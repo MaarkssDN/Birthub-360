@@ -20,8 +20,8 @@ em cada caminho — cada um continua descrito no lugar de sempre, agora com o st
 > **manual, controlado e feito localmente pelo Marcelo** (`deploy-ec2.sh`, `deploy-ec2.ps1`,
 > `deploy-aws.ps1`; procedimento em [`docs/operations/DEPLOY_EC2.md`](../operations/DEPLOY_EC2.md)).
 > Não há nada a configurar na AWS nem workflow de deploy no GitHub Actions. O Cloudflare R2 não é
-> usado; o backup do banco (`backup-production.yml`, escrito para o R2) nunca rodou e o que fazer
-> com ele está pendente de decisão do Marcelo. Estado de cada workflow: [`producao.md`](producao.md).
+> usado; o workflow de backup do banco nunca rodou e foi removido por decisão do Marcelo (PR #181),
+> então hoje não existe backup automático de produção. Estado de cada workflow: [`producao.md`](producao.md).
 
 ## 1. Caminho canônico por ambiente (estado real, 2026-09-20)
 

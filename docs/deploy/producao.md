@@ -10,15 +10,14 @@
 > - **Nenhum workflow do GitHub Actions faz deploy hoje.** `production.yaml` e `cd-homolog.yml` só
 >   publicam a imagem no GHCR; `.github/workflows/deploy-aws.yml.disabled` (ECS/S3/CloudFront) está
 >   desativado. Detalhes em [`docs/ops/wf5-prontidao-deploy.md`](../ops/wf5-prontidao-deploy.md) (PR #155).
-> - **Backup do banco:** `backup-production.yml` foi escrito para enviar ao Cloudflare R2, mas o
->   Marcelo **não usa o R2** (02/11/2026) e o workflow nunca rodou; hoje ele não tem destino válido.
+> - **Backup do banco:** `backup-production.yml` (escrito para o Cloudflare R2, que o Marcelo não usa)
+>   nunca rodou e foi **removido por decisão dele** (PR #181). **Hoje não existe backup automático de produção.**
 > - **Render, Neon, Vercel, GitHub Pages e Cloudflare R2 não são usados.** O blueprint do Render está arquivado em
 >   `infrastructure/archive/render.yaml.disabled`.
 >
 > **Decidido pelo Marcelo (02/11/2026):** não é preciso configurar nada na AWS. O deploy na EC2
 > continua manual, controlado e feito localmente por ele; não haverá workflow de deploy no GitHub Actions.
 >
-> **Decisão pendente do Marcelo:** o que fazer com o backup do banco, já que o R2 não é usado e a AWS não será configurada.
 >
 > **Todo o restante deste documento é histórico** (arquitetura Render + Neon + Cloudflare,
 > desativada em 20/09/2026) e não descreve a produção atual.
