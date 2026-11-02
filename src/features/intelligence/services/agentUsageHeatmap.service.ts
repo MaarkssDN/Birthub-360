@@ -1,5 +1,5 @@
 import { prisma } from '../../../lib/prisma.js';
-import { logger } from '../../../lib/logger.js';
+import '../../../lib/logger.js';
 
 /**
  * Heatmap de Uso do Swarm

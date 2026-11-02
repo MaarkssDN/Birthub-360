@@ -149,6 +149,7 @@ export function CandidateCard({
   };
 
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: onMouseEnter só toca um efeito sonoro decorativo; as ações do card são botões próprios.
     <div
       onMouseEnter={() => {
         SoundFX.play('hover');

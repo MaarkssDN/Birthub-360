@@ -106,6 +106,16 @@ describe('Cockpit Operacional e Telas de Gestão na UI', () => {
       expect(screen.getByText(/Objeção do Lead/i)).toBeDefined();
       expect(screen.getByPlaceholderText(/Estruture sua resposta/i)).toBeDefined();
     });
+
+    it('associa o rótulo "Sua Defesa de Objeção" ao campo de resposta (a11y)', () => {
+      render(<WarRoomArenaView />);
+
+      fireEvent.click(screen.getByRole('button', { name: /Entrar na Arena Agora/i }));
+
+      const field = screen.getByLabelText(/Sua Defesa de Objeção/i);
+      expect(field.tagName).toBe('TEXTAREA');
+      expect(field).toBe(screen.getByPlaceholderText(/Estruture sua resposta/i));
+    });
   });
 
   describe('3. Cockpit de Forecast Preditivo P10/P50/P90', () => {

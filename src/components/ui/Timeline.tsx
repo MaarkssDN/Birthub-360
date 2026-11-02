@@ -1,13 +1,4 @@
-import {
-  AlertCircle,
-  CheckCircle2,
-  Clock,
-  Mail,
-  MessageCircle,
-  MessageSquare,
-  Phone,
-  User,
-} from 'lucide-react';
+import { AlertCircle, CheckCircle2, Clock, Mail, MessageSquare, Phone, User } from 'lucide-react';
 import { WhatsAppIcon } from '../brand/CompanyBrandIcon.js';
 
 export interface TimelineItem {

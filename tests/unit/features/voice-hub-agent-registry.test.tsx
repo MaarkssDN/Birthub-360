@@ -3,7 +3,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
-import AgentRegistry from '@/features/voice-hub/pages/AgentRegistry.js';
 import DashboardAgentRegistry from '@/features/voice-hub/pages/Dashboard/AgentRegistry.js';
 
 const agent = {
@@ -22,7 +21,7 @@ function response(body: unknown, status = 200): Promise<Response> {
   } as Response);
 }
 
-function show(Page: typeof AgentRegistry) {
+function show(Page: typeof DashboardAgentRegistry) {
   return render(
     <MemoryRouter>
       <Page />
@@ -30,9 +29,8 @@ function show(Page: typeof AgentRegistry) {
   );
 }
 
-// Both routes contain the same implementation today; protect both until they are consolidated.
+// A cópia em pages/ foi removida (código morto, nunca roteada); fica a de pages/Dashboard/.
 describe.each([
-  ['Voice Hub', AgentRegistry],
   ['Dashboard', DashboardAgentRegistry],
 ] as const)('%s AgentRegistry', (_label, Page) => {
   beforeEach(() => {

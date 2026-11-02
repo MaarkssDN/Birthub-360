@@ -10,7 +10,7 @@ import {
   User,
   Zap,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { Badge } from '../../../components/ui/Badge.js';
 import { Button } from '../../../components/ui/Button.js';
 import { Input } from '../../../components/ui/Input.js';
@@ -23,6 +23,7 @@ import {
 } from '../api/socialSelling.api.js';
 
 export function ApproachGeneratorCard() {
+  const fieldId = useId();
   const [formData, setFormData] = useState<GenerateApproachInput>({
     targetCompany: '',
     targetRole: '',
@@ -82,10 +83,14 @@ export function ApproachGeneratorCard() {
 
         <form onSubmit={handleGenerate} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-ink flex items-center gap-1.5">
+            <label
+              htmlFor={`${fieldId}-empresa`}
+              className="text-xs font-semibold text-ink flex items-center gap-1.5"
+            >
               <Building2 className="w-3.5 h-3.5 text-ink-2" /> Empresa Alvo
             </label>
             <Input
+              id={`${fieldId}-empresa`}
               type="text"
               placeholder="Ex: Banco Neon, TOTVS, Logística Alfa"
               value={formData.targetCompany}
@@ -95,10 +100,14 @@ export function ApproachGeneratorCard() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-ink flex items-center gap-1.5">
+            <label
+              htmlFor={`${fieldId}-cargo`}
+              className="text-xs font-semibold text-ink flex items-center gap-1.5"
+            >
               <User className="w-3.5 h-3.5 text-ink-2" /> Cargo do Decisor
             </label>
             <Input
+              id={`${fieldId}-cargo`}
               type="text"
               placeholder="Ex: Diretor Comercial, Head de RevOps"
               value={formData.targetRole}
@@ -109,10 +118,14 @@ export function ApproachGeneratorCard() {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-ink flex items-center gap-1.5">
+              <label
+                htmlFor={`${fieldId}-segmento`}
+                className="text-xs font-semibold text-ink flex items-center gap-1.5"
+              >
                 <Layers className="w-3.5 h-3.5 text-ink-2" /> Segmento
               </label>
               <Input
+                id={`${fieldId}-segmento`}
                 type="text"
                 placeholder="Ex: Fintech, Saúde, SaaS"
                 value={formData.segment}
@@ -121,10 +134,14 @@ export function ApproachGeneratorCard() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-ink flex items-center gap-1.5">
+              <label
+                htmlFor={`${fieldId}-canal`}
+                className="text-xs font-semibold text-ink flex items-center gap-1.5"
+              >
                 <Share2 className="w-3.5 h-3.5 text-ink-2" /> Canal
               </label>
               <Select
+                id={`${fieldId}-canal`}
                 value={formData.channel}
                 onChange={(e) =>
                   setFormData({
@@ -141,10 +158,14 @@ export function ApproachGeneratorCard() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-ink flex items-center gap-1.5">
+            <label
+              htmlFor={`${fieldId}-gatilho`}
+              className="text-xs font-semibold text-ink flex items-center gap-1.5"
+            >
               <Zap className="w-3.5 h-3.5 text-ink-2" /> Evento Gatilho / Contexto
             </label>
             <Input
+              id={`${fieldId}-gatilho`}
               type="text"
               placeholder="Ex: Anúncio de rodada de investimento, novas contratações"
               value={formData.triggerEvent}
@@ -153,8 +174,11 @@ export function ApproachGeneratorCard() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-ink">Tom de Voz</label>
+            <label htmlFor={`${fieldId}-tom`} className="text-xs font-semibold text-ink">
+              Tom de Voz
+            </label>
             <Select
+              id={`${fieldId}-tom`}
               value={formData.tone}
               onChange={(e) =>
                 setFormData({

@@ -8,7 +8,7 @@
  */
 
 import { logger } from '../../../lib/logger.js';
-import { prisma } from '../../../lib/prisma.js';
+import '../../../lib/prisma.js';
 
 export const PipedriveService = {
   /**

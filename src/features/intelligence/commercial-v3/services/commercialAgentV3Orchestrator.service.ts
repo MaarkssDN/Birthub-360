@@ -1,10 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
 import {
-  generateStructuredOutput,
-  UntrustedContentGuard,
   createUntrustedContentGuard,
+  generateStructuredOutput,
 } from '../../../../lib/ai/gateway.js';
 import { logger } from '../../../../lib/logger.js';
+import { commercialAgentResultV3Schema } from '../contracts/commercialAgentResultV3.schema.js';
 import type {
   CommercialAgentResultV3,
   CommercialV3AgentId,
@@ -12,9 +12,16 @@ import type {
   CommercialV3Evidence,
   CommercialV3Handoff,
 } from '../contracts/commercialAgentV3.types.js';
-import { commercialAgentResultV3Schema } from '../contracts/commercialAgentResultV3.schema.js';
 import { commercialAgentV3Registry } from './commercialAgentV3Registry.service.js';
 import { commercialContextBuilder } from './commercialContextBuilder.service.js';
+
+/**
+ * Stub determinístico do LLM para testes E2E/CI. Só liga com COMMERCIAL_V3_LLM_STUB=true e
+ * NODE_ENV diferente de production; em produção o comportamento é sempre o original.
+ */
+export function isCommercialV3LlmStubEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
+  return env.COMMERCIAL_V3_LLM_STUB === 'true' && env.NODE_ENV !== 'production';
+}
 
 export interface DispatchCommercialMissionInput {
   agentId: CommercialV3AgentId;
@@ -175,6 +182,10 @@ export class CommercialAgentV3OrchestratorService {
     // 7. Tentativa de geração com LLM via AI Gateway estruturado
     let rawResult: CommercialAgentResultV3;
     try {
+      if (isCommercialV3LlmStubEnabled()) {
+        // Stub determinístico só para E2E/CI (nunca em produção): não chama o provedor de LLM.
+        throw new Error('COMMERCIAL_V3_LLM_STUB ativo: LLM desligado para teste determinístico.');
+      }
       rawResult = await generateStructuredOutput<CommercialAgentResultV3>({
         organizationId: input.organizationId,
         feature: 'commercial-v3',
@@ -185,7 +196,9 @@ export class CommercialAgentV3OrchestratorService {
     } catch (err: unknown) {
       logger.warn(
         { err },
-        'AI Gateway indisponível ou em erro; utilizando envelope consultivo seguro.',
+        isCommercialV3LlmStubEnabled()
+          ? '[stub e2e] AI Gateway simulado indisponível; utilizando envelope consultivo seguro.'
+          : 'AI Gateway indisponível ou em erro; utilizando envelope consultivo seguro.',
       );
       rawResult = buildConsultiveEnvelope();
     }

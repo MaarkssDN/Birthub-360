@@ -5,7 +5,6 @@ import type {
   LiveCopilotState,
   LiveTranscriptionEntry,
   LiveVoiceSessionState,
-  LiveVoiceTransportType,
   ObjectionDetectionResult,
 } from './types.js';
 

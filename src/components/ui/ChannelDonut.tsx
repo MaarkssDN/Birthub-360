@@ -58,6 +58,7 @@ export function ChannelDonut({
           {sorted.map(([label, value]) => {
             const pct = Math.round((value / total) * 1000) / 10;
             return (
+              // biome-ignore lint/a11y/noStaticElementInteractions: onMouseEnter só toca um efeito sonoro decorativo (role=presentation); não há ação a expor ao teclado.
               <div
                 key={label}
                 role="presentation"

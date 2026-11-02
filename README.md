@@ -77,14 +77,22 @@ cd Birthub-360
 # 2. Instalar dependências
 npm install
 
-# 3. Configurar variáveis de ambiente
-cp .env.example .env
+# 3. Configurar variáveis de ambiente (não sobrescreve um .env existente)
+[ -f .env ] || cp .env.example .env
+#    3a. PLATFORM_OPERATOR_TOKEN (>= 16 chars; protege /admin/queues e /metrics).
+#        Fica vazio no .env.example; sem ele o boot falha com
+#        "Too small: expected string to have >=16 characters". Gere e cole no .env:
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+#    3b. BETTER_AUTH_SECRET: troque o placeholder do .env por um valor novo:
+openssl rand -base64 32
+#        Nunca versione o .env nem reutilize chaves de outro ambiente.
 
 # 4. Subir containers de infraestrutura (Postgres, Redis, Qdrant)
 docker compose -f docker-compose.services.yml up -d
 
-# 5. Executar migrações do banco de dados e seeds
-npx prisma migrate dev
+# 5. Gerar o Prisma Client, executar migrações do banco de dados e seeds
+npx prisma generate
+npx prisma migrate dev   # ou `npx prisma migrate deploy` para só aplicar as migrações existentes
 npx prisma db seed
 
 # 6. Iniciar servidor de desenvolvimento
@@ -92,6 +100,8 @@ npm run dev
 ```
 
 Ambiente Windows: utilize o script pronto `Iniciar-Servidor-BirthHub360.bat`.
+
+> Estes passos substituem o bootstrap automático do antigo Codespace (`.devcontainer/post-create*.sh`, removido).
 
 ---
 

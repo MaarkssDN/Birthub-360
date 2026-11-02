@@ -128,6 +128,7 @@ export function BentoCard({
   }
 
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: com onClick o elemento recebe role=button, tabIndex=0 e Enter/Espaço; sem onClick os handlers são só de efeito visual (spotlight).
     <div
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}

@@ -1,13 +1,25 @@
-> **[ARCHIVED / NOT ACTIVE]** Esta arquitetura est depreciada. A nica fonte de verdade cannica atual  docs/operations/PRODUCTION_ARCHITECTURE.md. 
-
 # Guia de Produção — Birth Hub 360 / Prospector-Atlas
 
-> [!WARNING]
-> **DOCUMENTO ARQUIVADO / PRODUÇÃO CLOUD DESATIVADA (2026-09-20):**
-> Por decisão de produto, **Render, Neon, Cloudflare e qualquer caminho de produção em nuvem foram desativados por enquanto**.
-> O arquivo `render.yaml` foi retirado da raiz e arquivado em `infrastructure/archive/render.yaml.disabled`.
-> O ambiente canônico ativo é **100% Local-First** (`docker-compose.yml`). Este guia é mantido apenas como documentação de referência histórica.
-
+> [!IMPORTANT]
+> **Estado real da produção (atualizado em 02/11/2026):** o deploy está, por enquanto, na **AWS**,
+> numa instância EC2 (`3.143.251.44`, container Docker `birthhub-app`). O deploy é **manual**, pelos
+> scripts `deploy-ec2.sh`, `deploy-ec2.ps1` e `deploy-aws.ps1` (build local, `scp` e `ssh` para a EC2,
+> depois `docker restart`). O procedimento oficial está em
+> [`docs/operations/DEPLOY_EC2.md`](../operations/DEPLOY_EC2.md).
+>
+> - **Nenhum workflow do GitHub Actions faz deploy hoje.** `production.yaml` e `cd-homolog.yml` só
+>   publicam a imagem no GHCR; `.github/workflows/deploy-aws.yml.disabled` (ECS/S3/CloudFront) está
+>   desativado. Detalhes em [`docs/ops/wf5-prontidao-deploy.md`](../ops/wf5-prontidao-deploy.md) (PR #155).
+> - **Backup do banco:** `backup-production.yml` (escrito para o Cloudflare R2, que o Marcelo não usa)
+>   nunca rodou e foi **removido por decisão dele** (PR #181). **Hoje não existe backup automático de produção.**
+> - **Render, Neon, Vercel, GitHub Pages e Cloudflare R2 não são usados.** O blueprint do Render está arquivado em
+>   `infrastructure/archive/render.yaml.disabled`.
+>
+> **Decidido pelo Marcelo (02/11/2026):** não é preciso configurar nada na AWS. O deploy na EC2
+> continua manual, controlado e feito localmente por ele; não haverá workflow de deploy no GitHub Actions.
+>
+> **Todo o restante deste documento é histórico** (arquitetura Render + Neon + Cloudflare,
+> desativada em 20/09/2026) e não descreve a produção atual.
 
 Este documento é o guia único para colocar (ou manter) a aplicação em produção. Ele assume a
 decisão arquitetural tomada nesta rodada: **monólito único no Render** (o mesmo serviço Express
@@ -232,7 +244,6 @@ Nada precisou mudar nos workflows existentes — já cobrem o necessário:
 | `production.yaml`   | Mesmo gate de testes + build de imagem Docker (`ghcr.io`) com aprovação manual — caminho K8s/Helm/ArgoCD, não usado pelo Render                                                                                   |
 | `cd-homolog.yml`    | Deploy de homologação (branch `develop`) via imagem Docker + Helm                                                                                                                                                 |
 | `sonarqube.yml`     | Análise estática de qualidade/cobertura                                                                                                                                                                           |
-| `deploy-pages.yml`  | Publica build estático (sem backend) no GitHub Pages — gatilho manual (`workflow_dispatch`), não roda mais em todo push em `main`; não é a URL de produção nem um ambiente funcional (API não existe nesse build) |
 | `android-build.yml` | Gera APK do app mobile via Capacitor                                                                                                                                                                              |
 
 O único ajuste recomendado (manual, seção 2.3) é a branch protection rule em `main` exigindo o

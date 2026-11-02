@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -33,8 +33,12 @@ const temporaryDirectory = () => {
   return directory;
 };
 const bash = (script: string, env: Record<string, string>, cwd = process.cwd()) => {
+  const bashExecutable =
+    process.platform === 'win32' && existsSync('C:\\Program Files\\Git\\bin\\bash.exe')
+      ? 'C:\\Program Files\\Git\\bin\\bash.exe'
+      : 'bash';
   const result = spawnSync(
-    'bash',
+    bashExecutable,
     ['--noprofile', '--norc', '-e', '-o', 'pipefail', '-c', script],
     {
       cwd,

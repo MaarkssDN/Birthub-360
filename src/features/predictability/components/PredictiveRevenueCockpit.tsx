@@ -1,41 +1,25 @@
-import { AnimatePresence, motion } from 'framer-motion';
 import {
-  AlertTriangle,
-  ArrowRight,
-  Calculator,
   Check,
   CheckCircle2,
-  DollarSign,
-  HelpCircle,
-  Info,
-  Layers,
-  LineChart,
-  Percent,
-  RefreshCw,
   Scale,
   ShieldCheck,
   Sliders,
   Sparkles,
-  TrendingDown,
-  TrendingUp,
   UserCheck,
-  Users,
   X,
   Zap,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Badge } from '../../../components/ui/Badge.js';
 import { Button } from '../../../components/ui/Button.js';
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/Card.js';
+import { Card } from '../../../components/ui/Card.js';
 import { SoundFX } from '../../../lib/soundEffects.js';
 import { toast } from '../../../lib/toast.js';
 import { cn } from '../../../lib/utils.js';
 import type {
   AccountAllocationRecommendation,
-  BacktestValidationMetrics,
   ProjectedRevenueHorizon,
   RevenueHorizonDays,
-  WhatIfSimulationInput,
   WhatIfSimulationResult,
 } from '../../../shared/contracts/predictiveRevenueOracle.contract.js';
 

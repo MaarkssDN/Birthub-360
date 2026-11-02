@@ -1,24 +1,8 @@
 import { useState } from 'react';
-import {
-  Activity,
-  AlertOctagon,
-  ArrowRight,
-  CheckCircle2,
-  Clock,
-  Database,
-  Globe2,
-  HardDrive,
-  RefreshCw,
-  RotateCcw,
-  Server,
-  Shield,
-  ShieldAlert,
-  ShieldCheck,
-  Zap,
-} from 'lucide-react';
+import { AlertOctagon, Globe2, RotateCcw, Server, ShieldCheck, Zap } from 'lucide-react';
 import { Badge } from '../../../components/ui/Badge.js';
 import { Button } from '../../../components/ui/Button.js';
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/Card.js';
+import { Card } from '../../../components/ui/Card.js';
 import { SoundFX } from '../../../lib/soundEffects.js';
 import { toast } from '../../../lib/toast.js';
 import { cn } from '../../../lib/utils.js';

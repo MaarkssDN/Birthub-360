@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import {
   Key,
   Webhook,
@@ -26,6 +27,7 @@ import { Badge, Button, EmptyState, Skeleton } from '../../components/design-sys
 // "temporarily unavailable" state (persistence not deployed yet — never a fabricated empty list,
 // AGENTS.md §14) are both handled in hooks/useDeveloperSettings.ts.
 export default function DevelopersPage() {
+  const fieldId = useId();
   const {
     isAdmin,
     keysState,
@@ -418,10 +420,14 @@ export default function DevelopersPage() {
             <form onSubmit={handleCreateKey}>
               <div className="p-6 space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase mb-2">
+                  <label
+                    htmlFor={`${fieldId}-chave-nome`}
+                    className="block text-xs font-bold text-slate-600 uppercase mb-2"
+                  >
                     Identificador da Chave
                   </label>
                   <input
+                    id={`${fieldId}-chave-nome`}
                     type="text"
                     value={newKeyName}
                     placeholder="Ex: CI Pipeline, Integração Birth Hub 360, staging"
@@ -485,10 +491,14 @@ export default function DevelopersPage() {
             <form onSubmit={handleCreateWebhook}>
               <div className="p-6 space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase mb-2">
+                  <label
+                    htmlFor={`${fieldId}-webhook-url`}
+                    className="block text-xs font-bold text-slate-600 uppercase mb-2"
+                  >
                     URL do Endpoint
                   </label>
                   <input
+                    id={`${fieldId}-webhook-url`}
                     type="url"
                     value={newWebhookUrl}
                     placeholder="https://seu-servidor.com/webhooks/voice"
@@ -502,10 +512,14 @@ export default function DevelopersPage() {
                   </p>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase mb-2">
+                  <label
+                    htmlFor={`${fieldId}-webhook-eventos`}
+                    className="block text-xs font-bold text-slate-600 uppercase mb-2"
+                  >
                     Eventos
                   </label>
                   <input
+                    id={`${fieldId}-webhook-eventos`}
                     type="text"
                     value={newWebhookEvents}
                     placeholder="agent.call.ended ou * para todos os eventos"

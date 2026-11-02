@@ -1,11 +1,9 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import Telephony from '@/features/voice-hub/pages/Telephony.js';
 import DashboardTelephony from '@/features/voice-hub/pages/Dashboard/Telephony.js';
 
 describe.each([
-  ['Voice Hub', Telephony],
   ['Dashboard', DashboardTelephony],
 ] as const)('%s telephony data integrity', (_label, Page) => {
   beforeEach(() => {

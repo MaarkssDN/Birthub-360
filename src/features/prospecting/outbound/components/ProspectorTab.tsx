@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useState, useEffect } from 'react';
+import { useEffect, useId, useState } from 'react';
 import type {
   Lead,
   AIConfig,
@@ -97,6 +97,7 @@ export const ProspectorTab: React.FC<ProspectorTabProps> = ({
   onFiltersChange,
   runMeta = null,
 }) => {
+  const fieldId = useId();
   // Dropdown & Combobox States for the 7 requested fields
   const [selectedSegment, setSelectedSegment] = useState<string>('transp_geral');
   const [customSegmentText, setCustomSegmentText] = useState<string>('');
@@ -415,6 +416,7 @@ export const ProspectorTab: React.FC<ProspectorTabProps> = ({
             {/* Field 2: Região / Estado */}
             <div className="md:col-span-2 space-y-1.5">
               <label
+                htmlFor={`${fieldId}-uf`}
                 className={`block text-xs font-semibold uppercase tracking-wider ${
                   isDark ? 'text-slate-300' : 'text-slate-700'
                 }`}
@@ -422,6 +424,7 @@ export const ProspectorTab: React.FC<ProspectorTabProps> = ({
                 2. Estado (UF)
               </label>
               <select
+                id={`${fieldId}-uf`}
                 value={selectedState}
                 onChange={(e) => handleStateChange(e.target.value)}
                 className={`w-full border rounded-xl px-3 py-2.5 text-xs font-semibold outline-none transition ${
@@ -456,6 +459,7 @@ export const ProspectorTab: React.FC<ProspectorTabProps> = ({
             {/* Raio de Busca */}
             <div className="md:col-span-2 space-y-1.5">
               <label
+                htmlFor={`${fieldId}-raio`}
                 className={`block text-xs font-semibold uppercase tracking-wider ${
                   isDark ? 'text-slate-300' : 'text-slate-700'
                 }`}
@@ -463,6 +467,7 @@ export const ProspectorTab: React.FC<ProspectorTabProps> = ({
                 Raio (km)
               </label>
               <select
+                id={`${fieldId}-raio`}
                 value={searchRadius}
                 onChange={(e) => setSearchRadius(e.target.value)}
                 className={`w-full border rounded-xl px-3 py-2.5 text-xs font-semibold outline-none transition ${
@@ -548,6 +553,7 @@ export const ProspectorTab: React.FC<ProspectorTabProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5 pt-1">
             <div className="md:col-span-12 space-y-1.5">
               <label
+                htmlFor={`${fieldId}-quantidade`}
                 className={`block text-xs font-semibold uppercase tracking-wider ${
                   isDark ? 'text-slate-300' : 'text-slate-700'
                 }`}
@@ -555,6 +561,7 @@ export const ProspectorTab: React.FC<ProspectorTabProps> = ({
                 Quantidade de Leads a prospectar nesta rodada
               </label>
               <select
+                id={`${fieldId}-quantidade`}
                 value={limit}
                 onChange={(e) => setLimit(Number(e.target.value))}
                 className={`w-full max-w-sm border rounded-xl px-3 py-2.5 text-xs font-bold outline-none transition ${

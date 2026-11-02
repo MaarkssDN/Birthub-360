@@ -95,8 +95,7 @@ export const universalOfficeDocsTool = new DynamicStructuredTool({
               },
             ];
 
-        renderedContent =
-          `# ${title}\n\n` + sections.map((s) => `## ${s.heading}\n\n${s.body}`).join('\n\n');
+        renderedContent = `# ${title}\n\n${sections.map((s) => `## ${s.heading}\n\n${s.body}`).join('\n\n')}`;
         formatMetadata = {
           compatibleFormats: ['Microsoft Word (.docx)', 'Google Docs', 'Markdown (.md)'],
           sectionCount: sections.length,
@@ -131,7 +130,7 @@ export const universalOfficeDocsTool = new DynamicStructuredTool({
           rowCount: rows.length,
           columnCount: headers.length,
           xlsxByteLength: buffer.byteLength,
-          xlsxPreviewBase64Prefix: xlsxBase64.slice(0, 120) + '...',
+          xlsxPreviewBase64Prefix: `${xlsxBase64.slice(0, 120)}...`,
         };
       } else {
         // powerpoint_or_gslides

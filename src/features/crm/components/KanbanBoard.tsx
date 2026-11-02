@@ -1,6 +1,6 @@
 import type React from 'react';
-import { KanbanCard } from './KanbanCard.js';
-import { KanbanColumn } from './KanbanColumn.js';
+import './KanbanCard.js';
+import './KanbanColumn.js';
 
 export interface KanbanBoardProps {
   deals?: Array<{ id: string; title: string; stage: string; value: number }>;

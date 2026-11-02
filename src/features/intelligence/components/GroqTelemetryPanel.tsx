@@ -7,35 +7,22 @@ import { motion } from 'framer-motion';
 import {
   Activity,
   AlertCircle,
-  ArrowDownRight,
-  ArrowUpRight,
-  CheckCircle2,
   Clock,
   Coins,
   Cpu,
   DollarSign,
   Gauge,
-  Layers,
-  LineChart,
-  Loader2,
   RefreshCw,
-  Sparkles,
   Zap,
 } from 'lucide-react';
-import React, { useCallback, useEffect, useState } from 'react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '../../../components/ui/Card.js';
+import { useCallback, useEffect, useState } from 'react';
+import { Card } from '../../../components/ui/Card.js';
 import { Button } from '../../../components/ui/Button.js';
 import { Skeleton } from '../../../components/ui/Skeleton.js';
 import { api } from '../../../lib/api.js';
 import { SoundFX } from '../../../lib/soundEffects.js';
 import { toast } from '../../../lib/toast.js';
-import { fadeInUp, staggerContainer, staggerItem } from '../../../lib/motion.js';
+import { staggerContainer, staggerItem } from '../../../lib/motion.js';
 
 interface GroqCallRecord {
   id: string;
