@@ -5,7 +5,6 @@
  * Fornece interface e cliente Redis otimizado para operações de cache,
  * com fail-fast, fail-safe e suporte a injeção para testes.
  */
-import type { Redis } from 'ioredis';
 import { logger } from '../logger.js';
 import { cacheConnection, redisConfigured } from '../queue/redis.js';
 
