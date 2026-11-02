@@ -2,7 +2,7 @@
 
 - **SHA:** `e55f17e796c80c41f877ade6a475081f95b74c4a` (verificado no início e antes da escrita)
 - **Base:** main `16dd960f` (0 commits atrás)
-- **Veredito:** **BLOQUEADO** (Visual Regression vermelho; precisa de re-execução)
+- **Veredito:** **APROVADO** (atualizado: re-execução do VR 41434764309 tentativa 2 verde)
 
 ## Escopo e código
 1 linha de comentário `biome-ignore` em `src/features/prospecting/components/prospecting-hub/CandidateCard.tsx:152`. O `<div>` só tem `onMouseEnter` com `SoundFX.play('hover')` (`:154-156`); as ações do card são `<button>` próprios. Falso positivo confirmado; nenhum interativo ficou sem teclado. Sem package/lockfile, App.tsx, schema ou workflows.
@@ -17,3 +17,6 @@ O diff é só um comentário JSX, sem efeito de render; as telas falhas (CRM e o
 
 ## Bloqueador (dono: WF6)
 Re-executar os jobs falhos do VR 41434764309; com resultado verde, o veredito passa a APROVADO sem outra mudança.
+
+## Atualização — re-execução do VR
+WF6 re-executou os jobs falhos no mesmo SHA (head reconfirmado inalterado). Visual Regression 41434764309 **tentativa 2: success** (job 125270558527). A tentativa 1 falhou por flake herdado, sem relação com o diff. O bloqueador foi resolvido e todos os checks estão verdes. **Veredito final: APROVADO.**
