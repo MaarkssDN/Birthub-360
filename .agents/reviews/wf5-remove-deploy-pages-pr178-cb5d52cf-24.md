@@ -1,7 +1,7 @@
 # Parecer Agente 24 — PR #178 (WF5, remoção do deploy-pages.yml)
 
 - **SHA:** cb5d52cfe4b4f6d9d1f9d062032129094574f991 (base b7f42d0c85f47e9b4c7965b3c6edba4f8eecfdb3)
-- **Veredito: BLOQUEADO (CI pendente).** A revisão técnica não encontrou problemas, mas o gate obrigatório ainda não terminou. Sem ele não há aprovação (AGENTS.md §40).
+- **Veredito: APROVADO** (atualizado em 02/11/2026 com o CI concluído; substitui o BLOQUEADO por CI pendente da versão anterior).
 
 ## Escopo e ownership
 - O PR remove `.github/workflows/deploy-pages.yml` (-93), tira a linha dele da tabela em `docs/deploy/producao.md` e acrescenta uma nota em `docs/index.md:8-10`. O pages é do WF5 (decisão do Agente 00).
@@ -19,3 +19,9 @@
 - Concluídos com success: CodeQL 41451851708, Trivy 41451851788, Dependency Review 41451851710 e VR 41451851701.
 - **Pendentes:** Release 41451851752 (application gate: Unit em andamento; Golden, Integration, Build, Smoke e E2E ainda não rodaram) e Sonar 41451851705.
 - Para destravar: Release verde no mesmo SHA, com Unit, Golden, Integration, Build, Smoke e E2E executados.
+
+## Atualização do CI (APROVADO)
+- Release 41451851752 (attempt 1) com success. No application gate, Lint, Type Check, Unit, Golden Dataset, Integration, Build, Smoke e E2E rodaram com success.
+- Sonar 41451851705 com success. CodeQL, Trivy, Dependency Review e VR já estavam com success.
+- Sem falhas novas em relação à main: o Release da base b7f42d0c (41451316633) também terminou com success.
+- Bundle Budget não roda (filtro de path).
