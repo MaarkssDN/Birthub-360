@@ -36,3 +36,4 @@ overrides:
   qs: ^6.16.0
   'mammoth>@xmldom/xmldom': ^0.8.15
   '@capacitor/cli>@xmldom/xmldom': ^0.9.12
+  acorn: 8.11.3
