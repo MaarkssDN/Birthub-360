@@ -9,13 +9,13 @@
  */
 
 import { createHash } from 'node:crypto';
-import { logger } from '../../logger.js';
-import { getRedisClient, isRedisConfigured } from '../../redis/client.js';
 import type {
   ISemanticCachePort,
   SemanticCacheEntry,
   SemanticCacheKeyParams,
 } from '../../../shared/contracts/semanticCache.contract.js';
+import { logger } from '../../logger.js';
+import { getRedisClient } from '../../redis/client.js';
 
 /** TTLs Padrão por Categoria */
 export const CACHE_TTL = {
