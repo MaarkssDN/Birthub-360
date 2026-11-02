@@ -1,4 +1,3 @@
-import { Shield } from 'lucide-react';
 import type React from 'react';
 import { TAB_META, type TabType } from './tabMeta.js';
 
