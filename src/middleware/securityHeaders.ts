@@ -3,7 +3,7 @@
  * Aplica CSP, HSTS, X-Frame-Options, X-Content-Type-Options e Referrer-Policy.
  */
 
-import type { IncomingMessage, ServerResponse } from 'http';
+import type { IncomingMessage, ServerResponse } from 'node:http';
 
 export function applySecurityHeaders(
   _req: IncomingMessage,

@@ -1,15 +1,12 @@
 import {
   AlertTriangle,
   ArrowLeft,
-  ArrowRight,
   BookOpen,
   CheckCircle2,
   ChevronRight,
-  Filter,
   Loader2,
   Search,
   Send,
-  ShieldAlert,
   ShieldCheck,
   Sparkles,
   Users,
@@ -22,7 +19,6 @@ import type {
   CommercialAgentCatalogEntry,
   CommercialAgentResultV3,
   CommercialPlaybookMetadata,
-  CommercialSkillDefinition,
   CommercialV3AgentId,
 } from '../../intelligence/commercial-v3/contracts/commercialAgentV3.types.js';
 import type { RedteamEvaluationReport } from '../../intelligence/commercial-v3/evaluation/commercialRedteamEvaluator.service.js';

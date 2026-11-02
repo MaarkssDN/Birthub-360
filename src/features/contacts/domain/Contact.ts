@@ -1,4 +1,3 @@
-import type { ContactStatus } from '@prisma/client';
 import type { Repository } from '../../../shared/domain/Repository.js';
 
 import type { Contact } from '../../../shared/types/crm.js';

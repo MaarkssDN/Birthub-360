@@ -1,4 +1,4 @@
-import { prisma, withRlsContext } from '../../lib/prisma.js';
+import { withRlsContext } from '../../lib/prisma.js';
 import { logger } from '../../lib/logger.js';
 import { wrapUntrustedContent } from '../../lib/ai/gateway.js';
 
