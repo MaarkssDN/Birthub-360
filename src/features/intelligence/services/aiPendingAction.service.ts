@@ -315,7 +315,6 @@ export async function executeAndRecord(action: ExecutableAction): Promise<Execut
   return result;
 }
 
-
 /**
  * HITL — Acopla feedback da decisão humana (aprovação ou rejeição) ao LearningAgent e registra no AuditLog.
  * Permite ao sistema fechar o closed-loop de inteligência com dados reais auditáveis da interação humana.
@@ -335,7 +334,8 @@ export async function recordHumanDecisionFeedback(params: {
       data: {
         tenantId: organizationId,
         actorId,
-        action: decision === 'APPROVE' ? 'AI_PENDING_ACTION_APPROVED' : 'AI_PENDING_ACTION_REJECTED',
+        action:
+          decision === 'APPROVE' ? 'AI_PENDING_ACTION_APPROVED' : 'AI_PENDING_ACTION_REJECTED',
         entity: 'AIPendingAction',
         entityId: actionId,
         details: JSON.stringify({
@@ -355,10 +355,16 @@ export async function recordHumanDecisionFeedback(params: {
           return agent.reflectAndLearn(organizationId, actorId);
         })
         .catch((err) => {
-          logger.warn({ err, actorId, organizationId }, 'LearningAgent reflection background call error');
+          logger.warn(
+            { err, actorId, organizationId },
+            'LearningAgent reflection background call error',
+          );
         });
     }
   } catch (error) {
-    logger.error({ err: error, actionId, actorId }, 'Falha ao registrar feedback de decisão humana de IA');
+    logger.error(
+      { err: error, actionId, actorId },
+      'Falha ao registrar feedback de decisão humana de IA',
+    );
   }
 }
