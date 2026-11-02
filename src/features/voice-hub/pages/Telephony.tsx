@@ -125,6 +125,7 @@ export default function TelephonyPage() {
               <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
                 <Play className="h-4 w-4 text-green-600" /> Pré-visualização
               </h4>
+              {/* biome-ignore lint/a11y/useMediaCaption: música de espera gerada, sem fala; não há conteúdo a legendar (decisão do owner, ver docs/quality/biome-warnings-backlog.md). */}
               <audio src={generatedMusicUrl} controls className="w-full h-10" />
               <a
                 href={generatedMusicUrl}

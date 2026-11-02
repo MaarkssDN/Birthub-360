@@ -116,3 +116,16 @@ Regras `a11y/*`, `noImportantStyles` e `noDescendingSpecificity` envolvem markup
 | 3 | `complexity/noStaticOnlyClass` | `shared` | 1 | 01 |
 
 Total: 585.
+
+## Decisões registradas
+
+### `a11y/useMediaCaption` (02/11/2026, decisão do owner)
+
+| Arquivo | Decisão | Motivo |
+| --- | --- | --- |
+| `src/features/mobile/components/FieldMeetingRecorder.tsx` | `biome-ignore` documentado | Prévia local da gravação feita pelo próprio usuário; não existe fonte de legenda. |
+| `src/features/voice-hub/pages/Telephony.tsx` | `biome-ignore` documentado | Música de espera gerada, sem fala; nada a legendar. |
+| `src/features/voice-hub/pages/Dashboard/Telephony.tsx` | `biome-ignore` documentado | Idem (cópia do anterior). |
+| `src/features/voice-hub/pages/Organization.tsx` e `pages/Dashboard/Organization.tsx` | Pendente | Arquivos em PR aberta (#168); fora deste lote. Tratar depois que #168 for resolvida. |
+
+Não foi adicionado `<track kind="captions">` sem fonte de legenda real.
