@@ -42,4 +42,19 @@ Nenhum P1/P2.
 - Nenhuma.
 
 ## Decisão
-**BLOQUEADO (CI pendente)** — revisão de código sem bloqueios de mérito; nenhuma conversão a reverter. Teste obrigatório não executado não é aprovação: runs pendentes: Release 41434147148 (application gate: Unit Tests/Golden em execução; Integration, Build, Smoke, E2E pendentes).
+**SUPERADO — ver Atualização abaixo.** (decisão anterior: BLOQUEADO por CI pendente)
+
+## Atualização — 2026-11-02 09:28 (UTC-3)
+- Head reconfirmado com gh: `9ff0400d8c4ce28bd114f989bd5b66b3866f8a22` (inalterado); main segue `16dd960f310a1ab4b3c8bb5e9091a6f05c7b6a69`.
+- Release \"Central Birth Hub 360 Release\" **41434147148: completed/success**. Todos os jobs verdes (secret scan, trivy, dependency review, application gate). Todos os passos do application gate executados e verdes:
+  - Lint ✅ · Type Check ✅
+  - Unit Tests ✅ — 5538 passed, 1 skipped
+  - Golden Dataset ✅ — 11 passed
+  - Integration Tests ✅ — 738 passed, 2 skipped
+  - Build ✅ · Smoke ✅
+  - E2E ✅ — 108 passed (8.7m)
+- Baseline main 16dd960f: Release 41433136212 success. Nenhuma falha nova.
+- Sonar segue como risco (não bloqueio), conforme achados acima.
+
+## Decisão final
+**APROVADO** para o SHA `9ff0400d8c4ce28bd114f989bd5b66b3866f8a22`. Pendências P3 acima não bloqueiam.
