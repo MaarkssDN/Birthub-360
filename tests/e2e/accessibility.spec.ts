@@ -45,6 +45,30 @@ async function waitForAnimationsToSettle(page: import('@playwright/test').Page) 
     .catch(() => {});
 }
 
+/**
+ * Achado WF4 (run 41406972116): o axe mediu 4.24:1 no badge "Ecossistema" do Painel Central com o
+ * card pai ainda na animação de entrada (opacity 0 → 1, blur 8px). A animação é do Framer Motion
+ * (requestAnimationFrame), invisível a `document.getAnimations()`, e o buffer fixo de 1s nem sempre
+ * cobre o runner de CI. Espera até todo `.bh-platform-card` (e ancestrais) estar com opacidade 1 e
+ * sem filtro antes do scan. Best-effort: após 5s segue com o scan como antes.
+ */
+async function waitForCardsEntrance(page: import('@playwright/test').Page) {
+  await page
+    .waitForFunction(
+      () =>
+        Array.from(document.querySelectorAll('.bh-platform-card')).every((card) => {
+          for (let el: Element | null = card; el; el = el.parentElement) {
+            const style = getComputedStyle(el);
+            if (Number(style.opacity) < 1 || (style.filter && style.filter !== 'none')) return false;
+          }
+          return true;
+        }),
+      undefined,
+      { timeout: 5_000 },
+    )
+    .catch(() => {});
+}
+
 async function assertNoBlockingViolations(
   page: import('@playwright/test').Page,
   testInfo: import('@playwright/test').TestInfo,
@@ -98,6 +122,7 @@ test.describe('Acessibilidade automática (axe-core)', () => {
   }, testInfo) => {
     await signUp(page, { email: uniqueTestEmail('a11y-dash') });
     await waitForAppReady(page);
+    await waitForCardsEntrance(page);
     await assertNoBlockingViolations(page, testInfo);
   });
 
