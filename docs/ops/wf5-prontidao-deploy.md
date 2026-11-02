@@ -40,11 +40,10 @@ O Marcelo informou em 02/11/2026 que o deploy está, por enquanto, na AWS. Verif
 - **O backup aponta para Cloudflare R2**, não para AWS (S3).
 - **Docs desatualizados (fora do escopo deste PR):** `docs/deploy/producao.md` ainda descreve o caminho Render/Neon/Cloudflare como arquitetura de produção.
 
-Nada foi alterado nos workflows por isso: levar `production.yaml` a fazer deploy na EC2 (ou trocar o destino do backup para S3) é decisão de arquitetura, não erro de configuração. Fica como decisão do Marcelo com o Agente 10.
+Nada foi alterado nos workflows por isso: levar `production.yaml` a fazer deploy na EC2 (ou trocar o destino do backup para S3) é decisão de arquitetura, não erro de configuração. Decisão do Marcelo em 02/11/2026: não é preciso configurar nada na AWS; o deploy na EC2 continua manual, controlado e feito localmente por ele, sem workflow de deploy no GitHub Actions.
 
 ## Ações que só o Marcelo pode fazer
 1. Criar os environments `production` (required reviewers + branch policy `main`) e, se quiser, `homologation`.
 2. Se o backup for ativado: decidir o destino (R2, como está hoje, ou S3 na AWS); se ficar no R2, habilitar R2 e cadastrar os 6 secrets acima.
 3. Decidir o alvo de homologação (criar `develop`? qual chart?) antes de qualquer dry-run.
 4. Autorizar qualquer primeiro `workflow_dispatch` (dry-run). Este agente não executou nenhum.
-5. Decidir se o deploy na AWS (hoje manual, pelos scripts EC2) deve ganhar um workflow com aprovação no environment `production`.
