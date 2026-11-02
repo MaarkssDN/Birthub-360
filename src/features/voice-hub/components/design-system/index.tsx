@@ -436,6 +436,7 @@ export function Card({ children, className = '', onClick, hoverable = false }: C
     : undefined;
 
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: com onClick o Card recebe role=button, tabIndex=0 e Enter/Espaço; sem onClick não há handler de interação.
     <div
       onClick={onClick}
       onKeyDown={handleKeyDown}
