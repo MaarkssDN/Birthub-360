@@ -1,4 +1,4 @@
-// Opções de ICP (Perfil de Cliente Ideal) para os dropdowns do Prospector.
+// Opções de ICP (Perfil de Cliente Ideal) para os dropdowns do Módulo de Prospecção Birth Hub 360.
 // Extraídas do "Playbook Comercial Birth Hub 360" e do "Playbook Comercial - Birth Hub 360"
 // fornecidos pelo time comercial.
 

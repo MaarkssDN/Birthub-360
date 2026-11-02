@@ -65,7 +65,7 @@ pool.on('error', (err) => {
 // aspiracional em infrastructure/observability/alert.rules.yml). `pg.Pool` já mantém essas 3
 // contagens internamente (nenhuma instrumentação nova de query necessária) — só faltava expô-las
 // como Gauge Prometheus, mesmo padrão pull-based de src/lib/queue/metrics.ts. Consumida pelo grupo
-// `prospector-atlas.database.ativos-hoje` em alert.rules.yml.
+// `birthhub-360.database.ativos-hoje` em alert.rules.yml.
 export const dbPoolTotalConnections = new client.Gauge({
   name: 'pg_pool_total_connections',
   help: 'Total de clientes (conectados + sendo criados) no pool pg deste processo.',

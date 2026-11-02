@@ -38,7 +38,7 @@ const RECONNECT_BASE_DELAY_MS = 2000;
 const RECONNECT_MAX_DELAY_MS = 60000;
 
 // RUN-011 (Onda 41/Agente 16): o WASocket é um objeto em memória por processo — sem trava, duas
-// réplicas de `prospector-atlas-worker` (worker.replicaCount > 1 + HPA) poderiam abrir, para a
+// réplicas de `birthhub-360-worker` (worker.replicaCount > 1 + HPA) poderiam abrir, para a
 // MESMA organização, duas conexões WhatsApp Web simultâneas do mesmo dispositivo vinculado. O
 // protocolo do Baileys/WhatsApp não tolera isso bem (desconexões, mensagens perdidas/duplicadas,
 // em casos extremos banimento do número). A trava distribuída abaixo garante posse exclusiva por
