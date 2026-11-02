@@ -1,54 +1,44 @@
-# Parecer Agente 24 — PR #163 (agente/wf5-remove-devcontainer) — head 6a7cb6b5
+# Parecer Agente 24 — PR #163 (agente/wf5-remove-devcontainer) — head 6a7cb6b5 — FINAL
 
-- **SHA revisado:** `6a7cb6b5090b12c4e952e24f5301c224eef54c5a` (confirmado com `gh` no início e antes de escrever; 02/11/2026 ~06:37 BRT)
+- **SHA revisado:** `6a7cb6b5090b12c4e952e24f5301c224eef54c5a` (reconfirmado com `gh` em 02/11/2026 ~07:30 BRT, sem mudanças)
 - **Base:** `main` `34ca6493516ff9c2c893fc49f16971e0972cf82d`
-- **Veredito:** **BLOQUEADO (CI pendente)**
-- Substitui o parecer de `6298a544`. Vale só para este SHA.
+- **Veredito:** **APROVADO (técnico)**. **O merge depende de o Marcelo confirmar que autorizou a remoção do `.devcontainer`** (autorização relatada pelo agente via 00 e ainda não verificada pelo 24).
+- Substitui a versão "BLOQUEADO (CI pendente)" deste mesmo arquivo. Vale só para este SHA.
+
+## Por que APROVADO com condição, e não BLOQUEADO
+O AGENTS.md §40 (l.909) bloqueia por ausência de evidência técnica: teste não executado, ambiente indisponível ou evidência insuficiente. Todas as evidências técnicas estão completas e verdes. A autorização do Marcelo é uma **decisão humana de escopo**, não um gate técnico do 24. Por isso fica registrada como condição explícita de merge, e o merge **não pode** acontecer sem essa confirmação. Se o Marcelo negar, este parecer perde efeito e o PR deve ser fechado ou revertido pelo dono.
 
 ## Merge da main
 - `6a7cb6b5` tem os pais `5db8ab7d` e `34ca6493`. `git merge-tree --write-tree` gera a mesma árvore. **O merge é limpo.**
-- Diff próprio (`34ca6493..6a7cb6b5`): as 6 remoções em `.devcontainer/` (iguais às do parecer anterior) **+ `README.md` (+14/-4)**, vindo do commit novo `5db8ab7d`.
+- Diff próprio: as 6 remoções em `.devcontainer/` + `README.md` (+14/-4, commit `5db8ab7d`).
 
-## Revisão do commit novo 5db8ab7d (README.md:80-105)
-- `[ -f .env ] || cp .env.example .env` não sobrescreve um `.env` existente. OK.
-- `PLATFORM_OPERATOR_TOKEN` é gerado com `crypto.randomBytes(32).toString('hex')` (64 chars) e colado no `.env`. Confere com `.env.example:77`, onde a variável vem vazia. OK.
-  - **P4:** o README diz ">= 16 chars", mas `src/config/env.ts:438` define `MIN_PLATFORM_OPERATOR_TOKEN_LENGTH = 32` (checagem reforçada). O comando gera 64, então a instrução funciona. Sugestão: escrever ">= 32".
-- `BETTER_AUTH_SECRET` usa `openssl rand -base64 32` no lugar do placeholder `replace-with-a-long-random-secret` (`.env.example:25`). OK.
-- Avisa para "Nunca versione o .env nem reutilize chaves de outro ambiente". `.gitignore:9` tem `.env*`. OK.
-- `prisma generate` + `migrate dev` (ou `migrate deploy`) + `db seed` substituem o bootstrap do `post-create*.sh`. Isso **resolve o P3** do parecer anterior.
-- **Segurança:** nenhum valor de segredo real no README, só comandos de geração. Orientação segura.
-- **P4 opcional (herdado):** `PII_BLIND_INDEX_KEY` (`.env.example:41`, placeholder) não é mencionado no setup. Pode valer documentar como gerar.
-
-## Referências pendentes
-Não mudou em relação ao parecer anterior: nenhuma referência executada a `.devcontainer`. `src/lib/auth.ts:63-72` (CODESPACE_NAME) fica inerte (P4). O README agora menciona a remoção do `.devcontainer` de forma explícita.
+## Achados
+- Não há referências executadas a `.devcontainer`. `src/lib/auth.ts:63-72` (CODESPACE_NAME) fica inerte: P4.
+- README (`README.md:80-105`): `[ -f .env ] || cp`, `PLATFORM_OPERATOR_TOKEN` gerado com `crypto.randomBytes(32)`, `BETTER_AUTH_SECRET` com `openssl rand -base64 32`, aviso para nunca versionar o `.env` (`.gitignore:9` `.env*`), `prisma generate`/`migrate`/`seed`. Não há segredo real e a orientação é segura. **Resolve o P3** anterior do bootstrap.
+- P4: o README diz ">= 16 chars", mas `src/config/env.ts:438` exige 32 (o comando gera 64, então funciona).
+- P4: documentar a geração de `PII_BLIND_INDEX_KEY` no setup local.
+- `.devcontainer/docker-compose.yml` removido tinha credenciais só de dev. Elas continuam no histórico do Git, sem ação necessária.
 
 ## Propriedade
-Pela decisão atual, `.devcontainer/**` pertence ao WF5. O `README.md` não tem dono explícito no AGENTS.md e a mudança é documental, coerente com a remoção. **OK, sem achado.**
+`.devcontainer/**` pertence ao WF5 (decisão atual do 00). `README.md` é uma mudança documental coerente com a remoção. OK.
 
-## CI no head 6a7cb6b5 (até ~06:37 BRT, ~44 min de espera)
-| Run | Workflow | Estado |
+## CI no head 6a7cb6b5 (concluída)
+| Run | Workflow | Resultado |
 |---|---|---|
+| 41415550226 | Central Birth Hub 360 Release | **success** |
 | 41415550056 | Security - Trivy | success |
 | 41415550050 | Security - CodeQL | success |
 | 41415550069 | Security - Dependency Review | success |
 | 41415550214 | Visual Regression Tests | success |
 | 41415550146 | SonarQube Analysis | success |
-| 41415550226 | Central Birth Hub 360 Release | **in_progress** |
 
-- No Release 41415550226 / application gate, estes passos passaram: Lint, Prettier, Type Check, Architecture, OpenAPI drift, **Unit Tests**, AI Resilience e Migrations.
-- **Ainda pendentes:** Golden Dataset (em execução), Integration, Build, Smoke e E2E.
+- **Executados e verdes no application gate:** Unit, Golden Dataset, Integration, Build, Smoke e E2E. Os jobs build, trivy, secret scan e dependency review também deram success.
 - Bundle Budget não foi disparado (filtro de paths). Não se aplica.
-- **Baseline da main `34ca6493`:** Release 41415379934 **success** (Lint, Unit, Integration, Build, Smoke e E2E OK). Até agora não há falha nova.
+- **Baseline da main `34ca6493`:** Release 41415379934 success. **Nenhuma falha nova nem herdada.**
 
-## Motivo do bloqueio
-AGENTS.md §40 (l.909) diz que teste obrigatório não executado não equivale a aprovação, e o Release 41415550226 não concluiu. Uma remoção de config de ambiente de dev mais docs não muda o runtime. O bloqueio vem só da aplicação literal da regra.
-
-## O que desbloqueia
-Release 41415550226 com success neste SHA, seguido de confirmação do 24. Também depende da resposta à pergunta 2 abaixo.
-
-## Condições humanas (não são aprovação)
+## Condições humanas
+- **Condição de merge:** o Marcelo precisa confirmar que autorizou a remoção do `.devcontainer`.
 - Não há deploy/produção, rotação de chaves nem mudança de configuração do repo neste PR.
-- **Condição:** a autorização do Marcelo para remover o `.devcontainer` foi relatada pelo agente (via 00) e **não foi verificada** pelo 24.
 
 ## Perguntas em aberto para o Marcelo
 1. O Marcelo de fato autorizou a remoção do `.devcontainer`?
