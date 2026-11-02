@@ -232,7 +232,6 @@ Nada precisou mudar nos workflows existentes — já cobrem o necessário:
 | `production.yaml`   | Mesmo gate de testes + build de imagem Docker (`ghcr.io`) com aprovação manual — caminho K8s/Helm/ArgoCD, não usado pelo Render                                                                                   |
 | `cd-homolog.yml`    | Deploy de homologação (branch `develop`) via imagem Docker + Helm                                                                                                                                                 |
 | `sonarqube.yml`     | Análise estática de qualidade/cobertura                                                                                                                                                                           |
-| `deploy-pages.yml`  | Publica build estático (sem backend) no GitHub Pages — gatilho manual (`workflow_dispatch`), não roda mais em todo push em `main`; não é a URL de produção nem um ambiente funcional (API não existe nesse build) |
 | `android-build.yml` | Gera APK do app mobile via Capacitor                                                                                                                                                                              |
 
 O único ajuste recomendado (manual, seção 2.3) é a branch protection rule em `main` exigindo o
