@@ -283,6 +283,39 @@ export interface ChainVerificationResult {
   reason?: ChainViolation;
 }
 
+/** Checkpoint externo durável ancorado em S3 Object Lock / KMS (F5 / Issue #36). */
+export interface ExternalConsentCheckpoint {
+  organizationId: string;
+  genesisId: string;
+  genesisHash: string;
+  lastSequence: number;
+  lastHash: string;
+  anchoredAt: string;
+  signature?: string;
+}
+
+export interface IConsentExternalCheckpointStore {
+  saveCheckpoint(checkpoint: ExternalConsentCheckpoint): Promise<void>;
+  getLatestCheckpoint(organizationId: string): Promise<ExternalConsentCheckpoint | null>;
+}
+
+export class InMemoryConsentExternalCheckpointStore implements IConsentExternalCheckpointStore {
+  private readonly checkpoints = new Map<string, ExternalConsentCheckpoint>();
+
+  async saveCheckpoint(checkpoint: ExternalConsentCheckpoint): Promise<void> {
+    this.checkpoints.set(checkpoint.organizationId, { ...checkpoint });
+  }
+
+  async getLatestCheckpoint(organizationId: string): Promise<ExternalConsentCheckpoint | null> {
+    const cp = this.checkpoints.get(organizationId);
+    return cp ? { ...cp } : null;
+  }
+
+  clear(): void {
+    this.checkpoints.clear();
+  }
+}
+
 /**
  * Verificação pura da cadeia. Com `head` (ou checkpoint externo) detecta também truncamento de
  * cauda e recriação da cadeia a partir de um novo gênese.
@@ -291,6 +324,7 @@ export function verifyConsentChain(
   organizationId: string,
   chain: StoredConsentAuditEvent[],
   head?: ConsentChainHead | null,
+  externalCheckpoint?: ExternalConsentCheckpoint | null,
 ): ChainVerificationResult {
   const fail = (reason: ChainViolation, id?: string): ChainVerificationResult => {
     logger.error(
@@ -312,15 +346,32 @@ export function verifyConsentChain(
       return fail('PII_IN_CHAIN', r.id);
     expectedPrev = currentHash;
   }
-  if (head === undefined) return { valid: true, totalRecords: chain.length };
-  if (!head) return chain.length === 0 ? { valid: true, totalRecords: 0 } : fail('HEAD_MISSING');
-  if (chain.length === 0) return fail('TRUNCATED');
-  if (chain[0].id !== head.genesisId || chain[0].currentHash !== head.genesisHash) {
-    return fail('GENESIS_REPLACED', chain[0].id);
+  if (head !== undefined) {
+    if (!head) return chain.length === 0 ? { valid: true, totalRecords: 0 } : fail('HEAD_MISSING');
+    if (chain.length === 0) return fail('TRUNCATED');
+    if (chain[0].id !== head.genesisId || chain[0].currentHash !== head.genesisHash) {
+      return fail('GENESIS_REPLACED', chain[0].id);
+    }
+    const last = chain[chain.length - 1];
+    if (last.sequence !== head.lastSequence || last.currentHash !== head.lastHash) {
+      return fail('TRUNCATED', last.id);
+    }
   }
-  const last = chain[chain.length - 1];
-  if (last.sequence !== head.lastSequence || last.currentHash !== head.lastHash) {
-    return fail('TRUNCATED', last.id);
+  if (externalCheckpoint) {
+    if (chain.length === 0) return fail('TRUNCATED');
+    if (
+      chain[0].id !== externalCheckpoint.genesisId ||
+      chain[0].currentHash !== externalCheckpoint.genesisHash
+    ) {
+      return fail('GENESIS_REPLACED', chain[0].id);
+    }
+    if (chain.length - 1 < externalCheckpoint.lastSequence) {
+      return fail('TRUNCATED', chain[chain.length - 1]?.id);
+    }
+    const elAtCheckpoint = chain[externalCheckpoint.lastSequence];
+    if (elAtCheckpoint && elAtCheckpoint.currentHash !== externalCheckpoint.lastHash) {
+      return fail('HASH_MISMATCH', elAtCheckpoint.id);
+    }
   }
   return { valid: true, totalRecords: chain.length };
 }
@@ -335,6 +386,7 @@ export class ConsentChainUnavailableError extends Error {}
 export interface ConsentAuditChainOptions {
   repo: ConsentAuditChainRepository;
   tokenizer: SubjectTokenizer;
+  externalCheckpointStore?: IConsentExternalCheckpointStore;
   /** Retenção do registro da tarefa de expurgo após conclusão (dias). */
   purgeTaskRetentionDays?: number;
   maxPurgeAttempts?: number;
@@ -656,13 +708,42 @@ export class ConsentAuditChainService implements IConsentAuditChainPort {
     );
   }
 
-  async verifyChainIntegrity(organizationId: string): Promise<ChainVerificationResult> {
+  async anchorExternalCheckpoint(
+    organizationId: string,
+  ): Promise<ExternalConsentCheckpoint | null> {
     this.assertTenant(organizationId);
-    const [chain, head] = await Promise.all([
+    if (!this.opts.externalCheckpointStore) return null;
+    const head = await this.opts.repo.getHead(organizationId);
+    if (!head) return null;
+    const checkpoint: ExternalConsentCheckpoint = {
+      organizationId,
+      genesisId: head.genesisId,
+      genesisHash: head.genesisHash,
+      lastSequence: head.lastSequence,
+      lastHash: head.lastHash,
+      anchoredAt: new Date().toISOString(),
+    };
+    await this.opts.externalCheckpointStore.saveCheckpoint(checkpoint);
+    logger.info(
+      { organizationId, lastSequence: checkpoint.lastSequence, lastHash: checkpoint.lastHash },
+      'ConsentAuditChain: checkpoint externo ancorado com sucesso',
+    );
+    return checkpoint;
+  }
+
+  async verifyChainIntegrity(
+    organizationId: string,
+    options?: { checkExternal?: boolean },
+  ): Promise<ChainVerificationResult> {
+    this.assertTenant(organizationId);
+    const [chain, head, externalCheckpoint] = await Promise.all([
       this.opts.repo.listChain(organizationId),
       this.opts.repo.getHead(organizationId),
+      options?.checkExternal && this.opts.externalCheckpointStore
+        ? this.opts.externalCheckpointStore.getLatestCheckpoint(organizationId)
+        : Promise.resolve(null),
     ]);
-    return verifyConsentChain(organizationId, chain, head);
+    return verifyConsentChain(organizationId, chain, head, externalCheckpoint);
   }
 
   async getChain(organizationId: string): Promise<StoredConsentAuditEvent[]> {
