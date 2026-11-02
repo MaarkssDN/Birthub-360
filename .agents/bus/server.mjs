@@ -173,6 +173,7 @@ const server = http.createServer(async (req, res) => {
     const agents = db.prepare('SELECT * FROM agents ORDER BY id ASC').all();
     const totalMessages = db.prepare('SELECT COUNT(*) as count FROM messages').get().count;
     const totalHandoffs = db.prepare('SELECT COUNT(*) as count FROM handoffs').get().count;
+    const recentHandoffs = db.prepare('SELECT * FROM handoffs ORDER BY created_at DESC LIMIT 8').all();
     const waveNum = db.prepare("SELECT value FROM wave_state WHERE key = 'current_wave'").get()?.value || '1';
     const waveTitle = db.prepare("SELECT value FROM wave_state WHERE key = 'wave_title'").get()?.value || 'Onda 1';
     const stepsJson = db.prepare("SELECT value FROM wave_state WHERE key = 'steps'").get()?.value || '[]';
@@ -201,6 +202,7 @@ const server = http.createServer(async (req, res) => {
       totalAgents: agents.length,
       totalMessages,
       totalHandoffs,
+      recentHandoffs,
       wave: {
         number: parseInt(waveNum, 10),
         title: waveTitle,
@@ -347,31 +349,45 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  // API: Buscar mensagens (com suporte a conversação direta entre dois agentes)
+  // API: Buscar mensagens (com filtro flexível entre quaisquer agentes)
   if (req.method === 'GET' && pathname === '/api/messages') {
     const agentId = url.searchParams.get('agentId');
     const peerId = url.searchParams.get('peerId');
+    const mode = url.searchParams.get('mode') || 'pair'; // 'pair', 'agent_all', 'global'
     const limit = parseInt(url.searchParams.get('limit') || '100', 10);
     const since = parseInt(url.searchParams.get('since') || '0', 10);
 
     let rows;
-    if (peerId && agentId) {
-      // Conversa bidirecional específica entre A e B (ou broadcast)
+    if (mode === 'global' || (!agentId && !peerId)) {
       rows = db.prepare(`
         SELECT * FROM messages
-        WHERE created_at > ? AND (
-          (from_id = ? AND to_id = ?) OR
-          (from_id = ? AND to_id = ?) OR
-          (to_id = 'ALL' AND (from_id = ? OR from_id = ?))
-        )
+        WHERE created_at > ?
         ORDER BY created_at DESC LIMIT ?
-      `).all(since, agentId, peerId, peerId, agentId, agentId, peerId, limit);
-    } else if (agentId) {
+      `).all(since, limit);
+    } else if (mode === 'agent_all' && agentId) {
       rows = db.prepare(`
         SELECT * FROM messages
-        WHERE created_at > ? AND (to_id = ? OR to_id = 'ALL' OR from_id = ?)
+        WHERE created_at > ? AND (from_id = ? OR to_id = ? OR to_id = 'ALL')
         ORDER BY created_at DESC LIMIT ?
       `).all(since, agentId, agentId, limit);
+    } else if (peerId && agentId) {
+      if (peerId === 'ALL') {
+        rows = db.prepare(`
+          SELECT * FROM messages
+          WHERE created_at > ? AND (to_id = 'ALL' OR from_id = ? OR to_id = ?)
+          ORDER BY created_at DESC LIMIT ?
+        `).all(since, agentId, agentId, limit);
+      } else {
+        rows = db.prepare(`
+          SELECT * FROM messages
+          WHERE created_at > ? AND (
+            (from_id = ? AND to_id = ?) OR
+            (from_id = ? AND to_id = ?) OR
+            (to_id = 'ALL' AND (from_id = ? OR from_id = ?))
+          )
+          ORDER BY created_at DESC LIMIT ?
+        `).all(since, agentId, peerId, peerId, agentId, agentId, peerId, limit);
+      }
     } else {
       rows = db.prepare(`
         SELECT * FROM messages
@@ -477,68 +493,70 @@ function renderDashboardHtml() {
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #090d16;
-      --surface: #0f172a;
-      --card-bg: #141e33;
-      --card-hover: #1a2742;
-      --border: #1e293b;
-      --border-accent: rgba(56, 189, 248, 0.35);
-      --text: #f1f5f9;
+      --bg: #070b14;
+      --surface: #0f1629;
+      --card-bg: #131c31;
+      --card-elevated: #192540;
+      --border: rgba(148, 163, 184, 0.14);
+      --border-focus: rgba(56, 189, 248, 0.55);
+      --text: #f8fafc;
       --text-muted: #94a3b8;
       --text-dim: #64748b;
       --primary: #38bdf8;
       --primary-glow: rgba(56, 189, 248, 0.18);
       --indigo: #6366f1;
       --green: #10b981;
-      --green-glow: rgba(16, 185, 129, 0.2);
       --yellow: #f59e0b;
       --red: #ef4444;
       --purple: #a855f7;
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+      --radius-pill: 9999px;
       --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       --font-mono: 'JetBrains Mono', Consolas, monospace;
+      --shadow-card: 0 12px 32px -8px rgba(0, 0, 0, 0.45);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    
+
     body {
-      background: var(--bg);
+      background: radial-gradient(circle at 15% 0%, #111b36 0%, var(--bg) 55%);
       color: var(--text);
       font-family: var(--font-sans);
       height: 100vh;
       display: flex;
       flex-direction: column;
+      padding: 16px 20px;
+      gap: 16px;
       overflow: hidden;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* BARRA SUPERIOR PRINCIPAL */
-    header {
+    /* TOP BAR + WAVE PROGRESS EM BENTO CARD ARREDONDADO */
+    .top-bar-card {
       background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 10px 24px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 14px 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 24px;
+      box-shadow: var(--shadow-card);
       flex-shrink: 0;
-      z-index: 10;
     }
 
-    .brand-section {
+    .brand-cluster {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 14px;
     }
 
-    .brand-logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .logo-badge {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
+    .logo-circle {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
       background: linear-gradient(135deg, #0284c7, #6366f1);
       display: flex;
       align-items: center;
@@ -546,39 +564,89 @@ function renderDashboardHtml() {
       font-weight: 800;
       color: #fff;
       font-size: 0.95rem;
-      box-shadow: 0 0 16px rgba(56, 189, 248, 0.3);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.35);
+      flex-shrink: 0;
     }
 
     .brand-title {
       font-size: 1.05rem;
       font-weight: 800;
       letter-spacing: -0.02em;
-      color: #ffffff;
+      color: #fff;
     }
 
-    .brand-sub {
-      font-size: 0.72rem;
+    .brand-subtitle {
+      font-size: 0.74rem;
       color: var(--text-muted);
-      font-weight: 500;
     }
 
-    /* BARRA DE STATUS DOS AGENTES (SLOTS) */
-    .status-bar-metrics {
+    /* PROGRESSO CENTRAL NA TOP BAR */
+    .wave-progress-cluster {
+      flex: 1;
+      max-width: 520px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-pill);
+      padding: 8px 18px;
       display: flex;
       align-items: center;
-      gap: 18px;
+      gap: 14px;
     }
 
-    .metric-pill {
+    .wave-pill-badge {
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(99, 102, 241, 0.45);
+      color: #a5b4fc;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: var(--radius-pill);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .progress-track {
+      flex: 1;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #38bdf8, #6366f1, #10b981);
+      border-radius: var(--radius-pill);
+      transition: width 0.4s ease;
+    }
+
+    .progress-pct {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--primary);
+      min-width: 38px;
+      text-align: right;
+    }
+
+    /* PILLS DE STATUS */
+    .metrics-cluster {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status-pill {
       display: flex;
       align-items: center;
       gap: 8px;
       background: var(--card-bg);
       border: 1px solid var(--border);
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 0.76rem;
+      padding: 7px 14px;
+      border-radius: var(--radius-pill);
+      font-size: 0.75rem;
       font-weight: 600;
+      white-space: nowrap;
     }
 
     .dot {
@@ -590,802 +658,745 @@ function renderDashboardHtml() {
     .dot-yellow { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
     .dot-blue { background: var(--primary); box-shadow: 0 0 8px var(--primary); }
 
-    /* BARRA DE PROGRESSO DA ONDA */
-    .wave-progress-bar-container {
-      background: #0b1220;
-      border-bottom: 1px solid var(--border);
-      padding: 8px 24px;
+    /* GRID BENTO PRINCIPAL (2 COLUNAS AMPLAS E EQUILIBRADAS) */
+    .bento-workspace {
+      display: grid;
+      grid-template-columns: 1fr 410px;
+      gap: 16px;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* COLUNA ESQUERDA/CENTRAL: CONVERSAÇÃO MULTI-AGENTE */
+    .conversation-bento-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
       display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+    }
+
+    /* BARRA DE SELEÇÃO DE AGENTES EM LISTA SUSPENSA */
+    .conversation-selector-bar {
+      padding: 16px 22px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 20px;
-      flex-shrink: 0;
+      gap: 14px;
     }
 
-    .wave-info {
+    .selector-group {
       display: flex;
       align-items: center;
-      gap: 12px;
-      min-width: 260px;
+      gap: 10px;
+      flex: 1;
+      min-width: 280px;
     }
 
-    .wave-tag {
-      background: rgba(99, 102, 241, 0.2);
-      border: 1px solid rgba(99, 102, 241, 0.4);
-      color: #818cf8;
-      font-size: 0.72rem;
+    .selector-box {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .selector-label {
+      font-size: 0.68rem;
       font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 6px;
       text-transform: uppercase;
-    }
-
-    .wave-name {
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: #fff;
-    }
-
-    .progress-track-wrapper {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      max-width: 600px;
-    }
-
-    .progress-bar-bg {
-      flex: 1;
-      height: 7px;
-      background: var(--card-bg);
-      border-radius: 10px;
-      overflow: hidden;
-      border: 1px solid var(--border);
-      position: relative;
-    }
-
-    .progress-bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #0284c7, #38bdf8, #10b981);
-      border-radius: 10px;
-      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .progress-percent-label {
-      font-size: 0.78rem;
-      font-weight: 700;
-      color: var(--primary);
-      font-family: var(--font-mono);
-      min-width: 42px;
-    }
-
-    .steps-checklist-btn {
-      background: transparent;
-      border: 1px solid var(--border);
+      letter-spacing: 0.04em;
       color: var(--text-muted);
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 0.72rem;
+      padding-left: 6px;
+    }
+
+    select.round-select, input.round-input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-pill);
+      padding: 9px 16px;
+      color: #fff;
+      font-size: 0.82rem;
       font-weight: 600;
+      font-family: var(--font-sans);
+      outline: none;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      width: 100%;
+    }
+
+    select.round-select:hover, select.round-select:focus,
+    input.round-input:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12);
+    }
+
+    .swap-agents-btn {
+      margin-top: 16px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--card-elevated);
+      border: 1px solid var(--border);
+      color: var(--primary);
+      font-size: 1rem;
       cursor: pointer;
       display: flex;
       align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .swap-agents-btn:hover {
+      background: var(--primary);
+      color: #000;
+      transform: rotate(180deg);
+    }
+
+    .view-mode-pills {
+      display: flex;
       gap: 6px;
+      background: var(--bg);
+      padding: 4px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border);
+    }
+
+    .mode-pill {
+      padding: 6px 12px;
+      border-radius: var(--radius-pill);
+      font-size: 0.73rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: transparent;
+      border: none;
+      cursor: pointer;
       transition: all 0.15s;
     }
 
-    .steps-checklist-btn:hover {
-      border-color: var(--primary);
-      color: #fff;
+    .mode-pill.active {
+      background: var(--primary);
+      color: #000;
     }
 
-    /* LAYOUT PRINCIPAL DE 3 COLUNAS */
-    .main-grid {
-      display: grid;
-      grid-template-columns: 340px 1fr 340px;
-      flex: 1;
-      overflow: hidden;
-    }
-
-    /* COLUNA ESQUERDA: ROSTER */
-    .sidebar {
-      background: var(--surface);
-      border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .sidebar-header {
-      padding: 12px 16px;
+    /* BARRA RÁPIDA DE AGENTES ATIVOS NA CONVERSA (PÍLULAS CLICÁVEIS) */
+    .quick-agent-switcher {
+      padding: 10px 22px;
+      background: rgba(15, 22, 41, 0.75);
       border-bottom: 1px solid var(--border);
       display: flex;
-      flex-direction: column;
-      gap: 10px;
-      background: rgba(255,255,255,0.01);
-    }
-
-    .search-box {
-      position: relative;
-    }
-
-    .search-box input {
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 7px 12px 7px 32px;
-      color: #fff;
-      font-size: 0.8rem;
-      font-family: var(--font-sans);
-      outline: none;
-      transition: border-color 0.15s;
-    }
-
-    .search-box input:focus {
-      border-color: var(--primary);
-    }
-
-    .search-icon {
-      position: absolute;
-      left: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 0.8rem;
-      color: var(--text-dim);
-    }
-
-    .filter-chips {
-      display: flex;
-      gap: 6px;
+      align-items: center;
+      gap: 8px;
       overflow-x: auto;
-      padding-bottom: 2px;
+      flex-shrink: 0;
     }
 
-    .chip {
+    .quick-switcher-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-right: 4px;
+      white-space: nowrap;
+    }
+
+    .agent-mini-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: var(--radius-pill);
       background: var(--card-bg);
       border: 1px solid var(--border);
       color: var(--text-muted);
-      font-size: 0.7rem;
+      font-size: 0.73rem;
       font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 12px;
       cursor: pointer;
       white-space: nowrap;
       transition: all 0.15s;
     }
 
-    .chip.active, .chip:hover {
+    .agent-mini-pill:hover {
+      border-color: var(--primary);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    .agent-mini-pill.active-peer {
       background: var(--primary-glow);
       border-color: var(--primary);
       color: var(--primary);
     }
 
-    .roster-list {
+    /* FEED DE MENSAGENS COM BALÕES ARREDONDADOS */
+    .chat-stream {
       flex: 1;
       overflow-y: auto;
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .agent-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 12px;
-      cursor: pointer;
-      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      position: relative;
-    }
-
-    .agent-card:hover {
-      border-color: var(--border-accent);
-      background: var(--card-hover);
-      transform: translateY(-1px);
-    }
-
-    .agent-card.selected {
-      border-color: var(--primary);
-      background: rgba(56, 189, 248, 0.08);
-      box-shadow: inset 3px 0 0 var(--primary);
-    }
-
-    .agent-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-      background: #1e293b;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-family: var(--font-mono);
-      font-size: 0.85rem;
-      color: #38bdf8;
-      border: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-
-    .agent-card.online .agent-avatar {
-      background: rgba(16, 185, 129, 0.15);
-      border-color: rgba(16, 185, 129, 0.4);
-      color: var(--green);
-    }
-
-    .agent-body {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .agent-topline {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 2px;
-    }
-
-    .agent-name {
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: #fff;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .agent-role {
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .status-badge {
-      font-size: 0.65rem;
-      font-weight: 700;
-      padding: 2px 6px;
-      border-radius: 10px;
-      text-transform: uppercase;
-      font-family: var(--font-mono);
-    }
-
-    .badge-online { background: rgba(16, 185, 129, 0.2); color: var(--green); border: 1px solid rgba(16, 185, 129, 0.4); }
-    .badge-offline { background: rgba(100, 116, 139, 0.15); color: var(--text-dim); }
-    .badge-busy { background: rgba(245, 158, 11, 0.2); color: var(--yellow); border: 1px solid rgba(245, 158, 11, 0.4); }
-
-    /* COLUNA CENTRAL: CONVERSAÇÃO ENTRE AGENTES */
-    .chat-panel {
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      background: #0b111e;
-    }
-
-    .chat-header {
-      padding: 12px 20px;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-shrink: 0;
-    }
-
-    .chat-target-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .chat-target-title {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: #fff;
-    }
-
-    .chat-target-subtitle {
-      font-size: 0.74rem;
-      color: var(--text-muted);
-    }
-
-    .chat-feed {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px;
+      padding: 22px;
       display: flex;
       flex-direction: column;
       gap: 14px;
     }
 
-    .msg-bubble {
-      display: flex;
-      flex-direction: column;
-      max-width: 85%;
-      border-radius: 10px;
-      padding: 12px 14px;
+    .msg-card-round {
+      max-width: 82%;
+      border-radius: 22px;
+      padding: 14px 18px;
       background: var(--card-bg);
       border: 1px solid var(--border);
-      position: relative;
-    }
-
-    .msg-bubble.from-me {
-      align-self: flex-end;
-      background: #1e293b;
-      border-color: rgba(56, 189, 248, 0.3);
-    }
-
-    .msg-bubble.from-peer {
-      align-self: flex-start;
-      background: var(--card-bg);
-    }
-
-    .msg-bubble.broadcast {
-      align-self: center;
-      max-width: 92%;
-      background: rgba(99, 102, 241, 0.1);
-      border-color: rgba(99, 102, 241, 0.3);
-    }
-
-    .msg-meta {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 6px;
-      font-size: 0.74rem;
-    }
-
-    .msg-actors {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-weight: 700;
-      color: #fff;
-    }
-
-    .tag-type {
-      font-size: 0.65rem;
-      font-weight: 800;
-      padding: 1px 6px;
-      border-radius: 4px;
-      text-transform: uppercase;
-      font-family: var(--font-mono);
-    }
-    .tag-TASK { background: rgba(56, 189, 248, 0.2); color: var(--primary); }
-    .tag-HANDOFF { background: rgba(168, 85, 247, 0.2); color: var(--purple); }
-    .tag-ALERT { background: rgba(239, 68, 68, 0.2); color: var(--red); }
-    .tag-GATE { background: rgba(245, 158, 11, 0.2); color: var(--yellow); }
-    .tag-CHAT { background: rgba(255, 255, 255, 0.1); color: #fff; }
-
-    .msg-subject-line {
-      font-weight: 700;
-      color: #fff;
-      font-size: 0.85rem;
-      margin-bottom: 4px;
-    }
-
-    .msg-text {
-      color: var(--text);
-      font-size: 0.82rem;
-      line-height: 1.45;
-      white-space: pre-wrap;
-      font-family: var(--font-mono);
-      background: rgba(0,0,0,0.25);
-      padding: 8px 10px;
-      border-radius: 6px;
-      border: 1px solid rgba(255,255,255,0.04);
-    }
-
-    .msg-time {
-      font-size: 0.68rem;
-      color: var(--text-dim);
-      margin-top: 4px;
-      text-align: right;
-    }
-
-    /* BARRA DE ENVIO DE MENSAGENS */
-    .chat-composer {
-      padding: 14px 20px;
-      background: var(--surface);
-      border-top: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      flex-shrink: 0;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+      transition: transform 0.15s;
     }
 
-    .composer-toolbar {
+    .msg-card-round:hover {
+      border-color: rgba(148, 163, 184, 0.28);
+    }
+
+    .msg-card-round.mine {
+      align-self: flex-end;
+      background: linear-gradient(145deg, #162440, #1a2c4e);
+      border-color: rgba(56, 189, 248, 0.35);
+      border-bottom-right-radius: 6px;
+    }
+
+    .msg-card-round.theirs {
+      align-self: flex-start;
+      background: var(--card-bg);
+      border-bottom-left-radius: 6px;
+    }
+
+    .msg-card-round.broadcast {
+      align-self: center;
+      max-width: 92%;
+      background: rgba(99, 102, 241, 0.11);
+      border-color: rgba(99, 102, 241, 0.35);
+    }
+
+    .msg-header-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
     }
 
-    .composer-actors {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.78rem;
-      font-weight: 600;
-    }
-
-    select, input[type="text"] {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 6px 10px;
-      color: #fff;
-      font-size: 0.78rem;
-      font-family: var(--font-sans);
-      outline: none;
-    }
-
-    select:focus, input:focus {
-      border-color: var(--primary);
-    }
-
-    .input-row {
-      display: flex;
-      gap: 10px;
-    }
-
-    textarea.chat-input {
-      flex: 1;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 14px;
-      color: #fff;
-      font-size: 0.84rem;
-      font-family: var(--font-mono);
-      outline: none;
-      resize: none;
-      min-height: 58px;
-      max-height: 120px;
-    }
-
-    textarea.chat-input:focus {
-      border-color: var(--primary);
-    }
-
-    .btn-send {
-      background: linear-gradient(135deg, #0284c7, #38bdf8);
-      color: #000;
-      border: none;
-      font-weight: 700;
-      padding: 0 18px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 0.85rem;
-      transition: all 0.15s;
+    .actor-pills {
       display: flex;
       align-items: center;
       gap: 6px;
+      flex-wrap: wrap;
     }
 
-    .btn-send:hover {
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
-      transform: translateY(-1px);
+    .actor-badge-btn {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
     }
 
-    /* COLUNA DIREITA: GATES, HANDOFFS & METRICAS */
-    .ops-panel {
-      background: var(--surface);
-      border-left: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      overflow-y: auto;
-      padding: 16px;
-      gap: 16px;
+    .actor-badge-btn:hover {
+      background: var(--primary);
+      color: #000;
+      border-color: var(--primary);
     }
 
-    .section-title {
-      font-size: 0.75rem;
-      text-transform: uppercase;
+    .type-pill {
+      font-size: 0.65rem;
       font-weight: 800;
-      letter-spacing: 0.05em;
-      color: var(--text-dim);
+      padding: 3px 9px;
+      border-radius: var(--radius-pill);
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+    }
+    .type-TASK { background: rgba(56, 189, 248, 0.2); color: var(--primary); }
+    .type-HANDOFF { background: rgba(168, 85, 247, 0.2); color: #d8b4fe; }
+    .type-ALERT { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+    .type-GATE { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
+    .type-CHAT { background: rgba(16, 185, 129, 0.18); color: #6ee7b7; }
+
+    .msg-subject-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .msg-body-box {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      line-height: 1.5;
+      color: var(--text);
+      background: rgba(0, 0, 0, 0.25);
+      padding: 10px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      white-space: pre-wrap;
+    }
+
+    .msg-footer-actions {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 8px;
+      font-size: 0.68rem;
+      color: var(--text-dim);
+      padding-top: 2px;
     }
 
-    .checklist-card {
+    .reply-to-agent-link {
+      color: var(--primary);
+      cursor: pointer;
+      font-weight: 600;
+      background: none;
+      border: none;
+      font-size: 0.7rem;
+    }
+
+    .reply-to-agent-link:hover {
+      text-decoration: underline;
+    }
+
+    /* COMPOSER ARREDONDADO NO RODAPÉ DO CHAT */
+    .composer-area {
+      padding: 16px 22px;
+      background: var(--card-bg);
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .composer-controls-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .composer-input-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 8px 10px 8px 16px;
+      transition: border-color 0.18s;
+    }
+
+    .composer-input-bar:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12);
+    }
+
+    .composer-input-bar textarea {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      outline: none;
+      resize: none;
+      height: 42px;
+      padding-top: 10px;
+    }
+
+    .btn-send-round {
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      color: #000;
+      border: none;
+      border-radius: var(--radius-pill);
+      padding: 10px 20px;
+      font-weight: 800;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.18s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .btn-send-round:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(56, 189, 248, 0.35);
+    }
+
+    /* COLUNA DIREITA: BENTO STACK DE CARDS ARREDONDADOS */
+    .side-bento-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .bento-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .card-header-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-title {
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    /* CARD DE DETALHE DO AGENTE SELECIONADO */
+    .agent-inspector-box {
       background: var(--card-bg);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px;
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .inspector-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .inspector-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--primary-glow);
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+
+    .status-toggle-group {
+      display: flex;
+      gap: 6px;
+    }
+
+    .status-btn-pill {
+      flex: 1;
+      padding: 6px 10px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .status-btn-pill.active-online {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: var(--green);
+      color: var(--green);
+    }
+    .status-btn-pill.active-busy {
+      background: rgba(245, 158, 11, 0.2);
+      border-color: var(--yellow);
+      color: var(--yellow);
+    }
+    .status-btn-pill.active-offline {
+      background: rgba(148, 163, 184, 0.18);
+      border-color: var(--text-muted);
+      color: #fff;
+    }
+
+    .cmd-pill-box {
+      background: #050811;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 9px 12px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .copy-pill-btn {
+      background: var(--card-elevated);
+      border: 1px solid var(--border);
+      color: #fff;
+      border-radius: var(--radius-pill);
+      padding: 4px 10px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* CHECKLIST DA ONDA ARREDONDADO */
+    .step-list {
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
 
-    .check-item {
+    .step-pill-item {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 9px 12px;
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       gap: 10px;
-      font-size: 0.78rem;
+      font-size: 0.77rem;
       cursor: pointer;
-      padding: 4px 0;
-      user-select: none;
+      transition: all 0.15s;
     }
 
-    .check-box {
-      width: 16px;
-      height: 16px;
-      border-radius: 4px;
+    .step-pill-item:hover {
+      border-color: var(--primary);
+    }
+
+    .step-pill-item.done {
+      opacity: 0.65;
+    }
+
+    .step-check-circle {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
       border: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 0.68rem;
-      color: #fff;
       flex-shrink: 0;
-      margin-top: 2px;
     }
 
-    .check-item.done .check-box {
+    .step-pill-item.done .step-check-circle {
       background: var(--green);
       border-color: var(--green);
+      color: #000;
+      font-weight: 900;
     }
 
-    .check-item.done span {
-      color: var(--text-dim);
-      text-decoration: line-through;
-    }
-
-    .handoff-quick-form {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px;
+    /* FORMULÁRIO HANDOFF ARREDONDADO */
+    .handoff-form-grid {
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
 
-    .handoff-quick-form label {
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-    }
-
-    .btn-handoff {
-      background: rgba(168, 85, 247, 0.15);
-      border: 1px solid rgba(168, 85, 247, 0.3);
-      color: #d8b4fe;
-      font-weight: 700;
-      padding: 8px;
-      border-radius: 6px;
-      font-size: 0.78rem;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
-    .btn-handoff:hover {
-      background: rgba(168, 85, 247, 0.25);
-      border-color: var(--purple);
-    }
-
-    .cmd-badge {
-      background: #000;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 8px 10px;
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      color: var(--primary);
-      word-break: break-all;
-      position: relative;
-    }
-
-    .cmd-copy-btn {
-      position: absolute;
-      right: 6px;
-      top: 6px;
-      background: rgba(255,255,255,0.1);
-      border: none;
+    .btn-purple-pill {
+      background: linear-gradient(135deg, #7e22ce, #a855f7);
       color: #fff;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 0.65rem;
+      border: none;
+      border-radius: var(--radius-pill);
+      padding: 10px 16px;
+      font-weight: 700;
+      font-size: 0.8rem;
       cursor: pointer;
+      transition: all 0.18s;
+    }
+
+    .btn-purple-pill:hover {
+      box-shadow: 0 4px 16px rgba(168, 85, 247, 0.4);
+      transform: translateY(-1px);
     }
   </style>
 </head>
 <body>
 
-  <!-- 1. HEADER PRINCIPAL -->
-  <header>
-    <div class="brand-section">
-      <div class="brand-logo">
-        <div class="logo-badge">360</div>
-        <div>
-          <div class="brand-title">BIRTH HUB 360 &bull; Mission Control</div>
-          <div class="brand-sub">Rede Autônoma de Agentes & Governança AGENTS.md</div>
-        </div>
+  <!-- 1. TOP BAR CARD ARREDONDADO COM PROGRESSO E STATUS -->
+  <div class="top-bar-card">
+    <div class="brand-cluster">
+      <div class="logo-circle">360</div>
+      <div>
+        <div class="brand-title">BIRTH HUB 360 &bull; Agent Mesh</div>
+        <div class="brand-subtitle">Orquestração Multi-Sessão & Comunicação entre Agentes</div>
       </div>
     </div>
 
-    <!-- METRICAS DE STATUS / SLOTS -->
-    <div class="status-bar-metrics">
-      <div class="metric-pill">
+    <!-- BARRA DE PROGRESSO DA ONDA -->
+    <div class="wave-progress-cluster">
+      <span class="wave-pill-badge" id="waveBadge">Onda 1</span>
+      <div class="progress-track">
+        <div class="progress-fill" id="waveProgressFill" style="width: 29%;"></div>
+      </div>
+      <span class="progress-pct" id="waveProgressPct">29%</span>
+    </div>
+
+    <!-- INDICADORES GLOBAIS -->
+    <div class="metrics-cluster">
+      <div class="status-pill">
         <span class="dot dot-green"></span>
-        <span>Mesh Porta <span id="portDisplay">${PORT}</span></span>
+        <span>Online: <strong id="onlineCountLabel">0</strong>/26</span>
       </div>
-
-      <div class="metric-pill" title="Regra AGENTS.md: máximo 8 especialistas simultâneos">
-        <span class="dot" id="concurrencyDot"></span>
-        <span>Slots Concorrentes: <strong id="slotsDisplay">0 / 8</strong></span>
+      <div class="status-pill" title="Limite de concorrência do AGENTS.md">
+        <span class="dot" id="slotDot"></span>
+        <span>Slots: <strong id="slotRatioLabel">0 / 8</strong></span>
       </div>
-
-      <div class="metric-pill">
+      <div class="status-pill">
         <span class="dot dot-blue"></span>
-        <span>Handoffs Ativos: <strong id="handoffCountDisplay">0</strong></span>
+        <span>Handoffs: <strong id="handoffTotalLabel">0</strong></span>
       </div>
-    </div>
-  </header>
-
-  <!-- 2. BARRA DE PROGRESSO DA ONDA -->
-  <div class="wave-progress-bar-container">
-    <div class="wave-info">
-      <span class="wave-tag" id="waveTag">Onda 1</span>
-      <span class="wave-name" id="waveTitle">Fundação & Plataforma</span>
-    </div>
-
-    <div class="progress-track-wrapper">
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill" id="progressBarFill" style="width: 28%;"></div>
-      </div>
-      <div class="progress-percent-label" id="progressPercentLabel">28%</div>
-    </div>
-
-    <div style="display: flex; gap: 8px;">
-      <span style="font-size: 0.75rem; color: var(--text-muted); align-self: center;" id="progressStepsLabel">2 de 7 marcos</span>
     </div>
   </div>
 
-  <!-- 3. MAIN WORKSPACE (3 COLUNAS) -->
-  <div class="main-grid">
+  <!-- 2. WORKSPACE PRINCIPAL EM BENTO GRID -->
+  <div class="bento-workspace">
 
-    <!-- COLUNA 1: ROSTER DE AGENTES & PESQUISA -->
-    <div class="sidebar">
-      <div class="sidebar-header">
-        <div class="search-box">
-          <span class="search-icon">&#128269;</span>
-          <input type="text" id="agentSearch" placeholder="Buscar por ID, nome ou função..." oninput="filterAgents()">
-        </div>
-        <div class="filter-chips">
-          <div class="chip active" onclick="setCategoryFilter('ALL', this)">Todos (<span id="totalAgentsCount">26</span>)</div>
-          <div class="chip" onclick="setCategoryFilter('ONLINE', this)">Online (<span id="onlineAgentsCount">0</span>)</div>
-          <div class="chip" onclick="setCategoryFilter('Coordenação', this)">Coordenação</div>
-          <div class="chip" onclick="setCategoryFilter('Engenharia', this)">Engenharia</div>
-          <div class="chip" onclick="setCategoryFilter('Produto', this)">Produto</div>
-          <div class="chip" onclick="setCategoryFilter('Governança', this)">Governança</div>
-        </div>
-      </div>
+    <!-- PAINEL CENTRAL: CONVERSAÇÃO COM LISTAS SUSPENSAS DE AGENTES -->
+    <div class="conversation-bento-card">
 
-      <div class="roster-list" id="rosterList">
-        <!-- Renderizado dinamicamente via JS -->
-      </div>
-    </div>
-
-    <!-- COLUNA 2: CONVERSAÇÃO ENTRE AGENTES (CHAT VIEW) -->
-    <div class="chat-panel">
-      <div class="chat-header">
-        <div class="chat-target-info">
-          <div class="agent-avatar" id="activeChatAvatar">00</div>
-          <div>
-            <div class="chat-target-title" id="activeChatTitle">Canal Geral de Broadcast (Todos os Agentes)</div>
-            <div class="chat-target-subtitle" id="activeChatSubtitle">Transmissão aberta para toda a rede de especialistas</div>
-          </div>
-        </div>
-        <div style="display: flex; gap: 8px;">
-          <button class="chip" style="font-size: 0.72rem;" onclick="loadMessages()">&#x21bb; Atualizar</button>
-        </div>
-      </div>
-
-      <div class="chat-feed" id="chatFeed">
-        <!-- Mensagens renderizadas aqui -->
-      </div>
-
-      <!-- COMPOSER DE MENSAGENS -->
-      <div class="chat-composer">
-        <div class="composer-toolbar">
-          <div class="composer-actors">
-            <span style="color: var(--text-muted);">De:</span>
-            <select id="chatSenderSelect">
-              <option value="00">Agente 00 — Coordenador (Você)</option>
-              <!-- Popula agentes disponíveis para simulação -->
-            </select>
-
-            <span style="color: var(--text-muted); margin-left: 8px;">Tipo:</span>
-            <select id="chatTypeSelect">
-              <option value="TASK">TASK (Ordem de Missão)</option>
-              <option value="HANDOFF">HANDOFF (Transferência Formal)</option>
-              <option value="CHAT">CHAT (Conversa Direta)</option>
-              <option value="GATE">GATE (Validação de Gate)</option>
-              <option value="ALERT">ALERT (Bloqueador)</option>
-            </select>
+      <!-- SELETORES SUSPENSOS DE AGENTES -->
+      <div class="conversation-selector-bar">
+        <div class="selector-group">
+          <div class="selector-box">
+            <span class="selector-label">Agente Ativo (Remetente / Ponto de Vista)</span>
+            <select class="round-select" id="agentA_Select" onchange="onAgentPairChange()"></select>
           </div>
 
-          <div style="font-size: 0.72rem; color: var(--text-dim);">
-            Pressione <strong>Enter</strong> para enviar
+          <button class="swap-agents-btn" title="Inverter Agentes (A ↔ B)" onclick="swapAgents()">&#8644;</button>
+
+          <div class="selector-box">
+            <span class="selector-label">Conversando com (Destinatário / Canal)</span>
+            <select class="round-select" id="agentB_Select" onchange="onAgentPairChange()"></select>
           </div>
         </div>
 
-        <div class="input-row">
-          <input type="text" id="chatSubjectInput" placeholder="Assunto (opcional)..." style="width: 240px;">
-          <textarea class="chat-input" id="chatContentInput" placeholder="Digite a mensagem ou diretriz para o agente..." onkeydown="handleChatKeyDown(event)"></textarea>
-          <button class="btn-send" onclick="sendChatMessage()">
+        <!-- FILTRO DE VISUALIZAÇÃO DA CONVERSA -->
+        <div class="view-mode-pills">
+          <button class="mode-pill active" id="modePairBtn" onclick="setChatMode('pair')">Direto (A &harr; B)</button>
+          <button class="mode-pill" id="modeAgentAllBtn" onclick="setChatMode('agent_all')">Tudo do Agente</button>
+          <button class="mode-pill" id="modeGlobalBtn" onclick="setChatMode('global')">Feed Global</button>
+        </div>
+      </div>
+
+      <!-- BARRA RÁPIDA PARA PULAR PARA QUALQUER AGENTE DENTRO DA CONVERSA -->
+      <div class="quick-agent-switcher" id="quickSwitcherBar">
+        <span class="quick-switcher-label">Pular para agente:</span>
+        <!-- Pílulas geradas dinamicamente -->
+      </div>
+
+      <!-- STREAM DE CONVERSA -->
+      <div class="chat-stream" id="chatStream">
+        <!-- Balões de mensagem arredondados -->
+      </div>
+
+      <!-- COMPOSER DE MENSAGEM -->
+      <div class="composer-area">
+        <div class="composer-controls-row">
+          <select class="round-select" id="msgTypeSelect" style="width: 210px; padding: 6px 14px; font-size: 0.76rem;">
+            <option value="CHAT">💬 CHAT (Conversa Direta)</option>
+            <option value="TASK">⚡ TASK (Ordem de Missão)</option>
+            <option value="HANDOFF">📦 HANDOFF (Transferência)</option>
+            <option value="GATE">🛡️ GATE (Validação)</option>
+            <option value="ALERT">🚨 ALERT (Bloqueador)</option>
+          </select>
+
+          <input type="text" class="round-input" id="msgSubjectInput" placeholder="Assunto ou contexto rápido (opcional)..." style="flex: 1; padding: 6px 14px; font-size: 0.78rem;">
+
+          <!-- SELETOR RÁPIDO PARA MENCIONAR OUTRO AGENTE NA MENSAGEM -->
+          <select class="round-select" id="mentionAgentSelect" onchange="insertAgentMention(this)" style="width: 210px; padding: 6px 14px; font-size: 0.75rem;">
+            <option value="">+ Mencionar outro Agente (@)</option>
+          </select>
+        </div>
+
+        <div class="composer-input-bar">
+          <textarea id="msgContentInput" placeholder="Escreva a mensagem e pressione Enter para enviar..." onkeydown="handleEnterKey(event)"></textarea>
+          <button class="btn-send-round" onclick="sendMessageNow()">
             <span>Enviar</span>
             <span>&rarr;</span>
           </button>
         </div>
       </div>
+
     </div>
 
-    <!-- COLUNA 3: MARCOS DA ONDA, HANDOFFS & COMANDOS -->
-    <div class="ops-panel">
+    <!-- COLUNA LATERAL DIREITA: BENTO CARDS ARREDONDADOS -->
+    <div class="side-bento-stack">
 
-      <!-- MARCOS DA ONDA (CHECKLIST) -->
-      <div>
-        <div class="section-title">
-          <span>Marcos da Onda Ativa</span>
-          <span style="font-size: 0.7rem; color: var(--primary);" id="waveStepCount">2/7</span>
+      <!-- CARD 1: INSPETOR DO AGENTE SELECIONADO -->
+      <div class="bento-card">
+        <div class="card-header-line">
+          <span class="card-title">Ficha & Controle do Agente</span>
+          <select class="round-select" id="inspectorAgentSelect" onchange="selectInspectorAgent(this.value)" style="width: 175px; padding: 4px 10px; font-size: 0.73rem;"></select>
         </div>
-        <div class="checklist-card" id="checklistCard">
-          <!-- Gerado dinamicamente -->
+
+        <div class="agent-inspector-box">
+          <div class="inspector-top">
+            <div class="inspector-avatar" id="inspAvatar">00</div>
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-weight: 800; font-size: 0.9rem; color: #fff;" id="inspName">Coordenador</div>
+              <div style="font-size: 0.73rem; color: var(--text-muted);" id="inspRole">Orquestrador Geral</div>
+            </div>
+          </div>
+
+          <div class="status-toggle-group">
+            <button class="status-btn-pill" id="btnStatOnline" onclick="changeAgentStatus('online')">🟢 Online</button>
+            <button class="status-btn-pill" id="btnStatBusy" onclick="changeAgentStatus('busy')">🟡 Ocupado</button>
+            <button class="status-btn-pill" id="btnStatOffline" onclick="changeAgentStatus('offline')">⚪ Offline</button>
+          </div>
+
+          <div class="cmd-pill-box">
+            <span id="inspCliCmd" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">node .agents/bus/agent-cli.mjs session --id 00</span>
+            <button class="copy-pill-btn" onclick="copyInspCmd()">Copiar CLI</button>
+          </div>
         </div>
       </div>
 
-      <!-- REGISTRAR HANDOFF FORMAL -->
-      <div>
-        <div class="section-title">
-          <span>Novo Handoff Formal (AGENTS.md)</span>
+      <!-- CARD 2: PROGRESSO & MARCOS DA ONDA -->
+      <div class="bento-card">
+        <div class="card-header-line">
+          <span class="card-title">Marcos da Onda (Checklist)</span>
+          <span style="font-size: 0.72rem; font-weight: 700; color: var(--primary);" id="stepsFractionLabel">2/7</span>
         </div>
-        <div class="handoff-quick-form">
+        <div class="step-list" id="waveStepList">
+          <!-- Renderizado via JS -->
+        </div>
+      </div>
+
+      <!-- CARD 3: NOVO HANDOFF FORMAL -->
+      <div class="bento-card">
+        <div class="card-header-line">
+          <span class="card-title">Gerar Handoff Formal (.md)</span>
+        </div>
+        <div class="handoff-form-grid">
           <div style="display: flex; gap: 8px;">
-            <div style="flex: 1;">
-              <label>De (Origem)</label>
-              <select id="handoffFromSelect" style="width: 100%;"></select>
-            </div>
-            <div style="flex: 1;">
-              <label>Para (Destino)</label>
-              <select id="handoffToSelect" style="width: 100%;"></select>
-            </div>
+            <select class="round-select" id="hoFrom" style="padding: 7px 12px; font-size: 0.76rem;"></select>
+            <select class="round-select" id="hoTo" style="padding: 7px 12px; font-size: 0.76rem;"></select>
           </div>
-          <div>
-            <label>Identificador / Slug</label>
-            <input type="text" id="handoffSlugInput" placeholder="ex: contrato-rotas-leads" style="width: 100%;">
-          </div>
-          <div>
-            <label>Problema / Necessidade</label>
-            <input type="text" id="handoffProblemInput" placeholder="ex: Ajustar schema e contrato da API" style="width: 100%;">
-          </div>
-          <button class="btn-handoff" onclick="submitHandoff()">Criar Handoff Físico (.md)</button>
-        </div>
-      </div>
-
-      <!-- COMANDO RÁPIDO DO TERMINAL -->
-      <div>
-        <div class="section-title">
-          <span>Lançar Sessão no Terminal</span>
-        </div>
-        <div class="cmd-badge">
-          <span id="terminalCmdText">node .agents/bus/agent-cli.mjs session --id 01</span>
-          <button class="cmd-copy-btn" onclick="copyTerminalCmd()">Copiar</button>
-        </div>
-        <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 6px;">
-          Ou no PowerShell: <code style="color:var(--text); font-family:var(--font-mono);">.\.agents\bus\launch-agent.ps1 -AgentId "01"</code>
+          <input type="text" class="round-input" id="hoSlug" placeholder="Slug (ex: ajuste-contrato-api)" style="padding: 8px 14px; font-size: 0.78rem;">
+          <input type="text" class="round-input" id="hoProblem" placeholder="Descrição objetiva da dependência..." style="padding: 8px 14px; font-size: 0.78rem;">
+          <button class="btn-purple-pill" onclick="createNewHandoff()">Registrar Handoff na Onda</button>
         </div>
       </div>
 
@@ -1394,222 +1405,247 @@ function renderDashboardHtml() {
   </div>
 
   <script>
-    let allAgents = [];
-    let currentCategoryFilter = 'ALL';
-    let activeChatTargetId = 'ALL'; // 'ALL' ou o ID do agente selecionado
-    let currentWaveData = null;
+    let agentsList = [];
+    let chatMode = 'pair'; // 'pair', 'agent_all', 'global'
+    let currentInspectorId = '01';
 
-    async function loadStatus() {
+    async function fetchSystemState() {
       try {
         const res = await fetch('/api/status');
         const data = await res.json();
-        allAgents = data.agents || [];
-        currentWaveData = data.wave;
+        agentsList = data.agents || [];
 
-        // Atualiza contadores
-        document.getElementById('totalAgentsCount').innerText = data.totalAgents;
-        document.getElementById('onlineAgentsCount').innerText = data.onlineCount;
-        document.getElementById('handoffCountDisplay').innerText = data.totalHandoffs;
-        
-        // Concorrência e slots
-        const slotsEl = document.getElementById('slotsDisplay');
-        const dotEl = document.getElementById('concurrencyDot');
-        slotsEl.innerText = \`\${data.onlineCount} / \${data.maxAllowedSlots}\`;
+        // Indicadores da barra superior
+        document.getElementById('onlineCountLabel').innerText = data.onlineCount;
+        document.getElementById('slotRatioLabel').innerText = \`\${data.onlineCount} / \${data.maxAllowedSlots}\`;
+        document.getElementById('handoffTotalLabel').innerText = data.totalHandoffs;
 
+        const slotDot = document.getElementById('slotDot');
         if (data.onlineCount <= 3) {
-          dotEl.className = 'dot dot-green';
+          slotDot.className = 'dot dot-green';
         } else if (data.onlineCount <= 8) {
-          dotEl.className = 'dot dot-yellow';
+          slotDot.className = 'dot dot-yellow';
         } else {
-          dotEl.className = 'dot';
-          dotEl.style.background = 'var(--red)';
-          dotEl.style.boxShadow = '0 0 8px var(--red)';
+          slotDot.className = 'dot';
+          slotDot.style.background = 'var(--red)';
         }
 
-        // Progresso da onda
         if (data.wave) {
-          document.getElementById('waveTag').innerText = \`Onda \${data.wave.number}\`;
-          document.getElementById('waveTitle').innerText = data.wave.title;
-          document.getElementById('progressBarFill').style.width = \`\${data.wave.progressPercent}%\`;
-          document.getElementById('progressPercentLabel').innerText = \`\${data.wave.progressPercent}%\`;
-          document.getElementById('progressStepsLabel').innerText = \`\${data.wave.completedSteps} de \${data.wave.totalSteps} marcos\`;
-          document.getElementById('waveStepCount').innerText = \`\${data.wave.completedSteps}/\${data.wave.totalSteps}\`;
-          renderChecklist(data.wave.steps);
+          document.getElementById('waveBadge').innerText = \`Onda \${data.wave.number}\`;
+          document.getElementById('waveProgressFill').style.width = \`\${data.wave.progressPercent}%\`;
+          document.getElementById('waveProgressPct').innerText = \`\${data.wave.progressPercent}%\`;
+          document.getElementById('stepsFractionLabel').innerText = \`\${data.wave.completedSteps}/\${data.wave.totalSteps}\`;
+          renderSteps(data.wave.steps);
         }
 
-        renderRoster();
-        populateSelects();
+        populateDropdowns();
+        renderQuickSwitcherPills();
+        updateInspectorCard();
       } catch (err) {
-        console.error('Erro ao buscar status:', err);
+        console.error('Erro ao carregar estado:', err);
       }
     }
 
-    function renderChecklist(steps) {
-      const card = document.getElementById('checklistCard');
-      card.innerHTML = '';
-      (steps || []).forEach(s => {
-        const item = document.createElement('div');
-        item.className = 'check-item' + (s.done ? ' done' : '');
-        item.onclick = () => toggleStep(s.id);
-        item.innerHTML = \`
-          <div class="check-box">\${s.done ? '&#10003;' : ''}</div>
-          <div style="flex:1;">
-            <span>\${escapeHtml(s.text)}</span>
-            \${s.owner ? '<span style="font-size:0.65rem; color:var(--primary); font-family:var(--font-mono); margin-left:4px;">[' + s.owner + ']</span>' : ''}
-          </div>
-        \`;
-        card.appendChild(item);
+    function populateDropdowns() {
+      const selA = document.getElementById('agentA_Select');
+      const selB = document.getElementById('agentB_Select');
+      const selInsp = document.getElementById('inspectorAgentSelect');
+      const selMention = document.getElementById('mentionAgentSelect');
+      const hoFrom = document.getElementById('hoFrom');
+      const hoTo = document.getElementById('hoTo');
+
+      const valA = selA.value || '00';
+      const valB = selB.value || '01';
+      const valInsp = selInsp.value || currentInspectorId;
+      const valHoFrom = hoFrom.value || '01';
+      const valHoTo = hoTo.value || '02';
+
+      selA.innerHTML = '';
+      selB.innerHTML = '<option value="ALL">📢 Broadcast (Todos os Agentes)</option>';
+      selInsp.innerHTML = '';
+      selMention.innerHTML = '<option value="">+ Mencionar outro Agente (@)</option>';
+      hoFrom.innerHTML = '';
+      hoTo.innerHTML = '';
+
+      agentsList.forEach(a => {
+        const stIcon = a.isOnline ? '🟢' : '⚪';
+        const label = \`\${stIcon} Agente \${a.id} — \${a.name} (\${a.category})\`;
+
+        const optA = new Option(label, a.id);
+        const optB = new Option(label, a.id);
+        const optI = new Option(\`\${stIcon} Agente \${a.id} — \${a.name}\`, a.id);
+        const optM = new Option(\`@Agente-\${a.id} (\${a.name})\`, \`@Agente-\${a.id} \`);
+        const optHF = new Option(\`De: Agente \${a.id}\`, a.id);
+        const optHT = new Option(\`Para: Agente \${a.id}\`, a.id);
+
+        selA.add(optA);
+        selB.add(optB);
+        selInsp.add(optI);
+        selMention.add(optM);
+        hoFrom.add(optHF);
+        hoTo.add(optHT);
       });
+
+      selA.value = valA;
+      selB.value = valB;
+      selInsp.value = valInsp;
+      hoFrom.value = valHoFrom;
+      hoTo.value = valHoTo;
     }
 
-    async function toggleStep(stepId) {
-      try {
-        await fetch('/api/wave/toggle-step', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ stepId })
-        });
-        loadStatus();
-      } catch (err) {
-        console.error('Erro ao alternar step:', err);
-      }
-    }
+    function renderQuickSwitcherPills() {
+      const bar = document.getElementById('quickSwitcherBar');
+      const activeB = document.getElementById('agentB_Select').value;
 
-    function renderRoster() {
-      const container = document.getElementById('rosterList');
-      const searchVal = document.getElementById('agentSearch').value.toLowerCase();
-      container.innerHTML = '';
+      let html = '<span class="quick-switcher-label">Troca Rápida:</span>';
+      html += \`<div class="agent-mini-pill \${activeB === 'ALL' ? 'active-peer' : ''}" onclick="quickSelectPeer('ALL')">📢 Todos</div>\`;
 
-      // Adiciona card fixo do Broadcast
-      const broadcastCard = document.createElement('div');
-      broadcastCard.className = 'agent-card' + (activeChatTargetId === 'ALL' ? ' selected' : '');
-      broadcastCard.onclick = () => selectChatTarget('ALL', 'Canal Geral de Broadcast', 'Transmissão aberta para toda a rede');
-      broadcastCard.innerHTML = \`
-        <div class="agent-avatar" style="color:#818cf8; background:rgba(99,102,241,0.15);">&#128226;</div>
-        <div class="agent-body">
-          <div class="agent-topline">
-            <span class="agent-name">Broadcast Geral</span>
-            <span class="status-badge badge-online">ATIVO</span>
-          </div>
-          <div class="agent-role">Todos os agentes ouvintes</div>
-        </div>
-      \`;
-      container.appendChild(broadcastCard);
-
-      allAgents.forEach(a => {
-        // Filtro de categoria
-        if (currentCategoryFilter === 'ONLINE' && !a.isOnline) return;
-        if (currentCategoryFilter !== 'ALL' && currentCategoryFilter !== 'ONLINE' && a.category !== currentCategoryFilter) return;
-
-        // Filtro de busca
-        if (searchVal) {
-          const matchId = a.id.toLowerCase().includes(searchVal);
-          const matchName = a.name.toLowerCase().includes(searchVal);
-          const matchRole = a.role.toLowerCase().includes(searchVal);
-          if (!matchId && !matchName && !matchRole) return;
-        }
-
-        const card = document.createElement('div');
-        card.className = 'agent-card' + (a.isOnline ? ' online' : '') + (activeChatTargetId === a.id ? ' selected' : '');
-        card.onclick = () => selectChatTarget(a.id, \`Agente \${a.id} — \${a.name}\`, a.role);
-
-        const badgeClass = a.isOnline ? (a.computedStatus === 'busy' ? 'badge-busy' : 'badge-online') : 'badge-offline';
-        const badgeText = a.isOnline ? (a.computedStatus === 'busy' ? 'OCUPADO' : 'ONLINE') : 'OFFLINE';
-
-        card.innerHTML = \`
-          <div class="agent-avatar">\${a.id}</div>
-          <div class="agent-body">
-            <div class="agent-topline">
-              <span class="agent-name">\${a.name}</span>
-              <span class="status-badge \${badgeClass}">\${badgeText}</span>
-            </div>
-            <div class="agent-role">\${a.role}</div>
-            \${a.worktree ? '<div style="font-size:0.65rem; color:var(--primary); font-family:var(--font-mono); margin-top:2px;">📁 ' + a.worktree + '</div>' : ''}
-          </div>
-        \`;
-        container.appendChild(card);
+      agentsList.forEach(a => {
+        const dot = a.isOnline ? '🟢' : '⚪';
+        const isCurrent = activeB === a.id ? 'active-peer' : '';
+        html += \`<div class="agent-mini-pill \${isCurrent}" onclick="quickSelectPeer('\${a.id}')" title="\${a.name} - \${a.role}">\${dot} \${a.id}</div>\`;
       });
+
+      bar.innerHTML = html;
     }
 
-    function selectChatTarget(id, title, subtitle) {
-      activeChatTargetId = id;
-      document.getElementById('activeChatAvatar').innerText = id === 'ALL' ? '📢' : id;
-      document.getElementById('activeChatTitle').innerText = title;
-      document.getElementById('activeChatSubtitle').innerText = subtitle;
-      document.getElementById('terminalCmdText').innerText = id === 'ALL'
-        ? 'node .agents/bus/agent-cli.mjs session --id 00'
-        : \`node .agents/bus/agent-cli.mjs session --id \${id}\`;
-
-      renderRoster();
-      loadMessages();
-    }
-
-    async function loadMessages() {
-      let url = '/api/messages?limit=80';
-      if (activeChatTargetId !== 'ALL') {
-        // Conversa bidirecional entre Agente 00 e o alvo
-        const sender = document.getElementById('chatSenderSelect').value || '00';
-        url = \`/api/messages?agentId=\${sender}&peerId=\${activeChatTargetId}&limit=80\`;
+    function quickSelectPeer(peerId) {
+      document.getElementById('agentB_Select').value = peerId;
+      if (peerId !== 'ALL') {
+        currentInspectorId = peerId;
+        document.getElementById('inspectorAgentSelect').value = peerId;
+        updateInspectorCard();
       }
+      renderQuickSwitcherPills();
+      fetchConversation();
+    }
 
+    function onAgentPairChange() {
+      const valB = document.getElementById('agentB_Select').value;
+      if (valB && valB !== 'ALL') {
+        currentInspectorId = valB;
+        document.getElementById('inspectorAgentSelect').value = valB;
+        updateInspectorCard();
+      }
+      renderQuickSwitcherPills();
+      fetchConversation();
+    }
+
+    function swapAgents() {
+      const selA = document.getElementById('agentA_Select');
+      const selB = document.getElementById('agentB_Select');
+      if (selB.value === 'ALL') return;
+      const temp = selA.value;
+      selA.value = selB.value;
+      selB.value = temp;
+      onAgentPairChange();
+    }
+
+    function setChatMode(mode) {
+      chatMode = mode;
+      document.getElementById('modePairBtn').classList.toggle('active', mode === 'pair');
+      document.getElementById('modeAgentAllBtn').classList.toggle('active', mode === 'agent_all');
+      document.getElementById('modeGlobalBtn').classList.toggle('active', mode === 'global');
+      fetchConversation();
+    }
+
+    async function fetchConversation() {
+      const agentA = document.getElementById('agentA_Select').value || '00';
+      const agentB = document.getElementById('agentB_Select').value || '01';
+
+      const url = \`/api/messages?mode=\${chatMode}&agentId=\${agentA}&peerId=\${agentB}&limit=100\`;
       try {
         const res = await fetch(url);
         const data = await res.json();
-        renderChatFeed(data.messages || []);
+        renderMessages(data.messages || [], agentA);
       } catch (err) {
-        console.error('Erro ao carregar mensagens:', err);
+        console.error('Erro ao buscar conversa:', err);
       }
     }
 
-    function renderChatFeed(msgs) {
-      const feed = document.getElementById('chatFeed');
-      if (msgs.length === 0) {
-        feed.innerHTML = \`
-          <div style="color:var(--text-dim); text-align:center; margin-top:60px; font-size:0.85rem;">
-            Nenhuma mensagem neste canal ainda.<br>
-            Use o campo abaixo para iniciar a conversa com este agente.
+    function renderMessages(msgs, perspectiveAgentId) {
+      const stream = document.getElementById('chatStream');
+      if (!msgs.length) {
+        stream.innerHTML = \`
+          <div style="text-align:center; color:var(--text-dim); margin: auto; padding: 40px;">
+            <div style="font-size: 1.6rem; margin-bottom: 8px;">💬</div>
+            <div style="font-weight: 700; color: var(--text-muted);">Nenhuma mensagem neste filtro ainda</div>
+            <div style="font-size: 0.78rem; margin-top: 4px;">Selecione qualquer par de agentes nas listas suspensas acima ou envie uma mensagem abaixo.</div>
           </div>
         \`;
         return;
       }
 
-      const currentSender = document.getElementById('chatSenderSelect').value;
-      feed.innerHTML = '';
-
+      stream.innerHTML = '';
       msgs.forEach(m => {
-        const bubble = document.createElement('div');
-        const isFromMe = m.from_id === currentSender;
+        const isMine = m.from_id === perspectiveAgentId;
         const isBroadcast = m.to_id === 'ALL';
-
-        bubble.className = 'msg-bubble ' + (isBroadcast ? 'broadcast' : (isFromMe ? 'from-me' : 'from-peer'));
+        const card = document.createElement('div');
+        card.className = 'msg-card-round ' + (isBroadcast ? 'broadcast' : (isMine ? 'mine' : 'theirs'));
 
         const timeStr = new Date(m.created_at).toLocaleTimeString('pt-BR');
+        const fromAgent = agentsList.find(x => x.id === m.from_id);
+        const toAgent = agentsList.find(x => x.id === m.to_id);
 
-        bubble.innerHTML = \`
-          <div class="msg-meta">
-            <div class="msg-actors">
-              <span>Agente \${m.from_id}</span>
-              <span>&rarr;</span>
-              <span>\${m.to_id === 'ALL' ? '📢 TODOS' : 'Agente ' + m.to_id}</span>
-              <span class="tag-type tag-\${m.type}">\${m.type}</span>
+        const fromTitle = fromAgent ? \`Agente \${m.from_id} (\${fromAgent.name})\` : \`Agente \${m.from_id}\`;
+        const toTitle = m.to_id === 'ALL' ? '📢 Todos' : (toAgent ? \`Agente \${m.to_id} (\${toAgent.name})\` : \`Agente \${m.to_id}\`);
+
+        card.innerHTML = \`
+          <div class="msg-header-row">
+            <div class="actor-pills">
+              <button class="actor-badge-btn" onclick="jumpToAgent('\${m.from_id}')" title="Clique para selecionar este agente">\${escapeHtml(fromTitle)}</button>
+              <span style="color:var(--text-dim); font-size:0.75rem;">&rarr;</span>
+              <button class="actor-badge-btn" onclick="jumpToAgent('\${m.to_id}')" title="Clique para selecionar este destinatário">\${escapeHtml(toTitle)}</button>
             </div>
+            <span class="type-pill type-\${m.type}">\${m.type}</span>
           </div>
-          \${m.subject ? '<div class="msg-subject-line">' + escapeHtml(m.subject) + '</div>' : ''}
-          <div class="msg-text">\${escapeHtml(m.content)}</div>
-          <div class="msg-time">\${timeStr}</div>
+          \${m.subject ? '<div class="msg-subject-title">' + escapeHtml(m.subject) + '</div>' : ''}
+          <div class="msg-body-box">\${escapeHtml(m.content)}</div>
+          <div class="msg-footer-actions">
+            <button class="reply-to-agent-link" onclick="focusConversationPair('\${m.to_id === 'ALL' ? perspectiveAgentId : m.to_id}', '\${m.from_id}')">
+              &#8617; Responder como Agente \${m.to_id === 'ALL' ? perspectiveAgentId : m.to_id} para Agente \${m.from_id}
+            </button>
+            <span>\${timeStr}</span>
+          </div>
         \`;
-        feed.appendChild(bubble);
+        stream.appendChild(card);
       });
 
-      feed.scrollTop = feed.scrollHeight;
+      stream.scrollTop = stream.scrollHeight;
     }
 
-    async function sendChatMessage() {
-      const from_id = document.getElementById('chatSenderSelect').value;
-      const to_id = activeChatTargetId;
-      const type = document.getElementById('chatTypeSelect').value;
-      const subject = document.getElementById('chatSubjectInput').value.trim();
-      const content = document.getElementById('chatContentInput').value.trim();
+    // Permite clicar em qualquer agente dentro de uma mensagem e abrir a conversa dele
+    function jumpToAgent(agentId) {
+      if (!agentId || agentId === 'ALL') {
+        quickSelectPeer('ALL');
+        return;
+      }
+      quickSelectPeer(agentId);
+    }
+
+    // Permite inverter/focar diretamente o par para resposta imediata
+    function focusConversationPair(fromId, toId) {
+      document.getElementById('agentA_Select').value = fromId;
+      document.getElementById('agentB_Select').value = toId;
+      onAgentPairChange();
+      document.getElementById('msgContentInput').focus();
+    }
+
+    function insertAgentMention(selectEl) {
+      const val = selectEl.value;
+      if (!val) return;
+      const input = document.getElementById('msgContentInput');
+      input.value = input.value + val;
+      selectEl.value = '';
+      input.focus();
+    }
+
+    async function sendMessageNow() {
+      const from_id = document.getElementById('agentA_Select').value;
+      const to_id = document.getElementById('agentB_Select').value;
+      const type = document.getElementById('msgTypeSelect').value;
+      const subject = document.getElementById('msgSubjectInput').value.trim();
+      const content = document.getElementById('msgContentInput').value.trim();
 
       if (!content) return;
 
@@ -1620,122 +1656,127 @@ function renderDashboardHtml() {
           body: JSON.stringify({ from_id, to_id, type, subject, content })
         });
         if (res.ok) {
-          document.getElementById('chatContentInput').value = '';
-          document.getElementById('chatSubjectInput').value = '';
-          loadMessages();
+          document.getElementById('msgContentInput').value = '';
+          document.getElementById('msgSubjectInput').value = '';
+          fetchConversation();
+          fetchSystemState();
         }
       } catch (err) {
-        alert('Erro ao enviar mensagem: ' + err.message);
+        alert('Falha ao enviar mensagem: ' + err.message);
       }
     }
 
-    function handleChatKeyDown(e) {
+    function handleEnterKey(e) {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        sendChatMessage();
+        sendMessageNow();
       }
     }
 
-    function populateSelects() {
-      const senderSelect = document.getElementById('chatSenderSelect');
-      const handoffFrom = document.getElementById('handoffFromSelect');
-      const handoffTo = document.getElementById('handoffToSelect');
-
-      const currentSender = senderSelect.value;
-      senderSelect.innerHTML = '<option value="00">Agente 00 — Coordenador (Você)</option>';
-      handoffFrom.innerHTML = '';
-      handoffTo.innerHTML = '';
-
-      allAgents.forEach(a => {
-        const opt = document.createElement('option');
-        opt.value = a.id;
-        opt.textContent = \`Agente \${a.id} — \${a.name}\`;
-        senderSelect.appendChild(opt);
-
-        const optFrom = opt.cloneNode(true);
-        const optTo = opt.cloneNode(true);
-        handoffFrom.appendChild(optFrom);
-        handoffTo.appendChild(optTo);
-      });
-
-      if (currentSender) senderSelect.value = currentSender;
-      handoffFrom.value = '01';
-      handoffTo.value = '02';
+    function selectInspectorAgent(id) {
+      currentInspectorId = id;
+      updateInspectorCard();
     }
 
-    async function submitHandoff() {
-      const from_id = document.getElementById('handoffFromSelect').value;
-      const to_id = document.getElementById('handoffToSelect').value;
-      const slug = document.getElementById('handoffSlugInput').value.trim();
-      const problem = document.getElementById('handoffProblemInput').value.trim();
+    function updateInspectorCard() {
+      const ag = agentsList.find(a => a.id === currentInspectorId) || agentsList[0];
+      if (!ag) return;
+
+      document.getElementById('inspAvatar').innerText = ag.id;
+      document.getElementById('inspName').innerText = \`Agente \${ag.id} — \${ag.name}\`;
+      document.getElementById('inspRole').innerText = ag.role;
+      document.getElementById('inspCliCmd').innerText = \`node .agents/bus/agent-cli.mjs session --id \${ag.id}\`;
+
+      document.getElementById('btnStatOnline').className = 'status-btn-pill' + (ag.computedStatus === 'online' ? ' active-online' : '');
+      document.getElementById('btnStatBusy').className = 'status-btn-pill' + (ag.computedStatus === 'busy' ? ' active-busy' : '');
+      document.getElementById('btnStatOffline').className = 'status-btn-pill' + (ag.computedStatus === 'offline' ? ' active-offline' : '');
+    }
+
+    async function changeAgentStatus(status) {
+      try {
+        await fetch('/api/agents/set-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: currentInspectorId, status })
+        });
+        fetchSystemState();
+      } catch (err) {
+        console.error('Erro ao mudar status:', err);
+      }
+    }
+
+    function copyInspCmd() {
+      const cmd = document.getElementById('inspCliCmd').innerText;
+      navigator.clipboard.writeText(cmd);
+    }
+
+    function renderSteps(steps) {
+      const list = document.getElementById('waveStepList');
+      list.innerHTML = '';
+      (steps || []).forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'step-pill-item' + (s.done ? ' done' : '');
+        div.onclick = () => toggleWaveStep(s.id);
+        div.innerHTML = \`
+          <div class="step-check-circle">\${s.done ? '&#10003;' : ''}</div>
+          <div style="flex:1;">\${escapeHtml(s.text)}</div>
+          <span style="font-family:var(--font-mono); font-size:0.68rem; color:var(--primary);">[\${s.owner}]</span>
+        \`;
+        list.appendChild(div);
+      });
+    }
+
+    async function toggleWaveStep(stepId) {
+      await fetch('/api/wave/toggle-step', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stepId })
+      });
+      fetchSystemState();
+    }
+
+    async function createNewHandoff() {
+      const from_id = document.getElementById('hoFrom').value;
+      const to_id = document.getElementById('hoTo').value;
+      const slug = document.getElementById('hoSlug').value.trim();
+      const problem = document.getElementById('hoProblem').value.trim();
 
       if (!slug || !problem) {
-        alert('Preencha o slug e a descrição do problema.');
+        alert('Informe o slug e a descrição para criar o handoff.');
         return;
       }
 
-      try {
-        const res = await fetch('/api/handoff', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ wave: 1, from_id, to_id, slug, problem })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          alert('Handoff criado com sucesso: ' + data.filePath);
-          document.getElementById('handoffSlugInput').value = '';
-          document.getElementById('handoffProblemInput').value = '';
-          loadStatus();
-          loadMessages();
-        }
-      } catch (err) {
-        alert('Erro ao criar handoff: ' + err.message);
+      const res = await fetch('/api/handoff', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ wave: 1, from_id, to_id, slug, problem })
+      });
+      if (res.ok) {
+        document.getElementById('hoSlug').value = '';
+        document.getElementById('hoProblem').value = '';
+        fetchSystemState();
+        fetchConversation();
       }
-    }
-
-    function copyTerminalCmd() {
-      const text = document.getElementById('terminalCmdText').innerText;
-      navigator.clipboard.writeText(text);
-      alert('Comando copiado para a área de transferência!');
-    }
-
-    function setCategoryFilter(cat, el) {
-      currentCategoryFilter = cat;
-      document.querySelectorAll('.filter-chips .chip').forEach(c => c.classList.remove('active'));
-      el.classList.add('active');
-      renderRoster();
-    }
-
-    function filterAgents() {
-      renderRoster();
     }
 
     function escapeHtml(str) {
       return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
-    // SSE em tempo real
-    function initEvents() {
+    function initSSE() {
       const evt = new EventSource('/api/events');
       evt.addEventListener('message', () => {
-        loadMessages();
-        loadStatus();
+        fetchConversation();
+        fetchSystemState();
       });
-      evt.addEventListener('agent_registered', () => {
-        loadStatus();
-      });
-      evt.addEventListener('agent_status_changed', () => {
-        loadStatus();
-      });
-      evt.addEventListener('wave_updated', () => {
-        loadStatus();
-      });
+      evt.addEventListener('agent_registered', () => fetchSystemState());
+      evt.addEventListener('agent_status_changed', () => fetchSystemState());
+      evt.addEventListener('wave_updated', () => fetchSystemState());
     }
 
-    loadStatus();
-    loadMessages();
-    initEvents();
-    setInterval(loadStatus, 20000);
+    fetchSystemState().then(() => fetchConversation());
+    initSSE();
+    setInterval(fetchSystemState, 15000);
   </script>
 </body>
 </html>`;
