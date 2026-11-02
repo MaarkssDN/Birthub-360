@@ -1,0 +1,63 @@
+BIRTHUB 360 - AUDITORIA LOCAL, CONTINUA E COM RELATORIO HTML
+==============================================================
+
+1) Requisitos
+   - Windows 11 e PowerShell 7+ (pwsh)
+   - Node.js/npm; dependencias do repositorio ja instaladas (npm ci)
+   - Docker Desktop ligado com suporte ao stack local do Birthub 360
+   - Navegadores do Playwright instalados (caso nao: npx playwright install chromium)
+   - Repositorio MarksNN/Birthub-360 (NAO Regeneration)
+
+2) Executar no PowerShell 7
+   cd 'C:\Users\Administrator\Documents\GitHub\Birthub-360'
+   pwsh -NoProfile -ExecutionPolicy Bypass -File '.\BIRTHUB360-TESTE-LOCAL-COMPLETO.ps1' -Projeto (Get-Location).Path
+
+3) Variantes opcionais
+   -SemVisuais        Ignora regressao visual (por padrao roda quatro viewports)
+   -SemCobertura      Testes unitarios sem coverage
+   -SemE2E            Ignora Playwright funcional
+   -SemIntegracao     Ignora integracao (E2E ainda roda seu pretest)
+   -TimeoutMinutos 90 Limite maximo por etapa (nao da auditoria inteira)
+   -PermitirBancoLAN  Permite APENAS IP privado, banco com nome de teste; confirmar previamente
+   -NaoAbrir          Nao abre relatorio no navegador
+   -Destino 'D:\Relatorios-Birthub360' Define pasta de saida
+
+4) O que sera executado (por padrao)
+   - Auditoria de waivers de dependencias, lint, format check, typecheck
+   - Arquitetura e hotspots, OpenAPI drift
+   - Testes unitarios completos com cobertura
+   - Testes de integracao (com pretest e migracoes do banco de teste)
+   - Playwright funcional (login, API, fluxos E2E existentes no repo)
+   - Playwright visual (quatro viewports)
+   - Build da aplicacao + worker, verificacao de orcamento dos assets
+   - Prisma schema/migration drift contra banco de teste
+
+5) O que nunca faz
+   - Nao modifica a main nem realiza merge/push
+   - Nao aplica autofix em massa, nem ignora os testes que falharem
+   - Nao roda contra host publico ou banco sem nome explicito de teste
+   - Nao tenta parar o servidor que ja estiver rodando na porta 3000
+   - Nao executa testes com efeitos em banco quando o guard de seguranca falha
+
+6) Saida
+   Documentos\Birthub360-TestReports\auditoria-AAAAMMDD-HHMMSS-XXXXXX\
+      RELATORIO-BIRTHUB360.html    Acompanhamento e plano de correcao
+      resultado.json               Detalhe estruturado das etapas e achados
+      falhas.csv                   Lista tabular para triagem
+      logs\*.stdout.log e *.stderr.log  Saida detalhada de cada etapa
+
+IMPORTANTE
+   .env.test deve apontar para prospectordb_test em host local ou rede de teste
+   isolada. O pretest do repositorio usa Docker para preparar essa base e aplica
+   migracoes. Testes de integracao/E2E alteram registros dessa base. O guard por
+   host/nome e uma protecao adicional, mas nao substitui a verificacao humana
+   de que o endereco realmente nao aponta para dados de producao.
+
+   O script nao equivale a uma varredura SonarQube remota; ele executa os testes
+   de cobertura e gates locais disponiveis no package.json. Nao corrige codigo:
+   registra o que falhou e sugere o proximo passo. O HTML pode ter ate 10.000
+   achados automaticamente classificados; todos os logs sao guardados.
+
+   O runner foi preparado e revisado estaticamente, mas nao foi executado em
+   Windows nesta conversa. Verifique o primeiro relatorio e compartilhe-o
+   comigo caso queira converter os achados em handoffs por agente.
