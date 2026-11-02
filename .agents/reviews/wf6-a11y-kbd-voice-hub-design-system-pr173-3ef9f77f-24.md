@@ -2,7 +2,7 @@
 
 - **SHA:** `3ef9f77f1418de29d794c409f2cdfabcb48256b0` (verificado no início e antes da escrita)
 - **Base:** main `16dd960f` (0 commits atrás)
-- **Veredito:** **BLOQUEADO** (Visual Regression vermelho; precisa de re-execução)
+- **Veredito:** **APROVADO** (atualizado: re-execução do VR 41434780402 tentativa 2 verde)
 
 ## Escopo e código
 1 linha de comentário `biome-ignore` em `src/features/voice-hub/components/design-system/index.tsx:439`. O `Card` com `onClick` recebe `role="button"`, `tabIndex=0` e `handleKeyDown` com Enter/Espaço e `preventDefault` (`:429-436`, `:440-444`); sem `onClick` não há handler. Falso positivo confirmado. Observação (pré-existente, fora do diff): `handleKeyDown` não verifica `event.target === event.currentTarget`. Sem package/lockfile, App.tsx, schema ou workflows.
@@ -17,3 +17,6 @@ O diff é só um comentário JSX, sem efeito de render; o mesmo padrão de flake
 
 ## Bloqueador (dono: WF6)
 Re-executar os jobs falhos do VR 41434780402; com resultado verde, o veredito passa a APROVADO sem outra mudança.
+
+## Atualização — re-execução do VR
+WF6 re-executou os jobs falhos no mesmo SHA (head reconfirmado inalterado). Visual Regression 41434780402 **tentativa 2: success** (job 125270572574). A tentativa 1 falhou por flake herdado, sem relação com o diff. O bloqueador foi resolvido e todos os checks estão verdes. **Veredito final: APROVADO.**
