@@ -12,14 +12,36 @@ const testEnv = loadEnv({ path: path.resolve(process.cwd(), '.env.test') }).pars
 
 export default defineConfig({
   test: {
-    environment: 'node',
-    include: ['tests/integration/**/*.test.ts'],
     env: testEnv,
     // tests/helpers/integration-setup.ts seeds the "test-org-id" Organization that every
     // integration test's fixtures depend on (foreign key) and cleans up before/after each test -
     // it existed but was never wired here, so on a genuinely fresh DB (like CI) every test failed
     // with a foreign key violation the first time nothing had happened to create that row yet.
-    setupFiles: ['./tests/helpers/integration-setup.ts'],
+    // Dois projetos: os `.test.ts` seguem exatamente como antes (Node puro + seed/limpeza do banco
+    // via integration-setup.ts); os `.test.tsx` (fluxos de UI com API mockada, ex.:
+    // features/social-selling/ApproachGeneratorCard.test.tsx) não eram coletados pelo glob antigo.
+    // Eles rodam em jsdom, com o mesmo setup de DOM da suíte unitária, e sem o setup de banco
+    // (não tocam Postgres/Redis).
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'integration',
+          environment: 'node',
+          include: ['tests/integration/**/*.test.ts'],
+          setupFiles: ['./tests/helpers/integration-setup.ts'],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'integration-ui',
+          environment: 'jsdom',
+          include: ['tests/integration/**/*.test.tsx'],
+          setupFiles: ['./tests/mocks/setup.ts'],
+        },
+      },
+    ],
     fileParallelism: false,
     singleThread: true,
     // Default do Vitest (10s) ficou justo demais: arquivos são executados em sequência
