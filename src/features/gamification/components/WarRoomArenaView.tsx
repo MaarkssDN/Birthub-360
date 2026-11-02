@@ -11,7 +11,7 @@ import {
   Trophy,
   Users,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { Badge } from '../../../components/ui/Badge.js';
 import { Button } from '../../../components/ui/Button.js';
 import { Card } from '../../../components/ui/Card.js';
@@ -53,6 +53,7 @@ const SAMPLE_OBJECTIONS = [
 ];
 
 export function WarRoomArenaView() {
+  const fieldId = useId();
   const { currentUser } = useAuth();
   const userName = currentUser?.name || 'Consultor Comercial';
 
@@ -405,7 +406,10 @@ export function WarRoomArenaView() {
 
               {/* Input de Defesa do Closer */}
               <div className="space-y-3">
-                <label className="text-xs font-bold text-ink flex items-center justify-between">
+                <label
+                  htmlFor={`${fieldId}-defesa`}
+                  className="text-xs font-bold text-ink flex items-center justify-between"
+                >
                   <span>Sua Defesa de Objeção:</span>
                   <span className="text-[10px] text-ink-3 font-normal">
                     {defenderInput.length} caracteres
@@ -413,6 +417,7 @@ export function WarRoomArenaView() {
                 </label>
 
                 <textarea
+                  id={`${fieldId}-defesa`}
                   rows={4}
                   value={defenderInput}
                   onChange={(e) => setDefenderInput(e.target.value)}
