@@ -315,47 +315,47 @@ export function CommercialAgentCellPanel() {
           {!v3Loading && filteredV3Agents.length > 0 && (
             <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {filteredV3Agents.map((agent) => (
-                // biome-ignore lint/a11y/useSemanticElements: <li> preserva a semântica de lista; o conteúdo do card é de bloco, inválido dentro de <button>.
-                <li
-                  key={agent.id}
-                  // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <li> mantido para preservar a semântica de lista do grid; o item vira um botão alternável (aria-pressed).
-                  role="button"
-                  tabIndex={0}
-                  aria-pressed={selectedAgentId === agent.id}
-                  onClick={() => setSelectedAgentId(agent.id)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault();
-                      setSelectedAgentId(agent.id);
-                    }
-                  }}
-                  className={`group cursor-pointer rounded-card border transition-all p-4 shadow-card hover:border-primary/50 hover:shadow-md ${
-                    selectedAgentId === agent.id
-                      ? 'border-primary bg-primary/5'
-                      : 'border-line bg-surface'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full bg-ok-solid" />
-                        <p className="font-display text-xs font-bold text-ink group-hover:text-primary transition-colors">
-                          {agent.name}
-                        </p>
+                <li key={agent.id} className="flex">
+                  {/* biome-ignore lint/a11y/useSemanticElements: o card contém conteúdo de bloco (<div>/<p>), inválido dentro de <button>; role, tabIndex e Enter/Espaço dão a mesma semântica sem mudar o layout. */}
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={selectedAgentId === agent.id}
+                    onClick={() => setSelectedAgentId(agent.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        setSelectedAgentId(agent.id);
+                      }
+                    }}
+                    className={`group flex-1 cursor-pointer rounded-card border transition-all p-4 shadow-card hover:border-primary/50 hover:shadow-md ${
+                      selectedAgentId === agent.id
+                        ? 'border-primary bg-primary/5'
+                        : 'border-line bg-surface'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="h-2 w-2 rounded-full bg-ok-solid" />
+                          <p className="font-display text-xs font-bold text-ink group-hover:text-primary transition-colors">
+                            {agent.name}
+                          </p>
+                        </div>
+                        <p className="text-[11px] text-ink-2 font-mono mt-0.5">ID: {agent.id}</p>
                       </div>
-                      <p className="text-[11px] text-ink-2 font-mono mt-0.5">ID: {agent.id}</p>
+                      <Badge variant="info">V3.1</Badge>
                     </div>
-                    <Badge variant="info">V3.1</Badge>
-                  </div>
 
-                  <div className="mt-3 flex items-center gap-3 text-[11px] text-ink-2 border-t border-line/50 pt-2">
-                    <span className="flex items-center gap-1 font-medium">
-                      <Sparkles className="h-3 w-3 text-primary" /> {agent.skills} skills
-                    </span>
-                    <span className="flex items-center gap-1 font-medium">
-                      <BookOpen className="h-3 w-3 text-ink-2" /> {agent.playbooks} playbooks
-                    </span>
-                    <ChevronRight className="ml-auto h-3.5 w-3.5 text-ink-2 group-hover:translate-x-0.5 transition-transform" />
+                    <div className="mt-3 flex items-center gap-3 text-[11px] text-ink-2 border-t border-line/50 pt-2">
+                      <span className="flex items-center gap-1 font-medium">
+                        <Sparkles className="h-3 w-3 text-primary" /> {agent.skills} skills
+                      </span>
+                      <span className="flex items-center gap-1 font-medium">
+                        <BookOpen className="h-3 w-3 text-ink-2" /> {agent.playbooks} playbooks
+                      </span>
+                      <ChevronRight className="ml-auto h-3.5 w-3.5 text-ink-2 group-hover:translate-x-0.5 transition-transform" />
+                    </div>
                   </div>
                 </li>
               ))}
@@ -609,11 +609,11 @@ export function CommercialAgentCellPanel() {
                             key={p.id}
                             role="button"
                             tabIndex={0}
-                            onClick={() => handleOpenPlaybook(p.id)}
+                            onClick={() => void handleOpenPlaybook(p.id)}
                             onKeyDown={(event) => {
                               if (event.key === 'Enter' || event.key === ' ') {
                                 event.preventDefault();
-                                handleOpenPlaybook(p.id);
+                                void handleOpenPlaybook(p.id);
                               }
                             }}
                             className="group/pb flex items-center justify-between p-1.5 rounded bg-surface-subtle text-[11px] font-mono text-ink-2 hover:bg-primary/10 hover:text-primary cursor-pointer transition-colors"

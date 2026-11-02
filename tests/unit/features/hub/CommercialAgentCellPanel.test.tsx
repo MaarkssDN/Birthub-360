@@ -231,8 +231,13 @@ describe('CommercialAgentCellPanel', () => {
 
   it('a11y: cards de especialista e playbooks são botões acionáveis por teclado', async () => {
     render(<CommercialAgentCellPanel />);
-    const icpCard = (await screen.findByText('Arquiteto de ICP')).closest('li');
-    expect(icpCard?.getAttribute('role')).toBe('button');
+    const icpCard = (await screen.findByText('Arquiteto de ICP')).closest('[role="button"]');
+    expect(icpCard).toBeTruthy();
+    // O <li> continua item da lista (listitem implícito) e contém o botão.
+    const item = icpCard?.closest('li');
+    expect(item?.hasAttribute('role')).toBe(false);
+    expect(screen.getAllByRole('listitem')).toContain(item);
+    expect(screen.getByRole('button', { name: /Arquiteto de ICP/ })).toBe(icpCard);
     expect(icpCard?.getAttribute('tabindex')).toBe('0');
     expect(icpCard?.getAttribute('aria-pressed')).toBe('false');
 
