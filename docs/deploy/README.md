@@ -15,6 +15,13 @@ em cada caminho — cada um continua descrito no lugar de sempre, agora com o st
 > Por decisão de produto, **Render, Neon, Cloudflare e qualquer caminho de produção em nuvem foram desativados por enquanto**.
 > O Blueprint `render.yaml` foi retirado da raiz e arquivado em `infrastructure/archive/render.yaml.disabled`.
 > O **único ambiente ativo, homologado e canônico** da plataforma é o **Local-First** (`docker-compose.yml`), operando Postgres local com pgvector, Redis local, LiteLLM, Ollama, Meilisearch e MinIO local.
+>
+> **Atualização (02/11/2026):** a produção roda, por enquanto, numa instância **AWS EC2** com deploy
+> **manual, controlado e feito localmente pelo Marcelo** (`deploy-ec2.sh`, `deploy-ec2.ps1`,
+> `deploy-aws.ps1`; procedimento em [`docs/operations/DEPLOY_EC2.md`](../operations/DEPLOY_EC2.md)).
+> Não há nada a configurar na AWS nem workflow de deploy no GitHub Actions. O Cloudflare R2 não é
+> usado; o workflow de backup do banco nunca rodou e foi removido por decisão do Marcelo (PR #181),
+> então hoje não existe backup automático de produção. Estado de cada workflow: [`producao.md`](producao.md).
 
 ## 1. Caminho canônico por ambiente (estado real, 2026-09-20)
 
