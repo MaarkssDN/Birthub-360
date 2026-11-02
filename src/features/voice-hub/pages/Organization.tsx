@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Save, Upload, Shield, Video, Loader2, AlertTriangle, Lock } from 'lucide-react';
 import { useSessionStore } from '../../store/useSessionStore.js';
 import { logger } from '../../../lib/logger.js';
@@ -45,6 +45,7 @@ type AuditLogState =
 const AUDIT_LOG_PAGE_SIZE = 20;
 
 export default function OrganizationPage() {
+  const fieldId = useId();
   const [activeTab, setActiveTab] = useState('branding');
   const brandColor = useSessionStore((state) => state.brandColor);
   const setBrandColor = useSessionStore((state) => state.setBrandColor);
@@ -268,7 +269,10 @@ export default function OrganizationPage() {
           {activeTab === 'branding' && (
             <div className="max-w-xl space-y-6">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label
+                  htmlFor={`${fieldId}-nome`}
+                  className="block text-sm font-medium text-slate-700 mb-2"
+                >
                   Nome da Organização
                 </label>
                 {orgNameStatus === 'loading' ? (
@@ -280,6 +284,7 @@ export default function OrganizationPage() {
                   // name yet (GET /api/organizations exists, no PUT/PATCH). An
                   // editable field here used to silently discard the edit on save.
                   <input
+                    id={`${fieldId}-nome`}
                     type="text"
                     value={branding.name}
                     readOnly
@@ -300,11 +305,15 @@ export default function OrganizationPage() {
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label
+                  htmlFor={`${fieldId}-cor`}
+                  className="block text-sm font-medium text-slate-700 mb-2"
+                >
                   Cor da Marca
                 </label>
                 <div className="flex gap-4 items-center">
                   <input
+                    id={`${fieldId}-cor`}
                     type="color"
                     value={branding.color}
                     onChange={(e) => setBranding({ ...branding, color: e.target.value })}
@@ -320,7 +329,7 @@ export default function OrganizationPage() {
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Logo</label>
+                <span className="block text-sm font-medium text-slate-700 mb-2">Logo</span>
                 <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:bg-slate-50 transition-colors cursor-pointer">
                   <Upload className="h-8 w-8 text-slate-400 mx-auto mb-2" />
                   <p className="text-sm text-slate-500">Clique para fazer upload (PNG, SVG)</p>
@@ -348,9 +357,9 @@ export default function OrganizationPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <span className="block text-sm font-medium text-slate-700 mb-2">
                     1. Upload de Imagem Base
-                  </label>
+                  </span>
                   <input
                     type="file"
                     accept="image/png, image/jpeg"
@@ -395,10 +404,14 @@ export default function OrganizationPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label
+                    htmlFor={`${fieldId}-video-prompt`}
+                    className="block text-sm font-medium text-slate-700 mb-2"
+                  >
                     2. Prompt do Vídeo
                   </label>
                   <textarea
+                    id={`${fieldId}-video-prompt`}
                     value={videoPrompt}
                     onChange={(e) => setVideoPrompt(e.target.value)}
                     className="w-full p-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand outline-none resize-none h-24"
@@ -431,7 +444,7 @@ export default function OrganizationPage() {
               </div>
 
               <div className="flex-1 border-t md:border-t-0 md:border-l border-slate-200 pt-8 md:pt-0 md:pl-8 flex flex-col">
-                <label className="block text-sm font-medium text-slate-700 mb-4">Resultado</label>
+                <span className="block text-sm font-medium text-slate-700 mb-4">Resultado</span>
 
                 {videoUrl ? (
                   <div className="space-y-4">

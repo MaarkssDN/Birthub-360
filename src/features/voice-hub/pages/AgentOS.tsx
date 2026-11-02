@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, Button, Badge } from '../../components/design-system.js';
 import {
@@ -44,6 +44,7 @@ function DemoDataEmptyState({ message }: { message: string }) {
 }
 
 export default function AgentOS() {
+  const fieldId = useId();
   const { id } = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('builder');
@@ -168,16 +169,28 @@ export default function AgentOS() {
                     <h3 className="text-lg font-bold mb-4">Configurações Gerais</h3>
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium mb-1">Nome do Agente</label>
+                        <label
+                          htmlFor={`${fieldId}-nome`}
+                          className="block text-sm font-medium mb-1"
+                        >
+                          Nome do Agente
+                        </label>
                         <input
+                          id={`${fieldId}-nome`}
                           type="text"
                           defaultValue={agentName}
                           className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:outline-none focus:border-brand"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-1">Descrição</label>
+                        <label
+                          htmlFor={`${fieldId}-descricao`}
+                          className="block text-sm font-medium mb-1"
+                        >
+                          Descrição
+                        </label>
                         <textarea
+                          id={`${fieldId}-descricao`}
                           rows={3}
                           defaultValue="Prospecção e qualificação de leads."
                           className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:outline-none focus:border-brand"
@@ -185,16 +198,32 @@ export default function AgentOS() {
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium mb-1">Departamento</label>
-                          <select className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:outline-none focus:border-brand">
+                          <label
+                            htmlFor={`${fieldId}-departamento`}
+                            className="block text-sm font-medium mb-1"
+                          >
+                            Departamento
+                          </label>
+                          <select
+                            id={`${fieldId}-departamento`}
+                            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:outline-none focus:border-brand"
+                          >
                             <option>Recepção</option>
                             <option>Vendas</option>
                             <option>Suporte</option>
                           </select>
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-1">Categoria</label>
-                          <select className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:outline-none focus:border-brand">
+                          <label
+                            htmlFor={`${fieldId}-categoria`}
+                            className="block text-sm font-medium mb-1"
+                          >
+                            Categoria
+                          </label>
+                          <select
+                            id={`${fieldId}-categoria`}
+                            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:outline-none focus:border-brand"
+                          >
                             <option>Vendas</option>
                             <option>Financeiro</option>
                           </select>
@@ -248,8 +277,16 @@ Consultivo, profissional, calmo e seguro.`}
                     <h3 className="text-lg font-bold mb-4">Modelo Generativo</h3>
                     <div className="space-y-6">
                       <div>
-                        <label className="block text-sm font-medium mb-1">Provedor e Modelo</label>
-                        <select className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:outline-none focus:border-brand">
+                        <label
+                          htmlFor={`${fieldId}-modelo`}
+                          className="block text-sm font-medium mb-1"
+                        >
+                          Provedor e Modelo
+                        </label>
+                        <select
+                          id={`${fieldId}-modelo`}
+                          className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:outline-none focus:border-brand"
+                        >
                           <option>Google Gemini 2.5 Pro</option>
                           <option>Google Gemini 2.5 Flash</option>
                           <option>OpenAI GPT-4o</option>
@@ -259,10 +296,13 @@ Consultivo, profissional, calmo e seguro.`}
 
                       <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-4">
                         <div className="flex justify-between items-center">
-                          <label className="text-sm font-medium">Temperature</label>
+                          <label htmlFor={`${fieldId}-temperature`} className="text-sm font-medium">
+                            Temperature
+                          </label>
                           <span className="text-sm font-mono text-brand">0.3</span>
                         </div>
                         <input
+                          id={`${fieldId}-temperature`}
                           type="range"
                           min="0"
                           max="1"
