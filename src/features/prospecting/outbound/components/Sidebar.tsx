@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import {
   Database,
   ShieldCheck,
@@ -88,6 +88,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onDeleteRecentSearch = () => {},
   onClearRecentSearches = () => {},
 }) => {
+  const fieldId = useId();
   const isDark = theme === 'dark';
   const [showIntegrations, setShowIntegrations] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -302,9 +303,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             }`}
           >
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+              <span className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
                 <Cpu className="w-3.5 h-3.5 text-[var(--brand-primary)]" /> Motor de IA (LLM)
-              </label>
+              </span>
               <button
                 type="button"
                 onClick={checkOllama}
@@ -442,10 +443,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {aiConfig.provider === 'groq' && (
               <div className="space-y-2.5 pt-1 text-xs">
                 <div>
-                  <label className={`mb-1 block ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                  <label
+                    htmlFor={`${fieldId}-groq-key`}
+                    className={`mb-1 block ${isDark ? 'text-slate-400' : 'text-slate-600'}`}
+                  >
                     Groq API Key
                   </label>
                   <input
+                    id={`${fieldId}-groq-key`}
                     type="password"
                     value={aiConfig.groqApiKey}
                     onChange={(e) => {
@@ -464,10 +469,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   />
                 </div>
                 <div>
-                  <label className={`mb-1 block ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                  <label
+                    htmlFor={`${fieldId}-groq-modelo`}
+                    className={`mb-1 block ${isDark ? 'text-slate-400' : 'text-slate-600'}`}
+                  >
                     Modelo Groq
                   </label>
                   <select
+                    id={`${fieldId}-groq-modelo`}
                     value={aiConfig.groqModel}
                     onChange={(e) =>
                       setAiConfig((prev: any) => ({ ...prev, groqModel: e.target.value }))
@@ -556,7 +565,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
             }`}
           >
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+              <label
+                htmlFor={`${fieldId}-proposta`}
+                className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5"
+              >
                 <Target className="w-3.5 h-3.5 text-emerald-500" /> Proposta de Valor
               </label>
               <button
@@ -582,6 +594,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
 
             <textarea
+              id={`${fieldId}-proposta`}
               rows={3}
               value={pitch}
               onChange={(e) => setPitch(e.target.value)}
@@ -690,6 +703,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <div className="space-y-2 pt-1">
                 <div>
                   <label
+                    htmlFor={`${fieldId}-bitrix-alvo`}
                     className={`text-[11px] mb-1 flex justify-between ${isDark ? 'text-slate-400' : 'text-slate-600'}`}
                   >
                     <span>Destino Bitrix24 CRM</span>
@@ -698,6 +712,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     </span>
                   </label>
                   <select
+                    id={`${fieldId}-bitrix-alvo`}
                     value={integrationsConfig.activeBitrixTarget}
                     onChange={(e) =>
                       setIntegrationsConfig((prev: any) => ({
@@ -722,11 +737,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                 <div>
                   <label
+                    htmlFor={`${fieldId}-google-places-key`}
                     className={`text-[11px] mb-1 flex justify-between ${isDark ? 'text-slate-400' : 'text-slate-600'}`}
                   >
                     <span>Google Places API Key</span>
                   </label>
                   <input
+                    id={`${fieldId}-google-places-key`}
                     type="password"
                     value={googleApiKey}
                     onChange={(e) => {
@@ -747,11 +764,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                 <div>
                   <label
+                    htmlFor={`${fieldId}-apollo-key`}
                     className={`text-[11px] mb-1 flex justify-between ${isDark ? 'text-slate-400' : 'text-slate-600'}`}
                   >
                     <span>Apollo.io API Key</span>
                   </label>
                   <input
+                    id={`${fieldId}-apollo-key`}
                     type="password"
                     value={apolloApiKey}
                     onChange={(e) => {
@@ -781,9 +800,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             }`}
           >
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+              <span className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
                 <Database className="w-3.5 h-3.5 text-[var(--brand-primary)]" /> Banco Relacional
-              </label>
+              </span>
               <button
                 type="button"
                 onClick={() => onNavigateTab('database')}
