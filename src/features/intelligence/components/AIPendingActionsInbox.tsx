@@ -84,7 +84,12 @@ export function presentationFor(action: AIPendingActionItem): ActionPresentation
       title: isFirstContact ? 'Primeiro Contato (WhatsApp)' : 'Negociador de IA · Réplica WhatsApp',
       approveLabel: 'Aprovar e Enviar',
       approveTitle: 'Envia a réplica imediatamente pelo WhatsApp oficial.',
-      icon: <MessageSquare className="w-4 h-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />,
+      icon: (
+        <MessageSquare
+          className="w-4 h-4 text-emerald-600 dark:text-emerald-400"
+          aria-hidden="true"
+        />
+      ),
       category: 'whatsapp',
     };
   }
@@ -93,7 +98,9 @@ export function presentationFor(action: AIPendingActionItem): ActionPresentation
       title: 'Atividade de Follow-up / Tarefa',
       approveLabel: 'Criar Tarefa',
       approveTitle: 'Cria a atividade no CRM com data e responsável.',
-      icon: <CalendarClock className="w-4 h-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />,
+      icon: (
+        <CalendarClock className="w-4 h-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+      ),
       category: 'task',
     };
   }
@@ -152,7 +159,10 @@ export interface AIPendingActionsInboxProps {
   className?: string;
 }
 
-export function AIPendingActionsInbox({ onActionProcessed, className = '' }: AIPendingActionsInboxProps) {
+export function AIPendingActionsInbox({
+  onActionProcessed,
+  className = '',
+}: AIPendingActionsInboxProps) {
   const [actions, setActions] = useState<AIPendingActionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -163,7 +173,9 @@ export function AIPendingActionsInbox({ onActionProcessed, className = '' }: AIP
 
   // Filtros
   const [riskFilter, setRiskFilter] = useState<'all' | 'low' | 'medium' | 'high'>('all');
-  const [typeFilter, setTypeFilter] = useState<'all' | 'email' | 'whatsapp' | 'task' | 'recommendation'>('all');
+  const [typeFilter, setTypeFilter] = useState<
+    'all' | 'email' | 'whatsapp' | 'task' | 'recommendation'
+  >('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   const searchInputId = useId();
@@ -176,9 +188,9 @@ export function AIPendingActionsInbox({ onActionProcessed, className = '' }: AIP
 
       try {
         // 1. Tenta endpoint primário da célula comercial (HITL)
-        const res = await api.get<{ success?: boolean; data?: AIPendingActionItem[] } | AIPendingActionItem[]>(
-          '/api/agent/commercial-cell/pending-actions',
-        );
+        const res = await api.get<
+          { success?: boolean; data?: AIPendingActionItem[] } | AIPendingActionItem[]
+        >('/api/agent/commercial-cell/pending-actions');
         if (Array.isArray(res)) {
           items = res;
         } else if (res && Array.isArray((res as any).data)) {
@@ -402,7 +414,10 @@ export function AIPendingActionsInbox({ onActionProcessed, className = '' }: AIP
     >
       {/* Live Region para leitores de tela */}
       <div role="status" aria-live="polite" className="sr-only">
-        {feedback || (loading ? 'Carregando ações pendentes de IA...' : `${filteredActions.length} ações pendentes disponíveis.`)}
+        {feedback ||
+          (loading
+            ? 'Carregando ações pendentes de IA...'
+            : `${filteredActions.length} ações pendentes disponíveis.`)}
       </div>
 
       {/* Cabeçalho da Inbox HITL */}
@@ -436,7 +451,10 @@ export function AIPendingActionsInbox({ onActionProcessed, className = '' }: AIP
             aria-label="Atualizar lista de ações pendentes"
             className="flex items-center gap-1.5"
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
+            <RefreshCw
+              className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`}
+              aria-hidden="true"
+            />
             <span>Atualizar</span>
           </Button>
         </div>
@@ -472,7 +490,9 @@ export function AIPendingActionsInbox({ onActionProcessed, className = '' }: AIP
           <div className="flex items-center gap-2.5">
             <AlertCircle className="h-5 w-5 text-critical shrink-0" aria-hidden="true" />
             <div>
-              <p className="text-sm font-semibold text-critical">Erro na comunicação com a Célula de IA</p>
+              <p className="text-sm font-semibold text-critical">
+                Erro na comunicação com a Célula de IA
+              </p>
               <p className="text-xs text-ink-2 mt-0.5">{error}</p>
             </div>
           </div>
@@ -489,7 +509,10 @@ export function AIPendingActionsInbox({ onActionProcessed, className = '' }: AIP
       )}
 
       {/* Cartões de Resumo / Filtros Rápidos de Risco */}
-      <section className="mb-6 grid grid-cols-2 sm:grid-cols-4 gap-3" aria-label="Resumo por nível de risco">
+      <section
+        className="mb-6 grid grid-cols-2 sm:grid-cols-4 gap-3"
+        aria-label="Resumo por nível de risco"
+      >
         <button
           type="button"
           onClick={() => setRiskFilter('all')}
@@ -535,7 +558,9 @@ export function AIPendingActionsInbox({ onActionProcessed, className = '' }: AIP
             <span className="h-2 w-2 rounded-full bg-amber-500" aria-hidden="true" />
             Médio Risco
           </span>
-          <span className="font-display text-xl font-bold text-ink mt-0.5">{riskCounts.medium}</span>
+          <span className="font-display text-xl font-bold text-ink mt-0.5">
+            {riskCounts.medium}
+          </span>
         </button>
 
         <button
@@ -563,7 +588,10 @@ export function AIPendingActionsInbox({ onActionProcessed, className = '' }: AIP
           <label htmlFor={searchInputId} className="sr-only">
             Buscar por lead, agente ou conteúdo da ação
           </label>
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-3" aria-hidden="true" />
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-3"
+            aria-hidden="true"
+          />
           <input
             id={searchInputId}
             type="search"
@@ -585,7 +613,11 @@ export function AIPendingActionsInbox({ onActionProcessed, className = '' }: AIP
         </div>
 
         {/* Filtros de Tipo */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0" role="toolbar" aria-label="Filtrar por canal ou tipo de ação">
+        <div
+          className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0"
+          role="toolbar"
+          aria-label="Filtrar por canal ou tipo de ação"
+        >
           <span className="text-xs font-semibold text-ink-2 shrink-0 flex items-center gap-1">
             <Filter className="h-3 w-3" aria-hidden="true" /> Tipo:
           </span>
@@ -736,197 +768,200 @@ export function AIPendingActionsInbox({ onActionProcessed, className = '' }: AIP
             aria-label="Lista de ações de IA pendentes"
           >
             {filteredActions.map((action) => {
-            const presentation = presentationFor(action);
-            const risk = normalizeRisk(action.riskLevel);
-            const isProcessing = processingId === action.id;
-            const isSelected = selectedIds.has(action.id);
-            const confidencePercent = action.confidence != null ? Math.round(action.confidence * 100) : null;
-            const targetRecipient =
-              action.payload?.to ||
-              action.payload?.recipient ||
-              action.payload?.leadId ||
-              'Lead do CRM';
+              const presentation = presentationFor(action);
+              const risk = normalizeRisk(action.riskLevel);
+              const isProcessing = processingId === action.id;
+              const isSelected = selectedIds.has(action.id);
+              const confidencePercent =
+                action.confidence != null ? Math.round(action.confidence * 100) : null;
+              const targetRecipient =
+                action.payload?.to ||
+                action.payload?.recipient ||
+                action.payload?.leadId ||
+                'Lead do CRM';
 
-            return (
-              <article
-                key={action.id}
-                aria-labelledby={`action-title-${action.id}`}
-                className={`relative rounded-xl border transition-all ${
-                  isSelected
-                    ? 'border-brand/50 bg-brand/[0.02] shadow-sm'
-                    : 'border-line bg-surface hover:border-line-strong shadow-xs'
-                } p-4 sm:p-5`}
-              >
-                {/* Linha superior: Seleção, Tipo de Ação, Badges e Risco */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-line/60 pb-3">
-                  <div className="flex items-center gap-3">
-                    <input
-                      id={`checkbox-action-${action.id}`}
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => toggleSelectAction(action.id)}
-                      className="h-4 w-4 rounded border-line text-brand focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none cursor-pointer"
-                      aria-label={`Selecionar ação ${presentation.title} para ${targetRecipient}`}
-                    />
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-surface-2 border border-line">
-                        {presentation.icon}
+              return (
+                <article
+                  key={action.id}
+                  aria-labelledby={`action-title-${action.id}`}
+                  className={`relative rounded-xl border transition-all ${
+                    isSelected
+                      ? 'border-brand/50 bg-brand/[0.02] shadow-sm'
+                      : 'border-line bg-surface hover:border-line-strong shadow-xs'
+                  } p-4 sm:p-5`}
+                >
+                  {/* Linha superior: Seleção, Tipo de Ação, Badges e Risco */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-line/60 pb-3">
+                    <div className="flex items-center gap-3">
+                      <input
+                        id={`checkbox-action-${action.id}`}
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleSelectAction(action.id)}
+                        className="h-4 w-4 rounded border-line text-brand focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none cursor-pointer"
+                        aria-label={`Selecionar ação ${presentation.title} para ${targetRecipient}`}
+                      />
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-surface-2 border border-line">
+                          {presentation.icon}
+                        </div>
+                        <div>
+                          <h3
+                            id={`action-title-${action.id}`}
+                            className="font-display text-sm sm:text-base font-bold text-ink leading-tight"
+                          >
+                            {presentation.title}
+                          </h3>
+                          <span className="text-[11px] text-ink-3">
+                            Origem: {action.agentRole || action.payload?.role || 'Agente Tático'}
+                          </span>
+                        </div>
                       </div>
-                      <div>
-                        <h3
-                          id={`action-title-${action.id}`}
-                          className="font-display text-sm sm:text-base font-bold text-ink leading-tight"
+                    </div>
+
+                    <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+                      {/* Confiança */}
+                      {confidencePercent !== null && (
+                        <span
+                          className="inline-flex items-center rounded-md border border-line bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-ink-2"
+                          title="Nível de confiança estatística da IA nesta sugestão"
                         >
-                          {presentation.title}
-                        </h3>
-                        <span className="text-[11px] text-ink-3">
-                          Origem: {action.agentRole || action.payload?.role || 'Agente Tático'}
+                          {confidencePercent}% conf.
                         </span>
-                      </div>
-                    </div>
-                  </div>
+                      )}
 
-                  <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
-                    {/* Confiança */}
-                    {confidencePercent !== null && (
+                      {/* Badge de Risco WCAG 2.2 AA */}
                       <span
-                        className="inline-flex items-center rounded-md border border-line bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-ink-2"
-                        title="Nível de confiança estatística da IA nesta sugestão"
+                        className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-semibold ${riskBadgeClasses(
+                          risk,
+                        )}`}
                       >
-                        {confidencePercent}% conf.
+                        {risk === 'high' ? (
+                          <ShieldAlert className="h-3 w-3 shrink-0" aria-hidden="true" />
+                        ) : (
+                          <ShieldCheck className="h-3 w-3 shrink-0" aria-hidden="true" />
+                        )}
+                        <span>{riskLabel(risk)}</span>
                       </span>
-                    )}
-
-                    {/* Badge de Risco WCAG 2.2 AA */}
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-semibold ${riskBadgeClasses(
-                        risk,
-                      )}`}
-                    >
-                      {risk === 'high' ? (
-                        <ShieldAlert className="h-3 w-3 shrink-0" aria-hidden="true" />
-                      ) : (
-                        <ShieldCheck className="h-3 w-3 shrink-0" aria-hidden="true" />
-                      )}
-                      <span>{riskLabel(risk)}</span>
-                    </span>
-                  </div>
-                </div>
-
-                {/* Corpo do Card: Detalhes, Contexto e Conteúdo */}
-                <div className="py-3.5 space-y-3">
-                  {/* Destinatário ou Entidade Alvo */}
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-2">
-                    {action.payload?.leadId && (
-                      <span className="inline-flex items-center gap-1">
-                        <UserCheck className="h-3.5 w-3.5 text-ink-3" aria-hidden="true" />
-                        <strong className="font-semibold text-ink">Lead ID:</strong>{' '}
-                        <code className="font-mono text-[11px] bg-surface-2 px-1.5 py-0.5 rounded border border-line">
-                          {action.payload.leadId}
-                        </code>
-                      </span>
-                    )}
-                    {(action.payload?.to || action.payload?.recipient) && (
-                      <span>
-                        <strong className="font-semibold text-ink">Destinatário:</strong>{' '}
-                        {action.payload.to || action.payload.recipient}
-                      </span>
-                    )}
-                    {action.payload?.date && (
-                      <span>
-                        <strong className="font-semibold text-ink">Data Sugerida:</strong>{' '}
-                        {action.payload.date}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Evidência / Gatilho / Promessa Comercial Detectada */}
-                  {(action.payload?.evidenceSnippet || action.payload?.triggerDetail || action.payload?.trigger) && (
-                    <div className="rounded-lg border border-brand/20 bg-brand/[0.04] p-3 text-xs">
-                      <div className="font-semibold text-ink flex items-center gap-1.5 mb-1 text-[11px]">
-                        <Sparkles className="h-3.5 w-3.5 text-brand" aria-hidden="true" />
-                        <span>Gatilho Detectado pela IA:</span>
-                      </div>
-                      <p className="text-ink-2 italic leading-relaxed">
-                        {action.payload.evidenceSnippet ||
-                          action.payload.triggerDetail ||
-                          `Disparado pelo gatilho: ${action.payload.trigger}`}
-                      </p>
                     </div>
-                  )}
+                  </div>
 
-                  {/* Prévia da Mensagem ou Conteúdo da Ação */}
-                  {(action.payload?.body ||
-                    action.payload?.message ||
-                    action.payload?.synthesis ||
-                    action.payload?.observations) && (
-                    <div className="rounded-lg border border-line bg-surface-2/60 p-3 text-xs space-y-1">
-                      {action.payload?.subject && (
-                        <p className="font-semibold text-ink mb-1">
-                          Assunto:{' '}
-                          <span className="font-normal text-ink-2">{action.payload.subject}</span>
+                  {/* Corpo do Card: Detalhes, Contexto e Conteúdo */}
+                  <div className="py-3.5 space-y-3">
+                    {/* Destinatário ou Entidade Alvo */}
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-2">
+                      {action.payload?.leadId && (
+                        <span className="inline-flex items-center gap-1">
+                          <UserCheck className="h-3.5 w-3.5 text-ink-3" aria-hidden="true" />
+                          <strong className="font-semibold text-ink">Lead ID:</strong>{' '}
+                          <code className="font-mono text-[11px] bg-surface-2 px-1.5 py-0.5 rounded border border-line">
+                            {action.payload.leadId}
+                          </code>
+                        </span>
+                      )}
+                      {(action.payload?.to || action.payload?.recipient) && (
+                        <span>
+                          <strong className="font-semibold text-ink">Destinatário:</strong>{' '}
+                          {action.payload.to || action.payload.recipient}
+                        </span>
+                      )}
+                      {action.payload?.date && (
+                        <span>
+                          <strong className="font-semibold text-ink">Data Sugerida:</strong>{' '}
+                          {action.payload.date}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Evidência / Gatilho / Promessa Comercial Detectada */}
+                    {(action.payload?.evidenceSnippet ||
+                      action.payload?.triggerDetail ||
+                      action.payload?.trigger) && (
+                      <div className="rounded-lg border border-brand/20 bg-brand/[0.04] p-3 text-xs">
+                        <div className="font-semibold text-ink flex items-center gap-1.5 mb-1 text-[11px]">
+                          <Sparkles className="h-3.5 w-3.5 text-brand" aria-hidden="true" />
+                          <span>Gatilho Detectado pela IA:</span>
+                        </div>
+                        <p className="text-ink-2 italic leading-relaxed">
+                          {action.payload.evidenceSnippet ||
+                            action.payload.triggerDetail ||
+                            `Disparado pelo gatilho: ${action.payload.trigger}`}
                         </p>
-                      )}
-                      <p className="whitespace-pre-wrap text-ink leading-relaxed font-sans line-clamp-4">
-                        {action.payload?.body ||
-                          action.payload?.message ||
-                          action.payload?.synthesis ||
-                          action.payload?.observations}
-                      </p>
-                    </div>
-                  )}
-                </div>
+                      </div>
+                    )}
 
-                {/* Rodapé do Card: Ações em 1 Clique (Aprovar / Rejeitar) */}
-                <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-line/60 pt-3">
-                  <span className="text-[11px] text-ink-3">
-                    {action.createdAt
-                      ? `Proposta em: ${new Date(action.createdAt).toLocaleString('pt-BR')}`
-                      : 'Ação em fila de aprovação'}
-                  </span>
-
-                  <div className="flex items-center gap-2">
-                    {/* Botão de Rejeição em 1 clique */}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleReject(action)}
-                      disabled={isProcessing || batchProcessing}
-                      className="text-xs text-critical border-critical/30 hover:bg-critical/10 hover:border-critical/50 focus-visible:ring-critical"
-                      aria-label={`Rejeitar e descartar ${presentation.title} para ${targetRecipient}`}
-                    >
-                      {isProcessing ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
-                      ) : (
-                        <XCircle className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
-                      )}
-                      Rejeitar
-                    </Button>
-
-                    {/* Botão de Aprovação em 1 clique */}
-                    <Button
-                      type="button"
-                      variant="primary"
-                      size="sm"
-                      onClick={() => handleApprove(action)}
-                      disabled={isProcessing || batchProcessing}
-                      title={presentation.approveTitle}
-                      className="text-xs font-semibold shadow-xs"
-                      aria-label={`${presentation.approveLabel} para ${targetRecipient}`}
-                    >
-                      {isProcessing ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
-                      ) : (
-                        <Check className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
-                      )}
-                      {presentation.approveLabel}
-                    </Button>
+                    {/* Prévia da Mensagem ou Conteúdo da Ação */}
+                    {(action.payload?.body ||
+                      action.payload?.message ||
+                      action.payload?.synthesis ||
+                      action.payload?.observations) && (
+                      <div className="rounded-lg border border-line bg-surface-2/60 p-3 text-xs space-y-1">
+                        {action.payload?.subject && (
+                          <p className="font-semibold text-ink mb-1">
+                            Assunto:{' '}
+                            <span className="font-normal text-ink-2">{action.payload.subject}</span>
+                          </p>
+                        )}
+                        <p className="whitespace-pre-wrap text-ink leading-relaxed font-sans line-clamp-4">
+                          {action.payload?.body ||
+                            action.payload?.message ||
+                            action.payload?.synthesis ||
+                            action.payload?.observations}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                </footer>
-              </article>
-            );
-          })}
+
+                  {/* Rodapé do Card: Ações em 1 Clique (Aprovar / Rejeitar) */}
+                  <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-line/60 pt-3">
+                    <span className="text-[11px] text-ink-3">
+                      {action.createdAt
+                        ? `Proposta em: ${new Date(action.createdAt).toLocaleString('pt-BR')}`
+                        : 'Ação em fila de aprovação'}
+                    </span>
+
+                    <div className="flex items-center gap-2">
+                      {/* Botão de Rejeição em 1 clique */}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleReject(action)}
+                        disabled={isProcessing || batchProcessing}
+                        className="text-xs text-critical border-critical/30 hover:bg-critical/10 hover:border-critical/50 focus-visible:ring-critical"
+                        aria-label={`Rejeitar e descartar ${presentation.title} para ${targetRecipient}`}
+                      >
+                        {isProcessing ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                        ) : (
+                          <XCircle className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
+                        )}
+                        Rejeitar
+                      </Button>
+
+                      {/* Botão de Aprovação em 1 clique */}
+                      <Button
+                        type="button"
+                        variant="primary"
+                        size="sm"
+                        onClick={() => handleApprove(action)}
+                        disabled={isProcessing || batchProcessing}
+                        title={presentation.approveTitle}
+                        className="text-xs font-semibold shadow-xs"
+                        aria-label={`${presentation.approveLabel} para ${targetRecipient}`}
+                      >
+                        {isProcessing ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                        ) : (
+                          <Check className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
+                        )}
+                        {presentation.approveLabel}
+                      </Button>
+                    </div>
+                  </footer>
+                </article>
+              );
+            })}
           </div>
         )}
       </div>
