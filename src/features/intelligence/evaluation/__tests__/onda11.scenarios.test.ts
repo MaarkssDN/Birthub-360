@@ -4,7 +4,7 @@ import {
   evaluateStagnation,
   formatCanonicalEnrichmentForAgent,
 } from '../../domain/canonicalEnrichment.js';
-import { getLeadContextTool, searchLeadsTool } from '../../tools/crmTools.js';
+import { getLeadContextTool } from '../../tools/crmTools.js';
 import { sseService } from '../../../notifications/sse.service.js';
 
 const prismaFindManyMock = vi.fn();
