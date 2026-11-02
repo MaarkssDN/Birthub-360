@@ -78,7 +78,7 @@ export function SinglePageDashboard() {
           <h2 className="text-lg font-bold text-rose-600 dark:text-rose-400 font-display">
             Falha ao carregar indicadores comerciais
           </h2>
-          <p className="text-sm text-sky-700 dark:text-[#70D6FF] max-w-md mx-auto">
+          <p className="text-sm text-ink-2 max-w-md mx-auto">
             {error || 'Não foi possível sincronizar as métricas de pipeline com o servidor.'}
           </p>
           <div className="pt-2">
@@ -123,7 +123,7 @@ export function SinglePageDashboard() {
       <div className="w-full max-w-[98rem] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
         {/* ── COMMAND CENTER HEADER ────────────────────────────────────────── */}
         <motion.header
-          className="relative border-b border-line bg-background p-6 flex flex-col md:flex-row md:items-end md:justify-between gap-6"
+          className="relative rounded-2xl border border-line bg-surface/80 backdrop-blur-xl p-6 sm:p-8 flex flex-col md:flex-row md:items-end md:justify-between gap-6 shadow-sm"
           variants={staggerContainer(0.08, 0)}
           initial="hidden"
           animate="show"
@@ -139,10 +139,10 @@ export function SinglePageDashboard() {
                 SISTEMA OPERACIONAL
               </span>
             </div>
-            <h1 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-brand-ink dark:text-brand">
+            <h1 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-ink">
               {greeting()}, {firstName}.
             </h1>
-            <p className="text-sm text-sky-700 dark:text-[#70D6FF] max-w-2xl font-sans">
+            <p className="text-sm text-ink-2 max-w-2xl font-interface">
               Visão consolidada de inteligência comercial, prospecção e pipeline em tempo real.
             </p>
           </motion.div>
@@ -184,7 +184,7 @@ export function SinglePageDashboard() {
             className="bh-platform-card group relative p-5 transition-colors overflow-hidden"
           >
             <div className="flex items-center justify-between mb-3">
-              <span className="bh-label text-sm font-bold uppercase tracking-wider text-[var(--card-accent)] flex items-center gap-2 font-sans">
+              <span className="bh-label text-sm font-bold uppercase tracking-wider text-[var(--card-accent)] flex items-center gap-2 font-interface">
                 <Target className="w-4 h-4 text-[var(--card-accent)]" /> Volume em Pipeline
               </span>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[color-mix(in_srgb,var(--card-accent)_10%,transparent)] text-[color-mix(in_srgb,var(--card-accent)_80%,black)] dark:text-[color-mix(in_srgb,var(--card-accent)_80%,white)]">
@@ -219,7 +219,7 @@ export function SinglePageDashboard() {
             className="bh-platform-card group relative p-5 transition-colors overflow-hidden"
           >
             <div className="flex items-center justify-between mb-3">
-              <span className="bh-label text-sm font-bold uppercase tracking-wider text-[var(--card-accent)] flex items-center gap-2 font-sans">
+              <span className="bh-label text-sm font-bold uppercase tracking-wider text-[var(--card-accent)] flex items-center gap-2 font-interface">
                 <TrendingUp className="w-4 h-4 text-[var(--card-accent)]" /> Taxa de Conversão
               </span>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[color-mix(in_srgb,var(--card-accent)_10%,transparent)] text-[color-mix(in_srgb,var(--card-accent)_80%,black)] dark:text-[color-mix(in_srgb,var(--card-accent)_80%,white)]">
@@ -248,7 +248,7 @@ export function SinglePageDashboard() {
             className="bh-platform-card group relative p-5 transition-colors overflow-hidden"
           >
             <div className="flex items-center justify-between mb-3">
-              <span className="bh-label text-sm font-bold uppercase tracking-wider text-[var(--card-accent)] flex items-center gap-2 font-sans">
+              <span className="bh-label text-sm font-bold uppercase tracking-wider text-[var(--card-accent)] flex items-center gap-2 font-interface">
                 <Activity className="w-4 h-4 text-[var(--card-accent)]" /> Atividades Pendentes
               </span>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[color-mix(in_srgb,var(--card-accent)_10%,transparent)] text-[color-mix(in_srgb,var(--card-accent)_80%,black)] dark:text-[color-mix(in_srgb,var(--card-accent)_80%,white)]">
@@ -277,7 +277,7 @@ export function SinglePageDashboard() {
             className="bh-platform-card group relative p-5 transition-colors overflow-hidden"
           >
             <div className="flex items-center justify-between mb-3">
-              <span className="bh-label text-sm font-bold uppercase tracking-wider text-[var(--card-accent)] flex items-center gap-2 font-sans">
+              <span className="bh-label text-sm font-bold uppercase tracking-wider text-[var(--card-accent)] flex items-center gap-2 font-interface">
                 <Users className="w-4 h-4 text-[var(--card-accent)]" /> Contas e Empresas
               </span>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[color-mix(in_srgb,var(--card-accent)_10%,transparent)] text-[color-mix(in_srgb,var(--card-accent)_80%,black)] dark:text-[color-mix(in_srgb,var(--card-accent)_80%,white)]">
@@ -306,11 +306,11 @@ export function SinglePageDashboard() {
           <Card variant="panel" padding="default" className="lg:col-span-2 shadow-card space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-line pb-4">
               <div>
-                <h2 className="text-base font-bold text-brand-ink dark:text-[#00D4FF] flex items-center gap-2 font-display">
+                <h2 className="text-base font-bold text-ink flex items-center gap-2 font-display">
                   <BarChart3 className="w-4 h-4 text-brand" />
                   Jornada & Conversão do Funil
                 </h2>
-                <p className="text-xs text-sky-700 dark:text-[#70D6FF] font-sans mt-0.5">
+                <p className="text-xs text-ink-2 font-interface mt-0.5">
                   Distribuição de oportunidades através das fases de qualificação e fechamento.
                 </p>
               </div>
@@ -328,10 +328,8 @@ export function SinglePageDashboard() {
                 <div className="w-12 h-12 rounded-full bg-surface-2 mx-auto flex items-center justify-center text-ink-2">
                   <Layers className="w-6 h-6" />
                 </div>
-                <h4 className="text-sm font-semibold text-brand-ink dark:text-[#00D4FF]">
-                  Nenhum dado de funil registrado
-                </h4>
-                <p className="text-xs text-sky-700 dark:text-[#70D6FF] max-w-sm mx-auto">
+                <h4 className="text-sm font-semibold text-ink">Nenhum dado de funil registrado</h4>
+                <p className="text-xs text-ink-2 max-w-sm mx-auto">
                   Inicie o fluxo cadastrando ou importando novos leads através do módulo de
                   prospecção.
                 </p>
@@ -401,11 +399,11 @@ export function SinglePageDashboard() {
           >
             <div>
               <div className="border-b border-line pb-4">
-                <h2 className="text-base font-bold text-brand-ink dark:text-[#00D4FF] flex items-center gap-2 font-display">
+                <h2 className="text-base font-bold text-ink flex items-center gap-2 font-display">
                   <Flame className="w-4 h-4 text-rose-500" />
                   Temperatura dos Leads
                 </h2>
-                <p className="text-xs text-sky-700 dark:text-[#70D6FF] font-sans mt-0.5">
+                <p className="text-xs text-ink-2 font-interface mt-0.5">
                   Engajamento da base por prioridade de contato.
                 </p>
               </div>
@@ -508,7 +506,7 @@ export function SinglePageDashboard() {
         {/* ── STRATEGIC QUICK LAUNCH BENTO (4 TILES) ────────────────────── */}
         <div>
           <div className="mb-4">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-brand-ink dark:text-[#00D4FF] font-sans flex items-center gap-2">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-ink font-interface flex items-center gap-2">
               <Zap className="w-4 h-4 text-brand" />
               Cockpits Operacionais & Ações Diretas
             </h2>
@@ -530,7 +528,7 @@ export function SinglePageDashboard() {
                 <h3 className="bh-label font-bold text-base text-[var(--card-accent)] transition-colors font-display">
                   Prospecção ICP & Mercado
                 </h3>
-                <p className="text-sm text-ink-2 leading-relaxed font-sans">
+                <p className="text-sm text-ink-2 leading-relaxed font-interface">
                   Varredura de decisores corporativos, enriquecimento de dados e qualificação B2B.
                 </p>
               </div>
@@ -555,7 +553,7 @@ export function SinglePageDashboard() {
                 <h3 className="bh-label font-bold text-base text-[var(--card-accent)] transition-colors font-display">
                   Gestão Comercial 360°
                 </h3>
-                <p className="text-sm text-ink-2 leading-relaxed font-sans">
+                <p className="text-sm text-ink-2 leading-relaxed font-interface">
                   Kanban ágil de oportunidades, controle de propostas e avanço de estágios de
                   negociação.
                 </p>
@@ -581,7 +579,7 @@ export function SinglePageDashboard() {
                 <h3 className="bh-label font-bold text-base text-[var(--card-accent)] transition-colors font-display">
                   Cadência & Multicanal
                 </h3>
-                <p className="text-sm text-ink-2 leading-relaxed font-sans">
+                <p className="text-sm text-ink-2 leading-relaxed font-interface">
                   Regras automatizadas de follow-up, disparos via WhatsApp, e-mail e ligações
                   inteligentes.
                 </p>
@@ -607,7 +605,7 @@ export function SinglePageDashboard() {
                 <h3 className="bh-label font-bold text-base text-[var(--card-accent)] transition-colors font-display">
                   Inteligência & Copiloto IA
                 </h3>
-                <p className="text-sm text-ink-2 leading-relaxed font-sans">
+                <p className="text-sm text-ink-2 leading-relaxed font-interface">
                   Diagnósticos preditivos de fechamento, análise de objeções e relatórios
                   executivos.
                 </p>
@@ -630,10 +628,10 @@ export function SinglePageDashboard() {
                   <BrainCircuit className="w-4 h-4" />
                 </span>
                 <div>
-                  <h3 className="text-sm font-bold text-brand-ink dark:text-[#00D4FF] font-display">
+                  <h3 className="text-sm font-bold text-ink font-display">
                     Motor de Inteligência Autônoma
                   </h3>
-                  <p className="text-xs text-sky-700 dark:text-[#70D6FF] font-sans">
+                  <p className="text-xs text-ink-2 font-interface">
                     Monitorando oportunidades e pontos de inflexão.
                   </p>
                 </div>
@@ -671,7 +669,7 @@ export function SinglePageDashboard() {
               <button
                 type="button"
                 onClick={() => navigate('/app/intelligence')}
-                className="inline-flex items-center gap-2 text-xs font-bold text-iris hover:text-ink transition-colors cursor-pointer group font-sans focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+                className="inline-flex items-center gap-2 text-xs font-bold text-iris hover:text-ink transition-colors cursor-pointer group font-interface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
               >
                 <span>Acessar Central de Inteligência</span>
                 <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
@@ -691,10 +689,10 @@ export function SinglePageDashboard() {
                   <Sparkles className="w-4 h-4" />
                 </span>
                 <div>
-                  <h3 className="text-sm font-bold text-brand-ink dark:text-[#00D4FF] font-display">
+                  <h3 className="text-sm font-bold text-ink font-display">
                     Performance da Equipe Comercial
                   </h3>
-                  <p className="text-xs text-sky-700 dark:text-[#70D6FF] font-sans">
+                  <p className="text-xs text-ink-2 font-interface">
                     Nível de engajamento operacional e consistência.
                   </p>
                 </div>

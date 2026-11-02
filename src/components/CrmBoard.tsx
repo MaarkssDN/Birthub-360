@@ -725,7 +725,7 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
       <div className="flex shrink-0 flex-col items-start justify-between gap-4 border-b border-brand/25 bg-surface-elevated/92 p-4 backdrop-blur-xl sm:flex-row sm:items-center lg:px-6 lg:py-5">
         <div>
           <div className="bh-label mb-1 text-brand">PIPELINE COMERCIAL</div>
-          <h2 className="flex items-center gap-2 font-display text-h2 font-bold text-brand-ink dark:text-brand">
+          <h2 className="flex items-center gap-2 font-display text-h2 font-bold text-ink">
             <Target className="h-5 w-5 text-brand" aria-hidden="true" />
             {funnel === 'Lead' ? 'Leads e pré-vendas' : 'Negócios e fechamento'}
           </h2>
@@ -740,7 +740,7 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
             // useSemanticElements deste repositório).
             // biome-ignore lint/a11y/useSemanticElements: ver comentário acima
             <div
-              className="inline-flex items-center gap-1 p-1 mt-3 bg-surface-2 rounded-lg border border-line"
+              className="inline-flex items-center gap-1 p-1 mt-3 bg-surface-2 rounded-xl border border-line shadow-xs"
               role="group"
               aria-label="Funil do pipeline"
             >
@@ -1026,7 +1026,7 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
 
       {/* Barra Flutuante de Ações em Lote (Fixa na parte inferior quando há leads selecionados) */}
       {selectedLeadIds.size > 0 && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 bg-surface/95 backdrop-blur-xl border border-line shadow-2xl rounded-3xl p-3 px-5 flex flex-wrap items-center gap-3 animate-in slide-in-from-bottom-5 duration-300">
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 bg-surface/95 backdrop-blur-xl border border-brand/30 shadow-elevated dark:shadow-[0_0_28px_rgba(0,212,255,0.18)] rounded-2xl p-3 px-5 flex flex-wrap items-center gap-3 animate-in slide-in-from-bottom-5 duration-300">
           <div className="flex items-center gap-2 pr-3 border-r border-line">
             <span className="w-6 h-6 rounded-full bg-brand text-on-brand text-xs font-black flex items-center justify-center">
               {selectedLeadIds.size}

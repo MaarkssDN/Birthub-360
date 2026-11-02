@@ -541,7 +541,7 @@ export function IntelligenceHub({ initialTab }: IntelligenceHubProps) {
               return (
                 <div
                   key={item.title}
-                  className="p-3.5 rounded-card bg-surface/90 dark:bg-[#121622]/90 border border-line flex items-center gap-3"
+                  className="p-3.5 rounded-card bg-surface/90 dark:bg-surface-elevated/90 border border-line flex items-center gap-3"
                 >
                   <div
                     className={`w-9 h-9 rounded-control border flex items-center justify-center shrink-0 ${item.box}`}
@@ -568,7 +568,7 @@ export function IntelligenceHub({ initialTab }: IntelligenceHubProps) {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="relative rounded-card-lg overflow-hidden border border-brand/35 bg-gradient-to-br from-[#121829] via-[#0d111a] to-[#0a0d14] p-6 sm:p-8 shadow-elevated"
+              className="relative rounded-card-lg overflow-hidden border border-brand/35 bg-gradient-to-br from-surface via-surface to-surface-2 dark:from-[#14141A] dark:via-[#0F1015] dark:to-[#0A0B0E] p-6 sm:p-8 shadow-elevated"
             >
               <div
                 className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-brand/10 blur-3xl"
@@ -590,17 +590,17 @@ export function IntelligenceHub({ initialTab }: IntelligenceHubProps) {
                     </span>
                   </div>
 
-                  <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-display">
+                  <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-ink font-display">
                     Célula Comercial de Agentes Autônomos
                   </h2>
 
-                  <p className="text-sm text-slate-300 leading-relaxed">
+                  <p className="text-sm text-ink-2 leading-relaxed">
                     Workspace executivo dos 12 agentes especializados da Tríade Comercial (BDR, SDR,
                     Closer e Gestão de Contas) integrados a traces de governança, memória de
                     contexto e execução sincronizada.
                   </p>
 
-                  <div className="flex flex-wrap items-center gap-4 pt-2 text-xs text-slate-400">
+                  <div className="flex flex-wrap items-center gap-4 pt-2 text-xs text-ink-2">
                     <div className="flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-brand" />
                       <span>12 Agentes Especialistas</span>
@@ -621,7 +621,7 @@ export function IntelligenceHub({ initialTab }: IntelligenceHubProps) {
                     type="button"
                     size="lg"
                     onClick={() => handleOpenTool('commercial_cell')}
-                    className="w-full sm:w-auto bg-gradient-to-r from-brand to-[#00a8ff] text-on-brand font-bold shadow-glow-brand hover:opacity-95 transition-all text-sm gap-2"
+                    className="w-full sm:w-auto bg-gradient-to-r bg-brand hover:bg-brand-hover text-on-brand font-display font-bold shadow-glow-brand hover:opacity-95 transition-all text-sm gap-2"
                   >
                     Acessar Célula Comercial <ArrowRight className="w-4 h-4" />
                   </Button>
@@ -632,7 +632,7 @@ export function IntelligenceHub({ initialTab }: IntelligenceHubProps) {
 
           {/* Barra de Capacidades Fixadas / Favoritos (se existirem ferramentas fixadas) */}
           {pinnedTools.length > 0 && searchQuery.trim() === '' && selectedCategory === 'all' && (
-            <div className="p-3.5 rounded-card bg-surface/80 dark:bg-[#101420]/80 border border-line">
+            <div className="p-3.5 rounded-card bg-surface/80 dark:bg-surface-elevated/80 border border-line">
               <div className="flex items-center justify-between mb-2 px-1">
                 <span className="text-[11px] font-bold text-ink-2 uppercase tracking-wider flex items-center gap-1.5">
                   <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
@@ -698,7 +698,7 @@ export function IntelligenceHub({ initialTab }: IntelligenceHubProps) {
                       className={`inline-flex items-center gap-2 px-3 py-2 rounded-control text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                         isSelected
                           ? 'bg-brand text-on-brand shadow-sm font-bold'
-                          : 'bg-surface/80 dark:bg-[#141926]/80 text-ink-2 hover:text-ink hover:bg-surface-2 border border-line'
+                          : 'bg-surface/80 dark:bg-surface-elevated/80 text-ink-2 hover:text-ink hover:bg-surface-2 border border-line'
                       }`}
                     >
                       <Icon className="w-3.5 h-3.5 shrink-0" />
@@ -727,7 +727,7 @@ export function IntelligenceHub({ initialTab }: IntelligenceHubProps) {
                     placeholder="Buscar capacidade, script, groq..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-surface/90 dark:bg-[#141926]/90 border border-line rounded-control pl-9 pr-8 py-2 text-xs text-ink placeholder:text-ink-2/60 focus:outline-none focus:border-brand transition-colors"
+                    className="w-full bg-surface/90 dark:bg-surface-elevated/90 border border-line rounded-control pl-9 pr-8 py-2 text-xs text-ink placeholder:text-ink-2/60 focus:outline-none focus:border-brand transition-colors"
                   />
                   {searchQuery && (
                     <button
@@ -860,7 +860,7 @@ export function IntelligenceHub({ initialTab }: IntelligenceHubProps) {
                                 variant="interactive"
                                 padding="sm"
                                 onClick={() => handleOpenTool(tool.id)}
-                                className={`h-full flex flex-col justify-between border-line group-hover:border-brand/40 bg-surface/90 dark:bg-[#121622]/90 transition-all duration-200 cursor-pointer ${tool.isFlagship ? 'ring-1 ring-brand/30' : ''}`}
+                                className={`h-full flex flex-col justify-between border-line group-hover:border-brand/40 bg-surface/90 dark:bg-surface-elevated/90 transition-all duration-200 cursor-pointer ${tool.isFlagship ? 'ring-1 ring-brand/30' : ''}`}
                               >
                                 <div>
                                   <div className="flex items-start justify-between gap-2 mb-3 pr-7">
@@ -927,7 +927,7 @@ export function IntelligenceHub({ initialTab }: IntelligenceHubProps) {
                           variant="interactive"
                           padding="sm"
                           onClick={() => handleOpenTool(tool.id)}
-                          className={`h-full flex flex-col justify-between border-line group-hover:border-brand/40 bg-surface/90 dark:bg-[#121622]/90 transition-all duration-200 cursor-pointer ${tool.isFlagship ? 'ring-1 ring-brand/30' : ''}`}
+                          className={`h-full flex flex-col justify-between border-line group-hover:border-brand/40 bg-surface/90 dark:bg-surface-elevated/90 transition-all duration-200 cursor-pointer ${tool.isFlagship ? 'ring-1 ring-brand/30' : ''}`}
                         >
                           <div>
                             <div className="flex items-start justify-between gap-3 mb-3.5 pr-7">
@@ -984,7 +984,7 @@ export function IntelligenceHub({ initialTab }: IntelligenceHubProps) {
           {/* MODO 2: DENSE COMMAND MATRIX (Alta Densidade Operacional)  */}
           {/* ======================================================== */}
           {filteredTools.length > 0 && viewMode === 'matrix' && (
-            <div className="rounded-card border border-line bg-surface/90 dark:bg-[#121622]/90 overflow-hidden shadow-sm">
+            <div className="rounded-card border border-line bg-surface/90 dark:bg-surface-elevated/90 overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
@@ -1087,7 +1087,7 @@ export function IntelligenceHub({ initialTab }: IntelligenceHubProps) {
   return (
     <div className="flex-1 overflow-y-auto bg-transparent p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
       {/* Barra Superior de Navegação Rápida com Breadcrumb e Switcher */}
-      <div className="p-3.5 rounded-card bg-surface/90 dark:bg-[#121622]/90 border border-line flex flex-wrap items-center justify-between gap-3 shadow-sm">
+      <div className="p-3.5 rounded-card bg-surface/90 dark:bg-surface-elevated/90 border border-line flex flex-wrap items-center justify-between gap-3 shadow-sm">
         <div className="flex items-center gap-3">
           <button
             type="button"
