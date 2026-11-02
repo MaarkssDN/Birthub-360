@@ -434,6 +434,36 @@ services:
       - no-new-privileges:true
     restart: unless-stopped
 
+  # -------------------------------------------------------
+  # OS-8: Faster-Whisper - Transcricao de audio (STT) local e gratuita
+  # API OpenAI-compativel: http://localhost:8001/v1/audio/transcriptions
+  # -------------------------------------------------------
+  faster-whisper:
+    image: fedirz/faster-whisper-server:latest-cpu
+    container_name: birthhub_faster_whisper
+    environment:
+      WHISPER_MODEL: Systran/faster-whisper-small
+    ports:
+      - '8001:8000'
+    volumes:
+      - birthhub_whisper_cache:/root/.cache/huggingface
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  # -------------------------------------------------------
+  # OS-8: Kokoro TTS - Sintese de voz neural (TTS) local e gratuita
+  # API OpenAI-compativel: http://localhost:8880/v1/audio/speech
+  # -------------------------------------------------------
+  kokoro-tts:
+    image: ghcr.io/remsky/kokoro-fastapi-cpu:v0.2.1
+    container_name: birthhub_kokoro_tts
+    ports:
+      - '8880:8880'
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
 volumes:
   birthhub_flowise_data:
   birthhub_openwebui_data:
@@ -445,3 +475,4 @@ volumes:
   birthhub_chatwoot_data:
   birthhub_uptime_kuma_data:
   birthhub_pocketbase_data:
+  birthhub_whisper_cache:
