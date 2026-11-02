@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useState, useEffect } from 'react';
+import { useEffect, useId, useState } from 'react';
 import type { DatabaseStats, QueryResult, ThemeMode } from '../types.js';
 import { Database, Play, Table, RefreshCw, AlertCircle, Code2 } from 'lucide-react';
 
@@ -14,6 +14,7 @@ export const DatabaseExplorerTab: React.FC<DatabaseExplorerTabProps> = ({
   onRefreshStats,
   theme = 'dark',
 }) => {
+  const fieldId = useId();
   const [_selectedTable, _setSelectedTable] = useState('messages');
   const [customSql, setCustomSql] = useState(
     'SELECT m.id, l.name as lead, m.channel, m.status, m.content FROM messages m LEFT JOIN leads l ON m.lead_id = l.id LIMIT 25;',
@@ -203,6 +204,7 @@ export const DatabaseExplorerTab: React.FC<DatabaseExplorerTabProps> = ({
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <label
+            htmlFor={`${fieldId}-sql`}
             className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${
               isDark ? 'text-slate-300' : 'text-slate-700'
             }`}
@@ -239,6 +241,7 @@ export const DatabaseExplorerTab: React.FC<DatabaseExplorerTabProps> = ({
         {/* Query Text Area */}
         <div className="space-y-2">
           <textarea
+            id={`${fieldId}-sql`}
             rows={3}
             value={customSql}
             onChange={(e) => setCustomSql(e.target.value)}

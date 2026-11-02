@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import {
   Lock,
   Mail,
@@ -45,6 +45,7 @@ const FEATURES = [
 ] as const;
 
 export function LoginScreen({ onLogin, isDark, setTheme }: LoginScreenProps) {
+  const fieldId = useId();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -174,6 +175,7 @@ export function LoginScreen({ onLogin, isDark, setTheme }: LoginScreenProps) {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label
+                  htmlFor={`${fieldId}-email`}
                   className={`block text-xs font-medium mb-1.5 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}
                 >
                   Email
@@ -183,6 +185,7 @@ export function LoginScreen({ onLogin, isDark, setTheme }: LoginScreenProps) {
                     <Mail className={`w-4 h-4 ${isDark ? 'text-slate-500' : 'text-slate-400'}`} />
                   </div>
                   <input
+                    id={`${fieldId}-email`}
                     type="email"
                     required
                     value={email}
@@ -202,6 +205,7 @@ export function LoginScreen({ onLogin, isDark, setTheme }: LoginScreenProps) {
 
               <div>
                 <label
+                  htmlFor={`${fieldId}-senha`}
                   className={`block text-xs font-medium mb-1.5 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}
                 >
                   Senha
@@ -211,6 +215,7 @@ export function LoginScreen({ onLogin, isDark, setTheme }: LoginScreenProps) {
                     <Lock className={`w-4 h-4 ${isDark ? 'text-slate-500' : 'text-slate-400'}`} />
                   </div>
                   <input
+                    id={`${fieldId}-senha`}
                     type="password"
                     required
                     value={password}
