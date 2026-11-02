@@ -37,13 +37,13 @@ O Marcelo informou em 02/11/2026 que o deploy está, por enquanto, na AWS. Verif
 - **Nenhum workflow ativo faz deploy na AWS.** `production.yaml` só gera SBOM, escaneia e publica a imagem no GHCR (`ghcr.io`); não há passo de deploy. `cd-homolog.yml` publica no GHCR e atualiza valores de Helm (`charts/prospector-atlas`, caminho inexistente) para um fluxo GitOps/K8s que não está provisionado.
 - **O único workflow para AWS é `deploy-aws.yml.disabled`** (ECR/ECS/S3/CloudFront), arquivado e mantido desativado.
 - **O deploy real na AWS é manual**, pelos scripts `deploy-ec2.sh`, `deploy-ec2.ps1` e `deploy-aws.ps1` (build local, `scp` e `ssh` para uma instância EC2), fora do GitHub Actions.
-- **O backup aponta para Cloudflare R2**, não para AWS (S3).
+- **O backup aponta para Cloudflare R2**, que o Marcelo **não usa** (02/11/2026); como a AWS também não será configurada, o workflow hoje não tem destino válido.
 - **Docs desatualizados (fora do escopo deste PR):** `docs/deploy/producao.md` ainda descreve o caminho Render/Neon/Cloudflare como arquitetura de produção.
 
 Nada foi alterado nos workflows por isso: levar `production.yaml` a fazer deploy na EC2 (ou trocar o destino do backup para S3) é decisão de arquitetura, não erro de configuração. Decisão do Marcelo em 02/11/2026: não é preciso configurar nada na AWS; o deploy na EC2 continua manual, controlado e feito localmente por ele, sem workflow de deploy no GitHub Actions.
 
 ## Ações que só o Marcelo pode fazer
 1. Criar os environments `production` (required reviewers + branch policy `main`) e, se quiser, `homologation`.
-2. Se o backup for ativado: decidir o destino (R2, como está hoje, ou S3 na AWS); se ficar no R2, habilitar R2 e cadastrar os 6 secrets acima.
+2. Decidir o que fazer com `backup-production.yml`, já que o R2 não é usado e a AWS não será configurada.
 3. Decidir o alvo de homologação (criar `develop`? qual chart?) antes de qualquer dry-run.
 4. Autorizar qualquer primeiro `workflow_dispatch` (dry-run). Este agente não executou nenhum.
