@@ -5,7 +5,7 @@
 - **Veredito:** **BLOQUEADO** (Visual Regression vermelho; precisa de re-execução)
 
 ## Escopo e código
-1 linha de comentário `biome-ignore` em `src/features/voice-hub/components/design-system/index.tsx:439`. O `Card` com `onClick` recebe `role="button"`, `tabIndex=0` e `handleKeyDown` com Enter/Espaço e `preventDefault` (`:428-436`, `:440-444`); sem `onClick` não há handler. Falso positivo confirmado. Observação (pré-existente, fora do diff): `handleKeyDown` não verifica `event.target === event.currentTarget`. Sem package/lockfile, App.tsx, schema ou workflows.
+1 linha de comentário `biome-ignore` em `src/features/voice-hub/components/design-system/index.tsx:439`. O `Card` com `onClick` recebe `role="button"`, `tabIndex=0` e `handleKeyDown` com Enter/Espaço e `preventDefault` (`:429-436`, `:440-444`); sem `onClick` não há handler. Falso positivo confirmado. Observação (pré-existente, fora do diff): `handleKeyDown` não verifica `event.target === event.currentTarget`. Sem package/lockfile, App.tsx, schema ou workflows.
 
 ## CI @3ef9f77f
 - Release 41434780449 success (job 125252572388): Unit 5537 passed, 1 skipped; AI Resilience 11/11; Integration 738 passed, 2 skipped; Build e smoke success; E2E 108 passed.
