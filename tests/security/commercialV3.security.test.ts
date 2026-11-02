@@ -1,13 +1,13 @@
 import express, { type NextFunction, type Request, type Response } from 'express';
 import request from 'supertest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { errorHandler } from '../../../../shared/middlewares/errorHandler.js';
-import { COMMERCIAL_V3_AGENT_IDS } from '../contracts/commercialAgentV3.types.js';
+import { errorHandler } from '../../src/shared/middlewares/errorHandler.js';
+import { COMMERCIAL_V3_AGENT_IDS } from '../../src/features/intelligence/commercial-v3/contracts/commercialAgentV3.types.js';
 
 // Mock determinístico do AI Gateway com espião para capturar chamadas de organizationId e prompt
 const generateStructuredOutputSpy = vi.fn();
-vi.mock('../../../../lib/ai/gateway.js', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../../lib/ai/gateway.js')>();
+vi.mock('../../src/lib/ai/gateway.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../src/lib/ai/gateway.js')>();
   return {
     ...actual,
     generateStructuredOutput: vi.fn(async (options: any) => {
@@ -76,7 +76,9 @@ vi.mock('../../../../lib/ai/gateway.js', async (importOriginal) => {
   };
 });
 
-const { commercialV3Routes } = await import('../routes/commercialV3.routes.js');
+const { commercialV3Routes } = await import(
+  '../../src/features/intelligence/commercial-v3/routes/commercialV3.routes.js'
+);
 
 interface MockUser {
   id: string;
