@@ -15,9 +15,10 @@
 > - **Render, Neon, Vercel e GitHub Pages não são usados.** O blueprint do Render está arquivado em
 >   `infrastructure/archive/render.yaml.disabled`.
 >
-> **Decisões pendentes do Marcelo:**
-> 1. O backup do banco continua indo para o Cloudflare R2 ou passa para o S3 da AWS?
-> 2. O deploy na EC2 deve ganhar um workflow no GitHub Actions que só roda com aprovação dele?
+> **Decidido pelo Marcelo (02/11/2026):** não é preciso configurar nada na AWS. O deploy na EC2
+> continua manual, controlado e feito localmente por ele; não haverá workflow de deploy no GitHub Actions.
+>
+> **Decisão pendente do Marcelo:** o destino do backup do banco (hoje o workflow aponta para o Cloudflare R2).
 >
 > **Todo o restante deste documento é histórico** (arquitetura Render + Neon + Cloudflare,
 > desativada em 20/09/2026) e não descreve a produção atual.
