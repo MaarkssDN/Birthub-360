@@ -5,7 +5,7 @@
 - **Veredito:** **BLOQUEADO** (Visual Regression vermelho; precisa de re-execução)
 
 ## Escopo e código
-1 linha de comentário `biome-ignore` em `src/features/prospecting/components/prospecting-hub/CandidateCard.tsx:152`. O `<div>` só tem `onMouseEnter` com `SoundFX.play('hover')` (`:153-156`); as ações do card são `<button>` próprios. Falso positivo confirmado; nenhum interativo ficou sem teclado. Sem package/lockfile, App.tsx, schema ou workflows.
+1 linha de comentário `biome-ignore` em `src/features/prospecting/components/prospecting-hub/CandidateCard.tsx:152`. O `<div>` só tem `onMouseEnter` com `SoundFX.play('hover')` (`:154-156`); as ações do card são `<button>` próprios. Falso positivo confirmado; nenhum interativo ficou sem teclado. Sem package/lockfile, App.tsx, schema ou workflows.
 
 ## CI @e55f17e7
 - Release 41434764286 success (job 125249919207): Unit 5537 passed, 1 skipped; AI Resilience 11/11; Integration 738 passed, 2 skipped; Build e smoke success; E2E 108 passed.
