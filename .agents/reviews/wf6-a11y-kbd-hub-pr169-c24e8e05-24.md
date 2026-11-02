@@ -2,7 +2,7 @@
 
 - **SHA revisado:** c24e8e0566537a1a009f7510a71d2aa298c60d96 (head confirmado via gh no início e antes da escrita)
 - **Parecer anterior:** BLOQUEADO em 2ef3277d
-- **Veredito: BLOQUEADO** (o único bloqueio é o Visual Regression vermelho; o código está correto)
+- **Veredito: APROVADO** (atualizado em 02/11 10:15 BRT, depois da re-execução do VR; antes estava BLOQUEADO só pelo VR)
 
 ## Diff incremental 2ef3277d..c24e8e05 (2 arquivos)
 - `src/features/hub/components/CommercialAgentCellPanel.tsx:318`: agora é `<li key className="flex">`, sem role. Assim a árvore expõe list > listitem > button.
@@ -32,3 +32,11 @@ Re-rodar o VR no mesmo SHA. Se ficar verde, vira APROVADO sem nova revisão de c
 - `biome format src` dá 0 erros.
 - O "1 erro" nos arquivos tocados é o `assist/source/organizeImports` em `NewLoginScreen.tsx:1:1`. Ele aparece no `biome check` e já existe igual na main. **A reivindicação procede.**
 - No CommercialAgentCellPanel sobra o warning `noUnusedVariables` em `:70`, que também já existia.
+
+## Atualização: re-execução do VR (02/11, 10:15 BRT)
+- O WF6 re-rodou os jobs que falharam no run 41443584143, no mesmo SHA. A **tentativa 2** saiu **success**, no job **125291434649** (Visual Regression).
+- Resultado: 87 passed e 1 flaky, que passou no retry: [mobile] dark › Administração - Module Access (`visual.spec.ts:119`), tela sem relação com o PR.
+- A tela light › Inteligência [desktop], que tinha falhado na tentativa 1, passou. Isso confirma que a falha anterior era flake e não vinha do PR.
+- Head reconfirmado via gh antes da escrita: c24e8e0566537a1a009f7510a71d2aa298c60d96.
+
+**APROVADO** preso ao SHA c24e8e0566537a1a009f7510a71d2aa298c60d96. Se o head mudar, o parecer cai.
