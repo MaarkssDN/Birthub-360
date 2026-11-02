@@ -42,7 +42,12 @@ export interface SemanticCacheFinOpsMetrics {
 }
 
 function isClientReady(client: any): boolean {
-  if (client && typeof client === 'object' && 'status' in client && typeof client.status === 'string') {
+  if (
+    client &&
+    typeof client === 'object' &&
+    'status' in client &&
+    typeof client.status === 'string'
+  ) {
     return client.status === 'ready';
   }
   return true;
@@ -93,7 +98,11 @@ export class SemanticCacheService implements ISemanticCachePort {
         const trimmed = val.trim();
         // Normalização especial para domínios e CNPJs comuns
         if (key.toLowerCase().includes('domain') || key.toLowerCase().includes('site')) {
-          val = trimmed.toLowerCase().replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/\/$/, '');
+          val = trimmed
+            .toLowerCase()
+            .replace(/^https?:\/\//i, '')
+            .replace(/^www\./i, '')
+            .replace(/\/$/, '');
         } else if (key.toLowerCase().includes('cnpj')) {
           val = trimmed.replace(/\D/g, '');
         } else {
