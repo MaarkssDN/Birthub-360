@@ -228,4 +228,26 @@ describe('CommercialAgentCellPanel', () => {
     });
     expect(screen.queryByText('Habilidade 0')).toBeNull();
   });
+
+  it('a11y: cards de especialista e playbooks são botões acionáveis por teclado', async () => {
+    render(<CommercialAgentCellPanel />);
+    const icpCard = (await screen.findByText('Arquiteto de ICP')).closest('[role="button"]');
+    expect(icpCard).toBeTruthy();
+    // O <li> continua item da lista (listitem implícito) e contém o botão.
+    const item = icpCard?.closest('li');
+    expect(item?.hasAttribute('role')).toBe(false);
+    expect(screen.getAllByRole('listitem')).toContain(item);
+    expect(screen.getByRole('button', { name: /Arquiteto de ICP/ })).toBe(icpCard);
+    expect(icpCard?.getAttribute('tabindex')).toBe('0');
+    expect(icpCard?.getAttribute('aria-pressed')).toBe('false');
+
+    fireEvent.keyDown(icpCard as HTMLElement, { key: 'Enter' });
+    expect(await screen.findByText('Habilidade 0')).toBeTruthy();
+    expect(icpCard?.getAttribute('aria-pressed')).toBe('true');
+
+    const playbook = screen.getByText(/P1: Abertura/).closest('[role="button"]');
+    expect(playbook?.getAttribute('tabindex')).toBe('0');
+    fireEvent.keyDown(playbook as HTMLElement, { key: ' ' });
+    expect(await screen.findByText('# SOP de abertura')).toBeTruthy();
+  });
 });
