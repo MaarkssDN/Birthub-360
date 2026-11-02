@@ -806,10 +806,7 @@ export function ExternalCrmPanel({ providerKey, displayName, authType }: Externa
             if (e.key === 'Escape') handleCloseModal();
           }}
         >
-          <div
-            className="w-full max-w-lg rounded-2xl border border-line bg-surface p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-150"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="w-full max-w-lg rounded-2xl border border-line bg-surface p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-150">
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-3 border-b border-line">
               <div className="flex items-center gap-3">
