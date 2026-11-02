@@ -36,3 +36,11 @@ overrides:
   qs: ^6.16.0
   'mammoth>@xmldom/xmldom': ^0.8.15
   '@capacitor/cli>@xmldom/xmldom': ^0.9.12
+  # Pin acorn 8.11.3 - origem: merge 0c4fe2fd (2026-10-04, branch agente/08-waiver-ghsa-ch52),
+  # sem justificativa registrada no commit nem em docs/security/AUDIT_WAIVERS.md.
+  # GHSA-CH52-4W7C-C8XP NAO afeta acorn (era http-cache-semantics <=4.2.0; advisory hoje
+  # "Withdrawn"; waiver removido em 985d8586). Unico advisory de acorn (GHSA-6chw-6frg-f759)
+  # afeta so <5.7.4/6.4.1/7.1.1; OSV/GHSA sem vulns para 8.11.3 nem 8.18.0.
+  # Criterio para remover: decisao do Agente 00/dono confirmando que nao ha motivo de
+  # compatibilidade, e build + testes verdes sem o pin (npm ja resolve 8.18.0).
+  acorn: 8.11.3

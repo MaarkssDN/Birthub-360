@@ -407,4 +407,22 @@ describe('SemanticCacheService — Redis & Multi-Tenant Isolation', () => {
     const cached = await cache.get(params);
     expect(cached).toBe('Resposta salva no fallback local');
   });
+
+  // CRITÉRIO ADICIONAL: Ordenação determinística das chaves de cache (Sonar S2871)
+  it('ordena chaves de forma determinística por code unit, independente da ordem de inserção (Sonar S2871)', () => {
+    const a = { zeta: 'z', Alpha: 'A', beta: 'b', _id: '1', 'émpresa': 'e' };
+    const b = { 'émpresa': 'e', beta: 'b', _id: '1', zeta: 'z', Alpha: 'A' };
+
+    const keyA = cache.normalizeFirmographicInput(a);
+    const keyB = cache.normalizeFirmographicInput(b);
+
+    expect(keyA).toBe(keyB);
+    expect(keyA.split('|').map((entry) => entry.split(':')[0])).toEqual([
+      'Alpha',
+      '_id',
+      'beta',
+      'zeta',
+      'émpresa',
+    ]);
+  });
 });
