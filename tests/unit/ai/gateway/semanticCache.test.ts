@@ -4,7 +4,7 @@
  * Handoff: 00-para-16-10-semantic-cache-redis.md
  */
 
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   CACHE_TTL,
   SemanticCacheService,
@@ -424,5 +424,75 @@ describe('SemanticCacheService — Redis & Multi-Tenant Isolation', () => {
       'zeta',
       'émpresa',
     ]);
+  });
+
+  // CRITÉRIO ADICIONAL: Caminhos de borda (cobertura de código novo no Sonar)
+  describe('caminhos de borda', () => {
+    const base = {
+      organizationId: 'tenant-borda',
+      model: 'local-llama3',
+      promptVersion: 'v1.0',
+      purpose: 'general',
+      promptText: 'Pergunta de borda',
+    };
+    const meta = { tokens: 10, costUsd: 0.001, classification: 'INTERNAL' as const };
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('normaliza input firmográfico em string e retorna vazio para input inválido', () => {
+      expect(cache.normalizeFirmographicInput('  ACME   Ltda ')).toBe(
+        cache.normalizePrompt('  ACME   Ltda ').toLowerCase(),
+      );
+      expect(cache.normalizeFirmographicInput(null as unknown as string)).toBe('');
+    });
+
+    it('resolve TTL de buscas rápidas/voláteis', () => {
+      expect(cache.resolveTtlSeconds({ purpose: 'quick-lookup' })).toBe(CACHE_TTL.QUICK_SEARCH);
+      expect(cache.resolveTtlSeconds({ purpose: 'volatile' })).toBe(CACHE_TTL.QUICK_SEARCH);
+    });
+
+    it('get/set/invalidate exigem organizationId', async () => {
+      const semTenant = { ...base, organizationId: '  ' };
+      await expect(cache.get(semTenant)).rejects.toThrow('Tenancy violation');
+      await expect(cache.set(semTenant, 'x', meta)).rejects.toThrow('Tenancy violation');
+      await expect(cache.invalidateTenant('')).rejects.toThrow('Tenancy violation');
+    });
+
+    it('trata cliente Redis sem campo status como pronto', async () => {
+      const { status: _status, ...semStatus } = mockRedisClient as IRedisClient & { status: string };
+      setRedisClientForTesting(semStatus as IRedisClient);
+      await cache.set(base, 'resposta sem status', meta);
+      expect([...mockRedisData.keys()].some((k) => k.includes('tenant-borda'))).toBe(true);
+    });
+
+    it('descarta entrada expirada do fallback local', async () => {
+      setRedisClientForTesting({ ...mockRedisClient, status: 'end' } as IRedisClient);
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-11-02T10:00:00Z'));
+      await cache.set(base, 'vai expirar', { ...meta, ttlSeconds: 1 });
+      vi.setSystemTime(new Date('2026-11-02T10:00:05Z'));
+      expect(await cache.get(base)).toBeNull();
+      expect(await cache.invalidateTenant(base.organizationId)).toBe(0);
+    });
+
+    it('invalidateTenant segue com a memória local quando o Redis falha', async () => {
+      await cache.set(base, 'resposta', meta);
+      setRedisClientForTesting({
+        ...mockRedisClient,
+        scan: async () => {
+          throw new Error('redis fora');
+        },
+      } as IRedisClient);
+      expect(await cache.invalidateTenant(base.organizationId)).toBe(1);
+    });
+
+    it('clear remove as chaves do Redis', async () => {
+      await cache.set(base, 'resposta', meta);
+      expect(mockRedisData.size).toBeGreaterThan(0);
+      await cache.clear();
+      expect(mockRedisData.size).toBe(0);
+    });
   });
 });
