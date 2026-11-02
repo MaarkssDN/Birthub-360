@@ -16,7 +16,7 @@ import {
   Sparkles,
   Watch,
 } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 import { api } from '../../../lib/api.js';
 import { SoundFX } from '../../../lib/soundEffects.js';
 import { EcosystemInboundEventSimulator } from './EcosystemInboundEventSimulator.js';
@@ -106,6 +106,7 @@ export function UniversalEcosystemPanel({
   mode,
   onLaunchSwarmMission,
 }: UniversalEcosystemPanelProps) {
+  const fieldId = useId();
   const [connectors, setConnectors] = useState<ConnectorStatusItem[]>([]);
   const [catalog, setCatalog] = useState<UniversalToolMeta[]>([]);
   const [loading, setLoading] = useState(false);
@@ -556,10 +557,14 @@ export function UniversalEcosystemPanel({
                   <div className="pt-3 border-t border-line space-y-2.5">
                     {item.fields.map((field) => (
                       <div key={field.key}>
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-ink-2 mb-1">
+                        <label
+                          htmlFor={`${fieldId}-${item.provider}-${field.key}`}
+                          className="block text-[10px] font-bold uppercase tracking-wider text-ink-2 mb-1"
+                        >
                           {field.label}
                         </label>
                         <input
+                          id={`${fieldId}-${item.provider}-${field.key}`}
                           type={field.secret ? 'password' : 'text'}
                           value={formValues[field.key] ?? ''}
                           onChange={(e) =>
@@ -622,10 +627,14 @@ export function UniversalEcosystemPanel({
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-ink-2 mb-1">
+            <label
+              htmlFor={`${fieldId}-formato`}
+              className="block text-[10px] font-bold uppercase tracking-wider text-ink-2 mb-1"
+            >
               Formato do Artefato
             </label>
             <select
+              id={`${fieldId}-formato`}
               value={officeType}
               onChange={(e) => setOfficeType(e.target.value as any)}
               className="w-full bg-surface border border-line rounded-lg px-3 py-2 text-xs font-bold text-ink"
@@ -636,11 +645,15 @@ export function UniversalEcosystemPanel({
             </select>
           </div>
           <div className="md:col-span-2">
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-ink-2 mb-1">
+            <label
+              htmlFor={`${fieldId}-titulo`}
+              className="block text-[10px] font-bold uppercase tracking-wider text-ink-2 mb-1"
+            >
               Título do Arquivo
             </label>
             <div className="flex gap-2">
               <input
+                id={`${fieldId}-titulo`}
                 type="text"
                 value={officeTitle}
                 onChange={(e) => setOfficeTitle(e.target.value)}
@@ -703,10 +716,14 @@ export function UniversalEcosystemPanel({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-ink-2 mb-1">
+            <label
+              htmlFor={`${fieldId}-agente-nome`}
+              className="block text-[10px] font-bold uppercase tracking-wider text-ink-2 mb-1"
+            >
               Nome / Cargo do Agente Separado
             </label>
             <input
+              id={`${fieldId}-agente-nome`}
               type="text"
               value={agentTitle}
               onChange={(e) => setAgentTitle(e.target.value)}
@@ -714,10 +731,14 @@ export function UniversalEcosystemPanel({
             />
           </div>
           <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-ink-2 mb-1">
+            <label
+              htmlFor={`${fieldId}-agente-prompt`}
+              className="block text-[10px] font-bold uppercase tracking-wider text-ink-2 mb-1"
+            >
               Diretriz / System Prompt do Agente
             </label>
             <input
+              id={`${fieldId}-agente-prompt`}
               type="text"
               value={customPrompt}
               onChange={(e) => setCustomPrompt(e.target.value)}
@@ -755,11 +776,15 @@ export function UniversalEcosystemPanel({
         </div>
 
         <div>
-          <label className="block text-[10px] font-bold uppercase tracking-wider text-ink-2 mb-1">
+          <label
+            htmlFor={`${fieldId}-missao`}
+            className="block text-[10px] font-bold uppercase tracking-wider text-ink-2 mb-1"
+          >
             Missão para o Agente Separado
           </label>
           <div className="flex gap-2">
             <input
+              id={`${fieldId}-missao`}
               type="text"
               value={standaloneMission}
               onChange={(e) => setStandaloneMission(e.target.value)}
