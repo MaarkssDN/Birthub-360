@@ -7,6 +7,7 @@ import {
   Loader2,
   LogOut,
   Moon,
+  Sparkles,
   Sun,
   Volume2,
   VolumeX,
@@ -114,7 +115,7 @@ export function HubScreen() {
   const isDesktopOrbit = useIsDesktopOrbit();
   const clock = useLiveClock();
   const [soundOn, setSoundOn] = useState(() => SoundFX.isEnabled());
-  const [viewMode, setViewMode] = useState<'orbit' | 'cockpit'>('orbit');
+  const [viewMode, setViewMode] = useState<'orbit' | 'cockpit' | 'agents'>('orbit');
   const burstRef = useRef<BurstHandle>(null);
 
   const firstName = currentUser?.name?.trim().split(/\s+/)[0] ?? 'Usuário';
@@ -383,9 +384,12 @@ export function HubScreen() {
 
   return (
     <div
-      className="relative h-screen max-h-screen w-full overflow-hidden flex flex-col justify-between select-none text-white"
+      className="relative h-screen max-h-screen w-full overflow-hidden flex flex-col justify-between select-none text-[color:var(--ink)] bg-[color:var(--bg)] transition-colors duration-300"
       style={{
-        background: 'linear-gradient(160deg, #0b132b 0%, #0f1d3d 45%, #0b132b 100%)',
+        background:
+          theme === 'dark'
+            ? 'radial-gradient(ellipse at 50% 0%, #14141A 0%, #0D0D0D 75%)'
+            : 'radial-gradient(ellipse at 50% 0%, #FFFFFF 0%, #F8FAFC 85%)',
       }}
     >
       {/* Command Center Background Grid */}
@@ -430,10 +434,10 @@ export function HubScreen() {
 
       <div className="relative z-10 flex flex-col h-full w-full justify-between overflow-hidden">
         {/* Topbar Birth Hub 360° */}
-        <header className="flex items-center gap-3 px-6 pt-3 pb-1.5 shrink-0 border-b border-white/8">
-          <BirthHubLogo variant="horizontal" className="h-7 text-white" />
+        <header className="flex items-center gap-3 px-6 pt-3 pb-1.5 shrink-0 border-b border-[color:var(--line)] bg-[color:var(--surface)]/70 backdrop-blur-xl transition-colors duration-300">
+          <BirthHubLogo variant="horizontal" className="h-7 text-[color:var(--ink)]" />
 
-          <div className="ml-auto hidden items-center gap-2 rounded-full border border-white/15 bg-white/8 px-3 py-1 text-xs font-bold text-white/70 backdrop-blur-md sm:flex shadow-xs">
+          <div className="ml-auto hidden items-center gap-2 rounded-full border border-[color:var(--line)] bg-[color:var(--surface-2)]/80 px-3 py-1 text-xs font-bold text-[color:var(--ink-2)] backdrop-blur-md sm:flex shadow-xs">
             <span className="hub-beacon h-2 w-2 rounded-full bg-brand" />
             {brandInfo.name} &middot; {brandInfo.ecosystemLabel}
             <ChevronDown className="h-3 w-3 opacity-60" />
@@ -446,7 +450,7 @@ export function HubScreen() {
               setSoundOn(next);
               if (next) SoundFX.play('focus');
             }}
-            className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/12 bg-white/6 text-white/50 backdrop-blur-md transition-colors hover:border-white/20 hover:bg-white/10 hover:text-white/80"
+            className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[color:var(--line)] bg-[color:var(--surface)]/80 text-[color:var(--ink-2)] backdrop-blur-md transition-colors hover:border-[color:var(--brand)] hover:text-[color:var(--ink)]"
             aria-label={soundOn ? 'Desativar som de interação' : 'Ativar som de interação'}
             title={soundOn ? 'Desativar som de interação' : 'Ativar som de interação'}
           >
@@ -459,19 +463,23 @@ export function HubScreen() {
               SoundFX.play('focus');
               toggleTheme();
             }}
-            className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/12 bg-white/6 text-white/50 backdrop-blur-md transition-colors hover:border-white/20 hover:bg-white/10 hover:text-white/80"
+            className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[color:var(--line)] bg-[color:var(--surface)]/80 text-[color:var(--ink-2)] backdrop-blur-md transition-colors hover:border-[color:var(--brand)] hover:text-[color:var(--ink)]"
             aria-label="Alternar tema"
             title={`Mudar para modo ${theme === 'dark' ? 'claro' : 'escuro'}`}
           >
-            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            {theme === 'dark' ? (
+              <Sun className="h-4 w-4 text-amber-400" />
+            ) : (
+              <Moon className="h-4 w-4 text-sky-600" />
+            )}
           </button>
 
           {currentUser && (
-            <div className="flex items-center gap-2 rounded-full border border-white/15 bg-white/8 py-0.5 pl-1 pr-3 backdrop-blur-md">
+            <div className="flex items-center gap-2 rounded-full border border-[color:var(--line)] bg-[color:var(--surface-2)]/80 py-0.5 pl-1 pr-3 backdrop-blur-md">
               <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand text-[11px] font-bold text-on-brand">
                 {currentUser.name?.charAt(0).toUpperCase() || 'U'}
               </div>
-              <span className="hidden text-xs font-semibold text-white/80 sm:inline">
+              <span className="hidden text-xs font-semibold text-[color:var(--ink)] sm:inline">
                 {currentUser.name}
               </span>
             </div>
@@ -494,22 +502,24 @@ export function HubScreen() {
             <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-brand">
               Birth Hub 360° &middot; Central Executiva
             </div>
-            <h1 className="mt-0.5 font-display text-xl sm:text-2xl md:text-3xl font-semibold leading-tight tracking-tight text-white">
+            <h1 className="mt-0.5 font-display text-xl sm:text-2xl md:text-3xl font-semibold leading-tight tracking-tight text-[color:var(--ink)]">
               {clock.greeting}, <span className="text-brand font-bold">{firstName}</span>
             </h1>
-            <p className="mt-0.5 text-xs font-normal text-white/45">{brandInfo.slogan}</p>
+            <p className="mt-0.5 text-xs font-normal text-[color:var(--ink-2)]">
+              {brandInfo.slogan}
+            </p>
           </div>
 
           <div className="flex items-center gap-3">
             {/* View Mode Toggle */}
-            <div className="hidden sm:flex items-center rounded-full bg-white/8 p-0.5 border border-white/12 backdrop-blur-md">
+            <div className="hidden sm:flex items-center rounded-full bg-[color:var(--surface-2)]/90 p-0.5 border border-[color:var(--line)] backdrop-blur-md shadow-xs">
               <button
                 type="button"
                 onClick={() => setViewMode('orbit')}
                 className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full transition-all cursor-pointer ${
                   viewMode === 'orbit'
                     ? 'bg-brand text-on-brand shadow-xs'
-                    : 'text-white/50 hover:text-white/80'
+                    : 'text-[color:var(--ink-2)] hover:text-[color:var(--ink)]'
                 }`}
                 title="Visualização em Órbita 360°"
               >
@@ -522,12 +532,25 @@ export function HubScreen() {
                 className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full transition-all cursor-pointer ${
                   viewMode === 'cockpit'
                     ? 'bg-brand text-on-brand shadow-xs'
-                    : 'text-white/50 hover:text-white/80'
+                    : 'text-[color:var(--ink-2)] hover:text-[color:var(--ink)]'
                 }`}
                 title="Visualização em Cockpit Executivo"
               >
                 <LayoutGrid className="h-3.5 w-3.5" />
                 Cockpit
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('agents')}
+                className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full transition-all cursor-pointer ${
+                  viewMode === 'agents'
+                    ? 'bg-brand text-on-brand shadow-xs'
+                    : 'text-[color:var(--ink-2)] hover:text-[color:var(--ink)]'
+                }`}
+                title="Célula de Inteligência Comercial (19 Agentes)"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                Célula IA
               </button>
             </div>
 
@@ -545,7 +568,7 @@ export function HubScreen() {
                 <span className="font-mono text-lg font-bold tabular-nums text-brand leading-none">
                   {clock.time}
                 </span>
-                <span className="text-[9px] font-semibold capitalize text-white/45 mt-0.5">
+                <span className="text-[9px] font-semibold capitalize text-[color:var(--ink-2)] mt-0.5">
                   {clock.dateLabel}
                 </span>
               </div>
@@ -566,7 +589,7 @@ export function HubScreen() {
                   {WEEKDAYS_SHORT.map((d, i) => (
                     <span
                       key={`wd-${i}`}
-                      className="text-center text-[7.5px] font-bold text-white/30"
+                      className="text-center text-[7.5px] font-bold text-[color:var(--ink-2)] opacity-70"
                     >
                       {d}
                     </span>
@@ -578,7 +601,7 @@ export function HubScreen() {
                         className={
                           cell.isToday
                             ? 'grid place-items-center rounded bg-brand py-0.2 text-[8.5px] font-black text-on-brand shadow-glow-brand'
-                            : 'grid place-items-center rounded py-0.2 text-[8.5px] font-semibold text-white/40'
+                            : 'grid place-items-center rounded py-0.2 text-[8.5px] font-semibold text-[color:var(--ink-2)]'
                         }
                       >
                         {cell.day}
@@ -597,25 +620,25 @@ export function HubScreen() {
 
         {/* Section Label */}
         <div className="mx-auto flex w-full max-w-[1250px] items-center gap-2.5 px-6 py-0.5 shrink-0">
-          <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/35">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[color:var(--ink-2)] opacity-75">
             Da prospecção ao contrato — Ecossistema de Inteligência Comercial{' '}
-            <span className="inline-flex items-center gap-1 font-bold text-white/55">
+            <span className="inline-flex items-center gap-1 font-bold text-[color:var(--ink)] opacity-90">
               <BirthHubLogo variant="symbol" className="h-3.5 w-auto text-brand" />
               BIRTH HUB 360°
             </span>
           </span>
-          <span className="h-px flex-1 bg-gradient-to-r from-white/12 to-transparent" />
+          <span className="h-px flex-1 bg-gradient-to-r from-[color:var(--line)] to-transparent" />
         </div>
 
         <main className="flex-1 min-h-0 w-full relative flex items-center justify-center overflow-hidden px-4">
           {!isLoading && grantedCatalog.length === 0 && (
-            <p className="absolute top-1 left-6 text-[11px] text-white/40 z-20 pointer-events-none">
+            <p className="absolute top-1 left-6 text-[11px] text-ink-2 z-20 pointer-events-none">
               Nenhum módulo executivo liberado para a sua conta ainda — a central exibe as
               ferramentas base.
             </p>
           )}
           {isLoading && (
-            <div className="absolute top-1 left-6 flex items-center gap-1.5 text-[11px] text-white/40 z-20 pointer-events-none">
+            <div className="absolute top-1 left-6 flex items-center gap-1.5 text-[11px] text-ink-2 z-20 pointer-events-none">
               <Loader2 className="h-3.5 w-3.5 animate-spin" /> Carregando módulos...
             </div>
           )}
@@ -655,19 +678,27 @@ export function HubScreen() {
                 );
               })}
             </div>
-          ) : isDesktopOrbit && viewMode === 'cockpit' ? (
-            <ExecutiveCockpitView items={items} onCardClick={handleCardClick} />
+          ) : viewMode === 'cockpit' ? (
+            <div className="h-full overflow-y-auto w-full py-4 flex flex-col items-center">
+              <ExecutiveCockpitView items={items} onCardClick={handleCardClick} />
+              <div className="mx-auto w-full max-w-[1250px] px-8 pb-12 pt-8">
+                <CommercialAgentCellPanel />
+              </div>
+            </div>
+          ) : viewMode === 'agents' ? (
+            <div className="h-full overflow-y-auto w-full py-4 px-8 max-w-[1250px] mx-auto">
+              <CommercialAgentCellPanel />
+            </div>
           ) : (
             <div className="h-full overflow-y-auto w-full py-2">
               <MobileDestinationList items={items} />
+              <div className="px-6 pb-12 pt-6">
+                <CommercialAgentCellPanel />
+              </div>
             </div>
           )}
 
-          {/* Equipe IA Comercial — catálogo somente leitura dos 12 agentes da Célula Comercial
-              (onda 43), seção separada abaixo da órbita, ver CommercialAgentCellPanel.tsx */}
-          <div className="mx-auto w-full max-w-[1250px] px-8 pb-10 pt-6">
-            <CommercialAgentCellPanel />
-          </div>
+          {/* Equipe IA Comercial integrada nas visões Cockpit, Célula IA e Mobile */}
         </main>
       </div>
     </div>
@@ -683,18 +714,16 @@ function MobileDestinationList({ items }: { items: OrbitItem[] }) {
         <button
           type="button"
           onClick={primary.onOpen}
-          className="group relative flex w-full items-center gap-4 overflow-hidden rounded-2xl border border-brand/40 bg-gradient-to-r from-brand/15 via-white/5 to-transparent p-5 text-left shadow-glow-brand transition-all duration-200 active:scale-[0.99] backdrop-blur-md"
+          className="group relative flex w-full items-center gap-4 overflow-hidden rounded-2xl border border-brand/40 bg-gradient-to-r from-brand/15 via-surface/40 to-transparent p-5 text-left shadow-glow-brand transition-all duration-200 active:scale-[0.99] backdrop-blur-md"
         >
           <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-brand/40 bg-brand/20 text-brand">
             <primary.icon className="h-6 w-6" aria-hidden="true" />
           </span>
           <div>
-            <span className="block font-display text-base font-bold text-white group-hover:text-brand transition-colors">
+            <span className="block font-display text-base font-bold text-ink group-hover:text-brand transition-colors">
               {primary.label}
             </span>
-            <span className="mt-0.5 block font-mono text-xs text-white/50">
-              {primary.description}
-            </span>
+            <span className="mt-0.5 block font-mono text-xs text-ink-2">{primary.description}</span>
           </div>
         </button>
       )}
@@ -704,10 +733,10 @@ function MobileDestinationList({ items }: { items: OrbitItem[] }) {
             key={item.key}
             type="button"
             onClick={item.onOpen}
-            className="group flex flex-col items-start gap-2.5 rounded-xl border border-white/10 bg-white/5 p-4 text-left shadow-sm backdrop-blur-md transition-all duration-200 hover:border-white/20 hover:bg-white/10 active:scale-[0.98]"
+            className="group flex flex-col items-start gap-2.5 rounded-xl border border-line bg-surface/80 p-4 text-left shadow-sm backdrop-blur-md transition-all duration-200 hover:border-brand/40 hover:bg-surface active:scale-[0.98]"
           >
             <span
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-white/10"
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-line"
               style={{
                 background: `color-mix(in srgb, var(--${item.colorVar}) 15%, transparent)`,
                 color: `var(--${item.colorVar})`,
@@ -715,11 +744,9 @@ function MobileDestinationList({ items }: { items: OrbitItem[] }) {
             >
               <item.icon className="h-4 w-4" aria-hidden="true" />
             </span>
-            <span className="flex items-center gap-1 font-display text-xs font-semibold text-white/90">
+            <span className="flex items-center gap-1 font-display text-xs font-semibold text-ink">
               {item.label}
-              {item.external && (
-                <ExternalLink className="h-3 w-3 text-white/40" aria-hidden="true" />
-              )}
+              {item.external && <ExternalLink className="h-3 w-3 text-ink-2" aria-hidden="true" />}
             </span>
           </button>
         ))}
@@ -744,7 +771,7 @@ function ExecutiveCockpitView({
         <button
           type="button"
           onClick={(e) => onCardClick(e, primary)}
-          className="group relative flex items-center justify-between w-full p-4 rounded-2xl bg-gradient-to-r from-brand/15 via-white/5 to-transparent border border-brand/40 shadow-glow-brand hover:border-brand hover:shadow-glow-brand-strong transition-all cursor-pointer text-left backdrop-blur-md"
+          className="group relative flex items-center justify-between w-full p-4 rounded-2xl bg-gradient-to-r from-brand/15 via-surface/40 to-transparent border border-brand/40 shadow-glow-brand hover:border-brand hover:shadow-glow-brand-strong transition-all cursor-pointer text-left backdrop-blur-md"
           aria-label={`${primary.label} - ${primary.description}`}
         >
           <div className="flex items-center gap-4">
@@ -756,14 +783,14 @@ function ExecutiveCockpitView({
                 <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-brand text-on-brand">
                   Principal
                 </span>
-                <span className="text-[11px] font-medium text-white/50">
+                <span className="text-[11px] font-medium text-ink-2">
                   Central Comercial Integrada
                 </span>
               </div>
-              <h2 className="font-display text-lg font-bold text-white mt-0.5 group-hover:text-brand transition-colors">
+              <h2 className="font-display text-lg font-bold text-ink mt-0.5 group-hover:text-brand transition-colors">
                 {primary.label}
               </h2>
-              <p className="font-mono text-xs text-white/50">{primary.description}</p>
+              <p className="font-mono text-xs text-ink-2">{primary.description}</p>
             </div>
           </div>
           <div className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-brand text-on-brand font-bold text-xs shadow-xs group-hover:scale-105 transition-transform shrink-0">
@@ -781,7 +808,7 @@ function ExecutiveCockpitView({
               key={item.key}
               type="button"
               onClick={(e) => onCardClick(e, item)}
-              className="group relative flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 shadow-sm hover:border-white/25 hover:bg-white/10 transition-all cursor-pointer text-left backdrop-blur-md overflow-hidden"
+              className="group relative flex items-center gap-3 p-3 rounded-xl bg-surface/80 border border-line shadow-sm hover:border-brand/40 hover:bg-surface transition-all cursor-pointer text-left backdrop-blur-md overflow-hidden"
               aria-label={`${item.label} - ${item.description}`}
             >
               <div
@@ -796,12 +823,12 @@ function ExecutiveCockpitView({
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1">
-                  <span className="font-display text-xs font-semibold text-white/90 truncate group-hover:text-brand transition-colors">
+                  <span className="font-display text-xs font-semibold text-ink truncate group-hover:text-brand transition-colors">
                     {item.label}
                   </span>
-                  {item.external && <ExternalLink className="h-3 w-3 text-white/40 shrink-0" />}
+                  {item.external && <ExternalLink className="h-3 w-3 text-ink-2 shrink-0" />}
                 </div>
-                <p className="font-mono text-[10px] text-white/50 truncate mt-0.5">
+                <p className="font-mono text-[10px] text-ink-2 truncate mt-0.5">
                   {item.description}
                 </p>
               </div>
