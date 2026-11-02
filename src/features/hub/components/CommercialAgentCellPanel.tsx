@@ -315,9 +315,20 @@ export function CommercialAgentCellPanel() {
           {!v3Loading && filteredV3Agents.length > 0 && (
             <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {filteredV3Agents.map((agent) => (
+                // biome-ignore lint/a11y/useSemanticElements: <li> preserva a semântica de lista; o conteúdo do card é de bloco, inválido dentro de <button>.
                 <li
                   key={agent.id}
+                  // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <li> mantido para preservar a semântica de lista do grid; o item vira um botão alternável (aria-pressed).
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={selectedAgentId === agent.id}
                   onClick={() => setSelectedAgentId(agent.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      setSelectedAgentId(agent.id);
+                    }
+                  }}
                   className={`group cursor-pointer rounded-card border transition-all p-4 shadow-card hover:border-primary/50 hover:shadow-md ${
                     selectedAgentId === agent.id
                       ? 'border-primary bg-primary/5'
@@ -593,9 +604,18 @@ export function CommercialAgentCellPanel() {
                       </p>
                       <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1 text-xs">
                         {agentDetails.playbooks.map((p) => (
+                          // biome-ignore lint/a11y/useSemanticElements: trocar por <button> mudaria estilos nativos (fonte, alinhamento) da linha; role e teclado mantêm o visual idêntico.
                           <div
                             key={p.id}
+                            role="button"
+                            tabIndex={0}
                             onClick={() => handleOpenPlaybook(p.id)}
+                            onKeyDown={(event) => {
+                              if (event.key === 'Enter' || event.key === ' ') {
+                                event.preventDefault();
+                                handleOpenPlaybook(p.id);
+                              }
+                            }}
                             className="group/pb flex items-center justify-between p-1.5 rounded bg-surface-subtle text-[11px] font-mono text-ink-2 hover:bg-primary/10 hover:text-primary cursor-pointer transition-colors"
                           >
                             <span className="truncate font-semibold">

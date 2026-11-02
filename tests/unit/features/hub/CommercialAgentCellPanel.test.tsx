@@ -228,4 +228,21 @@ describe('CommercialAgentCellPanel', () => {
     });
     expect(screen.queryByText('Habilidade 0')).toBeNull();
   });
+
+  it('a11y: cards de especialista e playbooks são botões acionáveis por teclado', async () => {
+    render(<CommercialAgentCellPanel />);
+    const icpCard = (await screen.findByText('Arquiteto de ICP')).closest('li');
+    expect(icpCard?.getAttribute('role')).toBe('button');
+    expect(icpCard?.getAttribute('tabindex')).toBe('0');
+    expect(icpCard?.getAttribute('aria-pressed')).toBe('false');
+
+    fireEvent.keyDown(icpCard as HTMLElement, { key: 'Enter' });
+    expect(await screen.findByText('Habilidade 0')).toBeTruthy();
+    expect(icpCard?.getAttribute('aria-pressed')).toBe('true');
+
+    const playbook = screen.getByText(/P1: Abertura/).closest('[role="button"]');
+    expect(playbook?.getAttribute('tabindex')).toBe('0');
+    fireEvent.keyDown(playbook as HTMLElement, { key: ' ' });
+    expect(await screen.findByText('# SOP de abertura')).toBeTruthy();
+  });
 });
