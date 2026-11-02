@@ -31,8 +31,20 @@ Resultado: actionlint limpo nos 6 workflows do escopo.
 | Build Android | **Pronto** | Gate em PR verde (16/10); job de build só por dispatch, nunca exercitado. |
 | deploy-aws.yml.disabled | Desativado (não reativado) | Exigiria `AWS_ROLE_TO_ASSUME`, `AWS_S3_FRONTEND_BUCKET`, `AWS_CLOUDFRONT_DIST_ID` — nenhum existe. Também interpola secrets direto no shell; corrigir se um dia for reativado. |
 
+## Alinhamento com o alvo de deploy (AWS)
+O Marcelo informou em 02/11/2026 que o deploy está, por enquanto, na AWS. Verificação dos workflows do escopo:
+- **Nenhum workflow aponta para Render, Vercel ou GitHub Pages.** O blueprint do Render está arquivado em `infrastructure/archive/render.yaml.disabled`, e `deploy-pages.yml` sai do repo em PR separado.
+- **Nenhum workflow ativo faz deploy na AWS.** `production.yaml` só gera SBOM, escaneia e publica a imagem no GHCR (`ghcr.io`); não há passo de deploy. `cd-homolog.yml` publica no GHCR e atualiza valores de Helm (`charts/prospector-atlas`, caminho inexistente) para um fluxo GitOps/K8s que não está provisionado.
+- **O único workflow para AWS é `deploy-aws.yml.disabled`** (ECR/ECS/S3/CloudFront), arquivado e mantido desativado.
+- **O deploy real na AWS é manual**, pelos scripts `deploy-ec2.sh`, `deploy-ec2.ps1` e `deploy-aws.ps1` (build local, `scp` e `ssh` para uma instância EC2), fora do GitHub Actions.
+- **O backup aponta para Cloudflare R2**, não para AWS (S3).
+- **Docs desatualizados (fora do escopo deste PR):** `docs/deploy/producao.md` ainda descreve o caminho Render/Neon/Cloudflare como arquitetura de produção.
+
+Nada foi alterado nos workflows por isso: levar `production.yaml` a fazer deploy na EC2 (ou trocar o destino do backup para S3) é decisão de arquitetura, não erro de configuração. Fica como decisão do Marcelo com o Agente 10.
+
 ## Ações que só o Marcelo pode fazer
 1. Criar os environments `production` (required reviewers + branch policy `main`) e, se quiser, `homologation`.
-2. Se o backup for ativado: habilitar R2 e cadastrar os 6 secrets acima.
+2. Se o backup for ativado: decidir o destino (R2, como está hoje, ou S3 na AWS); se ficar no R2, habilitar R2 e cadastrar os 6 secrets acima.
 3. Decidir o alvo de homologação (criar `develop`? qual chart?) antes de qualquer dry-run.
 4. Autorizar qualquer primeiro `workflow_dispatch` (dry-run). Este agente não executou nenhum.
+5. Decidir se o deploy na AWS (hoje manual, pelos scripts EC2) deve ganhar um workflow com aprovação no environment `production`.
