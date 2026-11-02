@@ -1,5 +1,5 @@
 import type React from 'react';
-import { CompanyBrandIcon } from '../brand/CompanyBrandIcon.js';
+import '../brand/CompanyBrandIcon.js';
 
 export interface TechToolInfo {
   name: string;
