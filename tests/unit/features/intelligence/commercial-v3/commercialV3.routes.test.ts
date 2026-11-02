@@ -73,11 +73,12 @@ describe('rotas da suíte comercial V3.1', () => {
       true,
     );
 
-    const allSkills = await request(admin).get(
-      '/api/agent/commercial-v3/skills?agentId=desconhecido',
-    );
+    const allSkills = await request(admin).get('/api/agent/commercial-v3/skills');
     expect(allSkills.status).toBe(200);
     expect(allSkills.body.total).toBe(463);
+
+    const invalidSkill = await request(admin).get('/api/agent/commercial-v3/skills?agentId=desconhecido');
+    expect(invalidSkill.status).toBe(400);
 
     const policy = await request(admin).get('/api/agent/commercial-v3/policy');
     expect(policy.status).toBe(200);
