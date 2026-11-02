@@ -27,9 +27,11 @@ runs:
   steps:
     - name: Validar formato do SHA
       shell: bash
+      env:
+        INPUT_SHA: ${{ inputs.sha }}
       run: |
         set -euo pipefail
-        sha="${{ inputs.sha }}"
+        sha="$INPUT_SHA"
         if ! [[ "$sha" =~ ^[0-9a-f]{40}$ ]]; then
           echo "::error::DEPLOY BLOCKED — SHA inválido: '$sha'. Informe o commit SHA completo (40 caracteres hex), nunca um branch/tag/apelido (main, latest, HEAD)."
           exit 1

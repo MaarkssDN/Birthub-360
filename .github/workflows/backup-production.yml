@@ -114,6 +114,8 @@ jobs:
           set -euo pipefail
           aws s3 ls "s3://${R2_BUCKET}/${BACKUP_FILE}.gpg" \
             --endpoint-url "https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
-          echo "### Backup de produção" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Arquivo: \`${BACKUP_FILE}.gpg\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Confirmado no bucket \`${R2_BUCKET}\` em $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "### Backup de produção"
+            echo "- Arquivo: \`${BACKUP_FILE}.gpg\`"
+            echo "- Confirmado no bucket \`${R2_BUCKET}\` em $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } >> "$GITHUB_STEP_SUMMARY"
