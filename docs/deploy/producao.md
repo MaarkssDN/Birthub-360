@@ -18,7 +18,6 @@
 > **Decidido pelo Marcelo (02/11/2026):** não é preciso configurar nada na AWS. O deploy na EC2
 > continua manual, controlado e feito localmente por ele; não haverá workflow de deploy no GitHub Actions.
 >
->
 > **Todo o restante deste documento é histórico** (arquitetura Render + Neon + Cloudflare,
 > desativada em 20/09/2026) e não descreve a produção atual.
 
