@@ -8,6 +8,7 @@ import {
   computeConsentEventHash,
   GENESIS_HASH,
   InMemoryConsentAuditChainRepository,
+  InMemoryConsentExternalCheckpointStore,
   type StoredConsentAuditEvent,
   verifyConsentChain,
 } from '../../../src/lib/security/consentAuditChain.service.js';
@@ -606,5 +607,149 @@ describe('#40 runInTransaction + lock 64 bits (U7)', () => {
     await repo.deleteExpiredPurges('org-x', new Date());
     expect(orgs).toEqual(['org-x']);
     expect(raw[0]).toContain("set_config('app.current_tenant_id'");
+  });
+});
+
+describe('Issue #36: Ancoragem de Checkpoint Externo em S3 Object Lock / KMS (F5)', () => {
+  let repo: InMemoryConsentAuditChainRepository;
+  let keys: InMemorySubjectKeyStore;
+  let tokenizer: SubjectTokenizer;
+  let checkpointStore: InMemoryConsentExternalCheckpointStore;
+  let chain: ConsentAuditChainService;
+
+  beforeEach(() => {
+    repo = new InMemoryConsentAuditChainRepository();
+    keys = new InMemorySubjectKeyStore();
+    tokenizer = new SubjectTokenizer(new EnvTenantPepperProvider(PEPPER), keys);
+    checkpointStore = new InMemoryConsentExternalCheckpointStore();
+    chain = new ConsentAuditChainService({
+      repo,
+      tokenizer,
+      externalCheckpointStore: checkpointStore,
+    });
+  });
+
+  it('ancora checkpoint externo a partir do head atual da cadeia', async () => {
+    await rec(chain, 'org-alpha', 'titular-1');
+    await rec(chain, 'org-alpha', 'titular-2');
+
+    const checkpoint = await chain.anchorExternalCheckpoint('org-alpha');
+    expect(checkpoint).not.toBeNull();
+    expect(checkpoint?.organizationId).toBe('org-alpha');
+    expect(checkpoint?.lastSequence).toBe(2);
+    expect(checkpoint?.lastHash).toBeDefined();
+
+    const stored = await checkpointStore.getLatestCheckpoint('org-alpha');
+    expect(stored).toEqual(checkpoint);
+
+    const verified = await chain.verifyChainIntegrity('org-alpha', { checkExternal: true });
+    expect(verified.valid).toBe(true);
+    expect(verified.totalRecords).toBe(3); // genesis + 2 consents
+  });
+
+  it('detecta truncamento de cauda mesmo se invasor alterar o head local', async () => {
+    await rec(chain, 'org-beta', 'titular-1');
+    await rec(chain, 'org-beta', 'titular-2');
+    await rec(chain, 'org-beta', 'titular-3');
+
+    // Ancora com 3 registros (seq 3)
+    await chain.anchorExternalCheckpoint('org-beta');
+
+    // Invasor trunca o último registro e ajusta o head do banco para a seq 2
+    repo.rawChain('org-beta').pop();
+    const head = repo.rawHeads().get('org-beta')!;
+    head.lastSequence = 2;
+    head.lastHash = repo.rawChain('org-beta')[2].currentHash;
+
+    // Verificação sem checagem externa passaria falso-positivo no head local forjado:
+    const checkLocal = await chain.verifyChainIntegrity('org-beta', { checkExternal: false });
+    expect(checkLocal.valid).toBe(true);
+
+    // Verificação COM checkpoint externo acusa TRUNCATED com precisão forense irrefutável!
+    const checkExternal = await chain.verifyChainIntegrity('org-beta', { checkExternal: true });
+    expect(checkExternal.valid).toBe(false);
+    expect(checkExternal.reason).toBe('TRUNCATED');
+  });
+
+  it('detecta recriação de cadeia (novo gênese forjado com repositório limpo)', async () => {
+    await rec(chain, 'org-gamma', 'titular-1');
+    await chain.anchorExternalCheckpoint('org-gamma');
+
+    // Atacante limpa tudo e recria novo gênese
+    repo.clear();
+    await rec(chain, 'org-gamma', 'titular-novo');
+
+    const result = await chain.verifyChainIntegrity('org-gamma', { checkExternal: true });
+    expect(result.valid).toBe(false);
+    expect(result.reason).toBe('GENESIS_REPLACED');
+  });
+
+  it('detecta adulteração de elo histórico ancorado', async () => {
+    await rec(chain, 'org-delta', 'titular-1');
+    await rec(chain, 'org-delta', 'titular-2');
+    await chain.anchorExternalCheckpoint('org-delta');
+
+    // Adultera o hash do elo ancorado
+    repo.rawChain('org-delta')[2].currentHash = '0'.repeat(64);
+
+    const result = await chain.verifyChainIntegrity('org-delta', { checkExternal: true });
+    expect(result.valid).toBe(false);
+    expect(result.reason).toBe('HASH_MISMATCH');
+  });
+
+  it('S3ObjectLockConsentCheckpointStore grava e recupera com validação de assinatura HMAC', async () => {
+    const { S3ObjectLockConsentCheckpointStore } = await import(
+      '../../../src/lib/security/s3ObjectLockConsentCheckpoint.store.js'
+    );
+    const mockStorage = new Map<string, string>();
+    const mockS3 = {
+      send: async (cmd: any) => {
+        if (cmd.input?.Body) {
+          mockStorage.set(`${cmd.input.Bucket}/${cmd.input.Key}`, cmd.input.Body);
+          return {};
+        }
+        if (cmd.input?.Key) {
+          const body = mockStorage.get(`${cmd.input.Bucket}/${cmd.input.Key}`);
+          if (!body) {
+            const err: any = new Error('NoSuchKey');
+            err.name = 'NoSuchKey';
+            throw err;
+          }
+          return {
+            Body: { transformToString: async () => body },
+          };
+        }
+        return {};
+      },
+    };
+
+    const s3Store = new S3ObjectLockConsentCheckpointStore({
+      bucketName: 'birthhub360-lgpd-worm',
+      signingSecret: 'super-secret-kms-hmac-key',
+      s3Client: mockS3,
+    });
+
+    const cp = {
+      organizationId: 'tenant-s3-test',
+      genesisId: 'gen-123',
+      genesisHash: 'hash-gen-123',
+      lastSequence: 10,
+      lastHash: 'hash-seq-10',
+      anchoredAt: '2026-11-02T12:00:00.000Z',
+    };
+
+    await s3Store.saveCheckpoint(cp);
+    const retrieved = await s3Store.getLatestCheckpoint('tenant-s3-test');
+    expect(retrieved).not.toBeNull();
+    expect(retrieved?.lastSequence).toBe(10);
+    expect(retrieved?.signature).toBeDefined();
+
+    // Se adulterado no storage, a assinatura rejeita
+    const rawSaved = JSON.parse(mockStorage.get('birthhub360-lgpd-worm/lgpd-consent-checkpoints/tenant-s3-test/latest.json')!);
+    rawSaved.lastHash = 'forged-hash';
+    mockStorage.set('birthhub360-lgpd-worm/lgpd-consent-checkpoints/tenant-s3-test/latest.json', JSON.stringify(rawSaved));
+
+    const tampered = await s3Store.getLatestCheckpoint('tenant-s3-test');
+    expect(tampered).toBeNull();
   });
 });

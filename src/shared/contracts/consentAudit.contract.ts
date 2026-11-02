@@ -35,9 +35,15 @@ export interface IConsentAuditChainPort {
     operatorUserId?: string,
   ): Promise<ConsentAuditEvent>;
 
-  verifyChainIntegrity(organizationId: string): Promise<{
+  verifyChainIntegrity(
+    organizationId: string,
+    options?: { checkExternal?: boolean },
+  ): Promise<{
     valid: boolean;
     totalRecords: number;
     brokenAtId?: string;
+    reason?: string;
   }>;
+
+  anchorExternalCheckpoint?(organizationId: string): Promise<unknown>;
 }
