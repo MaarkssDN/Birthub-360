@@ -1,4 +1,4 @@
-import { logger } from '../../logger.js';
+import '../../logger.js';
 import { resolveModelName } from './model-routing.js';
 
 export type TaskComplexity = 'LOW' | 'MEDIUM' | 'HIGH';

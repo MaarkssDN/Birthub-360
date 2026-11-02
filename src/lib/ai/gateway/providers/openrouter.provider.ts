@@ -1,6 +1,6 @@
-import { env } from '../../../../config/env.js';
+import '../../../../config/env.js';
 import { callProvider } from '../circuit-breaker.js';
-import { normalizeApiBaseUrl, requestChatCompletion } from '../http-client.js';
+import { requestChatCompletion } from '../http-client.js';
 import type { ChatCompletionResponse } from '../types.js';
 import type { ProviderAdapter, ProviderChatParams } from './types.js';
 
