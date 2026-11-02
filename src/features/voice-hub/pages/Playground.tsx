@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { Play, Mic, MicOff, Save, RotateCcw } from 'lucide-react';
 import { logger } from '../../../lib/logger.js';
 
@@ -27,6 +27,7 @@ interface SpeechRecognitionLike {
 }
 
 export default function PlaygroundPage() {
+  const fieldId = useId();
   const [prompt, setPrompt] = useState('Você é um assistente útil e amigável.');
   const [messages, setMessages] = useState<{ role: 'user' | 'agent'; text: string }[]>([]);
   const [input, setInput] = useState('');
@@ -303,17 +304,35 @@ export default function PlaygroundPage() {
           />
           <div className="mt-4 space-y-4">
             <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1">Modelo</label>
-              <select className="w-full p-2 border border-slate-300 rounded-lg bg-white text-sm">
+              <label
+                htmlFor={`${fieldId}-modelo`}
+                className="block text-xs font-bold text-slate-500 mb-1"
+              >
+                Modelo
+              </label>
+              <select
+                id={`${fieldId}-modelo`}
+                className="w-full p-2 border border-slate-300 rounded-lg bg-white text-sm"
+              >
                 <option>GPT-4 Turbo</option>
                 <option>GPT-3.5 Turbo</option>
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-500 mb-1">
+              <label
+                htmlFor={`${fieldId}-temperatura`}
+                className="block text-xs font-bold text-slate-500 mb-1"
+              >
                 Temperatura (0.7)
               </label>
-              <input type="range" className="w-full accent-brand" min="0" max="1" step="0.1" />
+              <input
+                id={`${fieldId}-temperatura`}
+                type="range"
+                className="w-full accent-brand"
+                min="0"
+                max="1"
+                step="0.1"
+              />
             </div>
             <div className="pt-2 border-t border-slate-200">
               <label className="flex items-center gap-2 cursor-pointer">

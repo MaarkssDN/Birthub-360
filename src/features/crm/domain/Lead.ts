@@ -1,4 +1,4 @@
-import type { LeadFunnel, LeadStatus, LeadTemperature } from '@prisma/client';
+import type { LeadFunnel } from '@prisma/client';
 import type { Repository } from '../../../shared/domain/Repository.js';
 
 import type { Lead } from '../../../shared/types/crm.js';

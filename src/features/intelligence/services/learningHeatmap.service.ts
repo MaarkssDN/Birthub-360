@@ -1,4 +1,4 @@
-import { prisma } from '../../../lib/prisma.js';
+import '../../../lib/prisma.js';
 import { logger } from '../../../lib/logger.js';
 
 /**

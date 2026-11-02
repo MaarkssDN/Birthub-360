@@ -1,5 +1,5 @@
 import type React from 'react';
-import type { Lead, LeadStatus } from './lead-card/types.js';
+import type { LeadStatus } from './lead-card/types.js';
 import { useLeadCardState } from './lead-card/useLeadCardState.js';
 import { LeadCardHeader } from './lead-card/LeadCardHeader.js';
 import { LeadCardDecisorProfile } from './lead-card/LeadCardDecisorProfile.js';

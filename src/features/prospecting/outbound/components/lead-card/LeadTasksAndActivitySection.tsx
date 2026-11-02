@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import type React from 'react';
 import {
   ListChecks,
@@ -59,6 +60,7 @@ export const LeadTasksAndActivitySection: React.FC<LeadTasksAndActivitySectionPr
   isSaving,
   saveSuccess,
 }) => {
+  const fieldId = useId();
   return (
     <>
       {/* Tarefas do lead */}
@@ -202,11 +204,13 @@ export const LeadTasksAndActivitySection: React.FC<LeadTasksAndActivitySectionPr
           <div className="space-y-3">
             <div>
               <label
+                htmlFor={`${fieldId}-contexto`}
                 className={`block text-xs mb-1 font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}
               >
                 Contexto da Atividade (O que foi tratado?)
               </label>
               <textarea
+                id={`${fieldId}-contexto`}
                 rows={2}
                 value={activityContext}
                 onChange={(e) => setActivityContext(e.target.value)}
@@ -222,6 +226,7 @@ export const LeadTasksAndActivitySection: React.FC<LeadTasksAndActivitySectionPr
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label
+                  htmlFor={`${fieldId}-observacao`}
                   className={`block text-xs font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}
                 >
                   Observação da Atividade (Próximos passos? Objeções?)
@@ -240,6 +245,7 @@ export const LeadTasksAndActivitySection: React.FC<LeadTasksAndActivitySectionPr
                 </button>
               </div>
               <textarea
+                id={`${fieldId}-observacao`}
                 rows={3}
                 value={activityNotes}
                 onChange={(e) => setActivityNotes(e.target.value)}

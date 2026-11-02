@@ -93,3 +93,38 @@ describe('UniversalEcosystemPanel — teste de ping do conector', () => {
     expect(await screen.findByText('Falha ao testar conector SLACK.')).toBeTruthy();
   });
 });
+
+// a11y/noLabelWithoutControl: os rótulos precisam apontar para os seus campos.
+describe('UniversalEcosystemPanel — rótulos acessíveis', () => {
+  beforeEach(() => {
+    vi.mocked(api.get).mockReset();
+    vi.mocked(api.post).mockReset();
+    vi.mocked(api.get).mockImplementation(async (url: string) => {
+      if (String(url).includes('/connectors')) return { data: [slack] };
+      return { data: [] };
+    });
+  });
+
+  it('associa o rótulo de cada credencial ao seu campo no modo conectores', async () => {
+    render(<UniversalEcosystemPanel mode="connectors" onLaunchSwarmMission={vi.fn()} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Editar Credenciais' }));
+
+    const field = screen.getByLabelText('Webhook');
+    expect(field.tagName).toBe('INPUT');
+    expect(field).toBe(screen.getByPlaceholderText('https://hooks.slack.com'));
+  });
+
+  it('associa os rótulos do estúdio aos seus campos', () => {
+    render(<UniversalEcosystemPanel mode="studio" onLaunchSwarmMission={vi.fn()} />);
+
+    expect(screen.getByLabelText(/Formato do Artefato/i).tagName).toBe('SELECT');
+    expect(screen.getByLabelText(/Título do Arquivo/i).tagName).toBe('INPUT');
+    expect(screen.getByLabelText(/Nome \/ Cargo do Agente Separado/i)).toHaveProperty(
+      'value',
+      'Especialista de Operações & Receita 360',
+    );
+    expect(screen.getByLabelText(/Diretriz \/ System Prompt do Agente/i).tagName).toBe('INPUT');
+    expect(screen.getByLabelText(/Missão para o Agente Separado/i).tagName).toBe('INPUT');
+  });
+});

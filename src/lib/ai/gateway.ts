@@ -107,7 +107,7 @@ export async function generateTextOutput(options: {
       model: 'general',
       promptVersion: 'v1',
       purpose: options.feature || 'general',
-      promptText: (options.systemInstruction || '') + '\n' + options.prompt,
+      promptText: `${options.systemInstruction || ''}\n${options.prompt}`,
     });
     if (cached) {
       return { text: cached };
@@ -131,7 +131,7 @@ export async function generateTextOutput(options: {
           model: 'general',
           promptVersion: 'v1',
           purpose: options.feature || 'general',
-          promptText: (options.systemInstruction || '') + '\n' + options.prompt,
+          promptText: `${options.systemInstruction || ''}\n${options.prompt}`,
         },
         res.content,
         {
@@ -168,7 +168,7 @@ export async function generateStructuredOutput<T>(options: {
       model: 'general',
       promptVersion: 'v1',
       purpose: options.feature || 'general-structured',
-      promptText: (options.systemInstruction || '') + '\n' + options.prompt,
+      promptText: `${options.systemInstruction || ''}\n${options.prompt}`,
     });
     if (cached) {
       return cleanAndParseJson<T>(cached);
@@ -192,7 +192,7 @@ export async function generateStructuredOutput<T>(options: {
         model: 'general',
         promptVersion: 'v1',
         purpose: options.feature || 'general-structured',
-        promptText: (options.systemInstruction || '') + '\n' + options.prompt,
+        promptText: `${options.systemInstruction || ''}\n${options.prompt}`,
       },
       res.content,
       {

@@ -61,6 +61,10 @@ desta rodada. Qualquer backup gerenciado do provedor de banco (Supabase ou Neon)
 provedor diferente (Cloudflare R2 vs. infraestrutura interna do provedor de banco) continua
 reduzindo correlação de falha entre as duas cópias.
 
+> **Atualização (02/11/2026):** o workflow `backup-production.yml` foi **removido** por decisão do
+> Marcelo (o Cloudflare R2 não é usado e a AWS não será configurada para isso). Ele nunca chegou a
+> rodar. **Hoje não existe backup automático de produção**; o texto abaixo é histórico.
+
 - **Mecanismo**: `.github/workflows/backup-production.yml` — `pg_dump` diário (05:00 UTC) contra o
   Postgres real, via papel dedicado `prospector_backup` (somente leitura, `BYPASSRLS` — necessário
   para capturar todos os tenants, nunca usado pela aplicação), saída comprimida e criptografada

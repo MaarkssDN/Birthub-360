@@ -1,15 +1,12 @@
 import {
   AlertTriangle,
   ArrowLeft,
-  ArrowRight,
   BookOpen,
   CheckCircle2,
   ChevronRight,
-  Filter,
   Loader2,
   Search,
   Send,
-  ShieldAlert,
   ShieldCheck,
   Sparkles,
   Users,
@@ -22,7 +19,6 @@ import type {
   CommercialAgentCatalogEntry,
   CommercialAgentResultV3,
   CommercialPlaybookMetadata,
-  CommercialSkillDefinition,
   CommercialV3AgentId,
 } from '../../intelligence/commercial-v3/contracts/commercialAgentV3.types.js';
 import type { RedteamEvaluationReport } from '../../intelligence/commercial-v3/evaluation/commercialRedteamEvaluator.service.js';
@@ -319,36 +315,47 @@ export function CommercialAgentCellPanel() {
           {!v3Loading && filteredV3Agents.length > 0 && (
             <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {filteredV3Agents.map((agent) => (
-                <li
-                  key={agent.id}
-                  onClick={() => setSelectedAgentId(agent.id)}
-                  className={`group cursor-pointer rounded-card border transition-all p-4 shadow-card hover:border-primary/50 hover:shadow-md ${
-                    selectedAgentId === agent.id
-                      ? 'border-primary bg-primary/5'
-                      : 'border-line bg-surface'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full bg-ok-solid" />
-                        <p className="font-display text-xs font-bold text-ink group-hover:text-primary transition-colors">
-                          {agent.name}
-                        </p>
+                <li key={agent.id} className="flex">
+                  {/* biome-ignore lint/a11y/useSemanticElements: o card contém conteúdo de bloco (<div>/<p>), inválido dentro de <button>; role, tabIndex e Enter/Espaço dão a mesma semântica sem mudar o layout. */}
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={selectedAgentId === agent.id}
+                    onClick={() => setSelectedAgentId(agent.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        setSelectedAgentId(agent.id);
+                      }
+                    }}
+                    className={`group flex-1 cursor-pointer rounded-card border transition-all p-4 shadow-card hover:border-primary/50 hover:shadow-md ${
+                      selectedAgentId === agent.id
+                        ? 'border-primary bg-primary/5'
+                        : 'border-line bg-surface'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="h-2 w-2 rounded-full bg-ok-solid" />
+                          <p className="font-display text-xs font-bold text-ink group-hover:text-primary transition-colors">
+                            {agent.name}
+                          </p>
+                        </div>
+                        <p className="text-[11px] text-ink-2 font-mono mt-0.5">ID: {agent.id}</p>
                       </div>
-                      <p className="text-[11px] text-ink-2 font-mono mt-0.5">ID: {agent.id}</p>
+                      <Badge variant="info">V3.1</Badge>
                     </div>
-                    <Badge variant="info">V3.1</Badge>
-                  </div>
 
-                  <div className="mt-3 flex items-center gap-3 text-[11px] text-ink-2 border-t border-line/50 pt-2">
-                    <span className="flex items-center gap-1 font-medium">
-                      <Sparkles className="h-3 w-3 text-primary" /> {agent.skills} skills
-                    </span>
-                    <span className="flex items-center gap-1 font-medium">
-                      <BookOpen className="h-3 w-3 text-ink-2" /> {agent.playbooks} playbooks
-                    </span>
-                    <ChevronRight className="ml-auto h-3.5 w-3.5 text-ink-2 group-hover:translate-x-0.5 transition-transform" />
+                    <div className="mt-3 flex items-center gap-3 text-[11px] text-ink-2 border-t border-line/50 pt-2">
+                      <span className="flex items-center gap-1 font-medium">
+                        <Sparkles className="h-3 w-3 text-primary" /> {agent.skills} skills
+                      </span>
+                      <span className="flex items-center gap-1 font-medium">
+                        <BookOpen className="h-3 w-3 text-ink-2" /> {agent.playbooks} playbooks
+                      </span>
+                      <ChevronRight className="ml-auto h-3.5 w-3.5 text-ink-2 group-hover:translate-x-0.5 transition-transform" />
+                    </div>
                   </div>
                 </li>
               ))}
@@ -597,9 +604,18 @@ export function CommercialAgentCellPanel() {
                       </p>
                       <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1 text-xs">
                         {agentDetails.playbooks.map((p) => (
+                          // biome-ignore lint/a11y/useSemanticElements: trocar por <button> mudaria estilos nativos (fonte, alinhamento) da linha; role e teclado mantêm o visual idêntico.
                           <div
                             key={p.id}
-                            onClick={() => handleOpenPlaybook(p.id)}
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => void handleOpenPlaybook(p.id)}
+                            onKeyDown={(event) => {
+                              if (event.key === 'Enter' || event.key === ' ') {
+                                event.preventDefault();
+                                void handleOpenPlaybook(p.id);
+                              }
+                            }}
                             className="group/pb flex items-center justify-between p-1.5 rounded bg-surface-subtle text-[11px] font-mono text-ink-2 hover:bg-primary/10 hover:text-primary cursor-pointer transition-colors"
                           >
                             <span className="truncate font-semibold">

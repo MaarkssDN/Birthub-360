@@ -187,7 +187,7 @@ export function SinglePageDashboard() {
               <span className="bh-label text-sm font-bold uppercase tracking-wider text-[var(--card-accent)] flex items-center gap-2 font-sans">
                 <Target className="w-4 h-4 text-[var(--card-accent)]" /> Volume em Pipeline
               </span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[color-mix(in_srgb,var(--card-accent)_10%,transparent)] text-[var(--card-accent)]">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[color-mix(in_srgb,var(--card-accent)_10%,transparent)] text-[color-mix(in_srgb,var(--card-accent)_80%,black)] dark:text-[color-mix(in_srgb,var(--card-accent)_80%,white)]">
                 Ativo
               </span>
             </div>
@@ -222,7 +222,7 @@ export function SinglePageDashboard() {
               <span className="bh-label text-sm font-bold uppercase tracking-wider text-[var(--card-accent)] flex items-center gap-2 font-sans">
                 <TrendingUp className="w-4 h-4 text-[var(--card-accent)]" /> Taxa de Conversão
               </span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[color-mix(in_srgb,var(--card-accent)_10%,transparent)] text-[var(--card-accent)] ">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[color-mix(in_srgb,var(--card-accent)_10%,transparent)] text-[color-mix(in_srgb,var(--card-accent)_80%,black)] dark:text-[color-mix(in_srgb,var(--card-accent)_80%,white)]">
                 Win Rate
               </span>
             </div>
@@ -251,7 +251,7 @@ export function SinglePageDashboard() {
               <span className="bh-label text-sm font-bold uppercase tracking-wider text-[var(--card-accent)] flex items-center gap-2 font-sans">
                 <Activity className="w-4 h-4 text-[var(--card-accent)]" /> Atividades Pendentes
               </span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[color-mix(in_srgb,var(--card-accent)_10%,transparent)] text-[var(--card-accent)]">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[color-mix(in_srgb,var(--card-accent)_10%,transparent)] text-[color-mix(in_srgb,var(--card-accent)_80%,black)] dark:text-[color-mix(in_srgb,var(--card-accent)_80%,white)]">
                 Prioridade
               </span>
             </div>
@@ -280,7 +280,7 @@ export function SinglePageDashboard() {
               <span className="bh-label text-sm font-bold uppercase tracking-wider text-[var(--card-accent)] flex items-center gap-2 font-sans">
                 <Users className="w-4 h-4 text-[var(--card-accent)]" /> Contas e Empresas
               </span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[color-mix(in_srgb,var(--card-accent)_10%,transparent)] text-[var(--card-accent)] ">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[color-mix(in_srgb,var(--card-accent)_10%,transparent)] text-[color-mix(in_srgb,var(--card-accent)_80%,black)] dark:text-[color-mix(in_srgb,var(--card-accent)_80%,white)]">
                 Ecossistema
               </span>
             </div>

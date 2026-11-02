@@ -2,7 +2,6 @@ import { randomUUID } from 'node:crypto';
 import type {
   AgentActionEvaluation,
   AgentSloMetrics,
-  AutonomyLevel,
   AutonomyPolicyConfig,
   IAutonomyGovernorPort,
 } from '../../../shared/contracts/autonomyLimits.contract.js';

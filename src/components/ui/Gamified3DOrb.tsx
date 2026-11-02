@@ -55,6 +55,7 @@ function GemScene({
       floatIntensity={animate && !reduceMotion ? 0.6 : 0}
     >
       {/* Cristal / Poliedro Central Interativo */}
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: <mesh> é um objeto three.js (react-three-fiber) no canvas WebGL, não um elemento DOM; ARIA/teclado não se aplicam aqui. */}
       <mesh
         ref={meshRef}
         scale={isBoosting ? 1.35 : 1.2}

@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
 import {
   UploadCloud,
   RefreshCw,
@@ -44,6 +44,7 @@ interface RagTestResult {
 }
 
 export default function KnowledgeManager() {
+  const fieldId = useId();
   const [agentsState, setAgentsState] = useState<{
     status: 'loading' | 'error' | 'ready';
     agents: AgentItem[];
@@ -502,10 +503,14 @@ export default function KnowledgeManager() {
 
             <form onSubmit={handleFileUpload} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label
+                  htmlFor={`${fieldId}-doc-nome`}
+                  className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+                >
                   Nome do Documento
                 </label>
                 <input
+                  id={`${fieldId}-doc-nome`}
                   type="text"
                   required
                   placeholder="Ex: Tabela de Preços 2026"
@@ -516,10 +521,14 @@ export default function KnowledgeManager() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label
+                  htmlFor={`${fieldId}-doc-palavra`}
+                  className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+                >
                   Palavra-chave / Tópico Principal
                 </label>
                 <input
+                  id={`${fieldId}-doc-palavra`}
                   type="text"
                   required
                   placeholder="Ex: precos, planos, suporte"
@@ -530,10 +539,14 @@ export default function KnowledgeManager() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label
+                  htmlFor={`${fieldId}-doc-arquivo`}
+                  className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+                >
                   Arquivo (.txt, .md, .json, .csv)
                 </label>
                 <input
+                  id={`${fieldId}-doc-arquivo`}
                   type="file"
                   required
                   accept=".txt,.md,.json,.csv,text/plain,text/markdown"
@@ -598,10 +611,14 @@ export default function KnowledgeManager() {
 
             <form onSubmit={handleManualAdd} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label
+                  htmlFor={`${fieldId}-texto-titulo`}
+                  className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+                >
                   Título / Nome
                 </label>
                 <input
+                  id={`${fieldId}-texto-titulo`}
                   type="text"
                   required
                   placeholder="Ex: Regras de Cancelamento"
@@ -612,10 +629,14 @@ export default function KnowledgeManager() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label
+                  htmlFor={`${fieldId}-texto-palavra`}
+                  className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+                >
                   Palavra-chave
                 </label>
                 <input
+                  id={`${fieldId}-texto-palavra`}
                   type="text"
                   required
                   placeholder="Ex: cancelamento, estorno, reembolso"
@@ -626,10 +647,14 @@ export default function KnowledgeManager() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label
+                  htmlFor={`${fieldId}-texto-conteudo`}
+                  className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+                >
                   Texto Completo / Instrução de Resposta
                 </label>
                 <textarea
+                  id={`${fieldId}-texto-conteudo`}
                   required
                   rows={6}
                   placeholder="Insira o conteúdo detalhado que o agente deve usar para responder perguntas sobre este tópico..."
@@ -696,11 +721,15 @@ export default function KnowledgeManager() {
 
             <form onSubmit={handleRunRagTest} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label
+                  htmlFor={`${fieldId}-pergunta`}
+                  className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+                >
                   Pergunta do Lead
                 </label>
                 <div className="flex gap-2">
                   <input
+                    id={`${fieldId}-pergunta`}
                     type="text"
                     required
                     placeholder="Ex: Como funciona a política de cancelamento?"

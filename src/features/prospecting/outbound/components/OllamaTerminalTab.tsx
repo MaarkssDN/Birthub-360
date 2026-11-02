@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import type { AIConfig } from '../types.js';
 import {
   Terminal,
@@ -33,6 +33,7 @@ export const OllamaTerminalTab: React.FC<OllamaTerminalTabProps> = ({
   onCheckOllama,
   isChecking,
 }) => {
+  const fieldId = useId();
   const [testPrompt, setTestPrompt] = useState(
     'Gere uma mensagem curta de abertura de cold call para a Birth Hub 360.',
   );
@@ -168,10 +169,11 @@ export const OllamaTerminalTab: React.FC<OllamaTerminalTabProps> = ({
 
         <div className="space-y-3">
           <div>
-            <label className="text-xs text-slate-400 mb-1 block">
+            <label htmlFor={`${fieldId}-prompt`} className="text-xs text-slate-400 mb-1 block">
               Prompt de Teste para o LLaMA3
             </label>
             <textarea
+              id={`${fieldId}-prompt`}
               rows={2}
               value={testPrompt}
               onChange={(e) => setTestPrompt(e.target.value)}

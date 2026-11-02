@@ -1,4 +1,4 @@
-import { logger } from '../../../lib/logger.js';
+import '../../../lib/logger.js';
 
 /**
  * Serviço de Detecção Automática de PII (Dados Pessoais Sensíveis)
