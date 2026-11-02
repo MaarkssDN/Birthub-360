@@ -86,7 +86,7 @@ export class SemanticCacheService implements ISemanticCachePort {
       return '';
     }
 
-    const sortedKeys = Object.keys(input).sort();
+    const sortedKeys = Object.keys(input).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
     const normalizedEntries = sortedKeys.map((key) => {
       let val = input[key];
       if (typeof val === 'string') {

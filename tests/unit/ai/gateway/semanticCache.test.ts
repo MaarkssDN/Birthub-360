@@ -195,6 +195,23 @@ describe('SemanticCacheService — Redis & Multi-Tenant Isolation', () => {
   });
 
   // CRITÉRIO DE SUCESSO 4: TTL dinâmico e configurável
+  it('ordena chaves de forma determinística por code unit, independente da ordem de inserção (Sonar S2871)', () => {
+    const a = { zeta: 'z', Alpha: 'A', beta: 'b', _id: '1', 'émpresa': 'e' };
+    const b = { 'émpresa': 'e', beta: 'b', _id: '1', zeta: 'z', Alpha: 'A' };
+
+    const keyA = cache.normalizeFirmographicInput(a);
+    const keyB = cache.normalizeFirmographicInput(b);
+
+    expect(keyA).toBe(keyB);
+    expect(keyA.split('|').map((entry) => entry.split(':')[0])).toEqual([
+      'Alpha',
+      '_id',
+      'beta',
+      'zeta',
+      'émpresa',
+    ]);
+  });
+
   it('aplica TTL dinâmico conforme a categoria da requisição (7 dias para dados firmográficos públicos, 24h para enriquecimento)', async () => {
     // 1. Dados firmográficos públicos -> 7 dias (604.800s)
     const paramsFirmographic = {
