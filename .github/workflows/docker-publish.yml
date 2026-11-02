@@ -45,6 +45,10 @@ jobs:
           INPUT_SHA: ${{ inputs.sha }}
         run: |
           set -euo pipefail
+          if ! [[ "$INPUT_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::DEPLOY BLOCKED — SHA inválido. Informe o commit SHA completo (40 caracteres hex minúsculos)."
+            exit 1
+          fi
           echo "sha=${INPUT_SHA}" >> "$GITHUB_OUTPUT"
       - uses: ./.github/actions/require-ci-green
         with:

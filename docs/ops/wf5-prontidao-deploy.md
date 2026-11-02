@@ -13,7 +13,7 @@ Método: actionlint 1.7.7 + shellcheck 0.10.0; `gh secret list`, `gh variable li
 
 ## Correções feitas neste PR (sem mudar comportamento de deploy)
 1. `.github/actions/require-ci-green/action.yml`: `inputs.sha` não é mais interpolado direto no shell (risco de injeção) → passado via `env`.
-2. `docker-publish.yml`: idem para `inputs.sha`; removidos o `if:` e o ramo `workflow_run` mortos (gatilho `workflow_run` já removido no commit 957710ce).
+2. `docker-publish.yml`: idem para `inputs.sha`, validado (`^[0-9a-f]{40}$`, `::error::` + falha) antes de gravar em `GITHUB_OUTPUT` (P3 do Agente 24; a action `require-ci-green` já valida o mesmo regex antes de qualquer uso e não grava outputs com o valor); removidos o `if:` e o ramo `workflow_run` mortos (gatilho `workflow_run` já removido no commit 957710ce).
 3. `deploy-pages.yml`: `pages: write`/`id-token: write` saíram do nível do workflow para o job `deploy` (o único que publica); workflow ficou `contents: read`.
 4. `backup-production.yml`: SC2129 (redirecionamentos agrupados no step summary).
 Resultado: actionlint limpo nos 7 workflows do escopo.
