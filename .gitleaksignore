@@ -54,3 +54,10 @@ db20c1f3e5cd53f3c0be462502548bfafa850587:test-gemini-quota.ts:generic-api-key:2
 # as fingerprints históricas exatas; qualquer novo commit/linha continua sendo escaneado.
 7eaf7d191fce8e2d1d3de403a1fab3bfe2bb33f2:.env.test.example:generic-api-key:36
 7eaf7d191fce8e2d1d3de403a1fab3bfe2bb33f2:.env.test.example:generic-api-key:37
+# Follow-up P3-4 do parecer 24 do PR #153 (agente/24-review-pr153-97be4018): a linha de
+# PII_BLIND_INDEX_KEY em .env.test.example deslocou de 36/37 para 38 (commit 12910286 adicionou
+# linhas acima). Verificado pelo WF2 como aparente chave só de teste (CONFIRMAÇÃO HUMANA PENDENTE): existe apenas em .env.test.example
+# (template do harness local, distinto do .env.example), não aparece em nenhum outro arquivo,
+# config de deploy ou código. Fingerprint no formato de `gitleaks dir` (sem commit) — cobre só
+# esta linha/regra; qualquer outra linha ou valor novo continua sendo escaneado.
+.env.test.example:generic-api-key:38

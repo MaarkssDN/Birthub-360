@@ -8,29 +8,38 @@ mkdir -p "$BACKUP_DIR"
 
 if [[ "${1:-}" == "--verify-crypto" ]]; then
   echo "[Crypto-Check] Testando cifra e decifra AES-256 simétrica..."
-  TEST_PAYLOAD="BIRTHUB360_CANONICAL_TEST_PAYLOAD_$(date +%s)"
+  TEST_PAYLOAD="BIRTHUB360_CANONICAL_TEST_PAYLOAD_$(date +%s)_$$"
   CIPHER_FILE="$BACKUP_DIR/test_crypto.enc"
   DECRYPT_FILE="$BACKUP_DIR/test_crypto.dec"
-  KEY="${BACKUP_VERIFY_KEY:-$(openssl rand -hex 32)}"
+  cleanup_crypto() { rm -f "$CIPHER_FILE" "$DECRYPT_FILE" 2>/dev/null || true; }
+  trap cleanup_crypto EXIT
+  cleanup_crypto
 
-  # Simula cifragem e decifragem com openssl enc aes-256-cbc ou verificação algorítmica
-  echo "$TEST_PAYLOAD" | openssl enc -aes-256-cbc -pbkdf2 -pass "pass:$KEY" -out "$CIPHER_FILE" 2>/dev/null || {
-    # Fallback se openssl não estiver com chave interativa em ambiente restrito
-    echo "$TEST_PAYLOAD" > "$DECRYPT_FILE"
+  fail_crypto() {
+    echo "[Crypto-Check] Falha na validação criptográfica: $1" >&2
+    exit 1
   }
 
-  if [[ -f "$CIPHER_FILE" ]]; then
-    openssl enc -d -aes-256-cbc -pbkdf2 -pass "pass:$KEY" -in "$CIPHER_FILE" -out "$DECRYPT_FILE" 2>/dev/null || true
+  command -v openssl >/dev/null 2>&1 || fail_crypto "openssl não encontrado no PATH."
+  KEY="${BACKUP_VERIFY_KEY:-$(openssl rand -hex 32)}"
+  [[ -n "$KEY" ]] || fail_crypto "não foi possível obter a chave de verificação."
+
+  # Sem fallback em claro: se cifrar ou decifrar falhar, a verificação falha (exit != 0).
+  printf '%s' "$TEST_PAYLOAD" | openssl enc -aes-256-cbc -pbkdf2 -pass "pass:$KEY" -out "$CIPHER_FILE" 2>/dev/null \
+    || fail_crypto "cifragem com openssl falhou."
+  [[ -s "$CIPHER_FILE" ]] || fail_crypto "arquivo cifrado vazio ou ausente."
+  if cmp -s <(printf '%s' "$TEST_PAYLOAD") "$CIPHER_FILE"; then
+    fail_crypto "arquivo cifrado idêntico ao payload em claro."
   fi
 
-  if grep -q "BIRTHUB360_CANONICAL_TEST_PAYLOAD" "$DECRYPT_FILE" 2>/dev/null || [[ -f "$CIPHER_FILE" ]]; then
-    echo "[Crypto-Check] Criptografia AES-256 validada com sucesso! Código 0."
-    rm -f "$CIPHER_FILE" "$DECRYPT_FILE" 2>/dev/null || true
-    exit 0
-  else
-    echo "[Crypto-Check] Falha na validação criptográfica."
-    exit 1
-  fi
+  openssl enc -d -aes-256-cbc -pbkdf2 -pass "pass:$KEY" -in "$CIPHER_FILE" -out "$DECRYPT_FILE" 2>/dev/null \
+    || fail_crypto "decifragem com openssl falhou."
+
+  [[ "$(cat "$DECRYPT_FILE")" == "$TEST_PAYLOAD" ]] \
+    || fail_crypto "round-trip não confere com o payload original."
+
+  echo "[Crypto-Check] Criptografia AES-256 validada com sucesso (round-trip conferido)."
+  exit 0
 fi
 
 echo "Executando rotina padrão de backup..."
