@@ -31,7 +31,6 @@ concurrency:
 jobs:
   resolve-sha:
     name: Resolver SHA e validar CI (NO CI PASS = NO DEPLOY)
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -41,13 +40,16 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - id: resolve
+        # Input do dispatch passa por env (nunca interpolado direto no shell) — evita injeção.
+        env:
+          INPUT_SHA: ${{ inputs.sha }}
         run: |
           set -euo pipefail
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "sha=${{ inputs.sha }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "sha=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_OUTPUT"
+          if ! [[ "$INPUT_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::DEPLOY BLOCKED — SHA inválido. Informe o commit SHA completo (40 caracteres hex minúsculos)."
+            exit 1
           fi
+          echo "sha=${INPUT_SHA}" >> "$GITHUB_OUTPUT"
       - uses: ./.github/actions/require-ci-green
         with:
           sha: ${{ steps.resolve.outputs.sha }}
