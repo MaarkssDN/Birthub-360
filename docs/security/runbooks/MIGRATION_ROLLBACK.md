@@ -84,6 +84,9 @@ sem uma cópia anterior do dado. As únicas opções reais são, em ordem de pre
 
 1. **Restore seletivo a partir do backup mais recente anterior ao incidente** (preferido — não
    perde as escritas legítimas que aconteceram depois, só repara o que a migration destruiu):
+   - **Atualização (02/11/2026):** o workflow `backup-production.yml` foi removido por decisão do
+     Marcelo e nunca rodou. **Não existe backup automático de produção**; use um dump manual
+     recente, se houver, ou pule para a opção 3. O texto abaixo é histórico.
    - Backup real: `pg_dump` diário via `.github/workflows/backup-production.yml`, criptografado
      (GPG/AES256), retido 30 dias em Cloudflare R2 (ver `docs/SRE.md` §4). **Confirme antes de
      depender disso**: em 26/08/2026 o workflow existe e foi validado mecanicamente, mas a
