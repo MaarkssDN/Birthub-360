@@ -229,20 +229,12 @@
     },
     {
       "agentCode": "ab-test-synthesizer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "access-right-auditor",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -261,20 +253,12 @@
     },
     {
       "agentCode": "account-mapper",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "accrual-engine",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -294,20 +278,12 @@
     },
     {
       "agentCode": "activity-analyzer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "acv-growth-tracker",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -342,11 +318,7 @@
     },
     {
       "agentCode": "address-proof-validator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -416,20 +388,12 @@
     },
     {
       "agentCode": "agent-builder",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "aging-report-sender",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -452,11 +416,7 @@
     },
     {
       "agentCode": "alt-data-scorer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -479,29 +439,17 @@
     },
     {
       "agentCode": "annual-report-analyzer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "anomaly-detector",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "api-integration-builder",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -524,83 +472,47 @@
     },
     {
       "agentCode": "approval-workflow-router",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "architecture-diagrammer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "arr-bridge-builder",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "attribution-modeler",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "audience-segment-discoverer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "audit-bot",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "audit-prep-engine",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "audit-trail-builder",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "auto-decision-engine",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -620,29 +532,17 @@
     },
     {
       "agentCode": "bad-debt-predictor",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "bank-reconciliation-bot",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "bankruptcy-risk-monitor",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -695,29 +595,17 @@
     },
     {
       "agentCode": "board-prep",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "board-reporting-automator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "bottleneck-detector",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -764,20 +652,12 @@
     },
     {
       "agentCode": "budget-variance-pinger",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "burn-rate-monitor",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -797,29 +677,17 @@
     },
     {
       "agentCode": "calendar-sniper",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "call-review",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "campaign-decay-predictor",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -854,101 +722,57 @@
     },
     {
       "agentCode": "cap-table-manager",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "capacity-modeler",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "capacity-planner",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "capital-adequacy-calculator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "capital-allocator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "cash-app-matcher",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "cash-flow-clairvoyant",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "central-bank-xml-generator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "ceo",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "cfo",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "channel-attrition-predictor",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -968,20 +792,12 @@
     },
     {
       "agentCode": "chargeback-dispute-automator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "churn-cohort-isolator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -1035,20 +851,12 @@
     },
     {
       "agentCode": "closing-forecast",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "cloud-spend-optimizer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -1074,83 +882,47 @@
     },
     {
       "agentCode": "cohort-analyzer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "cold-call-scripter",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "collection-agency-router",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "comms-surveillance-bot",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "communication",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "comp-plan-calculator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "competitor-displacement",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "competitor-financial-scraper",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "competitor-intel-broadcaster",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -1171,20 +943,12 @@
     },
     {
       "agentCode": "compliance-checklist-enforcer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "compliance-enforcer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -1204,29 +968,17 @@
     },
     {
       "agentCode": "content-to-lead",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "context-memory",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "contract-drafter",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -1244,20 +996,12 @@
     },
     {
       "agentCode": "conversion-forecaster",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "coo",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -1277,29 +1021,17 @@
     },
     {
       "agentCode": "credit-hold-releaser",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "credit-limit-recommender",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "credit-score-fetcher",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -1319,11 +1051,7 @@
     },
     {
       "agentCode": "crisis-navigator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -1356,11 +1084,7 @@
     },
     {
       "agentCode": "cro",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -1383,11 +1107,7 @@
     },
     {
       "agentCode": "crypto-tracing-bot",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -1410,29 +1130,17 @@
     },
     {
       "agentCode": "cto",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "culture-pulse",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "custom-crmui-builder",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -1483,11 +1191,7 @@
     },
     {
       "agentCode": "dashboard-auto-freshener",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -1535,11 +1239,7 @@
     },
     {
       "agentCode": "data-enrichment-automator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -1580,65 +1280,37 @@
     },
     {
       "agentCode": "data-silo-bridger",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "deadline-tracker",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "deal-at-risk-alerter",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "deal-desk-autopilot",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "deal-risk",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "deck-customizer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "default-probability-modeler",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -1661,65 +1333,37 @@
     },
     {
       "agentCode": "demo-sandboxer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "demo-scripter",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "device-fingerprint-matcher",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "discount-approver",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "discount-leak-guard",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "discount-waterfall-modeler",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "disputed-charge-aggregator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -1756,11 +1400,7 @@
     },
     {
       "agentCode": "dunning-automator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -1779,29 +1419,17 @@
     },
     {
       "agentCode": "early-adopter-nurturer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "enablement-coach",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "enrichment-bot",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -1824,29 +1452,17 @@
     },
     {
       "agentCode": "event-qualifier",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "exec-summary-generator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "executive-demo-curator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -1869,11 +1485,7 @@
     },
     {
       "agentCode": "executive-summary-bot",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -1892,20 +1504,12 @@
     },
     {
       "agentCode": "failed-payment-retrier",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "false-positive-reducer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -1928,56 +1532,32 @@
     },
     {
       "agentCode": "fast-quoter",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "feature-heatmapper",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "finance",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "financial-ratio-calculator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "follow-up",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "follow-up-ghost",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -1996,83 +1576,47 @@
     },
     {
       "agentCode": "forecast-rollup",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "forecasting-modeler",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "funnel-leak-detector",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "fx-risk-manager",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "gamification-master",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "gatekeeper-bypass",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "geospatial-expansion-mapper",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "ghosting-preventer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "gl-anomaly-detector",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -2092,20 +1636,12 @@
     },
     {
       "agentCode": "gtm-alignment-scorer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "handoff-agent",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -2150,11 +1686,7 @@
     },
     {
       "agentCode": "high-risk-jurisdiction-pinger",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -2173,20 +1705,12 @@
     },
     {
       "agentCode": "id-verification-matcher",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "implementer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -2205,11 +1729,7 @@
     },
     {
       "agentCode": "incident-post-mortem-drafter",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -2229,38 +1749,22 @@
     },
     {
       "agentCode": "instance-right-sizer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "intent-decoder",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "invoice-generator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "ip-infringement-scraper",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -2283,11 +1787,7 @@
     },
     {
       "agentCode": "journey-drop-off-locator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -2325,11 +1825,7 @@
     },
     {
       "agentCode": "knowledge",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -2488,20 +1984,12 @@
     },
     {
       "agentCode": "leaderboard-broadcaster",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "legal",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -2519,65 +2007,37 @@
     },
     {
       "agentCode": "limit-decrease-recommender",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "liquidity-ratio-monitor",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "liveness-check-analyzer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "lt-vby-channel-calculator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "macro-factor-tracker",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "maestro-orchestrator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "mapeia",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -2597,38 +2057,22 @@
     },
     {
       "agentCode": "margin-calculator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "market-expansion-modeler",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "market-sentinel",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "market-share-estimator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -2648,38 +2092,22 @@
     },
     {
       "agentCode": "media-mix-optimizer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "meeting-booker",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "mesh-orchestrator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "micro-learning-creator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -2702,65 +2130,37 @@
     },
     {
       "agentCode": "money-mule-detector",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "month-end-close-automator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "multi-cloud-cost-modeler",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "multi-threader",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "multi-year-deal-modeller",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "mutual-action-tracker",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "narrative-weaver",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -2778,11 +2178,7 @@
     },
     {
       "agentCode": "net-retention-modeler",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -2802,47 +2198,27 @@
     },
     {
       "agentCode": "niche-explorer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "non-standard-flag",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "objection-crusher",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "objection-flashcard",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "objection-handling",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -2862,47 +2238,27 @@
     },
     {
       "agentCode": "onboarding-ramp-tracker",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "onboarding-sales",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "one-on-one-prep",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "ops",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "org-nav",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -2925,11 +2281,7 @@
     },
     {
       "agentCode": "partner-ecosystem-scout",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -2952,29 +2304,17 @@
     },
     {
       "agentCode": "payment-link-sender",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "payment-plan-negotiator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "pep-screener",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -2994,29 +2334,17 @@
     },
     {
       "agentCode": "personalization-engine",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "pipeline-auditor",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "pipeline-inspector",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -3035,11 +2363,7 @@
     },
     {
       "agentCode": "pipeline-velocity-tracker",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -3059,65 +2383,37 @@
     },
     {
       "agentCode": "planner",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "playbook-creator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "playbook-generator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "playbook-updater",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "po-c-tracker",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "policy-approval-guard",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "policy-mapping-bot",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -3152,38 +2448,22 @@
     },
     {
       "agentCode": "price-discount-impact",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "pricing-elasticity-tester",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "pricing-optimizer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "pricing-tester",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -3206,65 +2486,37 @@
     },
     {
       "agentCode": "process-bottleneck-alerter",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "process-flow-mapper",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "process-walkthrough-automator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "procurement-hacker",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "procurement-policy-bot",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "product-feedback-looper",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "productivity",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -3287,29 +2539,17 @@
     },
     {
       "agentCode": "promise-to-pay-tracker",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "proposal",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "proration-calculator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -3332,47 +2572,27 @@
     },
     {
       "agentCode": "qualification",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "quota-architect",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "quota-attainment-tracker",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "quota-setter",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "ramp-up-assistant",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -3395,20 +2615,12 @@
     },
     {
       "agentCode": "regulatory-change-alerter",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "regulatory-training-tracker",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -3446,20 +2658,12 @@
     },
     {
       "agentCode": "remediation-plan-tracker",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "remittance-extractor",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -3495,29 +2699,17 @@
     },
     {
       "agentCode": "rep-coach",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "requirements-gatherer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "resource-balancer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -3536,38 +2728,22 @@
     },
     {
       "agentCode": "reviewer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "rfp-auto-responder",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "rh",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "risk-exposure-quantifier",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -3587,83 +2763,47 @@
     },
     {
       "agentCode": "roi-calculator-builder",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "roi-scenario-modeler",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "roleplay-trainer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "routing-traffic-cop",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "saa-s-license-auditor",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "sales",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "sales-manager",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "sanctions-screener",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "sar-drafter",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -3686,11 +2826,7 @@
     },
     {
       "agentCode": "scenario-modeler",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -3710,11 +2846,7 @@
     },
     {
       "agentCode": "scope-creep-detector",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -3733,11 +2865,7 @@
     },
     {
       "agentCode": "security-questionnaire-filler",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -3826,11 +2954,7 @@
     },
     {
       "agentCode": "session-replay-summarizer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -3855,11 +2979,7 @@
     },
     {
       "agentCode": "sla-escalator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -3882,92 +3002,52 @@
     },
     {
       "agentCode": "spend-controller",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "sql-query-generator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "stakeholder-persona-generator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "stakeholder-update-automator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "stat-significance-tester",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "stickiness-tracker",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "strategic-alliance-scout",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "strategic-kpi-aggregator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "strategic-partner-scout",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "stress-test-modeler",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -3987,83 +3067,47 @@
     },
     {
       "agentCode": "supply-chain-sync",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "synthetic-identity-detector",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "target-scraper",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "tax-exemption-verifier",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "tax-optimizer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "tech-objection-resolver",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "tech-stack-auditor",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "territory-balancer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "territory-mapper",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -4104,20 +3148,12 @@
     },
     {
       "agentCode": "tiering-optimizer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "tool-roi-analyzer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -4137,11 +3173,7 @@
     },
     {
       "agentCode": "trade-reference-checker",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -4164,56 +3196,32 @@
     },
     {
       "agentCode": "transaction-hold-reviewer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "transaction-link-analyzer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "transcript-coach",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "trend-catcher",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "trigger-event-watcher",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "ubo-mapper",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -4251,20 +3259,12 @@
     },
     {
       "agentCode": "use-case-generator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "user-story-writer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -4284,47 +3284,27 @@
     },
     {
       "agentCode": "validation-rule-enforcer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "value-aligner",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "velocity-rule-engine",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "vendor-negotiator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "vertical-translator",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -4362,20 +3342,12 @@
     },
     {
       "agentCode": "voice-pitch-grader",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
       "agentCode": "voicemail-dropper",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -4394,11 +3366,7 @@
     },
     {
       "agentCode": "webinar-nurturer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     },
     {
@@ -4454,11 +3422,7 @@
     },
     {
       "agentCode": "win-loss-analyzer",
-      "capabilityCodes": [
-        "agent.discover",
-        "agent.execute",
-        "agent.request_cross_role"
-      ],
+      "capabilityCodes": ["agent.discover", "agent.execute", "agent.request_cross_role"],
       "source": "UNIVERSAL_ONLY"
     }
   ]
