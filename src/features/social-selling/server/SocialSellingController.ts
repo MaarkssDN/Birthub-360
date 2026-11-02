@@ -1,9 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import type { AuthRequest } from '../../../shared/middlewares/authenticateToken.js';
-import {
-  type SocialSellingApproachService,
-  socialSellingApproachService,
-} from './socialSellingApproach.service.js';
+import { socialSellingApproachService } from './socialSellingApproach.service.js';
 
 export class SocialSellingController {
   static async generateApproach(req: Request, res: Response, next: NextFunction): Promise<void> {

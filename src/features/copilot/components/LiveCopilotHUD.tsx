@@ -2,14 +2,10 @@ import { AnimatePresence, motion } from 'framer-motion';
 import {
   Activity,
   AlertCircle,
-  Bot,
   Check,
-  ChevronDown,
   ChevronRight,
-  ChevronUp,
   Clock,
   Copy,
-  ExternalLink,
   FileText,
   Maximize2,
   Mic,
@@ -18,7 +14,6 @@ import {
   Radio,
   RefreshCw,
   Sparkles,
-  Volume2,
   X,
   Zap,
 } from 'lucide-react';

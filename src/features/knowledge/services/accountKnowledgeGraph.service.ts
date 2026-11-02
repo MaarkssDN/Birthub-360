@@ -4,10 +4,8 @@ import type {
   GraphEdge,
   GraphNode,
   GraphNodeType,
-  GraphRelationshipType,
   IAccountKnowledgeGraphPort,
   MultiThreadingApproach,
-  RelationshipConfidence,
 } from '../../../shared/contracts/accountKnowledgeGraph.contract.js';
 import { domainEventMesh } from '../../../lib/queue/domainEventMesh.service.js';
 import { logger } from '../../../lib/logger.js';

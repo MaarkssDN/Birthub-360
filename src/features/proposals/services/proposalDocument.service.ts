@@ -3,7 +3,7 @@
  * Geração de buffer e assinatura digital de integridade via SHA-256.
  */
 
-import { createHash } from 'crypto';
+import { createHash } from 'node:crypto';
 
 export interface GeneratedProposal {
   proposalId: string;

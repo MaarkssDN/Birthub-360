@@ -1,21 +1,15 @@
-import { AnimatePresence, motion } from 'framer-motion';
 import {
   AlertCircle,
-  Award,
-  CheckCircle2,
   Clock,
   Crown,
   Flame,
-  MessageSquare,
   Play,
   RotateCcw,
   Send,
-  Shield,
   Sparkles,
   Swords,
   Trophy,
   Users,
-  Zap,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Badge } from '../../../components/ui/Badge.js';
@@ -28,7 +22,6 @@ import { cn } from '../../../lib/utils.js';
 import type {
   ArenaPedagogicalScore,
   ObjectionRound,
-  WarRoomArenaRoom,
   WarRoomMode,
 } from '../../../shared/contracts/warRoomArena.contract.js';
 

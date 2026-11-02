@@ -21,7 +21,7 @@ import {
   Wifi,
   WifiOff,
 } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   type AudioRecordingResult,
   type AudioRecordingState,

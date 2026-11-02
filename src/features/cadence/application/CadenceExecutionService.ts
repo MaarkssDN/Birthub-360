@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { logger } from '../../../lib/logger.js';
-import { broadcastEvent } from '../../../lib/eventsBus.js';
+import '../../../lib/eventsBus.js';
 import {
   type CallWindow,
   DEFAULT_CALL_WINDOW,
@@ -24,7 +24,6 @@ import type {
   EnqueueSwarmActionResult,
   SwarmCadenceChannel,
   SwarmDeliveryNotificationListener,
-  SwarmDeliveryStatus,
   SwarmTouchNotification,
 } from './CadenceExecutionPort.js';
 
