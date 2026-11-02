@@ -1,7 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import {
   generateStructuredOutput,
-  UntrustedContentGuard,
   createUntrustedContentGuard,
 } from '../../../../lib/ai/gateway.js';
 import { logger } from '../../../../lib/logger.js';
