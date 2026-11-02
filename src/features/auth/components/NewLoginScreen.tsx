@@ -1217,6 +1217,8 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
               onKeyDown={(event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
                   event.preventDefault();
+                  // Tecla segurada gera keydown com repeat=true: aciona só uma vez.
+                  if (event.repeat) return;
                   event.currentTarget.click();
                 }
               }}
@@ -1249,6 +1251,8 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
               onKeyDown={(event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
                   event.preventDefault();
+                  // Tecla segurada gera keydown com repeat=true: aciona só uma vez.
+                  if (event.repeat) return;
                   event.currentTarget.click();
                 }
               }}
@@ -1297,6 +1301,8 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
               onKeyDown={(event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
                   event.preventDefault();
+                  // Tecla segurada gera keydown com repeat=true: aciona só uma vez.
+                  if (event.repeat) return;
                   event.currentTarget.click();
                 }
               }}
