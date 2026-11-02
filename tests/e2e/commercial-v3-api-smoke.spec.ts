@@ -75,7 +75,8 @@ test.describe('Comercial V3.1 — smoke HTTP dos 8 endpoints', () => {
     const envelope = (await ok.json()).data;
     expect(envelope.status).toBe('COMPLETED');
     expect(envelope.mode).toBe('CONSULTIVO');
-    expect(envelope.sendEligible).toBe(false);
+    expect(envelope.compliance.sendEligible).toBe(false);
+    expect(envelope.execution.performed).toBe(false);
 
     expect((await r.post(`${BASE}/dispatch`, { data: { agentId: 'sdr', mission: '   ' } })).status()).toBe(400);
     expect(
