@@ -20,7 +20,7 @@
 |---|---|
 | Release 41415472133 | **success**. Application gate executou de fato: Run Lint, Type Check, **Unit Tests** (09:01–09:17Z), Golden Dataset, **Integration Tests** (09:27–09:33Z), **Build**, Smoke test do build, **E2E** (iniciado 09:34Z), todos success. Trivy, secret scan e dependency review: success. |
 | Frontend Bundle Budget 41415471930 | success |
-| Visual Regression 41415471959 → 41415472051 | success |
+| Visual Regression 41415472051 | success |
 | SonarQube Analysis 41415471988 | success. Quality Gate SonarCloud OK (ratings 1, duplicação 0.0, hotspots 100%). |
 | CodeQL 41415472015, Trivy 41415472093, Dependency Review 41415471959 | success |
 
