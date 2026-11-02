@@ -8,7 +8,7 @@ Este documento define a única arquitetura canônica e suportada para a platafor
 > O deploy é **manual, controlado e feito localmente pelo Marcelo**, pelos scripts `deploy-ec2.sh`,
 > `deploy-ec2.ps1` e `deploy-aws.ps1` (procedimento em [`DEPLOY_EC2.md`](DEPLOY_EC2.md)). Por decisão
 > dele, não há nada a configurar na AWS e **não há workflow de deploy** no GitHub Actions.
-> O destino do backup do banco ainda está **pendente de decisão do Marcelo**.
+> O Cloudflare R2 não é usado; o que fazer com o backup do banco está **pendente de decisão do Marcelo**.
 
 ## 1. Topologia Oficial: 100% Local-First / Single-Node
 
@@ -37,7 +37,7 @@ A plataforma inteira é implantada via Docker Compose em uma única máquina (VM
 
 ## 4. Backup e Disaster Recovery
 
-- **Banco de Dados**: o workflow `backup-production.yml` exporta o dump e envia para o Cloudflare R2, mas nunca rodou (R2 desabilitado e secrets ausentes). O destino do backup está pendente de decisão do Marcelo.
+- **Banco de Dados**: o workflow `backup-production.yml` foi escrito para enviar o dump ao Cloudflare R2, mas o R2 não é usado e o workflow nunca rodou. O que fazer com o backup está pendente de decisão do Marcelo.
 - **Storage**: O volume do MinIO deve ter backup no nível do disco.
 - O Recovery é testado e documentado através de runbooks (`docs/operations/RUNBOOKS.md`).
 
