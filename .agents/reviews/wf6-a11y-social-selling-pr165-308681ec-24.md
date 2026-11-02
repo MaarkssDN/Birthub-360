@@ -43,4 +43,20 @@
 - Re-executar Visual Regression (41434163622) e obter verde; aguardar Release.
 
 ## Decisão
-**BLOQUEADO (CI pendente)** — revisão de código sem bloqueios de mérito; nenhuma conversão a reverter. Teste obrigatório não executado não é aprovação: runs pendentes: Release 41434163665 (application gate: Unit Tests/Golden em execução; Integration, Build, Smoke, E2E pendentes). Também falta VR verde (41434163622 falhou).
+**SUPERADO — ver Atualização abaixo.** (decisão anterior: BLOQUEADO por CI pendente)
+
+## Atualização — 2026-11-02 09:28 (UTC-3)
+- Head reconfirmado com gh: `308681ec6fcb947de9ff1d9d375f162ed2b19f29` (inalterado); main segue `16dd960f310a1ab4b3c8bb5e9091a6f05c7b6a69`.
+- Release \"Central Birth Hub 360 Release\" **41434163665: completed/success**. Todos os jobs verdes (secret scan, trivy, dependency review, application gate). Todos os passos do application gate executados e verdes:
+  - Lint ✅ · Type Check ✅
+  - Unit Tests ✅ — 5538 passed, 1 skipped
+  - Golden Dataset ✅ — 11 passed
+  - Integration Tests ✅ — 738 passed, 2 skipped
+  - Build ✅ · Smoke ✅
+  - E2E ✅ — 108 passed (8.6m)
+- Visual Regression 41434163622 re-executado (tentativa 2): **success** — 84 passed, 4 flaky, 0 failed. A falha da tentativa 1 (prospect-dark, admin-module-access, telas fora do escopo) fica classificada como **herdada/flake**, não regressão nova.
+- Baseline main 16dd960f: Release 41433136212 success. Nenhuma falha nova.
+- Sonar segue como risco (não bloqueio), conforme achados acima.
+
+## Decisão final
+**APROVADO** para o SHA `308681ec6fcb947de9ff1d9d375f162ed2b19f29`. Pendências P3 acima não bloqueiam.
