@@ -135,3 +135,6 @@ audit-screenshots/
 # Scripts locais com credenciais temporarias
 scripts/setup-admin-user.mjs
 scripts/verify-user.mjs
+
+# Agent Bus runtime databases
+.agents/bus/*.db*
