@@ -307,7 +307,8 @@ export const LeadStageAndTags: React.FC<LeadStageAndTagsProps> = ({
                   <button
                     type="button"
                     onClick={() => setIsPickingLossReason(false)}
-                    className="hover:text-slate-200"
+                    aria-label="Cancelar seleção de motivo de perda"
+                    className="hover:text-slate-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -334,7 +335,8 @@ export const LeadStageAndTags: React.FC<LeadStageAndTagsProps> = ({
                   <button
                     type="button"
                     onClick={() => setIsPickingWinReason(false)}
-                    className="hover:text-slate-200"
+                    aria-label="Cancelar seleção de motivo de ganho"
+                    className="hover:text-slate-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -409,7 +411,8 @@ export const LeadStageAndTags: React.FC<LeadStageAndTagsProps> = ({
             <button
               type="button"
               onClick={() => handleRemoveTag(tag)}
-              className="text-slate-400 hover:text-red-400 transition-colors p-0.5 rounded"
+              aria-label={`Remover tag "${tag}"`}
+              className="text-slate-400 hover:text-red-400 transition-colors p-0.5 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
               title={`Remover tag "${tag}"`}
             >
               <X className="w-2.5 h-2.5" />
@@ -447,7 +450,8 @@ export const LeadStageAndTags: React.FC<LeadStageAndTagsProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsTagPopoverOpen(false)}
-                  className="hover:text-[#F8F9FF]"
+                  aria-label="Fechar popover de tags"
+                  className="hover:text-[#F8F9FF] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
                 >
                   <X className="w-3 h-3" />
                 </button>

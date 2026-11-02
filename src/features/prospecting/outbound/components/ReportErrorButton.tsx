@@ -116,11 +116,12 @@ export function ReportErrorButton({ user, page, isDark = true }: ReportErrorButt
                   <button
                     type="button"
                     onClick={close}
-                    className={
+                    aria-label="Fechar modal"
+                    className={`rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${
                       isDark
                         ? 'text-slate-500 hover:text-slate-300'
                         : 'text-slate-400 hover:text-slate-600'
-                    }
+                    }`}
                   >
                     <X className="w-4 h-4" />
                   </button>

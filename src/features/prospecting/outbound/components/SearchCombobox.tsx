@@ -195,7 +195,8 @@ export const SearchCombobox: React.FC<SearchComboboxProps> = ({
               <button
                 type="button"
                 onClick={() => setSearchTerm('')}
-                className="text-slate-400 hover:text-slate-200 p-0.5"
+                aria-label="Limpar busca"
+                className="text-slate-400 hover:text-slate-200 p-0.5 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
               >
                 <X className="w-3 h-3" />
               </button>

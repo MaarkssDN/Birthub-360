@@ -91,7 +91,8 @@ export const BrandGuideModal: React.FC<BrandGuideModalProps> = ({ isOpen, onClos
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-[#F8F9FF] hover:bg-slate-700 transition"
+            aria-label="Fechar modal"
+            className="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-[#F8F9FF] hover:bg-slate-700 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5618]"
           >
             <X className="w-5 h-5" />
           </button>
