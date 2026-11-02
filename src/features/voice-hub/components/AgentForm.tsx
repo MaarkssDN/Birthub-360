@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bot, Wand2, X, ChevronRight, Mic, Layout, Sparkles } from 'lucide-react';
 import type { AgentConfig, AgentTemplate } from '../types.js';
@@ -17,6 +17,7 @@ const INITIAL_CONFIG: AgentConfig = {
 };
 
 export function AgentForm() {
+  const fieldId = useId();
   const navigate = useNavigate();
   const [config, setConfig] = useState<AgentConfig>(INITIAL_CONFIG);
   const [isSaving, setIsSaving] = useState(false);
@@ -153,10 +154,14 @@ export function AgentForm() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                <label
+                  htmlFor={`${fieldId}-nome`}
+                  className="text-sm font-bold text-slate-700 dark:text-slate-300"
+                >
                   Nome do Agente
                 </label>
                 <input
+                  id={`${fieldId}-nome`}
                   type="text"
                   value={config.name}
                   onChange={(e) => setConfig({ ...config, name: e.target.value })}
@@ -166,10 +171,14 @@ export function AgentForm() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                <label
+                  htmlFor={`${fieldId}-idioma`}
+                  className="text-sm font-bold text-slate-700 dark:text-slate-300"
+                >
                   Idioma Principal
                 </label>
                 <select
+                  id={`${fieldId}-idioma`}
                   value={config.language}
                   onChange={(e) => setConfig({ ...config, language: e.target.value })}
                   className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all shadow-sm"
@@ -182,10 +191,14 @@ export function AgentForm() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
+              <label
+                htmlFor={`${fieldId}-descricao`}
+                className="text-sm font-bold text-slate-700 dark:text-slate-300"
+              >
                 Descrição e Missão
               </label>
               <textarea
+                id={`${fieldId}-descricao`}
                 rows={3}
                 value={config.description}
                 onChange={(e) => setConfig({ ...config, description: e.target.value })}
