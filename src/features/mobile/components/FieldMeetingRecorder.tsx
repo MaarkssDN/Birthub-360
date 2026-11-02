@@ -435,7 +435,6 @@ export function FieldMeetingRecorder({
         {recordingResult && (
           <div className="w-full mt-2 pt-4 border-t border-line/60 flex flex-col gap-2">
             <span className="text-xs font-medium text-ink/70">Prévia do áudio gravado:</span>
-            {/* biome-ignore lint/a11y/useMediaCaption: prévia local da gravação que o próprio usuário acabou de fazer; não há fonte de legenda (decisão do owner, ver docs/quality/biome-warnings-backlog.md). */}
             <audio
               controls
               src={URL.createObjectURL(recordingResult.blob)}

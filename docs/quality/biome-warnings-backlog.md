@@ -119,13 +119,15 @@ Total: 585.
 
 ## Decisões registradas
 
-### `a11y/useMediaCaption` (02/11/2026, decisão do owner)
+### `a11y/useMediaCaption` (02/11/2026, revisado após o parecer do Agente 24 ao #174)
 
-| Arquivo | Decisão | Motivo |
+Os 5 avisos continuam **abertos**. Nenhuma supressão foi aplicada.
+
+| Arquivo | Situação | Dono da pendência |
 | --- | --- | --- |
-| `src/features/mobile/components/FieldMeetingRecorder.tsx` | `biome-ignore` documentado | Prévia local da gravação feita pelo próprio usuário; não existe fonte de legenda. |
-| `src/features/voice-hub/pages/Telephony.tsx` | `biome-ignore` documentado | Música de espera gerada, sem fala; nada a legendar. |
-| `src/features/voice-hub/pages/Dashboard/Telephony.tsx` | `biome-ignore` documentado | Idem (cópia do anterior). |
-| `src/features/voice-hub/pages/Organization.tsx` e `pages/Dashboard/Organization.tsx` | Pendente | Arquivos em PR aberta (#168); fora deste lote. Tratar depois que #168 for resolvida. |
+| `src/features/mobile/components/FieldMeetingRecorder.tsx` | O `<audio>` toca a reunião gravada, que tem fala. O WF6 tentou ligar o áudio à transcrição via `aria-describedby`, mas o componente não tem nenhum bloco de transcrição: o texto da l.249 é só um subtítulo, e a transcrição (Whisper/Copiloto) é gerada no servidor depois do sync, então não existe na hora da prévia. Sem um vínculo confiável, o aviso fica aberto. | 00 / dono do mobile (09): exibir a transcrição junto ao player ou aceitar outra alternativa em texto. |
+| `src/features/voice-hub/pages/Telephony.tsx` | A música de espera pode ter vocal, porque o prompt livre vai para o Lyria (`ai.controller.ts:81-88`). Aviso mantido. | Dono do voice-hub (12): forçar instrumental no backend ou gerar legenda. |
+| `src/features/voice-hub/pages/Dashboard/Telephony.tsx` | Mesmo caso (cópia do anterior). | Dono do voice-hub (12). |
+| `src/features/voice-hub/pages/Organization.tsx` e `pages/Dashboard/Organization.tsx` | Arquivos em PR aberta (#168). Fora deste lote. | Retomar depois do #168. |
 
-Não foi adicionado `<track kind="captions">` sem fonte de legenda real.
+Não foi adicionado `<track kind="captions">` sem uma fonte de legenda real.
