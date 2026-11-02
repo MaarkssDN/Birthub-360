@@ -1206,10 +1206,21 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
         <div className="max-w-6xl mx-auto space-y-12">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Card 1: Ajuda */}
+            {/* biome-ignore lint/a11y/useSemanticElements: o card contém <h3>/<p>/<div> (conteúdo de bloco, inválido dentro de <button>); role, tabIndex e Enter/Espaço dão a mesma semântica sem mudar o layout. */}
             <div
+              role="button"
+              tabIndex={0}
               onClick={() => {
                 SoundFX.play('click');
                 window.location.href = 'mailto:suporte@birthhub360.com';
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  // Tecla segurada gera keydown com repeat=true: aciona só uma vez.
+                  if (event.repeat) return;
+                  event.currentTarget.click();
+                }
               }}
               className="vancouver-quick-card"
             >
@@ -1229,10 +1240,21 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
             </div>
 
             {/* Card 2: Contato */}
+            {/* biome-ignore lint/a11y/useSemanticElements: o card contém <h3>/<p>/<div> (conteúdo de bloco, inválido dentro de <button>); role, tabIndex e Enter/Espaço dão a mesma semântica sem mudar o layout. */}
             <div
+              role="button"
+              tabIndex={0}
               onClick={() => {
                 SoundFX.play('click');
                 window.location.href = 'mailto:comercial@birthhub360.com';
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  // Tecla segurada gera keydown com repeat=true: aciona só uma vez.
+                  if (event.repeat) return;
+                  event.currentTarget.click();
+                }
               }}
               className="vancouver-quick-card"
             >
@@ -1268,10 +1290,21 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
             </div>
 
             {/* Card 4: Segurança */}
+            {/* biome-ignore lint/a11y/useSemanticElements: o card contém <h3>/<p>/<div> (conteúdo de bloco, inválido dentro de <button>); role, tabIndex e Enter/Espaço dão a mesma semântica sem mudar o layout. */}
             <div
+              role="button"
+              tabIndex={0}
               onClick={() => {
                 SoundFX.play('click');
                 navigate('/privacy');
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  // Tecla segurada gera keydown com repeat=true: aciona só uma vez.
+                  if (event.repeat) return;
+                  event.currentTarget.click();
+                }
               }}
               className="vancouver-quick-card"
             >
