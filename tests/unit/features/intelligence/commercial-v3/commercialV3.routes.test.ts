@@ -73,9 +73,14 @@ describe('rotas da suíte comercial V3.1', () => {
       true,
     );
 
-    const allSkills = await request(admin).get(
+    // Contrato OpenAPI (#142): agentId é enum canônico; valor fora do enum → 400.
+    const unknownAgentSkills = await request(admin).get(
       '/api/agent/commercial-v3/skills?agentId=desconhecido',
     );
+    expect(unknownAgentSkills.status).toBe(400);
+    expect(unknownAgentSkills.body.success).toBe(false);
+
+    const allSkills = await request(admin).get('/api/agent/commercial-v3/skills');
     expect(allSkills.status).toBe(200);
     expect(allSkills.body.total).toBe(463);
 
