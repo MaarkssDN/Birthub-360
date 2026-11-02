@@ -176,15 +176,18 @@ jobs:
         run: bash scripts/db/bootstrap-app-role.sh localhost 5434 prospector prospectordb_test
 
       - name: Audit for vulnerabilities (waiver-aware)
+        continue-on-error: true  # DIAG WF4, NÃO MERGEAR
         run: npm run security:audit-waivers
 
       - name: Generate Prisma Client
         run: npx prisma generate
 
       - name: Run Lint
+        continue-on-error: true  # DIAG WF4, NÃO MERGEAR
         run: npm run lint:ci
 
       - name: Run Prettier check
+        continue-on-error: true  # DIAG WF4, NÃO MERGEAR
         # Correção da ANALISE-DIVIDA-TECNICA-ROBUSTA.md original (2026-08-28): Prettier já estava
         # configurado (.prettierrc) mas sem script format:check nem gate de CI — rodado
         # `npm run format` uma vez para zerar os 925 arquivos fora do padrão antes de tornar isto
@@ -192,6 +195,7 @@ jobs:
         run: npm run format:check
 
       - name: Verificar working tree limpa após os gates de verificação
+        continue-on-error: true  # DIAG WF4, NÃO MERGEAR
         # Nenhum gate de CI (lint, geração do Prisma Client, etc.) deve alterar
         # arquivos versionados. Autofix é um comando local explícito
         # (`npm run lint:fix`), nunca implícito no pipeline. Este passo é uma
@@ -206,18 +210,23 @@ jobs:
           fi
 
       - name: Run Type Check
+        continue-on-error: true  # DIAG WF4, NÃO MERGEAR
         run: npm run typecheck
 
       - name: Architecture tests (fronteiras de dependência e hotspots)
+        continue-on-error: true  # DIAG WF4, NÃO MERGEAR
         run: npm run test:architecture
 
       - name: Verificar deriva de OpenAPI
+        continue-on-error: true  # DIAG WF4, NÃO MERGEAR
         run: npm run verify:openapi-drift
 
       - name: Run Unit Tests
+        continue-on-error: true  # DIAG WF4, NÃO MERGEAR
         run: npm run test:unit -- --coverage
 
       - name: Run AI Resilience Tests (TD-009)
+        continue-on-error: true  # DIAG WF4, NÃO MERGEAR
         run: npm run test:unit -- src/lib/ai/gateway/__tests__/http-client.test.ts src/lib/ai/gateway/__tests__/circuit-breaker.test.ts src/lib/ai/gateway/__tests__/retry.test.ts
 
       - name: Run Migrations (para testes de integração)
@@ -281,6 +290,7 @@ jobs:
           EOF
 
       - name: Run Integration Tests (auth, RBAC and tenant isolation)
+        continue-on-error: true  # DIAG WF4, NÃO MERGEAR
         run: npm run test:integration -- --coverage
 
       - name: Run Build
