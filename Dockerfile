@@ -44,7 +44,7 @@ RUN npm prune --omit=dev
 # k8s/Helm quebra sem ela ("npx prisma migrate deploy": command not found) — ver handoff
 # .agents/handoffs/onda-4/10-para-08-prisma-cli-imagem-producao.md. O deploy real hoje
 # (Render, render.yaml) não usa este Dockerfile e não é afetado, mas o caminho
-# k8s/Helm/ArgoCD (charts/prospector-atlas/templates/migration-job.yaml,
+# k8s/Helm/ArgoCD (charts/birthhub-360/templates/migration-job.yaml,
 # k8s/migration-job.yaml — aspiracional) precisa da CLI presente na imagem final.
 # Reinstala só a CLI, na versão exata já instalada pelo lockfile, sem tocar em
 # package.json/lockfile (--no-save) e sem reintroduzir o restante das devDependencies.
@@ -137,7 +137,7 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
 # sem pendência é rápido/no-op) e seguro sob múltiplas réplicas (Prisma usa advisory lock —
 # instâncias concorrentes serializam em vez de corromper o schema), então não introduz problema
 # novo no caminho k8s/Helm (que também tem o Job dedicado em
-# charts/prospector-atlas/templates/migration-job.yaml como pre-install/pre-upgrade hook; esta
+# charts/birthhub-360/templates/migration-job.yaml como pre-install/pre-upgrade hook; esta
 # camada aqui é defesa adicional, não substitui aquele hook). Render não é afetado — usa
 # `buildCommand`/`startCommand` próprios e nunca passa por este Dockerfile (ver render.yaml).
 # `exec` no fim troca o shell pelo processo Node como PID 1 do container, preservando o

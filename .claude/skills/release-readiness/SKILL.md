@@ -92,7 +92,7 @@ Percorra estas frentes, citando arquivo real por achado:
   mesmo com `ci.yml` vermelho.
 - **Deploy/rollback**: `Dockerfile` (multi-stage, usuário não-root) → GHCR → ArgoCD
   (`argocd/application-production.yaml`, `application-homolog.yaml`, sync automático com
-  `prune`+`selfHeal`) → `charts/prospector-atlas` (Helm) → `k8s/` (`api-deployment.yaml` com
+  `prune`+`selfHeal`) → `charts/birthhub-360` (Helm) → `k8s/` (`api-deployment.yaml` com
   `readinessProbe`/`livenessProbe` reais em `/health/ready` e `/health/live`, este último faz
   `SELECT 1`). **Pergunta em aberto a investigar, não assumir**: migrations rodam automaticamente
   no deploy real (K8s/ArgoCD) ou dependem de um passo manual/job separado? O `Dockerfile` só roda

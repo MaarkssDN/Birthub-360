@@ -1,4 +1,4 @@
-# Guia de Produção — Birth Hub 360 / Prospector-Atlas
+# Guia de Produção — Birth Hub 360
 
 > [!IMPORTANT]
 > **Estado real da produção (atualizado em 02/11/2026):** o deploy está, por enquanto, na **AWS**,

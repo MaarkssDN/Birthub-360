@@ -7,7 +7,7 @@ Extensão Manifest V3 real que fala com o backend do módulo Copiloto Comercial 
 
 - Detecta o Google Meet (URL + título + código da reunião).
 - Tema claro/escuro — botão 🌙/☀️ no header do side panel, persistido em `chrome.storage.sync`.
-  Escuro continua o padrão (era o único antes); a cor de marca (laranja) é fixa nos dois temas, só
+  Escuro continua o padrão (era o único antes); a cor de marca (azul neon Birth Hub 360) é fixa nos dois temas, só
   a superfície muda.
 - Vincula a reunião a um Lead existente da Central Birth Hub 360 — por nome (busca incremental com
   `GET /api/copiloto-ia/leads/search`, mostrando até 10 candidatos por título do Lead/nome do
@@ -97,7 +97,7 @@ real do Google Meet — precisa de um passo manual num Chrome de verdade antes d
    reatualizado. Sem esse passo no servidor, a extensão erra com CORS mesmo com a URL certa.
 2. **URL do backend — já configurada como padrão**: `DEFAULT_API_BASE_URL` (`src/api.js`) e
    `host_permissions` (`manifest.json`) apontam para o serviço Render de produção
-   (`https://prospector-atlas.onrender.com`, ver `docs/deploy/producao.md` §2 e §8 — o caminho
+   (`https://app.birthhub360.com.br`, ver `docs/deploy/producao.md` §2 e §8 — o caminho
    Oracle Cloud/ADR-004 citado aqui antes foi retirado no commit 783f8582 e o IP direto parou de
    responder). Trocar para `https://app.birthhub360.com.br` assim que o cutover de domínio/DNS
    (`docs/deploy/producao.md` §3) acontecer. A aba "Configurações" do side panel continua existindo
