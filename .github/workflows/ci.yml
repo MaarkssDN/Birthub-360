@@ -278,6 +278,7 @@ jobs:
           AUTH_RATE_LIMIT_MAX=$AUTH_RATE_LIMIT_MAX
           PLATFORM_OPERATOR_TOKEN=$PLATFORM_OPERATOR_TOKEN
           BOOTSTRAP_SUPERUSER_URL=postgresql://prospector:prospector_test_pass@localhost:5434/prospectordb_test
+          COMMERCIAL_V3_LLM_STUB=true
           EOF
 
       - name: Run Integration Tests (auth, RBAC and tenant isolation)
@@ -467,6 +468,7 @@ jobs:
           ALLOWED_ORIGINS=$ALLOWED_ORIGINS
           AUTH_RATE_LIMIT_MAX=$AUTH_RATE_LIMIT_MAX
           PLATFORM_OPERATOR_TOKEN=$PLATFORM_OPERATOR_TOKEN
+          COMMERCIAL_V3_LLM_STUB=true
           EOF
 
       - name: Install Playwright browsers
