@@ -205,4 +205,48 @@ export interface AnalyticsRepository {
     todayStart: Date,
     baselineStart: Date,
   ): Promise<RealtimeCockpitRawData>;
+  getUnifiedTimeline(
+    organizationId: string,
+    query: UnifiedTimelineQuery,
+  ): Promise<UnifiedTimelineResult>;
+}
+
+export type UnifiedTimelineEntityType =
+  | 'lead'
+  | 'deal'
+  | 'call'
+  | 'email'
+  | 'whatsapp'
+  | 'automation';
+
+export type UnifiedTimelineOutcome = 'success' | 'pending' | 'failed';
+
+export interface UnifiedTimelineEvent {
+  id: string;
+  timestamp: string;
+  entityType: UnifiedTimelineEntityType;
+  title: string;
+  description?: string;
+  actor: string;
+  targetName?: string;
+  targetId?: string;
+  outcome: UnifiedTimelineOutcome;
+  metadata?: Record<string, unknown>;
+}
+
+export interface UnifiedTimelineQuery {
+  period?: 'today' | '7d' | '30d' | 'all';
+  entityType?: 'all' | UnifiedTimelineEntityType;
+  outcome?: 'all' | UnifiedTimelineOutcome;
+  search?: string;
+  limit?: number;
+  page?: number;
+}
+
+export interface UnifiedTimelineResult {
+  events: UnifiedTimelineEvent[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }

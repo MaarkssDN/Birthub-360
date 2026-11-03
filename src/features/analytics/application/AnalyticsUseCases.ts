@@ -20,6 +20,9 @@ import {
   type RealtimeCockpitMetrics,
   type SalesSummaryMetrics,
   WON,
+  type UnifiedTimelineEvent,
+  type UnifiedTimelineQuery,
+  type UnifiedTimelineResult,
 } from '../domain/Analytics.js';
 import {
   brazilMonthKey,
@@ -556,4 +559,66 @@ export class AnalyticsUseCases {
       lastUpdated: now.toISOString(),
     };
   }
+
+  async unifiedTimeline(
+    organizationId: string,
+    query: UnifiedTimelineQuery = {},
+  ): Promise<UnifiedTimelineResult> {
+    return this.repository.getUnifiedTimeline(organizationId, query);
+  }
+}
+
+/**
+ * Converte eventos da timeline unificada em formato CSV RFC-4180 com delimitador ';'
+ * e BOM UTF-8 (\uFEFF) para compatibilidade nativa com Excel e auditoria.
+ */
+export function buildUnifiedTimelineCsv(events: UnifiedTimelineEvent[]): string {
+  const header = [
+    'Data e Hora',
+    'Tipo',
+    'Título',
+    'Descrição',
+    'Responsável',
+    'Alvo/Contato',
+    'Resultado',
+  ].join(';');
+  const escapeCell = (val?: string) => {
+    if (!val) return '""';
+    const clean = val.replace(/"/g, '""').replace(/\r?\n/g, ' ');
+    return `"${clean}"`;
+  };
+
+  const rows = events.map((e) => {
+    const formattedDate = new Date(e.timestamp).toLocaleString('pt-BR');
+    const outcomeLabel =
+      e.outcome === 'success'
+        ? 'Concluído/Sucesso'
+        : e.outcome === 'failed'
+          ? 'Falha/Cancelado'
+          : 'Pendente';
+    const typeLabel =
+      e.entityType === 'call'
+        ? 'Chamada'
+        : e.entityType === 'email'
+          ? 'E-mail'
+          : e.entityType === 'whatsapp'
+            ? 'WhatsApp'
+            : e.entityType === 'deal'
+              ? 'Negociação'
+              : e.entityType === 'automation'
+                ? 'Automação'
+                : 'Lead';
+
+    return [
+      escapeCell(formattedDate),
+      escapeCell(typeLabel),
+      escapeCell(e.title),
+      escapeCell(e.description),
+      escapeCell(e.actor),
+      escapeCell(e.targetName),
+      escapeCell(outcomeLabel),
+    ].join(';');
+  });
+
+  return '\uFEFF' + [header, ...rows].join('\r\n');
 }

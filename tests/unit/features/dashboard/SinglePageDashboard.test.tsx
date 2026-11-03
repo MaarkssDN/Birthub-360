@@ -26,6 +26,12 @@ vi.mock('@/hooks/useDatabase', () => ({
     error: null,
     refetch: vi.fn(),
   }),
+  useUnifiedTimeline: () => ({
+    events: [],
+    loading: false,
+    error: null,
+    refetch: vi.fn(),
+  }),
 }));
 
 let mockIsOnline = true;

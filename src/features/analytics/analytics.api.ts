@@ -112,6 +112,38 @@ export function formatMonthLabel(month: string): string {
   return `${monthNames[monthIndex]}/${year.slice(2)}`;
 }
 
+export type UnifiedTimelineEntityType =
+  | 'lead'
+  | 'deal'
+  | 'call'
+  | 'email'
+  | 'whatsapp'
+  | 'automation';
+
+export type UnifiedTimelineOutcome = 'success' | 'pending' | 'failed';
+
+export interface UnifiedTimelineEvent {
+  id: string;
+  timestamp: string;
+  entityType: UnifiedTimelineEntityType;
+  title: string;
+  description?: string;
+  actor: string;
+  targetName?: string;
+  targetId?: string;
+  outcome: UnifiedTimelineOutcome;
+  metadata?: Record<string, unknown>;
+}
+
+export interface UnifiedTimelineQuery {
+  period?: 'today' | '7d' | '30d' | 'all';
+  entityType?: 'all' | UnifiedTimelineEntityType;
+  outcome?: 'all' | UnifiedTimelineOutcome;
+  search?: string;
+  limit?: number;
+  page?: number;
+}
+
 export const analyticsApi = {
   dashboard: (months: number) =>
     api.get<AnalyticsDashboard>(`/api/analytics/dashboard?months=${months}`, {
@@ -129,4 +161,26 @@ export const analyticsApi = {
     api.get<RealtimeCockpitMetrics>('/api/analytics/realtime-cockpit', {
       timeoutMs: 15_000,
     }),
+  unifiedTimeline: (query: UnifiedTimelineQuery = {}) => {
+    const params = new URLSearchParams();
+    if (query.period) params.set('period', query.period);
+    if (query.entityType) params.set('entityType', query.entityType);
+    if (query.outcome) params.set('outcome', query.outcome);
+    if (query.search) params.set('search', query.search);
+    if (query.page) params.set('page', String(query.page));
+    if (query.limit) params.set('limit', String(query.limit));
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    return api.get<UnifiedTimelineEvent[]>(`/api/analytics/unified-timeline${qs}`, {
+      timeoutMs: 20_000,
+    });
+  },
+  exportUnifiedTimelineUrl: (query: UnifiedTimelineQuery = {}) => {
+    const params = new URLSearchParams();
+    if (query.period) params.set('period', query.period);
+    if (query.entityType) params.set('entityType', query.entityType);
+    if (query.outcome) params.set('outcome', query.outcome);
+    if (query.search) params.set('search', query.search);
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    return `/api/analytics/unified-timeline/export${qs}`;
+  },
 };

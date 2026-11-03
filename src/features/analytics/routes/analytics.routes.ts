@@ -18,5 +18,9 @@ router.get('/productivity-heatmap', (req, res, next) =>
   resolve().getProductivityHeatmap(req, res, next),
 );
 router.get('/realtime-cockpit', (req, res, next) => resolve().getRealtimeCockpit(req, res, next));
+router.get('/unified-timeline', (req, res, next) => resolve().getUnifiedTimeline(req, res, next));
+router.get('/unified-timeline/export', (req, res, next) =>
+  resolve().exportUnifiedTimeline(req, res, next),
+);
 
 export const analyticsRoutes = router;

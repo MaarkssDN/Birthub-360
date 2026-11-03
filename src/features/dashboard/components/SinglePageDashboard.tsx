@@ -46,6 +46,7 @@ import {
 import { CommercialJourneyStream } from '../../../components/CommercialJourneyStream.js';
 import { DashboardBuilderModal } from './DashboardBuilderModal.js';
 import { ProductivityHeatmapWidget } from './ProductivityHeatmapWidget.js';
+import { UnifiedTimelineWidget } from './UnifiedTimelineWidget.js';
 import { RealtimeCockpitWidget } from './RealtimeCockpitWidget.js';
 
 function greeting() {
@@ -397,6 +398,9 @@ export function SinglePageDashboard() {
 
       case 'commercialJourney':
         return <CommercialJourneyStream key="commercialJourney" />;
+
+      case 'unifiedTimeline':
+        return <UnifiedTimelineWidget key="unifiedTimeline" />;
 
       case 'pipelineFunnel':
         return (

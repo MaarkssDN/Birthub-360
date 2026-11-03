@@ -8,8 +8,19 @@ import {
   analyticsApi,
   type ProductivityHeatmapSlot,
   type RealtimeCockpitMetrics,
+  type UnifiedTimelineEntityType,
+  type UnifiedTimelineEvent,
+  type UnifiedTimelineOutcome,
+  type UnifiedTimelineQuery,
 } from '../features/analytics/analytics.api.js';
-export type { ProductivityHeatmapSlot, RealtimeCockpitMetrics };
+export type {
+  ProductivityHeatmapSlot,
+  RealtimeCockpitMetrics,
+  UnifiedTimelineEntityType,
+  UnifiedTimelineEvent,
+  UnifiedTimelineOutcome,
+  UnifiedTimelineQuery,
+};
 import { activitiesDB, analyticsDB, companiesDB, contactsDB, leadsDB } from '../lib/db.js';
 import { readSseStream } from '../lib/sse.js';
 import type { Activity, Company, Contact, Lead, PaginatedResponse } from '../types/index.js';
@@ -361,4 +372,32 @@ export function useRealtimeCockpit() {
   }, [load]);
 
   return { data, loading, error, isLiveConnected, refetch: load };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UNIFIED TIMELINE HOOK (/api/analytics/unified-timeline)
+// ─────────────────────────────────────────────────────────────────────────────
+export function useUnifiedTimeline(query: UnifiedTimelineQuery = {}) {
+  const [events, setEvents] = useState<UnifiedTimelineEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchTimeline = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await analyticsApi.unifiedTimeline(query);
+      setEvents(data ?? []);
+      setError(null);
+    } catch (e: any) {
+      setError(e instanceof Error ? e.message : 'Erro ao carregar timeline unificada');
+    } finally {
+      setLoading(false);
+    }
+  }, [query.period, query.entityType, query.outcome, query.search, query.page, query.limit]);
+
+  useEffect(() => {
+    fetchTimeline();
+  }, [fetchTimeline]);
+
+  return { events, loading, error, refetch: fetchTimeline };
 }

@@ -4981,6 +4981,92 @@ paths:
                           currentValue: { type: number, example: 37.5 }
                       lastUpdated: { type: string, format: date-time, example: '2026-11-03T14:00:00.000Z' }
 
+  /analytics/unified-timeline:
+    get:
+      tags: [Analytics]
+      summary: Timeline unificada cross-entity (leads, negociações, chamadas, WhatsApp, automações)
+      parameters:
+        - name: period
+          in: query
+          description: Período de análise
+          schema: { type: string, enum: [today, 7d, 30d, all], default: 30d }
+        - name: entityType
+          in: query
+          description: Tipo de entidade
+          schema: { type: string, enum: [all, lead, deal, call, email, whatsapp, automation], default: all }
+        - name: outcome
+          in: query
+          description: Resultado do evento
+          schema: { type: string, enum: [all, success, pending, failed], default: all }
+        - name: search
+          in: query
+          description: Termo de busca textual (contato, empresa, responsável, título)
+          schema: { type: string }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50, maximum: 200 }
+      responses:
+        '200':
+          description: Eventos da timeline unificada
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, data, meta]
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, timestamp, entityType, title, actor, outcome]
+                      properties:
+                        id: { type: string, example: act_clz12345 }
+                        timestamp: { type: string, format: date-time }
+                        entityType: { type: string, enum: [lead, deal, call, email, whatsapp, automation] }
+                        title: { type: string, example: 'Ligação: Proposta comercial' }
+                        description: { type: string }
+                        actor: { type: string, example: 'Vendedor' }
+                        targetName: { type: string, example: 'Empresa Alpha' }
+                        targetId: { type: string }
+                        outcome: { type: string, enum: [success, pending, failed] }
+                        metadata: { type: object }
+                  meta:
+                    type: object
+                    required: [total, page, limit, totalPages]
+                    properties:
+                      total: { type: integer }
+                      page: { type: integer }
+                      limit: { type: integer }
+                      totalPages: { type: integer }
+
+  /analytics/unified-timeline/export:
+    get:
+      tags: [Analytics]
+      summary: Exportação da timeline unificada para auditoria em CSV (compatível com Excel)
+      parameters:
+        - name: period
+          in: query
+          schema: { type: string, enum: [today, 7d, 30d, all], default: 30d }
+        - name: entityType
+          in: query
+          schema: { type: string, enum: [all, lead, deal, call, email, whatsapp, automation], default: all }
+        - name: outcome
+          in: query
+          schema: { type: string, enum: [all, success, pending, failed], default: all }
+        - name: search
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Arquivo CSV formatado com BOM UTF-8 e delimitador ponto-e-vírgula
+          content:
+            text/csv:
+              schema: { type: string }
+
   # ───────────────────────────── Knowledge ─────────────────────────────
   /knowledge:
     get:

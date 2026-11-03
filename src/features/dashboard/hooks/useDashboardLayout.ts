@@ -7,6 +7,7 @@ export type WidgetId =
   | 'realtimeCockpit'
   | 'productivityHeatmap'
   | 'commercialJourney'
+  | 'unifiedTimeline'
   | 'pipelineFunnel'
   | 'quickActions'
   | 'aiOrchestrator'
@@ -52,6 +53,13 @@ export const WIDGETS_METADATA: Record<WidgetId, WidgetMeta> = {
     name: 'Jornada Comercial 360° Stream',
     category: 'Tempo Real',
     description: 'Feed em tempo real de movimentações, propostas e eventos comerciais.',
+  },
+  unifiedTimeline: {
+    id: 'unifiedTimeline',
+    name: 'Timeline Unificada Cross-Entity',
+    category: 'Operações',
+    description:
+      'Auditoria cronológica de leads, negócios, chamadas, WhatsApp e automações, com exportação.',
   },
   pipelineFunnel: {
     id: 'pipelineFunnel',
@@ -133,6 +141,7 @@ export const ROLE_DEFAULT_TEMPLATES: Record<
       'realtimeCockpit',
       'productivityHeatmap',
       'commercialJourney',
+      'unifiedTimeline',
       'pipelineFunnel',
       'quickActions',
       'gamification',
@@ -148,6 +157,7 @@ export const ROLE_DEFAULT_TEMPLATES: Record<
       'realtimeCockpit',
       'productivityHeatmap',
       'commercialJourney',
+      'unifiedTimeline',
       'quickActions',
       'aiOrchestrator',
       'gamification',
@@ -163,6 +173,7 @@ export const ROLE_DEFAULT_TEMPLATES: Record<
       'productivityHeatmap',
       'pipelineFunnel',
       'commercialJourney',
+      'unifiedTimeline',
       'aiOrchestrator',
       'gamification',
       'quickActions',
