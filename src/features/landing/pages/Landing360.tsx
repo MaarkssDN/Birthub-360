@@ -223,7 +223,9 @@ export function Landing360({
     const errorParam = searchParams.get('error');
     if (errorParam) {
       if (errorParam === 'sso_failed' || errorParam === 'oauth_failed') {
-        setErrorMessage('Falha na autenticação via SSO Empresarial. Tente novamente ou use E-mail Corporativo.');
+        setErrorMessage(
+          'Falha na autenticação via SSO Empresarial. Tente novamente ou use E-mail Corporativo.',
+        );
       } else if (errorParam === 'unauthorized') {
         setErrorMessage('Acesso não autorizado para esta organização.');
       } else {
@@ -331,7 +333,9 @@ export function Landing360({
     }
 
     if (!isAuthorizedLoginEmail(trimmedEmail)) {
-      setErrorMessage('Por favor, informe um endereço de e-mail corporativo válido (ex: nome@empresa.com.br).');
+      setErrorMessage(
+        'Por favor, informe um endereço de e-mail corporativo válido (ex: nome@empresa.com.br).',
+      );
       return;
     }
 
@@ -412,7 +416,9 @@ export function Landing360({
 
     const targetDomain = email.trim();
     if (!targetDomain) {
-      setErrorMessage('Por favor, informe o domínio corporativo da sua organização (ex: empresa.com.br).');
+      setErrorMessage(
+        'Por favor, informe o domínio corporativo da sua organização (ex: empresa.com.br).',
+      );
       return;
     }
 
@@ -427,7 +433,7 @@ export function Landing360({
 
       if (!res.ok || !data.success) {
         setErrorMessage(
-          data.error || 'Provedor SSO corporativo não configurado para este domínio.'
+          data.error || 'Provedor SSO corporativo não configurado para este domínio.',
         );
         setIsSubmitting(false);
         return;
@@ -2107,7 +2113,8 @@ export function Landing360({
                     Single Sign-On Corporativo
                   </h4>
                   <p className="landing-subtitle font-sans text-xs leading-relaxed mb-3">
-                    Autenticação federada OpenID Connect / SAML 2.0 (Google Workspace / Microsoft Entra ID) para a sua organização.
+                    Autenticação federada OpenID Connect / SAML 2.0 (Google Workspace / Microsoft
+                    Entra ID) para a sua organização.
                   </p>
                   <div className="space-y-1.5 text-left">
                     <label

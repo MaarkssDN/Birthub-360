@@ -51,7 +51,9 @@ export const authenticateToken = async (
     if (user.lockedUntil) {
       const lockedTime = new Date(user.lockedUntil).getTime();
       if (lockedTime > Date.now()) {
-        res.status(403).json({ success: false, error: 'Conta temporariamente bloqueada por segurança.' });
+        res
+          .status(403)
+          .json({ success: false, error: 'Conta temporariamente bloqueada por segurança.' });
         return;
       }
     }

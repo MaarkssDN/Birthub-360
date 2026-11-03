@@ -40,13 +40,7 @@ const blurMap = {
   '2xl': 'blur-[160px]',
 };
 
-export function Glow({
-  className,
-  variant,
-  color = 'brand',
-  blur = 'lg',
-  ...props
-}: GlowProps) {
+export function Glow({ className, variant, color = 'brand', blur = 'lg', ...props }: GlowProps) {
   return (
     <div
       data-slot="glow"

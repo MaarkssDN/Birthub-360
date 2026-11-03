@@ -4,8 +4,7 @@ import { cn } from '../../lib/utils.js';
 import { Button } from './Button.js';
 import { Glow } from './Glow.js';
 
-export interface CtaBannerProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
+export interface CtaBannerProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
   onCtaClick?: () => void;
   title?: React.ReactNode;
   description?: string;

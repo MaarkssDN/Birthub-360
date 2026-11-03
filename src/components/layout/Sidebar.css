@@ -28,23 +28,27 @@
   transform: translateX(4px);
   background: var(--surface);
   border-color: var(--line);
-  box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  box-shadow:
+    0 4px 14px -2px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
   color: var(--ink);
 }
 
 .dark .sidebar-card-idle:hover {
   transform: translateX(4px);
-  background: #18191E;
+  background: #18191e;
   border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  color: #FFFFFF;
+  box-shadow:
+    0 4px 16px -2px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  color: #ffffff;
 }
 
 /* CARDS ATIVOS SEMÂNTICOS DE ALTA PRECISÃO (Pill / Squircle) */
 
 /* 1. CYAN (Azul Executivo / Inovação) */
 .sidebar-nav-card.sidebar-card-active-cyan {
-  background: #FFFFFF;
+  background: #ffffff;
   border: 1px solid rgba(0, 212, 255, 0.45);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 1),
@@ -53,7 +57,7 @@
 }
 
 .dark .sidebar-nav-card.sidebar-card-active-cyan {
-  background: #181A20;
+  background: #181a20;
   border: 1px solid rgba(0, 212, 255, 0.4);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
@@ -62,7 +66,7 @@
 }
 
 .sidebar-nav-card.sidebar-card-active-cyan:hover {
-  border-color: #00D4FF;
+  border-color: #00d4ff;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 1),
     0 6px 22px -3px rgba(0, 212, 255, 0.25);
@@ -70,7 +74,7 @@
 
 /* 2. PINK (Rosa Executivo / Sinais) */
 .sidebar-nav-card.sidebar-card-active-pink {
-  background: #FFFFFF;
+  background: #ffffff;
   border: 1px solid rgba(255, 45, 155, 0.45);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 1),
@@ -79,7 +83,7 @@
 }
 
 .dark .sidebar-nav-card.sidebar-card-active-pink {
-  background: #1B171D;
+  background: #1b171d;
   border: 1px solid rgba(255, 45, 155, 0.4);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
@@ -89,7 +93,7 @@
 
 /* 3. GOLD (Dourado / Receita & Performance) */
 .sidebar-nav-card.sidebar-card-active-gold {
-  background: #FFFFFF;
+  background: #ffffff;
   border: 1px solid rgba(245, 158, 11, 0.45);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 1),
@@ -98,7 +102,7 @@
 }
 
 .dark .sidebar-nav-card.sidebar-card-active-gold {
-  background: #1C1A16;
+  background: #1c1a16;
   border: 1px solid rgba(245, 158, 11, 0.4);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
@@ -108,7 +112,7 @@
 
 /* 4. IRIS (Íris / IA & Automações) */
 .sidebar-nav-card.sidebar-card-active-iris {
-  background: #FFFFFF;
+  background: #ffffff;
   border: 1px solid rgba(139, 125, 255, 0.45);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 1),
@@ -117,7 +121,7 @@
 }
 
 .dark .sidebar-nav-card.sidebar-card-active-iris {
-  background: #1A1822;
+  background: #1a1822;
   border: 1px solid rgba(139, 125, 255, 0.4);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
@@ -140,7 +144,7 @@
 
 /* Floating Rail Popover (Menu recolhido com cantos arredondados) */
 .sidebar-rail-popover-card {
-  background: #FFFFFF;
+  background: #ffffff;
   border: 1px solid var(--line);
   border-radius: 18px;
   box-shadow:
@@ -149,7 +153,7 @@
 }
 
 .dark .sidebar-rail-popover-card {
-  background: #16171B;
+  background: #16171b;
   border-color: rgba(255, 255, 255, 0.12);
   box-shadow:
     0 16px 48px -4px rgba(0, 0, 0, 0.55),
@@ -159,7 +163,7 @@
 /* Footer Card (Copiloto IA / Destaque Célula) */
 .sidebar-footer-card {
   border-radius: 16px;
-  background: #FFFFFF;
+  background: #ffffff;
   border: 1px solid var(--line);
   box-shadow:
     0 4px 16px -2px rgba(0, 0, 0, 0.04),
@@ -168,7 +172,7 @@
 }
 
 .dark .sidebar-footer-card {
-  background: #16171B;
+  background: #16171b;
   border-color: rgba(255, 255, 255, 0.08);
   box-shadow:
     0 4px 18px -2px rgba(0, 0, 0, 0.4),

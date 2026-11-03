@@ -1321,6 +1321,77 @@ paths:
         '200':
           description: Sessão encerrada
 
+  /auth/sso-providers:
+    get:
+      tags: [Auth]
+      summary: Lista provedores SSO corporativos e status real de configuração
+      security: []
+      responses:
+        '200':
+          description: Provedores SSO e disponibilidade de credenciais
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, providers]
+                properties:
+                  success:
+                    type: boolean
+                  providers:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      required: [id, name, configured]
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        configured:
+                          type: boolean
+
+  /auth/sso-discover:
+    post:
+      tags: [Auth]
+      summary: Descoberta de provedor federado SSO corporativo por domínio ou e-mail
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                domain:
+                  type: string
+                  example: empresa.com.br
+                email:
+                  type: string
+                  example: usuario@empresa.com.br
+      responses:
+        '200':
+          description: Provedor corporativo identificado e configurado
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, domain, provider, providerName, configured]
+                properties:
+                  success:
+                    type: boolean
+                  domain:
+                    type: string
+                  provider:
+                    type: string
+                  providerName:
+                    type: string
+                  configured:
+                    type: boolean
+        '400':
+          description: Domínio ou e-mail corporativo inválido
+        '503':
+          description: Provedor corporativo identificado, mas credenciais de SSO não configuradas no ambiente
+
   /auth-extra/welcome-email:
     post:
       tags: [Auth]

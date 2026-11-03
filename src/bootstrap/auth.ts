@@ -17,7 +17,9 @@ export function mountAuthHandler(app: Express): void {
   // Endpoints declarados de SSO Corporativo — audita provedores reais e evita simulação fictícia
   app.get('/api/auth/sso-providers', (_req, res) => {
     const google = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
-    const microsoft = Boolean(process.env.MICROSOFT_CLIENT_ID && process.env.MICROSOFT_CLIENT_SECRET);
+    const microsoft = Boolean(
+      process.env.MICROSOFT_CLIENT_ID && process.env.MICROSOFT_CLIENT_SECRET,
+    );
     res.json({
       success: true,
       providers: {
@@ -53,8 +55,12 @@ export function mountAuthHandler(app: Express): void {
       return;
     }
 
-    const googleConfigured = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
-    const microsoftConfigured = Boolean(process.env.MICROSOFT_CLIENT_ID && process.env.MICROSOFT_CLIENT_SECRET);
+    const googleConfigured = Boolean(
+      process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET,
+    );
+    const microsoftConfigured = Boolean(
+      process.env.MICROSOFT_CLIENT_ID && process.env.MICROSOFT_CLIENT_SECRET,
+    );
 
     const isMicrosoftDomain =
       domain.endsWith('microsoft.com') ||
