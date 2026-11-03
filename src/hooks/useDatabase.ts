@@ -327,8 +327,10 @@ export function useRealtimeCockpit() {
   }, []);
 
   useEffect(() => {
-    load();
-    const interval = setInterval(load, 30_000);
+    void load();
+    const interval = setInterval(() => {
+      void load();
+    }, 30_000);
     return () => clearInterval(interval);
   }, [load]);
 
@@ -353,7 +355,7 @@ export function useRealtimeCockpit() {
 
         await readSseStream(response, () => {
           if (!cancelled) {
-            load();
+            void load();
           }
         });
       } catch {
@@ -363,7 +365,7 @@ export function useRealtimeCockpit() {
       }
     };
 
-    connectSSE();
+    void connectSSE();
 
     return () => {
       cancelled = true;
@@ -396,7 +398,7 @@ export function useUnifiedTimeline(query: UnifiedTimelineQuery = {}) {
   }, [query.period, query.entityType, query.outcome, query.search, query.page, query.limit]);
 
   useEffect(() => {
-    fetchTimeline();
+    void fetchTimeline();
   }, [fetchTimeline]);
 
   return { events, loading, error, refetch: fetchTimeline };

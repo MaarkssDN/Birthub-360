@@ -266,7 +266,7 @@ export function Landing360({
     SoundFX.play('click');
     setActiveScreen('intro');
     if (location.pathname === '/login') {
-      navigate('/', { replace: true });
+      void navigate('/', { replace: true });
     }
   };
 

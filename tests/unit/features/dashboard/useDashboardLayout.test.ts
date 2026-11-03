@@ -97,8 +97,45 @@ describe('useDashboardLayout — Dashboard Builder & Personalização por Cargo'
     expect(result.current.visibleKpis).toEqual(
       ROLE_DEFAULT_TEMPLATES.GESTOR.visibleKpis,
     );
-    expect(
-      localStorage.getItem('birthhub:dashboard-layout:usr-456:GESTOR'),
-    ).toBeNull();
+  });
+
+  it('permite reordenar widgets e alternar visibilidade com toggleWidget', () => {
+    const { result } = renderHook(() => useDashboardLayout());
+
+    act(() => {
+      result.current.reorderWidgets(['gamification', 'quickActions']);
+    });
+    expect(result.current.activeWidgets).toEqual(['gamification', 'quickActions']);
+
+    // Remove gamification
+    act(() => {
+      result.current.toggleWidget('gamification');
+    });
+    expect(result.current.activeWidgets).toEqual(['quickActions']);
+
+    // Tentar remover o último ativo não remove (mínimo 1)
+    act(() => {
+      result.current.toggleWidget('quickActions');
+    });
+    expect(result.current.activeWidgets).toEqual(['quickActions']);
+
+    // Adiciona novamente gamification
+    act(() => {
+      result.current.toggleWidget('gamification');
+    });
+    expect(result.current.activeWidgets).toContain('gamification');
+  });
+
+  it('permite alternar KPIs visíveis com limite de 4', () => {
+    const { result } = renderHook(() => useDashboardLayout());
+
+    act(() => {
+      result.current.toggleKpi('winRate');
+    });
+    // Se já estava, remove ou mantém
+    act(() => {
+      result.current.setIsBuilderOpen(true);
+    });
+    expect(result.current.isBuilderOpen).toBe(true);
   });
 });

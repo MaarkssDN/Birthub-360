@@ -549,7 +549,7 @@ export function IntelligenceHub({ initialTab }: IntelligenceHubProps) {
                     <StatusIcon className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[10px] font-bold text-[#507290] dark:text-[#7A9BB8] uppercase tracking-wider font-mono">
+                    <p className="text-[10px] font-bold text-[#3B5A75] dark:text-[#94B3CD] uppercase tracking-wider font-mono">
                       {item.title}
                     </p>
                     <p className="text-xs font-black text-[#0F2942] dark:text-[#E2F1FF] truncate flex items-center gap-1.5 mt-0.5">

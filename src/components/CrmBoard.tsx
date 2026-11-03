@@ -890,7 +890,7 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
       <div className="flex flex-wrap items-center gap-2 px-4 lg:px-6 py-2 border-b border-line/60 bg-surface/50 dark:bg-[#101216]/50 backdrop-blur-md">
         <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-2 border border-line text-xs">
           <span className="w-2 h-2 rounded-full bg-[#10B981] shadow-[0_0_8px_#10B981] animate-pulse" />
-          <span className="font-mono text-[10px] font-bold text-[#507290] dark:text-[#7A9BB8] uppercase">
+          <span className="font-mono text-[10px] font-bold text-[#3B5A75] dark:text-[#94B3CD] uppercase">
             Diagnóstico:
           </span>
           <span className="font-bold text-[#0F2942] dark:text-[#E2F1FF]">Pipeline Saudável</span>
@@ -898,7 +898,7 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
 
         <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-2 border border-line text-xs">
           <TrendingUp className="w-3.5 h-3.5 text-[#059669] dark:text-[#34D399]" />
-          <span className="font-mono text-[10px] font-bold text-[#507290] dark:text-[#7A9BB8] uppercase">
+          <span className="font-mono text-[10px] font-bold text-[#3B5A75] dark:text-[#94B3CD] uppercase">
             Pipeline:
           </span>
           <span className="font-extrabold text-[#059669] dark:text-[#34D399]">
@@ -910,7 +910,7 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
 
         <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-2 border border-line text-xs">
           <Activity className="w-3.5 h-3.5 text-[#00D4FF]" />
-          <span className="font-mono text-[10px] font-bold text-[#507290] dark:text-[#7A9BB8] uppercase">
+          <span className="font-mono text-[10px] font-bold text-[#3B5A75] dark:text-[#94B3CD] uppercase">
             Win Rate:
           </span>
           <span className="font-extrabold text-[#0284c7] dark:text-[#00D4FF]">
@@ -920,7 +920,7 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
 
         <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-2 border border-line text-xs">
           <Flame className="w-3.5 h-3.5 text-[#F59E0B]" />
-          <span className="font-mono text-[10px] font-bold text-[#507290] dark:text-[#7A9BB8] uppercase">
+          <span className="font-mono text-[10px] font-bold text-[#3B5A75] dark:text-[#94B3CD] uppercase">
             Quentes:
           </span>
           <span className="font-extrabold text-[#F59E0B]">{pipelineMetrics.hotLeads}</span>
@@ -928,7 +928,7 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
 
         <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-2 border border-line text-xs">
           <Zap className="w-3.5 h-3.5 text-[#8B7DFF]" />
-          <span className="font-mono text-[10px] font-bold text-[#507290] dark:text-[#7A9BB8] uppercase">
+          <span className="font-mono text-[10px] font-bold text-[#3B5A75] dark:text-[#94B3CD] uppercase">
             Enriquecidos:
           </span>
           <span className="font-bold text-[#0F2942] dark:text-[#E2F1FF]">

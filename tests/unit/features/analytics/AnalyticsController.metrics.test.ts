@@ -114,4 +114,78 @@ describe('AnalyticsController — tratamento defensivo em /api/analytics', () =>
     expect(next).toHaveBeenCalledWith(testError);
     expect(res.json).not.toHaveBeenCalled();
   });
+
+  it('responde 200 com eventos e meta em getUnifiedTimeline', async () => {
+    const mockEvents = [
+      { id: 'ev-1', title: 'Chamada Realizada', timestamp: '2026-11-03T10:00:00Z', entityType: 'call', outcome: 'success', actor: 'SDR' },
+    ];
+    const mockUseCases = {
+      unifiedTimeline: vi.fn().mockResolvedValue({
+        events: mockEvents,
+        total: 1,
+        page: 1,
+        limit: 20,
+        totalPages: 1,
+      }),
+    } as unknown as AnalyticsUseCases;
+
+    const controller = new AnalyticsController(mockUseCases);
+    const req = {
+      user: { organizationId: 'org-test' },
+      query: { period: '7d', entityType: 'call', page: '1', limit: '20' },
+    } as unknown as Request;
+    const res = { json: vi.fn() } as unknown as Response;
+    const next = vi.fn();
+
+    await controller.getUnifiedTimeline(req, res, next);
+
+    expect(res.json).toHaveBeenCalledWith({
+      success: true,
+      data: mockEvents,
+      meta: { total: 1, page: 1, limit: 20, totalPages: 1 },
+    });
+  });
+
+  it('encaminha erro para next() em getUnifiedTimeline quando useCases falha', async () => {
+    const testError = new Error('Falha no caso de uso');
+    const mockUseCases = {
+      unifiedTimeline: vi.fn().mockRejectedValue(testError),
+    } as unknown as AnalyticsUseCases;
+
+    const controller = new AnalyticsController(mockUseCases);
+    const req = { user: { organizationId: 'org-test' }, query: {} } as unknown as Request;
+    const res = { json: vi.fn() } as unknown as Response;
+    const next = vi.fn();
+
+    await controller.getUnifiedTimeline(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(testError);
+  });
+
+  it('exporta timeline como CSV em exportUnifiedTimeline', async () => {
+    const mockEvents = [
+      { id: 'ev-1', title: 'Chamada', timestamp: '2026-11-03T10:00:00Z', entityType: 'call', outcome: 'success', actor: 'SDR' },
+    ];
+    const mockUseCases = {
+      unifiedTimeline: vi.fn().mockResolvedValue({
+        events: mockEvents,
+        total: 1,
+        page: 1,
+        limit: 1000,
+        totalPages: 1,
+      }),
+    } as unknown as AnalyticsUseCases;
+
+    const controller = new AnalyticsController(mockUseCases);
+    const req = { user: { organizationId: 'org-test' }, query: {} } as unknown as Request;
+    const setHeader = vi.fn();
+    const send = vi.fn();
+    const res = { setHeader, send } as unknown as Response;
+    const next = vi.fn();
+
+    await controller.exportUnifiedTimeline(req, res, next);
+
+    expect(setHeader).toHaveBeenCalledWith('Content-Type', 'text/csv; charset=utf-8');
+    expect(send).toHaveBeenCalled();
+  });
 });

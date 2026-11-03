@@ -303,7 +303,7 @@ export function UnifiedTimelineWidget() {
                   onClick={() => setPeriod(p)}
                   className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     isSelected
-                      ? 'bg-brand text-[#121316] font-bold shadow-xs'
+                      ? 'bg-brand text-white font-bold shadow-xs'
                       : 'text-ink-2 hover:text-ink hover:bg-surface-2'
                   }`}
                 >
@@ -343,7 +343,7 @@ export function UnifiedTimelineWidget() {
                   onClick={() => setEntityType(typeKey)}
                   className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     isSelected
-                      ? 'bg-brand text-[#121316] font-bold shadow-xs'
+                      ? 'bg-brand text-white font-bold shadow-xs'
                       : 'bg-surface text-ink-2 hover:text-ink border border-line'
                   }`}
                 >
