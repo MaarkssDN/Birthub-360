@@ -132,9 +132,9 @@ export function ProductivityHeatmapWidget() {
       return 'bg-cyan-500/25 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30';
     }
     // 'all' ou 'calls' -> Brand
-    if (ratio > 0.6) return 'bg-brand text-brand-foreground font-bold shadow-sm';
-    if (ratio > 0.3) return 'bg-brand/70 text-brand-foreground font-semibold';
-    return 'bg-brand/20 text-brand border border-brand/30';
+    if (ratio > 0.6) return 'bg-brand text-[#121316] font-bold shadow-sm';
+    if (ratio > 0.3) return 'bg-brand/70 text-[#121316] font-semibold';
+    return 'bg-brand/20 text-emerald-800 dark:text-brand border border-brand/30';
   };
 
   const bestDayLabel = bestSlot
@@ -168,7 +168,7 @@ export function ProductivityHeatmapWidget() {
             onClick={() => setMetric('all')}
             className={`px-3 py-1 rounded-lg font-semibold transition-colors cursor-pointer ${
               metric === 'all'
-                ? 'bg-brand text-brand-foreground shadow-sm'
+                ? 'bg-brand text-[#121316] shadow-sm'
                 : 'text-ink-2 hover:text-ink'
             }`}
           >
@@ -179,7 +179,7 @@ export function ProductivityHeatmapWidget() {
             onClick={() => setMetric('calls')}
             className={`px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
               metric === 'calls'
-                ? 'bg-brand text-brand-foreground shadow-sm'
+                ? 'bg-brand text-[#121316] shadow-sm'
                 : 'text-ink-2 hover:text-ink'
             }`}
           >

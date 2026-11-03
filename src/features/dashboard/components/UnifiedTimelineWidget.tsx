@@ -71,7 +71,7 @@ const ENTITY_TYPE_CONFIG: Record<
   whatsapp: {
     label: 'WhatsApp',
     icon: MessageSquare,
-    color: 'text-emerald-600 dark:text-emerald-300',
+    color: 'text-emerald-700 dark:text-emerald-300',
     bg: 'bg-emerald-600/10 border-emerald-600/20',
   },
   automation: {
@@ -89,13 +89,13 @@ const OUTCOME_CONFIG: Record<
   success: {
     label: 'Concluído',
     icon: CheckCircle2,
-    color: 'text-emerald-600 dark:text-emerald-400',
+    color: 'text-emerald-700 dark:text-emerald-400',
     badge: 'bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border-emerald-500/20',
   },
   pending: {
     label: 'Pendente',
     icon: Clock,
-    color: 'text-amber-600 dark:text-amber-400',
+    color: 'text-amber-800 dark:text-amber-400',
     badge: 'bg-amber-500/10 text-amber-800 dark:text-amber-400 border-amber-500/20',
   },
   failed: {
@@ -303,7 +303,7 @@ export function UnifiedTimelineWidget() {
                   onClick={() => setPeriod(p)}
                   className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     isSelected
-                      ? 'bg-brand text-brand-foreground shadow-xs'
+                      ? 'bg-brand text-[#121316] font-bold shadow-xs'
                       : 'text-ink-2 hover:text-ink hover:bg-surface-2'
                   }`}
                 >
@@ -343,7 +343,7 @@ export function UnifiedTimelineWidget() {
                   onClick={() => setEntityType(typeKey)}
                   className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     isSelected
-                      ? 'bg-brand text-brand-foreground shadow-xs'
+                      ? 'bg-brand text-[#121316] font-bold shadow-xs'
                       : 'bg-surface text-ink-2 hover:text-ink border border-line'
                   }`}
                 >

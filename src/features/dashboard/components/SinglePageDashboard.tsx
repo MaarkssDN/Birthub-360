@@ -900,7 +900,7 @@ export function SinglePageDashboard() {
                     onClick={() => setRole(r)}
                     className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-brand text-brand-foreground shadow-xs'
+                        ? 'bg-brand text-[#121316] shadow-xs'
                         : 'text-ink-2 hover:text-ink hover:bg-surface'
                     }`}
                   >

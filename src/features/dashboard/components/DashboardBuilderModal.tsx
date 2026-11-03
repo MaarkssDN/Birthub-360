@@ -221,7 +221,7 @@ export function DashboardBuilderModal({
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-sm font-bold text-ink font-display">{r}</span>
                         {isSelected && (
-                          <span className="w-5 h-5 rounded-full bg-brand text-brand-foreground flex items-center justify-center">
+                          <span className="w-5 h-5 rounded-full bg-brand text-[#121316] flex items-center justify-center">
                             <Check className="w-3 h-3" />
                           </span>
                         )}
@@ -265,7 +265,7 @@ export function DashboardBuilderModal({
                       <div
                         className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${
                           isChecked
-                            ? 'bg-brand border-brand text-brand-foreground'
+                            ? 'bg-brand border-brand text-[#121316]'
                             : 'border-line bg-surface'
                         }`}
                       >

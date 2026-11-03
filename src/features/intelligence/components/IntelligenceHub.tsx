@@ -541,7 +541,7 @@ export function IntelligenceHub({ initialTab }: IntelligenceHubProps) {
               return (
                 <div
                   key={item.title}
-                  className="p-3.5 rounded-card bg-surface/90 dark:bg-surface-elevated/90 border border-line flex items-center gap-3"
+                  className="p-3.5 rounded-2xl bg-white/90 dark:bg-[#15171C]/90 border border-line/80 shadow-[0_4px_16px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.8)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)] flex items-center gap-3 transition-transform duration-200 hover:scale-[1.02]"
                 >
                   <div
                     className={`w-9 h-9 rounded-control border flex items-center justify-center shrink-0 ${item.box}`}
@@ -549,10 +549,10 @@ export function IntelligenceHub({ initialTab }: IntelligenceHubProps) {
                     <StatusIcon className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[10px] font-bold text-ink-2 uppercase tracking-wider">
+                    <p className="text-[10px] font-bold text-[#507290] dark:text-[#7A9BB8] uppercase tracking-wider font-mono">
                       {item.title}
                     </p>
-                    <p className="text-xs font-bold text-ink truncate flex items-center gap-1.5">
+                    <p className="text-xs font-black text-[#0F2942] dark:text-[#E2F1FF] truncate flex items-center gap-1.5 mt-0.5">
                       <span className={`w-2 h-2 rounded-full ${item.dot}`} />
                       {item.value}
                     </p>
@@ -695,10 +695,10 @@ export function IntelligenceHub({ initialTab }: IntelligenceHubProps) {
                         SoundFX.play('click');
                         setSelectedCategory(cat.id);
                       }}
-                      className={`inline-flex items-center gap-2 px-3 py-2 rounded-control text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                      className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                         isSelected
-                          ? 'bg-brand text-on-brand shadow-sm font-bold'
-                          : 'bg-surface/80 dark:bg-surface-elevated/80 text-ink-2 hover:text-ink hover:bg-surface-2 border border-line'
+                          ? 'bg-[#00D4FF] text-[#0A1626] font-extrabold shadow-[0_0_14px_rgba(0,212,255,0.4)]'
+                          : 'bg-white dark:bg-[#15171C] text-[#3B5A75] dark:text-[#94B3CD] hover:text-[#0F2942] dark:hover:text-white hover:bg-surface-2 border border-line/80 shadow-xs'
                       }`}
                     >
                       <Icon className="w-3.5 h-3.5 shrink-0" />
@@ -727,7 +727,7 @@ export function IntelligenceHub({ initialTab }: IntelligenceHubProps) {
                     placeholder="Buscar capacidade, script, groq..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-surface/90 dark:bg-surface-elevated/90 border border-line rounded-control pl-9 pr-8 py-2 text-xs text-ink placeholder:text-ink-2/60 focus:outline-none focus:border-brand transition-colors"
+                    className="w-full rounded-full border border-line/80 bg-white dark:bg-[#15171C] pl-9 pr-8 py-2 text-xs text-[#0F2942] dark:text-[#E2F1FF] placeholder:text-[#5B7B98] focus:outline-none focus:border-[#00D4FF] focus-visible:ring-2 focus-visible:ring-[#00D4FF]/30 transition-all shadow-inner"
                   />
                   {searchQuery && (
                     <button
@@ -860,7 +860,7 @@ export function IntelligenceHub({ initialTab }: IntelligenceHubProps) {
                                 variant="interactive"
                                 padding="sm"
                                 onClick={() => handleOpenTool(tool.id)}
-                                className={`h-full flex flex-col justify-between border-line group-hover:border-brand/40 bg-surface/90 dark:bg-surface-elevated/90 transition-all duration-200 cursor-pointer ${tool.isFlagship ? 'ring-1 ring-brand/30' : ''}`}
+                                className={`h-full flex flex-col justify-between rounded-[1.5rem] border border-line/80 group-hover:border-[#00D4FF]/50 bg-white/95 dark:bg-[#15171C]/95 backdrop-blur-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.9)] dark:shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)] group-hover:shadow-[0_8px_30px_rgba(0,212,255,0.15)] transition-all duration-200 cursor-pointer ${tool.isFlagship ? 'ring-1 ring-[#00D4FF]/40' : ''}`}
                               >
                                 <div>
                                   <div className="flex items-start justify-between gap-2 mb-3 pr-7">
@@ -869,16 +869,16 @@ export function IntelligenceHub({ initialTab }: IntelligenceHubProps) {
                                         <Icon className="w-4 h-4" />
                                       </div>
                                       <div className="min-w-0">
-                                        <CardTitle className="text-xs font-bold text-ink group-hover:text-brand transition-colors line-clamp-1">
+                                        <CardTitle className="text-xs font-black text-[#0F2942] dark:text-[#E2F1FF] group-hover:text-[#00D4FF] transition-colors line-clamp-1">
                                           {tool.label}
                                         </CardTitle>
-                                        <span className="text-[10px] font-mono text-ink-2 truncate block">
+                                        <span className="text-[10px] font-mono font-bold text-[#0284c7] dark:text-[#00D4FF] truncate block mt-0.5">
                                           {tool.badge}
                                         </span>
                                       </div>
                                     </div>
                                   </div>
-                                  <CardDescription className="text-xs text-ink-2 leading-relaxed line-clamp-3">
+                                  <CardDescription className="text-xs text-[#3B5A75] dark:text-[#94B3CD] leading-relaxed line-clamp-3 mt-1">
                                     {tool.description}
                                   </CardDescription>
                                 </div>
@@ -886,7 +886,7 @@ export function IntelligenceHub({ initialTab }: IntelligenceHubProps) {
                                   <span className="text-[10px] font-mono text-ink-2 truncate max-w-[150px]">
                                     {tool.techMeta}
                                   </span>
-                                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-brand group-hover:translate-x-1 transition-transform shrink-0">
+                                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-[#00D4FF]/10 text-[#0284c7] dark:text-[#00D4FF] border border-[#00D4FF]/30 group-hover:bg-[#00D4FF] group-hover:text-[#0A1626] transition-all shrink-0">
                                     Acessar <ArrowRight className="w-3 h-3" />
                                   </span>
                                 </div>
@@ -927,7 +927,7 @@ export function IntelligenceHub({ initialTab }: IntelligenceHubProps) {
                           variant="interactive"
                           padding="sm"
                           onClick={() => handleOpenTool(tool.id)}
-                          className={`h-full flex flex-col justify-between border-line group-hover:border-brand/40 bg-surface/90 dark:bg-surface-elevated/90 transition-all duration-200 cursor-pointer ${tool.isFlagship ? 'ring-1 ring-brand/30' : ''}`}
+                          className={`h-full flex flex-col justify-between rounded-[1.5rem] border border-line/80 group-hover:border-[#00D4FF]/50 bg-white/95 dark:bg-[#15171C]/95 backdrop-blur-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.9)] dark:shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)] group-hover:shadow-[0_8px_30px_rgba(0,212,255,0.15)] transition-all duration-200 cursor-pointer ${tool.isFlagship ? 'ring-1 ring-[#00D4FF]/40' : ''}`}
                         >
                           <div>
                             <div className="flex items-start justify-between gap-3 mb-3.5 pr-7">
@@ -936,7 +936,7 @@ export function IntelligenceHub({ initialTab }: IntelligenceHubProps) {
                                   <Icon className="w-5 h-5" />
                                 </div>
                                 <div className="min-w-0">
-                                  <CardTitle className="text-sm font-bold text-ink group-hover:text-brand transition-colors line-clamp-1">
+                                  <CardTitle className="text-sm font-black text-[#0F2942] dark:text-[#E2F1FF] group-hover:text-[#00D4FF] transition-colors line-clamp-1">
                                     {tool.label}
                                   </CardTitle>
                                   <span className="text-[10px] font-medium text-ink-2 uppercase tracking-wider block">
@@ -951,7 +951,7 @@ export function IntelligenceHub({ initialTab }: IntelligenceHubProps) {
                                 {tool.badge}
                               </Badge>
                             </div>
-                            <CardDescription className="text-xs text-ink-2 leading-relaxed line-clamp-3">
+                            <CardDescription className="text-xs text-[#3B5A75] dark:text-[#94B3CD] leading-relaxed line-clamp-3">
                               {tool.description}
                             </CardDescription>
                           </div>
@@ -959,7 +959,7 @@ export function IntelligenceHub({ initialTab }: IntelligenceHubProps) {
                             <span className="text-[11px] font-mono text-ink-2 truncate max-w-[190px]">
                               {tool.techMeta}
                             </span>
-                            <span className="inline-flex items-center gap-1 text-xs font-bold text-brand group-hover:translate-x-1 transition-transform shrink-0">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-[#00D4FF]/10 text-[#0284c7] dark:text-[#00D4FF] border border-[#00D4FF]/30 group-hover:bg-[#00D4FF] group-hover:text-[#0A1626] transition-all shrink-0">
                               Acessar <ArrowRight className="w-3.5 h-3.5" />
                             </span>
                           </div>

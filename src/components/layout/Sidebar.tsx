@@ -233,7 +233,7 @@ export function Sidebar({
                     360°
                   </span>
                 </div>
-                <div className="mt-1 flex items-center gap-1.5 truncate font-mono text-[9.5px] font-bold uppercase tracking-wider text-[#D4F434]">
+                <div className="mt-1 flex items-center gap-1.5 truncate font-mono text-[9.5px] font-bold uppercase tracking-wider text-emerald-800 dark:text-[#D4F434]">
                   <span
                     className="h-1.5 w-1.5 rounded-full bg-[#D4F434] shadow-[0_0_6px_#D4F434] animate-pulse"
                     aria-hidden="true"

@@ -16,6 +16,10 @@ import {
 import confetti from 'canvas-confetti';
 import {
   Bookmark,
+  Activity,
+  Flame,
+  TrendingUp,
+  Zap,
   CheckSquare,
   Download,
   Loader2,
@@ -167,6 +171,26 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
       return true;
     });
   }, [leads, ownerFilter, searchQuery, enrichmentFilter, temperatureFilter]);
+
+  const pipelineMetrics = useMemo(() => {
+    const totalAmount = leads.reduce((acc, l) => acc + (Number(l.amount) || 0), 0);
+    const hotLeads = leads.filter((l) => l.temperature === 'Quente').length;
+    const enrichedCount = leads.filter(
+      (l) => l.company?.enrichmentStatus === 'Enriquecido',
+    ).length;
+    const winCount = leads.filter(
+      (l) => l.status === 'Convertido em Oportunidade' || l.status === 'Negócios Ganhos',
+    ).length;
+    const winRate = leads.length > 0 ? Math.round((winCount / leads.length) * 100) : 0;
+
+    return {
+      totalAmount,
+      totalCount: leads.length,
+      hotLeads,
+      enrichedCount,
+      winRate,
+    };
+  }, [leads]);
 
   useEffect(() => {
     // /api/users nunca existiu como rota (404 silencioso todo carregamento — achado do teste
@@ -724,12 +748,15 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
       {/* Header com estilo moderno */}
       <div className="flex shrink-0 flex-col items-start justify-between gap-4 border-b border-brand/25 bg-surface-elevated/92 p-4 backdrop-blur-xl sm:flex-row sm:items-center lg:px-6 lg:py-5">
         <div>
-          <div className="bh-label mb-1 text-brand">PIPELINE COMERCIAL</div>
-          <h2 className="flex items-center gap-2 font-display text-h2 font-bold text-ink">
-            <Target className="h-5 w-5 text-brand" aria-hidden="true" />
+          <div className="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-[#0284c7] dark:text-[#00D4FF] mb-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D4F434] shadow-[0_0_8px_#D4F434] animate-pulse" />
+            <span>PIPELINE COMERCIAL REVENUE OS</span>
+          </div>
+          <h2 className="flex items-center gap-2.5 font-display text-2xl font-black tracking-tight text-[#0F2942] dark:text-[#E2F1FF]">
+            <Target className="h-5 w-5 text-[#00D4FF]" aria-hidden="true" />
             {funnel === 'Lead' ? 'Leads e pré-vendas' : 'Negócios e fechamento'}
           </h2>
-          <p className="text-ink-2 text-xs mt-1">
+          <p className="text-xs text-[#3B5A75] dark:text-[#94B3CD] mt-1 font-sans">
             {funnel === 'Lead'
               ? 'Qualifique, nutra e converta os leads prontos para o pipeline de negócios.'
               : 'Gerencie propostas, pilotos e receita em um funil separado.'}
@@ -861,6 +888,48 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
         </div>
       </div>
 
+      {/* Faixa de Vitais Comerciais e Telemetria (Ronas IT Cardiology / Spatial UI) */}
+      <div className="flex flex-wrap items-center gap-2 px-4 lg:px-6 py-2 border-b border-line/60 bg-surface/50 dark:bg-[#101216]/50 backdrop-blur-md">
+        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-2 border border-line text-xs">
+          <span className="w-2 h-2 rounded-full bg-[#10B981] shadow-[0_0_8px_#10B981] animate-pulse" />
+          <span className="font-mono text-[10px] font-bold text-[#507290] dark:text-[#7A9BB8] uppercase">Diagnóstico:</span>
+          <span className="font-bold text-[#0F2942] dark:text-[#E2F1FF]">Pipeline Saudável</span>
+        </div>
+
+        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-2 border border-line text-xs">
+          <TrendingUp className="w-3.5 h-3.5 text-[#059669] dark:text-[#34D399]" />
+          <span className="font-mono text-[10px] font-bold text-[#507290] dark:text-[#7A9BB8] uppercase">Pipeline:</span>
+          <span className="font-extrabold text-[#059669] dark:text-[#34D399]">
+            {pipelineMetrics.totalAmount > 0
+              ? `R$ ${pipelineMetrics.totalAmount.toLocaleString('pt-BR')}`
+              : 'R$ 0,00'}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-2 border border-line text-xs">
+          <Activity className="w-3.5 h-3.5 text-[#00D4FF]" />
+          <span className="font-mono text-[10px] font-bold text-[#507290] dark:text-[#7A9BB8] uppercase">Win Rate:</span>
+          <span className="font-extrabold text-[#0284c7] dark:text-[#00D4FF]">{pipelineMetrics.winRate}%</span>
+        </div>
+
+        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-2 border border-line text-xs">
+          <Flame className="w-3.5 h-3.5 text-[#F59E0B]" />
+          <span className="font-mono text-[10px] font-bold text-[#507290] dark:text-[#7A9BB8] uppercase">Quentes:</span>
+          <span className="font-extrabold text-[#F59E0B]">{pipelineMetrics.hotLeads}</span>
+        </div>
+
+        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-2 border border-line text-xs">
+          <Zap className="w-3.5 h-3.5 text-[#8B7DFF]" />
+          <span className="font-mono text-[10px] font-bold text-[#507290] dark:text-[#7A9BB8] uppercase">Enriquecidos:</span>
+          <span className="font-bold text-[#0F2942] dark:text-[#E2F1FF]">{pipelineMetrics.enrichedCount}</span>
+        </div>
+
+        <div className="ml-auto hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4F434]/15 border border-[#D4F434]/35 text-[#121316] dark:text-[#D4F434] text-xs font-mono font-bold">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#D4F434] shadow-[0_0_6px_#D4F434]" />
+          <span>{pipelineMetrics.totalCount} DEALS NO FUNIL</span>
+        </div>
+      </div>
+
       {/* Barra de filtros do pipeline (Onda B2a) — busca por texto + dono, persistidos na URL. */}
       <div className="flex shrink-0 flex-wrap items-center gap-3 border-b border-line bg-surface-subtle px-4 py-3 lg:px-6">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
@@ -874,7 +943,7 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
             value={searchQuery}
             onChange={(e) => handleSearchQueryChange(e.target.value)}
             placeholder="Buscar por empresa ou contato..."
-            className="w-full rounded-control border border-line bg-surface-elevated py-2 pl-9 pr-3 text-xs text-ink placeholder:text-ink-2 focus:outline-none focus:border-brand focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 transition-all"
+            className="w-full rounded-full border border-line/80 bg-white dark:bg-[#15171C] py-2 pl-9 pr-3 text-xs text-[#0F2942] dark:text-[#E2F1FF] placeholder:text-[#5B7B98] focus:outline-none focus:border-[#00D4FF] focus-visible:ring-2 focus-visible:ring-[#00D4FF]/30 transition-all shadow-inner"
           />
         </div>
         <div className="flex items-center gap-1.5">

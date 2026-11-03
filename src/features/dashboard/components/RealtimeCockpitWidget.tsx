@@ -87,8 +87,8 @@ export function RealtimeCockpitWidget() {
               <span
                 className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase ${
                   isLiveConnected
-                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                    : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                    ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20'
+                    : 'bg-amber-500/10 text-amber-800 dark:text-amber-400 border border-amber-500/20'
                 }`}
               >
                 <span
@@ -168,10 +168,10 @@ export function RealtimeCockpitWidget() {
         {/* Vendas Fechadas Hoje */}
         <div className="p-3.5 rounded-xl border border-line bg-surface-2 flex flex-col justify-between">
           <div className="flex items-center justify-between text-xs text-ink-2 mb-2 font-interface">
-            <span className="flex items-center gap-1.5 font-semibold text-emerald-600 dark:text-emerald-400">
+            <span className="flex items-center gap-1.5 font-semibold text-emerald-700 dark:text-emerald-400">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Fechamentos
             </span>
-            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
               {conversionRateToday.toFixed(0)}% taxa
             </span>
           </div>
@@ -182,10 +182,10 @@ export function RealtimeCockpitWidget() {
         {/* Receita Faturada Hoje */}
         <div className="p-3.5 rounded-xl border border-line bg-surface-2 flex flex-col justify-between">
           <div className="flex items-center justify-between text-xs text-ink-2 mb-2 font-interface">
-            <span className="flex items-center gap-1.5 font-semibold text-amber-600 dark:text-amber-400">
+            <span className="flex items-center gap-1.5 font-semibold text-amber-800 dark:text-amber-400">
               <DollarSign className="w-3.5 h-3.5 text-amber-500" /> Receita Ganha
             </span>
-            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400">
+            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-800 dark:text-amber-400">
               BRL
             </span>
           </div>

@@ -1,5 +1,5 @@
 import { useDroppable } from '@dnd-kit/core';
-import { rectSortingStrategy, SortableContext } from '@dnd-kit/sortable';
+import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 import React from 'react';
 import { LEAD_STATUS_EMOJI as STATUS_EMOJI } from '../../../lib/enumMap.js';
 import type { Lead, LeadStatus } from '../../../types/index.js';
@@ -14,7 +14,6 @@ interface KanbanColumnProps {
   selectedLeadIds?: Set<string>;
   onToggleSelect?: (leadId: string) => void;
   selectionMode?: boolean;
-  /** id do usuário -> nome, para KanbanCard exibir o dono (Lead.owner guarda o id, não o nome). */
   ownerNameById?: Record<string, string>;
 }
 
@@ -49,9 +48,6 @@ export const KanbanColumn = React.memo(function KanbanColumn({
     scoredLeads.length > 0
       ? Math.round(scoredLeads.reduce((acc, l) => acc + (l.score || 0), 0) / scoredLeads.length)
       : 0;
-  const hotCount = leads.filter(
-    (l) => l.temperature === 'Quente' || (typeof l.score === 'number' && l.score >= 70),
-  ).length;
 
   const stagnantCount = leads.filter((l) => {
     const lastDate = l.lastInteraction || l.updatedAt || l.createdAt;
@@ -63,16 +59,17 @@ export const KanbanColumn = React.memo(function KanbanColumn({
   return (
     <div
       ref={setNodeRef}
-      className={`relative flex max-h-full min-w-[320px] max-w-[320px] shrink-0 flex-col overflow-hidden rounded-card border bg-surface motion-safe:transition-colors motion-safe:duration-200 ${
+      className={`relative flex max-h-full min-w-[320px] max-w-[320px] shrink-0 flex-col overflow-hidden rounded-[1.5rem] border motion-safe:transition-colors motion-safe:duration-200 ${
         isOver
-          ? 'border-[color:var(--brand-text)] bg-[color:color-mix(in_srgb,var(--brand)_6%,var(--surface))]'
-          : 'border-line'
+          ? 'border-[#00D4FF] bg-[#00D4FF]/5 dark:bg-[#00D4FF]/10 ring-2 ring-[#00D4FF]/25'
+          : 'border-[#E2E8F0] dark:border-white/10 bg-[#F4F6F9]/80 dark:bg-[#0D0F14]'
       }`}
     >
-      <div className="sticky top-0 z-10 flex flex-col gap-1 border-b border-line bg-surface px-4 pb-3 pt-4">
+      {/* Sticky Sculpted Column Header */}
+      <div className="sticky top-0 z-10 flex flex-col gap-1.5 border-b border-line/60 bg-white/95 dark:bg-[#14161C]/95 backdrop-blur-xl px-4 pb-3.5 pt-4">
         <div className="flex items-center justify-between gap-2">
-          <h3 className="flex min-w-0 items-center gap-1.5 text-[11px] font-medium tracking-[0.08em] text-ink-2 uppercase">
-            <span className="shrink-0" aria-hidden="true">
+          <h3 className="flex min-w-0 items-center gap-2 text-xs font-extrabold tracking-wide text-[#1E4E75] dark:text-[#90D2FF] uppercase font-display">
+            <span className="shrink-0 text-sm" aria-hidden="true">
               {STATUS_EMOJI[status] || '📌'}
             </span>
             <span className="line-clamp-2 leading-tight">{status}</span>
@@ -81,80 +78,62 @@ export const KanbanColumn = React.memo(function KanbanColumn({
             {stagnantCount > 0 && (
               <span
                 title={`${stagnantCount} lead(s) estagnado(s) há mais de 7 dias nesta etapa`}
-                className="inline-flex items-center rounded-full border border-line bg-[color:color-mix(in_srgb,var(--critical)_10%,var(--surface))] px-2 py-0.5 text-[11px] font-semibold tabular-nums text-ink"
+                className="inline-flex items-center rounded-full border border-rose-500/30 bg-rose-500/15 px-2 py-0.5 text-[10px] font-bold tabular-nums text-rose-700 dark:text-rose-400"
               >
                 {stagnantCount}
               </span>
             )}
-            <span className="flex items-center gap-1.5 text-xs font-semibold tabular-nums text-ink-2">
+            <span className="flex items-center gap-1.5 text-xs font-bold tabular-nums text-ink px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-white/10 border border-line/50">
               {leads.length > 0 && (
-                <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--brand-text)]" />
+                <span className="h-1.5 w-1.5 rounded-full bg-[#00D4FF] shadow-[0_0_6px_#00D4FF]" />
               )}
               {leads.length}
             </span>
           </div>
         </div>
-        <div className="text-xs font-medium tabular-nums text-ink-2">
+
+        {/* Telemetria da Coluna: Forecast e Score Médio */}
+        <div className="text-xs font-semibold tabular-nums text-ink-2 flex items-center justify-between pt-0.5">
           {totalForecast > 0 ? (
-            <span>
+            <span className="text-[#059669] dark:text-[#34D399] font-mono">
               Forecast:{' '}
-              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
-                totalForecast,
-              )}
-            </span>
-          ) : scoredLeads.length > 0 ? (
-            <span
-              className="flex items-center gap-1.5"
-              title={`${scoredLeads.length} leads com Fit Score calculado`}
-            >
-              <span>Fit Médio: {avgScore}pts</span>
-              {hotCount > 0 && <span>· {hotCount} quentes</span>}
+              {new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+                maximumFractionDigits: 0,
+              }).format(totalForecast)}
             </span>
           ) : (
-            <span>Forecast: R$ 0,00</span>
+            <span className="text-ink-3 text-[11px]">Sem valor ponderado</span>
+          )}
+          {avgScore > 0 && (
+            <span className="text-[11px] font-mono text-ink-2">
+              ICP Médio: <b className="text-[#00D4FF] font-bold">{avgScore}</b>
+            </span>
           )}
         </div>
       </div>
 
-      {
-        // Achado da auditoria (PR #328, item fora de escopo original): sem virtualização, uma
-        // coluna populosa monta todos os `KanbanCard` no DOM de uma vez (até ~1000 leads/funil
-        // buscados por `useCrmBoardController`, sem paginação real — ver `groupedLeads` em
-        // `CrmBoard.tsx`). Analisado e DELIBERADAMENTE NÃO implementado agora, apesar de
-        // `@tanstack/react-virtual` já ser dependência real do projeto e já ter um padrão pronto
-        // (`ui/VirtualTable.tsx`, `CompanyList.tsx`): virtualizar esta lista especificamente exige
-        // continuar passando TODOS os ids ao `SortableContext` do @dnd-kit (drag-and-drop e
-        // reordenação por teclado dependem disso para colisão/foco), só renderizando via
-        // windowing os `KanbanCard` VISÍVEIS — um padrão não-trivial de acertar sem quebrar o drag
-        // por teclado (`crm-kanban.spec.ts`, já historicamente sensível a timing nesta suíte, ver
-        // achado do PR #328 sobre esse mesmo teste) nem o autoscroll ao arrastar perto da borda da
-        // janela virtualizada, e que exigiria validação visual/interativa real em navegador para
-        // ser considerado concluído (não disponível neste ambiente/sessão). Forçar essa mudança
-        // sem essa validação é mais arriscado do que manter o estado atual — ver seção 4 regra
-        // #8 e seção 12 item 6 de .claude/CLAUDE.md.
-      }
-      <div className="p-3 flex-1 overflow-y-auto space-y-2.5 min-h-[150px] custom-scrollbar">
+      {/* Cards List / Scroll Area */}
+      <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-3 scrollbar-thin">
         <SortableContext items={leads.map((lead) => lead.id)} strategy={rectSortingStrategy}>
-          {leads.map((lead) => (
-            <KanbanCard
-              key={lead.id}
-              lead={lead}
-              onClick={onCardClick}
-              onEnrich={onCardEnrich}
-              onConvert={onConvert}
-              isSelected={selectedLeadIds?.has(lead.id)}
-              onToggleSelect={onToggleSelect}
-              selectionMode={selectionMode}
-              ownerNameById={ownerNameById}
-            />
-          ))}
+        {leads.map((lead) => (
+          <KanbanCard
+            key={lead.id}
+            lead={lead}
+            onClick={onCardClick}
+            onEnrich={onCardEnrich}
+            onConvert={onConvert}
+            isSelected={selectedLeadIds?.has(lead.id)}
+            onToggleSelect={onToggleSelect}
+            selectionMode={selectionMode}
+            ownerNameById={ownerNameById}
+          />
+        ))}
         </SortableContext>
         {leads.length === 0 && (
-          <div className="h-full min-h-[110px] rounded-lg flex flex-col items-center justify-center text-ink-3 text-xs gap-1.5 transition-colors border border-dashed border-line">
-            <span className="text-base" aria-hidden="true">
-              📥
-            </span>
-            <span className="font-mono text-[10px] uppercase tracking-wider">Solte cards aqui</span>
+          <div className="grid h-32 place-items-center rounded-[1.25rem] border border-dashed border-line/70 p-4 text-center text-xs text-ink-3">
+            Nenhum negócio nesta etapa
           </div>
         )}
       </div>
