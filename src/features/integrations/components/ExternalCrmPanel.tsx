@@ -249,7 +249,7 @@ export function ExternalCrmPanel({ providerKey, displayName, authType }: Externa
   }, [providerKey, displayName]);
 
   useEffect(() => {
-    fetchConnections();
+    void fetchConnections();
   }, [fetchConnections]);
 
   // Validation
