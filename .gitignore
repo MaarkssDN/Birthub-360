@@ -138,7 +138,9 @@ scripts/verify-user.mjs
 
 # Agent Bus runtime databases
 .agents/bus/*.db*
-scripts/test-login.ts
-scripts/find-login.ts
+scripts/test-*.ts
+scripts/test-*.mjs
+scripts/find-*.ts
+scripts/find-*.mjs
 .agents/scripts/
 
