@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SoundFX } from '../../../lib/soundEffects.js';
+import { SoundFX } from '../lib/soundEffects.js';
 
 interface CommercialJourneyStreamProps {
   onClose?: () => void;

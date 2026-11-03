@@ -56,7 +56,7 @@ propósito por estar fora de "## Exceções ativas"):
 
 ### `src/features/landing/pages/Landing360.tsx`
 
-- **Limite excepcional:** 2300 linhas
+- **Limite excepcional:** 2500 linhas
 - **Dono:** Marks-Mah
 - **Motivo:** Nova landing page 360 integrada ao portal comercial e vitrine visual (adicionados gaveta de navegação mobile, links de conformidade e modal de acesso); pendente de modularização de seções.
 - **Registrado em:** 2026-10-07

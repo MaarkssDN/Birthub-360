@@ -43,7 +43,7 @@ import {
   useDashboardLayout,
   type WidgetId,
 } from '../hooks/useDashboardLayout.js';
-import { CommercialJourneyStream } from './CommercialJourneyStream.js';
+import { CommercialJourneyStream } from '../../../components/CommercialJourneyStream.js';
 import { DashboardBuilderModal } from './DashboardBuilderModal.js';
 import { ProductivityHeatmapWidget } from './ProductivityHeatmapWidget.js';
 import { RealtimeCockpitWidget } from './RealtimeCockpitWidget.js';

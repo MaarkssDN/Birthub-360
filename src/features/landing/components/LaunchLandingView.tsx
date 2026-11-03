@@ -9,7 +9,7 @@ import {
   StatsGrid,
 } from '../../../components/ui/index.js';
 import { SoundFX } from '../../../lib/soundEffects.js';
-import { CommercialJourneyStream } from '../../dashboard/components/CommercialJourneyStream.js';
+import { CommercialJourneyStream } from '../../../components/CommercialJourneyStream.js';
 import '../pages/AuroraMotion.css';
 
 export interface LaunchLandingViewProps {
