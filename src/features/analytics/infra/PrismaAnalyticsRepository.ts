@@ -1,10 +1,13 @@
 import { prisma } from '../../../lib/prisma.js';
 import type {
+  ActivityHeatmapRawRow,
   AnalyticsRepository,
   ClosedLead,
   CohortLeadRow,
   FunnelStageData,
   GroupCount,
+  RealtimeCockpitRawData,
+  WonLeadHeatmapRawRow,
 } from '../domain/Analytics.js';
 import { CLOSED_STATUSES } from '../domain/Analytics.js';
 
@@ -322,5 +325,134 @@ export class PrismaAnalyticsRepository implements AnalyticsRepository {
     } catch {
       return null;
     }
+  }
+
+  async findActivitiesForHeatmap(
+    organizationId: string,
+    since: Date,
+  ): Promise<ActivityHeatmapRawRow[]> {
+    const rows = await prisma.activity.findMany({
+      where: {
+        organizationId,
+        deletedAt: null,
+        createdAt: { gte: since },
+      },
+      select: {
+        type: true,
+        createdAt: true,
+      },
+    });
+    return rows.map((r) => ({
+      type: r.type,
+      createdAt: r.createdAt,
+    }));
+  }
+
+  async findWonLeadsForHeatmap(
+    organizationId: string,
+    since: Date,
+  ): Promise<WonLeadHeatmapRawRow[]> {
+    const rows = await prisma.lead.findMany({
+      where: {
+        organizationId,
+        deletedAt: null,
+        status: 'Negocios_Ganhos' as never,
+        closedAt: { gte: since },
+      },
+      select: {
+        closedAt: true,
+        amount: true,
+      },
+    });
+    return rows.map((r) => ({
+      closedAt: r.closedAt,
+      amount: r.amount,
+    }));
+  }
+
+  async getRealtimeCockpitData(
+    organizationId: string,
+    todayStart: Date,
+    baselineStart: Date,
+  ): Promise<RealtimeCockpitRawData> {
+    const baselineDays = Math.max(
+      1,
+      Math.round((todayStart.getTime() - baselineStart.getTime()) / (24 * 60 * 60 * 1000)),
+    );
+
+    const [
+      leadsToday,
+      dealsWonToday,
+      wonRevenueTodayAgg,
+      activitiesToday,
+      leadsBaseline,
+      dealsWonBaseline,
+      activitiesBaseline,
+    ] = await Promise.all([
+      prisma.lead.count({
+        where: {
+          organizationId,
+          deletedAt: null,
+          createdAt: { gte: todayStart },
+        },
+      }),
+      prisma.lead.count({
+        where: {
+          organizationId,
+          deletedAt: null,
+          status: 'Negocios_Ganhos' as never,
+          closedAt: { gte: todayStart },
+        },
+      }),
+      prisma.lead.aggregate({
+        where: {
+          organizationId,
+          deletedAt: null,
+          status: 'Negocios_Ganhos' as never,
+          closedAt: { gte: todayStart },
+        },
+        _sum: { amount: true },
+      }),
+      prisma.activity.count({
+        where: {
+          organizationId,
+          deletedAt: null,
+          createdAt: { gte: todayStart },
+        },
+      }),
+      prisma.lead.count({
+        where: {
+          organizationId,
+          deletedAt: null,
+          createdAt: { gte: baselineStart, lt: todayStart },
+        },
+      }),
+      prisma.lead.count({
+        where: {
+          organizationId,
+          deletedAt: null,
+          status: 'Negocios_Ganhos' as never,
+          closedAt: { gte: baselineStart, lt: todayStart },
+        },
+      }),
+      prisma.activity.count({
+        where: {
+          organizationId,
+          deletedAt: null,
+          createdAt: { gte: baselineStart, lt: todayStart },
+        },
+      }),
+    ]);
+
+    return {
+      leadsToday,
+      dealsWonToday,
+      wonRevenueToday: wonRevenueTodayAgg._sum?.amount ?? 0,
+      activitiesToday,
+      leadsBaseline,
+      dealsWonBaseline,
+      activitiesBaseline,
+      baselineDays,
+    };
   }
 }

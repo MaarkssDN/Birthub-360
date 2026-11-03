@@ -4,8 +4,13 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { analyticsApi } from '../features/analytics/analytics.api.js';
+import {
+  analyticsApi,
+  type ProductivityHeatmapSlot,
+  type RealtimeCockpitMetrics,
+} from '../features/analytics/analytics.api.js';
 import { activitiesDB, analyticsDB, companiesDB, contactsDB, leadsDB } from '../lib/db.js';
+import { readSseStream } from '../lib/sse.js';
 import type { Activity, Company, Contact, Lead, PaginatedResponse } from '../types/index.js';
 
 // ─── Generic fetch hook ────────────────────────────────────────────────────────
@@ -216,12 +221,6 @@ export function useActivities(params?: {
   from?: string;
   to?: string;
 }) {
-  // `from`/`to` faltavam neste array de deps: o efeito em useFetch só reagia a page/limit/leadId/
-  // status/type, então trocar o intervalo de datas (ex.: navegar de mês no calendário) nunca
-  // disparava um novo fetch — a tela ficava presa nos dados do primeiro intervalo carregado.
-  // `from`/`to` já chegam como string (YYYY-MM-DD), não `Date`, então comparam por valor de forma
-  // estável entre renders — adicioná-los aqui não reintroduz o problema de um `new Date()` que
-  // mudaria de identidade a cada render.
   const { data, loading, error, refetch } = useFetch(
     () => activitiesDB.list(params),
     [
@@ -285,4 +284,80 @@ export function useAnalytics() {
 // ─────────────────────────────────────────────────────────────────────────────
 export function useAnalyticsDashboard(months: number) {
   return useFetch(() => analyticsApi.dashboard(months), [months]);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PRODUCTIVITY HEATMAP HOOK (/api/analytics/productivity-heatmap)
+// ─────────────────────────────────────────────────────────────────────────────
+export function useProductivityHeatmap(days = 30) {
+  return useFetch<ProductivityHeatmapSlot[]>(() => analyticsApi.productivityHeatmap(days), [days]);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REALTIME COCKPIT HOOK (/api/analytics/realtime-cockpit + SSE Live Stream)
+// ─────────────────────────────────────────────────────────────────────────────
+export function useRealtimeCockpit() {
+  const [data, setData] = useState<RealtimeCockpitMetrics | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isLiveConnected, setIsLiveConnected] = useState(false);
+
+  const load = useCallback(async () => {
+    try {
+      const res = await analyticsApi.realtimeCockpit();
+      setData(res);
+      setError(null);
+    } catch (e: any) {
+      setError(e instanceof Error ? e.message : 'Erro ao carregar cockpit em tempo real');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+    const interval = setInterval(load, 30_000);
+    return () => clearInterval(interval);
+  }, [load]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    let cancelled = false;
+
+    const connectSSE = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/events', {
+          method: 'GET',
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          signal: controller.signal,
+        });
+
+        if (response.ok) {
+          setIsLiveConnected(true);
+        }
+
+        await readSseStream(response, () => {
+          if (!cancelled) {
+            load();
+          }
+        });
+      } catch {
+        if (!cancelled) {
+          setIsLiveConnected(false);
+        }
+      }
+    };
+
+    connectSSE();
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [load]);
+
+  return { data, loading, error, isLiveConnected, refetch: load };
 }

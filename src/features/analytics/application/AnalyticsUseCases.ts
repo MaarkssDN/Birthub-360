@@ -6,6 +6,7 @@ import {
 import {
   type AnalyticsDashboard,
   type AnalyticsRepository,
+  type AnomalyAlert,
   type CohortRow,
   type DistributionSlice,
   FUNNEL_STAGES,
@@ -15,6 +16,8 @@ import {
   type MonthlyPoint,
   type OverviewMetrics,
   type PerformanceAgentRow,
+  type ProductivityHeatmapSlot,
+  type RealtimeCockpitMetrics,
   type SalesSummaryMetrics,
   WON,
 } from '../domain/Analytics.js';
@@ -402,5 +405,155 @@ export class AnalyticsUseCases {
     } catch {
       return { metrics: [], total: 0 };
     }
+  }
+
+  /**
+   * Heatmap de produtividade por dia da semana (0-6) x hora (0-23)
+   * categorizado por tipo de atividade e fechamento de vendas.
+   */
+  async productivityHeatmap(
+    organizationId: string,
+    days = 30,
+    now = new Date(),
+  ): Promise<ProductivityHeatmapSlot[]> {
+    const since = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+    const [activities, wonLeads] = await Promise.all([
+      this.repository.findActivitiesForHeatmap(organizationId, since),
+      this.repository.findWonLeadsForHeatmap(organizationId, since),
+    ]);
+
+    const grid: ProductivityHeatmapSlot[] = [];
+    for (let day = 0; day < 7; day++) {
+      for (let hour = 0; hour < 24; hour++) {
+        grid.push({
+          dayOfWeek: day,
+          hour,
+          totalActivities: 0,
+          calls: 0,
+          meetings: 0,
+          messages: 0,
+          tasks: 0,
+          conversions: 0,
+        });
+      }
+    }
+
+    for (const act of activities) {
+      const d = act.createdAt;
+      const day = d.getDay();
+      const hour = d.getHours();
+      const slot = grid[day * 24 + hour];
+      if (slot) {
+        slot.totalActivities++;
+        const typeLower = (act.type || '').toLowerCase();
+        if (typeLower.includes('ligacao') || typeLower.includes('ligação')) {
+          slot.calls++;
+        } else if (
+          typeLower.includes('reuniao') ||
+          typeLower.includes('reunião') ||
+          typeLower.includes('visita')
+        ) {
+          slot.meetings++;
+        } else if (
+          typeLower.includes('email') ||
+          typeLower.includes('e-mail') ||
+          typeLower.includes('whatsapp') ||
+          typeLower.includes('mensagem')
+        ) {
+          slot.messages++;
+        } else {
+          slot.tasks++;
+        }
+      }
+    }
+
+    for (const lead of wonLeads) {
+      if (lead.closedAt) {
+        const d = lead.closedAt;
+        const day = d.getDay();
+        const hour = d.getHours();
+        const slot = grid[day * 24 + hour];
+        if (slot) {
+          slot.conversions++;
+        }
+      }
+    }
+
+    return grid;
+  }
+
+  /**
+   * Cockpit Executivo em tempo real com contadores do dia e detecção estatística de anomalias.
+   */
+  async realtimeCockpit(organizationId: string, now = new Date()): Promise<RealtimeCockpitMetrics> {
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const baselineStart = new Date(todayStart.getTime() - 14 * 24 * 60 * 60 * 1000);
+
+    const data = await this.repository.getRealtimeCockpitData(
+      organizationId,
+      todayStart,
+      baselineStart,
+    );
+
+    const conversionRateToday =
+      data.leadsToday > 0 ? (data.dealsWonToday / data.leadsToday) * 100 : 0;
+    const baselineConversionRate =
+      data.leadsBaseline > 0 ? (data.dealsWonBaseline / data.leadsBaseline) * 100 : 0;
+    const baselineDailyActivities =
+      data.baselineDays > 0 ? data.activitiesBaseline / data.baselineDays : 0;
+
+    let anomaly: AnomalyAlert = {
+      detected: false,
+      type: 'NONE',
+      severity: 'info',
+      title: 'Operação Estável',
+      message: 'Métricas de conversão e cadência dentro dos padrões operacionais esperados.',
+      deviationPct: 0,
+      benchmarkValue: Math.round(baselineConversionRate * 10) / 10,
+      currentValue: Math.round(conversionRateToday * 10) / 10,
+    };
+
+    if (data.leadsBaseline >= 5 && baselineConversionRate > 0 && data.leadsToday >= 3) {
+      if (conversionRateToday < baselineConversionRate * 0.65) {
+        const dropPct = Math.round(
+          ((baselineConversionRate - conversionRateToday) / baselineConversionRate) * 100,
+        );
+        anomaly = {
+          detected: true,
+          type: 'CONVERSION_DROP',
+          severity: dropPct > 60 ? 'critical' : 'warning',
+          title: 'Queda Brusca de Conversão',
+          message: `Taxa de conversão de hoje (${conversionRateToday.toFixed(1)}%) está ${dropPct}% abaixo da média móvel dos últimos 14 dias (${baselineConversionRate.toFixed(1)}%).`,
+          deviationPct: dropPct,
+          benchmarkValue: Math.round(baselineConversionRate * 10) / 10,
+          currentValue: Math.round(conversionRateToday * 10) / 10,
+        };
+      }
+    } else if (baselineDailyActivities >= 5 && now.getHours() >= 15) {
+      const expectedPace = baselineDailyActivities * (Math.min(now.getHours(), 19) / 19);
+      if (data.activitiesToday < expectedPace * 0.4) {
+        const dropPct = Math.round(((expectedPace - data.activitiesToday) / expectedPace) * 100);
+        anomaly = {
+          detected: true,
+          type: 'ACTIVITY_DROP',
+          severity: 'warning',
+          title: 'Desaceleração Operacional',
+          message: `Volume de atividades de hoje (${data.activitiesToday}) está ${dropPct}% abaixo do ritmo esperado (${Math.round(expectedPace)}).`,
+          deviationPct: dropPct,
+          benchmarkValue: Math.round(expectedPace),
+          currentValue: data.activitiesToday,
+        };
+      }
+    }
+
+    return {
+      leadsToday: data.leadsToday,
+      dealsWonToday: data.dealsWonToday,
+      wonRevenueToday: data.wonRevenueToday,
+      activitiesToday: data.activitiesToday,
+      conversionRateToday: Math.round(conversionRateToday * 100) / 100,
+      anomaly,
+      lastUpdated: now.toISOString(),
+    };
   }
 }

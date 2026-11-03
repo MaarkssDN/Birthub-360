@@ -37,6 +37,38 @@ export interface SalesSummaryMetrics {
   salesVelocityDays: number | null;
 }
 
+export interface ProductivityHeatmapSlot {
+  dayOfWeek: number;
+  hour: number;
+  totalActivities: number;
+  calls: number;
+  meetings: number;
+  messages: number;
+  tasks: number;
+  conversions: number;
+}
+
+export interface AnomalyAlert {
+  detected: boolean;
+  type: 'CONVERSION_DROP' | 'ACTIVITY_DROP' | 'NONE';
+  severity: 'info' | 'warning' | 'critical';
+  title: string;
+  message: string;
+  deviationPct: number;
+  benchmarkValue: number;
+  currentValue: number;
+}
+
+export interface RealtimeCockpitMetrics {
+  leadsToday: number;
+  dealsWonToday: number;
+  wonRevenueToday: number;
+  activitiesToday: number;
+  conversionRateToday: number;
+  anomaly: AnomalyAlert;
+  lastUpdated: string;
+}
+
 export interface AnalyticsDashboard {
   overview: OverviewMetrics;
   funnel: FunnelStage[];
@@ -87,6 +119,14 @@ export const analyticsApi = {
     }),
   salesSummary: () =>
     api.get<SalesSummaryMetrics>('/api/analytics/sales-summary', {
+      timeoutMs: 15_000,
+    }),
+  productivityHeatmap: (days = 30) =>
+    api.get<ProductivityHeatmapSlot[]>(`/api/analytics/productivity-heatmap?days=${days}`, {
+      timeoutMs: 15_000,
+    }),
+  realtimeCockpit: () =>
+    api.get<RealtimeCockpitMetrics>('/api/analytics/realtime-cockpit', {
       timeoutMs: 15_000,
     }),
 };

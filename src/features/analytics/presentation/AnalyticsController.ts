@@ -12,6 +12,12 @@ function parseMonths(raw: unknown): number {
   return Math.min(Math.max(parsed, MIN_MONTHS), MAX_MONTHS);
 }
 
+function parseDays(raw: unknown, defaultDays = 30): number {
+  const parsed = Number.parseInt(String(raw ?? ''), 10);
+  if (Number.isNaN(parsed) || parsed <= 0) return defaultDays;
+  return Math.min(parsed, 180);
+}
+
 export class AnalyticsController {
   constructor(private analyticsUseCases: AnalyticsUseCases) {}
 
@@ -103,6 +109,37 @@ export class AnalyticsController {
           pipelineValue: overview.pipelineValue,
         },
       });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * GET /api/analytics/productivity-heatmap?days=30
+   */
+  getProductivityHeatmap = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      const { organizationId } = (req as AuthRequest).user;
+      const days = parseDays(req.query.days, 30);
+      const heatmap = await this.analyticsUseCases.productivityHeatmap(organizationId, days);
+      res.json({ success: true, data: heatmap });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * GET /api/analytics/realtime-cockpit
+   */
+  getRealtimeCockpit = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { organizationId } = (req as AuthRequest).user;
+      const metrics = await this.analyticsUseCases.realtimeCockpit(organizationId);
+      res.json({ success: true, data: metrics });
     } catch (error) {
       next(error);
     }

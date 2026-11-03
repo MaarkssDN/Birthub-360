@@ -14,5 +14,9 @@ router.get('/dashboard', (req, res, next) => resolve().getDashboard(req, res, ne
 router.get('/sales-summary', (req, res, next) => resolve().getSalesSummary(req, res, next));
 router.get('/cohort', (req, res, next) => resolve().getCohort(req, res, next));
 router.get('/export/csv', (req, res, next) => resolve().exportCohortCsv(req, res, next));
+router.get('/productivity-heatmap', (req, res, next) =>
+  resolve().getProductivityHeatmap(req, res, next),
+);
+router.get('/realtime-cockpit', (req, res, next) => resolve().getRealtimeCockpit(req, res, next));
 
 export const analyticsRoutes = router;

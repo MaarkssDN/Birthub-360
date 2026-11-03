@@ -35,6 +35,8 @@ import {
   staggerItem,
 } from '../../../lib/motion.js';
 import { CommercialJourneyStream } from './CommercialJourneyStream.js';
+import { RealtimeCockpitWidget } from './RealtimeCockpitWidget.js';
+import { ProductivityHeatmapWidget } from './ProductivityHeatmapWidget.js';
 
 function greeting() {
   const hour = new Date().getHours();
@@ -301,6 +303,9 @@ export function SinglePageDashboard() {
           </motion.div>
         </motion.div>
 
+        {/* ── REALTIME EXECUTIVE COCKPIT WIDGET ── */}
+        <RealtimeCockpitWidget />
+
         {/* ── 360° COMMERCIAL JOURNEY STREAM ── */}
         <CommercialJourneyStream />
 
@@ -506,6 +511,9 @@ export function SinglePageDashboard() {
             </div>
           </Card>
         </div>
+
+        {/* ── PRODUCTIVITY HEATMAP (SALES CADENCE MATRIX) ── */}
+        <ProductivityHeatmapWidget />
 
         {/* ── STRATEGIC QUICK LAUNCH BENTO (4 TILES) ────────────────────── */}
         <div>

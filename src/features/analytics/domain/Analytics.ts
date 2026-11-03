@@ -113,6 +113,59 @@ export interface FunnelStageData {
   amount: number;
 }
 
+export interface ProductivityHeatmapSlot {
+  dayOfWeek: number;
+  hour: number;
+  totalActivities: number;
+  calls: number;
+  meetings: number;
+  messages: number;
+  tasks: number;
+  conversions: number;
+}
+
+export interface AnomalyAlert {
+  detected: boolean;
+  type: 'CONVERSION_DROP' | 'ACTIVITY_DROP' | 'NONE';
+  severity: 'info' | 'warning' | 'critical';
+  title: string;
+  message: string;
+  deviationPct: number;
+  benchmarkValue: number;
+  currentValue: number;
+}
+
+export interface RealtimeCockpitMetrics {
+  leadsToday: number;
+  dealsWonToday: number;
+  wonRevenueToday: number;
+  activitiesToday: number;
+  conversionRateToday: number;
+  anomaly: AnomalyAlert;
+  lastUpdated: string;
+}
+
+export interface ActivityHeatmapRawRow {
+  type: string;
+  createdAt: Date;
+}
+
+export interface WonLeadHeatmapRawRow {
+  closedAt: Date | null;
+  amount: number | null;
+}
+
+export interface RealtimeCockpitRawData {
+  leadsToday: number;
+  dealsWonToday: number;
+  wonRevenueToday: number;
+  activitiesToday: number;
+  leadsBaseline: number;
+  dealsWonBaseline: number;
+  activitiesBaseline: number;
+  baselineDays: number;
+}
+
 export interface AnalyticsRepository {
   countCompanies(organizationId: string): Promise<number>;
   countContacts(organizationId: string): Promise<number>;
@@ -145,4 +198,11 @@ export interface AnalyticsRepository {
   findCallActivityTimestamps(organizationId: string): Promise<Date[]>;
   findLeadsForCohort(organizationId: string, since: Date): Promise<CohortLeadRow[]>;
   calculateRealTmq(organizationId: string): Promise<number | null>;
+  findActivitiesForHeatmap(organizationId: string, since: Date): Promise<ActivityHeatmapRawRow[]>;
+  findWonLeadsForHeatmap(organizationId: string, since: Date): Promise<WonLeadHeatmapRawRow[]>;
+  getRealtimeCockpitData(
+    organizationId: string,
+    todayStart: Date,
+    baselineStart: Date,
+  ): Promise<RealtimeCockpitRawData>;
 }
