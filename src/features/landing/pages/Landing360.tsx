@@ -22,7 +22,8 @@ import {
 } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { isAuthorizedLoginEmail } from '../../../config/access-policy.js';
 import { useAuth } from '../../../contexts/AuthContext.js';
 import { useTheme } from '../../../contexts/ThemeContext.js';
 import { authClient } from '../../../lib/auth-client.js';
@@ -203,7 +204,69 @@ export function Landing360({
   const { currentUser, isPending: isAuthPending } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const reduceMotion = useReducedMotion();
+
+  // Sincronizar activeScreen com a rota ativa
+  useEffect(() => {
+    if (location.pathname === '/login') {
+      setActiveScreen('login');
+    } else if (location.pathname === '/' || location.pathname === '/welcome') {
+      setActiveScreen('intro');
+    }
+  }, [location.pathname]);
+
+  // Capturar erros passados por query string (ex: retorno de OAuth /login?error=...)
+  useEffect(() => {
+    const errorParam = searchParams.get('error');
+    if (errorParam) {
+      if (errorParam === 'sso_failed' || errorParam === 'oauth_failed') {
+        setErrorMessage('Falha na autenticação via SSO Empresarial. Tente novamente ou use E-mail Corporativo.');
+      } else if (errorParam === 'unauthorized') {
+        setErrorMessage('Acesso não autorizado para esta organização.');
+      } else {
+        setErrorMessage(decodeURIComponent(errorParam));
+      }
+    }
+  }, [searchParams]);
+
+  // Monitorar alteração de modo tela cheia
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  const handleToggleFullscreen = async () => {
+    SoundFX.play('confirm');
+    try {
+      if (!document.fullscreenElement) {
+        if (document.documentElement.requestFullscreen) {
+          await document.documentElement.requestFullscreen();
+        } else {
+          setErrorMessage('Seu navegador não oferece suporte para modo tela cheia.');
+        }
+      } else {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        }
+      }
+    } catch {
+      setErrorMessage('Não foi possível alternar o modo tela cheia no navegador.');
+    }
+  };
+
+  const handleBackToHome = () => {
+    SoundFX.play('click');
+    setActiveScreen('intro');
+    if (location.pathname === '/login') {
+      navigate('/', { replace: true });
+    }
+  };
 
   // Estado do botão flutuante de voltar ao topo
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -250,6 +313,9 @@ export function Landing360({
   const handleGoToLogin = () => {
     SoundFX.play('confirm');
     setActiveScreen('login');
+    if (location.pathname !== '/login') {
+      navigate('/login');
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -258,13 +324,24 @@ export function Landing360({
     setErrorMessage('');
     setSuccessMessage('');
 
-    if (!email.trim()) {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
       setErrorMessage('Por favor, informe seu e-mail corporativo.');
+      return;
+    }
+
+    if (!isAuthorizedLoginEmail(trimmedEmail)) {
+      setErrorMessage('Por favor, informe um endereço de e-mail corporativo válido (ex: nome@empresa.com.br).');
       return;
     }
 
     if (authMode !== 'forgot' && !password.trim()) {
       setErrorMessage('Por favor, informe sua senha de acesso.');
+      return;
+    }
+
+    if (authMode === 'signup' && password.trim().length < 8) {
+      setErrorMessage('A senha de acesso corporativo deve conter pelo menos 8 caracteres.');
       return;
     }
 
@@ -325,6 +402,53 @@ export function Landing360({
     } catch (err: any) {
       setErrorMessage(err.message || 'Ocorreu um erro inesperado ao processar.');
       setIsSubmitting(false);
+    }
+  };
+
+  const handleSsoSubmit = async () => {
+    SoundFX.play('confirm');
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    const targetDomain = email.trim();
+    if (!targetDomain) {
+      setErrorMessage('Por favor, informe o domínio corporativo da sua organização (ex: empresa.com.br).');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/auth/sso-discover', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ domain: targetDomain }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setErrorMessage(
+          data.error || 'Provedor SSO corporativo não configurado para este domínio.'
+        );
+        setIsSubmitting(false);
+        return;
+      }
+
+      setSuccessMessage(`Conectando ao provedor empresarial ${data.providerName}...`);
+      await authClient.signIn.social({
+        provider: data.provider,
+        callbackURL: '/app',
+      });
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Falha ao contatar serviço de autenticação SSO.');
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleTabKeyDown = (e: React.KeyboardEvent, currentTab: 'email' | 'sso') => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const nextTab = currentTab === 'email' ? 'sso' : 'email';
+      setAuthMethod(nextTab);
     }
   };
 
@@ -1836,10 +1960,7 @@ export function Landing360({
           <button
             id="btn-back"
             type="button"
-            onClick={() => {
-              SoundFX.play('click');
-              setActiveScreen('intro');
-            }}
+            onClick={handleBackToHome}
             className="text-slate-700 dark:text-slate-300 hover:text-[#00D4FF] dark:hover:text-[#00D4FF] transition-colors flex items-center gap-2 font-mono text-xs sm:text-sm font-bold uppercase tracking-wider cursor-pointer px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -1862,13 +1983,12 @@ export function Landing360({
             </button>
             <button
               type="button"
-              onClick={() => {
-                SoundFX.play('confirm');
-                navigate('/login');
-              }}
+              onClick={handleToggleFullscreen}
+              aria-label={isFullscreen ? 'Sair da tela cheia' : 'Ativar modo tela cheia'}
+              title={isFullscreen ? 'Sair da tela cheia' : 'Ativar modo tela cheia'}
               className="text-slate-600 dark:text-slate-400 hover:text-[#00D4FF] transition-colors font-mono text-xs cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800"
             >
-              <span>Tela Cheia</span>
+              <span>{isFullscreen ? 'Sair Tela Cheia' : 'Tela Cheia'}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -1910,9 +2030,13 @@ export function Landing360({
                 aria-label="Método de acesso"
               >
                 <button
+                  id="auth-tab-email"
                   type="button"
                   role="tab"
                   aria-selected={authMethod === 'email'}
+                  aria-controls="auth-panel-email"
+                  tabIndex={authMethod === 'email' ? 0 : -1}
+                  onKeyDown={(e) => handleTabKeyDown(e, 'email')}
                   onClick={() => setAuthMethod('email')}
                   className={`py-2 px-3 text-xs font-mono font-bold flex items-center justify-center gap-2 rounded-lg cursor-pointer transition-all ${
                     authMethod === 'email'
@@ -1924,9 +2048,13 @@ export function Landing360({
                   <span>E-mail Corporativo</span>
                 </button>
                 <button
+                  id="auth-tab-sso"
                   type="button"
                   role="tab"
                   aria-selected={authMethod === 'sso'}
+                  aria-controls="auth-panel-sso"
+                  tabIndex={authMethod === 'sso' ? 0 : -1}
+                  onKeyDown={(e) => handleTabKeyDown(e, 'sso')}
                   onClick={() => setAuthMethod('sso')}
                   className={`py-2 px-3 text-xs font-mono font-bold flex items-center justify-center gap-2 rounded-lg cursor-pointer transition-all ${
                     authMethod === 'sso'
@@ -1943,37 +2071,43 @@ export function Landing360({
             {/* Mensagens de Feedback */}
             {errorMessage && (
               <div
+                id="auth-error-message"
                 role="alert"
-                className="mb-4 p-3 rounded-xl bg-red-950/60 border border-red-500/50 flex items-start gap-2.5 text-xs text-red-200"
+                className="mb-4 p-3 rounded-xl bg-red-100 dark:bg-red-950/60 border border-red-300 dark:border-red-500/50 flex items-start gap-2.5 text-xs text-red-800 dark:text-red-200"
               >
-                <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                <AlertCircle className="w-4 h-4 text-red-500 dark:text-red-400 shrink-0 mt-0.5" />
                 <p className="font-medium font-sans">{errorMessage}</p>
               </div>
             )}
 
             {successMessage && (
               <div
+                id="auth-status-message"
                 role="status"
-                className="mb-4 p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/50 flex items-start gap-2.5 text-xs text-emerald-200"
+                className="mb-4 p-3 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-500/50 flex items-start gap-2.5 text-xs text-emerald-800 dark:text-emerald-200"
               >
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                 <p className="font-medium font-sans">{successMessage}</p>
               </div>
             )}
 
             {/* Conteúdo de SSO Empresarial ou Formulário Padrão */}
             {authMethod === 'sso' && authMode === 'signin' ? (
-              <div className="space-y-4">
+              <div
+                id="auth-panel-sso"
+                role="tabpanel"
+                aria-labelledby="auth-tab-sso"
+                className="space-y-4"
+              >
                 <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0B1120] border border-slate-200 dark:border-slate-800 text-center">
                   <div className="w-10 h-10 rounded-xl bg-[#00D4FF]/15 text-[#00D4FF] flex items-center justify-center mx-auto mb-2.5">
                     <Lock className="w-5 h-5" />
                   </div>
-                  <h4 className="font-display text-sm font-bold text-slate-800 dark:text-slate-200 mb-1">
+                  <h4 className="font-display text-sm font-bold text-[#0369a1] dark:text-[#00D4FF] mb-1">
                     Single Sign-On Corporativo
                   </h4>
-                  <p className="font-sans text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-3">
-                    Autenticação federada SAML 2.0 / Okta / Azure AD configurada para o subdomínio
-                    da sua organização.
+                  <p className="landing-subtitle font-sans text-xs leading-relaxed mb-3">
+                    Autenticação federada OpenID Connect / SAML 2.0 (Google Workspace / Microsoft Entra ID) para a sua organização.
                   </p>
                   <div className="space-y-1.5 text-left">
                     <label
@@ -1987,6 +2121,8 @@ export function Landing360({
                       type="text"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      aria-invalid={Boolean(errorMessage)}
+                      aria-describedby={errorMessage ? 'auth-error-message' : undefined}
                       className="w-full h-11 bg-white dark:bg-[#0F172A] text-slate-900 dark:text-white border border-slate-300 dark:border-slate-700 focus:border-[#00D4FF] focus:ring-1 focus:ring-[#00D4FF] rounded-xl px-4 text-sm font-sans outline-none placeholder:text-slate-400"
                       placeholder="empresa.com.br"
                     />
@@ -1994,23 +2130,30 @@ export function Landing360({
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    SoundFX.play('confirm');
-                    if (!email.trim()) {
-                      setErrorMessage('Por favor, informe seu domínio corporativo para SSO.');
-                      return;
-                    }
-                    setSuccessMessage(`Validando federação SAML 2.0 para ${email.trim()}...`);
-                  }}
-                  className="btn-cta-light w-full h-12 rounded-xl font-mono text-sm sm:text-base font-bold uppercase tracking-wider flex items-center justify-center gap-2.5 cursor-pointer shadow-lg transition-all"
+                  disabled={isSubmitting}
+                  onClick={handleSsoSubmit}
+                  className="btn-cta-light w-full h-12 rounded-xl font-mono text-sm sm:text-base font-bold uppercase tracking-wider flex items-center justify-center gap-2.5 cursor-pointer shadow-lg transition-all disabled:opacity-50"
                 >
-                  <span>Continuar com SSO</span>
-                  <ArrowRight className="w-4 h-4 text-white" />
+                  {isSubmitting ? (
+                    <Loader2 className="w-5 h-5 animate-spin text-white" />
+                  ) : (
+                    <>
+                      <span>Continuar com SSO</span>
+                      <ArrowRight className="w-4 h-4 text-white" />
+                    </>
+                  )}
                 </button>
               </div>
             ) : (
               /* Formulário Padrão */
-              <form onSubmit={handleAuthSubmit} className="space-y-4" noValidate>
+              <form
+                id="auth-panel-email"
+                role={authMode === 'signin' ? 'tabpanel' : undefined}
+                aria-labelledby={authMode === 'signin' ? 'auth-tab-email' : undefined}
+                onSubmit={handleAuthSubmit}
+                className="space-y-4"
+                noValidate
+              >
                 {authMode === 'signup' && (
                   <div className="space-y-1.5">
                     <label
@@ -2048,6 +2191,8 @@ export function Landing360({
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    aria-invalid={Boolean(errorMessage)}
+                    aria-describedby={errorMessage ? 'auth-error-message' : undefined}
                     className="w-full h-11 bg-slate-50 dark:bg-[#0B1120] text-slate-900 dark:text-white border border-slate-300 dark:border-slate-700 focus:border-[#00D4FF] focus:ring-1 focus:ring-[#00D4FF] rounded-xl px-4 text-sm font-sans outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
                     placeholder="nome@empresa.com.br"
                     required
@@ -2071,6 +2216,8 @@ export function Landing360({
                         type={showPassword ? 'text' : 'password'}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+                        aria-invalid={Boolean(errorMessage)}
+                        aria-describedby={errorMessage ? 'auth-error-message' : undefined}
                         className="w-full h-11 bg-slate-50 dark:bg-[#0B1120] text-slate-900 dark:text-white border border-slate-300 dark:border-slate-700 focus:border-[#00D4FF] focus:ring-1 focus:ring-[#00D4FF] rounded-xl px-4 text-sm font-sans outline-none transition-all pr-11 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                         placeholder="••••••••"
                         required

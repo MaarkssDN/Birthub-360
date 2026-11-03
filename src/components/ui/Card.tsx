@@ -5,39 +5,34 @@ import { cn } from '../../lib/utils.js';
 import { BorderBeam, type BorderBeamProps } from './BorderBeam.js';
 
 const cardVariants = cva(
-  'bh-platform-card relative overflow-hidden rounded-card text-ink transition-all duration-200 ease-out border-t border-t-white/20 dark:border-t-white/10',
+  'bh-platform-card relative overflow-hidden rounded-2xl sm:rounded-3xl text-ink transition-all duration-200 ease-out border border-line bg-surface/95 dark:bg-[#16171B]/95 backdrop-blur-xl shadow-[0_4px_24px_-2px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.85)] dark:shadow-[0_4px_24px_-2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.07)] hover:shadow-[0_8px_32px_-4px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_32px_-4px_rgba(0,212,255,0.12)] hover:-translate-y-0.5',
   {
     variants: {
       variant: {
-        default:
-          'bg-surface/95 dark:bg-[#0f172a]/90 backdrop-blur-md border border-line shadow-card hover:border-line-strong hover:shadow-elevated hover:-translate-y-0.5',
-        stat: 'bg-surface/95 dark:bg-[#0f172a]/90 backdrop-blur-md border border-line shadow-card hover:border-line-strong hover:shadow-elevated hover:-translate-y-0.5',
+        default: 'hover:border-line-strong',
+        stat: 'hover:border-brand/40',
         outline:
-          'border border-line bg-transparent hover:border-line-strong hover:bg-surface-interactive hover:-translate-y-0.5',
-        accent:
-          'bg-surface/95 dark:bg-[#0f172a]/90 backdrop-blur-md border border-line shadow-card hover:border-line-strong hover:shadow-elevated hover:-translate-y-0.5',
+          'border border-line bg-transparent hover:border-line-strong hover:bg-surface-interactive',
+        accent: 'hover:border-brand/50 shadow-[0_4px_20px_rgba(0,212,255,0.12)]',
         elevated:
-          'bg-surface/95 dark:bg-[#0f172a]/90 backdrop-blur-md border border-line shadow-elevated hover:border-line-strong hover:-translate-y-0.5',
+          'shadow-[0_12px_40px_-6px_rgba(0,0,0,0.08)] dark:shadow-[0_12px_40px_-6px_rgba(0,0,0,0.5)] border-line hover:border-line-strong',
         interactive:
-          'group bg-surface/95 dark:bg-[#0f172a]/90 backdrop-blur-md border border-line shadow-card cursor-pointer hover:border-line-strong hover:bg-surface-interactive hover:shadow-elevated hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99]',
-        // Variantes estruturais recomendadas pelo Design System v2.0
+          'group cursor-pointer hover:border-brand/40 hover:bg-surface-interactive hover:shadow-[0_10px_32px_-4px_rgba(0,0,0,0.08)] active:translate-y-0 active:scale-[0.99]',
         surface: 'bg-surface-2 border border-line shadow-none hover:border-line-strong',
-        panel:
-          'bg-surface/95 dark:bg-[#0f172a]/90 backdrop-blur-md border border-line shadow-card hover:border-line-strong hover:shadow-elevated hover:-translate-y-0.5',
-        metric:
-          'bg-surface/95 dark:bg-[#0f172a]/90 backdrop-blur-md border border-line shadow-card hover:border-line-strong hover:shadow-elevated hover:-translate-y-0.5',
+        panel: 'hover:border-line-strong',
+        metric: 'hover:border-brand/40',
         data: 'bg-surface-2 border border-line shadow-none',
-        feature:
-          'bg-surface/95 dark:bg-[#0f172a]/90 backdrop-blur-md border border-line shadow-card hover:border-line-strong hover:shadow-elevated hover:-translate-y-0.5',
+        feature: 'border-brand/30 hover:border-brand/60 shadow-[0_4px_24px_rgba(0,212,255,0.12)]',
         floating:
-          'bg-surface/95 dark:bg-[#0f172a]/90 backdrop-blur-md border border-line shadow-card hover:border-line-strong hover:shadow-elevated hover:-translate-y-0.5',
-        bento:
-          'bg-surface/95 dark:bg-[#0f172a]/90 backdrop-blur-md border border-line shadow-card hover:border-line-strong hover:shadow-elevated hover:-translate-y-0.5',
-        cosmic:
-          'bg-surface/95 dark:bg-[#0f172a]/90 backdrop-blur-md border border-line shadow-card hover:border-line-strong hover:shadow-elevated hover:-translate-y-0.5',
+          'shadow-[0_16px_48px_-8px_rgba(0,0,0,0.12)] dark:shadow-[0_16px_48px_-8px_rgba(0,0,0,0.6)] border-line-strong',
+        bento: 'hover:border-brand/35',
+        cosmic: 'border-brand/30 dark:border-brand/40 shadow-[0_4px_24px_rgba(0,212,255,0.15)]',
         glass:
-          'border border-line bg-surface/80 dark:bg-[#0f172a]/80 backdrop-blur-xl shadow-card hover:border-line-strong hover:shadow-elevated hover:-translate-y-0.5',
-        neon: 'bg-surface/95 dark:bg-[#0f172a]/90 backdrop-blur-md border border-line shadow-card hover:border-line-strong hover:shadow-elevated hover:-translate-y-0.5',
+          'border border-line bg-surface/80 dark:bg-[#16171B]/80 backdrop-blur-2xl shadow-card hover:border-line-strong',
+        neon: 'border-brand/40 shadow-[0_0_24px_rgba(0,212,255,0.18)] hover:border-brand',
+        // Estilo orgânico inspirado em Ronas IT / Spatial UI (pill card)
+        organic:
+          'rounded-3xl border border-line/70 bg-white dark:bg-[#18191E] shadow-[0_4px_24px_-2px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.9)] dark:shadow-[0_4px_24px_-2px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.08)] hover:scale-[1.01] transition-transform duration-200',
       },
       padding: {
         default: 'p-6',
@@ -56,23 +51,14 @@ const cardVariants = cva(
 export interface CardProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof cardVariants> {
-  /** Faixa de destaque no topo do card — usa os tokens de marca (`--brand`/`--brand-2`). */
   accentBar?: boolean;
-  /** Ativa o efeito de borda em órbita contínua durante carregamento. */
   isLoading?: boolean;
-  /** Ativa o feixe laser luminoso contínuo no perímetro do card (efeito BorderBeam). */
   borderBeam?: boolean;
-  /** Variação cromática do feixe laser (padrão: undefined, idêntico ao vídeo). */
   borderBeamVariant?: BorderBeamProps['variant'];
-  /** Duração em segundos da volta completa do feixe. */
   borderBeamDuration?: number;
-  /** Comprimento do feixe em pixels. */
   borderBeamSize?: number;
-  /** Ativa o holofote especular que segue o cursor em tempo real (2026 Spatial UI). */
   spotlight?: boolean;
-  /** Emite som sutil ao passar o cursor sobre o card. */
   soundHover?: boolean;
-  /** Emite som ao clicar no card. */
   soundClick?: boolean;
 }
 

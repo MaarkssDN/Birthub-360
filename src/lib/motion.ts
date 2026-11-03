@@ -29,6 +29,31 @@ export const SPRING_ELASTIC = { type: 'spring', stiffness: 260, damping: 24, mas
 export const SPRING_BOUNCY = { type: 'spring', stiffness: 260, damping: 24, mass: 0.9 } as const; // Replaced with softer spring
 export const SPRING_TACTILE = { type: 'spring', stiffness: 500, damping: 28, mass: 0.6 } as const;
 export const SPRING_MOMENTUM = { type: 'spring', stiffness: 350, damping: 25, mass: 0.8 } as const;
+export const SPRING_ORGANIC = { type: 'spring', stiffness: 280, damping: 22, mass: 0.8 } as const;
+
+export const pillReveal: Variants = {
+  hidden: { opacity: 0, scale: 0.94, y: 6 },
+  show: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { type: 'spring', stiffness: 300, damping: 22 },
+  },
+};
+
+export const journeyConnector: Variants = {
+  hidden: { pathLength: 0, opacity: 0 },
+  show: {
+    pathLength: 1,
+    opacity: 1,
+    transition: { duration: 0.8, ease: EASE_PREMIUM },
+  },
+};
+
+export const nodePulse: Variants = {
+  rest: { scale: 1 },
+  hover: { scale: 1.08, transition: { type: 'spring', stiffness: 400, damping: 15 } },
+};
 
 export const fadeIn: Variants = {
   hidden: { opacity: 0 },

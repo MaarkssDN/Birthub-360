@@ -34,6 +34,7 @@ import {
   staggerContainer,
   staggerItem,
 } from '../../../lib/motion.js';
+import { CommercialJourneyStream } from './CommercialJourneyStream.js';
 
 function greeting() {
   const hour = new Date().getHours();
@@ -299,6 +300,9 @@ export function SinglePageDashboard() {
             </div>
           </motion.div>
         </motion.div>
+
+        {/* ── 360° COMMERCIAL JOURNEY STREAM ── */}
+        <CommercialJourneyStream />
 
         {/* ── CORE OPERATIONAL DISTRIBUTION & LIVE PIPELINE ─────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

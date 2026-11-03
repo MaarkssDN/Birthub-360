@@ -116,6 +116,9 @@
   --neon-text: #70d6ff;
   --neon-card-bg: #14141a;
   --neon-card-border: rgba(0, 212, 255, 0.22);
+  --neon-lime: #d4f434;
+  --neon-lime-hover: #c5e826;
+  --lime-glow: rgba(212, 244, 52, 0.35);
 
   /* Tons Light complementares */
   --light-pink: #e6007a;
@@ -126,7 +129,7 @@
   --grad-titles: linear-gradient(135deg, #00d4ff 0%, #ff2d9b 50%, #ffc107 100%);
   --grad-cta: linear-gradient(135deg, #ff2d9b 0%, #00d4ff 100%);
 
-  --bg: #f8fafc;
+  --bg: #f0efe9;
   --surface: #ffffff;
   --surface-2: #f1f5f9;
   --surface-subtle: #e2e8f0;

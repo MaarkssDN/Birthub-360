@@ -14,6 +14,80 @@ import { auth } from '../lib/auth.js';
  * real: essas rotas passam por authenticateToken, que só concede tenantId real da sessão.
  */
 export function mountAuthHandler(app: Express): void {
+  // Endpoints declarados de SSO Corporativo — audita provedores reais e evita simulação fictícia
+  app.get('/api/auth/sso-providers', (_req, res) => {
+    const google = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+    const microsoft = Boolean(process.env.MICROSOFT_CLIENT_ID && process.env.MICROSOFT_CLIENT_SECRET);
+    res.json({
+      success: true,
+      providers: {
+        google: { id: 'google', name: 'Google Workspace', configured: google },
+        microsoft: { id: 'microsoft', name: 'Microsoft Entra ID', configured: microsoft },
+      },
+    });
+  });
+
+  app.post('/api/auth/sso-discover', (req, res) => {
+    const rawInput =
+      typeof req.body?.domain === 'string'
+        ? req.body.domain
+        : typeof req.body?.email === 'string'
+          ? req.body.email
+          : '';
+    const trimmed = rawInput.trim().toLowerCase();
+
+    if (!trimmed) {
+      res.status(400).json({
+        success: false,
+        error: 'Informe um domínio corporativo válido (ex: empresa.com.br).',
+      });
+      return;
+    }
+
+    const domain = trimmed.includes('@') ? trimmed.split('@')[1] : trimmed;
+    if (!domain?.includes('.') || domain.length < 4) {
+      res.status(400).json({
+        success: false,
+        error: 'Domínio corporativo inválido. Formato esperado: suaempresa.com.br.',
+      });
+      return;
+    }
+
+    const googleConfigured = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+    const microsoftConfigured = Boolean(process.env.MICROSOFT_CLIENT_ID && process.env.MICROSOFT_CLIENT_SECRET);
+
+    const isMicrosoftDomain =
+      domain.endsWith('microsoft.com') ||
+      domain.endsWith('onmicrosoft.com') ||
+      domain.endsWith('outlook.com') ||
+      domain.endsWith('live.com') ||
+      domain.endsWith('hotmail.com');
+
+    const provider = isMicrosoftDomain ? 'microsoft' : 'google';
+    const isConfigured = provider === 'microsoft' ? microsoftConfigured : googleConfigured;
+    const providerName = provider === 'microsoft' ? 'Microsoft Entra ID' : 'Google Workspace';
+
+    if (!isConfigured) {
+      res.status(503).json({
+        success: false,
+        code: 'SSO_NOT_CONFIGURED',
+        provider,
+        providerName,
+        domain,
+        error: `O provedor SSO corporativo (${providerName}) ainda não foi ativado com credenciais empresariais (CLIENT_ID / CLIENT_SECRET) neste ambiente. Utilize autenticação por E-mail Corporativo ou contate o administrador do tenant.`,
+      });
+      return;
+    }
+
+    res.json({
+      success: true,
+      domain,
+      provider,
+      providerName,
+      configured: true,
+    });
+  });
+
   const authHandler = toNodeHandler(auth);
   // CORREÇÃO: app.all captura todos os métodos HTTP, incluindo CONNECT e TRACE.
   // app.use é mais correto aqui: deixa o Better Auth decidir quais métodos aceita.

@@ -45,7 +45,16 @@ export const authenticateToken = async (
       email: string;
       role: string;
       organizationId: string;
+      lockedUntil?: string | Date | null;
     };
+
+    if (user.lockedUntil) {
+      const lockedTime = new Date(user.lockedUntil).getTime();
+      if (lockedTime > Date.now()) {
+        res.status(403).json({ success: false, error: 'Conta temporariamente bloqueada por segurança.' });
+        return;
+      }
+    }
 
     if (!isAuthorizedLoginEmail(user.email)) {
       res.status(403).json({ success: false, error: 'Acesso restrito ao e-mail autorizado.' });

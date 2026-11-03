@@ -5,6 +5,8 @@ import { APIError, createAuthMiddleware, isAPIError } from 'better-auth/api';
 import { env } from '../config/env.js';
 import { parseAllowedOrigins } from '../config/network.js';
 import { requestContext } from './async-context.js';
+import { AuditService } from './audit/audit.service.js';
+import { hashPasswordArgon2id, verifyPasswordHash } from './auth/password-hash.js';
 import { MailerNotConfiguredError, sendEmail } from './email/mailer.js';
 import { logger } from './logger.js';
 import { prisma } from './prisma.js';
@@ -76,6 +78,10 @@ export const auth = betterAuth({
   ],
   emailAndPassword: {
     enabled: true,
+    password: {
+      hash: hashPasswordArgon2id,
+      verify: verifyPasswordHash,
+    },
     // Sem isto, `isAuthorizedLoginEmail` (checagem por DOMÍNIO, não por posse da caixa postal)
     // era a ÚNICA barreira do cadastro: bastava digitar qualquer endereço
     // "algo@birthhub360.com.br"/"@birthhub360.com.br" — mesmo pertencente a outra pessoa — para ganhar
@@ -102,6 +108,20 @@ export const auth = betterAuth({
     // atacante com uma sessão já aberta continuava com acesso mesmo depois da vítima trocar a
     // senha.
     revokeSessionsOnPasswordReset: true,
+    onPasswordReset: async ({ user }) => {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { failedLoginAttempts: 0, lockedUntil: null },
+      });
+      await AuditService.log({
+        action: 'UPDATE',
+        entity: 'User',
+        entityId: user.id,
+        organizationId: (user as any).organizationId ?? undefined,
+        afterState: { event: 'PASSWORD_RESET_COMPLETED' },
+      });
+      logger.info({ userId: user.id }, 'Senha redefinida com sucesso. Bloqueios de login limpos.');
+    },
     // Sem isto, POST /api/auth/request-password-reset responde "Reset password isn't enabled"
     // (ver node_modules/better-auth/dist/api/routes/password.mjs) — o endpoint só existe de
     // verdade quando um envio de e-mail é fornecido.
@@ -124,13 +144,21 @@ export const auth = betterAuth({
       } catch (error: any) {
         if (error instanceof MailerNotConfiguredError) {
           logger.warn(
-            { userId: user.id, reason: 'MAILER_NOT_CONFIGURED' },
-            'Reset de senha solicitado, mas SMTP não está configurado.',
+            {
+              userId: user.id,
+              resetUrl: process.env.NODE_ENV !== 'production' ? url : undefined,
+              reason: 'MAILER_NOT_CONFIGURED',
+            },
+            'Reset de senha solicitado, mas SMTP não está configurado. Resposta neutra preservada contra enumeração.',
           );
-          throw new APIError('INTERNAL_SERVER_ERROR', {
-            message:
-              'Serviço de e-mail não configurado. Não é possível enviar o link de redefinição.',
+          await AuditService.log({
+            action: 'UPDATE',
+            entity: 'User',
+            entityId: user.id,
+            organizationId: (user as any).organizationId ?? undefined,
+            afterState: { event: 'PASSWORD_RESET_REQUESTED_MAILER_NOT_CONFIGURED' },
           });
+          return;
         }
         logger.error(
           { userId: user.id, reason: 'RESET_EMAIL_FAILED' },
@@ -188,6 +216,13 @@ export const auth = betterAuth({
     },
   },
   socialProviders,
+  account: {
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ['google', 'microsoft'],
+      allowDifferentEmails: false,
+    },
+  },
   plugins: [],
   hooks: {
     // Roda ANTES do better-auth verificar a senha — barra a tentativa (e evita o custo de
@@ -298,6 +333,16 @@ export const auth = betterAuth({
         type: 'boolean',
         defaultValue: false,
       },
+      lockedUntil: {
+        type: 'date',
+        required: false,
+        input: false,
+      },
+      failedLoginAttempts: {
+        type: 'number',
+        defaultValue: 0,
+        input: false,
+      },
     },
   },
   databaseHooks: {
@@ -391,10 +436,17 @@ export const auth = betterAuth({
     session: {
       create: {
         before: async (session) => {
-          const _user = await prisma.user.findUnique({
+          const user = await prisma.user.findUnique({
             where: { id: session.userId },
-            select: { email: true },
+            select: { email: true, lockedUntil: true },
           });
+
+          if (user?.lockedUntil && user.lockedUntil.getTime() > Date.now()) {
+            throw new APIError('FORBIDDEN', {
+              message: ACCOUNT_LOCKED_MESSAGE,
+              code: ACCOUNT_LOCKED_ERROR_CODE,
+            });
+          }
 
           // Temporariamente desabilitado para permitir cadastro administrativo
           // Se o usuário já existe e o email não é autorizado, bloqueia.
