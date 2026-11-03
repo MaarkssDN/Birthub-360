@@ -144,3 +144,10 @@ scripts/find-*.ts
 scripts/find-*.mjs
 .agents/scripts/
 
+# Scripts de diagnóstico do SonarQube — gerados automaticamente pelo scanner
+# nunca devem ser versionados (ver workflows/sonarqube.yml)
+.sonar/
+.scannerwork/
+sonar-report/
+*.scannerwork
+
