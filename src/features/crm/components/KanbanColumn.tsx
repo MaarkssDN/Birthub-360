@@ -117,19 +117,19 @@ export const KanbanColumn = React.memo(function KanbanColumn({
       {/* Cards List / Scroll Area */}
       <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-3 scrollbar-thin">
         <SortableContext items={leads.map((lead) => lead.id)} strategy={rectSortingStrategy}>
-        {leads.map((lead) => (
-          <KanbanCard
-            key={lead.id}
-            lead={lead}
-            onClick={onCardClick}
-            onEnrich={onCardEnrich}
-            onConvert={onConvert}
-            isSelected={selectedLeadIds?.has(lead.id)}
-            onToggleSelect={onToggleSelect}
-            selectionMode={selectionMode}
-            ownerNameById={ownerNameById}
-          />
-        ))}
+          {leads.map((lead) => (
+            <KanbanCard
+              key={lead.id}
+              lead={lead}
+              onClick={onCardClick}
+              onEnrich={onCardEnrich}
+              onConvert={onConvert}
+              isSelected={selectedLeadIds?.has(lead.id)}
+              onToggleSelect={onToggleSelect}
+              selectionMode={selectionMode}
+              ownerNameById={ownerNameById}
+            />
+          ))}
         </SortableContext>
         {leads.length === 0 && (
           <div className="grid h-32 place-items-center rounded-[1.25rem] border border-dashed border-line/70 p-4 text-center text-xs text-ink-3">

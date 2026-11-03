@@ -43,8 +43,7 @@ function getStagnationBadge(days: number) {
   }
   return {
     label: `${days}d estagnado`,
-    className:
-      'border-rose-500/30 bg-rose-500/10 text-rose-800 dark:text-rose-400 font-bold',
+    className: 'border-rose-500/30 bg-rose-500/10 text-rose-800 dark:text-rose-400 font-bold',
     dot: 'bg-rose-500 shadow-[0_0_6px_rgba(244,63,94,0.5)]',
   };
 }
@@ -202,7 +201,8 @@ export const KanbanCard = React.memo(function KanbanCard({
             </h4>
           ) : (
             <h4 className="text-sm font-semibold text-ink-2">
-              Sem empresa <span className="text-xs font-normal opacity-70">· dados incompletos</span>
+              Sem empresa{' '}
+              <span className="text-xs font-normal opacity-70">· dados incompletos</span>
             </h4>
           )}
           {lead.score !== undefined && lead.score !== null ? (

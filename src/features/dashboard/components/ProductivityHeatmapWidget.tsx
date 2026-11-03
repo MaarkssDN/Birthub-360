@@ -167,9 +167,7 @@ export function ProductivityHeatmapWidget() {
             type="button"
             onClick={() => setMetric('all')}
             className={`px-3 py-1 rounded-lg font-semibold transition-colors cursor-pointer ${
-              metric === 'all'
-                ? 'bg-brand text-[#121316] shadow-sm'
-                : 'text-ink-2 hover:text-ink'
+              metric === 'all' ? 'bg-brand text-[#121316] shadow-sm' : 'text-ink-2 hover:text-ink'
             }`}
           >
             Todas
@@ -178,9 +176,7 @@ export function ProductivityHeatmapWidget() {
             type="button"
             onClick={() => setMetric('calls')}
             className={`px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
-              metric === 'calls'
-                ? 'bg-brand text-[#121316] shadow-sm'
-                : 'text-ink-2 hover:text-ink'
+              metric === 'calls' ? 'bg-brand text-[#121316] shadow-sm' : 'text-ink-2 hover:text-ink'
             }`}
           >
             <PhoneCall className="w-3 h-3" />
