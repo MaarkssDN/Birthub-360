@@ -59,7 +59,7 @@ export const KanbanColumn = React.memo(function KanbanColumn({
   return (
     <div
       ref={setNodeRef}
-      className={`relative flex max-h-full min-w-[320px] max-w-[320px] shrink-0 flex-col overflow-hidden rounded-[1.5rem] border motion-safe:transition-colors motion-safe:duration-200 ${
+      className={`relative flex max-h-full min-w-[320px] max-w-[320px] shrink-0 flex-col overflow-hidden rounded-card rounded-2xl border motion-safe:transition-colors motion-safe:duration-200 ${
         isOver
           ? 'border-[#00D4FF] bg-[#00D4FF]/5 dark:bg-[#00D4FF]/10 ring-2 ring-[#00D4FF]/25'
           : 'border-[#E2E8F0] dark:border-white/10 bg-[#F4F6F9]/80 dark:bg-[#0D0F14]'
@@ -133,7 +133,10 @@ export const KanbanColumn = React.memo(function KanbanColumn({
         </SortableContext>
         {leads.length === 0 && (
           <div className="grid h-32 place-items-center rounded-[1.25rem] border border-dashed border-line/70 p-4 text-center text-xs text-ink-3">
-            Nenhum negócio nesta etapa
+            <span className="text-base" aria-hidden="true">
+              📥
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-wider">Solte cards aqui</span>
           </div>
         )}
       </div>
