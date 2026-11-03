@@ -4910,6 +4910,77 @@ paths:
             text/csv:
               schema: { type: string }
 
+  /analytics/productivity-heatmap:
+    get:
+      tags: [Analytics]
+      summary: Mapa de calor de produtividade comercial e conversões por dia da semana e hora
+      parameters:
+        - name: days
+          in: query
+          description: Janela de análise em dias retroativos (padrão 30 dias)
+          schema: { type: integer, minimum: 1, maximum: 90, default: 30 }
+      responses:
+        '200':
+          description: Slots do mapa de calor de produtividade
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, data]
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      required: [dayOfWeek, hour, totalActivities, calls, meetings, messages, tasks, conversions]
+                      properties:
+                        dayOfWeek: { type: integer, minimum: 0, maximum: 6, example: 2 }
+                        hour: { type: integer, minimum: 0, maximum: 23, example: 14 }
+                        totalActivities: { type: integer, example: 12 }
+                        calls: { type: integer, example: 5 }
+                        meetings: { type: integer, example: 3 }
+                        messages: { type: integer, example: 2 }
+                        tasks: { type: integer, example: 2 }
+                        conversions: { type: integer, example: 1 }
+
+  /analytics/realtime-cockpit:
+    get:
+      tags: [Analytics]
+      summary: Cockpit executivo em tempo real com métricas do dia e detecção estatística de anomalias
+      responses:
+        '200':
+          description: Métricas operacionais em tempo real e status de anomalia
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, data]
+                properties:
+                  success: { type: boolean, example: true }
+                  data:
+                    type: object
+                    required: [leadsToday, dealsWonToday, wonRevenueToday, activitiesToday, conversionRateToday, anomaly, lastUpdated]
+                    properties:
+                      leadsToday: { type: integer, example: 8 }
+                      dealsWonToday: { type: integer, example: 3 }
+                      wonRevenueToday: { type: number, example: 45000 }
+                      activitiesToday: { type: integer, example: 42 }
+                      conversionRateToday: { type: number, example: 37.5 }
+                      anomaly:
+                        type: object
+                        required: [detected, type, severity, title, message, deviationPct, benchmarkValue, currentValue]
+                        properties:
+                          detected: { type: boolean, example: false }
+                          type: { type: string, enum: [CONVERSION_DROP, ACTIVITY_DROP, NONE], example: NONE }
+                          severity: { type: string, enum: [info, warning, critical], example: info }
+                          title: { type: string, example: Operação Nominal }
+                          message: { type: string, example: Métricas do dia dentro dos parâmetros normais. }
+                          deviationPct: { type: number, example: 0 }
+                          benchmarkValue: { type: number, example: 30 }
+                          currentValue: { type: number, example: 37.5 }
+                      lastUpdated: { type: string, format: date-time, example: '2026-11-03T14:00:00.000Z' }
+
   # ───────────────────────────── Knowledge ─────────────────────────────
   /knowledge:
     get:

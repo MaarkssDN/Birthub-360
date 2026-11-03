@@ -14,8 +14,10 @@ import {
 } from 'lucide-react';
 import { Card } from '../../../components/ui/Card.js';
 import { Skeleton } from '../../../components/ui/Skeleton.js';
-import type { ProductivityHeatmapSlot } from '../../../features/analytics/analytics.api.js';
-import { useProductivityHeatmap } from '../../../hooks/useDatabase.js';
+import {
+  useProductivityHeatmap,
+  type ProductivityHeatmapSlot,
+} from '../../../hooks/useDatabase.js';
 
 const DAYS_OF_WEEK = [
   { day: 0, label: 'Dom', full: 'Domingo' },

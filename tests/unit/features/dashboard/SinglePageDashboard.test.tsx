@@ -13,6 +13,19 @@ vi.mock('@/contexts/AuthContext', () => ({
 const mockUseAnalyticsDashboard = vi.fn();
 vi.mock('@/hooks/useDatabase', () => ({
   useAnalyticsDashboard: (months: number) => mockUseAnalyticsDashboard(months),
+  useRealtimeCockpit: () => ({
+    data: null,
+    loading: false,
+    error: null,
+    isLiveConnected: false,
+    refetch: vi.fn(),
+  }),
+  useProductivityHeatmap: () => ({
+    data: [],
+    loading: false,
+    error: null,
+    refetch: vi.fn(),
+  }),
 }));
 
 let mockIsOnline = true;
@@ -115,8 +128,8 @@ describe('SinglePageDashboard — estados de loading, error e verdade operaciona
     // Métricas do card
     expect(screen.getByText('12 oportunidades ativas')).toBeInTheDocument();
     expect(screen.getByText('25.5%')).toBeInTheDocument();
-    expect(screen.getByText('4')).toBeInTheDocument();
-    expect(screen.getByText('8')).toBeInTheDocument();
+    expect(screen.getAllByText('4').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('8').length).toBeGreaterThanOrEqual(1);
 
     // Indicadores reais de conectores
     expect(screen.getByText('Rede Conectada')).toBeInTheDocument();

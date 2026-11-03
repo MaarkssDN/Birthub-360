@@ -9,6 +9,7 @@ import {
   type ProductivityHeatmapSlot,
   type RealtimeCockpitMetrics,
 } from '../features/analytics/analytics.api.js';
+export type { ProductivityHeatmapSlot, RealtimeCockpitMetrics };
 import { activitiesDB, analyticsDB, companiesDB, contactsDB, leadsDB } from '../lib/db.js';
 import { readSseStream } from '../lib/sse.js';
 import type { Activity, Company, Contact, Lead, PaginatedResponse } from '../types/index.js';
