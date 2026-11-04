@@ -60,6 +60,7 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
     env: {
+      ...process.env,
       NODE_ENV: process.env.NODE_ENV ?? 'test',
       PORT,
       // O apiLimiter genérico envolve /api/auth antes do authLimiter dedicado. A suíte E2E inteira

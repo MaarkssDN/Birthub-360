@@ -73,6 +73,7 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 90_000,
     env: {
+      ...process.env,
       NODE_ENV: process.env.NODE_ENV ?? 'test',
       PORT,
       API_RATE_LIMIT_MAX: process.env.API_RATE_LIMIT_MAX ?? '5000',
