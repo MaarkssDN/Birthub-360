@@ -8,15 +8,25 @@ import {
   Zap,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import {
+  type HeroVariant,
+  trackRoiSimulatorConverted,
+} from '../../../lib/analytics/conversionTelemetry.js';
 import { SoundFX } from '../../../lib/soundEffects.js';
 
 export interface RoiSimulatorModalProps {
   isOpen: boolean;
+  variant?: HeroVariant;
   onClose: () => void;
   onProceedToLogin: () => void;
 }
 
-export function RoiSimulatorModal({ isOpen, onClose, onProceedToLogin }: RoiSimulatorModalProps) {
+export function RoiSimulatorModal({
+  isOpen,
+  variant = 'A',
+  onClose,
+  onProceedToLogin,
+}: RoiSimulatorModalProps) {
   // Parâmetros operacionais com valores padrão executivos
   const [dealsCount, setDealsCount] = useState<number>(50);
   const [avgTicket, setAvgTicket] = useState<number>(30000);
@@ -56,6 +66,13 @@ export function RoiSimulatorModal({ isOpen, onClose, onProceedToLogin }: RoiSimu
 
   const handleAction = () => {
     SoundFX.play('confirm');
+    trackRoiSimulatorConverted(variant, {
+      dealsCount,
+      avgTicket,
+      leakRate,
+      recoverableMonthly: monthlyRecoverableRevenue,
+      annualRecoverable: annualRecoverableRevenue,
+    });
     onClose();
     onProceedToLogin();
   };

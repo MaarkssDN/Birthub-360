@@ -11,11 +11,18 @@ import {
   TrendingUp,
   Zap,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import {
+  type HeroVariant,
+  trackHeroCtaPrimaryClick,
+  trackHeroRoiSimulatorOpened,
+  trackHeroVariantImpression,
+  trackHeroVariantSwitched,
+} from '../../../lib/analytics/conversionTelemetry.js';
 import { SoundFX } from '../../../lib/soundEffects.js';
 import { RoiSimulatorModal } from './RoiSimulatorModal.js';
 
-export type HeroVariant = 'A' | 'B' | 'C';
+export type { HeroVariant };
 
 interface HeroConversionSectionProps {
   onGoToLogin: () => void;
@@ -98,8 +105,16 @@ export function HeroConversionSection({ onGoToLogin }: HeroConversionSectionProp
 
   const content = VARIANTS[activeVariant];
 
+  // 1. Rastrear visualização da variante do Hero (com deduplicação de sessão)
+  useEffect(() => {
+    trackHeroVariantImpression(activeVariant);
+  }, [activeVariant]);
+
   const handleSelectVariant = (variant: HeroVariant) => {
     SoundFX.play('click');
+    if (variant !== activeVariant) {
+      trackHeroVariantSwitched(activeVariant, variant);
+    }
     setActiveVariant(variant);
     try {
       sessionStorage.setItem('bh_hero_variant', variant);
@@ -113,12 +128,14 @@ export function HeroConversionSection({ onGoToLogin }: HeroConversionSectionProp
 
   const handlePrimaryClick = () => {
     SoundFX.play('confirm');
+    trackHeroCtaPrimaryClick(activeVariant, content.ctaPrimary);
     onGoToLogin();
   };
 
   const handleSecondaryClick = () => {
     SoundFX.play('click');
     if (activeVariant === 'A' || activeVariant === 'C') {
+      trackHeroRoiSimulatorOpened(activeVariant, 'hero_secondary');
       setIsSimulatorOpen(true);
     } else {
       const el =
@@ -497,6 +514,7 @@ export function HeroConversionSection({ onGoToLogin }: HeroConversionSectionProp
       {/* Simulador Executivo de ROI & Previsibilidade */}
       <RoiSimulatorModal
         isOpen={isSimulatorOpen}
+        variant={activeVariant}
         onClose={() => setIsSimulatorOpen(false)}
         onProceedToLogin={onGoToLogin}
       />

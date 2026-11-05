@@ -8,7 +8,6 @@ import {
   CheckCircle2,
   FileClock,
   Gauge,
-  Loader2,
   RefreshCw,
   Target,
   TrendingUp,
@@ -18,6 +17,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { PageTitleCard } from '../../../components/ui/PageTitleCard.js';
 import { Button } from '../../../components/ui/Button.js';
+import { MetricSkeleton, Skeleton } from '../../../components/ui/Skeleton.js';
 import { api } from '../../../lib/api.js';
 import { clientLogger } from '../../../lib/clientLogger.js';
 import { fadeInUp, staggerContainer } from '../../../lib/motion.js';
@@ -123,8 +123,64 @@ export function CrmOverview({ onNavigate }: CrmOverviewProps) {
 
   if (loading && !data) {
     return (
-      <div className="flex min-h-[420px] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-brand" />
+      <div className="space-y-6 w-full px-4 sm:px-6 lg:px-8 py-6" aria-busy="true" role="status" aria-label="Carregando Cockpit Comercial">
+        <div className="flex items-center justify-between rounded-2xl border border-line bg-surface p-5">
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-44" />
+            <Skeleton className="h-3.5 w-72" />
+          </div>
+          <Skeleton className="h-9 w-24 rounded-lg" />
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          {Array.from({ length: 5 }).map((_, idx) => (
+            <MetricSkeleton key={`kpi-skel-${idx}`} />
+          ))}
+        </div>
+
+        <div className="rounded-2xl border border-line bg-surface p-5 space-y-2">
+          <Skeleton className="h-4 w-36" />
+          <Skeleton className="h-3 w-3/4" />
+        </div>
+
+        <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.05fr_0.95fr]">
+          <div className="rounded-2xl border border-line bg-surface p-5 space-y-4">
+            <div className="flex justify-between">
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-5 w-5 rounded" />
+            </div>
+            <div className="space-y-3 pt-2">
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-2 w-full rounded-full" />
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-2 w-full rounded-full" />
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-2 w-full rounded-full" />
+            </div>
+          </div>
+          <div className="rounded-2xl border border-line bg-surface p-5 space-y-4">
+            <div className="flex justify-between">
+              <Skeleton className="h-5 w-28" />
+              <Skeleton className="h-4 w-14" />
+            </div>
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-8 w-8 rounded-lg" />
+                <div className="flex-1 space-y-1">
+                  <Skeleton className="h-4 w-40" />
+                  <Skeleton className="h-3 w-28" />
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-8 w-8 rounded-lg" />
+                <div className="flex-1 space-y-1">
+                  <Skeleton className="h-4 w-44" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
