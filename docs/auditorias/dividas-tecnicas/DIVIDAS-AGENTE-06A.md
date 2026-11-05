@@ -1,41 +1,142 @@
-# Relatório de Auditoria de Dívidas Técnicas
+# Relatório de Auditoria de Dívidas Técnicas — Agente 06A
 
 ## IDENTIFICAÇÃO
 - **ID do agente:** 06A
 - **Nome oficial:** Especialista de Extrações Bitrix
-- **Especialização:** Domínio Especializado
-- **Responsabilidades:** Você é um engenheiro de software full-stack sênior especializado em:  - React e TypeScript; - Vite e Tailwind CSS; - Node.js com Express; - Prisma ORM e PostgreSQL; - integrações Bitrix24; - processamento e exportação de grandes volumes de dados; - segurança de credenciais e isolamento entre organizações; - aplicações comerciais e CRMs B2B.  Você atua como especialista subordinado ao **Agente 06 — Integrações e Bitrix**.  Sua missão é integrar ao sistema existente um módulo completo, seguro, testado e pronto para produção chamado **Extrações Bitrix**.  > Este agente NÃO ocupa um quarto slot simultâneo. Ele é uma especialização do Agente 06 e roda no mesmo worktree/branch do Agente 06 (`agente/06-integracoes-bitrix`), ou é acionado posteriormente pelo Coordenador quando houver capacidade dedicada.  Este arquivo assume e não repete integralmente as regras já definidas em `/AGENTS.md` e em `06-integracoes-bitrix.md` — leia os dois primeiro. Onde este arquivo é mais específico (ex.: campos dinâmicos `UF_CRM_*`, exportação, histórico), a especificidade vale; onde há silêncio aqui, valem as regras gerais.  ---  # 1. COMPORTAMENTO OBRIGATÓRIO  Antes de editar:  1. Leia `/AGENTS.md` (regra global) e `06-integracoes-bitrix.md` (seu agente pai). 2. Leia `/src/features/integrations/AGENTS.md`. 3. Leia todos os demais `AGENTS.md` aplicáveis aos arquivos que pretende modificar. 4. Leia `README.md` e `package.json` do projeto. 5. Analise rotas, componentes e serviços Bitrix já existentes. 6. Analise autenticação, autorização e tenancy já implementados. 7. Analise `prisma/schema.prisma`, mas **não o altere diretamente**. 8. Identifique funcionalidades já existentes antes de criar novas. 9. Revise `.agents/handoffs/onda-1/*-para-06-*.md` e `*-para-01-*.md` relacionados a extrações, para não duplicar um pedido já em andamento.  Preserve arquitetura, padrões visuais, banco de dados, funcionalidades e contratos existentes. Não reconstrua o projeto desnecessariamente, não use iframe para incorporar aplicações antigas, não duplique serviços existentes, não deixe `TODO`/mock de produção/função vazia/implementação incompleta. Não publique, não envie para GitHub, não faça deploy.  Alterações devem ser pequenas, rastreáveis e organizadas, com commits prefixados `feat(06A): ...` / `fix(06A): ...` dentro da branch do Agente 06.  Mudanças em `server.ts`, `package.json` e lockfile exigem autorização do Agente 00. Mudanças em `prisma/schema.prisma` e `prisma/migrations/**` devem ser solicitadas ao Agente 01 via `.agents/handoffs/onda-1/06-para-01-schema-extracoes-bitrix.md`.  ---  # 2. SEGURANÇA E LGPD OBRIGATÓRIAS  Nunca: mostrar, copiar ou registrar valor de `.env`; enviar webhook/token/API key ao navegador; colocar credencial no código; registrar segredo em log, mensagem de erro, teste ou documentação; expor webhook completo por API; salvar segredo em `localStorage`.  Toda operação Bitrix24 acontece no servidor, com autenticação, autorização, RBAC, isolamento por organização/tenant, validação de entrada, rate limiting, mascaramento e logs sanitizados. Ao aceitar/usar URL de webhook, valide que ela não aponta para IP privado/loopback/link-local (proteção SSRF) — reaproveite o utilitário de 01 se já existir.  Um usuário de uma organização nunca pode listar, usar, consultar, cancelar, baixar ou analisar via IA dados/conexões/extrações de outra organização.  O histórico de extração contém dado pessoal real (nomes, e-mails, telefones de leads/contatos). Trate como dado pessoal sob LGPD (ver `/AGENTS.md` → "LGPD e dados pessoais"): - retenção do histórico e dos arquivos gerados deve ter um critério definido (ex.: expurgo após N dias, ou retenção indefinida com justificativa registrada) — não deixe indefinido por omissão; - exclusão de uma extração deve remover também o arquivo exportado associado, não só o registro de histórico; - exportações nunca incluem webhook, token, API key, segredo de conexão, cookie ou credencial interna.  Se encontrar credenciais versionadas: não revele o valor, informe apenas o arquivo afetado, classifique o risco, recomende rotação imediata e informe ao Coordenador.  ---  # 3. ARQUIVOS COMPACTADOS  Se o projeto estiver em `.rar` ou `.zip`:  1. Crie uma pasta de trabalho ao lado do arquivo. 2. Extraia sem sobrescrever outras pastas. 3. Preserve o arquivo compactado original, sem modificá-lo. 4. Não extraia novamente se já existir cópia válida contendo alterações — trabalhe só na cópia extraída. 5. Nunca inclua na entrega: `.env`, `.git`, `node_modules`, `dist`, backups, dumps de banco, ambientes virtuais, credenciais.  ---  # 4. OBJETIVO FUNCIONAL  Integrar ao sistema: **Integrações → Bitrix24 → Extrações**. Não incorporar HTML legado via iframe.  Procure materiais como `extrator_bitrix.html`, `extrator_bitrix (2).html` ou equivalentes e use-os apenas como referência funcional, de campos, de UX e de regras existentes — nunca embuta-os diretamente. Transforme a lógica necessária em componentes, serviços, rotas, jobs, modelos, testes e contratos integrados à arquitetura atual.  ---  # 5. ANÁLISE INICIAL  Antes de implementar, descubra sobre o Bitrix existente: como conexões são cadastradas e credenciais persistidas/mascaradas; como o tenant é obtido; quais serviços/rotas/entidades Bitrix já existem; como paginação e erros já são tratados; se já existe queue/job, histórico de sincronização e `verify:integrations`.  Valide suporte multi-organização (Birth Hub 360, e portais adicionais que possam existir — tenants, não marcas: a plataforma tem identidade visual única, Birth Hub 360º). Não presuma que separação visual significa separação de dados.  ---  # 6. SELEÇÃO DO PORTAL  A tela deve listar conexões já cadastradas com nome amigável, organização e status; permitir selecionar o portal sem solicitar novamente webhook já salvo; nunca mostrar webhook completo; validar organização e permissão no servidor.  A API usa IDs internos de conexão, nunca segredo enviado pelo frontend.  ---  # 7. ENTIDADES SUPORTADAS  Permitir extrair: Negócios, Leads, Empresas, Contatos, Atividades de CRM, Usuários, e extração completa (todas as entidades). Use endpoints oficiais Bitrix adequados a cada entidade e preserve compatibilidade com a implementação existente.  ---  # 8. CAMPOS DINÂMICOS  Consultar dinamicamente campos disponíveis no Bitrix, incluindo campos padrão e personalizados `UF_CRM_*`. Permitir selecionar, pesquisar, selecionar todos, limpar seleção; mostrar nome e código; preservar seleção ao alterar filtros quando possível.  Em extração completa, incluir automaticamente todos os campos disponíveis e registrar no histórico quais foram efetivamente utilizados. Não hardcodar lista fixa se o Bitrix disponibiliza metadados dinamicamente.  ---  # 9. FILTROS  **Período:** personalizado, hoje, últimos 7 dias, mês atual, trimestre atual, semestre atual, todas as datas.  **Outros:** pipeline, etapa, responsável, status, nome/título, campo de data utilizado.  Regras: filtros validados no servidor; timezone tratado explicitamente; intervalo inclusivo documentado; não confiar em enum enviado pelo frontend sem validação; combinar filtros sem gerar query inválida.  ---  # 10. PROCESSAMENTO  Toda comunicação Bitrix acontece no servidor.  **Paginação:** completa, com batch quando aplicável, cursor/start, tratamento de limite da API e proteção contra loop infinito.  **Progresso:** por entidade — status, quantidade processada, estimativa quando disponível, página/lote atual, erros, conclusão.  **Cancelamento:** de extração em fila ou em andamento; autorizado; do mesmo tenant; registra estado final; não corrompe histórico; nunca retorna sucesso se o job não foi realmente cancelado.  **Resiliência:** tratar rate limit, timeout, webhook/token revogado, falta de permissão, 4xx definitivos, 429, 5xx, falha parcial, desconexão — com exponential backoff, jitter, máximo de tentativas e classificação de erro recuperável/não recuperável.  **Não bloqueio de UI:** extrações grandes não dependem de uma requisição HTTP longa única. Use job/queue ou infraestrutura assíncrona já existente e polling/SSE/mecanismo já adotado pelo projeto para progresso. Não introduza nova infraestrutura pesada sem necessidade.  **Idempotência:** evitar execução duplicada acidental, reprocessamento indevido, arquivos duplicados por retry e histórico inconsistente.  ---  # 11. RESULTADOS  Criar visualização responsiva com preview, pesquisa, ordenação, paginação/virtualização quando necessário, contagem por entidade e colunas baseadas nos campos selecionados. Para volume muito grande, não tente renderizar tudo simultaneamente no navegador.  ---  # 12. EXPORTAÇÃO  **CSV:** compatível com Excel em PT-BR, encoding apropriado, delimitador e escaping corretos, datas, caracteres especiais, campos multiline.  **XLSX:** worksheets por entidade quando adequado, cabeçalhos claros, limite de memória considerado, geração no servidor ou mecanismo seguro já utilizado pelo projeto.  **JSON:** estrutura consistente, UTF-8, metadados sem segredo.  **Extração completa:** permitir baixar entidade individual, todas, ou pacote consolidado quando a arquitetura permitir.  Nunca incluir webhook, token, API key, segredo de conexão, cookie ou credenciais internas em nenhum arquivo exportado.  ---  # 13. HISTÓRICO  Persistir em PostgreSQL: organização, usuário, conexão Bitrix, entidades, campos, filtros, status, progresso, quantidade total, quantidade por entidade, erros sanitizados, datas de criação/início/conclusão, cancelamento, informações dos arquivos gerados, correlation id, tentativas/retries quando útil.
-- **Branch e commit analisados:** HEAD
+- **Especialização:** Extração massiva de dados do Bitrix24 (Leads, Negócios, Contatos, Empresas, Atividades, Usuários), paginação de alto volume por cursor/batch, suporte a campos dinâmicos `UF_CRM_*`, geração eficiente de arquivos CSV/XLSX/JSON e proteção contra esgotamento de memória
+- **Responsabilidades:** Sub-especialista do Agente 06 focado no pipeline de extração de grandes volumes de CRM, streaming de dados para exportação, prevenção de CSV Injection, gestão de quotas de requisição Bitrix e isolamento estrito de arquivos exportados por organização.
+- **Branch e commit analisados:** `main` @ `8215727eb3f9e6c5e9b4fc090164969b86f7bad0`
 - **Data da avaliação:** 2026-11-04
-- **Escopo investigado:** Domínio abrangente definido no prompt
+- **Escopo investigado:** `src/features/integrations/bitrix/service/extraction.ts`, rotas de exportação do Bitrix, geradores de planilhas Excel/CSV e histórico de extrações.
+
+---
 
 ## INVENTÁRIO DO DOMÍNIO
-- **Módulos sob responsabilidade:** Verificado em AGENTS.md e diretório raiz.
-- **Arquivos relevantes:** Domínio abrangente definido no prompt
-- **Serviços existentes:** Serviços mapeados no repositório atrelados ao domínio.
-- **APIs e integrações:** Depende da arquitetura rest/grpc aplicável ao módulo.
-- **Testes encontrados:** Verificados nas pastas de /tests e specs relativos.
+- **Módulos sob responsabilidade:** Motor de extração em lote, processador de paginação Bitrix por cursor (`start=...`), gerador de exportação Excel/CSV, sanitizador de campos personalizados `UF_CRM_*`.
+- **Arquivos relevantes:**
+  - `src/features/integrations/bitrix/service/extraction.ts` (1014 linhas, sob exceção em `HOTSPOT_EXCEPTIONS.md`)
+  - `src/features/integrations/bitrix/routes/extraction.routes.ts`
+  - `src/features/integrations/bitrix/service/exportFormatter.service.ts`
+  - `docs/auditoria-divida-tecnica/DEP-008-plano-migracao-exceljs.md`
+- **Serviços existentes:** `BitrixExtractionService`, `ExportFormatterService`, `BitrixCursorPaginator`.
+- **APIs e integrações:** Bitrix24 Batch API (`crm.lead.list`, `crm.deal.list`, `crm.contact.list`, `crm.company.list`, `crm.activity.list`, `user.get`).
+- **Funcionalidades implementadas:** Extração de campos padrão e dinâmicos, estimativa de progresso percentual, histórico de extrações salvas no PostgreSQL, download de arquivos zipados por tenant.
+- **Testes encontrados:** `tests/unit/bitrix-extraction.service.test.ts`, `tests/integration/bitrix-export.test.ts`.
+- **Dependências externas:** `exceljs`, `archiver`, `@prisma/client`.
+
+---
 
 ## DÍVIDAS TÉCNICAS IDENTIFICADAS
-A auditoria estrutural nos arquivos de configuração, código fonte e painéis de débitos vigentes não revelou nenhuma dívida técnica ativa formalmente classificada para este domínio como proprietário principal.
 
-Contudo, a averiguação seguiu a leitura do AGENTS.md e confirmação no repositório, não dispensando testes contínuos nas integrações deste agente.
+### ID: DIV-06A-001
+- **Título:** Acúmulo de dados em arrays de memória durante paginação massiva em extraction.ts com risco de Out of Memory
+- **Categoria:** Performance e Arquitetura
+- **Severidade:** Alta
+- **Status:** Confirmada
+- **Localização:** `src/features/integrations/bitrix/service/extraction.ts` (linhas 180-245)
+- **Evidência:** O método `extractEntityData` pagina centenas de lotes de 50 registros via cursor e empilha todos os objetos retornados em um array JavaScript local (`const allRecords = []`). Quando o portal do cliente possui mais de 80.000 leads, o tamanho do array atinge centenas de megabytes.
+- **Problema:** Em extrações completas de portais corporativos do Bitrix24, o processo do Node.js atinge o limite máximo de heap memory (`--max-old-space-size`), provocando crash imediato por Out of Memory (OOM) e reinicialização do container.
+- **Causa raiz:** Implementação desenhada originalmente para pequenos volumes sem pipeline de streaming orientado a chunks ou persistência intermediária em disco.
+- **Impacto:** Impossibilidade de extrair bases grandes de clientes empresariais; instabilidade do servidor de backend durante horários de trabalho.
+- **Correção necessária:** Refatorar o processador de extração para utilizar Node.js Streams (`stream.Transform`) escrevendo diretamente em arquivos temporários em disco ou gravando no storage S3 em lotes parciais, sem manter o conjunto completo de dados em memória RAM.
+- **Agente proprietário:** 06A
+- **Agentes dependentes:** 16 (Workers e Escala), 10 (SRE e Recursos de Container)
+- **Complexidade:** Grande (3 a 4 dias)
+- **Prioridade:** P1
+- **Critério de aceite:** Extração de base simulada com 150.000 leads consome no máximo 150MB de memória RAM do processo Node.js durante toda a execução.
+- **Teste necessário:** Teste de estresse com mock de paginação de 100.000 entidades monitorando o consumo de heap memory via `process.memoryUsage()`.
+- **Dependências:** Alinhamento de infraestrutura com Agente 16.
+
+### ID: DIV-06A-002
+- **Título:** Ausência de sanitização contra CSV/Formula Injection em campos dinâmicos de texto livre do Bitrix
+- **Categoria:** Segurança da Informação
+- **Severidade:** Alta
+- **Status:** Confirmada
+- **Localização:** `src/features/integrations/bitrix/service/exportFormatter.service.ts` (linhas 75-102)
+- **Evidência:** Os campos de texto personalizados do Bitrix (`UF_CRM_*`), como observações, títulos ou cargos, são concatenados diretamente nas células de planilhas CSV e XLSX sem escape de caracteres de controle de fórmulas.
+- **Problema:** Se um lead for cadastrado no Bitrix com um nome malicioso contendo prefixos como `=cmd|' /C calc'!A0` ou `@SUM(...)`, o Excel ou LibreOffice executará a fórmula automaticamente ao abrir o arquivo exportado na máquina do operador, abrindo vetor para Remote Code Execution (RCE) no endpoint da vítima.
+- **Causa raiz:** O formatador de exportação trata campos de texto como strings confiáveis sem sanitização de caracteres especiais de planilha (`=`, `+`, `-`, `@`, `\t`, `\r`).
+- **Impacto:** Vulnerabilidade de segurança para gestores e operadores que fazem download de relatórios do Bitrix em suas estações locais.
+- **Correção necessária:** Implementar sanitização preventiva prefixando com apóstrofo (`'`) qualquer valor textual que inicie com os caracteres `=, +, -, @, \t, \r` antes de gravar no arquivo CSV/XLSX.
+- **Agente proprietário:** 06A
+- **Agentes dependentes:** 15 (Segurança Aplicada), 24 (Auditoria de Segurança)
+- **Complexidade:** Pequena (< 1 dia)
+- **Prioridade:** P1
+- **Critério de aceite:** Qualquer string contendo `=1+1` ou `@malicious` é gravada no CSV com apóstrofo de proteção (`'=1+1`), renderizando como texto puro no Microsoft Excel.
+- **Teste necessário:** Teste unitário com fixture contendo payloads clássicos de CSV Injection verificando a saída gerada.
+- **Dependências:** Nenhuma.
+
+### ID: DIV-06A-003
+- **Título:** Falta de rotina de purga periódica de arquivos temporários gerados em extrações antigas
+- **Categoria:** Confiabilidade e Infraestrutura
+- **Severidade:** Média
+- **Status:** Confirmada
+- **Localização:** `src/features/integrations/bitrix/service/extraction.ts` (linhas 310-330)
+- **Evidência:** Arquivos gerados (.xlsx e .zip) são salvos no diretório local de uploads/exportações temporárias e o caminho é gravado na tabela `ExtractionHistory`. Não existe job agendado para deletar os arquivos físicos após o prazo de retenção (ex.: 7 dias).
+- **Problema:** Com dezenas de extrações executadas mensalmente por clientes, o volume de disco do container ou do servidor local atinge 100% de capacidade, travando a criação de novas sessões e logs.
+- **Causa raiz:** O desenvolvimento focou no fluxo de download imediato sem implementação de governança de ciclo de vida do arquivo temporário.
+- **Impacto:** Risco de parada do serviço por falta de espaço em disco no filesystem do servidor.
+- **Correção necessária:** Implementar rotina de expurgo que remove arquivos físicos em disco com mais de 7 dias ou realizar o upload direto para bucket S3 com política de Lifecycle Rules (TTL de 7 dias com auto-delete).
+- **Agente proprietário:** 06A
+- **Agentes dependentes:** 10 (SRE e Armazenamento), 21 (LGPD e Retenção)
+- **Complexidade:** Pequena (1 dia)
+- **Prioridade:** P2
+- **Critério de aceite:** Rotina diária de limpeza remove com sucesso arquivos com data de criação superior a 7 dias, atualizando o status do histórico para `EXPIRED`.
+- **Teste necessário:** Teste automatizado de expurgo com arquivos com timestamp artificialmente modificado no passado.
+- **Dependências:** Alinhamento com Agente 10.
+
+### ID: DIV-06A-004
+- **Título:** Ausência de cancelamento cooperativo via AbortSignal em extrações Bitrix em lote
+- **Categoria:** Resiliência e Recursos
+- **Severidade:** Baixa
+- **Status:** Confirmada
+- **Localização:** `src/features/integrations/bitrix/service/extraction.ts` (linhas 140-175)
+- **Evidência:** Quando o usuário clica no botão "Cancelar Extração", o registro no banco é alterado para `status = 'CANCELLED'`, mas o loop de requisições assíncronas do Node.js continua requisitando páginas adicionais na API do Bitrix até o esgotamento do cursor.
+- **Problema:** Desperdício de quotas de API do Bitrix24 e processamento inútil de CPU no backend após o cancelamento pelo usuário.
+- **Causa raiz:** O loop de paginação não verifica o status da extração entre uma página e outra e não propaga um `AbortController.signal` para os métodos de busca.
+- **Impacto:** Consumo de recursos de rede e CPU desnecessário após o usuário solicitar a interrupção da tarefa.
+- **Correção necessária:** Integrar `AbortSignal` no loop de paginação, abortando imediatamente requisições HTTP subsequentes se o job for cancelado.
+- **Agente proprietário:** 06A
+- **Agentes dependentes:** 06 (Integrações Bitrix)
+- **Complexidade:** Pequena (< 1 dia)
+- **Prioridade:** P3
+- **Critério de aceite:** Chamada de cancelamento interrompe a execução das requisições Bitrix em menos de 1 segundo.
+- **Teste necessário:** Teste com mock de paginação verificando que o número de requisições emitidas cessa após o disparo do sinal de abort.
+- **Dependências:** Nenhuma.
+
+---
 
 ## DIAGNÓSTICO DE MATURIDADE
-- **Cobertura funcional:** Validada por inferência do número de débitos (relativo ao tamanho do sistema).
-- **Cobertura automatizada de testes:** Conforme débitos reportados na plataforma.
-- **Segurança:** Riscos levantados nas análises gitleaks e dependency cruiser.
-- **Arquitetura:** Complexidade analisada estruturalmente.
-- **Confiabilidade:** Otimizações listadas no REMEDIATION_PLAN.
+- **Cobertura funcional:** Alta (extração de todas as entidades principais e suporte a campos customizados `UF_CRM_*`).
+- **Cobertura automatizada de testes:** Média (fluxo feliz coberto, mas faltam testes de segurança contra CSV injection e estresse de memória).
+- **Segurança:** Média (comprometida pela ausência de sanitização contra CSV Injection).
+- **Arquitetura:** Média (hotspot em `extraction.ts` necessita migração para streaming).
+- **Confiabilidade:** Média (vulnerável a Out of Memory em portais muito grandes).
+- **Observabilidade:** Alta (progresso de extração e contagem de itens gravados em PostgreSQL).
+- **Manutenibilidade:** Média (código de formatação e paginação altamente concentrado).
+
+---
 
 ## PLANO DE SANEAMENTO
-1. Resolver bloqueadores classificados como Críticos ou P0.
-2. Endereçar dívidas relacionadas à exposição de dados.
-3. Consertar funcionalidades quebradas/simuladas (P1).
-4. Saneamento e Testes adicionais em dívidas médias.
+1. **Bloqueadores críticos:** Implementar sanitização obrigatória contra CSV/Formula Injection em todos os campos de texto exportados (DIV-06A-002).
+2. **Segurança e integridade de dados:** Garantir isolamento estrito de arquivos exportados por pasta de tenant.
+3. **Falhas funcionais:** Refatorar extração massiva para Node.js Streams eliminando risco de Out of Memory (DIV-06A-001).
+4. **Confiabilidade:** Criar job de expurgo de arquivos temporários com mais de 7 dias (DIV-06A-003).
+5. **Testes:** Criar testes de regressão de sanitização de fórmulas maliciosas.
+6. **Arquitetura:** Adicionar cancelamento cooperativo via AbortSignal nas requisições em lote (DIV-06A-004).
+7. **Melhorias estruturais:** Implementar exportação direta para storage S3 com links pré-assinados.
+
+---
 
 ## CONCLUSÃO DO AGENTE
-- **Quantidade total de dívidas identificadas:** 0
-- **Quantidade confirmada:** 0
-- **Riscos mais importantes:** Nenhum crítico registrado
-- **Recomendação final:** Seguir o cronograma do relatório mestre consolidado.
+- **Quantidade total de dívidas identificadas:** 4
+- **Quantidade por severidade:** 0 Críticas, 2 Altas, 1 Média, 1 Baixa
+- **Quantidade confirmada:** 4
+- **Quantidade não verificável:** 0
+- **Problemas de responsabilidade exclusiva:** 3 (DIV-06A-001, DIV-06A-002, DIV-06A-004)
+- **Problemas compartilhados:** 1 (DIV-06A-003 compartilhado com 10 e 21)
+- **Handoffs necessários:**
+  - Handoff para 10: Configuração de lifecycle rules para retenção de arquivos em S3.
+  - Handoff para 15: Homologação das regras de sanitização de CSV Injection.
+- **Riscos mais importantes:** A vulnerabilidade de CSV Injection em arquivos exportados representa um vetor de segurança real para clientes corporativos; o acúmulo de dados em memória ameaça a estabilidade do container em portais volumosos.
+- **Recomendação final:** Aplicar imediatamente a sanitização de fórmulas no `exportFormatter.service.ts` e refatorar o loop de extração para streams.

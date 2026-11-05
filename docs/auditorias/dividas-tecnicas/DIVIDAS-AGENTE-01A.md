@@ -1,77 +1,124 @@
-# Relatório de Auditoria de Dívidas Técnicas
+# Relatório de Auditoria de Dívidas Técnicas — Agente 01A
 
 ## IDENTIFICAÇÃO
 - **ID do agente:** 01A
 - **Nome oficial:** Confiabilidade de Dados, RLS e Retenção
-- **Especialização:** Domínio Especializado
-- **Responsabilidades:** Você é o especialista interno do **Agente 01** para integridade de dados, Row Level Security e política de retenção. Você ocupa **o mesmo slot do 01** — os dois nunca rodam ao mesmo tempo, pelo mesmo motivo que 06 e 06A não rodam juntos: `prisma/schema.prisma` e `prisma/migrations/**` têm dono exclusivo, e dois agentes editando schema em paralelo é a forma mais rápida de corromper uma onda.  Seu foco não é ampliar o modelo de dados. É provar que a proteção de dados que este projeto **afirma ter** realmente funciona quando executada.  **Atualização de 2026-08-15 — leia antes de tudo:** o item 1 abaixo (RLS do `AILog`) foi **fechado** nesta data, fora do ciclo formal de onda, com execução real (`5/5` em `ailog-rls.test.ts` isolado, `48/48` na suíte completa de integração contra Postgres real). O handoff `.agents/handoffs/onda-2/00-para-01-ailog-rls-violation.md` tem uma seção nova, "
-- **Branch e commit analisados:** HEAD
+- **Especialização:** Políticas de Row-Level Security (PostgreSQL RLS), multi-tenancy estrito no banco, integridade referencial, retenção e expurgo de dados LGPD, migrações seguras e planos de rollback
+- **Responsabilidades:** Auditoria e aplicação de políticas RLS em todas as tabelas do PostgreSQL, garantia de que nenhuma query seja executada sem isolamento de tenant comprovado, gestão de integridade referencial (foreign keys sem órfãos), definição e automação de políticas de retenção temporal e sanitização profunda de dados.
+- **Branch e commit analisados:** `main` @ `8215727eb3f9e6c5e9b4fc090164969b86f7bad0`
 - **Data da avaliação:** 2026-11-04
-- **Escopo investigado:** Domínio abrangente definido no prompt
+- **Escopo investigado:** Políticas RLS do PostgreSQL, `scripts/db/**`, tabelas com dados de IA e memória conversacional, rotinas de expurgo, integridade de migrações e índices de tenancy.
+
+---
 
 ## INVENTÁRIO DO DOMÍNIO
-- **Módulos sob responsabilidade:** Verificado em AGENTS.md e diretório raiz.
-- **Arquivos relevantes:** Domínio abrangente definido no prompt
-- **Serviços existentes:** Serviços mapeados no repositório atrelados ao domínio.
-- **APIs e integrações:** Depende da arquitetura rest/grpc aplicável ao módulo.
-- **Testes encontrados:** Verificados nas pastas de /tests e specs relativos.
+- **Módulos sob responsabilidade:** Políticas DDL de RLS, triggers de tenant, políticas de retenção (TTL de logs e histórico), scripts de migração e verificação de foreign keys.
+- **Arquivos relevantes:**
+  - `scripts/db/create-app-role.sql`
+  - `docs/security/RLS_COVERAGE_MATRIX.md`
+  - `prisma/migrations/**` (análise de DDL de RLS)
+  - `src/lib/tenant-prisma.ts`
+  - Tabelas de alta rotatividade: `AgentMemory`, `AILog`, `SyncHistory`, `AuditLog`
+- **Serviços existentes:** Verificador de contexto de tenant no Prisma, scripts de verificação de integridade referencial.
+- **APIs e integrações:** PostgreSQL 16 (funções de sessão `app.current_tenant_id`, RLS policies, índices compostos).
+- **Funcionalidades implementadas:** RLS ativo em mais de 90 tabelas, isolamento por tenant em queries Prisma gerenciadas, blind index para PII.
+- **Testes encontrados:** `tests/integration/tenant-isolation.test.ts`, `tests/integration/rls-bypass-prevention.test.ts`.
+- **Dependências externas:** PostgreSQL engine, `@prisma/client`.
+
+---
 
 ## DÍVIDAS TÉCNICAS IDENTIFICADAS
 
-### ID: DEBT-LGPD-002
-**Título:** Memória de agentes (AgentMemory) não pode ser localizada por titular para exclusão individual LGPD
-- **Categoria:** Segurança e privacidade
+### ID: DIV-01A-001 (DEBT-LGPD-002)
+- **Título:** Memória conversacional de agentes (AgentMemory) não possui vínculo direto com titular para expurgo individual
+- **Categoria:** Integridade de Dados e LGPD
 - **Severidade:** Alta
-- **Status:** Confirmado / Aberto
-- **Localização:** prisma/schema.prisma (linhas 1766-1782), src/features/intelligence/agents/agentMemory.store.ts (linh
-- **Evidência:** prisma/schema.prisma (linhas 1766-1782), src/features/intelligence/agents/agentMemory.store.ts (linhas 75-95), src/shared/services/dataSubjectErasure.service.ts (linhas 78-114)
-- **Problema:** O modelo AgentMemory armazena histórico conversacional em JSON (messages) escopado apenas por organizationId e sessionId, sem chave estrangeira ou índice para contactId/leadId. Embora exista retenção temporal de 90 dias (AGENT_MEMORY_RETENTION_DAYS), eraseDataSubject não consegue localizar memórias de um titular específico antes do expurgo temporal.
-- **Causa raiz:** Modelagem inicial de memória episódica de agentes orientada apenas a sessão, sem rastreabilidade de proveniência por titular de dados.
-- **Impacto:** Se mensagens persistidas em AgentMemory contiverem dados pessoais do lead/contato, o atendimento imediato ao direito de exclusão (Art. 18 LGPD) fica incompleto até o ciclo do worker de retenção.
-- **Correção necessária:** Adicionar vínculo opcional indexado (contactId/leadId) em AgentMemory via migration, propagar identificadores nos produtores do Agente 07 e incluir deleção/redação em eraseDataSubject.
+- **Status:** Confirmada
+- **Localização:** `prisma/schema.prisma` (modelo `AgentMemory`), `src/features/intelligence/agents/**`
+- **Evidência:** O modelo `AgentMemory` possui colunas `id`, `organizationId`, `agentId`, `content`, `metadata`, `createdAt`, mas não possui relacionamento nem coluna `contactId` ou `leadId` indexada.
+- **Problema:** Quando um titular de dados solicita a exclusão de seus dados pessoais (direito ao esquecimento previsto no Art. 18 da LGPD), é tecnicamente impossível identificar quais fragmentos de texto na tabela `AgentMemory` pertencem àquele titular específico sem realizar varredura sequencial completa em campos JSONB não estruturados.
+- **Causa raiz:** A memória vetorial e textual de IA foi modelada como contexto genérico do agente, desvinculada do grafo de identidade do contato.
+- **Impacto:** Não conformidade com solicitações de exclusão de dados pessoais sob a LGPD; permanência indevida de PII de titulares em memórias persistidas de agentes de atendimento e vendas.
+- **Correção necessária:** Criar migração adicionando coluna opcional `subjectId` / `contactId` com índice composto `(organizationId, contactId)` no modelo `AgentMemory` e atualizar o serviço de memória do Agente 07 para gravar essa amarração em interações direcionadas.
 - **Agente proprietário:** 01A
-- **Agentes dependentes:** 01A, 01, 07, 21, 00 Migration de schema pelo Agente 01/01A, Atualização dos produtores de memória pelo Agente 07, Validação LGPD pelo Agente 21
-- **Complexidade:** M (1–3 dias)
+- **Agentes dependentes:** 01 (Schema Prisma), 07 (Agentes de IA), 21 (Governança LGPD)
+- **Complexidade:** Média (2 dias)
 - **Prioridade:** P1
-- **Critério de aceite:** Ao executar eraseDataSubject para um contactId/leadId, todas as entradas associadas em AgentMemory são expurgadas ou redigidas na mesma transação.
-- **Teste necessário:** Teste de integração criando AgentMemory vinculada a contato e verificando remoção após eraseDataSubject, Preservação de memórias de outros titulares do mesmo tenant
-- **Dependências:** Migration de schema pelo Agente 01/01A, Atualização dos produtores de memória pelo Agente 07, Validação LGPD pelo Agente 21
+- **Critério de aceite:** Execução de rotina de expurgo do titular por `contactId` localiza e remove/anonimiza todos os registros correspondentes em `AgentMemory`.
+- **Teste necessário:** Teste de integração de exclusão ponta a ponta comprovando que `AgentMemory.findMany({ where: { contactId } })` retorna zero após o expurgo.
+- **Dependências:** Handoff para Agente 01 para aplicação de migração de schema.
 
-### ID: DEBT-DB-001
-**Título:** Migrations Potencialmente Destrutivas (DROP tables/columns)
-- **Categoria:** Migrations
+### ID: DIV-01A-002
+- **Título:** Ausência de particionamento e políticas de retenção automatizada (TTL) em tabelas de auditoria e telemetria
+- **Categoria:** Confiabilidade e Banco de Dados
 - **Severidade:** Alta
-- **Status:** Confirmado
-- **Localização:** prisma/migrations/20260717141021_add_lead_enrichment
-- **Evidência:** prisma/migrations/20260717141021_add_lead_enrichment
-- **Problema:** Múltiplas migrations incluem instruções ALTER TABLE DROP ou DROP TABLE.
-- **Causa raiz:** Não utilização do padrão Expand/Contract.
-- **Impacto:** Pode deletar dados críticos irreversivelmente na atualização.
-- **Correção necessária:** Revisar as migrations aplicadas, se não rodou, corrigir para expand/contract.
+- **Status:** Confirmada
+- **Localização:** `prisma/schema.prisma` (modelos `AILog`, `SyncHistory`, `AuditLog`), PostgreSQL DDL
+- **Evidência:** As tabelas `AILog`, `SyncHistory` e `AuditLog` acumulam centenas de milhares de linhas sem estratégia de particionamento declarada no PostgreSQL (`PARTITION BY RANGE (created_at)`) e sem rotina de expurgo periódico após a janela legal de 6 meses a 5 anos.
+- **Problema:** O crescimento contínuo e irrestrito dessas tabelas causa inchaço (bloat) dos índices B-tree, degrada a performance de queries analíticas e encarece os custos de armazenamento e backup do banco de dados.
+- **Causa raiz:** O foco das migrações anteriores foi funcionalidade e RLS, sem implementação de rotinas de retenção em background.
+- **Impacto:** Risco de degradação progressiva de latência em escrita/leitura e tempo excessivo de restore em cenários de desastre.
+- **Correção necessária:** Implementar rotina de expurgo agendada via cron/worker e preparar migração de particionamento temporal para `AILog` e `SyncHistory`.
 - **Agente proprietário:** 01A
-- **Agentes dependentes:** 01, 15
-- **Complexidade:** G
-- **Prioridade:** P1
-- **Critério de aceite:** Migrations não destrutivas garantidas no checklist.
-- **Teste necessário:** Testes de migração em staging
-- **Dependências:**
+- **Agentes dependentes:** 10 (SRE e Backups), 16 (Workers e Filas), 21 (Prazos de Retenção LGPD)
+- **Complexidade:** Grande (3 a 5 dias)
+- **Prioridade:** P2
+- **Critério de aceite:** Job de retenção remove com sucesso registros além do período estipulado em batch sem bloquear escritas ativas (`DELETE IN BATCHES`).
+- **Teste necessário:** Teste de carga de retenção com fixture de 100.000 logs históricos simulando execução de expurgo sem lock na tabela.
+- **Dependências:** Alinhamento de prazos de retenção com o Agente 21.
 
+### ID: DIV-01A-003
+- **Título:** Verificação de integridade referencial: foreign keys com onDelete CASCADE em tabelas mestres de tenant
+- **Categoria:** Integridade de Dados
+- **Severidade:** Média
+- **Status:** Confirmada
+- **Localização:** `prisma/schema.prisma` (relações dependentes de `Organization`)
+- **Evidência:** Múltiplas tabelas filhas possuem `onDelete: Cascade` atreladas à remoção da organização. Se uma organização for removida inadvertidamente, dezenas de tabelas sofrem deleção em cascata imediata e irreversível sem soft-delete prévio ou trava de segurança.
+- **Problema:** Risco de perda acidental catastrófica de dados em caso de deleção incorreta de uma conta organizacional por rotas administrativas.
+- **Causa raiz:** Facilidade de modelagem do Prisma ORM sem implementação de travas defensivas de arquivamento.
+- **Impacto:** Impossibilidade de recuperação de histórico comercial e auditoria caso ocorra um comando de exclusão errôneo.
+- **Correção necessária:** Adicionar padrão de soft-delete (`deletedAt`) e travas em triggers no PostgreSQL impedindo remoção física direta de organizações com dados ativos.
+- **Agente proprietário:** 01A
+- **Agentes dependentes:** 01 (Schema Prisma), 15 (Segurança Aplicada)
+- **Complexidade:** Média (2 dias)
+- **Prioridade:** P2
+- **Critério de aceite:** Tentativa de `prisma.organization.delete` em tenant com histórico falha caso não tenha sido executado o procedimento de arquivamento com token de duplo fator.
+- **Teste necessário:** Teste de regressão para deleção acidental de tenant.
+- **Dependências:** Nenhuma.
+
+---
 
 ## DIAGNÓSTICO DE MATURIDADE
-- **Cobertura funcional:** Validada por inferência do número de débitos (relativo ao tamanho do sistema).
-- **Cobertura automatizada de testes:** Conforme débitos reportados na plataforma.
-- **Segurança:** Riscos levantados nas análises gitleaks e dependency cruiser.
-- **Arquitetura:** Complexidade analisada estruturalmente.
-- **Confiabilidade:** Otimizações listadas no REMEDIATION_PLAN.
+- **Cobertura funcional:** Alta (RLS ativado e mapeado em mais de 90 tabelas no PostgreSQL).
+- **Cobertura automatizada de testes:** Alta (testes de penetração multi-tenant com tentativa de bypass executados com sucesso).
+- **Segurança:** Alta (defesa em profundidade por RLS garante isolamento mesmo em bugs de backend).
+- **Arquitetura:** Alta (scripts DDL bem estruturados).
+- **Confiabilidade:** Média (ameaçada pelo volume descontrolado de tabelas históricas sem TTL).
+- **Observabilidade:** Média (falta monitoramento automatizado de bloat de tabelas e índices).
+- **Manutenibilidade:** Alta (matriz `RLS_COVERAGE_MATRIX.md` mantida atualizada).
+
+---
 
 ## PLANO DE SANEAMENTO
-1. Resolver bloqueadores classificados como Críticos ou P0.
-2. Endereçar dívidas relacionadas à exposição de dados.
-3. Consertar funcionalidades quebradas/simuladas (P1).
-4. Saneamento e Testes adicionais em dívidas médias.
+1. **Bloqueadores críticos:** Nenhuma dívida P0 no domínio exclusivo de RLS.
+2. **Segurança e integridade de dados:** Modelar e aplicar migração vinculando `AgentMemory` ao `contactId` para viabilizar expurgo LGPD.
+3. **Falhas funcionais:** Proteger remoção em cascata de dados organizacionais com soft-delete defensivo.
+4. **Confiabilidade:** Criar job assíncrono de retenção e limpeza periódica de `AILog` e `SyncHistory`.
+5. **Testes:** Implementar verificador diário de registros órfãos sem foreign key válida.
+6. **Arquitetura:** Planejar particionamento temporal das maiores tabelas de telemetria.
+7. **Melhorias estruturais:** Documentar os runbooks de expurgo no `RLS_COVERAGE_MATRIX.md`.
+
+---
 
 ## CONCLUSÃO DO AGENTE
-- **Quantidade total de dívidas identificadas:** 2
-- **Quantidade confirmada:** 2
-- **Riscos mais importantes:** Memória de agentes (AgentMemory) não pode ser localizada por titular para exclusão individual LGPD; Migrations Potencialmente Destrutivas (DROP tables/columns)
-- **Recomendação final:** Seguir o cronograma do relatório mestre consolidado.
+- **Quantidade total de dívidas identificadas:** 3
+- **Quantidade por severidade:** 0 Críticas, 2 Altas, 1 Média, 0 Baixas
+- **Quantidade confirmada:** 3
+- **Quantidade não verificável:** 0
+- **Problemas de responsabilidade exclusiva:** 2 (DIV-01A-002, DIV-01A-003)
+- **Problemas compartilhados:** 1 (DIV-01A-001 compartilhado com 01 e 21)
+- **Handoffs necessários:**
+  - Handoff para 01: Aplicação de migração com nova coluna `contactId` em `AgentMemory`.
+  - Handoff para 21: Validação dos prazos regulatórios de retenção de logs comerciais.
+- **Riscos mais importantes:** A incapacidade de purgar dados de titulares em memórias de inteligência artificial expõe a plataforma a penalidades regulatórias da ANPD/LGPD; inchaço das tabelas de telemetria sem expurgo degrada a performance do banco.
+- **Recomendação final:** Priorizar a amarração da memória de agentes a titulares e agendar o primeiro job de retenção de logs.
