@@ -1,0 +1,315 @@
+/**
+ * ==============================================================================
+ * BIRTH HUB 360° — LUXURY DESIGN TOKENS & FOUNDATIONS (FASE 0)
+ * ==============================================================================
+ * Sistema canônico de tokens de luxo tecnológico, estética escultural dark mode,
+ * micro-iluminação cáustica, tipografia de alta precisão e acessibilidade WCAG 2.2 AA.
+ *
+ * Em conformidade estrita com:
+ * - docs/design/BIRTHHUB-360-DESIGN-LANGUAGE.md
+ * - docs/BrandConstitution.md
+ * - src/config/brand.ts
+ */
+
+:root {
+  /* ----------------------------------------------------------------------------
+     1. PALETA OBSIDIAN & SURFACES (Vazio Escultural e Camadas)
+     ---------------------------------------------------------------------------- */
+  --lux-obsidian: #0D0D0D;             /* Fundo mestre absoluto (Dark Void) */
+  --lux-surface-ground: #101015;       /* Camada de base inferior */
+  --lux-titanium: #14141A;             /* Superfície padrão de cards e consoles */
+  --lux-surface-elevated: #1C1C24;     /* Superfície elevada e headers secundários */
+  --lux-surface-floating: #252532;     /* Dropdowns, modais e elementos flutuantes */
+  --lux-surface-hover: #1E1E28;        /* Estado hover refinado de cards */
+  --lux-overlay-glass: rgba(13, 13, 13, 0.78); /* Cortina de blur para backdrops */
+
+  /* ----------------------------------------------------------------------------
+     2. NEONS OFICIAIS DE ALTA PRECISÃO
+     ---------------------------------------------------------------------------- */
+  --lux-neon-blue: #00D4FF;            /* Tecnologia, comando, autoridade primária */
+  --lux-neon-gold: #FFC107;            /* Ouro de alta relojoaria, métricas e sinais */
+  --lux-gold-soft: #D4AF37;            /* Ouro clássico metálico suave */
+  --lux-gold-light: #EBD689;           /* Destaque especular dourado */
+  --lux-gold-deep: #9C7A22;            /* Ouro profundo em sombra */
+  --lux-neon-pink: #FF2D9B;            /* Inteligência tática, atitude e energia */
+  --lux-neon-iris: #8B7DFF;            /* Profundidade espacial e nós do enxame */
+  --lux-neon-lime: #22C55E;            /* Telemetria positiva / status nominal */
+  --lux-neon-danger: #EF4444;          /* Alertas de risco / desvios de rota */
+
+  /* ----------------------------------------------------------------------------
+     3. TIPOGRAFIA & CONTRASTE CALIBRADO (SEM BRANCO PURO CEGO)
+     ---------------------------------------------------------------------------- */
+  --lux-snow: #F8F9FF;                 /* Branco neon de leitura máxima */
+  --lux-ink-primary: #F8F9FF;          /* Texto principal */
+  --lux-ink-secondary: #9EADC8;        /* Rótulos e descrições secundárias */
+  --lux-ink-muted: #6B7A99;            /* Metadados, copyright e timestamps */
+  --lux-ink-cyan: #70D6FF;             /* Texto informativo azulado de alto contraste */
+
+  /* Famílias Tipográficas */
+  --lux-font-display: 'Sora', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --lux-font-body: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  --lux-font-mono: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, monospace;
+
+  /* Rastreamento (Tracking) Escultural */
+  --lux-tracking-hero: -0.03em;
+  --lux-tracking-title: -0.02em;
+  --lux-tracking-body: -0.01em;
+  --lux-tracking-mono: 0.06em;
+
+  /* ----------------------------------------------------------------------------
+     4. GRADIENTES DE LUZ & CAUSTICS
+     ---------------------------------------------------------------------------- */
+  --lux-grad-titles: linear-gradient(135deg, #00D4FF 0%, #FF2D9B 50%, #FFC107 100%);
+  --lux-grad-cta: linear-gradient(135deg, #FF2D9B 0%, #00D4FF 100%);
+  --lux-grad-gold: linear-gradient(135deg, #FFC107 0%, #D4AF37 50%, #9C7A22 100%);
+  --lux-grad-blue: linear-gradient(135deg, #00D4FF 0%, #0284C7 100%);
+  --lux-grad-orbit: conic-gradient(from 200deg, #D4AF37 0%, #EBD689 16%, #8B7DFF 38%, #5B21B6 52%, #0065D2 70%, #00D4FF 85%, #D4AF37 100%);
+  --lux-grad-glass: linear-gradient(135deg, rgba(248, 249, 255, 0.05) 0%, rgba(248, 249, 255, 0.01) 100%);
+
+  /* ----------------------------------------------------------------------------
+     5. BORDAS ESTRUTURAIS & GLOW CONTROLADO
+     ---------------------------------------------------------------------------- */
+  --lux-border-subtle: 1px solid rgba(0, 212, 255, 0.14);
+  --lux-border-strong: 1px solid rgba(0, 212, 255, 0.32);
+  --lux-border-gold: 1px solid rgba(255, 193, 7, 0.25);
+  --lux-border-glass: 1px solid rgba(248, 249, 255, 0.07);
+
+  --lux-glow-blue: 0 0 32px rgba(0, 212, 255, 0.28);
+  --lux-glow-gold: 0 0 32px rgba(255, 193, 7, 0.22);
+  --lux-glow-pink: 0 0 32px rgba(255, 45, 155, 0.22);
+  --lux-shadow-elevated: 0 24px 60px -16px rgba(0, 0, 0, 0.85);
+  --lux-shadow-ambient: 0 8px 32px rgba(0, 0, 0, 0.6);
+
+  /* ----------------------------------------------------------------------------
+     6. ESCALA DE RAIO & ESPAÇAMENTO MATEMÁTICO (Base 4px)
+     ---------------------------------------------------------------------------- */
+  --lux-r-xs: 4px;
+  --lux-r-sm: 8px;
+  --lux-r-md: 12px;
+  --lux-r-lg: 16px;
+  --lux-r-xl: 24px;
+  --lux-r-pill: 9999px;
+
+  /* ----------------------------------------------------------------------------
+     7. MOTIONS & TIMING CURVES INERCIAIS
+     ---------------------------------------------------------------------------- */
+  --lux-ease-inertial: cubic-bezier(0.16, 1, 0.3, 1);  /* Inércia de alto prestígio */
+  --lux-ease-snappy: cubic-bezier(0.22, 1, 0.36, 1);    /* Reações imediatas de clique */
+  --lux-ease-ambient: cubic-bezier(0.4, 0, 0.2, 1);     /* Loops contínuos e flutuação */
+
+  --lux-duration-micro: 180ms;
+  --lux-duration-normal: 280ms;
+  --lux-duration-scrolly: 750ms;
+}
+
+/* ==============================================================================
+   CLASSES UTILITÁRIAS DE LUXO TECNOLÓGICO
+   ============================================================================== */
+
+/* Tipografia de Destaque */
+.lux-headline-hero {
+  font-family: var(--lux-font-display);
+  font-weight: 800;
+  letter-spacing: var(--lux-tracking-hero);
+  line-height: 1.05;
+  background: var(--lux-grad-titles);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.lux-headline-gold {
+  font-family: var(--lux-font-display);
+  font-weight: 700;
+  letter-spacing: var(--lux-tracking-title);
+  line-height: 1.15;
+  background: var(--lux-grad-gold);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.lux-headline-blue {
+  font-family: var(--lux-font-display);
+  font-weight: 700;
+  letter-spacing: var(--lux-tracking-title);
+  line-height: 1.15;
+  color: var(--lux-neon-blue);
+}
+
+/* Rótulos de Telemetria / Badges Militares e Executivos */
+.lux-hud-tag {
+  font-family: var(--lux-font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: var(--lux-tracking-mono);
+  text-transform: uppercase;
+  color: var(--lux-neon-gold);
+  background: rgba(255, 193, 7, 0.08);
+  border: 1px solid rgba(255, 193, 7, 0.22);
+  padding: 4px 10px;
+  border-radius: var(--lux-r-xs);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lux-hud-tag-cyan {
+  color: var(--lux-neon-blue);
+  background: rgba(0, 212, 255, 0.08);
+  border-color: rgba(0, 212, 255, 0.24);
+}
+
+/* Card Esculpido em Vidro Fumê com Micro-Borda Refletiva */
+.lux-card-frosted {
+  background-color: var(--lux-titanium);
+  background-image: linear-gradient(180deg, rgba(20, 20, 26, 0.85) 0%, rgba(16, 16, 21, 0.95) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: var(--lux-border-glass);
+  border-radius: var(--lux-r-lg);
+  box-shadow: var(--lux-shadow-ambient);
+  transition: border-color var(--lux-duration-normal) var(--lux-ease-ambient),
+              transform var(--lux-duration-normal) var(--lux-ease-inertial),
+              box-shadow var(--lux-duration-normal) var(--lux-ease-ambient);
+}
+
+.lux-card-frosted:hover {
+  border-color: rgba(0, 212, 255, 0.35);
+  transform: translateY(-2px);
+  box-shadow: var(--lux-shadow-elevated), var(--lux-glow-blue);
+}
+
+/* Botão Primário de Ação Soberana (Metal Anodizado + Gradiente) */
+.lux-btn-primary {
+  font-family: var(--lux-font-body);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #0D0D0D;
+  background: var(--lux-grad-cta);
+  padding: 14px 32px;
+  border-radius: var(--lux-r-sm);
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 0 24px rgba(255, 45, 155, 0.35);
+  transition: transform var(--lux-duration-micro) var(--lux-ease-snappy),
+              box-shadow var(--lux-duration-micro) var(--lux-ease-snappy),
+              filter var(--lux-duration-micro) var(--lux-ease-snappy);
+}
+
+.lux-btn-primary:hover {
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0 0 36px rgba(0, 212, 255, 0.5);
+  filter: brightness(1.08);
+}
+
+.lux-btn-primary:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+/* Botão Secundário de Vidro Estrutural */
+.lux-btn-secondary {
+  font-family: var(--lux-font-body);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--lux-snow);
+  background: rgba(248, 249, 255, 0.04);
+  backdrop-filter: blur(8px);
+  padding: 14px 28px;
+  border-radius: var(--lux-r-sm);
+  border: 1px solid rgba(248, 249, 255, 0.15);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background-color var(--lux-duration-normal) var(--lux-ease-ambient),
+              border-color var(--lux-duration-normal) var(--lux-ease-ambient),
+              transform var(--lux-duration-normal) var(--lux-ease-inertial);
+}
+
+.lux-btn-secondary:hover {
+  background: rgba(248, 249, 255, 0.08);
+  border-color: var(--lux-neon-blue);
+  color: var(--lux-neon-blue);
+  transform: translateY(-1px);
+}
+
+/* ==============================================================================
+   8. HARNESS DE ACESSIBILIDADE WCAG 2.2 AA & REDUCED MOTION
+   ============================================================================== */
+
+/* Anel de Foco Estrito para Navegação por Teclado */
+.lux-focus-ring:focus-visible {
+  outline: 2px solid var(--lux-neon-blue);
+  outline-offset: 3px;
+}
+
+/* Neutralização de Motion para Preferência de Acessibilidade */
+@media (prefers-reduced-motion: reduce) {
+  .lux-card-frosted,
+  .lux-btn-primary,
+  .lux-btn-secondary {
+    transition: none;
+    animation: none;
+  }
+
+  .lux-card-frosted:hover,
+  .lux-btn-primary:hover,
+  .lux-btn-secondary:hover {
+    transform: none;
+  }
+}
+
+/* ==============================================================================
+   9. MATRIZ DE IMUTABILIDADE & PERFORMANCE DE MOTION (DESIGN DE INTERAÇÃO)
+   ============================================================================== */
+
+/* Elementos Estritamente Imutáveis (Zero Movimento/Transform) */
+.immobile-element {
+  /* biome-ignore lint/complexity/noImportantStyles: regra imutável do sistema de motion */
+  transform: none !important;
+  /* biome-ignore lint/complexity/noImportantStyles: regra imutável do sistema de motion */
+  animation: none !important;
+  /* biome-ignore lint/complexity/noImportantStyles: regra imutável do sistema de motion */
+  transition: none !important;
+}
+
+/* Cabeçalho de Tabela Estático e Imutável */
+.table-sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  /* biome-ignore lint/complexity/noImportantStyles: regra imutável do sistema de motion */
+  transform: none !important;
+  /* biome-ignore lint/complexity/noImportantStyles: regra imutável do sistema de motion */
+  animation: none !important;
+}
+
+/* Células de Dados Numéricos: alinhamento e largura fixos, zero jitter */
+.numeric-tabular-cell {
+  font-family: var(--lux-font-mono);
+  font-variant-numeric: tabular-nums;
+  /* biome-ignore lint/complexity/noImportantStyles: regra imutável do sistema de motion */
+  transform: none !important;
+}
+
+/* Aceleração de Hardware para Compositor Mobile (Zero Reflow) */
+.motion-gpu {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  will-change: transform, opacity;
+}
+
+/* Botões de Ação Destrutiva: sem efeito magnético ou drift */
+.action-critical-firm {
+  /* biome-ignore lint/complexity/noImportantStyles: regra imutável do sistema de motion */
+  transform: none !important;
+}
+.action-critical-firm:active {
+  /* biome-ignore lint/complexity/noImportantStyles: regra imutável do sistema de motion */
+  transform: scale(0.97) !important;
+}

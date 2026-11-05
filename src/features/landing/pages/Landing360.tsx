@@ -21,7 +21,11 @@ import {
   Zap,
 } from 'lucide-react';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
+
+const LuxuryLandingPage = lazy(() =>
+  import('../luxury/LuxuryLandingPage.js').then((m) => ({ default: m.LuxuryLandingPage })),
+);
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { isAuthorizedLoginEmail } from '../../../config/access-policy.js';
 import { useAuth } from '../../../contexts/AuthContext.js';
@@ -457,6 +461,21 @@ export function Landing360({
       setAuthMethod(nextTab);
     }
   };
+
+  const isLuxuryMode = searchParams.get('mode') === 'luxury' || searchParams.get('view') === 'luxury';
+  if (isLuxuryMode && activeScreen === 'intro') {
+    return (
+      <Suspense
+        fallback={
+          <div className="min-h-screen bg-[#0D0D0D] flex items-center justify-center text-[#00D4FF] font-mono text-sm tracking-widest">
+            INICIALIZANDO CENTRAL 360º...
+          </div>
+        }
+      >
+        <LuxuryLandingPage />
+      </Suspense>
+    );
+  }
 
   if (isAuthPending) {
     return (

@@ -96,7 +96,7 @@ export function VirtualTable<T>({
       {/* biome-ignore lint/a11y/useFocusableInteractive: ver comentário acima */}
       {/* biome-ignore lint/a11y/useSemanticElements: ver comentário acima */}
       <div
-        className="sticky top-0 z-10 flex shrink-0 border-b border-line bg-surface/90 backdrop-blur-sm"
+        className="sticky top-0 z-10 flex shrink-0 border-b border-line bg-surface/90 backdrop-blur-sm table-sticky-header immobile-element"
         role="row"
         aria-rowindex={0}
       >
@@ -151,7 +151,7 @@ export function VirtualTable<T>({
                   transform: `translateY(${virtualRow.start}px)`,
                   height: `${virtualRow.size}px`,
                 }}
-                className={`flex items-center border-b border-line transition-colors
+                className={`flex items-center border-b border-line transition-colors duration-150 motion-gpu
                   ${onRowClick && row ? 'cursor-pointer hover:bg-surface-2' : ''}
                   ${isLoading ? 'animate-pulse' : ''}
                 `}

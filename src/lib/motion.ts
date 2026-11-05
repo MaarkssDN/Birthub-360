@@ -184,9 +184,30 @@ export const shimmer: Variants = {
  * Inclinação 3D sutil (Spatial UI) que segue o cursor sobre o elemento.
  * Desativada automaticamente quando o usuário prefere menos movimento.
  */
+/**
+ * Detecta se o dispositivo do usuário utiliza ponteiro de toque (coarse pointer / touch).
+ * Em dispositivos móveis e WebView do Capacitor, desativa rastreamento contínuo de cursor
+ * para garantir 60/120 FPS fixos e zero aquecimento de GPU.
+ */
+export function useIsTouchDevice() {
+  const [isTouch, setIsTouch] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const hasCoarseMatch =
+      typeof window.matchMedia === 'function'
+        ? window.matchMedia('(pointer: coarse)').matches
+        : false;
+    const hasTouchEvents = 'ontouchstart' in window;
+    const hasTouchPoints = typeof navigator !== 'undefined' && (navigator.maxTouchPoints ?? 0) > 0;
+    setIsTouch(Boolean(hasCoarseMatch || hasTouchEvents || hasTouchPoints));
+  }, []);
+  return isTouch;
+}
+
 export function useTilt(intensity = 10) {
   const ref = useRef<HTMLElement | null>(null);
   const reduceMotion = useReducedMotion();
+  const isTouch = useIsTouchDevice();
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -194,7 +215,7 @@ export function useTilt(intensity = 10) {
   const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-intensity, intensity]), SPRING_SOFT);
 
   const onPointerMove = (event: React.PointerEvent<HTMLElement>) => {
-    if (reduceMotion || !ref.current) return;
+    if (reduceMotion || isTouch || !ref.current) return;
     const rect = ref.current.getBoundingClientRect();
     x.set((event.clientX - rect.left) / rect.width - 0.5);
     y.set((event.clientY - rect.top) / rect.height - 0.5);
@@ -207,7 +228,7 @@ export function useTilt(intensity = 10) {
 
   return {
     ref,
-    style: reduceMotion ? undefined : { rotateX, rotateY, transformPerspective: 800 },
+    style: reduceMotion || isTouch ? undefined : { rotateX, rotateY, transformPerspective: 800 },
     onPointerMove,
     onPointerLeave,
   };
@@ -219,16 +240,13 @@ export function useTilt(intensity = 10) {
 export function useMagnetic(strength = 0.35) {
   const ref = useRef<HTMLElement | null>(null);
   const reduceMotion = useReducedMotion();
+  const isTouch = useIsTouchDevice();
 
   const x = useSpring(0, SPRING_SNAPPY);
   const y = useSpring(0, SPRING_SNAPPY);
 
   const onPointerMove = (event: React.PointerEvent<HTMLElement>) => {
-    // Bug real: reduceMotion era lido de useReducedMotion() mas nunca checado aqui (diferente de
-    // useTilt, que já fazia essa guarda) — o efeito magnético continuava puxando o elemento mesmo
-    // com prefers-reduced-motion ativo. Achado e corrigido na Onda 8 (débito de acessibilidade,
-    // Constituição §8/§10).
-    if (reduceMotion || !ref.current) return;
+    if (reduceMotion || isTouch || !ref.current) return;
     const rect = ref.current.getBoundingClientRect();
     x.set((event.clientX - rect.left - rect.width / 2) * strength);
     y.set((event.clientY - rect.top - rect.height / 2) * strength);
@@ -239,7 +257,7 @@ export function useMagnetic(strength = 0.35) {
     y.set(0);
   };
 
-  return { ref, style: { x, y }, onPointerMove, onPointerLeave };
+  return { ref, style: isTouch || reduceMotion ? undefined : { x, y }, onPointerMove, onPointerLeave };
 }
 
 export const shimmerBeam: Variants = {
@@ -287,9 +305,10 @@ export function useCursorSpotlight() {
   const [coords, setCoords] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
   const reduceMotion = useReducedMotion();
+  const isTouch = useIsTouchDevice();
 
   const onPointerMove = (e: React.PointerEvent<HTMLElement>) => {
-    if (reduceMotion || !ref.current) return;
+    if (reduceMotion || isTouch || !ref.current) return;
     const rect = ref.current.getBoundingClientRect();
     setCoords({
       x: e.clientX - rect.left,
@@ -308,7 +327,7 @@ export function useCursorSpotlight() {
     onPointerEnter,
     onPointerLeave,
     spotlightStyle:
-      isHovered && !reduceMotion
+      isHovered && !reduceMotion && !isTouch
         ? {
             background: `radial-gradient(400px circle at ${coords.x}px ${coords.y}px, rgba(0, 229, 255, 0.14), transparent 65%)`,
           }
@@ -393,5 +412,157 @@ export const scanLineEntry: Variants = {
     scaleX: 1,
     opacity: [0, 0.6, 0],
     transition: { duration: 1.4, ease: EASE_OUT_EXPO, delay: 0.3 },
+  },
+};
+
+/**
+ * -----------------------------------------------------------------------------
+ * COREOGRAFIA DE INTERAÇÃO & COMPOSITOR ENGINE (v2.0)
+ * -----------------------------------------------------------------------------
+ */
+
+/**
+ * Transição de página otimizada para mobile / WebView:
+ * Apenas 'transform' e 'opacity', sem blur pesado em runtime.
+ */
+export const pageTransitionClean: Variants = {
+  initial: { opacity: 0, y: 10 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.22, ease: EASE_PREMIUM },
+  },
+  exit: {
+    opacity: 0,
+    y: -8,
+    transition: { duration: 0.15, ease: EASE_IN_OUT_SMOOTH },
+  },
+};
+
+/**
+ * Coreografia de Container de Grid (KPIs, Listas e Cards de Operação)
+ */
+export const staggerGridContainer = (stagger = 0.04, delayChildren = 0.05): Variants => ({
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: stagger, delayChildren },
+  },
+});
+
+export const gridItemEntrance: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.28, ease: EASE_PREMIUM },
+  },
+};
+
+/**
+ * Microinterações táteis para Botões e Ações de Comando (CTAs)
+ */
+export const buttonMotion: Variants = {
+  rest: { scale: 1, y: 0 },
+  hover: { y: -1.5, transition: { duration: 0.15, ease: EASE_OUT_EXPO } },
+  tap: { scale: 0.97, transition: { duration: 0.08, ease: EASE_OUT_EXPO } },
+};
+
+/**
+ * Microinterações para Cards de Registro e Painéis Analíticos
+ */
+export const cardHoverMotion: Variants = {
+  rest: { y: 0 },
+  hover: { y: -2, transition: { duration: 0.2, ease: EASE_PREMIUM } },
+  tap: { scale: 0.99, transition: { duration: 0.08 } },
+};
+
+/**
+ * Revelação suave acionada por rolagem de página (Viewport Scroll)
+ * Usar com viewport: { once: true, margin: '-40px' }
+ */
+export const scrollRevealFadeUp: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.35, ease: EASE_PREMIUM },
+  },
+};
+
+export const scrollRevealScale: Variants = {
+  hidden: { opacity: 0, scale: 0.97 },
+  show: {
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.32, ease: EASE_OUT_EXPO },
+  },
+};
+
+/**
+ * Animações de Modais e Diálogos de Confirmação
+ */
+export const modalBackdropMotion: Variants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { duration: 0.2, ease: EASE_OUT_EXPO } },
+  exit: { opacity: 0, transition: { duration: 0.15, ease: EASE_IN_OUT_SMOOTH } },
+};
+
+export const modalDialogMotion: Variants = {
+  hidden: { opacity: 0, scale: 0.96, y: 8 },
+  show: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { duration: 0.25, ease: EASE_PREMIUM },
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.97,
+    y: 6,
+    transition: { duration: 0.16, ease: EASE_IN_OUT_SMOOTH },
+  },
+};
+
+/**
+ * Drawers Laterais e Folhas de Detalhes de Leads
+ */
+export const drawerSlideRight: Variants = {
+  hidden: { x: '100%', opacity: 0.8 },
+  show: {
+    x: 0,
+    opacity: 1,
+    transition: { duration: 0.3, ease: EASE_PREMIUM },
+  },
+  exit: {
+    x: '100%',
+    opacity: 0.8,
+    transition: { duration: 0.22, ease: EASE_IN_OUT_SMOOTH },
+  },
+};
+
+export const drawerSlideBottom: Variants = {
+  hidden: { y: '100%', opacity: 0.8 },
+  show: {
+    y: 0,
+    opacity: 1,
+    transition: { duration: 0.3, ease: EASE_PREMIUM },
+  },
+  exit: {
+    y: '100%',
+    opacity: 0.8,
+    transition: { duration: 0.22, ease: EASE_IN_OUT_SMOOTH },
+  },
+};
+
+/**
+ * Entrada de Linhas de Tabela: zero reflow de largura, entrada estanque em Y
+ */
+export const tableRowEntrance: Variants = {
+  hidden: { opacity: 0, y: 6 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.2, ease: EASE_PREMIUM },
   },
 };

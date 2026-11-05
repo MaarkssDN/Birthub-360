@@ -16,6 +16,8 @@ import {
   X,
 } from 'lucide-react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
+import { drawerSlideRight, modalBackdropMotion } from '../../../lib/motion.js';
 import { EntityAttachments } from '../../../components/crm/EntityAttachments.js';
 import { AIEmailGenerator } from '../../../components/ui/AIEmailGenerator.js';
 import { Button } from '../../../components/ui/Button.js';
@@ -129,6 +131,7 @@ interface LeadDetailDrawerProps {
 }
 
 export function LeadDetailDrawer({ leadId, onClose, onChanged }: LeadDetailDrawerProps) {
+  const reduceMotion = useReducedMotion();
   const { playbook, info: playbookMeta } = useActivePlaybook();
   const { setActiveRecord, clearActiveRecord } = useActiveRecord();
   const { currentUser } = useAuth();
@@ -429,8 +432,11 @@ export function LeadDetailDrawer({ leadId, onClose, onChanged }: LeadDetailDrawe
           conveniência de mouse/touch, não um alvo de interação que um usuário de teclado precise
           alcançar. Elemento de backdrop com role="button" para fechar via teclado - sem aria-hidden
           pois é focável. */}
-      {/* biome-ignore lint/a11y/useSemanticElements: backdrop overlay com clique para fechar */}
-      <div
+      <motion.div
+        variants={reduceMotion ? undefined : modalBackdropMotion}
+        initial={reduceMotion ? undefined : 'hidden'}
+        animate={reduceMotion ? undefined : 'show'}
+        exit={reduceMotion ? undefined : 'exit'}
         className="fixed inset-0 bg-ink/40 backdrop-blur-xs transition-opacity"
         role="button"
         tabIndex={0}
@@ -442,11 +448,15 @@ export function LeadDetailDrawer({ leadId, onClose, onChanged }: LeadDetailDrawe
         }}
         onClick={onClose}
       />
-      <div
+      <motion.div
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative w-full max-w-2xl bg-surface border-l border-line shadow-2xl flex flex-col h-full overflow-hidden z-10 before:absolute before:inset-x-0 before:top-0 before:h-[2px] before:bg-gradient-to-r before:from-transparent before:via-brand/50 before:to-transparent before:z-20"
+        variants={reduceMotion ? undefined : drawerSlideRight}
+        initial={reduceMotion ? undefined : 'hidden'}
+        animate={reduceMotion ? undefined : 'show'}
+        exit={reduceMotion ? undefined : 'exit'}
+        className="relative w-full max-w-2xl bg-surface border-l border-line shadow-2xl flex flex-col h-full overflow-hidden z-10 motion-gpu before:absolute before:inset-x-0 before:top-0 before:h-[2px] before:bg-gradient-to-r before:from-transparent before:via-brand/50 before:to-transparent before:z-20"
       >
         {loading ? (
           <div className="flex-1 flex items-center justify-center p-8">
@@ -997,7 +1007,7 @@ export function LeadDetailDrawer({ leadId, onClose, onChanged }: LeadDetailDrawe
             </div>
           </>
         )}
-      </div>
+      </motion.div>
 
       {whatsappOpen && leadPhone && (
         <WhatsAppChatPanel

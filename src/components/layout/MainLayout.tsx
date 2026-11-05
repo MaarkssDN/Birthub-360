@@ -9,6 +9,7 @@ import { useNavigationState } from './hooks/useNavigationState.js';
 import { MobileNavDrawer } from './MobileNavDrawer.js';
 import { CommandPalette } from '../ui/CommandPalette.js';
 import { Toaster } from '../ui/Toaster.js';
+import { PageTransition } from './PageTransition.js';
 import type { TabType } from './tabMeta.js';
 
 interface MainLayoutProps {
@@ -62,7 +63,9 @@ export function MainLayout({ children, activeTab: activeTabProp }: MainLayoutPro
             style={{ '--page-accent': `var(--color-heading-${domainAccent})` } as CSSProperties}
           >
             <DataFlowLines />
-            {children}
+            <PageTransition id={pathname}>
+              {children}
+            </PageTransition>
           </main>
         </div>
       </div>

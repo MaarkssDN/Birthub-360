@@ -1,6 +1,6 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import type React from 'react';
-import { EASE_PREMIUM } from '../../lib/motion.js';
+import { pageTransitionClean } from '../../lib/motion.js';
 import { cn } from '../../lib/utils.js';
 
 export interface PageTransitionProps {
@@ -14,7 +14,7 @@ export function PageTransition({ children, className, id }: PageTransitionProps)
 
   if (shouldReduceMotion) {
     return (
-      <div className={cn('flex-1 flex flex-col min-h-0 overflow-hidden', className)}>
+      <div className={cn('flex-1 flex flex-col min-h-0 min-w-0', className)}>
         {children}
       </div>
     );
@@ -23,13 +23,14 @@ export function PageTransition({ children, className, id }: PageTransitionProps)
   return (
     <motion.div
       key={id}
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -6 }}
-      transition={{ duration: 0.25, ease: EASE_PREMIUM }}
-      className={cn('flex-1 flex flex-col min-h-0 overflow-hidden', className)}
+      variants={pageTransitionClean}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className={cn('flex-1 flex flex-col min-h-0 min-w-0 motion-gpu', className)}
     >
       {children}
     </motion.div>
   );
 }
+export default PageTransition;

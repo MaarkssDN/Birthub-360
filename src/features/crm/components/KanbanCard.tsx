@@ -145,7 +145,7 @@ export const KanbanCard = React.memo(function KanbanCard({
     <div
       ref={setNodeRef}
       style={style}
-      className={`group relative overflow-hidden rounded-card rounded-2xl border bg-white dark:bg-[#14161C] shadow-[0_4px_16px_-2px_rgba(0,0,0,0.04)] hover:shadow-[0_10px_28px_-4px_rgba(0,212,255,0.14)] motion-safe:transition-all motion-safe:duration-200 ${
+      className={`group relative overflow-hidden rounded-card rounded-2xl border bg-white dark:bg-[#14161C] shadow-[0_4px_16px_-2px_rgba(0,0,0,0.04)] hover:shadow-[0_10px_28px_-4px_rgba(0,212,255,0.14)] motion-safe:transition-all motion-safe:duration-200 motion-safe:hover:-translate-y-0.5 active:scale-[0.99] motion-gpu ${
         isSelected
           ? 'border-[#00D4FF] bg-[color:color-mix(in_srgb,var(--brand)_8%,var(--surface))] ring-2 ring-[#00D4FF]/30'
           : 'border-line/80 hover:border-[#00D4FF]/50'

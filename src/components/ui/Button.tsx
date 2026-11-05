@@ -126,7 +126,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       </Comp>
     );
 
-    if (magnetic) {
+    // Regra da Matriz de Imutabilidade: ações destrutivas nunca recebem atração magnética
+    if (magnetic && variant !== 'destructive') {
       return <Magnetic>{buttonContent}</Magnetic>;
     }
 
