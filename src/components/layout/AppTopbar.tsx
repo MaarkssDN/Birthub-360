@@ -82,7 +82,7 @@ export function AppTopbar({ activeTab, onOpenMobileNav }: AppTopbarProps) {
   };
 
   return (
-    <header className="relative sticky top-0 z-20 flex h-14 sm:h-16 shrink-0 items-center gap-1.5 sm:gap-2.5 bg-white/85 dark:bg-[#090D16]/85 backdrop-blur-xl border-b border-slate-200/80 dark:border-white/[0.08] px-2.5 sm:px-6 overflow-hidden">
+    <header className="relative sticky top-0 z-20 flex h-14 sm:h-16 shrink-0 items-center gap-1.5 sm:gap-2.5 bg-white/85 dark:bg-[#090D16]/85 backdrop-blur-xl border-b border-slate-200/80 dark:border-white/[0.08] px-2.5 sm:px-6 overflow-hidden immobile-element">
       <button
         type="button"
         onClick={onOpenMobileNav}
@@ -160,7 +160,7 @@ export function AppTopbar({ activeTab, onOpenMobileNav }: AppTopbarProps) {
             {dateLabel}
           </p>
           <p
-            className="font-mono text-sm text-[color:var(--color-text-primary)] [font-variant-numeric:tabular-nums]"
+            className="font-mono text-sm text-[color:var(--color-text-primary)] [font-variant-numeric:tabular-nums] numeric-tabular-cell"
             style={{ fontWeight: 400 }}
           >
             {timeLabel}
