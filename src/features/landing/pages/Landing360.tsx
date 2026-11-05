@@ -6,7 +6,6 @@ import {
   ArrowUp,
   Check,
   CheckCircle2,
-  Compass,
   Eye,
   EyeOff,
   Loader2,
@@ -21,17 +20,13 @@ import {
   Zap,
 } from 'lucide-react';
 import type React from 'react';
-import { Suspense, lazy, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 
 const LuxuryLandingPage = lazy(() =>
   import('../luxury/LuxuryLandingPage.js').then((m) => ({ default: m.LuxuryLandingPage })),
 );
+
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { isAuthorizedLoginEmail } from '../../../config/access-policy.js';
-import { useAuth } from '../../../contexts/AuthContext.js';
-import { useTheme } from '../../../contexts/ThemeContext.js';
-import { authClient } from '../../../lib/auth-client.js';
-import { SoundFX } from '../../../lib/soundEffects.js';
 import { BirthHubLogo } from '../../../components/brand/BirthHubLogo.js';
 import {
   AiDiagnosticLayerIcon,
@@ -41,6 +36,12 @@ import {
   ReactiveCardIcon,
   SilosCardIcon,
 } from '../../../components/brand/LandingTitleIcons.js';
+import { isAuthorizedLoginEmail } from '../../../config/access-policy.js';
+import { useAuth } from '../../../contexts/AuthContext.js';
+import { useTheme } from '../../../contexts/ThemeContext.js';
+import { authClient } from '../../../lib/auth-client.js';
+import { SoundFX } from '../../../lib/soundEffects.js';
+import { HeroConversionSection } from '../components/HeroConversionSection.js';
 import './Landing360.css';
 
 // 8 PILARES OFICIAIS COMPLETOS DO BIRTH HUB 360° (PALETA NEON OFICIAL - DOURADO RADIANTE)
@@ -462,7 +463,8 @@ export function Landing360({
     }
   };
 
-  const isLuxuryMode = searchParams.get('mode') === 'luxury' || searchParams.get('view') === 'luxury';
+  const isLuxuryMode =
+    searchParams.get('mode') === 'luxury' || searchParams.get('view') === 'luxury';
   if (isLuxuryMode && activeScreen === 'intro') {
     return (
       <Suspense
@@ -659,92 +661,42 @@ export function Landing360({
           )}
         </header>
 
-        {/* 2. HERO SECTION */}
-        <section
-          id="hero"
-          className="relative px-5 py-16 sm:px-8 lg:px-14 overflow-hidden border-b border-slate-700/60 transition-colors"
-        >
-          {/* Halos luminosos neon sutis */}
-          <div className="pointer-events-none absolute top-10 right-10 w-[500px] h-[500px] max-w-full rounded-full blur-[140px] bg-[#00D4FF]/10" />
-          <div className="pointer-events-none absolute bottom-0 left-10 w-[450px] h-[450px] max-w-full rounded-full blur-[140px] bg-[#FF2D9B]/10" />
+        {/* 2. HERO SECTION - OTIMIZADO PARA CONVERSÃO, TESTE A/B & TELEMETRIA */}
+        <HeroConversionSection onGoToLogin={handleGoToLogin} />
 
-          <div className="relative z-10 max-w-6xl mx-auto flex flex-col items-center text-center">
-            {/* Headline Centralizada com Animação Luminous das 3 Frases */}
-            <h1 className="font-display text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-[1.2] max-w-4xl text-center mx-auto mb-6">
-              <span className="block space-y-1 sm:space-y-2">
-                <span className="hero-phrase-line hero-phrase-1 block">
-                  <span className="landing-title-cyan font-extrabold">Dados que </span>
-                  <span className="grad-text-blue font-extrabold">Conectam.</span>
-                </span>
-                <span className="hero-phrase-line hero-phrase-2 block">
-                  <span className="landing-title-purple font-extrabold">Inteligência que </span>
-                  <span className="grad-text-purple font-extrabold">Decide.</span>
-                </span>
-                <span className="hero-phrase-line hero-phrase-3 block">
-                  <span className="landing-title-gold font-extrabold">Execução que </span>
-                  <span className="grad-text-gold font-extrabold">Acontece.</span>
-                </span>
-              </span>
-            </h1>
-
-            {/* Subheadline Oficial Centralizada - SEM BRANCO OU PRETO */}
-            <p className="landing-subtitle mt-2 text-base sm:text-lg md:text-xl font-medium max-w-3xl leading-relaxed text-center mx-auto">
-              Conecte CRM, dados, inteligência artificial e automação em um único centro de comando
-              para planejar, monitorar, prever e acelerar suas operações comerciais.
-            </p>
-
-            {/* CTAs do Hero com animação pulsante — ZERO FUNDO BRANCO */}
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <button
-                type="button"
-                onClick={handleGoToLogin}
-                className="btn-cta-light btn-cta-pulse inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl font-mono text-sm sm:text-base font-bold uppercase tracking-wider cursor-pointer shadow-lg"
-              >
-                <span>Acessar Plataforma</span>
-                <ArrowRight className="w-5 h-5" />
-              </button>
-              <a
-                href="#pilares"
-                className="btn-secondary-dark inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-xl font-mono text-sm font-bold uppercase tracking-wider transition-all"
-              >
-                <span>Ver os 8 Pilares</span>
-                <Compass className="w-4 h-4 text-[#00D4FF]" />
-              </a>
-            </div>
-
-            {/* Capacidades reais: Multi-CRM — Respiro +36px e bordas semânticas */}
-            <div className="mt-20 pt-8 border-t border-slate-200/80 dark:border-slate-800 w-full max-w-6xl xl:max-w-7xl">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {FEATURE_TAGS.map((tag, index) => (
-                  <div
-                    key={tag.label}
-                    className={`capability-card ${getSemanticCardClass(tag.color)} flex flex-col items-center justify-center text-center p-6 rounded-2xl transition-all shadow-md`}
+        {/* Capacidades reais: Multi-CRM — Respiro +36px e bordas semânticas */}
+        <section className="px-5 py-12 sm:px-8 lg:px-14 border-b border-slate-700/60 transition-colors">
+          <div className="max-w-6xl xl:max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {FEATURE_TAGS.map((tag, index) => (
+                <div
+                  key={tag.label}
+                  className={`capability-card ${getSemanticCardClass(tag.color)} flex flex-col items-center justify-center text-center p-6 rounded-2xl transition-all shadow-md`}
+                  style={{
+                    animationDelay: `${index * 45}ms`,
+                  }}
+                >
+                  <span
+                    className="font-mono text-xs font-bold uppercase tracking-wider mb-2.5 px-3 py-1 rounded-full"
                     style={{
-                      animationDelay: `${index * 45}ms`,
+                      color: tag.color,
+                      backgroundColor: `${tag.color}18`,
+                      border: `1.5px solid ${tag.color}55`,
                     }}
                   >
-                    <span
-                      className="font-mono text-xs font-bold uppercase tracking-wider mb-2.5 px-3 py-1 rounded-full"
-                      style={{
-                        color: tag.color,
-                        backgroundColor: `${tag.color}18`,
-                        border: `1.5px solid ${tag.color}55`,
-                      }}
-                    >
-                      {tag.kicker}
-                    </span>
-                    <h4
-                      className="font-display font-bold text-base sm:text-lg leading-snug text-center mb-2"
-                      style={{ color: tag.color }}
-                    >
-                      {tag.label}
-                    </h4>
-                    <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
-                      {tag.desc}
-                    </p>
-                  </div>
-                ))}
-              </div>
+                    {tag.kicker}
+                  </span>
+                  <h4
+                    className="font-display font-bold text-base sm:text-lg leading-snug text-center mb-2"
+                    style={{ color: tag.color }}
+                  >
+                    {tag.label}
+                  </h4>
+                  <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
+                    {tag.desc}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         </section>
