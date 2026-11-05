@@ -1,9 +1,11 @@
 import { useReducedMotion } from 'framer-motion';
 import {
   AlertCircle,
+  AlertTriangle,
   ArrowLeft,
   ArrowRight,
   ArrowUp,
+  Calculator,
   Check,
   CheckCircle2,
   Eye,
@@ -39,9 +41,11 @@ import {
 import { isAuthorizedLoginEmail } from '../../../config/access-policy.js';
 import { useAuth } from '../../../contexts/AuthContext.js';
 import { useTheme } from '../../../contexts/ThemeContext.js';
+import { trackHeroRoiSimulatorOpened } from '../../../lib/analytics/conversionTelemetry.js';
 import { authClient } from '../../../lib/auth-client.js';
 import { SoundFX } from '../../../lib/soundEffects.js';
 import { HeroConversionSection } from '../components/HeroConversionSection.js';
+import { RoiSimulatorModal } from '../components/RoiSimulatorModal.js';
 import './Landing360.css';
 
 // 8 PILARES OFICIAIS COMPLETOS DO BIRTH HUB 360° (PALETA NEON OFICIAL - DOURADO RADIANTE)
@@ -206,6 +210,7 @@ export function Landing360({
   initialScreen?: 'intro' | 'login';
 } = {}) {
   const [activeScreen, setActiveScreen] = useState<'intro' | 'login'>(initialScreen);
+  const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
   const { currentUser, isPending: isAuthPending } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -701,7 +706,7 @@ export function Landing360({
           </div>
         </section>
 
-        {/* 3. PROBLEMA */}
+        {/* 3. PROBLEMA - IMPACTO FINANCEIRO & DORES VISCERAIS */}
         <section
           id="problema"
           className="px-5 py-16 sm:px-8 lg:px-14 border-b border-slate-700/60 transition-colors"
@@ -709,70 +714,118 @@ export function Landing360({
           <div className="max-w-7xl mx-auto">
             {/* Cabeçalho de Seção Centralizado */}
             <div className="text-center max-w-3xl mx-auto mb-12">
-              <div className="inline-flex items-center px-3.5 py-1.5 rounded-full text-[11px] font-mono font-bold uppercase tracking-widest bg-[#EF4444]/10 border border-[#EF4444]/40 text-[#EF4444] mb-3.5 mx-auto">
-                <span>O Gargalo Estrutural das Empresas</span>
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] font-mono font-bold uppercase tracking-widest bg-[#EF4444]/15 border border-[#EF4444]/40 text-[#EF4444] mb-3.5 mx-auto">
+                <span className="w-2 h-2 rounded-full bg-[#EF4444] animate-pulse" />
+                <span>O Custo Oculto da Operação Comercial</span>
               </div>
               <h2 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight mb-3 text-center landing-title-pink">
                 A realidade de operar com dados fragmentados e equipes no escuro
               </h2>
               <p className="landing-subtitle text-sm sm:text-base leading-relaxed text-center mx-auto">
-                Empresas investem em múltiplas ferramentas, mas continuam sem clareza sobre onde o
-                pipeline está travado, quais negócios realmente têm chance de fechar e o que cada
-                vendedor deve fazer a seguir.
+                Empresas investem fortunas atraindo leads, mas continuam sem clareza sobre onde o
+                pipeline está travado, quais negócios realmente têm chance de fechar e quanto
+                dinheiro está sendo deixado na mesa todos os meses.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="section-card card-semantic-pink p-6 text-center flex flex-col items-center rounded-2xl shadow-md">
-                <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#FF2D9B] bg-[#FF2D9B]/10 border border-[#FF2D9B]/35 px-3 py-1 rounded-full mb-3">
-                  Silos &amp; Fragmentação
-                </span>
-                <div className="w-12 h-12 rounded-xl bg-[#FF2D9B]/15 text-[#FF2D9B] flex items-center justify-center mb-4 border border-[#FF2D9B]/30">
-                  <SilosCardIcon size={24} color="#FF2D9B" />
+              {/* Card 1: Silos & WhatsApp */}
+              <div className="section-card card-semantic-pink p-6 text-center flex flex-col items-center justify-between rounded-2xl shadow-md">
+                <div className="flex flex-col items-center">
+                  <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#FF2D9B] bg-[#FF2D9B]/15 border border-[#FF2D9B]/35 px-3 py-1 rounded-full mb-3">
+                    Até 35% de Oportunidades Perdidas
+                  </span>
+                  <div className="w-12 h-12 rounded-xl bg-[#FF2D9B]/15 text-[#FF2D9B] flex items-center justify-center mb-4 border border-[#FF2D9B]/30">
+                    <SilosCardIcon size={24} color="#FF2D9B" />
+                  </div>
+                  <h3 className="font-display text-lg sm:text-xl font-bold text-[#db2777] dark:text-[#FF2D9B] mb-2 text-center">
+                    Negociações Presas no WhatsApp Pessoal
+                  </h3>
+                  <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
+                    Sem sincronização automática via API/Webhooks, históricos de conversa e chamadas
+                    ficam isolados no celular do vendedor. Quando alguém sai da equipe, o histórico
+                    e o relacionamento com o cliente desaparecem.
+                  </p>
                 </div>
-                <h3 className="font-display text-lg sm:text-xl font-bold text-[#db2777] dark:text-[#FF2D9B] mb-2 text-center">
-                  Silos e Ferramentas Desconectadas
-                </h3>
-                <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
-                  O CRM não fala em tempo real com a telefonia, as trocas de WhatsApp ficam perdidas
-                  no celular do vendedor e os dados de prospecção não retroalimentam o time de
-                  fechamento.
-                </p>
+                <div className="mt-4 pt-3 border-t border-[#FF2D9B]/20 w-full text-[11px] font-mono text-[#FF2D9B] italic">
+                  “Follow-ups atrasam dias e a diretoria não sabe o que foi prometido.”
+                </div>
               </div>
 
-              <div className="section-card card-semantic-gold p-6 text-center flex flex-col items-center rounded-2xl shadow-md">
-                <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#F59E0B] bg-[#F59E0B]/10 border border-[#F59E0B]/35 px-3 py-1 rounded-full mb-3">
-                  Falta de Telemetria
-                </span>
-                <div className="w-12 h-12 rounded-xl bg-[#F59E0B]/15 text-[#F59E0B] flex items-center justify-center mb-4 border border-[#F59E0B]/30">
-                  <ReactiveCardIcon size={24} color="#F59E0B" />
+              {/* Card 2: Ponto Cego & Gestão Reativa */}
+              <div className="section-card card-semantic-gold p-6 text-center flex flex-col items-center justify-between rounded-2xl shadow-md">
+                <div className="flex flex-col items-center">
+                  <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#F59E0B] bg-[#F59E0B]/15 border border-[#F59E0B]/35 px-3 py-1 rounded-full mb-3">
+                    15h/Semana em Cobrança Manual
+                  </span>
+                  <div className="w-12 h-12 rounded-xl bg-[#F59E0B]/15 text-[#F59E0B] flex items-center justify-center mb-4 border border-[#F59E0B]/30">
+                    <ReactiveCardIcon size={24} color="#F59E0B" />
+                  </div>
+                  <h3 className="font-display text-lg sm:text-xl font-bold text-[#d97706] dark:text-[#F59E0B] mb-2 text-center">
+                    Descobrir a Meta Perdida no Dia 28
+                  </h3>
+                  <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
+                    Gestores passam o dia cobrando preenchimento manual de CRM que ninguém atualiza.
+                    O forecast vira um palpite e a equipe descobre no final do mês que os negócios
+                    esperados evaporaram sem aviso prévio.
+                  </p>
                 </div>
-                <h3 className="font-display text-lg sm:text-xl font-bold text-[#d97706] dark:text-[#F59E0B] mb-2 text-center">
-                  Gestão Reativa &amp; Decisões Tardias
-                </h3>
-                <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
-                  Gestores passam o dia cobrando preenchimento manual de planilhas e só descobrem
-                  que a meta não será atingida nos últimos dias do mês, quando já não há tempo hábil
-                  para corrigir o curso.
-                </p>
+                <div className="mt-4 pt-3 border-t border-[#F59E0B]/20 w-full text-[11px] font-mono text-[#F59E0B] italic">
+                  “Decisões no escuro baseadas em feeling e planilhas desatualizadas.”
+                </div>
               </div>
 
-              <div className="section-card card-semantic-cyan p-6 text-center flex flex-col items-center rounded-2xl shadow-md">
-                <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#00D4FF] bg-[#00D4FF]/10 border border-[#00D4FF]/35 px-3 py-1 rounded-full mb-3">
-                  Execução Reativa
-                </span>
-                <div className="w-12 h-12 rounded-xl bg-[#00D4FF]/15 text-[#00D4FF] flex items-center justify-center mb-4 border border-[#00D4FF]/30">
-                  <LostDealsCardIcon size={24} color="#00D4FF" />
+              {/* Card 3: Fila Fria & Resposta Lenta */}
+              <div className="section-card card-semantic-cyan p-6 text-center flex flex-col items-center justify-between rounded-2xl shadow-md">
+                <div className="flex flex-col items-center">
+                  <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#00D4FF] bg-[#00D4FF]/15 border border-[#00D4FF]/35 px-3 py-1 rounded-full mb-3">
+                    Tempo de Resposta &gt; 4 Horas
+                  </span>
+                  <div className="w-12 h-12 rounded-xl bg-[#00D4FF]/15 text-[#00D4FF] flex items-center justify-center mb-4 border border-[#00D4FF]/30">
+                    <LostDealsCardIcon size={24} color="#00D4FF" />
+                  </div>
+                  <h3 className="font-display text-lg sm:text-xl font-bold text-[#0369a1] dark:text-[#00D4FF] mb-2 text-center">
+                    Leads Quentes Esfriando sem Cadência
+                  </h3>
+                  <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
+                    Sem agentes autônomos de qualificação e alertas preditivos, oportunidades com
+                    alto potencial ficam paradas na caixa de entrada sem próximo passo claro,
+                    enquanto a concorrência responde em segundos e fecha a venda.
+                  </p>
                 </div>
-                <h3 className="font-display text-lg sm:text-xl font-bold text-[#0369a1] dark:text-[#00D4FF] mb-2 text-center">
-                  Perda Invisível de Oportunidades
-                </h3>
-                <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
-                  Sem orquestração e alertas preditivos, leads esfriam na fila sem follow-up
-                  tempestivo, objeções críticas não são tratadas e a taxa de conversão despenca sem
-                  causa raiz evidente.
+                <div className="mt-4 pt-3 border-t border-[#00D4FF]/20 w-full text-[11px] font-mono text-[#00D4FF] italic">
+                  “A cada hora sem resposta, a probabilidade de fechamento cai pela metade.”
+                </div>
+              </div>
+            </div>
+
+            {/* Banner de Ponte para o Simulador de ROI */}
+            <div className="mt-12 p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-slate-900/95 via-slate-900/80 to-slate-900/95 border border-[#EF4444]/35 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="space-y-1.5 text-center md:text-left">
+                <span className="font-mono text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center justify-center md:justify-start gap-1.5">
+                  <AlertTriangle className="w-4 h-4 text-rose-400" />
+                  Diagnóstico Financeiro do Pipeline
+                </span>
+                <h4 className="font-display text-lg sm:text-xl font-bold text-slate-100">
+                  Quer saber quanto a sua operação está deixando na mesa hoje?
+                </h4>
+                <p className="landing-subtitle text-xs sm:text-sm max-w-xl">
+                  Simule em 30 segundos o volume financeiro em risco com base no seu ticket médio e
+                  descubra quanto você pode resgatar com orquestração inteligente e IA.
                 </p>
               </div>
+              <button
+                type="button"
+                onClick={() => {
+                  SoundFX.play('click');
+                  trackHeroRoiSimulatorOpened('A', 'problem_section_banner');
+                  setIsSimulatorOpen(true);
+                }}
+                className="btn-cta-light whitespace-nowrap px-6 py-3.5 rounded-xl font-mono text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-2.5 cursor-pointer shadow-md hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] shrink-0 transition-all"
+              >
+                <Calculator className="w-4 h-4 text-slate-950" />
+                <span>Calcular Vazamento no Meu Pipeline</span>
+              </button>
             </div>
           </div>
         </section>
@@ -2375,6 +2428,12 @@ export function Landing360({
           <ArrowUp className="w-5 h-5" />
         </button>
       )}
+      {/* Modal Global do Simulador Executivo de Previsibilidade & ROI */}
+      <RoiSimulatorModal
+        isOpen={isSimulatorOpen}
+        onClose={() => setIsSimulatorOpen(false)}
+        onProceedToLogin={handleGoToLogin}
+      />
     </main>
   );
 }
