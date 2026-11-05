@@ -1,9 +1,21 @@
-import { AlertTriangle, Ban, CheckCircle2, Cpu, Database, EyeOff, Layers, Unlink } from 'lucide-react';
+import {
+  AlertTriangle,
+  Ban,
+  CheckCircle2,
+  Cpu,
+  Database,
+  EyeOff,
+  Layers,
+  Unlink,
+} from 'lucide-react';
 import { SpotlightCard } from './SpotlightCard.js';
 
 export function Act2Dissonance() {
   return (
-    <section id="tese" className="relative py-24 sm:py-32 bg-[#0D0D0D] border-t border-white/[0.06] overflow-hidden">
+    <section
+      id="tese"
+      className="relative py-24 sm:py-32 bg-[#0D0D0D] border-t border-white/[0.06] overflow-hidden"
+    >
       {/* Sutil gradiente de alerta/fundo */}
       <div className="pointer-events-none absolute -right-40 top-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#EF4444]/[0.03] blur-3xl rounded-full -z-10" />
 
@@ -11,17 +23,18 @@ export function Act2Dissonance() {
         {/* Cabeçalho da Seção */}
         <div className="max-w-3xl mx-auto text-center space-y-4 mb-16 sm:mb-20">
           <div className="lux-hud-tag text-[#EF4444] border-[#EF4444]/30 bg-[#EF4444]/[0.08]">
-            <AlertTriangle className="w-3.5 h-3.5 text-[#EF4444]" />
-            A Anatomia da Fuga de Receita
+            <AlertTriangle className="w-3.5 h-3.5 text-[#EF4444]" />A Anatomia da Fuga de Receita
           </div>
 
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-[-0.02em] leading-tight text-[#F8F9FF]">
-            A ilusão das <span className="text-[#EF4444]">ferramentas isoladas</span> está custando o seu crescimento.
+            A ilusão das <span className="text-[#EF4444]">ferramentas isoladas</span> está custando
+            o seu crescimento.
           </h2>
 
           <p className="text-base sm:text-lg text-[#9EADC8] leading-relaxed">
-            A maioria das empresas opera com um quebra-cabeça de 10 a 15 softwares desconexos.
-            O resultado não é inteligência: é atrito operacional, perda de contexto e receita invisível que escapa pelo funil.
+            A maioria das empresas opera com um quebra-cabeça de 10 a 15 softwares desconexos. O
+            resultado não é inteligência: é atrito operacional, perda de contexto e receita
+            invisível que escapa pelo funil.
           </p>
         </div>
 
@@ -40,7 +53,9 @@ export function Act2Dissonance() {
                   </span>
                   <div>
                     <h3 className="text-lg font-bold text-[#F8F9FF]">O Ecossistema Retalhado</h3>
-                    <span className="font-mono text-xs text-[#EF4444]">CRMs Legados & Plugins Avulsos</span>
+                    <span className="font-mono text-xs text-[#EF4444]">
+                      CRMs Legados & Plugins Avulsos
+                    </span>
                   </div>
                 </div>
                 <span className="px-3 py-1 rounded text-xs font-mono font-semibold bg-[#EF4444]/15 text-[#EF4444]">
@@ -52,25 +67,33 @@ export function Act2Dissonance() {
                 <li className="flex items-start gap-3">
                   <Unlink className="w-4 h-4 text-[#EF4444] shrink-0 mt-1" />
                   <span>
-                    <strong className="text-[#F8F9FF]">Silos cegos de informação:</strong> O CRM não conversa com a cadência, que ignora o canal de voz, que não alimenta o financeiro.
+                    <strong className="text-[#F8F9FF]">Silos cegos de informação:</strong> O CRM não
+                    conversa com a cadência, que ignora o canal de voz, que não alimenta o
+                    financeiro.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Database className="w-4 h-4 text-[#EF4444] shrink-0 mt-1" />
                   <span>
-                    <strong className="text-[#F8F9FF]">Deterioração contínua de dados:</strong> 70% dos contatos ficam desatualizados ou incompletos por falta de enriquecimento em tempo real.
+                    <strong className="text-[#F8F9FF]">Deterioração contínua de dados:</strong> 70%
+                    dos contatos ficam desatualizados ou incompletos por falta de enriquecimento em
+                    tempo real.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Cpu className="w-4 h-4 text-[#EF4444] shrink-0 mt-1" />
                   <span>
-                    <strong className="text-[#F8F9FF]">IA cosmética e sem contexto:</strong> Bots genéricos de mercado que inventam dados (alucinação) por não estarem ancorados no histórico corporativo real.
+                    <strong className="text-[#F8F9FF]">IA cosmética e sem contexto:</strong> Bots
+                    genéricos de mercado que inventam dados (alucinação) por não estarem ancorados
+                    no histórico corporativo real.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <EyeOff className="w-4 h-4 text-[#EF4444] shrink-0 mt-1" />
                   <span>
-                    <strong className="text-[#F8F9FF]">Gestão reativa e tardia:</strong> O diretor só descobre que a meta não será batida no final do mês, quando nada mais pode ser corrigido.
+                    <strong className="text-[#F8F9FF]">Gestão reativa e tardia:</strong> O diretor
+                    só descobre que a meta não será batida no final do mês, quando nada mais pode
+                    ser corrigido.
                   </span>
                 </li>
               </ul>
@@ -98,7 +121,9 @@ export function Act2Dissonance() {
                   </span>
                   <div>
                     <h3 className="text-lg font-bold text-[#F8F9FF]">Birth Hub 360º</h3>
-                    <span className="font-mono text-xs text-[#00D4FF]">Central de Comando Unificada</span>
+                    <span className="font-mono text-xs text-[#00D4FF]">
+                      Central de Comando Unificada
+                    </span>
                   </div>
                 </div>
                 <span className="px-3 py-1 rounded text-xs font-mono font-semibold bg-[#00D4FF]/15 text-[#00D4FF]">
@@ -110,25 +135,33 @@ export function Act2Dissonance() {
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-4 h-4 text-[#00D4FF] shrink-0 mt-1" />
                   <span>
-                    <strong className="text-[#F8F9FF]">Fluxo contínuo 360º:</strong> Da prospecção outbound à mesa de fechamento, cada interação alimenta o mesmo cérebro operacional.
+                    <strong className="text-[#F8F9FF]">Fluxo contínuo 360º:</strong> Da prospecção
+                    outbound à mesa de fechamento, cada interação alimenta o mesmo cérebro
+                    operacional.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-4 h-4 text-[#FF2D9B] shrink-0 mt-1" />
                   <span>
-                    <strong className="text-[#F8F9FF]">Enriquecimento contínuo autônomo:</strong> Sinais de compra e inteligência de decisores sincronizados a cada segundo com isolamento RLS.
+                    <strong className="text-[#F8F9FF]">Enriquecimento contínuo autônomo:</strong>{' '}
+                    Sinais de compra e inteligência de decisores sincronizados a cada segundo com
+                    isolamento RLS.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-4 h-4 text-[#FFC107] shrink-0 mt-1" />
                   <span>
-                    <strong className="text-[#F8F9FF]">Copiloto IA proprietário:</strong> Respostas ancoradas estritamente no seu playbook, dados históricos e matriz de objeções validada.
+                    <strong className="text-[#F8F9FF]">Copiloto IA proprietário:</strong> Respostas
+                    ancoradas estritamente no seu playbook, dados históricos e matriz de objeções
+                    validada.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-4 h-4 text-[#22C55E] shrink-0 mt-1" />
                   <span>
-                    <strong className="text-[#F8F9FF]">Previsibilidade matemática:</strong> Modelagem estatística de probabilidade que antecipa gargalos e alerta a próxima melhor ação (NBA).
+                    <strong className="text-[#F8F9FF]">Previsibilidade matemática:</strong>{' '}
+                    Modelagem estatística de probabilidade que antecipa gargalos e alerta a próxima
+                    melhor ação (NBA).
                   </span>
                 </li>
               </ul>

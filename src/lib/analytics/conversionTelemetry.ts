@@ -144,7 +144,7 @@ export function trackHeroCtaPrimaryClick(variant: HeroVariant, ctaText: string):
  */
 export function trackHeroRoiSimulatorOpened(
   variant: HeroVariant,
-  trigger: 'hero_secondary' | 'floating_pill' | 'manual',
+  trigger: 'hero_secondary' | 'floating_pill' | 'manual' | 'problem_section_banner' | (string & {}),
 ): void {
   recordConversionEvent('hero_roi_simulator_opened', variant, {
     trigger,

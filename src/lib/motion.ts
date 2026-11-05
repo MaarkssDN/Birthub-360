@@ -257,7 +257,12 @@ export function useMagnetic(strength = 0.35) {
     y.set(0);
   };
 
-  return { ref, style: isTouch || reduceMotion ? undefined : { x, y }, onPointerMove, onPointerLeave };
+  return {
+    ref,
+    style: isTouch || reduceMotion ? undefined : { x, y },
+    onPointerMove,
+    onPointerLeave,
+  };
 }
 
 export const shimmerBeam: Variants = {

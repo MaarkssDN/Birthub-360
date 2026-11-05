@@ -76,7 +76,8 @@ export function LuxuryHeaderHUD({ onOpenPrivateAccess }: LuxuryHeaderHUDProps) {
             <div className="flex items-center gap-1.5">
               <Terminal className="w-3.5 h-3.5 text-[#FFC107]" />
               <span className="font-mono text-xs text-[#9EADC8]">
-                LATÊNCIA: <span className="text-[#FFC107] font-semibold font-mono">{latency}ms</span>
+                LATÊNCIA:{' '}
+                <span className="text-[#FFC107] font-semibold font-mono">{latency}ms</span>
               </span>
             </div>
           </div>

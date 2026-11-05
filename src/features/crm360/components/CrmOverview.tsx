@@ -123,7 +123,12 @@ export function CrmOverview({ onNavigate }: CrmOverviewProps) {
 
   if (loading && !data) {
     return (
-      <div className="space-y-6 w-full px-4 sm:px-6 lg:px-8 py-6" aria-busy="true" role="status" aria-label="Carregando Cockpit Comercial">
+      <div
+        className="space-y-6 w-full px-4 sm:px-6 lg:px-8 py-6"
+        aria-busy="true"
+        role="status"
+        aria-label="Carregando Cockpit Comercial"
+      >
         <div className="flex items-center justify-between rounded-2xl border border-line bg-surface p-5">
           <div className="space-y-2">
             <Skeleton className="h-6 w-44" />

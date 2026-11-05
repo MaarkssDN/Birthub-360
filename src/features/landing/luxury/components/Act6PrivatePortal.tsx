@@ -28,7 +28,10 @@ export function Act6PrivatePortal() {
   };
 
   return (
-    <section id="acesso" className="relative py-24 sm:py-32 bg-[#0D0D0D] border-t border-white/[0.06] overflow-hidden">
+    <section
+      id="acesso"
+      className="relative py-24 sm:py-32 bg-[#0D0D0D] border-t border-white/[0.06] overflow-hidden"
+    >
       {/* Luz dourada e azul no fechamento da página */}
       <div className="pointer-events-none absolute -bottom-40 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-gradient-to-t from-[#FFC107]/10 via-[#00D4FF]/08 to-transparent blur-3xl opacity-70" />
 
@@ -44,12 +47,13 @@ export function Act6PrivatePortal() {
             </div>
 
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-[-0.02em] leading-tight text-[#F8F9FF]">
-              Transforme a sua área comercial em uma <span className="lux-headline-hero">central de comando.</span>
+              Transforme a sua área comercial em uma{' '}
+              <span className="lux-headline-hero">central de comando.</span>
             </h2>
 
             <p className="text-sm sm:text-base text-[#9EADC8] leading-relaxed">
-              Agende uma apresentação técnica privativa com o coordenador da plataforma e veja o sistema
-              operando sobre a estrutura real da sua organização.
+              Agende uma apresentação técnica privativa com o coordenador da plataforma e veja o
+              sistema operando sobre a estrutura real da sua organização.
             </p>
           </div>
 
@@ -60,14 +64,17 @@ export function Act6PrivatePortal() {
               </div>
               <h3 className="text-xl font-bold text-[#F8F9FF]">Acesso Solicitado com Sucesso</h3>
               <p className="text-sm text-[#9EADC8] max-w-md mx-auto">
-                Nossa equipe de engenharia e coordenação comercial entrará em contato em até 4 horas úteis
-                para agendar a sua sessão reservada.
+                Nossa equipe de engenharia e coordenação comercial entrará em contato em até 4 horas
+                úteis para agendar a sua sessão reservada.
               </p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4 max-w-lg mx-auto">
               <div>
-                <label htmlFor="portal-name" className="block text-xs font-mono uppercase text-[#9EADC8] mb-1.5 font-semibold">
+                <label
+                  htmlFor="portal-name"
+                  className="block text-xs font-mono uppercase text-[#9EADC8] mb-1.5 font-semibold"
+                >
                   Nome Completo
                 </label>
                 <input
@@ -83,7 +90,10 @@ export function Act6PrivatePortal() {
               </div>
 
               <div>
-                <label htmlFor="portal-email" className="block text-xs font-mono uppercase text-[#9EADC8] mb-1.5 font-semibold">
+                <label
+                  htmlFor="portal-email"
+                  className="block text-xs font-mono uppercase text-[#9EADC8] mb-1.5 font-semibold"
+                >
                   E-mail Corporativo
                 </label>
                 <input
@@ -99,7 +109,10 @@ export function Act6PrivatePortal() {
               </div>
 
               <div>
-                <label htmlFor="portal-company" className="block text-xs font-mono uppercase text-[#9EADC8] mb-1.5 font-semibold">
+                <label
+                  htmlFor="portal-company"
+                  className="block text-xs font-mono uppercase text-[#9EADC8] mb-1.5 font-semibold"
+                >
                   Empresa &amp; Número de Vendedores
                 </label>
                 <input
@@ -130,7 +143,8 @@ export function Act6PrivatePortal() {
                   onClick={() => SoundFX.play('navigate')}
                   className="text-xs text-[#9EADC8] hover:text-[#00D4FF] transition-colors font-medium"
                 >
-                  Já possui credenciais de acesso corporativo? <strong className="text-[#F8F9FF] underline">Entrar no Console</strong>
+                  Já possui credenciais de acesso corporativo?{' '}
+                  <strong className="text-[#F8F9FF] underline">Entrar no Console</strong>
                 </Link>
               </div>
             </form>

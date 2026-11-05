@@ -63,9 +63,7 @@ export function MainLayout({ children, activeTab: activeTabProp }: MainLayoutPro
             style={{ '--page-accent': `var(--color-heading-${domainAccent})` } as CSSProperties}
           >
             <DataFlowLines />
-            <PageTransition id={pathname}>
-              {children}
-            </PageTransition>
+            <PageTransition id={pathname}>{children}</PageTransition>
           </main>
         </div>
       </div>

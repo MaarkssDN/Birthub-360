@@ -48,7 +48,8 @@ export function Act1Hero({ onOpenPrivateAccess }: Act1HeroProps) {
             <SculpturalReveal delay={0.22}>
               <p className="max-w-xl text-base sm:text-lg lg:text-xl text-[#9EADC8] font-normal leading-relaxed">
                 Conectando dados dispersos, IA preditiva, automação e orquestração de vendas em uma
-                única central executiva. Menos fragmentação. Decisões cirúrgicas. Execução em tempo real.
+                única central executiva. Menos fragmentação. Decisões cirúrgicas. Execução em tempo
+                real.
               </p>
             </SculpturalReveal>
 
@@ -81,7 +82,9 @@ export function Act1Hero({ onOpenPrivateAccess }: Act1HeroProps) {
                   <Shield className="w-3.5 h-3.5 text-[#00D4FF]" />
                   <span>Segurança</span>
                 </div>
-                <div className="font-bold text-sm sm:text-base text-[#F8F9FF]">Multi-Tenant RLS</div>
+                <div className="font-bold text-sm sm:text-base text-[#F8F9FF]">
+                  Multi-Tenant RLS
+                </div>
               </div>
 
               <div>
@@ -89,7 +92,9 @@ export function Act1Hero({ onOpenPrivateAccess }: Act1HeroProps) {
                   <Lock className="w-3.5 h-3.5 text-[#FFC107]" />
                   <span>Privacidade</span>
                 </div>
-                <div className="font-bold text-sm sm:text-base text-[#F8F9FF]">100% LGPD Nativo</div>
+                <div className="font-bold text-sm sm:text-base text-[#F8F9FF]">
+                  100% LGPD Nativo
+                </div>
               </div>
 
               <div>
@@ -97,7 +102,9 @@ export function Act1Hero({ onOpenPrivateAccess }: Act1HeroProps) {
                   <Radio className="w-3.5 h-3.5 text-[#FF2D9B]" />
                   <span>Velocidade</span>
                 </div>
-                <div className="font-bold text-sm sm:text-base text-[#F8F9FF]">Tempo Real / 120 FPS</div>
+                <div className="font-bold text-sm sm:text-base text-[#F8F9FF]">
+                  Tempo Real / 120 FPS
+                </div>
               </div>
             </div>
           </div>

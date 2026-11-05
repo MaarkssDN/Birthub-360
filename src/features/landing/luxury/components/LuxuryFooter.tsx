@@ -17,7 +17,8 @@ export function LuxuryFooter() {
               </span>
             </div>
             <p className="text-xs text-[#9EADC8] leading-relaxed">
-              Central de comando inteligente: conectando dados, potencializando decisões e acelerando a execução.
+              Central de comando inteligente: conectando dados, potencializando decisões e
+              acelerando a execução.
             </p>
           </div>
 
@@ -37,9 +38,7 @@ export function LuxuryFooter() {
 
         {/* Linha Final de Direitos e Créditos */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-center sm:text-left text-[#6B7A99]">
-          <div>
-            © 2026 Birth Hub 360º. Todos os direitos reservados.
-          </div>
+          <div>© 2026 Birth Hub 360º. Todos os direitos reservados.</div>
           <div className="flex items-center gap-2">
             <Shield className="w-3.5 h-3.5 text-[#00D4FF]" />
             <span>{BRAND.credit}</span>

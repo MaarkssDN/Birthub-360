@@ -30,13 +30,15 @@ export function Act4TacticalEngine() {
   };
 
   return (
-    <section id="motor" className="relative py-24 sm:py-32 bg-[#0D0D0D] border-t border-white/[0.06] overflow-hidden">
+    <section
+      id="motor"
+      className="relative py-24 sm:py-32 bg-[#0D0D0D] border-t border-white/[0.06] overflow-hidden"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Cabeçalho */}
         <div className="max-w-3xl mx-auto text-center space-y-4 mb-16 sm:mb-20">
           <div className="lux-hud-tag text-[#FF2D9B] border-[#FF2D9B]/30 bg-[#FF2D9B]/[0.08]">
-            <Cpu className="w-3.5 h-3.5 text-[#FF2D9B]" />
-            A Verdade Operacional
+            <Cpu className="w-3.5 h-3.5 text-[#FF2D9B]" />A Verdade Operacional
           </div>
 
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-[-0.02em] leading-tight text-[#F8F9FF]">
@@ -45,8 +47,9 @@ export function Act4TacticalEngine() {
           </h2>
 
           <p className="text-base sm:text-lg text-[#9EADC8] leading-relaxed">
-            Veja a central de comando em tempo real. Cada agente opera com dados isolados por tenant,
-            processando telemetria em milissegundos e auxiliando o time de vendas exatamente no momento do fechamento.
+            Veja a central de comando em tempo real. Cada agente opera com dados isolados por
+            tenant, processando telemetria em milissegundos e auxiliando o time de vendas exatamente
+            no momento do fechamento.
           </p>
         </div>
 
@@ -123,8 +126,12 @@ export function Act4TacticalEngine() {
                     </div>
 
                     <div>
-                      <h4 className="text-lg font-bold text-[#F8F9FF]">Diretor de Operações — Logística Global</h4>
-                      <p className="text-xs text-[#9EADC8]">Conta Qualificada ICP Tier-1 · Ticket Previsto: R$ 180.000</p>
+                      <h4 className="text-lg font-bold text-[#F8F9FF]">
+                        Diretor de Operações — Logística Global
+                      </h4>
+                      <p className="text-xs text-[#9EADC8]">
+                        Conta Qualificada ICP Tier-1 · Ticket Previsto: R$ 180.000
+                      </p>
                     </div>
 
                     <div className="pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs font-mono">
@@ -138,7 +145,8 @@ export function Act4TacticalEngine() {
                       Objeção Detectada em Tempo Real
                     </span>
                     <p className="text-sm text-[#F8F9FF] italic">
-                      &quot;Precisamos entender como vocês garantem que os dados dos nossos clientes não vão vazar entre contas.&quot;
+                      &quot;Precisamos entender como vocês garantem que os dados dos nossos clientes
+                      não vão vazar entre contas.&quot;
                     </p>
                   </div>
                 </div>
@@ -155,10 +163,13 @@ export function Act4TacticalEngine() {
 
                     <div className="p-4 rounded-lg bg-black/60 border border-[#00D4FF]/20 text-sm text-[#F8F9FF] leading-relaxed space-y-2">
                       <p>
-                        <strong>Argumento-Chave:</strong> Destaque o isolamento multi-tenant a nível de banco com RLS (Row Level Security) nativo no PostgreSQL. Nenhum tenant tem acesso aos dados de outro.
+                        <strong>Argumento-Chave:</strong> Destaque o isolamento multi-tenant a nível
+                        de banco com RLS (Row Level Security) nativo no PostgreSQL. Nenhum tenant
+                        tem acesso aos dados de outro.
                       </p>
                       <p className="text-xs text-[#9EADC8] font-mono">
-                        SLA de conformidade LGPD com auditoria contínua e criptografia AES-256 em repouso.
+                        SLA de conformidade LGPD com auditoria contínua e criptografia AES-256 em
+                        repouso.
                       </p>
                     </div>
 
@@ -177,39 +188,57 @@ export function Act4TacticalEngine() {
 
             {activeConsole === 'swarm' && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <SpotlightCard glowColor="rgba(0, 212, 255, 0.2)" className="p-5 bg-black/40 border-[#00D4FF]/20 space-y-3">
+                <SpotlightCard
+                  glowColor="rgba(0, 212, 255, 0.2)"
+                  className="p-5 bg-black/40 border-[#00D4FF]/20 space-y-3"
+                >
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs text-[#00D4FF] font-bold">AGENTE 05 · PROSPECÇÃO</span>
+                    <span className="font-mono text-xs text-[#00D4FF] font-bold">
+                      AGENTE 05 · PROSPECÇÃO
+                    </span>
                     <span className="h-2 w-2 rounded-full bg-[#00D4FF] animate-pulse" />
                   </div>
                   <p className="text-xs text-[#9EADC8]">
-                    Varredura contínua de sinais de expansão, abertura de filiais e contratações em decisores-alvo.
+                    Varredura contínua de sinais de expansão, abertura de filiais e contratações em
+                    decisores-alvo.
                   </p>
                   <div className="text-xs font-mono text-[#F8F9FF] pt-2 border-t border-white/[0.08]">
                     Status: 1.240 contas analisadas hoje
                   </div>
                 </SpotlightCard>
 
-                <SpotlightCard glowColor="rgba(255, 45, 155, 0.2)" className="p-5 bg-black/40 border-[#FF2D9B]/20 space-y-3">
+                <SpotlightCard
+                  glowColor="rgba(255, 45, 155, 0.2)"
+                  className="p-5 bg-black/40 border-[#FF2D9B]/20 space-y-3"
+                >
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs text-[#FF2D9B] font-bold">AGENTE 07 · COPILOTO IA</span>
+                    <span className="font-mono text-xs text-[#FF2D9B] font-bold">
+                      AGENTE 07 · COPILOTO IA
+                    </span>
                     <span className="h-2 w-2 rounded-full bg-[#FF2D9B] animate-pulse" />
                   </div>
                   <p className="text-xs text-[#9EADC8]">
-                    Geração de diagnósticos de gargalo de pipeline e recomendações de fechamento para closers.
+                    Geração de diagnósticos de gargalo de pipeline e recomendações de fechamento
+                    para closers.
                   </p>
                   <div className="text-xs font-mono text-[#F8F9FF] pt-2 border-t border-white/[0.08]">
                     Status: 42 recomendações ativas
                   </div>
                 </SpotlightCard>
 
-                <SpotlightCard glowColor="rgba(255, 193, 7, 0.2)" className="p-5 bg-black/40 border-[#FFC107]/20 space-y-3">
+                <SpotlightCard
+                  glowColor="rgba(255, 193, 7, 0.2)"
+                  className="p-5 bg-black/40 border-[#FFC107]/20 space-y-3"
+                >
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs text-[#FFC107] font-bold">AGENTE 12 · VOZ &amp; CALLS</span>
+                    <span className="font-mono text-xs text-[#FFC107] font-bold">
+                      AGENTE 12 · VOZ &amp; CALLS
+                    </span>
                     <span className="h-2 w-2 rounded-full bg-[#FFC107] animate-pulse" />
                   </div>
                   <p className="text-xs text-[#9EADC8]">
-                    Transcrição semântica ultrarrápida com detecção instantânea de sentimento e intenção de compra.
+                    Transcrição semântica ultrarrápida com detecção instantânea de sentimento e
+                    intenção de compra.
                   </p>
                   <div className="text-xs font-mono text-[#F8F9FF] pt-2 border-t border-white/[0.08]">
                     Status: Latência média de transcrição: 140ms
@@ -223,19 +252,31 @@ export function Act4TacticalEngine() {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   <div className="p-4 rounded-xl bg-black/40 border border-white/[0.08]">
                     <span className="font-mono text-xs text-[#9EADC8] block">Pipeline Ativo</span>
-                    <span className="text-xl sm:text-2xl font-bold font-mono text-[#F8F9FF]">R$ 4.280.000</span>
+                    <span className="text-xl sm:text-2xl font-bold font-mono text-[#F8F9FF]">
+                      R$ 4.280.000
+                    </span>
                   </div>
                   <div className="p-4 rounded-xl bg-black/40 border border-white/[0.08]">
-                    <span className="font-mono text-xs text-[#9EADC8] block">Pipeline Ponderado</span>
-                    <span className="text-xl sm:text-2xl font-bold font-mono text-[#FFC107]">R$ 2.940.000</span>
+                    <span className="font-mono text-xs text-[#9EADC8] block">
+                      Pipeline Ponderado
+                    </span>
+                    <span className="text-xl sm:text-2xl font-bold font-mono text-[#FFC107]">
+                      R$ 2.940.000
+                    </span>
                   </div>
                   <div className="p-4 rounded-xl bg-black/40 border border-white/[0.08]">
-                    <span className="font-mono text-xs text-[#9EADC8] block">Negócios em Risco</span>
-                    <span className="text-xl sm:text-2xl font-bold font-mono text-[#EF4444]">3 Contas</span>
+                    <span className="font-mono text-xs text-[#9EADC8] block">
+                      Negócios em Risco
+                    </span>
+                    <span className="text-xl sm:text-2xl font-bold font-mono text-[#EF4444]">
+                      3 Contas
+                    </span>
                   </div>
                   <div className="p-4 rounded-xl bg-black/40 border border-white/[0.08]">
                     <span className="font-mono text-xs text-[#9EADC8] block">Meta Prevista</span>
-                    <span className="text-xl sm:text-2xl font-bold font-mono text-[#22C55E]">114% Atingimento</span>
+                    <span className="text-xl sm:text-2xl font-bold font-mono text-[#22C55E]">
+                      114% Atingimento
+                    </span>
                   </div>
                 </div>
 

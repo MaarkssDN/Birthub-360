@@ -113,8 +113,7 @@ export function Act3Singularity() {
         {/* Cabeçalho */}
         <div className="max-w-3xl mx-auto text-center space-y-4 mb-16 sm:mb-20">
           <div className="lux-hud-tag text-[#00D4FF] border-[#00D4FF]/30 bg-[#00D4FF]/[0.08]">
-            <Network className="w-3.5 h-3.5 text-[#00D4FF]" />
-            A Matriz Contínua 360º
+            <Network className="w-3.5 h-3.5 text-[#00D4FF]" />A Matriz Contínua 360º
           </div>
 
           <SculpturalReveal delay={0.1}>
@@ -126,8 +125,8 @@ export function Act3Singularity() {
 
           <SculpturalReveal delay={0.2}>
             <p className="text-base sm:text-lg text-[#9EADC8] leading-relaxed">
-              Nada no Birth Hub 360º existe isolado. Cada dado ingerido refina a inteligência,
-              que aprimora a decisão, que acelera a execução — retroalimentando a base continuamente.
+              Nada no Birth Hub 360º existe isolado. Cada dado ingerido refina a inteligência, que
+              aprimora a decisão, que acelera a execução — retroalimentando a base continuamente.
             </p>
           </SculpturalReveal>
 
@@ -140,9 +139,7 @@ export function Act3Singularity() {
                 style={{ scaleX: smoothProgress, transformOrigin: '0%' }}
               />
             </div>
-            <span className="text-[#00D4FF] font-bold">
-              {quadrants[activeQuadrant]?.title}
-            </span>
+            <span className="text-[#00D4FF] font-bold">{quadrants[activeQuadrant]?.title}</span>
           </div>
         </div>
 
@@ -195,24 +192,21 @@ export function Act3Singularity() {
                     >
                       {item.tag}
                     </span>
-                    <h3 className="text-xl font-extrabold text-[#F8F9FF]">
-                      {item.title}
-                    </h3>
-                    <p className="text-xs text-[#9EADC8] mt-1 font-medium">
-                      {item.subtitle}
-                    </p>
+                    <h3 className="text-xl font-extrabold text-[#F8F9FF]">{item.title}</h3>
+                    <p className="text-xs text-[#9EADC8] mt-1 font-medium">{item.subtitle}</p>
                   </div>
 
-                  <p className="text-sm text-[#9EADC8] leading-relaxed">
-                    {item.desc}
-                  </p>
+                  <p className="text-sm text-[#9EADC8] leading-relaxed">{item.desc}</p>
                 </div>
 
                 {/* Lista de detalhes */}
                 <div className="mt-8 pt-6 border-t border-white/[0.08] space-y-2.5">
                   {item.details.map((detail) => (
                     <div key={detail} className="flex items-start gap-2 text-xs text-[#F8F9FF]/80">
-                      <Check className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: item.color }} />
+                      <Check
+                        className="w-3.5 h-3.5 shrink-0 mt-0.5"
+                        style={{ color: item.color }}
+                      />
                       <span>{detail}</span>
                     </div>
                   ))}

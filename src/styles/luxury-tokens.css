@@ -15,40 +15,40 @@
   /* ----------------------------------------------------------------------------
      1. PALETA OBSIDIAN & SURFACES (Vazio Escultural e Camadas)
      ---------------------------------------------------------------------------- */
-  --lux-obsidian: #0D0D0D;             /* Fundo mestre absoluto (Dark Void) */
-  --lux-surface-ground: #101015;       /* Camada de base inferior */
-  --lux-titanium: #14141A;             /* Superfície padrão de cards e consoles */
-  --lux-surface-elevated: #1C1C24;     /* Superfície elevada e headers secundários */
-  --lux-surface-floating: #252532;     /* Dropdowns, modais e elementos flutuantes */
-  --lux-surface-hover: #1E1E28;        /* Estado hover refinado de cards */
+  --lux-obsidian: #0d0d0d; /* Fundo mestre absoluto (Dark Void) */
+  --lux-surface-ground: #101015; /* Camada de base inferior */
+  --lux-titanium: #14141a; /* Superfície padrão de cards e consoles */
+  --lux-surface-elevated: #1c1c24; /* Superfície elevada e headers secundários */
+  --lux-surface-floating: #252532; /* Dropdowns, modais e elementos flutuantes */
+  --lux-surface-hover: #1e1e28; /* Estado hover refinado de cards */
   --lux-overlay-glass: rgba(13, 13, 13, 0.78); /* Cortina de blur para backdrops */
 
   /* ----------------------------------------------------------------------------
      2. NEONS OFICIAIS DE ALTA PRECISÃO
      ---------------------------------------------------------------------------- */
-  --lux-neon-blue: #00D4FF;            /* Tecnologia, comando, autoridade primária */
-  --lux-neon-gold: #FFC107;            /* Ouro de alta relojoaria, métricas e sinais */
-  --lux-gold-soft: #D4AF37;            /* Ouro clássico metálico suave */
-  --lux-gold-light: #EBD689;           /* Destaque especular dourado */
-  --lux-gold-deep: #9C7A22;            /* Ouro profundo em sombra */
-  --lux-neon-pink: #FF2D9B;            /* Inteligência tática, atitude e energia */
-  --lux-neon-iris: #8B7DFF;            /* Profundidade espacial e nós do enxame */
-  --lux-neon-lime: #22C55E;            /* Telemetria positiva / status nominal */
-  --lux-neon-danger: #EF4444;          /* Alertas de risco / desvios de rota */
+  --lux-neon-blue: #00d4ff; /* Tecnologia, comando, autoridade primária */
+  --lux-neon-gold: #ffc107; /* Ouro de alta relojoaria, métricas e sinais */
+  --lux-gold-soft: #d4af37; /* Ouro clássico metálico suave */
+  --lux-gold-light: #ebd689; /* Destaque especular dourado */
+  --lux-gold-deep: #9c7a22; /* Ouro profundo em sombra */
+  --lux-neon-pink: #ff2d9b; /* Inteligência tática, atitude e energia */
+  --lux-neon-iris: #8b7dff; /* Profundidade espacial e nós do enxame */
+  --lux-neon-lime: #22c55e; /* Telemetria positiva / status nominal */
+  --lux-neon-danger: #ef4444; /* Alertas de risco / desvios de rota */
 
   /* ----------------------------------------------------------------------------
      3. TIPOGRAFIA & CONTRASTE CALIBRADO (SEM BRANCO PURO CEGO)
      ---------------------------------------------------------------------------- */
-  --lux-snow: #F8F9FF;                 /* Branco neon de leitura máxima */
-  --lux-ink-primary: #F8F9FF;          /* Texto principal */
-  --lux-ink-secondary: #9EADC8;        /* Rótulos e descrições secundárias */
-  --lux-ink-muted: #6B7A99;            /* Metadados, copyright e timestamps */
-  --lux-ink-cyan: #70D6FF;             /* Texto informativo azulado de alto contraste */
+  --lux-snow: #f8f9ff; /* Branco neon de leitura máxima */
+  --lux-ink-primary: #f8f9ff; /* Texto principal */
+  --lux-ink-secondary: #9eadc8; /* Rótulos e descrições secundárias */
+  --lux-ink-muted: #6b7a99; /* Metadados, copyright e timestamps */
+  --lux-ink-cyan: #70d6ff; /* Texto informativo azulado de alto contraste */
 
   /* Famílias Tipográficas */
-  --lux-font-display: 'Sora', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  --lux-font-body: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
-  --lux-font-mono: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, monospace;
+  --lux-font-display: "Sora", "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --lux-font-body: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, sans-serif;
+  --lux-font-mono: "JetBrains Mono", "IBM Plex Mono", ui-monospace, monospace;
 
   /* Rastreamento (Tracking) Escultural */
   --lux-tracking-hero: -0.03em;
@@ -59,12 +59,25 @@
   /* ----------------------------------------------------------------------------
      4. GRADIENTES DE LUZ & CAUSTICS
      ---------------------------------------------------------------------------- */
-  --lux-grad-titles: linear-gradient(135deg, #00D4FF 0%, #FF2D9B 50%, #FFC107 100%);
-  --lux-grad-cta: linear-gradient(135deg, #FF2D9B 0%, #00D4FF 100%);
-  --lux-grad-gold: linear-gradient(135deg, #FFC107 0%, #D4AF37 50%, #9C7A22 100%);
-  --lux-grad-blue: linear-gradient(135deg, #00D4FF 0%, #0284C7 100%);
-  --lux-grad-orbit: conic-gradient(from 200deg, #D4AF37 0%, #EBD689 16%, #8B7DFF 38%, #5B21B6 52%, #0065D2 70%, #00D4FF 85%, #D4AF37 100%);
-  --lux-grad-glass: linear-gradient(135deg, rgba(248, 249, 255, 0.05) 0%, rgba(248, 249, 255, 0.01) 100%);
+  --lux-grad-titles: linear-gradient(135deg, #00d4ff 0%, #ff2d9b 50%, #ffc107 100%);
+  --lux-grad-cta: linear-gradient(135deg, #ff2d9b 0%, #00d4ff 100%);
+  --lux-grad-gold: linear-gradient(135deg, #ffc107 0%, #d4af37 50%, #9c7a22 100%);
+  --lux-grad-blue: linear-gradient(135deg, #00d4ff 0%, #0284c7 100%);
+  --lux-grad-orbit: conic-gradient(
+    from 200deg,
+    #d4af37 0%,
+    #ebd689 16%,
+    #8b7dff 38%,
+    #5b21b6 52%,
+    #0065d2 70%,
+    #00d4ff 85%,
+    #d4af37 100%
+  );
+  --lux-grad-glass: linear-gradient(
+    135deg,
+    rgba(248, 249, 255, 0.05) 0%,
+    rgba(248, 249, 255, 0.01) 100%
+  );
 
   /* ----------------------------------------------------------------------------
      5. BORDAS ESTRUTURAIS & GLOW CONTROLADO
@@ -93,9 +106,9 @@
   /* ----------------------------------------------------------------------------
      7. MOTIONS & TIMING CURVES INERCIAIS
      ---------------------------------------------------------------------------- */
-  --lux-ease-inertial: cubic-bezier(0.16, 1, 0.3, 1);  /* Inércia de alto prestígio */
-  --lux-ease-snappy: cubic-bezier(0.22, 1, 0.36, 1);    /* Reações imediatas de clique */
-  --lux-ease-ambient: cubic-bezier(0.4, 0, 0.2, 1);     /* Loops contínuos e flutuação */
+  --lux-ease-inertial: cubic-bezier(0.16, 1, 0.3, 1); /* Inércia de alto prestígio */
+  --lux-ease-snappy: cubic-bezier(0.22, 1, 0.36, 1); /* Reações imediatas de clique */
+  --lux-ease-ambient: cubic-bezier(0.4, 0, 0.2, 1); /* Loops contínuos e flutuação */
 
   --lux-duration-micro: 180ms;
   --lux-duration-normal: 280ms;
@@ -167,9 +180,10 @@
   border: var(--lux-border-glass);
   border-radius: var(--lux-r-lg);
   box-shadow: var(--lux-shadow-ambient);
-  transition: border-color var(--lux-duration-normal) var(--lux-ease-ambient),
-              transform var(--lux-duration-normal) var(--lux-ease-inertial),
-              box-shadow var(--lux-duration-normal) var(--lux-ease-ambient);
+  transition:
+    border-color var(--lux-duration-normal) var(--lux-ease-ambient),
+    transform var(--lux-duration-normal) var(--lux-ease-inertial),
+    box-shadow var(--lux-duration-normal) var(--lux-ease-ambient);
 }
 
 .lux-card-frosted:hover {
@@ -183,7 +197,7 @@
   font-family: var(--lux-font-body);
   font-weight: 700;
   font-size: 0.95rem;
-  color: #0D0D0D;
+  color: #0d0d0d;
   background: var(--lux-grad-cta);
   padding: 14px 32px;
   border-radius: var(--lux-r-sm);
@@ -194,9 +208,10 @@
   justify-content: center;
   gap: 10px;
   box-shadow: 0 0 24px rgba(255, 45, 155, 0.35);
-  transition: transform var(--lux-duration-micro) var(--lux-ease-snappy),
-              box-shadow var(--lux-duration-micro) var(--lux-ease-snappy),
-              filter var(--lux-duration-micro) var(--lux-ease-snappy);
+  transition:
+    transform var(--lux-duration-micro) var(--lux-ease-snappy),
+    box-shadow var(--lux-duration-micro) var(--lux-ease-snappy),
+    filter var(--lux-duration-micro) var(--lux-ease-snappy);
 }
 
 .lux-btn-primary:hover {
@@ -225,9 +240,10 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  transition: background-color var(--lux-duration-normal) var(--lux-ease-ambient),
-              border-color var(--lux-duration-normal) var(--lux-ease-ambient),
-              transform var(--lux-duration-normal) var(--lux-ease-inertial);
+  transition:
+    background-color var(--lux-duration-normal) var(--lux-ease-ambient),
+    border-color var(--lux-duration-normal) var(--lux-ease-ambient),
+    transform var(--lux-duration-normal) var(--lux-ease-inertial);
 }
 
 .lux-btn-secondary:hover {

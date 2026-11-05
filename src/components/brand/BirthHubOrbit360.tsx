@@ -172,8 +172,8 @@ function OrbitScene({
       onPointerMove={(e) => {
         if (!interactive) return;
         mouseTarget.current = {
-          x: (e.pointer.x) * 1.2,
-          y: (-e.pointer.y) * 1.2,
+          x: e.pointer.x * 1.2,
+          y: -e.pointer.y * 1.2,
         };
       }}
     >
@@ -186,28 +186,15 @@ function OrbitScene({
       {/* 2. Coroa de Telemetria Exterior (Tick marks) */}
       <points ref={coronaRef}>
         <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            args={[coronaPoints, 3]}
-          />
+          <bufferAttribute attach="attributes-position" args={[coronaPoints, 3]} />
         </bufferGeometry>
-        <pointsMaterial
-          size={0.035}
-          color="#FFC107"
-          transparent
-          opacity={0.65}
-          sizeAttenuation
-        />
+        <pointsMaterial size={0.035} color="#FFC107" transparent opacity={0.65} sizeAttenuation />
       </points>
 
       {/* 3. A Grande Órbita Cromática 360° */}
       <mesh ref={ringRef} position={[0, 0, 0]}>
         <torusGeometry args={[1.95, 0.075, 32, 128]} />
-        <shaderMaterial
-          ref={shaderMatRef}
-          args={[ChromaticRingShader]}
-          transparent
-        />
+        <shaderMaterial ref={shaderMatRef} args={[ChromaticRingShader]} transparent />
       </mesh>
 
       {/* 4. Nós de Dados em Trânsito (4 Pilares) */}
@@ -256,11 +243,7 @@ function OrbitScene({
       {/* 7. Núcleo Monolítico de Obsidian */}
       <mesh position={[0, 0, -0.05]}>
         <cylinderGeometry args={[1.32, 1.32, 0.08, 64]} rotation={[Math.PI / 2, 0, 0]} />
-        <meshStandardMaterial
-          color="#0D0D0D"
-          roughness={0.25}
-          metalness={0.88}
-        />
+        <meshStandardMaterial color="#0D0D0D" roughness={0.25} metalness={0.88} />
       </mesh>
 
       {/* 8. Bisel Refletivo do Núcleo */}
@@ -348,10 +331,7 @@ export function BirthHubOrbit360({
           style={{ width: '100%', height: '100%' }}
         >
           <Suspense fallback={null}>
-            <OrbitScene
-              interactive={interactive}
-              reduceMotion={reduceMotion}
-            />
+            <OrbitScene interactive={interactive} reduceMotion={reduceMotion} />
           </Suspense>
         </Canvas>
       ) : (

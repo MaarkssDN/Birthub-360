@@ -13,14 +13,11 @@ export function useSmoothInertiaScroll(enabled = true) {
     if (!enabled || typeof window === 'undefined') return;
 
     // Respeita prefers-reduced-motion
-    const prefersReducedMotion = window.matchMedia(
-      '(prefers-reduced-motion: reduce)',
-    ).matches;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) return;
 
     // Desativa em dispositivos de toque puro (mobile/tablet nativo já possui inércia elástica)
-    const isTouchDevice =
-      'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     if (isTouchDevice && window.innerWidth < 1024) return;
 
     let targetY = window.scrollY;
@@ -48,17 +45,14 @@ export function useSmoothInertiaScroll(enabled = true) {
     const onWheel = (e: WheelEvent) => {
       // Não intercepta se o usuário estiver rolando dentro de um modal ou textarea
       const target = e.target as HTMLElement | null;
-      if (
-        target?.closest?.('textarea, input, select, [data-scrollable="true"]')
-      ) {
+      if (target?.closest?.('textarea, input, select, [data-scrollable="true"]')) {
         return;
       }
 
       // Previne salto abrupto padrão do mousewheel no desktop
       e.preventDefault();
 
-      const maxScroll =
-        document.documentElement.scrollHeight - window.innerHeight;
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
       targetY += e.deltaY * 0.95;
       targetY = Math.max(0, Math.min(targetY, maxScroll));
 
