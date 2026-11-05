@@ -23,6 +23,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { CommercialJourneyStream } from '../../../components/CommercialJourneyStream.js';
 import { Button } from '../../../components/ui/Button.js';
 import { Card } from '../../../components/ui/Card.js';
 import { GamificationWidget } from '../../../components/ui/GamificationWidget.js';
@@ -43,11 +44,10 @@ import {
   useDashboardLayout,
   type WidgetId,
 } from '../hooks/useDashboardLayout.js';
-import { CommercialJourneyStream } from '../../../components/CommercialJourneyStream.js';
 import { DashboardBuilderModal } from './DashboardBuilderModal.js';
 import { ProductivityHeatmapWidget } from './ProductivityHeatmapWidget.js';
-import { UnifiedTimelineWidget } from './UnifiedTimelineWidget.js';
 import { RealtimeCockpitWidget } from './RealtimeCockpitWidget.js';
+import { UnifiedTimelineWidget } from './UnifiedTimelineWidget.js';
 
 function greeting() {
   const hour = new Date().getHours();
@@ -154,7 +154,7 @@ export function SinglePageDashboard() {
             key="pipelineValue"
             variants={metricReveal}
             data-accent="gold"
-            className="bh-platform-card group relative p-5 transition-colors overflow-hidden"
+            className="bh-platform-card group relative p-5 transition-colors overflow-hidden motion-gpu"
           >
             <div className="flex items-center justify-between mb-3">
               <span className="bh-label text-sm font-bold uppercase tracking-wider text-[var(--card-accent)] flex items-center gap-2 font-interface">
@@ -164,7 +164,7 @@ export function SinglePageDashboard() {
                 Ativo
               </span>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold text-ink font-mono tracking-tight">
+            <p className="text-2xl sm:text-3xl font-bold text-ink font-mono tracking-tight tabular-nums numeric-tabular-cell">
               {pipelineValue > 0
                 ? new Intl.NumberFormat('pt-BR', {
                     style: 'currency',
@@ -192,7 +192,7 @@ export function SinglePageDashboard() {
             key="winRate"
             variants={metricReveal}
             data-accent="success"
-            className="bh-platform-card group relative p-5 transition-colors overflow-hidden"
+            className="bh-platform-card group relative p-5 transition-colors overflow-hidden motion-gpu"
           >
             <div className="flex items-center justify-between mb-3">
               <span className="bh-label text-sm font-bold uppercase tracking-wider text-[var(--card-accent)] flex items-center gap-2 font-interface">
@@ -202,7 +202,7 @@ export function SinglePageDashboard() {
                 Win Rate
               </span>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold text-ink font-mono tracking-tight">
+            <p className="text-2xl sm:text-3xl font-bold text-ink font-mono tracking-tight tabular-nums numeric-tabular-cell">
               {winRate}%
             </p>
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-line/40 text-xs text-ink-2">
@@ -224,7 +224,7 @@ export function SinglePageDashboard() {
             key="pendingActivities"
             variants={metricReveal}
             data-accent="iris"
-            className="bh-platform-card group relative p-5 transition-colors overflow-hidden"
+            className="bh-platform-card group relative p-5 transition-colors overflow-hidden motion-gpu"
           >
             <div className="flex items-center justify-between mb-3">
               <span className="bh-label text-sm font-bold uppercase tracking-wider text-[var(--card-accent)] flex items-center gap-2 font-interface">
@@ -234,7 +234,7 @@ export function SinglePageDashboard() {
                 Prioridade
               </span>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold text-ink font-mono tracking-tight">
+            <p className="text-2xl sm:text-3xl font-bold text-ink font-mono tracking-tight tabular-nums numeric-tabular-cell">
               {pendingActivities}
             </p>
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-line/40 text-xs text-ink-2">
@@ -256,7 +256,7 @@ export function SinglePageDashboard() {
             key="totalCompanies"
             variants={metricReveal}
             data-accent="cyan"
-            className="bh-platform-card group relative p-5 transition-colors overflow-hidden"
+            className="bh-platform-card group relative p-5 transition-colors overflow-hidden motion-gpu"
           >
             <div className="flex items-center justify-between mb-3">
               <span className="bh-label text-sm font-bold uppercase tracking-wider text-[var(--card-accent)] flex items-center gap-2 font-interface">
@@ -266,7 +266,7 @@ export function SinglePageDashboard() {
                 Ecossistema
               </span>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold text-ink font-mono tracking-tight">
+            <p className="text-2xl sm:text-3xl font-bold text-ink font-mono tracking-tight tabular-nums numeric-tabular-cell">
               {totalCompanies}
             </p>
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-line/40 text-xs text-ink-2">
@@ -288,7 +288,7 @@ export function SinglePageDashboard() {
             key="closedThisMonth"
             variants={metricReveal}
             data-accent="success"
-            className="bh-platform-card group relative p-5 transition-colors overflow-hidden"
+            className="bh-platform-card group relative p-5 transition-colors overflow-hidden motion-gpu"
           >
             <div className="flex items-center justify-between mb-3">
               <span className="bh-label text-sm font-bold uppercase tracking-wider text-[var(--card-accent)] flex items-center gap-2 font-interface">
@@ -298,7 +298,7 @@ export function SinglePageDashboard() {
                 Fechados
               </span>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold text-ink font-mono tracking-tight">
+            <p className="text-2xl sm:text-3xl font-bold text-ink font-mono tracking-tight tabular-nums numeric-tabular-cell">
               {closedThisMonth}
             </p>
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-line/40 text-xs text-ink-2">
@@ -320,7 +320,7 @@ export function SinglePageDashboard() {
             key="leadsToday"
             variants={metricReveal}
             data-accent="cyan"
-            className="bh-platform-card group relative p-5 transition-colors overflow-hidden"
+            className="bh-platform-card group relative p-5 transition-colors overflow-hidden motion-gpu"
           >
             <div className="flex items-center justify-between mb-3">
               <span className="bh-label text-sm font-bold uppercase tracking-wider text-[var(--card-accent)] flex items-center gap-2 font-interface">
@@ -330,7 +330,7 @@ export function SinglePageDashboard() {
                 Em Cadência
               </span>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold text-ink font-mono tracking-tight">
+            <p className="text-2xl sm:text-3xl font-bold text-ink font-mono tracking-tight tabular-nums numeric-tabular-cell">
               {totalLeads}
             </p>
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-line/40 text-xs text-ink-2">
@@ -352,7 +352,7 @@ export function SinglePageDashboard() {
             key="wonRevenueMonth"
             variants={metricReveal}
             data-accent="gold"
-            className="bh-platform-card group relative p-5 transition-colors overflow-hidden"
+            className="bh-platform-card group relative p-5 transition-colors overflow-hidden motion-gpu"
           >
             <div className="flex items-center justify-between mb-3">
               <span className="bh-label text-sm font-bold uppercase tracking-wider text-[var(--card-accent)] flex items-center gap-2 font-interface">
@@ -362,7 +362,7 @@ export function SinglePageDashboard() {
                 Faturamento
               </span>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold text-ink font-mono tracking-tight">
+            <p className="text-2xl sm:text-3xl font-bold text-ink font-mono tracking-tight tabular-nums numeric-tabular-cell">
               {new Intl.NumberFormat('pt-BR', {
                 style: 'currency',
                 currency: 'BRL',

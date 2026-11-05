@@ -1,5 +1,5 @@
 import { useDroppable } from '@dnd-kit/core';
-import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
+import { rectSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 import React from 'react';
 import { LEAD_STATUS_EMOJI as STATUS_EMOJI } from '../../../lib/enumMap.js';
 import type { Lead, LeadStatus } from '../../../types/index.js';
@@ -66,7 +66,7 @@ export const KanbanColumn = React.memo(function KanbanColumn({
       }`}
     >
       {/* Sticky Sculpted Column Header */}
-      <div className="sticky top-0 z-10 flex flex-col gap-1.5 border-b border-line/60 bg-white/95 dark:bg-[#14161C]/95 backdrop-blur-xl px-4 pb-3.5 pt-4">
+      <div className="sticky top-0 z-10 flex flex-col gap-1.5 border-b border-line/60 bg-white/95 dark:bg-[#14161C]/95 backdrop-blur-xl px-4 pb-3.5 pt-4 table-sticky-header immobile-element">
         <div className="flex items-center justify-between gap-2">
           <h3 className="flex min-w-0 items-center gap-2 text-xs font-extrabold tracking-wide text-[#1E4E75] dark:text-[#90D2FF] uppercase font-display">
             <span className="shrink-0 text-sm" aria-hidden="true">
