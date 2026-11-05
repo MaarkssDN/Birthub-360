@@ -901,7 +901,7 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
           <span className="font-mono text-[10px] font-bold text-[#3B5A75] dark:text-[#94B3CD] uppercase">
             Pipeline:
           </span>
-          <span className="font-extrabold text-[#059669] dark:text-[#34D399]">
+          <span className="font-extrabold text-[#047857] dark:text-[#34D399]">
             {pipelineMetrics.totalAmount > 0
               ? `R$ ${pipelineMetrics.totalAmount.toLocaleString('pt-BR')}`
               : 'R$ 0,00'}
