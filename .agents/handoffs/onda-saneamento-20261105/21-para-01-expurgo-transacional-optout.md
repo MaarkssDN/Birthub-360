@@ -1,10 +1,16 @@
 De: 21 — Privacidade e LGPD
 Para: 01 — Plataforma, Segurança e Dados
 Onda: onda-saneamento-20261105
-Status: aberto
+Status: resolvido
 Prioridade: bloqueador
 Bloqueador-ref: DIV-AGENTE-21-001 (B-13)
 Sprint destino: Onda 1 — Segurança, Schema, Tenancy e LGPD
+
+## Resolução
+- Refatorado `src/shared/services/dataSubjectErasure.service.ts` para executar todas as mutações no PostgreSQL sob `prisma.$transaction(async (tx) => { ... })` interativo, garantindo atomicidade estrita ACID e rollback imediato em caso de erro sem deixar órfãos.
+- Inserido registro de auditoria imutável em `tx.auditLog.create` com hash SHA-256 do titular, data/hora ISO, ator executor e estatísticas detalhadas de registros expurgados.
+- Integração com limpeza defensiva de chaves de cache Redis (`getRedisClient().del`) e exclusão de áudios no object storage disparadas somente após o commit com sucesso da transação de banco.
+- Criada suíte de testes unitários `tests/unit/services/erasure-transaction-rollback.test.ts` (2/2 aprovados) comprovando que falhas intermediárias provocam rollback total sem tocar em storage ou cache.
 
 ## Problema
 Serviço de exclusão de dados do titular (dataSubjectErasure.service.ts) realiza exclusões em cascata manuais fora de uma transação Prisma, deixando registros órfãos em caso de falha parcial.

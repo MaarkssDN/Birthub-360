@@ -57,6 +57,27 @@ describe('agentMemory.store', () => {
       expect(agentMemory.findFirst).not.toHaveBeenCalled();
     });
 
+    it('persiste contactId em create e update para rastreabilidade de titular LGPD', async () => {
+      await saveAgentMemory({
+        sessionId: 's-contact-1',
+        agentType: 'SDR',
+        organizationId: 'org-1',
+        contactId: 'contact-123',
+        messages: [{ role: 'user', content: 'mensagem com titular' }],
+      });
+
+      expect(agentMemory.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          create: expect.objectContaining({
+            contactId: 'contact-123',
+          }),
+          update: expect.objectContaining({
+            contactId: 'contact-123',
+          }),
+        }),
+      );
+    });
+
     it('status padrão é Completed quando não especificado', async () => {
       await saveAgentMemory({
         sessionId: 's1',

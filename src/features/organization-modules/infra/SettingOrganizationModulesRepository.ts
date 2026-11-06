@@ -15,6 +15,7 @@ function parseStoredState(value: unknown): OrganizationModulesStoredState | null
     ? raw.enabledModules.filter((k): k is string => typeof k === 'string')
     : [];
   return {
+    version: typeof raw.version === 'number' ? raw.version : 1,
     enabledModules,
     onboardingCompletedAt:
       typeof raw.onboardingCompletedAt === 'string' ? raw.onboardingCompletedAt : null,

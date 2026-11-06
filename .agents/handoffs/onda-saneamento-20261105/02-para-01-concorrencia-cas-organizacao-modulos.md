@@ -1,10 +1,19 @@
 De: 02 — Produto e UX
 Para: 01 — Plataforma, Segurança e Dados
 Onda: onda-saneamento-20261105
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: DIV-AGENTE-02-001
 Sprint destino: Onda 1 — Segurança, Schema, Tenancy e LGPD
+
+## Resolução
+- Adicionado campo `version: number` ao contrato `OrganizationModulesStoredState` e `OrganizationModulesView` em `src/features/organization-modules/domain/OrganizationModules.ts`.
+- Implementado controle de versão otimista (Compare-And-Swap / CAS) em `OrganizationModulesService.mutate`:
+  - Se `expectedVersion` for enviado e diferir da versão atual no banco, lança `OrganizationModulesServiceError` com status HTTP 409 Conflict.
+  - A cada mutação bem-sucedida, `version` é incrementada sequencialmente.
+- Atualizado `SettingOrganizationModulesRepository` para persistir e carregar a versão.
+- Atualizado `organizationModules.routes.ts` para extrair `expectedVersion` via header `If-Match` ou body `version`.
+- Criada suíte de testes unitários `tests/unit/features/organization-modules/organizationModules-concurrency.test.ts` (3/3 aprovados) comprovando que requisições concorrentes com mesma versão base resultam em uma aprovada e uma rejeitada com 409 Conflict.
 
 ## Problema
 Atualização de módulos habilitados da organização em organizationModules.service.ts sofre de race condition com múltiplos administradores.

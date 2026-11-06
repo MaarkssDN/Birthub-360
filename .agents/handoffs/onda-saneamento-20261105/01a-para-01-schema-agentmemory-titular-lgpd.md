@@ -1,10 +1,17 @@
 De: 01A — Confiabilidade de Dados, RLS e Retenção
 Para: 01 — Plataforma, Segurança e Dados
 Onda: onda-saneamento-20261105
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: DIV-AGENTE-01A-001 (B-13)
 Sprint destino: Onda 1 — Segurança, Schema, Tenancy e LGPD
+
+## Resolução
+- Adicionado campo `contactId String?` ao model `AgentMemory` no `prisma/schema.prisma` com índice composto `@@index([organizationId, contactId])`.
+- Criada e executada a migration `prisma/migrations/20261106140000_add_contact_id_to_agent_memory/migration.sql` através do papel de autoridade DDL `prospector_migrator`.
+- `npm run verify:migration-drift` validado com sucesso (`No difference detected`).
+- Atualizado `src/features/intelligence/agents/agentMemory.store.ts` para suportar `contactId` no input, create e update do upsert atômico.
+- Testes unitários atualizados em `src/features/intelligence/agents/__tests__/agentMemory.store.test.ts` (12/12 aprovados).
 
 ## Problema
 Tabela AgentMemory armazena contexto de IA com dados de contato/lead em campo JSON livre sem chave estrangeira ou coluna indexada de titular.

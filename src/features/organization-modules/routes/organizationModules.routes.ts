@@ -17,6 +17,20 @@ const router = Router();
 
 type Handler = (authReq: AuthRequest, req: Request) => Promise<OrganizationModulesView>;
 
+function extractExpectedVersion(req: Request): number | undefined {
+  const ifMatch = req.headers['if-match'];
+  if (typeof ifMatch === 'string') {
+    const parsed = Number.parseInt(ifMatch.replace(/["']/g, ''), 10);
+    if (!Number.isNaN(parsed)) return parsed;
+  }
+  const body = req.body as Record<string, unknown> | undefined;
+  if (body) {
+    if (typeof body.version === 'number') return body.version;
+    if (typeof body.expectedVersion === 'number') return body.expectedVersion;
+  }
+  return undefined;
+}
+
 function handle(fn: Handler) {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -43,8 +57,13 @@ router.use(requireRole(['ADMIN']));
 // Precisa vir antes de '/:moduleKey'.
 router.post(
   '/onboarding/complete',
-  handle((authReq) =>
-    organizationModulesService.completeOnboarding(authReq.user.organizationId, authReq.user.id),
+  handle((authReq, req) =>
+    organizationModulesService.completeOnboarding(
+      authReq.user.organizationId,
+      authReq.user.id,
+      new Date(),
+      extractExpectedVersion(req),
+    ),
   ),
 );
 
@@ -55,6 +74,7 @@ router.put(
       authReq.user.organizationId,
       authReq.user.id,
       (req.body as { modules?: unknown } | undefined)?.modules,
+      extractExpectedVersion(req),
     ),
   ),
 );
@@ -66,6 +86,7 @@ router.post(
       authReq.user.organizationId,
       authReq.user.id,
       routeParam(req.params.moduleKey, 'moduleKey'),
+      extractExpectedVersion(req),
     ),
   ),
 );
@@ -77,6 +98,7 @@ router.delete(
       authReq.user.organizationId,
       authReq.user.id,
       routeParam(req.params.moduleKey, 'moduleKey'),
+      extractExpectedVersion(req),
     ),
   ),
 );
