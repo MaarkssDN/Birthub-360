@@ -1,7 +1,7 @@
 De: 10 — Infraestrutura, Observabilidade e SRE
 Para: 16 — Runtime, Workers e Escala
 Onda: onda-saneamento-20261105
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: DIV-AGENTE-10-002
 Sprint destino: Onda 2 — Runtime, Workers e Infraestrutura
@@ -27,3 +27,8 @@ Base de auditoria: DIVIDAS-AGENTE-10.md e DIVIDAS-AGENTE-16.md.
 
 ## Contexto adicional
 Melhoria na experiência de usuário durante deploys de zero downtime.
+
+## Resolução (Onda 2 — 2026-11-06)
+- Implementado `sseService.gracefulDrain(reconnectAfterMs = 3000)` em `src/features/notifications/sse.service.ts`, emitindo `event: server_shutdown` com payload JSON `{"message":"Server is shutting down","reconnectAfterMs":3000}` antes de encerrar o response stream de cada cliente conectado.
+- Integrado `sseService.gracefulDrain()` no ciclo de encerramento de `createGracefulShutdown` em `src/bootstrap/shutdown.ts` (invocado no `SIGTERM` / `SIGINT` registrado em `server.ts`).
+- Validado por `tests/unit/features/notifications/sse-graceful-drain.test.ts` (1/1 PASS).

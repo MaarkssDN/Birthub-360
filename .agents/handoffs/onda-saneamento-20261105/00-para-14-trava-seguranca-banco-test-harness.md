@@ -1,7 +1,7 @@
 De: 00 — Coordenador
 Para: 14 — Ambiente de Execução e Test Harness
 Onda: onda-saneamento-20261105
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: DIV-AGENTE-14-001
 Sprint destino: Onda 2 — Runtime, Workers e Infraestrutura
@@ -27,3 +27,8 @@ Base de auditoria: DIVIDAS-AGENTE-14.md.
 
 ## Contexto adicional
 Proteção contra perda de dados acidental em ambientes de teste.
+
+## Resolução (Onda 2 — 2026-11-06)
+- Implementada e exportada a função `assertTestDatabaseSafety` (e `parseDotEnvContent`) em `scripts/test/prepare-integration-env.js`, invocada antes de qualquer operação de container ou banco.
+- A trava aborta imediatamente quando `NODE_ENV !== 'test'`, quando o database em `DATABASE_URL`, `DIRECT_URL` ou `TEST_DATABASE_URL` não termina com `_test`, ou quando o hostname coincide com endpoints gerenciados de produção (AWS RDS, Supabase, Neon, Azure Database, CloudSQL).
+- Validado por `tests/unit/scripts/test-harness-safety.test.ts` (6/6 PASS).

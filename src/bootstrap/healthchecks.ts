@@ -1,5 +1,6 @@
 import type { Express, Request, Response } from 'express';
 import { env } from '../config/env.js';
+import { circuitGuard, getCircuitHealthSnapshot } from '../lib/circuitGuard.js';
 import { logger } from '../lib/logger.js';
 import { prisma } from '../lib/prisma.js';
 import { connection, queuesEnabled } from '../lib/queue/redis.js';
@@ -21,9 +22,11 @@ export async function handleReadiness(_req: Request, res: Response): Promise<voi
     // biome-ignore lint/plugin/no-prisma-tx-escape: uso legado congelado no baseline (parecer 15 #40 L1); migrar para runInTransaction
     await prisma.$queryRaw`SELECT 1`;
     dependencies.database = 'connected';
+    circuitGuard.recordSuccess('database');
   } catch (err: any) {
     logger.error({ err }, 'Readiness: Database probe failed');
     dependencies.database = 'unavailable';
+    circuitGuard.recordFailure('database', err);
     isReady = false;
   }
 
@@ -31,9 +34,11 @@ export async function handleReadiness(_req: Request, res: Response): Promise<voi
     try {
       await connection.ping();
       dependencies.redis = 'connected';
+      circuitGuard.recordSuccess('redis');
     } catch (err: any) {
       logger.error({ err }, 'Readiness: Redis probe failed');
       dependencies.redis = 'unavailable';
+      circuitGuard.recordFailure('redis', err);
       isReady = false;
     }
   } else {
@@ -47,10 +52,13 @@ export async function handleReadiness(_req: Request, res: Response): Promise<voi
     dependencies.storage = 'unconfigured';
   }
 
+  const circuits = getCircuitHealthSnapshot();
+
   if (isReady) {
     res.status(200).json({
       status: 'ok',
       dependencies,
+      circuits,
       version: env.BUILD_VERSION,
       commit: env.COMMIT_SHA,
       timestamp: new Date().toISOString(),
@@ -60,6 +68,7 @@ export async function handleReadiness(_req: Request, res: Response): Promise<voi
       status: 'error',
       message: 'One or more critical dependencies unavailable',
       dependencies,
+      circuits,
       version: env.BUILD_VERSION,
       commit: env.COMMIT_SHA,
       timestamp: new Date().toISOString(),

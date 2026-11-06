@@ -1,7 +1,7 @@
 De: 00 — Coordenador
 Para: 10 — Infraestrutura, Observabilidade e SRE
 Onda: onda-saneamento-20261105
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: DIV-AGENTE-10-001
 Sprint destino: Onda 2 — Runtime, Workers e Infraestrutura
@@ -27,3 +27,7 @@ Base de auditoria: DIVIDAS-AGENTE-10.md.
 
 ## Contexto adicional
 Conformidade SRE e resiliência de desastre.
+
+## Resolução (Onda 2 — 2026-11-06)
+- `scripts/backup/run-backup-restore-drill.ts` (e seu ponto de entrada espelhado em `scripts/sre/run-backup-restore-drill.ts`) executa restore real em banco efêmero, valida `prisma migrate status`, compara contagens de 16 tabelas críticas, verifica índices inválidos e registros órfãos de tenant e avalia o SLA de RTO (`<= 900s`) via `evaluateRestoreDrillAcceptance`.
+- Criada suíte unitária `tests/unit/scripts/backup-restore-drill-rto.test.ts` (5/5 PASS) cobrindo critérios de aceite e rejeição de RTO, divergência de contagens, índices inválidos e migrações pendentes.

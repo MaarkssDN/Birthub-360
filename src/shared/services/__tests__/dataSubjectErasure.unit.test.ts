@@ -21,6 +21,7 @@ vi.mock('@/lib/storage', () => ({
 }));
 
 vi.mock('@/lib/prisma', () => ({
+  runInTransaction: undefined,
   prisma: {
     contact: {
       findFirst: (...args: unknown[]) => findFirstMock(...args),
