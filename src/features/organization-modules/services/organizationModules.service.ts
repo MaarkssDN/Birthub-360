@@ -114,7 +114,12 @@ export class OrganizationModulesService {
     }
   }
 
-  async enable(organizationId: string, userId: string, moduleKey: string, expectedVersion?: number) {
+  async enable(
+    organizationId: string,
+    userId: string,
+    moduleKey: string,
+    expectedVersion?: number,
+  ) {
     assertKnownModule(moduleKey);
     return this.mutate(
       organizationId,
@@ -127,7 +132,12 @@ export class OrganizationModulesService {
     );
   }
 
-  async disable(organizationId: string, userId: string, moduleKey: string, expectedVersion?: number) {
+  async disable(
+    organizationId: string,
+    userId: string,
+    moduleKey: string,
+    expectedVersion?: number,
+  ) {
     assertKnownModule(moduleKey);
     if (ALWAYS_ACTIVE_KEYS.includes(moduleKey)) {
       throw new OrganizationModulesServiceError(
@@ -147,7 +157,12 @@ export class OrganizationModulesService {
   }
 
   /** Substitui o conjunto inteiro (atômico do ponto de vista do cliente). */
-  async replace(organizationId: string, userId: string, moduleKeys: unknown, expectedVersion?: number) {
+  async replace(
+    organizationId: string,
+    userId: string,
+    moduleKeys: unknown,
+    expectedVersion?: number,
+  ) {
     if (!Array.isArray(moduleKeys) || !moduleKeys.every((k) => typeof k === 'string')) {
       throw new OrganizationModulesServiceError('Campo "modules" deve ser uma lista de chaves.');
     }

@@ -52,8 +52,7 @@ beforeEach(() => {
 });
 
 describe('Retention Purge & Log Archiving Service (DIV-AGENTE-01A-002)', () => {
-  it('executa purga em múltiplos lotes (batching) até esgotar registros expirados', async () => {
-    // Simula 2 lotes de 100 registros em AILog e depois vazio
+  it('executa purga em múltiplos lotes (batching) até esgotar registros expirados em AILog, BitrixSyncLog e ExternalCrmSyncLog', async () => {
     aiLogFindManyMock
       .mockResolvedValueOnce(Array.from({ length: 100 }, (_, i) => ({ id: `ai-${i}` })))
       .mockResolvedValueOnce(Array.from({ length: 50 }, (_, i) => ({ id: `ai-second-${i}` })))
@@ -63,17 +62,31 @@ describe('Retention Purge & Log Archiving Service (DIV-AGENTE-01A-002)', () => {
       .mockResolvedValueOnce({ count: 100 })
       .mockResolvedValueOnce({ count: 50 });
 
+    bitrixFindManyMock
+      .mockResolvedValueOnce(Array.from({ length: 100 }, (_, i) => ({ id: `bx-${i}` })))
+      .mockResolvedValueOnce(Array.from({ length: 20 }, (_, i) => ({ id: `bx-second-${i}` })));
+    bitrixDeleteManyMock
+      .mockResolvedValueOnce({ count: 100 })
+      .mockResolvedValueOnce({ count: 20 });
+
+    crmFindManyMock
+      .mockResolvedValueOnce(Array.from({ length: 100 }, (_, i) => ({ id: `crm-${i}` })))
+      .mockResolvedValueOnce(Array.from({ length: 10 }, (_, i) => ({ id: `crm-second-${i}` })));
+    crmDeleteManyMock
+      .mockResolvedValueOnce({ count: 100 })
+      .mockResolvedValueOnce({ count: 10 });
+
     const result = await executeRetentionPurge({
       batchSize: 100,
-      sleepBetweenBatchesMs: 0,
-      policy: { aiLogDays: 90 },
+      sleepBetweenBatchesMs: 1,
+      policy: { aiLogDays: 90, syncLogDays: 180 },
       now: new Date('2026-11-01T00:00:00Z'),
     });
 
     expect(result.deletedAILogs).toBe(150);
-    expect(result.batchesExecuted).toBe(2);
-    expect(aiLogFindManyMock).toHaveBeenCalledTimes(2);
-    expect(aiLogDeleteManyMock).toHaveBeenCalledTimes(2);
+    expect(result.deletedBitrixSyncLogs).toBe(120);
+    expect(result.deletedExternalCrmSyncLogs).toBe(110);
+    expect(result.batchesExecuted).toBe(6);
     expect(result.cutoffDates.aiLog.toISOString()).toBe('2026-08-03T00:00:00.000Z');
   });
 
@@ -95,5 +108,16 @@ describe('Retention Purge & Log Archiving Service (DIV-AGENTE-01A-002)', () => {
         }),
       }),
     );
+  });
+
+  it('isola falhas individuais de tabelas sem interromper o ciclo completo de purga', async () => {
+    aiLogFindManyMock.mockRejectedValueOnce(new Error('DB timeout AILog'));
+    bitrixFindManyMock.mockRejectedValueOnce(new Error('DB timeout BitrixSyncLog'));
+    crmFindManyMock.mockRejectedValueOnce(new Error('DB timeout ExternalCrmSyncLog'));
+
+    const result = await executeRetentionPurge({ sleepBetweenBatchesMs: 0 });
+    expect(result.deletedAILogs).toBe(0);
+    expect(result.deletedBitrixSyncLogs).toBe(0);
+    expect(result.deletedExternalCrmSyncLogs).toBe(0);
   });
 });

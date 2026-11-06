@@ -98,6 +98,12 @@ export const bullmqQueueRetryCount = new client.Counter({
   labelNames: ['queue'] as const,
 });
 
+export const bullmqDlqMessagesTotal = new client.Counter({
+  name: 'bullmq_dlq_messages_total',
+  help: 'Total acumulado de jobs encaminhados para a Dead Letter Queue (DLQ) por fila e motivo.',
+  labelNames: ['queue', 'reason'] as const,
+});
+
 export const workerProcessUp = new client.Gauge({
   name: 'birthhub360_worker_up',
   help: '1 quando o processo dedicado de workers terminou o bootstrap e está ativo.',
@@ -150,6 +156,10 @@ export function recordQueueJobCompleted(name: string): void {
 
 export function recordQueueRetry(name: string): void {
   bullmqQueueRetryCount.inc({ queue: name });
+}
+
+export function recordQueueDlqMessage(queue: string, reason: string): void {
+  bullmqDlqMessagesTotal.inc({ queue, reason });
 }
 
 export function setWorkerProcessUp(up: boolean): void {

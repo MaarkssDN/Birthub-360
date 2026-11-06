@@ -33,23 +33,23 @@ Cada handoff segue rigorosamente os requisitos do **`AGENTS.md` §18**, contendo
 ### Onda 1: Segurança, Schema, Tenancy e LGPD (P1)
 | Handoff | De | Para | Prioridade | Bloqueador Ref | Arquivo Principal |
 |---|---|---|---|---|---|
-| [`00-para-01-filtro-tenant-repositorios-discador.md`](./00-para-01-filtro-tenant-repositorios-discador.md) | 00 | 01 | `bloqueador` | DIV-AGENTE-01-001 (B-10) | `src/infrastructure/repositories/dialer/` |
-| [`21-para-01-expurgo-transacional-optout.md`](./21-para-01-expurgo-transacional-optout.md) | 21 | 01 | `bloqueador` | DIV-AGENTE-21-001 (B-13) | `src/services/dataSubjectErasure.service.ts` |
-| [`01a-para-01-schema-agentmemory-titular-lgpd.md`](./01a-para-01-schema-agentmemory-titular-lgpd.md) | 01A | 01 | `alto` | DIV-AGENTE-01A-001 (B-13) | `prisma/schema.prisma` |
-| [`02-para-01-concorrencia-cas-organizacao-modulos.md`](./02-para-01-concorrencia-cas-organizacao-modulos.md) | 02 | 01 | `normal` | DIV-AGENTE-02-001 | `src/services/organizationModules.service.ts` |
-| [`21-para-01-dossie-portabilidade-titular.md`](./21-para-01-dossie-portabilidade-titular.md) | 21 | 01 | `alto` | DIV-AGENTE-21-002 | `src/services/dataSubjectPortability.service.ts` |
-| [`00-para-01a-particionamento-retencao-logs.md`](./00-para-01a-particionamento-retencao-logs.md) | 00 | 01A | `normal` | DIV-AGENTE-01A-002 | `src/services/retentionPurge.service.ts` |
+| [`00-para-01-filtro-tenant-repositorios-discador.md`](./00-para-01-filtro-tenant-repositorios-discador.md) | 00 | 01 | `resolvido` (bloqueador) | DIV-AGENTE-01-001 (B-10) | `src/infrastructure/repositories/dialer/` |
+| [`21-para-01-expurgo-transacional-optout.md`](./21-para-01-expurgo-transacional-optout.md) | 21 | 01 | `resolvido` (bloqueador) | DIV-AGENTE-21-001 (B-13) | `src/shared/services/dataSubjectErasure.service.ts` |
+| [`01a-para-01-schema-agentmemory-titular-lgpd.md`](./01a-para-01-schema-agentmemory-titular-lgpd.md) | 01A | 01 | `resolvido` (alto) | DIV-AGENTE-01A-001 (B-13) | `prisma/schema.prisma` |
+| [`02-para-01-concorrencia-cas-organizacao-modulos.md`](./02-para-01-concorrencia-cas-organizacao-modulos.md) | 02 | 01 | `resolvido` (normal) | DIV-AGENTE-02-001 | `src/features/organization-modules/organizationModules.service.ts` |
+| [`21-para-01-dossie-portabilidade-titular.md`](./21-para-01-dossie-portabilidade-titular.md) | 21 | 01 | `resolvido` (alto) | DIV-AGENTE-21-002 | `src/shared/services/dataSubjectPortability.service.ts` |
+| [`00-para-01a-particionamento-retencao-logs.md`](./00-para-01a-particionamento-retencao-logs.md) | 00 | 01A | `resolvido` (normal) | DIV-AGENTE-01A-002 | `src/shared/services/retentionPurge.service.ts` |
 
 ---
 
 ### Onda 2: Runtime, Workers, Filas e Infraestrutura (P1)
 | Handoff | De | Para | Prioridade | Bloqueador Ref | Arquivo Principal |
 |---|---|---|---|---|---|
-| [`00-para-16-dead-letter-queue-whatsapp.md`](./00-para-16-dead-letter-queue-whatsapp.md) | 00 | 16 | `bloqueador` | DIV-AGENTE-16-001 (B-11) | `src/workers/whatsappQueue.worker.ts` |
-| [`00-para-14-trava-seguranca-banco-test-harness.md`](./00-para-14-trava-seguranca-banco-test-harness.md) | 00 | 14 | `alto` | DIV-AGENTE-14-001 | `scripts/test/prepare-integration-env.js` |
-| [`00-para-10-assercoes-rto-restore-drill.md`](./00-para-10-assercoes-rto-restore-drill.md) | 00 | 10 | `alto` | DIV-AGENTE-10-001 | `scripts/sre/run-backup-restore-drill.ts` |
-| [`10-para-16-shutdown-coordenado-sse-server.md`](./10-para-16-shutdown-coordenado-sse-server.md) | 10 | 16 | `normal` | DIV-AGENTE-10-002 | `server.ts` |
-| [`16-para-10-circuit-guard-redis-especifico.md`](./16-para-10-circuit-guard-redis-especifico.md) | 16 | 10 | `alto` | DIV-AGENTE-16-002 | `src/lib/circuitGuard.ts` |
+| [`00-para-16-dead-letter-queue-whatsapp.md`](./00-para-16-dead-letter-queue-whatsapp.md) | 00 | 16 | `resolvido` (bloqueador) | DIV-AGENTE-16-001 (B-11) | `src/lib/queue/whatsappCommand.worker.ts` |
+| [`00-para-14-trava-seguranca-banco-test-harness.md`](./00-para-14-trava-seguranca-banco-test-harness.md) | 00 | 14 | `resolvido` (alto) | DIV-AGENTE-14-001 | `scripts/test/prepare-integration-env.js` |
+| [`00-para-10-assercoes-rto-restore-drill.md`](./00-para-10-assercoes-rto-restore-drill.md) | 00 | 10 | `resolvido` (alto) | DIV-AGENTE-10-001 | `scripts/sre/run-backup-restore-drill.ts` |
+| [`10-para-16-shutdown-coordenado-sse-server.md`](./10-para-16-shutdown-coordenado-sse-server.md) | 10 | 16 | `resolvido` (normal) | DIV-AGENTE-10-002 | `src/features/notifications/sse.service.ts` |
+| [`16-para-10-circuit-guard-redis-especifico.md`](./16-para-10-circuit-guard-redis-especifico.md) | 16 | 10 | `resolvido` (alto) | DIV-AGENTE-16-002 | `src/lib/circuitGuard.ts` |
 
 ---
 

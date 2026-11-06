@@ -1,7 +1,7 @@
 De: 00 — Coordenador
 Para: 16 — Runtime, Workers e Escala
 Onda: onda-saneamento-20261105
-Status: aberto
+Status: resolvido
 Prioridade: bloqueador
 Bloqueador-ref: DIV-AGENTE-16-001 (B-11)
 Sprint destino: Onda 2 — Runtime, Workers e Infraestrutura
@@ -30,3 +30,9 @@ Base de auditoria: DIVIDAS-AGENTE-16.md e DIVIDAS-AGENTE-06.md.
 
 ## Contexto adicional
 Desbloqueio operacional crítico para alta volumetria de mensagens.
+
+## Resolução (Onda 2 — 2026-11-06)
+- Implementado classificador `isPermanentWhatsAppError` em `src/lib/queue/whatsappCommand.worker.ts` diferenciando erros permanentes (HTTP 400/401/403/404/410/422, números não registrados no WhatsApp, opt-out do destinatário) de erros transientes (timeout, 5xx, sessão desconectada).
+- Erros permanentes são convertidos em `UnrecoverableError` do BullMQ para interromper retries inúteis e encaminhados imediatamente para a fila `whatsapp-messages-dlq` (`whatsappDlqQueue` em `src/lib/queue/whatsappCommand.queue.ts`) e para o `AuditLog` (`recordDeadLetter`), enquanto erros transientes respeitam até 3 tentativas com exponential backoff antes da DLQ.
+- Adicionada métrica Prometheus `bullmq_dlq_messages_total` (`recordQueueDlqMessage`) em `src/lib/queue/metrics.ts`.
+- Validado por `tests/unit/lib/queue/whatsapp-queue-dlq.test.ts` (4/4 PASS).

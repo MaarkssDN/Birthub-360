@@ -65,13 +65,17 @@ export const sseService = {
     res.setHeader('Connection', 'keep-alive');
     res.flushHeaders();
 
-    const clientId = Date.now().toString();
+    const clientId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const client = { id: clientId, orgId: organizationId, res };
     clients.add(client);
 
     req.on('close', () => {
       clients.delete(client);
     });
+  },
+
+  getActiveClientCount(): number {
+    return clients.size;
   },
 
   notifyVoiceQualified(organizationId: string, leadId: string, message: string) {
@@ -128,10 +132,21 @@ export const sseService = {
       });
   },
 
-  async closeAll() {
+  /**
+   * Drena graciosamente todas as conexões SSE ativas enviando o evento `server_shutdown`
+   * (além de `shutdown` legado) antes de encerrar os sockets, permitindo que o cliente
+   * frontend agende reconexão silenciosa sem exibir erro de rede durante deploys.
+   */
+  async gracefulDrain(reconnectAfterMs = 3000) {
+    const payload = JSON.stringify({
+      message: 'Server is shutting down',
+      reconnectAfterMs,
+    });
+
     for (const client of clients) {
       try {
-        client.res.write('event: shutdown\ndata: {"message":"Server is shutting down"}\n\n');
+        client.res.write(`event: server_shutdown\ndata: ${payload}\n\n`);
+        client.res.write(`event: shutdown\ndata: ${payload}\n\n`);
         client.res.end();
       } catch {
         // Ignore errors on closing socket
@@ -146,5 +161,9 @@ export const sseService = {
         // Ignore subscriber quit error
       }
     }
+  },
+
+  async closeAll() {
+    await this.gracefulDrain();
   },
 };

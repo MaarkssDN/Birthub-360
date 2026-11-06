@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { requestContext } from '../../lib/async-context.js';
 import { logger } from '../../lib/logger.js';
-import { prisma } from '../../lib/prisma.js';
+import { prisma, runInTransaction } from '../../lib/prisma.js';
 import { getRedisClient, isRedisConfigured } from '../../lib/redis/client.js';
 import { deleteObject } from '../../lib/storage/index.js';
 
@@ -50,9 +50,11 @@ export async function eraseDataSubject(target: ErasureTarget): Promise<ErasureRe
     { tenantId: target.organizationId, userId: target.actorUserId },
     async () => {
       // 1. Executa todas as alterações de banco atomicamente dentro de prisma.$transaction
-      const txRunner = typeof prisma.$transaction === 'function'
-        ? (fn: (tx: any) => Promise<any>) => prisma.$transaction(fn)
-        : (fn: (tx: any) => Promise<any>) => fn(prisma);
+      const txRunner =
+        typeof runInTransaction === 'function'
+          ? (fn: (tx: any) => Promise<any>) =>
+              runInTransaction(fn, { organizationId: target.organizationId })
+          : (fn: (tx: any) => Promise<any>) => fn(prisma);
 
       const dbResult = await txRunner(async (tx) => {
         const contact = await tx.contact.findFirst({
@@ -331,7 +333,10 @@ export async function eraseDataSubject(target: ErasureTarget): Promise<ErasureRe
             );
           }
         } catch (cacheErr) {
-          logger.warn({ cacheErr, contactId: target.contactId }, 'Falha não-bloqueante ao limpar cache Redis do titular');
+          logger.warn(
+            { cacheErr, contactId: target.contactId },
+            'Falha não-bloqueante ao limpar cache Redis do titular',
+          );
         }
       }
 

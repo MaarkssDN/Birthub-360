@@ -1,7 +1,7 @@
 De: 16 — Runtime, Workers e Escala
 Para: 10 — Infraestrutura, Observabilidade e SRE
 Onda: onda-saneamento-20261105
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: DIV-AGENTE-16-002
 Sprint destino: Onda 2 — Runtime, Workers e Infraestrutura
@@ -27,3 +27,8 @@ Base de auditoria: DIVIDAS-AGENTE-16.md.
 
 ## Contexto adicional
 Resiliência contra falhas em cascata.
+
+## Resolução (Onda 2 — 2026-11-06)
+- Criado `src/lib/circuitGuard.ts` com `CircuitGuardRegistry` mantendo circuitos estritamente isolados por dependência downstream (`redis`, `database`, `bitrix`, `telephony`, `ai`), estados `CLOSED` / `OPEN` / `HALF_OPEN` e contadores independentes.
+- Integrado `getCircuitHealthSnapshot()` ao endpoint de readiness (`/health/ready` e `/readyz`) em `src/bootstrap/healthchecks.ts`, reportando o status granular de cada circuito.
+- Validado por `tests/unit/lib/circuitGuard-isolation.test.ts` (3/3 PASS).

@@ -14,7 +14,10 @@ export interface ShutdownLogger {
 export interface ShutdownDeps {
   httpServer: Server;
   workers: EmbeddedWorkersHandle;
-  sseService: { closeAll(): Promise<unknown> };
+  sseService: {
+    closeAll(): Promise<unknown>;
+    gracefulDrain?(reconnectAfterMs?: number): Promise<unknown>;
+  };
   prisma: { $disconnect(): Promise<unknown> };
   shutdownLangfuse: () => Promise<unknown>;
   connection: QuittableConnection;
@@ -35,7 +38,8 @@ const DEFAULT_HTTP_CLOSE_TIMEOUT_MS = 10_000;
  * `process.on`. A ordem de encerramento é intencional e preservada do server.ts original:
  *
  * 1. para de aceitar novas conexões HTTP (`server.close`);
- * 2. fecha os clientes SSE (`sseService`) enquanto o servidor HTTP drena conexões abertas;
+ * 2. drena os clientes SSE (`sseService.gracefulDrain` / `closeAll`) enviando `server_shutdown`
+ *    enquanto o servidor HTTP drena conexões abertas;
  * 3. fecha todos os workers BullMQ embutidos (param de puxar novos jobs);
  * 4. encerra Langfuse (flush de traces pendentes) e desconecta o Prisma;
  * 5. por último, fecha as três conexões Redis (dados, rate limiter, cache) — usadas por quase
@@ -103,7 +107,11 @@ export function createGracefulShutdown(deps: ShutdownDeps): (signal: string) => 
     });
 
     try {
-      await sseService.closeAll();
+      if (typeof sseService.gracefulDrain === 'function') {
+        await sseService.gracefulDrain();
+      } else {
+        await sseService.closeAll();
+      }
     } catch (err) {
       logger.error({ err }, 'Erro ao fechar clientes SSE durante shutdown');
     }

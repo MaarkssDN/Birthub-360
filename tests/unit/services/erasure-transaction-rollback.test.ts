@@ -124,6 +124,7 @@ vi.mock('@/lib/redis/client.js', () => ({
 }));
 
 vi.mock('@/lib/prisma', () => ({
+  runInTransaction: (cb: any) => transactionMock(cb),
   prisma: {
     $transaction: (cb: any) => transactionMock(cb),
     contact: { findFirst: contactFindFirstMock, update: contactUpdateMock },

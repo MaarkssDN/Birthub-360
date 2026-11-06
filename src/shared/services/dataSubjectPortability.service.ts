@@ -271,7 +271,9 @@ export async function exportDataSubjectDossier(
       // 7. Compilação do Dossiê Estruturado
       const exportId = `portability-${randomBytes(8).toString('hex')}`;
       const dataSubjectHash = createHash('sha256')
-        .update(`${request.organizationId}:${request.contactId}:${contact.email || contact.phone || ''}`)
+        .update(
+          `${request.organizationId}:${request.contactId}:${contact.email || contact.phone || ''}`,
+        )
         .digest('hex');
 
       const dossier: DataSubjectDossier = {
