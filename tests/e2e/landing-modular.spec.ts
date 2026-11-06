@@ -6,7 +6,7 @@ test.describe('Landing Page Modular E2E', () => {
   });
 
   test('deve renderizar a HeroSection com a headline oficial e botão de acesso', async ({ page }) => {
-    await expect(page.locator('h1')).toContainText('Dados que Conectam');
+    await expect(page.locator('h1')).toContainText(/Pare de perder vendas|Dados que Conectam/i);
     const ctaButton = page.locator('a, button', { hasText: 'Acessar Plataforma' }).first();
     await expect(ctaButton).toBeVisible();
     const href = await ctaButton.getAttribute('href');

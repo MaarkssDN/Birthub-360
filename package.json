@@ -91,7 +91,8 @@
     "release:check": "node scripts/release-gate.js",
     "mobile:sync": "cap sync android",
     "mobile:open": "cap open android",
-    "typecheck": "node --max-old-space-size=8192 ./node_modules/typescript/bin/tsc --noEmit"
+    "typecheck": "node --max-old-space-size=8192 ./node_modules/typescript/bin/tsc --noEmit",
+    "verify:governance-reviews": "node scripts/ci/check-independent-review.js"
   },
   "dependencies": {
     "@ai-sdk/react": "^4.0.114",
@@ -327,4 +328,3 @@
     "vitest-mock-extended": "^5.0.0"
   }
 }
-

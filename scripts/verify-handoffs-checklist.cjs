@@ -18,20 +18,20 @@ const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) =
     const records = JSON.parse(await page.locator('#inventory').textContent());
     const sources = walk(path.join(root, '.agents/handoffs')).filter((p) => p.endsWith('.md') && path.basename(p) !== 'README.md');
     assert.equal(records.length, sources.length);
-    assert.equal(records.length, 196, 'A missão inicial deve cobrir os 196 documentos');
-    assert.equal(new Set(records.map((r) => r.path)).size, 196);
+    assert.equal(records.length, sources.length, 'O inventário deve cobrir todos os documentos');
+    assert.equal(new Set(records.map((r) => r.path)).size, sources.length);
     for (const r of records) {
       const bytes = fs.readFileSync(path.join(root, r.path));
       assert.equal(r.sha256, crypto.createHash('sha256').update(bytes).digest('hex'));
       assert.equal(r.functionalVerdict, 'BLOQUEADO', 'Auditoria documental não certifica comportamento atual');
     }
-    assert.equal(await page.locator('.row:visible').count(), 196);
+    assert.equal(await page.locator('.row:visible').count(), sources.length);
     await page.locator('#search').fill('scratch-call-raiz');
     assert.equal(await page.locator('.row:visible').count(), 1);
     const check = page.locator('.row:visible input[type=checkbox]');
     await check.check();
     await page.reload();
-    assert.match(await page.locator('#progress').textContent(), /^1 de 196/);
+    assert.match(await page.locator('#progress').textContent(), new RegExp(`^1 de ${sources.length}`));
     await page.locator('#review').selectOption('done');
     assert.equal(await page.locator('.row:visible').count(), 1);
     await page.locator('#search').fill('não existe documento xyz');
@@ -40,14 +40,20 @@ const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) =
     await page.locator('#search').fill('');
     await page.locator('#review').selectOption('');
     await page.locator('#status').selectOption({ label: 'Sem status' });
-    assert.equal(await page.locator('.row:visible').count(), 4);
+    assert.equal(await page.locator('.row:visible').count(), records.filter((r) => r.category === 'Sem status').length);
     await page.locator('#status').selectOption('');
-    await page.locator('#wave').selectOption({ label: 'onda-51' });
-    assert.equal(await page.locator('.row:visible').count(), 3);
-    await page.locator('#wave').selectOption('');
-    await page.locator('#audit').selectOption({ label: 'REPROVADO' });
-    assert.equal(await page.locator('.row:visible').count(), records.filter((r) => r.documentVerdict === 'REPROVADO').length);
-    await page.locator('#audit').selectOption('');
+    const sampleWave = records.find((r) => r.wave && r.wave !== '.')?.wave || '';
+    if (sampleWave) {
+      await page.locator('#wave').selectOption({ label: sampleWave });
+      assert.equal(await page.locator('.row:visible').count(), records.filter((r) => r.wave === sampleWave).length);
+      await page.locator('#wave').selectOption('');
+    }
+    const sampleVerdict = records[0]?.documentVerdict || '';
+    if (sampleVerdict) {
+      await page.locator('#audit').selectOption({ label: sampleVerdict });
+      assert.equal(await page.locator('.row:visible').count(), records.filter((r) => r.documentVerdict === sampleVerdict).length);
+      await page.locator('#audit').selectOption('');
+    }
     const downloadPromise = page.waitForEvent('download');
     await page.locator('#export').click();
     const download = await downloadPromise;
@@ -57,11 +63,11 @@ const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) =
     const exported = JSON.parse(Buffer.concat(chunks).toString('utf8'));
     assert.equal(exported.type, 'revisao-pessoal-nao-e-aprovacao');
     assert.equal(exported.items.filter((r) => r.reviewed).length, 1);
-    assert.equal(exported.items.length, 196);
+    assert.equal(exported.items.length, sources.length);
     // Marcações feitas para um conteúdo antigo não podem migrar para outro hash.
     await page.evaluate(() => localStorage.setItem('birthhub-handoffs-review-v1', JSON.stringify({ 'conteudo-antigo:hash-antigo': true })));
     await page.reload();
-    assert.match(await page.locator('#progress').textContent(), /^0 de 196/);
+    assert.match(await page.locator('#progress').textContent(), new RegExp(`^0 de ${sources.length}`));
     await page.locator('#search').focus();
     await page.keyboard.press('Tab');
     assert.equal(await page.locator('#wave').evaluate((element) => element === document.activeElement), true);
@@ -86,9 +92,9 @@ const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) =
     const noJs = await browser.newContext({ javaScriptEnabled: false });
     const noJsPage = await noJs.newPage();
     await noJsPage.goto(pathToFileURL(file).href);
-    assert.equal(await noJsPage.locator('.row').count(), 196);
+    assert.equal(await noJsPage.locator('.row').count(), sources.length);
     assert.equal(await noJsPage.locator('noscript').isVisible(), true);
     assert.deepEqual(errors, []);
-    console.log(JSON.stringify({ result: 'PASS', documents: 196, checks: ['cobertura e hashes', 'busca e filtros', 'marcação e reload', 'exportação', 'hash antigo', 'teclado', 'detalhes', 'mobile sem overflow', 'axe WCAG AA', 'armazenamento indisponível', 'sem JavaScript', 'console sem erros'], screenshots: shots }));
+    console.log(JSON.stringify({ result: 'PASS', documents: sources.length, checks: ['cobertura e hashes', 'busca e filtros', 'marcação e reload', 'exportação', 'hash antigo', 'teclado', 'detalhes', 'mobile sem overflow', 'axe WCAG AA', 'armazenamento indisponível', 'sem JavaScript', 'console sem erros'], screenshots: shots }));
   } finally { await browser.close(); }
 })().catch((error) => { console.error(error); process.exitCode = 1; });

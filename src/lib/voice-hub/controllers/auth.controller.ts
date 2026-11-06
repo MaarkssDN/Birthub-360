@@ -1,21 +1,22 @@
-import { logger } from '../../../lib/logger.js';
 import type { Request, Response } from 'express';
-import { loginSchema, registerSchema } from '../validators/index.js';
 import { z } from 'zod';
+import { logger } from '../../../lib/logger.js';
+import { loginSchema, registerSchema } from '../validators/index.js';
 
 const tokenSchema = z.object({
   token: z.string().optional(),
 });
-import { register, login, refreshSession, AuthError } from '../services/authService.js';
-import { writeAuditLog } from '../services/audit.js';
-import { createMetric } from '../repositories/metricRepository.js';
-import { getPermissionsForRoleName } from '../repositories/roleRepository.js';
+
 import {
-  setCookie,
-  setLoggedInCookie,
   ACCESS_TOKEN_MAX_AGE_MS,
   REFRESH_TOKEN_MAX_AGE_MS,
+  setCookie,
+  setLoggedInCookie,
 } from '../lib/cookies.js';
+import { createMetric } from '../repositories/metricRepository.js';
+import { getPermissionsForRoleName } from '../repositories/roleRepository.js';
+import { writeAuditLog } from '../services/audit.js';
+import { AuthError, login, refreshSession, register } from '../services/authService.js';
 
 export async function registerHandler(req: Request, res: Response) {
   const parsed = registerSchema.safeParse(req.body);
@@ -33,7 +34,10 @@ export async function registerHandler(req: Request, res: Response) {
     setCookie(res, 'refresh_token', result.refreshToken, REFRESH_TOKEN_MAX_AGE_MS);
     return res.json(result);
   } catch (err: unknown) {
-    logger.error('Register Error', err);
+    logger.error(
+      { err: err instanceof Error ? { message: err.message, name: err.name } : 'Unknown error' },
+      'Register Error',
+    );
     if (err instanceof AuthError) {
       return res.status(err.status).json({ error: err.message });
     }
@@ -62,7 +66,10 @@ export async function loginHandler(req: Request, res: Response) {
     setCookie(res, 'refresh_token', result.refreshToken, REFRESH_TOKEN_MAX_AGE_MS);
     return res.json(result);
   } catch (err: unknown) {
-    logger.error('Login Error', err);
+    logger.error(
+      { err: err instanceof Error ? { message: err.message, name: err.name } : 'Unknown error' },
+      'Login Error',
+    );
     if (err instanceof AuthError) {
       return res.status(err.status).json({ error: err.message });
     }
@@ -89,7 +96,10 @@ export async function refreshHandler(req: Request, res: Response) {
     setLoggedInCookie(res);
     return res.json(result);
   } catch (err: any) {
-    logger.error('Refresh Token Error', err);
+    logger.error(
+      { err: err instanceof Error ? { message: err.message, name: err.name } : 'Unknown error' },
+      'Refresh Token Error',
+    );
     return res.status(500).json({ error: 'Erro interno no servidor.' });
   }
 }

@@ -10,6 +10,17 @@ import {
 } from 'lucide-react';
 import { SpotlightCard } from './SpotlightCard.js';
 
+const INTEGRATION_ECOSYSTEM = [
+  { name: 'Bitrix24', src: '/landing/assets/bitrix24.svg' },
+  { name: 'Salesforce', src: '/landing/assets/salesforce.svg' },
+  { name: 'HubSpot', src: '/landing/assets/hubspot.svg' },
+  { name: 'Pipedrive', src: '/landing/assets/pipedrive.svg' },
+  { name: 'WhatsApp', src: '/landing/assets/whatsapp.svg' },
+  { name: 'Google', src: '/landing/assets/google.svg' },
+  { name: 'Microsoft', src: '/landing/assets/microsoft.svg' },
+  { name: 'Webhooks', src: '/landing/assets/webhooks.svg' },
+] as const;
+
 export function Act2Dissonance() {
   return (
     <section
@@ -172,6 +183,36 @@ export function Act2Dissonance() {
               <span className="text-[#00D4FF] font-bold">+42% Velocidade no Pipeline</span>
             </div>
           </SpotlightCard>
+        </div>
+
+        {/* Ticker de Conectividade Soberana Multi-CRM */}
+        <div className="mt-16 pt-12 border-t border-white/[0.08]">
+          <div className="text-center space-y-2 mb-8">
+            <span className="font-mono text-xs uppercase tracking-widest text-[#9EADC8]">
+              Interoperabilidade Universal sem Rompimento de Legado
+            </span>
+            <p className="text-sm font-semibold text-[#F8F9FF]">
+              Conecta-se e sincroniza nativamente com o seu ecossistema atual
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 items-center">
+            {INTEGRATION_ECOSYSTEM.map((item) => (
+              <div
+                key={item.name}
+                className="flex flex-col items-center justify-center p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.15] hover:bg-white/[0.04] transition-all group"
+              >
+                <img
+                  src={item.src}
+                  alt={item.name}
+                  className="h-6 w-6 object-contain opacity-70 group-hover:opacity-100 transition-opacity filter brightness-110"
+                />
+                <span className="mt-2 text-[11px] font-mono text-[#9EADC8] group-hover:text-[#F8F9FF] transition-colors">
+                  {item.name}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

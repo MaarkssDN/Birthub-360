@@ -22,11 +22,11 @@ Cada handoff segue rigorosamente os requisitos do **`AGENTS.md` §18**, contendo
 ### Onda 0: Bloqueadores de Integridade, Gates e Segurança Crítica (P0)
 | Handoff | De | Para | Prioridade | Bloqueador Ref | Arquivo Principal |
 |---|---|---|---|---|---|
-| [`00-para-15-mascaramento-tokens-auth.md`](./00-para-15-mascaramento-tokens-auth.md) | 00 | 15 | `bloqueador` | DIV-AGENTE-15-001 (B-04) | `src/services/auth.service.ts` |
-| [`00-para-08-blindagem-release-gate.md`](./00-para-08-blindagem-release-gate.md) | 00 | 08 | `bloqueador` | DIV-AGENTE-08-001 (B-05) | `scripts/release-gate.js` |
-| [`00-para-08a-gatilho-ghcr-docker-publish.md`](./00-para-08a-gatilho-ghcr-docker-publish.md) | 00 | 08A | `normal` | DIV-AGENTE-08A-001 | `.github/workflows/docker-publish.yml` |
-| [`00-para-24-reconciliacao-handoffs-historicos.md`](./00-para-24-reconciliacao-handoffs-historicos.md) | 00 | 24 | `normal` | DIV-AGENTE-00-001 | `.agents/handoffs/` |
-| [`24-para-08a-trava-ci-aprovacao-revisao.md`](./24-para-08a-trava-ci-aprovacao-revisao.md) | 24 | 08A | `alto` | DIV-AGENTE-24-001 | `.github/workflows/ci.yml` |
+| [`00-para-15-mascaramento-tokens-auth.md`](./00-para-15-mascaramento-tokens-auth.md) | 00 | 15 | `resolvido` (bloqueador) | DIV-AGENTE-15-001 (B-04) | `src/services/auth.service.ts` |
+| [`00-para-08-blindagem-release-gate.md`](./00-para-08-blindagem-release-gate.md) | 00 | 08 | `resolvido` (bloqueador) | DIV-AGENTE-08-001 (B-05) | `scripts/release-gate.js` |
+| [`00-para-08a-gatilho-ghcr-docker-publish.md`](./00-para-08a-gatilho-ghcr-docker-publish.md) | 00 | 08A | `resolvido` (normal) | DIV-AGENTE-08A-001 | `.github/workflows/docker-publish.yml` |
+| [`00-para-24-reconciliacao-handoffs-historicos.md`](./00-para-24-reconciliacao-handoffs-historicos.md) | 00 | 24 | `resolvido` (normal) | DIV-AGENTE-00-001 | `.agents/handoffs/` |
+| [`24-para-08a-trava-ci-aprovacao-revisao.md`](./24-para-08a-trava-ci-aprovacao-revisao.md) | 24 | 08A | `resolvido` (alto) | DIV-AGENTE-24-001 | `.github/workflows/ci.yml` |
 
 ---
 

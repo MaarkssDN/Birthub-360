@@ -1,25 +1,17 @@
 import { useReducedMotion } from 'framer-motion';
 import {
   AlertCircle,
-  AlertTriangle,
   ArrowLeft,
   ArrowRight,
   ArrowUp,
-  Calculator,
-  Check,
   CheckCircle2,
   Eye,
   EyeOff,
   Loader2,
   Lock,
   Mail,
-  Menu,
   Moon,
   Sun,
-  Target,
-  Workflow,
-  X,
-  Zap,
 } from 'lucide-react';
 import type React from 'react';
 import { lazy, Suspense, useEffect, useState } from 'react';
@@ -29,164 +21,213 @@ const LuxuryLandingPage = lazy(() =>
 );
 
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { BirthHubLogo } from '../../../components/brand/BirthHubLogo.js';
-import {
-  AiDiagnosticLayerIcon,
-  ExecutionLayerIcon,
-  LostDealsCardIcon,
-  MultiCrmDataLayerIcon,
-  ReactiveCardIcon,
-  SilosCardIcon,
-} from '../../../components/brand/LandingTitleIcons.js';
-import { isAuthorizedLoginEmail } from '../../../config/access-policy.js';
-import { useAuth } from '../../../contexts/AuthContext.js';
-import { useTheme } from '../../../contexts/ThemeContext.js';
-import { trackHeroRoiSimulatorOpened } from '../../../lib/analytics/conversionTelemetry.js';
-import { authClient } from '../../../lib/auth-client.js';
-import { SoundFX } from '../../../lib/soundEffects.js';
-import { HeroConversionSection } from '../components/HeroConversionSection.js';
+import { BirthHubLogo } from '@/components/brand/BirthHubLogo';
+import { isAuthorizedLoginEmail } from '@/config/access-policy';
+import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
+import { trackHeroRoiSimulatorOpened } from '@/lib/analytics/conversionTelemetry';
+import { authClient } from '@/lib/auth-client';
+import { SoundFX } from '@/lib/soundEffects';
 import { RoiSimulatorModal } from '../components/RoiSimulatorModal.js';
+import './LandingAdaptive.css';
 import './Landing360.css';
 
-// 8 PILARES OFICIAIS COMPLETOS DO BIRTH HUB 360° (PALETA NEON OFICIAL - DOURADO RADIANTE)
-const OFFICIAL_PILLARS = [
+// 8 PILARES ADAPTATIVOS
+const ADAPTIVE_PILLARS = [
   {
-    id: '01',
-    slug: 'HUB',
-    name: 'HUB COMERCIAL',
-    desc: 'Centralização de contas, pipeline comercial unificado e visão 360° de cada oportunidade em negociação.',
-    symbol: '◉',
-    color: '#00D4FF', // Azul Neon
-    tag: 'Pipeline Central',
-    focus: 'Gestão Unificada de Oportunidades',
+    num: '01',
+    title: 'Hub comercial',
+    desc: 'Centralize contas, pipeline e oportunidades em uma visão 360° de cada negociação.',
+    bg: '/landing/assets/pillar-hub.jpg',
+    colorClass: '',
+    modalTitle: '01. Hub Comercial',
+    modalDesc:
+      'Centralização de contas, pipeline comercial unificado e visão 360° de cada oportunidade em negociação com rastreabilidade total.',
   },
   {
-    id: '02',
-    slug: 'INTEL',
-    name: 'INTELIGÊNCIA DE MERCADO',
-    desc: 'Enriquecimento analítico de dados B2B, sinais de compra, qualificação precisa e inteligência de decisores.',
-    symbol: '◎',
-    color: '#FF2D9B', // Rosa Neon
-    tag: 'Decisão por Dados',
-    focus: 'Sinais & Qualificação Preditiva',
+    num: '02',
+    title: 'Inteligência de mercado',
+    desc: 'Enriqueça dados B2B, identifique sinais de compra e qualifique decisores com precisão.',
+    bg: '/landing/assets/pillar-market.jpg',
+    colorClass: 'b360-c-pink',
+    modalTitle: '02. Inteligência de Mercado',
+    modalDesc:
+      'Enriquecimento analítico de dados B2B, mapeamento de contas, identificação de sinais de compra e qualificação preditiva.',
   },
   {
-    id: '03',
-    slug: 'ORCH',
-    name: 'ORQUESTRAÇÃO DE VENDAS',
-    desc: 'Cadências multicanal coordenadas, regras de transição de bastão e alinhamento operacional de ponta a ponta.',
-    symbol: '⟶',
-    color: '#00D4FF', // Azul Neon
-    tag: 'Fluxos Integrados',
-    focus: 'Cadências & Passagem de Bastão',
+    num: '03',
+    title: 'Orquestração de vendas',
+    desc: 'Coordene cadências multicanal, passagem de bastão e a próxima ação de vendas.',
+    bg: '/landing/assets/pillar-orchestration.jpg',
+    colorClass: 'b360-c-gold',
+    modalTitle: '03. Orquestração de Vendas',
+    modalDesc:
+      'Cadências coordenadas entre SDRs e Closers, regras claras de passagem de bastão e direcionamento para a próxima melhor ação.',
   },
   {
-    id: '04',
-    slug: 'PERF',
-    name: 'PERFORMANCE COMERCIAL',
-    desc: 'Telemetria de conversão, velocidade de avanço no funil, metas operacionais e produtividade da equipe.',
-    symbol: '▥',
-    color: '#F59E0B', // Dourado Radiante
-    tag: 'Metas & Velocidade',
-    focus: 'Métricas & Conversão em Tempo Real',
+    num: '04',
+    title: 'Performance comercial',
+    desc: 'Acompanhe conversão, velocidade do funil, metas e produtividade da equipe.',
+    bg: '/landing/assets/pillar-performance.jpg',
+    colorClass: 'b360-c-iris',
+    modalTitle: '04. Performance Comercial',
+    modalDesc:
+      'Telemetria de conversão, velocidade de ciclo entre etapas, metas operacionais e produtividade da equipe em tempo real.',
   },
   {
-    id: '05',
-    slug: 'FORE',
-    name: 'PREVISIBILIDADE COMERCIAL',
-    desc: 'Modelagem estatística de probabilidade, análise de pipeline ponderado e cenários embasados no histórico real.',
-    symbol: '⌁',
-    color: '#F59E0B', // Dourado Radiante
-    tag: 'Pipeline Ponderado',
-    focus: 'Cenários & Probabilidade Real',
+    num: '05',
+    title: 'Previsibilidade comercial',
+    desc: 'Modele probabilidades, pipeline ponderado e cenários baseados no histórico real.',
+    bg: '/landing/assets/pillar-forecast.jpg',
+    colorClass: '',
+    modalTitle: '05. Previsibilidade Comercial',
+    modalDesc:
+      'Modelagem estatística de probabilidade, análise de pipeline ponderado e projeções de receita embasadas no histórico real.',
   },
   {
-    id: '06',
-    slug: 'AI',
-    name: 'INTELIGÊNCIA ARTIFICIAL',
-    desc: 'Copiloto comercial ancorado nos dados da empresa, diagnóstico de entraves e suporte ativo em negociações.',
-    symbol: '✦',
-    color: '#8B7DFF', // Íris / Roxo Neon
-    tag: 'Copiloto & Modelos',
-    focus: 'Agentes & Diagnóstico Contextual',
+    num: '06',
+    title: 'Inteligência artificial',
+    desc: 'Um copiloto conectado aos dados da empresa e ao contexto das negociações.',
+    bg: '/landing/assets/pillar-ai.jpg',
+    colorClass: 'b360-c-pink',
+    modalTitle: '06. Inteligência Artificial',
+    modalDesc:
+      'Copiloto de negociações contextualizado com dados da organização, diagnóstico de entraves e recomendações acionáveis em tempo real.',
   },
   {
-    id: '07',
-    slug: 'AUTO',
-    name: 'AUTOMAÇÃO & CONECTIVIDADE MULTI-CRM',
-    desc: 'Sincronização bidirecional em tempo real, gatilhos automáticos e integração profunda com Bitrix24, HubSpot, Salesforce, Pipedrive e APIs abertas.',
-    symbol: '◇',
-    color: '#00D4FF', // Azul Neon
-    tag: 'Multi-CRM & Webhooks',
-    focus: 'Integrações Multi-CRM & Ações Instantâneas',
+    num: '07',
+    title: 'Automação & conectividade',
+    desc: 'Sincronize CRMs, acione gatilhos e integre ferramentas por APIs e webhooks.',
+    bg: '/landing/assets/pillar-automation.jpg',
+    colorClass: 'b360-c-gold',
+    modalTitle: '07. Automação & Conectividade Multi-CRM',
+    modalDesc:
+      'Sincronização bidirecional em tempo real via APIs abertas e webhooks com Bitrix24, Salesforce, HubSpot e Pipedrive.',
   },
   {
-    id: '08',
-    slug: 'ENG',
-    name: 'ENGAJAMENTO COMERCIAL',
-    desc: 'Comunicação integrada, telefonia em nuvem, histórico de interações e rastreabilidade total de contatos.',
-    symbol: '◌',
-    color: '#FF2D9B', // Rosa Neon
-    tag: 'Voz & Omnichannel',
-    focus: 'Telefonia & Registro de Contato',
-  },
-] as const;
-
-// TAGS DE CAPACIDADES DA PLATAFORMA (PALETA NEON OFICIAL COM CONECTIVIDADE MULTI-CRM)
-const FEATURE_TAGS = [
-  {
-    kicker: 'GESTÃO UNIFICADA',
-    label: 'Pipeline Centralizado',
-    color: '#00D4FF',
-    desc: 'Reúna oportunidades, etapas e histórico comercial em uma visão organizada.',
-  },
-  {
-    kicker: 'ENRIQUECIMENTO ICP',
-    label: 'Inteligência B2B',
-    color: '#FF2D9B',
-    desc: 'Contextualize empresas e contatos com dados para apoiar a qualificação.',
-  },
-  {
-    kicker: 'FLUXO OPERACIONAL',
-    label: 'Cadências Automatizadas',
-    color: '#00D4FF',
-    desc: 'Organize sequências de contato e próximos passos ao longo da negociação.',
-  },
-  {
-    kicker: 'TELEMETRIA DE FUNIL',
-    label: 'Velocidade de Ciclo',
-    color: '#F59E0B',
-    desc: 'Acompanhe o tempo entre etapas e identifique pontos de estagnação.',
-  },
-  {
-    kicker: 'FORECAST ESTATÍSTICO',
-    label: 'Cenários Ponderados',
-    color: '#F59E0B',
-    desc: 'Compare projeções considerando etapas, probabilidades e histórico do pipeline.',
-  },
-  {
-    kicker: 'COPILOTO DE DEALS',
-    label: 'Copiloto Comercial IA',
-    color: '#FF2D9B',
-    desc: 'Apoie diagnósticos e próximas ações com o contexto das negociações.',
-  },
-  {
-    kicker: 'ECOSSISTEMA ABERTO',
-    label: 'Conectividade Multi-CRM',
-    color: '#00D4FF',
-    desc: 'Conecte registros e fluxos comerciais com Bitrix24, Salesforce, HubSpot e Pipedrive.',
-  },
-  {
-    kicker: 'TELEFONIA INTEGRADA',
-    label: 'Telefonia & Voz Ativa',
-    color: '#FF2D9B',
-    desc: 'Integre interações de voz ao acompanhamento das oportunidades comerciais.',
+    num: '08',
+    title: 'Engajamento comercial',
+    desc: 'Reúna telefonia, interações e histórico de contatos em uma comunicação integrada.',
+    bg: '/landing/assets/hero-team.jpg',
+    colorClass: 'b360-c-iris',
+    modalTitle: '08. Engajamento Comercial',
+    modalDesc:
+      'Telefonia em nuvem integrada, gravação, transcrição com IA, WhatsApp API oficial e linha do tempo omnichannel unificada.',
   },
 ];
 
-function BH360LogoMark({ size = 52 }: { size?: number }) {
+// ECOSSISTEMA DE INTEGRAÇÕES OFICIAIS
+const ADAPTIVE_INTEGRATIONS = [
+  {
+    name: 'Bitrix24',
+    desc: 'Sincronização bidirecional de leads, contatos, negócios e etapas de funil.',
+    icon: '/landing/assets/bitrix24.svg',
+  },
+  {
+    name: 'HubSpot',
+    desc: 'Alinhamento contínuo entre marketing de atração e vendas ativas.',
+    icon: '/landing/assets/hubspot.svg',
+  },
+  {
+    name: 'Salesforce',
+    desc: 'Mapeamento de contas estratégicas e histórico corporativo de deals.',
+    icon: '/landing/assets/salesforce.svg',
+  },
+  {
+    name: 'Pipedrive',
+    desc: 'Visão clara de etapas e atividades operacionais de prospecção.',
+    icon: '/landing/assets/pipedrive.svg',
+  },
+  {
+    name: 'WhatsApp API',
+    desc: 'Conversas oficiais registradas diretamente na linha do tempo do cliente.',
+    icon: '/landing/assets/whatsapp.svg',
+  },
+  {
+    name: 'Voz Integrada',
+    desc: 'Telefonia em nuvem com gravação, transcrição e resumo automático.',
+    icon: '/landing/assets/voice.svg',
+  },
+  {
+    name: 'Webhooks & APIs',
+    desc: 'Disparo e recebimento de eventos customizados em tempo real.',
+    icon: '/landing/assets/webhooks.svg',
+  },
+  {
+    name: 'Google Workspace',
+    desc: 'Agendamento sincronizado, e-mails, atas e documentos compartilhados.',
+    icon: '/landing/assets/google.svg',
+  },
+  {
+    name: 'Microsoft 365',
+    desc: 'Integração com Outlook, Teams e suíte de produtividade corporativa.',
+    icon: '/landing/assets/microsoft.svg',
+  },
+];
+
+// MÓDULOS DO COMMAND CENTER SANDBOX
+const COMMAND_MODULES = [
+  {
+    name: 'Inteligência',
+    ico: '✧',
+    desc: 'Insights e decisões',
+    modalDesc:
+      'Copiloto de IA, Next Best Action (NBA), análise preditiva de fechamento e detecção precoce de riscos no pipeline.',
+  },
+  {
+    name: 'CRM & BI',
+    ico: '▦',
+    desc: 'Pipeline e dados',
+    modalDesc:
+      'Visão unificada de pipeline, métricas de conversão em tempo real e relatórios executivos de win/loss.',
+  },
+  {
+    name: 'Prospecção',
+    ico: '◎',
+    desc: 'Descobrir oportunidades',
+    modalDesc:
+      'Localização de leads corporativos, enriquecimento de CNPJs e qualificação preditiva de ICP.',
+  },
+  {
+    name: 'Automações',
+    ico: '⌘',
+    desc: 'Fluxos inteligentes',
+    modalDesc:
+      'Workflows inteligentes para passagem de bastão, envio de propostas e cadências automatizadas de follow-up.',
+  },
+  {
+    name: 'Gamificação',
+    ico: '✦',
+    desc: 'Evolução e metas',
+    modalDesc:
+      'Quadro de metas, desafios semanais, pontuação por atividades e rankings de produtividade de equipe.',
+  },
+  {
+    name: 'Roleplay',
+    ico: '◇',
+    desc: 'Simulações de vendas',
+    modalDesc:
+      'Simulador de negociações com inteligência artificial para treinamento e nivelamento contínuo do time comercial.',
+  },
+  {
+    name: 'Social Selling',
+    ico: '✺',
+    desc: 'Presença e conexão',
+    modalDesc:
+      'Geração assistida de mensagens de engajamento no LinkedIn e canais de relacionamento corporativo B2B.',
+  },
+  {
+    name: 'VoiceHub',
+    ico: '◈',
+    desc: 'Conversas inteligentes',
+    modalDesc:
+      'Discador inteligente, gravação, transcrição e análise de sentimentos em chamadas de vendas.',
+  },
+];
+
+function BH360LogoMark({ size = 40 }: { size?: number }) {
   return (
-    <span style={{ width: size, height: size }} className="inline-block relative">
+    <span style={{ width: size, height: size }} className="inline-block relative shrink-0">
       <BirthHubLogo
         variant="icon"
         title="Birth Hub 360º"
@@ -197,19 +238,14 @@ function BH360LogoMark({ size = 52 }: { size?: number }) {
   );
 }
 
-function getSemanticCardClass(color: string): string {
-  if (color === '#FF2D9B') return 'card-semantic-pink';
-  if (color === '#F59E0B') return 'card-semantic-gold';
-  if (color === '#8B7DFF') return 'card-semantic-iris';
-  return 'card-semantic-cyan';
-}
-
 export function Landing360({
   initialScreen = 'intro',
 }: {
   initialScreen?: 'intro' | 'login';
 } = {}) {
   const [activeScreen, setActiveScreen] = useState<'intro' | 'login'>(initialScreen);
+  const [viewMode, setViewMode] = useState<'public' | 'command'>('public');
+  const [activeModal, setActiveModal] = useState<{ title: string; desc: string } | null>(null);
   const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
   const { currentUser, isPending: isAuthPending } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -224,9 +260,10 @@ export function Landing360({
     if (location.pathname === '/login') {
       setActiveScreen('login');
     } else if (location.pathname === '/' || location.pathname === '/welcome') {
+      if (initialScreen === 'login') return;
       setActiveScreen('intro');
     }
-  }, [location.pathname]);
+  }, [location.pathname, initialScreen]);
 
   // Capturar erros passados por query string (ex: retorno de OAuth /login?error=...)
   useEffect(() => {
@@ -294,11 +331,9 @@ export function Landing360({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [selectedPillar, setSelectedPillar] = useState<string | null>(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    document.title = 'Birth Hub 360° · Sistema Operacional Comercial Multi-CRM';
+    document.title = 'Birth Hub 360° · Revenue Command Center & Multi-CRM';
   }, []);
 
   // Monitorar scroll para exibição do botão Voltar ao Topo
@@ -317,18 +352,39 @@ export function Landing360({
     }
   }, [currentUser, navigate]);
 
-  const handlePillarClick = (id: string) => {
-    SoundFX.play('click');
-    setSelectedPillar(id === selectedPillar ? null : id);
-  };
-
   const handleGoToLogin = () => {
     SoundFX.play('confirm');
     setActiveScreen('login');
     if (location.pathname !== '/login') {
       navigate('/login');
     }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (typeof window.scrollTo === 'function') {
+      window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+    }
+  };
+
+  const handleSwitchView = (mode: 'public' | 'command') => {
+    SoundFX.play('click');
+    setViewMode(mode);
+    if (typeof window.scrollTo === 'function') {
+      window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+    }
+  };
+
+  const handleOpenModal = (title: string, desc: string) => {
+    SoundFX.play('click');
+    setActiveModal({ title, desc });
+  };
+
+  const handleCloseModal = () => {
+    SoundFX.play('click');
+    setActiveModal(null);
+  };
+
+  const handleOpenRoiSimulator = () => {
+    SoundFX.play('click');
+    trackHeroRoiSimulatorOpened('A', 'landing_adaptive_hero');
+    setIsSimulatorOpen(true);
   };
 
   const handleAuthSubmit = async (e: React.FormEvent) => {
@@ -499,1467 +555,624 @@ export function Landing360({
   return (
     <main
       className={`relative w-full min-h-screen overflow-x-clip font-sans selection:bg-[#FF2D9B]/30 selection:text-[#00D4FF] landing-neon-root transition-colors duration-300 ${
-        theme === 'dark' ? 'bg-[#0B1120] text-slate-100' : 'bg-[#F8FAFC] text-slate-800'
+        theme === 'dark' ? 'bg-[#06111e] text-slate-100' : 'bg-[#F8FAFC] text-slate-800'
       }`}
     >
       {/* ════════════════════════════════════════════════════════════════════
-          TELA 1: LANDING COMPLETA
+          TELA 1: LANDING ADAPTADA & COMMAND CENTER INTERATIVO
       ════════════════════════════════════════════════════════════════════ */}
-      <div className={activeScreen === 'intro' ? 'block' : 'hidden'}>
-        {/* 1. NAVBAR FIXA — PRESENÇA INSTITUCIONAL & ENTERPRISE (+12% PRESENÇA) */}
-        <header className="navbar-sticky w-full px-4 sm:px-6 lg:px-8 py-3.5 sm:py-4">
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-2.5 sm:gap-4 lg:gap-6">
-            <a href="#hero" className="flex items-center gap-3.5 group shrink-0">
-              <BH360LogoMark size={52} />
-              <div className="flex flex-col">
-                <span className="font-display text-[22px] sm:text-2xl font-bold leading-tight tracking-tight">
-                  <span className="landing-title-cyan font-bold">Birth Hub</span>
-                  <span className="landing-title-pink ml-1 font-extrabold">360°</span>
+      <div className={activeScreen === 'intro' ? 'block b360-adaptive-landing' : 'hidden'}>
+        {/* Topbar Fixa */}
+        <header className="b360-topbar">
+          <div className="b360-shell">
+            <div className="b360-toprow">
+              <a href="#inicio" className="b360-brand" aria-label="Birth Hub 360">
+                <BH360LogoMark size={38} />
+                <span>
+                  Birth Hub <strong>360°</strong>
                 </span>
-                <span className="font-mono text-[11px] uppercase tracking-[0.24em] text-[#00D4FF] font-semibold">
-                  Revenue Command Center
-                </span>
+              </a>
+
+              {/* Seletor de Modo: Página Pública vs Command Center */}
+              <nav className="b360-mode-switch" aria-label="Alternar modo de visualização">
+                <button
+                  id="btn-public"
+                  type="button"
+                  className="b360-mode-btn"
+                  aria-pressed={viewMode === 'public'}
+                  onClick={() => handleSwitchView('public')}
+                >
+                  Página pública
+                </button>
+                <button
+                  id="btn-command"
+                  type="button"
+                  className="b360-mode-btn"
+                  aria-pressed={viewMode === 'command'}
+                  onClick={() => handleSwitchView('command')}
+                >
+                  Command Center
+                </button>
+              </nav>
+
+              {/* Links de navegação desktop */}
+              <nav className="b360-topnav" aria-label="Navegação principal">
+                <a href="#destaques">8 pilares</a>
+                <a href="#ia">IA Comercial</a>
+                <a href="#ecossistema">Integrações</a>
+                <button
+                  type="button"
+                  onClick={handleOpenRoiSimulator}
+                  className="text-xs font-mono font-bold uppercase tracking-wider text-[#00D4FF] hover:text-[#FF2D9B] transition-colors"
+                >
+                  Simular ROI
+                </button>
+              </nav>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  className="p-2 rounded-full border border-slate-700/60 bg-slate-900/60 text-slate-300 hover:text-[#00D4FF] transition-colors"
+                  aria-label={theme === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro'}
+                  title={theme === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro'}
+                >
+                  {theme === 'dark' ? (
+                    <Sun className="w-4 h-4 text-[#FFC107]" />
+                  ) : (
+                    <Moon className="w-4 h-4 text-[#00D4FF]" />
+                  )}
+                </button>
+
+                <button className="b360-aurora b360-small" type="button" onClick={handleGoToLogin}>
+                  <span className="b360-aurora-inner">
+                    Acessar Plataforma <span aria-hidden="true">→</span>
+                  </span>
+                </button>
               </div>
-            </a>
-
-            {/* Links de navegação desktop — Cada item como um botão pill, sem sobreposição */}
-            <nav className="hidden xl:flex items-center justify-center gap-1 xl:gap-1.5 2xl:gap-2.5 flex-1 mx-1.5 2xl:mx-3">
-              <a href="#problema" className="nav-pill-btn">
-                Problema
-              </a>
-              <a href="#plataforma" className="nav-pill-btn">
-                Plataforma
-              </a>
-              <a href="#pilares" className="nav-pill-btn">
-                8 Pilares
-              </a>
-              <a href="#fluxo" className="nav-pill-btn">
-                Fluxo
-              </a>
-              <a href="#ia" className="nav-pill-btn">
-                IA
-              </a>
-              <a href="#automacao" className="nav-pill-btn">
-                Automação
-              </a>
-              <a href="#performance" className="nav-pill-btn">
-                Performance
-              </a>
-              <a href="#previsibilidade" className="nav-pill-btn">
-                Previsibilidade
-              </a>
-              <a href="#ecossistema" className="nav-pill-btn">
-                Ecossistema
-              </a>
-            </nav>
-
-            <div className="flex items-center gap-3 shrink-0">
-              {/* Botão de Alternância de Tema (Light / Dark) */}
-              <button
-                type="button"
-                onClick={toggleTheme}
-                className="landing-theme-toggle-btn"
-                aria-label={theme === 'dark' ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro'}
-                title={theme === 'dark' ? 'Ativar Modo Claro' : 'Ativar Modo Escuro'}
-              >
-                {theme === 'dark' ? (
-                  <Sun className="w-[18px] h-[18px] text-amber-400" />
-                ) : (
-                  <Moon className="w-[18px] h-[18px] text-sky-600" />
-                )}
-              </button>
-
-              {/* Botão de Login no Topo com animação de piscar/pulsar */}
-              <button
-                type="button"
-                onClick={handleGoToLogin}
-                className="btn-cta-light btn-cta-pulse hidden sm:inline-flex items-center gap-2 px-4 xl:px-5 py-2.5 rounded-xl font-sans text-xs xl:text-[13px] font-bold uppercase tracking-wider cursor-pointer shadow-md shrink-0"
-              >
-                <span>Acessar Plataforma</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-
-              {/* Botão Hambúrguer Mobile (< xl) */}
-              <button
-                type="button"
-                onClick={() => {
-                  SoundFX.play('click');
-                  setMobileMenuOpen(!mobileMenuOpen);
-                }}
-                aria-label={mobileMenuOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
-                aria-expanded={mobileMenuOpen}
-                className="xl:hidden inline-flex items-center justify-center p-2 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-200 hover:text-[#00D4FF] hover:border-[#00D4FF] transition-all cursor-pointer shadow-md"
-              >
-                {mobileMenuOpen ? (
-                  <X className="w-5 h-5 text-[#FF2D9B]" />
-                ) : (
-                  <Menu className="w-5 h-5 text-[#00D4FF]" />
-                )}
-              </button>
             </div>
           </div>
-
-          {/* Gaveta de Navegação Mobile */}
-          {mobileMenuOpen && (
-            <div className="xl:hidden max-w-7xl mx-auto mt-3 pt-3 border-t border-slate-700/60 bg-slate-900/95 backdrop-blur-xl rounded-2xl p-4 shadow-2xl border border-slate-800/80 animate-in fade-in slide-in-from-top-2 duration-200">
-              <nav className="flex flex-col gap-1.5 font-mono text-xs font-semibold text-slate-300">
-                {[
-                  { href: '#problema', label: 'Problema' },
-                  { href: '#plataforma', label: 'Plataforma' },
-                  { href: '#pilares', label: '8 Pilares' },
-                  { href: '#fluxo', label: 'Fluxo Operacional' },
-                  { href: '#ia', label: 'Inteligência Artificial' },
-                  { href: '#automacao', label: 'Automação' },
-                  { href: '#performance', label: 'Performance' },
-                  { href: '#previsibilidade', label: 'Previsibilidade' },
-                  { href: '#ecossistema', label: 'Ecossistema Multi-CRM' },
-                ].map((item) => (
-                  <a
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => {
-                      SoundFX.play('click');
-                      setMobileMenuOpen(false);
-                    }}
-                    className="px-3 py-2 rounded-lg hover:bg-slate-800 hover:text-[#00D4FF] transition-colors flex items-center justify-between"
-                  >
-                    <span>{item.label}</span>
-                    <span className="text-slate-500 font-mono text-[10px]">→</span>
-                  </a>
-                ))}
-                <div className="pt-2 mt-1 border-t border-slate-700/60 flex items-center justify-between">
-                  <span className="text-xs font-mono text-slate-300">Alternar tema:</span>
-                  <button
-                    type="button"
-                    onClick={toggleTheme}
-                    className="landing-theme-toggle-btn"
-                    aria-label={
-                      theme === 'dark' ? 'Mudar para Modo Claro' : 'Mudar para Modo Escuro'
-                    }
-                  >
-                    {theme === 'dark' ? (
-                      <span className="flex items-center gap-1.5 text-xs font-bold text-amber-400">
-                        <Sun className="w-4 h-4" /> Claro
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1.5 text-xs font-bold text-sky-600">
-                        <Moon className="w-4 h-4" /> Escuro
-                      </span>
-                    )}
-                  </button>
-                </div>
-                <div className="pt-2 mt-1 border-t border-slate-700/60 sm:hidden">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      handleGoToLogin();
-                    }}
-                    className="btn-cta-light w-full py-3 rounded-xl font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg"
-                  >
-                    <span>Acessar Plataforma</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </nav>
-            </div>
-          )}
         </header>
 
-        {/* 2. HERO SECTION - OTIMIZADO PARA CONVERSÃO, TESTE A/B & TELEMETRIA */}
-        <HeroConversionSection onGoToLogin={handleGoToLogin} />
+        {/* MODO 1: PÁGINA PÚBLICA */}
+        {viewMode === 'public' && (
+          <div className="b360-shell">
+            {/* Hero Section */}
+            <section className="b360-hero" id="inicio">
+              <div className="b360-hero-main">
+                <div>
+                  <div className="b360-eyebrow">REVENUE COMMAND CENTER</div>
+                  <h1>
+                    Dados que conectam.
+                    <br />
+                    <em>Inteligência que decide.</em>
+                    <br />
+                    <span className="b360-gold-text">Execução que acontece.</span>
+                  </h1>
+                  <p>
+                    Conecte CRM, dados, inteligência artificial e automação em um único centro de
+                    comando para planejar, monitorar, prever e acelerar suas operações comerciais.
+                  </p>
+                  <div className="flex flex-wrap items-center gap-4">
+                    <button
+                      className="b360-aurora"
+                      type="button"
+                      onClick={() => handleSwitchView('command')}
+                    >
+                      <span className="b360-aurora-inner">
+                        Explorar a plataforma <span aria-hidden="true">↗</span>
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleOpenRoiSimulator}
+                      className="px-6 py-3 rounded-full text-xs font-mono font-bold tracking-wider uppercase border border-[#00D4FF]/40 text-[#00D4FF] hover:bg-[#00D4FF]/10 transition-colors"
+                    >
+                      Simular ROI Comercial
+                    </button>
+                  </div>
+                  <div className="b360-hero-trust">
+                    ✦ <b>Supervisor On-line</b> · Orquestração inteligente · Experiência integrada
+                  </div>
+                </div>
 
-        {/* Capacidades reais: Multi-CRM — Respiro +36px e bordas semânticas */}
-        <section className="px-5 py-12 sm:px-8 lg:px-14 border-b border-slate-700/60 transition-colors">
-          <div className="max-w-6xl xl:max-w-7xl mx-auto">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {FEATURE_TAGS.map((tag, index) => (
-                <div
-                  key={tag.label}
-                  className={`capability-card ${getSemanticCardClass(tag.color)} flex flex-col items-center justify-center text-center p-6 rounded-2xl transition-all shadow-md`}
-                  style={{
-                    animationDelay: `${index * 45}ms`,
-                  }}
-                >
-                  <span
-                    className="font-mono text-xs font-bold uppercase tracking-wider mb-2.5 px-3 py-1 rounded-full"
-                    style={{
-                      color: tag.color,
-                      backgroundColor: `${tag.color}18`,
-                      border: `1.5px solid ${tag.color}55`,
-                    }}
+                <div className="b360-hero-photo">
+                  <div className="b360-hero-photo-caption">
+                    <strong>Pessoas, dados e decisões.</strong>
+                    <span>Uma operação conectada de ponta a ponta.</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* 8 Pilares */}
+            <section id="destaques">
+              <div className="b360-sectionhead">
+                <div className="b360-eyebrow">ARQUITETURA DE RECEITA</div>
+                <h2>Oito pilares. Uma operação conectada.</h2>
+                <p>
+                  Da primeira oportunidade à decisão de receita, cada dimensão trabalha em conjunto.
+                </p>
+              </div>
+
+              <div className="b360-feature-grid">
+                {ADAPTIVE_PILLARS.map((pillar) => (
+                  <button
+                    key={pillar.num}
+                    type="button"
+                    className={`b360-feature-card ${pillar.colorClass}`}
+                    style={{ backgroundImage: `url('${pillar.bg}')` }}
+                    onClick={() => handleOpenModal(pillar.modalTitle, pillar.modalDesc)}
                   >
-                    {tag.kicker}
-                  </span>
-                  <h4
-                    className="font-display font-bold text-base sm:text-lg leading-snug text-center mb-2"
-                    style={{ color: tag.color }}
-                  >
-                    {tag.label}
-                  </h4>
-                  <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
-                    {tag.desc}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* 3. PROBLEMA - IMPACTO FINANCEIRO & DORES VISCERAIS */}
-        <section
-          id="problema"
-          className="px-5 py-16 sm:px-8 lg:px-14 border-b border-slate-700/60 transition-colors"
-        >
-          <div className="max-w-7xl mx-auto">
-            {/* Cabeçalho de Seção Centralizado */}
-            <div className="text-center max-w-3xl mx-auto mb-12">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] font-mono font-bold uppercase tracking-widest bg-[#EF4444]/15 border border-[#EF4444]/40 text-[#EF4444] mb-3.5 mx-auto">
-                <span className="w-2 h-2 rounded-full bg-[#EF4444] animate-pulse" />
-                <span>O Custo Oculto da Operação Comercial</span>
-              </div>
-              <h2 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight mb-3 text-center landing-title-pink">
-                A realidade de operar com dados fragmentados e equipes no escuro
-              </h2>
-              <p className="landing-subtitle text-sm sm:text-base leading-relaxed text-center mx-auto">
-                Empresas investem fortunas atraindo leads, mas continuam sem clareza sobre onde o
-                pipeline está travado, quais negócios realmente têm chance de fechar e quanto
-                dinheiro está sendo deixado na mesa todos os meses.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Card 1: Silos & WhatsApp */}
-              <div className="section-card card-semantic-pink p-6 text-center flex flex-col items-center justify-between rounded-2xl shadow-md">
-                <div className="flex flex-col items-center">
-                  <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#FF2D9B] bg-[#FF2D9B]/15 border border-[#FF2D9B]/35 px-3 py-1 rounded-full mb-3">
-                    Até 35% de Oportunidades Perdidas
-                  </span>
-                  <div className="w-12 h-12 rounded-xl bg-[#FF2D9B]/15 text-[#FF2D9B] flex items-center justify-center mb-4 border border-[#FF2D9B]/30">
-                    <SilosCardIcon size={24} color="#FF2D9B" />
-                  </div>
-                  <h3 className="font-display text-lg sm:text-xl font-bold text-[#db2777] dark:text-[#FF2D9B] mb-2 text-center">
-                    Negociações Presas no WhatsApp Pessoal
-                  </h3>
-                  <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
-                    Sem sincronização automática via API/Webhooks, históricos de conversa e chamadas
-                    ficam isolados no celular do vendedor. Quando alguém sai da equipe, o histórico
-                    e o relacionamento com o cliente desaparecem.
-                  </p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-[#FF2D9B]/20 w-full text-[11px] font-mono text-[#FF2D9B] italic">
-                  “Follow-ups atrasam dias e a diretoria não sabe o que foi prometido.”
-                </div>
-              </div>
-
-              {/* Card 2: Ponto Cego & Gestão Reativa */}
-              <div className="section-card card-semantic-gold p-6 text-center flex flex-col items-center justify-between rounded-2xl shadow-md">
-                <div className="flex flex-col items-center">
-                  <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#F59E0B] bg-[#F59E0B]/15 border border-[#F59E0B]/35 px-3 py-1 rounded-full mb-3">
-                    15h/Semana em Cobrança Manual
-                  </span>
-                  <div className="w-12 h-12 rounded-xl bg-[#F59E0B]/15 text-[#F59E0B] flex items-center justify-center mb-4 border border-[#F59E0B]/30">
-                    <ReactiveCardIcon size={24} color="#F59E0B" />
-                  </div>
-                  <h3 className="font-display text-lg sm:text-xl font-bold text-[#d97706] dark:text-[#F59E0B] mb-2 text-center">
-                    Descobrir a Meta Perdida no Dia 28
-                  </h3>
-                  <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
-                    Gestores passam o dia cobrando preenchimento manual de CRM que ninguém atualiza.
-                    O forecast vira um palpite e a equipe descobre no final do mês que os negócios
-                    esperados evaporaram sem aviso prévio.
-                  </p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-[#F59E0B]/20 w-full text-[11px] font-mono text-[#F59E0B] italic">
-                  “Decisões no escuro baseadas em feeling e planilhas desatualizadas.”
-                </div>
-              </div>
-
-              {/* Card 3: Fila Fria & Resposta Lenta */}
-              <div className="section-card card-semantic-cyan p-6 text-center flex flex-col items-center justify-between rounded-2xl shadow-md">
-                <div className="flex flex-col items-center">
-                  <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#00D4FF] bg-[#00D4FF]/15 border border-[#00D4FF]/35 px-3 py-1 rounded-full mb-3">
-                    Tempo de Resposta &gt; 4 Horas
-                  </span>
-                  <div className="w-12 h-12 rounded-xl bg-[#00D4FF]/15 text-[#00D4FF] flex items-center justify-center mb-4 border border-[#00D4FF]/30">
-                    <LostDealsCardIcon size={24} color="#00D4FF" />
-                  </div>
-                  <h3 className="font-display text-lg sm:text-xl font-bold text-[#0369a1] dark:text-[#00D4FF] mb-2 text-center">
-                    Leads Quentes Esfriando sem Cadência
-                  </h3>
-                  <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
-                    Sem agentes autônomos de qualificação e alertas preditivos, oportunidades com
-                    alto potencial ficam paradas na caixa de entrada sem próximo passo claro,
-                    enquanto a concorrência responde em segundos e fecha a venda.
-                  </p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-[#00D4FF]/20 w-full text-[11px] font-mono text-[#00D4FF] italic">
-                  “A cada hora sem resposta, a probabilidade de fechamento cai pela metade.”
-                </div>
-              </div>
-            </div>
-
-            {/* Banner de Ponte para o Simulador de ROI */}
-            <div className="mt-12 p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-slate-900/95 via-slate-900/80 to-slate-900/95 border border-[#EF4444]/35 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="space-y-1.5 text-center md:text-left">
-                <span className="font-mono text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center justify-center md:justify-start gap-1.5">
-                  <AlertTriangle className="w-4 h-4 text-rose-400" />
-                  Diagnóstico Financeiro do Pipeline
-                </span>
-                <h4 className="font-display text-lg sm:text-xl font-bold text-slate-100">
-                  Quer saber quanto a sua operação está deixando na mesa hoje?
-                </h4>
-                <p className="landing-subtitle text-xs sm:text-sm max-w-xl">
-                  Simule em 30 segundos o volume financeiro em risco com base no seu ticket médio e
-                  descubra quanto você pode resgatar com orquestração inteligente e IA.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  SoundFX.play('click');
-                  trackHeroRoiSimulatorOpened('A', 'problem_section_banner');
-                  setIsSimulatorOpen(true);
-                }}
-                className="btn-cta-light whitespace-nowrap px-6 py-3.5 rounded-xl font-mono text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-2.5 cursor-pointer shadow-md hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] shrink-0 transition-all"
-              >
-                <Calculator className="w-4 h-4 text-slate-950" />
-                <span>Calcular Vazamento no Meu Pipeline</span>
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {/* 4. PLATAFORMA */}
-        <section
-          id="plataforma"
-          className="px-5 py-16 sm:px-8 lg:px-14 border-b border-slate-700/60 transition-colors"
-        >
-          <div className="max-w-7xl mx-auto">
-            {/* Cabeçalho Centralizado */}
-            <div className="text-center max-w-3xl mx-auto mb-12">
-              <div className="inline-flex items-center px-3.5 py-1.5 rounded-full text-[11px] font-mono font-bold uppercase tracking-widest bg-[#F59E0B]/10 border border-[#F59E0B]/40 text-[#F59E0B] mb-3.5 mx-auto">
-                <span>Arquitetura One OS</span>
-              </div>
-              <h2 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight mb-3 text-center landing-title-gradient">
-                Um único sistema operacional para planejar, monitorar e acelerar
-              </h2>
-              <p className="landing-subtitle text-sm sm:text-base leading-relaxed text-center mx-auto">
-                O Birth Hub 360° unifica a governança de dados, os algoritmos de diagnóstico e o
-                centro de comando diário da sua equipe comercial com conectividade Multi-CRM.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="section-card card-semantic-cyan p-6 flex flex-col items-center text-center rounded-2xl shadow-md">
-                <div className="flex items-center justify-center gap-2 mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#00D4FF]/15 text-[#00D4FF] flex items-center justify-center border border-[#00D4FF]/30">
-                    <MultiCrmDataLayerIcon size={24} color="#00D4FF" />
-                  </div>
-                </div>
-                <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#00D4FF] bg-[#00D4FF]/10 border border-[#00D4FF]/35 px-3 py-1 rounded-full mb-2">
-                  Camada 01
-                </span>
-                <h3 className="font-display text-lg sm:text-xl font-bold text-[#0369a1] dark:text-[#00D4FF] mb-2 text-center">
-                  Dados &amp; Conectividade Multi-CRM
-                </h3>
-                <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
-                  Conexão via API REST e webhooks bidirecionais com Bitrix24, HubSpot, Salesforce,
-                  Pipedrive, e-mails corporativos, canais de mensageria e dados enriquecidos B2B em
-                  uma única fonte da verdade.
-                </p>
-              </div>
-
-              <div className="section-card card-semantic-pink p-6 flex flex-col items-center text-center rounded-2xl shadow-md">
-                <div className="flex items-center justify-center gap-2 mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#FF2D9B]/15 text-[#FF2D9B] flex items-center justify-center border border-[#FF2D9B]/30">
-                    <AiDiagnosticLayerIcon size={24} color="#FF2D9B" />
-                  </div>
-                </div>
-                <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#FF2D9B] bg-[#FF2D9B]/10 border border-[#FF2D9B]/35 px-3 py-1 rounded-full mb-2">
-                  Camada 02
-                </span>
-                <h3 className="font-display text-lg sm:text-xl font-bold text-[#db2777] dark:text-[#FF2D9B] mb-2 text-center">
-                  Motor de Diagnóstico &amp; IA
-                </h3>
-                <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
-                  Algoritmos contextuais que avaliam a saúde de cada deal, detectam riscos em tempo
-                  real e sugerem a próxima melhor ação para fechar com maior margem.
-                </p>
-              </div>
-
-              <div className="section-card card-semantic-gold p-6 flex flex-col items-center text-center rounded-2xl shadow-md">
-                <div className="flex items-center justify-center gap-2 mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#F59E0B]/15 text-[#F59E0B] flex items-center justify-center border border-[#F59E0B]/30">
-                    <ExecutionLayerIcon size={24} color="#F59E0B" />
-                  </div>
-                </div>
-                <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#F59E0B] bg-[#F59E0B]/10 border border-[#F59E0B]/35 px-3 py-1 rounded-full mb-2">
-                  Camada 03
-                </span>
-                <h3 className="font-display text-lg sm:text-xl font-bold text-[#d97706] dark:text-[#F59E0B] mb-2 text-center">
-                  Execução &amp; Orquestração
-                </h3>
-                <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
-                  Cockpit de trabalho ágil para pré-vendas (SDR), vendas (Closer) e liderança, com
-                  automações de tarefas repetitivas e cadências sem atrito.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 5. 8 PILARES OFICIAIS */}
-        <section
-          id="pilares"
-          className="px-5 py-16 sm:px-8 lg:px-14 border-b border-slate-700/60 transition-colors"
-        >
-          <div className="max-w-7xl mx-auto">
-            {/* Cabeçalho Centralizado */}
-            <div className="text-center max-w-3xl mx-auto mb-12">
-              <div className="inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest bg-[#F59E0B]/10 border border-[#F59E0B]/40 text-[#F59E0B] mb-3.5 mx-auto">
-                <span>ESTRUTURA OFICIAL DO PRODUTO</span>
-              </div>
-              <h2 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight mb-3 text-center landing-title-gold">
-                Os 8 Pilares Fundamentais do Birth Hub 360°
-              </h2>
-              <p className="landing-subtitle text-sm sm:text-base leading-relaxed text-center mx-auto">
-                Cada pilar resolve uma dimensão estratégica da operação comercial, operando de forma
-                independente ou em perfeita sinergia sistêmica.
-              </p>
-            </div>
-
-            {/* Grid dos 8 Cards Coloridos */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-              {OFFICIAL_PILLARS.map((p) => {
-                const isActive = selectedPillar === p.id;
-                const pillarColor =
-                  theme === 'dark'
-                    ? p.color
-                    : p.color === '#00D4FF'
-                      ? '#0369a1'
-                      : p.color === '#F59E0B'
-                        ? '#92400e'
-                        : '#be185d';
-
-                return (
-                  <div
-                    key={p.id}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => handlePillarClick(p.id)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handlePillarClick(p.id);
-                      }
-                    }}
-                    className={`pillar-card group flex flex-col justify-between p-5 rounded-2xl cursor-pointer border transition-all duration-300 relative ${
-                      isActive
-                        ? 'pillar-card-active ring-2 ring-offset-2 ring-offset-[#0B1120]'
-                        : ''
-                    }`}
-                    style={{
-                      borderColor: isActive ? pillarColor : `${pillarColor}75`,
-                      borderWidth: '1px',
-                      borderStyle: 'solid',
-                      boxShadow: isActive
-                        ? theme === 'dark'
-                          ? `0 0 0 2px ${p.color}, 0 12px 28px -4px rgba(0,0,0,0.65), 0 0 14px 1px ${p.color}35`
-                          : `0 0 0 2px ${pillarColor}, 0 8px 24px -2px rgba(15,23,42,0.1), 0 0 10px ${pillarColor}20`
-                        : theme === 'dark'
-                          ? `0 6px 20px -2px rgba(0, 0, 0, 0.5), 0 0 8px 0 ${p.color}10`
-                          : `0 4px 16px -2px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03)`,
-                    }}
-                  >
-                    {/* Topo do Card */}
-                    <div className="flex items-center justify-between mb-3 pt-1">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className="font-mono text-xs font-bold px-2.5 py-1 rounded-full"
-                          style={{
-                            backgroundColor: `${pillarColor}18`,
-                            color: pillarColor,
-                            border: `1.5px solid ${pillarColor}55`,
-                          }}
-                        >
-                          {p.id}
-                        </span>
-                        <span
-                          className="font-mono text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
-                          style={{
-                            backgroundColor: `${pillarColor}18`,
-                            color: pillarColor,
-                          }}
-                        >
-                          {p.slug}
-                        </span>
-                      </div>
-
-                      <div
-                        className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-lg transition-transform duration-300 group-hover:scale-110"
-                        style={{
-                          backgroundColor: `${pillarColor}18`,
-                          color: pillarColor,
-                          border: `1.5px solid ${pillarColor}55`,
-                        }}
-                      >
-                        {p.symbol}
-                      </div>
-                    </div>
-
-                    {/* Conteúdo do Card com Nome Oficial */}
-                    <div className="flex-1 my-1">
-                      <h3
-                        className="font-display text-base sm:text-lg font-bold leading-tight mb-2 text-center"
-                        style={{ color: pillarColor }}
-                      >
-                        {p.name}
+                    <div className="b360-card-bottom">
+                      <h3>
+                        {pillar.num}. {pillar.title}
                       </h3>
-                      <p className="landing-subtitle font-sans text-sm font-medium leading-relaxed mb-3 text-center">
-                        {p.desc}
-                      </p>
-                      <div className="text-center">
-                        <span className="inline-block px-3 py-1 rounded-full text-xs font-mono font-semibold section-card landing-subtitle border border-slate-700/60">
-                          Foco: {p.focus}
-                        </span>
-                      </div>
+                      <p>{pillar.desc}</p>
                     </div>
-
-                    {/* Rodapé do Card */}
-                    <div className="mt-4 pt-2.5 border-t border-slate-700/60 flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <span
-                          className="w-2 h-2 rounded-full animate-pulse"
-                          style={{ backgroundColor: pillarColor }}
-                        />
-                        <span
-                          className="font-mono text-[11px] font-bold uppercase tracking-wider"
-                          style={{ color: pillarColor }}
-                        >
-                          {p.tag}
-                        </span>
-                      </div>
-                      <span
-                        className="font-mono text-[11px] opacity-0 group-hover:opacity-100 transition-opacity font-bold"
-                        style={{ color: pillarColor }}
-                      >
-                        CONECTADO →
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Detalhamento Interativo do Pilar Selecionado (Executive Drawer) */}
-            {selectedPillar &&
-              (() => {
-                const pilar = OFFICIAL_PILLARS.find((p) => p.id === selectedPillar);
-                if (!pilar) return null;
-
-                return (
-                  <div
-                    className="pillar-detail-drawer mt-8 p-6 sm:p-8 rounded-2xl relative shadow-2xl transition-all"
-                    style={{
-                      border: `2.5px solid ${pilar.color}`,
-                      background:
-                        theme === 'dark'
-                          ? 'linear-gradient(135deg, #0F172A 0%, #0B1120 100%)'
-                          : 'linear-gradient(135deg, #FFFFFF 0%, #F0F9FF 100%)',
-                      boxShadow: `0 16px 48px -4px ${pilar.color}35, 0 0 28px 4px ${pilar.color}25`,
-                    }}
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-4 border-b border-slate-200 dark:border-slate-800">
-                      <div className="flex items-center gap-3.5">
-                        <div
-                          className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-xl shadow-sm shrink-0"
-                          style={{
-                            backgroundColor: `${pilar.color}22`,
-                            color: pilar.color,
-                            border: `1.5px solid ${pilar.color}55`,
-                          }}
-                        >
-                          {pilar.symbol}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span
-                              className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-full"
-                              style={{
-                                backgroundColor: `${pilar.color}20`,
-                                color: pilar.color,
-                              }}
-                            >
-                              PILAR {pilar.id}
-                            </span>
-                            <span className="font-mono text-xs text-slate-500 dark:text-slate-400">
-                              TAG: {pilar.tag}
-                            </span>
-                          </div>
-                          <h3
-                            className="font-display text-xl sm:text-2xl font-extrabold mt-0.5"
-                            style={{ color: pilar.color }}
-                          >
-                            {pilar.name}
-                          </h3>
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          SoundFX.play('click');
-                          setSelectedPillar(null);
-                        }}
-                        className="self-start sm:self-center px-4 py-2 rounded-xl font-mono text-xs font-bold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer transition-all"
-                      >
-                        ✕ Fechar Detalhes
-                      </button>
-                    </div>
-
-                    <p className="landing-subtitle text-base font-medium leading-relaxed max-w-3xl mb-5">
-                      {pilar.desc}
-                    </p>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 font-mono text-xs">
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0B1120] border border-slate-200 dark:border-slate-800">
-                        <span className="text-slate-500 dark:text-slate-400 block mb-1">
-                          Foco Estratégico:
-                        </span>
-                        <span className="font-bold text-slate-800 dark:text-slate-200 text-sm">
-                          {pilar.focus}
-                        </span>
-                      </div>
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0B1120] border border-slate-200 dark:border-slate-800">
-                        <span className="text-slate-500 dark:text-slate-400 block mb-1">
-                          Integração &amp; Dados:
-                        </span>
-                        <span className="font-bold text-[#00D4FF] text-sm">
-                          Sincronização Contínua Multi-CRM
-                        </span>
-                      </div>
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0B1120] border border-slate-200 dark:border-slate-800">
-                        <span className="text-slate-500 dark:text-slate-400 block mb-1">
-                          Governança &amp; Acesso:
-                        </span>
-                        <span className="font-bold text-[#10B981] text-sm">
-                          Isolamento Multi-Tenant Ativo
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })()}
-          </div>
-        </section>
-
-        {/* 6. FLUXO OPERACIONAL */}
-        <section id="fluxo" className="px-5 py-16 sm:px-8 lg:px-14 landing-section-base">
-          <div className="max-w-7xl mx-auto">
-            {/* Cabeçalho Centralizado */}
-            <div className="text-center max-w-3xl mx-auto mb-12">
-              <div className="inline-flex items-center px-3.5 py-1.5 rounded-full text-[11px] font-mono font-bold uppercase tracking-widest bg-[#F59E0B]/10 border border-[#F59E0B]/40 text-[#F59E0B] mb-3.5 mx-auto">
-                <span>CICLO OPERACIONAL COMPLETO</span>
+                  </button>
+                ))}
               </div>
-              <h2 className="font-display text-2xl sm:text-4xl font-extrabold landing-title-gradient tracking-tight mb-3 text-center">
-                Como os dados fluem da prospecção ao fechamento
-              </h2>
-              <p className="landing-subtitle text-sm sm:text-base leading-relaxed text-center mx-auto">
-                Cada etapa é governada por automações e inteligência para garantir velocidade e zero
-                perda de oportunidades com sincronização Multi-CRM.
-              </p>
-            </div>
+            </section>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-              <div className="flow-step-card card-semantic-cyan p-5 sm:p-6 text-center flex flex-col items-center">
-                <div className="mb-3 text-center">
-                  <span className="inline-block px-3 py-1 rounded-full font-mono text-xs font-bold uppercase tracking-wider bg-[#00D4FF]/15 text-[#0369a1] dark:text-[#00D4FF] border border-[#00D4FF]/35">
-                    ETAPA 01
-                  </span>
-                </div>
-                <h4 className="font-display text-base sm:text-lg font-bold text-[#0369a1] dark:text-[#00D4FF] mb-2.5 text-center">
-                  Entrada &amp; Captura
-                </h4>
-                <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
-                  Leads e contas são integrados via CRMs (Bitrix24, HubSpot, Salesforce, Pipedrive),
-                  campanhas ou prospecção ativa.
+            {/* Problema / Contexto */}
+            <section className="b360-section" id="problema">
+              <div className="b360-sectionhead">
+                <div className="b360-eyebrow">ELIMINAÇÃO DE SILOS</div>
+                <h2>Sua equipe precisa de contexto para avançar.</h2>
+                <p>
+                  Ferramentas isoladas fragmentam o histórico e escondem o que realmente trava o
+                  pipeline.
                 </p>
               </div>
 
-              <div className="flow-step-card card-semantic-pink p-5 sm:p-6 text-center flex flex-col items-center">
-                <div className="mb-3 text-center">
-                  <span className="inline-block px-3 py-1 rounded-full font-mono text-xs font-bold uppercase tracking-wider bg-[#FF2D9B]/15 text-[#db2777] dark:text-[#FF2D9B] border border-[#FF2D9B]/35">
-                    ETAPA 02
-                  </span>
-                </div>
-                <h4 className="font-display text-base sm:text-lg font-bold text-[#db2777] dark:text-[#FF2D9B] mb-2.5 text-center">
-                  Enriquecimento B2B
-                </h4>
-                <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
-                  Dados de receita, decisores e porte validam o fit do cliente ideal (ICP).
-                </p>
-              </div>
-
-              <div className="flow-step-card card-semantic-gold p-5 sm:p-6 text-center flex flex-col items-center">
-                <div className="mb-3 text-center">
-                  <span className="inline-block px-3 py-1 rounded-full font-mono text-xs font-bold uppercase tracking-wider bg-[#F59E0B]/15 text-[#d97706] dark:text-[#F59E0B] border border-[#F59E0B]/35">
-                    ETAPA 03
-                  </span>
-                </div>
-                <h4 className="font-display text-base sm:text-lg font-bold text-[#d97706] dark:text-[#F59E0B] mb-2.5 text-center">
-                  Cadência &amp; SLA
-                </h4>
-                <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
-                  Distribuição instantânea ao SDR com réguas de contato automáticas.
-                </p>
-              </div>
-
-              <div className="flow-step-card card-semantic-iris p-5 sm:p-6 text-center flex flex-col items-center">
-                <div className="mb-3 text-center">
-                  <span className="inline-block px-3 py-1 rounded-full font-mono text-xs font-bold uppercase tracking-wider bg-[#8B7DFF]/15 text-[#7c3aed] dark:text-[#8B7DFF] border border-[#8B7DFF]/35">
-                    ETAPA 04
-                  </span>
-                </div>
-                <h4 className="font-display text-base sm:text-lg font-bold text-[#7c3aed] dark:text-[#8B7DFF] mb-2.5 text-center">
-                  Apoio com IA
-                </h4>
-                <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
-                  Copiloto analisa objeções, histórico e recomenda a abordagem ideal.
-                </p>
-              </div>
-
-              <div className="flow-step-card card-semantic-green p-5 sm:p-6 text-center flex flex-col items-center">
-                <div className="mb-3 text-center">
-                  <span className="inline-block px-3 py-1 rounded-full font-mono text-xs font-bold uppercase tracking-wider bg-[#10B981]/15 text-[#059669] dark:text-[#10B981] border border-[#10B981]/35">
-                    ETAPA 05
-                  </span>
-                </div>
-                <h4 className="font-display text-base sm:text-lg font-bold text-[#059669] dark:text-[#10B981] mb-2.5 text-center">
-                  Fechamento &amp; Dados
-                </h4>
-                <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
-                  Contrato fechado e aprendizados de win/loss retroalimentam o sistema.
-                </p>
-              </div>
-            </div>
-
-            {/* Demonstração Real do Motor de Prospecção — Prova de Capacidade Enterprise */}
-            <div className="mt-14 rounded-2xl border border-[#00D4FF]/45 dark:border-[#00D4FF]/60 ring-1 ring-[#00D4FF]/20 bg-gradient-to-b from-white via-sky-50/40 to-slate-50 dark:from-[#0F172A] dark:via-[#0c192c] dark:to-[#081524] p-5 sm:p-7 lg:p-8 shadow-[0_20px_50px_-10px_rgba(15,23,42,0.1)] dark:shadow-[0_25px_60px_-12px_rgba(0,0,0,0.7)]">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-200 dark:border-slate-800">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#00D4FF]" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#FF2D9B]" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]" />
-                  </div>
-                  <div className="h-4 w-px bg-slate-300 dark:bg-slate-700" />
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#00D4FF] animate-pulse" />
-                    <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#00D4FF]">
-                      Radar Discovery em Operação Real · Fontes Abertas
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-[11px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-[#00D4FF]/10 text-[#00D4FF] border border-[#00D4FF]/30">
-                    Telemetria Ativa
-                  </span>
-                  <span className="font-mono text-[11px] text-slate-500 dark:text-slate-400">
-                    Captura real do produto · Desktop &amp; Mobile
-                  </span>
-                </div>
-              </div>
-
-              <div className="relative overflow-hidden rounded-xl border border-slate-200/90 dark:border-slate-700/80 bg-slate-100 dark:bg-[#0B1120] shadow-inner">
-                {reduceMotion ? (
-                  <img
-                    src="/landing/prospeccao/poster-prospect-radar.png"
-                    alt="Radar de Prospecção Comercial do Birth Hub 360°"
-                    className="w-full h-auto object-cover"
-                    loading="lazy"
-                  />
-                ) : (
-                  <video
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    poster="/landing/prospeccao/poster-prospect-radar.png"
-                    className="w-full h-auto object-cover"
-                  >
-                    <source src="/landing/prospeccao/prospect-radar-demo.webm" type="video/webm" />
-                    <source src="/landing/prospeccao/prospect-radar-demo.mp4" type="video/mp4" />
-                    Seu navegador não suporta a tag de vídeo.
-                  </video>
-                )}
-              </div>
-
-              <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-600 dark:text-slate-300 font-mono">
-                <span>✦ ICP Filtrado por Segmento, Região e Personas B2B</span>
-                <span className="text-[#0369a1] dark:text-[#00D4FF] font-medium">
-                  Integração via API e webhooks com Bitrix24, HubSpot, Salesforce e principais CRMs
-                </span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 7. IA (INTELIGÊNCIA ARTIFICIAL CONTEXTUAL) */}
-        <section id="ia" className="px-5 py-16 sm:px-8 lg:px-14 landing-section-alt">
-          <div className="max-w-7xl mx-auto">
-            {/* Cabeçalho Centralizado */}
-            <div className="text-center max-w-3xl mx-auto mb-12">
-              <div className="inline-flex items-center px-3.5 py-1.5 rounded-full text-[11px] font-mono font-bold uppercase tracking-widest bg-[#FF2D9B]/10 border border-[#FF2D9B]/40 text-[#FF2D9B] mb-3.5 mx-auto">
-                <span>IA COM CONTEXTO OPERACIONAL REAL</span>
-              </div>
-              <h2 className="font-display text-2xl sm:text-4xl font-extrabold landing-title-pink tracking-tight mb-3 text-center">
-                Inteligência Artificial que compreende o seu pipeline
-              </h2>
-              <p className="landing-subtitle text-sm sm:text-base leading-relaxed text-center mx-auto">
-                Ao contrário de ferramentas genéricas de texto, a IA do Birth Hub 360° é diretamente
-                conectada aos dados operacionais dos seus CRMs, entendendo o estágio de cada
-                negociação, o histórico de contatos e as objeções recorrentes.
-              </p>
-            </div>
-
-            <div className="flex flex-col lg:flex-row items-center gap-10">
-              <div className="lg:w-1/2 space-y-4">
-                <div className="section-card card-semantic-cyan flex items-start gap-3.5 p-5 rounded-2xl shadow-md">
-                  <div className="w-8 h-8 rounded-full bg-[#00D4FF]/20 text-[#00D4FF] flex items-center justify-center shrink-0 mt-0.5 border border-[#00D4FF]/35">
-                    <Check className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="font-display font-bold text-base text-[#0369a1] dark:text-[#00D4FF]">
-                      Diagnóstico de Entraves
-                    </h4>
-                    <p className="landing-subtitle text-sm font-medium leading-relaxed mt-1">
-                      Alerta deals estagnados com sugestões claras de destravamento baseadas no
-                      histórico da conta.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="section-card card-semantic-pink flex items-start gap-3.5 p-5 rounded-2xl shadow-md">
-                  <div className="w-8 h-8 rounded-full bg-[#FF2D9B]/20 text-[#FF2D9B] flex items-center justify-center shrink-0 mt-0.5 border border-[#FF2D9B]/35">
-                    <Check className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="font-display font-bold text-base text-[#db2777] dark:text-[#FF2D9B]">
-                      Próxima Melhor Ação
-                    </h4>
-                    <p className="landing-subtitle text-sm font-medium leading-relaxed mt-1">
-                      Recomendações acionáveis para o vendedor avançar o contato e contornar
-                      objeções críticas.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="section-card card-semantic-gold flex items-start gap-3.5 p-5 rounded-2xl shadow-md">
-                  <div className="w-8 h-8 rounded-full bg-[#F59E0B]/20 text-[#F59E0B] flex items-center justify-center shrink-0 mt-0.5 border border-[#F59E0B]/35">
-                    <Check className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="font-display font-bold text-base text-[#d97706] dark:text-[#F59E0B]">
-                      Isolamento &amp; Segurança
-                    </h4>
-                    <p className="landing-subtitle text-sm font-medium leading-relaxed mt-1">
-                      Seus dados comerciais jamais são utilizados para treinar modelos públicos.
-                      Conformidade LGPD total.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="lg:w-1/2 w-full">
-                <div className="section-card card-semantic-pink p-6 shadow-2xl">
-                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-800">
-                    <div className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-full bg-[#FF2D9B] animate-pulse" />
-                      <span className="font-mono text-xs font-bold text-[#FF2D9B]">
-                        COPILOTO COMERCIAL ATIVO
-                      </span>
-                    </div>
-                    <span className="font-mono text-[11px] text-slate-500 dark:text-slate-400">
-                      Contexto: Deal #4892 · Multi-CRM
-                    </span>
-                  </div>
-                  <div className="space-y-3 font-mono text-xs">
-                    <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0F172A] border border-[#FF2D9B]/40 text-slate-700 dark:text-slate-200 shadow-sm">
-                      <span className="text-[#FF2D9B] font-bold">Diagnóstico:</span> Negociação de
-                      R$ 140k sem retorno há 4 dias após envio de proposta.
-                    </div>
-                    <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0F172A] border border-[#00D4FF]/40 text-slate-700 dark:text-slate-200 shadow-sm">
-                      <span className="text-[#00D4FF] font-bold">Ação Sugerida:</span> Disparar
-                      cadência de validação de decisor financeiro abordando ROI estimado em 90 dias.
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 8. AUTOMAÇÃO & CONECTIVIDADE MULTI-CRM */}
-        <section id="automacao" className="px-5 py-16 sm:px-8 lg:px-14 landing-section-base">
-          <div className="max-w-6xl mx-auto">
-            {/* Cabeçalho Centralizado com SVG Customizado */}
-            <div className="text-center max-w-3xl mx-auto mb-12">
-              <div className="inline-flex items-center px-3.5 py-1.5 rounded-full text-[11px] font-mono font-bold uppercase tracking-widest bg-[#00D4FF]/10 border border-[#00D4FF]/40 text-[#00D4FF] mb-3.5 mx-auto">
-                <span>CONECTIVIDADE MULTI-CRM</span>
-              </div>
-              <h2 className="font-display text-2xl sm:text-4xl font-extrabold landing-title-cyan tracking-tight mb-3 text-center">
-                Automação Inteligente &amp; Conectividade Multi-CRM
-              </h2>
-              <p className="landing-subtitle text-sm sm:text-base leading-relaxed text-center mx-auto">
-                Remova tarefas braçais repetitivas e integre seus fluxos com Bitrix24, HubSpot,
-                Salesforce, Pipedrive e mensageria sem atrito.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="section-card card-semantic-cyan p-6 flex flex-col items-center text-center rounded-2xl shadow-md">
-                <div className="w-12 h-12 rounded-xl bg-[#00D4FF]/15 text-[#00D4FF] flex items-center justify-center font-bold mb-4 border border-[#00D4FF]/35">
-                  <Workflow className="w-6 h-6" />
-                </div>
-                <h3 className="font-display text-lg sm:text-xl font-bold text-[#0369a1] dark:text-[#00D4FF] mb-2 text-center">
-                  Sincronização Multi-CRM
-                </h3>
-                <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
-                  Atualizações automáticas de campos, estágios de oportunidade e tarefas em
-                  Bitrix24, HubSpot, Salesforce e Pipedrive sem digitação dupla.
-                </p>
-              </div>
-
-              <div className="section-card card-semantic-pink p-6 flex flex-col items-center text-center rounded-2xl shadow-md">
-                <div className="w-12 h-12 rounded-xl bg-[#FF2D9B]/15 text-[#FF2D9B] flex items-center justify-center font-bold mb-4 border border-[#FF2D9B]/35">
-                  <Zap className="w-6 h-6" />
-                </div>
-                <h3 className="font-display text-lg sm:text-xl font-bold text-[#db2777] dark:text-[#FF2D9B] mb-2 text-center">
-                  Gatilhos de Comportamento
-                </h3>
-                <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
-                  Aberturas de proposta, acessos a links ou ausência de contato disparam alertas
-                  imediatos para a equipe responsável.
-                </p>
-              </div>
-
-              <div className="section-card card-semantic-gold p-6 flex flex-col items-center text-center rounded-2xl shadow-md">
-                <div className="w-12 h-12 rounded-xl bg-[#F59E0B]/15 text-[#F59E0B] flex items-center justify-center font-bold mb-4 border border-[#F59E0B]/35">
-                  <Target className="w-6 h-6" />
-                </div>
-                <h3 className="font-display text-lg sm:text-xl font-bold text-[#d97706] dark:text-[#F59E0B] mb-2 text-center">
-                  Distribuição Inteligente
-                </h3>
-                <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
-                  Roteamento de oportunidades com base em carga de trabalho, especialidade do
-                  vendedor e tamanho da conta.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 9. PERFORMANCE COMERCIAL */}
-        <section id="performance" className="px-5 py-16 sm:px-8 lg:px-14 landing-section-alt">
-          <div className="max-w-6xl mx-auto">
-            {/* Cabeçalho Centralizado com SVG Customizado */}
-            <div className="text-center max-w-3xl mx-auto mb-12">
-              <div className="inline-flex items-center px-3.5 py-1.5 rounded-full text-[11px] font-mono font-bold uppercase tracking-widest bg-[#F59E0B]/10 border border-[#F59E0B]/40 text-[#F59E0B] mb-3.5 mx-auto">
-                <span>TELEMETRIA DE RESULTADOS</span>
-              </div>
-              <h2 className="font-display text-2xl sm:text-4xl font-extrabold landing-title-gold tracking-tight mb-3 text-center">
-                Visibilidade cirúrgica da tração e das metas
-              </h2>
-              <p className="landing-subtitle text-sm sm:text-base leading-relaxed text-center mx-auto">
-                Monitore taxas de passagem por fase, tempo de permanência em cada estágio e
-                produtividade real da equipe.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-              <div className="section-card card-semantic-cyan p-6 text-center flex flex-col items-center rounded-2xl shadow-md">
-                <div className="font-mono text-xs text-[#0369a1] dark:text-[#00D4FF] uppercase font-bold tracking-wider mb-2 px-3 py-1 rounded-full bg-[#00D4FF]/10 border border-[#00D4FF]/30">
-                  Taxa de Conversão
-                </div>
-                <div className="font-display text-2xl sm:text-3xl font-extrabold text-[#0369a1] dark:text-[#00D4FF] my-2 text-center">
-                  Funil 360°
-                </div>
-                <div className="mb-2.5">
-                  <span className="font-mono text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#00D4FF]/15 text-[#0369a1] dark:text-[#00D4FF] border border-[#00D4FF]/30">
-                    +24% Eficiência
-                  </span>
-                </div>
-                <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
-                  Acompanhamento da taxa de conversão entre cada etapa do pipeline.
-                </p>
-              </div>
-
-              <div className="section-card card-semantic-pink p-6 text-center flex flex-col items-center rounded-2xl shadow-md">
-                <div className="font-mono text-xs text-[#db2777] dark:text-[#FF2D9B] uppercase font-bold tracking-wider mb-2 px-3 py-1 rounded-full bg-[#FF2D9B]/10 border border-[#FF2D9B]/30">
-                  Velocidade de Vendas
-                </div>
-                <div className="font-display text-2xl sm:text-3xl font-extrabold text-[#db2777] dark:text-[#FF2D9B] my-2 text-center">
-                  Ciclo Médio
-                </div>
-                <div className="mb-2.5">
-                  <span className="font-mono text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#FF2D9B]/15 text-[#db2777] dark:text-[#FF2D9B] border border-[#FF2D9B]/30">
-                    -38% Duração
-                  </span>
-                </div>
-                <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
-                  Identificação do tempo exato que um lead leva da qualificação ao fechamento.
-                </p>
-              </div>
-
-              <div className="section-card card-semantic-gold p-6 text-center flex flex-col items-center rounded-2xl shadow-md">
-                <div className="font-mono text-xs text-[#d97706] dark:text-[#F59E0B] uppercase font-bold tracking-wider mb-2 px-3 py-1 rounded-full bg-[#F59E0B]/10 border border-[#F59E0B]/30">
-                  Gestão de Metas
-                </div>
-                <div className="font-display text-2xl sm:text-3xl font-extrabold text-[#d97706] dark:text-[#F59E0B] my-2 text-center">
-                  Ritmo &amp; Pace
-                </div>
-                <div className="mb-2.5">
-                  <span className="font-mono text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#F59E0B]/15 text-[#d97706] dark:text-[#F59E0B] border border-[#F59E0B]/30">
-                    Tempo Real
-                  </span>
-                </div>
-                <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
-                  Comparativo diário de faturamento atingido versus meta mensal estabelecida.
-                </p>
-              </div>
-
-              <div className="section-card card-semantic-iris p-6 text-center flex flex-col items-center rounded-2xl shadow-md">
-                <div className="font-mono text-xs text-[#7c3aed] dark:text-[#8B7DFF] uppercase font-bold tracking-wider mb-2 px-3 py-1 rounded-full bg-[#8B7DFF]/10 border border-[#8B7DFF]/30">
-                  Motivos de Perda
-                </div>
-                <div className="font-display text-2xl sm:text-3xl font-extrabold text-[#7c3aed] dark:text-[#8B7DFF] my-2 text-center">
-                  Win / Loss
-                </div>
-                <div className="mb-2.5">
-                  <span className="font-mono text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#8B7DFF]/15 text-[#7c3aed] dark:text-[#8B7DFF] border border-[#8B7DFF]/30">
-                    Diagnóstico IA
-                  </span>
-                </div>
-                <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
-                  Análise estruturada de causas de perda para correção contínua do produto.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 10. PREVISIBILIDADE COMERCIAL */}
-        <section id="previsibilidade" className="px-5 py-16 sm:px-8 lg:px-14 landing-section-base">
-          <div className="max-w-6xl mx-auto">
-            {/* Cabeçalho Centralizado com SVG Customizado */}
-            <div className="text-center max-w-3xl mx-auto mb-12">
-              <div className="inline-flex items-center px-3.5 py-1.5 rounded-full text-[11px] font-mono font-bold uppercase tracking-widest bg-[#F59E0B]/10 border border-[#F59E0B]/40 text-[#F59E0B] mb-3.5 mx-auto">
-                <span>RIGOR ANALÍTICO</span>
-              </div>
-              <h2 className="font-display text-2xl sm:text-4xl font-extrabold landing-title-gold tracking-tight mb-3 text-center">
-                Previsibilidade comercial baseada em dados reais
-              </h2>
-              <p className="landing-subtitle text-sm sm:text-base leading-relaxed text-center mx-auto">
-                Sem promessas mágicas: modelagem estatística séria que pondera a maturidade do
-                pipeline e as taxas históricas de conversão.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="section-card card-semantic-gold p-6 flex flex-col items-center text-center rounded-2xl shadow-md">
-                <div className="w-11 h-11 rounded-xl bg-[#F59E0B]/20 text-[#F59E0B] flex items-center justify-center font-bold mb-3 font-mono text-base border border-[#F59E0B]/40">
-                  01
-                </div>
-                <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#F59E0B] bg-[#F59E0B]/10 border border-[#F59E0B]/35 px-3 py-1 rounded-full mb-2">
-                  Modelagem Probabilística
-                </span>
-                <h3 className="font-display text-lg sm:text-xl font-bold text-[#d97706] dark:text-[#F59E0B] mb-2 text-center">
-                  Pipeline Ponderado
-                </h3>
-                <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
-                  Cálculo de probabilidade de fechamento por estágio formal de negociação, evitando
-                  expectativas infladas de receita.
-                </p>
-              </div>
-
-              <div className="section-card card-semantic-cyan p-6 flex flex-col items-center text-center rounded-2xl shadow-md">
-                <div className="w-11 h-11 rounded-xl bg-[#00D4FF]/20 text-[#00D4FF] flex items-center justify-center font-bold mb-3 font-mono text-base border border-[#00D4FF]/40">
-                  02
-                </div>
-                <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#00D4FF] bg-[#00D4FF]/10 border border-[#00D4FF]/35 px-3 py-1 rounded-full mb-2">
-                  Qualidade da Base
-                </span>
-                <h3 className="font-display text-lg sm:text-xl font-bold text-[#0369a1] dark:text-[#00D4FF] mb-2 text-center">
-                  Maturidade de Dados
-                </h3>
-                <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
-                  O sistema reconhece que a precisão preditiva depende da consistência de
-                  preenchimento e do histórico da organização.
-                </p>
-              </div>
-
-              <div className="section-card card-semantic-pink p-6 flex flex-col items-center text-center rounded-2xl shadow-md">
-                <div className="w-11 h-11 rounded-xl bg-[#FF2D9B]/20 text-[#FF2D9B] flex items-center justify-center font-bold mb-3 font-mono text-base border border-[#FF2D9B]/40">
-                  03
-                </div>
-                <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#FF2D9B] bg-[#FF2D9B]/10 border border-[#FF2D9B]/35 px-3 py-1 rounded-full mb-2">
-                  Gestão de Risco
-                </span>
-                <h3 className="font-display text-lg sm:text-xl font-bold text-[#db2777] dark:text-[#FF2D9B] mb-2 text-center">
-                  Cenários Conservador &amp; Otimista
-                </h3>
-                <p className="landing-subtitle text-sm font-medium leading-relaxed text-center">
-                  Simulação de faixas de faturamento para que a liderança tome decisões de
-                  crescimento, contratação e investimento com segurança.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 11. ECOSSISTEMA TECNOLÓGICO */}
-        <section id="ecossistema" className="px-5 py-12 sm:px-8 lg:px-14 landing-section-alt">
-          <div className="max-w-6xl mx-auto">
-            {/* Cabeçalho Centralizado */}
-            <div className="text-center max-w-3xl mx-auto mb-8">
-              <div className="inline-flex items-center px-3.5 py-1.5 rounded-full text-[11px] font-mono font-bold uppercase tracking-widest bg-[#00D4FF]/10 border border-[#00D4FF]/40 text-[#00D4FF] mb-3.5 mx-auto">
-                <span>CONECTIVIDADE ENTERPRISE</span>
-              </div>
-              <h2 className="font-display text-2xl sm:text-4xl font-extrabold landing-title-cyan tracking-tight mb-3 text-center">
-                Integrado ao ecossistema tecnológico da sua empresa
-              </h2>
-              <p className="landing-subtitle text-sm sm:text-base leading-relaxed text-center mx-auto">
-                Construído para operar com múltiplos CRMs e todas as ferramentas comerciais
-                corporativas.
-              </p>
-            </div>
-
-            {/* Grid Multi-CRM Completo — Zero Fundo Branco Chapado */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5">
-              <div className="section-card card-semantic-cyan p-5 sm:p-6 rounded-2xl text-center flex flex-col items-center shadow-md">
-                <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#0369a1] dark:text-[#00D4FF] bg-[#00D4FF]/10 border border-[#00D4FF]/30 px-2.5 py-0.5 rounded-full mb-2">
-                  ● API &amp; Webhooks
-                </span>
-                <div className="font-display text-base sm:text-lg font-bold text-[#0369a1] dark:text-[#00D4FF]">
-                  Bitrix24
-                </div>
-                <div className="landing-subtitle text-xs sm:text-sm font-medium mt-1">
-                  Sincronização Contínua
-                </div>
-              </div>
-
-              <div className="section-card card-semantic-pink p-5 sm:p-6 rounded-2xl text-center flex flex-col items-center shadow-md">
-                <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#db2777] dark:text-[#FF2D9B] bg-[#FF2D9B]/10 border border-[#FF2D9B]/30 px-2.5 py-0.5 rounded-full mb-2">
-                  ● Bidirecional
-                </span>
-                <div className="font-display text-base sm:text-lg font-bold text-[#db2777] dark:text-[#FF2D9B]">
-                  HubSpot
-                </div>
-                <div className="landing-subtitle text-xs sm:text-sm font-medium mt-1">
-                  Conexão de Pipeline
-                </div>
-              </div>
-
-              <div className="section-card card-semantic-gold p-5 sm:p-6 rounded-2xl text-center flex flex-col items-center shadow-md">
-                <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#d97706] dark:text-[#F59E0B] bg-[#F59E0B]/10 border border-[#F59E0B]/30 px-2.5 py-0.5 rounded-full mb-2">
-                  ● Enterprise Sync
-                </span>
-                <div className="font-display text-base sm:text-lg font-bold text-[#d97706] dark:text-[#F59E0B]">
-                  Salesforce
-                </div>
-                <div className="landing-subtitle text-xs sm:text-sm font-medium mt-1">
-                  Conector de Contas
-                </div>
-              </div>
-
-              <div className="section-card card-semantic-green p-5 sm:p-6 rounded-2xl text-center flex flex-col items-center shadow-md">
-                <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#059669] dark:text-[#10B981] bg-[#10B981]/10 border border-[#10B981]/30 px-2.5 py-0.5 rounded-full mb-2">
-                  ● Pipeline Sync
-                </span>
-                <div className="font-display text-base sm:text-lg font-bold text-[#059669] dark:text-[#10B981]">
-                  Pipedrive
-                </div>
-                <div className="landing-subtitle text-xs sm:text-sm font-medium mt-1">
-                  Fluxos em Tempo Real
-                </div>
-              </div>
-
-              <div className="section-card card-semantic-cyan p-5 sm:p-6 rounded-2xl text-center flex flex-col items-center shadow-md">
-                <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#0369a1] dark:text-[#00D4FF] bg-[#00D4FF]/10 border border-[#00D4FF]/30 px-2.5 py-0.5 rounded-full mb-2">
-                  ● Direto na Fila
-                </span>
-                <div className="font-display text-base sm:text-lg font-bold text-[#0369a1] dark:text-[#00D4FF]">
-                  WhatsApp API
-                </div>
-                <div className="landing-subtitle text-xs sm:text-sm font-medium mt-1">
-                  Mensageria Ativa
-                </div>
-              </div>
-
-              <div className="section-card card-semantic-gold p-5 sm:p-6 rounded-2xl text-center flex flex-col items-center shadow-md">
-                <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#d97706] dark:text-[#F59E0B] bg-[#F59E0B]/10 border border-[#F59E0B]/30 px-2.5 py-0.5 rounded-full mb-2">
-                  ● Telefonia Cloud
-                </span>
-                <div className="font-display text-base sm:text-lg font-bold text-[#d97706] dark:text-[#F59E0B]">
-                  Voz Integrada
-                </div>
-                <div className="landing-subtitle text-xs sm:text-sm font-medium mt-1">
-                  Gravação &amp; Métricas
-                </div>
-              </div>
-
-              <div className="section-card card-semantic-cyan p-5 sm:p-6 rounded-2xl text-center flex flex-col items-center shadow-md">
-                <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#0369a1] dark:text-[#00D4FF] bg-[#00D4FF]/10 border border-[#00D4FF]/30 px-2.5 py-0.5 rounded-full mb-2">
-                  ● REST &amp; Hooks
-                </span>
-                <div className="font-display text-base sm:text-lg font-bold text-[#0369a1] dark:text-[#00D4FF]">
-                  Webhooks &amp; APIs
-                </div>
-                <div className="landing-subtitle text-xs sm:text-sm font-medium mt-1">
-                  Arquitetura Aberta
-                </div>
-              </div>
-
-              <div className="section-card card-semantic-pink p-5 sm:p-6 rounded-2xl text-center flex flex-col items-center shadow-md">
-                <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#db2777] dark:text-[#FF2D9B] bg-[#FF2D9B]/10 border border-[#FF2D9B]/30 px-2.5 py-0.5 rounded-full mb-2">
-                  ● Rastreabilidade
-                </span>
-                <div className="font-display text-base sm:text-lg font-bold text-[#db2777] dark:text-[#FF2D9B]">
-                  E-mail Corporativo
-                </div>
-                <div className="landing-subtitle text-xs sm:text-sm font-medium mt-1">
-                  Histórico Auditável
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 12. COMMAND CENTER (COCKPIT) */}
-        <section id="command-center" className="px-5 py-16 sm:px-8 lg:px-14 landing-section-base">
-          <div className="max-w-6xl mx-auto">
-            {/* Cabeçalho Centralizado com SVG Customizado */}
-            <div className="text-center max-w-3xl mx-auto mb-12">
-              <div className="inline-flex items-center px-3.5 py-1.5 rounded-full text-[11px] font-mono font-bold uppercase tracking-widest bg-[#FF2D9B]/10 border border-[#FF2D9B]/40 text-[#FF2D9B] mb-3.5 mx-auto">
-                <span>COCKPIT OPERACIONAL</span>
-              </div>
-              <h2 className="font-display text-2xl sm:text-4xl font-extrabold landing-title-pink tracking-tight mb-3 text-center">
-                O centro de comando unificado para liderança e time
-              </h2>
-              <p className="landing-subtitle text-sm sm:text-base leading-relaxed text-center mx-auto">
-                Tenha um ambiente único onde diretores acompanham a saúde da receita, gerentes
-                supervisionam gargalos em tempo real e executivos de vendas recebem sua rotina de
-                atividades organizada por prioridade.
-              </p>
-            </div>
-
-            <div className="flex flex-col lg:flex-row items-center gap-10">
-              <div className="lg:w-1/2 w-full space-y-4">
-                <div className="grid grid-cols-2 gap-3.5 font-mono text-xs">
-                  <div className="section-card card-semantic-cyan p-5 sm:p-6 rounded-2xl text-slate-700 dark:text-slate-200 text-center shadow-md">
-                    <span className="font-bold text-[#0369a1] dark:text-[#00D4FF] block mb-2 text-base">
-                      SDRs &amp; BDRs
-                    </span>
-                    <p className="landing-subtitle text-xs sm:text-sm font-medium leading-relaxed">
-                      Fila priorizada por inteligência, roteiro de qualificação e dados de decisores
-                      enriquecidos na tela.
-                    </p>
-                  </div>
-                  <div className="section-card card-semantic-gold p-5 sm:p-6 rounded-2xl text-slate-700 dark:text-slate-200 text-center shadow-md">
-                    <span className="font-bold text-[#d97706] dark:text-[#F59E0B] block mb-2 text-base">
-                      Closers
-                    </span>
-                    <p className="landing-subtitle text-xs sm:text-sm font-medium leading-relaxed">
-                      Visão 360° do deal, mapeamento de objeções históricas e suporte preditivo do
-                      copiloto comercial.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="section-card card-semantic-pink p-5 sm:p-6 rounded-2xl text-slate-700 dark:text-slate-200 text-center shadow-md">
-                  <span className="font-bold text-[#db2777] dark:text-[#FF2D9B] block mb-2 text-base">
-                    Diretoria &amp; Head de Vendas
-                  </span>
-                  <p className="landing-subtitle text-xs sm:text-sm font-medium leading-relaxed">
-                    Previsibilidade acionável, telemetria diária de faturamento e controle
-                    irrestrito de cada etapa do pipeline.
+              <div className="b360-editorial-rows">
+                <article
+                  className="b360-editorial-article"
+                  style={{ backgroundImage: "url('/landing/assets/pillar-market.jpg')" }}
+                >
+                  <h3>Chega de silos</h3>
+                  <p>
+                    CRM, telefonia, mensagens e prospecção precisam compartilhar o mesmo contexto
+                    para evitar retrabalho e perda de oportunidades.
                   </p>
-                </div>
+                </article>
+                <article
+                  className="b360-editorial-article"
+                  style={{ backgroundImage: "url('/landing/assets/pillar-forecast.jpg')" }}
+                >
+                  <h3>Decisões no tempo certo</h3>
+                  <p>
+                    Substitua a leitura tardia de planilhas por visibilidade instantânea das etapas,
+                    estagnações e gargalos operacionais.
+                  </p>
+                </article>
+                <article
+                  className="b360-editorial-article"
+                  style={{ backgroundImage: "url('/landing/assets/pillar-hub.jpg')" }}
+                >
+                  <h3>Nenhuma oportunidade no escuro</h3>
+                  <p>
+                    Organize follow-ups rigorosos, acompanhe negócios sem contato recente e dê
+                    clareza total à próxima melhor ação comercial.
+                  </p>
+                </article>
+              </div>
+            </section>
+
+            {/* Arquitetura da Plataforma */}
+            <section className="b360-section" id="plataforma">
+              <div className="b360-sectionhead">
+                <div className="b360-eyebrow">SISTEMA OPERACIONAL COMERCIAL</div>
+                <h2>Um centro de comando para a sua receita.</h2>
+                <p>Dados, diagnóstico e execução integrados na mesma experiência.</p>
               </div>
 
-              <div className="lg:w-1/2 w-full">
-                <div className="section-card card-semantic-cyan p-6 sm:p-7 shadow-2xl rounded-2xl">
-                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-800">
-                    <span className="font-mono text-xs font-bold text-[#0369a1] dark:text-[#00D4FF]">
-                      BIRTH HUB 360° · COCKPIT ATIVO
-                    </span>
-                    <span className="font-mono text-[10px] px-2.5 py-0.5 rounded-full bg-[#00D4FF]/20 text-[#0369a1] dark:text-[#00D4FF] font-bold border border-[#00D4FF]/30">
-                      100% OPERACIONAL
-                    </span>
-                  </div>
-                  <div className="space-y-3 font-mono text-xs">
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0B1120] border border-[#00D4FF]/35 shadow-sm">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-slate-600 dark:text-slate-300 font-medium">
-                          Leads Ativos na Fila
-                        </span>
-                        <span className="font-extrabold text-[#0369a1] dark:text-[#00D4FF] text-sm sm:text-base">
-                          184 contatos
-                        </span>
-                      </div>
-                      <div className="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                        <div
-                          className="bg-[#00D4FF] h-full rounded-full"
-                          style={{ width: '78%' }}
-                        />
-                      </div>
-                    </div>
+              <div className="b360-editorial-rows">
+                <article
+                  className="b360-editorial-article"
+                  style={{ backgroundImage: "url('/landing/assets/pillar-automation.jpg')" }}
+                >
+                  <h3>Dados e conectividade Multi-CRM</h3>
+                  <p>
+                    Conexões via APIs e webhooks com Bitrix24, HubSpot, Salesforce e Pipedrive
+                    mantêm as informações comerciais sempre alinhadas.
+                  </p>
+                </article>
+                <article
+                  className="b360-editorial-article"
+                  style={{ backgroundImage: "url('/landing/assets/pillar-ai.jpg')" }}
+                >
+                  <h3>Diagnóstico e inteligência</h3>
+                  <p>
+                    Analise a saúde das contas, identifique riscos de perda e encontre caminhos
+                    fundamentados para destravar o fechamento de deals.
+                  </p>
+                </article>
+                <article
+                  className="b360-editorial-article"
+                  style={{ backgroundImage: "url('/landing/assets/pillar-orchestration.jpg')" }}
+                >
+                  <h3>Execução e orquestração</h3>
+                  <p>
+                    Organize a rotina de SDRs, closers e líderes com cadências estruturadas, regras
+                    de SLA e automações acionáveis.
+                  </p>
+                </article>
+              </div>
+            </section>
 
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0B1120] border border-[#F59E0B]/35 shadow-sm">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-slate-600 dark:text-slate-300 font-medium">
-                          Deals com Risco Identificado
-                        </span>
-                        <span className="font-extrabold text-[#d97706] dark:text-[#F59E0B] text-sm sm:text-base">
-                          3 oportunidades
-                        </span>
-                      </div>
-                      <div className="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                        <div
-                          className="bg-[#F59E0B] h-full rounded-full"
-                          style={{ width: '18%' }}
-                        />
-                      </div>
-                    </div>
+            {/* Fluxo */}
+            <section className="b360-section" id="fluxo">
+              <div className="b360-sectionhead">
+                <div className="b360-eyebrow">JORNADA COMPLETA</div>
+                <h2>Da prospecção ao fechamento.</h2>
+                <p>Um fluxo contínuo, com contexto em cada passagem de bastão.</p>
+              </div>
 
-                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0B1120] border border-[#FF2D9B]/35 shadow-sm">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-slate-600 dark:text-slate-300 font-medium">
-                          Cadências em Execução
-                        </span>
-                        <span className="font-extrabold text-[#db2777] dark:text-[#FF2D9B] text-sm sm:text-base">
-                          12 ativas
-                        </span>
-                      </div>
-                      <div className="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                        <div
-                          className="bg-[#FF2D9B] h-full rounded-full"
-                          style={{ width: '92%' }}
-                        />
-                      </div>
+              <ol className="b360-flow">
+                <li
+                  className="b360-flow-step"
+                  style={{ backgroundImage: "url('/landing/assets/pillar-hub.jpg')" }}
+                >
+                  <span className="b360-step-num">01</span>
+                  <h3>Entrada e captura</h3>
+                  <p>Leads e contas chegam por CRMs, campanhas e prospecção ativa em tempo real.</p>
+                </li>
+                <li
+                  className="b360-flow-step"
+                  style={{ backgroundImage: "url('/landing/assets/pillar-market.jpg')" }}
+                >
+                  <span className="b360-step-num">02</span>
+                  <h3>Enriquecimento B2B</h3>
+                  <p>
+                    Dados de empresas e decisores apoiam a validação do ICP e mapeamento de contas.
+                  </p>
+                </li>
+                <li
+                  className="b360-flow-step"
+                  style={{ backgroundImage: "url('/landing/assets/pillar-orchestration.jpg')" }}
+                >
+                  <span className="b360-step-num">03</span>
+                  <h3>Cadência e SLA</h3>
+                  <p>
+                    Distribuição automática e contato ágil seguindo regras operacionais rígidas.
+                  </p>
+                </li>
+                <li
+                  className="b360-flow-step"
+                  style={{ backgroundImage: "url('/landing/assets/pillar-ai.jpg')" }}
+                >
+                  <span className="b360-step-num">04</span>
+                  <h3>Apoio com IA</h3>
+                  <p>
+                    Histórico contextual e matriz de objeções orientam as reuniões e abordagens.
+                  </p>
+                </li>
+                <li
+                  className="b360-flow-step"
+                  style={{ backgroundImage: "url('/landing/assets/pillar-forecast.jpg')" }}
+                >
+                  <span className="b360-step-num">05</span>
+                  <h3>Fechamento e dados</h3>
+                  <p>
+                    O aprendizado dos negócios ganhos e perdidos realimenta toda a operação
+                    comercial.
+                  </p>
+                </li>
+              </ol>
+            </section>
+
+            {/* Seção IA */}
+            <section className="b360-section" id="ia">
+              <div className="b360-ai-grid">
+                <div>
+                  <div className="b360-eyebrow">COPILOTO COMERCIAL</div>
+                  <h2 className="text-3xl font-extrabold text-white mb-4">
+                    Inteligência que compreende seu pipeline.
+                  </h2>
+                  <p className="text-slate-400 text-base mb-6">
+                    O copiloto analisa o estágio de cada negociação, o histórico das interações e as
+                    objeções recorrentes para apoiar sua equipe em tempo real.
+                  </p>
+                  <div className="flex flex-col gap-4">
+                    <div className="p-5 rounded-2xl border border-cyan-500/20 bg-slate-900/60">
+                      <h3 className="text-lg font-bold text-cyan-400 mb-1">
+                        Diagnóstico de entraves
+                      </h3>
+                      <p className="text-slate-300 text-sm">
+                        Identifique negócios estagnados no funil e receba o contexto exato do motivo
+                        de bloqueio.
+                      </p>
+                    </div>
+                    <div className="p-5 rounded-2xl border border-pink-500/20 bg-slate-900/60">
+                      <h3 className="text-lg font-bold text-pink-400 mb-1">
+                        Próxima melhor ação (NBA)
+                      </h3>
+                      <p className="text-slate-300 text-sm">
+                        Receba recomendações preditivas para avançar negociações e contornar
+                        objeções de preço e escopo.
+                      </p>
                     </div>
                   </div>
                 </div>
+
+                <div className="b360-copilot-card">
+                  <div className="b360-copilot-top">
+                    <span>COPILOTO ON-LINE</span>
+                    <small>Simulação Contextual</small>
+                  </div>
+                  <h3>Oportunidade pede atenção.</h3>
+                  <p>
+                    Proposta comercial no valor de R$ 145.000 enviada há 4 dias sem retorno
+                    registrado.
+                  </p>
+                  <div className="b360-suggestion-box">
+                    <b>Próxima Ação Sugerida:</b>
+                    <p>
+                      Retomar contato com o CFO destacando o caso de ROI simulado e propor reunião
+                      de alinhamento de implantação.
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
+            </section>
+
+            {/* Ecossistema / Integrações */}
+            <section className="b360-section" id="ecossistema">
+              <div className="b360-sectionhead">
+                <div className="b360-eyebrow">CONECTIVIDADE TOTAL</div>
+                <h2>Conectado ao seu ecossistema.</h2>
+                <p>
+                  Uma operação aberta e compatível com as ferramentas que sua empresa já utiliza.
+                </p>
+              </div>
+
+              <div className="b360-integrations">
+                {ADAPTIVE_INTEGRATIONS.map((integ) => (
+                  <article key={integ.name} className="b360-integration-card">
+                    <div className="b360-integration-title">
+                      <img src={integ.icon} alt={`${integ.name} logo`} />
+                      <h3>{integ.name}</h3>
+                    </div>
+                    <p>{integ.desc}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            {/* Final CTA */}
+            <section className="b360-final-cta">
+              <h2>Coloque sua operação comercial sob comando.</h2>
+              <p>
+                Explore a experiência do Birth Hub 360° e descubra como dados, equipe e execução se
+                potencializam mutuamente.
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-4">
+                <button
+                  className="b360-aurora"
+                  type="button"
+                  onClick={() => handleSwitchView('command')}
+                >
+                  <span className="b360-aurora-inner">
+                    Acessar Command Center <span aria-hidden="true">→</span>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleGoToLogin}
+                  className="px-6 py-3 rounded-full text-xs font-mono font-bold tracking-wider uppercase border border-slate-700 text-slate-300 hover:text-white hover:border-slate-500 transition-colors"
+                >
+                  Acessar Plataforma
+                </button>
+              </div>
+            </section>
           </div>
-        </section>
+        )}
 
-        {/* 13. CTA FINAL — EXECUTIVE COMMAND DECK */}
-        <section id="cta" className="px-5 py-20 sm:px-8 lg:px-14 landing-section-alt text-center">
-          <div className="max-w-4xl mx-auto cta-command-deck p-8 sm:p-12 text-center flex flex-col items-center">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-[#00D4FF]/15 border border-[#00D4FF]/40 text-[#0369a1] dark:text-[#00D4FF] mb-5">
-              <span className="w-2 h-2 rounded-full bg-[#00D4FF] animate-pulse" />
-              <span>SISTEMA OPERACIONAL COMERCIAL B2B</span>
-            </div>
-            <h2 className="font-display text-3xl sm:text-5xl font-extrabold landing-title-gradient tracking-tight leading-tight text-center mx-auto max-w-2xl">
-              <span>Pronto para colocar sua operação comercial sob comando?</span>
-            </h2>
-            <p className="landing-subtitle mt-4 text-base sm:text-lg max-w-2xl mx-auto text-center font-medium leading-relaxed">
-              Acesse a plataforma corporativa do Birth Hub 360° e conecte dados, equipe e execução
-              em tempo real com governança Multi-CRM.
-            </p>
-
-            {/* Badges de Confiança Enterprise */}
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 text-xs font-mono font-semibold">
-              <span className="px-3 py-1 rounded-full bg-[#00D4FF]/10 text-[#0369a1] dark:text-[#00D4FF] border border-[#00D4FF]/30">
-                ✦ SLA 99.9%
-              </span>
-              <span className="px-3 py-1 rounded-full bg-[#FF2D9B]/10 text-[#db2777] dark:text-[#FF2D9B] border border-[#FF2D9B]/30">
-                ✦ Isolamento Multi-Tenant
-              </span>
-              <span className="px-3 py-1 rounded-full bg-[#F59E0B]/10 text-[#d97706] dark:text-[#F59E0B] border border-[#F59E0B]/30">
-                ✦ Conexão Multi-CRM
-              </span>
-              <span className="px-3 py-1 rounded-full bg-[#10B981]/10 text-[#059669] dark:text-[#10B981] border border-[#10B981]/30">
-                ✦ LGPD Compliant
-              </span>
-            </div>
-
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+        {/* MODO 2: COMMAND CENTER (SANDBOX INTERATIVO) */}
+        {viewMode === 'command' && (
+          <div className="b360-shell b360-dashboard-layout">
+            {/* Sidebar */}
+            <aside className="b360-side" aria-label="Módulos da Plataforma">
+              <div className="b360-side-brand">
+                <BH360LogoMark size={28} />
+                <span className="font-bold text-white">
+                  Birth Hub <strong className="text-pink-500">360°</strong>
+                </span>
+              </div>
+              <small>PRINCIPAL</small>
               <button
                 type="button"
-                onClick={handleGoToLogin}
-                className="btn-cta-light btn-cta-pulse inline-flex items-center justify-center gap-3 px-10 py-4 rounded-xl font-mono text-base font-bold uppercase tracking-wider cursor-pointer shadow-lg"
+                className="b360-active"
+                onClick={() =>
+                  handleOpenModal(
+                    'Command Center',
+                    'Centro unificado de operações de receita e monitoramento em tempo real.',
+                  )
+                }
               >
-                <span>Acessar Plataforma</span>
-                <ArrowRight className="w-5 h-5" />
+                <span className="b360-dot" /> Command Center
               </button>
-            </div>
-          </div>
-        </section>
+              <button
+                type="button"
+                onClick={() =>
+                  handleOpenModal(
+                    'Inteligência Comercial',
+                    'Copiloto de IA, Next Best Action (NBA), diagnóstico de gargalos e recomendações de deals.',
+                  )
+                }
+              >
+                ✧ Inteligência
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  handleOpenModal(
+                    'CRM & BI 360°',
+                    'Pipeline unificado, visualização de negócios por valor, previsão ponderada e telemetria.',
+                  )
+                }
+              >
+                ▦ CRM & BI
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  handleOpenModal(
+                    'Prospecção B2B',
+                    'Mapeamento de empresas no Brasil, descoberta de sócios e decisores, qualificação de ICP.',
+                  )
+                }
+              >
+                ◎ Prospecção
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  handleOpenModal(
+                    'Automações',
+                    'Gatilhos Multi-CRM, cadências automáticas de follow-up e sincronização de eventos.',
+                  )
+                }
+              >
+                ⌘ Automações
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  handleOpenModal(
+                    'VoiceHub',
+                    'Telefonia corporativa em nuvem, discador automático e transcrição com inteligência artificial.',
+                  )
+                }
+              >
+                ◈ VoiceHub
+              </button>
+              <small>CONTROLE</small>
+              <button
+                type="button"
+                onClick={() =>
+                  handleOpenModal(
+                    'Governança & RLS',
+                    'Isolamento multi-tenant estrito, controle de papéis (RBAC) e conformidade integral LGPD.',
+                  )
+                }
+              >
+                ◉ Governança
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  handleOpenModal(
+                    'Central de Integrações',
+                    'Conectores para Bitrix24, Salesforce, HubSpot, WhatsApp Oficial e webhooks customizados.',
+                  )
+                }
+              >
+                ⥈ Integrações
+              </button>
+            </aside>
 
-        {/* 14. FOOTER */}
-        <footer className="px-5 py-10 sm:px-8 lg:px-14 landing-section-footer">
-          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 border-b border-slate-800 pb-8 mb-6">
-            <div className="flex items-center gap-3">
-              <BH360LogoMark size={42} />
-              <div>
-                <div className="font-display text-lg font-bold text-[#00D4FF]">
-                  Birth Hub <span className="text-[#FF2D9B]">360°</span>
+            {/* Conteúdo Central do Command Center */}
+            <div>
+              <div className="b360-dash-header">
+                <div>
+                  <div className="b360-eyebrow">SEU CENTRO DE OPERAÇÕES</div>
+                  <h1>Command Center</h1>
+                  <p>Agentes inteligentes, operações e indicadores em uma única tela.</p>
                 </div>
-                <div className="font-mono text-[10px] uppercase tracking-widest text-[#F59E0B]">
-                  Business Command Center
+                <button
+                  className="b360-aurora b360-small"
+                  type="button"
+                  onClick={() =>
+                    handleOpenModal(
+                      'Nova Missão Comercial',
+                      'Defina o objetivo operacional: prospecção ativa, auditoria de gargalos ou cadência multicanal.',
+                    )
+                  }
+                >
+                  <span className="b360-aurora-inner">+ Nova missão</span>
+                </button>
+              </div>
+
+              {/* Card do Supervisor On-line */}
+              <section className="b360-supervisor">
+                <div className="b360-eyebrow">SUPERVISOR ON-LINE</div>
+                <h2>O que vamos conquistar hoje?</h2>
+                <p>
+                  Descreva seu objetivo de vendas. Eu coordeno os agentes, analiso o pipeline e
+                  trago as ações prioritárias.
+                </p>
+                <button
+                  className="b360-aurora b360-small"
+                  type="button"
+                  onClick={() =>
+                    handleOpenModal(
+                      'Iniciar Missão Autônoma',
+                      'O Supervisor ativará os agentes de Enriquecimento, Qualificação e Copiloto para analisar seu pipeline em tempo real.',
+                    )
+                  }
+                >
+                  <span className="b360-aurora-inner">Iniciar missão →</span>
+                </button>
+              </section>
+
+              {/* Métricas Operacionais */}
+              <div className="b360-metrics">
+                <div className="b360-metric">
+                  <small>Missões Ativas</small>
+                  <strong>128</strong>
+                  <span>● Operação contínua</span>
+                </div>
+                <div className="b360-metric">
+                  <small>Agentes Acionados</small>
+                  <strong>19</strong>
+                  <span>● Em execução paralela</span>
+                </div>
+                <div className="b360-metric">
+                  <small>Oportunidades em Radar</small>
+                  <strong>86</strong>
+                  <span>● R$ 4.2M em pipeline</span>
                 </div>
               </div>
-            </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-6 font-mono text-xs text-slate-300">
-              <a href="#problema" className="hover:text-[#00D4FF] transition-colors">
-                Problema
-              </a>
-              <a href="#plataforma" className="hover:text-[#00D4FF] transition-colors">
-                Plataforma
-              </a>
-              <a href="#pilares" className="hover:text-[#00D4FF] transition-colors">
-                8 Pilares
-              </a>
-              <a href="#fluxo" className="hover:text-[#00D4FF] transition-colors">
-                Fluxo
-              </a>
-              <a href="#ia" className="hover:text-[#00D4FF] transition-colors">
-                IA
-              </a>
-              <a href="#performance" className="hover:text-[#00D4FF] transition-colors">
-                Performance
-              </a>
-              <a href="#previsibilidade" className="hover:text-[#00D4FF] transition-colors">
-                Previsibilidade
-              </a>
+              {/* Módulos do Sistema */}
+              <div
+                className="b360-sectionhead"
+                style={{ margin: '36px 0 20px', textAlign: 'left' }}
+              >
+                <div className="b360-eyebrow">EXPLORE A PLATAFORMA</div>
+                <h2>Seus oito pilares operacionais</h2>
+                <p style={{ margin: 0 }}>
+                  Clique em qualquer módulo para inspecionar os recursos e capacidades integradas.
+                </p>
+              </div>
+
+              <div className="b360-modules">
+                {COMMAND_MODULES.map((mod) => (
+                  <button
+                    key={mod.name}
+                    type="button"
+                    className="b360-module"
+                    onClick={() => handleOpenModal(mod.name, mod.modalDesc)}
+                  >
+                    <span className="b360-ico">{mod.ico}</span>
+                    <b>{mod.name}</b>
+                    <span>{mod.desc}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
+        )}
 
-          <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs text-slate-400 text-center">
-            <div className="flex flex-col sm:flex-row items-center gap-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono text-[11px]">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>Sistemas Operacionais · Latência 22ms · 99.98% Uptime</span>
-              </div>
-              <p>© {new Date().getFullYear()} Birth Hub 360°. Todos os direitos reservados.</p>
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-              <Link
-                to="/terms"
-                className="hover:text-[#00D4FF] transition-colors underline-offset-4 hover:underline"
-              >
-                Termos de Uso
-              </Link>
-              <span>·</span>
-              <Link
-                to="/privacy"
-                className="hover:text-[#00D4FF] transition-colors underline-offset-4 hover:underline"
-              >
+        {/* Footer Institucional */}
+        <footer className="b360-footer">
+          <div className="b360-shell b360-footer-row">
+            <span>© 2026 Birth Hub 360° · Todos os direitos reservados.</span>
+            <div className="flex items-center gap-4 text-xs">
+              <Link to="/privacy" className="hover:text-[#00D4FF] transition-colors">
                 Política de Privacidade
               </Link>
               <span>·</span>
@@ -1971,6 +1184,38 @@ export function Landing360({
             </div>
           </div>
         </footer>
+
+        {/* Modal Interativo de Demonstração / Inspeção de Recursos */}
+        {activeModal && (
+          // biome-ignore lint/a11y/useKeyWithClickEvents: backdrop click-to-close
+          <div
+            className="b360-dialog-backdrop"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="b360-dialog-title"
+            onClick={handleCloseModal}
+          >
+            {/* biome-ignore lint/a11y/noStaticElementInteractions: modal dialog box stopPropagation */}
+            {/* biome-ignore lint/a11y/useKeyWithClickEvents: modal dialog box stopPropagation */}
+            <div className="b360-dialog-box" onClick={(e) => e.stopPropagation()}>
+              <div className="b360-eyebrow">MÓDULO PLATAFORMA</div>
+              <h2 id="b360-dialog-title">{activeModal.title}</h2>
+              <p id="b360-dialog-desc">{activeModal.desc}</p>
+              <div className="b360-modal-actions">
+                <button type="button" className="b360-modalclose" onClick={handleCloseModal}>
+                  Fechar
+                </button>
+                <button
+                  type="button"
+                  className="px-5 py-2 rounded-full font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-[#00D4FF] to-[#0099CC] text-[#031422] hover:opacity-95 transition-opacity"
+                  onClick={handleGoToLogin}
+                >
+                  Acessar Plataforma →
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ════════════════════════════════════════════════════════════════════
@@ -2257,7 +1502,7 @@ export function Landing360({
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 hover:text-[#00D4FF] transition-colors p-1"
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-600 dark:text-slate-400 hover:text-[#00D4FF] transition-colors p-1"
                         aria-label="Mostrar ou ocultar senha"
                       >
                         {showPassword ? (

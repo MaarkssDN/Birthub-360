@@ -168,8 +168,8 @@ export function HeroConversionSection({ onGoToLogin }: HeroConversionSectionProp
         {/* ====================================================================
             BARRA DE TESTE A/B INTERATIVO (EXPERIMENTAÇÃO RÁPIDA EM TEMPO REAL)
             ==================================================================== */}
-        <div className="mb-6 inline-flex flex-wrap items-center justify-center gap-1.5 p-1 rounded-full bg-slate-900/60 dark:bg-black/60 border border-slate-700/70 backdrop-blur-md shadow-inner">
-          <span className="font-mono text-[10px] uppercase font-bold tracking-wider text-slate-400 px-3 py-1 hidden sm:inline-flex items-center gap-1.5">
+        <div className="mb-6 inline-flex flex-wrap items-center justify-center gap-1.5 p-1 rounded-full bg-slate-900 border border-slate-700 shadow-inner">
+          <span className="font-mono text-[10px] uppercase font-bold tracking-wider text-slate-200 px-3 py-1 hidden sm:inline-flex items-center gap-1.5">
             <Sparkles className="w-3 h-3 text-[#00D4FF]" />
             Teste A/B:
           </span>
@@ -179,7 +179,7 @@ export function HeroConversionSection({ onGoToLogin }: HeroConversionSectionProp
             className={`px-3 py-1 rounded-full font-mono text-xs font-bold transition-all ${
               activeVariant === 'A'
                 ? 'bg-[#00D4FF] text-slate-950 shadow-[0_0_12px_rgba(0,212,255,0.4)]'
-                : 'text-slate-300 hover:text-white hover:bg-white/5'
+                : 'text-slate-200 hover:text-white hover:bg-white/10'
             }`}
           >
             A · Previsibilidade
@@ -190,7 +190,7 @@ export function HeroConversionSection({ onGoToLogin }: HeroConversionSectionProp
             className={`px-3 py-1 rounded-full font-mono text-xs font-bold transition-all ${
               activeVariant === 'B'
                 ? 'bg-[#FF2D9B] text-white shadow-[0_0_12px_rgba(255,45,155,0.4)]'
-                : 'text-slate-300 hover:text-white hover:bg-white/5'
+                : 'text-slate-200 hover:text-white hover:bg-white/10'
             }`}
           >
             B · Automação IA
@@ -201,7 +201,7 @@ export function HeroConversionSection({ onGoToLogin }: HeroConversionSectionProp
             className={`px-3 py-1 rounded-full font-mono text-xs font-bold transition-all ${
               activeVariant === 'C'
                 ? 'bg-[#F59E0B] text-slate-950 shadow-[0_0_12px_rgba(245,158,11,0.4)]'
-                : 'text-slate-300 hover:text-white hover:bg-white/5'
+                : 'text-slate-200 hover:text-white hover:bg-white/10'
             }`}
           >
             C · Aceleração & ROI
@@ -212,13 +212,12 @@ export function HeroConversionSection({ onGoToLogin }: HeroConversionSectionProp
             BLOCO CENTRAL: HEADLINE + SUBTITLE + CTAs
             ==================================================================== */}
         <div className="text-center max-w-4xl mx-auto flex flex-col items-center">
-          {/* Eyebrow Kicker com Status Pulsante */}
+          {/* Eyebrow Kicker com Status Pulsante (Container opaco de alto contraste) */}
           <div
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full font-mono text-[11px] font-bold uppercase tracking-wider mb-5 shadow-sm"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full font-mono text-[11px] font-bold uppercase tracking-wider mb-5 shadow-sm bg-slate-950 border"
             style={{
               color: content.tagColor,
-              backgroundColor: `${content.tagColor}15`,
-              border: `1.5px solid ${content.tagColor}40`,
+              borderColor: `${content.tagColor}50`,
             }}
           >
             <span
@@ -230,6 +229,9 @@ export function HeroConversionSection({ onGoToLogin }: HeroConversionSectionProp
 
           {/* Headline H1 com Contraste Neon de Alta Conversão */}
           <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.18] text-center mb-6">
+            <span className="block text-sm sm:text-base font-mono font-bold uppercase tracking-widest text-sky-700 dark:text-[#00D4FF] mb-2">
+              Dados que Conectam · Inteligência que Decide
+            </span>
             <span className="landing-title-cyan">{content.titlePrefix}</span>
             <span
               className="font-extrabold ml-1.5"
@@ -281,7 +283,7 @@ export function HeroConversionSection({ onGoToLogin }: HeroConversionSectionProp
           </div>
 
           {/* Micro-Garantia Anti-Fricção */}
-          <div className="mt-3.5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 font-mono text-xs text-slate-400">
+          <div className="mt-3.5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 font-mono text-xs text-slate-200">
             <span className="inline-flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
               Acesso Imediato
@@ -309,7 +311,7 @@ export function HeroConversionSection({ onGoToLogin }: HeroConversionSectionProp
                 <span className="w-3 h-3 rounded-full bg-rose-500/80 border border-rose-600/50" />
                 <span className="w-3 h-3 rounded-full bg-amber-500/80 border border-amber-600/50" />
                 <span className="w-3 h-3 rounded-full bg-emerald-500/80 border border-emerald-600/50" />
-                <span className="ml-2 font-mono text-[11px] font-semibold text-slate-400 hidden sm:inline">
+                <span className="ml-2 font-mono text-[11px] font-semibold text-slate-200 hidden sm:inline">
                   BirthHub 360° · Revenue Operating System v4.2
                 </span>
               </div>
@@ -328,7 +330,7 @@ export function HeroConversionSection({ onGoToLogin }: HeroConversionSectionProp
               {/* Barra de KPIs Rápidos */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div className="p-3.5 sm:p-4 rounded-xl bg-slate-800/50 border border-slate-700/60">
-                  <div className="flex items-center justify-between text-xs font-mono text-slate-400 mb-1">
+                  <div className="flex items-center justify-between text-xs font-mono text-slate-200 mb-1">
                     <span>PIPELINE MONITORADO</span>
                     <TrendingUp className="w-4 h-4 text-[#00D4FF]" />
                   </div>
@@ -341,20 +343,20 @@ export function HeroConversionSection({ onGoToLogin }: HeroConversionSectionProp
                 </div>
 
                 <div className="p-3.5 sm:p-4 rounded-xl bg-slate-800/50 border border-slate-700/60">
-                  <div className="flex items-center justify-between text-xs font-mono text-slate-400 mb-1">
+                  <div className="flex items-center justify-between text-xs font-mono text-slate-200 mb-1">
                     <span>PRECISÃO PREDITIVA</span>
                     <BarChart3 className="w-4 h-4 text-[#FF2D9B]" />
                   </div>
                   <div className="font-display text-xl sm:text-2xl font-black text-pink-400">
                     99.4%
                   </div>
-                  <div className="text-[11px] font-mono text-slate-400 mt-1">
+                  <div className="text-[11px] font-mono text-slate-200 mt-1">
                     Forecast auditado por IA
                   </div>
                 </div>
 
                 <div className="p-3.5 sm:p-4 rounded-xl bg-slate-800/50 border border-slate-700/60">
-                  <div className="flex items-center justify-between text-xs font-mono text-slate-400 mb-1">
+                  <div className="flex items-center justify-between text-xs font-mono text-slate-200 mb-1">
                     <span>TEMPO DE RESPOSTA</span>
                     <Zap className="w-4 h-4 text-[#F59E0B]" />
                   </div>
@@ -378,8 +380,8 @@ export function HeroConversionSection({ onGoToLogin }: HeroConversionSectionProp
                     }}
                     className={`px-3 py-1 rounded-lg font-mono text-xs font-bold transition-all ${
                       activeTabTelemetry === 'deal'
-                        ? 'bg-[#00D4FF]/20 text-[#00D4FF] border border-[#00D4FF]/40'
-                        : 'text-slate-400 hover:text-slate-200'
+                        ? 'bg-cyan-950 text-cyan-300 border border-cyan-400/60 shadow-[0_0_10px_rgba(0,212,255,0.2)]'
+                        : 'text-slate-300 hover:text-white'
                     }`}
                   >
                     1. Deal Intelligence
@@ -392,14 +394,14 @@ export function HeroConversionSection({ onGoToLogin }: HeroConversionSectionProp
                     }}
                     className={`px-3 py-1 rounded-lg font-mono text-xs font-bold transition-all ${
                       activeTabTelemetry === 'voice'
-                        ? 'bg-[#FF2D9B]/20 text-[#FF2D9B] border border-[#FF2D9B]/40'
-                        : 'text-slate-400 hover:text-slate-200'
+                        ? 'bg-pink-950 text-pink-300 border border-pink-400/60 shadow-[0_0_10px_rgba(255,45,155,0.2)]'
+                        : 'text-slate-300 hover:text-white'
                     }`}
                   >
                     2. Agente Autônomo VoiceHub
                   </button>
                 </div>
-                <span className="font-mono text-[11px] text-slate-500 hidden sm:inline">
+                <span className="font-mono text-[11px] text-slate-300 hidden sm:inline">
                   {content.microProof}
                 </span>
               </div>
@@ -419,7 +421,7 @@ export function HeroConversionSection({ onGoToLogin }: HeroConversionSectionProp
                     <div className="font-display text-lg font-bold text-slate-100">
                       Hospital Materno Alpha · R$ 320.000
                     </div>
-                    <p className="text-xs text-slate-400 leading-relaxed">
+                    <p className="text-xs text-slate-200 leading-relaxed">
                       Sinal de compra detectado: CFO e Diretor de Compras revisaram a proposta 3
                       vezes nas últimas 2 horas.
                     </p>
@@ -430,12 +432,12 @@ export function HeroConversionSection({ onGoToLogin }: HeroConversionSectionProp
                       <span className="text-amber-400 font-bold">Próxima Ação Recomendada:</span>{' '}
                       Disparar minuta de assinatura com cláusula SLA prioritária.
                     </div>
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-800 text-[11px] font-mono text-slate-400">
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-800 text-[11px] font-mono text-slate-300">
                       <span className="flex items-center gap-1.5 text-cyan-400">
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         CRM Sincronizado via Webhook
                       </span>
-                      <span className="text-slate-500">Há 2 minutos</span>
+                      <span className="text-slate-300">Há 2 minutos</span>
                     </div>
                   </div>
                 </div>
@@ -454,7 +456,7 @@ export function HeroConversionSection({ onGoToLogin }: HeroConversionSectionProp
                     <div className="font-display text-lg font-bold text-slate-100">
                       Qualificação Automática · 42 segundos
                     </div>
-                    <p className="text-xs text-slate-400 leading-relaxed italic border-l-2 border-pink-500/40 pl-3">
+                    <p className="text-xs text-slate-200 leading-relaxed italic border-l-2 border-pink-500/40 pl-3">
                       “Olá Dr. Renato, identificamos sua solicitação sobre o módulo de previsão de
                       receita. O especialista tem horário livre hoje às 16:30. Podemos confirmar?”
                     </p>
@@ -466,21 +468,21 @@ export function HeroConversionSection({ onGoToLogin }: HeroConversionSectionProp
                       reunião para 16:30. Oportunidade movida automaticamente para o estágio
                       “Reunião Agendada”.
                     </div>
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-800 text-[11px] font-mono text-slate-400">
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-800 text-[11px] font-mono text-slate-300">
                       <span className="flex items-center gap-1.5 text-pink-400">
                         <PhoneCall className="w-3.5 h-3.5" />
                         Gravação & Transcrição Salvas
                       </span>
-                      <span className="text-slate-500">Zero preenchimento manual</span>
+                      <span className="text-slate-300">Zero preenchimento manual</span>
                     </div>
                   </div>
                 </div>
               )}
 
               {/* Selos de Confiança Enterprise e Integração */}
-              <div className="pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-slate-400">
+              <div className="pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs font-mono text-slate-300">
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-500">Conexão API & Webhooks:</span>
+                  <span className="text-slate-300">Conexão API & Webhooks:</span>
                   <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-semibold">
                     Bitrix24
                   </span>
@@ -496,11 +498,11 @@ export function HeroConversionSection({ onGoToLogin }: HeroConversionSectionProp
                 </div>
 
                 <div className="flex items-center gap-3 text-[11px]">
-                  <span className="inline-flex items-center gap-1 text-slate-400">
+                  <span className="inline-flex items-center gap-1 text-slate-300">
                     <Lock className="w-3.5 h-3.5 text-[#00D4FF]" />
                     Isolamento RLS Multi-Tenant
                   </span>
-                  <span className="inline-flex items-center gap-1 text-slate-400">
+                  <span className="inline-flex items-center gap-1 text-slate-300">
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                     LGPD 100% Conforme
                   </span>

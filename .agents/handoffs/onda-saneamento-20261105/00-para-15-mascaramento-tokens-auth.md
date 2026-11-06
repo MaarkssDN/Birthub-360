@@ -1,7 +1,7 @@
 De: 00 — Coordenador
 Para: 15 — Segurança Aplicada e Rotação de Segredos
 Onda: onda-saneamento-20261105
-Status: aberto
+Status: resolvido
 Prioridade: bloqueador
 Bloqueador-ref: DIV-AGENTE-15-001 (B-04)
 Sprint destino: Onda 0 — Bloqueadores Críticos e Gates
@@ -31,3 +31,9 @@ Base de auditoria: DIVIDAS-AGENTE-15.md e DIVIDAS-AGENTE-00.md.
 
 ## Contexto adicional
 Handoff gerado a partir do Plano de Saneamento de Dívidas Técnicas. Correção prioritária para fechamento do Gate da Onda 0.
+
+## Resolução (Agente 15)
+- Status atualizado para: resolvido
+- Em `src/lib/auth.ts`: implementado mascaramento regex de token no resetUrl (`url.replace(/(token=)[^&]+/, '$1***')`) evitando vazamento de token em logs de fallback em ambientes de dev/staging.
+- Em `src/lib/voice-hub/controllers/auth.controller.ts`: substituído logging cru de objetos de erro potencialmente portadores de tokens por objetos sanitizados `{ err: { message, name } }`.
+- `src/lib/logger.ts`: redaction paths auditados e confirmados cobrindo `token`, `resetUrl`, `authorization`, `password`, `secret`.

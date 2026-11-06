@@ -152,7 +152,7 @@ export function RoiSimulatorModal({
                 onChange={(e) => setDealsCount(Number(e.target.value))}
                 className="w-full accent-[#00D4FF] cursor-pointer"
               />
-              <div className="flex justify-between text-[10px] font-mono text-slate-500">
+              <div className="flex justify-between text-[10px] font-mono text-slate-300">
                 <span>10 deals</span>
                 <span>150 deals</span>
                 <span>300+ deals</span>
@@ -179,7 +179,7 @@ export function RoiSimulatorModal({
                 onChange={(e) => setAvgTicket(Number(e.target.value))}
                 className="w-full accent-[#FF2D9B] cursor-pointer"
               />
-              <div className="flex justify-between text-[10px] font-mono text-slate-500">
+              <div className="flex justify-between text-[10px] font-mono text-slate-300">
                 <span>R$ 5.000</span>
                 <span>R$ 75.000</span>
                 <span>R$ 150.000+</span>
@@ -210,7 +210,7 @@ export function RoiSimulatorModal({
                 onChange={(e) => setLeakRate(Number(e.target.value))}
                 className="w-full accent-[#F59E0B] cursor-pointer"
               />
-              <div className="flex justify-between text-[10px] font-mono text-slate-500">
+              <div className="flex justify-between text-[10px] font-mono text-slate-300">
                 <span>10% (Funil Maduro)</span>
                 <span>35% (Média de Mercado)</span>
                 <span>60% (Sem Cadência)</span>
@@ -227,7 +227,7 @@ export function RoiSimulatorModal({
                 </div>
                 <div className="font-display text-xl font-black text-rose-300 mt-1">
                   {formatCurrency(monthlyLeakedRevenue)}
-                  <span className="text-xs font-normal text-slate-400 font-mono block">
+                  <span className="text-xs font-normal text-slate-200 font-mono block">
                     por estagnação no funil
                   </span>
                 </div>
@@ -247,7 +247,7 @@ export function RoiSimulatorModal({
               </div>
             </div>
 
-            <div className="flex items-center gap-2 pt-2 border-t border-slate-800/80 text-xs font-mono text-slate-400">
+            <div className="flex items-center gap-2 pt-2 border-t border-slate-800/80 text-xs font-mono text-slate-200">
               <Zap className="w-4 h-4 text-cyan-400 shrink-0" />
               <span>
                 <strong>+15 horas semanais</strong> liberadas por vendedor ao automatizar
@@ -267,7 +267,7 @@ export function RoiSimulatorModal({
               <ArrowRight className="w-5 h-5 text-slate-950" />
             </button>
 
-            <div className="flex items-center justify-center gap-4 text-[11px] font-mono text-slate-400">
+            <div className="flex items-center justify-center gap-4 text-[11px] font-mono text-slate-200">
               <span className="inline-flex items-center gap-1">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                 Sem compromisso

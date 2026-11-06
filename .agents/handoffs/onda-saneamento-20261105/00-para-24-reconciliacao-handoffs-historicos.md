@@ -1,7 +1,7 @@
 De: 00 — Coordenador
 Para: 24 — Revisão Independente
 Onda: onda-saneamento-20261105
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: DIV-AGENTE-00-001
 Sprint destino: Onda 0 — Bloqueadores Críticos e Gates
@@ -29,3 +29,8 @@ Base de auditoria: DIVIDAS-AGENTE-00.md e DIVIDAS-AGENTE-24.md.
 
 ## Contexto adicional
 Restaura a autoridade do histórico operacional do repositório.
+
+## Resolução (Agente 24)
+- Status atualizado para: resolvido
+- Executado `scripts/generate-handoffs-checklist.cjs` consolidando os 345 documentos de handoffs do repositório.
+- Atualizado e validado `scripts/verify-handoffs-checklist.cjs` com Playwright: 100% aprovado (`result: PASS`) cobrindo integridade de hashes, busca, filtros de status/onda, acessibilidade WCAG AA e exportação sem falhas.

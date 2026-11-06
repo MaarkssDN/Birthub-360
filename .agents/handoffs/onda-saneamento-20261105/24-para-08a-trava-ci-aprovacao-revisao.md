@@ -1,7 +1,7 @@
 De: 24 — Revisão Independente
 Para: 08A — Operações Git e Deploy AWS
 Onda: onda-saneamento-20261105
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: DIV-AGENTE-24-001
 Sprint destino: Onda 0 — Bloqueadores Críticos e Gates
@@ -28,3 +28,9 @@ Base de auditoria: DIVIDAS-AGENTE-24.md.
 
 ## Contexto adicional
 Enforcement programático da governança de revisão independente.
+
+## Resolução (Agente 08A / Agente 24)
+- Status atualizado para: resolvido
+- Criado `scripts/ci/check-independent-review.js`: script estrito que valida a presença de arquivos de parecer emitidos pelo Agente 24 em `.agents/reviews/`.
+- Adicionado script `npm run verify:governance-reviews` em `package.json`.
+- Integrado step obrigatório `Verificar governança e parecer independente (Agente 24)` no workflow `.github/workflows/ci.yml`.

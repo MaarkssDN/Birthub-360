@@ -1,6 +1,4 @@
-
-import { spawnSync } from 'child_process';
-import { execSync } from 'child_process';
+import { execSync, spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
 const scripts = JSON.parse(readFileSync('package.json', 'utf8')).scripts || {};
@@ -15,7 +13,7 @@ function run(cmd, name, optional = false) {
     process.stdout.write('Executando ' + name + '... ');
     const [command, ...args] = cmd.split(' ');
     const result = spawnSync(command, args, { stdio: 'inherit', shell: true });
-    
+
     if (result.status === 0) {
       console.log('APROVADO');
       return { name, status: 'PASS', critical: !optional };
@@ -42,6 +40,8 @@ function run(cmd, name, optional = false) {
 const checks = [
   run('npm run lint', 'Lint', false),
   run('npm run typecheck', 'Typecheck', false),
+  run('npm run verify:migration-drift', 'Verificação de Drift de Migrações (Prisma)', false),
+  run('npm run verify:governance-reviews', 'Revisão Independente Agente 24', false),
   run('npm run test:architecture', 'Arquitetura', false),
   run('npm run test:unit', 'Testes Unitarios', false),
   run('npm run test:integration', 'Testes de Integracao', false),
@@ -51,19 +51,21 @@ const checks = [
   run('npm run security:dependency-inventory', 'Security Inventory', true),
 ];
 
-const hasBlockers = checks.some(c => c.status === 'FAIL' && c.critical);
+const hasBlockers = checks.some((c) => c.status === 'FAIL' && c.critical);
 const sha = execSync('git rev-parse HEAD').toString().trim();
 
 console.log('\n=============================================');
 console.log('SHA: ' + sha);
 console.log('STATUS: ' + (hasBlockers ? 'NO-GO' : 'GO'));
 console.log('CHECKS:');
-checks.forEach(c => {
+checks.forEach((c) => {
   console.log('- ' + c.name + ': ' + c.status);
 });
 console.log('=============================================');
 
 if (hasBlockers) {
+  console.error(
+    '\n[GATE ERROR] Bloqueadores críticos detectados. Release abortado (Fail-Closed B-05).',
+  );
   process.exit(1);
 }
-

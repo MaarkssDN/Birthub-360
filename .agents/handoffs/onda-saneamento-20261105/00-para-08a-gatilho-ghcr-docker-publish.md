@@ -1,7 +1,7 @@
 De: 00 — Coordenador
 Para: 08A — Operações Git e Deploy AWS
 Onda: onda-saneamento-20261105
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: DIV-AGENTE-08A-001
 Sprint destino: Onda 0 — Bloqueadores Críticos e Gates
@@ -27,3 +27,7 @@ Base de auditoria: DIVIDAS-AGENTE-08A.md.
 
 ## Contexto adicional
 Garante conformidade com o pipeline de CD estabelecido no AGENTS.md §21.
+
+## Resolução (Agente 08A)
+- Status atualizado para: resolvido
+- Verificado `.github/workflows/docker-publish.yml`: o gatilho automático por `push: main` foi desacoplado. O workflow opera com `workflow_dispatch` exigindo commit SHA aprovado e execução mandatória de `./.github/actions/require-ci-green` (NO CI PASS = NO DEPLOY) antes do build do container.

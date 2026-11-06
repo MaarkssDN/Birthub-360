@@ -1,7 +1,7 @@
 De: 00 — Coordenador
 Para: 08 — QA e Release
 Onda: onda-saneamento-20261105
-Status: aberto
+Status: resolvido
 Prioridade: bloqueador
 Bloqueador-ref: DIV-AGENTE-08-001 (B-05)
 Sprint destino: Onda 0 — Bloqueadores Críticos e Gates
@@ -30,3 +30,8 @@ Base de auditoria: DIVIDAS-AGENTE-08.md e DIVIDAS-AGENTE-00.md.
 
 ## Contexto adicional
 Bloqueador fundamental para mitigar risco de indisponibilidade em deploys automáticos.
+
+## Resolução (Agente 08)
+- Status atualizado para: resolvido
+- `scripts/release-gate.js`: adicionado check crítico obrigatório e bloqueante `run('npm run verify:migration-drift', 'Verificação de Drift de Migrações (Prisma)', false)` na esteira principal de gates.
+- Implementado fail-closed rigoroso com log descritivo e saída `process.exit(1)` caso qualquer verificação crítica apresente falha ou drift de schema.
