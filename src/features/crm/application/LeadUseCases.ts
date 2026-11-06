@@ -457,8 +457,12 @@ export class LeadUseCases extends BaseUseCases<Lead, LeadRepository> {
     ];
 
     const escapeCsvValue = (value: unknown) => {
-      const s = value == null ? '' : String(value);
-      return /[";\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+      const raw = value == null ? '' : String(value);
+      const sanitized =
+        /^[=+\-@\t\r]/.test(raw) || /^[=+\-@\t\r]/.test(raw.replace(/^ +/, '')) ? `'${raw}` : raw;
+      return /[";\n\r]/.test(sanitized) || sanitized.startsWith("'")
+        ? `"${sanitized.replace(/"/g, '""')}"`
+        : sanitized;
     };
 
     const rows = leads.map((l) => {

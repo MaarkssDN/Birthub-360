@@ -25,6 +25,8 @@ export const EXTRACTION_FILE_FORMATS: readonly ExtractionFileFormat[] = ['csv', 
 
 const STORAGE_ROOT = path.resolve(env.BITRIX_EXTRACTION_STORAGE_DIR || './data/bitrix-extractions');
 
+const CSV_FORMULA_PREFIX_REGEX = /^[=+\-@\t\r]/;
+
 export interface ExtractionEntityDataset {
   entity: string;
   label: string;
@@ -82,10 +84,29 @@ export async function deleteExtractionRunFiles(
   await fs.rm(runDir(organizationId, runId), { recursive: true, force: true });
 }
 
-function csvEscape(value: unknown): string {
+/**
+ * Neutraliza vetores de CSV/Spreadsheet Formula Injection (DIV-AGENTE-06A-001 / B-04):
+ * qualquer string iniciando com `=`, `+`, `-`, `@`, `\t` ou `\r` recebe apóstrofo (`'`)
+ * antes do caractere de controle.
+ */
+export function sanitizeSpreadsheetFormulaString(raw: string): string {
+  if (CSV_FORMULA_PREFIX_REGEX.test(raw)) {
+    return `'${raw}`;
+  }
+  return raw;
+}
+
+export function sanitizeCsvCell(value: unknown): string {
   if (value === null || value === undefined) return '';
-  const s = typeof value === 'object' ? JSON.stringify(value) : String(value);
-  return /[";\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  const raw = typeof value === 'object' ? JSON.stringify(value) : String(value);
+  const hasFormulaPrefix = CSV_FORMULA_PREFIX_REGEX.test(raw);
+  const safe = sanitizeSpreadsheetFormulaString(raw);
+  const needsQuotes = hasFormulaPrefix || /[";,\n\r]/.test(safe);
+  return needsQuotes ? `"${safe.replace(/"/g, '""')}"` : safe;
+}
+
+function csvEscape(value: unknown): string {
+  return sanitizeCsvCell(value);
 }
 
 /**
@@ -97,20 +118,19 @@ export function toCsv(rows: Record<string, unknown>[]): string {
   const headerSet = new Set<string>();
   for (const row of rows) for (const key of Object.keys(row)) headerSet.add(key);
   const headers = Array.from(headerSet);
-  if (headers.length === 0) return '﻿';
+  if (headers.length === 0) return '\uFEFF';
   const lines = [headers.join(';')];
   for (const row of rows) lines.push(headers.map((h) => csvEscape(row[h])).join(';'));
   // BOM UTF-8 (U+FEFF) de propósito no início do CSV — sem ele o Excel abre acentos/ç como
   // mojibake; não é espaço irregular acidental.
-  // eslint-disable-next-line no-irregular-whitespace
-  return `﻿${lines.join('\r\n')}`;
+  return `\uFEFF${lines.join('\r\n')}`;
 }
 
 function serializeCell(value: unknown): string | number | boolean | null {
   if (value === null || value === undefined) return null;
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')
-    return value;
-  return JSON.stringify(value);
+  if (typeof value === 'string') return sanitizeSpreadsheetFormulaString(value);
+  if (typeof value === 'number' || typeof value === 'boolean') return value;
+  return sanitizeSpreadsheetFormulaString(JSON.stringify(value));
 }
 
 /** Nome de aba do Excel é limitado a 31 caracteres e não aceita alguns símbolos — normaliza antes de usar. */
