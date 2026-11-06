@@ -7,6 +7,7 @@
  * /setup (organizações legadas, anteriores a este endpoint).
  */
 export interface OrganizationModulesStoredState {
+  version?: number;
   enabledModules: string[];
   onboardingCompletedAt: string | null;
   updatedByUserId: string | null;
@@ -34,4 +35,6 @@ export interface OrganizationModulesView {
   onboardingCompletedAt: string | null;
   activeModules: string[];
   modules: OrganizationModuleView[];
+  /** Versão sequencial de optimistic locking (CAS). */
+  version: number;
 }

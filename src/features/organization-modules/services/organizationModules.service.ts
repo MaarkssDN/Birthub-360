@@ -32,7 +32,7 @@ function normalize(keys: Iterable<string>): string[] {
 
 /**
  * Módulos de produto por organização + onboarding (/setup). Repositório injetável (mesmo padrão
- * de ModuleAccessService) para teste sem banco.
+ * de ModuleAccessService) para teste sem banco. Suporta controle de concorrência otimista (CAS).
  */
 export class OrganizationModulesService {
   private readonly mutationLocks = new Map<string, Promise<unknown>>();
@@ -46,6 +46,7 @@ export class OrganizationModulesService {
     // useOrganizationModules().isModuleActive sempre devolve true.
     const activeModules = state ? normalize(state.enabledModules) : [...ALL_KEYS];
     return {
+      version: state?.version ?? 1,
       configured: state !== null,
       onboardingCompleted: Boolean(state?.onboardingCompletedAt),
       onboardingCompletedAt: state?.onboardingCompletedAt ?? null,
@@ -67,23 +68,38 @@ export class OrganizationModulesService {
     organizationId: string,
     userId: string,
     fn: (current: OrganizationModulesStoredState) => OrganizationModulesStoredState,
+    expectedVersion?: number,
   ): Promise<OrganizationModulesView> {
     const previous = this.mutationLocks.get(organizationId) ?? Promise.resolve();
     const runMutation = async (): Promise<OrganizationModulesView> => {
       const current = (await this.repository.load(organizationId)) ?? {
+        version: 1,
         // Primeira gravação parte só dos obrigatórios (o /setup escolhe o resto explicitamente).
         enabledModules: [...ALWAYS_ACTIVE_KEYS],
         onboardingCompletedAt: null,
         updatedByUserId: null,
       };
+
+      if (
+        expectedVersion !== undefined &&
+        current.version !== undefined &&
+        current.version !== expectedVersion
+      ) {
+        throw new OrganizationModulesServiceError(
+          `Conflito de concorrência ao atualizar módulos da organização. Versão informada (${expectedVersion}) difere da versão atual (${current.version}). Recarregue as configurações antes de tentar novamente.`,
+          409,
+        );
+      }
+
       const next = fn(current);
       const saved: OrganizationModulesStoredState = {
         ...next,
+        version: (current.version ?? 0) + 1,
         enabledModules: normalize(next.enabledModules),
         updatedByUserId: userId,
       };
       await this.repository.save(organizationId, saved);
-      // Relê do repositório: a resposta reflete o que de fato foi persistido, não o que pedimos.
+      // Relê do repositório: a resposta reflete o que de fato foi persistido.
       return this.get(organizationId);
     };
 
@@ -98,15 +114,20 @@ export class OrganizationModulesService {
     }
   }
 
-  async enable(organizationId: string, userId: string, moduleKey: string) {
+  async enable(organizationId: string, userId: string, moduleKey: string, expectedVersion?: number) {
     assertKnownModule(moduleKey);
-    return this.mutate(organizationId, userId, (s) => ({
-      ...s,
-      enabledModules: [...s.enabledModules, moduleKey],
-    }));
+    return this.mutate(
+      organizationId,
+      userId,
+      (s) => ({
+        ...s,
+        enabledModules: [...s.enabledModules, moduleKey],
+      }),
+      expectedVersion,
+    );
   }
 
-  async disable(organizationId: string, userId: string, moduleKey: string) {
+  async disable(organizationId: string, userId: string, moduleKey: string, expectedVersion?: number) {
     assertKnownModule(moduleKey);
     if (ALWAYS_ACTIVE_KEYS.includes(moduleKey)) {
       throw new OrganizationModulesServiceError(
@@ -114,26 +135,46 @@ export class OrganizationModulesService {
         409,
       );
     }
-    return this.mutate(organizationId, userId, (s) => ({
-      ...s,
-      enabledModules: s.enabledModules.filter((k) => k !== moduleKey),
-    }));
+    return this.mutate(
+      organizationId,
+      userId,
+      (s) => ({
+        ...s,
+        enabledModules: s.enabledModules.filter((k) => k !== moduleKey),
+      }),
+      expectedVersion,
+    );
   }
 
   /** Substitui o conjunto inteiro (atômico do ponto de vista do cliente). */
-  async replace(organizationId: string, userId: string, moduleKeys: unknown) {
+  async replace(organizationId: string, userId: string, moduleKeys: unknown, expectedVersion?: number) {
     if (!Array.isArray(moduleKeys) || !moduleKeys.every((k) => typeof k === 'string')) {
       throw new OrganizationModulesServiceError('Campo "modules" deve ser uma lista de chaves.');
     }
     moduleKeys.forEach(assertKnownModule);
-    return this.mutate(organizationId, userId, (s) => ({ ...s, enabledModules: moduleKeys }));
+    return this.mutate(
+      organizationId,
+      userId,
+      (s) => ({ ...s, enabledModules: moduleKeys }),
+      expectedVersion,
+    );
   }
 
-  async completeOnboarding(organizationId: string, userId: string, now: Date = new Date()) {
-    return this.mutate(organizationId, userId, (s) => ({
-      ...s,
-      onboardingCompletedAt: s.onboardingCompletedAt ?? now.toISOString(),
-    }));
+  async completeOnboarding(
+    organizationId: string,
+    userId: string,
+    now: Date = new Date(),
+    expectedVersion?: number,
+  ) {
+    return this.mutate(
+      organizationId,
+      userId,
+      (s) => ({
+        ...s,
+        onboardingCompletedAt: s.onboardingCompletedAt ?? now.toISOString(),
+      }),
+      expectedVersion,
+    );
   }
 }
 

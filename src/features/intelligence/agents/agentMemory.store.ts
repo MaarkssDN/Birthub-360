@@ -8,6 +8,7 @@ export interface SaveAgentMemoryInput {
   sessionId: string;
   agentType: string;
   organizationId: string | null | undefined;
+  contactId?: string | null;
   messages: unknown;
   status?: SaveAgentMemoryStatus;
   errorMessage?: string | null;
@@ -67,6 +68,7 @@ export async function saveAgentMemory(input: SaveAgentMemoryInput): Promise<void
           sessionId: input.sessionId,
           agentType: input.agentType,
           organizationId: null,
+          contactId: input.contactId ?? null,
           messages,
           status,
           errorMessage,
@@ -88,6 +90,7 @@ export async function saveAgentMemory(input: SaveAgentMemoryInput): Promise<void
       sessionId: input.sessionId,
       agentType: input.agentType,
       organizationId,
+      contactId: input.contactId ?? null,
       messages,
       status,
       errorMessage,
@@ -96,6 +99,7 @@ export async function saveAgentMemory(input: SaveAgentMemoryInput): Promise<void
       messages,
       status,
       errorMessage,
+      ...(input.contactId !== undefined ? { contactId: input.contactId } : {}),
     },
   });
 }

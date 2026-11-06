@@ -1,10 +1,15 @@
 De: 00 — Coordenador
 Para: 01 — Plataforma, Segurança e Dados
 Onda: onda-saneamento-20261105
-Status: aberto
+Status: resolvido
 Prioridade: bloqueador
 Bloqueador-ref: DIV-AGENTE-01-001 (B-10)
 Sprint destino: Onda 1 — Segurança, Schema, Tenancy e LGPD
+
+## Resolução
+- Verificado e validado o mecanismo fail-closed de injeção e resolução obrigatória de tenant (`resolveOrganizationId`) em `PgCampaignRepository` e `PgLeadRepository`, garantindo que ausência de tenant lance `TenantContextMissingError`.
+- Cláusulas `organization_id = ${orgId}` rigorosamente parametrizadas em todas as queries e mutações (`$queryRaw` e `$executeRaw`).
+- Implementada suíte de testes de isolamento multi-tenant em `tests/unit/features/cadence/dialer/dialer-tenancy-isolation.test.ts` (7/7 aprovados), comprovando que o Tenant B jamais lê, reserva com lock ou agrega campanhas e leads pertencentes ao Tenant A.
 
 ## Problema
 Consultas SQL e Prisma nos repositórios do discador (PgCampaignRepository e PgLeadRepository) realizam leituras sem cláusula WHERE organizationId obrigatória.

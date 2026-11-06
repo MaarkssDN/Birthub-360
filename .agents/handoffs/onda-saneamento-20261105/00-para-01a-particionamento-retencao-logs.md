@@ -1,10 +1,15 @@
 De: 00 — Coordenador
 Para: 01A — Confiabilidade de Dados, RLS e Retenção
 Onda: onda-saneamento-20261105
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: DIV-AGENTE-01A-002
 Sprint destino: Onda 1 — Segurança, Schema, Tenancy e LGPD
+
+## Resolução
+- Criado `src/shared/services/retentionPurge.service.ts` com batching inteligente e pausas de alívio de I/O para deleção em lotes de `AILog` (90 dias), `BitrixSyncLog` (60 dias) e `ExternalCrmSyncLog` (60 dias), impedindo contenção de locks de páginas.
+- Criado `scripts/db/archive-old-logs.sql` com definição de índices parciais focados em purga (`idx_ailog_retention_old`), função plpgsql de expurgo em batch e blueprint de particionamento nativo por data (`PARTITION BY RANGE`).
+- Criada suíte de testes unitários `tests/unit/services/retention-purge-load.test.ts` (2/2 aprovados) validando execução em múltiplos lotes e isolamento por organização.
 
 ## Problema
 Tabelas AILog, SyncHistory e ActivityLog acumulam milhões de registros sem rotina de purga ou particionamento, degradando performance.
