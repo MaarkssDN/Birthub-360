@@ -12923,3 +12923,70 @@ components:
         modules:
           type: array
           items: { $ref: '#/components/schemas/OrganizationModuleView' }
+
+  /api/organization/modules:
+    get:
+      summary: Lista status dos modulos da organizacao
+      tags:
+        - OrganizationModules
+      responses:
+        '200':
+          description: Modulos listados com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  modules:
+                    type: array
+                    items:
+                      type: string
+    put:
+      summary: Atualiza modulos da organizacao com controle otimista CAS
+      tags:
+        - OrganizationModules
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - modules
+                - version
+              properties:
+                modules:
+                  type: array
+                  items:
+                    type: string
+                version:
+                  type: integer
+      responses:
+        '200':
+          description: Modulos atualizados com sucesso
+        '409':
+          description: Conflito de versao concorrente (CAS)
+
+  /api/telephony/webhook/3cx:
+    post:
+      summary: Recebe eventos de status de chamada do PABX 3CX
+      tags:
+        - Telephony
+      parameters:
+        - in: header
+          name: x-3cx-signature
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: x-3cx-timestamp
+          required: true
+          schema:
+            type: string
+      responses:
+        '202':
+          description: Evento aceito e enfileirado para processamento assincrono
+        '401':
+          description: Assinatura ou timestamp invalidos
