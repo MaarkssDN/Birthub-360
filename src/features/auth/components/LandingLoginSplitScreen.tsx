@@ -1071,7 +1071,7 @@ export function LandingLoginSplitScreen() {
               </span>
               <span className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-3 h-3 text-[var(--ok)]" aria-hidden="true" />
-                Conformidade LGPD
+                Governança LGPD (Art. 18)
               </span>
             </div>
           </motion.div>

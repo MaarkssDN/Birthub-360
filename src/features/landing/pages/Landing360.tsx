@@ -4,14 +4,38 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUp,
+  BarChart3,
+  Bot,
+  Building2,
+  Check,
   CheckCircle2,
+  Clock,
+  Compass,
+  Cpu,
+  Database,
+  ExternalLink,
   Eye,
   EyeOff,
+  GitBranch,
+  Headphones,
+  Layers,
+  LineChart,
   Loader2,
   Lock,
   Mail,
+  MessageSquare,
   Moon,
+  Network,
+  PhoneCall,
+  Search,
+  Shield,
+  ShieldCheck,
+  Sparkles,
   Sun,
+  Target,
+  TrendingUp,
+  Workflow,
+  Zap,
 } from 'lucide-react';
 import type React from 'react';
 import { lazy, Suspense, useEffect, useState } from 'react';
@@ -29,6 +53,7 @@ import { trackHeroRoiSimulatorOpened } from '@/lib/analytics/conversionTelemetry
 import { authClient } from '@/lib/auth-client';
 import { SoundFX } from '@/lib/soundEffects';
 import { RoiSimulatorModal } from '../components/RoiSimulatorModal.js';
+import { PillarDetailModal } from '../components/PillarDetailModal.js';
 import './LandingAdaptive.css';
 import './Landing360.css';
 
@@ -40,6 +65,9 @@ const ADAPTIVE_PILLARS = [
     desc: 'Centralize contas, pipeline e oportunidades em uma visão 360° de cada negociação.',
     bg: '/landing/assets/pillar-hub.jpg',
     colorClass: '',
+    accentColor: '#00D4FF',
+    tag: 'PIPELINE 360°',
+    kpi: 'R$ 4.2M em pipeline',
     modalTitle: '01. Hub Comercial',
     modalDesc:
       'Centralização de contas, pipeline comercial unificado e visão 360° de cada oportunidade em negociação com rastreabilidade total.',
@@ -50,6 +78,9 @@ const ADAPTIVE_PILLARS = [
     desc: 'Enriqueça dados B2B, identifique sinais de compra e qualifique decisores com precisão.',
     bg: '/landing/assets/pillar-market.jpg',
     colorClass: 'b360-c-pink',
+    accentColor: '#FF2D9B',
+    tag: 'ENRIQUECIMENTO B2B',
+    kpi: '96% Match ICP',
     modalTitle: '02. Inteligência de Mercado',
     modalDesc:
       'Enriquecimento analítico de dados B2B, mapeamento de contas, identificação de sinais de compra e qualificação preditiva.',
@@ -60,6 +91,9 @@ const ADAPTIVE_PILLARS = [
     desc: 'Coordene cadências multicanal, passagem de bastão e a próxima ação de vendas.',
     bg: '/landing/assets/pillar-orchestration.jpg',
     colorClass: 'b360-c-gold',
+    accentColor: '#FFC107',
+    tag: 'CADÊNCIA MULTICANAL',
+    kpi: 'SLA < 15min',
     modalTitle: '03. Orquestração de Vendas',
     modalDesc:
       'Cadências coordenadas entre SDRs e Closers, regras claras de passagem de bastão e direcionamento para a próxima melhor ação.',
@@ -70,6 +104,9 @@ const ADAPTIVE_PILLARS = [
     desc: 'Acompanhe conversão, velocidade do funil, metas e produtividade da equipe.',
     bg: '/landing/assets/pillar-performance.jpg',
     colorClass: 'b360-c-iris',
+    accentColor: '#8B7DFF',
+    tag: 'TELEMETRIA & METAS',
+    kpi: '+24.8% Conversão',
     modalTitle: '04. Performance Comercial',
     modalDesc:
       'Telemetria de conversão, velocidade de ciclo entre etapas, metas operacionais e produtividade da equipe em tempo real.',
@@ -80,6 +117,9 @@ const ADAPTIVE_PILLARS = [
     desc: 'Modele probabilidades, pipeline ponderado e cenários baseados no histórico real.',
     bg: '/landing/assets/pillar-forecast.jpg',
     colorClass: '',
+    accentColor: '#00D4FF',
+    tag: 'FORECAST PROBABILÍSTICO',
+    kpi: '94.2% Acurácia',
     modalTitle: '05. Previsibilidade Comercial',
     modalDesc:
       'Modelagem estatística de probabilidade, análise de pipeline ponderado e projeções de receita embasadas no histórico real.',
@@ -90,6 +130,9 @@ const ADAPTIVE_PILLARS = [
     desc: 'Um copiloto conectado aos dados da empresa e ao contexto das negociações.',
     bg: '/landing/assets/pillar-ai.jpg',
     colorClass: 'b360-c-pink',
+    accentColor: '#FF2D9B',
+    tag: 'COPILOTO DE NEGOCIAÇÕES',
+    kpi: 'NBA em Tempo Real',
     modalTitle: '06. Inteligência Artificial',
     modalDesc:
       'Copiloto de negociações contextualizado com dados da organização, diagnóstico de entraves e recomendações acionáveis em tempo real.',
@@ -100,6 +143,9 @@ const ADAPTIVE_PILLARS = [
     desc: 'Sincronize CRMs, acione gatilhos e integre ferramentas por APIs e webhooks.',
     bg: '/landing/assets/pillar-automation.jpg',
     colorClass: 'b360-c-gold',
+    accentColor: '#FFC107',
+    tag: 'GATEWAY MULTI-CRM',
+    kpi: '12ms Latência',
     modalTitle: '07. Automação & Conectividade Multi-CRM',
     modalDesc:
       'Sincronização bidirecional em tempo real via APIs abertas e webhooks com Bitrix24, Salesforce, HubSpot e Pipedrive.',
@@ -108,8 +154,11 @@ const ADAPTIVE_PILLARS = [
     num: '08',
     title: 'Engajamento comercial',
     desc: 'Reúna telefonia, interações e histórico de contatos em uma comunicação integrada.',
-    bg: '/landing/assets/hero-team.jpg',
+    bg: '/landing/assets/pillar-hub.jpg',
     colorClass: 'b360-c-iris',
+    accentColor: '#8B7DFF',
+    tag: 'VOICEHUB & WHATSAPP',
+    kpi: 'Sentimento 94%',
     modalTitle: '08. Engajamento Comercial',
     modalDesc:
       'Telefonia em nuvem integrada, gravação, transcrição com IA, WhatsApp API oficial e linha do tempo omnichannel unificada.',
@@ -122,48 +171,234 @@ const ADAPTIVE_INTEGRATIONS = [
     name: 'Bitrix24',
     desc: 'Sincronização bidirecional de leads, contatos, negócios e etapas de funil.',
     icon: '/landing/assets/bitrix24.svg',
+    status: 'active' as const,
+    statusLabel: 'Em Produção',
+  },
+  {
+    name: 'WhatsApp Oficial API',
+    desc: 'Conversas oficiais registradas na linha do tempo com opt-in auditável.',
+    icon: '/landing/assets/whatsapp.svg',
+    status: 'active' as const,
+    statusLabel: 'Em Produção',
+  },
+  {
+    name: 'VoiceHub Telefonia',
+    desc: 'Telefonia em nuvem com discador inteligente, gravação, transcrição e análise por IA.',
+    icon: '/landing/assets/voice.svg',
+    status: 'active' as const,
+    statusLabel: 'Em Produção',
+  },
+  {
+    name: 'Webhooks & REST APIs',
+    desc: 'Disparo e recepção de eventos customizados em tempo real com autenticação segura.',
+    icon: '/landing/assets/webhooks.svg',
+    status: 'active' as const,
+    statusLabel: 'Em Produção',
   },
   {
     name: 'HubSpot',
-    desc: 'Alinhamento contínuo entre marketing de atração e vendas ativas.',
+    desc: 'Alinhamento contínuo entre inbound marketing e pipeline de vendas ativas.',
     icon: '/landing/assets/hubspot.svg',
+    status: 'in_dev' as const,
+    statusLabel: 'Em Homologação',
   },
   {
     name: 'Salesforce',
-    desc: 'Mapeamento de contas estratégicas e histórico corporativo de deals.',
+    desc: 'Mapeamento de contas estratégicas enterprise e histórico corporativo de negociações.',
     icon: '/landing/assets/salesforce.svg',
+    status: 'in_dev' as const,
+    statusLabel: 'Em Homologação',
   },
   {
     name: 'Pipedrive',
-    desc: 'Visão clara de etapas e atividades operacionais de prospecção.',
+    desc: 'Gestão visual de etapas e atividades operacionais de prospecção e fechamento.',
     icon: '/landing/assets/pipedrive.svg',
-  },
-  {
-    name: 'WhatsApp API',
-    desc: 'Conversas oficiais registradas diretamente na linha do tempo do cliente.',
-    icon: '/landing/assets/whatsapp.svg',
-  },
-  {
-    name: 'Voz Integrada',
-    desc: 'Telefonia em nuvem com gravação, transcrição e resumo automático.',
-    icon: '/landing/assets/voice.svg',
-  },
-  {
-    name: 'Webhooks & APIs',
-    desc: 'Disparo e recebimento de eventos customizados em tempo real.',
-    icon: '/landing/assets/webhooks.svg',
+    status: 'in_dev' as const,
+    statusLabel: 'Em Homologação',
   },
   {
     name: 'Google Workspace',
-    desc: 'Agendamento sincronizado, e-mails, atas e documentos compartilhados.',
+    desc: 'Agendamento sincronizado no Google Agenda, e-mails corporativos e documentos.',
     icon: '/landing/assets/google.svg',
+    status: 'planned' as const,
+    statusLabel: 'Planejado',
   },
   {
     name: 'Microsoft 365',
-    desc: 'Integração com Outlook, Teams e suíte de produtividade corporativa.',
+    desc: 'Integração federada com Outlook, Teams e ecossistema de produtividade.',
     icon: '/landing/assets/microsoft.svg',
+    status: 'planned' as const,
+    statusLabel: 'Planejado',
   },
 ];
+
+function renderPillarIcon(num: string) {
+  switch (num) {
+    case '01':
+      return <Layers className="w-5 h-5 text-[#00D4FF]" />;
+    case '02':
+      return <Target className="w-5 h-5 text-[#FF2D9B]" />;
+    case '03':
+      return <Workflow className="w-5 h-5 text-[#FFC107]" />;
+    case '04':
+      return <TrendingUp className="w-5 h-5 text-[#8B7DFF]" />;
+    case '05':
+      return <LineChart className="w-5 h-5 text-[#00D4FF]" />;
+    case '06':
+      return <Sparkles className="w-5 h-5 text-[#FF2D9B]" />;
+    case '07':
+      return <Zap className="w-5 h-5 text-[#FFC107]" />;
+    case '08':
+      return <PhoneCall className="w-5 h-5 text-[#8B7DFF]" />;
+    default:
+      return <Building2 className="w-5 h-5" />;
+  }
+}
+
+function renderPillarVisual(num: string) {
+  switch (num) {
+    case '01':
+      return (
+        <div className="b360-micro-kanban" aria-hidden="true">
+          <div className="b360-kanban-col">
+            <span className="b360-kanban-tag">Qualificação</span>
+            <div className="b360-kanban-card">
+              <span className="b360-deal-name">Tech Corp</span>
+              <strong className="b360-deal-val text-[#00D4FF]">R$ 145k</strong>
+            </div>
+          </div>
+          <div className="b360-kanban-col">
+            <span className="b360-kanban-tag">Proposta</span>
+            <div className="b360-kanban-card b360-highlight">
+              <span className="b360-deal-name">Grupo Delta</span>
+              <strong className="b360-deal-val text-[#FF2D9B]">R$ 280k</strong>
+            </div>
+          </div>
+        </div>
+      );
+    case '02':
+      return (
+        <div className="b360-micro-dossier" aria-hidden="true">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="font-mono text-[10px] text-slate-400">CNPJ 42.108.902/0001-34</span>
+            <span className="b360-match-badge">96% ICP</span>
+          </div>
+          <div className="b360-dossier-row">
+            <span className="text-slate-300">Setor Saúde · 14 Decisores</span>
+            <CheckCircle2 className="w-3.5 h-3.5 text-[#00D4FF] shrink-0" />
+          </div>
+        </div>
+      );
+    case '03':
+      return (
+        <div className="b360-micro-cadence" aria-hidden="true">
+          <div className="b360-cadence-step done">
+            <span className="b360-cadence-dot" />
+            <span>D1: E-mail Executivo</span>
+          </div>
+          <div className="b360-cadence-step active">
+            <span className="b360-cadence-dot animate-ping" />
+            <span>D3: WhatsApp Oficial</span>
+          </div>
+          <div className="b360-cadence-step pending">
+            <span className="b360-cadence-dot" />
+            <span>D5: Reunião Closer (SLA 15m)</span>
+          </div>
+        </div>
+      );
+    case '04':
+      return (
+        <div className="b360-micro-telemetry" aria-hidden="true">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs text-slate-400 font-mono">Taxa de Conversão</span>
+            <span className="text-xs font-bold font-mono text-[#8B7DFF]">+24.8%</span>
+          </div>
+          <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden mb-2">
+            <div className="h-full bg-gradient-to-r from-[#8B7DFF] to-[#00D4FF] rounded-full w-[74%]" />
+          </div>
+          <div className="flex justify-between text-[10px] font-mono text-slate-400">
+            <span>Ciclo: 18.2 dias</span>
+            <span>Meta: 114%</span>
+          </div>
+        </div>
+      );
+    case '05':
+      return (
+        <div className="b360-micro-forecast" aria-hidden="true">
+          <div className="b360-forecast-bars">
+            <div className="b360-fbar-item">
+              <span className="b360-fbar-lbl">Conservador</span>
+              <div className="b360-fbar-fill w-[55%] bg-slate-600" />
+              <strong className="b360-fbar-val">R$ 1.2M</strong>
+            </div>
+            <div className="b360-fbar-item">
+              <span className="b360-fbar-lbl">Provável</span>
+              <div className="b360-fbar-fill w-[78%] bg-[#00D4FF]" />
+              <strong className="b360-fbar-val text-[#00D4FF]">R$ 1.84M</strong>
+            </div>
+            <div className="b360-fbar-item">
+              <span className="b360-fbar-lbl">Otimista</span>
+              <div className="b360-fbar-fill w-[95%] bg-[#FF2D9B]" />
+              <strong className="b360-fbar-val text-[#FF2D9B]">R$ 2.40M</strong>
+            </div>
+          </div>
+        </div>
+      );
+    case '06':
+      return (
+        <div className="b360-micro-copilot" aria-hidden="true">
+          <div className="b360-copilot-pill">
+            <Sparkles className="w-3 h-3 text-[#FF2D9B]" />
+            <span>Objeção: "Preço acima do budget"</span>
+          </div>
+          <p className="b360-copilot-recommendation">
+            NBA: Enviar proposta parcelada com ROI garantido em 45 dias.
+          </p>
+        </div>
+      );
+    case '07':
+      return (
+        <div className="b360-micro-integrations" aria-hidden="true">
+          <div className="b360-integ-chip active">
+            <span className="b360-integ-led green" />
+            <span>Bitrix24 (12ms)</span>
+          </div>
+          <div className="b360-integ-chip active">
+            <span className="b360-integ-led green" />
+            <span>HubSpot Sync</span>
+          </div>
+          <div className="b360-integ-chip active">
+            <span className="b360-integ-led green" />
+            <span>Webhooks 0 falhas</span>
+          </div>
+        </div>
+      );
+    case '08':
+      return (
+        <div className="b360-micro-voice" aria-hidden="true">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-1.5">
+              <PhoneCall className="w-3 h-3 text-[#8B7DFF]" />
+              <span className="font-mono text-[10px] text-slate-300">Chamada Transcrita</span>
+            </div>
+            <span className="b360-sentiment-badge">94% Positivo</span>
+          </div>
+          <div className="b360-audio-wave">
+            <span style={{ height: '40%' }} />
+            <span style={{ height: '70%' }} />
+            <span style={{ height: '100%' }} />
+            <span style={{ height: '60%' }} />
+            <span style={{ height: '90%' }} />
+            <span style={{ height: '45%' }} />
+            <span style={{ height: '80%' }} />
+            <span style={{ height: '55%' }} />
+          </div>
+        </div>
+      );
+    default:
+      return null;
+  }
+}
 
 // MÓDULOS DO COMMAND CENTER SANDBOX
 const COMMAND_MODULES = [
@@ -246,6 +481,7 @@ export function Landing360({
   const [activeScreen, setActiveScreen] = useState<'intro' | 'login'>(initialScreen);
   const [viewMode, setViewMode] = useState<'public' | 'command'>('public');
   const [activeModal, setActiveModal] = useState<{ title: string; desc: string } | null>(null);
+  const [selectedPillarId, setSelectedPillarId] = useState<string | null>(null);
   const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
   const { currentUser, isPending: isAuthPending } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -371,13 +607,15 @@ export function Landing360({
     }
   };
 
-  const handleOpenModal = (title: string, desc: string) => {
+  const handleOpenModal = (title: string, desc: string, pillarNum?: string) => {
     SoundFX.play('click');
+    setSelectedPillarId(pillarNum ?? null);
     setActiveModal({ title, desc });
   };
 
   const handleCloseModal = () => {
     SoundFX.play('click');
+    setSelectedPillarId(null);
     setActiveModal(null);
   };
 
@@ -603,7 +841,7 @@ export function Landing360({
                 <button
                   type="button"
                   onClick={handleOpenRoiSimulator}
-                  className="text-xs font-mono font-bold uppercase tracking-wider text-[#00D4FF] hover:text-[#FF2D9B] transition-colors"
+                  className="text-xs font-mono font-bold uppercase tracking-wider text-sky-600 dark:text-[#00D4FF] hover:text-[#FF2D9B] transition-colors"
                 >
                   Simular ROI
                 </button>
@@ -613,14 +851,14 @@ export function Landing360({
                 <button
                   type="button"
                   onClick={toggleTheme}
-                  className="p-2 rounded-full border border-slate-700/60 bg-slate-900/60 text-slate-300 hover:text-[#00D4FF] transition-colors"
+                  className={`p-2 rounded-full border transition-colors ${theme === 'dark' ? 'border-slate-700/60 bg-slate-900/60 text-slate-300 hover:text-[#00D4FF]' : 'border-slate-300/80 bg-white/90 text-slate-700 hover:text-sky-600 shadow-sm'}`}
                   aria-label={theme === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro'}
                   title={theme === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro'}
                 >
                   {theme === 'dark' ? (
                     <Sun className="w-4 h-4 text-[#FFC107]" />
                   ) : (
-                    <Moon className="w-4 h-4 text-[#00D4FF]" />
+                    <Moon className="w-4 h-4 text-[#0284c7] dark:text-[#00D4FF]" />
                   )}
                 </button>
 
@@ -653,7 +891,7 @@ export function Landing360({
                     Conecte CRM, dados, inteligência artificial e automação em um único centro de
                     comando para planejar, monitorar, prever e acelerar suas operações comerciais.
                   </p>
-                  <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex flex-wrap items-center gap-3.5">
                     <button
                       className="b360-aurora"
                       type="button"
@@ -666,20 +904,112 @@ export function Landing360({
                     <button
                       type="button"
                       onClick={handleOpenRoiSimulator}
-                      className="px-6 py-3 rounded-full text-xs font-mono font-bold tracking-wider uppercase border border-[#00D4FF]/40 text-[#00D4FF] hover:bg-[#00D4FF]/10 transition-colors"
+                      className="b360-hero-pill-btn"
                     >
                       Simular ROI Comercial
                     </button>
+                    <button
+                      type="button"
+                      onClick={handleGoToLogin}
+                      className="b360-hero-secondary-btn"
+                    >
+                      Acessar Plataforma
+                    </button>
                   </div>
                   <div className="b360-hero-trust">
-                    ✦ <b>Supervisor On-line</b> · Orquestração inteligente · Experiência integrada
+                    <span className="w-2 h-2 rounded-full bg-[#00D4FF] animate-pulse" />
+                    <span>✦ <b>Supervisor On-line</b> · Orquestração inteligente · Experiência integrada</span>
                   </div>
                 </div>
 
-                <div className="b360-hero-photo">
-                  <div className="b360-hero-photo-caption">
-                    <strong>Pessoas, dados e decisões.</strong>
-                    <span>Uma operação conectada de ponta a ponta.</span>
+                <div className="b360-hero-console" role="region" aria-label="Visão Executiva do Command Center">
+                  <div className="b360-console-topbar">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#00D4FF] animate-pulse" />
+                      <span className="font-mono text-[11px] font-bold tracking-wider uppercase text-[#00D4FF]">
+                        SUPERVISOR ON-LINE · OPERAÇÃO CONECTADA
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400">
+                      <span className="px-2 py-0.5 rounded-md bg-slate-800/80 border border-slate-700/60 text-slate-300">
+                        RLS Multi-Tenant
+                      </span>
+                      <span className="px-2 py-0.5 rounded-md bg-[#00D4FF]/10 border border-[#00D4FF]/30 text-[#00D4FF]">
+                        12ms
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="b360-console-kpis">
+                    <div className="b360-console-kpi">
+                      <span className="b360-kpi-label">Pipeline em Radar</span>
+                      <strong className="b360-kpi-value text-[#00D4FF]">R$ 4.280.000</strong>
+                      <span className="b360-kpi-trend text-emerald-400">▲ +18.4% vs mês ant.</span>
+                    </div>
+                    <div className="b360-console-kpi">
+                      <span className="b360-kpi-label">Oportunidades</span>
+                      <strong className="b360-kpi-value text-[#FF2D9B]">86 ativas</strong>
+                      <span className="b360-kpi-trend text-slate-400">12 em fechamento</span>
+                    </div>
+                    <div className="b360-console-kpi">
+                      <span className="b360-kpi-label">Acurácia Forecast</span>
+                      <strong className="b360-kpi-value text-[#FFC107]">94.2%</strong>
+                      <span className="b360-kpi-trend text-emerald-400">Modelo ponderado</span>
+                    </div>
+                    <div className="b360-console-kpi">
+                      <span className="b360-kpi-label">Agentes Ativos</span>
+                      <strong className="b360-kpi-value text-[#8B7DFF]">19 agentes</strong>
+                      <span className="b360-kpi-trend text-cyan-400">Execução paralela</span>
+                    </div>
+                  </div>
+
+                  <div className="b360-console-stream">
+                    <div className="b360-stream-item">
+                      <div className="b360-stream-badge bg-[#00D4FF]/15 text-[#00D4FF] border border-[#00D4FF]/30">
+                        Copiloto IA
+                      </div>
+                      <div className="b360-stream-content">
+                        <p className="b360-stream-title">Objeção de preço contornada · Deal #1042</p>
+                        <p className="b360-stream-desc">Proposta R$ 145k renegociada com ROI simulado de 3.8x. NBA aceita pelo Closer.</p>
+                      </div>
+                      <span className="b360-stream-time">Agora</span>
+                    </div>
+
+                    <div className="b360-stream-item">
+                      <div className="b360-stream-badge bg-[#FF2D9B]/15 text-[#FF2D9B] border border-[#FF2D9B]/30">
+                        Bitrix24 Sync
+                      </div>
+                      <div className="b360-stream-content">
+                        <p className="b360-stream-title">Sincronização bidirecional de 14 oportunidades</p>
+                        <p className="b360-stream-desc">Contas e histórico de mensagens unificados com persistência multi-tenant.</p>
+                      </div>
+                      <span className="b360-stream-time">há 2 min</span>
+                    </div>
+
+                    <div className="b360-stream-item">
+                      <div className="b360-stream-badge bg-[#8B7DFF]/15 text-[#8B7DFF] border border-[#8B7DFF]/30">
+                        VoiceHub
+                      </div>
+                      <div className="b360-stream-content">
+                        <p className="b360-stream-title">Chamada com CFO da Vanguarda transcrita</p>
+                        <p className="b360-stream-desc">Duração 14m 20s · Sentimento 94% Positivo · SLA de follow-up disparado.</p>
+                      </div>
+                      <span className="b360-stream-time">há 5 min</span>
+                    </div>
+                  </div>
+
+                  <div className="b360-console-footer">
+                    <div className="flex items-center gap-2 text-xs text-slate-300">
+                      <Sparkles className="w-3.5 h-3.5 text-[#00D4FF]" />
+                      <span>Supervisor pronto para coordenar sua próxima missão de receita.</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleSwitchView('command')}
+                      className="b360-console-action-btn"
+                    >
+                      Ver Command Center →
+                    </button>
                   </div>
                 </div>
               </div>
@@ -691,7 +1021,7 @@ export function Landing360({
                 <div className="b360-eyebrow">ARQUITETURA DE RECEITA</div>
                 <h2>Oito pilares. Uma operação conectada.</h2>
                 <p>
-                  Da primeira oportunidade à decisão de receita, cada dimensão trabalha em conjunto.
+                  Da primeira oportunidade à decisão de receita, cada dimensão trabalha em conjunto em uma esteira integrada.
                 </p>
               </div>
 
@@ -701,14 +1031,29 @@ export function Landing360({
                     key={pillar.num}
                     type="button"
                     className={`b360-feature-card ${pillar.colorClass}`}
-                    style={{ backgroundImage: `url('${pillar.bg}')` }}
-                    onClick={() => handleOpenModal(pillar.modalTitle, pillar.modalDesc)}
+                    onClick={() => handleOpenModal(pillar.modalTitle, pillar.modalDesc, pillar.num)}
                   >
+                    <div className="b360-card-header">
+                      <span className="b360-pillar-badge">{pillar.num}</span>
+                      <div className="b360-pillar-icon">
+                        {renderPillarIcon(pillar.num)}
+                      </div>
+                      <span className="b360-pillar-tag">{pillar.tag}</span>
+                    </div>
+
+                    <div className="b360-card-visual">
+                      {renderPillarVisual(pillar.num)}
+                    </div>
+
                     <div className="b360-card-bottom">
                       <h3>
                         {pillar.num}. {pillar.title}
                       </h3>
                       <p>{pillar.desc}</p>
+                      <div className="b360-card-action">
+                        <span>Inspecionar capacidades</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </div>
                     </div>
                   </button>
                 ))}
@@ -726,36 +1071,71 @@ export function Landing360({
                 </p>
               </div>
 
-              <div className="b360-editorial-rows">
-                <article
-                  className="b360-editorial-article"
-                  style={{ backgroundImage: "url('/landing/assets/pillar-market.jpg')" }}
-                >
-                  <h3>Chega de silos</h3>
-                  <p>
-                    CRM, telefonia, mensagens e prospecção precisam compartilhar o mesmo contexto
-                    para evitar retrabalho e perda de oportunidades.
-                  </p>
+              <div className="b360-problem-grid">
+                <article className="b360-problem-card">
+                  <div className="b360-problem-header">
+                    <span className="b360-problem-tag">SILOS DE INFORMAÇÃO</span>
+                    <span className="b360-problem-icon">❌</span>
+                  </div>
+                  <h3>Chega de silos operacionais</h3>
+                  <div className="b360-problem-body">
+                    <div className="b360-problem-row">
+                      <span className="b360-label-flag red">Problema</span>
+                      <p>CRM, telefonia, e-mails e WhatsApp desconectados forçam os vendedores a caçar informações e retrabalhar contatos.</p>
+                    </div>
+                    <div className="b360-problem-row">
+                      <span className="b360-label-flag cyan">Solução Birth Hub</span>
+                      <p>Linha do tempo 360° unificada onde cada negociação preserva todo o histórico de interações e passagens de bastão.</p>
+                    </div>
+                  </div>
+                  <div className="b360-problem-kpi">
+                    <TrendingUp className="w-4 h-4 text-[#00D4FF]" />
+                    <span><b>Resultado:</b> -40% no tempo de preparação e zero retrabalho operacional.</span>
+                  </div>
                 </article>
-                <article
-                  className="b360-editorial-article"
-                  style={{ backgroundImage: "url('/landing/assets/pillar-forecast.jpg')" }}
-                >
+
+                <article className="b360-problem-card">
+                  <div className="b360-problem-header">
+                    <span className="b360-problem-tag">DECISÕES TARDIAS</span>
+                    <span className="b360-problem-icon">❌</span>
+                  </div>
                   <h3>Decisões no tempo certo</h3>
-                  <p>
-                    Substitua a leitura tardia de planilhas por visibilidade instantânea das etapas,
-                    estagnações e gargalos operacionais.
-                  </p>
+                  <div className="b360-problem-body">
+                    <div className="b360-problem-row">
+                      <span className="b360-label-flag red">Problema</span>
+                      <p>Planilhas estáticas e fechamentos mensais revelam estagnações quando já não há tempo hábil para recuperar a meta.</p>
+                    </div>
+                    <div className="b360-problem-row">
+                      <span className="b360-label-flag cyan">Solução Birth Hub</span>
+                      <p>Telemetria em tempo real com alertas preditivos de gargalos e desvios de velocidade de ciclo em D+0.</p>
+                    </div>
+                  </div>
+                  <div className="b360-problem-kpi">
+                    <TrendingUp className="w-4 h-4 text-[#FF2D9B]" />
+                    <span><b>Resultado:</b> +28% na velocidade de avanço entre etapas do funil.</span>
+                  </div>
                 </article>
-                <article
-                  className="b360-editorial-article"
-                  style={{ backgroundImage: "url('/landing/assets/pillar-hub.jpg')" }}
-                >
+
+                <article className="b360-problem-card">
+                  <div className="b360-problem-header">
+                    <span className="b360-problem-tag">OPORTUNIDADES NO ESCURO</span>
+                    <span className="b360-problem-icon">❌</span>
+                  </div>
                   <h3>Nenhuma oportunidade no escuro</h3>
-                  <p>
-                    Organize follow-ups rigorosos, acompanhe negócios sem contato recente e dê
-                    clareza total à próxima melhor ação comercial.
-                  </p>
+                  <div className="b360-problem-body">
+                    <div className="b360-problem-row">
+                      <span className="b360-label-flag red">Problema</span>
+                      <p>Falta de rigor no cumprimento de SLAs faz negócios quentes esfriarem sem acompanhamento ou ação definida.</p>
+                    </div>
+                    <div className="b360-problem-row">
+                      <span className="b360-label-flag cyan">Solução Birth Hub</span>
+                      <p>Orquestração automática de follow-ups com SLA garantido e recomendação da Próxima Melhor Ação (NBA).</p>
+                    </div>
+                  </div>
+                  <div className="b360-problem-kpi">
+                    <TrendingUp className="w-4 h-4 text-[#FFC107]" />
+                    <span><b>Resultado:</b> 100% das oportunidades com próximo passo monitorado.</span>
+                  </div>
                 </article>
               </div>
             </section>
@@ -768,36 +1148,50 @@ export function Landing360({
                 <p>Dados, diagnóstico e execução integrados na mesma experiência.</p>
               </div>
 
-              <div className="b360-editorial-rows">
-                <article
-                  className="b360-editorial-article"
-                  style={{ backgroundImage: "url('/landing/assets/pillar-automation.jpg')" }}
-                >
+              <div className="b360-platform-grid">
+                <article className="b360-platform-card">
+                  <div className="b360-platform-icon bg-[#00D4FF]/10 text-[#00D4FF] border border-[#00D4FF]/30">
+                    <Database className="w-6 h-6" />
+                  </div>
                   <h3>Dados e conectividade Multi-CRM</h3>
                   <p>
-                    Conexões via APIs e webhooks com Bitrix24, HubSpot, Salesforce e Pipedrive
-                    mantêm as informações comerciais sempre alinhadas.
+                    Conexões bidirecionais via APIs abertas e webhooks com Bitrix24, HubSpot, Salesforce e Pipedrive
+                    mantêm os dados comerciais sincronizados em milissegundos sem duplicação.
                   </p>
+                  <div className="b360-platform-badge">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#00D4FF] animate-pulse" />
+                    <span>Persistência RLS Multi-Tenant</span>
+                  </div>
                 </article>
-                <article
-                  className="b360-editorial-article"
-                  style={{ backgroundImage: "url('/landing/assets/pillar-ai.jpg')" }}
-                >
+
+                <article className="b360-platform-card">
+                  <div className="b360-platform-icon bg-[#FF2D9B]/10 text-[#FF2D9B] border border-[#FF2D9B]/30">
+                    <Sparkles className="w-6 h-6" />
+                  </div>
                   <h3>Diagnóstico e inteligência</h3>
                   <p>
-                    Analise a saúde das contas, identifique riscos de perda e encontre caminhos
-                    fundamentados para destravar o fechamento de deals.
+                    Analise a saúde das contas, identifique riscos de estagnação e receba recomendações preditivas
+                    fundamentadas no histórico real de negociações para destravar o fechamento.
                   </p>
+                  <div className="b360-platform-badge">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#FF2D9B] animate-pulse" />
+                    <span>Copiloto Contextual & NBA</span>
+                  </div>
                 </article>
-                <article
-                  className="b360-editorial-article"
-                  style={{ backgroundImage: "url('/landing/assets/pillar-orchestration.jpg')" }}
-                >
+
+                <article className="b360-platform-card">
+                  <div className="b360-platform-icon bg-[#FFC107]/10 text-[#FFC107] border border-[#FFC107]/30">
+                    <Workflow className="w-6 h-6" />
+                  </div>
                   <h3>Execução e orquestração</h3>
                   <p>
-                    Organize a rotina de SDRs, closers e líderes com cadências estruturadas, regras
-                    de SLA e automações acionáveis.
+                    Coordene a rotina de SDRs, Closers e liderança com cadências multicanal, regras rígidas de SLA
+                    e supervisão autônoma para garantir passagens de bastão sem fricção.
                   </p>
+                  <div className="b360-platform-badge">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#FFC107] animate-pulse" />
+                    <span>Passagem de Bastão com SLA</span>
+                  </div>
                 </article>
               </div>
             </section>
@@ -807,91 +1201,140 @@ export function Landing360({
               <div className="b360-sectionhead">
                 <div className="b360-eyebrow">JORNADA COMPLETA</div>
                 <h2>Da prospecção ao fechamento.</h2>
-                <p>Um fluxo contínuo, com contexto em cada passagem de bastão.</p>
+                <p>Um fluxo contínuo, com contexto preservado em cada passagem de bastão.</p>
               </div>
 
-              <ol className="b360-flow">
-                <li
-                  className="b360-flow-step"
-                  style={{ backgroundImage: "url('/landing/assets/pillar-hub.jpg')" }}
-                >
-                  <span className="b360-step-num">01</span>
+              <div className="b360-flow-connected">
+                <div className="b360-flow-card">
+                  <div className="b360-flow-num-badge">01</div>
+                  <div className="b360-flow-icon">
+                    <Building2 className="w-5 h-5 text-[#00D4FF]" />
+                  </div>
                   <h3>Entrada e captura</h3>
-                  <p>Leads e contas chegam por CRMs, campanhas e prospecção ativa em tempo real.</p>
-                </li>
-                <li
-                  className="b360-flow-step"
-                  style={{ backgroundImage: "url('/landing/assets/pillar-market.jpg')" }}
-                >
-                  <span className="b360-step-num">02</span>
+                  <p>Leads e contas chegam por CRMs, campanhas de marketing e prospecção ativa com enriquecimento automático.</p>
+                  <div className="b360-flow-kpi">Inbound & Outbound</div>
+                </div>
+
+                <div className="b360-flow-connector" aria-hidden="true">
+                  <div className="b360-flow-line" />
+                  <ArrowRight className="w-4 h-4 b360-flow-arrow" />
+                </div>
+
+                <div className="b360-flow-card">
+                  <div className="b360-flow-num-badge">02</div>
+                  <div className="b360-flow-icon">
+                    <Target className="w-5 h-5 text-[#FF2D9B]" />
+                  </div>
                   <h3>Enriquecimento B2B</h3>
-                  <p>
-                    Dados de empresas e decisores apoiam a validação do ICP e mapeamento de contas.
-                  </p>
-                </li>
-                <li
-                  className="b360-flow-step"
-                  style={{ backgroundImage: "url('/landing/assets/pillar-orchestration.jpg')" }}
-                >
-                  <span className="b360-step-num">03</span>
+                  <p>Dados de empresas, decisores e CNAE apoiam a validação imediata do ICP e priorização inteligente de contas.</p>
+                  <div className="b360-flow-kpi">Match ICP & QSA</div>
+                </div>
+
+                <div className="b360-flow-connector" aria-hidden="true">
+                  <div className="b360-flow-line" />
+                  <ArrowRight className="w-4 h-4 b360-flow-arrow" />
+                </div>
+
+                <div className="b360-flow-card">
+                  <div className="b360-flow-num-badge">03</div>
+                  <div className="b360-flow-icon">
+                    <GitBranch className="w-5 h-5 text-[#FFC107]" />
+                  </div>
                   <h3>Cadência e SLA</h3>
-                  <p>
-                    Distribuição automática e contato ágil seguindo regras operacionais rígidas.
-                  </p>
-                </li>
-                <li
-                  className="b360-flow-step"
-                  style={{ backgroundImage: "url('/landing/assets/pillar-ai.jpg')" }}
-                >
-                  <span className="b360-step-num">04</span>
+                  <p>Distribuição automática e contato ágil entre SDR e Closer seguindo regras operacionais rígidas de SLA.</p>
+                  <div className="b360-flow-kpi">Toques Multicanal</div>
+                </div>
+
+                <div className="b360-flow-connector" aria-hidden="true">
+                  <div className="b360-flow-line" />
+                  <ArrowRight className="w-4 h-4 b360-flow-arrow" />
+                </div>
+
+                <div className="b360-flow-card">
+                  <div className="b360-flow-num-badge">04</div>
+                  <div className="b360-flow-icon">
+                    <Bot className="w-5 h-5 text-[#8B7DFF]" />
+                  </div>
                   <h3>Apoio com IA</h3>
-                  <p>
-                    Histórico contextual e matriz de objeções orientam as reuniões e abordagens.
-                  </p>
-                </li>
-                <li
-                  className="b360-flow-step"
-                  style={{ backgroundImage: "url('/landing/assets/pillar-forecast.jpg')" }}
-                >
-                  <span className="b360-step-num">05</span>
+                  <p>Histórico contextual, matriz de objeções e copiloto orientam as abordagens e reuniões de negociação.</p>
+                  <div className="b360-flow-kpi">NBA em Tempo Real</div>
+                </div>
+
+                <div className="b360-flow-connector" aria-hidden="true">
+                  <div className="b360-flow-line" />
+                  <ArrowRight className="w-4 h-4 b360-flow-arrow" />
+                </div>
+
+                <div className="b360-flow-card">
+                  <div className="b360-flow-num-badge">05</div>
+                  <div className="b360-flow-icon">
+                    <LineChart className="w-5 h-5 text-[#00D4FF]" />
+                  </div>
                   <h3>Fechamento e dados</h3>
-                  <p>
-                    O aprendizado dos negócios ganhos e perdidos realimenta toda a operação
-                    comercial.
-                  </p>
-                </li>
-              </ol>
+                  <p>O aprendizado dos negócios ganhos e perdidos realimenta os modelos estatísticos de previsão de receita.</p>
+                  <div className="b360-flow-kpi">Forecast Ponderado</div>
+                </div>
+              </div>
             </section>
 
             {/* Seção IA */}
             <section className="b360-section" id="ia">
               <div className="b360-ai-grid">
                 <div>
-                  <div className="b360-eyebrow">COPILOTO COMERCIAL</div>
-                  <h2 className="text-3xl font-extrabold text-white mb-4">
+                  <div className="b360-eyebrow">COPILOTO COMERCIAL & SUPERVISOR</div>
+                  <h2 className="text-3xl font-extrabold landing-title-gradient mb-4">
                     Inteligência que compreende seu pipeline.
                   </h2>
                   <p className="text-slate-400 text-base mb-6">
                     O copiloto analisa o estágio de cada negociação, o histórico das interações e as
-                    objeções recorrentes para apoiar sua equipe em tempo real.
+                    objeções recorrentes para apoiar sua equipe em tempo real com supervisão contínua.
                   </p>
-                  <div className="flex flex-col gap-4">
-                    <div className="p-5 rounded-2xl border border-cyan-500/20 bg-slate-900/60">
-                      <h3 className="text-lg font-bold text-cyan-400 mb-1">
-                        Diagnóstico de entraves
-                      </h3>
-                      <p className="text-slate-300 text-sm">
-                        Identifique negócios estagnados no funil e receba o contexto exato do motivo
-                        de bloqueio.
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-6">
+                    <div className="p-4 rounded-2xl border border-cyan-500/20 bg-slate-900/60 dark:bg-[#0B1A2E]/80">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <Sparkles className="w-4 h-4 text-[#00D4FF]" />
+                        <h3 className="text-sm font-bold text-[#00D4FF]">
+                          Diagnóstico de entraves
+                        </h3>
+                      </div>
+                      <p className="text-slate-300 dark:text-slate-400 text-xs leading-relaxed">
+                        Identifique negócios estagnados no funil e receba o contexto exato do motivo de bloqueio.
                       </p>
                     </div>
-                    <div className="p-5 rounded-2xl border border-pink-500/20 bg-slate-900/60">
-                      <h3 className="text-lg font-bold text-pink-400 mb-1">
-                        Próxima melhor ação (NBA)
-                      </h3>
-                      <p className="text-slate-300 text-sm">
-                        Receba recomendações preditivas para avançar negociações e contornar
-                        objeções de preço e escopo.
+
+                    <div className="p-4 rounded-2xl border border-pink-500/20 bg-slate-900/60 dark:bg-[#0B1A2E]/80">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <Target className="w-4 h-4 text-[#FF2D9B]" />
+                        <h3 className="text-sm font-bold text-[#FF2D9B]">
+                          Próxima melhor ação (NBA)
+                        </h3>
+                      </div>
+                      <p className="text-slate-300 dark:text-slate-400 text-xs leading-relaxed">
+                        Receba recomendações táticas preditivas para avançar negociações e contornar objeções.
+                      </p>
+                    </div>
+
+                    <div className="p-4 rounded-2xl border border-amber-500/20 bg-slate-900/60 dark:bg-[#0B1A2E]/80">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <Clock className="w-4 h-4 text-[#FFC107]" />
+                        <h3 className="text-sm font-bold text-[#FFC107]">
+                          Contexto histórico
+                        </h3>
+                      </div>
+                      <p className="text-slate-300 dark:text-slate-400 text-xs leading-relaxed">
+                        Leitura instantânea de chamadas gravadas, e-mails trocados e propostas enviadas.
+                      </p>
+                    </div>
+
+                    <div className="p-4 rounded-2xl border border-indigo-500/20 bg-slate-900/60 dark:bg-[#0B1A2E]/80">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <Bot className="w-4 h-4 text-[#8B7DFF]" />
+                        <h3 className="text-sm font-bold text-[#8B7DFF]">
+                          Supervisor On-line
+                        </h3>
+                      </div>
+                      <p className="text-slate-300 dark:text-slate-400 text-xs leading-relaxed">
+                        Orquestração autônoma de missões operacionais e alocação dinâmica de agentes.
                       </p>
                     </div>
                   </div>
@@ -899,20 +1342,37 @@ export function Landing360({
 
                 <div className="b360-copilot-card">
                   <div className="b360-copilot-top">
-                    <span>COPILOTO ON-LINE</span>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-[#00D4FF] animate-pulse" />
+                      <span>COPILOTO ON-LINE</span>
+                    </div>
                     <small>Simulação Contextual</small>
                   </div>
-                  <h3>Oportunidade pede atenção.</h3>
-                  <p>
-                    Proposta comercial no valor de R$ 145.000 enviada há 4 dias sem retorno
-                    registrado.
-                  </p>
-                  <div className="b360-suggestion-box">
-                    <b>Próxima Ação Sugerida:</b>
-                    <p>
-                      Retomar contato com o CFO destacando o caso de ROI simulado e propor reunião
-                      de alinhamento de implantação.
+                  <div className="b360-copilot-deal-info">
+                    <span className="b360-copilot-deal-tag">OPORTUNIDADE #1042</span>
+                    <h3>Oportunidade pede atenção.</h3>
+                    <p className="b360-copilot-deal-desc">
+                      Proposta comercial no valor de <strong>R$ 145.000</strong> enviada há 4 dias sem retorno registrado após reunião técnica.
                     </p>
+                  </div>
+                  <div className="b360-suggestion-box">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-[#00D4FF] mb-1">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Próxima Ação Sugerida (NBA):</span>
+                    </div>
+                    <p>
+                      Retomar contato com o CFO destacando o caso de ROI simulado (payback estimado em 45 dias) e propor reunião executiva de implantação com modelo parcelado.
+                    </p>
+                  </div>
+                  <div className="b360-copilot-actions">
+                    <button
+                      type="button"
+                      onClick={() => handleOpenModal('Copiloto de IA', 'Simulação do Copiloto de IA em negociação real.')}
+                      className="b360-copilot-apply-btn"
+                    >
+                      <span>Aplicar recomendação na oportunidade</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -924,16 +1384,24 @@ export function Landing360({
                 <div className="b360-eyebrow">CONECTIVIDADE TOTAL</div>
                 <h2>Conectado ao seu ecossistema.</h2>
                 <p>
-                  Uma operação aberta e compatível com as ferramentas que sua empresa já utiliza.
+                  Uma operação aberta e compatível com as ferramentas comerciais e produtividade que sua empresa já utiliza.
                 </p>
               </div>
 
               <div className="b360-integrations">
                 {ADAPTIVE_INTEGRATIONS.map((integ) => (
                   <article key={integ.name} className="b360-integration-card">
-                    <div className="b360-integration-title">
-                      <img src={integ.icon} alt={`${integ.name} logo`} />
-                      <h3>{integ.name}</h3>
+                    <div className="b360-integration-header">
+                      <div className="b360-integration-title">
+                        <img src={integ.icon} alt={`${integ.name} logo`} />
+                        <h3>{integ.name}</h3>
+                      </div>
+                      <span className={`b360-status-pill ${integ.status}`}>
+                        {integ.status === 'active' && <span className="b360-status-dot green" />}
+                        {integ.status === 'in_dev' && <span className="b360-status-dot amber" />}
+                        {integ.status === 'planned' && <span className="b360-status-dot slate" />}
+                        <span>{integ.statusLabel}</span>
+                      </span>
                     </div>
                     <p>{integ.desc}</p>
                   </article>
@@ -943,10 +1411,11 @@ export function Landing360({
 
             {/* Final CTA */}
             <section className="b360-final-cta">
+              <div className="b360-eyebrow">CONTROLE TOTAL DE RECEITA</div>
               <h2>Coloque sua operação comercial sob comando.</h2>
               <p>
                 Explore a experiência do Birth Hub 360° e descubra como dados, equipe e execução se
-                potencializam mutuamente.
+                potencializam mutuamente em uma única plataforma soberana.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-4">
                 <button
@@ -957,6 +1426,13 @@ export function Landing360({
                   <span className="b360-aurora-inner">
                     Acessar Command Center <span aria-hidden="true">→</span>
                   </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleOpenRoiSimulator}
+                  className="b360-hero-pill-btn"
+                >
+                  Simular ROI Comercial
                 </button>
                 <button
                   type="button"
@@ -1055,7 +1531,7 @@ export function Landing360({
                 onClick={() =>
                   handleOpenModal(
                     'Governança & RLS',
-                    'Isolamento multi-tenant estrito, controle de papéis (RBAC) e conformidade integral LGPD.',
+                    'Isolamento multi-tenant estrito, controle de papéis (RBAC) e governança de privacidade LGPD.',
                   )
                 }
               >
@@ -1169,53 +1645,83 @@ export function Landing360({
 
         {/* Footer Institucional */}
         <footer className="b360-footer">
-          <div className="b360-shell b360-footer-row">
-            <span>© 2026 Birth Hub 360° · Todos os direitos reservados.</span>
-            <div className="flex items-center gap-4 text-xs">
-              <Link to="/privacy" className="hover:text-[#00D4FF] transition-colors">
-                Política de Privacidade
-              </Link>
-              <span>·</span>
-              <span>Isolamento Multi-Tenant</span>
-              <span>·</span>
-              <span>Conformidade LGPD/GDPR</span>
-              <span>·</span>
-              <span>Criptografia AES-256</span>
+          <div className="b360-shell">
+            <div className="b360-footer-grid">
+              <div className="b360-footer-col brand">
+                <div className="flex items-center gap-2.5 mb-3">
+                  <BH360LogoMark size={32} />
+                  <span className="font-display font-extrabold text-lg text-slate-100 dark:text-white">
+                    Birth Hub <strong className="text-[#FF2D9B]">360°</strong>
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 leading-relaxed mb-4 max-w-sm">
+                  O sistema operacional definitivo para operações de receita enterprise unificando CRM, telemetria e inteligência artificial.
+                </p>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-mono bg-slate-800/60 border border-slate-700/60 text-slate-300">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#00D4FF]" />
+                  <span>Isolamento Multi-Tenant por RLS</span>
+                </div>
+              </div>
+
+              <div className="b360-footer-col">
+                <h4>Plataforma</h4>
+                <ul>
+                  <li><button type="button" onClick={() => handleOpenModal('01. Hub Comercial', 'Pipeline 360° e contas.', '01')}>01. Pipeline & Contas</button></li>
+                  <li><button type="button" onClick={() => handleOpenModal('02. Inteligência de Mercado', 'Enriquecimento B2B.', '02')}>02. Inteligência de Mercado</button></li>
+                  <li><button type="button" onClick={() => handleOpenModal('03. Orquestração de Vendas', 'Cadência e SLAs.', '03')}>03. Orquestração de Vendas</button></li>
+                  <li><button type="button" onClick={() => handleOpenModal('06. Inteligência Artificial', 'Copiloto de negociações.', '06')}>06. Copiloto de IA</button></li>
+                </ul>
+              </div>
+
+              <div className="b360-footer-col">
+                <h4>Conectividade</h4>
+                <ul>
+                  <li><span>Bitrix24 (API Oficial)</span></li>
+                  <li><span>WhatsApp Business API</span></li>
+                  <li><span>VoiceHub Telefonia em Nuvem</span></li>
+                  <li><span>Webhooks & Open REST API</span></li>
+                </ul>
+              </div>
+
+              <div className="b360-footer-col">
+                <h4>Governança</h4>
+                <ul>
+                  <li>
+                    <Link to="/privacy" className="hover:text-[#00D4FF] transition-colors">
+                      Política de Privacidade
+                    </Link>
+                  </li>
+                  <li><span>Direitos do Titular (LGPD Art. 18)</span></li>
+                  <li><span>Sessão Segura HttpOnly</span></li>
+                  <li><span>Auditoria de Logs & RBAC</span></li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="b360-footer-bottom">
+              <span>© 2026 Birth Hub 360° · Todos os direitos reservados.</span>
+              <div className="flex items-center gap-3 text-xs text-slate-400">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span>Sistemas Operacionais 100%</span>
+                </span>
+                <span>·</span>
+                <span>Versão 2.4 Enterprise</span>
+              </div>
             </div>
           </div>
         </footer>
 
-        {/* Modal Interativo de Demonstração / Inspeção de Recursos */}
-        {activeModal && (
-          // biome-ignore lint/a11y/useKeyWithClickEvents: backdrop click-to-close
-          <div
-            className="b360-dialog-backdrop"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="b360-dialog-title"
-            onClick={handleCloseModal}
-          >
-            {/* biome-ignore lint/a11y/noStaticElementInteractions: modal dialog box stopPropagation */}
-            {/* biome-ignore lint/a11y/useKeyWithClickEvents: modal dialog box stopPropagation */}
-            <div className="b360-dialog-box" onClick={(e) => e.stopPropagation()}>
-              <div className="b360-eyebrow">MÓDULO PLATAFORMA</div>
-              <h2 id="b360-dialog-title">{activeModal.title}</h2>
-              <p id="b360-dialog-desc">{activeModal.desc}</p>
-              <div className="b360-modal-actions">
-                <button type="button" className="b360-modalclose" onClick={handleCloseModal}>
-                  Fechar
-                </button>
-                <button
-                  type="button"
-                  className="px-5 py-2 rounded-full font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-[#00D4FF] to-[#0099CC] text-[#031422] hover:opacity-95 transition-opacity"
-                  onClick={handleGoToLogin}
-                >
-                  Acessar Plataforma →
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Modal Editorial dos 8 Pilares e Módulos da Plataforma */}
+        <PillarDetailModal
+          isOpen={Boolean(activeModal || selectedPillarId)}
+          pillarId={selectedPillarId}
+          genericModal={activeModal}
+          onClose={handleCloseModal}
+          onProceedToLogin={handleGoToLogin}
+          onOpenRoiSimulator={handleOpenRoiSimulator}
+          theme={theme}
+        />
       </div>
 
       {/* ════════════════════════════════════════════════════════════════════
@@ -1620,18 +2126,18 @@ export function Landing360({
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
                 <div className="flex flex-col items-center">
                   <span className="font-mono text-[10px] font-bold text-[#0369a1] dark:text-[#00D4FF]">
-                    TLS 1.3
+                    Multi-Tenant
                   </span>
                   <span className="font-sans text-[9px] font-medium text-slate-600 dark:text-slate-400">
-                    Em Trânsito
+                    Isolamento RLS
                   </span>
                 </div>
                 <div className="flex flex-col items-center">
                   <span className="font-mono text-[10px] font-bold text-[#0369a1] dark:text-[#00D4FF]">
-                    AES-256-GCM
+                    Sessão Segura
                   </span>
                   <span className="font-sans text-[9px] font-medium text-slate-600 dark:text-slate-400">
-                    Em Repouso
+                    Cookie HttpOnly
                   </span>
                 </div>
                 <div className="flex flex-col items-center">
@@ -1644,10 +2150,10 @@ export function Landing360({
                 </div>
                 <div className="flex flex-col items-center">
                   <span className="font-mono text-[10px] font-bold text-[#047857] dark:text-[#10B981]">
-                    Multi-Tenant
+                    RBAC Estrito
                   </span>
                   <span className="font-sans text-[9px] font-medium text-slate-600 dark:text-slate-400">
-                    Isolamento
+                    Controle de Acesso
                   </span>
                 </div>
               </div>

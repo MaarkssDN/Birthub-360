@@ -19,13 +19,23 @@ describe('toCsv — compatível com Excel PT-BR (06A, seção 12)', () => {
     const csv = toCsv([{ NOME: 'João', VALOR: '10,50' }]);
     expect(csv.startsWith('﻿')).toBe(true);
     expect(csv).toContain('NOME;VALOR');
-    expect(csv).toContain('João;10,50');
+    // sanitizeCsvCell() coloca aspas nos valores contendo vírgula per RFC 4180
+    // preservando integridade de valores decimais em PT-BR ('"10,50"')
+    expect(csv).toContain('João;"10,50"');
   });
 
   it('escapa valor com ; ou aspas ou quebra de linha (formato RFC4180)', async () => {
     const { toCsv } = await import('../extractionFiles.js');
     const csv = toCsv([{ COMENTARIO: 'linha1;"citada"\nlinha2' }]);
     expect(csv).toContain('"linha1;""citada""\nlinha2"');
+  });
+
+  it('neutraliza fórmulas maliciosas nas células sem quebrar a exportação (proteção CSV Injection)', async () => {
+    const { toCsv } = await import('../extractionFiles.js');
+    const csv = toCsv([{ FORMULA: '=1+1', CMD: '-2+3', SUM: '@SUM(A1)' }]);
+    expect(csv).toContain("\"'=1+1\"");
+    expect(csv).toContain("\"'-2+3\"");
+    expect(csv).toContain("\"'@SUM(A1)\"");
   });
 
   it('une o cabeçalho de linhas com formas diferentes (campos UF_CRM_* variáveis) sem perder colunas', async () => {

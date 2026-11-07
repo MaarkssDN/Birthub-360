@@ -1,4 +1,4 @@
-﻿/**
+/**
  * src/services/cadence/stepScheduler.service.ts
  * Agendador inteligente de passos de cadencia com respeito a janela comercial (08:00 - 19:00) e timezone.
  * (Handoff 06-para-17 / DIV-AGENTE-17-001)
@@ -22,12 +22,12 @@ export class CadenceStepSchedulerService {
     const endHour = options.endHour ?? 19;
     const targetNextHour = options.targetNextHour ?? 9;
 
-    let adjusted = new Date(scheduledDate.getTime());
+    const adjusted = new Date(scheduledDate.getTime());
 
     // Obter dia da semana e hora local (usando UTC ou calculo simples de timezone)
     // 0 = Domingo, 6 = Sabado
-    let dayOfWeek = adjusted.getUTCDay();
-    let hour = adjusted.getUTCHours();
+    const dayOfWeek = adjusted.getUTCDay();
+    const hour = adjusted.getUTCHours();
 
     // Se for Sabado (6), posterga para Segunda-feira
     if (dayOfWeek === 6) {

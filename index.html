@@ -14,9 +14,23 @@
   <title>Birth Hub 360° | Commercial Intelligence & Execution Platform</title>
   <!-- Fontes oficiais self-hosted são carregadas por globals.css. -->
   <script>
-    document.documentElement.classList.remove("dark");
-    document.documentElement.classList.add("light");
-    document.documentElement.dataset.theme = "light";
+    try {
+      var savedTheme = localStorage.getItem("birthhub360_theme");
+      var activeTheme = (savedTheme === "dark" || savedTheme === "light") ? savedTheme : "light";
+      if (activeTheme === "dark") {
+        document.documentElement.classList.add("dark");
+        document.documentElement.classList.remove("light");
+        document.documentElement.dataset.theme = "dark";
+      } else {
+        document.documentElement.classList.remove("dark");
+        document.documentElement.classList.add("light");
+        document.documentElement.dataset.theme = "light";
+      }
+    } catch (e) {
+      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.add("light");
+      document.documentElement.dataset.theme = "light";
+    }
   </script>
 </head>
 

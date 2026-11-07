@@ -662,7 +662,7 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
                   <div className="w-5 h-5 rounded-full bg-sky-100 text-brand flex items-center justify-center">
                     <Check className="w-3.5 h-3.5" />
                   </div>
-                  <span>Totalmente seguro com criptografia e conformidade LGPD.</span>
+                  <span>Proteção de dados com criptografia e governança LGPD.</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <div className="w-5 h-5 rounded-full bg-sky-100 text-brand flex items-center justify-center">
@@ -1142,7 +1142,7 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
                   </li>
                   <li className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-emerald-600" />
-                    <span>Conformidade total com LGPD & RLS</span>
+                    <span>Governança de privacidade LGPD & isolamento RLS</span>
                   </li>
                 </ul>
               </div>
@@ -1311,7 +1311,7 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
               <div>
                 <h3 className="font-display text-xl font-bold text-[#10B981]">Segurança</h3>
                 <p className="text-xs text-ink-2 mt-2">
-                  Auditorias de segurança, RLS multi-tenant e conformidade LGPD.
+                  Auditorias de segurança, RLS multi-tenant e governança de privacidade LGPD.
                 </p>
               </div>
               <div className="flex justify-end pt-4">

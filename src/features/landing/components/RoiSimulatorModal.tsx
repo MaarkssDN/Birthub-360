@@ -95,9 +95,9 @@ export function RoiSimulatorModal({
         }
       }}
     >
-      <div className="relative w-full max-w-2xl my-8 rounded-2xl sm:rounded-3xl border border-slate-700 bg-slate-900/95 dark:bg-[#0f1422]/98 text-slate-100 shadow-[0_25px_70px_rgba(0,0,0,0.8)] overflow-hidden">
+      <div className="relative w-full max-w-2xl my-8 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-700 bg-white/98 dark:bg-[#0f1422]/98 text-slate-900 dark:text-slate-100 shadow-[0_25px_70px_rgba(0,0,0,0.2)] dark:shadow-[0_25px_70px_rgba(0,0,0,0.8)] overflow-hidden">
         {/* Header do Simulador */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/70">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/70">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-[#00D4FF]/15 border border-[#00D4FF]/40 flex items-center justify-center text-[#00D4FF]">
               <Calculator className="w-4 h-4" />
@@ -105,11 +105,11 @@ export function RoiSimulatorModal({
             <div>
               <h2
                 id="roi-modal-title"
-                className="font-display text-base sm:text-lg font-bold text-cyan-400"
+                className="font-display text-base sm:text-lg font-bold text-sky-600 dark:text-cyan-400"
               >
                 Simulador Executivo de Previsibilidade & ROI
               </h2>
-              <span className="font-mono text-[10px] text-slate-400 uppercase tracking-wider">
+              <span className="font-mono text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 Auditoria de Vazamento de Pipeline Comercial
               </span>
             </div>
@@ -122,7 +122,7 @@ export function RoiSimulatorModal({
               onClose();
             }}
             aria-label="Fechar simulador"
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -135,10 +135,10 @@ export function RoiSimulatorModal({
             {/* Slider 1: Deals Ativos */}
             <div className="space-y-1.5">
               <div className="flex justify-between items-center text-xs font-mono">
-                <label htmlFor="deals-slider" className="text-slate-300 font-semibold">
+                <label htmlFor="deals-slider" className="text-slate-700 dark:text-slate-300 font-semibold">
                   Oportunidades em Andamento por Mês:
                 </label>
-                <span className="px-2.5 py-0.5 rounded bg-slate-800 text-cyan-400 font-bold">
+                <span className="px-2.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-cyan-400 font-bold">
                   {dealsCount} deals
                 </span>
               </div>
@@ -152,7 +152,7 @@ export function RoiSimulatorModal({
                 onChange={(e) => setDealsCount(Number(e.target.value))}
                 className="w-full accent-[#00D4FF] cursor-pointer"
               />
-              <div className="flex justify-between text-[10px] font-mono text-slate-300">
+              <div className="flex justify-between text-[10px] font-mono text-slate-500 dark:text-slate-300">
                 <span>10 deals</span>
                 <span>150 deals</span>
                 <span>300+ deals</span>
@@ -162,10 +162,10 @@ export function RoiSimulatorModal({
             {/* Slider 2: Ticket Médio */}
             <div className="space-y-1.5">
               <div className="flex justify-between items-center text-xs font-mono">
-                <label htmlFor="ticket-slider" className="text-slate-300 font-semibold">
+                <label htmlFor="ticket-slider" className="text-slate-700 dark:text-slate-300 font-semibold">
                   Ticket Médio por Negócio:
                 </label>
-                <span className="px-2.5 py-0.5 rounded bg-slate-800 text-pink-400 font-bold">
+                <span className="px-2.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-pink-400 font-bold">
                   {formatCurrency(avgTicket)}
                 </span>
               </div>
@@ -179,7 +179,7 @@ export function RoiSimulatorModal({
                 onChange={(e) => setAvgTicket(Number(e.target.value))}
                 className="w-full accent-[#FF2D9B] cursor-pointer"
               />
-              <div className="flex justify-between text-[10px] font-mono text-slate-300">
+              <div className="flex justify-between text-[10px] font-mono text-slate-500 dark:text-slate-300">
                 <span>R$ 5.000</span>
                 <span>R$ 75.000</span>
                 <span>R$ 150.000+</span>
@@ -191,12 +191,12 @@ export function RoiSimulatorModal({
               <div className="flex justify-between items-center text-xs font-mono">
                 <label
                   htmlFor="leak-slider"
-                  className="text-slate-300 font-semibold flex items-center gap-1.5"
+                  className="text-slate-700 dark:text-slate-300 font-semibold flex items-center gap-1.5"
                 >
                   <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
                   Taxa Atual de Perda por Falta de Follow-up:
                 </label>
-                <span className="px-2.5 py-0.5 rounded bg-slate-800 text-amber-400 font-bold">
+                <span className="px-2.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-amber-400 font-bold">
                   {leakRate}%
                 </span>
               </div>
@@ -210,7 +210,7 @@ export function RoiSimulatorModal({
                 onChange={(e) => setLeakRate(Number(e.target.value))}
                 className="w-full accent-[#F59E0B] cursor-pointer"
               />
-              <div className="flex justify-between text-[10px] font-mono text-slate-300">
+              <div className="flex justify-between text-[10px] font-mono text-slate-500 dark:text-slate-300">
                 <span>10% (Funil Maduro)</span>
                 <span>35% (Média de Mercado)</span>
                 <span>60% (Sem Cadência)</span>
@@ -219,35 +219,35 @@ export function RoiSimulatorModal({
           </div>
 
           {/* Card de Impacto Projetado */}
-          <div className="p-5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-4">
+          <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-3.5 rounded-xl bg-slate-900/60 border border-rose-500/30">
+              <div className="p-3.5 rounded-xl bg-rose-50/80 dark:bg-slate-900/60 border border-rose-200 dark:border-rose-500/30">
                 <div className="text-[11px] font-mono text-rose-400 uppercase font-semibold">
                   Receita Mensal em Risco
                 </div>
-                <div className="font-display text-xl font-black text-rose-300 mt-1">
+                <div className="font-display text-xl font-black text-rose-600 dark:text-rose-300 mt-1">
                   {formatCurrency(monthlyLeakedRevenue)}
-                  <span className="text-xs font-normal text-slate-200 font-mono block">
+                  <span className="text-xs font-normal text-slate-600 dark:text-slate-200 font-mono block">
                     por estagnação no funil
                   </span>
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-slate-900/60 border border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+              <div className="p-3.5 rounded-xl bg-emerald-50/80 dark:bg-slate-900/60 border border-emerald-200 dark:border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
                 <div className="text-[11px] font-mono text-emerald-400 uppercase font-semibold flex items-center gap-1.5">
                   <TrendingUp className="w-3.5 h-3.5" />
                   Receita Resgatável com IA
                 </div>
-                <div className="font-display text-xl font-black text-emerald-300 mt-1">
+                <div className="font-display text-xl font-black text-emerald-700 dark:text-emerald-300 mt-1">
                   {formatCurrency(monthlyRecoverableRevenue)}
-                  <span className="text-xs font-normal text-emerald-400/80 font-mono block">
+                  <span className="text-xs font-normal text-emerald-700/80 dark:text-emerald-400/80 font-mono block">
                     + {formatCurrency(annualRecoverableRevenue)} / ano
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 pt-2 border-t border-slate-800/80 text-xs font-mono text-slate-200">
+            <div className="flex items-center gap-2 pt-2 border-t border-slate-200 dark:border-slate-800/80 text-xs font-mono text-slate-600 dark:text-slate-200">
               <Zap className="w-4 h-4 text-cyan-400 shrink-0" />
               <span>
                 <strong>+15 horas semanais</strong> liberadas por vendedor ao automatizar
@@ -267,7 +267,7 @@ export function RoiSimulatorModal({
               <ArrowRight className="w-5 h-5 text-slate-950" />
             </button>
 
-            <div className="flex items-center justify-center gap-4 text-[11px] font-mono text-slate-200">
+            <div className="flex items-center justify-center gap-4 text-[11px] font-mono text-slate-500 dark:text-slate-200">
               <span className="inline-flex items-center gap-1">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                 Sem compromisso
