@@ -214,7 +214,9 @@ export function useB360ScrollVelocityInertia(
 
     return () => {
       cancelAnimationFrame(rafId);
-      cards.forEach((card) => { card.style.removeProperty('--scroll-tilt'); });
+      cards.forEach((card) => {
+        card.style.removeProperty('--scroll-tilt');
+      });
     };
   }, [selector, reduceMotion]);
 }
@@ -358,4 +360,3 @@ export function useB360SectionProgress(targetId = 'problema') {
 
   return { progress, isIntersecting };
 }
-
