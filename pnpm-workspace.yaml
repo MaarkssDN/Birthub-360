@@ -21,10 +21,15 @@ minimumReleaseAgeExclude:
 # (protobufjs 6.x, sharp 0.32.x, mysql2 3.15.x) e o gate de PR do Trivy reporta HIGH/CRITICAL em
 # um lockfile que nenhum ambiente instala. Ao mudar `overrides` no package.json, atualize aqui.
 overrides:
+  '@qdrant/js-client-rest>undici': ^7.30.1
+  '@ai-sdk/provider-utils>undici': ^7.30.1
+  'testcontainers>undici': ^8.12.2
+  'million>undici': ^6.29.1
   deepmerge-ts: ^8.0.2
-  brace-expansion: ^2.0.1
+  brace-expansion: ^2.1.7
+  dompurify: ^3.4.17
   uuid: ^14.0.2
-  fast-uri: ^3.1.7
+  fast-uri: ^3.1.9
   '@xenova/transformers>sharp': ^0.35.3
   protobufjs: 7.6.5
   lodash: ^4.17.24
@@ -33,6 +38,20 @@ overrides:
   'xcode>uuid': '>=11.1.1'
   'openai>zod': $zod
   mysql2: ^3.22.0
-  qs: ^6.16.0
+  qs: ^6.16.1
+  deepmerge: 4.1.2
+  systeminformation: ^5.33.19
+  source-map-js: ^1.2.2
+  body-parser: ^2.4.0
+  ip-address: ^10.7.5
+  serialize-javascript: ^7.1.4
+  '@joshwooding/vite-plugin-react-docgen-typescript>glob': ^14.0.4
+  'cacache>glob': ^14.0.4
+  'rimraf@>=5.0.0>glob': ^14.0.4
+  'archiver-utils@>=5.0.0>glob': ^14.0.4
+  'workbox-build>glob': ^14.0.4
+  '@ts-morph/common>minimatch': ^11.0.5
+  '@typescript-eslint/typescript-estree>minimatch': ^11.0.5
   'mammoth>@xmldom/xmldom': ^0.8.15
   '@capacitor/cli>@xmldom/xmldom': ^0.9.12
+  'tsx>esbuild': $esbuild
