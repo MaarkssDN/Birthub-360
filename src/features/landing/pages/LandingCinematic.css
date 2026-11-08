@@ -1,0 +1,458 @@
+/* ==========================================================================
+   BIRTH HUB 360 — CAMADA CINEMATOGRÁFICA COMPLEMENTAR (LANDING + LOGIN)
+   Convive com o sistema existente em LandingAdaptive.css:
+   .b360-ambient (orbes + anel orbital), coreografia do hero
+   (b360-hero-rise / b360-hero-console-in) e .b360-reveal via
+   IntersectionObserver. Aqui ficam apenas os efeitos que faltavam:
+   scroll progress, ambient interno do hero, count-up, tilt 3D,
+   reveal tipográfico por palavras, halo neon e microinterações.
+   Somente transform/opacity/filter — prefers-reduced-motion desliga tudo.
+   ========================================================================== */
+
+/* ── 1. SCROLL PROGRESS ─────────────────────────────────────────────────── */
+
+.b360-scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 200;
+  pointer-events: none;
+  background: rgba(148, 163, 184, 0.12);
+}
+
+.b360-scroll-progress-bar {
+  height: 100%;
+  width: 100%;
+  transform-origin: left center;
+  transform: scaleX(0);
+  background: linear-gradient(90deg, #00d4ff, #8b7dff, #ff2d9b, #ffc107);
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.55);
+  will-change: transform;
+}
+
+/* ── 2. AMBIENT INTERNO DO HERO — grid + motes neon ─────────────────────── */
+
+.b360-ambientfx {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* conteúdo do hero precisa ficar acima da camada ambiente interna */
+.b360-hero .b360-hero-main {
+  position: relative;
+  z-index: 1;
+}
+
+.b360-ambientfx-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.5;
+  will-change: transform;
+}
+
+.b360-ambientfx-blob-a {
+  width: 52%;
+  height: 62%;
+  top: -20%;
+  left: -10%;
+  background: radial-gradient(circle, rgba(0, 212, 255, 0.22), transparent 65%);
+  animation: b360fx-blob-a 26s ease-in-out infinite alternate;
+}
+
+.b360-ambientfx-blob-b {
+  width: 46%;
+  height: 55%;
+  bottom: -24%;
+  right: -8%;
+  background: radial-gradient(circle, rgba(255, 45, 155, 0.18), transparent 65%);
+  animation: b360fx-blob-b 32s ease-in-out infinite alternate;
+}
+
+.b360-ambientfx-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 212, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.05) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 85% 75% at 50% 35%, black 15%, transparent 78%);
+  -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 35%, black 15%, transparent 78%);
+}
+
+@keyframes b360fx-blob-a {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(5%, 9%, 0) scale(1.14);
+  }
+}
+
+@keyframes b360fx-blob-b {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1.08);
+  }
+  100% {
+    transform: translate3d(-7%, -5%, 0) scale(0.94);
+  }
+}
+
+/* Motes — nós de dados neon que sobem, pulsam e dissipam */
+.b360-mote {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0;
+  animation:
+    b360fx-mote-rise 9s ease-in-out infinite,
+    b360fx-mote-glow 4s ease-in-out infinite;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.b360-mote-cyan {
+  background: #00d4ff;
+  color: #00d4ff;
+}
+.b360-mote-pink {
+  background: #ff2d9b;
+  color: #ff2d9b;
+}
+.b360-mote-gold {
+  background: #ffc107;
+  color: #ffc107;
+}
+.b360-mote-iris {
+  background: #8b7dff;
+  color: #8b7dff;
+}
+
+@keyframes b360fx-mote-rise {
+  0% {
+    transform: translate3d(0, 26px, 0) scale(0.6);
+    opacity: 0;
+  }
+  18% {
+    opacity: 0.9;
+  }
+  55% {
+    transform: translate3d(14px, -34px, 0) scale(1);
+    opacity: 0.65;
+  }
+  100% {
+    transform: translate3d(-10px, -92px, 0) scale(0.7);
+    opacity: 0;
+  }
+}
+
+@keyframes b360fx-mote-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 6px currentColor;
+  }
+  50% {
+    box-shadow:
+      0 0 14px currentColor,
+      0 0 26px currentColor;
+  }
+}
+
+/* ── 3. TIPOGRAFIA CINEMATOGRÁFICA — reveal por palavras ────────────────── */
+
+.b360-word {
+  display: inline-block;
+  opacity: 0;
+  transform: translate3d(0, 0.7em, 0) rotate(2.5deg);
+  filter: blur(10px);
+  animation: b360fx-word-in 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity, filter;
+}
+
+@keyframes b360fx-word-in {
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+.b360-hero-title {
+  text-shadow:
+    0 0 40px rgba(0, 212, 255, 0.25),
+    0 0 90px rgba(255, 45, 155, 0.12);
+}
+
+/* ── 4. CARDS — profundidade em camadas sobre o .b360-reveal existente ───── */
+
+.b360-feature-card {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* profundidade extra do conteúdo quando o card termina o reveal de scroll —
+   anima o filho para não disputar transform com .b360-reveal-in */
+.b360-feature-card.b360-reveal-in .b360-card-content {
+  animation: b360fx-card-depth 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.15s backwards;
+}
+
+@keyframes b360fx-card-depth {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0) scale(0.97);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+.b360-feature-card,
+.b360-problem-card,
+.b360-platform-card,
+.b360-integration-card,
+.b360-flow-card,
+.b360-module {
+  transition:
+    transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.45s ease,
+    border-color 0.3s ease;
+}
+
+/* cascata de entrada dos itens do console do hero */
+.b360-stream-item {
+  opacity: 0;
+  animation: b360fx-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.b360-stream-item:nth-child(1) {
+  animation-delay: 1.05s;
+}
+.b360-stream-item:nth-child(2) {
+  animation-delay: 1.3s;
+}
+.b360-stream-item:nth-child(3) {
+  animation-delay: 1.55s;
+}
+
+.b360-console-kpi {
+  opacity: 0;
+  animation: b360fx-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.b360-console-kpi:nth-child(1) {
+  animation-delay: 0.95s;
+}
+.b360-console-kpi:nth-child(2) {
+  animation-delay: 1.1s;
+}
+.b360-console-kpi:nth-child(3) {
+  animation-delay: 1.25s;
+}
+.b360-console-kpi:nth-child(4) {
+  animation-delay: 1.4s;
+}
+
+@keyframes b360fx-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+/* ── 5. BOTÃO HALO NEON — CTAs de autenticação ──────────────────────────── */
+
+.b360-neon-halo {
+  position: relative;
+  isolation: isolate;
+}
+
+.b360-neon-halo::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(
+    from var(--b360-halo-angle, 0deg),
+    #00d4ff,
+    #8b7dff,
+    #ff2d9b,
+    #ffc107,
+    #00d4ff
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.9;
+  animation: b360fx-halo-spin 5s linear infinite;
+  pointer-events: none;
+}
+
+.b360-neon-halo::after {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--b360-halo-angle, 0deg),
+    rgba(0, 212, 255, 0.35),
+    rgba(255, 45, 155, 0.3),
+    rgba(255, 193, 7, 0.25),
+    rgba(139, 125, 255, 0.35),
+    rgba(0, 212, 255, 0.35)
+  );
+  filter: blur(14px);
+  opacity: 0.55;
+  animation: b360fx-halo-spin 5s linear infinite;
+  z-index: -1;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.b360-neon-halo:hover::after,
+.b360-neon-halo:focus-visible::after {
+  opacity: 0.95;
+}
+
+@property --b360-halo-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes b360fx-halo-spin {
+  to {
+    --b360-halo-angle: 360deg;
+  }
+}
+
+/* ── 6. LOGIN — entrada cinematográfica contida ─────────────────────────── */
+
+.b360-login-rise {
+  opacity: 0;
+  transform: translate3d(0, 22px, 0);
+  filter: blur(5px);
+  animation: b360fx-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.b360-login-rise-1 {
+  animation-delay: 0.08s;
+}
+.b360-login-rise-2 {
+  animation-delay: 0.26s;
+}
+.b360-login-rise-3 {
+  animation-delay: 0.44s;
+}
+.b360-login-rise-4 {
+  animation-delay: 0.6s;
+}
+
+/* inputs: realce de foco mais expressivo */
+.card-login-command input:focus,
+.card-login-command select:focus {
+  box-shadow:
+    0 0 0 1px rgba(0, 212, 255, 0.55),
+    0 0 18px rgba(0, 212, 255, 0.18);
+}
+
+/* ── 7. MICROINTERAÇÕES — fluxo, badges e KPIs ──────────────────────────── */
+
+.b360-flow-line {
+  position: relative;
+  overflow: hidden;
+}
+
+.b360-flow-line::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 212, 255, 0.55),
+    rgba(255, 45, 155, 0.45),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: b360fx-flow-sweep 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes b360fx-flow-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  55%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.b360-pillar-badge {
+  transition:
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.3s ease;
+}
+
+.b360-feature-card:hover .b360-pillar-badge,
+.b360-feature-card:focus-visible .b360-pillar-badge {
+  transform: scale(1.12) rotate(-4deg);
+}
+
+.b360-kpi-value {
+  text-shadow: 0 0 24px currentColor;
+}
+
+/* ── 8. RESPONSIVIDADE — reduzir densidade em telas pequenas ────────────── */
+
+@media (max-width: 768px) {
+  .b360-ambientfx {
+    opacity: 0.55;
+  }
+  .b360-mote {
+    display: none;
+  }
+}
+
+/* ── 9. REDUCED MOTION — desligamento total e elegante ──────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .b360-scroll-progress {
+    display: none;
+  }
+  .b360-ambientfx,
+  .b360-word,
+  .b360-stream-item,
+  .b360-console-kpi,
+  .card-login-command,
+  .b360-login-rise,
+  .b360-flow-line::after,
+  .b360-neon-halo::before,
+  .b360-neon-halo::after,
+  .b360-feature-card.b360-reveal-in .b360-card-content {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+  .b360-feature-card,
+  .b360-problem-card,
+  .b360-platform-card,
+  .b360-integration-card,
+  .b360-flow-card,
+  .b360-module {
+    transition: none !important;
+  }
+}

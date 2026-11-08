@@ -151,3 +151,5 @@ scripts/find-*.mjs
 sonar-report/
 *.scannerwork
 
+
+scratch/

@@ -8,18 +8,21 @@ import {
   Cpu,
   Database,
   Layers,
-  LucideIcon,
+  type LucideIcon,
   Network,
   PhoneCall,
   Search,
+  Settings,
+  Share2,
+  Smartphone,
   Sparkles,
   TrendingUp,
   Workflow,
 } from 'lucide-react';
-import React from 'react';
+import type React from 'react';
 
 export type PillarThemeColor = 'cyan' | 'pink' | 'gold' | 'iris';
-export type PillarId = '01' | '02' | '03' | '04' | '05' | '06' | '07' | '08';
+export type PillarId = '01' | '02' | '03' | '04' | '05' | '06' | '07' | '08' | '09' | '10' | '11';
 export type PillarAvailability = 'Operacional' | 'Disponível no CRM' | 'Conector API Ativo';
 
 export interface PillarCapability {
@@ -931,6 +934,220 @@ export function VisualizerEngajamento({ theme = 'dark' }: { theme?: 'dark' | 'li
 // 2. REGISTRO TIPADO DOS 8 PILARES COMERCIAIS (PILLAR_REGISTRY)
 // ============================================================================
 
+/** 09 — Admin & Operations: governança, papéis, acesso por módulo e telemetria da plataforma */
+export function VisualizerAdminOps({ theme = 'dark' }: { theme?: 'dark' | 'light' } = {}) {
+  const isDark = theme === 'dark';
+  const rows = [
+    { label: 'Settings Globais', meta: 'Organização · 14 políticas', ok: true },
+    { label: 'Equipe & Papéis', meta: 'RBAC · 6 perfis ativos', ok: true },
+    { label: 'Module Access', meta: '11 módulos concedidos', ok: true },
+    { label: 'Feature Flags', meta: '3 flags em rollout', ok: false },
+  ];
+  return (
+    <div
+      className={`rounded-2xl border p-4 space-y-3 font-mono text-xs shadow-inner transition-colors ${
+        isDark
+          ? 'border-cyan-500/30 bg-slate-900/80 text-slate-300'
+          : 'border-cyan-300 bg-cyan-50/40 text-slate-700'
+      }`}
+    >
+      <div
+        className={`flex items-center justify-between border-b pb-2.5 ${
+          isDark ? 'border-slate-800' : 'border-slate-200'
+        }`}
+      >
+        <span
+          className={`flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px] ${
+            isDark ? 'text-cyan-400' : 'text-cyan-700'
+          }`}
+        >
+          <Settings className="w-3.5 h-3.5" /> Governança · Admin & Operations
+        </span>
+        <span
+          className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+            isDark
+              ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30'
+              : 'bg-cyan-100 text-cyan-800 border-cyan-300'
+          }`}
+        >
+          RBAC Ativo
+        </span>
+      </div>
+      <div className="space-y-1.5">
+        {rows.map((r) => (
+          <div
+            key={r.label}
+            className={`flex items-center justify-between p-2 rounded-lg border text-[11px] ${
+              isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+            }`}
+          >
+            <span className={`font-semibold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+              {r.label}
+            </span>
+            <span className="flex items-center gap-2">
+              <span
+                className={`text-[9px] font-sans ${isDark ? 'text-slate-500' : 'text-slate-400'}`}
+              >
+                {r.meta}
+              </span>
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  r.ok ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'
+                }`}
+              />
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** 10 — Mobile & Field Sales: FieldMeetingRecorder, offline sync e IA edge */
+export function VisualizerFieldSales({ theme = 'dark' }: { theme?: 'dark' | 'light' } = {}) {
+  const isDark = theme === 'dark';
+  return (
+    <div
+      className={`rounded-2xl border p-4 space-y-3 font-mono text-xs shadow-inner transition-colors ${
+        isDark
+          ? 'border-pink-500/30 bg-slate-900/80 text-slate-300'
+          : 'border-pink-300 bg-pink-50/40 text-slate-700'
+      }`}
+    >
+      <div
+        className={`flex items-center justify-between border-b pb-2.5 ${
+          isDark ? 'border-slate-800' : 'border-slate-200'
+        }`}
+      >
+        <span
+          className={`flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px] ${
+            isDark ? 'text-pink-400' : 'text-pink-700'
+          }`}
+        >
+          <Smartphone className="w-3.5 h-3.5" /> FieldMeetingRecorder · Android
+        </span>
+        <span
+          className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+            isDark
+              ? 'bg-pink-500/10 text-pink-400 border-pink-500/30'
+              : 'bg-pink-100 text-pink-800 border-pink-300'
+          }`}
+        >
+          Offline Sync
+        </span>
+      </div>
+      <div
+        className={`rounded-xl p-3 border space-y-2.5 ${
+          isDark ? 'bg-slate-950/90 border-pink-500/30' : 'bg-white border-pink-200 shadow-sm'
+        }`}
+      >
+        <div className="flex items-center justify-between">
+          <span
+            className={`text-[11px] font-semibold ${isDark ? 'text-slate-200' : 'text-slate-900'}`}
+          >
+            Visita técnica — Cliente Aurora
+          </span>
+          <span
+            className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
+              isDark ? 'bg-rose-500/15 text-rose-300' : 'bg-rose-100 text-rose-700'
+            }`}
+          >
+            ● REC 12:04
+          </span>
+        </div>
+        <div className="flex items-center gap-1 h-8">
+          {[10, 18, 26, 14, 22, 30, 16, 24, 12, 20, 28, 15].map((h, i) => (
+            <i key={i} className="flex-1 rounded-sm bg-pink-400/70" style={{ height: `${h}px` }} />
+          ))}
+        </div>
+        <div className="flex items-center justify-between text-[9px] font-sans">
+          <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>
+            IA edge transcrevendo localmente
+          </span>
+          <span className={isDark ? 'text-emerald-400' : 'text-emerald-600'}>
+            Sync pendente: 3 registros
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** 11 — Social Selling: geração de abordagem por canal com copywriting assistido por IA */
+export function VisualizerSocialSelling({ theme = 'dark' }: { theme?: 'dark' | 'light' } = {}) {
+  const isDark = theme === 'dark';
+  const channels = ['LinkedIn', 'WhatsApp', 'E-mail'];
+  return (
+    <div
+      className={`rounded-2xl border p-4 space-y-3 font-mono text-xs shadow-inner transition-colors ${
+        isDark
+          ? 'border-amber-500/30 bg-slate-900/80 text-slate-300'
+          : 'border-amber-300 bg-amber-50/40 text-slate-700'
+      }`}
+    >
+      <div
+        className={`flex items-center justify-between border-b pb-2.5 ${
+          isDark ? 'border-slate-800' : 'border-slate-200'
+        }`}
+      >
+        <span
+          className={`flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px] ${
+            isDark ? 'text-amber-400' : 'text-amber-700'
+          }`}
+        >
+          <Share2 className="w-3.5 h-3.5" /> ApproachGenerator · Shadow Copy
+        </span>
+        <span
+          className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+            isDark
+              ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+              : 'bg-amber-100 text-amber-800 border-amber-300'
+          }`}
+        >
+          Copy por IA
+        </span>
+      </div>
+      <div className="flex gap-1.5">
+        {channels.map((c, i) => (
+          <span
+            key={c}
+            className={`px-2 py-1 rounded-lg text-[9px] font-bold border ${
+              i === 0
+                ? isDark
+                  ? 'bg-amber-500/15 text-amber-300 border-amber-500/40'
+                  : 'bg-amber-100 text-amber-800 border-amber-300'
+                : isDark
+                  ? 'bg-slate-950/80 text-slate-400 border-slate-800'
+                  : 'bg-white text-slate-500 border-slate-200'
+            }`}
+          >
+            {c}
+          </span>
+        ))}
+      </div>
+      <div
+        className={`rounded-xl p-3 border space-y-1.5 ${
+          isDark ? 'bg-slate-950/90 border-amber-500/25' : 'bg-white border-amber-200 shadow-sm'
+        }`}
+      >
+        <p
+          className={`text-[10px] leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
+        >
+          “Olá {'{nome}'}, vi que a {'{empresa}'} expandiu a operação comercial no Sul — exatamente
+          o cenário em que ajudamos empresas como a sua a estruturar cadências multicanal em 30
+          dias…”
+        </p>
+        <div className="flex items-center justify-between text-[9px] font-sans">
+          <span className={isDark ? 'text-slate-500' : 'text-slate-400'}>
+            Tom: consultivo · Personalização: conta + decisor
+          </span>
+          <span className={isDark ? 'text-amber-400' : 'text-amber-700'}>Aprovar →</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export const PILLARS_EDITORIAL_DATA: Record<string, PillarData> = {
   '01': {
     id: '01',
@@ -1377,5 +1594,179 @@ export const PILLARS_EDITORIAL_DATA: Record<string, PillarData> = {
       },
     ],
     renderVisualizer: (theme) => <VisualizerEngajamento theme={theme} />,
+  },
+
+  '09': {
+    id: '09',
+    num: '09',
+    badge: 'GOVERNANÇA & FUNDAÇÃO OPERACIONAL',
+    title: 'Admin & Operations',
+    modalTitle: '09. Admin & Operations',
+    tagline:
+      'Camada de administração da plataforma: settings, equipe, acesso por módulo e telemetria.',
+    commercialDescription:
+      'A fundação operacional que sustenta todos os módulos comerciais: configurações globais, gestão de equipe e papéis, controle de acesso granular por módulo, feature flags e observabilidade de consumo. Não é um módulo comercial — é o que torna a operação auditável e escalável.',
+    detailedDesc:
+      'A fundação operacional que sustenta todos os módulos comerciais: configurações globais, gestão de equipe e papéis (RBAC), controle de acesso granular por módulo, feature flags com rollout controlado, catálogo de módulos por organização e relatórios de bug, consumo de IA e notificações.',
+    themeColor: 'cyan',
+    icon: Settings,
+    route: '/app/settings',
+    ctaText: 'Abrir Administração',
+    availability: 'Disponível no CRM',
+    capabilities: [
+      {
+        title: 'Settings Globais & Feature Flags',
+        desc: 'Configurações da organização com rollout controlado de funcionalidades por tenant.',
+      },
+      {
+        title: 'Equipe, Papéis & Module Access',
+        desc: 'Gestão de usuários com RBAC e concessão granular de acesso aos 11 módulos.',
+      },
+      {
+        title: 'Telemetria de Consumo & IA',
+        desc: 'Monitoramento de uso da plataforma, consumo de tokens de IA e relatórios de bug integrados.',
+      },
+      {
+        title: 'Resiliência & Failover',
+        desc: 'Painéis de resiliência operacional e failover para continuidade da receita.',
+      },
+    ],
+    metrics: [
+      {
+        value: '11 módulos',
+        label: 'Catálogo por organização',
+        trend: 'Concessão granular',
+        context: 'Simulação',
+      },
+      {
+        value: 'RBAC',
+        label: 'Controle de papéis',
+        trend: 'Mínimo privilégio',
+        context: 'Simulação',
+      },
+      {
+        value: '100%',
+        label: 'Auditoria de acessos',
+        trend: 'Logs imutáveis',
+        context: 'Simulação',
+      },
+    ],
+    renderVisualizer: (theme) => <VisualizerAdminOps theme={theme} />,
+  },
+
+  '10': {
+    id: '10',
+    num: '10',
+    badge: 'FORÇA DE CAMPO & APP ANDROID',
+    title: 'Mobile & Field Sales',
+    modalTitle: '10. Mobile & Field Sales',
+    tagline:
+      'Vendas em campo com gravação de reuniões, sincronização offline e IA edge no app Android.',
+    commercialDescription:
+      'O vendedor não para quando sai do escritório. O FieldMeetingRecorder registra reuniões externas com áudio e IA edge, sincroniza offline e devolve os insights ao pipeline — tudo pelo app Android dedicado construído com Capacitor.',
+    detailedDesc:
+      'O vendedor não para quando sai do escritório. O FieldMeetingRecorder registra reuniões externas com gravação de áudio, transcrição por IA edge e sincronização offline; o app Android via Capacitor mantém a mesma plataforma na palma da mão, com os mesmos dados e governança do desktop.',
+    themeColor: 'pink',
+    icon: Smartphone,
+    route: '/app',
+    ctaText: 'Conhecer o App de Campo',
+    availability: 'Disponível no CRM',
+    capabilities: [
+      {
+        title: 'FieldMeetingRecorder',
+        desc: 'Gravação de reuniões externas com transcrição automática e extração de próximos passos.',
+      },
+      {
+        title: 'Sincronização Offline-first',
+        desc: 'Registros capturados em campo sincronizam com o CRM quando a conexão retorna.',
+      },
+      {
+        title: 'IA Edge no Dispositivo',
+        desc: 'Processamento local de áudio e texto para reduzir latência e custo de API.',
+      },
+      {
+        title: 'App Android via Capacitor',
+        desc: 'Aplicativo nativo com a mesma experiência da plataforma web, incluindo Voice Hub dedicado.',
+      },
+    ],
+    metrics: [
+      {
+        value: '100%',
+        label: 'Reuniões registradas',
+        trend: 'Sem retrabalho de anotações',
+        context: 'Simulação',
+      },
+      {
+        value: 'Offline',
+        label: 'Operação sem sinal',
+        trend: 'Fila de sincronização',
+        context: 'Simulação',
+      },
+      {
+        value: 'Edge AI',
+        label: 'Processamento local',
+        trend: 'Menor latência',
+        context: 'Simulação',
+      },
+    ],
+    renderVisualizer: (theme) => <VisualizerFieldSales theme={theme} />,
+  },
+
+  '11': {
+    id: '11',
+    num: '11',
+    badge: 'VENDA SOCIAL & COPY ASSISTIDO',
+    title: 'Social Selling',
+    modalTitle: '11. Social Selling',
+    tagline:
+      'Abordagens personalizadas por canal com copywriting assistido por IA e persistência de interações.',
+    commercialDescription:
+      'Venda onde o decisor está: LinkedIn, WhatsApp e e-mail. O módulo gera abordagens personalizadas por conta e decisor, com copywriting assistido por IA e persistência de cada interação — concedido por módulo à organização.',
+    detailedDesc:
+      'Venda onde o decisor está: LinkedIn, WhatsApp e e-mail. O SocialSellingHub combina geração de abordagens personalizadas por conta e decisor, copywriting assistido por IA (shadow copy), abordagem estruturada por canal e persistência de interações para alimentar o pipeline com contexto real.',
+    themeColor: 'gold',
+    icon: Share2,
+    route: '/social-selling',
+    ctaText: 'Abrir Social Selling',
+    availability: 'Disponível no CRM',
+    capabilities: [
+      {
+        title: 'ApproachGeneratorCard',
+        desc: 'Geração de abordagens personalizadas por canal usando contexto da conta e do decisor.',
+      },
+      {
+        title: 'Shadow Copywriting por IA',
+        desc: 'Rascunhos de mensagens em tom consultivo prontos para revisão e aprovação humana.',
+      },
+      {
+        title: 'Abordagem Estruturada por Canal',
+        desc: 'Sequências adaptadas a LinkedIn, WhatsApp e e-mail com cadência própria.',
+      },
+      {
+        title: 'Persistência de Interações',
+        desc: 'Cada toque registrado na linha do tempo 360° da conta, alimentando o Hub Comercial.',
+      },
+    ],
+    metrics: [
+      {
+        value: '3+ canais',
+        label: 'Abordagem multicanal',
+        trend: 'LinkedIn · WhatsApp · E-mail',
+        context: 'Simulação',
+      },
+      {
+        value: 'IA',
+        label: 'Copy assistido',
+        trend: 'Aprovação humana',
+        context: 'Simulação',
+      },
+      {
+        value: '360°',
+        label: 'Contexto unificado',
+        trend: 'Interações persistidas',
+        context: 'Simulação',
+      },
+    ],
+    renderVisualizer: (theme) => <VisualizerSocialSelling theme={theme} />,
   },
 };

@@ -249,8 +249,17 @@ export function setupDI() {
   container.register('MeetingSynthesisService', new MeetingSynthesisService());
   container.register('SDRQualificationAgent', new SDRQualificationAgent());
   container.register('CloserAgent', new CloserAgent());
-  container.register('BitrixEventMeshBridge', bitrixEventMeshBridge);
-  container.register('BitrixConnectionTester', { testBitrixConnection });
+  container.register('BitrixLeadWritebackAdapter', bitrixLeadWritebackAdapter);
+  container.register('BitrixConnectionOps', { testBitrixConnection });
+  container.register('Crm360UseCases', crm360UseCases);
+  container.register('QualificationMatrixUseCases', qualificationMatrixUseCases);
+  container.register('ObjectionMatrixUseCases', objectionMatrixUseCases);
+  container.register('BugReportUseCases', bugReportUseCases);
+  container.register('UsageUseCases', usageUseCases);
+  container.register('FeatureFlagsUseCases', featureFlagsUseCases);
+  container.register('CopilotoIaUseCases', copilotoIaUseCases);
+  container.register('CopilotoBitrixWritebackUseCases', copilotoBitrixWritebackUseCases);
+  container.register('RoleplayPlaybookPort', new PlaybookRoleplayAdapter());
 
   // 4. Controllers
   container.register('NoteController', new NoteController(noteUseCases));
@@ -259,11 +268,22 @@ export function setupDI() {
   container.register('ContactController', new ContactController(contactUseCases));
   container.register('CompanyController', new CompanyController(companyUseCases));
   container.register('LeadController', new LeadController(leadUseCases));
+  container.register(
+    'LeadDedupController',
+    new LeadDedupController(new LeadDeduplicationService()),
+  );
+  container.register(
+    'CompanyDedupController',
+    new CompanyDedupController(new CompanyDeduplicationService()),
+  );
   container.register('AutomationController', new AutomationController(automationUseCases));
   container.register('AnalyticsController', new AnalyticsController(analyticsUseCases));
   container.register(
     'CommercialIntelligenceController',
-    new CommercialIntelligenceController(commercialIntelligenceUseCases),
+    new CommercialIntelligenceController(
+      commercialIntelligenceUseCases,
+      commercialIntelligenceAiService,
+    ),
   );
   container.register('Crm360Controller', new Crm360Controller(crm360UseCases));
   container.register(
@@ -274,28 +294,34 @@ export function setupDI() {
     'ObjectionMatrixController',
     new ObjectionMatrixController(objectionMatrixUseCases),
   );
+  container.register('LivingPlaybookController', new LivingPlaybookController());
   container.register('BugReportController', new BugReportController(bugReportUseCases));
   container.register('UsageController', new UsageController(usageUseCases));
   container.register('FeatureFlagsController', new FeatureFlagsController(featureFlagsUseCases));
-  container.register('CopilotoIaController', new CopilotoIaController(copilotoIaUseCases));
   container.register(
-    'CopilotoBitrixWritebackUseCases',
-    copilotoBitrixWritebackUseCases,
+    'CopilotoIaController',
+    new CopilotoIaController(copilotoIaUseCases, copilotoBitrixWritebackUseCases),
   );
-  container.register('LivingPlaybookController', new LivingPlaybookController());
-  container.register('PlaybookRoleplayAdapter', new PlaybookRoleplayAdapter());
-  container.register('CompanyDeduplicationService', new CompanyDeduplicationService());
-  container.register('LeadDeduplicationService', new LeadDeduplicationService());
-  container.register('CompanyDedupController', new CompanyDedupController());
-  container.register('LeadDedupController', new LeadDedupController());
 
-  // 5. Event subscriptions
-  subscribeToCrmStageChanges(eventBus);
+  // Conexão do barramento de eventos do CRM com o motor de automações
+  subscribeToCrmStageChanges(async (event) => {
+    await automationEngine.handle({
+      organizationId: event.organizationId,
+      trigger: 'Lead mudou de status',
+      entity: 'Lead',
+      entityId: event.leadId,
+      data: event.data,
+    });
+  });
 
-  // 6. Automation engine
-  container.register('AutomationEngine', automationEngine);
+  // Conexão do DomainEventMesh com fluxos automáticos de CRM e mensageria no Bitrix24 e WhatsApp
+  bitrixEventMeshBridge.register();
 }
 
-function registerDomainEventOutbox() {
-  configureDomainEventOutboxFromEnv();
+/** Registra a UoW transacional da outbox no container (síncrono). Exportado para teste. */
+export function registerDomainEventOutbox(env: NodeJS.ProcessEnv = process.env): boolean {
+  const adapters = configureDomainEventOutboxFromEnv(env);
+  if (!adapters) return false;
+  container.register('DomainEventOutboxUnitOfWork', adapters.unitOfWork);
+  return true;
 }

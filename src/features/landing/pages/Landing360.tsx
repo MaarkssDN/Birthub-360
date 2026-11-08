@@ -28,8 +28,11 @@ import {
   Network,
   PhoneCall,
   Search,
+  Settings,
+  Share2,
   Shield,
   ShieldCheck,
+  Smartphone,
   Sparkles,
   Sun,
   Target,
@@ -52,12 +55,20 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { trackHeroRoiSimulatorOpened } from '@/lib/analytics/conversionTelemetry';
 import { authClient } from '@/lib/auth-client';
 import { SoundFX } from '@/lib/soundEffects';
+import {
+  B360AmbientFX,
+  B360CountUp,
+  B360ScrollProgress,
+  B360Words,
+  useB360CardTilt,
+} from '../components/CinematicFX.js';
 import { PillarDetailModal } from '../components/PillarDetailModal.js';
 import { RoiSimulatorModal } from '../components/RoiSimulatorModal.js';
 import './LandingAdaptive.css';
 import './Landing360.css';
+import './LandingCinematic.css';
 
-// 8 PILARES ADAPTATIVOS (BENTO GRID REFINADO)
+// 11 MÓDULOS ADAPTATIVOS (8 Pilares Centrais + 3 Complementares — BENTO GRID REFINADO)
 const ADAPTIVE_PILLARS = [
   {
     num: '01',
@@ -138,7 +149,7 @@ const ADAPTIVE_PILLARS = [
     num: '06',
     bentoClass: 'b360-bento-p6 b360-bento-tall',
     title: 'Inteligência artificial',
-    desc: 'Um copiloto conectado aos dados da empresa e ao contexto das negociações.',
+    desc: 'Um enxame de 20+ agentes especializados e um copiloto conectado aos dados da empresa.',
     bg: '/landing/assets/pillar-ai.jpg',
     colorClass: 'b360-c-pink',
     accentColor: '#FF2D9B',
@@ -153,11 +164,11 @@ const ADAPTIVE_PILLARS = [
     num: '07',
     bentoClass: 'b360-bento-p7',
     title: 'Automação & conectividade',
-    desc: 'Sincronize CRMs, acione gatilhos e integre ferramentas por APIs e webhooks.',
+    desc: 'Motor de regras, scanners inteligentes e uma malha de 9 conectores — incluindo Bitrix24.',
     bg: '/landing/assets/pillar-automation.jpg',
     colorClass: 'b360-c-gold',
     accentColor: '#FFC107',
-    tag: 'GATEWAY MULTI-CRM',
+    tag: 'MOTOR DE REGRAS & 9 CONECTORES',
     kpiPrefix: 'Simulação:',
     kpi: '~12 ms sync',
     modalTitle: '07. Automação & Conectividade Multi-CRM',
@@ -177,7 +188,52 @@ const ADAPTIVE_PILLARS = [
     kpi: '94% sentimento',
     modalTitle: '08. Engajamento Comercial',
     modalDesc:
-      'Telefonia em nuvem integrada, gravação, transcrição com IA, WhatsApp API oficial e linha do tempo omnichannel unificada.',
+      'Voice Hub com studio visual e supervisão ao vivo, cold call governado, WhatsApp via Chatwoot, mesa de tratamento e app Android dedicado.',
+  },
+  {
+    num: '09',
+    bentoClass: 'b360-bento-p9',
+    title: 'Admin & operations',
+    desc: 'Fundação operacional: settings globais, equipe e papéis, acesso por módulo e feature flags.',
+    bg: '',
+    colorClass: '',
+    accentColor: '#00D4FF',
+    tag: 'GOVERNANÇA DA PLATAFORMA',
+    kpiPrefix: 'Escopo:',
+    kpi: 'Por organização',
+    modalTitle: '09. Admin & Operations',
+    modalDesc:
+      'Camada de administração da plataforma: configurações globais, gestão de equipe e papéis, controle de acesso a módulos, feature flags e telemetria de consumo.',
+  },
+  {
+    num: '10',
+    bentoClass: 'b360-bento-p10',
+    title: 'Mobile & field sales',
+    desc: 'Vendas em campo com gravação de reuniões, sincronização offline e IA edge no app Android.',
+    bg: '',
+    colorClass: 'b360-c-pink',
+    accentColor: '#FF2D9B',
+    tag: 'FORÇA DE CAMPO',
+    kpiPrefix: 'Modo:',
+    kpi: 'Offline-first',
+    modalTitle: '10. Mobile & Field Sales',
+    modalDesc:
+      'FieldMeetingRecorder para registrar reuniões externas, sincronização offline, gravação de áudio e IA edge — o vendedor trabalha fora do escritório com a mesma plataforma via app Android (Capacitor).',
+  },
+  {
+    num: '11',
+    bentoClass: 'b360-bento-p11',
+    title: 'Social selling',
+    desc: 'Abordagens personalizadas por canal com copywriting assistido por IA e persistência de interações.',
+    bg: '',
+    colorClass: 'b360-c-gold',
+    accentColor: '#FFC107',
+    tag: 'VENDA SOCIAL',
+    kpiPrefix: 'Canais:',
+    kpi: 'LinkedIn · WhatsApp',
+    modalTitle: '11. Social Selling',
+    modalDesc:
+      'Geração de abordagens personalizadas, copywriting assistido por IA, abordagem estruturada por canal e persistência de interações — módulo concedido por organização.',
   },
 ];
 
@@ -266,6 +322,12 @@ function renderPillarIcon(num: string) {
       return <Zap className="w-5 h-5 text-[#FFC107]" />;
     case '08':
       return <PhoneCall className="w-5 h-5 text-[#8B7DFF]" />;
+    case '09':
+      return <Settings className="w-5 h-5 text-[#00D4FF]" />;
+    case '10':
+      return <Smartphone className="w-5 h-5 text-[#FF2D9B]" />;
+    case '11':
+      return <Share2 className="w-5 h-5 text-[#FFC107]" />;
     default:
       return <Building2 className="w-5 h-5" />;
   }
@@ -336,63 +398,84 @@ function renderPillarVisual(num: string) {
   }
 }
 
-// MÓDULOS DO COMMAND CENTER SANDBOX
+// MÓDULOS DO COMMAND CENTER SANDBOX (11 MÓDULOS OFICIAIS DA PLATAFORMA)
 const COMMAND_MODULES = [
   {
-    name: 'Inteligência',
-    ico: '✧',
-    desc: 'Insights e decisões',
-    modalDesc:
-      'Copiloto de IA, Next Best Action (NBA), análise preditiva de fechamento e detecção precoce de riscos no pipeline.',
-  },
-  {
-    name: 'CRM & BI',
+    name: 'Hub Comercial',
     ico: '▦',
-    desc: 'Pipeline e dados',
+    desc: 'Pipeline e contas 360°',
     modalDesc:
-      'Visão unificada de pipeline, métricas de conversão em tempo real e relatórios executivos de win/loss.',
+      'Núcleo operacional: pipeline kanban, gestão de negócios, propostas e cadastro unificado de contas e decisores — a base de dados sobre a qual todos os outros módulos operam.',
   },
   {
-    name: 'Prospecção',
+    name: 'Inteligência de Mercado',
     ico: '◎',
-    desc: 'Descobrir oportunidades',
+    desc: 'Prospecção multi-fonte',
     modalDesc:
-      'Localização de leads corporativos, enriquecimento de CNPJs e qualificação preditiva de ICP.',
+      'Motor de prospecção multi-fonte: consulta CNPJ, Apollo, Hunter, Google Places, LinkedIn e mais; enriquece contas com dados societários e monta um dossiê 360° antes da abordagem.',
   },
   {
-    name: 'Automações',
+    name: 'Orquestração de Vendas',
     ico: '⌘',
-    desc: 'Fluxos inteligentes',
+    desc: 'Cadências e execução',
     modalDesc:
-      'Workflows inteligentes para passagem de bastão, envio de propostas e cadências automatizadas de follow-up.',
+      'Motor próprio de cadências com opt-out e rate limit, plano diário priorizado, mesa de tratamento e ferramental de execução — playbooks, roteiros, matrizes, roleplay e academy.',
   },
   {
-    name: 'Gamificação',
+    name: 'Performance Comercial',
     ico: '✦',
-    desc: 'Evolução e metas',
+    desc: 'Analytics & gamificação',
     modalDesc:
-      'Quadro de metas, desafios semanais, pontuação por atividades e rankings de produtividade de equipe.',
+      'Analytics com coortes, win/loss estruturado, gamificação com coaching e ~18 tipos de relatórios executivos — de gargalo de funil a benchmark de vendedores.',
   },
   {
-    name: 'Roleplay',
-    ico: '◇',
-    desc: 'Simulações de vendas',
+    name: 'Previsibilidade Comercial',
+    ico: '◔',
+    desc: 'Forecast preditivo',
     modalDesc:
-      'Simulador de negociações com inteligência artificial para treinamento e nivelamento contínuo do time comercial.',
+      'Forecast com calibração contínua contra o realizado, pipeline ponderado, health score, detecção de risco por deal e simulador de cenários de contratação.',
+  },
+  {
+    name: 'Inteligência Artificial',
+    ico: '✧',
+    desc: 'Enxame de agentes',
+    modalDesc:
+      'Enxame de 20+ agentes especializados (BDR, Closer, SDR, Forecast, Pricing, Contract, Churn, Guardian do Bitrix), copiloto contextual com voz, RAG corporativo e aprovação humana para ações de alto impacto.',
+  },
+  {
+    name: 'Automação & Conectividade',
+    ico: '⇄',
+    desc: 'Regras & 9 conectores',
+    modalDesc:
+      'Motor de regras com dry-run, versionamento e idempotência; scanners de leads frios e deals estagnados; smart lead router; e malha de 9 conectores — incluindo o extrator completo do Bitrix24.',
+  },
+  {
+    name: 'Engajamento Comercial',
+    ico: '◈',
+    desc: 'Voz, WhatsApp & agenda',
+    modalDesc:
+      'Voice Hub com studio visual e supervisão ao vivo, cold call governado por política e scoring, WhatsApp via Chatwoot, mesa de tratamento e página pública de agendamento — com app Android dedicado.',
+  },
+  {
+    name: 'Admin & Operations',
+    ico: '⚙',
+    desc: 'Fundação da plataforma',
+    modalDesc:
+      'Camada de administração: settings globais, gestão de equipe e papéis, controle de acesso a módulos, feature flags, catálogo por organização, relatórios de bug, consumo de IA e notificações.',
+  },
+  {
+    name: 'Mobile & Field Sales',
+    ico: '▣',
+    desc: 'Vendas em campo',
+    modalDesc:
+      'FieldMeetingRecorder para reuniões externas, sincronização offline, gravação de áudio e IA edge — o app Android via Capacitor mantém o vendedor produtivo fora do escritório.',
   },
   {
     name: 'Social Selling',
     ico: '✺',
-    desc: 'Presença e conexão',
+    desc: 'Venda via redes sociais',
     modalDesc:
-      'Geração assistida de mensagens de engajamento no LinkedIn e canais de relacionamento corporativo B2B.',
-  },
-  {
-    name: 'VoiceHub',
-    ico: '◈',
-    desc: 'Conversas inteligentes',
-    modalDesc:
-      'Discador inteligente, gravação, transcrição e análise de sentimentos em chamadas de vendas.',
+      'Abordagens personalizadas por canal, copywriting assistido por IA, abordagem estruturada e persistência de interações — concedido por módulo à organização.',
   },
 ];
 
@@ -426,6 +509,7 @@ export function Landing360({
   const [searchParams] = useSearchParams();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const reduceMotion = useReducedMotion();
+  useB360CardTilt([viewMode, activeScreen]);
 
   // Sincronizar activeScreen com a rota ativa
   useEffect(() => {
@@ -507,6 +591,66 @@ export function Landing360({
   useEffect(() => {
     document.title = 'Birth Hub 360° · Revenue Command Center & Multi-CRM';
   }, []);
+
+  // Scroll reveals cinematográficos — IntersectionObserver adiciona .b360-reveal-in
+  // conforme as seções entram na viewport (movimento só existe sob
+  // prefers-reduced-motion: no-preference, definido no CSS).
+  useEffect(() => {
+    if (activeScreen !== 'intro' || !('IntersectionObserver' in window)) return;
+    const root = document.querySelector('.b360-adaptive-landing');
+    if (!root) return;
+
+    const targets = root.querySelectorAll<HTMLElement>(
+      '.b360-section, .b360-problem-card, .b360-platform-card, .b360-flow-card, .b360-ai-grid > div, .b360-integration-card, .b360-feature-card, .b360-module, .b360-final-cta',
+    );
+    if (targets.length === 0) return;
+
+    targets.forEach((el) => {
+      el.classList.add('b360-reveal');
+    });
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('b360-reveal-in');
+            entry.target.classList.remove('b360-reveal');
+            io.unobserve(entry.target);
+          }
+        }
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -6% 0px' },
+    );
+    // Fallback para saltos de scroll (scrollTo/end, âncoras, find-in-page):
+    // elementos que ficam acima da viewport sem nunca intersectar ficariam
+    // ocultos para sempre — um listener passivo os revela ao passar.
+    const revealPassed = () => {
+      for (const el of targets) {
+        if (!el.classList.contains('b360-reveal-in') && el.getBoundingClientRect().bottom < 0) {
+          el.classList.add('b360-reveal-in');
+          io.unobserve(el);
+        }
+      }
+    };
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        revealPassed();
+      });
+    };
+    revealPassed();
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    targets.forEach((el) => {
+      io.observe(el);
+    });
+    return () => {
+      io.disconnect();
+      window.removeEventListener('scroll', onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [activeScreen, viewMode]);
 
   // Monitorar scroll para exibição do botão Voltar ao Topo
   useEffect(() => {
@@ -742,10 +886,19 @@ export function Landing360({
         theme === 'dark' ? 'bg-[#06111e] text-slate-100' : 'bg-[#F8FAFC] text-slate-800'
       }`}
     >
+      <B360ScrollProgress />
       {/* ════════════════════════════════════════════════════════════════════
           TELA 1: LANDING ADAPTADA & COMMAND CENTER INTERATIVO
       ════════════════════════════════════════════════════════════════════ */}
       <div className={activeScreen === 'intro' ? 'block b360-adaptive-landing' : 'hidden'}>
+        {/* Camada ambiente cinematográfica — orbes de cor + anel de órbita cônico 360° */}
+        <div className="b360-ambient" aria-hidden="true">
+          <div className="b360-orb b360-orb-a" />
+          <div className="b360-orb b360-orb-b" />
+          <div className="b360-orb b360-orb-c" />
+          <div className="b360-orbit-ring" />
+        </div>
+
         {/* Topbar Fixa */}
         <header className="b360-topbar">
           <div className="b360-shell">
@@ -781,7 +934,7 @@ export function Landing360({
 
               {/* Links de navegação desktop */}
               <nav className="b360-topnav" aria-label="Navegação principal">
-                <a href="#destaques">8 pilares</a>
+                <a href="#destaques">11 módulos</a>
                 <a href="#ia">IA Comercial</a>
                 <a href="#ecossistema">Integrações</a>
                 <button
@@ -823,15 +976,20 @@ export function Landing360({
           <div className="b360-shell">
             {/* Hero Section */}
             <section className="b360-hero" id="inicio">
+              <B360AmbientFX variant="hero" />
               <div className="b360-hero-main">
                 <div>
                   <div className="b360-eyebrow">REVENUE COMMAND CENTER</div>
-                  <h1>
-                    Dados que conectam.
+                  <h1 className="b360-hero-title">
+                    <B360Words text="Dados que conectam." baseDelay={420} />
                     <br />
-                    <em>Inteligência que decide.</em>
+                    <em>
+                      <B360Words text="Inteligência que decide." baseDelay={560} />
+                    </em>
                     <br />
-                    <span className="b360-gold-text">Execução que acontece.</span>
+                    <span className="b360-gold-text">
+                      <B360Words text="Execução que acontece." baseDelay={700} />
+                    </span>
                   </h1>
                   <p>
                     Conecte CRM, dados, inteligência artificial e automação em um único centro de
@@ -895,22 +1053,30 @@ export function Landing360({
                   <div className="b360-console-kpis">
                     <div className="b360-console-kpi">
                       <span className="b360-kpi-label">Pipeline em Radar</span>
-                      <strong className="b360-kpi-value text-[#00D4FF]">R$ 4.280.000</strong>
+                      <strong className="b360-kpi-value text-[#00D4FF]">
+                        <B360CountUp to={4280000} prefix="R$ " />
+                      </strong>
                       <span className="b360-kpi-trend text-emerald-400">▲ +18.4% vs mês ant.</span>
                     </div>
                     <div className="b360-console-kpi">
                       <span className="b360-kpi-label">Oportunidades</span>
-                      <strong className="b360-kpi-value text-[#FF2D9B]">86 ativas</strong>
+                      <strong className="b360-kpi-value text-[#FF2D9B]">
+                        <B360CountUp to={86} suffix=" ativas" />
+                      </strong>
                       <span className="b360-kpi-trend text-slate-400">12 em fechamento</span>
                     </div>
                     <div className="b360-console-kpi">
                       <span className="b360-kpi-label">Acurácia Forecast</span>
-                      <strong className="b360-kpi-value text-[#FFC107]">94.2%</strong>
+                      <strong className="b360-kpi-value text-[#FFC107]">
+                        <B360CountUp to={94.2} decimals={1} suffix="%" />
+                      </strong>
                       <span className="b360-kpi-trend text-emerald-400">Modelo ponderado</span>
                     </div>
                     <div className="b360-console-kpi">
                       <span className="b360-kpi-label">Agentes Ativos</span>
-                      <strong className="b360-kpi-value text-[#8B7DFF]">19 agentes</strong>
+                      <strong className="b360-kpi-value text-[#8B7DFF]">
+                        <B360CountUp to={20} suffix="+ agentes" />
+                      </strong>
                       <span className="b360-kpi-trend text-cyan-400">Execução paralela</span>
                     </div>
                   </div>
@@ -983,14 +1149,14 @@ export function Landing360({
               </div>
             </section>
 
-            {/* 8 Pilares — Bento Cinematográfico Refinado */}
+            {/* 11 Módulos — Bento Cinematográfico Refinado (8 Pilares + 3 Complementares) */}
             <section id="destaques" className="b360-pillars-stage">
               <div className="b360-stage-lights" aria-hidden="true" />
               <div className="b360-pillars-head">
                 <div>
                   <div className="b360-eyebrow">ARQUITETURA DE RECEITA</div>
                   <h2>
-                    Oito pilares.
+                    Onze módulos.
                     <br />
                     <span className="b360-grad-a">Uma operação conectada.</span>
                   </h2>
@@ -999,8 +1165,8 @@ export function Landing360({
                   </div>
                 </div>
                 <p>
-                  Da primeira oportunidade à decisão de receita, cada dimensão trabalha em conjunto
-                  em uma esteira integrada.
+                  Oito pilares centrais e três módulos complementares trabalham em conjunto em uma
+                  esteira integrada — do pipeline à governança, do campo ao social selling.
                 </p>
               </div>
 
@@ -1016,7 +1182,14 @@ export function Landing360({
                     {/* Imagem de Fundo Editorial com Leve Ampliação no Hover */}
                     <div
                       className="b360-card-bg"
-                      style={{ backgroundImage: `url('${pillar.bg}')` }}
+                      style={
+                        pillar.bg
+                          ? { backgroundImage: `url('${pillar.bg}')` }
+                          : {
+                              background:
+                                'linear-gradient(140deg, var(--a, #00D4FF), var(--b, #3B82F6))',
+                            }
+                      }
                       aria-hidden="true"
                     />
 
@@ -1043,7 +1216,7 @@ export function Landing360({
                       {renderPillarVisual(pillar.num)}
 
                       <div className="b360-card-bottom">
-                        {['01', '04', '06', '08'].includes(pillar.num) && (
+                        {['01', '04', '06', '08', '09', '10', '11'].includes(pillar.num) && (
                           <div className="b360-pillar-icon">{renderPillarIcon(pillar.num)}</div>
                         )}
                         <h3>
@@ -1656,17 +1829,23 @@ export function Landing360({
               <div className="b360-metrics">
                 <div className="b360-metric">
                   <small>Missões Ativas</small>
-                  <strong>128</strong>
+                  <strong>
+                    <B360CountUp to={128} />
+                  </strong>
                   <span>● Operação contínua</span>
                 </div>
                 <div className="b360-metric">
                   <small>Agentes Acionados</small>
-                  <strong>19</strong>
+                  <strong>
+                    <B360CountUp to={20} suffix="+" />
+                  </strong>
                   <span>● Em execução paralela</span>
                 </div>
                 <div className="b360-metric">
                   <small>Oportunidades em Radar</small>
-                  <strong>86</strong>
+                  <strong>
+                    <B360CountUp to={86} />
+                  </strong>
                   <span>● R$ 4.2M em pipeline</span>
                 </div>
               </div>
@@ -1677,7 +1856,7 @@ export function Landing360({
                 style={{ margin: '36px 0 20px', textAlign: 'left' }}
               >
                 <div className="b360-eyebrow">EXPLORE A PLATAFORMA</div>
-                <h2>Seus oito pilares operacionais</h2>
+                <h2>Onze módulos integrados</h2>
                 <p style={{ margin: 0 }}>
                   Clique em qualquer módulo para inspecionar os recursos e capacidades integradas.
                 </p>
@@ -1825,7 +2004,7 @@ export function Landing360({
           </div>
         </footer>
 
-        {/* Modal Editorial dos 8 Pilares e Módulos da Plataforma */}
+        {/* Modal Editorial dos 11 Módulos e Pilares da Plataforma */}
         <PillarDetailModal
           isOpen={Boolean(activeModal || selectedPillarId)}
           pillarId={selectedPillarId}
@@ -1849,8 +2028,16 @@ export function Landing360({
             : 'hidden opacity-0 pointer-events-none'
         }`}
       >
+        {/* Camada ambiente cinematográfica — mesma linguagem visual da landing */}
+        <div className="b360-ambient" aria-hidden="true">
+          <div className="b360-orb b360-orb-a" />
+          <div className="b360-orb b360-orb-b" />
+          <div className="b360-orb b360-orb-c" />
+          <div className="b360-orbit-ring" />
+        </div>
+
         {/* Topo do Modal com navegação */}
-        <div className="w-full max-w-[460px] flex items-center justify-between mb-4">
+        <div className="b360-login-rise b360-login-rise-1 w-full max-w-[460px] flex items-center justify-between mb-4">
           <button
             id="btn-back"
             type="button"
@@ -1889,7 +2076,7 @@ export function Landing360({
         </div>
 
         {/* Header Centralizado do Modal — Sequência Coesa */}
-        <div className="flex flex-col items-center mb-4 text-center">
+        <div className="b360-login-rise b360-login-rise-2 flex flex-col items-center mb-4 text-center">
           <BH360LogoMark size={48} />
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-mono font-bold uppercase tracking-wider bg-[#00D4FF]/10 border border-[#00D4FF]/30 text-[#00D4FF] mt-3 mb-2">
             <span className="w-1.5 h-1.5 rounded-full bg-[#00D4FF] animate-pulse" />
@@ -1909,12 +2096,12 @@ export function Landing360({
               ? 'Preencha suas informações corporativas para provisionamento de acesso.'
               : authMode === 'forgot'
                 ? 'Informe seu e-mail corporativo para receber o link de recuperação.'
-                : 'Central de inteligência comercial, previsibilidade e governança integrada.'}
+                : '11 módulos integrados de Revenue Intelligence — do pipeline à governança.'}
           </p>
         </div>
 
         {/* Card Central de Login — Command Deck (Zero Fundo Branco Chapado) */}
-        <div className="w-full max-w-[460px] mb-8">
+        <div className="b360-login-rise b360-login-rise-3 w-full max-w-[460px] mb-8">
           <div className="card-login-command p-6 sm:p-7 relative">
             {/* Abas E-mail vs SSO */}
             {authMode === 'signin' && (
@@ -2027,7 +2214,7 @@ export function Landing360({
                   type="button"
                   disabled={isSubmitting}
                   onClick={handleSsoSubmit}
-                  className="btn-cta-light w-full h-12 rounded-xl font-mono text-sm sm:text-base font-bold uppercase tracking-wider flex items-center justify-center gap-2.5 cursor-pointer shadow-lg transition-all disabled:opacity-50"
+                  className="btn-cta-light b360-neon-halo w-full h-12 rounded-xl font-mono text-sm sm:text-base font-bold uppercase tracking-wider flex items-center justify-center gap-2.5 cursor-pointer shadow-lg transition-all disabled:opacity-50"
                 >
                   {isSubmitting ? (
                     <Loader2 className="w-5 h-5 animate-spin text-white" />
@@ -2163,7 +2350,7 @@ export function Landing360({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="btn-cta-light w-full h-12 rounded-xl font-mono text-sm sm:text-base font-bold uppercase tracking-wider flex items-center justify-center gap-2.5 cursor-pointer shadow-lg transition-all disabled:opacity-50"
+                  className="btn-cta-light b360-neon-halo w-full h-12 rounded-xl font-mono text-sm sm:text-base font-bold uppercase tracking-wider flex items-center justify-center gap-2.5 cursor-pointer shadow-lg transition-all disabled:opacity-50"
                 >
                   {isSubmitting ? (
                     <Loader2 className="w-5 h-5 animate-spin text-white" />
