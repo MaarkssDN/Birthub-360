@@ -58,8 +58,6 @@ import { SoundFX } from '@/lib/soundEffects';
 import {
   B360AmbientFX,
   B360CountUp,
-  B360FannedCardDeck,
-  B360FloatingGravityNodes,
   B360FloatingNodes,
   B360NeonButton,
   B360ScrollProgress,
@@ -71,6 +69,7 @@ import { RoiSimulatorModal } from '../components/RoiSimulatorModal.js';
 import './LandingAdaptive.css';
 import './Landing360.css';
 import './LandingCinematic.css';
+import './LandingRegenerationV4.css';
 
 // 11 MÓDULOS ADAPTATIVOS (8 Pilares Centrais + 3 Complementares — BENTO GRID REFINADO)
 const ADAPTIVE_PILLARS = [
@@ -985,14 +984,14 @@ export function Landing360({
                 <div>
                   <div className="b360-eyebrow">REVENUE COMMAND CENTER</div>
                   <h1 className="b360-hero-title">
-                    <B360Words text="Dados que conectam." baseDelay={420} />
-                    <br />
-                    <em>
-                      <B360Words text="Inteligência que decide." baseDelay={560} />
-                    </em>
-                    <br />
-                    <span className="b360-gold-text">
-                      <B360Words text="Execução que acontece." baseDelay={700} />
+                    <span className="b360-hero-line b360-hero-line-cyan">
+                      <B360Words text="Dados que conectam." baseDelay={220} />
+                    </span>
+                    <span className="b360-hero-line b360-hero-line-iris">
+                      <B360Words text="Inteligência que decide." baseDelay={360} />
+                    </span>
+                    <span className="b360-hero-line b360-hero-line-gold">
+                      <B360Words text="Execução que acontece." baseDelay={500} />
                     </span>
                   </h1>
                   <p>
@@ -1156,11 +1155,6 @@ export function Landing360({
             {/* 11 Módulos — Bento Cinematográfico Refinado (8 Pilares + 3 Complementares) */}
             <section id="destaques" className="b360-pillars-stage">
               <div className="b360-stage-lights" aria-hidden="true" />
-              {/* Fanned 3D Perspective Card Deck (Inspirado nos frames 00:03-00:04) */}
-              <B360FannedCardDeck
-                onSelectCard={(c) => handleOpenModal(c.title, c.desc, c.num)}
-              />
-
               <div className="b360-pillars-head">
                 <div>
                   <div className="b360-eyebrow">ARQUITETURA DE RECEITA</div>
@@ -1649,22 +1643,6 @@ export function Landing360({
               </div>
             </section>
 
-            {/* Revenue Intelligence Mesh — Simulação com Física Interativa (Tokens Dinâmicos) */}
-            <section className="b360-gravity-section py-12 px-4">
-              <div className="max-w-4xl mx-auto text-center mb-6">
-                <div className="b360-eyebrow">REVENUE INTELLIGENCE MESH</div>
-                <h3 className="font-display text-2xl sm:text-3xl font-extrabold landing-title-gradient tracking-tight mb-2">
-                  Nós de Dados e Sinais Operacionais em Tempo Real
-                </h3>
-                <p className="landing-subtitle text-xs sm:text-sm max-w-lg mx-auto">
-                  Aproxime o cursor dos nós para interagir com o fluxo contínuo de sinais, dados e conectores da esteira Birthub 360°.
-                </p>
-              </div>
-              <div className="max-w-4xl mx-auto">
-                <B360FloatingGravityNodes />
-              </div>
-            </section>
-
             {/* Final CTA */}
             <section className="b360-final-cta">
               <div className="b360-eyebrow">CONTROLE TOTAL DE RECEITA</div>
@@ -1693,7 +1671,7 @@ export function Landing360({
                 <button
                   type="button"
                   onClick={handleGoToLogin}
-                  className="px-6 py-3 rounded-full text-xs font-mono font-bold tracking-wider uppercase border border-slate-700 text-slate-300 hover:text-white hover:border-slate-500 transition-colors"
+                  className="b360-hero-secondary-btn"
                 >
                   Acessar Plataforma
                 </button>
@@ -1709,7 +1687,7 @@ export function Landing360({
             <aside className="b360-side" aria-label="Módulos da Plataforma">
               <div className="b360-side-brand">
                 <BH360LogoMark size={28} />
-                <span className="font-bold text-white">
+                <span className="font-bold b360-sidebar-wordmark">
                   Birth Hub <strong className="text-pink-500">360°</strong>
                 </span>
               </div>
@@ -1913,7 +1891,7 @@ export function Landing360({
               <div className="b360-footer-col brand">
                 <div className="flex items-center gap-2.5 mb-3">
                   <BH360LogoMark size={32} />
-                  <span className="font-display font-extrabold text-lg text-slate-100 dark:text-white">
+                  <span className="font-display font-extrabold text-lg b360-footer-wordmark">
                     Birth Hub <strong className="text-[#FF2D9B]">360°</strong>
                   </span>
                 </div>
