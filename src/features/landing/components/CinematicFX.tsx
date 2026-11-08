@@ -278,10 +278,7 @@ export function B360Words({
     <span className={`b360-words-wrap ${className}`.trim()}>
       {words.map((w, i) => (
         <span key={`${w}-${i}`} className="b360-word-item">
-          <span
-            className="b360-word"
-            style={{ animationDelay: `${baseDelay + i * step}ms` }}
-          >
+          <span className="b360-word" style={{ animationDelay: `${baseDelay + i * step}ms` }}>
             {w}
           </span>
           {i < words.length - 1 ? '\u00A0' : null}
