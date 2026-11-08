@@ -982,14 +982,14 @@ export function Landing360({
                 <div>
                   <div className="b360-eyebrow">REVENUE COMMAND CENTER</div>
                   <h1 className="b360-hero-title">
-                    <B360Words text="Dados que conectam." baseDelay={420} />
-                    <br />
-                    <em>
-                      <B360Words text="Inteligência que decide." baseDelay={560} />
-                    </em>
-                    <br />
-                    <span className="b360-gold-text">
-                      <B360Words text="Execução que acontece." baseDelay={700} />
+                    <span className="b360-hero-line b360-hero-line-cyan">
+                      <B360Words text="Dados que conectam." baseDelay={220} />
+                    </span>
+                    <span className="b360-hero-line b360-hero-line-iris">
+                      <B360Words text="Inteligência que decide." baseDelay={360} />
+                    </span>
+                    <span className="b360-hero-line b360-hero-line-gold">
+                      <B360Words text="Execução que acontece." baseDelay={500} />
                     </span>
                   </h1>
                   <p>
@@ -1669,7 +1669,7 @@ export function Landing360({
                 <button
                   type="button"
                   onClick={handleGoToLogin}
-                  className="px-6 py-3 rounded-full text-xs font-mono font-bold tracking-wider uppercase border border-slate-700 text-slate-300 hover:text-white hover:border-slate-500 transition-colors"
+                  className="b360-hero-secondary-btn"
                 >
                   Acessar Plataforma
                 </button>
@@ -1685,7 +1685,7 @@ export function Landing360({
             <aside className="b360-side" aria-label="Módulos da Plataforma">
               <div className="b360-side-brand">
                 <BH360LogoMark size={28} />
-                <span className="font-bold text-white">
+                <span className="font-bold b360-sidebar-wordmark">
                   Birth Hub <strong className="text-pink-500">360°</strong>
                 </span>
               </div>
@@ -1889,7 +1889,7 @@ export function Landing360({
               <div className="b360-footer-col brand">
                 <div className="flex items-center gap-2.5 mb-3">
                   <BH360LogoMark size={32} />
-                  <span className="font-display font-extrabold text-lg text-slate-100 dark:text-white">
+                  <span className="font-display font-extrabold text-lg b360-footer-wordmark">
                     Birth Hub <strong className="text-[#FF2D9B]">360°</strong>
                   </span>
                 </div>
