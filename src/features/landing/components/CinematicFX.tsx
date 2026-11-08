@@ -1,4 +1,5 @@
 import { useReducedMotion } from 'framer-motion';
+import { BarChart3, BrainCircuit, Database, GitBranch, Network, Workflow } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 /**
@@ -71,6 +72,51 @@ const MOTES = [
   { x: '66%', y: '88%', s: 4, d: '0.3s', c: 'pink' },
 ] as const;
 
+/**
+ * Nós de dados decorativos — adaptação original do movimento físico observado
+ * na referência, sem reproduzir símbolos monetários ou a identidade externa.
+ * A animação é pausada fora da viewport e removida em reduced-motion.
+ */
+const DATA_NODES = [
+  { id: 'network', Icon: Network, tone: 'cyan' },
+  { id: 'brain', Icon: BrainCircuit, tone: 'iris' },
+  { id: 'workflow', Icon: Workflow, tone: 'pink' },
+  { id: 'database', Icon: Database, tone: 'gold' },
+  { id: 'chart', Icon: BarChart3, tone: 'cyan' },
+  { id: 'branch', Icon: GitBranch, tone: 'iris' },
+] as const;
+
+export function B360FloatingNodes({ variant = 'hero' }: { variant?: 'hero' | 'footer' }) {
+  const fieldRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const field = fieldRef.current;
+    if (!field) return;
+    if (!('IntersectionObserver' in window)) {
+      field.dataset.active = 'true';
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        field.dataset.active = entry.isIntersecting ? 'true' : 'false';
+      },
+      { threshold: 0.01 },
+    );
+    observer.observe(field);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={fieldRef} className={`b360-node-field b360-node-field-${variant}`} aria-hidden="true">
+      {DATA_NODES.map(({ id, Icon, tone }) => (
+        <span key={id} className={`b360-data-node b360-data-node-${id} b360-data-node-${tone}`}>
+          <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
+        </span>
+      ))}
+    </div>
+  );
+}
+
 export function B360AmbientFX({ variant = 'hero' }: { variant?: 'hero' }) {
   const reduceMotion = useReducedMotion();
   return (
@@ -82,6 +128,7 @@ export function B360AmbientFX({ variant = 'hero' }: { variant?: 'hero' }) {
       <span className="b360-ambientfx-blob b360-ambientfx-blob-a" />
       <span className="b360-ambientfx-blob b360-ambientfx-blob-b" />
       <span className="b360-ambientfx-grid" />
+      <B360FloatingNodes variant="hero" />
       {MOTES.map((m, i) => (
         <i
           key={i}
