@@ -456,3 +456,318 @@
     transition: none !important;
   }
 }
+
+
+/* ── 10. BOTÕES NEON HALO CÁPSULA (SISTEMA CINEMATOGRÁFICO) ───────────────── */
+
+.b360-neon-halo-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  padding: 2px;
+  background: conic-gradient(
+    from var(--b360-halo-angle, 0deg),
+    #00d4ff,
+    #8b7dff,
+    #ff2d9b,
+    #ffc107,
+    #00d4ff
+  );
+  border: none;
+  cursor: pointer;
+  isolation: isolate;
+  text-decoration: none;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+  will-change: transform;
+}
+
+.b360-neon-halo-btn::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--b360-halo-angle, 0deg),
+    rgba(0, 212, 255, 0.45),
+    rgba(139, 125, 255, 0.45),
+    rgba(255, 45, 155, 0.45),
+    rgba(255, 193, 7, 0.35),
+    rgba(0, 212, 255, 0.45)
+  );
+  filter: blur(12px);
+  opacity: 0.55;
+  z-index: -1;
+  pointer-events: none;
+  animation: b360fx-halo-spin 5s linear infinite;
+  transition: opacity 0.3s ease;
+}
+
+.b360-neon-halo-btn-content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  width: 100%;
+  height: 100%;
+  padding: 0.75rem 1.75rem;
+  border-radius: 9999px;
+  background: #0b1120;
+  color: #f8f9ff;
+  font-family: var(--b360-font-mono, "IBM Plex Mono", monospace);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+.b360-neon-halo-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+}
+
+.b360-neon-halo-btn:hover::before {
+  opacity: 0.95;
+  filter: blur(16px);
+}
+
+.b360-neon-halo-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.b360-neon-halo-btn:focus-visible {
+  outline: 2px solid #00d4ff;
+  outline-offset: 3px;
+}
+
+.b360-neon-halo-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Variantes de botões halo */
+.b360-neon-halo-btn-pink {
+  background: conic-gradient(from var(--b360-halo-angle, 0deg), #ff2d9b, #ffc107, #00d4ff, #ff2d9b);
+}
+.b360-neon-halo-btn-pink::before {
+  background: conic-gradient(from var(--b360-halo-angle, 0deg), rgba(255, 45, 155, 0.5), rgba(255, 193, 7, 0.4), rgba(255, 45, 155, 0.5));
+}
+
+.b360-neon-halo-btn-iris {
+  background: conic-gradient(from var(--b360-halo-angle, 0deg), #8b7dff, #00d4ff, #ff2d9b, #8b7dff);
+}
+.b360-neon-halo-btn-iris::before {
+  background: conic-gradient(from var(--b360-halo-angle, 0deg), rgba(139, 125, 255, 0.5), rgba(0, 212, 255, 0.4), rgba(139, 125, 255, 0.5));
+}
+
+/* ── 11. FANNED CARD DECK — 3D PERSPECTIVE (FRAMES 00:03-00:04) ────────── */
+
+.b360-fanned-container {
+  width: 100%;
+  max-width: 960px;
+  margin: 2.5rem auto;
+  perspective: 1200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem 0.5rem;
+}
+
+.b360-fanned-deck {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  min-height: 280px;
+}
+
+.b360-fanned-card {
+  position: relative;
+  width: 280px;
+  min-height: 240px;
+  background: rgba(11, 17, 32, 0.92);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+  cursor: pointer;
+  transform: translateX(var(--card-tx, 0px)) translateY(var(--card-ty, 0px)) rotate(var(--card-rot, 0deg));
+  transform-origin: center bottom;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.45s ease, border-color 0.3s ease;
+  margin: 0 -36px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55);
+}
+
+.b360-fanned-card-glow {
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  border: 1px solid var(--card-accent, #00d4ff);
+  opacity: 0.35;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.b360-fanned-card:hover,
+.b360-fanned-card:focus-visible,
+.b360-fanned-card.b360-fanned-card-active {
+  transform: translateX(calc(var(--card-tx, 0px) * 1.5)) translateY(-18px) rotate(calc(var(--card-rot, 0deg) * 0.5)) scale(1.06);
+  border-color: var(--card-accent, #00d4ff);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.65), 0 0 28px var(--card-accent, rgba(0, 212, 255, 0.35));
+  z-index: 20 !important;
+  outline: none;
+}
+
+.b360-fanned-card:hover .b360-fanned-card-glow,
+.b360-fanned-card:focus-visible .b360-fanned-card-glow {
+  opacity: 0.95;
+}
+
+.b360-fanned-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.b360-fanned-card-num {
+  font-family: var(--b360-font-mono, monospace);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--card-accent, #00d4ff);
+}
+
+.b360-fanned-card-tag {
+  font-family: var(--b360-font-mono, monospace);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  background: rgba(148, 163, 184, 0.1);
+  color: var(--card-accent, #00d4ff);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.b360-fanned-card-title {
+  font-family: var(--b360-font-display, "Sora", sans-serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #e8f2ff;
+  margin: 0.25rem 0;
+  display: block;
+}
+
+.b360-fanned-card-desc {
+  font-family: var(--b360-font-body, "Inter", sans-serif);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #94a3b8;
+  margin: 0.4rem 0 1rem;
+  display: block;
+}
+
+.b360-fanned-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+  padding-top: 0.75rem;
+}
+
+.b360-fanned-card-kpi {
+  font-family: var(--b360-font-mono, monospace);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--card-accent, #00d4ff);
+}
+
+.b360-fanned-card-arrow {
+  color: #94a3b8;
+  font-size: 0.875rem;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.b360-fanned-card:hover .b360-fanned-card-arrow {
+  transform: translateX(4px);
+  color: var(--card-accent, #00d4ff);
+}
+
+/* ── 12. FLOATING GRAVITY NODES CANVAS (FRAMES 00:11-00:15) ──────────────── */
+
+.b360-gravity-canvas-wrapper {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  background: radial-gradient(ellipse at 50% 50%, rgba(11, 17, 32, 0.6) 0%, rgba(7, 10, 19, 0.95) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.4);
+}
+
+.b360-gravity-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+.b360-gravity-static-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem;
+  padding: 1.5rem;
+}
+
+.b360-gravity-static-node {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.95rem;
+  border-radius: 9999px;
+  background: rgba(11, 17, 32, 0.88);
+  border: 1px solid;
+}
+
+/* ── 13. REGRA ESTRITA DE TIPOGRAFIA: ZERO PRETO OU BRANCO PURO ─────────── */
+
+.b360-adaptive-landing h1,
+.b360-adaptive-landing h2,
+.b360-adaptive-landing h3,
+.b360-adaptive-landing h4,
+.b360-adaptive-landing h5,
+.b360-adaptive-landing h6,
+.login-antessala-backdrop h1,
+.login-antessala-backdrop h2,
+.login-antessala-backdrop h3,
+.login-antessala-backdrop h4,
+.landing-title-gradient {
+  color: #e8f2ff;
+}
+
+.b360-adaptive-landing p.landing-subtitle,
+.login-antessala-backdrop p.landing-subtitle,
+.b360-hero p,
+.b360-sectionhead p {
+  color: #9cb3ce;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .b360-neon-halo-btn,
+  .b360-neon-halo-btn::before,
+  .b360-fanned-card,
+  .b360-fanned-card:hover,
+  .b360-fanned-card-glow {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}

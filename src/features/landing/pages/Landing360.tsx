@@ -58,6 +58,9 @@ import { SoundFX } from '@/lib/soundEffects';
 import {
   B360AmbientFX,
   B360CountUp,
+  B360FannedCardDeck,
+  B360FloatingGravityNodes,
+  B360NeonButton,
   B360ScrollProgress,
   B360Words,
   useB360CardTilt,
@@ -417,7 +420,7 @@ const COMMAND_MODULES = [
   {
     name: 'Orquestração de Vendas',
     ico: '⌘',
-    desc: 'Cadências e execução',
+    desc: 'Cadências, execução & roleplay',
     modalDesc:
       'Motor próprio de cadências com opt-out e rate limit, plano diário priorizado, mesa de tratamento e ferramental de execução — playbooks, roteiros, matrizes, roleplay e academy.',
   },
@@ -1012,13 +1015,13 @@ export function Landing360({
                     >
                       Simular ROI Comercial
                     </button>
-                    <button
-                      type="button"
+                    <B360NeonButton
                       onClick={handleGoToLogin}
-                      className="b360-hero-secondary-btn"
+                      className="b360-hero-neon-btn"
+                      variant="cyan"
                     >
                       Acessar Plataforma
-                    </button>
+                    </B360NeonButton>
                   </div>
                   <div className="b360-hero-trust">
                     <span className="w-2 h-2 rounded-full bg-[#00D4FF] animate-pulse" />
@@ -1075,7 +1078,7 @@ export function Landing360({
                     <div className="b360-console-kpi">
                       <span className="b360-kpi-label">Agentes Ativos</span>
                       <strong className="b360-kpi-value text-[#8B7DFF]">
-                        <B360CountUp to={20} suffix="+ agentes" />
+                        <B360CountUp to={24} suffix=" agentes IA" />
                       </strong>
                       <span className="b360-kpi-trend text-cyan-400">Execução paralela</span>
                     </div>
@@ -1152,6 +1155,11 @@ export function Landing360({
             {/* 11 Módulos — Bento Cinematográfico Refinado (8 Pilares + 3 Complementares) */}
             <section id="destaques" className="b360-pillars-stage">
               <div className="b360-stage-lights" aria-hidden="true" />
+              {/* Fanned 3D Perspective Card Deck (Inspirado nos frames 00:03-00:04) */}
+              <B360FannedCardDeck
+                onSelectCard={(c) => handleOpenModal(c.title, c.desc, c.num)}
+              />
+
               <div className="b360-pillars-head">
                 <div>
                   <div className="b360-eyebrow">ARQUITETURA DE RECEITA</div>
@@ -1640,6 +1648,22 @@ export function Landing360({
               </div>
             </section>
 
+            {/* Revenue Intelligence Mesh — Simulação com Física Interativa (Tokens Dinâmicos) */}
+            <section className="b360-gravity-section py-12 px-4">
+              <div className="max-w-4xl mx-auto text-center mb-6">
+                <div className="b360-eyebrow">REVENUE INTELLIGENCE MESH</div>
+                <h3 className="font-display text-2xl sm:text-3xl font-extrabold landing-title-gradient tracking-tight mb-2">
+                  Nós de Dados e Sinais Operacionais em Tempo Real
+                </h3>
+                <p className="landing-subtitle text-xs sm:text-sm max-w-lg mx-auto">
+                  Aproxime o cursor dos nós para interagir com o fluxo contínuo de sinais, dados e conectores da esteira Birthub 360°.
+                </p>
+              </div>
+              <div className="max-w-4xl mx-auto">
+                <B360FloatingGravityNodes />
+              </div>
+            </section>
+
             {/* Final CTA */}
             <section className="b360-final-cta">
               <div className="b360-eyebrow">CONTROLE TOTAL DE RECEITA</div>
@@ -1837,7 +1861,7 @@ export function Landing360({
                 <div className="b360-metric">
                   <small>Agentes Acionados</small>
                   <strong>
-                    <B360CountUp to={20} suffix="+" />
+                    <B360CountUp to={24} suffix="+" />
                   </strong>
                   <span>● Em execução paralela</span>
                 </div>
@@ -2350,22 +2374,24 @@ export function Landing360({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="btn-cta-light b360-neon-halo w-full h-12 rounded-xl font-mono text-sm sm:text-base font-bold uppercase tracking-wider flex items-center justify-center gap-2.5 cursor-pointer shadow-lg transition-all disabled:opacity-50"
+                  className="b360-neon-halo-btn w-full h-12 rounded-full cursor-pointer shadow-lg transition-all disabled:opacity-50"
                 >
-                  {isSubmitting ? (
-                    <Loader2 className="w-5 h-5 animate-spin text-white" />
-                  ) : (
-                    <>
-                      <span>
-                        {authMode === 'signup'
-                          ? 'Solicitar Acesso'
-                          : authMode === 'forgot'
-                            ? 'Enviar Link de Redefinição'
-                            : 'Entrar na Plataforma'}
-                      </span>
-                      <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1 text-white" />
-                    </>
-                  )}
+                  <span className="b360-neon-halo-btn-content w-full h-full flex items-center justify-center gap-2.5 font-mono text-sm sm:text-base font-bold uppercase tracking-wider">
+                    {isSubmitting ? (
+                      <Loader2 className="w-5 h-5 animate-spin text-white" />
+                    ) : (
+                      <>
+                        <span>
+                          {authMode === 'signup'
+                            ? 'Solicitar Acesso'
+                            : authMode === 'forgot'
+                              ? 'Enviar Link de Redefinição'
+                              : 'Entrar na Plataforma'}
+                        </span>
+                        <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
+                      </>
+                    )}
+                  </span>
                 </button>
               </form>
             )}
