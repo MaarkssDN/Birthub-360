@@ -313,6 +313,33 @@
   transform: none;
 }
 
+/* O CTA de login do Hero usa o componente oficial de halo e recebe o mesmo acabamento. */
+.b360-adaptive-landing .b360-neon-halo-btn {
+  min-height: 49px;
+  padding: 2px;
+  border-radius: 9999px;
+  box-shadow: 0 13px 28px -18px rgba(0, 212, 255, .64);
+  transition: transform .32s var(--v4-ease), box-shadow .32s ease;
+}
+.b360-adaptive-landing .b360-neon-halo-btn-content {
+  min-height: 45px;
+  padding: 11px 23px;
+  border: 1px solid rgba(0, 212, 255, .32);
+  border-radius: 9999px;
+  background: #0a1730;
+  color: #88e8ff;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 740;
+  line-height: 1.3;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.b360-adaptive-landing .b360-neon-halo-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 17px 32px -18px rgba(0, 212, 255, .75);
+}
+
 /* O palco dos pilares deixa de parecer uma colagem irregular. */
 .b360-adaptive-landing .b360-pillars-stage {
   margin-block: clamp(24px, 3.4vw, 50px) clamp(56px, 6vw, 90px);
