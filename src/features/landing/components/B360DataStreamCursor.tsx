@@ -65,8 +65,10 @@ export function B360DataStreamCursor() {
 
     document.body.classList.add('b360-custom-cursor-active');
 
-    let width = (canvas.width = window.innerWidth);
-    let height = (canvas.height = window.innerHeight);
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
 
     const onResize = () => {
       width = canvas.width = window.innerWidth;
