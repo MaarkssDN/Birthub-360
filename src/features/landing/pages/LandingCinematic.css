@@ -368,6 +368,17 @@
     0 0 18px rgba(0, 212, 255, 0.18);
 }
 
+/* No acesso, a mesma atmosfera tem densidade menor para priorizar o formulário. */
+.login-antessala-backdrop .b360-ambient {
+  opacity: 0.38;
+}
+.login-antessala-backdrop .b360-ambient .b360-orbit-ring {
+  opacity: 0.18;
+}
+.login-antessala-backdrop .b360-ambient .b360-orb {
+  animation-duration: 42s;
+}
+
 /* ── 7. MICROINTERAÇÕES — fluxo, badges e KPIs ──────────────────────────── */
 
 .b360-flow-line {
