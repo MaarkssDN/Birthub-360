@@ -1,12 +1,5 @@
 import { useReducedMotion } from 'framer-motion';
-import {
-  BarChart3,
-  BrainCircuit,
-  Database,
-  GitBranch,
-  Network,
-  Workflow,
-} from 'lucide-react';
+import { BarChart3, BrainCircuit, Database, GitBranch, Network, Workflow } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 /**
@@ -114,16 +107,9 @@ export function B360FloatingNodes({ variant = 'hero' }: { variant?: 'hero' | 'fo
   }, []);
 
   return (
-    <div
-      ref={fieldRef}
-      className={`b360-node-field b360-node-field-${variant}`}
-      aria-hidden="true"
-    >
+    <div ref={fieldRef} className={`b360-node-field b360-node-field-${variant}`} aria-hidden="true">
       {DATA_NODES.map(({ id, Icon, tone }) => (
-        <span
-          key={id}
-          className={`b360-data-node b360-data-node-${id} b360-data-node-${tone}`}
-        >
+        <span key={id} className={`b360-data-node b360-data-node-${id} b360-data-node-${tone}`}>
           <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
         </span>
       ))}
@@ -236,7 +222,8 @@ export function useB360CardTilt(deps: unknown[] = []) {
 
   useEffect(() => {
     if (reduceMotion) return;
-    if (typeof window.matchMedia === 'function' && !window.matchMedia('(pointer: fine)').matches) return;
+    if (typeof window.matchMedia === 'function' && !window.matchMedia('(pointer: fine)').matches)
+      return;
 
     const cards = document.querySelectorAll<HTMLElement>('.b360-feature-card');
     const cleanups: Array<() => void> = [];
@@ -640,22 +627,11 @@ export function B360FloatingGravityNodes() {
     return (
       <div className="b360-gravity-static-grid">
         {GRAVITY_NODES_DATA.map((item, idx) => (
-          <div
-            key={idx}
-            className="b360-gravity-static-node"
-            style={{ borderColor: item.color }}
-          >
-            <span
-              className="w-2 h-2 rounded-full"
-              style={{ backgroundColor: item.color }}
-            />
+          <div key={idx} className="b360-gravity-static-node" style={{ borderColor: item.color }}>
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
             <div className="flex flex-col">
-              <span className="font-mono text-xs font-bold text-[#E8F2FF]">
-                {item.label}
-              </span>
-              <span className="text-[10px] text-slate-400 font-sans">
-                {item.sublabel}
-              </span>
+              <span className="font-mono text-xs font-bold text-[#E8F2FF]">{item.label}</span>
+              <span className="text-[10px] text-slate-400 font-sans">{item.sublabel}</span>
             </div>
           </div>
         ))}
