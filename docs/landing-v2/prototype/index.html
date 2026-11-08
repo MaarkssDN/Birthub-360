@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Birth Hub 360° · Landing V2 — Protótipo visual (Gate A)</title>
+  <meta name="description" content="Proposta visual V2 da Landing Page do Birth Hub 360°. Protótipo estático para aprovação (Gate A)." />
+  <link rel="stylesheet" href="./landing-v2.css" />
+  <script>
+    // Tema: persistido; padrão = preferência do sistema
+    (function () {
+      var t = localStorage.getItem('bh-proto-theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+</head>
+<body>
+  <!-- Sprite de ícones (traço arredondado, padrão BrandIcons) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4"/></symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+      <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 2 10 5-10 5L2 7l10-5Z"/><path d="m2 12 10 5 10-5"/><path d="m2 17 10 5 10-5"/></symbol>
+      <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+      <symbol id="i-branch" viewBox="0 0 24 24"><path d="M6 3v12"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></symbol>
+      <symbol id="i-trend" viewBox="0 0 24 24"><path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></symbol>
+      <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></symbol>
+      <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3Z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z"/></symbol>
+      <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z"/></symbol>
+      <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></symbol>
+      <symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></symbol>
+      <symbol id="i-flow" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><path d="M6.5 10v4a3 3 0 0 0 3 3H14"/></symbol>
+      <symbol id="i-bot" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M8.5 14h.01M15.5 14h.01M9.5 17.5h5"/><circle cx="12" cy="3" r="1"/></symbol>
+      <symbol id="i-build" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2"/></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></symbol>
+      <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/></symbol>
+      <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+    </defs>
+  </svg>
+
+  <!-- ========== HEADER ========== -->
+  <div class="nav-wrap">
+    <header class="nav">
+      <a class="brand" href="#inicio" aria-label="Birth Hub 360">
+        <img src="../../../public/landing/assets/birthhub-logo.svg" alt="" width="38" height="38" />
+        <span class="t">Birth Hub <b>360°</b></span>
+      </a>
+      <nav class="nav-links" aria-label="Navegação principal">
+        <a href="#pilares">8 pilares</a>
+        <a href="#comando">Command Center</a>
+        <a href="#ia">IA Comercial</a>
+        <a href="#ecossistema">Integrações</a>
+        <a href="#cta">Simular ROI</a>
+      </nav>
+      <div class="nav-right">
+        <button class="theme-btn" type="button" id="theme-toggle" aria-label="Alternar tema claro/escuro">
+          <svg class="ico i-sun"><use href="#i-sun"/></svg><svg class="ico i-moon"><use href="#i-moon"/></svg>
+        </button>
+        <a class="aurora sm" href="#cta"><span class="aurora-face">Acessar Plataforma <svg class="ico"><use href="#i-arrow"/></svg></span></a>
+      </div>
+    </header>
+  </div>
+
+  <main>
+  <!-- ========== 1. HERO ========== -->
+  <section class="hero" id="inicio">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow rv">Revenue Command Center</span>
+        <h1 class="rv d1" aria-label="Dados que conectam. Inteligência que decide. Execução que acontece.">
+          <span>Dados que conectam.</span>
+          <span class="grad-a">Inteligência que decide.</span>
+          <span class="grad-b">Execução que acontece.</span>
+        </h1>
+        <p class="lead rv d2">Conecte CRM, dados, inteligência artificial e automação em um único centro de comando para planejar, monitorar, prever e acelerar suas operações comerciais.</p>
+        <div class="hero-cta rv d3">
+          <a class="aurora lg" href="#comando"><span class="aurora-face">Explorar a plataforma <svg class="ico"><use href="#i-arrow"/></svg></span></a>
+          <a class="btn-ghost" href="#cta">Simular ROI comercial</a>
+          <a class="btn-text" href="#cta">Acessar plataforma →</a>
+        </div>
+        <div class="hero-proof rv d3">
+          <span class="chip"><i class="live"></i> Supervisor on-line</span>
+          <span class="chip">Orquestração inteligente</span>
+          <span class="chip">RLS multi-tenant</span>
+        </div>
+      </div>
+
+      <div class="hero-visual rv d2">
+        <div class="console" role="group" aria-label="Demonstração ilustrativa do Command Center">
+          <aside class="c-side" aria-hidden="true">
+            <img src="../../../public/landing/assets/birthhub-logo.svg" alt="" />
+            <i class="on"><svg class="ico"><use href="#i-home"/></svg></i>
+            <i><svg class="ico"><use href="#i-chart"/></svg></i>
+            <i><svg class="ico"><use href="#i-target"/></svg></i>
+            <i><svg class="ico"><use href="#i-spark"/></svg></i>
+            <i><svg class="ico"><use href="#i-phone"/></svg></i>
+            <i><svg class="ico"><use href="#i-grid"/></svg></i>
+          </aside>
+          <div class="c-main">
+            <div class="c-top">
+              <div class="c-title">Command Center <small><i class="live" style="display:inline-block;margin-right:6px"></i>Supervisor on-line · Operação conectada</small></div>
+              <div class="c-tags"><span>RLS multi-tenant</span><span class="cy">12 ms</span></div>
+            </div>
+            <div class="c-kpis">
+              <div class="kpi" style="--k:#00D4FF"><label>Pipeline em radar</label><strong>R$ 4.280.000</strong><em class="up">▲ +18,4% vs mês ant.</em>
+                <svg class="spark" viewBox="0 0 58 26" fill="none"><path d="M1 22 10 17 18 19 28 10 38 13 48 5 57 2" stroke="#00D4FF" stroke-width="2" stroke-linecap="round"/></svg></div>
+              <div class="kpi" style="--k:#FF5CB4"><label>Oportunidades</label><strong>86 ativas</strong><em>12 em fechamento</em>
+                <svg class="spark" viewBox="0 0 58 26" fill="none"><path d="M1 18 10 20 18 12 28 15 38 8 48 11 57 4" stroke="#FF5CB4" stroke-width="2" stroke-linecap="round"/></svg></div>
+              <div class="kpi" style="--k:#FFC107"><label>Acurácia forecast</label><strong>94,2%</strong><em class="up">Modelo ponderado</em>
+                <svg class="spark" viewBox="0 0 58 26" fill="none"><path d="M1 12 10 10 18 13 28 7 38 8 48 4 57 5" stroke="#FFC107" stroke-width="2" stroke-linecap="round"/></svg></div>
+              <div class="kpi" style="--k:#A79CFF"><label>Agentes ativos</label><strong>19 agentes</strong><em>Execução paralela</em>
+                <svg class="spark" viewBox="0 0 58 26" fill="none"><path d="M1 20 10 14 18 16 28 9 38 12 48 6 57 8" stroke="#A79CFF" stroke-width="2" stroke-linecap="round"/></svg></div>
+            </div>
+            <div class="c-grid">
+              <div class="panel">
+                <h4>Forecast ponderado <small>Q4 · R$ mi</small></h4>
+                <svg viewBox="0 0 420 150" width="100%" height="auto" role="img" aria-label="Gráfico ilustrativo de forecast: cenários conservador, provável e otimista">
+                  <defs>
+                    <linearGradient id="fa" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#00D4FF" stop-opacity=".55"/><stop offset="1" stop-color="#00D4FF" stop-opacity="0"/></linearGradient>
+                    <linearGradient id="fb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF2D9B" stop-opacity=".28"/><stop offset="1" stop-color="#FF2D9B" stop-opacity="0"/></linearGradient>
+                  </defs>
+                  <g stroke="rgba(248,249,255,.08)"><path d="M0 30H420M0 70H420M0 110H420"/></g>
+                  <path d="M0 120 50 108 100 112 150 92 200 86 250 70 300 60 350 44 420 30V150H0Z" fill="url(#fb)"/>
+                  <path d="M0 120 50 108 100 112 150 92 200 86 250 70 300 60 350 44 420 30" stroke="#FF2D9B" stroke-width="2" fill="none"/>
+                  <path d="M0 128 50 118 100 120 150 104 200 98 250 86 300 78 350 66 420 54V150H0Z" fill="url(#fa)"/>
+                  <path d="M0 128 50 118 100 120 150 104 200 98 250 86 300 78 350 66 420 54" stroke="#00D4FF" stroke-width="2.5" fill="none"/>
+                  <path d="M0 136 50 130 100 132 150 120 200 116 250 106 300 100 350 92 420 84" stroke="#A79CFF" stroke-width="2" stroke-dasharray="4 5" fill="none"/>
+                  <circle cx="350" cy="66" r="5" fill="#0E1020" stroke="#00D4FF" stroke-width="2.5"/>
+                </svg>
+                <div class="legend"><span><i style="background:#A79CFF"></i>Conservador</span><span><i style="background:#00D4FF"></i>Provável</span><span><i style="background:#FF2D9B"></i>Otimista</span></div>
+              </div>
+              <div class="panel feed">
+                <h4>Atividade em tempo real <small>ao vivo</small></h4>
+                <div class="feed-item"><span class="tag" style="--tc:#00D4FF">Copiloto IA</span><b>Objeção de preço contornada · Deal #1042</b><span>Proposta R$ 145k renegociada, ROI simulado 3,8x.</span></div>
+                <div class="feed-item"><span class="tag" style="--tc:#FF5CB4">Bitrix24 Sync</span><b>Sincronização de 14 oportunidades</b><span>Histórico unificado, persistência multi-tenant.</span></div>
+                <div class="feed-item"><span class="tag" style="--tc:#A79CFF">VoiceHub</span><b>Chamada com CFO transcrita</b><span>14m 20s · sentimento 94% positivo.</span></div>
+              </div>
+            </div>
+            <div class="demo-note">Dados ilustrativos de demonstração</div>
+          </div>
+        </div>
+
+        <!-- Cartões flutuantes: profundidade -->
+        <div class="float float-nba">
+          <h5><svg class="ico" style="color:#FF5CB4"><use href="#i-spark"/></svg> Próxima melhor ação · NBA</h5>
+          <p>Retomar contato com o CFO destacando o ROI simulado e propor reunião executiva.</p>
+        </div>
+        <div class="float float-call" aria-hidden="true">
+          <h5><svg class="ico" style="color:#A79CFF"><use href="#i-phone"/></svg> Chamada transcrita</h5>
+          <p>Sentimento <b style="color:#4ADE80">94% positivo</b></p>
+          <div class="wave"><i style="--h:8px"></i><i style="--h:16px"></i><i style="--h:24px"></i><i style="--h:12px"></i><i style="--h:20px"></i><i style="--h:26px"></i><i style="--h:14px"></i><i style="--h:22px"></i><i style="--h:10px"></i><i style="--h:18px"></i><i style="--h:24px"></i><i style="--h:12px"></i><i style="--h:8px"></i><i style="--h:16px"></i></div>
+        </div>
+        <div class="float float-sla" aria-hidden="true"><b>&lt; 15 min</b><span>SLA de primeiro<br>contato</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 2. OITO PILARES ========== -->
+  <section class="stage sec" id="pilares" style="padding-block: clamp(70px,8vw,120px)">
+    <div class="stage-lights" aria-hidden="true"></div>
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <span class="eyebrow rv">Arquitetura de receita</span>
+          <h2 class="h2 rv d1">Oito pilares.<br><span class="grad-a">Uma operação conectada.</span></h2>
+        </div>
+        <p class="lead rv d2">Da primeira oportunidade à decisão de receita, cada dimensão trabalha em conjunto em uma esteira integrada.</p>
+      </div>
+
+      <div class="bento">
+        <article class="pillar big p1 rv">
+          <span class="p-bg" style="background-image:url('../../../public/landing/assets/pillar-hub.jpg')"></span><span class="p-tint"></span><span class="p-scrim"></span>
+          <div class="p-top"><span class="p-num">01</span><span class="p-tag">Pipeline 360°</span></div>
+          <div class="p-float pf1"><b>Pipeline unificado</b><div class="row"><span>Qualificação<em>R$ 145k</em></span><span>Proposta<em>R$ 280k</em></span></div></div>
+          <div class="p-body"><span class="p-ico"><svg class="ico"><use href="#i-layers"/></svg></span><h3>Hub comercial</h3><p>Centralize contas, pipeline e oportunidades em uma visão 360° de cada negociação.</p>
+            <div class="p-foot"><span class="p-kpi">R$ 4.2M em pipeline</span><button class="p-go" type="button" aria-label="Inspecionar capacidades: Hub comercial">Inspecionar capacidades <svg class="ico"><use href="#i-arrow"/></svg></button></div></div>
+        </article>
+
+        <article class="pillar p2 rv d1">
+          <span class="p-bg" style="background-image:url('../../../public/landing/assets/pillar-market.jpg')"></span><span class="p-tint"></span><span class="p-scrim"></span>
+          <div class="p-top"><span class="p-num">02</span><span class="p-tag">Enriquecimento B2B</span></div>
+          <div class="p-body"><h3>Inteligência de mercado</h3><p>Enriqueça dados B2B, identifique sinais de compra e qualifique decisores.</p>
+            <div class="p-foot"><span class="p-kpi">96% Match ICP</span><button class="p-go" type="button" aria-label="Inspecionar capacidades: Inteligência de mercado">Inspecionar <svg class="ico"><use href="#i-arrow"/></svg></button></div></div>
+        </article>
+
+        <article class="pillar p3 rv d2">
+          <span class="p-bg" style="background-image:url('../../../public/landing/assets/pillar-orchestration.jpg')"></span><span class="p-tint"></span><span class="p-scrim"></span>
+          <div class="p-top"><span class="p-num">03</span><span class="p-tag">Cadência multicanal</span></div>
+          <div class="p-body"><h3>Orquestração de vendas</h3><p>Coordene cadências multicanal, passagem de bastão e a próxima ação.</p>
+            <div class="p-foot"><span class="p-kpi">SLA &lt; 15 min</span><button class="p-go" type="button" aria-label="Inspecionar capacidades: Orquestração de vendas">Inspecionar <svg class="ico"><use href="#i-arrow"/></svg></button></div></div>
+        </article>
+
+        <article class="pillar tall p4 rv">
+          <span class="p-bg" style="background-image:url('../../../public/landing/assets/pillar-performance.jpg')"></span><span class="p-tint"></span><span class="p-scrim"></span>
+          <div class="p-top"><span class="p-num">04</span><span class="p-tag">Telemetria &amp; metas</span></div>
+          <div class="p-float pf4"><b>Taxa de conversão</b><div class="bar"><i></i></div><span style="display:flex;justify-content:space-between"><span>Ciclo 18,2 dias</span><span style="color:#fff;font-family:var(--f-mono);font-weight:600">+24,8%</span></span></div>
+          <div class="p-body"><span class="p-ico"><svg class="ico"><use href="#i-trend"/></svg></span><h3>Performance comercial</h3><p>Acompanhe conversão, velocidade do funil, metas e produtividade da equipe.</p>
+            <div class="p-foot"><span class="p-kpi">+24.8% Conversão</span><button class="p-go" type="button" aria-label="Inspecionar capacidades: Performance comercial">Inspecionar <svg class="ico"><use href="#i-arrow"/></svg></button></div></div>
+        </article>
+
+        <article class="pillar p5 rv d1">
+          <span class="p-bg" style="background-image:url('../../../public/landing/assets/pillar-forecast.jpg')"></span><span class="p-tint"></span><span class="p-scrim"></span>
+          <div class="p-top"><span class="p-num">05</span><span class="p-tag">Forecast probabilístico</span></div>
+          <div class="p-body"><h3>Previsibilidade comercial</h3><p>Modele probabilidades, pipeline ponderado e cenários do histórico real.</p>
+            <div class="p-foot"><span class="p-kpi">94.2% Acurácia</span><button class="p-go" type="button" aria-label="Inspecionar capacidades: Previsibilidade comercial">Inspecionar <svg class="ico"><use href="#i-arrow"/></svg></button></div></div>
+        </article>
+
+        <article class="pillar tall p6 rv d2">
+          <span class="p-bg" style="background-image:url('../../../public/landing/assets/pillar-ai.jpg')"></span><span class="p-tint"></span><span class="p-scrim"></span>
+          <div class="p-top"><span class="p-num">06</span><span class="p-tag">Copiloto de negociações</span></div>
+          <div class="p-float pf6"><b>NBA · próxima melhor ação</b>Enviar proposta parcelada com ROI garantido em 45 dias.</div>
+          <div class="p-body"><span class="p-ico"><svg class="ico"><use href="#i-spark"/></svg></span><h3>Inteligência artificial</h3><p>Um copiloto conectado aos dados da empresa e ao contexto das negociações.</p>
+            <div class="p-foot"><span class="p-kpi">NBA em tempo real</span><button class="p-go" type="button" aria-label="Inspecionar capacidades: Inteligência artificial">Inspecionar <svg class="ico"><use href="#i-arrow"/></svg></button></div></div>
+        </article>
+
+        <article class="pillar p7 rv d1">
+          <span class="p-bg" style="background-image:url('../../../public/landing/assets/pillar-automation.jpg')"></span><span class="p-tint"></span><span class="p-scrim"></span>
+          <div class="p-top"><span class="p-num">07</span><span class="p-tag">Gateway multi-CRM</span></div>
+          <div class="p-body"><h3>Automação &amp; conectividade</h3><p>Sincronize CRMs, acione gatilhos e integre ferramentas por APIs e webhooks.</p>
+            <div class="p-foot"><span class="p-kpi">12 ms latência</span><button class="p-go" type="button" aria-label="Inspecionar capacidades: Automação e conectividade">Inspecionar <svg class="ico"><use href="#i-arrow"/></svg></button></div></div>
+        </article>
+
+        <article class="pillar big p8 rv">
+          <span class="p-bg" style="background-image:url('../../../public/landing/assets/pillar-engagement.jpg')"></span><span class="p-tint"></span><span class="p-scrim"></span>
+          <div class="p-top"><span class="p-num">08</span><span class="p-tag">VoiceHub &amp; WhatsApp</span></div>
+          <div class="p-float pf8"><b>Chamada transcrita</b><span style="display:flex;justify-content:space-between"><span>Sentimento</span><span style="color:#fff;font-family:var(--f-mono);font-weight:600">94% positivo</span></span>
+            <div class="wave"><i style="--h:8px"></i><i style="--h:16px"></i><i style="--h:24px"></i><i style="--h:12px"></i><i style="--h:20px"></i><i style="--h:26px"></i><i style="--h:14px"></i><i style="--h:22px"></i><i style="--h:10px"></i><i style="--h:18px"></i><i style="--h:24px"></i><i style="--h:12px"></i></div></div>
+          <div class="p-body"><span class="p-ico"><svg class="ico"><use href="#i-phone"/></svg></span><h3>Engajamento comercial</h3><p>Reúna telefonia, interações e histórico de contatos em uma comunicação integrada.</p>
+            <div class="p-foot"><span class="p-kpi">Sentimento 94%</span><button class="p-go" type="button" aria-label="Inspecionar capacidades: Engajamento comercial">Inspecionar capacidades <svg class="ico"><use href="#i-arrow"/></svg></button></div></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 3. PROBLEMAS: problema → impacto → solução ========== -->
+  <section class="sec problem" id="problema">
+    <div class="wrap problem-grid">
+      <div class="problem-intro">
+        <span class="eyebrow rv">Eliminação de silos</span>
+        <h2 class="h2 rv d1">Sua equipe precisa de <span class="grad-b">contexto</span> para avançar.</h2>
+        <p class="lead rv d2">Ferramentas isoladas fragmentam o histórico e escondem o que realmente trava o pipeline.</p>
+        <div class="legend-3 rv d3">
+          <span><i style="background:var(--coral)"></i>O problema</span>
+          <span><i style="background:var(--gold)"></i>O impacto</span>
+          <span><i style="background:var(--cyan)"></i>A solução Birth Hub</span>
+        </div>
+      </div>
+
+      <div class="chapters">
+        <article class="chapter rv" data-n="1" style="--c1:#FF6B5E">
+          <div class="ch-head"><span class="ch-tag">Silos de informação</span><span class="ch-big" aria-hidden="true">01</span></div>
+          <h3>Chega de silos operacionais</h3>
+          <div class="ch-cols">
+            <div class="ch-col prob"><span class="lbl">Problema</span><p>CRM, telefonia, e-mails e WhatsApp desconectados forçam os vendedores a caçar informações e retrabalhar contatos.</p></div>
+            <div class="ch-col imp"><span class="lbl">Impacto</span><span class="stat">−40%</span><p>no tempo de preparação e zero retrabalho operacional.</p></div>
+            <div class="ch-col sol"><span class="lbl">Solução Birth Hub</span><p>Linha do tempo 360° unificada onde cada negociação preserva todo o histórico de interações e passagens de bastão.</p></div>
+          </div>
+        </article>
+        <article class="chapter rv d1" data-n="2" style="--c1:#FF2D9B">
+          <div class="ch-head"><span class="ch-tag">Decisões tardias</span><span class="ch-big" aria-hidden="true">02</span></div>
+          <h3>Decisões no tempo certo</h3>
+          <div class="ch-cols">
+            <div class="ch-col prob"><span class="lbl">Problema</span><p>Planilhas estáticas e fechamentos mensais revelam estagnações quando já não há tempo hábil para recuperar a meta.</p></div>
+            <div class="ch-col imp"><span class="lbl">Impacto</span><span class="stat">+28%</span><p>na velocidade de avanço entre etapas do funil.</p></div>
+            <div class="ch-col sol"><span class="lbl">Solução Birth Hub</span><p>Telemetria em tempo real com alertas preditivos de gargalos e desvios de velocidade de ciclo em D+0.</p></div>
+          </div>
+        </article>
+        <article class="chapter rv d2" data-n="3" style="--c1:#8B7DFF">
+          <div class="ch-head"><span class="ch-tag">Oportunidades no escuro</span><span class="ch-big" aria-hidden="true">03</span></div>
+          <h3>Nenhuma oportunidade no escuro</h3>
+          <div class="ch-cols">
+            <div class="ch-col prob"><span class="lbl">Problema</span><p>Falta de rigor no cumprimento de SLAs faz negócios quentes esfriarem sem acompanhamento ou ação definida.</p></div>
+            <div class="ch-col imp"><span class="lbl">Impacto</span><span class="stat">100<small>%</small></span><p>das oportunidades com próximo passo monitorado.</p></div>
+            <div class="ch-col sol"><span class="lbl">Solução Birth Hub</span><p>Orquestração automática de follow-ups com SLA garantido e recomendação da Próxima Melhor Ação (NBA).</p></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 4. CENTRO DE COMANDO ========== -->
+  <section class="stage cmd-wrap" id="comando">
+    <div class="stage-lights" aria-hidden="true"></div>
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <span class="eyebrow rv">Sistema operacional comercial</span>
+          <h2 class="h2 rv d1">Um centro de comando <span class="grad-b">para a sua receita.</span></h2>
+        </div>
+        <p class="lead rv d2">Dados, diagnóstico e execução integrados na mesma experiência.</p>
+      </div>
+
+      <div style="position:relative" class="rv">
+        <span class="callout" style="--cc:#00D4FF;left:-8px;top:64px">Pipeline unificado</span>
+        <span class="callout" style="--cc:#FF2D9B;right:-8px;top:240px">Forecast ponderado</span>
+        <span class="callout" style="--cc:#8B7DFF;right:30px;bottom:-14px">Supervisor on-line</span>
+        <div class="app" role="group" aria-label="Demonstração ilustrativa do Command Center">
+          <div class="app-bar" aria-hidden="true">
+            <div class="dots"><i></i><i></i><i></i></div>
+            <div class="app-tabs"><span class="on">Command Center</span><span>CRM &amp; BI</span><span>Prospecção</span><span>Automações</span><span>VoiceHub</span><span>Governança</span></div>
+          </div>
+          <div class="app-body">
+            <div style="display:grid;gap:14px;min-width:0">
+              <div class="kanban">
+                <div class="k-col"><h4>Qualificação <span>3</span></h4>
+                  <div class="deal" style="--dc:#00D4FF;--w:35%"><b>Tech Corp</b><em>R$ 145k</em><div class="mini"><i></i></div></div>
+                  <div class="deal" style="--dc:#00D4FF;--w:22%"><b>Orbit Logística</b><em>R$ 62k</em><div class="mini"><i></i></div></div></div>
+                <div class="k-col"><h4>Proposta <span>4</span></h4>
+                  <div class="deal" style="--dc:#A79CFF;--w:58%"><b>Grupo Delta</b><em>R$ 280k</em><div class="mini"><i></i></div></div>
+                  <div class="deal" style="--dc:#A79CFF;--w:49%"><b>Nexa Saúde</b><em>R$ 98k</em><div class="mini"><i></i></div></div></div>
+                <div class="k-col"><h4>Negociação <span>2</span></h4>
+                  <div class="deal hot" style="--dc:#FF5CB4;--w:74%"><b>Oportunidade #1042</b><em>R$ 145.000</em><span>Sem retorno há 4 dias</span><div class="mini"><i></i></div></div>
+                  <div class="deal" style="--dc:#FFC107;--w:81%"><b>Vanguarda S.A.</b><em>R$ 210k</em><div class="mini"><i></i></div></div></div>
+                <div class="k-col"><h4>Fechamento <span>2</span></h4>
+                  <div class="deal" style="--dc:#19E3C8;--w:92%"><b>Alfa Energia</b><em>R$ 330k</em><div class="mini"><i></i></div></div>
+                  <div class="deal" style="--dc:#19E3C8;--w:88%"><b>Mercurio Tech</b><em>R$ 74k</em><div class="mini"><i></i></div></div></div>
+              </div>
+              <div class="panel chart-lg">
+                <h4>Velocidade do funil <small>dias por etapa</small></h4>
+                <svg viewBox="0 0 640 120" width="100%" role="img" aria-label="Gráfico ilustrativo de velocidade do funil">
+                  <defs><linearGradient id="fv" x1="0" x2="1"><stop offset="0" stop-color="#00D4FF"/><stop offset=".5" stop-color="#8B7DFF"/><stop offset="1" stop-color="#FF2D9B"/></linearGradient></defs>
+                  <g fill="url(#fv)"><rect x="0" y="12" width="560" height="14" rx="7"/><rect x="0" y="38" width="440" height="14" rx="7" opacity=".85"/><rect x="0" y="64" width="330" height="14" rx="7" opacity=".7"/><rect x="0" y="90" width="210" height="14" rx="7" opacity=".55"/></g>
+                  <g font-family="IBM Plex Mono, monospace" font-size="11" fill="#9AA2C8"><text x="570" y="23">Qualif.</text><text x="450" y="49">Proposta</text><text x="340" y="75">Negociação</text><text x="220" y="101">Fechamento</text></g>
+                </svg>
+              </div>
+            </div>
+            <div class="side-col">
+              <div class="panel sup">
+                <h4>Supervisor on-line <small><i class="live" style="display:inline-block;margin-right:6px"></i>ativo</small></h4>
+                <div class="msg"><strong>O que vamos conquistar hoje?</strong><br>Descreva seu objetivo de vendas. Eu coordeno os agentes, analiso o pipeline e trago as ações prioritárias.</div>
+                <div class="feed-item"><span class="tag" style="--tc:#00D4FF">Missão em andamento</span><b>Auditoria de gargalos</b><span>3 agentes · enriquecimento, qualificação e copiloto.</span></div>
+                <div class="feed-item"><span class="tag" style="--tc:#FFC107">Alerta</span><b>2 negócios acima do SLA</b><span>Próxima ação sugerida disponível.</span></div>
+              </div>
+              <div class="panel">
+                <h4>Saúde das contas <small>ilustrativo</small></h4>
+                <svg viewBox="0 0 300 110" width="100%" role="img" aria-label="Gráfico ilustrativo de saúde das contas">
+                  <defs><linearGradient id="fh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#19E3C8" stop-opacity=".5"/><stop offset="1" stop-color="#19E3C8" stop-opacity="0"/></linearGradient></defs>
+                  <path d="M0 80 30 70 60 74 90 52 120 58 150 38 180 44 210 26 240 30 300 12V110H0Z" fill="url(#fh)"/>
+                  <path d="M0 80 30 70 60 74 90 52 120 58 150 38 180 44 210 26 240 30 300 12" stroke="#19E3C8" stroke-width="2.5" fill="none"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cap-row">
+        <div class="cap rv" style="--cc:#00D4FF"><svg class="ico"><use href="#i-db"/></svg><h3>Dados e conectividade Multi-CRM</h3><p>Conexões bidirecionais via APIs abertas e webhooks com Bitrix24, HubSpot, Salesforce e Pipedrive mantêm os dados comerciais sincronizados sem duplicação.</p><span class="pill"><i class="live"></i>Persistência RLS multi-tenant</span></div>
+        <div class="cap rv d1" style="--cc:#FF2D9B"><svg class="ico"><use href="#i-spark"/></svg><h3>Diagnóstico e inteligência</h3><p>Analise a saúde das contas, identifique riscos de estagnação e receba recomendações fundamentadas no histórico real de negociações.</p><span class="pill"><i class="live" style="background:#FF2D9B"></i>Copiloto contextual &amp; NBA</span></div>
+        <div class="cap rv d2" style="--cc:#FFC107"><svg class="ico"><use href="#i-flow"/></svg><h3>Execução e orquestração</h3><p>Coordene SDRs, Closers e liderança com cadências multicanal, regras de SLA e supervisão para passagens de bastão sem fricção.</p><span class="pill"><i class="live" style="background:#FFC107"></i>Passagem de bastão com SLA</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 5. JORNADA COMERCIAL ========== -->
+  <section class="sec journey" id="jornada">
+    <div class="wrap">
+      <div class="journey-head">
+        <span class="eyebrow rv">Jornada completa</span>
+        <h2 class="h2 rv d1">Da prospecção ao <span class="grad-a">fechamento.</span></h2>
+        <p class="lead rv d2">Um fluxo contínuo, com contexto preservado em cada passagem de bastão.</p>
+      </div>
+      <ol class="path" style="list-style:none;margin-block:30px 0;padding-inline:0" aria-label="Cinco etapas da jornada comercial">
+        <span class="path-line" aria-hidden="true"></span>
+        <li class="step rv" style="--sa:#00D4FF;--sb:#3B82F6;--sa-t:var(--t-cyan)"><span class="node-o"><svg class="ico"><use href="#i-build"/></svg></span>
+          <div class="step-card"><span class="n">ETAPA 01</span><h3>Entrada e captura</h3><p>Leads e contas chegam por CRMs, campanhas e prospecção ativa com enriquecimento automático.</p><span class="kp">Inbound &amp; Outbound</span></div></li>
+        <li class="step rv d1" style="--sa:#FF2D9B;--sb:#FF7A59;--sa-t:var(--t-pink)"><span class="node-o"><svg class="ico"><use href="#i-target"/></svg></span>
+          <div class="step-card"><span class="n">ETAPA 02</span><h3>Enriquecimento B2B</h3><p>Dados de empresas, decisores e CNAE apoiam a validação imediata do ICP e a priorização de contas.</p><span class="kp">Match ICP &amp; QSA</span></div></li>
+        <li class="step rv d2" style="--sa:#FFC107;--sb:#FF8A3D;--sa-t:var(--t-gold)"><span class="node-o"><svg class="ico"><use href="#i-branch"/></svg></span>
+          <div class="step-card"><span class="n">ETAPA 03</span><h3>Cadência e SLA</h3><p>Distribuição automática e contato ágil entre SDR e Closer seguindo regras operacionais de SLA.</p><span class="kp">Toques multicanal</span></div></li>
+        <li class="step rv d3" style="--sa:#8B7DFF;--sb:#00D4FF;--sa-t:var(--t-iris)"><span class="node-o"><svg class="ico"><use href="#i-bot"/></svg></span>
+          <div class="step-card"><span class="n">ETAPA 04</span><h3>Apoio com IA</h3><p>Histórico contextual, matriz de objeções e copiloto orientam as abordagens e reuniões.</p><span class="kp">NBA em tempo real</span></div></li>
+        <li class="step rv d3" style="--sa:#19E3C8;--sb:#00D4FF;--sa-t:var(--t-cyan)"><span class="node-o"><svg class="ico"><use href="#i-chart"/></svg></span>
+          <div class="step-card"><span class="n">ETAPA 05</span><h3>Fechamento e dados</h3><p>O aprendizado de negócios ganhos e perdidos realimenta os modelos de previsão de receita.</p><span class="kp">Forecast ponderado</span></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ========== 6. INTELIGÊNCIA ARTIFICIAL ========== -->
+  <section class="stage ai-wrap" id="ia">
+    <div class="stage-lights" aria-hidden="true"></div>
+    <div class="wrap ai-grid">
+      <div class="ai-left">
+        <span class="eyebrow rv">Copiloto comercial &amp; supervisor</span>
+        <h2 class="h2 rv d1">Inteligência que <span class="grad-a">compreende</span> seu pipeline.</h2>
+        <p class="lead rv d2">O copiloto analisa o estágio de cada negociação, o histórico das interações e as objeções recorrentes para apoiar sua equipe com supervisão contínua.</p>
+        <div class="stages rv d3">
+          <div class="stg" style="--sc:#00D4FF"><span class="si"><svg class="ico"><use href="#i-spark"/></svg></span><div><h3>Diagnóstico de entraves</h3><p>Identifique negócios estagnados e receba o contexto exato do motivo de bloqueio.</p></div></div>
+          <div class="stg" style="--sc:#FFC107"><span class="si"><svg class="ico"><use href="#i-clock"/></svg></span><div><h3>Contexto histórico</h3><p>Leitura instantânea de chamadas gravadas, e-mails trocados e propostas enviadas.</p></div></div>
+          <div class="stg" style="--sc:#FF2D9B"><span class="si"><svg class="ico"><use href="#i-target"/></svg></span><div><h3>Recomendação · NBA</h3><p>Recomendações táticas para avançar negociações e contornar objeções.</p></div></div>
+          <div class="stg" style="--sc:#8B7DFF"><span class="si"><svg class="ico"><use href="#i-shield"/></svg></span><div><h3>Supervisão on-line</h3><p>Orquestração de missões operacionais com decisão final sempre humana.</p></div></div>
+        </div>
+      </div>
+
+      <div class="copilot rv d1" role="group" aria-label="Simulação contextual do copiloto de IA">
+        <div class="cp" style="--cc:#00D4FF">
+          <div class="cp-h"><span><i class="live"></i>01 Diagnóstico</span><span style="color:#9AA2C8">Oportunidade #1042</span></div>
+          <p><strong>Oportunidade pede atenção.</strong> Proposta de <strong>R$ 145.000</strong> enviada há 4 dias sem retorno após a reunião técnica.</p>
+          <div class="risk" aria-hidden="true"><i></i></div>
+          <p style="font-size:12px;color:#9AA2C8">Risco de estagnação · alto</p>
+        </div>
+        <div class="cp" style="--cc:#FFC107">
+          <div class="cp-h"><span>02 Contexto</span></div>
+          <div class="tl"><div><i></i>Reunião técnica · há 4 dias</div><div><i></i>Proposta enviada · há 4 dias</div><div><i></i>CFO abriu o e-mail 2×</div><div><i></i>Objeção de preço registrada</div></div>
+        </div>
+        <div class="cp cp-rec" style="--cc:#FF5CB4">
+          <div class="cp-h"><span>03 Recomendação · NBA</span><span style="color:#9AA2C8">Simulação contextual</span></div>
+          <h3>Retomar contato com o CFO</h3>
+          <p>Destaque o caso de ROI simulado (payback estimado em 45 dias) e proponha reunião executiva de implantação com modelo parcelado.</p>
+        </div>
+        <div class="cp" style="--cc:#A79CFF;grid-column:1 / -1">
+          <div class="cp-h"><span>04 Supervisão</span><span style="color:#9AA2C8">Aprovação humana</span></div>
+          <div class="approve"><span class="ok">Aplicar recomendação na oportunidade</span><span class="adj">Ajustar</span></div>
+          <div class="audit">// ação registrada em trilha de auditoria · aprovada por: responsável da conta</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 7. INTEGRAÇÕES / ECOSSISTEMA ========== -->
+  <section class="sec eco" id="ecossistema">
+    <div class="wrap eco-grid">
+      <div class="eco-left">
+        <span class="eyebrow rv">Conectividade total</span>
+        <h2 class="h2 rv d1">Conectado ao seu <span class="grad-a">ecossistema.</span></h2>
+        <p class="lead rv d2">Uma operação aberta e compatível com as ferramentas comerciais e de produtividade que sua empresa já utiliza.</p>
+        <div class="status-list rv d3">
+          <div class="status-row" style="--sc:#0E9F8E"><span class="s-badge" style="--sc:var(--t-cyan)">Em produção</span><p><b>Bitrix24, WhatsApp Oficial API, VoiceHub Telefonia, Webhooks &amp; REST APIs.</b> Disponíveis hoje.</p></div>
+          <div class="status-row"><span class="s-badge" style="--sc:var(--t-gold)">Em homologação</span><p><b>HubSpot, Salesforce, Pipedrive.</b> Em validação com clientes.</p></div>
+          <div class="status-row"><span class="s-badge" style="--sc:var(--muted)">Planejado</span><p><b>Google Workspace, Microsoft 365.</b> No roadmap.</p></div>
+        </div>
+      </div>
+
+      <div class="orbit rv d1" role="group" aria-label="Ecossistema de integrações: anel interno em produção, intermediário em homologação, externo planejado">
+        <span class="ring r3"></span><span class="ring r2"></span><span class="ring r1"></span>
+        <div class="hub"><img src="../../../public/landing/assets/birthhub-logo.svg" alt="Birth Hub 360" /></div>
+        <div class="node active n1"><div class="logo"><img src="../../../public/landing/assets/bitrix24.svg" alt="" /></div><span>Bitrix24</span></div>
+        <div class="node active n2"><div class="logo"><img src="../../../public/landing/assets/whatsapp.svg" alt="" /></div><span>WhatsApp API</span></div>
+        <div class="node active n3"><div class="logo"><img src="../../../public/landing/assets/voice.svg" alt="" /></div><span>VoiceHub</span></div>
+        <div class="node active n4"><div class="logo"><img src="../../../public/landing/assets/webhooks.svg" alt="" /></div><span>Webhooks &amp; REST</span></div>
+        <div class="node dev n5"><div class="logo"><img src="../../../public/landing/assets/hubspot.svg" alt="" /></div><span>HubSpot</span></div>
+        <div class="node dev n6"><div class="logo"><img src="../../../public/landing/assets/salesforce.svg" alt="" /></div><span>Salesforce</span></div>
+        <div class="node dev n7"><div class="logo"><img src="../../../public/landing/assets/pipedrive.svg" alt="" /></div><span>Pipedrive</span></div>
+        <div class="node plan n8"><div class="logo"><img src="../../../public/landing/assets/google.svg" alt="" /></div><span>Google</span></div>
+        <div class="node plan n9"><div class="logo"><img src="../../../public/landing/assets/microsoft.svg" alt="" /></div><span>Microsoft 365</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 8. CTA FINAL ========== -->
+  <section class="stage cta" id="cta">
+    <span class="cta-blob b1" aria-hidden="true"></span><span class="cta-blob b2" aria-hidden="true"></span>
+    <span class="cta-blob b3" aria-hidden="true"></span><span class="cta-blob b4" aria-hidden="true"></span>
+    <span class="cta-ring" aria-hidden="true"></span>
+    <div class="wrap">
+      <span class="eyebrow rv">Controle total de receita</span>
+      <h2 class="rv d1">Coloque sua operação comercial <span class="grad-a">sob comando.</span></h2>
+      <p class="lead rv d2">Explore a experiência do Birth Hub 360° e descubra como dados, equipe e execução se potencializam mutuamente em uma única plataforma.</p>
+      <div class="cta-actions rv d3">
+        <a class="aurora lg" href="#comando"><span class="aurora-face">Acessar Command Center <svg class="ico"><use href="#i-arrow"/></svg></span></a>
+        <a class="btn-ghost" href="#cta">Simular ROI comercial</a>
+        <a class="btn-ghost" href="#inicio">Acessar plataforma</a>
+      </div>
+    </div>
+  </section>
+  </main>
+
+  <!-- ========== 9. RODAPÉ ========== -->
+  <footer class="footer" id="rodape">
+    <div class="wrap">
+      <div class="foot-grid">
+        <div class="foot-brand">
+          <a class="brand" href="#inicio"><img src="../../../public/landing/assets/birthhub-logo.svg" alt="" width="44" height="44" /><span class="t">Birth Hub <b>360°</b></span></a>
+          <p>Revenue Command Center &amp; Multi-CRM. Dados que conectam, inteligência que decide, execução que acontece.</p>
+          <div class="foot-badges"><span class="chip">LGPD</span><span class="chip">RLS multi-tenant</span><span class="chip">Supervisão humana</span></div>
+        </div>
+        <nav class="foot-col" aria-label="Plataforma"><h4>Plataforma</h4><a href="#pilares">8 pilares</a><a href="#comando">Command Center</a><a href="#jornada">Jornada comercial</a><a href="#ia">IA Comercial</a></nav>
+        <nav class="foot-col" aria-label="Ecossistema"><h4>Ecossistema</h4><a href="#ecossistema">Integrações</a><a href="#problema">Problemas que resolvemos</a><a href="#cta">Simular ROI</a></nav>
+        <nav class="foot-col" aria-label="Acesso"><h4>Acesso</h4><a href="#cta">Acessar plataforma</a><a href="#inicio">Voltar ao topo</a></nav>
+      </div>
+      <div class="wordmark" aria-hidden="true">BIRTH HUB 360°</div>
+      <div class="foot-bottom"><span>© 2026 Birth Hub 360°. Todos os direitos reservados.</span><span>Protótipo visual V2 · Gate A</span></div>
+    </div>
+  </footer>
+
+  <script>
+    // Tema
+    document.getElementById('theme-toggle').addEventListener('click', function () {
+      var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('bh-proto-theme', next);
+    });
+    // Reveal (sem animação sob prefers-reduced-motion)
+    (function () {
+      var els = document.querySelectorAll('.rv');
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) {
+        els.forEach(function (e) { e.classList.add('in'); }); return;
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
+      }, { threshold: 0.12 });
+      els.forEach(function (e) { io.observe(e); });
+    })();
+  </script>
+</body>
+</html>

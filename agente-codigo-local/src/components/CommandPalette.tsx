@@ -1,30 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import {
-  Search,
-  FileCode,
-  Zap,
-  Terminal,
-  Download,
-  Github,
-  Settings,
-  Eye,
-  History,
-  Trash2,
-  FolderOpen,
-  Layers,
-  Sparkles,
-  Command,
-  ArrowRight,
-  Code2,
-  Shield,
-  FilePlus,
-  Volume2,
-  VolumeX,
-  FlaskConical,
-  Activity,
-  GitBranch,
-  BookOpen
-} from 'lucide-react';
+import { Search, FileCode, Zap, Terminal, Download, Settings, Eye, History, Trash2, FolderOpen, Layers, Sparkles, Command, ArrowRight, Code2, Shield, FilePlus, Volume2, VolumeX, FlaskConical, Activity, GitBranch, BookOpen } from 'lucide-react';
+import { Github } from './icons/Github';
 import { sounds } from '../services/soundEffects';
 
 export type AgentMode = 'turbo' | 'architect' | 'security';

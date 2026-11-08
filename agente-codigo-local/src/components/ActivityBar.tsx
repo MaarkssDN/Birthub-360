@@ -1,20 +1,6 @@
 import React from 'react';
-import {
-  Files,
-  Search,
-  History,
-  Terminal,
-  Eye,
-  Settings,
-  Zap,
-  Github,
-  FolderCode,
-  Command,
-  FlaskConical,
-  Activity,
-  GitBranch,
-  BookOpen
-} from 'lucide-react';
+import { Files, Search, History, Terminal, Eye, Settings, Zap, FolderCode, Command, FlaskConical, Activity, GitBranch, BookOpen } from 'lucide-react';
+import { Github } from './icons/Github';
 import { sounds } from '../services/soundEffects';
 
 export type ActivityTab = 'files' | 'search' | 'checkpoints';

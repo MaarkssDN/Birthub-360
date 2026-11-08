@@ -1,15 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Github,
-  X,
-  ExternalLink,
-  CheckCircle2,
-  AlertTriangle,
-  Loader2,
-  Lock,
-  Globe,
-  Key
-} from 'lucide-react';
+import { X, ExternalLink, CheckCircle2, AlertTriangle, Loader2, Lock, Globe, Key } from 'lucide-react';
+import { Github } from './icons/Github';
 
 interface GitHubExportModalProps {
   isOpen: boolean;

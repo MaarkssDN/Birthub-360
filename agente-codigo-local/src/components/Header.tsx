@@ -1,26 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import {
-  FolderCode,
-  FolderOpen,
-  Download,
-  Terminal,
-  Settings,
-  HardDrive,
-  Cpu,
-  Layers,
-  ChevronDown,
-  History,
-  Zap,
-  Github,
-  Search,
-  PanelLeft,
-  PanelRight,
-  Sparkles,
-  ExternalLink,
-  User as UserIcon,
-  Cloud,
-  GitBranch
-} from 'lucide-react';
+import { FolderCode, FolderOpen, Download, Terminal, Settings, HardDrive, Cpu, Layers, ChevronDown, History, Zap, Search, PanelLeft, PanelRight, Sparkles, ExternalLink, User as UserIcon, Cloud, GitBranch } from 'lucide-react';
+import { Github } from './icons/Github';
 import { BackendProvider, StorageMode, TokenUsageStats } from '../types/agent';
 import { STARTER_TEMPLATES } from '../services/fileSystem';
 import { auth, type User } from '../firebase/config';
