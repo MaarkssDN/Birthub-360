@@ -87,7 +87,7 @@ export const JSDocGeneratorModal: React.FC<JSDocGeneratorModalProps> = ({
     } catch (err: any) {
       console.error('Erro ao gerar JSDoc:', err);
       setError(err?.message || 'Falha ao processar documentação JSDoc com IA.');
-      sounds.playErrorBeep();
+      sounds.playAlertTone();
     } finally {
       setLoading(false);
     }

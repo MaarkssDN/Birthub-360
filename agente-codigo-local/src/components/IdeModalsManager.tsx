@@ -18,7 +18,7 @@ export interface IdeModalsManagerProps {
   setCheckpointsOpen: (open: boolean) => void;
   checkpoints: WorkspaceCheckpoint[];
   handleRestoreCheckpoint: (cp: WorkspaceCheckpoint) => void;
-  handleCreateSnapshot: (name: string) => void;
+  handleCreateSnapshot: (name?: string) => void | Promise<void>;
   handleDeleteCheckpoint: (id: string) => void;
 
   githubModalOpen: boolean;
@@ -51,14 +51,14 @@ export interface IdeModalsManagerProps {
   setUnitTestModalOpen: (open: boolean) => void;
   selectedPath: string | null;
   fileContent: string;
-  handleCreateTestFile: (path: string, content: string) => void;
+  handleCreateTestFile: (path: string, content: string) => Promise<void>;
   setTerminalOpen: (open: boolean) => void;
   setTerminalExternalCmd: (cmd: { cmd: string; timestamp: number } | null) => void;
 
   codeAnalysisModalOpen: boolean;
   setCodeAnalysisModalOpen: (open: boolean) => void;
   selectedCodeContext: CodeSelectionContext | null;
-  handleApplyRefactoredCode: (newCode: string) => void;
+  handleApplyRefactoredCode: (newCode: string, isSnippetOnly: boolean) => void | Promise<void>;
 
   aiStudioOpen: boolean;
   setAiStudioOpen: (open: boolean) => void;
@@ -73,7 +73,7 @@ export interface IdeModalsManagerProps {
   setGitModalOpen: (open: boolean) => void;
   updateGitStatus: () => void;
   storageMode: StorageMode;
-  gitDefaultTab: 'status' | 'history' | 'stashes' | 'branches' | 'ai-commit';
+  gitDefaultTab: 'changes' | 'history' | 'branches';
   handleUpdateAllFilesFromGit: (files: Record<string, string>) => void;
   setDiffInfo: (diff: any) => void;
 }
