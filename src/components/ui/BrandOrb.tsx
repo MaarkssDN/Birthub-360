@@ -121,6 +121,7 @@ export function BrandOrb({
       onClick={handleInteract}
       disabled={!interactive}
       title={interactive ? 'Clique para interagir com o Brand Orb 3D' : undefined}
+      aria-label={interactive ? 'Interagir com o Brand Orb' : 'Brand Orb'}
     >
       <Canvas
         camera={{ position: [0, 0, 4], fov: 45 }}
