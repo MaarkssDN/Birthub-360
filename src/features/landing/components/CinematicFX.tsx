@@ -1,5 +1,12 @@
 import { useReducedMotion } from 'framer-motion';
-import { BarChart3, BrainCircuit, Database, GitBranch, Network, Workflow } from 'lucide-react';
+import {
+  BarChart3,
+  BrainCircuit,
+  Database,
+  GitBranch,
+  Network,
+  Workflow,
+} from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 /**
@@ -107,9 +114,16 @@ export function B360FloatingNodes({ variant = 'hero' }: { variant?: 'hero' | 'fo
   }, []);
 
   return (
-    <div ref={fieldRef} className={`b360-node-field b360-node-field-${variant}`} aria-hidden="true">
+    <div
+      ref={fieldRef}
+      className={`b360-node-field b360-node-field-${variant}`}
+      aria-hidden="true"
+    >
       {DATA_NODES.map(({ id, Icon, tone }) => (
-        <span key={id} className={`b360-data-node b360-data-node-${id} b360-data-node-${tone}`}>
+        <span
+          key={id}
+          className={`b360-data-node b360-data-node-${id} b360-data-node-${tone}`}
+        >
           <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
         </span>
       ))}
