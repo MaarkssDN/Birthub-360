@@ -267,26 +267,37 @@ export function PillarContent({
             >
               <Sparkles className="w-3.5 h-3.5 text-sky-400" /> Interface Operacional
             </span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800/60 dark:bg-slate-900/80 text-slate-400 border border-slate-700/60">
+            <span
+              className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+                theme === 'dark'
+                  ? 'bg-slate-900/80 text-slate-400 border-slate-700/60'
+                  : 'bg-slate-100 text-slate-600 border-slate-300'
+              }`}
+            >
               Simulação baseada em dados operacionais
             </span>
           </div>
 
           {/* Renderização do Mockup Realístico Contextualizado */}
           <div className="transition-all duration-300">
-            {pillar.renderVisualizer()}
+            {pillar.renderVisualizer(theme)}
           </div>
         </div>
 
         {/* Métricas e Benefícios Específicos com Metadados Claros */}
         <div className="space-y-2.5">
-          <h3
-            className={`font-display text-xs font-bold uppercase tracking-wider ${
-              theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
-            }`}
-          >
-            Impacto & Benefícios Mensuráveis
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3
+              className={`font-display text-xs font-bold uppercase tracking-wider ${
+                theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
+              }`}
+            >
+              Impacto & Benefícios Mensuráveis
+            </h3>
+            <span className="text-[9px] font-mono text-slate-400">
+              * Projeções baseadas em simulações
+            </span>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
             {pillar.metrics.map((m) => (

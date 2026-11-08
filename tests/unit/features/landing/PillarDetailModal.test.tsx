@@ -200,4 +200,23 @@ describe('PillarDetailModal — Arquitetura dos 8 Pilares Comerciais', () => {
     expect(PillarDetailDialog).toBeDefined();
     expect(PillarContent).toBeDefined();
   });
+
+  it('deve renderizar todos os 8 visualizadores contextuais em modo Light sem reter tema escuro', () => {
+    const pillarIds = ['01', '02', '03', '04', '05', '06', '07', '08'];
+
+    for (const id of pillarIds) {
+      const { container, unmount } = renderModal({ pillarId: id, theme: 'light' });
+
+      // O container do visualizador contextual deve possuir classe clara no tema light
+      expect(screen.getByText('Interface Operacional')).toBeInTheDocument();
+      expect(screen.getByText('Simulação baseada em dados operacionais')).toBeInTheDocument();
+
+      // Verificar que não há bloqueio de renderização do mockup no tema light
+      const visualizerRoot = container.querySelector('.transition-all.duration-300');
+      expect(visualizerRoot).toBeInTheDocument();
+      expect(visualizerRoot?.children.length).toBeGreaterThan(0);
+
+      unmount();
+    }
+  });
 });

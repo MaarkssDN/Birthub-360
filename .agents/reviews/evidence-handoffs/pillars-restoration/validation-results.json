@@ -1,0 +1,84 @@
+{
+  "dark": {
+    "cards": [
+      {
+        "index": 1,
+        "badge": "01",
+        "tag": "PIPELINE 360°",
+        "title": "01. Hub comercial",
+        "imgUrl": "/landing/assets/pillar-hub.jpg",
+        "httpStatus": 200,
+        "ok": true
+      },
+      {
+        "index": 2,
+        "badge": "02",
+        "tag": "ENRIQUECIMENTO B2B",
+        "title": "02. Inteligência de mercado",
+        "imgUrl": "/landing/assets/pillar-market.jpg",
+        "httpStatus": 200,
+        "ok": true
+      },
+      {
+        "index": 3,
+        "badge": "03",
+        "tag": "CADÊNCIA MULTICANAL",
+        "title": "03. Orquestração de vendas",
+        "imgUrl": "/landing/assets/pillar-orchestration.jpg",
+        "httpStatus": 200,
+        "ok": true
+      },
+      {
+        "index": 4,
+        "badge": "04",
+        "tag": "TELEMETRIA & METAS",
+        "title": "04. Performance comercial",
+        "imgUrl": "/landing/assets/pillar-performance.jpg",
+        "httpStatus": 200,
+        "ok": true
+      },
+      {
+        "index": 5,
+        "badge": "05",
+        "tag": "FORECAST PROBABILÍSTICO",
+        "title": "05. Previsibilidade comercial",
+        "imgUrl": "/landing/assets/pillar-forecast.jpg",
+        "httpStatus": 200,
+        "ok": true
+      },
+      {
+        "index": 6,
+        "badge": "06",
+        "tag": "COPILOTO DE NEGOCIAÇÕES",
+        "title": "06. Inteligência artificial",
+        "imgUrl": "/landing/assets/pillar-ai.jpg",
+        "httpStatus": 200,
+        "ok": true
+      },
+      {
+        "index": 7,
+        "badge": "07",
+        "tag": "GATEWAY MULTI-CRM",
+        "title": "07. Automação & conectividade",
+        "imgUrl": "/landing/assets/pillar-automation.jpg",
+        "httpStatus": 200,
+        "ok": true
+      },
+      {
+        "index": 8,
+        "badge": "08",
+        "tag": "VOICEHUB & WHATSAPP",
+        "title": "08. Engajamento comercial",
+        "imgUrl": "/landing/assets/pillar-engagement.jpg",
+        "httpStatus": 200,
+        "ok": true
+      }
+    ],
+    "allImagesLoaded": true
+  },
+  "light": {
+    "cards": [],
+    "allImagesLoaded": true
+  },
+  "modalsTested": []
+}

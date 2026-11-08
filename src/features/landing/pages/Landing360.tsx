@@ -154,7 +154,7 @@ const ADAPTIVE_PILLARS = [
     num: '08',
     title: 'Engajamento comercial',
     desc: 'Reúna telefonia, interações e histórico de contatos em uma comunicação integrada.',
-    bg: '/landing/assets/pillar-hub.jpg',
+    bg: '/landing/assets/pillar-engagement.jpg',
     colorClass: 'b360-c-iris',
     accentColor: '#8B7DFF',
     tag: 'VOICEHUB & WHATSAPP',
@@ -588,8 +588,18 @@ export function Landing360({
     }
   }, [currentUser, navigate]);
 
+  // Limpeza de estado de modais e simuladores em mudanças de rota
+  useEffect(() => {
+    setSelectedPillarId(null);
+    setActiveModal(null);
+    setIsSimulatorOpen(false);
+  }, [location.pathname]);
+
   const handleGoToLogin = () => {
     SoundFX.play('confirm');
+    setSelectedPillarId(null);
+    setActiveModal(null);
+    setIsSimulatorOpen(false);
     setActiveScreen('login');
     if (location.pathname !== '/login') {
       navigate('/login');
@@ -1033,26 +1043,46 @@ export function Landing360({
                     className={`b360-feature-card ${pillar.colorClass}`}
                     onClick={() => handleOpenModal(pillar.modalTitle, pillar.modalDesc, pillar.num)}
                   >
-                    <div className="b360-card-header">
-                      <span className="b360-pillar-badge">{pillar.num}</span>
-                      <div className="b360-pillar-icon">
-                        {renderPillarIcon(pillar.num)}
+                    {/* Imagem de Fundo Editorial com Leve Ampliação no Hover */}
+                    <div
+                      className="b360-card-bg"
+                      style={{ backgroundImage: `url('${pillar.bg}')` }}
+                      aria-hidden="true"
+                    />
+
+                    {/* Gradiente Scrim de Proteção para Legibilidade Editorial */}
+                    <div className="b360-card-scrim" aria-hidden="true" />
+
+                    {/* Glow Suave Oficial com a Cor do Pilar */}
+                    <div
+                      className="b360-card-glow"
+                      style={{ '--card-accent': pillar.accentColor } as React.CSSProperties}
+                      aria-hidden="true"
+                    />
+
+                    {/* Conteúdo do Card em Camada Superior */}
+                    <div className="b360-card-content">
+                      <div className="b360-card-header">
+                        <span className="b360-pillar-badge">{pillar.num}</span>
+                        <div className="b360-pillar-icon">
+                          {renderPillarIcon(pillar.num)}
+                        </div>
+                        <span className="b360-pillar-tag">{pillar.tag}</span>
                       </div>
-                      <span className="b360-pillar-tag">{pillar.tag}</span>
-                    </div>
 
-                    <div className="b360-card-visual">
-                      {renderPillarVisual(pillar.num)}
-                    </div>
+                      <div className="b360-card-visual">
+                        {renderPillarVisual(pillar.num)}
+                      </div>
 
-                    <div className="b360-card-bottom">
-                      <h3>
-                        {pillar.num}. {pillar.title}
-                      </h3>
-                      <p>{pillar.desc}</p>
-                      <div className="b360-card-action">
-                        <span>Inspecionar capacidades</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
+                      <div className="b360-card-bottom">
+                        <h3>
+                          {pillar.num}. {pillar.title}
+                        </h3>
+                        <p>{pillar.desc}</p>
+                        <div className="b360-card-action">
+                          <span>Inspecionar capacidades</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </div>
                       </div>
                     </div>
                   </button>

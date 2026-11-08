@@ -184,7 +184,7 @@ html {
 
 /* Títulos: Cores de marca vibrantes, gradientes ou matizes neon */
 .landing-neon-root .landing-title-cyan {
-  color: #0284c7 !important; /* Light: Sky profundo */
+  color: #0369a1 !important; /* Light: Sky profundo com contraste WCAG 2.2 AA (5.88:1) */
 }
 :root.dark .landing-neon-root .landing-title-cyan,
 .dark .landing-neon-root .landing-title-cyan {
@@ -283,7 +283,7 @@ h1:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"
   h5:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"]),
 .landing-neon-root
   h6:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"]) {
-  color: #0284c7;
+  color: #0369a1;
 }
 
 :root.dark
