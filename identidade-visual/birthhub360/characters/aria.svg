@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%" fill="none" role="img" aria-labelledby="aria-title aria-desc">
+  <title id="aria-title">Aria — Maestrina de Fluxos</title>
+  <desc id="aria-desc">Avatar não-humano representando Aria: fitas harmônicas em onda fluida verde esmeralda e ciano, simbolizando orquestração e ritmo de vendas.</desc>
+  <defs>
+    <linearGradient id="aria-wave-1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="50%" stop-color="#00D4FF"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="aria-wave-2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#34D399"/>
+      <stop offset="50%" stop-color="#06B6D4"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+    <linearGradient id="aria-core-grad" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#00D4FF"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+    <filter id="aria-glow" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="aria-halo" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="10" result="blur2"/>
+    </filter>
+  </defs>
+
+  <!-- Halo de Fundo -->
+  <circle cx="64" cy="64" r="48" fill="#10B981" fill-opacity="0.15" filter="url(#aria-halo)"/>
+
+  <!-- Anel de Ressonância Harmônica -->
+  <circle cx="64" cy="64" r="50" stroke="#00D4FF" stroke-width="1.2" stroke-dasharray="5 7" opacity="0.45"/>
+
+  <!-- Fita de Fluxo Harmônico Traseira (Wave Loop) -->
+  <path d="M 22 74 C 28 38, 54 30, 68 54 C 82 78, 104 76, 108 52" stroke="url(#aria-wave-2)" stroke-width="5" stroke-linecap="round" opacity="0.55"/>
+
+  <!-- Onda Primária Dinâmica (Mobius Conductor Wave) -->
+  <g filter="url(#aria-glow)">
+    <path d="M 20 54 C 26 84, 52 94, 64 68 C 76 42, 100 44, 108 72" stroke="url(#aria-wave-1)" stroke-width="6" stroke-linecap="round"/>
+  </g>
+
+  <!-- Núcleo Harmônico Central: Diapasão Quântico -->
+  <ellipse cx="64" cy="64" rx="16" ry="12" fill="#0D0D0D" stroke="url(#aria-core-grad)" stroke-width="2.5" filter="url(#aria-glow)"/>
+  
+  <!-- Frequência / Pulso de Cadência Central -->
+  <path d="M 54 64 Q 59 57, 64 64 T 74 64" stroke="#A7F3D0" stroke-width="2.5" stroke-linecap="round" filter="url(#aria-glow)"/>
+
+  <!-- Pontos de Cadência / Batimento de Vendas -->
+  <circle cx="38" cy="78" r="3.5" fill="#10B981" filter="url(#aria-glow)"/>
+  <circle cx="38" cy="78" r="1.5" fill="#FFFFFF"/>
+
+  <circle cx="64" cy="44" r="3" fill="#00D4FF" filter="url(#aria-glow)"/>
+  <circle cx="64" cy="44" r="1" fill="#FFFFFF"/>
+
+  <circle cx="90" cy="50" r="3.5" fill="#34D399" filter="url(#aria-glow)"/>
+  <circle cx="90" cy="50" r="1.5" fill="#FFFFFF"/>
+
+  <circle cx="106" cy="72" r="4" fill="#00D4FF" filter="url(#aria-glow)"/>
+  <circle cx="106" cy="72" r="1.5" fill="#FFFFFF"/>
+
+  <!-- Micro-arcos de Orquestração -->
+  <path d="M 40 32 Q 64 24, 88 32" stroke="#10B981" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+  <path d="M 46 98 Q 64 104, 82 98" stroke="#00D4FF" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+</svg>

@@ -1,0 +1,703 @@
+/**
+ * Birth Hub 360° — Sistema Visual dos Personagens (Tokens TypeScript Oficiais)
+ * Mapeamento canônico dos 9 personagens e suporte a Framer Motion / Tailwind.
+ * Desenvolvido pelo Agente 11 em colaboração com Agente 03.
+ */
+
+export type CharacterId =
+  | 'orbit'
+  | 'nexus'
+  | 'aria'
+  | 'vanguard'
+  | 'oracle'
+  | 'core'
+  | 'spark'
+  | 'echo'
+  | 'sudo';
+
+export type CharacterState =
+  | 'idle'
+  | 'listening'
+  | 'processing'
+  | 'speaking'
+  | 'success'
+  | 'error';
+
+export interface CharacterPalette {
+  primary: string;
+  primaryRgb: string;
+  secondary: string;
+  secondaryRgb: string;
+  accent: string;
+  gradientDark: string;
+  gradientLight: string;
+  halo: string;
+  heading: string;
+  subheading: string;
+}
+
+export interface CharacterExpressionConfig {
+  animation: string;
+  scale: number;
+  haloOpacity: number;
+  statusColor: string;
+  description: string;
+}
+
+export interface CharacterDefinition {
+  id: CharacterId;
+  name: string;
+  pillar: string;
+  module: string;
+  role: string;
+  ariaLabel: string;
+  command: string;
+  archetype: string;
+  palette: CharacterPalette;
+  assets: {
+    svg: string;
+    viewBox: string;
+  };
+  expressions: Record<CharacterState, CharacterExpressionConfig>;
+}
+
+export const BIRTHHUB_CHARACTERS: Record<CharacterId, CharacterDefinition> = {
+  orbit: {
+    id: 'orbit',
+    name: 'Orbit',
+    pillar: 'PILAR 01 — HUB COMERCIAL',
+    module: 'crm',
+    role: 'Guardião do CRM',
+    ariaLabel: 'Orbit, agente guardião do CRM e da integridade de pipeline',
+    command: 'Ei Orbit',
+    archetype: 'Non-Human Gravitational Gyroscope',
+    palette: {
+      primary: '#FFC107',
+      primaryRgb: '255, 193, 7',
+      secondary: '#00D4FF',
+      secondaryRgb: '0, 212, 255',
+      accent: '#FF2D9B',
+      gradientDark: 'linear-gradient(135deg, rgba(255, 193, 7, 0.25) 0%, rgba(0, 212, 255, 0.15) 100%)',
+      gradientLight: 'linear-gradient(135deg, rgba(217, 119, 6, 0.15) 0%, rgba(2, 132, 199, 0.10) 100%)',
+      halo: '0 0 32px rgba(255, 193, 7, 0.35)',
+      heading: '#FFC107',
+      subheading: '#70D6FF',
+    },
+    assets: {
+      svg: '/brand/characters/orbit.svg',
+      viewBox: '0 0 128 128',
+    },
+    expressions: {
+      idle: {
+        animation: 'orbit-idle 6s ease-in-out infinite',
+        scale: 1,
+        haloOpacity: 0.35,
+        statusColor: '#FFC107',
+        description: 'Pulso giroscópico suave em órbita contínua',
+      },
+      listening: {
+        animation: 'orbit-listening 1.8s ease-in-out infinite',
+        scale: 1.05,
+        haloOpacity: 0.65,
+        statusColor: '#00D4FF',
+        description: 'Expansão de anéis com captação ativa de sinal',
+      },
+      processing: {
+        animation: 'orbit-spin-fast 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite',
+        scale: 1.02,
+        haloOpacity: 0.75,
+        statusColor: '#FF2D9B',
+        description: 'Rotação rápida dos anéis orbitais com varredura',
+      },
+      speaking: {
+        animation: 'orbit-speaking 2s ease-in-out infinite',
+        scale: 1.04,
+        haloOpacity: 0.55,
+        statusColor: '#FFC107',
+        description: 'Pulso elástico das ondas equatoriais com síntese',
+      },
+      success: {
+        animation: 'orbit-success 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+        scale: 1.08,
+        haloOpacity: 0.85,
+        statusColor: '#10B981',
+        description: 'Flash de confirmação e estabilização de órbita',
+      },
+      error: {
+        animation: 'orbit-error 0.5s ease-in-out',
+        scale: 0.98,
+        haloOpacity: 0.70,
+        statusColor: '#EF4444',
+        description: 'Oscilação lateral e advertência de barreira',
+      },
+    },
+  },
+  nexus: {
+    id: 'nexus',
+    name: 'Nexus',
+    pillar: 'PILAR 02 — INTELIGÊNCIA DE MERCADO',
+    module: 'market-intelligence',
+    role: 'Analista de Dados',
+    ariaLabel: 'Nexus, agente analista de dados e inteligência de mercado',
+    command: 'Ei Nexus',
+    archetype: 'Non-Human Faceted Quantum Prism',
+    palette: {
+      primary: '#00D4FF',
+      primaryRgb: '0, 212, 255',
+      secondary: '#38BDF8',
+      secondaryRgb: '56, 189, 248',
+      accent: '#FFC107',
+      gradientDark: 'linear-gradient(135deg, rgba(0, 212, 255, 0.25) 0%, rgba(2, 132, 199, 0.15) 100%)',
+      gradientLight: 'linear-gradient(135deg, rgba(2, 132, 199, 0.18) 0%, rgba(56, 189, 248, 0.10) 100%)',
+      halo: '0 0 32px rgba(0, 212, 255, 0.40)',
+      heading: '#00D4FF',
+      subheading: '#BAE6FD',
+    },
+    assets: {
+      svg: '/brand/characters/nexus.svg',
+      viewBox: '0 0 128 128',
+    },
+    expressions: {
+      idle: {
+        animation: 'nexus-idle 5s ease-in-out infinite',
+        scale: 1,
+        haloOpacity: 0.35,
+        statusColor: '#00D4FF',
+        description: 'Refração prismática suave dos vértices hexagonais',
+      },
+      listening: {
+        animation: 'nexus-listening 1.6s ease-in-out infinite',
+        scale: 1.05,
+        haloOpacity: 0.70,
+        statusColor: '#7DD3FC',
+        description: 'Pulso sequencial dos 6 nós de dados',
+      },
+      processing: {
+        animation: 'nexus-crystallize 1s ease-in-out infinite alternate',
+        scale: 1.03,
+        haloOpacity: 0.80,
+        statusColor: '#FFC107',
+        description: 'Refração geométrica acelerada das facetas',
+      },
+      speaking: {
+        animation: 'nexus-speaking 2s ease-in-out infinite',
+        scale: 1.04,
+        haloOpacity: 0.60,
+        statusColor: '#00D4FF',
+        description: 'Emissão de feixes de dados a partir do centro',
+      },
+      success: {
+        animation: 'nexus-success 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+        scale: 1.08,
+        haloOpacity: 0.90,
+        statusColor: '#10B981',
+        description: 'Iluminação integral do cristal de dados',
+      },
+      error: {
+        animation: 'nexus-error 0.5s ease-in-out',
+        scale: 0.98,
+        haloOpacity: 0.70,
+        statusColor: '#EF4444',
+        description: 'Flicker de refração e descontinuidade de sinal',
+      },
+    },
+  },
+  aria: {
+    id: 'aria',
+    name: 'Aria',
+    pillar: 'PILAR 03 — ORQUESTRAÇÃO DE VENDAS',
+    module: 'daily-plan',
+    role: 'Maestrina de Fluxos',
+    ariaLabel: 'Aria, agente maestrina de fluxos diários e cadência de vendas',
+    command: 'Ei Aria',
+    archetype: 'Non-Human Harmonic Mobius Ribbon',
+    palette: {
+      primary: '#10B981',
+      primaryRgb: '16, 185, 129',
+      secondary: '#00D4FF',
+      secondaryRgb: '0, 212, 255',
+      accent: '#34D399',
+      gradientDark: 'linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(0, 212, 255, 0.15) 100%)',
+      gradientLight: 'linear-gradient(135deg, rgba(5, 150, 105, 0.15) 0%, rgba(2, 132, 199, 0.10) 100%)',
+      halo: '0 0 32px rgba(16, 185, 129, 0.40)',
+      heading: '#10B981',
+      subheading: '#A7F3D0',
+    },
+    assets: {
+      svg: '/brand/characters/aria.svg',
+      viewBox: '0 0 128 128',
+    },
+    expressions: {
+      idle: {
+        animation: 'aria-idle 6s ease-in-out infinite',
+        scale: 1,
+        haloOpacity: 0.35,
+        statusColor: '#10B981',
+        description: 'Ondulação serena das fitas de fluxo contínuo',
+      },
+      listening: {
+        animation: 'aria-listening 1.8s ease-in-out infinite',
+        scale: 1.05,
+        haloOpacity: 0.65,
+        statusColor: '#00D4FF',
+        description: 'Alinhamento das ondas em ressonância auditiva',
+      },
+      processing: {
+        animation: 'aria-undulate-fast 1.2s ease-in-out infinite',
+        scale: 1.03,
+        haloOpacity: 0.75,
+        statusColor: '#34D399',
+        description: 'Ciclo rápido de ondas de orquestração',
+      },
+      speaking: {
+        animation: 'aria-speaking 2s ease-in-out infinite',
+        scale: 1.04,
+        haloOpacity: 0.60,
+        statusColor: '#10B981',
+        description: 'Modulação rítmica com pulso harmônico',
+      },
+      success: {
+        animation: 'aria-success 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+        scale: 1.08,
+        haloOpacity: 0.85,
+        statusColor: '#10B981',
+        description: 'Sincronia perfeita e harmonia verde brilhante',
+      },
+      error: {
+        animation: 'aria-error 0.5s ease-in-out',
+        scale: 0.98,
+        haloOpacity: 0.70,
+        statusColor: '#EF4444',
+        description: 'Quebra transitória na curvatura da fita',
+      },
+    },
+  },
+  vanguard: {
+    id: 'vanguard',
+    name: 'Vanguard',
+    pillar: 'PILAR 04 — PERFORMANCE COMERCIAL',
+    module: 'dashboard',
+    role: 'Estrategista de Metas',
+    ariaLabel: 'Vanguard, agente estrategista de metas e aceleração de performance',
+    command: 'Ei Vanguard',
+    archetype: 'Non-Human Ascending Spearhead & Shield',
+    palette: {
+      primary: '#FF2D9B',
+      primaryRgb: '255, 45, 155',
+      secondary: '#FFC107',
+      secondaryRgb: '255, 193, 7',
+      accent: '#00D4FF',
+      gradientDark: 'linear-gradient(135deg, rgba(255, 45, 155, 0.25) 0%, rgba(255, 193, 7, 0.15) 100%)',
+      gradientLight: 'linear-gradient(135deg, rgba(217, 27, 124, 0.15) 0%, rgba(217, 119, 6, 0.10) 100%)',
+      halo: '0 0 32px rgba(255, 45, 155, 0.40)',
+      heading: '#FF2D9B',
+      subheading: '#FECDD3',
+    },
+    assets: {
+      svg: '/brand/characters/vanguard.svg',
+      viewBox: '0 0 128 128',
+    },
+    expressions: {
+      idle: {
+        animation: 'vanguard-idle 5s ease-in-out infinite',
+        scale: 1,
+        haloOpacity: 0.35,
+        statusColor: '#FF2D9B',
+        description: 'Levitação axial com pulso de prontidão do propulsor',
+      },
+      listening: {
+        animation: 'vanguard-listening 1.5s ease-in-out infinite',
+        scale: 1.05,
+        haloOpacity: 0.65,
+        statusColor: '#00D4FF',
+        description: 'Inclinação vetorial em atenção estratégica',
+      },
+      processing: {
+        animation: 'vanguard-thrust 0.9s ease-in-out infinite alternate',
+        scale: 1.04,
+        haloOpacity: 0.80,
+        statusColor: '#FFC107',
+        description: 'Ignição do núcleo dourado e cálculo de avanço',
+      },
+      speaking: {
+        animation: 'vanguard-speaking 1.8s ease-in-out infinite',
+        scale: 1.04,
+        haloOpacity: 0.60,
+        statusColor: '#FF2D9B',
+        description: 'Disparo de pulso afiado nas bordas angulares',
+      },
+      success: {
+        animation: 'vanguard-success 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+        scale: 1.10,
+        haloOpacity: 0.90,
+        statusColor: '#10B981',
+        description: 'Elevação vertical máxima de conquista de meta',
+      },
+      error: {
+        animation: 'vanguard-error 0.5s ease-in-out',
+        scale: 0.98,
+        haloOpacity: 0.70,
+        statusColor: '#EF4444',
+        description: 'Recuo defensivo com alerta de bloqueio',
+      },
+    },
+  },
+  oracle: {
+    id: 'oracle',
+    name: 'Oracle',
+    pillar: 'PILAR 05 — PREVISIBILIDADE COMERCIAL',
+    module: 'forecast',
+    role: 'Visionário de Forecast',
+    ariaLabel: 'Oracle, agente visionário de forecast e previsibilidade comercial',
+    command: 'Ei Oracle',
+    archetype: 'Non-Human Astrolabe Ocular Lens',
+    palette: {
+      primary: '#A855F7',
+      primaryRgb: '168, 85, 247',
+      secondary: '#FF2D9B',
+      secondaryRgb: '255, 45, 155',
+      accent: '#00D4FF',
+      gradientDark: 'linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(255, 45, 155, 0.15) 100%)',
+      gradientLight: 'linear-gradient(135deg, rgba(147, 51, 234, 0.15) 0%, rgba(217, 27, 124, 0.10) 100%)',
+      halo: '0 0 32px rgba(168, 85, 247, 0.40)',
+      heading: '#C084FC',
+      subheading: '#E9D5FF',
+    },
+    assets: {
+      svg: '/brand/characters/oracle.svg',
+      viewBox: '0 0 128 128',
+    },
+    expressions: {
+      idle: {
+        animation: 'oracle-idle 6s ease-in-out infinite',
+        scale: 1,
+        haloOpacity: 0.35,
+        statusColor: '#A855F7',
+        description: 'Rotação lenta dos círculos temporais concêntricos',
+      },
+      listening: {
+        animation: 'oracle-listening 1.8s ease-in-out infinite',
+        scale: 1.05,
+        haloOpacity: 0.70,
+        statusColor: '#00D4FF',
+        description: 'Dilatação suave da pupila estelar holográfica',
+      },
+      processing: {
+        animation: 'oracle-scanning 1.2s ease-in-out infinite',
+        scale: 1.03,
+        haloOpacity: 0.80,
+        statusColor: '#FF2D9B',
+        description: 'Varredura estroboscópica da linha do tempo',
+      },
+      speaking: {
+        animation: 'oracle-speaking 2s ease-in-out infinite',
+        scale: 1.04,
+        haloOpacity: 0.60,
+        statusColor: '#A855F7',
+        description: 'Projeção de anéis luminosos de probabilidade',
+      },
+      success: {
+        animation: 'oracle-success 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+        scale: 1.08,
+        haloOpacity: 0.90,
+        statusColor: '#10B981',
+        description: 'Convergência focal exata de alta acurácia',
+      },
+      error: {
+        animation: 'oracle-error 0.5s ease-in-out',
+        scale: 0.98,
+        haloOpacity: 0.70,
+        statusColor: '#EF4444',
+        description: 'Divergência temporal com alerta de incerteza',
+      },
+    },
+  },
+  core: {
+    id: 'core',
+    name: 'Core',
+    pillar: 'PILAR 06 — INTELIGÊNCIA ARTIFICIAL',
+    module: 'intelligence',
+    role: 'Mente Principal',
+    ariaLabel: 'Core, agente mente principal e orquestrador cognitivo de IA',
+    command: 'Ei Core',
+    archetype: 'Non-Human Synaptic Hypersphere',
+    palette: {
+      primary: '#6366F1',
+      primaryRgb: '99, 102, 241',
+      secondary: '#00D4FF',
+      secondaryRgb: '0, 212, 255',
+      accent: '#FF2D9B',
+      gradientDark: 'linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(0, 212, 255, 0.15) 100%)',
+      gradientLight: 'linear-gradient(135deg, rgba(79, 70, 229, 0.18) 0%, rgba(2, 132, 199, 0.10) 100%)',
+      halo: '0 0 34px rgba(99, 102, 241, 0.45)',
+      heading: '#818CF8',
+      subheading: '#C7D2FE',
+    },
+    assets: {
+      svg: '/brand/characters/core.svg',
+      viewBox: '0 0 128 128',
+    },
+    expressions: {
+      idle: {
+        animation: 'core-idle 5.5s ease-in-out infinite',
+        scale: 1,
+        haloOpacity: 0.40,
+        statusColor: '#6366F1',
+        description: 'Respiração neural rítmica com feixes de sinapse',
+      },
+      listening: {
+        animation: 'core-listening 1.6s ease-in-out infinite',
+        scale: 1.05,
+        haloOpacity: 0.70,
+        statusColor: '#00D4FF',
+        description: 'Ativação de nós periféricos e concentração do orbe',
+      },
+      processing: {
+        animation: 'core-synapse-fire 1s cubic-bezier(0.4, 0, 0.2, 1) infinite',
+        scale: 1.04,
+        haloOpacity: 0.85,
+        statusColor: '#FF2D9B',
+        description: 'Disparo elétrico rápido entre sinapses conectadas',
+      },
+      speaking: {
+        animation: 'core-speaking 2s ease-in-out infinite',
+        scale: 1.04,
+        haloOpacity: 0.65,
+        statusColor: '#6366F1',
+        description: 'Irradiação concêntrica de raciocínio estruturado',
+      },
+      success: {
+        animation: 'core-success 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+        scale: 1.09,
+        haloOpacity: 0.95,
+        statusColor: '#10B981',
+        description: 'Equilíbrio sináptico total e síntese concluída',
+      },
+      error: {
+        animation: 'core-error 0.5s ease-in-out',
+        scale: 0.98,
+        haloOpacity: 0.75,
+        statusColor: '#EF4444',
+        description: 'Curto-circuito sináptico passageiro e isolamento',
+      },
+    },
+  },
+  spark: {
+    id: 'spark',
+    name: 'Spark',
+    pillar: 'PILAR 07 — AUTOMAÇÃO & CONECTIVIDADE',
+    module: 'automations',
+    role: 'Engenheiro de Integrações',
+    ariaLabel: 'Spark, agente engenheiro de integrações, automações e webhooks',
+    command: 'Ei Spark',
+    archetype: 'Non-Human 4-Point Electric Starlight',
+    palette: {
+      primary: '#14B8A6',
+      primaryRgb: '20, 184, 166',
+      secondary: '#D4F434',
+      secondaryRgb: '212, 244, 52',
+      accent: '#00F2FE',
+      gradientDark: 'linear-gradient(135deg, rgba(20, 184, 166, 0.25) 0%, rgba(212, 244, 52, 0.15) 100%)',
+      gradientLight: 'linear-gradient(135deg, rgba(13, 148, 136, 0.18) 0%, rgba(197, 232, 38, 0.10) 100%)',
+      halo: '0 0 32px rgba(20, 184, 166, 0.40)',
+      heading: '#2DD4BF',
+      subheading: '#99F6E4',
+    },
+    assets: {
+      svg: '/brand/characters/spark.svg',
+      viewBox: '0 0 128 128',
+    },
+    expressions: {
+      idle: {
+        animation: 'spark-idle 4.5s ease-in-out infinite',
+        scale: 1,
+        haloOpacity: 0.35,
+        statusColor: '#14B8A6',
+        description: 'Fagulha estática suave com centelhamento leve',
+      },
+      listening: {
+        animation: 'spark-listening 1.4s ease-in-out infinite',
+        scale: 1.06,
+        haloOpacity: 0.70,
+        statusColor: '#D4F434',
+        description: 'Alongamento dos terminais de barramento',
+      },
+      processing: {
+        animation: 'spark-pulse-rapid 0.8s ease-in-out infinite alternate',
+        scale: 1.05,
+        haloOpacity: 0.85,
+        statusColor: '#00F2FE',
+        description: 'Chaveamento elétrico em alta frequência',
+      },
+      speaking: {
+        animation: 'spark-speaking 1.8s ease-in-out infinite',
+        scale: 1.04,
+        haloOpacity: 0.60,
+        statusColor: '#14B8A6',
+        description: 'Transmissão contínua de pacotes de dados',
+      },
+      success: {
+        animation: 'spark-success 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+        scale: 1.10,
+        haloOpacity: 0.90,
+        statusColor: '#10B981',
+        description: 'Disparo síncrono de webhook 200 OK confirmado',
+      },
+      error: {
+        animation: 'spark-error 0.5s ease-in-out',
+        scale: 0.98,
+        haloOpacity: 0.70,
+        statusColor: '#EF4444',
+        description: 'Interrupção do circuito e arco de disjuntor',
+      },
+    },
+  },
+  echo: {
+    id: 'echo',
+    name: 'Echo',
+    pillar: 'PILAR 08 — ENGAJAMENTO COMERCIAL',
+    module: 'voice-hub',
+    role: 'Especialista em Voz',
+    ariaLabel: 'Echo, agente especialista em voz comercial, telefonia e áudio',
+    command: 'Ei Echo',
+    archetype: 'Non-Human Acoustic Resonator Capsule',
+    palette: {
+      primary: '#FB7185',
+      primaryRgb: '251, 113, 133',
+      secondary: '#00D4FF',
+      secondaryRgb: '0, 212, 255',
+      accent: '#FF2D9B',
+      gradientDark: 'linear-gradient(135deg, rgba(251, 113, 133, 0.25) 0%, rgba(0, 212, 255, 0.15) 100%)',
+      gradientLight: 'linear-gradient(135deg, rgba(225, 29, 72, 0.15) 0%, rgba(2, 132, 199, 0.10) 100%)',
+      halo: '0 0 32px rgba(251, 113, 133, 0.40)',
+      heading: '#FDA4AF',
+      subheading: '#FECDD3',
+    },
+    assets: {
+      svg: '/brand/characters/echo.svg',
+      viewBox: '0 0 128 128',
+    },
+    expressions: {
+      idle: {
+        animation: 'echo-idle 5.5s ease-in-out infinite',
+        scale: 1,
+        haloOpacity: 0.35,
+        statusColor: '#FB7185',
+        description: 'Ressonância esférica com ondas sonoras suaves',
+      },
+      listening: {
+        animation: 'echo-listening 1.5s ease-in-out infinite',
+        scale: 1.06,
+        haloOpacity: 0.70,
+        statusColor: '#00D4FF',
+        description: 'Sensibilidade acústica com ondas concêntricas vivas',
+      },
+      processing: {
+        animation: 'echo-equalize 1s ease-in-out infinite',
+        scale: 1.03,
+        haloOpacity: 0.80,
+        statusColor: '#FF2D9B',
+        description: 'Oscilação vertical rápida do equalizador de voz',
+      },
+      speaking: {
+        animation: 'echo-speaking 1.8s ease-in-out infinite',
+        scale: 1.05,
+        haloOpacity: 0.65,
+        statusColor: '#FB7185',
+        description: 'Dispersão esférica de som com modulação estéreo',
+      },
+      success: {
+        animation: 'echo-success 0.75s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+        scale: 1.09,
+        haloOpacity: 0.90,
+        statusColor: '#10B981',
+        description: 'Acorde perfeito e equalização em repouso claro',
+      },
+      error: {
+        animation: 'echo-error 0.5s ease-in-out',
+        scale: 0.98,
+        haloOpacity: 0.70,
+        statusColor: '#EF4444',
+        description: 'Ruído estático e colapso transiente de frequência',
+      },
+    },
+  },
+  sudo: {
+    id: 'sudo',
+    name: 'Sudo',
+    pillar: 'ADMINISTRAÇÃO',
+    module: 'settings',
+    role: 'Controlador de Sistema',
+    ariaLabel: 'Sudo, agente controlador de sistema, governança e alçadas',
+    command: 'Ei Sudo',
+    archetype: 'Non-Human Cryptographic Isometric Monolith',
+    palette: {
+      primary: '#94A3B8',
+      primaryRgb: '148, 163, 184',
+      secondary: '#00D4FF',
+      secondaryRgb: '0, 212, 255',
+      accent: '#FFC107',
+      gradientDark: 'linear-gradient(135deg, rgba(148, 163, 184, 0.25) 0%, rgba(0, 212, 255, 0.15) 100%)',
+      gradientLight: 'linear-gradient(135deg, rgba(71, 85, 105, 0.15) 0%, rgba(2, 132, 199, 0.10) 100%)',
+      halo: '0 0 32px rgba(0, 212, 255, 0.35)',
+      heading: '#E2E8F0',
+      subheading: '#94A3B8',
+    },
+    assets: {
+      svg: '/brand/characters/sudo.svg',
+      viewBox: '0 0 128 128',
+    },
+    expressions: {
+      idle: {
+        animation: 'sudo-idle 6s ease-in-out infinite',
+        scale: 1,
+        haloOpacity: 0.35,
+        statusColor: '#94A3B8',
+        description: 'Sentinela estático com pulso sutil de laser perimetral',
+      },
+      listening: {
+        animation: 'sudo-listening 1.6s ease-in-out infinite',
+        scale: 1.04,
+        haloOpacity: 0.65,
+        statusColor: '#00D4FF',
+        description: 'Varredura de credencial no perímetro criptográfico',
+      },
+      processing: {
+        animation: 'sudo-encrypt 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite',
+        scale: 1.02,
+        haloOpacity: 0.75,
+        statusColor: '#FFC107',
+        description: 'Validação de chaves e alçadas de autorização',
+      },
+      speaking: {
+        animation: 'sudo-speaking 2s ease-in-out infinite',
+        scale: 1.03,
+        haloOpacity: 0.55,
+        statusColor: '#94A3B8',
+        description: 'Emissão de logs de auditoria e veredito',
+      },
+      success: {
+        animation: 'sudo-success 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+        scale: 1.07,
+        haloOpacity: 0.85,
+        statusColor: '#10B981',
+        description: 'Trava de cofre verde e autorização concedida',
+      },
+      error: {
+        animation: 'sudo-error 0.5s ease-in-out',
+        scale: 0.98,
+        haloOpacity: 0.75,
+        statusColor: '#EF4444',
+        description: 'Bloqueio vermelho de acesso e negação de alçada',
+      },
+    },
+  },
+} as const;
+
+export function getCharacter(id: CharacterId): CharacterDefinition {
+  return BIRTHHUB_CHARACTERS[id];
+}
+
+export function listCharacters(): CharacterDefinition[] {
+  return Object.values(BIRTHHUB_CHARACTERS);
+}

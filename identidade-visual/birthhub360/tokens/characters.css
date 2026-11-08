@@ -1,0 +1,264 @@
+/**
+ * Birth Hub 360° — Sistema Visual dos Personagens (Tokens CSS Oficiais)
+ * Mapeamento completo dos 9 personagens: Orbit, Nexus, Aria, Vanguard, Oracle, Core, Spark, Echo, Sudo.
+ * Desenvolvido pelo Agente 11 em consonância com o Design System Oficial.
+ */
+
+:root {
+  /* ==========================================================================
+     HALOS & PALETAS ESPECÍFICAS DOS PERSONAGENS (DARK MODE DEFAULT)
+     ========================================================================== */
+  /* Orbit (Pilar 01) */
+  --char-orbit-primary: #FFC107;
+  --char-orbit-secondary: #00D4FF;
+  --char-orbit-accent: #FF2D9B;
+  --char-orbit-halo: 0 0 32px rgba(255, 193, 7, 0.35);
+  --char-orbit-card-grad: linear-gradient(135deg, rgba(255, 193, 7, 0.16) 0%, rgba(0, 212, 255, 0.08) 100%);
+
+  /* Nexus (Pilar 02) */
+  --char-nexus-primary: #00D4FF;
+  --char-nexus-secondary: #38BDF8;
+  --char-nexus-accent: #FFC107;
+  --char-nexus-halo: 0 0 32px rgba(0, 212, 255, 0.40);
+  --char-nexus-card-grad: linear-gradient(135deg, rgba(0, 212, 255, 0.18) 0%, rgba(2, 132, 199, 0.08) 100%);
+
+  /* Aria (Pilar 03) */
+  --char-aria-primary: #10B981;
+  --char-aria-secondary: #00D4FF;
+  --char-aria-accent: #34D399;
+  --char-aria-halo: 0 0 32px rgba(16, 185, 129, 0.38);
+  --char-aria-card-grad: linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(0, 212, 255, 0.08) 100%);
+
+  /* Vanguard (Pilar 04) */
+  --char-vanguard-primary: #FF2D9B;
+  --char-vanguard-secondary: #FFC107;
+  --char-vanguard-accent: #00D4FF;
+  --char-vanguard-halo: 0 0 32px rgba(255, 45, 155, 0.40);
+  --char-vanguard-card-grad: linear-gradient(135deg, rgba(255, 45, 155, 0.18) 0%, rgba(255, 193, 7, 0.08) 100%);
+
+  /* Oracle (Pilar 05) */
+  --char-oracle-primary: #A855F7;
+  --char-oracle-secondary: #FF2D9B;
+  --char-oracle-accent: #00D4FF;
+  --char-oracle-halo: 0 0 32px rgba(168, 85, 247, 0.40);
+  --char-oracle-card-grad: linear-gradient(135deg, rgba(168, 85, 247, 0.18) 0%, rgba(255, 45, 155, 0.08) 100%);
+
+  /* Core (Pilar 06) */
+  --char-core-primary: #6366F1;
+  --char-core-secondary: #00D4FF;
+  --char-core-accent: #FF2D9B;
+  --char-core-halo: 0 0 34px rgba(99, 102, 241, 0.45);
+  --char-core-card-grad: linear-gradient(135deg, rgba(99, 102, 241, 0.20) 0%, rgba(0, 212, 255, 0.10) 100%);
+
+  /* Spark (Pilar 07) */
+  --char-spark-primary: #14B8A6;
+  --char-spark-secondary: #D4F434;
+  --char-spark-accent: #00F2FE;
+  --char-spark-halo: 0 0 32px rgba(20, 184, 166, 0.40);
+  --char-spark-card-grad: linear-gradient(135deg, rgba(20, 184, 166, 0.18) 0%, rgba(212, 244, 52, 0.08) 100%);
+
+  /* Echo (Pilar 08) */
+  --char-echo-primary: #FB7185;
+  --char-echo-secondary: #00D4FF;
+  --char-echo-accent: #FF2D9B;
+  --char-echo-halo: 0 0 32px rgba(251, 113, 133, 0.40);
+  --char-echo-card-grad: linear-gradient(135deg, rgba(251, 113, 133, 0.18) 0%, rgba(0, 212, 255, 0.08) 100%);
+
+  /* Sudo (Administração) */
+  --char-sudo-primary: #94A3B8;
+  --char-sudo-secondary: #00D4FF;
+  --char-sudo-accent: #FFC107;
+  --char-sudo-halo: 0 0 32px rgba(0, 212, 255, 0.35);
+  --char-sudo-card-grad: linear-gradient(135deg, rgba(148, 163, 184, 0.18) 0%, rgba(0, 212, 255, 0.08) 100%);
+
+  /* Cores Globais de Estado dos Personagens */
+  --char-state-idle: var(--neon-blue);
+  --char-state-listening: #00D4FF;
+  --char-state-processing: #FF2D9B;
+  --char-state-speaking: #FFC107;
+  --char-state-success: #10B981;
+  --char-state-error: #EF4444;
+
+  /* Tempos de Transição */
+  --char-transition-fast: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --char-transition-smooth: 350ms cubic-bezier(0.16, 1, 0.3, 1);
+  --char-transition-bounce: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ==========================================================================
+   VARIAÇÕES LIGHT MODE (ALTO CONTRASTE E PRESERVAÇÃO DE TONALIDADE NEON)
+   ========================================================================== */
+[data-theme="light"],
+.theme-light,
+:root:not(.dark) {
+  --char-orbit-halo: 0 0 24px rgba(217, 119, 6, 0.22);
+  --char-orbit-card-grad: linear-gradient(135deg, rgba(217, 119, 6, 0.12) 0%, rgba(2, 132, 199, 0.06) 100%);
+
+  --char-nexus-halo: 0 0 24px rgba(2, 132, 199, 0.25);
+  --char-nexus-card-grad: linear-gradient(135deg, rgba(2, 132, 199, 0.12) 0%, rgba(56, 189, 248, 0.06) 100%);
+
+  --char-aria-halo: 0 0 24px rgba(5, 150, 105, 0.25);
+  --char-aria-card-grad: linear-gradient(135deg, rgba(5, 150, 105, 0.12) 0%, rgba(2, 132, 199, 0.06) 100%);
+
+  --char-vanguard-halo: 0 0 24px rgba(217, 27, 124, 0.25);
+  --char-vanguard-card-grad: linear-gradient(135deg, rgba(217, 27, 124, 0.12) 0%, rgba(217, 119, 6, 0.06) 100%);
+
+  --char-oracle-halo: 0 0 24px rgba(147, 51, 234, 0.25);
+  --char-oracle-card-grad: linear-gradient(135deg, rgba(147, 51, 234, 0.12) 0%, rgba(217, 27, 124, 0.06) 100%);
+
+  --char-core-halo: 0 0 24px rgba(79, 70, 229, 0.25);
+  --char-core-card-grad: linear-gradient(135deg, rgba(79, 70, 229, 0.12) 0%, rgba(2, 132, 199, 0.06) 100%);
+
+  --char-spark-halo: 0 0 24px rgba(13, 148, 136, 0.25);
+  --char-spark-card-grad: linear-gradient(135deg, rgba(13, 148, 136, 0.12) 0%, rgba(197, 232, 38, 0.06) 100%);
+
+  --char-echo-halo: 0 0 24px rgba(225, 29, 72, 0.25);
+  --char-echo-card-grad: linear-gradient(135deg, rgba(225, 29, 72, 0.12) 0%, rgba(2, 132, 199, 0.06) 100%);
+
+  --char-sudo-halo: 0 0 24px rgba(71, 85, 105, 0.22);
+  --char-sudo-card-grad: linear-gradient(135deg, rgba(71, 85, 105, 0.12) 0%, rgba(2, 132, 199, 0.06) 100%);
+}
+
+/* ==========================================================================
+   KEYFRAMES DE ANIMAÇÃO DAS EXPRESSÕES
+   ========================================================================== */
+@keyframes char-levitate {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-4px) scale(1.015);
+  }
+}
+
+@keyframes char-listening-pulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 16px rgba(0, 212, 255, 0.4));
+  }
+  50% {
+    transform: scale(1.06);
+    filter: drop-shadow(0 0 28px rgba(0, 212, 255, 0.75));
+  }
+}
+
+@keyframes char-processing-spin {
+  0% {
+    transform: rotate(0deg) scale(1.02);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.05);
+  }
+  100% {
+    transform: rotate(360deg) scale(1.02);
+  }
+}
+
+@keyframes char-speaking-equalize {
+  0%, 100% {
+    transform: scaleY(1) scaleX(1);
+  }
+  25% {
+    transform: scaleY(1.05) scaleX(0.98);
+  }
+  75% {
+    transform: scaleY(0.97) scaleX(1.04);
+  }
+}
+
+@keyframes char-success-burst {
+  0% {
+    transform: scale(0.95);
+    filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.4));
+  }
+  50% {
+    transform: scale(1.12);
+    filter: drop-shadow(0 0 36px rgba(16, 185, 129, 0.85));
+  }
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 16px rgba(16, 185, 129, 0.5));
+  }
+}
+
+@keyframes char-error-shake {
+  0%, 100% {
+    transform: translateX(0);
+    filter: drop-shadow(0 0 12px rgba(239, 68, 68, 0.5));
+  }
+  20%, 60% {
+    transform: translateX(-4px);
+  }
+  40%, 80% {
+    transform: translateX(4px);
+  }
+}
+
+/* ==========================================================================
+   CLASSES UTILITÁRIAS PARA OS PERSONAGENS
+   ========================================================================== */
+.bh-character-avatar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  transition: transform var(--char-transition-smooth), filter var(--char-transition-smooth);
+}
+
+.bh-character-avatar[data-state="idle"] {
+  animation: char-levitate 5.5s ease-in-out infinite;
+}
+
+.bh-character-avatar[data-state="listening"] {
+  animation: char-listening-pulse 1.6s ease-in-out infinite;
+}
+
+.bh-character-avatar[data-state="processing"] {
+  animation: char-processing-spin 2s linear infinite;
+}
+
+.bh-character-avatar[data-state="speaking"] {
+  animation: char-speaking-equalize 1.8s ease-in-out infinite;
+}
+
+.bh-character-avatar[data-state="success"] {
+  animation: char-success-burst 0.75s var(--char-transition-bounce) forwards;
+}
+
+.bh-character-avatar[data-state="error"] {
+  animation: char-error-shake 0.5s ease-in-out forwards;
+}
+
+/* Card Oficial de Personagem */
+.bh-character-card {
+  border-radius: 20px;
+  padding: 1.5rem;
+  background: var(--neon-card-bg, #14141A);
+  border: 1px solid var(--neon-card-border, rgba(0, 212, 255, 0.22));
+  backdrop-filter: blur(24px);
+  box-shadow: 0 12px 36px -8px rgba(0, 0, 0, 0.6);
+  transition: transform var(--char-transition-smooth), border-color var(--char-transition-smooth), box-shadow var(--char-transition-smooth);
+}
+
+.bh-character-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 212, 255, 0.45);
+}
+
+/* ==========================================================================
+   ACESSIBILIDADE: PREFERS-REDUCED-MOTION
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .bh-character-avatar,
+  .bh-character-avatar[data-state="idle"],
+  .bh-character-avatar[data-state="listening"],
+  .bh-character-avatar[data-state="processing"],
+  .bh-character-avatar[data-state="speaking"],
+  .bh-character-avatar[data-state="success"],
+  .bh-character-avatar[data-state="error"] {
+    animation: none !important;
+    transform: none !important;
+    transition: opacity 150ms ease !important;
+  }
+}

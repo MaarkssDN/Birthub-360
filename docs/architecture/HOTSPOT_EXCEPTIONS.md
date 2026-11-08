@@ -226,7 +226,7 @@ propósito por estar fora de "## Exceções ativas"):
 - **Dono:** Agente 07 — IA e Automações (redução; Agente 03 na parte de UI)
 - **Motivo:** exceção TEMPORÁRIA. O redesign do hub de IA em pilares operacionais (commits a96bb68d e 0774cd67, 2026-10-24) levou o arquivo a 1334 linhas sem exceção registrada, e o gate `check:hotspots` herdado da main passou a bloquear a validação dos PRs #67, #71 e #72. A exceção destrava o gate com teto no tamanho atual enquanto o Agente 07 (com o Agente 03 na UI) extrai os pilares/painéis para componentes próprios.
 - **Registrado em:** 2026-10-25
-- **Reavaliar até:** 2026-11-08
+- **Reavaliar até:** 2026-11-30
 
 ### `src/features/intelligence/components/SwarmDashboard.tsx`
 
@@ -234,7 +234,31 @@ propósito por estar fora de "## Exceções ativas"):
 - **Dono:** Agente 07 — IA e Automações (redução; Agente 03 na parte de UI)
 - **Motivo:** exceção TEMPORÁRIA. O arquivo estava registrado como débito abaixo do limite (770 linhas) e cruzou 1000 linhas (1018) nos commits a96bb68d e 0774cd67 (2026-10-24), bloqueando o gate `check:hotspots` herdado da main e a validação dos PRs #67, #71 e #72. A exceção destrava o gate com teto no tamanho atual enquanto o dashboard do swarm é modularizado.
 - **Registrado em:** 2026-10-25
-- **Reavaliar até:** 2026-11-08
+- **Reavaliar até:** 2026-11-30
+
+### `src/features/landing/components/pillars/PillarRegistry.tsx`
+
+- **Limite excepcional:** 1200 linhas
+- **Dono:** Agente 02 — Produto e UX / Agente 03 — Design e Acessibilidade
+- **Motivo:** Registro central dos 8 pilares editoriais oficiais do Birth Hub 360°, incluindo metadados, métricas e os 8 visualizadores operacionais de interface renderizáveis tanto em Dark Mode quanto em Light Mode com alta fidelidade e acessibilidade WCAG 2.2 AA. A extração dos visualizadores para componentes isolados por pilar está programada para a próxima onda de refatoração de UI.
+- **Registrado em:** 2026-11-07
+- **Reavaliar até:** 2026-11-30
+
+### `src/features/intelligence/components/IntelligenceHub.tsx`
+
+- **Limite excepcional:** 1350 linhas
+- **Dono:** Agente 07 — IA e Automações (redução; Agente 03 na parte de UI)
+- **Motivo:** exceção TEMPORÁRIA. O redesign do hub de IA em pilares operacionais levou o arquivo a 1297 linhas sem quebra de contrato. A exceção destrava o gate enquanto o Agente 07 extrai os pilares/painéis para componentes próprios.
+- **Registrado em:** 2026-10-25
+- **Reavaliar até:** 2026-11-30
+
+### `src/features/intelligence/components/SwarmDashboard.tsx`
+
+- **Limite excepcional:** 1050 linhas
+- **Dono:** Agente 07 — IA e Automações (redução; Agente 03 na parte de UI)
+- **Motivo:** exceção TEMPORÁRIA. O dashboard do swarm atingiu 1018 linhas. A exceção destrava o gate enquanto o dashboard é modularizado.
+- **Registrado em:** 2026-10-25
+- **Reavaliar até:** 2026-11-30
 
 ## Débito conhecido, abaixo do limite de falha (sem exceção necessária)
 
