@@ -4109,7 +4109,7 @@ html.light .b360-adaptive-landing .b360-bento-grid .b360-pillar-tag,
   height: 540px;
   left: -140px;
   top: 6%;
-  background: radial-gradient(circle, rgba(0, 212, 255, 0.20), transparent 65%);
+  background: radial-gradient(circle, rgba(0, 212, 255, 0.2), transparent 65%);
 }
 
 .b360-ambient .b360-orb-b {
@@ -4125,7 +4125,7 @@ html.light .b360-adaptive-landing .b360-bento-grid .b360-pillar-tag,
   height: 460px;
   left: 32%;
   bottom: -180px;
-  background: radial-gradient(circle, rgba(255, 193, 7, 0.10), transparent 65%);
+  background: radial-gradient(circle, rgba(255, 193, 7, 0.1), transparent 65%);
 }
 
 .b360-ambient .b360-orbit-ring {
@@ -4153,7 +4153,7 @@ html.light .b360-adaptive-landing .b360-bento-grid .b360-pillar-tag,
   position: absolute;
   inset: 18%;
   border-radius: 50%;
-  border: 1px dashed rgba(255, 255, 255, 0.10);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
 }
 
 .b360-ambient .b360-orbit-ring::before {
@@ -4187,19 +4187,33 @@ html.light .b360-adaptive-landing .b360-bento-grid .b360-pillar-tag,
   }
 
   @keyframes b360-drift-a {
-    from { transform: translate3d(0, 0, 0) scale(1); }
-    to { transform: translate3d(60px, 40px, 0) scale(1.12); }
+    from {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    to {
+      transform: translate3d(60px, 40px, 0) scale(1.12);
+    }
   }
   @keyframes b360-drift-b {
-    from { transform: translate3d(0, 0, 0) scale(1.08); }
-    to { transform: translate3d(-70px, 55px, 0) scale(0.96); }
+    from {
+      transform: translate3d(0, 0, 0) scale(1.08);
+    }
+    to {
+      transform: translate3d(-70px, 55px, 0) scale(0.96);
+    }
   }
   @keyframes b360-drift-c {
-    from { transform: translate3d(0, 0, 0) scale(0.95); }
-    to { transform: translate3d(50px, -45px, 0) scale(1.1); }
+    from {
+      transform: translate3d(0, 0, 0) scale(0.95);
+    }
+    to {
+      transform: translate3d(50px, -45px, 0) scale(1.1);
+    }
   }
   @keyframes b360-orbit-spin {
-    to { transform: translate(-50%, -50%) rotate(360deg); }
+    to {
+      transform: translate(-50%, -50%) rotate(360deg);
+    }
   }
 
   /* Coreografia do hero — entrada única autoral, staggered, ease-out exponencial */
@@ -4207,11 +4221,21 @@ html.light .b360-adaptive-landing .b360-bento-grid .b360-pillar-tag,
     opacity: 0;
     animation: b360-hero-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
-  .b360-hero .b360-hero-main > div:first-child > *:nth-child(1) { animation-delay: 0.05s; }
-  .b360-hero .b360-hero-main > div:first-child > *:nth-child(2) { animation-delay: 0.18s; }
-  .b360-hero .b360-hero-main > div:first-child > *:nth-child(3) { animation-delay: 0.30s; }
-  .b360-hero .b360-hero-main > div:first-child > *:nth-child(4) { animation-delay: 0.42s; }
-  .b360-hero .b360-hero-main > div:first-child > *:nth-child(5) { animation-delay: 0.54s; }
+  .b360-hero .b360-hero-main > div:first-child > *:nth-child(1) {
+    animation-delay: 0.05s;
+  }
+  .b360-hero .b360-hero-main > div:first-child > *:nth-child(2) {
+    animation-delay: 0.18s;
+  }
+  .b360-hero .b360-hero-main > div:first-child > *:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+  .b360-hero .b360-hero-main > div:first-child > *:nth-child(4) {
+    animation-delay: 0.42s;
+  }
+  .b360-hero .b360-hero-main > div:first-child > *:nth-child(5) {
+    animation-delay: 0.54s;
+  }
 
   .b360-hero .b360-hero-console {
     opacity: 0;
@@ -4220,12 +4244,28 @@ html.light .b360-adaptive-landing .b360-bento-grid .b360-pillar-tag,
   }
 
   @keyframes b360-hero-rise {
-    from { opacity: 0; transform: translateY(26px); filter: blur(8px); }
-    to { opacity: 1; transform: translateY(0); filter: blur(0); }
+    from {
+      opacity: 0;
+      transform: translateY(26px);
+      filter: blur(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
   }
   @keyframes b360-hero-console-in {
-    from { opacity: 0; transform: translateY(34px) scale(0.97); filter: blur(10px); }
-    to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    from {
+      opacity: 0;
+      transform: translateY(34px) scale(0.97);
+      filter: blur(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      filter: blur(0);
+    }
   }
 
   /* Entrada da tela de login — card emerge do fundo com blur suave */
@@ -4233,8 +4273,16 @@ html.light .b360-adaptive-landing .b360-bento-grid .b360-pillar-tag,
     animation: b360-login-card-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
   }
   @keyframes b360-login-card-in {
-    from { opacity: 0; transform: translateY(28px) scale(0.98); filter: blur(8px); }
-    to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    from {
+      opacity: 0;
+      transform: translateY(28px) scale(0.98);
+      filter: blur(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      filter: blur(0);
+    }
   }
 
   /* Scroll reveals — estado oculto só existe quando a animação pode rodar */
@@ -4245,8 +4293,14 @@ html.light .b360-adaptive-landing .b360-bento-grid .b360-pillar-tag,
     animation: b360-reveal-in 0.75s cubic-bezier(0.16, 1, 0.3, 1) backwards;
   }
   @keyframes b360-reveal-in {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
 

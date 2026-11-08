@@ -1065,7 +1065,9 @@ export function Landing360({
                       <strong className="b360-kpi-value text-[#00D4FF]">
                         <B360CountUp to={4280000} prefix="R$ " />
                       </strong>
-                      <span className="b360-kpi-trend text-emerald-400">Dados ilustrativos, não reais</span>
+                      <span className="b360-kpi-trend text-emerald-400">
+                        Dados ilustrativos, não reais
+                      </span>
                     </div>
                     <div className="b360-console-kpi">
                       <span className="b360-kpi-label">Oportunidades · simulação</span>
@@ -1079,7 +1081,9 @@ export function Landing360({
                       <strong className="b360-kpi-value text-[#FFC107]">
                         <B360CountUp to={94.2} decimals={1} suffix="%" />
                       </strong>
-                      <span className="b360-kpi-trend text-emerald-400">Exemplo de previsão ponderada</span>
+                      <span className="b360-kpi-trend text-emerald-400">
+                        Exemplo de previsão ponderada
+                      </span>
                     </div>
                     <div className="b360-console-kpi">
                       <span className="b360-kpi-label">Agentes · especificação V4</span>
@@ -1290,7 +1294,8 @@ export function Landing360({
                   <div className="b360-problem-kpi">
                     <TrendingUp className="w-4 h-4 text-[#00D4FF]" />
                     <span>
-                      <b>Benefício esperado:</b> menos retrabalho e preparação comercial contextualizada.
+                      <b>Benefício esperado:</b> menos retrabalho e preparação comercial
+                      contextualizada.
                     </span>
                   </div>
                 </article>
@@ -1350,7 +1355,8 @@ export function Landing360({
                   <div className="b360-problem-kpi">
                     <TrendingUp className="w-4 h-4 text-[#FFC107]" />
                     <span>
-                      <b>Benefício esperado:</b> acompanhamento de próximos passos conforme regras e SLAs.
+                      <b>Benefício esperado:</b> acompanhamento de próximos passos conforme regras e
+                      SLAs.
                     </span>
                   </div>
                 </article>
@@ -1678,11 +1684,7 @@ export function Landing360({
                 >
                   Simular ROI Comercial
                 </button>
-                <button
-                  type="button"
-                  onClick={handleGoToLogin}
-                  className="b360-hero-secondary-btn"
-                >
+                <button type="button" onClick={handleGoToLogin} className="b360-hero-secondary-btn">
                   Acessar Plataforma
                 </button>
               </div>
