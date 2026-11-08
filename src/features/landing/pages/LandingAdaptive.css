@@ -251,7 +251,7 @@
   font-weight: 800;
   line-height: 1.08;
   letter-spacing: -0.035em;
-  color: #ffffff;
+  color: #e8f2ff;
   margin-bottom: 24px;
 }
 
@@ -349,7 +349,7 @@
   font-size: clamp(30px, 3.2vw, 44px);
   font-weight: 800;
   letter-spacing: -0.03em;
-  color: #ffffff;
+  color: #e8f2ff;
   margin-bottom: 14px;
   line-height: 1.15;
 }
@@ -641,7 +641,7 @@
   font-family: var(--b360-font-display);
   font-size: 24px;
   font-weight: 700;
-  color: #ffffff;
+  color: #e8f2ff;
   margin-bottom: 10px;
 }
 
@@ -726,7 +726,7 @@
   font-family: var(--b360-font-display);
   font-size: 20px;
   font-weight: 700;
-  color: #ffffff;
+  color: #e8f2ff;
   margin: 0;
 }
 
@@ -754,7 +754,7 @@
   font-family: var(--b360-font-display);
   font-size: clamp(32px, 3.6vw, 48px);
   font-weight: 800;
-  color: #ffffff;
+  color: #e8f2ff;
   margin-bottom: 16px;
 }
 
@@ -855,7 +855,7 @@
   font-family: var(--b360-font-display);
   font-size: 34px;
   font-weight: 800;
-  color: #ffffff;
+  color: #e8f2ff;
   margin: 0;
 }
 
@@ -893,7 +893,7 @@
   font-family: var(--b360-font-display);
   font-size: 28px;
   font-weight: 700;
-  color: #ffffff;
+  color: #e8f2ff;
   margin: 10px 0;
 }
 
@@ -3254,9 +3254,6 @@ html.light .b360-adaptive-landing .b360-footer-col ul a:hover,
 
 /* Responsividade Mobile & Tablet */
 @media (max-width: 1024px) {
-  .b360-feature-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
   .b360-problem-grid,
   .b360-platform-grid {
     grid-template-columns: 1fr !important;
@@ -3274,9 +3271,6 @@ html.light .b360-adaptive-landing .b360-footer-col ul a:hover,
 }
 
 @media (max-width: 640px) {
-  .b360-feature-grid {
-    grid-template-columns: 1fr !important;
-  }
   .b360-footer-grid {
     grid-template-columns: 1fr !important;
   }
@@ -3284,5 +3278,767 @@ html.light .b360-adaptive-landing .b360-footer-col ul a:hover,
     flex-direction: column !important;
     gap: 12px !important;
     text-align: center !important;
+  }
+}
+
+/* ==========================================================================
+   FASE V2 — REFINAMENTO FINAL DO BENTO GRID (8 PILARES CINEMATOGRÁFICOS)
+   Preserva composição assimétrica 12 colunas, imagens de fundo reais,
+   gradientes, hierarquia, contraste WCAG AA e responsividade tablet/mobile.
+   ========================================================================== */
+
+.b360-pillars-stage {
+  position: relative;
+  margin: 56px 0;
+  padding: clamp(56px, 6vw, 88px) clamp(20px, 4vw, 44px);
+  border-radius: 36px;
+  overflow: hidden;
+  isolation: isolate;
+  background: #0a0c18;
+  border: 1px solid rgba(160, 195, 255, 0.14);
+  box-shadow: 0 32px 72px -32px rgba(4, 7, 18, 0.72);
+}
+
+.b360-stage-lights {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.b360-stage-lights::before,
+.b360-stage-lights::after {
+  content: "";
+  position: absolute;
+  width: 55%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  filter: blur(110px);
+}
+
+.b360-stage-lights::before {
+  left: -15%;
+  top: -20%;
+  background: #00d4ff;
+  opacity: 0.22;
+}
+
+.b360-stage-lights::after {
+  right: -15%;
+  bottom: -25%;
+  background: #ff2d9b;
+  opacity: 0.2;
+}
+
+.b360-pillars-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: clamp(24px, 4vw, 64px);
+  align-items: end;
+  margin-bottom: clamp(32px, 4.5vw, 52px);
+}
+
+.b360-pillars-head h2 {
+  font-family: var(--b360-font-display);
+  font-size: clamp(32px, 4.2vw, 54px);
+  font-weight: 800;
+  letter-spacing: -0.032em;
+  line-height: 1.06;
+  color: #e8f2ff;
+  margin: 14px 0 0;
+}
+
+.b360-grad-a {
+  background: linear-gradient(100deg, #00d4ff 0%, #8b7dff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.b360-pillars-head p {
+  color: #bdc9e8;
+  font-size: clamp(15.5px, 1.25vw, 18px);
+  line-height: 1.62;
+  max-width: 52ch;
+  margin: 0;
+}
+
+.b360-demo-disclaimer-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-family: var(--b360-font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9cebff;
+  background: rgba(0, 212, 255, 0.1);
+  border: 1px solid rgba(0, 212, 255, 0.32);
+}
+
+.b360-demo-disclaimer-banner::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffc107;
+  flex: none;
+}
+
+/* Bento Grid Assimétrico de 12 Colunas */
+.b360-feature-grid.b360-bento-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: repeat(4, 276px) 320px;
+  gap: 18px;
+}
+
+.b360-bento-grid .b360-feature-card {
+  --a: #00d4ff;
+  --b: #3b82f6;
+  --title-tone: #e4f7ff;
+  --sub-tone: #cedbf5;
+  position: relative;
+  min-height: 0;
+  border-radius: 28px;
+  padding: 22px 24px;
+  overflow: hidden;
+  isolation: isolate;
+  background-color: #0c1022;
+  border: 1px solid color-mix(in srgb, var(--a) 34%, rgba(232, 242, 255, 0.14));
+  color: var(--sub-tone);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+  cursor: pointer;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--a) 26%, transparent),
+    0 24px 50px -28px rgba(4, 7, 18, 0.82);
+  transition:
+    transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1),
+    box-shadow 0.45s ease,
+    border-color 0.35s ease;
+}
+
+.b360-bento-grid .b360-feature-card:hover,
+.b360-bento-grid .b360-feature-card:focus-visible {
+  transform: translateY(-4px) scale(1.01);
+  border-color: var(--a);
+  box-shadow:
+    0 0 0 1.5px color-mix(in srgb, var(--a) 72%, transparent),
+    0 26px 60px -22px color-mix(in srgb, var(--a) 52%, transparent);
+}
+
+/* Camadas visuais do card */
+.b360-bento-grid .b360-card-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  background-size: cover;
+  background-position: var(--bg-pos, center);
+  filter: saturate(1.12) contrast(1.06) brightness(0.96);
+  transform: scale(1.02);
+  transition: transform 0.85s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.b360-bento-grid .b360-feature-card:hover .b360-card-bg {
+  transform: scale(1.07);
+}
+
+.b360-bento-grid .b360-card-tint {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  mix-blend-mode: soft-light;
+  opacity: 0.64;
+  background: linear-gradient(140deg, var(--a), var(--b));
+  pointer-events: none;
+}
+
+.b360-bento-grid .b360-card-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      to top,
+      rgba(7, 10, 24, 0.96) 0%,
+      rgba(8, 12, 28, 0.8) 38%,
+      rgba(8, 12, 28, 0.2) 68%,
+      rgba(8, 12, 28, 0.05) 85%
+    ),
+    linear-gradient(to bottom, rgba(7, 10, 24, 0.5) 0%, rgba(7, 10, 24, 0) 26%),
+    linear-gradient(120deg, color-mix(in srgb, var(--a) 24%, transparent), transparent 55%);
+}
+
+.b360-bento-grid .b360-card-glow {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 85% 15%,
+    color-mix(in srgb, var(--a) 22%, transparent) 0%,
+    transparent 65%
+  );
+}
+
+.b360-bento-grid .b360-card-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.b360-bento-grid .b360-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 0;
+}
+
+.b360-bento-grid .b360-pillar-badge {
+  font-family: var(--b360-font-mono);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 7px 11px;
+  border-radius: 10px;
+  background: rgba(8, 12, 28, 0.84);
+  border: 1px solid color-mix(in srgb, var(--a) 68%, transparent);
+  color: var(--title-tone);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+.b360-bento-grid .b360-pillar-tag {
+  font-family: var(--b360-font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--title-tone);
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(8, 12, 28, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid color-mix(in srgb, var(--a) 45%, rgba(232, 242, 255, 0.22));
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  text-shadow: none;
+}
+
+.b360-bento-grid .b360-card-bottom {
+  display: grid;
+  gap: 8px;
+  z-index: 2;
+}
+
+.b360-bento-grid .b360-pillar-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--a), var(--b));
+  box-shadow: 0 8px 22px -6px var(--a);
+}
+
+.b360-bento-grid .b360-pillar-icon svg {
+  color: #090d1c !important;
+  width: 21px;
+  height: 21px;
+}
+
+.b360-bento-grid .b360-feature-card h3 {
+  font-family: var(--b360-font-display);
+  font-size: clamp(1.3rem, 1.72vw, 1.6rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+  color: var(--title-tone) !important;
+  margin: 0;
+  text-shadow: 0 2px 16px rgba(4, 7, 18, 0.78);
+}
+
+.b360-bento-grid .b360-feature-card.b360-bento-big h3 {
+  font-size: clamp(1.85rem, 2.75vw, 2.5rem);
+  line-height: 1.06;
+}
+
+.b360-bento-grid .b360-feature-card.b360-bento-tall h3 {
+  font-size: clamp(1.45rem, 2vw, 1.88rem);
+}
+
+.b360-bento-grid .b360-feature-card p {
+  font-size: 14.5px;
+  font-weight: 450;
+  line-height: 1.5;
+  color: var(--sub-tone) !important;
+  max-width: 48ch;
+  margin: 0;
+  text-shadow: 0 1px 12px rgba(4, 7, 18, 0.88);
+}
+
+.b360-bento-grid .b360-feature-card.b360-bento-big p,
+.b360-bento-grid .b360-feature-card.b360-bento-tall p {
+  font-size: 15px;
+}
+
+.b360-bento-grid .b360-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.b360-bento-grid .b360-card-kpi {
+  font-family: var(--b360-font-mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--title-tone);
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(8, 12, 28, 0.86);
+  border: 1px solid color-mix(in srgb, var(--a) 62%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+.b360-bento-grid .b360-card-kpi small {
+  font-weight: 600;
+  color: var(--a);
+  margin-right: 5px;
+  font-size: 11px;
+}
+
+.b360-bento-grid .b360-card-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 0;
+  font-family: var(--b360-font-display);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--title-tone) !important;
+  padding: 8px 13px;
+  border-radius: 999px;
+  background: rgba(12, 18, 40, 0.84);
+  border: 1px solid color-mix(in srgb, var(--a) 48%, rgba(232, 242, 255, 0.22));
+  backdrop-filter: blur(10px);
+  opacity: 1;
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.25s ease;
+}
+
+.b360-bento-grid .b360-card-action svg {
+  color: var(--a);
+  transition: transform 0.3s ease;
+}
+
+.b360-bento-grid .b360-feature-card:hover .b360-card-action {
+  background: rgba(16, 24, 52, 0.94);
+  border-color: var(--a);
+  transform: none;
+}
+
+.b360-bento-grid .b360-feature-card:hover .b360-card-action svg {
+  transform: translateX(4px);
+}
+
+/* Distribuição Assimétrica dos 8 Pilares e Identidade Cromática (Zero #FFF ou #000 puros) */
+.b360-bento-grid .b360-bento-p1 {
+  grid-column: 1 / 8;
+  grid-row: 1 / 3;
+  --a: #00d4ff;
+  --b: #3b82f6;
+  --title-tone: #e3f8ff;
+  --sub-tone: #c9e2f8;
+  --bg-pos: center 40%;
+}
+
+.b360-bento-grid .b360-bento-p2 {
+  grid-column: 8 / 13;
+  grid-row: 1 / 2;
+  --a: #ff2d9b;
+  --b: #ff7a59;
+  --title-tone: #ffe8f4;
+  --sub-tone: #e8cee0;
+  --bg-pos: center 35%;
+}
+
+.b360-bento-grid .b360-bento-p3 {
+  grid-column: 8 / 13;
+  grid-row: 2 / 3;
+  --a: #ffc107;
+  --b: #ff8a3d;
+  --title-tone: #fff5d9;
+  --sub-tone: #eadbc0;
+  --bg-pos: center 45%;
+}
+
+.b360-bento-grid .b360-bento-p4 {
+  grid-column: 1 / 5;
+  grid-row: 3 / 5;
+  --a: #8b7dff;
+  --b: #00d4ff;
+  --title-tone: #ede9ff;
+  --sub-tone: #d0ccf2;
+  --bg-pos: center 25%;
+}
+
+.b360-bento-grid .b360-bento-p5 {
+  grid-column: 5 / 9;
+  grid-row: 3 / 4;
+  --a: #19e3c8;
+  --b: #00d4ff;
+  --title-tone: #e2fbf7;
+  --sub-tone: #c5e8e4;
+  --bg-pos: center 30%;
+}
+
+.b360-bento-grid .b360-bento-p7 {
+  grid-column: 5 / 9;
+  grid-row: 4 / 5;
+  --a: #ffc107;
+  --b: #ff2d9b;
+  --title-tone: #fff3dc;
+  --sub-tone: #ebd8c4;
+  --bg-pos: center 50%;
+}
+
+.b360-bento-grid .b360-bento-p6 {
+  grid-column: 9 / 13;
+  grid-row: 3 / 5;
+  --a: #ff2d9b;
+  --b: #8b7dff;
+  --title-tone: #ffe9f6;
+  --sub-tone: #e6cce2;
+  --bg-pos: center 40%;
+}
+
+.b360-bento-grid .b360-bento-p8 {
+  grid-column: 1 / 13;
+  grid-row: 5 / 6;
+  --a: #8b7dff;
+  --b: #ff2d9b;
+  --title-tone: #efeaff;
+  --sub-tone: #d4cef2;
+  --bg-pos: center 38%;
+}
+
+.b360-bento-grid .b360-bento-p8 .b360-card-bottom {
+  max-width: 600px;
+}
+
+/* Widgets Flutuantes de Contexto nos Cards Maiores (01, 04, 06, 08) */
+.b360-p-float {
+  position: absolute;
+  z-index: 2;
+  border-radius: 16px;
+  padding: 12px 14px;
+  background: rgba(10, 14, 30, 0.8);
+  backdrop-filter: blur(14px);
+  border: 1px solid color-mix(in srgb, var(--a) 42%, rgba(232, 242, 255, 0.18));
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--sub-tone);
+  box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.75);
+}
+
+.b360-p-float b {
+  display: block;
+  font-family: var(--b360-font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--a);
+  margin-bottom: 6px;
+}
+
+.b360-pf1 {
+  right: 24px;
+  top: 76px;
+  width: 256px;
+}
+
+.b360-pf-row {
+  display: flex;
+  gap: 8px;
+}
+
+.b360-pf-row span {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(232, 242, 255, 0.07);
+  font-size: 11.5px;
+}
+
+.b360-pf-row em {
+  display: block;
+  font-style: normal;
+  color: var(--title-tone);
+  font-weight: 700;
+  font-family: var(--b360-font-mono);
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.b360-pf4,
+.b360-pf6 {
+  left: 24px;
+  right: 24px;
+  top: 76px;
+}
+
+.b360-pf-bar {
+  height: 7px;
+  border-radius: 7px;
+  background: rgba(232, 242, 255, 0.14);
+  overflow: hidden;
+  margin: 8px 0 6px;
+}
+
+.b360-pf-bar i {
+  display: block;
+  height: 100%;
+  width: 76%;
+  background: linear-gradient(90deg, var(--a), var(--b));
+  border-radius: 7px;
+}
+
+.b360-pf-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11.5px;
+}
+
+.b360-pf-meta strong {
+  color: var(--title-tone);
+  font-family: var(--b360-font-mono);
+  font-weight: 600;
+}
+
+.b360-pf8 {
+  right: 28px;
+  bottom: 24px;
+  width: 300px;
+}
+
+.b360-pf-wave {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 26px;
+  margin-top: 6px;
+}
+
+.b360-pf-wave i {
+  width: 3px;
+  height: var(--h, 12px);
+  border-radius: 3px;
+  background: linear-gradient(#00d4ff, #8b7dff);
+}
+
+/* ==========================================================================
+   BENTO GRID LIGHT MODE — MOLDURA EDITORIAL CLARA + IMAGENS PRESERVADAS
+   ========================================================================== */
+
+html:not(.dark) .b360-adaptive-landing .b360-pillars-stage,
+html.light .b360-adaptive-landing .b360-pillars-stage,
+[data-theme="light"] .b360-adaptive-landing .b360-pillars-stage {
+  background:
+    radial-gradient(48% 42% at 10% 10%, rgba(0, 212, 255, 0.18), transparent 70%),
+    radial-gradient(45% 42% at 90% 18%, rgba(255, 45, 155, 0.14), transparent 70%),
+    radial-gradient(50% 45% at 50% 100%, rgba(139, 125, 255, 0.16), transparent 72%),
+    linear-gradient(180deg, #e6eef9 0%, #eef3fc 50%, #e5edf9 100%);
+  border: 1px solid rgba(14, 27, 61, 0.11);
+  box-shadow:
+    inset 0 1px 0 rgba(248, 249, 255, 0.9),
+    0 30px 70px -45px rgba(20, 40, 90, 0.25);
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-pillars-head h2,
+html.light .b360-adaptive-landing .b360-pillars-head h2,
+[data-theme="light"] .b360-adaptive-landing .b360-pillars-head h2 {
+  color: #0e1b3d;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-grad-a,
+html.light .b360-adaptive-landing .b360-grad-a,
+[data-theme="light"] .b360-adaptive-landing .b360-grad-a {
+  background: linear-gradient(100deg, #006ba6 0%, #4e3cd6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-pillars-head p,
+html.light .b360-adaptive-landing .b360-pillars-head p,
+[data-theme="light"] .b360-adaptive-landing .b360-pillars-head p {
+  color: #24355c;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-demo-disclaimer-banner,
+html.light .b360-adaptive-landing .b360-demo-disclaimer-banner,
+[data-theme="light"] .b360-adaptive-landing .b360-demo-disclaimer-banner {
+  color: #005a8d;
+  background: rgba(0, 107, 166, 0.1);
+  border-color: rgba(0, 107, 166, 0.3);
+}
+
+/* Overlays Adaptativos no Light Mode: preserva a fotografia vibrante e legibilidade WCAG AA */
+html:not(.dark) .b360-adaptive-landing .b360-bento-grid .b360-feature-card,
+html.light .b360-adaptive-landing .b360-bento-grid .b360-feature-card,
+[data-theme="light"] .b360-adaptive-landing .b360-bento-grid .b360-feature-card {
+  background-color: #0c1022;
+  border-color: color-mix(in srgb, var(--a) 42%, rgba(14, 27, 61, 0.2));
+  box-shadow:
+    0 0 0 1.5px color-mix(in srgb, var(--a) 38%, rgba(14, 27, 61, 0.18)),
+    0 24px 52px -22px rgba(14, 27, 61, 0.42);
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-bento-grid .b360-card-bg,
+html.light .b360-adaptive-landing .b360-bento-grid .b360-card-bg,
+[data-theme="light"] .b360-adaptive-landing .b360-bento-grid .b360-card-bg {
+  filter: saturate(1.22) contrast(1.08) brightness(1.08);
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-bento-grid .b360-card-tint,
+html.light .b360-adaptive-landing .b360-bento-grid .b360-card-tint,
+[data-theme="light"] .b360-adaptive-landing .b360-bento-grid .b360-card-tint {
+  opacity: 0.46;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-bento-grid .b360-card-scrim,
+html.light .b360-adaptive-landing .b360-bento-grid .b360-card-scrim,
+[data-theme="light"] .b360-adaptive-landing .b360-bento-grid .b360-card-scrim,
+html:not(.dark) .b360-adaptive-landing .b360-bento-grid .b360-feature-card:hover .b360-card-scrim,
+html.light .b360-adaptive-landing .b360-bento-grid .b360-feature-card:hover .b360-card-scrim,
+[data-theme="light"]
+  .b360-adaptive-landing
+  .b360-bento-grid
+  .b360-feature-card:hover
+  .b360-card-scrim {
+  background:
+    linear-gradient(
+      to top,
+      rgba(9, 15, 36, 0.95) 0%,
+      rgba(10, 17, 40, 0.8) 36%,
+      rgba(10, 17, 40, 0.16) 66%,
+      rgba(10, 17, 40, 0.04) 84%
+    ),
+    linear-gradient(to bottom, rgba(9, 15, 36, 0.34) 0%, rgba(9, 15, 36, 0) 24%),
+    linear-gradient(125deg, color-mix(in srgb, var(--a) 22%, transparent), transparent 55%);
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-bento-grid .b360-pillar-badge,
+html.light .b360-adaptive-landing .b360-bento-grid .b360-pillar-badge,
+[data-theme="light"] .b360-adaptive-landing .b360-bento-grid .b360-pillar-badge {
+  background: rgba(8, 12, 28, 0.86);
+  border: 1px solid color-mix(in srgb, var(--a) 68%, transparent);
+  color: var(--title-tone);
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-bento-grid .b360-pillar-tag,
+html.light .b360-adaptive-landing .b360-bento-grid .b360-pillar-tag,
+[data-theme="light"] .b360-adaptive-landing .b360-bento-grid .b360-pillar-tag {
+  background: rgba(8, 12, 28, 0.82);
+  border: 1px solid color-mix(in srgb, var(--a) 45%, rgba(232, 242, 255, 0.22));
+  color: var(--title-tone);
+}
+
+/* Responsividade do Bento Grid: Tablet (<= 1100px) e Mobile (<= 760px) */
+@media (max-width: 1100px) {
+  .b360-pillars-head {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .b360-feature-grid.b360-bento-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    grid-template-rows: none !important;
+    grid-auto-rows: minmax(280px, auto);
+    gap: 16px;
+  }
+  .b360-bento-grid .b360-bento-p1 {
+    grid-column: 1 / 7;
+    grid-row: auto;
+    min-height: 410px;
+  }
+  .b360-bento-grid .b360-bento-p2,
+  .b360-bento-grid .b360-bento-p3,
+  .b360-bento-grid .b360-bento-p5,
+  .b360-bento-grid .b360-bento-p7 {
+    grid-column: span 3;
+    grid-row: auto;
+    min-height: 290px;
+  }
+  .b360-bento-grid .b360-bento-p4,
+  .b360-bento-grid .b360-bento-p6 {
+    grid-column: span 3;
+    grid-row: auto;
+    min-height: 390px;
+  }
+  .b360-bento-grid .b360-bento-p8 {
+    grid-column: 1 / 7;
+    grid-row: auto;
+    min-height: 340px;
+  }
+  .b360-pf8 {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .b360-pillars-stage {
+    padding: 36px 16px;
+    border-radius: 26px;
+  }
+  .b360-feature-grid.b360-bento-grid {
+    grid-template-columns: 1fr !important;
+    grid-auto-rows: auto;
+    gap: 16px;
+  }
+  .b360-bento-grid .b360-feature-card,
+  .b360-bento-grid .b360-bento-p1,
+  .b360-bento-grid .b360-bento-p2,
+  .b360-bento-grid .b360-bento-p3,
+  .b360-bento-grid .b360-bento-p4,
+  .b360-bento-grid .b360-bento-p5,
+  .b360-bento-grid .b360-bento-p6,
+  .b360-bento-grid .b360-bento-p7,
+  .b360-bento-grid .b360-bento-p8 {
+    grid-column: 1 / -1 !important;
+    min-height: 330px;
+    padding: 20px;
+  }
+  .b360-bento-grid .b360-bento-p1,
+  .b360-bento-grid .b360-bento-p8 {
+    min-height: 370px;
+  }
+  .b360-p-float {
+    display: none !important;
   }
 }

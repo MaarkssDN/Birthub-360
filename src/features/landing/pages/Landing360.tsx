@@ -52,34 +52,38 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { trackHeroRoiSimulatorOpened } from '@/lib/analytics/conversionTelemetry';
 import { authClient } from '@/lib/auth-client';
 import { SoundFX } from '@/lib/soundEffects';
-import { RoiSimulatorModal } from '../components/RoiSimulatorModal.js';
 import { PillarDetailModal } from '../components/PillarDetailModal.js';
+import { RoiSimulatorModal } from '../components/RoiSimulatorModal.js';
 import './LandingAdaptive.css';
 import './Landing360.css';
 
-// 8 PILARES ADAPTATIVOS
+// 8 PILARES ADAPTATIVOS (BENTO GRID REFINADO)
 const ADAPTIVE_PILLARS = [
   {
     num: '01',
+    bentoClass: 'b360-bento-p1 b360-bento-big',
     title: 'Hub comercial',
     desc: 'Centralize contas, pipeline e oportunidades em uma visão 360° de cada negociação.',
     bg: '/landing/assets/pillar-hub.jpg',
     colorClass: '',
     accentColor: '#00D4FF',
     tag: 'PIPELINE 360°',
-    kpi: 'R$ 4.2M em pipeline',
+    kpiPrefix: 'Simulação:',
+    kpi: 'R$ 4,2M pipeline',
     modalTitle: '01. Hub Comercial',
     modalDesc:
       'Centralização de contas, pipeline comercial unificado e visão 360° de cada oportunidade em negociação com rastreabilidade total.',
   },
   {
     num: '02',
+    bentoClass: 'b360-bento-p2',
     title: 'Inteligência de mercado',
     desc: 'Enriqueça dados B2B, identifique sinais de compra e qualifique decisores com precisão.',
     bg: '/landing/assets/pillar-market.jpg',
     colorClass: 'b360-c-pink',
     accentColor: '#FF2D9B',
     tag: 'ENRIQUECIMENTO B2B',
+    kpiPrefix: 'Simulação:',
     kpi: '96% Match ICP',
     modalTitle: '02. Inteligência de Mercado',
     modalDesc:
@@ -87,78 +91,90 @@ const ADAPTIVE_PILLARS = [
   },
   {
     num: '03',
+    bentoClass: 'b360-bento-p3',
     title: 'Orquestração de vendas',
     desc: 'Coordene cadências multicanal, passagem de bastão e a próxima ação de vendas.',
     bg: '/landing/assets/pillar-orchestration.jpg',
     colorClass: 'b360-c-gold',
     accentColor: '#FFC107',
     tag: 'CADÊNCIA MULTICANAL',
-    kpi: 'SLA < 15min',
+    kpiPrefix: 'Alvo SLA:',
+    kpi: '< 15 min',
     modalTitle: '03. Orquestração de Vendas',
     modalDesc:
       'Cadências coordenadas entre SDRs e Closers, regras claras de passagem de bastão e direcionamento para a próxima melhor ação.',
   },
   {
     num: '04',
+    bentoClass: 'b360-bento-p4 b360-bento-tall',
     title: 'Performance comercial',
     desc: 'Acompanhe conversão, velocidade do funil, metas e produtividade da equipe.',
     bg: '/landing/assets/pillar-performance.jpg',
     colorClass: 'b360-c-iris',
     accentColor: '#8B7DFF',
     tag: 'TELEMETRIA & METAS',
-    kpi: '+24.8% Conversão',
+    kpiPrefix: 'Simulação:',
+    kpi: '+24,8% conversão',
     modalTitle: '04. Performance Comercial',
     modalDesc:
       'Telemetria de conversão, velocidade de ciclo entre etapas, metas operacionais e produtividade da equipe em tempo real.',
   },
   {
     num: '05',
+    bentoClass: 'b360-bento-p5',
     title: 'Previsibilidade comercial',
     desc: 'Modele probabilidades, pipeline ponderado e cenários baseados no histórico real.',
     bg: '/landing/assets/pillar-forecast.jpg',
     colorClass: '',
     accentColor: '#00D4FF',
     tag: 'FORECAST PROBABILÍSTICO',
-    kpi: '94.2% Acurácia',
+    kpiPrefix: 'Simulação:',
+    kpi: '94,2% acurácia',
     modalTitle: '05. Previsibilidade Comercial',
     modalDesc:
       'Modelagem estatística de probabilidade, análise de pipeline ponderado e projeções de receita embasadas no histórico real.',
   },
   {
     num: '06',
+    bentoClass: 'b360-bento-p6 b360-bento-tall',
     title: 'Inteligência artificial',
     desc: 'Um copiloto conectado aos dados da empresa e ao contexto das negociações.',
     bg: '/landing/assets/pillar-ai.jpg',
     colorClass: 'b360-c-pink',
     accentColor: '#FF2D9B',
     tag: 'COPILOTO DE NEGOCIAÇÕES',
-    kpi: 'NBA em Tempo Real',
+    kpiPrefix: 'Modo:',
+    kpi: 'NBA em tempo real',
     modalTitle: '06. Inteligência Artificial',
     modalDesc:
       'Copiloto de negociações contextualizado com dados da organização, diagnóstico de entraves e recomendações acionáveis em tempo real.',
   },
   {
     num: '07',
+    bentoClass: 'b360-bento-p7',
     title: 'Automação & conectividade',
     desc: 'Sincronize CRMs, acione gatilhos e integre ferramentas por APIs e webhooks.',
     bg: '/landing/assets/pillar-automation.jpg',
     colorClass: 'b360-c-gold',
     accentColor: '#FFC107',
     tag: 'GATEWAY MULTI-CRM',
-    kpi: '12ms Latência',
+    kpiPrefix: 'Simulação:',
+    kpi: '~12 ms sync',
     modalTitle: '07. Automação & Conectividade Multi-CRM',
     modalDesc:
       'Sincronização bidirecional em tempo real via APIs abertas e webhooks com Bitrix24, Salesforce, HubSpot e Pipedrive.',
   },
   {
     num: '08',
+    bentoClass: 'b360-bento-p8 b360-bento-big',
     title: 'Engajamento comercial',
     desc: 'Reúna telefonia, interações e histórico de contatos em uma comunicação integrada.',
     bg: '/landing/assets/pillar-engagement.jpg',
     colorClass: 'b360-c-iris',
     accentColor: '#8B7DFF',
     tag: 'VOICEHUB & WHATSAPP',
-    kpi: 'Sentimento 94%',
+    kpiPrefix: 'Simulação:',
+    kpi: '94% sentimento',
     modalTitle: '08. Engajamento Comercial',
     modalDesc:
       'Telefonia em nuvem integrada, gravação, transcrição com IA, WhatsApp API oficial e linha do tempo omnichannel unificada.',
@@ -259,139 +275,59 @@ function renderPillarVisual(num: string) {
   switch (num) {
     case '01':
       return (
-        <div className="b360-micro-kanban" aria-hidden="true">
-          <div className="b360-kanban-col">
-            <span className="b360-kanban-tag">Qualificação</span>
-            <div className="b360-kanban-card">
-              <span className="b360-deal-name">Tech Corp</span>
-              <strong className="b360-deal-val text-[#00D4FF]">R$ 145k</strong>
-            </div>
-          </div>
-          <div className="b360-kanban-col">
-            <span className="b360-kanban-tag">Proposta</span>
-            <div className="b360-kanban-card b360-highlight">
-              <span className="b360-deal-name">Grupo Delta</span>
-              <strong className="b360-deal-val text-[#FF2D9B]">R$ 280k</strong>
-            </div>
-          </div>
-        </div>
-      );
-    case '02':
-      return (
-        <div className="b360-micro-dossier" aria-hidden="true">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="font-mono text-[10px] text-slate-400">CNPJ 42.108.902/0001-34</span>
-            <span className="b360-match-badge">96% ICP</span>
-          </div>
-          <div className="b360-dossier-row">
-            <span className="text-slate-300">Setor Saúde · 14 Decisores</span>
-            <CheckCircle2 className="w-3.5 h-3.5 text-[#00D4FF] shrink-0" />
-          </div>
-        </div>
-      );
-    case '03':
-      return (
-        <div className="b360-micro-cadence" aria-hidden="true">
-          <div className="b360-cadence-step done">
-            <span className="b360-cadence-dot" />
-            <span>D1: E-mail Executivo</span>
-          </div>
-          <div className="b360-cadence-step active">
-            <span className="b360-cadence-dot animate-ping" />
-            <span>D3: WhatsApp Oficial</span>
-          </div>
-          <div className="b360-cadence-step pending">
-            <span className="b360-cadence-dot" />
-            <span>D5: Reunião Closer (SLA 15m)</span>
+        <div className="b360-p-float b360-pf1" aria-hidden="true">
+          <b>Pipeline unificado · exemplo</b>
+          <div className="b360-pf-row">
+            <span>
+              Qualificação<em>R$ 145k</em>
+            </span>
+            <span>
+              Proposta<em>R$ 280k</em>
+            </span>
           </div>
         </div>
       );
     case '04':
       return (
-        <div className="b360-micro-telemetry" aria-hidden="true">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-xs text-slate-400 font-mono">Taxa de Conversão</span>
-            <span className="text-xs font-bold font-mono text-[#8B7DFF]">+24.8%</span>
+        <div className="b360-p-float b360-pf4" aria-hidden="true">
+          <b>Taxa de conversão · simulação</b>
+          <div className="b360-pf-bar">
+            <i />
           </div>
-          <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden mb-2">
-            <div className="h-full bg-gradient-to-r from-[#8B7DFF] to-[#00D4FF] rounded-full w-[74%]" />
-          </div>
-          <div className="flex justify-between text-[10px] font-mono text-slate-400">
-            <span>Ciclo: 18.2 dias</span>
-            <span>Meta: 114%</span>
-          </div>
-        </div>
-      );
-    case '05':
-      return (
-        <div className="b360-micro-forecast" aria-hidden="true">
-          <div className="b360-forecast-bars">
-            <div className="b360-fbar-item">
-              <span className="b360-fbar-lbl">Conservador</span>
-              <div className="b360-fbar-fill w-[55%] bg-slate-600" />
-              <strong className="b360-fbar-val">R$ 1.2M</strong>
-            </div>
-            <div className="b360-fbar-item">
-              <span className="b360-fbar-lbl">Provável</span>
-              <div className="b360-fbar-fill w-[78%] bg-[#00D4FF]" />
-              <strong className="b360-fbar-val text-[#00D4FF]">R$ 1.84M</strong>
-            </div>
-            <div className="b360-fbar-item">
-              <span className="b360-fbar-lbl">Otimista</span>
-              <div className="b360-fbar-fill w-[95%] bg-[#FF2D9B]" />
-              <strong className="b360-fbar-val text-[#FF2D9B]">R$ 2.40M</strong>
-            </div>
+          <div className="b360-pf-meta">
+            <span>Ciclo 18,2 dias</span>
+            <strong>+24,8%</strong>
           </div>
         </div>
       );
     case '06':
       return (
-        <div className="b360-micro-copilot" aria-hidden="true">
-          <div className="b360-copilot-pill">
-            <Sparkles className="w-3 h-3 text-[#FF2D9B]" />
-            <span>Objeção: "Preço acima do budget"</span>
-          </div>
-          <p className="b360-copilot-recommendation">
-            NBA: Enviar proposta parcelada com ROI garantido em 45 dias.
-          </p>
-        </div>
-      );
-    case '07':
-      return (
-        <div className="b360-micro-integrations" aria-hidden="true">
-          <div className="b360-integ-chip active">
-            <span className="b360-integ-led green" />
-            <span>Bitrix24 (12ms)</span>
-          </div>
-          <div className="b360-integ-chip active">
-            <span className="b360-integ-led green" />
-            <span>HubSpot Sync</span>
-          </div>
-          <div className="b360-integ-chip active">
-            <span className="b360-integ-led green" />
-            <span>Webhooks 0 falhas</span>
-          </div>
+        <div className="b360-p-float b360-pf6" aria-hidden="true">
+          <b>NBA · simulação contextual</b>
+          <span>Enviar proposta parcelada com ROI estimado em 45 dias.</span>
         </div>
       );
     case '08':
       return (
-        <div className="b360-micro-voice" aria-hidden="true">
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-1.5">
-              <PhoneCall className="w-3 h-3 text-[#8B7DFF]" />
-              <span className="font-mono text-[10px] text-slate-300">Chamada Transcrita</span>
-            </div>
-            <span className="b360-sentiment-badge">94% Positivo</span>
+        <div className="b360-p-float b360-pf8" aria-hidden="true">
+          <b>Chamada transcrita · exemplo</b>
+          <div className="b360-pf-meta">
+            <span>Sentimento simulado</span>
+            <strong>94% positivo</strong>
           </div>
-          <div className="b360-audio-wave">
-            <span style={{ height: '40%' }} />
-            <span style={{ height: '70%' }} />
-            <span style={{ height: '100%' }} />
-            <span style={{ height: '60%' }} />
-            <span style={{ height: '90%' }} />
-            <span style={{ height: '45%' }} />
-            <span style={{ height: '80%' }} />
-            <span style={{ height: '55%' }} />
+          <div className="b360-pf-wave">
+            <i style={{ '--h': '8px' } as React.CSSProperties} />
+            <i style={{ '--h': '16px' } as React.CSSProperties} />
+            <i style={{ '--h': '24px' } as React.CSSProperties} />
+            <i style={{ '--h': '12px' } as React.CSSProperties} />
+            <i style={{ '--h': '20px' } as React.CSSProperties} />
+            <i style={{ '--h': '26px' } as React.CSSProperties} />
+            <i style={{ '--h': '14px' } as React.CSSProperties} />
+            <i style={{ '--h': '22px' } as React.CSSProperties} />
+            <i style={{ '--h': '10px' } as React.CSSProperties} />
+            <i style={{ '--h': '18px' } as React.CSSProperties} />
+            <i style={{ '--h': '24px' } as React.CSSProperties} />
+            <i style={{ '--h': '12px' } as React.CSSProperties} />
           </div>
         </div>
       );
@@ -1028,7 +964,12 @@ export function Landing360({
                   <div className="b360-console-footer">
                     <div className="flex items-center gap-2 text-xs text-slate-300">
                       <Sparkles className="w-3.5 h-3.5 text-[#00D4FF]" />
-                      <span>Supervisor pronto para coordenar sua próxima missão de receita.</span>
+                      <span>
+                        Supervisor pronto ·{' '}
+                        <em className="not-italic opacity-80">
+                          Dados ilustrativos de demonstração
+                        </em>
+                      </span>
                     </div>
                     <button
                       type="button"
@@ -1042,24 +983,35 @@ export function Landing360({
               </div>
             </section>
 
-            {/* 8 Pilares */}
-            <section id="destaques">
-              <div className="b360-sectionhead">
-                <div className="b360-eyebrow">ARQUITETURA DE RECEITA</div>
-                <h2>Oito pilares. Uma operação conectada.</h2>
+            {/* 8 Pilares — Bento Cinematográfico Refinado */}
+            <section id="destaques" className="b360-pillars-stage">
+              <div className="b360-stage-lights" aria-hidden="true" />
+              <div className="b360-pillars-head">
+                <div>
+                  <div className="b360-eyebrow">ARQUITETURA DE RECEITA</div>
+                  <h2>
+                    Oito pilares.
+                    <br />
+                    <span className="b360-grad-a">Uma operação conectada.</span>
+                  </h2>
+                  <div className="b360-demo-disclaimer-banner">
+                    Cenário demonstrativo · Indicadores ilustrativos de simulação
+                  </div>
+                </div>
                 <p>
                   Da primeira oportunidade à decisão de receita, cada dimensão trabalha em conjunto
                   em uma esteira integrada.
                 </p>
               </div>
 
-              <div className="b360-feature-grid">
+              <div className="b360-feature-grid b360-bento-grid">
                 {ADAPTIVE_PILLARS.map((pillar) => (
                   <button
                     key={pillar.num}
                     type="button"
-                    className={`b360-feature-card ${pillar.colorClass}`}
+                    className={`b360-feature-card ${pillar.bentoClass} ${pillar.colorClass}`}
                     onClick={() => handleOpenModal(pillar.modalTitle, pillar.modalDesc, pillar.num)}
+                    aria-label={`Inspecionar capacidades: ${pillar.title}`}
                   >
                     {/* Imagem de Fundo Editorial com Leve Ampliação no Hover */}
                     <div
@@ -1067,6 +1019,9 @@ export function Landing360({
                       style={{ backgroundImage: `url('${pillar.bg}')` }}
                       aria-hidden="true"
                     />
+
+                    {/* Tonalização Cromática Editorial */}
+                    <div className="b360-card-tint" aria-hidden="true" />
 
                     {/* Gradiente Scrim de Proteção para Legibilidade Editorial */}
                     <div className="b360-card-scrim" aria-hidden="true" />
@@ -1082,20 +1037,28 @@ export function Landing360({
                     <div className="b360-card-content">
                       <div className="b360-card-header">
                         <span className="b360-pillar-badge">{pillar.num}</span>
-                        <div className="b360-pillar-icon">{renderPillarIcon(pillar.num)}</div>
                         <span className="b360-pillar-tag">{pillar.tag}</span>
                       </div>
 
-                      <div className="b360-card-visual">{renderPillarVisual(pillar.num)}</div>
+                      {renderPillarVisual(pillar.num)}
 
                       <div className="b360-card-bottom">
+                        {['01', '04', '06', '08'].includes(pillar.num) && (
+                          <div className="b360-pillar-icon">{renderPillarIcon(pillar.num)}</div>
+                        )}
                         <h3>
                           {pillar.num}. {pillar.title}
                         </h3>
                         <p>{pillar.desc}</p>
-                        <div className="b360-card-action">
-                          <span>Inspecionar capacidades</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
+                        <div className="b360-card-foot">
+                          <span className="b360-card-kpi">
+                            <small>{pillar.kpiPrefix}</small>
+                            {pillar.kpi}
+                          </span>
+                          <span className="b360-card-action">
+                            <span>Inspecionar capacidades</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </span>
                         </div>
                       </div>
                     </div>
