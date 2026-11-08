@@ -861,6 +861,151 @@
   color: #9cb3ce;
 }
 
+/* ── 14. CURSOR DE FOCO, RASTRO DE DADOS & INTERAÇÃO MAGNÉTICA ────── */
+
+/* Canvas para rastro de dados fotônicos e conexões de fibra óptica */
+.b360-data-stream-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9990;
+  display: block;
+}
+
+/* Ponto de foco óptico de precisão (substitui triângulo vazado ou cursores rígidos) */
+.b360-cursor-focus-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow:
+    0 0 8px #00d4ff,
+    0 0 16px rgba(0, 212, 255, 0.75),
+    0 0 24px rgba(255, 45, 155, 0.45);
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  will-change: transform, opacity;
+  margin-top: -2.5px;
+  margin-left: -2.5px;
+}
+
+/* Anel de foco óptico com abertura e reação tátil */
+.b360-cursor-focus-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 212, 255, 0.5);
+  background: radial-gradient(circle, rgba(0, 212, 255, 0.08) 0%, transparent 72%);
+  box-shadow: 0 0 14px rgba(0, 212, 255, 0.22);
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0;
+  will-change: transform, opacity;
+  margin-top: -13px;
+  margin-left: -13px;
+  transition:
+    width 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    height 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    margin-top 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    margin-left 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease,
+    opacity 0.25s ease;
+}
+
+/* Expansão do anel de foco ao pairar sobre itens interativos */
+.b360-cursor-focus-ring.b360-cursor-ring-active {
+  width: 44px;
+  height: 44px;
+  margin-top: -22px;
+  margin-left: -22px;
+  border-color: rgba(255, 45, 155, 0.7);
+  background: radial-gradient(circle, rgba(255, 45, 155, 0.12) 0%, transparent 75%);
+  box-shadow: 0 0 22px rgba(255, 45, 155, 0.38);
+}
+
+/* Sintonia magnética ao se aproximar de Inteligência de Mercado (P02 - Rosa Neon) */
+.b360-cursor-focus-ring.b360-cursor-magnetic-p2 {
+  border-color: rgba(255, 45, 155, 0.95);
+  box-shadow:
+    0 0 18px rgba(255, 45, 155, 0.65),
+    inset 0 0 8px rgba(255, 45, 155, 0.3);
+}
+
+/* Sintonia magnética ao se aproximar de Engajamento Comercial (P08 - Íris Violeta) */
+.b360-cursor-focus-ring.b360-cursor-magnetic-p8 {
+  border-color: rgba(139, 125, 255, 0.95);
+  box-shadow:
+    0 0 18px rgba(139, 125, 255, 0.65),
+    inset 0 0 8px rgba(139, 125, 255, 0.3);
+}
+
+/* Iluminação de Borda Glassmorphism Reativa (Contorno Magnético) */
+.b360-card-magnetic-rim {
+  position: absolute;
+  inset: -1.5px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  background: radial-gradient(
+    320px circle at var(--magnetic-x, 50%) var(--magnetic-y, 50%),
+    rgba(var(--magnetic-rgb, 0, 212, 255), calc(var(--magnetic-intensity, 0) * 0.9)) 0%,
+    transparent 68%
+  );
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  padding: 1.5px;
+}
+
+.b360-feature-card.b360-magnetic-lit .b360-card-magnetic-rim {
+  opacity: 1;
+}
+
+/* Brilho Cáustico Glassmorphism no Card Iluminado */
+.b360-feature-card.b360-magnetic-lit {
+  border-color: rgba(var(--magnetic-rgb, 0, 212, 255), calc(0.35 + var(--magnetic-intensity, 0) * 0.45));
+  box-shadow:
+    0 24px 50px -15px rgba(0, 0, 0, 0.6),
+    0 0 calc(32px * var(--magnetic-intensity, 1)) rgba(var(--magnetic-rgb, 0, 212, 255), calc(0.24 * var(--magnetic-intensity, 1))),
+    inset 0 0 20px rgba(var(--magnetic-rgb, 0, 212, 255), calc(0.08 * var(--magnetic-intensity, 1)));
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+/* Customização Específica para Inteligência de Mercado */
+.b360-bento-p2.b360-magnetic-lit {
+  --magnetic-rgb: 255, 45, 155;
+}
+
+/* Customização Específica para Engajamento Comercial */
+.b360-bento-p8.b360-magnetic-lit {
+  --magnetic-rgb: 139, 125, 255;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .b360-data-stream-canvas,
+  .b360-cursor-focus-dot,
+  .b360-cursor-focus-ring,
+  .b360-card-magnetic-rim {
+    display: none !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .b360-neon-halo-btn,
   .b360-neon-halo-btn::before,

@@ -2544,6 +2544,21 @@
       let width, height;
       let particles = [];
       const count = 48;
+      let mouse = { x: -999, y: -999, active: false };
+      let mouseTrail = [];
+
+      window.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+        mouse.active = true;
+        mouseTrail.push({ x: e.clientX, y: e.clientY, time: performance.now() });
+        if (mouseTrail.length > 18) mouseTrail.shift();
+      });
+
+      window.addEventListener('mouseleave', () => {
+        mouse.active = false;
+        mouseTrail = [];
+      });
 
       function resize() {
         width = canvas.width = window.innerWidth;
@@ -2595,6 +2610,44 @@
               ctx.stroke();
             }
           }
+
+          // Conexão neural suave com o cursor do mouse (gradiente azul/rosa)
+          if (mouse.active) {
+            const mdx = p.x - mouse.x;
+            const mdy = p.y - mouse.y;
+            const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
+            if (mdist < 140) {
+              const grad = ctx.createLinearGradient(mouse.x, mouse.y, p.x, p.y);
+              const mAlpha = 0.35 * (1 - mdist / 140);
+              grad.addColorStop(0, `rgba(0, 212, 255, ${mAlpha})`);
+              grad.addColorStop(1, `rgba(255, 45, 155, ${mAlpha * 0.8})`);
+              ctx.beginPath();
+              ctx.moveTo(mouse.x, mouse.y);
+              ctx.lineTo(p.x, p.y);
+              ctx.strokeStyle = grad;
+              ctx.lineWidth = 0.8;
+              ctx.stroke();
+            }
+          }
+        }
+
+        // Rastro de fibra óptica do mouse
+        if (mouse.active && mouseTrail.length > 2) {
+          for (let k = 0; k < mouseTrail.length - 1; k++) {
+            const ptA = mouseTrail[k];
+            const ptB = mouseTrail[k + 1];
+            const progress = k / mouseTrail.length;
+            const grad = ctx.createLinearGradient(ptA.x, ptA.y, ptB.x, ptB.y);
+            grad.addColorStop(0, `rgba(0, 212, 255, ${0.4 * progress})`);
+            grad.addColorStop(1, `rgba(255, 45, 155, ${0.35 * progress})`);
+            ctx.beginPath();
+            ctx.moveTo(ptA.x, ptA.y);
+            ctx.lineTo(ptB.x, ptB.y);
+            ctx.strokeStyle = grad;
+            ctx.lineWidth = 1.0 + progress * 0.8;
+            ctx.stroke();
+          }
+        }
         }
         requestAnimationFrame(renderFrame);
       }

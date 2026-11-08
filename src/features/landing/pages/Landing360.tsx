@@ -57,6 +57,7 @@ import { authClient } from '@/lib/auth-client';
 import { SoundFX } from '@/lib/soundEffects';
 import {
   B360AmbientFX,
+  B360DataStreamCursor,
   B360CountUp,
   B360FloatingNodes,
   B360NeonButton,
@@ -889,7 +890,12 @@ export function Landing360({
         theme === 'dark' ? 'bg-[#06111e] text-slate-100' : 'bg-[#F8FAFC] text-slate-800'
       }`}
     >
-      {activeScreen === 'intro' && <B360ScrollProgress />}
+      {activeScreen === 'intro' && (
+        <>
+          <B360ScrollProgress />
+          <B360DataStreamCursor />
+        </>
+      )}
       {/* ════════════════════════════════════════════════════════════════════
           TELA 1: LANDING ADAPTADA & COMMAND CENTER INTERATIVO
       ════════════════════════════════════════════════════════════════════ */}
@@ -1178,6 +1184,7 @@ export function Landing360({
                   <button
                     key={pillar.num}
                     type="button"
+                    data-pillar={pillar.num}
                     className={`b360-feature-card ${pillar.bentoClass} ${pillar.colorClass}`}
                     onClick={() => handleOpenModal(pillar.modalTitle, pillar.modalDesc, pillar.num)}
                     aria-label={`Inspecionar capacidades: ${pillar.title}`}
@@ -1208,6 +1215,9 @@ export function Landing360({
                       style={{ '--card-accent': pillar.accentColor } as React.CSSProperties}
                       aria-hidden="true"
                     />
+
+                    {/* Contorno Magnético Glassmorphism Reativo */}
+                    <div className="b360-card-magnetic-rim" aria-hidden="true" />
 
                     {/* Conteúdo do Card em Camada Superior */}
                     <div className="b360-card-content">
