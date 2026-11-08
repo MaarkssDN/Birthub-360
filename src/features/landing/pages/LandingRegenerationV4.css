@@ -135,23 +135,47 @@
   min-width: 0;
 }
 
-.b360-adaptive-landing .b360-hero .b360-eyebrow {
-  margin-bottom: 22px;
-  background: rgba(0, 212, 255, 0.1) !important;
-  color: #87e9ff !important;
-  border-color: rgba(0, 212, 255, 0.3) !important;
+.b360-adaptive-landing .b360-hero .b360-eyebrow,
+.b360-adaptive-landing .b360-pillars-stage .b360-eyebrow,
+.b360-adaptive-landing .b360-section .b360-eyebrow {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  font-family: var(--b360-font-mono, "IBM Plex Mono", monospace) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.24em !important;
+  text-transform: uppercase !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  margin-bottom: 18px !important;
+  color: #00d4ff !important;
+}
+
+.b360-adaptive-landing .b360-hero .b360-eyebrow::before,
+.b360-adaptive-landing .b360-pillars-stage .b360-eyebrow::before,
+.b360-adaptive-landing .b360-section .b360-eyebrow::before {
+  content: "✦";
+  font-size: 11px;
+  color: #00d4ff;
+  filter: drop-shadow(0 0 8px rgba(0, 212, 255, 0.7));
 }
 
 .b360-adaptive-landing .b360-hero-title {
   display: flex;
   flex-direction: column;
-  gap: clamp(6px, 0.9vw, 13px);
-  margin: 0 0 27px;
-  max-width: 780px;
+  gap: clamp(8px, 1.2vw, 18px);
+  margin: 0 0 32px;
+  max-width: 860px;
+  font-family: var(--b360-font-display, "Sora", sans-serif);
   font-weight: 800;
-  font-size: clamp(33px, 3.7vw, 62px);
-  line-height: 1.13;
-  letter-spacing: -0.045em;
+  font-size: clamp(40px, 5.2vw, 74px) !important;
+  line-height: 1.08 !important;
+  letter-spacing: -0.035em !important;
   overflow-wrap: normal;
   word-break: normal;
 }
@@ -159,27 +183,72 @@
 .b360-adaptive-landing .b360-hero-title .b360-hero-line {
   display: block;
   width: 100%;
-  color: #79e7ff !important;
   text-wrap: balance;
+  background: linear-gradient(135deg, #ffffff 0%, #a5f3fc 25%, #00d4ff 60%, #0284c7 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  filter: drop-shadow(0 0 32px rgba(0, 212, 255, 0.45)) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.55)) !important;
 }
 
 .b360-adaptive-landing .b360-hero-title .b360-hero-line-iris {
-  color: #b0a0ff !important;
+  background: linear-gradient(135deg, #ffffff 0%, #e9d5ff 25%, #a855f7 60%, #7c3aed 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  filter: drop-shadow(0 0 32px rgba(168, 85, 247, 0.45)) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.55)) !important;
 }
 
 .b360-adaptive-landing .b360-hero-title .b360-hero-line-gold {
-  color: #ffd467 !important;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef08a 25%, #f59e0b 60%, #d97706 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  filter: drop-shadow(0 0 32px rgba(245, 158, 11, 0.45)) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.55)) !important;
+}
+
+/* Modo Claro: Títulos cromáticos profundos de alta saturação (NUNCA PRETO) */
+html:not(.dark) .b360-adaptive-landing .b360-hero-title .b360-hero-line,
+html.light .b360-adaptive-landing .b360-hero-title .b360-hero-line,
+[data-theme="light"] .b360-adaptive-landing .b360-hero-title .b360-hero-line {
+  background: linear-gradient(135deg, #0369a1 0%, #0284c7 45%, #0099cc 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  filter: drop-shadow(0 2px 10px rgba(2, 132, 199, 0.25)) !important;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-hero-title .b360-hero-line-iris,
+html.light .b360-adaptive-landing .b360-hero-title .b360-hero-line-iris,
+[data-theme="light"] .b360-adaptive-landing .b360-hero-title .b360-hero-line-iris {
+  background: linear-gradient(135deg, #6b21a8 0%, #7c3aed 45%, #4f46e5 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  filter: drop-shadow(0 2px 10px rgba(124, 58, 237, 0.25)) !important;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-hero-title .b360-hero-line-gold,
+html.light .b360-adaptive-landing .b360-hero-title .b360-hero-line-gold,
+[data-theme="light"] .b360-adaptive-landing .b360-hero-title .b360-hero-line-gold {
+  background: linear-gradient(135deg, #b45309 0%, #d97706 45%, #ea580c 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  filter: drop-shadow(0 2px 10px rgba(217, 119, 6, 0.25)) !important;
+}
+
+.b360-words-wrap {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.28em;
+}
+
+.b360-word-item {
+  display: inline-flex;
+  align-items: baseline;
+  white-space: nowrap;
 }
 
 .b360-adaptive-landing .b360-word {
   display: inline-block;
   white-space: nowrap;
-  text-shadow: none;
   letter-spacing: inherit;
-}
-
-.b360-adaptive-landing .b360-word:not(:last-child) {
-  margin-inline-end: 0.24em;
 }
 
 .b360-adaptive-landing .b360-hero-main > div:first-child > p {
@@ -377,9 +446,21 @@
 }
 
 .b360-adaptive-landing .b360-pillars-head h2 {
-  font-size: clamp(30px, 4vw, 55px);
-  line-height: 1.12;
-  color: #88e7ff !important;
+  font-size: clamp(34px, 4.4vw, 62px) !important;
+  line-height: 1.1 !important;
+  background: linear-gradient(135deg, #ffffff 0%, #a5f3fc 30%, #38bdf8 70%, #00d4ff 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  filter: drop-shadow(0 0 24px rgba(0, 212, 255, 0.35)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)) !important;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-pillars-head h2,
+html.light .b360-adaptive-landing .b360-pillars-head h2,
+[data-theme="light"] .b360-adaptive-landing .b360-pillars-head h2 {
+  background: linear-gradient(135deg, #0c4a6e 0%, #0284c7 45%, #1d4ed8 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  filter: drop-shadow(0 2px 8px rgba(2, 132, 199, 0.2)) !important;
 }
 
 .b360-adaptive-landing .b360-pillars-head p {
@@ -584,10 +665,22 @@
   margin: 0 auto clamp(25px, 3.5vw, 46px);
 }
 .b360-adaptive-landing .b360-sectionhead h2 {
-  font-size: clamp(27px, 3vw, 43px);
-  line-height: 1.18;
-  color: var(--v4-ink) !important;
-  margin-bottom: 14px;
+  font-size: clamp(32px, 3.8vw, 52px) !important;
+  line-height: 1.14 !important;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #ffffff 0%, #bae6fd 30%, #38bdf8 70%, #00d4ff 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  filter: drop-shadow(0 0 24px rgba(0, 212, 255, 0.35)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)) !important;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-sectionhead h2,
+html.light .b360-adaptive-landing .b360-sectionhead h2,
+[data-theme="light"] .b360-adaptive-landing .b360-sectionhead h2 {
+  background: linear-gradient(135deg, #0c4a6e 0%, #0284c7 45%, #1d4ed8 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  filter: drop-shadow(0 2px 8px rgba(2, 132, 199, 0.2)) !important;
 }
 .b360-adaptive-landing .b360-sectionhead p {
   color: var(--v4-body) !important;
