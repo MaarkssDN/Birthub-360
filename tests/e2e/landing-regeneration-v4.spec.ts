@@ -37,8 +37,12 @@ test.describe('Birthub 360 — Landing Regeneration V4', () => {
     await expect(cards).toHaveCount(11);
     await expect(cards.first()).toBeVisible();
     await expect(page.locator('.b360-gravity-section')).toHaveCount(0);
-    await expect(page.locator('.b360-fan-deck')).toHaveCount(0);
+    await expect(page.locator('.b360-fanned-container')).toHaveCount(0);
 
+    for (const section of await page.locator('.b360-section').all()) {
+      await section.scrollIntoViewIfNeeded();
+    }
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
     await test.info().attach('landing-v4-desktop', {
       body: await page.screenshot({ fullPage: true }),
       contentType: 'image/png',
@@ -66,6 +70,10 @@ test.describe('Birthub 360 — Landing Regeneration V4', () => {
       expect(opacity).toBe('1');
     }
 
+    for (const section of await page.locator('.b360-section').all()) {
+      await section.scrollIntoViewIfNeeded();
+    }
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
     await test.info().attach('landing-v4-mobile', {
       body: await page.screenshot({ fullPage: true }),
       contentType: 'image/png',
