@@ -57,13 +57,19 @@ import { authClient } from '@/lib/auth-client';
 import { SoundFX } from '@/lib/soundEffects';
 import {
   B360AmbientFX,
-  B360DataStreamCursor,
   B360CountUp,
+  B360DataStreamCursor,
+  B360DecryptBlock,
   B360FloatingNodes,
   B360NeonButton,
   B360ScrollProgress,
+  B360UnifiedPipelineFlow,
   B360Words,
   useB360CardTilt,
+  useB360MagneticAttraction,
+  useB360ScrollParallax,
+  useB360ScrollVelocityInertia,
+  useB360SectionProgress,
 } from '../components/CinematicFX.js';
 import { PillarDetailModal } from '../components/PillarDetailModal.js';
 import { RoiSimulatorModal } from '../components/RoiSimulatorModal.js';
@@ -514,6 +520,10 @@ export function Landing360({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const reduceMotion = useReducedMotion();
   useB360CardTilt([viewMode, activeScreen]);
+  useB360ScrollParallax();
+  useB360ScrollVelocityInertia();
+  useB360MagneticAttraction('.b360-integration-card', 0.16, 170);
+  const { isIntersecting: isProblemIntersecting } = useB360SectionProgress('problema');
 
   // Sincronizar activeScreen com a rota ativa
   useEffect(() => {
@@ -1274,7 +1284,11 @@ export function Landing360({
                     <span className="b360-problem-tag">SILOS DE INFORMAÇÃO</span>
                     <span className="b360-problem-icon">❌</span>
                   </div>
-                  <h3>Chega de silos operacionais</h3>
+                  <B360DecryptBlock
+                    text="Chega de silos operacionais"
+                    active={isProblemIntersecting}
+                    delayMs={0}
+                  />
                   <div className="b360-problem-body">
                     <div className="b360-problem-row">
                       <span className="b360-label-flag red">Problema</span>
@@ -1305,7 +1319,11 @@ export function Landing360({
                     <span className="b360-problem-tag">DECISÕES TARDIAS</span>
                     <span className="b360-problem-icon">❌</span>
                   </div>
-                  <h3>Decisões no tempo certo</h3>
+                  <B360DecryptBlock
+                    text="Decisões no tempo certo"
+                    active={isProblemIntersecting}
+                    delayMs={180}
+                  />
                   <div className="b360-problem-body">
                     <div className="b360-problem-row">
                       <span className="b360-label-flag red">Problema</span>
@@ -1335,7 +1353,11 @@ export function Landing360({
                     <span className="b360-problem-tag">OPORTUNIDADES NO ESCURO</span>
                     <span className="b360-problem-icon">❌</span>
                   </div>
-                  <h3>Nenhuma oportunidade no escuro</h3>
+                  <B360DecryptBlock
+                    text="Nenhuma oportunidade no escuro"
+                    active={isProblemIntersecting}
+                    delayMs={360}
+                  />
                   <div className="b360-problem-body">
                     <div className="b360-problem-row">
                       <span className="b360-label-flag red">Problema</span>
@@ -1637,6 +1659,9 @@ export function Landing360({
                   sua empresa já utiliza.
                 </p>
               </div>
+
+              {/* Visualização de Pipeline Unificado — Fluxo de Pacotes Luminosos com Desvio Fluido */}
+              <B360UnifiedPipelineFlow />
 
               <div className="b360-integrations">
                 {ADAPTIVE_INTEGRATIONS.map((integ) => (

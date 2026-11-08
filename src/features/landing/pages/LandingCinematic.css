@@ -1090,6 +1090,209 @@
   --magnetic-rgb: 139, 125, 255;
 }
 
+/* ── 15. PIPELINE UNIFICADO & ECOSSISTEMA COM MAGNETISMO CONTROLADO ────── */
+
+.b360-unified-pipeline-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 360px;
+  margin: 32px 0 24px;
+  border-radius: 24px;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 50%, rgba(11, 20, 42, 0.75) 0%, rgba(6, 11, 24, 0.96) 100%);
+  border: 1px solid rgba(0, 212, 255, 0.22);
+  box-shadow:
+    0 24px 60px -20px rgba(0, 0, 0, 0.7),
+    inset 0 0 45px rgba(0, 212, 255, 0.06);
+}
+
+.b360-unified-pipeline-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+.b360-pipeline-hud-overlay {
+  position: absolute;
+  top: 16px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 2;
+  font-family: var(--b360-font-mono, monospace);
+  font-size: 11px;
+}
+
+.b360-pipeline-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: rgba(0, 212, 255, 0.12);
+  border: 1px solid rgba(0, 212, 255, 0.35);
+  color: #00d4ff;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.b360-pipeline-kpi {
+  color: #94a3b8;
+}
+
+.b360-pipeline-kpi strong {
+  color: #e8f2ff;
+  font-weight: 700;
+}
+
+/* ── 16. ATRAÇÃO MAGNÉTICA EM CARDS DO ECOSSISTEMA ──────────────────────── */
+
+.b360-integration-card {
+  transition:
+    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.25s ease,
+    box-shadow 0.25s ease !important;
+  will-change: transform;
+}
+
+.b360-integration-card:hover {
+  border-color: rgba(0, 212, 255, 0.65) !important;
+  box-shadow:
+    0 16px 36px -10px rgba(0, 212, 255, 0.25),
+    0 0 20px rgba(0, 212, 255, 0.15) !important;
+}
+
+/* ── 17. LEVITAÇÃO ESTRUTURAL & INÉRCIA ROTACIONAL (GPU ONLY) ───────────── */
+
+@media (prefers-reduced-motion: no-preference) {
+  .b360-hero-console {
+    animation: b360-structural-levitate 7s ease-in-out infinite alternate !important;
+    transform: translate3d(0, var(--parallax-y, 0px), 0) rotateX(var(--scroll-tilt, 0deg));
+    will-change: transform;
+  }
+
+  .b360-fanned-card {
+    transform: translate3d(var(--card-tx, 0px), calc(var(--card-ty, 0px) + var(--parallax-y, 0px)), 0)
+      rotateZ(var(--card-rot, 0deg)) rotateX(var(--scroll-tilt, 0deg));
+    will-change: transform;
+  }
+
+  .b360-problem-card {
+    transform: rotateX(var(--scroll-tilt, 0deg));
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+  }
+}
+
+@keyframes b360-structural-levitate {
+  0% {
+    transform: translate3d(0, calc(var(--parallax-y, 0px) + 0px), 0) rotateX(var(--scroll-tilt, 0deg));
+    box-shadow:
+      0 20px 48px rgba(0, 0, 0, 0.5),
+      0 0 24px rgba(0, 212, 255, 0.15);
+  }
+  50% {
+    transform: translate3d(0, calc(var(--parallax-y, 0px) - 8px), 0) rotateX(var(--scroll-tilt, 0deg));
+    box-shadow:
+      0 28px 58px rgba(0, 0, 0, 0.6),
+      0 0 34px rgba(0, 212, 255, 0.24);
+  }
+  100% {
+    transform: translate3d(0, calc(var(--parallax-y, 0px) + 0px), 0) rotateX(var(--scroll-tilt, 0deg));
+    box-shadow:
+      0 20px 48px rgba(0, 0, 0, 0.5),
+      0 0 24px rgba(0, 212, 255, 0.15);
+  }
+}
+
+/* ── 18. AURORA DINÂMICA (DIGITAL LAVA LAMP AI REACTION) ─────────────────── */
+
+@media (prefers-reduced-motion: no-preference) {
+  .b360-ambient .b360-orb-a {
+    transform: translate3d(0, var(--scroll-shift-y, 0px), 0);
+    animation: b360-lavalamp-morph 18s ease-in-out infinite alternate !important;
+    will-change: transform, border-radius;
+  }
+
+  .b360-ambient .b360-orb-b {
+    transform: translate3d(0, var(--scroll-shift-y, 0px), 0);
+    animation: b360-lavalamp-morph 22s ease-in-out infinite alternate-reverse !important;
+    will-change: transform, border-radius;
+  }
+}
+
+@keyframes b360-lavalamp-morph {
+  0% {
+    border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+    opacity: 0.45;
+    filter: blur(85px);
+  }
+  33% {
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+    opacity: 0.58;
+    filter: blur(95px);
+  }
+  66% {
+    border-radius: 35% 65% 55% 45% / 40% 60% 40% 60%;
+    opacity: 0.48;
+    filter: blur(90px);
+  }
+  100% {
+    border-radius: 50% 50% 40% 60% / 55% 45% 65% 35%;
+    opacity: 0.55;
+    filter: blur(100px);
+  }
+}
+
+/* ── 19. REVELAÇÃO POR INTERSEÇÃO & MÁSCARA DE VIDRO FOSCO ───────────────── */
+
+.b360-decrypt-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.b360-blur-sweep-mask {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.15) 45%,
+    rgba(0, 212, 255, 0.35) 50%,
+    transparent 100%
+  );
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transform: translateX(-100%);
+  opacity: 0;
+  z-index: 4;
+}
+
+.b360-blur-sweep-active .b360-blur-sweep-mask {
+  animation: b360-blur-sweep 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes b360-blur-sweep {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(110%);
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .b360-data-stream-canvas,
   .b360-cursor-focus-dot,

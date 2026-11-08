@@ -462,7 +462,15 @@ const GRAVITY_NODES_DATA = [
   { label: 'Bitrix24 Realtime', sublabel: 'Sync Bidirecional', color: '#00D4FF' },
 ];
 
+export {
+  B360DecryptBlock,
+  useB360MagneticAttraction,
+  useB360ScrollParallax,
+  useB360ScrollVelocityInertia,
+  useB360SectionProgress,
+} from './B360CinematicEngine.js';
 export { B360DataStreamCursor } from './B360DataStreamCursor.js';
+export { B360UnifiedPipelineFlow } from './B360UnifiedPipelineFlow.js';
 
 export function B360FloatingGravityNodes() {
   const containerRef = useRef<HTMLDivElement | null>(null);
