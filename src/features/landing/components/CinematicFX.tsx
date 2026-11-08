@@ -274,17 +274,17 @@ export function B360Words({
   const isTest = typeof process !== 'undefined' && process.env?.NODE_ENV === 'test';
   if (reduceMotion || isTest) return <span className={className}>{text}</span>;
   const words = text.split(/\s+/).filter(Boolean);
-  if (reduceMotion) return <span className={className}>{text}</span>;
   return (
-    <span className={className}>
+    <span className={`b360-words-wrap ${className}`.trim()}>
       {words.map((w, i) => (
-        <span
-          key={`${w}-${i}`}
-          className="b360-word"
-          style={{ animationDelay: `${baseDelay + i * step}ms` }}
-        >
-          {w}
-          {i < words.length - 1 ? ' ' : ''}
+        <span key={`${w}-${i}`} className="b360-word-item">
+          <span
+            className="b360-word"
+            style={{ animationDelay: `${baseDelay + i * step}ms` }}
+          >
+            {w}
+          </span>
+          {i < words.length - 1 ? '\u00A0' : null}
         </span>
       ))}
     </span>

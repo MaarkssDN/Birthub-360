@@ -61,13 +61,17 @@ export function B360UnifiedPipelineFlow() {
     }
     if (!ctx) return;
 
-    let width = (canvas.width = container.clientWidth);
-    let height = (canvas.height = Math.max(340, container.clientHeight));
+    canvas.width = container.clientWidth;
+    let width = canvas.width;
+    canvas.height = Math.max(340, container.clientHeight);
+    let height = canvas.height;
 
     const onResize = () => {
       if (!container || !canvas) return;
-      width = canvas.width = container.clientWidth;
-      height = canvas.height = Math.max(340, container.clientHeight);
+      canvas.width = container.clientWidth;
+      width = canvas.width;
+      canvas.height = Math.max(340, container.clientHeight);
+      height = canvas.height;
     };
     window.addEventListener('resize', onResize, { passive: true });
 
@@ -129,7 +133,7 @@ export function B360UnifiedPipelineFlow() {
       const centerY = height / 2;
 
       // 1. Desenho das Linhas Guia dos Conectores (Streamlines)
-      SOURCES.forEach((source, idx) => {
+      SOURCES.forEach((source) => {
         const startX = source.side === 'left' ? 40 : width - 40;
         const startY = centerY + source.yOffset * (height * 0.38);
 
@@ -300,7 +304,10 @@ export function B360UnifiedPipelineFlow() {
 
   if (reduceMotion) {
     return (
-      <div className="b360-pipeline-static-panel" aria-label="Visualização de Pipeline Integrado">
+      <section
+        className="b360-pipeline-static-panel"
+        aria-label="Visualização de Pipeline Integrado"
+      >
         <div className="flex items-center justify-between p-4 bg-slate-900/80 rounded-2xl border border-slate-700/60">
           <span className="font-mono text-xs text-sky-400 font-bold uppercase">
             ✦ Pipeline Unificado · Operação 360° em Tempo Real
@@ -309,15 +316,14 @@ export function B360UnifiedPipelineFlow() {
             Conectores Ativos: Bitrix24, HubSpot, Salesforce, WhatsApp, VoiceHub
           </span>
         </div>
-      </div>
+      </section>
     );
   }
 
   return (
-    <div
+    <section
       ref={containerRef}
       className="b360-unified-pipeline-wrapper"
-      role="region"
       aria-label="Fluxo Interativo de Pipeline Unificado e Conectores do Ecossistema"
     >
       <div className="b360-pipeline-hud-overlay">
@@ -330,6 +336,6 @@ export function B360UnifiedPipelineFlow() {
         </span>
       </div>
       <canvas ref={canvasRef} className="b360-unified-pipeline-canvas" />
-    </div>
+    </section>
   );
 }
