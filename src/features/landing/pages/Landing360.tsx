@@ -68,6 +68,7 @@ import { RoiSimulatorModal } from '../components/RoiSimulatorModal.js';
 import './LandingAdaptive.css';
 import './Landing360.css';
 import './LandingCinematic.css';
+import './LandingRegenerationV4.css';
 
 // 11 MÓDULOS ADAPTATIVOS (8 Pilares Centrais + 3 Complementares — BENTO GRID REFINADO)
 const ADAPTIVE_PILLARS = [
