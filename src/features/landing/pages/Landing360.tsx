@@ -58,6 +58,7 @@ import { SoundFX } from '@/lib/soundEffects';
 import {
   B360AmbientFX,
   B360CountUp,
+  B360FloatingNodes,
   B360ScrollProgress,
   B360Words,
   useB360CardTilt,
@@ -886,7 +887,7 @@ export function Landing360({
         theme === 'dark' ? 'bg-[#06111e] text-slate-100' : 'bg-[#F8FAFC] text-slate-800'
       }`}
     >
-      <B360ScrollProgress />
+      {activeScreen === 'intro' && <B360ScrollProgress />}
       {/* ════════════════════════════════════════════════════════════════════
           TELA 1: LANDING ADAPTADA & COMMAND CENTER INTERATIVO
       ════════════════════════════════════════════════════════════════════ */}
@@ -1037,7 +1038,7 @@ export function Landing360({
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full bg-[#00D4FF] animate-pulse" />
                       <span className="font-mono text-[11px] font-bold tracking-wider uppercase text-[#00D4FF]">
-                        SUPERVISOR ON-LINE · OPERAÇÃO CONECTADA
+                        PRÉVIA ILUSTRATIVA · DADOS SIMULADOS
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400">
@@ -1045,39 +1046,39 @@ export function Landing360({
                         RLS Multi-Tenant
                       </span>
                       <span className="px-2 py-0.5 rounded-md bg-[#00D4FF]/10 border border-[#00D4FF]/30 text-[#00D4FF]">
-                        12ms
+                        INTERFACE DEMO
                       </span>
                     </div>
                   </div>
 
                   <div className="b360-console-kpis">
                     <div className="b360-console-kpi">
-                      <span className="b360-kpi-label">Pipeline em Radar</span>
+                      <span className="b360-kpi-label">Pipeline · simulação</span>
                       <strong className="b360-kpi-value text-[#00D4FF]">
                         <B360CountUp to={4280000} prefix="R$ " />
                       </strong>
-                      <span className="b360-kpi-trend text-emerald-400">▲ +18.4% vs mês ant.</span>
+                      <span className="b360-kpi-trend text-emerald-400">Dados ilustrativos, não reais</span>
                     </div>
                     <div className="b360-console-kpi">
-                      <span className="b360-kpi-label">Oportunidades</span>
+                      <span className="b360-kpi-label">Oportunidades · simulação</span>
                       <strong className="b360-kpi-value text-[#FF2D9B]">
                         <B360CountUp to={86} suffix=" ativas" />
                       </strong>
-                      <span className="b360-kpi-trend text-slate-400">12 em fechamento</span>
+                      <span className="b360-kpi-trend text-slate-400">Cenário ilustrativo</span>
                     </div>
                     <div className="b360-console-kpi">
-                      <span className="b360-kpi-label">Acurácia Forecast</span>
+                      <span className="b360-kpi-label">Forecast · simulação</span>
                       <strong className="b360-kpi-value text-[#FFC107]">
                         <B360CountUp to={94.2} decimals={1} suffix="%" />
                       </strong>
-                      <span className="b360-kpi-trend text-emerald-400">Modelo ponderado</span>
+                      <span className="b360-kpi-trend text-emerald-400">Exemplo de previsão ponderada</span>
                     </div>
                     <div className="b360-console-kpi">
-                      <span className="b360-kpi-label">Agentes Ativos</span>
+                      <span className="b360-kpi-label">Agentes · especificação V4</span>
                       <strong className="b360-kpi-value text-[#8B7DFF]">
-                        <B360CountUp to={20} suffix="+ agentes" />
+                        <B360CountUp to={24} suffix=" + Supervisor" />
                       </strong>
-                      <span className="b360-kpi-trend text-cyan-400">Execução paralela</span>
+                      <span className="b360-kpi-trend text-cyan-400">Arquitetura prevista</span>
                     </div>
                   </div>
 
@@ -1277,7 +1278,7 @@ export function Landing360({
                   <div className="b360-problem-kpi">
                     <TrendingUp className="w-4 h-4 text-[#00D4FF]" />
                     <span>
-                      <b>Resultado:</b> -40% no tempo de preparação e zero retrabalho operacional.
+                      <b>Benefício esperado:</b> menos retrabalho e preparação comercial contextualizada.
                     </span>
                   </div>
                 </article>
@@ -1307,7 +1308,7 @@ export function Landing360({
                   <div className="b360-problem-kpi">
                     <TrendingUp className="w-4 h-4 text-[#FF2D9B]" />
                     <span>
-                      <b>Resultado:</b> +28% na velocidade de avanço entre etapas do funil.
+                      <b>Benefício esperado:</b> mais visibilidade de gargalos para priorizar ações.
                     </span>
                   </div>
                 </article>
@@ -1337,7 +1338,7 @@ export function Landing360({
                   <div className="b360-problem-kpi">
                     <TrendingUp className="w-4 h-4 text-[#FFC107]" />
                     <span>
-                      <b>Resultado:</b> 100% das oportunidades com próximo passo monitorado.
+                      <b>Benefício esperado:</b> acompanhamento de próximos passos conforme regras e SLAs.
                     </span>
                   </div>
                 </article>
@@ -1828,25 +1829,25 @@ export function Landing360({
               {/* Métricas Operacionais */}
               <div className="b360-metrics">
                 <div className="b360-metric">
-                  <small>Missões Ativas</small>
+                  <small>Missões · simulação</small>
                   <strong>
                     <B360CountUp to={128} />
                   </strong>
                   <span>● Operação contínua</span>
                 </div>
                 <div className="b360-metric">
-                  <small>Agentes Acionados</small>
+                  <small>Agentes · especificação V4</small>
                   <strong>
-                    <B360CountUp to={20} suffix="+" />
+                    <B360CountUp to={24} suffix=" + Supervisor" />
                   </strong>
-                  <span>● Em execução paralela</span>
+                  <span>● Arquitetura prevista</span>
                 </div>
                 <div className="b360-metric">
-                  <small>Oportunidades em Radar</small>
+                  <small>Oportunidades · simulação</small>
                   <strong>
                     <B360CountUp to={86} />
                   </strong>
-                  <span>● R$ 4.2M em pipeline</span>
+                  <span>● Cenário ilustrativo</span>
                 </div>
               </div>
 
@@ -1882,6 +1883,7 @@ export function Landing360({
 
         {/* Footer Institucional */}
         <footer className="b360-footer">
+          <B360FloatingNodes variant="footer" />
           <div className="b360-shell">
             <div className="b360-footer-grid">
               <div className="b360-footer-col brand">
@@ -1995,7 +1997,7 @@ export function Landing360({
               <div className="flex items-center gap-3 text-xs text-slate-400">
                 <span className="inline-flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  <span>Sistemas Operacionais 100%</span>
+                  <span>Arquitetura Enterprise</span>
                 </span>
                 <span>·</span>
                 <span>Versão 2.4 Enterprise</span>
@@ -2470,7 +2472,7 @@ export function Landing360({
           type="button"
           onClick={() => {
             SoundFX.play('click');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
           }}
           className="btn-floating-top"
           aria-label="Voltar ao topo da página"
