@@ -1,0 +1,34 @@
+name: Format V4 Landing Repair
+on:
+  push:
+    branches:
+      - fix/landing-v4-biome-format-20261108
+    paths:
+      - .github/workflows/format-v4-landing-repair.yml
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.repository == 'MarksNN/Birthub-360'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Format only the five failing files
+        run: |
+          npm exec --yes --package=@biomejs/biome@2.5.14 -- biome format --write             src/features/landing/components/CinematicFX.tsx             src/features/landing/pages/Landing360.tsx             src/features/landing/pages/LandingAdaptive.css             src/features/landing/pages/LandingCinematic.css             src/features/landing/pages/LandingRegenerationV4.css
+      - name: Commit formatter-only changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/features/landing/components/CinematicFX.tsx                   src/features/landing/pages/Landing360.tsx                   src/features/landing/pages/LandingAdaptive.css                   src/features/landing/pages/LandingCinematic.css                   src/features/landing/pages/LandingRegenerationV4.css
+          if ! git diff --cached --quiet; then
+            git commit -m "style(landing): apply Biome formatter to V4 visual files"
+            git push origin HEAD:fix/landing-v4-biome-format-20261108
+          fi
