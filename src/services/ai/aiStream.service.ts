@@ -4,8 +4,13 @@
  */
 
 export class QuotaExceededError extends Error {
-  constructor(public readonly organizationId: string, public readonly consumedTokens: number) {
-    super(`CotaExcedida: Limite de tokens da organizacao '${organizationId}' ultrapassado durante streaming (${consumedTokens} tokens consumidos).`);
+  constructor(
+    public readonly organizationId: string,
+    public readonly consumedTokens: number,
+  ) {
+    super(
+      `CotaExcedida: Limite de tokens da organizacao '${organizationId}' ultrapassado durante streaming (${consumedTokens} tokens consumidos).`,
+    );
     this.name = 'QuotaExceededError';
   }
 }

@@ -928,11 +928,17 @@ export function Landing360({
                   </div>
                   <div className="b360-hero-trust">
                     <span className="w-2 h-2 rounded-full bg-[#00D4FF] animate-pulse" />
-                    <span>✦ <b>Supervisor On-line</b> · Orquestração inteligente · Experiência integrada</span>
+                    <span>
+                      ✦ <b>Supervisor On-line</b> · Orquestração inteligente · Experiência integrada
+                    </span>
                   </div>
                 </div>
 
-                <div className="b360-hero-console" role="region" aria-label="Visão Executiva do Command Center">
+                <div
+                  className="b360-hero-console"
+                  role="region"
+                  aria-label="Visão Executiva do Command Center"
+                >
                   <div className="b360-console-topbar">
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full bg-[#00D4FF] animate-pulse" />
@@ -979,8 +985,13 @@ export function Landing360({
                         Copiloto IA
                       </div>
                       <div className="b360-stream-content">
-                        <p className="b360-stream-title">Objeção de preço contornada · Deal #1042</p>
-                        <p className="b360-stream-desc">Proposta R$ 145k renegociada com ROI simulado de 3.8x. NBA aceita pelo Closer.</p>
+                        <p className="b360-stream-title">
+                          Objeção de preço contornada · Deal #1042
+                        </p>
+                        <p className="b360-stream-desc">
+                          Proposta R$ 145k renegociada com ROI simulado de 3.8x. NBA aceita pelo
+                          Closer.
+                        </p>
                       </div>
                       <span className="b360-stream-time">Agora</span>
                     </div>
@@ -990,8 +1001,12 @@ export function Landing360({
                         Bitrix24 Sync
                       </div>
                       <div className="b360-stream-content">
-                        <p className="b360-stream-title">Sincronização bidirecional de 14 oportunidades</p>
-                        <p className="b360-stream-desc">Contas e histórico de mensagens unificados com persistência multi-tenant.</p>
+                        <p className="b360-stream-title">
+                          Sincronização bidirecional de 14 oportunidades
+                        </p>
+                        <p className="b360-stream-desc">
+                          Contas e histórico de mensagens unificados com persistência multi-tenant.
+                        </p>
                       </div>
                       <span className="b360-stream-time">há 2 min</span>
                     </div>
@@ -1002,7 +1017,9 @@ export function Landing360({
                       </div>
                       <div className="b360-stream-content">
                         <p className="b360-stream-title">Chamada com CFO da Vanguarda transcrita</p>
-                        <p className="b360-stream-desc">Duração 14m 20s · Sentimento 94% Positivo · SLA de follow-up disparado.</p>
+                        <p className="b360-stream-desc">
+                          Duração 14m 20s · Sentimento 94% Positivo · SLA de follow-up disparado.
+                        </p>
                       </div>
                       <span className="b360-stream-time">há 5 min</span>
                     </div>
@@ -1031,7 +1048,8 @@ export function Landing360({
                 <div className="b360-eyebrow">ARQUITETURA DE RECEITA</div>
                 <h2>Oito pilares. Uma operação conectada.</h2>
                 <p>
-                  Da primeira oportunidade à decisão de receita, cada dimensão trabalha em conjunto em uma esteira integrada.
+                  Da primeira oportunidade à decisão de receita, cada dimensão trabalha em conjunto
+                  em uma esteira integrada.
                 </p>
               </div>
 
@@ -1064,15 +1082,11 @@ export function Landing360({
                     <div className="b360-card-content">
                       <div className="b360-card-header">
                         <span className="b360-pillar-badge">{pillar.num}</span>
-                        <div className="b360-pillar-icon">
-                          {renderPillarIcon(pillar.num)}
-                        </div>
+                        <div className="b360-pillar-icon">{renderPillarIcon(pillar.num)}</div>
                         <span className="b360-pillar-tag">{pillar.tag}</span>
                       </div>
 
-                      <div className="b360-card-visual">
-                        {renderPillarVisual(pillar.num)}
-                      </div>
+                      <div className="b360-card-visual">{renderPillarVisual(pillar.num)}</div>
 
                       <div className="b360-card-bottom">
                         <h3>
@@ -1111,16 +1125,24 @@ export function Landing360({
                   <div className="b360-problem-body">
                     <div className="b360-problem-row">
                       <span className="b360-label-flag red">Problema</span>
-                      <p>CRM, telefonia, e-mails e WhatsApp desconectados forçam os vendedores a caçar informações e retrabalhar contatos.</p>
+                      <p>
+                        CRM, telefonia, e-mails e WhatsApp desconectados forçam os vendedores a
+                        caçar informações e retrabalhar contatos.
+                      </p>
                     </div>
                     <div className="b360-problem-row">
                       <span className="b360-label-flag cyan">Solução Birth Hub</span>
-                      <p>Linha do tempo 360° unificada onde cada negociação preserva todo o histórico de interações e passagens de bastão.</p>
+                      <p>
+                        Linha do tempo 360° unificada onde cada negociação preserva todo o histórico
+                        de interações e passagens de bastão.
+                      </p>
                     </div>
                   </div>
                   <div className="b360-problem-kpi">
                     <TrendingUp className="w-4 h-4 text-[#00D4FF]" />
-                    <span><b>Resultado:</b> -40% no tempo de preparação e zero retrabalho operacional.</span>
+                    <span>
+                      <b>Resultado:</b> -40% no tempo de preparação e zero retrabalho operacional.
+                    </span>
                   </div>
                 </article>
 
@@ -1133,16 +1155,24 @@ export function Landing360({
                   <div className="b360-problem-body">
                     <div className="b360-problem-row">
                       <span className="b360-label-flag red">Problema</span>
-                      <p>Planilhas estáticas e fechamentos mensais revelam estagnações quando já não há tempo hábil para recuperar a meta.</p>
+                      <p>
+                        Planilhas estáticas e fechamentos mensais revelam estagnações quando já não
+                        há tempo hábil para recuperar a meta.
+                      </p>
                     </div>
                     <div className="b360-problem-row">
                       <span className="b360-label-flag cyan">Solução Birth Hub</span>
-                      <p>Telemetria em tempo real com alertas preditivos de gargalos e desvios de velocidade de ciclo em D+0.</p>
+                      <p>
+                        Telemetria em tempo real com alertas preditivos de gargalos e desvios de
+                        velocidade de ciclo em D+0.
+                      </p>
                     </div>
                   </div>
                   <div className="b360-problem-kpi">
                     <TrendingUp className="w-4 h-4 text-[#FF2D9B]" />
-                    <span><b>Resultado:</b> +28% na velocidade de avanço entre etapas do funil.</span>
+                    <span>
+                      <b>Resultado:</b> +28% na velocidade de avanço entre etapas do funil.
+                    </span>
                   </div>
                 </article>
 
@@ -1155,16 +1185,24 @@ export function Landing360({
                   <div className="b360-problem-body">
                     <div className="b360-problem-row">
                       <span className="b360-label-flag red">Problema</span>
-                      <p>Falta de rigor no cumprimento de SLAs faz negócios quentes esfriarem sem acompanhamento ou ação definida.</p>
+                      <p>
+                        Falta de rigor no cumprimento de SLAs faz negócios quentes esfriarem sem
+                        acompanhamento ou ação definida.
+                      </p>
                     </div>
                     <div className="b360-problem-row">
                       <span className="b360-label-flag cyan">Solução Birth Hub</span>
-                      <p>Orquestração automática de follow-ups com SLA garantido e recomendação da Próxima Melhor Ação (NBA).</p>
+                      <p>
+                        Orquestração automática de follow-ups com SLA garantido e recomendação da
+                        Próxima Melhor Ação (NBA).
+                      </p>
                     </div>
                   </div>
                   <div className="b360-problem-kpi">
                     <TrendingUp className="w-4 h-4 text-[#FFC107]" />
-                    <span><b>Resultado:</b> 100% das oportunidades com próximo passo monitorado.</span>
+                    <span>
+                      <b>Resultado:</b> 100% das oportunidades com próximo passo monitorado.
+                    </span>
                   </div>
                 </article>
               </div>
@@ -1185,8 +1223,9 @@ export function Landing360({
                   </div>
                   <h3>Dados e conectividade Multi-CRM</h3>
                   <p>
-                    Conexões bidirecionais via APIs abertas e webhooks com Bitrix24, HubSpot, Salesforce e Pipedrive
-                    mantêm os dados comerciais sincronizados em milissegundos sem duplicação.
+                    Conexões bidirecionais via APIs abertas e webhooks com Bitrix24, HubSpot,
+                    Salesforce e Pipedrive mantêm os dados comerciais sincronizados em milissegundos
+                    sem duplicação.
                   </p>
                   <div className="b360-platform-badge">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#00D4FF] animate-pulse" />
@@ -1200,8 +1239,9 @@ export function Landing360({
                   </div>
                   <h3>Diagnóstico e inteligência</h3>
                   <p>
-                    Analise a saúde das contas, identifique riscos de estagnação e receba recomendações preditivas
-                    fundamentadas no histórico real de negociações para destravar o fechamento.
+                    Analise a saúde das contas, identifique riscos de estagnação e receba
+                    recomendações preditivas fundamentadas no histórico real de negociações para
+                    destravar o fechamento.
                   </p>
                   <div className="b360-platform-badge">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#FF2D9B] animate-pulse" />
@@ -1215,8 +1255,9 @@ export function Landing360({
                   </div>
                   <h3>Execução e orquestração</h3>
                   <p>
-                    Coordene a rotina de SDRs, Closers e liderança com cadências multicanal, regras rígidas de SLA
-                    e supervisão autônoma para garantir passagens de bastão sem fricção.
+                    Coordene a rotina de SDRs, Closers e liderança com cadências multicanal, regras
+                    rígidas de SLA e supervisão autônoma para garantir passagens de bastão sem
+                    fricção.
                   </p>
                   <div className="b360-platform-badge">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#FFC107] animate-pulse" />
@@ -1241,7 +1282,10 @@ export function Landing360({
                     <Building2 className="w-5 h-5 text-[#00D4FF]" />
                   </div>
                   <h3>Entrada e captura</h3>
-                  <p>Leads e contas chegam por CRMs, campanhas de marketing e prospecção ativa com enriquecimento automático.</p>
+                  <p>
+                    Leads e contas chegam por CRMs, campanhas de marketing e prospecção ativa com
+                    enriquecimento automático.
+                  </p>
                   <div className="b360-flow-kpi">Inbound & Outbound</div>
                 </div>
 
@@ -1256,7 +1300,10 @@ export function Landing360({
                     <Target className="w-5 h-5 text-[#FF2D9B]" />
                   </div>
                   <h3>Enriquecimento B2B</h3>
-                  <p>Dados de empresas, decisores e CNAE apoiam a validação imediata do ICP e priorização inteligente de contas.</p>
+                  <p>
+                    Dados de empresas, decisores e CNAE apoiam a validação imediata do ICP e
+                    priorização inteligente de contas.
+                  </p>
                   <div className="b360-flow-kpi">Match ICP & QSA</div>
                 </div>
 
@@ -1271,7 +1318,10 @@ export function Landing360({
                     <GitBranch className="w-5 h-5 text-[#FFC107]" />
                   </div>
                   <h3>Cadência e SLA</h3>
-                  <p>Distribuição automática e contato ágil entre SDR e Closer seguindo regras operacionais rígidas de SLA.</p>
+                  <p>
+                    Distribuição automática e contato ágil entre SDR e Closer seguindo regras
+                    operacionais rígidas de SLA.
+                  </p>
                   <div className="b360-flow-kpi">Toques Multicanal</div>
                 </div>
 
@@ -1286,7 +1336,10 @@ export function Landing360({
                     <Bot className="w-5 h-5 text-[#8B7DFF]" />
                   </div>
                   <h3>Apoio com IA</h3>
-                  <p>Histórico contextual, matriz de objeções e copiloto orientam as abordagens e reuniões de negociação.</p>
+                  <p>
+                    Histórico contextual, matriz de objeções e copiloto orientam as abordagens e
+                    reuniões de negociação.
+                  </p>
                   <div className="b360-flow-kpi">NBA em Tempo Real</div>
                 </div>
 
@@ -1301,7 +1354,10 @@ export function Landing360({
                     <LineChart className="w-5 h-5 text-[#00D4FF]" />
                   </div>
                   <h3>Fechamento e dados</h3>
-                  <p>O aprendizado dos negócios ganhos e perdidos realimenta os modelos estatísticos de previsão de receita.</p>
+                  <p>
+                    O aprendizado dos negócios ganhos e perdidos realimenta os modelos estatísticos
+                    de previsão de receita.
+                  </p>
                   <div className="b360-flow-kpi">Forecast Ponderado</div>
                 </div>
               </div>
@@ -1317,7 +1373,8 @@ export function Landing360({
                   </h2>
                   <p className="text-slate-400 text-base mb-6">
                     O copiloto analisa o estágio de cada negociação, o histórico das interações e as
-                    objeções recorrentes para apoiar sua equipe em tempo real com supervisão contínua.
+                    objeções recorrentes para apoiar sua equipe em tempo real com supervisão
+                    contínua.
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-6">
                     <div className="p-4 rounded-2xl border border-cyan-500/20 bg-slate-900/60 dark:bg-[#0B1A2E]/80">
@@ -1328,7 +1385,8 @@ export function Landing360({
                         </h3>
                       </div>
                       <p className="text-slate-300 dark:text-slate-400 text-xs leading-relaxed">
-                        Identifique negócios estagnados no funil e receba o contexto exato do motivo de bloqueio.
+                        Identifique negócios estagnados no funil e receba o contexto exato do motivo
+                        de bloqueio.
                       </p>
                     </div>
 
@@ -1340,31 +1398,30 @@ export function Landing360({
                         </h3>
                       </div>
                       <p className="text-slate-300 dark:text-slate-400 text-xs leading-relaxed">
-                        Receba recomendações táticas preditivas para avançar negociações e contornar objeções.
+                        Receba recomendações táticas preditivas para avançar negociações e contornar
+                        objeções.
                       </p>
                     </div>
 
                     <div className="p-4 rounded-2xl border border-amber-500/20 bg-slate-900/60 dark:bg-[#0B1A2E]/80">
                       <div className="flex items-center gap-2 mb-1.5">
                         <Clock className="w-4 h-4 text-[#FFC107]" />
-                        <h3 className="text-sm font-bold text-[#FFC107]">
-                          Contexto histórico
-                        </h3>
+                        <h3 className="text-sm font-bold text-[#FFC107]">Contexto histórico</h3>
                       </div>
                       <p className="text-slate-300 dark:text-slate-400 text-xs leading-relaxed">
-                        Leitura instantânea de chamadas gravadas, e-mails trocados e propostas enviadas.
+                        Leitura instantânea de chamadas gravadas, e-mails trocados e propostas
+                        enviadas.
                       </p>
                     </div>
 
                     <div className="p-4 rounded-2xl border border-indigo-500/20 bg-slate-900/60 dark:bg-[#0B1A2E]/80">
                       <div className="flex items-center gap-2 mb-1.5">
                         <Bot className="w-4 h-4 text-[#8B7DFF]" />
-                        <h3 className="text-sm font-bold text-[#8B7DFF]">
-                          Supervisor On-line
-                        </h3>
+                        <h3 className="text-sm font-bold text-[#8B7DFF]">Supervisor On-line</h3>
                       </div>
                       <p className="text-slate-300 dark:text-slate-400 text-xs leading-relaxed">
-                        Orquestração autônoma de missões operacionais e alocação dinâmica de agentes.
+                        Orquestração autônoma de missões operacionais e alocação dinâmica de
+                        agentes.
                       </p>
                     </div>
                   </div>
@@ -1382,7 +1439,8 @@ export function Landing360({
                     <span className="b360-copilot-deal-tag">OPORTUNIDADE #1042</span>
                     <h3>Oportunidade pede atenção.</h3>
                     <p className="b360-copilot-deal-desc">
-                      Proposta comercial no valor de <strong>R$ 145.000</strong> enviada há 4 dias sem retorno registrado após reunião técnica.
+                      Proposta comercial no valor de <strong>R$ 145.000</strong> enviada há 4 dias
+                      sem retorno registrado após reunião técnica.
                     </p>
                   </div>
                   <div className="b360-suggestion-box">
@@ -1391,13 +1449,19 @@ export function Landing360({
                       <span>Próxima Ação Sugerida (NBA):</span>
                     </div>
                     <p>
-                      Retomar contato com o CFO destacando o caso de ROI simulado (payback estimado em 45 dias) e propor reunião executiva de implantação com modelo parcelado.
+                      Retomar contato com o CFO destacando o caso de ROI simulado (payback estimado
+                      em 45 dias) e propor reunião executiva de implantação com modelo parcelado.
                     </p>
                   </div>
                   <div className="b360-copilot-actions">
                     <button
                       type="button"
-                      onClick={() => handleOpenModal('Copiloto de IA', 'Simulação do Copiloto de IA em negociação real.')}
+                      onClick={() =>
+                        handleOpenModal(
+                          'Copiloto de IA',
+                          'Simulação do Copiloto de IA em negociação real.',
+                        )
+                      }
                       className="b360-copilot-apply-btn"
                     >
                       <span>Aplicar recomendação na oportunidade</span>
@@ -1414,7 +1478,8 @@ export function Landing360({
                 <div className="b360-eyebrow">CONECTIVIDADE TOTAL</div>
                 <h2>Conectado ao seu ecossistema.</h2>
                 <p>
-                  Uma operação aberta e compatível com as ferramentas comerciais e produtividade que sua empresa já utiliza.
+                  Uma operação aberta e compatível com as ferramentas comerciais e produtividade que
+                  sua empresa já utiliza.
                 </p>
               </div>
 
@@ -1685,7 +1750,8 @@ export function Landing360({
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 leading-relaxed mb-4 max-w-sm">
-                  O sistema operacional definitivo para operações de receita enterprise unificando CRM, telemetria e inteligência artificial.
+                  O sistema operacional definitivo para operações de receita enterprise unificando
+                  CRM, telemetria e inteligência artificial.
                 </p>
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-mono bg-slate-800/60 border border-slate-700/60 text-slate-300">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#00D4FF]" />
@@ -1696,20 +1762,68 @@ export function Landing360({
               <div className="b360-footer-col">
                 <h4>Plataforma</h4>
                 <ul>
-                  <li><button type="button" onClick={() => handleOpenModal('01. Hub Comercial', 'Pipeline 360° e contas.', '01')}>01. Pipeline & Contas</button></li>
-                  <li><button type="button" onClick={() => handleOpenModal('02. Inteligência de Mercado', 'Enriquecimento B2B.', '02')}>02. Inteligência de Mercado</button></li>
-                  <li><button type="button" onClick={() => handleOpenModal('03. Orquestração de Vendas', 'Cadência e SLAs.', '03')}>03. Orquestração de Vendas</button></li>
-                  <li><button type="button" onClick={() => handleOpenModal('06. Inteligência Artificial', 'Copiloto de negociações.', '06')}>06. Copiloto de IA</button></li>
+                  <li>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleOpenModal('01. Hub Comercial', 'Pipeline 360° e contas.', '01')
+                      }
+                    >
+                      01. Pipeline & Contas
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleOpenModal('02. Inteligência de Mercado', 'Enriquecimento B2B.', '02')
+                      }
+                    >
+                      02. Inteligência de Mercado
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleOpenModal('03. Orquestração de Vendas', 'Cadência e SLAs.', '03')
+                      }
+                    >
+                      03. Orquestração de Vendas
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleOpenModal(
+                          '06. Inteligência Artificial',
+                          'Copiloto de negociações.',
+                          '06',
+                        )
+                      }
+                    >
+                      06. Copiloto de IA
+                    </button>
+                  </li>
                 </ul>
               </div>
 
               <div className="b360-footer-col">
                 <h4>Conectividade</h4>
                 <ul>
-                  <li><span>Bitrix24 (API Oficial)</span></li>
-                  <li><span>WhatsApp Business API</span></li>
-                  <li><span>VoiceHub Telefonia em Nuvem</span></li>
-                  <li><span>Webhooks & Open REST API</span></li>
+                  <li>
+                    <span>Bitrix24 (API Oficial)</span>
+                  </li>
+                  <li>
+                    <span>WhatsApp Business API</span>
+                  </li>
+                  <li>
+                    <span>VoiceHub Telefonia em Nuvem</span>
+                  </li>
+                  <li>
+                    <span>Webhooks & Open REST API</span>
+                  </li>
                 </ul>
               </div>
 
@@ -1721,9 +1835,15 @@ export function Landing360({
                       Política de Privacidade
                     </Link>
                   </li>
-                  <li><span>Direitos do Titular (LGPD Art. 18)</span></li>
-                  <li><span>Sessão Segura HttpOnly</span></li>
-                  <li><span>Auditoria de Logs & RBAC</span></li>
+                  <li>
+                    <span>Direitos do Titular (LGPD Art. 18)</span>
+                  </li>
+                  <li>
+                    <span>Sessão Segura HttpOnly</span>
+                  </li>
+                  <li>
+                    <span>Auditoria de Logs & RBAC</span>
+                  </li>
                 </ul>
               </div>
             </div>

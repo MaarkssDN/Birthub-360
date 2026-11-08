@@ -49,7 +49,11 @@ export class TelephonyBillingService {
   /**
    * Converte uma sequencia de ciclos de faturamento para validacao de fechamentos consecutivos.
    */
-  public generateSubsequentCycles(initialStartDate: Date, cyclesCount: number, cutOffDay?: number): BillingCyclePeriod[] {
+  public generateSubsequentCycles(
+    initialStartDate: Date,
+    cyclesCount: number,
+    cutOffDay?: number,
+  ): BillingCyclePeriod[] {
     const cycles: BillingCyclePeriod[] = [];
     let currentStart = new Date(initialStartDate.getTime());
     const cutOff = cutOffDay ?? currentStart.getUTCDate();
@@ -58,12 +62,17 @@ export class TelephonyBillingService {
       const cycle = this.calculateNextBillingCycle(currentStart, cutOff);
       cycles.push(cycle);
       // O proximo ciclo comeca no inicio do dia seguinte
-      currentStart = new Date(Date.UTC(
-        cycle.cycleEnd.getUTCFullYear(),
-        cycle.cycleEnd.getUTCMonth(),
-        cycle.cycleEnd.getUTCDate() + 1,
-        0, 0, 0, 0
-      ));
+      currentStart = new Date(
+        Date.UTC(
+          cycle.cycleEnd.getUTCFullYear(),
+          cycle.cycleEnd.getUTCMonth(),
+          cycle.cycleEnd.getUTCDate() + 1,
+          0,
+          0,
+          0,
+          0,
+        ),
+      );
     }
 
     return cycles;

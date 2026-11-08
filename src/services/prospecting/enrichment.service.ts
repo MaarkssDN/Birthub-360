@@ -7,7 +7,9 @@ import { logger } from '../../lib/logger.js';
 
 export class CircuitBreakerOpenError extends Error {
   constructor(public readonly retryAfterMs: number) {
-    super(`CircuitBreakerOpen: Requisicoes pausadas devido a Rate Limit (429). Tente novamente em ${retryAfterMs}ms.`);
+    super(
+      `CircuitBreakerOpen: Requisicoes pausadas devido a Rate Limit (429). Tente novamente em ${retryAfterMs}ms.`,
+    );
     this.name = 'CircuitBreakerOpenError';
   }
 }
@@ -24,7 +26,10 @@ export class LeadEnrichmentService {
     const now = Date.now();
     if (now < this.circuitOpenUntil) {
       const waitRemaining = this.circuitOpenUntil - now;
-      logger.warn({ waitRemaining }, '[LeadEnrichmentService] Circuit Breaker ABERTO - Requisicao abortada');
+      logger.warn(
+        { waitRemaining },
+        '[LeadEnrichmentService] Circuit Breaker ABERTO - Requisicao abortada',
+      );
       throw new CircuitBreakerOpenError(waitRemaining);
     }
 

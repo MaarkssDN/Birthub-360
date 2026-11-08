@@ -15,16 +15,24 @@ export class TelephonyWebhookHandler {
   /**
    * Enfileira evento recebido do 3CX para execucao em background, liberando o servidor 3CX em < 50ms (HTTP 202).
    */
-  public async handleIncoming3CXWebhook(payload: Record<string, unknown>): Promise<Webhook3CXEnqueueResult> {
+  public async handleIncoming3CXWebhook(
+    payload: Record<string, unknown>,
+  ): Promise<Webhook3CXEnqueueResult> {
     const jobId = `3cx-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
     // Dispara processamento em background assincronamente (worker/queue abstraction)
     setImmediate(async () => {
       try {
         await process3CXWebhook(payload);
-        logger.info({ jobId }, '[TelephonyWebhookHandler] Processamento assincrono concluido com sucesso');
+        logger.info(
+          { jobId },
+          '[TelephonyWebhookHandler] Processamento assincrono concluido com sucesso',
+        );
       } catch (error) {
-        logger.error({ jobId, err: error }, '[TelephonyWebhookHandler] Falha no processamento assincrono do webhook 3CX');
+        logger.error(
+          { jobId, err: error },
+          '[TelephonyWebhookHandler] Falha no processamento assincrono do webhook 3CX',
+        );
       }
     });
 

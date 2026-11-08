@@ -1,9 +1,4 @@
-import {
-  ArrowRight,
-  Calculator,
-  CheckCircle2,
-  Sparkles,
-} from 'lucide-react';
+import { ArrowRight, Calculator, CheckCircle2, Sparkles } from 'lucide-react';
 import React from 'react';
 import { PillarData, PillarThemeColor } from './PillarRegistry.js';
 
@@ -185,11 +180,17 @@ export function PillarContent({
               >
                 <div className="flex items-center gap-1.5 font-semibold text-xs">
                   <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 ${accent.iconColor}`} />
-                  <span className={theme === 'dark' ? 'text-slate-100 font-sans' : 'text-slate-900 font-sans'}>
+                  <span
+                    className={
+                      theme === 'dark' ? 'text-slate-100 font-sans' : 'text-slate-900 font-sans'
+                    }
+                  >
                     {cap.title}
                   </span>
                 </div>
-                <p className={`text-[11px] leading-normal font-sans ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+                <p
+                  className={`text-[11px] leading-normal font-sans ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}
+                >
                   {cap.desc}
                 </p>
               </div>
@@ -279,9 +280,7 @@ export function PillarContent({
           </div>
 
           {/* Renderização do Mockup Realístico Contextualizado */}
-          <div className="transition-all duration-300">
-            {pillar.renderVisualizer(theme)}
-          </div>
+          <div className="transition-all duration-300">{pillar.renderVisualizer(theme)}</div>
         </div>
 
         {/* Métricas e Benefícios Específicos com Metadados Claros */}

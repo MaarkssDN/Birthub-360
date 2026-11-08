@@ -10,7 +10,9 @@ export interface RenderTemplateOptions {
 
 export class TemplateRenderError extends Error {
   constructor(public readonly missingVariables: string[]) {
-    super(`Variavel(is) obrigatoria(s) sem valor ou fallback no template: ${missingVariables.join(', ')}`);
+    super(
+      `Variavel(is) obrigatoria(s) sem valor ou fallback no template: ${missingVariables.join(', ')}`,
+    );
     this.name = 'TemplateRenderError';
   }
 }
@@ -30,21 +32,25 @@ export class CadenceTemplateRendererService {
     const missingVariables: string[] = [];
 
     // Regex para capturar {{ path.to.var | default: "fallback" }} ou {{ path.to.var }}
-    const rendered = template.replace(/\{\{\s*([a-zA-Z0-9_.]+)(?:\s*\|\s*default:\s*(?:"([^"]*)"|'([^']*)'))?\s*\}\}/g, (fullMatch, varPath, dqFallback, sqFallback) => {
-      const fallback = dqFallback !== undefined ? dqFallback : sqFallback !== undefined ? sqFallback : undefined;
-      const value = this.resolvePath(context, varPath);
+    const rendered = template.replace(
+      /\{\{\s*([a-zA-Z0-9_.]+)(?:\s*\|\s*default:\s*(?:"([^"]*)"|'([^']*)'))?\s*\}\}/g,
+      (fullMatch, varPath, dqFallback, sqFallback) => {
+        const fallback =
+          dqFallback !== undefined ? dqFallback : sqFallback !== undefined ? sqFallback : undefined;
+        const value = this.resolvePath(context, varPath);
 
-      if (value !== undefined && value !== null && String(value).trim() !== '') {
-        return String(value);
-      }
+        if (value !== undefined && value !== null && String(value).trim() !== '') {
+          return String(value);
+        }
 
-      if (fallback !== undefined) {
-        return fallback;
-      }
+        if (fallback !== undefined) {
+          return fallback;
+        }
 
-      missingVariables.push(varPath);
-      return fullMatch; // Mantem tag para deteccao no modo strict
-    });
+        missingVariables.push(varPath);
+        return fullMatch; // Mantem tag para deteccao no modo strict
+      },
+    );
 
     if (options.strict && missingVariables.length > 0) {
       throw new TemplateRenderError(missingVariables);

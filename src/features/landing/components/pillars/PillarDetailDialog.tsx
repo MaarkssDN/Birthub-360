@@ -63,7 +63,9 @@ export function PillarDetailDialog({
 
     // Foco inicial no elemento interativo principal
     const timer = setTimeout(() => {
-      const primaryBtn = modalRef.current?.querySelector<HTMLElement>('button[data-primary-action="true"]');
+      const primaryBtn = modalRef.current?.querySelector<HTMLElement>(
+        'button[data-primary-action="true"]',
+      );
       if (primaryBtn) {
         primaryBtn.focus();
       } else {
@@ -132,9 +134,7 @@ export function PillarDetailDialog({
         ref={modalRef}
         onClick={(e) => e.stopPropagation()}
         className={`relative w-full max-w-5xl max-h-[92vh] flex flex-col my-auto rounded-3xl border transition-all duration-300 overflow-hidden ${getContainerGlowBorder()} ${
-          theme === 'dark'
-            ? 'bg-[#0B132B]/98 text-slate-100'
-            : 'bg-white/98 text-slate-900'
+          theme === 'dark' ? 'bg-[#0B132B]/98 text-slate-100' : 'bg-white/98 text-slate-900'
         }`}
       >
         {/* Botão de Fechar Superior Direito */}
@@ -157,9 +157,7 @@ export function PillarDetailDialog({
         </div>
 
         {/* Conteúdo com rolagem suave */}
-        <div className="flex-1 overflow-y-auto p-6 sm:p-8 lg:p-10">
-          {children}
-        </div>
+        <div className="flex-1 overflow-y-auto p-6 sm:p-8 lg:p-10">{children}</div>
       </div>
     </div>
   );

@@ -135,7 +135,10 @@ export function RoiSimulatorModal({
             {/* Slider 1: Deals Ativos */}
             <div className="space-y-1.5">
               <div className="flex justify-between items-center text-xs font-mono">
-                <label htmlFor="deals-slider" className="text-slate-700 dark:text-slate-300 font-semibold">
+                <label
+                  htmlFor="deals-slider"
+                  className="text-slate-700 dark:text-slate-300 font-semibold"
+                >
                   Oportunidades em Andamento por Mês:
                 </label>
                 <span className="px-2.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-cyan-400 font-bold">
@@ -162,7 +165,10 @@ export function RoiSimulatorModal({
             {/* Slider 2: Ticket Médio */}
             <div className="space-y-1.5">
               <div className="flex justify-between items-center text-xs font-mono">
-                <label htmlFor="ticket-slider" className="text-slate-700 dark:text-slate-300 font-semibold">
+                <label
+                  htmlFor="ticket-slider"
+                  className="text-slate-700 dark:text-slate-300 font-semibold"
+                >
                   Ticket Médio por Negócio:
                 </label>
                 <span className="px-2.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-pink-400 font-bold">

@@ -5,17 +5,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { SoundFX } from '@/lib/soundEffects';
 import { PillarContent } from './pillars/PillarContent.js';
 import { PillarDetailDialog } from './pillars/PillarDetailDialog.js';
-import {
-  PILLARS_EDITORIAL_DATA,
-  PillarData,
-  PillarThemeColor,
-} from './pillars/PillarRegistry.js';
+import { PILLARS_EDITORIAL_DATA, PillarData, PillarThemeColor } from './pillars/PillarRegistry.js';
 
-export {
-  PILLARS_EDITORIAL_DATA,
-  type PillarData,
-  type PillarThemeColor,
-};
+export { PILLARS_EDITORIAL_DATA, type PillarData, type PillarThemeColor };
 
 export interface PillarDetailModalProps {
   isOpen: boolean;

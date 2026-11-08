@@ -7,8 +7,13 @@ import { randomUUID } from 'node:crypto';
 import { logger } from '../logger.js';
 
 export class LoopDetectedException extends Error {
-  constructor(public readonly correlationId: string, public readonly hopCount: number) {
-    super(`Loop de execucao detectado entre agentes! Limite maximo de 5 hops excedido (correlationId: ${correlationId}, hopCount: ${hopCount}).`);
+  constructor(
+    public readonly correlationId: string,
+    public readonly hopCount: number,
+  ) {
+    super(
+      `Loop de execucao detectado entre agentes! Limite maximo de 5 hops excedido (correlationId: ${correlationId}, hopCount: ${hopCount}).`,
+    );
     this.name = 'LoopDetectedException';
   }
 }
@@ -44,7 +49,12 @@ export class AgentBus {
 
     if (hopCount > AgentBus.MAX_HOPS) {
       logger.error(
-        { correlationId, hopCount, sender: params.senderAgentId, recipient: params.recipientAgentId },
+        {
+          correlationId,
+          hopCount,
+          sender: params.senderAgentId,
+          recipient: params.recipientAgentId,
+        },
         '[AgentBus] ALERTA CRITICO: Loop de comunicacao entre agentes abortado',
       );
       throw new LoopDetectedException(correlationId, hopCount);

@@ -40,7 +40,10 @@ export class CommercialRecommendationsService {
     return record;
   }
 
-  public async getDecision(organizationId: string, recommendationId: string): Promise<PersistedRecommendationDecision | null> {
+  public async getDecision(
+    organizationId: string,
+    recommendationId: string,
+  ): Promise<PersistedRecommendationDecision | null> {
     const key = `${organizationId}:${recommendationId}`;
     return this.decisionsStore.get(key) || null;
   }

@@ -99,7 +99,9 @@ export function VisualizerHubComercial({ theme = 'dark' }: { theme?: 'dark' | 'l
           }`}
         >
           <div className="flex justify-between items-center text-[10px]">
-            <span className={`font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>QUALIFICAÇÃO</span>
+            <span className={`font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              QUALIFICAÇÃO
+            </span>
             <span className={`font-bold ${isDark ? 'text-sky-400' : 'text-sky-600'}`}>R$ 180k</span>
           </div>
           <div
@@ -107,7 +109,9 @@ export function VisualizerHubComercial({ theme = 'dark' }: { theme?: 'dark' | 'l
               isDark ? 'bg-slate-900/90 border-slate-700/60' : 'bg-slate-50 border-slate-200'
             }`}
           >
-            <p className={`text-[11px] font-semibold truncate ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>
+            <p
+              className={`text-[11px] font-semibold truncate ${isDark ? 'text-slate-200' : 'text-slate-900'}`}
+            >
               Indústria Alfa S/A
             </p>
             <p className={`text-[9px] font-sans ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -132,7 +136,9 @@ export function VisualizerHubComercial({ theme = 'dark' }: { theme?: 'dark' | 'l
           }`}
         >
           <div className="flex justify-between items-center text-[10px]">
-            <span className={`font-semibold ${isDark ? 'text-sky-300' : 'text-sky-700'}`}>PROPOSTA</span>
+            <span className={`font-semibold ${isDark ? 'text-sky-300' : 'text-sky-700'}`}>
+              PROPOSTA
+            </span>
             <span className={`font-bold ${isDark ? 'text-sky-400' : 'text-sky-600'}`}>R$ 340k</span>
           </div>
           <div
@@ -140,15 +146,21 @@ export function VisualizerHubComercial({ theme = 'dark' }: { theme?: 'dark' | 'l
               isDark ? 'bg-slate-900/90 border-sky-500/50' : 'bg-sky-50/70 border-sky-200'
             }`}
           >
-            <p className={`text-[11px] font-semibold truncate ${isDark ? 'text-sky-200' : 'text-sky-900'}`}>
+            <p
+              className={`text-[11px] font-semibold truncate ${isDark ? 'text-sky-200' : 'text-sky-900'}`}
+            >
               Varejo Global Ltda
             </p>
-            <p className={`text-[9px] font-semibold font-sans ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
+            <p
+              className={`text-[9px] font-semibold font-sans ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}
+            >
               Próx: Reunião Diretoria
             </p>
             <span
               className={`mt-1 inline-block text-[8px] px-1.5 py-0.5 rounded border ${
-                isDark ? 'bg-sky-950/80 text-sky-300 border-sky-500/30' : 'bg-sky-100 text-sky-800 border-sky-300'
+                isDark
+                  ? 'bg-sky-950/80 text-sky-300 border-sky-500/30'
+                  : 'bg-sky-100 text-sky-800 border-sky-300'
               }`}
             >
               Proposta V2 Enviada
@@ -163,23 +175,35 @@ export function VisualizerHubComercial({ theme = 'dark' }: { theme?: 'dark' | 'l
           }`}
         >
           <div className="flex justify-between items-center text-[10px]">
-            <span className={`font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>FECHAMENTO</span>
-            <span className={`font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>R$ 520k</span>
+            <span className={`font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              FECHAMENTO
+            </span>
+            <span className={`font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
+              R$ 520k
+            </span>
           </div>
           <div
             className={`p-2 rounded-lg border ${
-              isDark ? 'bg-slate-900/90 border-emerald-500/40' : 'bg-emerald-50/70 border-emerald-200'
+              isDark
+                ? 'bg-slate-900/90 border-emerald-500/40'
+                : 'bg-emerald-50/70 border-emerald-200'
             }`}
           >
-            <p className={`text-[11px] font-semibold truncate ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>
+            <p
+              className={`text-[11px] font-semibold truncate ${isDark ? 'text-slate-200' : 'text-slate-900'}`}
+            >
               FinTech Horizons
             </p>
-            <p className={`text-[9px] font-semibold font-sans ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
+            <p
+              className={`text-[9px] font-semibold font-sans ${isDark ? 'text-amber-400' : 'text-amber-600'}`}
+            >
               Minuta Jurídica (90%)
             </p>
             <span
               className={`mt-1 inline-block text-[8px] px-1.5 py-0.5 rounded border ${
-                isDark ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/30' : 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                isDark
+                  ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/30'
+                  : 'bg-emerald-100 text-emerald-800 border-emerald-300'
               }`}
             >
               Aguardando Assinatura
@@ -260,16 +284,28 @@ export function VisualizerMercado({ theme = 'dark' }: { theme?: 'dark' | 'light'
           }`}
         >
           <div>
-            <span className={`text-[10px] block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>CNAE Principal</span>
-            <span className={`font-semibold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>4930-2 (Cargas)</span>
+            <span className={`text-[10px] block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+              CNAE Principal
+            </span>
+            <span className={`font-semibold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+              4930-2 (Cargas)
+            </span>
           </div>
           <div>
-            <span className={`text-[10px] block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Decisor no QSA</span>
-            <span className={`font-semibold ${isDark ? 'text-pink-300' : 'text-pink-700'}`}>Diretor Comercial</span>
+            <span className={`text-[10px] block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+              Decisor no QSA
+            </span>
+            <span className={`font-semibold ${isDark ? 'text-pink-300' : 'text-pink-700'}`}>
+              Diretor Comercial
+            </span>
           </div>
           <div className="col-span-2 sm:col-span-1">
-            <span className={`text-[10px] block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Canal Corporativo</span>
-            <span className={`font-semibold ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>E-mail Validado ✓</span>
+            <span className={`text-[10px] block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+              Canal Corporativo
+            </span>
+            <span className={`font-semibold ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
+              E-mail Validado ✓
+            </span>
           </div>
         </div>
 
@@ -280,7 +316,8 @@ export function VisualizerMercado({ theme = 'dark' }: { theme?: 'dark' | 'light'
               : 'bg-pink-50 border-pink-200 text-pink-900'
           }`}
         >
-          <strong>Sinal de Compra:</strong> Contratação ativa de 8 executivos de vendas + Expansão recente de filiais no Sul.
+          <strong>Sinal de Compra:</strong> Contratação ativa de 8 executivos de vendas + Expansão
+          recente de filiais no Sul.
         </div>
       </div>
     </div>
@@ -338,7 +375,9 @@ export function VisualizerOrquestracao({ theme = 'dark' }: { theme?: 'dark' | 'l
             <span className={`font-semibold ${isDark ? 'text-slate-300' : 'text-slate-800'}`}>
               D+0 • E-mail de Apresentação de Valor
             </span>
-            <span className={`text-[10px] block font-sans ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
+            <span
+              className={`text-[10px] block font-sans ${isDark ? 'text-slate-500' : 'text-slate-500'}`}
+            >
               Entregue • Aberto 2x pelo lead
             </span>
           </div>
@@ -371,15 +410,20 @@ export function VisualizerOrquestracao({ theme = 'dark' }: { theme?: 'dark' | 'l
                 NEXT BEST ACTION
               </span>
             </div>
-            <span className={`text-[10px] block font-sans mt-0.5 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-              Roteiro tático: validar dor de controle do Diretor de Operações e propor passagem para Closer.
+            <span
+              className={`text-[10px] block font-sans mt-0.5 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}
+            >
+              Roteiro tático: validar dor de controle do Diretor de Operações e propor passagem para
+              Closer.
             </span>
           </div>
         </div>
 
         <div
           className={`flex items-center gap-3 p-2 rounded-xl border text-[10px] ${
-            isDark ? 'bg-slate-950/80 border-slate-800 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-600'
+            isDark
+              ? 'bg-slate-950/80 border-slate-800 text-slate-400'
+              : 'bg-slate-50 border-slate-200 text-slate-600'
           }`}
         >
           <span
@@ -438,27 +482,51 @@ export function VisualizerPerformance({ theme = 'dark' }: { theme?: 'dark' | 'li
             isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
           }`}
         >
-          <span className={`text-[10px] block font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>ENTRADA</span>
-          <span className={`text-sm font-bold ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>1.240</span>
-          <span className={`text-[9px] block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>leads no mês</span>
+          <span
+            className={`text-[10px] block font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+          >
+            ENTRADA
+          </span>
+          <span className={`text-sm font-bold ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>
+            1.240
+          </span>
+          <span className={`text-[9px] block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+            leads no mês
+          </span>
         </div>
         <div
           className={`p-2.5 rounded-xl border ${
             isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
           }`}
         >
-          <span className={`text-[10px] block font-semibold ${isDark ? 'text-violet-400' : 'text-violet-700'}`}>QUALIF.</span>
-          <span className={`text-sm font-bold ${isDark ? 'text-violet-300' : 'text-violet-800'}`}>410</span>
-          <span className={`text-[9px] block ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>33.1% conv.</span>
+          <span
+            className={`text-[10px] block font-semibold ${isDark ? 'text-violet-400' : 'text-violet-700'}`}
+          >
+            QUALIF.
+          </span>
+          <span className={`text-sm font-bold ${isDark ? 'text-violet-300' : 'text-violet-800'}`}>
+            410
+          </span>
+          <span className={`text-[9px] block ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
+            33.1% conv.
+          </span>
         </div>
         <div
           className={`p-2.5 rounded-xl border ${
             isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
           }`}
         >
-          <span className={`text-[10px] block font-semibold ${isDark ? 'text-sky-400' : 'text-sky-700'}`}>PROPOSTA</span>
-          <span className={`text-sm font-bold ${isDark ? 'text-sky-300' : 'text-sky-800'}`}>185</span>
-          <span className={`text-[9px] block ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>45.1% conv.</span>
+          <span
+            className={`text-[10px] block font-semibold ${isDark ? 'text-sky-400' : 'text-sky-700'}`}
+          >
+            PROPOSTA
+          </span>
+          <span className={`text-sm font-bold ${isDark ? 'text-sky-300' : 'text-sky-800'}`}>
+            185
+          </span>
+          <span className={`text-[9px] block ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
+            45.1% conv.
+          </span>
         </div>
         <div
           className={`p-2.5 rounded-xl border ${
@@ -467,9 +535,17 @@ export function VisualizerPerformance({ theme = 'dark' }: { theme?: 'dark' | 'li
               : 'bg-white border-emerald-300 shadow-sm'
           }`}
         >
-          <span className={`text-[10px] block font-semibold ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>GANHOS</span>
-          <span className={`text-sm font-bold ${isDark ? 'text-emerald-300' : 'text-emerald-800'}`}>78</span>
-          <span className={`text-[9px] block ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>42.2% conv.</span>
+          <span
+            className={`text-[10px] block font-semibold ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}
+          >
+            GANHOS
+          </span>
+          <span className={`text-sm font-bold ${isDark ? 'text-emerald-300' : 'text-emerald-800'}`}>
+            78
+          </span>
+          <span className={`text-[9px] block ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
+            42.2% conv.
+          </span>
         </div>
       </div>
 
@@ -481,10 +557,14 @@ export function VisualizerPerformance({ theme = 'dark' }: { theme?: 'dark' | 'li
         }`}
       >
         <span>
-          Velocidade Média do Ciclo: <strong className={isDark ? 'text-slate-200' : 'text-slate-900'}>18 dias</strong>
+          Velocidade Média do Ciclo:{' '}
+          <strong className={isDark ? 'text-slate-200' : 'text-slate-900'}>18 dias</strong>
         </span>
         <span>
-          Produtividade: <strong className={isDark ? 'text-violet-300' : 'text-violet-700'}>14 calls + 3 demos/dia por rep</strong>
+          Produtividade:{' '}
+          <strong className={isDark ? 'text-violet-300' : 'text-violet-700'}>
+            14 calls + 3 demos/dia por rep
+          </strong>
         </span>
       </div>
     </div>
@@ -531,9 +611,17 @@ export function VisualizerPrevisibilidade({ theme = 'dark' }: { theme?: 'dark' |
             isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
           }`}
         >
-          <span className={`text-[10px] block font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>CONSERVADOR</span>
-          <span className={`text-base font-bold ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>R$ 1.180.000</span>
-          <span className={`text-[9px] block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>95% probabilidade</span>
+          <span
+            className={`text-[10px] block font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+          >
+            CONSERVADOR
+          </span>
+          <span className={`text-base font-bold ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>
+            R$ 1.180.000
+          </span>
+          <span className={`text-[9px] block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+            95% probabilidade
+          </span>
         </div>
         <div
           className={`p-2.5 rounded-xl border text-center ${
@@ -542,18 +630,36 @@ export function VisualizerPrevisibilidade({ theme = 'dark' }: { theme?: 'dark' |
               : 'bg-white border-sky-300 shadow-sm'
           }`}
         >
-          <span className={`text-[10px] font-bold block ${isDark ? 'text-sky-300' : 'text-sky-700'}`}>CENÁRIO PROVÁVEL</span>
-          <span className={`text-base font-bold ${isDark ? 'text-sky-300' : 'text-sky-800'}`}>R$ 1.450.000</span>
-          <span className={`text-[9px] block font-semibold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>meta orçamentária</span>
+          <span
+            className={`text-[10px] font-bold block ${isDark ? 'text-sky-300' : 'text-sky-700'}`}
+          >
+            CENÁRIO PROVÁVEL
+          </span>
+          <span className={`text-base font-bold ${isDark ? 'text-sky-300' : 'text-sky-800'}`}>
+            R$ 1.450.000
+          </span>
+          <span
+            className={`text-[9px] block font-semibold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}
+          >
+            meta orçamentária
+          </span>
         </div>
         <div
           className={`p-2.5 rounded-xl border text-center ${
             isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
           }`}
         >
-          <span className={`text-[10px] block font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>OTIMISTA</span>
-          <span className={`text-base font-bold ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>R$ 1.720.000</span>
-          <span className={`text-[9px] block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>upside mapeado</span>
+          <span
+            className={`text-[10px] block font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+          >
+            OTIMISTA
+          </span>
+          <span className={`text-base font-bold ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>
+            R$ 1.720.000
+          </span>
+          <span className={`text-[9px] block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+            upside mapeado
+          </span>
         </div>
       </div>
 
@@ -620,8 +726,12 @@ export function VisualizerIaCopilot({ theme = 'dark' }: { theme?: 'dark' | 'ligh
             Objeção Detectada: &quot;Orçamento congelado até o próximo trimestre&quot;
           </span>
         </div>
-        <p className={`text-[11px] font-sans leading-relaxed pl-6 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-          <strong>Recomendação Tática:</strong> Propor ativação em 2 etapas (Setup técnico no mês corrente com início de faturamento no próximo ciclo fiscal). No histórico da sua conta, esse modelo converteu <strong>78%</strong> das objeções semelhantes.
+        <p
+          className={`text-[11px] font-sans leading-relaxed pl-6 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}
+        >
+          <strong>Recomendação Tática:</strong> Propor ativação em 2 etapas (Setup técnico no mês
+          corrente com início de faturamento no próximo ciclo fiscal). No histórico da sua conta,
+          esse modelo converteu <strong>78%</strong> das objeções semelhantes.
         </p>
       </div>
 
@@ -680,8 +790,14 @@ export function VisualizerAutomacao({ theme = 'dark' }: { theme?: 'dark' | 'ligh
           }`}
         >
           <div>
-            <span className={`font-semibold block ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>API Bitrix24</span>
-            <span className={`text-[10px] font-sans ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Via REST / Webhook</span>
+            <span className={`font-semibold block ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>
+              API Bitrix24
+            </span>
+            <span
+              className={`text-[10px] font-sans ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+            >
+              Via REST / Webhook
+            </span>
           </div>
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10B981]" />
         </div>
@@ -692,8 +808,14 @@ export function VisualizerAutomacao({ theme = 'dark' }: { theme?: 'dark' | 'ligh
           }`}
         >
           <div>
-            <span className={`font-semibold block ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>Webhooks REST</span>
-            <span className={`text-[10px] font-sans ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Retry Exponencial</span>
+            <span className={`font-semibold block ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>
+              Webhooks REST
+            </span>
+            <span
+              className={`text-[10px] font-sans ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+            >
+              Retry Exponencial
+            </span>
           </div>
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10B981]" />
         </div>
@@ -704,8 +826,14 @@ export function VisualizerAutomacao({ theme = 'dark' }: { theme?: 'dark' | 'ligh
           }`}
         >
           <div>
-            <span className={`font-semibold block ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>Event Bus</span>
-            <span className={`text-[10px] font-sans ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Latência: 120ms</span>
+            <span className={`font-semibold block ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>
+              Event Bus
+            </span>
+            <span
+              className={`text-[10px] font-sans ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
+            >
+              Latência: 120ms
+            </span>
           </div>
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10B981]" />
         </div>
@@ -718,7 +846,8 @@ export function VisualizerAutomacao({ theme = 'dark' }: { theme?: 'dark' | 'ligh
             : 'bg-amber-50 border-amber-200 text-amber-900'
         }`}
       >
-        <strong>Conectores Reais:</strong> Integração via API REST aberta, fila idempotente e webhooks seguros autenticados com chave HMAC.
+        <strong>Conectores Reais:</strong> Integração via API REST aberta, fila idempotente e
+        webhooks seguros autenticados com chave HMAC.
       </div>
     </div>
   );
@@ -767,7 +896,9 @@ export function VisualizerEngajamento({ theme = 'dark' }: { theme?: 'dark' | 'li
           <span className={`font-semibold ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>
             Ligação: Diretor de Tecnologia
           </span>
-          <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>Duração: 04:18 • WebRTC</span>
+          <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>
+            Duração: 04:18 • WebRTC
+          </span>
         </div>
         <div
           className={`p-2 rounded-lg border font-sans text-[11px] leading-relaxed ${
@@ -776,7 +907,8 @@ export function VisualizerEngajamento({ theme = 'dark' }: { theme?: 'dark' | 'li
               : 'bg-slate-50 border-slate-200 text-slate-800'
           }`}
         >
-          &quot;Perfeito. Gostei da integração nativa com o nosso CRM e da segurança com LGPD. Podemos agendar a demonstração técnica para quinta-feira às 14h.&quot;
+          &quot;Perfeito. Gostei da integração nativa com o nosso CRM e da segurança com LGPD.
+          Podemos agendar a demonstração técnica para quinta-feira às 14h.&quot;
         </div>
         <div
           className={`flex items-center justify-between text-[10px] pt-1 font-sans ${
@@ -784,7 +916,9 @@ export function VisualizerEngajamento({ theme = 'dark' }: { theme?: 'dark' | 'li
           }`}
         >
           <span>Ação automática: Reunião criada na agenda</span>
-          <span className={`font-semibold font-mono ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
+          <span
+            className={`font-semibold font-mono ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}
+          >
             Deal atualizado no CRM ✓
           </span>
         </div>
@@ -833,9 +967,24 @@ export const PILLARS_EDITORIAL_DATA: Record<string, PillarData> = {
       },
     ],
     metrics: [
-      { value: '+42%', label: 'Velocidade de Negociação', trend: 'Ciclo médio reduzido', context: 'Simulação' },
-      { value: 'Zero', label: 'Deals Esquecidos', trend: 'Rastreabilidade total', context: 'Simulação' },
-      { value: '< 3 cliques', label: 'Auditoria de Contas', trend: 'Navegação instantânea', context: 'Simulação' },
+      {
+        value: '+42%',
+        label: 'Velocidade de Negociação',
+        trend: 'Ciclo médio reduzido',
+        context: 'Simulação',
+      },
+      {
+        value: 'Zero',
+        label: 'Deals Esquecidos',
+        trend: 'Rastreabilidade total',
+        context: 'Simulação',
+      },
+      {
+        value: '< 3 cliques',
+        label: 'Auditoria de Contas',
+        trend: 'Navegação instantânea',
+        context: 'Simulação',
+      },
     ],
     renderVisualizer: (theme) => <VisualizerHubComercial theme={theme} />,
   },
@@ -846,7 +995,8 @@ export const PILLARS_EDITORIAL_DATA: Record<string, PillarData> = {
     badge: 'PROSPECÇÃO B2B & SINAIS DE COMPRA',
     title: 'Inteligência de Mercado',
     modalTitle: '02. Inteligência de Mercado',
-    tagline: 'Enriqueça dados B2B, identifique sinais de compra e qualifique decisores com precisão.',
+    tagline:
+      'Enriqueça dados B2B, identifique sinais de compra e qualifique decisores com precisão.',
     commercialDescription:
       'Mapeie e qualifique o mercado endereçável (TAM) com precisão cirúrgica. Identifique empresas ativas no Brasil por CNAE, receita presumida, quadro societário (QSA) e descubra o contato corporativo direto de quem realmente decide.',
     detailedDesc:
@@ -875,9 +1025,24 @@ export const PILLARS_EDITORIAL_DATA: Record<string, PillarData> = {
       },
     ],
     metrics: [
-      { value: '3x mais', label: 'Precisão na Qualificação', trend: 'Filtro por ICP', context: 'Simulação' },
-      { value: '-70%', label: 'Tempo de Pesquisa Cadastral', trend: 'Automação CNPJ', context: 'Simulação' },
-      { value: '100%', label: 'Conformidade LGPD', trend: 'Base legal auditada', context: 'Simulação' },
+      {
+        value: '3x mais',
+        label: 'Precisão na Qualificação',
+        trend: 'Filtro por ICP',
+        context: 'Simulação',
+      },
+      {
+        value: '-70%',
+        label: 'Tempo de Pesquisa Cadastral',
+        trend: 'Automação CNPJ',
+        context: 'Simulação',
+      },
+      {
+        value: '100%',
+        label: 'Conformidade LGPD',
+        trend: 'Base legal auditada',
+        context: 'Simulação',
+      },
     ],
     renderVisualizer: (theme) => <VisualizerMercado theme={theme} />,
   },
@@ -917,8 +1082,18 @@ export const PILLARS_EDITORIAL_DATA: Record<string, PillarData> = {
       },
     ],
     metrics: [
-      { value: '+65%', label: 'Disciplina de Follow-ups', trend: 'Régua automatizada', context: 'Simulação' },
-      { value: '4 dias', label: 'Ciclo de Qualificação', trend: 'Transição ágil', context: 'Simulação' },
+      {
+        value: '+65%',
+        label: 'Disciplina de Follow-ups',
+        trend: 'Régua automatizada',
+        context: 'Simulação',
+      },
+      {
+        value: '4 dias',
+        label: 'Ciclo de Qualificação',
+        trend: 'Transição ágil',
+        context: 'Simulação',
+      },
       { value: '100%', label: 'Leads no SLA', trend: 'Sem gargalos ocultos', context: 'Simulação' },
     ],
     renderVisualizer: (theme) => <VisualizerOrquestracao theme={theme} />,
@@ -959,9 +1134,24 @@ export const PILLARS_EDITORIAL_DATA: Record<string, PillarData> = {
       },
     ],
     metrics: [
-      { value: '+28%', label: 'Eficiência de Conversão', trend: 'Eliminação de atritos', context: 'Simulação' },
-      { value: '18 dias', label: 'Ciclo Médio de Vendas', trend: 'Visibilidade total', context: 'Simulação' },
-      { value: 'Tempo Real', label: 'Apuração de Metas', trend: 'Telemetria contínua', context: 'Simulação' },
+      {
+        value: '+28%',
+        label: 'Eficiência de Conversão',
+        trend: 'Eliminação de atritos',
+        context: 'Simulação',
+      },
+      {
+        value: '18 dias',
+        label: 'Ciclo Médio de Vendas',
+        trend: 'Visibilidade total',
+        context: 'Simulação',
+      },
+      {
+        value: 'Tempo Real',
+        label: 'Apuração de Metas',
+        trend: 'Telemetria contínua',
+        context: 'Simulação',
+      },
     ],
     renderVisualizer: (theme) => <VisualizerPerformance theme={theme} />,
   },
@@ -1001,9 +1191,24 @@ export const PILLARS_EDITORIAL_DATA: Record<string, PillarData> = {
       },
     ],
     metrics: [
-      { value: '94%', label: 'Confiabilidade Estatística', trend: 'Modelo calibrado', context: 'Simulação' },
-      { value: '45 dias', label: 'Antecipação de Desvios', trend: 'Correção de rota', context: 'Simulação' },
-      { value: '3 Faixas', label: 'Cenários Modelados', trend: 'Orçamento seguro', context: 'Simulação' },
+      {
+        value: '94%',
+        label: 'Confiabilidade Estatística',
+        trend: 'Modelo calibrado',
+        context: 'Simulação',
+      },
+      {
+        value: '45 dias',
+        label: 'Antecipação de Desvios',
+        trend: 'Correção de rota',
+        context: 'Simulação',
+      },
+      {
+        value: '3 Faixas',
+        label: 'Cenários Modelados',
+        trend: 'Orçamento seguro',
+        context: 'Simulação',
+      },
     ],
     renderVisualizer: (theme) => <VisualizerPrevisibilidade theme={theme} />,
   },
@@ -1043,9 +1248,24 @@ export const PILLARS_EDITORIAL_DATA: Record<string, PillarData> = {
       },
     ],
     metrics: [
-      { value: '2h / dia', label: 'Otimização Operacional', trend: 'Menos burocracia', context: 'Simulação' },
-      { value: '+35%', label: 'Superação de Objeções', trend: 'Argumentos táticos', context: 'Simulação' },
-      { value: '-50%', label: 'Rampa de Novos Vendedores', trend: 'Treinamento contínuo', context: 'Simulação' },
+      {
+        value: '2h / dia',
+        label: 'Otimização Operacional',
+        trend: 'Menos burocracia',
+        context: 'Simulação',
+      },
+      {
+        value: '+35%',
+        label: 'Superação de Objeções',
+        trend: 'Argumentos táticos',
+        context: 'Simulação',
+      },
+      {
+        value: '-50%',
+        label: 'Rampa de Novos Vendedores',
+        trend: 'Treinamento contínuo',
+        context: 'Simulação',
+      },
     ],
     renderVisualizer: (theme) => <VisualizerIaCopilot theme={theme} />,
   },
@@ -1085,9 +1305,19 @@ export const PILLARS_EDITORIAL_DATA: Record<string, PillarData> = {
       },
     ],
     metrics: [
-      { value: '99.98%', label: 'Sucesso de Sincronização', trend: 'Fila idempotente', context: 'Simulação' },
+      {
+        value: '99.98%',
+        label: 'Sucesso de Sincronização',
+        trend: 'Fila idempotente',
+        context: 'Simulação',
+      },
       { value: 'Zero', label: 'Perda de Eventos', trend: 'Retry automático', context: 'Simulação' },
-      { value: '< 120ms', label: 'Latência do Event Bus', trend: 'Entrega imediata', context: 'Simulação' },
+      {
+        value: '< 120ms',
+        label: 'Latência do Event Bus',
+        trend: 'Entrega imediata',
+        context: 'Simulação',
+      },
     ],
     renderVisualizer: (theme) => <VisualizerAutomacao theme={theme} />,
   },
@@ -1127,9 +1357,24 @@ export const PILLARS_EDITORIAL_DATA: Record<string, PillarData> = {
       },
     ],
     metrics: [
-      { value: '+50%', label: 'Produtividade de Ligações', trend: 'Discador com 1 clique', context: 'Simulação' },
-      { value: '100%', label: 'Auditoria de Interações', trend: 'Gravações vinculadas', context: 'Simulação' },
-      { value: 'Instantâneo', label: 'Resumo com IA', trend: 'Transcrição ponta a ponta', context: 'Simulação' },
+      {
+        value: '+50%',
+        label: 'Produtividade de Ligações',
+        trend: 'Discador com 1 clique',
+        context: 'Simulação',
+      },
+      {
+        value: '100%',
+        label: 'Auditoria de Interações',
+        trend: 'Gravações vinculadas',
+        context: 'Simulação',
+      },
+      {
+        value: 'Instantâneo',
+        label: 'Resumo com IA',
+        trend: 'Transcrição ponta a ponta',
+        context: 'Simulação',
+      },
     ],
     renderVisualizer: (theme) => <VisualizerEngajamento theme={theme} />,
   },

@@ -33,9 +33,9 @@ describe('toCsv — compatível com Excel PT-BR (06A, seção 12)', () => {
   it('neutraliza fórmulas maliciosas nas células sem quebrar a exportação (proteção CSV Injection)', async () => {
     const { toCsv } = await import('../extractionFiles.js');
     const csv = toCsv([{ FORMULA: '=1+1', CMD: '-2+3', SUM: '@SUM(A1)' }]);
-    expect(csv).toContain("\"'=1+1\"");
-    expect(csv).toContain("\"'-2+3\"");
-    expect(csv).toContain("\"'@SUM(A1)\"");
+    expect(csv).toContain('"\'=1+1"');
+    expect(csv).toContain('"\'-2+3"');
+    expect(csv).toContain('"\'@SUM(A1)"');
   });
 
   it('une o cabeçalho de linhas com formas diferentes (campos UF_CRM_* variáveis) sem perder colunas', async () => {

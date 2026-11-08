@@ -3,7 +3,10 @@
  * Card de recomendacao conectado a persistencia real via recommendationsService.
  */
 import React, { useState } from 'react';
-import { commercialRecommendationsService, type RecommendationDecision } from '../../services/ai/recommendations.service.js';
+import {
+  commercialRecommendationsService,
+  type RecommendationDecision,
+} from '../../services/ai/recommendations.service.js';
 
 export interface NextBestActionCardProps {
   recommendationId: string;
@@ -41,15 +44,25 @@ export const NextBestActionCard: React.FC<NextBestActionCardProps> = ({
   };
 
   if (status === 'REJECTED') {
-    return <div data-testid="nba-card-dismissed" className="hidden">Descartado</div>;
+    return (
+      <div data-testid="nba-card-dismissed" className="hidden">
+        Descartado
+      </div>
+    );
   }
 
   return (
-    <div data-testid={`nba-card-${recommendationId}`} className="border p-4 rounded-lg bg-white shadow-sm">
+    <div
+      data-testid={`nba-card-${recommendationId}`}
+      className="border p-4 rounded-lg bg-white shadow-sm"
+    >
       <h3 className="font-semibold text-slate-800">{title}</h3>
       <p className="text-sm text-slate-600 mt-1">{description}</p>
       {status === 'ACCEPTED' ? (
-        <span data-testid="nba-status-accepted" className="text-xs text-green-600 font-bold mt-2 inline-block">
+        <span
+          data-testid="nba-status-accepted"
+          className="text-xs text-green-600 font-bold mt-2 inline-block"
+        >
           Acao Aceita
         </span>
       ) : (

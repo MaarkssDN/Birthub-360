@@ -18,7 +18,12 @@ export class PwaCachePurgeService {
 
     for (const key of keys) {
       // Deleta todos os caches que contenham dados de API, leads, contacts ou sessao
-      if (key.includes('api') || key.includes('data') || key.includes('leads') || key.includes('birthhub')) {
+      if (
+        key.includes('api') ||
+        key.includes('data') ||
+        key.includes('leads') ||
+        key.includes('birthhub')
+      ) {
         await caches.delete(key);
         deletedCaches.push(key);
       }

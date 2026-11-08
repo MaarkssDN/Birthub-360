@@ -7,7 +7,7 @@
 export interface ScheduleOptions {
   timezone?: string; // Default: America/Sao_Paulo
   startHour?: number; // Default: 8
-  endHour?: number;   // Default: 19
+  endHour?: number; // Default: 19
   targetNextHour?: number; // Default: 9 (hora de execucao no proximo dia util)
 }
 
