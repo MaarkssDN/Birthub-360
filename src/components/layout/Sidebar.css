@@ -186,3 +186,88 @@
     0 6px 22px -3px rgba(0, 212, 255, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 1);
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   IMPECCABLE SIDEBAR — ENHANCED UX STYLES
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* Scrollbar styling for nav container */
+.bh-sidebar-nav {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.bh-sidebar-nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+.bh-sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.bh-sidebar-nav::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 3px;
+}
+
+.bh-sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: var(--line-strong, rgba(0, 0, 0, 0.2));
+}
+
+/* Collapsed state refinements */
+.bh-sidebar--collapsed .bh-sidebar-wordmark {
+  opacity: 0;
+  width: 0;
+  pointer-events: none;
+}
+
+/* Footer card iris glow on hover */
+.bh-sidebar-footer-card:hover {
+  border-color: var(--iris, #8b7dff);
+  background: color-mix(in srgb, var(--iris, #8b7dff) 4%, var(--surface));
+}
+
+.dark .bh-sidebar-footer-card:hover {
+  border-color: rgba(139, 125, 255, 0.5);
+  background: color-mix(in srgb, var(--iris, #8b7dff) 8%, #16171b);
+  box-shadow:
+    0 8px 24px -4px rgba(139, 125, 255, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* Section badge glow animation */
+.bh-sidebar-section-badge-dot {
+  animation: sidebar-dot-pulse 2s ease-in-out infinite;
+}
+
+@keyframes sidebar-dot-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-nav-card,
+  .sidebar-footer-card,
+  .bh-sidebar-footer-card {
+    transition: none;
+  }
+
+  .bh-sidebar-section-badge-dot {
+    animation: none;
+  }
+}
+
+/* Mobile sidebar overlay */
+.bh-sidebar--mobile {
+  box-shadow: 24px 0 48px -12px rgba(0, 0, 0, 0.2);
+}
+
+.dark .bh-sidebar--mobile {
+  box-shadow: 24px 0 48px -12px rgba(0, 0, 0, 0.5);
+}

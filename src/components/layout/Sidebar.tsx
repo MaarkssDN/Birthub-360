@@ -1,4 +1,4 @@
-import { ArrowRight, ChevronDown, ChevronLeft, X } from 'lucide-react';
+import { ChevronDown, ChevronLeft, Sparkles, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext.js';
@@ -11,12 +11,16 @@ import type { TabType } from './tabMeta.js';
 import './Sidebar.css';
 
 /**
- * Sidebar com estética Orgânica Espacial (Ronas IT / Spatial UI):
- * - Superfícies escupidas com curvatura contínua
- * - Itens em formato pill com dual-lobed icon wells
- * - Indicadores pulsantes elétricos em neon lime (#D4F434) e cyan (#00D4FF)
- * - Badges kicker mono para cabeçalhos de seção
- * - Card widget em destaque no rodapé para a Célula Comercial e Hub de IA
+ * IMPECCABLE SIDEBAR — Birth Hub 360°
+ *
+ * Redesign completo seguindo princípios de craft award-winning:
+ * - Superfícies esculpidas com profundidade real e micro-chanfro especular
+ * - Itens em formato pill com icon wells de alta precisão
+ * - Indicadores semânticos com glow elétrico (Cyan, Gold, Iris, Pink)
+ * - Transições fluidas com cubic-bezier(0.22, 1, 0.36, 1)
+ * - Contraste WCAG 2.2 AA inegociável em Light/Dark mode
+ * - Estados claros: idle, hover, active, focus, disabled
+ * - Suporte completo a reduced-motion
  */
 
 interface SidebarProps {
@@ -109,17 +113,22 @@ function getActiveIconWellStyle(accent: AccentColor): string {
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface';
 
-const EASE = 'motion-safe:transition-all motion-safe:duration-200 motion-safe:ease-out';
+// Premium easing curve inline nas classes Tailwind
+const EASE =
+  'motion-safe:transition-all motion-safe:duration-[220ms] motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)]';
 
-const ITEM = `sidebar-nav-card group relative flex w-full items-center text-[13px] tracking-[-0.011em] ${EASE} ${FOCUS_RING}`;
+// Container do item com hover elevado
+const ITEM = `sidebar-nav-card group relative flex w-full items-center gap-3 text-[13.5px] tracking-[-0.012em] rounded-[14px] border border-transparent ${EASE} ${FOCUS_RING}`;
 
+// Icon well com profundidade e brilho
 const ICON_WELL =
-  'grid h-8 w-8 shrink-0 place-items-center rounded-xl motion-safe:transition-all motion-safe:duration-200 motion-safe:ease-out';
+  'grid h-[34px] w-[34px] shrink-0 place-items-center rounded-[10px] motion-safe:transition-all motion-safe:duration-[220ms] motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)]';
 
 const ICON_WELL_QUIET =
-  'bg-surface-2 text-ink-2 border border-line/60 group-hover:bg-surface group-hover:border-line group-hover:text-ink group-hover:scale-105';
+  'bg-surface-2 text-ink-2 border border-transparent group-hover:bg-surface group-hover:border-line group-hover:text-ink group-hover:shadow-sm';
 
-const GHOST_CONTROL = `h-8 w-8 shrink-0 place-items-center rounded-xl border border-line text-ink-2 hover:bg-surface-2 hover:text-ink ${EASE} ${FOCUS_RING}`;
+// Botão de controle ghost
+const GHOST_CONTROL = `grid h-8 w-8 shrink-0 place-items-center rounded-[10px] border border-transparent text-ink-2 hover:bg-surface-2 hover:border-line hover:text-ink ${EASE} ${FOCUS_RING}`;
 
 /** Caminho atual relativo a /app (ex.: `market-intelligence/hub`). */
 function currentAppPath(pathname: string): string {
@@ -196,46 +205,46 @@ export function Sidebar({
       {launch && <NavLaunchTransition launch={launch} onFinish={finishLaunch} />}
 
       <aside
-        className={`relative z-30 flex h-full flex-col bg-surface/95 dark:bg-[#121316]/95 backdrop-blur-2xl font-sans text-ink select-none ${
+        className={`bh-sidebar relative z-30 flex h-full flex-col bg-surface/98 dark:bg-[#111214]/98 backdrop-blur-xl font-sans text-ink select-none ${
           mobileOpen
-            ? 'w-full'
-            : `hidden border-r border-line shadow-card lg:flex motion-safe:transition-[width] motion-safe:duration-200 motion-safe:ease-out ${
-                isCollapsed ? 'w-[4.5rem]' : 'w-[17.5rem]'
+            ? 'bh-sidebar--mobile bh-sidebar--mobile-open w-[288px]'
+            : `hidden border-r border-line/80 lg:flex motion-safe:transition-[width] motion-safe:duration-[280ms] motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                isCollapsed ? 'bh-sidebar--collapsed w-[72px]' : 'w-[272px]'
               }`
         }`}
         aria-label="Navegação Principal"
       >
-        {/* Brand Header */}
-        <div
-          className={`flex h-16 shrink-0 items-center ${
-            isCollapsed ? 'justify-center px-2' : 'justify-between gap-2 px-3.5'
+        {/* Brand Header — Impeccable */}
+        <header
+          className={`bh-sidebar-header flex shrink-0 items-center ${
+            isCollapsed ? 'h-[68px] justify-center px-2' : 'h-[68px] justify-between gap-3 px-4'
           }`}
         >
           <button
             type="button"
             onClick={() => openTab('dashboard')}
-            className={`flex min-w-0 items-center gap-2.5 text-left rounded-2xl p-1.5 transition-all ${FOCUS_RING} hover:opacity-95`}
+            className={`bh-sidebar-logo-wrapper flex min-w-0 items-center gap-3 text-left rounded-2xl p-1 ${EASE} ${FOCUS_RING} hover:opacity-95`}
             title="Birth Hub 360° — Ir para Visão Geral"
             aria-label="Birth Hub 360° — Ir para Visão Geral"
           >
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-surface-2 border border-line shadow-xs transition-transform duration-200 hover:scale-105">
+            <span className="bh-sidebar-logo grid h-10 w-10 shrink-0 place-items-center rounded-[12px] bg-surface-2 border border-line/80 shadow-sm motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-105 hover:rotate-[-2deg]">
               <BirthHubLogo
                 variant="mark"
                 animated={false}
-                className="h-6 w-6 drop-shadow-[0_0_8px_rgba(0,212,255,0.45)]"
+                className="h-6 w-6 drop-shadow-[0_0_10px_rgba(0,212,255,0.5)]"
               />
             </span>
             {!isCollapsed && (
-              <div className="min-w-0">
-                <div className="truncate font-display text-[15px] font-extrabold leading-none tracking-[-0.02em] text-ink">
+              <div className="bh-sidebar-wordmark min-w-0 motion-safe:transition-opacity motion-safe:duration-200">
+                <div className="bh-sidebar-wordmark-title truncate font-display text-[15px] font-bold leading-tight tracking-[-0.02em] text-ink">
                   Birth Hub{' '}
-                  <span className="text-[#00D4FF] drop-shadow-[0_0_8px_rgba(0,212,255,0.4)]">
+                  <span className="text-brand dark:text-[#00D4FF] dark:drop-shadow-[0_0_8px_rgba(0,212,255,0.45)]">
                     360°
                   </span>
                 </div>
-                <div className="mt-1 flex items-center gap-1.5 truncate font-mono text-[9.5px] font-bold uppercase tracking-wider text-emerald-800 dark:text-[#D4F434]">
+                <div className="bh-sidebar-wordmark-sub mt-0.5 flex items-center gap-1.5 truncate font-mono text-[9px] font-semibold uppercase tracking-[0.05em] text-ink-2">
                   <span
-                    className="h-1.5 w-1.5 rounded-full bg-[#D4F434] shadow-[0_0_6px_#D4F434] animate-pulse"
+                    className="h-[5px] w-[5px] rounded-full bg-[#D4F434] shadow-[0_0_8px_#D4F434] motion-safe:animate-pulse"
                     aria-hidden="true"
                   />
                   <span>Revenue OS</span>
@@ -248,70 +257,85 @@ export function Sidebar({
             <button
               type="button"
               onClick={onCloseMobile}
-              className={`grid lg:hidden ${GHOST_CONTROL}`}
+              className={`bh-sidebar-mobile-close lg:hidden ${GHOST_CONTROL}`}
               title="Fechar navegação"
               aria-label="Fechar navegação"
             >
-              <X className="h-4 w-4" strokeWidth={1.5} />
+              <X size={16} strokeWidth={1.75} />
             </button>
           ) : (
             !isCollapsed && (
               <button
                 type="button"
                 onClick={toggleCollapse}
-                className={`hidden lg:grid ${GHOST_CONTROL}`}
+                className={`bh-sidebar-collapse-btn hidden lg:grid ${GHOST_CONTROL}`}
                 title="Recolher menu lateral"
                 aria-label="Recolher menu lateral"
               >
-                <ChevronLeft className="h-3.5 w-3.5" strokeWidth={1.5} />
+                <ChevronLeft
+                  size={14}
+                  strokeWidth={1.75}
+                  className="motion-safe:transition-transform motion-safe:duration-250"
+                />
               </button>
             )
           )}
-        </div>
+        </header>
 
         {isCollapsed && !mobileOpen && (
           <div className="flex shrink-0 justify-center pb-2">
             <button
               type="button"
               onClick={toggleCollapse}
-              className={`grid ${GHOST_CONTROL}`}
+              className={`bh-sidebar-collapse-btn ${GHOST_CONTROL}`}
               title="Expandir menu lateral"
               aria-label="Expandir menu lateral"
             >
-              <ChevronLeft className="h-3.5 w-3.5 rotate-180" strokeWidth={1.5} />
+              <ChevronLeft
+                size={14}
+                strokeWidth={1.75}
+                className="rotate-180 motion-safe:transition-transform motion-safe:duration-250"
+              />
             </button>
           </div>
         )}
 
         <div
           aria-hidden="true"
-          className={`h-px shrink-0 bg-line/60 ${isCollapsed ? 'mx-3' : 'mx-4'}`}
+          className={`h-px shrink-0 bg-gradient-to-r from-transparent via-line/60 to-transparent ${isCollapsed ? 'mx-3' : 'mx-4'}`}
         />
 
-        {/* Scrollable Nav Items */}
+        {/* Scrollable Nav Items — Impeccable */}
         <nav
-          className={`sidebar-scroll-container flex-1 overflow-y-auto py-3 ${
-            isCollapsed ? 'space-y-3 px-2' : 'space-y-4 px-3'
+          className={`bh-sidebar-nav sidebar-scroll-container flex-1 overflow-y-auto py-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-line hover:scrollbar-thumb-line-strong ${
+            isCollapsed ? 'space-y-4 px-2' : 'space-y-5 px-3'
           }`}
         >
           {navSections.map((section) => {
             const sectionBadge = getSectionBadgeStyle(section.title);
             return (
-              <div key={section.title} className="space-y-1.5">
+              <div key={section.title} className="bh-sidebar-section space-y-2">
                 {!isCollapsed ? (
-                  <div className="flex items-center gap-2 px-1 pt-1.5 pb-1">
+                  <div className="bh-sidebar-section-header flex items-center gap-2 px-1 pt-2 pb-1 sticky top-0 bg-surface/95 dark:bg-[#111214]/95 backdrop-blur-sm z-[1]">
                     <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-mono text-[9px] font-bold uppercase tracking-wider border ${sectionBadge.bg} ${sectionBadge.border} ${sectionBadge.text}`}
+                      className={`bh-sidebar-section-badge inline-flex items-center gap-[5px] px-[10px] py-[3px] rounded-full font-mono text-[9.5px] font-semibold uppercase tracking-[0.06em] border ${sectionBadge.bg} ${sectionBadge.border} ${sectionBadge.text}`}
                     >
                       <span
-                        className={`h-1.5 w-1.5 rounded-full ${sectionBadge.dot} shadow-[0_0_6px_currentColor]`}
+                        className={`bh-sidebar-section-badge-dot h-[5px] w-[5px] rounded-full ${sectionBadge.dot} shadow-[0_0_6px_currentColor]`}
+                        aria-hidden="true"
                       />
                       {section.title}
                     </span>
-                    <div className="flex-1 h-px bg-line/60" aria-hidden="true" />
+                    <div
+                      className="flex-1 h-px bg-gradient-to-r from-line/50 to-transparent"
+                      aria-hidden="true"
+                    />
                   </div>
                 ) : (
-                  <div className="mx-auto my-1.5 h-px w-5 bg-line" aria-hidden="true" />
+                  <div
+                    className="mx-auto my-2 h-px w-6 rounded-full bg-line/60"
+                    aria-hidden="true"
+                  />
                 )}
 
                 {section.groups.map((group) => {
@@ -334,7 +358,7 @@ export function Sidebar({
                     <section
                       key={group.id}
                       aria-label={group.label}
-                      className="relative"
+                      className="bh-sidebar-group relative"
                       onMouseEnter={(e) => {
                         if (isCollapsed) {
                           setHoveredGroupId(group.id);
@@ -359,45 +383,49 @@ export function Sidebar({
                             selectTab(group.primaryTab, e);
                           }
                         }}
-                        className={`${ITEM} ${
+                        className={`bh-sidebar-item ${ITEM} ${
                           isCollapsed
-                            ? 'h-10 justify-center px-0 rounded-2xl'
-                            : 'h-10 justify-between gap-1.5 pr-2.5 pl-2'
+                            ? 'h-[42px] justify-center px-0 rounded-[14px]'
+                            : 'h-[44px] justify-between pr-3 pl-[10px]'
                         } ${cardStyleClass}`}
                         aria-label={group.ariaLabel || group.label}
                         aria-current={isActive && !hasSubItems ? 'page' : undefined}
                         aria-expanded={hasSubItems && !isCollapsed ? isGroupExpanded : undefined}
                         title={isCollapsed ? group.label : undefined}
                         data-testid={`sidebar-nav-${group.id}`}
+                        data-tooltip={isCollapsed ? group.label : undefined}
                       >
+                        {/* Active Indicator Bar */}
                         {isActive && (
                           <span
                             aria-hidden="true"
-                            className={`absolute left-0 top-2 bottom-2 w-1.5 rounded-r-full ${
+                            className={`absolute left-0 top-[8px] bottom-[8px] w-[3px] rounded-r-full motion-safe:transition-all motion-safe:duration-300 ${
                               accent === 'cyan'
-                                ? 'bg-[#00D4FF] shadow-[0_0_10px_#00D4FF]'
+                                ? 'bg-[#00D4FF] shadow-[0_0_12px_#00D4FF]'
                                 : accent === 'gold'
-                                  ? 'bg-[#F59E0B] shadow-[0_0_10px_#F59E0B]'
+                                  ? 'bg-[#F59E0B] shadow-[0_0_12px_#F59E0B]'
                                   : accent === 'pink'
-                                    ? 'bg-[#FF2D9B] shadow-[0_0_10px_#FF2D9B]'
-                                    : 'bg-[#8B7DFF] shadow-[0_0_10px_#8B7DFF]'
+                                    ? 'bg-[#FF2D9B] shadow-[0_0_12px_#FF2D9B]'
+                                    : 'bg-[#8B7DFF] shadow-[0_0_12px_#8B7DFF]'
                             }`}
                           />
                         )}
 
-                        <span className="flex min-w-0 items-center gap-2">
+                        <span className="bh-sidebar-item-content flex min-w-0 items-center gap-3">
                           <span
                             data-nav-icon
-                            className={`${ICON_WELL} ${
+                            className={`bh-sidebar-item-icon ${ICON_WELL} ${
                               isActive ? getActiveIconWellStyle(accent) : ICON_WELL_QUIET
                             }`}
                           >
-                            <Icon size={16} strokeWidth={isActive ? 2 : 1.5} />
+                            <Icon size={18} strokeWidth={isActive ? 2 : 1.75} />
                           </span>
                           {!isCollapsed && (
                             <span
-                              className={`truncate font-sans text-[13px] tracking-[-0.012em] ${
-                                isActive ? 'font-bold text-ink' : 'font-medium text-ink-2'
+                              className={`bh-sidebar-item-label truncate font-sans text-[13.5px] tracking-[-0.012em] motion-safe:transition-colors ${
+                                isActive
+                                  ? 'font-semibold text-ink'
+                                  : 'font-medium text-ink-2 group-hover:text-ink'
                               }`}
                             >
                               {group.label}
@@ -410,15 +438,16 @@ export function Sidebar({
                             size={14}
                             strokeWidth={1.75}
                             aria-hidden="true"
-                            className={`shrink-0 text-ink-2 transition-transform duration-200 ${
+                            className={`bh-sidebar-item-chevron shrink-0 text-ink-2 motion-safe:transition-transform motion-safe:duration-200 ${
                               isGroupExpanded ? 'rotate-180' : ''
                             }`}
                           />
                         )}
                       </button>
 
+                      {/* Sub-items Pocket — Expandable with animation */}
                       {!isCollapsed && hasSubItems && isGroupExpanded && (
-                        <div className="sidebar-subitems-pocket mt-1 mb-1.5 ml-2 mr-1 p-1 space-y-0.5">
+                        <div className="bh-sidebar-subitems sidebar-subitems-pocket mt-1.5 mb-2 ml-[18px] mr-2 py-1.5 px-1 space-y-0.5 border-l-2 border-line/60">
                           {subItems.map((subItem) => {
                             const isSubActive = isSubItemActive(
                               subItem,
@@ -431,10 +460,10 @@ export function Sidebar({
                                 key={(subItem.path ?? subItem.tab) + subItem.label}
                                 type="button"
                                 onClick={(e) => selectTab(subItem.tab, e, subItem.path)}
-                                className={`group/sub flex h-8 w-full items-center rounded-xl px-2.5 text-left text-[12px] tracking-[-0.011em] transition-all ${FOCUS_RING} ${
+                                className={`bh-sidebar-subitem group/sub flex h-[32px] w-full items-center rounded-[10px] px-3 text-left text-[12.5px] tracking-[-0.01em] ${EASE} ${FOCUS_RING} ${
                                   isSubActive
                                     ? accent === 'cyan'
-                                      ? 'bg-[#00D4FF]/15 border border-[#00D4FF]/40 text-[#0284c7] dark:text-[#00D4FF] font-semibold shadow-xs'
+                                      ? 'bg-[#00D4FF]/12 border border-[#00D4FF]/35 text-[#0284c7] dark:text-[#00D4FF] font-semibold'
                                       : accent === 'gold'
                                         ? 'bg-[#F59E0B]/15 border border-[#F59E0B]/40 text-[#b45309] dark:text-[#F59E0B] font-semibold shadow-xs'
                                         : accent === 'pink'
@@ -529,37 +558,47 @@ export function Sidebar({
           })}
         </nav>
 
-        {/* Footer Card */}
-        <div className={`shrink-0 ${isCollapsed ? 'px-2 pt-2 pb-3' : 'px-3 pt-2 pb-3'}`}>
-          <div aria-hidden="true" className="mb-2 h-px bg-line/60" />
+        {/* Footer Card — Impeccable CTA */}
+        <footer
+          className={`bh-sidebar-footer shrink-0 ${isCollapsed ? 'px-2 pt-3 pb-4' : 'px-3 pt-3 pb-4'}`}
+        >
+          <div
+            aria-hidden="true"
+            className="mb-3 h-px bg-gradient-to-r from-transparent via-line/60 to-transparent"
+          />
           {!isCollapsed ? (
-            <div className="sidebar-footer-card p-2.5">
+            <div className="bh-sidebar-footer-card sidebar-footer-card p-3 rounded-[14px]">
               <button
                 type="button"
                 onClick={() => openTab('intelligence')}
-                className={`group flex w-full items-center justify-between gap-2 text-left transition-all ${FOCUS_RING}`}
+                className={`group flex w-full items-center justify-between gap-3 text-left ${EASE} ${FOCUS_RING}`}
                 data-testid="sidebar-intelligence-cta"
               >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#8B7DFF]/15 text-[#8B7DFF] border border-[#8B7DFF]/35 shadow-[0_0_10px_rgba(139,125,255,0.25)] transition-transform duration-200 group-hover:scale-105">
-                    <ArrowRight
-                      size={14}
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="bh-sidebar-footer-card-icon grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-[#8B7DFF]/12 text-[#6d28d9] dark:text-[#8B7DFF] border border-[#8B7DFF]/30 shadow-[0_0_12px_rgba(139,125,255,0.2)] motion-safe:transition-all motion-safe:duration-200 group-hover:scale-105 group-hover:shadow-[0_0_16px_rgba(139,125,255,0.35)]">
+                    <Sparkles
+                      size={16}
                       strokeWidth={1.75}
                       aria-hidden="true"
-                      className="motion-safe:transition-transform motion-safe:duration-200 motion-safe:ease-out group-hover:translate-x-0.5"
+                      className="motion-safe:transition-transform motion-safe:duration-200 group-hover:rotate-12"
                     />
                   </span>
-                  <div className="min-w-0">
-                    <div className="truncate font-display text-[13px] font-bold text-ink group-hover:text-brand transition-colors">
+                  <div className="bh-sidebar-footer-card-content min-w-0">
+                    <div className="bh-sidebar-footer-card-title truncate font-display text-[13px] font-semibold text-ink group-hover:text-brand-text dark:group-hover:text-brand motion-safe:transition-colors">
                       Hub de IA &amp; Agentes
                     </div>
-                    <div className="truncate font-mono text-[9.5px] text-ink-2 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#D4F434] shadow-[0_0_6px_#D4F434]" />
-                      <span>12 Agentes Ativos</span>
+                    <div className="bh-sidebar-footer-card-meta flex items-center gap-[6px] mt-0.5">
+                      <span
+                        className="bh-sidebar-footer-card-status w-[6px] h-[6px] rounded-full bg-[#D4F434] shadow-[0_0_8px_#D4F434] motion-safe:animate-pulse"
+                        aria-hidden="true"
+                      />
+                      <span className="bh-sidebar-footer-card-desc truncate font-mono text-[10px] font-medium text-ink-2">
+                        12 Agentes Ativos
+                      </span>
                     </div>
                   </div>
                 </div>
-                <span className="font-mono text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[#D4F434]/15 text-[#121316] dark:text-[#D4F434] border border-[#D4F434]/30 shrink-0">
+                <span className="bh-sidebar-footer-card-badge font-mono text-[9px] font-bold px-2 py-1 rounded-[6px] bg-[#D4F434]/12 text-[#5a6b17] dark:text-[#D4F434] border border-[#D4F434]/25 shrink-0 uppercase tracking-[0.04em]">
                   AUTO
                 </span>
               </button>
@@ -568,15 +607,15 @@ export function Sidebar({
             <button
               type="button"
               onClick={() => openTab('intelligence')}
-              className={`sidebar-footer-card mx-auto grid h-10 w-10 place-items-center rounded-2xl text-[#8B7DFF] hover:scale-105 transition-all ${FOCUS_RING}`}
+              className={`bh-sidebar-footer-card sidebar-footer-card mx-auto grid h-[42px] w-[42px] place-items-center rounded-[14px] text-[#6d28d9] dark:text-[#8B7DFF] hover:scale-105 motion-safe:transition-all ${FOCUS_RING}`}
               title="Ver Hub de IA"
               aria-label="Ver Hub de IA"
               data-testid="sidebar-intelligence-icon"
             >
-              <ArrowRight size={15} strokeWidth={1.75} aria-hidden="true" />
+              <Sparkles size={18} strokeWidth={1.75} aria-hidden="true" />
             </button>
           )}
-        </div>
+        </footer>
       </aside>
     </>
   );
