@@ -1,0 +1,9 @@
+{
+  "name": "testland/webhook-delivery-tester",
+  "description": "Use whenever webhooks need tests, on the sending or receiving side: HMAC-SHA256 signatures, retries with backoff and jitter, timestamp replay windows, ordering, dead letters and body encoding per Standard Webhooks, plus replaying captured inbound payloads with tampering and key rotation cases.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.16"
+}

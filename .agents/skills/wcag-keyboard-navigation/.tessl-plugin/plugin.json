@@ -1,0 +1,9 @@
+{
+  "name": "testland/wcag-keyboard-navigation",
+  "description": "Use when building or reviewing keyboard-only support or a modal, drawer or popover's focus handling: WCAG 2.2 keyboard access, no keyboard traps, shortcuts, focus order, visible and unobscured focus, with test scripts and the focus-trap pattern (focus on open, Escape, restore).",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.8"
+}

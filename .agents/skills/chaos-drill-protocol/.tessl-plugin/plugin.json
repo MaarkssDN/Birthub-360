@@ -1,0 +1,9 @@
+{
+  "name": "testland/chaos-drill-protocol",
+  "description": "Use when a chaos experiment is already designed and a fault is about to be injected into a running system. Sets the go/no-go gates (non-production, healthy baseline, live monitoring, tested rollback), blast-radius bound, abort criteria, inject and abort commands and the recovery check.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.9"
+}

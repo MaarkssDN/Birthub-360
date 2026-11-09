@@ -1,0 +1,9 @@
+{
+  "name": "testland/lighthouse-perf",
+  "description": "Use when a web frontend needs Core Web Vitals (LCP, INP, CLS) checked on every PR, or its first performance budgets drafted. Sets up Lighthouse CI with Google's thresholds at the 75th percentile, per-route budgets by page type, resource-size budgets, report artifacts and PR comments.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.8.7"
+}

@@ -1,0 +1,9 @@
+{
+  "name": "testland/test-effort-estimation",
+  "description": "Use when an epic or release is split into testable areas and someone must commit test capacity. Produces a PERT three-point estimate as ranges, with a named assumptions ledger and a split across developer, automation and exploratory work; also classifies a change set's shape from git history.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.10.16"
+}

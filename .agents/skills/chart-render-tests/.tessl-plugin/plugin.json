@@ -1,0 +1,9 @@
+{
+  "name": "testland/chart-render-tests",
+  "description": "Use when a dashboard renders charts that need regression tests, before a chart library upgrade or after a theme change. Canvas charts (Chart.js) get screenshot and toDataURL diffs, SVG (D3) gets normalized structure snapshots, and Vega or Vega-Lite specs get schema and compile checks.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.0.2"
+}

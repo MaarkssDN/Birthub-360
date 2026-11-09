@@ -1,0 +1,9 @@
+{
+  "name": "testland/negative-test-generator",
+  "description": "Use when code has deliberate error paths but the tests only prove the success case. For each happy-path test, generates parameterized tests for validation errors, missing fields, wrong types, authorization failures, rate limits, conflicts and attack payloads in the project's test runner format.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.13"
+}

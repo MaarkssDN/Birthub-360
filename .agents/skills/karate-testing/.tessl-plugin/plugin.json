@@ -1,0 +1,9 @@
+{
+  "name": "testland/karate-testing",
+  "description": "Use when a JVM project wants HTTP API tests written as Karate .feature files instead of Java code: the Gherkin-style DSL, match with fuzzy validators, JUnit 5 and Maven runs, and JUnit XML for CI. For Java fluent tests use restassured-testing; for Python YAML tests use tavern-testing.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.5.7"
+}

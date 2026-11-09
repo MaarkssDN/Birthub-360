@@ -1,0 +1,9 @@
+{
+  "name": "testland/malicious-payload-bank",
+  "description": "Use when writing negative tests for input validation, fuzz targets or security tests that need real attack strings: SQL injection, XSS, SSRF, path traversal, command injection, XXE, prototype pollution, ReDoS, Unicode confusables and header injection, with which payloads fit each input context.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.6"
+}

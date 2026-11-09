@@ -1,0 +1,9 @@
+{
+  "name": "testland/multi-tool-finding-triage",
+  "description": "Use when several security scanners (SAST, DAST, secrets, SCA, container, IaC) produce separate reports and the team needs one BLOCK or PASS. Normalizes and dedupes findings, records which scanners agree, rejects waivers without expiry or approver, adds EPSS and KEV, and writes one PR comment.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.11"
+}

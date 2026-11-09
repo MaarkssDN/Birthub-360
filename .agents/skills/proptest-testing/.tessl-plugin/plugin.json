@@ -1,0 +1,9 @@
+{
+  "name": "testland/proptest-testing",
+  "description": "Use when a Rust project needs property-based tests, especially for parsers, serializers and functions with structured input. Sets up proptest: the proptest! macro, strategies for collections, regex strings and any, shrinking and the persisted regression file.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.14"
+}

@@ -1,0 +1,9 @@
+{
+  "name": "testland/mobile-device-matrix-toolkit",
+  "description": "Use when deciding which iOS and Android devices and OS versions to test on at each stage to control CI cost: smoke per PR, regression per merge, full farm at release. Generates Appium configs per device from one YAML, runs a GitHub Actions matrix and merges JUnit results into one table.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.4.5"
+}

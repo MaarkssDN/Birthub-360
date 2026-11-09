@@ -1,0 +1,9 @@
+{
+  "name": "testland/flake-axis-bisection",
+  "description": "Use when one test is known to fail intermittently and reading its code has not explained why. Varies one condition at a time (isolation, order, workers, viewport, latency, repetition), counts passes and failures with confidence intervals, and walks shared resources once parallelism is implicated.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.6"
+}

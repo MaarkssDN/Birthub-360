@@ -1,0 +1,9 @@
+{
+  "name": "testland/manual-test-script-author",
+  "description": "Use when a feature can't or shouldn't be fully automated and a human tester needs a script: UAT sign-off, regression baselines, certification, deploy smoke checklists. Writes self-contained manual test cases as a step table, Gherkin, a business-language UAT script or a one-line checklist.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.7.8"
+}

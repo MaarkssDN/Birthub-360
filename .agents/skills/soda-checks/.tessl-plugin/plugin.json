@@ -1,0 +1,9 @@
+{
+  "name": "testland/soda-checks",
+  "description": "Use when warehouse data quality (Snowflake, BigQuery, Postgres, Redshift and others) should be checked with YAML-based SodaCL: writing checks, configuration.yml data sources, soda scan runs and CI gating on the exit code, with Soda Core or Soda Cloud.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.0.7"
+}

@@ -1,0 +1,9 @@
+{
+  "name": "testland/test-strategy-author",
+  "description": "Use when a project, release or feature needs a test strategy or master test plan that stakeholders sign off: scope, test types per layer, risk-based prioritization, tools, environments, exit criteria and ownership, plus a budgeted per-risk test plan with owners and effort.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.10.18"
+}

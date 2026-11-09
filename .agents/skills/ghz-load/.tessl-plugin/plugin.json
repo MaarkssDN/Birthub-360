@@ -1,0 +1,9 @@
+{
+  "name": "testland/ghz-load",
+  "description": "Use when a gRPC service needs load testing or a latency regression gate: ghz runs with request count, concurrency, rate and duration, JSON, CSV or HTML output, and p50, p95 and p99 latency, RPS and error rates checked in CI.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.13"
+}

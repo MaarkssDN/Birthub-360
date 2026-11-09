@@ -1,0 +1,9 @@
+{
+  "name": "testland/event-sourcing-tests",
+  "description": "Use when an event-sourced aggregate gains or changes an event type, snapshots are added, or a CQRS read model is projected from events. Tests given-events/when-command/then-events, replay determinism, upcasting, snapshot equivalence, projections and eventual-consistency windows.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.14"
+}

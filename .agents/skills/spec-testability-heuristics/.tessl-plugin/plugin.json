@@ -1,0 +1,9 @@
+{
+  "name": "testland/spec-testability-heuristics",
+  "description": "Use when a user story, acceptance criterion, PRD section, API contract or PR description is about to go to implementation and someone needs to know which sentences can't be verified. Scores each claim as observable, decidable and bounded, rewrites weak ones and gives a BLOCK, REVIEW or OK verdict.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.4.10"
+}

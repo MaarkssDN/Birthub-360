@@ -1,0 +1,9 @@
+{
+  "name": "testland/pseudo-localization-runner",
+  "description": "Use when preparing an app for translation, checking localization infrastructure, or when pseudo-localization comes up. Replaces strings with accented, 35%-longer variants to expose hardcoded text, truncation, encoding and bidi problems without real translators.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.1.13"
+}

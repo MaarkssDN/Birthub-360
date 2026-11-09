@@ -1,0 +1,9 @@
+{
+  "name": "testland/feature-flag-test-harness",
+  "description": "Use when a feature behind a flag must be tested both on and off, or several flags interact. Runs the same suite under the minimum set of flag combinations with an OpenFeature in-memory provider, as labeled CI matrix shards, and reports results per combination.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.5"
+}

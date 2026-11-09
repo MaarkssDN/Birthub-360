@@ -1,0 +1,9 @@
+{
+  "name": "testland/serverless-integration-test-builder",
+  "description": "Use when a serverless project (SAM, serverless.yml, Wrangler, Vercel or Netlify functions) has no integration tests yet. Inventories functions and event sources, picks a local emulator per function, generates test events, asserts cold-start and timeout budgets, and emits the tests and CI config.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.5"
+}

@@ -1,0 +1,9 @@
+{
+  "name": "testland/aria-authoring-patterns",
+  "description": "Use when building or reviewing a custom interactive widget with no native HTML equivalent (combobox, dialog, menu, tabs, tree and more). Gives the W3C ARIA Authoring Practices pattern: required roles and states, keyboard interaction and common violations.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.8"
+}

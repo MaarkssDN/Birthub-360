@@ -1,0 +1,9 @@
+{
+  "name": "testland/cache-key-discriminator-audit",
+  "description": "Use whenever a user saw another user's or tenant's data, or a per-user response goes through a shared cache, Redis or a CDN, or a cache key is designed or changed. Checks the key holds every value the response depends on (tenant, user, scope, locale), writes the fixed key, Vary header and tests.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.11"
+}

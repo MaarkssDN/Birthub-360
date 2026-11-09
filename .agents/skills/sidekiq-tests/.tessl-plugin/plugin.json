@@ -1,0 +1,9 @@
+{
+  "name": "testland/sidekiq-tests",
+  "description": "Use whenever Ruby Sidekiq workers need tests: the fake!, inline! and disable! testing modes, RSpec and Minitest helpers, clearing jobs between tests, and assertions on enqueued jobs, arguments, scheduling, retries and unique jobs.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.3"
+}

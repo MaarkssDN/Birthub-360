@@ -1,0 +1,9 @@
+{
+  "name": "testland/idempotency-test-author",
+  "description": "Use whenever the same request or message could be processed twice (at-least-once queues, retries, webhook redelivery, double clicks, mobile retries) and duplicates must have no extra effect. Tests idempotency keys, delivery semantics, fingerprint dedup and the idempotency window.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.8"
+}

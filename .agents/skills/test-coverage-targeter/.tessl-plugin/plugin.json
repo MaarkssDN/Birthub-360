@@ -1,0 +1,9 @@
+{
+  "name": "testland/test-coverage-targeter",
+  "description": "Use when a team can write only a handful of new tests and must pick which uncovered code matters most, or when some modules lose coverage while the total looks fine. Ranks uncovered branches in the diff by complexity, churn and test cost, and tracks per-file coverage drift.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.4.11"
+}

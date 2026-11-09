@@ -1,0 +1,9 @@
+{
+  "name": "testland/multiplayer-state-machine-coverage",
+  "description": "Use before a multiplayer game goes to platform cert, where broken multiplayer is a common rejection. Builds a coverage matrix for connect, authority handoff, disconnect, reconnect and host migration under latency, loss and reordering for Unity Netcode, Unreal and Mirror, with a go/no-go gate.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.4.18"
+}

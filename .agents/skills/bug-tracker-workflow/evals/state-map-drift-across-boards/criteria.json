@@ -1,0 +1,41 @@
+{
+  "context": "Piotr replaced hand-pasted values with a nightly sync, which reads as the responsible fix and is the wrong axis: the problem was never how old the copy is, it is that some of these values are not properties of a board at all. Two log lines settle it and the agent has to use both. The 2026-08-18 09:14 Jira failure came after a sync that ran clean at 03:00 the same morning - a transition's validity depends on the issue's current status, so no snapshot of a project can encode it at any refresh rate. The 2026-08-19 11:02 Linear failure came 22 minutes after the team renamed the column, which is inside any sync interval anyone would propose, and the deeper fault is matching on a display name at all rather than on the state's stable lifecycle category. automation/sync-notes.md also shows the sync covers only part of the file: description_format, lookup_by, priority_for_urgent, severity_field and update_mode are still whatever was last pasted. Predicted baseline failure: the agent accepts the sync as directionally right and tightens it - hourly, or on a webhook when a board changes - and hands back a corrected map. That makes most of the log disappear and leaves the file exactly as fragile, and it is contradicted on its face by the 09:14 line, which the agent typically reads as an unexplained one-off because Piotr's own notes call it a known gap. Second predicted miss: the two lines that returned 200 are skipped because nothing failed - a triager's edit silently overwritten by a replace-mode update with no revision check, and an outage filed at the lowest urgency band because priority_for_urgent is 4 on a scale where 1 is the most urgent. Third: the agent waves away the throttling concern rather than answering it, which is how the pasted file was justified in the first place.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Both deliverables produced",
+      "max_score": 5,
+      "description": "board-map-decision.md and board-map-fixes.csv both exist, the CSV carrying entry,verdict,replacement,how_obtained with a row per entry being changed. Missing either scores zero."
+    },
+    {
+      "name": "MUST NOT keep lifecycle identifiers in the file at any refresh rate",
+      "max_score": 32,
+      "description": "The Jira transition numbers and the Linear and Azure DevOps state names are each identified as values the script asks the board for at the moment it acts, and MUST NOT survive in the map as stored or synced values. Proposing a shorter sync interval, a webhook-driven refresh, or a corrected set of values scores zero here however accurate the values are. Full marks name the lookup per platform: for Jira the transitions available for that issue in its current status, for Linear the team's workflow states matched on their stable lifecycle category rather than the display name, for Azure DevOps the states the project's own process template defines."
+    },
+    {
+      "name": "The staleness argument refuted from the log, not asserted",
+      "max_score": 20,
+      "description": "board-map-decision.md uses the 2026-08-18 09:14 line - a clean 03:00 sync followed by a 400 six hours later - to show a transition's validity is a property of the issue's current status and not of the project, and the 2026-08-19 line to show the rename landed 22 minutes before the failure, inside any interval worth proposing. Rejecting the sync on general principle with neither line cited scores at most half; concluding that the sync should run more often scores zero."
+    },
+    {
+      "name": "The call budget answered without a stored copy",
+      "max_score": 14,
+      "description": "Piotr's throttling concern gets a concrete answer: resolve the workflow scheme or the team's states once per run and hold it for the life of that run, refreshing on a 4xx, with the per-issue transition lookup being one call at the moment of the transition rather than on every request. Dismissing the concern, or telling him to look everything up on every call, scores zero."
+    },
+    {
+      "name": "The silent overwrite explained",
+      "max_score": 14,
+      "description": "The 2026-08-20 line - a 200 that lost a triager's edit - is attributed to an update that replaces the item without checking the revision it was read at, and the fix is a conditional update that fails when the item has changed since. Attributing it to a race nothing can help, or omitting the line because it did not error, scores zero."
+    },
+    {
+      "name": "Urgency value corrected",
+      "max_score": 10,
+      "description": "priority_for_urgent set to 4 is identified as the least urgent band on that platform rather than the most urgent, which is why the 2026-08-22 outage landed below routine work, and the correct value is given. Leaving the line unexamined scores zero."
+    },
+    {
+      "name": "The entries the sync never covered",
+      "max_score": 10,
+      "description": "The values sync-notes.md lists as unread are handled: description_format set to text is the reason a Jira create sends plain text where the structured document form is required, and severity_field is a field that is simply not defined for the Bug type on the Platform project's template - named as an absent field rather than a typo, with the check that establishes which fields the work item type actually has. Getting one of the two scores at most half."
+    }
+  ]
+}

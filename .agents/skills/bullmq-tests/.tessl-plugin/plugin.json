@@ -1,0 +1,9 @@
+{
+  "name": "testland/bullmq-tests",
+  "description": "Use whenever a Node.js or TypeScript service uses BullMQ and its queues or workers need tests: producers, worker processors, retries, backoff and repeat jobs, FlowProducer parent-child jobs and QueueEvents, against real Redis (Docker, Testcontainers) or ioredis-mock.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.4"
+}

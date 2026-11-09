@@ -1,0 +1,9 @@
+{
+  "name": "testland/bug-tracker-workflow",
+  "description": "Use when defect counts or reports are wrong (missing top-severity bugs, fixed items counted as new, unmerged duplicates) or bug filing and transitions need automating. One workflow for Jira, Linear, GitHub Issues and Azure DevOps: dedupe before filing, severity vs priority, lifecycle and CI filing.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.0.7"
+}

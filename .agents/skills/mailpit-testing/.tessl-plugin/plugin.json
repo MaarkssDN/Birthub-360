@@ -1,0 +1,9 @@
+{
+  "name": "testland/mailpit-testing",
+  "description": "Use whenever code sends email and tests must check it: capture messages in Mailpit's local SMTP server (port 1025) and assert on them through its REST API, test SMTP failures with chaos mode, follow multipart, link, unsubscribe and bounce flows, or migrate from MailHog.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.14"
+}

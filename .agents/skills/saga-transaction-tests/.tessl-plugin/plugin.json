@@ -1,0 +1,9 @@
+{
+  "name": "testland/saga-transaction-tests",
+  "description": "Use when a business transaction spans two or more services and a mid-sequence failure must be undone, or compensation logic just changed. Tests orchestrated and choreographed sagas: each compensating step, partial failures, idempotent compensations and the outbox for atomic publish.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.13"
+}

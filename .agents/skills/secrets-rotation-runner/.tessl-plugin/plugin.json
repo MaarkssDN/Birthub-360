@@ -1,0 +1,9 @@
+{
+  "name": "testland/secrets-rotation-runner",
+  "description": "Use when a secret is found in code or history, or for scheduled rotation: identify the provider, rotate the credential through its API (AWS IAM, GitHub, Stripe, GCP, Azure, Twilio, Slack and more), revoke the old one, log the audit trail and link the post-mortem. Scrubbing git history is not enough.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.13"
+}

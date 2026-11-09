@@ -1,0 +1,9 @@
+{
+  "name": "testland/playwright-fixture-builder",
+  "description": "Use when a Playwright suite has copy-pasted beforeEach setup that should be a fixture, or needs shared login, database or feature-flag setup across many specs. Builds test.extend fixtures with the right test or worker scope, setup and teardown, and per-worker isolation.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.5"
+}

@@ -1,0 +1,9 @@
+{
+  "name": "testland/web-e2e-overview",
+  "description": "Use when a web app has no E2E tests yet, a team is choosing or replacing an E2E framework, or a first browser test must go green. Explains what E2E covers, picks between Playwright, Cypress, Selenium, WebdriverIO, Puppeteer, TestCafe and cloud grids, and the traps that make suites flaky.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.9.7"
+}

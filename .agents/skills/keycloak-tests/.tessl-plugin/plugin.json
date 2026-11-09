@@ -1,0 +1,9 @@
+{
+  "name": "testland/keycloak-tests",
+  "description": "Use whenever an app uses self-hosted Keycloak and needs integration tests: a throwaway Keycloak per test class via Testcontainers, realm JSON imports, OIDC discovery, token and introspection endpoints, the admin REST API, password, auth-code, client-credentials and token-exchange flows, and UMA.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.17"
+}

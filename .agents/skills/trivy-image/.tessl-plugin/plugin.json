@@ -1,0 +1,9 @@
+{
+  "name": "testland/trivy-image",
+  "description": "Use when container images need one scanner for vulnerabilities, secrets, misconfigurations and licenses: trivy image with severity filters, SARIF or JSON output, .trivyignore suppressions, --ignore-unfixed and scanner toggles. For a standalone SBOM use syft-generation.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.1.21"
+}

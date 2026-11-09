@@ -1,0 +1,9 @@
+{
+  "name": "testland/espresso-suite",
+  "description": "Use whenever an Android app needs UI tests in Google's Espresso: onView with perform and check, automatic synchronization instead of sleeps, IdlingResource for app async work, ./gradlew connectedAndroidTest and JUnit XML results.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.4.5"
+}

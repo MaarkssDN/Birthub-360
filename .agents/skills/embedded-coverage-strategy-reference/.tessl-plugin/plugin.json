@@ -1,0 +1,9 @@
+{
+  "name": "testland/embedded-coverage-strategy-reference",
+  "description": "Use when deciding what code coverage level embedded C/C++ needs (statement, branch, MC/DC) and wiring gcov or llvm-cov into the build: host vs QEMU instrumentation, MISRA-C and DO-178C expectations by safety level, and report formats.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.9"
+}

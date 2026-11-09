@@ -1,0 +1,9 @@
+{
+  "name": "testland/stryker-mutation",
+  "description": "Use when a JavaScript or TypeScript suite has high coverage but bugs still slip through, and the team wants mutation testing to find weak tests. Sets up StrykerJS: the Jest, Vitest, Mocha or Karma runner, stryker.conf.json, thresholds and incremental runs on pull requests.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.13"
+}

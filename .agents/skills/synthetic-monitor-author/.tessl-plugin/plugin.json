@@ -1,0 +1,9 @@
+{
+  "name": "testland/synthetic-monitor-author",
+  "description": "Use when a critical user journey needs continuous checks in production, or monitor coverage was never derived from real usage. Writes a synthetic monitor for Datadog, Pingdom, Checkly or New Relic with browser or API steps, cadence, checks and alerts, and ranks unmonitored journeys from RUM data.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.11"
+}

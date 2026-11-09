@@ -1,0 +1,9 @@
+{
+  "name": "testland/rust-unit-tests",
+  "description": "Use whenever the task is to write, add, fix or review Rust tests, even one quick #[test]: assert macros, should_panic, Result-returning tests, integration and doc tests, rstest parametrization, mockall, coverage with cargo-llvm-cov and Criterion benchmarks.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.0.1"
+}

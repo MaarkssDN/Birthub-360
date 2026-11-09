@@ -1,0 +1,9 @@
+{
+  "name": "testland/launchdarkly-testing",
+  "description": "Use whenever code that reads LaunchDarkly feature flags needs tests: the TestData source for hermetic tests with no network, file-based fixtures, per-test flag overrides and assignment checks. Which flag combinations to cover is in openfeature-sdk-testing's flag test-matrix reference.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.15"
+}

@@ -1,0 +1,9 @@
+{
+  "name": "testland/test-case-anatomy-reference",
+  "description": "Use when writing a test case template, reviewing a batch of test cases for quality, or migrating cases between tools. Lists the ISO/IEC/IEEE 29119-3 and ISTQB test case fields, maps them to TestRail, Xray, Zephyr Scale, Allure TestOps and Qase, and gives a PASS, WEAK or FAIL review rubric.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.6"
+}

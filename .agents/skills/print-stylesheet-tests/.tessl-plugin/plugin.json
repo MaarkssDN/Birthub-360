@@ -1,0 +1,9 @@
+{
+  "name": "testland/print-stylesheet-tests",
+  "description": "Use when an app has a Print button or print stylesheet that is untested, or printed and PDF copies break in the wrong places. Tests print CSS with Playwright print emulation and page.pdf(): @page size and margins, page breaks, orphans and widows, and print-only rules.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.1.11"
+}

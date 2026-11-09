@@ -1,0 +1,9 @@
+{
+  "name": "testland/payment-flow-test-author",
+  "description": "Use when a payment integration needs refund, dispute or payment-webhook tests: a refund matrix (full, partial, over-refund) for Stripe, Adyen, PayPal and Braintree, chargebacks with card-network reason codes, and webhook replay through each gateway's simulator.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.0.2"
+}

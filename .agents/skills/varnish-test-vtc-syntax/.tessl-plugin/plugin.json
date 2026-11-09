@@ -1,0 +1,9 @@
+{
+  "name": "testland/varnish-test-vtc-syntax",
+  "description": "Use when a Varnish caching layer or VCL change needs tests: varnishtest VTC files with server, client and varnish blocks, grace and saint modes, PURGE handlers with ACLs, and surrogate-key invalidation with the xkey vmod.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.6"
+}

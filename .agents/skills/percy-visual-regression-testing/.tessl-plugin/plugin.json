@@ -1,0 +1,9 @@
+{
+  "name": "testland/percy-visual-regression-testing",
+  "description": "Use when visual regression tests run on BrowserStack Percy: @percy/cli with the Playwright, Cypress, Selenium or Storybook SDK, percy exec, viewports, masks and ignored regions, and reviewing diffs in Percy builds.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.12"
+}

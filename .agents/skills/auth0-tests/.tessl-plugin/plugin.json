@@ -1,0 +1,9 @@
+{
+  "name": "testland/auth0-tests",
+  "description": "Use when an app uses Auth0 and needs tests for its tenant config, login flows or Action scripts: per-PR or namespaced tenants, Universal Login, PKCE, client credentials, Rules and Hooks, and config drift with a0deploy. Generic OAuth flows are oauth-flow-test-author.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.15"
+}

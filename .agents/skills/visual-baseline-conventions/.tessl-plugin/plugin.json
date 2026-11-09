@@ -1,0 +1,9 @@
+{
+  "name": "testland/visual-baseline-conventions",
+  "description": "Use when planning or auditing visual regression coverage: which stories or pages get baselines, which breakpoints, masking vs thresholds, when to add or drop a baseline, and how to choose between Percy, Chromatic, Playwright and Storybook test-runner.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.13"
+}

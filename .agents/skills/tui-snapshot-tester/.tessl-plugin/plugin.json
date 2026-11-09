@@ -1,0 +1,9 @@
+{
+  "name": "testland/tui-snapshot-tester",
+  "description": "Use when a terminal UI (TUI) app needs tests that catch layout regressions. Captures rendered terminal frames as SVG or text snapshots and diffs them on each run: pytest-textual-snapshot for Textual, insta for Ratatui, teatest for Bubble Tea, ink-testing-library for Ink.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.1.9"
+}

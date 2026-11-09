@@ -1,0 +1,9 @@
+{
+  "name": "testland/go-unit-tests",
+  "description": "Use whenever the task is to write, add, fix or review Go tests, even a quick table-driven test for one function: t.Run subtests, t.Parallel, helpers, fuzz tests, benchmarks, race detection and coverage with go test, plus Ginkgo and gomock or testify mocks.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.0.1"
+}

@@ -1,0 +1,46 @@
+{
+  "context": "An engineer has already diagnosed and filed the defect from two numbers a support agent typed into a chat window, without opening the structured record that exists for the same transfer. His hypothesis is genuinely attractive: 1250.00 against 1205.00 is a digit transposition, which is what a minor-unit formatting defect looks like, and a renderer fix is already in review. Predicted baseline failure: the agent accepts the framing it was handed, writes a tidy report about a statement-line display defect, keeps Minor severity and P3 because nothing is described as lost, and repeats that the customer's money is where it should be. What the unaided agent is predicted not to do is reconcile data/ledger-export.json, where TRF-90c41 debits 125000 and credits only 120500, with the missing 4500 sitting on CLR-HOLD-014 as a HOLD_PENDING_REVIEW posting still marked released false. Money genuinely did not arrive; the printed string is faithful, as the shipped renderer test shows, so the transposition reading is a coincidence of two numbers that happen to differ by the reserve. The export also settles two things the ticket could not: TRF-90d77 is a second customer short-credited the same way, and Sofia's own second screened transfer TRF-90f03 released its hold and balanced, which contradicts her 'every single time'.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Deliverables produced",
+      "max_score": 5,
+      "description": "reports/transfer-amount-mismatch.md and docs/review-note.md both exist, and test/ledger.test.js has at least one added test. Scores zero if any of the three is missing."
+    },
+    {
+      "name": "MUST NOT carry the hand-copied diagnosis instead of the parsed record",
+      "max_score": 32,
+      "description": "The report MUST NOT characterise this as a statement-rendering, formatting, display or transposition defect, MUST NOT state that the money moved correctly or that the customer's balance is intact, and MUST NOT endorse shipping the renderer fix as the resolution. Any of those scores zero for this criterion regardless of the rest, because the ledger export shows the destination account was credited 120500 against a 125000 debit. Full marks require the report to state that the customer is 4500 minor units short and that the shortfall is an unreleased HOLD_PENDING_REVIEW posting on CLR-HOLD-014, not a rendering problem."
+    },
+    {
+      "name": "Actual and reproduction built from the export, not the chat paste",
+      "max_score": 22,
+      "description": "The Actual section names the three postings of TRF-90c41 by code and amount, and the reproduction pins the build the export names - pay-svc 4.19.2, commit 8f2ad10 - with the transfer reference TRF-90c41 that the chat paste never contained. Reaching the right conclusion but pinning reproduction to 'Production' or to no commit at all scores at most half. Reproducing BANK-3318's environment block verbatim, or presenting the two chat figures as the whole of the evidence, scores zero."
+    },
+    {
+      "name": "Test that settles it",
+      "max_score": 20,
+      "description": "An added test in test/ledger.test.js reconciles TRF-90c41 and asserts it is not balanced - delta -4500 - and that it carries an unreleased hold, and it passes on the shipped code. A test that only asserts renderAmount formats 120500 or 125000 correctly scores zero: the renderer is faithful under both hypotheses, so it separates nothing. Asserting only that the two transfers differ, without the customer-visible shortfall, scores at most half."
+    },
+    {
+      "name": "Severity rescored from impact, priority argued separately",
+      "max_score": 12,
+      "description": "Severity is restated from what the defect does to the user - customer funds not credited - and priority is argued from business context (a second affected customer, the customer leaving tomorrow, one reply available). Scores zero if Minor and P3 are carried over unchanged, or if severity and priority are asserted as one judgement or a single value with no separate reasoning."
+    },
+    {
+      "name": "Scope and frequency taken from the export",
+      "max_score": 12,
+      "description": "The report states that two of the three screened-route transfers in the export carry an unreleased hold, names TRF-90d77 as a second affected customer, and resolves the frequency question with evidence rather than leaving it open: the customer's own second screened transfer TRF-90f03 released its hold and balanced, so 'every single time' is not supported. Scores zero if the report repeats 'Occurrences reported: 1' or 'every single time' as established fact, or asserts a rate the export does not support. Naming the second affected transfer without addressing frequency scores at most half."
+    },
+    {
+      "name": "Answers Ravi rather than overruling him",
+      "max_score": 8,
+      "description": "docs/review-note.md engages with his reasoning - grants that 1250 against 1205 really is a transposition-shaped pair and that the renderer is the obvious suspect from two numbers alone - and names the posting that changes the reading. Scores zero if his conclusion is reversed without addressing it, or if the note is a verdict with no reasoning attached."
+    },
+    {
+      "name": "Unknowns still carried and questions listed for the one reply",
+      "max_score": 8,
+      "description": "Browser, browser version, operating system and the web-versus-mobile ambiguity are each carried as unknown, and the report holds an itemised list support can paste into today's single reply - at minimum which surface she used and whether the husband's account should be checked. Scores zero if any browser name, version or OS is asserted, or if the husband's report is presented as a confirmed second occurrence rather than an unverified lead."
+    }
+  ]
+}

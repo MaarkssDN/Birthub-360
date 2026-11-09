@@ -1,11 +1,1115 @@
 {
   "version": 1,
   "skills": {
+    "a11y-violation-gate": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-accessibility/skills/a11y-violation-gate/SKILL.md",
+      "computedHash": "d41ac6951167ed5c1cdf7fa56bc64e2f2367699037d4a7924fac563439d1f921"
+    },
+    "ab-test-validity-checklist": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-feature-flags/skills/ab-test-validity-checklist/SKILL.md",
+      "computedHash": "440257d42166a936e39c97978d6d2e05df26bd6356b5896a0a8295ef0c0b46da"
+    },
+    "add-to-homescreen-flow-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-pwa/skills/add-to-homescreen-flow-tests/SKILL.md",
+      "computedHash": "81a58cff4626fda805177e9e3665808f7f43d9dfb77f90e308479f8485d519ca"
+    },
     "agent-browser": {
       "source": "vercel-labs/agent-browser",
       "sourceType": "github",
       "skillPath": "skills/agent-browser/SKILL.md",
       "computedHash": "80161e6836b3b40f4e83730a290deb40ac14d877d38c97ad5f6d71be37ce74c3"
+    },
+    "ai-spec-coverage-mapper": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-ai-assisted/skills/ai-spec-coverage-mapper/SKILL.md",
+      "computedHash": "9e52adac990a61626e575388fed9168838bcb35a63fd30e5f427b52585752c59"
+    },
+    "ai-test-generator": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-ai-assisted/skills/ai-test-generator/SKILL.md",
+      "computedHash": "297821c9ead89610215d161c6013d8bc3012b5f2b975e24bf8ec3a9b613f2dd4"
+    },
+    "allure-reports": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-reporting/skills/allure-reports/SKILL.md",
+      "computedHash": "83ad547022d1a4e36a0c01a7e8b9bfb7ce66cc0d405baf865ed41e78ab34d4e8"
+    },
+    "api-chaos-runner": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-api-testing/skills/api-chaos-runner/SKILL.md",
+      "computedHash": "6a245f901bec129f59d186e5a711834019a5250e3a6a6fd8f22a9ed08af952c1"
+    },
+    "apollo-server-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-graphql/skills/apollo-server-tests/SKILL.md",
+      "computedHash": "54bcfb3d914d3ea27877ae1b5ddf5f8585cea02a4a6b6a878f0947ec5376bd80"
+    },
+    "appium-python-expert": {
+      "source": "jmr85/e2e-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/appium-python-expert/SKILL.md",
+      "computedHash": "1fbbb9b129402bece28ac1c3ff69cf1b8e961cf1c2d3a78300a29551f8322c7a"
+    },
+    "appium-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-mobile/skills/appium-testing/SKILL.md",
+      "computedHash": "6322565b9e248c8c2cd62f5c866a35f075537e629068ea51b991d672d78842b5"
+    },
+    "aria-authoring-patterns": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-accessibility/skills/aria-authoring-patterns/SKILL.md",
+      "computedHash": "ec71637c520775c4d0501b83052d1318de69156b1229dd5609016015d01e9d4e"
+    },
+    "ask-matt": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/ask-matt/SKILL.md",
+      "computedHash": "9eead017d1708983aea08e98edc915defe7bf23719ac053ca98ab53dc518bd52"
+    },
+    "async-ordering-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-concurrency/skills/async-ordering-tests/SKILL.md",
+      "computedHash": "acdfe28b5493a4f7168205bb7b54b5e7c56148210fb7973f5180681e223244a5"
+    },
+    "atlas-migrations": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-db-migrations/skills/atlas-migrations/SKILL.md",
+      "computedHash": "c06f9afc4ee5629760d4b8093c61ca0a31b8a1f56a062190f65b1dc4e6fb27a4"
+    },
+    "attack-surface-test-checklist": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-process/skills/attack-surface-test-checklist/SKILL.md",
+      "computedHash": "d83cc29bace5d077017bbe7620c45d83c4daec63bf0444e9203a37fe48f0395a"
+    },
+    "audit-trail-test-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-compliance/skills/audit-trail-test-author/SKILL.md",
+      "computedHash": "6ab39f2eaf1d166e0e62db427b6616d27d184ae22c6151948b6431e7ee0f729b"
+    },
+    "auth0-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-auth-flows/skills/auth0-tests/SKILL.md",
+      "computedHash": "4e19e19d70df7b1be9b948548b65df52033e02b53c6dbed6c0939aae83a9d35c"
+    },
+    "aws-sam-local-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-serverless/skills/aws-sam-local-testing/SKILL.md",
+      "computedHash": "9604516c5cabec140a896d5b2c3c30fd2133f70b7aff59bf1405dd39498cba6d"
+    },
+    "axe-a11y": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-accessibility/skills/axe-a11y/SKILL.md",
+      "computedHash": "763332b2c1cdc9f282f010e4bfeac98a22fafb0771e589fe41cf65f01033f3a9"
+    },
+    "azure-functions-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-serverless/skills/azure-functions-tests/SKILL.md",
+      "computedHash": "ddea27b43e0d8e6b89370611ad882a349c4b3ffe9c4a0d3c3db90f679d03e333"
+    },
+    "bats-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-cli-tools/skills/bats-testing/SKILL.md",
+      "computedHash": "1727c3c05d8988fc3c826318f4cddbe58aaeabf3efe92270f271c2aada1a919d"
+    },
+    "bdd-step-library-curator": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-bdd/skills/bdd-step-library-curator/SKILL.md",
+      "computedHash": "573730f4a651216cd954679bfa018cfafb1a54bf075fd76684f44fb5fc3b696e"
+    },
+    "behave-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-bdd/skills/behave-testing/SKILL.md",
+      "computedHash": "8574ee09f2e45ff9bb782fcf58fa3a6d10914222deeda174a5d0b800a8a6ecb7"
+    },
+    "boundary-value-generator": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-data/skills/boundary-value-generator/SKILL.md",
+      "computedHash": "322f053f5d78687e3e3b8ce4dd492748c95760e61b0721ad389f77942d54c3fb"
+    },
+    "browser-matrix-strategy-reference": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-web-e2e/skills/browser-matrix-strategy-reference/SKILL.md",
+      "computedHash": "c0b22dde3a985dc5b37fe1dd9d41533c50d2ee19a06fe729979318fb0692be55"
+    },
+    "buf-cli-lint-breaking-build": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-grpc/skills/buf-cli-lint-breaking-build/SKILL.md",
+      "computedHash": "5180ce361b72e59d9fc5d1e96cc631c1cd7166de30397dd741233cf99ee8f9d5"
+    },
+    "bug-bash-facilitator": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-manual-testing/skills/bug-bash-facilitator/SKILL.md",
+      "computedHash": "1d836c2ebf437c9d09fe6c002ea5d16f334f2060f29733a527da7df1a6c01a58"
+    },
+    "bug-report-template": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-bug-repro/skills/bug-report-template/SKILL.md",
+      "computedHash": "50bd6367887da67d500c5228fac2339950efd03087280c372b24b60e88dd1a96"
+    },
+    "bug-tracker-workflow": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-defect-management/skills/bug-tracker-workflow/SKILL.md",
+      "computedHash": "f1ae5ac50b666748794680e24ef7caf7965890a2bd207a71054f7c0fd8fdc1a6"
+    },
+    "bullmq-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-async-jobs/skills/bullmq-tests/SKILL.md",
+      "computedHash": "6cedd229dbfcaf42ada2bfa45601447de00e5a9f807d8b3e9e82d93a3438be09"
+    },
+    "cache-key-discriminator-audit": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-cache-testing/skills/cache-key-discriminator-audit/SKILL.md",
+      "computedHash": "a5373bc74ea8bf3e64ea7ce479e2883c116074608f91d13bcbdc62f57c2b047c"
+    },
+    "cdn-cache-purge-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-cache-testing/skills/cdn-cache-purge-tests/SKILL.md",
+      "computedHash": "29a4f5020253958b24ca3cc5298222d872be9b4b38df4d4d85ae3150ec31616b"
+    },
+    "ceedling-build-runner": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-embedded/skills/ceedling-build-runner/SKILL.md",
+      "computedHash": "80b9069f1bb34e0bd18f382de2fced82442ebb7ba396b1a7b9e31a4627bc11b2"
+    },
+    "celery-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-async-jobs/skills/celery-tests/SKILL.md",
+      "computedHash": "f20bb6348835d695dcba12d5b44b1c8272ddeae6e343992220bfdeed6ba3b314"
+    },
+    "chaos-drill-protocol": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-resilience/skills/chaos-drill-protocol/SKILL.md",
+      "computedHash": "7ab3578c16f37b2d63116dcf9fa1cceb2ad290b51c1c2527cce3db761cf41c49"
+    },
+    "chaos-experiment-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-resilience/skills/chaos-experiment-author/SKILL.md",
+      "computedHash": "b6485503ef18ea9f5e17864f41fbc802a442576f6c2b8267c73e0fce1511c4de"
+    },
+    "chaos-mesh": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-resilience/skills/chaos-mesh/SKILL.md",
+      "computedHash": "3632c8f9878fbbe82fe822fb348674e91d8215b0d10a72e6811a24f42ad4ee1e"
+    },
+    "chart-render-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-visual-regression/skills/chart-render-tests/SKILL.md",
+      "computedHash": "f6f182dd7ec671b321e307fd204ba4d3d89bf9afb4577a41ce8b9b5d0138a044"
+    },
+    "checkov-policy": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-iac/skills/checkov-policy/SKILL.md",
+      "computedHash": "35a008b77e99d8009afbab7d982d564511b7858b4193b5ba41b780b7edba551e"
+    },
+    "chief-of-staff": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/in-progress/chief-of-staff/SKILL.md",
+      "computedHash": "4e46e888b6069dc9a21a0ee4b7748b96b5f14c4c2a4d587f0c5b85e02a88f085"
+    },
+    "chromatic-visual-regression-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-visual-regression/skills/chromatic-visual-regression-testing/SKILL.md",
+      "computedHash": "cad712ecec856b9eb643f284465f0dfa50f63ccb3047698cb4f38e25cc355bfc"
+    },
+    "chrome-extension-messaging-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-browser-extension/skills/chrome-extension-messaging-tests/SKILL.md",
+      "computedHash": "76dbc0bf9dbd5033cb6bdecd64ae5bf0796e1cd4d347ab8ab810ce5345edb585"
+    },
+    "ci-failure-triage": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-bug-repro/skills/ci-failure-triage/SKILL.md",
+      "computedHash": "8b843ea989f7e5f8b516e7aa11ebea58c79b2e21a3563a4a8e2579d4acca037d"
+    },
+    "ci-test-job-conventions": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-ci-integration/skills/ci-test-job-conventions/SKILL.md",
+      "computedHash": "24999c359d7fd5fa12d64bfe612e1abbbc8de67fdf5209ec424795a4261831ac"
+    },
+    "claude-handoff": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/in-progress/claude-handoff/SKILL.md",
+      "computedHash": "7286edfcb9237c72b3bd96cdab1d6a515f529b25380923569924b96d2d265701"
+    },
+    "cli-output-conventions": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-cli-tools/skills/cli-output-conventions/SKILL.md",
+      "computedHash": "e8bb36f40ef4fb20cd7ddd5c35916659f3d9b3a47a5144b3af2924a042a187a7"
+    },
+    "cloud-grid-e2e": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-web-e2e/skills/cloud-grid-e2e/SKILL.md",
+      "computedHash": "6ba0d232c2490f71352a309018bb0fd0463de94095596028c0bd84dbef39ebf8"
+    },
+    "cloudflare-workers-miniflare": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-serverless/skills/cloudflare-workers-miniflare/SKILL.md",
+      "computedHash": "11295464cb5686a28b603e195946418f03aae7398b28ae3b86b8cf3a995c905e"
+    },
+    "code-review": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/code-review/SKILL.md",
+      "computedHash": "c2e0695f4d6bb9e1cc0b4c68d9965d062271cff387000fa59c1c2d31a18c25b8"
+    },
+    "codebase-design": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/codebase-design/SKILL.md",
+      "computedHash": "417e3ea96ab3fbe2b7a4279ce3e59202fb7106ad688c12f2d577c9219803de8d"
+    },
+    "codeql-queries": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-security-scanning/skills/codeql-queries/SKILL.md",
+      "computedHash": "ff59a0b6b5cb50926779ef0bb35ae0a9aa71c45ce478cc99c9db5464b3b64693"
+    },
+    "compliance-coverage-scoring": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-compliance/skills/compliance-coverage-scoring/SKILL.md",
+      "computedHash": "d4f2cb4589b6b344be1092b10d39ed9c0deb39bca4d90d5ded268879ab6d1442"
+    },
+    "confirmation-testing-workflow": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-defect-management/skills/confirmation-testing-workflow/SKILL.md",
+      "computedHash": "0ca84770e724e3448d66b22c6c290e1d478c298f71cfe33c1c1692d88ba4bf76"
+    },
+    "contract-compatibility-gate": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-contract-testing/skills/contract-compatibility-gate/SKILL.md",
+      "computedHash": "a0feb0c14a4ce8f24c0f8b8749e673fd7e9ea6fc88be4ca36c6e52b18b402998"
+    },
+    "coverage-diff-reporter": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-reporting/skills/coverage-diff-reporter/SKILL.md",
+      "computedHash": "d4fb48d893a48fce4718b57d478540cd11fb4922ca83da4be22ff6e4db056872"
+    },
+    "coverage-guided-fuzzing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-fuzz-testing/skills/coverage-guided-fuzzing/SKILL.md",
+      "computedHash": "7eb3f0fb4d6ca0a5e4e58d9ccb426847959a682ece7a10e05a21892a973bcc69"
+    },
+    "coverage-py-analysis": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-reporting/skills/coverage-py-analysis/SKILL.md",
+      "computedHash": "e6deed0e7e80cea24ecda7e2144cd33943c7fa980881d3cb9b180727ab68a51b"
+    },
+    "cron-job-test-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-async-jobs/skills/cron-job-test-author/SKILL.md",
+      "computedHash": "3b6fbbcf18b748113f94b964bad6ac6f3791a6906b5048f8aa5bf2bda8ffad3f"
+    },
+    "cross-tenant-data-leak-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-multi-tenancy/skills/cross-tenant-data-leak-tests/SKILL.md",
+      "computedHash": "ed4f44bc1997b5b9b93500fedb2da17a45b8c0e0f20f21c288b47dde5b3024ba"
+    },
+    "cucumber-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-bdd/skills/cucumber-testing/SKILL.md",
+      "computedHash": "88720f216726d18b23fbf20d1e8128e804c0344a52dcb5d0990fe4292711a62b"
+    },
+    "currents-integration": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-reporting/skills/currents-integration/SKILL.md",
+      "computedHash": "98f3c7d70bbef82f59d77918f644844f2156c77fbf9aad628e01acae86871232"
+    },
+    "cve-exploitability-triage": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-security-scanning/skills/cve-exploitability-triage/SKILL.md",
+      "computedHash": "1d2015536ddcbfb108f777951ed09c78914118650c39cc0d45c109175bc45798"
+    },
+    "cypress-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-web-e2e/skills/cypress-testing/SKILL.md",
+      "computedHash": "ec0dde1385d8b1b579626fbfe798162f3a3808e625c70240fc52019c59d7e1aa"
+    },
+    "data-contract-extractor": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-data-quality/skills/data-contract-extractor/SKILL.md",
+      "computedHash": "b0ab30732f1cf1b98260255775aabcf014c567ed68a22308bd8fdcf4918d3b50"
+    },
+    "data-quality-conventions": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-data-quality/skills/data-quality-conventions/SKILL.md",
+      "computedHash": "f56ed3d198c6ee3d2cc357fd2cd726ec70650642a3278d4c1e6d142d5e3000c7"
+    },
+    "data-quality-gate": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-data-quality/skills/data-quality-gate/SKILL.md",
+      "computedHash": "652ffa7db06d869a9e24f5ed69549d10c168fb7c92fd928667a818a0ff406860"
+    },
+    "db-query-plan-analyzer": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-load-testing/skills/db-query-plan-analyzer/SKILL.md",
+      "computedHash": "ffa551c09f72c5f6386c980e21c226850eaa2eb7e073a60e2bb7ac48564bf4b5"
+    },
+    "dbt-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-data-quality/skills/dbt-testing/SKILL.md",
+      "computedHash": "2d57a14a8f8a223959550d1be47213c42ca44013270c8c071065cbb9410fa80d"
+    },
+    "deadlock-detection-harness": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-concurrency/skills/deadlock-detection-harness/SKILL.md",
+      "computedHash": "005082cbbd7b316191bd0b31f2e3b2e6750f969d59da07ef74e780943683963b"
+    },
+    "decision-table-test-design": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-manual-testing/skills/decision-table-test-design/SKILL.md",
+      "computedHash": "d6abd3980a38e31bd98d4acda72195be80a5fb8fe788effe5888533d5a89913f"
+    },
+    "deepchecks-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-ml-models/skills/deepchecks-tests/SKILL.md",
+      "computedHash": "f62a5fa473ca0f5a7b5335144b893a1743f0ee069d0d025e011e73bc6ab3e8d2"
+    },
+    "deepeval-evaluation": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-llm-evaluation/skills/deepeval-evaluation/SKILL.md",
+      "computedHash": "b6fedad213ab5c28468a5f5dcbaae00cd3d8f8a1c3fd240c54d1623d4210b08e"
+    },
+    "defect-escape-taxonomy": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-bug-repro/skills/defect-escape-taxonomy/SKILL.md",
+      "computedHash": "6b67ab1febf72d28b8d7613eda43663aee3040925f629d2219143affb0696b75"
+    },
+    "definition-of-done": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-process/skills/definition-of-done/SKILL.md",
+      "computedHash": "63d58ae88af01dfb9ea22b61a3e565a746c55fb358856eeb9187cd8c96fc10a0"
+    },
+    "dependabot-config": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-security-scanning/skills/dependabot-config/SKILL.md",
+      "computedHash": "558dc5ee00375cf2d6af1f4fc661c7282a646ac5e3769c022bcdf871060e0683"
+    },
+    "dependency-vulnerability-scanning": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-security-scanning/skills/dependency-vulnerability-scanning/SKILL.md",
+      "computedHash": "ac6c960c807b0785f3dee37c292e46359ca9598b5c1b126ac038e8f0cf98e72c"
+    },
+    "deploy-to-vercel": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/deploy-to-vercel/SKILL.md",
+      "computedHash": "a024eac409b1bb2e072a19e7e0d7f194ac5482c87fb1a2ad6f62d041b454040c"
+    },
+    "desktop-test-strategy-reference": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-desktop/skills/desktop-test-strategy-reference/SKILL.md",
+      "computedHash": "92e2216970c7ce4a2752bcf22033353e855561298a10d766705bf239d151aef8"
+    },
+    "detox-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-mobile/skills/detox-testing/SKILL.md",
+      "computedHash": "8e180e382c0d1440ad520f40444f32eb15e39dcde6d3bb7e7b909f1ac849b894"
+    },
+    "diagnosing-bugs": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/diagnosing-bugs/SKILL.md",
+      "computedHash": "aec3686657177071076dc1586c22cdf95137c230bc74cbb5d069903d73804817"
+    },
+    "docker-compose-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-environment/skills/docker-compose-tests/SKILL.md",
+      "computedHash": "4f5bf9ce63d3fbfebf6e47bda3c94412ca9b50ec5c9cf4c9db46daab14003242"
+    },
+    "domain-modeling": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/domain-modeling/SKILL.md",
+      "computedHash": "f377a1341e1b368833cfe5889ace3e61d7df48d7a9e5da9253dba75d062bbfbc"
+    },
+    "dotnet-unit-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-unit-tests-net/skills/dotnet-unit-tests/SKILL.md",
+      "computedHash": "364697d785dd7aee52a1b17a0f591ed506d71f14a256f50a19a341e108847325"
+    },
+    "dr-drill-runner": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-resilience/skills/dr-drill-runner/SKILL.md",
+      "computedHash": "d586f125f58256794757f3fa12614b8cd66933d3ccb4b12a3a09a8fc634ff872"
+    },
+    "dst-transition-reference": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-time/skills/dst-transition-reference/SKILL.md",
+      "computedHash": "dd59284e18b69c0d6feeed8387269c5fa336236eefb0b6caf17ebceae7152573"
+    },
+    "e2e-suite-budget": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-process/skills/e2e-suite-budget/SKILL.md",
+      "computedHash": "978e7b0c026f27a71b930b3ac1e243d0a7b0368b05b3b59229df8e4c1ca2e3cb"
+    },
+    "elasticsearch-relevance-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-search-relevance/skills/elasticsearch-relevance-tests/SKILL.md",
+      "computedHash": "0d061ce0f56299238f4f619a0d8417c73bf03fd421a955b4f6369e484060e34c"
+    },
+    "electron-playwright": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-desktop/skills/electron-playwright/SKILL.md",
+      "computedHash": "99804871fbbae57172c59db0f0269784388bff761e11ac0229748c5f8bc87ab4"
+    },
+    "embedded-coverage-strategy-reference": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-embedded/skills/embedded-coverage-strategy-reference/SKILL.md",
+      "computedHash": "6eab95212f3ebbffe95cf66f60949df8ea11ddaec1bebca9cac1864085019f12"
+    },
+    "error-budget-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-resilience/skills/error-budget-tests/SKILL.md",
+      "computedHash": "6394b61a4d3a544b7c202b26df2f9e8720343f2ec8bf0e508badf325805a471a"
+    },
+    "espresso-suite": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-mobile/skills/espresso-suite/SKILL.md",
+      "computedHash": "d5bc7b795a7160399067442047ee421c6890b988341170346de0fdfae7657482"
+    },
+    "event-sourcing-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-saga-cqrs/skills/event-sourcing-tests/SKILL.md",
+      "computedHash": "31c80cad3db3f6487ebfd6f34241f2a4d844e0b465fc321acbfb553833c406f4"
+    },
+    "evidently-monitoring": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-ml-models/skills/evidently-monitoring/SKILL.md",
+      "computedHash": "eab3853c950d4c99a17977301b559eb0260623a78291d2db3130c0ec4cc832f1"
+    },
+    "exec-quality-narrative": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-team-management/skills/exec-quality-narrative/SKILL.md",
+      "computedHash": "ef2d9ff8501b317397115a62763b3ac8fd2dd5d39fe9e56f70bd2b8783d13d7a"
+    },
+    "experiment-results-interpreter": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-feature-flags/skills/experiment-results-interpreter/SKILL.md",
+      "computedHash": "00ba2041d1e59c3ba1ed304b6459befba4c7fb4ce7c0f5beffb1958da8365f5d"
+    },
+    "experiment-sdk-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-feature-flags/skills/experiment-sdk-testing/SKILL.md",
+      "computedHash": "fbfd3b639986471fefc1339d03e65649b68d536250650b70847f998b55c266e2"
+    },
+    "exploratory-charter-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-manual-testing/skills/exploratory-charter-author/SKILL.md",
+      "computedHash": "0119caf8cbb39e217786b547c579e2654fb64be10ee832688df57516617f32a2"
+    },
+    "exploratory-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-manual-testing/skills/exploratory-testing/SKILL.md",
+      "computedHash": "58773f08aa73979680cde092b610982efbff681148dd5589fd6d8de9c59f1d45"
+    },
+    "failure-injection-test-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-resilience/skills/failure-injection-test-author/SKILL.md",
+      "computedHash": "53264b71180fe3cdbd45f5a02fea3316d08245d12c3e6e327585a5ca47fce3bb"
+    },
+    "fairlearn-fairness": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-ml-models/skills/fairlearn-fairness/SKILL.md",
+      "computedHash": "0e212393422f781a146fc94b3144f6274d120ed7656e4046a4e2e621cc91675c"
+    },
+    "fake-clock-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-time/skills/fake-clock-testing/SKILL.md",
+      "computedHash": "28d34fb43ebdae3e8f2f6794853fba1774680ba0882f5c3a1cc97d8530ae89ff"
+    },
+    "faker-data": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-data/skills/faker-data/SKILL.md",
+      "computedHash": "f5fcfc02bdcc1efd776fbb2706ccc18ebff30c92c7a929027d4d553aec05383c"
+    },
+    "fast-check-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-property-based/skills/fast-check-testing/SKILL.md",
+      "computedHash": "ad23d2bf4918ed1af188cdf699b2a835ce0ceb5be4efd229ee2b28efbac63c23"
+    },
+    "feature-flag-test-harness": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-environment/skills/feature-flag-test-harness/SKILL.md",
+      "computedHash": "431de506b9db4d0de921deb765227865b932e5e590ece5f348b41304aadea2f0"
+    },
+    "flake-axis-bisection": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-flake-triage/skills/flake-axis-bisection/SKILL.md",
+      "computedHash": "7f79dbb6d3e9f48ca987eff451938536cb87396d8cc31bf13e94f5c8e2cfc748"
+    },
+    "flake-dashboard-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-flake-triage/skills/flake-dashboard-author/SKILL.md",
+      "computedHash": "24bb45f2c8a93584332c8f9700afe46f1d4644ea6d962cd52937a29a0390605b"
+    },
+    "flake-pattern-reference": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-flake-triage/skills/flake-pattern-reference/SKILL.md",
+      "computedHash": "1ed1af4029a890e86b18ae6f0f4702e743061071bf7d8db3cc246c180c56a2a9"
+    },
+    "flaky-test-quarantine": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-flake-triage/skills/flaky-test-quarantine/SKILL.md",
+      "computedHash": "d9331b2017d7a75a6d92b349362a91c755bab0ca678981c47003aeec045114ba"
+    },
+    "flame-graph-analyzer": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-load-testing/skills/flame-graph-analyzer/SKILL.md",
+      "computedHash": "8db909ce89f81dad60b448e43525997da27421b1bd63ddcbbacc54cb6467e213"
+    },
+    "flaui-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-desktop/skills/flaui-tests/SKILL.md",
+      "computedHash": "fea5f6908c5c9c57d304099f75cadfad60b293dbff8d95a73abc113aed37cd95"
+    },
+    "flutter-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-mobile/skills/flutter-testing/SKILL.md",
+      "computedHash": "1a7ffe4eb07ff05148cccc78c8fa4d40e931424e1d95a965657593c25997b849"
+    },
+    "flyway-migrations": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-db-migrations/skills/flyway-migrations/SKILL.md",
+      "computedHash": "00526b90ea189c712e279ef1888c115be800fa6dcacd8d6ab51dd9a752697ac3"
+    },
+    "framework-choice-advisor": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-process/skills/framework-choice-advisor/SKILL.md",
+      "computedHash": "f5318b9e01813d4de9d7bd9d1e83aa0a60359bd5bb1b9d7e2b212c213071002a"
+    },
+    "game-perf-profiling": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-game/skills/game-perf-profiling/SKILL.md",
+      "computedHash": "a17ca580f5f3aae6f7741f9f0da98acee8f783ebae3daafa8cbe61927409d97c"
+    },
+    "gameplay-recording-replay": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-game/skills/gameplay-recording-replay/SKILL.md",
+      "computedHash": "688b742601c0cf7b83f6299ac8bb60da8e4c7d3e8a49c1ec0b3f83082b8e2821"
+    },
+    "gdpr-test-patterns": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-compliance/skills/gdpr-test-patterns/SKILL.md",
+      "computedHash": "bf52ae77a6e31f4f59c46daf50e0399c593bbb10a5cf43c207550d4ad6dca7b8"
+    },
+    "gherkin-from-stories": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-bdd/skills/gherkin-from-stories/SKILL.md",
+      "computedHash": "cdfbb49dad6b8dde291c9b094207f51f9413b9d93d183ba34d85f4ac939977c0"
+    },
+    "ghz-load": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-grpc/skills/ghz-load/SKILL.md",
+      "computedHash": "88ee46aa5272f7a9d8f01bc231404d452fd64bf5b9868543b29e0c560dbab4c2"
+    },
+    "giskard-llm": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-llm-evaluation/skills/giskard-llm/SKILL.md",
+      "computedHash": "8578788578a77f9935bf6436e85166a104acfe468c9e1fb3966e99df84316271"
+    },
+    "giskard-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-ml-models/skills/giskard-tests/SKILL.md",
+      "computedHash": "6b8b3ce35aaa9b3f3dea6999ca07db9f5a2d75d37988845abc8e350e8045f865"
+    },
+    "git-guardrails-claude-code": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/misc/git-guardrails-claude-code/SKILL.md",
+      "computedHash": "fa22f1aa2708d95cc3149640f33e085381b184a0322609930f7971c1dca11835"
+    },
+    "github-actions-test-jobs": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-ci-integration/skills/github-actions-test-jobs/SKILL.md",
+      "computedHash": "adcf1cf2ed952ea502feb4fc4227a948ebec70608837c51f84799c2dcb64c62e"
+    },
+    "gitlab-ci-test-jobs": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-ci-integration/skills/gitlab-ci-test-jobs/SKILL.md",
+      "computedHash": "a54c4ba55d55e719db49bff8f4b9bf0b96d8ae540aa990f7f15df9a67eafb42a"
+    },
+    "gitleaks-scanning": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-security-scanning/skills/gitleaks-scanning/SKILL.md",
+      "computedHash": "cdd6e10e7fc5c42b47df90b428f4028052abc5819f64802c88b52581faef875c"
+    },
+    "go-unit-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-unit-tests-go-rust/skills/go-unit-tests/SKILL.md",
+      "computedHash": "b0da0040281682af16b78488e542bc2bf7094ecce24b6424b476e5d4faacbaa2"
+    },
+    "godot-gut-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-game/skills/godot-gut-tests/SKILL.md",
+      "computedHash": "dd639cdaf7247463f19b9c4198b69673504b6e2a8c2c72cf77e55a0d4e643eb9"
+    },
+    "golden-file-conventions": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-data/skills/golden-file-conventions/SKILL.md",
+      "computedHash": "36c4a354622aa811eceef42d36ecabee9ae6a846571d74e61098956aef28e99f"
+    },
+    "googletest-embedded-arm": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-embedded/skills/googletest-embedded-arm/SKILL.md",
+      "computedHash": "7963a7c344cbdb98ed875c01bacab2ba8d5df4ca363bae313084c5dcf1675aed"
+    },
+    "graphql-complexity-limit-tester": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-graphql/skills/graphql-complexity-limit-tester/SKILL.md",
+      "computedHash": "fd28b4d01446e746ad732f6610c362ac91cc5bf5531408354aebd85115ab6cc5"
+    },
+    "graphql-n-plus-one-remediation": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-graphql/skills/graphql-n-plus-one-remediation/SKILL.md",
+      "computedHash": "402065c68f1d1880c7390dd6bfd6753a83270f8d81bdde694069909a4a6cd134"
+    },
+    "graphql-schema-regression": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-contract-testing/skills/graphql-schema-regression/SKILL.md",
+      "computedHash": "009e52a2f0b792b0e6408a318b423422613093f85cb2aea7697c8d19a68dfcb8"
+    },
+    "graphql-subscription-test-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-graphql/skills/graphql-subscription-test-author/SKILL.md",
+      "computedHash": "f89462006726c89367a639be7b7a8281f001d904ac5f7497184adb5ceda9acd5"
+    },
+    "graphql-yoga-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-graphql/skills/graphql-yoga-tests/SKILL.md",
+      "computedHash": "98e244e61510bcfc53f3ec21a845c97918b1c2f2e10167be15381be8940090f6"
+    },
+    "great-expectations": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-data-quality/skills/great-expectations/SKILL.md",
+      "computedHash": "fedc533695d474cd0482da97fd85dededc08a4a0f714e99c55b92d890e6e9646"
+    },
+    "grill-me": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/productivity/grill-me/SKILL.md",
+      "computedHash": "5e0c683385eafd83f106ac6c9d67dfbbfe5aa4b3fe65aad114eb1055a99c818f"
+    },
+    "grill-with-docs": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/grill-with-docs/SKILL.md",
+      "computedHash": "a610223c9796f755b603f15ec114849a4b38b9ba3006acfa9bdf3cc56dd44dad"
+    },
+    "grilling": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/productivity/grilling/SKILL.md",
+      "computedHash": "a57d6b820c3b10700fd7de8ea1199bb0d42bc194df9f10baec4a6ed6a9686448"
+    },
+    "grpc-mock": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-grpc/skills/grpc-mock/SKILL.md",
+      "computedHash": "1733cedd4fe532b4418a4e93dd1b67f6794f84242b0d3042670675967b84bed9"
+    },
+    "grpc-streaming-test-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-grpc/skills/grpc-streaming-test-author/SKILL.md",
+      "computedHash": "d0f3d61293f0b4c01fc457da909c7a66f13a7dc21dbfef2973bf3635f4d94285"
+    },
+    "grpcurl-cli": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-grpc/skills/grpcurl-cli/SKILL.md",
+      "computedHash": "3497b85c015b83701914c5ea927e22192c76cd46ed8b15125e3c492f32b6af7e"
+    },
+    "handoff": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/productivity/handoff/SKILL.md",
+      "computedHash": "00e2d31992d62490083ed2fa2fc2a4418362f765875a59e7a3dc52836f826ab2"
+    },
+    "hardware-in-loop-reference": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-embedded/skills/hardware-in-loop-reference/SKILL.md",
+      "computedHash": "702a1beceede21bb1093c8008829b3a8e23e740acc65f25cd6fca3860ad88e40"
+    },
+    "hasura-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-graphql/skills/hasura-tests/SKILL.md",
+      "computedHash": "9897049fb9fcd9ba45fa19310cf8903926e6ebe3ba675923415f26d6f5c4f4a0"
+    },
+    "helm-chart-tester": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-iac/skills/helm-chart-tester/SKILL.md",
+      "computedHash": "b49983c8b82216934ee82bb1bb3699085f02ff2e854a3f93b64ceffa207de462"
+    },
+    "hipaa-test-patterns": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-compliance/skills/hipaa-test-patterns/SKILL.md",
+      "computedHash": "1f50291b07d4dcb5c722646cc93dc817d926359a69bc0d5219290a5a11d21df1"
+    },
+    "hybrid-search-eval-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-search-relevance/skills/hybrid-search-eval-author/SKILL.md",
+      "computedHash": "ac867b54ca33e30022a53d56749ec2fa760c8ecf6ee923bf7f9585d26cff577d"
+    },
+    "hypothesis-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-property-based/skills/hypothesis-testing/SKILL.md",
+      "computedHash": "1fd7a4f41e131219a10efb2f45def5b574a1eacf40acb43abca53c25815a1669"
+    },
+    "i18n-string-coverage": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-localization/skills/i18n-string-coverage/SKILL.md",
+      "computedHash": "80d4d8f000e39d181e234f0cc71b312e51eae67936280ba35595aa06915ca57b"
+    },
+    "idempotency-test-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-async-jobs/skills/idempotency-test-author/SKILL.md",
+      "computedHash": "d4ebd8f0f976dc1507590141c4adaaa1234bdf9d3778a0d0d9e169ce983cfd7f"
+    },
+    "implement": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/implement/SKILL.md",
+      "computedHash": "141e77647388ad7d716a8f992b604872df0cbf6cdfbc8fa2a02cbc9fe67160fc"
+    },
+    "implement-spec": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/implement-spec/SKILL.md",
+      "computedHash": "b2f5c6fd6a1a9d025500db2350c30edd2673c3bd57d08396f104a2a592d4dffb"
+    },
+    "improve-codebase-architecture": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/improve-codebase-architecture/SKILL.md",
+      "computedHash": "11cfd9568d71445df710d5a9332c674ad773de0c9d5fc22d3ffa175bdd7d988b"
+    },
+    "jacoco-analysis": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-reporting/skills/jacoco-analysis/SKILL.md",
+      "computedHash": "cda9ae9c96562d24721857d61889cf43a197fb2684fc820fb00d5191dd6e6441"
+    },
+    "jaeger-trace-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-distributed-tracing/skills/jaeger-trace-tests/SKILL.md",
+      "computedHash": "5a6f78cf70ba76fac2bf86c6d6e0bdb920fc81d19cfa105124032b2e9bcbe31e"
+    },
+    "jenkinsfile-test-stages": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-ci-integration/skills/jenkinsfile-test-stages/SKILL.md",
+      "computedHash": "880f18b901bca742364aced452b6af86ff886424e21f7b7fb8df7d3ba3786acf"
+    },
+    "jmeter-load-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-load-testing/skills/jmeter-load-testing/SKILL.md",
+      "computedHash": "c194985e6aab9e3561998483024d525fe27a2debb9982d6cb4667401b84e8d97"
+    },
+    "jqwik-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-property-based/skills/jqwik-testing/SKILL.md",
+      "computedHash": "dd267fcf4ac4b74418f11e3dad5fab0cdfcb81dce8fd8ca1722d0c20b1583862"
+    },
+    "js-unit-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-unit-tests-js/skills/js-unit-tests/SKILL.md",
+      "computedHash": "d64128bb4b818ce59d87e7081fe5e656a1c83425996cdbf4f3e596cb30a7a919"
+    },
+    "judgment-list-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-search-relevance/skills/judgment-list-author/SKILL.md",
+      "computedHash": "64db1f86768a50436febdc7a53005bf9a082787ff401359e23282b45714c8913"
+    },
+    "junit-xml-analysis": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-reporting/skills/junit-xml-analysis/SKILL.md",
+      "computedHash": "f5287204083c20b79881c171d1d989abde242cb35d819288825b978987fe45de"
+    },
+    "jvm-unit-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-unit-tests-jvm/skills/jvm-unit-tests/SKILL.md",
+      "computedHash": "9ad6c834ecb6c3720ed13ec651bf9b1aea3ea27782b6634bf28f2598f32376f8"
+    },
+    "k-anonymity-verifier": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-data-privacy/skills/k-anonymity-verifier/SKILL.md",
+      "computedHash": "23236555f1f1ce0f9414bfabf33201d40ebab2ca9b56cfd135d615fa09275d49"
+    },
+    "k6-load-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-load-testing/skills/k6-load-testing/SKILL.md",
+      "computedHash": "519eb420e2318e56484a4283e15dc1f79344f8a795dd9c07652df86e3045b3ef"
+    },
+    "kafka-consumer-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-async-jobs/skills/kafka-consumer-tests/SKILL.md",
+      "computedHash": "eb031757d258ca1e728c8470d3a7813a17c48ab217175c1679439e00e8249de1"
+    },
+    "karate-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-api-testing/skills/karate-testing/SKILL.md",
+      "computedHash": "14f39181dcbac72084d412b3c47e035e4a3f081109db14be9f86db2618d28a8a"
+    },
+    "keycloak-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-auth-flows/skills/keycloak-tests/SKILL.md",
+      "computedHash": "e4180880bda4d8edce928f3770f442e35d67546cc692629b61e2cdb4ca7cb474"
+    },
+    "knip-dead-code": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-code-quality/skills/knip-dead-code/SKILL.md",
+      "computedHash": "85632c2b3f15de72e863176995e1dbde4cf34ac7d60d98c1eea3ff2d22b0a95d"
+    },
+    "langfuse-tracing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-llm-evaluation/skills/langfuse-tracing/SKILL.md",
+      "computedHash": "1451d05f299d6b50847c11ef9d70c323db530cd4dcb722223124f98cae5db0be"
+    },
+    "language-native-sast": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-security-scanning/skills/language-native-sast/SKILL.md",
+      "computedHash": "8bd0186a33697fedd60b96a88cc425532d546b2fffc0835a27d261777e315d93"
+    },
+    "launchdarkly-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-feature-flags/skills/launchdarkly-testing/SKILL.md",
+      "computedHash": "76a84ad9352aa3b588440bf8090c3747440668719e698d13e7fdecfe1ced5081"
+    },
+    "lcov-analysis": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-reporting/skills/lcov-analysis/SKILL.md",
+      "computedHash": "744ad60f82b8726664fa7e5d9b112f9bf438810064549af0596c9d13de2edf59"
+    },
+    "lighthouse-perf": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-load-testing/skills/lighthouse-perf/SKILL.md",
+      "computedHash": "4016d512c1c2925d2c960e11093b21dfe7af5439080d2d0cc5f2c1a9d848545d"
+    },
+    "liquibase-migrations": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-db-migrations/skills/liquibase-migrations/SKILL.md",
+      "computedHash": "b59011cf40b26bbf051c5692d876917038f56ea7c3589b1edb0c1ab18e5391e3"
+    },
+    "living-documentation-publisher": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-bdd/skills/living-documentation-publisher/SKILL.md",
+      "computedHash": "fcb846a56b0971ac811281bb984c362cd4876a79580bf27f22d62c133970719c"
+    },
+    "lizard-complexity": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-code-quality/skills/lizard-complexity/SKILL.md",
+      "computedHash": "c54b7074a8c6cf78b5372d0c6390928b93a8c5f1432874b1e1cd981e856ee57f"
+    },
+    "llm-eval-anti-patterns": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-llm-evaluation/skills/llm-eval-anti-patterns/SKILL.md",
+      "computedHash": "7fe4fcf33e9bd6e8d89f7d63fea49094b052bbbcd1c1e88b3ae19c9783428bc8"
+    },
+    "llm-regression-suite-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-llm-evaluation/skills/llm-regression-suite-author/SKILL.md",
+      "computedHash": "40314f5fbdc84cde955f8b3228e55cc81a22cd5ab806552b2cb9b0c7dc965377"
+    },
+    "load-testing-overview": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-load-testing/skills/load-testing-overview/SKILL.md",
+      "computedHash": "163d4733aafcf5a56523899a586ec742d9caa8c82332b613ecb365922995cbcb"
+    },
+    "locale-format-validator": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-localization/skills/locale-format-validator/SKILL.md",
+      "computedHash": "231d88d537aa9415a29b007155f5aeeb389579f7624ae3cdc26a2724918f6153"
+    },
+    "loop-me": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/in-progress/loop-me/SKILL.md",
+      "computedHash": "d7fbcf41b5af203a6f2a7937afaaaebdd9941b0aa4cc3654b52daec01d3fb564"
+    },
+    "madge-deps": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-code-quality/skills/madge-deps/SKILL.md",
+      "computedHash": "a3b057494c27aa287fe5ecf767a26e378a2d1fac80447c0d62094d2e44dc3c02"
+    },
+    "maestro-flows": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-mobile/skills/maestro-flows/SKILL.md",
+      "computedHash": "818af77669049b47811aaa375eede61cf46d80342bf4ed5dd8d59f80348f2f04"
+    },
+    "mailpit-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-notifications/skills/mailpit-testing/SKILL.md",
+      "computedHash": "d92a1c06fb9b3ba86f190b651821e36377786a33255f360625cbd591dcb3b435"
+    },
+    "malicious-payload-bank": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-data/skills/malicious-payload-bank/SKILL.md",
+      "computedHash": "8577a22e6a963a71b13a77ede5a4a8eacb25c2907af8e00c865ee344fddf9de5"
     },
     "mantis-advise": {
       "source": "google/mantis",
@@ -121,17 +1225,1181 @@
       "skillPath": "mantis-threat-model/SKILL.md",
       "computedHash": "82cf16a79dc69bda21d20a85ec773343c8204f4f8d027c454f827ba34af98d1d"
     },
+    "manual-test-script-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-manual-testing/skills/manual-test-script-author/SKILL.md",
+      "computedHash": "301bc6973b1b588107f6012a42a1fee1b912906a6dcb1614c6fbfed3a9f6388c"
+    },
+    "mfa-flow-test-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-auth-flows/skills/mfa-flow-test-author/SKILL.md",
+      "computedHash": "71064af06574698f697debf5de6be189e16d2a078da626b258d2090cf4e9f747"
+    },
+    "migrate-to-shoehorn": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/misc/migrate-to-shoehorn/SKILL.md",
+      "computedHash": "7d31e494a384d1a5b88d1dec6e1f50e673ef1a60f7b0b6e92babfbb242f79b62"
+    },
+    "migration-operation-taxonomy": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-db-migrations/skills/migration-operation-taxonomy/SKILL.md",
+      "computedHash": "2bd84f9468917b8fe839c3fde4fde6d9cf89b2951e178167d62c0dfe3492b2fc"
+    },
+    "mobile-a11y-test-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-mobile/skills/mobile-a11y-test-author/SKILL.md",
+      "computedHash": "2bb7ff487749d9353500f43ca30a6fa86655e1e4a147f066c87e0505c3641409"
+    },
+    "mobile-device-matrix-toolkit": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-mobile/skills/mobile-device-matrix-toolkit/SKILL.md",
+      "computedHash": "aaa970236960e7f2a5d9da3e77bba48968e139b070cdcbe6d89dfcd14c05dbe0"
+    },
+    "model-based-test-graph-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-ai-assisted/skills/model-based-test-graph-author/SKILL.md",
+      "computedHash": "853348dd5e5c59344aca6ba4bbb3e4eee8bca1fcf4b1902271a4e8f52edb61a2"
+    },
+    "model-performance-regression-gate": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-ml-models/skills/model-performance-regression-gate/SKILL.md",
+      "computedHash": "fa72ab8dbb29845fe957fbc69bfdc9f56a76dc359ba51bec78c990c8e3316457"
+    },
+    "model-risk-evidence-matrix": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-ml-models/skills/model-risk-evidence-matrix/SKILL.md",
+      "computedHash": "4c1698cc16955b9bd7216218270e728dac19fe23bb9b6788b2726acc3b866d52"
+    },
+    "mqtt-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-realtime-protocols/skills/mqtt-tests/SKILL.md",
+      "computedHash": "f9e0ac301701907790c1db53d2ea5992749a6676c69c4d7c7db660a7649d14ac"
+    },
+    "msw-handlers": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-data/skills/msw-handlers/SKILL.md",
+      "computedHash": "0ce798eb1d1be9c8f024bd089ec54a0ed4a4a1a6e6cbce3ef2c8502d68488e59"
+    },
+    "mull-mutation": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-mutation-testing/skills/mull-mutation/SKILL.md",
+      "computedHash": "e9b65ff212d01de3389d9a7b9e58d48f1cd0645643194d8f3ea9c163fa0b89d1"
+    },
+    "multi-tool-finding-triage": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-security-scanning/skills/multi-tool-finding-triage/SKILL.md",
+      "computedHash": "0e65db0839485f796f30e329be4faf224efdcae81ab0db996b71eecfc423fdfa"
+    },
+    "multiplayer-state-machine-coverage": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-game/skills/multiplayer-state-machine-coverage/SKILL.md",
+      "computedHash": "51ed742ab7d4336352b5bf9701905afbfd91e93c8b4d0fdbc9e5150eaba22e8a"
+    },
+    "mutant-survival-triage": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-mutation-testing/skills/mutant-survival-triage/SKILL.md",
+      "computedHash": "34dafdb38b8cb0dd68a988280dfb10d34610c8617fb3fdf8a68b6bbf2d9b401d"
+    },
+    "mutmut-mutation": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-mutation-testing/skills/mutmut-mutation/SKILL.md",
+      "computedHash": "d9290f3966b0a319a0f938b15386679ab70cdd0201f023484ae20982f44d27c9"
+    },
+    "mvcc-isolation-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-concurrency/skills/mvcc-isolation-tests/SKILL.md",
+      "computedHash": "063d551a449d28791a63e534edf6ce83379bd01b073b16d2a9e21d7608253f1c"
+    },
+    "negative-test-generator": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-data/skills/negative-test-generator/SKILL.md",
+      "computedHash": "9f824c56e5baf5495473508304e90ddda94541d3449cf75deeb830bf656988a3"
+    },
+    "non-functional-requirement-extractor": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-shift-left/skills/non-functional-requirement-extractor/SKILL.md",
+      "computedHash": "f9af00a7cf252d8cfa57cfb987d3fd120ba733ad2ca0b478c2cf459bb0cd4f27"
+    },
+    "notebook-ci-pipeline-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-ml-models/skills/notebook-ci-pipeline-author/SKILL.md",
+      "computedHash": "8b496d5fe4e9a7af130c181e05a7e8d4e4aa31237ee6e473667844eb335c6b60"
+    },
+    "nuclei-dast": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-security-scanning/skills/nuclei-dast/SKILL.md",
+      "computedHash": "69ff8999b079d6e83d12b823d653b57fed19996edf338ac72d6d4ce37ceff050"
+    },
+    "oauth-flow-test-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-auth-flows/skills/oauth-flow-test-author/SKILL.md",
+      "computedHash": "e2c8f8c7cf6b8d88ca058d50b14112b04dd635d781b60a6465af2b48d1cbc844"
+    },
+    "object-model-patterns": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-review/skills/object-model-patterns/SKILL.md",
+      "computedHash": "e1dba070c59ff192eab610ed1f2814923bee90b283569559e00cc19d62f0bdd9"
+    },
+    "offline-fallback-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-pwa/skills/offline-fallback-tests/SKILL.md",
+      "computedHash": "3781cb8b2697689f015be5f3793304790ce172f0918c2bf4d8d446b41d590686"
+    },
+    "okta-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-auth-flows/skills/okta-tests/SKILL.md",
+      "computedHash": "f1537eb4f1ece6437c55ed56cbf2d63b70d6bce34540b85133c17824d9a6df2b"
+    },
+    "openapi-contract-diff": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-contract-testing/skills/openapi-contract-diff/SKILL.md",
+      "computedHash": "aa048988e15f0ad3b65b9e2325218aec996e8cd733e4f8641c8adf42e64bfa7b"
+    },
+    "openfeature-sdk-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-feature-flags/skills/openfeature-sdk-testing/SKILL.md",
+      "computedHash": "4e37c6eac74827a1010d02f29ef9449f9689e58dd5db1c2ac698205a5ab3e0e8"
+    },
+    "opentelemetry-trace-assertions": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-distributed-tracing/skills/opentelemetry-trace-assertions/SKILL.md",
+      "computedHash": "bbcbc99e07443023022e27f97a09b57cb22c6576b16ee835ec5d6df7b42f8a1f"
+    },
+    "otel-collector-config-tester": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-distributed-tracing/skills/otel-collector-config-tester/SKILL.md",
+      "computedHash": "c1412df76964a9f9f7c7e255ab5133bfaf3b4f18a0e211a89609c441defad559"
+    },
+    "outbox-pattern-test-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-saga-cqrs/skills/outbox-pattern-test-author/SKILL.md",
+      "computedHash": "1b910fb19e47be65036eb75ddb2fe35f4ba4d29f8f2f1e946380249f2c50cb6d"
+    },
+    "pact-contract-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-contract-testing/skills/pact-contract-testing/SKILL.md",
+      "computedHash": "4d8f270d4b6f529e9369350447064b72c2d25d3a78429aa3ab8d5820e4673726"
+    },
+    "pairwise-test-case-generator": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-data/skills/pairwise-test-case-generator/SKILL.md",
+      "computedHash": "ece03a65a5c496ee6538309d21d2166330d6c0f2a445e74ee1039411b13c6473"
+    },
+    "payment-flow-test-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-payment/skills/payment-flow-test-author/SKILL.md",
+      "computedHash": "873f8cbdca28450b3c61f5b07ede0e63acc7378387054e60be9deec12fc46807"
+    },
+    "payment-gateway-sandboxes": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-payment/skills/payment-gateway-sandboxes/SKILL.md",
+      "computedHash": "a5e980fc3e6f56df83c0715a73c9e56b80ab9b3a517d0177fd6586ff4a9626a0"
+    },
+    "pci-dss-control-test-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-compliance/skills/pci-dss-control-test-author/SKILL.md",
+      "computedHash": "ff43b50ae2e9ae39c0b3f6a88bc0c584d968f7e67ba5ccc59852508a9f2161e9"
+    },
+    "pdf-accessibility-checker": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-pdf-print/skills/pdf-accessibility-checker/SKILL.md",
+      "computedHash": "15651c8a5816a1b3f4e51940cf6726a7dab133387308d0a866ce1b85d52047a3"
+    },
+    "pdf-snapshot-tester": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-pdf-print/skills/pdf-snapshot-tester/SKILL.md",
+      "computedHash": "d57333ff92319b6c05515e2c2d032322ac16e73d531ff9a7ccb38e2d4c047b20"
+    },
+    "percy-visual-regression-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-visual-regression/skills/percy-visual-regression-testing/SKILL.md",
+      "computedHash": "e24bf15e2234a0f05933224c21fcca9a85ecb443fbe4c0fa0c29e363d56d5541"
+    },
+    "perf-budget-gate": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-load-testing/skills/perf-budget-gate/SKILL.md",
+      "computedHash": "3ee6c71823e35b43bf22da21edfd87a401ce39ba1e1b6e8eff5864c60948dece"
+    },
+    "pester-cli-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-cli-tools/skills/pester-cli-testing/SKILL.md",
+      "computedHash": "39a053b653b9040cc3364c6b7650912d2cd45284a9f1620faf7b846a27324bc4"
+    },
+    "pii-masking-pipeline-builder": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-data-privacy/skills/pii-masking-pipeline-builder/SKILL.md",
+      "computedHash": "8e6a4fbcf70905c2727fbb74b3173a8cedaff8a4ad757bc854a92614d2574822"
+    },
+    "pitest-mutation": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-mutation-testing/skills/pitest-mutation/SKILL.md",
+      "computedHash": "c22c19794c71bc037b578bf45ab34cc9a2857f9973d7ff76c14b64cf57582f6c"
+    },
+    "platform-cert-overview-reference": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-game/skills/platform-cert-overview-reference/SKILL.md",
+      "computedHash": "502e3662442066b7c6ec9adb94b2faf5bb7836bb2a7fe96f80cb72cfdede77a1"
+    },
+    "playwright-agents": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-web-e2e/skills/playwright-agents/SKILL.md",
+      "computedHash": "f005befd19c622ad67db2716bc84212bcc6647750497ecb45e9836e1aeba69df"
+    },
+    "playwright-automation-expert": {
+      "source": "jmr85/e2e-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/playwright-automation-expert/SKILL.md",
+      "computedHash": "9ba7a0bcae67b203260338764660c294d873d0d9c8381e6e17e48b09af862cac"
+    },
+    "playwright-cucumber-expert": {
+      "source": "jmr85/e2e-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/playwright-cucumber-expert/SKILL.md",
+      "computedHash": "b80769136e3e4bd59d791066f6c8c79ffa7af42682aec62f2eb97bd72ce4bc88"
+    },
+    "playwright-extension-fixtures": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-browser-extension/skills/playwright-extension-fixtures/SKILL.md",
+      "computedHash": "61f27e30596bae0c874e466103632f12ac8f4314ae6ebf4d772ed4a67df699b0"
+    },
+    "playwright-fixture-builder": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-environment/skills/playwright-fixture-builder/SKILL.md",
+      "computedHash": "ac003c6818f9a21025a430457ef5136a73bd27392a60ba59a4580168064e0827"
+    },
+    "playwright-snapshots": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-visual-regression/skills/playwright-snapshots/SKILL.md",
+      "computedHash": "70f056da20b2546beceedad0e2f61ea864d2764a597a862dfea0250809e18d71"
+    },
+    "playwright-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-web-e2e/skills/playwright-testing/SKILL.md",
+      "computedHash": "080337ee14c09892e3747f1a0048d9ca1ac5d8a93c829375be316a9e1df11e8b"
+    },
+    "policy-as-code-runner": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-iac/skills/policy-as-code-runner/SKILL.md",
+      "computedHash": "a3106a09c9056c1b6746d942dbc9a1501b71d807706dacdd554620bdeab2b9c6"
+    },
+    "post-mortem-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-process/skills/post-mortem-author/SKILL.md",
+      "computedHash": "e29a60a49ba760b7a6bacb872d7be9f5c57500f6487c6ae2d2cfd4ab65821efc"
+    },
+    "postman-collections": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-api-testing/skills/postman-collections/SKILL.md",
+      "computedHash": "eaa6ad244d574c94988ddeed97dcfcf76188c3556ad1f370de5e7ec0f0f41deb"
+    },
+    "pr": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/pr/SKILL.md",
+      "computedHash": "e6e63bada1f038e0b5488f8b62f77ebbd36c97669ddc5afaffcd17f974709f9a"
+    },
+    "presidio-pii-detection": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-data-privacy/skills/presidio-pii-detection/SKILL.md",
+      "computedHash": "0597be5586472087b7075b083360c1821e70e295c009ae8e10a169dbffbd08c8"
+    },
+    "print-stylesheet-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-pdf-print/skills/print-stylesheet-tests/SKILL.md",
+      "computedHash": "54e74cbaa8a46ae7e7d4796e90a660ee2a83f6cd61eeafeed2add28df0b6b665"
+    },
+    "prod-canary-validator": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-shift-right/skills/prod-canary-validator/SKILL.md",
+      "computedHash": "e2840c2f9f7a929f996958e0757b88019cd7984bd54d173c974e790e342518f1"
+    },
+    "promptfoo-evaluation": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-llm-evaluation/skills/promptfoo-evaluation/SKILL.md",
+      "computedHash": "5eeba01608762a54f5e465985b06909c7e0586dafa6fb058395182b5d7cd11cb"
+    },
+    "proptest-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-property-based/skills/proptest-testing/SKILL.md",
+      "computedHash": "66a9a950ed951beabdf3499b6fde3ab43ddcf11b70e67e2153f6197d94d568e3"
+    },
+    "protobuf-compat-checking": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-contract-testing/skills/protobuf-compat-checking/SKILL.md",
+      "computedHash": "839dab5d4581421d5ea9db5133893e288212c87ae3d5d03fdb2f97375ecbe070"
+    },
+    "prototype": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/prototype/SKILL.md",
+      "computedHash": "62979fe039ef64407b258f8824db41b9185f788638747df803032df4153c2aae"
+    },
+    "pseudo-localization-runner": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-localization/skills/pseudo-localization-runner/SKILL.md",
+      "computedHash": "56d4f9689f57eff011f795cd9a77351099b2d8434742093a484503a68360105d"
+    },
+    "push-notification-test-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-notifications/skills/push-notification-test-author/SKILL.md",
+      "computedHash": "f1051271e587b9b67c0a0026999e440c6a19540ae57c642ee2e3e5562f574d8e"
+    },
+    "pytest-asyncio-patterns": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-unit-tests-python/skills/pytest-asyncio-patterns/SKILL.md",
+      "computedHash": "64dcbfcb90d7220a42dbb098955449548ae3dfde014b790df40dba75619d5bf9"
+    },
+    "python-unit-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-unit-tests-python/skills/python-unit-tests/SKILL.md",
+      "computedHash": "f7e70b2e05bbff62583e7117364f680416e040987a561abfed726ee2c4b20013"
+    },
+    "qa-hiring-kit": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-team-management/skills/qa-hiring-kit/SKILL.md",
+      "computedHash": "bd96487fbe2fb16224998ffec5304cfb47c93582449a1af47bf435a676e5299e"
+    },
+    "qemu-system-test-runner": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-embedded/skills/qemu-system-test-runner/SKILL.md",
+      "computedHash": "e31badeaaa65001a70bb0194ecfb5355e75afa3844d099d09fb0e28664853786"
+    },
+    "qt-test-framework": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-desktop/skills/qt-test-framework/SKILL.md",
+      "computedHash": "469c31279ff93218fcb9abb12d66f86a2a9c9ee9a21e2e959b88929525f52b64"
+    },
+    "quality-status-digest": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-team-management/skills/quality-status-digest/SKILL.md",
+      "computedHash": "3a78bdc4419f586e1075cad60b4c24913cb7a48cac4541d855727a1e1acab8b2"
+    },
+    "rabbitmq-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-async-jobs/skills/rabbitmq-tests/SKILL.md",
+      "computedHash": "7a59be58c48ba7103f52946a89ea264ef82db80baf8c38db34f88fbd121f69c5"
+    },
+    "race-condition-test-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-concurrency/skills/race-condition-test-author/SKILL.md",
+      "computedHash": "5e988c032a390afc2e49b7f3f03c81bea7541291fe46da5fbc523ecaff3164dd"
+    },
+    "ragas-evaluation": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-llm-evaluation/skills/ragas-evaluation/SKILL.md",
+      "computedHash": "455e45d0c013ee239753d17dd1fa79f1bc0141a60ef87ea8107571d12a7b543d"
+    },
+    "reachability-analyzer": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-security-scanning/skills/reachability-analyzer/SKILL.md",
+      "computedHash": "960b1369762ecce4a52154c207656bfae5f9faadc718a90694268fea1f702efa"
+    },
+    "red-green-refactor": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-tdd/skills/red-green-refactor/SKILL.md",
+      "computedHash": "b21e337cf8624cc0e88f35fd648598c9571c7ffcf0053f3d2d50c3903c59137d"
+    },
+    "redis-cache-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-cache-testing/skills/redis-cache-tests/SKILL.md",
+      "computedHash": "ad2d91ec25f38ebb5ddf5461cf68d6f1180202a279bda1815947001fcb38fe7c"
+    },
+    "regression-suite-selector": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-impact-analysis/skills/regression-suite-selector/SKILL.md",
+      "computedHash": "0423efe0ebc7f41a6a606383cc4cc22cf39dff6df2521abd76e72d915cf10220"
+    },
+    "release-runbook-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-shift-right/skills/release-runbook-author/SKILL.md",
+      "computedHash": "218666b6c273387d61948c0991e228dbc04209383f40620046318a7b75099339"
+    },
+    "renovate-config": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-security-scanning/skills/renovate-config/SKILL.md",
+      "computedHash": "fa72e061c63b00a62c37742d828ec6a1401c92b8b61db4bde8bf03e0de9058ca"
+    },
+    "reqnroll-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-bdd/skills/reqnroll-testing/SKILL.md",
+      "computedHash": "04726f95bca19ce6a6b3aa835d7abb8558aa2a24c282440805decd5608676308"
+    },
+    "research": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/research/SKILL.md",
+      "computedHash": "c219850f3a5effcdf4180ca550e92a375fbc8b5b1ec999f68804c37351363018"
+    },
+    "restassured-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-api-testing/skills/restassured-testing/SKILL.md",
+      "computedHash": "8509cd803ffec03533f60195f9532b6516181cee0427e74a2cd3e1af8b4020ef"
+    },
+    "restler-fuzzing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-api-testing/skills/restler-fuzzing/SKILL.md",
+      "computedHash": "d431dcb7104937453f1c8795fb1aaaf27d1375e1555b7487c8236c363e1aa01a"
+    },
+    "retro": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/retro/SKILL.md",
+      "computedHash": "e63bb774fba4e601edfffc56bbd5c938d76c8faa2dff49456dff3b1e679cd3b6"
+    },
+    "risk-matrix": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-process/skills/risk-matrix/SKILL.md",
+      "computedHash": "25d912b9d743b029e6dab53ceb056986cb544f7549298c7cd813099e930a585b"
+    },
+    "rtl-rendering-tester": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-localization/skills/rtl-rendering-tester/SKILL.md",
+      "computedHash": "3695d529a54bf130253c2e89bef58cad5a924a71490a69964109c3018959814a"
+    },
+    "rust-unit-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-unit-tests-go-rust/skills/rust-unit-tests/SKILL.md",
+      "computedHash": "97219d860ac2ef1adcd05e367cffc076ab91bbf71d0fbae76513d6d26c7bd09b"
+    },
+    "saga-transaction-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-saga-cqrs/skills/saga-transaction-tests/SKILL.md",
+      "computedHash": "a1b5ea2a3c9cdb9ddb0603934b983ba36abc1ddd31c78fafaaa49a9631b5e589"
+    },
+    "scaffold-exercises": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/misc/scaffold-exercises/SKILL.md",
+      "computedHash": "0f8154a7be9fc5ebe6ae0550d520259fadfdd512c166cb7f137f8e697aae4017"
+    },
+    "schemathesis-fuzzing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-api-testing/skills/schemathesis-fuzzing/SKILL.md",
+      "computedHash": "76bf0719f792a559d37f1274d44eec87ec8eb8841a06a2649ae14ed9feb37f41"
+    },
+    "screen-reader-test-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-accessibility/skills/screen-reader-test-author/SKILL.md",
+      "computedHash": "e2ad830858b518d33ee647a0668d4bac8cdac7a24d08fc84f82e428171ae81ce"
+    },
+    "secrets-rotation-runner": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-security-scanning/skills/secrets-rotation-runner/SKILL.md",
+      "computedHash": "c16c4b169d04bdf629f0772355d1962fd73e66242e5352e042e24d41de19c352"
+    },
+    "seed-data-curator": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-data/skills/seed-data-curator/SKILL.md",
+      "computedHash": "fadff9fe157557e97885675d773a23e29653c4fa0c174d954bfffed3e4495db5"
+    },
+    "selenium-cucumber-expert": {
+      "source": "jmr85/e2e-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/selenium-cucumber-expert/SKILL.md",
+      "computedHash": "024f6fc51d1ed82c9f5a78074db74244c48959a133cf22aefafdbc878b8254d4"
+    },
+    "selenium-grid-4-runner": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-web-e2e/skills/selenium-grid-4-runner/SKILL.md",
+      "computedHash": "f75fd16134ea0993ecd18681e95833c521e13f6892ffdd88b4f5f9587baf3a46"
+    },
+    "selenium-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-web-e2e/skills/selenium-testing/SKILL.md",
+      "computedHash": "a82237cdb86dcc25989ef0238235b30f6897db117b71be8add9d7b151709ca6e"
+    },
+    "semgrep-rules": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-security-scanning/skills/semgrep-rules/SKILL.md",
+      "computedHash": "9f06e3f4849f97d4801f10d601ee50e9adce660f775059cedba59cf517970ba3"
+    },
+    "server-sent-events-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-realtime-protocols/skills/server-sent-events-tests/SKILL.md",
+      "computedHash": "68d9107ff78badb9931b71d5c2ca4092da550f9d9cb962390cf9b413961451f3"
+    },
+    "serverless-integration-test-builder": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-serverless/skills/serverless-integration-test-builder/SKILL.md",
+      "computedHash": "f49e6cee0c2bd5d0c129b97b8937f841aba371867f3a59fc68a2ca5da1cbd745"
+    },
+    "service-worker-lifecycle-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-pwa/skills/service-worker-lifecycle-tests/SKILL.md",
+      "computedHash": "8b71f8e5260e80813384f0fafb1db4244908d446c51fa64696efa8bdccf8c41b"
+    },
+    "session-management-test-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-auth-flows/skills/session-management-test-author/SKILL.md",
+      "computedHash": "00fb1fb95e733dd169354e7d39edf5f31c7dda6ea514f9b4b719968b6c959fc4"
+    },
+    "setup-matt-pocock-skills": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/setup-matt-pocock-skills/SKILL.md",
+      "computedHash": "a7107058cd22442215320bb4282a7d8623aeabc7fbf9817b560c5464f34efd51"
+    },
+    "setup-pre-commit": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/misc/setup-pre-commit/SKILL.md",
+      "computedHash": "4ae1ad6988eb61dbc600627bc12e061215d96ced504632d00f0d9de5905eadfa"
+    },
+    "setup-ts-deep-modules": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/in-progress/setup-ts-deep-modules/SKILL.md",
+      "computedHash": "0b0e7124ad1272d59e44bcb4224275e76421351294a91480ada62234158c1023"
+    },
+    "sidekiq-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-async-jobs/skills/sidekiq-tests/SKILL.md",
+      "computedHash": "7e32b797049560b45e8891dca9bc758824cb1f97f0fa5b3ef0ae2af82336e864"
+    },
+    "skill-matrix-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-team-management/skills/skill-matrix-author/SKILL.md",
+      "computedHash": "21abce45d54ab7ac92011d6a5293e39be59fcb94d5e06d141f8a65ee091cb217"
+    },
+    "slo-load-test-plan": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-load-testing/skills/slo-load-test-plan/SKILL.md",
+      "computedHash": "86638e4602296b435b3ed5ee32a491303293c80f58eacd3869497fd2ffceb5f8"
+    },
+    "smoke-suite-gate": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-process/skills/smoke-suite-gate/SKILL.md",
+      "computedHash": "4c1653362ba93f4b938ff4ec98ed2c8aa676077e670d53177680db105c09d565"
+    },
+    "sms-test-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-notifications/skills/sms-test-author/SKILL.md",
+      "computedHash": "f06f10a64203ae6a94e3e99d8242592f46b7665aa5e1bf68d0e8bc01697039bc"
+    },
+    "soc2-evidence-collector": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-compliance/skills/soc2-evidence-collector/SKILL.md",
+      "computedHash": "9ac46ff71f5776223b57e23973dbb960517e3d5118386044c4bf771dff7832df"
+    },
+    "soda-checks": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-data-quality/skills/soda-checks/SKILL.md",
+      "computedHash": "c0fecd8d5dbf39d292b82814f80615017f1b15f6e6563d142961cd7c52a0ac58"
+    },
+    "sonarqube-maintainability-gate": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-code-quality/skills/sonarqube-maintainability-gate/SKILL.md",
+      "computedHash": "5f787e478d6b7b5d86dcaee73b106da758234e558f547742b836fdefb2f5a24a"
+    },
+    "sonarqube-rules": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-security-scanning/skills/sonarqube-rules/SKILL.md",
+      "computedHash": "0909693e101347059384e0a18ef25aa7447880753299f7e72d5195a56bce40f1"
+    },
+    "spec-testability-heuristics": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-shift-left/skills/spec-testability-heuristics/SKILL.md",
+      "computedHash": "e23361edd6d2fb95e675cb642ed7c85ea29aa3b51ea3c555a2ec814a43b550a0"
+    },
+    "sqs-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-async-jobs/skills/sqs-tests/SKILL.md",
+      "computedHash": "4dafbcff866df82832c03f3ae2472926157c3fa0f7916d0441bd9c627604b34a"
+    },
+    "state-transition-test-design": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-manual-testing/skills/state-transition-test-design/SKILL.md",
+      "computedHash": "9ad1390df9233fa607430c82179e8bd9ea6363436d348b60beb5aff719fa6ae2"
+    },
+    "storybook-visual-regression-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-visual-regression/skills/storybook-visual-regression-testing/SKILL.md",
+      "computedHash": "8f709f7fb183a34a7406ba6ab66393c5772a83376fffe0086eafe90c7884c97d"
+    },
+    "stride-threat-modeling": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-shift-left/skills/stride-threat-modeling/SKILL.md",
+      "computedHash": "e55d63543eb78462e72ff619690cd199654203794db547899e6d33a2232d2b00"
+    },
+    "stripe-subscription-billing-test-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-payment/skills/stripe-subscription-billing-test-author/SKILL.md",
+      "computedHash": "3ebb8f2ece7081c140a35e99cc478f6f0c6ea6ff4726e06d03cece132044a2dd"
+    },
+    "stripe-test-cards-and-webhooks": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-payment/skills/stripe-test-cards-and-webhooks/SKILL.md",
+      "computedHash": "8656b9532d35cd6f96582046b3b9955a9e292c23df475bb6b8a6007fb19e9078"
+    },
+    "stryker-mutation": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-mutation-testing/skills/stryker-mutation/SKILL.md",
+      "computedHash": "ca3d26df66d3afc739675c60d410ab3eb1ea6e4741e6788686f72aab5c87e9c3"
+    },
+    "stryker-net-mutation": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-mutation-testing/skills/stryker-net-mutation/SKILL.md",
+      "computedHash": "a54016b1c4a9ae782e3b00dd36f2b06179d3763d085e0e093c7ae411d0ffba2e"
+    },
+    "syft-generation": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-security-scanning/skills/syft-generation/SKILL.md",
+      "computedHash": "e702b285fd3c39104ff350605c8da6abc29d25abdab0454cbf5f780014af79b5"
+    },
+    "synthea-healthcare-data": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-data-privacy/skills/synthea-healthcare-data/SKILL.md",
+      "computedHash": "e80a5ee136ce8ac416b20f9607163f65b127d840e132f553bb0b6068eaeb2cda"
+    },
+    "synthetic-data-toolkit": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-data/skills/synthetic-data-toolkit/SKILL.md",
+      "computedHash": "55118bfbdcfe03d5fdf7a7b7b72570ec84ecaf6eca4bb8b2ed6d086579f4489d"
+    },
+    "synthetic-monitor-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-shift-right/skills/synthetic-monitor-author/SKILL.md",
+      "computedHash": "f901bb5fb75d4f0d5e8991f5716bde79d56459be70336d872d0f70f8d1307cc7"
+    },
+    "synthetic-pii-generator": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-data/skills/synthetic-pii-generator/SKILL.md",
+      "computedHash": "8e68e1e2594a63377006bd1a8876ab11b66a3836fb6eb11240d2eb6ab0e5e21b"
+    },
+    "tcm-case-management": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-management/skills/tcm-case-management/SKILL.md",
+      "computedHash": "fe1981ef3ea0577e0e081933f456c2cf6b25ddd25fe9a468714596fc40b2f3b7"
+    },
+    "tdd": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/tdd/SKILL.md",
+      "computedHash": "535d1a6f3bd5bded8971e7e4ea76538907cbff6b6d32c39cf97b669869dcd383"
+    },
+    "teach": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/productivity/teach/SKILL.md",
+      "computedHash": "6e029f9d1d5acdc2e79e745f86424c218180b7b4c6a7c660e32c4802db12d6cf"
+    },
+    "tenant-onboarding-test-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-multi-tenancy/skills/tenant-onboarding-test-author/SKILL.md",
+      "computedHash": "cbf69efa26077779144809ed44983c72d08a8d37d191a7ad53e80fec3b525374"
+    },
+    "test-case-anatomy-reference": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-management/skills/test-case-anatomy-reference/SKILL.md",
+      "computedHash": "7fb1f43fc2220c59be962cb1ff2b2b36ec49421705dbfcb671c3be0932bfaf87"
+    },
+    "test-case-from-live-feature": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-process/skills/test-case-from-live-feature/SKILL.md",
+      "computedHash": "3170ed3209f05a43e7feb7c1f3a6741d251ce66e7f35d4ad4c821ca0262a7856"
+    },
+    "test-case-ideation-from-story": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-process/skills/test-case-ideation-from-story/SKILL.md",
+      "computedHash": "0c67758feff34686add183f62b2b87fbf2079c94256e0ab37c88163221654c46"
+    },
+    "test-code-conventions": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-review/skills/test-code-conventions/SKILL.md",
+      "computedHash": "7bc4b96baf3ff182055f335a772b5266560f062682e0e1525a5760c22c59e1c7"
+    },
+    "test-coverage-targeter": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-reporting/skills/test-coverage-targeter/SKILL.md",
+      "computedHash": "97a3121e0090380556632ec6af26e1ae6620b018143d34db5023ba1255303672"
+    },
+    "test-data-patterns": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-data/skills/test-data-patterns/SKILL.md",
+      "computedHash": "a8e5057d2a6d061c6e225b59b0a8203fb8a75ba6787da56ef74dbdff097320e4"
+    },
+    "test-design-scorecard": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-review/skills/test-design-scorecard/SKILL.md",
+      "computedHash": "c442e58326d8fa77024849ea6f37e3c23295e850d984a5a476e825f276116e2e"
+    },
+    "test-effort-estimation": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-process/skills/test-effort-estimation/SKILL.md",
+      "computedHash": "26ee3b10b16fb24b5540344911ca685a119a60c1d93d446697c2061990fe69ad"
+    },
+    "test-framework-architecture-audit": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-review/skills/test-framework-architecture-audit/SKILL.md",
+      "computedHash": "770d9369a6cc60df71e673ead369f5eed11ea915806e4775c4a740077fc8999b"
+    },
+    "test-framework-blueprint": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-review/skills/test-framework-blueprint/SKILL.md",
+      "computedHash": "b62cef3f9f12fae08c5e3cbf2ed1ac5aca26060d7ec6911db88d1191612b1304"
+    },
+    "test-isolation-patterns": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-review/skills/test-isolation-patterns/SKILL.md",
+      "computedHash": "c8c81d8d44c8f1831a2872429c612c3ba9e668c24fc193e68035b961ec89c120"
+    },
+    "test-management-sync": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-reporting/skills/test-management-sync/SKILL.md",
+      "computedHash": "bc505e3e35ccefc1454b22d02bd78f9c454879a29b9a3c98edde08deffce1174"
+    },
+    "test-pyramid-balancer": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-process/skills/test-pyramid-balancer/SKILL.md",
+      "computedHash": "1e03bd2df737cc007004cfac60919cfe479ef20cc7ef7cdb42b3960c4d7f6a90"
+    },
+    "test-removal-criteria": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-impact-analysis/skills/test-removal-criteria/SKILL.md",
+      "computedHash": "5326b098af4b13d6021d55e6eb551c663d4eb36c932b0781cc6b75a9248dbb19"
+    },
+    "test-run-summary-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-reporting/skills/test-run-summary-author/SKILL.md",
+      "computedHash": "677ca458ff0690cabbbb74c8f8ccd48bb0c710ec3354d1016fe4208380bb2c33"
+    },
+    "test-strategy-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-process/skills/test-strategy-author/SKILL.md",
+      "computedHash": "c4fd31bf75b164d7c05b04977740be2ecc88e8e19b20a14316c81249cef8f31f"
+    },
+    "test-suite-health-audit": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-review/skills/test-suite-health-audit/SKILL.md",
+      "computedHash": "80d561e208693a68f2ca14ce4902d3b0976f3c62b963cea3c77fa6017a96cd6e"
+    },
+    "testcontainers": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-environment/skills/testcontainers/SKILL.md",
+      "computedHash": "d1e9dffb01427569722eeb34f70de664c57f453cb9415024a74f2353381997fb"
+    },
+    "timezone-test-matrix-builder": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-time/skills/timezone-test-matrix-builder/SKILL.md",
+      "computedHash": "199c1a4d7de75bcf2cde1e5d11f9d28e0181ba235f9a669e10d93e3a525ecafc"
+    },
+    "to-questionnaire": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/productivity/to-questionnaire/SKILL.md",
+      "computedHash": "e2cb00bfeb4243f1384bf7e106185ccb69fd7d45ff6a3b04bec4102f505aba31"
+    },
+    "to-spec": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/to-spec/SKILL.md",
+      "computedHash": "0ee8caf20fc7df94db53e76f42588fb01eee88c6f8dc97e7a3a0565be8978e74"
+    },
+    "to-tickets": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/to-tickets/SKILL.md",
+      "computedHash": "f7d1bca83f85e4880eec5ed4fe0bff5b8ad1ba14f1e0b17dd0f6d9235a461ec4"
+    },
+    "toxiproxy-chaos": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-resilience/skills/toxiproxy-chaos/SKILL.md",
+      "computedHash": "18be65879095ee4e32dc0e4f2713e4a0053540a2e819b68016ccbd2c52983018"
+    },
+    "trace-spec-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-distributed-tracing/skills/trace-spec-author/SKILL.md",
+      "computedHash": "d55085723f7c6b7191d737c1e11e6110515f8a5c6f1f55ba1e10e68fdbc59679"
+    },
+    "traceability-matrix-builder": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-management/skills/traceability-matrix-builder/SKILL.md",
+      "computedHash": "026a3091ced6821a6e4c1ecdfe5c46477c0db95f5ca3a07751acdb431c37f83d"
+    },
+    "triage": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/triage/SKILL.md",
+      "computedHash": "453a7a098edcbec2a6ef67f8aa6720433672ebdf93023c90cefa79f160c72599"
+    },
+    "trivy-config": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-iac/skills/trivy-config/SKILL.md",
+      "computedHash": "123895eb85740076b9af086a6138333c601e9577b26180b0c73b9cc1ea2640c2"
+    },
+    "trivy-image": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-security-scanning/skills/trivy-image/SKILL.md",
+      "computedHash": "8d76b5b4da2aa5d03119207374755785b0c1f80341a97a39f4a289d87172df75"
+    },
+    "tui-snapshot-tester": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-cli-tools/skills/tui-snapshot-tester/SKILL.md",
+      "computedHash": "374d84c609f0ef9e80e9c630018de6d15b64cbd0fe65345c99e3ef4cfb4a7020"
+    },
+    "unity-test-framework": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-game/skills/unity-test-framework/SKILL.md",
+      "computedHash": "48fbfe4efbeca62abdc66b5cd53b2c4674ee488403194bdacb9abab12ba135b8"
+    },
+    "unity-test-framework-c": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-embedded/skills/unity-test-framework-c/SKILL.md",
+      "computedHash": "80bfb1b7c235fe4414742b5e4893d8d192c0e96b9b93d8f0d037ee3fd7bede19"
+    },
+    "unreal-automation-system": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-game/skills/unreal-automation-system/SKILL.md",
+      "computedHash": "90636e713d6e622dd9ea7edcee0f3f1be3f62eaaa680ad875fa6f2459a691e71"
+    },
+    "varnish-test-vtc-syntax": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-cache-testing/skills/varnish-test-vtc-syntax/SKILL.md",
+      "computedHash": "df37d76f490991757f84cb0406e7dc421a0d5caea70bf6766ac126ca0e77f2a6"
+    },
+    "vector-search-recall-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-search-relevance/skills/vector-search-recall-tests/SKILL.md",
+      "computedHash": "428dba74911a16e15f9dfec32a53ebf9e1d1251a5697cfbd358367421ce1f2dc"
+    },
+    "vercel-cli-with-tokens": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/vercel-cli-with-tokens/SKILL.md",
+      "computedHash": "a2f596ac516fe8986386f9562f4c94604af9fb6a0fc417d263cbe6dc05117b72"
+    },
+    "vercel-composition-patterns": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/composition-patterns/SKILL.md",
+      "computedHash": "f98931159fa9c7fed043bcd18a891a46dcf89ababa38df13a4c5b7b30dc0ce07"
+    },
+    "vercel-optimize": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/vercel-optimize/SKILL.md",
+      "computedHash": "9d4ace02972b9b1c462f097c7322eb32c9f04bba6f2fb5cf482086d402eeec33"
+    },
     "vercel-react-best-practices": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/react-best-practices/SKILL.md",
-      "computedHash": "6b526d013e28073246a36f99b529bc43745d30832ecfa8217b359c34f260ca6b"
+      "computedHash": "3219a1944e404ffc14d1d9d6aef6dd2e3855b81387ee0a044ccbfe14d34c2357"
+    },
+    "vercel-react-native-skills": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/react-native-skills/SKILL.md",
+      "computedHash": "2e9088a7333666d8c2833b8ff58bd51b955501c42b4c7244f72b4cbf22dafcc4"
+    },
+    "vercel-react-view-transitions": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/react-view-transitions/SKILL.md",
+      "computedHash": "6c9169eb561dcdea32408e2525a2eb5375d709dd8dbb3412b895e6c58a8dc22e"
+    },
+    "vex-author": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-security-scanning/skills/vex-author/SKILL.md",
+      "computedHash": "fa71c42554668a91359fbc4298f3c5e24c7b9ef64c1992a661cd397daaa2a89a"
+    },
+    "visual-baseline-conventions": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-visual-regression/skills/visual-baseline-conventions/SKILL.md",
+      "computedHash": "eda22d00d32a25ef00c310e33f00fed2e8293940f64d3bff36dbfaf149905ecc"
+    },
+    "visual-baseline-gate": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-visual-regression/skills/visual-baseline-gate/SKILL.md",
+      "computedHash": "b192ec455309f11b1f12c40cf9bd77d10928b16e240068a6c499acc3344a9a4e"
+    },
+    "wait-what": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/productivity/wait-what/SKILL.md",
+      "computedHash": "b4f3760a199cbd6415e4c885de230bef4eecba563791de211a92d335e16a9cb0"
+    },
+    "wayfinder": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/wayfinder/SKILL.md",
+      "computedHash": "4af8ec5362024e82017056169efdcb1bc7671d11a1d6e2a8a8aab997675426e0"
+    },
+    "wcag-color-contrast": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-accessibility/skills/wcag-color-contrast/SKILL.md",
+      "computedHash": "d8ef51ba141f216dc1a4082c99940897834abf23a5beb57e71ab55eb880f1508"
+    },
+    "wcag-compliance-reporter": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-accessibility/skills/wcag-compliance-reporter/SKILL.md",
+      "computedHash": "78377cb8994bc44ec57029e61f3a955a3abaee2251943f1ff7dc365b1d65368f"
+    },
+    "wcag-keyboard-navigation": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-accessibility/skills/wcag-keyboard-navigation/SKILL.md",
+      "computedHash": "d3b6df6b4653f11e0992c9508edd9e7c8ff16c712f6eecb70fdb19a193f2f459"
     },
     "web-design-guidelines": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/web-design-guidelines/SKILL.md",
-      "computedHash": "d8e7d3afe37dcc8a97b99ffb5afdb4d0919ae0092ea8b68f44eb201f035e33ac"
+      "computedHash": "a6a44d5498f7e8f68289902f3dedfc6f38ae0cee1e96527c80724cf27f727c2a"
+    },
+    "web-e2e-overview": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-web-e2e/skills/web-e2e-overview/SKILL.md",
+      "computedHash": "b87c4959ab116758aae4a71d2ae34c5a1e0443d3ea2b1d284a49b60e0214e064"
+    },
+    "web-push-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-pwa/skills/web-push-tests/SKILL.md",
+      "computedHash": "47b6b85a8eddd0fadcc286a003b3e4bc86156c6783a266491cbb35b4b151eb9b"
+    },
+    "web-vitals-inp-deep": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-load-testing/skills/web-vitals-inp-deep/SKILL.md",
+      "computedHash": "c712f88d36d03af34df70a7943da7458ff0f0e15a828d1d97c52f57ef2481992"
+    },
+    "webdriverio-testing": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-web-e2e/skills/webdriverio-testing/SKILL.md",
+      "computedHash": "e4a17a0e6132f84f011908631b59edbadd142833f5dc3701d022d792af387e8e"
+    },
+    "webhook-delivery-tester": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-notifications/skills/webhook-delivery-tester/SKILL.md",
+      "computedHash": "9094cc7cb94fc2619ee0938bb759826403a23f890de9a968bbcae8ed4f3c27d0"
+    },
+    "websocket-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-realtime-protocols/skills/websocket-tests/SKILL.md",
+      "computedHash": "a81c9917b74f0d7813a259da2d49833e4730fd54ee671e9dc199675b6dc0a12f"
+    },
+    "winappdriver": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-desktop/skills/winappdriver/SKILL.md",
+      "computedHash": "c724492ba663d6abeb933b59be61c71e3479356ddce97cf2d82c8c16a8076a3d"
+    },
+    "wiremock-stubs": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-test-data/skills/wiremock-stubs/SKILL.md",
+      "computedHash": "6ebfcbab43b87e11aea005c79d7391063b569922126f8580f5a36fd2e5583bf9"
+    },
+    "wizard": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/wizard/SKILL.md",
+      "computedHash": "c8fffad2f165f6c34e415ee291f9f8a9f1ef8cdea1b15b4f0034f615f49d8827"
+    },
+    "workbox-tests": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-pwa/skills/workbox-tests/SKILL.md",
+      "computedHash": "ebe413cdb561cd5bc52c4f355780a5425a8d150da8f58b2213a953bf1f6c7a3f"
+    },
+    "writing-beats": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/in-progress/writing-beats/SKILL.md",
+      "computedHash": "1d1c32479fa0774738c7baf264026e937f4a75ef7c20bd6c1b585681cadb523c"
+    },
+    "writing-for-agents": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/productivity/writing-for-agents/SKILL.md",
+      "computedHash": "831e996c177c6c5233eb3bb472a33edee2b3ce1ee5a6d7e8b696c1c3fb4eda3d"
+    },
+    "writing-fragments": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/in-progress/writing-fragments/SKILL.md",
+      "computedHash": "e97c829457cb9119aa6a636b989b3c3e273e55c9bcf27b6d281d8132e04ca972"
+    },
+    "writing-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/writing-guidelines/SKILL.md",
+      "computedHash": "e90462d4f801d823603b12c345ad0ff91a7489415274432681d21c7129123c26"
+    },
+    "writing-shape": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/in-progress/writing-shape/SKILL.md",
+      "computedHash": "175889218686932bda7724425b97a0a10a7679db51447c40a1a0d3a5e6f2130e"
+    },
+    "xcuitest-suite": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-mobile/skills/xcuitest-suite/SKILL.md",
+      "computedHash": "ba31bc23cf6b500b0dbff550d1477a3b1f9235698581de8d44c01a164d54e2d9"
+    },
+    "zap-baseline": {
+      "source": "testland/qa",
+      "sourceType": "github",
+      "skillPath": "plugins/qa-security-scanning/skills/zap-baseline/SKILL.md",
+      "computedHash": "30c401934947708b6122f0eaeea7c6492ef84a62438c3d131a72bf75eb28dde6"
     }
   }
 }

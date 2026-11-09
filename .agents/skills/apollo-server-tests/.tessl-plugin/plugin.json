@@ -1,0 +1,9 @@
+{
+  "name": "testland/apollo-server-tests",
+  "description": "Use whenever an Apollo Server v4+ GraphQL service needs tests: in-process executeOperation calls, supertest against an ephemeral port, context injection, response and error assertions, and checks that production config disables introspection and enforces persisted queries.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.4.4"
+}

@@ -139,7 +139,7 @@ export function Landing360({initialScreen='intro'}:{initialScreen?:'intro'|'logi
     e.preventDefault();setErr('');setOk('');setBusy(true);
     try{
       if(authMode==='forgot'){
-        await authClient.forgetPassword({email,redirectTo:`${window.location.origin}/reset-password`});
+        await authClient.requestPasswordReset({ email, redirectTo: '/reset-password' });
         setOk('Link enviado! Verifique seu e-mail.');setBusy(false);return;
       }
       if(authMode==='signup'){
@@ -170,7 +170,7 @@ export function Landing360({initialScreen='intro'}:{initialScreen?:'intro'|'logi
       <div className="lp-login">
         <button className="lp-btn lp-btn-i lp-login-back" onClick={goHome} aria-label="Voltar"><ArrowLeft className="w-5 h-5"/></button>
         <motion.div className="lp-login-card" initial={{opacity:0,y:24}} animate={{opacity:1,y:0}} transition={{duration:.5}}>
-          <div className="lp-login-logo"><BirthHubLogo size={36}/> Birth Hub 360°</div>
+          <div className="lp-login-logo"><BirthHubLogo className='w-9 h-9' /> Birth Hub 360°</div>
           <div className="lp-login-tabs" role="tablist">
             <button role="tab" aria-selected={authMethod==='email'} className="lp-login-tab" onClick={()=>setAuthMethod('email')}>E-mail</button>
             <button role="tab" aria-selected={authMethod==='sso'} className="lp-login-tab" onClick={()=>setAuthMethod('sso')}>SSO</button>
@@ -210,7 +210,7 @@ export function Landing360({initialScreen='intro'}:{initialScreen?:'intro'|'logi
 
       {/* Header */}
       <header className="lp-hdr"><div className="lp-c lp-hdr-inner">
-        <a href="/" className="lp-logo"><BirthHubLogo size={36}/> Birth Hub 360°</a>
+        <a href="/" className="lp-logo"><BirthHubLogo className='w-9 h-9' /> Birth Hub 360°</a>
         <nav className="lp-nav"><a href="#modules">Módulos</a><a href="#how">Como funciona</a><a href="#security">Segurança</a></nav>
         <div className="lp-hdr-acts">
           <button className="lp-btn lp-btn-i" onClick={toggleTheme} aria-label="Alternar tema">{theme==='dark'?<Sun className="w-4 h-4"/>:<Moon className="w-4 h-4"/>}</button>
@@ -274,6 +274,7 @@ export function Landing360({initialScreen='intro'}:{initialScreen?:'intro'|'logi
             );
           })}
         </div>
+      </div></section>
 
       {/* Command Center - Perspective Reveal */}
       <section className="lp-sec lp-cmd"><div className="lp-c">
@@ -341,6 +342,7 @@ export function Landing360({initialScreen='intro'}:{initialScreen?:'intro'|'logi
             </motion.div>
           );})}
         </div>
+      </div></section>
 
       {/* CTA */}
       <section className="lp-cta"><div className="lp-c">
@@ -359,7 +361,7 @@ export function Landing360({initialScreen='intro'}:{initialScreen?:'intro'|'logi
       {/* Footer */}
       <footer className="lp-ft"><div className="lp-c">
         <div className="lp-ft-grid">
-          <div><div className="lp-ft-brand"><BirthHubLogo size={28}/> Birth Hub 360°</div><p className="lp-ft-desc">Revenue Command Center para times B2B que querem escalar com inteligência.</p></div>
+          <div><div className="lp-ft-brand"><BirthHubLogo className='w-7 h-7' /> Birth Hub 360°</div><p className="lp-ft-desc">Revenue Command Center para times B2B que querem escalar com inteligência.</p></div>
           <div><h4>Produto</h4><ul className="lp-ft-links"><li><a href="#modules">Módulos</a></li><li><a href="#how">Como funciona</a></li><li><button onClick={openSim}>Simulador ROI</button></li></ul></div>
           <div><h4>Empresa</h4><ul className="lp-ft-links"><li><a href="/about">Sobre</a></li><li><a href="/careers">Carreiras</a></li><li><a href="/contact">Contato</a></li></ul></div>
           <div><h4>Legal</h4><ul className="lp-ft-links"><li><a href="/privacy">Privacidade</a></li><li><a href="/terms">Termos</a></li><li><a href="/security">Segurança</a></li></ul></div>

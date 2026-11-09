@@ -1,0 +1,9 @@
+{
+  "name": "testland/test-management-sync",
+  "description": "Use when CI test results must flow into TestRail, Xray for Jira or Zephyr Scale without manual copying. Maps tests to case IDs, opens a run per build, pushes results in batches and closes runs on main only; vendor details are in its references.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.0.1"
+}

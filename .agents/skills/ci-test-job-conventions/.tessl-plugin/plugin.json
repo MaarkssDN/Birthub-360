@@ -1,0 +1,9 @@
+{
+  "name": "testland/ci-test-job-conventions",
+  "description": "Use when designing how tests run in CI on any platform (GitHub Actions, GitLab CI, Jenkins, CircleCI): how many shards, which failures are safe to retry, quarantine, artifact retention, per-PR vs nightly cadence, cancel-on-push, timeouts and secrets. CircleCI config patterns are in its references.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.1.12"
+}

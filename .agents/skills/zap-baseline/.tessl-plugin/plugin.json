@@ -1,0 +1,9 @@
+{
+  "name": "testland/zap-baseline",
+  "description": "Use when a web app needs OWASP ZAP scanning before production: the Docker baseline passive scan as a CI gate, the full active scan for staging, the Ajax spider for SPAs, scans behind a login (forms, JSON, OAuth or bearer tokens) and a rollout plan from PR baseline to nightly active scans.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.7"
+}

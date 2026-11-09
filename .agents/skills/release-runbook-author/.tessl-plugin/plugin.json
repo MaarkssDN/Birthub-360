@@ -1,0 +1,9 @@
+{
+  "name": "testland/release-runbook-author",
+  "description": "Use when a service is about to ship and its release steps live only in people's heads or a chat thread, or a shared release window needs its cutover order. Writes a six-phase runbook (pre-flight, smoke, canary, promote gate, rollout, verification) with baseline-relative criteria and rollback paths.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.10"
+}

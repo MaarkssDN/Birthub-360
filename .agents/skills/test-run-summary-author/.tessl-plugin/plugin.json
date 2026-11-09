@@ -1,0 +1,9 @@
+{
+  "name": "testland/test-run-summary-author",
+  "description": "Use whenever someone asks to write a test-run summary, release test status or Slack post from test results, even from a few numbers: pass, fail and skip counts, JUnit XML, Allure JSON, a TestRail, Xray or Zephyr export. Writes the markdown narrative: a pass/fail lead, deltas and failure owners.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.4.14"
+}

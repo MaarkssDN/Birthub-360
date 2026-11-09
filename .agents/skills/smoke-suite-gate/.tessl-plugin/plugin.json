@@ -1,0 +1,9 @@
+{
+  "name": "testland/smoke-suite-gate",
+  "description": "Use when a team needs a fast per-deploy gate: a smoke suite of 5-15 critical journeys (login, checkout, payment, main read path) that runs in under 5 minutes as E2E or API tests and blocks the deploy when it fails, with retries for transient failures.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.10.9"
+}

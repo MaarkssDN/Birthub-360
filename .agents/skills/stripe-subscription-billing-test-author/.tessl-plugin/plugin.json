@@ -1,0 +1,9 @@
+{
+  "name": "testland/stripe-subscription-billing-test-author",
+  "description": "Use when Stripe subscriptions or recurring billing need tests: trial to paid, proration on upgrade and downgrade, dunning on failed renewals, cancel and reactivate, and the subscription webhook events, using Stripe test clocks to skip through billing cycles without waiting.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.4.6"
+}

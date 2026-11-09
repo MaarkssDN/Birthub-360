@@ -1,0 +1,9 @@
+{
+  "name": "testland/i18n-string-coverage",
+  "description": "Use when a product ships in several languages and untranslated text keeps slipping in. Scans code for user-facing strings not wrapped in the translation function, maps gaps to the translation files, reports coverage per language and fails PRs that add new untranslated strings.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.1.13"
+}

@@ -1,0 +1,9 @@
+{
+  "name": "testland/pairwise-test-case-generator",
+  "description": "Use when a function or endpoint takes 3 or more inputs whose combinations matter and the full Cartesian product is too large. Combines boundary values, equivalence classes and pairwise (or N-wise) reduction into parameterized cases in the project's runner format.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.7"
+}

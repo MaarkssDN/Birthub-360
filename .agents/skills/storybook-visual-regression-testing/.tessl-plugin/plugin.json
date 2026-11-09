@@ -1,0 +1,9 @@
+{
+  "name": "testland/storybook-visual-regression-testing",
+  "description": "Use when a repo already has Storybook and wants a visual test per story: the hosted Chromatic addon, or the self-hosted Storybook test-runner with a postVisit hook calling Playwright's toHaveScreenshot, plus CI setup.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.12"
+}

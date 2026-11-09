@@ -1,0 +1,9 @@
+{
+  "name": "testland/test-removal-criteria",
+  "description": "Use when a suite has outgrown its value and someone is about to delete tests. Sorts candidates into duplicate, tautology, trivial, dead-signal and orphan, and deletes only when all four gate conditions hold, with a written reason, coverage evidence and a named reviewer.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.1.8"
+}

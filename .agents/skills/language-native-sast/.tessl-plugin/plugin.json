@@ -1,0 +1,9 @@
+{
+  "name": "testland/language-native-sast",
+  "description": "Use when a repo needs security linting inside its own toolchain: Bandit for Python, gosec for Go, eslint-plugin-security and no-unsanitized for JavaScript/TypeScript, or PMD's Apex rules for Salesforce, with justified suppressions, baselines for legacy code, SARIF and CI gates.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.0.1"
+}

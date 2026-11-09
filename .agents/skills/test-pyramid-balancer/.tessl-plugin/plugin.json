@@ -1,0 +1,9 @@
+{
+  "name": "testland/test-pyramid-balancer",
+  "description": "Use when asked about test distribution or balance: too many E2E tests, slow CI caused by tests, or rebalancing a suite. Counts unit, integration and E2E tests with runtimes, detects ice-cream-cone and hourglass shapes, and recommends target ratios for the codebase's shape.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.10.9"
+}

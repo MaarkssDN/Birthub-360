@@ -1,0 +1,9 @@
+{
+  "name": "testland/axe-a11y",
+  "description": "Use whenever pages or components need automated accessibility scanning: axe-core via axe.run(), @axe-core/playwright or the CLI on every PR, rule configuration and CI-gateable results, plus pa11y, Lighthouse CI accessibility, WAVE and IBM Equal Access (Section 508) in its references.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.11"
+}

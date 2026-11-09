@@ -1,0 +1,9 @@
+{
+  "name": "testland/offline-fallback-tests",
+  "description": "Use when choosing or changing how a PWA route behaves offline, or a 'doesn't work offline' bug needs pinning to a route. Maps each route to an offline caching recipe (cache first, network first and others), tests it with Playwright, and covers Workbox offlineFallback and storage choices.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.8"
+}
