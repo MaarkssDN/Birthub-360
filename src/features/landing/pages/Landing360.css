@@ -1210,3 +1210,108 @@ html.dark .landing-neon-root .landing-section-footer .text-\[\#F59E0B\],
 html.dark .landing-neon-root .landing-section-footer .text-\[\#b45309\] {
   color: #fbbf24 !important;
 }
+
+/* ==========================================================================
+   IMPECCABLE PREMIUM LOGIN AMBIENT & COCKPIT ENHANCEMENTS
+   ========================================================================== */
+.b360-ambient {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.b360-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  opacity: 0.25;
+  will-change: transform;
+}
+
+html.dark .b360-orb,
+[data-theme="dark"] .b360-orb {
+  opacity: 0.35;
+}
+
+.b360-orb-a {
+  width: 480px;
+  height: 480px;
+  top: -120px;
+  left: -80px;
+  background: radial-gradient(circle, rgba(0, 212, 255, 0.45) 0%, transparent 70%);
+  animation: orbFloatA 18s ease-in-out infinite alternate;
+}
+
+.b360-orb-b {
+  width: 520px;
+  height: 520px;
+  bottom: -140px;
+  right: -100px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.35) 0%, transparent 70%);
+  animation: orbFloatB 22s ease-in-out infinite alternate;
+}
+
+.b360-orb-c {
+  width: 360px;
+  height: 360px;
+  top: 40%;
+  left: 45%;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.25) 0%, transparent 70%);
+  animation: orbFloatC 26s ease-in-out infinite alternate;
+}
+
+.b360-orbit-ring {
+  position: absolute;
+  width: 800px;
+  height: 800px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px dashed rgba(0, 212, 255, 0.12);
+  border-radius: 9999px;
+  pointer-events: none;
+}
+
+@keyframes orbFloatA {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(60px, 40px) scale(1.08);
+  }
+}
+
+@keyframes orbFloatB {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(-50px, -30px) scale(1.05);
+  }
+}
+
+@keyframes orbFloatC {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(40px, -50px) scale(1.1);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

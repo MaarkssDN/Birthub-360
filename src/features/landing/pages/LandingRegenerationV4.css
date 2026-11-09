@@ -156,10 +156,10 @@ html.light .b360-adaptive-landing .b360-topbar,
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr);
-  gap: clamp(28px, 4vw, 68px);
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: clamp(20px, 2.8vw, 40px);
   align-items: center;
-  padding: clamp(36px, 5.2vw, 80px) clamp(24px, 4.6vw, 74px);
+  padding: clamp(24px, 3.2vw, 44px) clamp(20px, 3.2vw, 48px) !important;
 }
 
 .b360-adaptive-landing .b360-hero-main > div {
@@ -199,14 +199,14 @@ html.light .b360-adaptive-landing .b360-topbar,
 .b360-adaptive-landing .b360-hero-title {
   display: flex;
   flex-direction: column;
-  gap: clamp(8px, 1.2vw, 18px);
-  margin: 0 0 32px;
-  max-width: 860px;
+  gap: clamp(6px, 0.8vw, 10px);
+  margin: 0 0 20px;
+  max-width: 680px;
   font-family: var(--b360-font-display, "Sora", sans-serif);
   font-weight: 800;
-  font-size: clamp(40px, 5.2vw, 74px) !important;
-  line-height: 1.08 !important;
-  letter-spacing: -0.035em !important;
+  font-size: clamp(28px, 3.2vw, 44px) !important;
+  line-height: 1.15 !important;
+  letter-spacing: -0.025em !important;
   overflow-wrap: normal;
   word-break: normal;
 }
@@ -283,10 +283,10 @@ html.light .b360-adaptive-landing .b360-hero-title .b360-hero-line-gold,
 }
 
 .b360-adaptive-landing .b360-hero-main > div:first-child > p {
-  max-width: 55ch;
-  margin-bottom: 27px;
-  font-size: clamp(15px, 1.2vw, 18px);
-  line-height: 1.75;
+  max-width: 52ch;
+  margin-bottom: 20px;
+  font-size: clamp(14px, 1.05vw, 16px);
+  line-height: 1.6;
   color: #b0c5e1 !important;
 }
 
@@ -1001,11 +1001,12 @@ html.light .b360-adaptive-landing .b360-sectionhead h2,
   }
   .b360-adaptive-landing .b360-hero-main {
     grid-template-columns: minmax(0, 1fr);
-    padding: clamp(32px, 5vw, 60px) !important;
-    gap: 36px;
+    padding: clamp(20px, 3.5vw, 36px) !important;
+    gap: 24px;
   }
   .b360-adaptive-landing .b360-hero-title {
-    max-width: 780px;
+    max-width: 640px;
+    font-size: clamp(26px, 4.5vw, 36px) !important;
   }
   .b360-adaptive-landing .b360-hero-console {
     max-width: 860px;
@@ -1062,9 +1063,9 @@ html.light .b360-adaptive-landing .b360-sectionhead h2,
     gap: 26px;
   }
   .b360-adaptive-landing .b360-hero-title {
-    font-size: clamp(34px, 8.2vw, 52px);
-    line-height: 1.12;
-    letter-spacing: -0.035em;
+    font-size: clamp(24px, 6vw, 32px);
+    line-height: 1.15;
+    letter-spacing: -0.025em;
   }
   .b360-adaptive-landing .b360-hero-title .b360-hero-line {
     text-wrap: pretty;
@@ -1458,77 +1459,77 @@ html.dark .b360-adaptive-landing .b360-eyebrow,
 }
 
 /* ── 3. PROPORÇÕES EXATAS DO BENTO GRID DOS 11 MÓDULOS ─────────────────── */
-/* Layout 12 colunas x 6 linhas correspondente a media_1794181417581_73c765c2.jpg */
+/* Layout 12 colunas equilibrado e proporcional com 11 cards */
 .b360-adaptive-landing .b360-feature-grid.b360-bento-grid {
   display: grid !important;
   grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
-  grid-template-rows: repeat(4, 276px) 320px 280px !important;
+  grid-template-rows: repeat(4, 280px) !important;
   gap: 18px !important;
 }
 
 .b360-adaptive-landing .b360-bento-grid .b360-bento-p1 {
-  grid-column: 1 / 8 !important;
-  grid-row: 1 / 3 !important;
+  grid-column: 1 / 7 !important;
+  grid-row: 1 / 2 !important;
   min-height: 0 !important;
 }
 
 .b360-adaptive-landing .b360-bento-grid .b360-bento-p2 {
-  grid-column: 8 / 13 !important;
+  grid-column: 7 / 13 !important;
   grid-row: 1 / 2 !important;
   min-height: 0 !important;
 }
 
 .b360-adaptive-landing .b360-bento-grid .b360-bento-p3 {
-  grid-column: 8 / 13 !important;
+  grid-column: 1 / 5 !important;
   grid-row: 2 / 3 !important;
   min-height: 0 !important;
 }
 
 .b360-adaptive-landing .b360-bento-grid .b360-bento-p4 {
-  grid-column: 1 / 5 !important;
-  grid-row: 3 / 5 !important;
+  grid-column: 5 / 9 !important;
+  grid-row: 2 / 3 !important;
   min-height: 0 !important;
 }
 
 .b360-adaptive-landing .b360-bento-grid .b360-bento-p5 {
-  grid-column: 5 / 9 !important;
+  grid-column: 9 / 13 !important;
+  grid-row: 2 / 3 !important;
+  min-height: 0 !important;
+}
+
+.b360-adaptive-landing .b360-bento-grid .b360-bento-p6 {
+  grid-column: 1 / 5 !important;
   grid-row: 3 / 4 !important;
   min-height: 0 !important;
 }
 
 .b360-adaptive-landing .b360-bento-grid .b360-bento-p7 {
   grid-column: 5 / 9 !important;
-  grid-row: 4 / 5 !important;
-  min-height: 0 !important;
-}
-
-.b360-adaptive-landing .b360-bento-grid .b360-bento-p6 {
-  grid-column: 9 / 13 !important;
-  grid-row: 3 / 5 !important;
+  grid-row: 3 / 4 !important;
   min-height: 0 !important;
 }
 
 .b360-adaptive-landing .b360-bento-grid .b360-bento-p8 {
-  grid-column: 1 / 13 !important;
-  grid-row: 5 / 6 !important;
+  grid-column: 9 / 13 !important;
+  grid-row: 3 / 4 !important;
   min-height: 0 !important;
 }
 
 .b360-adaptive-landing .b360-bento-grid .b360-bento-p9 {
   grid-column: 1 / 5 !important;
-  grid-row: 6 / 7 !important;
+  grid-row: 4 / 5 !important;
   min-height: 0 !important;
 }
 
 .b360-adaptive-landing .b360-bento-grid .b360-bento-p10 {
   grid-column: 5 / 9 !important;
-  grid-row: 6 / 7 !important;
+  grid-row: 4 / 5 !important;
   min-height: 0 !important;
 }
 
 .b360-adaptive-landing .b360-bento-grid .b360-bento-p11 {
   grid-column: 9 / 13 !important;
-  grid-row: 6 / 7 !important;
+  grid-row: 4 / 5 !important;
   min-height: 0 !important;
 }
 

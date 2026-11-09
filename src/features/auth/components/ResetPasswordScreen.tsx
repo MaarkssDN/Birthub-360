@@ -1,13 +1,23 @@
 /* eslint-disable jsx-a11y/no-autofocus -- página de propósito único, ver comentário no local de uso */
 
 import { motion } from 'framer-motion';
-import { AlertCircle, ArrowRight, CheckCircle2, Loader2, Moon, Sun } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowRight,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  Loader2,
+  Moon,
+  Sun,
+} from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { BirthHubSignature } from '../../../components/brand/BirthHubLogo.js';
 import { useBrand } from '../../../contexts/BrandContext.js';
 import { useTheme } from '../../../contexts/ThemeContext.js';
 import { authClient } from '../../../lib/auth-client.js';
+import { SoundFX } from '../../../lib/soundEffects.js';
 
 // Chegamos aqui a partir do link enviado por e-mail (ver sendResetPassword em src/lib/auth.ts):
 // better-auth redireciona pra cá com ?token=... quando o token é válido, ou ?error=INVALID_TOKEN
@@ -19,6 +29,58 @@ export function ResetPasswordScreen() {
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const getPwdStrength = (pwd: string) => {
+    if (!pwd)
+      return {
+        score: 0,
+        label: '',
+        color: 'bg-slate-300 dark:bg-slate-700',
+        text: 'text-slate-400',
+        width: '0%',
+      };
+    let score = 0;
+    if (pwd.length >= 8) score += 1;
+    if (pwd.length >= 10 && /[0-9]/.test(pwd)) score += 1;
+    if (/[A-Z]/.test(pwd) && /[a-z]/.test(pwd)) score += 1;
+    if (/[^A-Za-z0-9]/.test(pwd)) score += 1;
+
+    if (score <= 1)
+      return {
+        score: 1,
+        label: 'Senha Fraca',
+        color: 'bg-rose-500',
+        text: 'text-rose-500',
+        width: '25%',
+      };
+    if (score === 2)
+      return {
+        score: 2,
+        label: 'Senha Razoável',
+        color: 'bg-amber-500',
+        text: 'text-amber-500',
+        width: '50%',
+      };
+    if (score === 3)
+      return {
+        score: 3,
+        label: 'Senha Segura',
+        color: 'bg-emerald-500',
+        text: 'text-emerald-500',
+        width: '75%',
+      };
+    return {
+      score: 4,
+      label: 'Senha Forte',
+      color: 'bg-[#00D4FF]',
+      text: 'text-[#00D4FF]',
+      width: '100%',
+    };
+  };
+
+  const pwdStrength = getPwdStrength(newPassword);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -132,28 +194,59 @@ export function ResetPasswordScreen() {
               )}
 
               <div>
-                <label
-                  htmlFor="reset-new-password"
-                  className="block text-[10px] font-bold text-ink-2 uppercase tracking-wider mb-1.5 ml-1"
-                >
-                  Nova Senha
-                </label>
-                <input
-                  id="reset-new-password"
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full bg-surface-2 border border-line rounded-2xl px-4 py-3.5 text-xs text-ink placeholder-ink-2 focus:outline-none focus:ring-2 focus:ring-brand transition-colors"
-                  placeholder="••••••••"
-                  minLength={8}
-                  required
-                  /* página de propósito único, acessada só via link de e-mail de redefinição de
-                     senha (nunca navegação livre); focar o único campo relevante da página é o
-                     padrão esperado deste fluxo (mesmo comportamento usado por GitHub/Google em
-                     telas equivalentes). */
-                  // biome-ignore lint/a11y/noAutofocus: ver comentário acima
-                  autoFocus
-                />
+                <div className="flex items-center justify-between mb-1.5 ml-1">
+                  <label
+                    htmlFor="reset-new-password"
+                    className="block text-[10px] font-bold text-ink-2 uppercase tracking-wider"
+                  >
+                    Nova Senha
+                  </label>
+                  {newPassword && (
+                    <span className={`font-mono text-[10px] font-bold ${pwdStrength.text}`}>
+                      {pwdStrength.label}
+                    </span>
+                  )}
+                </div>
+                <div className="relative">
+                  <input
+                    id="reset-new-password"
+                    type={showNewPassword ? 'text' : 'password'}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full bg-surface-2 border border-line rounded-2xl px-4 py-3.5 pr-11 text-xs text-ink placeholder-ink-2 focus:outline-none focus:ring-2 focus:ring-brand transition-colors"
+                    placeholder="••••••••"
+                    minLength={8}
+                    required
+                    /* página de propósito único, acessada só via link de e-mail de redefinição de
+                       senha (nunca navegação livre); focar o único campo relevante da página é o
+                       padrão esperado deste fluxo (mesmo comportamento usado por GitHub/Google em
+                       telas equivalentes). */
+                    // biome-ignore lint/a11y/noAutofocus: ver comentário acima
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      SoundFX.play('click');
+                      setShowNewPassword(!showNewPassword);
+                    }}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-2 hover:text-brand transition-colors p-1 cursor-pointer"
+                    aria-label="Mostrar ou ocultar senha"
+                  >
+                    {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+
+                {newPassword && (
+                  <div className="pt-2 space-y-1">
+                    <div className="w-full h-1 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full transition-all duration-300 ${pwdStrength.color}`}
+                        style={{ width: pwdStrength.width }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -163,16 +256,29 @@ export function ResetPasswordScreen() {
                 >
                   Confirmar Nova Senha
                 </label>
-                <input
-                  id="reset-confirm-password"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full bg-surface-2 border border-line rounded-2xl px-4 py-3.5 text-xs text-ink placeholder-ink-2 focus:outline-none focus:ring-2 focus:ring-brand transition-colors"
-                  placeholder="••••••••"
-                  minLength={8}
-                  required
-                />
+                <div className="relative">
+                  <input
+                    id="reset-confirm-password"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full bg-surface-2 border border-line rounded-2xl px-4 py-3.5 pr-11 text-xs text-ink placeholder-ink-2 focus:outline-none focus:ring-2 focus:ring-brand transition-colors"
+                    placeholder="••••••••"
+                    minLength={8}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      SoundFX.play('click');
+                      setShowConfirmPassword(!showConfirmPassword);
+                    }}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-2 hover:text-brand transition-colors p-1 cursor-pointer"
+                    aria-label="Mostrar ou ocultar confirmação de senha"
+                  >
+                    {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
 
               <button
