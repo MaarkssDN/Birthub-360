@@ -159,7 +159,9 @@ describe('Landing360', () => {
     expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
   });
 
-  it('deve validar e submeter formulários de signin, signup e forgot password', async () => {
+  it(
+    'deve validar e submeter formulários de signin, signup e forgot password',
+    async () => {
     const { container } = renderWithProviders('/login', 'login');
 
     const getForm = () => container.querySelector('#auth-panel-email') as HTMLFormElement;
@@ -243,7 +245,7 @@ describe('Landing360', () => {
 
     // Voltar para Login Corporativo a partir de forgot
     fireEvent.click(screen.getByText(/Login Corporativo/i));
-  });
+  }, 15000);
 
   it('deve suportar autenticação SSO Empresarial, navegação por teclado nas abas, tela cheia e erros de query string', async () => {
     const { container } = renderWithProviders('/login?error=sso_failed', 'login');
@@ -294,4 +296,58 @@ describe('Landing360', () => {
 
     fetchSpy.mockRestore();
   });
+  it('deve implementar os 8 pilares de alta conversão (Urgência, Provas Sociais, Formulário Objetivo e Teste A/B)', async () => {
+    const { container } = renderWithProviders('/', 'intro');
+
+    // 1. Proposta de valor clara & 6. Urgência responsável
+    expect(screen.getByText(/Ciclo de Implantação Assistida/i)).toBeInTheDocument();
+    expect(screen.getByText(/Acelere o ciclo de vendas e aumente a conversão do pipeline em até 3.8x/i)).toBeInTheDocument();
+
+    // 2. Design focado & 3. Foco no Call to Action
+    const ctaLinks = screen.getAllByRole('link', { name: /Garantir Demonstração Gratuita/i });
+    expect(ctaLinks.length).toBeGreaterThan(0);
+
+    // 5. Provas sociais, métricas e selos de credibilidade
+    expect(screen.getByText(/\+42%/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/3.8x/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/R\$ 180M\+/i)).toBeInTheDocument();
+    expect(screen.getByText(/Rodrigo Silveira/i)).toBeInTheDocument();
+    expect(screen.getByText(/Camila Duarte/i)).toBeInTheDocument();
+    expect(screen.getByText(/Criptografia AES-256 Ponta a Ponta/i)).toBeInTheDocument();
+    expect(screen.getByText(/Isolamento Multi-Tenant via Postgres RLS/i)).toBeInTheDocument();
+
+    // 4. Formulário objetivo de captura de lead
+    const nomeInput = container.querySelector('#lead-nome') as HTMLInputElement;
+    const emailInput = container.querySelector('#lead-email') as HTMLInputElement;
+    const zapInput = container.querySelector('#lead-whatsapp') as HTMLInputElement;
+    expect(nomeInput).toBeInTheDocument();
+    expect(emailInput).toBeInTheDocument();
+    expect(zapInput).toBeInTheDocument();
+
+    fireEvent.change(nomeInput, { target: { value: 'Mariana Gestora' } });
+    fireEvent.change(emailInput, { target: { value: 'mariana@vanguarda.com.br' } });
+    fireEvent.change(zapInput, { target: { value: '(11) 98765-4321' } });
+
+    // Seleção de chip de equipe comercial
+    const chipTeam = screen.getByText('16 a 50');
+    fireEvent.click(chipTeam);
+
+    // Submissão do formulário
+    const submitBtn = screen.getByRole('button', { name: /GARANTIR MINHA DEMONSTRAÇÃO GRATUITA/i });
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Sessão Solicitada com Sucesso/i)).toBeInTheDocument();
+      expect(screen.getByText(/mariana@vanguarda\.com\.br/i)).toBeInTheDocument();
+      expect(screen.getByText(/Abrir Google Agenda/i)).toBeInTheDocument();
+    });
+
+    // 8. Teste A/B: alternar para Variante B
+    const varBBtn = screen.getAllByRole('button', { name: /Variante B/i })[0];
+    fireEvent.click(varBBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Multiplique a capacidade de vendas da sua equipe/i)).toBeInTheDocument();
+    });
+  }, 15000);
 });

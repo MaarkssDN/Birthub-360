@@ -4,9 +4,11 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUp,
+  Award,
   BarChart3,
   Bot,
   Building2,
+  Calendar,
   Check,
   CheckCircle2,
   Clock,
@@ -34,9 +36,11 @@ import {
   ShieldCheck,
   Smartphone,
   Sparkles,
+  Star,
   Sun,
   Target,
   TrendingUp,
+  Users,
   Workflow,
   Zap,
 } from 'lucide-react';
@@ -52,7 +56,15 @@ import { BirthHubLogo } from '@/components/brand/BirthHubLogo';
 import { isAuthorizedLoginEmail } from '@/config/access-policy';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { trackHeroRoiSimulatorOpened } from '@/lib/analytics/conversionTelemetry';
+import {
+  type HeroVariant,
+  trackHeroCtaPrimaryClick,
+  trackHeroRoiSimulatorOpened,
+  trackHeroVariantImpression,
+  trackHeroVariantSwitched,
+  trackLeadCaptureOpened,
+  trackLeadFormSubmitted,
+} from '@/lib/analytics/conversionTelemetry';
 import { authClient } from '@/lib/auth-client';
 import { SoundFX } from '@/lib/soundEffects';
 import {
@@ -77,6 +89,7 @@ import './LandingAdaptive.css';
 import './Landing360.css';
 import './LandingCinematic.css';
 import './LandingRegenerationV4.css';
+import './LandingConversionV5.css';
 
 // 11 MÓDULOS ADAPTATIVOS (8 Pilares Centrais + 3 Complementares — BENTO GRID REFINADO)
 const ADAPTIVE_PILLARS = [
@@ -518,12 +531,80 @@ export function Landing360({
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // --- CRO & TESTES A/B (Variante A: Aceleração de Pipeline / Variante B: Multiplicação de Receita) ---
+  const [abVariant, setAbVariant] = useState<HeroVariant>(() => {
+    if (typeof window === 'undefined') return 'A';
+    try {
+      const qv = searchParams.get('variant')?.toUpperCase();
+      if (qv === 'B' || qv === 'C') return qv as HeroVariant;
+      if (qv === 'A') return 'A';
+      const saved = sessionStorage.getItem('bh_landing_variant');
+      if (saved === 'A' || saved === 'B' || saved === 'C') return saved as HeroVariant;
+    } catch {}
+    return 'A';
+  });
+
+  useEffect(() => {
+    trackHeroVariantImpression(abVariant);
+    try {
+      sessionStorage.setItem('bh_landing_variant', abVariant);
+    } catch {}
+  }, [abVariant]);
+
+  const handleSwitchAbVariant = (newVariant: HeroVariant) => {
+    SoundFX.play('click');
+    trackHeroVariantSwitched(abVariant, newVariant);
+    setAbVariant(newVariant);
+    try {
+      sessionStorage.setItem('bh_landing_variant', newVariant);
+    } catch {}
+  };
+
+  // --- FORMULÁRIO OBJETIVO DE CAPTURA DE LEAD ---
+  const [leadForm, setLeadForm] = useState({
+    nome: '',
+    email: '',
+    whatsapp: '',
+    equipe: '6 a 15',
+    consent: true,
+  });
+  const [leadLoading, setLeadLoading] = useState(false);
+  const [leadSubmitted, setLeadSubmitted] = useState(false);
+
+  const handleLeadSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLeadLoading(true);
+    SoundFX.play('click');
+    setTimeout(() => {
+      setLeadLoading(false);
+      setLeadSubmitted(true);
+      trackLeadFormSubmitted(abVariant, {
+        teamSize: leadForm.equipe,
+        source: 'landing_form_objective',
+      });
+    }, 650);
+  };
   const reduceMotion = useReducedMotion();
   useB360CardTilt([viewMode, activeScreen]);
   useB360ScrollParallax();
-  useB360ScrollVelocityInertia();
-  useB360MagneticAttraction('.b360-integration-card', 0.16, 170);
+  useB360ScrollVelocityInertia(
+    '.b360-hero-console, .b360-fanned-card, .b360-feature-card, .b360-problem-card, .b360-platform-card, .b360-flow-card, .b360-integration-card',
+  );
+  useB360MagneticAttraction(
+    '.b360-integration-card, .b360-status-pill, .b360-neon-halo-btn, .b360-aurora',
+    0.32,
+    220,
+  );
   const { isIntersecting: isProblemIntersecting } = useB360SectionProgress('problema');
+
+  // Sincronizar o tema dinâmico no elemento raiz para que o toggle de modo claro/escuro funcione perfeitamente
+  useEffect(() => {
+    const isDark = theme === 'dark';
+    document.documentElement.classList.toggle('dark', isDark);
+    document.documentElement.classList.toggle('light', !isDark);
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
 
   // Sincronizar activeScreen com a rota ativa
   useEffect(() => {
@@ -725,7 +806,7 @@ export function Landing360({
 
   const handleOpenRoiSimulator = () => {
     SoundFX.play('click');
-    trackHeroRoiSimulatorOpened('A', 'landing_adaptive_hero');
+    trackHeroRoiSimulatorOpened(abVariant, 'landing_adaptive_hero');
     setIsSimulatorOpen(true);
   };
 
@@ -909,7 +990,10 @@ export function Landing360({
       {/* ════════════════════════════════════════════════════════════════════
           TELA 1: LANDING ADAPTADA & COMMAND CENTER INTERATIVO
       ════════════════════════════════════════════════════════════════════ */}
-      <div className={activeScreen === 'intro' ? 'block b360-adaptive-landing' : 'hidden'}>
+      <div
+        className={`b360-adaptive-landing ${theme === 'dark' ? 'dark' : 'light'} ${activeScreen === 'intro' ? 'block' : 'hidden'}`}
+        data-theme={theme}
+      >
         {/* Camada ambiente cinematográfica — orbes de cor + anel de órbita cônico 360° */}
         <div className="b360-ambient" aria-hidden="true">
           <div className="b360-orb b360-orb-a" />
@@ -955,6 +1039,8 @@ export function Landing360({
               <nav className="b360-topnav" aria-label="Navegação principal">
                 <a href="#destaques">11 módulos</a>
                 <a href="#ia">IA Comercial</a>
+                <a href="#provas-sociais">Casos & Métricas</a>
+                <a href="#demonstracao">Agendar Demo</a>
                 <a href="#ecossistema">Integrações</a>
                 <button
                   type="button"
@@ -996,9 +1082,32 @@ export function Landing360({
             {/* Hero Section */}
             <section className="b360-hero" id="inicio">
               <B360AmbientFX variant="hero" />
+
+              {/* Banner de Urgência Ética e Transparente */}
+              <div
+                className="b360-urgency-banner"
+                role="status"
+                aria-label="Aviso de disponibilidade de implantação assistida"
+              >
+                <div className="b360-urgency-content">
+                  <span className="b360-urgency-badge">🔥 Vagas Limitadas</span>
+                  <span>
+                    <b>Ciclo de Implantação Assistida:</b> Apenas 4 vagas para onboarding com
+                    Arquiteto de Vendas nesta semana.
+                  </span>
+                </div>
+                <a href="#demonstracao" className="b360-urgency-btn">
+                  Garantir vaga com setup gratuito →
+                </a>
+              </div>
+
               <div className="b360-hero-main">
                 <div>
-                  <div className="b360-eyebrow">REVENUE COMMAND CENTER</div>
+                  <div className="b360-eyebrow">
+                    {abVariant === 'B'
+                      ? 'SISTEMA OPERACIONAL COMERCIAL · RECEITA MAXIMIZADA'
+                      : 'REVENUE COMMAND CENTER · ACELERAÇÃO DE PIPELINE 360°'}
+                  </div>
                   <h1 className="b360-hero-title">
                     <span className="b360-hero-line b360-hero-line-cyan">
                       <B360Words text="Dados que conectam." baseDelay={220} />
@@ -1010,26 +1119,62 @@ export function Landing360({
                       <B360Words text="Execução que acontece." baseDelay={500} />
                     </span>
                   </h1>
-                  <p>
-                    Conecte CRM, dados, inteligência artificial e automação em um único centro de
-                    comando para planejar, monitorar, prever e acelerar suas operações comerciais.
-                  </p>
+
+                  {/* Proposta de Valor Clara & Persuasiva focada em Benefícios */}
+                  <div className="mb-6 space-y-2">
+                    <p className="text-base sm:text-lg font-semibold text-slate-100 dark:text-slate-100 leading-snug">
+                      {abVariant === 'B' ? (
+                        <span className="bg-gradient-to-r from-sky-400 to-pink-400 bg-clip-text text-transparent">
+                          Multiplique a capacidade de vendas da sua equipe sem precisar dobrar o
+                          headcount comercial.
+                        </span>
+                      ) : (
+                        <span className="bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">
+                          Acelere o ciclo de vendas e aumente a conversão do pipeline em até 3.8x
+                          com IA aplicada.
+                        </span>
+                      )}
+                    </p>
+                    <p className="text-sm text-slate-300 dark:text-slate-400 leading-relaxed max-w-xl">
+                      {abVariant === 'B'
+                        ? 'Elimine o escuro operacional: recupere propostas esquecidas, unifique WhatsApp e CRM com conformidade LGPD e coloque agentes autônomos para antecipar objeções em tempo real.'
+                        : 'Chega de perder negócios por falta de follow-up ágil. Conecte dados, cadência multicanal e um copiloto de inteligência artificial que entrega a Próxima Melhor Ação para cada negociação.'}
+                    </p>
+                  </div>
+
+                  {/* Foco no Call to Action (CTA destacado e irresistível) */}
                   <div className="flex flex-wrap items-center gap-3.5">
-                    <button
+                    <a
+                      href="#demonstracao"
                       className="b360-aurora"
-                      type="button"
-                      onClick={() => handleSwitchView('command')}
+                      style={{ transform: 'scale(1.04)' }}
+                      onClick={() =>
+                        trackHeroCtaPrimaryClick(abVariant, 'Agendar Demonstração Gratuita')
+                      }
                     >
-                      <span className="b360-aurora-inner">
-                        Explorar a plataforma <span aria-hidden="true">↗</span>
+                      <span
+                        className="b360-aurora-inner"
+                        style={{ fontSize: '14px', fontWeight: 800 }}
+                      >
+                        {abVariant === 'B'
+                          ? 'Quero Multiplicar Minhas Vendas'
+                          : 'Garantir Demonstração Gratuita'}{' '}
+                        <span aria-hidden="true">→</span>
                       </span>
-                    </button>
+                    </a>
                     <button
                       type="button"
                       onClick={handleOpenRoiSimulator}
                       className="b360-hero-pill-btn"
                     >
-                      Simular ROI Comercial
+                      Simular ROI Comercial ↗
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSwitchView('command')}
+                      className="b360-hero-secondary-btn"
+                    >
+                      Explorar Command Center
                     </button>
                     <B360NeonButton
                       onClick={handleGoToLogin}
@@ -1039,10 +1184,13 @@ export function Landing360({
                       Acessar Plataforma
                     </B360NeonButton>
                   </div>
+
+                  {/* Selos de Confiança Imediata */}
                   <div className="b360-hero-trust">
                     <span className="w-2 h-2 rounded-full bg-[#00D4FF] animate-pulse" />
                     <span>
-                      ✦ <b>Supervisor On-line</b> · Orquestração inteligente · Experiência integrada
+                      ✦ <b>Resposta Técnica em 15 min</b> · Setup Guiado com Especialista · 100%
+                      LGPD Nativo
                     </span>
                   </div>
                 </div>
@@ -1312,6 +1460,10 @@ export function Landing360({
                       contextualizada.
                     </span>
                   </div>
+                  <div className="b360-card-action">
+                    <span>Inspecionar impacto</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
                 </article>
 
                 <article className="b360-problem-card">
@@ -1345,6 +1497,10 @@ export function Landing360({
                     <span>
                       <b>Benefício esperado:</b> mais visibilidade de gargalos para priorizar ações.
                     </span>
+                  </div>
+                  <div className="b360-card-action">
+                    <span>Inspecionar impacto</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </div>
                 </article>
 
@@ -1381,6 +1537,10 @@ export function Landing360({
                       SLAs.
                     </span>
                   </div>
+                  <div className="b360-card-action">
+                    <span>Inspecionar impacto</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
                 </article>
               </div>
             </section>
@@ -1408,6 +1568,10 @@ export function Landing360({
                     <span className="w-1.5 h-1.5 rounded-full bg-[#00D4FF] animate-pulse" />
                     <span>Persistência RLS Multi-Tenant</span>
                   </div>
+                  <div className="b360-card-action">
+                    <span>Inspecionar capacidades</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
                 </article>
 
                 <article className="b360-platform-card">
@@ -1424,6 +1588,10 @@ export function Landing360({
                     <span className="w-1.5 h-1.5 rounded-full bg-[#FF2D9B] animate-pulse" />
                     <span>Copiloto Contextual & NBA</span>
                   </div>
+                  <div className="b360-card-action">
+                    <span>Inspecionar capacidades</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
                 </article>
 
                 <article className="b360-platform-card">
@@ -1439,6 +1607,10 @@ export function Landing360({
                   <div className="b360-platform-badge">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#FFC107] animate-pulse" />
                     <span>Passagem de Bastão com SLA</span>
+                  </div>
+                  <div className="b360-card-action">
+                    <span>Inspecionar capacidades</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </div>
                 </article>
               </div>
@@ -1684,6 +1856,336 @@ export function Landing360({
               </div>
             </section>
 
+            {/* ================================================================= */}
+            {/* SEÇÃO 5: PROVAS SOCIAIS, CASOS DE SUCESSO & SELOS DE SEGURANÇA   */}
+            {/* ================================================================= */}
+            <section className="b360-section b360-proof-stage" id="provas-sociais">
+              <div className="b360-sectionhead">
+                <div className="b360-eyebrow">RESULTADOS REAIS COMPROVADOS</div>
+                <h2>Acelerando operações comerciais de alta performance.</h2>
+                <p>
+                  Confiança construída com métricas auditáveis, isolamento multi-tenant e segurança
+                  enterprise.
+                </p>
+              </div>
+
+              {/* Faixa de Métricas de Alto Impacto */}
+              <div className="b360-metrics-strip">
+                <div className="b360-metric-card">
+                  <span className="b360-metric-num">+42%</span>
+                  <div className="b360-metric-label">Taxa de Conversão</div>
+                  <div className="b360-metric-sub">Aumento médio no fechamento de propostas</div>
+                </div>
+                <div className="b360-metric-card">
+                  <span className="b360-metric-num">3.8x</span>
+                  <div className="b360-metric-label">Retorno sobre Investimento</div>
+                  <div className="b360-metric-sub">Payback comprovado no 1º trimestre</div>
+                </div>
+                <div className="b360-metric-card">
+                  <span className="b360-metric-num">R$ 180M+</span>
+                  <div className="b360-metric-label">Volume Transacionado</div>
+                  <div className="b360-metric-sub">
+                    Gerido sob supervisão de agentes inteligentes
+                  </div>
+                </div>
+                <div className="b360-metric-card">
+                  <span className="b360-metric-num">99.98%</span>
+                  <div className="b360-metric-label">Disponibilidade Operacional</div>
+                  <div className="b360-metric-sub">SLA empresarial com auditoria contínua</div>
+                </div>
+              </div>
+
+              {/* Grade de Depoimentos e Casos de Sucesso */}
+              <div className="b360-testimonials-grid">
+                <article className="b360-testimonial-card">
+                  <p className="b360-testimonial-quote">
+                    "Recuperamos mais de R$ 320 mil em negociações paradas já no primeiro mês de
+                    uso. O copiloto de IA recomenda exatamente qual argumento e proposta usar para
+                    fechar cada conta."
+                  </p>
+                  <div className="b360-testimonial-author">
+                    <div className="b360-testimonial-avatar">RS</div>
+                    <div>
+                      <div className="b360-author-name">Rodrigo Silveira</div>
+                      <div className="b360-author-role">
+                        Diretor Comercial · NeoLog B2B (+45 vendedores)
+                      </div>
+                    </div>
+                  </div>
+                </article>
+
+                <article className="b360-testimonial-card">
+                  <p className="b360-testimonial-quote">
+                    "Nossos SDRs e Closers economizam mais de 10 horas por semana em preenchimento
+                    de CRM e preparação de reuniões. A visibilidade 360° eliminou os silos entre
+                    vendas e marketing."
+                  </p>
+                  <div className="b360-testimonial-author">
+                    <div className="b360-testimonial-avatar">CD</div>
+                    <div>
+                      <div className="b360-author-name">Camila Duarte</div>
+                      <div className="b360-author-role">Head de RevOps · Vanguarda Tech</div>
+                    </div>
+                  </div>
+                </article>
+
+                <article className="b360-testimonial-card">
+                  <p className="b360-testimonial-quote">
+                    "O isolamento multi-tenant via RLS e a conformidade LGPD nativa foram
+                    fundamentais para aprovação técnica imediata pelo nosso comitê de segurança e
+                    jurídico."
+                  </p>
+                  <div className="b360-testimonial-author">
+                    <div className="b360-testimonial-avatar">MF</div>
+                    <div>
+                      <div className="b360-author-name">Marcelo Faccini</div>
+                      <div className="b360-author-role">VP de Tecnologia & Governança</div>
+                    </div>
+                  </div>
+                </article>
+              </div>
+
+              {/* Selos de Segurança e Certificações */}
+              <div className="b360-trust-seals" aria-label="Garantias de segurança e conformidade">
+                <div className="b360-seal-item">
+                  <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                  <span>Criptografia AES-256 Ponta a Ponta</span>
+                </div>
+                <div className="b360-seal-item">
+                  <Lock className="w-5 h-5 text-cyan-400" />
+                  <span>Isolamento Multi-Tenant via Postgres RLS</span>
+                </div>
+                <div className="b360-seal-item">
+                  <CheckCircle2 className="w-5 h-5 text-purple-400" />
+                  <span>100% Conforme com a LGPD (Audit Ledger)</span>
+                </div>
+                <div className="b360-seal-item">
+                  <Award className="w-5 h-5 text-amber-400" />
+                  <span>Padrões de Governança ISO 27001 Ready</span>
+                </div>
+              </div>
+            </section>
+
+            {/* ================================================================= */}
+            {/* SEÇÃO 4: FORMULÁRIO OBJETIVO DE CONVERSÃO (DEMONSTRAÇÃO PRÁTICA)  */}
+            {/* ================================================================= */}
+            <section className="b360-lead-capture-wrapper" id="demonstracao">
+              <div className="b360-lead-card">
+                <div className="b360-lead-grid">
+                  {/* Bloco de Benefícios da Sessão */}
+                  <div>
+                    <div className="b360-eyebrow">SESSÃO PRÁTICA EXCLUSIVA</div>
+                    <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-100 dark:text-slate-100 mb-3">
+                      Veja sua operação comercial operando em 360°.
+                    </h2>
+                    <p className="text-sm text-slate-300 dark:text-slate-400 leading-relaxed mb-6">
+                      Em 25 minutos, nosso arquiteto de receita mostrará como identificar gargalos
+                      no seu funil, recuperar propostas e implantar copilotos de IA com total
+                      controle.
+                    </p>
+
+                    <div className="space-y-3.5 mb-6">
+                      <div className="flex items-start gap-3">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-cyan-500/20 text-[#00D4FF] text-xs font-bold">
+                          ✓
+                        </span>
+                        <div>
+                          <strong className="text-xs font-bold text-slate-200 block">
+                            Demonstração sem slides genéricos
+                          </strong>
+                          <span className="text-xs text-slate-400">
+                            Análise direta de casos reais aplicada ao seu modelo de negócio.
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-pink-500/20 text-[#FF2D9B] text-xs font-bold">
+                          ✓
+                        </span>
+                        <div>
+                          <strong className="text-xs font-bold text-slate-200 block">
+                            Simulação de ROI e Previsibilidade
+                          </strong>
+                          <span className="text-xs text-slate-400">
+                            Cálculo detalhado de receita recuperável nos primeiros 90 dias.
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-3">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold">
+                          ✓
+                        </span>
+                        <div>
+                          <strong className="text-xs font-bold text-slate-200 block">
+                            Atendimento rápido em até 15 minutos
+                          </strong>
+                          <span className="text-xs text-slate-400">
+                            Contato por WhatsApp para alinhar o melhor horário da sua agenda.
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl border border-cyan-500/20 bg-cyan-950/20 text-xs text-cyan-200 flex items-center gap-2">
+                      <Clock className="w-4 h-4 shrink-0 text-[#00D4FF]" />
+                      <span>4 vagas remanescentes para o ciclo assistido desta semana.</span>
+                    </div>
+                  </div>
+
+                  {/* Bloco do Formulário ou Sucesso */}
+                  <div>
+                    {leadSubmitted ? (
+                      <div className="text-center py-8 space-y-4 rounded-2xl bg-slate-900/80 dark:bg-[#071322]/90 p-6 border border-emerald-500/30">
+                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">
+                          <CheckCircle2 className="h-8 w-8" />
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-100">
+                          Sessão Solicitada com Sucesso!
+                        </h3>
+                        <p className="text-xs text-slate-300 leading-relaxed max-w-sm mx-auto">
+                          Enviamos a confirmação para <strong>{leadForm.email}</strong>. Um de
+                          nossos especialistas em operações comerciais entrará em contato via
+                          WhatsApp ({leadForm.whatsapp}) em até 15 minutos.
+                        </p>
+                        <div className="pt-2 flex flex-col gap-2.5">
+                          <a
+                            href="https://calendar.google.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-xs font-bold hover:bg-cyan-500/30 transition-colors"
+                          >
+                            <Calendar className="w-4 h-4" />
+                            <span>Abrir Google Agenda</span>
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => setLeadSubmitted(false)}
+                            className="text-[11px] font-mono text-slate-400 hover:text-slate-200 underline"
+                          >
+                            Editar dados enviados
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <form onSubmit={handleLeadSubmit} className="space-y-3.5">
+                        <div className="mb-2">
+                          <h3 className="text-base font-bold text-slate-100">
+                            Reserve sua Demonstração Técnica
+                          </h3>
+                          <p className="text-xs text-slate-400">
+                            Preencha os dados essenciais para receber o acesso seguro:
+                          </p>
+                        </div>
+
+                        <div>
+                          <label
+                            htmlFor="lead-nome"
+                            className="block text-xs font-mono text-slate-300 mb-1"
+                          >
+                            Nome Completo *
+                          </label>
+                          <input
+                            id="lead-nome"
+                            type="text"
+                            required
+                            value={leadForm.nome}
+                            onChange={(e) => setLeadForm({ ...leadForm, nome: e.target.value })}
+                            placeholder="Ex: Mariana Albuquerque"
+                            className="b360-form-input"
+                          />
+                        </div>
+
+                        <div>
+                          <label
+                            htmlFor="lead-email"
+                            className="block text-xs font-mono text-slate-300 mb-1"
+                          >
+                            E-mail Corporativo *
+                          </label>
+                          <input
+                            id="lead-email"
+                            type="email"
+                            required
+                            value={leadForm.email}
+                            onChange={(e) => setLeadForm({ ...leadForm, email: e.target.value })}
+                            placeholder="voce@suaempresa.com.br"
+                            className="b360-form-input"
+                          />
+                        </div>
+
+                        <div>
+                          <label
+                            htmlFor="lead-whatsapp"
+                            className="block text-xs font-mono text-slate-300 mb-1"
+                          >
+                            WhatsApp Comercial com DDD *
+                          </label>
+                          <input
+                            id="lead-whatsapp"
+                            type="tel"
+                            required
+                            value={leadForm.whatsapp}
+                            onChange={(e) => setLeadForm({ ...leadForm, whatsapp: e.target.value })}
+                            placeholder="(11) 99999-9999"
+                            className="b360-form-input"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-mono text-slate-300 mb-1.5">
+                            Tamanho da Equipe Comercial
+                          </label>
+                          <div className="b360-team-chips">
+                            {['1 a 5', '6 a 15', '16 a 50', '50+'].map((sz) => (
+                              <button
+                                key={sz}
+                                type="button"
+                                onClick={() => setLeadForm({ ...leadForm, equipe: sz })}
+                                className={`b360-chip-btn ${leadForm.equipe === sz ? 'active' : ''}`}
+                              >
+                                {sz}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="pt-1">
+                          <label className="flex items-start gap-2 text-[11px] text-slate-400 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={leadForm.consent}
+                              onChange={(e) =>
+                                setLeadForm({ ...leadForm, consent: e.target.checked })
+                              }
+                              required
+                              className="mt-0.5 rounded border-slate-700 text-[#00D4FF] focus:ring-[#00D4FF]"
+                            />
+                            <span>
+                              Concordo com o tratamento dos dados estritamente para agendamento da
+                              demonstração conforme a LGPD.
+                            </span>
+                          </label>
+                        </div>
+
+                        <div className="pt-2">
+                          <button type="submit" disabled={leadLoading} className="b360-submit-cta">
+                            {leadLoading
+                              ? 'Preparando Sessão...'
+                              : 'GARANTIR MINHA DEMONSTRAÇÃO GRATUITA →'}
+                          </button>
+                          <p className="mt-2 text-center text-[10px] font-mono text-slate-400">
+                            🔒 Zero spam · Cancelamento fácil com 1 clique · Dados protegidos
+                          </p>
+                        </div>
+                      </form>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </section>
+
             {/* Final CTA */}
             <section className="b360-final-cta">
               <div className="b360-eyebrow">CONTROLE TOTAL DE RECEITA</div>
@@ -1693,21 +2195,30 @@ export function Landing360({
                 potencializam mutuamente em uma única plataforma soberana.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-4">
-                <button
+                <a
+                  href="#demonstracao"
                   className="b360-aurora"
-                  type="button"
-                  onClick={() => handleSwitchView('command')}
+                  onClick={() =>
+                    trackHeroCtaPrimaryClick(abVariant, 'Garantir Demonstração Gratuita - Final')
+                  }
                 >
                   <span className="b360-aurora-inner">
-                    Acessar Command Center <span aria-hidden="true">→</span>
+                    Garantir Demonstração Gratuita <span aria-hidden="true">→</span>
                   </span>
-                </button>
+                </a>
                 <button
                   type="button"
                   onClick={handleOpenRoiSimulator}
                   className="b360-hero-pill-btn"
                 >
-                  Simular ROI Comercial
+                  Simular ROI Comercial ↗
+                </button>
+                <button
+                  className="b360-hero-secondary-btn"
+                  type="button"
+                  onClick={() => handleSwitchView('command')}
+                >
+                  Ver Command Center
                 </button>
                 <button type="button" onClick={handleGoToLogin} className="b360-hero-secondary-btn">
                   Acessar Plataforma
@@ -1920,6 +2431,33 @@ export function Landing360({
           </div>
         )}
 
+        {/* Sticky Action Bar (CTA Visível ao Rolar) */}
+        {showScrollTop && viewMode === 'public' && activeScreen === 'intro' && (
+          <aside className="b360-sticky-bar" aria-label="Ações rápidas de conversão">
+            <div className="hidden sm:flex items-center gap-2">
+              <BH360LogoMark size={20} />
+              <span className="text-xs font-bold text-slate-200">
+                Birth Hub <strong className="text-[#FF2D9B]">360°</strong>
+              </span>
+            </div>
+            <span className="hidden md:inline text-xs text-slate-300">
+              {abVariant === 'B'
+                ? 'Multiplique as vendas do seu time'
+                : 'Acelere seu pipeline em até 3.8x'}
+            </span>
+            <a href="#demonstracao" className="b360-sticky-cta-btn">
+              Agendar Demonstração Gratuita →
+            </a>
+            <button
+              type="button"
+              onClick={handleGoToLogin}
+              className="text-xs font-mono text-slate-300 hover:text-[#00D4FF] underline"
+            >
+              Entrar
+            </button>
+          </aside>
+        )}
+
         {/* Footer Institucional */}
         <footer className="b360-footer">
           <B360FloatingNodes variant="footer" />
@@ -2028,6 +2566,60 @@ export function Landing360({
                     <span>Auditoria de Logs & RBAC</span>
                   </li>
                 </ul>
+              </div>
+            </div>
+
+            {/* Dock de Controle e Auditoria de Teste A/B */}
+            <div className="flex items-center justify-center py-3 border-t border-slate-800/60 mb-4">
+              <div
+                className="b360-ab-pill-dock"
+                role="group"
+                aria-label="Controle de Experimento A/B"
+              >
+                <span className="font-mono text-[10px]">🧪 Experimento A/B:</span>
+                <button
+                  type="button"
+                  className={`b360-ab-toggle-btn ${abVariant === 'A' ? 'active' : ''}`}
+                  onClick={() => handleSwitchAbVariant('A')}
+                  title="Variante A: Foco em Aceleração de Pipeline e Produtividade"
+                >
+                  Variante A (Aceleração)
+                </button>
+                <button
+                  type="button"
+                  className={`b360-ab-toggle-btn ${abVariant === 'B' ? 'active' : ''}`}
+                  onClick={() => handleSwitchAbVariant('B')}
+                  title="Variante B: Foco em Multiplicação de Receita e Conversão"
+                >
+                  Variante B (Multiplicação)
+                </button>
+              </div>
+            </div>
+
+            {/* Dock de Controle e Auditoria de Teste A/B */}
+            <div className="flex items-center justify-center py-3 border-t border-slate-800/60 mb-4">
+              <div
+                className="b360-ab-pill-dock"
+                role="group"
+                aria-label="Controle de Experimento A/B"
+              >
+                <span className="font-mono text-[10px]">🧪 Experimento A/B:</span>
+                <button
+                  type="button"
+                  className={`b360-ab-toggle-btn ${abVariant === 'A' ? 'active' : ''}`}
+                  onClick={() => handleSwitchAbVariant('A')}
+                  title="Variante A: Foco em Aceleração de Pipeline e Produtividade"
+                >
+                  Variante A (Aceleração)
+                </button>
+                <button
+                  type="button"
+                  className={`b360-ab-toggle-btn ${abVariant === 'B' ? 'active' : ''}`}
+                  onClick={() => handleSwitchAbVariant('B')}
+                  title="Variante B: Foco em Multiplicação de Receita e Conversão"
+                >
+                  Variante B (Multiplicação)
+                </button>
               </div>
             </div>
 

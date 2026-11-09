@@ -46,7 +46,8 @@ export function B360DataStreamCursor() {
     if (reduceMotion) return;
     if (typeof window === 'undefined') return;
     if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') return;
-    if (typeof window.matchMedia === 'function' && !window.matchMedia('(pointer: fine)').matches) {
+    // Habilitado para todos os ambientes desktop e estações com mouse/trackpad
+    if (typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches) {
       return;
     }
 

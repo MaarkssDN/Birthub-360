@@ -58,7 +58,7 @@
       {
         "index": 7,
         "badge": "07",
-        "tag": "GATEWAY MULTI-CRM",
+        "tag": "MOTOR DE REGRAS & 9 CONECTORES",
         "title": "07. Automação & conectividade",
         "imgUrl": "/landing/assets/pillar-automation.jpg",
         "httpStatus": 200,
@@ -70,6 +70,33 @@
         "tag": "VOICEHUB & WHATSAPP",
         "title": "08. Engajamento comercial",
         "imgUrl": "/landing/assets/pillar-engagement.jpg",
+        "httpStatus": 200,
+        "ok": true
+      },
+      {
+        "index": 9,
+        "badge": "09",
+        "tag": "GOVERNANÇA DA PLATAFORMA",
+        "title": "09. Admin & operations",
+        "imgUrl": null,
+        "httpStatus": 200,
+        "ok": true
+      },
+      {
+        "index": 10,
+        "badge": "10",
+        "tag": "FORÇA DE CAMPO",
+        "title": "10. Mobile & field sales",
+        "imgUrl": null,
+        "httpStatus": 200,
+        "ok": true
+      },
+      {
+        "index": 11,
+        "badge": "11",
+        "tag": "VENDA SOCIAL",
+        "title": "11. Social selling",
+        "imgUrl": null,
         "httpStatus": 200,
         "ok": true
       }

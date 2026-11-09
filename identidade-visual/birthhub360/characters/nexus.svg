@@ -49,13 +49,13 @@
   <polygon points="29,44 64,64 29,84" fill="url(#nexus-facet-3)" fill-opacity="0.9"/>
 
   <!-- Arestas de Brilho Quântico -->
-  <g filter="url(#nexus-glow)">
-    <line x1="64" y1="24" x2="64" y2="64" stroke="#BAE6FD" stroke-width="1.5"/>
-    <line x1="29" y1="44" x2="64" y2="64" stroke="#BAE6FD" stroke-width="1.5"/>
-    <line x1="99" y1="44" x2="64" y2="64" stroke="#BAE6FD" stroke-width="1.5"/>
-    <line x1="29" y1="84" x2="64" y2="64" stroke="#BAE6FD" stroke-width="1.5"/>
-    <line x1="99" y1="84" x2="64" y2="64" stroke="#BAE6FD" stroke-width="1.5"/>
-    <line x1="64" y1="104" x2="64" y2="64" stroke="#BAE6FD" stroke-width="1.5"/>
+  <g stroke="#BAE6FD" stroke-width="1.5" filter="url(#nexus-glow)">
+    <line x1="64" y1="24" x2="64" y2="64"/>
+    <line x1="29" y1="44" x2="64" y2="64"/>
+    <line x1="99" y1="44" x2="64" y2="64"/>
+    <line x1="29" y1="84" x2="64" y2="64"/>
+    <line x1="99" y1="84" x2="64" y2="64"/>
+    <line x1="64" y1="104" x2="64" y2="64"/>
   </g>
 
   <!-- Núcleo de Processamento de Dados (Glow) -->
@@ -64,15 +64,19 @@
   <circle cx="64" cy="64" r="3" fill="#BAE6FD"/>
 
   <!-- Vértices da Constelação de Dados -->
-  <circle cx="64" cy="14" r="3.5" fill="#00D4FF" filter="url(#nexus-glow)"/>
-  <circle cx="108" cy="39" r="3.5" fill="#00D4FF" filter="url(#nexus-glow)"/>
-  <circle cx="108" cy="89" r="3.5" fill="#00D4FF" filter="url(#nexus-glow)"/>
-  <circle cx="64" cy="114" r="3.5" fill="#00D4FF" filter="url(#nexus-glow)"/>
-  <circle cx="20" cy="89" r="3.5" fill="#00D4FF" filter="url(#nexus-glow)"/>
-  <circle cx="20" cy="39" r="3.5" fill="#00D4FF" filter="url(#nexus-glow)"/>
+  <g fill="#00D4FF" filter="url(#nexus-glow)">
+    <circle cx="64" cy="14" r="3.5"/>
+    <circle cx="108" cy="39" r="3.5"/>
+    <circle cx="108" cy="89" r="3.5"/>
+    <circle cx="64" cy="114" r="3.5"/>
+    <circle cx="20" cy="89" r="3.5"/>
+    <circle cx="20" cy="39" r="3.5"/>
+  </g>
 
   <!-- Sinais de Fluxo Analítico -->
-  <circle cx="64" cy="14" r="1.5" fill="#FFFFFF"/>
-  <circle cx="108" cy="39" r="1.5" fill="#FFFFFF"/>
-  <circle cx="64" cy="114" r="1.5" fill="#FFFFFF"/>
+  <g fill="#FFFFFF">
+    <circle cx="64" cy="14" r="1.5"/>
+    <circle cx="108" cy="39" r="1.5"/>
+    <circle cx="64" cy="114" r="1.5"/>
+  </g>
 </svg>

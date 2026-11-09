@@ -11,14 +11,12 @@ import { useEffect, useRef, useState } from 'react';
  * Ao aproximar o mouse, o elemento é atraído em direção ao ponteiro.
  * No pointerleave, retorna com amortecimento elástico (spring physics).
  */
-export function useB360MagneticAttraction(selector: string, pullStrength = 0.18, maxDist = 160) {
+export function useB360MagneticAttraction(selector: string, pullStrength = 0.28, maxDist = 200) {
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     if (reduceMotion) return;
     if (typeof window === 'undefined') return;
-    if (typeof window.matchMedia === 'function' && !window.matchMedia('(pointer: fine)').matches)
-      return;
 
     const elements = document.querySelectorAll<HTMLElement>(selector);
     if (!elements.length) return;
@@ -38,10 +36,10 @@ export function useB360MagneticAttraction(selector: string, pullStrength = 0.18,
         currentY += (targetY - currentY) * 0.22;
 
         if (isInteracting || Math.abs(currentX) > 0.1 || Math.abs(currentY) > 0.1) {
-          el.style.transform = `translate3d(${currentX.toFixed(2)}px, ${currentY.toFixed(2)}px, 0)`;
+          el.style.setProperty('transform', `translate3d(${currentX.toFixed(2)}px, ${currentY.toFixed(2)}px, 0)`, 'important');
           rafId = requestAnimationFrame(updateSpring);
         } else {
-          el.style.transform = '';
+          el.style.removeProperty('transform');
           currentX = 0;
           currentY = 0;
         }
@@ -164,7 +162,7 @@ export function useB360ScrollParallax() {
  * volta a 0 graus. 100% acelerado pela GPU.
  */
 export function useB360ScrollVelocityInertia(
-  selector = '.b360-hero-console, .b360-fanned-card, .b360-problem-card',
+  selector = '.b360-hero-console, .b360-fanned-card, .b360-feature-card, .b360-problem-card, .b360-platform-card, .b360-flow-card, .b360-integration-card',
 ) {
   const reduceMotion = useReducedMotion();
 
@@ -191,7 +189,7 @@ export function useB360ScrollVelocityInertia(
       currentVelocity += (instantVelocity - currentVelocity) * 0.35;
 
       // Mapeamento para inclinação de 2° a 4.5°
-      const targetTilt = Math.max(-4.5, Math.min(4.5, currentVelocity * 2.8));
+      const targetTilt = Math.max(-5.0, Math.min(5.0, currentVelocity * 3.5));
       // Amortecimento tipo mola (spring)
       currentTilt += (targetTilt - currentTilt) * 0.18;
 
@@ -259,6 +257,7 @@ export function B360DecryptBlock({
     let frame = 0;
     const totalFrames = Math.max(16, Math.min(30, Math.floor(text.length * 1.2)));
 
+    // Start scramble immediately with visible cyberpunk glyphs
     timeoutRef.current = setTimeout(() => {
       const interval = setInterval(() => {
         frame++;

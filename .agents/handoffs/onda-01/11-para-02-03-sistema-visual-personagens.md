@@ -3,7 +3,7 @@ Para: 02 — Produto e UX & 03 — Design e Acessibilidade
 Onda: Onda 01
 Status: aberto
 Prioridade: alto
-Bloqueador-ref: B-06 (Erradicação de cenografia visual de IA)
+Bloqueador-ref: B-06 (Dados fictícios misturados com dados reais — mitigação de cenografia e avatares randômicos no cockpit; histórico: referenciado originalmente como "Erradicação de cenografia visual de IA")
 Sprint destino: Sprint Atual (Onda 01)
 
 ## Problema
@@ -42,3 +42,6 @@ Os 9 avatares vetoriais originais foram criados e salvos localmente em `public/b
 
 ## Contexto adicional
 Esta entrega é resultado da solicitação do usuário e da governança da Onda 01 autorizada pelo Agente 00 no relatório de auditoria `.agents/runs/00-auditoria-ecossistema-agentes-personagens-20261107.md`. Todos os assets foram criados em conformidade com as restrições de propriedade de arquivo do Agente 11.
+
+### Registro Histórico e Saneamento de Governança
+- **Correção de Referência de Bloqueador (Agente 11):** A nomenclatura canônica de **B-06** estabelecida em `AGENTS.md` (Seção 22) é *"Dados fictícios misturados com dados reais"*. O registro original deste handoff utilizava *"Erradicação de cenografia visual de IA"*. A referência foi harmonizada com a governança global, preservando o histórico de auditoria intacto.

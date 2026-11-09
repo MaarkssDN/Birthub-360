@@ -56,13 +56,14 @@ Cada handoff segue rigorosamente os requisitos do **`AGENTS.md` §18**, contendo
 ### Onda 3: Integrações, Extrações, Telefonia e Comunicação (P1/P2)
 | Handoff | De | Para | Prioridade | Bloqueador Ref | Arquivo Principal |
 |---|---|---|---|---|---|
-| [`00-para-06a-sanitizacao-csv-injection-bitrix.md`](./00-para-06a-sanitizacao-csv-injection-bitrix.md) | 00 | 06A | `bloqueador` | DIV-AGENTE-06A-001 (B-04) | `src/services/bitrix/exportFormatter.service.ts` |
-| [`06-para-06a-streaming-extracao-memoria-oom.md`](./06-para-06a-streaming-extracao-memoria-oom.md) | 06 | 06A | `alto` | DIV-AGENTE-06-001 | `src/services/bitrix/extraction.ts` |
-| [`12-para-06-buffer-assincrono-webhooks-3cx.md`](./12-para-06-buffer-assincrono-webhooks-3cx.md) | 12 | 06 | `bloqueador` | DIV-AGENTE-12-001 (B-07) | `src/services/telephony/webhookHandler.service.ts` |
-| [`04-para-12-correcao-faturamento-meses-31-dias.md`](./04-para-12-correcao-faturamento-meses-31-dias.md) | 04 | 12 | `alto` | DIV-AGENTE-04-001 | `src/services/telephony/billing.service.ts` |
-| [`15-para-12-mascaramento-pii-transcricoes-voz.md`](./15-para-12-mascaramento-pii-transcricoes-voz.md) | 15 | 12 | `bloqueador` | DIV-AGENTE-12-002 (B-13) | `src/services/telephony/transcription.service.ts` |
-| [`05-para-17-trava-templates-cadencia-placeholders.md`](./05-para-17-trava-templates-cadencia-placeholders.md) | 05 | 17 | `alto` | DIV-AGENTE-05-001 | `src/services/cadence/templateRenderer.service.ts` |
-| [`06-para-17-janela-horario-comercial-whatsapp.md`](./06-para-17-janela-horario-comercial-whatsapp.md) | 06 | 17 | `alto` | DIV-AGENTE-17-001 | `src/services/cadence/stepScheduler.service.ts` |
+| [`00-para-06a-sanitizacao-csv-injection-bitrix.md`](./00-para-06a-sanitizacao-csv-injection-bitrix.md) | 00 | 06A | `resolvido` (bloqueador) | DIV-AGENTE-06A-001 (B-04) | `src/services/bitrix/exportFormatter.service.ts` |
+| [`06-para-06a-streaming-extracao-memoria-oom.md`](./06-para-06a-streaming-extracao-memoria-oom.md) | 06 | 06A | `resolvido` (alto) | DIV-AGENTE-06-001 | `src/services/bitrix/extraction.ts` |
+| [`12-para-06-buffer-assincrono-webhooks-3cx.md`](./12-para-06-buffer-assincrono-webhooks-3cx.md) | 12 | 06 | `resolvido` (bloqueador) | DIV-AGENTE-12-001 (B-07) | `src/services/telephony/webhookHandler.service.ts` |
+| [`04-para-12-correcao-faturamento-meses-31-dias.md`](./04-para-12-correcao-faturamento-meses-31-dias.md) | 04 | 12 | `resolvido` (alto) | DIV-AGENTE-04-001 | `src/services/telephony/billing.service.ts` |
+| [`15-para-12-mascaramento-pii-transcricoes-voz.md`](./15-para-12-mascaramento-pii-transcricoes-voz.md) | 15 | 12 | `resolvido` (bloqueador) | DIV-AGENTE-12-002 (B-13) | `src/services/telephony/transcription.service.ts` |
+| [`05-para-17-trava-templates-cadencia-placeholders.md`](./05-para-17-trava-templates-cadencia-placeholders.md) | 05 | 17 | `resolvido` (alto) | DIV-AGENTE-05-001 | `src/services/cadence/templateRenderer.service.ts` |
+| [`06-para-17-janela-horario-comercial-whatsapp.md`](./06-para-17-janela-horario-comercial-whatsapp.md) | 06 | 17 | `resolvido` (alto) | DIV-AGENTE-17-001 | `src/services/cadence/stepScheduler.service.ts` |
+| [`06-para-07-liberacao-ia.md`](./06-para-07-liberacao-ia.md) | 06 | 07 | `resolvido` (alto) | DIV-AGENTE-06-LIBERACAO-IA | Transição Onda 3 → Onda 4 |
 
 ---
 

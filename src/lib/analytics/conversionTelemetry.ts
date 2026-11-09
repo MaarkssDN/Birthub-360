@@ -15,7 +15,9 @@ export type ConversionEventName =
   | 'hero_cta_primary_click'
   | 'hero_roi_simulator_opened'
   | 'roi_simulator_converted'
-  | 'hero_variant_switched';
+  | 'hero_variant_switched'
+  | 'lead_form_submitted'
+  | 'lead_capture_opened';
 
 export interface ConversionEventPayload {
   eventName: ConversionEventName;
@@ -175,6 +177,23 @@ export function trackHeroVariantSwitched(fromVariant: HeroVariant, toVariant: He
     fromVariant,
     toVariant,
   });
+}
+
+/**
+ * 6. Registra a abertura da seção ou modal de captura de lead.
+ */
+export function trackLeadCaptureOpened(variant: HeroVariant, source = 'landing_cta'): void {
+  recordConversionEvent('lead_capture_opened', variant, { source });
+}
+
+/**
+ * 7. Registra a conversão por submissão de formulário de lead/demonstração.
+ */
+export function trackLeadFormSubmitted(
+  variant: HeroVariant,
+  metadata?: { teamSize?: string; source?: string; role?: string },
+): void {
+  recordConversionEvent('lead_form_submitted', variant, metadata);
 }
 
 /**

@@ -153,3 +153,5 @@ sonar-report/
 
 
 scratch/
+
+.vscode/
