@@ -23,11 +23,11 @@ Parecer formal: `.agents/reviews/24-revisao-onda-saneamento-entregas-01-05-07-11
 - `npx tsc --noEmit` — 0 erros.
 - `npm run lint` (biome) — exit 0; 828 warnings pré-existentes, nenhum novo nos arquivos mergeados.
 - Vitest focado nos 3 módulos alterados — **37/37** (prisma-interceptors 23, enrichmentRetention 10, mission-trace 4).
-- `npm run build` — em execução ao fechar este relatório.
+- `npm run build` — passou (vite build + esbuild server.cjs + verify:pwa-precache, 221 entradas).
 
 ## Pendências / observações
 
-- `test:unit` completo, `test:integration`, `test:e2e` e `build` integral ainda pendentes antes de declarar GATE_VERDE da onda.
+- `test:unit` completo, `test:integration` e `test:e2e` ainda pendentes antes de declarar GATE_VERDE da onda.
 - O working tree principal contém WIP não commitado de outra sessão (personagens 9-29, sidebar, etc.) — os gates acima rodaram sobre ele; falhas futuras não relacionadas devem ser atribuídas corretamente.
 - Novos handoffs abertos pelas entregas: `15-para-01` (console.error cru em `src/bootstrap/auth.ts`), `11-para-00` (PNGs órfãos q1/q2 ~3MB), `11-para-03` (divergência de tokens globals.css vs canônicos), `11-para-08` (guard de fixtures).
 - ~50 handoffs `aberto`/`em-andamento` restantes em `onda-saneamento-20261110` + 8 em `onda-paralela-8` para próximas ondas.
