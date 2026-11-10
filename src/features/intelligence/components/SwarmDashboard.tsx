@@ -1,6 +1,5 @@
 import canvasConfetti from 'canvas-confetti';
 import { AnimatePresence, motion } from 'framer-motion';
-import { SoundFX } from '../../../lib/soundEffects.js';
 import {
   AlertTriangle,
   Bot,
@@ -21,110 +20,60 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useBrandAccent } from '../../../hooks/useBrandAccent.js';
 import { api } from '../../../lib/api.js';
 import { clientLogger } from '../../../lib/clientLogger.js';
+import { SoundFX } from '../../../lib/soundEffects.js';
 import { SWARM_BRAND } from '../agents/swarm.constants.js';
+import type {
+  AgentSloMetrics,
+  PipelineAgent,
+  SloRate,
+  SwarmAgent,
+  SwarmDashboardView,
+  SwarmEvent,
+  SwarmEventType,
+  SwarmMessage,
+  SwarmSloPanelProps,
+  SwarmSloSnapshot,
+} from './swarm-dashboard/swarm.types.js';
+import {
+  AGENT_NAMES,
+  createId,
+  formatMs,
+  formatPercent,
+  getAgentName,
+  MISSION_SUGGESTIONS,
+  PIPELINE_AGENTS,
+  SLO_ROLE_COLOR,
+  SLO_ROLE_LABEL,
+} from './swarm-dashboard/swarmMission.constants.js';
 import { UniversalEcosystemPanel } from './UniversalEcosystemPanel.js';
 
-type SwarmAgent = 'supervisor' | 'sdr' | 'bdr' | 'closer' | 'crm' | 'ops';
-type SwarmEventType = 'routing' | 'agent_result' | 'agent_error' | 'final';
-
-interface SwarmEvent {
-  type: SwarmEventType;
-  agent: SwarmAgent;
-  content: string;
-  step: number;
-  reasoning?: string;
-  nextAgent?: 'sdr' | 'bdr' | 'closer' | 'crm' | 'ops';
-}
-
-interface SwarmMessage {
-  id: string;
-  agent: SwarmAgent;
-  text: string;
-  timestamp: Date;
-  status: 'thinking' | 'done' | 'error';
-  kind: 'routing' | 'result' | 'final';
-  step: number;
-}
-
-interface SloRate {
-  value: number | null;
-  numerator: number;
-  denominator: number;
-  emptyReason?: string;
-}
-
-interface AgentSloMetrics {
-  role: 'SDR' | 'BDR' | 'CLOSER' | 'CRM' | 'OPS';
-  coverage: number;
-  conversion: SloRate;
-  humanOverride: SloRate;
-  errorRate: SloRate;
-  avgExecutionLatencyMs: number | null;
-  dataSourceNote?: string;
-}
-
-interface SwarmSloSnapshot {
-  organizationId: string;
-  windowDays: number;
-  generatedAt: string;
-  agents: AgentSloMetrics[];
-  cost: {
-    windowDays: number;
-    totalCostUsd: number;
-    totalTokens: number;
-    requestCount: number;
-    avgLatencyMs: number | null;
-    note: string;
-  };
-}
-
-const SLO_ROLE_LABEL: Record<AgentSloMetrics['role'], string> = {
-  SDR: 'SDR Autônomo',
-  BDR: 'BDR (Outbound)',
-  CLOSER: 'Closer Autônomo',
-  CRM: 'Gestor de CRM',
-  OPS: 'Agente de Operações',
+export type {
+  AgentSloMetrics,
+  PipelineAgent,
+  SloRate,
+  SwarmAgent,
+  SwarmDashboardView,
+  SwarmEvent,
+  SwarmEventType,
+  SwarmMessage,
+  SwarmSloPanelProps,
+  SwarmSloSnapshot,
 };
-
-const SLO_ROLE_COLOR: Record<AgentSloMetrics['role'], string> = {
-  SDR: 'var(--color-heading-cyan)',
-  BDR: 'var(--color-heading-success)',
-  CLOSER: 'var(--color-heading-pink)',
-  CRM: 'var(--color-heading-iris)',
-  OPS: 'var(--color-heading-gold)',
+export {
+  AGENT_NAMES,
+  createId,
+  formatMs,
+  formatPercent,
+  getAgentName,
+  MISSION_SUGGESTIONS,
+  PIPELINE_AGENTS,
+  SLO_ROLE_COLOR,
+  SLO_ROLE_LABEL,
 };
-
-function formatPercent(rate: SloRate): string {
-  if (rate.value === null) return '—';
-  return `${Math.round(rate.value * 100)}%`;
-}
-
-function formatMs(ms: number | null): string {
-  if (ms === null) return '—';
-  if (ms < 1_000) return `${Math.round(ms)} ms`;
-  if (ms < 60_000) return `${(ms / 1_000).toFixed(1)} s`;
-  return `${(ms / 60_000).toFixed(1)} min`;
-}
-
-const MISSION_SUGGESTIONS = [
-  'Acabei de importar um lead da empresa "TransLogística Express" (frota de 50 caminhões, faturamento alto). Qualifique o risco, avalie o fit outbound e sugira a próxima ação.',
-  'Analise os negócios em risco no funil desta semana e recomende os próximos passos para cada um.',
-  'Preciso de uma linha de abordagem fria para um lead do segmento logístico que ainda não respondeu.',
-  'Temos uma proposta enviada e o comprador levantou objeção de preço. Monte a estratégia de fechamento sem sacrificar margem.',
-  'Varra nossos e-mails (Outlook, Gmail e IMAP) para identificar oportunidades quentes, crie tarefas no Trello/Monday/Notion e dispare um alerta rápido no Celular e no Relógio (Smartwatch).',
-  'Descubra empresas de Logística e Indústria em SP, enriqueça os decisores no CRM, gere uma planilha Excel (.xlsx) de prospecção e salve os scripts de Cold Call e WhatsApp.',
-];
-
-function createId() {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-  return `${Date.now()}-${Math.floor(Math.random() * 1000000)}`;
-}
 
 export function SwarmDashboard() {
   const accent = useBrandAccent();
-  const [view, setView] = useState<'mission' | 'slo' | 'connectors' | 'studio'>('mission');
+  const [view, setView] = useState<SwarmDashboardView>('mission');
   const [mission, setMission] = useState('');
   const [leadId, setLeadId] = useState('');
   const [isExecuting, setIsExecuting] = useState(false);
@@ -477,25 +426,6 @@ export function SwarmDashboard() {
     }
   };
 
-  const getAgentName = (agent: string) => {
-    switch (agent) {
-      case 'supervisor':
-        return 'Supervisor (Orquestrador)';
-      case 'sdr':
-        return 'SDR Autônomo';
-      case 'bdr':
-        return 'BDR (Outbound)';
-      case 'closer':
-        return 'Closer Autônomo';
-      case 'crm':
-        return 'Gestor de CRM';
-      case 'ops':
-        return 'Agente de Operações';
-      default:
-        return 'Agente';
-    }
-  };
-
   const getAgentBg = (agent: string, status: SwarmMessage['status']) => {
     if (status === 'error')
       return 'bg-danger/10 border-danger/30 text-danger-active dark:text-danger';
@@ -516,14 +446,6 @@ export function SwarmDashboard() {
         return 'bg-surface-2 border-line text-ink';
     }
   };
-
-  const pipelineAgents: { key: SwarmAgent; label: string }[] = [
-    { key: 'sdr', label: 'SDR' },
-    { key: 'bdr', label: 'BDR' },
-    { key: 'closer', label: 'CLOSER' },
-    { key: 'crm', label: 'CRM' },
-    { key: 'ops', label: 'OPS' },
-  ];
 
   return (
     <div className="flex flex-col h-[750px] bg-surface rounded-[var(--radius-card)] border border-[var(--color-heading-iris)] overflow-hidden shadow-card relative">
@@ -552,7 +474,7 @@ export function SwarmDashboard() {
         <div className="flex items-center gap-3">
           {isExecuting && (
             <div className="hidden md:flex items-center gap-2 mr-2">
-              {pipelineAgents.map((p) => (
+              {PIPELINE_AGENTS.map((p) => (
                 <div
                   key={p.key}
                   className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border transition-colors ${
@@ -854,13 +776,6 @@ export function SwarmDashboard() {
       )}
     </div>
   );
-}
-
-interface SwarmSloPanelProps {
-  snapshot: SwarmSloSnapshot | null;
-  loading: boolean;
-  error: string | null;
-  onRetry: () => void;
 }
 
 function SwarmSloPanel({ snapshot, loading, error, onRetry }: SwarmSloPanelProps) {

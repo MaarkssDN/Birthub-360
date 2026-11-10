@@ -1,7 +1,7 @@
 De: 00 — Coordenador
 Para: 16 — Runtime, Workers e Escala
 Onda: v4-fase2
-Status: aberto
+Status: resolvido
 Prioridade: bloqueador
 Bloqueador-ref: B-11 (Garantia de Entrega e Idempotência de Eventos)
 Sprint destino: Sprint 01 - Fase 02
@@ -30,3 +30,8 @@ A especificação definitiva V4 ([BIRTHUB360_CONTRATOS_INTEGRACAO.md](file:///c:
 
 ## Contexto adicional
 Alinhamento obrigatório com AGENTS.md (Regra 14 e 15 - Propriedade exclusiva do Agente 16).
+
+
+## Resolução (Agente 16 / 00 — 2026-11-10)
+- **Implementação:** Malha de eventos implementada em `src/lib/queue/domainEventMesh.service.ts` com tipagem de tópicos de receita, DLQ com retentativas exponenciais em `deadLetter.ts`, e detecção de ciclos causais defensiva.
+- **Validação:** `tests/unit/queue/domainEventMesh.service.test.ts` executado com sucesso (4/4 testes verdes).

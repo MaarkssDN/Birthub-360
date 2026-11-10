@@ -56,11 +56,11 @@ propósito por estar fora de "## Exceções ativas"):
 
 ### `src/features/landing/pages/Landing360.tsx`
 
-- **Limite excepcional:** 2500 linhas
+- **Limite excepcional:** 3500 linhas
 - **Dono:** Marks-Mah
-- **Motivo:** Nova landing page 360 integrada ao portal comercial e vitrine visual (adicionados gaveta de navegação mobile, links de conformidade e modal de acesso); pendente de modularização de seções.
+- **Motivo:** Nova landing page 360 integrada ao portal comercial e vitrine visual (adicionados gaveta de navegação mobile, links de conformidade, pipeline unificado, atração magnética, levitação parallax e modal de acesso); pendente de modularização de seções.
 - **Registrado em:** 2026-10-07
-- **Atualizado em:** 2026-10-15
+- **Atualizado em:** 2026-11-10
 - **Reavaliar até:** 2026-11-30
 
 ### `src/features/integrations/bitrix/service/extraction.ts`
@@ -228,20 +228,13 @@ propósito por estar fora de "## Exceções ativas"):
 - **Registrado em:** 2026-10-25
 - **Reavaliar até:** 2026-11-30
 
-### `src/features/intelligence/components/SwarmDashboard.tsx`
-
-- **Limite excepcional:** 1018 linhas (teto = tamanho atual; o arquivo não pode crescer)
-- **Dono:** Agente 07 — IA e Automações (redução; Agente 03 na parte de UI)
-- **Motivo:** exceção TEMPORÁRIA. O arquivo estava registrado como débito abaixo do limite (770 linhas) e cruzou 1000 linhas (1018) nos commits a96bb68d e 0774cd67 (2026-10-24), bloqueando o gate `check:hotspots` herdado da main e a validação dos PRs #67, #71 e #72. A exceção destrava o gate com teto no tamanho atual enquanto o dashboard do swarm é modularizado.
-- **Registrado em:** 2026-10-25
-- **Reavaliar até:** 2026-11-30
-
 ### `src/features/landing/components/pillars/PillarRegistry.tsx`
 
-- **Limite excepcional:** 1400 linhas
+- **Limite excepcional:** 1450 linhas
 - **Dono:** Agente 02 — Produto e UX / Agente 03 — Design e Acessibilidade
-- **Motivo:** Registro central dos 8 pilares editoriais oficiais do Birth Hub 360°, incluindo metadados, métricas e os 8 visualizadores operacionais de interface renderizáveis tanto em Dark Mode quanto em Light Mode com alta fidelidade e acessibilidade WCAG 2.2 AA. Formatado com o padrão Biome do projeto (1382 linhas). A extração dos visualizadores para componentes isolados por pilar está programada para a próxima onda de refatoração de UI.
+- **Motivo:** Registro central dos 8 pilares editoriais oficiais do Birth Hub 360°, incluindo metadados, métricas e visualizadores operacionais de interface renderizáveis tanto em Dark Mode quanto em Light Mode com alta fidelidade e acessibilidade WCAG 2.2 AA. Reduzido de 1773 para 1609 linhas na Onda 1 (`HubComercialViewer.tsx`) e agora para 1402 linhas na Onda 2 com a extração cirúrgica de `MercadoViewer.tsx` e `OrquestracaoViewer.tsx` (em `src/features/landing/components/pillars/viewers/`). A modularização progressiva dos demais 5 visualizadores levará o arquivo abaixo de 700 linhas, eliminando o hotspot definitivamente.
 - **Registrado em:** 2026-11-07
+- **Atualizado em:** 2026-11-10
 - **Reavaliar até:** 2026-11-30
 
 
@@ -255,6 +248,7 @@ requerem exceção porque não quebram o gate, só ficam registrados aqui para n
 "Exceções ativas" acima. `SwarmDashboard.tsx` saiu em 2026-10-25 pelo mesmo motivo (1018 linhas).
 
 - `src/features/market-intelligence/server/accountIntelligence.service.ts` (857 linhas)
+- `src/features/intelligence/components/SwarmDashboard.tsx` (modularizado em 2026-11-10: 933 linhas, meta < 1000 atingida)
 - `src/features/crm/components/LeadDetailDrawer.tsx` (726 linhas)
 - `src/components/CrmBoard.tsx` (977 linhas, 2026-09-11)
 

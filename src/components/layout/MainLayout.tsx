@@ -5,6 +5,7 @@ import { AppTopbar } from './AppTopbar.js';
 import { OfflineBanner } from './OfflineBanner.js';
 import { DataFlowLines } from '../ui/DataFlowLines.js';
 import { VoiceCommandWidget } from '../ui/VoiceCommandWidget.js';
+import { ModuleAgentWidget } from '../ui/ModuleAgentWidget.js';
 import { useNavigationState } from './hooks/useNavigationState.js';
 import { MobileNavDrawer } from './MobileNavDrawer.js';
 import { CommandPalette } from '../ui/CommandPalette.js';
@@ -69,6 +70,7 @@ export function MainLayout({ children, activeTab: activeTabProp }: MainLayoutPro
       </div>
 
       <VoiceCommandWidget />
+      <ModuleAgentWidget activeTab={activeTab as TabType} />
       <CommandPalette />
       <Toaster />
     </div>

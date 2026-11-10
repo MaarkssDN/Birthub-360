@@ -1,7 +1,7 @@
 De: gha — Agente de CI/GitHub Actions (workflows sob 08 — QA e Release)
 Para: 01 — Plataforma e Dados
 Onda: 52
-Status: em-andamento
+Status: resolvido
 Prioridade: bloqueador
 Bloqueador-ref: GHA-TYPECHECK-01 (run 40204212570)
 Sprint destino: desbloqueio do application gate (`Run Type Check`) após #67 → #71 → #72

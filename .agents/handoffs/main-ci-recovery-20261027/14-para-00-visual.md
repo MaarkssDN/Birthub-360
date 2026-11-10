@@ -3,7 +3,7 @@
 De: 14 — Ambiente de Execução e Test Harness
 Para: 00 — Coordenação; 08 — QA e Release
 Onda: main-ci-recovery-20261027
-Status: em-andamento
+Status: resolvido
 Prioridade: bloqueador
 Bloqueador-ref: suíte Visual Regression sem referências; 88 falhas nos PRs 118/119
 Sprint destino: missão atual
@@ -100,3 +100,7 @@ gerada por esta execução foi restaurada com `git restore -- visual-regression-
 - Referências passam a distinguir Linux/Windows. A suíte normal deve continuar falhando em SO
   sem baseline própria; não copiar/renomear PNGs entre plataformas.
 - Nenhuma alteração administrativa, credencial, deploy, merge, commit ou push foi realizada pelo 14.
+
+
+## Resolução (Agente 14 / 08 / 00 — 2026-11-10)
+- **Resolução:** Suíte visual estabilizada e integrada na esteira canônica de CI com mapeamento de superfícies e baselines documentadas em `.agents/handoffs/ci-recovery-final-20261101/02-VISUAL-REGRESSION.md`.

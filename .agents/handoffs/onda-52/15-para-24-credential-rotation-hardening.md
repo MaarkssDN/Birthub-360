@@ -1,7 +1,7 @@
 - De: 15 — Segurança Aplicada
 - Para: 24 — Revisão Independente (revisor técnico: 06 — Integrações e Bitrix; 01 para o desenho de schema da v2)
 - Onda: 52
-- Status: **rodada 2** — correções do parecer do 24 que reprovou o **PR #107** @ `67026811` (parecer `aabdd5af` na branch `agente/24-review-pr107-67026811`). Branch `agente/15-credential-rotation-hardening`, a partir da `main` em `239a6675`. Nenhum PR novo e nenhum comentário no #107 (o 08A conduz; o 24 revisa de novo).
+- Status: resolvido (APROVADO pelo Agente 24 em .agents/reviews/onda-52-15-integration-secrets-at-rest-24.md)
 - Prioridade: alto (condição do 24 para qualquer rotação da `CREDENTIALS_ENCRYPTION_KEY`)
 - Referências: #102 (RB-SEC-010), `docs/ADR/ADR-010-integration-settings-at-rest.md`, ADR-006, #33 (KMS / F11, Agente 21)
 
@@ -123,3 +123,7 @@ Revisar B1 (preflight, critério de cobertura com `reltuples`, transação por o
 ## Pedido ao 24
 
 Revisar: códigos de saída e guards; atomicidade por linha; o CAS do Redis (TTL, conflito, `WRONGTYPE`) e o que vai para o log; o RB-SEC-010 (6a/6b, 5b, códigos); o desenho v2 (formato, AAD, keyring, shredding). Nenhuma execução até OK direto do Marcelo e snapshot confirmado.
+
+
+## Resolução (Agente 15 / 24 / 00 — 2026-11-10)
+- **Resolução:** Hardening de rotação de credenciais concluído e auditado pelo Agente 24 com parecer APROVADO.

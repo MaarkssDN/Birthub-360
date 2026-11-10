@@ -1,17 +1,11 @@
 import {
-  ArrowRight,
   BarChart3,
   Bot,
-  Briefcase,
-  Calculator,
-  CheckCircle2,
-  Cpu,
   Database,
   Layers,
   type LucideIcon,
   Network,
   PhoneCall,
-  Search,
   Settings,
   Share2,
   Smartphone,
@@ -20,6 +14,23 @@ import {
   Workflow,
 } from 'lucide-react';
 import type React from 'react';
+import {
+  HubComercialViewer,
+  MercadoViewer,
+  OrquestracaoViewer,
+  VisualizerHubComercial,
+  VisualizerMercado,
+  VisualizerOrquestracao,
+} from './viewers/index.js';
+
+export {
+  HubComercialViewer,
+  MercadoViewer,
+  OrquestracaoViewer,
+  VisualizerHubComercial,
+  VisualizerMercado,
+  VisualizerOrquestracao,
+};
 
 export type PillarThemeColor = 'cyan' | 'pink' | 'gold' | 'iris';
 export type PillarId = '01' | '02' | '03' | '04' | '05' | '06' | '07' | '08' | '09' | '10' | '11';
@@ -60,390 +71,9 @@ export interface PillarData {
 // 1. COMPONENTES DE VISUALIZAÇÃO CONTEXTUAL (SIMULAÇÃO OPERACIONAL BASEADA EM DADOS)
 // ============================================================================
 
-/** 01 — Hub Comercial: pipeline, contas, oportunidades, atividades e contexto comercial unificado */
-export function VisualizerHubComercial({ theme = 'dark' }: { theme?: 'dark' | 'light' } = {}) {
-  const isDark = theme === 'dark';
-  return (
-    <div
-      className={`rounded-2xl border p-4 space-y-3 font-mono text-xs shadow-inner transition-colors ${
-        isDark
-          ? 'border-sky-500/30 bg-slate-900/80 text-slate-300'
-          : 'border-sky-300 bg-sky-50/50 text-slate-700'
-      }`}
-    >
-      <div
-        className={`flex items-center justify-between border-b pb-2.5 ${
-          isDark ? 'border-slate-800' : 'border-slate-200'
-        }`}
-      >
-        <span
-          className={`flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px] ${
-            isDark ? 'text-sky-400' : 'text-sky-700'
-          }`}
-        >
-          <Layers className="w-3.5 h-3.5" /> Pipeline Ativo • R$ 1.040.000
-        </span>
-        <span
-          className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
-            isDark
-              ? 'bg-sky-500/10 text-sky-400 border-sky-500/30'
-              : 'bg-sky-100 text-sky-800 border-sky-300'
-          }`}
-        >
-          3 Negócios em Foco
-        </span>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-        {/* Coluna 1: Qualificação */}
-        <div
-          className={`rounded-xl p-2.5 border space-y-1.5 ${
-            isDark ? 'bg-slate-950/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
-          }`}
-        >
-          <div className="flex justify-between items-center text-[10px]">
-            <span className={`font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-              QUALIFICAÇÃO
-            </span>
-            <span className={`font-bold ${isDark ? 'text-sky-400' : 'text-sky-600'}`}>R$ 180k</span>
-          </div>
-          <div
-            className={`p-2 rounded-lg border ${
-              isDark ? 'bg-slate-900/90 border-slate-700/60' : 'bg-slate-50 border-slate-200'
-            }`}
-          >
-            <p
-              className={`text-[11px] font-semibold truncate ${isDark ? 'text-slate-200' : 'text-slate-900'}`}
-            >
-              Indústria Alfa S/A
-            </p>
-            <p className={`text-[9px] font-sans ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-              Score ICP: 94 • 2 decisores
-            </p>
-            <span
-              className={`mt-1 inline-block text-[8px] px-1.5 py-0.5 rounded ${
-                isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-200 text-slate-700'
-              }`}
-            >
-              Próx: Mapear Diretor
-            </span>
-          </div>
-        </div>
-
-        {/* Coluna 2: Proposta */}
-        <div
-          className={`rounded-xl p-2.5 border space-y-1.5 ${
-            isDark
-              ? 'bg-slate-950/90 border-sky-500/40 shadow-[0_0_12px_rgba(0,212,255,0.12)]'
-              : 'bg-white border-sky-300 shadow-sm'
-          }`}
-        >
-          <div className="flex justify-between items-center text-[10px]">
-            <span className={`font-semibold ${isDark ? 'text-sky-300' : 'text-sky-700'}`}>
-              PROPOSTA
-            </span>
-            <span className={`font-bold ${isDark ? 'text-sky-400' : 'text-sky-600'}`}>R$ 340k</span>
-          </div>
-          <div
-            className={`p-2 rounded-lg border ${
-              isDark ? 'bg-slate-900/90 border-sky-500/50' : 'bg-sky-50/70 border-sky-200'
-            }`}
-          >
-            <p
-              className={`text-[11px] font-semibold truncate ${isDark ? 'text-sky-200' : 'text-sky-900'}`}
-            >
-              Varejo Global Ltda
-            </p>
-            <p
-              className={`text-[9px] font-semibold font-sans ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}
-            >
-              Próx: Reunião Diretoria
-            </p>
-            <span
-              className={`mt-1 inline-block text-[8px] px-1.5 py-0.5 rounded border ${
-                isDark
-                  ? 'bg-sky-950/80 text-sky-300 border-sky-500/30'
-                  : 'bg-sky-100 text-sky-800 border-sky-300'
-              }`}
-            >
-              Proposta V2 Enviada
-            </span>
-          </div>
-        </div>
-
-        {/* Coluna 3: Fechamento */}
-        <div
-          className={`rounded-xl p-2.5 border space-y-1.5 ${
-            isDark ? 'bg-slate-950/90 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
-          }`}
-        >
-          <div className="flex justify-between items-center text-[10px]">
-            <span className={`font-semibold ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-              FECHAMENTO
-            </span>
-            <span className={`font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
-              R$ 520k
-            </span>
-          </div>
-          <div
-            className={`p-2 rounded-lg border ${
-              isDark
-                ? 'bg-slate-900/90 border-emerald-500/40'
-                : 'bg-emerald-50/70 border-emerald-200'
-            }`}
-          >
-            <p
-              className={`text-[11px] font-semibold truncate ${isDark ? 'text-slate-200' : 'text-slate-900'}`}
-            >
-              FinTech Horizons
-            </p>
-            <p
-              className={`text-[9px] font-semibold font-sans ${isDark ? 'text-amber-400' : 'text-amber-600'}`}
-            >
-              Minuta Jurídica (90%)
-            </p>
-            <span
-              className={`mt-1 inline-block text-[8px] px-1.5 py-0.5 rounded border ${
-                isDark
-                  ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/30'
-                  : 'bg-emerald-100 text-emerald-800 border-emerald-300'
-              }`}
-            >
-              Aguardando Assinatura
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** 02 — Inteligência de Mercado: enriquecimento de dados B2B, ICP, sinais de compra, decisores e priorização */
-export function VisualizerMercado({ theme = 'dark' }: { theme?: 'dark' | 'light' } = {}) {
-  const isDark = theme === 'dark';
-  return (
-    <div
-      className={`rounded-2xl border p-4 space-y-3 font-mono text-xs shadow-inner transition-colors ${
-        isDark
-          ? 'border-pink-500/30 bg-slate-900/80 text-slate-300'
-          : 'border-pink-300 bg-pink-50/40 text-slate-700'
-      }`}
-    >
-      <div
-        className={`flex items-center justify-between border-b pb-2.5 ${
-          isDark ? 'border-slate-800' : 'border-slate-200'
-        }`}
-      >
-        <span
-          className={`flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px] ${
-            isDark ? 'text-pink-400' : 'text-pink-700'
-          }`}
-        >
-          <Database className="w-3.5 h-3.5" /> Enriquecimento CNPJ • Receita & QSA
-        </span>
-        <span
-          className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
-            isDark
-              ? 'bg-pink-500/10 text-pink-400 border-pink-500/30'
-              : 'bg-pink-100 text-pink-800 border-pink-300'
-          }`}
-        >
-          ICP Score: 96/100
-        </span>
-      </div>
-
-      <div
-        className={`rounded-xl p-3 border space-y-2.5 ${
-          isDark ? 'bg-slate-950/90 border-pink-500/30' : 'bg-white border-pink-200 shadow-sm'
-        }`}
-      >
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
-          <div>
-            <h4
-              className={`text-sm font-bold font-sans tracking-tight ${
-                isDark ? 'text-slate-100' : 'text-slate-900'
-              }`}
-            >
-              TechLog Logística Integrada S/A
-            </h4>
-            <span className={`text-[10px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-              CNPJ: 14.288.901/0001-44 • Matriz São Paulo/SP
-            </span>
-          </div>
-          <span
-            className={`px-2.5 py-0.5 rounded-full border text-[10px] font-semibold w-fit ${
-              isDark
-                ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
-                : 'bg-emerald-100 text-emerald-800 border-emerald-300'
-            }`}
-          >
-            Receita Presumida: R$ 50M a R$ 100M
-          </span>
-        </div>
-
-        <div
-          className={`grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-2 border-t text-[11px] ${
-            isDark ? 'border-slate-800/80' : 'border-slate-200'
-          }`}
-        >
-          <div>
-            <span className={`text-[10px] block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-              CNAE Principal
-            </span>
-            <span className={`font-semibold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
-              4930-2 (Cargas)
-            </span>
-          </div>
-          <div>
-            <span className={`text-[10px] block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-              Decisor no QSA
-            </span>
-            <span className={`font-semibold ${isDark ? 'text-pink-300' : 'text-pink-700'}`}>
-              Diretor Comercial
-            </span>
-          </div>
-          <div className="col-span-2 sm:col-span-1">
-            <span className={`text-[10px] block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-              Canal Corporativo
-            </span>
-            <span className={`font-semibold ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
-              E-mail Validado ✓
-            </span>
-          </div>
-        </div>
-
-        <div
-          className={`p-2 rounded border text-[10px] font-sans ${
-            isDark
-              ? 'bg-pink-950/30 border-pink-500/20 text-pink-200'
-              : 'bg-pink-50 border-pink-200 text-pink-900'
-          }`}
-        >
-          <strong>Sinal de Compra:</strong> Contratação ativa de 8 executivos de vendas + Expansão
-          recente de filiais no Sul.
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** 03 — Orquestração de Vendas: cadências, passagem de bastão SDR → Closer, SLAs e próxima melhor ação */
-export function VisualizerOrquestracao({ theme = 'dark' }: { theme?: 'dark' | 'light' } = {}) {
-  const isDark = theme === 'dark';
-  return (
-    <div
-      className={`rounded-2xl border p-4 space-y-3 font-mono text-xs shadow-inner transition-colors ${
-        isDark
-          ? 'border-amber-500/30 bg-slate-900/80 text-slate-300'
-          : 'border-amber-300 bg-amber-50/40 text-slate-700'
-      }`}
-    >
-      <div
-        className={`flex items-center justify-between border-b pb-2.5 ${
-          isDark ? 'border-slate-800' : 'border-slate-200'
-        }`}
-      >
-        <span
-          className={`flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px] ${
-            isDark ? 'text-amber-400' : 'text-amber-700'
-          }`}
-        >
-          <Workflow className="w-3.5 h-3.5" /> Cadência Executiva • Passo 3 de 5
-        </span>
-        <span
-          className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
-            isDark
-              ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-              : 'bg-amber-100 text-amber-800 border-amber-300'
-          }`}
-        >
-          SLA Restante: 25 min
-        </span>
-      </div>
-
-      <div className="space-y-2">
-        <div
-          className={`flex items-center gap-3 p-2 rounded-xl border opacity-75 ${
-            isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-white border-slate-200'
-          }`}
-        >
-          <span
-            className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
-              isDark ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-100 text-emerald-800'
-            }`}
-          >
-            ✓
-          </span>
-          <div className="flex-1">
-            <span className={`font-semibold ${isDark ? 'text-slate-300' : 'text-slate-800'}`}>
-              D+0 • E-mail de Apresentação de Valor
-            </span>
-            <span
-              className={`text-[10px] block font-sans ${isDark ? 'text-slate-500' : 'text-slate-500'}`}
-            >
-              Entregue • Aberto 2x pelo lead
-            </span>
-          </div>
-        </div>
-
-        <div
-          className={`flex items-center gap-3 p-2.5 rounded-xl border ${
-            isDark
-              ? 'bg-slate-950/90 border-amber-500/50 shadow-[0_0_12px_rgba(255,193,7,0.12)]'
-              : 'bg-white border-amber-300 shadow-sm'
-          }`}
-        >
-          <span
-            className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold animate-pulse ${
-              isDark ? 'bg-amber-500/20 text-amber-300' : 'bg-amber-100 text-amber-800'
-            }`}
-          >
-            3
-          </span>
-          <div className="flex-1">
-            <div className="flex justify-between items-center">
-              <span className={`font-bold ${isDark ? 'text-amber-300' : 'text-amber-800'}`}>
-                D+2 • Ligação VoiceHub + Follow-up WhatsApp
-              </span>
-              <span
-                className={`px-2 py-0.5 rounded text-[9px] font-bold ${
-                  isDark ? 'bg-amber-500/20 text-amber-300' : 'bg-amber-100 text-amber-800'
-                }`}
-              >
-                NEXT BEST ACTION
-              </span>
-            </div>
-            <span
-              className={`text-[10px] block font-sans mt-0.5 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}
-            >
-              Roteiro tático: validar dor de controle do Diretor de Operações e propor passagem para
-              Closer.
-            </span>
-          </div>
-        </div>
-
-        <div
-          className={`flex items-center gap-3 p-2 rounded-xl border text-[10px] ${
-            isDark
-              ? 'bg-slate-950/80 border-slate-800 text-slate-400'
-              : 'bg-slate-50 border-slate-200 text-slate-600'
-          }`}
-        >
-          <span
-            className={`w-6 h-6 rounded-full flex items-center justify-center font-bold ${
-              isDark ? 'bg-slate-800 text-slate-400' : 'bg-slate-200 text-slate-600'
-            }`}
-          >
-            4
-          </span>
-          <div className="flex-1">
-            <span>D+4 • Passagem de Bastão (Handover SDR → Closer com Checklist BANT)</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+/** 01 — Hub Comercial: extraído para ./viewers/HubComercialViewer.tsx */
+/** 02 — Inteligência de Mercado: extraído para ./viewers/MercadoViewer.tsx */
+/** 03 — Orquestração de Vendas: extraído para ./viewers/OrquestracaoViewer.tsx */
 
 /** 04 — Performance Comercial: metas, produtividade, conversão e velocidade do funil */
 export function VisualizerPerformance({ theme = 'dark' }: { theme?: 'dark' | 'light' } = {}) {

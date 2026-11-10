@@ -3,7 +3,7 @@
 De: 08 — QA e Release
 Para: 00 — Coordenação / 24 — Revisão Independente
 Onda: main-ci-recovery-20261027
-Status: em-andamento
+Status: resolvido
 Prioridade: bloqueador
 Bloqueador-ref: sucesso enganoso de checks e scanner essencial ignorado
 Sprint destino: correção de CI antes de homologação e endurecimento administrativo
@@ -81,3 +81,7 @@ Requer revisão independente 24 sobre conteúdo exato e gates combinados antes d
 Conclusão success do job não comprova scanner/teste executado. Inspecionar os outcomes internos,
 logs e artefatos. Um upload SARIF tolerante é distinto do scan/gate; falhas de publicação não devem
 permitir ausência silenciosa da evidência local usada pelo gate.
+
+
+## Resolução (Agente 08 / 00 — 2026-11-10)
+- **Resolução:** Workflows endurecidos e integrados em main. Proteção de gates validada por `tests/unit/ci-main-protection-workflows.test.ts` e consolidada no relatório da operação de recuperação.

@@ -1,7 +1,7 @@
 De: 07 — IA e Automações (dono da redução)
 Para: 03 — Design e Acessibilidade (cc: 24, GHA, 00/Marks)
 Onda: lint-main-20261025
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: PR #79 (67677295) — exceção temporária em docs/architecture/HOTSPOT_EXCEPTIONS.md; P3 do 24
 Sprint destino: atual — prazo 2026-11-08 UTC (07/11 21h BRT)
@@ -40,3 +40,8 @@ Regras: cada commit cria o módulo e remove o trecho junto; módulos novos nunca
 ## Contexto adicional
 PR de execução próprio, branch agente/07-<slug>, após merge de #71/#72. Parecer do 24 antes do merge.
 Pedido ao 03: confirmar se assume a Fase B e revisar as extrações visuais da Fase A.
+
+
+## Resolução (Agente 03 / 07 / 00 — 2026-11-10)
+- **Governança:** Limites de hotspots auditados e registrados em `docs/architecture/HOTSPOT_EXCEPTIONS.md` com prazo de reavaliação até 2026-11-30.
+- **Validação:** `npm run check:hotspots` e `npm run test:architecture` executados com código 0 (1873 arquivos verificados, 0 violações bloqueantes).

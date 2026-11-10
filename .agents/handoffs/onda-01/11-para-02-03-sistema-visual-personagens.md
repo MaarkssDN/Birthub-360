@@ -1,7 +1,7 @@
 De: 11 — Marca e Ativos Institucionais
 Para: 02 — Produto e UX & 03 — Design e Acessibilidade
 Onda: Onda 01
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: B-06 (Dados fictícios misturados com dados reais — mitigação de cenografia e avatares randômicos no cockpit; histórico: referenciado originalmente como "Erradicação de cenografia visual de IA")
 Sprint destino: Sprint Atual (Onda 01)
@@ -45,3 +45,13 @@ Esta entrega é resultado da solicitação do usuário e da governança da Onda 
 
 ### Registro Histórico e Saneamento de Governança
 - **Correção de Referência de Bloqueador (Agente 11):** A nomenclatura canônica de **B-06** estabelecida em `AGENTS.md` (Seção 22) é *"Dados fictícios misturados com dados reais"*. O registro original deste handoff utilizava *"Erradicação de cenografia visual de IA"*. A referência foi harmonizada com a governança global, preservando o histórico de auditoria intacto.
+
+## Resolução (Agente 00 / 02 / 03 — 2026-11-10)
+- **Implementação:** Os 9 avatares vetoriais locais (`/brand/characters/*.svg`) foram plenamente integrados no cockpit em `src/components/ui/ModuleAgentWidget.tsx`, sem qualquer dependência ou chamada de rede externa ao DiceBear.
+- **Acessibilidade e Interatividade:** Adicionados botões de expansão com `aria-expanded` e `aria-label`, fechamento via tecla `Escape`, e vinculação dinâmica ao streaming de IA (`/api/agent/swarm/stream`) via `readSseStream`. O timer falso de 2 segundos foi eliminado.
+- **Evidências de Teste:**
+  - `tests/unit/components/ui/ModuleAgentWidget.test.tsx` -> 4/4 passed.
+  - `npm run typecheck` -> 0 erros.
+  - Parecer de Revisão Independente do Agente 24: APROVADO em `.agents/reviews/24-revisao-onda-ecossistema-01-20261109.md`.
+- **Status:** Concluído e homologado.
+

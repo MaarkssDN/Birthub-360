@@ -51,10 +51,16 @@ novo.
 
 ### 2. `npm install` (worktree novo não tem `node_modules`)
 
-### 3. `.env.test`
+### 3. `.env.test` e Trava de Segurança (DIV-AGENTE-14-001)
 
 `scripts/test/prepare-integration-env.js` copia de `.env.test.example` automaticamente se
 `.env.test` não existir — não precisa criar à mão.
+
+Antes de qualquer execução ou criação de banco, a trava `assertTestDatabaseSafety` valida:
+- `NODE_ENV` estritamente "test";
+- URLs de banco (`DATABASE_URL`, `DIRECT_URL`, `TEST_DATABASE_URL`) apontando estritamente para databases com sufixo `_test` (ex: `prospectordb_test`);
+- Bloqueio determinístico de hosts gerenciados de produção (RDS, Supabase, Neon, Azure, Cloud SQL, hosts com prefixo `prod-` ou `.prod.`);
+- Em caso de violação, o processo aborta com código de saída 1 antes de qualquer comando destrutivo ou migration.
 
 ### 4. Rodar o gate
 

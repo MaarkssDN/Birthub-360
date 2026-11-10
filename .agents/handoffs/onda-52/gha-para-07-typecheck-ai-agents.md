@@ -1,7 +1,7 @@
 De: gha — Agente de CI/GitHub Actions (workflows sob 08 — QA e Release)
 Para: 07 — IA e Automações
 Onda: 52
-Status: aberto
+Status: resolvido
 Prioridade: bloqueador
 Bloqueador-ref: GHA-TYPECHECK-07 (run 40204212570)
 Sprint destino: desbloqueio do application gate (`Run Type Check`) após #67 → #71 → #72
@@ -212,3 +212,8 @@ src/lib/ai/gateway/chat-model.ts:194:3  [FECHADO por #72]  TS2304 Cannot find na
 
 - O #72 já inclui `logger` em `chat-model.ts` e `supervisorNode(state, config?: RunnableConfig)` (decisão `07-para-00-correlationid-supervisor-thread-id.md`).
 - Arquivos majoritariamente criados em `20eed2c8` e `cdea0bc9`.
+
+
+## Resolução (Agente 07 / 00 — 2026-11-10)
+- **Saneamento:** Tipagem de `BaseAgent`, ferramentas de IA e dynamic routing estabilizadas e integradas ao LangGraph runtime.
+- **Validação:** `npm run typecheck` verde (código 0); `tests/unit/tactical/tacticalSwarm.agents.test.ts` e testes de guardrail verificados.

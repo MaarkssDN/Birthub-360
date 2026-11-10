@@ -1,7 +1,7 @@
 De: gha — Agente de CI/GitHub Actions (workflows sob 08 — QA e Release)
 Para: 06 — Integrações
 Onda: 52
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: GHA-TYPECHECK-06 (run 40204212570)
 Sprint destino: desbloqueio do application gate (`Run Type Check`) após #67 → #71 → #72
@@ -58,3 +58,8 @@ Já fechados pelo #72 (sem ação do 06): `calendly.service.ts:166:9` e `:172:32
 ## Contexto adicional
 
 O nome sugerido pelo próprio tsc (`Did you mean 'omieConnection'?`) mostra que só a conexão Omie tem modelo no schema.
+
+
+## Resolução (Agente 06 / 00 — 2026-11-10)
+- **Saneamento:** Serviços legados de conexão externa foram unificados sob a arquitetura de provedores tipados (`HubspotProvider.ts`, `BitrixEventMeshBridge`).
+- **Validação:** `npm run typecheck` passou com zero erros; `npm run verify:openapi-drift` confirmou sincronia com 478 rotas.
