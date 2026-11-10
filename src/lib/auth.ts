@@ -146,10 +146,6 @@ export const auth = betterAuth({
           logger.warn(
             {
               userId: user.id,
-              resetUrl:
-                process.env.NODE_ENV !== 'production' && url
-                  ? url.replace(/(token=)[^&]+/, '$1***')
-                  : undefined,
               reason: 'MAILER_NOT_CONFIGURED',
             },
             'Reset de senha solicitado, mas SMTP não está configurado. Resposta neutra preservada contra enumeração.',

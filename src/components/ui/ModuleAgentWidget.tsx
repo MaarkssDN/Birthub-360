@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertCircle, Bot, Loader2, Send, Sparkles, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { AlertCircle, Bot, RotateCcw, Send, Sparkles, Square, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext.js';
 import type { SwarmEvent } from '../../features/intelligence/agents/supervisor.agent.js';
 import { hasRequiredRole, MESA_TRATAMENTO_ROLES } from '../../lib/auth/authorization.js';
@@ -15,7 +15,10 @@ interface AgentCharacter {
   name: string;
   role: string;
   color: string;
+  headingColor: string;
+  subheadingColor: string;
   contextMsg: string;
+  ariaLabel: string;
 }
 
 const AGENTS_BY_PILLAR: Record<string, AgentCharacter> = {
@@ -24,63 +27,90 @@ const AGENTS_BY_PILLAR: Record<string, AgentCharacter> = {
     name: 'Orbit',
     role: 'Guardião do CRM',
     color: 'from-amber-400 to-amber-600',
+    headingColor: '#FFC107',
+    subheadingColor: '#70D6FF',
     contextMsg: 'Monitorando pipeline e integridade dos negócios',
+    ariaLabel: 'Orbit, agente guardião do CRM e da integridade de pipeline',
   },
   'PILAR 02 — INTELIGÊNCIA DE MERCADO': {
     id: 'nexus',
     name: 'Nexus',
     role: 'Analista de Dados',
     color: 'from-blue-400 to-blue-600',
+    headingColor: '#00D4FF',
+    subheadingColor: '#BAE6FD',
     contextMsg: 'Pesquisando dados de mercado, ICP e decisores',
+    ariaLabel: 'Nexus, agente analista de dados e inteligência de mercado',
   },
   'PILAR 03 — ORQUESTRAÇÃO DE VENDAS': {
     id: 'aria',
     name: 'Aria',
     role: 'Maestrina de Fluxos',
     color: 'from-emerald-400 to-emerald-600',
+    headingColor: '#10B981',
+    subheadingColor: '#34D399',
     contextMsg: 'Otimizando cadência diária e próximas melhores ações',
+    ariaLabel: 'Aria, agente maestrina de fluxos diários e cadência de vendas',
   },
   'PILAR 04 — PERFORMANCE COMERCIAL': {
     id: 'vanguard',
     name: 'Vanguard',
     role: 'Estrategista de Metas',
     color: 'from-rose-400 to-rose-600',
+    headingColor: '#FF2D9B',
+    subheadingColor: '#FFC107',
     contextMsg: 'Acompanhando gargalos de conversão e metas',
+    ariaLabel: 'Vanguard, agente estrategista de metas e aceleração de performance',
   },
   'PILAR 05 — PREVISIBILIDADE COMERCIAL': {
     id: 'oracle',
     name: 'Oracle',
     role: 'Visionário de Forecast',
     color: 'from-purple-400 to-purple-600',
+    headingColor: '#A855F7',
+    subheadingColor: '#FF2D9B',
     contextMsg: 'Projetando forecast ponderado e fechamentos',
+    ariaLabel: 'Oracle, agente visionário de forecast e previsibilidade comercial',
   },
   'PILAR 06 — INTELIGÊNCIA ARTIFICIAL': {
     id: 'core',
     name: 'Core',
     role: 'Mente Principal',
     color: 'from-indigo-400 to-indigo-600',
+    headingColor: '#6366F1',
+    subheadingColor: '#00D4FF',
     contextMsg: 'Supervisionando o enxame de agentes autônomos',
+    ariaLabel: 'Core, agente mente principal e orquestrador cognitivo de IA',
   },
   'PILAR 07 — AUTOMAÇÃO & CONECTIVIDADE': {
     id: 'spark',
     name: 'Spark',
     role: 'Engenheiro de Integrações',
     color: 'from-teal-400 to-teal-600',
+    headingColor: '#14B8A6',
+    subheadingColor: '#D4F434',
     contextMsg: 'Monitorando conectores externos e filas',
+    ariaLabel: 'Spark, agente engenheiro de conectores e integrações',
   },
   'PILAR 08 — ENGAJAMENTO COMERCIAL': {
     id: 'echo',
     name: 'Echo',
     role: 'Especialista em Voz',
     color: 'from-pink-400 to-pink-600',
+    headingColor: '#FB7185',
+    subheadingColor: '#00D4FF',
     contextMsg: 'Acompanhando discador, transcrições e cadências',
+    ariaLabel: 'Echo, agente especialista em telefonia, voz e engajamento',
   },
   ADMINISTRAÇÃO: {
     id: 'sudo',
     name: 'Sudo',
     role: 'Controlador de Sistema',
     color: 'from-slate-400 to-slate-600',
+    headingColor: '#94A3B8',
+    subheadingColor: '#FFC107',
     contextMsg: 'Validando governança, alçadas e segurança',
+    ariaLabel: 'Sudo, agente controlador de sistema, governança e alçadas',
   },
 };
 
@@ -93,11 +123,14 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [pipelineStep, setPipelineStep] = useState<AiReasoningStep>('CONTEXT');
   const [inputText, setInputText] = useState('');
+  const [lastPrompt, setLastPrompt] = useState<string | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamOutput, setStreamOutput] = useState('');
   const [streamReasoning, setStreamReasoning] = useState('');
   const [streamError, setStreamError] = useState<string | null>(null);
   const [activeSubAgent, setActiveSubAgent] = useState<string | null>(null);
+
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const { currentUser, isAdmin, canAccessCommercialIntelligence, canAccessCopilotoIa } = useAuth();
 
@@ -117,14 +150,24 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isExpanded]);
 
+  // Cancela qualquer streaming ativo no desmonte do componente
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+    };
+  }, []);
+
   const navGroupsByJourney = [
     {
       title: 'PILAR 01 — HUB COMERCIAL',
-      items: ['workspace', 'crm', 'crm360', 'propostas', 'companies', 'contacts'],
+      items: ['workspace', 'crm', 'crm360', 'propostas', 'companies', 'contacts', 'settings_hub'],
     },
     {
       title: 'PILAR 02 — INTELIGÊNCIA DE MERCADO',
-      items: ['prospect', 'market-intelligence'],
+      items: ['prospect', 'market-intelligence', 'settings_market'],
     },
     {
       title: 'PILAR 03 — ORQUESTRAÇÃO DE VENDAS',
@@ -139,11 +182,28 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
         'topic_training',
         'chatbook',
         'editor',
+        'playbooks',
+        'jornadas',
+        'processos',
+        'roteiros',
+        'settings_sales',
       ],
     },
     {
       title: 'PILAR 04 — PERFORMANCE COMERCIAL',
-      items: ['dashboard', 'analytics', 'winloss', 'reports'],
+      items: [
+        'dashboard',
+        'analytics',
+        'winloss',
+        'reports',
+        'signals-risks',
+        'gamification',
+        'settings_performance',
+      ],
+    },
+    {
+      title: 'PILAR 05 — PREVISIBILIDADE COMERCIAL',
+      items: ['forecast', 'pipeline_ponderado', 'metas', 'settings_predictability'],
     },
     {
       title: 'PILAR 06 — INTELIGÊNCIA ARTIFICIAL',
@@ -153,6 +213,7 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
         'intelligence',
         'knowledge',
         'sdr-diagnostic',
+        'settings_ai',
       ],
     },
     {
@@ -160,6 +221,7 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
       items: [
         ...(canManageOperations ? (['automations', 'integrations'] as TabType[]) : []),
         'bitrix',
+        'settings_automation',
       ],
     },
     {
@@ -169,6 +231,7 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
         'outbound',
         'dialer',
         ...(canAccessMesaTratamento ? (['mesa-tratamento'] as TabType[]) : []),
+        'settings_engagement',
       ].filter((tab) => !isNavHiddenTab(tab as TabType)),
     },
     {
@@ -198,10 +261,20 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
     }
   };
 
-  const handleSend = async () => {
-    if (!inputText.trim() || isStreaming) return;
-    const prompt = inputText.trim();
-    setInputText('');
+  const handleCancel = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setIsStreaming(false);
+    SoundFX.play('click');
+  };
+
+  const handleSend = async (customPrompt?: string) => {
+    const promptToSend = (customPrompt ?? inputText).trim();
+    if (!promptToSend || isStreaming) return;
+    if (!customPrompt) setInputText('');
+    setLastPrompt(promptToSend);
     setStreamError(null);
     setStreamOutput('');
     setStreamReasoning('');
@@ -210,13 +283,19 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
     setPipelineStep('CONTEXT');
     SoundFX.play('click');
 
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     try {
       setPipelineStep('ANALYSIS');
       const response = await fetch(
         '/api/agent/swarm/stream',
-        sseRequestInit({
-          mission: `[Contexto: ${activeGroup.title} - Agente: ${agent.name}] ${prompt}`,
-        }),
+        sseRequestInit(
+          {
+            mission: `[Contexto: ${activeGroup.title} - Agente: ${agent.name}] ${promptToSend}`,
+          },
+          controller.signal,
+        ),
       );
 
       await readSseStream(response, (evt) => {
@@ -251,10 +330,15 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
         }
       });
     } catch (err: any) {
-      setStreamError(err?.message || 'Falha na conexão com o copiloto de agentes.');
-      SoundFX.play('error');
+      if (err?.name === 'AbortError') {
+        setStreamError('Processamento cancelado pelo operador.');
+      } else {
+        setStreamError(err?.message || 'Falha na conexão com o copiloto de agentes.');
+        SoundFX.play('error');
+      }
     } finally {
       setIsStreaming(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -285,7 +369,7 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
   return (
     <section
       className="fixed bottom-4 left-4 z-50 flex flex-col-reverse items-start gap-4"
-      aria-label={`Copiloto ${agent.name}`}
+      aria-label={agent.ariaLabel}
     >
       {/* Botão Flutuante */}
       <motion.button
@@ -307,7 +391,7 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
         >
           <img
             src={`/brand/characters/${agent.id}.svg`}
-            alt={`Avatar do agente ${agent.name}`}
+            alt={agent.ariaLabel}
             className="w-7 h-7 drop-shadow-md"
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).src = '/brand/characters/core.svg';
@@ -318,7 +402,12 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
 
         <div className="ml-3 flex flex-col items-start justify-center">
           <div className="flex items-center gap-1.5">
-            <span className="text-[13px] font-bold text-[#F8F9FF] leading-none">{agent.name}</span>
+            <span
+              className="text-[13px] font-bold leading-none"
+              style={{ color: agent.headingColor }}
+            >
+              {agent.name}
+            </span>
             <Sparkles className="w-3 h-3 text-brand opacity-80" />
           </div>
 
@@ -344,7 +433,10 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
                 exit={{ opacity: 0, y: -5 }}
                 className="mt-0.5"
               >
-                <span className="text-[10px] font-medium text-[#F8F9FF]/40 leading-none">
+                <span
+                  className="text-[10px] font-medium leading-none"
+                  style={{ color: agent.subheadingColor }}
+                >
                   {agent.role}
                 </span>
               </motion.div>
@@ -376,7 +468,7 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
                 >
                   <img
                     src={`/brand/characters/${agent.id}.svg`}
-                    alt={agent.name}
+                    alt={agent.ariaLabel}
                     className="w-7 h-7"
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).src = '/brand/characters/core.svg';
@@ -384,10 +476,18 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
                   />
                 </div>
                 <div>
-                  <h3 className="text-[#F8F9FF] font-bold text-sm flex items-center gap-1.5">
+                  <h3
+                    className="font-bold text-sm flex items-center gap-1.5"
+                    style={{ color: agent.headingColor }}
+                  >
                     {agent.name} <Sparkles className="w-3.5 h-3.5 text-brand" />
                   </h3>
-                  <p className="text-[#F8F9FF]/40 text-[11px] font-mono mt-0.5">{agent.role}</p>
+                  <p
+                    className="text-[11px] font-mono mt-0.5"
+                    style={{ color: agent.subheadingColor }}
+                  >
+                    {agent.role}
+                  </p>
                 </div>
               </div>
               <button
@@ -417,13 +517,26 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
                 <div
                   role="alert"
                   aria-live="assertive"
-                  className="mt-4 p-3 rounded-lg bg-red-950/60 border border-red-500/30 text-red-200 text-xs flex items-start gap-2"
+                  className="mt-4 p-3 rounded-lg bg-red-950/60 border border-red-500/30 text-red-200 text-xs flex items-start justify-between gap-2"
                 >
-                  <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="font-semibold">Erro no processamento</p>
-                    <p className="text-red-300/80 mt-0.5">{streamError}</p>
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-semibold text-red-300">Erro no processamento</p>
+                      <p className="text-red-300/80 mt-0.5">{streamError}</p>
+                    </div>
                   </div>
+                  {lastPrompt && (
+                    <button
+                      type="button"
+                      onClick={() => handleSend(lastPrompt)}
+                      aria-label="Tentar novamente"
+                      className="px-2 py-1 bg-red-900/60 hover:bg-red-800/80 text-red-200 rounded text-[11px] font-semibold flex items-center gap-1 transition-colors shrink-0"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      Tentar
+                    </button>
+                  )}
                 </div>
               )}
 
@@ -460,19 +573,26 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
                   placeholder={`Pergunte ao ${agent.name} sobre este módulo...`}
                   className="w-full bg-[#F8F9FF]/5 border border-[#F8F9FF]/10 rounded-xl px-4 py-3 pr-12 text-sm text-[#F8F9FF] placeholder-[#F8F9FF]/30 focus:outline-none focus:border-brand/50 focus:ring-1 focus:ring-brand/50 resize-none h-16 disabled:opacity-50"
                 />
-                <button
-                  type="button"
-                  onClick={handleSend}
-                  disabled={!inputText.trim() || isStreaming}
-                  aria-label="Enviar comando para o copiloto"
-                  className="absolute right-2 bottom-2 p-2 rounded-lg bg-brand text-midnight font-bold hover:bg-brand-hover disabled:opacity-40 disabled:hover:bg-brand transition-colors focus:outline-none focus:ring-1 focus:ring-brand"
-                >
-                  {isStreaming ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
+                {isStreaming ? (
+                  <button
+                    type="button"
+                    onClick={handleCancel}
+                    aria-label="Cancelar comando do copiloto"
+                    className="absolute right-2 bottom-2 p-2 rounded-lg bg-red-600/80 text-white font-bold hover:bg-red-600 transition-colors focus:outline-none focus:ring-1 focus:ring-red-400"
+                  >
+                    <Square className="w-3.5 h-3.5 fill-current" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleSend()}
+                    disabled={!inputText.trim()}
+                    aria-label="Enviar comando para o copiloto"
+                    className="absolute right-2 bottom-2 p-2 rounded-lg bg-brand text-midnight font-bold hover:bg-brand-hover disabled:opacity-40 disabled:hover:bg-brand transition-colors focus:outline-none focus:ring-1 focus:ring-brand"
+                  >
                     <Send className="w-3.5 h-3.5" />
-                  )}
-                </button>
+                  </button>
+                )}
               </div>
             </div>
           </motion.div>

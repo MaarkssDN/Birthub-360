@@ -1,31 +1,33 @@
 ---
 name: baileys-whatsapp-resilience
-description: Padrões de estabilidade e segurança para a integração do WhatsApp via biblioteca Baileys (@whiskeysockets/baileys). Gestão do estado de autenticação (AuthCreds), reconexão de sessão QR Code, limitação de taxa anti-ban e confirmação de entrega.
+description: Governança e estabilidade para a integração WhatsApp via @whiskeysockets/baileys. Documenta riscos de conformidade da biblioteca não-oficial, reconexão de sessão, delays anti-ban e aderência ao model WhatsAppMessage.
 ---
 
 # Baileys WhatsApp Resilience — Birth Hub 360
 
 ## Objetivo
-Garantir alta disponibilidade e minimizar risco de banimento de números na conexão com WhatsApp, mantendo credenciais de autenticação persistentes e seguras.
+Operar com resiliência a integração WhatsApp baseada em `@whiskeysockets/baileys`, registrando explicitamente suas restrições operacionais e respeitando o schema atual (`WhatsAppMessage` em `prisma/schema.prisma`).
 
-## Diretrizes de Operação
+## Risco Operacional e de Conformidade (Importante)
+- `@whiskeysockets/baileys` **não é uma API oficial da Meta**; opera via engenharia reversa do protocolo WebSocket do WhatsApp Web.
+- Antes de qualquer ativação comercial em escala, avalie o risco de bloqueio/banimento de números e quebras de protocolo, mantendo os serviços desacoplados atrás de interface de provedor para facilitar uso da WhatsApp Business Cloud API oficial.
 
-### 1. Persistência de Autenticação (`useMultiFileAuthState`)
-- As chaves de sessão e tokens de criptografia devem ser sincronizados em armazenamento seguro (PostgreSQL ou diretório criptografado com permissões restritas).
-- Trate o evento `connection.update`:
-  - Se `connection === 'close'`, verifique o status code no `lastDisconnect.error`.
-  - Códigos como `DisconnectReason.loggedOut` (401) exigem reset completo da sessão e exibição de novo QR Code.
-  - Códigos transitórios (`connectionLost`, `timedOut`, `restartRequired`) devem acionar reconexão automática com delay mínimo de 3 segundos.
+## Diretrizes Técnicas
 
-### 2. Políticas Anti-Banimento e Delays Humanizados
-- **Intervalo Mínimo:** Mensagens não devem ser disparadas com 0ms de diferença. Adicione atrasos aleatórios entre 2 e 5 segundos entre disparos.
-- **Status de Presença:** Antes de enviar mensagens de texto longas ou mídias, envie evento de presença (`sendPresenceUpdate('composing')`) por 1 a 2 segundos para simular digitação real.
-- **Respeito a Opt-Out:** Se o destinatário responder comandos como "PARAR", "SAIR" ou denunciar incômodo, registre a revogação de consentimento imediatamente no CRM (LGPD).
+### 1. Persistência de Sessão e Reconexão
+- Credenciais de sessão nunca devem ficar em texto puro sem proteção (bloqueador **B-04**).
+- No evento `connection.update`:
+  - `DisconnectReason.loggedOut` (401) exige invalidação da sessão e novo pareamento QR Code.
+  - Desconexões transitórias devem acionar reconexão com backoff exponencial e jitter.
 
-### 3. Recebimento de Mídias e Webhooks
-- Ao receber imagens, áudios e documentos, faça o download do buffer cifrado, descriptografe, envie para bucket de armazenamento (S3) e salve apenas a URL e o mime-type no banco. Nunca armazene buffers pesados em base64 diretamente na tabela de mensagens.
+### 2. Políticas de Cadência e Opt-Out (LGPD)
+- Adicione intervalos humanizados (2 a 5 segundos) e atualização de presença (`sendPresenceUpdate('composing')`) antes do envio.
+- Comandos de opt-out do titular devem registrar revogação de consentimento imediatamente (bloqueador **B-13**).
+
+### 3. Aderência ao Schema (`WhatsAppMessage` em `prisma/schema.prisma`)
+- O model `WhatsAppMessage` atual possui as colunas: `id`, `organizationId`, `waMessageId`, `direction`, `phoneE164`, `body`, `contactId`, `leadId`, `receivedAt`.
+- **Não assuma** colunas inexistentes de status de recibo (`status`) ou metadados de mídia (`mediaUrl`, `mimeType`) sem antes abrir handoff formal ao **Agente 01** para evolução de `prisma/schema.prisma`.
 
 ## Checklist de Saúde do WhatsApp
-- [ ] O status da conexão (QR Code pendente / Conectado / Desconectado) é refletido em tempo real no frontend?
-- [ ] Mensagens enviadas registram status de entrega (`PENDENTE`, `ENVIADO`, `ENTREGUE`, `LIDO`) via eventos de recibo (`messages.update`)?
-- [ ] O número de telefone passa por normalização E.164 (ex: `5511999999999@s.whatsapp.net`) antes do disparo?
+- [ ] Números são normalizados em formato `phoneE164` antes de persistir em `WhatsAppMessage`?
+- [ ] Toda leitura e escrita em `WhatsAppMessage` respeita o isolamento por `organizationId` (testado em `tests/integration/whatsapp-message-tenant-isolation.test.ts`)?

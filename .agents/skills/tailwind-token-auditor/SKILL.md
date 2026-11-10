@@ -1,26 +1,31 @@
 ---
 name: tailwind-token-auditor
-description: Governança do Tailwind CSS no Birth Hub 360. Audita classes arbitrárias (ex: w-[342px], bg-[#123456]), força variáveis semânticas do tema (Light/Dark mode) e garante consistência com o Design System shadcn/Radix.
+description: Governança do Tailwind CSS v4 (@tailwindcss/vite e @theme em src/styles/globals.css) no Birth Hub 360. Audita classes arbitrárias, proíbe aliases legados em componentes novos e exige os tokens semânticos canônicos do projeto.
 ---
 
 # Tailwind Token Auditor — Birth Hub 360
 
 ## Objetivo
-Garantir fidelidade ao Design System e impedir o uso caótico de classes arbitrárias no Tailwind (`w-[340px]`, `text-[#0a192f]`, `p-[13px]`) que quebram temas Light/Dark e consistência visual.
+Garantir fidelidade ao Design System no Tailwind CSS v4 (configurado via `@theme` em `src/styles/globals.css`, sem arquivo `tailwind.config.js`) e impedir o uso de classes arbitrárias (`w-[340px]`, `text-[#0a192f]`) ou tokens legados depreciados.
 
 ## Quando Usar
-- Ao criar ou revisar componentes React no diretório `src/components/`, `src/pages/` ou `src/features/`.
-- Antes de submeter PRs que envolvam layout, tipografia, espaçamentos ou cores.
+- Ao criar ou revisar componentes React em `src/components/`, `src/pages/` ou `src/features/`.
 - Em revisões visuais do Agente 03 (Design e Acessibilidade) e Agente 24 (Revisão Independente).
 
 ## Regras Obrigatórias
-1. **Sem Hexadecimais Hardcoded:** Cores devem usar tokens semânticos (`bg-background`, `text-foreground`, `bg-primary`, `border-border`, `text-muted-foreground`).
-2. **Sem Dimensões Mágicas:** Evite `w-[273px]` ou `h-[59px]`. Utilize a escala padrão (`w-64`, `w-72`, `max-w-md`, etc.) ou classes de layout flexível (`flex-1`, `w-full`).
-3. **Suporte Dual a Temas:** Nunca declare `bg-white` ou `text-black` diretamente em superfícies que precisam alternar para dark mode. Use as variáveis configuradas em `globals.css` / `tailwind.config.js`.
-4. **Alinhamento com Radix / shadcn:** Preserve a semântica de estados (`data-[state=open]`, `focus-visible:ring-2`, `disabled:opacity-50`).
+1. **Tokens Semânticos Canônicos (`src/styles/globals.css`):**
+   - Superfícies: `bg-bg`, `bg-surface`, `bg-surface-2`
+   - Tipografia: `text-ink`, `text-ink-2`
+   - Marca e Destaque: `bg-brand`, `text-brand-ink`
+   - Bordas e Inputs: `border-line`, `border-input`
+2. **Proibição de Aliases Legados em Componentes Novos (`A03-P2-07` em `src/styles/globals.css:668-676`):**
+   - **Não utilizar** `bg-background`, `text-foreground`, `bg-primary`, `border-border` ou `text-muted-foreground` em componentes novos. Esses nomes existem apenas para compatibilidade legada ou não fazem parte do `@theme`.
+3. **Sem Dimensões Mágicas ou Hexadecimais Hardcoded:**
+   - Evite colchetes arbitrários (`w-[273px]`, `bg-[#123456]`). Use a escala do tema e layouts flexíveis (`flex-1`, `w-full`).
+4. **Suporte Dual a Temas (Light/Dark):**
+   - Nunca declare `bg-white` ou `text-black` em superfícies que alternam entre Light e Dark mode.
 
 ## Checklist de Verificação
-- [ ] O componente funciona visualmente tanto em tema Claro quanto Escuro?
-- [ ] Foram eliminadas classes com colchetes arbitrários desnecessários?
-- [ ] O contraste de cores segue o padrão WCAG AA mínimo (4.5:1 para texto normal)?
-- [ ] Os estados de foco (`focus-visible`) e hover usam tokens padronizados?
+- [ ] O componente usa exclusivamente os tokens canônicos (`bg-bg`, `bg-surface`, `bg-surface-2`, `text-ink`, `text-ink-2`, `border-line`)?
+- [ ] Nenhum componente novo foi criado sobre os aliases legados proibidos em `src/styles/globals.css:668-676`?
+- [ ] O contraste de cores atende ao WCAG AA mínimo (4.5:1 para texto normal) em Light e Dark mode?

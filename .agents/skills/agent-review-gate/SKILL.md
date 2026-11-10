@@ -6,7 +6,7 @@ description: Roteiro obrigatório de auditoria independente do Agente 24 (Revis�
 # Agent Review Gate — Agente 24 (Revisão Independente)
 
 ## Objetivo
-Atuar como o gatekeeper independente antes de qualquer merge na branch de integração (`integracao/onda-*`) ou release de código em produção, garantindo conformidade com a constituição do repositório (`AGENTS.md`).
+Atuar como o gatekeeper independente antes de qualquer merge na branch de integração (`integracao/onda-*`), encerramento de handoff ou release de código em produção, garantindo conformidade estrita com a constituição do repositório (`AGENTS.md` e `.agents/prompts/24-revisao-independente.md`).
 
 ## Protocolo de Auditoria (P1 a P4)
 
@@ -25,16 +25,23 @@ Atuar como o gatekeeper independente antes de qualquer merge na branch de integr
 
 ### 4. P4 — Execução orientada a objetivos
 - Existem testes automatizados cobrindo tanto o caminho de sucesso quanto o tratamento de falhas?
-- Todos os gates locais foram executados e documentados com saída real (`npx tsc --noEmit`, `npm run lint`, `npm test`)?
+- Todos os gates locais foram executados e documentados com saída real (`npx tsc --noEmit`, `npm run lint` e testes da área alterada)?
 
-## Matriz de Propriedade de Arquivos
+## Matriz de Propriedade de Arquivos (`AGENTS.md` §14 e §15)
 Verifique se o agente não tocou em arquivos fora de sua competência:
-- `prisma/schema.prisma` e `prisma/migrations/**` → Somente Agente 01/01A.
-- `src/App.tsx`, rotas principais e Sidebar → Somente Agente 02.
-- `android/**`, `capacitor.config.ts` → Somente Agente 09.
-- `server.ts` e `package.json` → Exigem aprovação explícita do Agente 00.
+- `prisma/schema.prisma` e `prisma/migrations/**` → Somente **Agente 01** (Agente 01A compartilha o mesmo slot com exclusão mútua `01 ↔ 01A` conforme `AGENTS.md` §14, mas a propriedade exclusiva de schema e migrations no §15 é do Agente 01).
+- `src/App.tsx`, navegação principal e Sidebar → Somente **Agente 02**.
+- `.github/workflows/**`, `Dockerfile`, `docker-compose.yml` → Somente **Agente 08**.
+- `k8s/**`, `argocd/**`, `charts/**`, `infrastructure/**` → Somente **Agente 10**.
+- `android/**`, `capacitor.config.ts` → Somente **Agente 09**.
+- `identidade-visual/**`, `documentacao-aplicacao/**` → Somente **Agente 11**.
+- `.agents/prompts/**` → Decisão humana (nenhum agente pode editar).
+- `.agents/runs/**` → Somente **Agente 00**.
+- `.agents/reviews/**` → Somente **Agente 24** ou **Agente 00**.
+- `server.ts`, `package.json` e lockfile → Exigem aprovação explícita do **Agente 00**.
 
 ## Veredito do Agente 24
-O parecer final deve ser salvo em `.agents/reviews/` no formato:
-- `APROVADO`: Todos os critérios cumpridos com evidências.
-- `REPROVADO`: Lista clara de pendências e motivos para devolução ao agente responsável.
+O parecer final deve ser registrado em `.agents/reviews/` utilizando um dos três vereditos oficiais definidos em `.agents/prompts/24-revisao-independente.md`:
+- `APROVADO`: Todos os critérios cumpridos com evidências verificáveis.
+- `REPROVADO`: Violação de escopo, propriedade, P1–P4, tenancy, LGPD ou ausência de evidência real, com lista acionável para correção.
+- `BLOQUEADO`: Impedimento externo, dependência de outro dono/handoff ou falta de infraestrutura/permissão necessária para concluir a validação.

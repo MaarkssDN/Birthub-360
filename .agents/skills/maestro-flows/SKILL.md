@@ -31,7 +31,7 @@ unit/widget tests cover that better.
 ## Step 1 - Install Maestro CLI
 
 ```bash
-curl -Ls "https://get.maestro.mobile.dev" | bash
+# [SAFEGUARD AGENTS.md §24: pipe to bash forbidden; install via package manager: brew tap mobile-dev-inc/tap && brew install maestro]
 maestro --version
 ```
 
@@ -169,7 +169,7 @@ jobs:
         with:
           api-level: 34
           script: |
-            curl -Ls "https://get.maestro.mobile.dev" | bash
+            # [SAFEGUARD AGENTS.md §24: pipe to bash forbidden; install via package manager: brew tap mobile-dev-inc/tap && brew install maestro]
             export PATH="$HOME/.maestro/bin:$PATH"
             maestro test .maestro/
 
@@ -179,7 +179,7 @@ jobs:
       - uses: actions/checkout@v5
       - run: |
           xcrun simctl boot 'iPhone 15'
-          curl -Ls "https://get.maestro.mobile.dev" | bash
+          # [SAFEGUARD AGENTS.md §24: pipe to bash forbidden; install via package manager: brew tap mobile-dev-inc/tap && brew install maestro]
           export PATH="$HOME/.maestro/bin:$PATH"
           maestro test .maestro/
 ```

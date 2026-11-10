@@ -1,24 +1,26 @@
 ---
 name: sql-n-plus-one-detector
-description: Detecção e eliminação de problemas de N+1 queries no Prisma Client e rotas do backend. Otimiza carregamento de relacionamentos, reduz latência da API e previne gargalo no PostgreSQL sob concorrência.
+description: Detecção e eliminação de problemas de N+1 queries no Prisma Client e rotas do backend. Otimiza carregamento de relacionamentos reais do schema (Lead, Activity, Contact, Company) e reduz latência no PostgreSQL.
 ---
 
 # SQL N+1 Detector — Birth Hub 360
 
 ## Objetivo
-Identificar e corrigir padrões de consulta ineficientes onde o backend executa 1 query inicial para listar registros principais e subsequentemente N queries adicionais dentro de loops para buscar entidades relacionadas (ex: contatos, itens de oportunidade, histórico de mensagens).
+Identificar e corrigir padrões de consulta onde o backend executa 1 query inicial para listar registros principais e N queries adicionais dentro de loops para buscar entidades relacionadas (ex: `Activity`, `Contact`, `CrmDealItem`, `TimelineEvent`).
 
-## Padrões Ofensivos no Prisma
+## Padrões Ofensivos no Prisma (`prisma/schema.prisma`)
 
 ### Exemplo de Anti-Pattern (N+1):
 ```typescript
-// Ruim: 1 query para leads + N queries para tarefas dentro do map
+// Ruim: 1 query para leads + N queries para activities dentro do map
 const leads = await prisma.lead.findMany({ where: { organizationId } });
-const leadsWithTasks = await Promise.all(
+const leadsWithActivities = await Promise.all(
   leads.map(async (lead) => {
-    const tasks = await prisma.task.findMany({ where: { leadId: lead.id } });
-    return { ...lead, tasks };
-  })
+    const activities = await prisma.activity.findMany({
+      where: { leadId: lead.id, organizationId },
+    });
+    return { ...lead, activities };
+  }),
 );
 ```
 
@@ -26,24 +28,29 @@ const leadsWithTasks = await Promise.all(
 
 #### 1. Uso de `include` / `select` nativo do Prisma:
 ```typescript
-// Bom: o Prisma agrupa automaticamente em poucas queries com WHERE IN (...)
-const leadsWithTasks = await prisma.lead.findMany({
+// Bom: o Prisma agrupa automaticamente em query com WHERE IN (...)
+const leadsWithActivities = await prisma.lead.findMany({
   where: { organizationId },
   include: {
-    tasks: {
-      select: { id: true, title: true, status: true, dueDate: true }
-    }
-  }
+    activities: {
+      select: {
+        id: true,
+        type: true,
+        owner: true,
+        date: true,
+        time: true,
+        status: true,
+        observations: true,
+      },
+    },
+  },
 });
 ```
 
 #### 2. Agrupamento em Batch com `findMany({ where: { leadId: { in: leadIds } } })`:
-Para situações onde os dados vêm de fontes separadas, colete todos os IDs e busque em uma única query com operador `in`.
-
-#### 3. DataLoader:
-Para serviços GraphQL ou composições profundas de microsserviços/módulos, utilize DataLoader com memoização e batching.
+Para fluxos onde os dados são agregados em serviços distintos, colete todos os IDs e busque em uma única query com o operador `in`, mantendo sempre o escopo de `organizationId`.
 
 ## Checklist de Auditoria
-- [ ] Nenhum `await prisma.<model>.*` existe dentro de laços `.map()`, `.forEach()` ou loops `for..of`.
-- [ ] Queries que listam tabelas com relacionamentos limitam as colunas selecionadas (`select` em vez de carregar modelos inteiros).
-- [ ] Relacionamentos volumosos aplicam paginação (`take`, `skip` ou cursores) para não carregar dezenas de milhares de registros na memória do Node.js.
+- [ ] Nenhum `await prisma.<model>.*` existe dentro de laços `.map()`, `.forEach()` ou `for..of`.
+- [ ] Queries que listam tabelas com relacionamentos limitam as colunas selecionadas (`select`).
+- [ ] Relacionamentos volumosos aplicam paginação (`take`, `skip` ou cursor).

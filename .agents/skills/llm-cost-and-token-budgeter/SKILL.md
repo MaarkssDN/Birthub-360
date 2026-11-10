@@ -6,7 +6,7 @@ description: Controle de custos, latência e orçamento de tokens para agentes d
 # LLM Cost & Token Budgeter — Agente 23 (Custo & Performance)
 
 ## Objetivo
-Evitar explosão de custos em APIs de LLM e lentidão na experiência do usuário. Garantir que cada automação, assistente de voz ou agente do Enxame utilize o modelo mais eficiente com o menor número viável de tokens.
+Evitar explosão de custos em APIs de LLM e lentidão na experiência do usuário. Garantir que cada automação, assistente de voz ou agente do Enxame utilize o modelo mais eficiente com o menor número viável de tokens, utilizando a infraestrutura real do projeto (`src/lib/ai/budget.ts`, `src/lib/ai/usage-log.ts` e modelo `AILog` em `prisma/schema.prisma`).
 
 ## Boas Práticas de Engenharia de Prompt e Custo
 
@@ -26,6 +26,10 @@ Evitar explosão de custos em APIs de LLM e lentidão na experiência do usuári
 ### 4. Structured Outputs com Schema Rígido
 - Prefira recursos nativos de `response_format: { type: "json_schema" }` ou chamada de funções (*tool calling*) em vez de pedir "responda em JSON" via prompt livre. Isso reduz tentativas frustradas de parse e retentativas desnecessárias.
 
-## Métricas Obrigatórias de Observabilidade
-- Registrar por requisição: `prompt_tokens`, `completion_tokens`, `total_cost_usd` e `duration_ms`.
-- Alertar caso um único job exceda o teto orçamentário configurado para a organização.
+## Métricas Obrigatórias de Observabilidade (`AILog`)
+- Registrar por requisição no modelo `AILog` (`prisma/schema.prisma:1826-1846`, via `src/lib/ai/usage-log.ts`) utilizando exclusivamente as colunas reais do schema:
+  - `id`, `organizationId`, `model`, `promptId`, `agentRole`, `createdAt`
+  - `tokens` (total de tokens consumidos na chamada)
+  - `cost` (custo calculado da chamada)
+  - `latencyMs` (duração da requisição em milissegundos)
+- Validar orçamento por organização via `src/lib/ai/budget.ts` e alertar caso uma organização ou job atinja o limite orçamentário configurado.

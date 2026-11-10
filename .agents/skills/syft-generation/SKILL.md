@@ -45,7 +45,7 @@ brew install syft
 docker run --rm -v "$PWD:/scan" anchore/syft scan dir:/scan -o cyclonedx-json
 
 # Install script into a user-owned dir (-b sets the target; no sudo needed)
-curl -sSfL https://get.anchore.io/syft | sh -s -- -b "$HOME/.local/bin"
+# [SAFEGUARD AGENTS.md §24: pipe to sh forbidden; use brew install syft, docker anchore/syft, or npm run security:sbom]
 ```
 
 Other paths (consult [sf-gh][sf-gh]): Scoop, Chocolatey, Nix.

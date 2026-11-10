@@ -113,7 +113,8 @@ function parseEffectiveTablePolicies(models: ModelMetadata[]) {
   for (const dir of migrationDirs) {
     const sqlPath = path.join(migrationsDir, dir, 'migration.sql');
     if (!fs.existsSync(sqlPath)) continue;
-    const sql = fs.readFileSync(sqlPath, 'utf8');
+    // Renomeacao 20260928125100: AtlasGRCallResult -> Birthub360CallResult
+    const sql = fs.readFileSync(sqlPath, 'utf8').replace(/AtlasGRCallResult/g, 'Birthub360CallResult');
 
     for (const { tableName } of models) {
       const tablePattern = `(?:"${tableName}"|\\b${tableName}\\b)`;
@@ -129,7 +130,7 @@ function parseEffectiveTablePolicies(models: ModelMetadata[]) {
 
       // Track DROP POLICY
       const dropRegex = new RegExp(
-        `DROP\\s+POLICY\\s+(?:IF\\s+EXISTS\\s+)?"?([\\w_]+)"?\\s+ON\\s+${tablePattern}(?:\\s*;|\\s|$)`,
+        `DROP\\s+POLICY\\s+(?:IF\\s+EXISTS\\s+)?"?([\\w_ ]+?)"?\\s+ON\\s+${tablePattern}(?:\\s*;|\\s|$)`,
         'gi',
       );
       let dropMatch: RegExpExecArray | null;
@@ -139,7 +140,7 @@ function parseEffectiveTablePolicies(models: ModelMetadata[]) {
 
       // Track CREATE POLICY
       const createPolicyRegex = new RegExp(
-        `CREATE\\s+POLICY\\s+"?([\\w_]+)"?\\s+ON\\s+${tablePattern}(?:\\s+FOR\\s+[\\w_]+)?([\\s\\S]*?);`,
+        `CREATE\\s+POLICY\\s+"?([\\w_ ]+?)"?\\s+ON\\s+${tablePattern}(?:\\s+FOR\\s+[\\w_]+)?([\\s\\S]*?);`,
         'gi',
       );
       let createMatch: RegExpExecArray | null;
@@ -211,6 +212,7 @@ describe('Row Level Security (RLS) - Cobertura e Isolamento Semântico no Banco 
     for (const { tableName } of models) {
       const state = tableState[tableName];
       if (Object.keys(state.policies).length === 0) {
+        missingPolicy.push(tableName);
       }
     }
 

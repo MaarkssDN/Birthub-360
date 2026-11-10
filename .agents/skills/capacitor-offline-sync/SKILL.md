@@ -1,25 +1,26 @@
 ---
 name: capacitor-offline-sync
-description: Padrões de desenvolvimento mobile e offline-first com Capacitor e PWA no Birth Hub 360 (Agente 09 - Mobile). Cobre armazenamento local (IndexedDB/SQLite), sincronização em segundo plano, precaching de assets e resiliência offline.
+description: Padrões de desenvolvimento mobile e offline-first com Capacitor e PWA no Birth Hub 360 (Agente 09 - Mobile). Cobre armazenamento local (IndexedDB/RxDB), sincronização em segundo plano, precaching de assets e resiliência offline.
 ---
 
 # Capacitor & Offline Sync — Agente 09 (Mobile)
 
 ## Objetivo
-Garantir que os profissionais e consultores que utilizam o aplicativo mobile ou PWA possam visualizar dados essenciais do CRM, registrar notas e preencher formulários mesmo em locais com conexão instável ou inexistente, com reconciliação transparente ao reconectar.
+Garantir que os profissionais e consultores que utilizam o aplicativo mobile (`@capacitor/core`, `@capacitor/android`, `@capacitor/ios`) ou PWA possam visualizar dados essenciais do CRM, registrar notas e preencher formulários mesmo em locais com conexão instável ou inexistente, com reconciliação transparente ao reconectar.
 
 ## Princípios de Arquitetura Offline-First
 
 ### 1. Camada de Cache Local (Local State Store)
-- Utilize Zustand/TanStack Query persistido no IndexedDB (ou SQLite via plugin do Capacitor `@capacitor-community/sqlite` em dispositivos móveis).
+- Utilize as bibliotecas já instaladas no `package.json`: `rxdb` (`^17.5.0`) e `@tanstack/react-query` (`^5.103.1`) persistido no IndexedDB.
+- **Governança de Dependências (`AGENTS.md` §15 e P2):** Não adicione `zustand`, `@capacitor-community/sqlite` ou `@capacitor/network` sem necessidade comprovada e aprovação explícita do Agente 00 para alterar `package.json`.
 - Leituras sempre consultam o cache local primeiro (*cache-first* ou *stale-while-revalidate*) para renderização instantânea da interface.
 
 ### 2. Fila de Mutações Offline (Outbox Pattern)
-- Ações disparadas offline (ex: "Criar Lead", "Atualizar Status", "Adicionar Nota") devem ser salvas em uma fila local persistente (`outbox_queue`) com um ID local temporário (UUID v4) e timestamp ISO.
+- Ações disparadas offline (ex: "Criar Lead", "Atualizar Status", "Adicionar Nota") devem ser salvas em uma coleção local persistente (`outbox_queue` no RxDB/IndexedDB) com um ID local temporário (UUID v4) e timestamp ISO.
 - A interface exibe a mutação com indicador visual ("Sincronização pendente").
 
 ### 3. Protocolo de Sincronização ao Reconectar
-- Ouça eventos de rede (`@capacitor/network` ou `navigator.onLine`).
+- Ouça eventos nativos de rede do navegador/WebView (`window.addEventListener('online', ...)` / `window.addEventListener('offline', ...)` e `navigator.onLine`).
 - Ao detectar internet ativa:
   1. Itere a `outbox_queue` em ordem cronológica.
   2. Envie as requisições com header de idempotência (`X-Idempotency-Key: <local_id>`).

@@ -1,24 +1,52 @@
 # Relatório de Homologação de Skills — Etapa S0
 **Data:** 2026-11-10  
-**Status:** HOMOLOGADO / APROVADO  
-**Responsáveis:** Agente 00 (Coordenador) e Agente 24 (Revisão Independente)  
-**Escopo:** Inventário e validação estrita de `.agents/skills/`, dependências, bloqueadores B-01 a B-14 e donos no `AGENTS.md`. Modo somente leitura (sem alteração em código de produto).
+**Status:** APROVADO PELO AGENTE 24 (`agent-review-gate` — Revisão Independente em 2026-11-10T14:15:30Z, Subagente `1a58951d-add9-48cc-aae0-c14b5acb0099`)  
+**Responsáveis:** Agente 00 (Coordenador) — Auditoria Independente: Agente 24 (`agent-review-gate`)  
+**Escopo:** Inventário e validação de `.agents/skills/`, saneamento de comandos perigosos em skills externas, alinhamento 100% factual das 16 skills customizadas com o repositório (`prisma/schema.prisma`, `package.json`, `src/styles/globals.css`, `AGENTS.md`), cruzamento com bloqueadores B-01 a B-14 e mapa real de dependências.
 
 ---
 
-## 1. Inventário Geral do Diretório `.agents/skills/`
+## 1. Inventário Geral e Saneamento de Segurança de `.agents/skills/`
 
-Foi realizada a varredura estrutural completa sobre todas as pastas de skills do repositório:
-- **Total de diretórios inspecionados:** 434
-- **Arquivos `SKILL.md` válidos com frontmatter YAML:** 434 (100% de conformidade sintática)
-- **Erros de sintaxe ou arquivos ausentes:** 0
-- **Comandos destrutivos ou riscos não autorizados:** Nenhum detectado.
+1. **Conformidade estrutural:**
+   - **Total de diretórios inspecionados:** 434
+   - **Arquivos `SKILL.md` com frontmatter YAML (`name`, `description`):** 434 (100% de conformidade sintática).
+2. **Auditoria de padrões sensíveis (20 skills externas identificadas na varredura):**
+   - **16 skills de teste/segurança defensiva (`apollo-server-tests`, `atlas-migrations`, `bats-testing`, `database-integrity`, `dependency-vulnerability-scanning`, `git-guardrails-claude-code`, `graphql-subscription-test-author`, `malicious-payload-bank`, `mantis-meta-agent`, `mantis-patch`, `mantis-pipeline-adapter`, `mantis-reproduce`, `migration-operation-taxonomy`, `mvcc-isolation-tests`, `stryker-mutation`, `synthetic-monitor-author`):** Contêm exemplos de payloads de teste (SQLi/XSS defensivo para validação de sanitizadores), hooks que *bloqueiam* `git push --force`/`rm -rf`, ou limpeza de diretórios temporários de teste (`$BATS_TEST_TMPDIR`). Não instruem execução destrutiva no repositório.
+   - **4 skills externas continham comandos operacionais de risco e foram SANEADAS neste ciclo:**
+     1. `.agents/skills/deploy-to-vercel/SKILL.md`: Removidas todas as instruções de deploy automático não autenticado (`--temporary` nas linhas 148, 162, 178, 188 e 220); substituídas por exigência explícita de autenticação e aprovação do Agente 00 / usuário (`AGENTS.md` §15 e §24).
+     2. `.agents/skills/maestro-flows/SKILL.md`: Removido `curl -Ls "https://get.maestro.mobile.dev" | bash`; substituído por verificação de binário pré-instalado sem execução remota de script shell.
+     3. `.agents/skills/syft-generation/SKILL.md`: Removido `curl -sSfL https://get.anchore.io/syft | sh`; substituído por uso de gerenciador de pacotes homologado ou container oficial em CI.
+     4. `.agents/skills/vercel-cli-with-tokens/SKILL.md`: Removidos comandos `printenv | grep` e `grep .env` que imprimiam valores de tokens no log do terminal; substituídos por verificação booleana de existência da chave sem exibir o segredo (`AGENTS.md` §24).
 
 ---
 
-## 2. Matriz de Cruzamento: 20 Skills Primárias vs Bloqueadores B-01 a B-14
+## 2. Alinhamento Factual das 16 Skills Customizadas ao Repositório
 
-Abaixo, a correlação direta de cobertura entre as 20 skills selecionadas para as trilhas técnicas (S1 a S4) e os 14 bloqueadores prioritários do `AGENTS.md`:
+Todas as divergências apontadas pela Revisão Independente (Agente 24) nas skills customizadas foram corrigidas:
+
+| Skill Customizada | Correção Aplicada para Aderência Estrita ao Código Real |
+| :--- | :--- |
+| `tailwind-token-auditor` | Alinhada ao Tailwind CSS v4 (`@tailwindcss/vite` + `@theme` em `src/styles/globals.css`), exigindo tokens canônicos (`bg-bg`, `bg-surface`, `bg-surface-2`, `text-ink`, `text-ink-2`, `border-line`, `bg-brand`) e proibindo aliases legados (`bg-background`, `text-foreground`, `bg-primary`) conforme `A03-P2-07` (`src/styles/globals.css:668-676`). |
+| `sql-n-plus-one-detector` | Exemplos corrigidos para usar models e campos reais de `prisma/schema.prisma` (`Lead`, `Activity` com `id`, `type`, `owner`, `date`, `time`, `status`, `observations`). |
+| `bitrix24-payload-validator` | Removido model fictício `BitrixFieldMapping`; referenciados os models reais `BitrixConnection`, `BitrixSyncRule`, `BitrixSyncLog`, `BitrixExtractionRun`, `CopilotoBitrixFieldMapping` e `ExternalCrmStageMapping`. Configurado rate limit de 2 req/s (Standard/Pro) a 5 req/s (Enterprise). |
+| `baileys-whatsapp-resilience` | Alinhada às colunas reais de `WhatsAppMessage` (`id`, `organizationId`, `waMessageId`, `direction`, `phoneE164`, `body`, `contactId`, `leadId`, `receivedAt`) e documentado o risco de conformidade da biblioteca não-oficial `@whiskeysockets/baileys`. |
+| `capacitor-offline-sync` | Removidas referências a bibliotecas não instaladas (`zustand`, `@capacitor-community/sqlite`, `@capacitor/network`); alinhada às dependências reais do `package.json` (`rxdb ^17.5.0`, `@tanstack/react-query ^5.103.1`, `@capacitor/core`, `@capacitor/android`, `@capacitor/ios` e eventos `online`/`navigator.onLine`). |
+| `llm-cost-and-token-budgeter` | Alinhada exclusivamente aos campos reais do model `AILog` em `prisma/schema.prisma:1826-1846` (`id`, `tokens`, `cost`, `latencyMs`, `model`, `promptId`, `organizationId`, `agentRole`, `createdAt`) e aos módulos `src/lib/ai/budget.ts` e `src/lib/ai/usage-log.ts`. |
+| `vitest-mutation-testing` | Documentado explicitamente que `@stryker-mutator/*` não está instalado em `package.json` e que qualquer adição requer aprovação explícita do Agente 00 (`AGENTS.md` §15). |
+| `rls-leak-checker` | Alinhada a `src/shared/middlewares/authenticateToken.ts`, `src/bootstrap/dbRoleCheck.ts`, coluna `"organizationId"` (camelCase), `current_setting('app.current_tenant_id', true)`, `BYPASS_RLS_ALLOWED_MODELS` em `src/lib/prisma.ts`, e ao princípio de que `@@unique([id, organizationId])` não substitui políticas RLS (`ENABLE` + `FORCE ROW LEVEL SECURITY` + `CREATE POLICY`). |
+| `lgpd-pii-sanitizer` | Removida menção a `Winston`; alinhada ao `pino` (`src/lib/logger.ts`), `decryptNestedContactPii` em `src/lib/prisma.ts` e protocolo obrigatório de 4 etapas (backup, dry-run, validação e rollback) para `scripts/security/backfill-contact-pii.ts`. |
+| `openapi-contract-keeper` | Removida menção a `Fastify`; alinhada ao Express 5 e aos scripts reais `npm run verify:openapi-drift` (`tsx scripts/verify-openapi-drift.ts`) e `npm run test:api-schema` (`.\\.venv-opensource\\Scripts\\schemathesis.exe run docs/openapi.yaml --url http://127.0.0.1:3000`). |
+| `k6-load-testing` | Detalhados os 3 scripts reais (`load:k6` -> `tests/load/k6-api.js` e `load:k6:crm` -> `tests/load/k6-crm-authenticated.js` via `docker compose -f docker-compose.yml -f docker-compose.postgres-local.yml -f docker-compose.opensource.yml --profile tools`, e `load:k6:ai-voice` via `node scripts/test/run-k6-ai-voice-stress.mjs`) e autenticação via sessões do `better-auth` (`auth.api.getSession`). |
+| `websocket-stream-debugger` | Substituída menção genérica a JWT por validação de sessão `better-auth` (`auth.api.getSession`), salas por organização (`org_${organizationId}`) e verificação de persistência real de comandos de voz (**B-07**). |
+| `agent-review-gate` | Alinhada à propriedade exclusiva de `prisma/schema.prisma` e `prisma/migrations/**` pelo **Agente 01** (`AGENTS.md` §15, com exclusão mútua `01 ↔ 01A` no §14) e aos três vereditos oficiais (`APROVADO`, `REPROVADO`, `BLOQUEADO`). |
+| `bullmq-worker-governance` | Diferenciada deduplicação de fila (`jobId` no Redis) de idempotência de negócio no PostgreSQL usando os models reais `DomainEventOutbox` e `DomainEventConsumption` (`@@unique([consumerName, eventId])`). |
+| `prisma-migration-safety` | Verificada: 100% compatível com PostgreSQL, `CONCURRENTLY`, `deletedAt` e `auditableModels` em `src/lib/prisma.ts`. |
+| `react-render-antipatterns` | Verificada: 100% compatível com React 19.3.0 e `@tanstack/react-virtual` (`^3.13.23`) instalado em `package.json`. |
+
+---
+
+## 3. Matriz de Cruzamento: 20 Skills Primárias vs Bloqueadores B-01 a B-14 (`AGENTS.md`)
 
 | Bloqueador Crítico | Descrição do Risco | Skills Diretas de Mitigação | Agente Responsável |
 | :--- | :--- | :--- | :--- |
@@ -39,66 +67,51 @@ Abaixo, a correlação direta de cobertura entre as 20 skills selecionadas para 
 
 ---
 
-## 3. Matriz de Propriedade e Roster de Agentes (`AGENTS.md`)
+## 4. Matriz de Propriedade e Roster Oficial (`AGENTS.md` §3, §14 e §15)
 
-Cada uma das 20 skills possui proprietário único e oficial, respeitando a separação estrita de slots:
-
-1. `rls-leak-checker` → **Agente 01A (Confiabilidade de Dados, RLS e Retenção)**
-2. `prisma-migration-safety` → **Agente 01 (Plataforma, Segurança e Dados)**
-3. `lgpd-pii-sanitizer` → **Agente 21 (Privacidade e LGPD)**
+1. `rls-leak-checker` → **Agente 01A (Confiabilidade de Dados, RLS e Retenção)** *(Slot compartilhado com 01; exclusão mútua `01 ↔ 01A`)*
+2. `prisma-migration-safety` → **Agente 01 (Plataforma, Segurança e Dados)** *(Dono exclusivo de `prisma/schema.prisma` e `prisma/migrations/**`)*
+3. `lgpd-pii-sanitizer` → **Agente 21 (Privacidade e LGPD)** & **Agente 15 (Segurança Aplicada)**
 4. `sql-n-plus-one-detector` → **Agente 23 (Custo, Performance e Limites de IA)**
 5. `bullmq-worker-governance` → **Agente 16 (Runtime, Workers e Escala)**
-6. `bitrix24-payload-validator` → **Agente 06 (Integrações e Bitrix)** / **06A (Extrações)**
-7. `baileys-whatsapp-resilience` → **Agente 06 (Integrações)** & **Agente 15 (Segurança)**
+6. `bitrix24-payload-validator` → **Agente 06 (Integrações e Bitrix)** / **06A (Extrações Bitrix)** *(Exclusão mútua `06 ↔ 06A`)*
+7. `baileys-whatsapp-resilience` → **Agente 06 (Integrações)** & **Agente 15 (Segurança Aplicada)**
 8. `openapi-contract-keeper` → **Agente 18 (Contratos, API e Documentação Viva)**
 9. `tailwind-token-auditor` → **Agente 03 (Design e Acessibilidade)**
 10. `vercel-composition-patterns` → **Agente 02 (Produto e UX)**
 11. `react-render-antipatterns` → **Agente 02 (Produto e UX)**
 12. `vercel-react-view-transitions` → **Agente 03 (Design e Acessibilidade)**
-13. `playwright-automation-expert` → **Agente 08 (QA e Release)** / **14 (Test Harness)**
+13. `playwright-automation-expert` → **Agente 08 (QA e Release)** & **Agente 14 (Test Harness)**
 14. `msw-handlers` → **Agente 14 (Ambiente de Execução e Test Harness)**
-15. `k6-load-testing` → **Agente 23 (Performance)** / **Agente 10 (SRE)**
+15. `k6-load-testing` → **Agente 23 (Performance)** & **Agente 10 (Infraestrutura e SRE)**
 16. `vitest-mutation-testing` → **Agente 08 (QA e Release)**
-17. `llm-cost-and-token-budgeter` → **Agente 23 (Custo & Limites de IA)**
+17. `llm-cost-and-token-budgeter` → **Agente 23 (Custo, Performance e Limites de IA)**
 18. `websocket-stream-debugger` → **Agente 12 (Voz e Telefonia)**
-19. `capacitor-offline-sync` → **Agente 09 (Mobile)**
+19. `capacitor-offline-sync` → **Agente 09 (Mobile)** *(Dono exclusivo de `android/**` e `capacitor.config.ts`)*
 20. `agent-review-gate` → **Agente 24 (Revisão Independente)**
 
 ---
 
-## 4. Mapa de Dependências Técnicas e Pré-requisitos
-
-Para evitar bloqueios durante as etapas de execução S1 a S4, foram mapeadas as seguintes dependências de infraestrutura e runtime:
+## 5. Mapa Factual de Dependências Técnicas e Pré-requisitos (S1 a S4)
 
 ```
 [Etapa S1 - RLS & Tenancy]
-   ├── Depende de: scripts/db/bootstrap-app-role.sh (Papel NOSUPERUSER/NOBYPASSRLS)
-   └── Depende de: docker-compose.postgres-local.yml ativo para testes de isolamento
+   ├── Depende de: scripts/db/bootstrap-app-role.sh e src/bootstrap/dbRoleCheck.ts (Papel NOSUPERUSER/NOBYPASSRLS)
+   ├── Depende de: docker-compose.postgres-local.yml ativo (porta 5434) para testes de integração RLS
+   └── Depende de: Handoff ao Agente 01 para criar CREATE POLICY ausente na tabela "DocumentEmbedding" e corrigir bloco vazio em tests/unit/db/rls-coverage.test.ts
 
 [Etapa S2 - Filas & Integrações]
-   ├── Depende de: Redis ativo (porta 6379)
-   ├── Depende de: Tabela PostgreSQL `ProcessedOperation` para idempotência transacional
-   └── Depende de: Tabela `BitrixFieldMapping` e credenciais por organização
+   ├── Depende de: Redis ativo (porta 6379) para BullMQ
+   ├── Depende de: Models reais `DomainEventOutbox` e `DomainEventConsumption` (em prisma/schema.prisma) para idempotência
+   └── Depende de: Models reais `BitrixConnection`, `CopilotoBitrixFieldMapping` e `ExternalCrmStageMapping`
 
 [Etapa S3 - Frontend & Interface]
-   ├── Depende de: React 19.3.0 (Confirmado no package.json)
-   └── Depende de: Tokens semânticos em globals.css / tailwind.config.js
+   ├── Depende de: React 19.3.0 e @tanstack/react-virtual ^3.13.23 (Confirmados em package.json)
+   └── Depende de: Tokens semânticos @theme em src/styles/globals.css (Tailwind v4 via @tailwindcss/vite)
 
 [Etapa S4 - QA, IA & Mobile]
-   ├── Depende de: Servidor local ativo para Schemathesis (porta 3000)
-   ├── Depende de: Playwright browsers instalados (npx playwright install)
-   └── Depende de: SQLite/Capacitor configurado no módulo mobile
+   ├── Depende de: Servidor local ativo (porta 3000) para npm run test:api-schema (Schemathesis) e npm run verify:openapi-drift (scripts/verify-openapi-drift.ts)
+   ├── Depende de: Modelos reais `AILog` (prisma/schema.prisma) e módulos src/lib/ai/budget.ts + src/lib/ai/usage-log.ts
+   ├── Depende de: Aprovação explícita do Agente 00 caso se deseje instalar @stryker-mutator/* no package.json
+   └── Depende de: rxdb ^17.5.0, @tanstack/react-query ^5.103.1 e @capacitor/core já presentes em package.json
 ```
-
----
-
-## 5. Parecer e Conclusão da Etapa S0
-
-A auditoria da **Etapa S0** comprova que:
-1. Todas as 434 skills do repositório estão formalizadas e sem erros de parsing.
-2. A cobertura contra os 14 bloqueadores prioritários (**B-01 a B-14**) está mapeada sem pontos cegos.
-3. Não há conflito de atribuição de agentes ou sobreposição não-autorizada de propriedade de arquivos.
-4. Nenhuma funcionalidade de produto foi alterada nesta etapa.
-
-**Veredito:** `APROVADO (GATE S0 VERDE)`  
-**Encaminhamento:** Autorizado o avanço para a **Etapa S1 — Segurança, Tenancy Real & Integridade de Dados** sob liderança dos Agentes 01/01A e 21.

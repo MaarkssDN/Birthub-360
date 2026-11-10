@@ -17,7 +17,7 @@ Before running any Vercel CLI commands, identify where the token is coming from.
 ### A) `VERCEL_TOKEN` is already set in the environment
 
 ```bash
-printenv VERCEL_TOKEN
+[ -n "$VERCEL_TOKEN" ] && echo "VERCEL_TOKEN=SET" || echo "VERCEL_TOKEN=UNSET" # Never print secret values (AGENTS.md §24)
 ```
 
 If this returns a value, you're ready. Skip to Step 2.
@@ -25,7 +25,7 @@ If this returns a value, you're ready. Skip to Step 2.
 ### B) Token is in a `.env` file under `VERCEL_TOKEN`
 
 ```bash
-grep '^VERCEL_TOKEN=' .env 2>/dev/null
+grep -q "^VERCEL_TOKEN=" .env 2>/dev/null && echo "FOUND_IN_DOTENV" # Never print secret values (AGENTS.md §24)
 ```
 
 If found, export it:
@@ -39,7 +39,7 @@ export VERCEL_TOKEN=$(grep '^VERCEL_TOKEN=' .env | cut -d= -f2-)
 Look for any variable that looks like a Vercel token (Vercel tokens typically start with `vca_`):
 
 ```bash
-grep -i 'vercel' .env 2>/dev/null
+grep -i "vercel" .env 2>/dev/null | cut -d= -f1 # List variable names ONLY, never values (AGENTS.md §24)
 ```
 
 Inspect the output to identify which variable holds the token, then export it as `VERCEL_TOKEN`:
@@ -75,7 +75,7 @@ printenv VERCEL_PROJECT_ID
 printenv VERCEL_ORG_ID
 
 # Or check .env
-grep -i 'vercel' .env 2>/dev/null
+grep -i "vercel" .env 2>/dev/null | cut -d= -f1 # List variable names ONLY, never values (AGENTS.md §24)
 ```
 
 **If you have a project URL** (e.g. `https://vercel.com/my-team/my-project`), extract the team slug:
@@ -314,8 +314,8 @@ Full details: https://vercel.com/docs/plans/pro-plan
 Check the environment and any `.env` files present:
 
 ```bash
-printenv | grep -i vercel
-grep -i vercel .env 2>/dev/null
+printenv | grep -i "vercel" | cut -d= -f1 # List variable names ONLY, never values (AGENTS.md §24)
+grep -i "vercel" .env 2>/dev/null | cut -d= -f1 # List variable names ONLY, never values (AGENTS.md §24)
 ```
 
 ### Authentication error

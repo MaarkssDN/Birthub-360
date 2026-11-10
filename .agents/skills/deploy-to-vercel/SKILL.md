@@ -145,7 +145,7 @@ The Vercel CLI isn't set up at all.
    ```bash
    vercel login
    ```
-   The user completes auth in their browser. If running in a non-interactive environment where login is not possible, skip to the **no-auth fallback** below.
+   The user completes auth in their browser. If running in a non-interactive environment where login is not possible, stop and request authenticated credentials or explicit authorization from the user.
 
 3. **Ask which team to deploy to** — present team slugs from `vercel teams list --format json` as a bulleted list. If only one team / personal account, skip. Once selected, proceed immediately.
 
@@ -159,19 +159,9 @@ The Vercel CLI isn't set up at all.
 
 ---
 
-### No-Auth Fallback — `vercel deploy --temporary`
+### No-Auth Fallback — Restricted by Repository Governance (`AGENTS.md` §3, §21, §24)
 
-**When to use:** The CLI has no credentials and `vercel login` isn't possible (sandboxes, agents, non-interactive environments). Do **not** ask the user to approve a CLI login or device code first — try this.
-
-```bash
-npx vercel@latest deploy [path] --temporary -y
-```
-
-No account is needed. The CLI builds locally, deploys to a temporary production URL, and prints a **claim URL** plus how long until the deployment expires. Rerunning the command in the same directory redeploys the same temporary project until it expires.
-
-Temporary deployments don't work in CI or in a directory already linked to a Vercel project. See https://vercel.com/docs/deployments/deploy-without-logging-in.
-
-**Tell the user:** "Your deployment is ready at [url]. It expires in [time] unless you claim it at [claimUrl]. Don't share the claim link."
+**CRITICAL GOVERNANCE RULE:** Never run unauthenticated temporary deployments (`--temporary`) automatically. Uploading local repository builds to unclaimed external public URLs is forbidden without **explicit prior user authorization** and independent review approval from Agente 24. If credentials are missing, stop and ask the user how they wish to authenticate.
 
 **Escalated network access (Codex):** Only escalate the deploy command if sandboxing blocks the network call (`sandbox_permissions=require_escalated`).
 
@@ -185,7 +175,7 @@ You have full shell access. Follow the decision flow above using the CLI directl
 
 ### Sandboxed environments (claude.ai, Codex)
 
-Check whether the CLI is logged in with `vercel whoami`. If it is, follow Step 2, including team selection. If it isn't, use the **no-auth fallback**.
+Check whether the CLI is logged in with `vercel whoami`. If it is, follow Step 2, including team selection. If it isn't, stop and request authentication from the user per the governance rule above.
 
 ---
 
@@ -195,7 +185,6 @@ Always show the user the deployment URL.
 
 - **Git push:** Use `vercel ls --format json` to find the preview URL. If the CLI isn't authenticated, tell the user to check the Vercel dashboard or commit status checks.
 - **CLI deploy:** Show the URL returned by `vercel deploy --no-wait`. Use `vercel inspect <url>` to check build status and report it to the user.
-- **No-auth fallback:** Show the deployment URL, the claim URL, and the expiry the CLI printed.
 
 **Do not** curl or fetch the deployed URL to verify it works. Just return the link.
 
@@ -227,4 +216,4 @@ the command with escalated permissions — want me to proceed?
 
 ### CLI Auth Failure
 
-If `vercel login` or `vercel deploy` fails with authentication errors, use the no-auth fallback: `vercel deploy --temporary -y`.
+If `vercel login` or `vercel deploy` fails with authentication errors, do not execute unauthenticated temporary deployments; report the authentication error to the user and request a valid `VERCEL_TOKEN` or interactive login.
