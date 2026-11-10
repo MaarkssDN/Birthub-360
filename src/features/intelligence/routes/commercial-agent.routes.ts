@@ -2,11 +2,8 @@ import { Router, type Request, type Response, type NextFunction } from 'express'
 import { prisma } from '../../../lib/prisma.js';
 import type { AuthRequest } from '../../../shared/middlewares/authenticateToken.js';
 import { brazilMonthKey, brazilMonthRange } from '../../../shared/time/brazilCalendar.js';
-import type {
-  AgentCenterTrace,
-  SellerWorkspaceOverview,
-  NextBestAction,
-} from '../agents/triad/triad.types.js';
+import { getCommercialMissionTrace } from '../services/commercialMissionTrace.service.js';
+import type { SellerWorkspaceOverview, NextBestAction } from '../agents/triad/triad.types.js';
 
 const router = Router();
 
@@ -172,7 +169,9 @@ router.get('/workspace', async (req: Request, res: Response, next: NextFunction)
 
 /**
  * GET /api/commercial-agent/mission/:id/trace
- * Retorna o trace de execução do Agent Center da Tríade para uma missão real da organização.
+ * Retorna o trace REAL de execução do Agent Center (handoffs + AgentExecution persistidos +
+ * trilha de consentimento LGPD) para uma missão da organização. `default` resolve para a missão
+ * mais recente; sem registro persistido retorna 404 — nunca dados sintéticos.
  */
 router.get(
   '/mission/:id/trace',
@@ -189,125 +188,22 @@ router.get(
         return;
       }
 
-      const lead =
-        rawId === 'default'
-          ? await prisma.lead.findFirst({
-              where: { organizationId, deletedAt: null },
-              include: { company: true, contact: true },
-              orderBy: { updatedAt: 'desc' },
-            })
-          : await prisma.lead.findFirst({
-              where: {
-                id: rawId.replace(/^mission-/, ''),
-                organizationId,
-                deletedAt: null,
-              },
-              include: { company: true, contact: true },
-            });
+      const requestedMissionId =
+        rawId === 'default' ? 'default' : rawId.replace(/^mission-/, '');
 
-      if (!lead) {
+      const trace = await getCommercialMissionTrace({
+        db: prisma,
+        organizationId,
+        requestedMissionId,
+      });
+
+      if (!trace) {
         res.status(404).json({
           success: false,
           error: 'Missão não encontrada para esta organização.',
         });
         return;
       }
-
-      const optOutConditions: Array<Record<string, unknown>> = [{ leadId: lead.id }];
-      if (lead.contact?.email) {
-        optOutConditions.push({ email: lead.contact.email });
-      }
-      if (lead.contact?.phone) {
-        optOutConditions.push({ phoneE164: lead.contact.phone });
-      }
-
-      const [optOutRecord, latestActivity] = await Promise.all([
-        prisma.optOutRecord.findFirst({
-          where: {
-            organizationId,
-            OR: optOutConditions,
-          },
-        }),
-        prisma.activity.findFirst({
-          where: {
-            organizationId,
-            leadId: lead.id,
-            deletedAt: null,
-          },
-          orderBy: { createdAt: 'desc' },
-        }),
-      ]);
-
-      const accountName =
-        lead.company?.tradeName ||
-        lead.company?.legalName ||
-        lead.contact?.name ||
-        lead.title ||
-        'Conta Comercial';
-      const traceTimestamp = (latestActivity?.updatedAt ?? lead.updatedAt).toISOString();
-      const hasOptOut = optOutRecord !== null;
-
-      const trace: AgentCenterTrace = {
-        missionId: `mission-${lead.id}`,
-        title: `Orquestração Tríade: ${accountName}`,
-        accountName,
-        status: hasOptOut ? 'WAITING_HUMAN_ACTION' : latestActivity ? 'COMPLETED' : 'IN_PROGRESS',
-        root: 'Tagarela (Supervisor Geral)',
-        directors: {
-          giselle: {
-            status: lead.score !== null && lead.score !== undefined ? 'COMPLETED' : 'PENDING',
-            specialists: [
-              {
-                id: `sp-giselle-${lead.id}`,
-                agentCode: 'GISELLE_STRATEGY',
-                agentName: 'Giselle (Inteligência & ICP)',
-                roleLabel: 'Pesquisa Firmográfica & Matriz de Dores',
-                director: 'GISELLE',
-                status: lead.score !== null && lead.score !== undefined ? 'COMPLETED' : 'PENDING',
-                resultSummary:
-                  lead.score !== null && lead.score !== undefined
-                    ? `Score registrado no CRM: ${lead.score}. Estágio atual: ${lead.status}.`
-                    : `Aguardando cálculo de score para o estágio ${lead.status}.`,
-                timestamp: lead.updatedAt.toISOString(),
-              },
-            ],
-          },
-          patricia: {
-            status: latestActivity ? 'COMPLETED' : 'PENDING',
-            specialists: [
-              {
-                id: `sp-patricia-${lead.id}`,
-                agentCode: 'PATRICIA_EXECUTION',
-                agentName: 'Patrícia (Execução & NBA)',
-                roleLabel: 'Geração de Roteiro & Cadência Multicanal',
-                director: 'PATRICIA',
-                status: latestActivity ? 'COMPLETED' : 'PENDING',
-                resultSummary: latestActivity
-                  ? `Atividade registrada (${latestActivity.type} - ${latestActivity.status}): ${latestActivity.observations || 'Sem observações'}.`
-                  : 'Nenhuma atividade de cadência executada para este lead até o momento.',
-                timestamp: traceTimestamp,
-              },
-            ],
-          },
-          guardiao: {
-            status: hasOptOut ? 'PENDING' : 'COMPLETED',
-            specialists: [
-              {
-                id: `sp-guardiao-${lead.id}`,
-                agentCode: 'GUARDIAO_GOVERNANCE',
-                agentName: 'Guardião (Governança & Risco)',
-                roleLabel: 'Verificação de Opt-Out & Restrições de Abordagem',
-                director: 'GUARDIAO',
-                status: hasOptOut ? 'BLOCKED' : 'COMPLETED',
-                resultSummary: hasOptOut
-                  ? `Restrição de contato (OptOutRecord) ativa pelo canal ${optOutRecord.originChannel}. Abordagem bloqueada.`
-                  : 'Nenhum registro de opt-out localizado em OptOutRecord para este lead.',
-                timestamp: traceTimestamp,
-              },
-            ],
-          },
-        },
-      };
 
       res.json({ success: true, data: trace });
     } catch (error) {
