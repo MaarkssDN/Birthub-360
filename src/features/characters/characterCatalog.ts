@@ -16,7 +16,13 @@
  *   Supervisor/AgentBus. Este catálogo é puramente declarativo/visual.
  */
 
-export type CharacterState = 'idle' | 'listening' | 'processing' | 'speaking' | 'success' | 'error';
+export type CharacterState =
+  | 'idle'
+  | 'listening'
+  | 'processing'
+  | 'speaking'
+  | 'success'
+  | 'error';
 
 export const CHARACTER_STATES: readonly CharacterState[] = [
   'idle',
@@ -962,7 +968,8 @@ export const CHARACTER_CATALOG: CharacterDefinition[] = [
     subheadingColor: '#ECFCCB',
     contextMsg: 'Diagnosticando maturidade de leads inbound',
     ariaLabel: 'Scope, agente de diagnóstico de maturidade de leads',
-    accessibleDescription: 'SDR Diagnostic: diagnóstico de maturidade de leads inbound.',
+    accessibleDescription:
+      'SDR Diagnostic: diagnóstico de maturidade de leads inbound.',
     archetype: 'Non-Human Diagnostic Reticle',
     animationSignature: 'pulso vital varrendo o retículo de diagnóstico',
     states: ALL_STATES,
@@ -992,7 +999,8 @@ export const CHARACTER_CATALOG: CharacterDefinition[] = [
     subheadingColor: '#FECACA',
     contextMsg: 'Varrendo o mercado em busca de novas contas',
     ariaLabel: 'Tracker, agente hunter de novas contas no mercado',
-    accessibleDescription: 'Hunter Agent: scanners automáticos de novas contas no mercado.',
+    accessibleDescription:
+      'Hunter Agent: scanners automáticos de novas contas no mercado.',
     archetype: 'Non-Human Market Sweep Radar',
     animationSignature: 'varredura angular do feixe de radar',
     states: ALL_STATES,
@@ -1022,7 +1030,8 @@ export const CHARACTER_CATALOG: CharacterDefinition[] = [
     subheadingColor: '#CFFAFE',
     contextMsg: 'Respondendo com agilidade tática em chat',
     ariaLabel: 'Tempo, agente tático de respostas rápidas em chat',
-    accessibleDescription: 'Tactical Agent: assistente de respostas rápidas em chat.',
+    accessibleDescription:
+      'Tactical Agent: assistente de respostas rápidas em chat.',
     archetype: 'Non-Human Tactical Chat Bolt',
     animationSignature: 'descarga do relâmpago com pontos de digitação',
     states: ALL_STATES,
