@@ -7,7 +7,8 @@
 
 ## TAREFA-SANEAMENTO-050 — Ativos pesados em `public/` (BT360-DT-0059)
 
-Compressão lossless com Pillow 13.0.0, preservando formato e nome de arquivo:
+Compressão com Pillow 13.0.0, preservando formato e nome de arquivo
+(PNGs via `optimize` = lossless; JPEGs via `quality=82` = lossy controlado):
 
 - `public/landing/assets/*.jpg` (12): JPEG `quality=82, progressive, optimize`.
   Destaques: `pillar-social.jpg` 768K→139K, `pillar-mobile.jpg` 708K→124K,

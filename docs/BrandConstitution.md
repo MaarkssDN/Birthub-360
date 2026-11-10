@@ -38,7 +38,7 @@ experiência da **Birth Hub 360º**.
 | **Dourado Neon** | `#FFC107` | `--palette-neon-gold` / `--color-neon-gold` | Sofisticação, prosperidade, previsibilidade e métricas. |
 | **Preto Neon (Fundo)** | `#0D0D0D` | `--palette-neon-black` / `--color-neon-black` | Fundo principal da página (Dark Mode), gerando alto contraste com as cores neon. |
 | **Branco Neon** | `#F8F9FF` | `--palette-neon-white` | Branco institucional do wordmark e de arte sobre fundos escuros. **Não** é a cor de texto corrido — ver "Azul Leitura" abaixo. |
-| **Azul Leitura (texto)** | `#70D6FF` | `--color-text-primary` / `--ink` / `--color-neon-text` | Textos corridos de corpo, subtítulos secundários e leitura padrão sobre o fundo escuro (substitui o branco puro por contraste). |
+| **Azul Leitura (texto)** | `#70D6FF` | `--ink` / `--color-neon-text` *(em `src/styles/globals.css`)* | Cor de texto corrido **efetiva** no app hoje (corpo, subtítulos, leitura sobre fundo escuro). Divergência pendente: o token canônico `--color-text-primary` em `identidade-visual/birthhub360/tokens/birthhub360.css` ainda vale `#F8F9FF` — reconciliação rastreada no handoff `11-para-03-*`. |
 | **Fundo de Cards** | `#14141A` | `--palette-neon-card` / `--color-neon-card` / `--color-surface` | Superfícies e cartões de conteúdo. |
 | **Bordas Glow** | `rgba(0, 212, 255, 0.22)` | `--palette-border` / `--color-neon-border` / `--color-border` | Bordas com efeito neon sutil. |
 
