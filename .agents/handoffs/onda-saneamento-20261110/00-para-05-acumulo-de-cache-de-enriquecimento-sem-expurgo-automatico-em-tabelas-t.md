@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 05 (Prospecção Comercial)
 Onda: Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-019)
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 4
@@ -48,3 +48,16 @@ Executar a tarefa `TAREFA-SANEAMENTO-019` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução
+
+**Agente 05 — 2026-11-10** (branch `agente/05-cache-enriquecimento-ttl`, pendente de revisão do Agente 24)
+
+O acúmulo real era a tabela `EnrichmentLog` (payload bruto do provider em `rawData`, ~7 linhas por execução, sem remoção). Implementado ciclo de vida em `src/features/prospecting/services/enrichment.service.ts`:
+
+- `ENRICHMENT_LOG_RETENTION_DAYS` (default 60 dias, faixa recomendada pela auditoria) + `getEnrichmentLogRetentionMs`/`computeEnrichmentLogCutoff`.
+- `purgeExpiredEnrichmentLogs` → `repo.deleteEnrichmentLogsCreatedBefore(cutoff)` (novo método em `IEnrichmentRepository`/`PrismaEnrichmentRepository`, `deleteMany` por `createdAt`).
+- `maybePurgeExpiredEnrichmentLogs` — expurgo oportunista com throttle de 24h por processo, disparado por `enrichCompany`; falha de banco é logada via `logger.warn` e não derruba o enriquecimento.
+- Sem migração/schema novo e sem dependência de `src/lib/queue/**` (slot do Agente 16).
+
+Gates executados no worktree: `npx tsc --noEmit` ✓, `npm run lint` ✓ (0 diagnósticos nos arquivos alterados), `vitest run -c vitest.unit.config.ts src/features/prospecting/services/__tests__/enrichmentRetention.test.ts` — 10/10 testes (retenção default/config/inválida, cutoff, expurgo, throttle 24h, falha de banco observável, gatilho via `enrichCompany` no caminho de cache).

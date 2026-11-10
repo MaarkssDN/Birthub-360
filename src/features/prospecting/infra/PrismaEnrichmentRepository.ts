@@ -29,6 +29,13 @@ export class PrismaEnrichmentRepository implements IEnrichmentRepository {
   ): Promise<EnrichmentLog> {
     return prisma.enrichmentLog.create({ data });
   }
+
+  async deleteEnrichmentLogsCreatedBefore(cutoff: Date): Promise<number> {
+    const res = await prisma.enrichmentLog.deleteMany({
+      where: { createdAt: { lt: cutoff } },
+    });
+    return res.count;
+  }
 }
 
 export const defaultEnrichmentRepository = new PrismaEnrichmentRepository();
