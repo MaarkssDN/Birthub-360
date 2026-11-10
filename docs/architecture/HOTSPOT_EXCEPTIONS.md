@@ -237,6 +237,22 @@ propósito por estar fora de "## Exceções ativas"):
 - **Atualizado em:** 2026-11-10
 - **Reavaliar até:** 2026-11-30
 
+### `src/features/characters/characterCatalog.ts`
+
+- **Limite excepcional:** 1150 linhas
+- **Dono:** Marks-Mah (autor da expansão do catálogo de personagens; fora do roster de agentes)
+- **Motivo:** catálogo declarativo dos personagens do Birth Hub 360° (metadados, roteiros e configurações de runtime), que cresceu para 1103 linhas com a expansão para 29 personagens. É essencialmente uma tabela de dados coesa; a modularização por domínio de personagem fica planejada enquanto o gate precisa continuar desbloqueado.
+- **Registrado em:** 2026-11-10
+- **Reavaliar até:** 2026-11-30
+
+### `src/features/landing/pages/Landing360Impeccable.tsx`
+
+- **Limite excepcional:** 1050 linhas
+- **Dono:** Marks-Mah (autor do redesign impecável da landing; fora do roster de agentes)
+- **Motivo:** variante "impeccable" da landing pública, com 1020 linhas após a formatação mecânica do biome (o arquivo era propositalmente compacto em 384 linhas com linhas longas). Mesma situação da exceção já registrada para `Landing360.tsx`: a composição visual aguarda extração de blocos para componentes próprios.
+- **Registrado em:** 2026-11-10
+- **Reavaliar até:** 2026-11-30
+
 
 
 ## Débito conhecido, abaixo do limite de falha (sem exceção necessária)
