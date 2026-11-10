@@ -28,7 +28,7 @@ import {
   EnvTenantPepperProvider,
   InMemorySubjectKeyStore,
   MissingPepperError,
-  KmsEnvelopeTenantKeyProvider,
+  KmsTenantPepperProvider,
   type KmsEnvelopeClient,
   type WrappedTenantKeyStore,
   UnavailableTenantKeyProvider,
@@ -136,7 +136,7 @@ function resolveTenantKeyProvider(
   isTest: boolean,
 ): TenantPepperProvider {
   if (env.LGPD_KMS_KEY_ID && opts.kms) {
-    return new KmsEnvelopeTenantKeyProvider(opts.kms.client, opts.kms.store, env.LGPD_KMS_KEY_ID);
+    return new KmsTenantPepperProvider(opts.kms.client, opts.kms.store, env.LGPD_KMS_KEY_ID);
   }
   if (isProd(env)) {
     // Fail-closed: nada de derivar de variável global em produção.

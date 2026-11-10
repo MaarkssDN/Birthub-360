@@ -20,7 +20,7 @@ import {
 import {
   EnvTenantPepperProvider,
   InMemorySubjectKeyStore,
-  KmsEnvelopeTenantKeyProvider,
+  KmsTenantPepperProvider,
   InMemoryWrappedTenantKeyStore,
   TenantKeyDestroyedError,
   MissingPepperError,
@@ -221,7 +221,7 @@ describe('ConsentAuditChain — REMED-06 / Agentes 15 e 24', () => {
         },
       };
       const store = new InMemoryWrappedTenantKeyStore();
-      const provider = new KmsEnvelopeTenantKeyProvider(kms, store, 'alias/lgpd', 0);
+      const provider = new KmsTenantPepperProvider(kms, store, 'alias/lgpd', 0);
       const t = new SubjectTokenizer(provider, new InMemorySubjectKeyStore());
       const a1 = await t.lookupId('A', 's');
       expect(a1).not.toBe(await t.lookupId('B', 's'));

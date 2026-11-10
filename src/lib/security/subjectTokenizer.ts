@@ -115,7 +115,7 @@ export class InMemoryWrappedTenantKeyStore implements WrappedTenantKeyStore {
  * Envelope KMS: DEK aleatória por tenant, cifrada pela CMK (encryptionContext = organizationId),
  * guardada cifrada no store. Plaintext só em memória com TTL curto.
  */
-export class KmsEnvelopeTenantKeyProvider implements TenantKeyProvider {
+export class KmsTenantPepperProvider implements TenantKeyProvider {
   private cache = new Map<string, { key: Buffer; exp: number }>();
   constructor(
     private readonly kms: KmsEnvelopeClient,
@@ -156,10 +156,6 @@ export class KmsEnvelopeTenantKeyProvider implements TenantKeyProvider {
     this.cache.delete(organizationId);
   }
 }
-
-/** Nome canônico exigido em produção (alinhado ao #35/Agente 24). */
-export const KmsTenantPepperProvider = KmsEnvelopeTenantKeyProvider;
-export type KmsTenantPepperProvider = KmsEnvelopeTenantKeyProvider;
 
 /** Fail-closed: usado em produção quando o KMS não está configurado. */
 export class UnavailableTenantKeyProvider implements TenantKeyProvider {

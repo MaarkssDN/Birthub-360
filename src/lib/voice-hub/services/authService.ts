@@ -14,7 +14,7 @@ import {
   createMembership,
   findMembershipWithRole,
 } from '../repositories/userRepository.js';
-import { createTenant } from '../repositories/organizationRepository.js';
+import { createTenant } from '../repositories/tenantRepository.js';
 import { getOrCreateSystemRole } from '../repositories/roleRepository.js';
 
 export class AuthError extends Error {
