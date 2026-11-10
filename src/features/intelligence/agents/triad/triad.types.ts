@@ -104,37 +104,197 @@ export interface GuardiaoPolicyVerdict {
   auditLog: string;
 }
 
+export type AgentCenterDirector = 'TAGARELA' | 'GISELLE' | 'PATRICIA' | 'GUARDIAO';
+export type AgentCenterNodeStatus =
+  | 'PENDING'
+  | 'RUNNING'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'DENIED'
+  | 'CANCELLED'
+  | 'BLOCKED';
+export type AgentCenterDirectorStatus = AgentCenterNodeStatus;
+export type AgentCenterTraceStatus =
+  | 'PENDING'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'DENIED'
+  | 'CANCELLED';
+
 export interface AgentCenterTraceNode {
   id: string;
   agentCode: string;
   agentName: string;
   roleLabel: string;
-  director: 'TAGARELA' | 'GISELLE' | 'PATRICIA' | 'GUARDIAO';
-  status: 'COMPLETED' | 'RUNNING' | 'PENDING' | 'BLOCKED';
+  director: AgentCenterDirector;
+  status: AgentCenterNodeStatus;
   resultSummary?: string;
   timestamp: string;
+}
+
+export interface AgentCenterTraceDirectors {
+  giselle: {
+    status: AgentCenterDirectorStatus;
+    specialists: AgentCenterTraceNode[];
+  };
+  patricia: {
+    status: AgentCenterDirectorStatus;
+    specialists: AgentCenterTraceNode[];
+  };
+  guardiao: {
+    status: AgentCenterDirectorStatus;
+    specialists: AgentCenterTraceNode[];
+  };
 }
 
 export interface AgentCenterTrace {
   missionId: string;
   title: string;
   accountName: string;
-  status: 'IN_PROGRESS' | 'COMPLETED' | 'WAITING_HUMAN_ACTION';
-  root: 'Tagarela (Supervisor Geral)';
-  directors: {
-    giselle: {
-      status: 'COMPLETED' | 'RUNNING' | 'PENDING';
-      specialists: AgentCenterTraceNode[];
-    };
-    patricia: {
-      status: 'COMPLETED' | 'RUNNING' | 'PENDING';
-      specialists: AgentCenterTraceNode[];
-    };
-    guardiao: {
-      status: 'COMPLETED' | 'RUNNING' | 'PENDING';
-      specialists: AgentCenterTraceNode[];
-    };
-  };
+  status: AgentCenterTraceStatus;
+  root: string;
+  rootNodes: AgentCenterTraceNode[];
+  directors: AgentCenterTraceDirectors;
+}
+
+export type MissionExecutionTraceStatus =
+  | 'PENDING'
+  | 'AUTHORIZING'
+  | 'RUNNING'
+  | 'SUCCEEDED'
+  | 'DENIED'
+  | 'FAILED'
+  | 'CANCELLED';
+
+export type MissionHandoffTraceStatus =
+  | 'CREATED'
+  | 'AUTHORIZING'
+  | 'QUEUED'
+  | 'ACCEPTED'
+  | 'RUNNING'
+  | 'COMPLETED'
+  | 'DENIED'
+  | 'FAILED'
+  | 'CANCELLED'
+  | 'EXPIRED';
+
+export interface MissionPolicyDecisionTrace {
+  allowed: boolean;
+  reason: string;
+  requiresApproval: boolean;
+  riskLevel: string | null;
+  accessLevel: string | null;
+  toolCode: string | null;
+  toolAvailable: boolean;
+  bindingVerification: string | null;
+  bindingEvidencePath: string | null;
+  temporaryGrantId: string | null;
+}
+
+export interface MissionToolCallTrace {
+  toolCode: string;
+  startedAt?: string;
+  finishedAt?: string;
+  ok?: boolean;
+}
+
+export interface MissionAgentExecutionTrace {
+  executionId: string;
+  agentCode: string;
+  agentName: string;
+  agentVersion: number | null;
+  capabilityCode: string;
+  mission: string | null;
+  status: MissionExecutionTraceStatus;
+  summary: string | null;
+  confidence: number | null;
+  errorMessage: string | null;
+  correlationId: string | null;
+  policyDecision: MissionPolicyDecisionTrace | null;
+  toolCalls: MissionToolCallTrace[];
+  createdAt: string;
+  updatedAt: string;
+  completedAt: string | null;
+}
+
+export interface MissionHandoffEvidenceTrace {
+  sourceAgent: string;
+  sourceExecutionId?: string;
+  capabilityCode?: string;
+  summary: string;
+  recordedAt: string;
+}
+
+export interface MissionHandoffTrace {
+  handoffId: string;
+  missionId: string;
+  conversationId: string;
+  fromAgent: string;
+  fromRole: string;
+  toAgent: string;
+  toRole: string;
+  requestType: string;
+  requestedCapability: string;
+  priority: string;
+  status: MissionHandoffTraceStatus;
+  effectiveStatus: MissionHandoffTraceStatus;
+  depth: number;
+  parentHandoffId: string | null;
+  executionId: string | null;
+  confidence: number | null;
+  errorMessage: string | null;
+  evidence: MissionHandoffEvidenceTrace[];
+  risksCount: number;
+  knownFactsCount: number;
+  createdAt: string;
+  updatedAt: string;
+  acceptedAt: string | null;
+  completedAt: string | null;
+  expiresAt: string | null;
+}
+
+export interface MissionOrganizationAiConsentTrace {
+  granted: boolean;
+  consentVersion: string | null;
+  grantedAt: string | null;
+  revokedAt: string | null;
+  grantedByUserId: string | null;
+}
+
+export interface MissionConsentAuditChainTrace {
+  status: 'VERIFIED' | 'INVALID' | 'UNAVAILABLE';
+  valid: boolean | null;
+  totalRecords: number | null;
+  reason: string | null;
+  checkedAt: string;
+  events: Array<{
+    id: string;
+    sequence: number;
+    kind: string;
+    subjectRef: string;
+    purpose: string;
+    termsVersion: string;
+    status: string;
+    occurredAt: string;
+    previousHash: string;
+    currentHash: string;
+  }>;
+}
+
+export interface MissionConsentTrace {
+  organizationAiConsent: MissionOrganizationAiConsentTrace | null;
+  externalPiiConsentGranted: boolean;
+  auditChain: MissionConsentAuditChainTrace;
+}
+
+export interface CommercialMissionTrace extends AgentCenterTrace {
+  requestedMissionId: string;
+  missionKey: string;
+  generatedAt: string;
+  executions: MissionAgentExecutionTrace[];
+  handoffs: MissionHandoffTrace[];
+  consent: MissionConsentTrace;
 }
 
 export interface SellerWorkspaceOverview {
