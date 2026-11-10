@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 05 (Prospecção Comercial)
 Onda: Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-019)
-Status: resolvido
+Status: em-andamento
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 4
