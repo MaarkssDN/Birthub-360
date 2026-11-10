@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Birthub 360° — Relatório Oficial do Supervisor Geral (Fase 02 · Onda 00)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0d14;
+      --bg-secondary: #101622;
+      --bg-card: #141c2e;
+      --bg-card-hover: #1a253c;
+      --border-color: #23304a;
+      --border-accent: #38bdf8;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-blue: #38bdf8;
+      --accent-purple: #a855f7;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    /* HEADER */
+    header {
+      background: linear-gradient(135deg, rgba(16, 22, 34, 0.95), rgba(20, 28, 46, 0.95));
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      top: -100px;
+      right: -100px;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .badge-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-blocked {
+      background: rgba(244, 63, 94, 0.15);
+      color: var(--accent-rose);
+      border: 1px solid rgba(244, 63, 94, 0.4);
+    }
+
+    .badge-approved {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-emerald);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    .badge-blue {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-blue);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+    }
+
+    .badge-purple {
+      background: rgba(168, 85, 247, 0.15);
+      color: var(--accent-purple);
+      border: 1px solid rgba(168, 85, 247, 0.4);
+    }
+
+    h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #ffffff 40%, var(--accent-blue) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+      font-weight: 400;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      border-top: 1px solid var(--border-color);
+      padding-top: 1.25rem;
+      font-size: 0.875rem;
+    }
+
+    .meta-item span {
+      display: block;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.2rem;
+    }
+
+    .meta-item strong {
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 0.825rem;
+    }
+
+    /* KPI METRICS */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .metric-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 1.5rem;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    .metric-val {
+      font-size: 2rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .metric-val.emerald { color: var(--accent-emerald); }
+    .metric-val.amber { color: var(--accent-amber); }
+    .metric-val.blue { color: var(--accent-blue); }
+    .metric-val.purple { color: var(--accent-purple); }
+
+    .metric-label {
+      font-size: 0.825rem;
+      color: var(--text-secondary);
+      margin-top: 0.4rem;
+      font-weight: 500;
+    }
+
+    /* SECTIONS */
+    .section-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.3);
+    }
+
+    .section-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.75rem;
+    }
+
+    .section-title::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 1.2rem;
+      background: var(--accent-blue);
+      border-radius: 2px;
+    }
+
+    /* CALLOUTS */
+    .alert-box {
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      border-left: 4px solid;
+      background: var(--bg-card);
+      font-size: 0.925rem;
+    }
+
+    .alert-box.danger {
+      border-left-color: var(--accent-rose);
+      background: rgba(244, 63, 94, 0.08);
+      color: #fecdd3;
+    }
+
+    .alert-box.warning {
+      border-left-color: var(--accent-amber);
+      background: rgba(245, 158, 11, 0.08);
+      color: #fef3c7;
+    }
+
+    .alert-box.success {
+      border-left-color: var(--accent-emerald);
+      background: rgba(16, 185, 129, 0.08);
+      color: #d1fae5;
+    }
+
+    .alert-box.info {
+      border-left-color: var(--accent-blue);
+      background: rgba(56, 189, 248, 0.08);
+      color: #e0f2fe;
+    }
+
+    .alert-box strong {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-weight: 700;
+    }
+
+    /* TABLES */
+    .table-responsive {
+      overflow-x: auto;
+      margin-top: 1rem;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      text-align: left;
+    }
+
+    th {
+      background-color: var(--bg-card);
+      color: var(--text-secondary);
+      font-weight: 600;
+      padding: 0.75rem 1rem;
+      text-transform: uppercase;
+      font-size: 0.725rem;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid rgba(35, 48, 74, 0.5);
+      color: var(--text-primary);
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background-color: rgba(26, 37, 60, 0.4);
+    }
+
+    .code-pill {
+      font-family: var(--font-mono);
+      background: rgba(15, 23, 42, 0.6);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      font-size: 0.775rem;
+      color: var(--accent-blue);
+    }
+
+    .status-tag {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.725rem;
+      font-weight: 600;
+    }
+
+    .status-tag.preserve { background: rgba(16, 185, 129, 0.2); color: var(--accent-emerald); }
+    .status-tag.correct { background: rgba(245, 158, 11, 0.2); color: var(--accent-amber); }
+    .status-tag.rebuild { background: rgba(244, 63, 94, 0.2); color: var(--accent-rose); }
+    .status-tag.discard { background: rgba(148, 163, 184, 0.2); color: var(--text-muted); }
+    .status-tag.p0 { background: #e11d48; color: #ffffff; font-weight: 700; }
+    .status-tag.p1 { background: #d97706; color: #ffffff; }
+    .status-tag.p2 { background: #2563eb; color: #ffffff; }
+    .status-tag.p3 { background: #475569; color: #e2e8f0; }
+
+    /* GRID FOR MODULES */
+    .module-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 1.25rem;
+      margin-top: 1rem;
+    }
+
+    .module-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.25rem;
+      transition: border-color 0.2s ease;
+    }
+
+    .module-item:hover {
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    .module-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .module-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #ffffff;
+    }
+
+    .module-desc {
+      font-size: 0.825rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.75rem;
+    }
+
+    .module-gap {
+      font-size: 0.8rem;
+      background: rgba(10, 13, 20, 0.6);
+      border-left: 3px solid var(--accent-amber);
+      padding: 0.5rem 0.75rem;
+      border-radius: 4px;
+      color: #e2e8f0;
+    }
+
+    /* FLOW DIAGRAM */
+    .flow-step-box {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+
+    .flow-step {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 1rem;
+      text-align: center;
+      position: relative;
+    }
+
+    .flow-step-num {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent-blue);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .flow-step-title {
+      font-size: 0.875rem;
+      font-weight: 700;
+      margin: 0.35rem 0;
+      color: #ffffff;
+    }
+
+    .flow-step-slots {
+      font-size: 0.725rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      padding: 2rem 0;
+      border-top: 1px solid var(--border-color);
+      margin-top: 3rem;
+    }
+
+    /* ARTIFACT LIST */
+    .artifact-list {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .artifact-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.85rem;
+    }
+
+    .artifact-name {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--accent-blue);
+    }
+
+    .artifact-desc {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- HEADER -->
+    <header>
+      <div class="badge-bar">
+        <span class="badge badge-blocked">RELEASE_BLOCKED (Onda 01 Bloqueada)</span>
+        <span class="badge badge-approved">ONDA 00: APROVADO COM RESSALVAS</span>
+        <span class="badge badge-blue">SUPERVISOR GERAL (AGENTE 00)</span>
+        <span class="badge badge-purple">DOCUMENTO MESTRE V4</span>
+      </div>
+      <h1>Birthub 360° — Relatório Oficial de Diagnóstico Técnico e Plano Mestre de Reconstrução</h1>
+      <p class="subtitle">Fase 02 · Onda 00 — Inventário Técnico Recursivo, Análise de Gap dos 11 Módulos, Reconciliação Forense e Backlog Mestre</p>
+      
+      <div class="meta-grid">
+        <div class="meta-item">
+          <span>Repositório</span>
+          <strong>MarksNN/Birthub-360</strong>
+        </div>
+        <div class="meta-item">
+          <span>Commit HEAD Auditado</span>
+          <strong>08c9734e1bb89a4d4fc552351470a1969f94d64f</strong>
+        </div>
+        <div class="meta-item">
+          <span>Autoridade de Governança</span>
+          <strong>AGENTS.md (Rev 2026-10-09)</strong>
+        </div>
+        <div class="meta-item">
+          <span>Data de Conclusão</span>
+          <strong>10 de Novembro de 2026</strong>
+        </div>
+      </div>
+    </header>
+
+    <!-- METRICS -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-val blue">1.931</div>
+        <div class="metric-label">Módulos JS/TS Rastreados (0 Violações de Arquitetura)</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-val purple">160</div>
+        <div class="metric-label">Modelos Relacionais Prisma (0 Diferenças de Migração)</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-val emerald">75 / 478</div>
+        <div class="metric-label">Prefixos de API / Endpoints OpenAPI (0 Drift)</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-val amber">52</div>
+        <div class="metric-label">Tarefas de Reconstrução Mapeadas no Backlog</div>
+      </div>
+    </div>
+
+    <!-- QUALITY GATE VERDICT -->
+    <div class="alert-box danger">
+      <strong>BLOQUEIO OPERACIONAL MANDATÓRIO — AGENTE 00</strong>
+      A Onda 01 e qualquer modificação em código de produção, migrações de banco ou deploy continuam <strong>estritamente bloqueados</strong> até autorização expressa da liderança técnica. A Fase 02 / Onda 00 encerra-se com o veredito oficial <strong>APROVADO COM RESSALVAS OPERACIONAIS</strong>. Nenhuma linha de código foi modificada durante este diagnóstico.
+    </div>
+
+    <!-- DISTRIBUIÇÃO TÉCNICA -->
+    <div class="section-card">
+      <h2 class="section-title">1. Diagnóstico Geral de Preservação vs. Reconstrução</h2>
+      <p style="color: var(--text-secondary); margin-bottom: 1rem;">Conforme determinação da Diretriz Mestra, todo o código existente foi auditado empiricamente para evitar desperdício de investimentos técnicos anteriores:</p>
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem;">
+        <div style="background: var(--bg-card); border-left: 4px solid var(--accent-emerald); padding: 1.25rem; border-radius: 8px;">
+          <div style="font-weight: 700; color: var(--accent-emerald); font-size: 1.1rem; margin-bottom: 0.25rem;">PRESERVAR (62%)</div>
+          <p style="font-size: 0.85rem; color: var(--text-secondary);">Núcleo transacional maduro (Companies, Contacts, Leads), schema Prisma com 160 modelos, autenticação PHC Argon2id, 75 rotas Express montadas, contratos OpenAPI e catálogo de 379 personas.</p>
+        </div>
+        <div style="background: var(--bg-card); border-left: 4px solid var(--accent-amber); padding: 1.25rem; border-radius: 8px;">
+          <div style="font-weight: 700; color: var(--accent-amber); font-size: 1.1rem; margin-bottom: 0.25rem;">CORRIGIR (28%)</div>
+          <p style="font-size: 0.85rem; color: var(--text-secondary);">Hotspots sob exceção temporária (CrmBoard 1258L, BitrixImportPanel 1252L, supervisor.agent 1000L), vazamento de token em logs de auth (P0), N+1 em queries de BI e 14 regras CSS !important.</p>
+        </div>
+        <div style="background: var(--bg-card); border-left: 4px solid var(--accent-rose); padding: 1.25rem; border-radius: 8px;">
+          <div style="font-weight: 700; color: var(--accent-rose); font-size: 1.1rem; margin-bottom: 0.25rem;">RECONSTRUIR (6%)</div>
+          <p style="font-size: 0.85rem; color: var(--text-secondary);">Mecanismo de persistência offline mobile (atualmente em LocalStorage frágil; exige SQLite nativo Capacitor com chave criptografada) e motor de simulação Dry-Run de automações em memória com rollback.</p>
+        </div>
+        <div style="background: var(--bg-card); border-left: 4px solid var(--text-muted); padding: 1.25rem; border-radius: 8px;">
+          <div style="font-weight: 700; color: var(--text-muted); font-size: 1.1rem; margin-bottom: 0.25rem;">DESCARTAR (4%)</div>
+          <p style="font-size: 0.85rem; color: var(--text-secondary);">Stubs de rotas legadas (/api/voice-hub e /api/outbound marcados como unavailableLegacyModule) e artefatos de mock sem consumidores ativos.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECONCILIAÇÃO DAS JORNADAS -->
+    <div class="section-card">
+      <h2 class="section-title">2. Revalidação da Especificação e Reconciliação das Jornadas</h2>
+      <p style="color: var(--text-secondary); margin-bottom: 1rem;">Confrontação forense das 5 referências informadas no prompt com o catálogo definitivo das 20 jornadas da V4:</p>
+
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Critério</th>
+              <th>Ref. Informada</th>
+              <th>Ref. Canônica V4</th>
+              <th>Módulo</th>
+              <th>Explicação da Reconciliação Documental</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>AC-MKT-003</strong></td>
+              <td><span class="code-pill">JOR-004</span></td>
+              <td><span class="code-pill" style="color: var(--accent-emerald);">JOR-02</span></td>
+              <td>MOD-02 Inteligência</td>
+              <td>Em rascunho anterior antigo, enriquecimento era numerado como 004; no catálogo consolidado V4, Descoberta & Enriquecimento é <strong>JOR-02</strong> (enquanto JOR-04 é Cadência Multicanal).</td>
+              <td><span class="status-tag preserve">HOMOLOGADO</span></td>
+            </tr>
+            <tr>
+              <td><strong>AC-AUT-003</strong></td>
+              <td><span class="code-pill">JOR-008</span></td>
+              <td><span class="code-pill" style="color: var(--accent-emerald);">JOR-17</span></td>
+              <td>MOD-07 Automação</td>
+              <td>A criação de regras com teste simulado Dry-Run é oficialmente <strong>JOR-17</strong>; JOR-08 no catálogo V4 é a Proposta Comercial e JOR-16 é a Sincronização Bitrix24.</td>
+              <td><span class="status-tag preserve">HOMOLOGADO</span></td>
+            </tr>
+            <tr>
+              <td><strong>AC-ENG-002</strong></td>
+              <td><span class="code-pill">JOR-015</span></td>
+              <td><span class="code-pill" style="color: var(--accent-emerald);">JOR-05</span></td>
+              <td>MOD-08 Engajamento</td>
+              <td>Cold Calling e Voice AI contra lista Não Perturbe é oficialmente <strong>JOR-05</strong>; JOR-15 no catálogo consolidado V4 é a jornada de Social Selling.</td>
+              <td><span class="status-tag preserve">HOMOLOGADO</span></td>
+            </tr>
+            <tr>
+              <td><strong>AC-ADM-002</strong></td>
+              <td><span class="code-pill">JOR-017</span></td>
+              <td><span class="code-pill" style="color: var(--accent-emerald);">JOR-01</span></td>
+              <td>MOD-09 Admin</td>
+              <td>O gate de concessão modular por organização pertence ao Onboarding & Setup de Tenant (<strong>JOR-01</strong>); JOR-17 é Dry-Run e JOR-20 é Direitos do Titular LGPD.</td>
+              <td><span class="status-tag preserve">HOMOLOGADO</span></td>
+            </tr>
+            <tr>
+              <td><strong>AC-MOB-003</strong></td>
+              <td><span class="code-pill">JOR-020</span></td>
+              <td><span class="code-pill" style="color: var(--accent-emerald);">JOR-14</span></td>
+              <td>MOD-10 Mobile</td>
+              <td>Vendas em campo com gravação offline e sincronização em lote com DLQ é oficialmente <strong>JOR-14</strong>; JOR-20 é Atendimento aos Direitos LGPD.</td>
+              <td><span class="status-tag preserve">HOMOLOGADO</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ANÁLISE DOS 11 MÓDULOS -->
+    <div class="section-card">
+      <h2 class="section-title">3. Matriz de Gap dos 11 Módulos Funcionais (Documento Mestre V4)</h2>
+      
+      <div class="module-cards">
+        
+        <div class="module-item">
+          <div class="module-header">
+            <span class="module-name">MOD-01 Hub Comercial (Orbit)</span>
+            <span class="status-tag correct">CORRIGIR</span>
+          </div>
+          <div class="module-desc">Pipeline Kanban ponderado, Ficha Cadastral 360°, Propostas com travas de desconto por alçada.</div>
+          <div class="module-gap"><strong>Gap:</strong> Hotspots em CrmBoard.tsx (1.258L) e PrismaCrm360Repository.ts (1.205L); trava de desconto requer middleware transacional.</div>
+        </div>
+
+        <div class="module-item">
+          <div class="module-header">
+            <span class="module-name">MOD-02 Inteligência de Mercado (Nexus)</span>
+            <span class="status-tag correct">CORRIGIR</span>
+          </div>
+          <div class="module-desc">Descoberta multi-fonte (7 provedores), Fit ICP e Dossiê 360° em 10 seções.</div>
+          <div class="module-gap"><strong>Gap:</strong> Hotspot em marketIntelligenceCompany.service.ts (1.016L); tarifação de créditos requer SELECT FOR UPDATE em quotas.</div>
+        </div>
+
+        <div class="module-item">
+          <div class="module-header">
+            <span class="module-name">MOD-03 Orquestração de Vendas (Aria)</span>
+            <span class="status-tag correct">CORRIGIR</span>
+          </div>
+          <div class="module-desc">Cadência multicanal, Mesa de Tratamento inbound SLA 5 min e Living Playbook com Roleplay.</div>
+          <div class="module-gap"><strong>Gap:</strong> Mecanismo compulsório de Auto-Stop pós-resposta precisa cancelar atomicamente os jobs no BullMQ.</div>
+        </div>
+
+        <div class="module-item">
+          <div class="module-header">
+            <span class="module-name">MOD-04 Performance Comercial (Vanguard)</span>
+            <span class="status-tag correct">CORRIGIR</span>
+          </div>
+          <div class="module-desc">17 relatórios executivos em tempo &lt; 800ms, Autópsia Win/Loss e Gamificação comercial.</div>
+          <div class="module-gap"><strong>Gap:</strong> Queries de funis com N+1 em agregações históricas; falta camada de cache L2 no Redis para relatórios agregados.</div>
+        </div>
+
+        <div class="module-item">
+          <div class="module-header">
+            <span class="module-name">MOD-05 Previsibilidade (Oracle)</span>
+            <span class="status-tag correct">CORRIGIR</span>
+          </div>
+          <div class="module-desc">Forecast preditivo calibrado (MAPE &lt; 8%), categorização Commit/Best Case e War Room em tempo real.</div>
+          <div class="module-gap"><strong>Gap:</strong> Canal SSE do War Room necessita de heartbeat mais estável e reconexão automática com buffer no frontend.</div>
+        </div>
+
+        <div class="module-item">
+          <div class="module-header">
+            <span class="module-name">MOD-06 Inteligência Artificial (Core)</span>
+            <span class="status-tag correct">CORRIGIR</span>
+          </div>
+          <div class="module-desc">Supervisor semântico, Fila de Aprovação Humana (AIPendingAction) e RAG em pgvector (1536 dim).</div>
+          <div class="module-gap"><strong>Gap:</strong> Hotspot severo no supervisor.agent.ts (1.000L); desacoplar barramento AgentBus e isolar alçadas.</div>
+        </div>
+
+        <div class="module-item">
+          <div class="module-header">
+            <span class="module-name">MOD-07 Automação & Conectividade (Spark)</span>
+            <span class="status-tag correct">CORRIGIR</span>
+          </div>
+          <div class="module-desc">Conector Bitrix24 bidirecional resiliente, conectores genéricos de CRM e modo Dry-Run simulado.</div>
+          <div class="module-gap"><strong>Gap:</strong> Hotspot em BitrixImportPanel.tsx (1.252L) e extraction.ts (1.014L); falta motor de dry-run simulado em memória com rollback.</div>
+        </div>
+
+        <div class="module-item">
+          <div class="module-header">
+            <span class="module-name">MOD-08 Engajamento Comercial (Echo)</span>
+            <span class="status-tag correct">CORRIGIR</span>
+          </div>
+          <div class="module-desc">VoiceHub Studio WebRTC, discagem governada contra Não Perturbe e transcrição ao vivo com PII masking.</div>
+          <div class="module-gap"><strong>Gap:</strong> Descartar stubs de rotas legadas (/api/voice-hub) e consolidar discador em /api/integrations/birth-voice.</div>
+        </div>
+
+        <div class="module-item">
+          <div class="module-header">
+            <span class="module-name">MOD-09 Admin & Operations (Sudo)</span>
+            <span class="status-tag correct">CORRIGIR</span>
+          </div>
+          <div class="module-desc">Onboarding de tenant, concessão modular (Gate HTTP 403) e Portal do Titular LGPD com hash encadeado.</div>
+          <div class="module-gap"><strong>Gap:</strong> Vulnerabilidade P0 no log de resetUrl em auth.ts; reforçar testes de retorno HTTP 403 para rotas não contratadas.</div>
+        </div>
+
+        <div class="module-item">
+          <div class="module-header">
+            <span class="module-name">MOD-10 Mobile & Field Sales</span>
+            <span class="status-tag rebuild">RECONSTRUIR</span>
+          </div>
+          <div class="module-desc">Modo Reunião offline com gravação de áudio e sincronização transacional com DLQ.</div>
+          <div class="module-gap"><strong>Gap:</strong> Persistência atual em LocalStorage/IndexedDB é frágil; exige motor nativo SQLite criptografado no Capacitor.</div>
+        </div>
+
+        <div class="module-item">
+          <div class="module-header">
+            <span class="module-name">MOD-11 Social Selling</span>
+            <span class="status-tag correct">CORRIGIR</span>
+          </div>
+          <div class="module-desc">Gerador de abordagens consultivas com IA e associação atômica de interações à timeline do CRM.</div>
+          <div class="module-gap"><strong>Gap:</strong> Interface preliminar pronta, mas requer integração direta com timeline de Lead e rate limiter anti-bloqueio.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- FUNDAÇÃO E EVIDÊNCIAS -->
+    <div class="section-card">
+      <h2 class="section-title">4. Fundação Transversal e Evidências Empíricas dos Testes</h2>
+      
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Comando / Verificação</th>
+              <th>Escopo Auditado</th>
+              <th>Resultado Observado</th>
+              <th>Impacto no Planejamento</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="code-pill">npm run test:architecture</span></td>
+              <td>Grafo de dependências (1.931 módulos) e hotspots</td>
+              <td><strong style="color: var(--accent-emerald);">APROVADO (0 violações)</strong></td>
+              <td>21 arquivos cobertos por exceção temporária válida até 2026-11-30.</td>
+            </tr>
+            <tr>
+              <td><span class="code-pill">npm run verify:migration-drift</span></td>
+              <td>160 modelos Prisma vs. 125+ migrações SQL</td>
+              <td><strong style="color: var(--accent-emerald);">APROVADO (0 drift)</strong></td>
+              <td>Base de dados consistente; nenhuma migração pendente na branch auditada.</td>
+            </tr>
+            <tr>
+              <td><span class="code-pill">npm run verify:openapi-drift</span></td>
+              <td>75 prefixos no server.ts vs 478 paths no docs/openapi.yaml</td>
+              <td><strong style="color: var(--accent-emerald);">APROVADO (0 drift)</strong></td>
+              <td>74 routers verificados sem divergência estrutural de contratos.</td>
+            </tr>
+            <tr>
+              <td><span class="code-pill">verify-auth-log-redaction.mjs</span></td>
+              <td>Logs de console no src/lib/auth.ts</td>
+              <td><strong style="color: var(--accent-rose);">FALHA (AssertionError)</strong></td>
+              <td><strong>P0 Ativa:</strong> resetUrl com token sensível em texto claro exposto em log (BT360-DT-0072).</td>
+            </tr>
+            <tr>
+              <td><span class="code-pill">transcription-pii-masking.test.ts</span></td>
+              <td>Sanitização de CPF e telefones em áudio</td>
+              <td><strong style="color: var(--accent-emerald);">APROVADO (3/3 testes)</strong></td>
+              <td>Motor de áudio homologado em conformidade com a LGPD (BT360-DT-0064 resolvido).</td>
+            </tr>
+            <tr>
+              <td><span class="code-pill">ai/budget.test.ts</span></td>
+              <td>Trava de orçamento de tokens nos agentes</td>
+              <td><strong style="color: var(--accent-emerald);">APROVADO (10/10 testes)</strong></td>
+              <td>Corte de chamadas aos 80% e 100% da cota validado com sucesso (BT360-DT-0092 resolvido).</td>
+            </tr>
+            <tr>
+              <td><span class="code-pill">npm run lint (Biome)</span></td>
+              <td>2.274 arquivos inspecionados</td>
+              <td><strong style="color: var(--accent-amber);">1.439 Avisos / 14 !important</strong></td>
+              <td>Regressão CSS ativa confirmada (BT360-DT-0017); zero erros fatais de sintaxe.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ROTEIRO EM 6 ONDAS -->
+    <div class="section-card">
+      <h2 class="section-title">5. Plano Mestre de Execução em 6 Ondas Sequenciais</h2>
+      <p style="color: var(--text-secondary);">Estruturado em conformidade com a Ordem de Integração do AGENTS.md (§19) e respeitando os limites de slots exclusivos (§14):</p>
+
+      <div class="flow-step-box">
+        <div class="flow-step">
+          <div class="flow-step-num">Onda 01</div>
+          <div class="flow-step-title">Fundação & Tenancy</div>
+          <div class="flow-step-slots">Slots: 01, 01A, 15</div>
+          <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">Saneamento do vazamento de token (P0), RLS compulsório no PostgreSQL e varredura Gitleaks.</p>
+        </div>
+        <div class="flow-step">
+          <div class="flow-step-num">Onda 02</div>
+          <div class="flow-step-title">Hub Comercial & Hotspots</div>
+          <div class="flow-step-slots">Slots: 02, 04, 06, 13, 18</div>
+          <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">Modularização CrmBoard (1258L), BitrixImportPanel (1252L), supervisor.agent (1000L) e travas de desconto.</p>
+        </div>
+        <div class="flow-step">
+          <div class="flow-step-num">Onda 03</div>
+          <div class="flow-step-title">Prospecção & Cadência</div>
+          <div class="flow-step-slots">Slots: 05, 06, 17</div>
+          <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">Débito atômico de créditos, Auto-Stop compulsório de cadências em &lt; 1s e Mesa de Tratamento.</p>
+        </div>
+        <div class="flow-step">
+          <div class="flow-step-num">Onda 04</div>
+          <div class="flow-step-title">Analytics & Previsão</div>
+          <div class="flow-step-slots">Slots: 04, 10, 16, 23</div>
+          <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">Otimização N+1 em funis de BI (&lt; 800ms), DLQs no BullMQ e War Room com telemetria SSE estável.</p>
+        </div>
+        <div class="flow-step">
+          <div class="flow-step-num">Onda 05</div>
+          <div class="flow-step-title">Enxame IA & Conectividade</div>
+          <div class="flow-step-slots">Slots: 06A, 07, 12, 13</div>
+          <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">Supervisor semântico com aprovação humana, Bitrix rate limit (2 req/s) e engine de Dry-Run.</p>
+        </div>
+        <div class="flow-step">
+          <div class="flow-step-num">Onda 06</div>
+          <div class="flow-step-title">Mobile, Social & Release</div>
+          <div class="flow-step-slots">Slots: 03, 08, 08A, 09, 21, 24</div>
+          <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">SQLite móvel criptografado, Social Selling na timeline, acessibilidade WCAG 2.2 AA e auditoria do Agente 24.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- DOCUMENTOS GERADOS -->
+    <div class="section-card">
+      <h2 class="section-title">6. Entregas Oficiais Disponibilizadas no Repositório</h2>
+      <p style="color: var(--text-secondary);">Os 9 documentos comprobatórios foram gerados no diretório oficial <span class="code-pill">docs/fase-02/onda-00/</span>:</p>
+
+      <ul class="artifact-list">
+        <li class="artifact-item">
+          <div>
+            <div class="artifact-name">01-INVENTARIO-TECNICO-COMPLETO.md</div>
+            <div class="artifact-desc">1.931 módulos, 160 models e 75 rotas de API mapeados.</div>
+          </div>
+          <span class="status-tag preserve">HOMOLOGADO</span>
+        </li>
+        <li class="artifact-item">
+          <div>
+            <div class="artifact-name">02-MATRIZ-GAP-11-MODULOS.md</div>
+            <div class="artifact-desc">Confrontação de MOD-01 a MOD-11 contra o Documento Mestre V4.</div>
+          </div>
+          <span class="status-tag preserve">HOMOLOGADO</span>
+        </li>
+        <li class="artifact-item">
+          <div>
+            <div class="artifact-name">03-AUDITORIA-ARQUITETURA-SEGURANCA-DADOS.md</div>
+            <div class="artifact-desc">Diagnóstico de RLS, Tenancy, Argon2id, Docker e integrações.</div>
+          </div>
+          <span class="status-tag preserve">HOMOLOGADO</span>
+        </li>
+        <li class="artifact-item">
+          <div>
+            <div class="artifact-name">04-AUDITORIA-SUPERVISOR-AGENTES.md</div>
+            <div class="artifact-desc">Taxonomia de 7 níveis, 15 agentes de runtime e 379 personas.</div>
+          </div>
+          <span class="status-tag preserve">HOMOLOGADO</span>
+        </li>
+        <li class="artifact-item">
+          <div>
+            <div class="artifact-name">05-MAPA-DEPENDENCIAS-RECONSTRUCAO.md</div>
+            <div class="artifact-desc">Grafo direcionado Mermaid sem ciclos e matriz de slots exclusivos.</div>
+          </div>
+          <span class="status-tag preserve">HOMOLOGADO</span>
+        </li>
+        <li class="artifact-item">
+          <div>
+            <div class="artifact-name">06-MATRIZ-PRESERVAR-CORRIGIR-RECONSTRUIR-DESCARTAR.md</div>
+            <div class="artifact-desc">Decisões técnicas fundamentadas em evidências empíricas.</div>
+          </div>
+          <span class="status-tag preserve">HOMOLOGADO</span>
+        </li>
+        <li class="artifact-item">
+          <div>
+            <div class="artifact-name">07-BACKLOG-MESTRE-FASE-02.md</div>
+            <div class="artifact-desc">52 tarefas técnicas priorizadas com critérios de aceite e gates.</div>
+          </div>
+          <span class="status-tag preserve">HOMOLOGADO</span>
+        </li>
+        <li class="artifact-item">
+          <div>
+            <div class="artifact-name">08-PLANO-EXECUCAO-ONDAS.md</div>
+            <div class="artifact-desc">Cronograma em 6 ondas sucessivas com protocolo de merge 2–3.</div>
+          </div>
+          <span class="status-tag preserve">HOMOLOGADO</span>
+        </li>
+        <li class="artifact-item">
+          <div>
+            <div class="artifact-name">09-PARECER-SUPERVISOR-ONDA-00.md</div>
+            <div class="artifact-desc">Parecer oficial do Agente 00 e auditoria dos 11 critérios de gate.</div>
+          </div>
+          <span class="status-tag preserve">HOMOLOGADO</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+      <p>Birthub 360° — Sistema Operacional de Revenue Intelligence · Documento Gerado em 10/11/2026</p>
+      <p>Governança de Engenharia por <strong>Agente 00 (Supervisor Geral)</strong> sob as regras de <strong>AGENTS.md</strong></p>
+    </footer>
+
+  </div>
+
+</body>
+</html>

@@ -1,4 +1,5 @@
 @import "../../identidade-visual/birthhub360/tokens/birthhub360.css";
+@import "../../identidade-visual/birthhub360/tokens/characters.css";
 
 /* Compatibility adapters: existing platform utilities consume the official tokens.
    Import after globals.css; never redefine the canonical palette here. */

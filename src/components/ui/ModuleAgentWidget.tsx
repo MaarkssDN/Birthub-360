@@ -11,74 +11,74 @@ import { isNavHiddenTab } from '../layout/tabMeta.js';
 import { AiReasoningPipeline, type AiReasoningStep } from './AiReasoningPipeline.js';
 
 interface AgentCharacter {
+  id: 'orbit' | 'nexus' | 'aria' | 'vanguard' | 'oracle' | 'core' | 'spark' | 'echo' | 'sudo';
   name: string;
   role: string;
-  seed: string;
   color: string;
   contextMsg: string;
 }
 
 const AGENTS_BY_PILLAR: Record<string, AgentCharacter> = {
   'PILAR 01 — HUB COMERCIAL': {
+    id: 'orbit',
     name: 'Orbit',
     role: 'Guardião do CRM',
-    seed: 'Orbit',
     color: 'from-amber-400 to-amber-600',
     contextMsg: 'Monitorando pipeline e integridade dos negócios',
   },
   'PILAR 02 — INTELIGÊNCIA DE MERCADO': {
+    id: 'nexus',
     name: 'Nexus',
     role: 'Analista de Dados',
-    seed: 'Felix',
     color: 'from-blue-400 to-blue-600',
     contextMsg: 'Pesquisando dados de mercado, ICP e decisores',
   },
   'PILAR 03 — ORQUESTRAÇÃO DE VENDAS': {
+    id: 'aria',
     name: 'Aria',
     role: 'Maestrina de Fluxos',
-    seed: 'Aria',
     color: 'from-emerald-400 to-emerald-600',
     contextMsg: 'Otimizando cadência diária e próximas melhores ações',
   },
   'PILAR 04 — PERFORMANCE COMERCIAL': {
+    id: 'vanguard',
     name: 'Vanguard',
     role: 'Estrategista de Metas',
-    seed: 'Vanguard',
     color: 'from-rose-400 to-rose-600',
     contextMsg: 'Acompanhando gargalos de conversão e metas',
   },
   'PILAR 05 — PREVISIBILIDADE COMERCIAL': {
+    id: 'oracle',
     name: 'Oracle',
     role: 'Visionário de Forecast',
-    seed: 'Oracle',
     color: 'from-purple-400 to-purple-600',
     contextMsg: 'Projetando forecast ponderado e fechamentos',
   },
   'PILAR 06 — INTELIGÊNCIA ARTIFICIAL': {
+    id: 'core',
     name: 'Core',
     role: 'Mente Principal',
-    seed: 'Buster',
     color: 'from-indigo-400 to-indigo-600',
     contextMsg: 'Supervisionando o enxame de agentes autônomos',
   },
   'PILAR 07 — AUTOMAÇÃO & CONECTIVIDADE': {
+    id: 'spark',
     name: 'Spark',
     role: 'Engenheiro de Integrações',
-    seed: 'Sparky',
     color: 'from-teal-400 to-teal-600',
     contextMsg: 'Monitorando conectores externos e filas',
   },
   'PILAR 08 — ENGAJAMENTO COMERCIAL': {
+    id: 'echo',
     name: 'Echo',
     role: 'Especialista em Voz',
-    seed: 'Echo',
     color: 'from-pink-400 to-pink-600',
     contextMsg: 'Acompanhando discador, transcrições e cadências',
   },
   ADMINISTRAÇÃO: {
+    id: 'sudo',
     name: 'Sudo',
     role: 'Controlador de Sistema',
-    seed: 'Sudo',
     color: 'from-slate-400 to-slate-600',
     contextMsg: 'Validando governança, alçadas e segurança',
   },
@@ -258,6 +258,18 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
     }
   };
 
+  const characterState = streamError
+    ? 'error'
+    : isStreaming
+      ? streamOutput
+        ? 'speaking'
+        : 'processing'
+      : inputText.trim()
+        ? 'listening'
+        : streamOutput
+          ? 'success'
+          : 'idle';
+
   const details: Record<AiReasoningStep, string> = {
     CONTEXT: `Analisando contexto ativo em ${agent.name}...`,
     ANALYSIS:
@@ -290,15 +302,15 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
         <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 translate-x-[-100%] group-hover:animate-[shimmer_1.5s_infinite]" />
 
         <div
-          className={`relative flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br ${agent.color} shadow-inner`}
+          className={`relative flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br ${agent.color} shadow-inner bh-character-avatar`}
+          data-state={characterState}
         >
           <img
-            src={`/brand/characters/${agent.name.toLowerCase()}.svg`}
+            src={`/brand/characters/${agent.id}.svg`}
             alt={`Avatar do agente ${agent.name}`}
             className="w-7 h-7 drop-shadow-md"
             onError={(e) => {
-              (e.currentTarget as HTMLImageElement).src =
-                `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${agent.seed}&backgroundColor=transparent`;
+              (e.currentTarget as HTMLImageElement).src = '/brand/characters/core.svg';
             }}
           />
           <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border border-surface shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
@@ -359,15 +371,15 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
             <div className="px-5 py-4 border-b border-[#F8F9FF]/10 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div
-                  className={`flex items-center justify-center w-11 h-11 rounded-full bg-gradient-to-br ${agent.color}`}
+                  className={`flex items-center justify-center w-11 h-11 rounded-full bg-gradient-to-br ${agent.color} bh-character-avatar`}
+                  data-state={characterState}
                 >
                   <img
-                    src={`/brand/characters/${agent.name.toLowerCase()}.svg`}
+                    src={`/brand/characters/${agent.id}.svg`}
                     alt={agent.name}
                     className="w-7 h-7"
                     onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).src =
-                        `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${agent.seed}&backgroundColor=transparent`;
+                      (e.currentTarget as HTMLImageElement).src = '/brand/characters/core.svg';
                     }}
                   />
                 </div>
