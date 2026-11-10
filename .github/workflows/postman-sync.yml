@@ -22,4 +22,4 @@ jobs:
         uses: postmanlabs/postman-cli-action@f4cd5fda93190809fff5a5ea6a9a5c5d3d8ef1e8 # v1.0.0
         with:
           api-key: ${{ secrets.POSTMAN_API_KEY }}
-          command: postman workspace push --yes
+          command: postman workspace push --yes --verbose
