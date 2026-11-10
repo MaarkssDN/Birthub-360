@@ -88,7 +88,10 @@ function CharacterCard({
           >
             {character.name}
           </h3>
-          <p className="text-[11px] font-medium mt-0.5" style={{ color: character.subheadingColor }}>
+          <p
+            className="text-[11px] font-medium mt-0.5"
+            style={{ color: character.subheadingColor }}
+          >
             {character.role}
           </p>
           <p className="text-[10px] font-mono text-[#F8F9FF]/50 mt-1 truncate">
@@ -142,9 +145,7 @@ function CharacterCard({
         <span className="text-[10px] font-mono text-[#F8F9FF]/50 ml-1">{previewTheme}</span>
       </div>
 
-      <p className="text-[10px] text-[#F8F9FF]/40 font-mono">
-        aria: {character.ariaLabel}
-      </p>
+      <p className="text-[10px] text-[#F8F9FF]/40 font-mono">aria: {character.ariaLabel}</p>
     </article>
   );
 }
@@ -176,10 +177,10 @@ export function CharacterGalleryView() {
           Galeria Oficial de Personagens
         </h1>
         <p className="text-sm text-[#F8F9FF]/70 max-w-3xl">
-          Catálogo canônico dos {CHARACTER_CATALOG.length} personagens digitais: 9 pilares
-          originais preservados + 20 identidades vinculadas a agentes reais de runtime, canais de
-          voz e orquestração. Nenhum vínculo operacional é inventado — personagens sem agente
-          direto estão marcados como identidade de interface.
+          Catálogo canônico dos {CHARACTER_CATALOG.length} personagens digitais: 9 pilares originais
+          preservados + 20 identidades vinculadas a agentes reais de runtime, canais de voz e
+          orquestração. Nenhum vínculo operacional é inventado — personagens sem agente direto estão
+          marcados como identidade de interface.
         </p>
       </header>
 
@@ -242,7 +243,11 @@ export function CharacterGalleryView() {
             </span>
           </h2>
           <div
-            className={previewTheme === 'light' ? 'theme-light grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}
+            className={
+              previewTheme === 'light'
+                ? 'theme-light grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                : 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+            }
           >
             {characters.map((character) => (
               <CharacterCard
@@ -257,8 +262,9 @@ export function CharacterGalleryView() {
       ))}
 
       <footer className="text-[11px] font-mono text-[#F8F9FF]/40 pt-4 border-t border-white/10">
-        Registro canônico: src/features/characters/characterCatalog.ts · SVGs: /brand/characters/*.svg
-        · Tokens: identidade-visual/birthhub360/tokens/characters.* · Estados: bh-character-avatar[data-state]
+        Registro canônico: src/features/characters/characterCatalog.ts · SVGs:
+        /brand/characters/*.svg · Tokens: identidade-visual/birthhub360/tokens/characters.* ·
+        Estados: bh-character-avatar[data-state]
       </footer>
     </div>
   );
