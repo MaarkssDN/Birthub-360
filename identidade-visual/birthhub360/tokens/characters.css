@@ -71,6 +71,155 @@
   --char-sudo-halo: 0 0 32px rgba(0, 212, 255, 0.35);
   --char-sudo-card-grad: linear-gradient(135deg, rgba(148, 163, 184, 0.18) 0%, rgba(0, 212, 255, 0.08) 100%);
 
+  /* ==========================================================================
+     EXPANSÃO 9 → 29 — CAMADA 2: AGENTES COMERCIAIS DE RUNTIME (15)
+     ========================================================================== */
+  /* Axiom (ldr-intelligence) */
+  --char-axiom-primary: #38BDF8;
+  --char-axiom-secondary: #FFC107;
+  --char-axiom-accent: #22C55E;
+  --char-axiom-halo: 0 0 32px rgba(56, 189, 248, 0.38);
+  --char-axiom-card-grad: linear-gradient(135deg, rgba(56, 189, 248, 0.18) 0%, rgba(255, 193, 7, 0.08) 100%);
+
+  /* Beacon (bdr-outbound) */
+  --char-beacon-primary: #FBBF24;
+  --char-beacon-secondary: #FF2D9B;
+  --char-beacon-accent: #00D4FF;
+  --char-beacon-halo: 0 0 32px rgba(251, 191, 36, 0.38);
+  --char-beacon-card-grad: linear-gradient(135deg, rgba(251, 191, 36, 0.18) 0%, rgba(255, 45, 155, 0.08) 100%);
+
+  /* Meridian (sdr-qualification) */
+  --char-meridian-primary: #34D399;
+  --char-meridian-secondary: #8B7DFF;
+  --char-meridian-accent: #00D4FF;
+  --char-meridian-halo: 0 0 32px rgba(52, 211, 153, 0.38);
+  --char-meridian-card-grad: linear-gradient(135deg, rgba(52, 211, 153, 0.18) 0%, rgba(139, 125, 255, 0.08) 100%);
+
+  /* Forge (closer-sales) */
+  --char-forge-primary: #FB923C;
+  --char-forge-secondary: #FFC107;
+  --char-forge-accent: #FF2D9B;
+  --char-forge-halo: 0 0 32px rgba(251, 146, 60, 0.40);
+  --char-forge-card-grad: linear-gradient(135deg, rgba(251, 146, 60, 0.18) 0%, rgba(255, 193, 7, 0.08) 100%);
+
+  /* Relay (coordinator-commercial) */
+  --char-relay-primary: #2DD4BF;
+  --char-relay-secondary: #00D4FF;
+  --char-relay-accent: #FFC107;
+  --char-relay-halo: 0 0 32px rgba(45, 212, 191, 0.38);
+  --char-relay-card-grad: linear-gradient(135deg, rgba(45, 212, 191, 0.18) 0%, rgba(0, 212, 255, 0.08) 100%);
+
+  /* Helm (manager-commercial) */
+  --char-helm-primary: #A78BFA;
+  --char-helm-secondary: #FFC107;
+  --char-helm-accent: #00D4FF;
+  --char-helm-halo: 0 0 32px rgba(167, 139, 250, 0.38);
+  --char-helm-card-grad: linear-gradient(135deg, rgba(167, 139, 250, 0.18) 0%, rgba(255, 193, 7, 0.08) 100%);
+
+  /* Apex (executive-director) */
+  --char-apex-primary: #FACC15;
+  --char-apex-secondary: #8B7DFF;
+  --char-apex-accent: #FF2D9B;
+  --char-apex-halo: 0 0 32px rgba(250, 204, 21, 0.38);
+  --char-apex-card-grad: linear-gradient(135deg, rgba(250, 204, 21, 0.18) 0%, rgba(139, 125, 255, 0.08) 100%);
+
+  /* Ledger (billing-revenue) */
+  --char-ledger-primary: #22C55E;
+  --char-ledger-secondary: #FFC107;
+  --char-ledger-accent: #00D4FF;
+  --char-ledger-halo: 0 0 32px rgba(34, 197, 94, 0.38);
+  --char-ledger-card-grad: linear-gradient(135deg, rgba(34, 197, 94, 0.18) 0%, rgba(255, 193, 7, 0.08) 100%);
+
+  /* Anchor (churn-retention) */
+  --char-anchor-primary: #60A5FA;
+  --char-anchor-secondary: #FF2D9B;
+  --char-anchor-accent: #8B7DFF;
+  --char-anchor-halo: 0 0 32px rgba(96, 165, 250, 0.38);
+  --char-anchor-card-grad: linear-gradient(135deg, rgba(96, 165, 250, 0.18) 0%, rgba(255, 45, 155, 0.08) 100%);
+
+  /* Seal (contract-signature) */
+  --char-seal-primary: #F472B6;
+  --char-seal-secondary: #FFC107;
+  --char-seal-accent: #8B7DFF;
+  --char-seal-halo: 0 0 32px rgba(244, 114, 182, 0.38);
+  --char-seal-card-grad: linear-gradient(135deg, rgba(244, 114, 182, 0.18) 0%, rgba(255, 193, 7, 0.08) 100%);
+
+  /* Cipher (bitrix-guardian) */
+  --char-cipher-primary: #6EE7B7;
+  --char-cipher-secondary: #38BDF8;
+  --char-cipher-accent: #FFC107;
+  --char-cipher-halo: 0 0 32px rgba(110, 231, 183, 0.36);
+  --char-cipher-card-grad: linear-gradient(135deg, rgba(110, 231, 183, 0.16) 0%, rgba(56, 189, 248, 0.08) 100%);
+
+  /* Harbinger (revenue-intelligence) */
+  --char-harbinger-primary: #C084FC;
+  --char-harbinger-secondary: #00D4FF;
+  --char-harbinger-accent: #FF2D9B;
+  --char-harbinger-halo: 0 0 32px rgba(192, 132, 252, 0.38);
+  --char-harbinger-card-grad: linear-gradient(135deg, rgba(192, 132, 252, 0.18) 0%, rgba(0, 212, 255, 0.08) 100%);
+
+  /* Scout (account-detective) */
+  --char-scout-primary: #4ADE80;
+  --char-scout-secondary: #00D4FF;
+  --char-scout-accent: #FFC107;
+  --char-scout-halo: 0 0 32px rgba(74, 222, 128, 0.36);
+  --char-scout-card-grad: linear-gradient(135deg, rgba(74, 222, 128, 0.16) 0%, rgba(0, 212, 255, 0.08) 100%);
+
+  /* Pledge (promise-guardian) */
+  --char-pledge-primary: #F9A8D4;
+  --char-pledge-secondary: #8B7DFF;
+  --char-pledge-accent: #FFC107;
+  --char-pledge-halo: 0 0 32px rgba(249, 168, 212, 0.36);
+  --char-pledge-card-grad: linear-gradient(135deg, rgba(249, 168, 212, 0.16) 0%, rgba(139, 125, 255, 0.08) 100%);
+
+  /* Tribunal (devils-advocate) */
+  --char-tribunal-primary: #64748B;
+  --char-tribunal-secondary: #EF4444;
+  --char-tribunal-accent: #FFC107;
+  --char-tribunal-halo: 0 0 32px rgba(100, 116, 139, 0.40);
+  --char-tribunal-card-grad: linear-gradient(135deg, rgba(100, 116, 139, 0.18) 0%, rgba(239, 68, 68, 0.08) 100%);
+
+  /* ==========================================================================
+     EXPANSÃO 9 → 29 — CAMADA 3: CANAIS E VOZ (4)
+     ========================================================================== */
+  /* Vox (voice-agent) */
+  --char-vox-primary: #F0ABFC;
+  --char-vox-secondary: #00D4FF;
+  --char-vox-accent: #FF2D9B;
+  --char-vox-halo: 0 0 32px rgba(240, 171, 252, 0.38);
+  --char-vox-card-grad: linear-gradient(135deg, rgba(240, 171, 252, 0.18) 0%, rgba(0, 212, 255, 0.08) 100%);
+
+  /* Scope (sdr-diagnostic) */
+  --char-scope-primary: #A3E635;
+  --char-scope-secondary: #8B7DFF;
+  --char-scope-accent: #00D4FF;
+  --char-scope-halo: 0 0 32px rgba(163, 230, 53, 0.36);
+  --char-scope-card-grad: linear-gradient(135deg, rgba(163, 230, 53, 0.16) 0%, rgba(139, 125, 255, 0.08) 100%);
+
+  /* Tracker (hunter-agent) */
+  --char-tracker-primary: #F87171;
+  --char-tracker-secondary: #FFC107;
+  --char-tracker-accent: #00D4FF;
+  --char-tracker-halo: 0 0 32px rgba(248, 113, 113, 0.36);
+  --char-tracker-card-grad: linear-gradient(135deg, rgba(248, 113, 113, 0.16) 0%, rgba(255, 193, 7, 0.08) 100%);
+
+  /* Tempo (tactical-agent) */
+  --char-tempo-primary: #67E8F9;
+  --char-tempo-secondary: #FF2D9B;
+  --char-tempo-accent: #FFC107;
+  --char-tempo-halo: 0 0 32px rgba(103, 232, 249, 0.36);
+  --char-tempo-card-grad: linear-gradient(135deg, rgba(103, 232, 249, 0.16) 0%, rgba(255, 45, 155, 0.08) 100%);
+
+  /* ==========================================================================
+     EXPANSÃO 9 → 29 — CAMADA 7: ORQUESTRAÇÃO (1)
+     ========================================================================== */
+  /* Aegis (supervisor-central) */
+  --char-aegis-primary: #8B7DFF;
+  --char-aegis-secondary: #FFC107;
+  --char-aegis-accent: #00D4FF;
+  --char-aegis-halo: 0 0 36px rgba(139, 125, 255, 0.42);
+  --char-aegis-card-grad: linear-gradient(135deg, rgba(139, 125, 255, 0.20) 0%, rgba(255, 193, 7, 0.08) 100%);
+
   /* Cores Globais de Estado dos Personagens */
   --char-state-idle: var(--neon-blue);
   --char-state-listening: #00D4FF;
@@ -117,6 +266,67 @@
 
   --char-sudo-halo: 0 0 24px rgba(71, 85, 105, 0.22);
   --char-sudo-card-grad: linear-gradient(135deg, rgba(71, 85, 105, 0.12) 0%, rgba(2, 132, 199, 0.06) 100%);
+
+  /* Expansão 9 → 29 — halos e gradientes em tema claro */
+  --char-axiom-halo: 0 0 24px rgba(2, 132, 199, 0.25);
+  --char-axiom-card-grad: linear-gradient(135deg, rgba(2, 132, 199, 0.12) 0%, rgba(217, 119, 6, 0.06) 100%);
+
+  --char-beacon-halo: 0 0 24px rgba(217, 119, 6, 0.25);
+  --char-beacon-card-grad: linear-gradient(135deg, rgba(217, 119, 6, 0.12) 0%, rgba(217, 27, 124, 0.06) 100%);
+
+  --char-meridian-halo: 0 0 24px rgba(5, 150, 105, 0.25);
+  --char-meridian-card-grad: linear-gradient(135deg, rgba(5, 150, 105, 0.12) 0%, rgba(109, 40, 217, 0.06) 100%);
+
+  --char-forge-halo: 0 0 24px rgba(234, 88, 12, 0.25);
+  --char-forge-card-grad: linear-gradient(135deg, rgba(234, 88, 12, 0.12) 0%, rgba(217, 119, 6, 0.06) 100%);
+
+  --char-relay-halo: 0 0 24px rgba(13, 148, 136, 0.25);
+  --char-relay-card-grad: linear-gradient(135deg, rgba(13, 148, 136, 0.12) 0%, rgba(2, 132, 199, 0.06) 100%);
+
+  --char-helm-halo: 0 0 24px rgba(124, 58, 237, 0.25);
+  --char-helm-card-grad: linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(217, 119, 6, 0.06) 100%);
+
+  --char-apex-halo: 0 0 24px rgba(202, 138, 4, 0.25);
+  --char-apex-card-grad: linear-gradient(135deg, rgba(202, 138, 4, 0.12) 0%, rgba(109, 40, 217, 0.06) 100%);
+
+  --char-ledger-halo: 0 0 24px rgba(21, 128, 61, 0.25);
+  --char-ledger-card-grad: linear-gradient(135deg, rgba(21, 128, 61, 0.12) 0%, rgba(217, 119, 6, 0.06) 100%);
+
+  --char-anchor-halo: 0 0 24px rgba(29, 78, 216, 0.25);
+  --char-anchor-card-grad: linear-gradient(135deg, rgba(29, 78, 216, 0.12) 0%, rgba(217, 27, 124, 0.06) 100%);
+
+  --char-seal-halo: 0 0 24px rgba(219, 39, 119, 0.25);
+  --char-seal-card-grad: linear-gradient(135deg, rgba(219, 39, 119, 0.12) 0%, rgba(217, 119, 6, 0.06) 100%);
+
+  --char-cipher-halo: 0 0 24px rgba(5, 150, 105, 0.25);
+  --char-cipher-card-grad: linear-gradient(135deg, rgba(5, 150, 105, 0.12) 0%, rgba(2, 132, 199, 0.06) 100%);
+
+  --char-harbinger-halo: 0 0 24px rgba(126, 34, 206, 0.25);
+  --char-harbinger-card-grad: linear-gradient(135deg, rgba(126, 34, 206, 0.12) 0%, rgba(0, 212, 255, 0.06) 100%);
+
+  --char-scout-halo: 0 0 24px rgba(22, 163, 74, 0.25);
+  --char-scout-card-grad: linear-gradient(135deg, rgba(22, 163, 74, 0.12) 0%, rgba(2, 132, 199, 0.06) 100%);
+
+  --char-pledge-halo: 0 0 24px rgba(219, 39, 119, 0.22);
+  --char-pledge-card-grad: linear-gradient(135deg, rgba(219, 39, 119, 0.10) 0%, rgba(109, 40, 217, 0.06) 100%);
+
+  --char-tribunal-halo: 0 0 24px rgba(71, 85, 105, 0.25);
+  --char-tribunal-card-grad: linear-gradient(135deg, rgba(71, 85, 105, 0.14) 0%, rgba(220, 38, 38, 0.06) 100%);
+
+  --char-vox-halo: 0 0 24px rgba(192, 38, 211, 0.25);
+  --char-vox-card-grad: linear-gradient(135deg, rgba(192, 38, 211, 0.12) 0%, rgba(2, 132, 199, 0.06) 100%);
+
+  --char-scope-halo: 0 0 24px rgba(101, 163, 13, 0.25);
+  --char-scope-card-grad: linear-gradient(135deg, rgba(101, 163, 13, 0.12) 0%, rgba(109, 40, 217, 0.06) 100%);
+
+  --char-tracker-halo: 0 0 24px rgba(220, 38, 38, 0.25);
+  --char-tracker-card-grad: linear-gradient(135deg, rgba(220, 38, 38, 0.12) 0%, rgba(217, 119, 6, 0.06) 100%);
+
+  --char-tempo-halo: 0 0 24px rgba(8, 145, 178, 0.25);
+  --char-tempo-card-grad: linear-gradient(135deg, rgba(8, 145, 178, 0.12) 0%, rgba(217, 27, 124, 0.06) 100%);
+
+  --char-aegis-halo: 0 0 24px rgba(99, 102, 241, 0.25);
+  --char-aegis-card-grad: linear-gradient(135deg, rgba(99, 102, 241, 0.14) 0%, rgba(217, 119, 6, 0.06) 100%);
 }
 
 /* ==========================================================================

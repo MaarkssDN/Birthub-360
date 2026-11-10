@@ -31,7 +31,9 @@ describe('ModuleAgentWidget', () => {
     expect(screen.queryByText(/Diga "Ei Orbit"/i)).toBeNull();
 
     // Valida uso de SVG local e acessibilidade do avatar
-    const avatar = screen.getByAltText('Avatar do agente Orbit');
+    const avatar = screen.getByAltText(
+      'Orbit, agente guardião do CRM e da integridade de pipeline',
+    );
     expect(avatar).toBeDefined();
     expect(avatar.getAttribute('src')).toBe('/brand/characters/orbit.svg');
   });

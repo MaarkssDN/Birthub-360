@@ -37,6 +37,16 @@ const DesignLabPage = lazy(() =>
   import('./features/design-lab/DesignLabPage.js').then((m) => ({ default: m.DesignLabPage })),
 );
 
+// Galeria interna de homologação dos 29 personagens digitais (missão de expansão
+// visual 9→29). Rota autenticada em /app/characters, propositalmente FORA do
+// TabType/navGroups: não aparece na Sidebar, no Command Palette nem no
+// ModuleAgentWidget — superfície de validação para QA/Design/Revisão (Agente 24).
+const CharacterGalleryView = lazy(() =>
+  import('./features/characters/CharacterGalleryView.js').then((m) => ({
+    default: m.CharacterGalleryView,
+  })),
+);
+
 // Lazy loaded feature modules
 const SocialSellingHub = lazy(() =>
   import('./features/social-selling/components/SocialSellingHub.js').then((m) => ({
@@ -580,6 +590,9 @@ function AppLayout() {
               element={<PillarSettingsPlaceholder pillarName="Engajamento Comercial" />}
             />
 
+            {/* Galeria interna de personagens — deliberadamente sem entrada em
+                TAB_META/Sidebar: acesso direto por URL autenticada apenas. */}
+            <Route path="characters" element={<CharacterGalleryView />} />
             <Route path="*" element={<Navigate to="/app" replace />} />
           </Routes>
         </Suspense>

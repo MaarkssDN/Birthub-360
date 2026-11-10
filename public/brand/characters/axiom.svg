@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%" fill="none" role="img" aria-labelledby="axiom-title axiom-desc">
+  <title id="axiom-title">Axiom — Guardião de Dados LDR</title>
+  <desc id="axiom-desc">Avatar não-humano representando Axiom: célula hexagonal de integridade de dados com grade de verificação e núcleo ciano.</desc>
+  <defs>
+    <radialGradient id="axiom-core-grad" cx="42%" cy="38%" r="65%">
+      <stop offset="0%" stop-color="#BAE6FD"/>
+      <stop offset="40%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#0369A1"/>
+    </radialGradient>
+    <linearGradient id="axiom-cell-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.9"/>
+      <stop offset="55%" stop-color="#FFC107" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#00D4FF" stop-opacity="0.9"/>
+    </linearGradient>
+    <filter id="axiom-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="axiom-halo-blur" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="blur2"/>
+    </filter>
+  </defs>
+
+  <circle cx="64" cy="64" r="46" fill="#38BDF8" fill-opacity="0.14" filter="url(#axiom-halo-blur)"/>
+
+  <!-- Célula hexagonal externa -->
+  <polygon points="64,22 98,43 98,85 64,106 30,85 30,43" fill="#0D0D0D" fill-opacity="0.55" stroke="url(#axiom-cell-grad)" stroke-width="3" filter="url(#axiom-glow)"/>
+
+  <!-- Grade interna de integridade (4 células) -->
+  <g stroke="#38BDF8" stroke-width="1.4" opacity="0.75">
+    <line x1="64" y1="34" x2="64" y2="94"/>
+    <line x1="42" y1="50" x2="86" y2="78"/>
+    <line x1="86" y1="50" x2="42" y2="78"/>
+  </g>
+
+  <!-- Nós de dados nos vértices internos -->
+  <circle cx="64" cy="36" r="3.2" fill="#FFC107" filter="url(#axiom-glow)"/>
+  <circle cx="86" cy="64" r="3" fill="#00D4FF" filter="url(#axiom-glow)"/>
+  <circle cx="64" cy="92" r="3" fill="#22C55E" filter="url(#axiom-glow)"/>
+  <circle cx="42" cy="64" r="3" fill="#38BDF8" filter="url(#axiom-glow)"/>
+
+  <!-- Núcleo verificado -->
+  <circle cx="64" cy="64" r="17" fill="url(#axiom-core-grad)" filter="url(#axiom-glow)"/>
+  <circle cx="64" cy="64" r="17" stroke="#BAE6FD" stroke-width="1" stroke-opacity="0.5"/>
+  <path d="M 57 64 L 62 69 L 72 58" stroke="#0D0D0D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="64" cy="64" r="4" fill="#0D0D0D" fill-opacity="0.85"/>
+</svg>

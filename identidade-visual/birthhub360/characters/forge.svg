@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%" fill="none" role="img" aria-labelledby="forge-title forge-desc">
+  <title id="forge-title">Forge — Closer Copilot</title>
+  <desc id="forge-desc">Avatar não-humano representando Forge: forja octogonal com chama de fechamento, núcleos de impacto e faíscas de proposta.</desc>
+  <defs>
+    <radialGradient id="forge-flame-grad" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#FFF3B0"/>
+      <stop offset="45%" stop-color="#FB923C"/>
+      <stop offset="100%" stop-color="#E11D48"/>
+    </radialGradient>
+    <linearGradient id="forge-anvil-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FB923C" stop-opacity="0.95"/>
+      <stop offset="55%" stop-color="#FFC107" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#FF2D9B" stop-opacity="0.9"/>
+    </linearGradient>
+    <filter id="forge-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="forge-halo-blur" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="blur2"/>
+    </filter>
+  </defs>
+
+  <circle cx="64" cy="64" r="46" fill="#FB923C" fill-opacity="0.14" filter="url(#forge-halo-blur)"/>
+
+  <!-- Câmara octogonal -->
+  <polygon points="64,26 92,45 92,83 64,102 36,83 36,45" fill="#0D0D0D" fill-opacity="0.55" stroke="url(#forge-anvil-grad)" stroke-width="3" filter="url(#forge-glow)"/>
+
+  <!-- Bigorna geométrica (base) -->
+  <path d="M 44 78 H 84 L 78 88 H 50 Z" fill="#1A1A22" stroke="#FB923C" stroke-width="2"/>
+  <rect x="58" y="88" width="12" height="6" rx="1.5" fill="#1A1A22" stroke="#FFC107" stroke-width="1.4"/>
+
+  <!-- Chama de fechamento -->
+  <g filter="url(#forge-glow)">
+    <path d="M 64 38 C 72 48 76 54 76 62 C 76 71 70 76 64 76 C 58 76 52 71 52 62 C 52 54 56 48 64 38 Z" fill="url(#forge-flame-grad)"/>
+    <path d="M 64 52 C 68 57 70 60 70 65 C 70 70 67 73 64 73 C 61 73 58 70 58 65 C 58 60 60 57 64 52 Z" fill="#FFF3B0"/>
+  </g>
+
+  <!-- Faíscas de impacto -->
+  <g fill="#FFC107" filter="url(#forge-glow)">
+    <circle cx="40" cy="58" r="2.4"/>
+    <circle cx="88" cy="52" r="2.8"/>
+    <circle cx="82" cy="92" r="2.2"/>
+    <circle cx="46" cy="94" r="2.4"/>
+  </g>
+  <circle cx="88" cy="52" r="1" fill="#FFFFFF"/>
+  <circle cx="40" cy="58" r="1" fill="#FFFFFF"/>
+</svg>

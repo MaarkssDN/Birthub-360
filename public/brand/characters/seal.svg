@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%" fill="none" role="img" aria-labelledby="seal-title seal-desc">
+  <title id="seal-title">Seal — Guardião Contratual</title>
+  <desc id="seal-desc">Avatar não-humano representando Seal: selo de cera digital com fitas entrelaçadas e carimbo central de assinatura.</desc>
+  <defs>
+    <radialGradient id="seal-wax-grad" cx="42%" cy="38%" r="65%">
+      <stop offset="0%" stop-color="#FBCFE8"/>
+      <stop offset="45%" stop-color="#F472B6"/>
+      <stop offset="100%" stop-color="#BE185D"/>
+    </radialGradient>
+    <linearGradient id="seal-ribbon-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFC107" stop-opacity="0.95"/>
+      <stop offset="55%" stop-color="#FF2D9B" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#8B7DFF" stop-opacity="0.9"/>
+    </linearGradient>
+    <filter id="seal-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="seal-halo-blur" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="blur2"/>
+    </filter>
+  </defs>
+
+  <circle cx="64" cy="64" r="46" fill="#F472B6" fill-opacity="0.14" filter="url(#seal-halo-blur)"/>
+
+  <!-- Fitas entrelaçadas (inferiores) -->
+  <g stroke="url(#seal-ribbon-grad)" stroke-width="7" stroke-linecap="round" fill="none" filter="url(#seal-glow)">
+    <path d="M 44 108 C 40 92 52 82 64 88 C 76 82 88 92 84 108"/>
+    <path d="M 56 108 C 54 98 60 92 66 94 C 72 92 78 98 76 108" opacity="0.85"/>
+  </g>
+
+  <!-- Selo de cera escaneado (12 lobos) -->
+  <g filter="url(#seal-glow)">
+    <circle cx="64" cy="60" r="30" fill="url(#seal-wax-grad)"/>
+    <g fill="#F472B6">
+      <circle cx="64" cy="30" r="7"/>
+      <circle cx="90" cy="39" r="7"/>
+      <circle cx="97" cy="60" r="7"/>
+      <circle cx="90" cy="81" r="7"/>
+      <circle cx="64" cy="90" r="7"/>
+      <circle cx="38" cy="81" r="7"/>
+      <circle cx="31" cy="60" r="7"/>
+      <circle cx="38" cy="39" r="7"/>
+    </g>
+    <circle cx="64" cy="60" r="30" fill="none" stroke="#BE185D" stroke-width="2" opacity="0.6"/>
+  </g>
+
+  <!-- Carimbo central: assinatura geométrica -->
+  <path d="M 52 62 L 60 54 L 66 60 L 74 50" stroke="#0D0D0D" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <circle cx="76" cy="62" r="5" fill="none" stroke="#0D0D0D" stroke-width="2.6"/>
+  <circle cx="64" cy="60" r="4" fill="#FFF3B0"/>
+</svg>
