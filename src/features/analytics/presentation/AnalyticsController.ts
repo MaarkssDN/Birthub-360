@@ -5,10 +5,44 @@ import {
   buildCohortCsv,
   buildUnifiedTimelineCsv,
 } from '../application/AnalyticsUseCases.js';
+import type { UnifiedTimelineQuery } from '../domain/Analytics.js';
 
 const MIN_MONTHS = 1;
 const MAX_MONTHS = 24;
 const DEFAULT_MONTHS = 6;
+
+// Allow-lists derivadas do contrato `UnifiedTimelineQuery` (domain/Analytics.ts).
+// Cada elemento é checado contra o union type — drift de domínio quebra o tsc.
+type TimelinePeriod = NonNullable<UnifiedTimelineQuery['period']>;
+type TimelineEntityFilter = NonNullable<UnifiedTimelineQuery['entityType']>;
+type TimelineOutcomeFilter = NonNullable<UnifiedTimelineQuery['outcome']>;
+
+const TIMELINE_PERIODS: readonly TimelinePeriod[] = ['today', '7d', '30d', 'all'];
+const TIMELINE_ENTITY_TYPES: readonly TimelineEntityFilter[] = [
+  'all',
+  'lead',
+  'deal',
+  'call',
+  'email',
+  'whatsapp',
+  'automation',
+];
+const TIMELINE_OUTCOMES: readonly TimelineOutcomeFilter[] = [
+  'all',
+  'success',
+  'pending',
+  'failed',
+];
+
+/** Valida um query param contra uma allow-list tipada; valores inválidos caem no fallback. */
+function parseQueryEnum<T extends string>(
+  raw: unknown,
+  allowed: readonly T[],
+  fallback: T,
+): T {
+  const value = typeof raw === 'string' ? raw : '';
+  return (allowed as readonly string[]).includes(value) ? (value as T) : fallback;
+}
 
 function parseMonths(raw: unknown): number {
   const parsed = Number.parseInt(String(raw ?? ''), 10);
@@ -161,9 +195,9 @@ export class AnalyticsController {
       const limitNum = limit ? Number.parseInt(String(limit), 10) : 50;
 
       const result = await this.analyticsUseCases.unifiedTimeline(organizationId, {
-        period: (period as any) || '30d',
-        entityType: (entityType as any) || 'all',
-        outcome: (outcome as any) || 'all',
+        period: parseQueryEnum(period, TIMELINE_PERIODS, '30d'),
+        entityType: parseQueryEnum(entityType, TIMELINE_ENTITY_TYPES, 'all'),
+        outcome: parseQueryEnum(outcome, TIMELINE_OUTCOMES, 'all'),
         search: search ? String(search) : undefined,
         page: Number.isFinite(pageNum) && pageNum > 0 ? pageNum : 1,
         limit: Number.isFinite(limitNum) && limitNum > 0 ? Math.min(limitNum, 200) : 50,
@@ -197,9 +231,9 @@ export class AnalyticsController {
       const { period, entityType, outcome, search } = req.query;
 
       const result = await this.analyticsUseCases.unifiedTimeline(organizationId, {
-        period: (period as any) || '30d',
-        entityType: (entityType as any) || 'all',
-        outcome: (outcome as any) || 'all',
+        period: parseQueryEnum(period, TIMELINE_PERIODS, '30d'),
+        entityType: parseQueryEnum(entityType, TIMELINE_ENTITY_TYPES, 'all'),
+        outcome: parseQueryEnum(outcome, TIMELINE_OUTCOMES, 'all'),
         search: search ? String(search) : undefined,
         page: 1,
         limit: 1000,
