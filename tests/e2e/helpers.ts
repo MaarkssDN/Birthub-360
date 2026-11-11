@@ -34,7 +34,9 @@ export async function signUp(
   });
   await page.goto('/login');
   await page.getByRole('button', { name: /^Criar conta$/ }).click();
-  await page.getByPlaceholder('Seu nome', { exact: true }).fill(resolvedName);
+  // /login renderiza Landing360 (initialScreen="login"), cujo campo de nome usa
+  // "Seu nome completo" — o NewLoginScreen legado usava "Seu nome".
+  await page.getByPlaceholder('Seu nome completo', { exact: true }).fill(resolvedName);
   await page.getByPlaceholder('nome@empresa.com.br', { exact: true }).fill(email);
   await page.getByPlaceholder('••••••••', { exact: true }).fill(password);
   const signupResponsePromise = page.waitForResponse(

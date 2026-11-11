@@ -21,7 +21,7 @@
 //    ele exista, com a extensão vector e o papel `prospector_app` prontos, antes de qualquer coisa
 //    depender disso (mesmo script SQL que scripts/db/bootstrap-app-role.sh usa no CI).
 
-import { existsSync, copyFileSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import net from 'node:net';
 import path from 'node:path';
@@ -115,6 +115,52 @@ const isCI = process.env.CI === 'true' || process.env.CI === '1';
 const envTestPath = path.resolve(process.cwd(), '.env.test');
 const envTestExamplePath = path.resolve(process.cwd(), '.env.test.example');
 
+// Chaves de serviço cujos hosts devem acompanhar o host onde o Docker publica
+// as portas. ALLOWED_ORIGINS e afins NÃO entram aqui — são origem do browser,
+// não endpoint de container.
+const DOCKER_SERVICE_URL_KEYS = new Set([
+  'DATABASE_URL',
+  'DIRECT_URL',
+  'TEST_DATABASE_URL',
+  'REDIS_URL',
+  'MEILI_HOST',
+]);
+
+/**
+ * Quando o Docker daemon é remoto (DOCKER_HOST=tcp://<host>:<port>), os containers
+ * publicam as portas NO HOST REMOTO — `localhost` nas URLs de serviço não
+ * resolve nada na máquina que roda os testes (foi a causa do ECONNREFUSED
+ * 127.0.0.1:6379/5434 observado em 2026-11-10). Devolve o host remoto ou null
+ * quando o Docker é local (default context / unix socket / localhost).
+ */
+export function dockerRemoteHost(env = process.env) {
+  const dockerHost = env.DOCKER_HOST || '';
+  const match = dockerHost.match(/^tcp:\/\/([^:/]+)/);
+  if (!match) return null;
+  const host = match[1];
+  return host === 'localhost' || host === '127.0.0.1' ? null : host;
+}
+
+/**
+ * Reescreve o host das URLs de serviço do `.env.test.example` para o host
+ * remoto do Docker, preservando credenciais, porta, path e query. Linhas que
+ * não sejam de serviço (ex.: ALLOWED_ORIGINS) passam intactas.
+ */
+export function rewriteEnvTestForRemoteDocker(content, remoteHost) {
+  if (!remoteHost) return content;
+  return content
+    .split('\n')
+    .map((line) => {
+      const eq = line.indexOf('=');
+      if (eq <= 0) return line;
+      const key = line.slice(0, eq).trim();
+      if (!DOCKER_SERVICE_URL_KEYS.has(key)) return line;
+      const value = line.slice(eq + 1);
+      return `${key}=${value.replace(/(@|\/\/)(localhost|127\.0\.0\.1)(?=[:/])/g, `$1${remoteHost}`)}`;
+    })
+    .join('\n');
+}
+
 const POSTGRES_CONTAINER = 'birthhub_postgres';
 const BOOTSTRAP_SUPERUSER = 'prospector';
 const BOOTSTRAP_DB = 'prospectordb';
@@ -159,8 +205,17 @@ function waitForPort(port, host, timeoutMs) {
 async function runPrepareIntegrationEnv() {
   if (!existsSync(envTestPath)) {
     if (existsSync(envTestExamplePath)) {
-      copyFileSync(envTestExamplePath, envTestPath);
-      console.log('.env.test não existia — copiado de .env.test.example.');
+      const remoteHost = dockerRemoteHost();
+      const content = rewriteEnvTestForRemoteDocker(
+        readFileSync(envTestExamplePath, 'utf-8'),
+        remoteHost,
+      );
+      writeFileSync(envTestPath, content);
+      console.log(
+        remoteHost
+          ? `.env.test não existia — copiado de .env.test.example com hosts de serviço reescritos para o Docker remoto (${remoteHost}).`
+          : '.env.test não existia — copiado de .env.test.example.',
+      );
     } else {
       console.error(
         '.env.test não encontrado e .env.test.example ausente. ' +
