@@ -36,7 +36,11 @@ export function useB360MagneticAttraction(selector: string, pullStrength = 0.28,
         currentY += (targetY - currentY) * 0.22;
 
         if (isInteracting || Math.abs(currentX) > 0.1 || Math.abs(currentY) > 0.1) {
-          el.style.setProperty('transform', `translate3d(${currentX.toFixed(2)}px, ${currentY.toFixed(2)}px, 0)`, 'important');
+          el.style.setProperty(
+            'transform',
+            `translate3d(${currentX.toFixed(2)}px, ${currentY.toFixed(2)}px, 0)`,
+            'important',
+          );
           rafId = requestAnimationFrame(updateSpring);
         } else {
           el.style.removeProperty('transform');

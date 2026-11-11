@@ -109,7 +109,9 @@ describe('injectTenantIntoWriteArgs', () => {
 
 describe('applyPiiEncryptionToWriteArgs', () => {
   it('cifra email/phone/whatsapp e grava índices cegos em create de Contact', () => {
-    const args = { data: { name: 'Fulano', email: 'Fulano@Example.com', phone: '+55 11 99999-0000' } };
+    const args = {
+      data: { name: 'Fulano', email: 'Fulano@Example.com', phone: '+55 11 99999-0000' },
+    };
     applyPiiEncryptionToWriteArgs(args, 'Contact', 'create');
     const data = (args as { data: Record<string, unknown> }).data;
     expect(data.name).toBe('Fulano'); // campo não-PII permanece texto puro
@@ -145,10 +147,7 @@ describe('applyPiiEncryptionToWriteArgs', () => {
 
   it('em createMany cifra cada item do array', () => {
     const args = {
-      data: [
-        { email: 'a@x.com' },
-        { email: 'b@x.com' },
-      ],
+      data: [{ email: 'a@x.com' }, { email: 'b@x.com' }],
     };
     applyPiiEncryptionToWriteArgs(args, 'Contact', 'createMany');
     const data = (args as { data: Array<Record<string, unknown>> }).data;

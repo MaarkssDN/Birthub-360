@@ -47,7 +47,11 @@ export function CopilotoIaPanel({
   const visibleTabs = TABS.filter((t) => !t.managementOnly || canManage);
 
   return (
-    <div className={className ?? (embedded ? 'flex h-full flex-col' : 'p-6 space-y-6 max-w-6xl mx-auto')}>
+    <div
+      className={
+        className ?? (embedded ? 'flex h-full flex-col' : 'p-6 space-y-6 max-w-6xl mx-auto')
+      }
+    >
       {!embedded && (
         <div>
           <h1 className="text-2xl font-display font-bold text-ink">Copiloto IA</h1>

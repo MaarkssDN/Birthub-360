@@ -63,6 +63,14 @@ propósito por estar fora de "## Exceções ativas"):
 - **Atualizado em:** 2026-11-10
 - **Reavaliar até:** 2026-11-30
 
+### `src/features/landing/pages/Landing360Impeccable.tsx`
+
+- **Limite excepcional:** 1050 linhas
+- **Dono:** Agente 15 — Segurança Aplicada
+- **Motivo:** o formatador do Biome no PR #220 reformatou o arquivo (384 linhas com linhas longas na main → 1021 linhas após quebras automáticas), cruzando o limite rígido de 1000 sem mudança de lógica. A exceção desbloqueia o `check:hotspots` enquanto a modularização das seções da landing fica para o dono de produto/UX; o limite excepcional é apertado (1050) para não liberar crescimento adicional.
+- **Registrado em:** 2026-11-11
+- **Reavaliar até:** 2026-11-30
+
 ### `src/features/integrations/bitrix/service/extraction.ts`
 
 - **Limite excepcional:** 1100 linhas

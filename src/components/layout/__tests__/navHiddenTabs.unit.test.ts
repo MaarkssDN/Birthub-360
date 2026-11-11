@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  ALL_MODULES,
-  getVisibleModuleItems,
-} from '../moduleRegistry.js';
+import { ALL_MODULES, getVisibleModuleItems } from '../moduleRegistry.js';
 import { isNavHiddenTab, NAV_HIDDEN_TABS, NAV_TAB_ALIASES, TAB_META } from '../tabMeta.js';
 
 const ALL_PERMISSIONS = {
