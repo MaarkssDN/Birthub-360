@@ -1,0 +1,167 @@
+import express from 'express';
+import rateLimit from 'express-rate-limit';
+import request from 'supertest';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { prisma } from '../../src/lib/prisma';
+import { LANDING_DEMO_CONSENT_VERSION, LANDING_LEAD_SOURCE } from '../../src/features/public-leads/publicLead.constants';
+import { publicLeadRoutes } from '../../src/features/public-leads/publicLead.routes';
+import { contactEmailIndex } from '../../src/lib/crypto/piiIndex';
+
+const valid = {
+  nome: 'Mariana Albuquerque',
+  email: 'mariana.demo@empresa-landing.com.br',
+  whatsapp: '(11) 98888-7777',
+  equipe: '16 a 50',
+  consent: true,
+  consentTextVersion: LANDING_DEMO_CONSENT_VERSION,
+};
+
+function buildApp(max = 20) {
+  const app = express();
+  app.use(express.json());
+  app.use(
+    '/api/public/leads',
+    rateLimit({
+      windowMs: 15 * 60 * 1000,
+      max,
+      standardHeaders: true,
+      legacyHeaders: false,
+      message: { ok: false, error: 'rate_limited' },
+    }),
+    publicLeadRoutes,
+  );
+  return app;
+}
+
+describe('POST /api/public/leads (integração)', () => {
+  beforeAll(() => {
+    process.env.LANDING_LEAD_ORGANIZATION_ID = 'test-org-id';
+  });
+
+  it('persiste lead + contato + prova de consentimento e responde 202 genérico', async () => {
+    const res = await request(buildApp()).post('/api/public/leads').send(valid);
+    expect(res.status).toBe(202);
+    expect(res.body).toEqual({ ok: true });
+    expect(res.body).not.toHaveProperty('leadId');
+
+    const emailIndex = contactEmailIndex(valid.email);
+    const contact = await prisma.contact.findFirst({
+      where: { organizationId: 'test-org-id', emailIndex, deletedAt: null },
+    });
+    expect(contact).toBeTruthy();
+    expect(contact?.name).toBe(valid.nome);
+
+    const lead = await prisma.lead.findFirst({
+      where: {
+        organizationId: 'test-org-id',
+        contactId: contact!.id,
+        source: LANDING_LEAD_SOURCE,
+        deletedAt: null,
+      },
+    });
+    expect(lead).toBeTruthy();
+    expect(lead?.status).toBe('Lead_Recebido');
+    expect(lead?.customFields).toMatchObject({ equipe: valid.equipe });
+
+    const consent = await prisma.publicLeadConsent.findFirst({
+      where: { organizationId: 'test-org-id', leadId: lead!.id },
+    });
+    expect(consent).toBeTruthy();
+    expect(consent?.termsVersion).toBe(LANDING_DEMO_CONSENT_VERSION);
+    expect(consent?.purpose).toBe('agendamento_demonstracao');
+    expect(consent?.termsText).toContain('agendamento da demonstração');
+    expect(consent?.grantedAt).toBeInstanceOf(Date);
+  });
+
+  it('não cria segundo lead no reenvio do mesmo e-mail e devolve o mesmo 202', async () => {
+    const app = buildApp();
+    const first = await request(app).post('/api/public/leads').send({
+      ...valid,
+      email: 'idempotente@empresa-landing.com.br',
+    });
+    const second = await request(app).post('/api/public/leads').send({
+      ...valid,
+      email: 'idempotente@empresa-landing.com.br',
+      nome: 'Outro Nome Tentando Sobrescrever',
+      whatsapp: '(21) 97777-6666',
+    });
+    expect(first.status).toBe(202);
+    expect(second.status).toBe(202);
+
+    const emailIndex = contactEmailIndex('idempotente@empresa-landing.com.br');
+    const contacts = await prisma.contact.findMany({
+      where: { organizationId: 'test-org-id', emailIndex, deletedAt: null },
+    });
+    expect(contacts).toHaveLength(1);
+    expect(contacts[0]?.name).toBe(valid.nome);
+
+    const leads = await prisma.lead.findMany({
+      where: {
+        organizationId: 'test-org-id',
+        contactId: contacts[0]!.id,
+        source: LANDING_LEAD_SOURCE,
+        deletedAt: null,
+      },
+    });
+    expect(leads).toHaveLength(1);
+  });
+
+  it('rejeita e-mail inválido e ausência de consentimento com 400', async () => {
+    const app = buildApp();
+    const invalidEmail = await request(app)
+      .post('/api/public/leads')
+      .send({ ...valid, email: 'sem-arroba' });
+    expect(invalidEmail.status).toBe(400);
+    expect(invalidEmail.body.error).toBe('invalid_payload');
+    expect(invalidEmail.body.fields.email).toBe('invalid');
+
+    const noConsent = await request(app)
+      .post('/api/public/leads')
+      .send({ ...valid, email: 'sem.consent@empresa-landing.com.br', consent: false });
+    expect(noConsent.status).toBe(400);
+    expect(noConsent.body.fields.consent).toBe('required');
+
+    expect(noConsent.status).toBe(400);
+  });
+
+  it('honeypot devolve 202 e não grava registro', async () => {
+    const email = 'honeypot@empresa-landing.com.br';
+    const res = await request(buildApp())
+      .post('/api/public/leads')
+      .send({ ...valid, email, website: 'https://spam.invalid' });
+    expect(res.status).toBe(202);
+
+    const emailIndex = contactEmailIndex(email);
+    const contact = await prisma.contact.findFirst({
+      where: { organizationId: 'test-org-id', emailIndex },
+    });
+    expect(contact).toBeNull();
+  });
+
+  it('ignora tenantId enviado pelo cliente e grava só no tenant configurado no servidor', async () => {
+    const email = 'tenant-ignore@empresa-landing.com.br';
+    const res = await request(buildApp())
+      .post('/api/public/leads')
+      .send({ ...valid, email, tenantId: 'org-arbitraria' });
+    expect(res.status).toBe(202);
+
+    const emailIndex = contactEmailIndex(email);
+    const contact = await prisma.contact.findFirst({
+      where: { emailIndex, deletedAt: null },
+    });
+    expect(contact?.organizationId).toBe('test-org-id');
+  });
+
+  it('responde 429 depois de N requisições no mesmo IP', async () => {
+    const app = buildApp(3);
+    const statuses: number[] = [];
+    for (let i = 0; i < 4; i += 1) {
+      const res = await request(app)
+        .post('/api/public/leads')
+        .send({ ...valid, email: `rate${i}@empresa-landing.com.br` });
+      statuses.push(res.status);
+    }
+    expect(statuses.slice(0, 3).every((status) => status === 202 || status === 400)).toBe(true);
+    expect(statuses[3]).toBe(429);
+  });
+});

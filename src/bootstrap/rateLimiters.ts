@@ -112,4 +112,20 @@ export function applyRateLimiters(app: Express): void {
     },
   });
   app.use('/api/bug-reports', authenticateToken, bugReportLimiter);
+
+  // Rate limiting dedicado da captura pública de lead da landing — por IP, bem mais
+  // apertado que o apiLimiter genérico (cada POST pode gravar Company/Contact/Lead +
+  // prova de consentimento). Montado sem authenticateToken de propósito: a rota é pública.
+  const publicLeadLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: env.PUBLIC_LEAD_RATE_LIMIT_MAX,
+    standardHeaders: true,
+    legacyHeaders: false,
+    store: redisStoreOrMemory(),
+    message: {
+      ok: false,
+      error: 'rate_limited',
+    },
+  });
+  app.use('/api/public/leads', publicLeadLimiter);
 }

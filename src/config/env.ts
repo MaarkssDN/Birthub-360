@@ -80,6 +80,15 @@ const envSchema = z
     // folgado para uso legítimo (ninguém reporta 10 bugs em 15 minutos) e apertado o bastante para
     // conter um usuário mal-intencionado enchendo a tabela BugReport.
     BUG_REPORT_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
+    // Limite dedicado do POST público /api/public/leads (landing 360°), por IP, janela de 15min.
+    // 5 é folgado para um humano preencher o formulário (inclusive retries) e apertado o bastante
+    // para conter abuso/enumeração. Não compartilha a cota genérica de 600 do apiLimiter.
+    PUBLIC_LEAD_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(5),
+    // Organização dona dos leads da landing institucional. O endpoint público NÃO aceita
+    // tenantId/organizationId do cliente — só este valor, configurado no servidor, resolve o
+    // tenant. Sem ele o POST responde 503 (fail-closed). Use o id (cuid) da Organization, não um
+    // slug ou nome. Pendente do OK do Marcelo em produção.
+    LANDING_LEAD_ORGANIZATION_ID: z.string().min(1).optional(),
     JSON_BODY_LIMIT: z.string().default('2mb'),
     TRUST_PROXY: z
       .enum(['true', 'false'])
