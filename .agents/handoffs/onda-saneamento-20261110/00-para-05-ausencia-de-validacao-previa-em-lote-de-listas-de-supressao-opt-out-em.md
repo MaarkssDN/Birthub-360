@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 05 (Prospecção Comercial)
 Onda: Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-020)
-Status: aberto
+Status: em-andamento
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 4
@@ -48,3 +48,13 @@ Executar a tarefa `TAREFA-SANEAMENTO-020` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução
+
+**Agente 05 — 2026-11-11** (branch `agente/05-supressao-optout`, commit `f635264b6`, pendente de revisão do Agente 24)
+
+`sendColdEmailBatch(campaigns)` adicionada em `src/features/prospecting/services/cold-email.service.ts`: consulta `isOptedOut`/`prismaOptOutRepository` para TODA a lista antes de qualquer envio, classifica cada item como `sent`/`failed`/`opt-out-suppressed`/`invalid`, e devolve contagens agregadas (`eligibleCount`, `suppressedCount`, etc.) — opt-out vira filtro sanitizador na entrada do funil, com visibilidade prévia sobre elegíveis. Fail-closed sem `organizationId`; erro do supressor propaga (sem fallback silencioso); `sendColdEmail` mantém a checagem de borda (defesa em profundidade).
+
+Testes: `cold-email.service.test.ts` — 9/9 (lista mista, supressão, inválido, contagens).
+
+Observação para o 24: a checagem por item usa `isOptedOut` (1 query por campanha) — filtro em lote por consulta única ficou fora do escopo cirúrgico; se o volume de listas crescer, avaliar `findMatches` batch (registrar como melhoria futura, não bloqueia).
