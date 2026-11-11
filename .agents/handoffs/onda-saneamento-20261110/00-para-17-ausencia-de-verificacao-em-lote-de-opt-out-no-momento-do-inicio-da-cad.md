@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 17 (Cadência Multicanal e Ciclo de Receita)
 Onda: Onda 3 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-035)
-Status: aberto
+Status: em-andamento
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 3
@@ -48,3 +48,19 @@ Executar a tarefa `TAREFA-SANEAMENTO-035` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução
+
+**Agente 17 — 2026-11-11** (branch `agente/17-optout-cadencia`, pendente de revisão do Agente 24; concluído pelo Agente 00 após interrupção do executor)
+
+O arquivo citado (`services/cadenceExecution.service.ts`) não existia — o fluxo real de início de cadência é `POST /api/cadence/runs` em `cadence.routes.ts` (o worker consome runs já criados). Implementado:
+
+- `domain/cadenceEligibility.ts` (commit `e6c5b8bcc`): regra pura `evaluateLeadCadenceEligibility` cobrindo as mesmas fontes de `checkOptOutStatus` — contato anonimizado/excluído (LGPD Art. 18), flags `optOut*` em `customFields` de lead e contato (escopo por canal), `OptOutRecord` casando por leadId/e-mail/telefone com escopo `global`/canal.
+- `cadence.routes.ts` (`POST /runs`): consulta `prismaOptOutRepository.list(organizationId)` UMA vez (filtro em lote, não N+1) e avalia o lead ANTES de criar o `CadenceRun`; inelegível → 409 com motivo. Cobre o gap real: lead **sem `contactId`** antes passava sem nenhuma checagem (a verificação antiga só rodava quando `lead.contactId` existia e só por contato).
+- `__tests__/cadenceEligibility.test.ts`: 8 testes (sucesso, anonimização, flags genéricas/por canal, OptOutRecord por leadId/e-mail/telefone com escopo, lead sem contactId, contrato de tenant).
+
+Mantida a checagem `checkOptOutStatus` existente como segunda camada (ela também cobre leads irmãos do mesmo contato).
+
+**Fora de escopo descoberto:** `START_SDR_CADENCE` em `src/features/market-intelligence/server/actionExecutor.service.ts` cria `CadenceRun` SEM qualquer checagem de opt-out — domínio do Agente 07. Handoff `17-para-07-optout-ausente-no-start-sdr-cadence.md` aberto.
+
+Gates: `npx tsc --noEmit` ✓, vitest `cadenceEligibility` + `optOut` 26/26 ✓.
