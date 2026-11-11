@@ -3,6 +3,7 @@ import {
   getFirstInvalidLeadField,
   isValidBrazilianWhatsapp,
   isValidLeadEmail,
+  mapLeadServerFieldErrors,
   normalizeBrazilianWhatsapp,
   validateLeadForm,
 } from '@/features/landing/services/leadFormValidation';
@@ -21,7 +22,7 @@ describe('leadFormValidation', () => {
     expect(isValidBrazilianWhatsapp('')).toBe(false);
   });
 
-  it('valida e-mail simples e exige nome, WhatsApp e consentimento', () => {
+  it('valida e-mail simples e exige nome e consentimento; WhatsApp só é validado se preenchido', () => {
     expect(isValidLeadEmail('mariana@vanguarda.com.br')).toBe(true);
     expect(isValidLeadEmail('invalido-sem-arroba')).toBe(false);
 
@@ -38,5 +39,25 @@ describe('leadFormValidation', () => {
     expect(errors.whatsapp).toBeDefined();
     expect(errors.consent).toBeDefined();
     expect(getFirstInvalidLeadField(errors)).toBe('nome');
+
+    const withoutWhatsapp = validateLeadForm({
+      nome: 'Mariana Albuquerque',
+      email: 'mariana@vanguarda.com.br',
+      whatsapp: '',
+      equipe: '6 a 15',
+      consent: true,
+    });
+    expect(withoutWhatsapp).toEqual({});
+  });
+
+  it('mapeia fields de 400 do servidor para erros de campo e mensagem de formulário', () => {
+    const mapped = mapLeadServerFieldErrors({
+      email: 'invalid',
+      consent: 'required',
+      consentTextVersion: 'stale',
+    });
+    expect(mapped.fieldErrors.email).toMatch(/e-mail válido/i);
+    expect(mapped.fieldErrors.consent).toMatch(/autorizar o tratamento/i);
+    expect(mapped.formMessage).toMatch(/versão do termo de consentimento/i);
   });
 });

@@ -1,53 +1,43 @@
 /**
  * Cliente de captura de lead da landing.
  *
- * O contrato HTTP ainda é responsabilidade do Agente 01
- * (handoff `.agents/handoffs/onda-landing-360-auditoria/02-para-01-endpoint-captura-lead.md`).
- * Este módulo não inventa a rota: enquanto `LEAD_CAPTURE_ENDPOINT` permanecer indefinido
- * ou com o placeholder, `submitLead` rejeita com erro tipado "endpoint indisponível"
- * e nunca simula sucesso.
+ * Contrato final do Agente 01 (PR #216): POST /api/public/demo-leads, sem auth.
+ * A rota vive somente nesta constante. Sucesso apenas com HTTP 202 e `{ ok: true }`.
  */
 
-export const LEAD_CAPTURE_ENDPOINT_PLACEHOLDER = 'PENDENTE_CONTRATO_AGENTE_01';
+/** Única constante da rota de captura — contrato PR #216. */
+export const LEAD_CAPTURE_ENDPOINT = '/api/public/demo-leads';
 
 /**
- * PENDENTE do contrato do Agente 01.
- * Substituir pelo caminho real somente quando o contrato for publicado.
- * Não inventar a rota.
- */
-export const LEAD_CAPTURE_ENDPOINT: string = LEAD_CAPTURE_ENDPOINT_PLACEHOLDER;
-
-/**
- * Versão do texto de consentimento exibido no formulário.
- * A alinhar com o contrato do Agente 01 e a validação do Agente 21.
- * Não criar texto legal novo sem o OK do Marcelo / Agente 21.
+ * Versão enviada no payload (`consentTextVersion`). Literal do contrato do Agente 01.
+ *
+ * TEXTO LEGAL PROVISÓRIO: o texto final exibido no formulário e o prazo de
+ * retenção dependem do OK do Marcelo. Não tratar esta versão como aprovação
+ * jurídica do copy provisório da UI.
  */
 export const LEAD_CONSENT_TEXT_VERSION = 'landing-demo-v1';
 
 /**
- * Finalidade declarada no texto atual de consentimento
- * ("tratamento dos dados estritamente para agendamento da demonstração").
- * A alinhar com o contrato do Agente 01 e a validação do Agente 21.
+ * Finalidade enviada no payload (`purpose`). Lista fechada do contrato: hoje
+ * apenas `agendamento_demonstracao`.
  */
-export const LEAD_CONSENT_PURPOSE = 'agendamento da demonstração';
+export const LEAD_CONSENT_PURPOSE = 'agendamento_demonstracao';
 
-export type LeadConsentMetadata = {
-  /** Versão do texto exibido. A alinhar com 01/21. */
-  textVersion: string;
-  /** Finalidade declarada. A alinhar com 01/21. */
-  purpose: string;
-  /** Timestamp ISO gerado no cliente no momento do envio. A alinhar com 01/21. */
-  timestamp: string;
-};
+export const LEAD_TEAM_SIZES = ['1 a 5', '6 a 15', '16 a 50', '50+'] as const;
+
+export type LeadTeamSize = (typeof LEAD_TEAM_SIZES)[number];
 
 export type LeadCapturePayload = {
   nome: string;
   email: string;
-  whatsapp: string;
-  equipe: string;
-  consent: boolean;
-  /** Metadados de consentimento — a alinhar com 01/21. */
-  consentMetadata: LeadConsentMetadata;
+  /** Opcional: omitir a chave quando o titular não informar WhatsApp. */
+  whatsapp?: string;
+  equipe: LeadTeamSize;
+  consent: true;
+  consentTextVersion: typeof LEAD_CONSENT_TEXT_VERSION;
+  purpose: typeof LEAD_CONSENT_PURPOSE;
+  /** Honeypot. A UI envia string vazia; preenchido pelo bot não deve ser impedido no cliente. */
+  website: string;
 };
 
 export type LeadSubmitErrorCode =
@@ -55,17 +45,27 @@ export type LeadSubmitErrorCode =
   | 'network'
   | 'validation'
   | 'rate_limit'
+  | 'unavailable'
   | 'server';
+
+export type LeadServerFieldIssue = 'required' | 'invalid' | 'stale' | string;
 
 export class LeadSubmitError extends Error {
   readonly code: LeadSubmitErrorCode;
   readonly status?: number;
+  readonly fields?: Record<string, LeadServerFieldIssue>;
 
-  constructor(code: LeadSubmitErrorCode, message: string, status?: number) {
+  constructor(
+    code: LeadSubmitErrorCode,
+    message: string,
+    status?: number,
+    fields?: Record<string, LeadServerFieldIssue>,
+  ) {
     super(message);
     this.name = 'LeadSubmitError';
     this.code = code;
     this.status = status;
+    this.fields = fields;
   }
 }
 
@@ -73,13 +73,15 @@ export const LEAD_SUBMIT_USER_MESSAGES: Record<LeadSubmitErrorCode, string> = {
   endpoint_unavailable: 'O envio ainda não está disponível. Tente novamente em instantes.',
   network: 'Não foi possível conectar. Verifique sua conexão e tente novamente.',
   validation: 'Não foi possível enviar seus dados. Revise as informações e tente novamente.',
-  rate_limit: 'Muitas tentativas. Aguarde alguns instantes e tente novamente.',
+  rate_limit:
+    'Muitas tentativas. O limite é de 5 envios a cada 15 minutos. Aguarde e tente novamente.',
+  unavailable: 'O envio está temporariamente indisponível. Tente novamente em instantes.',
   server: 'Estamos com instabilidade no momento. Tente novamente em instantes.',
 };
 
 export function isLeadCaptureEndpointConfigured(endpoint: string = LEAD_CAPTURE_ENDPOINT): boolean {
   const trimmed = endpoint.trim();
-  return trimmed.length > 0 && trimmed !== LEAD_CAPTURE_ENDPOINT_PLACEHOLDER;
+  return trimmed.length > 0 && trimmed !== 'PENDENTE_CONTRATO_AGENTE_01';
 }
 
 export function isLeadSubmitError(error: unknown): error is LeadSubmitError {
@@ -104,9 +106,49 @@ export type SubmitLeadOptions = {
   signal?: AbortSignal;
 };
 
+type LeadCaptureResponseBody = {
+  ok?: unknown;
+  error?: unknown;
+  fields?: unknown;
+};
+
+function readResponseBody(data: unknown): LeadCaptureResponseBody {
+  if (!data || typeof data !== 'object') {
+    return {};
+  }
+  return data as LeadCaptureResponseBody;
+}
+
+async function parseResponseBody(response: Response): Promise<unknown> {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
+function isSuccessBody(body: unknown): boolean {
+  return readResponseBody(body).ok === true;
+}
+
+function readFieldErrors(
+  body: LeadCaptureResponseBody,
+): Record<string, LeadServerFieldIssue> | undefined {
+  if (!body.fields || typeof body.fields !== 'object' || Array.isArray(body.fields)) {
+    return undefined;
+  }
+  const fields: Record<string, LeadServerFieldIssue> = {};
+  for (const [key, value] of Object.entries(body.fields as Record<string, unknown>)) {
+    if (typeof value === 'string' && value.length > 0) {
+      fields[key] = value;
+    }
+  }
+  return Object.keys(fields).length > 0 ? fields : undefined;
+}
+
 /**
  * Envia o payload para um endpoint explícito. Usado pelos testes e por `submitLead`.
- * Sucesso somente com resposta HTTP 2xx. Nunca simula sucesso.
+ * Sucesso somente com HTTP 202 e `{ ok: true }`. Nunca simula sucesso.
  */
 export async function submitLeadToEndpoint(
   endpoint: string,
@@ -138,16 +180,43 @@ export async function submitLeadToEndpoint(
     throw new LeadSubmitError('network', LEAD_SUBMIT_USER_MESSAGES.network);
   }
 
-  if (response.ok) {
+  const body = await parseResponseBody(response);
+
+  if (response.status === 202 && isSuccessBody(body)) {
     return;
   }
 
-  if (response.status === 429) {
+  const parsed = readResponseBody(body);
+  const errorCode = typeof parsed.error === 'string' ? parsed.error : undefined;
+
+  if (response.status === 429 || errorCode === 'rate_limited') {
     throw new LeadSubmitError('rate_limit', LEAD_SUBMIT_USER_MESSAGES.rate_limit, 429);
   }
 
+  if (response.status === 503 || errorCode === 'unavailable') {
+    throw new LeadSubmitError(
+      'unavailable',
+      LEAD_SUBMIT_USER_MESSAGES.unavailable,
+      response.status,
+    );
+  }
+
+  if (response.status === 400 || errorCode === 'invalid_payload') {
+    throw new LeadSubmitError(
+      'validation',
+      LEAD_SUBMIT_USER_MESSAGES.validation,
+      response.status,
+      readFieldErrors(parsed),
+    );
+  }
+
   if (response.status >= 400 && response.status < 500) {
-    throw new LeadSubmitError('validation', LEAD_SUBMIT_USER_MESSAGES.validation, response.status);
+    throw new LeadSubmitError(
+      'validation',
+      LEAD_SUBMIT_USER_MESSAGES.validation,
+      response.status,
+      readFieldErrors(parsed),
+    );
   }
 
   throw new LeadSubmitError('server', LEAD_SUBMIT_USER_MESSAGES.server, response.status);

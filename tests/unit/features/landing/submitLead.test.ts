@@ -1,24 +1,24 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   LEAD_CAPTURE_ENDPOINT,
-  LEAD_CAPTURE_ENDPOINT_PLACEHOLDER,
+  LEAD_CONSENT_PURPOSE,
+  LEAD_CONSENT_TEXT_VERSION,
   LEAD_SUBMIT_USER_MESSAGES,
   isLeadCaptureEndpointConfigured,
   submitLead,
   submitLeadToEndpoint,
+  type LeadCapturePayload,
 } from '@/features/landing/services/submitLead';
 
-const validPayload = {
+const validPayload: LeadCapturePayload = {
   nome: 'Mariana Albuquerque',
   email: 'mariana@vanguarda.com.br',
   whatsapp: '11999999999',
   equipe: '6 a 15',
   consent: true,
-  consentMetadata: {
-    textVersion: 'landing-demo-v1',
-    purpose: 'agendamento da demonstração',
-    timestamp: '2026-11-11T05:39:00.000Z',
-  },
+  consentTextVersion: LEAD_CONSENT_TEXT_VERSION,
+  purpose: LEAD_CONSENT_PURPOSE,
+  website: '',
 };
 
 describe('submitLead', () => {
@@ -33,73 +33,109 @@ describe('submitLead', () => {
     vi.unstubAllGlobals();
   });
 
-  it('rejeita com endpoint indisponível quando a constante é o placeholder e não chama fetch', async () => {
-    expect(LEAD_CAPTURE_ENDPOINT).toBe(LEAD_CAPTURE_ENDPOINT_PLACEHOLDER);
-    expect(isLeadCaptureEndpointConfigured()).toBe(false);
+  function jsonResponse(status: number, body: unknown) {
+    return {
+      ok: status >= 200 && status < 300,
+      status,
+      json: async () => body,
+    };
+  }
 
-    await expect(submitLead(validPayload)).rejects.toMatchObject({
-      name: 'LeadSubmitError',
-      code: 'endpoint_unavailable',
-      message: LEAD_SUBMIT_USER_MESSAGES.endpoint_unavailable,
-    });
-    expect(fetchMock).not.toHaveBeenCalled();
+  it('usa a constante única POST /api/public/demo-leads', () => {
+    expect(LEAD_CAPTURE_ENDPOINT).toBe('/api/public/demo-leads');
+    expect(isLeadCaptureEndpointConfigured()).toBe(true);
+    expect(LEAD_CONSENT_TEXT_VERSION).toBe('landing-demo-v1');
+    expect(LEAD_CONSENT_PURPOSE).toBe('agendamento_demonstracao');
   });
 
-  it('rejeita com endpoint indisponível para string vazia ou só espaços', async () => {
+  it('rejeita endpoint vazio ou placeholder e não chama fetch', async () => {
+    await expect(submitLeadToEndpoint('PENDENTE_CONTRATO_AGENTE_01', validPayload)).rejects.toMatchObject({
+      code: 'endpoint_unavailable',
+    });
     await expect(submitLeadToEndpoint('   ', validPayload)).rejects.toMatchObject({
       code: 'endpoint_unavailable',
     });
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('resolve somente em resposta 2xx e envia POST JSON com o payload', async () => {
-    fetchMock.mockResolvedValue({ ok: true, status: 201 });
+  it('resolve somente em 202 com ok:true e envia POST JSON com honeypot vazio', async () => {
+    fetchMock.mockResolvedValue(jsonResponse(202, { ok: true }));
 
-    await expect(submitLeadToEndpoint('/api/leads', validPayload)).resolves.toBeUndefined();
+    const payload: LeadCapturePayload = { ...validPayload, website: '' };
+    await expect(submitLead(payload)).resolves.toBeUndefined();
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe('/api/leads');
+    expect(url).toBe('/api/public/demo-leads');
     expect(init.method).toBe('POST');
     expect((init.headers as Record<string, string>)['Content-Type']).toBe('application/json');
-    expect(JSON.parse(String(init.body))).toEqual(validPayload);
+    expect(JSON.parse(String(init.body))).toEqual(payload);
+    expect(JSON.parse(String(init.body)).website).toBe('');
   });
 
-  it('mapeia 4xx para erro de validação com mensagem genérica segura', async () => {
-    fetchMock.mockResolvedValue({ ok: false, status: 422, json: async () => ({ error: 'segredo' }) });
+  it('omite whatsapp do corpo quando a chave não é enviada', async () => {
+    fetchMock.mockResolvedValue(jsonResponse(202, { ok: true }));
+    const { whatsapp: _omit, ...withoutWhatsapp } = validPayload;
+    await submitLead(withoutWhatsapp);
+    const body = JSON.parse(String((fetchMock.mock.calls[0] as [string, RequestInit])[1].body));
+    expect(body).not.toHaveProperty('whatsapp');
+  });
 
-    await expect(submitLeadToEndpoint('/api/leads', validPayload)).rejects.toMatchObject({
+  it('não trata 200/201 ou 202 sem ok:true como sucesso', async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse(200, { ok: true }));
+    await expect(submitLead(validPayload)).rejects.toMatchObject({ code: 'server', status: 200 });
+
+    fetchMock.mockResolvedValueOnce(jsonResponse(201, { ok: true }));
+    await expect(submitLead(validPayload)).rejects.toMatchObject({ code: 'server', status: 201 });
+
+    fetchMock.mockResolvedValueOnce(jsonResponse(202, { ok: false }));
+    await expect(submitLead(validPayload)).rejects.toMatchObject({ code: 'server', status: 202 });
+  });
+
+  it('mapeia 400 invalid_payload com fields', async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse(400, {
+        ok: false,
+        error: 'invalid_payload',
+        fields: { email: 'invalid', consent: 'required' },
+      }),
+    );
+
+    const error = await submitLead(validPayload).catch((caught) => caught);
+    expect(error).toMatchObject({
       name: 'LeadSubmitError',
       code: 'validation',
-      status: 422,
+      status: 400,
       message: LEAD_SUBMIT_USER_MESSAGES.validation,
+      fields: { email: 'invalid', consent: 'required' },
     });
   });
 
-  it('mapeia 429 para erro de limite de tentativas', async () => {
-    fetchMock.mockResolvedValue({ ok: false, status: 429 });
+  it('mapeia 429 rate_limited com mensagem específica', async () => {
+    fetchMock.mockResolvedValue(jsonResponse(429, { ok: false, error: 'rate_limited' }));
 
-    await expect(submitLeadToEndpoint('/api/leads', validPayload)).rejects.toMatchObject({
+    await expect(submitLead(validPayload)).rejects.toMatchObject({
       code: 'rate_limit',
       status: 429,
       message: LEAD_SUBMIT_USER_MESSAGES.rate_limit,
     });
+    expect(LEAD_SUBMIT_USER_MESSAGES.rate_limit).toMatch(/5 envios a cada 15 minutos/i);
   });
 
-  it('mapeia 5xx para erro de servidor', async () => {
-    fetchMock.mockResolvedValue({ ok: false, status: 503 });
+  it('mapeia 503 unavailable com mensagem específica', async () => {
+    fetchMock.mockResolvedValue(jsonResponse(503, { ok: false, error: 'unavailable' }));
 
-    await expect(submitLeadToEndpoint('/api/leads', validPayload)).rejects.toMatchObject({
-      code: 'server',
+    await expect(submitLead(validPayload)).rejects.toMatchObject({
+      code: 'unavailable',
       status: 503,
-      message: LEAD_SUBMIT_USER_MESSAGES.server,
+      message: LEAD_SUBMIT_USER_MESSAGES.unavailable,
     });
   });
 
-  it('mapeia falha de rede para erro de rede e não simula sucesso', async () => {
+  it('mapeia falha de rede para erro genérico e não simula sucesso', async () => {
     fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
 
-    await expect(submitLeadToEndpoint('/api/leads', validPayload)).rejects.toMatchObject({
+    await expect(submitLead(validPayload)).rejects.toMatchObject({
       code: 'network',
       message: LEAD_SUBMIT_USER_MESSAGES.network,
     });
@@ -109,8 +145,8 @@ describe('submitLead', () => {
     const abortError = new DOMException('The operation was aborted.', 'AbortError');
     fetchMock.mockRejectedValue(abortError);
 
-    await expect(submitLeadToEndpoint('/api/leads', validPayload, { signal: new AbortController().signal })).rejects.toBe(
-      abortError,
-    );
+    await expect(
+      submitLead(validPayload, { signal: new AbortController().signal }),
+    ).rejects.toBe(abortError);
   });
 });
