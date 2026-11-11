@@ -85,6 +85,18 @@ mesclado neste momento).
 - Testes unitários: 202/`ok:true`, 400 com `fields`, 429, 503, rede, honeypot
   vazio, WhatsApp opcional, consentimento desmarcado e bloqueio.
 
+- Parecer do Agente 24 no PR #219 (aprovado condicionado), atendido nesta branch:
+  contraste AA no tema claro do texto de consentimento e dos erros de campo
+  (`text-slate-600 dark:text-slate-400` = 7,58:1 no branco; `text-red-600
+  dark:text-red-400` = 4,83:1 no branco; no card escuro `#0F172A` as variantes
+  `dark:` permanecem 6,96:1 e 6,45:1). Chips de equipe como `radiogroup` com
+  `role="radio"`, `aria-checked` e setas/Home/End. `#lead-equipe-error` associado
+  via `aria-describedby` no grupo. E2E em `tests/e2e/landing-lead-form.spec.ts`
+  (mock 202/400/429/503, consentimento desmarcado e bloqueio), sem alteração de
+  snapshots visuais — o spec foi escrito, mas não executado aqui porque o
+  Playwright E2E exige `start:e2e` (Express + Prisma/banco). Nenhum texto legal
+  visível novo foi adicionado.
+
 ### O que falta
 
 - Merge do PR #216 na `main` para o endpoint existir no ambiente integrado.
