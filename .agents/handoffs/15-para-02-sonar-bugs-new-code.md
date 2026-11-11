@@ -60,7 +60,8 @@ outro dono).
 
 Corrigido pelo Agente 02 na branch `agente-02/sonar-bugs-new-code`, a partir da
 `origin/main` `94f95097b` (Quality Gate citado no handoff). SHA do fix:
-`ca3beab91751565ae115f5dda8fbb3536e63add8`.
+`ca3beab91751565ae115f5dda8fbb3536e63add8`. PR:
+https://github.com/marcelinhomarkss-rgb/Birthub-360/pull/229 (HEAD `360b6aac5`).
 
 - **S3923** `CopilotoIaPanel.tsx`: removido o ternário inútil
   `` embedded ? '' : '' ``. O `className` ficou estático
