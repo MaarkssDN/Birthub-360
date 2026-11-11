@@ -56,7 +56,11 @@ Branch de trabalho: `integracao/onda-saneamento-20261110` (depois mergeada em `m
 
 ## ORDEM 06 — Revisão independente (Agente 24)
 
-**Status: EM ANDAMENTO** — revisor independente acionado; parecer será gravado em `.agents/reviews/24-revisao-missao-ordens-pos-homologacao-20261111.md`. (Existe também `24-revisao-onda-saneamento-wave2-20261111.md` de trabalho paralelo sobre outros agentes — APROVADO 4/4.)
+**Status: CONCLUÍDO — APROVADO COM RESSALVAS, sem bloqueantes.**
+
+Parecer em `.agents/reviews/24-revisao-missao-ordens-pos-homologacao-20261111.md` (revisor independente, evidências executadas: 51+25 testes unitários verdes, tsc limpo, 29/29 personagens íntegros, zero segredos nos commits, jornadas não-tautológicas confirmadas).
+
+Ressalvas registradas: (1) Docker 2375 aberto — único risco residual real; (2) jornadas auditadas por leitura pelo revisor (eu as executei: integration 2/2, e2e 1/1); (3) swarmConcurrency em memória — limitação documentada para multi-réplica; (4) props mortas cosméticas em Sidebar.tsx.
 
 ## ORDEM 07 — Próximo ciclo funcional
 
