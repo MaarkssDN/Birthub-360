@@ -35,7 +35,11 @@ Agente 15 — Segurança Aplicada, 2026-11-11 (America/Sao_Paulo). Branch `agent
 - `subjectTokenizer.ts`: **não alterado**. `KmsTenantPepperProvider` é alias intencional de `KmsEnvelopeTenantKeyProvider` (comentário: "Nome canônico exigido em produção"), não duplicação de implementação. knip reporta os dois nomes; remover o alias quebraria o contrato canônico.
 
 ### PR
-Aberto contra `main` nesta branch. Número e URL constam no commit de acompanhamento deste handoff, se já houver; caso contrário, no corpo do próprio PR.
+- Número: #218
+- URL: https://github.com/marcelinhomarkss-rgb/Birthub-360/pull/218
+- Base: `main`
+- Branch: `agente-15/auth-import-fix`
+- Precisa de parecer APROVADO do Agente 24 preso ao SHA do head; merge só pelo Agente 25.
 
 ### Validações
 - `npm run typecheck`: passou (exit 0).
