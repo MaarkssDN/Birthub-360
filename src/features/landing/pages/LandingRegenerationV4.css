@@ -42,7 +42,7 @@ html.light .b360-adaptive-landing,
 .b360-final-cta h2,
 .login-antessala-backdrop :is(h1, h2) {
   font-family: "Sora", system-ui, sans-serif !important;
-  background: linear-gradient(135deg, #00D4FF 0%, #8B7DFF 50%, #FF2D9B 100%) !important;
+  background: linear-gradient(135deg, #00d4ff 0%, #8b7dff 50%, #ff2d9b 100%) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
@@ -215,21 +215,39 @@ html.light .b360-adaptive-landing .b360-topbar,
   display: block;
   width: 100%;
   text-wrap: balance;
-  background: linear-gradient(135deg, #00D4FF 0%, #38BDF8 30%, #8B7DFF 70%, #FF2D9B 100%) !important;
+  background: linear-gradient(
+    135deg,
+    #00d4ff 0%,
+    #38bdf8 30%,
+    #8b7dff 70%,
+    #ff2d9b 100%
+  ) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   filter: drop-shadow(0 0 32px rgba(0, 212, 255, 0.45)) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.55)) !important;
 }
 
 .b360-adaptive-landing .b360-hero-title .b360-hero-line-iris {
-  background: linear-gradient(135deg, #A78BFA 0%, #C084FC 30%, #8B7DFF 70%, #6366F1 100%) !important;
+  background: linear-gradient(
+    135deg,
+    #a78bfa 0%,
+    #c084fc 30%,
+    #8b7dff 70%,
+    #6366f1 100%
+  ) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   filter: drop-shadow(0 0 32px rgba(168, 85, 247, 0.45)) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.55)) !important;
 }
 
 .b360-adaptive-landing .b360-hero-title .b360-hero-line-gold {
-  background: linear-gradient(135deg, #FDE047 0%, #FBBF24 35%, #F59E0B 70%, #D97706 100%) !important;
+  background: linear-gradient(
+    135deg,
+    #fde047 0%,
+    #fbbf24 35%,
+    #f59e0b 70%,
+    #d97706 100%
+  ) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   filter: drop-shadow(0 0 32px rgba(245, 158, 11, 0.45)) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.55)) !important;
@@ -479,7 +497,13 @@ html.light .b360-adaptive-landing .b360-hero-title .b360-hero-line-gold,
 .b360-adaptive-landing .b360-pillars-head h2 {
   font-size: clamp(34px, 4.4vw, 62px) !important;
   line-height: 1.1 !important;
-  background: linear-gradient(135deg, #ffffff 0%, #a5f3fc 30%, #38bdf8 70%, #00d4ff 100%) !important;
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #a5f3fc 30%,
+    #38bdf8 70%,
+    #00d4ff 100%
+  ) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   filter: drop-shadow(0 0 24px rgba(0, 212, 255, 0.35)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)) !important;
@@ -671,7 +695,13 @@ html.light .b360-adaptive-landing .b360-pillars-head h2,
   font-size: clamp(32px, 3.8vw, 52px) !important;
   line-height: 1.14 !important;
   margin-bottom: 16px;
-  background: linear-gradient(135deg, #ffffff 0%, #bae6fd 30%, #38bdf8 70%, #00d4ff 100%) !important;
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #bae6fd 30%,
+    #38bdf8 70%,
+    #00d4ff 100%
+  ) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   filter: drop-shadow(0 0 24px rgba(0, 212, 255, 0.35)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)) !important;
@@ -1135,7 +1165,7 @@ html.light .b360-adaptive-landing .b360-sectionhead h2,
   .b360-adaptive-landing .b360-hero-title {
     font-size: 32px;
   }
-.b360-adaptive-landing .b360-console-kpis {
+  .b360-adaptive-landing .b360-console-kpis {
     grid-template-columns: 1fr;
   }
   .b360-adaptive-landing .b360-aurora .b360-aurora-inner {
@@ -1167,14 +1197,13 @@ html.light .b360-adaptive-landing .b360-sectionhead h2,
   }
 }
 
-
-
 /* ==========================================================================
    ESTILO BENTO MASTER PARA TODOS OS CARDS DA LANDING PAGE
    Inspirado no padrão dos 11 módulos e na referência do vídeo
    ========================================================================== */
 
-.b360-adaptive-landing :is(
+.b360-adaptive-landing
+:is(
   .b360-feature-card,
   .b360-problem-card,
   .b360-platform-card,
@@ -1185,34 +1214,42 @@ html.light .b360-adaptive-landing .b360-sectionhead h2,
   .b360-hero-console,
   .b360-fanned-card
 ),
-html:not(.dark) .b360-adaptive-landing :is(
-  .b360-feature-card,
-  .b360-problem-card,
-  .b360-platform-card,
-  .b360-flow-card,
-  .b360-integration-card,
-  .b360-module,
-  .b360-copilot-card,
-  .b360-hero-console,
-  .b360-fanned-card
-),
-[data-theme="light"] .b360-adaptive-landing :is(
-  .b360-feature-card,
-  .b360-problem-card,
-  .b360-platform-card,
-  .b360-flow-card,
-  .b360-integration-card,
-  .b360-module,
-  .b360-copilot-card,
-  .b360-hero-console,
-  .b360-fanned-card
-) {
+html:not(.dark)
+  .b360-adaptive-landing
+  :is(
+    .b360-feature-card,
+    .b360-problem-card,
+    .b360-platform-card,
+    .b360-flow-card,
+    .b360-integration-card,
+    .b360-module,
+    .b360-copilot-card,
+    .b360-hero-console,
+    .b360-fanned-card
+  ),
+[data-theme="light"]
+  .b360-adaptive-landing
+  :is(
+    .b360-feature-card,
+    .b360-problem-card,
+    .b360-platform-card,
+    .b360-flow-card,
+    .b360-integration-card,
+    .b360-module,
+    .b360-copilot-card,
+    .b360-hero-console,
+    .b360-fanned-card
+  ) {
   position: relative;
   min-width: 0;
   border-radius: 22px !important;
   border: 1px solid rgba(56, 189, 248, 0.22) !important;
   background:
-    radial-gradient(circle at 85% 10%, rgba(var(--card-accent-rgb, 0, 212, 255), 0.12), transparent 60%),
+    radial-gradient(
+      circle at 85% 10%,
+      rgba(var(--card-accent-rgb, 0, 212, 255), 0.12),
+      transparent 60%
+    ),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%) !important;
   box-shadow: 0 16px 40px -20px rgba(0, 0, 0, 0.7) !important;
   backdrop-filter: blur(16px) !important;
@@ -1224,16 +1261,17 @@ html:not(.dark) .b360-adaptive-landing :is(
     box-shadow 0.35s ease !important;
 }
 
-.b360-adaptive-landing :is(
-  .b360-feature-card,
-  .b360-problem-card,
-  .b360-platform-card,
-  .b360-flow-card,
-  .b360-integration-card,
-  .b360-module,
-  .b360-copilot-card,
-  .b360-fanned-card
-):hover {
+.b360-adaptive-landing
+  :is(
+    .b360-feature-card,
+    .b360-problem-card,
+    .b360-platform-card,
+    .b360-flow-card,
+    .b360-integration-card,
+    .b360-module,
+    .b360-copilot-card,
+    .b360-fanned-card
+  ):hover {
   transform: translateY(-6px) scale(1.008) !important;
   border-color: var(--card-accent, #00d4ff) !important;
   box-shadow:
@@ -1242,49 +1280,132 @@ html:not(.dark) .b360-adaptive-landing :is(
 }
 
 /* Cores específicas de cada card (NUNCA PRETO, NUNCA BRANCO) */
-.b360-problem-card:nth-child(1) { --card-accent: #f87171; --card-accent-rgb: 248, 113, 113; border-color: rgba(248, 113, 113, 0.28) !important; }
-.b360-problem-card:nth-child(2) { --card-accent: #ff2d9b; --card-accent-rgb: 255, 45, 155; border-color: rgba(255, 45, 155, 0.28) !important; }
-.b360-problem-card:nth-child(3) { --card-accent: #ffc107; --card-accent-rgb: 255, 193, 7; border-color: rgba(255, 193, 7, 0.28) !important; }
+.b360-problem-card:nth-child(1) {
+  --card-accent: #f87171;
+  --card-accent-rgb: 248, 113, 113;
+  border-color: rgba(248, 113, 113, 0.28) !important;
+}
+.b360-problem-card:nth-child(2) {
+  --card-accent: #ff2d9b;
+  --card-accent-rgb: 255, 45, 155;
+  border-color: rgba(255, 45, 155, 0.28) !important;
+}
+.b360-problem-card:nth-child(3) {
+  --card-accent: #ffc107;
+  --card-accent-rgb: 255, 193, 7;
+  border-color: rgba(255, 193, 7, 0.28) !important;
+}
 
-.b360-platform-card:nth-child(1) { --card-accent: #00d4ff; --card-accent-rgb: 0, 212, 255; border-color: rgba(0, 212, 255, 0.28) !important; }
-.b360-platform-card:nth-child(2) { --card-accent: #ff2d9b; --card-accent-rgb: 255, 45, 155; border-color: rgba(255, 45, 155, 0.28) !important; }
-.b360-platform-card:nth-child(3) { --card-accent: #ffc107; --card-accent-rgb: 255, 193, 7; border-color: rgba(255, 193, 7, 0.28) !important; }
+.b360-platform-card:nth-child(1) {
+  --card-accent: #00d4ff;
+  --card-accent-rgb: 0, 212, 255;
+  border-color: rgba(0, 212, 255, 0.28) !important;
+}
+.b360-platform-card:nth-child(2) {
+  --card-accent: #ff2d9b;
+  --card-accent-rgb: 255, 45, 155;
+  border-color: rgba(255, 45, 155, 0.28) !important;
+}
+.b360-platform-card:nth-child(3) {
+  --card-accent: #ffc107;
+  --card-accent-rgb: 255, 193, 7;
+  border-color: rgba(255, 193, 7, 0.28) !important;
+}
 
-.b360-flow-card:nth-child(1) { --card-accent: #00d4ff; --card-accent-rgb: 0, 212, 255; }
-.b360-flow-card:nth-child(3) { --card-accent: #ff2d9b; --card-accent-rgb: 255, 45, 155; }
-.b360-flow-card:nth-child(5) { --card-accent: #ffc107; --card-accent-rgb: 255, 193, 7; }
-.b360-flow-card:nth-child(7) { --card-accent: #8b7dff; --card-accent-rgb: 139, 125, 255; }
-.b360-flow-card:nth-child(9) { --card-accent: #10b981; --card-accent-rgb: 16, 185, 129; }
+.b360-flow-card:nth-child(1) {
+  --card-accent: #00d4ff;
+  --card-accent-rgb: 0, 212, 255;
+}
+.b360-flow-card:nth-child(3) {
+  --card-accent: #ff2d9b;
+  --card-accent-rgb: 255, 45, 155;
+}
+.b360-flow-card:nth-child(5) {
+  --card-accent: #ffc107;
+  --card-accent-rgb: 255, 193, 7;
+}
+.b360-flow-card:nth-child(7) {
+  --card-accent: #8b7dff;
+  --card-accent-rgb: 139, 125, 255;
+}
+.b360-flow-card:nth-child(9) {
+  --card-accent: #10b981;
+  --card-accent-rgb: 16, 185, 129;
+}
 
-.b360-integration-card { --card-accent: #38bdf8; --card-accent-rgb: 56, 189, 248; }
+.b360-integration-card {
+  --card-accent: #38bdf8;
+  --card-accent-rgb: 56, 189, 248;
+}
 
 /* Títulos dos Cards - Sempre na cor de destaque do card */
-.b360-problem-card:nth-child(1) h3 { color: #f87171 !important; text-shadow: 0 0 14px rgba(248, 113, 113, 0.35); }
-.b360-problem-card:nth-child(2) h3 { color: #ff2d9b !important; text-shadow: 0 0 14px rgba(255, 45, 155, 0.35); }
-.b360-problem-card:nth-child(3) h3 { color: #ffc107 !important; text-shadow: 0 0 14px rgba(255, 193, 7, 0.35); }
+.b360-problem-card:nth-child(1) h3 {
+  color: #f87171 !important;
+  text-shadow: 0 0 14px rgba(248, 113, 113, 0.35);
+}
+.b360-problem-card:nth-child(2) h3 {
+  color: #ff2d9b !important;
+  text-shadow: 0 0 14px rgba(255, 45, 155, 0.35);
+}
+.b360-problem-card:nth-child(3) h3 {
+  color: #ffc107 !important;
+  text-shadow: 0 0 14px rgba(255, 193, 7, 0.35);
+}
 
-.b360-platform-card:nth-child(1) h3 { color: #00d4ff !important; text-shadow: 0 0 14px rgba(0, 212, 255, 0.35); }
-.b360-platform-card:nth-child(2) h3 { color: #ff2d9b !important; text-shadow: 0 0 14px rgba(255, 45, 155, 0.35); }
-.b360-platform-card:nth-child(3) h3 { color: #ffc107 !important; text-shadow: 0 0 14px rgba(255, 193, 7, 0.35); }
+.b360-platform-card:nth-child(1) h3 {
+  color: #00d4ff !important;
+  text-shadow: 0 0 14px rgba(0, 212, 255, 0.35);
+}
+.b360-platform-card:nth-child(2) h3 {
+  color: #ff2d9b !important;
+  text-shadow: 0 0 14px rgba(255, 45, 155, 0.35);
+}
+.b360-platform-card:nth-child(3) h3 {
+  color: #ffc107 !important;
+  text-shadow: 0 0 14px rgba(255, 193, 7, 0.35);
+}
 
-.b360-flow-card:nth-child(1) h3 { color: #00d4ff !important; text-shadow: 0 0 12px rgba(0, 212, 255, 0.35); }
-.b360-flow-card:nth-child(3) h3 { color: #ff2d9b !important; text-shadow: 0 0 12px rgba(255, 45, 155, 0.35); }
-.b360-flow-card:nth-child(5) h3 { color: #ffc107 !important; text-shadow: 0 0 12px rgba(255, 193, 7, 0.35); }
-.b360-flow-card:nth-child(7) h3 { color: #8b7dff !important; text-shadow: 0 0 12px rgba(139, 125, 255, 0.35); }
-.b360-flow-card:nth-child(9) h3 { color: #10b981 !important; text-shadow: 0 0 12px rgba(16, 185, 129, 0.35); }
+.b360-flow-card:nth-child(1) h3 {
+  color: #00d4ff !important;
+  text-shadow: 0 0 12px rgba(0, 212, 255, 0.35);
+}
+.b360-flow-card:nth-child(3) h3 {
+  color: #ff2d9b !important;
+  text-shadow: 0 0 12px rgba(255, 45, 155, 0.35);
+}
+.b360-flow-card:nth-child(5) h3 {
+  color: #ffc107 !important;
+  text-shadow: 0 0 12px rgba(255, 193, 7, 0.35);
+}
+.b360-flow-card:nth-child(7) h3 {
+  color: #8b7dff !important;
+  text-shadow: 0 0 12px rgba(139, 125, 255, 0.35);
+}
+.b360-flow-card:nth-child(9) h3 {
+  color: #10b981 !important;
+  text-shadow: 0 0 12px rgba(16, 185, 129, 0.35);
+}
 
-.b360-integration-title h3 { color: #38bdf8 !important; text-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
-.b360-copilot-card h3 { color: #8b7dff !important; text-shadow: 0 0 14px rgba(139, 125, 255, 0.35); }
+.b360-integration-title h3 {
+  color: #38bdf8 !important;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+}
+.b360-copilot-card h3 {
+  color: #8b7dff !important;
+  text-shadow: 0 0 14px rgba(139, 125, 255, 0.35);
+}
 
 /* Textos e subtítulos dos cards */
-.b360-adaptive-landing :is(
-  .b360-problem-card,
-  .b360-platform-card,
-  .b360-flow-card,
-  .b360-integration-card,
-  .b360-copilot-card,
-  .b360-hero-console
-) p {
+.b360-adaptive-landing
+  :is(
+    .b360-problem-card,
+    .b360-platform-card,
+    .b360-flow-card,
+    .b360-integration-card,
+    .b360-copilot-card,
+    .b360-hero-console
+  )
+  p {
   color: #94a3b8 !important;
   font-size: 14px !important;
   line-height: 1.65 !important;
@@ -1314,8 +1435,6 @@ html:not(.dark) .b360-adaptive-landing :is(
   color: #00d4ff !important;
   transform: translateX(4px);
 }
-
-
 
 /* ==========================================================================
    MASTER THEME SUITE: DUAL THEME (LIGHT & DARK) + EXACT BENTO PROPORTIONS
@@ -1369,7 +1488,13 @@ html.light .b360-adaptive-landing .b360-final-cta h2,
 [data-theme="light"] .b360-adaptive-landing .b360-hero-title,
 [data-theme="light"] .b360-adaptive-landing .b360-final-cta h2 {
   font-family: "Sora", system-ui, sans-serif !important;
-  background: linear-gradient(135deg, #0284c7 0%, #2563eb 45%, #7c3aed 80%, #db2777 100%) !important;
+  background: linear-gradient(
+    135deg,
+    #0284c7 0%,
+    #2563eb 45%,
+    #7c3aed 80%,
+    #db2777 100%
+  ) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
@@ -1435,7 +1560,7 @@ html.dark .b360-adaptive-landing .b360-final-cta h2,
 [data-theme="dark"] .b360-adaptive-landing .b360-hero-title,
 [data-theme="dark"] .b360-adaptive-landing .b360-final-cta h2 {
   font-family: "Sora", system-ui, sans-serif !important;
-  background: linear-gradient(135deg, #00D4FF 0%, #8B7DFF 50%, #FF2D9B 100%) !important;
+  background: linear-gradient(135deg, #00d4ff 0%, #8b7dff 50%, #ff2d9b 100%) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
@@ -1595,7 +1720,8 @@ html.dark .b360-adaptive-landing .b360-eyebrow,
 }
 
 /* ── 5. CARDS BENTO GLASSMORPHIC EM AMBOS OS TEMAS ──────────────────────── */
-.b360-adaptive-landing :is(
+.b360-adaptive-landing
+:is(
   .b360-feature-card,
   .b360-problem-card,
   .b360-platform-card,
@@ -1611,7 +1737,11 @@ html.dark .b360-adaptive-landing .b360-eyebrow,
   border-radius: 22px !important;
   border: 1px solid rgba(56, 189, 248, 0.25) !important;
   background:
-    radial-gradient(circle at 85% 10%, rgba(var(--card-accent-rgb, 0, 212, 255), 0.14), transparent 60%),
+    radial-gradient(
+      circle at 85% 10%,
+      rgba(var(--card-accent-rgb, 0, 212, 255), 0.14),
+      transparent 60%
+    ),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%) !important;
   box-shadow: 0 16px 40px -20px rgba(0, 0, 0, 0.65) !important;
   backdrop-filter: blur(16px) !important;
@@ -1624,33 +1754,74 @@ html.dark .b360-adaptive-landing .b360-eyebrow,
 }
 
 /* Títulos dos Cards - Sempre cores vivas (NUNCA PRETO, NUNCA BRANCO) */
-.b360-adaptive-landing .b360-problem-card:nth-child(1) h3 { color: #f87171 !important; text-shadow: 0 0 14px rgba(248, 113, 113, 0.35); }
-.b360-adaptive-landing .b360-problem-card:nth-child(2) h3 { color: #ff2d9b !important; text-shadow: 0 0 14px rgba(255, 45, 155, 0.35); }
-.b360-adaptive-landing .b360-problem-card:nth-child(3) h3 { color: #ffc107 !important; text-shadow: 0 0 14px rgba(255, 193, 7, 0.35); }
+.b360-adaptive-landing .b360-problem-card:nth-child(1) h3 {
+  color: #f87171 !important;
+  text-shadow: 0 0 14px rgba(248, 113, 113, 0.35);
+}
+.b360-adaptive-landing .b360-problem-card:nth-child(2) h3 {
+  color: #ff2d9b !important;
+  text-shadow: 0 0 14px rgba(255, 45, 155, 0.35);
+}
+.b360-adaptive-landing .b360-problem-card:nth-child(3) h3 {
+  color: #ffc107 !important;
+  text-shadow: 0 0 14px rgba(255, 193, 7, 0.35);
+}
 
-.b360-adaptive-landing .b360-platform-card:nth-child(1) h3 { color: #00d4ff !important; text-shadow: 0 0 14px rgba(0, 212, 255, 0.35); }
-.b360-adaptive-landing .b360-platform-card:nth-child(2) h3 { color: #ff2d9b !important; text-shadow: 0 0 14px rgba(255, 45, 155, 0.35); }
-.b360-adaptive-landing .b360-platform-card:nth-child(3) h3 { color: #ffc107 !important; text-shadow: 0 0 14px rgba(255, 193, 7, 0.35); }
+.b360-adaptive-landing .b360-platform-card:nth-child(1) h3 {
+  color: #00d4ff !important;
+  text-shadow: 0 0 14px rgba(0, 212, 255, 0.35);
+}
+.b360-adaptive-landing .b360-platform-card:nth-child(2) h3 {
+  color: #ff2d9b !important;
+  text-shadow: 0 0 14px rgba(255, 45, 155, 0.35);
+}
+.b360-adaptive-landing .b360-platform-card:nth-child(3) h3 {
+  color: #ffc107 !important;
+  text-shadow: 0 0 14px rgba(255, 193, 7, 0.35);
+}
 
-.b360-adaptive-landing .b360-flow-card:nth-child(1) h3 { color: #00d4ff !important; text-shadow: 0 0 12px rgba(0, 212, 255, 0.35); }
-.b360-adaptive-landing .b360-flow-card:nth-child(3) h3 { color: #ff2d9b !important; text-shadow: 0 0 12px rgba(255, 45, 155, 0.35); }
-.b360-adaptive-landing .b360-flow-card:nth-child(5) h3 { color: #ffc107 !important; text-shadow: 0 0 12px rgba(255, 193, 7, 0.35); }
-.b360-adaptive-landing .b360-flow-card:nth-child(7) h3 { color: #8b7dff !important; text-shadow: 0 0 12px rgba(139, 125, 255, 0.35); }
-.b360-adaptive-landing .b360-flow-card:nth-child(9) h3 { color: #10b981 !important; text-shadow: 0 0 12px rgba(16, 185, 129, 0.35); }
+.b360-adaptive-landing .b360-flow-card:nth-child(1) h3 {
+  color: #00d4ff !important;
+  text-shadow: 0 0 12px rgba(0, 212, 255, 0.35);
+}
+.b360-adaptive-landing .b360-flow-card:nth-child(3) h3 {
+  color: #ff2d9b !important;
+  text-shadow: 0 0 12px rgba(255, 45, 155, 0.35);
+}
+.b360-adaptive-landing .b360-flow-card:nth-child(5) h3 {
+  color: #ffc107 !important;
+  text-shadow: 0 0 12px rgba(255, 193, 7, 0.35);
+}
+.b360-adaptive-landing .b360-flow-card:nth-child(7) h3 {
+  color: #8b7dff !important;
+  text-shadow: 0 0 12px rgba(139, 125, 255, 0.35);
+}
+.b360-adaptive-landing .b360-flow-card:nth-child(9) h3 {
+  color: #10b981 !important;
+  text-shadow: 0 0 12px rgba(16, 185, 129, 0.35);
+}
 
-.b360-adaptive-landing .b360-integration-title h3 { color: #38bdf8 !important; text-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
-.b360-adaptive-landing .b360-copilot-card h3 { color: #8b7dff !important; text-shadow: 0 0 14px rgba(139, 125, 255, 0.35); }
+.b360-adaptive-landing .b360-integration-title h3 {
+  color: #38bdf8 !important;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+}
+.b360-adaptive-landing .b360-copilot-card h3 {
+  color: #8b7dff !important;
+  text-shadow: 0 0 14px rgba(139, 125, 255, 0.35);
+}
 
 /* Conteúdo textual dentro dos cards */
-.b360-adaptive-landing :is(
-  .b360-feature-card,
-  .b360-problem-card,
-  .b360-platform-card,
-  .b360-flow-card,
-  .b360-integration-card,
-  .b360-copilot-card,
-  .b360-hero-console
-) p {
+.b360-adaptive-landing
+  :is(
+    .b360-feature-card,
+    .b360-problem-card,
+    .b360-platform-card,
+    .b360-flow-card,
+    .b360-integration-card,
+    .b360-copilot-card,
+    .b360-hero-console
+  )
+  p {
   color: #b0c5e1 !important;
   font-size: 14px !important;
   line-height: 1.65 !important;
@@ -1669,7 +1840,8 @@ html.dark .b360-adaptive-landing .b360-eyebrow,
 }
 
 @keyframes b360-card-float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
