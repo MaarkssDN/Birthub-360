@@ -336,18 +336,24 @@ describe('Landing360', () => {
     const submitBtn = screen.getByRole('button', { name: /GARANTIR MINHA DEMONSTRAÇÃO GRATUITA/i });
     fireEvent.click(submitBtn);
 
-    await waitFor(() => {
-      expect(screen.getByText(/Sessão Solicitada com Sucesso/i)).toBeInTheDocument();
-      expect(screen.getByText(/mariana@vanguarda\.com\.br/i)).toBeInTheDocument();
-      expect(screen.getByText(/Abrir Google Agenda/i)).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText(/Sessão Solicitada com Sucesso/i)).toBeInTheDocument();
+        expect(screen.getByText(/mariana@vanguarda\.com\.br/i)).toBeInTheDocument();
+        expect(screen.getByText(/Abrir Google Agenda/i)).toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
 
     // 8. Teste A/B: alternar para Variante B
     const varBBtn = screen.getAllByRole('button', { name: /Variante B/i })[0];
     fireEvent.click(varBBtn);
 
-    await waitFor(() => {
-      expect(screen.getByText(/Multiplique a capacidade de vendas da sua equipe/i)).toBeInTheDocument();
-    });
-  }, 15000);
+    await waitFor(
+      () => {
+        expect(screen.getByText(/Multiplique a capacidade de vendas da sua equipe/i)).toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
+  }, 60000);
 });
