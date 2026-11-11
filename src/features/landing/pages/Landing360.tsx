@@ -610,6 +610,34 @@ export function Landing360({
     };
   }, []);
 
+  const handleEquipeKeyDown = (
+    event: React.KeyboardEvent<HTMLButtonElement>,
+    current: LeadTeamSize,
+  ) => {
+    const currentIndex = LEAD_TEAM_SIZES.indexOf(current);
+    const lastIndex = LEAD_TEAM_SIZES.length - 1;
+    let nextIndex: number | null = null;
+
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+      nextIndex = currentIndex === lastIndex ? 0 : currentIndex + 1;
+    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+      nextIndex = currentIndex === 0 ? lastIndex : currentIndex - 1;
+    } else if (event.key === 'Home') {
+      nextIndex = 0;
+    } else if (event.key === 'End') {
+      nextIndex = lastIndex;
+    } else {
+      return;
+    }
+
+    event.preventDefault();
+    const next = LEAD_TEAM_SIZES[nextIndex];
+    setLeadForm({ ...leadForm, equipe: next });
+    requestAnimationFrame(() => {
+      document.getElementById(`lead-equipe-option-${nextIndex}`)?.focus();
+    });
+  };
+
   const handleLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (leadLoading) return;
@@ -2166,7 +2194,10 @@ export function Landing360({
                             className="b360-form-input"
                           />
                           {leadFieldErrors.nome ? (
-                            <p id="lead-nome-error" className="mt-1 text-[11px] text-red-400">
+                            <p
+                              id="lead-nome-error"
+                              className="mt-1 text-[11px] text-red-600 dark:text-red-400"
+                            >
                               {leadFieldErrors.nome}
                             </p>
                           ) : null}
@@ -2195,7 +2226,10 @@ export function Landing360({
                             className="b360-form-input"
                           />
                           {leadFieldErrors.email ? (
-                            <p id="lead-email-error" className="mt-1 text-[11px] text-red-400">
+                            <p
+                              id="lead-email-error"
+                              className="mt-1 text-[11px] text-red-600 dark:text-red-400"
+                            >
                               {leadFieldErrors.email}
                             </p>
                           ) : null}
@@ -2224,30 +2258,55 @@ export function Landing360({
                             className="b360-form-input"
                           />
                           {leadFieldErrors.whatsapp ? (
-                            <p id="lead-whatsapp-error" className="mt-1 text-[11px] text-red-400">
+                            <p
+                              id="lead-whatsapp-error"
+                              className="mt-1 text-[11px] text-red-600 dark:text-red-400"
+                            >
                               {leadFieldErrors.whatsapp}
                             </p>
                           ) : null}
                         </div>
 
                         <div>
-                          <div className="block text-xs font-mono text-slate-300 mb-1.5">
+                          <div
+                            id="lead-equipe-label"
+                            className="block text-xs font-mono text-slate-300 mb-1.5"
+                          >
                             Tamanho da Equipe Comercial
                           </div>
-                          <div className="b360-team-chips">
-                            {LEAD_TEAM_SIZES.map((sz) => (
-                              <button
-                                key={sz}
-                                type="button"
-                                onClick={() => setLeadForm({ ...leadForm, equipe: sz })}
-                                className={`b360-chip-btn ${leadForm.equipe === sz ? 'active' : ''}`}
-                              >
-                                {sz}
-                              </button>
-                            ))}
+                          <div
+                            className="b360-team-chips"
+                            role="radiogroup"
+                            aria-labelledby="lead-equipe-label"
+                            aria-invalid={Boolean(leadFieldErrors.equipe)}
+                            aria-describedby={
+                              leadFieldErrors.equipe ? 'lead-equipe-error' : undefined
+                            }
+                          >
+                            {LEAD_TEAM_SIZES.map((sz, index) => {
+                              const selected = leadForm.equipe === sz;
+                              return (
+                                <button
+                                  key={sz}
+                                  id={`lead-equipe-option-${index}`}
+                                  type="button"
+                                  role="radio"
+                                  aria-checked={selected}
+                                  tabIndex={selected ? 0 : -1}
+                                  onClick={() => setLeadForm({ ...leadForm, equipe: sz })}
+                                  onKeyDown={(event) => handleEquipeKeyDown(event, sz)}
+                                  className={`b360-chip-btn ${selected ? 'active' : ''}`}
+                                >
+                                  {sz}
+                                </button>
+                              );
+                            })}
                           </div>
                           {leadFieldErrors.equipe ? (
-                            <p id="lead-equipe-error" className="mt-1 text-[11px] text-red-400">
+                            <p
+                              id="lead-equipe-error"
+                              className="mt-1 text-[11px] text-red-600 dark:text-red-400"
+                            >
                               {leadFieldErrors.equipe}
                             </p>
                           ) : null}
@@ -2256,7 +2315,7 @@ export function Landing360({
                         <div className="pt-1">
                           <label
                             htmlFor="lead-consent"
-                            className="flex items-start gap-2 text-[11px] text-slate-400 cursor-pointer"
+                            className="flex items-start gap-2 text-[11px] text-slate-600 dark:text-slate-400 cursor-pointer"
                           >
                             <input
                               id="lead-consent"
@@ -2294,7 +2353,10 @@ export function Landing360({
                             </span>
                           </label>
                           {leadFieldErrors.consent ? (
-                            <p id="lead-consent-error" className="mt-1 text-[11px] text-red-400">
+                            <p
+                              id="lead-consent-error"
+                              className="mt-1 text-[11px] text-red-600 dark:text-red-400"
+                            >
                               {leadFieldErrors.consent}
                             </p>
                           ) : null}

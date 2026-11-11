@@ -495,6 +495,60 @@ describe('Landing360', () => {
     expect(screen.queryByText(/cancelamento fácil com 1 clique/i)).not.toBeInTheDocument();
   });
 
+  it('deve expor os chips de equipe como radiogroup com navegação por teclado', () => {
+    const { container } = renderWithProviders('/', 'intro');
+    const group = container.querySelector('[role="radiogroup"]') as HTMLElement;
+    expect(group).toHaveAttribute('aria-labelledby', 'lead-equipe-label');
+    expect(container.querySelector('#lead-equipe-label')).toHaveTextContent(
+      /Tamanho da Equipe Comercial/i,
+    );
+
+    const radios = screen.getAllByRole('radio');
+    expect(radios.map((radio) => radio.textContent)).toEqual(['1 a 5', '6 a 15', '16 a 50', '50+']);
+    expect(screen.getByRole('radio', { name: '6 a 15' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('radio', { name: '6 a 15' })).toHaveAttribute('tabindex', '0');
+    expect(screen.getByRole('radio', { name: '1 a 5' })).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByRole('radio', { name: '1 a 5' })).toHaveAttribute('tabindex', '-1');
+
+    fireEvent.keyDown(screen.getByRole('radio', { name: '6 a 15' }), { key: 'ArrowRight' });
+    expect(screen.getByRole('radio', { name: '16 a 50' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('radio', { name: '16 a 50' })).toHaveAttribute('tabindex', '0');
+
+    fireEvent.keyDown(screen.getByRole('radio', { name: '16 a 50' }), { key: 'Home' });
+    expect(screen.getByRole('radio', { name: '1 a 5' })).toHaveAttribute('aria-checked', 'true');
+  });
+
+  it('deve associar o erro de equipe via aria-describedby e usar contraste AA no tema claro', async () => {
+    const { LeadSubmitError } = await import('@/features/landing/services/submitLead');
+    submitLeadMock.mockRejectedValueOnce(
+      new LeadSubmitError(
+        'validation',
+        'Não foi possível enviar seus dados. Revise as informações e tente novamente.',
+        400,
+        { equipe: 'invalid' },
+      ),
+    );
+
+    const { container } = renderWithProviders('/', 'intro');
+    const consentLabel = container.querySelector('label[for="lead-consent"]') as HTMLElement;
+    expect(consentLabel.className).toMatch(/text-slate-600/);
+    expect(consentLabel.className).toMatch(/dark:text-slate-400/);
+
+    fillValidLeadForm(container);
+    submitLeadForm();
+
+    const equipeError = await screen.findByText(/Selecione o tamanho da equipe comercial/i, {
+      selector: '#lead-equipe-error',
+    });
+    expect(equipeError).toBeInTheDocument();
+    expect(equipeError.className).toMatch(/text-red-600/);
+    expect(equipeError.className).toMatch(/dark:text-red-400/);
+    const group = container.querySelector('[role="radiogroup"]') as HTMLElement;
+    expect(group).toHaveAttribute('aria-describedby', 'lead-equipe-error');
+    expect(group).toHaveAttribute('aria-invalid', 'true');
+    expect(trackLeadFormSubmittedMock).not.toHaveBeenCalled();
+  });
+
   it('deve submeter o formulário de lead com sucesso 2xx, mensagem honesta e alternar a variante A/B', async () => {
     const { container } = renderWithProviders('/', 'intro');
     fillValidLeadForm(container);
