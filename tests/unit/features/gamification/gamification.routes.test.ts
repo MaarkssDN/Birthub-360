@@ -13,6 +13,8 @@ import { server } from '../../../mocks/server';
 const computeMock = vi.fn();
 const generateCoachingReportMock = vi.fn();
 const findUniqueMock = vi.fn();
+const getSellerProfileMock = vi.fn();
+const getLeaderboardMock = vi.fn();
 
 vi.mock('@/features/gamification/services/sellerPerformanceAggregator.service', () => ({
   sellerPerformanceAggregator: { compute: (...args: unknown[]) => computeMock(...args) },
@@ -20,12 +22,20 @@ vi.mock('@/features/gamification/services/sellerPerformanceAggregator.service', 
 
 vi.mock('@/features/gamification/services/seller-coaching.service', () => ({
   sellerCoachingService: {
+    generateCoaching: (...args: unknown[]) => generateCoachingReportMock(...args),
     generateCoachingReport: (...args: unknown[]) => generateCoachingReportMock(...args),
   },
 }));
 
 vi.mock('@/lib/prisma', () => ({
   prisma: { user: { findUnique: (...args: unknown[]) => findUniqueMock(...args) } },
+}));
+
+vi.mock('@/features/gamification/application/GamificationUseCases', () => ({
+  GamificationUseCases: class {
+    getSellerProfile = (...args: unknown[]) => getSellerProfileMock(...args);
+    getLeaderboard = (...args: unknown[]) => getLeaderboardMock(...args);
+  },
 }));
 
 import { gamificationRoutes } from '@/features/gamification/routes/gamification.routes';
@@ -123,5 +133,52 @@ describe('gamification routes', () => {
 
     expect(res.status).toBe(500);
     expect(res.body.success).toBe(false);
+  });
+});
+
+/**
+ * Escopo de `?seller=` (ORDEM 04 — RBAC): `/profile` e `/coaching` consultam dados
+ * INDIVIDUAIS de vendedor. Papéis de gestão (ADMIN/GESTOR) podem pedir qualquer seller;
+ * os demais ficam restritos ao próprio nome da sessão — o parâmetro é ignorado, nunca
+ * confiado. O leaderboard é dado compartilhado do tenant e segue aberto a autenticados.
+ */
+describe('gamification routes — escopo de seller por papel', () => {
+  it('SDR pedindo ?seller=colega recebe o próprio perfil, não o do colega', async () => {
+    getSellerProfileMock.mockResolvedValue({ seller: 'Maria Silva' });
+    const app = buildApp({ id: 'user-1', organizationId: 'org-1', role: 'SDR' });
+
+    const res = await request(app).get('/api/gamification/profile?seller=Colega%20 Silva');
+
+    expect(res.status).toBe(200);
+    expect(getSellerProfileMock).toHaveBeenCalledWith('org-1', 'Maria Silva');
+  });
+
+  it('GESTOR consegue consultar o perfil de outro vendedor', async () => {
+    getSellerProfileMock.mockResolvedValue({ seller: 'João Souza' });
+    const app = buildApp({ id: 'gestor-1', organizationId: 'org-1', role: 'GESTOR' });
+
+    const res = await request(app).get('/api/gamification/profile?seller=Jo%C3%A3o%20Souza');
+
+    expect(res.status).toBe(200);
+    expect(getSellerProfileMock).toHaveBeenCalledWith('org-1', 'João Souza');
+  });
+
+  it('SDR pedindo coaching de colega recebe coaching do próprio desempenho', async () => {
+    const app = buildApp({ id: 'user-1', organizationId: 'org-1', role: 'SDR' });
+
+    const res = await request(app).get('/api/gamification/coaching?seller=Colega');
+
+    expect(res.status).toBe(200);
+    expect(computeMock).toHaveBeenCalledWith('org-1', 'Maria Silva', expect.anything());
+  });
+
+  it('leaderboard segue acessível a qualquer papel autenticado do tenant', async () => {
+    getLeaderboardMock.mockResolvedValue({ rankings: [] });
+    const app = buildApp({ id: 'user-1', organizationId: 'org-1', role: 'VISUALIZADOR' });
+
+    const res = await request(app).get('/api/gamification/leaderboard');
+
+    expect(res.status).toBe(200);
+    expect(getLeaderboardMock).toHaveBeenCalledWith('org-1', expect.anything());
   });
 });

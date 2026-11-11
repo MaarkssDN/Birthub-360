@@ -2,10 +2,19 @@
 
 De: Devin (assessor de arquitetura, sob demanda do usuário)
 Para: 00 — Coordenador
-Onda: proposta (aguardando decisão humana)
-Status: aberto
+Onda: Onda 01–04 executadas; Onda 05 (QA/homologação) em consolidação
+Status: em-andamento
 Prioridade: normal
 Sprint destino: a definir pelo 00
+
+> **Atualização (implementação):** a proposta foi aprovada e implementada.
+> A arquitetura efetiva difere da proposta em três pontos: (1) a navegação
+> contextual é um **painel lateral** (`ModuleNavPanel`), não top tabs;
+> (2) os dois assistentes podem abrir **simultaneamente** em desktop
+> (o Copiloto desloca-se para a esquerda do Chatbook); (3) a preservação
+> de estado é **híbrida**: URL para destino/filtros/abas + sessionStorage
+> para estado de UI dos assistentes. Detalhes em
+> `docs/architecture/NAVEGACAO-MODULAR.md`.
 
 ## Contexto
 
@@ -22,7 +31,8 @@ Decisões já tomadas com o usuário:
 
 - Painéis globais: **Copiloto IA + Chatbook**.
 - Estado na troca de módulo: **URL params** (deep-linkável, padrão já usado no projeto).
-- Escopo desta entrega: **somente proposta detalhada** (sem implementação ainda).
+- Escopo desta entrega: **implementação** (aprovada pelo usuário em missão
+  formal de reconstrução da navegação modular).
 
 ## Proposta de arquitetura
 
@@ -50,18 +60,18 @@ Três camadas de navegação:
 
 #### Camada 3 — Painéis globais: Copiloto IA + Chatbook
 
-- Dois painéis **dockáveis à direita** (drawer lateral ~400-480px), abrem **sobre
-  qualquer rota/módulo** e mantêm estado enquanto o usuário navega.
-- Base técnica existente: `VoiceCommandWidget`, `ModuleAgentWidget`, `CommandPalette`,
-  `Toaster` já são montados no `MainLayout` fora do `<main>` — o dock segue o mesmo padrão.
-- Conteúdo: instâncias dos hubs existentes (`CopilotoIaHub`, `ChatbookHub`) em modo
-  "embedded/panel", com `ActiveRecordContext` injetando o registro ativo (lead/contato/
-  empresa) — o contexto já existe e já alimenta prompts de IA.
-- Limite: **no máximo 1 painel global aberto por vez** por padrão (evita empilhar dois
-  drawers); avaliar split-view como evolução futura, não no MVP.
-- Gates: os painéis respeitam `RequireRole`/`RequireModuleAccess` do módulo de origem —
-  painel fechado se o usuário não tem acesso (`copiloto_ia` exige SDR+, ver
-  `COPILOTO_IA_ROLES` em `src/lib/auth/authorization.ts`).
+- Dois painéis **dockáveis à direita**, abrem **sobre qualquer rota/módulo** e
+  mantêm estado enquanto o usuário navega. **Decisão revisada na implementação:**
+  os dois podem ficar abertos ao mesmo tempo — em viewport ≥ lg o Copiloto
+  desloca-se para a esquerda do Chatbook (`lg:right-[540px]`); abaixo disso o
+  painel mais recente sobrepõe (painéis alternáveis adaptativos).
+- Base técnica: `AssistantsDock` montado no `MainLayout` fora do `<main>`;
+  `CopilotoIaPanel` ganhou modo `embedded` (painel não-modal, sem Drawer
+  Radix); `FloatingChatbook` reutilizado como está.
+- Estados independentes persistidos em sessionStorage
+  (`@birthhub:assistant-chatbook-open`, `@birthhub:assistant-copiloto-open`).
+- Gates: `canAccessCopilotoIa` (SDR+) controla o botão do Copiloto;
+  o conteúdo do Copiloto mantém `RequireRole` na rota cheia `/app/copiloto_ia`.
 
 ### Fluxo resultante
 

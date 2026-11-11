@@ -41,6 +41,8 @@ router.post(
   },
 );
 
+import { getCharacter } from '../../characters/characterCatalog.js';
+import { characterRuntimeRoutes } from '../../characters/characterRuntime.routes.js';
 import {
   approveLearningProfileVersion,
   getLearningProfileHistory,
@@ -52,6 +54,8 @@ import {
 import { SwarmOrchestrator } from '../agents/supervisor.agent.js';
 import { getDatasetSummary, validateToolUseCases } from '../evaluation/goldenDataset.service.js';
 import { getEvaluationMetricsSnapshot } from '../services/evaluationMetrics.service.js';
+import { logSwarmAction } from '../services/swarmAudit.service.js';
+import { acquireMissionSlot, releaseMissionSlot } from '../services/swarmConcurrency.service.js';
 import { getSwarmSloSnapshot } from '../services/swarmScheduler.service.js';
 
 const swarmMissionSchema = z.object({
@@ -61,6 +65,9 @@ const swarmMissionSchema = z.object({
   // CRM em vez de tentar (e sempre falhar) usar o texto da missão como se fosse um ID — ver
   // sdrNode em supervisor.agent.ts (IA-003).
   leadId: z.string().trim().min(1).max(200).optional(),
+  // Opcional: personagem oficial (catálogo canônico de 29) que originou a missão —
+  // vínculo visual↔execução auditável, validado contra o catálogo (nunca livre).
+  characterId: z.string().trim().min(1).max(64).optional(),
 });
 
 router.post(
@@ -69,11 +76,47 @@ router.post(
   validateRequest(swarmMissionSchema),
   async (req, res, next) => {
     try {
-      const { mission, sessionId, leadId } = req.body as z.infer<typeof swarmMissionSchema>;
-      const swarm = new SwarmOrchestrator();
-      const result = await swarm.executeMission(mission, sessionId, leadId);
-      // Retorna a última mensagem ou todo o contexto no formato esperado pelo api.ts (data envelope)
-      res.json({ success: true, data: { messages: result.map((m) => m.content) } });
+      const { mission, sessionId, leadId, characterId } = req.body as z.infer<
+        typeof swarmMissionSchema
+      >;
+      const { organizationId, id: userId } = (req as AuthRequest).user;
+      if (characterId && !getCharacter(characterId)) {
+        res.status(400).json({ success: false, error: 'characterId desconhecido.' });
+        return;
+      }
+      const sid = sessionId || `swarm-mission-${Date.now()}`;
+      // Gate de concorrência/idempotência: mesmo sessionId nunca executa 2x na org.
+      const slot = await acquireMissionSlot(organizationId, sid);
+      if (slot === 'duplicate') {
+        res.status(409).json({
+          success: false,
+          error: 'Missão já em execução para este sessionId (idempotência).',
+        });
+        return;
+      }
+      if (slot === 'timeout') {
+        res.status(429).json({
+          success: false,
+          error: 'Capacidade de missões do enxame esgotada — tente novamente em instantes.',
+        });
+        return;
+      }
+      try {
+        void logSwarmAction({
+          organizationId,
+          agentType: 'SUPERVISOR',
+          action: 'swarm_mission_start',
+          parameters: { sessionId: sid, characterId, missionChars: mission.length },
+          result: 'success',
+          userId,
+        });
+        const swarm = new SwarmOrchestrator();
+        const result = await swarm.executeMission(mission, sid, leadId);
+        // Retorna a última mensagem ou todo o contexto no formato esperado pelo api.ts (data envelope)
+        res.json({ success: true, data: { messages: result.map((m) => m.content) } });
+      } finally {
+        releaseMissionSlot(organizationId, sid);
+      }
     } catch (err: any) {
       next(err);
     }
@@ -86,7 +129,14 @@ router.post(
   validateRequest(swarmMissionSchema),
   async (req, res, next) => {
     try {
-      const { mission, sessionId, leadId } = req.body as z.infer<typeof swarmMissionSchema>;
+      const { mission, sessionId, leadId, characterId } = req.body as z.infer<
+        typeof swarmMissionSchema
+      >;
+      const { organizationId, id: userId } = (req as AuthRequest).user;
+      if (characterId && !getCharacter(characterId)) {
+        res.status(400).json({ success: false, error: 'characterId desconhecido.' });
+        return;
+      }
       const sid = sessionId || `swarm-mission-${Date.now()}`;
 
       res.setHeader('Content-Type', 'text/event-stream');
@@ -94,19 +144,72 @@ router.post(
       res.setHeader('Connection', 'keep-alive');
       res.flushHeaders?.();
 
-      const swarm = new SwarmOrchestrator();
+      // Gate de concorrência/idempotência com feedback SSE real:
+      // 'queued' informa a posição na fila; 'duplicate'/'timeout' encerram com erro.
+      const slot = await acquireMissionSlot(organizationId, sid, (position) => {
+        res.write(
+          `event: queued\ndata: ${JSON.stringify({ type: 'queued', sessionId: sid, position })}\n\n`,
+        );
+      });
+      if (slot !== 'acquired') {
+        res.write(
+          `event: error\ndata: ${JSON.stringify({
+            type: 'rejected',
+            code: slot === 'duplicate' ? 'DUPLICATE_MISSION' : 'QUEUE_TIMEOUT',
+            message:
+              slot === 'duplicate'
+                ? 'Missão já em execução para este sessionId.'
+                : 'Capacidade do enxame esgotada — tente novamente em instantes.',
+          })}\n\n`,
+        );
+        res.end();
+        return;
+      }
 
-      await swarm.executeMissionStream(
-        mission,
-        sid,
-        (event) => {
-          res.write(`data: ${JSON.stringify(event)}\n\n`);
-        },
-        leadId,
-      );
+      try {
+        void logSwarmAction({
+          organizationId,
+          agentType: 'SUPERVISOR',
+          action: 'swarm_mission_start',
+          parameters: { sessionId: sid, characterId, missionChars: mission.length },
+          result: 'success',
+          userId,
+        });
+        const swarm = new SwarmOrchestrator();
 
-      res.write('event: end\ndata: {}\n\n');
-      res.end();
+        await swarm.executeMissionStream(
+          mission,
+          sid,
+          (event) => {
+            res.write(`data: ${JSON.stringify(event)}\n\n`);
+          },
+          leadId,
+        );
+
+        void logSwarmAction({
+          organizationId,
+          agentType: 'SUPERVISOR',
+          action: 'swarm_mission_end',
+          parameters: { sessionId: sid, characterId },
+          result: 'success',
+          userId,
+        });
+        res.write('event: end\ndata: {}\n\n');
+      } catch (streamErr: any) {
+        void logSwarmAction({
+          organizationId,
+          agentType: 'SUPERVISOR',
+          action: 'swarm_mission_end',
+          parameters: { sessionId: sid, characterId },
+          result: 'error',
+          errorMessage: streamErr?.message,
+          userId,
+        });
+        throw streamErr;
+      } finally {
+        releaseMissionSlot(organizationId, sid);
+        if (!res.writableEnded) res.end();
+      }
     } catch (err: any) {
       if (!res.headersSent) {
         next(err);
@@ -370,13 +473,17 @@ router.get('/swarm/learn/history', async (req: Request, res: Response, next: Nex
   }
 });
 
+import { commercialV3Routes } from '../commercial-v3/routes/commercialV3.routes.js';
 // --- CÉLULA COMERCIAL DE AGENTES (onda 43, Agente 13; onda 6/AIAGENT-004) ---
 // Extraída para `commercialCell.routes.ts` na onda 6 — ver o cabeçalho daquele arquivo para o
 // motivo (gate de hotspot) e a garantia de que nenhuma URL pública mudou. Montado aqui como
 // sub-router, então os caminhos continuam `/api/agent/commercial-cell/...`.
 import { commercialCellRoutes } from './commercialCell.routes.js';
-import { commercialV3Routes } from '../commercial-v3/routes/commercialV3.routes.js';
 import { universalEcosystemRoutes } from './universalEcosystem.routes.js';
+
+// Central de Personagens e Agentes — catálogo dos 29 personagens + vínculo
+// runtime real (registry, circuit breaker, gate de concorrência, audit log).
+router.use('/characters', characterRuntimeRoutes);
 
 router.use(commercialCellRoutes);
 router.use('/commercial-v3', commercialV3Routes);
