@@ -106,12 +106,12 @@ describe('publicLeadSchema', () => {
 describe('hashClientIp', () => {
   it('nunca devolve o IP em claro e exige segredo', () => {
     const ip = '200.201.202.203';
-    const secret = 'abcdefghijklmnopqrstuvwxyz012345';
+    const secret = 'fixture-salt-for-hmac-unit-tests-only';
     const hashed = hashClientIp(ip, secret);
     expect(hashed).toBeTruthy();
     expect(hashed).not.toContain(ip);
     expect(hashed).toBe(hashClientIp(ip, secret));
-    expect(hashClientIp(ip, 'a-different-secret-key-32b')).not.toBe(hashed);
+    expect(hashClientIp(ip, 'another-fixture-salt-for-hmac-unit-tests')).not.toBe(hashed);
     expect(hashClientIp(ip, undefined)).toBeNull();
     expect(hashClientIp(undefined, secret)).toBeNull();
     expect(hashClientIp('', secret)).toBeNull();

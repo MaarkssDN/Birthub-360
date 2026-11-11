@@ -3,9 +3,21 @@ import rateLimit from 'express-rate-limit';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { prisma } from '../../src/lib/prisma';
-import { LANDING_DEMO_CONSENT_VERSION, LANDING_LEAD_SOURCE } from '../../src/features/public-leads/publicLead.constants';
+import { requestContext } from '../../src/lib/async-context';
+import {
+  LANDING_DEMO_CONSENT_CHAIN_PURPOSE,
+  LANDING_DEMO_CONSENT_PURPOSE,
+  LANDING_DEMO_CONSENT_VERSION,
+  LANDING_LEAD_SOURCE,
+} from '../../src/features/public-leads/publicLead.constants';
 import { publicLeadRoutes } from '../../src/features/public-leads/publicLead.routes';
 import { contactEmailIndex } from '../../src/lib/crypto/piiIndex';
+
+const CLEARTEXT_IP = /(?:^|[^0-9a-f])(?:127\.0\.0\.1|::ffff:127\.0\.0\.1)(?:[^0-9a-f]|$)/i;
+
+function assertNoCleartextIp(value: unknown): void {
+  expect(JSON.stringify(value)).not.toMatch(CLEARTEXT_IP);
+}
 
 const valid = {
   nome: 'Mariana Albuquerque',
@@ -37,6 +49,7 @@ function buildApp(max = 20) {
 describe('POST /api/public/demo-leads (integração)', () => {
   beforeAll(() => {
     process.env.LANDING_LEAD_ORGANIZATION_ID = 'test-org-id';
+    process.env.PUBLIC_LEAD_IP_HASH_SECRET ??= 'integration-test-ip-hash-secret';
   });
 
   it('persiste lead + contato + prova de consentimento e responde 202 genérico', async () => {
@@ -72,6 +85,21 @@ describe('POST /api/public/demo-leads (integração)', () => {
     expect(consent?.purpose).toBe('agendamento_demonstracao');
     expect(consent?.termsText).toContain('agendamento da demonstração');
     expect(consent?.grantedAt).toBeInstanceOf(Date);
+
+    const audit = await prisma.consentAuditRecord.findFirst({
+      where: {
+        organizationId: 'test-org-id',
+        purpose: LANDING_DEMO_CONSENT_CHAIN_PURPOSE[LANDING_DEMO_CONSENT_PURPOSE],
+        termsVersion: LANDING_DEMO_CONSENT_VERSION,
+      },
+      orderBy: { occurredAt: 'desc' },
+      include: { details: true },
+    });
+    expect(audit).toBeTruthy();
+    expect(audit?.details.length).toBeGreaterThan(0);
+    const detailText = audit!.details.map((row) => row.detail).join('\n');
+    expect(detailText).toMatch(/"ipHash"\s*:\s*"[0-9a-f]{64}"/);
+    assertNoCleartextIp({ consent, lead, contact, audit, details: audit?.details });
   });
 
   it('não cria segundo lead no reenvio do mesmo e-mail e devolve o mesmo 202', async () => {
@@ -190,5 +218,40 @@ describe('POST /api/public/demo-leads (integração)', () => {
       where: { organizationId: 'test-org-id', emailIndex },
     });
     expect(contact).toBeNull();
+  });
+
+  it('RLS: tenant B não lê a prova de consentimento do tenant A', async () => {
+    const email = 'rls-consent@empresa-landing.com.br';
+    const res = await request(buildApp()).post('/api/public/demo-leads').send({ ...valid, email });
+    expect(res.status).toBe(202);
+
+    const emailIndex = contactEmailIndex(email);
+    const contact = await prisma.contact.findFirst({
+      where: { organizationId: 'test-org-id', emailIndex, deletedAt: null },
+    });
+    const lead = await prisma.lead.findFirst({
+      where: { organizationId: 'test-org-id', contactId: contact!.id, source: LANDING_LEAD_SOURCE, deletedAt: null },
+    });
+    const consent = await prisma.publicLeadConsent.findFirst({
+      where: { organizationId: 'test-org-id', leadId: lead!.id },
+    });
+    expect(consent).toBeTruthy();
+
+    await requestContext.run({ bypassRls: true }, async () => {
+      const exists = await prisma.organization.findUnique({ where: { id: 'public-lead-rls-org-b' } });
+      if (!exists) {
+        await prisma.organization.create({ data: { id: 'public-lead-rls-org-b', name: 'Org B RLS public lead' } });
+      }
+    });
+
+    await requestContext.run({ tenantId: 'public-lead-rls-org-b' }, async () => {
+      const hidden = await prisma.publicLeadConsent.findMany({ where: { id: consent!.id } });
+      expect(hidden).toHaveLength(0);
+    });
+
+    await requestContext.run({ tenantId: 'test-org-id' }, async () => {
+      const visible = await prisma.publicLeadConsent.findMany({ where: { id: consent!.id } });
+      expect(visible).toHaveLength(1);
+    });
   });
 });

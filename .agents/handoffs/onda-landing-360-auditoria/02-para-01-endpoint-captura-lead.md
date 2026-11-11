@@ -104,7 +104,7 @@ Texto canônico (servidor; **não é texto legal final**):
 
 Gravada em **dois** lugares, no ato do POST bem-sucedido:
 
-1. `PublicLeadConsent` (tabela nova, migration `20261111040000_public_lead_consent_and_rls`) — texto, versão, finalidade, `grantedAt` (servidor), ligada ao Lead. Facilita consulta operacional junto ao CRM.
+1. `PublicLeadConsent` (tabela nova, migration `20261111040000_public_lead_consent_and_rls`) — texto, versão, finalidade, `grantedAt` (servidor), ligada ao Lead. Facilita consulta operacional junto ao CRM. A FK para `Lead` é **ON DELETE SET NULL** (não CASCADE): a prova operacional sobrevive se o lead for excluído. `organizationId` permanece obrigatório e isolado por RLS (CASCADE só no offboarding do tenant).
 2. Cadeia existente `ConsentAuditRecord` / `ConsentEventDetail` via `consentAuditChain.recordConsent`: `purpose` na cadeia é `AGENDAMENTO_DEMONSTRACAO` (a API pública continua com `agendamento_demonstracao` porque o padrão da cadeia exige `CAIXA_ALTA_COM_UNDERSCORE`), `termsVersion` = `landing-demo-v1`, `occurredAt` do servidor, `subjectRef` = e-mail tokenizado (HMAC) pela cadeia. O texto canônico e o **hash do IP** (se o sal estiver configurado) vão em `ConsentEventDetail.detail` (expurgável, fora do hash da cadeia).
 
 Se a cadeia falhar depois da persistência operacional, o lead não é apagado; o erro é logado sem PII.
@@ -112,6 +112,8 @@ Se a cadeia falhar depois da persistência operacional, o lead não é apagado; 
 #### IP
 
 Somente hasheado (HMAC-SHA256, sal `PUBLIC_LEAD_IP_HASH_SECRET`). Nunca persistido nem logado em claro. Sem o segredo, o IP simplesmente não é gravado.
+
+O rate limit e o hash usam a **mesma fonte confiável: `req.ip`**. Com `TRUST_PROXY=false` (default), isso é o IP do socket — um `X-Forwarded-For` forjado não entra. Com `TRUST_PROXY=true`, `src/bootstrap/security.ts` reescreve o header para o valor mais à esquerda antes do Express resolver `req.ip`; limiter e hash continuam alinhados, mas o hop confiável em si é follow-up de borda (não alterado neste PR).
 
 #### Retenção (operacional, não é texto legal final)
 

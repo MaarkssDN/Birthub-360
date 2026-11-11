@@ -15,6 +15,7 @@ const ACCEPTED_BODY = { ok: true as const };
  * Endpoint público da landing. Sem authenticateToken / requireTenant.
  * O tenant é resolvido exclusivamente por LANDING_LEAD_ORGANIZATION_ID no servidor.
  * O IP do titular é hasheado aqui (sal em PUBLIC_LEAD_IP_HASH_SECRET) e nunca é logado em claro.
+ * A fonte do IP é `req.ip` — a mesma chave do publicLeadLimiter em rateLimiters.ts.
  */
 publicLeadRoutes.post('/', async (req: Request, res: Response): Promise<void> => {
   try {

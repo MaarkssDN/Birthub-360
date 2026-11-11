@@ -5,7 +5,7 @@
 CREATE TABLE "PublicLeadConsent" (
     "id" TEXT NOT NULL,
     "organizationId" TEXT NOT NULL,
-    "leadId" TEXT NOT NULL,
+    "leadId" TEXT,
     "purpose" TEXT NOT NULL,
     "termsVersion" TEXT NOT NULL,
     "termsText" TEXT NOT NULL,
@@ -17,7 +17,9 @@ CREATE TABLE "PublicLeadConsent" (
 );
 
 ALTER TABLE "PublicLeadConsent" ADD CONSTRAINT "PublicLeadConsent_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE "PublicLeadConsent" ADD CONSTRAINT "PublicLeadConsent_leadId_fkey" FOREIGN KEY ("leadId") REFERENCES "Lead"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+-- SET NULL (não CASCADE): a prova operacional precisa sobreviver à exclusão do Lead.
+-- organizationId segue ON DELETE CASCADE (offboarding do tenant).
+ALTER TABLE "PublicLeadConsent" ADD CONSTRAINT "PublicLeadConsent_leadId_fkey" FOREIGN KEY ("leadId") REFERENCES "Lead"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 CREATE INDEX "PublicLeadConsent_organizationId_idx" ON "PublicLeadConsent"("organizationId");
 CREATE INDEX "PublicLeadConsent_organizationId_leadId_idx" ON "PublicLeadConsent"("organizationId", "leadId");

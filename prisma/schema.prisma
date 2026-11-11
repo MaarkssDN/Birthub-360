@@ -5578,8 +5578,11 @@ model PublicLeadConsent {
   id             String       @id @default(cuid())
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  leadId         String
-  lead           Lead         @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  /// Opcional de propósito: ON DELETE SET NULL preserva a prova operacional
+  /// se o Lead for excluído (a cascata apagaria o registro de consentimento).
+  /// organizationId permanece obrigatório e isolado por RLS.
+  leadId         String?
+  lead           Lead?        @relation(fields: [leadId], references: [id], onDelete: SetNull)
 
   /// Finalidade declarada (deve bater com o texto apresentado na landing).
   purpose      String
