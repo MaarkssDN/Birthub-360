@@ -8,7 +8,6 @@ import {
   BarChart3,
   Bot,
   Building2,
-  Calendar,
   Check,
   CheckCircle2,
   Clock,
@@ -45,7 +44,7 @@ import {
   Zap,
 } from 'lucide-react';
 import type React from 'react';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 
 const LuxuryLandingPage = lazy(() =>
   import('../luxury/LuxuryLandingPage.js').then((m) => ({ default: m.LuxuryLandingPage })),
@@ -56,6 +55,20 @@ import { BirthHubLogo } from '@/components/brand/BirthHubLogo';
 import { isAuthorizedLoginEmail } from '@/config/access-policy';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import {
+  getFirstInvalidLeadField,
+  type LeadFieldErrors,
+  type LeadFormField,
+  normalizeBrazilianWhatsapp,
+  validateLeadForm,
+} from '@/features/landing/services/leadFormValidation';
+import {
+  getLeadSubmitErrorMessage,
+  isAbortError,
+  LEAD_CONSENT_PURPOSE,
+  LEAD_CONSENT_TEXT_VERSION,
+  submitLead,
+} from '@/features/landing/services/submitLead';
 import {
   type HeroVariant,
   trackHeroCtaPrimaryClick,
@@ -567,24 +580,87 @@ export function Landing360({
     email: '',
     whatsapp: '',
     equipe: '6 a 15',
-    consent: true,
+    consent: false,
   });
   const [leadLoading, setLeadLoading] = useState(false);
   const [leadSubmitted, setLeadSubmitted] = useState(false);
+  const [leadFieldErrors, setLeadFieldErrors] = useState<LeadFieldErrors>({});
+  const [leadSubmitError, setLeadSubmitError] = useState<string | null>(null);
+  const leadNomeRef = useRef<HTMLInputElement>(null);
+  const leadEmailRef = useRef<HTMLInputElement>(null);
+  const leadWhatsappRef = useRef<HTMLInputElement>(null);
+  const leadConsentRef = useRef<HTMLInputElement>(null);
+  const leadAbortRef = useRef<AbortController | null>(null);
 
-  const handleLeadSubmit = (e: React.FormEvent) => {
+  const leadFieldRefs: Record<LeadFormField, React.RefObject<HTMLInputElement | null>> = {
+    nome: leadNomeRef,
+    email: leadEmailRef,
+    whatsapp: leadWhatsappRef,
+    consent: leadConsentRef,
+  };
+
+  useEffect(() => {
+    return () => {
+      leadAbortRef.current?.abort();
+    };
+  }, []);
+
+  const handleLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (leadLoading) return;
+
+    const fieldErrors = validateLeadForm(leadForm);
+    setLeadFieldErrors(fieldErrors);
+    setLeadSubmitError(null);
+
+    const firstInvalid = getFirstInvalidLeadField(fieldErrors);
+    if (firstInvalid) {
+      leadFieldRefs[firstInvalid].current?.focus();
+      return;
+    }
+
     setLeadLoading(true);
     SoundFX.play('click');
-    setTimeout(() => {
-      setLeadLoading(false);
+
+    leadAbortRef.current?.abort();
+    const controller = new AbortController();
+    leadAbortRef.current = controller;
+
+    try {
+      await submitLead(
+        {
+          nome: leadForm.nome.trim(),
+          email: leadForm.email.trim(),
+          whatsapp: normalizeBrazilianWhatsapp(leadForm.whatsapp),
+          equipe: leadForm.equipe,
+          consent: leadForm.consent,
+          // Metadados de consentimento — a alinhar com o contrato do Agente 01
+          // e a validação do Agente 21. Texto legal permanece o já exibido.
+          consentMetadata: {
+            textVersion: LEAD_CONSENT_TEXT_VERSION,
+            purpose: LEAD_CONSENT_PURPOSE,
+            timestamp: new Date().toISOString(),
+          },
+        },
+        { signal: controller.signal },
+      );
       setLeadSubmitted(true);
       trackLeadFormSubmitted(abVariant, {
         teamSize: leadForm.equipe,
         source: 'landing_form_objective',
       });
-    }, 650);
+    } catch (error) {
+      if (isAbortError(error)) {
+        return;
+      }
+      setLeadSubmitError(getLeadSubmitErrorMessage(error));
+    } finally {
+      if (!controller.signal.aborted) {
+        setLeadLoading(false);
+      }
+    }
   };
+  const firstInvalidLeadField = getFirstInvalidLeadField(leadFieldErrors);
   const reduceMotion = useReducedMotion();
   useB360CardTilt([viewMode, activeScreen]);
   useB360ScrollParallax();
@@ -2041,35 +2117,13 @@ export function Landing360({
                         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">
                           <CheckCircle2 className="h-8 w-8" />
                         </div>
-                        <h3 className="text-xl font-bold text-cyan-400">
-                          Sessão Solicitada com Sucesso!
-                        </h3>
+                        <h3 className="text-xl font-bold text-cyan-400">Solicitação recebida</h3>
                         <p className="text-xs text-slate-300 leading-relaxed max-w-sm mx-auto">
-                          Enviamos a confirmação para <strong>{leadForm.email}</strong>. Um de
-                          nossos especialistas em operações comerciais entrará em contato via
-                          WhatsApp ({leadForm.whatsapp}) em até 15 minutos.
+                          Recebemos seus dados. Nossa equipe vai entrar em contato.
                         </p>
-                        <div className="pt-2 flex flex-col gap-2.5">
-                          <a
-                            href="https://calendar.google.com"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-xs font-bold hover:bg-cyan-500/30 transition-colors"
-                          >
-                            <Calendar className="w-4 h-4" />
-                            <span>Abrir Google Agenda</span>
-                          </a>
-                          <button
-                            type="button"
-                            onClick={() => setLeadSubmitted(false)}
-                            className="text-[11px] font-mono text-slate-400 hover:text-slate-200 underline"
-                          >
-                            Editar dados enviados
-                          </button>
-                        </div>
                       </div>
                     ) : (
-                      <form onSubmit={handleLeadSubmit} className="space-y-3.5">
+                      <form onSubmit={handleLeadSubmit} noValidate className="space-y-3.5">
                         <div className="mb-2">
                           <h3 className="text-base font-bold text-cyan-400">
                             Reserve sua Demonstração Técnica
@@ -2088,13 +2142,22 @@ export function Landing360({
                           </label>
                           <input
                             id="lead-nome"
+                            ref={leadNomeRef}
                             type="text"
                             required
+                            autoComplete="name"
                             value={leadForm.nome}
                             onChange={(e) => setLeadForm({ ...leadForm, nome: e.target.value })}
                             placeholder="Ex: Mariana Albuquerque"
+                            aria-invalid={Boolean(leadFieldErrors.nome)}
+                            aria-describedby={leadFieldErrors.nome ? 'lead-nome-error' : undefined}
                             className="b360-form-input"
                           />
+                          {leadFieldErrors.nome ? (
+                            <p id="lead-nome-error" className="mt-1 text-[11px] text-red-400">
+                              {leadFieldErrors.nome}
+                            </p>
+                          ) : null}
                         </div>
 
                         <div>
@@ -2106,13 +2169,24 @@ export function Landing360({
                           </label>
                           <input
                             id="lead-email"
+                            ref={leadEmailRef}
                             type="email"
                             required
+                            autoComplete="email"
                             value={leadForm.email}
                             onChange={(e) => setLeadForm({ ...leadForm, email: e.target.value })}
                             placeholder="voce@suaempresa.com.br"
+                            aria-invalid={Boolean(leadFieldErrors.email)}
+                            aria-describedby={
+                              leadFieldErrors.email ? 'lead-email-error' : undefined
+                            }
                             className="b360-form-input"
                           />
+                          {leadFieldErrors.email ? (
+                            <p id="lead-email-error" className="mt-1 text-[11px] text-red-400">
+                              {leadFieldErrors.email}
+                            </p>
+                          ) : null}
                         </div>
 
                         <div>
@@ -2124,19 +2198,31 @@ export function Landing360({
                           </label>
                           <input
                             id="lead-whatsapp"
+                            ref={leadWhatsappRef}
                             type="tel"
                             required
+                            autoComplete="tel"
+                            inputMode="tel"
                             value={leadForm.whatsapp}
                             onChange={(e) => setLeadForm({ ...leadForm, whatsapp: e.target.value })}
                             placeholder="(11) 99999-9999"
+                            aria-invalid={Boolean(leadFieldErrors.whatsapp)}
+                            aria-describedby={
+                              leadFieldErrors.whatsapp ? 'lead-whatsapp-error' : undefined
+                            }
                             className="b360-form-input"
                           />
+                          {leadFieldErrors.whatsapp ? (
+                            <p id="lead-whatsapp-error" className="mt-1 text-[11px] text-red-400">
+                              {leadFieldErrors.whatsapp}
+                            </p>
+                          ) : null}
                         </div>
 
                         <div>
-                          <label className="block text-xs font-mono text-slate-300 mb-1.5">
+                          <div className="block text-xs font-mono text-slate-300 mb-1.5">
                             Tamanho da Equipe Comercial
-                          </label>
+                          </div>
                           <div className="b360-team-chips">
                             {['1 a 5', '6 a 15', '16 a 50', '50+'].map((sz) => (
                               <button
@@ -2152,14 +2238,24 @@ export function Landing360({
                         </div>
 
                         <div className="pt-1">
-                          <label className="flex items-start gap-2 text-[11px] text-slate-400 cursor-pointer">
+                          <label
+                            htmlFor="lead-consent"
+                            className="flex items-start gap-2 text-[11px] text-slate-400 cursor-pointer"
+                          >
                             <input
+                              id="lead-consent"
+                              ref={leadConsentRef}
                               type="checkbox"
                               checked={leadForm.consent}
                               onChange={(e) =>
                                 setLeadForm({ ...leadForm, consent: e.target.checked })
                               }
                               required
+                              aria-required="true"
+                              aria-invalid={Boolean(leadFieldErrors.consent)}
+                              aria-describedby={
+                                leadFieldErrors.consent ? 'lead-consent-error' : undefined
+                              }
                               className="mt-0.5 rounded border-slate-700 text-[#00D4FF] focus:ring-[#00D4FF]"
                             />
                             <span>
@@ -2167,13 +2263,40 @@ export function Landing360({
                               demonstração conforme a LGPD.
                             </span>
                           </label>
+                          {leadFieldErrors.consent ? (
+                            <p id="lead-consent-error" className="mt-1 text-[11px] text-red-400">
+                              {leadFieldErrors.consent}
+                            </p>
+                          ) : null}
+                        </div>
+
+                        <div
+                          id="lead-form-alert"
+                          role="alert"
+                          aria-live="assertive"
+                          aria-atomic="true"
+                        >
+                          {leadSubmitError ? (
+                            <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/50 border border-red-300 dark:border-red-500/40 flex items-start gap-2.5 text-xs text-red-900 dark:text-red-200">
+                              <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+                              <p className="font-medium font-sans">
+                                {leadSubmitError} Você pode tentar novamente sem perder os dados
+                                preenchidos.
+                              </p>
+                            </div>
+                          ) : firstInvalidLeadField && leadFieldErrors[firstInvalidLeadField] ? (
+                            <p className="sr-only">{leadFieldErrors[firstInvalidLeadField]}</p>
+                          ) : null}
                         </div>
 
                         <div className="pt-2">
-                          <button type="submit" disabled={leadLoading} className="b360-submit-cta">
-                            {leadLoading
-                              ? 'Preparando Sessão...'
-                              : 'GARANTIR MINHA DEMONSTRAÇÃO GRATUITA →'}
+                          <button
+                            type="submit"
+                            disabled={leadLoading}
+                            aria-busy={leadLoading}
+                            className="b360-submit-cta"
+                          >
+                            {leadLoading ? 'Enviando...' : 'GARANTIR MINHA DEMONSTRAÇÃO GRATUITA →'}
                           </button>
                           <p className="mt-2 text-center text-[10px] font-mono text-slate-400">
                             🔒 Zero spam · Cancelamento fácil com 1 clique · Dados protegidos

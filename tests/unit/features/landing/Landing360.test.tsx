@@ -4,14 +4,21 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { Landing360 } from '@/features/landing/pages/Landing360';
 
-const { signInEmailMock, signUpEmailMock, requestPasswordResetMock, signInSocialMock } = vi.hoisted(
-  () => ({
-    signInEmailMock: vi.fn(),
-    signUpEmailMock: vi.fn(),
-    requestPasswordResetMock: vi.fn(),
-    signInSocialMock: vi.fn(),
-  }),
-);
+const {
+  signInEmailMock,
+  signUpEmailMock,
+  requestPasswordResetMock,
+  signInSocialMock,
+  submitLeadMock,
+  trackLeadFormSubmittedMock,
+} = vi.hoisted(() => ({
+  signInEmailMock: vi.fn(),
+  signUpEmailMock: vi.fn(),
+  requestPasswordResetMock: vi.fn(),
+  signInSocialMock: vi.fn(),
+  submitLeadMock: vi.fn(),
+  trackLeadFormSubmittedMock: vi.fn(),
+}));
 
 vi.mock('../../../contexts/AuthContext.js', () => ({
   useAuth: () => ({
@@ -73,6 +80,23 @@ vi.mock('../../../lib/auth-client.js', () => ({
   },
 }));
 
+vi.mock('@/features/landing/services/submitLead', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/features/landing/services/submitLead')>();
+  return {
+    ...actual,
+    submitLead: submitLeadMock,
+  };
+});
+
+vi.mock('@/lib/analytics/conversionTelemetry', async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import('@/lib/analytics/conversionTelemetry')>();
+  return {
+    ...actual,
+    trackLeadFormSubmitted: trackLeadFormSubmittedMock,
+  };
+});
+
 describe('Landing360', () => {
   beforeEach(() => {
     sessionStorage.clear();
@@ -82,6 +106,9 @@ describe('Landing360', () => {
     signUpEmailMock.mockReset();
     requestPasswordResetMock.mockReset();
     signInSocialMock.mockReset();
+    submitLeadMock.mockReset();
+    submitLeadMock.mockResolvedValue(undefined);
+    trackLeadFormSubmittedMock.mockReset();
   });
 
   const renderWithProviders = (initialRoute = '/', initialScreen: 'intro' | 'login' = 'intro') => {
@@ -92,6 +119,28 @@ describe('Landing360', () => {
         </ThemeProvider>
       </MemoryRouter>,
     );
+  };
+
+  const fillValidLeadForm = (container: HTMLElement, options?: { consent?: boolean }) => {
+    fireEvent.change(container.querySelector('#lead-nome') as HTMLInputElement, {
+      target: { value: 'Mariana Albuquerque' },
+    });
+    fireEvent.change(container.querySelector('#lead-email') as HTMLInputElement, {
+      target: { value: 'mariana@vanguarda.com.br' },
+    });
+    fireEvent.change(container.querySelector('#lead-whatsapp') as HTMLInputElement, {
+      target: { value: '(11) 99999-9999' },
+    });
+    const consent = container.querySelector('#lead-consent') as HTMLInputElement;
+    if ((options?.consent ?? true) && !consent.checked) {
+      fireEvent.click(consent);
+    }
+  };
+
+  const submitLeadForm = () => {
+    const submitBtn = screen.getByRole('button', { name: /GARANTIR MINHA DEMONSTRAÇÃO GRATUITA/i });
+    fireEvent.submit(submitBtn.closest('form') as HTMLFormElement);
+    return submitBtn;
   };
 
   it('deve renderizar a tela inicial com o slogan oficial e botões de ação', () => {
@@ -338,39 +387,251 @@ describe('Landing360', () => {
     expect(container.querySelector('#lead-whatsapp')).toBeInTheDocument();
   });
 
-  it('deve submeter o formulário de lead com sucesso e alternar a variante A/B', async () => {
+  it('deve iniciar o consentimento desmarcado e bloquear o envio sem consentimento', async () => {
     const { container } = renderWithProviders('/', 'intro');
+    const consent = container.querySelector('#lead-consent') as HTMLInputElement;
+    expect(consent).toBeInTheDocument();
+    expect(consent.checked).toBe(false);
+    expect(consent).toHaveAttribute('required');
+    expect(consent).toHaveAttribute('aria-required', 'true');
 
-    const emailInput = container.querySelector('#lead-email') as HTMLInputElement;
-    expect(emailInput).toBeInTheDocument();
+    fillValidLeadForm(container, { consent: false });
+    submitLeadForm();
 
-    // Preenche apenas o campo assertado no sucesso para evitar re-renders
-    // desnecessários da landing inteira (cada change dispara render do componente).
-    fireEvent.change(emailInput, { target: { value: 'mariana@vanguarda.com.br' } });
-
-    // Submissão do formulário
-    const submitBtn = screen.getByRole('button', { name: /GARANTIR MINHA DEMONSTRAÇÃO GRATUITA/i });
-    const leadFormEl = submitBtn.closest('form') as HTMLFormElement;
-    fireEvent.submit(leadFormEl);
-
-    await waitFor(
-      () => {
-        expect(screen.getByText(/Sessão Solicitada com Sucesso/i)).toBeInTheDocument();
-        expect(screen.getByText(/mariana@vanguarda\.com\.br/i)).toBeInTheDocument();
-        expect(screen.getByText(/Abrir Google Agenda/i)).toBeInTheDocument();
-      },
-      { timeout: 3000 },
+    const consentError = await screen.findByText(
+      /autorizar o tratamento dos dados/i,
+      { selector: '#lead-consent-error' },
     );
+    expect(consentError).toBeInTheDocument();
+    expect(consent).toHaveAttribute('aria-invalid', 'true');
+    expect(consent).toHaveAttribute('aria-describedby', 'lead-consent-error');
+    expect(document.activeElement).toBe(consent);
+    expect(container.querySelector('#lead-form-alert')).toHaveAttribute('aria-live', 'assertive');
+    expect(container.querySelector('#lead-form-alert')).toHaveTextContent(
+      /autorizar o tratamento dos dados/i,
+    );
+    expect(submitLeadMock).not.toHaveBeenCalled();
+    expect(trackLeadFormSubmittedMock).not.toHaveBeenCalled();
+  });
 
-    // 8. Teste A/B: alternar para Variante B
+  it('deve recusar e-mail inválido, anunciar o erro em aria-live e focar o campo', async () => {
+    const { container } = renderWithProviders('/', 'intro');
+    fillValidLeadForm(container);
+    fireEvent.change(container.querySelector('#lead-email') as HTMLInputElement, {
+      target: { value: 'invalido-sem-arroba' },
+    });
+    submitLeadForm();
+
+    const emailError = await screen.findByText(/informe um e-mail válido/i, {
+      selector: '#lead-email-error',
+    });
+    expect(emailError).toHaveAttribute('id', 'lead-email-error');
+    const emailInput = container.querySelector('#lead-email') as HTMLInputElement;
+    expect(emailInput).toHaveAttribute('aria-invalid', 'true');
+    expect(emailInput).toHaveAttribute('aria-describedby', 'lead-email-error');
+    expect(document.activeElement).toBe(emailInput);
+    expect(container.querySelector('#lead-form-alert')).toHaveAttribute('aria-live', 'assertive');
+    expect(container.querySelector('#lead-form-alert')).toHaveTextContent(/informe um e-mail válido/i);
+    expect(submitLeadMock).not.toHaveBeenCalled();
+  });
+
+  it('deve recusar WhatsApp inválido sem DDD de 10 ou 11 dígitos', async () => {
+    const { container } = renderWithProviders('/', 'intro');
+    fillValidLeadForm(container);
+    fireEvent.change(container.querySelector('#lead-whatsapp') as HTMLInputElement, {
+      target: { value: '123' },
+    });
+    submitLeadForm();
+
+    expect(
+      await screen.findByText(/WhatsApp com DDD \(10 ou 11 dígitos\)/i, {
+        selector: '#lead-whatsapp-error',
+      }),
+    ).toBeInTheDocument();
+    const whatsappInput = container.querySelector('#lead-whatsapp') as HTMLInputElement;
+    expect(whatsappInput).toHaveAttribute('aria-invalid', 'true');
+    expect(document.activeElement).toBe(whatsappInput);
+    expect(submitLeadMock).not.toHaveBeenCalled();
+  });
+
+  it('deve submeter o formulário de lead com sucesso 2xx, mensagem honesta e alternar a variante A/B', async () => {
+    const { container } = renderWithProviders('/', 'intro');
+    fillValidLeadForm(container);
+    submitLeadForm();
+
+    await waitFor(() => {
+      expect(submitLeadMock).toHaveBeenCalledTimes(1);
+    });
+
+    const payload = submitLeadMock.mock.calls[0][0];
+    expect(payload).toMatchObject({
+      nome: 'Mariana Albuquerque',
+      email: 'mariana@vanguarda.com.br',
+      whatsapp: '11999999999',
+      equipe: '6 a 15',
+      consent: true,
+    });
+    expect(payload.consentMetadata.textVersion).toBeTruthy();
+    expect(payload.consentMetadata.purpose).toBeTruthy();
+    expect(payload.consentMetadata.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Recebemos seus dados\. Nossa equipe vai entrar em contato\./i),
+      ).toBeInTheDocument();
+    });
+    expect(screen.queryByText(/Sessão Solicitada com Sucesso/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/contato via WhatsApp/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Abrir Google Agenda/i)).not.toBeInTheDocument();
+    expect(trackLeadFormSubmittedMock).toHaveBeenCalledTimes(1);
+
     const varBBtn = screen.getAllByRole('button', { name: /Variante B/i })[0];
     fireEvent.click(varBBtn);
 
     await waitFor(
       () => {
-        expect(screen.getByText(/Multiplique a capacidade de vendas da sua equipe/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/Multiplique a capacidade de vendas da sua equipe/i),
+        ).toBeInTheDocument();
       },
       { timeout: 3000 },
     );
+  });
+
+  it('deve exibir erro genérico em 4xx, preservar os dados e permitir nova tentativa', async () => {
+    const { LeadSubmitError } = await import('@/features/landing/services/submitLead');
+    submitLeadMock.mockRejectedValueOnce(
+      new LeadSubmitError('validation', 'Não foi possível enviar seus dados. Revise as informações e tente novamente.', 400),
+    );
+
+    const { container } = renderWithProviders('/', 'intro');
+    fillValidLeadForm(container);
+    submitLeadForm();
+
+    await waitFor(() => {
+      expect(container.querySelector('#lead-form-alert')).toHaveTextContent(
+        /Não foi possível enviar seus dados/i,
+      );
+    });
+    expect(container.querySelector('#lead-form-alert')).toHaveAttribute('role', 'alert');
+    expect(container.querySelector('#lead-form-alert')).toHaveAttribute('aria-live', 'assertive');
+    expect(container.querySelector('#lead-form-alert')).toHaveTextContent(
+      /tentar novamente sem perder os dados/i,
+    );
+    expect((container.querySelector('#lead-email') as HTMLInputElement).value).toBe(
+      'mariana@vanguarda.com.br',
+    );
+    expect(trackLeadFormSubmittedMock).not.toHaveBeenCalled();
+
+    submitLeadMock.mockResolvedValueOnce(undefined);
+    submitLeadForm();
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Recebemos seus dados\. Nossa equipe vai entrar em contato\./i),
+      ).toBeInTheDocument();
+    });
+    expect(trackLeadFormSubmittedMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('deve exibir erro de instabilidade em 5xx sem disparar telemetria de sucesso', async () => {
+    const { LeadSubmitError } = await import('@/features/landing/services/submitLead');
+    submitLeadMock.mockRejectedValueOnce(
+      new LeadSubmitError('server', 'Estamos com instabilidade no momento. Tente novamente em instantes.', 500),
+    );
+
+    const { container } = renderWithProviders('/', 'intro');
+    fillValidLeadForm(container);
+    submitLeadForm();
+
+    await waitFor(() => {
+      expect(container.querySelector('#lead-form-alert')).toHaveTextContent(/instabilidade no momento/i);
+    });
+    expect(screen.getByRole('button', { name: /GARANTIR MINHA DEMONSTRAÇÃO GRATUITA/i })).toBeEnabled();
+    expect(trackLeadFormSubmittedMock).not.toHaveBeenCalled();
+  });
+
+  it('deve exibir erro de rede quando o envio falha por conexão', async () => {
+    const { LeadSubmitError } = await import('@/features/landing/services/submitLead');
+    submitLeadMock.mockRejectedValueOnce(
+      new LeadSubmitError('network', 'Não foi possível conectar. Verifique sua conexão e tente novamente.'),
+    );
+
+    const { container } = renderWithProviders('/', 'intro');
+    fillValidLeadForm(container);
+    submitLeadForm();
+
+    await waitFor(() => {
+      expect(container.querySelector('#lead-form-alert')).toHaveTextContent(/Não foi possível conectar/i);
+    });
+    expect(trackLeadFormSubmittedMock).not.toHaveBeenCalled();
+  });
+
+  it('deve exibir erro de limite quando o endpoint responde 429', async () => {
+    const { LeadSubmitError } = await import('@/features/landing/services/submitLead');
+    submitLeadMock.mockRejectedValueOnce(
+      new LeadSubmitError('rate_limit', 'Muitas tentativas. Aguarde alguns instantes e tente novamente.', 429),
+    );
+
+    const { container } = renderWithProviders('/', 'intro');
+    fillValidLeadForm(container);
+    submitLeadForm();
+
+    await waitFor(() => {
+      expect(container.querySelector('#lead-form-alert')).toHaveTextContent(/Muitas tentativas/i);
+    });
+    expect(trackLeadFormSubmittedMock).not.toHaveBeenCalled();
+  });
+
+  it('deve exibir erro observável quando o endpoint ainda está pendente do contrato', async () => {
+    const { LeadSubmitError, LEAD_SUBMIT_USER_MESSAGES } = await import(
+      '@/features/landing/services/submitLead'
+    );
+    submitLeadMock.mockRejectedValueOnce(
+      new LeadSubmitError('endpoint_unavailable', LEAD_SUBMIT_USER_MESSAGES.endpoint_unavailable),
+    );
+
+    const { container } = renderWithProviders('/', 'intro');
+    fillValidLeadForm(container);
+    submitLeadForm();
+
+    await waitFor(() => {
+      expect(container.querySelector('#lead-form-alert')).toHaveTextContent(
+        /envio ainda não está disponível/i,
+      );
+    });
+    expect(screen.queryByText(/Recebemos seus dados/i)).not.toBeInTheDocument();
+    expect(trackLeadFormSubmittedMock).not.toHaveBeenCalled();
+  });
+
+  it('não deve permitir duplo envio enquanto a requisição está em andamento', async () => {
+    let resolveSubmit: () => void = () => {};
+    submitLeadMock.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveSubmit = resolve;
+        }),
+    );
+
+    const { container } = renderWithProviders('/', 'intro');
+    fillValidLeadForm(container);
+    const submitBtn = submitLeadForm();
+
+    await waitFor(() => {
+      expect(submitLeadMock).toHaveBeenCalledTimes(1);
+    });
+    expect(submitBtn).toBeDisabled();
+    expect(submitBtn).toHaveAttribute('aria-busy', 'true');
+    expect(submitBtn).toHaveTextContent(/Enviando/i);
+
+    fireEvent.submit(submitBtn.closest('form') as HTMLFormElement);
+    expect(submitLeadMock).toHaveBeenCalledTimes(1);
+
+    resolveSubmit();
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Recebemos seus dados\. Nossa equipe vai entrar em contato\./i),
+      ).toBeInTheDocument();
+    });
   });
 });
