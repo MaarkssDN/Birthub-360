@@ -1,8 +1,12 @@
 /**
- * Shell Impeccable Operate (Agente 02) + handoff 05: a Sidebar precisa levar a TODOS os destinos
- * reais do pilar de Inteligência de Mercado — LDR (`/app/market-intelligence`), Hub de MI
- * (`/app/market-intelligence/hub`) e Prospecção Inteligente (`/app/prospect/inteligente`) —, que
- * antes eram rotas órfãs. Também fixa que o rodapé não mostra mais contagem inventada ("7 sinais").
+ * Shell Impeccable Operate (Agente 02) + handoff 05: a navegação precisa levar a TODOS os
+ * destinos reais do pilar de Inteligência de Mercado — LDR (`/app/market-intelligence`),
+ * Hub de MI (`/app/market-intelligence/hub`) e Prospecção Inteligente
+ * (`/app/prospect/inteligente`) —, que antes eram rotas órfãs.
+ *
+ * Atualizado para a navegação modular (2026-11-10): os destinos vivem no painel contextual
+ * do P02 (`ModuleNavPanel`), com `aria-current` marcando o item ativo. O antigo rodapé com
+ * CTA "Hub de IA"/contagem fabricada não existe mais — o painel do P06 cobre esse papel.
  */
 import '@testing-library/jest-dom/vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
@@ -31,6 +35,7 @@ function renderAt(path: string, activeTab: TabType) {
     isAdmin: false,
     canAccessCommercialIntelligence: true,
     canAccessCopilotoIa: true,
+    canManageOperations: undefined,
   });
   return render(
     <MemoryRouter initialEntries={[path]}>
@@ -40,35 +45,34 @@ function renderAt(path: string, activeTab: TabType) {
   );
 }
 
+// No painel modular os itens são <button> com o rótulo visível; o path vira parte do
+// data-testid (`module-nav-<modulo>-<tab>[-<path-com-hifens>]`).
 describe('Sidebar — destinos de MI e prospecção (handoff 05)', () => {
-  it('na rota do hub, expande o grupo e marca só o Hub como página atual', () => {
+  it('em /app/market-intelligence/hub só o Hub de Inteligência fica ativo', () => {
     renderAt('/app/market-intelligence/hub', 'market-intelligence');
-    const hub = screen.getByTestId('sidebar-sub-market-intelligence/hub');
-    const ldr = screen.getByTestId('sidebar-sub-market-intelligence');
+    const hub = screen.getByRole('button', { name: /Hub de Inteligência/ });
+    const ldr = screen.getByRole('button', { name: 'Pesquisa LDR' });
     expect(hub).toHaveAttribute('aria-current', 'page');
     expect(ldr).not.toHaveAttribute('aria-current');
   });
 
-  it('navega para /app/prospect/inteligente pelo sub-item', () => {
+  it('navega para /app/prospect/inteligente pelo item do P02', () => {
     renderAt('/app/prospect', 'prospect');
-    fireEvent.click(screen.getByTestId('sidebar-sub-prospect/inteligente'));
+    fireEvent.click(screen.getByRole('button', { name: /Prospecção Inteligente/ }));
     expect(screen.getByTestId('where')).toHaveTextContent('/app/prospect/inteligente');
   });
 
-  it('navega para o hub de MI a partir do LDR', () => {
+  it('em /app/market-intelligence o LDR fica ativo e navega para o hub', () => {
     renderAt('/app/market-intelligence', 'market-intelligence');
-    expect(screen.getByTestId('sidebar-sub-market-intelligence')).toHaveAttribute(
-      'aria-current',
-      'page',
-    );
-    fireEvent.click(screen.getByTestId('sidebar-sub-market-intelligence/hub'));
+    const ldr = screen.getByRole('button', { name: 'Pesquisa LDR' });
+    expect(ldr).toHaveAttribute('aria-current', 'page');
+    fireEvent.click(screen.getByRole('button', { name: /Hub de Inteligência/ }));
     expect(screen.getByTestId('where')).toHaveTextContent('/app/market-intelligence/hub');
   });
 
-  it('rótulo "Copiloto IA" e rodapé sem contagem fabricada', () => {
-    renderAt('/app/dashboard', 'dashboard');
+  it('no P06 o item Copiloto IA aparece para quem tem permissão', () => {
+    renderAt('/app/intelligence', 'intelligence');
     expect(screen.getByRole('button', { name: 'Copiloto IA' })).toBeInTheDocument();
     expect(screen.queryByText(/7 sinais/)).not.toBeInTheDocument();
-    expect(screen.getByTestId('sidebar-intelligence-cta')).toHaveTextContent(/Hub de IA/);
   });
 });

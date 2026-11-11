@@ -6,6 +6,7 @@ import { OfflineBanner } from './OfflineBanner.js';
 import { DataFlowLines } from '../ui/DataFlowLines.js';
 import { VoiceCommandWidget } from '../ui/VoiceCommandWidget.js';
 import { ModuleAgentWidget } from '../ui/ModuleAgentWidget.js';
+import { AssistantsDock } from './AssistantsDock.js';
 import { useNavigationState } from './hooks/useNavigationState.js';
 import { MobileNavDrawer } from './MobileNavDrawer.js';
 import { CommandPalette } from '../ui/CommandPalette.js';
@@ -71,6 +72,9 @@ export function MainLayout({ children, activeTab: activeTabProp }: MainLayoutPro
 
       <VoiceCommandWidget />
       <ModuleAgentWidget activeTab={activeTab as TabType} />
+      {/* Assistentes globais (Camada 3): Chatbook + Copiloto IA persistentes
+          sobre qualquer workspace — estado preservado entre módulos. */}
+      <AssistantsDock />
       <CommandPalette />
       <Toaster />
     </div>
