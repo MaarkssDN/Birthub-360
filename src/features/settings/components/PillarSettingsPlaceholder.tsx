@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Settings,
   Shield,
@@ -26,6 +26,8 @@ import {
 import { Button } from '../../../components/ui/Button.js';
 import { Input } from '../../../components/ui/Input.js';
 import { Badge } from '../../../components/ui/Badge.js';
+import { pillarSettingsApi } from '../pillarSettings.api.js';
+import { PILLAR_NAME_TO_SLUG } from '../domain/pillarSettings.js';
 
 interface PillarSettingsProps {
   pillarName: string;
@@ -69,12 +71,172 @@ export function PillarSettingsPlaceholder({ pillarName }: PillarSettingsProps) {
   const [engRecordCalls, setEngRecordCalls] = useState(true);
   const [engWorkingHoursOnly, setEngWorkingHoursOnly] = useState(true);
 
-  // P0 #693 (Agente 02): não existe API de persistência para configurações por pilar.
-  // Antes, "Salvar" exibia "Configurações salvas com sucesso!" sem gravar nada (sucesso falso).
-  // Agora o botão fica desabilitado e a tela avisa que é só pré-visualização.
-  // Não inventar API `pillar.*` aqui — quando houver contrato real (Agente 01), plugar o save.
-  const SAVE_UNAVAILABLE_MSG =
-    'Salvar indisponível: estas configurações ainda não são gravadas no servidor.';
+  // Onda F1: persistência real via /api/settings/pillars/:pillar (Setting por org).
+  // Somente a aba "Ferramentas & Regras" tem contrato de backend — as demais abas
+  // (permissoes/automacoes/integracoes) continuam placeholders visuais.
+  const pillarSlug = PILLAR_NAME_TO_SLUG[pillarName] ?? null;
+  const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [savedAt, setSavedAt] = useState<string | null>(null);
+
+  const applyValues = useCallback((values: Record<string, unknown>) => {
+    const num = (k: string, fallback: number) =>
+      typeof values[k] === 'number' ? (values[k] as number) : fallback;
+    const bool = (k: string, fallback: boolean) =>
+      typeof values[k] === 'boolean' ? (values[k] as boolean) : fallback;
+    const str = (k: string, fallback: string) =>
+      typeof values[k] === 'string' ? (values[k] as string) : fallback;
+
+    switch (pillarName) {
+      case 'Hub Comercial':
+        setHubStagnationDays(num('stagnationDays', 14));
+        setHubRequireLossReason(bool('requireLossReason', true));
+        setHubDedupCnpj(bool('dedupCnpj', true));
+        break;
+      case 'Inteligência de Mercado':
+        setMarketMinRevenue(str('minRevenue', 'R$ 5.000.000'));
+        setMarketAutoEnrich(bool('autoEnrich', true));
+        setMarketSignalAlerts(bool('signalAlerts', true));
+        break;
+      case 'Orquestração de Vendas':
+        setSalesSpeedToLead(num('speedToLeadMin', 5));
+        setSalesRequireBant(bool('requireBant', true));
+        setSalesDailyTouchesLimit(num('dailyTouchesLimit', 40));
+        break;
+      case 'Performance Comercial':
+        setPerfBenchmarkRate(num('benchmarkRate', 18.5));
+        setPerfRepScoreActive(bool('repScoreActive', true));
+        setPerfAnomalyAlerts(bool('anomalyAlerts', true));
+        break;
+      case 'Previsibilidade Comercial':
+        setPredModelType(
+          values.modelType === 'manual' ? 'manual' : 'historico',
+        );
+        setPredFreezeDay(num('freezeDay', 25));
+        setPredConfidenceFactor(num('confidenceFactor', 85));
+        break;
+      case 'Inteligência Artificial':
+        setAiModel(str('model', 'Claude 3.5 Sonnet'));
+        setAiTemperature(num('temperature', 0.3));
+        setAiPiiMasking(bool('piiMasking', true));
+        break;
+      case 'Automação & Conectividade':
+        setAutoBiDirectional(bool('biDirectional', true));
+        setAutoSyncInterval(num('syncIntervalMin', 5));
+        setAutoRetryCount(num('retryCount', 3));
+        break;
+      case 'Engajamento Comercial':
+        setEngClickToCall(bool('clickToCall', true));
+        setEngRecordCalls(bool('recordCalls', true));
+        setEngWorkingHoursOnly(bool('workingHoursOnly', true));
+        break;
+      default:
+        break;
+    }
+  }, [pillarName]);
+
+  const collectValues = (): Record<string, unknown> | null => {
+    switch (pillarName) {
+      case 'Hub Comercial':
+        return {
+          stagnationDays: hubStagnationDays,
+          requireLossReason: hubRequireLossReason,
+          dedupCnpj: hubDedupCnpj,
+        };
+      case 'Inteligência de Mercado':
+        return {
+          minRevenue: marketMinRevenue,
+          autoEnrich: marketAutoEnrich,
+          signalAlerts: marketSignalAlerts,
+        };
+      case 'Orquestração de Vendas':
+        return {
+          speedToLeadMin: salesSpeedToLead,
+          requireBant: salesRequireBant,
+          dailyTouchesLimit: salesDailyTouchesLimit,
+        };
+      case 'Performance Comercial':
+        return {
+          benchmarkRate: perfBenchmarkRate,
+          repScoreActive: perfRepScoreActive,
+          anomalyAlerts: perfAnomalyAlerts,
+        };
+      case 'Previsibilidade Comercial':
+        return {
+          modelType: predModelType,
+          freezeDay: predFreezeDay,
+          confidenceFactor: predConfidenceFactor,
+        };
+      case 'Inteligência Artificial':
+        return {
+          model: aiModel,
+          temperature: aiTemperature,
+          piiMasking: aiPiiMasking,
+        };
+      case 'Automação & Conectividade':
+        return {
+          biDirectional: autoBiDirectional,
+          syncIntervalMin: autoSyncInterval,
+          retryCount: autoRetryCount,
+        };
+      case 'Engajamento Comercial':
+        return {
+          clickToCall: engClickToCall,
+          recordCalls: engRecordCalls,
+          workingHoursOnly: engWorkingHoursOnly,
+        };
+      default:
+        return null;
+    }
+  };
+
+  useEffect(() => {
+    if (!pillarSlug) {
+      setLoadState('error');
+      setLoadError('Pilar de configurações não reconhecido.');
+      return;
+    }
+    let cancelled = false;
+    setLoadState('loading');
+    setLoadError(null);
+    pillarSettingsApi
+      .get(pillarSlug)
+      .then((view) => {
+        if (cancelled) return;
+        applyValues(view.values);
+        setSavedAt(view.updatedAt);
+        setLoadState('ready');
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        setLoadError(err instanceof Error ? err.message : 'Falha ao carregar configurações.');
+        setLoadState('error');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [pillarSlug, applyValues]);
+
+  const handleSave = async () => {
+    if (!pillarSlug || saveState === 'saving') return;
+    const values = collectValues();
+    if (!values) return;
+    setSaveState('saving');
+    setSaveError(null);
+    try {
+      const view = await pillarSettingsApi.update(pillarSlug, values);
+      applyValues(view.values);
+      setSavedAt(view.updatedAt);
+      setSaveState('saved');
+    } catch (err: unknown) {
+      setSaveError(
+        err instanceof Error ? err.message : 'Falha ao salvar configurações.',
+      );
+      setSaveState('error');
+    }
+  };
 
   const tabs = [
     { id: 'ferramentas' as const, label: 'Ferramentas & Regras', icon: Sliders },
@@ -705,18 +867,36 @@ export function PillarSettingsPlaceholder({ pillarName }: PillarSettingsProps) {
         icon={Settings}
         actions={
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-[var(--ink-3)] hidden md:inline">
-              Em breve
-            </span>
+            {saveState === 'saved' && (
+              <span className="text-xs font-semibold text-[var(--nav-c-green)] hidden md:inline">
+                Salvo
+              </span>
+            )}
+            {saveState === 'error' && (
+              <span className="text-xs font-semibold text-[var(--nav-c-red)] hidden md:inline">
+                Falha ao salvar
+              </span>
+            )}
             <Button
               variant="default"
               size="sm"
-              disabled
-              aria-disabled="true"
-              title={SAVE_UNAVAILABLE_MSG}
-              aria-label={SAVE_UNAVAILABLE_MSG}
+              onClick={handleSave}
+              disabled={
+                !pillarSlug ||
+                loadState !== 'ready' ||
+                saveState === 'saving' ||
+                activeTab !== 'ferramentas'
+              }
+              title={
+                activeTab !== 'ferramentas'
+                  ? 'Somente a aba "Ferramentas & Regras" é persistida no servidor.'
+                  : loadState === 'error'
+                    ? (loadError ?? 'Falha ao carregar configurações.')
+                    : undefined
+              }
             >
-              <Save className="w-4 h-4 mr-2" /> Salvar indisponível
+              <Save className="w-4 h-4 mr-2" />
+              {saveState === 'saving' ? 'Salvando…' : 'Salvar'}
             </Button>
           </div>
         }
@@ -755,8 +935,19 @@ export function PillarSettingsPlaceholder({ pillarName }: PillarSettingsProps) {
               Status do Pilar
             </span>
             <div className="flex items-center gap-1.5 text-xs text-[var(--ink-2)] font-medium">
-              <span className="w-2 h-2 rounded-full bg-[var(--ink-3)]" />
-              Configuração não persistida
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  loadState === 'ready'
+                    ? 'bg-[var(--nav-c-green)]'
+                    : loadState === 'error'
+                      ? 'bg-[var(--nav-c-red)]'
+                      : 'bg-[var(--ink-3)]'
+                }`}
+              />
+              {loadState === 'loading' && 'Carregando…'}
+              {loadState === 'error' && 'Falha ao carregar'}
+              {loadState === 'ready' &&
+                (savedAt ? `Salvo em ${new Date(savedAt).toLocaleString('pt-BR')}` : 'Persistido')}
             </div>
           </div>
         </div>
@@ -770,7 +961,7 @@ export function PillarSettingsPlaceholder({ pillarName }: PillarSettingsProps) {
                   {pillarName}
                 </Badge>
                 <Badge variant="outline" className="text-xs">
-                  Pré-visualização
+                  {activeTab === 'ferramentas' ? 'Persistente' : 'Pré-visualização'}
                 </Badge>
               </div>
               <h2 className="text-2xl font-bold">{tabs.find((t) => t.id === activeTab)?.label}</h2>
@@ -780,23 +971,81 @@ export function PillarSettingsPlaceholder({ pillarName }: PillarSettingsProps) {
               </p>
             </div>
 
-            <div
-              role="note"
-              className="flex gap-3 p-4 rounded-xl border border-[var(--nav-c-gold)]/30 bg-[var(--nav-c-gold)]/5"
-            >
-              <AlertCircle
-                className="w-5 h-5 shrink-0 mt-0.5 text-[var(--nav-c-gold)]"
-                aria-hidden="true"
-              />
-              <div className="text-sm">
-                <p className="font-semibold text-[var(--ink)]">Pré-visualização — nada é salvo</p>
-                <p className="text-xs text-[var(--ink-2)] mt-1">
-                  Os valores abaixo são padrões ilustrativos. Alterações feitas aqui{' '}
-                  <strong>não são gravadas</strong> e se perdem ao sair da tela. Salvar estará
-                  disponível quando a API de configurações do pilar existir.
-                </p>
+            {loadState === 'error' && (
+              <div
+                role="alert"
+                className="flex gap-3 p-4 rounded-xl border border-[var(--nav-c-red)]/30 bg-[var(--nav-c-red)]/5"
+              >
+                <AlertCircle
+                  className="w-5 h-5 shrink-0 mt-0.5 text-[var(--nav-c-red)]"
+                  aria-hidden="true"
+                />
+                <div className="text-sm">
+                  <p className="font-semibold text-[var(--ink)]">
+                    Não foi possível carregar as configurações salvas
+                  </p>
+                  <p className="text-xs text-[var(--ink-2)] mt-1">{loadError}</p>
+                </div>
               </div>
-            </div>
+            )}
+
+            {saveState === 'error' && saveError && (
+              <div
+                role="alert"
+                className="flex gap-3 p-4 rounded-xl border border-[var(--nav-c-red)]/30 bg-[var(--nav-c-red)]/5"
+              >
+                <AlertCircle
+                  className="w-5 h-5 shrink-0 mt-0.5 text-[var(--nav-c-red)]"
+                  aria-hidden="true"
+                />
+                <div className="text-sm">
+                  <p className="font-semibold text-[var(--ink)]">Falha ao salvar</p>
+                  <p className="text-xs text-[var(--ink-2)] mt-1">{saveError}</p>
+                </div>
+              </div>
+            )}
+
+            {activeTab !== 'ferramentas' ? (
+              <div
+                role="note"
+                className="flex gap-3 p-4 rounded-xl border border-[var(--nav-c-gold)]/30 bg-[var(--nav-c-gold)]/5"
+              >
+                <AlertCircle
+                  className="w-5 h-5 shrink-0 mt-0.5 text-[var(--nav-c-gold)]"
+                  aria-hidden="true"
+                />
+                <div className="text-sm">
+                  <p className="font-semibold text-[var(--ink)]">Pré-visualização — nada é salvo</p>
+                  <p className="text-xs text-[var(--ink-2)] mt-1">
+                    Os valores abaixo são ilustrativos e <strong>não são gravados</strong>. Somente
+                    a aba &quot;Ferramentas &amp; Regras&quot; possui persistência real no servidor.
+                  </p>
+                </div>
+              </div>
+            ) : null}
+
+            {activeTab === 'ferramentas' && (
+              <div
+                role="note"
+                className="flex gap-3 p-4 rounded-xl border border-[var(--nav-c-blue)]/30 bg-[var(--nav-c-blue)]/5"
+              >
+                <AlertCircle
+                  className="w-5 h-5 shrink-0 mt-0.5 text-[var(--nav-c-blue)]"
+                  aria-hidden="true"
+                />
+                <div className="text-sm">
+                  <p className="font-semibold text-[var(--ink)]">
+                    Preferências persistidas — aplicação em integração
+                  </p>
+                  <p className="text-xs text-[var(--ink-2)] mt-1">
+                    Os valores desta aba são <strong>salvos no servidor</strong>, mas a
+                    aplicação efetiva nas rotinas dos módulos consumidores ainda está em
+                    integração. Trate-os como preferências registradas, não como regras já
+                    em enforcement.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Render Tab Contents */}
             {activeTab === 'ferramentas' && renderToolsByPillar()}
