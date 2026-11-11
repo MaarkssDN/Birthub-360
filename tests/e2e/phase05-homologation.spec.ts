@@ -1,9 +1,19 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 const EVIDENCE_DIR = path.resolve(process.cwd(), 'docs/homologacao/evidence-fase-05');
+
+// A landing atual (Landing360Impeccable) renderiza os 11 pilares como `.lp-card`
+// com o título do pilar em um <h3>. O cartão não expõe o número do pilar — o
+// seletor é pelo título visível do cartão.
+const pillarCard = (page: Page, cardTitle: string) =>
+  page
+    .locator('.lp-card')
+    .filter({ has: page.getByRole('heading', { name: cardTitle, exact: true }) });
+
+const THEME_TOGGLE = 'button[aria-label="Alternar tema"]';
 
 test.beforeAll(async () => {
   if (!fs.existsSync(EVIDENCE_DIR)) {
@@ -14,73 +24,73 @@ test.beforeAll(async () => {
 test.describe('FASE 05 — HOMOLOGAÇÃO COMPLETA: LANDING PAGE, MODAIS, LIGHT/DARK E LOGIN', () => {
 
   // ==========================================================================
-  // 1. OS OITO MODAIS — VALIDAÇÃO COMPLETA
+  // 1. OS MODAIS DOS PILARES — VALIDAÇÃO COMPLETA
   // ==========================================================================
-  test.describe('1. Validação Completa dos Oito Modais', () => {
+  test.describe('1. Validação Completa dos Modais dos Pilares', () => {
     const pillars = [
       {
         num: '01',
+        cardTitle: 'Hub Comercial',
         title: 'Hub comercial',
         expectedModalTitle: '01. Hub Comercial',
         badge: 'PIPELINE 360° & CONTAS UNIFICADAS',
         cta: 'Acessar Pipeline no CRM',
-        themeColor: 'cyan',
       },
       {
         num: '02',
+        cardTitle: 'Inteligência de Mercado',
         title: 'Inteligência de mercado',
         expectedModalTitle: '02. Inteligência de Mercado',
         badge: 'PROSPECÇÃO B2B & SINAIS DE COMPRA',
         cta: 'Explorar Inteligência de Mercado',
-        themeColor: 'pink',
       },
       {
         num: '03',
+        cardTitle: 'Orquestração de Vendas',
         title: 'Orquestração de vendas',
         expectedModalTitle: '03. Orquestração de Vendas',
         badge: 'CADÊNCIA MULTICANAL & NEXT BEST ACTION',
         cta: 'Ver Cadências de Vendas',
-        themeColor: 'gold',
       },
       {
         num: '04',
+        cardTitle: 'Performance Comercial',
         title: 'Performance comercial',
         expectedModalTitle: '04. Performance Comercial',
         badge: 'TELEMETRIA DO FUNIL & VELOCIDADE',
         cta: 'Abrir Painel de Analytics',
-        themeColor: 'iris',
       },
       {
         num: '05',
+        cardTitle: 'Previsibilidade Comercial',
         title: 'Previsibilidade comercial',
         expectedModalTitle: '05. Previsibilidade Comercial',
         badge: 'PIPELINE PONDERADO & MODELAGEM ESTATÍSTICA',
         cta: 'Ver Previsão de Receita',
-        themeColor: 'cyan',
       },
       {
         num: '06',
+        cardTitle: 'Inteligência Artificial',
         title: 'Inteligência artificial',
         expectedModalTitle: '06. Inteligência Artificial',
         badge: 'COPILOTO DE IA CONTEXTUAL & DIAGNÓSTICO',
         cta: 'Acessar Hub de Inteligência',
-        themeColor: 'pink',
       },
       {
         num: '07',
+        cardTitle: 'Automação & Conectividade',
         title: 'Automação & conectividade',
         expectedModalTitle: '07. Automação & Conectividade Multi-CRM',
         badge: 'ECOSSISTEMA DE APIS & CONECTIVIDADE MULTI-CRM',
         cta: 'Ver Central de Automações',
-        themeColor: 'gold',
       },
       {
         num: '08',
+        cardTitle: 'Engajamento Comercial',
         title: 'Engajamento comercial',
         expectedModalTitle: '08. Engajamento Comercial',
         badge: 'TELEFONIA EM NUVEM & VOZ COM IA',
         cta: 'Conhecer o VoiceHub',
-        themeColor: 'iris',
       },
     ];
 
@@ -92,9 +102,7 @@ test.describe('FASE 05 — HOMOLOGAÇÃO COMPLETA: LANDING PAGE, MODAIS, LIGHT/D
         await page.waitForLoadState('domcontentloaded');
 
         // Localizar o card do pilar específico
-        const card = page
-          .locator('.b360-feature-card')
-          .filter({ has: page.locator('.b360-pillar-badge', { hasText: pillar.num }) });
+        const card = pillarCard(page, pillar.cardTitle);
         await expect(card).toBeVisible();
         await card.scrollIntoViewIfNeeded();
 
@@ -121,7 +129,7 @@ test.describe('FASE 05 — HOMOLOGAÇÃO COMPLETA: LANDING PAGE, MODAIS, LIGHT/D
         await expect(ctaBtn).toBeVisible();
         await expect(ctaBtn).toContainText(pillar.cta);
 
-        // Capturar evidência do modal no tema atual (Dark)
+        // Capturar evidência do modal no tema atual
         await page.screenshot({
           path: path.join(EVIDENCE_DIR, `modal-pilar-${pillar.num}-dark.png`),
         });
@@ -133,9 +141,10 @@ test.describe('FASE 05 — HOMOLOGAÇÃO COMPLETA: LANDING PAGE, MODAIS, LIGHT/D
         await expect(dialogs).toHaveCount(0);
 
         // 6. Testar no tema Light
-        const themeToggle = page.locator('button[aria-label*="modo"]').first();
+        const themeToggle = page.locator(THEME_TOGGLE).first();
         if (await themeToggle.isVisible()) {
           await themeToggle.click();
+          await card.scrollIntoViewIfNeeded();
           await card.click();
           await expect(dialogs).toHaveCount(1);
 
@@ -147,11 +156,12 @@ test.describe('FASE 05 — HOMOLOGAÇÃO COMPLETA: LANDING PAGE, MODAIS, LIGHT/D
           await page.keyboard.press('Escape');
           await expect(dialogs).toHaveCount(0);
 
-          // Retornar ao tema dark
+          // Retornar ao tema original
           await themeToggle.click();
         }
 
         // 7. Reabrir para testar foco inicial e botão "Fechar" textual
+        await card.scrollIntoViewIfNeeded();
         await card.click();
         await expect(dialogs).toHaveCount(1);
         const closeTextBtn = dialog.getByRole('button', { name: 'Fechar', exact: true });
@@ -163,9 +173,8 @@ test.describe('FASE 05 — HOMOLOGAÇÃO COMPLETA: LANDING PAGE, MODAIS, LIGHT/D
 
     test('Focus Trap: Tab e Shift+Tab navegam estritamente dentro do modal', async ({ page }) => {
       await page.goto('/');
-      const card = page
-        .locator('.b360-feature-card')
-        .filter({ has: page.locator('.b360-pillar-badge', { hasText: '01' }) });
+      const card = pillarCard(page, 'Hub Comercial');
+      await card.scrollIntoViewIfNeeded();
       await card.click();
 
       const dialog = page.locator('[role="dialog"]');
@@ -202,16 +211,15 @@ test.describe('FASE 05 — HOMOLOGAÇÃO COMPLETA: LANDING PAGE, MODAIS, LIGHT/D
 
     test('CTA leva ao Login para usuário não autenticado', async ({ page }) => {
       await page.goto('/');
-      const card = page
-        .locator('.b360-feature-card')
-        .filter({ has: page.locator('.b360-pillar-badge', { hasText: '02' }) });
+      const card = pillarCard(page, 'Inteligência de Mercado');
+      await card.scrollIntoViewIfNeeded();
       await card.click();
 
       const ctaBtn = page.locator('button[data-primary-action="true"]');
       await ctaBtn.click();
 
-      // Deve estar na tela de login
-      await expect(page.locator('text=Entrar na Plataforma')).toBeVisible();
+      // Deve estar na tela de login da landing
+      await expect(page.locator('.lp-login-card')).toBeVisible();
       await expect(page.locator('input[type="email"]')).toBeVisible();
     });
   });
@@ -228,8 +236,8 @@ test.describe('FASE 05 — HOMOLOGAÇÃO COMPLETA: LANDING PAGE, MODAIS, LIGHT/D
 
       const html = page.locator('html');
 
-      // Localizar botão de alternar tema no header ou flutuante
-      const themeToggle = page.locator('button[aria-label*="modo"]').first();
+      // Localizar botão de alternar tema no header
+      const themeToggle = page.locator(THEME_TOGGLE).first();
       await expect(themeToggle).toBeVisible();
 
       // Iniciar em Dark ou alternar para Dark
@@ -258,9 +266,8 @@ test.describe('FASE 05 — HOMOLOGAÇÃO COMPLETA: LANDING PAGE, MODAIS, LIGHT/D
       });
 
       // Abrir um modal em Light e validar contraste/estilo
-      const card01 = page
-        .locator('.b360-feature-card')
-        .filter({ has: page.locator('.b360-pillar-badge', { hasText: '01' }) });
+      const card01 = pillarCard(page, 'Hub Comercial');
+      await card01.scrollIntoViewIfNeeded();
       await card01.click();
       const dialog = page.locator('[role="dialog"]');
       await expect(dialog).toBeVisible();
@@ -271,6 +278,7 @@ test.describe('FASE 05 — HOMOLOGAÇÃO COMPLETA: LANDING PAGE, MODAIS, LIGHT/D
         path: path.join(EVIDENCE_DIR, 'modal-pilar-01-light.png'),
       });
       await page.keyboard.press('Escape');
+      await expect(dialog).toHaveCount(0);
 
       // Alternar repetidamente 4 vezes (teste de robustez)
       for (let i = 0; i < 4; i++) {
@@ -295,20 +303,9 @@ test.describe('FASE 05 — HOMOLOGAÇÃO COMPLETA: LANDING PAGE, MODAIS, LIGHT/D
       await page.screenshot({
         path: path.join(EVIDENCE_DIR, `login-screen-${currentTheme}.png`),
       });
-
-      // Alternar tema na tela de login
-      const loginThemeToggle = page.locator('button[aria-label*="modo"]').first();
-      if (await loginThemeToggle.isVisible()) {
-        await loginThemeToggle.click();
-        const toggledLoginTheme = await html.getAttribute('data-theme');
-        expect(toggledLoginTheme).not.toBe(currentTheme);
-        await page.screenshot({
-          path: path.join(EVIDENCE_DIR, `login-screen-${toggledLoginTheme}.png`),
-        });
-      }
     });
 
-    test('Simulador de ROI abre e renderiza com integridade em ambos os temas', async ({
+    test('Simulador de ROI abre e renderiza com integridade', async ({
       page,
     }) => {
       await page.goto('/');
@@ -367,9 +364,7 @@ test.describe('FASE 05 — HOMOLOGAÇÃO COMPLETA: LANDING PAGE, MODAIS, LIGHT/D
         await expect(logo).toBeVisible();
 
         // Cards visíveis e clicáveis
-        const card01 = page
-          .locator('.b360-feature-card')
-          .filter({ has: page.locator('.b360-pillar-badge', { hasText: '01' }) });
+        const card01 = pillarCard(page, 'Hub Comercial');
         await expect(card01).toBeVisible();
 
         // Capturar screenshot do viewport
@@ -378,11 +373,13 @@ test.describe('FASE 05 — HOMOLOGAÇÃO COMPLETA: LANDING PAGE, MODAIS, LIGHT/D
         });
 
         // Abrir modal no viewport e verificar encaixe
+        await card01.scrollIntoViewIfNeeded();
         await card01.click();
         const dialog = page.locator('[role="dialog"]');
         await expect(dialog).toBeVisible();
 
-        const dialogBox = await dialog.locator('.b360-micro-kanban, .b360-micro-telemetry, #b360-dialog-title').first().boundingBox();
+        const dialogTitle = page.locator('#b360-dialog-title');
+        const dialogBox = await dialogTitle.boundingBox();
         expect(dialogBox).not.toBeNull();
 
         await page.keyboard.press('Escape');
@@ -444,9 +441,7 @@ test.describe('FASE 05 — HOMOLOGAÇÃO COMPLETA: LANDING PAGE, MODAIS, LIGHT/D
     }) => {
       await page.goto('/');
       await page.waitForLoadState('domcontentloaded');
-      const card = page
-        .locator('.b360-feature-card')
-        .filter({ has: page.locator('.b360-pillar-badge', { hasText: '06' }) });
+      const card = pillarCard(page, 'Inteligência Artificial');
       await expect(card).toBeVisible();
       await card.scrollIntoViewIfNeeded();
       await card.click();

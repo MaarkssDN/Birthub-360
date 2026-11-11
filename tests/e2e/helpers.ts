@@ -33,15 +33,18 @@ export async function signUp(
     window.localStorage.setItem('@prospector:has_seen_tour', 'true');
   });
   await page.goto('/login');
-  await page.getByRole('button', { name: /^Criar conta$/ }).click();
+  // /login renderiza a landing (Landing360Impeccable): o cadastro fica numa aba de modo
+  // (signin -> signup) liberada pelo link "Criar" do rodapé do cartão, não por um botão
+  // "Criar conta" dedicado como no antigo NewLoginScreen.
+  await page.getByRole('button', { name: 'Criar', exact: true }).click();
   await page.getByPlaceholder('Seu nome', { exact: true }).fill(resolvedName);
-  await page.getByPlaceholder('nome@empresa.com.br', { exact: true }).fill(email);
+  await page.getByPlaceholder('seu@email.com', { exact: true }).fill(email);
   await page.getByPlaceholder('••••••••', { exact: true }).fill(password);
   const signupResponsePromise = page.waitForResponse(
     (response) => new URL(response.url()).pathname === '/api/auth/sign-up/email'
       && response.request().method() === 'POST',
   );
-  await page.getByRole('button', { name: /^Solicitar Acesso$/ }).click();
+  await page.getByRole('button', { name: 'Criar conta', exact: true }).click();
   const signupResponse = await signupResponsePromise;
   expect(signupResponse.ok(), 'Cadastro real deve ser confirmado pelo servidor').toBe(true);
   const signupData = await signupResponse.json();
@@ -53,7 +56,7 @@ export async function signUp(
     // Sem bypass de teste, confirma posse do e-mail no banco como o helper anterior;
     // não cria usuário/sessão por seed nem altera a política de autenticação do produto.
     await expect(
-      page.getByText(/Conta criada com sucesso|Solicitação de provisionamento enviada com sucesso/),
+      page.getByText(/Conta criada|Solicitação de provisionamento enviada com sucesso/),
     )
       .toBeVisible();
     requestContext.enterWith({ bypassRls: true });
@@ -92,13 +95,13 @@ export async function signUp(
   // Remove eventual sessão criada pelo cadastro para provar um login novo com a senha.
   await page.context().clearCookies();
   await page.goto('/login');
-  await page.getByPlaceholder('nome@empresa.com.br', { exact: true }).fill(email);
+  await page.getByPlaceholder('seu@email.com', { exact: true }).fill(email);
   await page.getByPlaceholder('••••••••', { exact: true }).fill(password);
   const signinResponsePromise = page.waitForResponse(
     (response) => new URL(response.url()).pathname === '/api/auth/sign-in/email'
       && response.request().method() === 'POST',
   );
-  await page.getByRole('button', { name: /^Entrar na Plataforma$/ }).click();
+  await page.getByRole('button', { name: 'Entrar', exact: true }).click();
   const signinResponse = await signinResponsePromise;
   expect(signinResponse.ok(), 'Login com senha real deve ser confirmado pelo servidor').toBe(true);
   const signinData = await signinResponse.json().catch(() => null);
