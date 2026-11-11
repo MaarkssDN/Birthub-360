@@ -47,3 +47,10 @@ o isolamento observado só pode vir da policy RLS do Postgres.
 
 Teste de cobertura estática `tests/unit/db/rls-coverage.test.ts` deve permanecer verde (policy já versionada).
 Testes de integração com Postgres não rodaram neste ambiente (`docker: command not found`; portas 5434/5432 fechadas).
+
+Após o parecer do Agente 24 (APROVADO CONDICIONADO): o cleanup e as releituras
+deixaram de usar `bypassRls` (a policy não honra esse GUC) e passam a rodar em
+`requestContext.run({ tenantId })` por ORG_A e ORG_B; `toThrow()` genérico foi
+trocado por asserção da mensagem de policy/P2025; há controle positivo de DELETE
+do próprio embedding; o `beforeAll` confere `current_user = prospector_app` com
+`rolbypassrls = false`.
