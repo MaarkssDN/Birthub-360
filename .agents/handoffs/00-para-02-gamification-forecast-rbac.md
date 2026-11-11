@@ -3,7 +3,7 @@
 De: 00 — Coordenador
 Para: 02 — Produto e UX (rotas/App.tsx) + dono backend das rotas
 Onda: pós-homologação 2026-11-10
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Sprint destino: próximo ciclo
 
@@ -55,3 +55,29 @@ Duas lacunas de autorização encontradas na auditoria funcional
 - `RequireModuleAccess` e `RequireRole` já existem e são o padrão —
   replicar o uso de `commercial_intelligence` (App.tsx ~493–500) como
   referência.
+
+## Resolução (2026-11-11, executado pelo Agente 00 sob ORDEM 04)
+
+Decisão aplicada — menor privilégio sem bloquear vendedores:
+
+1. **Gamificação backend** (`GamificationController.ts`): `/profile` e
+   `/coaching` aceitavam `?seller=` irrestrito — qualquer autenticado lia
+   dados individuais de colegas. Agora `resolveSellerScope` limita a
+   consulta ao próprio nome da sessão para papéis fora de ADMIN/GESTOR
+   (gestão mantém consulta irrestrita). `/leaderboard` permanece aberto
+   a autenticados — é dado compartilhado do tenant, uso legítimo de SDRs.
+   Nome do vendedor resolvido via `user.name` quando presente, senão
+   `prisma.user.findUnique`.
+2. **Frontend P05** (`App.tsx`): `forecast`, `metas` e
+   `pipeline_ponderado` agora usam `RequireRole(COMMERCIAL_INTELLIGENCE_ROLES)`
+   — backend já exigia ADMIN/GESTOR; o guard evita 403 cru em URL direta.
+3. **War Room**: mantido sem gate — `WarRoomArenaService` não tem rotas
+   HTTP (simulação client-side, sem dados de outros usuários); bloqueá-lo
+   não protegeria nada real. Registrado como simulação na matriz da O07.
+4. **Gamification frontend**: sem `RequireRole` — leaderboard/coaching
+   são uso legítimo de todos os papéis de vendas; a proteção real ficou
+   no escopo de seller no backend.
+
+Testes: `tests/unit/features/gamification/gamification.routes.test.ts`
+(+4 casos de escopo por papel), `tests/integration/features/gamification/`
+(12/12), `npx tsc --noEmit` limpo.
