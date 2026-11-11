@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { type NextFunction, type Request, type Response, Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../../lib/prisma.js';
+import { toE164BR } from '../../lib/phone.js';
 import type { AuthRequest } from '../../shared/middlewares/authenticateToken.js';
 import { AppError } from '../../shared/middlewares/errorHandler.js';
 import { requireRole } from '../../shared/middlewares/requireRole.js';
@@ -26,6 +27,9 @@ import {
   checkOptOutStatus,
   recordContactOptOut,
 } from '../../shared/services/optOutCheck.service.js';
+import { ANONYMIZED_CONTACT_NAME } from '../../shared/services/dataSubjectErasure.service.js';
+import { evaluateLeadCadenceEligibility } from './domain/cadenceEligibility.js';
+import type { CadenceChannel } from './domain/optOut.js';
 import { parseCadenceSequenceDefinition } from './jobs/cadenceRun.worker.js';
 
 /**
@@ -361,7 +365,21 @@ router.post(
 
       const lead = await prisma.lead.findFirst({
         where: { id: leadId, organizationId },
-        select: { id: true, contactId: true },
+        select: {
+          id: true,
+          contactId: true,
+          customFields: true,
+          contact: {
+            select: {
+              name: true,
+              deletedAt: true,
+              customFields: true,
+              email: true,
+              phone: true,
+              whatsapp: true,
+            },
+          },
+        },
       });
       if (!lead) throw new AppError('Lead não encontrado nesta organização.', 404);
 
@@ -378,6 +396,42 @@ router.post(
           'Sequência com dados inválidos — não é possível iniciar um run a partir dela.',
           422,
         );
+
+      // TAREFA-SANEAMENTO-035 / BT360-DT-0080 — elegibilidade do LEAD (não só do contato) contra
+      // opt-out/supressão, antes de criar o CadenceRun. Cobre lead sem contactId e casa por
+      // leadId/e-mail/telefone do contato, com escopo nos canais que a sequência usa. Os
+      // OptOutRecords da org são carregados uma única vez (filtro em lote, não N+1).
+      const channels = [...new Set(sequence.touches.map((t) => t.channel))] as CadenceChannel[];
+      const optOutRecords = await prismaOptOutRepository.list(organizationId);
+      const eligibility = evaluateLeadCadenceEligibility(
+        {
+          leadId: lead.id,
+          subject: {
+            leadId: lead.id,
+            email: lead.contact?.email ?? null,
+            phoneE164: toE164BR(lead.contact?.whatsapp ?? lead.contact?.phone ?? undefined),
+          },
+          leadCustomFields:
+            (lead.customFields as Record<string, unknown> | null | undefined) ?? null,
+          contact: lead.contact
+            ? {
+                anonymizedOrDeleted:
+                  lead.contact.name === ANONYMIZED_CONTACT_NAME || lead.contact.deletedAt !== null,
+                customFields:
+                  (lead.contact.customFields as Record<string, unknown> | null | undefined) ??
+                  null,
+              }
+            : null,
+        },
+        optOutRecords,
+        channels,
+      );
+      if (!eligibility.eligible) {
+        throw new AppError(
+          `Não é possível iniciar cadência: lead inelegível por opt-out/supressão (${eligibility.reason}${eligibility.matchedScope ? `, escopo: ${eligibility.matchedScope}` : ''}).`,
+          409,
+        );
+      }
 
       if (lead.contactId) {
         const firstChannel = sequence.touches[0]?.channel ?? 'whatsapp';
