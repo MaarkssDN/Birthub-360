@@ -246,7 +246,7 @@ export function B360DataStreamCursor() {
         const dist = Math.hypot(mouseX - closestX, mouseY - closestY);
 
         if (dist < PROXIMITY_RADIUS && isVisible) {
-          const intensity = Math.pow(1 - dist / PROXIMITY_RADIUS, 1.25);
+          const intensity = (1 - dist / PROXIMITY_RADIUS) ** 1.25;
           const relX = ((mouseX - rect.left) / rect.width) * 100;
           const relY = ((mouseY - rect.top) / rect.height) * 100;
 
