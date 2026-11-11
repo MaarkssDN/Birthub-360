@@ -595,6 +595,8 @@ export function Landing360({
   const leadEmailRef = useRef<HTMLInputElement>(null);
   const leadWhatsappRef = useRef<HTMLInputElement>(null);
   const leadConsentRef = useRef<HTMLInputElement>(null);
+  const leadEquipeGroupRef = useRef<HTMLDivElement>(null);
+  const leadEquipeFocusRafRef = useRef<number | null>(null);
   const leadAbortRef = useRef<AbortController | null>(null);
 
   const leadFieldRefs: Partial<Record<LeadFormField, React.RefObject<HTMLInputElement | null>>> = {
@@ -604,8 +606,33 @@ export function Landing360({
     consent: leadConsentRef,
   };
 
+  const cancelEquipeFocusRaf = () => {
+    if (leadEquipeFocusRafRef.current != null) {
+      cancelAnimationFrame(leadEquipeFocusRafRef.current);
+      leadEquipeFocusRafRef.current = null;
+    }
+  };
+
+  const focusLeadField = (field: LeadFormField) => {
+    cancelEquipeFocusRaf();
+    if (field === 'equipe') {
+      const selectedIndex = LEAD_TEAM_SIZES.indexOf(leadForm.equipe);
+      const selected =
+        (selectedIndex >= 0
+          ? document.getElementById(`lead-equipe-option-${selectedIndex}`)
+          : null) ??
+        leadEquipeGroupRef.current?.querySelector<HTMLElement>(
+          '[role="radio"][aria-checked="true"]',
+        );
+      (selected ?? leadEquipeGroupRef.current)?.focus();
+      return;
+    }
+    leadFieldRefs[field]?.current?.focus();
+  };
+
   useEffect(() => {
     return () => {
+      cancelEquipeFocusRaf();
       leadAbortRef.current?.abort();
     };
   }, []);
@@ -633,7 +660,9 @@ export function Landing360({
     event.preventDefault();
     const next = LEAD_TEAM_SIZES[nextIndex];
     setLeadForm({ ...leadForm, equipe: next });
-    requestAnimationFrame(() => {
+    cancelEquipeFocusRaf();
+    leadEquipeFocusRafRef.current = requestAnimationFrame(() => {
+      leadEquipeFocusRafRef.current = null;
       document.getElementById(`lead-equipe-option-${nextIndex}`)?.focus();
     });
   };
@@ -648,7 +677,7 @@ export function Landing360({
 
     const firstInvalid = getFirstInvalidLeadField(fieldErrors);
     if (firstInvalid) {
-      leadFieldRefs[firstInvalid]?.current?.focus();
+      focusLeadField(firstInvalid);
       return;
     }
 
@@ -689,7 +718,7 @@ export function Landing360({
         setLeadSubmitError(mapped.formMessage ?? getLeadSubmitErrorMessage(error));
         const firstInvalid = getFirstInvalidLeadField(mapped.fieldErrors);
         if (firstInvalid) {
-          leadFieldRefs[firstInvalid]?.current?.focus();
+          focusLeadField(firstInvalid);
         }
       } else {
         setLeadSubmitError(getLeadSubmitErrorMessage(error));
@@ -2275,6 +2304,7 @@ export function Landing360({
                             Tamanho da Equipe Comercial
                           </div>
                           <div
+                            ref={leadEquipeGroupRef}
                             className="b360-team-chips"
                             role="radiogroup"
                             aria-labelledby="lead-equipe-label"

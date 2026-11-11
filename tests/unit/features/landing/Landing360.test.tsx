@@ -546,6 +546,7 @@ describe('Landing360', () => {
     const group = container.querySelector('[role="radiogroup"]') as HTMLElement;
     expect(group).toHaveAttribute('aria-describedby', 'lead-equipe-error');
     expect(group).toHaveAttribute('aria-invalid', 'true');
+    expect(document.activeElement).toBe(screen.getByRole('radio', { name: '6 a 15' }));
     expect(trackLeadFormSubmittedMock).not.toHaveBeenCalled();
   });
 
