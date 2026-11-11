@@ -551,10 +551,33 @@ function AppLayout() {
               }
             />
 
-            {/* PILAR 05 */}
-            <Route path="forecast" element={<ForecastHub />} />
-            <Route path="metas" element={<MetasHub />} />
-            <Route path="pipeline_ponderado" element={<PipelinePonderadoHub />} />
+            {/* PILAR 05 — consomem /api/commercial-intelligence/*, que já exige
+              COMMERCIAL_INTELLIGENCE_ROLES no backend; o guard evita renderizar a casca e
+              tomar 403 cru em acesso direto por URL (mesmo padrão de commercial_intelligence). */}
+            <Route
+              path="forecast"
+              element={
+                <RequireRole allowedRoles={[...COMMERCIAL_INTELLIGENCE_ROLES]}>
+                  <ForecastHub />
+                </RequireRole>
+              }
+            />
+            <Route
+              path="metas"
+              element={
+                <RequireRole allowedRoles={[...COMMERCIAL_INTELLIGENCE_ROLES]}>
+                  <MetasHub />
+                </RequireRole>
+              }
+            />
+            <Route
+              path="pipeline_ponderado"
+              element={
+                <RequireRole allowedRoles={[...COMMERCIAL_INTELLIGENCE_ROLES]}>
+                  <PipelinePonderadoHub />
+                </RequireRole>
+              }
+            />
 
             {/* SETTINGS PER PILLAR */}
             <Route
