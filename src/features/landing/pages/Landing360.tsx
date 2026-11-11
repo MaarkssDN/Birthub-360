@@ -59,14 +59,18 @@ import {
   getFirstInvalidLeadField,
   type LeadFieldErrors,
   type LeadFormField,
+  mapLeadServerFieldErrors,
   normalizeBrazilianWhatsapp,
   validateLeadForm,
 } from '@/features/landing/services/leadFormValidation';
 import {
   getLeadSubmitErrorMessage,
   isAbortError,
+  isLeadSubmitError,
   LEAD_CONSENT_PURPOSE,
   LEAD_CONSENT_TEXT_VERSION,
+  LEAD_TEAM_SIZES,
+  type LeadTeamSize,
   submitLead,
 } from '@/features/landing/services/submitLead';
 import {
@@ -579,8 +583,9 @@ export function Landing360({
     nome: '',
     email: '',
     whatsapp: '',
-    equipe: '6 a 15',
+    equipe: '6 a 15' as LeadTeamSize,
     consent: false,
+    website: '',
   });
   const [leadLoading, setLeadLoading] = useState(false);
   const [leadSubmitted, setLeadSubmitted] = useState(false);
@@ -592,7 +597,7 @@ export function Landing360({
   const leadConsentRef = useRef<HTMLInputElement>(null);
   const leadAbortRef = useRef<AbortController | null>(null);
 
-  const leadFieldRefs: Record<LeadFormField, React.RefObject<HTMLInputElement | null>> = {
+  const leadFieldRefs: Partial<Record<LeadFormField, React.RefObject<HTMLInputElement | null>>> = {
     nome: leadNomeRef,
     email: leadEmailRef,
     whatsapp: leadWhatsappRef,
@@ -615,7 +620,7 @@ export function Landing360({
 
     const firstInvalid = getFirstInvalidLeadField(fieldErrors);
     if (firstInvalid) {
-      leadFieldRefs[firstInvalid].current?.focus();
+      leadFieldRefs[firstInvalid]?.current?.focus();
       return;
     }
 
@@ -627,20 +632,17 @@ export function Landing360({
     leadAbortRef.current = controller;
 
     try {
+      const whatsapp = normalizeBrazilianWhatsapp(leadForm.whatsapp);
       await submitLead(
         {
           nome: leadForm.nome.trim(),
           email: leadForm.email.trim(),
-          whatsapp: normalizeBrazilianWhatsapp(leadForm.whatsapp),
+          ...(whatsapp ? { whatsapp } : {}),
           equipe: leadForm.equipe,
-          consent: leadForm.consent,
-          // Metadados de consentimento — a alinhar com o contrato do Agente 01
-          // e a validação do Agente 21. Texto legal permanece o já exibido.
-          consentMetadata: {
-            textVersion: LEAD_CONSENT_TEXT_VERSION,
-            purpose: LEAD_CONSENT_PURPOSE,
-            timestamp: new Date().toISOString(),
-          },
+          consent: true,
+          consentTextVersion: LEAD_CONSENT_TEXT_VERSION,
+          purpose: LEAD_CONSENT_PURPOSE,
+          website: leadForm.website,
         },
         { signal: controller.signal },
       );
@@ -653,7 +655,17 @@ export function Landing360({
       if (isAbortError(error)) {
         return;
       }
-      setLeadSubmitError(getLeadSubmitErrorMessage(error));
+      if (isLeadSubmitError(error) && error.fields) {
+        const mapped = mapLeadServerFieldErrors(error.fields);
+        setLeadFieldErrors(mapped.fieldErrors);
+        setLeadSubmitError(mapped.formMessage ?? getLeadSubmitErrorMessage(error));
+        const firstInvalid = getFirstInvalidLeadField(mapped.fieldErrors);
+        if (firstInvalid) {
+          leadFieldRefs[firstInvalid]?.current?.focus();
+        }
+      } else {
+        setLeadSubmitError(getLeadSubmitErrorMessage(error));
+      }
     } finally {
       if (!controller.signal.aborted) {
         setLeadLoading(false);
@@ -2095,10 +2107,10 @@ export function Landing360({
                         </span>
                         <div>
                           <strong className="text-xs font-bold text-slate-200 block">
-                            Atendimento rápido em até 15 minutos
+                            Atendimento dedicado da equipe comercial
                           </strong>
                           <span className="text-xs text-slate-400">
-                            Contato por WhatsApp para alinhar o melhor horário da sua agenda.
+                            Entraremos em contato para alinhar o melhor horário da sua agenda.
                           </span>
                         </div>
                       </div>
@@ -2194,13 +2206,12 @@ export function Landing360({
                             htmlFor="lead-whatsapp"
                             className="block text-xs font-mono text-slate-300 mb-1"
                           >
-                            WhatsApp Comercial com DDD *
+                            WhatsApp Comercial com DDD (opcional)
                           </label>
                           <input
                             id="lead-whatsapp"
                             ref={leadWhatsappRef}
                             type="tel"
-                            required
                             autoComplete="tel"
                             inputMode="tel"
                             value={leadForm.whatsapp}
@@ -2224,7 +2235,7 @@ export function Landing360({
                             Tamanho da Equipe Comercial
                           </div>
                           <div className="b360-team-chips">
-                            {['1 a 5', '6 a 15', '16 a 50', '50+'].map((sz) => (
+                            {LEAD_TEAM_SIZES.map((sz) => (
                               <button
                                 key={sz}
                                 type="button"
@@ -2235,6 +2246,11 @@ export function Landing360({
                               </button>
                             ))}
                           </div>
+                          {leadFieldErrors.equipe ? (
+                            <p id="lead-equipe-error" className="mt-1 text-[11px] text-red-400">
+                              {leadFieldErrors.equipe}
+                            </p>
+                          ) : null}
                         </div>
 
                         <div className="pt-1">
@@ -2258,9 +2274,23 @@ export function Landing360({
                               }
                               className="mt-0.5 rounded border-slate-700 text-[#00D4FF] focus:ring-[#00D4FF]"
                             />
+                            {/* TEXTO LEGAL PROVISÓRIO — aguarda OK do Marcelo. A retenção
+                                operacional (90 dias sem avanço, ou 30 dias após a demo) e o
+                                armazenamento do IP apenas como hash vêm do contrato do Agente 01
+                                (PR #216) e ainda não são texto legal final. */}
                             <span>
-                              Concordo com o tratamento dos dados estritamente para agendamento da
-                              demonstração conforme a LGPD.
+                              Concordo com o tratamento do meu nome, e-mail e, se informado,
+                              WhatsApp, exclusivamente para contato sobre a demonstração do BirthHub
+                              360°. O IP é guardado apenas como hash. Sem avanço, os dados ficam
+                              retidos por 90 dias; após a demonstração, por 30 dias. Veja a{' '}
+                              <Link
+                                to="/privacy"
+                                className="underline decoration-slate-500 underline-offset-2 hover:text-[#00D4FF] transition-colors"
+                                onClick={(event) => event.stopPropagation()}
+                              >
+                                Política de Privacidade
+                              </Link>
+                              .
                             </span>
                           </label>
                           {leadFieldErrors.consent ? (
@@ -2289,6 +2319,21 @@ export function Landing360({
                           ) : null}
                         </div>
 
+                        <div
+                          aria-hidden="true"
+                          className="absolute -left-[9999px] h-0 w-0 overflow-hidden opacity-0"
+                        >
+                          <input
+                            id="lead-website"
+                            name="website"
+                            type="text"
+                            tabIndex={-1}
+                            autoComplete="off"
+                            value={leadForm.website}
+                            onChange={(e) => setLeadForm({ ...leadForm, website: e.target.value })}
+                          />
+                        </div>
+
                         <div className="pt-2">
                           <button
                             type="submit"
@@ -2299,7 +2344,7 @@ export function Landing360({
                             {leadLoading ? 'Enviando...' : 'GARANTIR MINHA DEMONSTRAÇÃO GRATUITA →'}
                           </button>
                           <p className="mt-2 text-center text-[10px] font-mono text-slate-400">
-                            🔒 Zero spam · Cancelamento fácil com 1 clique · Dados protegidos
+                            🔒 Zero spam · Contato só sobre a demonstração · Dados protegidos
                           </p>
                         </div>
                       </form>
@@ -2680,7 +2725,12 @@ export function Landing360({
                     </Link>
                   </li>
                   <li>
-                    <span>Direitos do Titular (LGPD Art. 18)</span>
+                    <Link
+                      to="/privacy#direitos-do-titular"
+                      className="hover:text-[#00D4FF] transition-colors"
+                    >
+                      Direitos do Titular (LGPD Art. 18)
+                    </Link>
                   </li>
                   <li>
                     <span>Sessão Segura HttpOnly</span>

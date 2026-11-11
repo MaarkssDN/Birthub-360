@@ -53,7 +53,7 @@ export default function PrivacyPolicy() {
           </p>
         </section>
 
-        <section className="mb-6 space-y-2">
+        <section id="direitos-do-titular" className="mb-6 space-y-2">
           <h2 className="text-xl font-semibold font-display text-ink">5. Direitos do Titular</h2>
           <p className="text-sm text-ink-2 leading-relaxed">
             O titular possui direito a acesso, correção, anonimização, bloqueio ou eliminação de

@@ -121,7 +121,10 @@ describe('Landing360', () => {
     );
   };
 
-  const fillValidLeadForm = (container: HTMLElement, options?: { consent?: boolean }) => {
+  const fillValidLeadForm = (
+    container: HTMLElement,
+    options?: { consent?: boolean; whatsapp?: string },
+  ) => {
     fireEvent.change(container.querySelector('#lead-nome') as HTMLInputElement, {
       target: { value: 'Mariana Albuquerque' },
     });
@@ -129,7 +132,7 @@ describe('Landing360', () => {
       target: { value: 'mariana@vanguarda.com.br' },
     });
     fireEvent.change(container.querySelector('#lead-whatsapp') as HTMLInputElement, {
-      target: { value: '(11) 99999-9999' },
+      target: { value: options?.whatsapp ?? '(11) 99999-9999' },
     });
     const consent = container.querySelector('#lead-consent') as HTMLInputElement;
     if ((options?.consent ?? true) && !consent.checked) {
@@ -454,6 +457,44 @@ describe('Landing360', () => {
     expect(submitLeadMock).not.toHaveBeenCalled();
   });
 
+  it('deve permitir envio sem WhatsApp e recusar só quando o número preenchido for inválido', async () => {
+    const { container } = renderWithProviders('/', 'intro');
+    const whatsappInput = container.querySelector('#lead-whatsapp') as HTMLInputElement;
+    expect(whatsappInput).not.toHaveAttribute('required');
+
+    fillValidLeadForm(container, { whatsapp: '' });
+    submitLeadForm();
+
+    await waitFor(() => {
+      expect(submitLeadMock).toHaveBeenCalledTimes(1);
+      expect(trackLeadFormSubmittedMock).toHaveBeenCalledTimes(1);
+    });
+    expect(submitLeadMock.mock.calls[0][0]).not.toHaveProperty('whatsapp');
+    expect(submitLeadMock.mock.calls[0][0].website).toBe('');
+  });
+
+  it('deve exibir texto provisório de consentimento com e-mail, WhatsApp, finalidade e link para /privacy', () => {
+    const { container } = renderWithProviders('/', 'intro');
+    const consentLabel = container.querySelector('label[for="lead-consent"]') as HTMLElement;
+    expect(consentLabel).toHaveTextContent(/nome, e-mail e, se informado,\s*WhatsApp/i);
+    expect(consentLabel).toHaveTextContent(/contato sobre a demonstração do BirthHub\s*360°/i);
+    expect(consentLabel).toHaveTextContent(/IP é guardado apenas como hash/i);
+    expect(consentLabel).toHaveTextContent(/90 dias/i);
+    expect(consentLabel).toHaveTextContent(/30 dias/i);
+    const consentPrivacyLink = consentLabel.querySelector('a');
+    expect(consentPrivacyLink).toHaveAttribute('href', '/privacy');
+    expect(consentPrivacyLink).toHaveTextContent(/Política de Privacidade/i);
+  });
+
+  it('deve apontar Direitos do Titular para a seção existente em /privacy e não prometer prazo ou cancelamento em 1 clique', () => {
+    renderWithProviders('/', 'intro');
+
+    const rightsLink = screen.getByRole('link', { name: /Direitos do Titular \(LGPD Art\. 18\)/i });
+    expect(rightsLink).toHaveAttribute('href', '/privacy#direitos-do-titular');
+    expect(screen.queryByText(/15 minutos/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/cancelamento fácil com 1 clique/i)).not.toBeInTheDocument();
+  });
+
   it('deve submeter o formulário de lead com sucesso 2xx, mensagem honesta e alternar a variante A/B', async () => {
     const { container } = renderWithProviders('/', 'intro');
     fillValidLeadForm(container);
@@ -470,10 +511,11 @@ describe('Landing360', () => {
       whatsapp: '11999999999',
       equipe: '6 a 15',
       consent: true,
+      consentTextVersion: 'landing-demo-v1',
+      purpose: 'agendamento_demonstracao',
+      website: '',
     });
-    expect(payload.consentMetadata.textVersion).toBeTruthy();
-    expect(payload.consentMetadata.purpose).toBeTruthy();
-    expect(payload.consentMetadata.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    expect(payload.consentMetadata).toBeUndefined();
 
     await waitFor(() => {
       expect(
@@ -534,10 +576,10 @@ describe('Landing360', () => {
     expect(trackLeadFormSubmittedMock).toHaveBeenCalledTimes(1);
   });
 
-  it('deve exibir erro de instabilidade em 5xx sem disparar telemetria de sucesso', async () => {
+  it('deve exibir erro específico em 503 unavailable sem disparar telemetria de sucesso', async () => {
     const { LeadSubmitError } = await import('@/features/landing/services/submitLead');
     submitLeadMock.mockRejectedValueOnce(
-      new LeadSubmitError('server', 'Estamos com instabilidade no momento. Tente novamente em instantes.', 500),
+      new LeadSubmitError('unavailable', 'O envio está temporariamente indisponível. Tente novamente em instantes.', 503),
     );
 
     const { container } = renderWithProviders('/', 'intro');
@@ -545,7 +587,9 @@ describe('Landing360', () => {
     submitLeadForm();
 
     await waitFor(() => {
-      expect(container.querySelector('#lead-form-alert')).toHaveTextContent(/instabilidade no momento/i);
+      expect(container.querySelector('#lead-form-alert')).toHaveTextContent(
+        /temporariamente indisponível/i,
+      );
     });
     expect(screen.getByRole('button', { name: /GARANTIR MINHA DEMONSTRAÇÃO GRATUITA/i })).toBeEnabled();
     expect(trackLeadFormSubmittedMock).not.toHaveBeenCalled();
@@ -570,7 +614,7 @@ describe('Landing360', () => {
   it('deve exibir erro de limite quando o endpoint responde 429', async () => {
     const { LeadSubmitError } = await import('@/features/landing/services/submitLead');
     submitLeadMock.mockRejectedValueOnce(
-      new LeadSubmitError('rate_limit', 'Muitas tentativas. Aguarde alguns instantes e tente novamente.', 429),
+      new LeadSubmitError('rate_limit', 'Muitas tentativas. O limite é de 5 envios a cada 15 minutos. Aguarde e tente novamente.', 429),
     );
 
     const { container } = renderWithProviders('/', 'intro');
@@ -602,6 +646,51 @@ describe('Landing360', () => {
     });
     expect(screen.queryByText(/Recebemos seus dados/i)).not.toBeInTheDocument();
     expect(trackLeadFormSubmittedMock).not.toHaveBeenCalled();
+  });
+
+  it('deve mapear 400 com fields para erros nos campos e preservar os dados', async () => {
+    const { LeadSubmitError } = await import('@/features/landing/services/submitLead');
+    submitLeadMock.mockRejectedValueOnce(
+      new LeadSubmitError(
+        'validation',
+        'Não foi possível enviar seus dados. Revise as informações e tente novamente.',
+        400,
+        { email: 'invalid' },
+      ),
+    );
+
+    const { container } = renderWithProviders('/', 'intro');
+    fillValidLeadForm(container);
+    submitLeadForm();
+
+    const emailError = await screen.findByText(/informe um e-mail válido/i, {
+      selector: '#lead-email-error',
+    });
+    expect(emailError).toBeInTheDocument();
+    expect((container.querySelector('#lead-email') as HTMLInputElement).value).toBe(
+      'mariana@vanguarda.com.br',
+    );
+    expect(document.activeElement).toBe(container.querySelector('#lead-email'));
+    expect(trackLeadFormSubmittedMock).not.toHaveBeenCalled();
+  });
+
+  it('deve enviar o honeypot website como string vazia e fora do fluxo de teclado', async () => {
+    const { container } = renderWithProviders('/', 'intro');
+    const honeypot = container.querySelector('#lead-website') as HTMLInputElement;
+    expect(honeypot).toBeInTheDocument();
+    expect(honeypot).toHaveAttribute('tabindex', '-1');
+    expect(honeypot.closest('[aria-hidden="true"]')).not.toBeNull();
+    expect(honeypot.value).toBe('');
+
+    fillValidLeadForm(container);
+    submitLeadForm();
+
+    await waitFor(() => {
+      expect(submitLeadMock).toHaveBeenCalledTimes(1);
+    });
+    expect(submitLeadMock.mock.calls[0][0].website).toBe('');
+    expect(submitLeadMock.mock.calls[0][0].consent).toBe(true);
+    expect(submitLeadMock.mock.calls[0][0].consentTextVersion).toBe('landing-demo-v1');
   });
 
   it('não deve permitir duplo envio enquanto a requisição está em andamento', async () => {
