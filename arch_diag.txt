@@ -1,0 +1,9 @@
+
+> react-example@0.0.1 lint:architecture
+> depcruise --config .dependency-cruiser.cjs --ignore-known .dependency-cruiser-known-violations.json --output-type err src server.ts worker.ts
+
+
+✔ no dependency violations found (1935 modules, 6337 dependencies cruised)
+‼ 69 known violations ignored. Run with --no-ignore-known to see them.
+‼ 81 stale known violations in the baseline. Run with '--baseline --baseline-mode shrink-only' to remove them.
+
