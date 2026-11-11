@@ -379,9 +379,53 @@ async function runPrepareIntegrationEnv() {
       console.error(`Falha ao preparar papel/extensão em "${TEST_DB_NAME}".`);
       process.exit(bootstrap.status || 1);
     }
+
+    // Isolamento dev↔test do Meilisearch: quando o .env.test aponta para a
+    // instância dedicada de teste (porta 7701, ver .env.test.example), garante
+    // que o container exista — o docker-compose.yml só sobe a instância de dev.
+    const testMeiliHost = effectiveEnv.MEILI_HOST || '';
+    if (/:7701(?::|\/|$)/.test(testMeiliHost)) {
+      const TEST_MEILI_CONTAINER = 'birthhub_meilisearch_test';
+      const ps = spawnSync('docker', ['ps', '-a', '--format', '{{.Names}}'], {
+        encoding: 'utf-8',
+      });
+      const names = new Set(
+        (ps.stdout || '')
+          .split('\n')
+          .map((s) => s.trim())
+          .filter(Boolean),
+      );
+      if (!names.has(TEST_MEILI_CONTAINER)) {
+        console.log(
+          `Meilisearch de teste dedicado ausente — subindo ${TEST_MEILI_CONTAINER} (porta 7701).`,
+        );
+        const run = spawnSync(
+          'docker',
+          [
+            'run',
+            '-d',
+            '--name',
+            TEST_MEILI_CONTAINER,
+            '-p',
+            '7701:7700',
+            '-e',
+            `MEILI_MASTER_KEY=${effectiveEnv.MEILI_MASTER_KEY || ''}`,
+            '-e',
+            'MEILI_ENV=development',
+            'getmeili/meilisearch:v1.6',
+          ],
+          { stdio: 'inherit' },
+        );
+        if (run.status !== 0) {
+          console.error('Falha ao subir o Meilisearch de teste dedicado.');
+          process.exit(run.status || 1);
+        }
+      }
+    }
   }
 
-  await waitForPort(5434, 'localhost', 60000);
+  // Com Docker remoto as portas são publicadas no host do daemon, não em localhost.
+  await waitForPort(5434, dockerRemoteHost() || 'localhost', 60000);
 }
 
 const isMainModule =
