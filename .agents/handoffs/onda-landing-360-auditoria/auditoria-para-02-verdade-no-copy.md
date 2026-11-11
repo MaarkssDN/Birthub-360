@@ -34,19 +34,29 @@ resto da página e na tela de login.
 
 ## Alteração necessária
 
-**Bloqueado por decisão de produto** — o 02 não deve inventar números nem
-remover claims sem alinhamento. Solicitar ao 00/responsável comercial:
+**Decisão de negócio tomada (2026-11-11, responsável humano):** fallback
+aprovado = **rotular como ilustrativo**. Ou seja:
 
-1. Quais métricas e depoimentos são reais e têm autorização de uso?
-   - Reais → manter com fonte/rastreabilidade.
-   - Ilustrativos → rotular consistentemente como "cenário ilustrativo"
-     (a página já usa esse padrão em outros blocos).
-2. Qual o número oficial de agentes (20+? 24?) — padronizar em toda a página.
-3. Quais certificações são fato ("READY" ≠ certificado) e quais claims de
-   performance (50ms, 15min, 5min) são verificáveis.
-4. Alinhar claims de conectores com os status reais: sync "em tempo real"
+- Métricas, depoimentos e claims sem fonte real devem ser rotulados
+  consistentemente como "cenário ilustrativo" / "dados de demonstração"
+  (padrão que a página já usa em outros blocos), em vez de exigir dados
+  reais ou remoção.
+- Permanecem pendentes de confirmação pontual (não bloqueiam): quais
+  certificações são fato ("READY" ≠ certificado) e o número oficial de
+  agentes (20+ vs 24) — padronizar o que for verificável.
+
+Checklist de execução:
+
+1. Aplicar rótulo de ilustração em: métricas (+42%, 3.8x, R$ 180M+, 99.98%),
+   depoimentos (marcar como "exemplo ilustrativo" ou substituir por cases
+   reais se existirem), selos de certificação ("READY" → texto preciso).
+2. Alinhar claims de conectores com os status reais: sync "em tempo real"
    só pode citar conectores "Em Produção" (Bitrix24, WhatsApp, VoiceHub,
    Webhooks) até HubSpot/Salesforce/Pipedrive saírem de homologação.
+3. Padronizar o número de agentes em toda a página (hero, KPIs, login,
+   Command Center) conforme o número oficial confirmado.
+4. Claims de performance ("3.8x", "15 min", "5 min setup", "50ms") devem
+   carregar o mesmo rótulo de ilustração ou ser suavizados.
 
 ## Teste esperado
 

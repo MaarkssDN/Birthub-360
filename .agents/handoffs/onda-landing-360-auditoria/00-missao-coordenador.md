@@ -34,10 +34,9 @@ de arquivos, dependências entre agentes e gates do AGENTS.md.
 
 ## Ordem de execução sugerida
 
-1. **Decisão prévia (humano/00)**: itens 3, 4, 5, 11 e 20 do handoff
-   `verdade-no-copy` dependem de dados reais de negócio — métricas, depoimentos,
-   certificações e o número oficial de agentes. Sem essa decisão, o 02 executa
-   tudo dos outros handoffs e deixa o copy sensível para o final.
+1. **Decisão de negócio**: ~~pendente~~ — RESOLVIDA: rotular como ilustrativo
+   (ver seção acima). Resta só confirmar número de agentes e certificações
+   com o responsável comercial quando o 02 chegar no pacote final.
 2. **01**: endpoint de captura de lead (desbloqueia o item 1).
 3. **21**: validação do consentimento LGPD (rápida, destrava o merge do form).
 4. **02**: executa em commits pequenos por pacote —
@@ -70,7 +69,15 @@ de arquivos, dependências entre agentes e gates do AGENTS.md.
 - `tsc --noEmit` + `npm run build` verdes; parecer do 24 registrado em
   `.agents/reviews/`.
 
-## Suposições decididas (validar com o humano se discordar)
+## Decisão de negócio registrada (2026-11-11, humano)
+
+**Copy sensível: rotular como ilustrativo.** Métricas, depoimentos e claims
+sem fonte real recebem rótulo de ilustração em vez de remoção ou dados
+reais — o 02 pode executar `verdade-no-copy` sem nova aprovação, exceto:
+número oficial de agentes e certificações ("READY" ≠ certificado), que
+pedem confirmação pontual antes de padronizar.
+
+## Suposições decididas (validar se algo mudar)
 
 - `Landing360Impeccable.tsx` e componentes mortos serão deletados após
   confirmação — há chance de serem versão alternativa intencional.

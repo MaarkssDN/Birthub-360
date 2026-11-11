@@ -37,11 +37,13 @@ não de erro de compilação.
 - Item 1 depende do endpoint do Agente 01 (`02-para-01-endpoint-captura-lead.md`) —
   o 02 pode implementar a UI com fallback, mas a captura real só fecha com o endpoint.
 - Item 10 depende de validação do Agente 21 antes do merge.
-- Itens 3, 4, 5, 11, 20 dependem de **decisão de produto/negócio** (dados reais vs.
-  rotulagem como ilustrativo) — o 02 não deve inventar números nem remover claims
-  sem alinhamento com o responsável comercial.
+- ~~Itens 3, 4, 5, 11, 20 dependem de decisão de produto~~ — **DECIDIDO
+  (2026-11-11)**: fallback aprovado é rotular como ilustrativo. Ver seção
+  "Decisão" em `auditoria-para-02-verdade-no-copy.md`. Resta apenas confirmação
+  pontual do número oficial de agentes e certificações.
 - Revisão final obrigatória: Agente 24 após a integração.
 
 ## Status da onda
 
-PLANEJADA — aguardando orquestração do Coordenador (00).
+EM_EXECUCAO — decisão de negócio registrada (rotular como ilustrativo);
+aguardando despacho dos handoffs pelo Coordenador (00).
