@@ -1,7 +1,7 @@
 - De: Auditoria ad-hoc (Devin CLI) — promover a 00 se virar missão formal
 - Para: 02 — Produto e UX
 - Onda: landing-360-auditoria
-- Status: Em andamento — UI pronta, aguardando contrato do 01 e validação do 21
+- Status: Em andamento — cliente ligado ao contrato do 01 (PR #216), aguardando merge na main, OK do Marcelo no texto legal e revisão/merge
 - Prioridade: bloqueador
 
 ## Problema
@@ -48,50 +48,49 @@ genérico — não é link de agendamento e não carrega dados do lead.
 
 ## Resolução
 
-Parcial — UI e cliente prontos na branch `agente-02/landing-form-lead-real`.
-O envio ainda não persiste lead de verdade porque o contrato HTTP do Agente 01
-não foi publicado.
+Cliente da landing ligado ao contrato final do Agente 01 (PR #216,
+`POST /api/public/demo-leads`) na branch `agente-02/landing-form-lead-real`.
+O funcionamento ponta a ponta depende do #216 estar na `main` (ainda não
+mesclado neste momento).
 
 ### O que foi feito
 
-- Módulo isolado `submitLead(payload, { signal })` com `fetch` POST JSON.
-  A constante `LEAD_CAPTURE_ENDPOINT` permanece no placeholder
-  `PENDENTE_CONTRATO_AGENTE_01`, claramente comentada como pendente do contrato
-  do Agente 01. Se a constante estiver vazia ou for o placeholder, a função
-  rejeita com erro tipado `endpoint_unavailable` e **nunca** simula sucesso.
-  Sucesso somente com resposta HTTP 2xx. Erros mapeados: rede, 4xx (mensagem
-  genérica segura), 429 e 5xx.
-- Payload enviado: nome, email, whatsapp (dígitos BR), equipe, consent e
-  metadados de consentimento (`textVersion`, `purpose`, `timestamp` ISO gerado
-  no cliente). Campos marcados para alinhar com 01/21.
-- Consentimento inicia desmarcado e é obrigatório (`required`, `aria-required`).
-  O texto legal exibido foi mantido; nenhum texto novo foi criado.
-- Validação de cliente: nome, e-mail válido, WhatsApp com DDD (10–11 dígitos BR,
-  aceitando máscara e DDI 55) e consentimento. Rótulos associados, `aria-invalid`,
-  `aria-describedby`, região `role="alert"` / `aria-live` para erros, foco no
-  primeiro campo inválido, botão `disabled` / `aria-busy` durante o envio,
-  bloqueio de duplo submit.
-- Estados honestos: carregando ("Enviando..."), erro com possibilidade de tentar
-  de novo sem perder dados, e sucesso com a mensagem
-  "Recebemos seus dados. Nossa equipe vai entrar em contato."
-- Removidas a promessa de WhatsApp em 15 minutos e o botão genérico do Google
-  Agenda na tela de sucesso. A rota `/book/:slug` existe (`PublicBookingPage`),
-  mas não há slug de demonstração definido para a landing — o botão foi removido
-  em vez de inventar um link.
-- `trackLeadFormSubmitted` dispara apenas após sucesso real (2xx).
-- Testes unitários reescritos/ampliados (sucesso 2xx, 4xx/5xx/rede/429, endpoint
-  pendente, consentimento desmarcado e bloqueio, WhatsApp/e-mail inválidos,
-  aria-live e ausência de duplo submit).
+- Confirmado (itens 1 e 2 do Agente 21): `consent` inicia `false`, a guarda JS
+  bloqueia o envio sem opt-in e o checkbox tem `required` / `aria-required`.
+- `LEAD_CAPTURE_ENDPOINT` é a única constante da rota e aponta para
+  `/api/public/demo-leads`. Sucesso somente com HTTP 202 e `{ ok: true }`.
+  200/201 ou 202 sem `ok:true` não exibem sucesso.
+- Payload alinhado ao contrato: `nome`, `email`, `whatsapp` (omitido se vazio),
+  `equipe` (`"1 a 5" | "6 a 15" | "16 a 50" | "50+"`, chips da UI usam
+  `LEAD_TEAM_SIZES`), `consent: true`, `consentTextVersion: "landing-demo-v1"`,
+  `purpose: "agendamento_demonstracao"` e `website` (honeypot, string vazia).
+- Honeypot `website` no form: campo de texto fora da tela, `tabIndex={-1}`,
+  `aria-hidden`, fora do fluxo de teclado. A UI envia `""`.
+- Erros: 400 `{ error: "invalid_payload", fields }` mapeados para os campos
+  quando possível; 429 `rate_limited` (mensagem específica de 5 envios / 15
+  min); 503 `unavailable` (mensagem específica); rede (mensagem genérica).
+- Texto de consentimento provisório cita nome, e-mail, WhatsApp opcional,
+  finalidade (contato sobre a demonstração do BirthHub 360°), IP guardado só
+  como hash, retenção operacional de 90 dias sem avanço ou 30 dias após a
+  demo, e link para `/privacy`. Marcado no código como TEXTO LEGAL PROVISÓRIO
+  — aguarda OK do Marcelo. A versão enviada permanece o literal do contrato
+  (`landing-demo-v1`); o texto canônico gravado no servidor (PR #216) é mais
+  curto e precisará ser alinhado quando o texto legal final for aprovado.
+- Promessas não cumpridas removidas: "15 minutos" na coluna esquerda e
+  "Cancelamento fácil com 1 clique". Tela de sucesso honesta, sem Google Agenda
+  genérico.
+- "Direitos do Titular" aponta para `/privacy#direitos-do-titular` (rota
+  pública existente; `id` adicionado na seção já presente em
+  `PrivacyPolicy.tsx`).
+- Testes unitários: 202/`ok:true`, 400 com `fields`, 429, 503, rede, honeypot
+  vazio, WhatsApp opcional, consentimento desmarcado e bloqueio.
 
 ### O que falta
 
-- Contrato e implementação do endpoint pelo Agente 01 (rota, shape da resposta,
-  persistência, rate limit e trilha de consentimento). Depois disso, substituir
-  `LEAD_CAPTURE_ENDPOINT` pelo caminho real — sem inventar a rota agora.
-- Validação do Agente 21 / OK do Marcelo sobre o texto de consentimento e sobre
-  os metadados (`textVersion`, `purpose`, `timestamp`), inclusive se a coleta de
-  WhatsApp exige base legal ou consentimento adicional.
-- Teste ponta a ponta com persistência ou fila, e consistência após reload,
-  quando o endpoint existir.
-- Decisão de produto: se houver um slug público estável de agendamento da demo,
-  o CTA de sucesso pode voltar apontando para `/book/:slug`. Não inventar o slug.
+- Merge do PR #216 na `main` para o endpoint existir no ambiente integrado.
+- **OK do Marcelo** para o texto legal final do consentimento (e alinhamento
+  com o texto canônico / versão no servidor) e para o prazo de retenção
+  descrito.
+- Teste ponta a ponta com persistência, depois do #216 na main.
+- Decisão de produto sobre CTA de sucesso para `/book/:slug` (não inventar o
+  slug).
