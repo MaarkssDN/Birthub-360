@@ -1,7 +1,7 @@
 - De: Auditoria ad-hoc (Devin CLI) — promover a 00 se virar missão formal
 - Para: 02 — Produto e UX
 - Onda: landing-360-auditoria
-- Status: aberto
+- Status: Em andamento — UI pronta, aguardando contrato do 01 e validação do 21
 - Prioridade: bloqueador
 
 ## Problema
@@ -20,6 +20,8 @@ genérico — não é link de agendamento e não carrega dados do lead.
 - `src/features/landing/pages/Landing360.tsx` — `handleLeadSubmit` (~L575-587),
   bloco do form (~L2072-2182), tela de sucesso (~L2039-2070)
 - Dependência: `02-para-01-endpoint-captura-lead.md` (endpoint real)
+- Cliente isolado: `src/features/landing/services/submitLead.ts`
+- Validação de cliente: `src/features/landing/services/leadFormValidation.ts`
 
 ## Alteração necessária
 
@@ -43,3 +45,53 @@ genérico — não é link de agendamento e não carrega dados do lead.
 
 - O consentimento LGPD do form está pré-marcado — ver handoff
   `02-para-21-validacao-consentimento-lgpd.md`. Não fazer merge sem essa validação.
+
+## Resolução
+
+Parcial — UI e cliente prontos na branch `agente-02/landing-form-lead-real`.
+O envio ainda não persiste lead de verdade porque o contrato HTTP do Agente 01
+não foi publicado.
+
+### O que foi feito
+
+- Módulo isolado `submitLead(payload, { signal })` com `fetch` POST JSON.
+  A constante `LEAD_CAPTURE_ENDPOINT` permanece no placeholder
+  `PENDENTE_CONTRATO_AGENTE_01`, claramente comentada como pendente do contrato
+  do Agente 01. Se a constante estiver vazia ou for o placeholder, a função
+  rejeita com erro tipado `endpoint_unavailable` e **nunca** simula sucesso.
+  Sucesso somente com resposta HTTP 2xx. Erros mapeados: rede, 4xx (mensagem
+  genérica segura), 429 e 5xx.
+- Payload enviado: nome, email, whatsapp (dígitos BR), equipe, consent e
+  metadados de consentimento (`textVersion`, `purpose`, `timestamp` ISO gerado
+  no cliente). Campos marcados para alinhar com 01/21.
+- Consentimento inicia desmarcado e é obrigatório (`required`, `aria-required`).
+  O texto legal exibido foi mantido; nenhum texto novo foi criado.
+- Validação de cliente: nome, e-mail válido, WhatsApp com DDD (10–11 dígitos BR,
+  aceitando máscara e DDI 55) e consentimento. Rótulos associados, `aria-invalid`,
+  `aria-describedby`, região `role="alert"` / `aria-live` para erros, foco no
+  primeiro campo inválido, botão `disabled` / `aria-busy` durante o envio,
+  bloqueio de duplo submit.
+- Estados honestos: carregando ("Enviando..."), erro com possibilidade de tentar
+  de novo sem perder dados, e sucesso com a mensagem
+  "Recebemos seus dados. Nossa equipe vai entrar em contato."
+- Removidas a promessa de WhatsApp em 15 minutos e o botão genérico do Google
+  Agenda na tela de sucesso. A rota `/book/:slug` existe (`PublicBookingPage`),
+  mas não há slug de demonstração definido para a landing — o botão foi removido
+  em vez de inventar um link.
+- `trackLeadFormSubmitted` dispara apenas após sucesso real (2xx).
+- Testes unitários reescritos/ampliados (sucesso 2xx, 4xx/5xx/rede/429, endpoint
+  pendente, consentimento desmarcado e bloqueio, WhatsApp/e-mail inválidos,
+  aria-live e ausência de duplo submit).
+
+### O que falta
+
+- Contrato e implementação do endpoint pelo Agente 01 (rota, shape da resposta,
+  persistência, rate limit e trilha de consentimento). Depois disso, substituir
+  `LEAD_CAPTURE_ENDPOINT` pelo caminho real — sem inventar a rota agora.
+- Validação do Agente 21 / OK do Marcelo sobre o texto de consentimento e sobre
+  os metadados (`textVersion`, `purpose`, `timestamp`), inclusive se a coleta de
+  WhatsApp exige base legal ou consentimento adicional.
+- Teste ponta a ponta com persistência ou fila, e consistência após reload,
+  quando o endpoint existir.
+- Decisão de produto: se houver um slug público estável de agendamento da demo,
+  o CTA de sucesso pode voltar apontando para `/book/:slug`. Não inventar o slug.
