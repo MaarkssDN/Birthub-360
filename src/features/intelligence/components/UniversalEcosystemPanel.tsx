@@ -48,6 +48,24 @@ interface UniversalToolMeta {
   supportedPlatforms: string[];
 }
 
+interface EcosystemPlaybookItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  platformsInvolved: string[];
+  stepsSummary: string[];
+}
+
+type OfficeDocType = 'excel_or_gsheet' | 'word_or_gdoc' | 'powerpoint_or_gslides';
+
+type EcosystemApiList<T> = T[] | { data?: T[] } | null | undefined;
+
+function unwrapList<T>(payload: EcosystemApiList<T>): T[] {
+  if (Array.isArray(payload)) return payload;
+  const data = payload?.data;
+  return Array.isArray(data) ? data : [];
+}
+
 interface UniversalEcosystemPanelProps {
   mode: 'connectors' | 'studio';
   onLaunchSwarmMission: (missionText: string) => void;
@@ -136,9 +154,7 @@ export function UniversalEcosystemPanel({
   const [standaloneOutput, setStandaloneOutput] = useState<string | null>(null);
 
   // Studio: Office Generator state
-  const [officeType, setOfficeType] = useState<
-    'excel_or_gsheet' | 'word_or_gdoc' | 'powerpoint_or_gslides'
-  >('excel_or_gsheet');
+  const [officeType, setOfficeType] = useState<OfficeDocType>('excel_or_gsheet');
   const [officeTitle, setOfficeTitle] = useState('Plano Executivo de Prospecção & Forecast Q4');
   const [generatingOffice, setGeneratingOffice] = useState(false);
   const [officeDownload, setOfficeDownload] = useState<{
@@ -149,15 +165,7 @@ export function UniversalEcosystemPanel({
   } | null>(null);
 
   // Studio: Automated Multi-Platform Playbooks state
-  const [playbooks, setPlaybooks] = useState<
-    Array<{
-      id: string;
-      title: string;
-      subtitle: string;
-      platformsInvolved: string[];
-      stepsSummary: string[];
-    }>
-  >([]);
+  const [playbooks, setPlaybooks] = useState<EcosystemPlaybookItem[]>([]);
   const [runningPlaybookId, setRunningPlaybookId] = useState<string | null>(null);
   const [testingProvider, setTestingProvider] = useState<string | null>(null);
   const [playbookReport, setPlaybookReport] = useState<{
@@ -177,30 +185,13 @@ export function UniversalEcosystemPanel({
     setLoading(true);
     try {
       const [connRes, catRes, pbRes] = await Promise.all([
-        api.get<{ success: boolean; data: ConnectorStatusItem[] }>(
-          '/api/agent/ecosystem/connectors',
-        ),
-        api.get<{ success: boolean; data: UniversalToolMeta[] }>('/api/agent/ecosystem/catalog'),
-        api.get<{ success: boolean; data: any[] }>('/api/agent/ecosystem/playbooks'),
+        api.get<EcosystemApiList<ConnectorStatusItem>>('/api/agent/ecosystem/connectors'),
+        api.get<EcosystemApiList<UniversalToolMeta>>('/api/agent/ecosystem/catalog'),
+        api.get<EcosystemApiList<EcosystemPlaybookItem>>('/api/agent/ecosystem/playbooks'),
       ]);
-      const connList = Array.isArray(connRes)
-        ? connRes
-        : Array.isArray((connRes as any)?.data)
-          ? (connRes as any).data
-          : [];
-      const catList = Array.isArray(catRes)
-        ? catRes
-        : Array.isArray((catRes as any)?.data)
-          ? (catRes as any).data
-          : [];
-      const pbList = Array.isArray(pbRes)
-        ? pbRes
-        : Array.isArray((pbRes as any)?.data)
-          ? (pbRes as any).data
-          : [];
-      setConnectors(connList);
-      setCatalog(catList);
-      setPlaybooks(pbList);
+      setConnectors(unwrapList(connRes));
+      setCatalog(unwrapList(catRes));
+      setPlaybooks(unwrapList(pbRes));
     } catch {
       // Silencioso caso a instância esteja sem sessão ativa
     } finally {
@@ -636,7 +627,16 @@ export function UniversalEcosystemPanel({
             <select
               id={`${fieldId}-formato`}
               value={officeType}
-              onChange={(e) => setOfficeType(e.target.value as any)}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (
+                  value === 'excel_or_gsheet' ||
+                  value === 'word_or_gdoc' ||
+                  value === 'powerpoint_or_gslides'
+                ) {
+                  setOfficeType(value);
+                }
+              }}
               className="w-full bg-surface border border-line rounded-lg px-3 py-2 text-xs font-bold text-ink"
             >
               <option value="excel_or_gsheet">Planilha Excel (.xlsx) / Google Sheets</option>
