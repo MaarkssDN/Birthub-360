@@ -1122,14 +1122,14 @@ export function Landing360({
 
                   {/* Proposta de Valor Clara & Persuasiva focada em Benefícios */}
                   <div className="mb-6 space-y-2">
-                    <p className="text-base sm:text-lg font-semibold text-slate-100 dark:text-slate-100 leading-snug">
+                    <p className="text-base sm:text-lg font-semibold leading-snug text-cyan-300">
                       {abVariant === 'B' ? (
-                        <span className="bg-gradient-to-r from-sky-400 to-pink-400 bg-clip-text text-transparent">
+                        <span>
                           Multiplique a capacidade de vendas da sua equipe sem precisar dobrar o
                           headcount comercial.
                         </span>
                       ) : (
-                        <span className="bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">
+                        <span>
                           Acelere o ciclo de vendas e aumente a conversão do pipeline em até 3.8x
                           com IA aplicada.
                         </span>
@@ -1975,7 +1975,7 @@ export function Landing360({
                   {/* Bloco de Benefícios da Sessão */}
                   <div>
                     <div className="b360-eyebrow">SESSÃO PRÁTICA EXCLUSIVA</div>
-                    <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-100 dark:text-slate-100 mb-3">
+                    <h2 className="text-2xl sm:text-3xl font-extrabold mb-3">
                       Veja sua operação comercial operando em 360°.
                     </h2>
                     <p className="text-sm text-slate-300 dark:text-slate-400 leading-relaxed mb-6">
@@ -2041,7 +2041,7 @@ export function Landing360({
                         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">
                           <CheckCircle2 className="h-8 w-8" />
                         </div>
-                        <h3 className="text-xl font-bold text-slate-100">
+                        <h3 className="text-xl font-bold text-cyan-400">
                           Sessão Solicitada com Sucesso!
                         </h3>
                         <p className="text-xs text-slate-300 leading-relaxed max-w-sm mx-auto">
@@ -2071,7 +2071,7 @@ export function Landing360({
                     ) : (
                       <form onSubmit={handleLeadSubmit} className="space-y-3.5">
                         <div className="mb-2">
-                          <h3 className="text-base font-bold text-slate-100">
+                          <h3 className="text-base font-bold text-cyan-400">
                             Reserve sua Demonstração Técnica
                           </h3>
                           <p className="text-xs text-slate-400">
