@@ -3,8 +3,10 @@ import { requestContext } from '../../lib/async-context.js';
 import { contactEmailIndex } from '../../lib/crypto/piiIndex.js';
 import { logger } from '../../lib/logger.js';
 import { prisma, runInTransaction } from '../../lib/prisma.js';
+import { consentAuditChain } from '../../lib/security/consentChainFactory.js';
+import { sendLandingLeadConfirmationEmail } from './publicLead.confirmationEmail.js';
 import {
-  LANDING_DEMO_CONSENT_PURPOSE,
+  LANDING_DEMO_CONSENT_CHAIN_PURPOSE,
   LANDING_DEMO_CONSENT_TEXT,
   LANDING_DEMO_CONSENT_VERSION,
   LANDING_LEAD_SOURCE,
@@ -22,6 +24,11 @@ export class PublicLeadUnavailableError extends Error {
 }
 
 export type PublicLeadCaptureResult = 'created' | 'duplicate';
+
+export type CapturePublicLeadOptions = {
+  /** HMAC do IP, já calculado na rota. Nunca passe o IP em claro. */
+  ipHash?: string | null;
+};
 
 function resolveLandingOrganizationId(): string {
   // process.env vive (testes podem ajustar o tenant sem reparse de env.ts);
@@ -43,13 +50,28 @@ function companyLabelFor(input: PublicLeadInput): string {
   return `Contato via landing — ${input.nome}`;
 }
 
+function chainDetailPayload(
+  ipHash: string | null | undefined,
+  purpose: PublicLeadInput['purpose'],
+): string {
+  return JSON.stringify({
+    termsText: LANDING_DEMO_CONSENT_TEXT,
+    termsVersion: LANDING_DEMO_CONSENT_VERSION,
+    purpose,
+    ...(ipHash ? { ipHash } : {}),
+  });
+}
+
 /**
  * Persiste o lead da landing no tenant configurado no servidor.
  * Idempotente por (organização + e-mail + origem landing_360): reenvio do mesmo
  * titular devolve 'duplicate' sem criar outro Lead e sem alterar dados já gravados
  * (um terceiro não consegue trocar o WhatsApp de um e-mail alheio).
  */
-export async function capturePublicLead(input: PublicLeadInput): Promise<PublicLeadCaptureResult> {
+export async function capturePublicLead(
+  input: PublicLeadInput,
+  options: CapturePublicLeadOptions = {},
+): Promise<PublicLeadCaptureResult> {
   const organizationId = resolveLandingOrganizationId();
   const emailIndex = contactEmailIndex(input.email);
   if (!emailIndex) {
@@ -105,7 +127,7 @@ export async function capturePublicLead(input: PublicLeadInput): Promise<PublicL
               organizationId,
               status: 'Ativo',
               size: input.equipe,
-              phones: [input.whatsapp],
+              phones: input.whatsapp ? [input.whatsapp] : [],
               emails: [input.email],
               tags: ['Landing 360'],
             },
@@ -118,7 +140,7 @@ export async function capturePublicLead(input: PublicLeadInput): Promise<PublicL
             data: {
               name: input.nome,
               email: input.email,
-              whatsapp: input.whatsapp,
+              ...(input.whatsapp ? { whatsapp: input.whatsapp } : {}),
               organizationId,
               companyId,
               status: 'Ativo',
@@ -141,7 +163,7 @@ export async function capturePublicLead(input: PublicLeadInput): Promise<PublicL
             customFields: {
               equipe: input.equipe,
               origem: 'landing_form_objective',
-              finalidade: LANDING_DEMO_CONSENT_PURPOSE,
+              finalidade: input.purpose,
             },
           },
         });
@@ -150,7 +172,7 @@ export async function capturePublicLead(input: PublicLeadInput): Promise<PublicL
           data: {
             organizationId,
             leadId: lead.id,
-            purpose: LANDING_DEMO_CONSENT_PURPOSE,
+            purpose: input.purpose,
             termsVersion: LANDING_DEMO_CONSENT_VERSION,
             termsText: LANDING_DEMO_CONSENT_TEXT,
             grantedAt: new Date(),
@@ -163,7 +185,25 @@ export async function capturePublicLead(input: PublicLeadInput): Promise<PublicL
       { organizationId },
     );
 
+    try {
+      await consentAuditChain.recordConsent({
+        organizationId,
+        subjectRef: input.email,
+        purpose: LANDING_DEMO_CONSENT_CHAIN_PURPOSE[input.purpose],
+        termsVersion: LANDING_DEMO_CONSENT_VERSION,
+        detail: chainDetailPayload(options.ipHash, input.purpose),
+      });
+    } catch (err: unknown) {
+      // A prova operacional (PublicLeadConsent) já foi gravada. A cadeia oficial é
+      // complementar; uma falha aqui não apaga o lead, mas fica visível no log (sem PII).
+      logger.error(
+        { err, event: 'public_lead_consent_chain_failed' },
+        'Consent audit chain append failed after public lead persist',
+      );
+    }
+
     logger.info({ event: 'public_lead_created' }, 'Public landing lead persisted');
+    await sendLandingLeadConfirmationEmail(input.email);
     return result;
   });
 }

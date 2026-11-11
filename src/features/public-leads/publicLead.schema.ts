@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import {
+  LANDING_DEMO_CONSENT_PURPOSES,
   LANDING_DEMO_CONSENT_VERSION,
   LANDING_LEAD_EQUIPE_VALUES,
 } from './publicLead.constants.js';
@@ -45,16 +46,20 @@ export const publicLeadSchema = z.object({
     .email('invalid')
     .max(320, 'invalid')
     .transform((value) => value.toLowerCase()),
-  whatsapp: z
-    .string({ error: 'required' })
-    .trim()
-    .min(8, 'invalid')
-    .max(40, 'invalid')
-    .refine(isValidBrWhatsapp, 'invalid')
-    .transform(normalizeBrWhatsapp),
+  whatsapp: z.preprocess(
+    (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
+    z
+      .string()
+      .trim()
+      .max(40, 'invalid')
+      .refine(isValidBrWhatsapp, 'invalid')
+      .transform(normalizeBrWhatsapp)
+      .optional(),
+  ),
   equipe: z.enum(LANDING_LEAD_EQUIPE_VALUES, { error: 'invalid' }),
   consent: z.literal(true, { error: 'required' }),
   consentTextVersion: z.literal(LANDING_DEMO_CONSENT_VERSION, { error: 'stale' }),
+  purpose: z.enum(LANDING_DEMO_CONSENT_PURPOSES, { error: 'invalid' }),
   // Honeypot: o schema aceita qualquer valor para não vazar o campo na validação;
   // a rota recusa preenchimento antes de persistir, respondendo o mesmo 202 genérico.
   website: z.unknown().optional(),
@@ -69,6 +74,7 @@ const FIELD_ERROR_FALLBACK: Record<string, string> = {
   equipe: 'invalid',
   consent: 'required',
   consentTextVersion: 'stale',
+  purpose: 'invalid',
 };
 
 export function fieldErrorsFromZod(error: z.ZodError): Record<string, string> {

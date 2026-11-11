@@ -80,7 +80,7 @@ const envSchema = z
     // folgado para uso legítimo (ninguém reporta 10 bugs em 15 minutos) e apertado o bastante para
     // conter um usuário mal-intencionado enchendo a tabela BugReport.
     BUG_REPORT_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
-    // Limite dedicado do POST público /api/public/leads (landing 360°), por IP, janela de 15min.
+    // Limite dedicado do POST público /api/public/demo-leads (landing 360°), por IP, janela de 15min.
     // 5 é folgado para um humano preencher o formulário (inclusive retries) e apertado o bastante
     // para conter abuso/enumeração. Não compartilha a cota genérica de 600 do apiLimiter.
     PUBLIC_LEAD_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(5),
@@ -89,6 +89,18 @@ const envSchema = z
     // tenant. Sem ele o POST responde 503 (fail-closed). Use o id (cuid) da Organization, não um
     // slug ou nome. Pendente do OK do Marcelo em produção.
     LANDING_LEAD_ORGANIZATION_ID: z.string().min(1).optional(),
+    // Sal HMAC-SHA256 do IP do titular na captura pública. Sem valor, o IP não é persistido
+    // (nunca em claro). Mínimo 16 caracteres quando definido.
+    PUBLIC_LEAD_IP_HASH_SECRET: z.string().min(16).optional(),
+    // E-mail transacional de confirmação + instruções de DSR. Desligado por padrão.
+    LANDING_LEAD_CONFIRMATION_EMAIL_ENABLED: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
+    // Política operacional de retenção do lead da demo (aprovada pelo Marcelo em 2026-11-11).
+    // Não é texto legal final. O job de purge fica como follow-up — estas vars só declaram o prazo.
+    LANDING_LEAD_RETENTION_IDLE_DAYS: z.coerce.number().int().positive().default(90),
+    LANDING_LEAD_RETENTION_AFTER_DEMO_DAYS: z.coerce.number().int().positive().default(30),
     JSON_BODY_LIMIT: z.string().default('2mb'),
     TRUST_PROXY: z
       .enum(['true', 'false'])

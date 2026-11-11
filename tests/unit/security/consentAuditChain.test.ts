@@ -569,6 +569,22 @@ describe('Ressalvas do Agente 15 @43922b4e', () => {
     await expect(svc.recordConsent(base)).resolves.toBeDefined();
   });
 
+  it('baixa: recordConsent aceita detail opcional em ConsentEventDetail (expurgável, fora do hash)', async () => {
+    const { repo, tokenizer } = mk();
+    const svc = new ConsentAuditChainService({ repo, tokenizer });
+    const ev = await svc.recordConsent({
+      organizationId: 'o',
+      subjectRef: 's',
+      purpose: 'AGENDAMENTO_DEMONSTRACAO',
+      termsVersion: 'landing-demo-v1',
+      detail: '{"termsText":"texto canônico","ipHash":"abc"}',
+    });
+    const stored = repo.details.get(ev.id);
+    expect(stored?.detail).toContain('texto canônico');
+    expect(stored?.detail).toContain('abc');
+    expect(ev.purpose).toBe('AGENDAMENTO_DEMONSTRACAO');
+  });
+
   it('baixa: colisão de chaves após NFC é erro', () => {
     expect(() => canonicalJson({ 'Jos\u00e9': 1, 'Jose\u0301': 2 })).toThrow(CanonicalJsonError);
   });

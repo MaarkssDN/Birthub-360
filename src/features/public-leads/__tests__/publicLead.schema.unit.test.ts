@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { LANDING_DEMO_CONSENT_VERSION } from '../publicLead.constants.js';
+import { hashClientIp } from '../publicLead.ipHash.js';
 import {
   fieldErrorsFromZod,
   isHoneypotFilled,
@@ -14,6 +15,7 @@ const valid = {
   equipe: '6 a 15',
   consent: true,
   consentTextVersion: LANDING_DEMO_CONSENT_VERSION,
+  purpose: 'agendamento_demonstracao',
 };
 
 describe('publicLeadSchema', () => {
@@ -73,5 +75,45 @@ describe('publicLeadSchema', () => {
     expect(isHoneypotFilled(undefined)).toBe(false);
     expect(isHoneypotFilled('http://spam.test')).toBe(true);
     expect(isHoneypotFilled(1)).toBe(true);
+  });
+
+  it('aceita WhatsApp omitido ou vazio e rejeita número inválido', () => {
+    const omitted = publicLeadSchema.safeParse({ ...valid, whatsapp: undefined });
+    expect(omitted.success).toBe(true);
+    const empty = publicLeadSchema.safeParse({ ...valid, whatsapp: '' });
+    expect(empty.success).toBe(true);
+    if (empty.success) {
+      expect(empty.data.whatsapp).toBeUndefined();
+    }
+    const invalid = publicLeadSchema.safeParse({ ...valid, whatsapp: '123' });
+    expect(invalid.success).toBe(false);
+    if (!invalid.success) {
+      expect(fieldErrorsFromZod(invalid.error).whatsapp).toBe('invalid');
+    }
+  });
+
+  it('exige purpose da lista fechada', () => {
+    const missing = publicLeadSchema.safeParse({ ...valid, purpose: undefined });
+    expect(missing.success).toBe(false);
+    if (!missing.success) {
+      expect(fieldErrorsFromZod(missing.error).purpose).toBe('invalid');
+    }
+    const other = publicLeadSchema.safeParse({ ...valid, purpose: 'newsletter' });
+    expect(other.success).toBe(false);
+  });
+});
+
+describe('hashClientIp', () => {
+  it('nunca devolve o IP em claro e exige segredo', () => {
+    const ip = '200.201.202.203';
+    const secret = 'abcdefghijklmnopqrstuvwxyz012345';
+    const hashed = hashClientIp(ip, secret);
+    expect(hashed).toBeTruthy();
+    expect(hashed).not.toContain(ip);
+    expect(hashed).toBe(hashClientIp(ip, secret));
+    expect(hashClientIp(ip, 'a-different-secret-key-32b')).not.toBe(hashed);
+    expect(hashClientIp(ip, undefined)).toBeNull();
+    expect(hashClientIp(undefined, secret)).toBeNull();
+    expect(hashClientIp('', secret)).toBeNull();
   });
 });

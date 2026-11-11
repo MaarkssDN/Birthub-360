@@ -127,5 +127,5 @@ export function applyRateLimiters(app: Express): void {
       error: 'rate_limited',
     },
   });
-  app.use('/api/public/leads', publicLeadLimiter);
+  app.use('/api/public/demo-leads', publicLeadLimiter);
 }

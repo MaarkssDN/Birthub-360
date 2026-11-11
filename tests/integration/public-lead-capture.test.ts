@@ -14,13 +14,14 @@ const valid = {
   equipe: '16 a 50',
   consent: true,
   consentTextVersion: LANDING_DEMO_CONSENT_VERSION,
+  purpose: 'agendamento_demonstracao',
 };
 
 function buildApp(max = 20) {
   const app = express();
   app.use(express.json());
   app.use(
-    '/api/public/leads',
+    '/api/public/demo-leads',
     rateLimit({
       windowMs: 15 * 60 * 1000,
       max,
@@ -33,13 +34,13 @@ function buildApp(max = 20) {
   return app;
 }
 
-describe('POST /api/public/leads (integração)', () => {
+describe('POST /api/public/demo-leads (integração)', () => {
   beforeAll(() => {
     process.env.LANDING_LEAD_ORGANIZATION_ID = 'test-org-id';
   });
 
   it('persiste lead + contato + prova de consentimento e responde 202 genérico', async () => {
-    const res = await request(buildApp()).post('/api/public/leads').send(valid);
+    const res = await request(buildApp()).post('/api/public/demo-leads').send(valid);
     expect(res.status).toBe(202);
     expect(res.body).toEqual({ ok: true });
     expect(res.body).not.toHaveProperty('leadId');
@@ -75,11 +76,11 @@ describe('POST /api/public/leads (integração)', () => {
 
   it('não cria segundo lead no reenvio do mesmo e-mail e devolve o mesmo 202', async () => {
     const app = buildApp();
-    const first = await request(app).post('/api/public/leads').send({
+    const first = await request(app).post('/api/public/demo-leads').send({
       ...valid,
       email: 'idempotente@empresa-landing.com.br',
     });
-    const second = await request(app).post('/api/public/leads').send({
+    const second = await request(app).post('/api/public/demo-leads').send({
       ...valid,
       email: 'idempotente@empresa-landing.com.br',
       nome: 'Outro Nome Tentando Sobrescrever',
@@ -109,14 +110,14 @@ describe('POST /api/public/leads (integração)', () => {
   it('rejeita e-mail inválido e ausência de consentimento com 400', async () => {
     const app = buildApp();
     const invalidEmail = await request(app)
-      .post('/api/public/leads')
+      .post('/api/public/demo-leads')
       .send({ ...valid, email: 'sem-arroba' });
     expect(invalidEmail.status).toBe(400);
     expect(invalidEmail.body.error).toBe('invalid_payload');
     expect(invalidEmail.body.fields.email).toBe('invalid');
 
     const noConsent = await request(app)
-      .post('/api/public/leads')
+      .post('/api/public/demo-leads')
       .send({ ...valid, email: 'sem.consent@empresa-landing.com.br', consent: false });
     expect(noConsent.status).toBe(400);
     expect(noConsent.body.fields.consent).toBe('required');
@@ -127,7 +128,7 @@ describe('POST /api/public/leads (integração)', () => {
   it('honeypot devolve 202 e não grava registro', async () => {
     const email = 'honeypot@empresa-landing.com.br';
     const res = await request(buildApp())
-      .post('/api/public/leads')
+      .post('/api/public/demo-leads')
       .send({ ...valid, email, website: 'https://spam.invalid' });
     expect(res.status).toBe(202);
 
@@ -141,7 +142,7 @@ describe('POST /api/public/leads (integração)', () => {
   it('ignora tenantId enviado pelo cliente e grava só no tenant configurado no servidor', async () => {
     const email = 'tenant-ignore@empresa-landing.com.br';
     const res = await request(buildApp())
-      .post('/api/public/leads')
+      .post('/api/public/demo-leads')
       .send({ ...valid, email, tenantId: 'org-arbitraria' });
     expect(res.status).toBe(202);
 
@@ -157,11 +158,37 @@ describe('POST /api/public/leads (integração)', () => {
     const statuses: number[] = [];
     for (let i = 0; i < 4; i += 1) {
       const res = await request(app)
-        .post('/api/public/leads')
+        .post('/api/public/demo-leads')
         .send({ ...valid, email: `rate${i}@empresa-landing.com.br` });
       statuses.push(res.status);
     }
     expect(statuses.slice(0, 3).every((status) => status === 202 || status === 400)).toBe(true);
     expect(statuses[3]).toBe(429);
+  });
+  it('aceita captura sem WhatsApp', async () => {
+    const email = 'sem-whatsapp@empresa-landing.com.br';
+    const { whatsapp: _whatsapp, ...rest } = valid;
+    const res = await request(buildApp()).post('/api/public/demo-leads').send({ ...rest, email });
+    expect(res.status).toBe(202);
+    const emailIndex = contactEmailIndex(email);
+    const contact = await prisma.contact.findFirst({
+      where: { organizationId: 'test-org-id', emailIndex, deletedAt: null },
+    });
+    expect(contact).toBeTruthy();
+    expect(contact?.whatsapp).toBeFalsy();
+  });
+
+  it('consent !== true responde 400 e não persiste nenhum registro', async () => {
+    const email = 'sem-consentimento@empresa-landing.com.br';
+    const res = await request(buildApp())
+      .post('/api/public/demo-leads')
+      .send({ ...valid, email, consent: false });
+    expect(res.status).toBe(400);
+    expect(res.body.fields.consent).toBe('required');
+    const emailIndex = contactEmailIndex(email);
+    const contact = await prisma.contact.findFirst({
+      where: { organizationId: 'test-org-id', emailIndex },
+    });
+    expect(contact).toBeNull();
   });
 });

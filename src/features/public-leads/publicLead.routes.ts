@@ -1,6 +1,8 @@
 import type { Request, Response } from 'express';
 import { Router } from 'express';
+import { env } from '../../config/env.js';
 import { logger } from '../../lib/logger.js';
+import { hashClientIp } from './publicLead.ipHash.js';
 import { fieldErrorsFromZod, isHoneypotFilled, publicLeadSchema } from './publicLead.schema.js';
 import { capturePublicLead, PublicLeadUnavailableError } from './publicLead.service.js';
 
@@ -9,9 +11,10 @@ export const publicLeadRoutes = Router();
 const ACCEPTED_BODY = { ok: true as const };
 
 /**
- * POST /api/public/leads
+ * POST /api/public/demo-leads
  * Endpoint público da landing. Sem authenticateToken / requireTenant.
  * O tenant é resolvido exclusivamente por LANDING_LEAD_ORGANIZATION_ID no servidor.
+ * O IP do titular é hasheado aqui (sal em PUBLIC_LEAD_IP_HASH_SECRET) e nunca é logado em claro.
  */
 publicLeadRoutes.post('/', async (req: Request, res: Response): Promise<void> => {
   try {
@@ -33,7 +36,11 @@ publicLeadRoutes.post('/', async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
-    await capturePublicLead(parsed.data);
+    const ipHash = hashClientIp(
+      req.ip,
+      process.env.PUBLIC_LEAD_IP_HASH_SECRET ?? env.PUBLIC_LEAD_IP_HASH_SECRET,
+    );
+    await capturePublicLead(parsed.data, { ipHash });
     res.status(202).json(ACCEPTED_BODY);
   } catch (err: unknown) {
     if (err instanceof PublicLeadUnavailableError) {

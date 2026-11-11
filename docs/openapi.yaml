@@ -2324,7 +2324,7 @@ paths:
         '201':
           description: Reunião agendada com sucesso
 
-  /public/leads:
+  /public/demo-leads:
     post:
       tags: [Landing]
       summary: Captura pública de lead da landing 360° (demonstração)
@@ -2352,7 +2352,7 @@ paths:
           application/json:
             schema:
               type: object
-              required: [nome, email, whatsapp, equipe, consent, consentTextVersion]
+              required: [nome, email, equipe, consent, consentTextVersion, purpose]
               properties:
                 nome:
                   type: string
@@ -2363,7 +2363,7 @@ paths:
                   format: email
                 whatsapp:
                   type: string
-                  description: Telefone brasileiro com DDD, com ou sem máscara, com ou sem DDI 55
+                  description: Opcional. Telefone brasileiro com DDD, com ou sem máscara, com ou sem DDI 55
                 equipe:
                   type: string
                   enum: ['1 a 5', '6 a 15', '16 a 50', '50+']
@@ -2373,6 +2373,9 @@ paths:
                 consentTextVersion:
                   type: string
                   enum: [landing-demo-v1]
+                purpose:
+                  type: string
+                  enum: [agendamento_demonstracao]
                 website:
                   type: string
                   description: Honeypot anti-abuso — deve ser omitido ou string vazia

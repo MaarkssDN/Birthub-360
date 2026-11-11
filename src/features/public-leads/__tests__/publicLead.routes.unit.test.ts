@@ -30,13 +30,14 @@ const valid = {
   equipe: '6 a 15',
   consent: true,
   consentTextVersion: LANDING_DEMO_CONSENT_VERSION,
+  purpose: 'agendamento_demonstracao',
 };
 
 function buildApp(max = 100) {
   const app = express();
   app.use(express.json());
   app.use(
-    '/api/public/leads',
+    '/api/public/demo-leads',
     rateLimit({
       windowMs: 15 * 60 * 1000,
       max,
@@ -49,14 +50,14 @@ function buildApp(max = 100) {
   return app;
 }
 
-describe('POST /api/public/leads', () => {
+describe('POST /api/public/demo-leads', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     capturePublicLead.mockResolvedValue('created');
   });
 
   it('retorna 202 genérico em payload válido, sem expor o lead criado', async () => {
-    const res = await request(buildApp()).post('/api/public/leads').send(valid);
+    const res = await request(buildApp()).post('/api/public/demo-leads').send(valid);
     expect(res.status).toBe(202);
     expect(res.body).toEqual({ ok: true });
     expect(res.body).not.toHaveProperty('id');
@@ -66,14 +67,14 @@ describe('POST /api/public/leads', () => {
 
   it('retorna o mesmo 202 para reenvio (idempotência, sem enumeração)', async () => {
     capturePublicLead.mockResolvedValue('duplicate');
-    const res = await request(buildApp()).post('/api/public/leads').send(valid);
+    const res = await request(buildApp()).post('/api/public/demo-leads').send(valid);
     expect(res.status).toBe(202);
     expect(res.body).toEqual({ ok: true });
   });
 
   it('retorna 202 e não persiste quando o honeypot está preenchido', async () => {
     const res = await request(buildApp())
-      .post('/api/public/leads')
+      .post('/api/public/demo-leads')
       .send({ ...valid, website: 'http://bot.test' });
     expect(res.status).toBe(202);
     expect(res.body).toEqual({ ok: true });
@@ -82,7 +83,7 @@ describe('POST /api/public/leads', () => {
 
   it('retorna 400 com fields claros para e-mail inválido e sem consentimento', async () => {
     const emailRes = await request(buildApp())
-      .post('/api/public/leads')
+      .post('/api/public/demo-leads')
       .send({ ...valid, email: 'invalido' });
     expect(emailRes.status).toBe(400);
     expect(emailRes.body).toEqual({
@@ -92,7 +93,7 @@ describe('POST /api/public/leads', () => {
     });
 
     const consentRes = await request(buildApp())
-      .post('/api/public/leads')
+      .post('/api/public/demo-leads')
       .send({ ...valid, consent: false });
     expect(consentRes.status).toBe(400);
     expect(consentRes.body.error).toBe('invalid_payload');
@@ -102,16 +103,16 @@ describe('POST /api/public/leads', () => {
 
   it('retorna 503 genérico quando o tenant da landing não está configurado', async () => {
     capturePublicLead.mockRejectedValue(new PublicLeadUnavailableError());
-    const res = await request(buildApp()).post('/api/public/leads').send(valid);
+    const res = await request(buildApp()).post('/api/public/demo-leads').send(valid);
     expect(res.status).toBe(503);
     expect(res.body).toEqual({ ok: false, error: 'unavailable' });
   });
 
   it('dispara 429 após exceder o rate limit por IP', async () => {
     const app = buildApp(2);
-    const first = await request(app).post('/api/public/leads').send(valid);
-    const second = await request(app).post('/api/public/leads').send(valid);
-    const third = await request(app).post('/api/public/leads').send(valid);
+    const first = await request(app).post('/api/public/demo-leads').send(valid);
+    const second = await request(app).post('/api/public/demo-leads').send(valid);
+    const third = await request(app).post('/api/public/demo-leads').send(valid);
     expect(first.status).toBe(202);
     expect(second.status).toBe(202);
     expect(third.status).toBe(429);
