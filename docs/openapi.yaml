@@ -154,6 +154,15 @@ tags:
   - name: Módulos da Organização
     description: >-
       Gerenciamento de módulos de produto ativos e conclusão do onboarding da organização (/setup)
+  - name: Settings por Pilar
+    description: >-
+      Preferências operacionais por pilar da aba "Ferramentas & Regras"
+      (`PillarSettingsPlaceholder`), persistidas em `Setting` por organização
+      (`key = settings.pilar.<slug>`, `userId = null`). GET para qualquer usuário
+      autenticado do tenant; PUT restrito a ADMIN (`requireRole`). As abas
+      Permissões, Gatilhos e Integrações da UI são placeholders visuais e não
+      têm contrato HTTP aqui.
+
   - name: Webhooks
     description: >-
       Endpoints de entrada de provedores externos, montados ANTES do `express.json()` global —
@@ -261,6 +270,106 @@ paths:
         '400': { $ref: '#/components/responses/BadRequest' }
         '401': { description: Não autenticado }
         '403': { $ref: '#/components/responses/Forbidden' }
+
+  /settings/pillars/{pillar}:
+    parameters:
+      - name: pillar
+        in: path
+        required: true
+        description: >-
+          Slug do pilar (`PILLAR_SLUGS` em `src/features/settings/domain/pillarSettings.ts`,
+          linhas 12–21). Valor fora desse conjunto responde 404 com a mensagem
+          `Pilar de settings desconhecido: {pillar}` (`assertSlug` em
+          `pillarSettings.routes.ts`, linhas 48–52).
+        schema:
+          $ref: '#/components/schemas/PillarSlug'
+    get:
+      tags: [Settings por Pilar]
+      summary: Lê as configurações operacionais de um pilar do tenant
+      description: >-
+        Montado em `/api/settings/pillars` com `authenticateToken` + `requireTenant`
+        (`src/bootstrap/routes.ts`, linha 228). Qualquer usuário autenticado do
+        tenant pode ler. Devolve `PillarSettingsView`: defaults do pilar mesclados
+        com o persistido (`mergePillarValues`), `configured=false` e `updatedAt=null`
+        quando a organização ainda não gravou o pilar
+        (`pillarSettings.service.ts`, linhas 46–56). Envelope
+        `{ success: true, data }` emitido por `handle` em `pillarSettings.routes.ts`
+        (linhas 27–31 e 55–59).
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200':
+          description: Configurações do pilar (defaults mesclados com o persistido)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PillarSettingsEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: >-
+            Pilar desconhecido. Corpo emitido por `handle` via
+            `PillarSettingsServiceError` (`pillarSettings.routes.ts`, linhas 49–50 e 37–40):
+            `{ success: false, error: "Pilar de settings desconhecido: {pillar}" }`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags: [Settings por Pilar]
+      summary: Atualiza parcialmente as configurações de um pilar (somente ADMIN)
+      description: >-
+        Mesmo mount de autenticação/tenant do GET, mais `requireRole(['ADMIN'])`
+        no próprio router (`pillarSettings.routes.ts`, linhas 62–72). O corpo é
+        `{ values: <patch> }`; só as chaves enviadas são validadas e mescladas
+        sobre defaults + persistido (`validatePillarPatch` + `mergePillarValues`).
+        Chaves fora de `PILLAR_FIELDS` do pilar, tipo ou faixa inválidos respondem
+        400. Não concede permissão real — RBAC continua no backend.
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PillarSettingsUpdateRequest'
+      responses:
+        '200':
+          description: Configurações atualizadas (`configured=true`, `updatedAt` ISO-8601)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PillarSettingsEnvelope'
+        '400':
+          description: >-
+            Patch inválido. Mensagens reais de `validatePillarPatch`
+            (`pillarSettings.ts`, linhas 140–190), reemitidas como
+            `PillarSettingsServiceError` 400 (`pillarSettings.service.ts`,
+            linhas 74–79): `Campo "values" deve ser um objeto.`;
+            `Campo desconhecido para o pilar "{slug}": {key}`;
+            `Campo "{key}" deve ser booleano.`;
+            `Campo "{key}" deve ser numérico.`;
+            `Campo "{key}" deve ser >= {min}.`;
+            `Campo "{key}" deve ser <= {max}.`;
+            `Campo "{key}" deve ser texto não vazio.`;
+            `Campo "{key}" deve ser um de: {enumValues}`.
+            O serviço também responde 400 com `Contexto de organização é obrigatório.`
+            se `organizationId` vier vazio (defesa no use case; o mount já aplica
+            `requireTenant`).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: >-
+            Pilar desconhecido. Mesmo corpo do GET 404:
+            `{ success: false, error: "Pilar de settings desconhecido: {pillar}" }`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /sales-orchestration/overview:
     get:
@@ -13284,6 +13393,160 @@ components:
       properties:
         success: { type: boolean, example: true }
         data: { $ref: '#/components/schemas/CharacterDetail' }
+
+    # ── Settings por pilar (`GET`/`PUT` /settings/pillars/{pillar}, Onda F1) ──
+    # Origem dos campos: ver descriptions. Nada aqui foi inventado.
+    PillarSlug:
+      type: string
+      description: >-
+        Slugs canônicos. Origem: `PILLAR_SLUGS` em
+        `src/features/settings/domain/pillarSettings.ts` (linhas 12–21).
+      enum: [hub, market, sales, performance, predictability, ai, automation, engagement]
+
+    PillarHubValues:
+      type: object
+      description: >-
+        Campos persistíveis do pilar `hub`. Origem: `PILLAR_FIELDS.hub` e
+        `PILLAR_DEFAULTS.hub` em `pillarSettings.ts` (linhas 63–67 e 107).
+        No GET o objeto vem completo (defaults mesclados). No PUT é um patch
+        parcial com as mesmas chaves.
+      properties:
+        stagnationDays: { type: number, minimum: 1, maximum: 365, example: 14 }
+        requireLossReason: { type: boolean, example: true }
+        dedupCnpj: { type: boolean, example: true }
+
+    PillarMarketValues:
+      type: object
+      description: >-
+        Campos persistíveis do pilar `market`. Origem: `PILLAR_FIELDS.market` e
+        `PILLAR_DEFAULTS.market` em `pillarSettings.ts` (linhas 68–72 e 108).
+      properties:
+        minRevenue: { type: string, example: 'R$ 5.000.000' }
+        autoEnrich: { type: boolean, example: true }
+        signalAlerts: { type: boolean, example: true }
+
+    PillarSalesValues:
+      type: object
+      description: >-
+        Campos persistíveis do pilar `sales`. Origem: `PILLAR_FIELDS.sales` e
+        `PILLAR_DEFAULTS.sales` em `pillarSettings.ts` (linhas 73–77 e 109).
+      properties:
+        speedToLeadMin: { type: number, minimum: 1, maximum: 1440, example: 5 }
+        requireBant: { type: boolean, example: true }
+        dailyTouchesLimit: { type: number, minimum: 1, maximum: 1000, example: 40 }
+
+    PillarPerformanceValues:
+      type: object
+      description: >-
+        Campos persistíveis do pilar `performance`. Origem: `PILLAR_FIELDS.performance`
+        e `PILLAR_DEFAULTS.performance` em `pillarSettings.ts` (linhas 78–82 e 110).
+      properties:
+        benchmarkRate: { type: number, minimum: 0, maximum: 100, example: 18.5 }
+        repScoreActive: { type: boolean, example: true }
+        anomalyAlerts: { type: boolean, example: true }
+
+    PillarPredictabilityValues:
+      type: object
+      description: >-
+        Campos persistíveis do pilar `predictability`. Origem:
+        `PILLAR_FIELDS.predictability` e `PILLAR_DEFAULTS.predictability` em
+        `pillarSettings.ts` (linhas 83–87 e 111).
+      properties:
+        modelType:
+          type: string
+          enum: [historico, manual]
+          example: historico
+        freezeDay: { type: number, minimum: 1, maximum: 28, example: 25 }
+        confidenceFactor: { type: number, minimum: 0, maximum: 100, example: 85 }
+
+    PillarAiValues:
+      type: object
+      description: >-
+        Campos persistíveis do pilar `ai`. Origem: `PILLAR_FIELDS.ai` e
+        `PILLAR_DEFAULTS.ai` em `pillarSettings.ts` (linhas 88–92 e 112).
+      properties:
+        model: { type: string, example: 'Claude 3.5 Sonnet' }
+        temperature: { type: number, minimum: 0, maximum: 2, example: 0.3 }
+        piiMasking: { type: boolean, example: true }
+
+    PillarAutomationValues:
+      type: object
+      description: >-
+        Campos persistíveis do pilar `automation`. Origem: `PILLAR_FIELDS.automation`
+        e `PILLAR_DEFAULTS.automation` em `pillarSettings.ts` (linhas 93–97 e 113).
+      properties:
+        biDirectional: { type: boolean, example: true }
+        syncIntervalMin: { type: number, minimum: 1, maximum: 1440, example: 5 }
+        retryCount: { type: number, minimum: 0, maximum: 10, example: 3 }
+
+    PillarEngagementValues:
+      type: object
+      description: >-
+        Campos persistíveis do pilar `engagement`. Origem: `PILLAR_FIELDS.engagement`
+        e `PILLAR_DEFAULTS.engagement` em `pillarSettings.ts` (linhas 98–102 e 114).
+      properties:
+        clickToCall: { type: boolean, example: true }
+        recordCalls: { type: boolean, example: true }
+        workingHoursOnly: { type: boolean, example: true }
+
+    PillarSettingsValues:
+      description: >-
+        `values` de um pilar. União dos oito mapas de `PILLAR_FIELDS`. O objeto
+        concreto depende do `{pillar}` do path. No GET é o conjunto completo
+        (defaults + persistido, `mergePillarValues`, `pillarSettings.ts` linhas
+        197–203). No PUT é um patch parcial.
+      oneOf:
+        - $ref: '#/components/schemas/PillarHubValues'
+        - $ref: '#/components/schemas/PillarMarketValues'
+        - $ref: '#/components/schemas/PillarSalesValues'
+        - $ref: '#/components/schemas/PillarPerformanceValues'
+        - $ref: '#/components/schemas/PillarPredictabilityValues'
+        - $ref: '#/components/schemas/PillarAiValues'
+        - $ref: '#/components/schemas/PillarAutomationValues'
+        - $ref: '#/components/schemas/PillarEngagementValues'
+
+    PillarSettingsView:
+      type: object
+      description: >-
+        Visão devolvida por GET e PUT. Origem: interface `PillarSettingsView` em
+        `src/features/settings/services/pillarSettings.service.ts` (linhas 32–39),
+        espelhada no cliente em `src/features/settings/pillarSettings.api.ts`
+        (linhas 10–16).
+      required: [pillar, values, configured, updatedAt]
+      properties:
+        pillar: { $ref: '#/components/schemas/PillarSlug' }
+        values: { $ref: '#/components/schemas/PillarSettingsValues' }
+        configured:
+          type: boolean
+          description: true quando a organização já gravou alguma configuração deste pilar
+        updatedAt:
+          type: string
+          nullable: true
+          format: date-time
+          description: >-
+            ISO-8601 (`new Date().toISOString()` no PUT,
+            `pillarSettings.service.ts` linha 85) ou `null` quando ainda não
+            configurado.
+
+    PillarSettingsEnvelope:
+      type: object
+      description: >-
+        Envelope `{ success, data }` emitido por `handle` em
+        `pillarSettings.routes.ts` (linhas 27–31).
+      required: [success, data]
+      properties:
+        success: { type: boolean, example: true }
+        data: { $ref: '#/components/schemas/PillarSettingsView' }
+
+    PillarSettingsUpdateRequest:
+      type: object
+      description: >-
+        Corpo do PUT. Origem: leitura de `(req.body as { values?: unknown })?.values`
+        em `pillarSettings.routes.ts` (linhas 66–71) e validação em
+        `validatePillarPatch` (`pillarSettings.ts`, linhas 136–195).
+      properties:
+        values:
+          $ref: '#/components/schemas/PillarSettingsValues'
 
   /api/organization/modules:
     get:
