@@ -3,7 +3,7 @@
 De: 00 — Coordenador
 Para: 01 (endpoint/schema se preciso) + 02 (UI)
 Onda: F1 (pós-navegação)
-Status: em-andamento
+Status: em-andamento (implementado; aguardando consumidores, e2e do Agente 08 e revisão 24)
 Prioridade: alto
 Referência: `docs/architecture/MATRIZ-FUNCIONAL-MODULOS.md` §3.2, §6
 
@@ -38,3 +38,20 @@ apenas `useState` local — **nenhuma chamada a API**: Salvar não persiste.
 ## Fora de escopo
 
 - Refatoração dos 49 hotspots; navegação modular (homologada).
+
+## Resolução (executor F1)
+
+- Contrato criado: `GET/PUT /api/settings/pillars/:pillar` montado em
+  `src/bootstrap/routes.ts` (authenticateToken + requireTenant; PUT exige
+  ADMIN via requireRole). Persistência em `Setting` por org
+  (`key = settings.pilar.<slug>`, value JSON `{version, values, updatedByUserId,
+  updatedAt}`) via helpers `findSetting`/`upsertSetting` — sem mudança de schema.
+- Novos arquivos: `src/features/settings/domain/pillarSettings.ts`,
+  `services/pillarSettings.service.ts`, `infrastructure/PillarSettingsSettingRepository.ts`,
+  `routes/pillarSettings.routes.ts`, `pillarSettings.api.ts` (cliente).
+- `PillarSettingsPlaceholder.tsx` agora carrega/salva de verdade na aba
+  "Ferramentas & Regras"; abas Permissões/Gatilhos/Integrações seguem
+  placeholders visuais (aviso honesto mantido) — sem contrato de backend.
+- Gates: `npx tsc --noEmit` ✅, `biome lint` ✅, vitest settings ✅ (16 testes).
+- Pendências para outros donos: teste e2e (reload → valor persistido) é do 08;
+  `src/bootstrap/routes.ts` foi editado (arquivo compartilhado — sinalizar ao 00/24).
