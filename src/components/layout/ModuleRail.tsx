@@ -4,11 +4,7 @@ import { useAuth } from '../../contexts/AuthContext.js';
 import { hasRequiredRole } from '../../lib/auth/authorization.js';
 import { SoundFX } from '../../lib/soundEffects.js';
 import { BirthHubLogo } from '../brand/BirthHubLogo.js';
-import {
-  getActiveModuleId,
-  getRailModules,
-  type ProductModule,
-} from './moduleRegistry.js';
+import { getActiveModuleId, getRailModules, type ProductModule } from './moduleRegistry.js';
 
 interface ModuleRailProps {
   /** Painel contextual recolhido — rail ganha o botão de reabrir. */
@@ -61,8 +57,7 @@ export function ModuleRail({ panelCollapsed, onTogglePanel }: ModuleRailProps) {
   const activeModuleId = getActiveModuleId(pathname);
   const isHub = activeModuleId === 'hub';
 
-  const { currentUser, isAdmin, canAccessCommercialIntelligence, canAccessCopilotoIa } =
-    useAuth();
+  const { currentUser, isAdmin, canAccessCommercialIntelligence, canAccessCopilotoIa } = useAuth();
   const canManageOperations =
     !!currentUser && hasRequiredRole(currentUser.role, ['ADMIN', 'GESTOR']);
 
@@ -169,7 +164,9 @@ export function ModuleRail({ panelCollapsed, onTogglePanel }: ModuleRailProps) {
         type="button"
         onClick={onTogglePanel}
         title={panelCollapsed ? 'Expandir navegação do módulo' : 'Recolher navegação do módulo'}
-        aria-label={panelCollapsed ? 'Expandir navegação do módulo' : 'Recolher navegação do módulo'}
+        aria-label={
+          panelCollapsed ? 'Expandir navegação do módulo' : 'Recolher navegação do módulo'
+        }
         aria-expanded={!panelCollapsed}
         data-testid="module-rail-toggle-panel"
         className={RAIL_BUTTON}
@@ -214,4 +211,3 @@ function PanelToggleIcon({ collapsed }: { collapsed: boolean }) {
     </svg>
   );
 }
-

@@ -188,8 +188,7 @@ router.get(
         return;
       }
 
-      const requestedMissionId =
-        rawId === 'default' ? 'default' : rawId.replace(/^mission-/, '');
+      const requestedMissionId = rawId === 'default' ? 'default' : rawId.replace(/^mission-/, '');
 
       const trace = await getCommercialMissionTrace({
         db: prisma,

@@ -19,14 +19,16 @@ import type { CharacterDefinition, CharacterLayer } from './characterCatalog.sha
 import { PILLAR_CHARACTERS } from './characterCatalogPillars.js';
 import { AGENT_CHARACTERS } from './characterCatalogAgents.js';
 
-export type { CharacterDefinition, CharacterLayer, CharacterPalette, CharacterState } from './characterCatalog.shared.js';
+export type {
+  CharacterDefinition,
+  CharacterLayer,
+  CharacterPalette,
+  CharacterState,
+} from './characterCatalog.shared.js';
 export { CHARACTER_STATES } from './characterCatalog.shared.js';
 
 /** Catálogo completo — 29 personagens (9 pilares + 20 agentes/canais/orquestração). */
-export const CHARACTER_CATALOG: CharacterDefinition[] = [
-  ...PILLAR_CHARACTERS,
-  ...AGENT_CHARACTERS,
-];
+export const CHARACTER_CATALOG: CharacterDefinition[] = [...PILLAR_CHARACTERS, ...AGENT_CHARACTERS];
 
 /* ------------------------------------------------------------------ *
  *  Índices e helpers declarativos

@@ -86,7 +86,9 @@ html:not(.dark) .b360-urgency-badge {
   text-decoration: none;
   cursor: pointer;
   border: none;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   white-space: nowrap;
 }
 
@@ -119,7 +121,9 @@ html:not(.dark) .b360-urgency-badge {
   border: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(10px);
   text-align: center;
-  transition: transform 0.25s ease, border-color 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease;
 }
 
 html:not(.dark) .b360-metric-card {
@@ -300,7 +304,9 @@ html:not(.dark) .b360-seal-item {
   border-radius: 28px;
   background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(10, 16, 30, 0.95) 100%);
   border: 1px solid rgba(0, 212, 255, 0.25);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 212, 255, 0.08);
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(0, 212, 255, 0.08);
   backdrop-filter: blur(20px);
 }
 
@@ -429,7 +435,9 @@ html:not(.dark) .b360-chip-btn.active {
   border: 1px solid rgba(0, 212, 255, 0.4);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 212, 255, 0.2);
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(0, 212, 255, 0.2);
   animation: b360FadeUp 0.3s ease-out;
 }
 

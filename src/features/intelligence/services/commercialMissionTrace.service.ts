@@ -187,7 +187,9 @@ function toEvidenceTrace(raw: unknown): MissionHandoffEvidenceTrace[] {
   });
 }
 
-function handoffEffectiveStatus(row: Pick<HandoffRow, 'status' | 'expiresAt'>): MissionHandoffTraceStatus {
+function handoffEffectiveStatus(
+  row: Pick<HandoffRow, 'status' | 'expiresAt'>,
+): MissionHandoffTraceStatus {
   const pending: MissionHandoffTraceStatus[] = ['CREATED', 'AUTHORIZING', 'QUEUED'];
   if (pending.includes(row.status) && row.expiresAt && row.expiresAt.getTime() <= Date.now()) {
     return 'EXPIRED';
@@ -226,7 +228,9 @@ function toHandoffTrace(row: HandoffRow): MissionHandoffTrace {
   };
 }
 
-function nodeStatusFromExecution(status: MissionAgentExecutionTrace['status']): AgentCenterNodeStatus {
+function nodeStatusFromExecution(
+  status: MissionAgentExecutionTrace['status'],
+): AgentCenterNodeStatus {
   switch (status) {
     case 'SUCCEEDED':
       return 'COMPLETED';
@@ -305,7 +309,8 @@ function classifyNode(
   node: AgentCenterTraceNode,
   domains: Map<string, string | null>,
 ): AgentCenterDirector {
-  return classifyAgentFromCatalog(node.agentCode, domains.get(node.agentCode) ?? undefined).director;
+  return classifyAgentFromCatalog(node.agentCode, domains.get(node.agentCode) ?? undefined)
+    .director;
 }
 
 function aggregateDirectorStatus(nodes: AgentCenterTraceNode[]): AgentCenterDirectorStatus {
@@ -522,10 +527,7 @@ export async function getCommercialMissionTrace(input: {
     leads
       .map(
         (lead) =>
-          lead.company?.tradeName ||
-          lead.company?.legalName ||
-          lead.contact?.name ||
-          lead.title,
+          lead.company?.tradeName || lead.company?.legalName || lead.contact?.name || lead.title,
       )
       .find((name): name is string => typeof name === 'string' && name.length > 0) ??
     'Conta não identificada';

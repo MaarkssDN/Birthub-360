@@ -156,7 +156,12 @@ interface CopilotoDockPanelProps {
 
 const DOCK_WIDTH = 440;
 
-function CopilotoDockPanel({ open, onClose, leadId, dockedBesideChatbook }: CopilotoDockPanelProps) {
+function CopilotoDockPanel({
+  open,
+  onClose,
+  leadId,
+  dockedBesideChatbook,
+}: CopilotoDockPanelProps) {
   const closeRef = useRef<HTMLButtonElement>(null);
 
   // Painel não-modal: Escape fecha; foco vai para o botão fechar ao abrir.
@@ -227,7 +232,14 @@ interface AssistantButtonProps {
   accent: 'cyan' | 'iris';
 }
 
-function AssistantButton({ label, description, open, onClick, testId, accent }: AssistantButtonProps) {
+function AssistantButton({
+  label,
+  description,
+  open,
+  onClick,
+  testId,
+  accent,
+}: AssistantButtonProps) {
   const activeRing =
     accent === 'iris'
       ? 'border-[#8B7DFF]/60 shadow-[0_0_18px_rgba(139,125,255,0.35)]'

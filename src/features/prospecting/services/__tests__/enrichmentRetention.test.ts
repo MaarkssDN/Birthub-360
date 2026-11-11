@@ -179,8 +179,6 @@ describe('enrichCompany — gatilho do expurgo', () => {
     expect(result.cached).toBe(true);
     expect(repo.updateCompany).not.toHaveBeenCalled();
     expect(repo.deleteEnrichmentLogsCreatedBefore).toHaveBeenCalledTimes(1);
-    expect(repo.deleteEnrichmentLogsCreatedBefore).toHaveBeenCalledWith(
-      expect.any(Date) as Date,
-    );
+    expect(repo.deleteEnrichmentLogsCreatedBefore).toHaveBeenCalledWith(expect.any(Date) as Date);
   });
 });
