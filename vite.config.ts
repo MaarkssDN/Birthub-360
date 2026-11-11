@@ -202,6 +202,15 @@ export default defineConfig(() => {
             if (normalizedId.includes('/embla-carousel')) {
               return 'vendor-carousel';
             }
+            // Three.js + React Three Fiber (~1MB) — biblioteca 3D pesada que só
+            // carrega sob demanda; isolar em chunk próprio evita que ela divida
+            // destino com vendors de UI.
+            if (
+              normalizedId.includes('/three/') ||
+              normalizedId.includes('/@react-three/')
+            ) {
+              return 'vendor-3d';
+            }
             return undefined;
           },
         },
