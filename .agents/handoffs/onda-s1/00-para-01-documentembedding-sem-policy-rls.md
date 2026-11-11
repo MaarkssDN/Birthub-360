@@ -27,3 +27,23 @@ Nova migration (Agente 01) com `CREATE POLICY` para `"DocumentEmbedding"` seguin
 
 ## Contexto adicional
 Testes de integração (Postgres :5434) não puderam rodar localmente: infra desligada.
+
+## Resolução
+
+A policy `tenant_isolation` já estava na main, na migration
+`20261110120000_document_embedding_rls_policy` (`USING ("tenantId" = current_setting('app.current_tenant_id', true))`).
+Nenhuma migration nova foi necessária (e a migration já aplicada não foi alterada).
+
+O que faltava — e este PR adiciona — é o teste de integração
+`tests/integration/document-embedding-rls.test.ts`, no padrão de `ailog-rls.test.ts`:
+
+- tenant A lê o próprio embedding e **não** lê o do tenant B (nem por `findMany` nem por `findUnique` no id);
+- INSERT de A com `tenantId` de B é rejeitado e nada é persistido;
+- UPDATE e DELETE de A sobre o embedding de B são rejeitados; o registro de B permanece intacto;
+- tenant A consegue atualizar o próprio embedding.
+
+`DocumentEmbedding` usa `tenantId` (não `organizationId`) e não está em `TENANT_INJECTED_MODELS`:
+o isolamento observado só pode vir da policy RLS do Postgres.
+
+Teste de cobertura estática `tests/unit/db/rls-coverage.test.ts` deve permanecer verde (policy já versionada).
+Testes de integração com Postgres não rodaram neste ambiente (`docker: command not found`; portas 5434/5432 fechadas).
