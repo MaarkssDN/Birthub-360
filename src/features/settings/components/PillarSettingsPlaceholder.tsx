@@ -81,61 +81,62 @@ export function PillarSettingsPlaceholder({ pillarName }: PillarSettingsProps) {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<string | null>(null);
 
-  const applyValues = useCallback((values: Record<string, unknown>) => {
-    const num = (k: string, fallback: number) =>
-      typeof values[k] === 'number' ? (values[k] as number) : fallback;
-    const bool = (k: string, fallback: boolean) =>
-      typeof values[k] === 'boolean' ? (values[k] as boolean) : fallback;
-    const str = (k: string, fallback: string) =>
-      typeof values[k] === 'string' ? (values[k] as string) : fallback;
+  const applyValues = useCallback(
+    (values: Record<string, unknown>) => {
+      const num = (k: string, fallback: number) =>
+        typeof values[k] === 'number' ? (values[k] as number) : fallback;
+      const bool = (k: string, fallback: boolean) =>
+        typeof values[k] === 'boolean' ? (values[k] as boolean) : fallback;
+      const str = (k: string, fallback: string) =>
+        typeof values[k] === 'string' ? (values[k] as string) : fallback;
 
-    switch (pillarName) {
-      case 'Hub Comercial':
-        setHubStagnationDays(num('stagnationDays', 14));
-        setHubRequireLossReason(bool('requireLossReason', true));
-        setHubDedupCnpj(bool('dedupCnpj', true));
-        break;
-      case 'Inteligência de Mercado':
-        setMarketMinRevenue(str('minRevenue', 'R$ 5.000.000'));
-        setMarketAutoEnrich(bool('autoEnrich', true));
-        setMarketSignalAlerts(bool('signalAlerts', true));
-        break;
-      case 'Orquestração de Vendas':
-        setSalesSpeedToLead(num('speedToLeadMin', 5));
-        setSalesRequireBant(bool('requireBant', true));
-        setSalesDailyTouchesLimit(num('dailyTouchesLimit', 40));
-        break;
-      case 'Performance Comercial':
-        setPerfBenchmarkRate(num('benchmarkRate', 18.5));
-        setPerfRepScoreActive(bool('repScoreActive', true));
-        setPerfAnomalyAlerts(bool('anomalyAlerts', true));
-        break;
-      case 'Previsibilidade Comercial':
-        setPredModelType(
-          values.modelType === 'manual' ? 'manual' : 'historico',
-        );
-        setPredFreezeDay(num('freezeDay', 25));
-        setPredConfidenceFactor(num('confidenceFactor', 85));
-        break;
-      case 'Inteligência Artificial':
-        setAiModel(str('model', 'Claude 3.5 Sonnet'));
-        setAiTemperature(num('temperature', 0.3));
-        setAiPiiMasking(bool('piiMasking', true));
-        break;
-      case 'Automação & Conectividade':
-        setAutoBiDirectional(bool('biDirectional', true));
-        setAutoSyncInterval(num('syncIntervalMin', 5));
-        setAutoRetryCount(num('retryCount', 3));
-        break;
-      case 'Engajamento Comercial':
-        setEngClickToCall(bool('clickToCall', true));
-        setEngRecordCalls(bool('recordCalls', true));
-        setEngWorkingHoursOnly(bool('workingHoursOnly', true));
-        break;
-      default:
-        break;
-    }
-  }, [pillarName]);
+      switch (pillarName) {
+        case 'Hub Comercial':
+          setHubStagnationDays(num('stagnationDays', 14));
+          setHubRequireLossReason(bool('requireLossReason', true));
+          setHubDedupCnpj(bool('dedupCnpj', true));
+          break;
+        case 'Inteligência de Mercado':
+          setMarketMinRevenue(str('minRevenue', 'R$ 5.000.000'));
+          setMarketAutoEnrich(bool('autoEnrich', true));
+          setMarketSignalAlerts(bool('signalAlerts', true));
+          break;
+        case 'Orquestração de Vendas':
+          setSalesSpeedToLead(num('speedToLeadMin', 5));
+          setSalesRequireBant(bool('requireBant', true));
+          setSalesDailyTouchesLimit(num('dailyTouchesLimit', 40));
+          break;
+        case 'Performance Comercial':
+          setPerfBenchmarkRate(num('benchmarkRate', 18.5));
+          setPerfRepScoreActive(bool('repScoreActive', true));
+          setPerfAnomalyAlerts(bool('anomalyAlerts', true));
+          break;
+        case 'Previsibilidade Comercial':
+          setPredModelType(values.modelType === 'manual' ? 'manual' : 'historico');
+          setPredFreezeDay(num('freezeDay', 25));
+          setPredConfidenceFactor(num('confidenceFactor', 85));
+          break;
+        case 'Inteligência Artificial':
+          setAiModel(str('model', 'Claude 3.5 Sonnet'));
+          setAiTemperature(num('temperature', 0.3));
+          setAiPiiMasking(bool('piiMasking', true));
+          break;
+        case 'Automação & Conectividade':
+          setAutoBiDirectional(bool('biDirectional', true));
+          setAutoSyncInterval(num('syncIntervalMin', 5));
+          setAutoRetryCount(num('retryCount', 3));
+          break;
+        case 'Engajamento Comercial':
+          setEngClickToCall(bool('clickToCall', true));
+          setEngRecordCalls(bool('recordCalls', true));
+          setEngWorkingHoursOnly(bool('workingHoursOnly', true));
+          break;
+        default:
+          break;
+      }
+    },
+    [pillarName],
+  );
 
   const collectValues = (): Record<string, unknown> | null => {
     switch (pillarName) {
@@ -231,9 +232,7 @@ export function PillarSettingsPlaceholder({ pillarName }: PillarSettingsProps) {
       setSavedAt(view.updatedAt);
       setSaveState('saved');
     } catch (err: unknown) {
-      setSaveError(
-        err instanceof Error ? err.message : 'Falha ao salvar configurações.',
-      );
+      setSaveError(err instanceof Error ? err.message : 'Falha ao salvar configurações.');
       setSaveState('error');
     }
   };
@@ -1038,10 +1037,9 @@ export function PillarSettingsPlaceholder({ pillarName }: PillarSettingsProps) {
                     Preferências persistidas — aplicação em integração
                   </p>
                   <p className="text-xs text-[var(--ink-2)] mt-1">
-                    Os valores desta aba são <strong>salvos no servidor</strong>, mas a
-                    aplicação efetiva nas rotinas dos módulos consumidores ainda está em
-                    integração. Trate-os como preferências registradas, não como regras já
-                    em enforcement.
+                    Os valores desta aba são <strong>salvos no servidor</strong>, mas a aplicação
+                    efetiva nas rotinas dos módulos consumidores ainda está em integração. Trate-os
+                    como preferências registradas, não como regras já em enforcement.
                   </p>
                 </div>
               </div>

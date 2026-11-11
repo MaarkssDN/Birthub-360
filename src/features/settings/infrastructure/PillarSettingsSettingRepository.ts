@@ -17,11 +17,7 @@ import {
 
 export interface PillarSettingsRepository {
   load(organizationId: string, slug: PillarSlug): Promise<PillarSettingsStoredState | null>;
-  save(
-    organizationId: string,
-    slug: PillarSlug,
-    state: PillarSettingsStoredState,
-  ): Promise<void>;
+  save(organizationId: string, slug: PillarSlug, state: PillarSettingsStoredState): Promise<void>;
 }
 
 function parseStoredState(value: unknown): PillarSettingsStoredState | null {

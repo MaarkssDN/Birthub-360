@@ -9,10 +9,7 @@ import { Router, type NextFunction, type Request, type Response } from 'express'
 import type { AuthRequest } from '../../../shared/middlewares/authenticateToken.js';
 import { requireRole } from '../../../shared/middlewares/requireRole.js';
 import { routeParam } from '../../../shared/http/routeParams.js';
-import {
-  isPillarSlug,
-  PillarSettingsValidationError,
-} from '../domain/pillarSettings.js';
+import { isPillarSlug, PillarSettingsValidationError } from '../domain/pillarSettings.js';
 import {
   PillarSettingsServiceError,
   pillarSettingsService,

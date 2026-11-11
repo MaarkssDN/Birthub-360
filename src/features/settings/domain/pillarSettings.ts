@@ -133,10 +133,7 @@ export class PillarSettingsValidationError extends Error {
  * conhecidos com tipos corretos. Lança PillarSettingsValidationError (400) em
  * chave desconhecida ou tipo/faixa inválidos.
  */
-export function validatePillarPatch(
-  slug: PillarSlug,
-  patch: unknown,
-): Record<string, unknown> {
+export function validatePillarPatch(slug: PillarSlug, patch: unknown): Record<string, unknown> {
   if (!patch || typeof patch !== 'object' || Array.isArray(patch)) {
     throw new PillarSettingsValidationError('Campo "values" deve ser um objeto.');
   }
@@ -145,9 +142,7 @@ export function validatePillarPatch(
   for (const [key, raw] of Object.entries(patch as Record<string, unknown>)) {
     const spec = fields[key];
     if (!spec) {
-      throw new PillarSettingsValidationError(
-        `Campo desconhecido para o pilar "${slug}": ${key}`,
-      );
+      throw new PillarSettingsValidationError(`Campo desconhecido para o pilar "${slug}": ${key}`);
     }
     switch (spec.type) {
       case 'boolean':
@@ -161,14 +156,10 @@ export function validatePillarPatch(
           throw new PillarSettingsValidationError(`Campo "${key}" deve ser numérico.`);
         }
         if (spec.min !== undefined && raw < spec.min) {
-          throw new PillarSettingsValidationError(
-            `Campo "${key}" deve ser >= ${spec.min}.`,
-          );
+          throw new PillarSettingsValidationError(`Campo "${key}" deve ser >= ${spec.min}.`);
         }
         if (spec.max !== undefined && raw > spec.max) {
-          throw new PillarSettingsValidationError(
-            `Campo "${key}" deve ser <= ${spec.max}.`,
-          );
+          throw new PillarSettingsValidationError(`Campo "${key}" deve ser <= ${spec.max}.`);
         }
         sanitized[key] = raw;
         break;
