@@ -15,9 +15,9 @@ const buttonVariants = cva(
       variant: {
         // Padrão Executivo High-Contrast
         default:
-          'rounded-2xl bg-gradient-to-b from-[#0284c7] to-[#0369a1] dark:from-[#00b4d8] dark:to-[#0284c7] text-white shadow-[0_2px_8px_rgba(2,132,199,0.25),inset_0_1px_0_rgba(255,255,255,0.25)] hover:shadow-[0_4px_16px_rgba(2,132,199,0.35)] hover:brightness-105 border-t border-t-white/30',
+          'rounded-2xl bg-gradient-to-b from-[#0369a1] to-[#075985] dark:from-[#00b4d8] dark:to-[#0284c7] text-on-brand shadow-[0_2px_8px_rgba(2,132,199,0.25),inset_0_1px_0_rgba(255,255,255,0.25)] hover:shadow-[0_4px_16px_rgba(2,132,199,0.35)] hover:brightness-105 border-t border-t-white/30',
         primary:
-          'rounded-2xl bg-gradient-to-b from-[#0284c7] to-[#0369a1] dark:from-[#00b4d8] dark:to-[#0284c7] text-white shadow-[0_2px_8px_rgba(2,132,199,0.25),inset_0_1px_0_rgba(255,255,255,0.25)] hover:shadow-[0_4px_16px_rgba(2,132,199,0.35)] hover:brightness-105 border-t border-t-white/30',
+          'rounded-2xl bg-gradient-to-b from-[#0369a1] to-[#075985] dark:from-[#00b4d8] dark:to-[#0284c7] text-on-brand shadow-[0_2px_8px_rgba(2,132,199,0.25),inset_0_1px_0_rgba(255,255,255,0.25)] hover:shadow-[0_4px_16px_rgba(2,132,199,0.35)] hover:brightness-105 border-t border-t-white/30',
 
         // Acento Elétrico Lime/Chartreuse (Referência Ronas IT / Spatial UI)
         electric:

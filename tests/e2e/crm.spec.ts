@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { signUp, uniqueTestEmail, waitForAppReady } from './helpers';
+import { appNavItem, navigateViaSidebar, signUp, uniqueTestEmail, waitForAppReady } from './helpers';
 
 // Navegação principal (item TEST-002). A partir da migração pra rotas reais (src/App.tsx: <Route
 // path="/app/*"> com <Routes> aninhadas por módulo), cada item do menu lateral corresponde a uma
@@ -10,16 +10,16 @@ import { signUp, uniqueTestEmail, waitForAppReady } from './helpers';
 interface NavItemConfig {
   label: string;
   route: string;
-  testId: string;
+  navKey: 'workspace' | 'crm' | 'companies' | 'contacts' | 'activities' | 'analytics';
 }
 
 const NAV_ITEMS: NavItemConfig[] = [
-  { label: 'Meu Espaço', route: 'workspace', testId: 'sidebar-nav-workspace' },
-  { label: 'Pipeline CRM', route: 'crm', testId: 'sidebar-nav-revenue_tree' },
-  { label: 'Empresas', route: 'companies', testId: 'sidebar-nav-companies' },
-  { label: 'Contatos & Decisores', route: 'contacts', testId: 'sidebar-nav-contacts' },
-  { label: 'Agenda', route: 'activities', testId: 'sidebar-nav-activities' },
-  { label: 'Analytics', route: 'analytics', testId: 'sidebar-nav-performance' },
+  { label: 'Meu Espaço', route: 'workspace', navKey: 'workspace' },
+  { label: 'Pipeline CRM', route: 'crm', navKey: 'crm' },
+  { label: 'Empresas', route: 'companies', navKey: 'companies' },
+  { label: 'Contatos & Decisores', route: 'contacts', navKey: 'contacts' },
+  { label: 'Agenda', route: 'activities', navKey: 'activities' },
+  { label: 'Analytics', route: 'analytics', navKey: 'analytics' },
 ];
 
 test.describe('Navegação principal', () => {
@@ -32,7 +32,7 @@ test.describe('Navegação principal', () => {
     await expect(page).toHaveTitle(/Birth Hub 360|Commercial Intelligence OS/);
   });
 
-  for (const { label, route, testId } of NAV_ITEMS) {
+  for (const { label, navKey } of NAV_ITEMS) {
     test(`navega para "${label}" pela barra lateral sem erros de console`, async ({ page }) => {
       const consoleErrors: string[] = [];
       page.on('console', (msg) => {
@@ -40,11 +40,9 @@ test.describe('Navegação principal', () => {
       });
       page.on('pageerror', (err) => consoleErrors.push(err.message));
 
-      // Localizador escopado na barra lateral via data-testid estável evita ambiguidades
-      // entre o grupo principal e seus subitens no menu expandido (ex.: "Meu Espaço" e "Analytics")
-      const navButton = page.locator('aside').getByTestId(testId);
-      await navButton.click();
-      await expect(page).toHaveURL(new RegExp(`/app/${route}$`));
+      // A navegação modular exige selecionar o módulo no rail antes do item do painel.
+      await navigateViaSidebar(page, navKey);
+      const navButton = appNavItem(page, navKey);
       // Espera o skeleton de carregamento (lazy-loaded module) sumir antes de checar erros.
       await expect(navButton).toBeVisible();
       await waitForAppReady(page);
@@ -57,13 +55,13 @@ test.describe('Navegação principal', () => {
   }
 
   test('recarrega .../app/crm diretamente (deep-link) sem cair no dashboard', async ({ page }) => {
-    await page.getByRole('button', { name: 'Pipeline CRM' }).click();
+    await navigateViaSidebar(page, 'crm');
     await expect(page).toHaveURL(/\/app\/crm$/);
 
     await page.reload();
 
     await expect(page).toHaveURL(/\/app\/crm$/);
-    await expect(page.getByRole('button', { name: 'Pipeline CRM' })).toBeVisible();
+    await expect(appNavItem(page, 'crm')).toBeVisible();
     // O h2 fixo do CrmBoard (src/components/CrmBoard.tsx) varia com o funil — "Leads e pré-vendas"
     // por padrão (funnel='Lead', o default ao navegar por /app/crm sem prop) ou "Negócios e
     // fechamento" — nunca "Sales Cloud (Pipeline CRM)", texto que este teste checava e que não
@@ -78,7 +76,7 @@ test.describe('Navegação principal', () => {
   });
 
   test('botão Voltar do navegador retorna do CRM pro dashboard', async ({ page }) => {
-    await page.getByRole('button', { name: 'Pipeline CRM' }).click();
+    await navigateViaSidebar(page, 'crm');
     await expect(page).toHaveURL(/\/app\/crm$/);
 
     await page.goBack();

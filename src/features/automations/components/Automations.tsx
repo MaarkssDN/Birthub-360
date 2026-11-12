@@ -532,11 +532,12 @@ export function Automations() {
             }
             icon={<Cpu className="w-5 h-5" />}
             actions={
-              <div className="flex items-center gap-3">
+              <div className="flex w-full min-w-0 flex-wrap items-center gap-3 sm:w-auto">
                 {isAdmin && (
                   <Button
                     type="button"
                     variant="outline"
+                    className="h-auto min-h-9 w-full whitespace-normal sm:w-auto"
                     sound="confirm"
                     onClick={() => void runStagnationScanNow()}
                     disabled={scanningStagnation}
@@ -551,7 +552,12 @@ export function Automations() {
                   </Button>
                 )}
                 {canManage && (
-                  <Button type="button" sound="focus" onClick={() => setCreating(true)}>
+                  <Button
+                    type="button"
+                    className="w-full sm:w-auto"
+                    sound="focus"
+                    onClick={() => setCreating(true)}
+                  >
                     <Plus className="w-4 h-4 mr-2" /> Nova automação
                   </Button>
                 )}

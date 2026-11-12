@@ -420,12 +420,23 @@ html:not(.dark) .b360-chip-btn.active {
 /* 4. STICKY ACTION BAR (CTA PERMANENTE)                                      */
 /* -------------------------------------------------------------------------- */
 
+/* Empilhamento da sticky de conversão (domínio do Agente 02; ver handoff
+   01-para-02-sticky-bar-zindex.md):
+   - z-index 40 fica abaixo do modal real dos pilares (Tailwind z-50) e do
+     backdrop legado (.b360-dialog-backdrop, 100). Subir acima do
+     "voltar ao topo" (.btn-floating-top, 90) colocaria a barra de novo
+     por cima do diálogo (50 < 90) e reabriria o hang do E2E.
+   - A proteção principal do modal é `body:has([role="dialog"])` abaixo.
+   - No mobile a pílula do CTA e o botão 52px compartilham a base da tela;
+     com 40 < 90 o botão cobriria o CTA. Quando a barra está visível,
+     o "voltar ao topo" sobe (regra body:has(.b360-sticky-bar) mais abaixo)
+     para não haver sobreposição, sem alterar o z-index do diálogo. */
 .b360-sticky-bar {
   position: fixed;
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 999;
+  z-index: 40;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -445,6 +456,17 @@ html:not(.dark) .b360-sticky-bar {
   background: rgba(255, 255, 255, 0.95);
   border-color: rgba(2, 132, 199, 0.35);
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+}
+
+body:has([role="dialog"]) .b360-sticky-bar {
+  display: none;
+}
+
+/* Reserva a faixa da pílula (~20px offset + altura da barra + folga) para o
+   botão flutuante, visível nas mesmas condições (showScrollTop). Assim o
+   CTA permanece clicável no mobile mesmo com z-index 40 < 90. */
+body:has(.b360-sticky-bar) .btn-floating-top {
+  bottom: 5.5rem;
 }
 
 .b360-sticky-cta-btn {
@@ -529,4 +551,93 @@ html:not(.dark) .b360-ab-pill-dock {
     animation: none !important;
     transform: none !important;
   }
+}
+
+/* Keep foreground/background pairs together when the page changes theme. */
+.b360-adaptive-landing .b360-ai-feature-card,
+.b360-adaptive-landing .b360-pipeline-banner {
+  background: #0b1a2e;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-ai-feature-card {
+  background: #ffffff;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-ai-feature-card h3,
+html:not(.dark) .b360-adaptive-landing .b360-eyebrow,
+html:not(.dark) .b360-adaptive-landing .b360-lead-card h3 {
+  color: #0369a1 !important;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-ai-feature-card:nth-child(2) h3 {
+  color: #be185d !important;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-ai-feature-card:nth-child(3) h3 {
+  color: #92400e !important;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-ai-feature-card:nth-child(4) h3 {
+  color: #6d28d9 !important;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-lead-card :is(label, strong, span, p) {
+  color: #335577 !important;
+}
+
+.b360-adaptive-landing .b360-lead-availability {
+  background: #083344;
+  color: #a5f3fc;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-lead-availability {
+  background: #ecfeff;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-footer p {
+  color: #a9cce6 !important;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-footer-wordmark strong {
+  color: #ff69b4 !important;
+}
+
+.b360-adaptive-landing .b360-footer .b360-ab-toggle-btn {
+  color: #475569;
+}
+
+.b360-adaptive-landing .b360-footer .b360-ab-toggle-btn.active {
+  color: #082f49;
+}
+
+html.dark .b360-adaptive-landing .b360-footer .b360-ab-pill-dock {
+  background: #0f172a;
+}
+
+html.dark .b360-adaptive-landing .b360-footer .b360-ab-toggle-btn:not(.active) {
+  color: #a9cce6;
+}
+
+.b360-adaptive-landing .b360-lead-success {
+  background: #071322;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-lead-success {
+  background: #f0fdf4;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-lead-success h3 {
+  color: #047857 !important;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-lead-success :is(a, button) {
+  color: #0369a1;
+}
+
+html:not(.dark) .b360-adaptive-landing :is(.b360-final-cta, .b360-supervisor) .b360-eyebrow {
+  color: #67e8f9 !important;
+}
+
+html:not(.dark) .b360-adaptive-landing :is(.b360-final-cta, .b360-supervisor) p {
+  color: #b9cde6 !important;
 }

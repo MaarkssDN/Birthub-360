@@ -205,3 +205,95 @@ export async function waitForAppReady(page: Page) {
   await page.waitForLoadState('domcontentloaded');
   await expect(page.getByTestId('page-fallback')).toHaveCount(0, { timeout: 30_000 });
 }
+
+/**
+ * Navegação pela UI modular (rail de módulos + painel contextual).
+ *
+ * Desde `feat(nav): navegacao modular` a sidebar plana sumiu: destinos como
+ * Pipeline, Cadências e Integrações só aparecem depois de selecionar o módulo
+ * no rail. Specs que ainda clicam `sidebar-nav-*` ou o rótulo antigo
+ * ("Pipeline CRM", /^Cadência/) esperam o timeout inteiro do teste (60s) e,
+ * com `retries: 2` no CI, esgotam o job de 2h no passo de E2E.
+ */
+const NAV_TIMEOUT_MS = 15_000;
+
+export const APP_NAV = {
+  workspace: {
+    railTestId: 'module-rail-hub',
+    itemTestId: 'module-nav-hub-workspace',
+    url: /\/app\/workspace$/,
+  },
+  crm: {
+    railTestId: 'module-rail-p01',
+    itemTestId: 'module-nav-p01-crm',
+    url: /\/app\/crm$/,
+  },
+  companies: {
+    railTestId: 'module-rail-p01',
+    itemTestId: 'module-nav-p01-companies',
+    url: /\/app\/companies$/,
+  },
+  contacts: {
+    railTestId: 'module-rail-p01',
+    itemTestId: 'module-nav-p01-contacts',
+    url: /\/app\/contacts$/,
+  },
+  activities: {
+    railTestId: 'module-rail-p03',
+    itemTestId: 'module-nav-p03-activities',
+    url: /\/app\/activities$/,
+  },
+  analytics: {
+    railTestId: 'module-rail-p04',
+    itemTestId: 'module-nav-p04-analytics',
+    url: /\/app\/analytics$/,
+  },
+  cadence: {
+    railTestId: 'module-rail-p03',
+    itemTestId: 'module-nav-p03-cadence',
+    url: /\/app\/cadence$/,
+  },
+  propostas: {
+    railTestId: 'module-rail-p01',
+    itemTestId: 'module-nav-p01-propostas',
+    url: /\/app\/propostas/,
+  },
+  integrations: {
+    railTestId: 'module-rail-p07',
+    itemTestId: 'module-nav-p07-integrations',
+    url: /\/app\/integrations/,
+  },
+} as const;
+
+export type AppNavKey = keyof typeof APP_NAV;
+
+export function appNavItem(page: Page, target: AppNavKey) {
+  return page.getByTestId(APP_NAV[target].itemTestId);
+}
+
+/**
+ * Limites — follow-up, não tratados aqui (não são a causa do hang de 2h):
+ * - Não reabre o painel colapsado. O clique no rail só navega para `module.home`;
+ *   o toggle é `module-rail-toggle-panel` / `localStorage @birthhub:module-panel-collapsed`.
+ *   Com o painel fechado o item não aparece e este helper falha em 15s.
+ * - Não funciona abaixo de 1024px: o rail é `hidden lg:flex` (`Sidebar.tsx`).
+ *   Os 7 specs deste job usam Desktop Chrome 1280×720; os E2E mobile já navegam
+ *   com `page.goto`, não com este helper.
+ */
+export async function navigateViaSidebar(page: Page, target: AppNavKey): Promise<void> {
+  const dest = APP_NAV[target];
+  const rail = page.getByTestId(dest.railTestId);
+  await expect(rail).toBeVisible({ timeout: NAV_TIMEOUT_MS });
+
+  const item = page.getByTestId(dest.itemTestId);
+  if (!(await item.isVisible().catch(() => false))) {
+    await rail.click();
+    const reachedDestination = await page
+      .waitForURL(dest.url, { timeout: 1_000 })
+      .then(() => true, () => false);
+    if (reachedDestination) return;
+    await expect(item).toBeVisible({ timeout: NAV_TIMEOUT_MS });
+  }
+  await item.click();
+  await expect(page).toHaveURL(dest.url, { timeout: NAV_TIMEOUT_MS });
+}
