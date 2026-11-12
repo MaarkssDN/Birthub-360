@@ -8,8 +8,23 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import client from 'prom-client';
 
+// RN-MKT-03: getCostPerCallUsd/DEFAULT_PROVIDER_COST_PER_CALL_USD migraram para providerBudget.ts
+// (o débito atômico precisa deles lá, sem ciclo de import) — providerCostMetrics só reexporta.
+// O mock precisa prover as mesmas exportações que o módulo real, senão o import/reexport quebra.
 vi.mock('../../../../../src/features/prospecting/services/providerBudget.js', () => ({
   recordProspectingProviderSpend: vi.fn(),
+  getCostPerCallUsd: vi.fn(
+    (provider: 'apollo' | 'hunter', env: NodeJS.ProcessEnv = {}) => {
+      const raw =
+        provider === 'apollo'
+          ? env.PROSPECTING_APOLLO_COST_PER_CALL_USD
+          : env.PROSPECTING_HUNTER_COST_PER_CALL_USD;
+      const parsed = raw != null ? Number(raw) : NaN;
+      if (Number.isFinite(parsed) && parsed >= 0) return parsed;
+      return provider === 'apollo' ? 0.01 : 0.02;
+    },
+  ),
+  DEFAULT_PROVIDER_COST_PER_CALL_USD: { apollo: 0.01, hunter: 0.02 },
 }));
 
 describe('src/features/prospecting/services/providerCostMetrics.ts', () => {

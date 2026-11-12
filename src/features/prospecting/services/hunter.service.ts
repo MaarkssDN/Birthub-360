@@ -1,7 +1,7 @@
 import { getPaidProspectingKey } from '../../../config/prospecting-integrations.js';
 import { fetchWithProviderRetry } from '../../../lib/enrichment/providerFetch.js';
 import { logger } from '../../../lib/logger.js';
-import { assertProspectingBudgetNotExceeded } from './providerBudget.js';
+import { consumeProspectingProviderCredit } from './providerBudget.js';
 import { buildProviderCacheKey, withProviderCache } from './providerCache.js';
 import { recordProviderCallCost } from './providerCostMetrics.js';
 import { checkProviderRateLimit } from './providerRateLimit.js';
@@ -75,7 +75,7 @@ async function findEmailViaHunterUncached(
   // DEC-09: bloqueio real de orçamento por organização — lança (não retorna um `{error}` suave
   // como o rate limit acima) de propósito, para propagar como erro HTTP real ao chamador em vez
   // de virar silenciosamente "sem resultado".
-  await assertProspectingBudgetNotExceeded('hunter');
+  await consumeProspectingProviderCredit('hunter');
 
   try {
     const params = new URLSearchParams({
@@ -146,7 +146,7 @@ async function findPeopleViaDomainSearchUncached(
   if (!rateLimit.allowed) return { contacts: [], error: rateLimit.message };
 
   // DEC-09: ver comentário equivalente em findEmailViaHunterUncached acima.
-  await assertProspectingBudgetNotExceeded('hunter');
+  await consumeProspectingProviderCredit('hunter');
 
   try {
     const params = new URLSearchParams({
