@@ -41,3 +41,17 @@ criptografada), WhatsAppMessage, ScheduledMeeting no MOD-08.
 ## Fora de escopo
 
 - Reescrever voice-hub; mexer em Capacitor/M10.
+
+## Resolução (Agente 12 — 2026-11-12, branch `agente/12-voicehub-reactivacao`)
+
+Auditoria concluída — parecer **NO-GO** para abrir o gate. Bloqueio raiz:
+voice-hub referencia models inexistentes no schema canônico (Tenant,
+Membership, Role, Session do Better Auth vs. AgentSession, User.companyName,
+TenantWebhookEndpoint vs. OrganizationWebhookEndpoint, Notification.message/
+isRead) e tem JWT/registro de tenants paralelos ao Better Auth. `/api/outbound`
+expõe banco legado sem auth em `campaigns.routes.ts` (handoff ao 05);
+`/api/dialer-3cx` é app Express sem auth/tenant (handoff ao 17). Decisão de
+adaptadores de identidade/schema escalada ao 01. Evidências e checklist
+completo em `12-para-00-voicehub-tenancy-auditoria.md`; isolamento por tenant
+nos services sãos congelado em `src/lib/voice-hub/__tests__/tenant-isolation.test.ts`
+(36 testes verdes). Gate permanece fechado.
