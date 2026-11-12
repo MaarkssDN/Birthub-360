@@ -19,7 +19,9 @@ concurrency:
   # podem cancelar a verificação de integração um do outro, ou o estado combinado de main fica
   # sem gate verde confirmado (mesmo modo de falha do incidente da Onda 5, RLS do AILog só
   # visível no gate de integração).
-  group: ${{ github.event_name == 'pull_request' && format('central-birthhub360-release-pr-{0}', github.event.pull_request.number) || format('central-birthhub360-release-push-{0}', github.sha) }}
+  # v2 separa PRs corrigidos dos runs legados cujo application gate usava always()
+  # e podia continuar após cancelamento, mantendo o grupo anterior ocupado.
+  group: ${{ github.event_name == 'pull_request' && format('central-birthhub360-release-pr-v2-{0}', github.event.pull_request.number) || format('central-birthhub360-release-push-{0}', github.sha) }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -91,7 +93,8 @@ jobs:
     name: Central Birth Hub 360 / application gate
     runs-on: ubuntu-latest
     needs: [secret-scan, trivy-scan]
-    if: always() && needs.secret-scan.result == 'success' && needs.trivy-scan.result == 'success'
+    # Respeita cancelamento de um PR superado; o agregador build abaixo continua fail-closed.
+    if: ${{ !cancelled() && needs.secret-scan.result == 'success' && needs.trivy-scan.result == 'success' }}
     # Os runs 36785425846 e 36791581889 completaram os gates anteriores, mas expiraram em 60/90 min
     # enquanto os 100 E2E rodavam serialmente com 1 worker. O último step E2E durou 73m28s sem resumo;
     # 120 min reserva ~103 min após os ~17 min medidos antes dos E2E. Margem operacional, não prova
