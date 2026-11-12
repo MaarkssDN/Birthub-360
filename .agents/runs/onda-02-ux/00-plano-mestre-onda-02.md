@@ -67,18 +67,27 @@ A ordem prioriza defeitos funcionais reais sobre cosmética.
 | Frente | Escopo | Status |
 |---|---|---|
 | F07 | Landing360: lead capture real + claims honestos | CONCLUÍDA (commit `bff84912d`, ver handoff) |
-| F01 | Shell/tokens: auditoria Impeccable do design system | PENDENTE |
+| F01 | Shell/tokens: auditoria Impeccable do design system | PARCIAL — chrome unificado em tokens (`fadae0ded`); auditoria completa dos 30 componentes e transições entre workspaces pendente |
 | F02–F06 | Workspaces P01–P08, M09–M10 | PENDENTE |
 | F08 | Personagens/Copiloto/Chatbook + a11y/E2E | PENDENTE |
 
 ## 4. Incidente de isolamento registrado
 
-Durante a sessão, outro agente executou `git checkout` no working tree
-compartilhado (HEAD mudou de `agente/02-onda-02-ux` para
-`agente/21-w3-consent-chain-async` com arquivos de LGPD/Bitrix sujos).
-O commit da Frente 07 (`bff84912d`) foi criado sobre a branch errada por esse
-motivo. Conteúdo isolado e cherry-pickável; reportado ao Agente 00 para
-reintegração. Nenhum arquivo de outro agente foi tocado ou commitado.
+Durante a sessão, o HEAD do working tree compartilhado mudou **três vezes** por
+checkout de outros agentes (`agente/14-w3-seed-compliance` →
+`agente/02-onda-02-ux` → `agente/21-w3-consent-chain-async` →
+`agente/22-w3-e2e-db-assert`), com arquivos de LGPD/Bitrix/cadence sujos de
+frentes alheias. Os commits da Onda 02 caíram nas branches erradas por esse
+motivo:
+
+- `bff84912d` — Frente 07 (lead capture) sobre `agente/21-w3-consent-chain-async`
+- `1b3a7c84d` — docs/handoff da Frente 07, mesma branch
+- `fadae0ded` — Frente 01 (tokens do shell) sobre `agente/22-w3-e2e-db-assert`
+
+Todos os conteúdos são isolados por arquivo e cherry-pickáveis. **Recomendação
+ao Agente 00:** congelar checkouts concorrentes neste clone ou exigir worktrees
+por frente (§17 do AGENTS.md) — do contrário toda a Onda 02 continuará caindo
+em branches de saneamento alheias.
 
 ## 3. Handoffs previstos
 
