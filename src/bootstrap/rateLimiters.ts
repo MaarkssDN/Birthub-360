@@ -112,4 +112,22 @@ export function applyRateLimiters(app: Express): void {
     },
   });
   app.use('/api/bug-reports', authenticateToken, bugReportLimiter);
+
+  // Rate Limiting dedicado do formulário público de captura de lead da landing —
+  // rota sem autenticação que dispara e-mail real a cada POST, então a cota é bem
+  // mais apertada que a genérica: ninguém legítimo pede "demonstração" dezenas de
+  // vezes por hora, e cada request gera uma mensagem SMTP.
+  const leadCaptureLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => ipKeyGenerator(req.ip || 'unknown'),
+    store: redisStoreOrMemory(),
+    message: {
+      success: false,
+      error: 'Muitas solicitações enviadas. Tente novamente em 1 hora.',
+    },
+  });
+  app.use('/api/public/lead-capture', leadCaptureLimiter);
 }
