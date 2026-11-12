@@ -1,21 +1,21 @@
 import crypto from 'node:crypto';
 import {
-  hashPassword,
-  verifyPassword,
-  generateToken,
   generateRefreshToken,
-  verifyRefreshToken,
+  generateToken,
+  hashPassword,
   type TokenPayload,
+  verifyPassword,
+  verifyRefreshToken,
 } from '../lib/auth-tokens.js';
+import { getOrCreateSystemRole } from '../repositories/roleRepository.js';
+import { createTenant } from '../repositories/tenantRepository.js';
 import {
+  createMembership,
+  createUser,
+  findMembershipWithRole,
   findUserByEmail,
   findUserById,
-  createUser,
-  createMembership,
-  findMembershipWithRole,
 } from '../repositories/userRepository.js';
-import { createTenant } from '../repositories/organizationRepository.js';
-import { getOrCreateSystemRole } from '../repositories/roleRepository.js';
 
 export class AuthError extends Error {
   status: number;
