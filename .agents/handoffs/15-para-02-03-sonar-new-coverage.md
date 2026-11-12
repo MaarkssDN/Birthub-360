@@ -3,7 +3,7 @@
 De: 15 — Segurança Aplicada
 Para: 02 — Produto e UX / 03 — Design e Acessibilidade (landing e UI); demais donos citados por arquivo
 Onda: Quality Gate da main `94f95097` (período de código novo desde 2026-10-27T21:30:30Z)
-Status: aberto
+Status: aberto (parcial)
 Prioridade: alto (bloqueia `new_coverage=60,7%`, limiar 80%)
 
 ## Problema
@@ -53,4 +53,35 @@ para o dono da landing/UI.
 
 ## Resolução
 
-(preenchido pelo destinatário ao resolver)
+Parcial — lote 1 (landing), branch `agente-02/sonar-coverage-landing-1`.
+
+Testes reais (Vitest 4 + jsdom + Testing Library) para os 5 arquivos de maior
+peso da landing, **sem alterar código de produção, CSS da landing, snapshots
+Playwright, limiar do Sonar ou exclusions**. Os efeitos de canvas/rAF que o
+código desliga com `NODE_ENV === 'test'` foram exercitados stubando
+`NODE_ENV=development` só no teste, com rAF em fila e canvas mockado.
+
+Cobertura local (v8, `vitest.unit.config.ts`, mesmos 5 arquivos, suíte de
+`tests/unit/features/landing` antes/depois):
+
+| arquivo | linhas antes | linhas depois |
+|---------|-------------:|--------------:|
+| `B360DataStreamCursor.tsx` | 3,83% (10/261) | 99,23% (259/261) |
+| `Landing360Impeccable.tsx` | 0% (0/167) | 97,0% (162/167) |
+| `CinematicFX.tsx` | 26,69% (59/221) | 95,47% (211/221) |
+| `B360UnifiedPipelineFlow.tsx` | 6,81% (12/176) | 100% (176/176) |
+| `B360CinematicEngine.tsx` | 6,47% (11/170) | 100% (170/170) |
+| **conjunto** | **9,24% (92/995)** | **98,29% (978/995)** |
+
+São +886 linhas executáveis cobertas nestes arquivos. No recorte de código
+novo do Sonar esses 5 arquivos tinham **942 linhas descobertas**; a maior
+parte deve entrar no numerador de `new_coverage`.
+
+O Quality Gate da main ainda não fecha sozinho com este lote: de 60,7% para
+80% faltam ~1228 linhas novas cobertas (6835 a cobrir, 2595 descobertas).
+Este lote deve abater a maior parte das 942, restando da ordem de **300–400
+linhas** (mais o que o Sonar não creditar 1:1). Próximos lotes: settings
+(90/205, 53,7%) e o restante da landing / `src/components`.
+
+Gates locais deste lote: 66 testes da suíte de landing (inclui os 12 casos
+já existentes de `Landing360.test.tsx`), `typecheck`, `lint` e `build` ok.
