@@ -43,10 +43,11 @@ test.describe('Visual Regression', () => {
         await page.goto('/app/dashboard');
         await waitForAppReady(page);
         await waitForVisualContentReady(page);
-        await expect(page.getByText(/VOLUME EM PIPELINE/)).toBeVisible({
+        // O card usa "Volume em Pipeline" no DOM; o visual em caixa alta vem do CSS.
+        await expect(page.getByText(/Volume em Pipeline/i)).toBeVisible({
           timeout: 15_000,
         });
-        await expect(page.getByRole('button', { name: /Abrir Cockpit CRM/ })).toBeVisible({
+        await expect(page.getByRole('button', { name: /Abrir Cockpit CRM/i })).toBeVisible({
           timeout: 15_000,
         });
         await waitForVisualFonts(page);
