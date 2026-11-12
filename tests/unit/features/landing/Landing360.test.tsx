@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -173,6 +174,40 @@ describe('Landing360', () => {
     expect(topBtn).toBeInTheDocument();
     fireEvent.click(topBtn);
     expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
+  });
+
+  it('deve ocultar a sticky bar de conversão com [role="dialog"] aberto e reexibi-la ao fechar', () => {
+    // jsdom 23 aplica `:has()` em `Element.matches`, mas não na cascata de
+    // getComputedStyle — o hide real é o CSS de produção abaixo. O teste
+    // trava o seletor e exercita a condição no DOM (abrir/fechar o pilar).
+    const css = readFileSync('src/features/landing/pages/LandingConversionV5.css', 'utf8');
+    expect(css).toMatch(/\.b360-sticky-bar\s*\{[^}]*z-index:\s*40/);
+    expect(css).toMatch(
+      /body:has\(\[role="dialog"\]\)\s+\.b360-sticky-bar\s*\{[^}]*display:\s*none/,
+    );
+    expect(css).toMatch(
+      /body:has\(\.b360-sticky-bar\)\s+\.btn-floating-top\s*\{[^}]*bottom:\s*5\.5rem/,
+    );
+
+    const { container } = renderWithProviders('/', 'intro');
+
+    Object.defineProperty(window, 'scrollY', { value: 500, configurable: true });
+    fireEvent.scroll(window);
+
+    const stickyBar = container.querySelector('.b360-sticky-bar') as HTMLElement;
+    expect(stickyBar).toBeInTheDocument();
+    expect(document.body.matches(':has([role="dialog"])')).toBe(false);
+
+    fireEvent.click(screen.getByText(/Hub comercial/i));
+    expect(container.querySelector('[role="dialog"]')).toBeInTheDocument();
+    expect(document.body.matches(':has([role="dialog"])')).toBe(true);
+    // O CSS oculta; o React não desmonta a barra — ao fechar ela volta.
+    expect(stickyBar).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText(/^Fechar$/i));
+    expect(container.querySelector('[role="dialog"]')).not.toBeInTheDocument();
+    expect(document.body.matches(':has([role="dialog"])')).toBe(false);
+    expect(stickyBar).toBeInTheDocument();
   });
 
   it(
