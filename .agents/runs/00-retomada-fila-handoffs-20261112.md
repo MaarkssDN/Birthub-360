@@ -39,3 +39,10 @@
 - `git -c core.longpaths=true` para worktree add (paths longos do Postman no Windows).
 - Subagentes: commit+push+PR próprios; merge só após parecer 24.
 - Slot 01↔01A exclusivo; 16↔06/07 em `src/lib/queue/**`.
+
+## Atualização — 2026-11-12 ~21:35Z
+
+- **PR #240 (Agente 10 — rate limiting borda + runbook Docker 2375): MERGED** `9198c7cf` — CI verde + parecer 24 (`24-revisao-pr240-infra-saneamento.md`, commit `001fdc558` em `agente/24-review-pr240`). Handoff Docker 2375 permanece `em-andamento` (ação do operador no host); credenciais → Agente 15.
+- **PR #239 (W3 saneamento — crypto envelope, CORS, opt-out, FK RESTRICT, seed compliance, teardown, TAREFA-031, fix CodeQL `hasOwn`): MERGED** `956402347` — CI 100% verde; parecer 24 estendido ao HEAD (`a339dcc95` em `agente/24-review-pr239-8a775c4`). Incidente: application gate reprovou 1 teste de integração (`lgpd-tenant-key-cascade` esperava CASCADE em FlywheelApproachRecord; migração TAREFA-SANEAMENTO-014 converteu p/ RESTRICT deliberadamente) — corrigida a expectativa do teste (commit `956402347`), adendo 24 aprovado.
+- **Agente 08 despachado** (worktree `agente-08-qa`, branch `agente/08-qa-saneamento`) — slot liberado pós-merge do 08A.
+- Em execução: 01, 07, 08, 13, 18, 21, 22, 23. Pendentes: 01A, 02, 03, 04, 05, 06, 06A, 09, 11, 12, 14, 15, 17 + fila PRs #215–#232.
