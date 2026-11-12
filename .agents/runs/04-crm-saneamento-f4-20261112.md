@@ -33,3 +33,32 @@ TAREFA-SANEAMENTO-018 (BT360-DT-0024): hotspot estrutural + queries de alto cust
 
 - **Agente 24:** revisão independente do commit `6d0913107` (condição de encerramento do handoff de saneamento).
 - **Agente 00:** War Room executivo SSE e Win/Loss autopsy estatística precisam de decisão de produto antes de implementação (registrado no handoff F4).
+
+## Remediação — cobertura SonarQube (PR #243, 2026-11-12 noite)
+
+Sonar reprovou o PR com **67.9% de cobertura em código novo** (mínimo 80%). Causa: os caminhos
+novos de apresentação/rota do endpoint `bitrix-sync-health` e os novos branches dos controllers
+`Crm360Controller` (guard `!orgId`, `logger.error` nos catches) não tinham teste.
+
+**Testes adicionados (somente testes — nenhum código de produção alterado):**
+
+- `src/features/commercial-intelligence/__tests__/bitrixSyncHealthController.unit.test.ts` (novo):
+  `getBitrixSyncHealth` sucesso (delega com `organizationId`, sem filtro comercial) + falha
+  (`next(error)`, nada engolido).
+- `tests/unit/commercial-intelligence/bitrixSyncHealth.routes.test.ts` (novo): monta o router
+  REAL com `requireRole(ADMIN/GESTOR)` — GESTOR → 200 e handler invocado; SDR → 403 e handler
+  não roda. Controller stub via `container.register` (padrão de `usage.routes.test.ts`).
+- `tests/unit/features/crm360/Crm360Controller.getOverview.test.ts` (novo): catch observável —
+  payload zerado mantido + `logger.error` chamado com o erro real; caminho feliz sem fallback.
+- `tests/unit/features/crm360/Crm360Controller.deals.test.ts`: +1 teste — `getDeals` sem
+  `organizationId` retorna 200 `[]` sem chamar o use case.
+
+**Verificação local de cobertura (lcov, subset focado):** todas as linhas executáveis novas
+dos 6 arquivos alterados (`CommercialIntelligenceUseCases`, `CommercialIntelligenceController`,
+`commercialIntelligence.routes`, `PrismaCrm360Repository`, `defaultPipelineStages`,
+`Crm360Controller`) passaram de parcialmente cobertas para **100% das linhas novas
+executáveis** — a suíte completa do CI só pode igualar ou superar esse número.
+
+**Gates:** `npx tsc --noEmit` PASS; `npx biome check` nos arquivos tocados limpo
+(tests/unit/** fora do escopo do biome por config do repo); vitest focado 8 arquivos / 37
+testes verde.
