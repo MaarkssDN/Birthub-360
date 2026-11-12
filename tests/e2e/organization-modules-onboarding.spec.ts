@@ -27,11 +27,13 @@ test.describe('Onboarding de Módulos da Organização', () => {
     // 5. Após setup, deve ir para /app
     await page.waitForURL('**/app');
 
-    // 6. Verifica a Sidebar (Core Central de Comando sempre visível)
-    const aside = page.locator('aside');
-    await expect(aside).toBeVisible();
-    const commandCenter = aside.getByText(/CENTRAL DE COMANDO|COMMAND CENTER/i).first();
-    await expect(commandCenter).toBeVisible();
+    // 6. O Hub Central permanece acessível no rail e no painel contextual.
+    const rail = page.getByRole('navigation', { name: 'Módulos do Birth Hub 360°' });
+    await expect(rail).toBeVisible();
+    await expect(rail.getByTestId('module-rail-hub')).toHaveAttribute('aria-current', 'page');
+    const hubNavigation = page.getByRole('navigation', { name: 'Navegação — Hub Central' });
+    await expect(hubNavigation).toBeVisible();
+    await expect(hubNavigation.getByRole('button', { name: 'Visão Geral', exact: true })).toBeVisible();
 
     // 7. Se recarregar a página, não pode voltar pro setup
     await page.goto('/app');

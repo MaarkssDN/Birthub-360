@@ -552,3 +552,92 @@ html:not(.dark) .b360-ab-pill-dock {
     transform: none !important;
   }
 }
+
+/* Keep foreground/background pairs together when the page changes theme. */
+.b360-adaptive-landing .b360-ai-feature-card,
+.b360-adaptive-landing .b360-pipeline-banner {
+  background: #0b1a2e;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-ai-feature-card {
+  background: #ffffff;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-ai-feature-card h3,
+html:not(.dark) .b360-adaptive-landing .b360-eyebrow,
+html:not(.dark) .b360-adaptive-landing .b360-lead-card h3 {
+  color: #0369a1 !important;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-ai-feature-card:nth-child(2) h3 {
+  color: #be185d !important;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-ai-feature-card:nth-child(3) h3 {
+  color: #92400e !important;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-ai-feature-card:nth-child(4) h3 {
+  color: #6d28d9 !important;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-lead-card :is(label, strong, span, p) {
+  color: #335577 !important;
+}
+
+.b360-adaptive-landing .b360-lead-availability {
+  background: #083344;
+  color: #a5f3fc;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-lead-availability {
+  background: #ecfeff;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-footer p {
+  color: #a9cce6 !important;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-footer-wordmark strong {
+  color: #ff69b4 !important;
+}
+
+.b360-adaptive-landing .b360-footer .b360-ab-toggle-btn {
+  color: #475569;
+}
+
+.b360-adaptive-landing .b360-footer .b360-ab-toggle-btn.active {
+  color: #082f49;
+}
+
+html.dark .b360-adaptive-landing .b360-footer .b360-ab-pill-dock {
+  background: #0f172a;
+}
+
+html.dark .b360-adaptive-landing .b360-footer .b360-ab-toggle-btn:not(.active) {
+  color: #a9cce6;
+}
+
+.b360-adaptive-landing .b360-lead-success {
+  background: #071322;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-lead-success {
+  background: #f0fdf4;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-lead-success h3 {
+  color: #047857 !important;
+}
+
+html:not(.dark) .b360-adaptive-landing .b360-lead-success :is(a, button) {
+  color: #0369a1;
+}
+
+html:not(.dark) .b360-adaptive-landing :is(.b360-final-cta, .b360-supervisor) .b360-eyebrow {
+  color: #67e8f9 !important;
+}
+
+html:not(.dark) .b360-adaptive-landing :is(.b360-final-cta, .b360-supervisor) p {
+  color: #b9cde6 !important;
+}

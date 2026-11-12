@@ -212,7 +212,7 @@ test.describe('FASE 05 — HOMOLOGAÇÃO COMPLETA: LANDING PAGE, MODAIS, LIGHT/D
 
       // Deve estar na tela de login
       await expect(page.locator('text=Entrar na Plataforma')).toBeVisible();
-      await expect(page.locator('input[type="email"]')).toBeVisible();
+      await expect(page.locator('#login-email')).toBeVisible();
     });
   });
 
