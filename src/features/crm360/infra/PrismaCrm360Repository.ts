@@ -50,11 +50,7 @@ import type {
   CrmPublicDocumentView,
 } from '../crm360.types.js';
 import type { ICrm360Repository } from '../domain/ICrm360Repository.js';
-import {
-  DEAL_STAGES,
-  type DefaultStage,
-  LEAD_STAGES,
-} from './defaultPipelineStages.js';
+import { DEAL_STAGES, type DefaultStage, LEAD_STAGES } from './defaultPipelineStages.js';
 
 // DATA-004 (Sprint 05/Onda 17): derivado da mesma fonte única usada por PrismaLeadRepository
 // (update()/updateStatus()) — antes desta correção esta lista tinha só 2 status (Ganhos/Perdidos),
