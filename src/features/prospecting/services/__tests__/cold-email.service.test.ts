@@ -141,9 +141,7 @@ describe('sendColdEmailBatch — filtro de opt-out na entrada do funil', () => {
     );
     // O supressor bloqueado NUNCA chega ao transporte — sendEmail só vê o elegível.
     expect(sendEmailMock).toHaveBeenCalledTimes(1);
-    expect(sendEmailMock).toHaveBeenCalledWith(
-      expect.objectContaining({ to: eligibleEmail }),
-    );
+    expect(sendEmailMock).toHaveBeenCalledWith(expect.objectContaining({ to: eligibleEmail }));
   });
 
   it('lista vazia: retorna contagens zeradas sem consultar supressor nem enviar', async () => {
@@ -176,7 +174,10 @@ describe('sendColdEmailBatch — filtro de opt-out na entrada do funil', () => {
     sendEmailMock.mockResolvedValue(undefined);
 
     const semTenant = { ...campaignWithEmail('camp-sem-org', eligibleEmail), organizationId: '' };
-    const result = await sendColdEmailBatch([semTenant, campaignWithEmail('camp-ok', eligibleEmail)]);
+    const result = await sendColdEmailBatch([
+      semTenant,
+      campaignWithEmail('camp-ok', eligibleEmail),
+    ]);
 
     expect(result.results).toEqual(
       expect.arrayContaining([
