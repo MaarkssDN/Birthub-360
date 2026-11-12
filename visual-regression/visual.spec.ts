@@ -118,20 +118,43 @@ test.describe('Visual Regression', () => {
 
       test('Administração - Module Access', async ({ page }) => {
         await setupDeterministicState(page, theme);
-        await signUp(page, { email: uniqueTestEmail(`visual-admin-${theme}`) });
+        // Nome curto e fixo: o default de signUp (`E2E Test User ${email}`) é longo e
+        // quebra a célula em larguras de tablet/mobile. O e-mail segue único (máscara).
+        await signUp(page, { email: uniqueTestEmail(`visual-admin-${theme}`), name: 'E2E Admin' });
         await page.goto('/app/module-access');
         await waitForAppReady(page);
-        // Garante que o painel administrativo real carregou os dados (sem spinner residual)
+        // Garante que o painel carregou a linha real (spinner sumiu e a célula existe)
         await expect(page.locator('.animate-spin')).toHaveCount(0, { timeout: 15_000 });
-        // Estabiliza o nome e o e-mail dinâmico no DOM para determinismo visual estrito
-        await page.evaluate(() => {
-          document.querySelectorAll('table tbody tr th span.font-bold').forEach((el) => {
-            el.textContent = 'Administrador do Sistema';
+        const userCell = page.locator('table tbody tr th').first();
+        await expect(userCell).toBeVisible({ timeout: 15_000 });
+        await expect(userCell.locator('span.font-bold.text-ink')).toHaveText('E2E Admin');
+        await expect(userCell.locator('div.text-xs')).toHaveText(/@birthhub360\.com\.br$/);
+
+        // Pin do nome/e-mail só depois dos dados assentarem. O seletor antigo
+        // `span.font-bold` também acertava o badge de papel ("Administrador"), e um
+        // re-render tardio do React às vezes restaurava o e-mail único longo — a
+        // caixa da célula mascarada ia de 60px para 106px no tablet entre runs.
+        const pinUserCell = async () => {
+          await userCell.evaluate((th) => {
+            const name = th.querySelector('span.font-bold.text-ink');
+            if (name) name.textContent = 'E2E Admin';
+            const email = th.querySelector(':scope > div.text-xs');
+            if (email) email.textContent = 'admin@birthhub360.com.br';
           });
-          document.querySelectorAll('table tbody tr th div.text-xs').forEach((el) => {
-            el.textContent = 'admin@birthhub360.com.br';
-          });
-        });
+        };
+        await expect
+          .poll(
+            async () => {
+              await pinUserCell();
+              return userCell.locator('div.text-xs').innerText();
+            },
+            { timeout: 5_000 },
+          )
+          .toBe('admin@birthhub360.com.br');
+        await expect(userCell.locator('span.font-bold.text-ink')).toHaveText('E2E Admin');
+        // O badge de papel precisa permanecer o rótulo do produto, não o fixture de nome
+        await expect(userCell.locator('span.font-bold').nth(1)).toHaveText('Administrador');
+
         await waitForVisualFonts(page);
         await expect(page).toHaveScreenshot(`admin-module-access-${theme}.png`, {
           ...SCREENSHOT_OPTIONS,
