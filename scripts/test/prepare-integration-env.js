@@ -173,6 +173,46 @@ const MIGRATOR_ROLE_PASSWORD =
 
 const REQUIRED_CONTAINERS = ['birthhub_postgres', 'birthhub_redis', 'birthhub_meilisearch'];
 const COMPOSE_FILES = ['-f', 'docker-compose.yml', '-f', 'docker-compose.postgres-local.yml'];
+
+/**
+ * Encerra deterministicamente os containers que ESTE processo subiu (TAREFA-SANEAMENTO-032 /
+ * BT360-DT-0070). Só os nomes passados são parados — containers já em execução (compartilhados
+ * entre worktrees) nunca entram na lista e não são tocados. `spawn` é injetável para teste.
+ * Devolve quantos containers foram parados com sucesso; falhas individuais são toleradas
+ * (o objetivo é não deixar zumbi, não abortar o teardown pelos demais).
+ */
+export function stopEphemeralContainers(names, spawn = spawnSync) {
+  let stopped = 0;
+  for (const name of names) {
+    const result = spawn('docker', ['stop', name], { stdio: 'ignore' });
+    if (result.status === 0) stopped += 1;
+  }
+  return stopped;
+}
+
+// Containers iniciados por esta execução do harness — populado abaixo e usado pelos
+// handlers de sinal para não deixar containers efêmeros zumbis no Docker local.
+const ephemeralContainers = [];
+let signalTeardownRegistered = false;
+
+function registerSignalTeardown() {
+  if (signalTeardownRegistered) return;
+  signalTeardownRegistered = true;
+  for (const signal of ['SIGINT', 'SIGTERM']) {
+    process.on(signal, () => {
+      const code = signal === 'SIGINT' ? 130 : 143;
+      if (ephemeralContainers.length === 0) {
+        process.exit(code);
+      }
+      console.error(
+        `\n${signal} recebido — encerrando ${ephemeralContainers.length} container(s) ` +
+          `efêmero(s) iniciados por este harness: ${ephemeralContainers.join(', ')}`,
+      );
+      stopEphemeralContainers(ephemeralContainers);
+      process.exit(code);
+    });
+  }
+}
 const SERVICE_BY_CONTAINER = {
   birthhub_postgres: 'postgres',
   birthhub_redis: 'redis',
@@ -240,6 +280,7 @@ async function runPrepareIntegrationEnv() {
   }
 
   if (!isCI) {
+    registerSignalTeardown();
     const running = spawnSync('docker', ['ps', '--format', '{{.Names}}'], { encoding: 'utf-8' });
     if (running.error?.code === 'ENOENT') {
       console.error(
@@ -290,6 +331,9 @@ async function runPrepareIntegrationEnv() {
         );
         process.exit(result.status || 1);
       }
+      // Só os serviços que faltavam e foram subidos agora são efêmeros desta execução —
+      // os já em execução são compartilhados entre worktrees e nunca entram na lista.
+      ephemeralContainers.push(...missingContainers);
     }
 
     const readyDeadline = Date.now() + 60000;
@@ -420,6 +464,7 @@ async function runPrepareIntegrationEnv() {
           console.error('Falha ao subir o Meilisearch de teste dedicado.');
           process.exit(run.status || 1);
         }
+        ephemeralContainers.push(TEST_MEILI_CONTAINER);
       }
     }
   }
