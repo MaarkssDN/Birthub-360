@@ -226,30 +226,38 @@ export function ExternalCrmPanel({ providerKey, displayName, authType }: Externa
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchConnections = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/integrations/external-crm?provider=${providerKey}`, {
-        method: 'GET',
-      });
-      if (!res.ok) {
-        throw new Error(`Falha ao carregar conexões de ${displayName} (status ${res.status})`);
+  const fetchConnections = useCallback(
+    async (signal?: AbortSignal) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch(`/api/integrations/external-crm?provider=${providerKey}`, {
+          method: 'GET',
+          signal,
+        });
+        if (!res.ok) {
+          throw new Error(`Falha ao carregar conexões de ${displayName} (status ${res.status})`);
+        }
+        const data = (await res.json()) as CrmConnection[];
+        if (signal?.aborted) return;
+        setConnections(data);
+        setLoadedOnce(true);
+      } catch (e: unknown) {
+        if (signal?.aborted || (e instanceof DOMException && e.name === 'AbortError')) return;
+        const msg = e instanceof Error ? e.message : 'Erro ao consultar conexões';
+        setError(msg);
+        toast.error(msg);
+      } finally {
+        if (!signal?.aborted) setLoading(false);
       }
-      const data = (await res.json()) as CrmConnection[];
-      setConnections(data);
-      setLoadedOnce(true);
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'Erro ao consultar conexões';
-      setError(msg);
-      toast.error(msg);
-    } finally {
-      setLoading(false);
-    }
-  }, [providerKey, displayName]);
+    },
+    [providerKey, displayName],
+  );
 
   useEffect(() => {
-    void fetchConnections();
+    const controller = new AbortController();
+    void fetchConnections(controller.signal);
+    return () => controller.abort();
   }, [fetchConnections]);
 
   // Validation
@@ -528,7 +536,7 @@ export function ExternalCrmPanel({ providerKey, displayName, authType }: Externa
         <div className="flex items-center gap-2 self-end sm:self-center">
           <button
             type="button"
-            onClick={fetchConnections}
+            onClick={() => void fetchConnections()}
             disabled={loading}
             aria-label={`Atualizar status de ${displayName}`}
             className="p-2.5 rounded-xl border border-line bg-surface-2 text-ink-2 hover:text-ink hover:bg-surface-3 transition-colors disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
