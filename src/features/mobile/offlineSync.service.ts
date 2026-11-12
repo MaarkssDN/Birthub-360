@@ -8,6 +8,7 @@
  */
 
 import { api } from '../../lib/api.js';
+import { createDefaultOfflineStorage } from './services/encryptedOfflineStorage.service.js';
 
 export type OfflineOperationType =
   | 'CREATE_LEAD'
@@ -73,7 +74,8 @@ export type SyncEvent =
   | { type: 'item_synced'; item: OfflineQueueItem; response: unknown }
   | { type: 'item_failed'; item: OfflineQueueItem; error: Error }
   | { type: 'sync_completed'; result: SyncResult }
-  | { type: 'queue_cleared' };
+  | { type: 'queue_cleared' }
+  | { type: 'queue_loaded'; pendingCount: number };
 
 export type SyncEventListener = (event: SyncEvent) => void;
 
@@ -356,9 +358,15 @@ export class OfflineSyncService {
   private networkProvider: NetworkStatusProvider;
   private syncLock = false;
   private unsubscribeNetwork?: () => void;
+  /**
+   * Promessa resolvida quando a fila e os mapeamentos de ID foram recuperados
+   * do storage (possivelmente de forma assíncrona/criptografada). Todos os
+   * métodos públicos que leem ou mutam a fila devem aguardar `ready`.
+   */
+  public readonly ready: Promise<void>;
 
   constructor(options: OfflineSyncServiceOptions = {}) {
-    this.storage = options.storage || new LocalStorageAdapter();
+    this.storage = options.storage || createDefaultOfflineStorage();
     this.apiClient = options.apiClient || defaultApiClient;
     this.autoSync = options.autoSync ?? true;
     this.maxRetries = options.maxRetries ?? 3;
@@ -366,7 +374,9 @@ export class OfflineSyncService {
     this.idMapKey = options.idMapKey || DEFAULT_ID_MAP_KEY;
 
     this.networkProvider = new NetworkStatusProvider();
-    this.loadFromStorage();
+    this.ready = this.loadFromStorage().then(() => {
+      this.emit({ type: 'queue_loaded', pendingCount: this.getPendingCount() });
+    });
 
     this.unsubscribeNetwork = this.networkProvider.subscribe((online) => {
       this.emit({
@@ -382,9 +392,9 @@ export class OfflineSyncService {
   /**
    * Carrega fila e mapeamentos de IDs a partir do armazenamento local seguro.
    */
-  private loadFromStorage(): void {
+  private async loadFromStorage(): Promise<void> {
     try {
-      const rawQueue = this.storage.getItem(this.storageKey);
+      const rawQueue = await this.storage.getItem(this.storageKey);
       if (rawQueue && typeof rawQueue === 'string') {
         const parsed = JSON.parse(rawQueue);
         if (Array.isArray(parsed)) {
@@ -400,7 +410,7 @@ export class OfflineSyncService {
     }
 
     try {
-      const rawMap = this.storage.getItem(this.idMapKey);
+      const rawMap = await this.storage.getItem(this.idMapKey);
       if (rawMap && typeof rawMap === 'string') {
         const parsed = JSON.parse(rawMap);
         if (parsed && typeof parsed === 'object') {
@@ -415,10 +425,10 @@ export class OfflineSyncService {
   /**
    * Persiste fila de operações no armazenamento local.
    */
-  private persistQueue(): void {
+  private async persistQueue(): Promise<void> {
     try {
       const serialized = JSON.stringify(this.queue);
-      void this.storage.setItem(this.storageKey, serialized);
+      await this.storage.setItem(this.storageKey, serialized);
     } catch (err) {
       console.error('[OfflineSync] Falha ao persistir fila localmente:', err);
     }
@@ -427,10 +437,10 @@ export class OfflineSyncService {
   /**
    * Persiste mapeamento de IDs temporários no armazenamento local.
    */
-  private persistIdMap(): void {
+  private async persistIdMap(): Promise<void> {
     try {
       const obj = Object.fromEntries(this.idMap.entries());
-      void this.storage.setItem(this.idMapKey, JSON.stringify(obj));
+      await this.storage.setItem(this.idMapKey, JSON.stringify(obj));
     } catch (err) {
       console.error('[OfflineSync] Falha ao persistir mapeamentos de IDs:', err);
     }
@@ -475,6 +485,7 @@ export class OfflineSyncService {
     dependsOnTempId?: string;
     meta?: Record<string, unknown>;
   }): Promise<OfflineQueueItem<T>> {
+    await this.ready;
     const item: OfflineQueueItem<T> = {
       id: generateTemporaryId('op'),
       type: params.type,
@@ -491,7 +502,7 @@ export class OfflineSyncService {
     };
 
     this.queue.push(item as OfflineQueueItem);
-    this.persistQueue();
+    void this.persistQueue();
     this.emit({ type: 'enqueued', item: item as OfflineQueueItem });
 
     // Se estiver online e autoSync ativo, dispara sincronização imediatamente
@@ -527,6 +538,7 @@ export class OfflineSyncService {
     leadId: string,
     leadData: Record<string, unknown>,
   ): Promise<OfflineQueueItem> {
+    await this.ready;
     const isTemp = leadId.startsWith('temp_') || this.queue.some((q) => q.temporaryId === leadId);
 
     return this.enqueue({
@@ -546,6 +558,7 @@ export class OfflineSyncService {
     leadId: string,
     noteData: { content: string; author: string },
   ): Promise<OfflineQueueItem> {
+    await this.ready;
     const isTemp = leadId.startsWith('temp_') || this.queue.some((q) => q.temporaryId === leadId);
 
     return this.enqueue({
@@ -565,6 +578,7 @@ export class OfflineSyncService {
     payload: FieldMeetingAudioPayload,
     tempId?: string,
   ): Promise<OfflineQueueItem<FieldMeetingAudioPayload>> {
+    await this.ready;
     const isTemp =
       payload.leadId &&
       (payload.leadId.startsWith('temp_') ||
@@ -655,6 +669,7 @@ export class OfflineSyncService {
    * Executa a sincronização completa da fila pendente contra o backend.
    */
   public async syncQueue(): Promise<SyncResult> {
+    await this.ready;
     if (!this.isOnline()) {
       const pendingCount = this.getPendingCount();
       return {
@@ -726,7 +741,7 @@ export class OfflineSyncService {
           const realId = extractEntityId(response);
           if (item.temporaryId && realId) {
             this.idMap.set(item.temporaryId, realId);
-            this.persistIdMap();
+            void this.persistIdMap();
           }
 
           this.emit({ type: 'item_synced', item, response });
@@ -758,7 +773,7 @@ export class OfflineSyncService {
     } finally {
       // Remove operações sincronizadas com sucesso da fila ativa
       this.queue = this.queue.filter((item) => item.status !== 'synced');
-      this.persistQueue();
+      void this.persistQueue();
       this.syncLock = false;
     }
 
@@ -786,6 +801,7 @@ export class OfflineSyncService {
    * Reinicia itens que falharam de volta para 'pending' e reexecuta sincronização.
    */
   public async retryFailed(): Promise<SyncResult> {
+    await this.ready;
     for (const item of this.queue) {
       if (item.status === 'failed') {
         item.status = 'pending';
@@ -793,7 +809,7 @@ export class OfflineSyncService {
         item.lastError = undefined;
       }
     }
-    this.persistQueue();
+    void this.persistQueue();
     return this.syncQueue();
   }
 
@@ -801,6 +817,7 @@ export class OfflineSyncService {
    * Limpa todas as operações e mapeamentos da fila offline.
    */
   public async clearQueue(): Promise<void> {
+    await this.ready;
     this.queue = [];
     this.idMap.clear();
     void this.storage.removeItem(this.storageKey);
