@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 22 (Verificação de Realidade)
 Onda: Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-040)
-Status: aberto
+Status: em-andamento
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 5
@@ -48,3 +48,24 @@ Executar a tarefa `TAREFA-SANEAMENTO-040` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução (Agente 22 — 2026-11-12)
+
+**Implementação:** `scripts/security/pii-log-scanner.ts` — scanner de vazamento
+de PII em logs/stdout/stderr:
+
+- padrões: CPF, CNPJ, e-mail, telefone BR, cartão (Luhn) e JWT/Bearer;
+- CLI: arquivos/diretórios/`--stdin`/`--self-test`; exit 1 em achados;
+- saída mascarada — o relatório nunca ecoa o valor encontrado;
+- supressão de PHONE sobreposta a CPF/CNPJ/cartão (anti-falso-positivo);
+- `tests/unit/security/piiLogScanner.test.ts`: 6 testes (sucesso + falha).
+
+**Branch/commit:** `agente/22-w3-pii-log-scanner` → `0dd339b3f`.
+
+**Gates:** self-test 7/7 PASS; Vitest 6/6; tsc/biome limpos.
+
+**Nota:** `package.json` não foi alterado (exige aprovação do 00) — comando
+documentado: `npx tsx scripts/security/pii-log-scanner.ts --self-test` e
+`npx tsx scripts/security/pii-log-scanner.ts <logs>`.
+
+**Status:** aguardando revisão formal do Agente 24.
