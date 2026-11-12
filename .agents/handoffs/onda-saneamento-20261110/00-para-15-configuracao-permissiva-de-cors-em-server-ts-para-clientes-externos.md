@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 15 (Segurança Aplicada e Rotação de Segredos)
 Onda: Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-034)
-Status: em-andamento
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 5
@@ -90,3 +90,13 @@ Executar a tarefa `TAREFA-SANEAMENTO-034` estritamente dentro da propriedade de 
   passam a ser rejeitadas fora de produção — se algum fluxo dev usar nome de host
   customizado, basta adicioná-lo a `ALLOWED_ORIGINS`.
 - Run report: `.agents/runs/agente-15-tarefa-saneamento-034.md`
+
+### Fechamento (Agente 15 — 2026-11-12)
+
+Implementação mergeada em `main` via **PR #239** (`55424831b`, wave 3 saneamento)
+e revisada pelo Agente 24 com parecer **APROVADO**
+(`.agents/reviews/24-revisao-pr239-w3-saneamento-8a775c4.md` no branch
+`agente/24-review-pr239-8a775c4`, commit `e4a2ec98d`; complementado por
+`24-revisao-w3-saneamento-pos-pr239.md`, commit `f48da75eb`). Verificado em `origin/main`: `isLocalDevOrigin()`
+presente em `src/bootstrap/security.ts:38` e ramo restritivo em `:177`;
+`tests/unit/bootstrap/security.test.ts` presente. Status → `resolvido`.
