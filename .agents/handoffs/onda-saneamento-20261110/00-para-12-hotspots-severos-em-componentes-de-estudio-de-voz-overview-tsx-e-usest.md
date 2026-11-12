@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 12 (Voz e Telefonia (Birthub Voices))
 Onda: Onda 3 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-008)
-Status: aberto
+Status: em-andamento
 Prioridade: alto
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 3
@@ -48,3 +48,29 @@ Executar a tarefa `TAREFA-SANEAMENTO-008` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução (Agente 12 — W4)
+
+- `Overview.tsx`: 1536 → 262 linhas. Extraídos para `pages/Dashboard/overview/`:
+  `OverviewHeader`, `OverviewKpisTab`, `OverviewQuickActions`, `OverviewWidgets`,
+  `OverviewOnboardingWizard`, `OverviewAuditTab`, `OverviewActionModal`,
+  `overviewFormat.ts`, `overviewTypes.ts`. Métricas seguem derivadas das APIs reais
+  (`/api/onboarding`, `/api/call-logs`, `/api/agents`, `/api/ready`, `/api/metrics`);
+  estados de loading/erro/vazio preservados; simulação de workflow permanece local.
+- `useStudioStore.ts`: 1130 → 422 linhas. Ações extraídas para factories no mesmo
+  padrão de `workflowPersistence.ts`:
+  `simulationActions.ts` (log de simulação, variáveis, start/stop/pause/resume/step),
+  `aiWorkflowActions.ts` (applyAiRefactor, generateWorkflowFromPrompt),
+  `serverWorkflowActions.ts` (publishWorkflowToServer, histórico de versões, rollback).
+  `workflowEpoch` permanece no store e é injetado via `getEpoch()`; `simulationInterval`
+  virou `simulationTimer` module-local da factory de simulação.
+
+### Gates executados
+- `npx tsc --noEmit` → PASS (exit 0).
+- `npx biome check` nos 14 arquivos do escopo → PASS (0 erros).
+- `npx vitest run -c vitest.unit.config.ts src/features/voice-hub/store/useStudioStore.versionHistory.test.ts` → 7/7.
+- `npx vitest run tests/unit/features/voice-hub-studio-persistence.test.ts tests/unit/features/voice-hub/ tests/unit/features/voice-hub-canvas-recovery.test.tsx tests/unit/features/voice-hub-test-simulator.test.tsx` → 49/49.
+- `npm run lint` (repo inteiro) e `npm run build` → ver run report `.agents/runs/`.
+
+Sem alteração de comportamento: os blocos JSX/ações foram movidos verbatim; o store
+permanece como coordenador e as factories recebem `get`/`set`/`getEpoch` injetados.
