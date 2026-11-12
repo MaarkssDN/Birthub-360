@@ -8,7 +8,6 @@ import {
   BarChart3,
   Bot,
   Building2,
-  Calendar,
   Check,
   CheckCircle2,
   Clock,
@@ -568,22 +567,41 @@ export function Landing360({
     whatsapp: '',
     equipe: '6 a 15',
     consent: true,
+    website: '',
   });
   const [leadLoading, setLeadLoading] = useState(false);
   const [leadSubmitted, setLeadSubmitted] = useState(false);
+  const [leadError, setLeadError] = useState('');
 
-  const handleLeadSubmit = (e: React.FormEvent) => {
+  const handleLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLeadError('');
     setLeadLoading(true);
     SoundFX.play('click');
-    setTimeout(() => {
-      setLeadLoading(false);
+    try {
+      const res = await fetch('/api/public/lead-capture', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...leadForm, website: '' }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.success) {
+        setLeadError(
+          data?.error ||
+            'Não foi possível enviar sua solicitação agora. Tente novamente em instantes.',
+        );
+        return;
+      }
       setLeadSubmitted(true);
       trackLeadFormSubmitted(abVariant, {
         teamSize: leadForm.equipe,
         source: 'landing_form_objective',
       });
-    }, 650);
+    } catch {
+      setLeadError('Falha de conexão. Verifique sua internet e tente novamente.');
+    } finally {
+      setLeadLoading(false);
+    }
   };
   const reduceMotion = useReducedMotion();
   useB360CardTilt([viewMode, activeScreen]);
@@ -1090,14 +1108,14 @@ export function Landing360({
                 aria-label="Aviso de disponibilidade de implantação assistida"
               >
                 <div className="b360-urgency-content">
-                  <span className="b360-urgency-badge">🔥 Vagas Limitadas</span>
+                  <span className="b360-urgency-badge">Onboarding Assistido</span>
                   <span>
-                    <b>Ciclo de Implantação Assistida:</b> Apenas 4 vagas para onboarding com
-                    Arquiteto de Vendas nesta semana.
+                    <b>Ciclo de Implantação Assistida:</b> onboarding guiado com Arquiteto de
+                    Vendas para colocar o time produtivo mais rápido.
                   </span>
                 </div>
                 <a href="#demonstracao" className="b360-urgency-btn">
-                  Garantir vaga com setup gratuito →
+                  Solicitar demonstração →
                 </a>
               </div>
 
@@ -1130,8 +1148,8 @@ export function Landing360({
                         </span>
                       ) : (
                         <span>
-                          Acelere o ciclo de vendas e aumente a conversão do pipeline em até 3.8x
-                          com IA aplicada.
+                          Acelere o ciclo de vendas e aumente a conversão do pipeline com IA
+                          aplicada ao dia a dia comercial.
                         </span>
                       )}
                     </p>
@@ -2030,7 +2048,9 @@ export function Landing360({
 
                     <div className="p-3.5 rounded-xl border border-cyan-500/20 bg-cyan-950/20 text-xs text-cyan-200 flex items-center gap-2">
                       <Clock className="w-4 h-4 shrink-0 text-[#00D4FF]" />
-                      <span>4 vagas remanescentes para o ciclo assistido desta semana.</span>
+                      <span>
+                        Sessão assistida por um especialista de operações comerciais.
+                      </span>
                     </div>
                   </div>
 
@@ -2042,23 +2062,14 @@ export function Landing360({
                           <CheckCircle2 className="h-8 w-8" />
                         </div>
                         <h3 className="text-xl font-bold text-cyan-400">
-                          Sessão Solicitada com Sucesso!
+                          Solicitação Recebida!
                         </h3>
                         <p className="text-xs text-slate-300 leading-relaxed max-w-sm mx-auto">
-                          Enviamos a confirmação para <strong>{leadForm.email}</strong>. Um de
-                          nossos especialistas em operações comerciais entrará em contato via
-                          WhatsApp ({leadForm.whatsapp}) em até 15 minutos.
+                          Registramos sua solicitação de demonstração. Nossa equipe entrará em
+                          contato pelos canais informados (<strong>{leadForm.email}</strong> /{' '}
+                          <strong>{leadForm.whatsapp}</strong>).
                         </p>
                         <div className="pt-2 flex flex-col gap-2.5">
-                          <a
-                            href="https://calendar.google.com"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-xs font-bold hover:bg-cyan-500/30 transition-colors"
-                          >
-                            <Calendar className="w-4 h-4" />
-                            <span>Abrir Google Agenda</span>
-                          </a>
                           <button
                             type="button"
                             onClick={() => setLeadSubmitted(false)}
@@ -2070,6 +2081,17 @@ export function Landing360({
                       </div>
                     ) : (
                       <form onSubmit={handleLeadSubmit} className="space-y-3.5">
+                        {/* Honeypot anti-spam: invisível para humanos, bots preenchem. */}
+                        <input
+                          type="text"
+                          name="website"
+                          value={leadForm.website ?? ''}
+                          onChange={(e) => setLeadForm({ ...leadForm, website: e.target.value })}
+                          tabIndex={-1}
+                          autoComplete="off"
+                          aria-hidden="true"
+                          className="hidden"
+                        />
                         <div className="mb-2">
                           <h3 className="text-base font-bold text-cyan-400">
                             Reserve sua Demonstração Técnica
@@ -2169,14 +2191,24 @@ export function Landing360({
                           </label>
                         </div>
 
+                        {leadError && (
+                          <p
+                            role="alert"
+                            className="text-[11px] font-mono text-red-400 text-center"
+                          >
+                            {leadError}
+                          </p>
+                        )}
+
                         <div className="pt-2">
                           <button type="submit" disabled={leadLoading} className="b360-submit-cta">
                             {leadLoading
-                              ? 'Preparando Sessão...'
-                              : 'GARANTIR MINHA DEMONSTRAÇÃO GRATUITA →'}
+                              ? 'Enviando Solicitação...'
+                              : 'SOLICITAR DEMONSTRAÇÃO GRATUITA →'}
                           </button>
                           <p className="mt-2 text-center text-[10px] font-mono text-slate-400">
-                            🔒 Zero spam · Cancelamento fácil com 1 clique · Dados protegidos
+                            Seus dados são usados apenas para contato sobre a demonstração, conforme
+                            a LGPD.
                           </p>
                         </div>
                       </form>
