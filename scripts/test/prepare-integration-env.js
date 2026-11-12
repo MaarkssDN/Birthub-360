@@ -190,6 +190,40 @@ export function stopEphemeralContainers(names, spawn = spawnSync) {
   return stopped;
 }
 
+/**
+ * Baseline determinístico de compliance/opt-out (TAREFA-SANEAMENTO-033 / BT360-DT-0071).
+ * O provisionamento antes criava só estrutura; testes de privacidade não tinham estado
+ * inicial estável. Semeia uma organização dedicada (`compliance-baseline-org`) com
+ * consentimento de IA e opt-outs representativos — NUNCA `test-org-id`, para não
+ * poluir os testes que usam o tenant padrão do harness.
+ *
+ * Idempotente: ids fixos + ON CONFLICT DO NOTHING — rodar N vezes não duplica.
+ * Escopo deliberado: apenas entidades autocontidas (OptOutRecord, OrganizationAiConsent).
+ * A cadeia de auditoria LGPD (ConsentAuditChainHead/ConsentAuditRecord) exige genesis
+ * hash/sequence válidos produzidos pelo serviço — seed SQL estático corromperia a
+ * verificação de integridade; quem precisar de cadeia deve criá-la via serviço nos testes.
+ */
+export const COMPLIANCE_BASELINE_ORG_ID = 'compliance-baseline-org';
+
+export function buildComplianceSeedSql() {
+  return `
+INSERT INTO "Organization" (id, name, "createdAt", "updatedAt")
+VALUES ('${COMPLIANCE_BASELINE_ORG_ID}', 'Compliance Baseline Org', now(), now())
+ON CONFLICT DO NOTHING;
+
+INSERT INTO "OrganizationAiConsent" (id, "organizationId", granted, "consentVersion", "grantedAt", "createdAt", "updatedAt")
+VALUES ('seed-ai-consent-baseline', '${COMPLIANCE_BASELINE_ORG_ID}', true, 'baseline-v1', now(), now(), now())
+ON CONFLICT DO NOTHING;
+
+INSERT INTO "OptOutRecord" (id, "organizationId", scope, email, "phoneE164", "originChannel", reason, "createdAt")
+VALUES
+  ('seed-optout-baseline-global', '${COMPLIANCE_BASELINE_ORG_ID}', 'Global', NULL, NULL, 'seed', 'baseline determinístico de compliance (BT360-DT-0071)', now()),
+  ('seed-optout-baseline-email', '${COMPLIANCE_BASELINE_ORG_ID}', 'Email', 'baseline-optout@example.invalid', NULL, 'seed', 'baseline determinístico de compliance (BT360-DT-0071)', now()),
+  ('seed-optout-baseline-whatsapp', '${COMPLIANCE_BASELINE_ORG_ID}', 'WhatsApp', NULL, '+5500000000000', 'seed', 'baseline determinístico de compliance (BT360-DT-0071)', now())
+ON CONFLICT DO NOTHING;
+`;
+}
+
 // Containers iniciados por esta execução do harness — populado abaixo e usado pelos
 // handlers de sinal para não deixar containers efêmeros zumbis no Docker local.
 const ephemeralContainers = [];
@@ -422,6 +456,30 @@ async function runPrepareIntegrationEnv() {
     if (bootstrap.status !== 0) {
       console.error(`Falha ao preparar papel/extensão em "${TEST_DB_NAME}".`);
       process.exit(bootstrap.status || 1);
+    }
+
+    // Seed determinístico de compliance/opt-out (BT360-DT-0071): baseline estável para
+    // testes de privacidade, idempotente (ids fixos + ON CONFLICT DO NOTHING).
+    const seed = spawnSync(
+      'docker',
+      [
+        'exec',
+        POSTGRES_CONTAINER,
+        'psql',
+        '-v',
+        'ON_ERROR_STOP=1',
+        '-U',
+        BOOTSTRAP_SUPERUSER,
+        '-d',
+        TEST_DB_NAME,
+        '-c',
+        buildComplianceSeedSql(),
+      ],
+      { stdio: 'inherit' },
+    );
+    if (seed.status !== 0) {
+      console.error(`Falha ao semear baseline de compliance/opt-out em "${TEST_DB_NAME}".`);
+      process.exit(seed.status || 1);
     }
 
     // Isolamento dev↔test do Meilisearch: quando o .env.test aponta para a
