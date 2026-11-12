@@ -45,12 +45,12 @@ const ProspectingHub = lazy(() =>
   })),
 );
 
-const CrmBoard = lazy(() =>
-  import('../CrmBoard.js').then((m) => ({ default: m.CrmBoard })),
-);
+const CrmBoard = lazy(() => import('../CrmBoard.js').then((m) => ({ default: m.CrmBoard })));
 
 const CrmOverview = lazy(() =>
-  import('../../features/crm360/components/CrmOverview.js').then((m) => ({ default: m.CrmOverview })),
+  import('../../features/crm360/components/CrmOverview.js').then((m) => ({
+    default: m.CrmOverview,
+  })),
 );
 
 const IntelligenceHub = lazy(() =>
@@ -84,7 +84,9 @@ const CompanyList = lazy(() =>
 );
 
 const ContactList = lazy(() =>
-  import('../../features/contacts/components/ContactList.js').then((m) => ({ default: m.ContactList })),
+  import('../../features/contacts/components/ContactList.js').then((m) => ({
+    default: m.ContactList,
+  })),
 );
 
 const ActivityList = lazy(() =>
@@ -94,11 +96,15 @@ const ActivityList = lazy(() =>
 );
 
 const CadenceHub = lazy(() =>
-  import('../../features/cadence/components/CadenceHub.js').then((m) => ({ default: m.CadenceHub })),
+  import('../../features/cadence/components/CadenceHub.js').then((m) => ({
+    default: m.CadenceHub,
+  })),
 );
 
 const RoleplayHub = lazy(() =>
-  import('../../features/roleplay/components/RoleplayHub.js').then((m) => ({ default: m.RoleplayHub })),
+  import('../../features/roleplay/components/RoleplayHub.js').then((m) => ({
+    default: m.RoleplayHub,
+  })),
 );
 
 const QualificationMatrixPage = lazy(() =>
@@ -132,7 +138,9 @@ const ReportsHub = lazy(() =>
 );
 
 const ChatbookHub = lazy(() =>
-  import('../../features/chatbook/components/ChatbookHub.js').then((m) => ({ default: m.ChatbookHub })),
+  import('../../features/chatbook/components/ChatbookHub.js').then((m) => ({
+    default: m.ChatbookHub,
+  })),
 );
 
 const Integrations = lazy(() =>
@@ -146,7 +154,9 @@ const KnowledgeBase = lazy(() =>
 );
 
 const Analytics = lazy(() =>
-  import('../../features/analytics/components/Analytics.js').then((m) => ({ default: m.Analytics })),
+  import('../../features/analytics/components/Analytics.js').then((m) => ({
+    default: m.Analytics,
+  })),
 );
 
 const WinLossAnalysis = lazy(() =>
@@ -176,7 +186,9 @@ const ForecastHub = lazy(() =>
 );
 
 const MetasHub = lazy(() =>
-  import('../../features/predictability/components/MetasHub.js').then((m) => ({ default: m.MetasHub })),
+  import('../../features/predictability/components/MetasHub.js').then((m) => ({
+    default: m.MetasHub,
+  })),
 );
 
 const PipelinePonderadoHub = lazy(() =>
@@ -234,9 +246,11 @@ const DailyPlanHub = lazy(() =>
 );
 
 const JoaoReisDiagnosticHub = lazy(() =>
-  import('../../features/commercial-intelligence/components/JoaoReisDiagnosticHub.js').then((m) => ({
-    default: m.JoaoReisDiagnosticHub,
-  })),
+  import('../../features/commercial-intelligence/components/JoaoReisDiagnosticHub.js').then(
+    (m) => ({
+      default: m.JoaoReisDiagnosticHub,
+    }),
+  ),
 );
 
 const Calendar = lazy(() =>
@@ -266,7 +280,9 @@ const Usage = lazy(() =>
 );
 
 const DocumentEditor = lazy(() =>
-  import('../../features/document-editor/components/Editor.js').then((m) => ({ default: m.Editor })),
+  import('../../features/document-editor/components/Editor.js').then((m) => ({
+    default: m.Editor,
+  })),
 );
 
 const Team = lazy(() =>
@@ -622,4 +638,3 @@ export function AppLayout() {
     </OnboardingGate>
   );
 }
-

@@ -352,7 +352,7 @@ describe('Landing360', () => {
 
     // 1. Proposta de valor clara & 6. Urgência responsável
     expect(screen.getByText(/Ciclo de Implantação Assistida/i)).toBeInTheDocument();
-    expect(screen.getByText(/Acelere o ciclo de vendas e aumente a conversão do pipeline em até 3.8x/i)).toBeInTheDocument();
+    expect(screen.getByText(/Acelere o ciclo de vendas e aumente a conversão do pipeline — projeções de até 3.8x/i)).toBeInTheDocument();
 
     // 2. Design focado & 3. Foco no Call to Action
     const ctaLinks = screen.getAllByRole('link', { name: /Garantir Demonstração Gratuita/i });
@@ -376,15 +376,28 @@ describe('Landing360', () => {
   it('deve submeter o formulário de lead com sucesso e alternar a variante A/B', async () => {
     const { container } = renderWithProviders('/', 'intro');
 
+    // Endpoint público de leads ainda não existe (handoff pendente do Agente 01):
+    // o teste mocka a resposta 200 do contrato POST /api/public/demo-requests.
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(new Response('{}', { status: 200 }));
+
+    const nomeInput = container.querySelector('#lead-nome') as HTMLInputElement;
     const emailInput = container.querySelector('#lead-email') as HTMLInputElement;
+    const whatsappInput = container.querySelector('#lead-whatsapp') as HTMLInputElement;
     expect(emailInput).toBeInTheDocument();
 
-    // Preenche apenas o campo assertado no sucesso para evitar re-renders
-    // desnecessários da landing inteira (cada change dispara render do componente).
+    fireEvent.change(nomeInput, { target: { value: 'Mariana Albuquerque' } });
     fireEvent.change(emailInput, { target: { value: 'mariana@vanguarda.com.br' } });
+    fireEvent.change(whatsappInput, { target: { value: '(11) 99999-9999' } });
 
-    // Submissão do formulário
-    const submitBtn = screen.getByRole('button', { name: /GARANTIR MINHA DEMONSTRAÇÃO GRATUITA/i });
+    // Consentimento LGPD não é pré-marcado: precisa ser marcado explicitamente.
+    const consentCheckbox = container.querySelector(
+      'input[type="checkbox"]',
+    ) as HTMLInputElement;
+    fireEvent.click(consentCheckbox);
+
+    const submitBtn = screen.getByRole('button', { name: /SOLICITAR DEMONSTRAÇÃO GRATUITA/i });
     const leadFormEl = submitBtn.closest('form') as HTMLFormElement;
     fireEvent.submit(leadFormEl);
 
@@ -392,10 +405,14 @@ describe('Landing360', () => {
       () => {
         expect(screen.getByText(/Sessão Solicitada com Sucesso/i)).toBeInTheDocument();
         expect(screen.getByText(/mariana@vanguarda\.com\.br/i)).toBeInTheDocument();
-        expect(screen.getByText(/Abrir Google Agenda/i)).toBeInTheDocument();
+        expect(fetchSpy).toHaveBeenCalledWith(
+          '/api/public/demo-requests',
+          expect.objectContaining({ method: 'POST' }),
+        );
       },
       { timeout: 3000 },
     );
+    fetchSpy.mockRestore();
 
     // 8. Teste A/B: alternar para Variante B
     const varBBtn = screen.getAllByRole('button', { name: /Variante B/i })[0];

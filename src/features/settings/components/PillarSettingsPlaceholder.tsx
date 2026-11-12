@@ -1,26 +1,26 @@
-import { useCallback, useEffect, useState } from 'react';
 import {
-  Settings,
-  Shield,
-  Zap,
+  AlertCircle,
+  Database,
   Link as LinkIcon,
   Save,
+  Settings,
+  Shield,
   Sliders,
-  Database,
-  AlertCircle,
+  Zap,
 } from 'lucide-react';
-import { CommandCenterHeader } from '../../../components/ui/CommandCenterHeader.js';
+import { useCallback, useEffect, useState } from 'react';
+import { Badge } from '../../../components/ui/Badge.js';
+import { Button } from '../../../components/ui/Button.js';
 import {
   Card,
-  CardHeader,
-  CardTitle,
   CardContent,
   CardDescription,
+  CardHeader,
+  CardTitle,
 } from '../../../components/ui/Card.js';
-import { Button } from '../../../components/ui/Button.js';
-import { Badge } from '../../../components/ui/Badge.js';
-import { pillarSettingsApi } from '../pillarSettings.api.js';
+import { CommandCenterHeader } from '../../../components/ui/CommandCenterHeader.js';
 import { PILLAR_NAME_TO_SLUG } from '../domain/pillarSettings.js';
+import { pillarSettingsApi } from '../pillarSettings.api.js';
 import { PillarToolsForms } from './PillarToolsForms.js';
 
 interface PillarSettingsProps {

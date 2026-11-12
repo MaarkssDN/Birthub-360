@@ -1,18 +1,11 @@
+import { BrainCircuit, Building2, LineChart, Phone, Target, Workflow } from 'lucide-react';
 import type { Dispatch, SetStateAction } from 'react';
 import {
-  Building2,
-  Target,
-  Workflow,
-  LineChart,
-  BrainCircuit,
-  Phone,
-} from 'lucide-react';
-import {
   Card,
-  CardHeader,
-  CardTitle,
   CardContent,
   CardDescription,
+  CardHeader,
+  CardTitle,
 } from '../../../components/ui/Card.js';
 import { Input } from '../../../components/ui/Input.js';
 
@@ -101,9 +94,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
             <CardContent className="space-y-4 border-t border-[var(--line)] pt-6">
               <div className="flex items-center justify-between p-3.5 rounded-lg bg-[var(--surface-2)] border border-[var(--line)]">
                 <div>
-                  <p className="font-medium text-sm">
-                    Tempo Limite de Estagnação de Oportunidades
-                  </p>
+                  <p className="font-medium text-sm">Tempo Limite de Estagnação de Oportunidades</p>
                   <p className="text-xs text-[var(--ink-3)]">
                     Alerta visual quando um negócio passa mais tempo que o permitido na mesma etapa.
                   </p>
@@ -121,9 +112,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
 
               <div className="flex items-center justify-between p-3.5 rounded-lg bg-[var(--surface-2)] border border-[var(--line)]">
                 <div>
-                  <p className="font-medium text-sm">
-                    Exigir Motivo Padronizado ao Perder Negócio
-                  </p>
+                  <p className="font-medium text-sm">Exigir Motivo Padronizado ao Perder Negócio</p>
                   <p className="text-xs text-[var(--ink-3)]">
                     Obrigatório catalogar concorrente e motivo de perda para alimentar o módulo
                     Win/Loss.
@@ -142,9 +131,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
 
               <div className="flex items-center justify-between p-3.5 rounded-lg bg-[var(--surface-2)] border border-[var(--line)]">
                 <div>
-                  <p className="font-medium text-sm">
-                    Deduplicação Automática por CNPJ e Domínio
-                  </p>
+                  <p className="font-medium text-sm">Deduplicação Automática por CNPJ e Domínio</p>
                   <p className="text-xs text-[var(--ink-3)]">
                     Impede a criação de contas duplicadas e vincula novos leads a contas existentes.
                   </p>
@@ -216,7 +203,8 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                 <div>
                   <p className="font-medium text-sm">Radar de Sinais & Alertas de Contratação</p>
                   <p className="text-xs text-[var(--ink-3)]">
-                    Notifica SDRs quando empresas-alvo abrem vagas em cargos comerciais estratégicos.
+                    Notifica SDRs quando empresas-alvo abrem vagas em cargos comerciais
+                    estratégicos.
                   </p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
@@ -244,8 +232,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                 <CardTitle>SLAs de Execução & Cadência de Vendas</CardTitle>
               </div>
               <CardDescription>
-                Políticas operacionais de atendimento, passagem de bastão e limites de toque
-                diário.
+                Políticas operacionais de atendimento, passagem de bastão e limites de toque diário.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 border-t border-[var(--line)] pt-6">
@@ -271,8 +258,8 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                 <div>
                   <p className="font-medium text-sm">Checklist Obrigatório BANT / MEDDICC</p>
                   <p className="text-xs text-[var(--ink-3)]">
-                    Bloqueia envio da reunião para Closer sem notas de Orçamento, Autoridade e
-                    Prazo preenchidas.
+                    Bloqueia envio da reunião para Closer sem notas de Orçamento, Autoridade e Prazo
+                    preenchidas.
                   </p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
@@ -408,9 +395,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                 </div>
                 <select
                   value={props.predModelType}
-                  onChange={(e) =>
-                    props.setPredModelType(e.target.value as 'historico' | 'manual')
-                  }
+                  onChange={(e) => props.setPredModelType(e.target.value as 'historico' | 'manual')}
                   className="p-2 text-xs rounded-lg border border-[var(--line)] bg-[var(--surface)] text-[var(--ink)] font-medium"
                 >
                   <option value="historico">Win Rate Histórico (IA)</option>
@@ -567,9 +552,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
 
               <div className="flex items-center justify-between p-3.5 rounded-lg bg-[var(--surface-2)] border border-[var(--line)]">
                 <div>
-                  <p className="font-medium text-sm">
-                    Intervalo de Sincronização em Segundo Plano
-                  </p>
+                  <p className="font-medium text-sm">Intervalo de Sincronização em Segundo Plano</p>
                   <p className="text-xs text-[var(--ink-3)]">
                     Frequência com que os workers buscam alterações nos sistemas integrados.
                   </p>
