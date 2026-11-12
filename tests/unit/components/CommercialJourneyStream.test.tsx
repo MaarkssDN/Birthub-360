@@ -29,7 +29,7 @@ describe('CommercialJourneyStream', () => {
     expect(screen.getByText(/Ao Vivo/i)).toBeInTheDocument();
 
     for (const label of TABS) {
-      fireEvent.click(screen.getByRole('button', { name: new RegExp(label.replace('&', '.'), 'i') }));
+      fireEvent.click(screen.getByRole('button', { name: label }));
     }
 
     fireEvent.click(screen.getByRole('button', { name: /Visitas & Calls/i }));

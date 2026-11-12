@@ -44,4 +44,20 @@ describe('pillarSettings domain', () => {
     });
     expect(mergePillarValues('ai', null).model).toBe('Claude 3.5 Sonnet');
   });
+
+  it('rejeita valor não-booleano e aceita true/false no campo boolean', () => {
+    expect(() => validatePillarPatch('hub', { requireLossReason: 'sim' })).toThrow(
+      /deve ser booleano/,
+    );
+    expect(() => validatePillarPatch('hub', { dedupCnpj: 1 })).toThrow(
+      PillarSettingsValidationError,
+    );
+    expect(() => validatePillarPatch('engagement', { clickToCall: null })).toThrow(
+      /deve ser booleano/,
+    );
+    expect(
+      validatePillarPatch('hub', { requireLossReason: false, dedupCnpj: true }),
+    ).toEqual({ requireLossReason: false, dedupCnpj: true });
+  });
+
 });
