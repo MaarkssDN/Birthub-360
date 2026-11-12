@@ -1,10 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { signUp, uniqueTestEmail, waitForAppReady } from '../tests/e2e/helpers';
-import {
-  setupDeterministicState,
-  waitForVisualContentReady,
-  waitForVisualFonts,
-} from './deterministic-state';
+import { setupDeterministicState, waitForVisualFonts } from './deterministic-state';
+import { waitForVisualContentReady } from './visual-content-ready';
 
 // Configs for screenshot masks
 const MASKS = {
