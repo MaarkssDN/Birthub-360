@@ -43,6 +43,12 @@ test.describe('Visual Regression', () => {
         await page.goto('/app/dashboard');
         await waitForAppReady(page);
         await waitForVisualContentReady(page);
+        await expect(page.getByText(/VOLUME EM PIPELINE/)).toBeVisible({
+          timeout: 15_000,
+        });
+        await expect(page.getByRole('button', { name: /Abrir Cockpit CRM/ })).toBeVisible({
+          timeout: 15_000,
+        });
         await waitForVisualFonts(page);
         await expect(page).toHaveScreenshot(`dashboard-${theme}.png`, {
           ...SCREENSHOT_OPTIONS,
@@ -115,6 +121,9 @@ test.describe('Visual Regression', () => {
         await page.goto('/app/integrations');
         await waitForAppReady(page);
         await waitForVisualContentReady(page);
+        await expect(page.getByRole('button', { name: /Conectar WhatsApp/ })).toBeVisible({
+          timeout: 15_000,
+        });
         await waitForVisualFonts(page);
         await expect(page).toHaveScreenshot(`integrations-${theme}.png`, SCREENSHOT_OPTIONS);
       });
