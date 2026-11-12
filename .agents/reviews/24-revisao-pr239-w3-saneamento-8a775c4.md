@@ -62,3 +62,9 @@ Com observações não bloqueadoras listadas ao final. A revisão foi estática 
 ## Escopo da aprovação
 
 Este parecer aprova **exclusivamente** o conteúdo do PR #239 no commit `8a775c412` para merge em `main`. Não aprova: execução dos testes (não rodados aqui), deploy, nem trabalho fora do diff auditado. Qualquer push adicional na branch exige novo parecer.
+
+## Adendo 2026-11-12 — extensão ao SHA `15f674526`
+
+Após o parecer, o PR recebeu o commit `15f674526` ("style(format): biome format nos arquivos da wave 3 (gate format:check)"). Delta auditado via `git diff 8a775c412..15f674526`: **somente 2 arquivos, +2/−7, formatação pura** — colapso de quebras de linha em `src/bootstrap/security.ts` (`isLocalDevOrigin`, condição `parts.length === 4`) e `src/shared/infra/PrismaOptOutRepository.ts` (`take` clamp em `list()`). Nenhuma mudança semântica, nenhum arquivo novo, nenhum escopo alterado.
+
+**Veredito estendido: APROVADO também para o HEAD `15f674526d22591bef697aa2abab2efcb142315b`** do PR #239. Todas as demais condições do parecer permanecem válidas.
