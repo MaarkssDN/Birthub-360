@@ -7,7 +7,7 @@ import {
 } from '../../src/features/job-roles/services/jobRole.service';
 import { runMultiCargoSeed } from '../../scripts/seed-multi-cargo';
 import { runCapabilityEngineSeed } from '../../scripts/seed-capability-engine';
-import { signUp, uniqueTestEmail, waitForAppReady } from './helpers';
+import { navigateViaSidebar, signUp, uniqueTestEmail, waitForAppReady } from './helpers';
 
 // PROMPT 6 — 12 Workspaces por Login/Cargo. Cobertura E2E real (não só integração de serviço):
 // o próprio fluxo de navegação, o estado sem cargo (o que qualquer usuário recém-cadastrado vê de
@@ -55,7 +55,7 @@ test.describe('Meu Workspace (PROMPT 6)', () => {
     page,
   }) => {
     await signUp(page, { email: uniqueTestEmail('workspace-empty') });
-    await page.locator('aside').getByTestId('sidebar-nav-workspace').click();
+    await navigateViaSidebar(page, 'workspace');
     await expect(page).toHaveURL(/\/app\/workspace$/);
     await waitForAppReady(page);
 

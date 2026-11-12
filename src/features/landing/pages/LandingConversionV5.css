@@ -420,12 +420,15 @@ html:not(.dark) .b360-chip-btn.active {
 /* 4. STICKY ACTION BAR (CTA PERMANENTE)                                      */
 /* -------------------------------------------------------------------------- */
 
+/* z-index abaixo do backdrop do modal (.b360-dialog-backdrop, z-index: 100).
+   Com 999 a barra interceptava o botão "Fechar" do diálogo e o E2E de
+   homologação esgotava o timeout de 60s (× retries) até cancelar o job. */
 .b360-sticky-bar {
   position: fixed;
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 999;
+  z-index: 40;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -445,6 +448,10 @@ html:not(.dark) .b360-sticky-bar {
   background: rgba(255, 255, 255, 0.95);
   border-color: rgba(2, 132, 199, 0.35);
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+}
+
+body:has([role="dialog"]) .b360-sticky-bar {
+  display: none;
 }
 
 .b360-sticky-cta-btn {
