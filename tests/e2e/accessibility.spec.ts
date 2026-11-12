@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { signUp, uniqueTestEmail, waitForAppReady } from './helpers';
+import { navigateViaSidebar, signUp, uniqueTestEmail, waitForAppReady } from './helpers';
 
 // Varredura automática de acessibilidade (axe-core) nas telas principais. Não bloqueia em toda e
 // qualquer violação — o app tem um backlog conhecido de achados `moderate`/`minor` (ver
@@ -128,7 +128,7 @@ test.describe('Acessibilidade automática (axe-core)', () => {
 
   test('Pipeline CRM não tem violações críticas/sérias', async ({ page }, testInfo) => {
     await signUp(page, { email: uniqueTestEmail('a11y-crm') });
-    await page.getByRole('button', { name: 'Pipeline CRM' }).click();
+    await navigateViaSidebar(page, 'crm');
     await waitForAppReady(page);
     await assertNoBlockingViolations(page, testInfo);
   });

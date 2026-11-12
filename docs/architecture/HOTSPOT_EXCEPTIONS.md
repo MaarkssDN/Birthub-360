@@ -245,13 +245,7 @@ propósito por estar fora de "## Exceções ativas"):
 - **Atualizado em:** 2026-11-10
 - **Reavaliar até:** 2026-11-30
 
-### `src/features/characters/characterCatalog.ts`
 
-- **Limite excepcional:** 1150 linhas
-- **Dono:** Marks-Mah (autor da expansão do catálogo de personagens; fora do roster de agentes)
-- **Motivo:** catálogo declarativo dos personagens do Birth Hub 360° (metadados, roteiros e configurações de runtime), que está em 1112 linhas após a expansão para 29 personagens. É essencialmente uma tabela de dados coesa; a modularização por domínio de personagem fica planejada enquanto o gate precisa continuar desbloqueado.
-- **Registrado em:** 2026-11-10
-- **Reavaliar até:** 2026-11-30
 
 ### `src/features/settings/components/PillarSettingsPlaceholder.tsx`
 
