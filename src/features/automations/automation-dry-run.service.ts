@@ -12,6 +12,11 @@ import {
   matchesConditions,
   renderTemplate,
 } from './automation.engine.js';
+import type {
+  CadenceActionConfig,
+  UpdateCustomFieldActionConfig,
+  WebhookActionConfig,
+} from './automation.types.js';
 import type { Automation } from './domain/Automation.js';
 
 /**
@@ -43,6 +48,31 @@ import type { Automation } from './domain/Automation.js';
  * inteira numa chamada síncrona de tela; (c) RBAC igual ao resto da feature (ADMIN/GESTOR, ver
  * `automation.routes.ts`) — quem pode ver o preview já podia ver os mesmos leads/atividades em
  * outras telas do CRM, então não há exposição de dado nova.
+ *
+ * ## Modo sandbox (cobertura de TODAS as ações do motor)
+ *
+ * O dry-run é o "sandbox" do motor: `runAction` NUNCA é chamado neste arquivo, então nenhum efeito
+ * colateral pode escapar por construção — não é uma execução com rollback, é uma prévia que
+ * espelha as MESMAS validações de config do `runAction` real (campos obrigatórios, lead vinculado,
+ * janela de ligação, opt-out) e descreve o efeito que SERIA produzido. Isso cobre as 7 ações do
+ * catálogo (`automation.engine.ts`), inclusive as de alto impacto que a prévia original não
+ * alcançava e que antes caíam em "Ação desconhecida":
+ *
+ * - "Chamar webhook externo" → registra método/URL renderizados; o `fetch` HTTP nunca acontece.
+ * - "Atualizar campo customizado" → registra entidade/campo/valor renderizados; o `prisma.*.update`
+ *   nunca acontece.
+ * - "Enrich lead" → registra o lead que seria enriquecido; o `domainEventMesh.publish` (job
+ *   enfileirado) nunca acontece.
+ * - "Mover para outra etapa de cadência" → registra a mutação pretendida na cadência; o
+ *   `cadenceIntegrationService.executeCadenceAction` nunca roda — logo nenhum enrollment é
+ *   alterado e nenhum envio multicanal (WhatsApp/e-mail) que a cadência dispara é agendado.
+ *
+ * Efeitos que já eram cobertos e continuam sem execução: e-mail SMTP ("Notificar equipe" canal
+ * e-mail), notificação in-app, atividade criada no CRM e ligação do SDR de Voz (`callLead`).
+ * A abordagem escolhida foi estender a prévia existente (sandbox por construção) em vez de executar
+ * `runAction` dentro de transação com rollback: efeitos externos pagos (voz, SMTP, HTTP, filas)
+ * não são revertíveis por rollback de banco, então interceptá-los antes de executar é o único
+ * sandbox realmente seguro — e é o que este serviço já fazia para as 3 ações originais.
  *
  * ## Reuso, não duplicação
  *
@@ -106,9 +136,11 @@ export interface DryRunResult {
 
 const METHODOLOGY_NOTE =
   'Simulação contra uma amostra dos dados reais e atuais da organização (mais recentes primeiro), ' +
-  'não contra dados fabricados — mas nenhuma ação foi executada de verdade (nenhum e-mail, atividade ' +
-  'ou ligação). Se a amostra não cobrir todos os registros da organização, o resultado pode não ' +
-  'refletir 100% dos casos reais.';
+  'não contra dados fabricados — em modo sandbox nenhuma ação é executada de verdade: e-mails, ' +
+  'ligações de voz, chamadas HTTP de webhook, escritas no CRM, publicações em fila e mutações de ' +
+  'cadência (incluindo os envios de WhatsApp que uma cadência dispara) são apenas registradas ' +
+  'como efeitos simulados. Se a amostra não cobrir todos os registros da organização, o resultado ' +
+  'pode não refletir 100% dos casos reais.';
 
 function daysSince(date: Date, now: Date): number {
   return Math.floor((now.getTime() - date.getTime()) / (24 * 60 * 60 * 1000));
@@ -385,6 +417,154 @@ async function previewCallSdrVoz(
   return { action: 'Ligar via SDR de Voz', wouldFire: true, details: { targetNumber } };
 }
 
+/** Prevê "Chamar webhook externo" sem disparar nenhum `fetch` — mesma validação de config do
+ *  `runAction` real (url obrigatória), mas a chamada HTTP NUNCA acontece neste arquivo. O preview
+ *  registra método/URL já renderizados como efeito simulado; o status remoto é desconhecido por
+ *  definição (a chamada não foi feita). */
+function previewWebhook(
+  config: WebhookActionConfig,
+  candidate: Candidate,
+): DryRunActionPreview {
+  if (!config.url) {
+    return {
+      action: 'Chamar webhook externo',
+      wouldFire: false,
+      blockedReason: 'Ação "Chamar webhook externo" requer o campo "url".',
+      details: {},
+    };
+  }
+  return {
+    action: 'Chamar webhook externo',
+    wouldFire: true,
+    details: {
+      method: config.method ?? 'POST',
+      url: renderTemplate(config.url, candidate.data),
+      simulatedEffect: 'chamada HTTP externa (webhook)',
+      note: 'A requisição HTTP NÃO foi enviada — apenas registrada como efeito simulado.',
+    },
+  };
+}
+
+/** Prevê "Atualizar campo customizado" sem gravar nada — mesmas validações do `runAction` real
+ *  (field obrigatório; na prática o motor só grava quando o alvo é Lead, demais entidades retornam
+ *  sem efeito). O `prisma.*.update` nunca acontece aqui. */
+function previewUpdateCustomField(
+  config: UpdateCustomFieldActionConfig,
+  candidate: Candidate,
+): DryRunActionPreview {
+  if (!config.field) {
+    return {
+      action: 'Atualizar campo customizado',
+      wouldFire: false,
+      blockedReason: 'Ação "Atualizar campo customizado" requer o campo "field".',
+      details: {},
+    };
+  }
+  const targetEntity = config.entity ?? candidate.entity;
+  const targetEntityId = config.entityId ?? candidate.entityId;
+  if (targetEntity !== 'Lead') {
+    return {
+      action: 'Atualizar campo customizado',
+      wouldFire: false,
+      blockedReason:
+        'O motor só aplica esta ação a Lead — para outros alvos a execução real termina sem efeito.',
+      details: { entity: targetEntity, entityId: targetEntityId, field: config.field },
+    };
+  }
+  const value =
+    typeof config.value === 'string' ? renderTemplate(config.value, candidate.data) : config.value;
+  return {
+    action: 'Atualizar campo customizado',
+    wouldFire: true,
+    details: {
+      entity: 'Lead',
+      entityId: targetEntityId,
+      field: config.field,
+      value,
+      simulatedEffect: 'escrita no CRM (lead)',
+      note: 'A atualização NÃO foi gravada — apenas registrada como efeito simulado.',
+    },
+  };
+}
+
+/** Prevê "Enrich lead" sem enfileirar nada — mesma resolução de leadId do `runAction` real.
+ *  O `domainEventMesh.publish` (que dispara o job de enriquecimento) NUNCA acontece aqui. */
+function previewEnrichLead(candidate: Candidate): DryRunActionPreview {
+  const leadId =
+    candidate.entity === 'Lead'
+      ? candidate.entityId
+      : typeof candidate.data.leadId === 'string'
+        ? candidate.data.leadId
+        : null;
+  if (!leadId) {
+    return {
+      action: 'Enrich lead',
+      wouldFire: false,
+      blockedReason: 'Ação "Enrich lead" precisa de um lead vinculado ao evento.',
+      details: {},
+    };
+  }
+  return {
+    action: 'Enrich lead',
+    wouldFire: true,
+    details: {
+      leadId,
+      queuedEvent: 'LEAD_ENRICHMENT_REQUESTED',
+      simulatedEffect: 'publicação em fila (job de enriquecimento)',
+      note: 'O evento NÃO foi publicado na fila — nenhum job de enriquecimento foi enfileirado.',
+    },
+  };
+}
+
+/** Prevê "Mover para outra etapa de cadência" sem tocar em enrollment nenhum — mesmas
+ *  validações do `runAction` real (`cadenceId` obrigatório; leadId via config, entidade Lead ou
+ *  `data.leadId`). O `cadenceIntegrationService.executeCadenceAction` NUNCA é chamado aqui: logo
+ *  nenhum enrollment é criado/alterado e nenhum envio multicanal (WhatsApp/e-mail) que a cadência
+ *  dispara é agendado. */
+function previewCadenceAction(
+  config: CadenceActionConfig,
+  candidate: Candidate,
+): DryRunActionPreview {
+  if (!config.cadenceId) {
+    return {
+      action: 'Mover para outra etapa de cadência',
+      wouldFire: false,
+      blockedReason:
+        'Ação "Mover para outra etapa de cadência" requer "cadenceId".',
+      details: {},
+    };
+  }
+  const leadId =
+    config.leadId ??
+    (candidate.entity === 'Lead'
+      ? candidate.entityId
+      : typeof candidate.data.leadId === 'string'
+        ? candidate.data.leadId
+        : undefined);
+  if (!leadId) {
+    return {
+      action: 'Mover para outra etapa de cadência',
+      wouldFire: false,
+      blockedReason:
+        'Ação "Mover para outra etapa de cadência" precisa de um leadId.',
+      details: { cadenceId: config.cadenceId },
+    };
+  }
+  return {
+    action: 'Mover para outra etapa de cadência',
+    wouldFire: true,
+    details: {
+      cadenceId: config.cadenceId,
+      leadId,
+      cadenceAction: config.action ?? 'move_to_step',
+      stepIndex: config.stepIndex ?? null,
+      pauseDays: config.pauseDays ?? null,
+      simulatedEffect: 'mutação de cadência multicanal',
+      note: 'A cadência NÃO foi alterada — nenhum enrollment mudou e nenhum envio de WhatsApp/e-mail foi agendado.',
+    },
+  };
+}
+
 async function previewAction(
   organizationId: string,
   automation: { name: string; action: AutomationActionType; actionConfig: unknown },
@@ -400,6 +580,21 @@ async function previewAction(
   }
   if (automation.action === 'Ligar via SDR de Voz') {
     return previewCallSdrVoz(organizationId, candidate);
+  }
+  if (automation.action === 'Chamar webhook externo') {
+    return previewWebhook(config as unknown as WebhookActionConfig, candidate);
+  }
+  if (automation.action === 'Atualizar campo customizado') {
+    return previewUpdateCustomField(
+      config as unknown as UpdateCustomFieldActionConfig,
+      candidate,
+    );
+  }
+  if (automation.action === 'Enrich lead') {
+    return previewEnrichLead(candidate);
+  }
+  if (automation.action === 'Mover para outra etapa de cadência') {
+    return previewCadenceAction(config as unknown as CadenceActionConfig, candidate);
   }
   return {
     action: automation.action,
