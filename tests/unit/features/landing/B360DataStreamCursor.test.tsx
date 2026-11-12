@@ -70,11 +70,16 @@ describe('B360DataStreamCursor', () => {
   });
 
   it('renderiza canvas e cursores, mas não liga o efeito no ambiente de teste', () => {
+    // Stub canvas/rAF presentes: se o guard NODE_ENV==='test' for removido, o loop
+    // liga e este teste falha (classe ativa + rAF enfileirado).
+    const { ctx } = installCanvasStub();
     const { container } = render(<B360DataStreamCursor />);
     expect(container.querySelector('canvas.b360-data-stream-canvas')).toBeInTheDocument();
     expect(container.querySelector('.b360-cursor-focus-dot')).toBeInTheDocument();
     expect(container.querySelector('.b360-cursor-focus-ring')).toBeInTheDocument();
     expect(document.body.classList.contains('b360-custom-cursor-active')).toBe(false);
+    expect(raf.pendingCount()).toBe(0);
+    expect(ctx.clearRect).not.toHaveBeenCalled();
   });
 
   it('não ativa o cursor customizado em viewport móvel', () => {

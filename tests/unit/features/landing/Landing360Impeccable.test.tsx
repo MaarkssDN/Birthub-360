@@ -130,7 +130,7 @@ describe('Landing360Impeccable', () => {
     fireEvent.click(screen.getByRole('button', { name: /Acessar plataforma/i }));
     expect(navMock).toHaveBeenCalledWith('/login', { replace: true });
     expect(screen.getByText(/Birth Hub 360°/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/seu@email.com/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('seu@email.com')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^Entrar$/i })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Voltar/i }));
@@ -183,7 +183,7 @@ describe('Landing360Impeccable', () => {
   it('valida e submete signin, signup e recuperação de senha', async () => {
     renderPage('/login', 'login');
 
-    const email = screen.getByPlaceholderText(/seu@email.com/i);
+    const email = screen.getByPlaceholderText('seu@email.com');
     const submit = () => fireEvent.click(screen.getByRole('button', { name: /^Entrar$/i }));
 
     fireEvent.change(email, { target: { value: 'usuario@intranet' } });
@@ -249,7 +249,7 @@ describe('Landing360Impeccable', () => {
     fireEvent.click(remember);
     expect(remember).not.toBeChecked();
 
-    fireEvent.change(screen.getByPlaceholderText(/seu@email.com/i), {
+    fireEvent.change(screen.getByPlaceholderText('seu@email.com'), {
       target: { value: 'executivo@empresa.com.br' },
     });
     fireEvent.change(password, { target: { value: 'SenhaForte1' } });
@@ -260,14 +260,14 @@ describe('Landing360Impeccable', () => {
   it('alterna para SSO, inicia o fluxo Microsoft e trata falha', async () => {
     renderPage('/login', 'login');
     fireEvent.click(screen.getByRole('tab', { name: /^SSO$/i }));
-    expect(screen.getByPlaceholderText(/empresa.com.br/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('empresa.com.br')).toBeInTheDocument();
 
     signInSocialMock.mockRejectedValueOnce(new Error('sso'));
     fireEvent.click(screen.getByRole('button', { name: /Conectar via SSO/i }));
     expect(await screen.findByText(/Erro ao iniciar SSO/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Usar e-mail/i }));
-    expect(screen.getByPlaceholderText(/seu@email.com/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('seu@email.com')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('tab', { name: /^SSO$/i }));
     signInSocialMock.mockResolvedValueOnce({});

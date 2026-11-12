@@ -293,9 +293,13 @@ describe('CinematicFX', () => {
     });
 
     it('não liga a física no ambiente de teste', () => {
+      // Stub canvas presente: se o guard NODE_ENV==='test' for removido, a física
+      // agenda rAF e este teste falha.
+      const { ctx } = installCanvasStub();
       const { container } = render(<B360FloatingGravityNodes />);
       expect(container.querySelector('.b360-gravity-canvas')).toBeInTheDocument();
       expect(raf.pendingCount()).toBe(0);
+      expect(ctx.clearRect).not.toHaveBeenCalled();
     });
 
     it('simula a física no canvas, repele no ponteiro e respeita as bordas', () => {

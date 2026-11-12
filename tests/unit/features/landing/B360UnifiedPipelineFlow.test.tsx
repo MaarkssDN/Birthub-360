@@ -65,6 +65,9 @@ describe('B360UnifiedPipelineFlow', () => {
   });
 
   it('renderiza o HUD interativo, mas não liga o loop de canvas no ambiente de teste', () => {
+    // Stub canvas/rAF presentes: se o guard NODE_ENV==='test' for removido, o loop
+    // agenda rAF e este teste falha.
+    const { ctx } = installCanvasStub();
     render(<B360UnifiedPipelineFlow />);
     expect(
       screen.getByRole('region', {
@@ -75,6 +78,8 @@ describe('B360UnifiedPipelineFlow', () => {
     expect(screen.getByText(/Eventos integrados:/i)).toBeInTheDocument();
     expect(screen.getByText('1.482')).toBeInTheDocument();
     expect(document.querySelector('canvas.b360-unified-pipeline-canvas')).toBeInTheDocument();
+    expect(raf.pendingCount()).toBe(0);
+    expect(ctx.clearRect).not.toHaveBeenCalled();
   });
 
   it('não inicia o loop se o contexto 2d estiver indisponível', () => {
