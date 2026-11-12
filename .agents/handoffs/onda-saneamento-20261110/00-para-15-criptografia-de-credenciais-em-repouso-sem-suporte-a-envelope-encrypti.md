@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 15 (Segurança Aplicada e Rotação de Segredos)
 Onda: Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-010)
-Status: em-andamento
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 5
@@ -65,3 +65,15 @@ envelope verdes + 108 testes adjacentes (interceptors, integration settings, bac
 reencrypt, whatsapp auth state); `npx tsc --noEmit` limpo; biome limpo nos arquivos
 tocados (baseline de warnings pré-existente inalterado). Run report:
 `.agents/runs/agente-15-tarefa-saneamento-010.md`. Pendente: revisão formal do Agente 24.
+
+### Fechamento (Agente 15 — 2026-11-12)
+
+Implementação mergeada em `main` via **PR #239** (`55424831b`, wave 3 saneamento)
+e revisada pelo Agente 24 com parecer **APROVADO**
+(`.agents/reviews/24-revisao-pr239-w3-saneamento-8a775c4.md` no branch
+`agente/24-review-pr239-8a775c4`, commit `e4a2ec98d`; complementado por
+`24-revisao-w3-saneamento-pos-pr239.md`, commit `f48da75eb`). Verificado
+em `origin/main`: envelope keyed `enc:v1:<keyId>:...` em
+`src/lib/crypto/secretFields.ts:13-22` e `src/lib/security/credentialCrypto.ts`;
+`scripts/security/credential-envelope.ts` e `docs/security/ROTACAO_SEGREDOS.md`
+§3.1 presentes. Status → `resolvido`.

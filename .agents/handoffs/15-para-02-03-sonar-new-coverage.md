@@ -89,3 +89,64 @@ já existentes de `Landing360.test.tsx`), `typecheck`, `lint` e `build` ok.
 ## Nota Agente 02 (2026-11-12)
 
 Na landing, o formulário de lead agora tem cobertura de unidade real (sucesso mockado do contrato `POST /api/public/demo-requests`, consent LGPD obrigatório e validação de WhatsApp) em `tests/unit/features/landing/Landing360.test.tsx`. Navegação mobile e novo footer são exercitados pelos testes de render existentes. Demais arquivos do escopo 02 devem ser priorizados pelo 08 na medição do quality gate.
+
+---
+
+Parcial — lote 2 (settings + `src/components`), branch `agente-02/sonar-coverage-settings-1`.
+
+Testes reais (Vitest 4 + jsdom + Testing Library) para o recorte de settings
+do período de código novo e para os componentes novos de maior impacto em
+`src/components`, **sem alterar código de produção, CSS da landing, snapshots
+Playwright, limiar do Sonar ou exclusions**. Sem rebase e sem force push.
+
+Cobertura local (v8, `vitest.unit.config.ts`) — arquivos alvo deste lote:
+
+### Settings
+
+| arquivo | linhas antes | linhas depois |
+|---------|-------------:|--------------:|
+| `pillarSettings.routes.ts` | 0% (0/18) | 100% (18/18) |
+| `pillarSettings.api.ts` | 0% (0/4) | 100% (4/4) |
+| `PillarSettingsSettingRepository.ts` | 12,50% (1/8) | 100% (8/8) |
+| `pillarSettings.ts` (domain) | 72,50% (29/40) | 97,50% (39/40) |
+| `pillarSettings.service.ts` | 86,36% (19/22) | 95,45% (21/22) |
+| `PillarSettingsPlaceholder.tsx` | 50,31% (80/159) | 84,27% (134/159) |
+| **subconjunto settings alvo** | **51,39% (129/251)** | **89,24% (224/251)** |
+
+São +95 linhas executáveis nestes arquivos (o Sonar apontava 90 descobertas
+em settings no período). O painel cobre os 8 pilares, validação/erros, abas
+e o contrato HTTP (GET/PUT, 401/403/404).
+
+### `src/components`
+
+| arquivo | linhas antes | linhas depois |
+|---------|-------------:|--------------:|
+| `AssistantsDock.tsx` | 0% (0/43) | 100% (43/43) |
+| `CommercialJourneyStream.tsx` | 0% (0/24) | 91,66% (22/24) |
+| `NextBestActionCard.tsx` | 0% (0/15) | 100% (15/15) |
+| `ModuleRail.tsx` | 71,11% (32/45) | 95,55% (43/45) |
+| `FloatingNavbar.tsx` | 0% (0/13) | 100% (13/13) |
+| `PricingSection.tsx` | 0% (0/9) | 100% (9/9) |
+| `Glow.tsx` | 0% (0/3) | 100% (3/3) |
+| `StatsGrid.tsx` | 0% (0/3) | 100% (3/3) |
+| `AuroraButton.tsx` | 0% (0/2) | 100% (2/2) |
+| `BentoShowcase.tsx` | 0% (0/1) | 100% (1/1) |
+| `CtaBanner.tsx` | 0% (0/1) | 100% (1/1) |
+| `HeroMockup.tsx` | 0% (0/1) | 100% (1/1) |
+| `ModuleAgentWidget.tsx` | 40,36% (44/109) | 92,66% (101/109) |
+| **subconjunto components alvo** | **28,16% (76/270)** | **95,19% (257/270)** |
+
+São +181 linhas executáveis neste recorte (incluindo o aprofundamento do
+stream SSE do `ModuleAgentWidget`). Não entramos em `BirthHubOrbit360`
+(27,5%, r3f) nem no `CrmBoard` (peso de código novo baixo frente ao tamanho).
+
+**Total do lote 2:** +276 linhas executáveis cobertas nos arquivos alvo.
+
+Somando com o lote 1 (+886), o local aponta ~1162 linhas a mais no numerador.
+O QG precisava de ~1228 linhas novas cobertas para chegar a 80%. A folga
+restante, se o Sonar não creditar 1:1, deve ficar na ordem de **0–150 linhas**
+(principalmente `BirthHubOrbit360` e o residual do Placeholder). Confirmar no
+Quality Gate após o merge dos PRs #230 e deste lote.
+
+Gates locais deste lote: suíte nova + testes pré-existentes de settings/
+layout/widget, `typecheck`, `lint` (apenas warnings pré-existentes) e `build` ok.
