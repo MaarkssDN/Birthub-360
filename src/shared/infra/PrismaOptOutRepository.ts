@@ -96,11 +96,20 @@ export class PrismaOptOutRepository implements OptOutRepository {
     return rows.map(toDomain);
   }
 
-  async list(organizationId: string, limit = 200): Promise<OptOutRecord[]> {
+  /**
+   * `limit` omitido → lista COMPLETA do tenant (sem truncamento silencioso): consumidores
+   * em lote e telas de auditoria precisam enxergar todo opt-out registrado, inclusive os
+   * mais antigos — truncar aqui reabriria o fail-open que a trava de opt-out existe para
+   * fechar (TAREFA do plano de saneamento W3, handoff 17→01A). `limit` explícito → no
+   * máximo N registros (clamp 1..500), para chamadas que realmente querem uma página.
+   */
+  async list(organizationId: string, limit?: number): Promise<OptOutRecord[]> {
     const rows = await prisma.optOutRecord.findMany({
       where: { organizationId },
       orderBy: { createdAt: 'desc' },
-      take: Math.min(Math.max(limit, 1), 500),
+      ...(limit === undefined
+        ? {}
+        : { take: Math.min(Math.max(limit, 1), 500) }),
     });
     return rows.map(toDomain);
   }
