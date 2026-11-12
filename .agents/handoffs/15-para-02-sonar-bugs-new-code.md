@@ -3,7 +3,7 @@
 De: 15 — Segurança Aplicada
 Para: 02 — Produto e UX (layout/nav e superfície do Copiloto); 03 — Design e Acessibilidade (landing, em cópia)
 Onda: Quality Gate da main `94f95097` (período de código novo desde 2026-10-27T21:30:30Z, `previous_version`)
-Status: aberto
+Status: resolvido
 Prioridade: alto (bloqueia `new_reliability_rating` — nota C, limiar A)
 
 ## Problema
@@ -58,4 +58,31 @@ outro dono).
 
 ## Resolução
 
-(preenchido pelo destinatário ao resolver)
+Corrigido pelo Agente 02 na branch `agente-02/sonar-bugs-new-code`, a partir da
+`origin/main` `94f95097b` (Quality Gate citado no handoff). SHA do fix:
+`ca3beab91751565ae115f5dda8fbb3536e63add8`. PR:
+https://github.com/marcelinhomarkss-rgb/Birthub-360/pull/229 (HEAD `360b6aac5`).
+
+- **S3923** `CopilotoIaPanel.tsx`: removido o ternário inútil
+  `` embedded ? '' : '' ``. O `className` ficou estático
+  `flex gap-1 border-b border-line`. Os dois ramos já eram vazios; não havia
+  diferença de intenção a preservar além do comportamento atual (nenhuma
+  classe extra no modo embutido ou não).
+- **S3923** `OrquestracaoViewer.tsx`: removido o ternário
+  `` isDark ? 'text-slate-500' : 'text-slate-500' ``. O `className` ficou
+  estático `text-[10px] block font-sans text-slate-500`, a mesma cor nos
+  dois temas — comportamento visual preservado, não era um bug de intenção
+  (a cor já era idêntica no claro e no escuro).
+- **S9383** `ModuleRail.tsx` (`goHome` / `openModule`) e
+  `PillarDetailModal.tsx`: `void navigate(...)`. Confirmado no tipo de
+  `react-router` (`NavigateFunction`): o retorno é `void | Promise<void>`.
+  O operador `void` marca a Promise como intencionalmente ignorada, sem
+  mudar o destino nem o momento da navegação.
+
+Testes existentes `tests/unit/features/landing/PillarDetailModal.test.tsx` e
+`tests/unit/features/landing/pillars/OrquestracaoViewer.test.tsx`: 18
+passaram. Não há testes unitários de `ModuleRail` nem de `CopilotoIaPanel`;
+não foram adicionados testes só para className estático ou para o `void`.
+`npm run typecheck`, `npm run lint` (`lint:ci` é o mesmo comando) e
+`npm run build` passaram. Quality Gate e exclusões do Sonar não foram
+alterados.

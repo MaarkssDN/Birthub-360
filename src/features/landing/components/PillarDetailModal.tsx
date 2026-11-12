@@ -41,7 +41,7 @@ export function PillarDetailModal({
     onClose();
     if (pillar) {
       if (currentUser) {
-        navigate(pillar.route);
+        void navigate(pillar.route);
       } else {
         onProceedToLogin();
       }
