@@ -1,6 +1,10 @@
 import { test, expect } from '@playwright/test';
 import { signUp, uniqueTestEmail, waitForAppReady } from '../tests/e2e/helpers';
-import { setupDeterministicState, waitForVisualFonts } from './deterministic-state';
+import {
+  setupDeterministicState,
+  waitForVisualContentReady,
+  waitForVisualFonts,
+} from './deterministic-state';
 
 // Configs for screenshot masks
 const MASKS = {
@@ -28,6 +32,7 @@ test.describe('Visual Regression', () => {
         await setupDeterministicState(page, theme);
         await page.goto('/login');
         await waitForAppReady(page);
+        await waitForVisualContentReady(page);
         await waitForVisualFonts(page);
         await expect(page).toHaveScreenshot(`login-${theme}.png`, SCREENSHOT_OPTIONS);
       });
@@ -37,6 +42,7 @@ test.describe('Visual Regression', () => {
         await signUp(page, { email: uniqueTestEmail(`visual-dash-${theme}`) });
         await page.goto('/app/dashboard');
         await waitForAppReady(page);
+        await waitForVisualContentReady(page);
         await waitForVisualFonts(page);
         await expect(page).toHaveScreenshot(`dashboard-${theme}.png`, {
           ...SCREENSHOT_OPTIONS,
@@ -49,6 +55,7 @@ test.describe('Visual Regression', () => {
         await signUp(page, { email: uniqueTestEmail(`visual-workspace-${theme}`) });
         await page.goto('/app/workspace');
         await waitForAppReady(page);
+        await waitForVisualContentReady(page);
         await waitForVisualFonts(page);
         await expect(page).toHaveScreenshot(`workspace-${theme}.png`, SCREENSHOT_OPTIONS);
       });
@@ -58,6 +65,10 @@ test.describe('Visual Regression', () => {
         await signUp(page, { email: uniqueTestEmail(`visual-crm-${theme}`) });
         await page.goto('/app/crm');
         await waitForAppReady(page);
+        await waitForVisualContentReady(page);
+        await expect(page.getByText(/Leads e pré-vendas|Negócios e fechamento/)).toBeVisible({
+          timeout: 15_000,
+        });
         await waitForVisualFonts(page);
         await expect(page).toHaveScreenshot(`crm-${theme}.png`, SCREENSHOT_OPTIONS);
       });
@@ -67,6 +78,13 @@ test.describe('Visual Regression', () => {
         await signUp(page, { email: uniqueTestEmail(`visual-prospect-${theme}`) });
         await page.goto('/app/prospect');
         await waitForAppReady(page);
+        await waitForVisualContentReady(page);
+        await expect(page.getByRole('heading', { name: /Busca Direta/ })).toBeVisible({
+          timeout: 15_000,
+        });
+        await expect(page.getByRole('button', { name: /Consultar CNPJ/ })).toBeVisible({
+          timeout: 15_000,
+        });
         await waitForVisualFonts(page);
         await expect(page).toHaveScreenshot(`prospect-${theme}.png`, SCREENSHOT_OPTIONS);
       });
@@ -76,6 +94,7 @@ test.describe('Visual Regression', () => {
         await signUp(page, { email: uniqueTestEmail(`visual-intelligence-${theme}`) });
         await page.goto('/app/intelligence');
         await waitForAppReady(page);
+        await waitForVisualContentReady(page);
         await waitForVisualFonts(page);
         await expect(page).toHaveScreenshot(`intelligence-${theme}.png`, SCREENSHOT_OPTIONS);
       });
@@ -85,6 +104,7 @@ test.describe('Visual Regression', () => {
         await signUp(page, { email: uniqueTestEmail(`visual-analytics-${theme}`) });
         await page.goto('/app/analytics');
         await waitForAppReady(page);
+        await waitForVisualContentReady(page);
         await waitForVisualFonts(page);
         await expect(page).toHaveScreenshot(`analytics-${theme}.png`, SCREENSHOT_OPTIONS);
       });
@@ -94,6 +114,7 @@ test.describe('Visual Regression', () => {
         await signUp(page, { email: uniqueTestEmail(`visual-integrations-${theme}`) });
         await page.goto('/app/integrations');
         await waitForAppReady(page);
+        await waitForVisualContentReady(page);
         await waitForVisualFonts(page);
         await expect(page).toHaveScreenshot(`integrations-${theme}.png`, SCREENSHOT_OPTIONS);
       });
@@ -103,6 +124,7 @@ test.describe('Visual Regression', () => {
         await signUp(page, { email: uniqueTestEmail(`visual-calendar-${theme}`) });
         await page.goto('/app/calendar');
         await waitForAppReady(page);
+        await waitForVisualContentReady(page);
         await waitForVisualFonts(page);
         await expect(page).toHaveScreenshot(`calendar-${theme}.png`, SCREENSHOT_OPTIONS);
       });
@@ -112,6 +134,7 @@ test.describe('Visual Regression', () => {
         await signUp(page, { email: uniqueTestEmail(`visual-automations-${theme}`) });
         await page.goto('/app/automations');
         await waitForAppReady(page);
+        await waitForVisualContentReady(page);
         await waitForVisualFonts(page);
         await expect(page).toHaveScreenshot(`automations-${theme}.png`, SCREENSHOT_OPTIONS);
       });
@@ -123,6 +146,7 @@ test.describe('Visual Regression', () => {
         await signUp(page, { email: uniqueTestEmail(`visual-admin-${theme}`), name: 'E2E Admin' });
         await page.goto('/app/module-access');
         await waitForAppReady(page);
+        await waitForVisualContentReady(page);
         // Garante que o painel carregou a linha real (spinner sumiu e a célula existe)
         await expect(page.locator('.animate-spin')).toHaveCount(0, { timeout: 15_000 });
         const userCell = page.locator('table tbody tr th').first();
