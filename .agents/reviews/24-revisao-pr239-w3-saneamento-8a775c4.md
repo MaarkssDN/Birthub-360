@@ -68,3 +68,24 @@ Este parecer aprova **exclusivamente** o conteúdo do PR #239 no commit `8a775c4
 Após o parecer, o PR recebeu o commit `15f674526` ("style(format): biome format nos arquivos da wave 3 (gate format:check)"). Delta auditado via `git diff 8a775c412..15f674526`: **somente 2 arquivos, +2/−7, formatação pura** — colapso de quebras de linha em `src/bootstrap/security.ts` (`isLocalDevOrigin`, condição `parts.length === 4`) e `src/shared/infra/PrismaOptOutRepository.ts` (`take` clamp em `list()`). Nenhuma mudança semântica, nenhum arquivo novo, nenhum escopo alterado.
 
 **Veredito estendido: APROVADO também para o HEAD `15f674526d22591bef697aa2abab2efcb142315b`** do PR #239. Todas as demais condições do parecer permanecem válidas.
+
+## Adendo 2026-11-12 — extensão ao SHA `909c4eb2e`
+
+Após o adendo anterior, o PR recebeu o commit `909c4eb2e` ("fix(security): hasOwn guard no lookup dinâmico de TOOL_EXECUTORS (CodeQL)"). Head confirmado: `gh pr view 239 --json headRefOid` = `909c4eb2e7f04d376e75f2da106736ee962ed25a`.
+
+**Delta auditado** (`git diff 15f674526..909c4eb2e`): **1 arquivo, +5/−3** — somente `src/features/job-roles/services/toolExecutors.ts`, função `getToolExecutor` (linhas ~904-912). Nenhum outro arquivo alterado, nenhum teste removido, nenhuma mudança de contrato.
+
+**Análise da correção**:
+
+- **Motivo correto**: `TOOL_EXECUTORS` é object literal `Record<string, ToolExecutor>`; chaves como `constructor`, `toString`, `hasOwnProperty` resolviam via prototype chain para valores truthy (funções) — `getToolExecutor('constructor')` retornaria um executor "falso" passado a `withToolTimeout`. Alerta CodeQL "Unvalidated dynamic method call" confirmado como risco real, não teórico.
+- **Correção adequada**: `Object.hasOwn` restringe o lookup a chaves próprias enumeráveis — exatamente os `CapabilityDefinition.code` registrados. Chaves de prototype agora retornam `undefined`, mesmo contrato fail-closed já tratado pelo único caller (`agentRuntime.service.ts:193`).
+- **Segundo guard simétrico**: `TOOL_EXECUTOR_TIMEOUT_OVERRIDES_MS[capabilityCode]` com `??` não capturava valores herdados truthy (ex.: `'toString'` → `Function` como `timeoutMs`); o `Object.hasOwn` no override corrige o mesmo vetor.
+- **Sem regressão**: nenhum caller depende de herança de prototype (verificado: `getToolExecutor` só é chamado em `agentRuntime.service.ts:193` com `request.requestedCapability`; teste existente `capability.inexistente → undefined` continua válido).
+- **Compatibilidade**: `Object.hasOwn` é ES2022 (`tsconfig` target/lib ES2022, Node 22) e já é padrão estabelecido no codebase (`src/lib/navigationBus.ts:28`, `src/lib/auth/authorization.ts:59`, `src/lib/ai/gateway/prompt-registry.ts:124`, `src/features/voice-hub/store/workflowPersistence.ts:29,103`, `src/features/intelligence/services/universalConnectors.catalog.ts:424`). Sem nova dependência.
+- **P1–P4**: correção cirúrgica, mínima, sem código especulativo; propriedade do arquivo respeitada (feature `job-roles`, commit de hardening de segurança na branch de consolidação do 00).
+
+**Observação não bloqueadora (nova)**:
+
+- **A7 (baixa, testes)**: o delta não adiciona teste de regressão para chaves de prototype (`getToolExecutor('constructor')` / `'__proto__'` → `undefined`). O comportamento é coberto indiretamente pelo contrato fail-closed, mas um caso explícito em `toolExecutors.timeout.test.ts` blindaria contra regressão futura. Sugestão de follow-up, não bloqueia.
+
+**Veredito estendido: APROVADO também para o HEAD `909c4eb2e7f04d376e75f2da106736ee962ed25a`** do PR #239. Todas as demais condições do parecer permanecem válidas.
