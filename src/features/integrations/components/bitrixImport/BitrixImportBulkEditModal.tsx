@@ -78,7 +78,11 @@ export function BitrixImportBulkEditModal({
           {/* Toolbar de botões toggle (não campos de formulário) — <fieldset> não traria
                     ganho real de acessibilidade aqui, só estilo. */}
           {/* biome-ignore lint/a11y/useSemanticElements: ver comentário acima */}
-          <div role="group" aria-labelledby="bulk-temperature-label" className="grid grid-cols-3 gap-2">
+          <div
+            role="group"
+            aria-labelledby="bulk-temperature-label"
+            className="grid grid-cols-3 gap-2"
+          >
             {(['Frio', 'Morno', 'Quente'] as const).map((temp) => (
               <button
                 key={temp}
@@ -122,8 +126,8 @@ export function BitrixImportBulkEditModal({
                 Qualificar via Voz — em breve
               </span>
               <span className="block text-[11px] text-ink-2 mt-0.5">
-                Disparo em lote ainda não está disponível. Depois de importado, você pode
-                qualificar cada lead individualmente pela ficha dele no CRM.
+                Disparo em lote ainda não está disponível. Depois de importado, você pode qualificar
+                cada lead individualmente pela ficha dele no CRM.
               </span>
             </div>
           </div>

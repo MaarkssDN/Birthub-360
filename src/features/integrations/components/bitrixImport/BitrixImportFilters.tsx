@@ -191,11 +191,7 @@ export function BitrixImportFilters({
             </div>
             <div className="flex flex-col gap-1">
               <label htmlFor="bitrix-filter-vendor" className={filterLabelClass}>
-                {canPickAnyVendor ? (
-                  <Users className="w-3 h-3" />
-                ) : (
-                  <Lock className="w-3 h-3" />
-                )}{' '}
+                {canPickAnyVendor ? <Users className="w-3 h-3" /> : <Lock className="w-3 h-3" />}{' '}
                 Vendedor
               </label>
               {canPickAnyVendor ? (
