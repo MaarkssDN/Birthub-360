@@ -105,4 +105,16 @@ describe('PillarSettingsService — persistência por pilar (Onda F1)', () => {
     expect(market.configured).toBe(false);
     expect(market.values.autoEnrich).toBe(true);
   });
+
+  it('GET e UPDATE exigem organizationId', async () => {
+    const service = new PillarSettingsService(new InMemoryRepo());
+    await expect(service.get('', 'hub')).rejects.toMatchObject({
+      name: 'PillarSettingsServiceError',
+      statusCode: 400,
+    });
+    await expect(service.update('', USER, 'hub', { stagnationDays: 10 })).rejects.toMatchObject({
+      statusCode: 400,
+    });
+  });
+
 });
