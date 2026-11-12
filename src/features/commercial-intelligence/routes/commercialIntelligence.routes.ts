@@ -49,6 +49,11 @@ router.get('/leading-indicators', (req, res, next) =>
 );
 router.get('/alerts', (req, res, next) => resolve().getAlerts(req, res, next));
 router.get('/crm-quality', (req, res, next) => resolve().getCrmQuality(req, res, next));
+// F4: endpoint dedicado do relatório de saúde da integração Bitrix24 (antes só composto em
+// `/crm-quality`) — leitura pura de banco, sem limitador de IA e sem filtro comercial.
+router.get('/bitrix-sync-health', (req, res, next) =>
+  resolve().getBitrixSyncHealth(req, res, next),
+);
 router.get('/deals', (req, res, next) => resolve().getDeals(req, res, next));
 router.get('/deals/:leadId/forecast', (req, res, next) =>
   resolve().getForecastExplain(req, res, next),
