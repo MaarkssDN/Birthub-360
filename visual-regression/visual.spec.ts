@@ -141,9 +141,12 @@ test.describe('Visual Regression', () => {
 
       test('Administração - Module Access', async ({ page }) => {
         await setupDeterministicState(page, theme);
-        // Nome curto e fixo: o default de signUp (`E2E Test User ${email}`) é longo e
-        // quebra a célula em larguras de tablet/mobile. O e-mail segue único (máscara).
-        await signUp(page, { email: uniqueTestEmail(`visual-admin-${theme}`), name: 'E2E Admin' });
+        // Nome curto e único: o default de signUp (`E2E Test User ${email}`) é longo e
+        // quebra a célula em tablet/mobile; um nome fixo igual em todos os workers
+        // colide com Organization.name (única, derivada do primeiro usuário).
+        const adminEmail = uniqueTestEmail(`visual-admin-${theme}`);
+        const adminName = `E2E ${adminEmail.split('@')[0].slice(-10)}`;
+        await signUp(page, { email: adminEmail, name: adminName });
         await page.goto('/app/module-access');
         await waitForAppReady(page);
         await waitForVisualContentReady(page);
@@ -151,7 +154,7 @@ test.describe('Visual Regression', () => {
         await expect(page.locator('.animate-spin')).toHaveCount(0, { timeout: 15_000 });
         const userCell = page.locator('table tbody tr th').first();
         await expect(userCell).toBeVisible({ timeout: 15_000 });
-        await expect(userCell.locator('span.font-bold.text-ink')).toHaveText('E2E Admin');
+        await expect(userCell.locator('span.font-bold.text-ink')).toHaveText(adminName);
         await expect(userCell.locator('div.text-xs')).toHaveText(/@birthhub360\.com\.br$/);
 
         // Pin do nome/e-mail só depois dos dados assentarem. O seletor antigo

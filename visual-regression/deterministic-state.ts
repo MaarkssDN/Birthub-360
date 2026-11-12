@@ -87,6 +87,9 @@ async function waitForHttpQuietIgnoringSse(page: Page, timeout = 15_000, quietMs
   page.on('requestfailed', onDone);
   try {
     let quietSince: number | null = pending.size === 0 ? Date.now() : null;
+    // Best-effort: o cockpit do dashboard (e similares) faz polling contínuo;
+    // não falhamos o teste se a janela quieta não aparecer — o sinal
+    // obrigatório já foi o fim do skeleton/`aria-busy`.
     await expect
       .poll(
         () => {
@@ -99,7 +102,8 @@ async function waitForHttpQuietIgnoringSse(page: Page, timeout = 15_000, quietMs
         },
         { timeout, intervals: [50, 100, 200] },
       )
-      .toBeGreaterThanOrEqual(quietMs);
+      .toBeGreaterThanOrEqual(quietMs)
+      .catch(() => undefined);
   } finally {
     page.off('request', onRequest);
     page.off('requestfinished', onDone);
