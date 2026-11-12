@@ -21,8 +21,6 @@ import { env } from '../../../../config/env.js';
 
 export type ExtractionFileFormat = 'csv' | 'xlsx' | 'json';
 
-export const EXTRACTION_FILE_FORMATS: readonly ExtractionFileFormat[] = ['csv', 'xlsx', 'json'];
-
 const STORAGE_ROOT = path.resolve(env.BITRIX_EXTRACTION_STORAGE_DIR || './data/bitrix-extractions');
 
 const CSV_FORMULA_PREFIX_REGEX = /^[=+\-@\t\r]/;
@@ -89,7 +87,7 @@ export async function deleteExtractionRunFiles(
  * qualquer string iniciando com `=`, `+`, `-`, `@`, `\t` ou `\r` recebe apóstrofo (`'`)
  * antes do caractere de controle.
  */
-export function sanitizeSpreadsheetFormulaString(raw: string): string {
+function sanitizeSpreadsheetFormulaString(raw: string): string {
   if (CSV_FORMULA_PREFIX_REGEX.test(raw)) {
     return `'${raw}`;
   }
