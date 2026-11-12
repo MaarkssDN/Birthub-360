@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { copilotLiveBus } from '../../../src/features/copilot/copilotLiveBus.js';
 import { LiveCopilotHUD } from '../../../src/features/copilot/components/LiveCopilotHUD.js';
 import { WarRoomArenaView } from '../../../src/features/gamification/components/WarRoomArenaView.js';
-import { PredictiveRevenueCockpit } from '../../../src/features/predictability/components/PredictiveRevenueCockpit.js';
+import { PredictiveRevenueCockpit } from '../../../src/features/commercial-intelligence/components/PredictiveRevenueCockpit.js';
 import { MultiRegionFailoverPanel } from '../../../src/features/settings/components/MultiRegionFailoverPanel.js';
 
 // Mocks do ambiente de teste
@@ -118,33 +118,74 @@ describe('Cockpit Operacional e Telas de Gestão na UI', () => {
     });
   });
 
-  describe('3. Cockpit de Forecast Preditivo P10/P50/P90', () => {
-    it('deve exibir os intervalos de confiança P10, P50 e P90 no horizonte de 30 dias', () => {
-      render(<PredictiveRevenueCockpit />);
+  describe('3. Cockpit de Forecast Preditivo (contrato honesto V2)', () => {
+    const basePayload = {
+      currentPeriod: '2026-01',
+      closedWonRevenue: 0,
+      weightedPipelineRevenue: 0,
+      modelConfidence: 'ESTIMATED_ONLY' as const,
+    };
 
-      expect(screen.getByText('Cockpit de Forecast Preditivo')).toBeDefined();
-      expect(screen.getByText(/P10 · Conservador/i)).toBeDefined();
-      expect(screen.getByText(/P50 · Cenário Base/i)).toBeDefined();
-      expect(screen.getByText(/P90 · Otimista/i)).toBeDefined();
+    it('deve exibir estado de dados insuficientes sem fabricar projeções', () => {
+      render(
+        <PredictiveRevenueCockpit
+          loading={false}
+          data={{
+            ...basePayload,
+            status: 'insufficient_data',
+            projections: null,
+          }}
+          error={null}
+        />,
+      );
+
+      expect(screen.getByTestId('predictive-empty')).toBeDefined();
+      expect(screen.getByText(/Histórico Insuficiente/i)).toBeDefined();
     });
 
-    it('deve permitir alternar o horizonte de tempo para 90 dias', () => {
-      render(<PredictiveRevenueCockpit />);
+    it('deve exibir erro real quando a API falha', () => {
+      render(<PredictiveRevenueCockpit loading={false} data={null} error="timeout" />);
 
-      const btn90d = screen.getByRole('button', { name: /Horizonte 90d/i });
-      fireEvent.click(btn90d);
-
-      expect(screen.getByText(/Horizonte 90d/i)).toBeDefined();
+      expect(screen.getByTestId('predictive-error')).toBeDefined();
+      expect(screen.getByText('timeout')).toBeDefined();
     });
 
-    it('deve permitir aprovar recomendações de alocação de contas com feedback', () => {
-      render(<PredictiveRevenueCockpit />);
+    it('deve exibir horizontes P10/P50/P90 quando há dados reais', () => {
+      render(
+        <PredictiveRevenueCockpit
+          loading={false}
+          data={{
+            ...basePayload,
+            status: 'ok',
+            projections: {
+              days30: {
+                horizonDays: 30,
+                expectedRevenue: 1000,
+                confidenceInterval: { p10: 800, p50: 1000, p90: 1200 },
+                status: 'ok',
+              },
+              days90: {
+                horizonDays: 90,
+                expectedRevenue: 3000,
+                confidenceInterval: { p10: 2400, p50: 3000, p90: 3600 },
+                status: 'ok',
+              },
+              days180: {
+                horizonDays: 180,
+                expectedRevenue: 6000,
+                confidenceInterval: { p10: 4800, p50: 6000, p90: 7200 },
+                status: 'ok',
+              },
+            },
+          }}
+          error={null}
+        />,
+      );
 
-      const approveBtns = screen.getAllByRole('button', { name: /Aprovar/i });
-      expect(approveBtns.length).toBeGreaterThan(0);
-
-      fireEvent.click(approveBtns[0]);
-      expect(screen.getByText('Aprovado')).toBeDefined();
+      expect(screen.getByTestId('predictive-ready')).toBeDefined();
+      expect(screen.getByText('Horizonte 30 Dias')).toBeDefined();
+      expect(screen.getByText('Horizonte 90 Dias')).toBeDefined();
+      expect(screen.getByText('Horizonte 180 Dias')).toBeDefined();
     });
   });
 
