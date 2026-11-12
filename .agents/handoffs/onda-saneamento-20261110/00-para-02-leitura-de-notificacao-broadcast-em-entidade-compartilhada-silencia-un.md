@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 02 (Produto e UX)
 Onda: Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-015)
-Status: aberto
+Status: em-andamento
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 5
@@ -48,3 +48,16 @@ Executar a tarefa `TAREFA-SANEAMENTO-015` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução (Agente 02 — 2026-11-12)
+
+O serviço já implementava leitura broadcast por usuário (DEBT-NOT-001): `readAt` global da notificação broadcast permanece `null` e o estado de leitura é persistido por `(organizationId, userId)` via `Setting` (`notifications.broadcastReads`) com cache em memória. A dívida estava `IMPLEMENTADO / NÃO VALIDADO`.
+
+Validação adicionada em `tests/unit/features/notification-service.test.ts` (15/15 verdes):
+- `unreadCount` exclui broadcasts lidos pelo usuário via `notIn`, mas conta normalmente para colega (`where.id` ausente para USER_B).
+- `list` injeta `readAt` individual para quem leu o broadcast; colega recebe `readAt: null` — sem contágio de leitura.
+- Cenário DEBT-NOT-001 original (A lê → B segue unread) já coberto e reconfirmado.
+
+Sem alteração de código de produção — implementação existente estava correta; faltava evidência de regressão. Persistência depende do delegate `Setting` (schema Prisma, Agente 01) já existente; fallback em memória documentado no serviço.
+
+Pendente: parecer Agente 24 e integração pelo Agente 00.

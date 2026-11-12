@@ -129,6 +129,57 @@ describe('NotificationService.markRead', () => {
     notif.findMany.mockResolvedValue([{ id: 'bcast-2' }]);
     expect(await notificationService.markAllRead(ORG, USER)).toBe(4);
   });
+
+  it('TAREFA-SANEAMENTO-015: unreadCount exclui broadcast lido pelo usuário, mas continua contando para colega', async () => {
+    // USER lê o broadcast bcast-1
+    notif.updateMany.mockResolvedValue({ count: 0 });
+    notif.findMany.mockResolvedValueOnce([{ id: 'bcast-1' }]);
+    await notificationService.markRead(ORG, 'bcast-1', USER);
+
+    // Para USER: o id lido sai da contagem via notIn
+    notif.count.mockResolvedValue(0);
+    await notificationService.unreadCount(ORG, USER);
+    const whereA = notif.count.mock.calls[0][0].where;
+    expect(whereA.id).toEqual({ notIn: ['bcast-1'] });
+
+    // Para USER_B: sem leitura registrada, nenhum id é excluído — broadcast segue unread
+    notif.count.mockResolvedValue(1);
+    await notificationService.unreadCount(ORG, USER_B);
+    const whereB = notif.count.mock.calls[1][0].where;
+    expect(whereB.id).toBeUndefined();
+    expect(whereB.OR).toEqual([{ userId: USER_B }, { userId: null }]);
+  });
+
+  it('TAREFA-SANEAMENTO-015: list injeta readAt individual do broadcast para quem leu — colega recebe readAt null', async () => {
+    const broadcastItem = {
+      id: 'bcast-1',
+      title: 'Alerta de Equipe',
+      body: null,
+      kind: 'Info',
+      entity: null,
+      entityId: null,
+      userId: null,
+      readAt: null,
+      createdAt: new Date('2026-10-15T10:00:00Z'),
+      automation: null,
+    };
+
+    notif.updateMany.mockResolvedValue({ count: 0 });
+    notif.findMany.mockResolvedValueOnce([{ id: 'bcast-1' }]);
+    await notificationService.markRead(ORG, 'bcast-1', USER);
+
+    // USER (leu): readAt hidratado com a data da leitura individual
+    notif.findMany.mockResolvedValueOnce([broadcastItem]);
+    const forA = await notificationService.list(ORG, USER);
+    expect(forA).toHaveLength(1);
+    expect(forA[0]?.readAt).toBeInstanceOf(Date);
+
+    // USER_B (não leu): broadcast permanece readAt null — não há contágio de leitura
+    notif.findMany.mockResolvedValueOnce([broadcastItem]);
+    const forB = await notificationService.list(ORG, USER_B);
+    expect(forB).toHaveLength(1);
+    expect(forB[0]?.readAt).toBeNull();
+  });
 });
 
 describe('NotificationService.remove', () => {
