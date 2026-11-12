@@ -50,3 +50,25 @@
 2. Revisão formal do Agente 24 pendente para AppLayout/CrmBoard (condição de fechamento dos handoffs de saneamento).
 3. Endpoint `/api/public/demo-requests` não existe — form falha observavelmente até o 01 entregar o contrato.
 4. `Landing360Impeccable.tsx` mantido (testes/E2E ativos); remoção depende de decisão do dono/00.
+
+## Remediação SonarQube — cobertura de código novo (PR #245, 2026-11-12)
+
+**Problema:** Sonar reprovou o PR com cobertura em código novo = 21,9% (mínimo 80%).
+
+**Ação:** suíte de testes unitários nova/estendida cobrindo os arquivos novos do diff, sem alterar código de produção e sem mocks que simulem integração real (handlers permanecem vi.fn() de fronteira de componente; fetch só mockado nos pontos de contrato HTTP já existentes).
+
+**Testes adicionados:**
+- `tests/unit/components/CrmBoardToolbar.test.tsx` (novo, 12 testes) — cobre 100% stmt/func/lines de `CrmBoardToolbar.tsx` (header, vitals, filtros, batch bar; branch 88,6%).
+- `tests/unit/features/settings/PillarToolsForms.test.tsx` (novo, 9 testes) — cobre 100% stmt/branch/func/lines de `PillarToolsForms.tsx` (8 pilares + fallback, todos os setters disparados).
+- `tests/unit/components/layout/AppLayout.test.tsx` (novo, 86 testes) — cobre ~99,4% de `AppLayout.tsx`: todas as ~65 rotas /app/* resolvidas com módulos lazy mockados por marcador, redirects (dialer/outbound/catch-all), gates RequireRole (negado p/ VISUALIZADOR, permitido p/ ADMIN), PageFallback, OnboardingTour on/off, onNavigate do CrmOverview.
+- `tests/unit/features/landing/Landing360.test.tsx` (+5 testes) — nav mobile (toggle aria-expanded, fechamento por link), validações do lead form (sem consent LGPD, WhatsApp inválido → sem fetch), erro HTTP 500 observável + payload consentimentoLgpd/equipe/origem, footer (link /privacy + modal editorial), iteração dos 11 COMMAND_MODULES.
+
+**Cobertura medida (vitest --coverage, arquivos-alvo):**
+- `CrmBoardToolbar.tsx`: 100% stmts / 100% funcs / 100% lines (branch 88,6%)
+- `PillarToolsForms.tsx`: 100% em todas as métricas
+- `AppLayout.tsx`: 99,4% stmts / 100% branch / 99,2% funcs / ~100% lines (após cobrir onNavigate)
+- `Landing360.tsx`: 81,6% stmts / 79,6% branch / 71,2% funcs / 83,1% lines (rodando só sua suíte; restante do diff já tinha cobertura prévia)
+
+**Gates:** `npx tsc --noEmit` ✅ · vitest focado 123+ testes verdes ✅ · biome não cobre `tests/**` (config `includes: src/**`) — nenhum arquivo de `src/` alterado nesta remediação, logo `npm run build`/`lint` inalterados em relação ao gate anterior ✅.
+
+**Observação:** sob `--coverage` (instrumentação v8), 2 testes de Landing360 ficaram lentos e falharam por timeout pontual; sem instrumentação a suíte passa 16/16 de forma estável — flake de ambiente de cobertura, não regressão.
