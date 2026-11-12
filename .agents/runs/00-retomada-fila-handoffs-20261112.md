@@ -46,3 +46,7 @@
 - **PR #239 (W3 saneamento — crypto envelope, CORS, opt-out, FK RESTRICT, seed compliance, teardown, TAREFA-031, fix CodeQL `hasOwn`): MERGED** `956402347` — CI 100% verde; parecer 24 estendido ao HEAD (`a339dcc95` em `agente/24-review-pr239-8a775c4`). Incidente: application gate reprovou 1 teste de integração (`lgpd-tenant-key-cascade` esperava CASCADE em FlywheelApproachRecord; migração TAREFA-SANEAMENTO-014 converteu p/ RESTRICT deliberadamente) — corrigida a expectativa do teste (commit `956402347`), adendo 24 aprovado.
 - **Agente 08 despachado** (worktree `agente-08-qa`, branch `agente/08-qa-saneamento`) — slot liberado pós-merge do 08A.
 - Em execução: 01, 07, 08, 13, 18, 21, 22, 23. Pendentes: 01A, 02, 03, 04, 05, 06, 06A, 09, 11, 12, 14, 15, 17 + fila PRs #215–#232.
+
+## Decisão do 00 — handoff 08→00 (gaps de produto AC-MKT-002/003 e SLA mesa-tratamento)
+
+Recebido via PR #241. Os três itens são **features de produto não implementadas** (ledger de créditos exige decisão de precificação/modelagem; badge FONTE_PARCIAL em market-intelligence; SLA em mesa-tratamento). Fora do escopo do ciclo de saneamento — exigem spec do Documento Mestre/confirmação do Marcelo. Decisão: **escalado ao humano**; handoff `00-para-08-cobertura-testes-modulos.md` permanece `em-andamento` até definição de escopo. Registrado para não bloquear a fila.
