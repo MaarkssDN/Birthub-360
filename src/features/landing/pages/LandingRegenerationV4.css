@@ -177,14 +177,13 @@ html.light .b360-adaptive-landing .b360-topbar,
   font-weight: 700 !important;
   letter-spacing: 0.24em !important;
   text-transform: uppercase !important;
-  background: transparent !important;
-  background-color: transparent !important;
-  border: none !important;
+  border: 1px solid rgba(0, 212, 255, 0.28) !important;
   box-shadow: none !important;
-  border-radius: 0 !important;
-  padding: 0 !important;
+  border-radius: 999px !important;
+  padding: 7px 14px !important;
   margin-bottom: 18px !important;
   color: #00d4ff !important;
+  background: rgba(0, 212, 255, 0.08) !important;
 }
 
 .b360-adaptive-landing .b360-hero .b360-eyebrow::before,
@@ -478,8 +477,9 @@ html.light .b360-adaptive-landing .b360-hero-title .b360-hero-line-gold,
 /* O palco dos pilares deixa de parecer uma colagem irregular. */
 .b360-adaptive-landing .b360-pillars-stage {
   margin-block: clamp(24px, 3.4vw, 50px) clamp(56px, 6vw, 90px);
-  padding: clamp(28px, 4vw, 62px);
-  border-radius: clamp(24px, 3vw, 40px);
+  padding: clamp(22px, 3.2vw, 48px);
+  border-radius: clamp(28px, 4vw, 48px) clamp(40px, 5vw, 64px) clamp(28px, 4vw, 48px)
+    clamp(40px, 5vw, 64px);
   border: 1px solid rgba(102, 195, 240, 0.26);
   background:
     radial-gradient(ellipse 70% 50% at 5% 0%, rgba(0, 212, 255, 0.15), transparent 78%),
@@ -495,7 +495,7 @@ html.light .b360-adaptive-landing .b360-hero-title .b360-hero-line-gold,
 }
 
 .b360-adaptive-landing .b360-pillars-head h2 {
-  font-size: clamp(34px, 4.4vw, 62px) !important;
+  font-size: clamp(30px, 3.8vw, 52px) !important;
   line-height: 1.1 !important;
   background: linear-gradient(
     135deg,
@@ -506,13 +506,13 @@ html.light .b360-adaptive-landing .b360-hero-title .b360-hero-line-gold,
   ) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
-  filter: drop-shadow(0 0 24px rgba(0, 212, 255, 0.35)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)) !important;
+  filter: drop-shadow(0 0 24px rgba(0, 212, 255, 0.35)) !important;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-pillars-head h2,
 html.light .b360-adaptive-landing .b360-pillars-head h2,
 [data-theme="light"] .b360-adaptive-landing .b360-pillars-head h2 {
-  background: linear-gradient(135deg, #0c4a6e 0%, #0284c7 45%, #1d4ed8 100%) !important;
+  background: linear-gradient(135deg, #0284c7 0%, #7c3aed 50%, #db2777 100%) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   filter: drop-shadow(0 2px 8px rgba(2, 132, 199, 0.2)) !important;
@@ -553,30 +553,59 @@ html.light .b360-adaptive-landing .b360-pillars-head h2,
 .b360-adaptive-landing .b360-bento-grid .b360-feature-card {
   grid-row: auto !important;
   min-width: 0;
-  min-height: 345px !important;
-  padding: clamp(20px, 2vw, 29px);
-  border-radius: 24px;
+  min-height: 210px !important;
+  max-height: none;
+  padding: clamp(14px, 1.5vw, 20px);
+  border-radius: 28px 40px 28px 40px;
   background: #0c1830 !important;
   border: 1px solid color-mix(in srgb, var(--a) 33%, #395270) !important;
   box-shadow: 0 24px 48px -36px rgba(0, 0, 0, 0.7) !important;
-  --title-tone: #8de8ff;
-  --sub-tone: #bdcfe8;
+  --title-tone: #38bdf8;
+  --sub-tone: #7dd3fc;
   transition:
     transform 0.4s var(--v4-ease),
     box-shadow 0.4s ease,
     border-color 0.3s ease;
 }
 
+/* Grade uniforme 3×N — nenhum card meia-tela / “quadrado gigante”. */
+.b360-adaptive-landing
+  .b360-bento-grid
+  :is(
+    .b360-bento-p1,
+    .b360-bento-p2,
+    .b360-bento-p3,
+    .b360-bento-p4,
+    .b360-bento-p5,
+    .b360-bento-p6,
+    .b360-bento-p7,
+    .b360-bento-p8,
+    .b360-bento-p9
+  ) {
+  grid-column: span 4 !important;
+  grid-row: auto !important;
+  min-height: 200px !important;
+}
+.b360-adaptive-landing .b360-bento-grid :is(.b360-bento-p10, .b360-bento-p11) {
+  grid-column: span 6 !important;
+  grid-row: auto !important;
+  min-height: 200px !important;
+}
+
 /* Broken spans removed in favor of exact 12-col Bento Grid below */
 
 .b360-adaptive-landing .b360-bento-grid :is(.b360-bento-p2, .b360-bento-p6, .b360-bento-p10) {
-  --title-tone: #ffabd7;
+  --title-tone: #ff5fb2;
 }
 .b360-adaptive-landing .b360-bento-grid :is(.b360-bento-p3, .b360-bento-p7, .b360-bento-p11) {
-  --title-tone: #ffda7e;
+  --title-tone: #ffc107;
 }
 .b360-adaptive-landing .b360-bento-grid :is(.b360-bento-p4, .b360-bento-p8) {
-  --title-tone: #c6b7ff;
+  --title-tone: #a78bfa;
+}
+
+.b360-adaptive-landing .b360-bento-grid .b360-p-float {
+  display: none !important;
 }
 
 .b360-adaptive-landing .b360-bento-grid .b360-card-bg {
@@ -614,16 +643,16 @@ html.light .b360-adaptive-landing .b360-pillars-head h2,
 }
 
 .b360-adaptive-landing .b360-bento-grid .b360-feature-card h3 {
-  font-size: clamp(20px, 1.6vw, 28px);
-  line-height: 1.18;
+  font-size: clamp(16px, 1.25vw, 20px);
+  line-height: 1.2;
   letter-spacing: -0.02em;
-  text-shadow: 0 1px 18px rgba(2, 9, 28, 0.8);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--a) 45%, transparent);
   color: var(--title-tone) !important;
   overflow-wrap: break-word;
 }
 
 .b360-adaptive-landing .b360-bento-grid .b360-feature-card.b360-bento-big h3 {
-  font-size: clamp(26px, 2.4vw, 39px);
+  font-size: clamp(17px, 1.35vw, 22px);
 }
 
 .b360-adaptive-landing .b360-bento-grid .b360-feature-card p {
@@ -704,13 +733,13 @@ html.light .b360-adaptive-landing .b360-pillars-head h2,
   ) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
-  filter: drop-shadow(0 0 24px rgba(0, 212, 255, 0.35)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)) !important;
+  filter: drop-shadow(0 0 24px rgba(0, 212, 255, 0.35)) !important;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-sectionhead h2,
 html.light .b360-adaptive-landing .b360-sectionhead h2,
 [data-theme="light"] .b360-adaptive-landing .b360-sectionhead h2 {
-  background: linear-gradient(135deg, #0c4a6e 0%, #0284c7 45%, #1d4ed8 100%) !important;
+  background: linear-gradient(135deg, #0284c7 0%, #7c3aed 50%, #db2777 100%) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   filter: drop-shadow(0 2px 8px rgba(2, 132, 199, 0.2)) !important;
@@ -742,7 +771,7 @@ html.light .b360-adaptive-landing .b360-sectionhead h2,
     .b360-copilot-card
   ) {
   min-width: 0;
-  border-radius: 22px;
+  border-radius: 28px 40px 28px 40px;
   border: 1px solid rgba(102, 174, 226, 0.28) !important;
   background:
     radial-gradient(circle at 90% 0%, rgba(139, 125, 255, 0.13), transparent 60%),
@@ -755,8 +784,8 @@ html.light .b360-adaptive-landing .b360-sectionhead h2,
 }
 
 .b360-adaptive-landing :is(.b360-problem-card, .b360-platform-card) {
-  min-height: 300px;
-  padding: clamp(22px, 2.3vw, 34px);
+  min-height: 240px;
+  padding: clamp(18px, 2vw, 26px);
   justify-content: flex-start;
   gap: 12px;
 }
@@ -1050,11 +1079,14 @@ html.light .b360-adaptive-landing .b360-sectionhead h2,
   .b360-adaptive-landing .b360-bento-grid .b360-feature-card {
     grid-column: span 3 !important;
     grid-row: auto !important;
-    min-height: 350px !important;
+    min-height: 200px !important;
+    border-radius: 26px 36px 26px 36px;
   }
-  .b360-adaptive-landing .b360-bento-grid :is(.b360-bento-p1, .b360-bento-p8, .b360-bento-p11) {
-    grid-column: span 6 !important;
-    min-height: 360px !important;
+  .b360-adaptive-landing
+    .b360-bento-grid
+    :is(.b360-bento-p1, .b360-bento-p2, .b360-bento-p8, .b360-bento-p11) {
+    grid-column: span 3 !important;
+    min-height: 200px !important;
   }
   .b360-adaptive-landing .b360-bento-grid .b360-p-float {
     display: none;
@@ -1583,79 +1615,63 @@ html.dark .b360-adaptive-landing .b360-eyebrow,
   text-shadow: 0 0 12px rgba(0, 212, 255, 0.45);
 }
 
-/* ── 3. PROPORÇÕES EXATAS DO BENTO GRID DOS 11 MÓDULOS ─────────────────── */
-/* Layout 12 colunas equilibrado e proporcional com 11 cards */
+/* ── 3. BENTO GRID COMPACTO (3 colunas, baixo, cantos orgânicos) ───────── */
 .b360-adaptive-landing .b360-feature-grid.b360-bento-grid {
   display: grid !important;
   grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
-  grid-template-rows: repeat(4, 280px) !important;
-  gap: 18px !important;
+  grid-template-rows: none !important;
+  grid-auto-rows: minmax(190px, auto) !important;
+  gap: 14px !important;
+}
+
+.b360-adaptive-landing .b360-bento-grid .b360-feature-card {
+  min-height: 190px !important;
+  border-radius: 28px 40px 28px 40px !important;
 }
 
 .b360-adaptive-landing .b360-bento-grid .b360-bento-p1 {
-  grid-column: 1 / 7 !important;
+  grid-column: 1 / 5 !important;
   grid-row: 1 / 2 !important;
-  min-height: 0 !important;
 }
-
 .b360-adaptive-landing .b360-bento-grid .b360-bento-p2 {
-  grid-column: 7 / 13 !important;
+  grid-column: 5 / 9 !important;
   grid-row: 1 / 2 !important;
-  min-height: 0 !important;
 }
-
 .b360-adaptive-landing .b360-bento-grid .b360-bento-p3 {
-  grid-column: 1 / 5 !important;
-  grid-row: 2 / 3 !important;
-  min-height: 0 !important;
+  grid-column: 9 / 13 !important;
+  grid-row: 1 / 2 !important;
 }
-
 .b360-adaptive-landing .b360-bento-grid .b360-bento-p4 {
-  grid-column: 5 / 9 !important;
+  grid-column: 1 / 5 !important;
   grid-row: 2 / 3 !important;
-  min-height: 0 !important;
 }
-
 .b360-adaptive-landing .b360-bento-grid .b360-bento-p5 {
+  grid-column: 5 / 9 !important;
+  grid-row: 2 / 3 !important;
+}
+.b360-adaptive-landing .b360-bento-grid .b360-bento-p6 {
   grid-column: 9 / 13 !important;
   grid-row: 2 / 3 !important;
-  min-height: 0 !important;
 }
-
-.b360-adaptive-landing .b360-bento-grid .b360-bento-p6 {
-  grid-column: 1 / 5 !important;
-  grid-row: 3 / 4 !important;
-  min-height: 0 !important;
-}
-
 .b360-adaptive-landing .b360-bento-grid .b360-bento-p7 {
-  grid-column: 5 / 9 !important;
-  grid-row: 3 / 4 !important;
-  min-height: 0 !important;
-}
-
-.b360-adaptive-landing .b360-bento-grid .b360-bento-p8 {
-  grid-column: 9 / 13 !important;
-  grid-row: 3 / 4 !important;
-  min-height: 0 !important;
-}
-
-.b360-adaptive-landing .b360-bento-grid .b360-bento-p9 {
   grid-column: 1 / 5 !important;
-  grid-row: 4 / 5 !important;
-  min-height: 0 !important;
+  grid-row: 3 / 4 !important;
 }
-
-.b360-adaptive-landing .b360-bento-grid .b360-bento-p10 {
+.b360-adaptive-landing .b360-bento-grid .b360-bento-p8 {
   grid-column: 5 / 9 !important;
-  grid-row: 4 / 5 !important;
-  min-height: 0 !important;
+  grid-row: 3 / 4 !important;
 }
-
-.b360-adaptive-landing .b360-bento-grid .b360-bento-p11 {
+.b360-adaptive-landing .b360-bento-grid .b360-bento-p9 {
   grid-column: 9 / 13 !important;
+  grid-row: 3 / 4 !important;
+}
+.b360-adaptive-landing .b360-bento-grid .b360-bento-p10 {
+  grid-column: 1 / 7 !important;
   grid-row: 4 / 5 !important;
-  min-height: 0 !important;
+}
+.b360-adaptive-landing .b360-bento-grid .b360-bento-p11 {
+  grid-column: 7 / 13 !important;
+  grid-row: 4 / 5 !important;
 }
 
 /* ── 4. PROPORÇÕES DAS DEMAIS SEÇÕES (SIMETRIA E EQUILÍBRIO) ─────────────── */
@@ -1668,8 +1684,9 @@ html.dark .b360-adaptive-landing .b360-eyebrow,
 }
 
 .b360-adaptive-landing .b360-problem-card {
-  min-height: 380px !important;
-  padding: 28px !important;
+  min-height: 230px !important;
+  padding: 22px !important;
+  border-radius: 28px 40px 28px 40px !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: space-between !important;
@@ -2074,23 +2091,23 @@ html.dark .b360-adaptive-landing .b360-eyebrow,
 
 /* 4. REDUÇÃO DE TAMANHO DAS DEMAIS SEÇÕES (COMPACTO E ORGANIZADO) */
 .b360-adaptive-landing .b360-problem-card {
-  min-height: 230px !important;
+  min-height: 220px !important;
   padding: 20px 22px !important;
-  border-radius: 18px !important;
+  border-radius: 28px 40px 28px 40px !important;
   gap: 10px !important;
 }
 
 .b360-adaptive-landing .b360-platform-card {
-  min-height: 210px !important;
+  min-height: 200px !important;
   padding: 20px 22px !important;
-  border-radius: 18px !important;
+  border-radius: 28px 40px 28px 40px !important;
   gap: 10px !important;
 }
 
 .b360-adaptive-landing .b360-flow-card {
-  min-height: 180px !important;
+  min-height: 170px !important;
   padding: 16px 18px !important;
-  border-radius: 16px !important;
+  border-radius: 24px 34px 24px 34px !important;
   gap: 8px !important;
 }
 

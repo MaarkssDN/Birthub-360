@@ -65,7 +65,11 @@ describe('quem cifra em src/ está coberto por algum alvo da rotação', () => {
   const KNOWN: Record<string, string> = {
     'src/lib/crypto/secretFields.ts': 'definição de encryptField',
     'src/lib/crypto/piiFields.ts': 'ENCRYPTED_MODEL_FIELDS → TARGET_MODELS',
-    'src/lib/prisma.ts': 'extensão do Prisma (encryptSensitiveFields) → TARGET_MODELS',
+    // A cifragem em escrita saiu de prisma.ts em 5a873b8e (TAREFA-SANEAMENTO-013,
+    // 2026-11-10) para applyPiiEncryptionToWriteArgs em prisma-interceptors.ts,
+    // ainda via encryptSensitiveFields → ENCRYPTED_MODEL_FIELDS → TARGET_MODELS.
+    // prisma.ts só orquestra a chamada (linha 202) e deixou de ser um chamador direto.
+    'src/lib/prisma-interceptors.ts': 'extensão do Prisma (encryptSensitiveFields) extraída de prisma.ts → TARGET_MODELS',
     'src/lib/integrations/integrationSettings.repository.ts': 'Setting (integration.* + legado bitrix)',
     'src/features/integrations/whatsapp/useRedisAuthState.ts': '--target=redis-wa-auth',
     'src/lib/security/credentialCrypto.ts': 'definição de encryptCredential (sem chamadores em src/)',

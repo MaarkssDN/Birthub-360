@@ -132,6 +132,83 @@ export function isEnrichmentFresh(
   return now.getTime() - company.enrichedAt.getTime() < ttlMs;
 }
 
+/**
+ * Ciclo de vida do EnrichmentLog (TAREFA-SANEAMENTO-019 / BT360-DT-0027): cada execução de
+ * enriquecimento grava ~7 linhas em `EnrichmentLog` com o payload bruto do provider em `rawData`
+ * (incluindo dados pessoais de decisores) e nada as removia — a tabela crescia para sempre e o
+ * "cache" de proveniência nunca expirava. Política de retenção: logs mais velhos que
+ * `ENRICHMENT_LOG_RETENTION_DAYS` (default 60 dias, dentro da faixa 30–60 recomendada pela
+ * auditoria DIV-05-003) são expurgados de forma oportunista por `maybePurgeExpiredEnrichmentLogs`.
+ *
+ * Por que oportunista e não um cron: o agendador de filas/cron é propriedade do Agente 16
+ * (`src/lib/queue/**`) — pendurar a purga em `enrichCompany` (o único caminho que produz essas
+ * linhas) mantém a política dentro do domínio do 05, sem depender de infra de outro agente. O
+ * throttle de 24h evita um `deleteMany` por chamada de enriquecimento.
+ */
+const ENRICHMENT_LOG_PURGE_INTERVAL_MS = 24 * 60 * 60 * 1000;
+let lastEnrichmentLogPurgeAt = 0;
+
+export function getEnrichmentLogRetentionMs(environment: NodeJS.ProcessEnv = process.env): number {
+  const days = Number(environment.ENRICHMENT_LOG_RETENTION_DAYS);
+  const safeDays = Number.isFinite(days) && days > 0 ? days : 60;
+  return safeDays * 24 * 60 * 60 * 1000;
+}
+
+/** Pura: instante de corte — logs criados antes dele são elegíveis ao expurgo. */
+export function computeEnrichmentLogCutoff(now: Date, retentionMs: number): Date {
+  return new Date(now.getTime() - retentionMs);
+}
+
+/**
+ * Expurgo efetivo: delega o `deleteMany` ao repositório. Propaga o erro do banco — quem chama
+ * decide como tratar (ver `maybePurgeExpiredEnrichmentLogs`, que isola a falha para não derrubar
+ * o enriquecimento por causa de uma manutenção).
+ */
+export async function purgeExpiredEnrichmentLogs(
+  repo: IEnrichmentRepository,
+  options: { now?: Date; retentionMs?: number } = {},
+): Promise<number> {
+  const now = options.now ?? new Date();
+  const retentionMs = options.retentionMs ?? getEnrichmentLogRetentionMs();
+  const cutoff = computeEnrichmentLogCutoff(now, retentionMs);
+  const deleted = await repo.deleteEnrichmentLogsCreatedBefore(cutoff);
+  if (deleted > 0) {
+    logger.info(
+      { deleted, cutoff: cutoff.toISOString(), retentionMs },
+      'purgeExpiredEnrichmentLogs: EnrichmentLog(s) expirados removidos (retenção de cache de enriquecimento)',
+    );
+  }
+  return deleted;
+}
+
+/**
+ * Ponto de entrada usado por `enrichCompany`: no máximo uma tentativa de expurgo a cada 24h por
+ * processo. Falha de banco no expurgo é logada com `warn` (erro explícito e observável) e NÃO
+ * derruba o enriquecimento — o enriquecimento em si não depende do log antigo; a retenção apenas
+ * tenta de novo no próximo intervalo.
+ */
+export async function maybePurgeExpiredEnrichmentLogs(
+  repo: IEnrichmentRepository,
+  now: Date = new Date(),
+): Promise<number> {
+  if (now.getTime() - lastEnrichmentLogPurgeAt < ENRICHMENT_LOG_PURGE_INTERVAL_MS) return 0;
+  lastEnrichmentLogPurgeAt = now.getTime();
+  try {
+    return await purgeExpiredEnrichmentLogs(repo, { now });
+  } catch (error) {
+    logger.warn(
+      { err: error },
+      'maybePurgeExpiredEnrichmentLogs: expurgo de EnrichmentLog expirados falhou — retenção tentará novamente no próximo intervalo',
+    );
+    return 0;
+  }
+}
+
+/** Somente para testes — zera o throttle em memória entre casos de teste. */
+export function resetEnrichmentLogPurgeThrottleForTests(): void {
+  lastEnrichmentLogPurgeAt = 0;
+}
+
 interface CompanyUpdateData {
   cnpj?: string;
   legalName?: string;
@@ -183,6 +260,10 @@ export async function enrichCompany(
 ) {
   const company = await repo.findCompanyById(companyId, organizationId);
   if (!company) throw new AppError('Company not found', 404);
+
+  // Expurgo oportunista de EnrichmentLog expirados (TAREFA-SANEAMENTO-019): nunca lança e tem
+  // throttle interno de 24h, então não adiciona latência nem pode derrubar o enriquecimento.
+  void maybePurgeExpiredEnrichmentLogs(repo);
 
   if (!options.force && isEnrichmentFresh(company)) {
     logger.info(

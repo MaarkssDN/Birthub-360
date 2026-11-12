@@ -63,6 +63,14 @@ propósito por estar fora de "## Exceções ativas"):
 - **Atualizado em:** 2026-11-10
 - **Reavaliar até:** 2026-11-30
 
+### `src/features/landing/pages/Landing360Impeccable.tsx`
+
+- **Limite excepcional:** 1050 linhas
+- **Dono:** Agente 15 — Segurança Aplicada
+- **Motivo:** o formatador do Biome no PR #220 reformatou o arquivo (384 linhas com linhas longas na main → 1021 linhas após quebras automáticas), cruzando o limite rígido de 1000 sem mudança de lógica. A exceção desbloqueia o `check:hotspots` enquanto a modularização das seções da landing fica para o dono de produto/UX; o limite excepcional é apertado (1050) para não liberar crescimento adicional.
+- **Registrado em:** 2026-11-11
+- **Reavaliar até:** 2026-11-30
+
 ### `src/features/integrations/bitrix/service/extraction.ts`
 
 - **Limite excepcional:** 1100 linhas
@@ -244,6 +252,15 @@ propósito por estar fora de "## Exceções ativas"):
 - **Motivo:** catálogo declarativo dos personagens do Birth Hub 360° (metadados, roteiros e configurações de runtime), que está em 1112 linhas após a expansão para 29 personagens. É essencialmente uma tabela de dados coesa; a modularização por domínio de personagem fica planejada enquanto o gate precisa continuar desbloqueado.
 - **Registrado em:** 2026-11-10
 - **Reavaliar até:** 2026-11-30
+
+### `src/features/settings/components/PillarSettingsPlaceholder.tsx`
+
+- **Limite excepcional:** 1235 linhas (teto = tamanho atual medido por `npm run check:hotspots` na main `549dad47`; o arquivo não pode crescer)
+- **Dono:** Agente 02 — Produto e UX
+- **Motivo:** o commit `75dee1ab` (2026-11-11, Onda F1 — persistência real de settings por pilar) elevou o arquivo de 986 para 1235 linhas, conforme o gate mede (`content.split('\n').length` em `scripts/architecture/check-hotspots.ts`), cruzando o limite rígido de 1000. A exceção é temporária e apertada no tamanho atual da main (sem folga) para desbloquear `check:hotspots` sem alterar o limite geral do repositório. O dono do domínio (`src/features/settings/AGENTS.md`) deve dividir o componente até 2026-11-30 e remover esta exceção; não estender o prazo nem o teto. O PR #225 (format, ainda não mesclado) só reduz quebras de linha e permanecerá abaixo deste teto.
+- **Registrado em:** 2026-11-11
+- **Reavaliar até:** 2026-11-30
+
 
 ## Débito conhecido, abaixo do limite de falha (sem exceção necessária)
 

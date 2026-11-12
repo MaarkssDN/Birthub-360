@@ -154,6 +154,15 @@ tags:
   - name: Módulos da Organização
     description: >-
       Gerenciamento de módulos de produto ativos e conclusão do onboarding da organização (/setup)
+  - name: Settings por Pilar
+    description: >-
+      Preferências operacionais por pilar da aba "Ferramentas & Regras"
+      (`PillarSettingsPlaceholder`), persistidas em `Setting` por organização
+      (`key = settings.pilar.<slug>`, `userId = null`). GET para qualquer usuário
+      autenticado do tenant; PUT restrito a ADMIN (`requireRole`). As abas
+      Permissões, Gatilhos e Integrações da UI são placeholders visuais e não
+      têm contrato HTTP aqui.
+
   - name: Webhooks
     description: >-
       Endpoints de entrada de provedores externos, montados ANTES do `express.json()` global —
@@ -261,6 +270,106 @@ paths:
         '400': { $ref: '#/components/responses/BadRequest' }
         '401': { description: Não autenticado }
         '403': { $ref: '#/components/responses/Forbidden' }
+
+  /settings/pillars/{pillar}:
+    parameters:
+      - name: pillar
+        in: path
+        required: true
+        description: >-
+          Slug do pilar (`PILLAR_SLUGS` em `src/features/settings/domain/pillarSettings.ts`,
+          linhas 12–21). Valor fora desse conjunto responde 404 com a mensagem
+          `Pilar de settings desconhecido: {pillar}` (`assertSlug` em
+          `pillarSettings.routes.ts`, linhas 48–52).
+        schema:
+          $ref: '#/components/schemas/PillarSlug'
+    get:
+      tags: [Settings por Pilar]
+      summary: Lê as configurações operacionais de um pilar do tenant
+      description: >-
+        Montado em `/api/settings/pillars` com `authenticateToken` + `requireTenant`
+        (`src/bootstrap/routes.ts`, linha 228). Qualquer usuário autenticado do
+        tenant pode ler. Devolve `PillarSettingsView`: defaults do pilar mesclados
+        com o persistido (`mergePillarValues`), `configured=false` e `updatedAt=null`
+        quando a organização ainda não gravou o pilar
+        (`pillarSettings.service.ts`, linhas 46–56). Envelope
+        `{ success: true, data }` emitido por `handle` em `pillarSettings.routes.ts`
+        (linhas 27–31 e 55–59).
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200':
+          description: Configurações do pilar (defaults mesclados com o persistido)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PillarSettingsEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: >-
+            Pilar desconhecido. Corpo emitido por `handle` via
+            `PillarSettingsServiceError` (`pillarSettings.routes.ts`, linhas 49–50 e 37–40):
+            `{ success: false, error: "Pilar de settings desconhecido: {pillar}" }`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags: [Settings por Pilar]
+      summary: Atualiza parcialmente as configurações de um pilar (somente ADMIN)
+      description: >-
+        Mesmo mount de autenticação/tenant do GET, mais `requireRole(['ADMIN'])`
+        no próprio router (`pillarSettings.routes.ts`, linhas 62–72). O corpo é
+        `{ values: <patch> }`; só as chaves enviadas são validadas e mescladas
+        sobre defaults + persistido (`validatePillarPatch` + `mergePillarValues`).
+        Chaves fora de `PILLAR_FIELDS` do pilar, tipo ou faixa inválidos respondem
+        400. Não concede permissão real — RBAC continua no backend.
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PillarSettingsUpdateRequest'
+      responses:
+        '200':
+          description: Configurações atualizadas (`configured=true`, `updatedAt` ISO-8601)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PillarSettingsEnvelope'
+        '400':
+          description: >-
+            Patch inválido. Mensagens reais de `validatePillarPatch`
+            (`pillarSettings.ts`, linhas 140–190), reemitidas como
+            `PillarSettingsServiceError` 400 (`pillarSettings.service.ts`,
+            linhas 74–79): `Campo "values" deve ser um objeto.`;
+            `Campo desconhecido para o pilar "{slug}": {key}`;
+            `Campo "{key}" deve ser booleano.`;
+            `Campo "{key}" deve ser numérico.`;
+            `Campo "{key}" deve ser >= {min}.`;
+            `Campo "{key}" deve ser <= {max}.`;
+            `Campo "{key}" deve ser texto não vazio.`;
+            `Campo "{key}" deve ser um de: {enumValues}`.
+            O serviço também responde 400 com `Contexto de organização é obrigatório.`
+            se `organizationId` vier vazio (defesa no use case; o mount já aplica
+            `requireTenant`).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: >-
+            Pilar desconhecido. Mesmo corpo do GET 404:
+            `{ success: false, error: "Pilar de settings desconhecido: {pillar}" }`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /sales-orchestration/overview:
     get:
@@ -3931,6 +4040,115 @@ paths:
                 $ref: '#/components/schemas/DataEnvelope'
 
   # ───────────────────────────── Agent (copiloto/voz/swarm) ─────────────────────────────
+  /agent/characters:
+    get:
+      tags: [Agent]
+      summary: Catálogo dos 29 personagens com vínculo de runtime real
+      description: >-
+        Lista o catálogo canônico de personagens (metadados de produto) enriquecido com o
+        vínculo de runtime derivado de registros reais (COMMERCIAL_AGENT_REGISTRY, circuit
+        breaker, gate de concorrência). Montado em `characterRuntime.routes.ts` (GET `/`)
+        sob `/api/agent` (`authenticateToken` + `aiLimiter` em `src/bootstrap/rateLimiters.ts`,
+        `requireTenant` em `src/bootstrap/routes.ts`). Sem `requireRole` adicional — qualquer
+        usuário autenticado do tenant pode ler. Quando o circuit breaker da organização está
+        OPEN, personagens com `runtime.dispatch = swarm-stream` têm `runtime.status` rebaixado
+        para `degraded`.
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200':
+          description: Lista de personagens e estado do enxame para a organização autenticada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CharactersListEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /agent/characters/activity:
+    get:
+      tags: [Agent]
+      summary: Execuções recentes do enxame (audit log real, escopo do tenant)
+      description: >-
+        Devolve logs de auditoria do enxame para a `organizationId` da sessão, via
+        `getSwarmAuditLogs` (`src/features/intelligence/services/swarmAudit.service.ts`).
+        A query `limit` é normalizada no handler (`Number(req.query.limit) || 20`, depois
+        limitada ao intervalo 1–100); não há validação Zod nem resposta 400.
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          description: >-
+            Quantidade de logs (padrão 20, mínimo 1, máximo 100). Implementado em
+            `characterRuntime.routes.ts` (GET `/activity`).
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        '200':
+          description: Logs e total no escopo da organização autenticada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CharactersActivityEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /agent/characters/concurrency:
+    get:
+      tags: [Agent]
+      summary: Estado do gate de concorrência de missões do enxame
+      description: >-
+        Observabilidade do gate de missões para a organização autenticada, via
+        `getSwarmConcurrencyState(organizationId)` em
+        `src/features/intelligence/services/swarmConcurrency.service.ts` (ramo com
+        `organizationId` definido — devolve `maxConcurrent`, `active` e `waiting`, sem o
+        campo agregado `organizations`).
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200':
+          description: Estado do gate para a organização autenticada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CharactersConcurrencyEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /agent/characters/{id}:
+    get:
+      tags: [Agent]
+      summary: Detalhe de um personagem do catálogo com vínculo de runtime
+      description: >-
+        Localiza o personagem por `id` técnico no catálogo canônico
+        (`getCharacterRuntimeEntry` em `characterRuntime.ts`). Em caso de sucesso devolve
+        a definição + `runtime` e `recentActivity` (`getSwarmAuditLogs` com `limit: 10`,
+        sempre no escopo do tenant — a atividade não é atribuída artificialmente ao
+        personagem). Em caso de id inexistente responde 404 com a mensagem literal
+        "Personagem não encontrado.".
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID técnico estável do personagem no catálogo (ex. `axiom`, `ledger`).
+          schema: { type: string }
+      responses:
+        '200':
+          description: Personagem encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CharacterDetailEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: >-
+            Personagem não encontrado. Corpo emitido pelo handler:
+            `{ success: false, error: "Personagem não encontrado." }`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /agent/chat:
     post:
       tags: [Agent]
@@ -12923,6 +13141,412 @@ components:
         modules:
           type: array
           items: { $ref: '#/components/schemas/OrganizationModuleView' }
+
+    # ── Central de Personagens (`GET /agent/characters*`) ──
+    # Origem dos campos: ver descriptions e o corpo do PR. Nada aqui foi inventado.
+    CharacterPalette:
+      type: object
+      description: >-
+        Paleta de cores do personagem. Origem: `CharacterPalette` em
+        `src/features/characters/characterCatalog.shared.ts` (linhas 29–39).
+      required: [primary, secondary, accent, heading, subheading, halo]
+      properties:
+        primary: { type: string }
+        secondary: { type: string }
+        accent: { type: string }
+        heading: { type: string, description: Cor do nome do personagem em títulos }
+        subheading: { type: string, description: Cor do subtítulo/papel }
+        halo: { type: string, description: Box-shadow do halo luminoso }
+
+    CharacterRuntimePayload:
+      type: object
+      description: >-
+        Vínculo de runtime derivado de registros reais. Origem: `CharacterRuntimePayload`
+        em `src/features/characters/characterApiTypes.ts` (linhas 9–18), que espelha
+        `CharacterRuntimeInfo` em `src/features/characters/characterRuntime.ts`
+        (linhas 77–103). O handler de listagem pode sobrescrever `status`/`reason`
+        quando o circuit breaker está OPEN e `dispatch` é `swarm-stream`
+        (`characterRuntime.routes.ts`, linhas 34–39).
+      required: [kind, status, reason, httpRoute, capabilities, requiresApproval, risk, dispatch]
+      properties:
+        kind:
+          type: string
+          enum: [pillar-context, commercial-agent, channel-engine, orchestration]
+        status:
+          type: string
+          enum: [available, degraded, unavailable]
+        reason: { type: string, nullable: true }
+        httpRoute: { type: string, nullable: true }
+        capabilities:
+          type: array
+          items: { type: string }
+        requiresApproval: { type: boolean }
+        risk: { type: string, nullable: true }
+        dispatch:
+          type: string
+          enum: [swarm-stream, module-surface, none]
+
+    CharacterDefinition:
+      type: object
+      description: >-
+        Metadados canônicos de um personagem. Origem: `CharacterDefinition` em
+        `src/features/characters/characterCatalog.shared.ts` (linhas 41–82).
+        `CharacterApiEntry` (`characterApiTypes.ts`, linhas 20–22) estende esta
+        interface com `runtime`.
+      required:
+        [
+          id,
+          name,
+          role,
+          layer,
+          linkedAgentId,
+          contextGroup,
+          modules,
+          palette,
+          svg,
+          viewBox,
+          badgeGradient,
+          headingColor,
+          subheadingColor,
+          contextMsg,
+          ariaLabel,
+          accessibleDescription,
+          archetype,
+          animationSignature,
+          states,
+          fallbackId,
+          command,
+        ]
+      properties:
+        id: { type: string, description: ID técnico estável — também nome do arquivo SVG }
+        name: { type: string }
+        role: { type: string, description: Função/papel curto exibido na UI }
+        layer:
+          type: string
+          enum: [pillar, commercial-agent, channel-agent, orchestration]
+        linkedAgentId: { type: string, nullable: true }
+        contextGroup: { type: string, nullable: true }
+        modules:
+          type: array
+          items: { type: string }
+        palette: { $ref: '#/components/schemas/CharacterPalette' }
+        svg: { type: string, description: Caminho do SVG local servido por /brand/characters/ }
+        viewBox: { type: string }
+        badgeGradient: { type: string }
+        headingColor: { type: string }
+        subheadingColor: { type: string }
+        contextMsg: { type: string, nullable: true }
+        ariaLabel: { type: string }
+        accessibleDescription: { type: string }
+        archetype: { type: string }
+        animationSignature: { type: string }
+        states:
+          type: array
+          items:
+            type: string
+            enum: [idle, listening, processing, speaking, success, error]
+        fallbackId:
+          type: string
+          enum: [core]
+          description: Personagem de fallback seguro (literal `core` no tipo TypeScript)
+        command: { type: string }
+
+    CharacterApiEntry:
+      description: >-
+        `CharacterApiEntry` em `src/features/characters/characterApiTypes.ts` (linhas 20–22) —
+        `CharacterDefinition` + `runtime`.
+      allOf:
+        - $ref: '#/components/schemas/CharacterDefinition'
+        - type: object
+          required: [runtime]
+          properties:
+            runtime: { $ref: '#/components/schemas/CharacterRuntimePayload' }
+
+    CharacterSwarmConcurrency:
+      type: object
+      description: >-
+        Retorno de `getSwarmConcurrencyState(organizationId)` com `organizationId` definido
+        (`src/features/intelligence/services/swarmConcurrency.service.ts`, linhas 146–152).
+        Não inclui o campo `organizations` do ramo agregado (sem organizationId).
+      required: [maxConcurrent, active, waiting]
+      properties:
+        maxConcurrent: { type: integer }
+        active: { type: integer }
+        waiting: { type: integer }
+
+    CharacterCircuitBreakerState:
+      type: object
+      description: >-
+        Recorte exposto pela listagem: o handler só devolve `{ state: breaker.state }`
+        (`characterRuntime.routes.ts`, linha 49). Os valores vêm de `CircuitBreakerState.state`
+        em `src/features/intelligence/services/autonomyCircuitBreaker.service.ts` (linha 25).
+      required: [state]
+      properties:
+        state:
+          type: string
+          enum: [CLOSED, OPEN, HALF_OPEN]
+
+    CharactersApiResponse:
+      type: object
+      description: >-
+        `data` de `GET /agent/characters`. Origem: `CharactersApiResponse` em
+        `src/features/characters/characterApiTypes.ts` (linhas 24–31) e o `res.json` em
+        `characterRuntime.routes.ts` (linhas 43–53). `generatedAt` é `new Date().toISOString()`.
+      required: [characters, swarm, generatedAt]
+      properties:
+        characters:
+          type: array
+          items: { $ref: '#/components/schemas/CharacterApiEntry' }
+        swarm:
+          type: object
+          required: [concurrency, circuitBreaker]
+          properties:
+            concurrency: { $ref: '#/components/schemas/CharacterSwarmConcurrency' }
+            circuitBreaker:
+              allOf:
+                - $ref: '#/components/schemas/CharacterCircuitBreakerState'
+              nullable: true
+        generatedAt: { type: string, format: date-time }
+
+    CharactersListEnvelope:
+      type: object
+      description: Envelope `{success,data}` da listagem (handler em characterRuntime.routes.ts:43–53).
+      required: [success, data]
+      properties:
+        success: { type: boolean, example: true }
+        data: { $ref: '#/components/schemas/CharactersApiResponse' }
+
+    SwarmAuditLog:
+      type: object
+      description: >-
+        Entrada devolvida por `getSwarmAuditLogs` (`SwarmAuditLog` em
+        `src/features/intelligence/services/swarmAudit.service.ts`, linhas 50–64 e o `map`
+        nas linhas 137–150). Não usar o contrato reduzido `SwarmAuditLogEntry` de
+        `characterApiTypes.ts` (linhas 33–42), que omite campos realmente retornados
+        (`organizationId`, `parameters`, `userId`, `ipAddress`, `userAgent`).
+      required: [id, organizationId, agentType, action, parameters, result, createdAt]
+      properties:
+        id: { type: string }
+        organizationId: { type: string }
+        agentType: { type: string }
+        action: { type: string }
+        parameters:
+          type: object
+          additionalProperties: true
+        result:
+          type: string
+          enum: [success, error]
+        errorMessage: { type: string }
+        userId: { type: string }
+        sessionId: { type: string }
+        correlationId: { type: string }
+        ipAddress: { type: string }
+        userAgent: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    SwarmAuditLogsPage:
+      type: object
+      description: >-
+        Retorno de `getSwarmAuditLogs`: `{ logs, total }`
+        (`swarmAudit.service.ts`, linhas 112–119 e 136).
+      required: [logs, total]
+      properties:
+        logs:
+          type: array
+          items: { $ref: '#/components/schemas/SwarmAuditLog' }
+        total: { type: integer }
+
+    CharactersActivityEnvelope:
+      type: object
+      description: Envelope de `GET /agent/characters/activity` (`characterRuntime.routes.ts`, linha 65).
+      required: [success, data]
+      properties:
+        success: { type: boolean, example: true }
+        data: { $ref: '#/components/schemas/SwarmAuditLogsPage' }
+
+    CharactersConcurrencyEnvelope:
+      type: object
+      description: Envelope de `GET /agent/characters/concurrency` (`characterRuntime.routes.ts`, linhas 75–78).
+      required: [success, data]
+      properties:
+        success: { type: boolean, example: true }
+        data: { $ref: '#/components/schemas/CharacterSwarmConcurrency' }
+
+    CharacterDetail:
+      type: object
+      description: >-
+        `data` de `GET /agent/characters/{id}`. Origem: o `res.json` em
+        `characterRuntime.routes.ts` (linhas 93–101) — spread de `entry.character`,
+        `runtime: entry.runtime` e `recentActivity` igual ao retorno de
+        `getSwarmAuditLogs` (objeto `{ logs, total }`, não um array).
+      allOf:
+        - $ref: '#/components/schemas/CharacterApiEntry'
+        - type: object
+          required: [recentActivity]
+          properties:
+            recentActivity: { $ref: '#/components/schemas/SwarmAuditLogsPage' }
+
+    CharacterDetailEnvelope:
+      type: object
+      description: Envelope de `GET /agent/characters/{id}` (`characterRuntime.routes.ts`, linhas 93–101).
+      required: [success, data]
+      properties:
+        success: { type: boolean, example: true }
+        data: { $ref: '#/components/schemas/CharacterDetail' }
+
+    # ── Settings por pilar (`GET`/`PUT` /settings/pillars/{pillar}, Onda F1) ──
+    # Origem dos campos: ver descriptions. Nada aqui foi inventado.
+    PillarSlug:
+      type: string
+      description: >-
+        Slugs canônicos. Origem: `PILLAR_SLUGS` em
+        `src/features/settings/domain/pillarSettings.ts` (linhas 12–21).
+      enum: [hub, market, sales, performance, predictability, ai, automation, engagement]
+
+    PillarHubValues:
+      type: object
+      description: >-
+        Campos persistíveis do pilar `hub`. Origem: `PILLAR_FIELDS.hub` e
+        `PILLAR_DEFAULTS.hub` em `pillarSettings.ts` (linhas 63–67 e 107).
+        No GET o objeto vem completo (defaults mesclados). No PUT é um patch
+        parcial com as mesmas chaves.
+      properties:
+        stagnationDays: { type: number, minimum: 1, maximum: 365, example: 14 }
+        requireLossReason: { type: boolean, example: true }
+        dedupCnpj: { type: boolean, example: true }
+
+    PillarMarketValues:
+      type: object
+      description: >-
+        Campos persistíveis do pilar `market`. Origem: `PILLAR_FIELDS.market` e
+        `PILLAR_DEFAULTS.market` em `pillarSettings.ts` (linhas 68–72 e 108).
+      properties:
+        minRevenue: { type: string, example: 'R$ 5.000.000' }
+        autoEnrich: { type: boolean, example: true }
+        signalAlerts: { type: boolean, example: true }
+
+    PillarSalesValues:
+      type: object
+      description: >-
+        Campos persistíveis do pilar `sales`. Origem: `PILLAR_FIELDS.sales` e
+        `PILLAR_DEFAULTS.sales` em `pillarSettings.ts` (linhas 73–77 e 109).
+      properties:
+        speedToLeadMin: { type: number, minimum: 1, maximum: 1440, example: 5 }
+        requireBant: { type: boolean, example: true }
+        dailyTouchesLimit: { type: number, minimum: 1, maximum: 1000, example: 40 }
+
+    PillarPerformanceValues:
+      type: object
+      description: >-
+        Campos persistíveis do pilar `performance`. Origem: `PILLAR_FIELDS.performance`
+        e `PILLAR_DEFAULTS.performance` em `pillarSettings.ts` (linhas 78–82 e 110).
+      properties:
+        benchmarkRate: { type: number, minimum: 0, maximum: 100, example: 18.5 }
+        repScoreActive: { type: boolean, example: true }
+        anomalyAlerts: { type: boolean, example: true }
+
+    PillarPredictabilityValues:
+      type: object
+      description: >-
+        Campos persistíveis do pilar `predictability`. Origem:
+        `PILLAR_FIELDS.predictability` e `PILLAR_DEFAULTS.predictability` em
+        `pillarSettings.ts` (linhas 83–87 e 111).
+      properties:
+        modelType:
+          type: string
+          enum: [historico, manual]
+          example: historico
+        freezeDay: { type: number, minimum: 1, maximum: 28, example: 25 }
+        confidenceFactor: { type: number, minimum: 0, maximum: 100, example: 85 }
+
+    PillarAiValues:
+      type: object
+      description: >-
+        Campos persistíveis do pilar `ai`. Origem: `PILLAR_FIELDS.ai` e
+        `PILLAR_DEFAULTS.ai` em `pillarSettings.ts` (linhas 88–92 e 112).
+      properties:
+        model: { type: string, example: 'Claude 3.5 Sonnet' }
+        temperature: { type: number, minimum: 0, maximum: 2, example: 0.3 }
+        piiMasking: { type: boolean, example: true }
+
+    PillarAutomationValues:
+      type: object
+      description: >-
+        Campos persistíveis do pilar `automation`. Origem: `PILLAR_FIELDS.automation`
+        e `PILLAR_DEFAULTS.automation` em `pillarSettings.ts` (linhas 93–97 e 113).
+      properties:
+        biDirectional: { type: boolean, example: true }
+        syncIntervalMin: { type: number, minimum: 1, maximum: 1440, example: 5 }
+        retryCount: { type: number, minimum: 0, maximum: 10, example: 3 }
+
+    PillarEngagementValues:
+      type: object
+      description: >-
+        Campos persistíveis do pilar `engagement`. Origem: `PILLAR_FIELDS.engagement`
+        e `PILLAR_DEFAULTS.engagement` em `pillarSettings.ts` (linhas 98–102 e 114).
+      properties:
+        clickToCall: { type: boolean, example: true }
+        recordCalls: { type: boolean, example: true }
+        workingHoursOnly: { type: boolean, example: true }
+
+    PillarSettingsValues:
+      description: >-
+        `values` de um pilar. União dos oito mapas de `PILLAR_FIELDS`. O objeto
+        concreto depende do `{pillar}` do path. No GET é o conjunto completo
+        (defaults + persistido, `mergePillarValues`, `pillarSettings.ts` linhas
+        197–203). No PUT é um patch parcial.
+      oneOf:
+        - $ref: '#/components/schemas/PillarHubValues'
+        - $ref: '#/components/schemas/PillarMarketValues'
+        - $ref: '#/components/schemas/PillarSalesValues'
+        - $ref: '#/components/schemas/PillarPerformanceValues'
+        - $ref: '#/components/schemas/PillarPredictabilityValues'
+        - $ref: '#/components/schemas/PillarAiValues'
+        - $ref: '#/components/schemas/PillarAutomationValues'
+        - $ref: '#/components/schemas/PillarEngagementValues'
+
+    PillarSettingsView:
+      type: object
+      description: >-
+        Visão devolvida por GET e PUT. Origem: interface `PillarSettingsView` em
+        `src/features/settings/services/pillarSettings.service.ts` (linhas 32–39),
+        espelhada no cliente em `src/features/settings/pillarSettings.api.ts`
+        (linhas 10–16).
+      required: [pillar, values, configured, updatedAt]
+      properties:
+        pillar: { $ref: '#/components/schemas/PillarSlug' }
+        values: { $ref: '#/components/schemas/PillarSettingsValues' }
+        configured:
+          type: boolean
+          description: true quando a organização já gravou alguma configuração deste pilar
+        updatedAt:
+          type: string
+          nullable: true
+          format: date-time
+          description: >-
+            ISO-8601 (`new Date().toISOString()` no PUT,
+            `pillarSettings.service.ts` linha 85) ou `null` quando ainda não
+            configurado.
+
+    PillarSettingsEnvelope:
+      type: object
+      description: >-
+        Envelope `{ success, data }` emitido por `handle` em
+        `pillarSettings.routes.ts` (linhas 27–31).
+      required: [success, data]
+      properties:
+        success: { type: boolean, example: true }
+        data: { $ref: '#/components/schemas/PillarSettingsView' }
+
+    PillarSettingsUpdateRequest:
+      type: object
+      description: >-
+        Corpo do PUT. Origem: leitura de `(req.body as { values?: unknown })?.values`
+        em `pillarSettings.routes.ts` (linhas 66–71) e validação em
+        `validatePillarPatch` (`pillarSettings.ts`, linhas 136–195).
+      properties:
+        values:
+          $ref: '#/components/schemas/PillarSettingsValues'
 
   /api/organization/modules:
     get:

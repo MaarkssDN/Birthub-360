@@ -13,7 +13,6 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/Card.js';
 import { CommandCenterHeader } from '../../../components/ui/CommandCenterHeader.js';
 import { KpiCard } from '../../../components/ui/KpiCard.js';
-import { PredictiveRevenueCockpit } from './PredictiveRevenueCockpit.js';
 import { PredictabilityEmptyState, PredictabilityStatusBanner } from './PredictabilityNoData.js';
 import {
   formatBRL,
@@ -84,7 +83,14 @@ export function ForecastHub() {
         </div>
 
         {activeTab === 'predictiveOracle' ? (
-          <PredictiveRevenueCockpit />
+          // O cockpit P10/P50/P90 anterior era 100% mockado (projeções e recomendações
+          // hardcoded apresentadas como reais). O backend real existe
+          // (`GET /api/commercial-intelligence/predictive/cockpit`), mas a ligação UI↔API é
+          // trabalho de onda futura — até lá, estado vazio honesto, nunca número inventado.
+          <PredictabilityEmptyState
+            title="Cockpit preditivo indisponível"
+            hint="A projeção probabilística P10/P50/P90 ainda não está conectada a dados reais nesta versão. Use a aba Forecast Operacional para os valores reais do motor de forecast."
+          />
         ) : (
           <>
             <PredictabilityStatusBanner

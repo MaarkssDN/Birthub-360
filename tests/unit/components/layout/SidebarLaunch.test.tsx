@@ -1,8 +1,12 @@
 /**
- * Animação de abertura de módulo da Sidebar: o ícone clicado voa até o centro, gira revelando o
+ * Animação de abertura de módulo da navegação: o ícone clicado voa até o centro, gira revelando o
  * logo e só então a navegação acontece (`NavLaunchTransition`). Estes testes fixam o contrato que
  * não pode regredir: a navegação SEMPRE acontece (com ou sem animação) e há caminhos rápidos —
- * módulo já ativo, Ctrl/⌘ pressionado, movimento reduzido, Escape — que não seguram o usuário.
+ * item já ativo, Ctrl/⌘ pressionado, movimento reduzido, Escape — que não seguram o usuário.
+ *
+ * Atualizado para a navegação modular (2026-11-10): os itens ficam no painel contextual do
+ * módulo dono da rota — os testes navegam dentro do P01 (`/app/crm`), onde "Empresas" e
+ * "Pipeline" são destinos reais do painel.
  */
 import '@testing-library/jest-dom/vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
@@ -25,15 +29,16 @@ function Where() {
   return <p data-testid="where">{useLocation().pathname}</p>;
 }
 
-function renderSidebar(activeTab: 'dashboard' | 'companies' = 'dashboard') {
+function renderSidebar(activeTab: 'crm' | 'companies' = 'crm') {
   useAuthMock.mockReturnValue({
     currentUser: { name: 'Usuária Teste', role: 'ADMIN', roleTitle: 'ADMIN' },
     isAdmin: true,
     canAccessCommercialIntelligence: true,
+    canAccessCopilotoIa: true,
     logout: vi.fn(),
   });
   return render(
-    <MemoryRouter initialEntries={['/app/dashboard']}>
+    <MemoryRouter initialEntries={['/app/crm']}>
       <Sidebar activeTab={activeTab} />
       <Where />
     </MemoryRouter>,
@@ -56,18 +61,18 @@ afterEach(() => {
 });
 
 describe('Sidebar — transição de abertura de módulo', () => {
-  it('mostra a transição ao clicar e navega para o módulo escolhido quando ela termina', async () => {
+  it('mostra a transição ao clicar e navega para o destino escolhido quando ela termina', async () => {
     renderSidebar();
     fireEvent.click(screen.getByRole('button', { name: 'Empresas' }));
 
     expect(overlay()).toHaveTextContent('Abrindo Empresas');
-    expect(screen.getByTestId('where')).toHaveTextContent('/app/dashboard');
+    expect(screen.getByTestId('where')).toHaveTextContent('/app/crm');
 
     await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent('/app/companies'));
     await waitFor(() => expect(overlay()).not.toBeInTheDocument());
   });
 
-  it('Ctrl/⌘ + clique vai direto ao módulo, sem transição', () => {
+  it('Ctrl/⌘ + clique vai direto ao destino, sem transição', () => {
     renderSidebar();
     fireEvent.click(screen.getByRole('button', { name: 'Empresas' }), { ctrlKey: true });
 
@@ -84,14 +89,15 @@ describe('Sidebar — transição de abertura de módulo', () => {
     expect(screen.getByTestId('where')).toHaveTextContent('/app/companies');
   });
 
-  it('clicar no módulo já ativo não dispara a transição', () => {
-    renderSidebar('companies');
-    fireEvent.click(screen.getByRole('button', { name: 'Empresas' }));
+  it('clicar no item já ativo não dispara a transição', () => {
+    renderSidebar('crm');
+    fireEvent.click(screen.getByRole('button', { name: 'Pipeline' }));
 
     expect(overlay()).not.toBeInTheDocument();
+    expect(screen.getByTestId('where')).toHaveTextContent('/app/crm');
   });
 
-  it('Escape encurta a transição e abre o módulo na hora', async () => {
+  it('Escape encurta a transição e abre o destino na hora', async () => {
     renderSidebar();
     fireEvent.click(screen.getByRole('button', { name: 'Empresas' }));
     expect(overlay()).toBeInTheDocument();
@@ -104,9 +110,9 @@ describe('Sidebar — transição de abertura de módulo', () => {
   it('ignora cliques extras enquanto a transição está em andamento', async () => {
     renderSidebar();
     fireEvent.click(screen.getByRole('button', { name: 'Empresas' }));
-    fireEvent.click(screen.getByRole('button', { name: /Analytics/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Propostas' }));
 
     await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent('/app/companies'));
-    expect(screen.getByTestId('where')).not.toHaveTextContent('/app/analytics');
+    expect(screen.getByTestId('where')).not.toHaveTextContent('/app/propostas');
   });
 });

@@ -6,4 +6,9 @@ export interface IEnrichmentRepository {
   findContactsEmailsAndPhones(companyId: string): Promise<Pick<Contact, 'email' | 'phone'>[]>;
   createContacts(data: Prisma.ContactCreateManyInput[]): Promise<number>;
   createEnrichmentLog(data: Prisma.EnrichmentLogUncheckedCreateInput): Promise<EnrichmentLog>;
+  /**
+   * Expurgo de retenção (TAREFA-SANEAMENTO-019 / BT360-DT-0027): remove logs de enriquecimento
+   * criados antes de `cutoff`. Retorna quantos registros foram apagados.
+   */
+  deleteEnrichmentLogsCreatedBefore(cutoff: Date): Promise<number>;
 }

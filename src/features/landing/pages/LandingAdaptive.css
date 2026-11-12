@@ -354,7 +354,7 @@
   font-size: clamp(30px, 3.2vw, 44px);
   font-weight: 800;
   letter-spacing: -0.03em;
-  color: #e8f2ff;
+  color: #38bdf8;
   margin-bottom: 14px;
   line-height: 1.15;
 }
@@ -375,9 +375,9 @@
 
 .b360-feature-card {
   position: relative;
-  min-height: 340px;
-  border-radius: 22px;
-  padding: 26px;
+  min-height: 210px;
+  border-radius: 28px 40px 28px 40px;
+  padding: 18px;
   overflow: hidden;
   border: 1px solid rgba(0, 212, 255, 0.28);
   background-size: cover;
@@ -3712,82 +3712,82 @@ html.light .b360-adaptive-landing .b360-footer-col ul a:hover,
 
 /* Distribuição Assimétrica dos 8 Pilares e Identidade Cromática (Zero #FFF ou #000 puros) */
 .b360-bento-grid .b360-bento-p1 {
-  grid-column: 1 / 7;
+  grid-column: 1 / 5;
   grid-row: 1 / 2;
   --a: #00d4ff;
   --b: #3b82f6;
-  --title-tone: #e3f8ff;
-  --sub-tone: #c9e2f8;
+  --title-tone: #38bdf8;
+  --sub-tone: #7dd3fc;
   --bg-pos: center 40%;
 }
 
 .b360-bento-grid .b360-bento-p2 {
-  grid-column: 7 / 13;
+  grid-column: 5 / 9;
   grid-row: 1 / 2;
   --a: #ff2d9b;
   --b: #ff7a59;
-  --title-tone: #ffe8f4;
-  --sub-tone: #e8cee0;
+  --title-tone: #ff5fb2;
+  --sub-tone: #fda4d0;
   --bg-pos: center 35%;
 }
 
 .b360-bento-grid .b360-bento-p3 {
-  grid-column: 1 / 5;
-  grid-row: 2 / 3;
+  grid-column: 9 / 13;
+  grid-row: 1 / 2;
   --a: #ffc107;
   --b: #ff8a3d;
-  --title-tone: #fff5d9;
-  --sub-tone: #eadbc0;
+  --title-tone: #ffc107;
+  --sub-tone: #fbbf24;
   --bg-pos: center 45%;
 }
 
 .b360-bento-grid .b360-bento-p4 {
-  grid-column: 5 / 9;
+  grid-column: 1 / 5;
   grid-row: 2 / 3;
   --a: #8b7dff;
   --b: #00d4ff;
-  --title-tone: #ede9ff;
-  --sub-tone: #d0ccf2;
+  --title-tone: #a78bfa;
+  --sub-tone: #c4b5fd;
   --bg-pos: center 25%;
 }
 
 .b360-bento-grid .b360-bento-p5 {
-  grid-column: 9 / 13;
+  grid-column: 5 / 9;
   grid-row: 2 / 3;
   --a: #19e3c8;
   --b: #00d4ff;
-  --title-tone: #e2fbf7;
-  --sub-tone: #c5e8e4;
+  --title-tone: #2dd4bf;
+  --sub-tone: #5eead4;
   --bg-pos: center 30%;
 }
 
-.b360-bento-grid .b360-bento-p7 {
-  grid-column: 5 / 9;
-  grid-row: 3 / 4;
-  --a: #ffc107;
-  --b: #ff2d9b;
-  --title-tone: #fff3dc;
-  --sub-tone: #ebd8c4;
-  --bg-pos: center 50%;
-}
-
 .b360-bento-grid .b360-bento-p6 {
-  grid-column: 1 / 5;
-  grid-row: 3 / 4;
+  grid-column: 9 / 13;
+  grid-row: 2 / 3;
   --a: #ff2d9b;
   --b: #8b7dff;
-  --title-tone: #ffe9f6;
-  --sub-tone: #e6cce2;
+  --title-tone: #ff5fb2;
+  --sub-tone: #fda4d0;
   --bg-pos: center 40%;
 }
 
+.b360-bento-grid .b360-bento-p7 {
+  grid-column: 1 / 5;
+  grid-row: 3 / 4;
+  --a: #ffc107;
+  --b: #ff2d9b;
+  --title-tone: #ffc107;
+  --sub-tone: #fbbf24;
+  --bg-pos: center 50%;
+}
+
 .b360-bento-grid .b360-bento-p8 {
-  grid-column: 9 / 13;
+  grid-column: 5 / 9;
   grid-row: 3 / 4;
   --a: #8b7dff;
   --b: #ff2d9b;
-  --title-tone: #efeaff;
-  --sub-tone: #d4cef2;
+  --title-tone: #a78bfa;
+  --sub-tone: #c4b5fd;
   --bg-pos: center 38%;
 }
 
@@ -3797,32 +3797,32 @@ html.light .b360-adaptive-landing .b360-footer-col ul a:hover,
 
 /* Módulos Complementares 09, 10 e 11 — fileira inferior do bento (8 pilares + 3 módulos) */
 .b360-bento-grid .b360-bento-p9 {
-  grid-column: 1 / 5;
-  grid-row: 4 / 5;
+  grid-column: 9 / 13;
+  grid-row: 3 / 4;
   --a: #00d4ff;
   --b: #3b82f6;
-  --title-tone: #e3f8ff;
-  --sub-tone: #c9e2f8;
+  --title-tone: #38bdf8;
+  --sub-tone: #7dd3fc;
   --bg-pos: center 40%;
 }
 
 .b360-bento-grid .b360-bento-p10 {
-  grid-column: 5 / 9;
+  grid-column: 1 / 7;
   grid-row: 4 / 5;
   --a: #ff2d9b;
   --b: #8b7dff;
-  --title-tone: #ffe8f4;
-  --sub-tone: #e8cee0;
+  --title-tone: #ff5fb2;
+  --sub-tone: #fda4d0;
   --bg-pos: center 40%;
 }
 
 .b360-bento-grid .b360-bento-p11 {
-  grid-column: 9 / 13;
+  grid-column: 7 / 13;
   grid-row: 4 / 5;
   --a: #ffc107;
   --b: #ff8a3d;
-  --title-tone: #fff5d9;
-  --sub-tone: #eadbc0;
+  --title-tone: #ffc107;
+  --sub-tone: #fbbf24;
   --bg-pos: center 40%;
 }
 
@@ -4058,39 +4058,23 @@ html.light .b360-adaptive-landing .b360-bento-grid .b360-pillar-tag,
   .b360-feature-grid.b360-bento-grid {
     grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
     grid-template-rows: none !important;
-    grid-auto-rows: minmax(280px, auto);
-    gap: 16px;
+    grid-auto-rows: minmax(200px, auto);
+    gap: 14px;
   }
-  .b360-bento-grid .b360-bento-p1 {
-    grid-column: 1 / 7;
-    grid-row: auto;
-    min-height: 410px;
-  }
+  .b360-bento-grid .b360-bento-p1,
   .b360-bento-grid .b360-bento-p2,
   .b360-bento-grid .b360-bento-p3,
-  .b360-bento-grid .b360-bento-p5,
-  .b360-bento-grid .b360-bento-p7 {
-    grid-column: span 3;
-    grid-row: auto;
-    min-height: 290px;
-  }
   .b360-bento-grid .b360-bento-p4,
-  .b360-bento-grid .b360-bento-p6 {
-    grid-column: span 3;
-    grid-row: auto;
-    min-height: 390px;
-  }
-  .b360-bento-grid .b360-bento-p8 {
-    grid-column: 1 / 7;
-    grid-row: auto;
-    min-height: 340px;
-  }
+  .b360-bento-grid .b360-bento-p5,
+  .b360-bento-grid .b360-bento-p6,
+  .b360-bento-grid .b360-bento-p7,
+  .b360-bento-grid .b360-bento-p8,
   .b360-bento-grid .b360-bento-p9,
   .b360-bento-grid .b360-bento-p10,
   .b360-bento-grid .b360-bento-p11 {
-    grid-column: span 2;
+    grid-column: span 3;
     grid-row: auto;
-    min-height: 290px;
+    min-height: 200px;
   }
   .b360-pf8 {
     display: none;
@@ -4120,12 +4104,13 @@ html.light .b360-adaptive-landing .b360-bento-grid .b360-pillar-tag,
   .b360-bento-grid .b360-bento-p10,
   .b360-bento-grid .b360-bento-p11 {
     grid-column: 1 / -1 !important;
-    min-height: 330px;
-    padding: 20px;
+    min-height: 190px;
+    padding: 16px;
+    border-radius: 26px 36px 26px 36px;
   }
   .b360-bento-grid .b360-bento-p1,
   .b360-bento-grid .b360-bento-p8 {
-    min-height: 370px;
+    min-height: 190px;
   }
   .b360-p-float {
     display: none !important;

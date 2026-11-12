@@ -22,7 +22,8 @@ import { encryptField, tryDecryptField } from './secretFields.js';
 //   2. Leitura aninhada (`include`/`select` a partir de outro model, ex.: `Lead.contact`) — a
 //      extensão do Prisma agora também decifra recursivamente qualquer `email`/`phone`/`whatsapp`
 //      no formato `enc:v1:...` em qualquer profundidade do resultado (`decryptNestedContactPii`
-//      em `prisma.ts`), não só no nível do model da própria operação.
+//      em `src/lib/prisma-interceptors.ts`, extraído de `prisma.ts` na TAREFA-SANEAMENTO-013),
+//      não só no nível do model da própria operação.
 // `name`/`linkedin`/`observations`/`role`/`department` CONTINUAM em texto puro — de propósito:
 // sustentam a busca livre por substring de `ContactService.findAll` (`contains`), que um índice de
 // igualdade não substitui sem trocar de técnica (full-text externo). Gap documentado, não

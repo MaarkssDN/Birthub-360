@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { getSidebarNavSections } from '../sidebarSections.js';
+import { ALL_MODULES, getVisibleModuleItems } from '../moduleRegistry.js';
 import { isNavHiddenTab, NAV_HIDDEN_TABS, NAV_TAB_ALIASES, TAB_META } from '../tabMeta.js';
+
+const ALL_PERMISSIONS = {
+  canAccessCommercialIntelligence: true,
+  canAccessCopilotoIa: true,
+  canManageOperations: true,
+  isAdmin: true,
+};
 
 // P0 #693 item 6 (handoff 17→02): voice-hub/outbound/dialer atrás de legacyModuleGate (503).
 describe('nav — módulos no gate MODULE_NOT_READY', () => {
@@ -19,15 +26,9 @@ describe('nav — módulos no gate MODULE_NOT_READY', () => {
     expect(TAB_META.outbound.label).toMatch(/indispon/i);
   });
 
-  it('Sidebar não lista nenhum tab escondido, mesmo com todas as permissões', () => {
-    const sections = getSidebarNavSections({
-      canAccessCommercialIntelligence: true,
-      canAccessCopilotoIa: true,
-      canManageOperations: true,
-      isAdmin: true,
-    });
-    const tabs = sections.flatMap((s) =>
-      s.groups.flatMap((g) => [g.primaryTab, ...(g.subItems ?? []).map((i) => i.tab)]),
+  it('registry de módulos não lista nenhum tab escondido, mesmo com todas as permissões', () => {
+    const tabs = ALL_MODULES.flatMap((m) =>
+      getVisibleModuleItems(m, ALL_PERMISSIONS).map((i) => i.tab),
     );
     for (const hidden of NAV_HIDDEN_TABS) expect(tabs).not.toContain(hidden);
   });
