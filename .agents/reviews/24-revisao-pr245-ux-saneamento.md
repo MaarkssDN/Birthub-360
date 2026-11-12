@@ -62,3 +62,21 @@
 **APROVADO** para o commit `7c42df0ea4a84b73210e0f4d91f6dc6a591231b2` (PR #245, branch `agente/02-ux-saneamento`), no escopo do diff auditado. Aprovação limitada a esta revisão exata; qualquer novo commit exige novo parecer. Não autoriza merge/release por si só — decisão de integração permanece com o 00 após gates formais.
 
 **Escopo da aprovação:** conformidade P1–P4, propriedade de arquivos, integridade das extrações (rotas, toolbar, forms), remoção segura de dead code, lead form honesto com consent LGPD, nav mobile acessível conforme handoff, testes novos sem enfraquecimento de asserts, e ausência de bloqueadores. Pendências externas (endpoint de leads, validação LGPD formal, decisão comercial de copy) estão corretamente rastreadas em handoffs e não são defeitos desta entrega.
+
+---
+
+## Adendo — extensão ao SHA `d273a9e7d` (merge de `origin/main`)
+
+**Data:** 2026-11-12 · **Revisor:** Agente 24 · **Escopo:** somente o delta `7c42df0ea..d273a9e7d` (merge commit `d273a9e7da180e61ed6633d927684f52c8defeb6`, pais `7c42df0ea` + `5d3f267e1` = tip de `origin/main`).
+
+**Verificação executada:**
+
+1. `gh pr view 245` → head = `d273a9e7da180e61ed6633d927684f52c8defeb6`, `mergeable: MERGEABLE`.
+2. `git merge-tree --write-tree 7c42df0ea 5d3f267e1` → único conflito de conteúdo: `.agents/handoffs/15-para-02-03-sonar-new-coverage.md`.
+3. Diff entre a árvore do auto-merge (`8f49c7690`) e a árvore do merge commit (`d273a9e7d`) → **1 arquivo, 1 inserção / 3 remoções**: exatamente a remoção dos marcadores de conflito. Nenhum outro arquivo foi tocado manualmente; todo o restante do delta vem de `main` (PRs #241 saneamento QA/08, #242 saneamento handoffs/15, #232 cobertura settings — já revisados/mergeados em main).
+4. Resolução do conflito = **união fiel dos dois lados**: nota "Agente 02 (2026-11-12)" preservada integralmente + bloco "Parcial — lote 2 (settings + src/components)" vindo de main, separados por `---`. Comparação lado a lado do arquivo conflitante vs. resolvido confirma zero perda de conteúdo e zero marcadores residuais.
+5. `authService.ts` e demais arquivos de código no delta são idênticos ao lado `main` (`git diff 5d3f267e1..d273a9e7d` nesses arquivos = vazio para código alterado por main); nenhuma edição manual em código auditado.
+
+**Conteúdo trazido por main no delta:** handoffs/runs de saneamento (docs), runbook `ROTATE_DEVSTACK_EXPOSED_SECRETS.md`, fix de import em `authService.ts` (PR #242, já mergeado em main), guard de fixtures e novos testes de cobertura (PRs #232/#241). Documentação e testes — escopo já revisado nos PRs de origem; nenhum código de produto novo introduzido por este merge além do que main já continha.
+
+**Veredito do adendo:** merge limpo e fiel. **APROVADO** para o SHA `d273a9e7d` como extensão da aprovação anterior — delta é merge de main + resolução docs-only sem perda de conteúdo. Não autoriza merge/release por si só.
