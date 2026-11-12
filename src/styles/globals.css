@@ -1110,97 +1110,16 @@
   .font-display,
   [class*="title" i],
   [class*="Title"] {
-    font-family: var(--font-brand-display) !important;
+    /* Sem !important (TAREFA-SANEAMENTO-003): a imposição do display font vive na
+       seção não-layered no fim do arquivo, que vence @layer utilities sem hack. */
+    font-family: var(--font-brand-display);
     color: var(--title-color-default);
     letter-spacing: -0.02em;
   }
 
-  /* Sobrescrever qualquer classe utilitária de branco ou preto quando aplicada a títulos */
-  :is(h1, h2, h3, h4, h5, h6, [role="heading"], [class*="title" i], [class*="Title"]):is(
-    .text-white,
-    .text-black,
-    .text-ink,
-    .text-slate-900,
-    .text-slate-950,
-    .text-gray-900,
-    .text-gray-950,
-    .text-zinc-900,
-    .text-neutral-900,
-    .dark\:text-white,
-    .dark\:text-white\/90,
-    .text-white\/90,
-    .text-white\/80,
-    .text-gray-800,
-    .text-slate-800
-  ) {
-    color: var(--title-color-default) !important;
-  }
-
-  /* Variações autorizadas de cores de títulos (Cyan, Gold, Pink, Gradiente) */
-  :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).neon-title-gold,
-  :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).text-gold {
-    color: var(--title-color-gold) !important;
-  }
-
-  :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).neon-title-pink,
-  :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).text-pink {
-    color: var(--title-color-pink) !important;
-  }
-
-  :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).neon-title-blue,
-  :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).text-neon-blue {
-    color: var(--title-color-cyan) !important;
-  }
-
-  /* Subtítulos: NUNCA brancos e NUNCA pretos */
-  :is(
-    [class*="subtitle" i],
-    [class*="Subtitle"],
-    .text-subtitle,
-    .card-subtitle,
-    [data-slot="description"],
-    header p,
-    .page-subtitle
-  ) {
-    color: var(--subtitle-color-default) !important;
-  }
-
-  /* Subtítulos que seguem imediatamente um cabeçalho */
-  :is(h1, h2, h3, h4, h5, h6) + p {
-    color: var(--subtitle-color-default) !important;
-  }
-
-  :is(
-    [class*="subtitle" i],
-    [class*="Subtitle"],
-    .text-subtitle,
-    .card-subtitle,
-    [data-slot="description"],
-    header p,
-    .page-subtitle,
-    :is(h1, h2, h3, h4, h5, h6) + p
-  ):is(
-    .text-white,
-    .text-black,
-    .text-ink,
-    .text-ink-2,
-    .text-slate-900,
-    .text-gray-900,
-    .text-zinc-900,
-    .text-neutral-900,
-    .dark\:text-white,
-    .text-white\/60,
-    .text-white\/70,
-    .text-white\/80,
-    .text-white\/90,
-    .text-gray-400,
-    .text-gray-500,
-    .text-slate-400,
-    .text-slate-500,
-    .text-muted-foreground
-  ) {
-    color: var(--subtitle-color-default) !important;
-  }
+  /* As regras de "policiamento" de cor de títulos/subtítulos que ficavam aqui com
+     !important foram movidas para o fim do arquivo, fora de @layer, com prefixo
+     `html body` — ver o bloco "Brand title/subtitle policing" ao final. */
 
   /* Títulos por padrão usam a identidade visual, preservando classes de cores utilitárias explícitas */
 
@@ -1942,4 +1861,130 @@
   background: rgba(255, 255, 255, 0.94);
   border-color: rgba(11, 19, 43, 0.1);
   box-shadow: 0 20px 50px -10px rgba(11, 19, 43, 0.08);
+}
+
+/* ============================================================
+   Brand title/subtitle policing — TAREFA-SANEAMENTO-003 (BT360-DT-0017)
+   ------------------------------------------------------------
+   Estas regras existiam dentro de @layer base com !important para vencer as
+   utilities do Tailwind (@layer utilities). Foram movidas para cá, FORA de
+   qualquer @layer: CSS não-layered já vence todas as layers na cascata, o que
+   permite remover o !important sem mudar o resultado computado.
+
+   O prefixo `html body` preserva a dominância que o !important garantia contra
+   regras não-layered de official-identity.css (carregado depois deste arquivo,
+   ex.: [data-page-accent] :is(h1..h6) e .bh-platform-card :is(h1..h6)). Sem ele,
+   empates de especificidade seriam resolvidos pela ordem de import e o heading
+   dentro de platform cards voltaria a herdar --ink — regressão visual.
+   ============================================================ */
+
+/* Display font dos títulos — continua imposto sobre utilities .font-* */
+html
+  body
+  :is(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    [role="heading"],
+    .font-display,
+    [class*="title" i],
+    [class*="Title"]
+  ) {
+  font-family: var(--font-brand-display);
+}
+
+/* Sobrescrever qualquer classe utilitária de branco ou preto quando aplicada a títulos */
+html
+  body
+  :is(h1, h2, h3, h4, h5, h6, [role="heading"], [class*="title" i], [class*="Title"]):is(
+    .text-white,
+    .text-black,
+    .text-ink,
+    .text-slate-900,
+    .text-slate-950,
+    .text-gray-900,
+    .text-gray-950,
+    .text-zinc-900,
+    .text-neutral-900,
+    .dark\:text-white,
+    .dark\:text-white\/90,
+    .text-white\/90,
+    .text-white\/80,
+    .text-gray-800,
+    .text-slate-800
+  ) {
+  color: var(--title-color-default);
+}
+
+/* Variações autorizadas de cores de títulos (Cyan, Gold, Pink, Gradiente) */
+html body :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).neon-title-gold,
+html body :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).text-gold {
+  color: var(--title-color-gold);
+}
+
+html body :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).neon-title-pink,
+html body :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).text-pink {
+  color: var(--title-color-pink);
+}
+
+html body :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).neon-title-blue,
+html body :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).text-neon-blue {
+  color: var(--title-color-cyan);
+}
+
+/* Subtítulos: NUNCA brancos e NUNCA pretos */
+html
+  body
+  :is(
+    [class*="subtitle" i],
+    [class*="Subtitle"],
+    .text-subtitle,
+    .card-subtitle,
+    [data-slot="description"],
+    header p,
+    .page-subtitle
+  ) {
+  color: var(--subtitle-color-default);
+}
+
+/* Subtítulos que seguem imediatamente um cabeçalho */
+html body :is(h1, h2, h3, h4, h5, h6) + p {
+  color: var(--subtitle-color-default);
+}
+
+html
+  body
+  :is(
+    [class*="subtitle" i],
+    [class*="Subtitle"],
+    .text-subtitle,
+    .card-subtitle,
+    [data-slot="description"],
+    header p,
+    .page-subtitle,
+    :is(h1, h2, h3, h4, h5, h6) + p
+  ):is(
+    .text-white,
+    .text-black,
+    .text-ink,
+    .text-ink-2,
+    .text-slate-900,
+    .text-gray-900,
+    .text-zinc-900,
+    .text-neutral-900,
+    .dark\:text-white,
+    .text-white\/60,
+    .text-white\/70,
+    .text-white\/80,
+    .text-white\/90,
+    .text-gray-400,
+    .text-gray-500,
+    .text-slate-400,
+    .text-slate-500,
+    .text-muted-foreground
+  ) {
+  color: var(--subtitle-color-default);
 }
