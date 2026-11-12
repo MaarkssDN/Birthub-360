@@ -269,6 +269,48 @@ export async function advanceCadenceRun(
     }
 
     // decision.type === 'dispatch'
+    //
+    // Auto-stop pós-resposta — janela residual fechada aqui (achado do relatório do supervisor):
+    // a checagem de `hasLeadReplied` no início do ciclo e a chamada real ao canal
+    // (`dispatcher.dispatch`) NÃO são atômicas — entre elas há várias leituras de banco
+    // (opt-out, rate limit) durante as quais uma resposta do lead pode chegar, e as rotas
+    // manuais de pause/stop (`cadence.routes.ts`) gravam direto no repositório sem passar pela
+    // trava `deps.lock`. Antes de tocar o canal real, re-lê o run e re-checa a resposta: se o
+    // run saiu de `active` ou o lead respondeu nesse intervalo, encerra/aguarda SEM despachar —
+    // nenhum envio acontece depois do sinal de parada. A janela residual que sobra é apenas a
+    // interna de `dispatcher.dispatch` (o envio real e o banco nunca são uma transação só),
+    // reduzida ao mínimo possível sem introduzir lock distribuído novo.
+    const freshRun = await deps.runRepo.findById(organizationId, runId);
+    if (!freshRun) {
+      // Run sumiu entre a leitura inicial e agora — nunca despachar às cegas.
+      return { run, decision: { type: 'wait', reason: 'locked' } };
+    }
+    if (freshRun.status === 'paused') {
+      return { run: freshRun, decision: { type: 'wait', reason: 'paused' } };
+    }
+    if (freshRun.status !== 'active') {
+      // Já terminal por outro caminho (stop manual, policy-guardrail) — nada a despachar nem a gravar.
+      return {
+        run: freshRun,
+        decision: { type: 'stop', reason: freshRun.stopReason ?? 'completed' },
+      };
+    }
+    if (await deps.hasLeadReplied(organizationId, run.leadId)) {
+      const stopped: CadenceRunState = applyStopDecision(run, 'lead-reply', now);
+      await deps.runRepo.save(stopped);
+      logger.info(
+        {
+          organizationId,
+          runId,
+          leadId: run.leadId,
+          reason: 'lead-reply',
+          status: stopped.status,
+        },
+        'Cadência encerrada por resposta do lead detectada na re-verificação pré-envio.',
+      );
+      return { run: stopped, decision: { type: 'stop', reason: 'lead-reply' } };
+    }
+
     const outcome = await deps.dispatcher.dispatch(decision.touch, run);
     const updated = recordTouchAttempt(run, sequence, decision.touch, now, {
       result: outcome.result,
