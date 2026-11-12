@@ -271,6 +271,15 @@ export function appNavItem(page: Page, target: AppNavKey) {
   return page.getByTestId(APP_NAV[target].itemTestId);
 }
 
+/**
+ * Limites — follow-up, não tratados aqui (não são a causa do hang de 2h):
+ * - Não reabre o painel colapsado. O clique no rail só navega para `module.home`;
+ *   o toggle é `module-rail-toggle-panel` / `localStorage @birthhub:module-panel-collapsed`.
+ *   Com o painel fechado o item não aparece e este helper falha em 15s.
+ * - Não funciona abaixo de 1024px: o rail é `hidden lg:flex` (`Sidebar.tsx`).
+ *   Os 7 specs deste job usam Desktop Chrome 1280×720; os E2E mobile já navegam
+ *   com `page.goto`, não com este helper.
+ */
 export async function navigateViaSidebar(page: Page, target: AppNavKey): Promise<void> {
   const dest = APP_NAV[target];
   const rail = page.getByTestId(dest.railTestId);
