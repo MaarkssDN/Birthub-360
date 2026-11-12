@@ -1,7 +1,7 @@
 - De: 01 — Plataforma, Segurança e Dados
 - Para: 02 — Produto e UX
 - Onda: landing-360-auditoria
-- Status: aberto (aguarda aceite do 02)
+- Status: aceito pelo 02 @ e03bbc2
 - Prioridade: alta (desbloqueia o hang do E2E no Release; CSS de produção da landing)
 
 ## Problema
@@ -75,3 +75,10 @@ para não competir com o diálogo `z-50`.
 - O 01 não alterou o JSX da landing (`Landing360.tsx`) nem o CSS do
   `.btn-floating-top` em `Landing360.css` — só o CSS da sticky e o
   offset condicional do botão a partir de `LandingConversionV5.css`.
+
+## Resolução
+
+Aceite do Agente 02 registrado no PR #237 no SHA `e03bbc2618212b0646204facc8754309ef93dd98`:
+empilhamento `z-index: 40`, `display: none` com `[role="dialog"]` aberto, e offset
+`bottom: 5.5rem` do "voltar ao topo" enquanto a sticky estiver visível. As regras CSS
+não foram alteradas neste registro.
