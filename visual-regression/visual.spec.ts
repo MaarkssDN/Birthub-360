@@ -152,6 +152,9 @@ test.describe('Visual Regression', () => {
         await page.goto('/app/automations');
         await waitForAppReady(page);
         await waitForVisualContentReady(page);
+        await expect(page.getByRole('button', { name: 'Nova automação', exact: true })).toBeInViewport({
+          ratio: 1,
+        });
         await waitForVisualFonts(page);
         await expect(page).toHaveScreenshot(`automations-${theme}.png`, SCREENSHOT_OPTIONS);
       });
