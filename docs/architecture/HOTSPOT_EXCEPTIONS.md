@@ -247,14 +247,6 @@ propósito por estar fora de "## Exceções ativas"):
 
 
 
-### `src/features/settings/components/PillarSettingsPlaceholder.tsx`
-
-- **Limite excepcional:** 1235 linhas (teto = tamanho atual medido por `npm run check:hotspots` na main `549dad47`; o arquivo não pode crescer)
-- **Dono:** Agente 02 — Produto e UX
-- **Motivo:** o commit `75dee1ab` (2026-11-11, Onda F1 — persistência real de settings por pilar) elevou o arquivo de 986 para 1235 linhas, conforme o gate mede (`content.split('\n').length` em `scripts/architecture/check-hotspots.ts`), cruzando o limite rígido de 1000. A exceção é temporária e apertada no tamanho atual da main (sem folga) para desbloquear `check:hotspots` sem alterar o limite geral do repositório. O dono do domínio (`src/features/settings/AGENTS.md`) deve dividir o componente até 2026-11-30 e remover esta exceção; não estender o prazo nem o teto. O PR #225 (format, ainda não mesclado) só reduz quebras de linha e permanecerá abaixo deste teto.
-- **Registrado em:** 2026-11-11
-- **Reavaliar até:** 2026-11-30
-
 
 ## Débito conhecido, abaixo do limite de falha (sem exceção necessária)
 
