@@ -66,7 +66,7 @@ A ordem prioriza defeitos funcionais reais sobre cosmética.
 
 | Frente | Escopo | Status |
 |---|---|---|
-| F07 | Landing360: lead capture real + claims honestos | CONCLUÍDA (commit `bff84912d`, ver handoff) |
+| F07 | Landing360: lead capture real + claims honestos | CONCLUÍDA (commits `c65676ebb` + `4b93a242d` na branch; ver handoff). `Act6PrivatePortal` (modo `?mode=luxury`) tinha o mesmo defeito de `setTimeout` fake + SLA "4h úteis" fabricado — corrigido com o mesmo endpoint; schema ganhou `empresa`/`mensagem` opcionais |
 | F01 | Shell/tokens: auditoria Impeccable do design system | EM ANDAMENTO — chrome unificado em tokens (`fadae0ded`→cherry-pick `4d473efeb`); Sidebar.css convertido de hex crus para tokens/`color-mix` (mesma frente, pendente de commit); acentos do rail/painel/dock/topbar migrados para aliases `--color-*` (`brand`, `brand-2`, `iris`, `neon-gold`). Auditoria dos componentes restantes e transições entre workspaces pendente |
 | F02–F06 | Workspaces P01–P08, M09–M10 | PENDENTE |
 | F08 | Personagens/Copiloto/Chatbook + a11y/E2E | PENDENTE |
