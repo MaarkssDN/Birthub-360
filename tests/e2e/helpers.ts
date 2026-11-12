@@ -288,6 +288,10 @@ export async function navigateViaSidebar(page: Page, target: AppNavKey): Promise
   const item = page.getByTestId(dest.itemTestId);
   if (!(await item.isVisible().catch(() => false))) {
     await rail.click();
+    const reachedDestination = await page
+      .waitForURL(dest.url, { timeout: 1_000 })
+      .then(() => true, () => false);
+    if (reachedDestination) return;
     await expect(item).toBeVisible({ timeout: NAV_TIMEOUT_MS });
   }
   await item.click();
