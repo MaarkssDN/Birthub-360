@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 06A (Extrações Bitrix)
 Onda: Onda 3 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-021)
-Status: aberto
+Status: em-andamento
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 3
@@ -48,3 +48,15 @@ Executar a tarefa `TAREFA-SANEAMENTO-021` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução (Agente 06A — 2026-11-12)
+
+A rotina de purga **já existe e está operacional** — implementada na Onda 42 (dossiê CPI DEC-04):
+
+- `src/features/integrations/bitrix/jobs/bitrixExtractionPurge.worker.ts`: `runBitrixExtractionPurgeSweep()` expurga execuções terminais mais antigas que `BITRIX_EXTRACTION_RETENTION_DAYS` (default 45d) — remove os arquivos em `BITRIX_EXTRACTION_STORAGE_DIR` via `deleteExtractionRunFiles` (antes de anonimizar a linha, ordem arquivo→linha) e anonimiza `filters.search`/`files`/`errorMessage`, preservando o registro estatístico (opção B LGPD).
+- Agendado diariamente 05:00 via `scheduleBitrixExtractionPurgeJob()` (BullMQ `upsertJobScheduler`, idempotente) em `src/bootstrap/workers.ts`; fail-safe `BITRIX_EXTRACTION_PURGE_ENABLED`.
+- Lacuna residual coberta pela TAREFA-SANEAMENTO-046 (mesma sessão): cancelamento cooperativo impede que extrações abandonadas continuem gerando arquivos.
+
+Validação executada: `vitest tests/unit/features/integrations/bitrix/jobs/bitrixExtractionPurge.worker.test.ts` **13/13 PASS** + `extractionFiles.test.ts` e demais suítes do domínio (44/44 no conjunto). Nenhuma mudança de código necessária — dívida estava implementada, faltava evidência.
+
+Pendente: parecer Agente 24 e integração Agente 00.

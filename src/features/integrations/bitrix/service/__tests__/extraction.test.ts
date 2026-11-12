@@ -226,14 +226,14 @@ describe('executeExtractionRun — paginação, progresso, cancelamento e resili
       WEBHOOK_URL,
       'crm.lead.list',
       expect.objectContaining({ start: 0 }),
-      { correlationId: 'corr-1' },
+      expect.objectContaining({ correlationId: 'corr-1', signal: expect.any(AbortSignal) }),
     );
     expect(clientMock.callBitrix).toHaveBeenNthCalledWith(
       2,
       WEBHOOK_URL,
       'crm.lead.list',
       expect.objectContaining({ start: 2 }),
-      { correlationId: 'corr-1' },
+      expect.objectContaining({ correlationId: 'corr-1', signal: expect.any(AbortSignal) }),
     );
 
     // 3 formatos: CSV por entidade + JSON consolidado + XLSX consolidado.
@@ -284,6 +284,51 @@ describe('executeExtractionRun — paginação, progresso, cancelamento e resili
     expect(clientMock.callBitrix).toHaveBeenCalledTimes(1);
     expect(filesMock.writeExtractionFile).not.toHaveBeenCalled();
     expect(prismaMock.bitrixExtractionRun.update).not.toHaveBeenCalled(); // nunca sobrescreve o status 'cancelled' já gravado por cancelExtractionRun
+  });
+
+  it('TAREFA-SANEAMENTO-046: propaga AbortSignal ao callBitrix — o cancelamento aborta o signal capturado pela chamada em voo', async () => {
+    prismaMock.bitrixExtractionRun.findFirst
+      .mockResolvedValueOnce(baseRun({ entities: ['lead'] })) // carga inicial da execução
+      .mockResolvedValueOnce({ status: 'running' }) // checagem ANTES da entidade
+      .mockResolvedValueOnce({ status: 'cancelled' }); // checagem DENTRO do onPage da 1ª página
+
+    let capturedSignal: AbortSignal | undefined;
+    clientMock.callBitrix.mockImplementationOnce(
+      (_url: string, _method: string, _params: unknown, options: { signal?: AbortSignal }) => {
+        capturedSignal = options.signal;
+        return Promise.resolve({ result: [{ ID: '1' }], next: 5 });
+      },
+    );
+
+    const { executeExtractionRun } = await import('../extraction.js');
+    await executeExtractionRun('org-1', 'run-1');
+
+    expect(capturedSignal).toBeInstanceOf(AbortSignal);
+    // O checkCancelled dentro do onPage abortou o controller da execução — o signal entregue ao
+    // fetch em voo reflete o cancelamento na hora, não só na próxima página.
+    expect(capturedSignal?.aborted).toBe(true);
+    // E a 2ª página nunca foi buscada.
+    expect(clientMock.callBitrix).toHaveBeenCalledTimes(1);
+  });
+
+  it('TAREFA-SANEAMENTO-046: AbortError do callBitrix é tratado como cancelamento cooperativo — não marca failed nem gera arquivo', async () => {
+    prismaMock.bitrixExtractionRun.findFirst
+      .mockResolvedValueOnce(baseRun({ entities: ['lead'] }))
+      .mockResolvedValueOnce({ status: 'running' }); // checagem ANTES da entidade
+
+    clientMock.callBitrix.mockRejectedValueOnce(
+      new DOMException('The operation was aborted.', 'AbortError'),
+    );
+
+    const { executeExtractionRun } = await import('../extraction.js');
+    await executeExtractionRun('org-1', 'run-1');
+
+    // Cancelamento cooperativo: nunca failRun, nunca arquivo, nunca "completed".
+    expect(prismaMock.bitrixExtractionRun.updateMany).not.toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ status: 'failed' }) }),
+    );
+    expect(filesMock.writeExtractionFile).not.toHaveBeenCalled();
+    expect(prismaMock.bitrixExtractionRun.update).not.toHaveBeenCalled();
   });
 
   it('entidade que falha marca status "failed", grava errorMessage e incrementa a métrica de falha por entidade', async () => {

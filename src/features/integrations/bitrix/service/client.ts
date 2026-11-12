@@ -185,6 +185,10 @@ export interface BitrixCallOptions {
   correlationId?: string;
   /** Sobrescreve o teto de tentativas — usado nos testes para não esperar segundos de backoff real. */
   maxAttempts?: number;
+  /** TAREFA-SANEAMENTO-046: cancelamento cooperativo — quando abortado, a chamada em voo é
+   * interrompida e nenhuma nova tentativa é iniciada; o erro propagado é `AbortError`, nunca
+   * retentado como falha transitória. */
+  signal?: AbortSignal;
 }
 
 /**
@@ -202,9 +206,17 @@ async function attemptBitrixCall<T>(
   method: string,
   params: Record<string, unknown> | undefined,
   correlationId: string,
+  externalSignal?: AbortSignal,
 ): Promise<T> {
+  if (externalSignal?.aborted) {
+    throw externalSignal.reason ?? new DOMException('The operation was aborted.', 'AbortError');
+  }
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  // Cancelamento cooperativo (TAREFA-SANEAMENTO-046): o signal externo aborta o MESMO controller
+  // do timeout — fetch/readJson rejeitam na hora em vez de esperar REQUEST_TIMEOUT_MS.
+  const onExternalAbort = () => controller.abort(externalSignal?.reason);
+  externalSignal?.addEventListener('abort', onExternalAbort, { once: true });
   let response: Response;
   let data: (T & { error?: string; error_description?: string }) | null = null;
   try {
@@ -268,6 +280,7 @@ async function attemptBitrixCall<T>(
     }
   } finally {
     clearTimeout(timeout);
+    externalSignal?.removeEventListener('abort', onExternalAbort);
   }
 
   if (!response.ok) {
@@ -426,11 +439,25 @@ export async function callBitrix<T>(
 
   let lastError: TransientBitrixError | null = null;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    // Cancelamento cooperativo (TAREFA-SANEAMENTO-046): abort nunca vira retry — propaga
+    // AbortError cru, fora do contrato Transient/Definitive, para o chamador decidir.
+    if (options.signal?.aborted) {
+      throw options.signal.reason ?? new DOMException('The operation was aborted.', 'AbortError');
+    }
     try {
-      const result = await attemptBitrixCall<T>(webhookUrl, method, params, correlationId);
+      const result = await attemptBitrixCall<T>(
+        webhookUrl,
+        method,
+        params,
+        correlationId,
+        options.signal,
+      );
       if (CIRCUIT_BREAKER_ENABLED) recordCircuitSuccess(webhookUrl);
       return result;
     } catch (err: any) {
+      if (options.signal?.aborted) {
+        throw options.signal.reason ?? new DOMException('The operation was aborted.', 'AbortError');
+      }
       if (err instanceof BitrixDefinitiveError) {
         logger.warn(
           { correlationId, method, statusCode: err.statusCode, attempt },

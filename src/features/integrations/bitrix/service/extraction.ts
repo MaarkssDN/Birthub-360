@@ -267,6 +267,35 @@ function applyCheckpoint(
 let extractionBackoffDelayFn = (attempt: number) => computeBackoffDelayMs(attempt, 200, 2000);
 let extractionSleepFn = sleep;
 
+/**
+ * TAREFA-SANEAMENTO-046: dorme `ms` ou retorna imediatamente se `signal` abortar — usado nos
+ * backoffs de página/entidade para que um cancelamento não fique refém do tempo de espera.
+ * `sleepFn` injetável em teste é preservado (a corrida é entre ele e o evento de abort).
+ */
+async function sleepOrAbort(
+  ms: number,
+  signal: AbortSignal | undefined,
+  sleepFn: (ms: number) => Promise<void>,
+): Promise<void> {
+  if (!signal || signal.aborted) {
+    if (signal?.aborted) return;
+    return sleepFn(ms);
+  }
+  let onAbort: (() => void) | undefined;
+  const aborted = new Promise<void>((resolve) => {
+    onAbort = () => resolve();
+    signal.addEventListener('abort', onAbort, { once: true });
+  });
+  await Promise.race([sleepFn(ms), aborted]);
+  if (onAbort) signal.removeEventListener('abort', onAbort);
+}
+
+function isAbortError(err: unknown): boolean {
+  return (
+    typeof err === 'object' && err !== null && (err as { name?: string }).name === 'AbortError'
+  );
+}
+
 /** Configura atraso de retentativa para testes unitários — permite eliminar waits reais. */
 export function __setExtractionRetryDelayForTests(
   delayFn?: (attempt: number) => number,
@@ -287,6 +316,7 @@ async function extractEntityPages(
   select: string[] | undefined,
   correlationId: string,
   onPage: (processedSoFar: number) => Promise<boolean>,
+  signal?: AbortSignal,
 ): Promise<{
   rows: Record<string, unknown>[];
   pagesScanned: number;
@@ -301,6 +331,13 @@ async function extractEntityPages(
   let cancelled = false;
 
   while (pagesScanned < PAGE_SAFETY_CAP) {
+    // Cancelamento cooperativo (TAREFA-SANEAMENTO-046): checa ANTES de gastar uma chamada HTTP
+    // — o `onPage` só roda depois da página chegar, então sem este check uma página extra sairia
+    // mesmo com a extração já cancelada.
+    if (signal?.aborted) {
+      cancelled = true;
+      break;
+    }
     const params: Record<string, unknown> = { filter, start };
     if (select) params.select = select;
     if (entity !== 'user') params.order = { ID: 'ASC' }; // ordem estável — evita pular/duplicar registro se algo for criado/alterado entre páginas
@@ -312,9 +349,15 @@ async function extractEntityPages(
       try {
         data = await callBitrix<BitrixListResponse>(webhookUrl, method, params, {
           correlationId,
+          signal,
         });
         break;
       } catch (err: any) {
+        // Abort propagado pelo signal da execução — não é falha de página, é cancelamento.
+        if (signal?.aborted || isAbortError(err)) {
+          cancelled = true;
+          break;
+        }
         // Erro definitivo (401/403/filtro inválido) propaga imediatamente sem retentar
         if (
           err instanceof BitrixDefinitiveError ||
@@ -346,10 +389,12 @@ async function extractEntityPages(
           '[bitrix] Falha transitória ao buscar página da extração — retentando com backoff',
         );
         bitrixExtractionRetriesTotal.inc({ tenant: organizationId, entity });
-        await extractionSleepFn(delay);
+        await sleepOrAbort(delay, signal, extractionSleepFn);
         pageAttempt++;
       }
     }
+
+    if (cancelled) break; // abort no meio das retentativas — `data` ficou null de propósito
 
     if (!data) {
       throw new AppError(`Falha ao obter dados da página start=${start} do Bitrix24.`, 502);
@@ -500,6 +545,15 @@ export async function executeExtractionRun(organizationId: string, runId: string
   if (!run) return;
 
   const correlationId = run.correlationId || randomUUID();
+  // TAREFA-SANEAMENTO-046: um AbortController por execução — todo `isCancelled` positivo aborta
+  // o signal, que é propagado ao `callBitrix` (interrompe fetch em voo) e aos backoffs
+  // (`sleepOrAbort`), em vez de esperar a página atual terminar de baixar.
+  const abortController = new AbortController();
+  const checkCancelled = async (): Promise<boolean> => {
+    const cancelled = await isCancelled(organizationId, runId);
+    if (cancelled) abortController.abort();
+    return cancelled;
+  };
   const entities = (run.entities as string[]).filter(isExtractionEntity);
   const fields = (run.fields as Partial<Record<string, string[]>> | null) ?? {};
   const filters = run.filters as unknown as StoredExtractionFilters;
@@ -549,7 +603,7 @@ export async function executeExtractionRun(organizationId: string, runId: string
   const incompleteEntities: string[] = [];
 
   for (const entity of entities) {
-    if (await isCancelled(organizationId, runId)) {
+    if (await checkCancelled()) {
       wasCancelled = true;
       break;
     }
@@ -602,8 +656,9 @@ export async function executeExtractionRun(organizationId: string, runId: string
               totalCount + processedSoFar,
               countByEntity,
             );
-            return isCancelled(organizationId, runId);
+            return checkCancelled();
           },
+          abortController.signal,
         );
 
         entry.pagesScanned = pagesScanned;
@@ -639,17 +694,18 @@ export async function executeExtractionRun(organizationId: string, runId: string
         }
         entitySuccess = true;
       } catch (err: any) {
+        // Abort durante retry/backoff da entidade — cancelamento, não falha.
+        if (abortController.signal.aborted || isAbortError(err)) {
+          wasCancelled = true;
+          break;
+        }
         const isDefinitive =
           err instanceof BitrixDefinitiveError ||
           err?.statusCode === 401 ||
           err?.statusCode === 403 ||
           err?.statusCode === 400;
 
-        if (
-          isDefinitive ||
-          entityAttempt >= maxEntityAttempts ||
-          (await isCancelled(organizationId, runId))
-        ) {
+        if (isDefinitive || entityAttempt >= maxEntityAttempts || (await checkCancelled())) {
           entry.status = 'error';
           entry.error = err instanceof Error ? err.message : String(err);
           await persistProgress(organizationId, runId, progressEntities, totalCount, countByEntity);
@@ -662,7 +718,11 @@ export async function executeExtractionRun(organizationId: string, runId: string
           '[bitrix] Falha transitória na entidade durante extração — retentando entidade inteira com backoff',
         );
         bitrixExtractionRetriesTotal.inc({ tenant: organizationId, entity });
-        await extractionSleepFn(extractionBackoffDelayFn(entityAttempt));
+        await sleepOrAbort(
+          extractionBackoffDelayFn(entityAttempt),
+          abortController.signal,
+          extractionSleepFn,
+        );
         entityAttempt++;
       }
     }
