@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 14 (Ambiente de Execução e Test Harness)
 Onda: Onda 2 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-032)
-Status: aberto
+Status: em-andamento
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 2
@@ -48,3 +48,17 @@ Executar a tarefa `TAREFA-SANEAMENTO-032` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução (Agente 14 — 2026-11-12, branch `agente/14-w3-teardown-sigint`)
+
+`scripts/test/prepare-integration-env.js` agora registra handlers `SIGINT`/`SIGTERM`
+quando entra no caminho Docker local (não-CI). Apenas os containers iniciados por
+esta execução entram em `ephemeralContainers` (serviços ausentes subidos via
+`docker compose up -d` + `birthhub_meilisearch_test` quando provisionado) — os três
+containers fixos já em execução, compartilhados entre worktrees, nunca são parados.
+No sinal, o harness executa `docker stop` em cada um e sai com código 130/143.
+`stopEphemeralContainers` é exportado e coberto por 3 testes unitários (sucesso,
+falha parcial tolerada, lista vazia). Nota: durante `spawnSync` bloqueante o handler
+é entregue ao retornar o spawn (atraso máximo de ~2s no loop de wait) — determinístico
+o suficiente para o objetivo de não deixar zumbis. Run report:
+`.agents/runs/agente-14-tarefa-saneamento-032.md`. Pendente: revisão do Agente 24.
