@@ -23,26 +23,26 @@ function railAccentClass(accent: PanelAccent, active: boolean): string {
   if (!active) return '';
   switch (accent) {
     case 'cyan':
-      return 'bg-[#00D4FF]/12 text-[#0284c7] dark:text-[#00D4FF] border-[#00D4FF]/40 shadow-[0_0_14px_rgba(0,212,255,0.25)]';
+      return 'bg-brand/12 text-sky-700 dark:text-brand border-brand/40 shadow-[0_0_14px_color-mix(in_srgb,var(--color-brand)_25%,transparent)]';
     case 'pink':
-      return 'bg-[#FF2D9B]/12 text-[#be185d] dark:text-[#FF2D9B] border-[#FF2D9B]/40 shadow-[0_0_14px_rgba(255,45,155,0.25)]';
+      return 'bg-brand-2/12 text-pink-700 dark:text-brand-2 border-brand-2/40 shadow-[0_0_14px_color-mix(in_srgb,var(--color-brand-2)_25%,transparent)]';
     case 'gold':
-      return 'bg-[#F59E0B]/12 text-[#b45309] dark:text-[#F59E0B] border-[#F59E0B]/40 shadow-[0_0_14px_rgba(245,158,11,0.25)]';
+      return 'bg-neon-gold/12 text-amber-700 dark:text-neon-gold border-neon-gold/40 shadow-[0_0_14px_color-mix(in_srgb,var(--color-neon-gold)_25%,transparent)]';
     case 'iris':
-      return 'bg-[#8B7DFF]/12 text-[#6d28d9] dark:text-[#8B7DFF] border-[#8B7DFF]/40 shadow-[0_0_14px_rgba(139,125,255,0.25)]';
+      return 'bg-iris/12 text-violet-700 dark:text-iris border-iris/40 shadow-[0_0_14px_color-mix(in_srgb,var(--color-iris)_25%,transparent)]';
   }
 }
 
 function activeBarClass(accent: PanelAccent): string {
   switch (accent) {
     case 'cyan':
-      return 'bg-[#00D4FF] shadow-[0_0_10px_#00D4FF]';
+      return 'bg-brand shadow-[0_0_10px_var(--color-brand)]';
     case 'pink':
-      return 'bg-[#FF2D9B] shadow-[0_0_10px_#FF2D9B]';
+      return 'bg-brand-2 shadow-[0_0_10px_var(--color-brand-2)]';
     case 'gold':
-      return 'bg-[#F59E0B] shadow-[0_0_10px_#F59E0B]';
+      return 'bg-neon-gold shadow-[0_0_10px_var(--color-neon-gold)]';
     case 'iris':
-      return 'bg-[#8B7DFF] shadow-[0_0_10px_#8B7DFF]';
+      return 'bg-iris shadow-[0_0_10px_var(--color-iris)]';
   }
 }
 

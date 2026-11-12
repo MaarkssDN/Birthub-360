@@ -67,7 +67,7 @@ A ordem prioriza defeitos funcionais reais sobre cosmética.
 | Frente | Escopo | Status |
 |---|---|---|
 | F07 | Landing360: lead capture real + claims honestos | CONCLUÍDA (commit `bff84912d`, ver handoff) |
-| F01 | Shell/tokens: auditoria Impeccable do design system | PARCIAL — chrome unificado em tokens (`fadae0ded`); auditoria completa dos 30 componentes e transições entre workspaces pendente |
+| F01 | Shell/tokens: auditoria Impeccable do design system | EM ANDAMENTO — chrome unificado em tokens (`fadae0ded`→cherry-pick `4d473efeb`); Sidebar.css convertido de hex crus para tokens/`color-mix` (mesma frente, pendente de commit); acentos do rail/painel/dock/topbar migrados para aliases `--color-*` (`brand`, `brand-2`, `iris`, `neon-gold`). Auditoria dos componentes restantes e transições entre workspaces pendente |
 | F02–F06 | Workspaces P01–P08, M09–M10 | PENDENTE |
 | F08 | Personagens/Copiloto/Chatbook + a11y/E2E | PENDENTE |
 
@@ -88,6 +88,19 @@ Todos os conteúdos são isolados por arquivo e cherry-pickáveis. **Recomendaç
 ao Agente 00:** congelar checkouts concorrentes neste clone ou exigir worktrees
 por frente (§17 do AGENTS.md) — do contrário toda a Onda 02 continuará caindo
 em branches de saneamento alheias.
+
+**Isolamento aplicado (2026-11-12, continuação):** worktree dedicada criada em
+`C:/Github/Birthub-360-worktrees/agente-02-onda02` sobre `agente/02-onda-02-ux`
+(`core.longpaths=true` foi necessário por causa de `postman/collections/**`;
+`node_modules` vinculado por junction — `package.json`/lockfile idênticos entre
+as bases). Os 4 commits da Onda 02 foram cherry-pickados sem conflito:
+
+- `bff84912d` → novo SHA na branch (Frente 07 código)
+- `1b3a7c84d` → docs/handoff Frente 07
+- `fadae0ded` → `4d473efeb` (Frente 01 chrome)
+- `1f270bf17` → `ad27b84cc` (registro de incidentes)
+
+A partir daqui todo o trabalho da Onda 02 acontece **somente** nesta worktree.
 
 ## 3. Handoffs previstos
 
