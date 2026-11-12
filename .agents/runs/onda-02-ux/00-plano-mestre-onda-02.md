@@ -112,3 +112,74 @@ A partir daqui todo o trabalho da Onda 02 acontece **somente** nesta worktree.
 - Impedimento registrado: claims de "demonstração agendada" dependem de um
   booking link público configurado por tenant — não existe slug oficial da
   marca; documentado como pendente de produto.
+
+## 5. Auditoria funcional transversal (continuação — sessão corrente)
+
+Padrão auditado: UI que parece operacional mas fabrica dados/efeitos
+(`setTimeout` como substituto de backend, `Math.random`, constantes
+hardcoded apresentadas como telemetria real, claims de persistência sem
+chamada de API).
+
+### Corrigido nesta sessão
+
+- **P04 War Room Arena** (`f5080c81e`): avaliação "pela IA" e XP
+  "computado no perfil" eram `Math.random` + `setTimeout`; agora scoring
+  heurístico determinístico local, copy honesta ("avaliação local de
+  treino"), XP apenas de sessão.
+- **Settings failover** (`7d04de912`, `b85410ffe`): `MultiRegionFailoverPanel`
+  deixou de apresentar telemetria simulada como operacional; virou
+  visualização honesta sem gatilho falso de failover.
+
+### Código morto fabricado removido (`a36517673`)
+
+Duas UIs **não roteadas** e já marcadas como legado/deprecated continham
+~970 linhas de fabricação — removidas em vez de "consertadas", pois o
+backend honesto já existe:
+
+- `features/predictability/components/PredictiveRevenueCockpit.tsx` —
+  projeções hardcoded (R$145k/485k), "Aprovar" com toast "encaminhada ao
+  CRM" sem nenhuma chamada de API. O contrato legado está marcado
+  `@deprecated` em `predictiveRevenueOracle.contract.ts` ("UI deve migrar
+  para V2"); o cockpit real é
+  `features/commercial-intelligence/components/PredictiveRevenueCockpit.tsx`
+  (props-driven, estados loading/error/empty honestos, dono Agente 04).
+- `features/settings/components/MultiRegionResiliencePanel.tsx` —
+  telemetria de regiões fabricada, "Testar Failover Seguro" via
+  `setTimeout` com "RTO: 4.2s" inventado, RPO/RTO hardcoded. Substituído na
+  prática por `MultiRegionFailoverPanel` (já corrigido). Sem nenhum import
+  em `src/`.
+
+Testes atualizados: `CockpitScreens.unit.test.tsx` agora cobre o contrato
+honesto V2 (insufficient_data / error / ready) do cockpit real;
+`cockpitsAndPanels.unit.test.tsx` perdeu os blocos das UIs removidas.
+
+### Auditado e considerado honesto (sem alteração)
+
+- **P05 Previsibilidade** (`ForecastHub`, `MetasHub`, `PipelinePonderadoHub`):
+  consomem `predictabilityApi.getOverview()` real; hook
+  `usePredictabilityOverview` documenta contrato P0 #693 com erro parcial,
+  fonte caída → `null` e vazio honesto — sem número fabricado.
+- **`LiveCopilotHUD`**: dirigido por `useLiveCopilotSession` (barramento
+  real de sessão de chamada) com props-overrides para teste; não é mock.
+- `setTimeout` remanescentes em `BookingLinksModal`, `ContactList`,
+  `LiveCopilotHUD` são resets de UI ("link copiado"), não sucesso fabricado.
+
+### Gates desta sessão
+
+- `npx tsc --noEmit`: 0 erros.
+- `vitest run` nos 2 arquivos de teste afetados: **14/14 verdes**
+  (novos testes do contrato V2 incluídos).
+- `biome check`: arquivos de teste são ignorados pela config (esperado);
+  nenhum arquivo `src/` novo alterado nesta sessão além dos já commitados.
+
+### Pendente da auditoria funcional
+
+- Workspaces P02 (inteligência de mercado), P03 (orquestração), P06–P08,
+  M09–M11: varredura tela a tela continua — os padrões `mock`/`simula`
+  remanescentes (~30 arquivos, maioria `features/intelligence` do Agente 07
+  e `features/automations`) precisam de triagem por arquivo; suspeitos já
+  listados: `EcosystemInboundEventSimulator` (nome sugere simulador
+  explícito — verificar se está rotulado como tal), `SwarmDashboard`,
+  `SuperagentCreator`, `DailyPlanHub`, `IaCoachTab`, `HiringScenarioCard`,
+  `roleplay/CallSetup`, `ForecastHub` (ok), `PredictiveRevenueCockpit`
+  (removido).
