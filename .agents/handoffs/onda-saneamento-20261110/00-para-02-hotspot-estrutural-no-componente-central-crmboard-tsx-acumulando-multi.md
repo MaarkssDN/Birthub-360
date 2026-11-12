@@ -48,3 +48,23 @@ Executar a tarefa `TAREFA-SANEAMENTO-002` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução (Agente 02 — W4, 2026-11-12)
+
+`src/components/CrmBoard.tsx`: 1257 → 501 linhas. Extrações em `src/components/crm-board/` (novo diretório, domínio 02):
+
+- `useCrmBoardDnD.ts` — todo o bloco DnD (sensors, coordinateGetter de teclado, announcements acessíveis, drag start/end/cancel, confete/som). JSX/comportamento preservados verbatim.
+- `useCrmBoardBulkActions.ts` — seleção múltipla, usuários atribuíveis, ações em lote (etapa/dono/Bitrix/enriquecimento IA).
+- `CrmBoardHeader.tsx`, `CrmBoardMetricsBar.tsx`, `CrmBoardFiltersBar.tsx`, `CrmBoardBatchBar.tsx` — seções de JSX extraídas com props explícitas.
+- `stageLabels.ts` — `STAGE_DISPLAY_LABELS`/`formatStageLabel` movidos; re-exportados por `CrmBoard.tsx` (API pública preservada).
+
+### Gates executados
+
+- `npx tsc --noEmit`: PASS.
+- `npx biome check` nos 8 arquivos: PASS.
+- `vitest tests/unit/features/crm/ + useCrmBoardController`: 44/44 PASS.
+- `check:hotspots`: exit 0 — arquivo abaixo de 1000; exceção em `HOTSPOT_EXCEPTIONS.md` ficou obsoleta (warning do gate) — remoção pertence ao Agente 08 (dono de docs/).
+
+### Pendências
+
+- Parecer Agente 24; integração pelo Agente 00. E2E do board (drag-and-drop, crm.spec.ts) não executado — sem Docker.

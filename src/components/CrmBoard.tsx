@@ -1,36 +1,8 @@
 /* eslint-disable jsx-a11y/no-noninteractive-tabindex -- regiões roláveis focáveis por teclado */
 
-import {
-  type Announcements,
-  closestCenter,
-  DndContext,
-  type DragEndEvent,
-  DragOverlay,
-  type DragStartEvent,
-  KeyboardCode,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core';
-import confetti from 'canvas-confetti';
-import {
-  Bookmark,
-  Activity,
-  Flame,
-  TrendingUp,
-  Zap,
-  CheckSquare,
-  Download,
-  Loader2,
-  Search,
-  Send,
-  Sparkles,
-  Target,
-  WifiOff,
-  X,
-} from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { closestCenter, DndContext, DragOverlay } from '@dnd-kit/core';
+import { WifiOff } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { BRAND } from '../config/brand.js';
 import { BitrixImportModal } from '../features/crm/components/BitrixImportModal.js';
@@ -38,27 +10,21 @@ import { KanbanCard } from '../features/crm/components/KanbanCard.js';
 import { KanbanColumn } from '../features/crm/components/KanbanColumn.js';
 import { LeadDetailDrawer } from '../features/crm/components/LeadDetailDrawer.js';
 import { type SavedViewItem, SavedViewsPanel } from '../features/crm/components/SavedViewsPanel.js';
-import { bitrixApi } from '../features/integrations/bitrix/bitrix.api.js';
 import { useCrmBoardController } from '../hooks/useCrmBoardController.js';
-import { api } from '../lib/api.js';
 import { clientLogger } from '../lib/clientLogger.js';
 import { SoundFX } from '../lib/soundEffects.js';
 import { toast } from '../lib/toast.js';
 import type { Lead, LeadStatus } from '../types/index.js';
-import { Bitrix24Icon } from './brand/CompanyBrandIcon.js';
-import { Button } from './ui/Button.js';
+import { CrmBoardBatchBar } from './crm-board/CrmBoardBatchBar.js';
+import { CrmBoardFiltersBar } from './crm-board/CrmBoardFiltersBar.js';
+import { CrmBoardHeader } from './crm-board/CrmBoardHeader.js';
+import { CrmBoardMetricsBar } from './crm-board/CrmBoardMetricsBar.js';
+import { useCrmBoardBulkActions } from './crm-board/useCrmBoardBulkActions.js';
+import { useCrmBoardDnD } from './crm-board/useCrmBoardDnD.js';
 import { ContextualTip } from './ui/ContextualTip.js';
 import { EmptyState } from './ui/EmptyState.js';
-import { Tooltip } from './ui/Tooltip.js';
 
-// dnd-kit ativa drag por teclado em Space E Enter por padrão — mas KanbanCard também usa Enter pra
-// abrir o LeadDetailDrawer (mesma tecla, dois significados). Restringindo o sensor a Space, Enter
-// fica livre e sem ambiguidade pra "abrir detalhes"; Space vira exclusivamente "pegar/soltar o card".
-const KEYBOARD_DRAG_CODES = {
-  start: [KeyboardCode.Space],
-  cancel: [KeyboardCode.Esc],
-  end: [KeyboardCode.Space],
-};
+export { formatStageLabel, STAGE_DISPLAY_LABELS } from './crm-board/stageLabels.js';
 
 const LEAD_COLUMNS: LeadStatus[] = [
   'Lead Recebido',
@@ -83,24 +49,6 @@ const DEAL_COLUMNS: LeadStatus[] = [
   'Negócios Perdidos',
   'Negócios Ganhos',
 ];
-
-/**
- * Rótulos canônicos de exibição para desacoplar chaves históricas de banco (`LeadStatus`)
- * de nomes legados de pilotos de clientes na camada visual multi-tenant (Horizonte 2).
- */
-export const STAGE_DISPLAY_LABELS: Partial<Record<LeadStatus, string>> = {
-  'Piloto VTECH': 'Piloto Técnico (PoC)',
-  'Piloto Birthub 360 Profile': 'Piloto Hub 360° — Em Curso',
-  'Piloto Birthub 360 Profile - Concluído': 'Piloto Hub 360° — Concluído',
-  'Piloto Birthub 360 Profile - Cancelado': 'Piloto Hub 360° — Cancelado',
-  'Piloto Logística': 'Piloto Operacional — Em Curso',
-  'Piloto Logístico - Concluído': 'Piloto Operacional — Concluído',
-  'Piloto Logístico - Cancelado': 'Piloto Operacional — Cancelado',
-};
-
-export function formatStageLabel(stage: LeadStatus): string {
-  return STAGE_DISPLAY_LABELS[stage] ?? stage;
-}
 
 interface CrmBoardProps {
   funnel?: 'Lead' | 'Negocio';
@@ -127,16 +75,8 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
   // em useState local) para que a URL seja a fonte de verdade — compartilhável, sobrevive a
   // reload, e o botão Voltar do navegador fecha o drawer antes de sair da tela (Onda A, Agente 00).
   const selectedLeadId = searchParams.get('lead');
-  const [activeLead, setActiveLead] = useState<Lead | null>(null);
-  const keyboardDragStatusRef = useRef<LeadStatus | null>(null);
-
-  // Multi-seleção e ações em lote
-  const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
-  const [selectionMode, setSelectionMode] = useState(false);
   const [isBitrixModalOpen, setIsBitrixModalOpen] = useState(false);
   const [isSavedViewsOpen, setIsSavedViewsOpen] = useState(false);
-  const [isBatchUpdating, setIsBatchUpdating] = useState(false);
-  const [users, setUsers] = useState<{ id: string; name: string }[]>([]);
 
   // Onda B2a (Agente 00, Commercial AI OS) — filtros reais do pipeline (dono + busca), persistidos
   // na URL como `owner`/`q`, mesmo mecanismo já usado para `funnel`/`lead`.
@@ -144,11 +84,6 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
   const searchQuery = searchParams.get('q') ?? '';
   const enrichmentFilter = searchParams.get('enrichment') ?? '';
   const temperatureFilter = searchParams.get('temp') ?? '';
-
-  const ownerNameById = useMemo(
-    () => Object.fromEntries(users.map((u) => [u.id, u.name])),
-    [users],
-  );
 
   const filteredLeads = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -190,15 +125,25 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
     };
   }, [leads]);
 
-  useEffect(() => {
-    // /api/users nunca existiu como rota (404 silencioso todo carregamento — achado do teste
-    // de console limpo em crm.spec.ts) — o endpoint real de nome/id de usuários da organização
-    // pra reatribuição é /api/team/assignable (ver team.routes.ts).
-    api
-      .get<{ owners: { id: string; name: string }[] }>('/api/team/assignable')
-      .then((res) => setUsers(res.owners))
-      .catch(() => setUsers([]));
-  }, []);
+  const {
+    selectedLeadIds,
+    setSelectedLeadIds,
+    selectionMode,
+    setSelectionMode,
+    isBatchUpdating,
+    users,
+    ownerNameById,
+    handleToggleSelect,
+    handleSelectAll,
+    handleClearSelection,
+    handleBatchMoveStage,
+    handleBatchReassignOwner,
+    handleBatchExportBitrix,
+    handleBatchEnrichSelected,
+  } = useCrmBoardBulkActions({ filteredLeads, fetchLeads });
+
+  const { activeLead, sensors, announcements, handleDragStart, handleDragEnd, handleDragCancel } =
+    useCrmBoardDnD({ leads, setLeads, fetchLeads, columns });
 
   useEffect(() => {
     const eventSource = new EventSource('/api/notifications/stream', { withCredentials: true });
@@ -221,222 +166,6 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
       eventSource.close();
     };
   }, [fetchLeads]);
-
-  // `sortableKeyboardCoordinates` (@dnd-kit/sortable) foi testado primeiro, por ser a opção
-  // nativa do dnd-kit — mas falhou em execução real neste board multi-coluna: sua busca por
-  // distância de canto (closestCorners) compara o card contra TODOS os droppables registrados
-  // (cada card individual E o droppable de cada coluna inteira via useDroppable em
-  // KanbanColumn), e o droppable da coluna, bem mais alto, tende a "ganhar" essa comparação
-  // antes de a seta conseguir avançar — ArrowRight repetido nunca saía da coluna vizinha mais
-  // próxima da origem.
-  //
-  // A primeira correção tentada usava um coordinateGetter próprio lendo `leads` (state) +
-  // um handleDragOver que reparentava o card otimisticamente no array `leads` a cada mudança de
-  // `over`, pra dar ao getter algo atualizado pra ler. Também falhou, por dois motivos
-  // confirmados em execução real: (1) o KeyboardSensor do dnd-kit congela a função
-  // coordinateGetter no momento em que o drag é ativado (Space) e reusa essa MESMA closure pro
-  // resto do gesto — fechar sobre `leads` direto sempre lia o valor de quando o drag começou,
-  // nunca o atualizado, nem trocando por uma ref sempre-atual resolvia sozinho; (2) reparentar o
-  // card de verdade em `leads` fazia o React desmontar/remontar o KanbanCard em outra
-  // <SortableContext> (coluna diferente = subárvore diferente, reconciliação por `key` não
-  // atravessa colunas), derrubando o foco real do DOM pro <body> no meio do drag — e esse
-  // remount, combinado com a remedição contínua de retângulos do dnd-kit
-  // (MeasuringStrategy.WhileDragging), também fazia a "coluna atual" pular sozinha sem nenhuma
-  // tecla ser pressionada.
-  //
-  // A solução abaixo evita os dois problemas não tocando em `leads` durante o drag: o
-  // coordinateGetter mantém seu próprio "cursor" (`keyboardDragStatusRef`), que ele mesmo lê E
-  // escreve a cada seta — autocontido, imune a re-render e a remontagem. `leads` só muda de
-  // verdade no drop (handleDragEnd), igual ao mouse já fazia antes desta rodada. O preview
-  // visual durante o drag continua vindo do <DragOverlay> (já existia antes desta rodada), que o
-  // dnd-kit já anima seguindo a posição virtual — não precisa de reparentação nenhuma pra isso.
-  const columnKeyboardCoordinateGetter = useCallback(
-    (
-      event: KeyboardEvent,
-      {
-        context,
-      }: {
-        context: {
-          droppableRects: Map<
-            string | number,
-            { left: number; top: number; width: number; height: number }
-          >;
-        };
-      },
-    ) => {
-      if (event.code !== 'ArrowLeft' && event.code !== 'ArrowRight') return undefined;
-      const currentStatus = keyboardDragStatusRef.current;
-      if (!currentStatus) return undefined;
-
-      const currentIndex = columns.indexOf(currentStatus);
-      if (currentIndex === -1) return undefined;
-      const nextIndex = event.code === 'ArrowRight' ? currentIndex + 1 : currentIndex - 1;
-      const nextStatus = columns[nextIndex];
-      if (!nextStatus) return undefined; // já está na primeira/última coluna
-
-      const rect = context.droppableRects.get(nextStatus);
-      if (!rect) return undefined;
-
-      event.preventDefault();
-      keyboardDragStatusRef.current = nextStatus;
-      // Mira no CENTRO do retângulo da coluna, não perto do topo: closestCenter compara
-      // centro-a-centro contra TODOS os droppables (cada card E cada coluna inteira). Um ponto
-      // perto do topo fica geometricamente mais perto do centro de um card vizinho (retângulo
-      // pequeno) do que do centro da própria coluna (retângulo alto) — fazia o alvo "grudar" na
-      // coluna anterior por 1-2 teclas antes de reagir, ou pular coluna vazia. Mirando no centro
-      // real da coluna, ela sempre vence essa comparação pra ela mesma.
-      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-    },
-    [columns],
-  );
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: columnKeyboardCoordinateGetter,
-      keyboardCodes: KEYBOARD_DRAG_CODES,
-    }),
-  );
-
-  /** Resolve a coluna de destino a partir do `over.id` do dnd-kit — pode ser o id da própria
-        coluna (drop numa coluna vazia) ou o id de um card dentro dela (drop entre dois cards). */
-  const resolveStatusFromOverId = useCallback(
-    (overId: string | number): LeadStatus | null => {
-      if (typeof overId === 'string' && columns.includes(overId as LeadStatus)) {
-        return overId as LeadStatus;
-      }
-      const overLead = leads.find((l) => l.id === overId);
-      return overLead ? overLead.status : null;
-    },
-    [leads, columns],
-  );
-
-  const leadLabel = useCallback((lead: Lead | null | undefined) => {
-    if (!lead) return 'Card';
-    return (
-      lead.company?.tradeName || lead.company?.legalName || lead.contact?.name || 'Lead sem empresa'
-    );
-  }, []);
-
-  const handleDragStart = useCallback(
-    (event: DragStartEvent) => {
-      const { active } = event;
-      const lead = leads.find((l) => l.id === active.id);
-      if (lead) {
-        setActiveLead(lead);
-        keyboardDragStatusRef.current = lead.status;
-        SoundFX.play('focus');
-      }
-    },
-    [leads],
-  );
-
-  const handleDragEnd = useCallback(
-    async (event: DragEndEvent) => {
-      const { active, over } = event;
-      setActiveLead(null);
-      keyboardDragStatusRef.current = null;
-
-      if (!over) return;
-
-      const leadId = active.id;
-      const targetStatus = resolveStatusFromOverId(over.id);
-      if (!targetStatus) return;
-
-      const currentLead = leads.find((l) => l.id === leadId);
-      if (currentLead && currentLead.status !== targetStatus) {
-        if (targetStatus === 'Negócios Ganhos' || targetStatus === 'Convertido em Oportunidade') {
-          SoundFX.play('success');
-          confetti({
-            particleCount: 80,
-            spread: 70,
-            origin: { y: 0.6 },
-            colors: [
-              '--color-brand-primary',
-              '--color-brand-secondary',
-              '--color-brand-accent',
-              '--color-success',
-              '--color-info',
-            ].map((token) =>
-              getComputedStyle(document.documentElement).getPropertyValue(token).trim(),
-            ),
-            disableForReducedMotion: true,
-          });
-        } else {
-          SoundFX.play('confirm');
-        }
-
-        setLeads((prev) =>
-          prev.map((lead) => (lead.id === leadId ? { ...lead, status: targetStatus } : lead)),
-        );
-
-        try {
-          // /api/leads/:id só existe como PUT (lead.routes.ts) — api.patch mandava PATCH,
-          // que o backend nunca registrou (404 silencioso engolido pelo catch abaixo).
-          // Resultado real: mover um card no Kanban nunca persistia, sempre revertia com o
-          // toast "a alteração foi desfeita" (achado do teste E2E de drag-and-drop).
-          await api.put(`/api/leads/${leadId}`, { status: targetStatus });
-        } catch (error: any) {
-          SoundFX.play('error');
-          clientLogger.error({ err: error }, 'Error updating lead status');
-          toast.error(
-            `Não foi possível mover ${leadLabel(currentLead)} — a alteração foi desfeita.`,
-          );
-          fetchLeads();
-        }
-      }
-    },
-    [leads, setLeads, fetchLeads, resolveStatusFromOverId, leadLabel],
-  );
-
-  const handleDragCancel = useCallback(() => {
-    setActiveLead(null);
-    keyboardDragStatusRef.current = null;
-  }, []);
-
-  // Announcements acessíveis do dnd-kit — o default ("Draggable item l2...") expõe o id
-  // interno do lead, que não diz nada pro usuário. Trocado por nome da empresa + coluna,
-  // sem introduzir dependência nova (accessibility.announcements é nativo do @dnd-kit/core).
-  const announcements: Announcements = useMemo(
-    () => ({
-      onDragStart({ active }) {
-        const lead = leads.find((l) => l.id === active.id);
-        return `${leadLabel(lead)} selecionado para mover, coluna atual ${lead?.status ?? ''}. Use as setas para escolher o destino, espaço para soltar, Esc para cancelar.`;
-      },
-      onDragOver({ active, over }) {
-        const lead = leads.find((l) => l.id === active.id);
-        const status = over ? resolveStatusFromOverId(over.id) : null;
-        if (!status) return `${leadLabel(lead)} não está sobre nenhuma coluna.`;
-        return `${leadLabel(lead)} sobre a coluna ${status}.`;
-      },
-      onDragEnd({ active, over }) {
-        const lead = leads.find((l) => l.id === active.id);
-        const status = over ? resolveStatusFromOverId(over.id) : null;
-        if (!status) return `Movimentação de ${leadLabel(lead)} cancelada.`;
-        return `${leadLabel(lead)} movido para ${status}.`;
-      },
-      onDragCancel({ active }) {
-        const lead = leads.find((l) => l.id === active.id);
-        // `leads` nunca é tocado durante o drag (só no drop, em handleDragEnd), então
-        // lead.status aqui já é a coluna de origem, sem precisar de nenhuma ref à parte.
-        return `Movimentação de ${leadLabel(lead)} cancelada. O card permanece em ${lead?.status ?? ''}.`;
-      },
-    }),
-    [leads, leadLabel, resolveStatusFromOverId],
-  );
-
-  const handleToggleSelect = useCallback((leadId: string) => {
-    setSelectedLeadIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(leadId)) next.delete(leadId);
-      else next.add(leadId);
-      return next;
-    });
-  }, []);
 
   const handleCardClick = useCallback(
     (lead: Lead) => {
@@ -467,136 +196,6 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
     );
   }, [setSearchParams]);
 
-  // Opera sobre os leads FILTRADOS visíveis, não todos os `leads` carregados — "selecionar todos"
-  // com um filtro ativo deve selecionar o que está na tela, não leads escondidos pelo filtro.
-  const handleSelectAll = useCallback(() => {
-    if (selectedLeadIds.size === filteredLeads.length) {
-      setSelectedLeadIds(new Set());
-    } else {
-      setSelectedLeadIds(new Set(filteredLeads.map((l) => l.id)));
-    }
-  }, [filteredLeads, selectedLeadIds.size]);
-
-  const handleClearSelection = useCallback(() => {
-    setSelectedLeadIds(new Set());
-    setSelectionMode(false);
-  }, []);
-
-  const handleBatchMoveStage = async (newStatus: string) => {
-    if (selectedLeadIds.size === 0 || !newStatus) return;
-    setIsBatchUpdating(true);
-    try {
-      // Usa o resultado real da API (updatedCount/failedCount), não selectedLeadIds.size — o
-      // backend filtra ids inexistentes/de outro tenant e só conta como atualizado quando algo
-      // realmente mudou, então a contagem solicitada podia ser maior que a real sem o usuário
-      // nunca saber (achado de auditoria).
-      const result = await api.post<{ updatedCount: number; total: number; failedCount: number }>(
-        '/api/leads/batch-update',
-        { leadIds: Array.from(selectedLeadIds), updates: { status: newStatus } },
-      );
-      if (result.failedCount > 0) {
-        toast.error(
-          `${result.updatedCount} de ${result.total} leads movidos para "${newStatus}" — ${result.failedCount} falharam.`,
-        );
-      } else {
-        toast.success(`${result.updatedCount} lead(s) movido(s) para "${newStatus}"!`);
-      }
-      fetchLeads();
-      setSelectedLeadIds(new Set());
-    } catch (err: any) {
-      toast.error(err instanceof Error ? err.message : 'Falha ao mover leads em lote.');
-    } finally {
-      setIsBatchUpdating(false);
-    }
-  };
-
-  const handleBatchReassignOwner = async (ownerId: string) => {
-    if (selectedLeadIds.size === 0) return;
-    const ownerUser = users.find((u) => u.id === ownerId);
-    const ownerName = ownerUser?.name || ownerId;
-    setIsBatchUpdating(true);
-    try {
-      // Lead.owner é contrato User.id, não nome (DATA-003, mesma correção já aplicada em
-      // handleOwnerChange de LeadDetailDrawer.tsx) — este caminho de reatribuição em lote gravava
-      // o nome até aqui, divergindo do resto da aplicação (round-robin, import Bitrix, verificação
-      // de duplicidade em LeadUseCases.ts, que resolve `existing.owner` via
-      // `prisma.user.findUnique({ where: { id } })`) e do próprio KanbanCard.tsx, que já espera
-      // resolver o nome de exibição a partir do id (ver ownerNameById acima). `ownerName` aqui
-      // continua existindo só para a mensagem do toast, não para o payload.
-      const result = await api.post<{ updatedCount: number; total: number; failedCount: number }>(
-        '/api/leads/batch-update',
-        { leadIds: Array.from(selectedLeadIds), updates: { owner: ownerId } },
-      );
-      if (result.failedCount > 0) {
-        toast.error(
-          `${result.updatedCount} de ${result.total} leads reatribuídos para "${ownerName}" — ${result.failedCount} falharam.`,
-        );
-      } else {
-        toast.success(`${result.updatedCount} lead(s) reatribuído(s) para "${ownerName}"!`);
-      }
-      fetchLeads();
-      setSelectedLeadIds(new Set());
-    } catch (err: any) {
-      toast.error(err instanceof Error ? err.message : 'Falha ao reatribuir leads.');
-    } finally {
-      setIsBatchUpdating(false);
-    }
-  };
-
-  const handleBatchExportBitrix = async () => {
-    if (selectedLeadIds.size === 0) {
-      // Se nenhum lead selecionado, pergunta se deseja exportar todos
-      try {
-        const res = await bitrixApi.exportLeadsBatch();
-        toast.success(
-          `Exportação concluída: ${res.data.exportedCount} leads enviados para o Bitrix24!`,
-        );
-        fetchLeads();
-      } catch (err: any) {
-        toast.error(err instanceof Error ? err.message : 'Falha ao exportar para Bitrix24.');
-      }
-      return;
-    }
-
-    setIsBatchUpdating(true);
-    try {
-      const res = await bitrixApi.exportLeadsBatch(Array.from(selectedLeadIds));
-      toast.success(`${res.data.exportedCount} leads enviados com sucesso para o Bitrix24!`);
-      fetchLeads();
-      setSelectedLeadIds(new Set());
-    } catch (err: any) {
-      toast.error(err instanceof Error ? err.message : 'Falha ao exportar para Bitrix24.');
-    } finally {
-      setIsBatchUpdating(false);
-    }
-  };
-
-  const handleBatchEnrichSelected = async () => {
-    if (selectedLeadIds.size === 0) return;
-    setIsBatchUpdating(true);
-    try {
-      const res = await api.post<{
-        success: boolean;
-        data: { enqueued: number; enfileirado?: boolean; motivo?: string };
-      }>('/api/leads/enrich-batch', { leadIds: Array.from(selectedLeadIds) });
-      if (res.data?.enqueued > 0) {
-        toast.success(
-          `${res.data.enqueued} lead(s) selecionado(s) enviado(s) para enriquecimento com IA!`,
-        );
-        fetchLeads();
-        setSelectedLeadIds(new Set());
-      } else if (res.data?.enfileirado === false) {
-        toast.error(`Falha ao enfileirar: ${res.data.motivo}`);
-      } else {
-        toast.info('Nenhum lead com empresa associada encontrado na seleção.');
-      }
-    } catch (err: any) {
-      toast.error(err instanceof Error ? err.message : 'Falha ao enriquecer leads selecionados.');
-    } finally {
-      setIsBatchUpdating(false);
-    }
-  };
-
   const handleFunnelChange = useCallback(
     (next: 'Lead' | 'Negocio') => {
       if (funnelProp) return; // funil fixado por prop — toggle não se aplica
@@ -606,7 +205,7 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
       // visível (mesmo comportamento de antes, agora expresso na URL em vez de em state local).
       setSearchParams(next === 'Lead' ? {} : { funnel: next }, { replace: true });
     },
-    [funnelProp, setSearchParams],
+    [funnelProp, setSearchParams, setSelectedLeadIds],
   );
 
   // Aplica funil+filtros de uma view salva de uma vez (Onda B2b) — mesma lógica de
@@ -628,7 +227,7 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
         { replace: true },
       );
     },
-    [funnelProp, setSearchParams],
+    [funnelProp, setSearchParams, setSelectedLeadIds],
   );
 
   const handleOwnerFilterChange = useCallback(
@@ -743,286 +342,40 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
     <div
       className={`flex-1 flex flex-col bg-bg text-ink animate-in fade-in duration-500 overflow-hidden relative ${embedded ? 'min-h-[680px] h-full' : 'h-full'}`}
     >
-      {/* Header com estilo moderno */}
-      <div className="flex shrink-0 flex-col items-start justify-between gap-4 border-b border-brand/25 bg-surface-elevated/92 p-4 backdrop-blur-xl sm:flex-row sm:items-center lg:px-6 lg:py-5">
-        <div>
-          <div className="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-[#0284c7] dark:text-[#00D4FF] mb-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#D4F434] shadow-[0_0_8px_#D4F434] animate-pulse" />
-            <span>PIPELINE COMERCIAL REVENUE OS</span>
-          </div>
-          <h2 className="flex items-center gap-2.5 font-display text-2xl font-black tracking-tight text-[#0F2942] dark:text-[#E2F1FF]">
-            <Target className="h-5 w-5 text-[#00D4FF]" aria-hidden="true" />
-            {funnel === 'Lead' ? 'Leads e pré-vendas' : 'Negócios e fechamento'}
-          </h2>
-          <p className="text-xs text-[#3B5A75] dark:text-[#94B3CD] mt-1 font-sans">
-            {funnel === 'Lead'
-              ? 'Qualifique, nutra e converta os leads prontos para o pipeline de negócios.'
-              : 'Gerencie propostas, pilotos e receita em um funil separado.'}
-          </p>
-          {!funnelProp && (
-            // Toolbar de botões toggle (não campos de formulário) — <fieldset> não traria ganho
-            // real de acessibilidade aqui, só estilo (mesma justificativa da política de
-            // useSemanticElements deste repositório).
-            // biome-ignore lint/a11y/useSemanticElements: ver comentário acima
-            <div
-              className="inline-flex items-center gap-1 p-1 mt-3 bg-surface-2 rounded-xl border border-line shadow-xs"
-              role="group"
-              aria-label="Funil do pipeline"
-            >
-              <button
-                type="button"
-                onClick={() => handleFunnelChange('Lead')}
-                aria-pressed={funnel === 'Lead'}
-                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                  funnel === 'Lead'
-                    ? 'bg-brand text-on-brand shadow-sm'
-                    : 'text-ink-2 hover:bg-surface hover:text-ink'
-                }`}
-              >
-                Leads
-              </button>
-              <button
-                type="button"
-                onClick={() => handleFunnelChange('Negocio')}
-                aria-pressed={funnel === 'Negocio'}
-                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                  funnel === 'Negocio'
-                    ? 'bg-brand text-on-brand shadow-sm'
-                    : 'text-ink-2 hover:bg-surface hover:text-ink'
-                }`}
-              >
-                Negócios
-              </button>
-            </div>
-          )}
-        </div>
+      <CrmBoardHeader
+        funnel={funnel}
+        showFunnelToggle={!funnelProp}
+        onFunnelChange={handleFunnelChange}
+        onOpenSavedViews={() => setIsSavedViewsOpen(true)}
+        selectionMode={selectionMode}
+        onToggleSelectionMode={() => {
+          setSelectionMode(!selectionMode);
+          if (selectionMode) setSelectedLeadIds(new Set());
+        }}
+        onOpenBitrixModal={() => setIsBitrixModalOpen(true)}
+        onBatchExportBitrix={handleBatchExportBitrix}
+        onBatchEnrich={handleBatchEnrich}
+        onExportCsv={handleExportCsv}
+        loading={loading}
+      />
 
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-          {/* Views Salvas (Onda B2b) */}
-          <Button
-            magnetic
-            onClick={() => setIsSavedViewsOpen(true)}
-            variant="secondary"
-            className="text-xs"
-            title="Ver e salvar views do pipeline (funil + filtros)"
-          >
-            <Bookmark className="w-4 h-4 shrink-0" />
-            <span>Views Salvas</span>
-          </Button>
-
-          {/* Botão de Modo de Seleção Múltipla */}
-          <Tooltip content="Ativa a seleção múltipla de cards para mover de etapa, reatribuir ou exportar leads em lote.">
-            <Button
-              onClick={() => {
-                setSelectionMode(!selectionMode);
-                if (selectionMode) setSelectedLeadIds(new Set());
-              }}
-              variant={selectionMode ? 'default' : 'secondary'}
-              soundClick
-              className="text-xs"
-              title="Ativar seleção múltipla de cards no Kanban"
-            >
-              <CheckSquare className="w-4 h-4 shrink-0" />
-              <span>{selectionMode ? 'Cancelar Seleção' : 'Seleção em Lote'}</span>
-            </Button>
-          </Tooltip>
-
-          {/* Botão Receber do Bitrix (Modal Manual) */}
-          <Tooltip content="Abre o painel para buscar, filtrar e importar leads/negócios do Bitrix24 para o Birth Hub.">
-            <Button
-              onClick={() => setIsBitrixModalOpen(true)}
-              variant="secondary"
-              soundClick
-              className="text-xs"
-              title="Abrir painel para buscar e receber leads do Bitrix24"
-            >
-              <Download className="w-4 h-4 rotate-180 shrink-0 text-sky-500" />
-              <span className="flex items-center gap-1.5">
-                <Bitrix24Icon className="w-3.5 h-3.5 shrink-0" /> Receber do Bitrix
-              </span>
-            </Button>
-          </Tooltip>
-
-          {/* Botão Enviar para Bitrix (Manual) */}
-          <Tooltip content="Dispara a sincronização manual e exportação dos leads do pipeline com o portal Bitrix24.">
-            <Button
-              onClick={handleBatchExportBitrix}
-              variant="secondary"
-              soundClick
-              className="text-xs"
-              title="Enviar leads para o portal Bitrix24"
-            >
-              <Send className="w-4 h-4 shrink-0 text-sky-500" />
-              <span className="flex items-center gap-1.5">
-                <Bitrix24Icon className="w-3.5 h-3.5 shrink-0" /> Enviar para Bitrix
-              </span>
-            </Button>
-          </Tooltip>
-
-          <Tooltip content="Enriquece dados cadastrais, tecnologias e decisores dos leads em lote usando IA.">
-            <Button
-              onClick={handleBatchEnrich}
-              disabled={loading}
-              variant="secondary"
-              soundClick
-              className="text-xs"
-              title="Enriquecer leads não enriquecidos em lote"
-            >
-              <Sparkles className="w-4 h-4 shrink-0 text-yellow-500" />
-              <span className="hidden sm:inline">Enriquecer lote</span>
-            </Button>
-          </Tooltip>
-
-          <Button
-            onClick={handleExportCsv}
-            variant="secondary"
-            soundClick
-            className="text-xs"
-            title="Exportar todos os leads para uma planilha CSV"
-          >
-            <Download className="w-4 h-4 shrink-0" />
-            <span className="hidden sm:inline">Exportar CSV</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* Faixa de Vitais Comerciais e Telemetria (Ronas IT Cardiology / Spatial UI) */}
-      <div className="flex flex-wrap items-center gap-2 px-4 lg:px-6 py-2 border-b border-line/60 bg-surface/50 dark:bg-[#101216]/50 backdrop-blur-md">
-        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-2 border border-line text-xs">
-          <span className="w-2 h-2 rounded-full bg-[#10B981] shadow-[0_0_8px_#10B981] animate-pulse" />
-          <span className="font-mono text-[10px] font-bold text-[#3B5A75] dark:text-[#94B3CD] uppercase">
-            Diagnóstico:
-          </span>
-          <span className="font-bold text-[#0F2942] dark:text-[#E2F1FF]">Pipeline Saudável</span>
-        </div>
-
-        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-2 border border-line text-xs">
-          <TrendingUp className="w-3.5 h-3.5 text-[#059669] dark:text-[#34D399]" />
-          <span className="font-mono text-[10px] font-bold text-[#3B5A75] dark:text-[#94B3CD] uppercase">
-            Pipeline:
-          </span>
-          <span className="font-extrabold text-[#047857] dark:text-[#34D399]">
-            {pipelineMetrics.totalAmount > 0
-              ? `R$ ${pipelineMetrics.totalAmount.toLocaleString('pt-BR')}`
-              : 'R$ 0,00'}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-2 border border-line text-xs">
-          <Activity className="w-3.5 h-3.5 text-[#00D4FF]" />
-          <span className="font-mono text-[10px] font-bold text-[#3B5A75] dark:text-[#94B3CD] uppercase">
-            Win Rate:
-          </span>
-          <span className="font-extrabold text-[#0284c7] dark:text-[#00D4FF]">
-            {pipelineMetrics.winRate}%
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-2 border border-line text-xs">
-          <Flame className="w-3.5 h-3.5 text-[#F59E0B]" />
-          <span className="font-mono text-[10px] font-bold text-[#3B5A75] dark:text-[#94B3CD] uppercase">
-            Quentes:
-          </span>
-          <span className="font-extrabold text-[#F59E0B]">{pipelineMetrics.hotLeads}</span>
-        </div>
-
-        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-2 border border-line text-xs">
-          <Zap className="w-3.5 h-3.5 text-[#8B7DFF]" />
-          <span className="font-mono text-[10px] font-bold text-[#3B5A75] dark:text-[#94B3CD] uppercase">
-            Enriquecidos:
-          </span>
-          <span className="font-bold text-[#0F2942] dark:text-[#E2F1FF]">
-            {pipelineMetrics.enrichedCount}
-          </span>
-        </div>
-
-        <div className="ml-auto hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4F434]/15 border border-[#D4F434]/35 text-[#121316] dark:text-[#D4F434] text-xs font-mono font-bold">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#D4F434] shadow-[0_0_6px_#D4F434]" />
-          <span>{pipelineMetrics.totalCount} DEALS NO FUNIL</span>
-        </div>
-      </div>
+      <CrmBoardMetricsBar metrics={pipelineMetrics} />
 
       {/* Barra de filtros do pipeline (Onda B2a) — busca por texto + dono, persistidos na URL. */}
-      <div className="flex shrink-0 flex-wrap items-center gap-3 border-b border-line bg-surface-subtle px-4 py-3 lg:px-6">
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <label htmlFor="crm-board-search" className="sr-only">
-            Buscar por empresa ou contato
-          </label>
-          <Search className="w-4 h-4 text-ink-2 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-          <input
-            id="crm-board-search"
-            type="search"
-            value={searchQuery}
-            onChange={(e) => handleSearchQueryChange(e.target.value)}
-            placeholder="Buscar por empresa ou contato..."
-            className="w-full rounded-full border border-line/80 bg-white dark:bg-[#15171C] py-2 pl-9 pr-3 text-xs text-[#0F2942] dark:text-[#E2F1FF] placeholder:text-[#5B7B98] focus:outline-none focus:border-[#00D4FF] focus-visible:ring-2 focus-visible:ring-[#00D4FF]/30 transition-all shadow-inner"
-          />
-        </div>
-        <div className="flex items-center gap-1.5">
-          <label htmlFor="crm-board-owner-filter" className="text-xs font-semibold text-ink-2">
-            Filtrar por dono:
-          </label>
-          <select
-            id="crm-board-owner-filter"
-            value={ownerFilter}
-            onChange={(e) => handleOwnerFilterChange(e.target.value)}
-            className="rounded-control border border-line bg-surface-elevated px-2.5 py-2 text-xs font-medium text-ink focus:outline-none focus:border-brand focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 transition-all"
-          >
-            <option value="">Todos os donos</option>
-            {users.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <label htmlFor="crm-board-enrichment-filter" className="text-xs font-semibold text-ink-2">
-            Enriquecimento:
-          </label>
-          <select
-            id="crm-board-enrichment-filter"
-            value={enrichmentFilter}
-            onChange={(e) => handleEnrichmentFilterChange(e.target.value)}
-            className="rounded-control border border-line bg-surface-elevated px-2.5 py-2 text-xs font-medium text-ink focus:outline-none focus:border-brand focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 transition-all"
-          >
-            <option value="">Todos</option>
-            <option value="Enriquecido">Enriquecidos</option>
-            <option value="Pendente">Pendentes</option>
-            <option value="Falhou">Falhou</option>
-          </select>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <label htmlFor="crm-board-temp-filter" className="text-xs font-semibold text-ink-2">
-            Temperatura:
-          </label>
-          <select
-            id="crm-board-temp-filter"
-            value={temperatureFilter}
-            onChange={(e) => handleTemperatureFilterChange(e.target.value)}
-            className="rounded-control border border-line bg-surface-elevated px-2.5 py-2 text-xs font-medium text-ink focus:outline-none focus:border-brand focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 transition-all"
-          >
-            <option value="">Todas</option>
-            <option value="Quente">🔥 Quente</option>
-            <option value="Morno">🌤️ Morno</option>
-            <option value="Frio">❄️ Frio</option>
-          </select>
-        </div>
-        {(ownerFilter || searchQuery || enrichmentFilter || temperatureFilter) && (
-          <>
-            <button
-              type="button"
-              onClick={handleClearFilters}
-              className="text-xs font-semibold text-brand hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-1"
-            >
-              Limpar filtros
-            </button>
-            <span className="text-xs text-ink-2 sm:ml-auto">
-              {filteredLeads.length} de {leads.length} leads
-            </span>
-          </>
-        )}
-      </div>
+      <CrmBoardFiltersBar
+        searchQuery={searchQuery}
+        ownerFilter={ownerFilter}
+        enrichmentFilter={enrichmentFilter}
+        temperatureFilter={temperatureFilter}
+        users={users}
+        onSearchQueryChange={handleSearchQueryChange}
+        onOwnerFilterChange={handleOwnerFilterChange}
+        onEnrichmentFilterChange={handleEnrichmentFilterChange}
+        onTemperatureFilterChange={handleTemperatureFilterChange}
+        onClearFilters={handleClearFilters}
+        filteredCount={filteredLeads.length}
+        totalCount={leads.length}
+      />
 
       {/* Contextual Tip Banner */}
       {!embedded && (
@@ -1106,128 +459,19 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
       </div>
 
       {/* Barra Flutuante de Ações em Lote (Fixa na parte inferior quando há leads selecionados) */}
-      {selectedLeadIds.size > 0 && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 bg-surface/95 backdrop-blur-xl border border-brand/30 shadow-elevated dark:shadow-[0_0_28px_rgba(0,212,255,0.18)] rounded-2xl p-3 px-5 flex flex-wrap items-center gap-3 animate-in slide-in-from-bottom-5 duration-300">
-          <div className="flex items-center gap-2 pr-3 border-r border-line">
-            <span className="w-6 h-6 rounded-full bg-brand text-on-brand text-xs font-black flex items-center justify-center">
-              {selectedLeadIds.size}
-            </span>
-            <span className="text-xs font-bold text-ink">selecionado(s)</span>
-            <button
-              type="button"
-              onClick={handleSelectAll}
-              className="text-[11px] font-bold text-brand hover:underline ml-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded px-1"
-            >
-              {selectedLeadIds.size === filteredLeads.length ? 'Desmarcar Todos' : 'Todos'}
-            </button>
-          </div>
-
-          {/* Mover Etapa em Massa */}
-          <Tooltip content="Transfere todos os leads selecionados para a nova etapa de funil indicada.">
-            <div className="flex items-center gap-1.5 cursor-pointer">
-              <label
-                htmlFor="crm-board-batch-stage"
-                className="text-[11px] font-semibold text-ink-2 cursor-pointer"
-              >
-                Etapa:
-              </label>
-              <select
-                id="crm-board-batch-stage"
-                onChange={(e) => {
-                  if (e.target.value) handleBatchMoveStage(e.target.value);
-                }}
-                disabled={isBatchUpdating}
-                defaultValue=""
-                className="px-2.5 py-1.5 bg-surface-2 border border-line rounded-xl text-xs font-bold text-ink focus:outline-none focus:border-brand focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <option value="" disabled>
-                  Mover para...
-                </option>
-                {columns.map((col) => (
-                  <option key={col} value={col}>
-                    {formatStageLabel(col)}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </Tooltip>
-
-          {/* Reatribuir Vendedor */}
-          <Tooltip content="Reatribui a responsabilidade dos leads selecionados para outro membro da equipe.">
-            <div className="flex items-center gap-1.5 cursor-pointer">
-              <label
-                htmlFor="crm-board-batch-owner"
-                className="text-[11px] font-semibold text-ink-2 cursor-pointer"
-              >
-                Dono:
-              </label>
-              <select
-                id="crm-board-batch-owner"
-                onChange={(e) => {
-                  if (e.target.value) handleBatchReassignOwner(e.target.value);
-                }}
-                disabled={isBatchUpdating}
-                defaultValue=""
-                className="px-2.5 py-1.5 bg-surface-2 border border-line rounded-xl text-xs font-bold text-ink focus:outline-none focus:border-brand focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <option value="" disabled>
-                  Atribuir a...
-                </option>
-                {users.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </Tooltip>
-
-          {/* Enriquecer Selecionados com IA */}
-          <Tooltip content="Dispara o enriquecimento cadastral, firmográfico e Fit Score para os leads selecionados.">
-            <button
-              type="button"
-              onClick={handleBatchEnrichSelected}
-              disabled={isBatchUpdating}
-              className="px-3 py-1.5 bg-brand hover:bg-brand-hover text-on-brand rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm disabled:opacity-50"
-            >
-              {isBatchUpdating ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Sparkles className="w-3.5 h-3.5" />
-              )}
-              Enriquecer com IA
-            </button>
-          </Tooltip>
-
-          {/* Enviar Selecionados para Bitrix */}
-          <Tooltip content="Sincroniza e exporta imediatamente apenas os leads selecionados para o Bitrix24.">
-            <button
-              type="button"
-              onClick={handleBatchExportBitrix}
-              disabled={isBatchUpdating}
-              className="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm disabled:opacity-50"
-            >
-              {isBatchUpdating ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Send className="w-3.5 h-3.5" />
-              )}
-              Enviar ao Bitrix24
-            </button>
-          </Tooltip>
-
-          <Tooltip content="Desmarcar todos os cards selecionados e fechar a barra de ações em lote.">
-            <button
-              type="button"
-              onClick={handleClearSelection}
-              className="p-1.5 rounded-xl hover:bg-surface-2 text-ink-2 hover:text-ink transition-colors"
-              title="Desmarcar todos"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </Tooltip>
-        </div>
-      )}
+      <CrmBoardBatchBar
+        selectedCount={selectedLeadIds.size}
+        allSelected={selectedLeadIds.size === filteredLeads.length}
+        onSelectAll={handleSelectAll}
+        columns={columns}
+        users={users}
+        isBatchUpdating={isBatchUpdating}
+        onBatchMoveStage={handleBatchMoveStage}
+        onBatchReassignOwner={handleBatchReassignOwner}
+        onBatchEnrichSelected={handleBatchEnrichSelected}
+        onBatchExportBitrix={handleBatchExportBitrix}
+        onClearSelection={handleClearSelection}
+      />
 
       {/* Modal de Importação Bitrix24 */}
       <BitrixImportModal
