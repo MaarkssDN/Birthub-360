@@ -2,6 +2,8 @@
 
 Registro de continuidade do Agente 00 (Coordenador). Main atual: 94f95097 (#227).
 
+**TRABALHOS ENCERRADOS em 2026-11-12 01:35 (BRT) por ordem do Marcelo.** Nenhum agente tem tarefa em execução. A fila abaixo é o ponto de retomada; nada foi mesclado depois do #227.
+
 ## Regras fixas
 - Nunca commit/push na main, nunca force push. Merge squash com `--match-head-commit`, sem `--auto`; `--admin` só com OK do Marcelo.
 - Conflito: merge commit da main, nunca rebase. Sem merge sem APROVADO do 24 no SHA exato.
@@ -38,6 +40,15 @@ Registro de continuidade do Agente 00 (Coordenador). Main atual: 94f95097 (#227)
 - 24 Revisão: revisar #237, #238 e refazer pareceres sob a regra provisória.
 - 25 Merge: seguir a ordem acima e reportar SHAs.
 - 26 VR: após #238, atualizar #224/#235/#236 com a main e pedir novo parecer.
+
+## Agentes em espera (sem demanda aberta neste ciclo)
+- 00 Coordenador: retomar a fila, conferir gate e Sonar QG da main após cada merge, pedir aval para as ondas 2–4, PR de docs com status dos handoffs já resolvidos.
+- 03 Design e Acessibilidade: redesign Impeccable estilo Vancouver+, light e dark.
+- 04 CRM e BI; 05 Prospecção; 06 Integrações e Bitrix; 12 Voz e Telefonia; 16 Runtime Workers; 17 Cadência e Receita; GHA (GitHub Actions): sem demanda nova.
+- 07 IA e Automações: sem bot ativo; o 15 executa por ele.
+- 08/08A QA, Release e Git: conferir CI da main quando acionado.
+- Cartógrafo de Produto: sem demanda nova.
+- WF1 Release Gate, WF2 Bundle Budget, WF3 SonarQube, WF4 E2E/Testes, WF5 Deploy/Rotação de segredos (só aprovação direta do Marcelo), WF6 Qualidade/a11y: reativar se gate, bundle, Sonar, testes ou a11y voltarem a falhar.
 
 ## Pendências do Marcelo
 Migration `20261111040000_public_lead_consent_and_rls`; secrets `LANDING_LEAD_ORGANIZATION_ID` e `PUBLIC_LEAD_IP_HASH_SECRET`; texto legal final, /privacy, slug /book; Docker 2375 no host 192.168.0.116; settings do GitHub; rate limit EC2; aval para ondas 2–4.
