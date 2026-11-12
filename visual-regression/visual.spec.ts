@@ -102,9 +102,13 @@ test.describe('Visual Regression', () => {
         await expect(
           page.getByRole('heading', { name: 'Hub de Inteligência Artificial & Agentes' }),
         ).toBeVisible({ timeout: 15_000 });
-        await expect(page.getByRole('button', { name: /Acessar Célula Comercial/ })).toBeVisible({
+        const commercialCta = page.getByRole('button', { name: /Acessar Célula Comercial/ });
+        await expect(commercialCta).toBeVisible({
           timeout: 15_000,
         });
+        if (theme === 'light') {
+          await expect(commercialCta).toHaveCSS('color', 'rgb(248, 250, 252)');
+        }
         await waitForVisualFonts(page);
         await expect(page).toHaveScreenshot(`intelligence-${theme}.png`, SCREENSHOT_OPTIONS);
       });
