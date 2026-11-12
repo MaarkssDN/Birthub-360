@@ -849,6 +849,62 @@ export const TOOL_EXECUTORS: Record<string, ToolExecutor> = {
   'agent.execute': agentExecute,
 };
 
+/**
+ * Timeout defensivo por execução de ferramenta (TAREFA-SANEAMENTO-031 / BT360-DT-0068).
+ * Antes, `agentRuntime.service.ts` fazia `await executor(ctx)` sem limite: uma tool
+ * travada bloqueava o runtime do agente indefinidamente. O wrapper corre o executor
+ * contra um timer e rejeita com `ToolTimeoutError` — erro explícito e observável
+ * (o runtime marca a AgentExecution como FAILED com a mensagem TOOL_TIMEOUT).
+ *
+ * Limitação conhecida e deliberada: Promise.race não cancela a promise subjacente —
+ * o executor travado continua consumindo recursos em background até resolver. O
+ * cancelamento real exigiria AbortSignal propagado até os serviços/use-cases
+ * (fora do escopo cirúrgico desta tarefa); o ganho aqui é que o runtime NUNCA mais
+ * fica bloqueado esperando uma tool.
+ */
+export class ToolTimeoutError extends Error {
+  constructor(
+    public readonly toolCode: string,
+    public readonly timeoutMs: number,
+  ) {
+    super(`TOOL_TIMEOUT: executor "${toolCode}" excedeu o limite de ${timeoutMs}ms.`);
+    this.name = 'ToolTimeoutError';
+  }
+}
+
+/** Default conservador para qualquer capability sem override. */
+export const DEFAULT_TOOL_EXECUTOR_TIMEOUT_MS = 120_000;
+
+/**
+ * Override por capability (ms). Vazio por padrão — adicionar aqui (ou evoluir para
+ * config por env/Setting se necessário) a tool que legitimamente precise de mais tempo.
+ */
+export const TOOL_EXECUTOR_TIMEOUT_OVERRIDES_MS: Record<string, number> = {};
+
+export function withToolTimeout(
+  executor: ToolExecutor,
+  toolCode: string,
+  timeoutMs: number = DEFAULT_TOOL_EXECUTOR_TIMEOUT_MS,
+): ToolExecutor {
+  return async (ctx) => {
+    let timer: NodeJS.Timeout | undefined;
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new ToolTimeoutError(toolCode, timeoutMs)), timeoutMs);
+      // Não segura o event loop só por causa do timer de timeout.
+      timer.unref?.();
+    });
+    try {
+      return await Promise.race([executor(ctx), timeout]);
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  };
+}
+
 export function getToolExecutor(capabilityCode: string): ToolExecutor | undefined {
-  return TOOL_EXECUTORS[capabilityCode];
+  const executor = TOOL_EXECUTORS[capabilityCode];
+  if (!executor) return undefined;
+  const timeoutMs =
+    TOOL_EXECUTOR_TIMEOUT_OVERRIDES_MS[capabilityCode] ?? DEFAULT_TOOL_EXECUTOR_TIMEOUT_MS;
+  return withToolTimeout(executor, capabilityCode, timeoutMs);
 }
