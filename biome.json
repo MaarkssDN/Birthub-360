@@ -91,18 +91,6 @@
   "overrides": [
     {
       "includes": [
-        "src/features/characters/CharacterGalleryView.tsx",
-        "src/features/characters/characterCatalog.ts",
-        "src/features/landing/components/B360CinematicEngine.tsx",
-        "src/features/landing/components/B360DataStreamCursor.tsx",
-        "src/features/landing/pages/Landing360Impeccable.tsx"
-      ],
-      "formatter": {
-        "enabled": false
-      }
-    },
-    {
-      "includes": [
         "**/*.test.ts",
         "**/*.test.tsx",
         "**/*.spec.ts",

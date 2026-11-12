@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { signUp, uniqueTestEmail, waitForAppReady } from './helpers';
+import { navigateViaSidebar, signUp, uniqueTestEmail, waitForAppReady } from './helpers';
 
 // ACH-04-03 (auditoria de 2026-09): PropostaForm.tsx gera documento comercial com valor
 // monetário real (crm360.routes.ts recalcula e persiste o total no Postgres), mas até este spec
@@ -16,7 +16,7 @@ test.describe('Fluxo de Proposta comercial (PropostaForm.tsx) — e2e de navegad
     // PropostaForm só oferece vínculo com empresa na criação (ver comentário no próprio
     // componente) e a busca é contra empresas já existentes — cria uma primeiro, mesmo caminho de
     // contact-company-forms.spec.ts.
-    await page.getByRole('button', { name: 'Empresas' }).click();
+    await navigateViaSidebar(page, 'companies');
     await waitForAppReady(page);
     await page.getByRole('button', { name: /Nova Empresa|Adicionar/ }).first().click();
     const suffix = Date.now();
@@ -26,7 +26,7 @@ test.describe('Fluxo de Proposta comercial (PropostaForm.tsx) — e2e de navegad
     await page.getByRole('button', { name: 'Criar Empresa' }).click();
     await expect(page.getByText('Empresa criada.')).toBeVisible();
 
-    await page.getByRole('button', { name: 'Propostas' }).click();
+    await navigateViaSidebar(page, 'propostas');
     await waitForAppReady(page);
 
     // .first() de propósito: quando a lista está vazia, PropostasList.tsx renderiza DOIS botões
@@ -100,7 +100,7 @@ test.describe('Fluxo de Proposta comercial (PropostaForm.tsx) — e2e de navegad
   }) => {
     await signUp(page, { email: uniqueTestEmail('proposta-form-validation') });
 
-    await page.getByRole('button', { name: 'Propostas' }).click();
+    await navigateViaSidebar(page, 'propostas');
     await waitForAppReady(page);
 
     let createRequestFired = false;
@@ -133,7 +133,7 @@ test.describe('Fluxo de Proposta comercial (PropostaForm.tsx) — e2e de navegad
   }) => {
     await signUp(page, { email: uniqueTestEmail('proposta-form-a11y') });
 
-    await page.getByRole('button', { name: 'Propostas' }).click();
+    await navigateViaSidebar(page, 'propostas');
     await waitForAppReady(page);
     await page.getByRole('button', { name: 'Novo Documento' }).first().click();
     await expect(page.getByRole('heading', { name: 'Novo Documento Comercial' })).toBeVisible();
