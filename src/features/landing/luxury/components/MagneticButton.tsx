@@ -10,6 +10,7 @@ interface MagneticButtonProps {
   type?: 'button' | 'submit' | 'reset';
   strength?: number;
   playSound?: boolean;
+  disabled?: boolean;
 }
 
 export function MagneticButton({
@@ -19,6 +20,7 @@ export function MagneticButton({
   type = 'button',
   strength = 0.28,
   playSound = true,
+  disabled = false,
 }: MagneticButtonProps) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -54,6 +56,7 @@ export function MagneticButton({
     <motion.button
       ref={buttonRef}
       type={type}
+      disabled={disabled}
       onClick={handleClick}
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
