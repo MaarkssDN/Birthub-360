@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 07 (IA, Copiloto e Automações)
 Onda: Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-023)
-Status: aberto
+Status: em-andamento
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 4
@@ -48,3 +48,15 @@ Executar a tarefa `TAREFA-SANEAMENTO-023` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução (Agente 07 — W4, 2026-11-12)
+
+`SearchService.hybridSearch` já distinguia indisponibilidade total de "sem resultados": quando AMBAS
+as estratégias (semântica pgvector + textual FTS→ILIKE) falham, lança
+`Base de Conhecimento temporariamente indisponível: falha nas buscas semântica e textual.`;
+falha parcial retorna resultados da estratégia sobrevivente com flags de disponibilidade.
+Tenant isolation (`organizationId` + `withRlsContext`) preservada nos dois caminhos.
+
+Evidência: `tests/unit/features/knowledge/KnowledgeSearchService.test.ts` — 5/5 testes
+(consulta vazia, fallback FTS→ILIKE, sucesso só-semântico, sucesso só-textual, falha total
+explícita). Commit da implementação na branch `agente/07-w4-ia`. Pendente: parecer do Agente 24.

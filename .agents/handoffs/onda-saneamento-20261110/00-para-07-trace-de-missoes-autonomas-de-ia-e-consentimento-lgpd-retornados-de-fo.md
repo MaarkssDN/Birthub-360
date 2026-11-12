@@ -57,3 +57,12 @@ Executar a tarefa `TAREFA-SANEAMENTO-005` estritamente dentro da propriedade de 
 - **Testes:** `src/features/intelligence/routes/__tests__/commercial-agent.mission-trace.test.ts` — 4 testes (404 sem missão persistida, 200 com trace real, strip de prefixo `mission-`, propagação de erro). 4/4 verdes.
 - **Gates executados:** `npx tsc --noEmit` (0 erros), `npx biome lint` nos 4 arquivos alterados (0 warnings após remoção de variável órfã), `npx vitest run` do novo teste (4/4).
 - **Pendente:** parecer do Agente 24 (`.agents/reviews/`) — condição de encerramento do handoff. Status mantido `em-andamento` até lá.
+
+## Resolução (Agente 07 — W4, 2026-11-12)
+
+Verificado: a implementação já existia no commit `f3f04bdaf` ("substituir trace sintético de
+missão por consulta real persistida", TAREFA-SANEAMENTO-005/BT360-DT-0039). `GET /mission/:id/trace`
+usa `commercialMissionTrace.service.ts` lendo `AgentHandoffMessage` + `AgentExecution` + trilha de
+consentimento LGPD reais; missão inexistente → 404. Sem código sintético remanescente nos
+arquivos citados. Cobertura: `commercial-agent.mission-trace.test.ts` (4 testes) dentro da suíte
+verde acima. Pendente: parecer do Agente 24.

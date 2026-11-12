@@ -1,7 +1,7 @@
 De: Agente 17 — Cadência Multicanal e Ciclo de Receita
 Para: Agente 07 (IA e Automações / market-intelligence)
 Onda: onda-saneamento-20261110
-Status: aberto
+Status: em-andamento
 Prioridade: alto
 Bloqueador-ref: BT360-DT-0080 (TAREFA-SANEAMENTO-035)
 Sprint destino: próxima onda de saneamento
@@ -32,3 +32,21 @@ Teste unitário do actionExecutor (ou do ponto de integração): lead opt-out �
 
 - Domínio `src/features/market-intelligence/**` pertence ao Agente 07 — o Agente 17 não pode editar.
 - `evaluateLeadCadenceEligibility` é função pura exportada; `OptOutRecord`/`prismaOptOutRepository` são compartilhados (`src/shared/**`, dono Agente 01 — consumo por porta é permitido).
+
+## Resolução (Agente 07 — W4, 2026-11-12)
+
+`actionExecutor.service.ts` (`START_SDR_CADENCE`) agora aplica a mesma regra de `POST
+/api/cadence/runs` ANTES de persistir o `CadenceRun`:
+1. `evaluateLeadCadenceEligibility` com `prismaOptOutRepository.list(organizationId)` — cobre
+   lead sem `contactId`, casa por leadId/e-mail/telefone, escopo nos canais da sequência
+   (`parseCadenceSequenceDefinition`); inelegível → `AppError` 409 com razão, sem criar run e sem
+   marcar a recomendação como Failed (pré-condição, status permanece Pending).
+2. `checkOptOutStatus(contactId, primeiroCanal, organizationId)` quando o lead tem contato —
+   paridade total com a rota; bloqueado → 409.
+3. Sequência ativa com `touches` malformado → 422 (antes o run seria criado sobre definição
+   inválida).
+
+Evidência: `tests/unit/market-intelligence/actionExecutor.tenancy.test.ts` (movido de
+`src/.../__tests__/` para dentro do include do vitest) — 11/11: opt-out flag → 409 sem run;
+contato suprimido → 409 sem run; lead elegível → run criado + Executed. Pendente: parecer do
+Agente 24.

@@ -53,8 +53,16 @@ const callBitrix = vi.fn();
 const leadFindFirst = vi.fn(async (_args: unknown) => null as null | { id: string });
 const sequenceFindFirst = vi.fn(async (_args: unknown) => null as null | { id: string });
 const saveRun = vi.fn(async (_run: unknown) => undefined);
+const optOutList = vi.fn(async (_org: string) => [] as unknown[]);
+const optOutCheck = vi.fn(async (_contactId: string, _channel: string, _org: string) => ({
+  blocked: false,
+  allowed: true,
+  code: null,
+  reason: null,
+}));
+const VALID_SEQUENCE = { id: 'seq-1', name: 'Seq', touches: [{ channel: 'email' }] };
 
-vi.mock('../../../../lib/prisma.js', () => ({
+vi.mock('../../../src/lib/prisma.js', () => ({
   // Simula a transação real: qualquer throw faz rollback do estado gravado dentro dela.
   withRlsContext: async (fn: (p: unknown) => unknown) => {
     const before = structuredClone(store.recs);
@@ -71,16 +79,32 @@ vi.mock('../../../../lib/prisma.js', () => ({
     }
   },
 }));
-vi.mock('../../../cadence/domain/cadence.js', () => ({ startCadenceRun: (x: unknown) => x }));
-vi.mock('../../../cadence/infra/PrismaCadenceRunRepository.js', () => ({
+vi.mock('../../../src/features/cadence/domain/cadence.js', () => ({ startCadenceRun: (x: unknown) => x }));
+vi.mock('../../../src/features/cadence/infra/PrismaCadenceRunRepository.js', () => ({
   prismaCadenceRunRepository: { save: (run: unknown) => saveRun(run) },
 }));
-vi.mock('../../../../lib/async-context.js', () => ({ getUserId: () => 'user-a' }));
-vi.mock('../../../integrations/bitrix/service/client.js', () => ({
+vi.mock('../../../src/features/cadence/jobs/cadenceRun.worker.js', () => ({
+  parseCadenceSequenceDefinition: (row: { id: string; name?: string; touches?: unknown }) =>
+    Array.isArray(row.touches)
+      ? { id: row.id, name: row.name ?? 'seq', touches: row.touches }
+      : null,
+}));
+vi.mock('../../../src/shared/infra/PrismaOptOutRepository.js', () => ({
+  prismaOptOutRepository: { list: (org: string) => optOutList(org) },
+}));
+vi.mock('../../../src/shared/services/optOutCheck.service.js', () => ({
+  checkOptOutStatus: (contactId: string, channel: string, org: string) =>
+    optOutCheck(contactId, channel, org),
+}));
+vi.mock('../../../src/shared/services/dataSubjectErasure.service.js', () => ({
+  ANONYMIZED_CONTACT_NAME: 'Contato Anonimizado',
+}));
+vi.mock('../../../src/lib/async-context.js', () => ({ getUserId: () => 'user-a' }));
+vi.mock('../../../src/features/integrations/bitrix/service/client.js', () => ({
   callBitrix: (...args: unknown[]) => callBitrix(...args),
 }));
 
-const { actionExecutorService } = await import('../actionExecutor.service.js');
+const { actionExecutorService } = await import('../../../src/features/market-intelligence/server/actionExecutor.service.js');
 
 function rec(over: Partial<Rec> & { org: string; webhook?: string }): Rec {
   const { org, webhook, ...rest } = over;
@@ -108,6 +132,8 @@ describe('actionExecutorService.executeAction — tenancy e pré-condições', (
     leadFindFirst.mockResolvedValue(null);
     sequenceFindFirst.mockResolvedValue(null);
     saveRun.mockResolvedValue(undefined);
+    optOutList.mockResolvedValue([]);
+    optOutCheck.mockResolvedValue({ blocked: false, allowed: true, code: null, reason: null });
     store.recs = [];
   });
 
@@ -163,7 +189,7 @@ describe('actionExecutorService.executeAction — tenancy e pré-condições', (
   it('cadência já ativa (P2002) → 409 e status permanece Pending', async () => {
     store.recs = [rec({ org: 'org-a', actionType: 'START_SDR_CADENCE' })];
     leadFindFirst.mockResolvedValue({ id: 'lead-1' });
-    sequenceFindFirst.mockResolvedValue({ id: 'seq-1' });
+    sequenceFindFirst.mockResolvedValue(VALID_SEQUENCE);
     saveRun.mockRejectedValueOnce(Object.assign(new Error('dup'), { code: 'P2002' }));
     await expect(
       actionExecutorService.executeAction('rec-1', 'co-1', 'org-a'),
@@ -174,7 +200,7 @@ describe('actionExecutorService.executeAction — tenancy e pré-condições', (
   it('lead e sequência são buscados com o organizationId da sessão', async () => {
     store.recs = [rec({ org: 'org-a', actionType: 'START_SDR_CADENCE' })];
     leadFindFirst.mockResolvedValue({ id: 'lead-1' });
-    sequenceFindFirst.mockResolvedValue({ id: 'seq-1' });
+    sequenceFindFirst.mockResolvedValue(VALID_SEQUENCE);
     await actionExecutorService.executeAction('rec-1', 'co-1', 'org-a');
     expect(leadFindFirst).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -190,7 +216,7 @@ describe('actionExecutorService.executeAction — tenancy e pré-condições', (
   it('falha real persiste Failed mesmo com rollback da transação de execução', async () => {
     store.recs = [rec({ org: 'org-a', actionType: 'START_SDR_CADENCE' })];
     leadFindFirst.mockResolvedValue({ id: 'lead-1' });
-    sequenceFindFirst.mockResolvedValue({ id: 'seq-1' });
+    sequenceFindFirst.mockResolvedValue(VALID_SEQUENCE);
     saveRun.mockRejectedValueOnce(new Error('db down'));
     await expect(actionExecutorService.executeAction('rec-1', 'co-1', 'org-a')).rejects.toThrow(
       'db down',
@@ -201,5 +227,76 @@ describe('actionExecutorService.executeAction — tenancy e pré-condições', (
         where: { id: 'rec-1', organizationId: 'org-a', companyId: 'co-1' },
       }),
     );
+  });
+
+  it('lead com flag de opt-out → 409 explícito, nenhum CadenceRun criado, status permanece Pending', async () => {
+    store.recs = [rec({ org: 'org-a', actionType: 'START_SDR_CADENCE' })];
+    leadFindFirst.mockResolvedValue({
+      id: 'lead-1',
+      customFields: { optOut: true },
+      contact: null,
+    });
+    sequenceFindFirst.mockResolvedValue(VALID_SEQUENCE);
+    await expect(
+      actionExecutorService.executeAction('rec-1', 'co-1', 'org-a'),
+    ).rejects.toMatchObject({ statusCode: 409 });
+    await expect(
+      actionExecutorService.executeAction('rec-1', 'co-1', 'org-a'),
+    ).rejects.toThrow(/opt-out/);
+    expect(saveRun).not.toHaveBeenCalled();
+    expect(store.recs[0].status).toBe('Pending');
+  });
+
+  it('contato bloqueado por checkOptOutStatus → 409 explícito, nenhum CadenceRun criado', async () => {
+    store.recs = [rec({ org: 'org-a', actionType: 'START_SDR_CADENCE' })];
+    leadFindFirst.mockResolvedValue({
+      id: 'lead-1',
+      contactId: 'contact-1',
+      customFields: null,
+      contact: {
+        name: 'Ana',
+        deletedAt: null,
+        customFields: null,
+        email: 'ana@x.com',
+        phone: null,
+        whatsapp: null,
+      },
+    });
+    sequenceFindFirst.mockResolvedValue(VALID_SEQUENCE);
+    optOutCheck.mockResolvedValue({
+      blocked: true,
+      allowed: false,
+      code: 'OPT_OUT_SUPPRESSED',
+      reason: 'Contato em lista de supressão.',
+    });
+    await expect(
+      actionExecutorService.executeAction('rec-1', 'co-1', 'org-a'),
+    ).rejects.toMatchObject({ statusCode: 409 });
+    expect(optOutCheck).toHaveBeenCalledWith('contact-1', 'email', 'org-a');
+    expect(saveRun).not.toHaveBeenCalled();
+    expect(store.recs[0].status).toBe('Pending');
+  });
+
+  it('lead elegível → CadenceRun criado e recomendação Executed', async () => {
+    store.recs = [rec({ org: 'org-a', actionType: 'START_SDR_CADENCE' })];
+    leadFindFirst.mockResolvedValue({
+      id: 'lead-1',
+      contactId: 'contact-1',
+      customFields: null,
+      contact: {
+        name: 'Ana',
+        deletedAt: null,
+        customFields: null,
+        email: 'ana@x.com',
+        phone: null,
+        whatsapp: null,
+      },
+    });
+    sequenceFindFirst.mockResolvedValue(VALID_SEQUENCE);
+    const out = await actionExecutorService.executeAction('rec-1', 'co-1', 'org-a');
+    expect(out).toEqual({ success: true, message: 'Cadência iniciada.' });
+    expect(optOutList).toHaveBeenCalledWith('org-a');
+    expect(saveRun).toHaveBeenCalledTimes(1);
+    expect(store.recs[0].status).toBe('Executed');
   });
 });

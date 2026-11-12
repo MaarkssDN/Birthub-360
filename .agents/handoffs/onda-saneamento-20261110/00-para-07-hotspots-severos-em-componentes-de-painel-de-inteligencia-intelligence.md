@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 07 (IA, Copiloto e Automações)
 Onda: Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-006)
-Status: aberto
+Status: em-andamento
 Prioridade: alto
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 4
@@ -48,3 +48,17 @@ Executar a tarefa `TAREFA-SANEAMENTO-006` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução (Agente 07 — W4, 2026-11-12)
+
+`IntelligenceHub.tsx` modularizado: 1296 → ~200 linhas (coordenador de estado). Extraídos:
+`intelligenceHub.catalog.ts` (catálogo/tipos/pilares), `IntelligenceHubOverview.tsx` (header,
+status, busca, grid/matrix, estado RAG) e `IntelligenceHubToolView.tsx` (render do tool ativo +
+navegação/Escape). Comportamento preservado: filtros, busca, pins (localStorage), modos de
+visualização, badges de status, RAG loading/error com retry, Escape→overview. Exceção de hotspot
+removida de `docs/architecture/HOTSPOT_EXCEPTIONS.md` (arquivo agora abaixo do teto).
+
+Evidência: teste de regressão movido de `src/.../__tests__/` (não descoberto pelo vitest) para
+`tests/unit/features/intelligence/components/IntelligenceHub.test.tsx` — 7/7 passando e agora
+efetivamente executado no CI. Suíte completa intelligence+market-intelligence+knowledge:
+52 arquivos / 327 testes verdes. Pendente: parecer do Agente 24.

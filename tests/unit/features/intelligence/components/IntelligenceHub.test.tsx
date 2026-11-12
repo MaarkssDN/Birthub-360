@@ -3,54 +3,54 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
-import { IntelligenceHub } from '../IntelligenceHub.js';
+import { IntelligenceHub } from '../../../../../src/features/intelligence/components/IntelligenceHub.js';
 
 // Mocks dos componentes pesados filhos
-vi.mock('../EliteCommercialAgentWorkspace.js', () => ({
+vi.mock('../../../../../src/features/intelligence/components/EliteCommercialAgentWorkspace.js', () => ({
   EliteCommercialAgentWorkspace: () => (
     <div data-testid="commercial-cell-view">Célula Workspace View</div>
   ),
 }));
-vi.mock('../GroqTelemetryPanel.js', () => ({
+vi.mock('../../../../../src/features/intelligence/components/GroqTelemetryPanel.js', () => ({
   GroqTelemetryPanel: () => <div data-testid="telemetry-view">Groq Telemetry View</div>,
 }));
-vi.mock('../AISuiteHub.js', () => ({
+vi.mock('../../../../../src/features/intelligence/components/AISuiteHub.js', () => ({
   AISuiteHub: () => <div data-testid="ai-suite-view">AI Suite View</div>,
 }));
-vi.mock('../SwarmDashboard.js', () => ({
+vi.mock('../../../../../src/features/intelligence/components/SwarmDashboard.js', () => ({
   SwarmDashboard: () => <div data-testid="swarm-view">Swarm Dashboard View</div>,
 }));
-vi.mock('../AgentQualityPanel.js', () => ({
+vi.mock('../../../../../src/features/intelligence/components/AgentQualityPanel.js', () => ({
   AgentQualityPanel: () => <div data-testid="quality-view">Quality Panel View</div>,
 }));
-vi.mock('../SalesMethodologyStudio.js', () => ({
+vi.mock('../../../../../src/features/intelligence/components/SalesMethodologyStudio.js', () => ({
   SalesMethodologyStudio: () => <div data-testid="methodologies-view">Methodologies View</div>,
 }));
-vi.mock('../../../dashboard/components/AIConfigCenter.js', () => ({
+vi.mock('../../../../../src/features/dashboard/components/AIConfigCenter.js', () => ({
   AIConfigCenter: () => <div data-testid="ai-config-view">AI Config View</div>,
 }));
-vi.mock('../SuperagentCreator.js', () => ({
+vi.mock('../../../../../src/features/intelligence/components/SuperagentCreator.js', () => ({
   SuperagentCreator: () => <div data-testid="superagent-view">Superagent Creator View</div>,
 }));
-vi.mock('../RobustScriptGenerator.js', () => ({
+vi.mock('../../../../../src/features/intelligence/components/RobustScriptGenerator.js', () => ({
   RobustScriptGenerator: () => <div data-testid="scripts-view">Scripts Generator View</div>,
 }));
-vi.mock('../AutomationGuide.js', () => ({
+vi.mock('../../../../../src/features/intelligence/components/AutomationGuide.js', () => ({
   AutomationGuide: () => <div data-testid="automations-view">Automation Guide View</div>,
 }));
-vi.mock('../B2BGenerator.js', () => ({
+vi.mock('../../../../../src/features/intelligence/components/B2BGenerator.js', () => ({
   B2BGenerator: () => <div data-testid="generator-view">B2B Generator View</div>,
 }));
-vi.mock('../../../components/Intelligence.js', () => ({
+vi.mock('../../../../../src/components/Intelligence.js', () => ({
   Intelligence: () => <div data-testid="tools-view">Outreach Intelligence View</div>,
 }));
-vi.mock('../../../copiloto-ia/components/CopilotoIaHub.js', () => ({
+vi.mock('../../../../../src/features/copiloto-ia/components/CopilotoIaHub.js', () => ({
   CopilotoIaHub: () => <div data-testid="copiloto-view">Copiloto IA View</div>,
 }));
-vi.mock('../AIPendingActions.js', () => ({
+vi.mock('../../../../../src/features/intelligence/components/AIPendingActions.js', () => ({
   AIPendingActions: () => <div data-testid="actions-view">Pending Actions View</div>,
 }));
-vi.mock('../../../knowledge/knowledge.api.js', () => ({
+vi.mock('../../../../../src/features/knowledge/knowledge.api.js', () => ({
   knowledgeApi: {
     list: vi.fn().mockResolvedValue([]),
   },

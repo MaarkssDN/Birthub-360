@@ -220,14 +220,6 @@ propósito por estar fora de "## Exceções ativas"):
 - **Registrado em:** 2026-10-16
 - **Reavaliar até:** 2026-11-30
 
-### `src/features/intelligence/components/IntelligenceHub.tsx`
-
-- **Limite excepcional:** 1334 linhas (teto = tamanho atual; o arquivo não pode crescer)
-- **Dono:** Agente 07 — IA e Automações (redução; Agente 03 na parte de UI)
-- **Motivo:** exceção TEMPORÁRIA. O redesign do hub de IA em pilares operacionais (commits a96bb68d e 0774cd67, 2026-10-24) levou o arquivo a 1334 linhas sem exceção registrada, e o gate `check:hotspots` herdado da main passou a bloquear a validação dos PRs #67, #71 e #72. A exceção destrava o gate com teto no tamanho atual enquanto o Agente 07 (com o Agente 03 na UI) extrai os pilares/painéis para componentes próprios.
-- **Registrado em:** 2026-10-25
-- **Reavaliar até:** 2026-11-30
-
 ### `src/features/landing/components/pillars/PillarRegistry.tsx`
 
 - **Limite excepcional:** 1450 linhas
@@ -249,6 +241,7 @@ requerem exceção porque não quebram o gate, só ficam registrados aqui para n
 
 - `src/features/market-intelligence/server/accountIntelligence.service.ts` (857 linhas)
 - `src/features/intelligence/components/SwarmDashboard.tsx` (modularizado em 2026-11-10: 933 linhas, meta < 1000 atingida)
+- `src/features/intelligence/components/IntelligenceHub.tsx` (modularizado em 2026-11-12 — TAREFA-SANEAMENTO-006: 1296 → ~200 linhas; catálogo em `intelligenceHub.catalog.ts`, visões em `IntelligenceHubOverview.tsx`/`IntelligenceHubToolView.tsx`)
 - `src/features/crm/components/LeadDetailDrawer.tsx` (726 linhas)
 - `src/components/CrmBoard.tsx` (977 linhas, 2026-09-11)
 
