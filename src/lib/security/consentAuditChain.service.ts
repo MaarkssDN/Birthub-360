@@ -316,9 +316,99 @@ export class InMemoryConsentExternalCheckpointStore implements IConsentExternalC
   }
 }
 
+type ChainViolationFound = { reason: ChainViolation; id?: string };
+
+/** Checagem pura de UM elo (TAREFA-SANEAMENTO-038): compartilhada pelo verificador síncrono e pelo assíncrono fracionado. */
+function checkChainRecord(
+  organizationId: string,
+  chain: StoredConsentAuditEvent[],
+  i: number,
+  expectedPrev: string,
+): { violation: ChainViolationFound | null; nextPrev: string } {
+  const r = chain[i];
+  if (r.organizationId !== organizationId)
+    return { violation: { reason: 'TENANT_MISMATCH', id: r.id }, nextPrev: expectedPrev };
+  if (r.sequence !== i)
+    return {
+      violation: { reason: r.sequence < i ? 'REORDERED' : 'SEQUENCE_GAP', id: r.id },
+      nextPrev: expectedPrev,
+    };
+  if ((i === 0) !== (r.kind === 'GENESIS'))
+    return { violation: { reason: 'GENESIS_INVALID', id: r.id }, nextPrev: expectedPrev };
+  if (r.previousHash !== expectedPrev)
+    return { violation: { reason: 'PREVIOUS_HASH_MISMATCH', id: r.id }, nextPrev: expectedPrev };
+  const { currentHash, ...content } = r;
+  if (computeConsentEventHash(content) !== currentHash)
+    return { violation: { reason: 'HASH_MISMATCH', id: r.id }, nextPrev: expectedPrev };
+  if (r.kind !== 'GENESIS' && !SUBJECT_TOKEN_PATTERN.test(r.subjectRef))
+    return { violation: { reason: 'PII_IN_CHAIN', id: r.id }, nextPrev: expectedPrev };
+  return { violation: null, nextPrev: currentHash };
+}
+
+/** Checagem da cabeça/checkpoint externo (truncamento de cauda e recriação de gênese). */
+function checkChainTail(
+  chain: StoredConsentAuditEvent[],
+  head: ConsentChainHead | null | undefined,
+  externalCheckpoint: ExternalConsentCheckpoint | null | undefined,
+): ChainViolationFound | null {
+  if (head !== undefined) {
+    if (!head) return chain.length === 0 ? null : { reason: 'HEAD_MISSING' };
+    if (chain.length === 0) return { reason: 'TRUNCATED' };
+    if (chain[0].id !== head.genesisId || chain[0].currentHash !== head.genesisHash) {
+      return { reason: 'GENESIS_REPLACED', id: chain[0].id };
+    }
+    const last = chain[chain.length - 1];
+    if (last.sequence !== head.lastSequence || last.currentHash !== head.lastHash) {
+      return { reason: 'TRUNCATED', id: last.id };
+    }
+  }
+  if (externalCheckpoint) {
+    if (chain.length === 0) return { reason: 'TRUNCATED' };
+    if (
+      chain[0].id !== externalCheckpoint.genesisId ||
+      chain[0].currentHash !== externalCheckpoint.genesisHash
+    ) {
+      return { reason: 'GENESIS_REPLACED', id: chain[0].id };
+    }
+    if (chain.length - 1 < externalCheckpoint.lastSequence) {
+      return { reason: 'TRUNCATED', id: chain[chain.length - 1]?.id };
+    }
+    const elAtCheckpoint = chain[externalCheckpoint.lastSequence];
+    if (elAtCheckpoint && elAtCheckpoint.currentHash !== externalCheckpoint.lastHash) {
+      return { reason: 'HASH_MISMATCH', id: elAtCheckpoint.id };
+    }
+  }
+  return null;
+}
+
+function chainResult(
+  organizationId: string,
+  chain: StoredConsentAuditEvent[],
+  violation: ChainViolationFound | null,
+): ChainVerificationResult {
+  if (violation) {
+    logger.error(
+      { organizationId, recordId: violation.id, reason: violation.reason },
+      'ConsentAuditChain: violação de integridade',
+    );
+    return {
+      valid: false,
+      totalRecords: chain.length,
+      brokenAtId: violation.id,
+      reason: violation.reason,
+    };
+  }
+  return { valid: true, totalRecords: chain.length };
+}
+
 /**
  * Verificação pura da cadeia. Com `head` (ou checkpoint externo) detecta também truncamento de
  * cauda e recriação da cadeia a partir de um novo gênese.
+ *
+ * Síncrona de propósito: adequada para cadeias pequenas (testes, rotinas pontuais). O caminho
+ * de request (`verifyChainIntegrity`) usa `verifyConsentChainAsync`, que cede o event loop a
+ * cada `yieldEvery` registros — TAREFA-SANEAMENTO-038: o hash-chaining O(n) não pode bloquear
+ * a API de onboarding em cadeias grandes.
  */
 export function verifyConsentChain(
   organizationId: string,
@@ -326,54 +416,40 @@ export function verifyConsentChain(
   head?: ConsentChainHead | null,
   externalCheckpoint?: ExternalConsentCheckpoint | null,
 ): ChainVerificationResult {
-  const fail = (reason: ChainViolation, id?: string): ChainVerificationResult => {
-    logger.error(
-      { organizationId, recordId: id, reason },
-      'ConsentAuditChain: violação de integridade',
-    );
-    return { valid: false, totalRecords: chain.length, brokenAtId: id, reason };
-  };
   let expectedPrev = GENESIS_HASH;
   for (let i = 0; i < chain.length; i++) {
-    const r = chain[i];
-    if (r.organizationId !== organizationId) return fail('TENANT_MISMATCH', r.id);
-    if (r.sequence !== i) return fail(r.sequence < i ? 'REORDERED' : 'SEQUENCE_GAP', r.id);
-    if ((i === 0) !== (r.kind === 'GENESIS')) return fail('GENESIS_INVALID', r.id);
-    if (r.previousHash !== expectedPrev) return fail('PREVIOUS_HASH_MISMATCH', r.id);
-    const { currentHash, ...content } = r;
-    if (computeConsentEventHash(content) !== currentHash) return fail('HASH_MISMATCH', r.id);
-    if (r.kind !== 'GENESIS' && !SUBJECT_TOKEN_PATTERN.test(r.subjectRef))
-      return fail('PII_IN_CHAIN', r.id);
-    expectedPrev = currentHash;
+    const { violation, nextPrev } = checkChainRecord(organizationId, chain, i, expectedPrev);
+    if (violation) return chainResult(organizationId, chain, violation);
+    expectedPrev = nextPrev;
   }
-  if (head !== undefined) {
-    if (!head) return chain.length === 0 ? { valid: true, totalRecords: 0 } : fail('HEAD_MISSING');
-    if (chain.length === 0) return fail('TRUNCATED');
-    if (chain[0].id !== head.genesisId || chain[0].currentHash !== head.genesisHash) {
-      return fail('GENESIS_REPLACED', chain[0].id);
-    }
-    const last = chain[chain.length - 1];
-    if (last.sequence !== head.lastSequence || last.currentHash !== head.lastHash) {
-      return fail('TRUNCATED', last.id);
-    }
+  return chainResult(organizationId, chain, checkChainTail(chain, head, externalCheckpoint));
+}
+
+const yieldToEventLoop = () => new Promise<void>((resolve) => setImmediate(resolve));
+
+/** Registros entre cedências do event loop na verificação assíncrona. */
+export const CONSENT_CHAIN_VERIFY_YIELD_EVERY = 256;
+
+/**
+ * Mesma verificação de `verifyConsentChain`, mas cede o event loop periodicamente para que
+ * cadeias longas não bloqueiem requests concorrentes (TAREFA-SANEAMENTO-038). O custo total de
+ * CPU é idêntico; apenas a fatia síncrona por iteração fica limitada a `yieldEvery` hashes.
+ */
+export async function verifyConsentChainAsync(
+  organizationId: string,
+  chain: StoredConsentAuditEvent[],
+  head?: ConsentChainHead | null,
+  externalCheckpoint?: ExternalConsentCheckpoint | null,
+  yieldEvery: number = CONSENT_CHAIN_VERIFY_YIELD_EVERY,
+): Promise<ChainVerificationResult> {
+  let expectedPrev = GENESIS_HASH;
+  for (let i = 0; i < chain.length; i++) {
+    if (yieldEvery > 0 && i > 0 && i % yieldEvery === 0) await yieldToEventLoop();
+    const { violation, nextPrev } = checkChainRecord(organizationId, chain, i, expectedPrev);
+    if (violation) return chainResult(organizationId, chain, violation);
+    expectedPrev = nextPrev;
   }
-  if (externalCheckpoint) {
-    if (chain.length === 0) return fail('TRUNCATED');
-    if (
-      chain[0].id !== externalCheckpoint.genesisId ||
-      chain[0].currentHash !== externalCheckpoint.genesisHash
-    ) {
-      return fail('GENESIS_REPLACED', chain[0].id);
-    }
-    if (chain.length - 1 < externalCheckpoint.lastSequence) {
-      return fail('TRUNCATED', chain[chain.length - 1]?.id);
-    }
-    const elAtCheckpoint = chain[externalCheckpoint.lastSequence];
-    if (elAtCheckpoint && elAtCheckpoint.currentHash !== externalCheckpoint.lastHash) {
-      return fail('HASH_MISMATCH', elAtCheckpoint.id);
-    }
-  }
-  return { valid: true, totalRecords: chain.length };
+  return chainResult(organizationId, chain, checkChainTail(chain, head, externalCheckpoint));
 }
 
 export type SubjectPurger = (
@@ -743,7 +819,9 @@ export class ConsentAuditChainService implements IConsentAuditChainPort {
         ? this.opts.externalCheckpointStore.getLatestCheckpoint(organizationId)
         : Promise.resolve(null),
     ]);
-    return verifyConsentChain(organizationId, chain, head, externalCheckpoint);
+    // Versão assíncrona fracionada (TAREFA-SANEAMENTO-038): cede o event loop a cada
+    // CONSENT_CHAIN_VERIFY_YIELD_EVERY registros para não bloquear a API em cadeias longas.
+    return verifyConsentChainAsync(organizationId, chain, head, externalCheckpoint);
   }
 
   async getChain(organizationId: string): Promise<StoredConsentAuditEvent[]> {
