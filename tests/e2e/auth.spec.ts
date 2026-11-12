@@ -37,13 +37,13 @@ test.describe('Autenticação', () => {
     // Sessão nova, sem os cookies do signup, pra forçar um login real do zero.
     await context.clearCookies();
     await page.goto('/login');
-    await page.getByPlaceholder('nome@empresa.com.br', { exact: true }).fill(email);
+    await page.getByPlaceholder('seu@email.com', { exact: true }).fill(email);
     await page.getByPlaceholder('••••••••').fill(E2E_PASSWORD);
     const signinResponsePromise = page.waitForResponse(
       (response) => new URL(response.url()).pathname === '/api/auth/sign-in/email'
         && response.request().method() === 'POST',
     );
-    await page.getByRole('button', { name: /^Entrar na Plataforma$/ }).click();
+    await page.getByRole('button', { name: 'Entrar', exact: true }).click();
     expect((await signinResponsePromise).ok()).toBe(true);
     await expect(page).toHaveURL(/\/app/, { timeout: 15_000 });
     const sessionResponse = await page.request.get('/api/auth/get-session');
@@ -60,13 +60,13 @@ test.describe('Autenticação', () => {
 
     await context.clearCookies();
     await page.goto('/login');
-    await page.getByPlaceholder('nome@empresa.com.br', { exact: true }).fill(email);
+    await page.getByPlaceholder('seu@email.com', { exact: true }).fill(email);
     await page.getByPlaceholder('••••••••').fill('SenhaErradaDeProposito!');
     const signinResponsePromise = page.waitForResponse(
       (response) => new URL(response.url()).pathname === '/api/auth/sign-in/email'
         && response.request().method() === 'POST',
     );
-    await page.getByRole('button', { name: /^Entrar na Plataforma$/ }).click();
+    await page.getByRole('button', { name: 'Entrar', exact: true }).click();
     const signinResponse = await signinResponsePromise;
     expect(signinResponse.status()).toBe(401);
     const signinError = await signinResponse.json();
@@ -78,7 +78,7 @@ test.describe('Autenticação', () => {
     expect(sessionResponse.ok()).toBe(true);
     expect(await sessionResponse.json()).toBeNull();
     await expect(page).toHaveURL(/\/login/);
-    await expect(page.getByRole('button', { name: /^Entrar na Plataforma$/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Entrar', exact: true })).toBeVisible();
   });
 
   test('acessar /app sem sessão válida redireciona para /login (ProtectedRoute)', async ({
