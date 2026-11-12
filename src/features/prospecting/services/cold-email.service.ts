@@ -136,3 +136,95 @@ export async function sendColdEmail(campaign: ColdEmailCampaign): Promise<boolea
     return false;
   }
 }
+
+/** Resultado por campanha dentro de um disparo em lote. */
+export type ColdEmailBatchOutcome = 'sent' | 'failed' | 'opt-out-suppressed' | 'invalid';
+
+export interface ColdEmailBatchItemResult {
+  campaignId: string;
+  outcome: ColdEmailBatchOutcome;
+}
+
+export interface ColdEmailBatchResult {
+  total: number;
+  /** Campanhas que passaram no filtro de opt-out e tiveram o envio efetivamente tentado. */
+  eligibleCount: number;
+  /** Campanhas bloqueadas pelo filtro de opt-out na entrada — nunca chegam ao envio. */
+  suppressedCount: number;
+  sentCount: number;
+  failedCount: number;
+  results: ColdEmailBatchItemResult[];
+}
+
+/**
+ * Ponto de entrada para disparo de cold email em LOTE (importações/listas de prospecção —
+ * BT360-DT-0028 / TAREFA-SANEAMENTO-020). Antes desta correção, a única forma de disparar era
+ * `sendColdEmail` item a item: a checagem de opt-out vivia só na borda do envio, então uma lista
+ * inteira entrava no funil sem nenhuma visibilidade prévia de quantos contatos eram elegíveis —
+ * e um titular suprimido só era descoberto no momento do disparo (ou nem isso, se o chamador
+ * esquecesse de chamar `sendColdEmail`).
+ *
+ * Aqui o opt-out vira filtro SANITIZADOR na entrada:
+ * 1. TODAS as campanhas da lista são consultadas contra `OptOutRecord` ANTES de qualquer envio;
+ * 2. as suprimidas recebem outcome 'opt-out-suppressed' e nunca chegam ao transporte;
+ * 3. campanhas sem `organizationId` são fail-closed ('invalid') — sem tenant não há como
+ *    consultar a supressão, então não são elegíveis;
+ * 4. se a consulta ao supressor falhar, o erro PROPAGA (sem fallback silencioso que trataria
+ *    "não consegui verificar" como "está liberado" — LGPD exige o contrário);
+ * 5. as elegíveis são enviadas via `sendColdEmail`, que mantém sua própria checagem de borda
+ *    (defesa em profundidade: a lista pode ter sido montada antes de um opt-out novo chegar).
+ *
+ * Contagens agregadas ficam visíveis no retorno e no log — sem PII (só IDs de campanha e
+ * domínios de e-mail, mesma disciplina de `sendColdEmail`).
+ */
+export async function sendColdEmailBatch(
+  campaigns: ColdEmailCampaign[],
+): Promise<ColdEmailBatchResult> {
+  const total = campaigns.length;
+  const results: ColdEmailBatchItemResult[] = [];
+  const eligible: ColdEmailCampaign[] = [];
+
+  // Etapa 1 — filtro sanitizador: opt-out verificado para a lista inteira antes de qualquer envio.
+  for (const campaign of campaigns) {
+    if (!campaign.organizationId) {
+      results.push({ campaignId: campaign.id, outcome: 'invalid' });
+      continue;
+    }
+    const blocked = await isOptedOut(
+      prismaOptOutRepository,
+      campaign.organizationId,
+      {
+        leadId: campaign.leadId ?? null,
+        email: campaign.targetEmail,
+        phoneE164: toE164BR(campaign.contactPhone ?? undefined),
+      },
+      'email',
+    );
+    if (blocked) {
+      results.push({ campaignId: campaign.id, outcome: 'opt-out-suppressed' });
+    } else {
+      eligible.push(campaign);
+    }
+  }
+
+  const suppressedCount = results.filter((r) => r.outcome === 'opt-out-suppressed').length;
+  const invalidCount = results.filter((r) => r.outcome === 'invalid').length;
+  const eligibleCount = eligible.length;
+
+  // Etapa 2 — envio apenas dos elegíveis, em sequência (mesma disciplina de honestidade de
+  // sendColdEmail: cada item reporta seu próprio outcome real).
+  for (const campaign of eligible) {
+    const sent = await sendColdEmail(campaign);
+    results.push({ campaignId: campaign.id, outcome: sent ? 'sent' : 'failed' });
+  }
+
+  const sentCount = results.filter((r) => r.outcome === 'sent').length;
+  const failedCount = results.filter((r) => r.outcome === 'failed').length;
+
+  logger.info(
+    { total, eligibleCount, suppressedCount, invalidCount, sentCount, failedCount },
+    'Cold email em lote: filtro de opt-out aplicado na entrada.',
+  );
+
+  return { total, eligibleCount, suppressedCount, sentCount, failedCount, results };
+}
