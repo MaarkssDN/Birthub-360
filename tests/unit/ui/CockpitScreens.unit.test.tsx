@@ -159,15 +159,14 @@ describe('Cockpit Operacional e Telas de Gestão na UI', () => {
       expect(screen.getByText('PRIMÁRIO')).toBeDefined();
     });
 
-    it('deve abrir o modal de disparo de failover controlado', () => {
+    it('deve se declarar demonstração visual e não oferecer failover executável', () => {
       render(<MultiRegionFailoverPanel />);
 
-      const triggerBtn = screen.getByRole('button', { name: /Disparar Failover/i });
-      fireEvent.click(triggerBtn);
-
-      expect(screen.getByText('Disparar Failover Controlado')).toBeDefined();
-      expect(screen.getByText('Região de Origem:')).toBeDefined();
-      expect(screen.getByText('Região de Destino:')).toBeDefined();
+      // EXP-05: o painel não pode mais simular telemetria/failover operacional.
+      expect(screen.getByText(/Demonstração visual/i)).toBeDefined();
+      expect(screen.getByText(/não estão conectados a uma infraestrutura operacional/i)).toBeDefined();
+      expect(screen.queryByRole('button', { name: /Disparar Failover/i })).toBeNull();
+      expect(screen.getByText(/Nenhum failover real foi registrado/i)).toBeDefined();
     });
   });
 });
