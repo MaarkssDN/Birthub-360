@@ -211,14 +211,6 @@ propósito por estar fora de "## Exceções ativas"):
 - **Registrado em:** 2026-09-24
 - **Reavaliar até:** 2026-11-30
 
-### `src/components/CrmBoard.tsx`
-
-- **Limite excepcional:** 1300 linhas
-- **Dono:** Agente 02 — Produto e UX
-- **Motivo:** Cruzou o limite de 1000 linhas (1003 linhas) após a modernização visual dos módulos operacionais (PR #729 / Onda F), aplicando tokens semânticos e estados de foco acessíveis WCAG AA. Ampliado para 1200 linhas devido a controles de filtros (enriquecimento/temperatura) e ação em lote de enriquecimento com IA. Exceção registrada para manter o pipeline liberado enquanto se planeja a extração de subcomponentes do pipeline e toolbar.
-- **Registrado em:** 2026-10-11
-- **Atualizado em:** 2026-10-16
-- **Reavaliar até:** 2026-11-30
 
 ### `src/features/crm/components/LeadDetailDrawer.tsx`
 
