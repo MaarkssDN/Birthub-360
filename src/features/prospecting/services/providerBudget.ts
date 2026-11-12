@@ -12,6 +12,42 @@ import { AppError } from '../../../shared/middlewares/errorHandler.js';
 export type ProspectingCostProvider = 'apollo' | 'hunter';
 
 /**
+ * Custo estimado por chamada bem-sucedida a cada provider faturável (Apollo/Hunter). Definido
+ * AQUI (e não em `providerCostMetrics.ts`) pelo mesmo motivo de `ProspectingCostProvider`:
+ * `providerCostMetrics.ts` já depende deste arquivo em runtime, então a dependência segue uma
+ * direção só — este módulo pode usar `getCostPerCallUsd` no débito atômico
+ * (`consumeProspectingProviderCredit`, RN-MKT-03 / AC-MKT-003) sem criar ciclo de import.
+ * `providerCostMetrics.ts` reexporta estas funções para quem já importava de lá.
+ *
+ * Fonte do custo por chamada: nem Apollo nem Hunter devolvem custo/crédito consumido no corpo da
+ * resposta — é uma ESTIMATIVA CONSERVADORA fixa por chamada, documentada em
+ * `providerCostMetrics.ts` (que mantém a justificativa detalhada dos valores e dos overrides por
+ * env). Ajustável via PROSPECTING_APOLLO_COST_PER_CALL_USD /
+ * PROSPECTING_HUNTER_COST_PER_CALL_USD.
+ */
+export const DEFAULT_PROVIDER_COST_PER_CALL_USD: Record<ProspectingCostProvider, number> = {
+  apollo: 0.01,
+  hunter: 0.02,
+};
+
+function envVarNameFor(provider: ProspectingCostProvider): string {
+  return provider === 'apollo'
+    ? 'PROSPECTING_APOLLO_COST_PER_CALL_USD'
+    : 'PROSPECTING_HUNTER_COST_PER_CALL_USD';
+}
+
+/** Lê o custo estimado por chamada (env), com fallback à estimativa conservadora documentada. */
+export function getCostPerCallUsd(
+  provider: ProspectingCostProvider,
+  environment: NodeJS.ProcessEnv = process.env,
+): number {
+  const raw = environment[envVarNameFor(provider)];
+  const parsed = raw != null ? Number(raw) : NaN;
+  if (Number.isFinite(parsed) && parsed >= 0) return parsed;
+  return DEFAULT_PROVIDER_COST_PER_CALL_USD[provider];
+}
+
+/**
  * DEC-09 (dossiê CPI, onda 42, opção B escolhida pelo usuário): teto REAL (bloqueante) de gasto
  * mensal de provider de prospecção (Apollo/Hunter), por organização. Diferente de
  * `providerCostMetrics.ts` (Counter Prometheus só de observação — sem rótulo de organização nem
@@ -80,6 +116,66 @@ function memoryIncr(key: string, amountUsd: number): number {
   }
   memoryTotals.set(key, next);
   return next;
+}
+
+/**
+ * Versão SÍNCRONA de check-and-debit do fallback em memória. Como não há `await` entre a leitura
+ * do total e a escrita, o bloco inteiro é atômico dentro do processo Node (single-threaded) —
+ * é o equivalente em memória do script Lua atômico usado no caminho Redis. Chamadas concorrentes
+ * no mesmo processo nunca ultrapassam o teto: cada uma observa o total já debitado pelas anteriores.
+ */
+function memoryTryDebit(
+  key: string,
+  amountUsd: number,
+  budgetUsd: number,
+): { allowed: boolean; total: number } {
+  const current = memoryTotals.get(key) ?? 0;
+  const next = current + amountUsd;
+  if (next > budgetUsd) {
+    return { allowed: false, total: current };
+  }
+  if (!memoryTotals.has(key) && memoryTotals.size >= MEMORY_MAX_ENTRIES) {
+    const oldestKey = memoryTotals.keys().next().value;
+    if (oldestKey !== undefined) memoryTotals.delete(oldestKey);
+  }
+  memoryTotals.set(key, next);
+  return { allowed: true, total: next };
+}
+
+/**
+ * Débito atômico check-and-add no Redis: incrementa o acumulado do mês e, na MESMA execução
+ * Lua (sem janela entre ler e escrever), desfaz o incremento se o novo total passar do teto.
+ * Retorna 1 quando o débito foi efetivado, 0 quando bloqueado. É o equivalente Redis do
+ * `SELECT ... FOR UPDATE` pedido pela auditoria (RN-MKT-03 / AC-MKT-003): sem este script, o par
+ * `GET`+comparação de `assertProspectingBudgetNotExceeded` seguido de `INCRBYFLOAT` tardio
+ * (recordProspectingProviderSpend, pós-chamada) deixava duas requisições concorrentes passarem
+ * juntas pelo check e estourarem o teto (double-spend).
+ */
+const ATOMIC_DEBIT_LUA = `
+local cost = tonumber(ARGV[1])
+local budget = tonumber(ARGV[2])
+local ttl = tonumber(ARGV[3])
+local current = redis.call('INCRBYFLOAT', KEYS[1], cost)
+if current > budget then
+  redis.call('DECRBYFLOAT', KEYS[1], cost)
+  return 0
+end
+redis.call('EXPIRE', KEYS[1], ttl)
+return 1
+`;
+
+/** Lê o total gravado para UMA chave (Redis ou memória) — best-effort, usado só para a
+ * mensagem do erro de bloqueio; nunca deve propagar falha de leitura. */
+async function readStoredTotal(key: string): Promise<number> {
+  if (redisConfigured) {
+    try {
+      const raw = await cacheConnection.get(key);
+      return raw != null ? Number(raw) : 0;
+    } catch {
+      return 0;
+    }
+  }
+  return memoryTotals.get(key) ?? 0;
 }
 
 /** Só para testes: limpa o fallback em memória entre casos. */
@@ -205,6 +301,81 @@ export async function assertProspectingBudgetNotExceeded(
 
   const monthCostUsd = await getOrgMonthProspectingCostUsd(organizationId);
   if (monthCostUsd >= budgetUsd) {
+    prospectingBudgetBlockedTotal.inc({ organization: organizationId, provider });
+    throw new ProspectingBudgetExceededError(organizationId, provider, monthCostUsd, budgetUsd);
+  }
+}
+
+/**
+ * RN-MKT-03 / AC-MKT-003 (MOD-02, JOR-02): "débito atômico no ledger antes da chamada externa".
+ *
+ * Diferente de `assertProspectingBudgetNotExceeded` (que só LÊ o acumulado e decide — o débito
+ * real só acontecia depois, via `recordProspectingProviderSpend` pós-resposta, abrindo a janela
+ * de double-spend sob concorrência), esta função debita o custo estimado da chamada
+ * (`getCostPerCallUsd`) de forma ATÔMICA no ledger do mês ANTES de qualquer byte sair para o
+ * provider: no Redis via script Lua check-and-add (INCRBYFLOAT + rollback condicional na mesma
+ * execução), no fallback em memória via seção síncrona sem `await` entre leitura e escrita.
+ *
+ * Chame no lugar de `assertProspectingBudgetNotExceeded`, no mesmo ponto dos 7 call sites
+ * faturáveis (antes de `fetchWithProviderRetry`). Uma chamada bloqueada lança
+ * `ProspectingBudgetExceededError` (HTTP 429) — o provider nunca é contatado.
+ *
+ * Trade-off consciente: o débito acontece mesmo se a chamada de rede falhar depois (timeout,
+ * HTTP 5xx) — a tentativa já é potencialmente faturável pelo provider e o lado seguro é sempre
+ * cobrar. Mesma política fail-open/fail-closed de `assertProspectingBudgetNotExceeded`:
+ * sem organização no contexto ou sem teto configurado (`monthlyProspectingBudgetUsd` nulo) =
+ * nunca bloqueia e nada é debitado; Redis configurado mas falhando = cai para o fallback em
+ * memória só desta chamada (proteção por processo, documentada no topo do arquivo).
+ *
+ * `recordProviderCallCost` (providerCostMetrics.ts) continua sendo chamado após `res.ok` nos
+ * mesmos pontos, mas passou a alimentar SÓ o Counter Prometheus de observação — o ledger
+ * durável por organização/mês é alimentado exclusivamente por esta função, para não contar
+ * duas vezes.
+ */
+export async function consumeProspectingProviderCredit(
+  provider: ProspectingCostProvider,
+  organizationId: string | undefined = getTenantId(),
+): Promise<void> {
+  if (!organizationId) return;
+
+  const budgetUsd = await getOrgProspectingBudgetUsd(organizationId);
+  if (budgetUsd === null) return; // sem teto configurado = sem débito e sem bloqueio
+
+  const costUsd = getCostPerCallUsd(provider);
+  if (!Number.isFinite(costUsd) || costUsd <= 0) return;
+
+  const key = buildKey(organizationId);
+  let allowed: boolean;
+  let monthCostUsd: number;
+
+  if (redisConfigured) {
+    try {
+      const result = await cacheConnection.eval(
+        ATOMIC_DEBIT_LUA,
+        1,
+        key,
+        String(costUsd),
+        String(budgetUsd),
+        String(REDIS_KEY_TTL_SECONDS),
+      );
+      allowed = result === 1 || result === '1';
+      monthCostUsd = allowed ? 0 : await readStoredTotal(key);
+    } catch (err: any) {
+      logger.warn(
+        { err, organizationId, provider },
+        'providerBudget: falha no débito atômico via Redis — usando fallback em memória só para esta chamada',
+      );
+      const mem = memoryTryDebit(key, costUsd, budgetUsd);
+      allowed = mem.allowed;
+      monthCostUsd = mem.total;
+    }
+  } else {
+    const mem = memoryTryDebit(key, costUsd, budgetUsd);
+    allowed = mem.allowed;
+    monthCostUsd = mem.total;
+  }
+
+  if (!allowed) {
     prospectingBudgetBlockedTotal.inc({ organization: organizationId, provider });
     throw new ProspectingBudgetExceededError(organizationId, provider, monthCostUsd, budgetUsd);
   }

@@ -27,6 +27,7 @@ let redisConfiguredValue = false;
 const cacheGet = vi.fn();
 const cacheIncrByFloat = vi.fn();
 const cacheExpire = vi.fn();
+const cacheEval = vi.fn();
 vi.mock('../../../../lib/queue/redis.js', () => ({
   get redisConfigured() {
     return redisConfiguredValue;
@@ -35,6 +36,7 @@ vi.mock('../../../../lib/queue/redis.js', () => ({
     get: (...args: unknown[]) => cacheGet(...args),
     incrbyfloat: (...args: unknown[]) => cacheIncrByFloat(...args),
     expire: (...args: unknown[]) => cacheExpire(...args),
+    eval: (...args: unknown[]) => cacheEval(...args),
   },
 }));
 
@@ -42,6 +44,7 @@ import { requestContext } from '../../../../lib/async-context.js';
 import {
   __resetProspectingBudgetForTests,
   assertProspectingBudgetNotExceeded,
+  consumeProspectingProviderCredit,
   getOrgMonthProspectingCostUsd,
   ProspectingBudgetExceededError,
   recordProspectingProviderSpend,
@@ -66,6 +69,7 @@ describe('providerBudget — teto por organização de prospecção (DEC-09)', (
     cacheGet.mockReset();
     cacheIncrByFloat.mockReset();
     cacheExpire.mockReset();
+    cacheEval.mockReset();
     redisConfiguredValue = false;
   });
 
@@ -200,6 +204,117 @@ describe('providerBudget — teto por organização de prospecção (DEC-09)', (
       await expect(
         recordProspectingProviderSpend('apollo', 3, 'org-redis-grava-falha'),
       ).resolves.toBeUndefined();
+    });
+  });
+
+  describe('consumeProspectingProviderCredit — débito atômico ANTES da chamada (RN-MKT-03/AC-MKT-003)', () => {
+    it('debita o custo estimado da chamada no acumulado do mês (fallback em memória)', async () => {
+      mockOrgBudget({ 'org-debito': 1 });
+
+      await runAs('org-debito', () => consumeProspectingProviderCredit('apollo'));
+
+      // default apollo = US$0.01/chamada (providerCostMetrics.DEFAULT_PROVIDER_COST_PER_CALL_USD)
+      expect(await getOrgMonthProspectingCostUsd('org-debito')).toBeCloseTo(0.01, 5);
+    });
+
+    it('não debita nem bloqueia quando a organização não tem teto configurado', async () => {
+      mockOrgBudget({ 'org-sem-teto-2': null });
+
+      await expect(
+        runAs('org-sem-teto-2', () => consumeProspectingProviderCredit('hunter')),
+      ).resolves.toBeUndefined();
+      expect(await getOrgMonthProspectingCostUsd('org-sem-teto-2')).toBe(0);
+    });
+
+    it('sem organização no requestContext, retorna cedo sem consultar teto nem debitar', async () => {
+      await expect(consumeProspectingProviderCredit('apollo')).resolves.toBeUndefined();
+      expect(findUniqueMock).not.toHaveBeenCalled();
+    });
+
+    it('bloqueia com ProspectingBudgetExceededError quando o débito estouraria o teto', async () => {
+      mockOrgBudget({ 'org-no-teto-2': 0.015 });
+      await consumeProspectingProviderCredit('apollo', 'org-no-teto-2'); // debita 0.01 → restam 0.005
+
+      const error = await runAs('org-no-teto-2', () =>
+        consumeProspectingProviderCredit('apollo'),
+      ).catch((e) => e);
+      expect(error).toBeInstanceOf(ProspectingBudgetExceededError);
+      expect((error as ProspectingBudgetExceededError).statusCode).toBe(429);
+      // O débito bloqueado foi revertido: o acumulado continua em 0.01, não 0.02.
+      expect(await getOrgMonthProspectingCostUsd('org-no-teto-2')).toBeCloseTo(0.01, 5);
+    });
+
+    it('prova de concorrência (memória): N débitos paralelos nunca ultrapassam o saldo do mês', async () => {
+      // Teto de US$0.05 = exatamente 5 chamadas Apollo de US$0.01. Sem atomicidade, os 10
+      // débitos concorrentes passariam pelo check antes de qualquer um gravar (double-spend).
+      mockOrgBudget({ 'org-corrida': 0.05 });
+
+      const results = await Promise.allSettled(
+        Array.from({ length: 10 }, () =>
+          runAs('org-corrida', () => consumeProspectingProviderCredit('apollo')),
+        ),
+      );
+
+      const fulfilled = results.filter((r) => r.status === 'fulfilled');
+      const rejected = results.filter((r) => r.status === 'rejected');
+      expect(fulfilled).toHaveLength(5);
+      expect(rejected).toHaveLength(5);
+      for (const r of rejected) {
+        expect((r as PromiseRejectedResult).reason).toBeInstanceOf(
+          ProspectingBudgetExceededError,
+        );
+      }
+      // Saldo final nunca negativo nem acima do teto: exatamente US$0.05 debitados.
+      expect(await getOrgMonthProspectingCostUsd('org-corrida')).toBeCloseTo(0.05, 5);
+    });
+
+    it('prova de concorrência (Redis): o script Lua check-and-add serializa débitos paralelos', async () => {
+      redisConfiguredValue = true;
+      mockOrgBudget({ 'org-corrida-redis': 0.05 });
+
+      // Emula a semântica do ATOMIC_DEBIT_LUA sobre um número JS: incrementa, compara com o
+      // teto e reverte quando estoura — tudo dentro de UMA "execução" (await único), ou seja,
+      // atomicamente em relação a outros evals concorrentes.
+      let redisTotal = 0;
+      cacheEval.mockImplementation(
+        async (_script: string, _numKeys: number, _key: string, cost: string, budget: string) => {
+          const c = Number(cost);
+          const b = Number(budget);
+          const next = redisTotal + c;
+          if (next > b) return 0;
+          redisTotal = next;
+          return 1;
+        },
+      );
+      cacheGet.mockImplementation(async () => String(redisTotal));
+
+      const results = await Promise.allSettled(
+        Array.from({ length: 10 }, () =>
+          runAs('org-corrida-redis', () => consumeProspectingProviderCredit('apollo')),
+        ),
+      );
+
+      expect(results.filter((r) => r.status === 'fulfilled')).toHaveLength(5);
+      expect(results.filter((r) => r.status === 'rejected')).toHaveLength(5);
+      expect(cacheEval).toHaveBeenCalledTimes(10);
+      // O eval recebeu o custo, o teto e o TTL como argumentos (INCRBYFLOAT+EXPIRE atômicos).
+      const [, , , costArg, budgetArg, ttlArg] = cacheEval.mock.calls[0] as unknown[];
+      expect(Number(costArg)).toBeCloseTo(0.01, 5);
+      expect(Number(budgetArg)).toBeCloseTo(0.05, 5);
+      expect(Number(ttlArg)).toBeGreaterThan(0);
+    });
+
+    it('cai para o fallback em memória quando o eval do Redis falha (fail-open documentado)', async () => {
+      redisConfiguredValue = true;
+      mockOrgBudget({ 'org-redis-debito-falha': 0.05 });
+      cacheEval.mockRejectedValue(new Error('Redis fora do ar (teste)'));
+
+      await expect(
+        runAs('org-redis-debito-falha', () => consumeProspectingProviderCredit('apollo')),
+      ).resolves.toBeUndefined();
+      // O débito caiu no fallback em memória — para lê-lo, simulamos Redis indisponível na leitura.
+      redisConfiguredValue = false;
+      expect(await getOrgMonthProspectingCostUsd('org-redis-debito-falha')).toBeCloseTo(0.01, 5);
     });
   });
 });

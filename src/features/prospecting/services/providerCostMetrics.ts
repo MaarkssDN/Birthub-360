@@ -1,11 +1,17 @@
 import client from 'prom-client';
-import { type ProspectingCostProvider, recordProspectingProviderSpend } from './providerBudget.js';
+import { getCostPerCallUsd, type ProspectingCostProvider } from './providerBudget.js';
 
 // Onda 42 (DEC-09): `ProspectingCostProvider` é definido em `providerBudget.ts`, não aqui — este
-// arquivo já depende daquele em runtime (`recordProspectingProviderSpend`, logo abaixo), então
-// manter a definição do tipo lá também evita um ciclo de import entre os dois módulos
-// (dependency-cruiser `no-circular`). Reexportado aqui para não quebrar quem já importa o tipo
-// deste arquivo (searchExecution.service.ts).
+// arquivo já depende daquele em runtime, então manter a definição do tipo lá também evita um
+// ciclo de import entre os dois módulos (dependency-cruiser `no-circular`). Reexportado aqui para
+// não quebrar quem já importa o tipo deste arquivo (searchExecution.service.ts).
+//
+// RN-MKT-03 / AC-MKT-003 (Onda 00, MOD-02): `DEFAULT_PROVIDER_COST_PER_CALL_USD` e
+// `getCostPerCallUsd` também moram em `providerBudget.ts` agora — o débito atômico
+// (`consumeProspectingProviderCredit`) precisa do custo por chamada naquele módulo, e a
+// dependência só pode apontar para um lado. Reexportados aqui para não quebrar os imports
+// existentes (providerCapabilities.ts, searchExecution.service.ts, testes).
+export { DEFAULT_PROVIDER_COST_PER_CALL_USD, getCostPerCallUsd } from './providerBudget.js';
 export type { ProspectingCostProvider };
 
 /**
@@ -22,20 +28,27 @@ export type { ProspectingCostProvider };
  * ATUALIZAÇÃO (DEC-09, onda 42): o parágrafo acima ("nunca um teto/bloqueio") descrevia o estado
  * ANTES desta rodada — a decisão de produto mudou (dossiê CPI, opção B). O Counter Prometheus
  * abaixo continua sendo só observação (sem rótulo de organização, sem corte por mês), mas
- * `recordProviderCallCost` agora TAMBÉM alimenta `providerBudget.ts` (armazenamento durável por
- * organização/mês, ver o comentário grande no topo daquele arquivo), que é o que
- * `assertProspectingBudgetNotExceeded` usa para bloquear de verdade uma chamada nova quando o teto
- * mensal por organização (`Organization.monthlyProspectingBudgetUsd`) é excedido. O bloqueio em si
- * acontece ANTES da chamada de rede (nos 7 pontos onde `checkProviderRateLimit` já é checado);
- * este arquivo só registra o gasto DEPOIS de uma chamada bem-sucedida, como sempre fez.
+ * `assertProspectingBudgetNotExceeded`/`consumeProspectingProviderCredit`
+ * (providerBudget.ts) usam o armazenamento durável por organização/mês para bloquear de verdade
+ * uma chamada nova quando o teto mensal por organização
+ * (`Organization.monthlyProspectingBudgetUsd`) é excedido.
+ *
+ * ATUALIZAÇÃO (RN-MKT-03 / AC-MKT-003, Onda 00 — MOD-02): o débito no ledger durável deixou de
+ * acontecer AQUI (pós-chamada, via `recordProspectingProviderSpend`, o que abria janela de
+ * double-spend sob concorrência) e passou a ser feito por `consumeProspectingProviderCredit`
+ * (providerBudget.ts), de forma atômica e ANTES da chamada de rede, nos mesmos 7 pontos onde
+ * `checkProviderRateLimit` já é checado. `recordProviderCallCost` agora alimenta SOMENTE o
+ * Counter Prometheus abaixo — chamar `recordProspectingProviderSpend` daqui contaria o gasto
+ * duas vezes. `recordProspectingProviderSpend` segue exportado em providerBudget.ts para uso
+ * manual/testes (ajustes, reconciliação), nunca em caminho de chamada faturável.
  *
  * Fonte do custo por chamada: nem Apollo nem Hunter devolvem custo/crédito consumido no corpo da
  * resposta de nenhum dos endpoints usados neste domínio (Organization Search/Enrich, People
  * Search/Match, Email Finder, Domain Search) — confirmado lendo os tipos de resposta mapeados em
  * apollo/types.ts e hunter.service.ts: nenhum expõe algo como `credits_used` ou `cost`. Sem esse
- * dado real por chamada, o custo abaixo é uma ESTIMATIVA CONSERVADORA fixa por chamada bem-
- * sucedida, documentada explicitamente como tal (não o valor exato faturado, que depende do plano
- * contratado do tenant):
+ * dado real por chamada, o custo é uma ESTIMATIVA CONSERVADORA fixa por chamada, documentada
+ * explicitamente como tal (não o valor exato faturado, que depende do plano contratado do
+ * tenant):
  *
  * - Apollo: os planos pagos publicamente listados (Basic/Professional, ~US$49-99/usuário/mês)
  *   incluem um número fixo de créditos de export/enrich por mês; dividindo o preço do plano pelos
@@ -56,28 +69,6 @@ export type { ProspectingCostProvider };
  * mesmo padrão de override por env já usado por getRateLimitPerMinute (providerRateLimit.ts).
  */
 
-export const DEFAULT_PROVIDER_COST_PER_CALL_USD: Record<ProspectingCostProvider, number> = {
-  apollo: 0.01,
-  hunter: 0.02,
-};
-
-function envVarNameFor(provider: ProspectingCostProvider): string {
-  return provider === 'apollo'
-    ? 'PROSPECTING_APOLLO_COST_PER_CALL_USD'
-    : 'PROSPECTING_HUNTER_COST_PER_CALL_USD';
-}
-
-/** Lê o custo estimado por chamada (env), com fallback à estimativa conservadora documentada acima. */
-export function getCostPerCallUsd(
-  provider: ProspectingCostProvider,
-  environment: NodeJS.ProcessEnv = process.env,
-): number {
-  const raw = environment[envVarNameFor(provider)];
-  const parsed = raw != null ? Number(raw) : NaN;
-  if (Number.isFinite(parsed) && parsed >= 0) return parsed;
-  return DEFAULT_PROVIDER_COST_PER_CALL_USD[provider];
-}
-
 export const prospectingProviderCostUsdTotal = new client.Counter({
   name: 'prospecting_provider_cost_usd_total',
   help: 'Custo estimado acumulado (USD) de chamadas bem-sucedidas a providers de prospecção (Apollo/Hunter), por provider. Estimativa fixa por chamada (ver providerCostMetrics.ts) — NÃO é um teto/orçamento, só um contador honesto do que já foi gasto.',
@@ -85,21 +76,18 @@ export const prospectingProviderCostUsdTotal = new client.Counter({
 });
 
 /**
- * Registra o custo estimado de UMA chamada de rede real e bem-sucedida ao `provider`. Chame nos
- * mesmos pontos onde `checkProviderRateLimit`/`withProviderCache` já foram integrados — sempre
- * DEPOIS de confirmar `res.ok` (nunca antes: uma chamada que falhou ou nunca saiu por estar
- * bloqueada pelo rate limiter não gastou crédito real) e NUNCA dentro de um cache hit (o resultado
+ * Registra o custo estimado de UMA chamada de rede real e bem-sucedida ao `provider` no Counter
+ * Prometheus de observação. Chame nos mesmos pontos onde `checkProviderRateLimit`/
+ * `withProviderCache` já foram integrados — sempre DEPOIS de confirmar `res.ok` (nunca antes:
+ * uma chamada que falhou ou nunca saiu por estar bloqueada pelo rate limiter/budget não deve
+ * contar como gasto bem-sucedido no contador) e NUNCA dentro de um cache hit (o resultado
  * cacheado não bateu o provider de novo, então não deve contar custo de novo) — ou seja, sempre
  * dentro da função "Uncached" de cada operação, nunca no wrapper público que primeiro checa o
  * cache.
  *
- * Desde DEC-09 (onda 42), também dispara (fire-and-forget, nunca aguardado pelo chamador — uma
- * falha ao persistir o gasto nunca deve atrasar ou derrubar uma resposta que o provider já deu de
- * verdade) `recordProspectingProviderSpend`, que soma esse mesmo custo ao acumulado do mês
- * corrente da organização ativa (`getTenantId()`), usado por
- * `assertProspectingBudgetNotExceeded` (providerBudget.ts) para decidir se a PRÓXIMA chamada deve
- * ser bloqueada. Erros dessa persistência são só logados dentro de `recordProspectingProviderSpend`
- * — nunca propagam para cá.
+ * O débito no ledger durável por organização/mês NÃO acontece mais aqui: desde RN-MKT-03
+ * (`consumeProspectingProviderCredit`, chamado antes da rede) ele já foi efetivado de forma
+ * atômica — somar de novo aqui dobraria o gasto registrado.
  */
 export function recordProviderCallCost(
   provider: ProspectingCostProvider,
@@ -108,5 +96,4 @@ export function recordProviderCallCost(
   const costUsd = getCostPerCallUsd(provider, environment);
   if (!Number.isFinite(costUsd) || costUsd <= 0) return;
   prospectingProviderCostUsdTotal.inc({ provider }, costUsd);
-  void recordProspectingProviderSpend(provider, costUsd);
 }
