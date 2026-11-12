@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 13 (Enxame Autônomo e Governança de Runtime)
 Onda: Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-031)
-Status: aberto
+Status: em-andamento
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 4
@@ -48,3 +48,25 @@ Executar a tarefa `TAREFA-SANEAMENTO-031` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução (Agente 13 — 2026-11-12, branch `agente/13-w3-tool-timeout`)
+
+O caminho real de execução de ferramentas do runtime do enxame não é
+`agents/tools/` (inexistente) nem o `AgentExecutor` do LangChain (domínio 07) — é
+`src/features/job-roles/services/toolExecutors.ts` + `agentRuntime.service.ts`
+(`await executor(ctx)` sem limite, BT360-DT-0068). Implementado:
+
+- `withToolTimeout(executor, toolCode, timeoutMs)` — `Promise.race` com
+  `ToolTimeoutError` (`TOOL_TIMEOUT: executor "<code>" excedeu o limite de <ms>ms`).
+- `DEFAULT_TOOL_EXECUTOR_TIMEOUT_MS = 120_000` + `TOOL_EXECUTOR_TIMEOUT_OVERRIDES_MS`
+  (override por capability — mapa vazio, ponto de extensão documentado).
+- `getToolExecutor` retorna o executor já wrapped — `agentRuntime.service.ts`
+  não precisou de edição; a `AgentExecution` vira `FAILED` com erro observável.
+
+Limitação registrada no código: `Promise.race` não cancela a promise do executor
+travado (continua em background); cancelamento real exigiria `AbortSignal`
+propagado aos use-cases — follow-up se necessário. Testes:
+`tests/unit/features/job-roles/toolExecutors.timeout.test.ts` — 6/6 verdes
+(roundtrip, hang→TOOL_TIMEOUT, erro propagado, registry fail-closed preservado).
+Run report: `.agents/runs/agente-13-tarefa-saneamento-031.md`. Pendente: revisão do
+Agente 24.

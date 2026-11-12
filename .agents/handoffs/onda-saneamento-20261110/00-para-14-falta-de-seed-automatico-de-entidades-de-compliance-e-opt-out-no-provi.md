@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 14 (Ambiente de Execução e Test Harness)
 Onda: Onda 2 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-033)
-Status: aberto
+Status: em-andamento
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 2
@@ -48,3 +48,20 @@ Executar a tarefa `TAREFA-SANEAMENTO-033` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução (Agente 14 — 2026-11-12, branch `agente/14-w3-seed-compliance`)
+
+`prepare-integration-env.js` agora executa `buildComplianceSeedSql()` via psql após o
+bootstrap de roles: organização dedicada `compliance-baseline-org` (nunca `test-org-id`,
+para não poluir o tenant padrão do harness) + `OrganizationAiConsent` granted +
+3 `OptOutRecord` (Global/Email/WhatsApp). Idempotente: ids fixos + `ON CONFLICT DO
+NOTHING` — verificado contra `prospectordb_test` real: 1ª execução cria
+1 org/1 consent/3 opt-outs; 2ª execução não duplica. Escopo deliberado: a cadeia de
+auditoria LGPD (`ConsentAuditChainHead`/`ConsentAuditRecord`) exige genesis
+hash/sequence válidos produzidos pelo serviço — seed SQL estático a corromperia;
+testes que precisam de cadeia devem criá-la via serviço. Ressalva de ciclo de vida:
+o `afterAll` do integration-setup remove todas as orgs ao fim de cada arquivo de
+teste — o baseline existe desde o provisioning até a primeira limpeza; recriação
+por arquivo de teste fica como possível follow-up se algum teste depender disso.
+Run report: `.agents/runs/agente-14-tarefa-saneamento-033.md`. Pendente: revisão do
+Agente 24.
