@@ -1,7 +1,7 @@
 De: Agente 11 — Marca e Ativos Institucionais
 Para: Agente 03 — Design e Acessibilidade
 Onda: Onda 5 (Plano Mestre de Saneamento — decorrente de TAREFA-SANEAMENTO-051 / BT360-DT-0060)
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: BT360-DT-0060
 Sprint destino: Onda 5
@@ -62,3 +62,39 @@ o Agente 11 atualizará `docs/BrandConstitution.md` e os tokens de
 - `docs/BrandConstitution.md` já foi atualizado nesta onda para documentar os
   nomes canônicos de token e apontar explicitamente estas divergências.
 - Nenhum arquivo de `src/**` foi alterado pelo Agente 11.
+
+## Resolução
+
+- Data: 2026-11-12 — Agente 03, branch `agente/03-design-saneamento`, commit `c3eaefd34`.
+- Decisão tomada: **alinhar os literais de `src/styles/**` à fonte canônica**
+  (`identidade-visual/birthhub360/tokens/` + `src/config/brand.ts`), em vez de
+  legitimar os valores divergentes — os tokens canônicos já eram os efetivos em
+  runtime porque `official-identity.css` os sobrescrevia; os literais antigos em
+  `globals.css` eram armadilhas para contextos sem esse override.
+- Alterações:
+  1. `--neon-white`/`--color-neon-white`/`--color-white`/`--color-snow`:
+     `#70D6FF` → `#F8F9FF` (canônico). O azul de leitura `#70D6FF` permanece com o
+     nome semanticamente correto `--neon-text`/`--color-neon-text` — a divergência
+     de nome apontada na evidência está resolvida em código.
+  2. `--light-pink`/`--color-light-pink`: `#E6007A` → `#D91B7C` (canônico).
+  3. `--light-blue`/`--color-light-blue`: `#0369A1` → `#0284C7` (canônico).
+     `#0369A1` permanece onde é interativo (`--brand`/`--color-brand-primary` do
+     tema claro em `official-identity.css`), como a própria evidência sugeria.
+  4. Tipografia: pilhas `--font-brand-sans`/`--font-brand-display` agora usam
+     apenas famílias self-hosted canônicas — `"Inter"` (interface) e `"Sora"`
+     (display) — e o `@import` do Google Fonts (Plus Jakarta Sans/Nunito/Outfit)
+     foi removido de `globals.css`. `official-identity.css` passou a aliasar
+     `--font-brand-sans: var(--font-interface)` e `--font-brand-display:
+     var(--font-heading)`; `luxury-tokens.css` teve "Plus Jakarta Sans" removido
+     das pilhas.
+- Impacto computado no app principal: nulo a quase-nulo — `official-identity.css`
+  já forçava `--color-white`/`--color-snow` = `--palette-neon-white` (#F8F9FF) e
+  os tokens de tema em runtime. Os literais divergentes só afetariam contextos
+  sem `official-identity.css` (ex.: `src/index.css`, hoje sem importador ativo).
+- Nenhum arquivo de `identidade-visual/` ou `docs/BrandConstitution.md` foi
+  alterado pelo 03 (propriedade do 11) — como os valores agora batem com o
+  canônico já documentado, não se espera atualização documental; se o 11 quiser
+  registrar a decisão formal, o código já reflete a Constituição.
+- Gates: `npx tsc --noEmit` OK; `npm run lint` OK; `npm run build` OK; testes
+  unitários de design system verdes.
+- Pendente de encerramento formal: parecer APROVADO do Agente 24.
