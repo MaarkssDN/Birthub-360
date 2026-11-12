@@ -55,13 +55,10 @@ function parseSchema(): Map<string, SchemaModel> {
     }
     if (current && line === '}') {
       current = null;
+      pendingDoc = []; // não vaza comentário de fim de model para o próximo model
       continue;
     }
-    if (!current) {
-      // Comentários de documentação fora de model (/// ou //) — acumula para o próximo campo.
-      if (/^(\/\/\/|\/\/)/.test(line)) pendingDoc.push(line.replace(/^\/\/\/?\s?/, ''));
-      continue;
-    }
+    if (!current) continue; // comentários fora de model não são anotação de campo
     if (/^(\/\/\/|\/\/)/.test(line)) {
       pendingDoc.push(line.replace(/^\/\/\/?\s?/, ''));
       continue;
