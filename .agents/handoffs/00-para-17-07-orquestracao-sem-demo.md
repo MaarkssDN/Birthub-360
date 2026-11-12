@@ -41,3 +41,9 @@ podem estar em modo demo.
 ## Fora de escopo
 
 - Redesenhar telas; mexer no rail/nav homologada.
+
+## Avaliação Agente 02 (2026-11-12)
+
+Escopo 02 nesta onda: garantir que superfícies de Orquestração de Vendas expostas na UI não fabriquem dados operacionais — empty states honestos, sem métricas/depoimentos inventados na landing (já tratado em `auditoria-para-02-verdade-no-copy`).
+
+Backlog permanece com 17 (cadência), 07 (roleplay/IA) e 08 (QA/e2e). Sem alteração de código pelo 02 além do pacote landing.

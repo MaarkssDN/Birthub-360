@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 02 (Produto e UX)
 Onda: Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-015)
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 5
@@ -48,3 +48,9 @@ Executar a tarefa `TAREFA-SANEAMENTO-015` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução (Agente 02 — 2026-11-12, branch `agente/02-ux-saneamento`)
+
+- Semântica por-usuário de unread para broadcasts confirmada: `Notification.readAt` global NÃO é alterado na leitura de broadcast; estado por usuário persiste em `Setting` com chave `notifications.broadcastReads` (com fallback em memória quando settings auxiliar indisponível).
+- `tests/unit/features/notification-service.test.ts`: 14 testes ✅ cobrindo leitura individual, broadcast por usuário e caminho de falha.
+- Gates: tsc ✅.

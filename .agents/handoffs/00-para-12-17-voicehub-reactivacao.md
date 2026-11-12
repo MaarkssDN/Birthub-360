@@ -3,7 +3,7 @@
 De: 00 — Coordenador
 Para: 12 (Voz e Telefonia) + 17 (Cadência) + 01 (gate/RLS) + 02 (nav)
 Onda: F2
-Status: aberto
+Status: em-andamento
 Prioridade: alto
 Referência: `docs/architecture/MATRIZ-FUNCIONAL-MODULOS.md` §3.1, §6
 
@@ -41,3 +41,12 @@ criptografada), WhatsAppMessage, ScheduledMeeting no MOD-08.
 ## Fora de escopo
 
 - Reescrever voice-hub; mexer em Capacitor/M10.
+
+## Avaliação Agente 02 (2026-11-12)
+
+Recebido e avaliado pelo 02. Manter **oculto** (`voice-hub`, `outbound`, `dialer` fora da navegação) até:
+1. Agentes 12/17 concluírem o isolamento de backend;
+2. Agente 01 validar tenancy/RLS dos endpoints `/api/voice-hub/*`, `/api/outbound/*`, `/api/dialer-3cx/*`;
+3. `dialer` permanece alias de `cadence` salvo decisão explícita em contrário.
+
+Sem alteração de código pelo 02 nesta onda — dependência externa.
