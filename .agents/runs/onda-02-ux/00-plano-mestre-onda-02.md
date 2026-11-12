@@ -66,10 +66,19 @@ A ordem prioriza defeitos funcionais reais sobre cosmética.
 
 | Frente | Escopo | Status |
 |---|---|---|
-| F07 | Landing360: lead capture real + claims honestos | EM_EXECUCAO |
+| F07 | Landing360: lead capture real + claims honestos | CONCLUÍDA (commit `bff84912d`, ver handoff) |
 | F01 | Shell/tokens: auditoria Impeccable do design system | PENDENTE |
 | F02–F06 | Workspaces P01–P08, M09–M10 | PENDENTE |
 | F08 | Personagens/Copiloto/Chatbook + a11y/E2E | PENDENTE |
+
+## 4. Incidente de isolamento registrado
+
+Durante a sessão, outro agente executou `git checkout` no working tree
+compartilhado (HEAD mudou de `agente/02-onda-02-ux` para
+`agente/21-w3-consent-chain-async` com arquivos de LGPD/Bitrix sujos).
+O commit da Frente 07 (`bff84912d`) foi criado sobre a branch errada por esse
+motivo. Conteúdo isolado e cherry-pickável; reportado ao Agente 00 para
+reintegração. Nenhum arquivo de outro agente foi tocado ou commitado.
 
 ## 3. Handoffs previstos
 
