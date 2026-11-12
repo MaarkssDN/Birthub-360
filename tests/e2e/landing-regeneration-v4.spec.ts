@@ -59,6 +59,13 @@ test.describe('Birthub 360 — Landing Regeneration V4', () => {
     await expect(page.locator('.b360-gravity-section')).toHaveCount(0);
     await expect(page.locator('.b360-fanned-container')).toHaveCount(0);
 
+    // Preserva a verificação estrutural adicionada no #214, usando a landing
+    // efetivamente montada em App.tsx (Landing360, não Landing360Impeccable).
+    await expect(page.locator('#destaques')).toBeAttached();
+    await expect(page.locator('#fluxo')).toBeAttached();
+    await expect(page.locator('#ecossistema')).toBeAttached();
+    await expect(page.locator('.b360-hero-console')).toBeAttached();
+
     for (const section of await page.locator('.b360-section').all()) {
       await section.scrollIntoViewIfNeeded();
     }

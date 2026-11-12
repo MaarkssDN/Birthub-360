@@ -136,6 +136,7 @@ test.describe('FASE 05 — HOMOLOGAÇÃO COMPLETA: LANDING PAGE, MODAIS, LIGHT/D
         const themeToggle = page.locator('button[aria-label*="modo"]').first();
         if (await themeToggle.isVisible()) {
           await themeToggle.click();
+          await card.scrollIntoViewIfNeeded();
           await card.click();
           await expect(dialogs).toHaveCount(1);
 
@@ -152,6 +153,7 @@ test.describe('FASE 05 — HOMOLOGAÇÃO COMPLETA: LANDING PAGE, MODAIS, LIGHT/D
         }
 
         // 7. Reabrir para testar foco inicial e botão "Fechar" textual
+        await card.scrollIntoViewIfNeeded();
         await card.click();
         await expect(dialogs).toHaveCount(1);
         const closeTextBtn = dialog.getByRole('button', { name: 'Fechar', exact: true });
@@ -166,6 +168,7 @@ test.describe('FASE 05 — HOMOLOGAÇÃO COMPLETA: LANDING PAGE, MODAIS, LIGHT/D
       const card = page
         .locator('.b360-feature-card')
         .filter({ has: page.locator('.b360-pillar-badge', { hasText: '01' }) });
+      await card.scrollIntoViewIfNeeded();
       await card.click();
 
       const dialog = page.locator('[role="dialog"]');
@@ -205,6 +208,7 @@ test.describe('FASE 05 — HOMOLOGAÇÃO COMPLETA: LANDING PAGE, MODAIS, LIGHT/D
       const card = page
         .locator('.b360-feature-card')
         .filter({ has: page.locator('.b360-pillar-badge', { hasText: '02' }) });
+      await card.scrollIntoViewIfNeeded();
       await card.click();
 
       const ctaBtn = page.locator('button[data-primary-action="true"]');
@@ -261,6 +265,7 @@ test.describe('FASE 05 — HOMOLOGAÇÃO COMPLETA: LANDING PAGE, MODAIS, LIGHT/D
       const card01 = page
         .locator('.b360-feature-card')
         .filter({ has: page.locator('.b360-pillar-badge', { hasText: '01' }) });
+      await card01.scrollIntoViewIfNeeded();
       await card01.click();
       const dialog = page.locator('[role="dialog"]');
       await expect(dialog).toBeVisible();
@@ -271,6 +276,7 @@ test.describe('FASE 05 — HOMOLOGAÇÃO COMPLETA: LANDING PAGE, MODAIS, LIGHT/D
         path: path.join(EVIDENCE_DIR, 'modal-pilar-01-light.png'),
       });
       await page.keyboard.press('Escape');
+      await expect(dialog).toHaveCount(0);
 
       // Alternar repetidamente 4 vezes (teste de robustez)
       for (let i = 0; i < 4; i++) {
@@ -378,6 +384,7 @@ test.describe('FASE 05 — HOMOLOGAÇÃO COMPLETA: LANDING PAGE, MODAIS, LIGHT/D
         });
 
         // Abrir modal no viewport e verificar encaixe
+        await card01.scrollIntoViewIfNeeded();
         await card01.click();
         const dialog = page.locator('[role="dialog"]');
         await expect(dialog).toBeVisible();
