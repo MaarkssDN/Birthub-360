@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   assertTestDatabaseSafety,
+  buildComplianceSeedSql,
+  COMPLIANCE_BASELINE_ORG_ID,
   parseDotEnvContent,
+  stopEphemeralContainers,
 } from '../../../scripts/test/prepare-integration-env.js';
 
 describe('Test Harness Database Safety Guard (DIV-AGENTE-14-001)', () => {
@@ -72,5 +75,68 @@ describe('Test Harness Database Safety Guard (DIV-AGENTE-14-001)', () => {
       NODE_ENV: 'test',
       DATABASE_URL: 'postgresql://u:p@localhost:5434/prospectordb_test',
     });
+  });
+});
+
+describe('Ephemeral container teardown on SIGINT/SIGTERM (TAREFA-SANEAMENTO-032)', () => {
+  it('stops exactly the containers the harness started, via docker stop', () => {
+    const calls: Array<{ cmd: string; args: string[] }> = [];
+    const spawn = (cmd: string, args: string[]) => {
+      calls.push({ cmd, args });
+      return { status: 0 };
+    };
+
+    const stopped = stopEphemeralContainers(['birthhub_postgres', 'birthhub_redis'], spawn);
+
+    expect(stopped).toBe(2);
+    expect(calls).toEqual([
+      { cmd: 'docker', args: ['stop', 'birthhub_postgres'] },
+      { cmd: 'docker', args: ['stop', 'birthhub_redis'] },
+    ]);
+  });
+
+  it('tolerates individual docker stop failures and still stops the remaining containers', () => {
+    const calls: string[] = [];
+    const spawn = (_cmd: string, args: string[]) => {
+      calls.push(args[1]);
+      return { status: args[1] === 'birthhub_postgres' ? 1 : 0 };
+    };
+
+    const stopped = stopEphemeralContainers(['birthhub_postgres', 'birthhub_meilisearch'], spawn);
+
+    expect(calls).toEqual(['birthhub_postgres', 'birthhub_meilisearch']);
+    expect(stopped).toBe(1);
+  });
+
+  it('does nothing when the list is empty (containers were already running/shared)', () => {
+    const spawn = () => {
+      throw new Error('docker não deveria ser invocado');
+    };
+    expect(stopEphemeralContainers([], spawn)).toBe(0);
+  });
+});
+
+describe('Compliance/opt-out baseline seed (TAREFA-SANEAMENTO-033)', () => {
+  it('is idempotent: every INSERT uses ON CONFLICT DO NOTHING with fixed ids', () => {
+    const sql = buildComplianceSeedSql();
+    const inserts = sql.match(/INSERT INTO/g) ?? [];
+    const conflicts = sql.match(/ON CONFLICT DO NOTHING/g) ?? [];
+    expect(inserts.length).toBe(3); // Organization + OrganizationAiConsent + OptOutRecord
+    expect(conflicts.length).toBe(3);
+    expect(sql).toContain(`'${COMPLIANCE_BASELINE_ORG_ID}'`);
+  });
+
+  it('uses a dedicated baseline org — never the shared test-org-id tenant', () => {
+    const sql = buildComplianceSeedSql();
+    expect(sql).not.toContain('test-org-id');
+    expect(COMPLIANCE_BASELINE_ORG_ID).toBe('compliance-baseline-org');
+  });
+
+  it('covers the opt-out scopes and the AI consent entity', () => {
+    const sql = buildComplianceSeedSql();
+    expect(sql).toContain('"OrganizationAiConsent"');
+    expect(sql).toContain("'Global'");
+    expect(sql).toContain("'Email'");
+    expect(sql).toContain("'WhatsApp'");
   });
 });

@@ -8,13 +8,21 @@ import { logger } from '../logger.js';
  *
  * Propriedade: Agente 15 (Segurança Aplicada e Rotação de Segredos)
  * Padrão: AES-256-GCM com IV aleatório (12 bytes) e authTag (16 bytes).
- * Formato de envelope serializado: "enc:v1:<iv base64>:<authTag base64>:<ciphertext base64>"
+ * Formatos de envelope serializado (mesmo de src/lib/crypto/secretFields.ts):
+ *  - keyed (atual): "enc:v1:<keyId>:<iv b64>:<authTag b64>:<ciphertext b64>" — keyId é o
+ *    fingerprint SHA-256 (12 hex) da chave que cifrou, permitindo rotação com grace period:
+ *    a chave anterior permanece em CREDENTIALS_ENCRYPTION_KEY_PREVIOUS e todo ciphertext
+ *    keyed ou legado continua decriptável durante a janela de rotação (BT360-DT-0073).
+ *  - legado: "enc:v1:<iv b64>:<authTag b64>:<ciphertext b64>" — sem keyId; a decriptação
+ *    tenta todas as chaves configuradas (atual → anterior), mesmo comportamento do
+ *    fallback manual anterior.
  */
 
 const ALGORITHM = 'aes-256-gcm';
 const VERSION_PREFIX = 'enc:v1:';
 const IV_LENGTH = 12;
 const AUTH_TAG_LENGTH = 16;
+const KEY_ID_LENGTH = 12;
 
 /**
  * Converte chave bruta (base64 de 32 bytes) em Buffer ou deriva chave de teste.
@@ -45,6 +53,79 @@ function resolveBufferKey(rawKey?: string): Buffer {
 }
 
 /**
+ * Chave anterior (grace period de rotação). Opcional; quando presente precisa ter o
+ * mesmo formato válido de CREDENTIALS_ENCRYPTION_KEY — valor malformado é erro
+ * fail-closed, não fallback silencioso.
+ */
+function resolvePreviousKeyBuffer(): Buffer | null {
+  const candidate = env.CREDENTIALS_ENCRYPTION_KEY_PREVIOUS?.trim();
+  if (!candidate) return null;
+  return resolveBufferKey(candidate);
+}
+
+/** Fingerprint público e estável da chave — identifica qual chave cifrou um envelope v2. */
+function keyIdFor(key: Buffer): string {
+  return createHash('sha256').update(key).digest('hex').slice(0, KEY_ID_LENGTH);
+}
+
+/**
+ * Monta a lista ordenada de chaves candidatas para decriptação.
+ * Ordem: argumentos explícitos (primaryKey/fallbackKey — compat com callers antigos),
+ * chave atual do env, chave anterior do env (grace period). Dedup por fingerprint.
+ * Para envelopes v2, a chave cujo fingerprint casa com o keyId do payload vem primeiro.
+ */
+function candidateKeys(
+  primaryKey?: string,
+  fallbackKey?: string,
+  preferredKeyId?: string,
+): Buffer[] {
+  const seen = new Set<string>();
+  const keys: Buffer[] = [];
+  const push = (key: Buffer) => {
+    const id = keyIdFor(key);
+    if (!seen.has(id)) {
+      seen.add(id);
+      keys.push(key);
+    }
+  };
+
+  const raws = [primaryKey, fallbackKey];
+  for (const raw of raws) {
+    if (!raw?.trim()) continue;
+    try {
+      push(resolveBufferKey(raw));
+    } catch {
+      // Argumento explícito malformado é ignorado se houver outras candidatas —
+      // mesma tolerância que o fallbackKey já tinha no formato v1.
+    }
+  }
+  try {
+    push(resolveBufferKey());
+  } catch (err) {
+    if (keys.length === 0) throw err;
+  }
+  try {
+    const previous = resolvePreviousKeyBuffer();
+    if (previous) push(previous);
+  } catch {
+    // Chave anterior malformada não deve derrubar a decriptação se a atual funciona.
+  }
+
+  if (keys.length === 0) {
+    throw new Error('Nenhuma chave de criptografia de credenciais configurada.');
+  }
+
+  if (preferredKeyId) {
+    keys.sort((a, b) => {
+      const aMatch = keyIdFor(a) === preferredKeyId ? 0 : 1;
+      const bMatch = keyIdFor(b) === preferredKeyId ? 0 : 1;
+      return aMatch - bMatch;
+    });
+  }
+  return keys;
+}
+
+/**
  * Criptografa credencial em texto puro retornando string envelope "enc:v1:...".
  * Suporta chave customizada opcional para processos de rotação dual-key / migração.
  */
@@ -59,7 +140,7 @@ export function encryptCredentialSync(plainText: string, customKey?: string): st
   const ciphertext = Buffer.concat([cipher.update(plainText, 'utf8'), cipher.final()]);
   const authTag = cipher.getAuthTag();
 
-  return `${VERSION_PREFIX}${iv.toString('base64')}:${authTag.toString('base64')}:${ciphertext.toString('base64')}`;
+  return `${VERSION_PREFIX}${keyIdFor(key)}:${iv.toString('base64')}:${authTag.toString('base64')}:${ciphertext.toString('base64')}`;
 }
 
 export async function encryptCredential(plainText: string, customKey?: string): Promise<string> {
@@ -85,31 +166,26 @@ export function decryptCredentialSync(
     return cipherText;
   }
 
-  const payload = cipherText.slice(VERSION_PREFIX.length);
-  const parts = payload.split(':');
-  if (parts.length !== 3) {
+  const parts = cipherText.slice(VERSION_PREFIX.length).split(':');
+  let preferredKeyId: string | undefined;
+  let ivB64: string;
+  let authTagB64: string;
+  let ciphertextB64: string;
+  if (parts.length === 4) {
+    // Envelope keyed: keyId + iv + authTag + ciphertext.
+    [preferredKeyId, ivB64, authTagB64, ciphertextB64] = parts;
+  } else if (parts.length === 3) {
+    // Envelope legado sem keyId.
+    [ivB64, authTagB64, ciphertextB64] = parts;
+  } else {
     throw new Error('Envelope de credencial corrompido ou com formato inválido.');
   }
 
-  const [ivB64, authTagB64, ciphertextB64] = parts;
   const iv = Buffer.from(ivB64, 'base64');
   const authTag = Buffer.from(authTagB64, 'base64');
   const encryptedBuf = Buffer.from(ciphertextB64, 'base64');
 
-  const keysToTry: Buffer[] = [];
-  try {
-    keysToTry.push(resolveBufferKey(primaryKey));
-  } catch (err) {
-    if (!fallbackKey) throw err;
-  }
-
-  if (fallbackKey) {
-    try {
-      keysToTry.push(resolveBufferKey(fallbackKey));
-    } catch {
-      // Ignora erro de parsing na chave fallback se a primeira estiver ok
-    }
-  }
+  const keysToTry = candidateKeys(primaryKey, fallbackKey, preferredKeyId);
 
   for (const key of keysToTry) {
     try {
