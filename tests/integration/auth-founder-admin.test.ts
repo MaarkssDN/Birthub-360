@@ -2,7 +2,7 @@ import { describe, it, expect, afterAll } from 'vitest';
 
 import { prisma } from '../../src/lib/prisma';
 import { auth } from '../../src/lib/auth';
-import { withRlsBypass, uniqueEmail } from '../helpers/rbac-e2e-helpers';
+import { withRlsBypass, withTenant, uniqueEmail } from '../helpers/rbac-e2e-helpers';
 
 // TAREFA-SANEAMENTO-044 / BT360-DT-0009 (Onda saneamento-20261110, Agente 01).
 //
@@ -63,7 +63,9 @@ describe('Cadastro de fundador de organização → role ADMIN (TAREFA-SANEAMENT
     );
     expect(org).not.toBeNull();
 
-    const modulesSetting = await withRlsBypass(() =>
+    // Setting tem RLS FORCE com policy apenas por tenant (sem cláusula de bypass) —
+    // a leitura precisa do tenantId da org, não de bypass.
+    const modulesSetting = await withTenant(user.organizationId, () =>
       prisma.setting.findFirst({
         where: { organizationId: user.organizationId, key: 'organization.modules' },
       }),
