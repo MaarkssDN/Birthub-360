@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertCircle, Bot, RotateCcw, Send, Sparkles, Square, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { type CSSProperties, useEffect, useRef, useState } from 'react';
+import './ModuleAgentWidget.css';
 import {
   CHARACTER_CATALOG,
   getCharacterOrFallback,
@@ -314,8 +315,13 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
         <div className="ml-3 flex flex-col items-start justify-center">
           <div className="flex items-center gap-1.5">
             <span
-              className="text-[13px] font-bold leading-none"
-              style={{ color: agent.headingColor }}
+              className="bh-agent-text text-[13px] font-bold leading-none"
+              style={
+                {
+                  color: agent.headingColor,
+                  '--agent-text-color': agent.headingColor,
+                } as CSSProperties
+              }
             >
               {agent.name}
             </span>
@@ -331,8 +337,8 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
                 exit={{ opacity: 0, y: -5 }}
                 className="flex items-center gap-1 mt-0.5"
               >
-                <Bot className="w-3 h-3 text-[#F8F9FF]/70" />
-                <span className="text-[10px] font-semibold text-[#F8F9FF]/70 uppercase tracking-wide">
+                <Bot className="w-3 h-3 text-ink-2" />
+                <span className="text-[10px] font-semibold text-ink-2 uppercase tracking-wide">
                   Copiloto IA Ativo
                 </span>
               </motion.div>
@@ -345,8 +351,13 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
                 className="mt-0.5"
               >
                 <span
-                  className="text-[10px] font-medium leading-none"
-                  style={{ color: agent.subheadingColor }}
+                  className="bh-agent-text text-[10px] font-medium leading-none"
+                  style={
+                    {
+                      color: agent.subheadingColor,
+                      '--agent-text-color': agent.subheadingColor,
+                    } as CSSProperties
+                  }
                 >
                   {agent.role}
                 </span>
