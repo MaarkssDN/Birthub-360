@@ -48,3 +48,20 @@ Executar a tarefa `TAREFA-SANEAMENTO-003` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução (Agente 03 — W5, TAREFA-SANEAMENTO-003 / BT360-DT-0017)
+
+Status: resolvido.
+
+- Removidas as 9 declarações `!important` do bloco de guarda de títulos/subtítulos em
+  `src/styles/globals.css` (font-family display + cores title/subtitle-default/gold/pink/cyan).
+- Justificativa técnica: as regras são CSS de autor **não-camadas**, que já vencem todas as
+  utilities do Tailwind (emitidas em `@layer utilities`) pela regra de cascata — o
+  `!important` era redundante e quebrava a cascata para overrides legítimos.
+- Os 5 `!important` restantes no arquivo são do bloco `prefers-reduced-motion`, onde a
+  declaração é intencional e documentada (precisa vencer qualquer animation-duration inline).
+- `biome lint src/styles/globals.css`: 0 warnings (as 8 ocorrências de
+  `noImportantStyles` desapareceram).
+
+Gates: `npx tsc --noEmit` PASS; `npm run lint` sem novos problemas; `vite build` PASS.
+Evidência: `.agents/runs/agente-03-tarefa-saneamento-003.md`.
