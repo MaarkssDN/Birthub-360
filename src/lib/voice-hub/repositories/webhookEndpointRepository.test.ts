@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('@/lib/prisma.js', () => ({
   prisma: {
-    tenantWebhookEndpoint: {
+    organizationWebhookEndpoint: {
       count: vi.fn(),
       create: vi.fn(),
       findMany: vi.fn(),
@@ -44,11 +44,11 @@ const baseRow = {
 describe('webhookEndpointRepository', () => {
   describe('countActiveEndpointsForTenant', () => {
     it('scopes the count by organizationId AND active:true (never counts inactive or another tenant)', async () => {
-      vi.mocked(prisma.tenantWebhookEndpoint.count).mockResolvedValue(3);
+      vi.mocked(prisma.organizationWebhookEndpoint.count).mockResolvedValue(3);
 
       const result = await countActiveEndpointsForTenant('tenant-1');
 
-      expect(prisma.tenantWebhookEndpoint.count).toHaveBeenCalledWith({
+      expect(prisma.organizationWebhookEndpoint.count).toHaveBeenCalledWith({
         where: { organizationId: 'tenant-1', active: true },
       });
       expect(result).toBe(3);
@@ -57,7 +57,7 @@ describe('webhookEndpointRepository', () => {
 
   describe('createEndpoint', () => {
     it('persists organizationId/url/secretHash/events and never leaks secretHash back as anything but the field itself', async () => {
-      vi.mocked(prisma.tenantWebhookEndpoint.create).mockResolvedValue(baseRow as any);
+      vi.mocked(prisma.organizationWebhookEndpoint.create).mockResolvedValue(baseRow as any);
 
       const result = await createEndpoint({
         organizationId: 'tenant-1',
@@ -66,7 +66,7 @@ describe('webhookEndpointRepository', () => {
         events: ['call.completed', 'lead.qualified'],
       });
 
-      expect(prisma.tenantWebhookEndpoint.create).toHaveBeenCalledWith({
+      expect(prisma.organizationWebhookEndpoint.create).toHaveBeenCalledWith({
         data: {
           organizationId: 'tenant-1',
           url: 'https://example.com/hooks',
@@ -80,11 +80,11 @@ describe('webhookEndpointRepository', () => {
 
   describe('listEndpointsForTenant', () => {
     it('scopes the query by organizationId in the WHERE clause and orders by createdAt desc', async () => {
-      vi.mocked(prisma.tenantWebhookEndpoint.findMany).mockResolvedValue([baseRow] as any);
+      vi.mocked(prisma.organizationWebhookEndpoint.findMany).mockResolvedValue([baseRow] as any);
 
       const result = await listEndpointsForTenant('tenant-1');
 
-      expect(prisma.tenantWebhookEndpoint.findMany).toHaveBeenCalledWith({
+      expect(prisma.organizationWebhookEndpoint.findMany).toHaveBeenCalledWith({
         where: { organizationId: 'tenant-1' },
         orderBy: { createdAt: 'desc' },
       });
@@ -96,7 +96,7 @@ describe('webhookEndpointRepository', () => {
       // Even if a caller mistakenly passed a query that matched every tenant, this test locks the
       // WHERE shape that prevents it — the mock only returns what is explicitly stubbed for the
       // exact `organizationId` requested.
-      vi.mocked(prisma.tenantWebhookEndpoint.findMany).mockImplementation(((args: any) => {
+      vi.mocked(prisma.organizationWebhookEndpoint.findMany).mockImplementation(((args: any) => {
         return Promise.resolve(args.where.organizationId === 'tenant-1' ? [baseRow] : []);
       }) as any);
 
@@ -108,7 +108,7 @@ describe('webhookEndpointRepository', () => {
     });
 
     it('normalizes an unexpected events JSON shape defensively (never throws, never fabricates)', async () => {
-      vi.mocked(prisma.tenantWebhookEndpoint.findMany).mockResolvedValue([
+      vi.mocked(prisma.organizationWebhookEndpoint.findMany).mockResolvedValue([
         { ...baseRow, events: 'not-an-array' },
         { ...baseRow, id: 'endpoint-2', events: ['call.completed', 42, null, 'lead.qualified'] },
         { ...baseRow, id: 'endpoint-3', events: null },
@@ -124,11 +124,11 @@ describe('webhookEndpointRepository', () => {
 
   describe('listActiveEndpointsForTenant', () => {
     it('scopes by organizationId AND active:true in the WHERE clause (active-only filtering happens in the query, not after fetch)', async () => {
-      vi.mocked(prisma.tenantWebhookEndpoint.findMany).mockResolvedValue([baseRow] as any);
+      vi.mocked(prisma.organizationWebhookEndpoint.findMany).mockResolvedValue([baseRow] as any);
 
       await listActiveEndpointsForTenant('tenant-1');
 
-      expect(prisma.tenantWebhookEndpoint.findMany).toHaveBeenCalledWith({
+      expect(prisma.organizationWebhookEndpoint.findMany).toHaveBeenCalledWith({
         where: { organizationId: 'tenant-1', active: true },
       });
     });
@@ -136,18 +136,18 @@ describe('webhookEndpointRepository', () => {
 
   describe('findEndpointForTenant', () => {
     it('scopes lookup by id AND organizationId (cross-tenant lookup returns null instead of leaking existence)', async () => {
-      vi.mocked(prisma.tenantWebhookEndpoint.findFirst).mockResolvedValue(null);
+      vi.mocked(prisma.organizationWebhookEndpoint.findFirst).mockResolvedValue(null);
 
       const result = await findEndpointForTenant('endpoint-1', 'tenant-2');
 
-      expect(prisma.tenantWebhookEndpoint.findFirst).toHaveBeenCalledWith({
+      expect(prisma.organizationWebhookEndpoint.findFirst).toHaveBeenCalledWith({
         where: { id: 'endpoint-1', organizationId: 'tenant-2' },
       });
       expect(result).toBeNull();
     });
 
     it('returns the mapped record when id and organizationId both match', async () => {
-      vi.mocked(prisma.tenantWebhookEndpoint.findFirst).mockResolvedValue(baseRow as any);
+      vi.mocked(prisma.organizationWebhookEndpoint.findFirst).mockResolvedValue(baseRow as any);
 
       const result = await findEndpointForTenant('endpoint-1', 'tenant-1');
 
@@ -158,17 +158,17 @@ describe('webhookEndpointRepository', () => {
 
   describe('findActiveEndpointById', () => {
     it('is intentionally global (no organizationId in the WHERE clause) but still active-only', async () => {
-      vi.mocked(prisma.tenantWebhookEndpoint.findFirst).mockResolvedValue(baseRow as any);
+      vi.mocked(prisma.organizationWebhookEndpoint.findFirst).mockResolvedValue(baseRow as any);
 
       await findActiveEndpointById('endpoint-1');
 
-      expect(prisma.tenantWebhookEndpoint.findFirst).toHaveBeenCalledWith({
+      expect(prisma.organizationWebhookEndpoint.findFirst).toHaveBeenCalledWith({
         where: { id: 'endpoint-1', active: true },
       });
     });
 
     it('returns null for a deactivated/deleted endpoint rather than throwing', async () => {
-      vi.mocked(prisma.tenantWebhookEndpoint.findFirst).mockResolvedValue(null);
+      vi.mocked(prisma.organizationWebhookEndpoint.findFirst).mockResolvedValue(null);
 
       const result = await findActiveEndpointById('endpoint-1');
 
@@ -178,11 +178,11 @@ describe('webhookEndpointRepository', () => {
 
   describe('deleteEndpoint', () => {
     it('deletes by id', async () => {
-      vi.mocked(prisma.tenantWebhookEndpoint.delete).mockResolvedValue(baseRow as any);
+      vi.mocked(prisma.organizationWebhookEndpoint.delete).mockResolvedValue(baseRow as any);
 
       await deleteEndpoint('endpoint-1');
 
-      expect(prisma.tenantWebhookEndpoint.delete).toHaveBeenCalledWith({
+      expect(prisma.organizationWebhookEndpoint.delete).toHaveBeenCalledWith({
         where: { id: 'endpoint-1' },
       });
     });
@@ -190,14 +190,14 @@ describe('webhookEndpointRepository', () => {
 
   describe('regenerateSecret', () => {
     it('updates only secretHash by id and returns the mapped record', async () => {
-      vi.mocked(prisma.tenantWebhookEndpoint.update).mockResolvedValue({
+      vi.mocked(prisma.organizationWebhookEndpoint.update).mockResolvedValue({
         ...baseRow,
         secretHash: 'new-hash',
       } as any);
 
       const result = await regenerateSecret('endpoint-1', 'new-hash');
 
-      expect(prisma.tenantWebhookEndpoint.update).toHaveBeenCalledWith({
+      expect(prisma.organizationWebhookEndpoint.update).toHaveBeenCalledWith({
         where: { id: 'endpoint-1' },
         data: { secretHash: 'new-hash' },
       });
@@ -207,18 +207,18 @@ describe('webhookEndpointRepository', () => {
 
   describe('recordDeliveryResult', () => {
     it('writes lastDeliveryAt (a fresh Date) and lastDeliveryStatus by id', async () => {
-      vi.mocked(prisma.tenantWebhookEndpoint.update).mockResolvedValue(baseRow as any);
+      vi.mocked(prisma.organizationWebhookEndpoint.update).mockResolvedValue(baseRow as any);
 
       await recordDeliveryResult('endpoint-1', 'delivered');
 
-      expect(prisma.tenantWebhookEndpoint.update).toHaveBeenCalledWith({
+      expect(prisma.organizationWebhookEndpoint.update).toHaveBeenCalledWith({
         where: { id: 'endpoint-1' },
         data: { lastDeliveryAt: expect.any(Date), lastDeliveryStatus: 'delivered' },
       });
     });
 
     it("propagates a Prisma failure to the caller (fire-and-forget is the caller webhook.worker.ts's responsibility, not this function's)", async () => {
-      vi.mocked(prisma.tenantWebhookEndpoint.update).mockRejectedValue(
+      vi.mocked(prisma.organizationWebhookEndpoint.update).mockRejectedValue(
         new Error('endpoint was deleted'),
       );
 
