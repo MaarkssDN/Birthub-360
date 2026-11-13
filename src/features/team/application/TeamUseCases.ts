@@ -3,12 +3,21 @@
  * UseCases implementing business rules for membership, roles and permissions
  */
 
+import { AuditService } from '../../../lib/audit/audit.service.js';
 import {
   type ITeamRepository,
   type TeamMember,
   TeamRole,
   type MemberInvite,
 } from '../domain/TeamDomain.js';
+
+// Quem executa a mudança de papel — alimenta actorId/ipAddress do AuditLog (MEL-10,
+// DEM-20261113-003). User não é modelo auditável pela extensão do Prisma, então a trilha de
+// ROLE_CHANGE é registrada explicitamente aqui.
+export interface TeamAuditActor {
+  userId?: string;
+  ipAddress?: string;
+}
 
 export class TeamUseCases {
   constructor(private readonly teamRepository: ITeamRepository) {}
@@ -58,6 +67,7 @@ export class TeamUseCases {
     organizationId: string,
     targetMemberId: string,
     newRole: TeamRole,
+    actor?: TeamAuditActor,
   ): Promise<TeamMember> {
     const member = await this.teamRepository.findById(targetMemberId, organizationId);
     if (!member) {
@@ -71,7 +81,20 @@ export class TeamUseCases {
       }
     }
 
-    return this.teamRepository.updateRole(targetMemberId, organizationId, newRole);
+    const updated = await this.teamRepository.updateRole(targetMemberId, organizationId, newRole);
+
+    await AuditService.log({
+      action: 'ROLE_CHANGE',
+      entity: 'User',
+      entityId: targetMemberId,
+      actorId: actor?.userId,
+      tenantId: organizationId,
+      ipAddress: actor?.ipAddress,
+      beforeState: { role: member.role },
+      afterState: { role: updated.role },
+    });
+
+    return updated;
   }
 
   /**
