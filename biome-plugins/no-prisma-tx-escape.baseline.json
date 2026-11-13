@@ -12,7 +12,7 @@
     "src/features/activities/services/activity.service.ts": ["$transaction:5545b046d2719fd7"],
     "src/features/billing/infra/PrismaUsageRepository.ts": ["$queryRaw:ab74380e30ae6321"],
     "src/features/cadence/infra/PrismaCadenceRunRepository.ts": ["$transaction:df1dcdf170ec2c4e"],
-    "src/features/companies/infra/PrismaCompanyRepository.ts": ["$transaction:ab1fdc76371de72b"],
+    "src/features/companies/infra/PrismaCompanyRepository.ts": ["$transaction:e037817b4a26850c"],
     "src/features/contacts/infra/PrismaContactRepository.ts": ["$transaction:1b9bf9c8a092726e"],
     "src/features/contacts/services/contact.service.ts": ["$transaction:1b9bf9c8a092726e"],
     "src/features/crm360/infra/PrismaCrm360Repository.ts": ["$transaction:7415cb42d7d58d62"],
