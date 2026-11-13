@@ -65,7 +65,7 @@ import {
   LANDING_DEMO_CONSENT_PURPOSE,
   LANDING_DEMO_CONSENT_TEXT,
   LANDING_DEMO_CONSENT_VERSION,
-} from '@/features/public-leads/publicLead.constants';
+} from '@/shared/contracts/publicLead.constants';
 import { SoundFX } from '@/lib/soundEffects';
 import {
   B360AmbientFX,

@@ -3,7 +3,7 @@ import {
   LANDING_DEMO_CONSENT_PURPOSES,
   LANDING_DEMO_CONSENT_VERSION,
   LANDING_LEAD_EQUIPE_VALUES,
-} from './publicLead.constants.js';
+} from '../../shared/contracts/publicLead.constants.js';
 
 export function digitsOnly(value: string): string {
   return value.replace(/\D/g, '');
