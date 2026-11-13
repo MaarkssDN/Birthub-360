@@ -183,3 +183,22 @@ honesto V2 (insufficient_data / error / ready) do cockpit real;
   `SuperagentCreator`, `DailyPlanHub`, `IaCoachTab`, `HiringScenarioCard`,
   `roleplay/CallSetup`, `ForecastHub` (ok), `PredictiveRevenueCockpit`
   (removido).
+
+### Complemento — P02/P03 auditados (mesma sessão)
+
+- **P03 Orquestração** (`sales-orchestration`, `cadence`, `playbook`): todos
+  os `setTimeout`/`Math.random` encontrados são legítimos — retry backoff
+  em `cadenceService`, debounce de busca em `StartRunDialog`, reset de
+  "copiado" em `RoteirosHub`/matrizes. Sem fabricação.
+- **P02 Inteligência de Mercado** (`market-intelligence`): hubs consomem
+  `api` real com estados loading/error/empty (`ProspeccaoInteligenteHub`,
+  `Account360`, `InteligenciaMercadoHub`). Sem `Math.random`/mock.
+- **Suspeitos remanescentes em `features/intelligence` (dono Agente 07)**:
+  `Math.random` em `agents/triad/*.agent.ts`, `swarm-dashboard/
+  swarmMission.constants.ts`, `services/{proactiveAlerts,promptAbTesting,
+  successPrediction}.service.ts` — podem ser jitter/A-B test legítimo ou
+  fabricação; triagem é do 07. Handoff de tokens já aberto
+  (`02-para-07-intelligence-hub-tokens.md`) — achados funcionais devem ser
+  anexados lá ou em handoff próprio do 07.
+- `RealtimeFeed`/`offlineSync*` (`Math.random`): geração de id/jitter —
+  legítimos.
