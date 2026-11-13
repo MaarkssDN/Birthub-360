@@ -73,3 +73,42 @@ materiais na revisão auditada:
 **APROVADO** — o delta `dd818d6cd..f95f861b5` é cirúrgico, corrige falhas reais
 de CI sem regressão funcional, e todos os gates locais reexecutados passam.
 A disposição de release permanece condicionada ao resultado do CI do PR #265.
+
+---
+
+## Adendo — delta `703eb5802..f1bdc70f4` (cobertura de branches)
+
+**Escopo:** 1 commit (`f1bdc70f4`), somente arquivos de teste — zero mudança em
+código de produção.
+
+**Motivo:** o application gate do CI reprovou o threshold de branches de
+`src/features/automations/**` (71.17% < 73% configurado em
+`vitest.unit.config.ts`). Análise do `coverage-final.json` do run `43451602605`
+mostrou 224 branches descobertos de 777 no glob; os arquivos a 0%
+(`infra/N8nWebhookDispatcher.ts`, `infra/PrismaAutomationRepository.ts`) são
+pré-existentes e não tocados pelo PR — o déficit é de baseline, não regressão
+deste delta.
+
+**Correção aplicada (testes apenas):**
+- `automation-dry-run.service.test.ts` (+12 casos): webhook sem `method`
+  (default POST), custom field sem `field`/entidade não-Lead/valor não-string,
+  atividade sem owner (fallback "Não atribuído"), enrich/cadência/SDR em
+  eventos de Activity com e sem `leadId`, cadência com defaults e `leadId`
+  explícito, SDR com número suprimido (opt-out), notify sem título/corpo.
+- `cadenceIntegration.service.test.ts` (+4 casos): `stepIndex` default,
+  `pause`/`resume` sem enrollment, ação inválida → erro explícito.
+- `automations-ui.test.tsx` (+5 casos): `describeAutomation` com operador
+  numérico, operador desconhecido e valor array; `automationsApi.dryRun` com e
+  sem `limit` (ambos os lados do ternário).
+
+**Gates reexecutados:**
+
+| Gate | Resultado |
+|---|---|
+| vitest (3 arquivos alterados) | PASS — **54/54** |
+| `npx tsc --noEmit` | PASS |
+| `npx biome check --write` (escopo) | PASS — 1 arquivo reordenado (imports) |
+
+**Veredito do adendo:** **APROVADO** — delta test-only, aumenta cobertura real
+de branches sem enfraquecer assertions nem alterar thresholds. A aprovação
+permanece condicionada ao CI verde do PR #265 no HEAD `f1bdc70f4`.
