@@ -46,8 +46,8 @@
   --lux-ink-cyan: #70d6ff; /* Texto informativo azulado de alto contraste */
 
   /* Famílias Tipográficas */
-  --lux-font-display: "Sora", "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
-  --lux-font-body: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, sans-serif;
+  --lux-font-display: "Sora", "Inter", system-ui, -apple-system, sans-serif;
+  --lux-font-body: "Inter", system-ui, -apple-system, sans-serif;
   --lux-font-mono: "JetBrains Mono", "IBM Plex Mono", ui-monospace, monospace;
 
   /* Rastreamento (Tracking) Escultural */

@@ -3,7 +3,7 @@
 De: 00 — Coordenador
 Para: 12 (Voz e Telefonia) + 17 (Cadência) + 01 (gate/RLS) + 02 (nav)
 Onda: F2
-Status: em-andamento
+Status: em-andamento (parcela do Agente 12 verificada/concluída em 2026-11-12 — itens 2 e 3 seguem com Agentes 01 e 02)
 Prioridade: alto
 Referência: `docs/architecture/MATRIZ-FUNCIONAL-MODULOS.md` §3.1, §6
 

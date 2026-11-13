@@ -185,6 +185,25 @@ export interface BitrixCallOptions {
   correlationId?: string;
   /** Sobrescreve o teto de tentativas — usado nos testes para não esperar segundos de backoff real. */
   maxAttempts?: number;
+  /**
+   * Cancelamento cooperativo (TAREFA-SANEAMENTO-046 / BT360-DT-0036): quando o chamador aborta
+   * este signal (ex.: extração cancelada pelo usuário), a chamada HTTP em voo é abortada, o
+   * backoff entre tentativas é interrompido e `BitrixCallAbortedError` propaga imediatamente —
+   * nunca classificado como timeout transitório nem como erro definitivo do Bitrix.
+   */
+  signal?: AbortSignal;
+}
+
+/**
+ * Cancelamento cooperativo do CHAMADOR (não é falha do Bitrix24): distingue "o usuário mandou
+ * parar" de "o provedor falhou", para que o consumidor (ex.: extração em lote) encerre o fluxo
+ * sem gerar arquivo, sem gravar status='failed' e sem consumir as tentativas de retry restantes.
+ */
+export class BitrixCallAbortedError extends Error {
+  constructor() {
+    super('Chamada ao Bitrix24 abortada pelo cancelamento do chamador.');
+    this.name = 'BitrixCallAbortedError';
+  }
 }
 
 /**
@@ -202,9 +221,18 @@ async function attemptBitrixCall<T>(
   method: string,
   params: Record<string, unknown> | undefined,
   correlationId: string,
+  signal?: AbortSignal,
 ): Promise<T> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  // Cancelamento cooperativo do chamador: quando `signal` aborta, aborta o MESMO controller
+  // interno — o fetch em voo rejeita na hora (AbortError) e os catches abaixo distinguem isso de
+  // timeout real via `signal?.aborted` antes de classificar como TransientBitrixError.
+  const onExternalAbort = () => controller.abort();
+  if (signal) {
+    if (signal.aborted) onExternalAbort();
+    else signal.addEventListener('abort', onExternalAbort, { once: true });
+  }
   let response: Response;
   let data: (T & { error?: string; error_description?: string }) | null = null;
   try {
@@ -220,6 +248,7 @@ async function attemptBitrixCall<T>(
       // `TransientBitrixError`/`BitrixDefinitiveError`, `callBitrix` já trata isso como erro
       // inesperado que não deve ser retentado, ver comentário lá).
       if (err instanceof AppError) throw err;
+      if (signal?.aborted) throw new BitrixCallAbortedError();
       if (controller.signal.aborted) {
         throw new TransientBitrixError(
           `Tempo limite esgotado ao comunicar com o Bitrix24 (timeout ${REQUEST_TIMEOUT_MS / 1000}s).`,
@@ -258,6 +287,7 @@ async function attemptBitrixCall<T>(
         controller.signal,
       );
     } catch {
+      if (signal?.aborted) throw new BitrixCallAbortedError();
       if (controller.signal.aborted) {
         throw new TransientBitrixError(
           `Tempo limite esgotado ao comunicar com o Bitrix24 (timeout ${REQUEST_TIMEOUT_MS / 1000}s).`,
@@ -267,6 +297,7 @@ async function attemptBitrixCall<T>(
       data = null;
     }
   } finally {
+    signal?.removeEventListener('abort', onExternalAbort);
     clearTimeout(timeout);
   }
 
@@ -398,6 +429,23 @@ export class BitrixCircuitOpenError extends AppError {
   }
 }
 
+/** `sleep` que também respeita cancelamento cooperativo — abortar durante o backoff rejeita na hora em vez de esperar o delay inteiro (TAREFA-SANEAMENTO-046). */
+function sleepUnlessAborted(ms: number, signal?: AbortSignal): Promise<void> {
+  if (!signal) return sleep(ms);
+  if (signal.aborted) return Promise.reject(new BitrixCallAbortedError());
+  return new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      signal.removeEventListener('abort', onAbort);
+      resolve();
+    }, ms);
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(new BitrixCallAbortedError());
+    };
+    signal.addEventListener('abort', onAbort, { once: true });
+  });
+}
+
 /**
  * Cliente HTTP de baixo nível para a REST API do Bitrix24 (via webhook de entrada). Reintenta
  * automaticamente falha de rede, timeout, HTTP 429/5xx e `QUERY_LIMIT_EXCEEDED`, com backoff
@@ -426,8 +474,17 @@ export async function callBitrix<T>(
 
   let lastError: TransientBitrixError | null = null;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    // Cancelamento cooperativo: abort durante o backoff entre tentativas ou antes da próxima
+    // tentativa encerra imediatamente — sem queimar as tentativas restantes (TAREFA-SANEAMENTO-046).
+    if (options.signal?.aborted) throw new BitrixCallAbortedError();
     try {
-      const result = await attemptBitrixCall<T>(webhookUrl, method, params, correlationId);
+      const result = await attemptBitrixCall<T>(
+        webhookUrl,
+        method,
+        params,
+        correlationId,
+        options.signal,
+      );
       if (CIRCUIT_BREAKER_ENABLED) recordCircuitSuccess(webhookUrl);
       return result;
     } catch (err: any) {
@@ -441,7 +498,7 @@ export async function callBitrix<T>(
         }
         throw err;
       }
-      if (!(err instanceof TransientBitrixError)) throw err; // erro inesperado (bug de código) — propaga cru
+      if (!(err instanceof TransientBitrixError)) throw err; // erro inesperado/abortado (bug de código ou cancelamento do chamador) — propaga cru, sem retentar
       lastError = err;
       logger.warn(
         { correlationId, method, statusCode: err.statusCode, attempt, maxAttempts },
@@ -449,7 +506,7 @@ export async function callBitrix<T>(
           (attempt < maxAttempts ? 'retentando' : 'tentativas esgotadas'),
       );
       if (attempt < maxAttempts) {
-        await sleep(err.retryAfterMsHint ?? backoffDelayMs(attempt));
+        await sleepUnlessAborted(err.retryAfterMsHint ?? backoffDelayMs(attempt), options.signal);
       }
     }
   }

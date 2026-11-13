@@ -157,4 +157,3 @@ const MondayProvider: CrmProvider = {
 };
 
 registerCrmProvider(MondayProvider);
-export { MondayProvider };
