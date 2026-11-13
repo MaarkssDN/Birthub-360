@@ -58,3 +58,16 @@ sobre os campos reais (`cost` USD, `tokens`) com merge de `agentRole` nulo em
 'UNKNOWN' preservando a semântica anterior. Novo teste
 `agentCostAnalysis.service.test.ts` cobre agregação, merge nulo/UNKNOWN,
 período vazio e propagação de erro do banco (4/4).
+
+**Agente 23 — 2026-11-11** (branch `agente/23-n1-metricas-ia`, concluído pelo Agente 00 após interrupção do executor; pendente de revisão do Agente 24)
+
+`analyzeAgentCosts` reescrito para `prisma.aILog.groupBy({ by: ['agentRole'], _count, _sum: { cost, tokens } })` — UMA query agregada em vez de `findMany` de todas as linhas + agregação em memória (varredura sem teto da tabela do tenant a cada chamada do painel).
+
+**Achado adicional corrigido:** a versão anterior selecionava `costUsd`/`promptTokens`/`completionTokens`, campos que NÃO existem no model `AILog` (reais: `tokens`, `cost`, `model`, `agentRole`) — o endpoint `/api/agent/cost-analysis` falharia em runtime. O shape de retorno `AgentCostAnalysis` foi preservado (mesmos campos/ordenação/mostExpensive/mostEfficient).
+
+Testes: `__tests__/agentCostAnalysis.service.test.ts` — 4/4 (shape, ordenação, período vazio, propagação de erro, `_sum` nulo → 0).
+
+Gates: vitest focado 4/4 ✓; `npx tsc --noEmit` executado pelo Agente 00 no worktree.
+
+**Agente 23 — 2026-11-12** (branch `agente/23-custo-saneamento`): WIP idêntico ao commit `a6972ed8f` de `origin/agente/23-n1-metricas-ia` foi commitado e a branch remota integrada via merge (sem reescrita de histórico). Gates reexecutados neste worktree: `npx vitest run -c vitest.unit.config.ts` nos 2 arquivos alterados → **12/12 testes PASS** (4 agentCostAnalysis + 8 marketResearchTool). `npx tsc --noEmit` e `npm run lint` executados na mesma branch — ver relatório `.agents/runs/agente-23-saneamento-onda-20261112.md`. Pendente apenas o parecer formal do Agente 24 (condição de encerramento do handoff).
+

@@ -89,6 +89,12 @@ const envSchema = z
     // 5 é folgado para um humano preencher o formulário (inclusive retries) e apertado o bastante
     // para conter abuso/enumeração. Não compartilha a cota genérica de 600 do apiLimiter.
     PUBLIC_LEAD_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(5),
+    // Limite dedicado dos endpoints de exportação (CSV/PDF/Excel), por tenant — 30/15min é
+    // folgado para relatórios legítimos e impede varredura em massa de tabelas via export.
+    EXPORT_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(30),
+    // Limite do agendamento público /api/calendar/book, por IP — 10/15min contém scraping
+    // de slots e spam de reservas sem atrapalhar um convidado real.
+    PUBLIC_BOOKING_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
     // Organização dona dos leads da landing institucional. O endpoint público NÃO aceita
     // tenantId/organizationId do cliente — só este valor, configurado no servidor, resolve o
     // tenant. Sem ele o POST responde 503 (fail-closed). Use o id (cuid) da Organization, não um

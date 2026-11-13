@@ -25,10 +25,14 @@ export interface AgentCostAnalysis {
 /**
  * Analisa custos por agente.
  *
- * TAREFA-SANEAMENTO-042 (BT360-DT-0094): a versão anterior fazia `findMany` de todos os
- * AILog do período e agregava em memória — transferência desnecessária de todas as linhas
- * e pressão no pool de conexões. Agora o agrupamento acontece no Postgres via `groupBy`
- * (campos reais do model AILog: `cost` em USD e `tokens` total, ver usage-log.ts).
+ * TAREFA-SANEAMENTO-042 / BT360-DT-0094: antes carregava TODAS as linhas de `AILog` do período
+ * para agregar em memória — sem teto de linhas, cada chamada varria a tabela inteira do tenant e
+ * pesava no pool de conexões do painel gerencial. Agora é uma única query `groupBy` por
+ * `agentRole` (mesmo padrão de `PrismaUsageRepository.groupByModel/groupByPrompt`).
+ *
+ * Campos reais do model `AILog` (schema.prisma): `tokens`, `cost`, `agentRole` — a versão
+ * anterior selecionava `costUsd`/`promptTokens`/`completionTokens`, que NÃO existem no schema e
+ * faziam a query falhar em runtime.
  */
 export async function analyzeAgentCosts(
   organizationId: string,
@@ -36,7 +40,7 @@ export async function analyzeAgentCosts(
 ): Promise<AgentCostAnalysis> {
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
-  const grouped = await prisma.aILog.groupBy({
+  const rows = await prisma.aILog.groupBy({
     by: ['agentRole'],
     where: {
       organizationId,
@@ -46,34 +50,19 @@ export async function analyzeAgentCosts(
     _sum: { cost: true, tokens: true },
   });
 
-  // `agentRole` nulo e a string 'UNKNOWN' são o mesmo agente lógico — mescla como a
-  // versão anterior (`log.agentRole || 'UNKNOWN'`).
-  const agentStats = new Map<
-    string,
-    {
-      count: number;
-      totalCost: number;
-      totalTokens: number;
-    }
-  >();
-
-  for (const row of grouped) {
-    const agent = row.agentRole || 'UNKNOWN';
-    const stats = agentStats.get(agent) ?? { count: 0, totalCost: 0, totalTokens: 0 };
-    stats.count += row._count._all;
-    stats.totalCost += row._sum.cost ?? 0;
-    stats.totalTokens += row._sum.tokens ?? 0;
-    agentStats.set(agent, stats);
-  }
-
-  const agents = Array.from(agentStats.entries()).map(([agentType, stats]) => ({
-    agentType,
-    totalExecutions: stats.count,
-    totalCostUsd: stats.totalCost,
-    avgCostPerExecution: stats.totalCost / stats.count,
-    totalTokens: stats.totalTokens,
-    avgTokensPerExecution: stats.totalTokens / stats.count,
-  }));
+  const agents = rows.map((row) => {
+    const count = row._count._all;
+    const totalCost = row._sum.cost ?? 0;
+    const totalTokens = row._sum.tokens ?? 0;
+    return {
+      agentType: row.agentRole || 'UNKNOWN',
+      totalExecutions: count,
+      totalCostUsd: totalCost,
+      avgCostPerExecution: count > 0 ? totalCost / count : 0,
+      totalTokens,
+      avgTokensPerExecution: count > 0 ? totalTokens / count : 0,
+    };
+  });
 
   const totalCostUsd = agents.reduce((sum, a) => sum + a.totalCostUsd, 0);
 

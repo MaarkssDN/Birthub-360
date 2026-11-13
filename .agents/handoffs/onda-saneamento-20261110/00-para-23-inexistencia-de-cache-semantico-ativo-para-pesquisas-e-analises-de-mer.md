@@ -62,3 +62,18 @@ CONFIDENTIAL — isolamento de tenant e LGPD preservados.
 
 Testes: `generate-output.test.ts` (cache hit/miss) e `semanticCache.test.ts`
 já cobriam sucesso/falha do módulo; suites commercial-v3 seguem verdes.
+
+**Agente 23 — 2026-11-12** (branch `agente/23-custo-saneamento`)
+
+**Diagnóstico:** o `SemanticCacheService` (`src/lib/ai/gateway/semanticCache.ts`, Redis + fallback local, namespace `semcache:{orgId}:{hash}`, métricas FinOps) já estava implementado e exposto via `generateTextOutput`/`generateStructuredOutput` (flag `useCache`) — porém **nenhum consumidor de pesquisa de mercado o utilizava**. O caminho real de "pesquisas e análises de mercado" é a tool `marketResearchTool` (`src/features/intelligence/tools/marketResearchTool.ts`), que a cada chamada batia em Tavily/Serper (provedores pagos) ou DuckDuckGo — origem dos 8–12s e do gasto redundante descritos na dívida.
+
+**Alteração cirúrgica:**
+- `marketResearchTool.ts`: antes de qualquer fetch externo, consulta `semanticCache.get` com `organizationId` do `requestContext` (tenant), `purpose: 'market-research'`, `promptText` = query normalizada; em hit, retorna o relatório cacheado sem tocar nos motores de busca. Em miss, após montar o relatório, grava via `semanticCache.set` com `classification: 'PUBLIC'` e `ttlSeconds: CACHE_TTL.ENRICHMENT` (24h — deduplica re-pesquisas do mesmo período sem servir notícias muito velhas; `purpose` não casa com as regras automáticas de `resolveTtlSeconds`, por isso o TTL explícito).
+- Sem tenant no contexto (jobs internos/testes), o cache é ignorado — `get`/`set` exigem `organizationId` e lançariam "Tenancy violation".
+- Erros de Redis já são tratados dentro do próprio `SemanticCacheService` (fallback local + warn); nenhum fallback enganoso adicionado.
+
+**Testes:** `marketResearchTool.test.ts` — 3 novos casos (hit sem fetch; miss grava com classification PUBLIC; sem tenant não consulta cache). Suíte do arquivo: **8/8 PASS**.
+
+**Observação de propriedade:** `marketResearchTool.ts` pertence ao domínio do Agente 07 (`src/features/intelligence/**`), mas era o único ponto de conexão real do cache semântico com pesquisas de mercado — alteração mantida mínima (+~55 linhas, sem refatoração adjacente). Registrado para ciência do 07 no relatório da onda.
+
+**Gates:** `npx vitest run -c vitest.unit.config.ts` nos arquivos alterados → 12/12 PASS; `npx tsc --noEmit` e `npm run lint` executados na branch — ver `.agents/runs/agente-23-saneamento-onda-20261112.md`. Pendente parecer do Agente 24.
