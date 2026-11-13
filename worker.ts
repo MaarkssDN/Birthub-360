@@ -94,6 +94,9 @@ import {
 } from './src/features/commercial-intelligence/jobs/forecastSnapshotWeekly.worker.js';
 import { createCopilotoTranscriptionWorker } from './src/features/copiloto-ia/jobs/transcribeConversation.worker.js';
 import { MeetingSynthesisService } from './src/features/chatbook/services/meeting-synthesis.service.js';
+// MEL-08 (Onda 2): consumidor da fila BullMQ 'webhooks' (webhook.service.ts enfileira, este
+// worker entrega com HMAC/retry/DLQ). Sem este registro as entregas nunca saíam do processo.
+import { startWebhookWorker } from './src/lib/voice-hub/services/webhook.worker.js';
 
 async function start() {
   // Papel do banco com menor privilégio (sem superuser/BYPASSRLS/posse) — fatal em produção.
@@ -125,6 +128,7 @@ async function start() {
   const copilotoTranscriptionWorker = createCopilotoTranscriptionWorker({
     meetingSynthesisPort: new MeetingSynthesisService(),
   });
+  const webhookWorker = startWebhookWorker();
 
   const searchWorker = env.ENABLE_SEARCH ? createSearchWorker() : null;
   if (env.ENABLE_SEARCH) {
@@ -172,6 +176,7 @@ async function start() {
     { name: 'account-intelligence-scheduler', worker: accountIntelligenceSchedulerWorker },
     { name: 'forecast-snapshot-weekly-queue', worker: forecastSnapshotWorker },
     { name: 'copiloto-ia-transcription-queue', worker: copilotoTranscriptionWorker },
+    { name: 'webhooks', worker: webhookWorker },
   ];
 
   await startWorkerServer(
