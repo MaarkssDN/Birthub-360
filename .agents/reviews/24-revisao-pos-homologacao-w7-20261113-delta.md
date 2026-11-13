@@ -112,3 +112,37 @@ deste delta.
 **Veredito do adendo:** **APROVADO** — delta test-only, aumenta cobertura real
 de branches sem enfraquecer assertions nem alterar thresholds. A aprovação
 permanece condicionada ao CI verde do PR #265 no HEAD `f1bdc70f4`.
+
+---
+
+## Adendo 2 — delta `f6157bc03..5a9f31cbf` (integration gate)
+
+**Escopo:** 1 commit (`5a9f31cbf`), somente arquivos de teste — zero mudança em
+código de produção.
+
+**Motivo:** application gate do run `43459244590` reprovou em
+`Run Integration Tests` com 2 arquivos falhos — ambos **regressões do main
+(PR #216)**, não do delta do PR:
+
+1. `tests/integration/onda-01/intelligenceCoreFlow.integration.test.ts` —
+   `TransactionTenantMismatchError` (`tenant-healthcare-corp` vs `test-org-id`).
+   Causa raiz: `tests/helpers/integration-setup.ts` (main, PR #216) passou a
+   forçar `CONSENT_CHAIN_USE_PRISMA=1`, migrando `consentAuditChain` de
+   in-memory para `PrismaSubjectKeyStore` → `runInTransaction`, que rejeita
+   tenant divergente do `requestContext` ambiente (fixado em `test-org-id`
+   pelo `beforeEach` global). Em main esse caminho nunca foi exercido porque
+   o unit gate quebrava antes (PublicLeadConsent). **Correção:** helper
+   `withTenant(tenantId)` (`requestContext.run`) envolvendo as 4 chamadas
+   `consentAuditChain` do arquivo — mesmo contexto que `authenticateToken`
+   populada em request real. Nenhum código de produção alterado; a semântica
+   fail-closed do `runInTransaction` é preservada e passa a ser exercida
+   corretamente.
+2. `tests/integration/rls-coverage.test.ts` — count `TENANT_SCOPED` 145→147
+   (`PublicLeadConsent` + `MultichannelCadenceEnrollment`), idêntico ao ajuste
+   já feito na variante unit.
+
+**Gates:** `npx tsc --noEmit` PASS. Testes de integração não executáveis
+localmente (sem Docker) — validação fica a cargo do CI.
+
+**Veredito do adendo:** **APROVADO** — correções test-only de paridade com o
+contrato de tenancy real; aprovação segue condicionada ao CI verde.
