@@ -1,4 +1,4 @@
-import { useR educedMotion } from 'framer-motion';
+import { useReducedMotion } from 'framer-motion';
 import {
   AlertCircle,
   ArrowLeft,
