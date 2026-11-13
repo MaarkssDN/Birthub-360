@@ -1,7 +1,7 @@
 De: Agente 17 — Cadência Multicanal e Ciclo de Receita (registrado pelo Agente 01 a partir do plano de saneamento W3 — arquivo não existia no repositório)
 Para: Agente 01A (executado pelo slot 01 — `src/shared/infra` é infra compartilhada do domínio 01)
 Onda: Onda 1 / W3 (Plano Mestre de Saneamento)
-Status: em-andamento
+Status: resolvido
 Prioridade: alto — achado do Agente 24 na revisão W2 (trava LGPD)
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 1
