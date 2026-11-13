@@ -9,7 +9,7 @@ import type {
   ProspectCriteria,
 } from '../../domain/prospectTypes.js';
 import { findEmailViaHunter, findPeopleViaDomainSearch } from '../hunter.service.js';
-import { assertProspectingBudgetNotExceeded } from '../providerBudget.js';
+import { consumeProspectingProviderCredit } from '../providerBudget.js';
 import { buildProviderCacheKey, withProviderCache } from '../providerCache.js';
 import { recordProviderCallCost } from '../providerCostMetrics.js';
 import { checkProviderRateLimit } from '../providerRateLimit.js';
@@ -65,7 +65,7 @@ async function enrichPersonByNameUncached(
 
   // DEC-09: bloqueio real de orçamento por organização — lança de propósito (ver
   // src/features/prospecting/services/providerBudget.ts).
-  await assertProspectingBudgetNotExceeded('apollo');
+  await consumeProspectingProviderCredit('apollo');
 
   const [firstName, ...rest] = fullName.trim().split(/\s+/);
   const lastName = rest.join(' ');
@@ -233,7 +233,7 @@ async function enrichOrganizationWithContactsUncached(
 
   // DEC-09: bloqueio real de orçamento por organização — lança de propósito (ver
   // src/features/prospecting/services/providerBudget.ts).
-  await assertProspectingBudgetNotExceeded('apollo');
+  await consumeProspectingProviderCredit('apollo');
 
   try {
     const res = await fetchWithProviderRetry(
@@ -339,7 +339,7 @@ async function searchDecisionMakersAdvancedUncached(
 
   // DEC-09: bloqueio real de orçamento por organização — lança de propósito (ver
   // src/features/prospecting/services/providerBudget.ts).
-  await assertProspectingBudgetNotExceeded('apollo');
+  await consumeProspectingProviderCredit('apollo');
 
   try {
     const body: Record<string, unknown> = {

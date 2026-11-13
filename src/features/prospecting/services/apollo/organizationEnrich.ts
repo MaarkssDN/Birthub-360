@@ -1,6 +1,6 @@
 import { getPaidProspectingKey } from '../../../../config/prospecting-integrations.js';
 import { fetchWithProviderRetry } from '../../../../lib/enrichment/providerFetch.js';
-import { assertProspectingBudgetNotExceeded } from '../providerBudget.js';
+import { consumeProspectingProviderCredit } from '../providerBudget.js';
 import { recordProviderCallCost } from '../providerCostMetrics.js';
 import { checkProviderRateLimit } from '../providerRateLimit.js';
 import { APOLLO_ORG_ENRICH_URL } from './client.js';
@@ -23,7 +23,7 @@ export async function enrichOrganizationByDomain(
 
   // DEC-09: bloqueio real de orçamento por organização — lança de propósito (ver
   // src/features/prospecting/services/providerBudget.ts).
-  await assertProspectingBudgetNotExceeded('apollo');
+  await consumeProspectingProviderCredit('apollo');
 
   try {
     const url = `${APOLLO_ORG_ENRICH_URL}?domain=${encodeURIComponent(domain)}`;

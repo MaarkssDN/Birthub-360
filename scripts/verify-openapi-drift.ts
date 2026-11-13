@@ -51,7 +51,7 @@ import {
   collectCompositionRootSource,
 } from '../src/shared/contracts/openapiRouteInventory.js';
 
-interface SubRouteDriftFinding {
+export interface SubRouteDriftFinding {
   method: string;
   /** Path completo já no estilo do documento (sem `/api`, `:param` convertido para `{param}`). */
   docStylePath: string;
@@ -62,11 +62,11 @@ interface SubRouteDriftFinding {
 
 const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete'] as const;
 
-function toDocStyleSegment(segment: string): string {
+export function toDocStyleSegment(segment: string): string {
   return segment.startsWith(':') ? `{${segment.slice(1)}}` : segment;
 }
 
-function toDocStylePath(sourcePath: string): string {
+export function toDocStylePath(sourcePath: string): string {
   // remove o segmento inicial 'api' e converte ':param' -> '{param}', mesma convenção do path do YAML
   const segments = sourcePath.split('/').filter(Boolean);
   const withoutApi = segments[0] === 'api' ? segments.slice(1) : segments;
@@ -74,7 +74,7 @@ function toDocStylePath(sourcePath: string): string {
 }
 
 /** Mapa `nomeDoIdentificador -> caminho relativo de import`, a partir de `import { a, b } from '../x.js';` simples. */
-function buildImportMap(source: string): Map<string, string> {
+export function buildImportMap(source: string): Map<string, string> {
   const map = new Map<string, string>();
   const importRegex = /import\s*\{([^}]+)\}\s*from\s*['"](\.\.?\/[^'"]+)['"]/g;
   let match: RegExpExecArray | null;
@@ -93,12 +93,12 @@ function buildImportMap(source: string): Map<string, string> {
   return map;
 }
 
-interface TopLevelMount {
+export interface TopLevelMount {
   prefix: string;
   routerVarName: string;
 }
 
-interface UseMount {
+export interface UseMount {
   /** Path literal do primeiro argumento do `.use(...)`, ex.: '/api/analytics' ou '/suite'. */
   path: string;
   routerVarName: string;
@@ -111,7 +111,7 @@ interface UseMount {
  * feature, o que é o que torna a resolução de sub-router aninhado (Passe 2 recursivo) possível sem
  * duplicar esta regra de extração.
  */
-function extractUseMounts(source: string, callerVarName: string): UseMount[] {
+export function extractUseMounts(source: string, callerVarName: string): UseMount[] {
   const mounts: UseMount[] = [];
   const safeName = escapeForRegex(callerVarName);
   const useRegex = new RegExp(
@@ -137,13 +137,13 @@ function extractUseMounts(source: string, callerVarName: string): UseMount[] {
 }
 
 /** Extrai `app.use('/api/prefixo', ...middlewares, identificadorSimples)` no composition root. */
-function extractTopLevelRouterMounts(source: string): TopLevelMount[] {
+export function extractTopLevelRouterMounts(source: string): TopLevelMount[] {
   return extractUseMounts(source, 'app')
     .filter((mount) => mount.path.startsWith('/api/'))
     .map((mount) => ({ prefix: mount.path, routerVarName: mount.routerVarName }));
 }
 
-function escapeForRegex(identifier: string): string {
+export function escapeForRegex(identifier: string): string {
   return identifier.replace(/[$]/g, '\\$');
 }
 
@@ -157,7 +157,7 @@ function escapeForRegex(identifier: string): string {
  * `export const nome = router;` (alias) ou `export const nome = Router();` (direto). Sem um dos
  * dois padrões reconhecíveis, devolve `null` e o mount é pulado (sem falso positivo).
  */
-function resolveRouterLocalVarName(source: string, exportedName: string): string | null {
+export function resolveRouterLocalVarName(source: string, exportedName: string): string | null {
   const safeName = escapeForRegex(exportedName);
   const aliasMatch = new RegExp(`export const ${safeName}\\s*=\\s*([A-Za-z_$][\\w$]*)\\s*;`).exec(
     source,
@@ -168,7 +168,7 @@ function resolveRouterLocalVarName(source: string, exportedName: string): string
 }
 
 /** Extrai `<localVarName>.<method>('/subpath', ...)` literais de um arquivo de router de feature. */
-function extractRouterMethodPaths(
+export function extractRouterMethodPaths(
   source: string,
   localVarName: string,
 ): Array<{ method: string; subpath: string }> {
@@ -185,7 +185,7 @@ function extractRouterMethodPaths(
   return found;
 }
 
-function joinPrefixAndSubpath(prefix: string, subpath: string): string {
+export function joinPrefixAndSubpath(prefix: string, subpath: string): string {
   if (subpath === '/' || subpath === '') return prefix;
   return `${prefix.replace(/\/$/, '')}${subpath.startsWith('/') ? subpath : `/${subpath}`}`;
 }
@@ -206,7 +206,7 @@ function joinPrefixAndSubpath(prefix: string, subpath: string): string {
  * com confiança (import não estático, export não reconhecido, arquivo fora de `src/`), esse ramo é
  * simplesmente abandonado em vez de arriscar reportar drift errado.
  */
-function resolveAndWalkRouter(
+export function resolveAndWalkRouter(
   repoRoot: string,
   absoluteFilePath: string,
   localVarName: string,
@@ -289,7 +289,7 @@ function resolveAndWalkRouter(
  * cada nível. Retorna também `resolvedFileCount` só para log informativo (quantos arquivos de
  * router — de qualquer nível de aninhamento — puderam ser lidos e verificados de fato).
  */
-function computeSubRouteDrift(
+export function computeSubRouteDrift(
   repoRoot: string,
   compositionRootSource: string,
   bootstrapDir: string,
@@ -431,4 +431,11 @@ function main(): void {
   );
 }
 
-main();
+// Só executa o CLI quando invocado diretamente (`tsx scripts/verify-openapi-drift.ts`), para que
+// os helpers exportados possam ser importados por testes unitários sem rodar `main()` (TAREFA-037).
+const isDirectRun =
+  process.argv[1] !== undefined &&
+  import.meta.url === new URL(`file:///${process.argv[1].replace(/\\/g, '/')}`).href;
+if (isDirectRun) {
+  main();
+}

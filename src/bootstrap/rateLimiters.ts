@@ -134,10 +134,8 @@ export function applyRateLimiters(app: Express): void {
   });
   app.use('/api/public/demo-leads', publicLeadLimiter);
 
-  // Rate Limiting dedicado do formulário público de captura de lead da landing —
-  // rota sem autenticação que dispara e-mail real a cada POST, então a cota é bem
-  // mais apertada que a genérica: ninguém legítimo pede "demonstração" dezenas de
-  // vezes por hora, e cada request gera uma mensagem SMTP.
+  // Captura pública alternativa da landing (/api/public/lead-capture — envio por e-mail,
+  // sem persistência). Mesma justificativa de cota apertada: cada POST dispara SMTP real.
   const leadCaptureLimiter = rateLimit({
     windowMs: 60 * 60 * 1000,
     max: 5,

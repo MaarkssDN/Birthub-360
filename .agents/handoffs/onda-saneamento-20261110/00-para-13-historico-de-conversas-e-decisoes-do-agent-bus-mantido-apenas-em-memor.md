@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 13 (Enxame Autônomo e Governança de Runtime)
 Onda: Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-030)
-Status: em-andamento
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 4
@@ -63,3 +63,7 @@ Ação tomada: nota de governança no cabeçalho do módulo proibindo uso para
 histórico + recomendação de deprecação/remoção do protótipo (decisão do 00).
 Run report: `.agents/runs/agente-13-tarefa-saneamento-030.md`. Pendente: revisão do
 Agente 24 e decisão do Coordenador sobre remoção do módulo.
+
+## Resolução
+
+TAREFA-030 — agentBus documentado como prototipo volatil; bus real = AgentHandoffMessage/AgentExecution (integrado via merge 6ecfc6033).

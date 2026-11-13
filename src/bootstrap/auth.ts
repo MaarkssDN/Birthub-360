@@ -2,6 +2,7 @@ import { toNodeHandler } from 'better-auth/node';
 import type { Express } from 'express';
 import { requestContext } from '../lib/async-context.js';
 import { auth } from '../lib/auth.js';
+import { logger } from '../lib/logger.js';
 
 /**
  * Monta o handler do Better Auth em /api/auth. As tabelas Organization/user/session/account/
@@ -102,7 +103,7 @@ export function mountAuthHandler(app: Express): void {
       try {
         await authHandler(req, res);
       } catch (err: any) {
-        console.error('MOUNT_AUTH_HANDLER_CAUGHT_ERROR:', err);
+        logger.error({ err }, 'MOUNT_AUTH_HANDLER_CAUGHT_ERROR');
         if (!res.headersSent) {
           res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
         }
