@@ -42,32 +42,25 @@ criptografada), WhatsAppMessage, ScheduledMeeting no MOD-08.
 
 - Reescrever voice-hub; mexer em Capacitor/M10.
 
-## Resolução — Agente 12 (2026-11-12, branch `agente/12-voz-handoffs`, base `origin/main` @ 0b52894e0)
+## Resolução parcial (Agente 17 — 2026-11-12)
 
-**Item 1 (12/17 — isolamento por organização das rotas de voz): verificado como já implementado em main.**
+Parte do Agente 17 neste handoff:
 
-- As rotas reais de voz NÃO estão atrás do gate: `src/bootstrap/routes.ts` monta
-  `/api/integrations/birth-voice` e `/api/integrations/3cx` com `authenticateToken` + `requireTenant`
-  (o frontend `voice-hub/api/voiceHub.api.ts` consome exatamente esses paths).
-- Todo handler escopa por `organizationId` do usuário autenticado:
-  `birthVoice.routes.ts` (conexões L165-210, supressões L103-146, call-logs L225-286) e
-  `threecx.routes.ts` (L98-160). Webhook de resultado isola o segredo por conexão/org —
-  coberto por `birthVoice.webhook.test.ts` (suíte ACH-06-01: rejeita segredo cross-tenant,
-  replay, timestamp stale, 503 fail-closed sem segredo).
-- As rotas legadas `/api/voice-hub`, `/api/outbound`, `/api/dialer-3cx` continuam atrás de
-  `unavailableLegacyModule` → 503 `MODULE_NOT_READY` **intencional** até o item 2 (Agente 01).
+- **Item 4 (decisão `dialer` → cadence): JÁ REGISTRADA E IMPLEMENTADA.** `/app/dialer` é alias de
+  `/app/cadence` em `src/App.tsx` (`<Route path="dialer" element={<Navigate to="/app/cadence" replace />} />`,
+  ~L460), com comentário explícito de que `/api/dialer-3cx/*` segue atrás do `legacyModuleGate`.
+  Handoff anterior `17-para-02` sobre o redirect já consta como resolvido (ver histórico de commits
+  `33a00b9ff`/`f423edf7b`/`29166b0a3`). Ou seja: o "Discador 3CX" como UI foi oficialmente cortado
+  a favor de Cadências; reabrir o dialer 3CX é decisão do Agente 12, não pendência do 17.
+- **Item 1 (isolamento por organização das rotas `/api/voice-hub/*`, `/api/outbound/*`,
+  `/api/dialer-3cx/*`)**: os arquivos de voz são propriedade exclusiva do Agente 12
+  (`src/features/voice-hub/AGENTS.md`). O Agente 17 não edita esses arquivos; a conclusão do
+  isolamento depende do 12 (implementação) + 01 (gate/RLS) + 02 (nav). Nada no domínio de cadência
+  bloqueia esse trabalho — o run de cadência já consulta `VoiceCallPort` via DI
+  (`src/features/cadence/jobs/cadenceRun.worker.ts`), sem acoplamento às rotas gated.
 
-**Item 4 (decisão sobre `dialer`): registrada.**
-`dialer` é alias de UI para `cadence` — `NAV_TAB_ALIASES = { dialer: 'cadence' }`
-(`src/components/layout/tabMeta.ts`, arquivo do Agente 02). Decisão do Agente 12: o discador
-3CX (`/api/dialer-3cx`) permanece **cortado oficialmente** — nenhuma rota nova será criada;
-a capacidade de discagem vive em `birth-voice`/`threecx` + cadência do Agente 17. Se o 00 decidir
-reabrir o módulo, o caminho é novo router tenant-scoped, não reativação do legado.
-
-**Pendente neste handoff (outros donos):**
-- Item 2 → Agente 01: validar RLS/tenancy antes de abrir o gate.
-- Item 3 → Agente 02: remover tabs de `NAV_HIDDEN_TABS` quando o backend responder 200.
-
+Status mantido `em-andamento`: aguardando os demais destinatários (12/01/02). A parte do 17 está
+encerrada com evidência acima.
 ## Avaliação Agente 02 (2026-11-12)
 
 Recebido e avaliado pelo 02. Manter **oculto** (`voice-hub`, `outbound`, `dialer` fora da navegação) até:

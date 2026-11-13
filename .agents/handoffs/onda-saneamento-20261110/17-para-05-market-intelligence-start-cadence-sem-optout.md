@@ -1,7 +1,7 @@
 De: 17 — Cadência Multicanal e Ciclo de Receita
 Para: 05 — Prospecção (dono provável de `src/features/market-intelligence/**`; confirmar com 00 se a propriedade for de outro agente)
 Onda: Onda 3 (Plano Mestre de Saneamento — continuação de TAREFA-SANEAMENTO-035 / BT360-DT-0080)
-Status: resolvido
+Status: aberto
 Prioridade: alto (LGPD — opt-out pode ser contornado por este caminho)
 Bloqueador-ref: `.agents/handoffs/onda-saneamento-20261110/00-para-17-ausencia-de-verificacao-em-lote-de-opt-out-no-momento-do-inicio-da-cad.md`
 
@@ -67,28 +67,3 @@ arquivo para `startCadenceRun`/`prismaCadenceRunRepository`).
 - Se a propriedade de `market-intelligence` não for do Agente 05, favor rotear ao dono correto
   via Agente 00 — o ponto é que TODO caminho que cria `CadenceRun` precisa passar pelo filtro de
   opt-out antes do save.
-
-## Resolução
-
-**Agente 05 — 2026-11-12** (branch `agente/05-optout-cadence-start`, PR a abrir)
-
-- Propriedade confirmada: `src/features/market-intelligence/**` é escopo do Agente 05
-  (`docs/architecture/BRAIN_TRUTH_MAP.md` BT-013 → 05; `docs/auditorias/dividas-tecnicas/DIVIDAS-AGENTE-05.md`
-  já auditou o diretório como escopo do 05). Nenhum handoff necessário.
-- `checkCadenceStartEligibility` ainda **não** está na `main` (PR #256 aberto, branch
-  `agente/17-cadencia-handoffs`). Para não criar dependência de PR aberto, a verificação
-  equivalente foi replicada em `actionExecutor.service.ts` usando primitivas já existentes na
-  main: `prismaLeadSubjectResolver` + `isOptedOut` (OptOutRecord unificado, um canal por vez)
-  e `checkOptOutStatus` por canal quando `lead.contactId` existe (flags de `customFields` e
-  contato anonimizado — sinais que não estão no OptOutRecord).
-- `sequenceRow.touches` (Json) é convertido em canais distintos de forma fail-closed:
-  toque sem canal válido (`email|whatsapp|voice`) ou sequência sem toques → 422, sem criar run.
-  Opt-out encontrado → `AppError` 409; por ser pré-condição (throw dentro de `withRlsContext`),
-  a recomendação permanece `Pending` e nenhum `CadenceRun` é persistido.
-- Testes: `src/features/market-intelligence/server/__tests__/actionExecutor.tenancy.test.ts`
-  — 5 novos casos (opt-out unificado → 409; flag de contato → 409; sem contactId → run criado;
-  dedup de canais; touches malformados → 422). 13/13 passando; `npx tsc --noEmit` limpo;
-  `biome check` limpo no escopo (1 warning pré-existente não relacionado).
-- **Nota de integração:** este handoff existia apenas na branch do PR #256 (ainda aberto).
-  O arquivo foi copiado para esta branch com status `resolvido` — se o #256 mergear antes,
-  resolver o add/add conflict mantendo esta versão (já com Resolução).
