@@ -1,45 +1,21 @@
+import { assertSafeOutboundUrl } from './ssrfGuard.js';
+
 /**
  * Validador SSRF para Webhooks e URLs de integração de saída.
+ *
+ * Delega para `assertSafeOutboundUrl` (src/lib/security/ssrfGuard.ts): esquema HTTPS
+ * (HTTP tolerado apenas fora de produção), bloqueio de host literal interno/reservado e
+ * resolução DNS validando TODOS os endereços do host. O antigo bypass de NODE_ENV
+ * development/test foi removido — a política de IP privado/reservado vale em todo ambiente;
+ * apenas o esquema `http:` continua tolerado fora de produção (convenção do projeto para
+ * receptores de webhook locais, ver isSafePublicUrl em src/lib/voice-hub/validators).
+ *
+ * NOTA: esta função valida a URL no momento da chamada. Callers que fazem `fetch` cru logo
+ * depois mantêm uma janela residual de DNS rebinding entre a validação e a conexão — para
+ * esses casos o ideal é `safeFetch`/`assertSafeExternalUrl` de src/shared/security/urlGuard.ts
+ * (fetch com pinning de DNS). Registrado como limitação conhecida no relatório MEL-13.
  */
 export async function validateWebhookUrl(targetUrl: string): Promise<boolean> {
-  try {
-    const parsed = new URL(targetUrl);
-    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-      throw new Error(
-        `Protocolo inválido: ${parsed.protocol}. Apenas http e https são permitidos.`,
-      );
-    }
-
-    if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
-      return true;
-    }
-
-    const hostname = parsed.hostname.toLowerCase();
-    if (
-      hostname === 'localhost' ||
-      hostname === '127.0.0.1' ||
-      hostname === '::1' ||
-      hostname === '169.254.169.254' ||
-      hostname.startsWith('192.168.') ||
-      hostname.startsWith('10.') ||
-      hostname.endsWith('.local') ||
-      hostname.endsWith('.internal')
-    ) {
-      throw new Error(
-        `URL bloqueada por política de segurança SSRF: destino interno proibido (${hostname})`,
-      );
-    }
-
-    const parts = hostname.split('.').map(Number);
-    if (parts.length === 4 && parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) {
-      throw new Error(
-        `URL bloqueada por política de segurança SSRF: destino em faixa privada (${hostname})`,
-      );
-    }
-
-    return true;
-  } catch (err: unknown) {
-    if (err instanceof Error) throw err;
-    throw new Error('URL inválida fornecida para o webhook');
-  }
+  await assertSafeOutboundUrl(targetUrl);
+  return true;
 }
