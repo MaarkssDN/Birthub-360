@@ -50,11 +50,11 @@ import type {
   SellerBenchmarkReport,
 } from '../domain/CommercialIntelligence.js';
 import type { CloseDateIntelligenceReport, JourneyReport } from '../domain/JourneyIntelligence.js';
-import { computeForecastCalibration } from './forecastCalibration.js';
 import { buildExecutiveExport, type ExecutiveExportPayload } from './executiveExport.js';
-import { simulateHiringScenario } from './hiringScenarioSimulator.js';
+import { computeForecastCalibration } from './forecastCalibration.js';
 import { getGoal as getGoalCommand, setGoal as setGoalCommand } from './goalCommands.js';
 import { computeHealthScore } from './healthScore.js';
+import { simulateHiringScenario } from './hiringScenarioSimulator.js';
 import { isDealOpen } from './pipelineEligibility.js';
 import { buildAging } from './queries/agingReport.js';
 import { buildAlerts } from './queries/alertsReport.js';
@@ -104,9 +104,11 @@ export class CommercialIntelligenceUseCases {
    * cachear ali poderia gravar/ler resultado defasado sob um relógio fixo. Chamadas de
    * produção (controller/AI service/commercialCell) omitem `now` e usam `new Date()` aqui.
    *
-   * Os sub-relatórios chamados DENTRO do loader também são invocados sem `now` de propósito:
-   * assim `healthScore`/`executiveExport`/`hiringScenario`/`forecastCalibration` reutilizam as
-   * entradas L2 dos relatórios-base em vez de recalcular `loadScoredDeals` por composição.
+   * Os sub-relatórios chamados DENTRO do loader recebem o `now` original do método (não o
+   * `effectiveNow` materializado): com `now` omitido eles saem com `undefined` e reutilizam
+   * as entradas L2 dos relatórios-base; com `now` explícito propagam o relógio determinístico
+   * e desligam o cache — `healthScore`/`executiveExport`/`hiringScenario`/`forecastCalibration`
+   * reutilizam as entradas L2 em produção sem contaminar testes/backtests.
    */
   private async cachedReport<T>(
     report: string,
@@ -282,14 +284,15 @@ export class CommercialIntelligenceUseCases {
     now?: Date,
   ): Promise<ExecutiveExportPayload> {
     // `format` entra como `extra` da chave — csv/json/html do mesmo filtro são entradas
-    // distintas. Os relatórios-base abaixo são chamados SEM `now` de propósito: reutilizam o
-    // cache L2 deles (e, em miss, gravam para os GETs irmãos do cockpit).
+    // distintas. Os relatórios-base abaixo recebem `now` (não `n`): em produção `now` é
+    // `undefined` e eles resolvem via cache L2; com `now` explícito (testes/backtests) eles
+    // recalculam deterministicamente — mesmo contrato de forecastCalibration/hiringScenario.
     return this.cachedReport('executive-export', organizationId, filter, now, format, async (n) => {
       const [overview, performance, creation, alertsList] = await Promise.all([
-        this.executiveOverview(organizationId, filter),
-        this.performance(organizationId, filter),
-        this.pipelineCreation(organizationId, filter),
-        this.alerts(organizationId, filter),
+        this.executiveOverview(organizationId, filter, now),
+        this.performance(organizationId, filter, now),
+        this.pipelineCreation(organizationId, filter, now),
+        this.alerts(organizationId, filter, now),
       ]);
       return buildExecutiveExport(format, overview, performance, creation, alertsList, n);
     });
@@ -364,14 +367,17 @@ export class CommercialIntelligenceUseCases {
       );
     }
     return this.cachedReport('health-score', organizationId, filter, now, undefined, async (n) => {
+      // Sub-relatórios recebem `now` (não omitido): produção (`now` undefined) reutiliza o
+      // cache L2 das bases; `now` explícito propaga o relógio determinístico e desliga o
+      // cache — sem isso, testes/backtests liam entradas L2 gravadas por outros cenários.
       const [overview, performance, aging, leadingIndicators, crmQuality, accuracy] =
         await Promise.all([
-          this.executiveOverview(organizationId, filter),
-          this.performance(organizationId, filter),
-          this.aging(organizationId, filter),
-          this.leadingIndicators(organizationId),
-          this.crmQuality(organizationId, filter),
-          this.forecastAccuracy(organizationId),
+          this.executiveOverview(organizationId, filter, now),
+          this.performance(organizationId, filter, now),
+          this.aging(organizationId, filter, now),
+          this.leadingIndicators(organizationId, now),
+          this.crmQuality(organizationId, filter, now),
+          this.forecastAccuracy(organizationId, now),
         ]);
       return computeHealthScore(
         {
