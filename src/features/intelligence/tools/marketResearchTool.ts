@@ -1,6 +1,7 @@
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
-import { wrapUntrustedContent } from '../../../lib/ai/gateway.js';
+import { getTenantId } from '../../../lib/async-context.js';
+import { CACHE_TTL, semanticCache, wrapUntrustedContent } from '../../../lib/ai/gateway.js';
 import { logger } from '../../../lib/logger.js';
 
 interface SearchResultItem {
@@ -190,6 +191,35 @@ export const marketResearchTool = tool(
       return 'Por favor, forneça um termo válido para pesquisa.';
     }
 
+    // TAREFA-SANEAMENTO-041 / BT360-DT-0093: a ferramenta batia nos motores de busca
+    // (Tavily/Serper pagos, DuckDuckGo) a cada chamada — 8–12s e custo redundante para
+    // empresas/pesquisas repetidas. O SemanticCache (Redis + fallback local, namespace por
+    // tenant) já existia no gateway mas nenhum consumidor de pesquisa de mercado o usava.
+    // Hit devolve o relatório cacheado; sem tenant no contexto (ex.: job interno), o cache
+    // é simplesmente ignorado — semanticCache.get/set exigem organizationId e lançariam
+    // "Tenancy violation".
+    const organizationId = getTenantId();
+    const cacheParams = organizationId
+      ? {
+          organizationId,
+          model: 'market-research',
+          promptVersion: 'v1',
+          purpose: 'market-research',
+          promptText: cleanQuery,
+        }
+      : null;
+
+    if (cacheParams) {
+      const cached = await semanticCache.get(cacheParams);
+      if (cached) {
+        logger.info(
+          { organizationId, query: cleanQuery },
+          'marketResearchTool: cache semântico hit — busca externa e síntese ignoradas',
+        );
+        return cached;
+      }
+    }
+
     logger.info({ query: cleanQuery }, 'Iniciando pesquisa de mercado inteligente (Multi-Engine)');
 
     let answer: string | undefined;
@@ -265,7 +295,23 @@ export const marketResearchTool = tool(
       finalReport += '\n';
     });
 
-    return finalReport.trim();
+    const finalReportTrimmed = finalReport.trim();
+
+    if (cacheParams) {
+      // classification PUBLIC: o relatório é derivado de fontes públicas da web, mas o
+      // conteúdo externo permanece envolvido por wrapUntrustedContent — cachear não altera
+      // a fronteira de confiança. ttlSeconds explícito (ENRICHMENT = 24h): purpose
+      // 'market-research' não casa com as regras de resolveTtlSeconds e cairia no DEFAULT;
+      // 24h deduplica re-pesquisas do mesmo período sem servir notícias muito velhas.
+      await semanticCache.set(cacheParams, finalReportTrimmed, {
+        tokens: 0,
+        costUsd: 0,
+        classification: 'PUBLIC',
+        ttlSeconds: CACHE_TTL.ENRICHMENT,
+      });
+    }
+
+    return finalReportTrimmed;
   },
   {
     name: 'market_research',
