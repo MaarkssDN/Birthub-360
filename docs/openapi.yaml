@@ -6034,6 +6034,41 @@ paths:
         '401': { description: Não autenticado }
         '403': { $ref: '#/components/responses/Forbidden' }
 
+  /social-selling/interactions:
+    post:
+      tags: [Social Selling]
+      summary: >-
+        Registra uma interação social executada manualmente e a vincula à
+        timeline do Lead no CRM (RN-SOC-02). Rate limit anti-rajada por organização.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [leadId]
+              properties:
+                leadId: { type: string, description: Lead do tenant que recebe o evento na timeline }
+                kind:
+                  type: string
+                  enum: [approach_sent, interaction_received]
+                  default: approach_sent
+                channel: { type: string, default: linkedin }
+                summary: { type: string, maxLength: 2000, nullable: true }
+      responses:
+        '201':
+          description: Interação registrada e evento gravado na timeline do Lead
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { type: object }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { description: Não autenticado }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
   # ───────────────────────────── Mobile ─────────────────────────────
   /mobile/field-meetings/sync:
     post:
