@@ -48,3 +48,22 @@ Executar a tarefa `TAREFA-SANEAMENTO-026` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução (Agente 08A — W5, TAREFA-SANEAMENTO-026 / BT360-DT-0049)
+
+Status: resolvido.
+
+**Diagnóstico:** `cache: 'npm'` do setup-node já existia nos dois jobs de
+`.github/workflows/ci.yml`. A lacuna restante era o download repetido dos
+engines binários do Prisma a cada `npx prisma generate`/postinstall.
+
+**Correção:** adicionado step `Cache Prisma engines` (actions/cache v6.1.0,
+SHA-pinado conforme convenção do repo) após cada `npm ci`, cacheando
+`node_modules/.prisma`, `node_modules/@prisma/engines` e `~/.cache/prisma`
+com chave `prisma-${{ runner.os }}-${{ hashFiles('package-lock.json') }}` —
+versão de engine sempre amarrada ao lockfile, sem risco de divergência.
+
+**Gate de regressão:** `tests/unit/ci/w5-gitops-governance.test.ts` assevera a
+presença dos dois blocos de cache e sua posição após `npm ci`.
+
+Evidência: `.agents/runs/agente-08A-tarefa-saneamento-026.md`.
