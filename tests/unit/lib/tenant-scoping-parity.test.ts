@@ -121,12 +121,6 @@ const KNOWN_RLS_ONLY_MODELS = [
   'ProspectRejection',
   'ProspectingSearchExecution',
   'PublicBookingLink',
-  // Prova de consentimento do lead público (landing /api/public/demo-leads): escrita só via
-  // publicLead.service.ts com organizationId resolvido server-side
-  // (LANDING_LEAD_ORGANIZATION_ID) — rota pública não tem requestContext de tenant, então a
-  // injeção de TENANT_INJECTED_MODELS não se aplica; isolamento garantido por RLS
-  // (migration 20261111040000_public_lead_consent_and_rls), mesmo critério de OptOutRecord.
-  'PublicLeadConsent',
   'QualificationMatrixItem',
   'Report',
   'RoleMemoryRecord',
