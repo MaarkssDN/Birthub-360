@@ -7,44 +7,43 @@ import { semanticCache } from '../../../src/lib/ai/cache/semanticCache.service.j
 import { modelCascadeRouter } from '../../../src/lib/ai/gateway/model-cascade.js';
 import { piiTokenizer } from '../../../src/lib/security/piiTokenizer.service.js';
 import { consentAuditChain } from '../../../src/lib/security/consentChainFactory.js';
-import { similarDealsService } from '../../../src/features/knowledge/similarDeals.service.js';
 import { requestContext } from '../../../src/lib/async-context.js';
 import { prisma } from '../../../src/lib/prisma.js';
-
-/** Executa `fn` com o tenant explícito no requestContext — o mesmo contexto que
- *  `authenticateToken` populada numa request real. Necessário porque a cadeia de
- *  consentimento é Prisma-backed nos testes de integração (`CONSENT_CHAIN_USE_PRISMA=1`,
- *  setupFile) e `runInTransaction` rejeita tenant divergente do ambiente — o
- *  `beforeEach` global fixa 'test-org-id', mas estes fluxos exercitam tenantA/tenantB. */
-function withTenant<T>(tenantId: string, fn: () => Promise<T>): Promise<T> {
-  return requestContext.run({ tenantId }, fn);
-}
+import { similarDealsService } from '../../../src/features/knowledge/similarDeals.service.js';
 
 describe('Onda 01 — Shared Intelligence Core End-to-End Integration Flow', () => {
   const tenantA = 'tenant-healthcare-corp';
   const tenantB = 'tenant-logistics-corp';
 
   beforeEach(async () => {
+    // CONSENT_CHAIN_USE_PRISMA=1 (PR #216): ConsentSubjectKey/ConsentAuditRecord têm FK para
+    // Organization — os tenants do fluxo precisam existir de verdade no banco de teste.
+    await requestContext.run({ bypassRls: true }, async () => {
+      await prisma.organization.upsert({
+        where: { id: tenantA },
+        update: {},
+        create: { id: tenantA, name: 'Tenant Healthcare Corp (intelligence core)' },
+      });
+      await prisma.organization.upsert({
+        where: { id: tenantB },
+        update: {},
+        create: { id: tenantB, name: 'Tenant Logistics Corp (intelligence core)' },
+      });
+    });
     domainEventMesh.clearProcessedEvents();
     curatedObjectionService.clear();
     commercialLearningFlywheel.clear();
     semanticCache.clear();
     piiTokenizer.clear();
     consentAuditChain.clear();
-    // A cadeia de consentimento é Prisma-backed em integração (CONSENT_CHAIN_USE_PRISMA=1)
-    // e ConsentSubjectKey/ConsentAuditRecord têm FK para Organization — os tenants dos
-    // fluxos precisam existir de verdade (cleanDatabase remove todas as orgs após cada teste).
-    await prisma.organization.create({
-      data: { id: tenantA, name: 'Healthcare Corp (intelligence flow)' },
-    });
-    await prisma.organization.create({
-      data: { id: tenantB, name: 'Logistics Corp (intelligence flow)' },
-    });
   });
 
   it('Flow 1: VoiceHub/Mobile -> PII Tokenization -> Consent Audit -> Objection Curation -> Roleplay Integration', async () => {
     // 1. Consentimento registrado e selado na cadeia criptográfica
-    const consent = await withTenant(tenantA, () =>
+    // CONSENT_CHAIN_USE_PRISMA=1 (PR #216): a cadeia real usa runInTransaction, que exige
+    // requestContext.tenantId igual ao organizationId da operação — o enterWith global do
+    // integration-setup fixa 'test-org-id', então o fluxo do tenant precisa do contexto próprio.
+    const consent = await requestContext.run({ tenantId: tenantA }, () =>
       consentAuditChain.recordConsent({
         organizationId: tenantA,
         subjectRef: 'contact-dr-marcos',
@@ -188,7 +187,7 @@ describe('Onda 01 — Shared Intelligence Core End-to-End Integration Flow', () 
 
   it('Flow 3: Revocation Propagation -> Immediate Disabling of Knowledge and Cache Purge', async () => {
     // 1. Cadastra consentimento e objeção
-    await withTenant(tenantA, () =>
+    await requestContext.run({ tenantId: tenantA }, () =>
       consentAuditChain.recordConsent({
         organizationId: tenantA,
         subjectRef: 'lead-rev-test',
@@ -211,7 +210,7 @@ describe('Onda 01 — Shared Intelligence Core End-to-End Integration Flow', () 
     expect(await curatedObjectionService.listEligibleForRoleplay(tenantA)).toHaveLength(1);
 
     // 2. Revogação de consentimento pelo titular
-    await withTenant(tenantA, () =>
+    await requestContext.run({ tenantId: tenantA }, () =>
       consentAuditChain.revokeConsent(
         tenantA,
         'lead-rev-test',
@@ -237,7 +236,7 @@ describe('Onda 01 — Shared Intelligence Core End-to-End Integration Flow', () 
     expect(invalidated).toBeGreaterThanOrEqual(0);
 
     // 6. Integridade da cadeia criptográfica permanece válida e auditável
-    const chainIntegrity = await withTenant(tenantA, () =>
+    const chainIntegrity = await requestContext.run({ tenantId: tenantA }, () =>
       consentAuditChain.verifyChainIntegrity(tenantA),
     );
     expect(chainIntegrity.valid).toBe(true);
