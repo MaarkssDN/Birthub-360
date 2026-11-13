@@ -61,4 +61,63 @@ export interface IMultichannelCadencePort {
   }): Promise<{ halted: boolean; channelsSuppressed: CadenceChannel[] }>;
 }
 
+/**
+ * Porta de persistência durável para matrículas de cadência multicanal.
+ *
+ * Substitui o acesso direto ao `sharedCadenceEnrollmentsStore` (Map em memória por processo —
+ * volátil em restart/deploy e divergente entre réplicas). A implementação de produção é
+ * `PrismaMultichannelCadenceEnrollmentStore` (`src/shared/infra/`), sobre a tabela
+ * `MultichannelCadenceEnrollment`. Todo método recebe `organizationId` explicitamente e toda
+ * implementação DEVE filtrar por ele — isolamento por tenant nunca é opcional.
+ *
+ * O store é quem gera o `enrollmentId` (`enr-<uuid>`), mesmo formato já exposto aos consumidores.
+ */
+export interface IMultichannelCadenceEnrollmentStore {
+  enroll(params: {
+    organizationId: string;
+    cadenceId: string;
+    leadId: string;
+    contactEmail?: string;
+    contactPhone?: string;
+  }): Promise<MultichannelCadenceEnrollment>;
+  get(
+    organizationId: string,
+    enrollmentId: string,
+  ): Promise<MultichannelCadenceEnrollment | undefined>;
+  findByLead(
+    organizationId: string,
+    leadId: string,
+  ): Promise<MultichannelCadenceEnrollment | undefined>;
+  /**
+   * Atualiza campos mutáveis de UMA matrícula, sempre com filtro duplo
+   * `(organizationId, enrollmentId)` — nunca por `enrollmentId` sozinho.
+   */
+  update(
+    organizationId: string,
+    enrollmentId: string,
+    patch: Partial<
+      Pick<MultichannelCadenceEnrollment, 'currentStep' | 'status' | 'lastActionAt'>
+    >,
+  ): Promise<MultichannelCadenceEnrollment | undefined>;
+  /**
+   * Atualiza em lote TODAS as matrículas de um lead dentro do tenant — usado por
+   * `registerOptOutAndHalt` para marcar `opted_out` em todas as cadências ativas do titular.
+   * Retorna as matrículas atualizadas.
+   */
+  updateByLead(
+    organizationId: string,
+    leadId: string,
+    patch: Partial<
+      Pick<MultichannelCadenceEnrollment, 'currentStep' | 'status' | 'lastActionAt'>
+    >,
+  ): Promise<MultichannelCadenceEnrollment[]>;
+}
+
+/**
+ * @deprecated LEGADO VOLÁTIL — Map em memória por processo. Enrollments gravados aqui se perdem
+ * em restart/deploy e divergem entre réplicas. Não use em código novo; migre para
+ * `IMultichannelCadenceEnrollmentStore` (`PrismaMultichannelCadenceEnrollmentStore`). Mantido
+ * exportado apenas para não quebrar consumidores existentes durante a migração — ver handoff
+ * `.agents/handoffs/onda-00/01-para-07-17-cadence-enrollment-store.md`.
+ */
 export const sharedCadenceEnrollmentsStore = new Map<string, MultichannelCadenceEnrollment>();

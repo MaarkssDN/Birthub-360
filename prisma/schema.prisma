@@ -982,6 +982,7 @@ model Organization {
   cadenceTouchAttempts          CadenceTouchAttempt[]
   emailMessages                 EmailMessage[]
   cadenceCalendarEvents         CadenceCalendarEvent[]
+  multichannelCadenceEnrollments MultichannelCadenceEnrollment[]
   crmCommercialDocumentVersions CrmCommercialDocumentVersion[]
   crmDocumentSignatureRequests  CrmDocumentSignatureRequest[]
   dealClosureEvents             DealClosureEvent[]
@@ -3728,6 +3729,56 @@ model CadenceCalendarEvent {
   @@index([organizationId])
   @@index([leadId])
   @@index([cadenceRunId])
+}
+
+/// Status de matrícula no subsistema de Cadência Multicanal Adaptativa — espelha o union type
+/// `'active' | 'completed' | 'paused' | 'opted_out' | 'failed'` de
+/// `MultichannelCadenceEnrollment.status` em
+/// `src/shared/contracts/multichannelCadence.contract.ts` (minúsculas no domínio, PascalCase aqui,
+/// mesmo padrão de mapeamento de `CadenceRunStatus`).
+enum MultichannelCadenceEnrollmentStatus {
+  Active
+  Completed
+  Paused
+  OptedOut
+  Failed
+}
+
+/// Persistência durável das matrículas do subsistema de Cadência Multicanal Adaptativa (contrato
+/// `multichannelCadence.contract.ts`, consumidores `AdaptiveMultichannelCadenceService` e
+/// `CadenceIntegrationService`). Substitui o `sharedCadenceEnrollmentsStore` em memória por
+/// processo — antes desta tabela, enrollments se perdiam em restart/deploy e divergiam entre
+/// réplicas (handoff 07→00, repassado ao 01 por ser dono de src/shared e do schema).
+///
+/// `id` É o `enrollmentId` do contrato (`enr-<uuid>` gerado pelo store) — não é cuid(), porque o
+/// id é exposto aos consumidores como identificador de negócio antes da persistência.
+///
+/// `leadId` é STRING SIMPLES, sem FK para `Lead`: matrículas podem ser criadas por automações com
+/// identificadores que ainda não existem como `Lead` local (ex.: id externo Bitrix), mesmo padrão
+/// adotado por `OptOutRecord` para identificadores de correspondência. O isolamento multi-tenant
+/// é garantido por `organizationId` + RLS (`tenant_isolation`), nunca por `leadId`.
+model MultichannelCadenceEnrollment {
+  id             String       @id
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  cadenceId    String
+  leadId       String
+  contactEmail String
+  contactPhone String
+
+  currentStep  Int                                  @default(1)
+  status       MultichannelCadenceEnrollmentStatus  @default(Active)
+
+  enrolledAt   DateTime  @default(now())
+  lastActionAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId, leadId])
+  @@index([organizationId, status])
+  @@index([organizationId, cadenceId])
 }
 
 /// Fotografia imutável de `CrmCommercialDocument` em um instante (entrega 5, parte 1 — proposta
