@@ -1,7 +1,8 @@
 import { X } from 'lucide-react';
-import React, { useEffect, useRef } from 'react';
+import type React from 'react';
+import { useEffect, useRef } from 'react';
 import { SoundFX } from '@/lib/soundEffects';
-import { PillarThemeColor } from './PillarRegistry.js';
+import type { PillarThemeColor } from './PillarRegistry.js';
 
 export interface PillarDetailDialogProps {
   isOpen: boolean;

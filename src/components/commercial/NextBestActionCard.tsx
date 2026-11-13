@@ -2,7 +2,8 @@
  * src/components/commercial/NextBestActionCard.tsx
  * Card de recomendacao conectado a persistencia real via recommendationsService.
  */
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import {
   commercialRecommendationsService,
   type RecommendationDecision,

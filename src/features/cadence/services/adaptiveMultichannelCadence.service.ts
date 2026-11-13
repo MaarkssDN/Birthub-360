@@ -8,13 +8,13 @@ import {
   type OptOutRepository,
 } from '../application/optOutService.js';
 import { prismaOptOutRepository } from '../infra/PrismaOptOutRepository.js';
-import {
-  type CadenceChannel,
-  type CadenceStep,
-  type IMultichannelCadencePort,
-  type IMultichannelCadenceEnrollmentStore,
-  type MultichannelCadenceEnrollment,
-  type StepDispatchResult,
+import type {
+  CadenceChannel,
+  CadenceStep,
+  IMultichannelCadencePort,
+  IMultichannelCadenceEnrollmentStore,
+  MultichannelCadenceEnrollment,
+  StepDispatchResult,
 } from '../../../shared/contracts/multichannelCadence.contract.js';
 import { prismaMultichannelCadenceEnrollmentStore } from '../../../shared/infra/PrismaMultichannelCadenceEnrollmentStore.js';
 

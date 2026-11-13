@@ -1,6 +1,6 @@
 import { ArrowRight, Calculator, CheckCircle2, Sparkles } from 'lucide-react';
 import React from 'react';
-import { PillarData, PillarThemeColor } from './PillarRegistry.js';
+import type { PillarData, PillarThemeColor } from './PillarRegistry.js';
 
 export interface PillarContentProps {
   pillar: PillarData;

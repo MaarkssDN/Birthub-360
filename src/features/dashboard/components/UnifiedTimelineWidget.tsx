@@ -1,4 +1,5 @@
-import React, { useId, useMemo, useState } from 'react';
+import type React from 'react';
+import { useId, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   AlertCircle,
