@@ -3,10 +3,11 @@
 // version-history/rollback panel. Same factory pattern as workflowPersistence.ts — the store
 // spreads these actions and passes `() => workflowEpoch` so async responses are still dropped
 // when the workflow context changed mid-flight (no cross-workflow writes).
-import { validationEngine } from '../../../lib/studio/ValidationEngine.js';
+
 import { clientLogger as logger } from '../../../lib/clientLogger.js';
-import type { NodeLifecycleState, StudioState } from './studioTypes.js';
+import { validationEngine } from '../../../lib/studio/ValidationEngine.js';
 import type { ValidationIssue, WorkflowVersionSummary } from '../lib/studio/types.js';
+import type { NodeLifecycleState, StudioState } from './studioTypes.js';
 
 type SetStudioState = (
   state: Partial<StudioState> | ((state: StudioState) => Partial<StudioState>),
@@ -190,9 +191,10 @@ export function createStudioServerActions(
             message: 'Fluxo validado e publicado com sucesso. Status: ativo.',
           });
           // A fresh publish archives a new version — keep an already-open history panel current
-          // instead of leaving it showing a now-stale list.
+          // instead of leaving it showing a now-stale list. Awaited so the refresh is part of this
+          // action's lifecycle (epoch-guarded inside fetchWorkflowVersions).
           if (get().isVersionHistoryOpen) {
-            get().fetchWorkflowVersions();
+            await get().fetchWorkflowVersions();
           }
           return;
         }
@@ -227,7 +229,9 @@ export function createStudioServerActions(
         rollbackIssues: [],
         rollbackError: null,
       });
-      get().fetchWorkflowVersions();
+      // openVersionHistory is synchronous by contract; the fetch is fire-and-forget and handles
+      // its own errors (versionHistoryState 'error'), so mark it explicitly ignored (S9383).
+      void get().fetchWorkflowVersions();
     },
 
     closeVersionHistory: () => {

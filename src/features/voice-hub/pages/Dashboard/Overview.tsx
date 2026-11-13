@@ -1,40 +1,39 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
-  Users,
-  FileText,
-  Sparkles,
-  Play,
-  Code,
-  ShieldCheck,
   Activity,
+  Code,
   Database,
+  FileText,
+  Play,
   Server,
+  ShieldCheck,
+  Sparkles,
+  Users,
 } from 'lucide-react';
-import {
-  Card,
-  Button,
-  Modal,
-  useToast,
-  ToastContainer,
-  Tooltip,
-  Spinner,
-  EmptyState,
-} from '../../components/design-system/index.js';
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { logger } from '../../../../lib/logger.js';
 import {
+  Button,
+  Card,
+  EmptyState,
+  Modal,
+  Spinner,
+  ToastContainer,
+  Tooltip,
+  useToast,
+} from '../../components/design-system/index.js';
+import {
+  type AgentRecord,
+  type CallLogEntry,
   calculateChecklistProgress,
   deriveOverviewMetrics,
+  type FetchStatus,
   formatMs,
   formatTokens,
   formatUsd,
-  type AgentRecord,
-  type CallLogEntry,
-  type FetchStatus,
   type MetricEntry,
   type ReadyChecks,
 } from './overviewMetrics.js';
-import { RealStatCard } from './overviewWidgets.js';
 import {
   AgentsCard,
   CallsLogCard,
@@ -42,6 +41,7 @@ import {
   PendingAlertsCard,
   PlatformStatusCard,
 } from './overviewSections.js';
+import { RealStatCard } from './overviewWidgets.js';
 
 interface FetchSlice<T> {
   status: FetchStatus;
@@ -160,11 +160,14 @@ export default function RebuiltExecutiveOverview() {
       }
     };
 
-    fetchChecklist();
-    fetchCalls(signal);
-    fetchAgents(signal);
-    fetchReady(signal);
-    fetchMetrics(signal);
+    // All five fetches handle their own errors internally (try/catch → status 'error'); they are
+    // fire-and-forget on mount, so mark them explicitly ignored — an unhandled rejection here
+    // would be a real bug (SonarQube typescript:S9383).
+    void fetchChecklist();
+    void fetchCalls(signal);
+    void fetchAgents(signal);
+    void fetchReady(signal);
+    void fetchMetrics(signal);
 
     return () => controller.abort();
   }, [fetchCalls, fetchAgents, fetchReady, fetchMetrics]);
