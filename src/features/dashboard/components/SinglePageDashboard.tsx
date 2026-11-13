@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 import {
   Activity,
   AlertTriangle,
@@ -38,6 +39,8 @@ import {
   staggerContainer,
   staggerItem,
 } from '../../../lib/motion.js';
+import { gamificationApi } from '../../gamification/api/gamification.api.js';
+import type { SellerScore } from '../../gamification/domain/Gamification.js';
 import {
   type DashboardRole,
   type KpiId,
@@ -79,6 +82,25 @@ export function SinglePageDashboard() {
   const overview = stats?.overview;
   const pipelineValue = overview?.pipelineValue ?? 0;
   const totalLeads = overview?.totalLeads ?? 0;
+
+  // Perfil gamificado real — sem fallback fabricado a partir de KPIs de pipeline.
+  const [sellerScore, setSellerScore] = useState<SellerScore | null>(null);
+  const [gamificationLoaded, setGamificationLoaded] = useState(false);
+  const sellerName = currentUser?.name?.trim() || undefined;
+  useEffect(() => {
+    let mounted = true;
+    gamificationApi
+      .getSellerProfile(sellerName)
+      .then((profile) => {
+        if (mounted) setSellerScore(profile);
+      })
+      .finally(() => {
+        if (mounted) setGamificationLoaded(true);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [sellerName]);
   const winRate =
     overview?.conversionRate != null ? Number(overview.conversionRate).toFixed(1) : '0.0';
   const firstName = currentUser?.name?.trim().split(/\s+/)[0] || 'Gestor';
@@ -595,14 +617,6 @@ export function SinglePageDashboard() {
                       {hasBitrixActive ? 'Bitrix24 Ativo' : 'Bitrix24 Pendente'}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
-                    <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-                    <span className="text-ink font-medium">PostgreSQL RLS</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
-                    <Sparkles className="w-3.5 h-3.5 shrink-0" />
-                    <span className="text-ink font-medium">Copiloto IA</span>
-                  </div>
                 </div>
               </div>
             </Card>
@@ -817,12 +831,27 @@ export function SinglePageDashboard() {
               </span>
             </div>
 
-            <GamificationWidget
-              initialXp={totalLeads * 50 + closedThisMonth * 200}
-              level={Math.max(1, Math.floor((totalLeads * 50 + closedThisMonth * 200) / 1000) + 1)}
-              streakDays={closedThisMonth > 0 ? 1 : 0}
-              show3DCore={false}
-            />
+            {!gamificationLoaded ? (
+              <Skeleton className="h-40 w-full rounded-xl" />
+            ) : sellerScore ? (
+              <GamificationWidget
+                initialXp={sellerScore.totalPoints}
+                level={sellerScore.level}
+                streakDays={sellerScore.streakDays}
+                sellerScore={sellerScore}
+                show3DCore={false}
+              />
+            ) : (
+              <div className="rounded-xl border border-dashed border-line p-6 text-center">
+                <p className="text-sm font-semibold text-ink">
+                  Perfil de gamificação indisponível
+                </p>
+                <p className="mt-1 text-xs text-ink-2">
+                  Nenhum perfil de vendedor foi encontrado para a sua conta. Os pontos e níveis
+                  aparecem aqui quando o perfil de gamificação existir.
+                </p>
+              </div>
+            )}
           </Card>
         );
 
