@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 23 (Custo, Performance e Limites de IA)
 Onda: Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-041)
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 4
@@ -48,3 +48,17 @@ Executar a tarefa `TAREFA-SANEAMENTO-041` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução
+
+O `SemanticCacheService` (`src/lib/ai/gateway/semanticCache.ts`) estava
+implementado e testado, mas nenhum chamador passava `useCache: true` — o cache
+nunca era consultado. Nesta onda ativei o cache no orquestrador comercial V3
+(`commercialAgentV3Orchestrator.service.ts`), endpoint de análise de conta/
+missão repetida por tenant: `useCache: true` +
+`ttlSeconds: CACHE_TTL.ACCOUNT_DIAGNOSTIC` (12h). A chave já inclui
+organizationId + hash do prompt completo, e o serviço descarta respostas
+CONFIDENTIAL — isolamento de tenant e LGPD preservados.
+
+Testes: `generate-output.test.ts` (cache hit/miss) e `semanticCache.test.ts`
+já cobriam sucesso/falha do módulo; suites commercial-v3 seguem verdes.
