@@ -50,3 +50,30 @@
 ## Decisão do 00 — handoff 08→00 (gaps de produto AC-MKT-002/003 e SLA mesa-tratamento)
 
 Recebido via PR #241. Os três itens são **features de produto não implementadas** (ledger de créditos exige decisão de precificação/modelagem; badge FONTE_PARCIAL em market-intelligence; SLA em mesa-tratamento). Fora do escopo do ciclo de saneamento — exigem spec do Documento Mestre/confirmação do Marcelo. Decisão: **escalado ao humano**; handoff `00-para-08-cobertura-testes-modulos.md` permanece `em-andamento` até definição de escopo. Registrado para não bloquear a fila.
+
+---
+
+## Atualização 2026-11-13 — fechamento do ciclo de saneamento
+
+### Merges confirmados em main (ordem)
+#237, #239 (W3 saneamento), #240 (Agente 10 infra), #241 (08), #242 (15), #243 (04 CRM), #244 (05), #245 (02 UX), #246 (Trivy pom pins), #247/#255 (08 Sonar cobertura), #248 (03 design + 88 baselines Linux via CI), #249 (06 integrações), #250 (09 mobile), #251 (14 harness docs), #252 (11 marca), #253 (12 voz), #254 (06A extrações), #256 (17 cadência opt-out), #257/#258/#260/#261 (pareceres/reviews docs), #259 (05 opt-out START_SDR_CADENCE), #215 (LGPD landing docs), #216 (01 public-leads endpoint).
+
+### PRs ainda abertos
+- #262 — Agente 23: semantic cache + groupBy custos IA (TAREFA-041/042), rebaseado sobre main.
+- #263 — Agente 18: remoção de casts `as any` do AnalyticsController + drift sub-rotas (cherry-pick de 65e714f4d).
+- #217 — teste RLS DocumentEmbedding (update-branch disparado, CI rerodando).
+- #219 — landing form real (Agente 02 rebaseando; conflita com main).
+- #223 — docs handoffs CTA/greeting (update-branch disparado).
+- #264 — este run report.
+
+### Desvios de processo registrados
+- PR #254 foi mergeado antes do parecer formal do Agente 24; revisão pós-merge despachada — handoffs 046/021 só fecham com APROVADO.
+- Agentes 01, 07, 13, 21, 22: despachados em worktrees isoladas; runs anteriores morreram com restart de sessão sem produzir commits — handoffs permanecem pendentes e foram re-despachados.
+- Agente 01A: slot exclusivo com 01 — pendente.
+
+### Pendências humanas/operador (não fecháveis por agentes)
+- Rotação de segredos Docker 2375 no host 192.168.0.116 (runbook `docs/security/runbooks/ROTATE_DEVSTACK_EXPOSED_SECRETS.md`).
+- Decisão do Marcelo sobre proposta de consentimento LGPD da landing (PR #215 mergeado como docs; validação de produto pendente).
+- Gaps de produto reportados pelo Agente 08: ledger de créditos (AC-MKT-003), badge FONTE_PARCIAL (AC-MKT-002), SLA treatment-desk — fora do escopo de saneamento.
+- Ownership de `nginx/**` não formalizado na matriz (Apontado pelo Agente 24).
+- Follow-ups: typo `enc:v2`/`enc:v1` em `src/config/env.ts`; README bootstrap sem overlay postgres-local; CSP allowlist `fonts.googleapis.com` residual em `src/bootstrap/security.ts`.
