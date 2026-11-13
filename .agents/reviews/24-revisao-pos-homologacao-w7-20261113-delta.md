@@ -3,7 +3,7 @@
 - Missão/onda: W7 — gates finais + disposição de release (`plano-ondas-saneamento-birthhub360.html`)
 - Auditor: Agente 24 (Revisão Independente)
 - Branch: `integracao/coordenador-20261112` → PR #265 → `main`
-- Revisão exata: HEAD `f95f861b5` (delta `dd818d6cd..HEAD`, 4 commits)
+- Revisão exata: HEAD `703eb5802` (delta `dd818d6cd..HEAD`, 5 commits)
 - Data: 2026-11-13
 - Parecer anterior: `24-revisao-pos-homologacao-w7-20261113.md` (APROVADO sobre `dd818d6cd`)
 
@@ -21,6 +21,12 @@ materiais na revisão auditada:
    `origem`, `varianteAb`) e a nav mobile, ausentes na versão integrada.
 4. **Baseline Prisma tx-escape** ficou stale após remoção do dialer legado
    (`PrismaCrm360Repository` sem `$transaction`).
+5. **Segunda rodada de CI** (run `43445741461`): `Run Unit Tests` reprovou 3
+   testes de `commercial-intelligence` — causa raiz: `healthScore`/`executiveExport`
+   omitiam `now` nos relatórios-base, que então liam o cache L2 Redis (só ativo no
+   CI, `REDIS_URL` configurada) gravado por cenários de teste anteriores. Corrigido
+   em `703eb5802` propagando o `now` original — mesmo contrato de
+   `forecastCalibration`/`hiringScenario`.
 
 ## 2. Delta auditado (`dd818d6cd..f95f861b5`, 13 arquivos, +163/−629)
 
@@ -30,6 +36,7 @@ materiais na revisão auditada:
 | `003afb1b9` | `ropa-inventory.ts`: escapa `\` antes de `\|` na renderização Markdown; inventário regenerado | Correto — sanitização completa, artefato `INVENTARIO_CAMPOS_PII.md` consistente (diff de 1 linha) |
 | `a56b95944` | `Landing360.tsx`: porta do `origin/main` o toggle `.b360-mobile-nav-toggle`, `#b360-mobile-nav` e `isValidWhatsapp` (10–13 dígitos); testes alinhados ao contrato real `POST /api/public/lead-capture` (`consent`, honeypot `website`, copy "Solicitação Recebida!") | Correto — restaura comportamento de `main` sem regredir o endpoint real; validação client-side espelha a regra do servidor |
 | `f95f861b5` | Remove 2 suítes de teste do dialer legado (`/api/dialer-3cx` removido — Cadence é o dialer canônico); limpa baseline tx-escape stale; ajusta contagens em `rls-coverage` (145→147: `PublicLeadConsent` + `MultichannelCadenceEnrollment`) e `tenant-scoping-parity` (`PublicLeadConsent` em `KNOWN_RLS_ONLY_MODELS` com justificativa RLS) | Correto — remoções proporcionais ao código já eliminado; justificativas documentadas inline |
+| `703eb5802` | `CommercialIntelligenceUseCases`: `healthScore`/`executiveExport` passam a propagar o `now` original aos relatórios-base (antes omitido → com Redis L2 ativo, `now` explícito de testes/backtests lia cache de outros cenários; 3 falhas no application gate) | Correto — mesmo contrato já usado por `forecastCalibration`/`hiringScenario`; produção (`now` undefined) segue reutilizando cache L2; caminho determinístico fica determinístico de ponta a ponta |
 
 ## 3. Gates executados nesta worktree (evidência real)
 
@@ -42,6 +49,7 @@ materiais na revisão auditada:
 | `tests/unit/architecture/prisma-tx-escape-baseline.test.ts` | PASS (14/14) |
 | `tests/unit/db/rls-coverage.test.ts` + `tenant-scoping-parity.test.ts` | PASS (22/22 combinados) |
 | `tests/unit/features/landing/Landing360.test.tsx` | PASS — **16/16** (antes 11/16) |
+| `src/features/commercial-intelligence/**` (24 arquivos) | PASS — **271/271** após fix `703eb5802` |
 
 ## 4. Propriedade e escopo
 
