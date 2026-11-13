@@ -207,6 +207,60 @@ describe('dryRunAutomation — modo sandbox (nenhum efeito real)', () => {
     expectNoSideEffects();
   });
 
+  it('webhook externo sem method: assume POST (mesmo default do runAction real)', async () => {
+    const result = await dryRunAutomation(
+      'org-1',
+      buildAutomation('Chamar webhook externo', { url: 'https://api.exemplo.com/{{status}}' }),
+    );
+
+    expect(result.records[0].outcome.wouldFire).toBe(true);
+    expect(result.records[0].outcome.details.method).toBe('POST');
+    expectNoSideEffects();
+  });
+
+  it('atualizar campo customizado sem field: wouldFire=false', async () => {
+    const result = await dryRunAutomation(
+      'org-1',
+      buildAutomation('Atualizar campo customizado', { entity: 'Lead' }),
+    );
+
+    expect(result.records[0].outcome.wouldFire).toBe(false);
+    expect(result.records[0].outcome.blockedReason).toContain('field');
+    expectNoSideEffects();
+  });
+
+  it('atualizar campo customizado mirando entidade que não é Lead: wouldFire=false', async () => {
+    const result = await dryRunAutomation(
+      'org-1',
+      buildAutomation('Atualizar campo customizado', {
+        entity: 'Company',
+        field: 'notes',
+        value: 'x',
+      }),
+    );
+
+    expect(result.records[0].outcome.wouldFire).toBe(false);
+    expect(result.records[0].outcome.blockedReason).toContain('Lead');
+    expect(result.records[0].outcome.details.entity).toBe('Company');
+    expectNoSideEffects();
+  });
+
+  it('atualizar campo customizado sem entity no config: usa a entidade do candidato', async () => {
+    const result = await dryRunAutomation(
+      'org-1',
+      buildAutomation('Atualizar campo customizado', { field: 'score', value: 42 }),
+    );
+
+    expect(result.records[0].outcome.wouldFire).toBe(true);
+    expect(result.records[0].outcome.details).toMatchObject({
+      entity: 'Lead',
+      entityId: 'lead-1',
+      field: 'score',
+      value: 42,
+    });
+    expectNoSideEffects();
+  });
+
   it('enrich lead: registra o lead SEM publicar na fila de jobs', async () => {
     const result = await dryRunAutomation('org-1', buildAutomation('Enrich lead'));
 
@@ -247,6 +301,85 @@ describe('dryRunAutomation — modo sandbox (nenhum efeito real)', () => {
 
     expect(result.records[0].outcome.wouldFire).toBe(false);
     expect(result.records[0].outcome.blockedReason).toContain('cadenceId');
+    expectNoSideEffects();
+  });
+
+  it('mover para cadência com apenas cadenceId: usa os defaults da ação', async () => {
+    const result = await dryRunAutomation(
+      'org-1',
+      buildAutomation('Mover para outra etapa de cadência', { cadenceId: 'cad-9' }),
+    );
+
+    expect(result.records[0].outcome.wouldFire).toBe(true);
+    expect(result.records[0].outcome.details).toMatchObject({
+      cadenceId: 'cad-9',
+      leadId: 'lead-1',
+      cadenceAction: 'move_to_step',
+      stepIndex: null,
+      pauseDays: null,
+    });
+    expectNoSideEffects();
+  });
+
+  it('mover para cadência com leadId explícito no config: usa o lead do config', async () => {
+    const result = await dryRunAutomation(
+      'org-1',
+      buildAutomation('Mover para outra etapa de cadência', {
+        cadenceId: 'cad-1',
+        leadId: 'lead-explicito',
+      }),
+    );
+
+    expect(result.records[0].outcome.wouldFire).toBe(true);
+    expect(result.records[0].outcome.details.leadId).toBe('lead-explicito');
+    expectNoSideEffects();
+  });
+
+  it('mover para cadência em evento de atividade COM leadId: resolve via data.leadId', async () => {
+    activityFindMany.mockResolvedValue([
+      {
+        id: 'act-1',
+        type: 'Follow_up',
+        owner: 'Ana',
+        leadId: 'lead-vinculado',
+        updatedAt: new Date(),
+      },
+    ]);
+
+    const result = await dryRunAutomation(
+      'org-1',
+      buildAutomation(
+        'Mover para outra etapa de cadência',
+        { cadenceId: 'cad-1', action: 'pause', pauseDays: 2 },
+        { trigger: 'Atividade concluída' as Automation['trigger'] },
+      ),
+    );
+
+    expect(result.records[0].outcome.wouldFire).toBe(true);
+    expect(result.records[0].outcome.details).toMatchObject({
+      leadId: 'lead-vinculado',
+      cadenceAction: 'pause',
+      pauseDays: 2,
+    });
+    expectNoSideEffects();
+  });
+
+  it('mover para cadência em evento de atividade SEM leadId: wouldFire=false', async () => {
+    activityFindMany.mockResolvedValue([
+      { id: 'act-1', type: 'Follow_up', owner: 'Ana', leadId: null, updatedAt: new Date() },
+    ]);
+
+    const result = await dryRunAutomation(
+      'org-1',
+      buildAutomation(
+        'Mover para outra etapa de cadência',
+        { cadenceId: 'cad-1' },
+        { trigger: 'Atividade concluída' as Automation['trigger'] },
+      ),
+    );
+
+    expect(result.records[0].outcome.wouldFire).toBe(false);
+    expect(result.records[0].outcome.blockedReason).toContain('leadId');
     expectNoSideEffects();
   });
 
@@ -292,6 +425,86 @@ describe('dryRunAutomation — modo sandbox (nenhum efeito real)', () => {
 
     expect(result.records[0].outcome.wouldFire).toBe(true);
     expect(result.records[0].outcome.details.targetNumber).toBe('+5511999990000');
+    expectNoSideEffects();
+  });
+
+  it('ligar via SDR de voz em evento de atividade: wouldFire=false (só vale para lead)', async () => {
+    activityFindMany.mockResolvedValue([
+      { id: 'act-1', type: 'Follow_up', owner: 'Ana', leadId: 'lead-1', updatedAt: new Date() },
+    ]);
+
+    const result = await dryRunAutomation(
+      'org-1',
+      buildAutomation(
+        'Ligar via SDR de Voz',
+        {},
+        { trigger: 'Atividade concluída' as Automation['trigger'] },
+      ),
+    );
+
+    expect(result.records[0].outcome.wouldFire).toBe(false);
+    expect(result.records[0].outcome.blockedReason).toContain('lead');
+    expectNoSideEffects();
+  });
+
+  it('ligar via SDR de voz com número suprimido (opt-out): wouldFire=false sem discar', async () => {
+    const { isSuppressed } = await import(
+      '../../integrations/birth-voice/callSuppression.service.js'
+    );
+    vi.mocked(isSuppressed).mockResolvedValueOnce(true);
+
+    const result = await dryRunAutomation('org-1', buildAutomation('Ligar via SDR de Voz'));
+
+    expect(result.records[0].outcome.wouldFire).toBe(false);
+    expect(result.records[0].outcome.blockedReason).toContain('bloqueio');
+    expect(result.records[0].outcome.details.targetNumber).toBe('+5511999990000');
+    expectNoSideEffects();
+  });
+
+  it('notificar equipe sem título/corpo no config: usa defaults da automação', async () => {
+    const result = await dryRunAutomation(
+      'org-1',
+      buildAutomation('Notificar equipe', { channel: 'email', to: 'time@exemplo.com' }),
+    );
+
+    expect(result.records[0].outcome.wouldFire).toBe(true);
+    expect(result.records[0].outcome.details.title).toBe('Regra de teste');
+    expectNoSideEffects();
+  });
+
+  it('criar atividade sem owner no config e lead sem owner: usa "Não atribuído"', async () => {
+    leadFindMany.mockResolvedValue([buildLeadRow({ owner: null })]);
+
+    const result = await dryRunAutomation('org-1', buildAutomation('Criar atividade', {}));
+
+    expect(result.records[0].outcome.wouldFire).toBe(true);
+    expect(result.records[0].outcome.details.owner).toBe('Não atribuído');
+    expect(result.records[0].outcome.details.type).toBe('Follow_up');
+    expectNoSideEffects();
+  });
+
+  it('enrich lead em evento de atividade COM leadId: resolve via data.leadId', async () => {
+    activityFindMany.mockResolvedValue([
+      {
+        id: 'act-1',
+        type: 'Follow_up',
+        owner: 'Ana',
+        leadId: 'lead-vinculado',
+        updatedAt: new Date(),
+      },
+    ]);
+
+    const result = await dryRunAutomation(
+      'org-1',
+      buildAutomation(
+        'Enrich lead',
+        {},
+        { trigger: 'Atividade concluída' as Automation['trigger'] },
+      ),
+    );
+
+    expect(result.records[0].outcome.wouldFire).toBe(true);
+    expect(result.records[0].outcome.details.leadId).toBe('lead-vinculado');
     expectNoSideEffects();
   });
 

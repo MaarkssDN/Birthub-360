@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { CadenceIntegrationService } from '../cadenceIntegration.service.js';
 import { createInMemoryCadenceEnrollmentStore } from '../../../../tests/mocks/inMemoryCadenceEnrollmentStore.js';
+import { CadenceIntegrationService } from '../cadenceIntegration.service.js';
 
 describe('CadenceIntegrationService (P3.4)', () => {
   let service: CadenceIntegrationService;
@@ -108,5 +108,51 @@ describe('CadenceIntegrationService (P3.4)', () => {
     const enrollment = await store.findByLead('org-1', 'lead-delta');
     expect(enrollment?.status).toBe('active');
     expect(enrollment?.currentStep).toBe(1);
+  });
+
+  it('move_to_step sem stepIndex usa o passo padrão 1', async () => {
+    const result = await service.executeCadenceAction('org-1', 'lead-sem-step', {
+      cadenceId: 'cad-1',
+      action: 'move_to_step',
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.details?.currentStep).toBe(1);
+
+    const enrollment = await store.findByLead('org-1', 'lead-sem-step');
+    expect(enrollment?.currentStep).toBe(1);
+  });
+
+  it('pause sem enrollment existente retorna sucesso sem mutação', async () => {
+    const result = await service.executeCadenceAction('org-1', 'lead-sem-enrollment', {
+      cadenceId: 'cad-1',
+      action: 'pause',
+      pauseDays: 3,
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.action).toBe('pause');
+    expect(result.details?.pausedDays).toBe(3);
+    expect(await store.findByLead('org-1', 'lead-sem-enrollment')).toBeUndefined();
+  });
+
+  it('resume sem enrollment existente retorna sucesso sem mutação', async () => {
+    const result = await service.executeCadenceAction('org-1', 'lead-sem-enrollment', {
+      cadenceId: 'cad-1',
+      action: 'resume',
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.action).toBe('resume');
+    expect(await store.findByLead('org-1', 'lead-sem-enrollment')).toBeUndefined();
+  });
+
+  it('ação de cadência não suportada lança erro explícito', async () => {
+    await expect(
+      service.executeCadenceAction('org-1', 'lead-1', {
+        cadenceId: 'cad-1',
+        action: 'acao_inexistente' as never,
+      }),
+    ).rejects.toThrow('não suportada');
   });
 });
