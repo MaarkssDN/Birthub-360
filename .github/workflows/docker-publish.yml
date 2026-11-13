@@ -17,6 +17,14 @@ on:
         description: 'Commit SHA completo (40 chars) já aprovado pelo CI a publicar.'
         required: true
         type: string
+      allow-unsigned-commit:
+        description: >-
+          Override explícito e auditado (TAREFA-SANEAMENTO-027): permite publicar um
+          commit cuja assinatura NÃO é verificada pelo GitHub. Fica registrado no run.
+          Use somente com justificativa — o default é bloquear.
+        required: false
+        type: boolean
+        default: false
 
 env:
   REGISTRY: ghcr.io
@@ -54,6 +62,69 @@ jobs:
         with:
           sha: ${{ steps.resolve.outputs.sha }}
           check-name: build
+
+      # TAREFA-SANEAMENTO-027 / BT360-DT-0050 — gate criptográfico de release.
+      # Duas verificações independentes antes de qualquer build/push:
+      #   1) tags de release (v* ou release/*) que apontam para o SHA precisam ser
+      #      ANOTADAS (objeto tag) — tag lightweight aponta direto para o commit e
+      #      não carrega metadado de quem/quando assinou a release;
+      #   2) o commit precisa ter assinatura verificada pelo GitHub
+      #      (commit.verification.verified), salvo override explícito por dispatch.
+      - name: Integridade de release — tags anotadas no SHA
+        env:
+          TARGET_SHA: ${{ steps.resolve.outputs.sha }}
+        run: |
+          set -euo pipefail
+          git fetch --tags --force origin
+          mapfile -t release_tags < <(git tag --points-at "$TARGET_SHA" | grep -E '^(v[0-9]|release/)' || true)
+          if [ "${#release_tags[@]}" -eq 0 ]; then
+            echo "Nenhuma tag de release (v* ou release/*) aponta para $TARGET_SHA — nada a validar em tags."
+            exit 0
+          fi
+          status=0
+          for tag in "${release_tags[@]}"; do
+            object_type="$(git cat-file -t "$tag")"
+            if [ "$object_type" != "tag" ]; then
+              echo "::error::DEPLOY BLOCKED — tag de release '$tag' é lightweight (objeto '$object_type'). Tags de release devem ser anotadas (git tag -a -s) para preservar integridade do histórico."
+              status=1
+            else
+              echo "Tag '$tag' é anotada (objeto tag)."
+            fi
+          done
+          exit "$status"
+
+      - name: Integridade de release — assinatura do commit
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          TARGET_SHA: ${{ steps.resolve.outputs.sha }}
+          ALLOW_UNSIGNED: ${{ inputs.allow-unsigned-commit }}
+        with:
+          script: |
+            const sha = process.env.TARGET_SHA;
+            const allowUnsigned = process.env.ALLOW_UNSIGNED === 'true';
+            const { data } = await github.rest.repos.getCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: sha,
+            });
+            const verification = data.commit.verification || {};
+            core.info(`Commit ${sha} — verification.verified=${verification.verified} reason=${verification.reason}`);
+            if (verification.verified === true) {
+              core.info('Commit com assinatura verificada pelo GitHub — gate de assinatura aprovado.');
+              return;
+            }
+            if (allowUnsigned) {
+              core.warning(
+                `DEPLOY liberado por override explícito allow-unsigned-commit — ` +
+                `commit ${sha} NÃO verificado (reason=${verification.reason}). Fica registrado neste run.`
+              );
+              return;
+            }
+            core.setFailed(
+              `DEPLOY BLOCKED — commit ${sha} sem assinatura verificada pelo GitHub ` +
+              `(reason=${verification.reason}). Assine o commit de release ou dispare ` +
+              `novamente com allow-unsigned-commit=true de forma consciente e justificada.`
+            );
 
   publish:
     needs: resolve-sha

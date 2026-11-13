@@ -168,8 +168,31 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
+      # TAREFA-SANEAMENTO-026 / BT360-DT-0049: cache de node_modules com chave
+      # exata do package-lock.json (só hit quando as dependências são idênticas —
+      # binários nativos do Prisma/esbuild são cobertos por estarem dentro de
+      # node_modules). Sem restore-keys de propósito: um node_modules de lockfile
+      # diferente não é base válida para `npm ci` (que sempre reinstala do zero).
+      - name: Cache node_modules (chave exata do lockfile)
+        id: cache-node-modules
+        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-${{ runner.arch }}-node22-${{ hashFiles('package-lock.json') }}
+
       - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci
+
+      - name: Verificar node_modules restaurado do cache
+        if: steps.cache-node-modules.outputs.cache-hit == 'true'
+        run: |
+          set -euo pipefail
+          # Cache hit só ocorre com a chave exata do lockfile, mas um cache
+          # corrompido/parcial não pode passar silenciosamente: falha explícita
+          # aqui é preferível a mascarar dependência ausente nos gates seguintes.
+          test -f node_modules/.package-lock.json
+          node -e "for (const m of ['typescript','prisma','vitest','react']) require.resolve(m)"
 
       - name: Bootstrap papel NOSUPERUSER da aplicação
         env:
@@ -447,8 +470,31 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
+      # TAREFA-SANEAMENTO-026 / BT360-DT-0049: cache de node_modules com chave
+      # exata do package-lock.json (só hit quando as dependências são idênticas —
+      # binários nativos do Prisma/esbuild são cobertos por estarem dentro de
+      # node_modules). Sem restore-keys de propósito: um node_modules de lockfile
+      # diferente não é base válida para `npm ci` (que sempre reinstala do zero).
+      - name: Cache node_modules (chave exata do lockfile)
+        id: cache-node-modules
+        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-${{ runner.arch }}-node22-${{ hashFiles('package-lock.json') }}
+
       - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci
+
+      - name: Verificar node_modules restaurado do cache
+        if: steps.cache-node-modules.outputs.cache-hit == 'true'
+        run: |
+          set -euo pipefail
+          # Cache hit só ocorre com a chave exata do lockfile, mas um cache
+          # corrompido/parcial não pode passar silenciosamente: falha explícita
+          # aqui é preferível a mascarar dependência ausente nos gates seguintes.
+          test -f node_modules/.package-lock.json
+          node -e "for (const m of ['typescript','prisma','vitest','react']) require.resolve(m)"
 
       - name: Bootstrap papel NOSUPERUSER da aplicação
         env:
