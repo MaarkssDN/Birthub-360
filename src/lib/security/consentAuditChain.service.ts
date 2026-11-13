@@ -548,6 +548,8 @@ export class ConsentAuditChainService implements IConsentAuditChainPort {
     termsVersion: string;
     operatorUserId?: string;
     retentionDays?: number;
+    /** Texto/metadados expurgáveis em ConsentEventDetail — nunca entram no hash da cadeia. */
+    detail?: string;
   }): Promise<ConsentAuditEvent> {
     this.assertTenant(input.organizationId);
     if (!CONSENT_PURPOSE_PATTERN.test(input.purpose))
@@ -557,7 +559,9 @@ export class ConsentAuditChainService implements IConsentAuditChainPort {
     const retentionUntil = input.retentionDays
       ? new Date(Date.now() + input.retentionDays * 86_400_000).toISOString()
       : undefined;
-    const lookupId = retentionUntil
+    const detail = input.detail;
+    const needsDetail = Boolean(detail) || Boolean(retentionUntil);
+    const lookupId = needsDetail
       ? await this.opts.tokenizer.lookupId(input.organizationId, input.subjectRef)
       : undefined;
     const event = await this.append(
@@ -573,13 +577,13 @@ export class ConsentAuditChainService implements IConsentAuditChainPort {
         status: 'GRANTED',
       }),
       async (ev, ctx) => {
-        // Retenção fica FORA da cadeia (ConsentEventDetail), sem texto livre.
-        if (retentionUntil && lookupId) {
+        // Retenção e texto canônico ficam FORA da cadeia (ConsentEventDetail), expurgáveis.
+        if (needsDetail && lookupId) {
           await ctx.saveDetail({
             eventId: ev.id,
             organizationId: input.organizationId,
             subjectLookupId: lookupId,
-            detail: '',
+            detail: detail ?? '',
             retentionUntil,
           });
         }

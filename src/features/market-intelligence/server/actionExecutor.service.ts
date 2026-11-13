@@ -1,10 +1,8 @@
 import { getUserId } from '../../../lib/async-context.js';
 import { toE164BR } from '../../../lib/phone.js';
 import { withRlsContext } from '../../../lib/prisma.js';
-import { prismaOptOutRepository } from '../../../shared/infra/PrismaOptOutRepository.js';
+import type { CadenceChannel } from '../../../shared/domain/optOut.js';
 import { AppError } from '../../../shared/middlewares/errorHandler.js';
-import { ANONYMIZED_CONTACT_NAME } from '../../../shared/services/dataSubjectErasure.service.js';
-import { checkOptOutStatus } from '../../../shared/services/optOutCheck.service.js';
 import { callBitrix } from '../../integrations/bitrix/service/client.js';
 
 /**
@@ -82,21 +80,7 @@ export const actionExecutorService = {
         const lead = await prisma.lead.findFirst({
           where: { companyId: company.id, organizationId, deletedAt: null },
           orderBy: { createdAt: 'desc' },
-          select: {
-            id: true,
-            contactId: true,
-            customFields: true,
-            contact: {
-              select: {
-                name: true,
-                deletedAt: true,
-                customFields: true,
-                email: true,
-                phone: true,
-                whatsapp: true,
-              },
-            },
-          },
+          include: { contact: { select: { email: true, whatsapp: true, phone: true } } },
         });
         if (!lead)
           throw new AppError('Nenhum lead associado a esta conta para iniciar cadência.', 400);
@@ -108,74 +92,73 @@ export const actionExecutorService = {
         if (!sequenceRow)
           throw new AppError('Nenhuma sequência ativa encontrada para iniciar cadência.', 400);
 
-        const { parseCadenceSequenceDefinition } = await import(
-          '../../cadence/jobs/cadenceRun.worker.js'
-        );
-        const { evaluateLeadCadenceEligibility } = await import(
-          '../../cadence/domain/cadenceEligibility.js'
-        );
-        const sequence = parseCadenceSequenceDefinition(sequenceRow);
-        if (!sequence)
+        // TAREFA-SANEAMENTO-035 / BT360-DT-0080 (handoff 17→05): trava de opt-out ANTES de criar
+        // o CadenceRun — sem ela, um lead em opt-out era recolocado em cadência por este caminho,
+        // contornando a verificação de POST /api/cadence/runs. `touches` é Json: a extração de
+        // canais é fail-closed (canal inválido/ausente → 422, mesmo critério de
+        // `parseCadenceSequenceDefinition`, sem importar o worker/BullMQ neste service).
+        const VALID_SEQUENCE_CHANNELS = new Set<CadenceChannel>(['email', 'whatsapp', 'voice']);
+        const rawTouches = Array.isArray(sequenceRow.touches) ? sequenceRow.touches : null;
+        const sequenceChannels = new Set<CadenceChannel>();
+        let touchesInvalid = rawTouches === null || rawTouches.length === 0;
+        for (const touch of rawTouches ?? []) {
+          const channel = (touch as { channel?: unknown } | null)?.channel;
+          if (
+            typeof channel !== 'string' ||
+            !VALID_SEQUENCE_CHANNELS.has(channel as CadenceChannel)
+          ) {
+            touchesInvalid = true;
+            break;
+          }
+          sequenceChannels.add(channel as CadenceChannel);
+        }
+        if (touchesInvalid)
           throw new AppError(
-            'Sequência ativa com dados inválidos — não é possível iniciar cadência a partir dela.',
+            'Sequência com dados inválidos — não é possível iniciar cadência a partir dela.',
             422,
           );
 
-        // Handoff 17→07 (onda-saneamento-20261110): START_SDR_CADENCE criava CadenceRun sem
-        // nenhuma verificação de opt-out — o lead podia estar suprimido e mesmo assim entrar na
-        // fila do worker. Replica a mesma regra de POST /api/cadence/runs: elegibilidade do LEAD
-        // (cobre lead sem contactId, casa por leadId/e-mail/telefone, escopo nos canais da
-        // sequência) + checkOptOutStatus por contato para paridade total.
-        const channels = [
-          ...new Set(sequence.touches.map((t) => t.channel)),
-        ] as import('../../cadence/domain/optOut.js').CadenceChannel[];
-        const optOutRecords = await prismaOptOutRepository.list(organizationId);
-        const eligibility = evaluateLeadCadenceEligibility(
-          {
-            leadId: lead.id,
-            subject: {
-              leadId: lead.id,
-              email: lead.contact?.email ?? null,
-              phoneE164: toE164BR(lead.contact?.whatsapp ?? lead.contact?.phone ?? undefined),
-            },
-            leadCustomFields:
-              (lead.customFields as Record<string, unknown> | null | undefined) ?? null,
-            contact: lead.contact
-              ? {
-                  anonymizedOrDeleted:
-                    lead.contact.name === ANONYMIZED_CONTACT_NAME ||
-                    lead.contact.deletedAt !== null,
-                  customFields:
-                    (lead.contact.customFields as Record<string, unknown> | null | undefined) ??
-                    null,
-                }
-              : null,
-          },
-          optOutRecords,
-          channels,
+        // 1) `OptOutRecord` unificado (leadId + e-mail + telefone resolvidos via contato) para
+        //    CADA canal distinto da sequência — equivalente a `checkCadenceStartEligibility`
+        //    (PR #256, ainda não mergeado na main; replicado aqui para não depender de PR aberto).
+        //    Sem import cross-feature de `cadence/` (gate `no-cross-feature-imports`): o sujeito é
+        //    resolvido localmente a partir de `Lead.contact` (mesma semântica de
+        //    `PrismaLeadSubjectResolver`) e a checagem usa o serviço compartilhado
+        //    `shared/services/optOutService.ts` + repositório `shared/infra/PrismaOptOutRepository`.
+        const { prismaOptOutRepository } = await import(
+          '../../../shared/infra/PrismaOptOutRepository.js'
         );
-        if (!eligibility.eligible) {
-          throw new AppError(
-            `Não é possível iniciar cadência: lead inelegível por opt-out/supressão (${eligibility.reason}${eligibility.matchedScope ? `, escopo: ${eligibility.matchedScope}` : ''}).`,
-            409,
-          );
-        }
+        const { isOptedOut } = await import('../../../shared/services/optOutService.js');
 
-        if (lead.contactId) {
-          const firstChannel = sequence.touches[0]?.channel ?? 'whatsapp';
-          const optOutCheck = await checkOptOutStatus(
-            lead.contactId,
-            firstChannel,
-            organizationId,
-            {
-              prisma,
-            },
-          );
-          if (optOutCheck.blocked) {
+        const optOutSubject = {
+          leadId: lead.id,
+          email: lead.contact?.email ?? null,
+          phoneE164: toE164BR(lead.contact?.whatsapp ?? lead.contact?.phone ?? undefined),
+        };
+        for (const channel of sequenceChannels) {
+          if (await isOptedOut(prismaOptOutRepository, organizationId, optOutSubject, channel)) {
             throw new AppError(
-              `Não é possível iniciar cadência: contato em lista de opt-out/supressão (${optOutCheck.code}): ${optOutCheck.reason}`,
+              `Não é possível iniciar cadência: lead em opt-out/supressão para o canal '${channel}'.`,
               409,
             );
+          }
+        }
+
+        // 2) Flags de contato/lead (`customFields`) e contato anonimizado — `checkOptOutStatus`
+        //    por canal, mesmo serviço usado em `POST /api/cadence/runs` (esses sinais não estão
+        //    no `OptOutRecord` unificado).
+        if (lead.contactId) {
+          const { checkOptOutStatus } = await import(
+            '../../../shared/services/optOutCheck.service.js'
+          );
+          for (const channel of sequenceChannels) {
+            const optOutCheck = await checkOptOutStatus(lead.contactId, channel, organizationId);
+            if (optOutCheck.blocked) {
+              throw new AppError(
+                `Não é possível iniciar cadência: contato em lista de opt-out/supressão (${optOutCheck.code}): ${optOutCheck.reason}`,
+                409,
+              );
+            }
           }
         }
 

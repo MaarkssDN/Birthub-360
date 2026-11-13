@@ -3,7 +3,7 @@
 De: 00 — Coordenador
 Para: 12 (Voz e Telefonia) + 17 (Cadência) + 01 (gate/RLS) + 02 (nav)
 Onda: F2
-Status: em-andamento
+Status: em-andamento (parcela do Agente 12 verificada/concluída em 2026-11-12 — itens 2 e 3 seguem com Agentes 01 e 02)
 Prioridade: alto
 Referência: `docs/architecture/MATRIZ-FUNCIONAL-MODULOS.md` §3.1, §6
 
@@ -42,6 +42,23 @@ criptografada), WhatsAppMessage, ScheduledMeeting no MOD-08.
 
 - Reescrever voice-hub; mexer em Capacitor/M10.
 
+## Resolução parcial (Agente 17 — 2026-11-12)
+
+Parte do Agente 17 neste handoff:
+
+- **Item 4 (decisão `dialer` → cadence): JÁ REGISTRADA E IMPLEMENTADA.** `/app/dialer` é alias de
+  `/app/cadence` em `src/App.tsx` (`<Route path="dialer" element={<Navigate to="/app/cadence" replace />} />`,
+  ~L460), com comentário explícito de que `/api/dialer-3cx/*` segue atrás do `legacyModuleGate`.
+  Handoff anterior `17-para-02` sobre o redirect já consta como resolvido (ver histórico de commits
+  `33a00b9ff`/`f423edf7b`/`29166b0a3`). Ou seja: o "Discador 3CX" como UI foi oficialmente cortado
+  a favor de Cadências; reabrir o dialer 3CX é decisão do Agente 12, não pendência do 17.
+- **Item 1 (isolamento por organização das rotas `/api/voice-hub/*`, `/api/outbound/*`,
+  `/api/dialer-3cx/*`)**: os arquivos de voz são propriedade exclusiva do Agente 12
+  (`src/features/voice-hub/AGENTS.md`). O Agente 17 não edita esses arquivos; a conclusão do
+  isolamento depende do 12 (implementação) + 01 (gate/RLS) + 02 (nav). Nada no domínio de cadência
+  bloqueia esse trabalho — o run de cadência já consulta `VoiceCallPort` via DI
+  (`src/features/cadence/jobs/cadenceRun.worker.ts`), sem acoplamento às rotas gated.
+
 ## Resolução (Agente 12 — 2026-11-12, branch `agente/12-voicehub-reactivacao`)
 
 Auditoria concluída — parecer **NO-GO** para abrir o gate. Bloqueio raiz:
@@ -55,7 +72,6 @@ adaptadores de identidade/schema escalada ao 01. Evidências e checklist
 completo em `12-para-00-voicehub-tenancy-auditoria.md`; isolamento por tenant
 nos services sãos congelado em `src/lib/voice-hub/__tests__/tenant-isolation.test.ts`
 (36 testes verdes). Gate permanece fechado.
-
 ## Avaliação Agente 02 (2026-11-12)
 
 Recebido e avaliado pelo 02. Manter **oculto** (`voice-hub`, `outbound`, `dialer` fora da navegação) até:

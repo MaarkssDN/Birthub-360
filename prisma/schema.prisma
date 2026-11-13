@@ -692,6 +692,7 @@ model Lead {
   copilotoDealHealthSnapshots CopilotoDealHealthSnapshot[]
   externalCrmSyncLogs         ExternalCrmSyncLog[]
   touchpoints                 LeadTouchpoint[]
+  publicLeadConsents          PublicLeadConsent[]
   // NOT NULL + ON DELETE CASCADE (DATA-007/DATA-003): reaplicado após confirmar que o banco não
   // tem linhas órfãs (ver migration 20260920010000_data007_organizationid_not_null_guarded, que
   // falha com RAISE EXCEPTION caso encontre alguma antes de aplicar a constraint).
@@ -1053,6 +1054,7 @@ model Organization {
   dncLists                    DncList[]
   customAiTools               CustomAiTool[]
   leadTouchpoints             LeadTouchpoint[]
+  publicLeadConsents          PublicLeadConsent[]
   consentAuditRecords         ConsentAuditRecord[]
   consentAuditChainHead       ConsentAuditChainHead?
   consentSubjectKeys          ConsentSubjectKey[]
@@ -5616,6 +5618,38 @@ model LeadTouchpoint {
   @@index([leadId])
   @@index([campaign])
   @@index([occurredAt])
+}
+
+/// Prova de consentimento LGPD da captura pública de lead da landing 360°.
+/// Separada do Lead.customFields para preservar texto, versão e timestamp mesmo se o
+/// customFields do CRM for editado depois. `onDelete: Cascade` no lead: a limpeza/exclusão
+/// do lead (e a suíte de integração que faz lead.deleteMany) remove a prova junto — o Agente 21
+/// pode endurecer retenção depois, se o inventário LGPD exigir prazo próprio.
+model PublicLeadConsent {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  /// Opcional de propósito: ON DELETE SET NULL preserva a prova operacional
+  /// se o Lead for excluído (a cascata apagaria o registro de consentimento).
+  /// organizationId permanece obrigatório e isolado por RLS.
+  leadId         String?
+  lead           Lead?        @relation(fields: [leadId], references: [id], onDelete: SetNull)
+
+  /// Finalidade declarada (deve bater com o texto apresentado na landing).
+  purpose      String
+  /// Versão canônica do texto (ex.: landing-demo-v1).
+  termsVersion String
+  /// Texto integral apresentado ao titular no momento do opt-in.
+  termsText    String    @db.Text
+  grantedAt    DateTime
+  /// Origem da captura (landing_360).
+  source       String
+
+  createdAt DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([organizationId, leadId])
+  @@index([leadId])
 }
 
 // REMED-06 (handoff 21→01, PR #33): cadeia de consentimento append-only + Flywheel durável.

@@ -2,11 +2,17 @@ import { randomUUID } from 'node:crypto';
 import { type NextFunction, type Request, type Response, Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../../lib/prisma.js';
-import { toE164BR } from '../../lib/phone.js';
+import { prismaOptOutRepository } from '../../shared/infra/PrismaOptOutRepository.js';
 import type { AuthRequest } from '../../shared/middlewares/authenticateToken.js';
 import { AppError } from '../../shared/middlewares/errorHandler.js';
 import { requireRole } from '../../shared/middlewares/requireRole.js';
 import { validateRequest } from '../../shared/middlewares/validateRequest.js';
+import {
+  checkOptOutStatus,
+  recordContactOptOut,
+} from '../../shared/services/optOutCheck.service.js';
+import { recordOptOut } from '../../shared/services/optOutService.js';
+import { checkCadenceStartEligibility } from './application/cadenceEligibility.js';
 import { scheduleVerifiedMeeting } from './application/scheduleMeeting.js';
 import { deactivateCadenceSequence } from './application/sequenceService.js';
 import {
@@ -20,16 +26,8 @@ import {
 import { prismaCadenceRunRepository } from './infra/PrismaCadenceRunRepository.js';
 import { prismaCadenceSequenceRepository } from './infra/PrismaCadenceSequenceRepository.js';
 import { prismaCalendarSchedulerPort } from './infra/PrismaCalendarSchedulerPort.js';
+import { prismaLeadSubjectResolver } from './infra/PrismaLeadSubjectResolver.js';
 import { prismaMeetingConfirmationNotePort } from './infra/PrismaMeetingConfirmationNotePort.js';
-import { prismaOptOutRepository } from '../../shared/infra/PrismaOptOutRepository.js';
-import { recordOptOut } from '../../shared/services/optOutService.js';
-import {
-  checkOptOutStatus,
-  recordContactOptOut,
-} from '../../shared/services/optOutCheck.service.js';
-import { ANONYMIZED_CONTACT_NAME } from '../../shared/services/dataSubjectErasure.service.js';
-import { evaluateLeadCadenceEligibility } from './domain/cadenceEligibility.js';
-import type { CadenceChannel } from './domain/optOut.js';
 import { parseCadenceSequenceDefinition } from './jobs/cadenceRun.worker.js';
 
 /**
@@ -365,21 +363,7 @@ router.post(
 
       const lead = await prisma.lead.findFirst({
         where: { id: leadId, organizationId },
-        select: {
-          id: true,
-          contactId: true,
-          customFields: true,
-          contact: {
-            select: {
-              name: true,
-              deletedAt: true,
-              customFields: true,
-              email: true,
-              phone: true,
-              whatsapp: true,
-            },
-          },
-        },
+        select: { id: true, contactId: true },
       });
       if (!lead) throw new AppError('Lead não encontrado nesta organização.', 404);
 
@@ -397,51 +381,39 @@ router.post(
           422,
         );
 
-      // TAREFA-SANEAMENTO-035 / BT360-DT-0080 — elegibilidade do LEAD (não só do contato) contra
-      // opt-out/supressão, antes de criar o CadenceRun. Cobre lead sem contactId e casa por
-      // leadId/e-mail/telefone do contato, com escopo nos canais que a sequência usa. Os
-      // OptOutRecords da org são carregados uma única vez (filtro em lote, não N+1).
-      const channels = [...new Set(sequence.touches.map((t) => t.channel))] as CadenceChannel[];
-      const optOutRecords = await prismaOptOutRepository.list(organizationId);
-      const eligibility = evaluateLeadCadenceEligibility(
-        {
-          leadId: lead.id,
-          subject: {
-            leadId: lead.id,
-            email: lead.contact?.email ?? null,
-            phoneE164: toE164BR(lead.contact?.whatsapp ?? lead.contact?.phone ?? undefined),
-          },
-          leadCustomFields:
-            (lead.customFields as Record<string, unknown> | null | undefined) ?? null,
-          contact: lead.contact
-            ? {
-                anonymizedOrDeleted:
-                  lead.contact.name === ANONYMIZED_CONTACT_NAME || lead.contact.deletedAt !== null,
-                customFields:
-                  (lead.contact.customFields as Record<string, unknown> | null | undefined) ??
-                  null,
-              }
-            : null,
-        },
-        optOutRecords,
-        channels,
-      );
-      if (!eligibility.eligible) {
-        throw new AppError(
-          `Não é possível iniciar cadência: lead inelegível por opt-out/supressão (${eligibility.reason}${eligibility.matchedScope ? `, escopo: ${eligibility.matchedScope}` : ''}).`,
-          409,
-        );
-      }
+      // TAREFA-SANEAMENTO-035 / BT360-DT-0080 — filtro prévio de opt-out em LOTE no início da
+      // cadência. Antes só o primeiro canal era avaliado e apenas quando o lead tinha
+      // `contactId`: leads sem contato entravam na fila do worker sem trava nenhuma, e um
+      // opt-out de canal posterior (ex.: `voice` com primeiro toque `email`) só era pego no
+      // meio do run — runs condenados desde o início, fila sobrecarregada e relatórios com
+      // leads inelegíveis. Agora os DOIS filtros rodam para TODOS os canais distintos da
+      // sequência antes de qualquer `CadenceRun` ser criada:
+      //   (a) `checkOptOutStatus` por canal — cobre flags em `customFields` do contato/lead e
+      //       contato anonimizado (LGPD Art. 18), além do OptOutRecord;
+      //   (b) `checkCadenceStartEligibility` — cobre o OptOutRecord unificado por leadId/
+      //       e-mail/telefone para leads SEM `contactId` (caso que (a) não alcança).
+      const sequenceChannels = [...new Set(sequence.touches.map((t) => t.channel))];
 
       if (lead.contactId) {
-        const firstChannel = sequence.touches[0]?.channel ?? 'whatsapp';
-        const optOutCheck = await checkOptOutStatus(lead.contactId, firstChannel, organizationId);
-        if (optOutCheck.blocked) {
-          throw new AppError(
-            `Não é possível iniciar cadência: contato em lista de opt-out/supressão (${optOutCheck.code}): ${optOutCheck.reason}`,
-            409,
-          );
+        for (const channel of sequenceChannels) {
+          const optOutCheck = await checkOptOutStatus(lead.contactId, channel, organizationId);
+          if (optOutCheck.blocked) {
+            throw new AppError(
+              `Não é possível iniciar cadência: contato em lista de opt-out/supressão (${optOutCheck.code}): ${optOutCheck.reason}`,
+              409,
+            );
+          }
         }
+      }
+
+      const eligibility = await checkCadenceStartEligibility(
+        { optOutRepo: prismaOptOutRepository, subjectResolver: prismaLeadSubjectResolver },
+        organizationId,
+        leadId,
+        sequenceChannels,
+      );
+      if (!eligibility.eligible) {
+        throw new AppError(`Não é possível iniciar cadência: ${eligibility.reason}`, 409);
       }
 
       const run = startCadenceRun({

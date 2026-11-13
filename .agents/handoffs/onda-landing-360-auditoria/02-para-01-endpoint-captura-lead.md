@@ -1,7 +1,7 @@
 - De: 02 — Produto e UX (em nome da auditoria da landing)
 - Para: 01 — Plataforma, Segurança e Dados
 - Onda: landing-360-auditoria
-- Status: aberto
+- Status: resolvido (PR aberto, aguardando revisão 24 / OK do Marcelo para migration em produção)
 - Prioridade: bloqueador
 
 ## Problema
@@ -41,3 +41,86 @@ O formulário hoje é cenográfico — ver `auditoria-para-02-form-lead-fake.md`
 - Consentimento: o texto atual promete "tratamento estritamente para
   agendamento da demonstração" — a finalidade registrada deve bater com isso
   ou o texto deve ser corrigido pelo 21/02.
+
+## Resolução
+
+Implementado pelo Agente 01 na branch `agente-01/lead-publico-endpoint` (PR #216).
+O `/api/leads` autenticado **não foi aberto**. Ajustado às observações do Agente 21
+e às decisões do Marcelo (2026-11-11): IP somente hasheado, WhatsApp opcional,
+retenção operacional 90 dias sem avanço ou 30 dias após a demo (configurável).
+**Isso não aprova texto legal final.**
+
+### Contrato — `POST /api/public/demo-leads`
+
+A rota foi renomeada de `/api/public/leads` para `/api/public/demo-leads` (barato e
+seguro: o PR ainda não estava na main; o cliente do Agente 02 ainda aponta para o
+placeholder `PENDENTE_CONTRATO_AGENTE_01`).
+
+- **Autenticação:** nenhuma. Sem `authenticateToken` / `requireTenant`.
+- **Tenant:** somente `LANDING_LEAD_ORGANIZATION_ID` no servidor. `tenantId` do cliente é ignorado.
+- **Rate limit:** `PUBLIC_LEAD_RATE_LIMIT_MAX` (padrão **5**) POST por IP / 15 min → `429 { "ok": false, "error": "rate_limited" }`.
+- **Content-Type:** `application/json`
+
+#### Payload
+
+```json
+{
+  "nome": "Mariana Albuquerque",
+  "email": "voce@suaempresa.com.br",
+  "whatsapp": "(11) 99999-9999",
+  "equipe": "6 a 15",
+  "consent": true,
+  "consentTextVersion": "landing-demo-v1",
+  "purpose": "agendamento_demonstracao",
+  "website": ""
+}
+```
+
+| Campo | Obrigatório | Regras |
+|---|---|---|
+| `nome` | sim | string 2–200, trim |
+| `email` | sim | e-mail válido, lowercase. Domínio gratuito aceito. |
+| `whatsapp` | **não** (decisão Marcelo) | Se enviado, BR com DDD (com/sem máscara/DDI 55). Vazio/omitido é aceito. |
+| `equipe` | sim | `"1 a 5"` \| `"6 a 15"` \| `"16 a 50"` \| `"50+"` |
+| `consent` | sim | literal `true`. `false`/omitido → 400 `fields.consent = "required"` e **nada é persistido**. |
+| `consentTextVersion` | sim | literal `"landing-demo-v1"` (stale → 400). |
+| `purpose` | sim | lista fechada; hoje só `"agendamento_demonstracao"`. |
+| `website` | não | Honeypot. Preenchido → 202 e não persiste. |
+
+Texto canônico (servidor; **não é texto legal final**):
+
+> Concordo com o tratamento dos dados estritamente para agendamento da demonstração conforme a LGPD.
+
+#### Respostas
+
+| Status | Corpo | Quando |
+|---|---|---|
+| 202 | `{ "ok": true }` | Captura nova, reenvio idempotente do mesmo e-mail, ou honeypot. Sem id/PII. |
+| 400 | `{ "ok": false, "error": "invalid_payload", "fields": { "<campo>": "required" \| "invalid" \| "stale" } }` | Validação (inclui `consent !== true`). |
+| 429 | `{ "ok": false, "error": "rate_limited" }` | Rate limit. |
+| 503 | `{ "ok": false, "error": "unavailable" }` | Tenant ausente ou falha interna. |
+
+#### Prova de consentimento
+
+Gravada em **dois** lugares, no ato do POST bem-sucedido:
+
+1. `PublicLeadConsent` (tabela nova, migration `20261111040000_public_lead_consent_and_rls`) — texto, versão, finalidade, `grantedAt` (servidor), ligada ao Lead. Facilita consulta operacional junto ao CRM. A FK para `Lead` é **ON DELETE SET NULL** (não CASCADE): a prova operacional sobrevive se o lead for excluído. `organizationId` permanece obrigatório e isolado por RLS (CASCADE só no offboarding do tenant).
+2. Cadeia existente `ConsentAuditRecord` / `ConsentEventDetail` via `consentAuditChain.recordConsent`: `purpose` na cadeia é `AGENDAMENTO_DEMONSTRACAO` (a API pública continua com `agendamento_demonstracao` porque o padrão da cadeia exige `CAIXA_ALTA_COM_UNDERSCORE`), `termsVersion` = `landing-demo-v1`, `occurredAt` do servidor, `subjectRef` = e-mail tokenizado (HMAC) pela cadeia. O texto canônico e o **hash do IP** (se o sal estiver configurado) vão em `ConsentEventDetail.detail` (expurgável, fora do hash da cadeia).
+
+Se a cadeia falhar depois da persistência operacional, o lead não é apagado; o erro é logado sem PII.
+
+#### IP
+
+Somente hasheado (HMAC-SHA256, sal `PUBLIC_LEAD_IP_HASH_SECRET`). Nunca persistido nem logado em claro. Sem o segredo, o IP simplesmente não é gravado.
+
+O rate limit e o hash usam a **mesma fonte confiável: `req.ip`**. Com `TRUST_PROXY=false` (default), isso é o IP do socket — um `X-Forwarded-For` forjado não entra. Com `TRUST_PROXY=true`, `src/bootstrap/security.ts` reescreve o header para o valor mais à esquerda antes do Express resolver `req.ip`; limiter e hash continuam alinhados, mas o hop confiável em si é follow-up de borda (não alterado neste PR).
+
+#### Retenção (operacional, não é texto legal final)
+
+Env configurável, com os valores aprovados pelo Marcelo como default: `LANDING_LEAD_RETENTION_IDLE_DAYS=90` (sem avanço) e `LANDING_LEAD_RETENTION_AFTER_DEMO_DAYS=30` (após a demo). **O job de purge/anonimização é follow-up** — não está implementado neste PR.
+
+#### E-mail de confirmação / DSR
+
+Existe mailer transacional (`src/lib/email/mailer.ts`, SMTP). Integração mínima atrás de `LANDING_LEAD_CONFIRMATION_EMAIL_ENABLED` (default `false`): se ligado e o SMTP estiver configurado, envia confirmação apontando para `/privacy`. Não inventa token de opt-out de 1 clique (canal ainda não existe). Falha de SMTP não derruba a captura.
+
+Cadência automática: não disparada.

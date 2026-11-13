@@ -2433,6 +2433,121 @@ paths:
         '201':
           description: Reunião agendada com sucesso
 
+  /public/demo-leads:
+    post:
+      tags: [Landing]
+      summary: Captura pública de lead da landing 360° (demonstração)
+      description: |
+        Endpoint público, sem autenticação. O tenant é resolvido exclusivamente
+        pela variável de ambiente LANDING_LEAD_ORGANIZATION_ID no servidor —
+        qualquer `tenantId` enviado pelo cliente é ignorado.
+
+        Resposta de sucesso é genérica e idempotente (`202 { ok: true }`) tanto
+        para captura nova quanto para reenvio do mesmo e-mail ou honeypot
+        preenchido, para não enumerar leads existentes.
+
+        Rate limit: PUBLIC_LEAD_RATE_LIMIT_MAX (padrão 5) requisições por IP a
+        cada 15 minutos (`429 { ok: false, error: rate_limited }`).
+
+        Consentimento: o cliente envia `consent: true` e `consentTextVersion`
+        igual a `landing-demo-v1`. O servidor grava timestamp, finalidade
+        `agendamento_demonstracao`, a versão e o texto integral canônico.
+
+        Honeypot: campo opcional `website` deve ir vazio/ausente; se preenchido,
+        a API responde 202 e não persiste.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nome, email, equipe, consent, consentTextVersion, purpose]
+              properties:
+                nome:
+                  type: string
+                  minLength: 2
+                  maxLength: 200
+                email:
+                  type: string
+                  format: email
+                whatsapp:
+                  type: string
+                  description: Opcional. Telefone brasileiro com DDD, com ou sem máscara, com ou sem DDI 55
+                equipe:
+                  type: string
+                  enum: ['1 a 5', '6 a 15', '16 a 50', '50+']
+                consent:
+                  type: boolean
+                  description: Deve ser true (opt-in afirmativo; o servidor rejeita false/omitido)
+                consentTextVersion:
+                  type: string
+                  enum: [landing-demo-v1]
+                purpose:
+                  type: string
+                  enum: [agendamento_demonstracao]
+                website:
+                  type: string
+                  description: Honeypot anti-abuso — deve ser omitido ou string vazia
+      responses:
+        '202':
+          description: Pedido aceito (captura nova, reenvio idempotente ou honeypot)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok]
+                properties:
+                  ok:
+                    type: boolean
+                    enum: [true]
+        '400':
+          description: Payload inválido (e-mail, WhatsApp, equipe, consentimento ou versão do texto)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, error, fields]
+                properties:
+                  ok:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: string
+                    enum: [invalid_payload]
+                  fields:
+                    type: object
+                    additionalProperties:
+                      type: string
+                      description: 'required | invalid | stale'
+        '429':
+          description: Rate limit excedido (por IP, janela de 15 minutos)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, error]
+                properties:
+                  ok:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: string
+                    enum: [rate_limited]
+        '503':
+          description: Tenant da landing não configurado ou falha interna (resposta genérica)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, error]
+                properties:
+                  ok:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: string
+                    enum: [unavailable]
+
   # ───────────────────────────── Prospecting ─────────────────────────────
   /prospecting/apollo/reconnect:
     post:
