@@ -38,8 +38,7 @@ import {
   staggerContainer,
   staggerItem,
 } from '../../../lib/motion.js';
-import { gamificationApi } from '../../gamification/api/gamification.api.js';
-import type { SellerScore } from '../../gamification/domain/Gamification.js';
+import { useSellerScoreProfile } from '../../../components/ui/useSellerScoreProfile.js';
 import {
   type DashboardRole,
   type KpiId,
@@ -83,23 +82,8 @@ export function SinglePageDashboard() {
   const totalLeads = overview?.totalLeads ?? 0;
 
   // Perfil gamificado real — sem fallback fabricado a partir de KPIs de pipeline.
-  const [sellerScore, setSellerScore] = useState<SellerScore | null>(null);
-  const [gamificationLoaded, setGamificationLoaded] = useState(false);
   const sellerName = currentUser?.name?.trim() || undefined;
-  useEffect(() => {
-    let mounted = true;
-    gamificationApi
-      .getSellerProfile(sellerName)
-      .then((profile) => {
-        if (mounted) setSellerScore(profile);
-      })
-      .finally(() => {
-        if (mounted) setGamificationLoaded(true);
-      });
-    return () => {
-      mounted = false;
-    };
-  }, [sellerName]);
+  const { sellerScore, gamificationLoaded } = useSellerScoreProfile(sellerName);
   const winRate =
     overview?.conversionRate != null ? Number(overview.conversionRate).toFixed(1) : '0.0';
   const firstName = currentUser?.name?.trim().split(/\s+/)[0] || 'Gestor';
