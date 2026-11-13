@@ -70,6 +70,7 @@ import { buildLosses } from './queries/lossesReport.js';
 import { buildPerformance } from './queries/performanceReport.js';
 import { buildPipelineCreation } from './queries/pipelineCreationReport.js';
 import { buildSellerBenchmark } from './queries/sellerBenchmarkReport.js';
+import { buildReportCacheKey, getCachedReport, setCachedReport } from './reportCache.js';
 
 export {
   COVERAGE_PROTECTION_FALLBACK_HEALTHY,
@@ -90,6 +91,37 @@ export class CommercialIntelligenceUseCases {
     private repository: CommercialIntelligenceRepository,
     private snapshotStore: ForecastSnapshotStore | null = null,
   ) {}
+
+  /**
+   * Cache L2 (Redis, TTL 60s) dos relatórios quentes — Agente 23. A chave carrega
+   * `organizationId` + filtro + `extra` (ver `reportCache.ts` para o porquê de cada decisão).
+   *
+   * `now` explícito NUNCA usa cache: é o caminho determinístico de testes/backtests e do job
+   * semanal de snapshot (`forecastSnapshotWeekly.worker.ts`), que precisa do cálculo fresco —
+   * cachear ali poderia gravar/ler resultado defasado sob um relógio fixo. Chamadas de
+   * produção (controller/AI service/commercialCell) omitem `now` e usam `new Date()` aqui.
+   *
+   * Os sub-relatórios chamados DENTRO do loader também são invocados sem `now` de propósito:
+   * assim `healthScore`/`executiveExport`/`hiringScenario`/`forecastCalibration` reutilizam as
+   * entradas L2 dos relatórios-base em vez de recalcular `loadScoredDeals` por composição.
+   */
+  private async cachedReport<T>(
+    report: string,
+    organizationId: string,
+    filter: CommercialIntelligenceFilter | undefined,
+    now: Date | undefined,
+    extra: string | undefined,
+    load: (effectiveNow: Date) => Promise<T>,
+  ): Promise<T> {
+    const effectiveNow = now ?? new Date();
+    if (now !== undefined) return load(effectiveNow);
+    const key = buildReportCacheKey(report, organizationId, filter, extra);
+    const hit = await getCachedReport<T>(key);
+    if (hit !== null) return hit;
+    const result = await load(effectiveNow);
+    await setCachedReport(key, result);
+    return result;
+  }
 
   // ─── Metas ──────────────────────────────────────────────────────────────
   async getGoal(
@@ -123,71 +155,87 @@ export class CommercialIntelligenceUseCases {
   async executiveOverview(
     organizationId: string,
     filter: CommercialIntelligenceFilter,
-    now = new Date(),
+    now?: Date,
   ): Promise<ExecutiveOverview> {
-    return buildExecutiveOverview(this.repository, organizationId, filter, now);
+    return this.cachedReport('overview', organizationId, filter, now, undefined, (n) =>
+      buildExecutiveOverview(this.repository, organizationId, filter, n),
+    );
   }
 
   // ─── Pipeline criado (Fase 3) ────────────────────────────────────────────
   async pipelineCreation(
     organizationId: string,
     filter: CommercialIntelligenceFilter,
-    now = new Date(),
+    now?: Date,
   ): Promise<PipelineCreation> {
-    return buildPipelineCreation(this.repository, organizationId, filter, now);
+    return this.cachedReport('pipeline-creation', organizationId, filter, now, undefined, (n) =>
+      buildPipelineCreation(this.repository, organizationId, filter, n),
+    );
   }
 
   // ─── Eficiência (Fase 4) ─────────────────────────────────────────────────
   async performance(
     organizationId: string,
     filter: CommercialIntelligenceFilter,
-    now = new Date(),
+    now?: Date,
   ): Promise<PerformanceMetrics> {
-    return buildPerformance(this.repository, organizationId, filter, now);
+    return this.cachedReport('performance', organizationId, filter, now, undefined, (n) =>
+      buildPerformance(this.repository, organizationId, filter, n),
+    );
   }
 
   // ─── Aging (Fase 5) ──────────────────────────────────────────────────────
   async aging(
     organizationId: string,
     filter: CommercialIntelligenceFilter,
-    now = new Date(),
+    now?: Date,
   ): Promise<AgingReport> {
-    return buildAging(this.repository, organizationId, filter, now);
+    return this.cachedReport('aging', organizationId, filter, now, undefined, (n) =>
+      buildAging(this.repository, organizationId, filter, n),
+    );
   }
 
   // ─── Motivos de perda (Fase 7) ───────────────────────────────────────────
   async losses(
     organizationId: string,
     filter: CommercialIntelligenceFilter,
-    now = new Date(),
+    now?: Date,
   ): Promise<LossAnalysis> {
-    return buildLosses(this.repository, organizationId, filter, now);
+    return this.cachedReport('losses', organizationId, filter, now, undefined, (n) =>
+      buildLosses(this.repository, organizationId, filter, n),
+    );
   }
 
   // ─── Leading Indicators (Fase 5/6) ───────────────────────────────────────
   async leadingIndicators(
     organizationId: string,
-    now = new Date(),
+    now?: Date,
   ): Promise<LeadingIndicatorsReport> {
-    return buildLeadingIndicators(this.repository, organizationId, now);
+    return this.cachedReport('leading-indicators', organizationId, undefined, now, undefined, (n) =>
+      buildLeadingIndicators(this.repository, organizationId, n),
+    );
   }
 
   // ─── Alertas executivos (Fase 6) ─────────────────────────────────────────
   async alerts(
     organizationId: string,
     filter: CommercialIntelligenceFilter,
-    now = new Date(),
+    now?: Date,
   ): Promise<ExecutiveAlert[]> {
-    return buildAlerts(this.repository, organizationId, filter, now);
+    return this.cachedReport('alerts', organizationId, filter, now, undefined, (n) =>
+      buildAlerts(this.repository, organizationId, filter, n),
+    );
   }
 
   // ─── Qualidade do CRM (Fase 7) ───────────────────────────────────────────
   async crmQuality(
     organizationId: string,
     filter: CommercialIntelligenceFilter,
-    now = new Date(),
+    now?: Date,
   ): Promise<CrmQualityIndex> {
-    return buildCrmQuality(this.repository, organizationId, filter, now);
+    return this.cachedReport('crm-quality', organizationId, filter, now, undefined, (n) =>
+      buildCrmQuality(this.repository, organizationId, filter, n),
+    );
   }
 
   // ─── Drill-down (seção 29) ────────────────────────────────────────────────
@@ -220,15 +268,20 @@ export class CommercialIntelligenceUseCases {
     organizationId: string,
     filter: CommercialIntelligenceFilter,
     format: ExportFormat,
-    now = new Date(),
+    now?: Date,
   ): Promise<ExecutiveExportPayload> {
-    const [overview, performance, creation, alertsList] = await Promise.all([
-      this.executiveOverview(organizationId, filter, now),
-      this.performance(organizationId, filter, now),
-      this.pipelineCreation(organizationId, filter, now),
-      this.alerts(organizationId, filter, now),
-    ]);
-    return buildExecutiveExport(format, overview, performance, creation, alertsList, now);
+    // `format` entra como `extra` da chave — csv/json/html do mesmo filtro são entradas
+    // distintas. Os relatórios-base abaixo são chamados SEM `now` de propósito: reutilizam o
+    // cache L2 deles (e, em miss, gravam para os GETs irmãos do cockpit).
+    return this.cachedReport('executive-export', organizationId, filter, now, format, async (n) => {
+      const [overview, performance, creation, alertsList] = await Promise.all([
+        this.executiveOverview(organizationId, filter),
+        this.performance(organizationId, filter),
+        this.pipelineCreation(organizationId, filter),
+        this.alerts(organizationId, filter),
+      ]);
+      return buildExecutiveExport(format, overview, performance, creation, alertsList, n);
+    });
   }
 
   // ─── Opções de filtro reais (seção 18) ───────────────────────────────────
@@ -240,9 +293,11 @@ export class CommercialIntelligenceUseCases {
   async historicalTrends(
     organizationId: string,
     filter: CommercialIntelligenceFilter,
-    now = new Date(),
+    now?: Date,
   ): Promise<HistoricalTrendsReport> {
-    return buildHistoricalTrends(this.repository, organizationId, filter, now);
+    return this.cachedReport('historical-trends', organizationId, filter, now, undefined, (n) =>
+      buildHistoricalTrends(this.repository, organizationId, filter, n),
+    );
   }
 
   // ─── Erro histórico do Forecast (previsto vs. realizado) ─────────────────
@@ -253,9 +308,19 @@ export class CommercialIntelligenceUseCases {
   // devolve `available: false` com o motivo — nunca um erro fabricado.
   async forecastAccuracy(
     organizationId: string,
-    now = new Date(),
+    now?: Date,
   ): Promise<ForecastAccuracySummary> {
-    return buildForecastAccuracy(this.repository, this.snapshotStore, organizationId, now);
+    // Cacheado: lê `loadScoredDeals` inteiro para o realizado dos períodos encerrados e é
+    // chamado tanto pelo GET /forecast-accuracy quanto de dentro do healthScore. O frescor de
+    // 60s é seguro — a fronteira "período encerrado" só muda uma vez por mês.
+    return this.cachedReport(
+      'forecast-accuracy',
+      organizationId,
+      undefined,
+      now,
+      undefined,
+      (n) => buildForecastAccuracy(this.repository, this.snapshotStore, organizationId, n),
+    );
   }
 
   // ─── Health Score composto (Pipeline/Conversão/Produtividade/Qualidade de CRM/Follow-up/
@@ -268,60 +333,99 @@ export class CommercialIntelligenceUseCases {
   async healthScore(
     organizationId: string,
     filter: CommercialIntelligenceFilter,
-    now = new Date(),
+    now?: Date,
     forecastAccuracy?: ForecastAccuracySummary,
   ): Promise<HealthScoreResult> {
-    const [overview, performance, aging, leadingIndicators, crmQuality, accuracy] =
-      await Promise.all([
-        this.executiveOverview(organizationId, filter, now),
-        this.performance(organizationId, filter, now),
-        this.aging(organizationId, filter, now),
-        this.leadingIndicators(organizationId, now),
-        this.crmQuality(organizationId, filter, now),
-        forecastAccuracy
-          ? Promise.resolve(forecastAccuracy)
-          : this.forecastAccuracy(organizationId, now),
+    // `forecastAccuracy` injetado = amostra explícita de backtest/teste — o resultado depende
+    // dela, então este caminho NUNCA usa cache (e `now` explícito já desliga o cache das
+    // sub-chamadas abaixo, mantendo o cálculo determinístico).
+    if (forecastAccuracy !== undefined) {
+      const effectiveNow = now ?? new Date();
+      const [overview, performance, aging, leadingIndicators, crmQuality] = await Promise.all([
+        this.executiveOverview(organizationId, filter, effectiveNow),
+        this.performance(organizationId, filter, effectiveNow),
+        this.aging(organizationId, filter, effectiveNow),
+        this.leadingIndicators(organizationId, effectiveNow),
+        this.crmQuality(organizationId, filter, effectiveNow),
       ]);
-    return computeHealthScore(
-      { overview, performance, aging, leadingIndicators, crmQuality, forecastAccuracy: accuracy },
-      now,
-    );
+      return computeHealthScore(
+        {
+          overview,
+          performance,
+          aging,
+          leadingIndicators,
+          crmQuality,
+          forecastAccuracy,
+        },
+        effectiveNow,
+      );
+    }
+    return this.cachedReport('health-score', organizationId, filter, now, undefined, async (n) => {
+      const [overview, performance, aging, leadingIndicators, crmQuality, accuracy] =
+        await Promise.all([
+          this.executiveOverview(organizationId, filter),
+          this.performance(organizationId, filter),
+          this.aging(organizationId, filter),
+          this.leadingIndicators(organizationId),
+          this.crmQuality(organizationId, filter),
+          this.forecastAccuracy(organizationId),
+        ]);
+      return computeHealthScore(
+        {
+          overview,
+          performance,
+          aging,
+          leadingIndicators,
+          crmQuality,
+          forecastAccuracy: accuracy,
+        },
+        n,
+      );
+    });
   }
 
   // ─── CLOSEDATE Intelligence (adiamentos/antecipações da data prevista) ────
   async closeDateIntelligence(
     organizationId: string,
     filter: CommercialIntelligenceFilter,
-    now = new Date(),
+    now?: Date,
   ): Promise<CloseDateIntelligenceReport> {
-    return buildCloseDateIntelligence(this.repository, organizationId, filter, now);
+    return this.cachedReport('close-date-intelligence', organizationId, filter, now, undefined, (n) =>
+      buildCloseDateIntelligence(this.repository, organizationId, filter, n),
+    );
   }
 
   // ─── Jornada (handoffs, reentradas, sem interação, mapa de transições) ─────
   async journey(
     organizationId: string,
     filter: CommercialIntelligenceFilter,
-    now = new Date(),
+    now?: Date,
   ): Promise<JourneyReport> {
-    return buildJourney(this.repository, organizationId, filter, now);
+    return this.cachedReport('journey', organizationId, filter, now, undefined, (n) =>
+      buildJourney(this.repository, organizationId, filter, n),
+    );
   }
 
   // ─── Detecção automática de gargalo de funil (comparação relativa entre etapas) ──────────
   async funnelBottlenecks(
     organizationId: string,
     filter: CommercialIntelligenceFilter,
-    now = new Date(),
+    now?: Date,
   ): Promise<FunnelBottleneckReport> {
-    return buildFunnelBottlenecks(this.repository, organizationId, filter, now);
+    return this.cachedReport('funnel-bottlenecks', organizationId, filter, now, undefined, (n) =>
+      buildFunnelBottlenecks(this.repository, organizationId, filter, n),
+    );
   }
 
   // ─── Benchmark de vendedor (Win Rate/Ciclo/Ticket vs. time e top performer) ──────────────
   async sellerBenchmark(
     organizationId: string,
     filter: CommercialIntelligenceFilter,
-    now = new Date(),
+    now?: Date,
   ): Promise<SellerBenchmarkReport> {
-    return buildSellerBenchmark(this.repository, organizationId, filter, now);
+    return this.cachedReport('seller-benchmark', organizationId, filter, now, undefined, (n) =>
+      buildSellerBenchmark(this.repository, organizationId, filter, n),
+    );
   }
 
   // ─── Forecast auto-calibrado (previsto vs. realizado retroalimenta o forecast atual) ────
@@ -332,8 +436,10 @@ export class CommercialIntelligenceUseCases {
   async forecastCalibration(
     organizationId: string,
     filter: CommercialIntelligenceFilter,
-    now = new Date(),
+    now?: Date,
   ): Promise<ForecastCalibrationResult> {
+    // `now` é repassado (não materializado aqui): quando omitido, as chamadas abaixo usam o
+    // cache L2 dos relatórios-base; quando explícito, tudo recalcula deterministicamente.
     const [overview, accuracy] = await Promise.all([
       this.executiveOverview(organizationId, filter, now),
       this.forecastAccuracy(organizationId, now),
@@ -350,9 +456,11 @@ export class CommercialIntelligenceUseCases {
   async channelAttribution(
     organizationId: string,
     filter: CommercialIntelligenceFilter,
-    now = new Date(),
+    now?: Date,
   ): Promise<ChannelAttributionReport> {
-    return buildChannelAttribution(this.repository, organizationId, filter, now);
+    return this.cachedReport('channel-attribution', organizationId, filter, now, undefined, (n) =>
+      buildChannelAttribution(this.repository, organizationId, filter, n),
+    );
   }
 
   // ─── Simulação de cenário (contratação de SDR/vendedor) ──────────────────────────────────
@@ -363,8 +471,10 @@ export class CommercialIntelligenceUseCases {
     organizationId: string,
     filter: CommercialIntelligenceFilter,
     additionalReps: number,
-    now = new Date(),
+    now?: Date,
   ): Promise<HiringScenarioResult> {
+    // `now` repassado como em forecastCalibration — as bases (pipelineCreation/performance)
+    // resolvem via cache L2 quando `now` é omitido.
     const [creation, performance] = await Promise.all([
       this.pipelineCreation(organizationId, filter, now),
       this.performance(organizationId, filter, now),
