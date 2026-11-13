@@ -77,8 +77,7 @@ function isItemActive(
 }
 
 function useModulePermissions(): ModuleNavPermissions {
-  const { currentUser, isAdmin, canAccessCommercialIntelligence, canAccessCopilotoIa } =
-    useAuth();
+  const { currentUser, isAdmin, canAccessCommercialIntelligence, canAccessCopilotoIa } = useAuth();
   const canManageOperations =
     !!currentUser && hasRequiredRole(currentUser.role, ['ADMIN', 'GESTOR']);
   return useMemo(
@@ -135,9 +134,7 @@ export function ModuleNavPanel({
     selectTab(
       itemDef.tab,
       event,
-      itemDef.path
-        ? `${itemDef.path}${itemDef.query ? `?${itemDef.query}` : ''}`
-        : undefined,
+      itemDef.path ? `${itemDef.path}${itemDef.query ? `?${itemDef.query}` : ''}` : undefined,
     );
   };
 
@@ -148,10 +145,7 @@ export function ModuleNavPanel({
       window.location.assign(target.home);
       return;
     }
-    openTab(
-      target.items[0]?.tab ?? 'dashboard',
-      target.home.replace(/^\/app\/?/, ''),
-    );
+    openTab(target.items[0]?.tab ?? 'dashboard', target.home.replace(/^\/app\/?/, ''));
   };
 
   const isHub = module.id === 'hub';
@@ -260,11 +254,13 @@ export function ModuleNavPanel({
                     mobileOnly ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                 >
-                  <span className={`${ICON_WELL} bg-surface-2 text-ink-2 border border-transparent group-hover:bg-surface group-hover:text-ink`}>
+                  <span
+                    className={`${ICON_WELL} bg-surface-2 text-ink-2 border border-transparent group-hover:bg-surface group-hover:text-ink`}
+                  >
                     <Icon className="h-4 w-4" aria-hidden="true" />
                   </span>
                   <span className="min-w-0 flex-1 truncate text-left font-medium">
-                    <span className="font-mono text-[9px] uppercase tracking-wide text-ink-2/70">
+                    <span className="font-mono text-[9px] uppercase tracking-wide text-ink-2">
                       {m.code}
                     </span>{' '}
                     {m.label}

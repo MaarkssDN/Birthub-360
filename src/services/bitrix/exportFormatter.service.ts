@@ -1,19 +1,4 @@
-﻿import {
-  buildXlsxWorkbook,
-  type ExtractionEntityDataset,
-  sanitizeCsvCell,
-  sanitizeSpreadsheetFormulaString,
-  toCsv,
-  toJson,
-} from '../../features/integrations/bitrix/service/extractionFiles.js';
-
-export {
-  buildXlsxWorkbook,
-  type ExtractionEntityDataset,
-  sanitizeSpreadsheetFormulaString,
-  toCsv,
-  toJson,
-};
+﻿import { sanitizeCsvCell } from '../../features/integrations/bitrix/service/extractionFiles.js';
 
 /**
  * Sanitiza uma celula individual contra CSV/Formula Injection (`=`, `+`, `-`, `@`, `\t`, `\r`)

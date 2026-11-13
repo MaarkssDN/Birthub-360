@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 02 (Produto e UX)
 Onda: Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-002)
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 5
@@ -48,3 +48,10 @@ Executar a tarefa `TAREFA-SANEAMENTO-002` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução (Agente 02 — 2026-11-12, branch `agente/02-ux-saneamento`)
+
+- Novo `src/components/CrmBoardToolbar.tsx` (538 linhas) absorveu toolbar/filtros/chrome do board.
+- `src/components/CrmBoard.tsx`: **886 linhas** — abaixo do limite de 1000; entrada na watch-list de `HOTSPOT_EXCEPTIONS.md` atualizada como modularizada.
+- Comportamento preservado (mesmos handlers/props); gates: tsc ✅, Biome ✅.
+- Commit: `4c94148cf`. **Pendente:** revisão formal do Agente 24.

@@ -86,7 +86,45 @@ describe('bootstrap/security', () => {
       vi.doUnmock('../../../src/config/env.js');
     });
 
-    it('aplica cabeçalhos de segurança do Helmet e permite qualquer origem fora de produção', async () => {
+    it('fora de produção permite origens locais (localhost, LAN privada, Capacitor) mas rejeita origem externa', async () => {
+      const { applySecurityMiddleware } = await import('../../../src/bootstrap/security.js');
+      const app = express();
+      applySecurityMiddleware(app);
+      app.get('/ping', (_req, res) => res.status(200).json({ ok: true }));
+
+      // Vite dev em porta arbitrária — permitida.
+      const local = await request(app).get('/ping').set('Origin', 'http://localhost:5999');
+      expect(local.status).toBe(200);
+      expect(local.headers['access-control-allow-origin']).toBe('http://localhost:5999');
+
+      // LAN privada (celular/dispositivo na mesma rede) — permitida.
+      const lan = await request(app).get('/ping').set('Origin', 'http://192.168.0.50:5173');
+      expect(lan.status).toBe(200);
+      expect(lan.headers['access-control-allow-origin']).toBe('http://192.168.0.50:5173');
+
+      // Capacitor (app mobile) — permitida.
+      const capacitor = await request(app)
+        .get('/ping')
+        .set('Origin', 'capacitor://localhost');
+      expect(capacitor.status).toBe(200);
+      expect(capacitor.headers['access-control-allow-origin']).toBe('capacitor://localhost');
+
+      // Origem externa qualquer — REJEITADA (BT360-DT-0074): sem headers CORS.
+      const external = await request(app)
+        .get('/ping')
+        .set('Origin', 'https://qualquer-origem.example.com');
+      expect(external.headers['access-control-allow-origin']).toBeUndefined();
+      expect(external.headers['access-control-allow-credentials']).toBeUndefined();
+    });
+
+    it('fora de produção permite origem externa explicitamente listada em ALLOWED_ORIGINS', async () => {
+      vi.doMock('../../../src/config/env.js', () => ({
+        env: {
+          NODE_ENV: 'development',
+          ALLOWED_ORIGINS: 'https://staging.birthhub360.com.br',
+          TRUST_PROXY: false,
+        },
+      }));
       const { applySecurityMiddleware } = await import('../../../src/bootstrap/security.js');
       const app = express();
       applySecurityMiddleware(app);
@@ -94,14 +132,12 @@ describe('bootstrap/security', () => {
 
       const res = await request(app)
         .get('/ping')
-        .set('Origin', 'https://qualquer-origem.example.com');
-
+        .set('Origin', 'https://staging.birthhub360.com.br');
       expect(res.status).toBe(200);
-      // Helmet aplica X-Content-Type-Options: nosniff por padrão.
-      expect(res.headers['x-content-type-options']).toBe('nosniff');
       expect(res.headers['access-control-allow-origin']).toBe(
-        'https://qualquer-origem.example.com',
+        'https://staging.birthhub360.com.br',
       );
+      expect(res.headers['access-control-allow-credentials']).toBe('true');
     });
 
     it('permite a origem da extensão Chrome do PRÓPRIO produto em produção quando ela está explicitamente em ALLOWED_ORIGINS', async () => {

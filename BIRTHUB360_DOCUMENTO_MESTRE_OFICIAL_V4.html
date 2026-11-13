@@ -829,6 +829,28 @@
       </div>
 
       <div class="agents-grid" id="agents-container"></div>
+
+      <div style="margin-top:38px;">
+        <span class="kicker">P06 — Camada de Personagens (Integração Runtime)</span>
+        <h3 style="font-family:var(--font-display); font-size:clamp(19px,2.2vw,24px); font-weight:800; color:#fff; margin:10px 0 12px;">29 Personagens: da Camada Visual à Execução Real</h3>
+        <p class="section-sub">Os 29 avatares do Birth Hub 360° deixaram de ser apenas identidade visual: cada personagem possui um vínculo verificável com o enxame de agentes, resolvido em runtime a partir do catálogo canônico (<code>src/features/characters/characterCatalog*.ts</code>) por <code>characterRuntime.ts</code> — o vínculo nunca é declarado manualmente. Personagens sem rota HTTP real são marcados como <code>unavailable</code> de forma honesta, sem mocks.</p>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr><th>Aspecto</th><th>Especificação Runtime</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Fluxo de execução</strong></td><td>Usuário → Central de Personagens <code>/app/characters</code> → Personagem → Supervisor 00 (AgentBus) → Especialista. O dispatch ocorre via <code>POST /api/agent/swarm/stream</code> (SSE) para personagens com <code>dispatch=swarm-stream</code>; <code>module-surface</code> direciona para a superfície real do módulo; <code>none</code> exibe indisponibilidade explícita.</td></tr>
+              <tr><td><strong>Superfície de API</strong></td><td><code>GET /api/agent/characters</code>, <code>/activity</code>, <code>/concurrency</code>, <code>/:id</code> — montadas em <code>agent.routes.ts</code> sob <code>authenticateToken</code> + <code>requireTenant</code> + <code>aiLimiter</code>, com escopo estrito por <code>organizationId</code>.</td></tr>
+              <tr><td><strong>Estados operacionais</strong></td><td>8 estados reais — <code>available</code>, <code>queued</code>, <code>processing</code>, <code>delegating</code>, <code>completed</code>, <code>error</code>, <code>blocked</code>, <code>unavailable</code> — mapeados para os 6 estados visuais do SVG. O feed de atividade vem de <code>swarmAuditLog</code> isolado por tenant.</td></tr>
+              <tr><td><strong>Gate de concorrência</strong></td><td><code>swarmConcurrency.service.ts</code>: slots por organização, fila FIFO, timeout configurável (<code>SWARM_MISSION_QUEUE_TIMEOUT_MS</code>), teto configurável (<code>SWARM_MAX_CONCURRENT_MISSIONS</code>, clamp em 8), rejeição de <code>sessionId</code> duplicado e cleanup garantido via try/finally.</td></tr>
+              <tr><td><strong>Implementação</strong></td><td><code>characterRuntime.ts</code>, <code>characterRuntime.routes.ts</code>, <code>useCharacterExecution.ts</code> (SSE tipado com executionId/correlationId, abort e dedup), <code>CharacterDetailPanel.tsx</code>, <code>CharacterGalleryView.tsx</code> (Central operacional). Circuit breaker OPEN degrada honestamente os dispatches <code>swarm-stream</code>.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="section-sub" style="margin-top:14px;">Referência de implementação homologada: <code>.agents/runs/2026-11-10-integracao-runtime-personagens.md</code>. A fase visual dos 29 personagens permanece especificada em <code>identidade-visual/GUIA-MESTRE-PERSONAGENS-BIRTH-HUB-360.md</code> e nos assets SVG de <code>public/brand/characters/</code>.</p>
+      </div>
     </div>
   </section>
 

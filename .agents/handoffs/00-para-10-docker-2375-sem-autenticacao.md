@@ -3,7 +3,7 @@
 De: 00 — Coordenador
 Para: 10 — Infraestrutura, Observabilidade e SRE
 Onda: pós-homologação 2026-11-10
-Status: aberto
+Status: em-andamento
 Prioridade: **bloqueador**
 Sprint destino: imediato
 
@@ -52,3 +52,41 @@ locais (gitignored) e os scripts que assumem 2375.
   conexão LAN autorizada pelo operador — a exposição parece intencional para
   dev, mas carece de restrição de rede.
 - O host é Docker Desktop 4.96.3 em Windows/WSL2.
+
+## Resolução
+
+**Agente 10 — 2026-11-12 — branch `agente/10-infra-saneamento`.**
+
+**Decisão:** Opção 2 (`ssh://`) como alvo definitivo; Opção 1 (firewall
+allowlist) como mitigação imediata. A execução no host `192.168.0.116`
+**não é possível remotamente** — diagnóstico anterior confirmou ausência de
+SSH/WinRM/admin remoto; requer operador no host (já escalado na ORDEM 01).
+
+**Parte versionável entregue:**
+
+- `infrastructure/security/apply-docker-2375-allowlist.ps1` — script
+  PowerShell idempotente (admin) que cria regras de firewall Windows
+  `Docker2375-Allow-DevOnly` liberando TCP 2375 somente para os IPs
+  autorizados (default `192.168.0.179`, parametrizável). **Correção em
+  relação ao runbook original:** usa SOMENTE regras Allow — no Windows
+  Firewall, Block tem precedência sobre Allow, então o par Allow+Block do
+  runbook anterior bloquearia também o IP autorizado. O inbound default já
+  bloqueia o restante.
+- `infrastructure/security/DOCKER-REMOTE-DAEMON.md` — decisão, runbook
+  completo para o operador (diagnóstico portproxy → mitigação → migração
+  ssh:// → demais portas expostas → resposta a incidente/rotação de
+  credenciais com handoff sugerido ao Agente 15).
+
+**Depende de ação humana (operador/Marcelo no host):**
+
+1. Executar o script de allowlist (Passo 1) — fecha a exposição para a LAN.
+2. Provisionar OpenSSH Server + docker context `ssh://` (Passo 2) e remover
+   a exposição TCP 2375.
+3. Avaliar rotação de credenciais expostas (Postgres, Redis, Meili, LiteLLM,
+   Better Auth, chaves de criptografia) — sugiro handoff ao Agente 15 após
+   contenção.
+
+**Status `em-andamento` (não `resolvido`):** a exposição segue ativa até o
+operador executar o Passo 1 no host; todo o material versionável está pronto.
+Critério de `resolvido`: `curl http://192.168.0.116:2375/version` de IP não
+autorizado → recusado, e `docker ps` do workstation autorizado funcionando.

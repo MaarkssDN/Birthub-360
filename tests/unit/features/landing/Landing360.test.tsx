@@ -1,4 +1,5 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { readFileSync } from 'node:fs';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ThemeProvider } from '@/contexts/ThemeContext';
@@ -175,6 +176,40 @@ describe('Landing360', () => {
     expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
   });
 
+  it('deve ocultar a sticky bar de conversão com [role="dialog"] aberto e reexibi-la ao fechar', () => {
+    // jsdom 23 aplica `:has()` em `Element.matches`, mas não na cascata de
+    // getComputedStyle — o hide real é o CSS de produção abaixo. O teste
+    // trava o seletor e exercita a condição no DOM (abrir/fechar o pilar).
+    const css = readFileSync('src/features/landing/pages/LandingConversionV5.css', 'utf8');
+    expect(css).toMatch(/\.b360-sticky-bar\s*\{[^}]*z-index:\s*40/);
+    expect(css).toMatch(
+      /body:has\(\[role="dialog"\]\)\s+\.b360-sticky-bar\s*\{[^}]*display:\s*none/,
+    );
+    expect(css).toMatch(
+      /body:has\(\.b360-sticky-bar\)\s+\.btn-floating-top\s*\{[^}]*bottom:\s*5\.5rem/,
+    );
+
+    const { container } = renderWithProviders('/', 'intro');
+
+    Object.defineProperty(window, 'scrollY', { value: 500, configurable: true });
+    fireEvent.scroll(window);
+
+    const stickyBar = container.querySelector('.b360-sticky-bar') as HTMLElement;
+    expect(stickyBar).toBeInTheDocument();
+    expect(document.body.matches(':has([role="dialog"])')).toBe(false);
+
+    fireEvent.click(screen.getByText(/Hub comercial/i));
+    expect(container.querySelector('[role="dialog"]')).toBeInTheDocument();
+    expect(document.body.matches(':has([role="dialog"])')).toBe(true);
+    // O CSS oculta; o React não desmonta a barra — ao fechar ela volta.
+    expect(stickyBar).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText(/^Fechar$/i));
+    expect(container.querySelector('[role="dialog"]')).not.toBeInTheDocument();
+    expect(document.body.matches(':has([role="dialog"])')).toBe(false);
+    expect(stickyBar).toBeInTheDocument();
+  });
+
   it(
     'deve validar e submeter formulários de signin, signup e forgot password',
     async () => {
@@ -317,7 +352,7 @@ describe('Landing360', () => {
 
     // 1. Proposta de valor clara & 6. Urgência responsável
     expect(screen.getByText(/Ciclo de Implantação Assistida/i)).toBeInTheDocument();
-    expect(screen.getByText(/Acelere o ciclo de vendas e aumente a conversão do pipeline em até 3.8x/i)).toBeInTheDocument();
+    expect(screen.getByText(/Acelere o ciclo de vendas e aumente a conversão do pipeline — projeções de até 3.8x/i)).toBeInTheDocument();
 
     // 2. Design focado & 3. Foco no Call to Action
     const ctaLinks = screen.getAllByRole('link', { name: /Garantir Demonstração Gratuita/i });
@@ -341,15 +376,28 @@ describe('Landing360', () => {
   it('deve submeter o formulário de lead com sucesso e alternar a variante A/B', async () => {
     const { container } = renderWithProviders('/', 'intro');
 
+    // Endpoint público de leads ainda não existe (handoff pendente do Agente 01):
+    // o teste mocka a resposta 200 do contrato POST /api/public/demo-requests.
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(new Response('{}', { status: 200 }));
+
+    const nomeInput = container.querySelector('#lead-nome') as HTMLInputElement;
     const emailInput = container.querySelector('#lead-email') as HTMLInputElement;
+    const whatsappInput = container.querySelector('#lead-whatsapp') as HTMLInputElement;
     expect(emailInput).toBeInTheDocument();
 
-    // Preenche apenas o campo assertado no sucesso para evitar re-renders
-    // desnecessários da landing inteira (cada change dispara render do componente).
+    fireEvent.change(nomeInput, { target: { value: 'Mariana Albuquerque' } });
     fireEvent.change(emailInput, { target: { value: 'mariana@vanguarda.com.br' } });
+    fireEvent.change(whatsappInput, { target: { value: '(11) 99999-9999' } });
 
-    // Submissão do formulário
-    const submitBtn = screen.getByRole('button', { name: /GARANTIR MINHA DEMONSTRAÇÃO GRATUITA/i });
+    // Consentimento LGPD não é pré-marcado: precisa ser marcado explicitamente.
+    const consentCheckbox = container.querySelector(
+      'input[type="checkbox"]',
+    ) as HTMLInputElement;
+    fireEvent.click(consentCheckbox);
+
+    const submitBtn = screen.getByRole('button', { name: /SOLICITAR DEMONSTRAÇÃO GRATUITA/i });
     const leadFormEl = submitBtn.closest('form') as HTMLFormElement;
     fireEvent.submit(leadFormEl);
 
@@ -357,10 +405,14 @@ describe('Landing360', () => {
       () => {
         expect(screen.getByText(/Sessão Solicitada com Sucesso/i)).toBeInTheDocument();
         expect(screen.getByText(/mariana@vanguarda\.com\.br/i)).toBeInTheDocument();
-        expect(screen.getByText(/Abrir Google Agenda/i)).toBeInTheDocument();
+        expect(fetchSpy).toHaveBeenCalledWith(
+          '/api/public/demo-requests',
+          expect.objectContaining({ method: 'POST' }),
+        );
       },
       { timeout: 3000 },
     );
+    fetchSpy.mockRestore();
 
     // 8. Teste A/B: alternar para Variante B
     const varBBtn = screen.getAllByRole('button', { name: /Variante B/i })[0];
@@ -372,5 +424,168 @@ describe('Landing360', () => {
       },
       { timeout: 3000 },
     );
+  });
+
+  it('deve abrir e fechar o menu de navegação mobile com aria-expanded correto', () => {
+    const { container } = renderWithProviders('/', 'intro');
+
+    const toggle = container.querySelector(
+      '.b360-mobile-nav-toggle',
+    ) as HTMLButtonElement;
+    expect(toggle).toBeInTheDocument();
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(container.querySelector('#b360-mobile-nav')).not.toBeInTheDocument();
+
+    fireEvent.click(toggle);
+    const mobileNav = container.querySelector('#b360-mobile-nav') as HTMLElement;
+    expect(mobileNav).toBeInTheDocument();
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(toggle).toHaveAttribute('aria-label', 'Fechar menu de navegação');
+
+    // Clicar num link âncora fecha o menu (escopo no nav mobile — o topnav
+    // desktop tem um link "Agendar Demo" idêntico).
+    fireEvent.click(within(mobileNav).getByRole('link', { name: 'Agendar Demo' }));
+    expect(container.querySelector('#b360-mobile-nav')).not.toBeInTheDocument();
+  });
+
+  it('deve bloquear submit do lead sem consentimento LGPD e com WhatsApp inválido (sem chamar fetch)', async () => {
+    const { container } = renderWithProviders('/', 'intro');
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+
+    const nomeInput = container.querySelector('#lead-nome') as HTMLInputElement;
+    const emailInput = container.querySelector('#lead-email') as HTMLInputElement;
+    const whatsappInput = container.querySelector('#lead-whatsapp') as HTMLInputElement;
+    const submitBtn = screen.getByRole('button', {
+      name: /SOLICITAR DEMONSTRAÇÃO GRATUITA/i,
+    });
+    const leadFormEl = submitBtn.closest('form') as HTMLFormElement;
+
+    fireEvent.change(nomeInput, { target: { value: 'Teste Validação' } });
+    fireEvent.change(emailInput, { target: { value: 'teste@empresa.com.br' } });
+    fireEvent.change(whatsappInput, { target: { value: '(11) 99999-9999' } });
+
+    // 1. Sem consentimento → erro LGPD, fetch nunca chamado.
+    fireEvent.submit(leadFormEl);
+    expect(screen.getByRole('alert')).toHaveTextContent(/tratamento de dados/i);
+    expect(fetchSpy).not.toHaveBeenCalled();
+
+    // 2. Com consentimento mas WhatsApp inválido → erro de telefone.
+    const consentCheckbox = container.querySelector(
+      'input[type="checkbox"]',
+    ) as HTMLInputElement;
+    fireEvent.click(consentCheckbox);
+
+    fireEvent.change(whatsappInput, { target: { value: '123' } });
+    fireEvent.submit(leadFormEl);
+    expect(screen.getByRole('alert')).toHaveTextContent(/WhatsApp válido com DDD/i);
+    expect(fetchSpy).not.toHaveBeenCalled();
+
+    // 3. WhatsApp com 9 dígitos (sem DDD) também é rejeitado.
+    fireEvent.change(whatsappInput, { target: { value: '999999999' } });
+    fireEvent.submit(leadFormEl);
+    expect(screen.getByRole('alert')).toHaveTextContent(/WhatsApp válido com DDD/i);
+    expect(fetchSpy).not.toHaveBeenCalled();
+
+    fetchSpy.mockRestore();
+  });
+
+  it('deve exibir erro honesto quando o POST de lead falha e enviar payload com consentimento', async () => {
+    const { container } = renderWithProviders('/', 'intro');
+
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(new Response('erro', { status: 500 }));
+
+    const nomeInput = container.querySelector('#lead-nome') as HTMLInputElement;
+    const emailInput = container.querySelector('#lead-email') as HTMLInputElement;
+    const whatsappInput = container.querySelector('#lead-whatsapp') as HTMLInputElement;
+    const submitBtn = screen.getByRole('button', {
+      name: /SOLICITAR DEMONSTRAÇÃO GRATUITA/i,
+    });
+    const leadFormEl = submitBtn.closest('form') as HTMLFormElement;
+
+    fireEvent.change(nomeInput, { target: { value: 'Falha Backend' } });
+    fireEvent.change(emailInput, { target: { value: 'falha@empresa.com.br' } });
+    fireEvent.change(whatsappInput, { target: { value: '11988887777' } });
+
+    // Seleciona chip de tamanho de equipe "16 a 50".
+    fireEvent.click(screen.getAllByRole('button', { name: '16 a 50' })[0]);
+
+    const consentCheckbox = container.querySelector(
+      'input[type="checkbox"]',
+    ) as HTMLInputElement;
+    fireEvent.click(consentCheckbox);
+
+    fireEvent.submit(leadFormEl);
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(/Não foi possível registrar/i);
+    });
+
+    expect(fetchSpy).toHaveBeenCalledWith(
+      '/api/public/demo-requests',
+      expect.objectContaining({
+        method: 'POST',
+        body: expect.stringContaining('"consentimentoLgpd":true'),
+      }),
+    );
+    const body = JSON.parse(fetchSpy.mock.calls[0][1]?.body as string);
+    expect(body.equipe).toBe('16 a 50');
+    expect(body.origem).toBe('landing_360');
+    expect(body.varianteAb).toBe('A');
+
+    fetchSpy.mockRestore();
+  });
+
+  it('deve abrir modal editorial ao clicar em link do footer e link de governança', () => {
+    const { container } = renderWithProviders('/', 'intro');
+
+    // Link de governança no footer aponta para rota /privacy (LGPD).
+    const privacyLinks = screen.getAllByRole('link', { name: /Política de Privacidade/i });
+    expect(privacyLinks.length).toBeGreaterThan(0);
+    expect(privacyLinks[0]).toHaveAttribute('href', '/privacy');
+
+    // Botão de módulo no footer abre o modal editorial.
+    fireEvent.click(screen.getByRole('button', { name: /02\. Inteligência de Mercado/i }));
+    expect(container.querySelector('[role="dialog"]')).toBeInTheDocument();
+    fireEvent.click(screen.getByText(/^Fechar$/i));
+    expect(container.querySelector('[role="dialog"]')).not.toBeInTheDocument();
+  });
+
+  it('deve inspecionar todos os 11 módulos do COMMAND_MODULES no grid interativo', () => {
+    const { container } = renderWithProviders('/', 'intro');
+
+    fireEvent.click(screen.getByText(/^Command Center$/i));
+
+    const moduleButtons = container.querySelectorAll('.b360-modules .b360-module');
+    expect(moduleButtons).toHaveLength(11);
+
+    const names = [
+      'Hub Comercial',
+      'Inteligência de Mercado',
+      'Orquestração de Vendas',
+      'Performance Comercial',
+      'Previsibilidade Comercial',
+      'Inteligência Artificial',
+      'Automação & Conectividade',
+      'Engajamento Comercial',
+      'Admin & Operations',
+      'Mobile & Field Sales',
+      'Social Selling',
+    ];
+    names.forEach((name) => {
+      const btn = Array.from(moduleButtons).find(
+        (b) => b.querySelector('b')?.textContent === name,
+      ) as HTMLElement;
+      expect(btn, `módulo ${name} deve existir no grid`).toBeTruthy();
+      fireEvent.click(btn);
+      expect(container.querySelector('[role="dialog"]')).toBeInTheDocument();
+      // Fecha via botão Fechar do PillarDetailModal.
+      const closeBtn = Array.from(container.querySelectorAll('button')).find(
+        (b) => b.textContent?.trim() === 'Fechar',
+      ) as HTMLElement;
+      fireEvent.click(closeBtn);
+      expect(container.querySelector('[role="dialog"]')).not.toBeInTheDocument();
+    });
   });
 });

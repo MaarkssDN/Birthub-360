@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { signUp, uniqueTestEmail, waitForAppReady } from './helpers';
+import { navigateViaSidebar, signUp, uniqueTestEmail, waitForAppReady } from './helpers';
 
 /**
  * CYC-009 (onda 29) — cobertura E2E da tela de cadência (`/app/cadence`), que até esta rodada só
@@ -25,8 +25,7 @@ test.describe('Cadência — UI de escrita (criar sequência, iniciar/pausar/ret
     expect(leadRes.status()).toBe(201);
     const leadId = (await leadRes.json()).data.id as string;
 
-    await page.getByRole('button', { name: /^Cadência/ }).click();
-    await expect(page).toHaveURL(/\/app\/cadence$/);
+    await navigateViaSidebar(page, 'cadence');
     await waitForAppReady(page);
 
     // Nova sequência
@@ -77,7 +76,7 @@ test.describe('Cadência — UI de escrita (criar sequência, iniciar/pausar/ret
     });
     const leadId = (await leadRes.json()).data.id as string;
 
-    await page.getByRole('button', { name: /^Cadência/ }).click();
+    await navigateViaSidebar(page, 'cadence');
     await waitForAppReady(page);
 
     await page.getByRole('button', { name: 'Nova sequência' }).click();

@@ -35,6 +35,11 @@ const envSchema = z
     // secretFields.ts, não aqui, para não derrubar a aplicação inteira ao subir só por causa deste
     // schema quando NODE_ENV ainda não foi resolvido nesta camada.
     CREDENTIALS_ENCRYPTION_KEY: z.string().optional(),
+    // Chave ANTERIOR de credenciais, mantida durante o grace period de rotação
+    // (BT360-DT-0073): envelopes "enc:v2:<keyId>:..." gravados com a chave antiga
+    // continuam decriptáveis enquanto esta variável estiver definida. Remover só
+    // após re-cifrar todos os segredos com a chave nova (re-encrypt sweep).
+    CREDENTIALS_ENCRYPTION_KEY_PREVIOUS: z.string().optional(),
     // Mesma obrigatoriedade condicional de CREDENTIALS_ENCRYPTION_KEY acima, reforçada em runtime
     // por src/lib/crypto/piiIndex.ts — chave do índice cego (HMAC-SHA256) de busca exata sobre
     // Contact.email/phone/whatsapp cifrados em repouso. Substitui `PII_SEARCH_HMAC_SECRET`
@@ -80,6 +85,27 @@ const envSchema = z
     // folgado para uso legítimo (ninguém reporta 10 bugs em 15 minutos) e apertado o bastante para
     // conter um usuário mal-intencionado enchendo a tabela BugReport.
     BUG_REPORT_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
+    // Limite dedicado do POST público /api/public/demo-leads (landing 360°), por IP, janela de 15min.
+    // 5 é folgado para um humano preencher o formulário (inclusive retries) e apertado o bastante
+    // para conter abuso/enumeração. Não compartilha a cota genérica de 600 do apiLimiter.
+    PUBLIC_LEAD_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(5),
+    // Organização dona dos leads da landing institucional. O endpoint público NÃO aceita
+    // tenantId/organizationId do cliente — só este valor, configurado no servidor, resolve o
+    // tenant. Sem ele o POST responde 503 (fail-closed). Use o id (cuid) da Organization, não um
+    // slug ou nome. Pendente do OK do Marcelo em produção.
+    LANDING_LEAD_ORGANIZATION_ID: z.string().min(1).optional(),
+    // Sal HMAC-SHA256 do IP do titular na captura pública. Sem valor, o IP não é persistido
+    // (nunca em claro). Mínimo 16 caracteres quando definido.
+    PUBLIC_LEAD_IP_HASH_SECRET: z.string().min(16).optional(),
+    // E-mail transacional de confirmação + instruções de DSR. Desligado por padrão.
+    LANDING_LEAD_CONFIRMATION_EMAIL_ENABLED: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
+    // Política operacional de retenção do lead da demo (aprovada pelo Marcelo em 2026-11-11).
+    // Não é texto legal final. O job de purge fica como follow-up — estas vars só declaram o prazo.
+    LANDING_LEAD_RETENTION_IDLE_DAYS: z.coerce.number().int().positive().default(90),
+    LANDING_LEAD_RETENTION_AFTER_DEMO_DAYS: z.coerce.number().int().positive().default(30),
     JSON_BODY_LIMIT: z.string().default('2mb'),
     TRUST_PROXY: z
       .enum(['true', 'false'])

@@ -101,11 +101,11 @@ export interface ModuleNavPermissions {
   isAdmin?: boolean;
 }
 
-const item = (
-  tab: TabType,
-  label?: string,
-  extra?: Partial<ModuleNavItem>,
-): ModuleNavItem => ({ tab, label, ...extra });
+const item = (tab: TabType, label?: string, extra?: Partial<ModuleNavItem>): ModuleNavItem => ({
+  tab,
+  label,
+  ...extra,
+});
 
 export const HUB_MODULE: ProductModule = {
   id: 'hub',
@@ -139,7 +139,12 @@ export const PRODUCT_MODULES: ProductModule[] = [
       item('propostas', 'Propostas'),
       { tab: 'companies', label: 'Empresas', section: 'Relacionamento' },
       item('contacts', 'Contatos & Decisores'),
-      { tab: 'contacts', label: 'Mapeamento de Decisores', path: 'contacts', query: 'view=decisores' },
+      {
+        tab: 'contacts',
+        label: 'Mapeamento de Decisores',
+        path: 'contacts',
+        query: 'view=decisores',
+      },
     ],
   },
   {
@@ -420,10 +425,7 @@ export function getActiveModuleId(pathname: string): ModuleId {
   const firstSegment = appPath.split('/')[0];
   const tab = firstSegment as TabType;
   for (const module of ALL_MODULES) {
-    const tabs = new Set<TabType>([
-      ...module.items.map((i) => i.tab),
-      ...(module.extraTabs ?? []),
-    ]);
+    const tabs = new Set<TabType>([...module.items.map((i) => i.tab), ...(module.extraTabs ?? [])]);
     if (tabs.has(tab)) return module.id;
   }
   return 'hub';

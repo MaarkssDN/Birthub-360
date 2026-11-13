@@ -1,5 +1,6 @@
 export * from './application/CadenceExecutionPort.js';
 export * from './application/CadenceExecutionService.js';
+export * from './application/cadenceEligibility.js';
 export * from './application/cadenceService.js';
 export * from './application/optOutService.js';
 export * from './application/rateLimitService.js';

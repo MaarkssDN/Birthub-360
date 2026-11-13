@@ -129,4 +129,3 @@ const PipedriveProvider: CrmProvider = {
 };
 
 registerCrmProvider(PipedriveProvider);
-export { PipedriveProvider };

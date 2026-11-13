@@ -5,6 +5,14 @@ import { Client } from 'pg';
 // Load test environment variables before Prisma initializes
 config({ path: path.resolve(process.cwd(), '.env.test') });
 
+// O default da factory em NODE_ENV=test usa repositório in-memory. A captura pública
+// de lead precisa gravar ConsentAuditRecord de verdade para o teste de integração
+// asserir a âncora LGPD no banco. Definido aqui (setupFile) para valer antes do
+// singleton ser criado no primeiro import.
+if (!process.env.CONSENT_CHAIN_USE_PRISMA) {
+  process.env.CONSENT_CHAIN_USE_PRISMA = '1';
+}
+
 // Seatbelt: se .env.test não existir (ou estiver desatualizado) — por exemplo, alguém rodando
 // `vitest run -c vitest.integration.config.ts` direto, sem passar pelo `pretest:integration` que
 // prepara o arquivo — DATABASE_URL cai de volta pro que já estiver no processo, que numa máquina
@@ -96,12 +104,42 @@ async function deleteOrganizationsAsOwner(args?: {
 
     if (targetIds.length === 0) return { count: 0 };
 
-    // Para cada organização, limpa as tabelas com FK RESTRICT ou triggers de retenção
+    // Para cada organização, limpa as tabelas com FK RESTRICT ou triggers de retenção.
+    // As 22 tabelas abaixo têm FK organizationId → Organization ON DELETE RESTRICT desde a
+    // migração 20261112000000_tenant_fk_cascade_to_restrict (TAREFA-SANEAMENTO-014): sem
+    // deletar os filhos antes, o DELETE da Organization falha com violação de FK.
+    const RESTRICT_FK_TABLES = [
+      'AIGuardrailEvent',
+      'AgentExecution',
+      'AgentMemoryRecord',
+      'RoleMemoryRecord',
+      'OrganizationMemoryRecord',
+      'LeadStageHistory',
+      'DealClosureEvent',
+      'ForecastSnapshot',
+      'AccountIntelligenceSnapshot',
+      'CopilotoDealHealthSnapshot',
+      'CopilotoConsentRecord',
+      'OrganizationAiConsent',
+      'OptOutRecord',
+      'CallLog',
+      'VoiceCallLog',
+      'ThreeCXCallEvent',
+      'BitrixSyncLog',
+      'ExternalCrmSyncLog',
+      'DomainEventOutbox',
+      'DomainEventConsumption',
+      'ProspectingSearchExecution',
+      'FlywheelApproachRecord',
+    ];
     for (const orgId of targetIds) {
       // Seta a flag LGPD oficial (ADR-006 / migration 20261021000000) para permitir DELETE na cadeia desta org
       await client.query(`SELECT set_config('app.lgpd_chain_retention_org', $1, false)`, [orgId]);
       await client.query(`DELETE FROM "ConsentAuditRecord" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
       await client.query(`DELETE FROM "ConsentAuditChainHead" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
+      for (const table of RESTRICT_FK_TABLES) {
+        await client.query(`DELETE FROM "${table}" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
+      }
       await client.query(`DELETE FROM "user" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
     }
 
@@ -159,6 +197,9 @@ const cleanDatabase = async () => {
       await prisma.timelineEvent.deleteMany();
       await prisma.activity.deleteMany();
       await prisma.note.deleteMany();
+      // PublicLeadConsent.leadId é ON DELETE SET NULL: a prova operacional sobrevive
+      // à exclusão do Lead. Limpar explicitamente no tenant evita residual entre testes.
+      await prisma.publicLeadConsent.deleteMany();
       await prisma.lead.deleteMany();
       await prisma.contact.deleteMany();
       await prisma.company.deleteMany();

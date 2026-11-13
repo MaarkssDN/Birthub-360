@@ -28,11 +28,7 @@ interface SidebarProps {
   onToggleCollapse?: () => void;
 }
 
-export function Sidebar({
-  activeTab,
-  mobileOpen = false,
-  onCloseMobile,
-}: SidebarProps) {
+export function Sidebar({ activeTab, mobileOpen = false, onCloseMobile }: SidebarProps) {
   const [panelCollapsed, setPanelCollapsed] = useState(() => {
     if (typeof window === 'undefined') return false;
     return window.localStorage.getItem(PANEL_COLLAPSED_KEY) === 'true';

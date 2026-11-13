@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockEnv = vi.hoisted(() => ({
   NODE_ENV: 'test' as string,
   CREDENTIALS_ENCRYPTION_KEY: undefined as string | undefined,
+  CREDENTIALS_ENCRYPTION_KEY_PREVIOUS: undefined as string | undefined,
 }));
 
 vi.mock('@/config/env', () => ({ env: mockEnv }));
@@ -18,6 +19,7 @@ import {
 beforeEach(() => {
   mockEnv.NODE_ENV = 'test';
   mockEnv.CREDENTIALS_ENCRYPTION_KEY = undefined;
+  mockEnv.CREDENTIALS_ENCRYPTION_KEY_PREVIOUS = undefined;
   _resetKeyCacheForTests();
 });
 
@@ -82,6 +84,77 @@ describe('secretFields — criptografia de credenciais de integrações em repou
 
     const encrypted = encryptField('dev-secret');
     expect(decryptField(encrypted)).toBe('dev-secret');
+  });
+
+  it('envelope keyed embute keyId da chave (versionamento — BT360-DT-0073)', () => {
+    const keyA = Buffer.alloc(32, 7).toString('base64');
+    const keyB = Buffer.alloc(32, 9).toString('base64');
+    mockEnv.CREDENTIALS_ENCRYPTION_KEY = keyA;
+
+    const encrypted = encryptField('segredo');
+    // enc:v1:<keyId>:<iv>:<authTag>:<ciphertext> — 4 segmentos após o prefixo.
+    const segments = encrypted.slice('enc:v1:'.length).split(':');
+    expect(segments).toHaveLength(4);
+    expect(segments[0]).toMatch(/^[0-9a-f]{12}$/);
+
+    _resetKeyCacheForTests();
+    mockEnv.CREDENTIALS_ENCRYPTION_KEY = keyB;
+    // keyId da cifra antiga não casa com a chave nova — falha fail-closed.
+    expect(() => decryptField(encrypted)).toThrow(/Falha ao decifrar/);
+  });
+
+  it('rotação com grace period: chave anterior em CREDENTIALS_ENCRYPTION_KEY_PREVIOUS decifra envelope antigo', () => {
+    const oldKey = Buffer.alloc(32, 1).toString('base64');
+    const newKey = Buffer.alloc(32, 2).toString('base64');
+
+    // Credencial gravada ANTES da rotação, cifrada com a chave antiga.
+    mockEnv.CREDENTIALS_ENCRYPTION_KEY = oldKey;
+    const cipherOld = encryptField('token-bitrix-antigo');
+
+    // Pós-rotação: chave nova é a atual, antiga vira PREVIOUS (grace period).
+    _resetKeyCacheForTests();
+    mockEnv.CREDENTIALS_ENCRYPTION_KEY = newKey;
+    mockEnv.CREDENTIALS_ENCRYPTION_KEY_PREVIOUS = oldKey;
+    expect(decryptField(cipherOld)).toBe('token-bitrix-antigo');
+
+    // Credencial gravada DEPOIS da rotação usa a chave nova e também decifra.
+    const cipherNew = encryptField('token-bitrix-novo');
+    expect(decryptField(cipherNew)).toBe('token-bitrix-novo');
+  });
+
+  it('após encerrar o grace period (remover PREVIOUS), envelope da chave antiga falha fail-closed', () => {
+    const oldKey = Buffer.alloc(32, 1).toString('base64');
+    const newKey = Buffer.alloc(32, 2).toString('base64');
+
+    mockEnv.CREDENTIALS_ENCRYPTION_KEY = oldKey;
+    const cipherOld = encryptField('segredo');
+
+    _resetKeyCacheForTests();
+    mockEnv.CREDENTIALS_ENCRYPTION_KEY = newKey;
+    mockEnv.CREDENTIALS_ENCRYPTION_KEY_PREVIOUS = oldKey;
+    expect(decryptField(cipherOld)).toBe('segredo');
+
+    // Grace period encerrado.
+    _resetKeyCacheForTests();
+    mockEnv.CREDENTIALS_ENCRYPTION_KEY_PREVIOUS = undefined;
+    expect(() => decryptField(cipherOld)).toThrow(/Falha ao decifrar/);
+  });
+
+  it('envelope legado de 3 segmentos (sem keyId) continua decifrável via chave anterior', () => {
+    const oldKey = Buffer.alloc(32, 1).toString('base64');
+    const newKey = Buffer.alloc(32, 2).toString('base64');
+
+    mockEnv.CREDENTIALS_ENCRYPTION_KEY = oldKey;
+    const keyed = encryptField('legado');
+    // Remove o segmento keyId → formato legado "enc:v1:<iv>:<tag>:<ct>".
+    const parts = keyed.split(':');
+    const legacy = `enc:v1:${parts.slice(3).join(':')}`;
+    expect(legacy.slice('enc:v1:'.length).split(':')).toHaveLength(3);
+
+    _resetKeyCacheForTests();
+    mockEnv.CREDENTIALS_ENCRYPTION_KEY = newKey;
+    mockEnv.CREDENTIALS_ENCRYPTION_KEY_PREVIOUS = oldKey;
+    expect(decryptField(legacy)).toBe('legado');
   });
 });
 

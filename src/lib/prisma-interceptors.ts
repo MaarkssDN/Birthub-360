@@ -1,7 +1,4 @@
-import {
-  ENCRYPTED_MODEL_FIELDS,
-  encryptSensitiveFields,
-} from './crypto/piiFields.js';
+import { ENCRYPTED_MODEL_FIELDS, encryptSensitiveFields } from './crypto/piiFields.js';
 import { computeContactPiiIndexes } from './crypto/piiIndex.js';
 import { tryDecryptField } from './crypto/secretFields.js';
 import { TENANT_INJECTED_MODELS } from './tenant-scoping-registry.js';
@@ -316,11 +313,7 @@ export function applyPiiEncryptionToWriteArgs(
  * Soft Delete (Read Filtering): models auditáveis nunca devolvem registros com
  * `deletedAt` preenchido em leituras. Mutação in-place de `args.where`.
  */
-export function applySoftDeleteReadFilter(
-  args: unknown,
-  model: string,
-  operation: string,
-): void {
+export function applySoftDeleteReadFilter(args: unknown, model: string, operation: string): void {
   if (!isAuditableModel(model)) return;
   if (
     !['findFirst', 'findFirstOrThrow', 'findMany', 'count', 'aggregate', 'groupBy'].includes(

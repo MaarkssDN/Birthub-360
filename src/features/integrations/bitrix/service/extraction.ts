@@ -6,7 +6,12 @@ import { prisma } from '../../../../lib/prisma.js';
 import { computeBackoffDelayMs, sleep } from '../../../../shared/http/retryWithBackoff.js';
 import { AppError } from '../../../../shared/middlewares/errorHandler.js';
 import { BITRIX_FIELD_MAP_VERSION } from '../bitrixFieldMap.js';
-import { BitrixDefinitiveError, callBitrix, getConnectionWebhookUrl } from './client.js';
+import {
+  BitrixCallAbortedError,
+  BitrixDefinitiveError,
+  callBitrix,
+  getConnectionWebhookUrl,
+} from './client.js';
 import {
   ALL_EXTRACTION_ENTITIES,
   type BitrixExtractionEntity,
@@ -277,7 +282,7 @@ export function __setExtractionRetryDelayForTests(
   extractionSleepFn = sleepFn ?? sleep;
 }
 
-export const MAX_PAGE_RETRIES = 3;
+const MAX_PAGE_RETRIES = 3;
 
 async function extractEntityPages(
   organizationId: string,
@@ -287,6 +292,7 @@ async function extractEntityPages(
   select: string[] | undefined,
   correlationId: string,
   onPage: (processedSoFar: number) => Promise<boolean>,
+  signal?: AbortSignal,
 ): Promise<{
   rows: Record<string, unknown>[];
   pagesScanned: number;
@@ -301,6 +307,9 @@ async function extractEntityPages(
   let cancelled = false;
 
   while (pagesScanned < PAGE_SAFETY_CAP) {
+    // Cancelamento cooperativo (TAREFA-SANEAMENTO-046): abort entre páginas encerra sem nova
+    // chamada de rede — o signal também é propagado a cada `callBitrix` abaixo.
+    if (signal?.aborted) throw new BitrixCallAbortedError();
     const params: Record<string, unknown> = { filter, start };
     if (select) params.select = select;
     if (entity !== 'user') params.order = { ID: 'ASC' }; // ordem estável — evita pular/duplicar registro se algo for criado/alterado entre páginas
@@ -312,9 +321,12 @@ async function extractEntityPages(
       try {
         data = await callBitrix<BitrixListResponse>(webhookUrl, method, params, {
           correlationId,
+          signal,
         });
         break;
       } catch (err: any) {
+        // Cancelamento cooperativo propaga imediatamente — nunca retentado como falha transitória.
+        if (err instanceof BitrixCallAbortedError) throw err;
         // Erro definitivo (401/403/filtro inválido) propaga imediatamente sem retentar
         if (
           err instanceof BitrixDefinitiveError ||
@@ -530,6 +542,12 @@ export async function executeExtractionRun(organizationId: string, runId: string
     return;
   }
 
+  // Cancelamento cooperativo (TAREFA-SANEAMENTO-046 / BT360-DT-0036): um AbortController por
+  // execução, disparado assim que `isCancelled` confirma status='cancelled' no banco. O signal
+  // desce até cada `callBitrix` — aborta o fetch em voo, interrompe o backoff entre tentativas e
+  // impede que uma página/entidade seguinte seja sequer requisitada depois do cancelamento.
+  const runAbortController = new AbortController();
+
   const datasets: ExtractionEntityDataset[] = [];
   const countByEntity: Record<string, number> = {};
   const progressEntities: ExtractionEntityProgress[] = entities.map((entity) => ({
@@ -550,6 +568,7 @@ export async function executeExtractionRun(organizationId: string, runId: string
 
   for (const entity of entities) {
     if (await isCancelled(organizationId, runId)) {
+      runAbortController.abort();
       wasCancelled = true;
       break;
     }
@@ -602,8 +621,11 @@ export async function executeExtractionRun(organizationId: string, runId: string
               totalCount + processedSoFar,
               countByEntity,
             );
-            return isCancelled(organizationId, runId);
+            const cancelled = await isCancelled(organizationId, runId);
+            if (cancelled) runAbortController.abort(); // propaga às chamadas HTTP em voo/seguintes
+            return cancelled;
           },
+          runAbortController.signal,
         );
 
         entry.pagesScanned = pagesScanned;
@@ -639,6 +661,15 @@ export async function executeExtractionRun(organizationId: string, runId: string
         }
         entitySuccess = true;
       } catch (err: any) {
+        // Cancelamento cooperativo (TAREFA-SANEAMENTO-046): o signal abortou porque a linha já
+        // está 'cancelled' (gravado por cancelExtractionRun) — não é falha da extração. Mesmo
+        // desfecho do cancelamento detectado entre páginas: nenhum arquivo gerado, histórico
+        // preservado, sem incremento da métrica de falhas.
+        if (err instanceof BitrixCallAbortedError) {
+          entry.status = 'pending';
+          wasCancelled = true;
+          break;
+        }
         const isDefinitive =
           err instanceof BitrixDefinitiveError ||
           err?.statusCode === 401 ||
@@ -949,8 +980,8 @@ export async function retryExtractionRun(organizationId: string, runId: string) 
   return updatedRun;
 }
 
-export const DEFAULT_STUCK_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutos
-export const MAX_RUN_ATTEMPTS = 3;
+const DEFAULT_STUCK_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutos
+const MAX_RUN_ATTEMPTS = 3;
 
 /**
  * Reconcilia extrações que ficaram presas com status 'running'
@@ -1008,6 +1039,3 @@ export async function reconcileStuckRuns(
     failedCount,
   };
 }
-
-export type { BitrixExtractionEntity, BitrixExtractionPeriod };
-export { ALL_EXTRACTION_ENTITIES, EXTRACTION_PERIODS };

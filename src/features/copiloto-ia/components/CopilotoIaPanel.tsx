@@ -47,7 +47,11 @@ export function CopilotoIaPanel({
   const visibleTabs = TABS.filter((t) => !t.managementOnly || canManage);
 
   return (
-    <div className={className ?? (embedded ? 'flex h-full flex-col' : 'p-6 space-y-6 max-w-6xl mx-auto')}>
+    <div
+      className={
+        className ?? (embedded ? 'flex h-full flex-col' : 'p-6 space-y-6 max-w-6xl mx-auto')
+      }
+    >
       {!embedded && (
         <div>
           <h1 className="text-2xl font-display font-bold text-ink">Copiloto IA</h1>
@@ -58,10 +62,7 @@ export function CopilotoIaPanel({
         </div>
       )}
 
-      <nav
-        className={`flex gap-1 border-b border-line ${embedded ? '' : ''}`}
-        aria-label="Abas do Copiloto IA"
-      >
+      <nav className="flex gap-1 border-b border-line" aria-label="Abas do Copiloto IA">
         {visibleTabs.map((t) => (
           <button
             key={t.id}
