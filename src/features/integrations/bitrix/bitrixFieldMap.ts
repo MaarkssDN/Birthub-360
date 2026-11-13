@@ -34,7 +34,7 @@
  */
 export const BITRIX_FIELD_MAP_VERSION = '2026-08-05';
 
-export type BitrixFieldValueType =
+type BitrixFieldValueType =
   | 'string'
   | 'enumeration'
   | 'double'
@@ -43,7 +43,7 @@ export type BitrixFieldValueType =
   | 'url';
 
 /** Onde este campo mora na Lead da plataforma. */
-export type BitrixFieldTarget =
+type BitrixFieldTarget =
   | { kind: 'lead'; field: string } // coluna top-level de Lead (ex: cadenceStage)
   | { kind: 'qualification'; field: string } // chave dentro do JSON Lead.qualification
   | { kind: 'contact'; field: string }; // campo do Contact vinculado (ex: role/cargo)

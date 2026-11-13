@@ -50,153 +50,7 @@ import type {
   CrmPublicDocumentView,
 } from '../crm360.types.js';
 import type { ICrm360Repository } from '../domain/ICrm360Repository.js';
-
-type DefaultStage = {
-  name: string;
-  code: string;
-  color: string;
-  probability: number;
-  leadStatus: LeadStatus;
-  isWon?: boolean;
-  isLost?: boolean;
-};
-
-const LEAD_STAGES: DefaultStage[] = [
-  {
-    name: 'Lead Recebido',
-    code: 'lead-recebido',
-    color: '#3b82f6',
-    probability: 5,
-    leadStatus: LeadStatus.Lead_Recebido,
-  },
-  {
-    name: 'Cadência Iniciada',
-    code: 'cadencia-iniciada',
-    color: '#6366f1',
-    probability: 10,
-    leadStatus: LeadStatus.Cadencia_Iniciada,
-  },
-  {
-    name: 'Qualificação (SDR)',
-    code: 'qualificacao-sdr',
-    color: '#8b5cf6',
-    probability: 25,
-    leadStatus: LeadStatus.Qualificacao_SDR,
-  },
-  {
-    name: 'Reunião Agendada',
-    code: 'reuniao-agendada',
-    color: '#06b6d4',
-    probability: 45,
-    leadStatus: LeadStatus.Reuniao_Agendada,
-  },
-  {
-    name: 'Convertido em Oportunidade',
-    code: 'convertido',
-    color: '#10b981',
-    probability: 60,
-    leadStatus: LeadStatus.Convertido_em_Oportunidade,
-  },
-  {
-    name: 'Lead Desqualificado',
-    code: 'desqualificado',
-    color: '#ef4444',
-    probability: 0,
-    leadStatus: LeadStatus.Lead_Desqualificado,
-    isLost: true,
-  },
-];
-
-const DEAL_STAGES: DefaultStage[] = [
-  {
-    name: 'Nova Oportunidade',
-    code: 'nova-oportunidade',
-    color: '#3b82f6',
-    probability: 15,
-    leadStatus: LeadStatus.Nova_Oportunidade,
-  },
-  {
-    name: 'Proposta Enviada',
-    code: 'proposta-enviada',
-    color: '#8b5cf6',
-    probability: 45,
-    leadStatus: LeadStatus.Proposta_Enviada,
-  },
-  {
-    name: 'Call/Visita Agendada',
-    code: 'call-visita',
-    color: '#06b6d4',
-    probability: 60,
-    leadStatus: LeadStatus.Call_Visita_Agendada,
-  },
-  {
-    name: 'Piloto VTECH',
-    code: 'piloto-vtech',
-    color: '#f59e0b',
-    probability: 70,
-    leadStatus: LeadStatus.Piloto_VTECH,
-  },
-  {
-    name: 'Piloto Birthub 360 Profile',
-    code: 'piloto-profile',
-    color: '#f97316',
-    probability: 75,
-    leadStatus: LeadStatus.Piloto_Birthub360_Profile,
-  },
-  {
-    name: 'Piloto Birthub 360 Profile - Concluído',
-    code: 'piloto-profile-concluido',
-    color: '#84cc16',
-    probability: 85,
-    leadStatus: LeadStatus.Piloto_Birthub360_Profile_Concluido,
-  },
-  {
-    name: 'Piloto Birthub 360 Profile - Cancelado',
-    code: 'piloto-profile-cancelado',
-    color: '#f43f5e',
-    probability: 0,
-    leadStatus: LeadStatus.Piloto_Birthub360_Profile_Cancelado,
-    isLost: true,
-  },
-  {
-    name: 'Piloto Logística',
-    code: 'piloto-logistica',
-    color: '#eab308',
-    probability: 75,
-    leadStatus: LeadStatus.Piloto_Logistica,
-  },
-  {
-    name: 'Piloto Logístico - Concluído',
-    code: 'piloto-logistico-concluido',
-    color: '#22c55e',
-    probability: 90,
-    leadStatus: LeadStatus.Piloto_Logistico_Concluido,
-  },
-  {
-    name: 'Piloto Logístico - Cancelado',
-    code: 'piloto-logistico-cancelado',
-    color: '#ef4444',
-    probability: 0,
-    leadStatus: LeadStatus.Piloto_Logistico_Cancelado,
-    isLost: true,
-  },
-  {
-    name: 'Negócios Ganhos',
-    code: 'ganho',
-    color: '#10b981',
-    probability: 100,
-    leadStatus: LeadStatus.Negocios_Ganhos,
-    isWon: true,
-  },
-  {
-    name: 'Negócios Perdidos',
-    code: 'perdido',
-    color: '#dc2626',
-    probability: 0,
-    leadStatus: LeadStatus.Negocios_Perdidos,
-    isLost: true,
-  },
-];
+import { DEAL_STAGES, type DefaultStage, LEAD_STAGES } from './defaultPipelineStages.js';
 
 // DATA-004 (Sprint 05/Onda 17): derivado da mesma fonte única usada por PrismaLeadRepository
 // (update()/updateStatus()) — antes desta correção esta lista tinha só 2 status (Ganhos/Perdidos),
@@ -339,6 +193,32 @@ async function attachLegacyRecords(
   pipeline: Awaited<ReturnType<typeof upsertDefaultPipeline>>,
   funnel: LeadFunnel,
 ) {
+  // TAREFA-SANEAMENTO-018 (BT360-DT-0024): esta função roda em TODA leitura do CRM360
+  // (getOverviewData/getPipelines/getBoardLeads/convertLead). Sem este pre-check, cada
+  // chamada disparava um `updateMany` por estágio do funil (6 em Leads + 12 em Negócios =
+  // até 18 escritas) mesmo quando nenhum lead estava pendente de atribuição — o maior
+  // custo de escrita do módulo em regime permanente. Um único `count` resolve: se não
+  // existe lead órfão (pipelineId null) cujo status case com algum estágio, nenhum
+  // `updateMany` teria efeito e o loop inteiro é pulado.
+  const stageStatuses = [
+    ...new Set(
+      pipeline.stages
+        .map((stage) => stage.leadStatus)
+        .filter((status): status is LeadStatus => status != null),
+    ),
+  ];
+  if (stageStatuses.length === 0) return;
+
+  const pendingOrphans = await prisma.lead.count({
+    where: {
+      organizationId,
+      funnel,
+      pipelineId: null,
+      status: { in: stageStatuses },
+    },
+  });
+  if (pendingOrphans === 0) return;
+
   for (const stage of pipeline.stages) {
     if (!stage.leadStatus) continue;
     await prisma.lead.updateMany({
@@ -516,28 +396,28 @@ export class PrismaCrm360Repository implements ICrm360Repository {
   }
 
   async getDeals(organizationId: string): Promise<unknown[]> {
-    try {
-      const deals = await prisma.lead.findMany({
-        where: {
-          organizationId,
-          funnel: LeadFunnel.Negocio,
-          deletedAt: null,
-        },
-        include: {
-          company: true,
-          contact: true,
-          pipelineStage: true,
-          dealItems: true,
-        },
-        orderBy: [{ probability: 'desc' }, { updatedAt: 'desc' }],
-      });
-      return deals.map((deal) => ({
-        ...deal,
-        status: fromPrismaLeadStatus(deal.status),
-      }));
-    } catch {
-      return [];
-    }
+    // TAREFA-SANEAMENTO-018 (BT360-DT-0024): o try/catch→[] anterior era um fallback
+    // enganoso — uma falha de banco/RLS virava "lista vazia" indistinguível de "sem
+    // negócios", violando AGENTS.md §30/§32. O erro agora propaga; o controller mantém
+    // o comportamento defensivo de resposta (200 + []) mas registra o erro no log.
+    const deals = await prisma.lead.findMany({
+      where: {
+        organizationId,
+        funnel: LeadFunnel.Negocio,
+        deletedAt: null,
+      },
+      include: {
+        company: true,
+        contact: true,
+        pipelineStage: true,
+        dealItems: true,
+      },
+      orderBy: [{ probability: 'desc' }, { updatedAt: 'desc' }],
+    });
+    return deals.map((deal) => ({
+      ...deal,
+      status: fromPrismaLeadStatus(deal.status),
+    }));
   }
 
   async getBoardLeads(organizationId: string, funnelStr = 'Negocio', pipelineId?: string) {

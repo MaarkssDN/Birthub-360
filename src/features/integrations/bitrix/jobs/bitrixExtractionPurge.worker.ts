@@ -51,7 +51,7 @@ import { deleteExtractionRunFiles } from '../service/extractionFiles.js';
 //
 // IDEMPOTÊNCIA: o schema agora possui a coluna `purgedAt` (Onda 42). O worker a utiliza no filtro
 // WHERE para ignorar execuções já expurgadas e a preenche diretamente no UPDATE.
-export const BITRIX_EXTRACTION_PURGE_QUEUE_NAME = 'bitrix-extraction-purge-queue';
+const BITRIX_EXTRACTION_PURGE_QUEUE_NAME = 'bitrix-extraction-purge-queue';
 
 /** Só extrações em estado TERMINAL são candidatas — nunca `queued`/`running` (em andamento, mesmo que antiga/travada; reconciliar runs travados é responsabilidade de outra rotina, não deste expurgo). */
 const TERMINAL_STATUSES = ['completed', 'completed_partial', 'failed', 'cancelled'] as const;

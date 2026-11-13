@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 05 (Prospecção Comercial)
 Onda: Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-019)
-Status: em-andamento
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 4
@@ -61,3 +61,5 @@ O acúmulo real era a tabela `EnrichmentLog` (payload bruto do provider em `rawD
 - Sem migração/schema novo e sem dependência de `src/lib/queue/**` (slot do Agente 16).
 
 Gates executados no worktree: `npx tsc --noEmit` ✓, `npm run lint` ✓ (0 diagnósticos nos arquivos alterados), `vitest run -c vitest.unit.config.ts src/features/prospecting/services/__tests__/enrichmentRetention.test.ts` — 10/10 testes (retenção default/config/inválida, cutoff, expurgo, throttle 24h, falha de banco observável, gatilho via `enrichCompany` no caminho de cache).
+
+**Atualização Agente 05 — 2026-11-12** (branch `agente/05-prospeccao-saneamento`, origin/main @ bd292b3be): implementação confirmada INTEGRADA em main — commit `0e412d67b` ("fix(prospecting): ciclo de vida e expurgo do cache de enriquecimento (TAREFA-SANEAMENTO-019)") e merge `83298fa86` ("merge: agente 05 - retencao/expurgo EnrichmentLog (revisao 24 aprovado)"). Re-verificado nesta sessão: `purgeExpiredEnrichmentLogs`/`maybePurgeExpiredEnrichmentLogs` presentes em `src/features/prospecting/services/enrichment.service.ts` (linhas ~167–266) e `enrichmentRetention.test.ts` 10/10 passando em `vitest.unit.config.ts`. Status → `resolvido`.

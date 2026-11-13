@@ -64,6 +64,7 @@ import { objectionMatrixRoutes } from '../features/playbook/objection-matrix/rou
 import { qualificationMatrixRoutes } from '../features/playbook/qualification-matrix/routes/qualification-matrix.routes.js';
 import { prospectingRoutes } from '../features/prospecting/routes/prospecting.routes.js';
 import { prospectingToolsRoutes } from '../features/prospecting/routes/prospecting-tools.routes.js';
+import { publicLeadRoutes } from '../features/public-leads/publicLead.routes.js';
 import { roleplayRoutes } from '../features/roleplay/routes/roleplay.routes.js';
 import { pillarSettingsRoutes } from '../features/settings/routes/pillarSettings.routes.js';
 import { salesOrchestrationRoutes } from '../features/sales-orchestration/server/salesOrchestration.routes.js';
@@ -99,6 +100,10 @@ export function mountFeatureRoutes(app: Express): void {
   // colida com nenhum padrão de lead.routes.ts, evita qualquer ambiguidade futura).
   app.use('/api/leads/dedup', authenticateToken, requireTenant, leadDedupRoutes);
   app.use('/api/leads', authenticateToken, requireTenant, leadRoutes);
+  // Endpoint PÚBLICO da landing (sem authenticateToken / requireTenant). Prefixo
+  // /api/public/demo-leads propositalmente distinto do /api/leads autenticado — não abre
+  // o CRM. O tenant é resolvido só por LANDING_LEAD_ORGANIZATION_ID no servidor.
+  app.use('/api/public/demo-leads', publicLeadRoutes);
   app.use('/api/crm/saved-views', authenticateToken, requireTenant, savedViewRoutes);
   app.use('/api/crm', authenticateToken, requireTenant, crm360Routes);
   app.use(

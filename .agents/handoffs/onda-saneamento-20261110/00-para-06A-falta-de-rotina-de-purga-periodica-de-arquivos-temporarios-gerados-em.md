@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 06A (Extrações Bitrix)
 Onda: Onda 3 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-021)
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 3
@@ -48,3 +48,17 @@ Executar a tarefa `TAREFA-SANEAMENTO-021` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução
+
+Verificação em 2026-11-12 pelo Agente 06A (worktree `agente-06a-bitrix`, branch `agente/06A-bitrix-saneamento`, base `origin/main` @ 0b52894e0):
+
+A rotina de purga periódica **já estava implementada** na Onda 42 — `src/features/integrations/bitrix/jobs/bitrixExtractionPurge.worker.ts` (`runBitrixExtractionPurgeSweep` + `createBitrixExtractionPurgeWorker` + `scheduleBitrixExtractionPurgeJob`, cron diário `0 5 * * *`), registrada em `src/bootstrap/workers.ts` (condicionada a `embeddedWorkersEnabled`). Cobre exatamente o impacto descrito: remove os arquivos temporários em `BITRIX_EXTRACTION_STORAGE_DIR` via `deleteExtractionRunFiles` e anonimiza a linha `BitrixExtractionRun` (expurgo LGPD opção B, `purgedAt`, retenção `BITRIX_EXTRACTION_RETENTION_DAYS`, flag fail-safe `BITRIX_EXTRACTION_PURGE_ENABLED`). A dívida permanecia "NÃO INICIADO" no backlog porque o worker **não tinha nenhum teste automatizado** — lacuna do critério de aceite "adição ou atualização de testes automatizados cobrindo caminho de sucesso e de falha".
+
+Fechamento desta rodada (cirúrgico, sem alterar o worker): criado `src/features/integrations/bitrix/jobs/__tests__/bitrixExtractionPurge.worker.test.ts` com 6 casos — flag desligada (fail-safe, zero acesso ao banco), expurgo feliz (arquivo apagado antes da linha, `filters.search` removido, `files=null`, `purgedAt` gravado, auditoria), filtro de seleção (somente status terminais + `purgedAt: null` + cutoff de retenção), idempotência (`progress.purgedAt`), falha isolada por execução e por organização (varredura continua).
+
+Limitação conhecida (documentada no próprio worker, fora do escopo cirúrgico desta tarefa): execuções presas em `running`/`queued` não são candidatas ao expurgo — reconciliação é responsabilidade de `reconcileStuckRuns`; e o expurgo itera linhas do banco, não diretórios órfãos de disco sem linha correspondente.
+
+Gates executados: `npx tsc --noEmit` (0 erros), `npm run lint` (biome — 0 erros no escopo), `npx vitest run -c vitest.unit.config.ts src/features/integrations/bitrix` → 16 arquivos / 187 testes passando. Relatório: `.agents/runs/06a-saneamento-abortsignal-purga.md`.
+
+**Pendente de encerramento formal:** parecer `APROVADO` do Agente 24 (validação de hashes + não-regressão), conforme condição do handoff.

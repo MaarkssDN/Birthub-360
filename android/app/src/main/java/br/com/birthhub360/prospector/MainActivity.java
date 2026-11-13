@@ -55,7 +55,7 @@ public class MainActivity extends BridgeActivity {
         "dashboard", "workspace", "companies", "contacts", "crm", "crm360", "mesa-tratamento",
         "activities", "cadence", "prospect", "signals-risks", "intelligence", "market-intelligence",
         "propostas", "chatbook", "roleplay", "qualification_matrix", "objections_matrix",
-        "topic_training", "bitrix", "reports", "integrations", "knowledge", "analytics", "winloss",
+        "topic_training", "bitrix", "reports", "integrations", "knowledge", "analytics", "gamification", "winloss",
         "calendar", "notifications", "automations", "usage", "editor", "team", "settings",
         "commercial_intelligence", "copiloto_ia", "daily-plan", "sdr-diagnostic", "module-access",
         "forecast", "metas", "pipeline_ponderado", "playbooks", "jornadas", "processos", "roteiros",

@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
+import { logger } from '../../../lib/logger.js';
 import { routeParam } from '../../../shared/http/routeParams.js';
 import type { AuthRequest } from '../../../shared/middlewares/authenticateToken.js';
 import { publishCrmStageChange } from '../../../shared/services/crmEventBus.js';
@@ -34,7 +35,10 @@ export class Crm360Controller {
       }
       const data = await this.crm360UseCases.getOverview(orgId);
       res.json({ success: true, data });
-    } catch {
+    } catch (error) {
+      // TAREFA-SANEAMENTO-018 (BT360-DT-0024): fallback de zeros é mantido para não quebrar
+      // o carregamento do painel, mas a falha real precisa ser observável no log.
+      logger.error({ err: error }, 'crm360.getOverview falhou — respondendo KPIs zerados');
       res.json({
         success: true,
         data: {
@@ -62,16 +66,19 @@ export class Crm360Controller {
    * GET /api/crm/deals
    * Handler defensivo para consulta de negócios:
    * Retorna array vazio em vez de estourar exceção não tratada no carregamento de /app/crm360.
+   * TAREFA-SANEAMENTO-018 (BT360-DT-0024): o catch silencioso anterior escondia falhas reais
+   * de banco/RLS — agora o erro é registrado no log antes do fallback de resposta.
    */
   getDeals = async (req: Request, res: Response, _next: NextFunction) => {
+    const orgId = (req as AuthRequest).user?.organizationId;
+    if (!orgId) {
+      return res.status(200).json([]);
+    }
     try {
-      const orgId = (req as AuthRequest).user?.organizationId;
-      if (!orgId) {
-        return res.status(200).json([]);
-      }
       const data = await this.crm360UseCases.getDeals(orgId);
       return res.status(200).json(Array.isArray(data) ? data : []);
-    } catch {
+    } catch (error) {
+      logger.error({ err: error, organizationId: orgId }, 'crm360.getDeals falhou');
       return res.status(200).json([]);
     }
   };

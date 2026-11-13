@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 01 (Plataforma, Segurança e Dados)
 Onda: Onda 1 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-044)
-Status: aberto
+Status: em-andamento
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 1
@@ -48,3 +48,11 @@ Executar a tarefa `TAREFA-SANEAMENTO-044` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução (Agente 01 — 2026-11-12)
+
+- **Causa raiz já eliminada:** `user.count` removido de `src/lib/auth.ts` no commit `5709caaa2` (onda-saneamento-20261015). Estado atual: fundador de org nova recebe `role: 'ADMIN'` sem consulta de contagem. Nenhuma alteração adicional em `src/lib/auth.ts` foi necessária.
+- **Teste de regressão adicionado:** `tests/integration/auth-founder-admin.test.ts` (sucesso: fundador→ADMIN+org+módulos; semântica: 2º fundador também ADMIN sem count; falha: e-mail duplicado rejeitado).
+- **Execução do teste de integração:** bloqueada nesta estação (sem `.env.test`/Docker). Pendente gate de integração do 00/08.
+- **Run report:** `.agents/runs/agente-01-tarefa-saneamento-044.md`.
+- **Revisão:** aguardando parecer do Agente 24.

@@ -41,3 +41,30 @@ podem estar em modo demo.
 ## Fora de escopo
 
 - Redesenhar telas; mexer no rail/nav homologada.
+
+## Resolução parcial (Agente 17 — 2026-11-12)
+
+Item 1 do Agente 17 — **verificação do que o backend retorna por tenant**:
+
+- `GET /api/sales-orchestration/overview` é servido por
+  `src/features/sales-orchestration/server/SalesOrchestrationService.ts` (implementado sob a regra
+  "P0 #693 — API de orquestração honesta"). Verificado no código em `origin/main`:
+  - `playbooks` vem de `PlaybookInsight` real do tenant (sem seed/template);
+  - `kpis.cadenciasAtivas` vem de `CadenceSequence` real (`active: true, deletedAt: null`);
+  - `jornadas`, `processos`, `roteiros` são `[]` fixos e declarados em `meta.emptySections`;
+  - métricas sem cálculo real (`aderenciaPlaybook`, `speedToLeadMin`, `complianceRate`, etc.)
+    retornam `null` e são listadas em `meta.unavailableMetrics` — nunca número inventado;
+  - `meta.source` é `'real'` quando há dados reais e `'none'` quando vazio — exatamente o contrato
+    `source: 'real'|'none'` que a UI usa para exibir `DemoDataNotice`/estado vazio honesto.
+- **Decisão do Agente 17**: declarar escopo reduzido — as três superfícies sem modelo de dados real
+  permanecem vazias e honestas (comportamento já implementado), em vez de popular com dados demo.
+  Documentar isso formalmente no Documento Mestre é decisão de produto (Agente 00/02), fora do
+  escopo de arquivo do 17.
+
+Status mantido `em-andamento`: itens dos Agentes 07, 02 e 08 seguem pendentes de verificação.
+
+## Avaliação Agente 02 (2026-11-12)
+
+Escopo 02 nesta onda: garantir que superfícies de Orquestração de Vendas expostas na UI não fabriquem dados operacionais — empty states honestos, sem métricas/depoimentos inventados na landing (já tratado em `auditoria-para-02-verdade-no-copy`).
+
+Backlog permanece com 17 (cadência), 07 (roleplay/IA) e 08 (QA/e2e). Sem alteração de código pelo 02 além do pacote landing.

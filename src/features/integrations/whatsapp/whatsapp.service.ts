@@ -29,7 +29,7 @@ import { extractMessageText, persistWhatsAppMessage } from './whatsappMessage.se
 
 const BAILEYS_CALL_TIMEOUT_MS = 15_000;
 
-export const whatsappEvents = new EventEmitter();
+const whatsappEvents = new EventEmitter();
 
 type WASocketLogger = Parameters<typeof makeWASocket>[0]['logger'];
 

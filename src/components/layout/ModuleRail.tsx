@@ -74,7 +74,7 @@ export function ModuleRail({ panelCollapsed, onTogglePanel }: ModuleRailProps) {
 
   const goHome = () => {
     SoundFX.play('navigate');
-    navigate('/app');
+    void navigate('/app');
   };
 
   const openModule = (module: ProductModule) => {
@@ -85,7 +85,7 @@ export function ModuleRail({ panelCollapsed, onTogglePanel }: ModuleRailProps) {
       window.location.assign(module.home);
       return;
     }
-    if (module.home) navigate(module.home);
+    if (module.home) void navigate(module.home);
   };
 
   return (

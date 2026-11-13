@@ -33,7 +33,7 @@ const COLD_STATUS = 'Lead_Recebido';
  */
 const SCAN_LIMIT = 200;
 
-export type SkipTally = {
+type SkipTally = {
   'max-attempts': number;
   cooldown: number;
   'no-phone': number;
