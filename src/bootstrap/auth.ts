@@ -102,10 +102,20 @@ export function mountAuthHandler(app: Express): void {
     requestContext.run({ bypassRls: true }, async () => {
       try {
         await authHandler(req, res);
-      } catch (err: any) {
-        logger.error({ err }, 'MOUNT_AUTH_HANDLER_CAUGHT_ERROR');
+      } catch (err: unknown) {
+        // Handoff 15→01 (BT360-DT-0072 residual): nunca logar o objeto de erro cru —
+        // ele pode carregar contexto da request (headers/query com token de
+        // verify-email/reset). O pino aplica LOGGER_REDACT_PATHS, mas payload
+        // mínimo é defesa em profundidade. A resposta 500 também não ecoa
+        // err.message (pode conter detalhe interno).
+        logger.error(
+          {
+            err: err instanceof Error ? { message: err.message, name: err.name } : 'Unknown error',
+          },
+          'MOUNT_AUTH_HANDLER_CAUGHT_ERROR',
+        );
         if (!res.headersSent) {
-          res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
+          res.status(500).json({ error: 'Erro interno no servidor' });
         }
       }
     });

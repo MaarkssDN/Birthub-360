@@ -28,6 +28,52 @@ const BASE_BACKOFF_MS = 500;
 const MAX_BACKOFF_MS = 8_000;
 const REQUEST_TIMEOUT_MS = 15_000;
 
+//
+// O retry acima é REATIVO: só desacelera depois que o Bitrix já respondeu 429/QUERY_LIMIT_EXCEEDED.
+// Extrações paginadas, `batch` e syncs em lote disparavam chamadas back-to-back sem nenhum
+// espaçamento — estouravam o limite do plano (~2 req/s nos planos básicos) e dependiam de tomar
+// 429 para então entrar em backoff. Aqui garantimos um intervalo mínimo ENTRE chamadas HTTP
+// sucessivas por webhookUrl (o rate limit do Bitrix é por portal, não global), serializado por
+// fila para que chamadas concorrentes da mesma conexão também respeitem o espaçamento (sem
+// rajada quando dois syncs disparam juntos). Plano superior pode baixar via env.
+const BITRIX_MIN_INTERVAL_MS =
+  Number(process.env.BITRIX_MIN_INTERVAL_MS) >= 0
+    ? Number(process.env.BITRIX_MIN_INTERVAL_MS)
+    : 500;
+
+const lastRequestAtByWebhook = new Map<string, number>();
+const paceQueueByWebhook = new Map<string, Promise<void>>();
+
+/**
+ * Espera a vez desta conexão na fila de pacing e garante o intervalo mínimo desde a última
+ * chamada HTTP real. Chamadas concorrentes para o MESMO webhook são serializadas — cada uma só
+ * "toma seu slot" depois que a anterior disparou o fetch, então N chamadas paralelas viram N
+ * slots espaçados de BITRIX_MIN_INTERVAL_MS em vez de um burst. `signal` (cancelamento
+ * cooperativo do chamador) também interrompe a espera na fila.
+ */
+function paceBitrixRequest(webhookUrl: string, signal?: AbortSignal): Promise<void> {
+  if (BITRIX_MIN_INTERVAL_MS <= 0) return Promise.resolve();
+  const queued = (paceQueueByWebhook.get(webhookUrl) ?? Promise.resolve()).then(async () => {
+    const elapsed = Date.now() - (lastRequestAtByWebhook.get(webhookUrl) ?? 0);
+    const waitMs = BITRIX_MIN_INTERVAL_MS - elapsed;
+    if (waitMs > 0) await sleepUnlessAborted(waitMs, signal);
+    lastRequestAtByWebhook.set(webhookUrl, Date.now());
+  });
+  // `.catch` na cópia guardada na fila: uma rejeição inesperada do pacing não pode travar a fila
+  // para sempre — a promise devolvida ao chamador (`queued`) ainda propaga o erro normalmente.
+  paceQueueByWebhook.set(
+    webhookUrl,
+    queued.catch(() => {}),
+  );
+  return queued;
+}
+
+/** Só para testes: limpa o estado de pacing entre casos (módulo fica cacheado entre imports). */
+export function __resetBitrixRateLimiterForTests(): void {
+  lastRequestAtByWebhook.clear();
+  paceQueueByWebhook.clear();
+}
+
 /** Erro definitivo do Bitrix (não recuperável por retry) — carrega o correlationId para rastreio nos logs. */
 export class BitrixDefinitiveError extends AppError {
   constructor(
@@ -97,6 +143,7 @@ export async function testWebhook(webhookUrl: string): Promise<{ portalDomain: s
   let data: { error?: string; error_description?: string } | null = null;
   try {
     try {
+      await paceBitrixRequest(webhookUrl, controller.signal);
       response = await safeFetch(`${webhookUrl}profile.json`, { signal: controller.signal });
     } catch (error: any) {
       // Erro do guard de SSRF (URL/host reprovado por `safeFetch`) já vem com a mensagem certa —
@@ -237,6 +284,10 @@ async function attemptBitrixCall<T>(
   let data: (T & { error?: string; error_description?: string }) | null = null;
   try {
     try {
+      // Pacing ANTES de cada attempt (inclui retentativas — toda request HTTP conta no limite
+      // do portal). Se o chamador abortar durante a espera na fila, BitrixCallAbortedError
+      // propaga e é classificado abaixo como cancelamento, nunca como falha do Bitrix.
+      await paceBitrixRequest(webhookUrl, signal ?? controller.signal);
       response = await safeFetch(`${webhookUrl}${method}.json`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
