@@ -13,9 +13,19 @@ export interface AgentUsageHeatmap {
     agentType: string;
     executions: number;
     percentage: number;
-    avgLatencyMs: number;
+    /**
+     * `AgentMemory` não registra latência de execução — o campo é `null` em vez de um valor
+     * fabricado (antes era `totalLatency / count` com `totalLatency` nunca acumulado, gerando
+     * NaN). Quando existir fonte real de latência por agente, preencher aqui.
+     */
+    avgLatencyMs: number | null;
     successRate: number;
-    costUsd: number;
+    /**
+     * Removido o `costUsd` estimado (`count * 0.01`) — KPI fabricado. `AgentMemory` não tem
+     * custo; custo real por chamada de IA vive em `AILog` (agregado por `agentRole` em
+     * `agentCostAnalysis.service.ts`), que usa vocabulário diferente de `agentType` e não pode
+     * ser juntado sem um mapeamento confiável.
+     */
   }>;
   totalExecutions: number;
   topAgent: string;
@@ -30,41 +40,40 @@ export async function generateAgentUsageHeatmap(
 ): Promise<AgentUsageHeatmap> {
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
-  const executions = await prisma.agentMemory.findMany({
+  // BT360-DT-0008 / TAREFA-SANEAMENTO-012: agregação no banco via groupBy por (agentType,
+  // status) — antes um findMany sem limite carregava todas as linhas de AgentMemory do
+  // período em memória.
+  const grouped = await prisma.agentMemory.groupBy({
+    by: ['agentType', 'status'],
     where: {
       organizationId,
       createdAt: { gte: since },
     },
-    select: {
-      agentType: true,
-      status: true,
-      createdAt: true,
-    },
+    _count: { _all: true },
   });
 
-  const agentStats = new Map<string, { count: number; totalLatency: number; success: number }>();
+  const agentStats = new Map<string, { count: number; success: number }>();
 
-  for (const exec of executions) {
-    const agent = exec.agentType;
+  for (const row of grouped) {
+    const agent = row.agentType;
     if (!agentStats.has(agent)) {
-      agentStats.set(agent, { count: 0, totalLatency: 0, success: 0 });
+      agentStats.set(agent, { count: 0, success: 0 });
     }
     const stats = agentStats.get(agent)!;
-    stats.count++;
-    stats.success += exec.status === 'Completed' ? 1 : 0;
+    stats.count += row._count._all;
+    stats.success += row.status === 'Completed' ? row._count._all : 0;
   }
 
   const agents = Array.from(agentStats.entries()).map(([agentType, stats]) => ({
     agentType,
     executions: stats.count,
     percentage: 0, // Calculado depois
-    avgLatencyMs: stats.totalLatency / stats.count,
+    avgLatencyMs: null,
     successRate: stats.success / stats.count,
-    costUsd: stats.count * 0.01, // Estimado
   }));
 
   const totalExecutions = agents.reduce((sum, a) => sum + a.executions, 0);
-  agents.forEach((a) => (a.percentage = (a.executions / totalExecutions) * 100));
+  agents.forEach((a) => (a.percentage = totalExecutions > 0 ? (a.executions / totalExecutions) * 100 : 0));
 
   agents.sort((a, b) => b.executions - a.executions);
 

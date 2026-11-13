@@ -31,47 +31,33 @@ export async function analyzeAgentCosts(
 ): Promise<AgentCostAnalysis> {
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
-  const aiLogs = await prisma.aILog.findMany({
+  // BT360-DT-0008 / TAREFA-SANEAMENTO-012: agregação no banco via groupBy — antes um findMany
+  // sem `take` carregava todas as linhas de AILog do período em memória. O select anterior
+  // também pedia campos inexistentes no model (`costUsd`, `promptTokens`, `completionTokens`;
+  // os reais são `cost`, `tokens`, `latencyMs`), o que quebrava o endpoint em runtime.
+  const grouped = await prisma.aILog.groupBy({
+    by: ['agentRole'],
     where: {
       organizationId,
       createdAt: { gte: since },
     },
-    select: {
-      agentRole: true,
-      costUsd: true,
-      promptTokens: true,
-      completionTokens: true,
-    },
+    _count: { _all: true },
+    _sum: { cost: true, tokens: true },
   });
 
-  const agentStats = new Map<
-    string,
-    {
-      count: number;
-      totalCost: number;
-      totalTokens: number;
-    }
-  >();
-
-  for (const log of aiLogs) {
-    const agent = log.agentRole || 'UNKNOWN';
-    if (!agentStats.has(agent)) {
-      agentStats.set(agent, { count: 0, totalCost: 0, totalTokens: 0 });
-    }
-    const stats = agentStats.get(agent)!;
-    stats.count++;
-    stats.totalCost += log.costUsd || 0;
-    stats.totalTokens += (log.promptTokens || 0) + (log.completionTokens || 0);
-  }
-
-  const agents = Array.from(agentStats.entries()).map(([agentType, stats]) => ({
-    agentType,
-    totalExecutions: stats.count,
-    totalCostUsd: stats.totalCost,
-    avgCostPerExecution: stats.totalCost / stats.count,
-    totalTokens: stats.totalTokens,
-    avgTokensPerExecution: stats.totalTokens / stats.count,
-  }));
+  const agents = grouped.map((row) => {
+    const totalExecutions = row._count._all;
+    const totalCostUsd = row._sum.cost ?? 0;
+    const totalTokens = row._sum.tokens ?? 0;
+    return {
+      agentType: row.agentRole ?? 'UNKNOWN',
+      totalExecutions,
+      totalCostUsd,
+      avgCostPerExecution: totalCostUsd / totalExecutions,
+      totalTokens,
+      avgTokensPerExecution: totalTokens / totalExecutions,
+    };
+  });
 
   const totalCostUsd = agents.reduce((sum, a) => sum + a.totalCostUsd, 0);
 
