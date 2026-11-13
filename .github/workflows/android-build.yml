@@ -31,7 +31,9 @@ jobs:
       run: npx prisma generate
 
     - name: Run Type Check
-      run: npm run typecheck
+      run: npm run typecheck 
+      env:
+      NODE_OPTIONS: --max-old-space-size=4096
 
     - name: Run Lint
       run: npm run lint:ci
