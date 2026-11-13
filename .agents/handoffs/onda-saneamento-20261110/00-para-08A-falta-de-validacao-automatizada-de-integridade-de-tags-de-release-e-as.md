@@ -48,3 +48,29 @@ Executar a tarefa `TAREFA-SANEAMENTO-027` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução (Agente 08A — W5, TAREFA-SANEAMENTO-027 / BT360-DT-0050)
+
+Status: resolvido (com risco residual registrado).
+
+**Correção em `.github/workflows/docker-publish.yml`:**
+
+- Novo input opcional `tag` no `workflow_dispatch`.
+- Novo job `validate-release` (publish agora depende de `resolve-sha` +
+  `validate-release`):
+  1. exige que o SHA seja ancestral de `origin/main` — fim de publicação de
+     commits fora da linha principal;
+  2. quando `tag` informada: formato semver obrigatório, tag deve existir,
+     deve ser **anotada** (`git cat-file -t` == `tag`) e `git rev-list -n1`
+     deve apontar exatamente para o SHA publicado.
+
+**Risco residual honesto:** assinatura GPG de commits NÃO é verificada — o
+repositório não adota assinatura criptográfica (nenhum commit assinado na
+linha principal); exigir `git verify-commit` reprovaria todo deploy. Se o
+Agente 00/humano quiser essa camada, é decisão de governança separada
+(exige política de chaves + proteção de branch), registrada no run report.
+
+**Gate de regressão:** casos em `w5-gitops-governance.test.ts` cobrem input,
+ancestralidade, semver/tag anotada/vínculo SHA e o `needs` do publish.
+
+Evidência: `.agents/runs/agente-08A-tarefa-saneamento-027.md`.
