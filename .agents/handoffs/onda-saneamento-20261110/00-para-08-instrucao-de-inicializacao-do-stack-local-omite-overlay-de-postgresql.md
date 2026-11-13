@@ -48,3 +48,26 @@ Executar a tarefa `TAREFA-SANEAMENTO-047` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução (Agente 08 — W5, TAREFA-SANEAMENTO-047 / BT360-DT-0047)
+
+Status: resolvido.
+
+**Diagnóstico:** o documento já estava correto — `docs/development/LOCAL_FIRST.md`
+inclui `-f docker-compose.postgres-local.yml` no comando de subida (linha 77,
+correção do commit `63f59a064`), e o próprio overlay documenta que todos os
+serviços dependem do `postgres` (porta 5434, pgvector).
+
+**Entrega desta onda (guarda de regressão):** novo teste
+`tests/unit/ci/local-first-docs.test.ts` (2 casos, todos verdes) que falha se
+qualquer comando `docker compose ... up` do runbook omitir o overlay
+`docker-compose.postgres-local.yml` e se o documento perder a referência ao
+serviço/porta 5434.
+
+Observação fora de escopo (registrada, não alterada): `docs/deploy/README.md`
+usa overlays `opensource`+`services` sem o postgres-local em um exemplo da
+seção 6.1 — aquele trecho descreve ferramentas extras opt-in, não o bootstrap
+do banco; se o Agente 00 entender que também deve citar o overlay, abrir
+handoff específico.
+
+Evidência: `.agents/runs/agente-08-tarefa-saneamento-047.md`.
