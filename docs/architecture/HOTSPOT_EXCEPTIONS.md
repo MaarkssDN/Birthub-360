@@ -101,30 +101,12 @@ propósito por estar fora de "## Exceções ativas"):
 - **Atualizado em:** 2026-10-14 (exceção temporária para a contagem atual)
 - **Reavaliar até:** 2026-11-30 (mesmo checkpoint dos demais itens desta lista)
 
-### `src/features/integrations/components/BitrixImportPanel.tsx`
-
-- **Limite excepcional:** 1300 linhas
-- **Dono:** Agente 06 — Integrações e Bitrix
-- **Motivo:** mesma situação do `CadenceHub.tsx` acima — já listado como débito conhecido em 960
   linhas (2026-08-25), cresceu para 1193 linhas sem que o gate rodasse de verdade em CI pelo mesmo
   motivo (mascarado por `no-cross-feature-imports` na etapa anterior). Não é regressão de nenhum
   PR específico. Modularizar fica para um item de dívida técnica dedicado.
 - **Registrado em:** 2026-08-29
 - **Reavaliar até:** 2026-11-30 (mesmo checkpoint do `KNOWN_VIOLATIONS.md`)
 
-### `src/features/integrations/components/Integrations.tsx`
-
-- **Limite excepcional:** 1200 linhas
-- **Dono:** Agente 06 — Integrações e Bitrix
-- **Motivo:** Exceção criada para liberar o build, arquivo passou das 1000 linhas (1081).
-- **Registrado em:** 2026-09-23
-- **Reavaliar até:** 2026-11-30 (mesmo checkpoint dos demais itens desta lista)
-
-### `src/features/integrations/components/ExternalCrmPanel.tsx`
-
-- **Limite excepcional:** 1100 linhas
-- **Dono:** Agente 06 — Integrações e Bitrix
-- **Motivo:** arquivo preexistente com 1077 linhas, acima do limite geral. A extração de
   subcomponentes é uma refatoração de UX/integração independente desta correção de CI e deve ser
   planejada pelo dono do domínio. Exceção temporária para manter o gate executável sem alterar o
   limite geral do repositório.

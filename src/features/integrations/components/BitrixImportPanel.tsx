@@ -1,42 +1,31 @@
 import {
-  AlertTriangle,
-  ArrowUpDown,
   Building2,
   CalendarDays,
   Check,
-  CheckCircle2,
-  CheckSquare,
   DollarSign,
-  Download,
-  Edit3,
   ExternalLink,
-  Filter,
-  Flame,
   Info,
   Layers,
   Loader2,
-  Lock,
   Mail,
   Phone,
   RefreshCw,
-  Search,
-  ShieldCheck,
-  SlidersHorizontal,
-  Sparkles,
-  Square,
   Tag,
   Users,
-  X,
-  XCircle,
   Zap,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Dialog } from '../../../components/ui/Dialog.js';
 import { useAuth } from '../../../contexts/AuthContext.js';
 import { api } from '../../../lib/api.js';
 import { hasRequiredRole } from '../../../lib/auth/authorization.js';
+import { BitrixBulkEditDialog } from './bitrixImport/BitrixBulkEditDialog.js';
+import { BitrixBulkSelectionBar } from './bitrixImport/BitrixBulkSelectionBar.js';
+import { BitrixImportFiltersPanel } from './bitrixImport/BitrixImportFiltersPanel.js';
+import { BitrixImportFooter } from './bitrixImport/BitrixImportFooter.js';
+import { BitrixImportModeBar } from './bitrixImport/BitrixImportModeBar.js';
+import { BitrixImportResultBanners } from './bitrixImport/BitrixImportResultBanners.js';
 
-interface BitrixLeadSummary {
+export interface BitrixLeadSummary {
   id: string;
   title: string;
   companyTitle: string | null;
@@ -49,7 +38,7 @@ interface BitrixLeadSummary {
   alreadyImported: boolean;
 }
 
-interface BitrixDealSummary {
+export interface BitrixDealSummary {
   id: string;
   title: string;
   stageLabel: string;
@@ -59,45 +48,25 @@ interface BitrixDealSummary {
   alreadyImported: boolean;
 }
 
-interface BitrixDealPipeline {
+export interface BitrixDealPipeline {
   id: string;
   name: string;
 }
 
-interface BitrixDealStage {
+export interface BitrixDealStage {
   id: string;
   name: string;
 }
 
-interface BitrixUserOption {
+export interface BitrixUserOption {
   id: string;
   name: string;
 }
 
-interface BitrixFieldOption {
+export interface BitrixFieldOption {
   code: string;
   label: string;
 }
-
-const MONTHS = [
-  'Janeiro',
-  'Fevereiro',
-  'Março',
-  'Abril',
-  'Maio',
-  'Junho',
-  'Julho',
-  'Agosto',
-  'Setembro',
-  'Outubro',
-  'Novembro',
-  'Dezembro',
-];
-
-const selectClass =
-  'h-9 text-sm rounded-xl border border-line bg-surface-2 text-ink px-3 disabled:opacity-40 min-w-[9rem] focus:bg-surface focus:ring-2 focus:ring-brand/20 focus:border-brand transition-colors outline-none cursor-pointer';
-const filterLabelClass =
-  'text-[10px] font-bold uppercase tracking-wide text-ink-2 flex items-center gap-1';
 
 interface BitrixImportPanelProps {
   connectionId: string;
@@ -166,8 +135,6 @@ export function BitrixImportPanel({ connectionId }: BitrixImportPanelProps) {
   // ── Modal de Edição em Lote ──
   const [showBulkEditModal, setShowBulkEditModal] = useState(false);
   const [bulkTemperature, setBulkTemperature] = useState<'Frio' | 'Morno' | 'Quente'>('Morno');
-
-  const currentYear = new Date().getFullYear();
 
   useEffect(() => {
     api
@@ -498,368 +465,61 @@ export function BitrixImportPanel({ connectionId }: BitrixImportPanelProps) {
       </div>
 
       {/* Alternador de Modo: Negócios x Leads + Indicadores de Valor */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex gap-1.5 p-1.5 bg-surface-2 rounded-2xl border border-line w-fit">
-          <button
-            type="button"
-            onClick={() => setMode('deals')}
-            className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-xl transition-colors ${mode === 'deals' ? 'bg-gradient-to-r from-brand-active to-brand-2 text-on-brand shadow-md shadow-brand-active/30' : 'text-ink-2 hover:text-ink'}`}
-          >
-            <Building2 className="w-4 h-4" />
-            Negócios (Comercial)
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode('leads')}
-            className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-xl transition-colors ${mode === 'leads' ? 'bg-gradient-to-r from-brand-active to-brand-2 text-on-brand shadow-md shadow-brand-active/30' : 'text-ink-2 hover:text-ink'}`}
-          >
-            <Users className="w-4 h-4" />
-            Leads (Todos)
-          </button>
-        </div>
-
-        {/* Métricas dos Selecionados */}
-        <div className="flex items-center gap-3">
-          {mode === 'deals' && totalSelectedValue > 0 && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-green-500/10 border border-green-500/20 text-green-700 dark:text-green-400 text-xs font-bold">
-              <DollarSign className="w-4 h-4" />
-              Total Selecionado: R$ {totalSelectedValue.toLocaleString('pt-BR')}
-            </div>
-          )}
-
-          {selected.size > 0 && (
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setShowBulkEditModal(true)}
-                className="flex items-center gap-1.5 px-3.5 py-2 bg-surface-2 hover:bg-line text-ink text-xs font-bold rounded-xl transition-colors"
-              >
-                <Edit3 className="w-3.5 h-3.5" />
-                Editar em Lote ({selected.size})
-              </button>
-              <button
-                type="button"
-                onClick={importSelected}
-                disabled={importing}
-                className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-brand-active to-brand-2 hover:brightness-110 text-on-brand text-xs font-bold rounded-xl shadow-md shadow-brand-active/20 transition-colors disabled:opacity-50"
-              >
-                {importing ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <Download className="w-3.5 h-3.5" />
-                )}
-                {importing ? 'Importando...' : `Importar Selecionados (${selected.size})`}
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
+      <BitrixImportModeBar
+        mode={mode}
+        onModeChange={setMode}
+        totalSelectedValue={totalSelectedValue}
+        selectedCount={selected.size}
+        onOpenBulkEdit={() => setShowBulkEditModal(true)}
+        onImportSelected={importSelected}
+        importing={importing}
+      />
 
       {/* Painel Avançado de Filtros e Busca */}
-      <div className="rounded-3xl border border-line bg-surface p-5 shadow-sm space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="relative w-full sm:max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-2 pointer-events-none" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={
-                mode === 'deals'
-                  ? 'Buscar por empresa, oportunidade ou negócio...'
-                  : 'Buscar por nome do lead, empresa, e-mail...'
-              }
-              className="w-full h-10 text-sm rounded-2xl border border-line bg-surface-2 text-ink pl-10 pr-9 placeholder:text-ink-2 focus:bg-surface focus:ring-2 focus:ring-brand/20 focus:border-brand transition-colors outline-none"
-            />
-            {search && (
-              <button
-                type="button"
-                onClick={() => setSearch('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-2 hover:text-ink p-1"
-                title="Limpar busca"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
+      <BitrixImportFiltersPanel
+        mode={mode}
+        canPickAnyVendor={canPickAnyVendor}
+        search={search}
+        setSearch={setSearch}
+        quickFilter={quickFilter}
+        setQuickFilter={setQuickFilter}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        customFieldCode={customFieldCode}
+        setCustomFieldCode={setCustomFieldCode}
+        customFieldValue={customFieldValue}
+        setCustomFieldValue={setCustomFieldValue}
+        fields={fields}
+        pipelines={pipelines}
+        stages={stages}
+        users={users}
+        stageId={stageId}
+        setStageId={setStageId}
+        assignedById={assignedById}
+        setAssignedById={setAssignedById}
+        month={month}
+        setMonth={setMonth}
+        year={year}
+        setYear={setYear}
+        totalItems={mode === 'deals' ? deals.length : leads.length}
+      />
 
-          {/* Filtros Rápidos (Pills) */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-            <button
-              type="button"
-              onClick={() => setQuickFilter('all')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${quickFilter === 'all' ? 'bg-ink text-surface shadow-sm' : 'bg-surface-2 text-ink-2 hover:text-ink'}`}
-            >
-              Todos ({mode === 'deals' ? deals.length : leads.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setQuickFilter('unimported')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${quickFilter === 'unimported' ? 'bg-brand-active text-on-brand shadow-sm shadow-brand-active/20' : 'bg-surface-2 text-ink-2 hover:text-ink'}`}
-            >
-              Disponíveis para Importar
-            </button>
-            {mode === 'deals' && (
-              <button
-                type="button"
-                onClick={() => setQuickFilter('has_value')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${quickFilter === 'has_value' ? 'bg-green-600 text-white shadow-sm shadow-green-600/20' : 'bg-surface-2 text-ink-2 hover:text-ink'}`}
-              >
-                Com Valor (R$)
-              </button>
-            )}
-            {mode === 'leads' && (
-              <button
-                type="button"
-                onClick={() => setQuickFilter('has_phone')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${quickFilter === 'has_phone' ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/20' : 'bg-surface-2 text-ink-2 hover:text-ink'}`}
-              >
-                Com Telefone
-              </button>
-            )}
-          </div>
-        </div>
-
-        {mode === 'deals' &&
-          (pipelines.length === 0 ? (
-            <p className="text-xs text-ink-2 flex items-center gap-1.5">
-              <Info className="w-3.5 h-3.5 shrink-0" />
-              Este portal não tem um pipeline &quot;Comercial&quot; — as vendas dele provavelmente
-              ficam na aba Leads, não em Negócios.
-            </p>
-          ) : (
-            <div className="flex flex-wrap items-end gap-3 pt-2 border-t border-line">
-              <div className="flex flex-col gap-1">
-                <span className={filterLabelClass}>
-                  <Filter className="w-3 h-3" /> Pipeline
-                </span>
-                <span className="flex items-center gap-1.5 h-9 px-3 rounded-xl bg-soft border border-brand/20 text-brand-ink dark:text-brand text-sm font-bold whitespace-nowrap">
-                  {pipelines[0].name}
-                </span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <label htmlFor="bitrix-filter-stage" className={filterLabelClass}>
-                  <Tag className="w-3 h-3" /> Etapa
-                </label>
-                <select
-                  id="bitrix-filter-stage"
-                  value={stageId}
-                  onChange={(e) => setStageId(e.target.value)}
-                  className={selectClass}
-                >
-                  <option value="">Todas as etapas</option>
-                  {stages.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex flex-col gap-1">
-                <label htmlFor="bitrix-filter-vendor" className={filterLabelClass}>
-                  {canPickAnyVendor ? <Users className="w-3 h-3" /> : <Lock className="w-3 h-3" />}{' '}
-                  Vendedor
-                </label>
-                {canPickAnyVendor ? (
-                  <select
-                    id="bitrix-filter-vendor"
-                    value={assignedById}
-                    onChange={(e) => setAssignedById(e.target.value)}
-                    className={selectClass}
-                  >
-                    <option value="">Todos os vendedores</option>
-                    {users.map((u) => (
-                      <option key={u.id} value={u.id}>
-                        {u.name}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <span
-                    id="bitrix-filter-vendor"
-                    className="flex items-center h-9 px-3 rounded-xl bg-surface-2 text-ink-2 text-sm font-medium"
-                    title="Você só vê e importa o seu próprio dado do Bitrix24 (Trava de Isolamento por Vendedor)."
-                  >
-                    Exclusivo do Seu Usuário
-                  </span>
-                )}
-              </div>
-              <div className="flex flex-col gap-1">
-                <label htmlFor="bitrix-filter-month" className={filterLabelClass}>
-                  <CalendarDays className="w-3 h-3" /> Mês
-                </label>
-                <select
-                  id="bitrix-filter-month"
-                  value={month}
-                  onChange={(e) => setMonth(e.target.value)}
-                  className={`${selectClass} min-w-[7rem]`}
-                >
-                  <option value="">Todos</option>
-                  {MONTHS.map((m, i) => (
-                    <option key={m} value={i + 1}>
-                      {m}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex flex-col gap-1">
-                <label htmlFor="bitrix-filter-year" className={filterLabelClass}>
-                  Ano
-                </label>
-                <select
-                  id="bitrix-filter-year"
-                  value={year}
-                  onChange={(e) => setYear(e.target.value)}
-                  className={`${selectClass} min-w-[5rem]`}
-                >
-                  <option value="">Todos</option>
-                  {Array.from({ length: 5 }, (_, i) => currentYear - i).map((y) => (
-                    <option key={y} value={y}>
-                      {y}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex flex-col gap-1 ml-auto">
-                <label htmlFor="bitrix-filter-sort" className={filterLabelClass}>
-                  <ArrowUpDown className="w-3 h-3" /> Ordenar Por
-                </label>
-                <select
-                  id="bitrix-filter-sort"
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as 'recent' | 'value' | 'name')}
-                  className={selectClass}
-                >
-                  <option value="recent">Mais Recentes</option>
-                  <option value="value">Maior Valor (R$)</option>
-                  <option value="name">Nome (A-Z)</option>
-                </select>
-              </div>
-            </div>
-          ))}
-
-        {fields.length > 0 && (
-          <div className="flex flex-wrap items-end gap-3 pt-2 border-t border-line">
-            <div className="flex flex-col gap-1">
-              <label htmlFor="bitrix-import-custom-field" className={filterLabelClass}>
-                <SlidersHorizontal className="w-3 h-3" /> Campo personalizado
-              </label>
-              <select
-                id="bitrix-import-custom-field"
-                value={customFieldCode}
-                onChange={(e) => setCustomFieldCode(e.target.value)}
-                className={`${selectClass} min-w-[13rem]`}
-              >
-                <option value="">Nenhum (não filtrar)</option>
-                {fields.map((f) => (
-                  <option key={f.code} value={f.code}>
-                    {f.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            {customFieldCode && (
-              <div className="flex flex-col gap-1">
-                <label htmlFor="bitrix-import-custom-field-value" className={filterLabelClass}>
-                  Valor exato a filtrar
-                </label>
-                <input
-                  id="bitrix-import-custom-field-value"
-                  type="text"
-                  value={customFieldValue}
-                  onChange={(e) => setCustomFieldValue(e.target.value)}
-                  placeholder="Ex: Transportadora"
-                  className="h-9 text-sm rounded-xl border border-line bg-surface-2 text-ink px-3 min-w-[11rem] placeholder:text-ink-2 focus:bg-surface focus:ring-2 focus:ring-brand/20 focus:border-brand transition-colors outline-none"
-                />
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {error && (
-        <p className="text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 p-3.5 rounded-2xl border border-red-200">
-          {error}
-        </p>
-      )}
-      {!error && restrictedWarning && (
-        <p className="text-xs text-warning-active dark:text-warning flex items-center gap-1.5 bg-amber-50 dark:bg-amber-500/10 p-3.5 rounded-2xl border border-amber-200 font-medium">
-          <ShieldCheck className="w-4 h-4 shrink-0 text-warning-active dark:text-warning" />{' '}
-          {restrictedWarning}
-        </p>
-      )}
-
-      {importResult && (
-        <div className="text-xs space-y-1 p-4 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 rounded-3xl shadow-sm">
-          <p className="text-green-700 dark:text-green-400 font-bold flex items-center gap-2 text-sm">
-            <CheckCircle2 className="w-4 h-4 text-green-600" /> {importResult.imported} registro(s)
-            importado(s) com sucesso
-            {importResult.skipped > 0 ? `, ${importResult.skipped} já existiam` : ''}.
-          </p>
-          {importResult.skippedConflicts > 0 && (
-            <p className="text-warning-active dark:text-warning flex items-center gap-1.5 pl-6">
-              <AlertTriangle className="w-3.5 h-3.5 shrink-0" /> {importResult.skippedConflicts}{' '}
-              bloqueado(s) — pertenciam a outro responsável.
-            </p>
-          )}
-          {importResult.skippedNotOwned > 0 && (
-            <p className="text-warning-active dark:text-warning flex items-center gap-1.5 pl-6">
-              <Lock className="w-3.5 h-3.5 shrink-0" /> {importResult.skippedNotOwned} ignorado(s) —
-              não atribuídos a você no Bitrix24.
-            </p>
-          )}
-          {!!importResult.failed && importResult.failed > 0 && (
-            <p className="text-red-600 dark:text-red-400 flex items-center gap-1.5 pl-6">
-              <XCircle className="w-3.5 h-3.5 shrink-0" /> {importResult.failed} falharam de verdade
-              (erro de rede/Bitrix) — os demais itens foram importados normalmente; tente novamente
-              só para estes.
-            </p>
-          )}
-        </div>
-      )}
+      <BitrixImportResultBanners
+        error={error}
+        restrictedWarning={restrictedWarning}
+        importResult={importResult}
+      />
 
       {/* Barra Superior de Seleção em Massa */}
       {!loading && availableItems.length > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 bg-gradient-to-r from-surface-2 to-soft border border-line rounded-2xl shadow-sm">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={toggleAllPage}
-              className="flex items-center gap-2 text-xs font-bold text-ink hover:text-brand dark:hover:text-brand-2 transition-colors"
-            >
-              {allPageSelected ? (
-                <CheckSquare className="w-4 h-4 text-brand" />
-              ) : (
-                <Square className="w-4 h-4 text-ink-2" />
-              )}
-              <span>Selecionar Todos da Página ({availableItems.length} disponíveis)</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={selectAllAvailable}
-              className="text-xs font-bold text-brand-ink hover:brightness-110 dark:text-brand flex items-center gap-1 underline underline-offset-2"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              Marcar Todos
-            </button>
-          </div>
-
-          {selected.size > 0 && (
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-bold text-brand-ink dark:text-brand bg-soft px-3 py-1 rounded-full">
-                {selected.size} selecionado(s)
-              </span>
-              <button
-                type="button"
-                onClick={() => setSelected(new Set())}
-                className="text-xs font-bold text-ink-2 hover:text-red-500 transition-colors"
-              >
-                Desmarcar Tudo
-              </button>
-            </div>
-          )}
-        </div>
+        <BitrixBulkSelectionBar
+          availableCount={availableItems.length}
+          allPageSelected={allPageSelected}
+          onToggleAllPage={toggleAllPage}
+          onSelectAllAvailable={selectAllAvailable}
+          selectedCount={selected.size}
+          onClearSelection={() => setSelected(new Set())}
+        />
       )}
 
       {/* Lista de Cards Ricos para Registros de Clientes */}
@@ -1084,168 +744,28 @@ export function BitrixImportPanel({ connectionId }: BitrixImportPanelProps) {
       )}
 
       {/* Paginação Inferior */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => load(Math.max(0, start - 50))}
-            disabled={loading || start === 0}
-            className="px-4 py-2 border border-line rounded-2xl text-xs font-bold text-ink hover:bg-surface-2 disabled:opacity-30 transition-colors"
-          >
-            ← Anterior
-          </button>
-          <button
-            type="button"
-            onClick={() => next != null && load(next)}
-            disabled={loading || next == null}
-            className="px-4 py-2 border border-line rounded-2xl text-xs font-bold text-ink hover:bg-surface-2 disabled:opacity-30 transition-colors"
-          >
-            Próxima →
-          </button>
-          <span className="text-xs text-ink-2 pl-2">
-            Exibindo {start + 1}–{start + (mode === 'deals' ? deals.length : leads.length)} de{' '}
-            {total}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {selected.size > 0 && (
-            <button
-              type="button"
-              onClick={() => setShowBulkEditModal(true)}
-              className="flex items-center gap-1.5 px-4 py-2.5 bg-surface-2 hover:bg-line text-ink text-xs font-bold rounded-2xl transition-colors"
-            >
-              <Edit3 className="w-3.5 h-3.5" />
-              Editar ({selected.size})
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={importSelected}
-            disabled={importing || selected.size === 0}
-            className="flex items-center gap-1.5 px-6 py-2.5 bg-gradient-to-r from-brand-active to-brand-2 hover:brightness-110 text-on-brand text-xs font-bold rounded-2xl shadow-md shadow-brand-active/20 transition-colors disabled:opacity-40"
-          >
-            {importing ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Download className="w-4 h-4" />
-            )}
-            {importing
-              ? 'Importando...'
-              : `Importar ${selected.size > 0 ? `(${selected.size})` : 'selecionados'}`}
-          </button>
-        </div>
-      </div>
-
+      <BitrixImportFooter
+        start={start}
+        next={next}
+        loading={loading}
+        pageCount={mode === 'deals' ? deals.length : leads.length}
+        total={total}
+        selectedCount={selected.size}
+        importing={importing}
+        onLoad={load}
+        onOpenBulkEdit={() => setShowBulkEditModal(true)}
+        onImportSelected={importSelected}
+      />
       {/* Modal de Configurações e Edição em Lote */}
-      <Dialog
+      <BitrixBulkEditDialog
         isOpen={showBulkEditModal}
         onClose={() => setShowBulkEditModal(false)}
-        maxWidth="max-w-md"
-        title={
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-2xl bg-soft text-brand-ink dark:text-brand flex items-center justify-center font-bold">
-              <Edit3 className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="block text-base font-bold text-ink">
-                Editar em Lote ({selected.size} itens)
-              </span>
-              <span className="block text-[11px] font-normal text-ink-2">
-                Defina os parâmetros padrão de importação.
-              </span>
-            </div>
-          </div>
-        }
-        footer={
-          <>
-            <button
-              type="button"
-              onClick={() => setShowBulkEditModal(false)}
-              className="px-4 py-2.5 text-xs font-bold text-ink-2 hover:bg-surface-2 rounded-2xl transition-colors"
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              onClick={applyBulkEditAndImport}
-              disabled={importing}
-              className="flex items-center gap-1.5 px-5 py-2.5 bg-gradient-to-r from-brand-active to-brand-2 hover:brightness-110 text-on-brand text-xs font-bold rounded-2xl shadow-md shadow-brand-active/20 transition-colors disabled:opacity-50"
-            >
-              {importing ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Download className="w-3.5 h-3.5" />
-              )}
-              Aplicar & Importar ({selected.size})
-            </button>
-          </>
-        }
-      >
-        <div className="space-y-4">
-          <div>
-            <span id="bulk-temperature-label" className="block text-xs font-bold text-ink mb-2">
-              Temperatura Inicial do Lead no Birth Hub 360
-            </span>
-            {/* Toolbar de botões toggle (não campos de formulário) — <fieldset> não traria
-                    ganho real de acessibilidade aqui, só estilo. */}
-            {/* biome-ignore lint/a11y/useSemanticElements: ver comentário acima */}
-            <div
-              role="group"
-              aria-labelledby="bulk-temperature-label"
-              className="grid grid-cols-3 gap-2"
-            >
-              {(['Frio', 'Morno', 'Quente'] as const).map((temp) => (
-                <button
-                  key={temp}
-                  type="button"
-                  onClick={() => setBulkTemperature(temp)}
-                  className={`flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold rounded-2xl border transition-colors ${
-                    bulkTemperature === temp
-                      ? 'bg-gradient-to-r from-brand-active to-brand-2 text-on-brand border-brand-active shadow-md shadow-brand-active/20'
-                      : 'bg-surface-2 border-line text-ink hover:bg-line'
-                  }`}
-                >
-                  <Flame
-                    className={`w-3.5 h-3.5 ${temp === 'Quente' ? 'text-red-400' : temp === 'Morno' ? 'text-amber-400' : 'text-blue-400'}`}
-                  />
-                  {temp}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="pt-2 border-t border-line">
-            {/* SEC/UX (achado de auditoria): este controle disparava até 100 ligações reais via
-                   provedor pago (Bland AI/Birthub Voices) sem nenhuma proteção de volume — a opção
-                   nunca foi de fato conectada ao backend (o usuário configurava, recebia toast de
-                   sucesso, e nenhuma ligação saía). Em vez de ligar isso silenciosamente numa
-                   correção de bug (decisão de produto/custo/compliance que exige throttling
-                   dedicado, não algo para decidir aqui), o controle fica desabilitado e honesto até
-                   ter uma implementação própria — qualificação por voz individual já funciona (ver
-                   o lead importado no CRM). */}
-            <div className="flex items-start gap-3 p-3.5 bg-surface-2 border border-line rounded-2xl opacity-70">
-              <input
-                type="checkbox"
-                checked={false}
-                disabled
-                aria-label="Qualificar via Voz — ainda não disponível para importação em lote"
-                className="w-4 h-4 rounded border-line mt-0.5 cursor-not-allowed"
-              />
-              <div>
-                <span className="block text-xs font-bold text-ink-2 flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4" />
-                  Qualificar via Voz — em breve
-                </span>
-                <span className="block text-[11px] text-ink-2 mt-0.5">
-                  Disparo em lote ainda não está disponível. Depois de importado, você pode
-                  qualificar cada lead individualmente pela ficha dele no CRM.
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Dialog>
+        selectedCount={selected.size}
+        temperature={bulkTemperature}
+        onTemperatureChange={setBulkTemperature}
+        importing={importing}
+        onApply={applyBulkEditAndImport}
+      />
     </div>
   );
 }

@@ -48,3 +48,22 @@ Executar a tarefa `TAREFA-SANEAMENTO-045` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução (Agente 06 — W5, TAREFA-SANEAMENTO-045 / BT360-DT-0032)
+
+Status: resolvido.
+
+`ExternalCrmPanel.fetchConnections` agora aceita `AbortSignal` opcional:
+
+- O `useEffect` de carga cria um `AbortController` por ciclo de vida e aborta no
+  cleanup (desmontagem/troca de provider), eliminando atualização de estado após
+  unmount e cancelando a requisição em voo.
+- O `catch` distingue cancelamento (`signal.aborted` / `AbortError`) de falhas
+  reais: aborts retornam silenciosamente sem toast/erro; falhas HTTP/rede continuam
+  exibindo mensagem explícita via `setError` + `toast.error` (nada é escondido).
+- `finally` só limpa `loading` quando a requisição não foi abortada.
+- O botão "Atualizar lista" chama `fetchConnections()` sem signal (retry manual
+  não é cancelável, comportamento preservado).
+
+Gates: `npx tsc --noEmit` PASS; `biome check` PASS; evidências completas em
+`.agents/runs/agente-06-tarefa-saneamento-045.md`.
