@@ -55,6 +55,34 @@ describe('Crm360Controller — query de negócios em /api/crm/deals', () => {
     expect(next).not.toHaveBeenCalled();
   });
 
+  it('retorna array vazio sem chamar o caso de uso quando a request não tem organizationId (TAREFA-SANEAMENTO-018)', async () => {
+    const getDeals = vi.fn();
+    const mockUseCases = {
+      getDeals,
+    } as unknown as Crm360UseCases;
+
+    const controller = new Crm360Controller(mockUseCases);
+
+    // Sem `user` — o guard `!orgId` foi içado para ANTES do try no saneamento para
+    // não depender de exceção para o caminho "sem tenant".
+    const req = {} as unknown as Request;
+
+    const jsonMock = vi.fn();
+    const statusMock = vi.fn().mockReturnValue({ json: jsonMock });
+    const res = {
+      status: statusMock,
+      json: jsonMock,
+    } as unknown as Response;
+    const next = vi.fn();
+
+    await controller.getDeals(req, res, next);
+
+    expect(statusMock).toHaveBeenCalledWith(200);
+    expect(jsonMock).toHaveBeenCalledWith([]);
+    expect(getDeals).not.toHaveBeenCalled();
+    expect(next).not.toHaveBeenCalled();
+  });
+
   it('retorna a lista de negócios quando existem negócios', async () => {
     const fakeDeals = [
       { id: 'deal-1', title: 'Negócio 1', amount: 50000, status: 'Negocios_Ganhos' },
