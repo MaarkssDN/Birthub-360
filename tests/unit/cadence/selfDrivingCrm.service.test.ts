@@ -1,6 +1,16 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { selfDrivingCrmService } from '../../../src/features/cadence/services/selfDrivingCrm.service.js';
 import { recordOptOut } from '../../../src/features/cadence/application/optOutService.js';
+
+// `adaptiveMultichannelCadenceService.isLeadOptedOut` agora consulta o OptOutRepository durável
+// (Prisma) — esta suíte unitária não tem Postgres, então o serviço de cadência é substituído por
+// um stub que reporta "sem opt-out de cadência" (o opt-out formal testado aqui passa pelo
+// `recordOptOut`/`this.optOutRepo` do próprio selfDrivingCrmService, não por este caminho).
+vi.mock('../../../src/features/cadence/services/adaptiveMultichannelCadence.service.js', () => ({
+  adaptiveMultichannelCadenceService: {
+    isLeadOptedOut: vi.fn(async () => false),
+  },
+}));
 
 describe('SelfDrivingCrmService — Eixo 7 (Cadências Adaptativas & Resgate Inteligente)', () => {
   const orgA = 'org-cadence-alpha';
