@@ -391,3 +391,75 @@ describe('callBitrix — circuit breaker de saúde do provedor (gap de auditoria
     fetchMock.mockRestore();
   });
 });
+
+describe('callBitrix — cancelamento cooperativo via AbortSignal (TAREFA-SANEAMENTO-046 / BT360-DT-0036)', () => {
+  it('signal já abortado antes da chamada: rejeita com BitrixCallAbortedError sem tocar na rede', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch');
+    const { callBitrix, BitrixCallAbortedError } = await import('../client.js');
+    const controller = new AbortController();
+    controller.abort();
+
+    await expect(
+      callBitrix(WEBHOOK, 'crm.lead.list', {}, { signal: controller.signal, maxAttempts: 4 }),
+    ).rejects.toBeInstanceOf(BitrixCallAbortedError);
+    expect(fetchMock).not.toHaveBeenCalled();
+    fetchMock.mockRestore();
+  });
+
+  it('abort durante o fetch em voo: rejeita na hora com BitrixCallAbortedError, sem retentar', async () => {
+    // fetch que respeita o signal real (AbortController interno do attemptBitrixCall) — mesmo
+    // comportamento do fetch nativo diante de um signal abortado.
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(
+      (_url: any, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () =>
+            reject(Object.assign(new Error('This operation was aborted'), { name: 'AbortError' })),
+          );
+        }),
+    );
+    const { callBitrix, BitrixCallAbortedError } = await import('../client.js');
+    const controller = new AbortController();
+
+    const pending = callBitrix(
+      WEBHOOK,
+      'crm.lead.list',
+      {},
+      {
+        signal: controller.signal,
+        maxAttempts: 4,
+      },
+    );
+    // Garante que a primeira tentativa já está em voo antes de abortar.
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    controller.abort();
+
+    await expect(pending).rejects.toBeInstanceOf(BitrixCallAbortedError);
+    expect(fetchMock).toHaveBeenCalledTimes(1); // nenhuma tentativa extra após o abort
+    fetchMock.mockRestore();
+  });
+
+  it('abort durante o backoff entre tentativas: interrompe o sleep e não consome as tentativas restantes', async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(jsonResponse({ error: 'boom' }, { status: 500 }));
+    const { callBitrix, BitrixCallAbortedError } = await import('../client.js');
+    const controller = new AbortController();
+
+    const pending = callBitrix(
+      WEBHOOK,
+      'crm.lead.list',
+      {},
+      {
+        signal: controller.signal,
+        maxAttempts: 4,
+      },
+    );
+    // A 1ª tentativa falha (500) e entra no backoff (~500ms+) — aborta bem antes disso acabar.
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    controller.abort();
+
+    await expect(pending).rejects.toBeInstanceOf(BitrixCallAbortedError);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    fetchMock.mockRestore();
+  });
+});

@@ -8,9 +8,16 @@ Este documento estabelece o procedimento operacional padrão (SOP) para rotaçã
 1. **DATABASE_URL / Credenciais do Banco**:
    - Usuário `prospector_app` do PostgreSQL.
    - Período de rotação: 90 dias ou imediato pós-incidente.
-2. **ENCRYPTION_KEY / PII Cipher Key**:
-   - Chave AES-256-GCM para criptografia em repouso.
-   - Suporte a decifragem com chave anterior durante janela de migração.
+2. **CREDENTIALS_ENCRYPTION_KEY / PII Cipher Key**:
+   - Chave AES-256-GCM para criptografia em repouso de credenciais de integrações
+     (Bitrix24, Google Workspace, telefonia) e campos PII (Contact.email/phone/whatsapp,
+     transcripts de voz) — ver `src/lib/crypto/secretFields.ts` e
+     `src/lib/security/credentialCrypto.ts`.
+   - Envelope versionado `enc:v1:<keyId>:<iv>:<authTag>:<ciphertext>`: o `keyId` é o
+     fingerprint SHA-256 (12 hex) da chave que cifrou, permitindo rotação com grace period
+     sem ambiguidade sobre qual chave abriu cada segredo (BT360-DT-0073).
+   - Suporte a decifragem com chave anterior durante janela de migração
+     (`CREDENTIALS_ENCRYPTION_KEY_PREVIOUS`).
 3. **BETTER_AUTH_SECRET / JWT Secret**:
    - Chave simétrica de assinatura de sessões.
 4. **Chaves de Provedores de IA (Groq, Anthropic, etc.)**:
@@ -24,6 +31,30 @@ Passo 3: Migrar leituras/escritas para a nova credencial.
 Passo 4: Promover versão para "AWSCURRENT".
 Passo 5: Revogar credencial antiga após 48 horas de carência.
 ```
+
+### 3.1 Rotação de `CREDENTIALS_ENCRYPTION_KEY` (envelope keyed — BT360-DT-0073)
+
+O envelope `enc:v1:<keyId>:...` torna a rotação segura: cada ciphertext declara qual chave
+o cifrou, e a decriptação tenta a chave atual e a anterior (`CREDENTIALS_ENCRYPTION_KEY_PREVIOUS`)
+até o re-encrypt sweep concluir. Procedimento:
+
+```
+Passo 1: Gerar NOVA chave: openssl rand -base64 32
+Passo 2: Deploy com CREDENTIALS_ENCRYPTION_KEY=<NOVA> e
+         CREDENTIALS_ENCRYPTION_KEY_PREVIOUS=<ANTIGA> — zero downtime: credenciais antigas
+         continuam decifrando pelo keyId/fallback.
+Passo 3: Rodar o re-encrypt sweep (re-cifra tudo para a chave nova):
+           DATABASE_URL=... CREDENTIALS_ENCRYPTION_KEY=<NOVA> \
+           OLD_KEY=<ANTIGA-b64> NEW_KEY=<NOVA-b64> \
+           npx tsx scripts/security/reencrypt-credentials.ts --apply
+Passo 4: Verificar legibilidade: mesmo comando com --verify (deve reportar 0 ilegíveis).
+Passo 5: Remover CREDENTIALS_ENCRYPTION_KEY_PREVIOUS e fazer novo deploy.
+         A partir daí, segredos cifrados com a chave antiga falham fail-closed
+         (comportamento intencional — janela de grace period encerrada).
+```
+
+Rollback dentro do grace period: basta manter `CREDENTIALS_ENCRYPTION_KEY_PREVIOUS` —
+nenhum ciphertext se perde por rotação de chave.
 
 ## 4. Execução do Script de Validação
 Para validar os formatos de credenciais e parâmetros antes de aplicar mudanças reais:

@@ -148,9 +148,7 @@ export function isEnrichmentFresh(
 const ENRICHMENT_LOG_PURGE_INTERVAL_MS = 24 * 60 * 60 * 1000;
 let lastEnrichmentLogPurgeAt = 0;
 
-export function getEnrichmentLogRetentionMs(
-  environment: NodeJS.ProcessEnv = process.env,
-): number {
+export function getEnrichmentLogRetentionMs(environment: NodeJS.ProcessEnv = process.env): number {
   const days = Number(environment.ENRICHMENT_LOG_RETENTION_DAYS);
   const safeDays = Number.isFinite(days) && days > 0 ? days : 60;
   return safeDays * 24 * 60 * 60 * 1000;

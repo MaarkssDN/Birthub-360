@@ -123,7 +123,12 @@ export const PILLAR_04_TABS = [
   'gamification',
   'settings_performance',
 ];
-export const PILLAR_05_TABS = ['forecast', 'pipeline_ponderado', 'metas', 'settings_predictability'];
+export const PILLAR_05_TABS = [
+  'forecast',
+  'pipeline_ponderado',
+  'metas',
+  'settings_predictability',
+];
 export const PILLAR_06_TABS = [
   'commercial_intelligence',
   'copiloto_ia',
@@ -140,4 +145,4 @@ export const PILLAR_08_TABS = [
   'mesa-tratamento',
   'settings_engagement',
 ];
-export const ADMIN_TABS = ['notifications', 'usage', 'team', 'module-access', 'settings'];
+export const ADMIN_TABS = ['notifications', 'usage', 'team', 'module-access', 'settings'];

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { signUp, uniqueTestEmail, waitForAppReady } from './helpers';
+import { navigateViaSidebar, signUp, uniqueTestEmail, waitForAppReady } from './helpers';
 
 // Cobre a migração de ContactForm/CompanyForm pra ui/Dialog (Tier 2 do "DESIGN_QA_CENTRAL_BIRTHUB360.md
 // — Fase G", arquivo removido do controle de versão em 22/08/2026, ver docs/REMOVED-DOCS.md).
@@ -12,7 +12,7 @@ test.describe('Formulários de Empresas e Contatos (migrados pra ui/Dialog)', ()
     page,
   }) => {
     await signUp(page, { email: uniqueTestEmail('company-form') });
-    await page.getByRole('button', { name: 'Empresas' }).click();
+    await navigateViaSidebar(page, 'companies');
     await waitForAppReady(page);
 
     await page
@@ -36,7 +36,7 @@ test.describe('Formulários de Empresas e Contatos (migrados pra ui/Dialog)', ()
 
   test('valida campo obrigatório sem fechar o dialog', async ({ page }) => {
     await signUp(page, { email: uniqueTestEmail('company-form-validation') });
-    await page.getByRole('button', { name: 'Empresas' }).click();
+    await navigateViaSidebar(page, 'companies');
     await waitForAppReady(page);
 
     await page
@@ -65,7 +65,7 @@ test.describe('Formulários de Empresas e Contatos (migrados pra ui/Dialog)', ()
     await signUp(page, { email: uniqueTestEmail('contact-form') });
 
     // Contato exige uma empresa existente no <select> — cria uma primeiro.
-    await page.getByRole('button', { name: 'Empresas' }).click();
+    await navigateViaSidebar(page, 'companies');
     await waitForAppReady(page);
     await page
       .getByRole('button', { name: /Nova Empresa|Adicionar/ })
@@ -78,7 +78,7 @@ test.describe('Formulários de Empresas e Contatos (migrados pra ui/Dialog)', ()
     await expect(page.getByText('Empresa criada.')).toBeVisible();
 
     // Navega para Contatos & Decisores pela Sidebar
-    await page.locator('aside').getByTestId('sidebar-nav-contacts').click();
+    await navigateViaSidebar(page, 'contacts');
     await waitForAppReady(page);
     await page
       .getByRole('button', { name: /Novo Contato|Adicionar Primeiro Contato/ })

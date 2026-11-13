@@ -88,6 +88,17 @@ describe('Automações', () => {
     expect(screen.getByText('1 regra · 1 ativa(s)')).toBeTruthy();
   });
 
+  it('abre o construtor pelo botão "Nova automação" do cabeçalho', async () => {
+    mockList([regra]);
+    const user = userEvent.setup();
+    render(<Automations />);
+
+    await screen.findByText('Avisar em Proposta Enviada');
+    await user.click(await screen.findByRole('button', { name: /Nova automação/ }));
+
+    expect(await screen.findByText('Construtor de Automação')).toBeTruthy();
+  });
+
   it('pausa a regra pelo switch', async () => {
     mockList([regra]);
     let updateCalledWith: { id: string; patch: unknown } | undefined;

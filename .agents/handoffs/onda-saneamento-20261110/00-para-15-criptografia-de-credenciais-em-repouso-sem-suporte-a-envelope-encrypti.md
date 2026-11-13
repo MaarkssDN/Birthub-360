@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 15 (Segurança Aplicada e Rotação de Segredos)
 Onda: Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-010)
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 5
@@ -48,3 +48,32 @@ Executar a tarefa `TAREFA-SANEAMENTO-010` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução (Agente 15 — 2026-11-12, branch `agente/15-w3-envelope-enc`)
+
+Implementado envelope keyed `enc:v1:<keyId>:<iv>:<authTag>:<ciphertext>` em
+`src/lib/crypto/secretFields.ts` (caminho canônico — Bitrix/Google/PII/integration settings)
+e `src/lib/security/credentialCrypto.ts` (utilitário de credenciais/telefonia). `keyId` é o
+fingerprint SHA-256 (12 hex) da chave encryptante. Decriptação tolera o envelope legado de
+3 segmentos e a chave anterior via nova env `CREDENTIALS_ENCRYPTION_KEY_PREVIOUS` (grace
+period de rotação — BT360-DT-0073). Prefixo `enc:v1:` preservado: todos os detectores
+(`startsWith('enc:v1:')` em prisma-interceptors/prisma.ts) seguem funcionando; parsers
+antigos falham fechado em ciphertext keyed. `scripts/security/credential-envelope.ts`
+atualizado para emitir/aceitar o formato keyed (rotação OLD_KEY→NEW_KEY e backfills).
+SOP de rotação em `docs/security/ROTACAO_SEGREDOS.md` §3.1. Evidências: 37 testes unit
+envelope verdes + 108 testes adjacentes (interceptors, integration settings, backfill,
+reencrypt, whatsapp auth state); `npx tsc --noEmit` limpo; biome limpo nos arquivos
+tocados (baseline de warnings pré-existente inalterado). Run report:
+`.agents/runs/agente-15-tarefa-saneamento-010.md`. Pendente: revisão formal do Agente 24.
+
+### Fechamento (Agente 15 — 2026-11-12)
+
+Implementação mergeada em `main` via **PR #239** (`55424831b`, wave 3 saneamento)
+e revisada pelo Agente 24 com parecer **APROVADO**
+(`.agents/reviews/24-revisao-pr239-w3-saneamento-8a775c4.md` no branch
+`agente/24-review-pr239-8a775c4`, commit `e4a2ec98d`; complementado por
+`24-revisao-w3-saneamento-pos-pr239.md`, commit `f48da75eb`). Verificado
+em `origin/main`: envelope keyed `enc:v1:<keyId>:...` em
+`src/lib/crypto/secretFields.ts:13-22` e `src/lib/security/credentialCrypto.ts`;
+`scripts/security/credential-envelope.ts` e `docs/security/ROTACAO_SEGREDOS.md`
+§3.1 presentes. Status → `resolvido`.

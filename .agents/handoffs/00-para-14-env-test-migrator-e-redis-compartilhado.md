@@ -3,7 +3,7 @@
 De: 00 — Coordenador
 Para: 14 — Ambiente de Execução e Test Harness
 Onda: pós-homologação 2026-11-10
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Sprint destino: próximo ciclo de infra de testes
 
@@ -61,3 +61,32 @@ Sprint destino: próximo ciclo de infra de testes
   hosts prod — a separação lógica existe; o problema é credencial stale e
   serviços compartilhados.
 - Produção não é afetada (sem `.env.production` local; prod na AWS).
+
+## Resolução (2026-11-11, executado pelo Agente 00 sob ORDEM 03)
+
+1. **Migrator**: a senha do papel `prospector_migrator` no Postgres remoto
+   havia divergido do `.env.test`. Realinhada via `ALTER ROLE` executado
+   como superuser `prospector` (dentro do container `birthhub_postgres`).
+   `DIRECT_URL` autentica; `prisma migrate deploy` aplicou as 2 migrations
+   pendentes em `prospectordb_test` com sucesso. O bootstrap do
+   `prepare-integration-env.js` (`create-app-role.sql.tpl`) reafirma a
+   senha padrão a cada execução, então a correção é durável.
+2. **Redis**: `.env.test` passou a usar DB index `/1`
+   (`redis://:***@192.168.0.116:6379/1`) — filas BullMQ, locks e cache de
+   teste invisíveis para o dev (verificado: escrita em /1 não aparece em /0).
+   Opção A do handoff, sem código novo.
+3. **Meilisearch**: novo container dedicado `birthhub_meilisearch_test`
+   (porta 7701, `MEILI_MASTER_KEY` = o do `.env.test`, auth verificada:
+   `/indexes` → 401 sem key, 200 com key). `.env.test` → `MEILI_HOST=:7701`.
+   Opção B do handoff.
+4. **Harness**: `prepare-integration-env.js` agora (a) espera a porta do
+   Postgres no host remoto quando `DOCKER_HOST` é tcp remoto (bug real:
+   `waitForPort` fixo em localhost falharia), e (b) sobe
+   `birthhub_meilisearch_test` automaticamente quando `MEILI_HOST` aponta
+   para :7701 e o container não existe.
+5. `.env.test.example` documenta o padrão de isolamento (DB index Redis +
+   instância Meili dedicada).
+
+Evidências: `npm run test:integration --
+tests/integration/completeCustomerJourney.integration.test.ts` → 2/2 verde;
+`tests/integration/features/gamification/` → 12/12 verde.

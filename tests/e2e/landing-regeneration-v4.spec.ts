@@ -13,11 +13,31 @@ test.describe('Birthub 360 — Landing Regeneration V4', () => {
     await expect(lines.nth(1)).toContainText('Inteligência que decide.');
     await expect(lines.nth(2)).toContainText('Execução que acontece.');
 
-    // O espaço entre palavras não pode depender de whitespace colapsado.
-    const spacing = await lines.first().locator('.b360-word').evaluateAll((words) => {
-      if (words.length < 2) return 0;
-      const first = words[0].getBoundingClientRect();
-      const second = words[1].getBoundingClientRect();
+    // Mede o espaço visual tanto no reveal por palavras quanto no texto sem animação.
+    // B360Words usa texto simples com NODE_ENV=test ou reduced-motion.
+    const spacing = await lines.first().evaluate((line) => {
+      const walker = document.createTreeWalker(line, NodeFilter.SHOW_TEXT);
+      const nodes: Text[] = [];
+      while (walker.nextNode()) nodes.push(walker.currentNode as Text);
+      const text = nodes.map((node) => node.textContent ?? '').join('');
+      const words = [...text.matchAll(/\S+/gu)];
+      if (words.length < 2) throw new Error('O título deve conter pelo menos duas palavras');
+      const wordRect = (start: number, length: number) => {
+        const range = document.createRange();
+        let offset = 0;
+        for (const node of nodes) {
+          const end = offset + node.length;
+          if (start >= offset && start < end) range.setStart(node, start - offset);
+          if (start + length > offset && start + length <= end) {
+            range.setEnd(node, start + length - offset);
+            break;
+          }
+          offset = end;
+        }
+        return range.getBoundingClientRect();
+      };
+      const first = wordRect(words[0].index ?? 0, words[0][0].length);
+      const second = wordRect(words[1].index ?? 0, words[1][0].length);
       return second.left - first.right;
     });
     expect(spacing).toBeGreaterThan(2);
@@ -38,6 +58,13 @@ test.describe('Birthub 360 — Landing Regeneration V4', () => {
     await expect(cards.first()).toBeVisible();
     await expect(page.locator('.b360-gravity-section')).toHaveCount(0);
     await expect(page.locator('.b360-fanned-container')).toHaveCount(0);
+
+    // Preserva a verificação estrutural adicionada no #214, usando a landing
+    // efetivamente montada em App.tsx (Landing360, não Landing360Impeccable).
+    await expect(page.locator('#destaques')).toBeAttached();
+    await expect(page.locator('#fluxo')).toBeAttached();
+    await expect(page.locator('#ecossistema')).toBeAttached();
+    await expect(page.locator('.b360-hero-console')).toBeAttached();
 
     for (const section of await page.locator('.b360-section').all()) {
       await section.scrollIntoViewIfNeeded();

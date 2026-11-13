@@ -3,7 +3,7 @@
 De: 00 — Coordenador
 Para: 08 — QA e Release
 Onda: pós-homologação 2026-11-10
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Sprint destino: próximo ciclo de QA
 
@@ -56,3 +56,30 @@ nenhum `page.goto`/`request` — é um teste unitário disfarçado.
 - Dependência: ambiente de teste precisa do handoff
   `00-para-14-env-test-migrator-e-redis-compartilhado.md` resolvido
   (credencial migrator) para suites de integração completas.
+
+## Resolução (2026-11-11, executado pelo Agente 00 sob ORDEM 05)
+
+Os dois arquivos foram **reescritos** — nenhum teste tautológico permanece:
+
+1. `tests/integration/completeCustomerJourney.integration.test.ts` —
+   jornada real via serviços/repositórios Prisma contra
+   `prospectordb_test`: Company+Contact+Lead → `LeadUseCases.updateLeadStatus`
+   (transições reais com timeline) → funil Negócio + `CrmDealItem` →
+   `CrmCommercialDocument` (Proposta persistida com publicToken) →
+   `CommercialGoal` + lead visível na fonte do forecast → `Automation`
+   persistida → `sellerPerformanceAggregator.compute` agregando
+   calls/reuniões/negócio fechado. + teste de isolamento cross-tenant.
+   **Resultado: 2/2 verde** (16.5s, Postgres/Redis reais).
+2. `tests/e2e/completeCustomerJourney.e2e.test.ts` — jornada real via
+   `page.request` com sessão Better Auth autêntica (signUp pela UI):
+   POST/PUT `/api/leads`, POST/GET `/api/crm/documents`,
+   GET `/api/commercial-intelligence/overview`, POST/GET `/api/automations`,
+   GET `/api/analytics/overview`, `/api/gamification/profile` e
+   `/api/copiloto-ia/conversations`. **Resultado: 1/1 verde** (~1.7min,
+   servidor + banco reais).
+
+Escopo declarado nos próprios arquivos: o spec E2E cobre API+persistência
++RBAC; renderização de tela segue nos specs de UI existentes; workers de
+fila não são exercitados (verificados em suítes próprias). O fechamento
+de negócio no teste de integração usa update direto como fixture — o gate
+`dealClosureGate` tem cobertura própria.

@@ -47,7 +47,10 @@ export function B360DataStreamCursor() {
     if (typeof window === 'undefined') return;
     if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') return;
     // Habilitado para todos os ambientes desktop e estações com mouse/trackpad
-    if (typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 768px)').matches) {
+    if (
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(max-width: 768px)').matches
+    ) {
       return;
     }
 
@@ -243,7 +246,7 @@ export function B360DataStreamCursor() {
         const dist = Math.hypot(mouseX - closestX, mouseY - closestY);
 
         if (dist < PROXIMITY_RADIUS && isVisible) {
-          const intensity = Math.pow(1 - dist / PROXIMITY_RADIUS, 1.25);
+          const intensity = (1 - dist / PROXIMITY_RADIUS) ** 1.25;
           const relX = ((mouseX - rect.left) / rect.width) * 100;
           const relY = ((mouseY - rect.top) / rect.height) * 100;
 
@@ -455,25 +458,13 @@ export function B360DataStreamCursor() {
   return (
     <>
       {/* Canvas acelerado por hardware para fluxo de partículas, feixes e conexões neurais */}
-      <canvas
-        ref={canvasRef}
-        className="b360-data-stream-canvas"
-        aria-hidden="true"
-      />
+      <canvas ref={canvasRef} className="b360-data-stream-canvas" aria-hidden="true" />
 
       {/* Ponto de foco central — núcleo de precisão óptica */}
-      <div
-        ref={dotRef}
-        className="b360-cursor-focus-dot"
-        aria-hidden="true"
-      />
+      <div ref={dotRef} className="b360-cursor-focus-dot" aria-hidden="true" />
 
       {/* Anel de foco óptico com abertura e resposta magnética */}
-      <div
-        ref={ringRef}
-        className="b360-cursor-focus-ring"
-        aria-hidden="true"
-      />
+      <div ref={ringRef} className="b360-cursor-focus-ring" aria-hidden="true" />
     </>
   );
 }

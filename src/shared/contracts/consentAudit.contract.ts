@@ -26,6 +26,7 @@ export interface IConsentAuditChainPort {
     termsVersion: string;
     operatorUserId?: string;
     retentionDays?: number;
+    detail?: string;
   }): Promise<ConsentAuditEvent>;
 
   revokeConsent(

@@ -1,7 +1,7 @@
 - De: Auditoria ad-hoc (Devin CLI) — promover a 00 se virar missão formal
 - Para: 02 — Produto e UX
 - Onda: landing-360-auditoria
-- Status: Em andamento — cliente ligado ao contrato do 01 (PR #216), aguardando merge na main, OK do Marcelo no texto legal e revisão/merge
+- Status: Em andamento — cliente ligado ao contrato do 01 (PR #216, já na main), aguardando OK do Marcelo no texto legal e revisão/merge
 - Prioridade: bloqueador
 
 ## Problema
@@ -106,3 +106,8 @@ mesclado neste momento).
 - Teste ponta a ponta com persistência, depois do #216 na main.
 - Decisão de produto sobre CTA de sucesso para `/book/:slug` (não inventar o
   slug).
+
+> Nota de merge (2026-11-12): a "Resolução parcial" que existia na `main`
+> (POST `/api/public/demo-requests`, commit `510bce4bd`) foi substituída por esta
+> resolução — o contrato final do Agente 01 (PR #216) é
+> `POST /api/public/demo-leads` com 202 `{ ok: true }`, já mergeado na `main`.
