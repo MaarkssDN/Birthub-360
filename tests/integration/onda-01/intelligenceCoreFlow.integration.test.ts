@@ -18,15 +18,17 @@ describe('Onda 01 — Shared Intelligence Core End-to-End Integration Flow', () 
   beforeEach(async () => {
     // CONSENT_CHAIN_USE_PRISMA=1 (PR #216): ConsentSubjectKey/ConsentAuditRecord têm FK para
     // Organization — os tenants do fluxo precisam existir de verdade no banco de teste.
-    await prisma.organization.upsert({
-      where: { id: tenantA },
-      update: {},
-      create: { id: tenantA, name: 'Tenant Healthcare Corp (intelligence core)' },
-    });
-    await prisma.organization.upsert({
-      where: { id: tenantB },
-      update: {},
-      create: { id: tenantB, name: 'Tenant Logistics Corp (intelligence core)' },
+    await requestContext.run({ bypassRls: true }, async () => {
+      await prisma.organization.upsert({
+        where: { id: tenantA },
+        update: {},
+        create: { id: tenantA, name: 'Tenant Healthcare Corp (intelligence core)' },
+      });
+      await prisma.organization.upsert({
+        where: { id: tenantB },
+        update: {},
+        create: { id: tenantB, name: 'Tenant Logistics Corp (intelligence core)' },
+      });
     });
     domainEventMesh.clearProcessedEvents();
     curatedObjectionService.clear();
