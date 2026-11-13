@@ -2,8 +2,6 @@ De: Agente 00 — Coordenador
 Para: Agente 14 (Ambiente de Execução e Test Harness)
 Onda: Onda 2 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-033)
 Status: resolvido
-
-Status: em-andamento
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 2
@@ -83,5 +81,3 @@ Condição de parecer APROVADO do Agente 24 satisfeita: revisão independente em
 `.agents/reviews/` (PR #257, `pr251-24-revisao.md`) confirmou a implementação em
 `main` via PR #239 com evidência de código e testes. Handoff encerrado como
 `resolvido`.
-
-

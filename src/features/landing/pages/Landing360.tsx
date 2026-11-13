@@ -600,10 +600,13 @@ export function Landing360({
       const res = await fetch('/api/public/lead-capture', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...leadForm, website: '' }),
+        body: JSON.stringify(leadForm),
       });
-      const data = await res.json().catch(() => null);
-      if (!res.ok || !data?.success) {
+      const data = (await res.json().catch(() => null)) as {
+        success?: boolean;
+        error?: string;
+      } | null;
+      if (!res.ok || data?.success !== true) {
         setLeadError(
           data?.error ||
             'Não foi possível enviar sua solicitação agora. Tente novamente em instantes.',
@@ -1941,88 +1944,12 @@ export function Landing360({
             {/* ================================================================= */}
             <section className="b360-section b360-proof-stage" id="provas-sociais">
               <div className="b360-sectionhead">
-                <div className="b360-eyebrow">RESULTADOS REAIS COMPROVADOS</div>
-                <h2>Acelerando operações comerciais de alta performance.</h2>
+                <div className="b360-eyebrow">CONFIANÇA E SEGURANÇA</div>
+                <h2>Garantias reais de plataforma, não promessas de marketing.</h2>
                 <p>
-                  Confiança construída com métricas auditáveis, isolamento multi-tenant e segurança
-                  enterprise.
+                  Isolamento multi-tenant, criptografia de dados e conformidade LGPD fazem parte da
+                  arquitetura do Birth Hub 360°.
                 </p>
-              </div>
-
-              {/* Faixa de Métricas de Alto Impacto */}
-              <div className="b360-metrics-strip">
-                <div className="b360-metric-card">
-                  <span className="b360-metric-num">+42%</span>
-                  <div className="b360-metric-label">Taxa de Conversão</div>
-                  <div className="b360-metric-sub">Aumento médio no fechamento de propostas</div>
-                </div>
-                <div className="b360-metric-card">
-                  <span className="b360-metric-num">3.8x</span>
-                  <div className="b360-metric-label">Retorno sobre Investimento</div>
-                  <div className="b360-metric-sub">Payback comprovado no 1º trimestre</div>
-                </div>
-                <div className="b360-metric-card">
-                  <span className="b360-metric-num">R$ 180M+</span>
-                  <div className="b360-metric-label">Volume Transacionado</div>
-                  <div className="b360-metric-sub">
-                    Gerido sob supervisão de agentes inteligentes
-                  </div>
-                </div>
-                <div className="b360-metric-card">
-                  <span className="b360-metric-num">99.98%</span>
-                  <div className="b360-metric-label">Disponibilidade Operacional</div>
-                  <div className="b360-metric-sub">SLA empresarial com auditoria contínua</div>
-                </div>
-              </div>
-
-              {/* Grade de Depoimentos e Casos de Sucesso */}
-              <div className="b360-testimonials-grid">
-                <article className="b360-testimonial-card">
-                  <p className="b360-testimonial-quote">
-                    "Recuperamos mais de R$ 320 mil em negociações paradas já no primeiro mês de
-                    uso. O copiloto de IA recomenda exatamente qual argumento e proposta usar para
-                    fechar cada conta."
-                  </p>
-                  <div className="b360-testimonial-author">
-                    <div className="b360-testimonial-avatar">RS</div>
-                    <div>
-                      <div className="b360-author-name">Rodrigo Silveira</div>
-                      <div className="b360-author-role">
-                        Diretor Comercial · NeoLog B2B (+45 vendedores)
-                      </div>
-                    </div>
-                  </div>
-                </article>
-
-                <article className="b360-testimonial-card">
-                  <p className="b360-testimonial-quote">
-                    "Nossos SDRs e Closers economizam mais de 10 horas por semana em preenchimento
-                    de CRM e preparação de reuniões. A visibilidade 360° eliminou os silos entre
-                    vendas e marketing."
-                  </p>
-                  <div className="b360-testimonial-author">
-                    <div className="b360-testimonial-avatar">CD</div>
-                    <div>
-                      <div className="b360-author-name">Camila Duarte</div>
-                      <div className="b360-author-role">Head de RevOps · Vanguarda Tech</div>
-                    </div>
-                  </div>
-                </article>
-
-                <article className="b360-testimonial-card">
-                  <p className="b360-testimonial-quote">
-                    "O isolamento multi-tenant via RLS e a conformidade LGPD nativa foram
-                    fundamentais para aprovação técnica imediata pelo nosso comitê de segurança e
-                    jurídico."
-                  </p>
-                  <div className="b360-testimonial-author">
-                    <div className="b360-testimonial-avatar">MF</div>
-                    <div>
-                      <div className="b360-author-name">Marcelo Faccini</div>
-                      <div className="b360-author-role">VP de Tecnologia & Governança</div>
-                    </div>
-                  </div>
-                </article>
               </div>
 
               {/* Selos de Segurança e Certificações */}
@@ -2533,7 +2460,7 @@ export function Landing360({
             <span className="hidden md:inline text-xs text-slate-300">
               {abVariant === 'B'
                 ? 'Multiplique as vendas do seu time'
-                : 'Acelere seu pipeline em até 3.8x'}
+                : 'Revenue Intelligence para o time comercial'}
             </span>
             <a href="#demonstracao" className="b360-sticky-cta-btn">
               Agendar Demonstração Gratuita →

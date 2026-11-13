@@ -29,6 +29,8 @@ const leadCaptureSchema = z.object({
     .transform((v) => v.replace(/\D/g, ''))
     .pipe(z.string().min(10).max(13)),
   equipe: z.enum(['1 a 5', '6 a 15', '16 a 50', '50+']),
+  empresa: z.string().trim().max(160).optional(),
+  mensagem: z.string().trim().max(2000).optional(),
   consent: z.literal(true),
   website: z.string().optional(),
 });
@@ -81,6 +83,8 @@ router.post(
             `E-mail corporativo: ${lead.email}`,
             `WhatsApp: ${lead.whatsapp}`,
             `Tamanho da equipe: ${lead.equipe}`,
+            ...(lead.empresa ? [`Empresa: ${lead.empresa}`] : []),
+            ...(lead.mensagem ? ['', `Mensagem: ${lead.mensagem}`] : []),
             `Consentimento LGPD: marcado em ${new Date().toISOString()}`,
             `Origem: ${req.get('origin') || req.get('referer') || 'desconhecida'}`,
           ].join('\n'),

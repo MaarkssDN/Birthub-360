@@ -10,8 +10,8 @@ import { OPEN_COMMAND_PALETTE_EVENT } from '../../lib/paletteIntent.js';
 import { SoundFX } from '../../lib/soundEffects.js';
 import { BirthHubLogo } from '../brand/BirthHubLogo.js';
 import { AppBreadcrumbs } from './AppBreadcrumbs.js';
+import { OfflineBadge, SyncIndicator } from './SyncIndicator.js';
 import { TAB_META, type TabType } from './tabMeta.js';
-import { SyncIndicator, OfflineBadge } from './SyncIndicator.js';
 
 interface AppTopbarProps {
   activeTab: TabType;
@@ -146,7 +146,7 @@ export function AppTopbar({ activeTab, onOpenMobileNav }: AppTopbarProps) {
           strokeWidth={1.5}
         />
         <span className="text-xs font-sans">Buscar empresa, decisor ou comando…</span>
-        <kbd className="ml-auto rounded-full border border-[color:var(--color-border-strong)] bg-[color:var(--surface-2)] px-2 py-0.5 text-[9px] font-medium text-sky-700 dark:text-[#70D6FF] transition-colors group-hover:border-[color:var(--color-brand-accent)]">
+        <kbd className="ml-auto rounded-full border border-[color:var(--color-border-strong)] bg-[color:var(--surface-2)] px-2 py-0.5 text-[9px] font-medium text-sky-700 dark:text-ink transition-colors group-hover:border-[color:var(--color-brand-accent)]">
           ⌘K
         </kbd>
       </button>
@@ -156,7 +156,7 @@ export function AppTopbar({ activeTab, onOpenMobileNav }: AppTopbarProps) {
         <SyncIndicator className="hidden sm:inline-flex" />
 
         <div className="hidden text-right leading-tight sm:block mr-2">
-          <p className="text-[9px] font-sans uppercase tracking-[0.2em] text-sky-700 dark:text-[#70D6FF]">
+          <p className="text-[9px] font-sans uppercase tracking-[0.2em] text-sky-700 dark:text-ink">
             {dateLabel}
           </p>
           <p
