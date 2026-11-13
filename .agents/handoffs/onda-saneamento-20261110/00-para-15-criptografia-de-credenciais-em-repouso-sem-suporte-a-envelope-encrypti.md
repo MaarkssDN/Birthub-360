@@ -2,6 +2,8 @@ De: Agente 00 — Coordenador
 Para: Agente 15 (Segurança Aplicada e Rotação de Segredos)
 Onda: Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-010)
 Status: resolvido
+
+Status: em-andamento
 Prioridade: alto
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 5
@@ -77,3 +79,5 @@ em `origin/main`: envelope keyed `enc:v1:<keyId>:...` em
 `src/lib/crypto/secretFields.ts:13-22` e `src/lib/security/credentialCrypto.ts`;
 `scripts/security/credential-envelope.ts` e `docs/security/ROTACAO_SEGREDOS.md`
 §3.1 presentes. Status → `resolvido`.
+
+

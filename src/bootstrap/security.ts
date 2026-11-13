@@ -52,7 +52,10 @@ function isLocalDevOrigin(origin: string): boolean {
   }
   if (hostname.startsWith('127.')) return true;
   const parts = hostname.split('.').map(Number);
-  if (parts.length === 4 && parts.every((n) => Number.isInteger(n) && n >= 0 && n <= 255)) {
+  if (
+    parts.length === 4 &&
+    parts.every((n) => Number.isInteger(n) && n >= 0 && n <= 255)
+  ) {
     const [a, b] = parts;
     return (
       a === 10 ||

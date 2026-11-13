@@ -44,3 +44,21 @@ A plataforma provê suporte técnico automatizado para atendimento aos direitos 
 | Flywheel (abordagens e few-shot) | Legítimo interesse, condicionado ao consentimento | Expurgo físico na revogação (#33) |
 
 Detalhes e runbook de offboarding: `docs/ADR/ADR-006-LGPD-Cadeia-Consentimento-Append-Only.md`.
+
+---
+
+## Inventário técnico de campos PII (ROPA automatizado)
+
+O inventário campo-a-campo de dados pessoais no schema é **gerado automaticamente** por
+`scripts/lgpd/ropa-inventory.ts` (TAREFA-SANEAMENTO-052), a partir de duas fontes:
+
+- `src/lib/crypto/encryptedModelFields.ts` — campos cifrados em repouso (AES-256-GCM);
+- anotações de PII nos comentários de `prisma/schema.prisma` (dados pessoais não cifrados).
+
+Artefato exportável para auditoria/RIPD: `docs/lgpd/INVENTARIO_CAMPOS_PII.md`.
+
+**Gate de drift:** `npx tsx scripts/lgpd/ropa-inventory.ts --check` falha (exit 1) quando um
+campo registrado em `ENCRYPTED_MODEL_FIELDS` deixa de existir no schema, quando o schema ganha
+anotação de PII não refletida no inventário, ou quando o arquivo gerado está desatualizado.
+Rodar `npx tsx scripts/lgpd/ropa-inventory.ts` (sem `--check`) regenera o inventário — nunca
+editar `INVENTARIO_CAMPOS_PII.md` à mão.

@@ -91,7 +91,7 @@ export function ModuleRail({ panelCollapsed, onTogglePanel }: ModuleRailProps) {
   return (
     <nav
       aria-label="Módulos do Birth Hub 360°"
-      className="bh-module-rail relative z-30 flex h-full w-[68px] shrink-0 flex-col items-center gap-1 border-r border-line/80 bg-surface/95 py-3 backdrop-blur-xl dark:bg-[#111214]/95"
+      className="bh-module-rail relative z-30 flex h-full w-[68px] shrink-0 flex-col items-center gap-1 border-r border-line/80 bg-surface/95 py-3 backdrop-blur-xl dark:bg-bg/95"
     >
       {/* Hub Central — logo */}
       <button

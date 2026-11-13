@@ -154,7 +154,7 @@ export function ModuleNavPanel({
   const showModuleLauncher = isHub || mobile;
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col bg-surface/95 dark:bg-[#111214]/95">
+    <div className="flex h-full min-h-0 w-full flex-col bg-surface/95 dark:bg-bg/95">
       {launch && <NavLaunchFallback launch={launch} onFinish={finishLaunch} />}
 
       {/* Cabeçalho do módulo */}
