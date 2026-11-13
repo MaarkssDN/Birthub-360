@@ -181,7 +181,8 @@ describe('Row Level Security (RLS) - Cobertura e Isolamento Semântico no Banco 
     // REMED-02: +AccountGraphNode, +AccountGraphEdge, +WinLossAutopsyReport (139 -> 142)
     // REMED-05: +DomainEventOutbox, +DomainEventConsumption (142 -> 144)
     // REMED-04: +RebalanceApproval (144 -> 145)
-    expect(tenantScopedCount).toBe(145);
+    // PR #216: +PublicLeadConsent (145 -> 146); cadência multicanal: +MultichannelCadenceEnrollment (146 -> 147)
+    expect(tenantScopedCount).toBe(147);
     expect(globalCatalogCount).toBe(14);
     expect(systemInternalCount).toBe(1);
   });
