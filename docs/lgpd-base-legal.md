@@ -44,3 +44,11 @@ A plataforma provê suporte técnico automatizado para atendimento aos direitos 
 | Flywheel (abordagens e few-shot) | Legítimo interesse, condicionado ao consentimento | Expurgo físico na revogação (#33) |
 
 Detalhes e runbook de offboarding: `docs/ADR/ADR-006-LGPD-Cadeia-Consentimento-Append-Only.md`.
+
+## Inventário de tratamento (ROPA) automatizado
+
+O inventário oficial de operações de tratamento é `docs/lgpd/INVENTARIO_TRATAMENTO_ROPA.md`.
+Seu anexo técnico (campos com cifra em repouso, por model Prisma) é gerado e verificado por
+`npx tsx scripts/lgpd/verify-ropa-drift.ts` — o modo padrão falha (exit 1) se houver drift
+entre `ENCRYPTED_MODEL_FIELDS`, `prisma/schema.prisma` e o documento; `--export` regenera
+o anexo. TAREFA-SANEAMENTO-052 / BT360-DT-0087.

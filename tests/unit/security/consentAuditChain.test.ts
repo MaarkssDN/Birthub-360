@@ -543,6 +543,34 @@ describe('Ressalvas do Agente 15 @43922b4e', () => {
     expect(keys.size()).toBe(0);
   });
 
+  it('(BT360-DT-0086) expurgo não varre a cadeia inteira: idempotência usa lookup pontual', async () => {
+    const { repo, tokenizer } = mk();
+    const svc = new ConsentAuditChainService({ repo, tokenizer });
+    svc.registerPurger('x', async () => ({ rows: 1 }));
+    // Cadeia longa: 30 consentimentos + 1 revogação para alongar o scan que existia antes.
+    for (let i = 0; i < 30; i++) await rec(svc, 'o', `lead-${i}`);
+    await svc.revokeConsent('o', 'lead-alvo', 'TITULAR_REQUEST', undefined, { processNow: false });
+    // Segunda revogação do MESMO titular exercita o caminho alreadyRetracted (lookup pontual).
+    await svc.revokeConsent('o', 'lead-alvo', 'OPERATOR_CORRECTION', undefined, {
+      processNow: false,
+    });
+
+    let listChainCalls = 0;
+    const original = repo.listChain.bind(repo);
+    repo.listChain = async (o: string) => {
+      listChainCalls++;
+      return original(o);
+    };
+    const r = await svc.processPendingPurges(50, new Date(Date.now() + 3_600_000));
+    expect(r.failed).toBe(0);
+    expect(r.done).toBe(2);
+    // Antes da correção, cada tarefa chamava listChain (O(cadeia) por tarefa). Agora: zero.
+    expect(listChainCalls).toBe(0);
+    const events = await svc.getChain('o');
+    expect(events.filter((e) => e.kind === 'RETRACTION')).toHaveLength(2);
+    expect((await svc.verifyChainIntegrity('o')).valid).toBe(true);
+  });
+
   it('baixa: boot em produção exige KMS; segredo global não basta (falha fechada)', () => {
     expect(() => assertConsentChainBootConfig({ NODE_ENV: 'production' })).toThrow(MissingPepperError);
     expect(() =>

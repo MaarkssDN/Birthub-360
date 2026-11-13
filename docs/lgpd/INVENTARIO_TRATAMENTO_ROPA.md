@@ -27,3 +27,30 @@
 3. **Mecanismo de Descarte e Esquecimento (DSR — Data Subject Request):**
    - Serviço automatizado e idempotente `src/shared/services/dataSubjectErasure.service.ts`.
    - Remoção de nomes, telefones, e-mails, notas livres, metadados de mensagens e áudios gravados, preservando unicamente identificadores opacos para integridade contábil e referencial da empresa.
+
+<!-- ROPA:GENERATED:START -->
+
+### Anexo técnico gerado automaticamente — campos com cifra em repouso
+
+Gerado por `scripts/lgpd/verify-ropa-drift.ts` a partir de
+`src/lib/crypto/encryptedModelFields.ts` (fonte única) e `prisma/schema.prisma`.
+NÃO edite manualmente: altere a fonte e rode `npx tsx scripts/lgpd/verify-ropa-drift.ts --export`.
+A verificação de drift (`--check`, modo padrão) falha se este bloco divergir da fonte
+ou se algum model/campo declarado não existir no schema.
+
+| Model Prisma | Campos cifrados (AES-256-GCM, envelope `enc:v1:`) | Base da declaração |
+|---|---|---|
+| `Account` | `accessToken, idToken, refreshToken` | `ENCRYPTED_MODEL_FIELDS` |
+| `BitrixConnection` | `webhookSecret, webhookUrl` | `ENCRYPTED_MODEL_FIELDS` |
+| `Contact` | `email, phone, whatsapp` | `ENCRYPTED_MODEL_FIELDS` |
+| `CopilotoTranscriptSegment` | `text` | `ENCRYPTED_MODEL_FIELDS` |
+| `ExternalCrmConnection` | `config` | `ENCRYPTED_MODEL_FIELDS` |
+| `GoogleWorkspaceConnection` | `accessToken, refreshToken` | `ENCRYPTED_MODEL_FIELDS` |
+| `OmieConnection` | `appKey, appSecret` | `ENCRYPTED_MODEL_FIELDS` |
+| `SlackConnection` | `botToken, webhookUrl` | `ENCRYPTED_MODEL_FIELDS` |
+| `StripeConnection` | `secretKey, webhookSecret` | `ENCRYPTED_MODEL_FIELDS` |
+| `ThreeCXConnection` | `apiKey, apiSecret` | `ENCRYPTED_MODEL_FIELDS` |
+| `VoiceCallLog` | `recordingUrl, summary, transcript` | `ENCRYPTED_MODEL_FIELDS` |
+| `VoiceHubConnection` | `apiKey, webhookSecret` | `ENCRYPTED_MODEL_FIELDS` |
+
+<!-- ROPA:GENERATED:END -->

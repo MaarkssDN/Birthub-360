@@ -84,6 +84,9 @@ class LazyRepo implements ConsentAuditChainRepository {
   async getHead(o: string) {
     return (await this.get()).repo.getHead(o);
   }
+  async hasRetractionFor(o: string, revocationEventId: string) {
+    return (await this.get()).repo.hasRetractionFor(o, revocationEventId);
+  }
   async listTenants() {
     return (await this.get()).repo.listTenants();
   }

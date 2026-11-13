@@ -8,14 +8,15 @@ import { createHash } from 'node:crypto';
  * Os delegates são tipados estruturalmente para compilar antes da migração; a factory
  * (`consentChainFactory.ts`) só usa este repositório quando os delegates existem no client.
  */
-import type {
-  ChainLockContext,
-  ConsentAuditChainRepository,
-  ConsentChainEventKind,
-  ConsentChainHead,
-  ConsentPurgeTask,
-  RevocationReasonCode,
-  StoredConsentAuditEvent,
+import {
+  retractionPurposeMarker,
+  type ChainLockContext,
+  type ConsentAuditChainRepository,
+  type ConsentChainEventKind,
+  type ConsentChainHead,
+  type ConsentPurgeTask,
+  type RevocationReasonCode,
+  type StoredConsentAuditEvent,
 } from './consentAuditChain.service.js';
 import {
   type SubjectKeyState,
@@ -57,7 +58,11 @@ export interface ConsentPurgeTaskRow {
 
 type Where = Record<string, unknown>;
 interface Delegate<Row> {
-  findFirst(args: { where: Where; orderBy?: Record<string, 'asc' | 'desc'> }): Promise<Row | null>;
+  findFirst(args: {
+    where: Where;
+    orderBy?: Record<string, 'asc' | 'desc'>;
+    select?: Record<string, boolean>;
+  }): Promise<Row | null>;
   findMany(args: {
     where: Where;
     orderBy?: Record<string, 'asc' | 'desc'>;
@@ -292,6 +297,25 @@ export class PrismaConsentAuditChainRepository implements ConsentAuditChainRepos
       tx.consentAuditChainHead.findFirst({ where: { organizationId } }),
     );
     return h ? { ...h } : null;
+  }
+
+  /**
+   * Idempotência do expurgo sem varrer a cadeia (TAREFA-SANEAMENTO-038): um único findFirst
+   * filtrado por tenant + kind=RETRACTION + marcador em `purpose`, em vez de `listChain`
+   * (findMany de TODOS os eventos do tenant) a cada tarefa processada pelo worker.
+   */
+  async hasRetractionFor(organizationId: string, revocationEventId: string): Promise<boolean> {
+    const row = await this.inTenant(organizationId, (tx) =>
+      tx.consentAuditRecord.findFirst({
+        where: {
+          organizationId,
+          kind: 'RETRACTION',
+          purpose: { contains: retractionPurposeMarker(revocationEventId) },
+        },
+        select: { id: true },
+      }),
+    );
+    return row !== null;
   }
 
   async listTenants(): Promise<string[]> {

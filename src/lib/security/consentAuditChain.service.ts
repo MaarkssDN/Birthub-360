@@ -89,6 +89,12 @@ export interface ConsentAuditChainRepository {
   withTenantLock<T>(organizationId: string, fn: (ctx: ChainLockContext) => Promise<T>): Promise<T>;
   listChain(organizationId: string): Promise<StoredConsentAuditEvent[]>;
   getHead(organizationId: string): Promise<ConsentChainHead | null>;
+  /**
+   * Lookup pontual de idempotência do expurgo (TAREFA-SANEAMENTO-038): verdadeiro se já existe
+   * RETRACTION para a revogação. NÃO pode varrer a cadeia inteira — o Postgres resolve com
+   * `findFirst` (kind + purpose contains); a memória varre o array já carregado.
+   */
+  hasRetractionFor(organizationId: string, revocationEventId: string): Promise<boolean>;
   /** Organizações a varrer pelo worker (sem bypass de RLS nas tabelas LGPD). */
   listTenants(): Promise<string[]>;
   /**
@@ -177,6 +183,13 @@ export class InMemoryConsentAuditChainRepository implements ConsentAuditChainRep
     return (this.chains.get(organizationId) ?? []).map((e) => ({ ...e }));
   }
 
+  async hasRetractionFor(organizationId: string, revocationEventId: string): Promise<boolean> {
+    const marker = retractionPurposeMarker(revocationEventId);
+    return (this.chains.get(organizationId) ?? []).some(
+      (e) => e.kind === 'RETRACTION' && e.purpose.includes(marker),
+    );
+  }
+
   async getHead(organizationId: string): Promise<ConsentChainHead | null> {
     const h = this.heads.get(organizationId);
     return h ? { ...h } : null;
@@ -252,6 +265,15 @@ export class InMemoryConsentAuditChainRepository implements ConsentAuditChainRep
     this.details.clear();
     this.locks.clear();
   }
+}
+
+/**
+ * Marcador estável embutido em `purpose` do evento RETRACTION (sem PII):
+ * `"revocationEventId":"<id>"` — substring do JSON canônico. Fonte única do formato usado
+ * tanto na gravação quanto nos lookups de idempotência (TAREFA-SANEAMENTO-038).
+ */
+export function retractionPurposeMarker(revocationEventId: string): string {
+  return `"revocationEventId":${JSON.stringify(revocationEventId)}`;
 }
 
 /** hash = sha256(previousHash + JSON canônico de todos os demais campos, exceto currentHash). */
@@ -700,12 +722,9 @@ export class ConsentAuditChainService implements IConsentAuditChainPort {
     organizationId: string,
     revocationEventId: string,
   ): Promise<boolean> {
-    const chain = await this.opts.repo.listChain(organizationId);
-    return chain.some(
-      (e) =>
-        e.kind === 'RETRACTION' &&
-        e.purpose.includes(`"revocationEventId":${JSON.stringify(revocationEventId)}`),
-    );
+    // Lookup pontual no repositório (índice/contains no Postgres) — antes varria a cadeia
+    // inteira do tenant a cada tarefa de expurgo (TAREFA-SANEAMENTO-038 / BT360-DT-0086).
+    return this.opts.repo.hasRetractionFor(organizationId, revocationEventId);
   }
 
   async anchorExternalCheckpoint(
