@@ -38,3 +38,22 @@ Auditoria de paridade `VALID_TABS` (`MainActivity.java`) × `ACTIVE_NAV_TABS`
 
 - Parecer do Agente 24 para ambas as tarefas.
 - Teste de paridade automatizado: depende do Agente 08 (handoff aberto).
+
+## Adendo — reconciliação com origin/main (2026-11-12, sessão seguinte)
+
+- `git merge origin/main` (b88f16729, +31 commits) executado sem conflitos;
+  branch agora `ahead 6`.
+- Re-verificação de paridade pós-merge via `npx tsx`: `VALID_TABS` = 53,
+  `ACTIVE_NAV_TABS` = 53, `java-only: []`, `ts-only: []` — inclui `gamification`.
+- `npx tsc --noEmit`: exit 0, sem erros.
+- `npm run lint` (biome, escopo `src/`): exit 0; warnings pré-existentes de
+  baseline, nenhum introduzido (diff não toca `src/**`).
+- `npx vitest run tests/unit/audit/wave2-out-of-scope-remediations.test.ts`:
+  12/12 testes passando (cobre DEBT-UX-005, deep links web-side).
+- Inventário físico re-confirmado: `public/icons/icon-192.png`,
+  `icon-512.png`, `icon-512-maskable.png`, `public/apple-touch-icon.png`,
+  `public/favicon.ico` presentes; `vite.config.ts` aponta maskable para o
+  arquivo dedicado; `index.html` declara `apple-touch-icon`.
+- Nenhum handoff destinado ao Agente 09 permanece `aberto`/`em-andamento`
+  nesta branch (7/7 resolvidos; os 2 abertos da onda-saneamento-20261110
+  foram implementados nesta branch).
