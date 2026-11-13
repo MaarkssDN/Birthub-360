@@ -62,4 +62,9 @@ export const TENANT_INJECTED_MODELS = [
   'PlaybookInsight',
   // LeadTouchpoint multi-tenant isolation
   'LeadTouchpoint',
+  // Onda coordenador-00 (handoff 07→01): matrículas de cadência multicanal são gravadas direto
+  // pelo client `prisma` global via PrismaMultichannelCadenceEnrollmentStore — mesmo tratamento
+  // de rede de segurança dos models core (o store também filtra organizationId explicitamente e
+  // a RLS `tenant_isolation` é a garantia real).
+  'MultichannelCadenceEnrollment',
 ];
