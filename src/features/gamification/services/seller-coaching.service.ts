@@ -78,16 +78,11 @@ Retorne SEMPRE e APENAS um JSON válido no formato:
 
       return cleanAndParseJson<SellerCoachingReport>(response.content);
     } catch (error: any) {
+      // Sem fallback fabricado: um relatório fixo apresentado como análise da
+      // IA é pior que um erro honesto. O controller propaga → HTTP 5xx → a UI
+      // exibe o estado de erro real.
       logger.error({ err: error }, 'Erro ao gerar coaching do vendedor');
-      return {
-        motivationalHeadline: `Bom trabalho esta semana, ${data.sellerName}!`,
-        overallGrade: 'B',
-        celebrationPoint: 'Manutenção do ritmo de atividades comerciais.',
-        criticalGaps: ['Otimizar tempo de resposta aos leads qualificados.'],
-        actionableMicroHabits: ['Revisar pipeline diariamente no início da manhã.'],
-        suggestedTrainingTopic: 'Técnicas de Fechamento e Contorno de Objeções',
-        nextWeekTargetFocus: 'Acelerar fechamento de oportunidades em fase final.',
-      };
+      throw error;
     }
   }
 }

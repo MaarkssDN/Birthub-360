@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
 import {
   Activity,
   AlertTriangle,
@@ -15,7 +14,6 @@ import {
   Radar,
   RotateCw,
   Search,
-  ShieldCheck,
   SlidersHorizontal,
   Sparkles,
   Target,
@@ -23,6 +21,7 @@ import {
   Users,
   Zap,
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CommercialJourneyStream } from '../../../components/CommercialJourneyStream.js';
 import { Button } from '../../../components/ui/Button.js';
@@ -843,9 +842,7 @@ export function SinglePageDashboard() {
               />
             ) : (
               <div className="rounded-xl border border-dashed border-line p-6 text-center">
-                <p className="text-sm font-semibold text-ink">
-                  Perfil de gamificação indisponível
-                </p>
+                <p className="text-sm font-semibold text-ink">Perfil de gamificação indisponível</p>
                 <p className="mt-1 text-xs text-ink-2">
                   Nenhum perfil de vendedor foi encontrado para a sua conta. Os pontos e níveis
                   aparecem aqui quando o perfil de gamificação existir.

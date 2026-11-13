@@ -327,14 +327,12 @@ describe('Landing360', () => {
     const ctaLinks = screen.getAllByRole('link', { name: /Garantir Demonstração Gratuita/i });
     expect(ctaLinks.length).toBeGreaterThan(0);
 
-    // 5. Provas sociais, métricas e selos de credibilidade
-    expect(screen.getByText(/\+42%/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/3.8x/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/R\$ 180M\+/i)).toBeInTheDocument();
-    expect(screen.getByText(/Rodrigo Silveira/i)).toBeInTheDocument();
-    expect(screen.getByText(/Camila Duarte/i)).toBeInTheDocument();
+    // 5. Selos de credibilidade reais da plataforma (sem métricas/depoimentos fabricados)
     expect(screen.getByText(/Criptografia AES-256 Ponta a Ponta/i)).toBeInTheDocument();
     expect(screen.getByText(/Isolamento Multi-Tenant via Postgres RLS/i)).toBeInTheDocument();
+    expect(screen.queryByText(/\+42%/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/R\$ 180M\+/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Rodrigo Silveira/i)).not.toBeInTheDocument();
 
     // 4. Formulário objetivo de captura de lead
     expect(container.querySelector('#lead-nome')).toBeInTheDocument();
