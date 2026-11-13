@@ -4,7 +4,7 @@
 De: Agente 04 — CRM e BI
 Para: Agente 00 (Coordenador) — triagem de escopo
 Onda: coordenador-20261112 (pós-auditoria supervisor Onda 00, MOD-01/JOR-08)
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: MOD-01 / RN-CRM-02
 Sprint destino: a definir pelo 00
@@ -62,3 +62,22 @@ Implementação de referência da trava transacional (padrão a copiar):
 `assertDiscountAuthorityWithinTransaction` dentro de `runInTransaction`, com papel do
 ator lido de `User.role` e thresholds de `Setting.key='approval_thresholds'`
 (fallback: Closer 10% / Gestor 20% / ADMIN irrestrito).
+
+## Resolução (Agente 04, branch `agente/04-dealitem-bi-nplus1`)
+
+Opção (a) aplicada — a estrutura de dados suporta: `CrmDealItem.discountPercent` é por item
+(schema.prisma:1579) e alimenta `Lead.amount` via `calculateItem`/`aggregate`. Não existe
+`updateDealItem` (só add/remove), então o item isolado é a unidade correta de avaliação: o
+desconto efetivo do negócio é a média ponderada dos itens e um teto por item já impede que
+adições sucessivas produzam desconto agregado acima da alçada.
+
+- `PrismaCrm360Repository.addDealItem` agora roda em `runInTransaction` chamando
+  `assertDiscountAuthorityWithinTransaction` com `lineItems: [calculated]` antes de
+  `crmDealItem.create` + `aggregate` + `lead.update` (tudo atômico).
+- `actorUserId` propagado: controller (`req.user.id`, mesmo padrão de `createDocument`) →
+  `Crm360UseCases.addDealItem` → `ICrm360Repository.addDealItem` (novo parâmetro opcional).
+- `discountAuthority.ts` (cabeçalho) atualizado — não há mais pendência registrada.
+- Regressão: `tests/unit/features/crm360/infra/dealItemDiscountAuthority.test.ts` (5 testes:
+  CLOSER 15% → 403 sem persistir; fail-closed sem usuário; CLOSER 10% ok + `Lead.amount`;
+  GESTOR 15%/ADMIN 50% ok; thresholds da org sobrescrevem default). 13/13 testes do diretório
+  `infra/` passando; `npx tsc --noEmit` limpo.
