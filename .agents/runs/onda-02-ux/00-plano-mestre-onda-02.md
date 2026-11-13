@@ -202,3 +202,29 @@ honesto V2 (insufficient_data / error / ready) do cockpit real;
   anexados lá ou em handoff próprio do 07.
 - `RealtimeFeed`/`offlineSync*` (`Math.random`): geração de id/jitter —
   legítimos.
+
+### Complemento 2 — P06–P08, M09–M11 auditados
+
+- **P07 Automação** (`automations`, `integrations`): sem padrões de
+  fabricação; `google.service.ts` usa `Math.random` apenas para gerar ID
+  de evento de calendário (legítimo). Domínio de código: Agente 06.
+- **P08 Engajamento** (`mesa-tratamento`): fila real via
+  `mesaTratamento.api.ts` + integração Bitrix documentada no AGENTS do
+  domínio; voz/telefonia permanece gated (`MODULE_NOT_READY` intencional,
+  handoff 17→12).
+- **M09 Admin** (`settings`): failover já corrigido; varredura de
+  `Math.random`/`setTimeout` restante não achou fabricação.
+- **M10 Mobile**: `availability: 'mobile'`, sem superfície web — nada a
+  auditar aqui.
+- **M11 Social Selling**: `SocialSellingHub` roteado em `/social-selling`
+  com `RequireModuleAccess`; `ApproachGeneratorCard` usa
+  `socialSelling.api` real; `setTimeout` é só reset de "copiado".
+- **P06 Inteligência Artificial**: `features/intelligence` é domínio do
+  Agente 07 — suspeitos de `Math.random` já listados acima para triagem
+  dele; nenhum arquivo editado por mim neste domínio.
+
+**Conclusão da auditoria funcional transversal**: as fabricações reais
+estavam concentradas em (a) landing lead forms — corrigidas; (b) War Room
+Arena — corrigida; (c) painéis de failover — corrigidos; (d) duas UIs
+mortas deprecated — removidas. Os workspaces vivos dos 11 módulos
+apresentam estados honestos ou estão gated intencionalmente.
