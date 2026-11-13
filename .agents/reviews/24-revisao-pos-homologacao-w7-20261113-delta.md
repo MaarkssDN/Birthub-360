@@ -174,3 +174,22 @@ localmente (sem Docker) — validação a cargo do CI.
 
 **Veredito do adendo:** **APROVADO** — correção test-only alinhada ao
 padrão canônico de seed de tenants; aprovação segue condicionada ao CI verde.
+
+---
+
+## Adendo 4 — Paridade tenant-scoping pós-merge de main (CI run 43481811272)
+
+**Escopo:** commit `14f43fca7`, somente
+`tests/unit/lib/tenant-scoping-parity.test.ts` — zero mudança em produção.
+
+**Motivo:** o merge de `origin/main` (PR #266) reclassificou
+`PublicLeadConsent` para `TENANT_INJECTED_MODELS`
+(`src/lib/tenant-scoping-registry.ts`), tirando-o do gap RLS-only — mas o
+snapshot `KNOWN_RLS_ONLY_MODELS` do teste de paridade ainda o continha,
+reprovando o unit gate com `noLongerPresent: ['PublicLeadConsent']`.
+Correção: remoção da entrada obsoleta (e do comentário que justificava o
+critério antigo). Validação local: `vitest run
+tenant-scoping-parity.test.ts` 2/2 PASS.
+
+**Veredito do adendo:** **APROVADO** — alinhamento do snapshot de teste à
+classificação canônica de main; aprovação segue condicionada ao CI verde.
