@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test';
 import { signUp, uniqueTestEmail } from './helpers';
+import {
+  countDbRows,
+  expectDbRow,
+  expectDbRowSoftDeleted,
+} from './db-assertions';
 
 // CRUD de lead ponta-a-ponta (item TEST-002 / 09-BACKLOG-EXECUTAVEL.md #20). A UI do Pipeline CRM
 // (CrmBoard.tsx) não tem um formulário de criação direta de lead — leads nascem via o fluxo de
@@ -23,6 +28,15 @@ test.describe('CRUD de lead', () => {
 
     const leadId = created.id;
 
+    // TAREFA-SANEAMENTO-039 (BT360-DT-0089): além do 201/GET, afirmar que a linha foi gravada de
+    // fato no PostgreSQL — resposta HTTP sozinha não prova persistência.
+    await expectDbRow('Lead', leadId, {
+      status: 'Lead Recebido',
+      source: 'e2e-test',
+      channel: 'Teste automatizado',
+      deletedAt: null,
+    });
+
     const readRes = await page.request.get(`/api/leads/${leadId}`);
     expect(readRes.ok()).toBeTruthy();
     const read = (await readRes.json()).data;
@@ -41,6 +55,12 @@ test.describe('CRUD de lead', () => {
     const readAgain = (await readAgainRes.json()).data;
     expect(readAgain.status).toBe('Qualificação (SDR)');
 
+    // O PUT devolveu 200 — mas só o banco prova que status/temperature foram realmente atualizados.
+    await expectDbRow('Lead', leadId, {
+      status: 'Qualificação (SDR)',
+      temperature: 'Quente',
+    });
+
     // lead.routes.ts:19 exige role ADMIN/GESTOR para DELETE. Quem se cadastra fundando uma
     // organização nova vira ADMIN dela (src/lib/auth.ts databaseHooks.user.create.before) — é a
     // única pessoa da organização nesse momento, então precisa conseguir administrar seus próprios
@@ -53,13 +73,23 @@ test.describe('CRUD de lead', () => {
     // mais em GET, mesmo continuando na tabela.
     const afterDeleteRes = await page.request.get(`/api/leads/${leadId}`);
     expect(afterDeleteRes.status()).toBe(404);
+
+    // E a prova no banco: a linha continua existindo com deletedAt preenchido — o 404 sozinho não
+    // distingue "soft delete persistido" de "registro nunca existiu".
+    await expectDbRowSoftDeleted('Lead', leadId);
   });
 
   test('rejeita status de lead fora do enum aceito', async ({ page }) => {
+    // Marcador único para provar no banco que a requisição rejeitada NÃO gravou nada.
+    const marker = `e2e-status-invalido-${Date.now()}`;
     const res = await page.request.post('/api/leads', {
-      data: { status: 'Status-Que-Nao-Existe' },
+      data: { status: 'Status-Que-Nao-Existe', source: marker },
     });
     expect(res.status()).toBe(400);
+    await expect(
+      countDbRows('Lead', 'source', marker),
+      'rejeição 400 não pode persistir nenhuma linha em Lead',
+    ).resolves.toBe(0);
   });
 
   test('lead recém-criado aparece na listagem paginada de leads', async ({ page }) => {
