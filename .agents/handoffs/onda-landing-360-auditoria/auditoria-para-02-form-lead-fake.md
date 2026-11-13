@@ -1,7 +1,7 @@
 - De: Auditoria ad-hoc (Devin CLI) — promover a 00 se virar missão formal
 - Para: 02 — Produto e UX
 - Onda: landing-360-auditoria
-- Status: aberto
+- Status: em-andamento
 - Prioridade: bloqueador
 
 ## Problema
@@ -43,3 +43,14 @@ genérico — não é link de agendamento e não carrega dados do lead.
 
 - O consentimento LGPD do form está pré-marcado — ver handoff
   `02-para-21-validacao-consentimento-lgpd.md`. Não fazer merge sem essa validação.
+
+## Resolução parcial (Agente 02 — 2026-11-12, commit `510bce4bd`)
+
+Feito:
+- `setTimeout` fake removido: submit agora faz `POST /api/public/demo-requests` real; qualquer falha exibe `role="alert"` observável — nunca sucesso falso.
+- Consentimento LGPD inicia desmarcado e é exigido no submit (validação formal do texto fica com Agente 21).
+- WhatsApp validado (10–13 dígitos); e-mail `type="email" required"`.
+- Copy de sucesso honesta (sem "em até 15 minutos"/"confirmação enviada"); botão genérico "Abrir Google Agenda" removido (rota real `/book/:slug` exige slug de tenant).
+- Teste unitário atualizado mockando 200 do contrato + marcando consent.
+
+Bloqueado em: endpoint público de captação (Agente 01 — handoff `01-para-02-contrato-api-leads`) e validação LGPD do consent (Agente 21). Até lá o form falha observavelmente.

@@ -1,7 +1,7 @@
 - De: 01 — Plataforma, Segurança e Dados
 - Para: 02 — Produto e UX
 - Onda: landing-360-auditoria
-- Status: aceito pelo 02 @ e03bbc2
+- Status: resolvido
 - Prioridade: alta (desbloqueia o hang do E2E no Release; CSS de produção da landing)
 
 ## Problema
@@ -82,3 +82,7 @@ Aceite do Agente 02 registrado no PR #237 no SHA `e03bbc2618212b0646204facc87543
 empilhamento `z-index: 40`, `display: none` com `[role="dialog"]` aberto, e offset
 `bottom: 5.5rem` do "voltar ao topo" enquanto a sticky estiver visível. As regras CSS
 não foram alteradas neste registro.
+
+## Resolução
+
+Status atualizado para resolvido — correção aceita e integrada na branch `agente/02-ux-saneamento` (2026-11-12).

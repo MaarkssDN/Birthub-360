@@ -135,6 +135,24 @@
   color: var(--b360-blue);
 }
 
+/* Navegação mobile — oculta por padrão, exibida abaixo de 720px */
+.b360-mobile-nav-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: transparent;
+  color: #8da4c4;
+  cursor: pointer;
+}
+
+.b360-mobile-nav {
+  display: none;
+}
+
 /* Aurora Button */
 .b360-aurora {
   display: inline-flex;
@@ -1133,9 +1151,48 @@
 @media (max-width: 720px) {
   .b360-toprow {
     height: 70px;
+    position: relative;
+    flex-wrap: wrap;
   }
   .b360-topnav {
     display: none;
+  }
+  .b360-mobile-nav-toggle {
+    display: inline-flex;
+  }
+  .b360-mobile-nav {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 70px;
+    left: 0;
+    right: 0;
+    z-index: 60;
+    background: rgba(10, 15, 26, 0.97);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    padding: 8px 16px 16px;
+    gap: 4px;
+  }
+  .b360-mobile-nav a,
+  .b360-mobile-nav button {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 12px;
+    border-radius: 10px;
+    color: #cbd5e1;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+  }
+  .b360-mobile-nav a:hover,
+  .b360-mobile-nav button:hover {
+    background: rgba(148, 163, 184, 0.12);
+    color: #fff;
   }
   .b360-hero h1 {
     font-size: 34px;
