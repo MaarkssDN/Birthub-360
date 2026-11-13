@@ -7,7 +7,7 @@ import { Badge } from '../../../components/ui/Badge.js';
  * gravação puramente local (ver `PrismaCalendarSchedulerPort.ts`/`GovBrSignatureProviderPort.ts`,
  * que já documentavam "stub de transporte" em comentário sem nenhum reflexo nesta tela).
  */
-export type IntegrationCapability = 'read' | 'write' | 'stub' | 'error' | 'pending_scope';
+type IntegrationCapability = 'read' | 'write' | 'stub' | 'error' | 'pending_scope';
 
 const CAPABILITY_CONFIG: Record<
   IntegrationCapability,

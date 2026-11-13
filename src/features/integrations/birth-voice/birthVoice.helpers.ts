@@ -8,7 +8,7 @@ import { toE164BR } from '../../../lib/phone.js';
  * precisa ser testável sem abrir pool de banco nem depender de variáveis de ambiente válidas.
  */
 
-export interface TranscriptTurn {
+interface TranscriptTurn {
   role: 'user' | 'assistant';
   content: string;
 }
