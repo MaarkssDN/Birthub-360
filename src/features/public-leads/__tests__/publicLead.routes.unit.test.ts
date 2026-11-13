@@ -19,7 +19,7 @@ vi.mock('../../../lib/logger.js', () => ({
   logger: { info: vi.fn(), error: vi.fn(), warn: vi.fn() },
 }));
 
-import { LANDING_DEMO_CONSENT_VERSION } from '../publicLead.constants.js';
+import { LANDING_DEMO_CONSENT_VERSION } from '../../../shared/contracts/publicLead.constants.js';
 import { publicLeadRoutes } from '../publicLead.routes.js';
 import { PublicLeadUnavailableError } from '../publicLead.service.js';
 

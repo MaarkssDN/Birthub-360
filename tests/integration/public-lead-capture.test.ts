@@ -9,7 +9,7 @@ import {
   LANDING_DEMO_CONSENT_PURPOSE,
   LANDING_DEMO_CONSENT_VERSION,
   LANDING_LEAD_SOURCE,
-} from '../../src/features/public-leads/publicLead.constants';
+} from '../../src/shared/contracts/publicLead.constants';
 import { publicLeadRoutes } from '../../src/features/public-leads/publicLead.routes';
 import { contactEmailIndex } from '../../src/lib/crypto/piiIndex';
 
