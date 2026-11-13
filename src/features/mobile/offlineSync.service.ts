@@ -9,6 +9,9 @@
 
 import { api } from '../../lib/api.js';
 import { createDefaultOfflineStorage } from './services/encryptedOfflineStorage.service.js';
+import type { StorageAdapter } from './services/offlineStorageAdapter.js';
+
+export { LocalStorageAdapter, type StorageAdapter } from './services/offlineStorageAdapter.js';
 
 export type OfflineOperationType =
   | 'CREATE_LEAD'
@@ -79,12 +82,6 @@ export type SyncEvent =
 
 export type SyncEventListener = (event: SyncEvent) => void;
 
-export interface StorageAdapter {
-  getItem(key: string): string | null | Promise<string | null>;
-  setItem(key: string, value: string): void | Promise<void>;
-  removeItem(key: string): void | Promise<void>;
-}
-
 export interface ApiClientAdapter {
   request<T = unknown>(params: {
     endpoint: string;
@@ -148,48 +145,6 @@ export function generateTemporaryId(prefix = 'temp'): string {
   const timestamp = Date.now().toString(36);
   const randomStr = Math.random().toString(36).substring(2, 9);
   return `${prefix}_${timestamp}_${randomStr}`;
-}
-
-/**
- * Adaptador de armazenamento com fallback seguro para memória quando localStorage não estiver disponível.
- */
-export class LocalStorageAdapter implements StorageAdapter {
-  private inMemoryFallback = new Map<string, string>();
-
-  getItem(key: string): string | null {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        return window.localStorage.getItem(key);
-      }
-    } catch {
-      // Ignora SecurityError ou restrições de sandbox
-    }
-    return this.inMemoryFallback.get(key) ?? null;
-  }
-
-  setItem(key: string, value: string): void {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        window.localStorage.setItem(key, value);
-        return;
-      }
-    } catch {
-      // QuotaExceededError ou restrições de sandbox
-    }
-    this.inMemoryFallback.set(key, value);
-  }
-
-  removeItem(key: string): void {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        window.localStorage.removeItem(key);
-        return;
-      }
-    } catch {
-      // Ignora
-    }
-    this.inMemoryFallback.delete(key);
-  }
 }
 
 /**

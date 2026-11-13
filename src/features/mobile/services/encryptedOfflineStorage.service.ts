@@ -30,7 +30,7 @@
  *    candidato a remoção ou adoção futura, decisão do Agente 00.
  */
 
-import { type StorageAdapter, LocalStorageAdapter } from '../offlineSync.service.js';
+import { LocalStorageAdapter, type StorageAdapter } from './offlineStorageAdapter.js';
 
 const CIPHERTEXT_PREFIX = 'bh360enc:v1:';
 const KEY_STORE_DB_NAME = 'birthhub360-secure-store';
