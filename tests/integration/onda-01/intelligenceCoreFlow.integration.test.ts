@@ -8,13 +8,26 @@ import { modelCascadeRouter } from '../../../src/lib/ai/gateway/model-cascade.js
 import { piiTokenizer } from '../../../src/lib/security/piiTokenizer.service.js';
 import { consentAuditChain } from '../../../src/lib/security/consentChainFactory.js';
 import { requestContext } from '../../../src/lib/async-context.js';
+import { prisma } from '../../../src/lib/prisma.js';
 import { similarDealsService } from '../../../src/features/knowledge/similarDeals.service.js';
 
 describe('Onda 01 — Shared Intelligence Core End-to-End Integration Flow', () => {
   const tenantA = 'tenant-healthcare-corp';
   const tenantB = 'tenant-logistics-corp';
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    // CONSENT_CHAIN_USE_PRISMA=1 (PR #216): ConsentSubjectKey/ConsentAuditRecord têm FK para
+    // Organization — os tenants do fluxo precisam existir de verdade no banco de teste.
+    await prisma.organization.upsert({
+      where: { id: tenantA },
+      update: {},
+      create: { id: tenantA, name: 'Tenant Healthcare Corp (intelligence core)' },
+    });
+    await prisma.organization.upsert({
+      where: { id: tenantB },
+      update: {},
+      create: { id: tenantB, name: 'Tenant Logistics Corp (intelligence core)' },
+    });
     domainEventMesh.clearProcessedEvents();
     curatedObjectionService.clear();
     commercialLearningFlywheel.clear();
