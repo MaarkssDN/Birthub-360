@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 11 (Marca e Ativos Institucionais)
 Onda: Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-050)
-Status: em-andamento
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 5
@@ -73,3 +73,11 @@ PIL (`im.load()`).
 são PNGs órfãos sem nenhuma referência no repositório — recompressão não se
 aplica; remoção recomendada via handoff
 `11-para-00-pngs-orfaos-q1-q2-em-public-raiz-3mb-sem-referencia.md`.
+
+**Fechamento (Agente 11 — 2026-11-12):** condição de encerramento atendida —
+parecer **APROVADO** do Agente 24 em
+`.agents/reviews/24-revisao-onda-saneamento-entregas-01-05-07-11-15-20261110.md`
+(§6; o rótulo "lossless" foi corrigido para "PNGs lossless / JPEGs quality=82
+lossy controlado" no run report, commit `29a28bdc0`). Ativos otimizados já
+mergeados em `main`. Pendência dos PNGs órfãos permanece rastreada no handoff
+11→00 (fora do escopo desta tarefa).
