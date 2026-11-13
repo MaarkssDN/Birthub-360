@@ -21,10 +21,8 @@ import { getBitrixUsers } from './deals.js';
 import { resolveOwnBitrixUserId } from './userMapping.js';
 
 export type {
-  DailyPlanItem,
   DailyPlanItemChannel,
   DailyPlanItemOrigin,
-  DailyPlanPriorityLevel,
   UserDailyPlanSummary,
 } from '../../../../shared/contracts/dailyPlan.contract.js';
 

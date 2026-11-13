@@ -8,7 +8,7 @@ import { isSuppressed } from './callSuppression.service.js';
 import { buildVoicePromptForLead, type VoiceScriptConfig } from './voiceScript.js';
 
 /** Caminho do webhook que o Birth Voices Hub chama com o resultado da ligação. */
-export const CALL_RESULT_WEBHOOK_PATH = '/api/integrations/birth-voice/webhook';
+const CALL_RESULT_WEBHOOK_PATH = '/api/integrations/birth-voice/webhook';
 
 const REQUEST_TIMEOUT_MS = 10_000;
 

@@ -6,10 +6,7 @@ import type {
 import { AppError } from '../../../../shared/middlewares/errorHandler.js';
 import { toPlanDate } from './dailyPlan.service.js';
 
-export type {
-  DailyClosingMetrics,
-  PendingDailyClosing,
-} from '../../../../shared/contracts/dailyPlan.contract.js';
+export type { PendingDailyClosing } from '../../../../shared/contracts/dailyPlan.contract.js';
 
 /**
  * Fechamento obrigatório do Plano Diário (ver `DailyPlanClosing` no schema e

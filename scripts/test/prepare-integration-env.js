@@ -173,6 +173,80 @@ const MIGRATOR_ROLE_PASSWORD =
 
 const REQUIRED_CONTAINERS = ['birthhub_postgres', 'birthhub_redis', 'birthhub_meilisearch'];
 const COMPOSE_FILES = ['-f', 'docker-compose.yml', '-f', 'docker-compose.postgres-local.yml'];
+
+/**
+ * Encerra deterministicamente os containers que ESTE processo subiu (TAREFA-SANEAMENTO-032 /
+ * BT360-DT-0070). Só os nomes passados são parados — containers já em execução (compartilhados
+ * entre worktrees) nunca entram na lista e não são tocados. `spawn` é injetável para teste.
+ * Devolve quantos containers foram parados com sucesso; falhas individuais são toleradas
+ * (o objetivo é não deixar zumbi, não abortar o teardown pelos demais).
+ */
+export function stopEphemeralContainers(names, spawn = spawnSync) {
+  let stopped = 0;
+  for (const name of names) {
+    const result = spawn('docker', ['stop', name], { stdio: 'ignore' });
+    if (result.status === 0) stopped += 1;
+  }
+  return stopped;
+}
+
+/**
+ * Baseline determinístico de compliance/opt-out (TAREFA-SANEAMENTO-033 / BT360-DT-0071).
+ * O provisionamento antes criava só estrutura; testes de privacidade não tinham estado
+ * inicial estável. Semeia uma organização dedicada (`compliance-baseline-org`) com
+ * consentimento de IA e opt-outs representativos — NUNCA `test-org-id`, para não
+ * poluir os testes que usam o tenant padrão do harness.
+ *
+ * Idempotente: ids fixos + ON CONFLICT DO NOTHING — rodar N vezes não duplica.
+ * Escopo deliberado: apenas entidades autocontidas (OptOutRecord, OrganizationAiConsent).
+ * A cadeia de auditoria LGPD (ConsentAuditChainHead/ConsentAuditRecord) exige genesis
+ * hash/sequence válidos produzidos pelo serviço — seed SQL estático corromperia a
+ * verificação de integridade; quem precisar de cadeia deve criá-la via serviço nos testes.
+ */
+export const COMPLIANCE_BASELINE_ORG_ID = 'compliance-baseline-org';
+
+export function buildComplianceSeedSql() {
+  return `
+INSERT INTO "Organization" (id, name, "createdAt", "updatedAt")
+VALUES ('${COMPLIANCE_BASELINE_ORG_ID}', 'Compliance Baseline Org', now(), now())
+ON CONFLICT DO NOTHING;
+
+INSERT INTO "OrganizationAiConsent" (id, "organizationId", granted, "consentVersion", "grantedAt", "createdAt", "updatedAt")
+VALUES ('seed-ai-consent-baseline', '${COMPLIANCE_BASELINE_ORG_ID}', true, 'baseline-v1', now(), now(), now())
+ON CONFLICT DO NOTHING;
+
+INSERT INTO "OptOutRecord" (id, "organizationId", scope, email, "phoneE164", "originChannel", reason, "createdAt")
+VALUES
+  ('seed-optout-baseline-global', '${COMPLIANCE_BASELINE_ORG_ID}', 'Global', NULL, NULL, 'seed', 'baseline determinístico de compliance (BT360-DT-0071)', now()),
+  ('seed-optout-baseline-email', '${COMPLIANCE_BASELINE_ORG_ID}', 'Email', 'baseline-optout@example.invalid', NULL, 'seed', 'baseline determinístico de compliance (BT360-DT-0071)', now()),
+  ('seed-optout-baseline-whatsapp', '${COMPLIANCE_BASELINE_ORG_ID}', 'WhatsApp', NULL, '+5500000000000', 'seed', 'baseline determinístico de compliance (BT360-DT-0071)', now())
+ON CONFLICT DO NOTHING;
+`;
+}
+
+// Containers iniciados por esta execução do harness — populado abaixo e usado pelos
+// handlers de sinal para não deixar containers efêmeros zumbis no Docker local.
+const ephemeralContainers = [];
+let signalTeardownRegistered = false;
+
+function registerSignalTeardown() {
+  if (signalTeardownRegistered) return;
+  signalTeardownRegistered = true;
+  for (const signal of ['SIGINT', 'SIGTERM']) {
+    process.on(signal, () => {
+      const code = signal === 'SIGINT' ? 130 : 143;
+      if (ephemeralContainers.length === 0) {
+        process.exit(code);
+      }
+      console.error(
+        `\n${signal} recebido — encerrando ${ephemeralContainers.length} container(s) ` +
+          `efêmero(s) iniciados por este harness: ${ephemeralContainers.join(', ')}`,
+      );
+      stopEphemeralContainers(ephemeralContainers);
+      process.exit(code);
+    });
+  }
+}
 const SERVICE_BY_CONTAINER = {
   birthhub_postgres: 'postgres',
   birthhub_redis: 'redis',
@@ -240,6 +314,7 @@ async function runPrepareIntegrationEnv() {
   }
 
   if (!isCI) {
+    registerSignalTeardown();
     const running = spawnSync('docker', ['ps', '--format', '{{.Names}}'], { encoding: 'utf-8' });
     if (running.error?.code === 'ENOENT') {
       console.error(
@@ -290,6 +365,9 @@ async function runPrepareIntegrationEnv() {
         );
         process.exit(result.status || 1);
       }
+      // Só os serviços que faltavam e foram subidos agora são efêmeros desta execução —
+      // os já em execução são compartilhados entre worktrees e nunca entram na lista.
+      ephemeralContainers.push(...missingContainers);
     }
 
     const readyDeadline = Date.now() + 60000;
@@ -380,6 +458,30 @@ async function runPrepareIntegrationEnv() {
       process.exit(bootstrap.status || 1);
     }
 
+    // Seed determinístico de compliance/opt-out (BT360-DT-0071): baseline estável para
+    // testes de privacidade, idempotente (ids fixos + ON CONFLICT DO NOTHING).
+    const seed = spawnSync(
+      'docker',
+      [
+        'exec',
+        POSTGRES_CONTAINER,
+        'psql',
+        '-v',
+        'ON_ERROR_STOP=1',
+        '-U',
+        BOOTSTRAP_SUPERUSER,
+        '-d',
+        TEST_DB_NAME,
+        '-c',
+        buildComplianceSeedSql(),
+      ],
+      { stdio: 'inherit' },
+    );
+    if (seed.status !== 0) {
+      console.error(`Falha ao semear baseline de compliance/opt-out em "${TEST_DB_NAME}".`);
+      process.exit(seed.status || 1);
+    }
+
     // Isolamento dev↔test do Meilisearch: quando o .env.test aponta para a
     // instância dedicada de teste (porta 7701, ver .env.test.example), garante
     // que o container exista — o docker-compose.yml só sobe a instância de dev.
@@ -420,6 +522,7 @@ async function runPrepareIntegrationEnv() {
           console.error('Falha ao subir o Meilisearch de teste dedicado.');
           process.exit(run.status || 1);
         }
+        ephemeralContainers.push(TEST_MEILI_CONTAINER);
       }
     }
   }
