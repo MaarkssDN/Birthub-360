@@ -182,11 +182,12 @@ export class Crm360Controller {
 
   addDealItem = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const orgId = (req as AuthRequest).user.organizationId;
+      const { organizationId: orgId, id: actorUserId } = (req as AuthRequest).user;
       const data = await this.crm360UseCases.addDealItem(
         orgId,
         routeParam(req.params.leadId, 'leadId'),
         req.body,
+        actorUserId,
       );
       res.status(201).json({ success: true, data });
     } catch (error: any) {

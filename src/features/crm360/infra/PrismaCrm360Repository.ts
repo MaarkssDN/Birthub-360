@@ -730,23 +730,46 @@ export class PrismaCrm360Repository implements ICrm360Repository {
     organizationId: string,
     leadId: string,
     input: CrmDealItemInput,
+    actorUserId?: string,
   ): Promise<CrmDealItem> {
     const calculated = calculateItem(input);
-    const item = await prisma.crmDealItem.create({
-      data: { ...calculated, organizationId, leadId },
-      include: { product: true },
-    });
 
-    const aggregate = await prisma.crmDealItem.aggregate({
-      where: { organizationId, leadId },
-      _sum: { total: true },
-    });
-    await prisma.lead.update({
-      where: { id: leadId, organizationId },
-      data: { amount: roundMoney(aggregate._sum.total ?? 0) },
-    });
+    // RN-CRM-02 (trava transacional da alçada de desconto — continuação do handoff
+    // `.agents/handoffs/onda-00/04-para-00-alcada-desconto-deal-items.md`): `CrmDealItem` tem
+    // `discountPercent` por item e persiste o valor que alimenta `Lead.amount`, então um CLOSER
+    // podia conceder desconto arbitrário fora da alçada. A mesma guarda dos documentos comerciais
+    // é reutilizada aqui, avaliando o item isolado: como cada item só pode ser criado (não há
+    // update de item) e o desconto efetivo do negócio é a média ponderada dos itens, um teto por
+    // item já impede que adições sucessivas produzam desconto agregado acima da alçada — itens
+    // acima dela só podem nascer de papéis com alçada maior (GESTOR/ADMIN). Tudo dentro de UM
+    // `runInTransaction`: ou a trava reprova (403, nada persiste) ou item + soma de `Lead.amount`
+    // comitam juntos.
+    return runInTransaction(
+      async (tx) => {
+        await assertDiscountAuthorityWithinTransaction(tx, {
+          organizationId,
+          actorUserId,
+          lineItems: [calculated],
+        });
 
-    return item as unknown as CrmDealItem;
+        const item = await tx.crmDealItem.create({
+          data: { ...calculated, organizationId, leadId },
+          include: { product: true },
+        });
+
+        const aggregate = await tx.crmDealItem.aggregate({
+          where: { organizationId, leadId },
+          _sum: { total: true },
+        });
+        await tx.lead.update({
+          where: { id: leadId, organizationId },
+          data: { amount: roundMoney(aggregate._sum.total ?? 0) },
+        });
+
+        return item as unknown as CrmDealItem;
+      },
+      { organizationId },
+    );
   }
 
   async removeDealItem(organizationId: string, leadId: string, itemId: string): Promise<void> {

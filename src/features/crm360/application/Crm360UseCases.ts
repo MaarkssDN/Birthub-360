@@ -58,8 +58,13 @@ export class Crm360UseCases {
     return this.crm360Repository.getDealItems(organizationId, leadId);
   }
 
-  async addDealItem(organizationId: string, leadId: string, input: CrmDealItemInput) {
-    return this.crm360Repository.addDealItem(organizationId, leadId, input);
+  async addDealItem(
+    organizationId: string,
+    leadId: string,
+    input: CrmDealItemInput,
+    actorUserId?: string,
+  ) {
+    return this.crm360Repository.addDealItem(organizationId, leadId, input, actorUserId);
   }
 
   async removeDealItem(organizationId: string, leadId: string, itemId: string) {

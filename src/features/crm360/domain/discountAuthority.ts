@@ -9,8 +9,10 @@
  * (BIRTHUB360_RELATORIO_SUPERVISOR_ONDA_00.html, MOD-01: "trava de desconto requer middleware
  * transacional"). A trava agora roda DENTRO de `runInTransaction` via
  * `infra/PrismaDiscountAuthorityGuard.ts`, com `SELECT ... FOR UPDATE` na linha do documento na
- * edição — ver os métodos do repositório. `addDealItem` (itens de negócio, não documento
- * comercial) segue sem trava de alçada — pendência registrada em handoff.
+ * edição — ver os métodos do repositório. `addDealItem` (itens de negócio) também é coberto pela
+ * mesma guarda — o item é avaliado isoladamente dentro do `runInTransaction` que o grava (ver
+ * `PrismaCrm360Repository.addDealItem`); a justificativa de avaliar o item isolado (e não o
+ * conjunto do negócio) está no comentário do método.
  *
  * Módulo puro (zero I/O): quem chama decide ONDE a verificação acontece; a implementação Prisma
  * (`infra/PrismaDiscountAuthorityGuard.ts`) executa a avaliação dentro de `$transaction`

@@ -38,10 +38,15 @@ export interface ICrm360Repository {
   listProducts(organizationId: string, search?: string): Promise<CrmProduct[]>;
   createProduct(organizationId: string, data: CrmProductInput): Promise<CrmProduct>;
   getDealItems(organizationId: string, leadId: string): Promise<CrmDealItem[]>;
+  /**
+   * `actorUserId` alimenta a trava de alçada de desconto (RN-CRM-02) — o item é avaliado
+   * isoladamente dentro da mesma transação que o grava; acima da alçada do papel, 403.
+   */
   addDealItem(
     organizationId: string,
     leadId: string,
     input: CrmDealItemInput,
+    actorUserId?: string,
   ): Promise<CrmDealItem>;
   removeDealItem(organizationId: string, leadId: string, itemId: string): Promise<void>;
 
