@@ -1,7 +1,7 @@
 De: 15 — Segurança Aplicada e Rotação de Segredos
 Para: 00 — Coordenador
 Onda: 1
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: DEM-20261113-002 / parecer 24 (G-1)
 Sprint destino: onda-1
@@ -47,3 +47,9 @@ Se negado: remover a linha e ajustar handoff 15→08 para usar `npx tsx`.
 
 Branch `agente/15-onda1-seguranca`, worktree
 `C:\Github\Birthub-360-worktrees\agente-15-onda1-seguranca`.
+
+## Resolução
+
+- 2026-11-13 (Agente 00): APROVADO retroativamente. O script
+  `verify:rls-coverage` permanece em package.json e será ligado ao CI pelo
+  Agente 08 (handoff 15→08).
