@@ -376,11 +376,10 @@ describe('Landing360', () => {
   it('deve submeter o formulário de lead com sucesso e alternar a variante A/B', async () => {
     const { container } = renderWithProviders('/', 'intro');
 
-    // Endpoint público de leads ainda não existe (handoff pendente do Agente 01):
-    // o teste mocka a resposta 200 do contrato POST /api/public/demo-requests.
+    // Endpoint público real: POST /api/public/demo-leads (Agente 01).
     const fetchSpy = vi
       .spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce(new Response('{}', { status: 200 }));
+      .mockResolvedValueOnce(new Response('{}', { status: 202 }));
 
     const nomeInput = container.querySelector('#lead-nome') as HTMLInputElement;
     const emailInput = container.querySelector('#lead-email') as HTMLInputElement;
@@ -406,7 +405,7 @@ describe('Landing360', () => {
         expect(screen.getByText(/Sessão Solicitada com Sucesso/i)).toBeInTheDocument();
         expect(screen.getByText(/mariana@vanguarda\.com\.br/i)).toBeInTheDocument();
         expect(fetchSpy).toHaveBeenCalledWith(
-          '/api/public/demo-requests',
+          '/api/public/demo-leads',
           expect.objectContaining({ method: 'POST' }),
         );
       },
@@ -489,6 +488,41 @@ describe('Landing360', () => {
     fetchSpy.mockRestore();
   });
 
+  it('deve submeter o lead sem WhatsApp (campo opcional por decisão LGPD)', async () => {
+    const { container } = renderWithProviders('/', 'intro');
+
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(new Response('{}', { status: 202 }));
+
+    const nomeInput = container.querySelector('#lead-nome') as HTMLInputElement;
+    const emailInput = container.querySelector('#lead-email') as HTMLInputElement;
+    const submitBtn = screen.getByRole('button', {
+      name: /SOLICITAR DEMONSTRAÇÃO GRATUITA/i,
+    });
+    const leadFormEl = submitBtn.closest('form') as HTMLFormElement;
+
+    fireEvent.change(nomeInput, { target: { value: 'Sem WhatsApp' } });
+    fireEvent.change(emailInput, { target: { value: 'semwa@empresa.com.br' } });
+
+    const consentCheckbox = container.querySelector(
+      'input[type="checkbox"]',
+    ) as HTMLInputElement;
+    fireEvent.click(consentCheckbox);
+
+    fireEvent.submit(leadFormEl);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Sessão Solicitada com Sucesso/i)).toBeInTheDocument();
+    });
+
+    const body = JSON.parse(fetchSpy.mock.calls[0][1]?.body as string);
+    expect(body.whatsapp).toBeUndefined();
+    expect(body.consent).toBe(true);
+
+    fetchSpy.mockRestore();
+  });
+
   it('deve exibir erro honesto quando o POST de lead falha e enviar payload com consentimento', async () => {
     const { container } = renderWithProviders('/', 'intro');
 
@@ -523,16 +557,17 @@ describe('Landing360', () => {
     });
 
     expect(fetchSpy).toHaveBeenCalledWith(
-      '/api/public/demo-requests',
+      '/api/public/demo-leads',
       expect.objectContaining({
         method: 'POST',
-        body: expect.stringContaining('"consentimentoLgpd":true'),
+        body: expect.stringContaining('"consent":true'),
       }),
     );
     const body = JSON.parse(fetchSpy.mock.calls[0][1]?.body as string);
     expect(body.equipe).toBe('16 a 50');
-    expect(body.origem).toBe('landing_360');
-    expect(body.varianteAb).toBe('A');
+    expect(body.consent).toBe(true);
+    expect(body.consentTextVersion).toBe('landing-demo-v1');
+    expect(body.purpose).toBe('agendamento_demonstracao');
 
     fetchSpy.mockRestore();
   });

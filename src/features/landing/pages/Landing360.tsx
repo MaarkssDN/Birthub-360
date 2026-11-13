@@ -61,6 +61,11 @@ import {
   trackLeadFormSubmitted,
 } from '@/lib/analytics/conversionTelemetry';
 import { authClient } from '@/lib/auth-client';
+import {
+  LANDING_DEMO_CONSENT_PURPOSE,
+  LANDING_DEMO_CONSENT_TEXT,
+  LANDING_DEMO_CONSENT_VERSION,
+} from '@/features/public-leads/publicLead.constants';
 import { SoundFX } from '@/lib/soundEffects';
 import {
   B360AmbientFX,
@@ -560,7 +565,8 @@ export function Landing360({
   };
 
   // --- FORMULÁRIO OBJETIVO DE CAPTURA DE LEAD ---
-  // NOTA: consentimento NUNCA pré-marcado (LGPD — validação formal pendente com Agente 21).
+  // LGPD (validação Agente 21, 2026-11-13): consentimento NUNCA pré-marcado;
+  // o texto exibido é o canônico gravado pelo servidor (publicLead.constants).
   const [leadForm, setLeadForm] = useState({
     nome: '',
     email: '',
@@ -586,7 +592,8 @@ export function Landing360({
       setLeadError('É necessário concordar com o tratamento de dados (LGPD) para continuar.');
       return;
     }
-    if (!isValidWhatsapp(leadForm.whatsapp)) {
+    // WhatsApp é opcional (decisão LGPD confirmada): só valida formato se preenchido.
+    if (leadForm.whatsapp.trim() !== '' && !isValidWhatsapp(leadForm.whatsapp)) {
       setLeadError('Informe um WhatsApp válido com DDD (ex: (11) 99999-9999).');
       return;
     }
@@ -594,19 +601,21 @@ export function Landing360({
     setLeadLoading(true);
     SoundFX.play('click');
     try {
-      // Contrato pendente de entrega pelo Agente 01 (endpoint público de captação de leads).
-      // Até lá, qualquer falha é exibida de forma observável — nunca sucesso falso.
-      const res = await fetch('/api/public/demo-requests', {
+      // Contrato real: POST /api/public/demo-leads (Agente 01, PR #216).
+      // O servidor valida consent === true, consentTextVersion e purpose,
+      // e ancora a prova em ConsentAuditRecord com IP hasheado e timestamp do servidor.
+      // Qualquer falha é exibida de forma observável — nunca sucesso falso.
+      const res = await fetch('/api/public/demo-leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           nome: leadForm.nome,
           email: leadForm.email,
-          whatsapp: leadForm.whatsapp,
+          whatsapp: leadForm.whatsapp.trim() === '' ? undefined : leadForm.whatsapp,
           equipe: leadForm.equipe,
-          consentimentoLgpd: true,
-          origem: 'landing_360',
-          varianteAb: abVariant,
+          consent: true,
+          consentTextVersion: LANDING_DEMO_CONSENT_VERSION,
+          purpose: LANDING_DEMO_CONSENT_PURPOSE,
         }),
       });
       if (!res.ok) {
@@ -2159,7 +2168,7 @@ export function Landing360({
                         </h3>
                         <p className="text-xs text-slate-300 leading-relaxed max-w-sm mx-auto">
                           Recebemos sua solicitação para <strong>{leadForm.email}</strong>. Nossa
-                          equipe entrará em contato pelo WhatsApp informado para agendar a
+                          equipe entrará em contato pelo e-mail informado{leadForm.whatsapp.trim() !== '' ? ' ou WhatsApp' : ''} para agendar a
                           demonstração.
                         </p>
                         <div className="pt-2 flex flex-col gap-2.5">
@@ -2224,12 +2233,11 @@ export function Landing360({
                             htmlFor="lead-whatsapp"
                             className="block text-xs font-mono text-slate-300 mb-1"
                           >
-                            WhatsApp Comercial com DDD *
+                            WhatsApp Comercial com DDD (opcional)
                           </label>
                           <input
                             id="lead-whatsapp"
                             type="tel"
-                            required
                             value={leadForm.whatsapp}
                             onChange={(e) => setLeadForm({ ...leadForm, whatsapp: e.target.value })}
                             placeholder="(11) 99999-9999"
@@ -2266,10 +2274,7 @@ export function Landing360({
                               required
                               className="mt-0.5 rounded border-slate-700 text-[#00D4FF] focus:ring-[#00D4FF]"
                             />
-                            <span>
-                              Concordo com o tratamento dos dados estritamente para agendamento da
-                              demonstração conforme a LGPD.
-                            </span>
+                            <span>{LANDING_DEMO_CONSENT_TEXT}</span>
                           </label>
                         </div>
 
@@ -2288,7 +2293,7 @@ export function Landing360({
                           </button>
                           <p className="mt-2 text-center text-[10px] font-mono text-slate-400">
                             <Lock className="inline w-3 h-3 mr-1" aria-hidden="true" />
-                            Zero spam · Cancelamento fácil com 1 clique · Dados protegidos
+                            Cancelamento a qualquer momento · Dados protegidos
                           </p>
                         </div>
                       </form>
