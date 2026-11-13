@@ -41,7 +41,9 @@ beforeEach(async () => {
   // `await import(...)` dentro do mesmo arquivo de teste — sem isto, falhas registradas por um
   // teste vazariam para o próximo e poderiam abrir o circuito de forma imprevisível conforme a
   // ordem de execução.
-  const { __resetBitrixCircuitBreakerForTests, __resetBitrixRateLimiterForTests } = await import('../client.js');
+  const { __resetBitrixCircuitBreakerForTests, __resetBitrixRateLimiterForTests } = await import(
+    '../client.js'
+  );
   __resetBitrixCircuitBreakerForTests();
   // O pacing por portal (BITRIX_MIN_INTERVAL_MS) também é estado module-level — sem reset, o
   // timestamp da última request de um teste vazaria para o próximo e atrasaria a primeira
