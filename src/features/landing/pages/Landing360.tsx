@@ -2168,7 +2168,8 @@ export function Landing360({
                         </h3>
                         <p className="text-xs text-slate-300 leading-relaxed max-w-sm mx-auto">
                           Recebemos sua solicitação para <strong>{leadForm.email}</strong>. Nossa
-                          equipe entrará em contato pelo e-mail informado{leadForm.whatsapp.trim() !== '' ? ' ou WhatsApp' : ''} para agendar a
+                          equipe entrará em contato pelo e-mail informado
+                          {leadForm.whatsapp.trim() !== '' ? ' ou WhatsApp' : ''} para agendar a
                           demonstração.
                         </p>
                         <div className="pt-2 flex flex-col gap-2.5">
