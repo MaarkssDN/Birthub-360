@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 08 (QA, Testes e Release)
 Onda: Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-007)
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 5
@@ -48,3 +48,41 @@ Executar a tarefa `TAREFA-SANEAMENTO-007` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução
+
+- **Status:** já implementado em `main` antes da emissão deste handoff — nenhuma alteração necessária em 2026-11-12 (Agente 08, verificação em `agente/08-qa-saneamento` @ `a8ce7646f`).
+- **Evidência:** `vitest.unit.config.ts` (linhas ~44-50) já inclui `src/**/__tests__/**/*.test.ts`, `src/**/*.test.ts` e `src/**/*.test.tsx` além de `tests/unit/**`. O `include` cobrindo `src/**` foi introduzido pelo commit `fc30b3325` (2026-10-16, "fix(audit): saneia e encerra ultimas 12 dividas tecnicas do inventario canico (wave 3)"), anterior à reconciliação de 2026-11-10 — a evidência do DIV-08-002 ("include: tests/unit/** apenas") está desatualizada em relação ao arquivo real.
+- **Verificação empírica:** existem hoje 309 arquivos `*.test.ts(x)` sob `src/` (231 só em `src/features/`), todos casando com os padrões de `include`; não há `.spec.*` nem arquivos em `__tests__` sem sufixo `.test.*`. A execução real de `npm run test:unit` nesta worktree (2026-11-12) mostra arquivos co-localizados sendo descobertos e executados, ex.: `src/features/commercial-intelligence/__tests__/CommercialIntelligenceUseCases.unit.test.ts` (68 testes), `src/features/integrations/bitrix/service/__tests__/extraction.test.ts` (43), `src/features/market-intelligence/components/__tests__/honestHubs.b06.test.ts`, `src/features/mesa-tratamento/services/__tests__/mesa-triage.service.test.ts` — todos verdes até o momento da verificação.
+- **Critério de aceite do DIV-08-002** ("npm run test:unit descobre e executa os arquivos co-localizados"): satisfeito — os arquivos rodam na suíte unitária padrão, que é o gate do CI.
+
+## Resolução (Agente 08 — W5, TAREFA-SANEAMENTO-007 / BT360-DT-0044)
+
+Status: resolvido.
+
+**Diagnóstico:** a causa raiz já havia sido corrigida antes desta onda — o commit
+`8b120cca4` (2026-10-17, "fix(staging): consolidacao das 6 capacidades") adicionou
+`src/**/*.test.ts` e `src/**/*.test.tsx` ao `include` de `vitest.unit.config.ts`.
+Verificação executada nesta worktree:
+
+- Censo em `src/features`: 234 arquivos `*.test.ts(x)` (212 em `__tests__/`, 22
+  co-localizados) — todos casam com os padrões de include atuais.
+- Nenhum arquivo `*.spec.*` ou teste fora do padrão `.test.` existe sob `src/`.
+- `tests/unit/**` e `src/**` são as únicas raízes que este config reivindica;
+  `tests/integration|security|container|e2e|load` pertencem a runners próprios.
+
+**Entrega desta onda (guarda de regressão):** novo teste
+`tests/unit/config/vitest-discovery.test.ts` (4 casos, todos verdes) que:
+
+1. exige os padrões `src/**/*.test.ts(x)` e `tests/unit/**/*.test.ts` no include;
+2. varre `src/` + `tests/unit/` por arquivos com cara de teste (`*.test.*`,
+   `*.spec.*`, `__tests__/**`) e falha listando qualquer órfão de descoberta;
+3. falha se algum padrão de include virar letra morta (não casa nenhum arquivo);
+4. documenta o caminho de falha: `*.spec.*` e arquivos soltos em `__tests__`
+   sem sufixo `.test` NÃO são descobertos — devem ser renomeados.
+
+Observação de implementação: os padrões são extraídos do texto do config (não via
+import) porque importar `vitest.unit.config.ts` puxa vite/esbuild, que quebra sob
+o ambiente jsdom da suíte (invariante TextEncoder/Uint8Array entre realms).
+
+Evidência: `.agents/runs/agente-08-tarefa-saneamento-007.md`.

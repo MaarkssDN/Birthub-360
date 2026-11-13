@@ -48,3 +48,27 @@ Executar a tarefa `TAREFA-SANEAMENTO-004` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução (Agente 06 — W5, TAREFA-SANEAMENTO-004 / BT360-DT-0030)
+
+Status: resolvido.
+
+Os três painéis foram decompostos cirurgicamente, preservando JSX/comportamento:
+
+- `ExternalCrmPanel.tsx`: 1078 → 817 linhas. Modal de conexão extraído para
+  `components/externalCrm/ExternalCrmConnectModal.tsx` (360 linhas).
+- `Integrations.tsx`: 1095 → 875 linhas. Card 3CX extraído para
+  `components/ThreeCxConnectionCard.tsx` (167 linhas, consome `use3CXIntegration()`
+  diretamente); `CapabilityBadge`/`IntegrationTruthBox`/`CAPABILITY_STYLES` movidos
+  para `components/integrationUi.tsx` (79 linhas).
+- `BitrixImportPanel.tsx`: 1251 → 788 linhas. Seis componentes extraídos para
+  `components/bitrixImport/`: `BitrixImportModeBar`, `BitrixImportFiltersPanel`,
+  `BitrixImportResultBanners`, `BitrixBulkSelectionBar`, `BitrixImportFooter`,
+  `BitrixBulkEditDialog`.
+
+Os três arquivos ficaram abaixo do limite geral de 1000 linhas — as exceções
+correspondentes em `docs/architecture/HOTSPOT_EXCEPTIONS.md` foram removidas.
+
+Gates: `npx tsc --noEmit` PASS; `biome check` nos arquivos do escopo PASS
+(0 erros); `npm run build` e testes de domínio executados — ver run report
+`.agents/runs/agente-06-tarefa-saneamento-004.md`.

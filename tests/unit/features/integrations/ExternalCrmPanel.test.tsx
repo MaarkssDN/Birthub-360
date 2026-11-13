@@ -18,6 +18,7 @@ vi.mock('../../../../src/components/brand/CompanyBrandIcon.js', () => ({
 }));
 
 import { ExternalCrmPanel } from '../../../../src/features/integrations/components/ExternalCrmPanel.js';
+import { toast } from '../../../../src/lib/toast.js';
 
 type Reply = { ok?: boolean; status?: number; body?: unknown } | Error;
 
@@ -92,6 +93,31 @@ describe('ExternalCrmPanel', () => {
     fireEvent.click(screen.getByRole('button', { name: /Conectar HubSpot/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Fechar janela' }));
     expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('cancela o carregamento ao desmontar sem exibir erro nem toast', async () => {
+    let capturedSignal: AbortSignal | null | undefined;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((_url: string, init?: RequestInit) => {
+        capturedSignal = init?.signal;
+        return new Promise((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () =>
+            reject(new DOMException('Aborted', 'AbortError')),
+          );
+        });
+      }),
+    );
+    const { unmount } = render(
+      <ExternalCrmPanel providerKey="hubspot" displayName="HubSpot" authType="oauth2" />,
+    );
+
+    await waitFor(() => expect(capturedSignal).toBeDefined());
+    unmount();
+
+    await waitFor(() => expect(capturedSignal?.aborted).toBe(true));
+    // AbortError é cancelamento cooperativo, não falha: não pode virar erro de UI.
+    expect(toast.error).not.toHaveBeenCalled();
   });
 
   it('exibe erro de carregamento e permite fechar o alerta', async () => {

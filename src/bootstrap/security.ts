@@ -28,6 +28,43 @@ export function assertAllowedOriginsConfigured(): void {
 }
 
 /**
+ * Origens "locais" aceitas fora de produção: loopback e faixas privadas RFC1918/CGNAT-local.
+ * Cobre o que o desenvolvimento real precisa sem abrir CORS para a internet:
+ *  - Vite/dev server em qualquer porta (`http://localhost:*`, `http://127.0.0.1:*`);
+ *  - app mobile/Capacitor (`capacitor://localhost`, `https://localhost`, `http://localhost`);
+ *  - dispositivo na mesma LAN (`http://192.168.x.x:5173`, `http://10.x.x.x:*`, etc.).
+ * Qualquer outra origem fora de produção precisa estar explicitamente em ALLOWED_ORIGINS.
+ */
+function isLocalDevOrigin(origin: string): boolean {
+  let hostname: string;
+  try {
+    hostname = new URL(origin).hostname.toLowerCase();
+  } catch {
+    return false;
+  }
+  if (
+    hostname === 'localhost' ||
+    hostname.endsWith('.localhost') ||
+    hostname === '::1' ||
+    hostname === '[::1]'
+  ) {
+    return true;
+  }
+  if (hostname.startsWith('127.')) return true;
+  const parts = hostname.split('.').map(Number);
+  if (parts.length === 4 && parts.every((n) => Number.isInteger(n) && n >= 0 && n <= 255)) {
+    const [a, b] = parts;
+    return (
+      a === 10 ||
+      (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && b === 168) ||
+      (a === 169 && b === 254)
+    );
+  }
+  return false;
+}
+
+/**
  * Monta os middlewares de segurança de borda: trust proxy, cabeçalhos HTTP (Helmet), CORS e
  * compressão de resposta. Devem ser os primeiros middlewares aplicados — antes de rate limiting,
  * webhooks ou qualquer rota — porque protegem/afetam toda requisição que entra no processo.
@@ -130,8 +167,18 @@ export function applySecurityMiddleware(app: Express): void {
       origin: (origin, callback) => {
         // Permitir requests sem origin (Postman, curl, apps mobile)
         if (!origin) return callback(null, true);
-        // Permitir todas as origens localmente para acesso na rede
-        if (env.NODE_ENV !== 'production') return callback(null, true);
+        // Fora de produção a allowlist NÃO é mais "qualquer origem" (BT360-DT-0074): só
+        // loopback/LAN — Vite dev em qualquer porta, Capacitor (`capacitor://localhost`,
+        // `https://localhost`) e dispositivo na mesma rede — ou o que estiver
+        // explicitamente em ALLOWED_ORIGINS. Antes, NODE_ENV !== 'production' liberava
+        // QUALQUER origem com credentials:true, o que em homologação/staging reabria
+        // CSRF e roubo de sessão para qualquer site de terceiros.
+        if (env.NODE_ENV !== 'production') {
+          if (isLocalDevOrigin(origin) || ALLOWED_ORIGINS.includes(origin)) {
+            return callback(null, true);
+          }
+          return callback(new Error(`CORS policy: origin ${origin} not allowed`));
+        }
         // CORREÇÃO: `origin.endsWith('.railway.app')` liberava CORS com credentials:true (cookies
         // de sessão) pra QUALQUER subdomínio railway.app, não só o desta aplicação — qualquer
         // outro app hospedado no Railway podia fazer requisições autenticadas contra esta API.

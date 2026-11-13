@@ -35,6 +35,11 @@ const envSchema = z
     // secretFields.ts, não aqui, para não derrubar a aplicação inteira ao subir só por causa deste
     // schema quando NODE_ENV ainda não foi resolvido nesta camada.
     CREDENTIALS_ENCRYPTION_KEY: z.string().optional(),
+    // Chave ANTERIOR de credenciais, mantida durante o grace period de rotação
+    // (BT360-DT-0073): envelopes "enc:v2:<keyId>:..." gravados com a chave antiga
+    // continuam decriptáveis enquanto esta variável estiver definida. Remover só
+    // após re-cifrar todos os segredos com a chave nova (re-encrypt sweep).
+    CREDENTIALS_ENCRYPTION_KEY_PREVIOUS: z.string().optional(),
     // Mesma obrigatoriedade condicional de CREDENTIALS_ENCRYPTION_KEY acima, reforçada em runtime
     // por src/lib/crypto/piiIndex.ts — chave do índice cego (HMAC-SHA256) de busca exata sobre
     // Contact.email/phone/whatsapp cifrados em repouso. Substitui `PII_SEARCH_HMAC_SECRET`

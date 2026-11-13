@@ -48,3 +48,30 @@ Executar a tarefa `TAREFA-SANEAMENTO-017` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução (Agente 03 — W5, TAREFA-SANEAMENTO-017 / BT360-DT-0020)
+
+Status: resolvido.
+
+Causa raiz confirmada: `src/styles/globals.css` importava Nunito/Outfit/Plus Jakarta Sans
+do Google Fonts via `@import url(...)` em runtime — dependência de rede externa e de
+`font-display: swap` tardio, origem da instabilidade dos screenshots.
+
+Correção aplicada (escopo: fontes + globals.css):
+
+- Baixados os 20 arquivos WOFF2 variáveis (subsets unicode-range: latin, latin-ext,
+  cyrillic, cyrillic-ext, vietnamese) das 3 famílias para `public/fonts/brand/` (496 KB).
+- O `@import` do Google Fonts foi substituído por `@font-face` locais equivalentes
+  (`font-display: swap`, `unicode-range` preservado) em `globals.css`.
+- `@import "tailwindcss"` mantido na posição válida (antes de qualquer regra).
+- `vite build` PASS — as 20 fontes entram no precache do PWA (240 entradas), o que também
+  elimina dependência de rede em produção/offline.
+- Os specs visuais já aguardam `document.fonts.ready` (`deterministic-state.ts`); com as
+  fontes self-hosted esse wait passa a ser determinístico.
+
+Observação de escopo: `playwright.visual.config.ts` não precisou de alteração — a
+instabilidade vinha da fonte remota, não da configuração. Não foi possível executar a
+suíte visual completa nesta sessão (requer baseline Linux/servidor); a não-regressão é
+coberta por build + espera explícita de fontes já existente.
+
+Evidência: `.agents/runs/agente-03-tarefa-saneamento-017.md`.

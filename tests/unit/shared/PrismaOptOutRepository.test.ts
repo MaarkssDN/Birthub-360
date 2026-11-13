@@ -82,6 +82,28 @@ describe('shared PrismaOptOutRepository', () => {
     });
   });
 
+  it('list() sem limit não envia take (tenant inteiro); com limit envia take clampado', async () => {
+    db.findMany.mockResolvedValue([]);
+    const repo = new PrismaOptOutRepository();
+
+    await repo.list('tenant-a');
+    expect(db.findMany).toHaveBeenLastCalledWith({
+      where: { organizationId: 'tenant-a' },
+      orderBy: { createdAt: 'desc' },
+    });
+    expect(db.findMany.mock.calls[0][0]).not.toHaveProperty('take');
+
+    await repo.list('tenant-a', 10);
+    expect(db.findMany).toHaveBeenLastCalledWith({
+      where: { organizationId: 'tenant-a' },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+    });
+
+    await repo.list('tenant-a', 9999);
+    expect(db.findMany.mock.calls[2][0].take).toBe(500);
+  });
+
   it('propagates persistence failures instead of reporting successful suppression', async () => {
     db.findMany.mockRejectedValue(new Error('database unavailable'));
     await expect(

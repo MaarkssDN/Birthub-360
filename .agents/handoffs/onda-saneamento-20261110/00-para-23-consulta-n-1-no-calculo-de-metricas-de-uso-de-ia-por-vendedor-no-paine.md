@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 23 (Custo, Performance e Limites de IA)
 Onda: Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-042)
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 4
@@ -48,3 +48,13 @@ Executar a tarefa `TAREFA-SANEAMENTO-042` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução
+
+`agentCostAnalysis.service.ts` agregava em memória após `findMany` de todos os
+AILog do período — e ainda selecionava campos inexistentes no model (`costUsd`,
+`promptTokens`, `completionTokens`). Reescrito para `prisma.aILog.groupBy`
+sobre os campos reais (`cost` USD, `tokens`) com merge de `agentRole` nulo em
+'UNKNOWN' preservando a semântica anterior. Novo teste
+`agentCostAnalysis.service.test.ts` cobre agregação, merge nulo/UNKNOWN,
+período vazio e propagação de erro do banco (4/4).
