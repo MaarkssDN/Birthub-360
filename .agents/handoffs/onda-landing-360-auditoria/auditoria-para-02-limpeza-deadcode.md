@@ -1,7 +1,7 @@
 - De: Auditoria ad-hoc (Devin CLI) — promover a 00 se virar missão formal
 - Para: 02 — Produto e UX
 - Onda: landing-360-auditoria
-- Status: aberto
+- Status: resolvido
 - Prioridade: normal
 
 ## Problema
@@ -58,3 +58,10 @@ performance definido para mobile/3G.
 - Regra P3: remover somente o que ficou órfão — não refatorar o que está vivo.
 - `Landing360Impeccable.tsx` pode ser uma versão alternativa intencional;
   confirmar com o 00 antes de deletar (pode ter handoff de design associado).
+
+## Resolução (Agente 02 — 2026-11-12, commit `510bce4bd`)
+
+- Removidos após revalidação por grep/imports: `LaunchLandingView.tsx`, `LandingLoginSplitScreen.tsx`, `LoginFormCard.tsx`, `LandingHeroScene.tsx`, `HeroConversionSection.tsx` (+ teste órfão), `AuroraMotion.css`, `LandingPage.tsx` (vazio).
+- Mantidos por ainda terem consumidores: `Landing360Impeccable.tsx` e `HeroConversionSection`-adjacentes com testes/E2E (decisão do dono/00 pendente para Impeccable — exceção registrada).
+- 11 imports Lucide não usados removidos de `Landing360.tsx`.
+- Gates: tsc ✅ após remoções.

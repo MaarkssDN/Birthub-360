@@ -55,3 +55,7 @@ apenas `useState` local — **nenhuma chamada a API**: Salvar não persiste.
 - Gates: `npx tsc --noEmit` ✅, `biome lint` ✅, vitest settings ✅ (16 testes).
 - Pendências para outros donos: teste e2e (reload → valor persistido) é do 08;
   `src/bootstrap/routes.ts` foi editado (arquivo compartilhado — sinalizar ao 00/24).
+
+## Nota Agente 02 (2026-11-12)
+
+Lado UI permanece íntegro após o split do hotspot: `PillarSettingsPlaceholder.tsx` (663 linhas) + `PillarToolsForms.tsx` (680) mantêm GET/PUT `/api/settings/pillars/:pillar` e placeholders honestos. `check:hotspots` ✅ sem exceção. Segue aguardando consumidores/e2e (08) e revisão 24.

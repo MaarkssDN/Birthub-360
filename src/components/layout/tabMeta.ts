@@ -36,6 +36,7 @@ import {
   Wallet,
   Zap,
 } from 'lucide-react';
+import type { ComponentType, SVGProps } from 'react';
 import {
   AIIcon,
   AutomationIcon,
@@ -44,6 +45,18 @@ import {
   OrchestrationIcon,
   PerformanceIcon,
 } from '../brand/PillarIcons.js';
+
+/**
+ * Props aceitas por qualquer ícone de navegação: os ícones lucide-react (que recebem `size`,
+ * `strokeWidth`, etc.) e os `PillarIcon` animados de `PillarIcons.tsx` (que aceitam `isActive`).
+ * Substitui o antigo `icon: any` — o contrato real é "componente SVG renderizável".
+ */
+export type TabNavIconProps = SVGProps<SVGSVGElement> & {
+  isActive?: boolean;
+  size?: string | number;
+};
+
+export type TabNavIcon = ComponentType<TabNavIconProps>;
 
 /**
  * Identificador de cada módulo navegável — fonte única usada pela Sidebar, Topbar e Command
@@ -151,10 +164,10 @@ export const NAV_ACCENT_VAR: Record<NavAccent, string> = {
 /** Metadados (rótulo + ícone + matiz) de cada módulo navegável — fonte única usada pela Sidebar, pelo
  * topbar e pelo Command Palette. Cada módulo tem um ícone SVG próprio (nenhum repetido).
  * Atualizado para paradigma Command Center: seções estratégicas agrupadas por função de comando. */
-export const TAB_META: Record<TabType, { label: string; icon: any; accent: NavAccent }> = {
+export const TAB_META: Record<TabType, { label: string; icon: TabNavIcon; accent: NavAccent }> = {
   // PILAR 01 — HUB COMERCIAL
   workspace: { label: 'Meu Espaço', icon: Briefcase, accent: 'blue' },
-  crm: { label: 'Pipeline CRM', icon: HubIcon as any, accent: 'blue' },
+  crm: { label: 'Pipeline CRM', icon: HubIcon, accent: 'blue' },
   crm360: { label: 'Gestão de Negócios', icon: Gauge, accent: 'violet' },
   propostas: { label: 'Propostas', icon: FileSignature, accent: 'gold' },
   companies: { label: 'Empresas', icon: Building2, accent: 'green' },
@@ -162,7 +175,7 @@ export const TAB_META: Record<TabType, { label: string; icon: any; accent: NavAc
   settings_hub: { label: 'Ajustes do Hub', icon: SettingsIcon, accent: 'slate' },
 
   // PILAR 02 — INTELIGÊNCIA DE MERCADO
-  prospect: { label: 'Prospecção', icon: IntelligenceIcon as any, accent: 'teal' },
+  prospect: { label: 'Prospecção', icon: IntelligenceIcon, accent: 'teal' },
   'market-intelligence': { label: 'Pesquisa de Mercado', icon: Radar, accent: 'teal' },
   settings_market: { label: 'Ajustes de Mercado', icon: SettingsIcon, accent: 'slate' },
 
@@ -172,7 +185,7 @@ export const TAB_META: Record<TabType, { label: string; icon: any; accent: NavAc
   jornadas: { label: 'Jornadas Comerciais', icon: GitBranch, accent: 'violet' },
   processos: { label: 'Processos de Vendas', icon: Network, accent: 'teal' },
   roteiros: { label: 'Roteiros de Abordagem', icon: MessageSquareText, accent: 'gold' },
-  'daily-plan': { label: 'Plano Diário', icon: OrchestrationIcon as any, accent: 'green' },
+  'daily-plan': { label: 'Plano Diário', icon: OrchestrationIcon, accent: 'green' },
   activities: { label: 'Tarefas & Atividades', icon: Activity, accent: 'iris' },
   calendar: { label: 'Calendário', icon: CalendarDays, accent: 'blue' },
   qualification_matrix: { label: 'Matriz de Qualificação', icon: ClipboardCheck, accent: 'teal' },
@@ -184,7 +197,7 @@ export const TAB_META: Record<TabType, { label: string; icon: any; accent: NavAc
   settings_sales: { label: 'Ajustes de Orquestração', icon: SettingsIcon, accent: 'slate' },
 
   // PILAR 04 — PERFORMANCE COMERCIAL
-  dashboard: { label: 'Command Center', icon: PerformanceIcon as any, accent: 'gold' },
+  dashboard: { label: 'Command Center', icon: PerformanceIcon, accent: 'gold' },
   analytics: { label: 'Analytics', icon: BarChart3, accent: 'blue' },
   gamification: { label: 'Gamificação & Ranking', icon: Trophy, accent: 'gold' },
   winloss: { label: 'Win/Loss', icon: Target, accent: 'red' },
@@ -204,7 +217,7 @@ export const TAB_META: Record<TabType, { label: string; icon: any; accent: NavAc
   // PILAR 06 — INTELIGÊNCIA ARTIFICIAL
   commercial_intelligence: {
     label: 'Inteligência de Vendas',
-    icon: AIIcon as any,
+    icon: AIIcon,
     accent: 'violet',
   },
   copiloto_ia: { label: 'Copiloto IA', icon: Mic, accent: 'iris' },
@@ -215,7 +228,7 @@ export const TAB_META: Record<TabType, { label: string; icon: any; accent: NavAc
   settings_ai: { label: 'Ajustes de IA', icon: SettingsIcon, accent: 'slate' },
 
   // PILAR 07 — AUTOMAÇÃO & CONECTIVIDADE
-  automations: { label: 'Automações', icon: AutomationIcon as any, accent: 'gold' },
+  automations: { label: 'Automações', icon: AutomationIcon, accent: 'gold' },
   integrations: { label: 'Integrações', icon: Globe, accent: 'blue' },
   bitrix: { label: 'Guia Prático Bitrix24', icon: Layers, accent: 'teal' },
   settings_automation: { label: 'Ajustes de Automação', icon: SettingsIcon, accent: 'slate' },

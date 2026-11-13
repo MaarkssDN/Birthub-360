@@ -61,3 +61,11 @@ Parte do Agente 17 neste handoff:
 
 Status mantido `em-andamento`: aguardando os demais destinatários (12/01/02). A parte do 17 está
 encerrada com evidência acima.
+## Avaliação Agente 02 (2026-11-12)
+
+Recebido e avaliado pelo 02. Manter **oculto** (`voice-hub`, `outbound`, `dialer` fora da navegação) até:
+1. Agentes 12/17 concluírem o isolamento de backend;
+2. Agente 01 validar tenancy/RLS dos endpoints `/api/voice-hub/*`, `/api/outbound/*`, `/api/dialer-3cx/*`;
+3. `dialer` permanece alias de `cadence` salvo decisão explícita em contrário.
+
+Sem alteração de código pelo 02 nesta onda — dependência externa.
