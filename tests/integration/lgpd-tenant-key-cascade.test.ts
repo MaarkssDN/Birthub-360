@@ -109,7 +109,7 @@ describe('REMED-06 v4 — cascata de Organization, A2, inventário de funções,
     await pool.end();
   });
 
-  it('v5: Organization com cadeia não sai — app sem DELETE/TRUNCATE em Organization; FKs da cadeia/head RESTRICT; demais LGPD CASCADE', async () => {
+  it('v5: Organization com cadeia não sai — app sem DELETE/TRUNCATE em Organization; FKs da cadeia/head e FlywheelApproachRecord RESTRICT; demais LGPD CASCADE', async () => {
     // Cadeia nunca é commitada (com FK RESTRICT ela prenderia a org de teste para sempre).
     const org = `test-lgpd-casc-${RUN}`;
     await mkOrg(org);
@@ -173,7 +173,7 @@ describe('REMED-06 v4 — cascata de Organization, A2, inventário de funções,
       ConsentSubjectKeyTombstone: 'c',
       ConsentEventDetail: 'c',
       ConsentPurgeTask: 'c',
-      FlywheelApproachRecord: 'c',
+      FlywheelApproachRecord: 'r',
       FlywheelFewShotExample: 'c',
       TenantKeyEnvelope: 'c',
     });

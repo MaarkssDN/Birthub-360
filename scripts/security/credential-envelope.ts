@@ -1,11 +1,12 @@
 // scripts/security/credential-envelope.ts
 //
-// Envelope `enc:v1:<iv>:<authTag>:<ciphertext>` (AES-256-GCM) — mesmo formato de
-// src/lib/crypto/secretFields.ts — com a chave passada EXPLICITAMENTE (sem src/config/env.ts, sem
-// chave de dev). Puro: usado pelo reencrypt (rotação/--verify) e pelo backfill (--verify e checagem
-// de legibilidade) para que os dois scripts classifiquem valores do mesmo jeito.
+// Envelope `enc:v1:<keyId>:<iv>:<authTag>:<ciphertext>` (AES-256-GCM, keyed — BT360-DT-0073)
+// ou legado `enc:v1:<iv>:<authTag>:<ciphertext>` — mesmo formato de src/lib/crypto/secretFields.ts
+// — com a chave passada EXPLICITAMENTE (sem src/config/env.ts, sem chave de dev). Puro: usado
+// pelo reencrypt (rotação/--verify) e pelo backfill (--verify e checagem de legibilidade) para
+// que os dois scripts classifiquem valores do mesmo jeito.
 
-import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
+import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
 
 const ALGORITHM = 'aes-256-gcm';
 export const VERSION_PREFIX = 'enc:v1:';
@@ -13,16 +14,30 @@ export const VERSION_PREFIX = 'enc:v1:';
 export const ENC_ANY_PREFIX = 'enc:';
 const IV_LENGTH = 12;
 const AUTH_TAG_LENGTH = 16;
+const KEY_ID_LENGTH = 12;
+
+/** Mesmo fingerprint de secretFields.ts/credentialCrypto.ts — keyId do envelope keyed. */
+function keyIdFor(keyBuf: Buffer): string {
+  return createHash('sha256').update(keyBuf).digest('hex').slice(0, KEY_ID_LENGTH);
+}
 
 export function decryptWithKey(stored: string, keyBuf: Buffer): string {
   if (!stored.startsWith(VERSION_PREFIX)) {
     return stored;
   }
   const parts = stored.slice(VERSION_PREFIX.length).split(':');
-  if (parts.length !== 3) {
+  // 4 segmentos = keyed (keyId + iv + authTag + ciphertext); 3 = legado sem keyId.
+  // O keyId é metadado de versão — a chave explícita decide a decriptação, não o rótulo.
+  let ivB64: string;
+  let authTagB64: string;
+  let ciphertextB64: string;
+  if (parts.length === 4) {
+    [, ivB64, authTagB64, ciphertextB64] = parts;
+  } else if (parts.length === 3) {
+    [ivB64, authTagB64, ciphertextB64] = parts;
+  } else {
     throw new Error('Formato de envelope inválido.');
   }
-  const [ivB64, authTagB64, ciphertextB64] = parts;
   const decipher = createDecipheriv(ALGORITHM, keyBuf, Buffer.from(ivB64, 'base64'), {
     authTagLength: AUTH_TAG_LENGTH,
   });
@@ -40,7 +55,7 @@ export function encryptWithKey(plaintext: string, keyBuf: Buffer): string {
   const cipher = createCipheriv(ALGORITHM, keyBuf, iv, { authTagLength: AUTH_TAG_LENGTH });
   const ciphertext = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()]);
   const authTag = cipher.getAuthTag();
-  return `${VERSION_PREFIX}${iv.toString('base64')}:${authTag.toString('base64')}:${ciphertext.toString('base64')}`;
+  return `${VERSION_PREFIX}${keyIdFor(keyBuf)}:${iv.toString('base64')}:${authTag.toString('base64')}:${ciphertext.toString('base64')}`;
 }
 
 /**

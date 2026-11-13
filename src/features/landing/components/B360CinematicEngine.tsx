@@ -230,6 +230,17 @@ export function useB360ScrollVelocityInertia(
 const CIPHER_CHARS = '#%&*01/<>[]X$@ØΔλ';
 
 /**
+ * Glyph aleatório só para o scramble visual de `B360DecryptBlock`.
+ * Não gera segredo, token nem identificador. Usa `crypto.getRandomValues`
+ * para não recorrer a um PRNG previsível (regra typescript:S2245).
+ */
+export function pickVisualCipherChar(): string {
+  const buf = new Uint32Array(1);
+  crypto.getRandomValues(buf);
+  return CIPHER_CHARS[buf[0] % CIPHER_CHARS.length];
+}
+
+/**
  * B360DecryptBlock — Exibe texto com efeito de descriptografia cibernética
  * (Matrix scramble) e máscara de vidro fosco (blur-reveal sweep) ativados
  * conforme o progresso de interseção da seção com a viewport.
@@ -273,7 +284,7 @@ export function B360DecryptBlock({
           .map((char, index) => {
             if (char === ' ') return ' ';
             if (index < resolvedLength) return text[index];
-            return CIPHER_CHARS[Math.floor(Math.random() * CIPHER_CHARS.length)];
+            return pickVisualCipherChar();
           })
           .join('');
 

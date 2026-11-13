@@ -1110,7 +1110,7 @@ model CommercialGoal {
 model LeadStageHistory {
   id             String       @id @default(cuid())
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   leadId         String
   lead           Lead         @relation(fields: [leadId], references: [id], onDelete: Cascade)
   // pipelineId/stageId ficam nullable e stageName é desnormalizado de propósito: uma etapa pode
@@ -1143,7 +1143,7 @@ model LeadStageHistory {
 model ForecastSnapshot {
   id             String       @id @default(cuid())
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   /// Período (mês) que este snapshot está prevendo — "YYYY-MM", mesma granularidade de CommercialGoal.
   period         String
   snapshotAt     DateTime     @default(now())
@@ -1231,7 +1231,7 @@ model SavedView {
 model AccountIntelligenceSnapshot {
   id             String       @id @default(cuid())
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   companyId      String
   company        Company      @relation(fields: [companyId, organizationId], references: [id, organizationId], onDelete: Cascade)
 
@@ -1865,7 +1865,7 @@ model AIGuardrailEvent {
   source String
 
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   createdAt      DateTime     @default(now())
 
   @@index([organizationId, type, createdAt])
@@ -2532,7 +2532,7 @@ model CopilotoDealHealthSnapshot {
   id String @id @default(cuid())
 
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
 
   leadId String
   lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
@@ -2599,7 +2599,7 @@ model CopilotoConsentRecord {
   id String @id @default(cuid())
 
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
 
   conversationId String
   conversation   CopilotoConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
@@ -2751,7 +2751,7 @@ model BitrixSyncRule {
 model BitrixSyncLog {
   id             String            @id @default(cuid())
   organizationId String
-  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   connectionId   String?
   connection     BitrixConnection? @relation(fields: [connectionId], references: [id], onDelete: SetNull)
 
@@ -3099,7 +3099,7 @@ model VoiceCallLog {
   id String @id @default(cuid())
 
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
 
   leadId String
 
@@ -3141,7 +3141,7 @@ enum OptOutScope {
 model OptOutRecord {
   id             String       @id @default(cuid())
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
 
   scope OptOutScope
 
@@ -3864,7 +3864,7 @@ enum DealClosureEventType {
 model DealClosureEvent {
   id             String       @id @default(cuid())
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
 
   leadId String
   lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
@@ -3887,7 +3887,7 @@ model DealClosureEvent {
 model ThreeCXCallEvent {
   id             String       @id @default(cuid())
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   connectionId   String? // ThreeCXConnection.id resolvida pelo extension, quando possível
   extension      String?
   callId         String? // id do 3CX, para idempotência de reentrega
@@ -3953,7 +3953,7 @@ model ProspectingSearchExecution {
   /// quando ela falha antes de qualquer persistência.
   id             String       @id
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
 
   savedSearchId String?
   savedSearch   SavedSearch? @relation(fields: [savedSearchId], references: [id], onDelete: SetNull)
@@ -4393,7 +4393,7 @@ enum AgentExecutionStatus {
 model AgentExecution {
   id                String               @id @default(cuid())
   organizationId    String
-  organization      Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization      Organization         @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   /// Sem relação FK para `User` de propósito (mesmo padrão de `ModuleAccessGrant.grantedByUserId`)
   /// — sobrevive à remoção do usuário, e o ator real desta execução é auditoria histórica, não
   /// vínculo vivo.
@@ -4853,7 +4853,7 @@ model LearningCandidate {
 model AgentMemoryRecord {
   id                String         @id @default(cuid())
   organizationId    String
-  organization      Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization      Organization   @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   agentCode         String
   topic             String
   category          MemoryCategory
@@ -4881,7 +4881,7 @@ model AgentMemoryRecord {
 model RoleMemoryRecord {
   id                String         @id @default(cuid())
   organizationId    String
-  organization      Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization      Organization   @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   jobRoleCode       String
   topic             String
   category          MemoryCategory
@@ -4906,7 +4906,7 @@ model RoleMemoryRecord {
 model OrganizationMemoryRecord {
   id                String         @id @default(cuid())
   organizationId    String
-  organization      Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization      Organization   @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   topic             String
   category          MemoryCategory
   content           Json
@@ -5092,7 +5092,7 @@ model ExternalCrmSyncRule {
 model ExternalCrmSyncLog {
   id             String       @id @default(cuid())
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
 
   connectionId String?
   connection   ExternalCrmConnection? @relation(fields: [connectionId], references: [id], onDelete: SetNull)
@@ -5317,7 +5317,7 @@ model Agent {
 model CallLog {
   id             String       @id @default(uuid())
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   userId         String?
   contactName    String
   duration       String
@@ -5364,7 +5364,7 @@ model Setting {
 model OrganizationAiConsent {
   id              String       @id @default(uuid())
   organizationId  String       @unique
-  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   granted         Boolean      @default(false)
   consentVersion  String?
   grantedAt       DateTime?
@@ -5752,7 +5752,7 @@ model ConsentPurgeTask {
 model FlywheelApproachRecord {
   id                  String                      @id
   organizationId      String
-  organization        Organization                @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization        Organization                @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   leadId              String
   lead                Lead                        @relation(fields: [leadId], references: [id], onDelete: Cascade)
   agentSlug           String?
@@ -5932,7 +5932,7 @@ enum DomainEventOutboxStatus {
 model DomainEventOutbox {
   id             String                  @id @default(dbgenerated("gen_random_uuid()"))
   organizationId String
-  organization   Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization            @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   eventId        String                  @unique
   eventType      String
   eventVersion   String                  @default("1.0.0")
@@ -5960,7 +5960,7 @@ model DomainEventOutbox {
 model DomainEventConsumption {
   id             String       @id @default(dbgenerated("gen_random_uuid()"))
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   eventId        String
   consumer       String
   processedAt    DateTime     @default(now()) @db.Timestamptz(3)
