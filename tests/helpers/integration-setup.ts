@@ -96,12 +96,42 @@ async function deleteOrganizationsAsOwner(args?: {
 
     if (targetIds.length === 0) return { count: 0 };
 
-    // Para cada organização, limpa as tabelas com FK RESTRICT ou triggers de retenção
+    // Para cada organização, limpa as tabelas com FK RESTRICT ou triggers de retenção.
+    // As 22 tabelas abaixo têm FK organizationId → Organization ON DELETE RESTRICT desde a
+    // migração 20261112000000_tenant_fk_cascade_to_restrict (TAREFA-SANEAMENTO-014): sem
+    // deletar os filhos antes, o DELETE da Organization falha com violação de FK.
+    const RESTRICT_FK_TABLES = [
+      'AIGuardrailEvent',
+      'AgentExecution',
+      'AgentMemoryRecord',
+      'RoleMemoryRecord',
+      'OrganizationMemoryRecord',
+      'LeadStageHistory',
+      'DealClosureEvent',
+      'ForecastSnapshot',
+      'AccountIntelligenceSnapshot',
+      'CopilotoDealHealthSnapshot',
+      'CopilotoConsentRecord',
+      'OrganizationAiConsent',
+      'OptOutRecord',
+      'CallLog',
+      'VoiceCallLog',
+      'ThreeCXCallEvent',
+      'BitrixSyncLog',
+      'ExternalCrmSyncLog',
+      'DomainEventOutbox',
+      'DomainEventConsumption',
+      'ProspectingSearchExecution',
+      'FlywheelApproachRecord',
+    ];
     for (const orgId of targetIds) {
       // Seta a flag LGPD oficial (ADR-006 / migration 20261021000000) para permitir DELETE na cadeia desta org
       await client.query(`SELECT set_config('app.lgpd_chain_retention_org', $1, false)`, [orgId]);
       await client.query(`DELETE FROM "ConsentAuditRecord" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
       await client.query(`DELETE FROM "ConsentAuditChainHead" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
+      for (const table of RESTRICT_FK_TABLES) {
+        await client.query(`DELETE FROM "${table}" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
+      }
       await client.query(`DELETE FROM "user" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
     }
 

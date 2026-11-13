@@ -4,6 +4,16 @@ metadata:
   name: prospector-ingress
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: 'false'
+    # Rate limiting de borda (TAREFA-SANEAMENTO-029 / BT360-DT-0057): camada de
+    # ingress ANTES da aplicação. Complementa — não substitui — os limitadores
+    # express-rate-limit de src/bootstrap/rateLimiters.ts (api/auth/IA), que
+    # continuam sendo a cota semântica por rota/tenant. Aqui o objetivo é conter
+    # flood bruto por IP na borda: um único cliente não pode nem abrir
+    # conexões ilimitadas nem sustentar rajadas acima do limite por segundo.
+    # Valores generosos de propósito: clientes legítimos atrás de NAT corporativo
+    # compartilham IP — apertar demais aqui quebraria escritórios inteiros.
+    nginx.ingress.kubernetes.io/limit-rps: '30'
+    nginx.ingress.kubernetes.io/limit-connections: '20'
 spec:
   rules:
     - host: prospector.local

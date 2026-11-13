@@ -136,7 +136,16 @@ export function anyRecordBlocksChannel(records: OptOutRecord[], channel: Cadence
  */
 export interface OptOutRepository {
   create(record: Omit<OptOutRecord, 'id' | 'createdAt'>): Promise<OptOutRecord>;
-  /** Registros da organização que casam com QUALQUER identificador não nulo do sujeito consultado. */
+  /**
+   * Registros da organização que casam com QUALQUER identificador não nulo do sujeito consultado.
+   * Sem limite — é a consulta usada pelos caminhos de disparo (isOptedOut/assertNotOptedOut).
+   */
   findMatches(organizationId: string, subject: NormalizedOptOutSubject): Promise<OptOutRecord[]>;
+  /**
+   * Listagem do tenant ordenada por `createdAt` desc.
+   * `limit` omitido → TODOS os registros (nunca truncar silenciosamente: um opt-out antigo
+   * precisa continuar visível/bloqueante). `limit` explícito → no máximo N (o adaptador
+   * Prisma faz clamp para 1..500).
+   */
   list(organizationId: string, limit?: number): Promise<OptOutRecord[]>;
 }

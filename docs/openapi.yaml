@@ -7901,6 +7901,21 @@ paths:
               { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
           }
         '403': { $ref: '#/components/responses/Forbidden' }
+  # F4 (handoff 00→04): endpoint dedicado do relatório "Saúde da Sincronização Bitrix24" —
+  # antes só existia composto em `crmQuality.bitrixSync`, sem rota própria. Sem filtro comercial
+  # (saúde de sincronização é operacional): cobre todos os negócios abertos do funil Negócio.
+  /commercial-intelligence/bitrix-sync-health:
+    get:
+      tags: [Comercial Inteligente]
+      summary: Saúde da sincronização Bitrix24 (vínculo, falhas e atividade dos últimos 30 dias sobre negócios abertos) — somente ADMIN/GESTOR
+      responses:
+        '200':
+          {
+            description: OK,
+            content:
+              { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
+          }
+        '403': { $ref: '#/components/responses/Forbidden' }
   # Revenue Oracle / rebalanceamento (REMED-03/04) — predictive.routes.ts (createPredictiveRoutes),
   # montado em commercialIntelligence.routes.ts sob /predictive. Herda authenticateToken +
   # requireTenant + requireRole(ADMIN, GESTOR). Métricas sem histórico suficiente vêm null com

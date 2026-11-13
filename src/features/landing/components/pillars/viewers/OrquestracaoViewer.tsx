@@ -57,9 +57,7 @@ export function OrquestracaoViewer({ theme = 'dark' }: PillarViewerProps) {
             <span className={`font-semibold ${isDark ? 'text-slate-300' : 'text-slate-800'}`}>
               D+0 • E-mail de Apresentação de Valor
             </span>
-            <span
-              className={`text-[10px] block font-sans ${isDark ? 'text-slate-500' : 'text-slate-500'}`}
-            >
+            <span className="text-[10px] block font-sans text-slate-500">
               Entregue • Aberto 2x pelo lead
             </span>
           </div>

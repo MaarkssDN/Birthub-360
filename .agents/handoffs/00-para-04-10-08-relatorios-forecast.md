@@ -39,3 +39,18 @@ calibragem contra dados reais.
 ## Fora de escopo
 
 - Novo design visual; reescrever motor de forecast.
+
+## Resolução (parcial — Agente 04, 2026-11-12)
+
+**Item 1 do handoff (checklist 17 relatórios): CONCLUÍDO.**
+O inventário `docs/architecture/RELATORIOS-EXECUTIVOS-INVENTARIO.md` (commit `37e968c68`, Onda F4) já continha o checklist dos 17 relatórios do Documento Mestre com status e evidência: 16 com endpoint próprio + `bitrixSyncHealthReport` parcial (só sub-métrica de `/crm-quality`).
+
+**Item "implementar os faltantes prioritários" (parcela do 04): PARCIALMENTE executado.**
+- ✅ Implementado: `GET /api/commercial-intelligence/bitrix-sync-health` — endpoint dedicado do 9º relatório (era o único "Parcial" do checklist). Novo `CommercialIntelligenceUseCases.bitrixSyncHealth` reutiliza `computeBitrixSyncHealth` sobre todos os negócios abertos do funil Negócio (sem filtro comercial — saúde de sincronização é operacional). Rota em `commercialIntelligence.routes.ts`, controller, entrada em `docs/openapi.yaml` (gate `verify:openapi-drift` verde) e 2 testes unitários novos (caminho com/sem conexão Bitrix, exclusão de negócios fechados). Checklist atualizado para **17/17 existem**.
+- ⏳ Restantes — fora do alcance cirúrgico desta execução / dependência de outros agentes:
+  - **War Room executivo SSE** (ausente — `/app/war-room` hoje é arena de gamificação, semântica diferente): feature nova que exige decisão de produto/UX → handoff para 02/03 + 00.
+  - **Win/Loss autopsy estatística por segmento/concorrente** (hoje só análise em prosa via IA): fundação existe (`lossTaxonomy.ts`, `/ai/loss-reason-analysis`); implementação estatística é item de produto → registrar como follow-up.
+  - **SLA <800ms / benchmark p95**: atribuído a 10/23 no próprio handoff.
+  - **MAPE<8% medido em dados reais**: depende do worker semanal de snapshot em produção (infra 10/16) + baseline de 08.
+
+**Status mantido `em-andamento`** até os itens multi-agente acima serem endereçados; a parcela do Agente 04 está implementada e com gates verdes (`tsc`, `lint`, vitest 266/266 nos módulos tocados, openapi-drift, architecture).
