@@ -110,10 +110,7 @@ export function mountAuthHandler(app: Express): void {
         // err.message (pode conter detalhe interno).
         logger.error(
           {
-            err:
-              err instanceof Error
-                ? { message: err.message, name: err.name }
-                : 'Unknown error',
+            err: err instanceof Error ? { message: err.message, name: err.name } : 'Unknown error',
           },
           'MOUNT_AUTH_HANDLER_CAUGHT_ERROR',
         );
