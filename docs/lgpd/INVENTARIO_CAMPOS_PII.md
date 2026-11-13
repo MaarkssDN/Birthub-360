@@ -10,7 +10,7 @@ Fontes: `prisma/schema.prisma` (anotações de PII em comentários) +
 Narrativa legal/finalidades/bases legais: ver `INVENTARIO_TRATAMENTO_ROPA.md` e
 `docs/lgpd-base-legal.md`.
 
-Total: 31 campos em 16 models.
+Total: 32 campos em 17 models.
 
 | Model | Campo | Tipo | Cifrado em repouso | Anotação no schema |
 |---|---|---|---|---|
@@ -34,6 +34,7 @@ Total: 31 campos em 16 models.
 | LearningCandidate | sanitization | Json? | não | Snapshot do `AnonymizationResult` (LgpdSanitizerService) — `null` só quando o conteúdo não tinha nenhum texto livre a sanitizar. |
 | OmieConnection | appKey | String | sim | Credenciais de aplicativo do Omie (Cadastros > Empresas > Chave de Integração). Cifradas em repouso (AES-256-GCM) de forma transparente pela extensão Prisma em |
 | OmieConnection | appSecret | String | sim | — |
+| PublicLeadConsent | termsText | String | não | Texto integral apresentado ao titular no momento do opt-in. |
 | SlackConnection | botToken | String? | sim | Bot User OAuth Token (xoxb-...) para enviar via chat.postMessage — permite escolher o canal de destino por chamada em vez de um único webhook fixo. Cifrado em r |
 | SlackConnection | webhookUrl | String? | sim | URL do Incoming Webhook do Slack (https://hooks.slack.com/services/...) — URL de usuário/tenant, por isso validada com assertSafeExternalUrl/safeFetch (SSRF) em |
 | StripeConnection | secretKey | String | sim | Chave secreta da API do Stripe (sk_live_.../sk_test_...). Cifrada em repouso (AES-256-GCM) de forma transparente pela extensão Prisma em src/lib/prisma.ts — ver |

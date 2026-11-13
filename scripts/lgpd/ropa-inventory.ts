@@ -156,7 +156,8 @@ function render(rows: InventoryRow[]): string {
     '|---|---|---|---|---|',
   ];
   for (const r of rows) {
-    const doc = r.docSnippet.replace(/\|/g, '\\|').replace(/\s+/g, ' ').trim() || '—';
+    const doc =
+      r.docSnippet.replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(/\s+/g, ' ').trim() || '—';
     lines.push(`| ${r.model} | ${r.field} | ${r.type} | ${r.encrypted ? 'sim' : 'não'} | ${doc} |`);
   }
   lines.push('');
