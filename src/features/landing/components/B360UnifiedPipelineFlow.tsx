@@ -308,7 +308,7 @@ export function B360UnifiedPipelineFlow() {
         className="b360-pipeline-static-panel"
         aria-label="Visualização de Pipeline Integrado"
       >
-        <div className="flex items-center justify-between p-4 bg-slate-900/80 rounded-2xl border border-slate-700/60">
+        <div className="b360-pipeline-banner flex items-center justify-between p-4 rounded-2xl border border-slate-700/60">
           <span className="font-mono text-xs text-sky-400 font-bold uppercase">
             ✦ Pipeline Unificado · Operação 360° em Tempo Real
           </span>

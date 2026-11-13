@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 01 (Plataforma, Segurança e Dados)
 Onda: Onda 1 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-012)
-Status: aberto
+Status: em-andamento
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 1
@@ -48,3 +48,10 @@ Executar a tarefa `TAREFA-SANEAMENTO-012` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução (Agente 01 — 2026-11-12)
+
+- **Arquivo indicado não contém a dívida:** `PrismaAnalyticsRepository.ts` não tem método de consumo de IA (dono: Agente 04). Nenhuma alteração feita nele.
+- **Ofensor real identificado** em arquivos do Agente 07: `agentCostAnalysis.service.ts` (`aILog.findMany` sem `take` + select de campos inexistentes → provável 500) e `agentUsageHeatmap.service.ts` (`agentMemory.findMany` sem limite + custo/latência fabricados).
+- **Redirecionado:** handoff `01-para-07-resumo-consumo-ia-findmany-sem-agregacao.md` aberto nesta mesma onda com evidências e correção sugerida.
+- **Run report:** `.agents/runs/agente-01-tarefa-saneamento-012.md`. Aguardando 00 confirmar reatribuição e parecer do 24.

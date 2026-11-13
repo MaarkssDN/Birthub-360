@@ -1,4 +1,7 @@
-@import url("https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300..900;1,300..900&family=Outfit:wght@300..900&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap");
+/* TAREFA-SANEAMENTO-017 / BT360-DT-0020 — nenhuma fonte remota: todas as famílias
+   institucionais são self-hosted em `public/fonts/` (WOFF2 com fallback TTF), o que
+   elimina a dependência de rede/OS que tornava os snapshots de regressão visual
+   instáveis. As pilhas abaixo apontam apenas para Sora, Inter e IBM Plex Mono. */
 @import "tailwindcss";
 /* Birth Hub 360 — Tipografia Oficial Exclusiva:
    - Sora: Títulos, Heros, Ações e Display
@@ -31,13 +34,34 @@
     U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
-/* IBM Plex Mono */
+/* IBM Plex Mono — WOFF2 self-hosted (latin + latin-ext) com fallback TTF local.
+   unicode-range separa os subconjuntos para não baixar a face errada (mesmo padrão
+   de Inter/Sora acima). */
 @font-face {
   font-family: "IBM Plex Mono";
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url("/fonts/ibm-plex-mono-400.ttf") format("truetype");
+  src:
+    url("/fonts/ibm-plex-mono-400-latin-ext.woff2") format("woff2"),
+    url("/fonts/ibm-plex-mono-400.ttf") format("truetype");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    url("/fonts/ibm-plex-mono-400-latin.woff2") format("woff2"),
+    url("/fonts/ibm-plex-mono-400.ttf") format("truetype");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 @font-face {
@@ -45,7 +69,26 @@
   font-style: italic;
   font-weight: 400;
   font-display: swap;
-  src: url("/fonts/ibm-plex-mono-400-italic.ttf") format("truetype");
+  src:
+    url("/fonts/ibm-plex-mono-400-italic-latin-ext.woff2") format("woff2"),
+    url("/fonts/ibm-plex-mono-400-italic.ttf") format("truetype");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    url("/fonts/ibm-plex-mono-400-italic-latin.woff2") format("woff2"),
+    url("/fonts/ibm-plex-mono-400-italic.ttf") format("truetype");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 @font-face {
@@ -53,7 +96,26 @@
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: url("/fonts/ibm-plex-mono-500.ttf") format("truetype");
+  src:
+    url("/fonts/ibm-plex-mono-500-latin-ext.woff2") format("woff2"),
+    url("/fonts/ibm-plex-mono-500.ttf") format("truetype");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src:
+    url("/fonts/ibm-plex-mono-500-latin.woff2") format("woff2"),
+    url("/fonts/ibm-plex-mono-500.ttf") format("truetype");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 @font-face {
@@ -61,7 +123,26 @@
   font-style: normal;
   font-weight: 600;
   font-display: swap;
-  src: url("/fonts/ibm-plex-mono-600.ttf") format("truetype");
+  src:
+    url("/fonts/ibm-plex-mono-600-latin-ext.woff2") format("woff2"),
+    url("/fonts/ibm-plex-mono-600.ttf") format("truetype");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src:
+    url("/fonts/ibm-plex-mono-600-latin.woff2") format("woff2"),
+    url("/fonts/ibm-plex-mono-600.ttf") format("truetype");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 @font-face {
@@ -69,7 +150,26 @@
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url("/fonts/ibm-plex-mono-700.ttf") format("truetype");
+  src:
+    url("/fonts/ibm-plex-mono-700-latin-ext.woff2") format("woff2"),
+    url("/fonts/ibm-plex-mono-700.ttf") format("truetype");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src:
+    url("/fonts/ibm-plex-mono-700-latin.woff2") format("woff2"),
+    url("/fonts/ibm-plex-mono-700.ttf") format("truetype");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 /* Sora (latin-ext) */
@@ -112,7 +212,10 @@
   --neon-pink: #ff2d9b;
   --neon-gold: #ffc107;
   --neon-black: #0d0d0d;
-  --neon-white: #70d6ff;
+  /* Token divergente corrigido (handoff 11-para-03 / BT360-DT-0060): o canônico
+     --palette-neon-white / BRAND.colors.neonWhite é #F8F9FF. O azul de leitura
+     #70D6FF continua existindo — mas com o nome semântico correto, --neon-text. */
+  --neon-white: #f8f9ff;
   --neon-text: #70d6ff;
   --neon-card-bg: #14141a;
   --neon-card-border: rgba(0, 212, 255, 0.22);
@@ -120,9 +223,10 @@
   --neon-lime-hover: #c5e826;
   --lime-glow: rgba(212, 244, 52, 0.35);
 
-  /* Tons Light complementares */
-  --light-pink: #e6007a;
-  --light-blue: #0369a1;
+  /* Tons Light complementares — alinhados ao canônico (brand.ts /
+     tokens birthhub360.css): lightPink #D91B7C, lightBlue #0284C7, lightGold #D97706. */
+  --light-pink: #d91b7c;
+  --light-blue: #0284c7;
   --light-gold: #d97706;
 
   /* Gradientes Oficiais */
@@ -263,17 +367,18 @@
   --shadow-nav-value: 12px 0 34px -28px rgba(26, 21, 19, 0.45);
   --shadow-nav-active-value: 0 10px 26px -14px color-mix(in srgb, var(--brand) 52%, black);
   --radius-nav-item-value: 12px;
+  /* Pilhas alinhadas à Constituição tipográfica canônica (Sora display + Inter
+     interface + IBM Plex Mono dados), todas self-hosted — sem dependência de
+     fontes remotas (Plus Jakarta Sans/Nunito/Outfit foram removidas). */
   --font-brand-sans:
-    "Plus Jakarta Sans", "Nunito", ui-rounded, -apple-system-subheadline, "Inter", system-ui,
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    "Inter", ui-rounded, -apple-system-subheadline, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, sans-serif;
   --title-color-default: var(--color-heading-cyan, #0369a1);
   --title-color-cyan: #0369a1;
   --title-color-pink: #d91b7c;
   --title-color-gold: #b45309;
   --subtitle-color-default: #0369a1;
-  --font-brand-display:
-    "Outfit", "Plus Jakarta Sans", "Nunito", ui-rounded, "Sora", system-ui, -apple-system,
-    sans-serif;
+  --font-brand-display: "Sora", "Inter", system-ui, -apple-system, sans-serif;
   --font-brand-mono: "IBM Plex Mono", ui-monospace, monospace;
   --font-features-rounded: "cv05", "cv11", "ss01";
   --tracking-rounded: -0.012em;
@@ -618,19 +723,22 @@
   --font-display: var(--font-brand-display);
   --font-mono: var(--font-brand-mono);
 
-  /* Cores Neon Oficiais Birth Hub 360 */
+  /* Cores Neon Oficiais Birth Hub 360 — literais alinhados ao canônico
+     (identidade-visual/birthhub360/tokens + src/config/brand.ts). O azul de
+     leitura #70D6FF permanece apenas em --color-neon-text; official-identity.css
+     ainda sobrescreve estes tokens em runtime por tema. */
   --color-neon-blue: #00d4ff;
   --color-neon-pink: #ff2d9b;
   --color-neon-gold: #ffc107;
   --color-neon-black: #0d0d0d;
-  --color-neon-white: #70d6ff;
+  --color-neon-white: #f8f9ff;
   --color-neon-text: #70d6ff;
   --color-neon-card: #14141a;
   --color-neon-border: rgba(0, 212, 255, 0.22);
 
-  /* Tons Light complementares */
-  --color-light-pink: #e6007a;
-  --color-light-blue: #0369a1;
+  /* Tons Light complementares — canônico: #D91B7C / #0284C7 / #D97706 */
+  --color-light-pink: #d91b7c;
+  --color-light-blue: #0284c7;
   --color-light-gold: #d97706;
 
   /* Paleta oficial Birth Hub 360 */
@@ -639,8 +747,10 @@
   --color-sunset: #ef4444;
   --color-red-violet: #ff2d9b;
   --color-gold: #ffc107;
-  --color-white: #70d6ff;
-  --color-snow: #70d6ff;
+  /* Branco/snow canônicos (#F8F9FF). official-identity.css já forçava estes
+     mesmos valores em runtime; o literal aqui deixou de divergir do token. */
+  --color-white: #f8f9ff;
+  --color-snow: #f8f9ff;
   --color-parchment: #e9e4d9;
   /* "Inteligência em movimento" — halos, indicadores, órbita. Não é fundo de
      botão: ver o comentário de --iris em :root. */
@@ -1000,97 +1110,16 @@
   .font-display,
   [class*="title" i],
   [class*="Title"] {
-    font-family: var(--font-brand-display) !important;
+    /* Sem !important (TAREFA-SANEAMENTO-003): a imposição do display font vive na
+       seção não-layered no fim do arquivo, que vence @layer utilities sem hack. */
+    font-family: var(--font-brand-display);
     color: var(--title-color-default);
     letter-spacing: -0.02em;
   }
 
-  /* Sobrescrever qualquer classe utilitária de branco ou preto quando aplicada a títulos */
-  :is(h1, h2, h3, h4, h5, h6, [role="heading"], [class*="title" i], [class*="Title"]):is(
-    .text-white,
-    .text-black,
-    .text-ink,
-    .text-slate-900,
-    .text-slate-950,
-    .text-gray-900,
-    .text-gray-950,
-    .text-zinc-900,
-    .text-neutral-900,
-    .dark\:text-white,
-    .dark\:text-white\/90,
-    .text-white\/90,
-    .text-white\/80,
-    .text-gray-800,
-    .text-slate-800
-  ) {
-    color: var(--title-color-default) !important;
-  }
-
-  /* Variações autorizadas de cores de títulos (Cyan, Gold, Pink, Gradiente) */
-  :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).neon-title-gold,
-  :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).text-gold {
-    color: var(--title-color-gold) !important;
-  }
-
-  :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).neon-title-pink,
-  :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).text-pink {
-    color: var(--title-color-pink) !important;
-  }
-
-  :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).neon-title-blue,
-  :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).text-neon-blue {
-    color: var(--title-color-cyan) !important;
-  }
-
-  /* Subtítulos: NUNCA brancos e NUNCA pretos */
-  :is(
-    [class*="subtitle" i],
-    [class*="Subtitle"],
-    .text-subtitle,
-    .card-subtitle,
-    [data-slot="description"],
-    header p,
-    .page-subtitle
-  ) {
-    color: var(--subtitle-color-default) !important;
-  }
-
-  /* Subtítulos que seguem imediatamente um cabeçalho */
-  :is(h1, h2, h3, h4, h5, h6) + p {
-    color: var(--subtitle-color-default) !important;
-  }
-
-  :is(
-    [class*="subtitle" i],
-    [class*="Subtitle"],
-    .text-subtitle,
-    .card-subtitle,
-    [data-slot="description"],
-    header p,
-    .page-subtitle,
-    :is(h1, h2, h3, h4, h5, h6) + p
-  ):is(
-    .text-white,
-    .text-black,
-    .text-ink,
-    .text-ink-2,
-    .text-slate-900,
-    .text-gray-900,
-    .text-zinc-900,
-    .text-neutral-900,
-    .dark\:text-white,
-    .text-white\/60,
-    .text-white\/70,
-    .text-white\/80,
-    .text-white\/90,
-    .text-gray-400,
-    .text-gray-500,
-    .text-slate-400,
-    .text-slate-500,
-    .text-muted-foreground
-  ) {
-    color: var(--subtitle-color-default) !important;
-  }
+  /* As regras de "policiamento" de cor de títulos/subtítulos que ficavam aqui com
+     !important foram movidas para o fim do arquivo, fora de @layer, com prefixo
+     `html body` — ver o bloco "Brand title/subtitle policing" ao final. */
 
   /* Títulos por padrão usam a identidade visual, preservando classes de cores utilitárias explícitas */
 
@@ -1832,4 +1861,130 @@
   background: rgba(255, 255, 255, 0.94);
   border-color: rgba(11, 19, 43, 0.1);
   box-shadow: 0 20px 50px -10px rgba(11, 19, 43, 0.08);
+}
+
+/* ============================================================
+   Brand title/subtitle policing — TAREFA-SANEAMENTO-003 (BT360-DT-0017)
+   ------------------------------------------------------------
+   Estas regras existiam dentro de @layer base com !important para vencer as
+   utilities do Tailwind (@layer utilities). Foram movidas para cá, FORA de
+   qualquer @layer: CSS não-layered já vence todas as layers na cascata, o que
+   permite remover o !important sem mudar o resultado computado.
+
+   O prefixo `html body` preserva a dominância que o !important garantia contra
+   regras não-layered de official-identity.css (carregado depois deste arquivo,
+   ex.: [data-page-accent] :is(h1..h6) e .bh-platform-card :is(h1..h6)). Sem ele,
+   empates de especificidade seriam resolvidos pela ordem de import e o heading
+   dentro de platform cards voltaria a herdar --ink — regressão visual.
+   ============================================================ */
+
+/* Display font dos títulos — continua imposto sobre utilities .font-* */
+html
+  body
+  :is(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    [role="heading"],
+    .font-display,
+    [class*="title" i],
+    [class*="Title"]
+  ) {
+  font-family: var(--font-brand-display);
+}
+
+/* Sobrescrever qualquer classe utilitária de branco ou preto quando aplicada a títulos */
+html
+  body
+  :is(h1, h2, h3, h4, h5, h6, [role="heading"], [class*="title" i], [class*="Title"]):is(
+    .text-white,
+    .text-black,
+    .text-ink,
+    .text-slate-900,
+    .text-slate-950,
+    .text-gray-900,
+    .text-gray-950,
+    .text-zinc-900,
+    .text-neutral-900,
+    .dark\:text-white,
+    .dark\:text-white\/90,
+    .text-white\/90,
+    .text-white\/80,
+    .text-gray-800,
+    .text-slate-800
+  ) {
+  color: var(--title-color-default);
+}
+
+/* Variações autorizadas de cores de títulos (Cyan, Gold, Pink, Gradiente) */
+html body :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).neon-title-gold,
+html body :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).text-gold {
+  color: var(--title-color-gold);
+}
+
+html body :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).neon-title-pink,
+html body :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).text-pink {
+  color: var(--title-color-pink);
+}
+
+html body :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).neon-title-blue,
+html body :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).text-neon-blue {
+  color: var(--title-color-cyan);
+}
+
+/* Subtítulos: NUNCA brancos e NUNCA pretos */
+html
+  body
+  :is(
+    [class*="subtitle" i],
+    [class*="Subtitle"],
+    .text-subtitle,
+    .card-subtitle,
+    [data-slot="description"],
+    header p,
+    .page-subtitle
+  ) {
+  color: var(--subtitle-color-default);
+}
+
+/* Subtítulos que seguem imediatamente um cabeçalho */
+html body :is(h1, h2, h3, h4, h5, h6) + p {
+  color: var(--subtitle-color-default);
+}
+
+html
+  body
+  :is(
+    [class*="subtitle" i],
+    [class*="Subtitle"],
+    .text-subtitle,
+    .card-subtitle,
+    [data-slot="description"],
+    header p,
+    .page-subtitle,
+    :is(h1, h2, h3, h4, h5, h6) + p
+  ):is(
+    .text-white,
+    .text-black,
+    .text-ink,
+    .text-ink-2,
+    .text-slate-900,
+    .text-gray-900,
+    .text-zinc-900,
+    .text-neutral-900,
+    .dark\:text-white,
+    .text-white\/60,
+    .text-white\/70,
+    .text-white\/80,
+    .text-white\/90,
+    .text-gray-400,
+    .text-gray-500,
+    .text-slate-400,
+    .text-slate-500,
+    .text-muted-foreground
+  ) {
+  color: var(--subtitle-color-default);
 }

@@ -112,4 +112,25 @@ export function applyRateLimiters(app: Express): void {
     },
   });
   app.use('/api/bug-reports', authenticateToken, bugReportLimiter);
+
+  // Rate limiting dedicado da captura pública de lead da landing — por IP, bem mais
+  // apertado que o apiLimiter genérico (cada POST pode gravar Company/Contact/Lead +
+  // prova de consentimento). Montado sem authenticateToken de propósito: a rota é pública.
+  // A chave é req.ip (mesma fonte do hash HMAC na rota). Com TRUST_PROXY=false (default),
+  // isso é o IP do socket. Com TRUST_PROXY=true, security.ts reescreve X-Forwarded-For
+  // para o valor mais à esquerda antes do Express resolver req.ip — limiter e hash
+  // continuam alinhados; o hop confiável em si é follow-up de borda, não desta rota.
+  const publicLeadLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: env.PUBLIC_LEAD_RATE_LIMIT_MAX,
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => ipKeyGenerator(req.ip || 'unknown'),
+    store: redisStoreOrMemory(),
+    message: {
+      ok: false,
+      error: 'rate_limited',
+    },
+  });
+  app.use('/api/public/demo-leads', publicLeadLimiter);
 }

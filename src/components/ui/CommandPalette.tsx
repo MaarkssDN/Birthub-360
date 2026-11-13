@@ -20,7 +20,7 @@ import {
 } from '../../lib/paletteIntent.js';
 import { SoundFX } from '../../lib/soundEffects.js';
 import type { Company, Contact, PaginatedResponse } from '../../types/index.js';
-import type { TabType } from '../layout/tabMeta.js';
+import type { TabNavIcon, TabType } from '../layout/tabMeta.js';
 import { isNavHiddenTab, TAB_META } from '../layout/tabMeta.js';
 
 type ResultItem = {
@@ -28,7 +28,7 @@ type ResultItem = {
   group: 'Ações rápidas' | 'Navegar' | 'Empresas' | 'Decisores';
   label: string;
   sublabel?: string;
-  icon: typeof Search;
+  icon: TabNavIcon;
   onSelect: () => void;
 };
 

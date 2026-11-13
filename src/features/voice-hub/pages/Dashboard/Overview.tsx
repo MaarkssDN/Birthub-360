@@ -1,127 +1,51 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'motion/react';
 import {
-  Users,
-  Phone,
-  FileText,
-  Sparkles,
-  CheckCircle2,
-  Play,
-  Code,
-  ShieldCheck,
   Activity,
-  RefreshCw,
+  Code,
   Database,
+  FileText,
+  Play,
   Server,
-  ShieldAlert,
-  AlertTriangle,
+  ShieldCheck,
+  Sparkles,
+  Users,
 } from 'lucide-react';
-import {
-  Card,
-  Button,
-  Badge,
-  Progress,
-  Spinner,
-  Skeleton,
-  EmptyState,
-  Alert,
-  Tooltip,
-  Modal,
-  useToast,
-  ToastContainer,
-} from '../../components/design-system/index.js';
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { logger } from '../../../../lib/logger.js';
+import {
+  Button,
+  Card,
+  EmptyState,
+  Modal,
+  Spinner,
+  ToastContainer,
+  Tooltip,
+  useToast,
+} from '../../components/design-system/index.js';
+import {
+  type AgentRecord,
+  type CallLogEntry,
+  calculateChecklistProgress,
+  deriveOverviewMetrics,
+  type FetchStatus,
+  formatMs,
+  formatTokens,
+  formatUsd,
+  type MetricEntry,
+  type ReadyChecks,
+} from './overviewMetrics.js';
+import {
+  AgentsCard,
+  CallsLogCard,
+  OnboardingPanel,
+  PendingAlertsCard,
+  PlatformStatusCard,
+} from './overviewSections.js';
+import { RealStatCard } from './overviewWidgets.js';
 
-interface CallLogEntry {
-  id: string;
-  contactName?: string;
-  duration?: string;
-  agent?: string;
-  status?: string;
-  time?: string;
-  timestamp?: string;
-}
-
-interface AgentRecord {
-  id: string;
-  name: string;
-  model: string;
-  phoneNumber?: string;
-  updatedAt?: string;
-}
-
-interface ReadyChecks {
-  database: 'ok' | 'error';
-  redis: 'ok' | 'error';
-}
-
-// One row of GET /api/metrics — see prisma/schema.prisma `Metric`. For SLA we only care about
-// `name === 'platform_ready_check'` rows (Agente 10, src/services/slaScheduler.ts): a real
-// Postgres+Redis health check sampled every ~5 minutes and persisted per tenant, never fabricated.
-interface MetricEntry {
-  id: string;
-  name: string;
-  value: number;
-  tags?: Record<string, unknown>;
-  timestamp: string;
-}
-
-type FetchStatus = 'loading' | 'ready' | 'error';
-
-const SLA_READY_CHECK_METRIC = 'platform_ready_check';
-const SLA_WINDOW_MS = 24 * 60 * 60 * 1000; // last 24h — see handoff onda-4/10-para-02-sla-telemetria-overview.md
-
-// AI call telemetry event names persisted by lib/voice-runtime/providers/LLMGateway.ts
-// (tenant-wide, userId: null) — one row per successful call to a real provider. See
-// .agents/handoffs/onda-4/04-para-02-telemetria-custo-ia-disponivel.md. Only written when a
-// provider actually returned a response — never for a consent-blocked call or a full failover
-// failure, so an empty result here means "no AI calls yet", not "pipeline missing".
-const AI_COST_METRIC = 'ai_call_cost_usd';
-const AI_TOKENS_METRIC = 'ai_call_tokens';
-const AI_LATENCY_METRIC = 'ai_call_latency_ms';
-
-function formatUsd(value: number): string {
-  return `US$ ${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`;
-}
-
-function formatTokens(value: number): string {
-  return value.toLocaleString('pt-BR');
-}
-
-function formatMs(value: number): string {
-  return `${Math.round(value).toLocaleString('pt-BR')} ms`;
-}
-
-// Names which real component(s) failed on a given platform_ready_check sample, from its `tags`
-// (`{ database: 'ok'|'error', redis: 'ok'|'error' }`). Returns null when the sample was healthy.
-function describeSlaFailure(sample: MetricEntry | undefined): string | null {
-  if (sample?.value !== 0) return null;
-  const tags = sample.tags ?? {};
-  const failed: string[] = [];
-  if (tags.database && tags.database !== 'ok') failed.push('banco de dados');
-  if (tags.redis && tags.redis !== 'ok') failed.push('Redis');
-  return failed.length > 0 ? failed.join(' e ') : 'componente não identificado';
-}
-
-// Parses a "mm:ss" call-duration string into whole seconds. Real call durations are free-text
-// (see prisma CallLog.duration / callLogRepository.createCallLog) so not every value is
-// guaranteed to match — anything that doesn't parse is simply excluded from the average rather
-// than silently coerced to 0, which would understate real call length.
-function parseDurationToSeconds(duration?: string): number | null {
-  if (!duration) return null;
-  const match = /^(\d{1,2}):(\d{2})$/.exec(duration.trim());
-  if (!match) return null;
-  const minutes = Number(match[1]);
-  const seconds = Number(match[2]);
-  if (Number.isNaN(minutes) || Number.isNaN(seconds)) return null;
-  return minutes * 60 + seconds;
-}
-
-function formatSecondsAsDuration(totalSeconds: number): string {
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = Math.round(totalSeconds % 60);
-  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+interface FetchSlice<T> {
+  status: FetchStatus;
+  data: T;
 }
 
 export default function RebuiltExecutiveOverview() {
@@ -134,64 +58,66 @@ export default function RebuiltExecutiveOverview() {
   const [checklist, setChecklist] = useState<Record<string, boolean> | null>(null);
   const [checklistError, setChecklistError] = useState(false);
 
-  const [callsState, setCallsState] = useState<{ status: FetchStatus; calls: CallLogEntry[] }>({
+  const [callsState, setCallsState] = useState<FetchSlice<CallLogEntry[]>>({
     status: 'loading',
-    calls: [],
+    data: [],
   });
-  const [agentsState, setAgentsState] = useState<{ status: FetchStatus; agents: AgentRecord[] }>({
+  const [agentsState, setAgentsState] = useState<FetchSlice<AgentRecord[]>>({
     status: 'loading',
-    agents: [],
+    data: [],
   });
-  const [readyState, setReadyState] = useState<{ status: FetchStatus; checks: ReadyChecks | null }>(
-    {
-      status: 'loading',
-      checks: null,
-    },
-  );
+  const [readyState, setReadyState] = useState<{
+    status: FetchStatus;
+    checks: ReadyChecks | null;
+  }>({
+    status: 'loading',
+    checks: null,
+  });
   // Real, tenant-scoped rows from GET /api/metrics — a single fetch, filtered client-side into the
   // SLA samples (platform_ready_check) and the AI cost/tokens/latency cards below. See
   // .agents/handoffs/onda-4/10-para-02-sla-telemetria-overview.md and
   // .agents/handoffs/onda-4/04-para-02-telemetria-custo-ia-disponivel.md. Never a fabricated value.
-  const [metricsState, setMetricsState] = useState<{ status: FetchStatus; metrics: MetricEntry[] }>(
-    {
-      status: 'loading',
-      metrics: [],
-    },
-  );
+  const [metricsState, setMetricsState] = useState<FetchSlice<MetricEntry[]>>({
+    status: 'loading',
+    data: [],
+  });
 
-  const fetchCalls = useCallback(async () => {
+  const fetchCalls = useCallback(async (signal?: AbortSignal) => {
     setCallsState((prev) => ({ ...prev, status: 'loading' }));
     try {
-      const res = await fetch('/api/call-logs');
+      const res = await fetch('/api/call-logs', { signal });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      setCallsState({ status: 'ready', calls: Array.isArray(data.callLogs) ? data.callLogs : [] });
+      setCallsState({ status: 'ready', data: Array.isArray(data.callLogs) ? data.callLogs : [] });
     } catch (err: any) {
+      if (err?.name === 'AbortError') return;
       logger.error('Error loading call logs', { err });
       setCallsState((prev) => ({ ...prev, status: 'error' }));
     }
   }, []);
 
-  const fetchAgents = useCallback(async () => {
+  const fetchAgents = useCallback(async (signal?: AbortSignal) => {
     setAgentsState((prev) => ({ ...prev, status: 'loading' }));
     try {
-      const res = await fetch('/api/agents');
+      const res = await fetch('/api/agents', { signal });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      setAgentsState({ status: 'ready', agents: Array.isArray(data.agents) ? data.agents : [] });
+      setAgentsState({ status: 'ready', data: Array.isArray(data.agents) ? data.agents : [] });
     } catch (err: any) {
+      if (err?.name === 'AbortError') return;
       logger.error('Error loading agents', { err });
       setAgentsState((prev) => ({ ...prev, status: 'error' }));
     }
   }, []);
 
-  const fetchReady = useCallback(async () => {
+  const fetchReady = useCallback(async (signal?: AbortSignal) => {
     setReadyState((prev) => ({ ...prev, status: 'loading' }));
     try {
-      const res = await fetch('/api/ready');
+      const res = await fetch('/api/ready', { signal });
       const data = await res.json();
       setReadyState({ status: 'ready', checks: data.checks ?? null });
     } catch (err: any) {
+      if (err?.name === 'AbortError') return;
       logger.error('Error loading platform readiness', { err });
       setReadyState({ status: 'error', checks: null });
     }
@@ -199,39 +125,51 @@ export default function RebuiltExecutiveOverview() {
 
   // GET /api/metrics is tenant-scoped (requireTenant) and mixes several event names (ai_call_*,
   // platform_ready_check, …) — fetched once here and filtered client-side per card below.
-  const fetchMetrics = useCallback(async () => {
+  const fetchMetrics = useCallback(async (signal?: AbortSignal) => {
     setMetricsState((prev) => ({ ...prev, status: 'loading' }));
     try {
-      const res = await fetch('/api/metrics');
+      const res = await fetch('/api/metrics', { signal });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const allMetrics: MetricEntry[] = Array.isArray(data.metrics) ? data.metrics : [];
-      setMetricsState({ status: 'ready', metrics: allMetrics });
+      setMetricsState({ status: 'ready', data: allMetrics });
     } catch (err: any) {
+      if (err?.name === 'AbortError') return;
       logger.error('Error loading metrics', { err });
       setMetricsState((prev) => ({ ...prev, status: 'error' }));
     }
   }, []);
 
   useEffect(() => {
+    // Abort on unmount: prevents setState-after-unmount and cancels in-flight requests when the
+    // operator navigates away mid-load (long sessions, slow networks).
+    const controller = new AbortController();
+    const { signal } = controller;
+
     const fetchChecklist = async () => {
       try {
-        const res = await fetch('/api/onboarding');
+        const res = await fetch('/api/onboarding', { signal });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         setChecklist(data.checklist ?? {});
       } catch (err: any) {
+        if (err?.name === 'AbortError') return;
         logger.error('Error loading onboarding checklist from database', { err });
         setChecklistError(true);
         setChecklist({});
       }
     };
 
-    fetchChecklist();
-    fetchCalls();
-    fetchAgents();
-    fetchReady();
-    fetchMetrics();
+    // All five fetches handle their own errors internally (try/catch → status 'error'); they are
+    // fire-and-forget on mount, so mark them explicitly ignored — an unhandled rejection here
+    // would be a real bug (SonarQube typescript:S9383).
+    void fetchChecklist();
+    void fetchCalls(signal);
+    void fetchAgents(signal);
+    void fetchReady(signal);
+    void fetchMetrics(signal);
+
+    return () => controller.abort();
   }, [fetchCalls, fetchAgents, fetchReady, fetchMetrics]);
 
   const updateChecklist = async (key: string, value: boolean) => {
@@ -239,7 +177,7 @@ export default function RebuiltExecutiveOverview() {
     const updated = { ...checklist, [key]: value };
     setChecklist(updated);
     showToast(
-      `Checklist atualizado! Progresso atualizado para ${Math.round(calculateOnboardingProgress(updated))}%`,
+      `Checklist atualizado! Progresso atualizado para ${Math.round(calculateChecklistProgress(updated))}%`,
       'info',
     );
 
@@ -254,14 +192,6 @@ export default function RebuiltExecutiveOverview() {
       logger.error('Error saving onboarding checklist to database', { err });
       showToast('Não foi possível salvar o checklist no servidor. Tente novamente.', 'error');
     }
-  };
-
-  const calculateOnboardingProgress = (currentList: Record<string, boolean> | null = checklist) => {
-    if (!currentList) return 0;
-    const keys = Object.keys(currentList);
-    if (keys.length === 0) return 0;
-    const completed = keys.filter((k) => currentList[k]).length;
-    return (completed / keys.length) * 100;
   };
 
   // Active onboarding tab/wizard step
@@ -289,72 +219,26 @@ export default function RebuiltExecutiveOverview() {
     }
   };
 
-  // ---- Real, derived metrics (no fabricated numbers) ----
-  const totalAgents = agentsState.agents.length;
-  const agentsWithPhone = agentsState.agents.filter((a) => !!a.phoneNumber).length;
+  // ---- Real, derived metrics (no fabricated numbers) — pure helpers in overviewMetrics.ts ----
+  const derived = deriveOverviewMetrics(callsState.data, agentsState.data, metricsState.data);
+  const {
+    totalAgents,
+    agentsWithPhone,
+    totalCalls,
+    callsToday,
+    completedCalls,
+    completionRate,
+    avgDuration,
+    parsedDurationCount,
+    slaUptimePercent,
+    slaCaption,
+    aiTotalCost,
+    aiTotalTokens,
+    aiAvgLatency,
+    aiCallCount,
+  } = derived;
 
-  const totalCalls = callsState.calls.length;
   const today = new Date();
-  const callsToday = callsState.calls.filter((c) => {
-    if (!c.timestamp) return false;
-    const d = new Date(c.timestamp);
-    return (
-      d.getFullYear() === today.getFullYear() &&
-      d.getMonth() === today.getMonth() &&
-      d.getDate() === today.getDate()
-    );
-  }).length;
-
-  const completedCalls = callsState.calls.filter((c) => c.status === 'Concluído').length;
-  const completionRate = totalCalls > 0 ? (completedCalls / totalCalls) * 100 : null;
-
-  const parsedDurations = callsState.calls
-    .map((c) => parseDurationToSeconds(c.duration))
-    .filter((v): v is number => v !== null);
-  const avgDuration =
-    parsedDurations.length > 0
-      ? formatSecondsAsDuration(parsedDurations.reduce((a, b) => a + b, 0) / parsedDurations.length)
-      : null;
-
-  // SLA (disponibilidade) — real uptime approximation from platform_ready_check samples in the
-  // last 24h, never a fabricated percentage. Empty (not zero) until the scheduler has produced at
-  // least one sample for this tenant — see .agents/handoffs/onda-4/10-para-02-sla-telemetria-overview.md.
-  const slaSamples = metricsState.metrics
-    .filter((m) => m.name === SLA_READY_CHECK_METRIC)
-    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-  const slaWindowSamples = slaSamples.filter(
-    (m) => Date.now() - new Date(m.timestamp).getTime() <= SLA_WINDOW_MS,
-  );
-  const slaUptimePercent =
-    slaWindowSamples.length > 0
-      ? (slaWindowSamples.filter((m) => m.value === 1).length / slaWindowSamples.length) * 100
-      : null;
-  const slaLastFailure = describeSlaFailure(slaSamples[0]);
-  const slaCaption =
-    slaUptimePercent !== null
-      ? `${slaWindowSamples.length} amostra${slaWindowSamples.length === 1 ? '' : 's'} (24h) · a cada 5 min${slaLastFailure ? ` · última falha: ${slaLastFailure}` : ''}`
-      : 'Ainda sem amostras suficientes';
-
-  // Telemetria de IA (custo, tokens, latência) — real, tenant-wide, gravada por
-  // lib/voice-runtime/providers/LLMGateway.ts a cada chamada que efetivamente atingiu um provedor.
-  // Ver .agents/handoffs/onda-4/04-para-02-telemetria-custo-ia-disponivel.md. Nunca fabricado: sem
-  // nenhuma linha ainda, os cards mostram "—" com uma legenda honesta de "ainda sem chamadas" (o
-  // pipeline existe, só não houve chamada de IA neste tenant ainda).
-  const aiCostSamples = metricsState.metrics.filter((m) => m.name === AI_COST_METRIC);
-  const aiTokensSamples = metricsState.metrics.filter((m) => m.name === AI_TOKENS_METRIC);
-  const aiLatencySamples = metricsState.metrics.filter((m) => m.name === AI_LATENCY_METRIC);
-
-  const aiTotalCost =
-    aiCostSamples.length > 0 ? aiCostSamples.reduce((sum, m) => sum + m.value, 0) : null;
-  const aiTotalTokens =
-    aiTokensSamples.length > 0 ? aiTokensSamples.reduce((sum, m) => sum + m.value, 0) : null;
-  const aiAvgLatency =
-    aiLatencySamples.length > 0
-      ? aiLatencySamples.reduce((sum, m) => sum + m.value, 0) / aiLatencySamples.length
-      : null;
-  // Total de chamadas de IA reportadas = nº de amostras de latência (uma por chamada bem-sucedida
-  // a um provedor real — ver contrato do handoff do Agente 04).
-  const aiCallCount = aiLatencySamples.length;
 
   return (
     <div className="space-y-8 animate-slide-up text-left">
@@ -479,276 +363,16 @@ export default function RebuiltExecutiveOverview() {
       </div>
 
       {/* COMPACT ONBOARDING WIZARD & CHECKLIST */}
-      {checklist === null ? (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
-          <div className="lg:col-span-2 space-y-3">
-            <Skeleton className="h-5 w-48" />
-            <Skeleton className="h-3 w-full" />
-            <Skeleton className="h-24 w-full" />
-          </div>
-          <Skeleton className="h-40 w-full" />
-        </div>
-      ) : (
-        <AnimatePresence>
-          {!wizardCollapsed && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, height: 0 }}
-              className="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-brand-50/50 dark:bg-brand-950/20 p-6 rounded-2xl border border-brand-100 dark:border-brand-900/40"
-            >
-              {/* Onboarding Wizard (Left 2 cols) */}
-              <div className="lg:col-span-2 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="primary">Guia de Onboarding</Badge>
-                    <span className="text-xs text-slate-500 font-bold">
-                      Inicie sua operação em minutos
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setWizardCollapsed(true)}
-                    className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-semibold"
-                  >
-                    Minimizar
-                  </button>
-                </div>
-
-                {checklistError && (
-                  <Alert
-                    variant="warning"
-                    title="Não foi possível carregar seu progresso salvo"
-                    description="Exibindo checklist local; suas próximas alterações ainda serão salvas ao servidor."
-                  />
-                )}
-
-                <div className="text-left space-y-1">
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                    Bem-vindo ao Birth Voices Hub
-                    <Sparkles className="h-4 w-4 text-amber-500" />
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-450 leading-relaxed">
-                    Siga o assistente passo a passo para configurar e testar sua atendente virtual.
-                  </p>
-                </div>
-
-                {/* Progress bar */}
-                <div className="space-y-1.5 pt-2">
-                  <div className="flex justify-between items-baseline">
-                    <span className="text-xs font-bold text-brand">Progresso do Setup</span>
-                    <span className="text-xs font-bold text-brand font-mono">
-                      {Math.round(calculateOnboardingProgress())}%
-                    </span>
-                  </div>
-                  <Progress value={calculateOnboardingProgress()} />
-                </div>
-
-                {/* Wizard Steps Layout */}
-                <div className="grid grid-cols-4 gap-2 pt-2">
-                  {[
-                    { step: 0, title: 'Organização', active: !!checklist.orgCreated },
-                    { step: 1, title: 'IA Agente', active: !!checklist.agentCreated },
-                    { step: 2, title: 'Telefonia', active: !!checklist.telephonyConnected },
-                    { step: 3, title: 'Atendimento', active: !!checklist.firstCallCompleted },
-                  ].map((item) => (
-                    <button
-                      type="button"
-                      key={item.step}
-                      onClick={() => setWizardStep(item.step)}
-                      className={`p-2.5 rounded-lg border text-center transition-all ${
-                        wizardStep === item.step
-                          ? 'bg-white dark:bg-slate-800 border-brand shadow-sm font-bold text-slate-900 dark:text-white'
-                          : 'bg-transparent border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:bg-white/40'
-                      }`}
-                    >
-                      <p className="text-[10px] uppercase font-bold text-slate-400">
-                        Etapa {item.step + 1}
-                      </p>
-                      <p className="text-xs truncate font-semibold">{item.title}</p>
-                      <div className="flex justify-center mt-1">
-                        {item.active ? (
-                          <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
-                        ) : (
-                          <div className="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-slate-600" />
-                        )}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-
-                {/* Step Detail Content */}
-                <div className="p-4 bg-white dark:bg-slate-800 rounded-xl border border-brand-100 dark:border-brand-900/30 text-left space-y-3">
-                  {wizardStep === 0 && (
-                    <>
-                      <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">
-                        1. Criar e Configurar Organização
-                      </h4>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                        Defina as cores corporativas, faça upload do logotipo da empresa e gerencie
-                        os administradores do sistema.
-                      </p>
-                      <div className="flex gap-2 pt-1">
-                        <Button
-                          size="sm"
-                          variant="primary"
-                          onClick={() => navigate('/dashboard/organization')}
-                        >
-                          Configurar Organização
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => updateChecklist('orgCreated', true)}
-                        >
-                          Marcar como feito
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                  {wizardStep === 1 && (
-                    <>
-                      <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">
-                        2. Criar seu Primeiro Agente de Voz
-                      </h4>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                        Configure os prompts comerciais, ajuste o tom de voz e defina as diretrizes
-                        de qualificação de leads.
-                      </p>
-                      <div className="flex gap-2 pt-1">
-                        <Button
-                          size="sm"
-                          variant="primary"
-                          onClick={() => navigate('/dashboard/agents/new')}
-                        >
-                          Criar Agente
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => updateChecklist('agentCreated', true)}
-                        >
-                          Marcar como feito
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                  {wizardStep === 2 && (
-                    <>
-                      <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">
-                        3. Conectar Telefonia e SIP Trunk
-                      </h4>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                        Conecte seu número de telefone virtual ou operadora local via protocolo SIP
-                        para receber chamadas de leads.
-                      </p>
-                      <div className="flex gap-2 pt-1">
-                        <Button
-                          size="sm"
-                          variant="primary"
-                          onClick={() => navigate('/dashboard/telephony')}
-                        >
-                          Conectar Telefonia
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => updateChecklist('telephonyConnected', true)}
-                        >
-                          Marcar como feito
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                  {wizardStep === 3 && (
-                    <>
-                      <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">
-                        4. Executar Primeiro Teste Real de Chamada
-                      </h4>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                        Abra o playground reativo de áudio e simule uma chamada de voz para
-                        verificar a latência, o tom e as transcrições do agente.
-                      </p>
-                      <div className="flex gap-2 pt-1">
-                        <Button
-                          size="sm"
-                          variant="primary"
-                          onClick={() => navigate('/dashboard/playground')}
-                        >
-                          Abrir Playground
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => updateChecklist('firstCallCompleted', true)}
-                        >
-                          Concluir Setup!
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Smart Checklist (Right 1 col) */}
-              <div className="bg-white dark:bg-slate-850 p-4 rounded-xl border border-brand-100/60 dark:border-slate-800 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center gap-1.5 text-slate-800 dark:text-slate-100 font-bold text-xs uppercase tracking-wider mb-3">
-                    <CheckCircle2 className="h-4.5 w-4.5 text-brand" />
-                    <span>Checklist Permanente</span>
-                  </div>
-
-                  <div className="space-y-2.5">
-                    <ChecklistItem
-                      label="Organização Configurada"
-                      checked={!!checklist.orgCreated}
-                      onChange={() => updateChecklist('orgCreated', !checklist.orgCreated)}
-                      onClick={() => navigate('/dashboard/organization')}
-                    />
-                    <ChecklistItem
-                      label="Primeiro Agente Criado"
-                      checked={!!checklist.agentCreated}
-                      onChange={() => updateChecklist('agentCreated', !checklist.agentCreated)}
-                      onClick={() => navigate('/dashboard/agents/new')}
-                    />
-                    <ChecklistItem
-                      label="Telefonia Conectada"
-                      checked={!!checklist.telephonyConnected}
-                      onChange={() =>
-                        updateChecklist('telephonyConnected', !checklist.telephonyConnected)
-                      }
-                      onClick={() => navigate('/dashboard/telephony')}
-                    />
-                    <ChecklistItem
-                      label="Conhecimento Enviado"
-                      checked={!!checklist.knowledgeAdded}
-                      onChange={() => updateChecklist('knowledgeAdded', !checklist.knowledgeAdded)}
-                      onClick={() => navigate('/dashboard/knowledge')}
-                    />
-                    <ChecklistItem
-                      label="Primeiro Teste Efetuado"
-                      checked={!!checklist.firstTest}
-                      onChange={() => updateChecklist('firstTest', !checklist.firstTest)}
-                      onClick={() => navigate('/dashboard/playground')}
-                    />
-                    <ChecklistItem
-                      label="Agente de Voz Ativo"
-                      checked={!!checklist.agentPublished}
-                      onChange={() => updateChecklist('agentPublished', !checklist.agentPublished)}
-                      onClick={() => navigate('/dashboard/agents/new')}
-                    />
-                  </div>
-                </div>
-                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 mt-3 text-left">
-                  <span className="text-[10px] text-slate-400 block leading-tight">
-                    Seu progresso é salvo automaticamente na sua conta.
-                  </span>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      )}
+      <OnboardingPanel
+        checklist={checklist}
+        checklistError={checklistError}
+        wizardStep={wizardStep}
+        onWizardStep={setWizardStep}
+        wizardCollapsed={wizardCollapsed}
+        onCollapse={() => setWizardCollapsed(true)}
+        progress={calculateChecklistProgress(checklist)}
+        onUpdateChecklist={updateChecklist}
+      />
 
       {/* DASHBOARD TAB SELECTOR */}
       <div className="flex border-b border-slate-200 dark:border-slate-800">
@@ -827,7 +451,7 @@ export default function RebuiltExecutiveOverview() {
               value={avgDuration ?? '—'}
               caption={
                 avgDuration
-                  ? `${parsedDurations.length} chamadas com duração válida`
+                  ? `${parsedDurationCount} chamadas com duração válida`
                   : 'Sem dados suficientes'
               }
               tooltip="Média calculada a partir das durações registradas"
@@ -906,259 +530,29 @@ export default function RebuiltExecutiveOverview() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Column: Recent Activity */}
             <div className="lg:col-span-2 space-y-6">
-              {/* CHAMADAS RECENTES (BANCO DE DADOS) */}
-              <Card className="p-6 space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700/60 pb-3">
-                  <div className="text-left">
-                    <h3 className="font-bold text-slate-900 dark:text-white text-base">
-                      Registro de Chamadas
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-450 mt-0.5">
-                      Últimas interações de voz registradas no banco de dados.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={fetchCalls}
-                    className="p-1 px-2.5 border rounded-lg text-xs font-semibold hover:bg-slate-50 flex items-center gap-1.5 dark:hover:bg-slate-800 dark:border-slate-700"
-                  >
-                    <RefreshCw className="h-3 w-3" /> Atualizar
-                  </button>
-                </div>
-                {callsState.status === 'loading' && (
-                  <div className="space-y-2 py-2">
-                    <Skeleton className="h-8 w-full" />
-                    <Skeleton className="h-8 w-full" />
-                    <Skeleton className="h-8 w-full" />
-                  </div>
-                )}
-                {callsState.status === 'error' && (
-                  <EmptyState
-                    icon={<AlertTriangle className="h-8 w-8" />}
-                    title="Não foi possível carregar as chamadas"
-                    description="Verifique sua conexão e tente novamente."
-                    action={
-                      <Button size="sm" variant="outline" onClick={fetchCalls}>
-                        Tentar novamente
-                      </Button>
-                    }
-                  />
-                )}
-                {callsState.status === 'ready' && callsState.calls.length === 0 && (
-                  <EmptyState
-                    icon={<Phone className="h-8 w-8" />}
-                    title="Nenhuma chamada registrada ainda"
-                    description="Assim que uma chamada real acontecer, ela aparece aqui."
-                  />
-                )}
-                {callsState.status === 'ready' && callsState.calls.length > 0 && (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs text-slate-650 dark:text-slate-450">
-                      <thead>
-                        <tr className="border-b border-slate-100 dark:border-slate-800 font-bold text-slate-400 uppercase tracking-wider text-[10px]">
-                          <th className="py-2">ID</th>
-                          <th className="py-2">Contato</th>
-                          <th className="py-2">Duração</th>
-                          <th className="py-2">Agente</th>
-                          <th className="py-2">Status</th>
-                          <th className="py-2 text-right">Quando</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-semibold">
-                        {callsState.calls.slice(0, 5).map((call) => (
-                          <tr
-                            key={call.id}
-                            className="hover:bg-slate-50 dark:hover:bg-slate-900/50"
-                          >
-                            <td className="py-2.5 font-mono text-[10px] text-slate-400">
-                              #{call.id}
-                            </td>
-                            <td className="py-2.5 font-bold text-slate-800 dark:text-slate-200">
-                              {call.contactName}
-                            </td>
-                            <td className="py-2.5 font-mono">{call.duration}</td>
-                            <td className="py-2.5">{call.agent}</td>
-                            <td className="py-2.5">
-                              <Badge variant={call.status === 'Concluído' ? 'success' : 'danger'}>
-                                {call.status}
-                              </Badge>
-                            </td>
-                            <td className="py-2.5 text-right text-slate-400 text-[10px]">
-                              {call.time}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </Card>
-
-              {/* AGENTES */}
-              <Card className="p-6 space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700/60 pb-3">
-                  <div className="text-left">
-                    <h3 className="font-bold text-slate-900 dark:text-white text-base">
-                      Seus Agentes
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-450 mt-0.5">
-                      Agentes de voz cadastrados nesta organização.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => navigate('/dashboard/agents')}
-                    className="p-1 px-2.5 border rounded-lg text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 dark:border-slate-700"
-                  >
-                    Ver todos
-                  </button>
-                </div>
-                {agentsState.status === 'loading' && (
-                  <div className="space-y-2 py-2">
-                    <Skeleton className="h-8 w-full" />
-                    <Skeleton className="h-8 w-full" />
-                  </div>
-                )}
-                {agentsState.status === 'error' && (
-                  <EmptyState
-                    icon={<AlertTriangle className="h-8 w-8" />}
-                    title="Não foi possível carregar os agentes"
-                    description="Verifique sua conexão e tente novamente."
-                    action={
-                      <Button size="sm" variant="outline" onClick={fetchAgents}>
-                        Tentar novamente
-                      </Button>
-                    }
-                  />
-                )}
-                {agentsState.status === 'ready' && agentsState.agents.length === 0 && (
-                  <EmptyState
-                    icon={<Users className="h-8 w-8" />}
-                    title="Nenhum agente criado ainda"
-                    description="Crie seu primeiro agente de voz para começar a qualificar leads."
-                    action={
-                      <Button
-                        size="sm"
-                        variant="primary"
-                        onClick={() => navigate('/dashboard/agents/new')}
-                      >
-                        Criar Agente
-                      </Button>
-                    }
-                  />
-                )}
-                {agentsState.status === 'ready' && agentsState.agents.length > 0 && (
-                  <div className="space-y-2">
-                    {agentsState.agents.slice(0, 5).map((agent) => (
-                      <div
-                        key={agent.id}
-                        className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/40 rounded-lg border border-slate-100 dark:border-slate-800"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-brand/10 text-brand rounded-lg">
-                            <Users className="h-4 w-4" />
-                          </div>
-                          <div className="text-left">
-                            <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                              {agent.name}
-                            </p>
-                            <p className="text-[10px] text-slate-500">{agent.model}</p>
-                          </div>
-                        </div>
-                        <Badge variant={agent.phoneNumber ? 'success' : 'secondary'}>
-                          {agent.phoneNumber ? 'Telefonia conectada' : 'Sem telefonia'}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </Card>
+              <CallsLogCard
+                status={callsState.status}
+                calls={callsState.data}
+                onRefresh={() => fetchCalls()}
+              />
+              <AgentsCard
+                status={agentsState.status}
+                agents={agentsState.data}
+                onViewAll={() => navigate('/dashboard/agents')}
+                onRetry={() => fetchAgents()}
+                onCreateAgent={() => navigate('/dashboard/agents/new')}
+              />
             </div>
 
             {/* Right Column: Health & Alerts */}
             <div className="space-y-6">
-              <Card className="p-6 space-y-4">
-                <div className="flex items-center gap-2 text-slate-800 dark:text-slate-100">
-                  <Activity className="h-5 w-5 text-brand" />
-                  <h4 className="font-bold text-sm uppercase tracking-wider">
-                    Status da Plataforma
-                  </h4>
-                </div>
-                {readyState.status === 'loading' && <Skeleton className="h-20 w-full" />}
-                {readyState.status !== 'loading' && (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/40 rounded-lg border border-slate-100 dark:border-slate-800">
-                      <div className="flex items-center gap-3">
-                        <Database className="h-4 w-4 text-slate-400" />
-                        <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                          Banco de Dados
-                        </p>
-                      </div>
-                      <Badge variant={readyState.checks?.database === 'ok' ? 'success' : 'danger'}>
-                        {readyState.checks?.database === 'ok' ? 'Operacional' : 'Indisponível'}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/40 rounded-lg border border-slate-100 dark:border-slate-800">
-                      <div className="flex items-center gap-3">
-                        <Server className="h-4 w-4 text-slate-400" />
-                        <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                          Redis
-                        </p>
-                      </div>
-                      <Badge variant={readyState.checks?.redis === 'ok' ? 'success' : 'danger'}>
-                        {readyState.checks?.redis === 'ok' ? 'Operacional' : 'Indisponível'}
-                      </Badge>
-                    </div>
-                  </div>
-                )}
-              </Card>
-
-              {/* ALERTA E PENDÊNCIAS — computed from real data, not hardcoded copy. */}
-              <Card className="p-6 space-y-4">
-                <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
-                  <ShieldAlert className="h-5 w-5" />
-                  <h4 className="font-bold text-sm uppercase tracking-wider">
-                    Alertas & Pendências
-                  </h4>
-                </div>
-                <div className="space-y-3">
-                  {agentsState.status === 'ready' && agentsState.agents.length === 0 && (
-                    <PendingAlert
-                      title="Nenhum agente criado"
-                      description="Crie seu primeiro agente de voz para começar a atender leads."
-                      actionLabel="Criar agente"
-                      onAction={() => navigate('/dashboard/agents/new')}
-                    />
-                  )}
-                  {agentsState.status === 'ready' &&
-                    agentsState.agents.length > 0 &&
-                    agentsWithPhone === 0 && (
-                      <PendingAlert
-                        title="Nenhum número de telefonia conectado"
-                        description="Conecte um número de voz SIP para receber ligações reais de leads."
-                        actionLabel="Vincular"
-                        onAction={() => navigate('/dashboard/telephony')}
-                      />
-                    )}
-                  {checklist && !checklist.knowledgeAdded && (
-                    <PendingAlert
-                      title="Base de conhecimento vazia"
-                      description="Adicione documentos de referência para melhorar a qualificação de leads."
-                      actionLabel="Adicionar"
-                      onAction={() => navigate('/dashboard/knowledge')}
-                      tone="amber"
-                    />
-                  )}
-                  {agentsState.status === 'ready' &&
-                    agentsState.agents.length > 0 &&
-                    agentsWithPhone > 0 &&
-                    checklist?.knowledgeAdded && (
-                      <p className="text-xs text-slate-400 py-4 text-center">
-                        Nenhuma pendência identificada.
-                      </p>
-                    )}
-                </div>
-              </Card>
+              <PlatformStatusCard status={readyState.status} checks={readyState.checks} />
+              <PendingAlertsCard
+                agentsStatus={agentsState.status}
+                agentsCount={agentsState.data.length}
+                agentsWithPhone={agentsWithPhone}
+                checklist={checklist}
+              />
             </div>
           </div>
         </div>
@@ -1308,123 +702,6 @@ export default function RebuiltExecutiveOverview() {
       </Modal>
 
       <ToastContainer toasts={toasts} />
-    </div>
-  );
-}
-
-// Subcomponent: a KPI card driven by real fetch status — never renders a placeholder number as
-// if it were live data. Shows a skeleton while loading, an inline retry affordance on error, and
-// the real computed value (or an explicit "—" + caption) once ready.
-interface RealStatCardProps {
-  title: string;
-  status: FetchStatus;
-  value: string;
-  caption: string;
-  tooltip: string;
-  onClick?: () => void;
-}
-
-function RealStatCard({ title, status, value, caption, tooltip, onClick }: RealStatCardProps) {
-  return (
-    <Tooltip text={tooltip}>
-      <Card
-        className={`p-4 hoverable space-y-2 relative overflow-hidden flex flex-col justify-between h-full group ${onClick ? 'cursor-pointer' : ''}`}
-        onClick={onClick}
-      >
-        <div className="space-y-1 text-left">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{title}</p>
-          {status === 'loading' ? (
-            <Skeleton className="h-7 w-16" />
-          ) : status === 'error' ? (
-            <p className="text-sm font-bold text-red-500 flex items-center gap-1">
-              <AlertTriangle className="h-3.5 w-3.5" /> Erro
-            </p>
-          ) : (
-            <p className="text-xl font-bold text-slate-900 dark:text-white tracking-tight font-sans">
-              {value}
-            </p>
-          )}
-        </div>
-        <span className="text-[10px] font-semibold text-slate-400">
-          {status === 'ready'
-            ? caption
-            : status === 'error'
-              ? 'Tentar novamente ao atualizar a página'
-              : ' '}
-        </span>
-      </Card>
-    </Tooltip>
-  );
-}
-
-// Subcomponent: an actionable pending item, computed from real state (not hardcoded copy).
-function PendingAlert({
-  title,
-  description,
-  actionLabel,
-  onAction,
-  tone = 'red',
-}: {
-  title: string;
-  description: string;
-  actionLabel: string;
-  onAction: () => void;
-  tone?: 'red' | 'amber';
-}) {
-  const toneClasses =
-    tone === 'red'
-      ? 'bg-red-50/60 dark:bg-red-950/20 border-red-100 dark:border-red-900/30 text-red-800 dark:text-red-300'
-      : 'bg-amber-50/60 dark:bg-amber-950/20 border-amber-100 dark:border-amber-900/30 text-amber-800 dark:text-amber-300';
-  return (
-    <div className={`p-3 border rounded-lg text-left ${toneClasses}`}>
-      <div className="flex justify-between items-start">
-        <p className="text-xs font-bold">{title}</p>
-        <button
-          type="button"
-          onClick={onAction}
-          className="text-[10px] font-bold text-brand hover:underline shrink-0 ml-2"
-        >
-          {actionLabel}
-        </button>
-      </div>
-      <p className="text-[10px] text-slate-500 mt-1">{description}</p>
-    </div>
-  );
-}
-
-// Subcomponent: Checklist Item
-interface ChecklistItemProps {
-  label: string;
-  checked: boolean;
-  onChange: () => void;
-  onClick: () => void;
-}
-
-function ChecklistItem({ label, checked, onChange, onClick }: ChecklistItemProps) {
-  return (
-    <div className="flex items-center justify-between gap-3 text-xs p-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors">
-      <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          checked={checked}
-          onChange={onChange}
-          className="h-3.5 w-3.5 text-brand rounded border-slate-300 focus:ring-brand accent-brand cursor-pointer"
-        />
-        <button
-          type="button"
-          onClick={onClick}
-          className={`font-semibold hover:text-brand transition-colors text-left ${checked ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-300'}`}
-        >
-          {label}
-        </button>
-      </div>
-      <button
-        type="button"
-        onClick={onClick}
-        className="text-[10px] font-bold text-slate-400 hover:text-brand transition-colors"
-      >
-        Ir
-      </button>
     </div>
   );
 }

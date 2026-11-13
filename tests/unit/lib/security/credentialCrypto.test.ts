@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { randomBytes } from 'node:crypto';
+import { describe, it, expect, afterEach } from 'vitest';
+import { createHash, randomBytes } from 'node:crypto';
+import { env } from '@/config/env.js';
 import {
   encryptCredential,
   decryptCredential,
@@ -15,12 +16,80 @@ describe('credentialCrypto — Criptografia e Sanitização Padronizada', () => 
   const keyB = randomBytes(32).toString('base64');
   const sampleSecret = 'dummy-secret-credential-sample-1234567890';
 
+  const savedKey = env.CREDENTIALS_ENCRYPTION_KEY;
+  const savedPreviousKey = env.CREDENTIALS_ENCRYPTION_KEY_PREVIOUS;
+
+  afterEach(() => {
+    env.CREDENTIALS_ENCRYPTION_KEY = savedKey;
+    env.CREDENTIALS_ENCRYPTION_KEY_PREVIOUS = savedPreviousKey;
+  });
+
+  function keyIdOf(rawKey: string): string {
+    return createHash('sha256')
+      .update(Buffer.from(rawKey, 'base64'))
+      .digest('hex')
+      .slice(0, 12);
+  }
+
   it('criptografa e decriptografa com sucesso com chave AES-256-GCM', async () => {
     const cipher = await encryptCredential(sampleSecret, keyA);
-    expect(cipher).toMatch(/^enc:v1:[A-Za-z0-9+/=]+:[A-Za-z0-9+/=]+:[A-Za-z0-9+/=]+$/);
+    expect(cipher).toMatch(
+      new RegExp(`^enc:v1:${keyIdOf(keyA)}:[A-Za-z0-9+/=]+:[A-Za-z0-9+/=]+:[A-Za-z0-9+/=]+$`),
+    );
 
     const decrypted = await decryptCredential(cipher, keyA);
     expect(decrypted).toBe(sampleSecret);
+  });
+
+  it('envelope keyed embute o keyId da chave que cifrou (versionamento)', () => {
+    const cipher = encryptCredentialSync(sampleSecret, keyA);
+    const keyId = cipher.split(':')[2];
+    expect(keyId).toBe(keyIdOf(keyA));
+    expect(keyId).not.toBe(keyIdOf(keyB));
+  });
+
+  it('rotação com grace period: chave anterior em env decripta envelope v2 antigo', async () => {
+    // Cenário pós-rotação: CREDENTIALS_ENCRYPTION_KEY = chave nova (keyB),
+    // CREDENTIALS_ENCRYPTION_KEY_PREVIOUS = chave antiga (keyA).
+    env.CREDENTIALS_ENCRYPTION_KEY = keyB;
+    env.CREDENTIALS_ENCRYPTION_KEY_PREVIOUS = keyA;
+
+    // Credencial gravada ANTES da rotação, cifrada com keyA.
+    const cipherOld = encryptCredentialSync(sampleSecret, keyA);
+
+    // Sem argumentos de chave: resolve via env — keyId do envelope seleciona keyA.
+    expect(decryptCredentialSync(cipherOld)).toBe(sampleSecret);
+
+    // Credencial gravada DEPOIS da rotação usa keyB e também decripta.
+    const cipherNew = encryptCredentialSync(sampleSecret);
+    expect(decryptCredentialSync(cipherNew)).toBe(sampleSecret);
+  });
+
+  it('após remoção da chave anterior, envelope cifrado com ela falha fail-closed', () => {
+    env.CREDENTIALS_ENCRYPTION_KEY = keyB;
+    env.CREDENTIALS_ENCRYPTION_KEY_PREVIOUS = keyA;
+    const cipherOld = encryptCredentialSync(sampleSecret, keyA);
+    expect(decryptCredentialSync(cipherOld)).toBe(sampleSecret);
+
+    // Grace period encerrado: chave antiga removida do env.
+    env.CREDENTIALS_ENCRYPTION_KEY_PREVIOUS = undefined;
+    expect(() => decryptCredentialSync(cipherOld)).toThrow(
+      'Falha na autenticação/decriptografia da credencial',
+    );
+  });
+
+  it('envelope v1 legado (sem keyId) continua decriptável via chave anterior do env', () => {
+    env.CREDENTIALS_ENCRYPTION_KEY = keyB;
+    env.CREDENTIALS_ENCRYPTION_KEY_PREVIOUS = keyA;
+
+    // Simula ciphertext gravado antes do versionamento: remove o segmento keyId
+    // do envelope keyed e mantém o prefixo enc:v1: com 3 segmentos (iv:tag:ct).
+    const keyed = encryptCredentialSync(sampleSecret, keyA);
+    const parts = keyed.split(':');
+    const v1 = `enc:v1:${parts.slice(3).join(':')}`;
+    expect(v1.split(':')).toHaveLength(5); // 'enc','v1',iv,tag,ct
+
+    expect(decryptCredentialSync(v1)).toBe(sampleSecret);
   });
 
   it('suporta operações síncronas de criptografia e decriptografia', () => {

@@ -62,10 +62,7 @@ export function CopilotoIaPanel({
         </div>
       )}
 
-      <nav
-        className={`flex gap-1 border-b border-line ${embedded ? '' : ''}`}
-        aria-label="Abas do Copiloto IA"
-      >
+      <nav className="flex gap-1 border-b border-line" aria-label="Abas do Copiloto IA">
         {visibleTabs.map((t) => (
           <button
             key={t.id}

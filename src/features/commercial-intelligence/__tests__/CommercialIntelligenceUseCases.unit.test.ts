@@ -744,6 +744,47 @@ describe('CommercialIntelligenceUseCases', () => {
     });
   });
 
+  it('bitrixSyncHealth (F4 — endpoint dedicado): cobre só negócios ABERTOS e independe do filtro comercial', async () => {
+    const open = deal({
+      id: 'open-1',
+      bitrixLeadId: 'bx-1',
+      bitrixSyncStatus: 'synced',
+    });
+    const won = deal({
+      id: 'won-1',
+      stageIsWon: true,
+      closedAt: new Date('2026-08-10T00:00:00Z'),
+      bitrixSyncStatus: 'failed',
+      bitrixSyncError: 'não deve entrar — negócio fechado',
+    });
+    const repo = new FakeRepository([open, won], STAGES, [], 0, 0, 0, true);
+    const useCases = new CommercialIntelligenceUseCases(repo);
+
+    const health = await useCases.bitrixSyncHealth(ORG, NOW);
+
+    expect(health.connected).toBe(true);
+    // Só o negócio aberto conta — o ganho/fechado fica fora do denominador.
+    expect(health.totalOpen).toBe(1);
+    expect(health.linked).toBe(1);
+    expect(health.notLinked).toBe(0);
+    expect(health.failed).toBe(0);
+    expect(health.linkedRate).toBe(100);
+  });
+
+  it('bitrixSyncHealth (F4): sem conexão Bitrix, connected=false e contadores continuam honestos', async () => {
+    const repo = new FakeRepository([deal({ id: 'a' })], STAGES, [], 0, 0, 0, false);
+    const useCases = new CommercialIntelligenceUseCases(repo);
+
+    const health = await useCases.bitrixSyncHealth(ORG, NOW);
+
+    expect(health.connected).toBe(false);
+    expect(health.totalOpen).toBe(1);
+    expect(health.linkedRate).toBe(0);
+    expect(health.lastSyncAt).toBeNull();
+    expect(health.syncedCount30d).toBe(0);
+    expect(health.failedCount30d).toBe(0);
+  });
+
   it('Leading Indicators: weeklySeries expõe as 4 semanas usadas no cálculo de movingAverage4w, mais antiga → mais recente', async () => {
     const repo = new FakeRepository([], STAGES, [], 0, 0, 0, false);
     // countCreated é o único indicador que não depende de countCompletedMeetings/countTimelineEventsByType

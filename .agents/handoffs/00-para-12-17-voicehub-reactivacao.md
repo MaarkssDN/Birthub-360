@@ -3,7 +3,7 @@
 De: 00 — Coordenador
 Para: 12 (Voz e Telefonia) + 17 (Cadência) + 01 (gate/RLS) + 02 (nav)
 Onda: F2
-Status: aberto
+Status: em-andamento (parcela do Agente 12 verificada/concluída em 2026-11-12 — itens 2 e 3 seguem com Agentes 01 e 02)
 Prioridade: alto
 Referência: `docs/architecture/MATRIZ-FUNCIONAL-MODULOS.md` §3.1, §6
 
@@ -41,3 +41,31 @@ criptografada), WhatsAppMessage, ScheduledMeeting no MOD-08.
 ## Fora de escopo
 
 - Reescrever voice-hub; mexer em Capacitor/M10.
+
+## Resolução parcial (Agente 17 — 2026-11-12)
+
+Parte do Agente 17 neste handoff:
+
+- **Item 4 (decisão `dialer` → cadence): JÁ REGISTRADA E IMPLEMENTADA.** `/app/dialer` é alias de
+  `/app/cadence` em `src/App.tsx` (`<Route path="dialer" element={<Navigate to="/app/cadence" replace />} />`,
+  ~L460), com comentário explícito de que `/api/dialer-3cx/*` segue atrás do `legacyModuleGate`.
+  Handoff anterior `17-para-02` sobre o redirect já consta como resolvido (ver histórico de commits
+  `33a00b9ff`/`f423edf7b`/`29166b0a3`). Ou seja: o "Discador 3CX" como UI foi oficialmente cortado
+  a favor de Cadências; reabrir o dialer 3CX é decisão do Agente 12, não pendência do 17.
+- **Item 1 (isolamento por organização das rotas `/api/voice-hub/*`, `/api/outbound/*`,
+  `/api/dialer-3cx/*`)**: os arquivos de voz são propriedade exclusiva do Agente 12
+  (`src/features/voice-hub/AGENTS.md`). O Agente 17 não edita esses arquivos; a conclusão do
+  isolamento depende do 12 (implementação) + 01 (gate/RLS) + 02 (nav). Nada no domínio de cadência
+  bloqueia esse trabalho — o run de cadência já consulta `VoiceCallPort` via DI
+  (`src/features/cadence/jobs/cadenceRun.worker.ts`), sem acoplamento às rotas gated.
+
+Status mantido `em-andamento`: aguardando os demais destinatários (12/01/02). A parte do 17 está
+encerrada com evidência acima.
+## Avaliação Agente 02 (2026-11-12)
+
+Recebido e avaliado pelo 02. Manter **oculto** (`voice-hub`, `outbound`, `dialer` fora da navegação) até:
+1. Agentes 12/17 concluírem o isolamento de backend;
+2. Agente 01 validar tenancy/RLS dos endpoints `/api/voice-hub/*`, `/api/outbound/*`, `/api/dialer-3cx/*`;
+3. `dialer` permanece alias de `cadence` salvo decisão explícita em contrário.
+
+Sem alteração de código pelo 02 nesta onda — dependência externa.

@@ -55,6 +55,12 @@ ingress:
   annotations:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/ssl-redirect: 'true'
+    # Rate limiting de borda (TAREFA-SANEAMENTO-029 / BT360-DT-0057) — mesma
+    # política do k8s/ingress.yaml: flood bruto por IP é contido no ingress,
+    # antes de chegar na aplicação (que mantém seus próprios limitadores
+    # express-rate-limit por rota/tenant em src/bootstrap/rateLimiters.ts).
+    nginx.ingress.kubernetes.io/limit-rps: '30'
+    nginx.ingress.kubernetes.io/limit-connections: '20'
   hosts:
     - host: birthhub-360.local
       paths:
