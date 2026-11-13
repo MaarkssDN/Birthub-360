@@ -8,6 +8,16 @@ import { modelCascadeRouter } from '../../../src/lib/ai/gateway/model-cascade.js
 import { piiTokenizer } from '../../../src/lib/security/piiTokenizer.service.js';
 import { consentAuditChain } from '../../../src/lib/security/consentChainFactory.js';
 import { similarDealsService } from '../../../src/features/knowledge/similarDeals.service.js';
+import { requestContext } from '../../../src/lib/async-context.js';
+
+/** Executa `fn` com o tenant explícito no requestContext — o mesmo contexto que
+ *  `authenticateToken` populada numa request real. Necessário porque a cadeia de
+ *  consentimento é Prisma-backed nos testes de integração (`CONSENT_CHAIN_USE_PRISMA=1`,
+ *  setupFile) e `runInTransaction` rejeita tenant divergente do ambiente — o
+ *  `beforeEach` global fixa 'test-org-id', mas estes fluxos exercitam tenantA/tenantB. */
+function withTenant<T>(tenantId: string, fn: () => Promise<T>): Promise<T> {
+  return requestContext.run({ tenantId }, fn);
+}
 
 describe('Onda 01 — Shared Intelligence Core End-to-End Integration Flow', () => {
   const tenantA = 'tenant-healthcare-corp';
@@ -24,13 +34,15 @@ describe('Onda 01 — Shared Intelligence Core End-to-End Integration Flow', () 
 
   it('Flow 1: VoiceHub/Mobile -> PII Tokenization -> Consent Audit -> Objection Curation -> Roleplay Integration', async () => {
     // 1. Consentimento registrado e selado na cadeia criptográfica
-    const consent = await consentAuditChain.recordConsent({
-      organizationId: tenantA,
-      subjectRef: 'contact-dr-marcos',
-      purpose: 'COMMERCIAL_CALL_AI_ANALYSIS',
-      termsVersion: 'v2026.1',
-      operatorUserId: 'user-sdr-01',
-    });
+    const consent = await withTenant(tenantA, () =>
+      consentAuditChain.recordConsent({
+        organizationId: tenantA,
+        subjectRef: 'contact-dr-marcos',
+        purpose: 'COMMERCIAL_CALL_AI_ANALYSIS',
+        termsVersion: 'v2026.1',
+        operatorUserId: 'user-sdr-01',
+      }),
+    );
     expect(consent.currentHash).toBeDefined();
 
     // 2. Transcrição bruta de chamada contendo dados sensíveis
@@ -166,12 +178,14 @@ describe('Onda 01 — Shared Intelligence Core End-to-End Integration Flow', () 
 
   it('Flow 3: Revocation Propagation -> Immediate Disabling of Knowledge and Cache Purge', async () => {
     // 1. Cadastra consentimento e objeção
-    await consentAuditChain.recordConsent({
-      organizationId: tenantA,
-      subjectRef: 'lead-rev-test',
-      purpose: 'TRAINING',
-      termsVersion: 'v1',
-    });
+    await withTenant(tenantA, () =>
+      consentAuditChain.recordConsent({
+        organizationId: tenantA,
+        subjectRef: 'lead-rev-test',
+        purpose: 'TRAINING',
+        termsVersion: 'v1',
+      }),
+    );
 
     const obj = await curatedObjectionService.ingestDetectedObjection({
       organizationId: tenantA,
@@ -187,12 +201,14 @@ describe('Onda 01 — Shared Intelligence Core End-to-End Integration Flow', () 
     expect(await curatedObjectionService.listEligibleForRoleplay(tenantA)).toHaveLength(1);
 
     // 2. Revogação de consentimento pelo titular
-    await consentAuditChain.revokeConsent(
-      tenantA,
-      'lead-rev-test',
-      'TITULAR_REQUEST',
-      'user-sdr-01',
-      { detail: 'Solicitação de exclusão do titular sob Artigo 18 da LGPD' },
+    await withTenant(tenantA, () =>
+      consentAuditChain.revokeConsent(
+        tenantA,
+        'lead-rev-test',
+        'TITULAR_REQUEST',
+        'user-sdr-01',
+        { detail: 'Solicitação de exclusão do titular sob Artigo 18 da LGPD' },
+      ),
     );
 
     // 3. Retração da objeção
@@ -211,7 +227,9 @@ describe('Onda 01 — Shared Intelligence Core End-to-End Integration Flow', () 
     expect(invalidated).toBeGreaterThanOrEqual(0);
 
     // 6. Integridade da cadeia criptográfica permanece válida e auditável
-    const chainIntegrity = await consentAuditChain.verifyChainIntegrity(tenantA);
+    const chainIntegrity = await withTenant(tenantA, () =>
+      consentAuditChain.verifyChainIntegrity(tenantA),
+    );
     expect(chainIntegrity.valid).toBe(true);
     expect(chainIntegrity.totalRecords).toBeGreaterThanOrEqual(2);
   });
