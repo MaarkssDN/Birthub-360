@@ -506,10 +506,7 @@ export async function callBitrix<T>(
           (attempt < maxAttempts ? 'retentando' : 'tentativas esgotadas'),
       );
       if (attempt < maxAttempts) {
-        await sleepUnlessAborted(
-          err.retryAfterMsHint ?? backoffDelayMs(attempt),
-          options.signal,
-        );
+        await sleepUnlessAborted(err.retryAfterMsHint ?? backoffDelayMs(attempt), options.signal);
       }
     }
   }

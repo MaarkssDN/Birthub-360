@@ -420,10 +420,15 @@ describe('callBitrix — cancelamento cooperativo via AbortSignal (TAREFA-SANEAM
     const { callBitrix, BitrixCallAbortedError } = await import('../client.js');
     const controller = new AbortController();
 
-    const pending = callBitrix(WEBHOOK, 'crm.lead.list', {}, {
-      signal: controller.signal,
-      maxAttempts: 4,
-    });
+    const pending = callBitrix(
+      WEBHOOK,
+      'crm.lead.list',
+      {},
+      {
+        signal: controller.signal,
+        maxAttempts: 4,
+      },
+    );
     // Garante que a primeira tentativa já está em voo antes de abortar.
     await new Promise((resolve) => setTimeout(resolve, 10));
     controller.abort();
@@ -440,10 +445,15 @@ describe('callBitrix — cancelamento cooperativo via AbortSignal (TAREFA-SANEAM
     const { callBitrix, BitrixCallAbortedError } = await import('../client.js');
     const controller = new AbortController();
 
-    const pending = callBitrix(WEBHOOK, 'crm.lead.list', {}, {
-      signal: controller.signal,
-      maxAttempts: 4,
-    });
+    const pending = callBitrix(
+      WEBHOOK,
+      'crm.lead.list',
+      {},
+      {
+        signal: controller.signal,
+        maxAttempts: 4,
+      },
+    );
     // A 1ª tentativa falha (500) e entra no backoff (~500ms+) — aborta bem antes disso acabar.
     await new Promise((resolve) => setTimeout(resolve, 20));
     controller.abort();

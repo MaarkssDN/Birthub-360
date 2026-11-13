@@ -132,8 +132,7 @@ describe('runBitrixExtractionPurgeSweep — TAREFA-SANEAMENTO-021', () => {
         }),
       }),
     );
-    const cutoff =
-      prismaMock.bitrixExtractionRun.findMany.mock.calls[0][0].where.createdAt.lte;
+    const cutoff = prismaMock.bitrixExtractionRun.findMany.mock.calls[0][0].where.createdAt.lte;
     const expectedCutoff = new Date();
     expectedCutoff.setDate(expectedCutoff.getDate() - 45);
     // Margem de alguns segundos entre a montagem do cutoff dentro do worker e a asserção aqui.
