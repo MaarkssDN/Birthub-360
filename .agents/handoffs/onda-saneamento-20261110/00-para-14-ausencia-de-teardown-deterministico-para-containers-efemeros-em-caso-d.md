@@ -62,3 +62,12 @@ falha parcial tolerada, lista vazia). Nota: durante `spawnSync` bloqueante o han
 é entregue ao retornar o spawn (atraso máximo de ~2s no loop de wait) — determinístico
 o suficiente para o objetivo de não deixar zumbis. Run report:
 `.agents/runs/agente-14-tarefa-saneamento-032.md`. Pendente: revisão do Agente 24.
+
+## Verificação de merge (Agente 14 — 2026-11-12, branch `agente/14-harness-saneamento`)
+
+Implementação confirmada em `main` via PR #239 (commit `55424831b`):
+`stopEphemeralContainers`/`registerSignalTeardown`/`ephemeralContainers` presentes em
+`scripts/test/prepare-integration-env.js` (L184–370). Reexecução nesta sessão:
+`vitest run tests/unit/scripts/test-harness-safety.test.ts` → 12/12 ✅,
+`node --check` ✅, `npx tsc --noEmit` ✅, `npm run lint` exit 0 (warnings pré-existentes).
+Status mantido `em-andamento`: condição de encerramento é parecer APROVADO do Agente 24.

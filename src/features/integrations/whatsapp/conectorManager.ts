@@ -5,7 +5,7 @@
 
 import { logger } from '../../../lib/logger.js';
 
-export type WhatsAppDriver = 'BAILEYS' | 'CLOUD_API';
+type WhatsAppDriver = 'BAILEYS' | 'CLOUD_API';
 
 export interface SendMessagePayload {
   organizationId: string;
@@ -75,5 +75,3 @@ export class WhatsAppConnectorManager {
     throw new Error(`Driver desconhecido: ${driver}`);
   }
 }
-
-export const whatsAppConnectorManager = new WhatsAppConnectorManager();

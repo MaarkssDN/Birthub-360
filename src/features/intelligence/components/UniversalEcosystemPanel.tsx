@@ -48,6 +48,25 @@ interface UniversalToolMeta {
   supportedPlatforms: string[];
 }
 
+interface EcosystemPlaybook {
+  id: string;
+  title: string;
+  subtitle: string;
+  platformsInvolved: string[];
+  stepsSummary: string[];
+}
+
+type OfficeArtifactType = 'excel_or_gsheet' | 'word_or_gdoc' | 'powerpoint_or_gslides';
+
+/** A API pode devolver a lista crua ou envelopada em `{ data: [...] }` — normaliza sem `any`. */
+function extractList<T>(res: unknown): T[] {
+  if (Array.isArray(res)) return res as T[];
+  if (res && typeof res === 'object' && Array.isArray((res as { data?: unknown }).data)) {
+    return (res as { data: T[] }).data;
+  }
+  return [];
+}
+
 interface UniversalEcosystemPanelProps {
   mode: 'connectors' | 'studio';
   onLaunchSwarmMission: (missionText: string) => void;
@@ -136,9 +155,7 @@ export function UniversalEcosystemPanel({
   const [standaloneOutput, setStandaloneOutput] = useState<string | null>(null);
 
   // Studio: Office Generator state
-  const [officeType, setOfficeType] = useState<
-    'excel_or_gsheet' | 'word_or_gdoc' | 'powerpoint_or_gslides'
-  >('excel_or_gsheet');
+  const [officeType, setOfficeType] = useState<OfficeArtifactType>('excel_or_gsheet');
   const [officeTitle, setOfficeTitle] = useState('Plano Executivo de Prospecção & Forecast Q4');
   const [generatingOffice, setGeneratingOffice] = useState(false);
   const [officeDownload, setOfficeDownload] = useState<{
@@ -149,15 +166,7 @@ export function UniversalEcosystemPanel({
   } | null>(null);
 
   // Studio: Automated Multi-Platform Playbooks state
-  const [playbooks, setPlaybooks] = useState<
-    Array<{
-      id: string;
-      title: string;
-      subtitle: string;
-      platformsInvolved: string[];
-      stepsSummary: string[];
-    }>
-  >([]);
+  const [playbooks, setPlaybooks] = useState<EcosystemPlaybook[]>([]);
   const [runningPlaybookId, setRunningPlaybookId] = useState<string | null>(null);
   const [testingProvider, setTestingProvider] = useState<string | null>(null);
   const [playbookReport, setPlaybookReport] = useState<{
@@ -177,27 +186,13 @@ export function UniversalEcosystemPanel({
     setLoading(true);
     try {
       const [connRes, catRes, pbRes] = await Promise.all([
-        api.get<{ success: boolean; data: ConnectorStatusItem[] }>(
-          '/api/agent/ecosystem/connectors',
-        ),
-        api.get<{ success: boolean; data: UniversalToolMeta[] }>('/api/agent/ecosystem/catalog'),
-        api.get<{ success: boolean; data: any[] }>('/api/agent/ecosystem/playbooks'),
+        api.get<unknown>('/api/agent/ecosystem/connectors'),
+        api.get<unknown>('/api/agent/ecosystem/catalog'),
+        api.get<unknown>('/api/agent/ecosystem/playbooks'),
       ]);
-      const connList = Array.isArray(connRes)
-        ? connRes
-        : Array.isArray((connRes as any)?.data)
-          ? (connRes as any).data
-          : [];
-      const catList = Array.isArray(catRes)
-        ? catRes
-        : Array.isArray((catRes as any)?.data)
-          ? (catRes as any).data
-          : [];
-      const pbList = Array.isArray(pbRes)
-        ? pbRes
-        : Array.isArray((pbRes as any)?.data)
-          ? (pbRes as any).data
-          : [];
+      const connList = extractList<ConnectorStatusItem>(connRes);
+      const catList = extractList<UniversalToolMeta>(catRes);
+      const pbList = extractList<EcosystemPlaybook>(pbRes);
       setConnectors(connList);
       setCatalog(catList);
       setPlaybooks(pbList);
@@ -636,7 +631,7 @@ export function UniversalEcosystemPanel({
             <select
               id={`${fieldId}-formato`}
               value={officeType}
-              onChange={(e) => setOfficeType(e.target.value as any)}
+              onChange={(e) => setOfficeType(e.target.value as OfficeArtifactType)}
               className="w-full bg-surface border border-line rounded-lg px-3 py-2 text-xs font-bold text-ink"
             >
               <option value="excel_or_gsheet">Planilha Excel (.xlsx) / Google Sheets</option>

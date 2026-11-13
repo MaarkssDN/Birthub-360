@@ -30,7 +30,7 @@ import { prismaOptOutRepository } from '../../cadence/infra/PrismaOptOutReposito
  * passo 3, e exige antes confirmar 100% de cobertura — fora do escopo desta tarefa pontual.
  */
 
-export type SuppressionSource = 'call-opt-out' | 'manual' | 'import';
+type SuppressionSource = 'call-opt-out' | 'manual' | 'import';
 
 export interface RecordOptOutInput {
   organizationId: string;

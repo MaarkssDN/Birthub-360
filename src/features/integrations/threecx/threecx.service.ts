@@ -538,20 +538,20 @@ const EXTENSION_SCAN_BATCH_SIZE = 25;
  * o descarte silencioso da colisão: ver `ExtensionResolutionAmbiguous`/`threeCXExtensionResolutionFailuresTotal`
  * e o uso de `AuditService.log` em `process3CXWebhook` abaixo.
  */
-export interface ExtensionResolutionAmbiguous {
+interface ExtensionResolutionAmbiguous {
   status: 'ambiguous';
   /** Ids das organizações em conflito — nunca o dado da conexão em si (apiKey/apiSecret cifrados
    *  nunca saem daqui), só o suficiente para investigação/observabilidade manual do conflito. */
   organizationIds: string[];
 }
 
-export interface ExtensionResolutionFound {
+interface ExtensionResolutionFound {
   status: 'resolved';
   organizationId: string;
   connection: ThreeCXConnection;
 }
 
-export type ExtensionResolutionResult =
+type ExtensionResolutionResult =
   | ExtensionResolutionFound
   | 'not-found'
   | ExtensionResolutionAmbiguous;

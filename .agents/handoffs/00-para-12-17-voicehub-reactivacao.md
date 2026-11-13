@@ -67,3 +67,12 @@ reabrir o módulo, o caminho é novo router tenant-scoped, não reativação do 
 **Pendente neste handoff (outros donos):**
 - Item 2 → Agente 01: validar RLS/tenancy antes de abrir o gate.
 - Item 3 → Agente 02: remover tabs de `NAV_HIDDEN_TABS` quando o backend responder 200.
+
+## Avaliação Agente 02 (2026-11-12)
+
+Recebido e avaliado pelo 02. Manter **oculto** (`voice-hub`, `outbound`, `dialer` fora da navegação) até:
+1. Agentes 12/17 concluírem o isolamento de backend;
+2. Agente 01 validar tenancy/RLS dos endpoints `/api/voice-hub/*`, `/api/outbound/*`, `/api/dialer-3cx/*`;
+3. `dialer` permanece alias de `cadence` salvo decisão explícita em contrário.
+
+Sem alteração de código pelo 02 nesta onda — dependência externa.

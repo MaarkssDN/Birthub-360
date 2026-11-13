@@ -4,13 +4,13 @@
  * (Handoff 06-para-06a / DIV-AGENTE-06-001)
  */
 
-export interface ChunkProcessResult {
+interface ChunkProcessResult {
   totalProcessed: number;
   chunksCount: number;
   peakHeapUsedBytes: number;
 }
 
-export class BitrixStreamingExtractionService {
+class BitrixStreamingExtractionService {
   /**
    * Async generator que consome uma fonte paginada em blocos definidos (ex: 500 por vez)
    * e descarrega para persistencia/callback sem manter todo o dataset em memoria.

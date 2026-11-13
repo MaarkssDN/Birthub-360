@@ -277,7 +277,7 @@ export function __setExtractionRetryDelayForTests(
   extractionSleepFn = sleepFn ?? sleep;
 }
 
-export const MAX_PAGE_RETRIES = 3;
+const MAX_PAGE_RETRIES = 3;
 
 async function extractEntityPages(
   organizationId: string,
@@ -949,8 +949,8 @@ export async function retryExtractionRun(organizationId: string, runId: string) 
   return updatedRun;
 }
 
-export const DEFAULT_STUCK_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutos
-export const MAX_RUN_ATTEMPTS = 3;
+const DEFAULT_STUCK_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutos
+const MAX_RUN_ATTEMPTS = 3;
 
 /**
  * Reconcilia extrações que ficaram presas com status 'running'
@@ -1008,6 +1008,3 @@ export async function reconcileStuckRuns(
     failedCount,
   };
 }
-
-export type { BitrixExtractionEntity, BitrixExtractionPeriod };
-export { ALL_EXTRACTION_ENTITIES, EXTRACTION_PERIODS };
