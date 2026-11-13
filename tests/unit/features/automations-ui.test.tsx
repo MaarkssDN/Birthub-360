@@ -15,7 +15,7 @@ const useAuthMock = vi.fn(() => ({ currentUser: { role: 'GESTOR' } }));
 vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => useAuthMock() }));
 
 import { Automations } from '@/features/automations/components/Automations';
-import { describeAutomation } from '@/features/automations/automations.api';
+import { automationsApi, describeAutomation } from '@/features/automations/automations.api';
 import { BrandProvider } from '@/contexts/BrandContext';
 
 const AUTOMATIONS_URL = '/api/automations';
@@ -68,6 +68,61 @@ describe('describeAutomation', () => {
     expect(describeAutomation({ ...regra, conditions: { status: '' } })).toBe(
       'Quando "Lead mudou de status" → Notificar equipe',
     );
+  });
+
+  it('descreve condição de operador numérico com o símbolo correspondente', () => {
+    expect(
+      describeAutomation({
+        ...regra,
+        conditions: { daysSinceLastInteraction: { gte: 3 } },
+      }),
+    ).toBe('Quando "Lead mudou de status" (daysSinceLastInteraction ≥ 3) → Notificar equipe');
+  });
+
+  it('operador numérico desconhecido cai no nome cru do operador', () => {
+    expect(
+      describeAutomation({
+        ...regra,
+        conditions: { score: { unknownOp: 5 } as never },
+      }),
+    ).toBe('Quando "Lead mudou de status" (score unknownOp 5) → Notificar equipe');
+  });
+
+  it('condição com valor array não é tratada como operador numérico', () => {
+    expect(
+      describeAutomation({
+        ...regra,
+        conditions: { tags: ['vip'] as never },
+      }),
+    ).toBe('Quando "Lead mudou de status" (tags = vip) → Notificar equipe');
+  });
+});
+
+describe('automationsApi.dryRun', () => {
+  it('envia { limit } no body quando o limite é informado', async () => {
+    let body: unknown;
+    server.use(
+      http.post(`${AUTOMATIONS_URL}/:id/dry-run`, async ({ request }) => {
+        body = await request.json();
+        return HttpResponse.json({ success: true, data: {} });
+      }),
+    );
+
+    await automationsApi.dryRun('a1', 5);
+    expect(body).toEqual({ limit: 5 });
+  });
+
+  it('envia body vazio quando o limite não é informado', async () => {
+    let body: unknown;
+    server.use(
+      http.post(`${AUTOMATIONS_URL}/:id/dry-run`, async ({ request }) => {
+        body = await request.json();
+        return HttpResponse.json({ success: true, data: {} });
+      }),
+    );
+
+    await automationsApi.dryRun('a1');
+    expect(body).toEqual({});
   });
 });
 

@@ -17,6 +17,10 @@ on:
         description: 'Commit SHA completo (40 chars) já aprovado pelo CI a publicar.'
         required: true
         type: string
+      tag:
+        description: 'Tag de release anotada (ex.: v1.2.3) que deve apontar para o SHA. Opcional — quando informada, a integridade dela é validada.'
+        required: false
+        type: string
 
 env:
   REGISTRY: ghcr.io
@@ -55,8 +59,60 @@ jobs:
           sha: ${{ steps.resolve.outputs.sha }}
           check-name: build
 
-  publish:
+  validate-release:
+    name: Validar integridade de release (ancestralidade + tag anotada)
+    runs-on: ubuntu-latest
     needs: resolve-sha
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Verificar ancestralidade em main e integridade da tag
+        # BT360-DT-0050 / TAREFA-SANEAMENTO-027: impede publicar commit fora da
+        # linha de main e vincula a tag de release ao SHA quando informada.
+        # Assinatura GPG de commits NÃO é verificada: o repositório não adota
+        # assinatura criptográfica (nenhum commit assinado em main) — exigir
+        # verify-commit aqui reprovaria todo deploy. Registrado como risco
+        # residual no run report para decisão do Agente 00.
+        env:
+          RELEASE_SHA: ${{ needs.resolve-sha.outputs.sha }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          git fetch origin main --quiet
+          if ! git merge-base --is-ancestor "$RELEASE_SHA" origin/main; then
+            echo "::error::DEPLOY BLOCKED — o SHA informado não é ancestral de origin/main. Publicação restrita a commits da linha principal."
+            exit 1
+          fi
+          echo "ancestralidade: OK ($RELEASE_SHA ∈ origin/main)"
+          if [ -z "$RELEASE_TAG" ]; then
+            echo "tag de release: não informada — validação de tag ignorada (opcional)."
+            exit 0
+          fi
+          if ! [[ "$RELEASE_TAG" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::DEPLOY BLOCKED — tag '$RELEASE_TAG' não segue semver (vMAJOR.MINOR.PATCH[-sufixo])."
+            exit 1
+          fi
+          git fetch origin "refs/tags/$RELEASE_TAG:refs/tags/$RELEASE_TAG" --quiet || {
+            echo "::error::DEPLOY BLOCKED — tag '$RELEASE_TAG' não existe no repositório."
+            exit 1
+          }
+          tag_type="$(git cat-file -t "refs/tags/$RELEASE_TAG")"
+          if [ "$tag_type" != "tag" ]; then
+            echo "::error::DEPLOY BLOCKED — '$RELEASE_TAG' é tag leve; releases exigem tag anotada (git tag -a)."
+            exit 1
+          fi
+          tag_target="$(git rev-list -n 1 "refs/tags/$RELEASE_TAG")"
+          if [ "$tag_target" != "$RELEASE_SHA" ]; then
+            echo "::error::DEPLOY BLOCKED — tag '$RELEASE_TAG' aponta para ${tag_target:0:12}, não para o SHA ${RELEASE_SHA:0:12}."
+            exit 1
+          fi
+          echo "tag de release: OK ($RELEASE_TAG anotada → $RELEASE_SHA)"
+
+  publish:
+    needs: [resolve-sha, validate-release]
     runs-on: ubuntu-latest
     permissions:
       contents: read

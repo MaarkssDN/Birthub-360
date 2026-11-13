@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 13 (Enxame Autônomo e Governança de Runtime)
 Onda: Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-030)
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 4
@@ -48,3 +48,22 @@ Executar a tarefa `TAREFA-SANEAMENTO-030` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução (Agente 13 — 2026-11-12, branch `agente/13-w3-agentbus-persist`)
+
+Investigação concluiu que a premissa da dívida está **desatualizada**:
+`src/lib/agents/agentBus.ts` é um protótipo de validação de roteamento/loop-guard
+sem nenhum consumidor em `src/` fora do próprio teste unitário
+(`agentBus-recursion-limit.test.ts`) — não é o barramento de produção e nunca foi.
+O Agent Bus real é `src/features/job-roles/services/agentBus.service.ts`, que já
+persiste cada handoff em `AgentHandoffMessage` (schema.prisma) e cada execução em
+`AgentExecution`, com trilha de auditoria completa — exatamente a rastreabilidade
+regulatória que a dívida pedia. Não foi fabricada persistência para código morto.
+Ação tomada: nota de governança no cabeçalho do módulo proibindo uso para
+histórico + recomendação de deprecação/remoção do protótipo (decisão do 00).
+Run report: `.agents/runs/agente-13-tarefa-saneamento-030.md`. Pendente: revisão do
+Agente 24 e decisão do Coordenador sobre remoção do módulo.
+
+## Resolução
+
+TAREFA-030 — agentBus documentado como prototipo volatil; bus real = AgentHandoffMessage/AgentExecution (integrado via merge 6ecfc6033).

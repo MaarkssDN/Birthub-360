@@ -62,6 +62,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction): Promis
       name,
       email,
       role,
+      actor: { userId: authReq.user.id, ipAddress: req.ip },
     });
     res.status(201).json({ success: true, data: { member, tempPassword } });
   } catch (error) {
@@ -89,6 +90,7 @@ router.post(
       const { member, tempPassword } = await resetTeamMemberPassword(
         authReq.user.organizationId,
         routeParam(req.params.id, 'id'),
+        { userId: authReq.user.id, ipAddress: req.ip },
       );
       res.json({ success: true, data: { member, tempPassword } });
     } catch (error) {
@@ -109,6 +111,7 @@ router.post(
       const member = await unlockTeamMember(
         authReq.user.organizationId,
         routeParam(req.params.id, 'id'),
+        { userId: authReq.user.id, ipAddress: req.ip },
       );
       res.json({ success: true, data: { member } });
     } catch (error) {
@@ -128,6 +131,7 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction): P
       authReq.user.organizationId,
       routeParam(req.params.id, 'id'),
       authReq.user.id,
+      req.ip,
     );
     res.json({ success: true, message: 'Usuario removido.' });
   } catch (error) {

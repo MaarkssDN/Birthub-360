@@ -2,20 +2,29 @@ import { randomUUID } from 'node:crypto';
 import { logger } from '../../../lib/logger.js';
 import { domainEventMesh } from '../../../lib/queue/domainEventMesh.service.js';
 import {
+  isOptedOut,
+  normalizeOptOutSubject,
+  recordOptOut,
+  type OptOutRepository,
+} from '../application/optOutService.js';
+import { prismaOptOutRepository } from '../infra/PrismaOptOutRepository.js';
+import {
   type CadenceChannel,
   type CadenceStep,
   type IMultichannelCadencePort,
+  type IMultichannelCadenceEnrollmentStore,
   type MultichannelCadenceEnrollment,
-  sharedCadenceEnrollmentsStore,
   type StepDispatchResult,
 } from '../../../shared/contracts/multichannelCadence.contract.js';
+import { prismaMultichannelCadenceEnrollmentStore } from '../../../shared/infra/PrismaMultichannelCadenceEnrollmentStore.js';
 
 export class AdaptiveMultichannelCadenceService implements IMultichannelCadencePort {
-  private enrollmentsStore = sharedCadenceEnrollmentsStore;
   private cadenceStepsStore = new Map<string, CadenceStep[]>();
-  private optOutRegistry = new Map<string, Set<string>>(); // organizationId:leadId -> Set de canais bloqueados
 
-  constructor() {
+  constructor(
+    private readonly enrollmentsStore: IMultichannelCadenceEnrollmentStore = prismaMultichannelCadenceEnrollmentStore,
+    private readonly optOutRepo: OptOutRepository = prismaOptOutRepository,
+  ) {
     // Configurar uma cadência modelo padrão (Passo 1: E-mail -> Passo 2: WhatsApp -> Passo 3: Voz)
     this.cadenceStepsStore.set('default-b2b-cadence', [
       {
@@ -56,21 +65,13 @@ export class AdaptiveMultichannelCadenceService implements IMultichannelCadenceP
       throw new Error('Tenancy violation: organizationId obrigatório para matrícula em cadência');
     }
 
-    const enrollmentId = `enr-${randomUUID()}`;
-    const enrollment: MultichannelCadenceEnrollment = {
-      enrollmentId,
+    const enrollment = await this.enrollmentsStore.enroll({
       organizationId: params.organizationId,
       cadenceId: params.cadenceId,
       leadId: params.leadId,
       contactEmail: params.contactEmail,
       contactPhone: params.contactPhone,
-      currentStep: 1,
-      status: 'active',
-      enrolledAt: new Date().toISOString(),
-    };
-
-    const key = `${params.organizationId}:${enrollmentId}`;
-    this.enrollmentsStore.set(key, enrollment);
+    });
 
     logger.info(
       `[MultichannelCadence] Lead ${params.leadId} matriculado na cadência ${params.cadenceId} no tenant ${params.organizationId}.`,
@@ -83,8 +84,7 @@ export class AdaptiveMultichannelCadenceService implements IMultichannelCadenceP
    * Executa o próximo passo da cadência, respeitando a trava de opt-out unificado.
    */
   async executeNextStep(enrollmentId: string, organizationId: string): Promise<StepDispatchResult> {
-    const key = `${organizationId}:${enrollmentId}`;
-    const enrollment = this.enrollmentsStore.get(key);
+    const enrollment = await this.enrollmentsStore.get(organizationId, enrollmentId);
 
     if (!enrollment) {
       throw new Error(`Enrollment ${enrollmentId} não encontrado no tenant ${organizationId}`);
@@ -105,8 +105,7 @@ export class AdaptiveMultichannelCadenceService implements IMultichannelCadenceP
     const step = steps.find((s) => s.stepNumber === enrollment.currentStep);
 
     if (!step) {
-      enrollment.status = 'completed';
-      this.enrollmentsStore.set(key, enrollment);
+      await this.enrollmentsStore.update(organizationId, enrollmentId, { status: 'completed' });
       return {
         stepNumber: enrollment.currentStep,
         channel: 'email',
@@ -116,17 +115,22 @@ export class AdaptiveMultichannelCadenceService implements IMultichannelCadenceP
       };
     }
 
-    // Checagem de Opt-Out Cross-Channel
-    const optOutKey = `${organizationId}:${enrollment.leadId}`;
-    const blockedChannels = this.optOutRegistry.get(optOutKey);
+    // Checagem de Opt-Out Cross-Channel (persistente — tabela OptOutRecord, não mais Map volátil)
+    const optedOut = await isOptedOut(
+      this.optOutRepo,
+      organizationId,
+      {
+        leadId: enrollment.leadId,
+      },
+      step.channel,
+    );
 
-    if (blockedChannels && (blockedChannels.has('all') || blockedChannels.has(step.channel))) {
+    if (optedOut) {
       logger.warn(
         `[MultichannelCadence] Disparo suprimido no canal [${step.channel}] para lead ${enrollment.leadId} por solicitação de opt-out unificado.`,
       );
 
-      enrollment.status = 'opted_out';
-      this.enrollmentsStore.set(key, enrollment);
+      await this.enrollmentsStore.update(organizationId, enrollmentId, { status: 'opted_out' });
 
       await domainEventMesh.publish({
         eventType: 'CROSS_CHANNEL_OPTOUT_ENFORCED',
@@ -154,9 +158,10 @@ export class AdaptiveMultichannelCadenceService implements IMultichannelCadenceP
 
     // Execução simulada bem-sucedida do passo
     const executedAt = new Date().toISOString();
-    enrollment.currentStep += 1;
-    enrollment.lastActionAt = executedAt;
-    this.enrollmentsStore.set(key, enrollment);
+    await this.enrollmentsStore.update(organizationId, enrollmentId, {
+      currentStep: enrollment.currentStep + 1,
+      lastActionAt: executedAt,
+    });
 
     logger.info(
       `[MultichannelCadence] Passo ${step.stepNumber} (${step.channel}) executado com sucesso para lead ${enrollment.leadId}.`,
@@ -185,29 +190,21 @@ export class AdaptiveMultichannelCadenceService implements IMultichannelCadenceP
       throw new Error('Tenancy violation: organizationId obrigatório');
     }
 
-    const optOutKey = `${params.organizationId}:${params.leadId}`;
-    let blockedChannels = this.optOutRegistry.get(optOutKey);
-    if (!blockedChannels) {
-      blockedChannels = new Set<string>();
-      this.optOutRegistry.set(optOutKey, blockedChannels);
-    }
+    // Regra LGPD / Art. 18: Opt-out em um canal cessa imediatamente todos os canais da organização.
+    // Persistido na tabela OptOutRecord (scope 'global') — sobrevive a restart e vale para todos
+    // os canais que consultam `isOptedOut`/`assertNotOptedOut`.
+    await recordOptOut(this.optOutRepo, {
+      organizationId: params.organizationId,
+      scope: 'global',
+      subject: { leadId: params.leadId },
+      originChannel: params.channelSource,
+      reason: params.reason,
+    });
 
-    // Regra LGPD / Art. 18: Opt-out em um canal cessa imediatamente todos os canais da organização
-    blockedChannels.add('all');
-    blockedChannels.add('email');
-    blockedChannels.add('whatsapp');
-    blockedChannels.add('voice');
-
-    // Pausar todas as matrículas ativas do lead no tenant
-    for (const [key, enrollment] of this.enrollmentsStore.entries()) {
-      if (
-        enrollment.organizationId === params.organizationId &&
-        enrollment.leadId === params.leadId
-      ) {
-        enrollment.status = 'opted_out';
-        this.enrollmentsStore.set(key, enrollment);
-      }
-    }
+    // Marcar todas as matrículas do lead no tenant como opted_out (durável).
+    await this.enrollmentsStore.updateByLead(params.organizationId, params.leadId, {
+      status: 'opted_out',
+    });
 
     await domainEventMesh.publish({
       eventType: 'CROSS_CHANNEL_OPTOUT_ENFORCED',
@@ -233,34 +230,30 @@ export class AdaptiveMultichannelCadenceService implements IMultichannelCadenceP
     };
   }
 
-  getEnrollment(
+  async getEnrollment(
     organizationId: string,
     enrollmentId: string,
-  ): MultichannelCadenceEnrollment | undefined {
-    return this.enrollmentsStore.get(`${organizationId}:${enrollmentId}`);
+  ): Promise<MultichannelCadenceEnrollment | undefined> {
+    return this.enrollmentsStore.get(organizationId, enrollmentId);
   }
 
-  findEnrollmentByLead(
+  async findEnrollmentByLead(
     organizationId: string,
     leadId: string,
-  ): MultichannelCadenceEnrollment | undefined {
-    for (const enrollment of this.enrollmentsStore.values()) {
-      if (enrollment.organizationId === organizationId && enrollment.leadId === leadId) {
-        return enrollment;
-      }
-    }
-    return undefined;
+  ): Promise<MultichannelCadenceEnrollment | undefined> {
+    return this.enrollmentsStore.findByLead(organizationId, leadId);
   }
 
-  isLeadOptedOut(organizationId: string, leadId: string): boolean {
-    const optOutKey = `${organizationId}:${leadId}`;
-    const blockedChannels = this.optOutRegistry.get(optOutKey);
-    return Boolean(blockedChannels && blockedChannels.size > 0);
-  }
-
-  clear(): void {
-    this.enrollmentsStore.clear();
-    this.optOutRegistry.clear();
+  /**
+   * `true` se existe QUALQUER OptOutRecord do lead no tenant — equivalente ao antigo
+   * `optOutRegistry` volátil, agora consultando a tabela durável `OptOutRecord`.
+   */
+  async isLeadOptedOut(organizationId: string, leadId: string): Promise<boolean> {
+    const matches = await this.optOutRepo.findMatches(
+      organizationId,
+      normalizeOptOutSubject({ leadId }),
+    );
+    return matches.length > 0;
   }
 }
 

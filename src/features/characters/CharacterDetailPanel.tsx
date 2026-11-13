@@ -34,14 +34,14 @@ const RUNTIME_STATUS_LABELS: Record<string, string> = {
 };
 
 const STATE_COLORS: Record<OperationalState, string> = {
-  available: '#10B981',
-  queued: '#FFC107',
-  processing: '#00D4FF',
-  delegating: '#8B7DFF',
-  completed: '#10B981',
-  error: '#EF4444',
-  blocked: '#F97316',
-  unavailable: '#94A3B8',
+  available: 'var(--ok)',
+  queued: 'var(--warn)',
+  processing: 'var(--brand)',
+  delegating: 'var(--iris)',
+  completed: 'var(--ok)',
+  error: 'var(--red)',
+  blocked: 'var(--color-warning)',
+  unavailable: 'var(--ink-2)',
 };
 
 function StateBadge({ state }: { state: OperationalState }) {
@@ -49,7 +49,11 @@ function StateBadge({ state }: { state: OperationalState }) {
   return (
     <span
       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono font-semibold border"
-      style={{ color, borderColor: `${color}55`, backgroundColor: `${color}14` }}
+      style={{
+        color,
+        borderColor: `color-mix(in srgb, ${color} 33%, transparent)`,
+        backgroundColor: `color-mix(in srgb, ${color} 8%, transparent)`,
+      }}
       data-testid={`state-badge-${state}`}
     >
       <CircleDot className="w-3 h-3" aria-hidden="true" />
@@ -170,7 +174,7 @@ export function CharacterDetailPanel({
             {entry.runtime.httpRoute && (
               <div className="col-span-2">
                 <dt className="text-white/40">Rota real</dt>
-                <dd className="text-[#00D4FF] break-all">{entry.runtime.httpRoute}</dd>
+                <dd className="text-brand break-all">{entry.runtime.httpRoute}</dd>
               </div>
             )}
             {entry.runtime.reason && (
@@ -236,7 +240,7 @@ export function CharacterDetailPanel({
                   placeholder={`Missão para ${entry.name} via Supervisor...`}
                   aria-label={`Missão para o agente ${entry.name}`}
                   disabled={exec.running}
-                  className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none focus:border-[#00D4FF]/50 disabled:opacity-50"
+                  className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none focus:border-brand/50 disabled:opacity-50"
                 />
                 {exec.running ? (
                   <button
@@ -253,7 +257,7 @@ export function CharacterDetailPanel({
                     onClick={() => void run(mission)}
                     disabled={!mission.trim()}
                     aria-label="Enviar missão"
-                    className="px-3 py-2 rounded-lg bg-[#00D4FF] text-[#0D0D0D] text-xs font-bold flex items-center gap-1 disabled:opacity-40"
+                    className="px-3 py-2 rounded-lg bg-brand text-on-brand text-xs font-bold flex items-center gap-1 disabled:opacity-40"
                   >
                     <Send className="w-3 h-3" /> Enviar
                   </button>
@@ -291,11 +295,11 @@ export function CharacterDetailPanel({
                       {ev.kind === 'error' ? (
                         <XCircle className="w-3 h-3 text-red-400 mt-0.5 shrink-0" />
                       ) : ev.kind === 'routing' ? (
-                        <Bot className="w-3 h-3 text-[#8B7DFF] mt-0.5 shrink-0" />
+                        <Bot className="w-3 h-3 text-iris mt-0.5 shrink-0" />
                       ) : ev.kind === 'result' ? (
                         <CheckCircle2 className="w-3 h-3 text-emerald-400 mt-0.5 shrink-0" />
                       ) : (
-                        <Loader2 className="w-3 h-3 text-[#00D4FF] mt-0.5 shrink-0" />
+                        <Loader2 className="w-3 h-3 text-brand mt-0.5 shrink-0" />
                       )}
                       <span className="text-white/70">
                         {ev.label}

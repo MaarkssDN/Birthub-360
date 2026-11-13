@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { requestContext } from '../../../../lib/async-context.js';
+import { semanticCache } from '../../../../lib/ai/gateway.js';
 import { marketResearchTool } from '../marketResearchTool.js';
 
 describe('marketResearchTool', () => {
@@ -119,5 +121,68 @@ describe('marketResearchTool', () => {
     for (const segment of segments) {
       expect(segment).toContain('</untrusted_external_content>');
     }
+  });
+
+  /**
+   * TAREFA-SANEAMENTO-041 / BT360-DT-0093: a ferramenta deve consultar o SemanticCache
+   * (namespace por tenant) antes de bater nos motores de busca pagos, e gravar o relatório
+   * gerado em caso de miss — eliminando chamadas repetidas a Tavily/Serper/DDG para a
+   * mesma pesquisa dentro do TTL.
+   */
+  describe('cache semântico (TAREFA-SANEAMENTO-041)', () => {
+    const ORG = 'org-teste-cache';
+
+    beforeEach(() => {
+      vi.spyOn(semanticCache, 'get').mockResolvedValue(null);
+      vi.spyOn(semanticCache, 'set').mockResolvedValue(undefined);
+    });
+
+    it('retorna o relatório cacheado sem chamar fetch quando há hit', async () => {
+      vi.mocked(semanticCache.get).mockResolvedValue('### Relatório cacheado');
+      const fetchSpy = vi.spyOn(globalThis, 'fetch');
+
+      const result = await requestContext.run({ tenantId: ORG }, () =>
+        marketResearchTool.invoke({ query: 'Loggi logística' }),
+      );
+
+      expect(result).toBe('### Relatório cacheado');
+      expect(semanticCache.get).toHaveBeenCalledWith(
+        expect.objectContaining({ organizationId: ORG, promptText: 'Loggi logística' }),
+      );
+      expect(fetchSpy).not.toHaveBeenCalled();
+      expect(semanticCache.set).not.toHaveBeenCalled();
+    });
+
+    it('executa a busca e grava no cache em caso de miss', async () => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+        ok: true,
+        text: async () =>
+          '<div class="result results_links"><h2><a class="result__url" href="https://x.com">X</a></h2><a class="result__snippet" href="#">Snippet</a></div>',
+      } as Response);
+
+      const result = await requestContext.run({ tenantId: ORG }, () =>
+        marketResearchTool.invoke({ query: 'empresa exemplo' }),
+      );
+
+      expect(result).toContain('DuckDuckGo Web Engine');
+      expect(semanticCache.set).toHaveBeenCalledWith(
+        expect.objectContaining({ organizationId: ORG, promptText: 'empresa exemplo' }),
+        expect.stringContaining('DuckDuckGo Web Engine'),
+        expect.objectContaining({ classification: 'PUBLIC' }),
+      );
+    });
+
+    it('não consulta o cache quando não há tenant no contexto', async () => {
+      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+        ok: true,
+        text: async () => '<html>vazio</html>',
+      } as Response);
+
+      await marketResearchTool.invoke({ query: 'sem tenant' });
+
+      expect(semanticCache.get).not.toHaveBeenCalled();
+      expect(semanticCache.set).not.toHaveBeenCalled();
+      expect(fetchSpy).toHaveBeenCalled();
+    });
   });
 });

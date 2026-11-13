@@ -63,7 +63,10 @@ describe('lgpd.routes — tenant vem só do usuário autenticado', () => {
       .get('/api/lgpd/titular/contact-1/export')
       .set('x-organization-id', 'org-de-outro-tenant');
 
-    expect(exportContactData).toHaveBeenCalledWith('org-real', 'contact-1');
+    expect(exportContactData).toHaveBeenCalledWith('org-real', 'contact-1', {
+      requestedByUserId: 'u1',
+      encryptionPassword: undefined,
+    });
   });
 });
 

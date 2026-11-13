@@ -3,6 +3,7 @@ import { activityRoutes } from '../features/activities/routes/activity.routes.js
 import { analyticsRoutes } from '../features/analytics/routes/analytics.routes.js';
 import { eventsRoutes } from '../features/analytics/routes/events.routes.js';
 import { attachmentRoutes } from '../features/attachments/routes/attachment.routes.js';
+import { apiKeyRoutes } from '../features/api-keys/apiKey.routes.js';
 import { authExtraRoutes } from '../features/auth/routes/auth-extra.routes.js';
 import { automationRoutes } from '../features/automations/routes/automation.routes.js';
 import { usageRoutes } from '../features/billing/routes/usage.routes.js';
@@ -50,6 +51,7 @@ import { roleSupervisorRoutes } from '../features/job-roles/routes/roleSuperviso
 import { workspaceRoutes } from '../features/job-roles/routes/workspace.routes.js';
 import { knowledgeRoutes } from '../features/knowledge/knowledge.routes.js';
 import { lgpdRouter } from '../features/lgpd/lgpd.routes.js';
+import { publicLeadCaptureRouter } from '../features/landing/routes/leadCapture.routes.js';
 import { accountIntelligenceRoutes } from '../features/market-intelligence/server/accountIntelligence.routes.js';
 import { marketIntelligenceCompanyRoutes } from '../features/market-intelligence/server/marketIntelligenceCompany.routes.js';
 import { mesaTratamentoRoutes } from '../features/mesa-tratamento/routes/mesaTratamento.routes.js';
@@ -250,10 +252,22 @@ export function mountFeatureRoutes(app: Express): void {
   // PROMPT 10 — Agent Builder / Fábrica de Agentes: mesmo padrão de mount independente.
   app.use('/api/agent-builder', authenticateToken, requireTenant, agentBuilderRoutes);
   app.use('/api/auth-extra', authenticateToken, requireTenant, authExtraRoutes);
+  // Gestão de API keys do tenant — só ADMIN cria/lista/revoga (MEL-07).
+  app.use(
+    '/api/api-keys',
+    authenticateToken,
+    requireTenant,
+    requireRole(['ADMIN']),
+    apiKeyRoutes,
+  );
   app.use('/api/agent', requireTenant, agentRoutes);
   app.use('/api/cadence', authenticateToken, requireTenant, cadenceRoutes);
   app.use('/api/calendar/booking-links', privateBookingRouter);
   app.use('/api/calendar/book', publicBookingRouter);
+  // Captura pública de lead da landing — sem authenticateToken/requireTenant (o lead
+  // ainda não tem conta). Rate limit dedicado em rateLimiters.ts; sem persistência em
+  // banco, o envio real é por e-mail (ver leadCapture.routes.ts).
+  app.use('/api/public', publicLeadCaptureRouter);
 
   // Rotas de inteligência de conta (LDR, /accounts/...) — checagem de papel própria
   // (requireRole dentro do router).

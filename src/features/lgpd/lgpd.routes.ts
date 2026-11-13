@@ -58,7 +58,17 @@ lgpdRouter.get(
       // Mesmo raciocínio da rota de exclusão acima: organizationId só do usuário autenticado.
       const { organizationId, id: actorId } = (req as AuthRequest).user;
       const contactId = routeParam(req.params.contactId, 'contactId');
-      const data = await lgpdService.exportContactData(organizationId, contactId);
+      // Senha de transporte OPCIONAL via header dedicado (nunca query string — vazaria em logs
+      // de acesso/proxy). Se ausente ou < 8 chars, o serviço devolve apenas o pacote em claro.
+      const exportPasswordHeader = req.headers['x-lgpd-export-password'];
+      const encryptionPassword =
+        typeof exportPasswordHeader === 'string' && exportPasswordHeader.trim().length >= 8
+          ? exportPasswordHeader.trim()
+          : undefined;
+      const data = await lgpdService.exportContactData(organizationId, contactId, {
+        requestedByUserId: actorId,
+        encryptionPassword,
+      });
 
       // Rota só de leitura — não passa pela extensão de auditoria do Prisma (que só cobre
       // create/update/delete, ver src/lib/prisma.ts), então sem este registro explícito o

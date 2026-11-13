@@ -10,8 +10,8 @@ import { OPEN_COMMAND_PALETTE_EVENT } from '../../lib/paletteIntent.js';
 import { SoundFX } from '../../lib/soundEffects.js';
 import { BirthHubLogo } from '../brand/BirthHubLogo.js';
 import { AppBreadcrumbs } from './AppBreadcrumbs.js';
+import { OfflineBadge, SyncIndicator } from './SyncIndicator.js';
 import { TAB_META, type TabType } from './tabMeta.js';
-import { SyncIndicator, OfflineBadge } from './SyncIndicator.js';
 
 interface AppTopbarProps {
   activeTab: TabType;
@@ -82,7 +82,7 @@ export function AppTopbar({ activeTab, onOpenMobileNav }: AppTopbarProps) {
   };
 
   return (
-    <header className="relative sticky top-0 z-20 flex h-14 sm:h-16 shrink-0 items-center gap-1.5 sm:gap-2.5 bg-white/85 dark:bg-[#090D16]/85 backdrop-blur-xl border-b border-slate-200/80 dark:border-white/[0.08] px-2.5 sm:px-6 overflow-hidden immobile-element">
+    <header className="relative sticky top-0 z-20 flex h-14 sm:h-16 shrink-0 items-center gap-1.5 sm:gap-2.5 bg-surface/85 dark:bg-bg/85 backdrop-blur-xl border-b border-line/80 px-2.5 sm:px-6 overflow-hidden immobile-element">
       <button
         type="button"
         onClick={onOpenMobileNav}
@@ -125,7 +125,7 @@ export function AppTopbar({ activeTab, onOpenMobileNav }: AppTopbarProps) {
         </div>
         <div className="flex min-w-0 flex-col leading-none overflow-hidden">
           <AppBreadcrumbs className="mb-1 hidden sm:flex" />
-          <h1 className="truncate font-display text-sm sm:text-base text-brand-ink dark:text-[#00D4FF] font-bold">
+          <h1 className="truncate font-display text-sm sm:text-base text-brand-ink dark:text-brand font-bold">
             {meta.label}
           </h1>
         </div>
@@ -146,7 +146,7 @@ export function AppTopbar({ activeTab, onOpenMobileNav }: AppTopbarProps) {
           strokeWidth={1.5}
         />
         <span className="text-xs font-sans">Buscar empresa, decisor ou comando…</span>
-        <kbd className="ml-auto rounded-full border border-[color:var(--color-border-strong)] bg-[color:var(--surface-2)] px-2 py-0.5 text-[9px] font-medium text-sky-700 dark:text-[#70D6FF] transition-colors group-hover:border-[color:var(--color-brand-accent)]">
+        <kbd className="ml-auto rounded-full border border-[color:var(--color-border-strong)] bg-[color:var(--surface-2)] px-2 py-0.5 text-[9px] font-medium text-sky-700 dark:text-ink transition-colors group-hover:border-[color:var(--color-brand-accent)]">
           ⌘K
         </kbd>
       </button>
@@ -156,7 +156,7 @@ export function AppTopbar({ activeTab, onOpenMobileNav }: AppTopbarProps) {
         <SyncIndicator className="hidden sm:inline-flex" />
 
         <div className="hidden text-right leading-tight sm:block mr-2">
-          <p className="text-[9px] font-sans uppercase tracking-[0.2em] text-sky-700 dark:text-[#70D6FF]">
+          <p className="text-[9px] font-sans uppercase tracking-[0.2em] text-sky-700 dark:text-ink">
             {dateLabel}
           </p>
           <p

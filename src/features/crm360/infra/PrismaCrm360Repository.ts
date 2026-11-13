@@ -15,7 +15,7 @@ import {
   LEAD_CLOSING_STATUSES,
   toPrismaLeadStatus,
 } from '../../../lib/enumMap.js';
-import { prisma } from '../../../lib/prisma.js';
+import { prisma, runInTransaction } from '../../../lib/prisma.js';
 import type { StripeChargePort } from '../../../shared/contracts/stripeCharge.contract.js';
 import {
   draftNextProposalVersion,
@@ -50,6 +50,7 @@ import type {
   CrmPublicDocumentView,
 } from '../crm360.types.js';
 import type { ICrm360Repository } from '../domain/ICrm360Repository.js';
+import { assertDiscountAuthorityWithinTransaction } from './PrismaDiscountAuthorityGuard.js';
 import { DEAL_STAGES, type DefaultStage, LEAD_STAGES } from './defaultPipelineStages.js';
 
 // DATA-004 (Sprint 05/Onda 17): derivado da mesma fonte única usada por PrismaLeadRepository
@@ -609,23 +610,46 @@ export class PrismaCrm360Repository implements ICrm360Repository {
     organizationId: string,
     leadId: string,
     input: CrmDealItemInput,
+    actorUserId?: string,
   ): Promise<CrmDealItem> {
     const calculated = calculateItem(input);
-    const item = await prisma.crmDealItem.create({
-      data: { ...calculated, organizationId, leadId },
-      include: { product: true },
-    });
 
-    const aggregate = await prisma.crmDealItem.aggregate({
-      where: { organizationId, leadId },
-      _sum: { total: true },
-    });
-    await prisma.lead.update({
-      where: { id: leadId, organizationId },
-      data: { amount: roundMoney(aggregate._sum.total ?? 0) },
-    });
+    // RN-CRM-02 (trava transacional da alçada de desconto — continuação do handoff
+    // `.agents/handoffs/onda-00/04-para-00-alcada-desconto-deal-items.md`): `CrmDealItem` tem
+    // `discountPercent` por item e persiste o valor que alimenta `Lead.amount`, então um CLOSER
+    // podia conceder desconto arbitrário fora da alçada. A mesma guarda dos documentos comerciais
+    // é reutilizada aqui, avaliando o item isolado: como cada item só pode ser criado (não há
+    // update de item) e o desconto efetivo do negócio é a média ponderada dos itens, um teto por
+    // item já impede que adições sucessivas produzam desconto agregado acima da alçada — itens
+    // acima dela só podem nascer de papéis com alçada maior (GESTOR/ADMIN). Tudo dentro de UM
+    // `runInTransaction`: ou a trava reprova (403, nada persiste) ou item + soma de `Lead.amount`
+    // comitam juntos.
+    return runInTransaction(
+      async (tx) => {
+        await assertDiscountAuthorityWithinTransaction(tx, {
+          organizationId,
+          actorUserId,
+          lineItems: [calculated],
+        });
 
-    return item as unknown as CrmDealItem;
+        const item = await tx.crmDealItem.create({
+          data: { ...calculated, organizationId, leadId },
+          include: { product: true },
+        });
+
+        const aggregate = await tx.crmDealItem.aggregate({
+          where: { organizationId, leadId },
+          _sum: { total: true },
+        });
+        await tx.lead.update({
+          where: { id: leadId, organizationId },
+          data: { amount: roundMoney(aggregate._sum.total ?? 0) },
+        });
+
+        return item as unknown as CrmDealItem;
+      },
+      { organizationId },
+    );
   }
 
   async removeDealItem(organizationId: string, leadId: string, itemId: string): Promise<void> {
@@ -658,55 +682,71 @@ export class PrismaCrm360Repository implements ICrm360Repository {
     const lineItems = input.lineItems.map(calculateItem);
     const { subtotal, discount, tax, total } = computeDocumentTotals(lineItems);
 
-    const doc = await prisma.crmCommercialDocument.create({
-      data: {
-        ...input,
-        number: input.number ?? `DOC-${Date.now()}`,
-        subtotal,
-        discount,
-        tax,
-        total,
-        lineItems: lineItems as unknown as Prisma.InputJsonValue,
-        organizationId,
-        issueDate: input.issueDate ? new Date(input.issueDate) : new Date(),
-        validUntil: input.validUntil ? new Date(input.validUntil) : null,
-        dueDate: input.dueDate ? new Date(input.dueDate) : null,
-      },
-      include: { lead: true, company: true, contact: true },
-    });
+    // RN-CRM-02 (trava transacional da alçada de desconto — auditoria MOD-01/JOR-08): a
+    // avaliação do desconto acontece DENTRO da mesma transação que grava documento + versão 1,
+    // nunca antes dela — fecha a janela em que duas criações concorrentes intercalavam
+    // validação e escrita. Sem linha pré-existente para travar aqui (é um INSERT), a atomicidade
+    // do tx interativo já basta: ou a trava reprova e nada grava, ou grava tudo.
+    return runInTransaction(
+      async (tx) => {
+        await assertDiscountAuthorityWithinTransaction(tx, {
+          organizationId,
+          actorUserId,
+          lineItems,
+        });
 
-    // CYC-005 (onda 25): versão 1 é gravada na própria criação — antes desta correção,
-    // `CrmCommercialDocumentVersion` era uma tabela morta confirmada (schema existia, zero
-    // linha escrita em código). `draftNextProposalVersion([], ...)` sempre resolve para
-    // versionNumber=1 aqui (histórico vazio).
-    const version1 = draftNextProposalVersion([], {
-      documentId: doc.id,
-      snapshot: {
-        title: doc.title,
-        currency: doc.currency,
-        lineItems: lineItems as unknown as ProposalSnapshot['lineItems'],
-        subtotal,
-        discount,
-        tax,
-        total,
-        notes: doc.notes,
-        terms: doc.terms,
-      },
-      changedBy: actorUserId ?? null,
-      changeReason: 'Criação do documento',
-    });
-    await prisma.crmCommercialDocumentVersion.create({
-      data: {
-        organizationId,
-        documentId: version1.documentId,
-        versionNumber: version1.versionNumber,
-        snapshot: version1.snapshot as unknown as Prisma.InputJsonValue,
-        changedBy: version1.changedBy,
-        changeReason: version1.changeReason,
-      },
-    });
+        const doc = await tx.crmCommercialDocument.create({
+          data: {
+            ...input,
+            number: input.number ?? `DOC-${Date.now()}`,
+            subtotal,
+            discount,
+            tax,
+            total,
+            lineItems: lineItems as unknown as Prisma.InputJsonValue,
+            organizationId,
+            issueDate: input.issueDate ? new Date(input.issueDate) : new Date(),
+            validUntil: input.validUntil ? new Date(input.validUntil) : null,
+            dueDate: input.dueDate ? new Date(input.dueDate) : null,
+          },
+          include: { lead: true, company: true, contact: true },
+        });
 
-    return serializeDocument(doc);
+        // CYC-005 (onda 25): versão 1 é gravada na própria criação — antes desta correção,
+        // `CrmCommercialDocumentVersion` era uma tabela morta confirmada (schema existia, zero
+        // linha escrita em código). `draftNextProposalVersion([], ...)` sempre resolve para
+        // versionNumber=1 aqui (histórico vazio).
+        const version1 = draftNextProposalVersion([], {
+          documentId: doc.id,
+          snapshot: {
+            title: doc.title,
+            currency: doc.currency,
+            lineItems: lineItems as unknown as ProposalSnapshot['lineItems'],
+            subtotal,
+            discount,
+            tax,
+            total,
+            notes: doc.notes,
+            terms: doc.terms,
+          },
+          changedBy: actorUserId ?? null,
+          changeReason: 'Criação do documento',
+        });
+        await tx.crmCommercialDocumentVersion.create({
+          data: {
+            organizationId,
+            documentId: version1.documentId,
+            versionNumber: version1.versionNumber,
+            snapshot: version1.snapshot as unknown as Prisma.InputJsonValue,
+            changedBy: version1.changedBy,
+            changeReason: version1.changeReason,
+          },
+        });
+
+        return serializeDocument(doc);
+      },
+      { organizationId },
+    );
   }
 
   async updateDocumentContent(
@@ -715,72 +755,96 @@ export class PrismaCrm360Repository implements ICrm360Repository {
     input: CrmDocumentUpdateInput,
     actorUserId?: string,
   ): Promise<CrmCommercialDocument> {
-    const existingRows = await prisma.crmCommercialDocumentVersion.findMany({
-      where: { organizationId, documentId },
-      orderBy: { versionNumber: 'asc' },
-    });
-    const existingVersions: ProposalVersion[] = existingRows.map((v) => ({
-      id: v.id,
-      documentId: v.documentId,
-      versionNumber: v.versionNumber,
-      snapshot: v.snapshot as unknown as ProposalSnapshot,
-      changedBy: v.changedBy,
-      changeReason: v.changeReason,
-      createdAt: v.createdAt,
-    }));
-
     const lineItems = input.lineItems.map(calculateItem);
     const { subtotal, discount, tax, total } = computeDocumentTotals(lineItems);
 
-    const nextVersion = draftNextProposalVersion(existingVersions, {
-      documentId,
-      snapshot: {
-        title: input.title,
-        currency: input.currency,
-        lineItems: lineItems as unknown as ProposalSnapshot['lineItems'],
-        subtotal,
-        discount,
-        tax,
-        total,
-        notes: input.notes ?? null,
-        terms: input.terms ?? null,
-      },
-      changedBy: actorUserId ?? null,
-      changeReason: input.changeReason ?? null,
-    });
+    // RN-CRM-02 (trava transacional da alçada de desconto — auditoria MOD-01/JOR-08): TODA a
+    // leitura-validação-escrita roda dentro de UM `runInTransaction`, e a linha do documento é
+    // travada com `SELECT ... FOR UPDATE` ANTES de ler as versões — duas edições concorrentes
+    // agora se serializam na linha: a segunda só enxerga o histórico já commitado da primeira
+    // (versionNumber nunca duplica por interleaving) e revalida o desconto contra o estado
+    // pós-lock. Antes, `existingRows` era lido fora de qualquer tx e a validação de desconto
+    // nem existia — janela real de race condition.
+    return runInTransaction(
+      async (tx) => {
+        const locked = await tx.$queryRaw<{ id: string }[]>`
+          SELECT id FROM "CrmCommercialDocument"
+          WHERE id = ${documentId} AND "organizationId" = ${organizationId}
+          FOR UPDATE
+        `;
+        if (locked.length === 0) {
+          throw new AppError('Documento não encontrado.', 404);
+        }
 
-    // biome-ignore lint/plugin/no-prisma-tx-escape: uso legado congelado no baseline (parecer 15 #40 L1); migrar para runInTransaction
-    const [, doc] = await prisma.$transaction([
-      prisma.crmCommercialDocumentVersion.create({
-        data: {
+        await assertDiscountAuthorityWithinTransaction(tx, {
           organizationId,
-          documentId: nextVersion.documentId,
-          versionNumber: nextVersion.versionNumber,
-          snapshot: nextVersion.snapshot as unknown as Prisma.InputJsonValue,
-          changedBy: nextVersion.changedBy,
-          changeReason: nextVersion.changeReason,
-        },
-      }),
-      prisma.crmCommercialDocument.update({
-        where: { id: documentId, organizationId },
-        data: {
-          title: input.title,
-          currency: input.currency,
-          validUntil: input.validUntil ? new Date(input.validUntil) : null,
-          dueDate: input.dueDate ? new Date(input.dueDate) : null,
-          subtotal,
-          discount,
-          tax,
-          total,
-          lineItems: lineItems as unknown as Prisma.InputJsonValue,
-          notes: input.notes ?? null,
-          terms: input.terms ?? null,
-        },
-        include: { lead: true, company: true, contact: true },
-      }),
-    ]);
+          actorUserId,
+          lineItems,
+        });
 
-    return serializeDocument(doc);
+        const existingRows = await tx.crmCommercialDocumentVersion.findMany({
+          where: { organizationId, documentId },
+          orderBy: { versionNumber: 'asc' },
+        });
+        const existingVersions: ProposalVersion[] = existingRows.map((v) => ({
+          id: v.id,
+          documentId: v.documentId,
+          versionNumber: v.versionNumber,
+          snapshot: v.snapshot as unknown as ProposalSnapshot,
+          changedBy: v.changedBy,
+          changeReason: v.changeReason,
+          createdAt: v.createdAt,
+        }));
+
+        const nextVersion = draftNextProposalVersion(existingVersions, {
+          documentId,
+          snapshot: {
+            title: input.title,
+            currency: input.currency,
+            lineItems: lineItems as unknown as ProposalSnapshot['lineItems'],
+            subtotal,
+            discount,
+            tax,
+            total,
+            notes: input.notes ?? null,
+            terms: input.terms ?? null,
+          },
+          changedBy: actorUserId ?? null,
+          changeReason: input.changeReason ?? null,
+        });
+
+        await tx.crmCommercialDocumentVersion.create({
+          data: {
+            organizationId,
+            documentId: nextVersion.documentId,
+            versionNumber: nextVersion.versionNumber,
+            snapshot: nextVersion.snapshot as unknown as Prisma.InputJsonValue,
+            changedBy: nextVersion.changedBy,
+            changeReason: nextVersion.changeReason,
+          },
+        });
+        const doc = await tx.crmCommercialDocument.update({
+          where: { id: documentId, organizationId },
+          data: {
+            title: input.title,
+            currency: input.currency,
+            validUntil: input.validUntil ? new Date(input.validUntil) : null,
+            dueDate: input.dueDate ? new Date(input.dueDate) : null,
+            subtotal,
+            discount,
+            tax,
+            total,
+            lineItems: lineItems as unknown as Prisma.InputJsonValue,
+            notes: input.notes ?? null,
+            terms: input.terms ?? null,
+          },
+          include: { lead: true, company: true, contact: true },
+        });
+
+        return serializeDocument(doc);
+      },
+      { organizationId },
+    );
   }
 
   async listDocumentVersions(

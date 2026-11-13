@@ -133,4 +133,65 @@ export function applyRateLimiters(app: Express): void {
     },
   });
   app.use('/api/public/demo-leads', publicLeadLimiter);
+
+  // Captura pública alternativa da landing (/api/public/lead-capture — envio por e-mail,
+  // sem persistência). Mesma justificativa de cota apertada: cada POST dispara SMTP real.
+  const leadCaptureLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => ipKeyGenerator(req.ip || 'unknown'),
+    store: redisStoreOrMemory(),
+    message: {
+      success: false,
+      error: 'Muitas solicitações enviadas. Tente novamente em 1 hora.',
+    },
+  });
+  app.use('/api/public/lead-capture', leadCaptureLimiter);
+
+  // Rate Limiting dedicado de EXPORTAÇÃO (DEM-20261113-002 / MEL-05): gerar
+  // CSV/PDF/Excel varre tabelas inteiras do tenant e consome CPU/memória —
+  // não pode dividir a cota folgada do apiLimiter. Chave por tenant quando a
+  // identidade já está disponível; authenticateToken roda aqui só para popular
+  // req.user (idempotente — o router monta o seu próprio depois).
+  const exportLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: env.EXPORT_RATE_LIMIT_MAX,
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) =>
+      (req as AuthRequest).user?.organizationId || ipKeyGenerator(req.ip || 'unknown'),
+    store: redisStoreOrMemory(),
+    message: {
+      success: false,
+      error: 'Muitas exportações solicitadas. Tente novamente em 15 minutos.',
+    },
+  });
+  const exportPaths = [
+    '/api/analytics/export',
+    '/api/analytics/unified-timeline/export',
+    '/api/commercial-intelligence/export',
+    '/api/leads/export',
+  ];
+  for (const path of exportPaths) {
+    app.use(path, authenticateToken, exportLimiter);
+  }
+
+  // Rate Limiting do agendamento público (/book/:slug): endpoint sem auth que
+  // grava compromissos — estrito por IP para conter scraping de slots e spam
+  // de reservas. authenticateToken NÃO entra aqui (rota é pública).
+  const publicBookingLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: env.PUBLIC_BOOKING_RATE_LIMIT_MAX,
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => ipKeyGenerator(req.ip || 'unknown'),
+    store: redisStoreOrMemory(),
+    message: {
+      success: false,
+      error: 'Muitas tentativas de agendamento. Tente novamente em 15 minutos.',
+    },
+  });
+  app.use('/api/calendar/book', publicBookingLimiter);
 }

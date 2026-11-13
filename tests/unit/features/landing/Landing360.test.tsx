@@ -352,20 +352,22 @@ describe('Landing360', () => {
 
     // 1. Proposta de valor clara & 6. Urgência responsável
     expect(screen.getByText(/Ciclo de Implantação Assistida/i)).toBeInTheDocument();
-    expect(screen.getByText(/Acelere o ciclo de vendas e aumente a conversão do pipeline — projeções de até 3.8x/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Acelere o ciclo de vendas e aumente a conversão do pipeline com IA aplicada ao dia a dia comercial/i,
+      ),
+    ).toBeInTheDocument();
 
     // 2. Design focado & 3. Foco no Call to Action
     const ctaLinks = screen.getAllByRole('link', { name: /Garantir Demonstração Gratuita/i });
     expect(ctaLinks.length).toBeGreaterThan(0);
 
-    // 5. Provas sociais, métricas e selos de credibilidade
-    expect(screen.getByText(/\+42%/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/3.8x/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/R\$ 180M\+/i)).toBeInTheDocument();
-    expect(screen.getByText(/Rodrigo Silveira/i)).toBeInTheDocument();
-    expect(screen.getByText(/Camila Duarte/i)).toBeInTheDocument();
+    // 5. Selos de credibilidade reais da plataforma (sem métricas/depoimentos fabricados)
     expect(screen.getByText(/Criptografia AES-256 Ponta a Ponta/i)).toBeInTheDocument();
     expect(screen.getByText(/Isolamento Multi-Tenant via Postgres RLS/i)).toBeInTheDocument();
+    expect(screen.queryByText(/\+42%/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/R\$ 180M\+/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Rodrigo Silveira/i)).not.toBeInTheDocument();
 
     // 4. Formulário objetivo de captura de lead
     expect(container.querySelector('#lead-nome')).toBeInTheDocument();
@@ -373,14 +375,13 @@ describe('Landing360', () => {
     expect(container.querySelector('#lead-whatsapp')).toBeInTheDocument();
   });
 
-  it('deve submeter o formulário de lead com sucesso e alternar a variante A/B', async () => {
-    const { container } = renderWithProviders('/', 'intro');
+  it('deve submeter o formulário de lead via API real e alternar a variante A/B', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ success: true }),
+    } as Response);
 
-    // Endpoint público de leads ainda não existe (handoff pendente do Agente 01):
-    // o teste mocka a resposta 200 do contrato POST /api/public/demo-requests.
-    const fetchSpy = vi
-      .spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce(new Response('{}', { status: 200 }));
+    const { container } = renderWithProviders('/', 'intro');
 
     const nomeInput = container.querySelector('#lead-nome') as HTMLInputElement;
     const emailInput = container.querySelector('#lead-email') as HTMLInputElement;
@@ -403,14 +404,15 @@ describe('Landing360', () => {
 
     await waitFor(
       () => {
-        expect(screen.getByText(/Sessão Solicitada com Sucesso/i)).toBeInTheDocument();
+        expect(screen.getByText(/Solicitação Recebida!/i)).toBeInTheDocument();
         expect(screen.getByText(/mariana@vanguarda\.com\.br/i)).toBeInTheDocument();
-        expect(fetchSpy).toHaveBeenCalledWith(
-          '/api/public/demo-requests',
-          expect.objectContaining({ method: 'POST' }),
-        );
       },
       { timeout: 3000 },
+    );
+
+    expect(fetchSpy).toHaveBeenCalledWith(
+      '/api/public/lead-capture',
+      expect.objectContaining({ method: 'POST' }),
     );
     fetchSpy.mockRestore();
 
@@ -519,20 +521,19 @@ describe('Landing360', () => {
     fireEvent.submit(leadFormEl);
 
     await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent(/Não foi possível registrar/i);
+      expect(screen.getByRole('alert')).toHaveTextContent(/Não foi possível enviar/i);
     });
 
     expect(fetchSpy).toHaveBeenCalledWith(
-      '/api/public/demo-requests',
+      '/api/public/lead-capture',
       expect.objectContaining({
         method: 'POST',
-        body: expect.stringContaining('"consentimentoLgpd":true'),
+        body: expect.stringContaining('"consent":true'),
       }),
     );
     const body = JSON.parse(fetchSpy.mock.calls[0][1]?.body as string);
     expect(body.equipe).toBe('16 a 50');
-    expect(body.origem).toBe('landing_360');
-    expect(body.varianteAb).toBe('A');
+    expect(body.website).toBe('');
 
     fetchSpy.mockRestore();
   });
