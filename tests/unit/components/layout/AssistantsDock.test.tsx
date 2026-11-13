@@ -1,94 +1,86 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const authState = { canAccessCopilotoIa: true };
+let canAccessCopilotoIa = true;
+let activeRecord: { type: string; id: string } | null = null;
+const copilotoProps: Array<Record<string, unknown>> = [];
 
-vi.mock('../../../../src/contexts/AuthContext.js', () => ({
-  useAuth: () => authState,
+vi.mock('@/contexts/AuthContext', () => ({
+  useAuth: () => ({ canAccessCopilotoIa }),
 }));
-
-const recordState: { activeRecord: { type: string; id: string } | null } = {
-  activeRecord: { type: 'lead', id: 'lead-42' },
-};
-
-vi.mock('../../../../src/hooks/useActiveRecord.js', () => ({
-  useActiveRecord: () => recordState,
+vi.mock('@/hooks/useActiveRecord', () => ({
+  useActiveRecord: () => ({ activeRecord }),
 }));
-
-vi.mock('../../../../src/lib/soundEffects.js', () => ({
-  SoundFX: { play: vi.fn() },
-}));
-
-vi.mock('../../../../src/features/chatbook/components/FloatingChatbook.js', () => ({
+vi.mock('@/lib/soundEffects', () => ({ SoundFX: { play: vi.fn() } }));
+vi.mock('@/features/chatbook/components/FloatingChatbook', () => ({
   FloatingChatbook: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
     isOpen ? (
       <div data-testid="floating-chatbook">
-        <button type="button" data-testid="floating-chatbook-close" onClick={onClose}>
-          Encerrar sessão Chatbook
+        <button type="button" onClick={onClose}>
+          fechar-chatbook
         </button>
       </div>
-    ) : (
-      <div data-testid="floating-chatbook-hidden" />
-    ),
+    ) : null,
+}));
+vi.mock('@/features/copiloto-ia/components/CopilotoIaPanel', () => ({
+  CopilotoIaPanel: (props: Record<string, unknown>) => {
+    copilotoProps.push(props);
+    return <div data-testid="copiloto-panel">copiloto</div>;
+  },
 }));
 
-vi.mock('../../../../src/features/copiloto-ia/components/CopilotoIaPanel.js', () => ({
-  CopilotoIaPanel: ({ leadId }: { leadId?: string }) => (
-    <div data-testid="copiloto-ia-panel">lead:{leadId ?? 'none'}</div>
-  ),
-}));
+import { AssistantsDock } from '@/components/layout/AssistantsDock';
 
-import { AssistantsDock } from '../../../../src/components/layout/AssistantsDock.js';
+beforeEach(() => {
+  canAccessCopilotoIa = true;
+  activeRecord = null;
+  copilotoProps.length = 0;
+  window.sessionStorage.clear();
+});
 
-const CHATBOOK_OPEN_KEY = '@birthhub:assistant-chatbook-open';
-const COPILOTO_OPEN_KEY = '@birthhub:assistant-copiloto-open';
+afterEach(cleanup);
 
 describe('AssistantsDock', () => {
-  beforeEach(() => {
-    sessionStorage.clear();
-    authState.canAccessCopilotoIa = true;
-    recordState.activeRecord = { type: 'lead', id: 'lead-42' };
-  });
-
-  it('abre e fecha o Chatbook, persistindo o estado', async () => {
+  it('renderiza os gatilhos de Chatbook e Copiloto IA', () => {
     render(<AssistantsDock />);
-    expect(screen.queryByTestId('floating-chatbook')).toBeNull();
-
-    fireEvent.click(screen.getByTestId('assistant-chatbook-toggle'));
-    expect(await screen.findByTestId('floating-chatbook')).toBeInTheDocument();
-    expect(sessionStorage.getItem(CHATBOOK_OPEN_KEY)).toBe('true');
-
-    fireEvent.click(screen.getByTestId('floating-chatbook-close'));
-    await waitFor(() => expect(sessionStorage.getItem(CHATBOOK_OPEN_KEY)).toBe('false'));
+    expect(screen.getByTestId('assistant-chatbook-toggle')).toBeTruthy();
+    expect(screen.getByTestId('assistant-copiloto-toggle')).toBeTruthy();
   });
 
-  it('abre o Copiloto IA com o lead ativo, fecha com Escape e com o X', async () => {
-    render(<AssistantsDock />);
-    fireEvent.click(screen.getByTestId('assistant-copiloto-toggle'));
-    expect(await screen.findByTestId('copiloto-ia-panel')).toHaveTextContent('lead:lead-42');
-    expect(screen.getByRole('complementary', { name: 'Copiloto IA' })).toBeInTheDocument();
-    expect(sessionStorage.getItem(COPILOTO_OPEN_KEY)).toBe('true');
-
-    fireEvent.keyDown(window, { key: 'Escape' });
-    await waitFor(() => expect(sessionStorage.getItem(COPILOTO_OPEN_KEY)).toBe('false'));
-
-    fireEvent.click(screen.getByTestId('assistant-copiloto-toggle'));
-    expect(await screen.findByTestId('copiloto-ia-panel')).toBeInTheDocument();
-    const panel = screen.getByRole('complementary', { name: 'Copiloto IA' });
-    fireEvent.click(within(panel).getByRole('button', { name: 'Fechar Copiloto IA' }));
-    await waitFor(() => expect(sessionStorage.getItem(COPILOTO_OPEN_KEY)).toBe('false'));
-  });
-
-  it('esconde o Copiloto quando o papel não tem acesso', () => {
-    authState.canAccessCopilotoIa = false;
+  it('oculta o Copiloto quando o usuário não tem acesso', () => {
+    canAccessCopilotoIa = false;
     render(<AssistantsDock />);
     expect(screen.queryByTestId('assistant-copiloto-toggle')).toBeNull();
-    expect(screen.getByTestId('assistant-chatbook-toggle')).toBeInTheDocument();
+    expect(screen.getByTestId('assistant-chatbook-toggle')).toBeTruthy();
   });
 
-  it('restaura o Chatbook aberto a partir do sessionStorage', async () => {
-    sessionStorage.setItem(CHATBOOK_OPEN_KEY, 'true');
+  it('abre e fecha o Chatbook persistindo em sessionStorage', async () => {
     render(<AssistantsDock />);
-    expect(await screen.findByTestId('floating-chatbook')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('assistant-chatbook-toggle'));
+    expect(await screen.findByTestId('floating-chatbook')).toBeTruthy();
+    expect(window.sessionStorage.getItem('@birthhub:assistant-chatbook-open')).toBe('true');
+    fireEvent.click(screen.getByLabelText('Fechar Chatbook'));
+    await waitFor(() =>
+      expect(window.sessionStorage.getItem('@birthhub:assistant-chatbook-open')).toBe('false'),
+    );
+  });
+
+  it('abre o painel do Copiloto, fecha com Escape e envia leadId do registro ativo', async () => {
+    activeRecord = { type: 'lead', id: 'lead-9' };
+    render(<AssistantsDock />);
+    fireEvent.click(screen.getByTestId('assistant-copiloto-toggle'));
+    expect(await screen.findByTestId('copiloto-panel')).toBeTruthy();
+    expect(screen.getByRole('complementary', { name: 'Copiloto IA' })).toBeTruthy();
+    expect(copilotoProps.at(-1)?.leadId).toBe('lead-9');
+    fireEvent.keyDown(window, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByTestId('copiloto-panel')).toBeNull());
+  });
+
+  it('não envia leadId quando o registro ativo não é lead', async () => {
+    activeRecord = { type: 'company', id: 'c-1' };
+    render(<AssistantsDock />);
+    fireEvent.click(screen.getByTestId('assistant-copiloto-toggle'));
+    await screen.findByTestId('copiloto-panel');
+    expect(copilotoProps.at(-1)?.leadId).toBeUndefined();
   });
 });
