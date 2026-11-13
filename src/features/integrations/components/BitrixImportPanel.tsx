@@ -1,72 +1,39 @@
 import {
-  Building2,
-  CalendarDays,
-  Check,
-  DollarSign,
-  ExternalLink,
+  AlertTriangle,
+  CheckCircle2,
+  CheckSquare,
+  Download,
+  Edit3,
   Info,
-  Layers,
   Loader2,
-  Mail,
-  Phone,
-  RefreshCw,
-  Tag,
-  Users,
-  Zap,
+  Lock,
+  ShieldCheck,
+  Sparkles,
+  Square,
+  XCircle,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext.js';
 import { api } from '../../../lib/api.js';
 import { hasRequiredRole } from '../../../lib/auth/authorization.js';
-import { BitrixBulkEditDialog } from './bitrixImport/BitrixBulkEditDialog.js';
-import { BitrixBulkSelectionBar } from './bitrixImport/BitrixBulkSelectionBar.js';
-import { BitrixImportFiltersPanel } from './bitrixImport/BitrixImportFiltersPanel.js';
-import { BitrixImportFooter } from './bitrixImport/BitrixImportFooter.js';
-import { BitrixImportModeBar } from './bitrixImport/BitrixImportModeBar.js';
-import { BitrixImportResultBanners } from './bitrixImport/BitrixImportResultBanners.js';
-
-export interface BitrixLeadSummary {
-  id: string;
-  title: string;
-  companyTitle: string | null;
-  contactName: string | null;
-  phone: string | null;
-  email: string | null;
-  statusLabel: string;
-  sourceId: string | null;
-  dateCreate: string | null;
-  alreadyImported: boolean;
-}
-
-export interface BitrixDealSummary {
-  id: string;
-  title: string;
-  stageLabel: string;
-  assignedById: string | null;
-  dateCreate: string | null;
-  opportunity: string | null;
-  alreadyImported: boolean;
-}
-
-export interface BitrixDealPipeline {
-  id: string;
-  name: string;
-}
-
-export interface BitrixDealStage {
-  id: string;
-  name: string;
-}
-
-export interface BitrixUserOption {
-  id: string;
-  name: string;
-}
-
-export interface BitrixFieldOption {
-  code: string;
-  label: string;
-}
+import { BitrixImportBulkEditModal } from './bitrixImport/BitrixImportBulkEditModal.js';
+import { BitrixImportDealCard } from './bitrixImport/BitrixImportDealCard.js';
+import { BitrixImportFilters } from './bitrixImport/BitrixImportFilters.js';
+import { BitrixImportHeader } from './bitrixImport/BitrixImportHeader.js';
+import { BitrixImportLeadCard } from './bitrixImport/BitrixImportLeadCard.js';
+import { BitrixImportToolbar } from './bitrixImport/BitrixImportToolbar.js';
+import type {
+  BitrixDealPipeline,
+  BitrixDealStage,
+  BitrixDealSummary,
+  BitrixFieldOption,
+  BitrixImportMode,
+  BitrixImportResult,
+  BitrixLeadSummary,
+  BitrixQuickFilter,
+  BitrixSortBy,
+  BitrixUserOption,
+} from './bitrixImport/types.js';
 
 interface BitrixImportPanelProps {
   connectionId: string;
@@ -75,7 +42,7 @@ interface BitrixImportPanelProps {
 export function BitrixImportPanel({ connectionId }: BitrixImportPanelProps) {
   const { currentUser } = useAuth();
   const canPickAnyVendor = !!currentUser && hasRequiredRole(currentUser.role, ['ADMIN', 'GESTOR']);
-  const [mode, setMode] = useState<'deals' | 'leads'>('deals');
+  const [mode, setMode] = useState<BitrixImportMode>('deals');
 
   // ── Modo Negócios ──
   const [pipelines, setPipelines] = useState<BitrixDealPipeline[]>([]);
@@ -92,10 +59,8 @@ export function BitrixImportPanel({ connectionId }: BitrixImportPanelProps) {
   const [leads, setLeads] = useState<BitrixLeadSummary[]>([]);
 
   // ── Filtros Locais & Ordenação ──
-  const [quickFilter, setQuickFilter] = useState<'all' | 'unimported' | 'has_phone' | 'has_value'>(
-    'all',
-  );
-  const [sortBy, setSortBy] = useState<'recent' | 'value' | 'name'>('recent');
+  const [quickFilter, setQuickFilter] = useState<BitrixQuickFilter>('all');
+  const [sortBy, setSortBy] = useState<BitrixSortBy>('recent');
 
   // ── Busca por Nome ──
   const [search, setSearch] = useState('');
@@ -123,18 +88,14 @@ export function BitrixImportPanel({ connectionId }: BitrixImportPanelProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [importing, setImporting] = useState(false);
   const [importingSingleId, setImportingSingleId] = useState<string | null>(null);
-  const [importResult, setImportResult] = useState<{
-    imported: number;
-    skipped: number;
-    skippedConflicts: number;
-    skippedNotOwned: number;
-    failed?: number;
-  } | null>(null);
+  const [importResult, setImportResult] = useState<BitrixImportResult | null>(null);
   const [restrictedWarning, setRestrictedWarning] = useState('');
 
   // ── Modal de Edição em Lote ──
   const [showBulkEditModal, setShowBulkEditModal] = useState(false);
   const [bulkTemperature, setBulkTemperature] = useState<'Frio' | 'Morno' | 'Quente'>('Morno');
+
+  const currentYear = new Date().getFullYear();
 
   useEffect(() => {
     api
@@ -425,101 +386,134 @@ export function BitrixImportPanel({ connectionId }: BitrixImportPanelProps) {
   const userName = (id: string | null) =>
     (id && users.find((u) => u.id === id)?.name) || (id ? `Usuário #${id}` : null);
 
+  const currentItemsCount = mode === 'deals' ? deals.length : leads.length;
+
   return (
     <div className="mt-6 pt-6 border-t border-line space-y-4">
-      {/* Header com Indicador de Saúde do Portal Bitrix */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-brand/10 via-brand-2/5 to-transparent p-5 rounded-3xl border border-brand/20 shadow-sm">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand to-brand-2 flex items-center justify-center text-on-brand shadow-lg shadow-brand/30">
-            <Layers className="w-6 h-6" />
-          </div>
-          <div>
-            <h3 className="text-base font-bold text-ink flex items-center gap-2">
-              Importador Inteligente Bitrix24
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                Conexão Segura & Ativa
-              </span>
-            </h3>
-            <p className="text-xs text-ink-2">
-              Filtre por vendedor, etapa e oportunidade. Importe com 1 clique.{' '}
-              {total > 0 && (
-                <strong className="text-ink font-bold">{total} registro(s) no portal.</strong>
-              )}
-            </p>
-          </div>
-        </div>
+      <BitrixImportHeader total={total} loading={loading} onRefresh={() => load(start)} />
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => load(start)}
-            disabled={loading}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-ink-2 hover:text-ink bg-surface border border-line rounded-2xl shadow-sm hover:shadow transition-colors disabled:opacity-50"
-            title="Recarregar dados do Bitrix24"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            Atualizar Portal
-          </button>
-        </div>
-      </div>
-
-      {/* Alternador de Modo: Negócios x Leads + Indicadores de Valor */}
-      <BitrixImportModeBar
+      <BitrixImportToolbar
         mode={mode}
         onModeChange={setMode}
         totalSelectedValue={totalSelectedValue}
         selectedCount={selected.size}
-        onOpenBulkEdit={() => setShowBulkEditModal(true)}
-        onImportSelected={importSelected}
         importing={importing}
+        onOpenBulkEdit={() => setShowBulkEditModal(true)}
+        onImportSelected={() => void importSelected()}
       />
 
-      {/* Painel Avançado de Filtros e Busca */}
-      <BitrixImportFiltersPanel
+      <BitrixImportFilters
         mode={mode}
-        canPickAnyVendor={canPickAnyVendor}
+        totalCount={currentItemsCount}
         search={search}
-        setSearch={setSearch}
+        onSearchChange={setSearch}
         quickFilter={quickFilter}
-        setQuickFilter={setQuickFilter}
-        sortBy={sortBy}
-        setSortBy={setSortBy}
-        customFieldCode={customFieldCode}
-        setCustomFieldCode={setCustomFieldCode}
-        customFieldValue={customFieldValue}
-        setCustomFieldValue={setCustomFieldValue}
-        fields={fields}
+        onQuickFilterChange={setQuickFilter}
         pipelines={pipelines}
         stages={stages}
-        users={users}
         stageId={stageId}
-        setStageId={setStageId}
+        onStageChange={setStageId}
         assignedById={assignedById}
-        setAssignedById={setAssignedById}
+        onAssignedByChange={setAssignedById}
+        users={users}
+        canPickAnyVendor={canPickAnyVendor}
         month={month}
-        setMonth={setMonth}
+        onMonthChange={setMonth}
         year={year}
-        setYear={setYear}
-        totalItems={mode === 'deals' ? deals.length : leads.length}
+        onYearChange={setYear}
+        currentYear={currentYear}
+        sortBy={sortBy}
+        onSortByChange={setSortBy}
+        fields={fields}
+        customFieldCode={customFieldCode}
+        onCustomFieldCodeChange={setCustomFieldCode}
+        customFieldValue={customFieldValue}
+        onCustomFieldValueChange={setCustomFieldValue}
       />
 
-      <BitrixImportResultBanners
-        error={error}
-        restrictedWarning={restrictedWarning}
-        importResult={importResult}
-      />
+      {error && (
+        <p className="text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 p-3.5 rounded-2xl border border-red-200">
+          {error}
+        </p>
+      )}
+      {!error && restrictedWarning && (
+        <p className="text-xs text-warning-active dark:text-warning flex items-center gap-1.5 bg-amber-50 dark:bg-amber-500/10 p-3.5 rounded-2xl border border-amber-200 font-medium">
+          <ShieldCheck className="w-4 h-4 shrink-0 text-warning-active dark:text-warning" />{' '}
+          {restrictedWarning}
+        </p>
+      )}
+
+      {importResult && (
+        <div className="text-xs space-y-1 p-4 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 rounded-3xl shadow-sm">
+          <p className="text-green-700 dark:text-green-400 font-bold flex items-center gap-2 text-sm">
+            <CheckCircle2 className="w-4 h-4 text-green-600" /> {importResult.imported} registro(s)
+            importado(s) com sucesso
+            {importResult.skipped > 0 ? `, ${importResult.skipped} já existiam` : ''}.
+          </p>
+          {importResult.skippedConflicts > 0 && (
+            <p className="text-warning-active dark:text-warning flex items-center gap-1.5 pl-6">
+              <AlertTriangle className="w-3.5 h-3.5 shrink-0" /> {importResult.skippedConflicts}{' '}
+              bloqueado(s) — pertenciam a outro responsável.
+            </p>
+          )}
+          {importResult.skippedNotOwned > 0 && (
+            <p className="text-warning-active dark:text-warning flex items-center gap-1.5 pl-6">
+              <Lock className="w-3.5 h-3.5 shrink-0" /> {importResult.skippedNotOwned} ignorado(s) —
+              não atribuídos a você no Bitrix24.
+            </p>
+          )}
+          {!!importResult.failed && importResult.failed > 0 && (
+            <p className="text-red-600 dark:text-red-400 flex items-center gap-1.5 pl-6">
+              <XCircle className="w-3.5 h-3.5 shrink-0" /> {importResult.failed} falharam de verdade
+              (erro de rede/Bitrix) — os demais itens foram importados normalmente; tente novamente
+              só para estes.
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Barra Superior de Seleção em Massa */}
       {!loading && availableItems.length > 0 && (
-        <BitrixBulkSelectionBar
-          availableCount={availableItems.length}
-          allPageSelected={allPageSelected}
-          onToggleAllPage={toggleAllPage}
-          onSelectAllAvailable={selectAllAvailable}
-          selectedCount={selected.size}
-          onClearSelection={() => setSelected(new Set())}
-        />
+        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 bg-gradient-to-r from-surface-2 to-soft border border-line rounded-2xl shadow-sm">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={toggleAllPage}
+              className="flex items-center gap-2 text-xs font-bold text-ink hover:text-brand dark:hover:text-brand-2 transition-colors"
+            >
+              {allPageSelected ? (
+                <CheckSquare className="w-4 h-4 text-brand" />
+              ) : (
+                <Square className="w-4 h-4 text-ink-2" />
+              )}
+              <span>Selecionar Todos da Página ({availableItems.length} disponíveis)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={selectAllAvailable}
+              className="text-xs font-bold text-brand-ink hover:brightness-110 dark:text-brand flex items-center gap-1 underline underline-offset-2"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              Marcar Todos
+            </button>
+          </div>
+
+          {selected.size > 0 && (
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-bold text-brand-ink dark:text-brand bg-soft px-3 py-1 rounded-full">
+                {selected.size} selecionado(s)
+              </span>
+              <button
+                type="button"
+                onClick={() => setSelected(new Set())}
+                className="text-xs font-bold text-ink-2 hover:text-red-500 transition-colors"
+              >
+                Desmarcar Tudo
+              </button>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Lista de Cards Ricos para Registros de Clientes */}
@@ -531,205 +525,29 @@ export function BitrixImportPanel({ connectionId }: BitrixImportPanelProps) {
       ) : (
         <div className="max-h-[34rem] overflow-y-auto space-y-3 pr-1">
           {mode === 'deals'
-            ? processedDeals.map((deal) => {
-                const isSelected = selected.has(deal.id);
-                const isSingleImporting = importingSingleId === deal.id;
-
-                return (
-                  <div
-                    key={deal.id}
-                    className={`group relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-3xl border transition-colors ${
-                      deal.alreadyImported
-                        ? 'opacity-50 bg-surface-2 border-line'
-                        : isSelected
-                          ? 'bg-brand/10 border-brand/50 shadow-md shadow-brand/5 ring-1 ring-brand/30'
-                          : 'bg-surface border-line hover:border-brand/40 hover:bg-soft shadow-sm'
-                    }`}
-                  >
-                    <div className="flex items-start gap-3.5 min-w-0 flex-1">
-                      <div className="pt-1 shrink-0">
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          disabled={deal.alreadyImported}
-                          onChange={() => toggle(deal.id)}
-                          className="w-4 h-4 rounded border-line text-brand focus:ring-brand cursor-pointer"
-                        />
-                      </div>
-
-                      <div className="space-y-1.5 min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <div className="w-8 h-8 rounded-xl bg-soft text-brand-ink dark:text-brand flex items-center justify-center shrink-0 font-bold text-xs">
-                            <Building2 className="w-4 h-4" />
-                          </div>
-                          <h4 className="font-bold text-ink text-sm truncate">{deal.title}</h4>
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-soft text-brand-ink dark:text-brand border border-brand/20 text-[10px] font-bold">
-                            <Tag className="w-3 h-3" />
-                            {deal.stageLabel}
-                          </span>
-                          {deal.alreadyImported && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-2 text-ink-2 text-[10px] font-bold">
-                              <Check className="w-3 h-3" /> Já Importado
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs text-ink-2">
-                          {deal.assignedById && (
-                            <span className="flex items-center gap-1">
-                              <Users className="w-3.5 h-3.5 text-ink-2" />
-                              {userName(deal.assignedById)}
-                            </span>
-                          )}
-                          {deal.opportunity && (
-                            <span className="flex items-center gap-1 font-bold text-green-600 dark:text-green-400">
-                              <DollarSign className="w-3.5 h-3.5" />
-                              R$ {Number(deal.opportunity).toLocaleString('pt-BR')}
-                            </span>
-                          )}
-                          {deal.dateCreate && (
-                            <span className="flex items-center gap-1 text-ink-2">
-                              <CalendarDays className="w-3.5 h-3.5" />
-                              {new Date(deal.dateCreate).toLocaleDateString('pt-BR')}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Ação Individual de 1 Clique */}
-                    {!deal.alreadyImported && (
-                      <div className="flex items-center gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-line">
-                        <button
-                          type="button"
-                          onClick={() => importSingle(deal.id)}
-                          disabled={isSingleImporting || importing}
-                          className="flex items-center gap-1.5 px-3.5 py-2 bg-soft hover:bg-brand/20 text-brand-ink dark:text-brand border border-brand/20 rounded-xl text-xs font-bold transition-colors disabled:opacity-50"
-                        >
-                          {isSingleImporting ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <Zap className="w-3.5 h-3.5 text-brand" />
-                          )}
-                          {isSingleImporting ? 'Importando...' : 'Importar Agora'}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })
-            : processedLeads.map((lead) => {
-                const isSelected = selected.has(lead.id);
-                const isSingleImporting = importingSingleId === lead.id;
-                const whatsappUrl = lead.phone
-                  ? `https://wa.me/${lead.phone.replace(/\D/g, '')}`
-                  : null;
-
-                return (
-                  <div
-                    key={lead.id}
-                    className={`group relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-3xl border transition-colors ${
-                      lead.alreadyImported
-                        ? 'opacity-50 bg-surface-2 border-line'
-                        : isSelected
-                          ? 'bg-brand/10 border-brand/50 shadow-md shadow-brand/5 ring-1 ring-brand/30'
-                          : 'bg-surface border-line hover:border-brand/40 hover:bg-soft shadow-sm'
-                    }`}
-                  >
-                    <div className="flex items-start gap-3.5 min-w-0 flex-1">
-                      <div className="pt-1 shrink-0">
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          disabled={lead.alreadyImported}
-                          onChange={() => toggle(lead.id)}
-                          className="w-4 h-4 rounded border-line text-brand focus:ring-brand cursor-pointer"
-                        />
-                      </div>
-
-                      <div className="space-y-1.5 min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <div className="w-8 h-8 rounded-xl bg-soft text-brand-ink dark:text-brand flex items-center justify-center shrink-0 font-bold text-xs">
-                            <Users className="w-4 h-4" />
-                          </div>
-                          <h4 className="font-bold text-ink text-sm truncate">{lead.title}</h4>
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-soft text-brand-ink dark:text-brand border border-brand/20 text-[10px] font-bold">
-                            <Tag className="w-3 h-3" />
-                            {lead.statusLabel}
-                          </span>
-                          {lead.alreadyImported && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-2 text-ink-2 text-[10px] font-bold">
-                              <Check className="w-3 h-3" /> Já Importado
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs text-ink">
-                          {lead.contactName && (
-                            <span className="flex items-center gap-1 font-semibold">
-                              <Users className="w-3.5 h-3.5 text-ink-2" />
-                              {lead.contactName}
-                            </span>
-                          )}
-
-                          {lead.phone && (
-                            <span className="flex items-center gap-1 text-ink-2">
-                              <Phone className="w-3.5 h-3.5 text-green-500" />
-                              {lead.phone}
-                              {whatsappUrl && (
-                                <a
-                                  href={whatsappUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="ml-1 text-green-600 hover:text-green-700 inline-flex items-center gap-0.5 text-[10px] font-bold bg-green-50 dark:bg-green-500/10 px-1.5 py-0.5 rounded"
-                                  title="Abrir no WhatsApp"
-                                >
-                                  WhatsApp <ExternalLink className="w-2.5 h-2.5" />
-                                </a>
-                              )}
-                            </span>
-                          )}
-
-                          {lead.email && (
-                            <span className="flex items-center gap-1 text-ink-2">
-                              <Mail className="w-3.5 h-3.5 text-blue-500" />
-                              <a href={`mailto:${lead.email}`} className="hover:underline">
-                                {lead.email}
-                              </a>
-                            </span>
-                          )}
-
-                          {lead.dateCreate && (
-                            <span className="flex items-center gap-1 text-ink-2 ml-auto">
-                              <CalendarDays className="w-3.5 h-3.5" />
-                              {new Date(lead.dateCreate).toLocaleDateString('pt-BR')}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Ação Individual de 1 Clique */}
-                    {!lead.alreadyImported && (
-                      <div className="flex items-center gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-line">
-                        <button
-                          type="button"
-                          onClick={() => importSingle(lead.id)}
-                          disabled={isSingleImporting || importing}
-                          className="flex items-center gap-1.5 px-3.5 py-2 bg-soft hover:bg-brand/20 text-brand-ink dark:text-brand border border-brand/20 rounded-xl text-xs font-bold transition-colors disabled:opacity-50"
-                        >
-                          {isSingleImporting ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <Zap className="w-3.5 h-3.5 text-brand" />
-                          )}
-                          {isSingleImporting ? 'Importando...' : 'Importar Agora'}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+            ? processedDeals.map((deal) => (
+                <BitrixImportDealCard
+                  key={deal.id}
+                  deal={deal}
+                  selected={selected.has(deal.id)}
+                  importingBulk={importing}
+                  importingSingle={importingSingleId === deal.id}
+                  userName={userName}
+                  onToggle={() => toggle(deal.id)}
+                  onImportSingle={() => void importSingle(deal.id)}
+                />
+              ))
+            : processedLeads.map((lead) => (
+                <BitrixImportLeadCard
+                  key={lead.id}
+                  lead={lead}
+                  selected={selected.has(lead.id)}
+                  importingBulk={importing}
+                  importingSingle={importingSingleId === lead.id}
+                  onToggle={() => toggle(lead.id)}
+                  onImportSingle={() => void importSingle(lead.id)}
+                />
+              ))}
 
           {(mode === 'deals' ? processedDeals.length : processedLeads.length) === 0 && (
             <div className="p-10 text-center bg-surface-2 rounded-3xl border border-dashed border-line space-y-2">
@@ -744,27 +562,66 @@ export function BitrixImportPanel({ connectionId }: BitrixImportPanelProps) {
       )}
 
       {/* Paginação Inferior */}
-      <BitrixImportFooter
-        start={start}
-        next={next}
-        loading={loading}
-        pageCount={mode === 'deals' ? deals.length : leads.length}
-        total={total}
-        selectedCount={selected.size}
-        importing={importing}
-        onLoad={load}
-        onOpenBulkEdit={() => setShowBulkEditModal(true)}
-        onImportSelected={importSelected}
-      />
-      {/* Modal de Configurações e Edição em Lote */}
-      <BitrixBulkEditDialog
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => load(Math.max(0, start - 50))}
+            disabled={loading || start === 0}
+            className="px-4 py-2 border border-line rounded-2xl text-xs font-bold text-ink hover:bg-surface-2 disabled:opacity-30 transition-colors"
+          >
+            ← Anterior
+          </button>
+          <button
+            type="button"
+            onClick={() => next != null && load(next)}
+            disabled={loading || next == null}
+            className="px-4 py-2 border border-line rounded-2xl text-xs font-bold text-ink hover:bg-surface-2 disabled:opacity-30 transition-colors"
+          >
+            Próxima →
+          </button>
+          <span className="text-xs text-ink-2 pl-2">
+            Exibindo {start + 1}–{start + currentItemsCount} de {total}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {selected.size > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowBulkEditModal(true)}
+              className="flex items-center gap-1.5 px-4 py-2.5 bg-surface-2 hover:bg-line text-ink text-xs font-bold rounded-2xl transition-colors"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              Editar ({selected.size})
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => void importSelected()}
+            disabled={importing || selected.size === 0}
+            className="flex items-center gap-1.5 px-6 py-2.5 bg-gradient-to-r from-brand-active to-brand-2 hover:brightness-110 text-on-brand text-xs font-bold rounded-2xl shadow-md shadow-brand-active/20 transition-colors disabled:opacity-40"
+          >
+            {importing ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
+            {importing
+              ? 'Importando...'
+              : `Importar ${selected.size > 0 ? `(${selected.size})` : 'selecionados'}`}
+          </button>
+        </div>
+      </div>
+
+      <BitrixImportBulkEditModal
         isOpen={showBulkEditModal}
-        onClose={() => setShowBulkEditModal(false)}
         selectedCount={selected.size}
-        temperature={bulkTemperature}
-        onTemperatureChange={setBulkTemperature}
+        bulkTemperature={bulkTemperature}
+        onBulkTemperatureChange={setBulkTemperature}
         importing={importing}
-        onApply={applyBulkEditAndImport}
+        onClose={() => setShowBulkEditModal(false)}
+        onApplyAndImport={() => void applyBulkEditAndImport()}
       />
     </div>
   );

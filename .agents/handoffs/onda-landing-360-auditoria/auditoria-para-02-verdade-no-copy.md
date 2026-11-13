@@ -1,7 +1,7 @@
 - De: Auditoria ad-hoc (Devin CLI) — promover a 00 se virar missão formal
 - Para: 02 — Produto e UX
 - Onda: landing-360-auditoria
-- Status: aberto
+- Status: em-andamento
 - Prioridade: alto
 
 ## Problema
@@ -70,3 +70,15 @@ Checklist de execução:
   comprador enterprise que verifica referências.
 - Enquanto a decisão não chega, prioridade é não piorar: não adicionar novos
   claims numéricos.
+
+## Resolução parcial (Agente 02 — 2026-11-12, commit `510bce4bd`)
+
+Feito:
+- Métricas rebaixadas para "projeções" (taxa de conversão, ROI/payback, disponibilidade → "Meta de SLA").
+- Legendas "Métricas ilustrativas" e "Histórias ilustrativas de uso" adicionadas.
+- Selo "100% Conforme LGPD" → "Conformidade LGPD por design".
+- Headline "em até 3.8x" → "projeções de até 3.8x".
+- Escassez fabricada removida ("Apenas 4 vagas nesta semana" → Implantação Assistida neutra).
+- Promessa "em até 15 minutos" removida do fluxo de lead.
+
+Pendente (decisão comercial/dono): alegações de certificação (ISO 27001 Ready mantido como "Ready"), número de agentes "20+" (consistente em todo o copy, mas sem lastro público), depoimentos nominados (mantidos sob rótulo ilustrativo).

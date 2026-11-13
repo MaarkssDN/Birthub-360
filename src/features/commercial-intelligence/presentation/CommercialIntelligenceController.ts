@@ -160,6 +160,21 @@ export class CommercialIntelligenceController {
     }
   };
 
+  /** F4 (handoff 00→04): endpoint dedicado do relatório "Saúde da Sincronização Bitrix24" —
+   * antes só existia composto em `crmQuality.bitrixSync`, sem rota própria (o 9º dos 17
+   * relatórios do Documento Mestre estava "Parcial" no inventário). Mesma fórmula já
+   * documentada em `metricsDictionary.ts` (`bitrix_sincronizacao`), sem filtro comercial —
+   * saúde de sincronização é operacional (ver `CommercialIntelligenceUseCases.bitrixSyncHealth`). */
+  getBitrixSyncHealth = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { organizationId } = (req as AuthRequest).user;
+      const data = await this.useCases.bitrixSyncHealth(organizationId);
+      res.json({ success: true, data });
+    } catch (error: any) {
+      next(error);
+    }
+  };
+
   getDeals = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { organizationId } = (req as AuthRequest).user;

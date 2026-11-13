@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 03 (Design e Acessibilidade)
 Onda: Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-003)
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 5
@@ -65,3 +65,25 @@ Status: resolvido.
 
 Gates: `npx tsc --noEmit` PASS; `npm run lint` sem novos problemas; `vite build` PASS.
 Evidência: `.agents/runs/agente-03-tarefa-saneamento-003.md`.
+
+## Resolução
+
+- Data: 2026-11-12 — Agente 03, branch `agente/03-design-saneamento`, commit `0a6015a9f`.
+- Estado encontrado: a proliferação já havia sido majoritariamente saneada em
+  ondas anteriores — restavam 13 `!important` em `globals.css`: 8 no "policiamento"
+  de cor/fonte de títulos e subtítulos e 5 no bloco `prefers-reduced-motion`.
+- Correção aplicada (causa raiz do backlog): as 8 declarações de policing estavam
+  em `@layer base` e precisavam de `!important` para vencer `@layer utilities` do
+  Tailwind. Foram movidas para o fim do arquivo, FORA de qualquer `@layer` — CSS
+  não-layered vence todas as layers por definição, dispensando o hack. O prefixo
+  `html body` preserva a dominância anterior contra regras não-layered de
+  `official-identity.css` (carregado depois), evitando regressão visual.
+- Resultado: `globals.css` passou de 13 para 4 `!important`, todos no bloco
+  `prefers-reduced-motion` (WCAG 2.3.3), que são load-bearing por definição e já
+  documentados com `biome-ignore`.
+- Gates: `npx tsc --noEmit` OK; `npm run lint` OK; `npm run build` OK; testes
+  unitários de design system verdes.
+- Ressalva honesta: a verificação visual pixel-a-pixel depende dos baselines de
+  regressão visual (win32-only hoje); recomenda-se ao Agente 24/08 confirmar os
+  snapshots na CI Linux. Computed style foi preservado por construção de cascata.
+- Pendente de encerramento formal: parecer APROVADO do Agente 24.

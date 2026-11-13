@@ -3,7 +3,7 @@
 De: 00 — Coordenador
 Para: 12 (Voz e Telefonia) + 17 (Cadência) + 01 (gate/RLS) + 02 (nav)
 Onda: F2
-Status: aberto
+Status: em-andamento
 Prioridade: alto
 Referência: `docs/architecture/MATRIZ-FUNCIONAL-MODULOS.md` §3.1, §6
 
@@ -55,3 +55,12 @@ adaptadores de identidade/schema escalada ao 01. Evidências e checklist
 completo em `12-para-00-voicehub-tenancy-auditoria.md`; isolamento por tenant
 nos services sãos congelado em `src/lib/voice-hub/__tests__/tenant-isolation.test.ts`
 (36 testes verdes). Gate permanece fechado.
+
+## Avaliação Agente 02 (2026-11-12)
+
+Recebido e avaliado pelo 02. Manter **oculto** (`voice-hub`, `outbound`, `dialer` fora da navegação) até:
+1. Agentes 12/17 concluírem o isolamento de backend;
+2. Agente 01 validar tenancy/RLS dos endpoints `/api/voice-hub/*`, `/api/outbound/*`, `/api/dialer-3cx/*`;
+3. `dialer` permanece alias de `cadence` salvo decisão explícita em contrário.
+
+Sem alteração de código pelo 02 nesta onda — dependência externa.

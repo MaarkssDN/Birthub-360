@@ -22,6 +22,7 @@
  */
 import type {
   AgingReport,
+  BitrixSyncHealth,
   ChannelAttributionReport,
   CommercialGoalDTO,
   CommercialIntelligenceFilter,
@@ -54,8 +55,10 @@ import { buildExecutiveExport, type ExecutiveExportPayload } from './executiveEx
 import { simulateHiringScenario } from './hiringScenarioSimulator.js';
 import { getGoal as getGoalCommand, setGoal as setGoalCommand } from './goalCommands.js';
 import { computeHealthScore } from './healthScore.js';
+import { isDealOpen } from './pipelineEligibility.js';
 import { buildAging } from './queries/agingReport.js';
 import { buildAlerts } from './queries/alertsReport.js';
+import { computeBitrixSyncHealth } from './queries/bitrixSyncHealthReport.js';
 import { buildFunnelBottlenecks } from './queries/bottleneckReport.js';
 import { buildChannelAttribution } from './queries/channelAttributionReport.js';
 import { buildCloseDateIntelligence } from './queries/closeDateIntelligenceReport.js';
@@ -236,6 +239,17 @@ export class CommercialIntelligenceUseCases {
     return this.cachedReport('crm-quality', organizationId, filter, now, undefined, (n) =>
       buildCrmQuality(this.repository, organizationId, filter, n),
     );
+  }
+
+  // ─── Saúde da integração Bitrix24 (F4 — endpoint dedicado do relatório que antes
+  // só existia composto dentro de `crmQuality.bitrixSync`) ────────────────────────
+  // Escopo: TODOS os negócios abertos do funil Negócio da organização (não o recorte do
+  // filtro comercial da tela) — saúde de sincronização é operacional, não segue mês/owner,
+  // mesma justificativa da janela fixa de 30 dias dentro de `computeBitrixSyncHealth`.
+  async bitrixSyncHealth(organizationId: string, now = new Date()): Promise<BitrixSyncHealth> {
+    const deals = await this.repository.findDeals(organizationId);
+    const open = deals.filter(isDealOpen);
+    return computeBitrixSyncHealth(this.repository, organizationId, open, now);
   }
 
   // ─── Drill-down (seção 29) ────────────────────────────────────────────────

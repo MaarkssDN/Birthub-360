@@ -17,6 +17,7 @@ vi.mock('../../../../src/components/brand/CompanyBrandIcon.js', () => ({
   CompanyBrandIcon: () => null,
 }));
 
+import { toast } from '../../../../src/lib/toast.js';
 import { ExternalCrmPanel } from '../../../../src/features/integrations/components/ExternalCrmPanel.js';
 import { toast } from '../../../../src/lib/toast.js';
 
@@ -57,6 +58,7 @@ const LIST_HUBSPOT = 'GET /api/integrations/external-crm?provider=hubspot';
 
 beforeEach(() => {
   authState.currentUser = { role: 'ADMIN' };
+  vi.clearAllMocks();
 });
 
 afterEach(() => {
@@ -325,5 +327,34 @@ describe('ExternalCrmPanel', () => {
     expect(screen.getByText('Nenhum portal HubSpot conectado')).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'Atualizar status de HubSpot' }));
+  });
+
+  it('aborta a listagem via AbortController ao desmontar, sem erro/ toast (S9383)', async () => {
+    let seenSignal: AbortSignal | undefined;
+    const fetchMock = vi.fn((_url: string, init?: RequestInit) => {
+      seenSignal = init?.signal as AbortSignal | undefined;
+      return new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener('abort', () =>
+          reject(new DOMException('The operation was aborted.', 'AbortError')),
+        );
+      });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { unmount } = render(
+      <ExternalCrmPanel providerKey="hubspot" displayName="HubSpot" authType="oauth2" />,
+    );
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(seenSignal).toBeInstanceOf(AbortSignal);
+    expect(seenSignal?.aborted).toBe(false);
+
+    unmount();
+    expect(seenSignal?.aborted).toBe(true);
+
+    // A rejeição por AbortError não pode virar erro de UI nem toast.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(toast.error).not.toHaveBeenCalled();
+    expect(screen.queryByRole('alert')).toBeNull();
   });
 });

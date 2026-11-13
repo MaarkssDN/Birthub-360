@@ -9,6 +9,14 @@ vi.mock('@/lib/prisma', () => ({
       updateMany: vi.fn(),
       deleteMany: vi.fn(),
     },
+    // DEBT-NOT-001: leituras de broadcast são persistidas por usuário na tabela Setting
+    // (key `notifications.broadcastReads`). Sem este delegate o serviço cai no fallback
+    // em memória — os testes abaixo cobrem os dois caminhos.
+    setting: {
+      findFirst: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+    },
   },
 }));
 
@@ -21,6 +29,8 @@ import { logger } from '@/lib/logger';
 import { notificationService } from '@/features/notifications/notification.service';
 
 const notif = prisma.notification as unknown as Record<string, ReturnType<typeof vi.fn>>;
+const setting = (prisma as unknown as { setting: Record<string, ReturnType<typeof vi.fn>> })
+  .setting;
 const ORG = 'org-1';
 const USER = 'user-1';
 const USER_B = 'user-2';
@@ -122,6 +132,53 @@ describe('NotificationService.markRead', () => {
     expect(unreadForB).toHaveLength(1);
     expect(unreadForB[0]?.id).toBe('bcast-1');
     expect(unreadForB[0]?.readAt).toBeNull();
+  });
+
+  it('DEBT-NOT-001 (persistência): grava leitura broadcast na Setting do usuário sem afetar colega', async () => {
+    const broadcastItem = {
+      id: 'bcast-p1',
+      title: 'Meta Atingida',
+      body: null,
+      kind: 'Info',
+      entity: null,
+      entityId: null,
+      userId: null,
+      readAt: null,
+      createdAt: new Date('2026-11-01T10:00:00Z'),
+      automation: null,
+    };
+
+    // Sem Setting prévia: findFirst devolve null tanto na carga quanto na verificação de update.
+    setting.findFirst.mockResolvedValue(null);
+    setting.create.mockResolvedValue({ id: 'setting-1' });
+    setting.update.mockResolvedValue({});
+
+    // markRead: updateMany pessoal = 0; confirmação de broadcast via findMany.
+    notif.updateMany.mockResolvedValue({ count: 0 });
+    notif.findMany
+      .mockResolvedValueOnce([{ id: 'bcast-p1' }]) // broadcast existe no tenant
+      .mockResolvedValueOnce([broadcastItem]) // list(ORG, USER)
+      .mockResolvedValueOnce([broadcastItem]); // list(ORG, USER_B)
+
+    expect(await notificationService.markRead(ORG, 'bcast-p1', USER)).toBe(true);
+
+    // Persistência real: cria Setting com a chave por-usuário contendo o id lido.
+    const createCall = setting.create.mock.calls.find(
+      (c) => c[0]?.data?.key === 'notifications.broadcastReads',
+    );
+    expect(createCall).toBeDefined();
+    expect(createCall?.[0].data.organizationId).toBe(ORG);
+    expect(createCall?.[0].data.userId).toBe(USER);
+    expect(createCall?.[0].data.value).toMatchObject({ 'bcast-p1': expect.any(String) });
+
+    // Usuário A não vê mais o broadcast como não lido...
+    const unreadForA = await notificationService.list(ORG, USER, true);
+    expect(unreadForA).toHaveLength(0);
+
+    // ...mas o colega B continua vendo (Setting dele está vazia → findFirst null).
+    const unreadForB = await notificationService.list(ORG, USER_B, true);
+    expect(unreadForB).toHaveLength(1);
+    expect(unreadForB[0]?.id).toBe('bcast-p1');
   });
 
   it('markAllRead devolve quantas foram marcadas (pessoais + broadcasts não lidos pelo usuário)', async () => {

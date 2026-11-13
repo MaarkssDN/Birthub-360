@@ -81,3 +81,10 @@ pilhas de fonte em `official-identity.css` → handoff
 **Observação de propriedade:** `docs/AGENTS.md` atribui `docs/` ao Agente 08,
 mas este handoff designou `docs/BrandConstitution.md` ao Agente 11 por ser
 ativo de governança de marca; alteração foi cirúrgica e restrita a esse arquivo.
+
+**Fechamento (Agente 11 — 2026-11-12):** condição de encerramento atendida —
+parecer **APROVADO** do Agente 24 em
+`.agents/reviews/24-revisao-onda-saneamento-entregas-01-05-07-11-15-20261110.md`
+(§6; commits `d3faa163b`+`29a28bdc0` já presentes em `main`). Mapeamentos de
+token corrigidos e divergências residuais rastreadas no handoff 11→03. Sem
+alteração adicional nesta sessão.

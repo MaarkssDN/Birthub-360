@@ -31,7 +31,7 @@ este último composto dentro de `crmQualityReport.ts` — não tem endpoint pró
 | 6 | `leadingIndicatorsReport.ts` | `GET …/leading-indicators` | `LeadingIndicatorsTab.tsx` | **Existe** | `routes:47-49`; `LeadingIndicatorsTab.tsx` |
 | 7 | `alertsReport.ts` | `GET …/alerts` | `AlertsPanel.tsx` / `ExecutiveOverviewTab.tsx:163` | **Existe** | `routes:50` |
 | 8 | `crmQualityReport.ts` | `GET …/crm-quality` | `CrmQualityTab.tsx` ("Qualidade do CRM") | **Existe** | `routes:51`; compõe `bitrixSyncHealthReport` |
-| 9 | `bitrixSyncHealthReport.ts` | — (composto em `/crm-quality`) | dentro de `CrmQualityTab` | **Parcial** | sem endpoint próprio; exposto apenas como sub-métrica de CRM Quality |
+| 9 | `bitrixSyncHealthReport.ts` | `GET …/bitrix-sync-health` (endpoint dedicado adicionado na execução deste handoff) + composto em `/crm-quality` | dentro de `CrmQualityTab` | **Existe** | `computeBitrixSyncHealth` via `CommercialIntelligenceUseCases.bitrixSyncHealth`; `commercialIntelligence.routes.ts` (`/bitrix-sync-health`) |
 | 10 | `drillDownReport.ts` | `GET …/deals` + `GET …/deals/:leadId/forecast` | `DealDrillDownDrawer.tsx`, `PipelineForecastTab.tsx` | **Existe** | `routes:52-55` |
 | 11 | `historicalTrendsReport.ts` | `GET …/trends` | `TrendChartCard.tsx`, `PerformanceTab.tsx:110` | **Existe** | `routes:61` |
 | 12 | `forecastAccuracyReport.ts` | `GET …/forecast-accuracy` | `ForecastAccuracyCard.tsx` | **Existe** | `routes:65`; depende do worker semanal de snapshot |
@@ -41,7 +41,7 @@ este último composto dentro de `crmQualityReport.ts` — não tem endpoint pró
 | 16 | `sellerBenchmarkReport.ts` | `GET …/seller-benchmark` | `SellerBenchmarkCard.tsx` | **Existe** | `routes:74` |
 | 17 | `channelAttributionReport.ts` | `GET …/channel-attribution` | `ChannelAttributionCard.tsx` | **Existe** | `routes:78-80`; versão reduzida (single-touch), multi-touch é handoff bloqueado |
 
-**Resumo:** 16 existem com endpoint próprio · 1 parcial (bitrixSyncHealth, sem endpoint dedicado).
+**Resumo:** 17/17 existem — 16 com endpoint próprio desde a auditoria + `bitrixSyncHealth` promovido a endpoint dedicado (`GET /api/commercial-intelligence/bitrix-sync-health`) na execução do handoff F4 (antes: parcial, só sub-métrica de `/crm-quality`).
 
 ### Relatórios/endpoints além dos 17 (P05 e suporte)
 

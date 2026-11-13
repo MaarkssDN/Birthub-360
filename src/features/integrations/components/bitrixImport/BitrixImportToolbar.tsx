@@ -1,24 +1,30 @@
-import { Building2, DollarSign, Download, Edit3, Loader2, Users } from 'lucide-react';
+/**
+ * Alternador de modo (Negócios x Leads) + métricas de seleção + ações de importação
+ * em lote. Extraído de BitrixImportPanel.tsx (TAREFA-SANEAMENTO-004 / BT360-DT-0030).
+ */
 
-interface BitrixImportModeBarProps {
-  mode: 'deals' | 'leads';
-  onModeChange: (mode: 'deals' | 'leads') => void;
+import { Building2, DollarSign, Download, Edit3, Loader2, Users } from 'lucide-react';
+import type { BitrixImportMode } from './types.js';
+
+interface BitrixImportToolbarProps {
+  mode: BitrixImportMode;
+  onModeChange: (mode: BitrixImportMode) => void;
   totalSelectedValue: number;
   selectedCount: number;
+  importing: boolean;
   onOpenBulkEdit: () => void;
   onImportSelected: () => void;
-  importing: boolean;
 }
 
-export function BitrixImportModeBar({
+export function BitrixImportToolbar({
   mode,
   onModeChange,
   totalSelectedValue,
   selectedCount,
+  importing,
   onOpenBulkEdit,
   onImportSelected,
-  importing,
-}: BitrixImportModeBarProps) {
+}: BitrixImportToolbarProps) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-4">
       <div className="flex gap-1.5 p-1.5 bg-surface-2 rounded-2xl border border-line w-fit">

@@ -37,8 +37,11 @@ html.dark,
   --accent-violet: var(--color-heading-iris);
   --accent-cyan: var(--color-heading-cyan);
   --pulse: var(--color-heading-pink);
-  --font-brand-sans: "Plus Jakarta Sans", "Nunito", ui-rounded, var(--font-interface);
-  --font-brand-display: "Outfit", "Plus Jakarta Sans", "Nunito", ui-rounded, var(--font-heading);
+  /* Pilhas canônicas self-hosted (Sora display / Inter interface / IBM Plex Mono
+     dados) — famílias remotas (Plus Jakarta Sans/Nunito/Outfit) removidas em
+     globals.css; ver TAREFA-SANEAMENTO-017. */
+  --font-brand-sans: var(--font-interface);
+  --font-brand-display: var(--font-heading);
   --font-brand-mono: var(--font-data);
   --shadow-card-value: var(--shadow-card);
   --shadow-card-hover-value: var(--shadow-elevated);

@@ -3,7 +3,7 @@
 De: 00 — Coordenador (registro pelo Agente 15)
 Para: 02 — Produto e UX (dono de `src/features/settings/**`, ver `src/features/settings/AGENTS.md`)
 Onda: F1 (pós-persistência de settings por pilar)
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Referência: `docs/architecture/HOTSPOT_EXCEPTIONS.md` (exceção temporária de `PillarSettingsPlaceholder.tsx`)
 
@@ -35,3 +35,10 @@ Não estender a exceção (nem o prazo, nem o teto). Quando o arquivo estiver no
 ## Resolução
 
 (preenchido pelo Agente 02 ao resolver)
+
+## Resolução (Agente 02 — 2026-11-12, branch `agente/02-ux-saneamento`)
+
+- `PillarSettingsPlaceholder.tsx`: 1235 → **663 linhas**. JSX de "Ferramentas & Regras" extraído para novo `PillarToolsForms.tsx` (680 linhas).
+- Contrato GET/PUT `/api/settings/pillars/:pillar` preservado; placeholders honestos de permissões/triggers/integrações mantidos.
+- Exceção removida de `docs/architecture/HOTSPOT_EXCEPTIONS.md`; `npm run check:hotspots` ✅ (0 arquivos >1000 sem exceção).
+- Gates: tsc ✅, Biome ✅.

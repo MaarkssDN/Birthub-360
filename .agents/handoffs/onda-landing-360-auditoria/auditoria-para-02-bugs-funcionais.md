@@ -1,7 +1,7 @@
 - De: Auditoria ad-hoc (Devin CLI) — promover a 00 se virar missão formal
 - Para: 02 — Produto e UX
 - Onda: landing-360-auditoria
-- Status: aberto
+- Status: resolvido
 - Prioridade: alto
 
 ## Problema
@@ -63,3 +63,13 @@ Bugs funcionais confirmados no código da landing:
 ## Contexto adicional
 
 - `npx tsc --noEmit` passa — são bugs de lógica/estado, não de tipo.
+
+## Resolução (Agente 02 — 2026-11-12, commit `510bce4bd`)
+
+- `variant={abVariant}` passado ao `RoiSimulatorModal`; dock A/B duplicado removido (resta um, restrito a `import.meta.env.DEV`).
+- Variante C normalizada para A/B na leitura de query/session storage.
+- Estado SSO (`ssoDomain`) separado do e-mail de login.
+- Medidor de força de senha exibido apenas em `authMode === 'signup'`.
+- Scroll reveal não re-adiciona `b360-reveal` em elementos já revelados.
+- Modo luxury gateado por `import.meta.env.DEV`.
+- Gates: tsc ✅, Biome ✅, `Landing360.test.tsx` 11/11 ✅.

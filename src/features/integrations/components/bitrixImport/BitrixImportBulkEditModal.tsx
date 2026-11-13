@@ -1,25 +1,30 @@
+/**
+ * Modal de edição em lote do importador Bitrix24 (temperatura inicial do lead).
+ * Extraído de BitrixImportPanel.tsx (TAREFA-SANEAMENTO-004 / BT360-DT-0030).
+ */
+
 import { Download, Edit3, Flame, Loader2, Sparkles } from 'lucide-react';
 import { Dialog } from '../../../../components/ui/Dialog.js';
 
-interface BitrixBulkEditDialogProps {
+interface BitrixImportBulkEditModalProps {
   isOpen: boolean;
-  onClose: () => void;
   selectedCount: number;
-  temperature: 'Frio' | 'Morno' | 'Quente';
-  onTemperatureChange: (temp: 'Frio' | 'Morno' | 'Quente') => void;
+  bulkTemperature: 'Frio' | 'Morno' | 'Quente';
+  onBulkTemperatureChange: (value: 'Frio' | 'Morno' | 'Quente') => void;
   importing: boolean;
-  onApply: () => void;
+  onClose: () => void;
+  onApplyAndImport: () => void;
 }
 
-export function BitrixBulkEditDialog({
+export function BitrixImportBulkEditModal({
   isOpen,
-  onClose,
   selectedCount,
-  temperature,
-  onTemperatureChange,
+  bulkTemperature,
+  onBulkTemperatureChange,
   importing,
-  onApply,
-}: BitrixBulkEditDialogProps) {
+  onClose,
+  onApplyAndImport,
+}: BitrixImportBulkEditModalProps) {
   return (
     <Dialog
       isOpen={isOpen}
@@ -44,14 +49,14 @@ export function BitrixBulkEditDialog({
         <>
           <button
             type="button"
-            onClick={() => onClose()}
+            onClick={onClose}
             className="px-4 py-2.5 text-xs font-bold text-ink-2 hover:bg-surface-2 rounded-2xl transition-colors"
           >
             Cancelar
           </button>
           <button
             type="button"
-            onClick={onApply}
+            onClick={onApplyAndImport}
             disabled={importing}
             className="flex items-center gap-1.5 px-5 py-2.5 bg-gradient-to-r from-brand-active to-brand-2 hover:brightness-110 text-on-brand text-xs font-bold rounded-2xl shadow-md shadow-brand-active/20 transition-colors disabled:opacity-50"
           >
@@ -82,9 +87,9 @@ export function BitrixBulkEditDialog({
               <button
                 key={temp}
                 type="button"
-                onClick={() => onTemperatureChange(temp)}
+                onClick={() => onBulkTemperatureChange(temp)}
                 className={`flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold rounded-2xl border transition-colors ${
-                  temperature === temp
+                  bulkTemperature === temp
                     ? 'bg-gradient-to-r from-brand-active to-brand-2 text-on-brand border-brand-active shadow-md shadow-brand-active/20'
                     : 'bg-surface-2 border-line text-ink hover:bg-line'
                 }`}
@@ -100,13 +105,13 @@ export function BitrixBulkEditDialog({
 
         <div className="pt-2 border-t border-line">
           {/* SEC/UX (achado de auditoria): este controle disparava até 100 ligações reais via
-                   provedor pago (Bland AI/Birthub Voices) sem nenhuma proteção de volume — a opção
-                   nunca foi de fato conectada ao backend (o usuário configurava, recebia toast de
-                   sucesso, e nenhuma ligação saía). Em vez de ligar isso silenciosamente numa
-                   correção de bug (decisão de produto/custo/compliance que exige throttling
-                   dedicado, não algo para decidir aqui), o controle fica desabilitado e honesto até
-                   ter uma implementação própria — qualificação por voz individual já funciona (ver
-                   o lead importado no CRM). */}
+                    provedor pago (Bland AI/Birthub Voices) sem nenhuma proteção de volume — a opção
+                    nunca foi de fato conectada ao backend (o usuário configurava, recebia toast de
+                    sucesso, e nenhuma ligação saía). Em vez de ligar isso silenciosamente numa
+                    correção de bug (decisão de produto/custo/compliance que exige throttling
+                    dedicado, não algo para decidir aqui), o controle fica desabilitado e honesto até
+                    ter uma implementação própria — qualificação por voz individual já funciona (ver
+                    o lead importado no CRM). */}
           <div className="flex items-start gap-3 p-3.5 bg-surface-2 border border-line rounded-2xl opacity-70">
             <input
               type="checkbox"

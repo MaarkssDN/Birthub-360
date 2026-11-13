@@ -193,14 +193,6 @@ propósito por estar fora de "## Exceções ativas"):
 - **Registrado em:** 2026-09-24
 - **Reavaliar até:** 2026-11-30
 
-### `src/components/CrmBoard.tsx`
-
-- **Limite excepcional:** 1300 linhas
-- **Dono:** Agente 02 — Produto e UX
-- **Motivo:** Cruzou o limite de 1000 linhas (1003 linhas) após a modernização visual dos módulos operacionais (PR #729 / Onda F), aplicando tokens semânticos e estados de foco acessíveis WCAG AA. Ampliado para 1200 linhas devido a controles de filtros (enriquecimento/temperatura) e ação em lote de enriquecimento com IA. Exceção registrada para manter o pipeline liberado enquanto se planeja a extração de subcomponentes do pipeline e toolbar.
-- **Registrado em:** 2026-10-11
-- **Atualizado em:** 2026-10-16
-- **Reavaliar até:** 2026-11-30
 
 ### `src/features/crm/components/LeadDetailDrawer.tsx`
 
@@ -229,14 +221,6 @@ propósito por estar fora de "## Exceções ativas"):
 
 
 
-### `src/features/settings/components/PillarSettingsPlaceholder.tsx`
-
-- **Limite excepcional:** 1235 linhas (teto = tamanho atual medido por `npm run check:hotspots` na main `549dad47`; o arquivo não pode crescer)
-- **Dono:** Agente 02 — Produto e UX
-- **Motivo:** o commit `75dee1ab` (2026-11-11, Onda F1 — persistência real de settings por pilar) elevou o arquivo de 986 para 1235 linhas, conforme o gate mede (`content.split('\n').length` em `scripts/architecture/check-hotspots.ts`), cruzando o limite rígido de 1000. A exceção é temporária e apertada no tamanho atual da main (sem folga) para desbloquear `check:hotspots` sem alterar o limite geral do repositório. O dono do domínio (`src/features/settings/AGENTS.md`) deve dividir o componente até 2026-11-30 e remover esta exceção; não estender o prazo nem o teto. O PR #225 (format, ainda não mesclado) só reduz quebras de linha e permanecerá abaixo deste teto.
-- **Registrado em:** 2026-11-11
-- **Reavaliar até:** 2026-11-30
-
 
 ## Débito conhecido, abaixo do limite de falha (sem exceção necessária)
 
@@ -249,7 +233,7 @@ requerem exceção porque não quebram o gate, só ficam registrados aqui para n
 - `src/features/market-intelligence/server/accountIntelligence.service.ts` (857 linhas)
 - `src/features/intelligence/components/SwarmDashboard.tsx` (modularizado em 2026-11-10: 933 linhas, meta < 1000 atingida)
 - `src/features/crm/components/LeadDetailDrawer.tsx` (726 linhas)
-- `src/components/CrmBoard.tsx` (977 linhas, 2026-09-11)
+- `src/components/CrmBoard.tsx` (modularizado em 2026-11-12: 886 linhas + `CrmBoardToolbar.tsx`, meta < 1000 atingida)
 
 Se qualquer um desses cruzar 1000 linhas num PR futuro sem uma exceção registrada acima, o gate
 bloqueia normalmente — esta lista é só contexto, não é uma isenção.

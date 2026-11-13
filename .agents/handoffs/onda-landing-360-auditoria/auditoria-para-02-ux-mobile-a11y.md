@@ -1,7 +1,7 @@
 - De: Auditoria ad-hoc (Devin CLI) — promover a 00 se virar missão formal
 - Para: 02 — Produto e UX (com consulta a 03 — Design e Acessibilidade)
 - Onda: landing-360-auditoria
-- Status: aberto
+- Status: resolvido
 - Prioridade: normal
 
 ## Problema
@@ -52,3 +52,11 @@ UX mobile, ícones e footer:
 - Itens 17 e 22 têm componente de design — consultar o 03 antes de implementar
   o padrão de navegação mobile e a política de ícones/emoji.
 - WCAG: alvo de toque 44px nos novos controles mobile.
+
+## Resolução (Agente 02 — 2026-11-12, commit `510bce4bd`)
+
+- Navegação mobile implementada: botão hambúrguer + painel `b360-mobile-nav` visível <720px, alvos ≥44px, `aria-expanded`/`aria-controls`.
+- Glifos Unicode de `COMMAND_MODULES` substituídos por ícones Lucide estáveis (LayoutGrid, Radar, Repeat, TrendingUp, Gauge, Bot, Workflow, Headset, Settings, Smartphone, Share2).
+- Footer: link funcional `/terms` adicionado; itens de Conectividade viraram anchors `#ecossistema`; "Direitos do Titular" → `/privacy`.
+- Emojis removidos do chrome de UI (🔥❌✓🔒🧪⚡ → Lucide/texto).
+- Gates: tsc ✅, Biome ✅, testes landing ✅. Verificação visual 375px recomendada no PR (dev server).

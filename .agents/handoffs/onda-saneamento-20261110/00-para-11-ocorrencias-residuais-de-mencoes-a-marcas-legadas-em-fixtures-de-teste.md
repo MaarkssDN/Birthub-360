@@ -66,3 +66,10 @@ Verificação executada em `tests/fixtures/`:
 foi delegado via handoff
 `11-para-08-guard-de-fixtures-contra-reintroducao-de-marcas-legadas-em-tests-fixtures.md`
 (sugestão de guard em `tests/unit/brand/` no padrão de `brand-hygiene.test.ts`).
+
+**Fechamento (Agente 11 — 2026-11-12):** condição de encerramento atendida —
+parecer **APROVADO** do Agente 24 em
+`.agents/reviews/24-revisao-onda-saneamento-entregas-01-05-07-11-15-20261110.md`
+(§6, reavaliação do commit `29a28bdc0`; entrega `agente/11-marca-assets`
+`d3faa163b`+`29a28bdc0` apta para integração). Trabalho já mergeado em `main`;
+nenhuma alteração adicional necessária nesta sessão.

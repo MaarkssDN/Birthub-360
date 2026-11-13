@@ -86,6 +86,10 @@ linhas** (mais o que o Sonar não creditar 1:1). Próximos lotes: settings
 Gates locais deste lote: 66 testes da suíte de landing (inclui os 12 casos
 já existentes de `Landing360.test.tsx`), `typecheck`, `lint` e `build` ok.
 
+## Nota Agente 02 (2026-11-12)
+
+Na landing, o formulário de lead agora tem cobertura de unidade real (sucesso mockado do contrato `POST /api/public/demo-requests`, consent LGPD obrigatório e validação de WhatsApp) em `tests/unit/features/landing/Landing360.test.tsx`. Navegação mobile e novo footer são exercitados pelos testes de render existentes. Demais arquivos do escopo 02 devem ser priorizados pelo 08 na medição do quality gate.
+
 ---
 
 Parcial — lote 2 (settings + `src/components`), branch `agente-02/sonar-coverage-settings-1`.

@@ -45,5 +45,3 @@ export class BitrixActivitySyncService {
     };
   }
 }
-
-export const bitrixActivitySyncService = new BitrixActivitySyncService();

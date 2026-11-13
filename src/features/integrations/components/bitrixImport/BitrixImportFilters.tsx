@@ -1,3 +1,9 @@
+/**
+ * Painel de filtros e busca do importador Bitrix24 (busca textual, filtros rápidos,
+ * filtros de pipeline/etapa/vendedor/período e campo personalizado).
+ * Extraído de BitrixImportPanel.tsx (TAREFA-SANEAMENTO-004 / BT360-DT-0030).
+ */
+
 import {
   ArrowUpDown,
   CalendarDays,
@@ -10,92 +16,79 @@ import {
   Users,
   X,
 } from 'lucide-react';
-import type {
-  BitrixDealPipeline,
-  BitrixDealStage,
-  BitrixFieldOption,
-  BitrixUserOption,
-} from '../BitrixImportPanel.js';
+import {
+  MONTHS,
+  filterLabelClass,
+  selectClass,
+  type BitrixDealPipeline,
+  type BitrixDealStage,
+  type BitrixFieldOption,
+  type BitrixImportMode,
+  type BitrixQuickFilter,
+  type BitrixSortBy,
+  type BitrixUserOption,
+} from './types.js';
 
-const MONTHS = [
-  'Janeiro',
-  'Fevereiro',
-  'Março',
-  'Abril',
-  'Maio',
-  'Junho',
-  'Julho',
-  'Agosto',
-  'Setembro',
-  'Outubro',
-  'Novembro',
-  'Dezembro',
-];
-
-const selectClass =
-  'h-9 text-sm rounded-xl border border-line bg-surface-2 text-ink px-3 disabled:opacity-40 min-w-[9rem] focus:bg-surface focus:ring-2 focus:ring-brand/20 focus:border-brand transition-colors outline-none cursor-pointer';
-const filterLabelClass =
-  'text-[10px] font-bold uppercase tracking-wide text-ink-2 flex items-center gap-1';
-
-type QuickFilter = 'all' | 'unimported' | 'has_phone' | 'has_value';
-type SortBy = 'recent' | 'value' | 'name';
-
-interface BitrixImportFiltersPanelProps {
-  mode: 'deals' | 'leads';
-  canPickAnyVendor: boolean;
+interface BitrixImportFiltersProps {
+  mode: BitrixImportMode;
+  totalCount: number;
   search: string;
-  setSearch: (value: string) => void;
-  quickFilter: QuickFilter;
-  setQuickFilter: (value: QuickFilter) => void;
-  sortBy: SortBy;
-  setSortBy: (value: SortBy) => void;
-  customFieldCode: string;
-  setCustomFieldCode: (value: string) => void;
-  customFieldValue: string;
-  setCustomFieldValue: (value: string) => void;
-  fields: BitrixFieldOption[];
+  onSearchChange: (value: string) => void;
+  quickFilter: BitrixQuickFilter;
+  onQuickFilterChange: (value: BitrixQuickFilter) => void;
+  // Filtros de Negócios
   pipelines: BitrixDealPipeline[];
   stages: BitrixDealStage[];
-  users: BitrixUserOption[];
   stageId: string;
-  setStageId: (value: string) => void;
+  onStageChange: (value: string) => void;
   assignedById: string;
-  setAssignedById: (value: string) => void;
+  onAssignedByChange: (value: string) => void;
+  users: BitrixUserOption[];
+  canPickAnyVendor: boolean;
   month: string;
-  setMonth: (value: string) => void;
+  onMonthChange: (value: string) => void;
   year: string;
-  setYear: (value: string) => void;
-  totalItems: number;
+  onYearChange: (value: string) => void;
+  currentYear: number;
+  // Ordenação
+  sortBy: BitrixSortBy;
+  onSortByChange: (value: BitrixSortBy) => void;
+  // Campo personalizado
+  fields: BitrixFieldOption[];
+  customFieldCode: string;
+  onCustomFieldCodeChange: (value: string) => void;
+  customFieldValue: string;
+  onCustomFieldValueChange: (value: string) => void;
 }
 
-export function BitrixImportFiltersPanel({
+export function BitrixImportFilters({
   mode,
-  canPickAnyVendor,
+  totalCount,
   search,
-  setSearch,
+  onSearchChange,
   quickFilter,
-  setQuickFilter,
-  sortBy,
-  setSortBy,
-  customFieldCode,
-  setCustomFieldCode,
-  customFieldValue,
-  setCustomFieldValue,
-  fields,
+  onQuickFilterChange,
   pipelines,
   stages,
-  users,
   stageId,
-  setStageId,
+  onStageChange,
   assignedById,
-  setAssignedById,
+  onAssignedByChange,
+  users,
+  canPickAnyVendor,
   month,
-  setMonth,
+  onMonthChange,
   year,
-  setYear,
-  totalItems,
-}: BitrixImportFiltersPanelProps) {
-  const currentYear = new Date().getFullYear();
+  onYearChange,
+  currentYear,
+  sortBy,
+  onSortByChange,
+  fields,
+  customFieldCode,
+  onCustomFieldCodeChange,
+  customFieldValue,
+  onCustomFieldValueChange,
+}: BitrixImportFiltersProps) {
   return (
     <div className="rounded-3xl border border-line bg-surface p-5 shadow-sm space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -104,7 +97,7 @@ export function BitrixImportFiltersPanel({
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => onSearchChange(e.target.value)}
             placeholder={
               mode === 'deals'
                 ? 'Buscar por empresa, oportunidade ou negócio...'
@@ -115,7 +108,7 @@ export function BitrixImportFiltersPanel({
           {search && (
             <button
               type="button"
-              onClick={() => setSearch('')}
+              onClick={() => onSearchChange('')}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-2 hover:text-ink p-1"
               title="Limpar busca"
             >
@@ -128,14 +121,14 @@ export function BitrixImportFiltersPanel({
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
           <button
             type="button"
-            onClick={() => setQuickFilter('all')}
+            onClick={() => onQuickFilterChange('all')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${quickFilter === 'all' ? 'bg-ink text-surface shadow-sm' : 'bg-surface-2 text-ink-2 hover:text-ink'}`}
           >
-            Todos ({totalItems})
+            Todos ({totalCount})
           </button>
           <button
             type="button"
-            onClick={() => setQuickFilter('unimported')}
+            onClick={() => onQuickFilterChange('unimported')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${quickFilter === 'unimported' ? 'bg-brand-active text-on-brand shadow-sm shadow-brand-active/20' : 'bg-surface-2 text-ink-2 hover:text-ink'}`}
           >
             Disponíveis para Importar
@@ -143,7 +136,7 @@ export function BitrixImportFiltersPanel({
           {mode === 'deals' && (
             <button
               type="button"
-              onClick={() => setQuickFilter('has_value')}
+              onClick={() => onQuickFilterChange('has_value')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${quickFilter === 'has_value' ? 'bg-green-600 text-white shadow-sm shadow-green-600/20' : 'bg-surface-2 text-ink-2 hover:text-ink'}`}
             >
               Com Valor (R$)
@@ -152,7 +145,7 @@ export function BitrixImportFiltersPanel({
           {mode === 'leads' && (
             <button
               type="button"
-              onClick={() => setQuickFilter('has_phone')}
+              onClick={() => onQuickFilterChange('has_phone')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${quickFilter === 'has_phone' ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/20' : 'bg-surface-2 text-ink-2 hover:text-ink'}`}
             >
               Com Telefone
@@ -185,7 +178,7 @@ export function BitrixImportFiltersPanel({
               <select
                 id="bitrix-filter-stage"
                 value={stageId}
-                onChange={(e) => setStageId(e.target.value)}
+                onChange={(e) => onStageChange(e.target.value)}
                 className={selectClass}
               >
                 <option value="">Todas as etapas</option>
@@ -205,7 +198,7 @@ export function BitrixImportFiltersPanel({
                 <select
                   id="bitrix-filter-vendor"
                   value={assignedById}
-                  onChange={(e) => setAssignedById(e.target.value)}
+                  onChange={(e) => onAssignedByChange(e.target.value)}
                   className={selectClass}
                 >
                   <option value="">Todos os vendedores</option>
@@ -232,7 +225,7 @@ export function BitrixImportFiltersPanel({
               <select
                 id="bitrix-filter-month"
                 value={month}
-                onChange={(e) => setMonth(e.target.value)}
+                onChange={(e) => onMonthChange(e.target.value)}
                 className={`${selectClass} min-w-[7rem]`}
               >
                 <option value="">Todos</option>
@@ -250,7 +243,7 @@ export function BitrixImportFiltersPanel({
               <select
                 id="bitrix-filter-year"
                 value={year}
-                onChange={(e) => setYear(e.target.value)}
+                onChange={(e) => onYearChange(e.target.value)}
                 className={`${selectClass} min-w-[5rem]`}
               >
                 <option value="">Todos</option>
@@ -268,7 +261,7 @@ export function BitrixImportFiltersPanel({
               <select
                 id="bitrix-filter-sort"
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as 'recent' | 'value' | 'name')}
+                onChange={(e) => onSortByChange(e.target.value as BitrixSortBy)}
                 className={selectClass}
               >
                 <option value="recent">Mais Recentes</option>
@@ -288,7 +281,7 @@ export function BitrixImportFiltersPanel({
             <select
               id="bitrix-import-custom-field"
               value={customFieldCode}
-              onChange={(e) => setCustomFieldCode(e.target.value)}
+              onChange={(e) => onCustomFieldCodeChange(e.target.value)}
               className={`${selectClass} min-w-[13rem]`}
             >
               <option value="">Nenhum (não filtrar)</option>
@@ -308,7 +301,7 @@ export function BitrixImportFiltersPanel({
                 id="bitrix-import-custom-field-value"
                 type="text"
                 value={customFieldValue}
-                onChange={(e) => setCustomFieldValue(e.target.value)}
+                onChange={(e) => onCustomFieldValueChange(e.target.value)}
                 placeholder="Ex: Transportadora"
                 className="h-9 text-sm rounded-xl border border-line bg-surface-2 text-ink px-3 min-w-[11rem] placeholder:text-ink-2 focus:bg-surface focus:ring-2 focus:ring-brand/20 focus:border-brand transition-colors outline-none"
               />
