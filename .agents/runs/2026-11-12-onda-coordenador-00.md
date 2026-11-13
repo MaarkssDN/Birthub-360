@@ -35,3 +35,18 @@ Escopo: executar itens pendentes do checklist de auditoria D:\11-11-2026 em orde
 
 ## Estado
 Branch pronta para PR/revisão humana. Sem push realizado (aguardando autorização do operador).
+
+## Adendo 2026-11-13 — Onda W7 (despacho paralelo + finalização)
+
+9 agentes despachados em worktrees dedicadas. Sessão reiniciou e 6 agentes foram perdidos sem entrega (01-voice-adapters, 05-outbound-auth, 08-mesa-e2e, 21-lgpd-portal, 16-warroom-sse, 10-k8s-decisao — worktrees preservadas para retomada). Salvamento do trabalho parcial:
+
+- **17**: corte do dialer-3cx legado inteiro (39 arquivos, sem auth/tenant, zero referências) — commit 32c97ad1e, tsc limpo → merge 18b3114f1.
+- **02**: placeholders de settings honestos (checkboxes permissão desabilitados "em breve") — commit e5da639f6 → merge 7d0f14a7c.
+- **04**: refatoração de hotspots INCOMPLETA (3 arquivos órfãos, sem wiring) — descartada, sem commit.
+- **01**: remoção do export deprecated sharedCadenceEnrollmentsStore — merge 81598506a.
+- **23**: cache L2 BI já integrado antes (c71959902).
+
+Verificação: npm run typecheck na integracao → exit 0.
+
+### Itens que voltam à fila (precisam re-despacho)
+Voice-hub adapters (01), outbound auth (05), mesa E2E (08), LGPD portal (21), War Room SSE (16), decisão k8s (10), hotspots CRM (04), revisão 24 desta leva.
