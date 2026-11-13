@@ -24,6 +24,7 @@ import {
   Loader2,
   Lock,
   Mail,
+  Menu,
   MessageSquare,
   Moon,
   Network,
@@ -41,6 +42,7 @@ import {
   TrendingUp,
   Users,
   Workflow,
+  X,
   Zap,
 } from 'lucide-react';
 import type React from 'react';
@@ -572,6 +574,13 @@ export function Landing360({
   const [leadLoading, setLeadLoading] = useState(false);
   const [leadSubmitted, setLeadSubmitted] = useState(false);
   const [leadError, setLeadError] = useState('');
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  // Validação mínima de WhatsApp BR: DDI opcional + DDD + número (10–13 dígitos no total).
+  const isValidWhatsapp = (raw: string): boolean => {
+    const digits = raw.replace(/\D/g, '');
+    return digits.length >= 10 && digits.length <= 13;
+  };
 
   const handleLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -579,6 +588,10 @@ export function Landing360({
     // LGPD: consentimento nunca pré-marcado — o envio exige a caixa marcada.
     if (!leadForm.consent) {
       setLeadError('É necessário concordar com o tratamento de dados (LGPD) para continuar.');
+      return;
+    }
+    if (!isValidWhatsapp(leadForm.whatsapp)) {
+      setLeadError('Informe um WhatsApp válido com DDD (ex: (11) 99999-9999).');
       return;
     }
     setLeadLoading(true);
@@ -1073,6 +1086,50 @@ export function Landing360({
                   Simular ROI
                 </button>
               </nav>
+
+              {/* Navegação mobile (<720px) — o topnav desktop é ocultado via CSS */}
+              <button
+                type="button"
+                className="b360-mobile-nav-toggle"
+                aria-expanded={mobileNavOpen}
+                aria-controls="b360-mobile-nav"
+                aria-label={mobileNavOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
+                onClick={() => setMobileNavOpen((open) => !open)}
+              >
+                {mobileNavOpen ? (
+                  <X className="w-5 h-5" aria-hidden="true" />
+                ) : (
+                  <Menu className="w-5 h-5" aria-hidden="true" />
+                )}
+              </button>
+              {mobileNavOpen && (
+                <nav id="b360-mobile-nav" className="b360-mobile-nav" aria-label="Navegação móvel">
+                  <a href="#destaques" onClick={() => setMobileNavOpen(false)}>
+                    11 módulos
+                  </a>
+                  <a href="#ia" onClick={() => setMobileNavOpen(false)}>
+                    IA Comercial
+                  </a>
+                  <a href="#provas-sociais" onClick={() => setMobileNavOpen(false)}>
+                    Casos & Métricas
+                  </a>
+                  <a href="#demonstracao" onClick={() => setMobileNavOpen(false)}>
+                    Agendar Demo
+                  </a>
+                  <a href="#ecossistema" onClick={() => setMobileNavOpen(false)}>
+                    Integrações
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileNavOpen(false);
+                      handleOpenRoiSimulator();
+                    }}
+                  >
+                    Simular ROI
+                  </button>
+                </nav>
+              )}
 
               <div className="flex items-center gap-3">
                 <button
