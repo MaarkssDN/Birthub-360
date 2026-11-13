@@ -113,11 +113,3 @@ export interface IMultichannelCadenceEnrollmentStore {
   ): Promise<MultichannelCadenceEnrollment[]>;
 }
 
-/**
- * @deprecated LEGADO VOLÁTIL — Map em memória por processo. Enrollments gravados aqui se perdem
- * em restart/deploy e divergem entre réplicas. Não use em código novo; migre para
- * `IMultichannelCadenceEnrollmentStore` (`PrismaMultichannelCadenceEnrollmentStore`). Mantido
- * exportado apenas para não quebrar consumidores existentes durante a migração — ver handoff
- * `.agents/handoffs/onda-00/01-para-07-17-cadence-enrollment-store.md`.
- */
-export const sharedCadenceEnrollmentsStore = new Map<string, MultichannelCadenceEnrollment>();
