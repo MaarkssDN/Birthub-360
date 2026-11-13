@@ -1,8 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import {
-  type StorageAdapter,
-  OfflineSyncService,
-} from '../offlineSync.service.js';
+import { type StorageAdapter, OfflineSyncService } from '../offlineSync.service.js';
 import {
   createDefaultOfflineStorage,
   EncryptedStorageAdapter,
@@ -32,11 +29,7 @@ class MemoryStorageAdapter implements StorageAdapter {
 }
 
 async function createTestKey(): Promise<CryptoKey> {
-  return crypto.subtle.generateKey(
-    { name: 'AES-GCM', length: 256 },
-    false,
-    ['encrypt', 'decrypt'],
-  );
+  return crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
 }
 
 describe('EncryptedStorageAdapter (AES-GCM / WebCrypto)', () => {

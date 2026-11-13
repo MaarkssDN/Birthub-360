@@ -1115,8 +1115,8 @@ export function Landing360({
                 <div className="b360-urgency-content">
                   <span className="b360-urgency-badge">Onboarding Assistido</span>
                   <span>
-                    <b>Ciclo de Implantação Assistida:</b> onboarding guiado com Arquiteto de
-                    Vendas para colocar o time produtivo mais rápido.
+                    <b>Ciclo de Implantação Assistida:</b> onboarding guiado com Arquiteto de Vendas
+                    para colocar o time produtivo mais rápido.
                   </span>
                 </div>
                 <a href="#demonstracao" className="b360-urgency-btn">
@@ -2053,9 +2053,7 @@ export function Landing360({
 
                     <div className="p-3.5 rounded-xl border border-cyan-500/20 bg-cyan-950/20 text-xs text-cyan-200 flex items-center gap-2">
                       <Clock className="w-4 h-4 shrink-0 text-[#00D4FF]" />
-                      <span>
-                        Sessão assistida por um especialista de operações comerciais.
-                      </span>
+                      <span>Sessão assistida por um especialista de operações comerciais.</span>
                     </div>
                   </div>
 
@@ -2066,9 +2064,7 @@ export function Landing360({
                         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">
                           <CheckCircle2 className="h-8 w-8" />
                         </div>
-                        <h3 className="text-xl font-bold text-cyan-400">
-                          Solicitação Recebida!
-                        </h3>
+                        <h3 className="text-xl font-bold text-cyan-400">Solicitação Recebida!</h3>
                         <p className="text-xs text-slate-300 leading-relaxed max-w-sm mx-auto">
                           Registramos sua solicitação de demonstração. Nossa equipe entrará em
                           contato pelos canais informados (<strong>{leadForm.email}</strong> /{' '}

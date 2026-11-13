@@ -116,9 +116,14 @@ export class AdaptiveMultichannelCadenceService implements IMultichannelCadenceP
     }
 
     // Checagem de Opt-Out Cross-Channel (persistente — tabela OptOutRecord, não mais Map volátil)
-    const optedOut = await isOptedOut(this.optOutRepo, organizationId, {
-      leadId: enrollment.leadId,
-    }, step.channel);
+    const optedOut = await isOptedOut(
+      this.optOutRepo,
+      organizationId,
+      {
+        leadId: enrollment.leadId,
+      },
+      step.channel,
+    );
 
     if (optedOut) {
       logger.warn(

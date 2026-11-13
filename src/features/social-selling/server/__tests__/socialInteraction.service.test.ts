@@ -55,7 +55,8 @@ describe('SocialInteractionService.recordInteraction — timeline do CRM (RN-SOC
     expect(timelineEventCreateMock).toHaveBeenCalledWith({
       data: {
         type: 'social_selling',
-        description: 'Abordagem social enviada via linkedin: Abordagem sobre previsibilidade de receita',
+        description:
+          'Abordagem social enviada via linkedin: Abordagem sobre previsibilidade de receita',
         leadId: 'lead-1',
       },
       select: { id: true },
@@ -81,9 +82,7 @@ describe('SocialInteractionService.recordInteraction — timeline do CRM (RN-SOC
   });
 
   it('leadId ausente → 400 antes de tocar no banco', async () => {
-    const error = await service
-      .recordInteraction('org-1', { leadId: '   ' })
-      .catch((e) => e);
+    const error = await service.recordInteraction('org-1', { leadId: '   ' }).catch((e) => e);
 
     expect(error).toBeInstanceOf(AppError);
     expect((error as AppError).statusCode).toBe(400);
@@ -143,11 +142,11 @@ describe('SocialInteractionService.recordInteraction — timeline do CRM (RN-SOC
     for (let i = 0; i < 20; i++) {
       await service.recordInteraction('org-a', { leadId: 'lead-1' });
     }
-    await expect(
-      service.recordInteraction('org-a', { leadId: 'lead-1' }),
-    ).rejects.toMatchObject({ statusCode: 429 });
-    await expect(
-      service.recordInteraction('org-b', { leadId: 'lead-1' }),
-    ).resolves.toMatchObject({ timelineEventId: 'evt-1' });
+    await expect(service.recordInteraction('org-a', { leadId: 'lead-1' })).rejects.toMatchObject({
+      statusCode: 429,
+    });
+    await expect(service.recordInteraction('org-b', { leadId: 'lead-1' })).resolves.toMatchObject({
+      timelineEventId: 'evt-1',
+    });
   });
 });

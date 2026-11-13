@@ -60,7 +60,9 @@ router.post(
 
       const recipient = leadCaptureRecipient();
       if (!recipient) {
-        logger.error('Lead capture sem destinatário configurado (LEAD_CAPTURE_EMAIL/SMTP_FROM/SMTP_USER).');
+        logger.error(
+          'Lead capture sem destinatário configurado (LEAD_CAPTURE_EMAIL/SMTP_FROM/SMTP_USER).',
+        );
         res.status(503).json({
           success: false,
           error: 'Canal de contato temporariamente indisponível. Tente novamente mais tarde.',
@@ -95,7 +97,10 @@ router.post(
         throw error;
       }
 
-      logger.info({ email: lead.email, equipe: lead.equipe }, 'Lead capture da landing enviado por e-mail.');
+      logger.info(
+        { email: lead.email, equipe: lead.equipe },
+        'Lead capture da landing enviado por e-mail.',
+      );
       res.json({ success: true });
     } catch (error) {
       next(error);

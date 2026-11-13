@@ -30,10 +30,7 @@
  *    candidato a remoção ou adoção futura, decisão do Agente 00.
  */
 
-import {
-  type StorageAdapter,
-  LocalStorageAdapter,
-} from '../offlineSync.service.js';
+import { type StorageAdapter, LocalStorageAdapter } from '../offlineSync.service.js';
 
 const CIPHERTEXT_PREFIX = 'bh360enc:v1:';
 const KEY_STORE_DB_NAME = 'birthhub360-secure-store';
@@ -219,11 +216,7 @@ export class EncryptedStorageAdapter implements StorageAdapter {
     const key = await this.ensureKey();
     const iv = crypto.getRandomValues(new Uint8Array(new ArrayBuffer(12)));
     const encoded = new TextEncoder().encode(plaintext);
-    const ciphertext = await crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv },
-      key,
-      encoded,
-    );
+    const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, encoded);
     return `${CIPHERTEXT_PREFIX}${bytesToBase64(iv)}:${bytesToBase64(new Uint8Array(ciphertext))}`;
   }
 
@@ -247,11 +240,7 @@ export class EncryptedStorageAdapter implements StorageAdapter {
 
       const iv = base64ToBytes(payload.slice(0, separatorIndex));
       const ciphertext = base64ToBytes(payload.slice(separatorIndex + 1));
-      const plaintextBuffer = await crypto.subtle.decrypt(
-        { name: 'AES-GCM', iv },
-        key,
-        ciphertext,
-      );
+      const plaintextBuffer = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
       return new TextDecoder().decode(plaintextBuffer);
     } catch {
       return null;

@@ -421,10 +421,7 @@ async function previewCallSdrVoz(
  *  `runAction` real (url obrigatória), mas a chamada HTTP NUNCA acontece neste arquivo. O preview
  *  registra método/URL já renderizados como efeito simulado; o status remoto é desconhecido por
  *  definição (a chamada não foi feita). */
-function previewWebhook(
-  config: WebhookActionConfig,
-  candidate: Candidate,
-): DryRunActionPreview {
+function previewWebhook(config: WebhookActionConfig, candidate: Candidate): DryRunActionPreview {
   if (!config.url) {
     return {
       action: 'Chamar webhook externo',
@@ -529,8 +526,7 @@ function previewCadenceAction(
     return {
       action: 'Mover para outra etapa de cadência',
       wouldFire: false,
-      blockedReason:
-        'Ação "Mover para outra etapa de cadência" requer "cadenceId".',
+      blockedReason: 'Ação "Mover para outra etapa de cadência" requer "cadenceId".',
       details: {},
     };
   }
@@ -545,8 +541,7 @@ function previewCadenceAction(
     return {
       action: 'Mover para outra etapa de cadência',
       wouldFire: false,
-      blockedReason:
-        'Ação "Mover para outra etapa de cadência" precisa de um leadId.',
+      blockedReason: 'Ação "Mover para outra etapa de cadência" precisa de um leadId.',
       details: { cadenceId: config.cadenceId },
     };
   }
@@ -585,10 +580,7 @@ async function previewAction(
     return previewWebhook(config as unknown as WebhookActionConfig, candidate);
   }
   if (automation.action === 'Atualizar campo customizado') {
-    return previewUpdateCustomField(
-      config as unknown as UpdateCustomFieldActionConfig,
-      candidate,
-    );
+    return previewUpdateCustomField(config as unknown as UpdateCustomFieldActionConfig, candidate);
   }
   if (automation.action === 'Enrich lead') {
     return previewEnrichLead(candidate);

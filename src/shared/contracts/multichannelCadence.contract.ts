@@ -95,9 +95,7 @@ export interface IMultichannelCadenceEnrollmentStore {
   update(
     organizationId: string,
     enrollmentId: string,
-    patch: Partial<
-      Pick<MultichannelCadenceEnrollment, 'currentStep' | 'status' | 'lastActionAt'>
-    >,
+    patch: Partial<Pick<MultichannelCadenceEnrollment, 'currentStep' | 'status' | 'lastActionAt'>>,
   ): Promise<MultichannelCadenceEnrollment | undefined>;
   /**
    * Atualiza em lote TODAS as matrículas de um lead dentro do tenant — usado por
@@ -107,9 +105,6 @@ export interface IMultichannelCadenceEnrollmentStore {
   updateByLead(
     organizationId: string,
     leadId: string,
-    patch: Partial<
-      Pick<MultichannelCadenceEnrollment, 'currentStep' | 'status' | 'lastActionAt'>
-    >,
+    patch: Partial<Pick<MultichannelCadenceEnrollment, 'currentStep' | 'status' | 'lastActionAt'>>,
   ): Promise<MultichannelCadenceEnrollment[]>;
 }
-

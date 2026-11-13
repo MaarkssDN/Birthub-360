@@ -36,9 +36,7 @@ function envVarName(): string {
 
 /** Lê o limite por hora (env), com fallback ao default documentado acima. `<= 0`/inválido =
  * limite default (proteção contra env mal configurada desativar a proteção sem querer). */
-export function getSocialInteractionsPerHour(
-  environment: NodeJS.ProcessEnv = process.env,
-): number {
+export function getSocialInteractionsPerHour(environment: NodeJS.ProcessEnv = process.env): number {
   const raw = environment[envVarName()];
   const parsed = raw != null ? Number(raw) : NaN;
   if (Number.isFinite(parsed) && parsed > 0) return parsed;
@@ -66,9 +64,10 @@ export function checkSocialInteractionRateLimit(
 
   const windowStartMs =
     existing && now - existing.windowStartMs < WINDOW_MS ? existing.windowStartMs : now;
-  const count = windowStartMs === now && (!existing || now - existing.windowStartMs >= WINDOW_MS)
-    ? 0
-    : (existing?.count ?? 0);
+  const count =
+    windowStartMs === now && (!existing || now - existing.windowStartMs >= WINDOW_MS)
+      ? 0
+      : (existing?.count ?? 0);
 
   const next: RateWindow = { windowStartMs, count };
 

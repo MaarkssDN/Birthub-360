@@ -129,9 +129,7 @@ describe('reportCache.buildReportCacheKey', () => {
       buildReportCacheKey('performance', 'org-a', { month: PERIOD, product: 'SKU-1' }),
     ).not.toBe(base);
     // owner com caractere separador não pode colidir com outro filtro
-    expect(
-      buildReportCacheKey('performance', 'org-a', { month: PERIOD, owner: 'a|b' }),
-    ).not.toBe(
+    expect(buildReportCacheKey('performance', 'org-a', { month: PERIOD, owner: 'a|b' })).not.toBe(
       buildReportCacheKey('performance', 'org-a', { month: PERIOD, owner: 'a', product: 'b' }),
     );
   });

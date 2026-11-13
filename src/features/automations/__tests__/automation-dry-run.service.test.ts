@@ -119,7 +119,10 @@ function buildAutomation(
   action: string,
   actionConfig: Record<string, unknown> = {},
   overrides: Partial<Automation> = {},
-): Pick<Automation, 'id' | 'name' | 'enabled' | 'trigger' | 'conditions' | 'action' | 'actionConfig'> {
+): Pick<
+  Automation,
+  'id' | 'name' | 'enabled' | 'trigger' | 'conditions' | 'action' | 'actionConfig'
+> {
   return {
     id: 'auto-1',
     name: 'Regra de teste',
@@ -177,10 +180,7 @@ describe('dryRunAutomation — modo sandbox (nenhum efeito real)', () => {
   });
 
   it('webhook externo sem url: marca wouldFire=false com o motivo (paridade com runAction)', async () => {
-    const result = await dryRunAutomation(
-      'org-1',
-      buildAutomation('Chamar webhook externo', {}),
-    );
+    const result = await dryRunAutomation('org-1', buildAutomation('Chamar webhook externo', {}));
 
     expect(result.records[0].outcome.wouldFire).toBe(false);
     expect(result.records[0].outcome.blockedReason).toContain('url');
@@ -288,10 +288,7 @@ describe('dryRunAutomation — modo sandbox (nenhum efeito real)', () => {
   });
 
   it('ligar via SDR de voz: registra o número SEM discar', async () => {
-    const result = await dryRunAutomation(
-      'org-1',
-      buildAutomation('Ligar via SDR de Voz'),
-    );
+    const result = await dryRunAutomation('org-1', buildAutomation('Ligar via SDR de Voz'));
 
     expect(result.records[0].outcome.wouldFire).toBe(true);
     expect(result.records[0].outcome.details.targetNumber).toBe('+5511999990000');
@@ -305,7 +302,11 @@ describe('dryRunAutomation — modo sandbox (nenhum efeito real)', () => {
 
     const result = await dryRunAutomation(
       'org-1',
-      buildAutomation('Enrich lead', {}, { trigger: 'Atividade concluída' as Automation['trigger'] }),
+      buildAutomation(
+        'Enrich lead',
+        {},
+        { trigger: 'Atividade concluída' as Automation['trigger'] },
+      ),
     );
 
     expect(result.sampleSize).toBe(1);

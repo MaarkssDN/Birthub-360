@@ -154,7 +154,9 @@ describe('PrismaMultichannelCadenceEnrollmentStore', () => {
     await store.enroll({ ...baseParams, organizationId: 'org-b', leadId: 'lead-1' });
 
     expect(await store.get('org-b', enrolled.enrollmentId)).toBeUndefined();
-    expect(await store.update('org-b', enrolled.enrollmentId, { status: 'failed' })).toBeUndefined();
+    expect(
+      await store.update('org-b', enrolled.enrollmentId, { status: 'failed' }),
+    ).toBeUndefined();
 
     // updateByLead em org-b só toca as matrículas DE org-b (a de org-a é invisível para esse
     // tenant); a matrícula de org-a permanece intacta.

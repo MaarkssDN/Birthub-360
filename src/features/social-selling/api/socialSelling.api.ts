@@ -30,9 +30,7 @@ export const socialSellingApi = {
   },
 
   /** RN-SOC-02: registra a interação/abordagem executada manualmente na timeline do Lead. */
-  logInteraction: async (
-    input: LogSocialInteractionInput,
-  ): Promise<LogSocialInteractionResult> => {
+  logInteraction: async (input: LogSocialInteractionInput): Promise<LogSocialInteractionResult> => {
     const response = await api.post<
       { data?: LogSocialInteractionResult; success?: boolean } & LogSocialInteractionResult
     >('/api/social-selling/interactions', input);

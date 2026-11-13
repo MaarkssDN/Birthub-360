@@ -210,10 +210,7 @@ export class CommercialIntelligenceUseCases {
   }
 
   // ─── Leading Indicators (Fase 5/6) ───────────────────────────────────────
-  async leadingIndicators(
-    organizationId: string,
-    now?: Date,
-  ): Promise<LeadingIndicatorsReport> {
+  async leadingIndicators(organizationId: string, now?: Date): Promise<LeadingIndicatorsReport> {
     return this.cachedReport('leading-indicators', organizationId, undefined, now, undefined, (n) =>
       buildLeadingIndicators(this.repository, organizationId, n),
     );
@@ -320,20 +317,12 @@ export class CommercialIntelligenceUseCases {
   // model `ForecastSnapshot`) e compara o snapshot mais antigo de cada mês já encerrado com o
   // Fechado realizado daquele mês. Sem store injetado, sem snapshot ou sem período encerrado,
   // devolve `available: false` com o motivo — nunca um erro fabricado.
-  async forecastAccuracy(
-    organizationId: string,
-    now?: Date,
-  ): Promise<ForecastAccuracySummary> {
+  async forecastAccuracy(organizationId: string, now?: Date): Promise<ForecastAccuracySummary> {
     // Cacheado: lê `loadScoredDeals` inteiro para o realizado dos períodos encerrados e é
     // chamado tanto pelo GET /forecast-accuracy quanto de dentro do healthScore. O frescor de
     // 60s é seguro — a fronteira "período encerrado" só muda uma vez por mês.
-    return this.cachedReport(
-      'forecast-accuracy',
-      organizationId,
-      undefined,
-      now,
-      undefined,
-      (n) => buildForecastAccuracy(this.repository, this.snapshotStore, organizationId, n),
+    return this.cachedReport('forecast-accuracy', organizationId, undefined, now, undefined, (n) =>
+      buildForecastAccuracy(this.repository, this.snapshotStore, organizationId, n),
     );
   }
 
@@ -404,8 +393,13 @@ export class CommercialIntelligenceUseCases {
     filter: CommercialIntelligenceFilter,
     now?: Date,
   ): Promise<CloseDateIntelligenceReport> {
-    return this.cachedReport('close-date-intelligence', organizationId, filter, now, undefined, (n) =>
-      buildCloseDateIntelligence(this.repository, organizationId, filter, n),
+    return this.cachedReport(
+      'close-date-intelligence',
+      organizationId,
+      filter,
+      now,
+      undefined,
+      (n) => buildCloseDateIntelligence(this.repository, organizationId, filter, n),
     );
   }
 

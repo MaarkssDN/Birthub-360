@@ -61,7 +61,9 @@ function toDomain(row: EnrollmentRow): MultichannelCadenceEnrollment {
 export class PrismaMultichannelCadenceEnrollmentStore
   implements IMultichannelCadenceEnrollmentStore
 {
-  constructor(private readonly delegate: EnrollmentDelegate = prisma.multichannelCadenceEnrollment) {}
+  constructor(
+    private readonly delegate: EnrollmentDelegate = prisma.multichannelCadenceEnrollment,
+  ) {}
 
   async enroll(params: {
     organizationId: string;
@@ -113,9 +115,7 @@ export class PrismaMultichannelCadenceEnrollmentStore
   async update(
     organizationId: string,
     enrollmentId: string,
-    patch: Partial<
-      Pick<MultichannelCadenceEnrollment, 'currentStep' | 'status' | 'lastActionAt'>
-    >,
+    patch: Partial<Pick<MultichannelCadenceEnrollment, 'currentStep' | 'status' | 'lastActionAt'>>,
   ): Promise<MultichannelCadenceEnrollment | undefined> {
     const data: Prisma.MultichannelCadenceEnrollmentUpdateInput = {};
     if (patch.currentStep !== undefined) data.currentStep = patch.currentStep;
@@ -141,9 +141,7 @@ export class PrismaMultichannelCadenceEnrollmentStore
   async updateByLead(
     organizationId: string,
     leadId: string,
-    patch: Partial<
-      Pick<MultichannelCadenceEnrollment, 'currentStep' | 'status' | 'lastActionAt'>
-    >,
+    patch: Partial<Pick<MultichannelCadenceEnrollment, 'currentStep' | 'status' | 'lastActionAt'>>,
   ): Promise<MultichannelCadenceEnrollment[]> {
     const data: Prisma.MultichannelCadenceEnrollmentUpdateManyMutationInput = {};
     if (patch.currentStep !== undefined) data.currentStep = patch.currentStep;

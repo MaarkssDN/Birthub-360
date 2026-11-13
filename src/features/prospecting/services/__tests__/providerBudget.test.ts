@@ -260,9 +260,7 @@ describe('providerBudget — teto por organização de prospecção (DEC-09)', (
       expect(fulfilled).toHaveLength(5);
       expect(rejected).toHaveLength(5);
       for (const r of rejected) {
-        expect((r as PromiseRejectedResult).reason).toBeInstanceOf(
-          ProspectingBudgetExceededError,
-        );
+        expect((r as PromiseRejectedResult).reason).toBeInstanceOf(ProspectingBudgetExceededError);
       }
       // Saldo final nunca negativo nem acima do teto: exatamente US$0.05 debitados.
       expect(await getOrgMonthProspectingCostUsd('org-corrida')).toBeCloseTo(0.05, 5);
