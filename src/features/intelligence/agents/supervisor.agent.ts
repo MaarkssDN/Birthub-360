@@ -994,6 +994,3 @@ export class SwarmOrchestrator {
     });
   }
 }
-
-export const SupervisorAgent = SwarmOrchestrator;
-export type SupervisorAgent = SwarmOrchestrator;
