@@ -149,9 +149,43 @@ export const noteSchema = z.object({
 // erro/abuso óbvio, não uma garantia de enforcement contra um cliente malicioso.
 export const MAX_ATTACHMENT_SIZE_BYTES = 25 * 1024 * 1024;
 
+// Allowlist de MIME para anexos (MEL-09): antes era string livre — um cliente
+// podia registrar "application/x-msdownload" ou HTML/JS servível depois via
+// download-url. Tipos executáveis, HTML e SVG (scriptável) ficam de fora.
+export const ALLOWED_ATTACHMENT_MIME_TYPES = [
+  'application/pdf',
+  'image/png',
+  'image/jpeg',
+  'image/webp',
+  'image/gif',
+  'text/plain',
+  'text/csv',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  'application/json',
+  'audio/mpeg',
+  'audio/wav',
+  'audio/ogg',
+  'audio/mp4',
+  'audio/webm',
+  'video/mp4',
+  'video/webm',
+] as const;
+
+const attachmentMimeSchema = z
+  .string()
+  .min(1, 'Tipo do arquivo é obrigatório')
+  .max(255)
+  .refine(
+    (v) => (ALLOWED_ATTACHMENT_MIME_TYPES as readonly string[]).includes(v.toLowerCase()),
+    'Tipo de arquivo não permitido',
+  );
+
 export const attachmentUploadUrlSchema = z.object({
   fileName: z.string().min(1, 'Nome do arquivo é obrigatório').max(255),
-  mimeType: z.string().min(1, 'Tipo do arquivo é obrigatório').max(255),
+  mimeType: attachmentMimeSchema,
   sizeBytes: z
     .number()
     .int()
@@ -162,7 +196,7 @@ export const attachmentUploadUrlSchema = z.object({
 export const attachmentCompleteSchema = z.object({
   objectKey: z.string().min(1),
   fileName: z.string().min(1).max(255),
-  mimeType: z.string().min(1).max(255),
+  mimeType: attachmentMimeSchema,
   sizeBytes: z.number().int().positive().max(MAX_ATTACHMENT_SIZE_BYTES),
 });
 

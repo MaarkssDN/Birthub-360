@@ -1,4 +1,5 @@
 import pino from 'pino';
+import { maskPiiInText } from './security/piiMask.js';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const lokiHost = process.env.LOKI_HOST;
@@ -118,8 +119,50 @@ export const LOGGER_REDACT_PATHS: string[] = [
   '*.cardNumber',
 ];
 
+// Heurística barata: PII sempre contém '@' ou dígitos. Evita regex em toda string logada.
+const PII_HINT = /[@\d]/;
+const MAX_SANITIZE_DEPTH = 6;
+
+/**
+ * Sanitiza PII em texto livre de logs (DEM-20261113-002 / MEL-04).
+ * O `redact` do pino cobre campos por caminho; esta função cobre PII embutida
+ * em strings livres — mensagem, err.message, err.stack e payloads aninhados.
+ * Exportada para teste.
+ */
+export function sanitizeLogValue(value: unknown, depth = 0): unknown {
+  if (typeof value === 'string') {
+    return PII_HINT.test(value) ? maskPiiInText(value) : value;
+  }
+  if (value === null || typeof value !== 'object' || depth >= MAX_SANITIZE_DEPTH) {
+    return value;
+  }
+  if (value instanceof Error) {
+    value.message = sanitizeLogValue(value.message, depth + 1) as string;
+    if (typeof value.stack === 'string') {
+      value.stack = sanitizeLogValue(value.stack, depth + 1) as string;
+    }
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => sanitizeLogValue(item, depth + 1));
+  }
+  const out: Record<string, unknown> = {};
+  for (const [key, val] of Object.entries(value)) {
+    out[key] = sanitizeLogValue(val, depth + 1);
+  }
+  return out;
+}
+
 export const logger = pino({
   level: process.env.LOG_LEVEL || 'info',
+  hooks: {
+    logMethod(args, method) {
+      for (let i = 0; i < args.length; i++) {
+        args[i] = sanitizeLogValue(args[i]);
+      }
+      return method.apply(this, args);
+    },
+  },
   redact: {
     paths: LOGGER_REDACT_PATHS,
     censor: '[REDACTED]',
