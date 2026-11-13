@@ -1,7 +1,8 @@
 import { getUserId } from '../../../lib/async-context.js';
+import { toE164BR } from '../../../lib/phone.js';
 import { withRlsContext } from '../../../lib/prisma.js';
+import type { CadenceChannel } from '../../../shared/domain/optOut.js';
 import { AppError } from '../../../shared/middlewares/errorHandler.js';
-import type { CadenceChannel } from '../../cadence/domain/cadence.js';
 import { callBitrix } from '../../integrations/bitrix/service/client.js';
 
 /**
@@ -79,6 +80,7 @@ export const actionExecutorService = {
         const lead = await prisma.lead.findFirst({
           where: { companyId: company.id, organizationId, deletedAt: null },
           orderBy: { createdAt: 'desc' },
+          include: { contact: { select: { email: true, whatsapp: true, phone: true } } },
         });
         if (!lead)
           throw new AppError('Nenhum lead associado a esta conta para iniciar cadência.', 400);
@@ -119,15 +121,20 @@ export const actionExecutorService = {
         // 1) `OptOutRecord` unificado (leadId + e-mail + telefone resolvidos via contato) para
         //    CADA canal distinto da sequência — equivalente a `checkCadenceStartEligibility`
         //    (PR #256, ainda não mergeado na main; replicado aqui para não depender de PR aberto).
+        //    Sem import cross-feature de `cadence/` (gate `no-cross-feature-imports`): o sujeito é
+        //    resolvido localmente a partir de `Lead.contact` (mesma semântica de
+        //    `PrismaLeadSubjectResolver`) e a checagem usa o serviço compartilhado
+        //    `shared/services/optOutService.ts` + repositório `shared/infra/PrismaOptOutRepository`.
         const { prismaOptOutRepository } = await import(
           '../../../shared/infra/PrismaOptOutRepository.js'
         );
-        const { prismaLeadSubjectResolver } = await import(
-          '../../cadence/infra/PrismaLeadSubjectResolver.js'
-        );
-        const { isOptedOut } = await import('../../cadence/application/optOutService.js');
+        const { isOptedOut } = await import('../../../shared/services/optOutService.js');
 
-        const optOutSubject = await prismaLeadSubjectResolver.resolve(organizationId, lead.id);
+        const optOutSubject = {
+          leadId: lead.id,
+          email: lead.contact?.email ?? null,
+          phoneE164: toE164BR(lead.contact?.whatsapp ?? lead.contact?.phone ?? undefined),
+        };
         for (const channel of sequenceChannels) {
           if (await isOptedOut(prismaOptOutRepository, organizationId, optOutSubject, channel)) {
             throw new AppError(

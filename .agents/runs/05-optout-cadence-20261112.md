@@ -51,3 +51,33 @@ nenhuma verificação de opt-out, contornando a trava de `POST /api/cadence/runs
 - Quando o PR #256 mergear, `checkCadenceStartEligibility` passará a existir; uma futura
   convergência pode trocar a replicação pelo helper oficial (não bloqueante).
 - Revisão do Agente 24 obrigatória antes de release (handoff saneamento).
+
+## Correção pós-gate (CI PR #259 — `no-cross-feature-imports`)
+
+O application gate reprovou 2 imports cross-feature novos:
+`cadence/infra/PrismaLeadSubjectResolver.ts` e `cadence/application/optOutService.ts`.
+
+Correção aplicada em `actionExecutor.service.ts`:
+
+- Sujeito de opt-out resolvido **localmente** via `Lead.contact` (incluso no `findFirst`
+  do lead): `email`, `phoneE164` via `toE164BR(whatsapp ?? phone)` — mesma semântica de
+  `PrismaLeadSubjectResolver`, sem import de `cadence/`.
+- Checagem via camada shared sancionada: `isOptedOut` de
+  `src/shared/services/optOutService.ts` + `prismaOptOutRepository` de
+  `src/shared/infra/PrismaOptOutRepository.ts` (já era shared).
+- Tipo `CadenceChannel` passou a vir de `src/shared/domain/optOut.js` (era import de
+  `cadence/domain/cadence.js` — também cross-feature, embora estivesse no baseline).
+- `checkOptOutStatus` (shared) e `startCadenceRun`/`PrismaCadenceRunRepository`
+  (cadence) mantidos — estes últimos já constam em
+  `.dependency-cruiser-known-violations.json` (baseline aceita pelo gate).
+- Teste `actionExecutor.tenancy.test.ts`: mocks atualizados para
+  `shared/services/optOutService.js`; removido mock/var do resolver de cadence.
+  Semântica inalterada: canal inválido → 422, opt-out → 409, Pending preservado.
+
+### Gates da correção
+
+- `npm run lint:architecture` → **0 violações** (1951 módulos; baseline ignorado/stale
+  apenas informativo).
+- `npx tsc --noEmit` → limpo.
+- `npx biome check` nos 2 arquivos → limpo (1 warning pré-existente mantido).
+- `npx vitest run -c vitest.unit.config.ts .../actionExecutor.tenancy.test.ts` → 13/13.

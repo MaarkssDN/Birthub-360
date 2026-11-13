@@ -54,11 +54,6 @@ const leadFindFirst = vi.fn(async (_args: unknown) => null as null | { id: strin
 const sequenceFindFirst = vi.fn(async (_args: unknown) => null as null | { id: string });
 const saveRun = vi.fn(async (_run: unknown) => undefined);
 const isOptedOut = vi.fn(async (_repo: unknown, _org: string, _s: unknown, _c: string) => false);
-const resolveOptOutSubject = vi.fn(async (_org: string, leadId: string) => ({
-  leadId,
-  email: null,
-  phoneE164: null,
-}));
 const checkOptOutStatus = vi.fn(async (_contactId: string, _channel: string, _org: string) => ({
   blocked: false,
   allowed: true,
@@ -90,12 +85,7 @@ vi.mock('../../../cadence/infra/PrismaCadenceRunRepository.js', () => ({
 vi.mock('../../../../shared/infra/PrismaOptOutRepository.js', () => ({
   prismaOptOutRepository: {},
 }));
-vi.mock('../../../cadence/infra/PrismaLeadSubjectResolver.js', () => ({
-  prismaLeadSubjectResolver: {
-    resolve: (org: string, leadId: string) => resolveOptOutSubject(org, leadId),
-  },
-}));
-vi.mock('../../../cadence/application/optOutService.js', () => ({
+vi.mock('../../../../shared/services/optOutService.js', () => ({
   isOptedOut: (repo: unknown, org: string, s: unknown, c: string) => isOptedOut(repo, org, s, c),
 }));
 vi.mock('../../../../shared/services/optOutCheck.service.js', () => ({
