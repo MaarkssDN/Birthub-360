@@ -26,12 +26,7 @@ import {
   Alert,
 } from '../../components/design-system/index.js';
 import { ChecklistItem, PendingAlert } from './overviewWidgets.js';
-import type {
-  AgentRecord,
-  CallLogEntry,
-  FetchStatus,
-  ReadyChecks,
-} from './overviewMetrics.js';
+import type { AgentRecord, CallLogEntry, FetchStatus, ReadyChecks } from './overviewMetrics.js';
 
 // Compact onboarding wizard + permanent checklist. `checklist === null` means the server state
 // has not loaded yet — the panel renders skeletons instead of flashing default "done" state.
@@ -118,7 +113,9 @@ export function OnboardingPanel({
             <div className="space-y-1.5 pt-2">
               <div className="flex justify-between items-baseline">
                 <span className="text-xs font-bold text-brand">Progresso do Setup</span>
-                <span className="text-xs font-bold text-brand font-mono">{Math.round(progress)}%</span>
+                <span className="text-xs font-bold text-brand font-mono">
+                  {Math.round(progress)}%
+                </span>
               </div>
               <Progress value={progress} />
             </div>
@@ -218,8 +215,8 @@ export function OnboardingPanel({
                     3. Conectar Telefonia e SIP Trunk
                   </h4>
                   <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                    Conecte seu número de telefone virtual ou operadora local via protocolo SIP
-                    para receber chamadas de leads.
+                    Conecte seu número de telefone virtual ou operadora local via protocolo SIP para
+                    receber chamadas de leads.
                   </p>
                   <div className="flex gap-2 pt-1">
                     <Button
@@ -496,7 +493,9 @@ export function AgentsCard({
                   <Users className="h-4 w-4" />
                 </div>
                 <div className="text-left">
-                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{agent.name}</p>
+                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    {agent.name}
+                  </p>
                   <p className="text-[10px] text-slate-500">{agent.model}</p>
                 </div>
               </div>
@@ -601,7 +600,9 @@ export function PendingAlertsCard({
           agentsCount > 0 &&
           agentsWithPhone > 0 &&
           checklist?.knowledgeAdded && (
-            <p className="text-xs text-slate-400 py-4 text-center">Nenhuma pendência identificada.</p>
+            <p className="text-xs text-slate-400 py-4 text-center">
+              Nenhuma pendência identificada.
+            </p>
           )}
       </div>
     </Card>

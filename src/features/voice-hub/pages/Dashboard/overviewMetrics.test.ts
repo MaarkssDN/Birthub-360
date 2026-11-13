@@ -25,7 +25,12 @@ const NOW = new Date('2026-11-12T15:00:00-03:00').getTime();
 const TODAY_ISO = '2026-11-12T10:00:00-03:00';
 const YESTERDAY_ISO = '2026-11-11T10:00:00-03:00';
 
-function metric(name: string, value: number, timestamp: string, tags?: Record<string, unknown>): MetricEntry {
+function metric(
+  name: string,
+  value: number,
+  timestamp: string,
+  tags?: Record<string, unknown>,
+): MetricEntry {
   return { id: `${name}-${timestamp}-${value}`, name, value, timestamp, tags };
 }
 
@@ -78,9 +83,7 @@ describe('calculateChecklistProgress', () => {
   });
 
   it('computes the percentage of done keys', () => {
-    expect(
-      calculateChecklistProgress({ a: true, b: false, c: true, d: true }),
-    ).toBe(75);
+    expect(calculateChecklistProgress({ a: true, b: false, c: true, d: true })).toBe(75);
   });
 });
 

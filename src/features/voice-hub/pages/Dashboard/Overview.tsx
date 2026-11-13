@@ -217,11 +217,7 @@ export default function RebuiltExecutiveOverview() {
   };
 
   // ---- Real, derived metrics (no fabricated numbers) — pure helpers in overviewMetrics.ts ----
-  const derived = deriveOverviewMetrics(
-    callsState.data,
-    agentsState.data,
-    metricsState.data,
-  );
+  const derived = deriveOverviewMetrics(callsState.data, agentsState.data, metricsState.data);
   const {
     totalAgents,
     agentsWithPhone,

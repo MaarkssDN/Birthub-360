@@ -1,9 +1,5 @@
 import { create } from 'zustand';
-import type {
-  StudioNode,
-  StudioEdge,
-  NodeType,
-} from '../lib/studio/types.js';
+import type { StudioNode, StudioEdge, NodeType } from '../lib/studio/types.js';
 import { addEdge } from '@xyflow/react';
 import { nodeRegistry } from './nodeRegistry.js';
 import { initialNodes, initialEdges } from './initialData.js';

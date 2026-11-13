@@ -4,10 +4,7 @@
 // caller; blocking validation issues must halt the walk — never silently advance).
 import { describe, expect, it } from 'vitest';
 import type { StudioNode, StudioEdge } from '../lib/studio/types.js';
-import {
-  blockingValidationIssues,
-  resolveNextSimulationTarget,
-} from './simulationGraph.js';
+import { blockingValidationIssues, resolveNextSimulationTarget } from './simulationGraph.js';
 
 function node(id: string, type: string, config?: Record<string, unknown>): StudioNode {
   return {
@@ -18,12 +15,7 @@ function node(id: string, type: string, config?: Record<string, unknown>): Studi
   } as StudioNode;
 }
 
-function edge(
-  id: string,
-  source: string,
-  target: string,
-  sourceHandle?: string,
-): StudioEdge {
+function edge(id: string, source: string, target: string, sourceHandle?: string): StudioEdge {
   return { id, source, target, sourceHandle } as StudioEdge;
 }
 
