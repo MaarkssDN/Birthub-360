@@ -9,6 +9,7 @@ import { piiTokenizer } from '../../../src/lib/security/piiTokenizer.service.js'
 import { consentAuditChain } from '../../../src/lib/security/consentChainFactory.js';
 import { similarDealsService } from '../../../src/features/knowledge/similarDeals.service.js';
 import { requestContext } from '../../../src/lib/async-context.js';
+import { prisma } from '../../../src/lib/prisma.js';
 
 /** Executa `fn` com o tenant explícito no requestContext — o mesmo contexto que
  *  `authenticateToken` populada numa request real. Necessário porque a cadeia de
@@ -23,13 +24,22 @@ describe('Onda 01 — Shared Intelligence Core End-to-End Integration Flow', () 
   const tenantA = 'tenant-healthcare-corp';
   const tenantB = 'tenant-logistics-corp';
 
-  beforeEach(() => {
+  beforeEach(async () => {
     domainEventMesh.clearProcessedEvents();
     curatedObjectionService.clear();
     commercialLearningFlywheel.clear();
     semanticCache.clear();
     piiTokenizer.clear();
     consentAuditChain.clear();
+    // A cadeia de consentimento é Prisma-backed em integração (CONSENT_CHAIN_USE_PRISMA=1)
+    // e ConsentSubjectKey/ConsentAuditRecord têm FK para Organization — os tenants dos
+    // fluxos precisam existir de verdade (cleanDatabase remove todas as orgs após cada teste).
+    await prisma.organization.create({
+      data: { id: tenantA, name: 'Healthcare Corp (intelligence flow)' },
+    });
+    await prisma.organization.create({
+      data: { id: tenantB, name: 'Logistics Corp (intelligence flow)' },
+    });
   });
 
   it('Flow 1: VoiceHub/Mobile -> PII Tokenization -> Consent Audit -> Objection Curation -> Roleplay Integration', async () => {
