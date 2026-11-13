@@ -3,7 +3,7 @@
 De: 01 — Plataforma, Segurança e Dados
 Para: 07 — IA e Automações e 17 — Cadência Multicanal e Ciclo de Receita
 Onda: 00 (coordenador-20261112)
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: handoff original `.agents/handoffs/onda-00/07-para-00-automation-dryrun-sandbox.md` item 3
 Sprint destino: próxima onda de endurecimento
@@ -93,3 +93,69 @@ não pôde ser substituída sem quebrá-los.
 - `IMultichannelCadencePort` (enrollLead/executeNextStep/registerOptOutAndHalt) **não mudou** —
   a migração é interna aos services.
 - Pendência de schema já resolvida: não é preciso nova migration além da entregue.
+
+## Resolução (executor sob coordenação do 00 — branch `agente/00-cadence-enrollment-migration`)
+
+Ambos os consumidores migrados para `IMultichannelCadenceEnrollmentStore`
+(`prismaMultichannelCadenceEnrollmentStore` como default injetável via construtor).
+
+### `src/features/cadence/services/adaptiveMultichannelCadence.service.ts` (17)
+
+- `enrollmentsStore` agora é `IMultichannelCadenceEnrollmentStore` injetado no construtor
+  (default = singleton Prisma). `enrollLead` delega a `store.enroll` (o store gera `enr-<uuid>`).
+- `executeNextStep`: `store.get` + `store.update` explícito para `currentStep`/`lastActionAt`/
+  `status` — o objeto retornado é cópia, nunca mutado.
+- `registerOptOutAndHalt`: o loop sobre `store.entries()` virou
+  `store.updateByLead(org, leadId, { status: 'opted_out' })`.
+- `getEnrollment`/`findEnrollmentByLead` viraram `async` (sem callers síncronos em produção —
+  só testes, atualizados).
+- **`optOutRegistry` volátil: REMOVIDO e substituído pelo durável.** `registerOptOutAndHalt`
+  agora grava `OptOutRecord` via `recordOptOut` (`prismaOptOutRepository`, scope `'global'`,
+  `originChannel = channelSource`, `subject.leadId`) — a mesma porta `OptOutRepository` já
+  usada por voz/WhatsApp/e-mail. `executeNextStep` checa supressão com `isOptedOut(repo, org,
+  {leadId}, step.channel)`; `isLeadOptedOut` virou `async` e consulta `repo.findMatches`
+  (equivalente ao antigo "qualquer canal bloqueado"). `selfDrivingCrm.service.ts` (mesmo dono)
+  recebeu `await` na chamada — único caller afetado.
+- **`clear()` removido**: não há mais estado volátil de enrollment/opt-out para limpar
+  (cadenceStepsStore é configuração, não estado). Callers de teste atualizados.
+- Efeito colateral positivo: opt-outs de outros canais (voz/WhatsApp via OptOutRecord) agora
+  também suprimem passos de cadência — antes o registry só conhecia o que o próprio engine
+  gravava. Escopo por canal é respeitado (`scope 'email'` só bloqueia email; `'global'` bloqueia
+  todos) — semântica do domínio `optOut.ts`, mais correta que o antigo "tudo ou nada".
+
+### `src/features/automations/cadenceIntegration.service.ts` (07)
+
+- `findEnrollmentByLead`/`enrollLead` privados viraram `async` sobre o store injetado
+  (`findByLead`/`enroll`). Mutações (`move_to_step`/`pause`/`resume`/`restart`) viraram
+  `store.update(org, enrollmentId, patch)` — comportamento observável idêntico
+  (`contactEmail`/`contactPhone` seguem `''` via default do store).
+
+### `sharedCadenceEnrollmentsStore` (@deprecated)
+
+Zero referências restantes em `src/` e `tests/` (só comentários de documentação). **Não foi
+deletado**: o export vive em `src/shared/contracts/multichannelCadence.contract.ts`, propriedade
+do Agente 01 — recomendo ao 01 remover o Map na próxima passada (nenhum consumidor restante).
+
+### Testes
+
+- Novo fake `tests/mocks/inMemoryCadenceEnrollmentStore.ts` (implementa a porta, devolve cópias
+  como o Prisma store) — prova persistência via porta sem Postgres.
+- `cadenceIntegration.service.test.ts`: instancia `new CadenceIntegrationService(store)` e
+  verifica via `store.findByLead` (async).
+- `adaptiveMultichannelCadence.service.test.ts`: injeta store fake + `InMemoryOptOutRepository`;
+  novo caso prova que avanço de passo persiste via update.
+- `selfDrivingCrm.service.test.ts`: `vi.mock` do serviço de cadência (agora async/Prisma) —
+  opt-out formal do teste continua coberto pelo `optOutRepo` InMemory do próprio serviço.
+- `onda03ComprehensiveFlow.integration.test.ts`: removidos import/`clear()` mortos (serviço não
+  era exercido no arquivo).
+- `onda03EndToEndFlow.integration.test.ts`: `beforeAll` faz upsert das Organizations dos tenants
+  (FK + RLS) e as chamadas de cadência rodam em `requestContext.run({tenantId})`; `Lead
+  'lead-corp-100'` criado antes do opt-out porque `OptOutRecord.leadId` tem FK para `Lead`.
+
+### Verificação executada
+
+- `npx tsc --noEmit` — limpo.
+- `npx vitest run -c vitest.unit.config.ts src/features/cadence src/features/automations
+  tests/unit/cadence` — 24 arquivos, 279 testes, todos verdes.
+- Pendente (precisa de Postgres de integração): `npm run test:integration` nos arquivos onda03
+  acima + `prisma migrate deploy` prévio — recomendado rodar no gate da onda.

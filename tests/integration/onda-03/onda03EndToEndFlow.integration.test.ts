@@ -1,12 +1,38 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { autonomousSdrService } from '../../../src/features/ai-voice/server/autonomousSdr.service.js';
 import { adaptiveMultichannelCadenceService } from '../../../src/features/cadence/services/adaptiveMultichannelCadence.service.js';
 import { proposalAutomationService } from '../../../src/features/proposals/services/proposalAutomation.service.js';
 import { autonomyGovernorService } from '../../../src/features/intelligence/services/autonomyGovernor.service.js';
+import { prisma } from '../../../src/lib/prisma.js';
+import { requestContext } from '../../../src/lib/async-context.js';
 
 describe('Onda 03 — Teste de Homologação E2E da Jornada de Autonomia Comercial', () => {
   const tenantA = 'tenant-enterprise-logistica-001';
   const tenantB = 'tenant-concorrente-varejo-002';
+
+  // O store de enrollments e o repositório de opt-out agora são duráveis (Postgres + RLS
+  // `tenant_isolation` + FK para Organization). Os tenants precisam existir como Organization
+  // e as chamadas de cadência precisam rodar dentro do requestContext do próprio tenant —
+  // fora dele, `app.current_tenant_id` fica preso ao 'test-org-id' do setup e a RLS bloqueia.
+  const withRlsBypass = <T>(fn: () => Promise<T>): Promise<T> =>
+    requestContext.run({ bypassRls: true }, fn);
+  const asTenant = <T>(organizationId: string, fn: () => Promise<T>): Promise<T> =>
+    requestContext.run({ tenantId: organizationId }, fn);
+
+  beforeAll(async () => {
+    await withRlsBypass(async () => {
+      await prisma.organization.upsert({
+        where: { id: tenantA },
+        update: {},
+        create: { id: tenantA, name: 'Tenant Enterprise Logística (E2E Onda 03)' },
+      });
+      await prisma.organization.upsert({
+        where: { id: tenantB },
+        update: {},
+        create: { id: tenantB, name: 'Tenant Concorrente Varejo (E2E Onda 03)' },
+      });
+    });
+  });
 
   it('deve executar o fluxo integrado de Autonomia Comercial ponta a ponta', async () => {
     // 1. SDR Autônomo conduz chamada ativa de qualificação dentro do horário comercial
@@ -26,19 +52,26 @@ describe('Onda 03 — Teste de Homologação E2E da Jornada de Autonomia Comerci
     expect(sdrCall.meetingScheduled).toBeDefined();
     expect(sdrCall.meetingScheduled?.googleMeetLink).toMatch(/^https:\/\/meet\.google\.com\//);
 
-    // 2. Matrícula na Cadência Multicanal Adaptativa
-    const enrollment = await adaptiveMultichannelCadenceService.enrollLead({
-      organizationId: tenantA,
-      cadenceId: 'default-b2b-cadence',
-      leadId: 'lead-corp-100',
-      contactEmail: 'fernanda@transglobal.com.br',
-      contactPhone: '+5511999887766',
-    });
+    // 2. Matrícula na Cadência Multicanal Adaptativa (store durável — roda no contexto do tenant)
+    const enrollment = await asTenant(tenantA, async () => {
+      const enrolled = await adaptiveMultichannelCadenceService.enrollLead({
+        organizationId: tenantA,
+        cadenceId: 'default-b2b-cadence',
+        leadId: 'lead-corp-100',
+        contactEmail: 'fernanda@transglobal.com.br',
+        contactPhone: '+5511999887766',
+      });
 
-    expect(enrollment.status).toBe('active');
-    const step1 = await adaptiveMultichannelCadenceService.executeNextStep(enrollment.enrollmentId, tenantA);
-    expect(step1.success).toBe(true);
-    expect(step1.channel).toBe('email');
+      expect(enrolled.status).toBe('active');
+      const step1Result = await adaptiveMultichannelCadenceService.executeNextStep(
+        enrolled.enrollmentId,
+        tenantA,
+      );
+      expect(step1Result.success).toBe(true);
+      expect(step1Result.channel).toBe('email');
+
+      return enrolled;
+    });
 
     // 3. Geração Automática de Proposta Comercial com itens e alçada
     const proposal = await proposalAutomationService.generateDraftProposal({
@@ -94,20 +127,30 @@ describe('Onda 03 — Teste de Homologação E2E da Jornada de Autonomia Comerci
     expect(signedProposal.status).toBe('sent_to_customer');
     expect(signedProposal.digitalSignatureRef?.documentHashSha256).toBeDefined();
 
-    // 6. Teste de Opt-Out Unificado e Supressão Cross-Channel
-    const optOut = await adaptiveMultichannelCadenceService.registerOptOutAndHalt({
-      organizationId: tenantA,
-      leadId: 'lead-corp-100',
-      channelSource: 'email',
-      reason: 'Solicitação de cancelamento de envio via e-mail corporativo',
-    });
+    // 6. Teste de Opt-Out Unificado e Supressão Cross-Channel (contexto do tenant — RLS)
+    await asTenant(tenantA, async () => {
+      // OptOutRecord.leadId tem FK para Lead — o lead precisa existir de verdade para o
+      // registro de opt-out persistir (o enrollment em si não tem FK, leadId é string simples).
+      await prisma.lead.upsert({
+        where: { id: 'lead-corp-100' },
+        update: {},
+        create: { id: 'lead-corp-100', organizationId: tenantA },
+      });
 
-    expect(optOut.halted).toBe(true);
-    const suppressedStep = await adaptiveMultichannelCadenceService.executeNextStep(
-      enrollment.enrollmentId,
-      tenantA,
-    );
-    expect(suppressedStep.suppressedByOptOut).toBe(true);
+      const optOut = await adaptiveMultichannelCadenceService.registerOptOutAndHalt({
+        organizationId: tenantA,
+        leadId: 'lead-corp-100',
+        channelSource: 'email',
+        reason: 'Solicitação de cancelamento de envio via e-mail corporativo',
+      });
+
+      expect(optOut.halted).toBe(true);
+      const suppressedStep = await adaptiveMultichannelCadenceService.executeNextStep(
+        enrollment.enrollmentId,
+        tenantA,
+      );
+      expect(suppressedStep.suppressedByOptOut).toBe(true);
+    });
 
     // 7. Auditoria do Painel de SLO de Autonomia do Tenant
     const slo = await autonomyGovernorService.getSloMetrics(tenantA, 'last_hour');
