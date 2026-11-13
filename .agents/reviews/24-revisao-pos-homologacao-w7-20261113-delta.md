@@ -146,3 +146,31 @@ localmente (sem Docker) — validação fica a cargo do CI.
 
 **Veredito do adendo:** **APROVADO** — correções test-only de paridade com o
 contrato de tenancy real; aprovação segue condicionada ao CI verde.
+
+---
+
+## Adendo 3 — Seed de Organization no intelligenceCoreFlow (CI run 43473149205)
+
+**Escopo:** commits `52eb4c941`/`9fe10a920`, somente o arquivo de teste
+`tests/integration/onda-01/intelligenceCoreFlow.integration.test.ts` — zero
+mudança em código de produção.
+
+**Motivo:** o run `43473149205` reprovou o mesmo arquivo em duas etapas
+sucessivas, ambas corrigidas dentro do contrato de tenancy real:
+
+1. **P2003 `ConsentSubjectKey_organizationId_fkey`** — com
+   `CONSENT_CHAIN_USE_PRISMA=1` (PR #216), `ConsentSubjectKey`/`ConsentAuditRecord`
+   exigem que `tenant-healthcare-corp`/`tenant-logistics-corp` existam em
+   `Organization`. Correção: seed idempotente das duas orgs no `beforeEach`.
+2. **P2039 RLS em `Organization`** — a primeira versão usou
+   `prisma.organization.upsert`, que falhou dentro do wrapper de transação
+   interativa do `executeWithRls`. Correção: padrão `findUnique`+`create`
+   sob `requestContext.run({ bypassRls: true })`, idêntico ao usado em
+   `rls-bypass-allowlist.test.ts` e demais suites de integração que criam
+   orgs de teste.
+
+**Gates:** `npx tsc --noEmit` PASS. Testes de integração não executáveis
+localmente (sem Docker) — validação a cargo do CI.
+
+**Veredito do adendo:** **APROVADO** — correção test-only alinhada ao
+padrão canônico de seed de tenants; aprovação segue condicionada ao CI verde.
