@@ -6,6 +6,7 @@
 
 import { type NextFunction, type Request, type Response, Router } from 'express';
 import { z } from 'zod';
+import { AuditService } from '../../lib/audit/audit.service.js';
 import type { AuthRequest } from '../../shared/middlewares/authenticateToken.js';
 import { createApiKey, listApiKeys, revokeApiKey } from './apiKey.service.js';
 
@@ -42,6 +43,17 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
       scopes: parsed.data.scopes,
       expiresInDays: parsed.data.expiresInDays ?? null,
     });
+    // APIKey não está em AUDITABLE_MODELS — a trilha de emissão de credencial de acesso é
+    // registrada explicitamente (MEL-10). Nunca logar rawKey/keyHash aqui.
+    await AuditService.log({
+      action: 'API_KEY_CREATED',
+      entity: 'APIKey',
+      entityId: key.id,
+      actorId: user.id,
+      tenantId: user.organizationId,
+      ipAddress: req.ip,
+      afterState: { name: key.name, scopes: key.scopes },
+    });
     res.status(201).json({ success: true, key, rawKey });
   } catch (error) {
     next(error);
@@ -56,6 +68,14 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction) =>
       res.status(404).json({ success: false, error: 'API key não encontrada ou já revogada.' });
       return;
     }
+    await AuditService.log({
+      action: 'API_KEY_REVOKED',
+      entity: 'APIKey',
+      entityId: String(req.params.id),
+      actorId: user.id,
+      tenantId: user.organizationId,
+      ipAddress: req.ip,
+    });
     res.json({ success: true });
   } catch (error) {
     next(error);

@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { hashPassword } from 'better-auth/crypto';
+import { AuditService } from '../../../lib/audit/audit.service.js';
 import { isAuthorizedLoginEmail } from '../../../config/access-policy.js';
 // Fonte canônica de RBAC — não duplicar a hierarquia de papéis aqui (ver comentário em
 // src/lib/auth/authorization.ts sobre o sistema de RBAC divergente que existia antes).
@@ -85,11 +86,21 @@ function generateTempPassword(): string {
   return `${pw}!A1`; // garante símbolo/maiúscula/dígito para qualquer política de senha
 }
 
+// Quem executa a ação administrativa (ADMIN que chamou a rota) — alimenta actorId/ipAddress do
+// AuditLog. User não está em AUDITABLE_MODELS (src/lib/prisma-interceptors.ts), então a extensão
+// de auditoria do Prisma não cobre create/update/delete de User: cada mutação sensível deste
+// módulo registra a trilha explicitamente aqui (MEL-10, DEM-20261113-003).
+export interface TeamAuditActor {
+  userId?: string;
+  ipAddress?: string;
+}
+
 export async function createTeamMember(input: {
   organizationId: string;
   name: string;
   email: string;
   role: string;
+  actor?: TeamAuditActor;
 }): Promise<{ member: TeamMember; tempPassword: string }> {
   const email = input.email.trim().toLowerCase();
   const name = input.name.trim();
@@ -142,6 +153,16 @@ export async function createTeamMember(input: {
     select: TEAM_MEMBER_SELECT,
   });
 
+  await AuditService.log({
+    action: 'CREATE',
+    entity: 'User',
+    entityId: member.id,
+    actorId: input.actor?.userId,
+    tenantId: input.organizationId,
+    ipAddress: input.actor?.ipAddress,
+    afterState: { email: member.email, role: member.role, provisionedBy: 'team' },
+  });
+
   return { member, tempPassword };
 }
 
@@ -156,6 +177,7 @@ export async function createTeamMember(input: {
 export async function resetTeamMemberPassword(
   organizationId: string,
   targetUserId: string,
+  actor?: TeamAuditActor,
 ): Promise<{ member: TeamMember; tempPassword: string }> {
   const target = await prisma.user.findFirst({
     where: { id: targetUserId, organizationId },
@@ -200,6 +222,16 @@ export async function resetTeamMemberPassword(
     select: TEAM_MEMBER_SELECT,
   });
 
+  await AuditService.log({
+    action: 'PASSWORD_RESET',
+    entity: 'User',
+    entityId: targetUserId,
+    actorId: actor?.userId,
+    tenantId: organizationId,
+    ipAddress: actor?.ipAddress,
+    afterState: { sessionsRevoked: true, mustChangePassword: true },
+  });
+
   return { member, tempPassword };
 }
 
@@ -212,6 +244,7 @@ export async function resetTeamMemberPassword(
 export async function unlockTeamMember(
   organizationId: string,
   targetUserId: string,
+  actor?: TeamAuditActor,
 ): Promise<TeamMember> {
   const target = await prisma.user.findFirst({
     where: { id: targetUserId, organizationId },
@@ -221,17 +254,30 @@ export async function unlockTeamMember(
     throw new TeamServiceError('Usuário não encontrado nesta organização.', 404);
   }
 
-  return prisma.user.update({
+  const member = await prisma.user.update({
     where: { id: targetUserId },
     data: { lockedUntil: null, failedLoginAttempts: 0 },
     select: TEAM_MEMBER_SELECT,
   });
+
+  await AuditService.log({
+    action: 'UPDATE',
+    entity: 'User',
+    entityId: targetUserId,
+    actorId: actor?.userId,
+    tenantId: organizationId,
+    ipAddress: actor?.ipAddress,
+    afterState: { loginLockCleared: true },
+  });
+
+  return member;
 }
 
 export async function deleteTeamMember(
   organizationId: string,
   targetUserId: string,
   requestingUserId: string,
+  ipAddress?: string,
 ): Promise<void> {
   if (targetUserId === requestingUserId) {
     throw new TeamServiceError('Você não pode excluir sua própria conta por aqui.', 400);
@@ -263,4 +309,14 @@ export async function deleteTeamMember(
 
   // Session/Account têm onDelete: Cascade a partir de User — uma única exclusão basta.
   await prisma.user.delete({ where: { id: targetUserId } });
+
+  await AuditService.log({
+    action: 'DELETE',
+    entity: 'User',
+    entityId: targetUserId,
+    actorId: requestingUserId,
+    tenantId: organizationId,
+    ipAddress,
+    beforeState: { role: target.role },
+  });
 }

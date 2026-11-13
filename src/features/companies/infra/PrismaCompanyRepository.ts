@@ -58,10 +58,15 @@ export class PrismaCompanyRepository implements CompanyRepository {
         }
 
         where.id = { in: meiliPage.ids };
+        // MEL-16 (DEM-20261113-003): a listagem NÃO inclui contacts/leads — o include to-many
+        // baixava TODAS as relations de cada empresa da página (over-fetch quadrático ao
+        // volume de contatos/leads por conta) e nenhum consumidor da lista usa esses campos
+        // (CompanyList/CommandPalette/ProspeccaoInteligenteHub leem só colunas da empresa;
+        // contacts só é usado pelo detalhe, que passa por findById abaixo, que mantém o
+        // include). Tipo `Company` declara contacts?/leads? como opcionais.
         const rows = await prisma.company.findMany({
           where,
           take: limit,
-          include: { contacts: true, leads: true },
         });
         const orderIndex = new Map(meiliPage.ids.map((id, idx) => [id, idx]));
         const sortedRows = [...rows].sort(
@@ -97,11 +102,12 @@ export class PrismaCompanyRepository implements CompanyRepository {
 
     // biome-ignore lint/plugin/no-prisma-tx-escape: uso legado congelado no baseline (parecer 15 #40 L1); migrar para runInTransaction
     const [data, total] = await prisma.$transaction([
+      // MEL-16 (DEM-20261113-003): sem `include: { contacts, leads }` — ver comentário no branch
+      // Meilisearch acima. findById mantém o include para a tela de detalhe.
       prisma.company.findMany({
         where,
         skip,
         take: limit,
-        include: { contacts: true, leads: true },
         orderBy: { createdAt: 'desc' },
       }),
       prisma.company.count({ where }),
