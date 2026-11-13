@@ -3,8 +3,10 @@
 // Gate estático de cobertura RLS (DEM-20261113-002 / Onda 1, MEL-03).
 //
 // Falha (exit 1) se existir model no schema.prisma com campo `organizationId`
-// cuja tabela não tenha, nas migrations, `ENABLE ROW LEVEL SECURITY` E ao menos
-// uma `CREATE POLICY`. Não exige banco — análise estática de arquivos.
+// OU `tenantId` (duas convenções de tenancy em uso — ex.: AuditLog,
+// DocumentEmbedding) cuja tabela não tenha, nas migrations,
+// `ENABLE ROW LEVEL SECURITY` E ao menos uma `CREATE POLICY`. Não exige banco
+// — análise estática de arquivos.
 //
 // Exceções legítimas ficam em ALLOWLIST abaixo (tabelas globais sem tenant,
 // ex.: auth do better-auth). Qualquer model novo com organizationId entra no
@@ -34,6 +36,10 @@ interface ModelInfo {
   hasOrgId: boolean;
 }
 
+function isTenantBearing(body: string): boolean {
+  return /^\s*(organizationId|tenantId)\s+\w+/m.test(body);
+}
+
 function parseSchema(): ModelInfo[] {
   const src = readFileSync(SCHEMA_PATH, 'utf8');
   const models: ModelInfo[] = [];
@@ -43,7 +49,7 @@ function parseSchema(): ModelInfo[] {
     const [, name, body] = m;
     const mapMatch = body.match(/@@map\("([^"]+)"\)/);
     const table = mapMatch ? mapMatch[1] : name;
-    const hasOrgId = /^\s*organizationId\s+\w+/m.test(body);
+    const hasOrgId = isTenantBearing(body);
     models.push({ name, table, hasOrgId });
   }
   return models;

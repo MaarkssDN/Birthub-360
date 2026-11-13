@@ -161,6 +161,11 @@ export const ALLOWED_ATTACHMENT_MIME_TYPES = [
   'text/plain',
   'text/csv',
   'application/vnd.ms-excel',
+  'application/msword',
+  // Fallback genérico enviado pelo front quando o browser não resolve o tipo
+  // (EntityAttachments usa file.type || 'application/octet-stream'). Não é
+  // renderizável como HTML/JS — seguro manter, senão anexos legítimos quebram.
+  'application/octet-stream',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'application/vnd.openxmlformats-officedocument.presentationml.presentation',

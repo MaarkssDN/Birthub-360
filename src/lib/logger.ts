@@ -146,8 +146,15 @@ export function sanitizeLogValue(value: unknown, depth = 0): unknown {
   if (Array.isArray(value)) {
     return value.map((item) => sanitizeLogValue(item, depth + 1));
   }
+  // Só recursa em objetos plain — Date, Buffer, Map, Set e instâncias de
+  // classe (Prisma, SDKs) devem chegar ao serializer intactos. Iterar
+  // Object.entries neles produziria {} ou {"0":..} e apagaria dados de log.
+  const proto = Object.getPrototypeOf(value);
+  if (proto !== Object.prototype && proto !== null) {
+    return value;
+  }
   const out: Record<string, unknown> = {};
-  for (const [key, val] of Object.entries(value)) {
+  for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
     out[key] = sanitizeLogValue(val, depth + 1);
   }
   return out;

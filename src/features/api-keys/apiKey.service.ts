@@ -5,7 +5,7 @@
 // hash SHA-256. Escopos são strings livres (`crm:read`, `export`, ...) —
 // a verificação por escopo é feita no middleware que consumir a chave.
 
-import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import { prisma } from '../../lib/prisma.js';
 
 const KEY_PREFIX = 'bhk_';
@@ -128,9 +128,3 @@ export function apiKeyMatchesScope(key: VerifiedApiKey, scope: string): boolean 
   return key.scopes.length === 0 || key.scopes.includes('*') || key.scopes.includes(scope);
 }
 
-/** Comparação em tempo constante para usos que precisem revalidar hash. */
-export function safeHashEqual(a: string, b: string): boolean {
-  const ba = Buffer.from(a, 'utf8');
-  const bb = Buffer.from(b, 'utf8');
-  return ba.length === bb.length && timingSafeEqual(ba, bb);
-}

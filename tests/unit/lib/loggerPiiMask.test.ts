@@ -54,4 +54,30 @@ describe('MEL-04: máscara de PII em logs', () => {
     for (let i = 0; i < 10; i++) deep = { next: deep };
     expect(() => sanitizeLogValue(deep)).not.toThrow();
   });
+
+  it('preserva objetos não-plain (Date, Buffer, Map, Set, instâncias)', () => {
+    // Regressão apontada na revisão 24 (A-1): iterar Object.entries em
+    // Date/Buffer/class instances apagava os dados do log ({}, {"0":..}).
+    const when = new Date('2026-11-13T12:00:00Z');
+    const buf = Buffer.from('ab');
+    class Foo {
+      bar = 'baz';
+    }
+    const input = {
+      when,
+      buf,
+      map: new Map([['k', 'v']]),
+      set: new Set([1]),
+      foo: new Foo(),
+      email: 'x@y.com',
+    };
+    const out = sanitizeLogValue(input) as typeof input;
+    expect(out.when).toBe(when);
+    expect(out.buf).toBe(buf);
+    expect(out.map).toBe(input.map);
+    expect(out.set).toBe(input.set);
+    expect(out.foo).toBe(input.foo);
+    // plain objects continuam sanitizados ao redor deles
+    expect(out.email).toBe('[EMAIL_OCULTO]');
+  });
 });
