@@ -33,7 +33,9 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     const user = (req as AuthRequest).user;
     const parsed = createSchema.safeParse(req.body);
     if (!parsed.success) {
-      res.status(400).json({ success: false, error: 'Payload inválido.', issues: parsed.error.issues });
+      res
+        .status(400)
+        .json({ success: false, error: 'Payload inválido.', issues: parsed.error.issues });
       return;
     }
     const { key, rawKey } = await createApiKey({

@@ -253,13 +253,7 @@ export function mountFeatureRoutes(app: Express): void {
   app.use('/api/agent-builder', authenticateToken, requireTenant, agentBuilderRoutes);
   app.use('/api/auth-extra', authenticateToken, requireTenant, authExtraRoutes);
   // Gestão de API keys do tenant — só ADMIN cria/lista/revoga (MEL-07).
-  app.use(
-    '/api/api-keys',
-    authenticateToken,
-    requireTenant,
-    requireRole(['ADMIN']),
-    apiKeyRoutes,
-  );
+  app.use('/api/api-keys', authenticateToken, requireTenant, requireRole(['ADMIN']), apiKeyRoutes);
   app.use('/api/agent', requireTenant, agentRoutes);
   app.use('/api/cadence', authenticateToken, requireTenant, cadenceRoutes);
   app.use('/api/calendar/booking-links', privateBookingRouter);
