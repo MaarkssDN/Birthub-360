@@ -5,7 +5,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { SoundFX } from '@/lib/soundEffects';
 import { PillarContent } from './pillars/PillarContent.js';
 import { PillarDetailDialog } from './pillars/PillarDetailDialog.js';
-import { PILLARS_EDITORIAL_DATA, type PillarData, type PillarThemeColor } from './pillars/PillarRegistry.js';
+import {
+  PILLARS_EDITORIAL_DATA,
+  type PillarData,
+  type PillarThemeColor,
+} from './pillars/PillarRegistry.js';
 
 export { PILLARS_EDITORIAL_DATA, type PillarData, type PillarThemeColor };
 
