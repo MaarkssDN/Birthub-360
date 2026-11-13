@@ -156,16 +156,17 @@ describe('parecer 15 (#40 L1): baseline de usos legados de no-prisma-tx-escape',
     expect(baseline.total).toBe(total);
   });
 
-  it('P2 (caso D do parecer 24): um uso extra na linha suprimida do PgLeadRepository falha', () => {
-    const file = 'src/features/cadence/dialer/infrastructure/db/repositories/PgLeadRepository.ts';
+  it('P2 (caso D do parecer 24): um uso extra na linha suprimida do PrismaUsageRepository falha', () => {
+    // Fixture migrado de PgLeadRepository (removido no corte do dialer-3cx legado,
+    // commits 32c97ad1e/18b3114f) para o $queryRaw legado de groupByDay.
+    const file = 'src/features/billing/infra/PrismaUsageRepository.ts';
     const original = readFileSync(path.join(ROOT, file), 'utf8');
     const lines = original.split('\n');
-    // A supressão de findById (perto da linha 83) e a linha que ela cobre.
+    // A supressão de groupByDay (linha ~28) e a linha que ela cobre.
     const target = lines.findIndex(
-      (l, i) =>
-        i >= 75 && i <= 90 && l.includes('const rows = await this.prisma.$queryRaw<LeadRow[]>'),
+      (l, i) => i >= 20 && i <= 40 && l.includes('const rows = await prisma.$queryRaw<'),
     );
-    expect(target, 'linha suprimida de findById não encontrada').toBeGreaterThan(0);
+    expect(target, 'linha suprimida de groupByDay não encontrada').toBeGreaterThan(0);
     expect(lines[target - 1]).toMatch(SUPPRESSION_RE);
     const base = analyzeSource(file, original);
     expect(suppressionProblems(file, base)).toEqual([]);
@@ -188,15 +189,15 @@ describe('parecer 15 (#40 L1): baseline de usos legados de no-prisma-tx-escape',
     const sameLine = mutate((l) =>
       l.replace(
         'const rows',
-        'void this.prisma.$executeRawUnsafe(String(process.env.X)); const rows',
+        'void prisma.$executeRawUnsafe(String(process.env.X)); const rows',
       ),
     );
     expect(sameLine.problems.join('\n')).toMatch(/cobre 2 usos/);
     // (2) segundo uso dentro do mesmo statement
     const sameStatement = mutate((l) =>
       l.replace(
-        'await this.prisma.$queryRaw',
-        'this.prisma.$executeRawUnsafe(String(process.env.X)) && await this.prisma.$queryRaw',
+        'await prisma.$queryRaw',
+        'prisma.$executeRawUnsafe(String(process.env.X)) && await prisma.$queryRaw',
       ),
     );
     expect(sameStatement.problems.join('\n')).toMatch(/cobre 2 usos/);
@@ -204,29 +205,35 @@ describe('parecer 15 (#40 L1): baseline de usos legados de no-prisma-tx-escape',
     expect(sameStatement.removed).toHaveLength(1);
     expect(sameLine.removed).toHaveLength(1);
     // (3) troca do uso legado por um Unsafe (1 uso, mas a chave muda)
-    const swapped = mutate((l) => l.replace('$queryRaw<LeadRow[]>', '$queryRawUnsafe<LeadRow[]>'));
+    const swapped = mutate((l) => l.replace('$queryRaw<', '$queryRawUnsafe<'));
     expect(swapped.problems).toEqual([]);
     expect(swapped.added).toEqual([
-      expect.stringMatching(/^src\/.*PgLeadRepository\.ts: \$queryRawUnsafe:/),
+      expect.stringMatching(/^src\/.*PrismaUsageRepository\.ts: \$queryRawUnsafe:/),
     ]);
     // (4) mudar o SQL do statement suprimido também muda a chave
     const sqlChanged = (() => {
       const copy = [...lines];
-      copy[target + 3] = (copy[target + 3] as string).replace('WHERE id', 'WHERE id = id OR id');
+      const sqlIdx = copy.findIndex((l) => l.includes('WHERE "organizationId"'));
+      expect(sqlIdx, 'linha WHERE do SQL não encontrada').toBeGreaterThan(target);
+      copy[sqlIdx] = (copy[sqlIdx] as string).replace(
+        'WHERE "organizationId"',
+        'WHERE "organizationId" = \'x\' OR "organizationId"',
+      );
       return minus(
         { [file]: suppressedUseKeys(analyzeSource(file, copy.join('\n'))) },
         baseline.files,
       );
     })();
     expect(sqlChanged).toHaveLength(1);
-    // reformatar não muda a chave
-    const reformatted = original.replace(
-      'const rows = await this.prisma.$queryRaw<LeadRow[]>(',
-      'const rows =  await  this.prisma.$queryRaw< LeadRow[] >(',
-    );
+    // reformatar não muda a chave (indentação extra dentro do template SQL)
+    const sqlLine = lines.findIndex((l) => l.includes('SELECT'));
+    const reformattedLines = [...lines];
+    reformattedLines[sqlLine] = `  ${(reformattedLines[sqlLine] as string).trimStart()}`;
+    const reformatted = reformattedLines.join('\n');
     expect(
       minus({ [file]: suppressedUseKeys(analyzeSource(file, reformatted)) }, baseline.files),
     ).toEqual([]);
+    void original;
   });
 
   it('S1b: a varredura cobre .mts/.cts/.jsx e pastas com ponto, como o biome', () => {

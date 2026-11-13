@@ -274,6 +274,10 @@ const envSchema = z
     SMTP_PASS: z.string().optional(),
     /** Endereço "De" usado no envio — cai para SMTP_USER quando ausente. */
     SMTP_FROM: z.string().optional(),
+    /** Caixa comercial que recebe leads do formulário público da landing
+     * (/api/public/lead-capture). Vazio = cai para SMTP_FROM/SMTP_USER; sem nenhum
+     * dos três a rota responde 503 (nunca finge captura). */
+    LEAD_CAPTURE_EMAIL: z.string().optional(),
 
     // Segredo do webhook /api/webhooks/email/inbound (CYC-003, onda 26) — transporte de e-mail de
     // ENTRADA, hoje um stub (nenhum provedor real de inbound-parse plugado, ver

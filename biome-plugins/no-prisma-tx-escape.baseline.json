@@ -1,7 +1,7 @@
 {
   "_comment": "Parecer 15 (#40 L1, #75 A1) e parecer 24 (#75 P2): usos legados de $queryRaw/$executeRaw/$transaction no client global (prisma.$x, this.prisma.$x e nomes pontilhados terminados em prisma), suprimidos com biome-ignore lint/plugin/no-prisma-tx-escape. Cada entrada é um uso: \"<método>:<sha256[0..16] do statement normalizado>\". A lista só pode diminuir: ao migrar um uso para runInTransaction, remova o biome-ignore e a entrada. Mudar o statement suprimido (método, SQL, corpo) muda a chave e exige revisão explícita aqui. Verificado por tests/unit/architecture/prisma-tx-escape-baseline.test.ts (a mensagem de falha mostra as chaves atuais).",
   "rule": "lint/plugin/no-prisma-tx-escape",
-  "total": 44,
+  "total": 28,
   "files": {
     "src/bootstrap/healthchecks.ts": ["$queryRaw:0d9e9cfe1eef5a83"],
     "src/bootstrap/workerServer.ts": ["$queryRaw:0d9e9cfe1eef5a83", "$queryRaw:0d9e9cfe1eef5a83"],
@@ -11,37 +11,11 @@
     ],
     "src/features/activities/services/activity.service.ts": ["$transaction:5545b046d2719fd7"],
     "src/features/billing/infra/PrismaUsageRepository.ts": ["$queryRaw:ab74380e30ae6321"],
-    "src/features/cadence/dialer/infrastructure/db/repositories/PgCallAttemptRepository.ts": [
-      "$executeRaw:ed2c4fc07d6de759",
-      "$queryRaw:81c0ff75ec710092",
-      "$queryRaw:a97d221746a146cd",
-      "$queryRaw:cc61d3a86a327c4e"
-    ],
-    "src/features/cadence/dialer/infrastructure/db/repositories/PgCampaignRepository.ts": [
-      "$executeRaw:d6916a377de7a767",
-      "$queryRaw:0b96be037d6a5e47",
-      "$queryRaw:0ed0dcfedfbdb138",
-      "$queryRaw:abb1f06b949008bf"
-    ],
-    "src/features/cadence/dialer/infrastructure/db/repositories/PgDncRepository.ts": [
-      "$executeRaw:7e5aff4904c53812",
-      "$queryRaw:18c1a48b3b5dc5c3"
-    ],
-    "src/features/cadence/dialer/infrastructure/db/repositories/PgLeadRepository.ts": [
-      "$executeRaw:6072a02bc1c9714d",
-      "$queryRaw:51df08e5f4fb651c",
-      "$queryRaw:b564a118d2681bf8",
-      "$queryRaw:e11399480763bbd1",
-      "$queryRaw:eac0b8205375919f"
-    ],
     "src/features/cadence/infra/PrismaCadenceRunRepository.ts": ["$transaction:df1dcdf170ec2c4e"],
     "src/features/companies/infra/PrismaCompanyRepository.ts": ["$transaction:ab1fdc76371de72b"],
     "src/features/contacts/infra/PrismaContactRepository.ts": ["$transaction:1b9bf9c8a092726e"],
     "src/features/contacts/services/contact.service.ts": ["$transaction:1b9bf9c8a092726e"],
-    "src/features/crm360/infra/PrismaCrm360Repository.ts": [
-      "$transaction:7415cb42d7d58d62",
-      "$transaction:e150812913268a2a"
-    ],
+    "src/features/crm360/infra/PrismaCrm360Repository.ts": ["$transaction:7415cb42d7d58d62"],
     "src/features/intelligence/infrastructure/PrismaAiSettingsRepository.ts": [
       "$transaction:aa946fedc6c6a83a"
     ],

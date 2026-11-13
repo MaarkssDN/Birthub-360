@@ -134,6 +134,22 @@ export function applyRateLimiters(app: Express): void {
   });
   app.use('/api/public/demo-leads', publicLeadLimiter);
 
+  // Captura pública alternativa da landing (/api/public/lead-capture — envio por e-mail,
+  // sem persistência). Mesma justificativa de cota apertada: cada POST dispara SMTP real.
+  const leadCaptureLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => ipKeyGenerator(req.ip || 'unknown'),
+    store: redisStoreOrMemory(),
+    message: {
+      success: false,
+      error: 'Muitas solicitações enviadas. Tente novamente em 1 hora.',
+    },
+  });
+  app.use('/api/public/lead-capture', leadCaptureLimiter);
+
   // Rate Limiting dedicado de EXPORTAÇÃO (DEM-20261113-002 / MEL-05): gerar
   // CSV/PDF/Excel varre tabelas inteiras do tenant e consome CPU/memória —
   // não pode dividir a cota folgada do apiLimiter. Chave por tenant quando a

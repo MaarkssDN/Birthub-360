@@ -1,0 +1,104 @@
+name: Branch hygiene
+
+# BT360-DT-0048 / TAREFA-SANEAMENTO-025: expurgo governado de branches remotas
+# órfãs. Regra conservadora e auditável:
+#   - só deleta branch cuja ponta já é ancestral de origin/main (todo commit
+#     preservado na linha principal — nenhuma perda de trabalho possível);
+#   - só deleta se a ponta tem mais de 14 dias sem commit novo;
+#   - nunca toca main/master/develop, integracao/*, release/*, gh-pages,
+#     dependabot/*;
+#   - branches NÃO mergeadas e velhas são apenas reportadas no summary —
+#     expurgo de trabalho não integrado exige decisão humana, não automação.
+# O repo setting "Automatically delete head branches" continua sendo a
+# primeira linha de defesa para branches de PR; este workflow cobre o
+# passivo acumulado e qualquer branch que escape daquele caminho.
+# Execução manual: workflow_dispatch com dry_run=true para pré-visualizar.
+
+on:
+  schedule:
+    - cron: '23 6 * * 1' # segundas 06:23 UTC — fora do horário de pico de CI
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Somente listar candidatos, sem deletar (true/false)'
+        required: false
+        default: 'true'
+        type: choice
+        options: ['true', 'false']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: branch-hygiene
+  cancel-in-progress: false
+
+jobs:
+  prune-merged-stale-branches:
+    name: Podar branches remotas mergeadas e inativas (>14d)
+    runs-on: ubuntu-latest
+    env:
+      STALE_DAYS: '14'
+      DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Sincronizar refs remotas
+        run: git fetch origin '+refs/heads/*:refs/remotes/origin/*' --prune --quiet
+
+      - name: Classificar e podar branches
+        run: |
+          set -euo pipefail
+          protected='^(main|master|develop|release|release/.*|integracao|integracao/.*|gh-pages|dependabot|dependabot/.*)$'
+          now=$(date +%s)
+          declare -a to_delete=() stale_unmerged=()
+
+          while IFS= read -r ref; do
+            branch="${ref#refs/remotes/origin/}"
+            [ "$branch" = "HEAD" ] && continue
+            [[ "$branch" =~ $protected ]] && continue
+            tip_ts=$(git log -1 --format=%ct "origin/$branch")
+            age_days=$(( (now - tip_ts) / 86400 ))
+            [ "$age_days" -lt "$STALE_DAYS" ] && continue
+            if git merge-base --is-ancestor "origin/$branch" origin/main; then
+              to_delete+=("$branch")
+            else
+              stale_unmerged+=("$branch")
+            fi
+          done < <(git for-each-ref --format='%(refname)' refs/remotes/origin)
+
+          {
+            echo "### Branch hygiene — $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "dry_run: \`$DRY_RUN\` | stale_threshold: ${STALE_DAYS}d"
+            echo ""
+            echo "#### Deletadas (mergeadas em main, >${STALE_DAYS}d sem commit)"
+            if [ "${#to_delete[@]}" -eq 0 ]; then
+              echo "_nenhuma_"
+            else
+              printf -- '- `%s`\n' "${to_delete[@]}"
+            fi
+            echo ""
+            echo "#### Não mergeadas e inativas (SOMENTE REPORTADAS — exigem decisão humana)"
+            if [ "${#stale_unmerged[@]}" -eq 0 ]; then
+              echo "_nenhuma_"
+            else
+              printf -- '- `%s`\n' "${stale_unmerged[@]}"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "::notice::dry_run=true — nenhuma branch foi deletada. Candidatas: ${#to_delete[@]} mergeadas, ${#stale_unmerged[@]} não-mergeadas reportadas."
+            printf 'would delete: %s\n' "${to_delete[@]:-}"
+            exit 0
+          fi
+
+          for b in "${to_delete[@]:-}"; do
+            [ -z "$b" ] && continue
+            if git push origin --delete "$b"; then
+              echo "deleted: $b"
+            else
+              echo "::warning::falha ao deletar origin/$b — branch pode ter sido recriada; seguindo."
+            fi
+          done

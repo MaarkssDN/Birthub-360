@@ -2548,6 +2548,106 @@ paths:
                     type: string
                     enum: [unavailable]
 
+  /public/lead-capture:
+    post:
+      tags: [Landing]
+      summary: Captura pública de lead da landing 360° (formulário "Reserve sua Demonstração", envio por e-mail)
+      description: |
+        Endpoint público, sem autenticação, distinto de `/public/demo-leads`
+        (que persiste Lead no banco). Este endpoint **não persiste nada**: o
+        pedido é encaminhado por e-mail via SMTP para a caixa comercial
+        configurada em `LEAD_CAPTURE_EMAIL` (fallback `SMTP_FROM`/`SMTP_USER`).
+
+        Sem destinatário/SMTP configurado a rota responde `503` — nunca finge
+        sucesso.
+
+        LGPD: `consent` é obrigatório (`true` literal); o servidor rejeita
+        `false`/omitido. O e-mail gerado registra o timestamp do consentimento.
+
+        Honeypot: campo opcional `website` deve ir vazio/ausente; se preenchido,
+        a API responde `200 { success: true }` sem gerar e-mail.
+
+        Rate limit: 5 requisições por IP por hora (`429`).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nome, email, whatsapp, equipe, consent]
+              properties:
+                nome:
+                  type: string
+                  minLength: 2
+                  maxLength: 120
+                email:
+                  type: string
+                  format: email
+                  maxLength: 160
+                whatsapp:
+                  type: string
+                  description: Telefone com DDD; máscara opcional. Dígitos finais devem totalizar 10-13.
+                equipe:
+                  type: string
+                  enum: ['1 a 5', '6 a 15', '16 a 50', '50+']
+                consent:
+                  type: boolean
+                  description: Deve ser true (opt-in afirmativo; o servidor rejeita false/omitido)
+                website:
+                  type: string
+                  description: Honeypot anti-abuso — deve ser omitido ou string vazia
+      responses:
+        '200':
+          description: E-mail de lead enviado (ou honeypot absorvido silenciosamente)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success]
+                properties:
+                  success:
+                    type: boolean
+                    enum: [true]
+        '400':
+          description: Payload inválido (nome, e-mail, WhatsApp, equipe ou consentimento)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, error]
+                properties:
+                  success:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: string
+        '429':
+          description: Rate limit excedido (por IP, janela de 1 hora)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, error]
+                properties:
+                  success:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: string
+        '503':
+          description: SMTP/destinatário não configurado ou falha de envio — resposta honesta, nunca sucesso falso
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, error]
+                properties:
+                  success:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: string
+
   # ───────────────────────────── Prospecting ─────────────────────────────
   /prospecting/apollo/reconnect:
     post:
@@ -6562,6 +6662,41 @@ paths:
                       channel: { type: string }
                       tone: { type: string }
                       estimatedTokens: { type: integer }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { description: Não autenticado }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /social-selling/interactions:
+    post:
+      tags: [Social Selling]
+      summary: >-
+        Registra uma interação social executada manualmente e a vincula à
+        timeline do Lead no CRM (RN-SOC-02). Rate limit anti-rajada por organização.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [leadId]
+              properties:
+                leadId: { type: string, description: Lead do tenant que recebe o evento na timeline }
+                kind:
+                  type: string
+                  enum: [approach_sent, interaction_received]
+                  default: approach_sent
+                channel: { type: string, default: linkedin }
+                summary: { type: string, maxLength: 2000, nullable: true }
+      responses:
+        '201':
+          description: Interação registrada e evento gravado na timeline do Lead
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { type: object }
         '400': { $ref: '#/components/responses/BadRequest' }
         '401': { description: Não autenticado }
         '403': { $ref: '#/components/responses/Forbidden' }

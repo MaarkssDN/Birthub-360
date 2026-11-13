@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 21 (Privacidade e LGPD)
 Onda: Onda 1 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-038)
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 1
@@ -48,3 +48,28 @@ Executar a tarefa `TAREFA-SANEAMENTO-038` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução (Agente 21 — 2026-11-12)
+
+**Implementação:** refatoração cirúrgica em `src/lib/security/consentAuditChain.service.ts`:
+
+- Extração de `checkChainRecord`/`checkChainTail`/`chainResult` — lógica de
+  verificação idêntica, compartilhada entre os dois verificadores (sem duplicação);
+- Novo `verifyConsentChainAsync`: mesma verificação cedendo o event loop via
+  `setImmediate` a cada `CONSENT_CHAIN_VERIFY_YIELD_EVERY` (256) registros;
+- `verifyChainIntegrity` (caminho de request via `commercialMissionTrace`) passa
+  a usar a versão assíncrona — o hash-chaining O(n) não bloqueia mais a API de
+  onboarding em cadeias longas;
+- `verifyConsentChain` síncrono preservado (API e testes existentes inalterados).
+
+**Branch/commit:** `agente/21-w3-consent-chain-async` → `598c17013`.
+
+**Gates:** `npx tsc --noEmit` limpo; biome limpo nos 2 arquivos; Vitest
+`tests/unit/security/consentAuditChain.test.ts` → **44/44 verdes** (+3 casos:
+paridade sync/async, HASH_MISMATCH, prova de yield do event loop).
+
+**Status:** aguardando revisão formal do Agente 24.
+
+## Resolução
+
+TAREFA-038 — consentAuditChain.service.ts refatorado para cadeia assincrona (merge 6ecfc6033; 44/44 testes na revisao W3).

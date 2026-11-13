@@ -51,6 +51,14 @@ Executar a tarefa `TAREFA-SANEAMENTO-042` estritamente dentro da propriedade de 
 
 ## Resolução
 
+`agentCostAnalysis.service.ts` agregava em memória após `findMany` de todos os
+AILog do período — e ainda selecionava campos inexistentes no model (`costUsd`,
+`promptTokens`, `completionTokens`). Reescrito para `prisma.aILog.groupBy`
+sobre os campos reais (`cost` USD, `tokens`) com merge de `agentRole` nulo em
+'UNKNOWN' preservando a semântica anterior. Novo teste
+`agentCostAnalysis.service.test.ts` cobre agregação, merge nulo/UNKNOWN,
+período vazio e propagação de erro do banco (4/4).
+
 **Agente 23 — 2026-11-11** (branch `agente/23-n1-metricas-ia`, concluído pelo Agente 00 após interrupção do executor; pendente de revisão do Agente 24)
 
 `analyzeAgentCosts` reescrito para `prisma.aILog.groupBy({ by: ['agentRole'], _count, _sum: { cost, tokens } })` — UMA query agregada em vez de `findMany` de todas as linhas + agregação em memória (varredura sem teto da tabela do tenant a cada chamada do painel).
