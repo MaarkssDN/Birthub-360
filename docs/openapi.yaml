@@ -168,6 +168,10 @@ tags:
       Endpoints de entrada de provedores externos, montados ANTES do `express.json()` global —
       corpo cru, autenticidade provada por HMAC ou segredo comparado em tempo constante, nunca por
       sessão de usuário
+  - name: API Keys
+    description: >-
+      Chaves de API do tenant (`bhk_...`) para acesso programático — CRUD restrito a
+      ADMIN; a chave bruta só é retornada na criação
 
 security:
   - sessionCookie: []
@@ -1521,6 +1525,218 @@ paths:
                 properties:
                   success:
                     type: boolean
+
+  /auth-extra/sessions:
+    get:
+      tags: [Auth]
+      summary: Lista as sessões ativas do usuário autenticado
+      description: >-
+        Retorna as sessões válidas (não expiradas) do próprio usuário, marcando qual é a
+        sessão corrente da requisição. Nunca expõe o token da sessão.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  sessions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        userAgent:
+                          type: string
+                          nullable: true
+                        ipAddress:
+                          type: string
+                          nullable: true
+                        createdAt:
+                          type: string
+                          format: date-time
+                        expiresAt:
+                          type: string
+                          format: date-time
+                        current:
+                          type: boolean
+
+  /auth-extra/sessions/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    delete:
+      tags: [Auth]
+      summary: Encerra uma sessão do usuário autenticado
+      description: >-
+        Remove a sessão informada desde que pertença ao usuário autenticado. A sessão
+        corrente não pode ser encerrada por aqui — use `POST /auth/sign-out`.
+      responses:
+        '200':
+          description: Sessão encerrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          description: Tentativa de encerrar a sessão corrente (use sign-out)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /auth-extra/sessions/revoke-others:
+    post:
+      tags: [Auth]
+      summary: Encerra todas as sessões do usuário exceto a atual
+      responses:
+        '200':
+          description: Sessões revogadas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  revoked:
+                    type: integer
+                    description: Quantidade de sessões encerradas
+
+  # ───────────────────────────── API Keys ─────────────────────────────
+  /api-keys:
+    get:
+      tags: [API Keys]
+      summary: Lista as API keys do tenant (somente ADMIN)
+      description: >-
+        Retorna as chaves de API da organização sem o segredo — a chave bruta (`bhk_...`)
+        só é exibida uma vez, na resposta do POST de criação.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  keys:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        scopes:
+                          type: array
+                          items:
+                            type: string
+                        createdAt:
+                          type: string
+                          format: date-time
+                        expiresAt:
+                          type: string
+                          format: date-time
+                          nullable: true
+                        lastUsedAt:
+                          type: string
+                          format: date-time
+                          nullable: true
+                        revokedAt:
+                          type: string
+                          format: date-time
+                          nullable: true
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags: [API Keys]
+      summary: Emite uma nova API key do tenant (somente ADMIN)
+      description: >-
+        Cria uma chave de API (`bhk_...`) para o tenant. A chave bruta é retornada
+        somente nesta resposta — depois disso só o hash SHA-256 permanece no banco.
+        A emissão é registrada em auditoria (`API_KEY_CREATED`).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 80
+                scopes:
+                  type: array
+                  maxItems: 30
+                  items:
+                    type: string
+                    minLength: 1
+                    maxLength: 60
+                expiresInDays:
+                  type: integer
+                  minimum: 1
+                  maximum: 3650
+                  nullable: true
+      responses:
+        '201':
+          description: Chave criada — `rawKey` só aparece aqui
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  key:
+                    type: object
+                  rawKey:
+                    type: string
+                    description: Chave bruta `bhk_...`, exibida uma única vez
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api-keys/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    delete:
+      tags: [API Keys]
+      summary: Revoga uma API key do tenant (somente ADMIN)
+      description: >-
+        Marca a chave como revogada (não remove o registro). A revogação é registrada
+        em auditoria (`API_KEY_REVOKED`).
+      responses:
+        '200':
+          description: Chave revogada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: API key não encontrada ou já revogada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   # ───────────────────────────── Companies ─────────────────────────────
   /companies:
