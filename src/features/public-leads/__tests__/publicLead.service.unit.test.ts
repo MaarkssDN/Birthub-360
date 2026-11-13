@@ -47,7 +47,10 @@ vi.mock('../publicLead.confirmationEmail.js', () => ({
 }));
 
 import { logger } from '../../../lib/logger.js';
-import { LANDING_DEMO_CONSENT_VERSION, LANDING_LEAD_SOURCE } from '../../../shared/contracts/publicLead.constants.js';
+import {
+  LANDING_DEMO_CONSENT_VERSION,
+  LANDING_LEAD_SOURCE,
+} from '../../../shared/contracts/publicLead.constants.js';
 import { capturePublicLead, PublicLeadUnavailableError } from '../publicLead.service.js';
 
 const input = {
