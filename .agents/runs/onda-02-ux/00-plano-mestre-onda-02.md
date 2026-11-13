@@ -228,3 +228,25 @@ estavam concentradas em (a) landing lead forms — corrigidas; (b) War Room
 Arena — corrigida; (c) painéis de failover — corrigidos; (d) duas UIs
 mortas deprecated — removidas. Os workspaces vivos dos 11 módulos
 apresentam estados honestos ou estão gated intencionalmente.
+
+## 6. Gates executados na worktree (sessão corrente)
+
+- `npx tsc --noEmit`: **0 erros**.
+- `vitest run tests/unit/ui/CockpitScreens.unit.test.tsx
+  tests/unit/components/cockpitsAndPanels.unit.test.tsx`: **14/14**.
+- `vitest run tests/unit/features/characters/`: **23/23** — inclui a
+  homologação "exatamente 29 personagens", ids únicos, SVGs presentes em
+  `public/` e `linkedAgentId` válido para cada pilar.
+- `npm run build`: **sucesso** — Vite 49.4s, esbuild server.cjs ok,
+  PWA `verify:pwa-precache` ✅ 220 entradas / ~12.4 MB reais. Warnings
+  pré-existentes: chunks >500 kB (vendor-echarts/excel/3d) e anotações
+  zod — não introduzidos por esta onda.
+
+### Pendências de gate que exigem ambiente
+
+- `npm run test:unit` completo, `test:integration` (Postgres+RLS),
+  `test:e2e` (Playwright) — não executados nesta sessão por exigirem o
+  harness do Agente 14/08 (containers + `.env.test`); recomendo rodar o
+  gate completo na branch de integração antes do merge.
+- Auditoria a11y automatizada (axe) por página — coberta parcialmente
+  pelos testes de componente; E2E de acessibilidade fica para o gate.
