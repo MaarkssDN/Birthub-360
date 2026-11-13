@@ -250,3 +250,47 @@ apresentam estados honestos ou estão gated intencionalmente.
   gate completo na branch de integração antes do merge.
 - Auditoria a11y automatizada (axe) por página — coberta parcialmente
   pelos testes de componente; E2E de acessibilidade fica para o gate.
+
+## 7. Fechamento da sessão (2026-11-13)
+
+### Executado
+
+- `Landing360.test.tsx` atualizado ao contrato honesto do lead-capture
+  (fetch mockado, campos obrigatórios, assert "Solicitação Recebida!") —
+  **10/10 verdes** (`da446c422`).
+- `SinglePageDashboard` (`d2a66e07e`):
+  - XP/level/streak não são mais derivados de KPIs de pipeline —
+    consome `gamificationApi.getSellerProfile()` real; estado vazio
+    honesto quando não há perfil.
+  - Removidos "PostgreSQL RLS"/"Copiloto IA" sempre-verdes do card
+    "Status dos Conectores".
+- `tsc --noEmit`: 0 erros após as mudanças.
+- Auditoria QA por subagente cobriu dashboard/analytics/gamification/
+  roleplay/activities/knowledge/notifications/automations/ai-voice/
+  copiloto-ia — restante dos achados vira handoffs (abaixo).
+
+### Bloqueios de ambiente confirmados
+
+- `test:unit` completo: suíte crashou por **OOM** (Zone Allocation
+  failed, exit 134) após ~1h neste ambiente Windows — não é falha de
+  código; rerun deve ocorrer no CI/Agente 14 com mais memória.
+  Antes do crash, única falha real era `Landing360.test.tsx` (2 testes
+  stale) — **corrigida e verde**.
+- `test:integration`/`test:e2e`: sem Docker e sem `.env.test` neste
+  ambiente — pendentes do harness Agente 14/08.
+
+### Achados repassados a outros agentes (não editados — fora da propriedade)
+
+- **Agente 03**: `components/ui/GamificationWidget.tsx` concede +25 XP /
+  missões / "Combo 1.5x" só em estado local e sem props fabrica zeros —
+  precisa consumir perfil real ou ser rotulado decorativo.
+- **Agente 07**: `CallAnalysisReport` anuncia "+50 pts" e "registrado no
+  ranking" sem award real; `SellerCoachingService` retorna relatório
+  fixo como se fosse análise de IA em falha do LLM;
+  `MultimodalRoleplaySimulatorService` é código morto com scores
+  fabricados; `conversationalIntelligence.service` (ai-voice) calcula
+  "adherenceScore" por regex.
+- **Agente 00**: integrar branch; decidir depoimentos/métricas
+  fabricados restantes na landing (seção "provas sociais" ainda exibe
+  +42%, 3.8x, R$180M+, depoimentos — decisão Marca/Produto pendente);
+  `Landing360Impeccable.tsx` não roteada.
