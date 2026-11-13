@@ -36,9 +36,9 @@ html.light .b360-adaptive-landing,
 }
 
 /* REGRA ABSOLUTA DE DESIGN: NENHUM TÍTULO OU SUBTÍTULO PODE TER FONTE PRETA OU BRANCA */
-.b360-adaptive-landing :is(h1, h2),
+.b360-adaptive-landing :is(h1, h2):not(.bh-n1-hero *),
 .b360-sectionhead h2,
-.b360-hero-title,
+.b360-hero-title:not(.bh-n1-title),
 .b360-final-cta h2,
 .login-antessala-backdrop :is(h1, h2) {
   font-family: "Sora", system-ui, sans-serif !important;
@@ -50,14 +50,14 @@ html.light .b360-adaptive-landing,
   text-shadow: none !important;
 }
 
-.b360-adaptive-landing :is(h3, h4, h5, h6),
+.b360-adaptive-landing :is(h3, h4, h5, h6):not(.bh-n1-hero *),
 .login-antessala-backdrop :is(h3, h4, h5, h6) {
   font-family: "Sora", system-ui, sans-serif !important;
   color: #38bdf8 !important;
   text-wrap: balance;
 }
 
-.b360-adaptive-landing :is(p, .b360-subtitle, .b360-sectionhead p) {
+.b360-adaptive-landing :is(p, .b360-subtitle, .b360-sectionhead p):not(.bh-n1-hero *) {
   color: #94a3b8 !important;
 }
 
@@ -195,7 +195,7 @@ html.light .b360-adaptive-landing .b360-topbar,
   filter: drop-shadow(0 0 8px rgba(0, 212, 255, 0.7));
 }
 
-.b360-adaptive-landing .b360-hero-title {
+.b360-adaptive-landing .b360-hero-title:not(.bh-n1-title) {
   display: flex;
   flex-direction: column;
   gap: clamp(6px, 0.8vw, 10px);
@@ -210,7 +210,7 @@ html.light .b360-adaptive-landing .b360-topbar,
   word-break: normal;
 }
 
-.b360-adaptive-landing .b360-hero-title .b360-hero-line {
+.b360-adaptive-landing .b360-hero-title:not(.bh-n1-title) .b360-hero-line {
   display: block;
   width: 100%;
   text-wrap: balance;
@@ -253,9 +253,9 @@ html.light .b360-adaptive-landing .b360-topbar,
 }
 
 /* Modo Claro: Títulos cromáticos profundos de alta saturação (NUNCA PRETO) */
-html:not(.dark) .b360-adaptive-landing .b360-hero-title .b360-hero-line,
-html.light .b360-adaptive-landing .b360-hero-title .b360-hero-line,
-[data-theme="light"] .b360-adaptive-landing .b360-hero-title .b360-hero-line {
+html:not(.dark) .b360-adaptive-landing .b360-hero-title:not(.bh-n1-title) .b360-hero-line,
+html.light .b360-adaptive-landing .b360-hero-title:not(.bh-n1-title) .b360-hero-line,
+[data-theme="light"] .b360-adaptive-landing .b360-hero-title:not(.bh-n1-title) .b360-hero-line {
   background: linear-gradient(135deg, #0369a1 0%, #0284c7 45%, #0099cc 100%) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
@@ -315,7 +315,7 @@ html.light .b360-adaptive-landing .b360-hero-title .b360-hero-line-gold,
 }
 
 /* Painel da capa legível: sem KPIs minúsculos em cards apertados. */
-.b360-adaptive-landing .b360-hero-console {
+.b360-adaptive-landing .b360-hero-console:not(.bh-n1-plate) {
   min-width: 0;
   overflow: hidden;
   border: 1px solid rgba(126, 209, 255, 0.28) !important;
@@ -1055,7 +1055,7 @@ html.light .b360-adaptive-landing .b360-sectionhead h2,
     max-width: 640px;
     font-size: clamp(26px, 4.5vw, 36px) !important;
   }
-  .b360-adaptive-landing .b360-hero-console {
+  .b360-adaptive-landing .b360-hero-console:not(.bh-n1-plate) {
     max-width: 860px;
     width: 100%;
   }
@@ -1232,7 +1232,7 @@ html.light .b360-adaptive-landing .b360-sectionhead h2,
   .b360-integration-card,
   .b360-module,
   .b360-copilot-card,
-  .b360-hero-console,
+  .b360-hero-console:not(.bh-n1-plate),
   .b360-fanned-card
 ),
 html:not(.dark)
@@ -1245,7 +1245,7 @@ html:not(.dark)
     .b360-integration-card,
     .b360-module,
     .b360-copilot-card,
-    .b360-hero-console,
+    .b360-hero-console:not(.bh-n1-plate),
     .b360-fanned-card
   ),
 [data-theme="light"]
@@ -1258,7 +1258,7 @@ html:not(.dark)
     .b360-integration-card,
     .b360-module,
     .b360-copilot-card,
-    .b360-hero-console,
+    .b360-hero-console:not(.bh-n1-plate),
     .b360-fanned-card
   ) {
   position: relative;
@@ -1424,7 +1424,7 @@ html:not(.dark)
     .b360-flow-card,
     .b360-integration-card,
     .b360-copilot-card,
-    .b360-hero-console
+    .b360-hero-console:not(.bh-n1-plate)
   )
   p {
   color: #94a3b8 !important;
@@ -1500,13 +1500,13 @@ html.light .b360-adaptive-landing .b360-topnav a:hover,
 }
 
 /* Títulos de Seção em Modo Claro (Azul Royal/Íris - NUNCA PRETO, NUNCA BRANCO) */
-html.light .b360-adaptive-landing :is(h1, h2),
+html.light .b360-adaptive-landing :is(h1, h2):not(.bh-n1-hero *),
 html.light .b360-adaptive-landing .b360-sectionhead h2,
-html.light .b360-adaptive-landing .b360-hero-title,
+html.light .b360-adaptive-landing .b360-hero-title:not(.bh-n1-title),
 html.light .b360-adaptive-landing .b360-final-cta h2,
-[data-theme="light"] .b360-adaptive-landing :is(h1, h2),
+[data-theme="light"] .b360-adaptive-landing :is(h1, h2):not(.bh-n1-hero *),
 [data-theme="light"] .b360-adaptive-landing .b360-sectionhead h2,
-[data-theme="light"] .b360-adaptive-landing .b360-hero-title,
+[data-theme="light"] .b360-adaptive-landing .b360-hero-title:not(.bh-n1-title),
 [data-theme="light"] .b360-adaptive-landing .b360-final-cta h2 {
   font-family: "Sora", system-ui, sans-serif !important;
   background: linear-gradient(
@@ -1525,9 +1525,11 @@ html.light .b360-adaptive-landing .b360-final-cta h2,
 }
 
 /* Subtítulos em Modo Claro (Ardósia Profunda - NUNCA PRETO, NUNCA BRANCO) */
-html.light .b360-adaptive-landing :is(p, .b360-subtitle, .b360-sectionhead p),
+html.light .b360-adaptive-landing :is(p, .b360-subtitle, .b360-sectionhead p):not(.bh-n1-hero *),
 html.light .b360-adaptive-landing .b360-hero-main > div:first-child > p,
-[data-theme="light"] .b360-adaptive-landing :is(p, .b360-subtitle, .b360-sectionhead p),
+[data-theme="light"]
+  .b360-adaptive-landing
+  :is(p, .b360-subtitle, .b360-sectionhead p):not(.bh-n1-hero *),
 [data-theme="light"] .b360-adaptive-landing .b360-hero-main > div:first-child > p {
   color: #335577 !important;
 }
@@ -1572,13 +1574,13 @@ html.dark .b360-adaptive-landing .b360-topnav a:hover,
 }
 
 /* Títulos de Seção em Modo Escuro (Ciano/Íris/Rosa Neon - NUNCA PRETO, NUNCA BRANCO) */
-html.dark .b360-adaptive-landing :is(h1, h2),
+html.dark .b360-adaptive-landing :is(h1, h2):not(.bh-n1-hero *),
 html.dark .b360-adaptive-landing .b360-sectionhead h2,
-html.dark .b360-adaptive-landing .b360-hero-title,
+html.dark .b360-adaptive-landing .b360-hero-title:not(.bh-n1-title),
 html.dark .b360-adaptive-landing .b360-final-cta h2,
-[data-theme="dark"] .b360-adaptive-landing :is(h1, h2),
+[data-theme="dark"] .b360-adaptive-landing :is(h1, h2):not(.bh-n1-hero *),
 [data-theme="dark"] .b360-adaptive-landing .b360-sectionhead h2,
-[data-theme="dark"] .b360-adaptive-landing .b360-hero-title,
+[data-theme="dark"] .b360-adaptive-landing .b360-hero-title:not(.bh-n1-title),
 [data-theme="dark"] .b360-adaptive-landing .b360-final-cta h2 {
   font-family: "Sora", system-ui, sans-serif !important;
   background: linear-gradient(135deg, #00d4ff 0%, #8b7dff 50%, #ff2d9b 100%) !important;
@@ -1590,9 +1592,11 @@ html.dark .b360-adaptive-landing .b360-final-cta h2,
 }
 
 /* Subtítulos em Modo Escuro (Ardósia Tecnológica - NUNCA PRETO, NUNCA BRANCO) */
-html.dark .b360-adaptive-landing :is(p, .b360-subtitle, .b360-sectionhead p),
+html.dark .b360-adaptive-landing :is(p, .b360-subtitle, .b360-sectionhead p):not(.bh-n1-hero *),
 html.dark .b360-adaptive-landing .b360-hero-main > div:first-child > p,
-[data-theme="dark"] .b360-adaptive-landing :is(p, .b360-subtitle, .b360-sectionhead p),
+[data-theme="dark"]
+  .b360-adaptive-landing
+  :is(p, .b360-subtitle, .b360-sectionhead p):not(.bh-n1-hero *),
 [data-theme="dark"] .b360-adaptive-landing .b360-hero-main > div:first-child > p {
   color: #94a3b8 !important;
 }
@@ -1735,7 +1739,7 @@ html.dark .b360-adaptive-landing .b360-eyebrow,
   .b360-integration-card,
   .b360-module,
   .b360-copilot-card,
-  .b360-hero-console,
+  .b360-hero-console:not(.bh-n1-plate),
   .b360-fanned-card
 ) {
   position: relative;
@@ -1825,7 +1829,7 @@ html.dark .b360-adaptive-landing .b360-eyebrow,
     .b360-flow-card,
     .b360-integration-card,
     .b360-copilot-card,
-    .b360-hero-console
+    .b360-hero-console:not(.bh-n1-plate)
   )
   p {
   color: #b0c5e1 !important;
@@ -1834,7 +1838,7 @@ html.dark .b360-adaptive-landing .b360-eyebrow,
 }
 
 /* ── 6. INÉRCIA ROTACIONAL & LEVITAÇÃO ──────────────────────────────────── */
-.b360-hero-console,
+.b360-hero-console:not(.bh-n1-plate),
 .b360-fanned-card,
 .b360-feature-card,
 .b360-problem-card,
@@ -1975,7 +1979,7 @@ html.dark .b360-adaptive-landing .b360-eyebrow,
   .b360-flow-card,
   .b360-integration-card,
   .b360-copilot-card,
-  .b360-hero-console
+  .b360-hero-console:not(.bh-n1-plate)
 ) {
   position: relative !important;
   overflow: hidden !important;
@@ -1989,7 +1993,7 @@ html.dark .b360-adaptive-landing .b360-eyebrow,
     .b360-flow-card,
     .b360-integration-card,
     .b360-copilot-card,
-    .b360-hero-console
+    .b360-hero-console:not(.bh-n1-plate)
   )::before {
   content: "" !important;
   position: absolute !important;
@@ -2012,7 +2016,7 @@ html.dark .b360-adaptive-landing .b360-eyebrow,
     .b360-flow-card,
     .b360-integration-card,
     .b360-copilot-card,
-    .b360-hero-console
+    .b360-hero-console:not(.bh-n1-plate)
   )
   > * {
   position: relative !important;
@@ -2070,7 +2074,7 @@ html.dark .b360-adaptive-landing .b360-eyebrow,
 }
 
 /* Imagens do Console e IA */
-.b360-adaptive-landing .b360-hero-console::before {
+.b360-adaptive-landing .b360-hero-console:not(.bh-n1-plate)::before {
   background-image: url("/landing/assets/hero-team.jpg") !important;
 }
 .b360-adaptive-landing .b360-copilot-card::before {
@@ -2124,9 +2128,9 @@ html:not(.dark) .b360-adaptive-landing .b360-hero {
 }
 
 /* Console Hero em Modo Claro */
-html.light .b360-adaptive-landing .b360-hero-console,
-[data-theme="light"] .b360-adaptive-landing .b360-hero-console,
-html:not(.dark) .b360-adaptive-landing .b360-hero-console {
+html.light .b360-adaptive-landing .b360-hero-console:not(.bh-n1-plate),
+[data-theme="light"] .b360-adaptive-landing .b360-hero-console:not(.bh-n1-plate),
+html:not(.dark) .b360-adaptive-landing .b360-hero-console:not(.bh-n1-plate) {
   background: rgba(255, 255, 255, 0.94) !important;
   border: 1px solid rgba(203, 213, 225, 0.85) !important;
   box-shadow: 0 12px 30px -15px rgba(15, 23, 42, 0.08) !important;
@@ -2201,7 +2205,7 @@ html.light
     .b360-flow-card,
     .b360-integration-card,
     .b360-copilot-card,
-    .b360-hero-console
+    .b360-hero-console:not(.bh-n1-plate)
   )::before,
 [data-theme="light"]
   .b360-adaptive-landing
@@ -2211,7 +2215,7 @@ html.light
     .b360-flow-card,
     .b360-integration-card,
     .b360-copilot-card,
-    .b360-hero-console
+    .b360-hero-console:not(.bh-n1-plate)
   )::before {
   opacity: 0.12 !important;
 }
@@ -2224,7 +2228,7 @@ html.light
     .b360-flow-card,
     .b360-integration-card,
     .b360-copilot-card,
-    .b360-hero-console
+    .b360-hero-console:not(.bh-n1-plate)
   ):hover::before,
 [data-theme="light"]
   .b360-adaptive-landing
@@ -2234,7 +2238,7 @@ html.light
     .b360-flow-card,
     .b360-integration-card,
     .b360-copilot-card,
-    .b360-hero-console
+    .b360-hero-console:not(.bh-n1-plate)
   ):hover::before {
   opacity: 0.22 !important;
 }
@@ -2352,7 +2356,7 @@ html.dark
     .b360-flow-card,
     .b360-integration-card,
     .b360-copilot-card,
-    .b360-hero-console
+    .b360-hero-console:not(.bh-n1-plate)
   )::before,
 [data-theme="dark"]
   .b360-adaptive-landing
@@ -2362,7 +2366,7 @@ html.dark
     .b360-flow-card,
     .b360-integration-card,
     .b360-copilot-card,
-    .b360-hero-console
+    .b360-hero-console:not(.bh-n1-plate)
   )::before {
   opacity: 0.18 !important;
 }
@@ -2375,7 +2379,7 @@ html.dark
     .b360-flow-card,
     .b360-integration-card,
     .b360-copilot-card,
-    .b360-hero-console
+    .b360-hero-console:not(.bh-n1-plate)
   ):hover::before,
 [data-theme="dark"]
   .b360-adaptive-landing
@@ -2385,7 +2389,7 @@ html.dark
     .b360-flow-card,
     .b360-integration-card,
     .b360-copilot-card,
-    .b360-hero-console
+    .b360-hero-console:not(.bh-n1-plate)
   ):hover::before {
   opacity: 0.3 !important;
 }
