@@ -902,9 +902,11 @@ export function withToolTimeout(
 }
 
 export function getToolExecutor(capabilityCode: string): ToolExecutor | undefined {
+  if (!Object.hasOwn(TOOL_EXECUTORS, capabilityCode)) return undefined;
   const executor = TOOL_EXECUTORS[capabilityCode];
   if (!executor) return undefined;
-  const timeoutMs =
-    TOOL_EXECUTOR_TIMEOUT_OVERRIDES_MS[capabilityCode] ?? DEFAULT_TOOL_EXECUTOR_TIMEOUT_MS;
+  const timeoutMs = Object.hasOwn(TOOL_EXECUTOR_TIMEOUT_OVERRIDES_MS, capabilityCode)
+    ? TOOL_EXECUTOR_TIMEOUT_OVERRIDES_MS[capabilityCode]
+    : DEFAULT_TOOL_EXECUTOR_TIMEOUT_MS;
   return withToolTimeout(executor, capabilityCode, timeoutMs);
 }

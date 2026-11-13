@@ -1,14 +1,14 @@
 import { motion, useAnimationControls } from 'framer-motion';
-import type { LucideIcon } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { EASE_OUT_EXPO, EASE_PREMIUM } from '../../lib/motion.js';
 import { BrandEmblemBadge } from '../brand/BrandEmblemBadge.js';
+import type { TabNavIcon } from './tabMeta.js';
 
 /** Módulo que o usuário acabou de escolher na barra lateral e de onde o "selo" decola. */
 export interface NavLaunch {
   label: string;
-  Icon: LucideIcon;
+  Icon: TabNavIcon;
   /** Valor CSS do matiz do módulo (ex.: `var(--nav-c-blue)`). */
   accent: string;
   /** Centro do ícone clicado, em coordenadas da viewport — ponto de partida do voo. */

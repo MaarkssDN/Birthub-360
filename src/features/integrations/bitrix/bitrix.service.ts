@@ -16,16 +16,7 @@
 // bitrix.routes.ts, prospecting.service.ts, bitrixSync.worker.ts e LeadUseCases.ts (import
 // dinâmico) sem exigir nenhuma mudança neles.
 
-export {
-  callBitrix,
-  getConnectionWebhookUrl,
-  getStatusLabels,
-  hostnameOf,
-  normalizeWebhookUrl,
-  testWebhook,
-} from './service/client.js';
-
-export type { BitrixConnectionSummary } from './service/connections.js';
+export { getConnectionWebhookUrl } from './service/client.js';
 export {
   connectBitrix,
   disconnectBitrix,
@@ -34,21 +25,9 @@ export {
   setInboundEventsEnabled,
   testBitrixConnection,
 } from './service/connections.js';
-export type { BitrixEntityKind, BitrixFieldOption } from './service/customFields.js';
-export {
-  applyInboundCustomFields,
-  buildOutboundCustomFields,
-  getEntityFields,
-  resolveEnumMaps,
-} from './service/customFields.js';
+export { getEntityFields } from './service/customFields.js';
 // Plano Diário Operacional com integração Bitrix24
-export type {
-  DailyPlanItem,
-  DailyPlanItemChannel,
-  DailyPlanItemOrigin,
-  DailyPlanPriorityLevel,
-  UserDailyPlanSummary,
-} from './service/dailyPlan.service.js';
+export type { DailyPlanItemOrigin } from './service/dailyPlan.service.js';
 export {
   addDailyPlanItemNote,
   completeDailyPlanItem,
@@ -56,23 +35,12 @@ export {
   fetchUserDailyPlan,
 } from './service/dailyPlan.service.js';
 // Fechamento obrigatório do Plano Diário (parecer do dia anterior + metas do novo dia)
-export type {
-  DailyClosingMetrics,
-  PendingDailyClosing,
-} from './service/dailyPlanClosing.service.js';
 export {
   createDailyPlanClosing,
   getPendingDailyClosing,
 } from './service/dailyPlanClosing.service.js';
 export { fetchDailyPlanItemNotes } from './service/dailyPlanNotes.service.js';
-export type {
-  BitrixDealFilters,
-  BitrixDealPipeline,
-  BitrixDealStage,
-  BitrixDealSummary,
-} from './service/deals.js';
 export {
-  findUnimportedBitrixDealIds,
   getBitrixUsers,
   getDealPipelines,
   getDealStages,
@@ -81,37 +49,28 @@ export {
 } from './service/deals.js';
 // Serviço real de Extrações Bitrix (Onda 7, Agente 06/06A) — ver service/extraction.ts para o
 // racional de arquitetura (execução em segundo plano sem worker BullMQ dedicado nesta rodada).
-export type { CreateExtractionRunInput } from './service/extraction.js';
 export {
-  ALL_EXTRACTION_ENTITIES,
   cancelExtractionRun,
   createExtractionRun,
   deleteExtractionRun,
   downloadExtractionFile,
-  EXTRACTION_PERIODS,
   getExtractionRun,
   listExtractionRuns,
   reconcileStuckRuns,
   retryExtractionRun,
 } from './service/extraction.js';
-export type { ExtractionFileFormat } from './service/extractionFiles.js';
-export type { BitrixLeadFilters, BitrixLeadSummary } from './service/leads.js';
 export {
   findUnimportedBitrixLeadIds,
   getLeadStatuses,
   importSelectedBitrixLeads,
   listBitrixLeads,
 } from './service/leads.js';
-export type { SyncLeadOverrides } from './service/outboundSync.js';
 export {
   exportLeadToBitrixNow,
   postCommentToBitrix,
-  pushLeadToBitrix,
 } from './service/outboundSync.js';
 // Histórico real de sincronização (webhook de entrada + push/pull), consumido por WebhookMonitor.tsx.
-export type { BitrixSyncLogSummary } from './service/syncLogs.js';
 export { listRecentBitrixSyncLogs } from './service/syncLogs.js';
-export type { BitrixSyncRuleInput } from './service/syncRules.js';
 export {
   createSyncRule,
   deleteSyncRule,
@@ -119,9 +78,7 @@ export {
   runBitrixSyncTick,
   setSyncRuleActive,
 } from './service/syncRules.js';
-export type { BitrixUserOption } from './service/userMapping.js';
 export {
   resolveBirthubUserIdByEmail,
-  resolveBirthubUserNameByEmail,
   resolveOwnBitrixUserId,
 } from './service/userMapping.js';

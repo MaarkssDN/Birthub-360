@@ -17,7 +17,7 @@ import { postCommentToBitrix, syncActivityToBitrix } from '../service/outboundSy
  * 2. Publicar alertas de risco comercial e opt-out diretamente na timeline de Deals/Leads do Bitrix24.
  * 3. Reagir a webhooks de entrada do Bitrix24 disparando fluxos de mensageria e engajamento.
  */
-export class BitrixEventMeshBridgeService {
+class BitrixEventMeshBridgeService {
   private isRegistered = false;
 
   public register(): void {

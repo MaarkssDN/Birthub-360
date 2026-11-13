@@ -260,7 +260,7 @@ export function ModuleNavPanel({
                     <Icon className="h-4 w-4" aria-hidden="true" />
                   </span>
                   <span className="min-w-0 flex-1 truncate text-left font-medium">
-                    <span className="font-mono text-[9px] uppercase tracking-wide text-ink-2/70">
+                    <span className="font-mono text-[9px] uppercase tracking-wide text-ink-2">
                       {m.code}
                     </span>{' '}
                     {m.label}

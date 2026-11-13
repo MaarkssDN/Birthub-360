@@ -68,5 +68,3 @@ export class BitrixPaginatedExtractor {
     return current;
   }
 }
-
-export const bitrixPaginatedExtractor = new BitrixPaginatedExtractor();

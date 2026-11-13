@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { signUp, uniqueTestEmail, setUserRole } from './helpers';
+import { navigateViaSidebar, signUp, uniqueTestEmail, setUserRole } from './helpers';
 
 /**
  * BILLING-008 (onda 5): os painéis de conexão Stripe/Omie (Integrations.tsx) não tinham NENHUMA
@@ -15,14 +15,12 @@ import { signUp, uniqueTestEmail, setUserRole } from './helpers';
  */
 
 async function openStripeTab(page: import('@playwright/test').Page) {
-  await page.getByRole('button', { name: /Integrações/ }).first().click();
-  await expect(page).toHaveURL(/\/app\/integrations/);
+  await navigateViaSidebar(page, 'integrations');
   await page.getByRole('button', { name: 'Stripe' }).click();
 }
 
 async function openOmieTab(page: import('@playwright/test').Page) {
-  await page.getByRole('button', { name: /Integrações/ }).first().click();
-  await expect(page).toHaveURL(/\/app\/integrations/);
+  await navigateViaSidebar(page, 'integrations');
   await page.getByRole('button', { name: 'Omie' }).click();
 }
 

@@ -9,6 +9,10 @@ import { PillarContent } from '@/features/landing/components/pillars/PillarConte
 import { PillarDetailDialog } from '@/features/landing/components/pillars/PillarDetailDialog';
 
 const navigateMock = vi.fn();
+const authState = vi.hoisted(() => ({
+  currentUser: null as { id: string; role: string } | null,
+}));
+
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
   return {
@@ -19,7 +23,7 @@ vi.mock('react-router-dom', async () => {
 
 vi.mock('@/contexts/AuthContext', () => ({
   useAuth: () => ({
-    currentUser: null,
+    currentUser: authState.currentUser,
     isPending: false,
     signOut: vi.fn(),
   }),
@@ -34,6 +38,7 @@ vi.mock('@/lib/soundEffects', () => ({
 describe('PillarDetailModal — Arquitetura dos 8 Pilares Comerciais', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    authState.currentUser = null;
     document.body.style.overflow = '';
   });
 
@@ -180,20 +185,43 @@ describe('PillarDetailModal — Arquitetura dos 8 Pilares Comerciais', () => {
     fireEvent.click(ctaBtn);
 
     expect(onProceedToLogin).toHaveBeenCalledTimes(1);
+    expect(navigateMock).not.toHaveBeenCalled();
+  });
+
+  it('deve navegar para a rota do pilar quando acionado por usuário autenticado', () => {
+    authState.currentUser = { id: 'user-1', role: 'ADMIN' };
+    const onProceedToLogin = vi.fn();
+    const onClose = vi.fn();
+    renderModal({ pillarId: '02', onProceedToLogin, onClose });
+
+    fireEvent.click(screen.getByText('Explorar Inteligência de Mercado'));
+
+    expect(navigateMock).toHaveBeenCalledWith(PILLARS_EDITORIAL_DATA['02'].route);
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onProceedToLogin).not.toHaveBeenCalled();
   });
 
   it('deve suportar modal genérico de módulos de Command Center', () => {
+    const onProceedToLogin = vi.fn();
+    const onClose = vi.fn();
     renderModal({
       pillarId: null,
       genericModal: {
         title: 'Módulo de Roleplay Comercial',
         desc: 'Simulação interativa com IA para treinamento tático.',
       },
+      onProceedToLogin,
+      onClose,
     });
 
     expect(screen.getByText('Módulo de Roleplay Comercial')).toBeInTheDocument();
     expect(screen.getByText('Simulação interativa com IA para treinamento tático.')).toBeInTheDocument();
     expect(screen.getByText('Acessar Plataforma →')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Acessar Plataforma →'));
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onProceedToLogin).toHaveBeenCalledTimes(1);
+    expect(navigateMock).not.toHaveBeenCalled();
   });
 
   it('deve exportar as primitivas arquiteturais PillarDetailDialog e PillarContent', () => {

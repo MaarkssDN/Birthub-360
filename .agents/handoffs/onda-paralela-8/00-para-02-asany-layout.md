@@ -1,7 +1,7 @@
 De: 00 — Coordenador
 Para: 02 — Produto e UX
 Onda: paralela-8
-Status: aberto
+Status: resolvido
 Prioridade: normal
 
 ## Problema
@@ -20,3 +20,11 @@ Substituir `as any` por tipos reais, generics ou narrowing mínimo. Não alterar
 
 ## Contexto
 Worktree: `.claude/worktrees/ag-02`, branch `agente/02-asany-layout`.
+
+## Resolução (Agente 02 — 2026-11-12, branch `agente/02-ux-saneamento`)
+
+- `src/components/layout/tabMeta.ts`: casts `as any` substituídos por contrato real `TabNavIcon`/`TabNavIconProps` (suporta ícones Lucide e ícones custom de pilar com prop `isActive`).
+- `src/features/intelligence/components/UniversalEcosystemPanel.tsx`: `as any` substituídos por aliases de resposta tipados e narrowing da união `officeType`.
+- `NavLaunchTransition.tsx` e `CommandPalette.tsx` (src/components/ui, dono 03) tiveram apenas o *tipo* de ícone alargado para o contrato compartilhado — sem mudança visual.
+- Gates: `npx tsc --noEmit` ✅, Biome ✅, 9 arquivos/45 testes de layout+nav ✅.
+- Commit: `6b36e7110`.

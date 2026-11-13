@@ -5,6 +5,14 @@ import { Client } from 'pg';
 // Load test environment variables before Prisma initializes
 config({ path: path.resolve(process.cwd(), '.env.test') });
 
+// O default da factory em NODE_ENV=test usa repositório in-memory. A captura pública
+// de lead precisa gravar ConsentAuditRecord de verdade para o teste de integração
+// asserir a âncora LGPD no banco. Definido aqui (setupFile) para valer antes do
+// singleton ser criado no primeiro import.
+if (!process.env.CONSENT_CHAIN_USE_PRISMA) {
+  process.env.CONSENT_CHAIN_USE_PRISMA = '1';
+}
+
 // Seatbelt: se .env.test não existir (ou estiver desatualizado) — por exemplo, alguém rodando
 // `vitest run -c vitest.integration.config.ts` direto, sem passar pelo `pretest:integration` que
 // prepara o arquivo — DATABASE_URL cai de volta pro que já estiver no processo, que numa máquina
@@ -189,6 +197,9 @@ const cleanDatabase = async () => {
       await prisma.timelineEvent.deleteMany();
       await prisma.activity.deleteMany();
       await prisma.note.deleteMany();
+      // PublicLeadConsent.leadId é ON DELETE SET NULL: a prova operacional sobrevive
+      // à exclusão do Lead. Limpar explicitamente no tenant evita residual entre testes.
+      await prisma.publicLeadConsent.deleteMany();
       await prisma.lead.deleteMany();
       await prisma.contact.deleteMany();
       await prisma.company.deleteMany();

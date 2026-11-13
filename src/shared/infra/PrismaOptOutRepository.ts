@@ -107,9 +107,7 @@ export class PrismaOptOutRepository implements OptOutRepository {
     const rows = await prisma.optOutRecord.findMany({
       where: { organizationId },
       orderBy: { createdAt: 'desc' },
-      ...(limit === undefined
-        ? {}
-        : { take: Math.min(Math.max(limit, 1), 500) }),
+      ...(limit === undefined ? {} : { take: Math.min(Math.max(limit, 1), 500) }),
     });
     return rows.map(toDomain);
   }

@@ -7,13 +7,29 @@ import { semanticCache } from '../../../src/lib/ai/cache/semanticCache.service.j
 import { modelCascadeRouter } from '../../../src/lib/ai/gateway/model-cascade.js';
 import { piiTokenizer } from '../../../src/lib/security/piiTokenizer.service.js';
 import { consentAuditChain } from '../../../src/lib/security/consentChainFactory.js';
+import { requestContext } from '../../../src/lib/async-context.js';
+import { prisma } from '../../../src/lib/prisma.js';
 import { similarDealsService } from '../../../src/features/knowledge/similarDeals.service.js';
 
 describe('Onda 01 — Shared Intelligence Core End-to-End Integration Flow', () => {
   const tenantA = 'tenant-healthcare-corp';
   const tenantB = 'tenant-logistics-corp';
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    // CONSENT_CHAIN_USE_PRISMA=1 (PR #216): ConsentSubjectKey/ConsentAuditRecord têm FK para
+    // Organization — os tenants do fluxo precisam existir de verdade no banco de teste.
+    await requestContext.run({ bypassRls: true }, async () => {
+      await prisma.organization.upsert({
+        where: { id: tenantA },
+        update: {},
+        create: { id: tenantA, name: 'Tenant Healthcare Corp (intelligence core)' },
+      });
+      await prisma.organization.upsert({
+        where: { id: tenantB },
+        update: {},
+        create: { id: tenantB, name: 'Tenant Logistics Corp (intelligence core)' },
+      });
+    });
     domainEventMesh.clearProcessedEvents();
     curatedObjectionService.clear();
     commercialLearningFlywheel.clear();
@@ -24,13 +40,18 @@ describe('Onda 01 — Shared Intelligence Core End-to-End Integration Flow', () 
 
   it('Flow 1: VoiceHub/Mobile -> PII Tokenization -> Consent Audit -> Objection Curation -> Roleplay Integration', async () => {
     // 1. Consentimento registrado e selado na cadeia criptográfica
-    const consent = await consentAuditChain.recordConsent({
-      organizationId: tenantA,
-      subjectRef: 'contact-dr-marcos',
-      purpose: 'COMMERCIAL_CALL_AI_ANALYSIS',
-      termsVersion: 'v2026.1',
-      operatorUserId: 'user-sdr-01',
-    });
+    // CONSENT_CHAIN_USE_PRISMA=1 (PR #216): a cadeia real usa runInTransaction, que exige
+    // requestContext.tenantId igual ao organizationId da operação — o enterWith global do
+    // integration-setup fixa 'test-org-id', então o fluxo do tenant precisa do contexto próprio.
+    const consent = await requestContext.run({ tenantId: tenantA }, () =>
+      consentAuditChain.recordConsent({
+        organizationId: tenantA,
+        subjectRef: 'contact-dr-marcos',
+        purpose: 'COMMERCIAL_CALL_AI_ANALYSIS',
+        termsVersion: 'v2026.1',
+        operatorUserId: 'user-sdr-01',
+      }),
+    );
     expect(consent.currentHash).toBeDefined();
 
     // 2. Transcrição bruta de chamada contendo dados sensíveis
@@ -166,12 +187,14 @@ describe('Onda 01 — Shared Intelligence Core End-to-End Integration Flow', () 
 
   it('Flow 3: Revocation Propagation -> Immediate Disabling of Knowledge and Cache Purge', async () => {
     // 1. Cadastra consentimento e objeção
-    await consentAuditChain.recordConsent({
-      organizationId: tenantA,
-      subjectRef: 'lead-rev-test',
-      purpose: 'TRAINING',
-      termsVersion: 'v1',
-    });
+    await requestContext.run({ tenantId: tenantA }, () =>
+      consentAuditChain.recordConsent({
+        organizationId: tenantA,
+        subjectRef: 'lead-rev-test',
+        purpose: 'TRAINING',
+        termsVersion: 'v1',
+      }),
+    );
 
     const obj = await curatedObjectionService.ingestDetectedObjection({
       organizationId: tenantA,
@@ -187,12 +210,14 @@ describe('Onda 01 — Shared Intelligence Core End-to-End Integration Flow', () 
     expect(await curatedObjectionService.listEligibleForRoleplay(tenantA)).toHaveLength(1);
 
     // 2. Revogação de consentimento pelo titular
-    await consentAuditChain.revokeConsent(
-      tenantA,
-      'lead-rev-test',
-      'TITULAR_REQUEST',
-      'user-sdr-01',
-      { detail: 'Solicitação de exclusão do titular sob Artigo 18 da LGPD' },
+    await requestContext.run({ tenantId: tenantA }, () =>
+      consentAuditChain.revokeConsent(
+        tenantA,
+        'lead-rev-test',
+        'TITULAR_REQUEST',
+        'user-sdr-01',
+        { detail: 'Solicitação de exclusão do titular sob Artigo 18 da LGPD' },
+      ),
     );
 
     // 3. Retração da objeção
@@ -211,7 +236,9 @@ describe('Onda 01 — Shared Intelligence Core End-to-End Integration Flow', () 
     expect(invalidated).toBeGreaterThanOrEqual(0);
 
     // 6. Integridade da cadeia criptográfica permanece válida e auditável
-    const chainIntegrity = await consentAuditChain.verifyChainIntegrity(tenantA);
+    const chainIntegrity = await requestContext.run({ tenantId: tenantA }, () =>
+      consentAuditChain.verifyChainIntegrity(tenantA),
+    );
     expect(chainIntegrity.valid).toBe(true);
     expect(chainIntegrity.totalRecords).toBeGreaterThanOrEqual(2);
   });

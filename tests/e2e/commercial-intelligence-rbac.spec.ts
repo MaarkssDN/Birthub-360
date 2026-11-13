@@ -12,9 +12,11 @@ test.describe('Comercial Inteligente — RBAC na UI', () => {
   }) => {
     await signUp(page, { email: uniqueTestEmail('ci-admin') });
 
-    await expect(page.getByRole('button', { name: /Inteligência de Vendas|Comercial Inteligente/ })).toBeVisible();
+    await page.getByTestId('module-rail-p06').click();
+    await expect(page.getByRole('navigation', { name: 'Navegação — Inteligência Artificial' })).toBeVisible();
+    await expect(page.getByTestId('module-nav-p06-commercial_intelligence')).toBeVisible();
 
-    await page.getByRole('button', { name: /Inteligência de Vendas|Comercial Inteligente/ }).click();
+    await page.getByTestId('module-nav-p06-commercial_intelligence').click();
     await expect(page).toHaveURL(/\/app\/commercial_intelligence/);
     await expect(page.getByRole('button', { name: 'Visão Executiva' })).toBeVisible();
   });
@@ -28,7 +30,9 @@ test.describe('Comercial Inteligente — RBAC na UI', () => {
 
     // Recarrega para a sessão refletir o novo papel (o client do better-auth cacheia a sessão).
     await page.reload();
-    await expect(page.getByRole('button', { name: /Inteligência de Vendas|Comercial Inteligente/ })).toHaveCount(0);
+    await page.getByTestId('module-rail-p06').click();
+    await expect(page.getByRole('navigation', { name: 'Navegação — Inteligência Artificial' })).toBeVisible();
+    await expect(page.getByTestId('module-nav-p06-commercial_intelligence')).toHaveCount(0);
 
     await page.goto('/app/commercial_intelligence');
     // "Acesso restrito" é o único conteúdo da área principal — o título "Comercial Inteligente" no
@@ -47,7 +51,9 @@ test.describe('Comercial Inteligente — RBAC na UI', () => {
     await setUserRole(email, 'VISUALIZADOR');
 
     await page.reload();
-    await expect(page.getByRole('button', { name: /Inteligência de Vendas|Comercial Inteligente/ })).toHaveCount(0);
+    await page.getByTestId('module-rail-p06').click();
+    await expect(page.getByRole('navigation', { name: 'Navegação — Inteligência Artificial' })).toBeVisible();
+    await expect(page.getByTestId('module-nav-p06-commercial_intelligence')).toHaveCount(0);
 
     await page.goto('/app/commercial_intelligence');
     await expect(page.getByText('Acesso restrito')).toBeVisible();
@@ -60,7 +66,9 @@ test.describe('Comercial Inteligente — RBAC na UI', () => {
     await setUserRole(email, 'GESTOR');
 
     await page.reload();
-    await expect(page.getByRole('button', { name: /Inteligência de Vendas|Comercial Inteligente/ })).toBeVisible();
+    await page.getByTestId('module-rail-p06').click();
+    await expect(page.getByRole('navigation', { name: 'Navegação — Inteligência Artificial' })).toBeVisible();
+    await expect(page.getByTestId('module-nav-p06-commercial_intelligence')).toBeVisible();
 
     await page.goto('/app/commercial_intelligence');
     await expect(page.getByRole('button', { name: 'Visão Executiva' })).toBeVisible();

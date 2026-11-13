@@ -878,7 +878,10 @@ export function SinglePageDashboard() {
                 SISTEMA OPERACIONAL
               </span>
             </div>
-            <h1 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-ink">
+            <h1
+              className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-ink"
+              data-testid="dashboard-greeting"
+            >
               {greeting()}, {firstName}.
             </h1>
             <p className="text-sm text-ink-2 max-w-2xl font-interface">

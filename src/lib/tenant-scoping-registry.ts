@@ -62,4 +62,8 @@ export const TENANT_INJECTED_MODELS = [
   'PlaybookInsight',
   // LeadTouchpoint multi-tenant isolation
   'LeadTouchpoint',
+  // PublicLeadConsent (PR #216): prova de consentimento LGPD da landing — escrita só via
+  // publicLead.service dentro de requestContext.run({ tenantId }); injeção adiciona a mesma
+  // rede de segurança dos demais models com organizationId.
+  'PublicLeadConsent',
 ];
