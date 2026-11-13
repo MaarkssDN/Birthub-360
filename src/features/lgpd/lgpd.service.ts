@@ -1,6 +1,8 @@
 import { logger } from '../../lib/logger.js';
 import { prisma } from '../../lib/prisma.js';
+import { consentAuditChain } from '../../lib/security/consentChainFactory.js';
 import { eraseDataSubject } from '../../shared/services/dataSubjectErasure.service.js';
+import { exportDataSubjectDossier } from '../../shared/services/dataSubjectPortability.service.js';
 import {
   checkOptOutStatus,
   assertOptOutStatus,
@@ -14,9 +16,54 @@ import {
 export class LgpdService {
   /**
    * Apaga / Anonimiza dados de um titular (LGPD Art. 18)
+   *
+   * Além da anonimização transacional do PII (`eraseDataSubject`), encadeia a revogação do
+   * consentimento na cadeia de auditoria (`ConsentAuditChain`, REMED-06): o evento REVOCATION +
+   * a tarefa de expurgo (outbox `ConsentPurgeTask`) + crypto-shredding da chave do titular são
+   * gravados na mesma transação da cadeia. Sem este elo, o titular tinha os dados apagados mas
+   * o consentimento continuava "vivo" na cadeia — violando minimização e o direito de revogação
+   * (art. 8º §5º). Best-effort DEPOIS do commit da anonimização: falha na cadeia nunca reverte
+   * uma exclusão já concluída, mas fica registrada no log para reconciliação.
    */
   async eraseContact(organizationId: string, contactId: string, actorUserId?: string) {
-    return await eraseDataSubject({ organizationId, contactId, actorUserId });
+    // O e-mail do titular é a `subjectRef` usada pela cadeia ao registrar consentimentos de
+    // leads públicos (ver publicLead.service.ts). Precisa ser capturado ANTES da anonimização,
+    // que zera `contact.email` — depois disso o vínculo com a cadeia seria impossível.
+    const contact = await prisma.contact.findFirst({
+      where: { id: contactId, organizationId },
+      select: { email: true },
+    });
+    const titularEmail = contact?.email?.trim().toLowerCase() || null;
+
+    const result = await eraseDataSubject({ organizationId, contactId, actorUserId });
+
+    if (titularEmail) {
+      try {
+        await consentAuditChain.revokeConsent(
+          organizationId,
+          titularEmail,
+          'ERASURE_REQUEST',
+          actorUserId,
+          // processNow padrão (true): tenta o expurgo imediatamente; se falhar, a tarefa fica
+          // PENDING na outbox para o worker de reconciliação (startConsentPurgeRuntime).
+        );
+      } catch (err) {
+        // A anonimização já foi commitada — não podemos "desfazer". A revogação pendente é
+        // registrada para reconciliação manual/operacional; o AuditLog da rota já prova a
+        // exclusão. Log sem PII (só ids).
+        logger.error(
+          { err, organizationId, contactId },
+          '[LGPD] Falha ao revogar consentimento na cadeia após exclusão do titular — reconciliar manualmente',
+        );
+      }
+    } else {
+      logger.warn(
+        { organizationId, contactId },
+        '[LGPD] Titular sem e-mail: revogação na cadeia de consentimento não aplicável (subjectRef é e-mail)',
+      );
+    }
+
+    return result;
   }
 
   /**
@@ -43,60 +90,38 @@ export class LgpdService {
   }
 
   /**
-   * Exporta os dados do titular em JSON estruturado (LGPD Portabilidade - Art. 18 V)
+   * Exporta os dados do titular para portabilidade (LGPD Art. 18, inciso V).
+   *
+   * Delega ao `exportDataSubjectDossier` (shared/services), que cobre TODAS as categorias de
+   * dados pessoais do titular: cadastro + customFields, leads, mensagens WhatsApp, ligações de
+   * voz (transcrição/resumo), conversas do Copiloto IA (transcrições e insights), timeline de
+   * eventos — com trilha de auditoria própria e opção de pacote criptografado AES-256-GCM.
+   * A versão anterior deste método retornava um recorte incompleto (sem voz, copiloto, timeline
+   * nem corpo das mensagens) — a rota existia mas a portabilidade não era de fato atendida.
    */
-  async exportContactData(organizationId: string, contactId: string) {
-    const contact = await prisma.contact.findFirst({
-      where: { id: contactId, organizationId },
-      include: {
-        leads: {
-          select: {
-            id: true,
-            title: true,
-            status: true,
-            temperature: true,
-            createdAt: true,
-          },
-        },
-        whatsAppMessages: {
-          select: {
-            id: true,
-            direction: true,
-            receivedAt: true,
-          },
-        },
-      },
+  async exportContactData(
+    organizationId: string,
+    contactId: string,
+    options?: { requestedByUserId?: string; encryptionPassword?: string },
+  ) {
+    const result = await exportDataSubjectDossier({
+      organizationId,
+      contactId,
+      requestedByUserId: options?.requestedByUserId,
+      encryptionPassword: options?.encryptionPassword,
     });
 
-    if (!contact) {
-      throw new Error('Contato não encontrado.');
-    }
-
-    logger.info({ organizationId, contactId }, '[LGPD] Exportação de dados do titular realizada');
-
-    return {
-      exportTimestamp: new Date().toISOString(),
-      contact: {
-        id: contact.id,
-        name: contact.name,
-        email: contact.email,
-        phone: contact.phone,
-        whatsapp: contact.whatsapp,
-        linkedin: contact.linkedin,
-        birthDate: contact.birthDate,
-        observations: contact.observations,
-        customFields: contact.customFields,
-        createdAt: contact.createdAt,
+    logger.info(
+      {
+        organizationId,
+        contactId,
+        exportId: result.dossier.metadata.exportId,
+        encrypted: Boolean(result.encryptedPackage),
       },
-      associatedLeads: contact.leads.map((l) => ({
-        id: l.id,
-        title: l.title,
-        status: l.status,
-        temperature: l.temperature,
-        createdAt: l.createdAt,
-      })),
-      whatsAppMessagesCount: contact.whatsAppMessages.length,
-    };
+      '[LGPD] Exportação de portabilidade do titular realizada',
+    );
+
+    return result;
   }
 }
 

@@ -6,6 +6,7 @@ import { isPrivateOrReservedHost } from '../validators/index.js';
 import type { WebhookPayload } from './webhook.service.js';
 import { findActiveSigningSecretHash } from './webhookEndpointService.js';
 import { recordDeliveryResult } from '../repositories/webhookEndpointRepository.js';
+import { isFinalAttempt, recordDeadLetter } from '../../../lib/queue/deadLetter.js';
 
 /** Matches the 5s timeout published in docs/webhooks/index.md. */
 const DELIVERY_TIMEOUT_MS = 5000;
@@ -157,11 +158,38 @@ export function startWebhookWorker() {
   worker.on('failed', (job, err) => {
     logger.error(`[WebhookWorker] Job ${job?.id} failed. Reason: ${err.message}`);
     const endpointId = job?.data?.endpointId;
-    const attempts = job?.opts?.attempts ?? 1;
-    if (endpointId && job && job.attemptsMade >= attempts) {
+    const finalAttempt = isFinalAttempt(job?.attemptsMade ?? 0, job?.opts?.attempts);
+    if (endpointId && job && finalAttempt) {
       // Final failure (retry budget exhausted) — best-effort bookkeeping, same "never fail on
       // recording" reasoning as the success path above.
       recordDeliveryResult(endpointId, 'failed').catch(() => undefined);
+    }
+    if (job && finalAttempt) {
+      // MEL-08 (Onda 2): dead-letter persistente e consultável para TODO job da fila
+      // 'webhooks' que esgotou as tentativas — inclusive os sem `endpointId` (targetUrl
+      // explícito ou fallback deployment-wide WEBHOOK_URL/TEST_WEBHOOK_URL), que antes só
+      // deixavam rastro em log efêmero e perdiam o `lastDeliveryStatus` do endpoint.
+      // `recordDeadLetter` grava um AuditLog `QUEUE_DEAD_LETTER` sanitizado (PII/segredos
+      // redigidos, payload truncado) e nunca lança — uma falha aqui não pode mascarar a
+      // falha original do job.
+      void recordDeadLetter({
+        queue: 'webhooks',
+        jobId: job.id,
+        jobName: 'send_webhook',
+        organizationId: job.data?.payload?.organizationId ?? null,
+        attemptsMade: job.attemptsMade,
+        error: err,
+        // Payload completo NÃO vai para a DLQ: `payload.data` pode carregar dados de
+        // chamada/lead (PII). Fica só o necessário para identificar e reprocessar a entrega
+        // manualmente (evento, destino, endpoint) — `sanitize` do deadLetter ainda corta
+        // strings longas e redige chaves sensíveis por precaução.
+        data: {
+          url: job.data?.url,
+          endpointId: job.data?.endpointId,
+          event: job.data?.payload?.type,
+          webhookEventId: job.data?.payload?.id,
+        },
+      }).catch(() => undefined);
     }
   });
 

@@ -94,6 +94,10 @@ import {
   scheduleCheckpointerPrune,
 } from '../lib/queue/checkpointerPrune.worker.js';
 import { createWhatsAppCommandWorker } from '../lib/queue/whatsappCommand.worker.js';
+// MEL-08 (Onda 2): consumidor da fila BullMQ 'webhooks' — ver worker.ts (mesmo registro no
+// processo dedicado). Sem ele, o modo embutido (ENABLE_EMBEDDED_WORKERS) enfileirava entregas
+// de webhook que nunca eram processadas.
+import { startWebhookWorker } from '../lib/voice-hub/services/webhook.worker.js';
 
 // `unknown` não serve aqui: os workers reais guardados neste handle têm DataType/ResultType todos
 // diferentes entre si (AgentJobData, EnrichmentJobData, WhatsAppSignalJobData, void, objetos de
@@ -143,6 +147,8 @@ export interface EmbeddedWorkersHandle {
   searchWorker: CloseableWorker;
   coldCallWorker: CloseableWorker;
   swarmSchedulerWorker: CloseableWorker;
+  /** Consumidor da fila 'webhooks' (entregas de saída com HMAC/retry/DLQ) — MEL-08, Onda 2. */
+  webhookWorker: CloseableWorker;
 }
 
 /**
@@ -199,6 +205,7 @@ export function startEmbeddedWorkers(): EmbeddedWorkersHandle {
     searchWorker: null,
     coldCallWorker: null,
     swarmSchedulerWorker: null,
+    webhookWorker: embeddedWorkersEnabled ? startWebhookWorker() : null,
   };
 
   // Sem Redis, `.add()` chega a enfileirar o comando e falha ao dar baixa nas retries —

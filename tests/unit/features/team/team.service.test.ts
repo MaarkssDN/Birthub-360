@@ -13,12 +13,16 @@ const userDelete = vi.fn();
 const userUpdate = vi.fn();
 
 vi.mock('../../../../src/lib/prisma.js', () => ({
+  isInActiveTransaction: () => false,
   prisma: {
     user: {
       findFirst: (...a: unknown[]) => userFindFirst(...a),
       count: (...a: unknown[]) => userCount(...a),
       delete: (...a: unknown[]) => userDelete(...a),
       update: (...a: unknown[]) => userUpdate(...a),
+    },
+    auditLog: {
+      create: vi.fn().mockResolvedValue({}),
     },
   },
 }));
