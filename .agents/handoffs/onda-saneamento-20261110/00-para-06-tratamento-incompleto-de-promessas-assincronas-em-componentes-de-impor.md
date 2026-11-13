@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 06 (Integrações e Bitrix)
 Onda: Onda 3 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-045)
-Status: em-andamento
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 3
@@ -77,3 +77,7 @@ Branch `agente/06-integracoes-saneamento`, worktree `C:/Github/Birthub-360-workt
 - Teste adicionado em `tests/unit/features/integrations/ExternalCrmPanel.test.tsx`: novo caso "aborta a listagem via AbortController ao desmontar, sem erro/toast (S9383)" + `vi.clearAllMocks()` no `beforeEach` para isolar histórico de mocks entre casos.
 - **Gates:** `npx tsc --noEmit` limpo; `npx biome lint` no escopo limpo; `vitest run tests/unit/features/integrations/ExternalCrmPanel.test.tsx` — 11/11 passando.
 - **Pendente:** parecer formal `APROVADO` do Agente 24 (condição de encerramento do handoff).
+
+## Resolução
+
+TAREFA-045 — AbortSignal em fetchConnections + cleanup no unmount (W5 Agente 06, f1cc14814 / PR #249).

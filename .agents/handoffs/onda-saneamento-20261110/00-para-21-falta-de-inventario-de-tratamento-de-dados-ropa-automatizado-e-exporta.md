@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 21 (Privacidade e LGPD)
 Onda: Onda 1 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-052)
-Status: em-andamento
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 1
@@ -74,3 +74,7 @@ dono exclusivo no §15 — a alteração foi autorizada pelo escopo do handoff
 raiz). Registrado para deliberação do Agente 24.
 
 **Status:** aguardando revisão formal do Agente 24.
+
+## Resolução
+
+TAREFA-052 — scripts/lgpd/ropa-inventory.ts com gate de drift (merge 6ecfc6033).

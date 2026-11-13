@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 13 (Enxame Autônomo e Governança de Runtime)
 Onda: Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-009)
-Status: em-andamento
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 4
@@ -82,3 +82,7 @@ entender que a propriedade prevalece sobre a atribuição do plano, o commit pod
 ser revertido sem perda — o código extraído é autocontido.
 
 **Status:** aguardando revisão formal do Agente 24.
+
+## Resolução
+
+TAREFA-009 — supervisor.agent.ts 999->900 linhas + supervisor.decision.ts extraido (merge 6ecfc6033).

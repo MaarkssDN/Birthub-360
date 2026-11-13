@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 22 (Verificação de Realidade)
 Onda: Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-040)
-Status: em-andamento
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 5
@@ -69,3 +69,7 @@ documentado: `npx tsx scripts/security/pii-log-scanner.ts --self-test` e
 `npx tsx scripts/security/pii-log-scanner.ts <logs>`.
 
 **Status:** aguardando revisão formal do Agente 24.
+
+## Resolução
+
+TAREFA-040 — scripts/security/pii-log-scanner.ts + tests/unit/security/piiLogScanner.test.ts (merge 6ecfc6033).

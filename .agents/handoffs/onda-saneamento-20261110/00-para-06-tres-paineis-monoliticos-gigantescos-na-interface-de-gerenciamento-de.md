@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 06 (Integrações e Bitrix)
 Onda: Onda 3 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-004)
-Status: em-andamento
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 3
@@ -89,3 +89,7 @@ Branch `agente/06-integracoes-saneamento`, worktree `C:/Github/Birthub-360-workt
 - Teste novo `tests/unit/features/integrations/BitrixImportPanel.test.tsx` (4 casos): listagem + seleção, importação em lote com sucesso (verifica payload/endpoint), falha de importação com erro explícito, falha de carga inicial.
 - **Gates:** `npx tsc --noEmit` limpo; `npx biome lint` no escopo limpo; `vitest run` no novo teste — 4/4; suites focadas de Bitrix (`src/features/integrations/bitrix/**/__tests__`, `tests/unit/{services,integrations}`) — 208 testes verdes, sem regressão.
 - **Pendente:** parecer formal `APROVADO` do Agente 24 (condição de encerramento do handoff). Observação: os demais "painéis monolíticos" citados no título da dívida (`BitrixExtractionPanel.tsx`, `BitrixSyncRulesPanel.tsx`) não constam do escopo de arquivos do handoff — se a intenção for decompor os três, peço ao 00 confirmar escopo estendido.
+
+## Resolução
+
+TAREFA-004 — paineis decompostos: BitrixImportPanel (main/PR #249), Integrations.tsx 862 linhas e ExternalCrmPanel.tsx 841 linhas (W5 Agente 06).
