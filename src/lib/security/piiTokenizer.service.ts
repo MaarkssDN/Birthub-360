@@ -1,10 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { logger } from '../logger.js';
-
-const CPF_REGEX = /\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b/g;
-const CNPJ_REGEX = /\b\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}\b/g;
-const PHONE_REGEX = /\b(?:\+?55\s?)?(?:\(?\d{2}\)?\s?)?(?:9\d{4}|\d{4})[-.\s]?\d{4}\b/g;
-const EMAIL_REGEX = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g;
+import { CNPJ_REGEX, CPF_REGEX, EMAIL_REGEX, PHONE_REGEX } from './piiMask.js';
 
 export interface TokenizedResult {
   tokenizedText: string;

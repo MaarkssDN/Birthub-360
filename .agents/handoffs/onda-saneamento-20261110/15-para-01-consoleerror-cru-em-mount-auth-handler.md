@@ -1,7 +1,7 @@
 De: Agente 15 — Segurança Aplicada e Rotação de Segredos
 Para: Agente 01 — Plataforma, Segurança e Dados
 Onda: onda-saneamento-20261110
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: BT360-DT-0072 (verificação de saneamento — residual adjacente)
 Sprint destino: Onda 0
@@ -62,3 +62,7 @@ Não é bloqueador de release por si só (depende de exceção não tratada do b
 carregar segredo no objeto de erro), mas fecha a última superfície de log de auth
 fora da camada pino. Se o Agente 01 avaliar que `err` nunca carrega credenciais,
 pode-se registrar "aceito por risco" e encerrar.
+
+## Resolução
+
+console.error substituido por logger.error({err}) com redaction pino — src/bootstrap/auth.ts.

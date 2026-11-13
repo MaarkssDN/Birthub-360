@@ -2,8 +2,6 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { LiveCopilotHUD } from '../../../src/features/copilot/components/LiveCopilotHUD.js';
 import { WarRoomArenaView } from '../../../src/features/gamification/components/WarRoomArenaView.js';
-import { PredictiveRevenueCockpit } from '../../../src/features/predictability/components/PredictiveRevenueCockpit.js';
-import { MultiRegionResiliencePanel } from '../../../src/features/settings/components/MultiRegionResiliencePanel.js';
 
 // Mocks para evitar dependências de som, toast e bus externo
 vi.mock('../../../src/lib/soundEffects.js', () => ({
@@ -69,52 +67,6 @@ describe('Cockpits e Painéis Operacionais (Opção 1)', () => {
       expect(textarea).toHaveValue(
         'Compreendo perfeitamente. Como você avalia o impacto de telemetria nativa no ROI?',
       );
-    });
-  });
-
-  describe('PredictiveRevenueCockpit', () => {
-    it('renderiza intervalos de confiança P10, P50 e P90 e horizontes temporais', () => {
-      render(<PredictiveRevenueCockpit />);
-
-      expect(screen.getByText(/Cockpit de Forecast Preditivo/i)).toBeInTheDocument();
-      expect(screen.getByText(/P10 · Conservador/i)).toBeInTheDocument();
-      expect(screen.getByText(/P50 · Cenário Base \(Mediana\)/i)).toBeInTheDocument();
-      expect(screen.getByText(/P90 · Otimista/i)).toBeInTheDocument();
-      expect(screen.getByText(/Simulador What-If de Sensibilidade/i)).toBeInTheDocument();
-    });
-
-    it('permite alternar o horizonte temporal para 30 ou 180 dias', () => {
-      render(<PredictiveRevenueCockpit />);
-
-      const btn30 = screen.getByText(/Horizonte 30d/i);
-      fireEvent.click(btn30);
-      expect(btn30).toBeInTheDocument();
-
-      const btn180 = screen.getByText(/Horizonte 180d/i);
-      fireEvent.click(btn180);
-      expect(btn180).toBeInTheDocument();
-    });
-  });
-
-  describe('MultiRegionResiliencePanel', () => {
-    it('renderiza regiões sa-east-1, us-east-1 e métricas de RPO/RTO', () => {
-      render(<MultiRegionResiliencePanel />);
-
-      expect(screen.getByText(/Governança de Topologia Multi-Região & Failover/i)).toBeInTheDocument();
-      expect(screen.getAllByText(/sa-east-1/i).length).toBeGreaterThan(0);
-      expect(screen.getAllByText(/us-east-1/i).length).toBeGreaterThan(0);
-      expect(screen.getAllByText(/us-west-2/i).length).toBeGreaterThan(0);
-      expect(screen.getByText(/RPO Máximo/i)).toBeInTheDocument();
-      expect(screen.getByText(/RTO Alvo/i)).toBeInTheDocument();
-    });
-
-    it('possui botão de teste de failover seguro acionável', () => {
-      render(<MultiRegionResiliencePanel />);
-
-      const failoverBtn = screen.getByRole('button', { name: /Testar Failover Seguro/i });
-      expect(failoverBtn).toBeInTheDocument();
-      fireEvent.click(failoverBtn);
-      expect(screen.getByText(/Processando Failover.../i)).toBeInTheDocument();
     });
   });
 

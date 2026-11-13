@@ -1,7 +1,7 @@
 De: Agente 01 (Plataforma, Segurança e Dados)
 Para: Agente 07 (IA, Copiloto e Automações)
 Onda: W3 (saneamento-20261110) — originado de TAREFA-SANEAMENTO-012 / BT360-DT-0008
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: RELEASE_BLOCKED — saneamento waves 3–6
 Sprint destino: W4 (domínio intelligence)
@@ -70,3 +70,7 @@ Executar dentro da propriedade do Agente 07 (`src/features/intelligence/**`):
 - `PrismaUsageRepository` (billing, Agente 01) já usa `groupBy`/`aggregate`/`$queryRaw`
   corretamente — serve de padrão de referência.
 - Revisão Agente 24 obrigatória.
+
+## Resolução
+
+TAREFA-042 — agentCostAnalysis.service.ts usa prisma.aILog.groupBy (W5 Agente 23, integrado em 38e8634f7).

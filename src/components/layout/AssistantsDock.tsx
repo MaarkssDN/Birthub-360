@@ -1,6 +1,6 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext.js';
 import { useActiveRecord } from '../../hooks/useActiveRecord.js';
 import { SoundFX } from '../../lib/soundEffects.js';
@@ -242,10 +242,10 @@ function AssistantButton({
 }: AssistantButtonProps) {
   const activeRing =
     accent === 'iris'
-      ? 'border-[#8B7DFF]/60 shadow-[0_0_18px_rgba(139,125,255,0.35)]'
-      : 'border-[#00D4FF]/60 shadow-[0_0_18px_rgba(0,212,255,0.35)]';
-  const dot = accent === 'iris' ? 'bg-[#8B7DFF]' : 'bg-[#00D4FF]';
-  const text = accent === 'iris' ? 'text-[#8B7DFF]' : 'text-[#0284c7] dark:text-[#00D4FF]';
+      ? 'border-iris/60 shadow-[0_0_18px_color-mix(in_srgb,var(--color-iris)_35%,transparent)]'
+      : 'border-brand/60 shadow-[0_0_18px_color-mix(in_srgb,var(--color-brand)_35%,transparent)]';
+  const dot = accent === 'iris' ? 'bg-iris' : 'bg-brand';
+  const text = accent === 'iris' ? 'text-iris' : 'text-sky-700 dark:text-brand';
 
   return (
     <button

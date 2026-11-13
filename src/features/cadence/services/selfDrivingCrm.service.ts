@@ -221,7 +221,7 @@ export class SelfDrivingCrmService implements ISelfDrivingCrmPort {
           optedOutVoice ||
           optedOutEmail ||
           optedOutWhatsApp ||
-          adaptiveMultichannelCadenceService.isLeadOptedOut(organizationId, lead.leadId);
+          (await adaptiveMultichannelCadenceService.isLeadOptedOut(organizationId, lead.leadId));
 
         let eligible = !isOptedOutFlag && !lead.isWonOrLost;
         let ineligibilityReason: string | undefined;

@@ -67,6 +67,10 @@ export class TeamController {
         organizationId,
         memberId as string,
         role as TeamRole,
+        {
+          userId: (req as AuthRequest).user?.id,
+          ipAddress: req.ip,
+        },
       );
       res.json({ success: true, data: updated });
     } catch (error) {

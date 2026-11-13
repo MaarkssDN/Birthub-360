@@ -1,21 +1,21 @@
-import { useMemo } from 'react';
 import type { MouseEvent } from 'react';
+import { useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext.js';
 import { hasRequiredRole } from '../../lib/auth/authorization.js';
 import { BirthHubLogo } from '../brand/BirthHubLogo.js';
 import { useSidebarState } from './hooks/useSidebarState.js';
-import { NavLaunchTransition } from './NavLaunchTransition.js';
-import type { NavLaunch } from './NavLaunchTransition.js';
 import {
   getActiveModuleId,
   getModuleById,
   getVisibleModuleItems,
-  PRODUCT_MODULES,
   type ModuleNavItem,
   type ModuleNavPermissions,
+  PRODUCT_MODULES,
   type ProductModule,
 } from './moduleRegistry.js';
+import type { NavLaunch } from './NavLaunchTransition.js';
+import { NavLaunchTransition } from './NavLaunchTransition.js';
 import { TAB_META, type TabType } from './tabMeta.js';
 
 interface ModuleNavPanelProps {
@@ -154,7 +154,7 @@ export function ModuleNavPanel({
   const showModuleLauncher = isHub || mobile;
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col bg-surface/95 dark:bg-[#111214]/95">
+    <div className="flex h-full min-h-0 w-full flex-col bg-surface/95 dark:bg-bg/95">
       {launch && <NavLaunchFallback launch={launch} onFinish={finishLaunch} />}
 
       {/* Cabeçalho do módulo */}
@@ -208,13 +208,13 @@ export function ModuleNavPanel({
                   {active && (
                     <span
                       aria-hidden="true"
-                      className="absolute left-0 top-[7px] bottom-[7px] w-[3px] rounded-r-full bg-[#00D4FF] shadow-[0_0_10px_#00D4FF]"
+                      className="absolute left-0 top-[7px] bottom-[7px] w-[3px] rounded-r-full bg-brand shadow-[0_0_10px_var(--color-brand)]"
                     />
                   )}
                   <span
                     className={`${ICON_WELL} ${
                       active
-                        ? 'bg-[#00D4FF]/15 text-[#0284c7] dark:text-[#00D4FF] border border-[#00D4FF]/40'
+                        ? 'bg-brand/15 text-sky-700 dark:text-brand border border-brand/40'
                         : 'bg-surface-2 text-ink-2 border border-transparent group-hover:bg-surface group-hover:text-ink'
                     }`}
                   >

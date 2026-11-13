@@ -514,29 +514,44 @@ export function PillarSettingsPlaceholder({ pillarName }: PillarSettingsProps) {
                         <p className="text-xs text-[var(--ink-3)]">{item.desc}</p>
                       </div>
                       <div className="flex items-center gap-4">
-                        <label className="flex items-center gap-2 text-xs font-medium cursor-pointer">
+                        <label
+                          className="flex items-center gap-2 text-xs font-medium text-[var(--ink-3)] cursor-not-allowed"
+                          title="Em breve — permissões reais são gerenciadas pelo RBAC do backend."
+                        >
                           <input
                             type="checkbox"
                             defaultChecked={true}
-                            className="rounded border-[var(--line)] text-[var(--nav-c-blue)] focus:ring-[var(--nav-c-blue)]"
+                            disabled
+                            aria-disabled="true"
+                            className="rounded border-[var(--line)] text-[var(--nav-c-blue)] focus:ring-[var(--nav-c-blue)] disabled:opacity-50"
                           />
                           Ver
                         </label>
-                        <label className="flex items-center gap-2 text-xs font-medium cursor-pointer">
+                        <label
+                          className="flex items-center gap-2 text-xs font-medium text-[var(--ink-3)] cursor-not-allowed"
+                          title="Em breve — permissões reais são gerenciadas pelo RBAC do backend."
+                        >
                           <input
                             type="checkbox"
                             defaultChecked={!item.role.includes('Visualizador')}
-                            className="rounded border-[var(--line)] text-[var(--nav-c-blue)] focus:ring-[var(--nav-c-blue)]"
+                            disabled
+                            aria-disabled="true"
+                            className="rounded border-[var(--line)] text-[var(--nav-c-blue)] focus:ring-[var(--nav-c-blue)] disabled:opacity-50"
                           />
                           Editar
                         </label>
-                        <label className="flex items-center gap-2 text-xs font-medium cursor-pointer">
+                        <label
+                          className="flex items-center gap-2 text-xs font-medium text-[var(--ink-3)] cursor-not-allowed"
+                          title="Em breve — permissões reais são gerenciadas pelo RBAC do backend."
+                        >
                           <input
                             type="checkbox"
                             defaultChecked={
                               item.role.includes('Admin') || item.role.includes('Gestor')
                             }
-                            className="rounded border-[var(--line)] text-[var(--nav-c-blue)] focus:ring-[var(--nav-c-blue)]"
+                            disabled
+                            aria-disabled="true"
+                            className="rounded border-[var(--line)] text-[var(--nav-c-blue)] focus:ring-[var(--nav-c-blue)] disabled:opacity-50"
                           />
                           Excluir
                         </label>

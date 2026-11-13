@@ -2548,6 +2548,106 @@ paths:
                     type: string
                     enum: [unavailable]
 
+  /public/lead-capture:
+    post:
+      tags: [Landing]
+      summary: Captura pública de lead da landing 360° (formulário "Reserve sua Demonstração", envio por e-mail)
+      description: |
+        Endpoint público, sem autenticação, distinto de `/public/demo-leads`
+        (que persiste Lead no banco). Este endpoint **não persiste nada**: o
+        pedido é encaminhado por e-mail via SMTP para a caixa comercial
+        configurada em `LEAD_CAPTURE_EMAIL` (fallback `SMTP_FROM`/`SMTP_USER`).
+
+        Sem destinatário/SMTP configurado a rota responde `503` — nunca finge
+        sucesso.
+
+        LGPD: `consent` é obrigatório (`true` literal); o servidor rejeita
+        `false`/omitido. O e-mail gerado registra o timestamp do consentimento.
+
+        Honeypot: campo opcional `website` deve ir vazio/ausente; se preenchido,
+        a API responde `200 { success: true }` sem gerar e-mail.
+
+        Rate limit: 5 requisições por IP por hora (`429`).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nome, email, whatsapp, equipe, consent]
+              properties:
+                nome:
+                  type: string
+                  minLength: 2
+                  maxLength: 120
+                email:
+                  type: string
+                  format: email
+                  maxLength: 160
+                whatsapp:
+                  type: string
+                  description: Telefone com DDD; máscara opcional. Dígitos finais devem totalizar 10-13.
+                equipe:
+                  type: string
+                  enum: ['1 a 5', '6 a 15', '16 a 50', '50+']
+                consent:
+                  type: boolean
+                  description: Deve ser true (opt-in afirmativo; o servidor rejeita false/omitido)
+                website:
+                  type: string
+                  description: Honeypot anti-abuso — deve ser omitido ou string vazia
+      responses:
+        '200':
+          description: E-mail de lead enviado (ou honeypot absorvido silenciosamente)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success]
+                properties:
+                  success:
+                    type: boolean
+                    enum: [true]
+        '400':
+          description: Payload inválido (nome, e-mail, WhatsApp, equipe ou consentimento)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, error]
+                properties:
+                  success:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: string
+        '429':
+          description: Rate limit excedido (por IP, janela de 1 hora)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, error]
+                properties:
+                  success:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: string
+        '503':
+          description: SMTP/destinatário não configurado ou falha de envio — resposta honesta, nunca sucesso falso
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, error]
+                properties:
+                  success:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: string
+
   # ───────────────────────────── Prospecting ─────────────────────────────
   /prospecting/apollo/reconnect:
     post:
@@ -5049,6 +5149,423 @@ paths:
               schema:
                 $ref: '#/components/schemas/DataEnvelope'
 
+  # ─── Célula Comercial — agentes conectados na onda 6 (AIAGENT-004) ───
+  # Montados via `router.use(commercialCellRoutes)` SEM path em agent.routes.ts — o Passe 2 do
+  # verify-openapi-drift só passou a enxergá-los após suporte a mount sem path
+  # (TAREFA-SANEAMENTO-037 / BT360-DT-0083). Todas exigem papel de escrita
+  # (ADMIN/GESTOR/CLOSER/SDR) e respondem `{ success, data }`.
+  /agent/commercial-cell/ldr-intelligence/run:
+    post:
+      tags: [Agent]
+      summary: >-
+        Executa o agente LDR (inteligência de leads) sobre o snapshot real de Account Intelligence
+        da conta informada (estado, score de fit/timing/intent, volume de evidência).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [accountId]
+              properties:
+                accountId: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+        '500':
+          description: Contexto de organização (tenant) não inicializado na requisição
+
+  /agent/commercial-cell/coordinator-commercial/run:
+    post:
+      tags: [Agent]
+      summary: >-
+        Executa o agente Coordenador Comercial sobre alertas executivos, aging e indicadores
+        leading já calculados pelo CommercialIntelligenceUseCases para o período informado.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [month]
+              properties:
+                month: { type: string, pattern: '^\d{4}-\d{2}$', description: 'Formato YYYY-MM' }
+                owner: { type: string }
+                product: { type: string }
+                source: { type: string }
+                icp: { type: string }
+                company: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+
+  /agent/commercial-cell/manager-commercial/run:
+    post:
+      tags: [Agent]
+      summary: >-
+        Executa o agente Gerente Comercial sobre executive overview, performance, aging e perdas
+        já calculados pelo CommercialIntelligenceUseCases para o período informado.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [month]
+              properties:
+                month: { type: string, pattern: '^\d{4}-\d{2}$', description: 'Formato YYYY-MM' }
+                owner: { type: string }
+                product: { type: string }
+                source: { type: string }
+                icp: { type: string }
+                company: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+
+  /agent/commercial-cell/executive-director/run:
+    post:
+      tags: [Agent]
+      summary: >-
+        Executa o agente Diretoria (executivo comercial) sobre executive overview, tendências
+        históricas, health score e acurácia de forecast já calculados para o período informado.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [month]
+              properties:
+                month: { type: string, pattern: '^\d{4}-\d{2}$', description: 'Formato YYYY-MM' }
+                owner: { type: string }
+                product: { type: string }
+                source: { type: string }
+                icp: { type: string }
+                company: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+
+  /agent/commercial-cell/bitrix-guardian/run:
+    post:
+      tags: [Agent]
+      summary: >-
+        Executa o agente Bitrix Guardian sobre o CrmQualityIndex.bitrixSync já calculado
+        (somente leitura — nenhum writeback para o Bitrix, que é exclusivo do domínio de
+        integrações).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [month]
+              properties:
+                month: { type: string, pattern: '^\d{4}-\d{2}$', description: 'Formato YYYY-MM' }
+                owner: { type: string }
+                product: { type: string }
+                source: { type: string }
+                icp: { type: string }
+                company: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+
+  # ─── Ecossistema Universal de Agentes (universalEcosystem.routes.ts) ───
+  # Mesmo mount sem path (`router.use(universalEcosystemRoutes)` em agent.routes.ts).
+  /agent/ecosystem/connectors:
+    get:
+      tags: [Agent]
+      summary: >-
+        Lista o status real dos conectores universais da organização (CRMs, e-mail, mensageria,
+        tarefas, reuniões, wearables). `maskedConfig` só é incluído para ADMIN/GESTOR.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+
+  /agent/ecosystem/connectors/{provider}:
+    put:
+      tags: [Agent]
+      summary: >-
+        Salva/atualiza credenciais de um conector universal (somente ADMIN/GESTOR), com validação
+        SSRF e mascaramento de segredos.
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [config]
+              properties:
+                config:
+                  type: object
+                  additionalProperties: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /agent/ecosystem/connectors/{provider}/test:
+    post:
+      tags: [Agent]
+      summary: Testa a conexão e conectividade em tempo real de um provedor específico.
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+
+  /agent/ecosystem/catalog:
+    get:
+      tags: [Agent]
+      summary: >-
+        Retorna o catálogo completo de ferramentas universais reutilizáveis pelo Swarm e por
+        agentes standalone.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+
+  /agent/ecosystem/standalone-run:
+    post:
+      tags: [Agent]
+      summary: >-
+        Executa um Agente Separado (standalone) equipado com as ferramentas universais das
+        categorias informadas. `success` reflete `!result.error`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [mission]
+              properties:
+                mission: { type: string, minLength: 2, maxLength: 4000 }
+                agentTitle: { type: string, maxLength: 120 }
+                customSystemPrompt: { type: string, maxLength: 4000 }
+                categories:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - prospecting_enrichment
+                      - email_intelligence
+                      - messaging_omnichannel
+                      - tasks_projects_notes
+                      - meetings_calendar
+                      - office_docs_sheets_slides
+                      - multi_device_notifications
+                      - scripts_prompts_enablement
+                      - crm_erp_sync
+                      - pipeline_revops
+                sessionId: { type: string, maxLength: 200 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+
+  /agent/ecosystem/office/generate:
+    post:
+      tags: [Agent]
+      summary: >-
+        Gera artefato real de Word/Google Docs, Excel (.xlsx binário via ExcelJS) ou
+        PowerPoint/Slides, com download imediato (base64) e indexação na Base de Conhecimento.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [docType, title]
+              properties:
+                docType:
+                  type: string
+                  enum: [word_or_gdoc, excel_or_gsheet, powerpoint_or_gslides]
+                title: { type: string, minLength: 2, maxLength: 200 }
+                leadId: { type: string }
+                companyId: { type: string }
+                documentSections:
+                  type: array
+                  items:
+                    type: object
+                    required: [heading, body]
+                    properties:
+                      heading: { type: string }
+                      body: { type: string }
+                sheetColumns:
+                  type: array
+                  items: { type: string }
+                sheetRows:
+                  type: array
+                  items:
+                    type: array
+                    items:
+                      oneOf:
+                        - { type: string }
+                        - { type: number }
+                        - { type: boolean }
+                        - { nullable: true }
+                slides:
+                  type: array
+                  items:
+                    type: object
+                    required: [title, bullets]
+                    properties:
+                      slideNumber: { type: integer }
+                      title: { type: string }
+                      bullets:
+                        type: array
+                        items: { type: string }
+                      speakerNotes: { type: string }
+      responses:
+        '200':
+          description: >-
+            OK — `data.download` contém `{ filename, mimeType, base64 }` para download imediato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+
+  /agent/ecosystem/playbooks:
+    get:
+      tags: [Agent]
+      summary: Lista as receitas/playbooks multi-plataforma automatizados ponta a ponta.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+
+  /agent/ecosystem/playbooks/{playbookId}/run:
+    post:
+      tags: [Agent]
+      summary: >-
+        Executa um playbook multi-plataforma completo encadeando as ferramentas universais.
+      parameters:
+        - name: playbookId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                segment: { type: string, maxLength: 120 }
+                location: { type: string, maxLength: 120 }
+                leadId: { type: string, maxLength: 120 }
+                transcript: { type: string, maxLength: 12000 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+
+  /agent/ecosystem/events/ingest:
+    post:
+      tags: [Agent]
+      summary: >-
+        Ingestão de eventos reativos multi-plataforma (webhooks e simulações) — mensagem
+        recebida, atualização de card/tarefa, reunião concluída ou mudança de estágio no CRM.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sourcePlatform, eventType, subjectOrTitle, content]
+              properties:
+                sourcePlatform:
+                  type: string
+                  enum:
+                    - outlook_m365
+                    - gmail
+                    - imap_email
+                    - whatsapp
+                    - telegram
+                    - teams
+                    - slack
+                    - trello
+                    - monday
+                    - notion
+                    - bitrix24
+                    - hubspot
+                    - pipedrive
+                    - rdstation
+                    - calendly
+                    - zoom
+                eventType:
+                  type: string
+                  enum:
+                    - inbound_message
+                    - task_or_card_update
+                    - meeting_completed
+                    - crm_deal_stage_change
+                sender: { type: string, maxLength: 160 }
+                subjectOrTitle: { type: string, minLength: 1, maxLength: 240 }
+                content: { type: string, minLength: 1, maxLength: 12000 }
+                leadId: { type: string, maxLength: 120 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelope'
+
   # ───────────────────────────── Prompts ─────────────────────────────
   /prompts:
     get:
@@ -6145,6 +6662,41 @@ paths:
                       channel: { type: string }
                       tone: { type: string }
                       estimatedTokens: { type: integer }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { description: Não autenticado }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /social-selling/interactions:
+    post:
+      tags: [Social Selling]
+      summary: >-
+        Registra uma interação social executada manualmente e a vincula à
+        timeline do Lead no CRM (RN-SOC-02). Rate limit anti-rajada por organização.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [leadId]
+              properties:
+                leadId: { type: string, description: Lead do tenant que recebe o evento na timeline }
+                kind:
+                  type: string
+                  enum: [approach_sent, interaction_received]
+                  default: approach_sent
+                channel: { type: string, default: linkedin }
+                summary: { type: string, maxLength: 2000, nullable: true }
+      responses:
+        '201':
+          description: Interação registrada e evento gravado na timeline do Lead
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { type: object }
         '400': { $ref: '#/components/responses/BadRequest' }
         '401': { description: Não autenticado }
         '403': { $ref: '#/components/responses/Forbidden' }

@@ -42,6 +42,16 @@ vi.mock('../repositories/webhookEndpointRepository.js', () => ({
   recordDeliveryResult: (...args: unknown[]) => mockRecordDeliveryResult(...args),
 }));
 
+// DLQ (MEL-08): webhook.worker grava AuditLog QUEUE_DEAD_LETTER via recordDeadLetter quando o
+// orçamento de retries se esgota. Mockado para o teste unitário não tocar Prisma/Redis — mesmo
+// padrão de whatsapp.service.lock.test.ts.
+const mockRecordDeadLetter = vi.fn().mockResolvedValue(undefined);
+vi.mock('../../../lib/queue/deadLetter.js', () => ({
+  recordDeadLetter: (...args: unknown[]) => mockRecordDeadLetter(...args),
+  isFinalAttempt: (attemptsMade: number, attemptsConfigured?: number) =>
+    attemptsMade >= (attemptsConfigured ?? 1),
+}));
+
 import { startWebhookWorker } from './webhook.worker.js';
 import type { WebhookPayload } from './webhook.service.js';
 
@@ -63,6 +73,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   lastProcessor = undefined;
   mockRecordDeliveryResult.mockResolvedValue(undefined);
+  mockRecordDeadLetter.mockResolvedValue(undefined);
   mockFetch.mockResolvedValue({ ok: true, status: 200, statusText: 'OK' });
   vi.stubGlobal('fetch', mockFetch);
   process.env.NODE_ENV = 'production';
@@ -260,6 +271,112 @@ describe('webhook.worker delivery failure bookkeeping', () => {
 
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(mockRecordDeliveryResult).not.toHaveBeenCalled();
+  });
+});
+
+describe('webhook.worker dead-letter (MEL-08)', () => {
+  function failedHandler() {
+    return mockOn.mock.calls.find(([event]) => event === 'failed')![1] as (
+      job: unknown,
+      err: Error,
+    ) => void;
+  }
+
+  it('records a persistent dead-letter entry when retries are exhausted, even without endpointId', async () => {
+    startWebhookWorker();
+    const payload = makePayload();
+    const job = {
+      id: 'job-dlq-1',
+      data: { url: 'https://example.com/hook', payload },
+      attemptsMade: 5,
+      opts: { attempts: 5 },
+    };
+    failedHandler()(job, new Error('HTTP 500: boom'));
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(mockRecordDeadLetter).toHaveBeenCalledTimes(1);
+    expect(mockRecordDeadLetter).toHaveBeenCalledWith(
+      expect.objectContaining({
+        queue: 'webhooks',
+        jobId: 'job-dlq-1',
+        jobName: 'send_webhook',
+        organizationId: 'tenant-a',
+        attemptsMade: 5,
+      }),
+    );
+    // O payload completo (que pode conter PII em `data`) NÃO vai para a DLQ — só metadados
+    // de identificação da entrega.
+    const dlqData = mockRecordDeadLetter.mock.calls[0][0].data as Record<string, unknown>;
+    expect(dlqData.payload).toBeUndefined();
+    expect(dlqData.event).toBe('call.completed');
+    expect(dlqData.webhookEventId).toBe('evt_1');
+  });
+
+  it('does not dead-letter while retry attempts remain', async () => {
+    startWebhookWorker();
+    const job = {
+      id: 'job-dlq-2',
+      data: { url: 'https://example.com/hook', payload: makePayload(), endpointId: 'ep-1' },
+      attemptsMade: 3,
+      opts: { attempts: 5 },
+    };
+    failedHandler()(job, new Error('HTTP 503'));
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(mockRecordDeadLetter).not.toHaveBeenCalled();
+    expect(mockRecordDeliveryResult).not.toHaveBeenCalled();
+  });
+
+  it('still records "failed" on the endpoint AND dead-letters on the same final failure', async () => {
+    mockFindActiveSigningSecretHash.mockResolvedValue('some-hash');
+    startWebhookWorker();
+    const job = {
+      id: 'job-dlq-3',
+      data: {
+        url: 'https://a.example.com/hook',
+        payload: makePayload(),
+        endpointId: 'ep-1',
+      },
+      attemptsMade: 5,
+      opts: { attempts: 5 },
+    };
+    failedHandler()(job, new Error('HTTP 500'));
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(mockRecordDeliveryResult).toHaveBeenCalledWith('ep-1', 'failed');
+    expect(mockRecordDeadLetter).toHaveBeenCalledWith(
+      expect.objectContaining({ queue: 'webhooks', organizationId: 'tenant-a' }),
+    );
+  });
+});
+
+describe('webhook.worker signature verification contract (receiver side)', () => {
+  it('a signature computed over a TAMPERED body does not match the header sent — receivers must reject it', async () => {
+    process.env.WEBHOOK_SIGNING_SECRET = 'deployment-secret';
+    startWebhookWorker();
+
+    await lastProcessor!({
+      id: 'job-sig-1',
+      data: { url: 'https://example.com/hook', payload: makePayload() },
+    });
+
+    const [, init] = mockFetch.mock.calls[0];
+    const sentBody = init.body as string;
+    const sentSignature = init.headers['x-birthvoices-signature'];
+
+    // Recompute over the exact body → matches (receiver accepts).
+    const valid = createHmac('sha256', 'deployment-secret').update(sentBody).digest('hex');
+    expect(sentSignature).toBe(valid);
+
+    // Recompute over a modified body (e.g. attacker changed `data`) → mismatch (receiver rejects).
+    const tampered = sentBody.replace('"s1"', '"s1-TAMPERED"');
+    expect(tampered).not.toBe(sentBody);
+    const invalid = createHmac('sha256', 'deployment-secret').update(tampered).digest('hex');
+    expect(sentSignature).not.toBe(invalid);
+
+    // Wrong secret → also mismatch.
+    const wrongSecret = createHmac('sha256', 'other-secret').update(sentBody).digest('hex');
+    expect(sentSignature).not.toBe(wrongSecret);
   });
 });
 

@@ -1,0 +1,90 @@
+name: Security - SBOM & Gates Estáticos
+
+# MEL-15 (Onda 2 / DEM-20261113-003): SBOM CycloneDX como artefato de CI + gates estáticos de
+# segurança que ainda não tinham cobertura em PR.
+#
+# O que este workflow cobre e o que NÃO cobre (para não duplicar gates existentes):
+#
+# - `sbom`: gera o SBOM CycloneDX do repositório (`npm run security:sbom` →
+#   `@cyclonedx/cyclonedx-npm`, mesmo comando já usado pelos workflows de deploy
+#   cd-homolog.yml e production.yaml) e publica `sbom.cdx.json` como artefato.
+#   Antes deste workflow o SBOM só existia no momento do deploy — agora cada PR e o scan
+#   semanal produzem um SBOM correlacionado ao commit, permitindo auditoria/retention e
+#   consumo por ferramentas externas (ex.: import do SBOM em Grype/Snyk fora do CI).
+#
+# - `rls-coverage-gate`: `npm run verify:rls-coverage`
+#   (scripts/security/check-rls-coverage.ts, criado na Onda 1 / DEM-20261113-002, handoff do
+#   Agente 15) é uma verificação 100% estática — compara models com organizationId/tenantId em
+#   prisma/schema.prisma contra ENABLE ROW LEVEL SECURITY + CREATE POLICY nas migrations, sem
+#   precisar de banco. Até aqui o script existia mas nenhum workflow o executava; este job o
+#   torna bloqueante em PR.
+#
+# Scan de vulnerabilidades de dependências: JÁ COBERTO e bloqueante em dois lugares —
+#   - ci.yml, job `trivy-scan` (fs scan Trivy, severidade HIGH/CRITICAL, exit-code 1,
+#     `.trivyignore.yaml`), que alimenta o required check `build`;
+#   - security-trivy.yml, job `trivy-fs-pr-gate` (mesma política, SARIF na aba Security).
+#   Somado a `security:audit-waivers` (`npm audit --audit-level=high`, waivers em
+#   docs/security/AUDIT_WAIVERS.md) e ao `dependency-review` (fail-on-severity: high).
+#   Por isso este workflow NÃO adiciona um segundo scan Trivy/Grype: seria runner duplicado
+#   com a mesma política, e um Grype bloqueante adicional falharia nos GHSA aceitos em
+#   AUDIT_WAIVERS.md por não ter mecanismo de waiver equivalente ao .trivyignore.yaml sem
+#   criar arquivo de configuração fora do escopo permitido (.github/workflows/**).
+#
+# Gatilhos: pull_request para main/master (mesmo padrão dos workflows de segurança
+# existentes), schedule semanal na quinta 06:00 UTC — deslocado do Trivy (segunda) e do
+# CodeQL (quarta) para não competir por runner — e workflow_dispatch.
+
+on:
+  pull_request:
+    branches: [ main, master ]
+  schedule:
+    - cron: '0 6 * * 4'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sbom:
+    name: "SBOM — CycloneDX (artefato por PR/semana)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies (para o SBOM)
+        run: npm ci --no-audit --no-fund
+
+      - name: Gerar SBOM (CycloneDX)
+        run: npm run security:sbom
+
+      - name: Upload do SBOM como artefato
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: sbom-${{ github.sha }}
+          path: sbom.cdx.json
+          retention-days: 90
+          if-no-files-found: error
+
+  rls-coverage-gate:
+    name: "RLS — cobertura de Row Level Security (bloqueante)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies (tsx para o script de verificação)
+        run: npm ci --no-audit --no-fund
+
+      - name: Verificar cobertura RLS (models tenant-bearing × migrations)
+        run: npm run verify:rls-coverage

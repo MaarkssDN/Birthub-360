@@ -2,7 +2,6 @@ import { AIMessage, type BaseMessage, HumanMessage, SystemMessage } from '@langc
 import type { RunnableConfig } from '@langchain/core/runnables';
 import { Annotation, StateGraph } from '@langchain/langgraph';
 import type { ChatOpenAI } from '@langchain/openai';
-import { z } from 'zod';
 import { checkpointer, ensureCheckpointerReady } from '../../../lib/ai/checkpointer.js';
 import { getAiModel, logAiUsage } from '../../../lib/ai/gateway.js';
 import { getTenantId } from '../../../lib/async-context.js';
@@ -34,6 +33,13 @@ import {
   semanticRouteMission,
 } from './subSwarms.config.js';
 import {
+  buildSwarmCorrelationId,
+  enforceLeadGuard,
+  fallbackDecision,
+  type SupervisorDecision,
+  supervisorDecisionSchema,
+} from './supervisor.decision.js';
+import {
   SWARM_CATALOG_TOTAL_AGENTS,
   SWARM_DEFAULT_SUB_SWARM,
   SWARM_IDENTITY,
@@ -42,8 +48,13 @@ import {
   SWARM_UNTRUSTED_CONTENT_GUARD,
 } from './swarm.constants.js';
 
+// Re-exporta a API de decisão extraída para supervisor.decision.ts (TAREFA-SANEAMENTO-009)
+// — consumidores continuam importando tudo de supervisor.agent.ts.
 export {
+  buildSwarmCorrelationId,
   detectSubSwarm,
+  enforceLeadGuard,
+  fallbackDecision,
   getAllCatalogAgents,
   matchCatalogAgents,
   type SemanticAgentMatch,
@@ -55,6 +66,7 @@ export {
   SWARM_MAX_STEPS,
   type SwarmAgentKey,
   semanticRouteMission,
+  supervisorDecisionSchema,
 };
 
 let cachedSupervisorLlm: ReturnType<typeof buildModelWithFallback> | null = null;
@@ -214,117 +226,6 @@ function buildEvent(
 
 function toAiMessage(event: SwarmEvent): AIMessage {
   return new AIMessage({ content: event.content, additional_kwargs: { swarmEvent: event } });
-}
-
-// Exportado só para teste unitário direto da validação de forma da decisão do supervisor.
-export const supervisorDecisionSchema = z.object({
-  action: z
-    .enum(['sdr', 'bdr', 'closer', 'crm', 'ops', 'finish'])
-    .describe(
-      'Qual especialista deve atuar a seguir, ou "finish" se a missão já foi suficientemente atendida.',
-    ),
-  subSwarm: z
-    .enum(['commercial', 'marketing', 'customer_success', 'operations'])
-    .optional()
-    .describe('Sub-Swarm temático direcionado para a etapa.'),
-  catalogAgentCode: z
-    .string()
-    .optional()
-    .describe(
-      'Código de um dos 379 agentes do catálogo selecionado pelo roteamento semântico, se aplicável.',
-    ),
-  instruction: z
-    .string()
-    .default('')
-    .describe(
-      'Instrução objetiva e ESPECÍFICA em português para o especialista escolhido: diga exatamente o que analisar/fazer e com base em que dado da missão. String vazia se action for "finish".',
-    ),
-  reasoning: z
-    .string()
-    .default('')
-    .describe(
-      'Uma frase curta explicando por que este especialista (e não outro) foi escolhido agora.',
-    ),
-});
-
-type SupervisorDecision = z.infer<typeof supervisorDecisionSchema>;
-
-// Exportado só para teste unitário direto do roteamento de contingência. Recebe a missão original
-// para usar como instrução de contingência — antes disto, todo fallback (parsing falhou, guard
-// interceptou) mandava um texto fixo e genérico pro especialista ("produza um resultado
-// objetivo"), descartando o pedido real do usuário justamente nos casos em que o roteamento por
-// IA não pôde ser confiado.
-export function fallbackDecision(
-  completed: SwarmAgentKey[],
-  hasLeadId: boolean,
-  mission: string = '',
-  subSwarm?: SubSwarmDomain,
-): SupervisorDecision {
-  const activeSubSwarm = subSwarm || (mission ? detectSubSwarm(mission) : 'commercial');
-  let order: SwarmAgentKey[];
-
-  if (activeSubSwarm === 'marketing') {
-    order = hasLeadId ? ['bdr', 'sdr', 'ops', 'crm'] : ['bdr', 'ops', 'crm'];
-  } else if (activeSubSwarm === 'customer_success') {
-    order = ['crm', 'ops', 'closer'];
-  } else if (activeSubSwarm === 'operations') {
-    order = ['ops', 'crm', 'bdr'];
-  } else {
-    order = hasLeadId ? ['sdr', 'bdr', 'closer', 'crm', 'ops'] : ['bdr', 'closer', 'crm', 'ops'];
-  }
-
-  const pending = order.find((agent) => !completed.includes(agent));
-  if (!pending) {
-    return {
-      action: 'finish',
-      instruction: '',
-      reasoning: 'Todos os especialistas relevantes já atuaram.',
-    };
-  }
-  return {
-    action: pending,
-    instruction:
-      mission.trim() ||
-      'Analise a missão do usuário com os dados disponíveis e produza um resultado objetivo.',
-    reasoning:
-      'Roteamento sequencial de contingência (resposta do supervisor não pôde ser interpretada).',
-  };
-}
-
-// Trava determinística: nunca aciona o Agente SDR sem um leadId real, mesmo que o LLM do
-// supervisor "esqueça" a instrução do prompt e escolha 'sdr' de qualquer forma — sdrNode
-// dependeria de get_lead_context com um ID que não existe e queimaria uma rodada inteira do
-// enxame só para produzir o mesmo erro que dava pra prever aqui. Exportado para teste unitário.
-export function enforceLeadGuard(
-  decision: SupervisorDecision,
-  context: Pick<SwarmStateType, 'leadId' | 'completed' | 'mission'> & {
-    subSwarm?: SubSwarmDomain;
-  },
-): SupervisorDecision {
-  if (decision.action !== 'sdr' || context.leadId) {
-    return decision;
-  }
-  const rerouted = fallbackDecision(
-    context.completed,
-    false,
-    context.mission,
-    context.subSwarm ?? decision.subSwarm,
-  );
-  const note = 'SDR não pode ser acionado: nenhum leadId foi informado para esta missão.';
-  return {
-    ...rerouted,
-    reasoning: rerouted.reasoning ? `${note} ${rerouted.reasoning}` : note,
-  };
-}
-
-// Correlation ID para tracing distribuído do supervisor: baseado no thread_id do checkpoint
-// (`${tenant}:${sid}`, montado em executeMission/executeMissionStream) e timestamp.
-// Decisão do Agente 07 (opção b) — ver
-// .agents/handoffs/onda-52/07-para-00-correlationid-supervisor-thread-id.md.
-export function buildSwarmCorrelationId(config?: RunnableConfig, now: number = Date.now()): string {
-  const raw = config?.configurable?.thread_id;
-  const threadId = typeof raw === 'string' && raw ? raw : 'no-thread';
-  return `swarm-${threadId}-${now}`;
 }
 
 /**

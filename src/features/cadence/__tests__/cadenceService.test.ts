@@ -387,3 +387,121 @@ describe('advanceCadenceRun — persistência do resultado após envio real conf
     expect(dispatcher.calls).toHaveLength(1);
   }, 10_000);
 });
+
+// Auto-stop pós-resposta (relatório do supervisor): a checagem de `hasLeadReplied` no início do
+// ciclo e a chamada real ao canal não são atômicas — entre elas há leituras de banco (opt-out,
+// rate limit) e as rotas manuais de pause/stop não passam pela trava. `advanceCadenceRun` agora
+// re-lê o run e re-checa a resposta imediatamente antes de `dispatcher.dispatch`; estes testes
+// provam que nenhum envio ocorre quando o sinal de parada chega nessa janela.
+describe('advanceCadenceRun — re-verificação pré-envio (auto-stop atômico)', () => {
+  function depsWith(
+    runRepo: CadenceRunRepository,
+    optOutRepo: InMemoryOptOutRepository,
+    dispatcher: CadenceDispatcher,
+    hasLeadReplied: (organizationId: string, leadId: string) => Promise<boolean>,
+  ) {
+    return {
+      runRepo,
+      optOutRepo,
+      subjectResolver: alwaysResolveSubject(),
+      dispatcher,
+      lock: noopLock(),
+      rateLimit: noopRateLimit(),
+      isWithinBusinessWindow: () => true,
+      hasLeadReplied,
+    };
+  }
+
+  function activeRun() {
+    return startCadenceRun({
+      id: 'run-1',
+      organizationId: ORG,
+      leadId: LEAD,
+      sequenceId: 'seq-1',
+      startedAt: NOW,
+    });
+  }
+
+  it('resposta do lead que chega DEPOIS da checagem inicial e ANTES do envio real impede o despacho e encerra o run', async () => {
+    const runRepo = new InMemoryCadenceRunRepository();
+    runRepo.seed(activeRun());
+    const optOutRepo = new InMemoryOptOutRepository();
+    const dispatcher = new ScriptedDispatcher({ result: 'sent' });
+
+    // Primeira chamada (início do ciclo): ainda não respondeu. Segunda (re-verificação
+    // pré-envio): a réplica chegou nesse intervalo — simula o webhook persistindo a mensagem.
+    let repliedCalls = 0;
+    const hasLeadReplied = async () => {
+      repliedCalls += 1;
+      return repliedCalls > 1;
+    };
+
+    const { run: updated, decision } = await advanceCadenceRun(
+      depsWith(runRepo, optOutRepo, dispatcher, hasLeadReplied),
+      ORG,
+      'run-1',
+      SEQUENCE,
+      NOW,
+    );
+
+    expect(decision).toEqual({ type: 'stop', reason: 'lead-reply' });
+    expect(dispatcher.calls).toHaveLength(0); // nenhum toque sai depois da resposta
+    expect(updated.status).toBe('stopped');
+    expect(updated.stopReason).toBe('lead-reply');
+    expect(repliedCalls).toBe(2); // a re-verificação realmente aconteceu
+  });
+
+  it('run parado manualmente (rota não usa a trava) entre a decisão e o envio real não despacha', async () => {
+    const inner = new InMemoryCadenceRunRepository();
+    inner.seed(activeRun());
+    // Na segunda leitura (re-verificação pré-envio) o run já está `stopped` — como ficaria se a
+    // rota POST /runs/:id/stop gravasse nesse intervalo.
+    let findCalls = 0;
+    const runRepo: CadenceRunRepository = {
+      save: (run) => inner.save(run),
+      findById: async (organizationId, id) => {
+        findCalls += 1;
+        const found = await inner.findById(organizationId, id);
+        if (findCalls > 1 && found) {
+          return { ...found, status: 'stopped', stopReason: 'manual-stop', stoppedAt: NOW };
+        }
+        return found;
+      },
+      listByOrganization: (organizationId, filter) =>
+        inner.listByOrganization(organizationId, filter),
+    };
+    const optOutRepo = new InMemoryOptOutRepository();
+    const dispatcher = new ScriptedDispatcher({ result: 'sent' });
+
+    const { run: updated, decision } = await advanceCadenceRun(
+      depsWith(runRepo, optOutRepo, dispatcher, async () => false),
+      ORG,
+      'run-1',
+      SEQUENCE,
+      NOW,
+    );
+
+    expect(decision).toEqual({ type: 'stop', reason: 'manual-stop' });
+    expect(dispatcher.calls).toHaveLength(0);
+    expect(updated.status).toBe('stopped');
+    expect(findCalls).toBe(2);
+  });
+
+  it('fluxo normal inalterado: run ativo e sem resposta despacha normalmente (re-verificação é transparente)', async () => {
+    const runRepo = new InMemoryCadenceRunRepository();
+    runRepo.seed(activeRun());
+    const optOutRepo = new InMemoryOptOutRepository();
+    const dispatcher = new ScriptedDispatcher({ result: 'sent' });
+
+    const { decision } = await advanceCadenceRun(
+      depsWith(runRepo, optOutRepo, dispatcher, async () => false),
+      ORG,
+      'run-1',
+      SEQUENCE,
+      NOW,
+    );
+
+    expect(decision.type).toBe('dispatch');
+    expect(dispatcher.calls).toHaveLength(1);
+  });
+});

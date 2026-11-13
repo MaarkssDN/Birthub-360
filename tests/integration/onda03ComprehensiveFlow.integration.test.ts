@@ -14,7 +14,6 @@ import {
   ORACLE_FIXED_NOW,
   seedRealHistory,
 } from '../unit/commercial-intelligence/oracleTestDoubles.js';
-import { adaptiveMultichannelCadenceService } from '../../src/features/cadence/services/adaptiveMultichannelCadence.service.js';
 import { recordOptOut } from '../../src/features/cadence/application/optOutService.js';
 
 describe('ONDA 03 — Fluxo Abrangente Integrado e Cinco Jornadas Comerciais E2E', () => {
@@ -26,7 +25,9 @@ describe('ONDA 03 — Fluxo Abrangente Integrado e Cinco Jornadas Comerciais E2E
     selfDrivingCrmService.clear();
     valueRealizationService.clear();
     predictiveRevenueOracleService.clear();
-    adaptiveMultichannelCadenceService.clear();
+    // adaptiveMultichannelCadenceService não tem mais clear(): enrollments e opt-outs agora
+    // persistem no Postgres (MultichannelCadenceEnrollment/OptOutRecord) e são limpos pelo
+    // cleanDatabase/integration-setup entre testes — o serviço não é exercido diretamente aqui.
   });
 
   // ──────────────────────────────────────────────────────────────────────────
