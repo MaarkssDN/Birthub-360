@@ -14,6 +14,7 @@ import {
   SlidersHorizontal,
   Smartphone,
   Sparkles,
+  Workflow,
 } from 'lucide-react';
 import type React from 'react';
 import { useId, useMemo, useState } from 'react';
@@ -25,18 +26,23 @@ import { useAuth } from '../../contexts/AuthContext.js';
 import { useOptionalTheme } from '../../contexts/ThemeContext.js';
 import { SoundFX } from '../../lib/soundEffects.js';
 
-export type HomeLayoutType = 'bento' | 'grid' | 'hub';
+export type HomeLayoutType = 'bento' | 'grid' | 'hub' | 'flow';
 
 const STORAGE_KEY = '@birthhub:home-layout';
 
 function getInitialLayout(paramLayout: string | null): HomeLayoutType {
-  if (paramLayout === 'bento' || paramLayout === 'grid' || paramLayout === 'hub') {
+  if (
+    paramLayout === 'bento' ||
+    paramLayout === 'grid' ||
+    paramLayout === 'hub' ||
+    paramLayout === 'flow'
+  ) {
     return paramLayout;
   }
   if (typeof window !== 'undefined') {
     const saved = window.localStorage.getItem(STORAGE_KEY);
-    if (saved === 'bento' || saved === 'grid' || saved === 'hub') {
-      return saved;
+    if (saved === 'bento' || saved === 'grid' || saved === 'hub' || saved === 'flow') {
+      return saved as HomeLayoutType;
     }
   }
   return 'bento';
@@ -231,6 +237,23 @@ export function CentralModulesHome() {
                   Orbital
                 </span>
               </button>
+
+              <button
+                type="button"
+                onClick={() => handleSelectLayout('flow')}
+                aria-pressed={layout === 'flow'}
+                className={`flex items-center gap-2 rounded-lg px-3.5 py-1.5 font-medium transition-all ${
+                  layout === 'flow'
+                    ? 'bg-surface text-brand font-semibold shadow-sm border border-brand/30'
+                    : 'text-ink-2 hover:text-ink'
+                }`}
+              >
+                <Workflow className="h-3.5 w-3.5" />
+                <span>Alternativa D: Esteira de Ciclo de Vendas</span>
+                <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-500">
+                  Pipeline
+                </span>
+              </button>
             </div>
           </div>
 
@@ -289,6 +312,14 @@ export function CentralModulesHome() {
 
         {layout === 'hub' && (
           <HubOrbitalView
+            modules={filteredModules}
+            onNavigate={handleNavigateToModule}
+            isDark={isDark}
+          />
+        )}
+
+        {layout === 'flow' && (
+          <WorkflowPipelineView
             modules={filteredModules}
             onNavigate={handleNavigateToModule}
             isDark={isDark}
@@ -694,6 +725,204 @@ function HubOrbitalView({ modules, onNavigate, isDark }: ProposalProps) {
                         )}
                       </div>
                     </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PROPOSTA D: ESTEIRA DA JORNADA DE VENDAS (PIPELINE FLOW)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function WorkflowPipelineView({ modules, onNavigate, isDark }: ProposalProps) {
+  const stages = useMemo(() => {
+    return [
+      {
+        id: 'discovery',
+        step: '01',
+        title: 'Atração & Inteligência de Mercado',
+        subtitle: 'Mapeamento de TAM, prospecção ativa e sinais sociais de compra',
+        color: '#FF2D9B',
+        ids: ['p02', 'm11'],
+      },
+      {
+        id: 'engagement',
+        step: '02',
+        title: 'Engajamento & Orquestração',
+        subtitle: 'Playbooks, cadências multicanal, roteiros e mesa de tratamento',
+        color: '#8B7DFF',
+        ids: ['p03', 'p08'],
+      },
+      {
+        id: 'closing',
+        step: '03',
+        title: 'Conversão & Inteligência Cognitiva',
+        subtitle: 'Pipeline CRM 360°, propostas, decisores e copiloto IA em tempo real',
+        color: '#00D4FF',
+        ids: ['p01', 'p06'],
+      },
+      {
+        id: 'predictability',
+        step: '04',
+        title: 'Previsibilidade & Escala de Performance',
+        subtitle: 'Analytics de funil, ranking, metas e forecast ponderado',
+        color: '#FFC107',
+        ids: ['p04', 'p05'],
+      },
+      {
+        id: 'ecosystem',
+        step: '05',
+        title: 'Operações, Campo & Governança',
+        subtitle: 'Automações Bitrix24, vendas em campo offline e controle corporativo',
+        color: '#FF6B35',
+        ids: ['p07', 'm10', 'm09'],
+      },
+    ];
+  }, []);
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between p-4 rounded-2xl border border-line/80 bg-surface/70 backdrop-blur-sm">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-500">
+            <Workflow className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="font-display text-sm font-bold text-ink">
+              Esteira da Jornada de Vendas — Revenue Flow 360°
+            </h3>
+            <p className="text-xs text-ink-2">
+              Visualização sequencial dos 11 módulos distribuídos pelas 5 fases da esteira comercial de receita.
+            </p>
+          </div>
+        </div>
+        <span className="hidden sm:inline-flex rounded-full bg-surface-2 px-3 py-1 font-mono text-[10px] font-semibold text-ink-2">
+          5 Etapas Consecutivas
+        </span>
+      </div>
+
+      <div className="flex flex-col gap-8">
+        {stages.map((stage) => {
+          const stageModules = modules.filter((m) => stage.ids.includes(m.id));
+          if (stageModules.length === 0) return null;
+
+          return (
+            <div
+              key={stage.id}
+              className="rounded-2xl border border-line/70 bg-surface/60 p-5 md:p-6 backdrop-blur-sm transition-all"
+            >
+              <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-line/40 pb-3">
+                <div className="flex items-center gap-3">
+                  <span
+                    className="flex h-7 w-7 items-center justify-center rounded-lg font-mono text-xs font-bold text-white shadow-sm"
+                    style={{ backgroundColor: stage.color }}
+                  >
+                    {stage.step}
+                  </span>
+                  <div>
+                    <h4 className="font-display text-base font-bold text-ink">
+                      {stage.title}
+                    </h4>
+                    <p className="text-xs text-ink-2">{stage.subtitle}</p>
+                  </div>
+                </div>
+                <span
+                  className="font-mono text-[10px] font-semibold px-2 py-0.5 rounded-full self-start sm:self-auto"
+                  style={{
+                    color: stage.color,
+                    backgroundColor: `color-mix(in srgb, ${stage.color} 12%, transparent)`,
+                  }}
+                >
+                  {stageModules.length} {stageModules.length === 1 ? 'módulo' : 'módulos'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {stageModules.map((m) => {
+                  const theme = getModuleTheme(m.id);
+                  const Icon = m.icon;
+                  const isMobileOnly = m.availability === 'mobile';
+                  const themeStyles = isDark ? theme.dark : theme.light;
+
+                  return (
+                    <motion.div
+                      key={m.id}
+                      layout
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      onClick={() => onNavigate(m)}
+                      className={`group flex flex-col justify-between rounded-xl border ${
+                        themeStyles.border
+                      } ${themeStyles.borderHover} ${
+                        themeStyles.surface
+                      } p-4 transition-all duration-200 ${theme.hoverGlow} ${
+                        isMobileOnly ? 'opacity-85' : 'cursor-pointer hover:-translate-y-1'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <span
+                            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl shadow-sm transition-transform duration-200 group-hover:scale-105"
+                            style={{
+                              backgroundColor: `color-mix(in srgb, ${theme.primaryColor} 16%, transparent)`,
+                              color: theme.primaryColor,
+                              borderColor: `color-mix(in srgb, ${theme.primaryColor} 30%, transparent)`,
+                            }}
+                          >
+                            <Icon className="h-5 w-5" aria-hidden="true" />
+                          </span>
+
+                          <span
+                            className="rounded-full px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wider"
+                            style={{
+                              backgroundColor: `color-mix(in srgb, ${theme.primaryColor} 12%, transparent)`,
+                              color: theme.primaryColor,
+                            }}
+                          >
+                            {theme.category.split('&')[0]}
+                          </span>
+                        </div>
+
+                        <h5 className="font-display text-base font-bold text-ink group-hover:text-brand transition-colors">
+                          {m.label}
+                        </h5>
+                        <p className="mt-1 text-xs text-ink-2 font-medium line-clamp-1">
+                          {m.tagline}
+                        </p>
+                        <p className="mt-2 text-xs text-ink-2/80 line-clamp-2 leading-relaxed">
+                          {theme.description}
+                        </p>
+                      </div>
+
+                      <div className="mt-4 pt-3 border-t border-line/40">
+                        <div className="flex flex-wrap gap-1 mb-2.5">
+                          {theme.features.slice(0, 2).map((feat, idx) => (
+                            <span
+                              key={idx}
+                              className="rounded bg-surface-2/80 px-1.5 py-0.5 text-[9px] text-ink-2"
+                            >
+                              {feat}
+                            </span>
+                          ))}
+                        </div>
+
+                        <div
+                          style={{ color: theme.primaryColor }}
+                          className="flex items-center justify-between text-xs font-semibold"
+                        >
+                          <span>{isMobileOnly ? 'App Mobile (Capacitor)' : 'Acessar Workspace'}</span>
+                          {!isMobileOnly && (
+                            <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
                   );
                 })}
               </div>
