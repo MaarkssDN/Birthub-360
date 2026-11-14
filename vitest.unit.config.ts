@@ -20,6 +20,9 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       clamscan: fileURLToPath(new URL('./tests/mocks/clamscan.ts', import.meta.url)),
       twilio: fileURLToPath(new URL('./tests/mocks/twilio.ts', import.meta.url)),
+      // `crawlee` não é dependência instalada (crawler roda no worker Temporal) — alias para
+      // stub, mesmo padrão de clamscan/twilio. Testes sobrescrevem com vi.mock('crawlee').
+      crawlee: fileURLToPath(new URL('./tests/mocks/crawlee.ts', import.meta.url)),
     },
   },
   test: {
