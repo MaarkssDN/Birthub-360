@@ -298,9 +298,7 @@ export function ModuleNavPanel({
                   >
                     <Icon className="h-4 w-4" aria-hidden="true" />
                   </span>
-                  <span className="min-w-0 flex-1 truncate text-left font-sans">
-                    {m.label}
-                  </span>
+                  <span className="min-w-0 flex-1 truncate text-left font-sans">{m.label}</span>
                   <span
                     className="h-2 w-2 rounded-full shrink-0 mr-0.5 transition-transform group-hover:scale-125"
                     style={{

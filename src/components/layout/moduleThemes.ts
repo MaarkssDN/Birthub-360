@@ -61,7 +61,8 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     name: 'Hub Comercial',
     shortName: 'Hub Comercial',
     tagline: 'CRM 360°, negócios e relacionamentos',
-    description: 'Centralize o pipeline de vendas, negociações ativas, empresas, contatos e mapa de decisores.',
+    description:
+      'Centralize o pipeline de vendas, negociações ativas, empresas, contatos e mapa de decisores.',
     category: 'Vendas & CRM',
     primaryColor: '#00D4FF',
     accentColor: '#38BDF8',
@@ -69,7 +70,12 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     iconBg: 'bg-[#00D4FF]/10 text-[#00D4FF]',
     borderColor: 'border-[#00D4FF]/30',
     hoverGlow: 'hover:shadow-[0_0_30px_rgba(0,212,255,0.22)]',
-    features: ['Pipeline de Vendas', 'Gestão de Negócios 360°', 'Propostas', 'Empresas & Decisores'],
+    features: [
+      'Pipeline de Vendas',
+      'Gestão de Negócios 360°',
+      'Propostas',
+      'Empresas & Decisores',
+    ],
     dark: {
       surface: 'bg-[radial-gradient(ellipse_at_top_left,rgba(0,212,255,0.08),rgba(13,13,13,0.95))]',
       surfaceElevated: 'bg-[rgba(0,212,255,0.06)]',
@@ -82,7 +88,8 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       taglineText: 'text-ink-2',
     },
     light: {
-      surface: 'bg-[radial-gradient(ellipse_at_top_left,rgba(0,212,255,0.09),rgba(255,255,255,0.98))]',
+      surface:
+        'bg-[radial-gradient(ellipse_at_top_left,rgba(0,212,255,0.09),rgba(255,255,255,0.98))]',
       surfaceElevated: 'bg-[#F0F9FF]',
       border: 'border-[rgba(0,180,225,0.30)]',
       borderHover: 'hover:border-[#0284C7]',
@@ -99,7 +106,8 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     name: 'Inteligência de Mercado',
     shortName: 'Inteligência de Mercado',
     tagline: 'Prospecção, LDR e dossiês de conta',
-    description: 'Motores de busca avançada, pesquisa LDR, qualificação de leads e inteligência competitiva.',
+    description:
+      'Motores de busca avançada, pesquisa LDR, qualificação de leads e inteligência competitiva.',
     category: 'Prospecção & Dados',
     primaryColor: '#FF2D9B',
     accentColor: '#F43F5E',
@@ -109,7 +117,8 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     hoverGlow: 'hover:shadow-[0_0_30px_rgba(255,45,155,0.22)]',
     features: ['Prospecção Ativa', 'Pesquisa LDR', 'Dossiês de Contas', 'Hub de Mercado'],
     dark: {
-      surface: 'bg-[radial-gradient(ellipse_at_top_left,rgba(255,45,155,0.08),rgba(13,13,13,0.95))]',
+      surface:
+        'bg-[radial-gradient(ellipse_at_top_left,rgba(255,45,155,0.08),rgba(13,13,13,0.95))]',
       surfaceElevated: 'bg-[rgba(255,45,155,0.06)]',
       border: 'border-[rgba(255,45,155,0.25)]',
       borderHover: 'hover:border-[#FF2D9B]',
@@ -120,7 +129,8 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       taglineText: 'text-ink-2',
     },
     light: {
-      surface: 'bg-[radial-gradient(ellipse_at_top_left,rgba(255,45,155,0.09),rgba(255,255,255,0.98))]',
+      surface:
+        'bg-[radial-gradient(ellipse_at_top_left,rgba(255,45,155,0.09),rgba(255,255,255,0.98))]',
       surfaceElevated: 'bg-[#FFF1F2]',
       border: 'border-[rgba(244,63,94,0.30)]',
       borderHover: 'hover:border-[#E11D48]',
@@ -137,7 +147,8 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     name: 'Orquestração de Vendas',
     shortName: 'Orquestração de Vendas',
     tagline: 'Jornadas, cadências, rotinas e conteúdo',
-    description: 'Estruture o playbook comercial, cadências multicanal, roleplay com IA, roteiros e rotinas.',
+    description:
+      'Estruture o playbook comercial, cadências multicanal, roleplay com IA, roteiros e rotinas.',
     category: 'Processos & Playbooks',
     primaryColor: '#8B7DFF',
     accentColor: '#6366F1',
@@ -145,9 +156,15 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     iconBg: 'bg-[#8B7DFF]/10 text-[#8B7DFF]',
     borderColor: 'border-[#8B7DFF]/30',
     hoverGlow: 'hover:shadow-[0_0_30px_rgba(139,125,255,0.22)]',
-    features: ['Jornadas Comerciais', 'Cadências Multicanal', 'Playbooks & Roteiros', 'Roleplay IA & Academy'],
+    features: [
+      'Jornadas Comerciais',
+      'Cadências Multicanal',
+      'Playbooks & Roteiros',
+      'Roleplay IA & Academy',
+    ],
     dark: {
-      surface: 'bg-[radial-gradient(ellipse_at_top_left,rgba(139,125,255,0.09),rgba(13,13,13,0.95))]',
+      surface:
+        'bg-[radial-gradient(ellipse_at_top_left,rgba(139,125,255,0.09),rgba(13,13,13,0.95))]',
       surfaceElevated: 'bg-[rgba(139,125,255,0.07)]',
       border: 'border-[rgba(139,125,255,0.28)]',
       borderHover: 'hover:border-[#8B7DFF]',
@@ -158,7 +175,8 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       taglineText: 'text-ink-2',
     },
     light: {
-      surface: 'bg-[radial-gradient(ellipse_at_top_left,rgba(139,125,255,0.09),rgba(255,255,255,0.98))]',
+      surface:
+        'bg-[radial-gradient(ellipse_at_top_left,rgba(139,125,255,0.09),rgba(255,255,255,0.98))]',
       surfaceElevated: 'bg-[#EEF2FF]',
       border: 'border-[rgba(99,102,241,0.30)]',
       borderHover: 'hover:border-[#4F46E5]',
@@ -175,7 +193,8 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     name: 'Performance Comercial',
     shortName: 'Performance Comercial',
     tagline: 'Analytics, gamificação e relatórios',
-    description: 'Monitore KPIs em tempo real, ranking de vendedores, taxas de conversão e relatórios avançados.',
+    description:
+      'Monitore KPIs em tempo real, ranking de vendedores, taxas de conversão e relatórios avançados.',
     category: 'Analytics & Métricas',
     primaryColor: '#FFC107',
     accentColor: '#F59E0B',
@@ -183,7 +202,12 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     iconBg: 'bg-[#FFC107]/10 text-[#FFC107]',
     borderColor: 'border-[#FFC107]/30',
     hoverGlow: 'hover:shadow-[0_0_30px_rgba(255,193,7,0.22)]',
-    features: ['Cockpit de Analytics', 'Análise Win/Loss', 'Relatórios Avançados', 'Gamificação & Ranking'],
+    features: [
+      'Cockpit de Analytics',
+      'Análise Win/Loss',
+      'Relatórios Avançados',
+      'Gamificação & Ranking',
+    ],
     dark: {
       surface: 'bg-[radial-gradient(ellipse_at_top_left,rgba(255,193,7,0.08),rgba(13,13,13,0.95))]',
       surfaceElevated: 'bg-[rgba(255,193,7,0.06)]',
@@ -196,7 +220,8 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       taglineText: 'text-ink-2',
     },
     light: {
-      surface: 'bg-[radial-gradient(ellipse_at_top_left,rgba(255,193,7,0.10),rgba(255,255,255,0.98))]',
+      surface:
+        'bg-[radial-gradient(ellipse_at_top_left,rgba(255,193,7,0.10),rgba(255,255,255,0.98))]',
       surfaceElevated: 'bg-[#FFFBEB]',
       border: 'border-[rgba(245,158,11,0.32)]',
       borderHover: 'hover:border-[#D97706]',
@@ -213,7 +238,8 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     name: 'Previsibilidade Comercial',
     shortName: 'Previsibilidade Comercial',
     tagline: 'Forecast, metas e pipeline ponderado',
-    description: 'Projete o fechamento do trimestre, acompanhe metas de receita e pondere riscos de funil.',
+    description:
+      'Projete o fechamento do trimestre, acompanhe metas de receita e pondere riscos de funil.',
     category: 'Forecast & Metas',
     primaryColor: '#10B981',
     accentColor: '#059669',
@@ -221,9 +247,15 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     iconBg: 'bg-[#10B981]/10 text-[#10B981]',
     borderColor: 'border-[#10B981]/30',
     hoverGlow: 'hover:shadow-[0_0_30px_rgba(16,185,129,0.22)]',
-    features: ['Modelagem de Forecast', 'Metas e Projeções', 'Pipeline Ponderado', 'Previsão de Receita'],
+    features: [
+      'Modelagem de Forecast',
+      'Metas e Projeções',
+      'Pipeline Ponderado',
+      'Previsão de Receita',
+    ],
     dark: {
-      surface: 'bg-[radial-gradient(ellipse_at_top_left,rgba(16,185,129,0.08),rgba(13,13,13,0.95))]',
+      surface:
+        'bg-[radial-gradient(ellipse_at_top_left,rgba(16,185,129,0.08),rgba(13,13,13,0.95))]',
       surfaceElevated: 'bg-[rgba(16,185,129,0.06)]',
       border: 'border-[rgba(16,185,129,0.25)]',
       borderHover: 'hover:border-[#10B981]',
@@ -234,7 +266,8 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       taglineText: 'text-ink-2',
     },
     light: {
-      surface: 'bg-[radial-gradient(ellipse_at_top_left,rgba(16,185,129,0.09),rgba(255,255,255,0.98))]',
+      surface:
+        'bg-[radial-gradient(ellipse_at_top_left,rgba(16,185,129,0.09),rgba(255,255,255,0.98))]',
       surfaceElevated: 'bg-[#ECFDF5]',
       border: 'border-[rgba(16,185,129,0.30)]',
       borderHover: 'hover:border-[#059669]',
@@ -251,7 +284,8 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     name: 'Inteligência Artificial',
     shortName: 'Inteligência Artificial',
     tagline: 'Copiloto, sinais, riscos e conhecimento',
-    description: 'Copiloto de negociação, radar preditivo de riscos em deals e base de conhecimento autônoma.',
+    description:
+      'Copiloto de negociação, radar preditivo de riscos em deals e base de conhecimento autônoma.',
     category: 'IA & Automação Cognitiva',
     primaryColor: '#A855F7',
     accentColor: '#9333EA',
@@ -259,9 +293,15 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     iconBg: 'bg-[#A855F7]/10 text-[#A855F7]',
     borderColor: 'border-[#A855F7]/32',
     hoverGlow: 'hover:shadow-[0_0_30px_rgba(168,85,247,0.24)]',
-    features: ['Copiloto IA de Vendas', 'Radar de Sinais & Riscos', 'Alertas de Deals em Risco', 'Base de Conhecimento'],
+    features: [
+      'Copiloto IA de Vendas',
+      'Radar de Sinais & Riscos',
+      'Alertas de Deals em Risco',
+      'Base de Conhecimento',
+    ],
     dark: {
-      surface: 'bg-[radial-gradient(ellipse_at_top_left,rgba(168,85,247,0.09),rgba(13,13,13,0.95))]',
+      surface:
+        'bg-[radial-gradient(ellipse_at_top_left,rgba(168,85,247,0.09),rgba(13,13,13,0.95))]',
       surfaceElevated: 'bg-[rgba(168,85,247,0.07)]',
       border: 'border-[rgba(168,85,247,0.28)]',
       borderHover: 'hover:border-[#A855F7]',
@@ -272,7 +312,8 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       taglineText: 'text-ink-2',
     },
     light: {
-      surface: 'bg-[radial-gradient(ellipse_at_top_left,rgba(168,85,247,0.09),rgba(255,255,255,0.98))]',
+      surface:
+        'bg-[radial-gradient(ellipse_at_top_left,rgba(168,85,247,0.09),rgba(255,255,255,0.98))]',
       surfaceElevated: 'bg-[#FAF5FF]',
       border: 'border-[rgba(168,85,247,0.30)]',
       borderHover: 'hover:border-[#9333EA]',
@@ -289,7 +330,8 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     name: 'Automação & Conectividade',
     shortName: 'Automação & Conectividade',
     tagline: 'Automações, integrações e Bitrix24',
-    description: 'Integre ecossistemas externos, sincronize com Bitrix24, dispare webhooks e gerencie fluxos.',
+    description:
+      'Integre ecossistemas externos, sincronize com Bitrix24, dispare webhooks e gerencie fluxos.',
     category: 'Integrações & Webhooks',
     primaryColor: '#FF6B35',
     accentColor: '#EA580C',
@@ -297,9 +339,15 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     iconBg: 'bg-[#FF6B35]/10 text-[#FF6B35]',
     borderColor: 'border-[#FF6B35]/30',
     hoverGlow: 'hover:shadow-[0_0_30px_rgba(255,107,53,0.24)]',
-    features: ['Fluxos de Automação', 'Sincronizador Bitrix24', 'Webhooks & Eventos', 'Integrações Customizadas'],
+    features: [
+      'Fluxos de Automação',
+      'Sincronizador Bitrix24',
+      'Webhooks & Eventos',
+      'Integrações Customizadas',
+    ],
     dark: {
-      surface: 'bg-[radial-gradient(ellipse_at_top_left,rgba(255,107,53,0.08),rgba(13,13,13,0.95))]',
+      surface:
+        'bg-[radial-gradient(ellipse_at_top_left,rgba(255,107,53,0.08),rgba(13,13,13,0.95))]',
       surfaceElevated: 'bg-[rgba(255,107,53,0.06)]',
       border: 'border-[rgba(255,107,53,0.25)]',
       borderHover: 'hover:border-[#FF6B35]',
@@ -310,7 +358,8 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       taglineText: 'text-ink-2',
     },
     light: {
-      surface: 'bg-[radial-gradient(ellipse_at_top_left,rgba(255,107,53,0.09),rgba(255,255,255,0.98))]',
+      surface:
+        'bg-[radial-gradient(ellipse_at_top_left,rgba(255,107,53,0.09),rgba(255,255,255,0.98))]',
       surfaceElevated: 'bg-[#FFF7ED]',
       border: 'border-[rgba(234,88,12,0.30)]',
       borderHover: 'hover:border-[#C2410C]',
@@ -327,7 +376,8 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     name: 'Engajamento Comercial',
     shortName: 'Engajamento Comercial',
     tagline: 'Voz, telefonia e mesa de tratamento',
-    description: 'Mesa de tratamento rápido, roteamento de chamadas e engajamento direto de contatos quentes.',
+    description:
+      'Mesa de tratamento rápido, roteamento de chamadas e engajamento direto de contatos quentes.',
     category: 'Voz & Telefonia',
     primaryColor: '#FF3366',
     accentColor: '#E11D48',
@@ -335,9 +385,15 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     iconBg: 'bg-[#FF3366]/10 text-[#FF3366]',
     borderColor: 'border-[#FF3366]/30',
     hoverGlow: 'hover:shadow-[0_0_30px_rgba(255,51,102,0.22)]',
-    features: ['Mesa de Tratamento', 'SLA de Primeiro Contato', 'Gestão de Fila Rápida', 'Hub de Engajamento'],
+    features: [
+      'Mesa de Tratamento',
+      'SLA de Primeiro Contato',
+      'Gestão de Fila Rápida',
+      'Hub de Engajamento',
+    ],
     dark: {
-      surface: 'bg-[radial-gradient(ellipse_at_top_left,rgba(255,51,102,0.08),rgba(13,13,13,0.95))]',
+      surface:
+        'bg-[radial-gradient(ellipse_at_top_left,rgba(255,51,102,0.08),rgba(13,13,13,0.95))]',
       surfaceElevated: 'bg-[rgba(255,51,102,0.06)]',
       border: 'border-[rgba(255,51,102,0.25)]',
       borderHover: 'hover:border-[#FF3366]',
@@ -348,7 +404,8 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       taglineText: 'text-ink-2',
     },
     light: {
-      surface: 'bg-[radial-gradient(ellipse_at_top_left,rgba(255,51,102,0.09),rgba(255,255,255,0.98))]',
+      surface:
+        'bg-[radial-gradient(ellipse_at_top_left,rgba(255,51,102,0.09),rgba(255,255,255,0.98))]',
       surfaceElevated: 'bg-[#FFF1F2]',
       border: 'border-[rgba(225,29,72,0.30)]',
       borderHover: 'hover:border-[#BE123C]',
@@ -365,7 +422,8 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     name: 'Admin & Operations',
     shortName: 'Admin & Operations',
     tagline: 'Equipe, acessos, consumo e configurações',
-    description: 'Gestão de usuários, permissões de módulos, consumo de IA, auditoria e ajustes do sistema.',
+    description:
+      'Gestão de usuários, permissões de módulos, consumo de IA, auditoria e ajustes do sistema.',
     category: 'Administração & Governança',
     primaryColor: '#94A3B8',
     accentColor: '#64748B',
@@ -373,9 +431,15 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     iconBg: 'bg-[#94A3B8]/10 text-[#94A3B8]',
     borderColor: 'border-[#94A3B8]/30',
     hoverGlow: 'hover:shadow-[0_0_30px_rgba(148,163,184,0.20)]',
-    features: ['Gestão de Equipe', 'Controle de Acesso RBAC', 'Consumo de IA & Tokens', 'Configurações Globais'],
+    features: [
+      'Gestão de Equipe',
+      'Controle de Acesso RBAC',
+      'Consumo de IA & Tokens',
+      'Configurações Globais',
+    ],
     dark: {
-      surface: 'bg-[radial-gradient(ellipse_at_top_left,rgba(148,163,184,0.08),rgba(13,13,13,0.95))]',
+      surface:
+        'bg-[radial-gradient(ellipse_at_top_left,rgba(148,163,184,0.08),rgba(13,13,13,0.95))]',
       surfaceElevated: 'bg-[rgba(148,163,184,0.06)]',
       border: 'border-[rgba(148,163,184,0.25)]',
       borderHover: 'hover:border-[#CBD5E1]',
@@ -386,7 +450,8 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       taglineText: 'text-ink-2',
     },
     light: {
-      surface: 'bg-[radial-gradient(ellipse_at_top_left,rgba(148,163,184,0.09),rgba(255,255,255,0.98))]',
+      surface:
+        'bg-[radial-gradient(ellipse_at_top_left,rgba(148,163,184,0.09),rgba(255,255,255,0.98))]',
       surfaceElevated: 'bg-[#F8FAFC]',
       border: 'border-[rgba(100,116,139,0.30)]',
       borderHover: 'hover:border-[#475569]',
@@ -403,7 +468,8 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     name: 'Mobile & Field Sales',
     shortName: 'Mobile & Field Sales',
     tagline: 'Vendas em campo, offline-first e check-in',
-    description: 'Aplicativo de bolso para vendedores externos com sincronização automática e geolocalização.',
+    description:
+      'Aplicativo de bolso para vendedores externos com sincronização automática e geolocalização.',
     category: 'App Mobile (Capacitor)',
     primaryColor: '#06B6D4',
     accentColor: '#0891B2',
@@ -411,7 +477,12 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     iconBg: 'bg-[#06B6D4]/10 text-[#06B6D4]',
     borderColor: 'border-[#06B6D4]/30',
     hoverGlow: 'hover:shadow-[0_0_30px_rgba(6,182,212,0.22)]',
-    features: ['Vendas em Campo', 'Sincronização Offline', 'Check-in de Visitas', 'App Nativo Android'],
+    features: [
+      'Vendas em Campo',
+      'Sincronização Offline',
+      'Check-in de Visitas',
+      'App Nativo Android',
+    ],
     dark: {
       surface: 'bg-[radial-gradient(ellipse_at_top_left,rgba(6,182,212,0.08),rgba(13,13,13,0.95))]',
       surfaceElevated: 'bg-[rgba(6,182,212,0.06)]',
@@ -424,7 +495,8 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       taglineText: 'text-ink-2',
     },
     light: {
-      surface: 'bg-[radial-gradient(ellipse_at_top_left,rgba(6,182,212,0.09),rgba(255,255,255,0.98))]',
+      surface:
+        'bg-[radial-gradient(ellipse_at_top_left,rgba(6,182,212,0.09),rgba(255,255,255,0.98))]',
       surfaceElevated: 'bg-[#F0FDFA]',
       border: 'border-[rgba(8,145,178,0.30)]',
       borderHover: 'hover:border-[#0E7490]',
@@ -441,7 +513,8 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     name: 'Social Selling',
     shortName: 'Social Selling',
     tagline: 'Sinais, copy e abordagem em 1 clique',
-    description: 'Identifique gatilhos de compra em redes profissionais e gere abordagens personalizadas com IA.',
+    description:
+      'Identifique gatilhos de compra em redes profissionais e gere abordagens personalizadas com IA.',
     category: 'Vendas Sociais & Sinais',
     primaryColor: '#D946EF',
     accentColor: '#C026D3',
@@ -449,9 +522,15 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     iconBg: 'bg-[#D946EF]/10 text-[#D946EF]',
     borderColor: 'border-[#D946EF]/30',
     hoverGlow: 'hover:shadow-[0_0_30px_rgba(217,70,239,0.22)]',
-    features: ['Radar de Sinais Sociais', 'Geração de Copy IA', 'Abordagem em 1 Clique', 'Extensão de Prospecção'],
+    features: [
+      'Radar de Sinais Sociais',
+      'Geração de Copy IA',
+      'Abordagem em 1 Clique',
+      'Extensão de Prospecção',
+    ],
     dark: {
-      surface: 'bg-[radial-gradient(ellipse_at_top_left,rgba(217,70,239,0.08),rgba(13,13,13,0.95))]',
+      surface:
+        'bg-[radial-gradient(ellipse_at_top_left,rgba(217,70,239,0.08),rgba(13,13,13,0.95))]',
       surfaceElevated: 'bg-[rgba(217,70,239,0.06)]',
       border: 'border-[rgba(217,70,239,0.25)]',
       borderHover: 'hover:border-[#D946EF]',
@@ -462,7 +541,8 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       taglineText: 'text-ink-2',
     },
     light: {
-      surface: 'bg-[radial-gradient(ellipse_at_top_left,rgba(217,70,239,0.09),rgba(255,255,255,0.98))]',
+      surface:
+        'bg-[radial-gradient(ellipse_at_top_left,rgba(217,70,239,0.09),rgba(255,255,255,0.98))]',
       surfaceElevated: 'bg-[#FDF4FF]',
       border: 'border-[rgba(192,38,211,0.30)]',
       borderHover: 'hover:border-[#A21CAF]',
