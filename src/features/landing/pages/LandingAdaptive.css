@@ -1435,6 +1435,7 @@ html:not(.dark) .b360-adaptive-landing .b360-feature-card,
 html.light .b360-adaptive-landing .b360-feature-card,
 [data-theme="light"] .b360-adaptive-landing .b360-feature-card {
   border: 1px solid rgba(203, 213, 225, 0.9);
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -1706,7 +1707,7 @@ html.light .b360-adaptive-landing .b360-side .b360-side-brand,
 html:not(.dark) .b360-adaptive-landing .b360-side small,
 html.light .b360-adaptive-landing .b360-side small,
 [data-theme="light"] .b360-adaptive-landing .b360-side small {
-  color: #0284c7;
+  color: #7dd3fc;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-side button,
@@ -1734,9 +1735,9 @@ html.light .b360-adaptive-landing .b360-side button.b360-active,
 html.light .b360-adaptive-landing .b360-side a.b360-active,
 [data-theme="light"] .b360-adaptive-landing .b360-side button.b360-active,
 [data-theme="light"] .b360-adaptive-landing .b360-side a.b360-active {
-  background: rgba(2, 132, 199, 0.1);
-  border: 1px solid rgba(2, 132, 199, 0.35);
-  color: #0284c7;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #7dd3fc;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-side .b360-dot,
@@ -1762,6 +1763,7 @@ html:not(.dark) .b360-adaptive-landing .b360-supervisor,
 html.light .b360-adaptive-landing .b360-supervisor,
 [data-theme="light"] .b360-adaptive-landing .b360-supervisor {
   border: 1px solid rgba(2, 132, 199, 0.22);
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -1783,6 +1785,7 @@ html.light .b360-adaptive-landing .b360-supervisor p,
 html:not(.dark) .b360-adaptive-landing .b360-metric,
 html.light .b360-adaptive-landing .b360-metric,
 [data-theme="light"] .b360-adaptive-landing .b360-metric {
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -1799,12 +1802,13 @@ html.light .b360-adaptive-landing .b360-metric small,
 html:not(.dark) .b360-adaptive-landing .b360-metric strong,
 html.light .b360-adaptive-landing .b360-metric strong,
 [data-theme="light"] .b360-adaptive-landing .b360-metric strong {
-  color: #0284c7;
+  color: #7dd3fc;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-module,
 html.light .b360-adaptive-landing .b360-module,
 [data-theme="light"] .b360-adaptive-landing .b360-module {
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -2931,6 +2935,7 @@ html.light .b360-adaptive-landing .b360-hero-console,
     0 20px 45px rgba(15, 23, 42, 0.08),
     0 0 25px rgba(2, 132, 199, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  background-color: #0d1a32;
   background:
     radial-gradient(ellipse at 90% 0%, rgba(2, 132, 199, 0.08) 0%, transparent 60%),
     radial-gradient(ellipse at 10% 100%, rgba(219, 39, 119, 0.06) 0%, transparent 60%),
@@ -2959,6 +2964,7 @@ html.light .b360-adaptive-landing .b360-kpi-label,
 html:not(.dark) .b360-adaptive-landing .b360-stream-item,
 html.light .b360-adaptive-landing .b360-stream-item,
 [data-theme="light"] .b360-adaptive-landing .b360-stream-item {
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -3075,6 +3081,7 @@ html.light .b360-adaptive-landing .b360-card-visual,
 html:not(.dark) .b360-adaptive-landing .b360-kanban-card,
 html.light .b360-adaptive-landing .b360-kanban-card,
 [data-theme="light"] .b360-adaptive-landing .b360-kanban-card {
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -3102,6 +3109,7 @@ html.light .b360-adaptive-landing .b360-copilot-recommendation,
 html:not(.dark) .b360-adaptive-landing .b360-integ-chip,
 html.light .b360-adaptive-landing .b360-integ-chip,
 [data-theme="light"] .b360-adaptive-landing .b360-integ-chip {
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -3113,6 +3121,7 @@ html.light .b360-adaptive-landing .b360-integ-chip,
 html:not(.dark) .b360-adaptive-landing .b360-problem-card,
 html.light .b360-adaptive-landing .b360-problem-card,
 [data-theme="light"] .b360-adaptive-landing .b360-problem-card {
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -3144,6 +3153,7 @@ html.light .b360-adaptive-landing .b360-problem-kpi,
 html:not(.dark) .b360-adaptive-landing .b360-platform-card,
 html.light .b360-adaptive-landing .b360-platform-card,
 [data-theme="light"] .b360-adaptive-landing .b360-platform-card {
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -3174,6 +3184,7 @@ html.light .b360-adaptive-landing .b360-platform-badge,
 html:not(.dark) .b360-adaptive-landing .b360-flow-card,
 html.light .b360-adaptive-landing .b360-flow-card,
 [data-theme="light"] .b360-adaptive-landing .b360-flow-card {
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -3196,14 +3207,14 @@ html.light .b360-adaptive-landing .b360-flow-card p,
 html:not(.dark) .b360-adaptive-landing .b360-flow-num-badge,
 html.light .b360-adaptive-landing .b360-flow-num-badge,
 [data-theme="light"] .b360-adaptive-landing .b360-flow-num-badge {
-  color: #0369a1;
+  color: #7dd3fc;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-flow-kpi,
 html.light .b360-adaptive-landing .b360-flow-kpi,
 [data-theme="light"] .b360-adaptive-landing .b360-flow-kpi {
-  color: #0369a1;
-  background: rgba(3, 105, 161, 0.1);
+  color: #7dd3fc;
+  background: rgba(56, 189, 248, 0.12);
 }
 
 /* Console KPI & Stream Contrast fixes for Light Mode */
