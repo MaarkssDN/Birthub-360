@@ -223,7 +223,7 @@ export function CrmBoardVitals({ pipelineMetrics }: { pipelineMetrics: PipelineM
       <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-2 border border-line text-xs">
         <TrendingUp className="w-3.5 h-3.5 text-ok" />
         <span className="font-mono text-[10px] font-bold text-ink-2 uppercase">Pipeline:</span>
-        <span className="font-extrabold text-ok">
+        <span className="font-extrabold text-ok-active dark:text-ok">
           {pipelineMetrics.totalAmount > 0
             ? `R$ ${pipelineMetrics.totalAmount.toLocaleString('pt-BR')}`
             : 'R$ 0,00'}

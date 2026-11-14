@@ -1526,6 +1526,7 @@ html.light .b360-adaptive-landing .b360-flow-step,
 html:not(.dark) .b360-adaptive-landing .b360-copilot-card,
 html.light .b360-adaptive-landing .b360-copilot-card,
 [data-theme="light"] .b360-adaptive-landing .b360-copilot-card {
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -1538,22 +1539,22 @@ html.light .b360-adaptive-landing .b360-copilot-card,
 html:not(.dark) .b360-adaptive-landing .b360-copilot-top,
 html.light .b360-adaptive-landing .b360-copilot-top,
 [data-theme="light"] .b360-adaptive-landing .b360-copilot-top {
-  color: #0369a1;
+  color: #7dd3fc;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-copilot-top small,
 html.light .b360-adaptive-landing .b360-copilot-top small,
 [data-theme="light"] .b360-adaptive-landing .b360-copilot-top small {
-  color: #0369a1;
+  color: #94a3b8;
   font-weight: 600;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-copilot-top span,
 html.light .b360-adaptive-landing .b360-copilot-top span,
 [data-theme="light"] .b360-adaptive-landing .b360-copilot-top span {
-  background: rgba(2, 132, 199, 0.08);
-  border-color: rgba(2, 132, 199, 0.22);
-  color: #0369a1;
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.3);
+  color: #7dd3fc;
   font-weight: 600;
 }
 
@@ -1592,6 +1593,7 @@ html.light .b360-adaptive-landing .b360-suggestion-box p,
 html:not(.dark) .b360-adaptive-landing .b360-integration-card,
 html.light .b360-adaptive-landing .b360-integration-card,
 [data-theme="light"] .b360-adaptive-landing .b360-integration-card {
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -1645,7 +1647,7 @@ html.light .b360-adaptive-landing .b360-status-pill.in_dev,
 html:not(.dark) .b360-adaptive-landing .b360-status-pill.planned,
 html.light .b360-adaptive-landing .b360-status-pill.planned,
 [data-theme="light"] .b360-adaptive-landing .b360-status-pill.planned {
-  color: #94a3b8;
+  color: #64748b;
   background: rgba(100, 116, 139, 0.12);
   border: 1px solid rgba(71, 85, 105, 0.35);
 }
@@ -1654,9 +1656,9 @@ html.light .b360-adaptive-landing .b360-status-pill.planned,
 html:not(.dark) .b360-adaptive-landing .b360-copilot-deal-tag,
 html.light .b360-adaptive-landing .b360-copilot-deal-tag,
 [data-theme="light"] .b360-adaptive-landing .b360-copilot-deal-tag {
-  color: #9d174d;
-  background: rgba(219, 39, 119, 0.1);
-  border: 1px solid rgba(190, 24, 93, 0.3);
+  color: #f472b6;
+  background: rgba(244, 114, 182, 0.12);
+  border: 1px solid rgba(244, 114, 182, 0.35);
 }
 
 /* Final CTA Light */
@@ -1679,13 +1681,14 @@ html.light .b360-adaptive-landing .b360-final-cta h2,
 html:not(.dark) .b360-adaptive-landing .b360-final-cta p,
 html.light .b360-adaptive-landing .b360-final-cta p,
 [data-theme="light"] .b360-adaptive-landing .b360-final-cta p {
-  color: #94a3b8;
+  color: #475569;
 }
 
 /* Command Center Dashboard Light */
 html:not(.dark) .b360-adaptive-landing .b360-side,
 html.light .b360-adaptive-landing .b360-side,
 [data-theme="light"] .b360-adaptive-landing .b360-side {
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -1833,7 +1836,7 @@ html:not(.dark) .b360-adaptive-landing .b360-footer,
 html.light .b360-adaptive-landing .b360-footer,
 [data-theme="light"] .b360-adaptive-landing .b360-footer {
   border-top: 1px solid rgba(226, 232, 240, 0.9);
-  color: #94a3b8;
+  color: #64748b;
 }
 
 /* Dialog Modals Light */
@@ -1846,6 +1849,7 @@ html.light .b360-adaptive-landing .b360-dialog-backdrop,
 html:not(.dark) .b360-adaptive-landing .b360-dialog-box,
 html.light .b360-adaptive-landing .b360-dialog-box,
 [data-theme="light"] .b360-adaptive-landing .b360-dialog-box {
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -1853,13 +1857,13 @@ html.light .b360-adaptive-landing .b360-dialog-box,
   box-shadow:
     0 25px 60px rgba(15, 23, 42, 0.2),
     0 0 20px rgba(2, 132, 199, 0.1);
-  color: #1e293b;
+  color: #e2e8f0;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-dialog-box h2,
 html.light .b360-adaptive-landing .b360-dialog-box h2,
 [data-theme="light"] .b360-adaptive-landing .b360-dialog-box h2 {
-  color: #0284c7;
+  color: #38bdf8;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-dialog-box p,
@@ -1872,7 +1876,7 @@ html:not(.dark) .b360-adaptive-landing .b360-modalclose,
 html.light .b360-adaptive-landing .b360-modalclose,
 [data-theme="light"] .b360-adaptive-landing .b360-modalclose {
   background: #f1f5f9;
-  color: #94a3b8;
+  color: #64748b;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-modalclose:hover,
@@ -3333,7 +3337,7 @@ html.light .b360-adaptive-landing .b360-footer-grid,
 html:not(.dark) .b360-adaptive-landing .b360-footer-col h4,
 html.light .b360-adaptive-landing .b360-footer-col h4,
 [data-theme="light"] .b360-adaptive-landing .b360-footer-col h4 {
-  color: #38bdf8;
+  color: #0369a1;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-footer-col ul button,
@@ -3345,7 +3349,7 @@ html.light .b360-adaptive-landing .b360-footer-col ul span,
 [data-theme="light"] .b360-adaptive-landing .b360-footer-col ul button,
 [data-theme="light"] .b360-adaptive-landing .b360-footer-col ul a,
 [data-theme="light"] .b360-adaptive-landing .b360-footer-col ul span {
-  color: #94a3b8;
+  color: #64748b;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-footer-col ul button:hover,
