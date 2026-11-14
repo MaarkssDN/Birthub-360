@@ -6,3 +6,4 @@ sendo carregado normalmente.
 
 @AGENTS.md
 @docs/orchestration/PROTOCOLO.md
+@docs/orchestration/PROTOCOLO_QUALIDADE_E_ACEITE.md
