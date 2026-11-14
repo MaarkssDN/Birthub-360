@@ -3,7 +3,7 @@
 **De:** Agente 02 — Produto e UX
 **Para:** Agente 04 — CRM e BI
 **Onda:** 02
-**Status:** aberto
+**Status:** resolvido
 **Prioridade:** normal
 **Bloqueador-ref:** nenhum
 **Sprint destino:** Onda 02 — Frente 02/03
@@ -61,3 +61,10 @@ verificando light + dark. Sem mudança de comportamento.
 - `CrmBoard.tsx` (src/components, já migrado) consome esses componentes — a
   inconsistência fica visível na mesma tela.
 - `ProspectingHub.tsx` (P02) já está 100% em tokens (0 hex) — serve de referência.
+
+## Resolução — verificado pelo Agente 00 (2026-11-14)
+
+**Status: resolvido.** Verificação em `main` (`528580fbf`): zero ocorrências de
+hex `#RRGGBB` em todo `src/features/crm/**` — `KanbanCard.tsx`,
+`KanbanColumn.tsx` e `KanbanBoard.tsx` já estão tokenizados (incluindo a remoção
+do lime off-palette `#D4F434`). Evidência: `grep -rEn "#[0-9a-fA-F]{6}" src/features/crm` → 0 matches.
