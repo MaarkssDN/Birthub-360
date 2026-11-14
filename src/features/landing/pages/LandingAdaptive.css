@@ -1435,10 +1435,10 @@ html:not(.dark) .b360-adaptive-landing .b360-feature-card,
 html.light .b360-adaptive-landing .b360-feature-card,
 [data-theme="light"] .b360-adaptive-landing .b360-feature-card {
   border: 1px solid rgba(203, 213, 225, 0.9);
-  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
+    background-color: #0d1a32;
   box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.08);
 }
 
@@ -1527,10 +1527,10 @@ html.light .b360-adaptive-landing .b360-flow-step,
 html:not(.dark) .b360-adaptive-landing .b360-copilot-card,
 html.light .b360-adaptive-landing .b360-copilot-card,
 [data-theme="light"] .b360-adaptive-landing .b360-copilot-card {
-  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
+    background-color: #0d1a32;
   border: 1px solid rgba(2, 132, 199, 0.22);
   box-shadow:
     0 16px 40px -8px rgba(15, 23, 42, 0.08),
@@ -1594,10 +1594,10 @@ html.light .b360-adaptive-landing .b360-suggestion-box p,
 html:not(.dark) .b360-adaptive-landing .b360-integration-card,
 html.light .b360-adaptive-landing .b360-integration-card,
 [data-theme="light"] .b360-adaptive-landing .b360-integration-card {
-  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
+    background-color: #0d1a32;
   border: 1px solid rgba(226, 232, 240, 0.9);
   box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.05);
 }
@@ -1689,10 +1689,10 @@ html.light .b360-adaptive-landing .b360-final-cta p,
 html:not(.dark) .b360-adaptive-landing .b360-side,
 html.light .b360-adaptive-landing .b360-side,
 [data-theme="light"] .b360-adaptive-landing .b360-side {
-  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
+    background-color: #0d1a32;
   border: 1px solid rgba(226, 232, 240, 0.9);
   box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.05);
 }
@@ -1763,10 +1763,10 @@ html:not(.dark) .b360-adaptive-landing .b360-supervisor,
 html.light .b360-adaptive-landing .b360-supervisor,
 [data-theme="light"] .b360-adaptive-landing .b360-supervisor {
   border: 1px solid rgba(2, 132, 199, 0.22);
-  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
+    background-color: #0d1a32;
   box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.05);
 }
 
@@ -1785,10 +1785,10 @@ html.light .b360-adaptive-landing .b360-supervisor p,
 html:not(.dark) .b360-adaptive-landing .b360-metric,
 html.light .b360-adaptive-landing .b360-metric,
 [data-theme="light"] .b360-adaptive-landing .b360-metric {
-  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
+    background-color: #0d1a32;
   border: 1px solid rgba(226, 232, 240, 0.9);
   box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.04);
 }
@@ -1808,10 +1808,10 @@ html.light .b360-adaptive-landing .b360-metric strong,
 html:not(.dark) .b360-adaptive-landing .b360-module,
 html.light .b360-adaptive-landing .b360-module,
 [data-theme="light"] .b360-adaptive-landing .b360-module {
-  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
+    background-color: #0d1a32;
   border: 1px solid rgba(226, 232, 240, 0.9);
   box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.04);
 }
@@ -1853,10 +1853,10 @@ html.light .b360-adaptive-landing .b360-dialog-backdrop,
 html:not(.dark) .b360-adaptive-landing .b360-dialog-box,
 html.light .b360-adaptive-landing .b360-dialog-box,
 [data-theme="light"] .b360-adaptive-landing .b360-dialog-box {
-  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
+    background-color: #0d1a32;
   border: 1px solid rgba(2, 132, 199, 0.35);
   box-shadow:
     0 25px 60px rgba(15, 23, 42, 0.2),
@@ -2935,11 +2935,11 @@ html.light .b360-adaptive-landing .b360-hero-console,
     0 20px 45px rgba(15, 23, 42, 0.08),
     0 0 25px rgba(2, 132, 199, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  background-color: #0d1a32;
   background:
     radial-gradient(ellipse at 90% 0%, rgba(2, 132, 199, 0.08) 0%, transparent 60%),
     radial-gradient(ellipse at 10% 100%, rgba(219, 39, 119, 0.06) 0%, transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
+    background-color: #0d1a32;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-console-topbar,
@@ -2964,10 +2964,10 @@ html.light .b360-adaptive-landing .b360-kpi-label,
 html:not(.dark) .b360-adaptive-landing .b360-stream-item,
 html.light .b360-adaptive-landing .b360-stream-item,
 [data-theme="light"] .b360-adaptive-landing .b360-stream-item {
-  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
+    background-color: #0d1a32;
   border-color: rgba(226, 232, 240, 0.9);
 }
 
@@ -3081,10 +3081,10 @@ html.light .b360-adaptive-landing .b360-card-visual,
 html:not(.dark) .b360-adaptive-landing .b360-kanban-card,
 html.light .b360-adaptive-landing .b360-kanban-card,
 [data-theme="light"] .b360-adaptive-landing .b360-kanban-card {
-  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
+    background-color: #0d1a32;
   border-color: #e2e8f0;
 }
 
@@ -3109,10 +3109,10 @@ html.light .b360-adaptive-landing .b360-copilot-recommendation,
 html:not(.dark) .b360-adaptive-landing .b360-integ-chip,
 html.light .b360-adaptive-landing .b360-integ-chip,
 [data-theme="light"] .b360-adaptive-landing .b360-integ-chip {
-  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
+    background-color: #0d1a32;
   border-color: #e2e8f0;
   color: #94a3b8;
 }
@@ -3121,10 +3121,10 @@ html.light .b360-adaptive-landing .b360-integ-chip,
 html:not(.dark) .b360-adaptive-landing .b360-problem-card,
 html.light .b360-adaptive-landing .b360-problem-card,
 [data-theme="light"] .b360-adaptive-landing .b360-problem-card {
-  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
+    background-color: #0d1a32;
   border-color: rgba(226, 232, 240, 0.95);
   box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.08);
 }
@@ -3153,10 +3153,10 @@ html.light .b360-adaptive-landing .b360-problem-kpi,
 html:not(.dark) .b360-adaptive-landing .b360-platform-card,
 html.light .b360-adaptive-landing .b360-platform-card,
 [data-theme="light"] .b360-adaptive-landing .b360-platform-card {
-  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
+    background-color: #0d1a32;
   border-color: rgba(226, 232, 240, 0.95);
   box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.08);
 }
@@ -3184,10 +3184,10 @@ html.light .b360-adaptive-landing .b360-platform-badge,
 html:not(.dark) .b360-adaptive-landing .b360-flow-card,
 html.light .b360-adaptive-landing .b360-flow-card,
 [data-theme="light"] .b360-adaptive-landing .b360-flow-card {
-  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
+    background-color: #0d1a32;
   border-color: rgba(226, 232, 240, 0.95);
   box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.08);
 }
