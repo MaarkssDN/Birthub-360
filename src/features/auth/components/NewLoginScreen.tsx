@@ -145,7 +145,7 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
   // Se já autenticado, vai para a rota pretendida ou Home
   useEffect(() => {
     if (currentUser) {
-      navigate(targetDestination, { replace: true });
+      void navigate(targetDestination, { replace: true });
     }
   }, [currentUser, navigate, targetDestination]);
 
@@ -234,7 +234,7 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
           return;
         }
 
-        navigate(targetDestination, { replace: true });
+        void navigate(targetDestination, { replace: true });
       } else if (authMode === 'signup') {
         const result = await authClient.signUp.email({
           email: email.trim(),
