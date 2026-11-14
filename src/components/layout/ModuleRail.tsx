@@ -138,9 +138,9 @@ export function ModuleRail({ panelCollapsed, onTogglePanel }: ModuleRailProps) {
               title={
                 isMobileOnly
                   ? `${module.label} — disponível no aplicativo mobile`
-                  : `${module.code} · ${module.label} — ${module.tagline}`
+                  : `${module.label} — ${module.tagline}`
               }
-              aria-label={`${module.code} ${module.label}`}
+              aria-label={module.label}
               aria-current={isActive ? 'page' : undefined}
               data-testid={`module-rail-${module.id}`}
               className={`${RAIL_BUTTON} ${railAccentClass(accent, isActive)} ${

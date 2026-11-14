@@ -22,21 +22,21 @@ test.describe('Navegação modular — rail e workspaces', () => {
     await expect(rail).toBeVisible();
     for (const name of [
       'Hub Central',
-      'P01 Hub Comercial',
-      'P02 Inteligência de Mercado',
-      'P03 Orquestração de Vendas',
-      'P04 Performance Comercial',
-      'P05 Previsibilidade Comercial',
-      'P06 Inteligência Artificial',
-      'P07 Automação & Conectividade',
-      'P08 Engajamento Comercial',
-      'M09 Admin & Operations',
-      'M11 Social Selling',
+      'Hub Comercial',
+      'Inteligência de Mercado',
+      'Orquestração de Vendas',
+      'Performance Comercial',
+      'Previsibilidade Comercial',
+      'Inteligência Artificial',
+      'Automação & Conectividade',
+      'Engajamento Comercial',
+      'Admin & Operations',
+      'Social Selling',
     ]) {
       await expect(rail.getByRole('button', { name: new RegExp(name) })).toBeVisible();
     }
     await expect(
-      rail.getByRole('button', { name: /M10 Mobile & Field Sales/ }),
+      rail.getByRole('button', { name: /Mobile & Field Sales/ }),
     ).toBeDisabled();
   });
 
@@ -50,7 +50,7 @@ test.describe('Navegação modular — rail e workspaces', () => {
     ).toBeVisible();
     await expect(page.getByRole('button', { name: 'Gestão de Negócios' })).toBeVisible();
 
-    await page.getByRole('button', { name: /P03 Orquestração de Vendas/ }).first().click();
+    await page.getByRole('button', { name: /Orquestração de Vendas/ }).first().click();
     await expect(page).toHaveURL(/\/app\/jornadas/);
     await expect(
       page.getByRole('navigation', { name: 'Navegação — Orquestração de Vendas' }),
@@ -96,9 +96,9 @@ test.describe('Navegação modular — mobile', () => {
     await page.getByRole('button', { name: 'Abrir menu de navegação' }).click();
     const drawer = page.getByRole('navigation', { name: /Módulos do Birth Hub|Navegação/ }).first();
     await expect(drawer).toBeVisible();
-    await expect(page.getByRole('button', { name: /M10 Mobile & Field Sales/ })).toBeDisabled();
+    await expect(page.getByRole('button', { name: /Mobile & Field Sales/ })).toBeDisabled();
 
-    await page.getByRole('button', { name: /P02 Inteligência de Mercado/ }).click();
+    await page.getByRole('button', { name: /Inteligência de Mercado/ }).click();
     await expect(page).toHaveURL(/\/app\/prospect/);
   });
 });
