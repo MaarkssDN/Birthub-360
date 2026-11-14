@@ -1,0 +1,152 @@
+<section class="ch ac-blue" id="identidade" data-secao="Identidade" aria-labelledby="h-identidade">
+  <div class="ch-head">
+    <h2 id="h-identidade">Identidade</h2>
+    <div><p class="lede">Quem a marca é, como o nome se escreve e como ela fala. A grafia do nome ainda não tem decisão definitiva: aparece aqui como provisória, com a pendência à vista.</p>
+    <p class="meta">{{range BB-ID}}</p></div>
+  </div>
+
+  <div class="sub" id="nome">
+    <h3>Nome e grafia <span class="st st-p">PROVISÓRIA</span></h3>
+    <div class="split">
+      <div class="stack">
+        <div class="tbl"><table>
+          <thead><tr><th scope="col">Grafia</th><th scope="col">Onde aparece nas fontes</th><th scope="col">Situação em V2.0</th></tr></thead>
+          <tbody>
+            <tr><td><b>Birthub 360°</b></td><td>Missão do usuário de 2026-11-13.</td><td>Adotada provisoriamente nos novos textos.</td></tr>
+            <tr><td><b>Birth Hub 360°</b> e <b>Birth Hub 360º</b></td><td>Brandbook oficial, manuais, <code>src/config/brand.ts</code> e a própria arte do logotipo. O levantamento do Agente 00 conta 27 arquivos.</td><td>Legado oficial. Mantida onde já existe, sem reescrita automática.</td></tr>
+            <tr><td><b>Birthub 360</b></td><td>Schema e migration (2 arquivos, segundo o Agente 00).</td><td>Uso técnico, fora de texto de marca.</td></tr>
+            <tr><td><b>BirthHub360</b></td><td>Identificadores e nomes de arquivo.</td><td>Uso técnico, não é grafia de texto.</td></tr>
+          </tbody></table></div>
+        <div class="plate flat bd" style="display:grid;gap:1.25rem;justify-items:start">
+          <img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Logotipo horizontal original, cuja arte lê BIRTH HUB 360°" width="473" height="128" style="width:min(100%,29.5rem);height:auto">
+          <p class="plate-cap" style="color:#9EADC8">Arte original preservada, sem alteração (C06). O wordmark desenhado lê <b style="color:#E8EEFF">BIRTH HUB 360°</b>, em duas palavras. Adotar "Birthub 360°" exigiria arte nova, fora do escopo desta frente.</p>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="note-box warn"><b>Pendência: decisão humana</b>
+          <p>Escolher entre <b>Birthub 360°</b> (missão) e <b>Birth Hub 360°</b> (fontes oficiais do repositório). Até lá, nenhuma página deve tratar a grafia como definitiva.</p>
+          <p>Impacto de trocar: arte do logotipo, <code>brand.ts</code>, manuais, metadados e textos legais.</p></div>
+        <div class="plate flat">
+          <p style="margin-bottom:.75rem"><b>Prova do ponto único de troca</b></p>
+          <p class="intro" style="margin-bottom:1rem;font-size:.9rem">Todo o nome neste documento sai de uma constante em <code>brandbook.js</code>. Troque abaixo e veja o título, o cabeçalho e os textos mudarem juntos.</p>
+          <div class="seg" role="group" aria-label="Simular grafia do nome">
+            <button type="button" data-brand-sim="main" aria-pressed="true">Birthub 360°</button>
+            <button type="button" data-brand-sim="alt" aria-pressed="false">Birth Hub 360°</button>
+          </div>
+          <p class="plate-cap" id="brand-sim-out" role="status">Simulação local. Nada é gravado.</p>
+        </div>
+      </div>
+    </div>
+    <ol class="rules">
+@@rule BB-ID-01 C origem: C01 da missão
+Posicionamento oficial: <b>Sistema Operacional de Inteligência Comercial, impulsionado por IA e Revenue Intelligence</b>. Usar a frase completa na primeira menção de cada peça.
+@@end
+@@rule BB-ID-02 P origem: derivada de C01
+Depois da primeira menção, a forma curta "Sistema Operacional de Inteligência Comercial" é aceita. "CRM" sozinho não descreve o produto e não deve ser a definição principal.
+@@end
+@@rule BB-ID-03 P origem: P-01
+Em textos novos, escrever <b data-brand>Birthub 360°</b> com o símbolo de grau (U+00B0), nunca o ordinal (U+00BA). Grafia pendente de decisão humana.
+@@end
+@@rule BB-ID-04 P origem: P-01
+O nome é citado por um único ponto de troca (constante ou token de conteúdo) e nunca digitado solto em componente ou peça. Neste documento: <code>BRAND_NAME</code> em <code>brandbook.js</code>.
+@@end
+@@rule BB-ID-05 C origem: C06 da missão
+A arte do logotipo não é redesenhada para acompanhar a grafia. A arte atual lê "BIRTH HUB 360°"; um novo wordmark depende da decisão de P-01.
+@@end
+@@rule BB-ID-06 P origem: proposta deste brandbook
+Não abreviar o nome em texto (por exemplo "BH360"). Em espaço estreito, usar o ícone do logotipo.
+@@end
+@@rule BB-ID-07 C origem: C07 da missão
+Arquitetura do produto: Hub Central, Workspaces Modulares e Assistentes Globais. Os 11 módulos são P01 a P08 (pilares) e M09 a M11.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="posicionamento">
+    <h3>Posicionamento</h3>
+    <p class="statement">Sistema Operacional de <span class="a">Inteligência Comercial</span>, impulsionado por IA e <span class="b">Revenue Intelligence</span>.</p>
+    <div class="parts">
+      <div class="part"><h4>Sistema Operacional</h4><p>Não é um módulo nem uma aba: é a camada onde a operação roda. Traduz a arquitetura Hub Central, Workspaces Modulares e Assistentes Globais.</p></div>
+      <div class="part"><h4>Inteligência Comercial</h4><p>O domínio. Prospecção, pipeline, cadência, performance e previsibilidade pensados para times comerciais (SDR, closer e gestão).</p></div>
+      <div class="part"><h4>IA e Revenue Intelligence</h4><p>O motor. A IA recomenda e executa com evidência visível; Revenue Intelligence é a disciplina que liga dado, decisão e receita.</p></div>
+    </div>
+    <ol class="rules">
+@@rule BB-ID-08 P origem: derivada de C01 e do Manual do Produto
+O ICP é qualquer empresa com área comercial que queira automatizar a operação ponta a ponta. Nenhum texto novo amarra o produto a um vertical específico.
+@@end
+@@rule BB-ID-09 P origem: proposta deste brandbook
+A promessa de IA é sempre acompanhada de evidência ou fonte; a marca nunca afirma onisciência. Coerente com BB-ID-15.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="proposito">
+    <h3>Propósito, proposta de valor e narrativa</h3>
+    <div class="split even">
+      <div>
+        <h4 style="margin-top:0">Propósito <span class="st st-p">PROVISÓRIO</span></h4>
+        <p>Reunir o que está disperso na operação comercial em um único comando: dado que vira decisão, e decisão que vira execução.</p>
+        <h4>Proposta de valor <span class="st st-p">PROVISÓRIA</span></h4>
+        <p>Três promessas, todas verificáveis no produto: unifica os dados da operação; recomenda com evidência; executa com governança, com aprovação humana nas ações de alto risco.</p>
+      </div>
+      <div class="note-box"><b>Como esta redação nasceu</b>
+        <p>Propósito e proposta de valor são texto proposto por esta frente, derivado do slogan e da tagline oficiais em <code>src/config/brand.ts</code> ("integrando dados, potencializando decisões e acelerando a execução") e dos princípios do Manual do Produto. Precisam de aprovação editorial.</p></div>
+    </div>
+    <h4 style="margin-top:2.5rem">Narrativa em três tempos <span class="st st-p">PROVISÓRIA</span></h4>
+    <div class="arc">
+      <div><div class="arc-line"></div><h4>Conectar</h4><p>Dados dispersos em CRM, planilhas, voz e mensagens entram em um único lugar, com origem rastreável.</p></div>
+      <div><div class="arc-line"></div><h4>Decidir</h4><p>A inteligência ordena o que importa agora e mostra a evidência por trás de cada recomendação.</p></div>
+      <div><div class="arc-line"></div><h4>Executar</h4><p>A próxima ação sai do mesmo lugar: cadência, ligação, proposta, com aprovação quando o risco pede.</p></div>
+    </div>
+    <ol class="rules">
+@@rule BB-ID-10 P origem: derivada de src/config/brand.ts
+Propósito: reunir o que está disperso na operação comercial em um único comando. Texto proposto, pendente de aprovação editorial.
+@@end
+@@rule BB-ID-11 P origem: Manual do Produto cap. 1 e BIRTHUB360_CONTRATOS_AGENTES.md
+Proposta de valor em três promessas verificáveis: unifica dados, recomenda com evidência, executa com governança e aprovação humana em ação de alto risco.
+@@end
+@@rule BB-ID-12 P origem: derivada de brand.ts (pilares Conexão, Inteligência, Execução)
+Narrativa em três tempos: Conectar, Decidir, Executar. Cada peça de comunicação ocupa um desses tempos e aponta para o seguinte.
+@@end
+@@rule BB-ID-13 P origem: AGENTS.md §25 (zero mock)
+Não reutilizar afirmações sem lastro do manual de produto legado ("0ms de latência de decisão", "100% WCAG 2.2 AA", "40+ módulos", contra 11 módulos oficiais). Só publicar número com fonte medida.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="voz">
+    <h3>Personalidade e tom de voz</h3>
+    <div class="traits">
+      <div class="trait"><b>Precisa</b><p>Diz o número, a fonte e o prazo. Sem adjetivo inflado.</p></div>
+      <div class="trait"><b>Direta</b><p>Verbo de ação no começo, uma ideia por frase.</p></div>
+      <div class="trait"><b>Analítica</b><p>Mostra a evidência antes da conclusão.</p></div>
+      <div class="trait"><b>Resolutiva</b><p>Todo problema vem com o próximo passo.</p></div>
+    </div>
+    <div class="vox" style="margin-top:2rem">
+      <div class="yes"><h4>CORRETO</h4><p>Gerar proposta comercial</p></div>
+      <div class="no"><h4>ERRADO</h4><p>Clique aqui</p></div>
+      <div class="yes row"><p>Não foi possível sincronizar com o Bitrix24: o token expirou. Reconecte em Configurações, Integrações.</p></div>
+      <div class="no row"><p>Ocorreu um erro inesperado. Tente mais tarde.</p></div>
+      <div class="yes row"><p>Probabilidade de fechamento em 78%, com base em 12 reuniões no mesmo segmento.</p></div>
+      <div class="no row"><p>Eu acho que este cliente vai fechar porque é muito qualificado.</p></div>
+    </div>
+    <p class="plate-cap">Exemplos de redação herdados do Manual de Identidade do Produto (cap. 4). O 78% e as 12 reuniões são texto de exemplo, não dado real.</p>
+    <ol class="rules">
+@@rule BB-ID-14 C origem: Manual de Identidade do Produto, cap. 4
+Personalidade: precisa, direta, analítica e resolutiva, com a postura de um consultor sênior de alto impacto.
+@@end
+@@rule BB-ID-15 C origem: Manual de Identidade do Produto, cap. 4
+A IA fala em hipótese apoiada em evidência concreta, nunca como entidade onipotente.
+@@end
+@@rule BB-ID-16 C origem: Manual de Identidade do Produto, cap. 4
+Botões e ações usam verbo direto que anuncia o resultado ("Gerar proposta comercial", "Sincronizar agora"). Proibidos "Clique aqui", "Submeter" e "OK".
+@@end
+@@rule BB-ID-17 C origem: Manual de Identidade do Produto, cap. 4
+Mensagens de erro dizem a causa raiz e oferecem o próximo passo de recuperação.
+@@end
+@@rule BB-ID-18 P origem: C08 da missão
+A personalidade tem duas réguas: cinematográfica na experiência comercial (landing, campanhas) e discreta e rápida na operação (plataforma).
+@@end
+    </ol>
+  </div>
+</section>

@@ -1,0 +1,40 @@
+/* Birthub 360° — Biblioteca de componentes V2.0 (RASCUNHO, NÃO HOMOLOGADO, PROTÓTIPO). Só tokens. */
+@import url("../03-design-system/docs.css");
+
+.lib-sec { padding-block: var(--space-12) var(--space-4); border-block-start: 1px solid var(--line); scroll-margin-block-start: calc(var(--size-header-h) + var(--space-4)); }
+.lib-sec:first-of-type { border-block-start: 0; padding-block-start: 0; }
+.lib-sec > h2 { margin-block-end: var(--space-2); }
+.lib-sec > .lede { margin-block-end: var(--space-4); }
+.demo { display: grid; gap: var(--space-2); margin-block: var(--space-5); min-inline-size: 0; }
+.demo > h3 { font-size: var(--text-h5); margin: 0; }
+.demo > p.note { font-size: var(--text-body-sm); color: var(--ink-muted); max-inline-size: 80ch; }
+.demo-panes { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); min-inline-size: 0; }
+html[data-split] .demo-panes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 1300px) { html[data-split] .demo-panes { grid-template-columns: minmax(0, 1fr); } }
+.demo-stage { position: relative; background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius-card); padding: var(--space-5); min-inline-size: 0; display: grid; gap: var(--space-4); align-content: start; }
+.demo-stage[data-label]::before { content: attr(data-label); position: absolute; inset-block-start: calc(var(--space-2) * -1 - 4px); inset-inline-start: var(--space-4); padding: 0 var(--space-2); background: var(--surface-3); color: var(--ink); border-radius: var(--radius-pill); font-family: var(--font-mono); font-size: 11px; line-height: 18px; letter-spacing: 0; border: 1px solid var(--line-strong); }
+.demo-stage--tall { min-block-size: 320px; }
+.state-grid { display: grid; grid-template-columns: 110px repeat(6, minmax(0, 1fr)); gap: var(--space-2) var(--space-2); align-items: center; font-size: var(--text-caption); color: var(--ink-muted); overflow-x: auto; }
+.state-grid > span:not(.bh-btn) { white-space: nowrap; }
+.state-grid .bh-btn { font-size: var(--text-body-sm); padding-inline: var(--space-2); min-inline-size: 0; }
+.state-scroll { overflow-x: auto; }
+.state-scroll .state-grid { min-inline-size: 720px; }
+.fields-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4); }
+.form-summary { margin-block-end: var(--space-2); }
+.form-summary ul { margin: var(--space-1) 0 0; padding-inline-start: var(--space-5); }
+.form-summary:focus-visible { outline: var(--focus-ring-width) solid var(--focus-ring-color); outline-offset: var(--focus-ring-offset); }
+.phone-frame { max-inline-size: 360px; border: 1px solid var(--line-strong); border-radius: var(--radius-modal); overflow: hidden; background: var(--bg); display: grid; }
+.phone-frame .body { padding: var(--space-4); min-block-size: 140px; display: grid; gap: var(--space-2); align-content: start; font-size: var(--text-body-sm); color: var(--ink-muted); }
+.bh-shell[data-module] .bh-topbar h4 { font-size: var(--text-h5); }
+.fixed-pane { background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius-card); padding: var(--space-5); display: grid; gap: var(--space-3); align-content: start; }
+.theme-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+@media (max-width: 700px) { .theme-pair { grid-template-columns: 1fr; } }
+.demo-stage .bh-table-wrap { max-block-size: 380px; }
+.sr-live { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+@media (max-width: 700px) { .demo-stage { padding: var(--space-4); } .lib-sec { padding-block-start: var(--space-8); } }
+[data-skel-area] .skel-ph { display: none; }
+[data-skel-area][data-loading="true"] .skel-ph { display: grid; }
+[data-skel-area][data-loading="true"] .skel-content { display: none; }
+.demo-stage > .bh-btn-group, .demo-stage > .bh-sample { justify-self: start; }
+.demo-stage { grid-template-columns: minmax(0, 1fr); }
+.demo-stage, .fixed-pane { border-radius: var(--radius-xs); }

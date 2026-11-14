@@ -1,0 +1,164 @@
+<section class="ch ac-iris" id="linguagem" data-secao="Linguagem visual" aria-labelledby="h-linguagem">
+  <div class="ch-head">
+    <h2 id="h-linguagem">Linguagem visual</h2>
+    <div><p class="lede">Neon Editorial Cinematic é a referência criativa desta versão: luz funcional sobre canvas escuro, composição de revista e profundidade controlada.</p>
+    <p class="meta">{{range BB-LING}}</p></div>
+  </div>
+
+  <div class="sub" id="direcao">
+    <h3>Neon Editorial Cinematic <span class="st st-p">REFERÊNCIA CRIATIVA</span></h3>
+    <div class="split even">
+      <div>
+        <div class="parts">
+          <div class="part"><h4>Neon</h4><p>A cor é luz com função: marca estado, foco e prioridade sobre um canvas quase preto.</p></div>
+          <div class="part"><h4>Editorial</h4><p>Grid assimétrico, tipografia em escala grande, legendas e margens que organizam a leitura.</p></div>
+          <div class="part"><h4>Cinematic</h4><p>Enquadramento, camadas e ritmo. O movimento cinematográfico existe só na experiência comercial.</p></div>
+        </div>
+      </div>
+      <div class="note-box"><b>Errata V2.1 · N1 localizado em repositório externo</b>
+        <p>Na V2.0 o nome "N1 Final Candidate" constava como não localizado, porque a busca cobriu só este repositório. O N1 existe em <code>github.com/MaarkssDN/Land-page</code> (<code>mission-06/n1-final/</code>, commit 0d08b31) e foi analisado: veja <a href="../08-referencia-n1/index.html">08 — Referência N1</a>. Ele é a referência da Experiência Comercial (Persuade) e não define regras para os workspaces. A página publicada (GitHub Pages) não pôde ser acessada neste ambiente (proxy 403); a análise usa o código do repositório.</p></div>
+    </div>
+    <ol class="rules">
+@@rule BB-LING-01 C origem: C05 da missão
+Neon Editorial Cinematic é referência criativa, não definição automática de regras. Regras só existem quando escritas e etiquetadas neste documento.
+@@end
+@@rule BB-LING-02 P origem: análise do N1 (08-referencia-n1), errata V2.1
+O N1 Final Candidate (repositório externo MaarkssDN/Land-page, commit 0d08b31) pode ser citado como referência criativa da Experiência Comercial, nunca como regra homologada nem como precedente para workspaces operacionais. Detalhes e mapeamento em 08-referencia-n1.
+@@end
+@@rule BB-LING-03 P origem: proposta deste brandbook
+Leitura da direção: neon como luz funcional (cor com função), editorial como estrutura (grid assimétrico, escala tipográfica, legendas) e cinematic como profundidade e ritmo, limitado à camada comercial.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="grafismos">
+    <h3>Grafismos 360°</h3>
+    <div class="graf">
+      <div class="gf"><div class="art"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="6" stroke-dasharray="1 4.6"/><circle cx="50" cy="50" r="34" fill="none" stroke="currentColor" stroke-width="1"/></svg></div><h4>Bezel de graduação</h4><p>Anel de marcas, referência de instrumento. Mede e enquadra.</p></div>
+      <div class="gf"><div class="art"><div class="orbring" style="width:72%" role="img" aria-label="Anel com gradiente da órbita"></div></div><h4>Órbita</h4><p>Anel de gradiente para indicador de estado ou progresso.</p></div>
+      <div class="gf"><div class="art"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 8v84M8 50h84" stroke="currentColor" stroke-width="1" fill="none"/><circle cx="50" cy="50" r="22" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="50" cy="50" r="2.5" fill="currentColor"/></svg></div><h4>Retícula e eixo</h4><p>Cruz de mira para foco e alinhamento, eco do eixo do símbolo.</p></div>
+      <div class="gf"><div class="art"><svg viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 50a32 32 0 0 1 64 0"/><path d="M26 50a24 24 0 0 1 48 0"/><path d="M34 50a16 16 0 0 1 32 0"/></g></svg></div><h4>Arcos concêntricos</h4><p>Alcance e camadas. Separador de seção ou fundo de gráfico.</p></div>
+      <div class="gf"><div class="art"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M20 70 50 30 82 62" fill="none" stroke="currentColor" stroke-width="1.2"/><g fill="currentColor"><circle cx="20" cy="70" r="4"/><circle cx="50" cy="30" r="5"/><circle cx="82" cy="62" r="4"/></g></svg></div><h4>Nós e conexões</h4><p>Entidades ligadas: conta, contato, negócio. Sempre com rótulo.</p></div>
+    </div>
+    <ol class="rules">
+@@rule BB-LING-04 P origem: proposta deste brandbook
+Cinco grafismos 360° autorizados: bezel de graduação, órbita, retícula e eixo, arcos concêntricos, nós e conexões. Todos desenhados em CSS ou SVG, em traço fino, sem redesenhar o logotipo.
+@@end
+@@rule BB-LING-05 P origem: proposta deste brandbook
+Grafismo ocupa a moldura e a margem; nunca fica atrás de texto corrido. Cada grafismo carrega informação (medida, estado, relação) ou sai.
+@@end
+@@rule BB-LING-06 P origem: proposta deste brandbook
+Proibido: malha ou grade decorativa de fundo, nuvem de brilho radial e ilustração montada com formas soltas em tamanho de herói.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="composicao">
+    <h3>Composição editorial</h3>
+    <div class="gridspec" aria-hidden="true"><i class="a" style="grid-column:span 7"></i><i class="m" style="grid-column:span 1"></i><i style="grid-column:span 4"></i></div>
+    <p class="plate-cap">Grid de 12 colunas: 7 de conteúdo dominante, 1 de respiro e 4 de apoio (legenda, dado, ação).</p>
+    <div class="dd" style="margin-top:1.5rem">
+      <figure class="good"><div class="wire l"><div class="col1"><b class="tt"></b><b class="ss"></b><b class="ss" style="width:35%"></b><b class="bt"></b></div><div class="col2"></div></div><figcaption>PADRÃO: título ancorado, conteúdo real ao lado, assimetria</figcaption></figure>
+      <figure class="bad"><div class="wire"><b class="tt" style="width:55%"></b><b class="ss"></b><b class="bt"></b><div class="tri"><b></b><b></b><b></b></div></div><figcaption>EVITAR: herói centralizado com três cartões iguais</figcaption></figure>
+    </div>
+    <ol class="rules">
+@@rule BB-LING-07 C origem: .claude/CLAUDE.md, regras 2 e 4
+Hero centralizado e três cartões iguais só para preencher espaço não são o padrão. Uma exceção exige justificativa escrita por objetivo, fluxo ou volume real de informação.
+@@end
+@@rule BB-LING-08 P origem: proposta deste brandbook
+Cada composição tem um elemento dominante identificável, grid assimétrico e uma legenda em Plex Mono que explica o que o olho vê.
+@@end
+@@rule BB-LING-09 P origem: proposta deste brandbook
+Na plataforma (nível operacional), densidade alta e estrutura previsível vencem a expressão; na landing e em campanhas (nível comercial), escala e ousadia vencem.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="profundidade">
+    <h3>Profundidade</h3>
+    <div class="layers">
+      <div class="stackviz" aria-hidden="true"><div class="ly l1">canvas</div><div class="ly l2">superfície</div><div class="ly l3">conteúdo</div><div class="ly l4">sinal (foco, alerta)</div></div>
+      <p>Quatro camadas: canvas, superfície, conteúdo e sinal. Cada camada acima tem fundo um degrau mais claro e sombra de elevação. A luz neon só mora na camada de sinal.</p>
+    </div>
+    <ol class="rules">
+@@rule BB-LING-10 P origem: proposta deste brandbook
+Quatro camadas de profundidade: canvas, superfície, conteúdo, sinal. Glow e cor neon intensa pertencem à camada de sinal.
+@@end
+@@rule BB-LING-11 P origem: CLAUDE.md regra 5
+Desfoque e vidro (<code>backdrop-filter</code>) só com função: cabeçalho fixo sobre conteúdo rolando, camada flutuante. Nunca como enfeite em todo cartão.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="iconografia">
+    <h3>Iconografia e ilustração <span class="st st-p">PROVISÓRIA</span></h3>
+    <div class="icons">
+      <div class="ico"><svg aria-hidden="true"><use href="#i-hub"/></svg><span>P01 Hub</span></div>
+      <div class="ico"><svg aria-hidden="true"><use href="#i-intel"/></svg><span>P02 Inteligência</span></div>
+      <div class="ico"><svg aria-hidden="true"><use href="#i-orch"/></svg><span>P03 Orquestração</span></div>
+      <div class="ico"><svg aria-hidden="true"><use href="#i-perf"/></svg><span>P04 Performance</span></div>
+      <div class="ico"><svg aria-hidden="true"><use href="#i-forecast"/></svg><span>P05 Previsão</span></div>
+      <div class="ico"><svg aria-hidden="true"><use href="#i-ai"/></svg><span>P06 IA</span></div>
+      <div class="ico"><svg aria-hidden="true"><use href="#i-auto"/></svg><span>P07 Automação</span></div>
+      <div class="ico"><svg aria-hidden="true"><use href="#i-voice"/></svg><span>P08 Voz</span></div>
+      <div class="ico"><svg aria-hidden="true"><use href="#i-admin"/></svg><span>M09 Admin</span></div>
+      <div class="ico"><svg aria-hidden="true"><use href="#i-field"/></svg><span>M10 Campo</span></div>
+      <div class="ico"><svg aria-hidden="true"><use href="#i-social"/></svg><span>M11 Social</span></div>
+      <div class="ico"><svg aria-hidden="true"><use href="#i-search"/></svg><span>Busca</span></div>
+    </div>
+    <p class="plate-cap">Conjunto de apoio desenhado para este brandbook (grade 24, traço 1,75, pontas arredondadas). A biblioteca definitiva é da frente 05-biblioteca.</p>
+    <ol class="rules">
+@@rule BB-LING-12 P origem: proposta deste brandbook
+Ícones são SVG desenhado, em grade 24, traço único de 1,75 e pontas arredondadas, na cor de acento do contexto. Nunca emoji nem glifo Unicode no lugar de ícone.
+@@end
+@@rule BB-LING-13 P origem: proposta deste brandbook
+Ícone acompanha sempre um rótulo em texto, a menos que seja ação universal com nome acessível. Ícone não fica dentro de quadrado arredondado acima de título.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="imagens">
+    <h3>Imagens</h3>
+    <div class="imgmap">
+      <div class="yes"><h4>Permitido</h4><ul>
+        <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Telas reais do produto, com dados reais ou rotuladas como exemplo.</li>
+        <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Diagramas, gráficos de dados e grafismos 360°.</li>
+        <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Os personagens não humanos oficiais (SVG originais).</li>
+        <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Tipografia em grande escala como imagem.</li></ul></div>
+      <div class="no"><h4>Proibido</h4><ul>
+        <li><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>Fotografia humana genérica de banco de imagens.</li>
+        <li><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>Ilustração ou avatar humano figurativo.</li>
+        <li><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>Métrica, gráfico ou cliente inventado apresentado como real.</li>
+        <li><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>Máscara geométrica fingindo recorte de foto.</li></ul></div>
+    </div>
+    <ol class="rules">
+@@rule BB-LING-14 C origem: C06 da missão
+Sem fotografia humana genérica. Personagens e logotipo originais não são redesenhados.
+@@end
+@@rule BB-LING-15 C origem: AGENTS.md §25 (zero mock)
+Nenhuma métrica, gráfico ou cliente fabricado é apresentado como real. Exemplo é sempre rotulado ("EXEMPLO" ou "VALORES ILUSTRATIVOS").
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="movimento">
+    <h3>Movimento: dois níveis</h3>
+    <div class="mo">
+      <div><h4>Experiência comercial</h4><div class="track play" data-dur="700ms" data-ez="cubic-bezier(.16,1,.3,1)"><span class="dotm"></span></div><p class="tick">Cinematográfico · 400 a 900 ms · saída exponencial</p></div>
+      <div><h4>Operacional</h4><div class="track play" data-dur="160ms" data-ez="cubic-bezier(.16,1,.3,1)"><span class="dotm"></span></div><p class="tick">Discreto e rápido · 120 a 200 ms · feedback</p></div>
+    </div>
+    <p style="margin-top:1rem"><button class="btn" id="mo-play" type="button">Reproduzir os dois</button> <span class="tick" id="mo-note" role="status" style="font:500 .8125rem var(--font-mono);color:var(--ink-muted);margin-left:.5rem"></span></p>
+    <p class="plate-cap">Faixas de duração são proposta deste brandbook. O detalhamento é da frente 04-motion-system, não lida aqui.</p>
+    <ol class="rules">
+@@rule BB-LING-16 C origem: C08 da missão
+Dois níveis de movimento: Experiência Comercial (cinematográfica) e Operacional (discreta e rápida).
+@@end
+@@rule BB-LING-17 C origem: C08 da missão
+<code>prefers-reduced-motion</code> é obrigatório em toda animação CSS ou JavaScript: com a preferência ativa, a animação é removida ou reduzida a troca de estado.
+@@end
+@@rule BB-LING-18 P origem: proposta deste brandbook
+Nível comercial: 400 a 900 ms; nível operacional: 120 a 200 ms; ambos com saída exponencial. Nenhum loop decorativo: toda animação comunica estado, guia atenção ou dá retorno.
+@@end
+    </ol>
+  </div>
+</section>

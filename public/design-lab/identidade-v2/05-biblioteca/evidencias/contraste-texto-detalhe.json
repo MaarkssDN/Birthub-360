@@ -1,0 +1,34 @@
+{
+ "biblioteca-dark-1440": {
+  "checked": 567,
+  "fails": []
+ },
+ "biblioteca-light-1440": {
+  "checked": 567,
+  "fails": []
+ },
+ "biblioteca-dark-390": {
+  "checked": 517,
+  "fails": []
+ },
+ "biblioteca-light-390": {
+  "checked": 517,
+  "fails": []
+ },
+ "design-system-dark-1440": {
+  "checked": 2092,
+  "fails": []
+ },
+ "design-system-light-1440": {
+  "checked": 2092,
+  "fails": []
+ },
+ "design-system-dark-390": {
+  "checked": 2062,
+  "fails": []
+ },
+ "design-system-light-390": {
+  "checked": 2062,
+  "fails": []
+ }
+}

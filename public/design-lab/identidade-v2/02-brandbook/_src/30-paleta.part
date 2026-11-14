@@ -1,0 +1,234 @@
+<section class="ch ac-pink" id="paleta" data-secao="Paleta Neon" aria-labelledby="h-paleta">
+  <div class="ch-head">
+    <h2 id="h-paleta">Paleta Neon</h2>
+    <div><p class="lede">Quatro cores de luz sobre dois canvas. O neon puro é preenchimento e sinalização; texto sobre Light usa variantes derivadas, medidas uma a uma.</p>
+    <p class="meta">{{range BB-COR}}</p></div>
+  </div>
+
+  <div class="sub" id="cores">
+    <h3>Cores oficiais (C02)</h3>
+    <div class="swatches">
+      <div class="sw big"><div class="chip" style="background:#00D4FF"><span class="on">Aa #0D0D0D</span></div><div class="meta"><h4>Azul Neon</h4><p class="hex">#00D4FF</p><p class="vals">RGB 0, 212, 255<br>HSL 190 100% 50%</p></div><p class="use"><b>Tecnologia, confiança, foco analítico.</b> Cor de interação primária: ações, links, foco, bordas ativas.</p></div>
+      <div class="sw big"><div class="chip" style="background:#FF2D9B"><span class="on">Aa #0D0D0D</span></div><div class="meta"><h4>Rosa Neon</h4><p class="hex">#FF2D9B</p><p class="vals">RGB 255, 45, 155<br>HSL 329 100% 59%</p></div><p class="use"><b>Energia, atitude, conversão.</b> Destaque comercial, alertas de atenção, inteligência de mercado.</p></div>
+      <div class="sw big"><div class="chip" style="background:#FFC107"><span class="on">Aa #0D0D0D</span></div><div class="meta"><h4>Dourado</h4><p class="hex">#FFC107</p><p class="vals">RGB 255, 193, 7<br>HSL 45 100% 51%</p></div><p class="use"><b>Receita, previsibilidade, governança.</b> Métricas de receita, decisões estratégicas, selo de rascunho.</p></div>
+      <div class="sw big"><div class="chip" style="background:#8B7DFF"><span class="on">Aa #0D0D0D</span></div><div class="meta"><h4>Íris</h4><p class="hex">#8B7DFF</p><p class="vals">RGB 139, 125, 255<br>HSL 246 100% 75%</p></div><p class="use"><b>Inteligência artificial.</b> Agentes, copiloto e automações autônomas.</p></div>
+      <div class="sw"><div class="chip" style="background:#0D0D0D"><span class="on" style="color:#9EADC8">Dark</span></div><div class="meta"><h4>Dark</h4><p class="hex">#0D0D0D</p><p class="vals">RGB 13, 13, 13<br>HSL 0 0% 5%</p></div><p class="use"><b>Canvas escuro.</b> Fundo principal. Não é o preto puro #000.</p></div>
+      <div class="sw"><div class="chip" style="background:#F4F7FB"><span class="on" style="color:#46546B">Light</span></div><div class="meta"><h4>Light</h4><p class="hex">#F4F7FB</p><p class="vals">RGB 244, 247, 251<br>HSL 214 47% 97%</p></div><p class="use"><b>Canvas claro.</b> Fundo principal do tema claro. Não é o branco puro #FFF.</p></div>
+    </div>
+    <ol class="rules">
+@@rule BB-COR-01 C origem: C02 da missão
+Paleta oficial: Azul Neon #00D4FF, Rosa Neon #FF2D9B, Dourado #FFC107, Íris #8B7DFF, Dark #0D0D0D e Light #F4F7FB. Nenhuma outra cor de marca é criada nesta versão.
+@@end
+@@rule BB-COR-02 C origem: C02 e Manual de Identidade Visual
+Papéis: Azul Neon é tecnologia e interação; Rosa Neon é energia e conversão; Dourado é receita e previsibilidade; Íris é inteligência artificial.
+@@end
+@@rule BB-COR-03 C origem: C02 e C04
+Os neons não são neutralizados nem trocados por pastéis. Dark e Light não são preto nem branco puros.
+@@end
+@@rule BB-COR-04 P origem: P-05
+Light oficial V2.0 é #F4F7FB (missão). O "Neon White" #F8F9FF dos tokens atuais é a cor de texto sobre Dark e não é usado como canvas. Conflito registrado.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="contraste">
+    <h3>Contraste WCAG medido</h3>
+    <p class="intro">Razão de contraste WCAG 2.2 calculada sobre os hexadecimais (luminância relativa). Texto normal exige 4,5:1; texto grande e componentes de interface, 3:1. Células tracejadas ficam abaixo de 3:1.</p>
+    <h4>Neon e tinta sobre os fundos</h4>
+    <div class="cm-wrap"><table class="cm">
+      <thead><tr><th scope="col">Cor (texto)</th><th scope="col">Dark #0D0D0D</th><th scope="col">Superfície #14141A</th><th scope="col">Superfície 3 #252530</th><th scope="col">Light #F4F7FB</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Azul Neon #00D4FF</th>{{cell #00D4FF #0D0D0D}}{{cell #00D4FF #14141A}}{{cell #00D4FF #252530}}{{cell #00D4FF #F4F7FB}}</tr>
+        <tr><th scope="row">Rosa Neon #FF2D9B</th>{{cell #FF2D9B #0D0D0D}}{{cell #FF2D9B #14141A}}{{cell #FF2D9B #252530}}{{cell #FF2D9B #F4F7FB}}</tr>
+        <tr><th scope="row">Dourado #FFC107</th>{{cell #FFC107 #0D0D0D}}{{cell #FFC107 #14141A}}{{cell #FFC107 #252530}}{{cell #FFC107 #F4F7FB}}</tr>
+        <tr><th scope="row">Íris #8B7DFF</th>{{cell #8B7DFF #0D0D0D}}{{cell #8B7DFF #14141A}}{{cell #8B7DFF #252530}}{{cell #8B7DFF #F4F7FB}}</tr>
+        <tr><th scope="row">Tinta Dark #E8EEFF</th>{{cell #E8EEFF #0D0D0D}}{{cell #E8EEFF #14141A}}{{cell #E8EEFF #252530}}{{cell #E8EEFF #F4F7FB}}</tr>
+        <tr><th scope="row">Tinta suave #9EADC8</th>{{cell #9EADC8 #0D0D0D}}{{cell #9EADC8 #14141A}}{{cell #9EADC8 #252530}}{{cell #9EADC8 #F4F7FB}}</tr>
+      </tbody></table></div>
+    <h4>Variantes de texto para Light (derivadas, PROVISÓRIAS)</h4>
+    <div class="cm-wrap"><table class="cm">
+      <thead><tr><th scope="col">Variante (texto)</th><th scope="col">Light #F4F7FB</th><th scope="col">Superfície #FBFCFE</th><th scope="col">Superfície 2 #EEF2F8</th><th scope="col">Superfície 3 #E3E9F2</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Azul #006C8C</th>{{cell #006C8C #F4F7FB}}{{cell #006C8C #FBFCFE}}{{cell #006C8C #EEF2F8}}{{cell #006C8C #E3E9F2}}</tr>
+        <tr><th scope="row">Rosa #C4105F</th>{{cell #C4105F #F4F7FB}}{{cell #C4105F #FBFCFE}}{{cell #C4105F #EEF2F8}}{{cell #C4105F #E3E9F2}}</tr>
+        <tr><th scope="row">Dourado #7A5800</th>{{cell #7A5800 #F4F7FB}}{{cell #7A5800 #FBFCFE}}{{cell #7A5800 #EEF2F8}}{{cell #7A5800 #E3E9F2}}</tr>
+        <tr><th scope="row">Íris #5B4BD6</th>{{cell #5B4BD6 #F4F7FB}}{{cell #5B4BD6 #FBFCFE}}{{cell #5B4BD6 #EEF2F8}}{{cell #5B4BD6 #E3E9F2}}</tr>
+        <tr><th scope="row">Tinta #0F1A2E</th>{{cell #0F1A2E #F4F7FB}}{{cell #0F1A2E #FBFCFE}}{{cell #0F1A2E #EEF2F8}}{{cell #0F1A2E #E3E9F2}}</tr>
+        <tr><th scope="row">Tinta suave #46546B</th>{{cell #46546B #F4F7FB}}{{cell #46546B #FBFCFE}}{{cell #46546B #EEF2F8}}{{cell #46546B #E3E9F2}}</tr>
+      </tbody></table></div>
+    <h4>Neon como preenchimento: qual texto vai por cima</h4>
+    <div class="cm-wrap"><table class="cm">
+      <thead><tr><th scope="col">Preenchimento</th><th scope="col">Texto #0D0D0D (on-neon)</th><th scope="col">Texto #FFFFFF (proibido)</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Azul Neon</th>{{cell #0D0D0D #00D4FF}}{{cell #FFFFFF #00D4FF}}</tr>
+        <tr><th scope="row">Rosa Neon</th>{{cell #0D0D0D #FF2D9B}}{{cell #FFFFFF #FF2D9B}}</tr>
+        <tr><th scope="row">Dourado</th>{{cell #0D0D0D #FFC107}}{{cell #FFFFFF #FFC107}}</tr>
+        <tr><th scope="row">Íris</th>{{cell #0D0D0D #8B7DFF}}{{cell #FFFFFF #8B7DFF}}</tr>
+      </tbody></table></div>
+    <div class="note-box" style="margin-top:1.25rem"><b>Variantes de Light que já existem no repositório</b>
+      <p>Os tokens oficiais atuais definem <code>--palette-cyan #0284C7</code>, <code>--palette-pink #D91B7C</code> e <code>--palette-gold #D97706</code> para Light. Sobre #F4F7FB medem <span class="num" data-cr="#0284C7|#F4F7FB">{{cr #0284C7 #F4F7FB}}:1</span>, <span class="num" data-cr="#D91B7C|#F4F7FB">{{cr #D91B7C #F4F7FB}}:1</span> e <span class="num" data-cr="#D97706|#F4F7FB">{{cr #D97706 #F4F7FB}}:1</span>: nenhum passa 4,5:1 como texto normal. É por isso que P-02 propõe variantes mais escuras.</p></div>
+    <ol class="rules">
+@@rule BB-COR-05 C origem: C02 (medição WCAG deste brandbook)
+Sobre Dark, Azul Neon, Dourado e Íris passam AA como texto normal em todas as superfícies escuras. Rosa Neon passa em Dark e #14141A, mas cai a 4,40:1 em #252530 (só texto grande ou ícone).
+@@end
+@@rule BB-COR-06 C origem: C02 (medição WCAG deste brandbook)
+Neon puro como texto sobre Light não passa: 1,65:1 (azul), 3,20:1 (rosa), 1,52:1 (dourado) e 3,02:1 (íris). Sobre Light, neon só aparece como preenchimento, nunca como texto.
+@@end
+@@rule BB-COR-07 P origem: P-02
+Texto colorido em Light usa as variantes derivadas #006C8C, #C4105F, #7A5800 e #5B4BD6, todas com 4,80:1 ou mais nas quatro superfícies claras medidas. Valores derivados, não oficiais.
+@@end
+@@rule BB-COR-08 C origem: C04 e CLAUDE.md
+Texto sobre preenchimento neon usa #0D0D0D (on-neon), com 5,65:1 ou mais. Texto branco sobre neon é proibido (por exemplo 1,77:1 sobre Azul Neon e 3,44:1 sobre Rosa).
+@@end
+@@rule BB-COR-09 P origem: WCAG 2.2
+Componentes de interface e anéis de foco exigem 3:1 contra o fundo adjacente; a cor nunca é o único sinal de estado (sempre acompanhada de texto, ícone ou forma).
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="distribuicao">
+    <h3>Hierarquia cromática e distribuição <span class="st st-p">PROVISÓRIA</span></h3>
+    <div class="mix" role="img" aria-label="Barra de proporção 60, 25, 10 e 5 por cento"><div class="m60">60</div><div class="m25">25</div><div class="m10">10</div><div class="m5"></div></div>
+    <div class="mix-leg"><div><b>60% canvas</b>Dark ou Light e superfícies</div><div><b>25% estrutura</b>Tinta, texto suave e linhas</div><div><b>10% interação</b>Azul Neon</div><div><b>5% acento</b>Rosa, Dourado, Íris</div></div>
+    <ol class="rules">
+@@rule BB-COR-10 P origem: exemplo da missão (60/25/10/5)
+Distribuição de área por tela: 60% canvas e superfícies, 25% tinta e linhas, 10% Azul Neon de interação e 5% acentos (Rosa, Dourado, Íris). A proporção é guia de revisão, não métrica automática.
+@@end
+@@rule BB-COR-11 P origem: proposta deste brandbook
+Num mesmo viewport, um acento secundário domina por contexto (Rosa em conversão, Dourado em receita, Íris em IA). Não misturar os quatro neons no mesmo componente.
+@@end
+@@rule BB-COR-12 P origem: proposta deste brandbook
+Ação primária é Azul Neon sólido com texto on-neon. Rosa Neon sólido é reservado ao ponto de conversão de maior valor da tela (um por tela).
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="superficies">
+    <h3>Superfícies e profundidade</h3>
+    <div class="split even">
+      <div class="ladder">
+        <div class="l0"><b>Canvas</b><span>#0D0D0D · sem sombra</span></div>
+        <div class="l1"><b>Superfície</b><span>#14141A · elevação 1</span></div>
+        <div class="l2"><b>Superfície 2</b><span>#1C1C24 · elevação 1</span></div>
+        <div class="l3"><b>Superfície 3</b><span>#252530 · elevação 2</span></div>
+      </div>
+      <div>
+        <p>A profundidade vem da troca de superfície e de sombras com deslocamento e desfoque. Sobre Dark, o limite é uma linha fina <code>rgba(158,173,200,.18)</code>; sobre Light, a sombra faz o trabalho.</p>
+        <p class="plate-cap">Superfícies escuras herdadas de <code>identidade-visual/.../tokens</code>. As superfícies Light são derivadas (P-04).</p>
+      </div>
+    </div>
+    <ol class="rules">
+@@rule BB-COR-13 C origem: tokens oficiais e P-04
+Escada de superfícies Dark: canvas #0D0D0D, superfície #14141A, superfície 2 #1C1C24, superfície 3 #252530. Cada degrau acima é uma camada mais alta.
+@@end
+@@rule BB-COR-14 P origem: P-04 e proposta deste brandbook
+Escada Light derivada: canvas #F4F7FB, superfície #FBFCFE, superfície 2 #EEF2F8, superfície 3 #E3E9F2.
+@@end
+@@rule BB-COR-15 P origem: proposta deste brandbook
+Sombras de elevação têm deslocamento vertical e desfoque (por exemplo <code>0 12px 28px -12px</code>); nunca halo colorido de deslocamento zero para dar profundidade. Cartão dentro de cartão é proibido.
+@@end
+@@rule BB-COR-16 P origem: tokens oficiais de raio
+Raios: controle 12 px, cartão 16 px, modal 20 px, pílula 9999 px.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="luz">
+    <h3>Iluminação e glow</h3>
+    <div class="plate flat bd"><div class="glows">
+      <button class="glowbtn" type="button" style="--gc:#00D4FF">Halo azul</button>
+      <button class="glowbtn" type="button" style="--gc:#FF2D9B">Halo rosa</button>
+      <button class="glowbtn" type="button" style="--gc:#FFC107">Halo dourado</button>
+      <button class="glowbtn off" type="button" style="--gc:#8B7DFF">Sem halo (repouso)</button>
+    </div>
+    <p class="plate-cap" style="color:#9EADC8">Halo oficial: <code>0 0 24px rgba(cor, .45)</code> (tokens <code>--glow-*</code>). Este é o único lugar do documento onde ele aparece.</p></div>
+    <ol class="rules">
+@@rule BB-COR-17 C origem: tokens oficiais --glow-blue, --glow-pink, --glow-gold
+Halo de marca: <code>0 0 24px</code> com a cor a 45% de opacidade. Personagens usam <code>0 0 32px</code> a 35 a 40%.
+@@end
+@@rule BB-COR-18 P origem: proposta deste brandbook
+Glow sinaliza estado (foco, ativo, em processamento) e nunca decora. No máximo um elemento com halo por região da tela; em repouso, sem halo.
+@@end
+@@rule BB-COR-19 P origem: proposta deste brandbook
+Em Light não há halo: o foco usa anel sólido de 2 px e a profundidade vem de sombra com deslocamento.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="gradientes">
+    <h3>Gradientes</h3>
+    <div class="grads">
+      <div class="orbring" role="img" aria-label="Anel com o gradiente da órbita 360 graus"></div>
+      <div><div class="orbline" role="img" aria-label="Linha com o gradiente da órbita"></div>
+      <p style="margin-top:1rem"><b>Órbita 360°:</b> <code>conic-gradient(from 0deg, #FFC107, #FF2D9B, #00D4FF, #FFC107)</code>. Único gradiente multicolor da marca.</p>
+      <p class="plate-cap">Os manuais legados também citam gradiente de título (azul, rosa, dourado, com texto recortado) e de CTA (rosa para azul). A V2.0 não os adota. Ver divergências D-03 e D-04.</p></div>
+    </div>
+    <ol class="rules">
+@@rule BB-COR-20 C origem: tokens oficiais --grad-orbit
+A órbita 360° é <code>conic-gradient(from 0deg, #FFC107, #FF2D9B, #00D4FF, #FFC107)</code>.
+@@end
+@@rule BB-COR-21 P origem: proposta deste brandbook e C04
+A órbita aparece só em anéis, bordas finas, indicadores e grafismos. Nunca como fundo com texto por cima, nunca em texto (<code>background-clip: text</code> é proibido) e no máximo uma por composição.
+@@end
+@@rule BB-COR-22 P origem: proposta deste brandbook
+Botão primário é cor sólida. O gradiente de CTA do manual legado (rosa para azul) não é adotado em V2.0.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="estados">
+    <h3>Estados e semântica</h3>
+    <div class="states">
+      <span class="sbtn">Padrão</span><span class="sbtn hov">Hover</span><span class="sbtn act">Ativo</span><span class="sbtn foc">Foco</span><span class="sbtn dis">Desabilitado</span><span class="sbtn ld"><span class="sp"></span>Carregando</span><span class="sbtn err">Erro</span>
+    </div>
+    <div class="sem" style="margin-top:2rem">
+      <div class="semi" style="--sc:var(--ok)"><b>Sucesso</b><span class="num">#22C55E Dark · #15803D Light</span><p>Meta batida, sincronização concluída.</p></div>
+      <div class="semi" style="--sc:var(--danger)"><b>Crítico</b><span class="num">#EF4444 Dark · #B91C1C Light</span><p>Perda, falha de API, ação urgente.</p></div>
+      <div class="semi" style="--sc:var(--info)"><b>Informativo</b><span class="num">#3B82F6 Dark · #1D4ED8 Light</span><p>Andamento, dica, metadado.</p></div>
+      <div class="semi" style="--sc:var(--c-gold)"><b>Atenção</b><span class="num">#FFC107 Dark · #7A5800 Light</span><p>Dado desatualizado, pendência.</p></div>
+    </div>
+    <div class="note-box warn" style="margin-top:1.25rem"><b>Semânticas confirmadas pela coordenação</b><p>Sucesso <b>#22C55E</b>, crítico <b>#EF4444</b>, atenção (dourado) <b>#FFC107</b> e informativo <b>#3B82F6</b>. O Design System está sendo alinhado a estes valores; no momento da leitura, <code>tokens.css</code> ainda declara #34D399, #FF9A3D e #FF5C6C.</p></div>
+    <p class="plate-cap">Contraste sobre #0D0D0D: sucesso <span class="num" data-cr="#22C55E|#0D0D0D">{{cr #22C55E #0D0D0D}}:1</span>, crítico <span class="num" data-cr="#EF4444|#0D0D0D">{{cr #EF4444 #0D0D0D}}:1</span>, informativo <span class="num" data-cr="#3B82F6|#0D0D0D">{{cr #3B82F6 #0D0D0D}}:1</span>. Sobre #F4F7FB os originais caem a <span class="num" data-cr="#22C55E|#F4F7FB">{{cr #22C55E #F4F7FB}}:1</span>, <span class="num" data-cr="#EF4444|#F4F7FB">{{cr #EF4444 #F4F7FB}}:1</span> e <span class="num" data-cr="#3B82F6|#F4F7FB">{{cr #3B82F6 #F4F7FB}}:1</span>; as variantes Light medem <span class="num" data-cr="#15803D|#F4F7FB">{{cr #15803D #F4F7FB}}:1</span>, <span class="num" data-cr="#B91C1C|#F4F7FB">{{cr #B91C1C #F4F7FB}}:1</span> e <span class="num" data-cr="#1D4ED8|#F4F7FB">{{cr #1D4ED8 #F4F7FB}}:1</span>.</p>
+    <ol class="rules">
+@@rule BB-COR-23 C origem: Manual de Identidade Visual, cap. 2
+Cores funcionais: sucesso #22C55E, crítico #EF4444, atenção (warning) em Dourado #FFC107, informativo #3B82F6 e inteligência artificial em Íris. O Design System está sendo alinhado a estes valores.
+@@end
+@@rule BB-COR-24 P origem: contraste medido, derivação deste brandbook
+Em Light, as cores funcionais usam #15803D, #B91C1C e #1D4ED8 (todas acima de 4,5:1 sobre #F4F7FB); os valores originais não passam.
+@@end
+@@rule BB-COR-25 P origem: proposta deste brandbook
+Todo componente interativo define padrão, hover, foco visível, ativo, desabilitado, carregando e erro. Todo painel de dados define loading, empty, error e stale (AGENTS.md §25).
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="temas">
+    <h3>Dark e Light</h3>
+    <div class="tbl tokmap"><table>
+      <thead><tr><th scope="col">Token</th><th scope="col">Dark</th><th scope="col">Light</th><th scope="col">Status</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">--bg</td><td><span class="dot" style="background:#0D0D0D"></span>#0D0D0D</td><td><span class="dot" style="background:#F4F7FB"></span>#F4F7FB</td><td>Missão (C02)</td></tr>
+        <tr><td class="mono">--surface</td><td><span class="dot" style="background:#14141A"></span>#14141A</td><td><span class="dot" style="background:#FBFCFE"></span>#FBFCFE</td><td>Dark herdada; Light derivada</td></tr>
+        <tr><td class="mono">--surface-2 / -3</td><td><span class="dot" style="background:#1C1C24"></span>#1C1C24 / #252530</td><td><span class="dot" style="background:#EEF2F8"></span>#EEF2F8 / #E3E9F2</td><td>Dark herdada; Light derivada</td></tr>
+        <tr><td class="mono">--ink</td><td><span class="dot" style="background:#E8EEFF"></span>#E8EEFF</td><td><span class="dot" style="background:#0F1A2E"></span>#0F1A2E</td><td>Derivada (P-03)</td></tr>
+        <tr><td class="mono">--ink-muted</td><td><span class="dot" style="background:#9EADC8"></span>#9EADC8</td><td><span class="dot" style="background:#46546B"></span>#46546B</td><td>Dark herdada; Light derivada</td></tr>
+        <tr><td class="mono">--c-blue</td><td><span class="dot" style="background:#00D4FF"></span>#00D4FF</td><td><span class="dot" style="background:#006C8C"></span>#006C8C</td><td>Light derivada (P-02)</td></tr>
+        <tr><td class="mono">--c-pink</td><td><span class="dot" style="background:#FF2D9B"></span>#FF2D9B</td><td><span class="dot" style="background:#C4105F"></span>#C4105F</td><td>Light derivada (P-02)</td></tr>
+        <tr><td class="mono">--c-gold</td><td><span class="dot" style="background:#FFC107"></span>#FFC107</td><td><span class="dot" style="background:#7A5800"></span>#7A5800</td><td>Light derivada (P-02)</td></tr>
+        <tr><td class="mono">--c-iris</td><td><span class="dot" style="background:#8B7DFF"></span>#8B7DFF</td><td><span class="dot" style="background:#5B4BD6"></span>#5B4BD6</td><td>Light derivada (P-02)</td></tr>
+        <tr><td class="mono">--on-neon</td><td><span class="dot" style="background:#0D0D0D"></span>#0D0D0D</td><td><span class="dot" style="background:#0D0D0D"></span>#0D0D0D</td><td>Missão (texto sobre neon)</td></tr>
+      </tbody></table></div>
+    <p class="plate-cap">Use o botão Dark/Light no topo para ver este documento inteiro nos dois temas. Mapa idêntico ao de <code>shared/core.css</code>.</p>
+    <ol class="rules">
+@@rule BB-COR-26 C origem: C02 e C04
+Dois temas oficiais, Dark (#0D0D0D) e Light (#F4F7FB), com alternância manual e persistência da escolha. O tema nunca depende só de <code>prefers-color-scheme</code>.
+@@end
+@@rule BB-COR-27 P origem: P-02, P-03 e P-04
+As variantes Light (superfícies, tinta e cores de texto) e a tinta #E8EEFF são derivadas, medidas neste documento e aguardam homologação.
+@@end
+@@rule BB-COR-28 C origem: C04
+Nenhum título ou subtítulo usa #FFFFFF ou #000000. Texto usa a tinta do tema ou a cor de acento do tema (ver Tipografia).
+@@end
+    </ol>
+  </div>
+</section>

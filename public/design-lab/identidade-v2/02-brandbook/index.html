@@ -1,0 +1,987 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0D0D0D">
+<meta name="robots" content="noindex,nofollow">
+<title>Birthub 360° · Brandbook V2.0 (RASCUNHO, NÃO HOMOLOGADO)</title>
+<link rel="stylesheet" href="../shared/core.css">
+<link rel="stylesheet" href="brandbook.css">
+<link rel="icon" href="../assets/logos/birthhub360-icone.svg" type="image/svg+xml">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-hub" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/></symbol>
+  <symbol id="i-intel" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.9-4.9M8 10.5h5M10.5 8v5"/></symbol>
+  <symbol id="i-orch" viewBox="0 0 24 24"><circle cx="5" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 6h3a4 4 0 0 1 4 4v0M7 18h3a4 4 0 0 0 4-4M14 12h3"/></symbol>
+  <symbol id="i-perf" viewBox="0 0 24 24"><path d="M5 20V11M12 20V4M19 20v-6M3 20h18"/></symbol>
+  <symbol id="i-forecast" viewBox="0 0 24 24"><path d="M3 18l5-5 4 3 4-6"/><path d="M16 10l5-4" stroke-dasharray="2 2.4"/><path d="M3 21h18"/></symbol>
+  <symbol id="i-ai" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 17v4M17 19h4"/></symbol>
+  <symbol id="i-auto" viewBox="0 0 24 24"><path d="M13 3L5 13.5h6L10 21l8-10.5h-6z"/></symbol>
+  <symbol id="i-voice" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+  <symbol id="i-admin" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-field" viewBox="0 0 24 24"><path d="M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11z"/><circle cx="12" cy="10" r="2.2"/></symbol>
+  <symbol id="i-social" viewBox="0 0 24 24"><path d="M4 5h16v10H9l-5 4z"/><path d="M8 9h8M8 12h5"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.4-4.4"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9H4z"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+</svg>
+<a class="skip" href="#conteudo">Pular para o conteúdo</a>
+
+<header class="hd">
+  <div class="draft" role="status"><b>V2.0 — RASCUNHO, NÃO HOMOLOGADO</b><span>Decisões provisórias estão marcadas. Não usar como regra homologada.</span></div>
+  <div class="bar">
+    <button class="btn menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="rail"><svg class="ic" aria-hidden="true"><use href="#i-menu"/></svg>Índice</button>
+    <a class="bar-brand" href="#topo"><img src="../assets/logos/birthhub360-icone.svg" alt="" width="28" height="28"><span><span data-brand>Birthub 360°</span> <small>Brandbook V2.0</small></span></a>
+    <span class="seg-label" id="filter-lbl">Regras:</span>
+    <div class="seg" role="group" aria-labelledby="filter-lbl">
+      <button type="button" data-filter="all" aria-pressed="true">Todas</button>
+      <button type="button" data-filter="confirmada" aria-pressed="false">Confirmadas</button>
+      <button type="button" data-filter="provisoria" aria-pressed="false">Provisórias</button>
+    </div>
+    <button class="btn" id="theme-btn" type="button" aria-pressed="false" aria-label="Alternar tema escuro e claro"><svg class="ic ico-moon" aria-hidden="true"><use href="#i-moon"/></svg><svg class="ic ico-sun" aria-hidden="true" style="display:none"><use href="#i-sun"/></svg><span class="lbl">Dark</span></button>
+  </div>
+  <p class="vh" id="filter-out" role="status" aria-live="polite"></p>
+</header>
+
+<div class="shell">
+<nav class="rail ac-blue" id="rail" aria-label="Índice do brandbook">
+  <div class="rail-ring">
+    <svg viewBox="0 0 56 56" aria-hidden="true"><circle class="tr" cx="28" cy="28" r="24"/><circle class="pr" cx="28" cy="28" r="24"/></svg>
+    <p>Leitura<b id="rail-pct">0%</b></p>
+  </div>
+  <ol>
+    <li><a href="#identidade">Identidade</a><ul>
+      <li><a href="#nome">Nome e grafia</a></li><li><a href="#posicionamento">Posicionamento</a></li><li><a href="#proposito">Propósito e narrativa</a></li><li><a href="#voz">Personalidade e voz</a></li></ul></li>
+    <li><a href="#logotipo">Logotipo</a><ul>
+      <li><a href="#versoes">Versões</a></li><li><a href="#proporcoes">Proporções</a></li><li><a href="#protecao">Área de proteção</a></li><li><a href="#minimos">Tamanhos mínimos</a></li><li><a href="#fundos">Fundos</a></li><li><a href="#restricoes">Restrições</a></li></ul></li>
+    <li><a href="#paleta">Paleta Neon</a><ul>
+      <li><a href="#cores">Cores oficiais</a></li><li><a href="#contraste">Contraste WCAG</a></li><li><a href="#distribuicao">Hierarquia e distribuição</a></li><li><a href="#superficies">Superfícies e profundidade</a></li><li><a href="#luz">Iluminação e glow</a></li><li><a href="#gradientes">Gradientes</a></li><li><a href="#estados">Estados e semântica</a></li><li><a href="#temas">Dark e Light</a></li></ul></li>
+    <li><a href="#tipografia">Tipografia</a><ul>
+      <li><a href="#familias">Famílias e usos</a></li><li><a href="#escala">Escala e pesos</a></li><li><a href="#cor-titulos">Cor dos títulos</a></li><li><a href="#hierarquia">Hierarquia em texto corrido</a></li></ul></li>
+    <li><a href="#linguagem">Linguagem visual</a><ul>
+      <li><a href="#direcao">Neon Editorial Cinematic</a></li><li><a href="#grafismos">Grafismos 360°</a></li><li><a href="#composicao">Composição editorial</a></li><li><a href="#profundidade">Profundidade</a></li><li><a href="#iconografia">Iconografia</a></li><li><a href="#imagens">Imagens</a></li><li><a href="#movimento">Movimento</a></li></ul></li>
+    <li><a href="#personagens">Personagens</a><ul>
+      <li><a href="#contagens">Quatro contagens</a></li><li><a href="#elenco">Elenco de 29</a></li><li><a href="#uso-personagens">Uso</a></li></ul></li>
+    <li><a href="#aplicacoes">Aplicações</a><ul>
+      <li><a href="#app-landing">Landing</a></li><li><a href="#app-login">Login</a></li><li><a href="#app-plataforma">Plataforma SaaS</a></li><li><a href="#app-dashboard">Dashboard</a></li><li><a href="#app-modulos">Módulos (11)</a></li><li><a href="#app-materiais">Materiais comerciais</a></li><li><a href="#app-social">Redes sociais</a></li><li><a href="#app-mobile">Mobile</a></li></ul></li>
+    <li><a href="#pendencias">Pendências</a><ul>
+      <li><a href="#decisoes">Matriz de decisões</a></li><li><a href="#divergencias">Divergências encontradas</a></li></ul></li>
+  </ol>
+  <p class="rail-foot">Regras: <span id="cnt-all">0</span> · confirmadas <span id="cnt-c">0</span> · provisórias <span id="cnt-p">0</span><br>Rascunho V2.0. Fonte de verdade: FONTE-DE-VERDADE.md e shared/core.css.</p>
+</nav>
+
+<main id="conteudo" tabindex="-1">
+<div class="wrap">
+
+<section class="mast" id="topo" aria-labelledby="h-topo">
+  <div>
+    <h1 id="h-topo"><span data-brand>Birthub 360°</span><span class="t2">Brandbook</span></h1>
+    <p class="lead">Sistema Operacional de Inteligência Comercial, impulsionado por IA e <em>Revenue Intelligence</em>.</p>
+    <p class="note">Este brandbook é a versão 2.0 em rascunho. Cada regra tem um ID estável e uma etiqueta: <b>CONFIRMADA</b> quando vem literalmente da missão (decisões C01 a C09) ou de documento oficial herdado, <b>PROVISÓRIA</b> quando é proposta derivada, ainda sem homologação. Os exemplos de aplicação são protótipos e usam valores ilustrativos.</p>
+    <dl class="stats">
+      <div><dt>Regras</dt><dd id="cnt-all2">121</dd></div>
+      <div class="c"><dt>Confirmadas</dt><dd>45</dd></div>
+      <div class="p"><dt>Provisórias</dt><dd>76</dd></div>
+    </dl>
+  </div>
+  <figure style="margin:0"><div class="dial" role="img" aria-label="Diagrama conceitual: Hub Central no centro, onze workspaces modulares P01 a M11 em anel e assistentes globais na borda"><svg class="ticks" viewBox="0 0 100 100" aria-hidden="true"><line x1="93.00" y1="50.00" x2="97.00" y2="50.00" stroke="currentColor" stroke-width="0.5" opacity="0.9"/><line x1="94.33" y1="53.88" x2="96.82" y2="54.10" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="93.82" y1="57.73" x2="96.29" y2="58.16" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="92.98" y1="61.52" x2="95.40" y2="62.16" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="91.82" y1="65.22" x2="94.17" y2="66.07" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="90.33" y1="68.81" x2="92.60" y2="69.86" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="87.24" y1="71.50" x2="90.70" y2="73.50" stroke="currentColor" stroke-width="0.5" opacity="0.9"/><line x1="86.45" y1="75.52" x2="88.50" y2="76.96" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="84.09" y1="78.60" x2="86.00" y2="80.21" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="81.47" y1="81.47" x2="83.23" y2="83.23" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="78.60" y1="84.09" x2="80.21" y2="86.00" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="75.52" y1="86.45" x2="76.96" y2="88.50" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="71.50" y1="87.24" x2="73.50" y2="90.70" stroke="currentColor" stroke-width="0.5" opacity="0.9"/><line x1="68.81" y1="90.33" x2="69.86" y2="92.60" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="65.22" y1="91.82" x2="66.07" y2="94.17" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="61.52" y1="92.98" x2="62.16" y2="95.40" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="57.73" y1="93.82" x2="58.16" y2="96.29" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="53.88" y1="94.33" x2="54.10" y2="96.82" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="50.00" y1="93.00" x2="50.00" y2="97.00" stroke="currentColor" stroke-width="0.5" opacity="0.9"/><line x1="46.12" y1="94.33" x2="45.90" y2="96.82" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="42.27" y1="93.82" x2="41.84" y2="96.29" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="38.48" y1="92.98" x2="37.84" y2="95.40" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="34.78" y1="91.82" x2="33.93" y2="94.17" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="31.19" y1="90.33" x2="30.14" y2="92.60" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="28.50" y1="87.24" x2="26.50" y2="90.70" stroke="currentColor" stroke-width="0.5" opacity="0.9"/><line x1="24.48" y1="86.45" x2="23.04" y2="88.50" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="21.40" y1="84.09" x2="19.79" y2="86.00" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="18.53" y1="81.47" x2="16.77" y2="83.23" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="15.91" y1="78.60" x2="14.00" y2="80.21" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="13.55" y1="75.52" x2="11.50" y2="76.96" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="12.76" y1="71.50" x2="9.30" y2="73.50" stroke="currentColor" stroke-width="0.5" opacity="0.9"/><line x1="9.67" y1="68.81" x2="7.40" y2="69.86" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="8.18" y1="65.22" x2="5.83" y2="66.07" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="7.02" y1="61.52" x2="4.60" y2="62.16" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="6.18" y1="57.73" x2="3.71" y2="58.16" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="5.67" y1="53.88" x2="3.18" y2="54.10" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="7.00" y1="50.00" x2="3.00" y2="50.00" stroke="currentColor" stroke-width="0.5" opacity="0.9"/><line x1="5.67" y1="46.12" x2="3.18" y2="45.90" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="6.18" y1="42.27" x2="3.71" y2="41.84" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="7.02" y1="38.48" x2="4.60" y2="37.84" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="8.18" y1="34.78" x2="5.83" y2="33.93" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="9.67" y1="31.19" x2="7.40" y2="30.14" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="12.76" y1="28.50" x2="9.30" y2="26.50" stroke="currentColor" stroke-width="0.5" opacity="0.9"/><line x1="13.55" y1="24.48" x2="11.50" y2="23.04" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="15.91" y1="21.40" x2="14.00" y2="19.79" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="18.53" y1="18.53" x2="16.77" y2="16.77" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="21.40" y1="15.91" x2="19.79" y2="14.00" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="24.48" y1="13.55" x2="23.04" y2="11.50" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="28.50" y1="12.76" x2="26.50" y2="9.30" stroke="currentColor" stroke-width="0.5" opacity="0.9"/><line x1="31.19" y1="9.67" x2="30.14" y2="7.40" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="34.78" y1="8.18" x2="33.93" y2="5.83" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="38.48" y1="7.02" x2="37.84" y2="4.60" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="42.27" y1="6.18" x2="41.84" y2="3.71" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="46.12" y1="5.67" x2="45.90" y2="3.18" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="50.00" y1="7.00" x2="50.00" y2="3.00" stroke="currentColor" stroke-width="0.5" opacity="0.9"/><line x1="53.88" y1="5.67" x2="54.10" y2="3.18" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="57.73" y1="6.18" x2="58.16" y2="3.71" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="61.52" y1="7.02" x2="62.16" y2="4.60" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="65.22" y1="8.18" x2="66.07" y2="5.83" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="68.81" y1="9.67" x2="69.86" y2="7.40" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="71.50" y1="12.76" x2="73.50" y2="9.30" stroke="currentColor" stroke-width="0.5" opacity="0.9"/><line x1="75.52" y1="13.55" x2="76.96" y2="11.50" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="78.60" y1="15.91" x2="80.21" y2="14.00" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="81.47" y1="18.53" x2="83.23" y2="16.77" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="84.09" y1="21.40" x2="86.00" y2="19.79" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="86.45" y1="24.48" x2="88.50" y2="23.04" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="87.24" y1="28.50" x2="90.70" y2="26.50" stroke="currentColor" stroke-width="0.5" opacity="0.9"/><line x1="90.33" y1="31.19" x2="92.60" y2="30.14" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="91.82" y1="34.78" x2="94.17" y2="33.93" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="92.98" y1="38.48" x2="95.40" y2="37.84" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="93.82" y1="42.27" x2="96.29" y2="41.84" stroke="currentColor" stroke-width="0.25" opacity="0.55"/><line x1="94.33" y1="46.12" x2="96.82" y2="45.90" stroke="currentColor" stroke-width="0.25" opacity="0.55"/></svg><span class="orb"></span><span class="axis ax-h"></span><span class="axis ax-v"></span><span class="deg" style="left:50%;top:0;transform:translateX(-50%)">0°</span><span class="deg" style="right:0;top:50%;transform:translateY(-50%)">90°</span><span class="deg" style="left:50%;bottom:0;transform:translateX(-50%)">180°</span><span class="deg" style="left:0;top:50%;transform:translateY(-50%)">270°</span><span class="nd" style="left:50.00%;top:11.00%;--nc:var(--c-gold)">P01</span><span class="nd" style="left:71.08%;top:17.19%;--nc:var(--c-blue)">P02</span><span class="nd" style="left:85.48%;top:33.80%;--nc:var(--c-iris)">P03</span><span class="nd" style="left:88.60%;top:55.55%;--nc:var(--c-pink)">P04</span><span class="nd" style="left:79.47%;top:75.54%;--nc:var(--c-gold)">P05</span><span class="nd" style="left:60.99%;top:87.42%;--nc:var(--c-iris)">P06</span><span class="nd" style="left:39.01%;top:87.42%;--nc:var(--c-blue)">P07</span><span class="nd" style="left:20.53%;top:75.54%;--nc:var(--c-pink)">P08</span><span class="nd" style="left:11.40%;top:55.55%;--nc:var(--c-gold)">M09</span><span class="nd" style="left:14.52%;top:33.80%;--nc:var(--c-blue)">M10</span><span class="nd" style="left:28.92%;top:17.19%;--nc:var(--c-pink)">M11</span><span class="as" style="left:83.23%;top:83.23%"></span><span class="as" style="left:4.60%;top:62.16%"></span><span class="as" style="left:62.16%;top:4.60%"></span><span class="core"><img src="../assets/logos/birthhub360-simbolo.svg" alt="" width="256" height="256"></span></div><figcaption class="dial-cap"><span><b>Centro:</b> Hub Central (símbolo original, sem alteração).</span><span><b>Anel:</b> 11 workspaces modulares, P01 a M11.</span><span><b>Borda:</b> assistentes globais (losangos). Diagrama conceitual.</span></figcaption></figure>
+</section>
+
+<section class="ch ac-blue" id="identidade" data-secao="Identidade" aria-labelledby="h-identidade">
+  <div class="ch-head">
+    <h2 id="h-identidade">Identidade</h2>
+    <div><p class="lede">Quem a marca é, como o nome se escreve e como ela fala. A grafia do nome ainda não tem decisão definitiva: aparece aqui como provisória, com a pendência à vista.</p>
+    <p class="meta">Regras BB-ID-01 a BB-ID-18 · 7 confirmadas · 11 provisórias</p></div>
+  </div>
+
+  <div class="sub" id="nome">
+    <h3>Nome e grafia <span class="st st-p">PROVISÓRIA</span></h3>
+    <div class="split">
+      <div class="stack">
+        <div class="tbl"><table>
+          <thead><tr><th scope="col">Grafia</th><th scope="col">Onde aparece nas fontes</th><th scope="col">Situação em V2.0</th></tr></thead>
+          <tbody>
+            <tr><td><b>Birthub 360°</b></td><td>Missão do usuário de 2026-11-13.</td><td>Adotada provisoriamente nos novos textos.</td></tr>
+            <tr><td><b>Birth Hub 360°</b> e <b>Birth Hub 360º</b></td><td>Brandbook oficial, manuais, <code>src/config/brand.ts</code> e a própria arte do logotipo. O levantamento do Agente 00 conta 27 arquivos.</td><td>Legado oficial. Mantida onde já existe, sem reescrita automática.</td></tr>
+            <tr><td><b>Birthub 360</b></td><td>Schema e migration (2 arquivos, segundo o Agente 00).</td><td>Uso técnico, fora de texto de marca.</td></tr>
+            <tr><td><b>BirthHub360</b></td><td>Identificadores e nomes de arquivo.</td><td>Uso técnico, não é grafia de texto.</td></tr>
+          </tbody></table></div>
+        <div class="plate flat bd" style="display:grid;gap:1.25rem;justify-items:start">
+          <img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Logotipo horizontal original, cuja arte lê BIRTH HUB 360°" width="473" height="128" style="width:min(100%,29.5rem);height:auto">
+          <p class="plate-cap" style="color:#9EADC8">Arte original preservada, sem alteração (C06). O wordmark desenhado lê <b style="color:#E8EEFF">BIRTH HUB 360°</b>, em duas palavras. Adotar "Birthub 360°" exigiria arte nova, fora do escopo desta frente.</p>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="note-box warn"><b>Pendência: decisão humana</b>
+          <p>Escolher entre <b>Birthub 360°</b> (missão) e <b>Birth Hub 360°</b> (fontes oficiais do repositório). Até lá, nenhuma página deve tratar a grafia como definitiva.</p>
+          <p>Impacto de trocar: arte do logotipo, <code>brand.ts</code>, manuais, metadados e textos legais.</p></div>
+        <div class="plate flat">
+          <p style="margin-bottom:.75rem"><b>Prova do ponto único de troca</b></p>
+          <p class="intro" style="margin-bottom:1rem;font-size:.9rem">Todo o nome neste documento sai de uma constante em <code>brandbook.js</code>. Troque abaixo e veja o título, o cabeçalho e os textos mudarem juntos.</p>
+          <div class="seg" role="group" aria-label="Simular grafia do nome">
+            <button type="button" data-brand-sim="main" aria-pressed="true">Birthub 360°</button>
+            <button type="button" data-brand-sim="alt" aria-pressed="false">Birth Hub 360°</button>
+          </div>
+          <p class="plate-cap" id="brand-sim-out" role="status">Simulação local. Nada é gravado.</p>
+        </div>
+      </div>
+    </div>
+    <ol class="rules">
+<li class="rule" id="BB-ID-01" data-status="confirmada"><a class="rid" href="#BB-ID-01">BB-ID-01</a><p>Posicionamento oficial: <b>Sistema Operacional de Inteligência Comercial, impulsionado por IA e Revenue Intelligence</b>. Usar a frase completa na primeira menção de cada peça.<span class="orig">Origem: C01 da missão</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-ID-02" data-status="provisoria"><a class="rid" href="#BB-ID-02">BB-ID-02</a><p>Depois da primeira menção, a forma curta "Sistema Operacional de Inteligência Comercial" é aceita. "CRM" sozinho não descreve o produto e não deve ser a definição principal.<span class="orig">Origem: derivada de C01</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-ID-03" data-status="provisoria"><a class="rid" href="#BB-ID-03">BB-ID-03</a><p>Em textos novos, escrever <b data-brand>Birthub 360°</b> com o símbolo de grau (U+00B0), nunca o ordinal (U+00BA). Grafia pendente de decisão humana.<span class="orig">Origem: P-01</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-ID-04" data-status="provisoria"><a class="rid" href="#BB-ID-04">BB-ID-04</a><p>O nome é citado por um único ponto de troca (constante ou token de conteúdo) e nunca digitado solto em componente ou peça. Neste documento: <code>BRAND_NAME</code> em <code>brandbook.js</code>.<span class="orig">Origem: P-01</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-ID-05" data-status="confirmada"><a class="rid" href="#BB-ID-05">BB-ID-05</a><p>A arte do logotipo não é redesenhada para acompanhar a grafia. A arte atual lê "BIRTH HUB 360°"; um novo wordmark depende da decisão de P-01.<span class="orig">Origem: C06 da missão</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-ID-06" data-status="provisoria"><a class="rid" href="#BB-ID-06">BB-ID-06</a><p>Não abreviar o nome em texto (por exemplo "BH360"). Em espaço estreito, usar o ícone do logotipo.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-ID-07" data-status="confirmada"><a class="rid" href="#BB-ID-07">BB-ID-07</a><p>Arquitetura do produto: Hub Central, Workspaces Modulares e Assistentes Globais. Os 11 módulos são P01 a P08 (pilares) e M09 a M11.<span class="orig">Origem: C07 da missão</span></p><span class="st st-c">CONFIRMADA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="posicionamento">
+    <h3>Posicionamento</h3>
+    <p class="statement">Sistema Operacional de <span class="a">Inteligência Comercial</span>, impulsionado por IA e <span class="b">Revenue Intelligence</span>.</p>
+    <div class="parts">
+      <div class="part"><h4>Sistema Operacional</h4><p>Não é um módulo nem uma aba: é a camada onde a operação roda. Traduz a arquitetura Hub Central, Workspaces Modulares e Assistentes Globais.</p></div>
+      <div class="part"><h4>Inteligência Comercial</h4><p>O domínio. Prospecção, pipeline, cadência, performance e previsibilidade pensados para times comerciais (SDR, closer e gestão).</p></div>
+      <div class="part"><h4>IA e Revenue Intelligence</h4><p>O motor. A IA recomenda e executa com evidência visível; Revenue Intelligence é a disciplina que liga dado, decisão e receita.</p></div>
+    </div>
+    <ol class="rules">
+<li class="rule" id="BB-ID-08" data-status="provisoria"><a class="rid" href="#BB-ID-08">BB-ID-08</a><p>O ICP é qualquer empresa com área comercial que queira automatizar a operação ponta a ponta. Nenhum texto novo amarra o produto a um vertical específico.<span class="orig">Origem: derivada de C01 e do Manual do Produto</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-ID-09" data-status="provisoria"><a class="rid" href="#BB-ID-09">BB-ID-09</a><p>A promessa de IA é sempre acompanhada de evidência ou fonte; a marca nunca afirma onisciência. Coerente com BB-ID-15.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="proposito">
+    <h3>Propósito, proposta de valor e narrativa</h3>
+    <div class="split even">
+      <div>
+        <h4 style="margin-top:0">Propósito <span class="st st-p">PROVISÓRIO</span></h4>
+        <p>Reunir o que está disperso na operação comercial em um único comando: dado que vira decisão, e decisão que vira execução.</p>
+        <h4>Proposta de valor <span class="st st-p">PROVISÓRIA</span></h4>
+        <p>Três promessas, todas verificáveis no produto: unifica os dados da operação; recomenda com evidência; executa com governança, com aprovação humana nas ações de alto risco.</p>
+      </div>
+      <div class="note-box"><b>Como esta redação nasceu</b>
+        <p>Propósito e proposta de valor são texto proposto por esta frente, derivado do slogan e da tagline oficiais em <code>src/config/brand.ts</code> ("integrando dados, potencializando decisões e acelerando a execução") e dos princípios do Manual do Produto. Precisam de aprovação editorial.</p></div>
+    </div>
+    <h4 style="margin-top:2.5rem">Narrativa em três tempos <span class="st st-p">PROVISÓRIA</span></h4>
+    <div class="arc">
+      <div><div class="arc-line"></div><h4>Conectar</h4><p>Dados dispersos em CRM, planilhas, voz e mensagens entram em um único lugar, com origem rastreável.</p></div>
+      <div><div class="arc-line"></div><h4>Decidir</h4><p>A inteligência ordena o que importa agora e mostra a evidência por trás de cada recomendação.</p></div>
+      <div><div class="arc-line"></div><h4>Executar</h4><p>A próxima ação sai do mesmo lugar: cadência, ligação, proposta, com aprovação quando o risco pede.</p></div>
+    </div>
+    <ol class="rules">
+<li class="rule" id="BB-ID-10" data-status="provisoria"><a class="rid" href="#BB-ID-10">BB-ID-10</a><p>Propósito: reunir o que está disperso na operação comercial em um único comando. Texto proposto, pendente de aprovação editorial.<span class="orig">Origem: derivada de src/config/brand.ts</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-ID-11" data-status="provisoria"><a class="rid" href="#BB-ID-11">BB-ID-11</a><p>Proposta de valor em três promessas verificáveis: unifica dados, recomenda com evidência, executa com governança e aprovação humana em ação de alto risco.<span class="orig">Origem: Manual do Produto cap. 1 e BIRTHUB360_CONTRATOS_AGENTES.md</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-ID-12" data-status="provisoria"><a class="rid" href="#BB-ID-12">BB-ID-12</a><p>Narrativa em três tempos: Conectar, Decidir, Executar. Cada peça de comunicação ocupa um desses tempos e aponta para o seguinte.<span class="orig">Origem: derivada de brand.ts (pilares Conexão, Inteligência, Execução)</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-ID-13" data-status="provisoria"><a class="rid" href="#BB-ID-13">BB-ID-13</a><p>Não reutilizar afirmações sem lastro do manual de produto legado ("0ms de latência de decisão", "100% WCAG 2.2 AA", "40+ módulos", contra 11 módulos oficiais). Só publicar número com fonte medida.<span class="orig">Origem: AGENTS.md §25 (zero mock)</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="voz">
+    <h3>Personalidade e tom de voz</h3>
+    <div class="traits">
+      <div class="trait"><b>Precisa</b><p>Diz o número, a fonte e o prazo. Sem adjetivo inflado.</p></div>
+      <div class="trait"><b>Direta</b><p>Verbo de ação no começo, uma ideia por frase.</p></div>
+      <div class="trait"><b>Analítica</b><p>Mostra a evidência antes da conclusão.</p></div>
+      <div class="trait"><b>Resolutiva</b><p>Todo problema vem com o próximo passo.</p></div>
+    </div>
+    <div class="vox" style="margin-top:2rem">
+      <div class="yes"><h4>CORRETO</h4><p>Gerar proposta comercial</p></div>
+      <div class="no"><h4>ERRADO</h4><p>Clique aqui</p></div>
+      <div class="yes row"><p>Não foi possível sincronizar com o Bitrix24: o token expirou. Reconecte em Configurações, Integrações.</p></div>
+      <div class="no row"><p>Ocorreu um erro inesperado. Tente mais tarde.</p></div>
+      <div class="yes row"><p>Probabilidade de fechamento em 78%, com base em 12 reuniões no mesmo segmento.</p></div>
+      <div class="no row"><p>Eu acho que este cliente vai fechar porque é muito qualificado.</p></div>
+    </div>
+    <p class="plate-cap">Exemplos de redação herdados do Manual de Identidade do Produto (cap. 4). O 78% e as 12 reuniões são texto de exemplo, não dado real.</p>
+    <ol class="rules">
+<li class="rule" id="BB-ID-14" data-status="confirmada"><a class="rid" href="#BB-ID-14">BB-ID-14</a><p>Personalidade: precisa, direta, analítica e resolutiva, com a postura de um consultor sênior de alto impacto.<span class="orig">Origem: Manual de Identidade do Produto, cap. 4</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-ID-15" data-status="confirmada"><a class="rid" href="#BB-ID-15">BB-ID-15</a><p>A IA fala em hipótese apoiada em evidência concreta, nunca como entidade onipotente.<span class="orig">Origem: Manual de Identidade do Produto, cap. 4</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-ID-16" data-status="confirmada"><a class="rid" href="#BB-ID-16">BB-ID-16</a><p>Botões e ações usam verbo direto que anuncia o resultado ("Gerar proposta comercial", "Sincronizar agora"). Proibidos "Clique aqui", "Submeter" e "OK".<span class="orig">Origem: Manual de Identidade do Produto, cap. 4</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-ID-17" data-status="confirmada"><a class="rid" href="#BB-ID-17">BB-ID-17</a><p>Mensagens de erro dizem a causa raiz e oferecem o próximo passo de recuperação.<span class="orig">Origem: Manual de Identidade do Produto, cap. 4</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-ID-18" data-status="provisoria"><a class="rid" href="#BB-ID-18">BB-ID-18</a><p>A personalidade tem duas réguas: cinematográfica na experiência comercial (landing, campanhas) e discreta e rápida na operação (plataforma).<span class="orig">Origem: C08 da missão</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+</section>
+
+<section class="ch ac-gold" id="logotipo" data-secao="Logotipo" aria-labelledby="h-logotipo">
+  <div class="ch-head">
+    <h2 id="h-logotipo">Logotipo</h2>
+    <div><p class="lede">Os três SVGs mestres entram sem nenhuma alteração. Tudo o que está desenhado em volta deles (medidas, proteção, fundos) é diagrama de apoio, nunca redesenho.</p>
+    <p class="meta">Regras BB-LOGO-01 a BB-LOGO-16 · 8 confirmadas · 8 provisórias</p></div>
+  </div>
+
+  <div class="sub" id="versoes">
+    <h3>Versões</h3>
+    <div class="logo-set">
+      <figure class="lplate dk" style="margin:0"><div class="art"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo do Birth Hub 360 sobre fundo escuro" width="256" height="256" style="width:min(100%,15rem)"></div><figcaption><b>Símbolo</b>Emblema completo, com o anel de graduação. A partir de 96 px.</figcaption></figure>
+      <figure class="lplate dk" style="margin:0"><div class="art"><img src="../assets/logos/birthhub360-icone.svg" alt="Ícone do Birth Hub 360 sobre fundo escuro" width="180" height="180" style="width:min(100%,9rem)"></div><figcaption><b>Ícone</b>Redução estrutural, sem anel de graduação. De 32 a 96 px.</figcaption></figure>
+      <figure class="lplate dk" style="margin:0"><div class="art"><img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Logotipo horizontal do Birth Hub 360 sobre fundo escuro" width="473" height="128" style="width:min(100%,19rem)"></div><figcaption><b>Horizontal</b>Símbolo e wordmark, assinatura institucional.</figcaption></figure>
+    </div>
+    <p class="plate-cap">Arquivos: <code>assets/logos/birthhub360-simbolo.svg</code>, <code>-icone.svg</code>, <code>-logo-horizontal.svg</code>. Cópias idênticas (verificadas com cmp) dos mestres em <code>identidade-visual/birthhub360/logos/</code>.</p>
+    <ol class="rules">
+<li class="rule" id="BB-LOGO-01" data-status="confirmada"><a class="rid" href="#BB-LOGO-01">BB-LOGO-01</a><p>O logotipo original não é redesenhado, recolorido, vetorizado de novo nem "melhorado". Usar sempre os SVGs mestres copiados em <code>assets/logos/</code>.<span class="orig">Origem: C06 da missão</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-LOGO-02" data-status="confirmada"><a class="rid" href="#BB-LOGO-02">BB-LOGO-02</a><p>Três versões oficiais: símbolo (emblema completo, 96 px ou mais), ícone (32 a 96 px; favicon e avatar) e horizontal (emblema mais logotipo, assinatura institucional).<span class="orig">Origem: src/config/brand.ts</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-LOGO-03" data-status="confirmada"><a class="rid" href="#BB-LOGO-03">BB-LOGO-03</a><p>Os SVGs mestres têm cores históricas (incluindo #3B82F6 no anel e serifa no "B" e no wordmark) que diferem dos tokens neon atuais. Foram preservados por determinação do usuário e não são corrigidos nesta frente.<span class="orig">Origem: identidade-visual/README.md</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-LOGO-04" data-status="provisoria"><a class="rid" href="#BB-LOGO-04">BB-LOGO-04</a><p>Cada imagem de logotipo leva texto alternativo com o nome e a versão. Em um cabeçalho que já traz o nome em texto, o ícone é decorativo (alt vazio).<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="proporcoes">
+    <h3>Proporções</h3>
+    <div class="split rev">
+      <div class="geo dkp" role="img" aria-label="Símbolo com quatro circunferências de medida sobrepostas, de A a D">
+        <img src="../assets/logos/birthhub360-simbolo.svg" alt="" width="256" height="256">
+        <i style="width:96.9%;height:96.9%"></i><i style="width:70.3%;height:70.3%"></i><i style="width:57.8%;height:57.8%"></i><i style="width:48%;height:48%"></i>
+        <span class="lb" style="left:84.25%;top:15.75%;transform:translate(-50%,-50%)">A</span><span class="lb" style="left:74.86%;top:74.86%;transform:translate(-50%,-50%)">B</span><span class="lb" style="left:70.44%;top:29.56%;transform:translate(-50%,-50%)">C</span><span class="lb" style="left:66.99%;top:66.99%;transform:translate(-50%,-50%)">D</span>
+      </div>
+      <div class="tbl"><table>
+        <thead><tr><th scope="col">Marca</th><th scope="col">Elemento (viewBox 256)</th><th scope="col">Diâmetro</th><th scope="col">% do lado</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">A</td><td>Anel de graduação (traço r 118,12 e espessura 11,77)</td><td class="num">248</td><td class="num">96,9%</td></tr>
+          <tr><td class="mono">B</td><td>Órbita, borda externa (r 90)</td><td class="num">180</td><td class="num">70,3%</td></tr>
+          <tr><td class="mono">C</td><td>Disco central (r 74), borda interna da órbita</td><td class="num">148</td><td class="num">57,8%</td></tr>
+          <tr><td class="mono">D</td><td>Aro dourado interno (r 61,5, traço 5)</td><td class="num">123</td><td class="num">48,0%</td></tr>
+          <tr><td class="mono">-</td><td>Eixo horizontal: largura 128, altura 3</td><td class="num">128</td><td class="num">50,0%</td></tr>
+        </tbody></table></div>
+    </div>
+    <p class="plate-cap">Medidas lidas no código do SVG mestre (símbolo). A caixa visível mede 248 de 256 unidades (bounding box 4 a 252, medida por rasterização). São fatos do arquivo, não instrução de redesenho.</p>
+    <ol class="rules">
+<li class="rule" id="BB-LOGO-05" data-status="confirmada"><a class="rid" href="#BB-LOGO-05">BB-LOGO-05</a><p>Geometria do símbolo (viewBox 256): anel de graduação com diâmetro 248, órbita 180, disco central 148, aro dourado 123 e eixo de 128 de largura. A órbita tem 16 de espessura em 6 arcos.<span class="orig">Origem: medido no SVG mestre</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-LOGO-06" data-status="confirmada"><a class="rid" href="#BB-LOGO-06">BB-LOGO-06</a><p>O emblema não sofre distorção de proporção, rotação arbitrária dos anéis nem alteração dos gradientes neon que formam a assinatura óptica.<span class="orig">Origem: BRANDBOOK-OFICIAL-BIRTH-HUB-360.html, cap. 4</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-LOGO-07" data-status="confirmada"><a class="rid" href="#BB-LOGO-07">BB-LOGO-07</a><p>O ícone é o recorte justo da órbita: viewBox 38 38 180 180, sem margem interna. O horizontal mede 946 por 256, com o símbolo ocupando a altura total.<span class="orig">Origem: medido no SVG mestre</span></p><span class="st st-c">CONFIRMADA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="protecao">
+    <h3>Área de proteção <span class="st st-p">PROVISÓRIA</span></h3>
+    <div class="split even">
+      <div class="plate flat bd" style="display:grid;gap:1.25rem;justify-items:center">
+        <div class="clear" style="padding:calc(220px * 58 / 256)"><span class="in"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo cercado pela área de proteção X" width="220" height="220" style="width:220px"></span><span class="xmark" style="left:.4rem;top:.4rem">X</span></div>
+        <p class="plate-cap" style="color:#9EADC8;text-align:center">Símbolo: X = ¼ do diâmetro visível (62 unidades)</p>
+      </div>
+      <div class="plate flat bd" style="display:grid;gap:1.25rem;justify-items:center;align-content:space-between">
+        <div class="clear" style="padding:29px 23px 29px 29px"><span class="in"><img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Logotipo horizontal cercado pela área de proteção X" width="300" height="81" style="width:300px"></span><span class="xmark" style="left:.3rem;top:.3rem">X</span></div>
+        <div class="clear" style="padding:calc(90px * .25)"><span class="in"><img src="../assets/logos/birthhub360-icone.svg" alt="Ícone cercado pela área de proteção X" width="90" height="90" style="width:90px"></span><span class="xmark" style="left:.2rem;top:.2rem">X</span></div>
+        <p class="plate-cap" style="color:#9EADC8;text-align:center">Horizontal: X ≈ 62 unidades (29 px nesta escala). Ícone: X = ¼ do lado.</p>
+      </div>
+    </div>
+    <ol class="rules">
+<li class="rule" id="BB-LOGO-08" data-status="provisoria"><a class="rid" href="#BB-LOGO-08">BB-LOGO-08</a><p>Área de proteção X = ¼ do diâmetro visível do símbolo (62 de 248 unidades) em todo o contorno. Nenhum texto, borda, imagem ou outro elemento entra nela.<span class="orig">Origem: proposta derivada da geometria medida</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-LOGO-09" data-status="provisoria"><a class="rid" href="#BB-LOGO-09">BB-LOGO-09</a><p>No ícone, que não tem anel de graduação, X = ¼ do lado do recorte (45 de 180 unidades). A proteção é medida a partir da borda visível, não da borda do arquivo.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="minimos">
+    <h3>Tamanhos mínimos</h3>
+    <div class="plate flat bd"><div class="minrow">
+      <figure><img src="../assets/logos/birthhub360-icone.svg" alt="Ícone a 24 px" width="24" height="24"><figcaption>ícone 24 px</figcaption></figure>
+      <figure><img src="../assets/logos/birthhub360-icone.svg" alt="Ícone a 32 px" width="32" height="32"><figcaption>ícone 32 px</figcaption></figure>
+      <figure><img src="../assets/logos/birthhub360-icone.svg" alt="Ícone a 64 px" width="64" height="64"><figcaption>ícone 64 px</figcaption></figure>
+      <figure><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo a 64 px" width="64" height="64"><figcaption>símbolo 64 px</figcaption></figure>
+      <figure><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo a 96 px" width="96" height="96"><figcaption>símbolo 96 px</figcaption></figure>
+      <figure><img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Horizontal com 32 px de altura" width="118" height="32"><figcaption>horizontal h 32</figcaption></figure>
+      <figure><img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Horizontal com 48 px de altura" width="177" height="48"><figcaption>horizontal h 48</figcaption></figure>
+    </div></div>
+    <ol class="rules">
+<li class="rule" id="BB-LOGO-10" data-status="confirmada"><a class="rid" href="#BB-LOGO-10">BB-LOGO-10</a><p>Símbolo completo: 96 px ou mais. Ícone: 32 a 96 px. Abaixo de 96 px o anel de graduação do símbolo deixa de ser legível e deve ser trocado pelo ícone.<span class="orig">Origem: src/config/brand.ts</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-LOGO-11" data-status="provisoria"><a class="rid" href="#BB-LOGO-11">BB-LOGO-11</a><p>Logotipo horizontal: altura mínima de 32 px em tela e 12 mm em impressão. Favicon e avatar pequeno usam o ícone, com 24 px como piso. Estes pisos precisam de teste em dispositivo real.<span class="orig">Origem: proposta deste brandbook, não validada em dispositivo</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="fundos">
+    <h3>Fundos permitidos e proibidos</h3>
+    <div class="bg-grid">
+      <div class="bgt ok" style="background:#0D0D0D"><span class="tag"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>OK</span><div class="art"><img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Horizontal sobre Dark" width="190" height="51" style="width:11.8rem"></div><span class="cap" style="color:#9EADC8">Dark #0D0D0D</span></div>
+      <div class="bgt ok" style="background:#14141A"><span class="tag"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>OK</span><div class="art"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo sobre superfície escura" width="88" height="88"></div><span class="cap" style="color:#9EADC8">Superfície #14141A</span></div>
+      <div class="bgt ok" style="background:#F4F7FB"><span class="tag"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>OK</span><div class="art"><img src="../assets/logos/birthhub360-icone.svg" alt="Ícone sobre Light" width="80" height="80"></div><span class="cap" style="color:#46546B">Light #F4F7FB (ícone e símbolo)</span></div>
+      <div class="bgt ok" style="background:#F4F7FB"><span class="tag"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>OK</span><div class="art"><span style="background:#0D0D0D;padding:.9rem 1.1rem;border-radius:12px;display:block"><img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Horizontal sobre placa escura em fundo Light" width="150" height="41" style="width:9.4rem"></span></div><span class="cap" style="color:#46546B">Horizontal em Light: placa escura</span></div>
+      <div class="bgt no" style="background:#F4F7FB"><span class="tag"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>NÃO</span><div class="art"><img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Horizontal direto sobre Light, sem placa" width="190" height="51" style="width:11.8rem"></div><span class="cap" style="color:#46546B">Horizontal direto em Light: wordmark perde contraste</span></div>
+      <div class="bgt no" style="background:#00D4FF"><span class="tag"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>NÃO</span><div class="art"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo sobre azul neon" width="88" height="88"></div><span class="cap" style="color:#0D0D0D">Fundo neon sólido</span></div>
+      <div class="bgt no" style="background:var(--grad-orbit)"><span class="tag"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>NÃO</span><div class="art"><img src="../assets/logos/birthhub360-icone.svg" alt="Ícone sobre gradiente de órbita" width="80" height="80"></div><span class="cap" style="color:#0D0D0D">Gradiente ou imagem ocupada</span></div>
+      <div class="bgt no" style="background:#6B7280"><span class="tag"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>NÃO</span><div class="art"><img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Horizontal sobre cinza médio" width="190" height="51" style="width:11.8rem"></div><span class="cap" style="color:#F4F7FB">Cinza médio</span></div>
+    </div>
+    <p class="plate-cap">Contraste das cores do wordmark horizontal contra #F4F7FB: Azul Neon <span class="num" data-cr="#00D4FF|#F4F7FB">1,65:1</span>, Dourado <span class="num" data-cr="#FFC107|#F4F7FB">1,52:1</span>, Rosa Neon <span class="num" data-cr="#FF2D9B|#F4F7FB">3,20:1</span>. Os três ficam abaixo de 3:1 em quase todo o traço.</p>
+    <ol class="rules">
+<li class="rule" id="BB-LOGO-12" data-status="provisoria"><a class="rid" href="#BB-LOGO-12">BB-LOGO-12</a><p>Fundos permitidos: Dark #0D0D0D, superfícies #14141A, #1C1C24 e #252530, e Light #F4F7FB para símbolo e ícone (o disco central escuro garante o contraste).<span class="orig">Origem: C02 e inspeção visual</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-LOGO-13" data-status="provisoria"><a class="rid" href="#BB-LOGO-13">BB-LOGO-13</a><p>O logotipo horizontal sobre Light exige placa escura #0D0D0D com área de proteção respeitada, porque o wordmark em gradiente neon fica abaixo de 3:1 sobre #F4F7FB.<span class="orig">Origem: contraste medido (ver tabela abaixo do grid)</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-LOGO-14" data-status="provisoria"><a class="rid" href="#BB-LOGO-14">BB-LOGO-14</a><p>Proibido sobre fundo neon sólido, gradiente, imagem ocupada ou cinza médio. Se o fundo não puder ser controlado, usar a placa escura.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="restricoes">
+    <h3>Restrições de uso</h3>
+    <div class="misuse">
+      <div class="mu"><span class="no"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>NÃO</span><div class="art"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo esticado na horizontal (exemplo proibido)" width="88" height="88" style="transform:scaleX(1.7)"></div><span class="cap">Esticar ou comprimir</span></div>
+      <div class="mu"><span class="no"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>NÃO</span><div class="art"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo girado (exemplo proibido)" width="88" height="88" style="transform:rotate(35deg)"></div><span class="cap">Girar o emblema ou os anéis</span></div>
+      <div class="mu"><span class="no"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>NÃO</span><div class="art"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo com cores trocadas (exemplo proibido)" width="88" height="88" style="filter:hue-rotate(140deg)"></div><span class="cap">Trocar as cores ou o gradiente</span></div>
+      <div class="mu"><span class="no"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>NÃO</span><div class="art"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo em um tom só (exemplo proibido)" width="88" height="88" style="filter:grayscale(1) contrast(.8)"></div><span class="cap">Versão monocromática improvisada</span></div>
+      <div class="mu"><span class="no"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>NÃO</span><div class="art"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo com sombra projetada (exemplo proibido)" width="88" height="88" style="filter:drop-shadow(8px 8px 0 #FF2D9B)"></div><span class="cap">Sombra, contorno ou efeito extra</span></div>
+      <div class="mu"><span class="no"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>NÃO</span><div class="art"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo cortado (exemplo proibido)" width="88" height="88" style="margin-left:-3rem"></div><span class="cap">Cortar ou sangrar o emblema</span></div>
+      <div class="mu"><span class="no"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>NÃO</span><div class="art"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo com opacidade baixa (exemplo proibido)" width="88" height="88" style="opacity:.3"></div><span class="cap">Baixar a opacidade</span></div>
+      <div class="mu"><span class="no"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>NÃO</span><div class="art" style="gap:.4rem"><img src="../assets/logos/birthhub360-icone.svg" alt="Ícone ao lado de texto digitado" width="44" height="44"><b style="font:700 1.1rem var(--font-ui);color:#E8EEFF">Birthub 360°</b></div><span class="cap">Remontar o horizontal com outra fonte</span></div>
+    </div>
+    <ol class="rules">
+<li class="rule" id="BB-LOGO-15" data-status="confirmada"><a class="rid" href="#BB-LOGO-15">BB-LOGO-15</a><p>Proibido distorcer proporção, girar o emblema ou os anéis, e alterar os gradientes neon do emblema.<span class="orig">Origem: BRANDBOOK-OFICIAL-BIRTH-HUB-360.html, cap. 4</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-LOGO-16" data-status="provisoria"><a class="rid" href="#BB-LOGO-16">BB-LOGO-16</a><p>Também proibido: recolorir ou fazer versão monocromática improvisada, aplicar sombra, contorno ou transparência, cortar o emblema, e montar um logotipo horizontal novo com outra fonte. Versão monocromática oficial depende de arte nova aprovada.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+</section>
+
+<section class="ch ac-pink" id="paleta" data-secao="Paleta Neon" aria-labelledby="h-paleta">
+  <div class="ch-head">
+    <h2 id="h-paleta">Paleta Neon</h2>
+    <div><p class="lede">Quatro cores de luz sobre dois canvas. O neon puro é preenchimento e sinalização; texto sobre Light usa variantes derivadas, medidas uma a uma.</p>
+    <p class="meta">Regras BB-COR-01 a BB-COR-28 · 12 confirmadas · 16 provisórias</p></div>
+  </div>
+
+  <div class="sub" id="cores">
+    <h3>Cores oficiais (C02)</h3>
+    <div class="swatches">
+      <div class="sw big"><div class="chip" style="background:#00D4FF"><span class="on">Aa #0D0D0D</span></div><div class="meta"><h4>Azul Neon</h4><p class="hex">#00D4FF</p><p class="vals">RGB 0, 212, 255<br>HSL 190 100% 50%</p></div><p class="use"><b>Tecnologia, confiança, foco analítico.</b> Cor de interação primária: ações, links, foco, bordas ativas.</p></div>
+      <div class="sw big"><div class="chip" style="background:#FF2D9B"><span class="on">Aa #0D0D0D</span></div><div class="meta"><h4>Rosa Neon</h4><p class="hex">#FF2D9B</p><p class="vals">RGB 255, 45, 155<br>HSL 329 100% 59%</p></div><p class="use"><b>Energia, atitude, conversão.</b> Destaque comercial, alertas de atenção, inteligência de mercado.</p></div>
+      <div class="sw big"><div class="chip" style="background:#FFC107"><span class="on">Aa #0D0D0D</span></div><div class="meta"><h4>Dourado</h4><p class="hex">#FFC107</p><p class="vals">RGB 255, 193, 7<br>HSL 45 100% 51%</p></div><p class="use"><b>Receita, previsibilidade, governança.</b> Métricas de receita, decisões estratégicas, selo de rascunho.</p></div>
+      <div class="sw big"><div class="chip" style="background:#8B7DFF"><span class="on">Aa #0D0D0D</span></div><div class="meta"><h4>Íris</h4><p class="hex">#8B7DFF</p><p class="vals">RGB 139, 125, 255<br>HSL 246 100% 75%</p></div><p class="use"><b>Inteligência artificial.</b> Agentes, copiloto e automações autônomas.</p></div>
+      <div class="sw"><div class="chip" style="background:#0D0D0D"><span class="on" style="color:#9EADC8">Dark</span></div><div class="meta"><h4>Dark</h4><p class="hex">#0D0D0D</p><p class="vals">RGB 13, 13, 13<br>HSL 0 0% 5%</p></div><p class="use"><b>Canvas escuro.</b> Fundo principal. Não é o preto puro #000.</p></div>
+      <div class="sw"><div class="chip" style="background:#F4F7FB"><span class="on" style="color:#46546B">Light</span></div><div class="meta"><h4>Light</h4><p class="hex">#F4F7FB</p><p class="vals">RGB 244, 247, 251<br>HSL 214 47% 97%</p></div><p class="use"><b>Canvas claro.</b> Fundo principal do tema claro. Não é o branco puro #FFF.</p></div>
+    </div>
+    <ol class="rules">
+<li class="rule" id="BB-COR-01" data-status="confirmada"><a class="rid" href="#BB-COR-01">BB-COR-01</a><p>Paleta oficial: Azul Neon #00D4FF, Rosa Neon #FF2D9B, Dourado #FFC107, Íris #8B7DFF, Dark #0D0D0D e Light #F4F7FB. Nenhuma outra cor de marca é criada nesta versão.<span class="orig">Origem: C02 da missão</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-COR-02" data-status="confirmada"><a class="rid" href="#BB-COR-02">BB-COR-02</a><p>Papéis: Azul Neon é tecnologia e interação; Rosa Neon é energia e conversão; Dourado é receita e previsibilidade; Íris é inteligência artificial.<span class="orig">Origem: C02 e Manual de Identidade Visual</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-COR-03" data-status="confirmada"><a class="rid" href="#BB-COR-03">BB-COR-03</a><p>Os neons não são neutralizados nem trocados por pastéis. Dark e Light não são preto nem branco puros.<span class="orig">Origem: C02 e C04</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-COR-04" data-status="provisoria"><a class="rid" href="#BB-COR-04">BB-COR-04</a><p>Light oficial V2.0 é #F4F7FB (missão). O "Neon White" #F8F9FF dos tokens atuais é a cor de texto sobre Dark e não é usado como canvas. Conflito registrado.<span class="orig">Origem: P-05</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="contraste">
+    <h3>Contraste WCAG medido</h3>
+    <p class="intro">Razão de contraste WCAG 2.2 calculada sobre os hexadecimais (luminância relativa). Texto normal exige 4,5:1; texto grande e componentes de interface, 3:1. Células tracejadas ficam abaixo de 3:1.</p>
+    <h4>Neon e tinta sobre os fundos</h4>
+    <div class="cm-wrap"><table class="cm">
+      <thead><tr><th scope="col">Cor (texto)</th><th scope="col">Dark #0D0D0D</th><th scope="col">Superfície #14141A</th><th scope="col">Superfície 3 #252530</th><th scope="col">Light #F4F7FB</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Azul Neon #00D4FF</th><td class="" style="--cfg:#00D4FF;--cbg:#0D0D0D" data-cr="#00D4FF|#0D0D0D"><span class="s">Aa</span><span class="n">10,98:1</span><span class="l">AAA</span></td><td class="" style="--cfg:#00D4FF;--cbg:#14141A" data-cr="#00D4FF|#14141A"><span class="s">Aa</span><span class="n">10,36:1</span><span class="l">AAA</span></td><td class="" style="--cfg:#00D4FF;--cbg:#252530" data-cr="#00D4FF|#252530"><span class="s">Aa</span><span class="n">8,56:1</span><span class="l">AAA</span></td><td class="fail" style="--cfg:#00D4FF;--cbg:#F4F7FB" data-cr="#00D4FF|#F4F7FB"><span class="s">Aa</span><span class="n">1,65:1</span><span class="l">falha</span></td></tr>
+        <tr><th scope="row">Rosa Neon #FF2D9B</th><td class="" style="--cfg:#FF2D9B;--cbg:#0D0D0D" data-cr="#FF2D9B|#0D0D0D"><span class="s">Aa</span><span class="n">5,65:1</span><span class="l">AA</span></td><td class="" style="--cfg:#FF2D9B;--cbg:#14141A" data-cr="#FF2D9B|#14141A"><span class="s">Aa</span><span class="n">5,33:1</span><span class="l">AA</span></td><td class="" style="--cfg:#FF2D9B;--cbg:#252530" data-cr="#FF2D9B|#252530"><span class="s">Aa</span><span class="n">4,40:1</span><span class="l">AA grande</span></td><td class="" style="--cfg:#FF2D9B;--cbg:#F4F7FB" data-cr="#FF2D9B|#F4F7FB"><span class="s">Aa</span><span class="n">3,20:1</span><span class="l">AA grande</span></td></tr>
+        <tr><th scope="row">Dourado #FFC107</th><td class="" style="--cfg:#FFC107;--cbg:#0D0D0D" data-cr="#FFC107|#0D0D0D"><span class="s">Aa</span><span class="n">11,92:1</span><span class="l">AAA</span></td><td class="" style="--cfg:#FFC107;--cbg:#14141A" data-cr="#FFC107|#14141A"><span class="s">Aa</span><span class="n">11,25:1</span><span class="l">AAA</span></td><td class="" style="--cfg:#FFC107;--cbg:#252530" data-cr="#FFC107|#252530"><span class="s">Aa</span><span class="n">9,30:1</span><span class="l">AAA</span></td><td class="fail" style="--cfg:#FFC107;--cbg:#F4F7FB" data-cr="#FFC107|#F4F7FB"><span class="s">Aa</span><span class="n">1,52:1</span><span class="l">falha</span></td></tr>
+        <tr><th scope="row">Íris #8B7DFF</th><td class="" style="--cfg:#8B7DFF;--cbg:#0D0D0D" data-cr="#8B7DFF|#0D0D0D"><span class="s">Aa</span><span class="n">5,99:1</span><span class="l">AA</span></td><td class="" style="--cfg:#8B7DFF;--cbg:#14141A" data-cr="#8B7DFF|#14141A"><span class="s">Aa</span><span class="n">5,66:1</span><span class="l">AA</span></td><td class="" style="--cfg:#8B7DFF;--cbg:#252530" data-cr="#8B7DFF|#252530"><span class="s">Aa</span><span class="n">4,67:1</span><span class="l">AA</span></td><td class="" style="--cfg:#8B7DFF;--cbg:#F4F7FB" data-cr="#8B7DFF|#F4F7FB"><span class="s">Aa</span><span class="n">3,02:1</span><span class="l">AA grande</span></td></tr>
+        <tr><th scope="row">Tinta Dark #E8EEFF</th><td class="" style="--cfg:#E8EEFF;--cbg:#0D0D0D" data-cr="#E8EEFF|#0D0D0D"><span class="s">Aa</span><span class="n">16,76:1</span><span class="l">AAA</span></td><td class="" style="--cfg:#E8EEFF;--cbg:#14141A" data-cr="#E8EEFF|#14141A"><span class="s">Aa</span><span class="n">15,82:1</span><span class="l">AAA</span></td><td class="" style="--cfg:#E8EEFF;--cbg:#252530" data-cr="#E8EEFF|#252530"><span class="s">Aa</span><span class="n">13,06:1</span><span class="l">AAA</span></td><td class="fail" style="--cfg:#E8EEFF;--cbg:#F4F7FB" data-cr="#E8EEFF|#F4F7FB"><span class="s">Aa</span><span class="n">1,08:1</span><span class="l">falha</span></td></tr>
+        <tr><th scope="row">Tinta suave #9EADC8</th><td class="" style="--cfg:#9EADC8;--cbg:#0D0D0D" data-cr="#9EADC8|#0D0D0D"><span class="s">Aa</span><span class="n">8,58:1</span><span class="l">AAA</span></td><td class="" style="--cfg:#9EADC8;--cbg:#14141A" data-cr="#9EADC8|#14141A"><span class="s">Aa</span><span class="n">8,09:1</span><span class="l">AAA</span></td><td class="" style="--cfg:#9EADC8;--cbg:#252530" data-cr="#9EADC8|#252530"><span class="s">Aa</span><span class="n">6,69:1</span><span class="l">AA</span></td><td class="fail" style="--cfg:#9EADC8;--cbg:#F4F7FB" data-cr="#9EADC8|#F4F7FB"><span class="s">Aa</span><span class="n">2,11:1</span><span class="l">falha</span></td></tr>
+      </tbody></table></div>
+    <h4>Variantes de texto para Light (derivadas, PROVISÓRIAS)</h4>
+    <div class="cm-wrap"><table class="cm">
+      <thead><tr><th scope="col">Variante (texto)</th><th scope="col">Light #F4F7FB</th><th scope="col">Superfície #FBFCFE</th><th scope="col">Superfície 2 #EEF2F8</th><th scope="col">Superfície 3 #E3E9F2</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Azul #006C8C</th><td class="" style="--cfg:#006C8C;--cbg:#F4F7FB" data-cr="#006C8C|#F4F7FB"><span class="s">Aa</span><span class="n">5,55:1</span><span class="l">AA</span></td><td class="" style="--cfg:#006C8C;--cbg:#FBFCFE" data-cr="#006C8C|#FBFCFE"><span class="s">Aa</span><span class="n">5,81:1</span><span class="l">AA</span></td><td class="" style="--cfg:#006C8C;--cbg:#EEF2F8" data-cr="#006C8C|#EEF2F8"><span class="s">Aa</span><span class="n">5,30:1</span><span class="l">AA</span></td><td class="" style="--cfg:#006C8C;--cbg:#E3E9F2" data-cr="#006C8C|#E3E9F2"><span class="s">Aa</span><span class="n">4,88:1</span><span class="l">AA</span></td></tr>
+        <tr><th scope="row">Rosa #C4105F</th><td class="" style="--cfg:#C4105F;--cbg:#F4F7FB" data-cr="#C4105F|#F4F7FB"><span class="s">Aa</span><span class="n">5,45:1</span><span class="l">AA</span></td><td class="" style="--cfg:#C4105F;--cbg:#FBFCFE" data-cr="#C4105F|#FBFCFE"><span class="s">Aa</span><span class="n">5,70:1</span><span class="l">AA</span></td><td class="" style="--cfg:#C4105F;--cbg:#EEF2F8" data-cr="#C4105F|#EEF2F8"><span class="s">Aa</span><span class="n">5,21:1</span><span class="l">AA</span></td><td class="" style="--cfg:#C4105F;--cbg:#E3E9F2" data-cr="#C4105F|#E3E9F2"><span class="s">Aa</span><span class="n">4,80:1</span><span class="l">AA</span></td></tr>
+        <tr><th scope="row">Dourado #7A5800</th><td class="" style="--cfg:#7A5800;--cbg:#F4F7FB" data-cr="#7A5800|#F4F7FB"><span class="s">Aa</span><span class="n">6,06:1</span><span class="l">AA</span></td><td class="" style="--cfg:#7A5800;--cbg:#FBFCFE" data-cr="#7A5800|#FBFCFE"><span class="s">Aa</span><span class="n">6,35:1</span><span class="l">AA</span></td><td class="" style="--cfg:#7A5800;--cbg:#EEF2F8" data-cr="#7A5800|#EEF2F8"><span class="s">Aa</span><span class="n">5,80:1</span><span class="l">AA</span></td><td class="" style="--cfg:#7A5800;--cbg:#E3E9F2" data-cr="#7A5800|#E3E9F2"><span class="s">Aa</span><span class="n">5,34:1</span><span class="l">AA</span></td></tr>
+        <tr><th scope="row">Íris #5B4BD6</th><td class="" style="--cfg:#5B4BD6;--cbg:#F4F7FB" data-cr="#5B4BD6|#F4F7FB"><span class="s">Aa</span><span class="n">5,71:1</span><span class="l">AA</span></td><td class="" style="--cfg:#5B4BD6;--cbg:#FBFCFE" data-cr="#5B4BD6|#FBFCFE"><span class="s">Aa</span><span class="n">5,98:1</span><span class="l">AA</span></td><td class="" style="--cfg:#5B4BD6;--cbg:#EEF2F8" data-cr="#5B4BD6|#EEF2F8"><span class="s">Aa</span><span class="n">5,46:1</span><span class="l">AA</span></td><td class="" style="--cfg:#5B4BD6;--cbg:#E3E9F2" data-cr="#5B4BD6|#E3E9F2"><span class="s">Aa</span><span class="n">5,03:1</span><span class="l">AA</span></td></tr>
+        <tr><th scope="row">Tinta #0F1A2E</th><td class="" style="--cfg:#0F1A2E;--cbg:#F4F7FB" data-cr="#0F1A2E|#F4F7FB"><span class="s">Aa</span><span class="n">16,19:1</span><span class="l">AAA</span></td><td class="" style="--cfg:#0F1A2E;--cbg:#FBFCFE" data-cr="#0F1A2E|#FBFCFE"><span class="s">Aa</span><span class="n">16,94:1</span><span class="l">AAA</span></td><td class="" style="--cfg:#0F1A2E;--cbg:#EEF2F8" data-cr="#0F1A2E|#EEF2F8"><span class="s">Aa</span><span class="n">15,48:1</span><span class="l">AAA</span></td><td class="" style="--cfg:#0F1A2E;--cbg:#E3E9F2" data-cr="#0F1A2E|#E3E9F2"><span class="s">Aa</span><span class="n">14,25:1</span><span class="l">AAA</span></td></tr>
+        <tr><th scope="row">Tinta suave #46546B</th><td class="" style="--cfg:#46546B;--cbg:#F4F7FB" data-cr="#46546B|#F4F7FB"><span class="s">Aa</span><span class="n">7,13:1</span><span class="l">AAA</span></td><td class="" style="--cfg:#46546B;--cbg:#FBFCFE" data-cr="#46546B|#FBFCFE"><span class="s">Aa</span><span class="n">7,46:1</span><span class="l">AAA</span></td><td class="" style="--cfg:#46546B;--cbg:#EEF2F8" data-cr="#46546B|#EEF2F8"><span class="s">Aa</span><span class="n">6,82:1</span><span class="l">AA</span></td><td class="" style="--cfg:#46546B;--cbg:#E3E9F2" data-cr="#46546B|#E3E9F2"><span class="s">Aa</span><span class="n">6,28:1</span><span class="l">AA</span></td></tr>
+      </tbody></table></div>
+    <h4>Neon como preenchimento: qual texto vai por cima</h4>
+    <div class="cm-wrap"><table class="cm">
+      <thead><tr><th scope="col">Preenchimento</th><th scope="col">Texto #0D0D0D (on-neon)</th><th scope="col">Texto #FFFFFF (proibido)</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Azul Neon</th><td class="" style="--cfg:#0D0D0D;--cbg:#00D4FF" data-cr="#0D0D0D|#00D4FF"><span class="s">Aa</span><span class="n">10,98:1</span><span class="l">AAA</span></td><td class="fail" style="--cfg:#FFFFFF;--cbg:#00D4FF" data-cr="#FFFFFF|#00D4FF"><span class="s">Aa</span><span class="n">1,77:1</span><span class="l">falha</span></td></tr>
+        <tr><th scope="row">Rosa Neon</th><td class="" style="--cfg:#0D0D0D;--cbg:#FF2D9B" data-cr="#0D0D0D|#FF2D9B"><span class="s">Aa</span><span class="n">5,65:1</span><span class="l">AA</span></td><td class="" style="--cfg:#FFFFFF;--cbg:#FF2D9B" data-cr="#FFFFFF|#FF2D9B"><span class="s">Aa</span><span class="n">3,44:1</span><span class="l">AA grande</span></td></tr>
+        <tr><th scope="row">Dourado</th><td class="" style="--cfg:#0D0D0D;--cbg:#FFC107" data-cr="#0D0D0D|#FFC107"><span class="s">Aa</span><span class="n">11,92:1</span><span class="l">AAA</span></td><td class="fail" style="--cfg:#FFFFFF;--cbg:#FFC107" data-cr="#FFFFFF|#FFC107"><span class="s">Aa</span><span class="n">1,63:1</span><span class="l">falha</span></td></tr>
+        <tr><th scope="row">Íris</th><td class="" style="--cfg:#0D0D0D;--cbg:#8B7DFF" data-cr="#0D0D0D|#8B7DFF"><span class="s">Aa</span><span class="n">5,99:1</span><span class="l">AA</span></td><td class="" style="--cfg:#FFFFFF;--cbg:#8B7DFF" data-cr="#FFFFFF|#8B7DFF"><span class="s">Aa</span><span class="n">3,24:1</span><span class="l">AA grande</span></td></tr>
+      </tbody></table></div>
+    <div class="note-box" style="margin-top:1.25rem"><b>Variantes de Light que já existem no repositório</b>
+      <p>Os tokens oficiais atuais definem <code>--palette-cyan #0284C7</code>, <code>--palette-pink #D91B7C</code> e <code>--palette-gold #D97706</code> para Light. Sobre #F4F7FB medem <span class="num" data-cr="#0284C7|#F4F7FB">3,81:1</span>, <span class="num" data-cr="#D91B7C|#F4F7FB">4,44:1</span> e <span class="num" data-cr="#D97706|#F4F7FB">2,96:1</span>: nenhum passa 4,5:1 como texto normal. É por isso que P-02 propõe variantes mais escuras.</p></div>
+    <ol class="rules">
+<li class="rule" id="BB-COR-05" data-status="confirmada"><a class="rid" href="#BB-COR-05">BB-COR-05</a><p>Sobre Dark, Azul Neon, Dourado e Íris passam AA como texto normal em todas as superfícies escuras. Rosa Neon passa em Dark e #14141A, mas cai a 4,40:1 em #252530 (só texto grande ou ícone).<span class="orig">Origem: C02 (medição WCAG deste brandbook)</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-COR-06" data-status="confirmada"><a class="rid" href="#BB-COR-06">BB-COR-06</a><p>Neon puro como texto sobre Light não passa: 1,65:1 (azul), 3,20:1 (rosa), 1,52:1 (dourado) e 3,02:1 (íris). Sobre Light, neon só aparece como preenchimento, nunca como texto.<span class="orig">Origem: C02 (medição WCAG deste brandbook)</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-COR-07" data-status="provisoria"><a class="rid" href="#BB-COR-07">BB-COR-07</a><p>Texto colorido em Light usa as variantes derivadas #006C8C, #C4105F, #7A5800 e #5B4BD6, todas com 4,80:1 ou mais nas quatro superfícies claras medidas. Valores derivados, não oficiais.<span class="orig">Origem: P-02</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-COR-08" data-status="confirmada"><a class="rid" href="#BB-COR-08">BB-COR-08</a><p>Texto sobre preenchimento neon usa #0D0D0D (on-neon), com 5,65:1 ou mais. Texto branco sobre neon é proibido (por exemplo 1,77:1 sobre Azul Neon e 3,44:1 sobre Rosa).<span class="orig">Origem: C04 e CLAUDE.md</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-COR-09" data-status="provisoria"><a class="rid" href="#BB-COR-09">BB-COR-09</a><p>Componentes de interface e anéis de foco exigem 3:1 contra o fundo adjacente; a cor nunca é o único sinal de estado (sempre acompanhada de texto, ícone ou forma).<span class="orig">Origem: WCAG 2.2</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="distribuicao">
+    <h3>Hierarquia cromática e distribuição <span class="st st-p">PROVISÓRIA</span></h3>
+    <div class="mix" role="img" aria-label="Barra de proporção 60, 25, 10 e 5 por cento"><div class="m60">60</div><div class="m25">25</div><div class="m10">10</div><div class="m5"></div></div>
+    <div class="mix-leg"><div><b>60% canvas</b>Dark ou Light e superfícies</div><div><b>25% estrutura</b>Tinta, texto suave e linhas</div><div><b>10% interação</b>Azul Neon</div><div><b>5% acento</b>Rosa, Dourado, Íris</div></div>
+    <ol class="rules">
+<li class="rule" id="BB-COR-10" data-status="provisoria"><a class="rid" href="#BB-COR-10">BB-COR-10</a><p>Distribuição de área por tela: 60% canvas e superfícies, 25% tinta e linhas, 10% Azul Neon de interação e 5% acentos (Rosa, Dourado, Íris). A proporção é guia de revisão, não métrica automática.<span class="orig">Origem: exemplo da missão (60/25/10/5)</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-COR-11" data-status="provisoria"><a class="rid" href="#BB-COR-11">BB-COR-11</a><p>Num mesmo viewport, um acento secundário domina por contexto (Rosa em conversão, Dourado em receita, Íris em IA). Não misturar os quatro neons no mesmo componente.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-COR-12" data-status="provisoria"><a class="rid" href="#BB-COR-12">BB-COR-12</a><p>Ação primária é Azul Neon sólido com texto on-neon. Rosa Neon sólido é reservado ao ponto de conversão de maior valor da tela (um por tela).<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="superficies">
+    <h3>Superfícies e profundidade</h3>
+    <div class="split even">
+      <div class="ladder">
+        <div class="l0"><b>Canvas</b><span>#0D0D0D · sem sombra</span></div>
+        <div class="l1"><b>Superfície</b><span>#14141A · elevação 1</span></div>
+        <div class="l2"><b>Superfície 2</b><span>#1C1C24 · elevação 1</span></div>
+        <div class="l3"><b>Superfície 3</b><span>#252530 · elevação 2</span></div>
+      </div>
+      <div>
+        <p>A profundidade vem da troca de superfície e de sombras com deslocamento e desfoque. Sobre Dark, o limite é uma linha fina <code>rgba(158,173,200,.18)</code>; sobre Light, a sombra faz o trabalho.</p>
+        <p class="plate-cap">Superfícies escuras herdadas de <code>identidade-visual/.../tokens</code>. As superfícies Light são derivadas (P-04).</p>
+      </div>
+    </div>
+    <ol class="rules">
+<li class="rule" id="BB-COR-13" data-status="confirmada"><a class="rid" href="#BB-COR-13">BB-COR-13</a><p>Escada de superfícies Dark: canvas #0D0D0D, superfície #14141A, superfície 2 #1C1C24, superfície 3 #252530. Cada degrau acima é uma camada mais alta.<span class="orig">Origem: tokens oficiais e P-04</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-COR-14" data-status="provisoria"><a class="rid" href="#BB-COR-14">BB-COR-14</a><p>Escada Light derivada: canvas #F4F7FB, superfície #FBFCFE, superfície 2 #EEF2F8, superfície 3 #E3E9F2.<span class="orig">Origem: P-04 e proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-COR-15" data-status="provisoria"><a class="rid" href="#BB-COR-15">BB-COR-15</a><p>Sombras de elevação têm deslocamento vertical e desfoque (por exemplo <code>0 12px 28px -12px</code>); nunca halo colorido de deslocamento zero para dar profundidade. Cartão dentro de cartão é proibido.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-COR-16" data-status="provisoria"><a class="rid" href="#BB-COR-16">BB-COR-16</a><p>Raios: controle 12 px, cartão 16 px, modal 20 px, pílula 9999 px.<span class="orig">Origem: tokens oficiais de raio</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="luz">
+    <h3>Iluminação e glow</h3>
+    <div class="plate flat bd"><div class="glows">
+      <button class="glowbtn" type="button" style="--gc:#00D4FF">Halo azul</button>
+      <button class="glowbtn" type="button" style="--gc:#FF2D9B">Halo rosa</button>
+      <button class="glowbtn" type="button" style="--gc:#FFC107">Halo dourado</button>
+      <button class="glowbtn off" type="button" style="--gc:#8B7DFF">Sem halo (repouso)</button>
+    </div>
+    <p class="plate-cap" style="color:#9EADC8">Halo oficial: <code>0 0 24px rgba(cor, .45)</code> (tokens <code>--glow-*</code>). Este é o único lugar do documento onde ele aparece.</p></div>
+    <ol class="rules">
+<li class="rule" id="BB-COR-17" data-status="confirmada"><a class="rid" href="#BB-COR-17">BB-COR-17</a><p>Halo de marca: <code>0 0 24px</code> com a cor a 45% de opacidade. Personagens usam <code>0 0 32px</code> a 35 a 40%.<span class="orig">Origem: tokens oficiais --glow-blue, --glow-pink, --glow-gold</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-COR-18" data-status="provisoria"><a class="rid" href="#BB-COR-18">BB-COR-18</a><p>Glow sinaliza estado (foco, ativo, em processamento) e nunca decora. No máximo um elemento com halo por região da tela; em repouso, sem halo.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-COR-19" data-status="provisoria"><a class="rid" href="#BB-COR-19">BB-COR-19</a><p>Em Light não há halo: o foco usa anel sólido de 2 px e a profundidade vem de sombra com deslocamento.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="gradientes">
+    <h3>Gradientes</h3>
+    <div class="grads">
+      <div class="orbring" role="img" aria-label="Anel com o gradiente da órbita 360 graus"></div>
+      <div><div class="orbline" role="img" aria-label="Linha com o gradiente da órbita"></div>
+      <p style="margin-top:1rem"><b>Órbita 360°:</b> <code>conic-gradient(from 0deg, #FFC107, #FF2D9B, #00D4FF, #FFC107)</code>. Único gradiente multicolor da marca.</p>
+      <p class="plate-cap">Os manuais legados também citam gradiente de título (azul, rosa, dourado, com texto recortado) e de CTA (rosa para azul). A V2.0 não os adota. Ver divergências D-03 e D-04.</p></div>
+    </div>
+    <ol class="rules">
+<li class="rule" id="BB-COR-20" data-status="confirmada"><a class="rid" href="#BB-COR-20">BB-COR-20</a><p>A órbita 360° é <code>conic-gradient(from 0deg, #FFC107, #FF2D9B, #00D4FF, #FFC107)</code>.<span class="orig">Origem: tokens oficiais --grad-orbit</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-COR-21" data-status="provisoria"><a class="rid" href="#BB-COR-21">BB-COR-21</a><p>A órbita aparece só em anéis, bordas finas, indicadores e grafismos. Nunca como fundo com texto por cima, nunca em texto (<code>background-clip: text</code> é proibido) e no máximo uma por composição.<span class="orig">Origem: proposta deste brandbook e C04</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-COR-22" data-status="provisoria"><a class="rid" href="#BB-COR-22">BB-COR-22</a><p>Botão primário é cor sólida. O gradiente de CTA do manual legado (rosa para azul) não é adotado em V2.0.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="estados">
+    <h3>Estados e semântica</h3>
+    <div class="states">
+      <span class="sbtn">Padrão</span><span class="sbtn hov">Hover</span><span class="sbtn act">Ativo</span><span class="sbtn foc">Foco</span><span class="sbtn dis">Desabilitado</span><span class="sbtn ld"><span class="sp"></span>Carregando</span><span class="sbtn err">Erro</span>
+    </div>
+    <div class="sem" style="margin-top:2rem">
+      <div class="semi" style="--sc:var(--ok)"><b>Sucesso</b><span class="num">#22C55E Dark · #15803D Light</span><p>Meta batida, sincronização concluída.</p></div>
+      <div class="semi" style="--sc:var(--danger)"><b>Crítico</b><span class="num">#EF4444 Dark · #B91C1C Light</span><p>Perda, falha de API, ação urgente.</p></div>
+      <div class="semi" style="--sc:var(--info)"><b>Informativo</b><span class="num">#3B82F6 Dark · #1D4ED8 Light</span><p>Andamento, dica, metadado.</p></div>
+      <div class="semi" style="--sc:var(--c-gold)"><b>Atenção</b><span class="num">#FFC107 Dark · #7A5800 Light</span><p>Dado desatualizado, pendência.</p></div>
+    </div>
+    <div class="note-box warn" style="margin-top:1.25rem"><b>Semânticas confirmadas pela coordenação</b><p>Sucesso <b>#22C55E</b>, crítico <b>#EF4444</b>, atenção (dourado) <b>#FFC107</b> e informativo <b>#3B82F6</b>. O Design System está sendo alinhado a estes valores; no momento da leitura, <code>tokens.css</code> ainda declara #34D399, #FF9A3D e #FF5C6C.</p></div>
+    <p class="plate-cap">Contraste sobre #0D0D0D: sucesso <span class="num" data-cr="#22C55E|#0D0D0D">8,53:1</span>, crítico <span class="num" data-cr="#EF4444|#0D0D0D">5,16:1</span>, informativo <span class="num" data-cr="#3B82F6|#0D0D0D">5,28:1</span>. Sobre #F4F7FB os originais caem a <span class="num" data-cr="#22C55E|#F4F7FB">2,12:1</span>, <span class="num" data-cr="#EF4444|#F4F7FB">3,50:1</span> e <span class="num" data-cr="#3B82F6|#F4F7FB">3,42:1</span>; as variantes Light medem <span class="num" data-cr="#15803D|#F4F7FB">4,67:1</span>, <span class="num" data-cr="#B91C1C|#F4F7FB">6,02:1</span> e <span class="num" data-cr="#1D4ED8|#F4F7FB">6,24:1</span>.</p>
+    <ol class="rules">
+<li class="rule" id="BB-COR-23" data-status="confirmada"><a class="rid" href="#BB-COR-23">BB-COR-23</a><p>Cores funcionais: sucesso #22C55E, crítico #EF4444, atenção (warning) em Dourado #FFC107, informativo #3B82F6 e inteligência artificial em Íris. O Design System está sendo alinhado a estes valores.<span class="orig">Origem: Manual de Identidade Visual, cap. 2</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-COR-24" data-status="provisoria"><a class="rid" href="#BB-COR-24">BB-COR-24</a><p>Em Light, as cores funcionais usam #15803D, #B91C1C e #1D4ED8 (todas acima de 4,5:1 sobre #F4F7FB); os valores originais não passam.<span class="orig">Origem: contraste medido, derivação deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-COR-25" data-status="provisoria"><a class="rid" href="#BB-COR-25">BB-COR-25</a><p>Todo componente interativo define padrão, hover, foco visível, ativo, desabilitado, carregando e erro. Todo painel de dados define loading, empty, error e stale (AGENTS.md §25).<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="temas">
+    <h3>Dark e Light</h3>
+    <div class="tbl tokmap"><table>
+      <thead><tr><th scope="col">Token</th><th scope="col">Dark</th><th scope="col">Light</th><th scope="col">Status</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">--bg</td><td><span class="dot" style="background:#0D0D0D"></span>#0D0D0D</td><td><span class="dot" style="background:#F4F7FB"></span>#F4F7FB</td><td>Missão (C02)</td></tr>
+        <tr><td class="mono">--surface</td><td><span class="dot" style="background:#14141A"></span>#14141A</td><td><span class="dot" style="background:#FBFCFE"></span>#FBFCFE</td><td>Dark herdada; Light derivada</td></tr>
+        <tr><td class="mono">--surface-2 / -3</td><td><span class="dot" style="background:#1C1C24"></span>#1C1C24 / #252530</td><td><span class="dot" style="background:#EEF2F8"></span>#EEF2F8 / #E3E9F2</td><td>Dark herdada; Light derivada</td></tr>
+        <tr><td class="mono">--ink</td><td><span class="dot" style="background:#E8EEFF"></span>#E8EEFF</td><td><span class="dot" style="background:#0F1A2E"></span>#0F1A2E</td><td>Derivada (P-03)</td></tr>
+        <tr><td class="mono">--ink-muted</td><td><span class="dot" style="background:#9EADC8"></span>#9EADC8</td><td><span class="dot" style="background:#46546B"></span>#46546B</td><td>Dark herdada; Light derivada</td></tr>
+        <tr><td class="mono">--c-blue</td><td><span class="dot" style="background:#00D4FF"></span>#00D4FF</td><td><span class="dot" style="background:#006C8C"></span>#006C8C</td><td>Light derivada (P-02)</td></tr>
+        <tr><td class="mono">--c-pink</td><td><span class="dot" style="background:#FF2D9B"></span>#FF2D9B</td><td><span class="dot" style="background:#C4105F"></span>#C4105F</td><td>Light derivada (P-02)</td></tr>
+        <tr><td class="mono">--c-gold</td><td><span class="dot" style="background:#FFC107"></span>#FFC107</td><td><span class="dot" style="background:#7A5800"></span>#7A5800</td><td>Light derivada (P-02)</td></tr>
+        <tr><td class="mono">--c-iris</td><td><span class="dot" style="background:#8B7DFF"></span>#8B7DFF</td><td><span class="dot" style="background:#5B4BD6"></span>#5B4BD6</td><td>Light derivada (P-02)</td></tr>
+        <tr><td class="mono">--on-neon</td><td><span class="dot" style="background:#0D0D0D"></span>#0D0D0D</td><td><span class="dot" style="background:#0D0D0D"></span>#0D0D0D</td><td>Missão (texto sobre neon)</td></tr>
+      </tbody></table></div>
+    <p class="plate-cap">Use o botão Dark/Light no topo para ver este documento inteiro nos dois temas. Mapa idêntico ao de <code>shared/core.css</code>.</p>
+    <ol class="rules">
+<li class="rule" id="BB-COR-26" data-status="confirmada"><a class="rid" href="#BB-COR-26">BB-COR-26</a><p>Dois temas oficiais, Dark (#0D0D0D) e Light (#F4F7FB), com alternância manual e persistência da escolha. O tema nunca depende só de <code>prefers-color-scheme</code>.<span class="orig">Origem: C02 e C04</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-COR-27" data-status="provisoria"><a class="rid" href="#BB-COR-27">BB-COR-27</a><p>As variantes Light (superfícies, tinta e cores de texto) e a tinta #E8EEFF são derivadas, medidas neste documento e aguardam homologação.<span class="orig">Origem: P-02, P-03 e P-04</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-COR-28" data-status="confirmada"><a class="rid" href="#BB-COR-28">BB-COR-28</a><p>Nenhum título ou subtítulo usa #FFFFFF ou #000000. Texto usa a tinta do tema ou a cor de acento do tema (ver Tipografia).<span class="orig">Origem: C04</span></p><span class="st st-c">CONFIRMADA</span></li>
+    </ol>
+  </div>
+</section>
+
+<section class="ch ac-blue" id="tipografia" data-secao="Tipografia" aria-labelledby="h-tipografia">
+  <div class="ch-head">
+    <h2 id="h-tipografia">Tipografia</h2>
+    <div><p class="lede">Três famílias, três trabalhos: Sora fala, Inter opera, IBM Plex Mono mede. Todas hospedadas em <code>public/fonts</code>, sem requisição a CDN.</p>
+    <p class="meta">Regras BB-TIPO-01 a BB-TIPO-16 · 7 confirmadas · 9 provisórias</p></div>
+  </div>
+
+  <div class="sub" id="familias">
+    <h3>Famílias e usos</h3>
+    <div class="fam">
+      <div><div><div class="spec sora">Decisão em um comando</div><p class="glyphs">ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789 ° % R$</p></div><div><h4>Sora, exibição</h4><p>Display e títulos H1 a H3, nomes de personagem, números de destaque. Pesos 600, 700 e 800; tracking -0,02em.</p></div></div>
+      <div><div><div class="spec inter">Interface de alta densidade, leitura confortável</div><p class="glyphs">ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789 ° % R$</p></div><div><h4>Inter, interface</h4><p>Menus, formulários, tabelas, botões e texto corrido. Pesos 400, 500 e 600; recursos <code>cv05, cv11, ss01</code> e tracking -0,012em.</p></div></div>
+      <div><div><div class="spec plex">R$ 1.234,56 · 98,7% · 42 ms</div><p class="glyphs">ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789 {}[]()</p></div><div><h4>IBM Plex Mono, dados</h4><p>Métricas, contadores, IDs, código, comandos ("Ei Orbit") e telemetria. Pesos 400, 500 e 600. Os números acima são formatação de exemplo.</p></div></div>
+    </div>
+    <ol class="rules">
+<li class="rule" id="BB-TIPO-01" data-status="confirmada"><a class="rid" href="#BB-TIPO-01">BB-TIPO-01</a><p>Trinca tipográfica: Sora (display), Inter (interface) e IBM Plex Mono (dados e código). Nenhuma outra família em peça nova.<span class="orig">Origem: C03 da missão</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-TIPO-02" data-status="confirmada"><a class="rid" href="#BB-TIPO-02">BB-TIPO-02</a><p>Proibidas em layout novo as famílias legadas Bodoni Moda, Cabin, JetBrains Mono e Playfair Display. O serifado do "B" e do wordmark do logotipo é arte preservada, não tipografia de layout.<span class="orig">Origem: BRANDBOOK-OFICIAL-BIRTH-HUB-360.html, cap. 4</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-TIPO-03" data-status="confirmada"><a class="rid" href="#BB-TIPO-03">BB-TIPO-03</a><p>Inter usa <code>font-feature-settings: "cv05","cv11","ss01"</code> e tracking -0,012em (o "toque arredondado"). Sora usa tracking -0,02em.<span class="orig">Origem: Manual de Identidade Visual, cap. 3</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-TIPO-04" data-status="confirmada"><a class="rid" href="#BB-TIPO-04">BB-TIPO-04</a><p>Plex Mono é reservada a métricas, contadores, badges técnicos, IDs, logs e código; números tabulares alinham colunas. Nunca em texto corrido nem como fantasia de "tecnológico".<span class="orig">Origem: Manual de Identidade Visual, cap. 3</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-TIPO-05" data-status="provisoria"><a class="rid" href="#BB-TIPO-05">BB-TIPO-05</a><p>Sora vale para H1 a H6 (Manual de Identidade Visual). O <code>.claude/CLAUDE.md</code> do repositório usa Inter em H4 a H6; a divergência aguarda decisão.<span class="orig">Origem: divergência D-02</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="escala">
+    <h3>Escalas e pesos: duas escalas, dois níveis <span class="st st-p">PROVISÓRIA</span></h3>
+    <p class="intro">Duas escalas ligadas aos níveis de intensidade (C08). A escala abaixo é a de Experiência Comercial e Leitura (este documento, landing, campanhas); a escala Operacional (plataforma) está na tabela seguinte.</p>
+    <div class="scale">
+      <div><span class="lab">Display · Sora 800<br>72/76 · -0,02em</span><span class="smp" style="font:800 clamp(2.25rem,7vw,4.5rem)/1.05 var(--font-display);letter-spacing:-.02em">Comando 360°</span></div>
+      <div><span class="lab">H1 · Sora 700<br>48/52</span><span class="smp" style="font:700 clamp(1.9rem,4.5vw,3rem)/1.1 var(--font-display);letter-spacing:-.02em">Pipeline sob controle</span></div>
+      <div><span class="lab">H2 · Sora 700<br>36/40</span><span class="smp" style="font:700 clamp(1.6rem,3.4vw,2.25rem)/1.15 var(--font-display);letter-spacing:-.02em">Previsibilidade de receita</span></div>
+      <div><span class="lab">H3 · Sora 600<br>24/30</span><span class="smp" style="font:600 1.5rem/1.25 var(--font-display);letter-spacing:-.02em">Plano diário priorizado</span></div>
+      <div><span class="lab">H4 · Sora 600<br>18/24</span><span class="smp" style="font:600 1.125rem/1.35 var(--font-display)">Cadência multicanal</span></div>
+      <div><span class="lab">Corpo · Inter 400<br>16/27 · medida 65 a 75ch</span><span class="smp" style="font:400 1rem/1.7 var(--font-ui)">O sistema ordena o que importa agora e mostra a evidência por trás de cada recomendação, para que o time decida em segundos.</span></div>
+      <div><span class="lab">Apoio · Inter 500<br>13/19</span><span class="smp" style="font:500 .8125rem/1.5 var(--font-ui);color:var(--ink-muted)">Atualizado há 4 minutos · fonte: CRM</span></div>
+      <div><span class="lab">Dados · Plex Mono 500<br>14/20 · tabular</span><span class="smp" style="font:500 .875rem/1.4 var(--font-mono)">00.000,00 · ID 0000-0000 · 000 ms</span></div>
+    </div>
+    <h4>Escala Operacional (plataforma), valores do Design System <span class="st st-p">PROVISÓRIA</span></h4>
+    <div class="tbl"><table>
+      <thead><tr><th scope="col">Papel</th><th scope="col">Tamanho / entrelinha</th><th scope="col">Peso</th><th scope="col">Uso</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">display-xl</td><td class="num">48 / 1,08</td><td class="num">700</td><td>Hero institucional (comercial)</td></tr>
+        <tr><td class="mono">display</td><td class="num">36 / 1,12</td><td class="num">700</td><td>Destaque de tela</td></tr>
+        <tr><td class="mono">h1 · h2 · h3</td><td class="num">30 / 1,2 · 24 / 1,25 · 20 / 1,3</td><td class="num">700 · 600 · 600</td><td>Título de tela, seção, bloco</td></tr>
+        <tr><td class="mono">h4 · h5 · h6</td><td class="num">18 · 16 · 14</td><td class="num">600</td><td>Subtítulos densos</td></tr>
+        <tr><td class="mono">body</td><td class="num">14 / 1,5</td><td class="num">400</td><td>Texto, tabelas, campos</td></tr>
+        <tr><td class="mono">body-sm · label</td><td class="num">13</td><td class="num">400 · 500</td><td>Apoio, rótulos</td></tr>
+        <tr><td class="mono">caption</td><td class="num">12 / 1,4</td><td class="num">500</td><td>Legenda</td></tr>
+        <tr><td class="mono">data · data-lg</td><td class="num">14 · 24</td><td class="num">500 · 600</td><td>Plex Mono tabular</td></tr>
+      </tbody></table></div>
+    <div class="wt" style="margin-top:2rem">
+      <span style="font:400 1.5rem var(--font-display)">Sora 400<small>apoio</small></span><span style="font:600 1.5rem var(--font-display)">Sora 600<small>H3 e H4</small></span><span style="font:700 1.5rem var(--font-display)">Sora 700<small>H1 e H2</small></span><span style="font:800 1.5rem var(--font-display)">Sora 800<small>display</small></span>
+      <span style="font:400 1.25rem var(--font-ui)">Inter 400<small>corpo</small></span><span style="font:500 1.25rem var(--font-ui)">Inter 500<small>rótulos</small></span><span style="font:600 1.25rem var(--font-ui)">Inter 600<small>botões</small></span>
+    </div>
+    <p class="plate-cap">Os textos de amostra são redação ilustrativa; "4 minutos" e "000" não são dados reais.</p>
+    <ol class="rules">
+<li class="rule" id="BB-TIPO-06" data-status="provisoria"><a class="rid" href="#BB-TIPO-06">BB-TIPO-06</a><p>Escala de Experiência Comercial e Leitura: display 72, H1 48, H2 36, H3 24, H4 18, corpo 16, apoio 13 e dados 14 (px). Display nunca passa de 6rem; cada degrau difere do vizinho em pelo menos 1,25x ou em peso.<span class="orig">Origem: proposta deste brandbook, ligada a C08</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-TIPO-07" data-status="provisoria"><a class="rid" href="#BB-TIPO-07">BB-TIPO-07</a><p>Escala Comercial e Leitura: corpo de 16 px no mínimo, entrelinha 1,6 a 1,7 e medida de 65 a 75 caracteres. Em fundo escuro, entrelinha um pouco maior.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-TIPO-15" data-status="provisoria"><a class="rid" href="#BB-TIPO-15">BB-TIPO-15</a><p>Escala de Experiência Operacional e Plataforma, a do Design System: display-xl 48, display 36, h1 30, h2 24, h3 20, h4 18, h5 16, h6 14, corpo 14 (entrelinha 1,5), body-sm 13, caption 12, label 13, dados 14 e data-lg 24 (px). Display-xl 48 é de uso comercial; na plataforma o título dominante é h1 30. Marcada PROVISÓRIA: o DS também a marca como provisória.<span class="orig">Origem: 03-design-system/tokens/tokens.json (lido em 2026-11-13)</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-TIPO-16" data-status="provisoria"><a class="rid" href="#BB-TIPO-16">BB-TIPO-16</a><p>Cada superfície usa uma escala só, escolhida pelo nível: Comercial e Leitura usa a de BB-TIPO-06; Operacional e Plataforma usa a de BB-TIPO-15. Famílias, pesos e tracking (BB-TIPO-01 a 04 e 09) valem para as duas.<span class="orig">Origem: C08 da missão</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-TIPO-08" data-status="provisoria"><a class="rid" href="#BB-TIPO-08">BB-TIPO-08</a><p>Títulos usam <code>text-wrap: balance</code> e texto corrido <code>text-wrap: pretty</code>. Tracking nunca abaixo de -0,04em.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-TIPO-09" data-status="confirmada"><a class="rid" href="#BB-TIPO-09">BB-TIPO-09</a><p>Pesos oficiais: Sora 400, 600, 700 e 800; Inter 400, 500, 600 e 700; Plex Mono 400, 500 e 600.<span class="orig">Origem: Manual de Identidade Visual, cap. 3</span></p><span class="st st-c">CONFIRMADA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="cor-titulos">
+    <h3>Cor dos títulos</h3>
+    <div class="tcolor">
+      <div class="tc ok"><p class="t" style="color:#E8EEFF">Previsibilidade</p><p class="s" style="color:#9EADC8">Tinta derivada sobre Dark.</p><span class="cap">CORRETO · #E8EEFF sobre #0D0D0D</span></div>
+      <div class="tc ok"><p class="t" style="color:#00D4FF">Previsibilidade</p><p class="s" style="color:#9EADC8">Neon de acento sobre Dark.</p><span class="cap">CORRETO · #00D4FF sobre #0D0D0D</span></div>
+      <div class="tc lt ok"><p class="t" style="color:#0F1A2E">Previsibilidade</p><p class="s" style="color:#46546B">Tinta derivada sobre Light.</p><span class="cap" style="color:#15803D">CORRETO · #0F1A2E sobre #F4F7FB</span></div>
+      <div class="tc lt ok"><p class="t" style="color:#C4105F">Previsibilidade</p><p class="s" style="color:#46546B">Variante de acento sobre Light.</p><span class="cap" style="color:#15803D">CORRETO · #C4105F sobre #F4F7FB</span></div>
+      <div class="tc no"><p class="t" style="color:#FFFFFF">Previsibilidade</p><p class="s" style="color:#9EADC8">Exemplo proibido: branco puro.</p><span class="cap">PROIBIDO · #FFFFFF (C04)</span></div>
+      <div class="tc lt no"><p class="t" style="color:#000000">Previsibilidade</p><p class="s" style="color:#46546B">Exemplo proibido: preto puro.</p><span class="cap" style="color:#B91C1C">PROIBIDO · #000000 (C04)</span></div>
+    </div>
+    <ol class="rules">
+<li class="rule" id="BB-TIPO-10" data-status="confirmada"><a class="rid" href="#BB-TIPO-10">BB-TIPO-10</a><p>Títulos e subtítulos nunca são #FFFFFF nem #000000. Em Dark, tinta #E8EEFF ou cor de acento; em Light, tinta #0F1A2E ou variante de acento.<span class="orig">Origem: C04 da missão</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-TIPO-11" data-status="confirmada"><a class="rid" href="#BB-TIPO-11">BB-TIPO-11</a><p>Ênfase em texto vem de peso, tamanho e cor sólida. Gradiente em texto (<code>background-clip: text</code>) é proibido em qualquer contexto.<span class="orig">Origem: C04 e CLAUDE.md</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-TIPO-12" data-status="provisoria"><a class="rid" href="#BB-TIPO-12">BB-TIPO-12</a><p>Um título tem uma cor só. A cor de acento do capítulo ou módulo pode colorir o título inteiro; palavras soltas coloridas dentro de frase são exceção rara.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="hierarquia">
+    <h3>Hierarquia em texto corrido</h3>
+    <div class="plate"><div class="prose-sample">
+      <div class="h5">Plano diário priorizado</div>
+      <p>A lista abre pelo contato com maior chance de resposta hoje e mostra por quê. Cada linha traz a última interação e a ação sugerida.</p>
+      <div class="h6">Como a prioridade é calculada</div>
+      <p>O ordenamento combina estágio, recência e sinais de engajamento. Nos campos de dados, usamos mono: <span class="mono-inline">score 00 · ciclo 00 d</span>.</p>
+    </div><p class="plate-cap">Texto de exemplo; valores e regras de cálculo são ilustrativos.</p></div>
+    <ol class="rules">
+<li class="rule" id="BB-TIPO-13" data-status="provisoria"><a class="rid" href="#BB-TIPO-13">BB-TIPO-13</a><p>Uma tela tem um único título dominante. Papéis (título, corpo, rótulo, dado) devem ser distinguíveis sem ler o texto, por tamanho, peso ou família.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-TIPO-14" data-status="provisoria"><a class="rid" href="#BB-TIPO-14">BB-TIPO-14</a><p>Números de métrica usam Plex Mono tabular; unidade e rótulo em Inter menor. Número sem fonte medida não é publicado (zero mock).<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+</section>
+
+<section class="ch ac-iris" id="linguagem" data-secao="Linguagem visual" aria-labelledby="h-linguagem">
+  <div class="ch-head">
+    <h2 id="h-linguagem">Linguagem visual</h2>
+    <div><p class="lede">Neon Editorial Cinematic é a referência criativa desta versão: luz funcional sobre canvas escuro, composição de revista e profundidade controlada.</p>
+    <p class="meta">Regras BB-LING-01 a BB-LING-18 · 6 confirmadas · 12 provisórias</p></div>
+  </div>
+
+  <div class="sub" id="direcao">
+    <h3>Neon Editorial Cinematic <span class="st st-p">REFERÊNCIA CRIATIVA</span></h3>
+    <div class="split even">
+      <div>
+        <div class="parts">
+          <div class="part"><h4>Neon</h4><p>A cor é luz com função: marca estado, foco e prioridade sobre um canvas quase preto.</p></div>
+          <div class="part"><h4>Editorial</h4><p>Grid assimétrico, tipografia em escala grande, legendas e margens que organizam a leitura.</p></div>
+          <div class="part"><h4>Cinematic</h4><p>Enquadramento, camadas e ritmo. O movimento cinematográfico existe só na experiência comercial.</p></div>
+        </div>
+      </div>
+      <div class="note-box"><b>Errata V2.1 · N1 localizado em repositório externo</b>
+        <p>Na V2.0 o nome "N1 Final Candidate" constava como não localizado, porque a busca cobriu só este repositório. O N1 existe em <code>github.com/MaarkssDN/Land-page</code> (<code>mission-06/n1-final/</code>, commit 0d08b31) e foi analisado: veja <a href="../08-referencia-n1/index.html">08 — Referência N1</a>. Ele é a referência da Experiência Comercial (Persuade) e não define regras para os workspaces. A página publicada (GitHub Pages) não pôde ser acessada neste ambiente (proxy 403); a análise usa o código do repositório.</p></div>
+    </div>
+    <ol class="rules">
+<li class="rule" id="BB-LING-01" data-status="confirmada"><a class="rid" href="#BB-LING-01">BB-LING-01</a><p>Neon Editorial Cinematic é referência criativa, não definição automática de regras. Regras só existem quando escritas e etiquetadas neste documento.<span class="orig">Origem: C05 da missão</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-LING-02" data-status="provisoria"><a class="rid" href="#BB-LING-02">BB-LING-02</a><p>O N1 Final Candidate (repositório externo MaarkssDN/Land-page, commit 0d08b31) pode ser citado como referência criativa da Experiência Comercial, nunca como regra homologada nem como precedente para workspaces operacionais. Detalhes e mapeamento em 08-referencia-n1.<span class="orig">Origem: análise do N1 (08-referencia-n1), errata V2.1</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-LING-03" data-status="provisoria"><a class="rid" href="#BB-LING-03">BB-LING-03</a><p>Leitura da direção: neon como luz funcional (cor com função), editorial como estrutura (grid assimétrico, escala tipográfica, legendas) e cinematic como profundidade e ritmo, limitado à camada comercial.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="grafismos">
+    <h3>Grafismos 360°</h3>
+    <div class="graf">
+      <div class="gf"><div class="art"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" stroke-width="6" stroke-dasharray="1 4.6"/><circle cx="50" cy="50" r="34" fill="none" stroke="currentColor" stroke-width="1"/></svg></div><h4>Bezel de graduação</h4><p>Anel de marcas, referência de instrumento. Mede e enquadra.</p></div>
+      <div class="gf"><div class="art"><div class="orbring" style="width:72%" role="img" aria-label="Anel com gradiente da órbita"></div></div><h4>Órbita</h4><p>Anel de gradiente para indicador de estado ou progresso.</p></div>
+      <div class="gf"><div class="art"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 8v84M8 50h84" stroke="currentColor" stroke-width="1" fill="none"/><circle cx="50" cy="50" r="22" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="50" cy="50" r="2.5" fill="currentColor"/></svg></div><h4>Retícula e eixo</h4><p>Cruz de mira para foco e alinhamento, eco do eixo do símbolo.</p></div>
+      <div class="gf"><div class="art"><svg viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 50a32 32 0 0 1 64 0"/><path d="M26 50a24 24 0 0 1 48 0"/><path d="M34 50a16 16 0 0 1 32 0"/></g></svg></div><h4>Arcos concêntricos</h4><p>Alcance e camadas. Separador de seção ou fundo de gráfico.</p></div>
+      <div class="gf"><div class="art"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M20 70 50 30 82 62" fill="none" stroke="currentColor" stroke-width="1.2"/><g fill="currentColor"><circle cx="20" cy="70" r="4"/><circle cx="50" cy="30" r="5"/><circle cx="82" cy="62" r="4"/></g></svg></div><h4>Nós e conexões</h4><p>Entidades ligadas: conta, contato, negócio. Sempre com rótulo.</p></div>
+    </div>
+    <ol class="rules">
+<li class="rule" id="BB-LING-04" data-status="provisoria"><a class="rid" href="#BB-LING-04">BB-LING-04</a><p>Cinco grafismos 360° autorizados: bezel de graduação, órbita, retícula e eixo, arcos concêntricos, nós e conexões. Todos desenhados em CSS ou SVG, em traço fino, sem redesenhar o logotipo.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-LING-05" data-status="provisoria"><a class="rid" href="#BB-LING-05">BB-LING-05</a><p>Grafismo ocupa a moldura e a margem; nunca fica atrás de texto corrido. Cada grafismo carrega informação (medida, estado, relação) ou sai.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-LING-06" data-status="provisoria"><a class="rid" href="#BB-LING-06">BB-LING-06</a><p>Proibido: malha ou grade decorativa de fundo, nuvem de brilho radial e ilustração montada com formas soltas em tamanho de herói.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="composicao">
+    <h3>Composição editorial</h3>
+    <div class="gridspec" aria-hidden="true"><i class="a" style="grid-column:span 7"></i><i class="m" style="grid-column:span 1"></i><i style="grid-column:span 4"></i></div>
+    <p class="plate-cap">Grid de 12 colunas: 7 de conteúdo dominante, 1 de respiro e 4 de apoio (legenda, dado, ação).</p>
+    <div class="dd" style="margin-top:1.5rem">
+      <figure class="good"><div class="wire l"><div class="col1"><b class="tt"></b><b class="ss"></b><b class="ss" style="width:35%"></b><b class="bt"></b></div><div class="col2"></div></div><figcaption>PADRÃO: título ancorado, conteúdo real ao lado, assimetria</figcaption></figure>
+      <figure class="bad"><div class="wire"><b class="tt" style="width:55%"></b><b class="ss"></b><b class="bt"></b><div class="tri"><b></b><b></b><b></b></div></div><figcaption>EVITAR: herói centralizado com três cartões iguais</figcaption></figure>
+    </div>
+    <ol class="rules">
+<li class="rule" id="BB-LING-07" data-status="confirmada"><a class="rid" href="#BB-LING-07">BB-LING-07</a><p>Hero centralizado e três cartões iguais só para preencher espaço não são o padrão. Uma exceção exige justificativa escrita por objetivo, fluxo ou volume real de informação.<span class="orig">Origem: .claude/CLAUDE.md, regras 2 e 4</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-LING-08" data-status="provisoria"><a class="rid" href="#BB-LING-08">BB-LING-08</a><p>Cada composição tem um elemento dominante identificável, grid assimétrico e uma legenda em Plex Mono que explica o que o olho vê.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-LING-09" data-status="provisoria"><a class="rid" href="#BB-LING-09">BB-LING-09</a><p>Na plataforma (nível operacional), densidade alta e estrutura previsível vencem a expressão; na landing e em campanhas (nível comercial), escala e ousadia vencem.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="profundidade">
+    <h3>Profundidade</h3>
+    <div class="layers">
+      <div class="stackviz" aria-hidden="true"><div class="ly l1">canvas</div><div class="ly l2">superfície</div><div class="ly l3">conteúdo</div><div class="ly l4">sinal (foco, alerta)</div></div>
+      <p>Quatro camadas: canvas, superfície, conteúdo e sinal. Cada camada acima tem fundo um degrau mais claro e sombra de elevação. A luz neon só mora na camada de sinal.</p>
+    </div>
+    <ol class="rules">
+<li class="rule" id="BB-LING-10" data-status="provisoria"><a class="rid" href="#BB-LING-10">BB-LING-10</a><p>Quatro camadas de profundidade: canvas, superfície, conteúdo, sinal. Glow e cor neon intensa pertencem à camada de sinal.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-LING-11" data-status="provisoria"><a class="rid" href="#BB-LING-11">BB-LING-11</a><p>Desfoque e vidro (<code>backdrop-filter</code>) só com função: cabeçalho fixo sobre conteúdo rolando, camada flutuante. Nunca como enfeite em todo cartão.<span class="orig">Origem: CLAUDE.md regra 5</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="iconografia">
+    <h3>Iconografia e ilustração <span class="st st-p">PROVISÓRIA</span></h3>
+    <div class="icons">
+      <div class="ico"><svg aria-hidden="true"><use href="#i-hub"/></svg><span>P01 Hub</span></div>
+      <div class="ico"><svg aria-hidden="true"><use href="#i-intel"/></svg><span>P02 Inteligência</span></div>
+      <div class="ico"><svg aria-hidden="true"><use href="#i-orch"/></svg><span>P03 Orquestração</span></div>
+      <div class="ico"><svg aria-hidden="true"><use href="#i-perf"/></svg><span>P04 Performance</span></div>
+      <div class="ico"><svg aria-hidden="true"><use href="#i-forecast"/></svg><span>P05 Previsão</span></div>
+      <div class="ico"><svg aria-hidden="true"><use href="#i-ai"/></svg><span>P06 IA</span></div>
+      <div class="ico"><svg aria-hidden="true"><use href="#i-auto"/></svg><span>P07 Automação</span></div>
+      <div class="ico"><svg aria-hidden="true"><use href="#i-voice"/></svg><span>P08 Voz</span></div>
+      <div class="ico"><svg aria-hidden="true"><use href="#i-admin"/></svg><span>M09 Admin</span></div>
+      <div class="ico"><svg aria-hidden="true"><use href="#i-field"/></svg><span>M10 Campo</span></div>
+      <div class="ico"><svg aria-hidden="true"><use href="#i-social"/></svg><span>M11 Social</span></div>
+      <div class="ico"><svg aria-hidden="true"><use href="#i-search"/></svg><span>Busca</span></div>
+    </div>
+    <p class="plate-cap">Conjunto de apoio desenhado para este brandbook (grade 24, traço 1,75, pontas arredondadas). A biblioteca definitiva é da frente 05-biblioteca.</p>
+    <ol class="rules">
+<li class="rule" id="BB-LING-12" data-status="provisoria"><a class="rid" href="#BB-LING-12">BB-LING-12</a><p>Ícones são SVG desenhado, em grade 24, traço único de 1,75 e pontas arredondadas, na cor de acento do contexto. Nunca emoji nem glifo Unicode no lugar de ícone.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-LING-13" data-status="provisoria"><a class="rid" href="#BB-LING-13">BB-LING-13</a><p>Ícone acompanha sempre um rótulo em texto, a menos que seja ação universal com nome acessível. Ícone não fica dentro de quadrado arredondado acima de título.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="imagens">
+    <h3>Imagens</h3>
+    <div class="imgmap">
+      <div class="yes"><h4>Permitido</h4><ul>
+        <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Telas reais do produto, com dados reais ou rotuladas como exemplo.</li>
+        <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Diagramas, gráficos de dados e grafismos 360°.</li>
+        <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Os personagens não humanos oficiais (SVG originais).</li>
+        <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>Tipografia em grande escala como imagem.</li></ul></div>
+      <div class="no"><h4>Proibido</h4><ul>
+        <li><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>Fotografia humana genérica de banco de imagens.</li>
+        <li><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>Ilustração ou avatar humano figurativo.</li>
+        <li><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>Métrica, gráfico ou cliente inventado apresentado como real.</li>
+        <li><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>Máscara geométrica fingindo recorte de foto.</li></ul></div>
+    </div>
+    <ol class="rules">
+<li class="rule" id="BB-LING-14" data-status="confirmada"><a class="rid" href="#BB-LING-14">BB-LING-14</a><p>Sem fotografia humana genérica. Personagens e logotipo originais não são redesenhados.<span class="orig">Origem: C06 da missão</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-LING-15" data-status="confirmada"><a class="rid" href="#BB-LING-15">BB-LING-15</a><p>Nenhuma métrica, gráfico ou cliente fabricado é apresentado como real. Exemplo é sempre rotulado ("EXEMPLO" ou "VALORES ILUSTRATIVOS").<span class="orig">Origem: AGENTS.md §25 (zero mock)</span></p><span class="st st-c">CONFIRMADA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="movimento">
+    <h3>Movimento: dois níveis</h3>
+    <div class="mo">
+      <div><h4>Experiência comercial</h4><div class="track play" data-dur="700ms" data-ez="cubic-bezier(.16,1,.3,1)"><span class="dotm"></span></div><p class="tick">Cinematográfico · 400 a 900 ms · saída exponencial</p></div>
+      <div><h4>Operacional</h4><div class="track play" data-dur="160ms" data-ez="cubic-bezier(.16,1,.3,1)"><span class="dotm"></span></div><p class="tick">Discreto e rápido · 120 a 200 ms · feedback</p></div>
+    </div>
+    <p style="margin-top:1rem"><button class="btn" id="mo-play" type="button">Reproduzir os dois</button> <span class="tick" id="mo-note" role="status" style="font:500 .8125rem var(--font-mono);color:var(--ink-muted);margin-left:.5rem"></span></p>
+    <p class="plate-cap">Faixas de duração são proposta deste brandbook. O detalhamento é da frente 04-motion-system, não lida aqui.</p>
+    <ol class="rules">
+<li class="rule" id="BB-LING-16" data-status="confirmada"><a class="rid" href="#BB-LING-16">BB-LING-16</a><p>Dois níveis de movimento: Experiência Comercial (cinematográfica) e Operacional (discreta e rápida).<span class="orig">Origem: C08 da missão</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-LING-17" data-status="confirmada"><a class="rid" href="#BB-LING-17">BB-LING-17</a><p><code>prefers-reduced-motion</code> é obrigatório em toda animação CSS ou JavaScript: com a preferência ativa, a animação é removida ou reduzida a troca de estado.<span class="orig">Origem: C08 da missão</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-LING-18" data-status="provisoria"><a class="rid" href="#BB-LING-18">BB-LING-18</a><p>Nível comercial: 400 a 900 ms; nível operacional: 120 a 200 ms; ambos com saída exponencial. Nenhum loop decorativo: toda animação comunica estado, guia atenção ou dá retorno.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+</section>
+
+<section class="ch ac-pink" id="personagens" data-secao="Personagens" aria-labelledby="h-personagens">
+  <div class="ch-head">
+    <h2 id="h-personagens">Personagens</h2>
+    <div><p class="lede">Os personagens são a camada de ilustração da marca: inteligências sintéticas não humanas, vetoriais, que ficam intactas. Quatro contagens parecidas não podem ser confundidas.</p>
+    <p class="meta">Regras BB-PERS-01 a BB-PERS-11 · 5 confirmadas · 6 provisórias</p></div>
+  </div>
+
+  <div class="sub" id="contagens">
+    <h3>Quatro contagens, quatro coisas diferentes</h3>
+    <div class="rel">
+      <div><span class="n">29</span><h4>Personagens</h4><p>Identidade visual: 29 SVGs em <code>public/brand/characters/</code> e em <code>identidade-visual/birthhub360/characters/</code>. Conferido: 9 pilares + 15 agentes comerciais + 4 agentes de canal + 1 orquestrador (<code>characterCatalog*.ts</code>); <code>characters.json</code> lista 9 em <code>characters</code> e 20 em <code>agentCharacters</code>.</p></div>
+      <div><span class="n">26</span><h4>Agentes técnicos <span class="st st-p">A CONFIRMAR</span></h4><p>A missão fixa 26 como categoria própria. No repositório, 26 é o tamanho do roster de agentes de engenharia (AGENTS.md §3, <code>ROSTER-SESSOES.md</code>). O enxame de IA em runtime aparece como 24 especialistas mais o Supervisor (<code>BIRTHUB360_CONTRATOS_AGENTES.md</code>) ou 15 (Documento Mestre V4.1). Nenhuma contagem de enxame bate com 26: pendência D-05.</p></div>
+      <div><span class="n">11</span><h4>Módulos</h4><p>Arquitetura do produto: P01 a P08 (pilares) e M09 a M11 (Documento Mestre V4.10, seção 03 e mapa de funcionalidades; <code>BIRTHUB360_DECISOES_PRODUTO.md</code> cita M10 Field Sales e M11 Social Selling).</p></div>
+      <div><span class="n">-</span><h4>Assistentes globais</h4><p>Camada transversal da arquitetura (C07), sem contagem oficial localizada. O README do design-lab cita <code>VoiceCommandWidget</code>, <code>CopilotTrigger</code> e <code>CommandPalette</code> montados no layout principal (citação, não conferida no código por esta frente).</p></div>
+    </div>
+    <ol class="rules">
+<li class="rule" id="BB-PERS-01" data-status="confirmada"><a class="rid" href="#BB-PERS-01">BB-PERS-01</a><p>29 personagens, 26 agentes técnicos e 11 módulos são três conjuntos distintos e nunca são confundidos em texto, interface ou peça. Assistentes globais é uma quarta categoria.<span class="orig">Origem: C09 da missão</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-PERS-02" data-status="confirmada"><a class="rid" href="#BB-PERS-02">BB-PERS-02</a><p>Contagem de personagens: 29 SVGs. Camadas: 9 pilares, 15 agentes comerciais, 4 agentes de canal e 1 orquestrador (Aegis).<span class="orig">Origem: arquivos do repositório (conferido)</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-PERS-03" data-status="provisoria"><a class="rid" href="#BB-PERS-03">BB-PERS-03</a><p>O significado exato de "26 agentes técnicos" aguarda confirmação humana: 26 coincide com o roster de engenharia, não com o enxame de IA. Enquanto isso, não publicar "26" em peça externa.<span class="orig">Origem: divergência D-05</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-PERS-04" data-status="provisoria"><a class="rid" href="#BB-PERS-04">BB-PERS-04</a><p>Nomes dos módulos: P01 Hub Comercial, P02 Inteligência de Mercado, P03 Orquestração de Vendas, P04 Performance Comercial, P05 Previsibilidade, P06 Inteligência Artificial, P07 Automação e Conectividade, P08 Voice e WhatsApp, M09 Administração, M10 Field Sales, M11 Social Selling. P07, M09 e M11 pendem de confirmação pela auditoria (D-10).<span class="orig">Origem: Documento Mestre V4.10 e Decisões de Produto</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="elenco">
+    <h3>Elenco de 29</h3>
+    <p class="intro">SVGs originais, carregados como imagem, sem edição. Fundo escuro de apoio apenas para apresentação.</p>
+    <div class="cast-group"><h4>Pilares <span class="num">9 personagens</span></h4><div class="cast big"><div class="ch-i"><img src="../../../brand/characters/orbit.svg" alt="Orbit, Guardião do CRM" width="96" height="96"><b>Orbit</b><span>Guardião do CRM</span></div><div class="ch-i"><img src="../../../brand/characters/nexus.svg" alt="Nexus, Analista de Dados" width="96" height="96"><b>Nexus</b><span>Analista de Dados</span></div><div class="ch-i"><img src="../../../brand/characters/aria.svg" alt="Aria, Maestrina de Fluxos" width="96" height="96"><b>Aria</b><span>Maestrina de Fluxos</span></div><div class="ch-i"><img src="../../../brand/characters/vanguard.svg" alt="Vanguard, Estrategista de Metas" width="96" height="96"><b>Vanguard</b><span>Estrategista de Metas</span></div><div class="ch-i"><img src="../../../brand/characters/oracle.svg" alt="Oracle, Visionário de Forecast" width="96" height="96"><b>Oracle</b><span>Visionário de Forecast</span></div><div class="ch-i"><img src="../../../brand/characters/core.svg" alt="Core, Mente Principal" width="96" height="96"><b>Core</b><span>Mente Principal</span></div><div class="ch-i"><img src="../../../brand/characters/spark.svg" alt="Spark, Engenheiro de Integrações" width="96" height="96"><b>Spark</b><span>Engenheiro de Integrações</span></div><div class="ch-i"><img src="../../../brand/characters/echo.svg" alt="Echo, Especialista em Voz" width="96" height="96"><b>Echo</b><span>Especialista em Voz</span></div><div class="ch-i"><img src="../../../brand/characters/sudo.svg" alt="Sudo, Controlador de Sistema" width="96" height="96"><b>Sudo</b><span>Controlador de Sistema</span></div></div></div><div class="cast-group"><h4>Agentes comerciais <span class="num">15 personagens</span></h4><div class="cast "><div class="ch-i"><img src="../../../brand/characters/axiom.svg" alt="Axiom, Guardião de Dados LDR" width="96" height="96"><b>Axiom</b><span>Guardião de Dados LDR</span></div><div class="ch-i"><img src="../../../brand/characters/beacon.svg" alt="Beacon, Prospector Outbound" width="96" height="96"><b>Beacon</b><span>Prospector Outbound</span></div><div class="ch-i"><img src="../../../brand/characters/meridian.svg" alt="Meridian, Qualificador SDR" width="96" height="96"><b>Meridian</b><span>Qualificador SDR</span></div><div class="ch-i"><img src="../../../brand/characters/forge.svg" alt="Forge, Closer Copilot" width="96" height="96"><b>Forge</b><span>Closer Copilot</span></div><div class="ch-i"><img src="../../../brand/characters/relay.svg" alt="Relay, Coordenador de Vendas" width="96" height="96"><b>Relay</b><span>Coordenador de Vendas</span></div><div class="ch-i"><img src="../../../brand/characters/helm.svg" alt="Helm, Gerente Comercial IA" width="96" height="96"><b>Helm</b><span>Gerente Comercial IA</span></div><div class="ch-i"><img src="../../../brand/characters/apex.svg" alt="Apex, Diretor Executivo IA" width="96" height="96"><b>Apex</b><span>Diretor Executivo IA</span></div><div class="ch-i"><img src="../../../brand/characters/ledger.svg" alt="Ledger, Auditor de Faturamento" width="96" height="96"><b>Ledger</b><span>Auditor de Faturamento</span></div><div class="ch-i"><img src="../../../brand/characters/anchor.svg" alt="Anchor, Guardião de Retenção" width="96" height="96"><b>Anchor</b><span>Guardião de Retenção</span></div><div class="ch-i"><img src="../../../brand/characters/seal.svg" alt="Seal, Guardião Contratual" width="96" height="96"><b>Seal</b><span>Guardião Contratual</span></div><div class="ch-i"><img src="../../../brand/characters/cipher.svg" alt="Cipher, Guardião Bitrix24" width="96" height="96"><b>Cipher</b><span>Guardião Bitrix24</span></div><div class="ch-i"><img src="../../../brand/characters/harbinger.svg" alt="Harbinger, Oráculo de Receita" width="96" height="96"><b>Harbinger</b><span>Oráculo de Receita</span></div><div class="ch-i"><img src="../../../brand/characters/scout.svg" alt="Scout, Detetive de Conta" width="96" height="96"><b>Scout</b><span>Detetive de Conta</span></div><div class="ch-i"><img src="../../../brand/characters/pledge.svg" alt="Pledge, Guardião de Promessas" width="96" height="96"><b>Pledge</b><span>Guardião de Promessas</span></div><div class="ch-i"><img src="../../../brand/characters/tribunal.svg" alt="Tribunal, Advogado do Diabo" width="96" height="96"><b>Tribunal</b><span>Advogado do Diabo</span></div></div></div><div class="cast-group"><h4>Agentes de canal <span class="num">4 personagens</span></h4><div class="cast "><div class="ch-i"><img src="../../../brand/characters/vox.svg" alt="Vox, Discador Autônomo" width="96" height="96"><b>Vox</b><span>Discador Autônomo</span></div><div class="ch-i"><img src="../../../brand/characters/scope.svg" alt="Scope, Diagnóstico de Leads" width="96" height="96"><b>Scope</b><span>Diagnóstico de Leads</span></div><div class="ch-i"><img src="../../../brand/characters/tracker.svg" alt="Tracker, Scanner de Mercado" width="96" height="96"><b>Tracker</b><span>Scanner de Mercado</span></div><div class="ch-i"><img src="../../../brand/characters/tempo.svg" alt="Tempo, Assistente Tático" width="96" height="96"><b>Tempo</b><span>Assistente Tático</span></div></div></div><div class="cast-group"><h4>Orquestração <span class="num">1 personagens</span></h4><div class="cast "><div class="ch-i"><img src="../../../brand/characters/aegis.svg" alt="Aegis, Supervisor Central" width="96" height="96"><b>Aegis</b><span>Supervisor Central</span></div></div></div>
+    <ol class="rules">
+<li class="rule" id="BB-PERS-05" data-status="confirmada"><a class="rid" href="#BB-PERS-05">BB-PERS-05</a><p>Os personagens não são redesenhados. Usar os SVGs de <code>public/brand/characters/</code> como estão.<span class="orig">Origem: C06 da missão</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-PERS-06" data-status="confirmada"><a class="rid" href="#BB-PERS-06">BB-PERS-06</a><p>Natureza não humana: sem traços antropomórficos figurativos, sem rostos, sem fotografia. São inteligências sintéticas expressivas.<span class="orig">Origem: Guia Mestre dos Personagens, 1.1</span></p><span class="st st-c">CONFIRMADA</span></li>
+<li class="rule" id="BB-PERS-07" data-status="confirmada"><a class="rid" href="#BB-PERS-07">BB-PERS-07</a><p>Seis expressões padronizadas por personagem: repouso, escuta, processamento, fala, sucesso e erro. A expressão comunica o estado real do agente, nunca é enfeite.<span class="orig">Origem: Guia Mestre dos Personagens, 4</span></p><span class="st st-c">CONFIRMADA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="uso-personagens">
+    <h3>Uso</h3>
+    <div class="states6"><span>idle</span><span>listening</span><span>processing</span><span>speaking</span><span>success</span><span>error</span></div>
+    <ol class="rules">
+<li class="rule" id="BB-PERS-08" data-status="provisoria"><a class="rid" href="#BB-PERS-08">BB-PERS-08</a><p>Cada personagem tem paleta própria (por exemplo o verde de Aria e o laranja de Forge) e essa paleta fica fora da C02. É permitida só dentro do personagem; interface ao redor segue C02.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-PERS-09" data-status="provisoria"><a class="rid" href="#BB-PERS-09">BB-PERS-09</a><p>Mostrar sobre fundo escuro ou em placa escura: os halos dos SVGs perdem presença em Light. Em tela pequena, usar a versão a 40 px ou mais.<span class="orig">Origem: Guia Mestre dos Personagens e proposta</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-PERS-10" data-status="provisoria"><a class="rid" href="#BB-PERS-10">BB-PERS-10</a><p>Personagem identifica um módulo pela associação documentada (Orbit em P01, Nexus em P02, Aria em P03, Vanguard em P04, Oracle em P05, Core em P06, Spark em P07, Echo em P08, Sudo em M09). M10 e M11 não têm personagem-pilar definido e não recebem um improvisado.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-PERS-11" data-status="provisoria"><a class="rid" href="#BB-PERS-11">BB-PERS-11</a><p>Comando de ativação em Plex Mono ("Ei Orbit"). Nome do personagem em Sora, descrição em Inter.<span class="orig">Origem: Guia Mestre dos Personagens</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+</section>
+
+<section class="ch ac-gold" id="aplicacoes" data-secao="Aplicações" aria-labelledby="h-aplicacoes">
+  <div class="ch-head">
+    <h2 id="h-aplicacoes">Aplicações</h2>
+    <div><p class="lede">Oito protótipos mostram o sistema funcionando. Todos são estáticos, construídos só para este documento, e usam valores ilustrativos. A landing e o login reais do produto não foram tocados.</p>
+    <p class="meta">Regras BB-APL-01 a BB-APL-14 · 0 confirmadas · 14 provisórias</p></div>
+  </div>
+
+  <div class="sub" id="app-landing">
+    <h3>Landing</h3>
+    <div class="pf"><div class="pf-bar"><span class="tg">PROTÓTIPO</span><span>Landing · nível comercial</span><span class="ex">Ilustração estática</span></div>
+    <div class="pf-body" role="group" aria-label="Protótipo de landing">
+      <div class="pl-nav"><img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Logotipo horizontal" width="130" height="35"><span>Módulos</span><span>Inteligência</span><span>Governança</span><span class="sp"></span><span class="pl-pill ol">Entrar</span></div>
+      <div class="pl-hero">
+        <div><div class="h5">Sistema Operacional de <em>Inteligência Comercial</em></div><p>Impulsionado por IA e Revenue Intelligence.</p><div class="pl-cta"><span class="pl-pill pk">Solicitar demonstração</span><span class="pl-pill ol">Ver os 11 módulos</span></div></div>
+        <div class="pl-orbit" aria-hidden="true"><span class="r"></span><span class="r r2"></span><span class="r r3"></span><img src="../assets/logos/birthhub360-simbolo.svg" alt="" width="256" height="256">
+          <i style="left:49%;top:-2%;background:var(--neon-blue)"></i><i style="left:92%;top:62%;background:var(--neon-pink)"></i><i style="left:12%;top:80%;background:var(--neon-gold)"></i><i style="left:6%;top:30%;background:var(--iris)"></i></div>
+      </div>
+      <div class="pl-mods"><span><b>P01</b>Hub Comercial</span><span><b>P02</b>Inteligência de Mercado</span><span><b>P03</b>Orquestração de Vendas</span><span><b>P04</b>Performance Comercial</span><span><b>P05</b>Previsibilidade</span><span><b>P06</b>Inteligência Artificial</span><span><b>P07</b>Automação e Conectividade</span><span><b>P08</b>Voice e WhatsApp</span><span><b>M09</b>Administração</span><span><b>M10</b>Field Sales</span><span><b>M11</b>Social Selling</span></div>
+    </div></div>
+    <ol class="rules">
+<li class="rule" id="BB-APL-01" data-status="provisoria"><a class="rid" href="#BB-APL-01">BB-APL-01</a><p>Landing é nível comercial: título em escala grande ancorado à esquerda, diagrama de arquitetura à direita, um único CTA em Rosa Neon e a faixa dos 11 módulos como prova de escopo.<span class="orig">Origem: C08 e proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-APL-02" data-status="provisoria"><a class="rid" href="#BB-APL-02">BB-APL-02</a><p>O título da landing é o posicionamento oficial (C01), sem reescrita de efeito. A promessa não cita número sem fonte.<span class="orig">Origem: BB-ID-01</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="app-login">
+    <h3>Login</h3>
+    <div class="pf"><div class="pf-bar"><span class="tg">PROTÓTIPO</span><span>Login · nível operacional</span><span class="ex">Ilustração estática</span></div>
+    <div class="pf-body plg" role="group" aria-label="Protótipo de tela de login">
+      <div class="plg-l"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo" width="88" height="88"><div><div class="h5">Entre no comando da sua operação.</div><p>Dados, decisões e execução no mesmo lugar.</p></div></div>
+      <div class="plg-r"><form onsubmit="return false" aria-label="Formulário ilustrativo"><div class="h6">Acessar</div>
+        <label>E-mail<span class="fld foc">nome@empresa.com.br</span></label>
+        <label>Senha<span class="fld">••••••••••</span></label>
+        <span class="pl-pill">Entrar</span><small>Foco visível em Azul Neon com anel de 3 px.</small></form></div>
+    </div></div>
+    <ol class="rules">
+<li class="rule" id="BB-APL-03" data-status="provisoria"><a class="rid" href="#BB-APL-03">BB-APL-03</a><p>Login: painel de marca à esquerda, formulário à direita, rótulo visível em todo campo, foco em Azul Neon com anel e botão primário sólido. Sem halo decorativo.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="app-plataforma">
+    <h3>Plataforma SaaS</h3>
+    <div class="pf"><div class="pf-bar"><span class="tg">PROTÓTIPO</span><span>Workspace P01 Hub Comercial · nível operacional</span><span class="ex">Valores ilustrativos</span></div>
+    <div class="pf-body ps" role="group" aria-label="Protótipo da plataforma">
+      <div class="ps-s"><div class="hub"><img src="../assets/logos/birthhub360-icone.svg" alt="" width="32" height="32"><b data-brand>Birthub 360°</b></div><span class="grp">MÓDULOS</span><a class="on"><svg class="ic" aria-hidden="true"><use href="#i-hub"/></svg><span>Hub Comercial</span><span class="cd">P01</span></a><a><svg class="ic" aria-hidden="true"><use href="#i-intel"/></svg><span>Inteligência de Mercado</span><span class="cd">P02</span></a><a><svg class="ic" aria-hidden="true"><use href="#i-orch"/></svg><span>Orquestração de Vendas</span><span class="cd">P03</span></a><a><svg class="ic" aria-hidden="true"><use href="#i-perf"/></svg><span>Performance Comercial</span><span class="cd">P04</span></a><a><svg class="ic" aria-hidden="true"><use href="#i-forecast"/></svg><span>Previsibilidade</span><span class="cd">P05</span></a><a><svg class="ic" aria-hidden="true"><use href="#i-ai"/></svg><span>Inteligência Artificial</span><span class="cd">P06</span></a><a><svg class="ic" aria-hidden="true"><use href="#i-auto"/></svg><span>Automação e Conectividade</span><span class="cd">P07</span></a><a><svg class="ic" aria-hidden="true"><use href="#i-voice"/></svg><span>Voice e WhatsApp</span><span class="cd">P08</span></a><a><svg class="ic" aria-hidden="true"><use href="#i-admin"/></svg><span>Administração</span><span class="cd">M09</span></a><a><svg class="ic" aria-hidden="true"><use href="#i-field"/></svg><span>Field Sales</span><span class="cd">M10</span></a><a><svg class="ic" aria-hidden="true"><use href="#i-social"/></svg><span>Social Selling</span><span class="cd">M11</span></a></div>
+      <div class="ps-m">
+        <div class="ps-top"><div class="h5">Hub Comercial</div><span class="cmd"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg>Buscar ou executar<kbd>Ctrl K</kbd></span></div>
+        <div class="ps-tabs"><span class="on">Pipeline</span><span>Contas</span><span>Propostas</span><span>Atividades</span></div>
+        <div class="ps-kan">
+          <div class="ps-col"><div class="h6">Qualificação <span class="num">00</span></div><div class="ps-card"><b>Conta exemplo A</b><span>R$ 00.000 · exemplo</span></div><div class="ps-card"><b>Conta exemplo B</b><span>R$ 00.000 · exemplo</span></div></div>
+          <div class="ps-col"><div class="h6">Proposta <span class="num">00</span></div><div class="ps-card"><b>Conta exemplo C</b><span>R$ 00.000 · exemplo</span></div></div>
+          <div class="ps-col"><div class="h6">Negociação <span class="num">00</span></div><div class="ps-empty">Nenhum negócio nesta etapa. Importar lista</div></div>
+          <div class="ps-col"><div class="h6">Fechamento <span class="num">00</span></div><div class="ps-card"><b>Conta exemplo D</b><span>R$ 00.000 · exemplo</span></div></div>
+        </div>
+      </div>
+    </div></div>
+    <ol class="rules">
+<li class="rule" id="BB-APL-04" data-status="provisoria"><a class="rid" href="#BB-APL-04">BB-APL-04</a><p>Plataforma: Hub Central na barra lateral com os 11 módulos (código em mono e ícone), cabeçalho do workspace na cor de acento do módulo, paleta de comandos sempre à mão e abas dentro do módulo.<span class="orig">Origem: C07 e proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-APL-05" data-status="provisoria"><a class="rid" href="#BB-APL-05">BB-APL-05</a><p>Todo painel mostra empty com ação clara (como "Importar lista"); nenhum cartão preenche vazio com dado inventado.<span class="orig">Origem: AGENTS.md §25</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="app-dashboard">
+    <h3>Dashboard</h3>
+    <div class="pf"><div class="pf-bar"><span class="tg">PROTÓTIPO</span><span>P05 Previsibilidade · nível operacional</span><span class="ex">VALORES ILUSTRATIVOS, NÃO SÃO DADOS REAIS</span></div>
+    <div class="pf-body pd" role="group" aria-label="Protótipo de dashboard">
+      <div class="pd-head"><div class="h5">Previsibilidade</div><span class="upd">Atualizado: exemplo</span></div>
+      <div class="pd-grid">
+        <div class="pd-t w4"><div class="h6">Receita prevista × realizada</div>
+          <svg class="pd-chart" viewBox="0 0 400 120" preserveAspectRatio="none" role="img" aria-label="Gráfico ilustrativo: linha realizada e projeção tracejada"><path class="ax" d="M0 119H400M0 60H400"/><path class="ln" d="M0 100 L50 92 L100 84 L150 70 L200 66 L240 52"/><path class="pj" d="M240 52 L300 40 L350 30 L400 20"/></svg>
+          <div class="pd-leg"><span class="a">Realizado (exemplo)</span><span class="b">Projeção (exemplo)</span></div></div>
+        <div class="pd-t w2"><div class="h6">Receita prevista</div><div class="pd-kpi">R$ 000.000<small>exemplo</small></div></div>
+        <div class="pd-t w3"><div class="h6">Pipeline ponderado</div><div class="pd-kpi" style="color:var(--c-gold)">R$ 000.000</div></div>
+        <div class="pd-t w3"><div class="h6">Ciclo médio</div><div class="pd-kpi">00<small>dias, exemplo</small></div></div>
+        <div class="pd-t w6"><div class="h6">Os quatro estados obrigatórios</div>
+          <div class="pd-st"><div class="ld"><b>LOADING</b>Sincronizando pipeline<div class="sk"></div><div class="sk s2"></div></div><div class="em"><b>EMPTY</b>Nenhum negócio qualificado. Importar lista</div><div class="er"><b>ERROR</b>Falha ao sincronizar: token expirado. Tentar novamente</div><div class="sl"><b>STALE</b>Dados de 45 min atrás. Reconectando</div></div></div>
+      </div>
+    </div></div>
+    <ol class="rules">
+<li class="rule" id="BB-APL-06" data-status="provisoria"><a class="rid" href="#BB-APL-06">BB-APL-06</a><p>Dashboard declara os quatro estados (loading, empty, error, stale). Stale mantém o dado anterior visível e informa a idade; error oferece nova tentativa.<span class="orig">Origem: Manual do Produto cap. 5 e AGENTS.md §25</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-APL-07" data-status="provisoria"><a class="rid" href="#BB-APL-07">BB-APL-07</a><p>Dashboard em bento de tamanhos desiguais, com o gráfico dominante e números em Plex Mono tabular. Projeção é tracejada e rotulada; linha de dado real é sólida.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="app-modulos">
+    <h3>Módulos (11), uma identidade contextual <span class="st st-p">PROVISÓRIA</span></h3>
+    <div class="pf"><div class="pf-bar"><span class="tg">PROTÓTIPO</span><span>Um sistema, onze contextos</span><span class="ex">Acentos atribuídos por esta frente</span></div>
+    <div class="pf-body pm" role="group" aria-label="Protótipo da identidade dos módulos">
+      <div class="pm-hd"><div style="--ac:var(--c-gold)"><span class="cd">P01</span><b>Hub Comercial</b><span class="sc">CRM, pipeline, propostas</span></div><div style="--ac:var(--c-blue)"><span class="cd">P02</span><b>Inteligência de Mercado</b><span class="sc">Prospecção, ICP, dossiês</span></div><div style="--ac:var(--c-pink)"><span class="cd">P04</span><b>Performance Comercial</b><span class="sc">Relatórios, win/loss, metas</span></div><div style="--ac:var(--c-iris)"><span class="cd">P06</span><b>Inteligência Artificial</b><span class="sc">Agentes, aprovações, conhecimento</span></div></div>
+      <div class="pm-rows"><div class="pm-r" style="--ac:var(--c-gold)"><span class="cd">P01</span><svg class="ic" aria-hidden="true"><use href="#i-hub"/></svg><span><b>Hub Comercial</b><span class="sc">CRM, pipeline, propostas</span></span><img src="../../../brand/characters/orbit.svg" alt="Orbit, personagem-pilar de P01" width="42" height="42" style="background:#0D0D0D;border-radius:50%"></div><div class="pm-r" style="--ac:var(--c-blue)"><span class="cd">P02</span><svg class="ic" aria-hidden="true"><use href="#i-intel"/></svg><span><b>Inteligência de Mercado</b><span class="sc">Prospecção, ICP, dossiês</span></span><img src="../../../brand/characters/nexus.svg" alt="Nexus, personagem-pilar de P02" width="42" height="42" style="background:#0D0D0D;border-radius:50%"></div><div class="pm-r" style="--ac:var(--c-iris)"><span class="cd">P03</span><svg class="ic" aria-hidden="true"><use href="#i-orch"/></svg><span><b>Orquestração de Vendas</b><span class="sc">Cadências, playbooks, plano diário</span></span><img src="../../../brand/characters/aria.svg" alt="Aria, personagem-pilar de P03" width="42" height="42" style="background:#0D0D0D;border-radius:50%"></div><div class="pm-r" style="--ac:var(--c-pink)"><span class="cd">P04</span><svg class="ic" aria-hidden="true"><use href="#i-perf"/></svg><span><b>Performance Comercial</b><span class="sc">Relatórios, win/loss, metas</span></span><img src="../../../brand/characters/vanguard.svg" alt="Vanguard, personagem-pilar de P04" width="42" height="42" style="background:#0D0D0D;border-radius:50%"></div><div class="pm-r" style="--ac:var(--c-gold)"><span class="cd">P05</span><svg class="ic" aria-hidden="true"><use href="#i-forecast"/></svg><span><b>Previsibilidade</b><span class="sc">Forecast e pipeline ponderado</span></span><img src="../../../brand/characters/oracle.svg" alt="Oracle, personagem-pilar de P05" width="42" height="42" style="background:#0D0D0D;border-radius:50%"></div><div class="pm-r" style="--ac:var(--c-iris)"><span class="cd">P06</span><svg class="ic" aria-hidden="true"><use href="#i-ai"/></svg><span><b>Inteligência Artificial</b><span class="sc">Agentes, aprovações, conhecimento</span></span><img src="../../../brand/characters/core.svg" alt="Core, personagem-pilar de P06" width="42" height="42" style="background:#0D0D0D;border-radius:50%"></div><div class="pm-r" style="--ac:var(--c-blue)"><span class="cd">P07</span><svg class="ic" aria-hidden="true"><use href="#i-auto"/></svg><span><b>Automação e Conectividade</b><span class="sc">Regras, integrações, webhooks</span></span><img src="../../../brand/characters/spark.svg" alt="Spark, personagem-pilar de P07" width="42" height="42" style="background:#0D0D0D;border-radius:50%"></div><div class="pm-r" style="--ac:var(--c-pink)"><span class="cd">P08</span><svg class="ic" aria-hidden="true"><use href="#i-voice"/></svg><span><b>Voice e WhatsApp</b><span class="sc">Voz, telefonia, mensagens</span></span><img src="../../../brand/characters/echo.svg" alt="Echo, personagem-pilar de P08" width="42" height="42" style="background:#0D0D0D;border-radius:50%"></div><div class="pm-r" style="--ac:var(--c-gold)"><span class="cd">M09</span><svg class="ic" aria-hidden="true"><use href="#i-admin"/></svg><span><b>Administração</b><span class="sc">Acesso por módulo, RBAC, LGPD</span></span><img src="../../../brand/characters/sudo.svg" alt="Sudo, personagem-pilar de M09" width="42" height="42" style="background:#0D0D0D;border-radius:50%"></div><div class="pm-r" style="--ac:var(--c-blue)"><span class="cd">M10</span><svg class="ic" aria-hidden="true"><use href="#i-field"/></svg><span><b>Field Sales</b><span class="sc">Reuniões em campo, offline</span></span><span class="nochar">sem personagem</span></div><div class="pm-r" style="--ac:var(--c-pink)"><span class="cd">M11</span><svg class="ic" aria-hidden="true"><use href="#i-social"/></svg><span><b>Social Selling</b><span class="sc">Sinais sociais e abordagem</span></span><span class="nochar">sem personagem</span></div></div>
+    </div></div>
+    <ol class="rules">
+<li class="rule" id="BB-APL-08" data-status="provisoria"><a class="rid" href="#BB-APL-08">BB-APL-08</a><p>Os 11 módulos compartilham um único sistema (mesma estrutura, mesmos componentes). O contexto muda só por um acento C02, o código em mono (P01 a M11) e o ícone. Não existem onze sistemas visuais.<span class="orig">Origem: C07 e proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-APL-09" data-status="provisoria"><a class="rid" href="#BB-APL-09">BB-APL-09</a><p>Acentos: Dourado em P01, P05 e M09; Azul em P02, P07 e M10; Rosa em P04, P08 e M11; Íris em P03 e P06. A atribuição é provisória e não carrega significado fora do módulo.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="app-materiais">
+    <h3>Materiais comerciais</h3>
+    <div class="pf"><div class="pf-bar"><span class="tg">PROTÓTIPO</span><span>Proposta (A4), slide e assinatura</span><span class="ex">Texto de exemplo</span></div>
+    <div class="pf-body pmat" role="group" aria-label="Protótipo de materiais comerciais">
+      <div class="pm-doc"><img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Logotipo horizontal" width="140" height="38"><div><div class="h5">[Título da proposta comercial]</div><p>Inteligência comercial para a operação de [cliente].</p></div><div class="ft"><span>Versão rascunho</span><span>[data]</span></div></div>
+      <div class="col">
+        <div class="pm-slide"><div><div class="h5">Do dado disperso à <em>decisão no comando</em></div><p>[Mensagem principal do slide, em uma frase.]</p></div><div class="bars" aria-hidden="true"><i style="width:90%;background:#0D0D0D"></i><i style="width:64%;background:#C4105F"></i><i style="width:40%;background:#006C8C"></i><small>gráfico ilustrativo</small></div></div>
+        <div class="pm-sign"><img src="../assets/logos/birthhub360-icone.svg" alt="Ícone" width="48" height="48"><div><b>[Nome do responsável]</b><span>[Cargo] · <span data-brand>Birthub 360°</span></span></div></div>
+      </div>
+    </div></div>
+    <ol class="rules">
+<li class="rule" id="BB-APL-10" data-status="provisoria"><a class="rid" href="#BB-APL-10">BB-APL-10</a><p>Proposta e apresentação seguem a tipografia da marca. Documento em Dark leva logotipo horizontal em Dark; slide em Light usa tinta #0F1A2E e acento Rosa de Light (#C4105F). Campos entre colchetes são placeholders até haver conteúdo real.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-APL-11" data-status="provisoria"><a class="rid" href="#BB-APL-11">BB-APL-11</a><p>Assinatura de e-mail usa o ícone (sem anel de graduação) a 48 px e o nome em Sora. Logotipo horizontal em fundo claro só com placa escura.<span class="orig">Origem: BB-LOGO-13</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="app-social">
+    <h3>Redes sociais</h3>
+    <div class="pf"><div class="pf-bar"><span class="tg">PROTÓTIPO</span><span>Posts, banner e avatar</span><span class="ex">Texto de exemplo, sem foto humana</span></div>
+    <div class="pf-body psoc" role="group" aria-label="Protótipo de peças para redes sociais">
+      <div class="pso"><span class="ring"></span><div class="h5">Conectar, decidir, <em>executar</em>.</div><div class="ft"><img src="../assets/logos/birthhub360-icone.svg" alt="" width="29" height="29"><span data-brand>Birthub 360°</span></div></div>
+      <div class="pso gd"><div class="h5">[Frase de campanha em até 8 palavras]</div><div class="ft"><img src="../assets/logos/birthhub360-icone.svg" alt="" width="29" height="29"><span data-brand>Birthub 360°</span></div></div>
+      <div class="pso lt"><div class="h5">[Pergunta que o time comercial faz hoje] <em>[resposta]</em></div><div class="ft"><img src="../assets/logos/birthhub360-icone.svg" alt="" width="29" height="29"><span data-brand>Birthub 360°</span></div></div>
+      <div class="wide"><img src="../assets/logos/birthhub360-simbolo.svg" alt="" width="96" height="96"><div><b>Sistema Operacional de Inteligência Comercial</b><span>Impulsionado por IA e Revenue Intelligence</span></div></div>
+    </div></div>
+    <ol class="rules">
+<li class="rule" id="BB-APL-12" data-status="provisoria"><a class="rid" href="#BB-APL-12">BB-APL-12</a><p>Peças sociais usam tipografia em escala grande e grafismo 360°; sem fotografia humana. Uma mensagem por peça, assinatura com ícone e nome no rodapé.<span class="orig">Origem: C06 da missão e proposta</span></p><span class="st st-p">PROVISÓRIA</span></li>
+<li class="rule" id="BB-APL-13" data-status="provisoria"><a class="rid" href="#BB-APL-13">BB-APL-13</a><p>Variações de fundo: Dark, Light e Dourado sólido com texto #0D0D0D (11,92:1). Avatar usa o ícone sobre Dark.<span class="orig">Origem: proposta deste brandbook</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+
+  <div class="sub" id="app-mobile">
+    <h3>Mobile</h3>
+    <div class="pf"><div class="pf-bar"><span class="tg">PROTÓTIPO</span><span>Plano diário no celular · nível operacional</span><span class="ex">Valores ilustrativos</span></div>
+    <div class="pf-body pmob" role="group" aria-label="Protótipo mobile">
+      <div class="phone"><div class="st-b"><span>09:41</span><span>exemplo</span></div><div class="hdm"><div class="h5">Plano de hoje</div><span>Três ações sugeridas</span></div>
+        <div class="lst"><div class="it"><b>Ligar para Conta exemplo A</b><span>sugerido · 00 min</span></div><div class="it"><b>Responder proposta B</b><span>sugerido · 00 min</span></div><div class="it"><b>Registrar reunião C</b><span>sugerido · 00 min</span></div></div>
+        <div class="tabs"><a class="on"><svg class="ic" aria-hidden="true"><use href="#i-home"/></svg>Hoje</a><a><svg class="ic" aria-hidden="true"><use href="#i-list"/></svg>Pipeline</a><a><svg class="ic" aria-hidden="true"><use href="#i-voice"/></svg>Voz</a><a><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg>Perfil</a></div></div>
+      <div class="pmob-note"><div class="h5">Alvos de toque e leitura em campo</div><ul><li>Linhas com no mínimo 44 px de altura.</li><li>Barra inferior com quatro destinos e rótulo.</li><li>Contraste de texto 4,5:1 ou mais em Dark e em Light.</li><li>Ícone do logotipo no cabeçalho; símbolo só a partir de 96 px.</li></ul></div>
+    </div></div>
+    <ol class="rules">
+<li class="rule" id="BB-APL-14" data-status="provisoria"><a class="rid" href="#BB-APL-14">BB-APL-14</a><p>Mobile é cidadão de primeira classe: alvos de toque de 44 px ou mais, navegação inferior com rótulos e leitura em Dark e Light. O protótipo foi verificado só em navegador a 390 px, não em dispositivo.<span class="orig">Origem: .claude/CLAUDE.md (app Android via Capacitor)</span></p><span class="st st-p">PROVISÓRIA</span></li>
+    </ol>
+  </div>
+</section>
+
+<section class="ch ac-gold" id="pendencias" data-secao="Pendências" aria-labelledby="h-pendencias">
+  <div class="ch-head">
+    <h2 id="h-pendencias">Pendências</h2>
+    <div><p class="lede">O que veio da missão, o que é provisório e onde as fontes se contradizem. Itens abaixo não são regras: são decisões a tomar.</p></div>
+  </div>
+  <div class="sub" id="decisoes">
+    <h3>Matriz de decisões</h3>
+    <div class="tbl cdec"><table>
+      <thead><tr><th scope="col">ID</th><th scope="col">Decisão</th><th scope="col">Status</th></tr></thead>
+      <tbody>
+        <tr><td class="mono id">C01</td><td>Posicionamento, Sistema Operacional de Inteligência Comercial</td><td>CONFIRMADA · BB-ID-01</td></tr>
+        <tr><td class="mono id">C02</td><td>Paleta Neon, Íris, Dark e Light</td><td>CONFIRMADA · BB-COR-01</td></tr>
+        <tr><td class="mono id">C03</td><td>Sora, Inter e IBM Plex Mono</td><td>CONFIRMADA · BB-TIPO-01</td></tr>
+        <tr><td class="mono id">C04</td><td>Sem título em #FFF ou #000</td><td>CONFIRMADA · BB-TIPO-10</td></tr>
+        <tr><td class="mono id">C05</td><td>Neon Editorial Cinematic como referência</td><td>CONFIRMADA · BB-LING-01</td></tr>
+        <tr><td class="mono id">C06</td><td>Sem foto humana; logo e personagens intactos</td><td>CONFIRMADA · BB-LOGO-01, BB-PERS-05, BB-LING-14</td></tr>
+        <tr><td class="mono id">C07</td><td>Hub Central, Workspaces e Assistentes; 11 módulos</td><td>CONFIRMADA · BB-ID-07</td></tr>
+        <tr><td class="mono id">C08</td><td>Dois níveis de movimento e reduced-motion</td><td>CONFIRMADA · BB-LING-16, BB-LING-17</td></tr>
+        <tr><td class="mono id">C09</td><td>29 personagens, 26 agentes e 11 módulos distintos</td><td>CONFIRMADA · BB-PERS-01 (o significado de 26 pende)</td></tr>
+        <tr><td class="mono id" style="color:var(--c-gold)">P-01</td><td>Grafia "Birthub 360°"</td><td>PROVISÓRIA · pendente de decisão humana</td></tr>
+        <tr><td class="mono id" style="color:var(--c-gold)">P-02</td><td>Variantes de texto em Light</td><td>PROVISÓRIA · BB-COR-07</td></tr>
+        <tr><td class="mono id" style="color:var(--c-gold)">P-03</td><td>Tinta #E8EEFF e #0F1A2E</td><td>PROVISÓRIA · BB-COR-27</td></tr>
+        <tr><td class="mono id" style="color:var(--c-gold)">P-04</td><td>Superfícies</td><td>PROVISÓRIA · BB-COR-14</td></tr>
+        <tr><td class="mono id" style="color:var(--c-gold)">P-05</td><td>Light #F4F7FB contra #F8F9FF</td><td>PROVISÓRIA · BB-COR-04</td></tr>
+      </tbody></table></div>
+  </div>
+  <div class="sub" id="divergencias">
+    <h3>Divergências encontradas por esta frente</h3>
+    <div class="tbl pend"><table>
+      <thead><tr><th scope="col">ID</th><th scope="col">Achado</th><th scope="col">Próximo passo</th></tr></thead>
+      <tbody>
+        <tr><td class="id">D-01</td><td>FONTE-DE-VERDADE.md diz que Íris #8B7DFF e Light #F4F7FB não existem nas fontes oficiais. Existem: <code>--palette-iris #8B7DFF</code> e <code>--palette-bg #F4F7FB</code> em <code>birthhub360.css</code>, e o Manual Visual lista Íris. Já <code>brand.ts</code> define <code>iris</code> como #FF2D9B.</td><td>Agente 00 corrige a nota; Agente 11 alinha <code>brand.ts</code>.</td></tr>
+        <tr><td class="id">D-02</td><td>H4 a H6: Sora (Manual Visual) contra Inter (<code>.claude/CLAUDE.md</code>).</td><td>Decisão humana. V2.0 usa Sora (BB-TIPO-05).</td></tr>
+        <tr><td class="id">D-03</td><td>Manual Visual manda gradiente em título com texto recortado. Contraria C04 e a constituição do repositório.</td><td>V2.0 proíbe (BB-TIPO-11). Atualizar o manual legado.</td></tr>
+        <tr><td class="id">D-04</td><td>Gradiente de CTA rosa para azul no manual legado.</td><td>V2.0 usa cor sólida (BB-COR-22).</td></tr>
+        <tr><td class="id">D-05</td><td>"26 agentes técnicos" coincide com o roster de engenharia (AGENTS.md §3), não com o enxame de IA (24 mais Supervisor, ou 15).</td><td>Confirmar o significado com o dono da missão.</td></tr>
+        <tr><td class="id">D-06</td><td>Manual do Produto traz "0ms de latência", "100% WCAG" e "40+ módulos" sem fonte; o produto tem 11 módulos.</td><td>Não reutilizar (BB-ID-13).</td></tr>
+        <tr><td class="id">D-07</td><td>Wordmark horizontal perde contraste sobre Light (abaixo de 3:1 em quase todo o traço).</td><td>Placa escura (BB-LOGO-13); arte nova só com decisão humana.</td></tr>
+        <tr><td class="id">D-08</td><td>O "B" e o wordmark do logotipo são serifados, fora da trinca tipográfica. Arte preservada por C06.</td><td>Nenhuma ação; registrar.</td></tr>
+        <tr><td class="id">D-09</td><td>Cores funcionais originais (#22C55E, #EF4444, #3B82F6) não passam 4,5:1 sobre Light.</td><td>Variantes derivadas (BB-COR-24) aguardam homologação.</td></tr>
+        <tr><td class="id">D-10</td><td>Nomes de P07, M09 e M11 vêm do Documento Mestre V4.10 e do Guia dos Personagens; sem confirmação.</td><td>01-auditoria confirma.</td></tr>
+        <tr><td class="id">D-11</td><td>Três paletas coexistem no repositório (Neon, Strategic Command Center e a da missão). Este brandbook segue a da missão.</td><td>Agente 00 e Design System decidem a migração.</td></tr>
+        <tr><td class="id">D-12</td><td>Design System ainda declara semânticas #34D399, #FF9A3D e #FF5C6C e escala operacional própria. O brandbook agora declara duas escalas (BB-TIPO-06 e BB-TIPO-15) e semânticas #22C55E, #EF4444, #FFC107, #3B82F6.</td><td>Agente 00 e DS alinham as semânticas; escala Operacional segue provisória.</td></tr>
+      </tbody></table></div>
+  </div>
+</section>
+
+</div>
+<footer class="ft wrap">
+  <p><b><span data-brand>Birthub 360°</span> · Brandbook V2.0 · RASCUNHO, NÃO HOMOLOGADO.</b> Gerado pela frente 02. Fontes de verdade: <code>FONTE-DE-VERDADE.md</code> e <code>shared/core.css</code>. Regras com ID estável em <code>regras.json</code>. Nenhum arquivo existente do repositório foi alterado.</p>
+</footer>
+</main>
+</div>
+<script src="brandbook.js"></script>
+</body>
+</html>

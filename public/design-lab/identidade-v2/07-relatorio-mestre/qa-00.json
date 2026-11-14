@@ -1,0 +1,542 @@
+{
+ "08-referencia-n1|dark|1440": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(13, 13, 13)",
+  "title": "Referência N1 — Birthub 360° V2.1",
+  "errs": [],
+  "fails": []
+ },
+ "08-referencia-n1|dark|390": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(13, 13, 13)",
+  "title": "Referência N1 — Birthub 360° V2.1",
+  "errs": [],
+  "fails": []
+ },
+ "08-referencia-n1|light|1440": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(244, 247, 251)",
+  "title": "Referência N1 — Birthub 360° V2.1",
+  "errs": [],
+  "fails": []
+ },
+ "08-referencia-n1|light|390": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(244, 247, 251)",
+  "title": "Referência N1 — Birthub 360° V2.1",
+  "errs": [],
+  "fails": []
+ },
+ "09-decisoes-humanas|dark|1440": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(13, 13, 13)",
+  "title": "Decisões humanas — Birthub 360° V2.1",
+  "errs": [],
+  "fails": []
+ },
+ "09-decisoes-humanas|dark|390": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(13, 13, 13)",
+  "title": "Decisões humanas — Birthub 360° V2.1",
+  "errs": [],
+  "fails": []
+ },
+ "09-decisoes-humanas|light|1440": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(244, 247, 251)",
+  "title": "Decisões humanas — Birthub 360° V2.1",
+  "errs": [],
+  "fails": []
+ },
+ "09-decisoes-humanas|light|390": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(244, 247, 251)",
+  "title": "Decisões humanas — Birthub 360° V2.1",
+  "errs": [],
+  "fails": []
+ },
+ "10-aceite|dark|1440": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(13, 13, 13)",
+  "title": "Aceite — Birthub 360° Identidade V2.1",
+  "errs": [],
+  "fails": []
+ },
+ "10-aceite|dark|390": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(13, 13, 13)",
+  "title": "Aceite — Birthub 360° Identidade V2.1",
+  "errs": [],
+  "fails": []
+ },
+ "10-aceite|light|1440": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(244, 247, 251)",
+  "title": "Aceite — Birthub 360° Identidade V2.1",
+  "errs": [],
+  "fails": []
+ },
+ "10-aceite|light|390": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(244, 247, 251)",
+  "title": "Aceite — Birthub 360° Identidade V2.1",
+  "errs": [],
+  "fails": []
+ },
+ "07-relatorio-mestre|dark|1440": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(13, 13, 13)",
+  "title": "Relatório Mestre do Agente 00 — Identidade V2.0",
+  "errs": [],
+  "fails": []
+ },
+ "07-relatorio-mestre|dark|390": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(13, 13, 13)",
+  "title": "Relatório Mestre do Agente 00 — Identidade V2.0",
+  "errs": [],
+  "fails": []
+ },
+ "07-relatorio-mestre|light|1440": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(244, 247, 251)",
+  "title": "Relatório Mestre do Agente 00 — Identidade V2.0",
+  "errs": [],
+  "fails": []
+ },
+ "07-relatorio-mestre|light|390": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(244, 247, 251)",
+  "title": "Relatório Mestre do Agente 00 — Identidade V2.0",
+  "errs": [],
+  "fails": []
+ },
+ "01-auditoria|dark|1440": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(13, 13, 13)",
+  "title": "Auditoria da identidade visual — Birthub 360° V2.0 (rascunho)",
+  "errs": [],
+  "fails": []
+ },
+ "01-auditoria|dark|390": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(13, 13, 13)",
+  "title": "Auditoria da identidade visual — Birthub 360° V2.0 (rascunho)",
+  "errs": [],
+  "fails": []
+ },
+ "01-auditoria|light|1440": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(244, 247, 251)",
+  "title": "Auditoria da identidade visual — Birthub 360° V2.0 (rascunho)",
+  "errs": [],
+  "fails": []
+ },
+ "01-auditoria|light|390": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(244, 247, 251)",
+  "title": "Auditoria da identidade visual — Birthub 360° V2.0 (rascunho)",
+  "errs": [],
+  "fails": []
+ },
+ "02-brandbook|dark|1440": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(13, 13, 13)",
+  "title": "Birthub 360° · Brandbook V2.0 (RASCUNHO, NÃO HOMOLOGADO)",
+  "errs": [],
+  "fails": []
+ },
+ "02-brandbook|dark|390": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(13, 13, 13)",
+  "title": "Birthub 360° · Brandbook V2.0 (RASCUNHO, NÃO HOMOLOGADO)",
+  "errs": [],
+  "fails": []
+ },
+ "02-brandbook|light|1440": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(244, 247, 251)",
+  "title": "Birthub 360° · Brandbook V2.0 (RASCUNHO, NÃO HOMOLOGADO)",
+  "errs": [],
+  "fails": []
+ },
+ "02-brandbook|light|390": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(244, 247, 251)",
+  "title": "Birthub 360° · Brandbook V2.0 (RASCUNHO, NÃO HOMOLOGADO)",
+  "errs": [],
+  "fails": []
+ },
+ "03-design-system|dark|1440": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(13, 13, 13)",
+  "title": "Design System V2.0 — Birthub 360° (RASCUNHO)",
+  "errs": [],
+  "fails": []
+ },
+ "03-design-system|dark|390": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(13, 13, 13)",
+  "title": "Design System V2.0 — Birthub 360° (RASCUNHO)",
+  "errs": [],
+  "fails": []
+ },
+ "03-design-system|light|1440": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(244, 247, 251)",
+  "title": "Design System V2.0 — Birthub 360° (RASCUNHO)",
+  "errs": [],
+  "fails": []
+ },
+ "03-design-system|light|390": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(244, 247, 251)",
+  "title": "Design System V2.0 — Birthub 360° (RASCUNHO)",
+  "errs": [],
+  "fails": []
+ },
+ "04-motion-system|dark|1440": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(13, 13, 13)",
+  "title": "Motion System V2.0 — Birthub 360° (RASCUNHO)",
+  "errs": [],
+  "fails": []
+ },
+ "04-motion-system|dark|390": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(13, 13, 13)",
+  "title": "Motion System V2.0 — Birthub 360° (RASCUNHO)",
+  "errs": [],
+  "fails": []
+ },
+ "04-motion-system|light|1440": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(244, 247, 251)",
+  "title": "Motion System V2.0 — Birthub 360° (RASCUNHO)",
+  "errs": [],
+  "fails": []
+ },
+ "04-motion-system|light|390": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(244, 247, 251)",
+  "title": "Motion System V2.0 — Birthub 360° (RASCUNHO)",
+  "errs": [],
+  "fails": []
+ },
+ "05-biblioteca|dark|1440": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(13, 13, 13)",
+  "title": "Biblioteca de componentes — Birthub 360° DS V2.0 (RASCUNHO)",
+  "errs": [],
+  "fails": []
+ },
+ "05-biblioteca|dark|390": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(13, 13, 13)",
+  "title": "Biblioteca de componentes — Birthub 360° DS V2.0 (RASCUNHO)",
+  "errs": [],
+  "fails": []
+ },
+ "05-biblioteca|light|1440": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(244, 247, 251)",
+  "title": "Biblioteca de componentes — Birthub 360° DS V2.0 (RASCUNHO)",
+  "errs": [],
+  "fails": []
+ },
+ "05-biblioteca|light|390": {
+  "overflow": false,
+  "badA": [],
+  "imgs": [],
+  "pureHeads": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "bg": "rgb(244, 247, 251)",
+  "title": "Biblioteca de componentes — Birthub 360° DS V2.0 (RASCUNHO)",
+  "errs": [],
+  "fails": []
+ }
+}

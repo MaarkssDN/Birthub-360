@@ -1,0 +1,95 @@
+{
+ "gerado": "2026-11-13T23:06:10.122Z",
+ "resultados": [
+  {
+   "name": "[dark] status oficiais success/warn/danger/info",
+   "ok": true,
+   "detail": "#22C55E,#FFC107,#EF4444,#3B82F6"
+  },
+  {
+   "name": "[dark] texto status dark",
+   "ok": true,
+   "detail": "#22C55E,#EF4444,#3B82F6,#FFC107"
+  },
+  {
+   "name": "[dark] motion vem do motion.css (micro/fast/base/slow, ease)",
+   "ok": true,
+   "detail": "80ms,120ms,160ms,200ms cubic-bezier(.4,0,.2,1)|cubic-bezier(.16,1,.3,1)|cubic-bezier(.4,0,1,1)"
+  },
+  {
+   "name": "[dark] nomes antigos removidos (--dur-instant/--ease-enter/--ease-exit vazios)",
+   "ok": true,
+   "detail": "||"
+  },
+  {
+   "name": "[dark] escala comercial: tokens do brandbook 72,48,36,24,18,16,13,14",
+   "ok": true,
+   "detail": "72px,48px,36px,24px,18px,16px,13px,14px"
+  },
+  {
+   "name": "[dark] data-motion=commercial: h1/h2/h4/corpo = 48/700, 36/700, 18/600, 16/400",
+   "ok": true,
+   "detail": "48px/700 36px/700 18px/600 16px/400"
+  },
+  {
+   "name": "[dark] vitrine: Comercial h3=24 corpo=16 lh 1,7; Operacional h5=16 corpo=14",
+   "ok": true,
+   "detail": "24px 16px 27.2px 16px 14px"
+  },
+  {
+   "name": "[dark] operacional segue padrão: h1 30, body 14",
+   "ok": true,
+   "detail": "30px 14px"
+  },
+  {
+   "name": "[light] status oficiais success/warn/danger/info",
+   "ok": true,
+   "detail": "#22C55E,#FFC107,#EF4444,#3B82F6"
+  },
+  {
+   "name": "[light] texto status light",
+   "ok": true,
+   "detail": "#15803D,#B91C1C,#1D4ED8,#7A5800"
+  },
+  {
+   "name": "[light] motion vem do motion.css (micro/fast/base/slow, ease)",
+   "ok": true,
+   "detail": "80ms,120ms,160ms,200ms cubic-bezier(.4,0,.2,1)|cubic-bezier(.16,1,.3,1)|cubic-bezier(.4,0,1,1)"
+  },
+  {
+   "name": "[light] nomes antigos removidos (--dur-instant/--ease-enter/--ease-exit vazios)",
+   "ok": true,
+   "detail": "||"
+  },
+  {
+   "name": "[light] escala comercial: tokens do brandbook 72,48,36,24,18,16,13,14",
+   "ok": true,
+   "detail": "72px,48px,36px,24px,18px,16px,13px,14px"
+  },
+  {
+   "name": "[light] data-motion=commercial: h1/h2/h4/corpo = 48/700, 36/700, 18/600, 16/400",
+   "ok": true,
+   "detail": "48px/700 36px/700 18px/600 16px/400"
+  },
+  {
+   "name": "[light] vitrine: Comercial h3=24 corpo=16 lh 1,7; Operacional h5=16 corpo=14",
+   "ok": true,
+   "detail": "24px 16px 27.2px 16px 14px"
+  },
+  {
+   "name": "[light] operacional segue padrão: h1 30, body 14",
+   "ok": true,
+   "detail": "30px 14px"
+  },
+  {
+   "name": "biblioteca: transição do botão = 0.12s/0.08s com ease-standard",
+   "ok": true,
+   "detail": "0.12s, 0.12s, 0.12s, 0.08s | cubic-bezier(0.4, 0, 0.2, 1), cubic-bezier(0.4, 0, 0.2, 1), cubic-bezier(0.4, 0, 0.2, 1), cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "sem erros de console/rede",
+   "ok": true,
+   "detail": ""
+  }
+ ]
+}

@@ -1,0 +1,67 @@
+<section class="ch ac-pink" id="personagens" data-secao="Personagens" aria-labelledby="h-personagens">
+  <div class="ch-head">
+    <h2 id="h-personagens">Personagens</h2>
+    <div><p class="lede">Os personagens são a camada de ilustração da marca: inteligências sintéticas não humanas, vetoriais, que ficam intactas. Quatro contagens parecidas não podem ser confundidas.</p>
+    <p class="meta">{{range BB-PERS}}</p></div>
+  </div>
+
+  <div class="sub" id="contagens">
+    <h3>Quatro contagens, quatro coisas diferentes</h3>
+    <div class="rel">
+      <div><span class="n">29</span><h4>Personagens</h4><p>Identidade visual: 29 SVGs em <code>public/brand/characters/</code> e em <code>identidade-visual/birthhub360/characters/</code>. Conferido: 9 pilares + 15 agentes comerciais + 4 agentes de canal + 1 orquestrador (<code>characterCatalog*.ts</code>); <code>characters.json</code> lista 9 em <code>characters</code> e 20 em <code>agentCharacters</code>.</p></div>
+      <div><span class="n">26</span><h4>Agentes técnicos <span class="st st-p">A CONFIRMAR</span></h4><p>A missão fixa 26 como categoria própria. No repositório, 26 é o tamanho do roster de agentes de engenharia (AGENTS.md §3, <code>ROSTER-SESSOES.md</code>). O enxame de IA em runtime aparece como 24 especialistas mais o Supervisor (<code>BIRTHUB360_CONTRATOS_AGENTES.md</code>) ou 15 (Documento Mestre V4.1). Nenhuma contagem de enxame bate com 26: pendência D-05.</p></div>
+      <div><span class="n">11</span><h4>Módulos</h4><p>Arquitetura do produto: P01 a P08 (pilares) e M09 a M11 (Documento Mestre V4.10, seção 03 e mapa de funcionalidades; <code>BIRTHUB360_DECISOES_PRODUTO.md</code> cita M10 Field Sales e M11 Social Selling).</p></div>
+      <div><span class="n">-</span><h4>Assistentes globais</h4><p>Camada transversal da arquitetura (C07), sem contagem oficial localizada. O README do design-lab cita <code>VoiceCommandWidget</code>, <code>CopilotTrigger</code> e <code>CommandPalette</code> montados no layout principal (citação, não conferida no código por esta frente).</p></div>
+    </div>
+    <ol class="rules">
+@@rule BB-PERS-01 C origem: C09 da missão
+29 personagens, 26 agentes técnicos e 11 módulos são três conjuntos distintos e nunca são confundidos em texto, interface ou peça. Assistentes globais é uma quarta categoria.
+@@end
+@@rule BB-PERS-02 C origem: arquivos do repositório (conferido)
+Contagem de personagens: 29 SVGs. Camadas: 9 pilares, 15 agentes comerciais, 4 agentes de canal e 1 orquestrador (Aegis).
+@@end
+@@rule BB-PERS-03 P origem: divergência D-05
+O significado exato de "26 agentes técnicos" aguarda confirmação humana: 26 coincide com o roster de engenharia, não com o enxame de IA. Enquanto isso, não publicar "26" em peça externa.
+@@end
+@@rule BB-PERS-04 P origem: Documento Mestre V4.10 e Decisões de Produto
+Nomes dos módulos: P01 Hub Comercial, P02 Inteligência de Mercado, P03 Orquestração de Vendas, P04 Performance Comercial, P05 Previsibilidade, P06 Inteligência Artificial, P07 Automação e Conectividade, P08 Voice e WhatsApp, M09 Administração, M10 Field Sales, M11 Social Selling. P07, M09 e M11 pendem de confirmação pela auditoria (D-10).
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="elenco">
+    <h3>Elenco de 29</h3>
+    <p class="intro">SVGs originais, carregados como imagem, sem edição. Fundo escuro de apoio apenas para apresentação.</p>
+    {{cast}}
+    <ol class="rules">
+@@rule BB-PERS-05 C origem: C06 da missão
+Os personagens não são redesenhados. Usar os SVGs de <code>public/brand/characters/</code> como estão.
+@@end
+@@rule BB-PERS-06 C origem: Guia Mestre dos Personagens, 1.1
+Natureza não humana: sem traços antropomórficos figurativos, sem rostos, sem fotografia. São inteligências sintéticas expressivas.
+@@end
+@@rule BB-PERS-07 C origem: Guia Mestre dos Personagens, 4
+Seis expressões padronizadas por personagem: repouso, escuta, processamento, fala, sucesso e erro. A expressão comunica o estado real do agente, nunca é enfeite.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="uso-personagens">
+    <h3>Uso</h3>
+    <div class="states6"><span>idle</span><span>listening</span><span>processing</span><span>speaking</span><span>success</span><span>error</span></div>
+    <ol class="rules">
+@@rule BB-PERS-08 P origem: proposta deste brandbook
+Cada personagem tem paleta própria (por exemplo o verde de Aria e o laranja de Forge) e essa paleta fica fora da C02. É permitida só dentro do personagem; interface ao redor segue C02.
+@@end
+@@rule BB-PERS-09 P origem: Guia Mestre dos Personagens e proposta
+Mostrar sobre fundo escuro ou em placa escura: os halos dos SVGs perdem presença em Light. Em tela pequena, usar a versão a 40 px ou mais.
+@@end
+@@rule BB-PERS-10 P origem: proposta deste brandbook
+Personagem identifica um módulo pela associação documentada (Orbit em P01, Nexus em P02, Aria em P03, Vanguard em P04, Oracle em P05, Core em P06, Spark em P07, Echo em P08, Sudo em M09). M10 e M11 não têm personagem-pilar definido e não recebem um improvisado.
+@@end
+@@rule BB-PERS-11 P origem: Guia Mestre dos Personagens
+Comando de ativação em Plex Mono ("Ei Orbit"). Nome do personagem em Sora, descrição em Inter.
+@@end
+    </ol>
+  </div>
+</section>

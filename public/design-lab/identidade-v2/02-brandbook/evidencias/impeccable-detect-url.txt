@@ -1,0 +1,168 @@
+
+http://localhost:8791/design-lab/identidade-v2/02-brandbook/index.html
+  [line-length] ~91 chars on 2 of 3 rendered lines (aim for <80)
+    → Text lines wider than ~80 characters are hard to read. The eye loses its place tracking back to the start of the next line, so it is measured on the lines that rendered and charged when more than one of them runs long. Add a max-width (65ch to 75ch) to text containers.
+  [low-contrast] 1.6:1 (need 3:1) — text #00d4ff on #f4f7fb
+    → Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.
+  [low-contrast] 1.6:1 (need 4.5:1) — text #00d4ff on #f4f7fb
+    → Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.
+  [low-contrast] 3.2:1 (need 4.5:1) — text #ff2d9b on #f4f7fb
+    → Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.
+  [low-contrast] 1.5:1 (need 3:1) — text #ffc107 on #f4f7fb
+    → Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.
+  [low-contrast] 1.5:1 (need 4.5:1) — text #ffc107 on #f4f7fb
+    → Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.
+  [low-contrast] 3.0:1 (need 4.5:1) — text #8b7dff on #f4f7fb
+    → Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.
+  [low-contrast] 1.1:1 (need 3:1) — text #e8eeff on #f4f7fb
+    → Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.
+  [low-contrast] 1.1:1 (need 4.5:1) — text #e8eeff on #f4f7fb
+    → Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.
+  [low-contrast] 2.1:1 (need 3:1) — text #9eadc8 on #f4f7fb
+    → Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.
+  [low-contrast] 2.1:1 (need 4.5:1) — text #9eadc8 on #f4f7fb
+    → Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.
+  [low-contrast] 1.8:1 (need 3:1) — text #ffffff on #00d4ff
+    → Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.
+  [low-contrast] 1.8:1 (need 4.5:1) — text #ffffff on #00d4ff
+    → Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.
+  [low-contrast] 3.4:1 (need 4.5:1) — text #ffffff on #ff2d9b
+    → Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.
+  [low-contrast] 1.6:1 (need 3:1) — text #ffffff on #ffc107
+    → Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.
+  [low-contrast] 1.6:1 (need 4.5:1) — text #ffffff on #ffc107
+    → Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.
+  [low-contrast] 3.2:1 (need 4.5:1) — text #ffffff on #8b7dff
+    → Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.
+  [line-length] ~86 chars on 2 of 4 rendered lines (aim for <80)
+    → Text lines wider than ~80 characters are hard to read. The eye loses its place tracking back to the start of the next line, so it is measured on the lines that rendered and charged when more than one of them runs long. Add a max-width (65ch to 75ch) to text containers.
+  [dark-glow] Zero-offset box-shadow glow (#00d4ff)
+    → Colored glow shadows — a zero-offset chromatic halo (box- or text-shadow) on any background, or any colored blurred shadow on a dark background — are the default "cool" look of AI-generated UIs. Use neutral elevation shadows and subtle, purposeful lighting instead.
+  [dark-glow] Zero-offset box-shadow glow (#ff2d9b)
+    → Colored glow shadows — a zero-offset chromatic halo (box- or text-shadow) on any background, or any colored blurred shadow on a dark background — are the default "cool" look of AI-generated UIs. Use neutral elevation shadows and subtle, purposeful lighting instead.
+  [dark-glow] Zero-offset box-shadow glow (#ffc107)
+    → Colored glow shadows — a zero-offset chromatic halo (box- or text-shadow) on any background, or any colored blurred shadow on a dark background — are the default "cool" look of AI-generated UIs. Use neutral elevation shadows and subtle, purposeful lighting instead.
+  [line-length] ~86 chars on 2 of 6 rendered lines (aim for <80)
+    → Text lines wider than ~80 characters are hard to read. The eye loses its place tracking back to the start of the next line, so it is measured on the lines that rendered and charged when more than one of them runs long. Add a max-width (65ch to 75ch) to text containers.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+  [undersized-ui-text] 10.64px functional text "P01" (below 11px floor)
+    → Interactive and content-bearing UI text (links, buttons, nav items, labels, table cells, meta rows, timecodes) below 11px is a legibility failure, not a style choice. WCAG sets no absolute pixel floor, but functional text under 11px is a defensible quality bar: it fails on high-DPI and small viewports and it degrades tap and read targets. The 11px floor holds even inside a footer; only non-interactive legal smallprint gets the softer 10px floor. Being ON the DESIGN.md size ramp does not exempt a value here: adding 8px to the ramp launders the token but not the legibility problem, and that is exactly the escape hatch this rule closes. Exempts sup/sub, visually-hidden (sr-only) text, and code/terminal contexts. Decorative letterspaced micro-labels are still functional and stay in scope.
+  [undersized-ui-text] 10.64px functional text "P02" (below 11px floor)
+    → Interactive and content-bearing UI text (links, buttons, nav items, labels, table cells, meta rows, timecodes) below 11px is a legibility failure, not a style choice. WCAG sets no absolute pixel floor, but functional text under 11px is a defensible quality bar: it fails on high-DPI and small viewports and it degrades tap and read targets. The 11px floor holds even inside a footer; only non-interactive legal smallprint gets the softer 10px floor. Being ON the DESIGN.md size ramp does not exempt a value here: adding 8px to the ramp launders the token but not the legibility problem, and that is exactly the escape hatch this rule closes. Exempts sup/sub, visually-hidden (sr-only) text, and code/terminal contexts. Decorative letterspaced micro-labels are still functional and stay in scope.
+  [undersized-ui-text] 10.64px functional text "P03" (below 11px floor)
+    → Interactive and content-bearing UI text (links, buttons, nav items, labels, table cells, meta rows, timecodes) below 11px is a legibility failure, not a style choice. WCAG sets no absolute pixel floor, but functional text under 11px is a defensible quality bar: it fails on high-DPI and small viewports and it degrades tap and read targets. The 11px floor holds even inside a footer; only non-interactive legal smallprint gets the softer 10px floor. Being ON the DESIGN.md size ramp does not exempt a value here: adding 8px to the ramp launders the token but not the legibility problem, and that is exactly the escape hatch this rule closes. Exempts sup/sub, visually-hidden (sr-only) text, and code/terminal contexts. Decorative letterspaced micro-labels are still functional and stay in scope.
+  [undersized-ui-text] 10.64px functional text "P04" (below 11px floor)
+    → Interactive and content-bearing UI text (links, buttons, nav items, labels, table cells, meta rows, timecodes) below 11px is a legibility failure, not a style choice. WCAG sets no absolute pixel floor, but functional text under 11px is a defensible quality bar: it fails on high-DPI and small viewports and it degrades tap and read targets. The 11px floor holds even inside a footer; only non-interactive legal smallprint gets the softer 10px floor. Being ON the DESIGN.md size ramp does not exempt a value here: adding 8px to the ramp launders the token but not the legibility problem, and that is exactly the escape hatch this rule closes. Exempts sup/sub, visually-hidden (sr-only) text, and code/terminal contexts. Decorative letterspaced micro-labels are still functional and stay in scope.
+  [undersized-ui-text] 10.64px functional text "P05" (below 11px floor)
+    → Interactive and content-bearing UI text (links, buttons, nav items, labels, table cells, meta rows, timecodes) below 11px is a legibility failure, not a style choice. WCAG sets no absolute pixel floor, but functional text under 11px is a defensible quality bar: it fails on high-DPI and small viewports and it degrades tap and read targets. The 11px floor holds even inside a footer; only non-interactive legal smallprint gets the softer 10px floor. Being ON the DESIGN.md size ramp does not exempt a value here: adding 8px to the ramp launders the token but not the legibility problem, and that is exactly the escape hatch this rule closes. Exempts sup/sub, visually-hidden (sr-only) text, and code/terminal contexts. Decorative letterspaced micro-labels are still functional and stay in scope.
+  [undersized-ui-text] 10.64px functional text "P06" (below 11px floor)
+    → Interactive and content-bearing UI text (links, buttons, nav items, labels, table cells, meta rows, timecodes) below 11px is a legibility failure, not a style choice. WCAG sets no absolute pixel floor, but functional text under 11px is a defensible quality bar: it fails on high-DPI and small viewports and it degrades tap and read targets. The 11px floor holds even inside a footer; only non-interactive legal smallprint gets the softer 10px floor. Being ON the DESIGN.md size ramp does not exempt a value here: adding 8px to the ramp launders the token but not the legibility problem, and that is exactly the escape hatch this rule closes. Exempts sup/sub, visually-hidden (sr-only) text, and code/terminal contexts. Decorative letterspaced micro-labels are still functional and stay in scope.
+  [undersized-ui-text] 10.64px functional text "P07" (below 11px floor)
+    → Interactive and content-bearing UI text (links, buttons, nav items, labels, table cells, meta rows, timecodes) below 11px is a legibility failure, not a style choice. WCAG sets no absolute pixel floor, but functional text under 11px is a defensible quality bar: it fails on high-DPI and small viewports and it degrades tap and read targets. The 11px floor holds even inside a footer; only non-interactive legal smallprint gets the softer 10px floor. Being ON the DESIGN.md size ramp does not exempt a value here: adding 8px to the ramp launders the token but not the legibility problem, and that is exactly the escape hatch this rule closes. Exempts sup/sub, visually-hidden (sr-only) text, and code/terminal contexts. Decorative letterspaced micro-labels are still functional and stay in scope.
+  [undersized-ui-text] 10.64px functional text "P08" (below 11px floor)
+    → Interactive and content-bearing UI text (links, buttons, nav items, labels, table cells, meta rows, timecodes) below 11px is a legibility failure, not a style choice. WCAG sets no absolute pixel floor, but functional text under 11px is a defensible quality bar: it fails on high-DPI and small viewports and it degrades tap and read targets. The 11px floor holds even inside a footer; only non-interactive legal smallprint gets the softer 10px floor. Being ON the DESIGN.md size ramp does not exempt a value here: adding 8px to the ramp launders the token but not the legibility problem, and that is exactly the escape hatch this rule closes. Exempts sup/sub, visually-hidden (sr-only) text, and code/terminal contexts. Decorative letterspaced micro-labels are still functional and stay in scope.
+  [undersized-ui-text] 10.64px functional text "M09" (below 11px floor)
+    → Interactive and content-bearing UI text (links, buttons, nav items, labels, table cells, meta rows, timecodes) below 11px is a legibility failure, not a style choice. WCAG sets no absolute pixel floor, but functional text under 11px is a defensible quality bar: it fails on high-DPI and small viewports and it degrades tap and read targets. The 11px floor holds even inside a footer; only non-interactive legal smallprint gets the softer 10px floor. Being ON the DESIGN.md size ramp does not exempt a value here: adding 8px to the ramp launders the token but not the legibility problem, and that is exactly the escape hatch this rule closes. Exempts sup/sub, visually-hidden (sr-only) text, and code/terminal contexts. Decorative letterspaced micro-labels are still functional and stay in scope.
+  [undersized-ui-text] 10.64px functional text "M10" (below 11px floor)
+    → Interactive and content-bearing UI text (links, buttons, nav items, labels, table cells, meta rows, timecodes) below 11px is a legibility failure, not a style choice. WCAG sets no absolute pixel floor, but functional text under 11px is a defensible quality bar: it fails on high-DPI and small viewports and it degrades tap and read targets. The 11px floor holds even inside a footer; only non-interactive legal smallprint gets the softer 10px floor. Being ON the DESIGN.md size ramp does not exempt a value here: adding 8px to the ramp launders the token but not the legibility problem, and that is exactly the escape hatch this rule closes. Exempts sup/sub, visually-hidden (sr-only) text, and code/terminal contexts. Decorative letterspaced micro-labels are still functional and stay in scope.
+  [undersized-ui-text] 10.64px functional text "M11" (below 11px floor)
+    → Interactive and content-bearing UI text (links, buttons, nav items, labels, table cells, meta rows, timecodes) below 11px is a legibility failure, not a style choice. WCAG sets no absolute pixel floor, but functional text under 11px is a defensible quality bar: it fails on high-DPI and small viewports and it degrades tap and read targets. The 11px floor holds even inside a footer; only non-interactive legal smallprint gets the softer 10px floor. Being ON the DESIGN.md size ramp does not exempt a value here: adding 8px to the ramp launders the token but not the legibility problem, and that is exactly the escape hatch this rule closes. Exempts sup/sub, visually-hidden (sr-only) text, and code/terminal contexts. Decorative letterspaced micro-labels are still functional and stay in scope.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+  [undersized-ui-text] 10.115px functional text "Birthub 360°" (below 11px floor)
+    → Interactive and content-bearing UI text (links, buttons, nav items, labels, table cells, meta rows, timecodes) below 11px is a legibility failure, not a style choice. WCAG sets no absolute pixel floor, but functional text under 11px is a defensible quality bar: it fails on high-DPI and small viewports and it degrades tap and read targets. The 11px floor holds even inside a footer; only non-interactive legal smallprint gets the softer 10px floor. Being ON the DESIGN.md size ramp does not exempt a value here: adding 8px to the ramp launders the token but not the legibility problem, and that is exactly the escape hatch this rule closes. Exempts sup/sub, visually-hidden (sr-only) text, and code/terminal contexts. Decorative letterspaced micro-labels are still functional and stay in scope.
+  [nested-cards] Card inside card
+    → Cards inside cards create visual noise and excessive depth. Flatten the hierarchy — use spacing, typography, and dividers instead of nesting containers.
+  [nested-cards] Card inside card
+    → Cards inside cards create visual noise and excessive depth. Flatten the hierarchy — use spacing, typography, and dividers instead of nesting containers.
+  [nested-cards] Card inside card
+    → Cards inside cards create visual noise and excessive depth. Flatten the hierarchy — use spacing, typography, and dividers instead of nesting containers.
+  [nested-cards] Card inside card
+    → Cards inside cards create visual noise and excessive depth. Flatten the hierarchy — use spacing, typography, and dividers instead of nesting containers.
+  [nested-cards] Card inside card
+    → Cards inside cards create visual noise and excessive depth. Flatten the hierarchy — use spacing, typography, and dividers instead of nesting containers.
+  [nested-cards] Card inside card
+    → Cards inside cards create visual noise and excessive depth. Flatten the hierarchy — use spacing, typography, and dividers instead of nesting containers.
+  [nested-cards] Card inside card
+    → Cards inside cards create visual noise and excessive depth. Flatten the hierarchy — use spacing, typography, and dividers instead of nesting containers.
+  [nested-cards] Card inside card
+    → Cards inside cards create visual noise and excessive depth. Flatten the hierarchy — use spacing, typography, and dividers instead of nesting containers.
+  [nested-cards] Card inside card
+    → Cards inside cards create visual noise and excessive depth. Flatten the hierarchy — use spacing, typography, and dividers instead of nesting containers.
+  [nested-cards] Card inside card
+    → Cards inside cards create visual noise and excessive depth. Flatten the hierarchy — use spacing, typography, and dividers instead of nesting containers.
+  [nested-cards] Card inside card
+    → Cards inside cards create visual noise and excessive depth. Flatten the hierarchy — use spacing, typography, and dividers instead of nesting containers.
+  [nested-cards] Card inside card
+    → Cards inside cards create visual noise and excessive depth. Flatten the hierarchy — use spacing, typography, and dividers instead of nesting containers.
+  [nested-cards] Card inside card
+    → Cards inside cards create visual noise and excessive depth. Flatten the hierarchy — use spacing, typography, and dividers instead of nesting containers.
+  [nested-cards] Card inside card
+    → Cards inside cards create visual noise and excessive depth. Flatten the hierarchy — use spacing, typography, and dividers instead of nesting containers.
+  [nested-cards] Card inside card
+    → Cards inside cards create visual noise and excessive depth. Flatten the hierarchy — use spacing, typography, and dividers instead of nesting containers.
+
+75 anti-patterns found.
+
+── Advisory (not counted as failures) ──
+
+http://localhost:8791/design-lab/identidade-v2/02-brandbook/index.html
+  [low-contrast] 4.49:1 (need 4.5:1) — text #f4f7fb on #6b7280
+    → Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.
+  [low-contrast] 4.4:1 (need 4.5:1) — text #ff2d9b on #252530
+    → Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.
+  [straggler] "assimetria" alone on the last of 2 lines (21% of the measure)
+    → The last line of this paragraph holds one word, which leaves a hole under the block. Set text-wrap: pretty on body copy (Chrome, Safari) to pull a word down beside it. Where a browser ignores it, edit the last sentence or bind the last two words with a no-break space. Keep it if the break is intended.
+  [tiny-text] 11.9px body text
+    → Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.
+
+4 advisory notes. Suppress with --no-advisory.

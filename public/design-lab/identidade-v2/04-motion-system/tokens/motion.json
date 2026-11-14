@@ -1,0 +1,42 @@
+{
+  "$schema": "birthub360/motion-tokens@2.0-draft",
+  "status": "RASCUNHO V2.0 — NÃO HOMOLOGADO",
+  "unit": "ms",
+  "levels": {
+    "operational": {
+      "duration": { "micro": 80, "fast": 120, "base": 160, "slow": 200, "cinematic": 200 },
+      "stagger": { "fast": 15, "base": 30, "slow": 40, "max": 200 },
+      "distance": { "xs": 2, "sm": 4, "md": 8, "lg": 12, "xl": 16 },
+      "parallaxDepth": 0, "scaleHover": 1.01, "scalePress": 0.98, "glowPulse": false
+    },
+    "commercial": {
+      "duration": { "micro": 120, "fast": 200, "base": 360, "slow": 600, "cinematic": 1200 },
+      "stagger": { "fast": 40, "base": 60, "slow": 100, "max": 600 },
+      "distance": { "xs": 4, "sm": 8, "md": 16, "lg": 32, "xl": 64 },
+      "parallaxDepth": 24, "scaleHover": 1.02, "scalePress": 0.97, "glowPulse": true
+    },
+    "reduced": {
+      "duration": "1ms (instantâneo); opacity usa reducedFade",
+      "reducedFade": 120, "stagger": 0, "distance": 0, "parallaxDepth": 0, "scaleHover": 1, "glowPulse": false, "loops": "removidos"
+    }
+  },
+  "easing": {
+    "standard": [0.4, 0, 0.2, 1], "out": [0.16, 1, 0.3, 1], "premium": [0.22, 1, 0.36, 1],
+    "in": [0.4, 0, 1, 1], "spring": [0.34, 1.56, 0.64, 1], "linear": "linear"
+  },
+  "glow": { "rgb": "0,212,255", "rest": 0.22, "active": 0.45, "rule": "só comunica estado; pulso apenas até o usuário reconhecer; nunca box-shadow animado (animar opacity de camada)" },
+  "orbit": { "periodMs": 6000, "fastPeriodMs": 1200, "rule": "rotação só enquanto houver sincronização/processamento" },
+  "characters": {
+    "source": "identidade-visual/birthhub360/tokens/characters.json → characters.<id>.expressions",
+    "states": ["idle", "listening", "processing", "speaking", "success", "error"],
+    "note": "Expressions já existem; este sistema não as redefine nem altera os SVGs."
+  },
+  "performanceBudget": {
+    "properties": ["transform", "opacity"],
+    "maxConcurrentAnimatedElements": 12,
+    "maxConcurrentLoops": 2,
+    "frameBudgetMs": 16.6,
+    "willChange": "somente durante a animação; nunca permanente",
+    "offscreen": "loops pausados fora da viewport"
+  }
+}
