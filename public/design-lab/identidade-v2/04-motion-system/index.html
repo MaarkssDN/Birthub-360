@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark" data-motion="commercial">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Motion System V2.0 — Birthub 360° (RASCUNHO)</title>
+<link rel="stylesheet" href="../shared/core.css">
+<link rel="stylesheet" href="tokens/motion.css">
+<script>document.documentElement.classList.add('js')</script>
+<style>
+*{box-sizing:border-box}
+html{scroll-padding-top:84px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-ui);font-size:15px;line-height:1.55}
+h1,h2,h3,h4{font-family:var(--font-display);color:var(--ink);margin:0;line-height:1.15;letter-spacing:-.01em}
+h1{font-size:clamp(28px,4.4vw,48px);font-weight:700}
+h2{font-size:clamp(22px,2.6vw,30px);font-weight:650}
+h3{font-size:16px;font-weight:600}
+p{margin:.4em 0}
+code,.mono{font-family:var(--font-mono);font-size:.88em}
+code{background:var(--surface-2);padding:.1em .4em;border-radius:4px}
+a{color:var(--c-blue)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--c-blue);outline-offset:2px}
+.muted{color:var(--ink-muted)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+/* chrome: sempre operacional, rápido */
+header.top{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:10px 20px}
+.draft{font-family:var(--font-mono);font-size:12px;letter-spacing:.04em;padding:3px 8px;border:1px solid var(--c-pink);color:var(--c-pink);border-radius:4px;white-space:nowrap}
+.ctl{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{background:transparent;border:0;padding:6px 10px;font-size:12px;transition:background-color var(--dur-fast) var(--ease-standard),color var(--dur-fast) var(--ease-standard)}
+.seg button[aria-pressed="true"]{background:var(--c-blue);color:var(--on-neon);font-weight:600}
+.seg button:disabled{opacity:.5;cursor:not-allowed}
+.layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:28px;max-width:1360px;margin:0 auto;padding:24px 20px 80px}
+nav.side{position:sticky;top:84px;align-self:start;max-height:calc(100vh - 100px);overflow:auto;font-size:13px}
+nav.side a{display:block;padding:5px 10px;color:var(--ink-muted);text-decoration:none;border-radius:6px;transition:background-color var(--dur-fast),color var(--dur-fast)}
+nav.side a:hover{background:var(--surface-2);color:var(--ink)}
+main{min-width:0}
+section.sec{padding:34px 0;border-top:1px solid var(--line)}
+section.sec>p.lead{color:var(--ink-muted);max-width:74ch}
+.num{font-family:var(--font-mono);font-size:12px;color:var(--c-iris);letter-spacing:.04em}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.demo{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;position:relative;overflow:hidden}
+.demo>.tag{position:absolute;top:10px;right:12px;font-family:var(--font-mono);font-size:12px;letter-spacing:.04em;color:var(--ink-muted)}
+.demo h3{margin-bottom:6px;padding-right:80px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.btn{background:var(--surface-3);border:1px solid var(--line);border-radius:8px;padding:7px 12px;font-size:13px;transition:transform var(--dur-fast) var(--ease-out),background-color var(--dur-fast) var(--ease-standard)}
+.btn:hover{transform:scale(var(--scale-hover))}
+.btn:active{transform:scale(var(--scale-press))}
+.btn.primary{background:var(--c-blue);color:var(--on-neon);border-color:transparent;font-weight:600}
+.btn.sm{padding:4px 9px;font-size:12px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--font-mono);font-size:12px;letter-spacing:.04em;color:var(--ink-muted);font-weight:500}
+.tblwrap{padding:6px;overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.pill{font-family:var(--font-mono);font-size:12px;padding:2px 7px;border-radius:99px;border:1px solid var(--line)}
+.ok{color:var(--c-blue)}.no{color:var(--c-pink)}
+/* reveal */
+.js .rv{opacity:0;transform:translateY(var(--distance-md));transition:opacity var(--dur-opacity) var(--ease-out),transform var(--dur-base) var(--ease-out);transition-delay:min(calc(var(--i,0)*var(--stagger-base)),var(--stagger-max))}
+.js .rv.in{opacity:1;transform:none}
+.js .rv.reset{transition:none}
+.rv-line{display:block;overflow:hidden}
+.js .rv-line>span{display:block;transform:translateY(105%);transition:transform var(--dur-slow) var(--ease-premium);transition-delay:min(calc(var(--i,0)*var(--stagger-slow)),var(--stagger-max))}
+.js .rv-line.in>span{transform:none}
+.js .rv-line.reset>span{transition:none}
+.offscreen *,.offscreen *::before,.offscreen *::after{animation-play-state:paused!important}
+/* durations/easing */
+.track{height:22px;background:var(--surface-2);border-radius:99px;position:relative;margin:6px 0}
+.dot{position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:var(--c-blue);transition:transform var(--d,var(--dur-base)) var(--ease,var(--ease-out))}
+.track.run .dot{transform:translateX(var(--trackw,200px))}
+.lv{padding:10px;border-radius:10px;border:1px dashed var(--line);margin-bottom:8px}
+.lv>b{font-family:var(--font-mono);font-size:12px;color:var(--ink-muted);font-weight:500}
+.curve{display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.curve svg{width:120px;height:120px;background:var(--surface-2);border-radius:8px}
+.curve path.c{stroke:var(--c-blue);fill:none;stroke-width:2.5}
+.curve .grid-l{stroke:var(--line);stroke-width:1}
+.ease-item{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--surface);flex:1 1 240px}
+.ease-item .track{margin-top:10px}
+/* screens */
+.screen{border:1px solid var(--line);border-radius:10px;background:var(--surface-2);padding:12px;display:grid;gap:10px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px}
+.kpi b{font-family:var(--font-mono);font-size:20px;display:block}
+.trow{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;padding:7px 8px;background:var(--surface);border-radius:6px;font-size:12px}
+.editorial{padding:18px;background:var(--surface-2);border-radius:10px}
+.editorial .ed-h{font-size:clamp(26px,4vw,44px);font-weight:700}
+.big-n{font-family:var(--font-mono);font-size:12px;color:var(--c-iris)}
+/* micro */
+.switch{width:44px;height:24px;border-radius:99px;background:var(--surface-3);border:1px solid var(--line);position:relative;padding:0}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--ink-muted);transition:transform var(--dur-fast) var(--ease-out),background-color var(--dur-fast)}
+.switch[aria-checked="true"]{background:rgba(var(--glow-color),.25)}
+.switch[aria-checked="true"]::after{transform:translateX(20px);background:var(--c-blue)}
+.chk path{stroke-dasharray:24;stroke-dashoffset:24;transition:stroke-dashoffset var(--dur-fast) var(--ease-out)}
+.chkb[aria-checked="true"] .chk path{stroke-dashoffset:0}
+.chkb{width:26px;height:26px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);padding:2px;display:grid;place-items:center}
+.chk{width:18px;height:18px;stroke:var(--c-blue);fill:none;stroke-width:3}
+.field{position:relative}
+.field input{width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--ink);font:inherit}
+.field::after{content:"";position:absolute;left:6px;right:6px;bottom:0;height:2px;background:var(--c-blue);transform:scaleX(0);transform-origin:left;transition:transform var(--dur-fast) var(--ease-out)}
+.field:focus-within::after{transform:scaleX(1)}
+.glowcard{position:relative;border:1px solid rgba(var(--glow-color),var(--glow-rest));border-radius:12px;padding:14px;background:var(--surface-2)}
+.glowcard::after{content:"";position:absolute;inset:-1px;border-radius:inherit;border:1px solid rgba(var(--glow-color),var(--glow-active));opacity:0;transition:opacity var(--dur-opacity) var(--ease-standard);pointer-events:none}
+.glowcard:hover::after,.glowcard:focus-within::after{opacity:1}
+.cta-wrap{display:inline-block;padding:14px}
+.cta{background:var(--c-blue);color:var(--on-neon);border:0;border-radius:10px;padding:11px 20px;font-weight:700;transition:transform var(--dur-base) var(--ease-out)}
+.cta:hover{transform:translate(var(--mx,0),var(--my,0)) scale(var(--scale-hover))}
+.cta:active{transform:scale(var(--scale-press))}
+/* async button */
+.abtn{min-width:150px;display:inline-flex;gap:8px;align-items:center;justify-content:center;border-radius:10px;border:1px solid transparent;padding:10px 16px;font-weight:600;background:var(--c-blue);color:var(--on-neon);position:relative;transition:transform var(--dur-fast) var(--ease-out),background-color var(--dur-opacity) var(--ease-standard)}
+.abtn:hover{transform:scale(var(--scale-hover))}.abtn:active{transform:scale(var(--scale-press))}
+.abtn[data-state="loading"]{opacity:.8;cursor:progress}
+.abtn[data-state="success"]{background:var(--surface-3);color:var(--c-blue);border-color:var(--c-blue);animation:okpulse var(--dur-slow) var(--ease-spring) 1}
+.abtn[data-state="error"]{background:var(--surface-3);color:var(--c-pink);border-color:var(--c-pink);animation:shake var(--dur-slow) var(--ease-standard) 1}
+.abtn .ico{width:16px;height:16px;display:none}
+.abtn[data-state="loading"] .spin{display:block}
+.abtn[data-state="success"] .okic,.abtn[data-state="error"] .erric{display:block}
+.spin{width:16px;height:16px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:spin 800ms linear infinite;display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes okpulse{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(calc(var(--distance-sm)*-1))}75%{transform:translateX(var(--distance-sm))}}
+.okic path,.erric path{stroke:currentColor;fill:none;stroke-width:3;stroke-dasharray:24;stroke-dashoffset:24}
+.abtn[data-state="success"] .okic path,.abtn[data-state="error"] .erric path{stroke-dashoffset:0;transition:stroke-dashoffset var(--dur-base) var(--ease-out)}
+/* hub */
+.hubwrap{position:relative;min-height:240px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface-2)}
+.hub{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;padding:14px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;text-align:left;min-height:96px}
+.tile small{font-family:var(--font-mono);color:var(--c-iris)}
+.ws{position:absolute;inset:0;background:var(--surface);transform-origin:0 0;padding:16px;display:grid;align-content:start;gap:8px;will-change:transform,opacity}
+.ws[hidden]{display:none}
+/* data */
+.bars{display:flex;align-items:flex-end;gap:6px;height:90px}
+.bars i{flex:1;background:var(--c-blue);border-radius:3px 3px 0 0;transform-origin:bottom;transform:scaleY(1);height:var(--h)}
+.js .bars i{transform:scaleY(0);transition:transform var(--dur-slow) var(--ease-out);transition-delay:min(calc(var(--i)*var(--stagger-fast)),var(--stagger-max))}
+.js .bars.in i{transform:scaleY(1)}
+.js .bars.reset i{transition:none}
+.line path.ln{fill:none;stroke:var(--c-iris);stroke-width:3;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:0}
+.js .line path.ln{stroke-dashoffset:1;transition:stroke-dashoffset var(--dur-cinematic) var(--ease-premium)}
+.js .line.in path.ln{stroke-dashoffset:0}
+.js .line.reset path.ln{transition:none}
+.donut circle{fill:none;stroke-width:10}
+.donut .bg{stroke:var(--surface-3)}
+.donut .fg{stroke:var(--c-gold);stroke-dasharray:100;stroke-dashoffset:0;transform:rotate(-90deg);transform-origin:50% 50%;stroke-linecap:round}
+.js .donut .fg{stroke-dashoffset:100;transition:stroke-dashoffset var(--dur-cinematic) var(--ease-out)}
+.js .donut.in .fg{stroke-dashoffset:var(--pct)}
+.js .donut.reset .fg{transition:none}
+/* loading */
+.skel{height:14px;border-radius:6px;background:var(--surface-3);position:relative;overflow:hidden;margin:8px 0}
+.skel{animation:skp 1400ms var(--ease-standard) infinite}
+.loaded .skel,.ws-body .skel{animation:none}
+@keyframes skp{50%{opacity:.45}}
+.progress{height:8px;background:var(--surface-3);border-radius:99px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--c-blue);transform-origin:left;transform:scaleX(var(--p,0));transition:transform var(--dur-slow) var(--ease-standard)}
+/* orbit 360 */
+.orb{position:relative;width:120px;height:120px;margin:6px auto}
+.ring{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 35%,var(--c-iris) 70%,var(--c-blue) 100%);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 7px),#000 calc(100% - 6px));mask:radial-gradient(farthest-side,transparent calc(100% - 7px),#000 calc(100% - 6px));opacity:.35;transition:opacity var(--dur-opacity)}
+.arm{position:absolute;inset:14px;border-radius:50%;border:1px dashed var(--line)}
+.arm b{position:absolute;top:-5px;left:calc(50% - 5px);width:10px;height:10px;border-radius:50%;background:var(--c-pink)}
+.arm.b{inset:30px}.arm.b b{background:var(--c-gold)}
+.core{position:absolute;inset:36px;border-radius:50%;background:var(--surface-3);border:1px solid var(--c-blue);display:grid;place-items:center;font-family:var(--font-mono);font-size:12px;color:var(--c-blue)}
+[data-sync="true"] .ring{opacity:1;animation:spin var(--orbit-period-fast) linear infinite}
+[data-sync="true"] .arm{animation:spin var(--orbit-period) linear infinite}
+[data-sync="true"] .arm.b{animation:spin calc(var(--orbit-period)*.6) linear infinite reverse}
+/* glow pulse (3 ciclos e fica estático; nunca infinito) */
+.alert{position:relative;display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;background:var(--surface-2);border:1px solid rgba(var(--glow-color),var(--glow-rest))}
+.alert .led{position:relative;width:12px;height:12px;border-radius:50%;background:var(--c-blue)}
+.alert .led::before{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--c-blue);opacity:0}
+.alert[data-state="pending"] .led::before{opacity:.45}
+[data-motion="commercial"] .alert[data-state="pending"] .led::before{animation:ping 1600ms var(--ease-out) 3}
+[data-motion="operational"] .alert[data-state="pending"]{border-color:rgba(var(--glow-color),var(--glow-active))}
+.alert[data-state="ack"] .led{background:var(--ink-muted)}
+@keyframes ping{from{transform:scale(1);opacity:.45}to{transform:scale(2.6);opacity:0}}
+/* parallax */
+.stage{position:relative;height:260px;padding:12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden;--px:0;--py:0;--sy:0}
+.layer{position:absolute;inset:-30px;display:grid;place-items:center;transform:translate3d(calc(var(--px)*var(--parallax-depth)*var(--k)),calc((var(--py) + var(--sy))*var(--parallax-depth)*var(--k)),0);transition:transform var(--dur-fast) var(--ease-out)}
+.layer.l1{--k:.3;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:36px 36px}
+.layer.l2{--k:.7}
+.layer.l3{--k:1.3}
+.l2 .ring{opacity:.7;position:static;width:150px;height:150px}
+.l3 h3{font-size:22px;text-align:center}
+/* chars */
+.chars{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+.av{position:relative;width:128px;height:128px}
+.av img{position:relative;width:100%;height:100%;display:block;transform:scale(var(--sc,1));transition:transform var(--dur-base) var(--ease-out)}
+.av .halo{position:absolute;inset:-6px;border-radius:50%;opacity:var(--ho,.35);box-shadow:0 0 0 0 transparent;border:2px solid var(--sc-color,var(--c-blue));transition:opacity var(--dur-opacity)}
+.av[data-state="listening"] .halo{animation:ping 1800ms var(--ease-standard) infinite}
+.av[data-state="processing"] .halo{border-style:dashed;animation:spin var(--orbit-period-fast) linear infinite}
+.av[data-state="idle"] img{animation:breathe 6000ms var(--ease-standard) infinite}
+.av[data-state="speaking"] img{animation:speak 2000ms var(--ease-standard) infinite}
+.av[data-state="success"] img{animation:okpulse var(--cs-dur,800ms) var(--ease-spring) 1 forwards}
+.av[data-state="error"] img{animation:shake var(--ce-dur,500ms) var(--ease-standard) 2}
+@keyframes breathe{50%{transform:scale(1.03)}}
+@keyframes speak{50%{transform:scale(1.04)}}
+.stat{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--sc-color)}
+pre{background:var(--surface-2);border-radius:8px;padding:10px;overflow:auto;font-size:12px;font-family:var(--font-mono)}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cmpbox{border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--surface)}
+.badge-lv{font-family:var(--font-mono);font-size:12px;color:var(--c-iris)}
+@media (max-width:860px){.layout{grid-template-columns:1fr}nav.side{position:static;max-height:none;display:flex;gap:4px;overflow-x:auto;white-space:nowrap}nav.side a{display:inline-block}.compare{grid-template-columns:1fr}header.top{position:static}}
+</style>
+</head>
+<body>
+<header class="top" data-motion="operational">
+  <strong style="font-family:var(--font-display)"><span data-brand>Birthub 360°</span> · Motion System V2.0</strong>
+  <span class="draft">RASCUNHO V2.0 — NÃO HOMOLOGADO</span>
+  <span class="ctl" role="group" aria-label="Tema">Tema
+    <span class="seg"><button id="th-dark" aria-pressed="true">Dark</button><button id="th-light" aria-pressed="false">Light</button></span></span>
+  <span class="ctl" role="group" aria-label="Movimento">Movimento
+    <span class="seg"><button id="mv-normal" aria-pressed="true">Normal</button><button id="mv-reduced" aria-pressed="false">Reduzido</button></span></span>
+  <span class="ctl" role="group" aria-label="Intensidade">Intensidade
+    <span class="seg"><button id="lv-commercial" aria-pressed="true">Comercial</button><button id="lv-operational" aria-pressed="false">Operacional</button></span></span>
+  <span class="ctl" id="status" role="status" aria-live="polite"></span>
+</header>
+<div class="layout">
+<nav class="side" aria-label="Seções" data-motion="operational">
+  <a href="#principios">1 Princípios</a><a href="#niveis">2 Dois níveis</a><a href="#duracoes">3 Durações</a><a href="#easings">4 Easings</a>
+  <a href="#stagger">5 Stagger</a><a href="#telas">6 Entrada de telas</a><a href="#editorial">7 Revelação editorial</a><a href="#micro">8 Microinterações</a>
+  <a href="#modulos">9 Hub → Workspace</a><a href="#botoes">10 Feedback de botões</a><a href="#loading">11 Loading</a><a href="#dados">12 Dados</a>
+  <a href="#orbita">13 Elementos 360°</a><a href="#neon">14 Neon</a><a href="#parallax">15 Profundidade</a><a href="#personagens">16 Personagens</a>
+  <a href="#reduzido">17 Reduzido</a><a href="#orcamento">18 Orçamento</a><a href="#uso">19 Onde usar / proibido</a><a href="#tokens">20 Tokens</a><a href="#divergencias">21 Divergências</a>
+</nav>
+<main>
+<h1>Motion System <span class="muted">V2.0</span></h1>
+<p class="muted" style="max-width:74ch">Movimento existe para comunicar causa e efeito, revelar dados, confirmar ações e sinalizar carregamento. Duas intensidades: <b>Comercial</b> (monumental, até 1200ms) e <b>Operacional</b> (80–200ms, sem loops decorativos, sem parallax). Use os controles do topo: tudo nesta página é tokenizado e reage a eles. Exemplos marcados <span class="pill">PROTÓTIPO</span>; números nos exemplos são ilustrativos, não métricas reais.</p>
+
+<section class="sec" id="principios"><h2>Princípios</h2>
+<div class="grid g3" id="pr">
+<div class="demo rv"><h3>Causa e efeito</h3><p class="muted">Movimento liga ação a resultado (lead movido, painel aberto). Sem relação causal, sem animação.</p></div>
+<div class="demo rv"><h3>Revelar em cascata</h3><p class="muted">Dados entram em sequência curta e limitada por teto (<code>--stagger-max</code>).</p></div>
+<div class="demo rv"><h3>Confirmar conclusão</h3><p class="muted">Sucesso = pulso discreto único. Erro = tremor curto. Nunca festa.</p></div>
+<div class="demo rv"><h3>Sinalizar espera</h3><p class="muted">Loops só enquanto algo está carregando/sincronizando/processando. Param ao terminar e fora da viewport.</p></div>
+<div class="demo rv"><h3>Barato por padrão</h3><p class="muted">Só <code>transform</code> e <code>opacity</code> quando possível. Exceções documentadas (SVG <code>stroke-dashoffset</code>).</p></div>
+<div class="demo rv"><h3>Reduzido é de primeira classe</h3><p class="muted">Sem transform, parallax, stagger ou loop. Mantém fade curto (120ms) e cor, para o feedback continuar legível.</p></div>
+</div>
+<div class="row"><button class="btn" data-replay="#pr">Reproduzir</button></div>
+</section>
+
+<section class="sec" id="niveis"><h2>Dois níveis de intensidade</h2>
+<p class="lead">Decisão C08. O mesmo componente, dois comportamentos. Aqui os dois níveis rodam lado a lado (fixos, independentes do seletor do topo).</p>
+<div class="compare" id="cmp">
+ <div class="cmpbox" data-motion="commercial"><span class="badge-lv">COMERCIAL · até 1200ms</span>
+   <div class="screen" style="margin-top:8px"><div class="rv" style="--i:0"><b>Painel de receita</b></div><div class="kpis"><div class="kpi rv" style="--i:1"><b>R$ 1,2M</b><small class="muted">ilustrativo</small></div><div class="kpi rv" style="--i:2"><b>38%</b><small class="muted">ilustrativo</small></div></div><div class="trow rv" style="--i:3"><span>Linha A</span><span>—</span><span>—</span></div></div>
+   <p class="muted mono" id="cmpC"></p></div>
+ <div class="cmpbox" data-motion="operational"><span class="badge-lv">OPERACIONAL · 80–200ms</span>
+   <div class="screen" style="margin-top:8px"><div class="rv" style="--i:0"><b>Painel de receita</b></div><div class="kpis"><div class="kpi rv" style="--i:1"><b>R$ 1,2M</b><small class="muted">ilustrativo</small></div><div class="kpi rv" style="--i:2"><b>38%</b><small class="muted">ilustrativo</small></div></div><div class="trow rv" style="--i:3"><span>Linha A</span><span>—</span><span>—</span></div></div>
+   <p class="muted mono" id="cmpO"></p></div>
+</div>
+<div class="row"><button class="btn" data-replay="#cmp">Reproduzir os dois</button></div>
+</section>
+
+<section class="sec" id="duracoes"><h2>Durações</h2>
+<p class="lead">Cinco degraus por nível. Operacional nunca passa de 200ms; Comercial vai até 1200ms só em momentos autorais (landing, abertura).</p>
+<div class="grid g2" id="dur">
+ <div class="demo"><span class="tag">PROTÓTIPO</span><h3>Operacional</h3><div data-motion="operational" id="durO"></div></div>
+ <div class="demo"><span class="tag">PROTÓTIPO</span><h3>Comercial</h3><div data-motion="commercial" id="durC"></div></div>
+</div>
+<div class="row"><button class="btn" id="durPlay">Reproduzir todas</button></div>
+</section>
+
+<section class="sec" id="easings"><h2>Easings</h2>
+<p class="lead">Seis curvas nomeadas. Chegadas usam <code>out</code>/<code>premium</code>; saídas usam <code>in</code> e são mais rápidas; <code>spring</code> só em confirmação discreta; <code>linear</code> apenas para rotação de estado e progresso.</p>
+<p class="muted mono">Visualizador: amostra fixa de 600ms só para ler a curva (não é transição de UI; fica fora do teto Operacional).</p>
+<div class="curve" id="eas" data-motion="commercial"></div>
+<div class="row"><button class="btn" id="easPlay">Reproduzir todas</button></div>
+</section>
+
+<section class="sec" id="stagger"><h2>Sequenciamento e stagger</h2>
+<p class="lead">Ordem de leitura: título, métricas, detalhes. Atraso por item = <code>min(i × --stagger-base, --stagger-max)</code>. Listas longas (&gt;12) não escalonam além do teto.</p>
+<div class="demo" id="stg"><span class="tag">PROTÓTIPO</span>
+ <div class="row" style="margin:0 0 10px"><label>Itens <input type="range" id="stgN" min="3" max="24" value="8"></label><output id="stgNo" class="mono">8</output><span class="muted mono" id="stgInfo"></span></div>
+ <div class="grid g3" id="stgList"></div>
+ <div class="row"><button class="btn" data-replay="#stgList">Reproduzir</button></div></div>
+</section>
+
+<section class="sec" id="telas"><h2>Entrada de telas</h2>
+<p class="lead">Ordem: barra, KPIs, tabela. Operacional encurta distância e duração; reduzido mostra tudo com fade.</p>
+<div class="demo"><span class="tag">PROTÓTIPO</span>
+ <div class="screen" id="scr"><div class="rv"><b>Pipeline · visão geral</b></div>
+ <div class="kpis"><div class="kpi rv"><b>128</b><small class="muted">ilustrativo</small></div><div class="kpi rv"><b>34</b><small class="muted">ilustrativo</small></div><div class="kpi rv"><b>9</b><small class="muted">ilustrativo</small></div><div class="kpi rv"><b>71%</b><small class="muted">ilustrativo</small></div></div>
+ <div class="trow rv"><span>Conta Alfa</span><span>Proposta</span><span>—</span></div><div class="trow rv"><span>Conta Beta</span><span>Qualificação</span><span>—</span></div><div class="trow rv"><span>Conta Gama</span><span>Negociação</span><span>—</span></div></div>
+ <div class="row"><button class="btn" data-replay="#scr">Reproduzir</button></div></div>
+</section>
+
+<section class="sec" id="editorial"><h2>Revelação editorial</h2>
+<p class="lead">Máscara de linha (translateY dentro de overflow oculto) e revelação por scroll, uma vez só. Uso Comercial. No Operacional cai para fade curto: títulos de ferramenta não fazem cerimônia.</p>
+<div class="demo"><span class="tag">PROTÓTIPO</span>
+ <div class="editorial" id="edt"><div class="big-n rv">01 / REVENUE INTELLIGENCE</div>
+ <h3 class="ed-h"><span class="rv-line"><span>Sistema operacional</span></span><span class="rv-line" style="--i:1"><span>de inteligência comercial</span></span></h3>
+ <p class="muted rv" style="--i:3;max-width:56ch">Parágrafo de apoio entra depois do título, com a mesma curva premium.</p></div>
+ <div class="editorial" style="margin-top:10px"><p class="rv rv-scroll">Role a página: este bloco revela ao entrar na viewport (uma vez).</p><p class="rv rv-scroll" style="--i:1">Segundo bloco, atraso por stagger.</p></div>
+ <div class="row"><button class="btn" data-replay="#edt">Reproduzir</button></div></div>
+</section>
+
+<section class="sec" id="micro"><h2>Microinterações</h2>
+<div class="grid g3">
+ <div class="demo"><span class="tag">PROTÓTIPO</span><h3>Borda glow reativa</h3><div class="glowcard" tabindex="0"><b>Lead prioritário</b><p class="muted">Borda 0,22 → 0,45 no hover/foco (opacity de camada, sem animar sombra).</p></div></div>
+ <div class="demo"><span class="tag">PROTÓTIPO</span><h3>CTA magnético</h3><div class="cta-wrap" id="ctaw"><button class="cta">Iniciar</button></div><p class="muted mono">scale(1.02) · ease [.16,1,.3,1] (Comercial)</p></div>
+ <div class="demo"><span class="tag">PROTÓTIPO</span><h3>Controles</h3>
+  <div class="row"><button class="switch" role="switch" aria-checked="false" aria-label="Alternar"></button>
+  <button class="chkb" role="checkbox" aria-checked="false" aria-label="Marcar"><svg class="chk" viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg></button></div>
+  <div class="field" style="margin-top:12px"><input aria-label="Campo de exemplo" placeholder="Foque aqui"></div></div>
+</div>
+</section>
+
+<section class="sec" id="modulos"><h2>Transição de módulo: Hub → Workspace</h2>
+<p class="lead">Elemento compartilhado (FLIP): o workspace nasce da posição do tile. Operacional: 200ms. Comercial: 600ms. Reduzido: só fade. Saída é mais rápida que a entrada.</p>
+<div class="demo"><span class="tag">PROTÓTIPO</span>
+ <div class="hubwrap" id="hubw"><div class="hub" id="hub">
+  <button class="tile" data-name="Hub Comercial"><small>P01</small><br><b>Hub Comercial</b></button>
+  <button class="tile" data-name="Inteligência de Mercado"><small>P02</small><br><b>Inteligência de Mercado</b></button>
+  <button class="tile" data-name="Orquestração de Vendas"><small>P03</small><br><b>Orquestração de Vendas</b></button>
+  <button class="tile" data-name="Enxame de IA"><small>P06</small><br><b>Enxame de IA</b></button></div>
+  <div class="ws" id="ws" hidden><div class="row" style="margin:0"><button class="btn sm" id="wsBack">← Hub</button><b id="wsTitle"></b></div><div class="ws-body"><div class="skel" style="width:70%"></div><div class="skel"></div><div class="skel" style="width:50%"></div></div></div></div>
+ <p class="muted mono" id="hubInfo">Clique em um tile.</p></div>
+</section>
+
+<section class="sec" id="botoes"><h2>Feedback de botões</h2>
+<p class="lead">Hover (escala sutil), press, loading (anel), sucesso (pulso único), erro (tremor curto). Cada estado muda também ícone e texto, nunca só movimento.</p>
+<div class="demo"><span class="tag">PROTÓTIPO</span>
+ <div class="row"><button class="abtn" id="ab1" data-state="idle"><span class="spin ico" aria-hidden="true"></span><svg class="ico okic" viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg><svg class="ico erric" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg><span class="lbl">Salvar lead</span></button>
+ <button class="abtn" id="ab2" data-state="idle"><span class="spin ico" aria-hidden="true"></span><svg class="ico okic" viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg><svg class="ico erric" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg><span class="lbl">Sincronizar (falha)</span></button></div>
+ <p class="muted mono" id="abInfo" role="status"></p></div>
+</section>
+
+<section class="sec" id="loading"><h2>Estados de loading</h2>
+<p class="lead">Loop permitido porque comunica espera. Ao concluir: loop para, conteúdo entra em fade. Reduzido: indicador estático com texto.</p>
+<div class="grid g3" id="ldg">
+ <div class="demo"><span class="tag">PROTÓTIPO</span><h3>Anel</h3><div class="row"><span class="spin" style="display:block;color:var(--c-blue);width:28px;height:28px" role="status" aria-label="Carregando"></span><span class="muted" id="ldTxt">Carregando…</span></div></div>
+ <div class="demo"><span class="tag">PROTÓTIPO</span><h3>Skeleton</h3><div id="sk"><div class="skel" style="width:80%"></div><div class="skel"></div><div class="skel" style="width:60%"></div></div></div>
+ <div class="demo"><span class="tag">PROTÓTIPO</span><h3>Progresso determinado</h3><div class="progress"><i id="pg"></i></div><p class="mono muted" id="pgT">0%</p></div>
+</div>
+<div class="row"><button class="btn" id="ldToggle">Simular carregamento</button></div>
+</section>
+
+<section class="sec" id="dados"><h2>Animações de dados</h2>
+<p class="lead">Contador (rAF, easing out), barras (scaleY), linha desenhando (stroke), rosca. Valores ilustrativos. Duração segue o nível.</p>
+<div class="grid g3" id="dt">
+ <div class="demo"><span class="tag">PROTÓTIPO</span><h3>Contador</h3><div class="kpi"><b id="cnt" data-to="1284">1284</b><small class="muted">leads (ilustrativo)</small></div></div>
+ <div class="demo"><span class="tag">PROTÓTIPO</span><h3>Barras</h3><div class="bars" id="brs"></div></div>
+ <div class="demo"><span class="tag">PROTÓTIPO</span><h3>Gráfico desenhando</h3><svg class="line" id="lnc" viewBox="0 0 300 100" width="100%" height="90" role="img" aria-label="Linha ilustrativa"><path class="ln" pathLength="1" d="M5 80 C40 70 60 30 100 45 S160 85 200 40 S260 20 295 15"/></svg></div>
+ <div class="demo"><span class="tag">PROTÓTIPO</span><h3>Rosca</h3><svg class="donut" id="dn" viewBox="0 0 60 60" width="90" height="90" style="--pct:28" role="img" aria-label="72 por cento ilustrativo"><circle class="bg" cx="30" cy="30" r="15.915" pathLength="100"/><circle class="fg" cx="30" cy="30" r="15.915" pathLength="100"/></svg></div>
+</div>
+<div class="row"><button class="btn" id="dtPlay">Reproduzir</button></div>
+</section>
+
+<section class="sec" id="orbita"><h2>Elementos 360°</h2>
+<p class="lead">Anel orbital cônico = sincronização/processamento em andamento. Gira só enquanto houver trabalho; parado, é um anel apagado. Sem rotação decorativa.</p>
+<div class="demo"><span class="tag">PROTÓTIPO</span>
+ <div class="orb" id="orb" data-sync="false"><div class="ring"></div><div class="arm"><b></b></div><div class="arm b"><b></b></div><div class="core" id="orbT">ocioso</div></div>
+ <div class="row" style="justify-content:center"><button class="btn" id="orbBtn">Iniciar sincronização</button></div></div>
+</section>
+
+<section class="sec" id="neon"><h2>Iluminação neon</h2>
+<p class="lead"><b>Regra:</b> glow só comunica estado. Aqui, "novo evento aguardando": anel pulsa 3 ciclos e fica estático até o usuário reconhecer; depois apaga. Nunca pulso infinito, nunca box-shadow animado. Operacional: sem pulso, apenas borda mais forte.</p>
+<div class="demo"><span class="tag">PROTÓTIPO</span>
+ <div class="alert" id="al" data-state="pending"><span class="led"></span><span id="alT">Novo lead qualificado</span><button class="btn sm" id="alB">Reconhecer</button></div>
+ <div class="row"><button class="btn sm" id="alR">Gerar novo evento</button></div></div>
+</section>
+
+<section class="sec" id="parallax"><h2>Profundidade e paralaxe</h2>
+<p class="lead">Só no nível Comercial: 3 camadas com profundidade diferente reagem ao mouse e ao scroll (transform). No Operacional e em reduzido a profundidade é 0px.</p>
+<div class="demo"><span class="tag">PROTÓTIPO</span>
+ <div class="stage" id="stg3"><div class="layer l1"></div><div class="layer l2"><div class="ring"></div></div><div class="layer l3"><h3>Profundidade em 3 planos</h3></div></div>
+ <p class="muted mono" id="pxInfo"></p></div>
+</section>
+
+<section class="sec" id="personagens"><h2>Personagens: estados</h2>
+<p class="lead">Demonstração de estados com os SVGs oficiais, sem redesenho. As <code>expressions</code> (idle, listening, processing, speaking, success, error) já existem em <code>identidade-visual/birthhub360/tokens/characters.json</code> com animação, escala, halo e cor de status. Aqui o halo/escala é reproduzido por CSS ao redor do SVG intacto; a animação interna dos anéis do próprio SVG pertence à implementação oficial.</p>
+<div class="demo"><span class="tag">PROTÓTIPO</span>
+ <div class="chars"><div class="av" id="av" data-state="idle"><div class="halo"></div><img id="avImg" alt="Personagem" src="../../../brand/characters/orbit.svg"></div>
+ <div><div class="row" style="margin:0" id="chSel" role="group" aria-label="Personagem"></div>
+ <div class="row" id="stSel" role="group" aria-label="Estado"></div>
+ <p class="mono muted" id="chInfo"></p></div></div></div>
+</section>
+
+<section class="sec" id="reduzido"><h2>Movimento reduzido</h2>
+<p class="lead">Respeita <code>prefers-reduced-motion</code> e permite simular pelo botão do topo. Aqui, lado a lado, as duas versões (a da direita é forçada em reduzido).</p>
+<div class="compare" id="rmcmp">
+ <div class="cmpbox" data-motion="commercial"><span class="badge-lv">NORMAL</span>
+  <div class="screen"><div class="kpis"><div class="kpi rv"><b>128</b></div><div class="kpi rv" style="--i:1"><b>34</b></div></div></div>
+  <div class="row"><span class="spin" style="display:block;color:var(--c-blue)" role="status" aria-label="Carregando"></span><span class="muted">Carregando…</span></div>
+  <div class="av" style="width:72px;height:72px;margin-top:8px" data-state="processing"><div class="halo"></div><img alt="" src="../../../brand/characters/orbit.svg"></div></div>
+ <div class="cmpbox" data-motion="commercial" data-reduce="true"><span class="badge-lv">REDUZIDO (simulado)</span>
+  <div class="screen"><div class="kpis"><div class="kpi rv"><b>128</b></div><div class="kpi rv" style="--i:1"><b>34</b></div></div></div>
+  <div class="row"><span class="spin" style="display:block;color:var(--c-blue)" role="status" aria-label="Carregando"></span><span class="muted">Carregando… (indicador estático + texto)</span></div>
+  <div class="av" style="width:72px;height:72px;margin-top:8px" data-state="processing"><div class="halo"></div><img alt="" src="../../../brand/characters/orbit.svg"></div></div>
+</div>
+<div class="row"><button class="btn" data-replay="#rmcmp">Reproduzir</button></div>
+<div class="tblwrap" style="margin-top:14px"><table><thead><tr><th>Normal</th><th>Reduzido substitui por</th></tr></thead><tbody>
+<tr><td>Entrada com translate + stagger</td><td>Fade 120ms, sem atraso, sem deslocamento</td></tr>
+<tr><td>Máscara de linha editorial</td><td>Texto já visível (fade 120ms)</td></tr>
+<tr><td>Hub → Workspace (FLIP)</td><td>Crossfade 120ms</td></tr>
+<tr><td>Spinner / anel orbital / halo giratório</td><td>Estático + texto "Carregando"/"Sincronizando"</td></tr>
+<tr><td>Skeleton shimmer</td><td>Bloco estático</td></tr>
+<tr><td>Contador, barras, linha, rosca</td><td>Valor/forma final imediata</td></tr>
+<tr><td>Pulso neon (ping)</td><td>Anel estático forte (estado visível sem movimento)</td></tr>
+<tr><td>Parallax mouse/scroll</td><td>Profundidade 0, camadas fixas</td></tr>
+<tr><td>Pulso de sucesso / tremor de erro</td><td>Troca de cor/ícone/texto, sem escala nem deslocamento</td></tr>
+<tr><td>Personagens: breathe/speak/ping/spin</td><td>Pose estática; estado indicado por cor do halo e rótulo</td></tr>
+</tbody></table></div>
+</section>
+
+<section class="sec" id="orcamento"><h2>Orçamento de performance</h2>
+<div class="tblwrap"><table><thead><tr><th>Item</th><th>Limite</th></tr></thead><tbody>
+<tr><td>Propriedades animadas</td><td><code>transform</code> e <code>opacity</code>. Exceções: <code>stroke-dashoffset</code> em SVG pequeno (≤1 por viewport), <code>background-color</code>/<code>color</code> em controles pequenos.</td></tr>
+<tr><td>Proibido animar</td><td>width, height, top, left, margin, box-shadow, filter/backdrop-filter blur</td></tr>
+<tr><td>Elementos animados simultâneos</td><td>≤ 12 (Operacional ≤ 6)</td></tr>
+<tr><td>Loops simultâneos</td><td>≤ 2 por viewport, só com estado ativo; pausados fora da viewport (classe <code>.offscreen</code> + IntersectionObserver)</td></tr>
+<tr><td>Frame</td><td>16,6ms (60fps); em Android/Capacitor tratar como Operacional sempre</td></tr>
+<tr><td>will-change</td><td>Somente durante a animação (ex.: workspace FLIP); nunca permanente</td></tr>
+<tr><td>Stagger</td><td>Total ≤ <code>--stagger-max</code> (200ms Op. / 600ms Com.)</td></tr>
+<tr><td>Parallax</td><td>Só Comercial, rAF, ≤ 3 camadas, só transform; desligado em reduzido</td></tr>
+<tr><td>Listas/tabelas</td><td>Sem animação por linha acima de 20 itens</td></tr>
+<tr><td>Bibliotecas</td><td>CSS + WAAPI nesta referência; no app, Framer Motion (já presente)</td></tr>
+</tbody></table></div>
+<p class="muted">Medição nesta página: ver <code>REGISTRO-AGENTE.md</code> (durações computadas e animações ativas verificadas em navegador).</p>
+</section>
+
+<section class="sec" id="uso"><h2>Onde usar qual nível, e o que é proibido</h2>
+<div class="tblwrap"><table><thead><tr><th>Superfície</th><th>Nível</th><th>Observação</th></tr></thead><tbody>
+<tr><td>Landing / WelcomeScreen / portal institucional</td><td><span class="pill ok">Comercial</span></td><td>Parallax, glow de estado, até 1200ms</td></tr>
+<tr><td>Apresentações, relatório mestre, onboarding hero</td><td><span class="pill ok">Comercial</span></td><td>Uma sequência autoral por tela</td></tr>
+<tr><td>Hub Central (navegação entre módulos)</td><td><span class="pill">Operacional</span></td><td>Transição FLIP 200ms. Abertura cinematográfica na 1ª entrada: decisão pendente do 00</td></tr>
+<tr><td>Workspaces (CRM, Kanban, tabelas, formulários, dashboards)</td><td><span class="pill">Operacional</span></td><td>Feedback e estado; sem parallax</td></tr>
+<tr><td>Assistentes globais e personagens</td><td><span class="pill">Operacional</span></td><td>Loops só em estado ativo (listening/processing/speaking)</td></tr>
+<tr><td>App mobile (Capacitor)</td><td><span class="pill">Operacional</span></td><td>Sempre; economia de bateria</td></tr>
+</tbody></table></div>
+<h3 style="margin-top:18px">Proibido (qualquer nível)</h3>
+<ul>
+<li>Repeat infinito que não comunica estado; fundos animados contínuos.</li>
+<li>Glassmorphism com blur pesado; animar blur, box-shadow, width/height/top/left.</li>
+<li>Duração funcional &gt; 200ms no Operacional ou &gt; 1200ms no Comercial.</li>
+<li>Parallax ou stagger longo no Operacional; bounce/spring em fluxos críticos.</li>
+<li>Gradiente em texto; título em #FFF/#000 puro (C04).</li>
+<li>Pulso neon sem evento pendente; glow animado por box-shadow.</li>
+<li>Ignorar <code>prefers-reduced-motion</code>; autoplay de áudio/vídeo.</li>
+</ul></section>
+
+<section class="sec" id="tokens"><h2>Tokens</h2>
+<p class="lead">Lidos ao vivo de <code>tokens/motion.css</code>. Arquivos: <a href="tokens/motion.css">motion.css</a>, <a href="tokens/motion.json">motion.json</a>, <a href="tokens/motion.contract.json">motion.contract.json</a>, <a href="tokens/README.md">README.md</a>.</p>
+<div class="tblwrap"><table id="tokT"><thead><tr><th>Token</th><th>Operacional</th><th>Comercial</th></tr></thead><tbody></tbody></table></div>
+<p class="muted" id="tokCount"></p>
+<div data-motion="operational" id="probeO" style="display:none"></div><div data-motion="commercial" id="probeC" style="display:none"></div>
+</section>
+
+<section class="sec" id="divergencias"><h2>Divergências e pendências registradas</h2>
+<ul>
+<li><b>Design System (03):</b> <code>03-design-system/tokens/</code> estava vazio na hora da entrega; reconciliação de nomes pendente (este sistema só usa <code>shared/core.css</code>).</li>
+<li><b>characters.json:</b> timings (success 800ms, error 500ms) excedem o teto Operacional; aqui comprimidos a 200ms no Operacional. Cores de status (#10B981, #EF4444 e outras) não pertencem à paleta C02: usadas só como cor de status do halo, conforme o JSON.</li>
+<li><b>src/lib/motion.ts:</b> <code>MOTION_DURATION.base</code> (0,25s) e <code>deliberate</code> (0,35s) acima do teto Operacional (ver tokens/README.md).</li>
+<li><b>Glow:</b> rgba(0,212,255) 0,22 → 0,45 vem da diretriz do motion engineer; equivale a #00D4FF (C02).</li>
+<li><b>Grafia</b> P-01 pendente: nome em um único ponto de troca (<code>[data-brand]</code>).</li>
+</ul></section>
+</main></div>
+
+<script>
+const BRAND_NAME='Birthub 360°';
+document.querySelectorAll('[data-brand]').forEach(e=>e.textContent=BRAND_NAME);
+const root=document.documentElement, $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const mqRM=matchMedia('(prefers-reduced-motion: reduce)');
+const isRM=el=>mqRM.matches||!!(el&&el.closest&&el.closest('[data-reduce="true"]'));
+const ms=(el,v)=>{const s=getComputedStyle(el).getPropertyValue(v).trim();return s.endsWith('ms')?parseFloat(s):s.endsWith('s')?parseFloat(s)*1000:parseFloat(s)||0};
+const reflow=el=>void el.offsetWidth;
+function replay(el){el.classList.add('reset');el.classList.remove('in');reflow(el);el.classList.remove('reset');el.classList.add('in')}
+function runReveal(c){
+  const items=[...c.querySelectorAll('.rv:not(.rv-scroll), .rv-line, .bars, .line, .donut')];
+  if(c.matches('.rv,.rv-line,.bars,.line,.donut'))items.unshift(c);
+  let i=0;items.forEach(e=>{if(!e.style.getPropertyValue('--i')&&e.classList.contains('rv'))e.style.setProperty('--i',i);i++});
+  items.forEach(e=>{e.classList.add('reset');e.classList.remove('in')});reflow(c);
+  items.forEach(e=>{e.classList.remove('reset');e.classList.add('in')});
+}
+function runGroup(sel){const c=$(sel);if(!c)return;
+  if(c.id==='stgList'||c.id==='scr'||c.id==='pr'||c.id==='cmp'||c.id==='rmcmp'||c.id==='edt'){
+    c.querySelectorAll('.rv:not(.rv-scroll),.rv-line').forEach((e,i)=>{if(!e.dataset.fixed){e.style.setProperty('--i',e.dataset.i??i)}});
+  }
+  runReveal(c)}
+$$('[data-replay]').forEach(b=>b.addEventListener('click',()=>runGroup(b.dataset.replay)));
+
+/* ---- controles globais ---- */
+const press=(ids,on)=>ids.forEach(i=>$('#'+i).setAttribute('aria-pressed',String(i===on)));
+function setTheme(t){root.dataset.theme=t;press(['th-dark','th-light'],'th-'+t)}
+$('#th-dark').onclick=()=>setTheme('dark');$('#th-light').onclick=()=>setTheme('light');
+function setReduced(r){if(mqRM.matches)r=true;if(r)root.dataset.reduce='true';else delete root.dataset.reduce;press(['mv-normal','mv-reduced'],r?'mv-reduced':'mv-normal');status();playAll()}
+$('#mv-normal').onclick=()=>setReduced(false);$('#mv-reduced').onclick=()=>setReduced(true);
+function setLevel(l){root.dataset.motion=l;press(['lv-commercial','lv-operational'],'lv-'+l);status();playAll()}
+$('#lv-commercial').onclick=()=>setLevel('commercial');$('#lv-operational').onclick=()=>setLevel('operational');
+function status(){const rm=mqRM.matches||root.dataset.reduce==='true';
+  $('#status').textContent=(mqRM.matches?'Sistema pede movimento reduzido (bloqueado). ':'')+'Efetivo: '+(rm?'reduzido':root.dataset.motion);
+  if(mqRM.matches)$('#mv-normal').disabled=true;
+  $('#pxInfo').textContent='--parallax-depth = '+ms($('#stg3'),'--parallax-depth')+'px'+(ms($('#stg3'),'--parallax-depth')?'':' (sem parallax neste modo)')}
+mqRM.addEventListener('change',()=>setReduced(mqRM.matches));
+
+/* ---- durações ---- */
+const DN=['micro','fast','base','slow','cinematic'];
+function buildDur(id){const c=$(id);c.innerHTML=DN.map(n=>`<div class="lv"><b>--dur-${n} · <span data-v="${n}"></span></b><div class="track" style="--d:var(--dur-${n})"><i class="dot"></i></div></div>`).join('')}
+buildDur('#durO');buildDur('#durC');
+function playDur(){['#durO','#durC'].forEach(id=>{const c=$(id);c.querySelectorAll('.track').forEach(t=>{const w=t.clientWidth-22;t.style.setProperty('--trackw',w+'px');t.classList.remove('run');t.querySelector('.dot').style.transition='none';reflow(t);t.querySelector('.dot').style.transition='';reflow(t);t.classList.add('run')});c.querySelectorAll('[data-v]').forEach(s=>s.textContent=ms(c,'--dur-'+s.dataset.v)+'ms')})}
+$('#durPlay').onclick=playDur;
+
+/* ---- easings ---- */
+const EAS=[['standard','.4,0,.2,1','Mudança de estado simétrica'],['out','.16,1,.3,1','Chegadas, CTA magnético (EASE_OUT_EXPO)'],['premium','.22,1,.36,1','Entradas editoriais (EASE_PREMIUM)'],['in','.4,0,1,1','Saídas (mais rápidas)'],['spring','.34,1.56,.64,1','Pulso de sucesso discreto'],['linear','','Rotação de estado e progresso']];
+$('#eas').innerHTML=EAS.map(([n,p,u])=>{const q=p?p.split(',').map(Number):[0,0,1,1];
+  const d=`M0 120 C${q[0]*120} ${120-q[1]*120} ${q[2]*120} ${120-q[3]*120} 120 0`;
+  return `<div class="ease-item"><div class="row" style="margin:0"><svg viewBox="-10 -30 140 170" aria-label="Curva ${n}"><path class="grid-l" d="M0 120H120M0 0V120"/><path class="c" d="${d}"/></svg><div><b class="mono">--ease-${n}</b><br><span class="mono muted">${p?'cubic-bezier('+p+')':'linear'}</span><br><span class="muted">${u}</span></div></div><div class="track" style="--ease:var(--ease-${n});--d:600ms"><i class="dot"></i></div></div>`}).join('');
+function playEas(){$$('#eas .track').forEach(t=>{const w=t.clientWidth-22;t.style.setProperty('--trackw',w+'px');const dot=t.querySelector('.dot');t.classList.remove('run');dot.style.transition='none';reflow(t);dot.style.transition=isRM(t)?'none':'';reflow(t);t.classList.add('run')})}
+$('#easPlay').onclick=playEas;
+
+/* ---- stagger ---- */
+function buildStg(){const n=+$('#stgN').value;$('#stgNo').textContent=n;
+  $('#stgList').innerHTML=Array.from({length:n},(_,i)=>`<div class="kpi rv" data-i="${i}"><b>${String(i+1).padStart(2,'0')}</b><small class="muted">item</small></div>`).join('');
+  const b=ms($('#stgList'),'--stagger-base'),m=ms($('#stgList'),'--stagger-max');
+  $('#stgInfo').textContent=`base ${b}ms · teto ${m}ms · último atraso ${Math.min((n-1)*b,m)}ms`;runGroup('#stgList')}
+$('#stgN').oninput=buildStg;
+
+/* ---- hub → workspace ---- */
+let wsOpen=false;
+function openWS(tile){if(wsOpen)return;wsOpen=true;const hub=$('#hubw'),ws=$('#ws'),hr=hub.getBoundingClientRect(),tr=tile.getBoundingClientRect();
+  $('#wsTitle').textContent=tile.dataset.name;ws.hidden=false;
+  const d=ms(hub,'--dur-slow'),rm=isRM(hub);let a;
+  if(rm){a=ws.animate([{opacity:0},{opacity:1}],{duration:ms(hub,'--dur-reduced-fade'),fill:'both'})}
+  else{a=ws.animate([{transform:`translate(${tr.left-hr.left}px,${tr.top-hr.top}px) scale(${tr.width/hr.width},${tr.height/hr.height})`,opacity:.2},{transform:'none',opacity:1}],{duration:d,easing:'cubic-bezier(.16,1,.3,1)',fill:'both'})}
+  a.finished.then(()=>{ws.style.willChange='auto';$('#hubInfo').textContent=`Duração da animação: ${a.effect.getTiming().duration}ms (${rm?'--dur-reduced-fade, só opacity':'--dur-slow'})`});ws.style.willChange='transform,opacity';
+  ws._tile=tile;$('#hub').inert=true;$('#wsBack').focus()}
+function closeWS(){if(!wsOpen)return;const hub=$('#hubw'),ws=$('#ws'),hr=hub.getBoundingClientRect(),tr=ws._tile.getBoundingClientRect(),rm=isRM(hub),d=Math.round(ms(hub,'--dur-slow')*.7);
+  const a=rm?ws.animate([{opacity:1},{opacity:0}],{duration:ms(hub,'--dur-reduced-fade'),fill:'both'}):ws.animate([{transform:'none',opacity:1},{transform:`translate(${tr.left-hr.left}px,${tr.top-hr.top}px) scale(${tr.width/hr.width},${tr.height/hr.height})`,opacity:0}],{duration:d,easing:'cubic-bezier(.4,0,1,1)',fill:'both'});
+  a.finished.then(()=>{ws.hidden=true;a.cancel();wsOpen=false;$('#hub').inert=false;ws._tile.focus()})}
+$$('.tile').forEach(t=>t.onclick=()=>openWS(t));$('#wsBack').onclick=closeWS;
+
+/* ---- botões assíncronos ---- */
+function wireAbtn(id,fail){const b=$(id);b.onclick=()=>{if(b.dataset.state==='loading')return;const l=b.querySelector('.lbl'),orig=l.textContent;
+  b.dataset.state='loading';l.textContent='Processando…';$('#abInfo').textContent='Processando…';
+  setTimeout(()=>{b.dataset.state=fail?'error':'success';l.textContent=fail?'Falhou. Tentar de novo':'Salvo';$('#abInfo').textContent=fail?'Erro: operação não concluída':'Concluído';
+    setTimeout(()=>{b.dataset.state='idle';l.textContent=orig},1600)},1100)}}
+wireAbtn('#ab1',false);wireAbtn('#ab2',true);
+
+/* ---- loading ---- */
+let loading=true,pgTimer;
+function setLoading(on){loading=on;$('#sk').classList.toggle('loaded',!on);
+  const sp=$$('#ldg .spin')[0];sp.style.display=on?'block':'none';$('#ldTxt').textContent=on?'Carregando…':'Concluído';
+  $('#ldToggle').textContent=on?'Concluir carregamento':'Simular carregamento';
+  clearInterval(pgTimer);let p=on?0:1;$('#pg').style.setProperty('--p',p);$('#pgT').textContent=Math.round(p*100)+'%';
+  if(on)pgTimer=setInterval(()=>{p=Math.min(.9,p+.18);$('#pg').style.setProperty('--p',p);$('#pgT').textContent=Math.round(p*100)+'%';if(p>=.9)clearInterval(pgTimer)},400);
+  else{$('#pg').style.setProperty('--p',1);$('#pgT').textContent='100%'}}
+$('#ldToggle').onclick=()=>setLoading(!loading);
+setLoading(true);
+
+/* ---- dados ---- */
+$('#brs').innerHTML=[40,62,48,80,70,92,64,100].map((h,i)=>`<i style="--h:${h}%;--i:${i}"></i>`).join('');
+let cntRaf;
+function playData(){const c=$('#dt'),to=+$('#cnt').dataset.to;
+  runReveal(c);cancelAnimationFrame(cntRaf);
+  if(isRM(c)){$('#cnt').textContent=to.toLocaleString('pt-BR');return}
+  const d=ms(c,'--dur-cinematic'),t0=performance.now();
+  const step=t=>{const k=Math.min(1,(t-t0)/d),e=1-Math.pow(1-k,4);$('#cnt').textContent=Math.round(to*e).toLocaleString('pt-BR');if(k<1)cntRaf=requestAnimationFrame(step)};cntRaf=requestAnimationFrame(step)}
+$('#dtPlay').onclick=playData;
+
+/* ---- órbita ---- */
+$('#orbBtn').onclick=()=>{const o=$('#orb'),on=o.dataset.sync!=='true';o.dataset.sync=String(on);
+  $('#orbBtn').textContent=on?'Concluir sincronização':'Iniciar sincronização';$('#orbT').textContent=on?'sync':'ocioso'};
+
+/* ---- neon ---- */
+const al=$('#al');
+$('#alB').onclick=()=>{al.dataset.state='ack';$('#alT').textContent='Evento reconhecido'};
+$('#alR').onclick=()=>{al.dataset.state='ack';reflow(al);al.dataset.state='pending';$('#alT').textContent='Novo lead qualificado'};
+
+/* ---- CTA magnético + glow ---- */
+const cw=$('#ctaw'),cta=cw.querySelector('.cta');
+cw.addEventListener('pointermove',e=>{const r=cw.getBoundingClientRect(),max=ms(cw,'--distance-xs');
+  cta.style.setProperty('--mx',((e.clientX-r.left)/r.width-.5)*2*max+'px');cta.style.setProperty('--my',((e.clientY-r.top)/r.height-.5)*2*max+'px')});
+cw.addEventListener('pointerleave',()=>{cta.style.setProperty('--mx','0px');cta.style.setProperty('--my','0px')});
+$$('.switch').forEach(s=>s.onclick=()=>s.setAttribute('aria-checked',String(s.getAttribute('aria-checked')!=='true')));
+$$('.chkb').forEach(s=>s.onclick=()=>s.setAttribute('aria-checked',String(s.getAttribute('aria-checked')!=='true')));
+
+/* ---- parallax (rAF) ---- */
+const stg=$('#stg3');let rafP=0,pend={x:0,y:0};
+stg.addEventListener('pointermove',e=>{const r=stg.getBoundingClientRect();pend.x=((e.clientX-r.left)/r.width-.5)*2;pend.y=((e.clientY-r.top)/r.height-.5)*2;if(!rafP)rafP=requestAnimationFrame(()=>{rafP=0;stg.style.setProperty('--px',pend.x);stg.style.setProperty('--py',pend.y)})});
+stg.addEventListener('pointerleave',()=>{stg.style.setProperty('--px',0);stg.style.setProperty('--py',0)});
+let rafS=0;addEventListener('scroll',()=>{if(rafS)return;rafS=requestAnimationFrame(()=>{rafS=0;const r=stg.getBoundingClientRect(),k=(r.top+r.height/2)/innerHeight-.5;stg.style.setProperty('--sy',Math.max(-1,Math.min(1,k*2)))})},{passive:true});
+
+/* ---- personagens ---- */
+const CHARS={"orbit": {"name": "Orbit", "expr": {"idle": {"scale": 1, "halo": 0.35, "color": "#FFC107", "anim": "orbit-idle 6s ease-in-out infinite"}, "listening": {"scale": 1.05, "halo": 0.65, "color": "#00D4FF", "anim": "orbit-listening 1.8s ease-in-out infinite"}, "processing": {"scale": 1.02, "halo": 0.75, "color": "#FF2D9B", "anim": "orbit-spin-fast 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite"}, "speaking": {"scale": 1.04, "halo": 0.55, "color": "#FFC107", "anim": "orbit-speaking 2s ease-in-out infinite"}, "success": {"scale": 1.08, "halo": 0.85, "color": "#10B981", "anim": "orbit-success 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards"}, "error": {"scale": 0.98, "halo": 0.7, "color": "#EF4444", "anim": "orbit-error 0.5s ease-in-out"}}}, "nexus": {"name": "Nexus", "expr": {"idle": {"scale": 1, "halo": 0.35, "color": "#00D4FF", "anim": "nexus-idle 5s ease-in-out infinite"}, "listening": {"scale": 1.05, "halo": 0.7, "color": "#7DD3FC", "anim": "nexus-listening 1.6s ease-in-out infinite"}, "processing": {"scale": 1.03, "halo": 0.8, "color": "#FFC107", "anim": "nexus-crystallize 1s ease-in-out infinite alternate"}, "speaking": {"scale": 1.04, "halo": 0.6, "color": "#00D4FF", "anim": "nexus-speaking 2s ease-in-out infinite"}, "success": {"scale": 1.08, "halo": 0.9, "color": "#10B981", "anim": "nexus-success 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards"}, "error": {"scale": 0.98, "halo": 0.7, "color": "#EF4444", "anim": "nexus-error 0.5s ease-in-out"}}}, "aria": {"name": "Aria", "expr": {"idle": {"scale": 1, "halo": 0.35, "color": "#10B981", "anim": "aria-idle 6s ease-in-out infinite"}, "listening": {"scale": 1.05, "halo": 0.65, "color": "#00D4FF", "anim": "aria-listening 1.8s ease-in-out infinite"}, "processing": {"scale": 1.03, "halo": 0.75, "color": "#34D399", "anim": "aria-undulate-fast 1.2s ease-in-out infinite"}, "speaking": {"scale": 1.04, "halo": 0.6, "color": "#10B981", "anim": "aria-speaking 2s ease-in-out infinite"}, "success": {"scale": 1.08, "halo": 0.85, "color": "#10B981", "anim": "aria-success 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards"}, "error": {"scale": 0.98, "halo": 0.7, "color": "#EF4444", "anim": "aria-error 0.5s ease-in-out"}}}, "vanguard": {"name": "Vanguard", "expr": {"idle": {"scale": 1, "halo": 0.35, "color": "#FF2D9B", "anim": "vanguard-idle 5s ease-in-out infinite"}, "listening": {"scale": 1.05, "halo": 0.65, "color": "#00D4FF", "anim": "vanguard-listening 1.5s ease-in-out infinite"}, "processing": {"scale": 1.04, "halo": 0.8, "color": "#FFC107", "anim": "vanguard-thrust 0.9s ease-in-out infinite alternate"}, "speaking": {"scale": 1.04, "halo": 0.6, "color": "#FF2D9B", "anim": "vanguard-speaking 1.8s ease-in-out infinite"}, "success": {"scale": 1.1, "halo": 0.9, "color": "#10B981", "anim": "vanguard-success 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards"}, "error": {"scale": 0.98, "halo": 0.7, "color": "#EF4444", "anim": "vanguard-error 0.5s ease-in-out"}}}, "oracle": {"name": "Oracle", "expr": {"idle": {"scale": 1, "halo": 0.35, "color": "#A855F7", "anim": "oracle-idle 6s ease-in-out infinite"}, "listening": {"scale": 1.05, "halo": 0.7, "color": "#00D4FF", "anim": "oracle-listening 1.8s ease-in-out infinite"}, "processing": {"scale": 1.03, "halo": 0.8, "color": "#FF2D9B", "anim": "oracle-scanning 1.2s ease-in-out infinite"}, "speaking": {"scale": 1.04, "halo": 0.6, "color": "#A855F7", "anim": "oracle-speaking 2s ease-in-out infinite"}, "success": {"scale": 1.08, "halo": 0.9, "color": "#10B981", "anim": "oracle-success 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards"}, "error": {"scale": 0.98, "halo": 0.7, "color": "#EF4444", "anim": "oracle-error 0.5s ease-in-out"}}}, "core": {"name": "Core", "expr": {"idle": {"scale": 1, "halo": 0.4, "color": "#6366F1", "anim": "core-idle 5.5s ease-in-out infinite"}, "listening": {"scale": 1.05, "halo": 0.7, "color": "#00D4FF", "anim": "core-listening 1.6s ease-in-out infinite"}, "processing": {"scale": 1.04, "halo": 0.85, "color": "#FF2D9B", "anim": "core-synapse-fire 1s cubic-bezier(0.4, 0, 0.2, 1) infinite"}, "speaking": {"scale": 1.04, "halo": 0.65, "color": "#6366F1", "anim": "core-speaking 2s ease-in-out infinite"}, "success": {"scale": 1.09, "halo": 0.95, "color": "#10B981", "anim": "core-success 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards"}, "error": {"scale": 0.98, "halo": 0.75, "color": "#EF4444", "anim": "core-error 0.5s ease-in-out"}}}, "spark": {"name": "Spark", "expr": {"idle": {"scale": 1, "halo": 0.35, "color": "#14B8A6", "anim": "spark-idle 4.5s ease-in-out infinite"}, "listening": {"scale": 1.06, "halo": 0.7, "color": "#D4F434", "anim": "spark-listening 1.4s ease-in-out infinite"}, "processing": {"scale": 1.05, "halo": 0.85, "color": "#00F2FE", "anim": "spark-pulse-rapid 0.8s ease-in-out infinite alternate"}, "speaking": {"scale": 1.04, "halo": 0.6, "color": "#14B8A6", "anim": "spark-speaking 1.8s ease-in-out infinite"}, "success": {"scale": 1.1, "halo": 0.9, "color": "#10B981", "anim": "spark-success 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards"}, "error": {"scale": 0.98, "halo": 0.7, "color": "#EF4444", "anim": "spark-error 0.5s ease-in-out"}}}, "echo": {"name": "Echo", "expr": {"idle": {"scale": 1, "halo": 0.35, "color": "#FB7185", "anim": "echo-idle 5.5s ease-in-out infinite"}, "listening": {"scale": 1.06, "halo": 0.7, "color": "#00D4FF", "anim": "echo-listening 1.5s ease-in-out infinite"}, "processing": {"scale": 1.03, "halo": 0.8, "color": "#FF2D9B", "anim": "echo-equalize 1s ease-in-out infinite"}, "speaking": {"scale": 1.05, "halo": 0.65, "color": "#FB7185", "anim": "echo-speaking 1.8s ease-in-out infinite"}, "success": {"scale": 1.09, "halo": 0.9, "color": "#10B981", "anim": "echo-success 0.75s cubic-bezier(0.34, 1.56, 0.64, 1) forwards"}, "error": {"scale": 0.98, "halo": 0.7, "color": "#EF4444", "anim": "echo-error 0.5s ease-in-out"}}}, "sudo": {"name": "Sudo", "expr": {"idle": {"scale": 1, "halo": 0.35, "color": "#94A3B8", "anim": "sudo-idle 6s ease-in-out infinite"}, "listening": {"scale": 1.04, "halo": 0.65, "color": "#00D4FF", "anim": "sudo-listening 1.6s ease-in-out infinite"}, "processing": {"scale": 1.02, "halo": 0.75, "color": "#FFC107", "anim": "sudo-encrypt 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite"}, "speaking": {"scale": 1.03, "halo": 0.55, "color": "#94A3B8", "anim": "sudo-speaking 2s ease-in-out infinite"}, "success": {"scale": 1.07, "halo": 0.85, "color": "#10B981", "anim": "sudo-success 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards"}, "error": {"scale": 0.98, "halo": 0.75, "color": "#EF4444", "anim": "sudo-error 0.5s ease-in-out"}}}};
+const STATES=['idle','listening','processing','speaking','success','error'];
+let curC='orbit',curS='idle';
+$('#chSel').innerHTML=Object.keys(CHARS).map(k=>`<button class="btn sm" data-c="${k}" aria-pressed="${k==='orbit'}">${CHARS[k].name}</button>`).join('');
+$('#stSel').innerHTML=STATES.map(s=>`<button class="btn sm" data-s="${s}" aria-pressed="${s==='idle'}">${s}</button>`).join('');
+function applyChar(){const e=CHARS[curC].expr[curS],av=$('#av'),op=!isRM(av);
+  $('#avImg').src='../../../brand/characters/'+curC+'.svg';$('#avImg').alt=CHARS[curC].name+' ('+curS+')';
+  av.dataset.state=curS;av.style.setProperty('--sc',op?e.scale:1);av.style.setProperty('--ho',e.halo);av.style.setProperty('--sc-color',e.color);
+  const opd=ms($('#av'),'--dur-slow')<=200;av.style.setProperty('--cs-dur',opd?'200ms':'800ms');av.style.setProperty('--ce-dur',opd?'200ms':'500ms');
+  $('#chInfo').innerHTML=`<span class="stat" style="--sc-color:${e.color}"></span> ${CHARS[curC].name} · ${curS} · escala ${e.scale} · halo ${e.halo} · ${e.color}<br>json: ${e.anim}`;
+  $$('#chSel button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.c===curC)));$$('#stSel button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.s===curS)))}
+$('#chSel').onclick=e=>{const b=e.target.closest('[data-c]');if(b){curC=b.dataset.c;applyChar()}};
+$('#stSel').onclick=e=>{const b=e.target.closest('[data-s]');if(b){curS=b.dataset.s;const av=$('#av');av.dataset.state='';reflow(av);applyChar()}};
+
+/* ---- tabela de tokens ---- */
+function buildTok(){const names=[...DN.map(n=>'--dur-'+n),'--stagger-fast','--stagger-base','--stagger-slow','--stagger-max','--distance-xs','--distance-sm','--distance-md','--distance-lg','--distance-xl','--parallax-depth','--scale-hover','--scale-press'];
+  const common=['--ease-standard','--ease-out','--ease-premium','--ease-in','--ease-spring','--ease-linear','--dur-reduced-fade','--glow-rest','--glow-active','--orbit-period','--orbit-period-fast'];
+  const g=(el,n)=>getComputedStyle(el).getPropertyValue(n).trim();
+  const tb=$('#tokT tbody');tb.innerHTML=names.map(n=>`<tr><td class="mono">${n}</td><td class="mono">${g($('#probeO'),n)}</td><td class="mono">${g($('#probeC'),n)}</td></tr>`).join('')+common.map(n=>`<tr><td class="mono">${n}</td><td class="mono" colspan="2">${g(root,n)}</td></tr>`).join('');
+  $('#tokCount').textContent=`${names.length*2+common.length} valores (${names.length} por nível + ${common.length} comuns); contrato: 46 ids.`}
+
+/* ---- autoplay por seção + pausa de loops fora da viewport ---- */
+const played=new Set();
+function playAll(){playDur();playEas();buildStg();$$('#pr,#cmp,#scr,#edt,#rmcmp').forEach(c=>runGroup('#'+c.id));playData();applyChar();buildTok();
+  $('#cmpC').textContent='dur-base '+ms($('#cmp [data-motion=commercial]'),'--dur-base')+'ms';$('#cmpO').textContent='dur-base '+ms($('#cmp [data-motion=operational]'),'--dur-base')+'ms'}
+const io=new IntersectionObserver(es=>es.forEach(e=>{e.target.classList.toggle('offscreen',!e.isIntersecting)}),{rootMargin:'80px'});
+$$('section.sec').forEach(s=>io.observe(s));
+const io2=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io2.unobserve(e.target)}}),{threshold:.4});
+$$('.rv-scroll').forEach(e=>io2.observe(e));
+setReduced(mqRM.matches);setTheme('dark');status();
+window.__motionReady=true;
+</script>
+</body>
+</html>

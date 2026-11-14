@@ -1,0 +1,127 @@
+<section class="ch ac-blue" id="tipografia" data-secao="Tipografia" aria-labelledby="h-tipografia">
+  <div class="ch-head">
+    <h2 id="h-tipografia">Tipografia</h2>
+    <div><p class="lede">Três famílias, três trabalhos: Sora fala, Inter opera, IBM Plex Mono mede. Todas hospedadas em <code>public/fonts</code>, sem requisição a CDN.</p>
+    <p class="meta">{{range BB-TIPO}}</p></div>
+  </div>
+
+  <div class="sub" id="familias">
+    <h3>Famílias e usos</h3>
+    <div class="fam">
+      <div><div><div class="spec sora">Decisão em um comando</div><p class="glyphs">ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789 ° % R$</p></div><div><h4>Sora, exibição</h4><p>Display e títulos H1 a H3, nomes de personagem, números de destaque. Pesos 600, 700 e 800; tracking -0,02em.</p></div></div>
+      <div><div><div class="spec inter">Interface de alta densidade, leitura confortável</div><p class="glyphs">ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789 ° % R$</p></div><div><h4>Inter, interface</h4><p>Menus, formulários, tabelas, botões e texto corrido. Pesos 400, 500 e 600; recursos <code>cv05, cv11, ss01</code> e tracking -0,012em.</p></div></div>
+      <div><div><div class="spec plex">R$ 1.234,56 · 98,7% · 42 ms</div><p class="glyphs">ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789 {}[]()</p></div><div><h4>IBM Plex Mono, dados</h4><p>Métricas, contadores, IDs, código, comandos ("Ei Orbit") e telemetria. Pesos 400, 500 e 600. Os números acima são formatação de exemplo.</p></div></div>
+    </div>
+    <ol class="rules">
+@@rule BB-TIPO-01 C origem: C03 da missão
+Trinca tipográfica: Sora (display), Inter (interface) e IBM Plex Mono (dados e código). Nenhuma outra família em peça nova.
+@@end
+@@rule BB-TIPO-02 C origem: BRANDBOOK-OFICIAL-BIRTH-HUB-360.html, cap. 4
+Proibidas em layout novo as famílias legadas Bodoni Moda, Cabin, JetBrains Mono e Playfair Display. O serifado do "B" e do wordmark do logotipo é arte preservada, não tipografia de layout.
+@@end
+@@rule BB-TIPO-03 C origem: Manual de Identidade Visual, cap. 3
+Inter usa <code>font-feature-settings: "cv05","cv11","ss01"</code> e tracking -0,012em (o "toque arredondado"). Sora usa tracking -0,02em.
+@@end
+@@rule BB-TIPO-04 C origem: Manual de Identidade Visual, cap. 3
+Plex Mono é reservada a métricas, contadores, badges técnicos, IDs, logs e código; números tabulares alinham colunas. Nunca em texto corrido nem como fantasia de "tecnológico".
+@@end
+@@rule BB-TIPO-05 P origem: divergência D-02
+Sora vale para H1 a H6 (Manual de Identidade Visual). O <code>.claude/CLAUDE.md</code> do repositório usa Inter em H4 a H6; a divergência aguarda decisão.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="escala">
+    <h3>Escalas e pesos: duas escalas, dois níveis <span class="st st-p">PROVISÓRIA</span></h3>
+    <p class="intro">Duas escalas ligadas aos níveis de intensidade (C08). A escala abaixo é a de Experiência Comercial e Leitura (este documento, landing, campanhas); a escala Operacional (plataforma) está na tabela seguinte.</p>
+    <div class="scale">
+      <div><span class="lab">Display · Sora 800<br>72/76 · -0,02em</span><span class="smp" style="font:800 clamp(2.25rem,7vw,4.5rem)/1.05 var(--font-display);letter-spacing:-.02em">Comando 360°</span></div>
+      <div><span class="lab">H1 · Sora 700<br>48/52</span><span class="smp" style="font:700 clamp(1.9rem,4.5vw,3rem)/1.1 var(--font-display);letter-spacing:-.02em">Pipeline sob controle</span></div>
+      <div><span class="lab">H2 · Sora 700<br>36/40</span><span class="smp" style="font:700 clamp(1.6rem,3.4vw,2.25rem)/1.15 var(--font-display);letter-spacing:-.02em">Previsibilidade de receita</span></div>
+      <div><span class="lab">H3 · Sora 600<br>24/30</span><span class="smp" style="font:600 1.5rem/1.25 var(--font-display);letter-spacing:-.02em">Plano diário priorizado</span></div>
+      <div><span class="lab">H4 · Sora 600<br>18/24</span><span class="smp" style="font:600 1.125rem/1.35 var(--font-display)">Cadência multicanal</span></div>
+      <div><span class="lab">Corpo · Inter 400<br>16/27 · medida 65 a 75ch</span><span class="smp" style="font:400 1rem/1.7 var(--font-ui)">O sistema ordena o que importa agora e mostra a evidência por trás de cada recomendação, para que o time decida em segundos.</span></div>
+      <div><span class="lab">Apoio · Inter 500<br>13/19</span><span class="smp" style="font:500 .8125rem/1.5 var(--font-ui);color:var(--ink-muted)">Atualizado há 4 minutos · fonte: CRM</span></div>
+      <div><span class="lab">Dados · Plex Mono 500<br>14/20 · tabular</span><span class="smp" style="font:500 .875rem/1.4 var(--font-mono)">00.000,00 · ID 0000-0000 · 000 ms</span></div>
+    </div>
+    <h4>Escala Operacional (plataforma), valores do Design System <span class="st st-p">PROVISÓRIA</span></h4>
+    <div class="tbl"><table>
+      <thead><tr><th scope="col">Papel</th><th scope="col">Tamanho / entrelinha</th><th scope="col">Peso</th><th scope="col">Uso</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">display-xl</td><td class="num">48 / 1,08</td><td class="num">700</td><td>Hero institucional (comercial)</td></tr>
+        <tr><td class="mono">display</td><td class="num">36 / 1,12</td><td class="num">700</td><td>Destaque de tela</td></tr>
+        <tr><td class="mono">h1 · h2 · h3</td><td class="num">30 / 1,2 · 24 / 1,25 · 20 / 1,3</td><td class="num">700 · 600 · 600</td><td>Título de tela, seção, bloco</td></tr>
+        <tr><td class="mono">h4 · h5 · h6</td><td class="num">18 · 16 · 14</td><td class="num">600</td><td>Subtítulos densos</td></tr>
+        <tr><td class="mono">body</td><td class="num">14 / 1,5</td><td class="num">400</td><td>Texto, tabelas, campos</td></tr>
+        <tr><td class="mono">body-sm · label</td><td class="num">13</td><td class="num">400 · 500</td><td>Apoio, rótulos</td></tr>
+        <tr><td class="mono">caption</td><td class="num">12 / 1,4</td><td class="num">500</td><td>Legenda</td></tr>
+        <tr><td class="mono">data · data-lg</td><td class="num">14 · 24</td><td class="num">500 · 600</td><td>Plex Mono tabular</td></tr>
+      </tbody></table></div>
+    <div class="wt" style="margin-top:2rem">
+      <span style="font:400 1.5rem var(--font-display)">Sora 400<small>apoio</small></span><span style="font:600 1.5rem var(--font-display)">Sora 600<small>H3 e H4</small></span><span style="font:700 1.5rem var(--font-display)">Sora 700<small>H1 e H2</small></span><span style="font:800 1.5rem var(--font-display)">Sora 800<small>display</small></span>
+      <span style="font:400 1.25rem var(--font-ui)">Inter 400<small>corpo</small></span><span style="font:500 1.25rem var(--font-ui)">Inter 500<small>rótulos</small></span><span style="font:600 1.25rem var(--font-ui)">Inter 600<small>botões</small></span>
+    </div>
+    <p class="plate-cap">Os textos de amostra são redação ilustrativa; "4 minutos" e "000" não são dados reais.</p>
+    <ol class="rules">
+@@rule BB-TIPO-06 P origem: proposta deste brandbook, ligada a C08
+Escala de Experiência Comercial e Leitura: display 72, H1 48, H2 36, H3 24, H4 18, corpo 16, apoio 13 e dados 14 (px). Display nunca passa de 6rem; cada degrau difere do vizinho em pelo menos 1,25x ou em peso.
+@@end
+@@rule BB-TIPO-07 P origem: proposta deste brandbook
+Escala Comercial e Leitura: corpo de 16 px no mínimo, entrelinha 1,6 a 1,7 e medida de 65 a 75 caracteres. Em fundo escuro, entrelinha um pouco maior.
+@@end
+@@rule BB-TIPO-15 P origem: 03-design-system/tokens/tokens.json (lido em 2026-11-13)
+Escala de Experiência Operacional e Plataforma, a do Design System: display-xl 48, display 36, h1 30, h2 24, h3 20, h4 18, h5 16, h6 14, corpo 14 (entrelinha 1,5), body-sm 13, caption 12, label 13, dados 14 e data-lg 24 (px). Display-xl 48 é de uso comercial; na plataforma o título dominante é h1 30. Marcada PROVISÓRIA: o DS também a marca como provisória.
+@@end
+@@rule BB-TIPO-16 P origem: C08 da missão
+Cada superfície usa uma escala só, escolhida pelo nível: Comercial e Leitura usa a de BB-TIPO-06; Operacional e Plataforma usa a de BB-TIPO-15. Famílias, pesos e tracking (BB-TIPO-01 a 04 e 09) valem para as duas.
+@@end
+@@rule BB-TIPO-08 P origem: proposta deste brandbook
+Títulos usam <code>text-wrap: balance</code> e texto corrido <code>text-wrap: pretty</code>. Tracking nunca abaixo de -0,04em.
+@@end
+@@rule BB-TIPO-09 C origem: Manual de Identidade Visual, cap. 3
+Pesos oficiais: Sora 400, 600, 700 e 800; Inter 400, 500, 600 e 700; Plex Mono 400, 500 e 600.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="cor-titulos">
+    <h3>Cor dos títulos</h3>
+    <div class="tcolor">
+      <div class="tc ok"><p class="t" style="color:#E8EEFF">Previsibilidade</p><p class="s" style="color:#9EADC8">Tinta derivada sobre Dark.</p><span class="cap">CORRETO · #E8EEFF sobre #0D0D0D</span></div>
+      <div class="tc ok"><p class="t" style="color:#00D4FF">Previsibilidade</p><p class="s" style="color:#9EADC8">Neon de acento sobre Dark.</p><span class="cap">CORRETO · #00D4FF sobre #0D0D0D</span></div>
+      <div class="tc lt ok"><p class="t" style="color:#0F1A2E">Previsibilidade</p><p class="s" style="color:#46546B">Tinta derivada sobre Light.</p><span class="cap" style="color:#15803D">CORRETO · #0F1A2E sobre #F4F7FB</span></div>
+      <div class="tc lt ok"><p class="t" style="color:#C4105F">Previsibilidade</p><p class="s" style="color:#46546B">Variante de acento sobre Light.</p><span class="cap" style="color:#15803D">CORRETO · #C4105F sobre #F4F7FB</span></div>
+      <div class="tc no"><p class="t" style="color:#FFFFFF">Previsibilidade</p><p class="s" style="color:#9EADC8">Exemplo proibido: branco puro.</p><span class="cap">PROIBIDO · #FFFFFF (C04)</span></div>
+      <div class="tc lt no"><p class="t" style="color:#000000">Previsibilidade</p><p class="s" style="color:#46546B">Exemplo proibido: preto puro.</p><span class="cap" style="color:#B91C1C">PROIBIDO · #000000 (C04)</span></div>
+    </div>
+    <ol class="rules">
+@@rule BB-TIPO-10 C origem: C04 da missão
+Títulos e subtítulos nunca são #FFFFFF nem #000000. Em Dark, tinta #E8EEFF ou cor de acento; em Light, tinta #0F1A2E ou variante de acento.
+@@end
+@@rule BB-TIPO-11 C origem: C04 e CLAUDE.md
+Ênfase em texto vem de peso, tamanho e cor sólida. Gradiente em texto (<code>background-clip: text</code>) é proibido em qualquer contexto.
+@@end
+@@rule BB-TIPO-12 P origem: proposta deste brandbook
+Um título tem uma cor só. A cor de acento do capítulo ou módulo pode colorir o título inteiro; palavras soltas coloridas dentro de frase são exceção rara.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="hierarquia">
+    <h3>Hierarquia em texto corrido</h3>
+    <div class="plate"><div class="prose-sample">
+      <div class="h5">Plano diário priorizado</div>
+      <p>A lista abre pelo contato com maior chance de resposta hoje e mostra por quê. Cada linha traz a última interação e a ação sugerida.</p>
+      <div class="h6">Como a prioridade é calculada</div>
+      <p>O ordenamento combina estágio, recência e sinais de engajamento. Nos campos de dados, usamos mono: <span class="mono-inline">score 00 · ciclo 00 d</span>.</p>
+    </div><p class="plate-cap">Texto de exemplo; valores e regras de cálculo são ilustrativos.</p></div>
+    <ol class="rules">
+@@rule BB-TIPO-13 P origem: proposta deste brandbook
+Uma tela tem um único título dominante. Papéis (título, corpo, rótulo, dado) devem ser distinguíveis sem ler o texto, por tamanho, peso ou família.
+@@end
+@@rule BB-TIPO-14 P origem: proposta deste brandbook
+Números de métrica usam Plex Mono tabular; unidade e rótulo em Inter menor. Número sem fonte medida não é publicado (zero mock).
+@@end
+    </ol>
+  </div>
+</section>

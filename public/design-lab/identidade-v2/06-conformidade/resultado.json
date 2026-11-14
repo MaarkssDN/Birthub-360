@@ -1,0 +1,201 @@
+{
+ "geradoEm": "2026-11-14T01:28:23.286Z",
+ "totalChecagens": 26,
+ "aprovadas": 26,
+ "falhas": [],
+ "brandbook": {
+  "total": 121,
+  "confirmadas": 45,
+  "provisorias": 76
+ },
+ "restricoesEntrada": 29,
+ "decisoes": {
+  "CONFIRMADA": 10,
+  "PROVISÓRIA": 8,
+  "PENDENTE": 8
+ },
+ "checks": [
+  {
+   "id": "N1-ACESSO",
+   "restricao": "N1: repositório analisado (commit 0d08b31) e impedimento da página publicada registrado",
+   "ok": true,
+   "evid": "08-referencia-n1/index.html",
+   "fonte": "Missão V2.1"
+  },
+  {
+   "id": "N1-RENDER",
+   "restricao": "N1 renderizado em Chromium (4 combinações): sem overflow, fundos oficiais, reduzido sem animação",
+   "ok": true,
+   "evid": "n1-verificacao.json",
+   "fonte": "Missão V2.1"
+  },
+  {
+   "id": "DEC-HUM",
+   "restricao": "Decisões humanas separadas, com alternativas e recomendação (H-01 a H-14)",
+   "ok": true,
+   "evid": "14 decisões",
+   "fonte": "Missão V2.1"
+  },
+  {
+   "id": "ERRATA-N1",
+   "restricao": "Nenhuma página afirma que o N1 está \"não localizado\" sem a errata V2.1",
+   "ok": true,
+   "evid": "grep",
+   "fonte": "Coerência"
+  },
+  {
+   "id": "C02-#00D4FF",
+   "restricao": "Cor oficial #00D4FF presente em core.css (herdado pelo DS) e em tokens.json do DS",
+   "ok": true,
+   "evid": "core:true tokens.json:true",
+   "fonte": "C02"
+  },
+  {
+   "id": "C02-#FF2D9B",
+   "restricao": "Cor oficial #FF2D9B presente em core.css (herdado pelo DS) e em tokens.json do DS",
+   "ok": true,
+   "evid": "core:true tokens.json:true",
+   "fonte": "C02"
+  },
+  {
+   "id": "C02-#FFC107",
+   "restricao": "Cor oficial #FFC107 presente em core.css (herdado pelo DS) e em tokens.json do DS",
+   "ok": true,
+   "evid": "core:true tokens.json:true",
+   "fonte": "C02"
+  },
+  {
+   "id": "C02-#8B7DFF",
+   "restricao": "Cor oficial #8B7DFF presente em core.css (herdado pelo DS) e em tokens.json do DS",
+   "ok": true,
+   "evid": "core:true tokens.json:true",
+   "fonte": "C02"
+  },
+  {
+   "id": "C02-#0D0D0D",
+   "restricao": "Cor oficial #0D0D0D presente em core.css (herdado pelo DS) e em tokens.json do DS",
+   "ok": true,
+   "evid": "core:true tokens.json:true",
+   "fonte": "C02"
+  },
+  {
+   "id": "C02-#F4F7FB",
+   "restricao": "Cor oficial #F4F7FB presente em core.css (herdado pelo DS) e em tokens.json do DS",
+   "ok": true,
+   "evid": "core:true tokens.json:true",
+   "fonte": "C02"
+  },
+  {
+   "id": "C02-BB",
+   "restricao": "Brandbook declara as cores C02 (regras BB-COR)",
+   "ok": true,
+   "evid": "28 regras BB-COR",
+   "fonte": "C02"
+  },
+  {
+   "id": "C04",
+   "restricao": "Nenhum h1–h3 renderizado em #FFF/#000 (5 páginas × 2 temas × 2 larguras)",
+   "ok": true,
+   "evid": "0 títulos puros em 36 combinações",
+   "fonte": "C04"
+  },
+  {
+   "id": "QA-ERR",
+   "restricao": "Sem erro de console nem requisição falha",
+   "ok": true,
+   "evid": "qa-00.json",
+   "fonte": "Quality gate"
+  },
+  {
+   "id": "QA-OVF",
+   "restricao": "Sem overflow horizontal (1440 e 390)",
+   "ok": true,
+   "evid": "qa-00.json",
+   "fonte": "Quality gate"
+  },
+  {
+   "id": "QA-LNK",
+   "restricao": "Âncoras internas íntegras e imagens carregadas",
+   "ok": true,
+   "evid": "qa-00.json",
+   "fonte": "Quality gate"
+  },
+  {
+   "id": "C03",
+   "restricao": "Sora, Inter e IBM Plex Mono carregadas em todas as páginas",
+   "ok": true,
+   "evid": "document.fonts",
+   "fonte": "C03"
+  },
+  {
+   "id": "DARKLIGHT",
+   "restricao": "Dark #0D0D0D e Light #F4F7FB como fundo base em todas as páginas",
+   "ok": true,
+   "evid": "body bg computado",
+   "fonte": "C02"
+  },
+  {
+   "id": "NOCDN",
+   "restricao": "Nenhuma página carrega recurso externo (CDN)",
+   "ok": true,
+   "evid": "0 páginas com URL externa",
+   "fonte": "Quality gate"
+  },
+  {
+   "id": "RM",
+   "restricao": "Todas as páginas tratam prefers-reduced-motion",
+   "ok": true,
+   "evid": "grep",
+   "fonte": "C08"
+  },
+  {
+   "id": "C06-LOGO",
+   "restricao": "Logos em assets/ idênticos aos oficiais (cmp byte a byte)",
+   "ok": true,
+   "evid": "cmp ×3",
+   "fonte": "C06"
+  },
+  {
+   "id": "LIMITES",
+   "restricao": "Nenhum arquivo fora de identidade-v2/ modificado (src, landing, login, assets oficiais)",
+   "ok": true,
+   "evid": "git status: só identidade-v2/",
+   "fonte": "Limites §11"
+  },
+  {
+   "id": "C09",
+   "restricao": "Personagens: 29 SVGs oficiais intactos",
+   "ok": true,
+   "evid": "diff -rq + ls",
+   "fonte": "C09/C06"
+  },
+  {
+   "id": "DS-MOTION",
+   "restricao": "Tokens motion×DS sem colisão de nomes com valores divergentes",
+   "ok": true,
+   "evid": "divergentes: nenhum; mesmos nomes e valores: 0",
+   "fonte": "Coerência"
+  },
+  {
+   "id": "DS-BB-SEM",
+   "restricao": "Semânticas de estado do DS usam #22C55E/#EF4444/#FFC107 (alinhado ao brandbook)",
+   "ok": true,
+   "evid": "tokens.css",
+   "fonte": "Coerência"
+  },
+  {
+   "id": "DS-BB-TIPO",
+   "restricao": "Brandbook declara escala Operacional (corpo 14px) coerente com o DS",
+   "ok": true,
+   "evid": "2 regras",
+   "fonte": "Coerência"
+  },
+  {
+   "id": "HOMOL",
+   "restricao": "Nenhuma página se apresenta como homologada; selo RASCUNHO presente",
+   "ok": true,
+   "evid": "grep RASCUNHO",
+   "fonte": "Limites §11"
+  }
+ ]
+}

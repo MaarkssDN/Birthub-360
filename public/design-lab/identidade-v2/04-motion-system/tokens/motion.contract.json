@@ -1,0 +1,22 @@
+{
+  "contract": "birthub360/motion-contract@2.0-draft",
+  "status": "RASCUNHO V2.0 — NÃO HOMOLOGADO",
+  "note": "id -> valor. Valores de duração em ms; níveis separados por sufixo.",
+  "tokens": {
+    "dur.micro.operational": "80ms", "dur.fast.operational": "120ms", "dur.base.operational": "160ms", "dur.slow.operational": "200ms", "dur.cinematic.operational": "200ms",
+    "dur.micro.commercial": "120ms", "dur.fast.commercial": "200ms", "dur.base.commercial": "360ms", "dur.slow.commercial": "600ms", "dur.cinematic.commercial": "1200ms",
+    "dur.reduced-fade": "120ms",
+    "ease.standard": "cubic-bezier(.4,0,.2,1)", "ease.out": "cubic-bezier(.16,1,.3,1)", "ease.premium": "cubic-bezier(.22,1,.36,1)",
+    "ease.in": "cubic-bezier(.4,0,1,1)", "ease.spring": "cubic-bezier(.34,1.56,.64,1)", "ease.linear": "linear",
+    "stagger.fast.operational": "15ms", "stagger.base.operational": "30ms", "stagger.slow.operational": "40ms", "stagger.max.operational": "200ms",
+    "stagger.fast.commercial": "40ms", "stagger.base.commercial": "60ms", "stagger.slow.commercial": "100ms", "stagger.max.commercial": "600ms",
+    "distance.xs.operational": "2px", "distance.sm.operational": "4px", "distance.md.operational": "8px", "distance.lg.operational": "12px", "distance.xl.operational": "16px",
+    "distance.xs.commercial": "4px", "distance.sm.commercial": "8px", "distance.md.commercial": "16px", "distance.lg.commercial": "32px", "distance.xl.commercial": "64px",
+    "parallax.depth.operational": "0px", "parallax.depth.commercial": "24px",
+    "scale.hover.operational": "1.01", "scale.hover.commercial": "1.02", "scale.press.operational": "0.98", "scale.press.commercial": "0.97",
+    "glow.rgb": "0,212,255", "glow.rest": "0.22", "glow.active": "0.45",
+    "orbit.period": "6000ms", "orbit.period-fast": "1200ms"
+  },
+  "cssVariables": "--dur-*, --ease-*, --stagger-*, --distance-*, --parallax-depth, --scale-*, --glow-*, --orbit-* (ver motion.css)",
+  "colorsUsed": "nenhuma além de --glow-color (0,212,255 = #00D4FF oficial) e as cores de shared/core.css"
+}

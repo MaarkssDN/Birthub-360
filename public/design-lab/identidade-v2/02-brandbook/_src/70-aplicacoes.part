@@ -1,0 +1,170 @@
+<section class="ch ac-gold" id="aplicacoes" data-secao="Aplicações" aria-labelledby="h-aplicacoes">
+  <div class="ch-head">
+    <h2 id="h-aplicacoes">Aplicações</h2>
+    <div><p class="lede">Oito protótipos mostram o sistema funcionando. Todos são estáticos, construídos só para este documento, e usam valores ilustrativos. A landing e o login reais do produto não foram tocados.</p>
+    <p class="meta">{{range BB-APL}}</p></div>
+  </div>
+
+  <div class="sub" id="app-landing">
+    <h3>Landing</h3>
+    <div class="pf"><div class="pf-bar"><span class="tg">PROTÓTIPO</span><span>Landing · nível comercial</span><span class="ex">Ilustração estática</span></div>
+    <div class="pf-body" role="group" aria-label="Protótipo de landing">
+      <div class="pl-nav"><img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Logotipo horizontal" width="130" height="35"><span>Módulos</span><span>Inteligência</span><span>Governança</span><span class="sp"></span><span class="pl-pill ol">Entrar</span></div>
+      <div class="pl-hero">
+        <div><div class="h5">Sistema Operacional de <em>Inteligência Comercial</em></div><p>Impulsionado por IA e Revenue Intelligence.</p><div class="pl-cta"><span class="pl-pill pk">Solicitar demonstração</span><span class="pl-pill ol">Ver os 11 módulos</span></div></div>
+        <div class="pl-orbit" aria-hidden="true"><span class="r"></span><span class="r r2"></span><span class="r r3"></span><img src="../assets/logos/birthhub360-simbolo.svg" alt="" width="256" height="256">
+          <i style="left:49%;top:-2%;background:var(--neon-blue)"></i><i style="left:92%;top:62%;background:var(--neon-pink)"></i><i style="left:12%;top:80%;background:var(--neon-gold)"></i><i style="left:6%;top:30%;background:var(--iris)"></i></div>
+      </div>
+      {{modstrip}}
+    </div></div>
+    <ol class="rules">
+@@rule BB-APL-01 P origem: C08 e proposta deste brandbook
+Landing é nível comercial: título em escala grande ancorado à esquerda, diagrama de arquitetura à direita, um único CTA em Rosa Neon e a faixa dos 11 módulos como prova de escopo.
+@@end
+@@rule BB-APL-02 P origem: BB-ID-01
+O título da landing é o posicionamento oficial (C01), sem reescrita de efeito. A promessa não cita número sem fonte.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="app-login">
+    <h3>Login</h3>
+    <div class="pf"><div class="pf-bar"><span class="tg">PROTÓTIPO</span><span>Login · nível operacional</span><span class="ex">Ilustração estática</span></div>
+    <div class="pf-body plg" role="group" aria-label="Protótipo de tela de login">
+      <div class="plg-l"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo" width="88" height="88"><div><div class="h5">Entre no comando da sua operação.</div><p>Dados, decisões e execução no mesmo lugar.</p></div></div>
+      <div class="plg-r"><form onsubmit="return false" aria-label="Formulário ilustrativo"><div class="h6">Acessar</div>
+        <label>E-mail<span class="fld foc">nome@empresa.com.br</span></label>
+        <label>Senha<span class="fld">••••••••••</span></label>
+        <span class="pl-pill">Entrar</span><small>Foco visível em Azul Neon com anel de 3 px.</small></form></div>
+    </div></div>
+    <ol class="rules">
+@@rule BB-APL-03 P origem: proposta deste brandbook
+Login: painel de marca à esquerda, formulário à direita, rótulo visível em todo campo, foco em Azul Neon com anel e botão primário sólido. Sem halo decorativo.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="app-plataforma">
+    <h3>Plataforma SaaS</h3>
+    <div class="pf"><div class="pf-bar"><span class="tg">PROTÓTIPO</span><span>Workspace P01 Hub Comercial · nível operacional</span><span class="ex">Valores ilustrativos</span></div>
+    <div class="pf-body ps" role="group" aria-label="Protótipo da plataforma">
+      {{sidebar}}
+      <div class="ps-m">
+        <div class="ps-top"><div class="h5">Hub Comercial</div><span class="cmd"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg>Buscar ou executar<kbd>Ctrl K</kbd></span></div>
+        <div class="ps-tabs"><span class="on">Pipeline</span><span>Contas</span><span>Propostas</span><span>Atividades</span></div>
+        <div class="ps-kan">
+          <div class="ps-col"><div class="h6">Qualificação <span class="num">00</span></div><div class="ps-card"><b>Conta exemplo A</b><span>R$ 00.000 · exemplo</span></div><div class="ps-card"><b>Conta exemplo B</b><span>R$ 00.000 · exemplo</span></div></div>
+          <div class="ps-col"><div class="h6">Proposta <span class="num">00</span></div><div class="ps-card"><b>Conta exemplo C</b><span>R$ 00.000 · exemplo</span></div></div>
+          <div class="ps-col"><div class="h6">Negociação <span class="num">00</span></div><div class="ps-empty">Nenhum negócio nesta etapa. Importar lista</div></div>
+          <div class="ps-col"><div class="h6">Fechamento <span class="num">00</span></div><div class="ps-card"><b>Conta exemplo D</b><span>R$ 00.000 · exemplo</span></div></div>
+        </div>
+      </div>
+    </div></div>
+    <ol class="rules">
+@@rule BB-APL-04 P origem: C07 e proposta deste brandbook
+Plataforma: Hub Central na barra lateral com os 11 módulos (código em mono e ícone), cabeçalho do workspace na cor de acento do módulo, paleta de comandos sempre à mão e abas dentro do módulo.
+@@end
+@@rule BB-APL-05 P origem: AGENTS.md §25
+Todo painel mostra empty com ação clara (como "Importar lista"); nenhum cartão preenche vazio com dado inventado.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="app-dashboard">
+    <h3>Dashboard</h3>
+    <div class="pf"><div class="pf-bar"><span class="tg">PROTÓTIPO</span><span>P05 Previsibilidade · nível operacional</span><span class="ex">VALORES ILUSTRATIVOS, NÃO SÃO DADOS REAIS</span></div>
+    <div class="pf-body pd" role="group" aria-label="Protótipo de dashboard">
+      <div class="pd-head"><div class="h5">Previsibilidade</div><span class="upd">Atualizado: exemplo</span></div>
+      <div class="pd-grid">
+        <div class="pd-t w4"><div class="h6">Receita prevista × realizada</div>
+          <svg class="pd-chart" viewBox="0 0 400 120" preserveAspectRatio="none" role="img" aria-label="Gráfico ilustrativo: linha realizada e projeção tracejada"><path class="ax" d="M0 119H400M0 60H400"/><path class="ln" d="M0 100 L50 92 L100 84 L150 70 L200 66 L240 52"/><path class="pj" d="M240 52 L300 40 L350 30 L400 20"/></svg>
+          <div class="pd-leg"><span class="a">Realizado (exemplo)</span><span class="b">Projeção (exemplo)</span></div></div>
+        <div class="pd-t w2"><div class="h6">Receita prevista</div><div class="pd-kpi">R$ 000.000<small>exemplo</small></div></div>
+        <div class="pd-t w3"><div class="h6">Pipeline ponderado</div><div class="pd-kpi" style="color:var(--c-gold)">R$ 000.000</div></div>
+        <div class="pd-t w3"><div class="h6">Ciclo médio</div><div class="pd-kpi">00<small>dias, exemplo</small></div></div>
+        <div class="pd-t w6"><div class="h6">Os quatro estados obrigatórios</div>
+          <div class="pd-st"><div class="ld"><b>LOADING</b>Sincronizando pipeline<div class="sk"></div><div class="sk s2"></div></div><div class="em"><b>EMPTY</b>Nenhum negócio qualificado. Importar lista</div><div class="er"><b>ERROR</b>Falha ao sincronizar: token expirado. Tentar novamente</div><div class="sl"><b>STALE</b>Dados de 45 min atrás. Reconectando</div></div></div>
+      </div>
+    </div></div>
+    <ol class="rules">
+@@rule BB-APL-06 P origem: Manual do Produto cap. 5 e AGENTS.md §25
+Dashboard declara os quatro estados (loading, empty, error, stale). Stale mantém o dado anterior visível e informa a idade; error oferece nova tentativa.
+@@end
+@@rule BB-APL-07 P origem: proposta deste brandbook
+Dashboard em bento de tamanhos desiguais, com o gráfico dominante e números em Plex Mono tabular. Projeção é tracejada e rotulada; linha de dado real é sólida.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="app-modulos">
+    <h3>Módulos (11), uma identidade contextual <span class="st st-p">PROVISÓRIA</span></h3>
+    <div class="pf"><div class="pf-bar"><span class="tg">PROTÓTIPO</span><span>Um sistema, onze contextos</span><span class="ex">Acentos atribuídos por esta frente</span></div>
+    <div class="pf-body pm" role="group" aria-label="Protótipo da identidade dos módulos">
+      {{modhead}}
+      <div class="pm-rows">{{modrows}}</div>
+    </div></div>
+    <ol class="rules">
+@@rule BB-APL-08 P origem: C07 e proposta deste brandbook
+Os 11 módulos compartilham um único sistema (mesma estrutura, mesmos componentes). O contexto muda só por um acento C02, o código em mono (P01 a M11) e o ícone. Não existem onze sistemas visuais.
+@@end
+@@rule BB-APL-09 P origem: proposta deste brandbook
+Acentos: Dourado em P01, P05 e M09; Azul em P02, P07 e M10; Rosa em P04, P08 e M11; Íris em P03 e P06. A atribuição é provisória e não carrega significado fora do módulo.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="app-materiais">
+    <h3>Materiais comerciais</h3>
+    <div class="pf"><div class="pf-bar"><span class="tg">PROTÓTIPO</span><span>Proposta (A4), slide e assinatura</span><span class="ex">Texto de exemplo</span></div>
+    <div class="pf-body pmat" role="group" aria-label="Protótipo de materiais comerciais">
+      <div class="pm-doc"><img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Logotipo horizontal" width="140" height="38"><div><div class="h5">[Título da proposta comercial]</div><p>Inteligência comercial para a operação de [cliente].</p></div><div class="ft"><span>Versão rascunho</span><span>[data]</span></div></div>
+      <div class="col">
+        <div class="pm-slide"><div><div class="h5">Do dado disperso à <em>decisão no comando</em></div><p>[Mensagem principal do slide, em uma frase.]</p></div><div class="bars" aria-hidden="true"><i style="width:90%;background:#0D0D0D"></i><i style="width:64%;background:#C4105F"></i><i style="width:40%;background:#006C8C"></i><small>gráfico ilustrativo</small></div></div>
+        <div class="pm-sign"><img src="../assets/logos/birthhub360-icone.svg" alt="Ícone" width="48" height="48"><div><b>[Nome do responsável]</b><span>[Cargo] · <span data-brand>Birthub 360°</span></span></div></div>
+      </div>
+    </div></div>
+    <ol class="rules">
+@@rule BB-APL-10 P origem: proposta deste brandbook
+Proposta e apresentação seguem a tipografia da marca. Documento em Dark leva logotipo horizontal em Dark; slide em Light usa tinta #0F1A2E e acento Rosa de Light (#C4105F). Campos entre colchetes são placeholders até haver conteúdo real.
+@@end
+@@rule BB-APL-11 P origem: BB-LOGO-13
+Assinatura de e-mail usa o ícone (sem anel de graduação) a 48 px e o nome em Sora. Logotipo horizontal em fundo claro só com placa escura.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="app-social">
+    <h3>Redes sociais</h3>
+    <div class="pf"><div class="pf-bar"><span class="tg">PROTÓTIPO</span><span>Posts, banner e avatar</span><span class="ex">Texto de exemplo, sem foto humana</span></div>
+    <div class="pf-body psoc" role="group" aria-label="Protótipo de peças para redes sociais">
+      <div class="pso"><span class="ring"></span><div class="h5">Conectar, decidir, <em>executar</em>.</div><div class="ft"><img src="../assets/logos/birthhub360-icone.svg" alt="" width="29" height="29"><span data-brand>Birthub 360°</span></div></div>
+      <div class="pso gd"><div class="h5">[Frase de campanha em até 8 palavras]</div><div class="ft"><img src="../assets/logos/birthhub360-icone.svg" alt="" width="29" height="29"><span data-brand>Birthub 360°</span></div></div>
+      <div class="pso lt"><div class="h5">[Pergunta que o time comercial faz hoje] <em>[resposta]</em></div><div class="ft"><img src="../assets/logos/birthhub360-icone.svg" alt="" width="29" height="29"><span data-brand>Birthub 360°</span></div></div>
+      <div class="wide"><img src="../assets/logos/birthhub360-simbolo.svg" alt="" width="96" height="96"><div><b>Sistema Operacional de Inteligência Comercial</b><span>Impulsionado por IA e Revenue Intelligence</span></div></div>
+    </div></div>
+    <ol class="rules">
+@@rule BB-APL-12 P origem: C06 da missão e proposta
+Peças sociais usam tipografia em escala grande e grafismo 360°; sem fotografia humana. Uma mensagem por peça, assinatura com ícone e nome no rodapé.
+@@end
+@@rule BB-APL-13 P origem: proposta deste brandbook
+Variações de fundo: Dark, Light e Dourado sólido com texto #0D0D0D (11,92:1). Avatar usa o ícone sobre Dark.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="app-mobile">
+    <h3>Mobile</h3>
+    <div class="pf"><div class="pf-bar"><span class="tg">PROTÓTIPO</span><span>Plano diário no celular · nível operacional</span><span class="ex">Valores ilustrativos</span></div>
+    <div class="pf-body pmob" role="group" aria-label="Protótipo mobile">
+      <div class="phone"><div class="st-b"><span>09:41</span><span>exemplo</span></div><div class="hdm"><div class="h5">Plano de hoje</div><span>Três ações sugeridas</span></div>
+        <div class="lst"><div class="it"><b>Ligar para Conta exemplo A</b><span>sugerido · 00 min</span></div><div class="it"><b>Responder proposta B</b><span>sugerido · 00 min</span></div><div class="it"><b>Registrar reunião C</b><span>sugerido · 00 min</span></div></div>
+        <div class="tabs"><a class="on"><svg class="ic" aria-hidden="true"><use href="#i-home"/></svg>Hoje</a><a><svg class="ic" aria-hidden="true"><use href="#i-list"/></svg>Pipeline</a><a><svg class="ic" aria-hidden="true"><use href="#i-voice"/></svg>Voz</a><a><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg>Perfil</a></div></div>
+      <div class="pmob-note"><div class="h5">Alvos de toque e leitura em campo</div><ul><li>Linhas com no mínimo 44 px de altura.</li><li>Barra inferior com quatro destinos e rótulo.</li><li>Contraste de texto 4,5:1 ou mais em Dark e em Light.</li><li>Ícone do logotipo no cabeçalho; símbolo só a partir de 96 px.</li></ul></div>
+    </div></div>
+    <ol class="rules">
+@@rule BB-APL-14 P origem: .claude/CLAUDE.md (app Android via Capacitor)
+Mobile é cidadão de primeira classe: alvos de toque de 44 px ou mais, navegação inferior com rótulos e leitura em Dark e Light. O protótipo foi verificado só em navegador a 390 px, não em dispositivo.
+@@end
+    </ol>
+  </div>
+</section>
