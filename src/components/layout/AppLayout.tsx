@@ -33,6 +33,12 @@ const AdaptiveDashboard = lazy(() =>
   })),
 );
 
+const CentralModulesHome = lazy(() =>
+  import('../../features/home/CentralModulesHome.js').then((m) => ({
+    default: m.CentralModulesHome,
+  })),
+);
+
 const WorkspaceHome = lazy(() =>
   import('../../features/workspace/components/WorkspaceHome.js').then((m) => ({
     default: m.WorkspaceHome,
@@ -397,15 +403,10 @@ export function AppLayout() {
             Router casar estes paths aninhados contra o restante da URL automaticamente. */}{' '}
         <Suspense fallback={<PageFallback />}>
           <Routes>
-            <Route index element={<AdaptiveDashboard />} />
-            {/* Alias explícito para /app/dashboard: TabType inclui 'dashboard' e Sidebar/
-              CommandPalette navegam para `/app/${tab}` para TODO TabType (useNavigationBusBridge é
-              a única exceção, com mapeamento especial só ali — ver comentário nesse hook). Sem esta
-              rota, "/app/dashboard" batia no catch-all "*" abaixo e re-navegava silenciosamente
-              para "/app", um redirect a mais e um histórico de navegação sujo para quem clicou em
-              "Painel Central" na Sidebar ou no Command Palette (achado real desta auditoria, não
-              coberto pelo teste de useNavigationBusBridge porque aquele hook já tinha o
-              contorno certo só para o comando de voz). */}
+            {/* Home Central dos 11 Módulos — primeira tela apresentada pós-login */}
+            <Route index element={<CentralModulesHome />} />
+            <Route path="home" element={<CentralModulesHome />} />
+            {/* Dashboard analítico e operacional dos KPIs comerciais */}
             <Route path="dashboard" element={<AdaptiveDashboard />} />
             {/* PROMPT 6 — Workspace do cargo (JobRole) do usuário autenticado. Sem RequireRole:
               qualquer UserRole autenticado pode abrir; o próprio workspace resolve seu estado

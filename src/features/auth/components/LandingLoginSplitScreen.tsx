@@ -15,7 +15,7 @@ import {
   Sun,
 } from 'lucide-react';
 import { useEffect, useId, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext.js';
 import { useTheme } from '../../../contexts/ThemeContext.js';
 import { authClient } from '../../../lib/auth-client.js';
@@ -264,6 +264,7 @@ function _SystemStatusBar({ dateLabel, timeLabel }: { dateLabel: string; timeLab
  */
 export function LandingLoginSplitScreen() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { currentUser, isPending } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
@@ -365,7 +366,9 @@ export function LandingLoginSplitScreen() {
   }
 
   if (currentUser) {
-    return <Navigate to="/app" replace />;
+    const from = (location.state as { from?: { pathname?: string; search?: string } })?.from;
+    const targetUrl = from?.pathname ? `${from.pathname}${from.search || ''}` : '/app';
+    return <Navigate to={targetUrl} replace />;
   }
 
   // ─── Input classes ────────────────────────────────────────────────────────
