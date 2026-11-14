@@ -207,22 +207,16 @@ describe('Capacidade 2 — Gamificação: Fluxo Integrado do Cockpit Comercial',
       expect(screen.getByText(/Mestre da Conexão/i)).toBeInTheDocument();
     });
 
-    it('permite interação com o Cristal 3D incrementando pontos de esforço', () => {
-      render(
-        <GamificationWidget
-          initialXp={100}
-          level={1}
-          streakDays={0}
-          sellerScore={null}
-          show3DCore
-        />,
-      );
+    it('interage com o Cristal 3D sem fabricar XP local — exibe apenas o totalPoints real', () => {
+      render(<GamificationWidget sellerScore={mockSellerProfile} show3DCore />);
 
       const orb = screen.getByTestId('mock-3d-orb');
       fireEvent.click(orb);
 
-      // 100 + 25 = 125 XP
-      expect(screen.getByText(/125/i)).toBeInTheDocument();
+      // O widget é somente leitura: o XP exibido continua sendo o
+      // totalPoints real do perfil, sem concessão local de pontos.
+      expect(screen.getByText(/2\.450/i)).toBeInTheDocument();
+      expect(screen.queryByText(/2\.475/i)).not.toBeInTheDocument();
     });
   });
 
