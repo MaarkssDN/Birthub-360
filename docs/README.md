@@ -66,8 +66,9 @@ do controle de versão em 22/08/2026; ver [`docs/REMOVED-DOCS.md`](REMOVED-DOCS.
 - [Guia de produção completo](deploy/producao.md) — Supabase, Render, Cloudflare, CI/CD e
   checklist da arquitetura de produção **congelada** durante a fase local-first (ver índice acima)
 - [Deploy no Render](deploy/render.md)
-- Checklist de validação pós-deploy: `deploy/producao.md` §7 (`deploy/RELEASE_CHECKLIST.md`
-  referenciado anteriormente aqui nunca existiu neste repositório — link corrigido)
+- Checklist de validação pós-deploy: `deploy/producao.md` §7, incluindo §7.1 (scan ZAP
+  pré-release) (`deploy/RELEASE_CHECKLIST.md` saiu do controle de versão em 22/08/2026 — ver
+  `docs/REMOVED-DOCS.md`)
 - ~~Plano Diretor de 100 Passos — encerramento~~ — `docs/ROADMAP-100-STEPS-COMPLETE.md` (registro
   histórico de 12/08/2026 que declarava `1.0.0-RELEASE-APPROVED`) foi removido do controle de
   versão em 22/08/2026 (ver [`docs/REMOVED-DOCS.md`](REMOVED-DOCS.md)). O estado de release vivo
