@@ -47,3 +47,26 @@ Missão atual somente auditoria; nenhuma correção autorizada por este handoff.
 ## Resolução
 
 > Reconciliação 2026-11-14 (Agente 00): veredicto DEFEITO-REAL — métricas/dados fabricados em ai-voice/proposals/promiseGuardian; billing e maskPii órfãos. Correção pendente de despacho. Ver RESULTADOS-RECONCILIACAO-20261114.md.
+
+> Correção executada 2026-11-14 (Agente 12, branch `agente/12-reconciliacao-voz-simulada`, worktree `Birthub-360-wt-fix-12`) — abordagem "honestidade primeiro": nenhum dado fabricado é mais apresentado como real sem flag. Status sugerido: **em-andamento** (falta parecer do 24 e integrações reais continuam pendentes).
+>
+> **F04-04 — flags `simulated` adicionadas:**
+> - `src/shared/contracts/autonomousSdr.contract.ts`: `simulated?: boolean` em `ScheduledMeetingProposal` e `SdrCallExecutionResult`.
+> - `autonomousSdr.service.ts`: `simulated: true` no resultado da chamada fabricada (durationSeconds=195, notas, transcriptSnippet) e na `ScheduledMeetingProposal` (googleCalendarEventId/googleMeetLink UUIDs falsos, status 'confirmed'). Resultado de bloqueio por horário NÃO é marcado (política real).
+> - `proposalAutomation.contract.ts` + `proposalAutomation.service.ts`: `digitalSignatureRef.simulated: true` — envelopeId/signatureUrl são UUIDs/URLs fabricados, sem Clicksign/DocuSign real.
+> - `promiseGuardian.agent.ts`: `approveCommitment` agora retorna `simulated: true` (crmTaskId é UUID local, nunca tarefa CRM real) e loga WARN quando o compromisso não existe no store (antes fabricava compromisso fantasma silenciosamente).
+>
+> **EXP-01 — bimodal Live:**
+> - `bimodalLiveVoice.contract.ts`: `BimodalLiveSession.simulated?: boolean`, `LiveTurn.simulated?: boolean`, `LiveLatencyMetrics.isEstimate?: boolean`.
+> - `bimodalLiveVoice.service.ts`: sessão, turnos fabricados e métricas placeholder marcados; `bargeInResponseMs` não soma mais offset artificial de +85ms (mede elapsed real).
+>
+> **EXP-07 — métricas conversacionais:**
+> - `conversationalIntelligence.service.ts`: `overlapTimeSeconds` agora é calculado de verdade (interseção de intervalos seller×customer com merge de spans); `diarizationQualityConfidence` 0.95 fabricado → 0.5 neutro e `isEstimate: true`.
+>
+> **Órfãos reconciliados:**
+> - `src/services/telephony/billing.service.ts`: confirmado órfão; o caminho produtivo é `src/lib/voice-hub/services/billingService.ts` (`computePeriodEnd` já faz clamp de fim de mês p/ monthly/yearly). Serviço mantido com nota de rodapé documentando que não é billing de produção (decisão: não remover — testes unitários o cobrem e remoção é decisão do 00).
+> - `src/services/telephony/transcription.service.ts`: **integrado** — `telephonyService.ts` (`handleTurn`) agora aplica `maskPii` nos turnos user/assistant ANTES de persistir em `session.metadata` (que alimenta o webhook `agent.call.ended` → transcript). Resolução real do B-13 no pipeline de voz.
+>
+> **Testes:** `tests/unit/voice-reconciliation/reconciliacao-forense-12.test.ts` (novo, 7 testes), `src/lib/voice-hub/services/telephonyService.piiMasking.test.ts` (novo, 2 testes); expectativas `isEstimate` atualizadas em `onda05Contracts.test.ts` e `conversationalIntelligence.service.test.ts`. `npx tsc --noEmit` limpo; vitest dos arquivos afetados verde.
+>
+> **Pendências explícitas:** implementação de integrações reais (Google Calendar/Meet, Clicksign/DocuSign, CRM tasks, transporte Live, STT/TTS real, diarização com ground truth) continua fora do escopo — este handoff agora apenas garante que simulações sejam honestamente sinalizadas.

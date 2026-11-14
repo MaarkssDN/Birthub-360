@@ -34,3 +34,9 @@ Blindagem de dados pessoais de clientes e pacientes em gravaÃ§Ãµes telefÃ´
 - Implementado TelephonyTranscriptionService em src/services/telephony/transcription.service.ts com sanitizacao de CPF ([REDACTED_CPF]), cartao de credito ([REDACTED_CARD]), email e telefone.
 - Testes: 	ests/unit/services/telephony/transcription-pii-masking.test.ts (3 passam).
 
+
+
+## Reconciliacao forense 2026-11-14 (Agente 12)
+- A resolucao anterior criava `TelephonyTranscriptionService` mas ele ficou orfao: o pipeline real de voz (`src/lib/voice-hub/services/telephonyService.ts`) persistia turnos com PII em `session.metadata` sem mascaramento.
+- Correcao aplicada: `handleTurn` agora chama `telephonyTranscriptionService.maskPii` nos turnos user e assistant ANTES de gravar metadata (que alimenta o webhook `agent.call.ended`/transcript). `callRecord.service.ts` ja possuia `redactPii` proprio para telemetria.
+- Teste de regressao: `src/lib/voice-hub/services/telephonyService.piiMasking.test.ts` (2 testes). Pendente: sanitizacao de embeddings vetoriais de chamadas (item 2 da alteracao necessaria) nao foi enderecada — nao ha pipeline de embeddings de transcricao localizado neste escopo.
