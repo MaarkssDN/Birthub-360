@@ -516,7 +516,7 @@ describe('Landing360', () => {
     fireEvent.submit(leadFormEl);
 
     await waitFor(() => {
-      expect(screen.getByText(/Sessão Solicitada com Sucesso/i)).toBeInTheDocument();
+      expect(screen.getByText(/Solicitação Recebida!/i)).toBeInTheDocument();
     });
 
     const body = JSON.parse(fetchSpy.mock.calls[0][1]?.body as string);
@@ -546,7 +546,7 @@ describe('Landing360', () => {
     fireEvent.change(whatsappInput, { target: { value: '11988887777' } });
 
     // Seleciona chip de tamanho de equipe "16 a 50".
-    fireEvent.click(screen.getAllByRole('button', { name: '16 a 50' })[0]);
+    fireEvent.click(within(leadFormEl).getByRole('button', { name: '16 a 50' }));
 
     const consentCheckbox = container.querySelector(
       'input[type="checkbox"]',
