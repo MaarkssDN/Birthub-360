@@ -18,6 +18,7 @@ filtrados) — **toda ação no host exige execução local ou acesso físico**.
 | Arquivo | Função |
 |---|---|
 | `apply-docker-2375-allowlist.ps1` | Mitigação imediata: regras de firewall Windows permitindo TCP 2375 somente dos IPs autorizados (default `192.168.0.179`). Idempotente, roda no host como Administrador. |
+| `verify-docker-2375-restriction.sh` | Verificação pós-mitigação: roda de qualquer host da LAN e confirma se a porta 2375 está bloqueada ou respondendo (`--expect blocked` / `--expect allowed`). |
 
 ## Runbook para o operador (no host 192.168.0.116)
 
@@ -43,7 +44,17 @@ O script só cria regras **Allow** — o inbound default do Windows já bloqueia
 resto (regra Block genérica teria precedência sobre Allow e quebraria o acesso
 autorizado).
 
-Verificação:
+Verificação (script versionado, roda de qualquer host da LAN):
+
+```bash
+# de um IP NÃO autorizado — deve reportar BLOQUEADO (exit 0):
+./infrastructure/security/verify-docker-2375-restriction.sh --expect blocked
+
+# do workstation autorizado — deve reportar EXPOSTO/acesso OK (exit 0):
+./infrastructure/security/verify-docker-2375-restriction.sh --expect allowed
+```
+
+Equivalente manual:
 
 ```powershell
 # de IP não autorizado (outro host da LAN):
