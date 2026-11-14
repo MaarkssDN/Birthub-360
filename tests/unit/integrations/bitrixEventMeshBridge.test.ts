@@ -225,6 +225,44 @@ describe('BitrixEventMeshBridgeService — Sincronização de Webhooks Bitrix24 
     });
   });
 
+  it('deve ignorar mensagem WhatsApp com payload fora do contrato (GATE-02)', async () => {
+    await domainEventMesh.publish({
+      eventType: 'WHATSAPP_MESSAGE_RECEIVED',
+      eventVersion: '1.0.0',
+      organizationId: 'tenant-alpha',
+      correlationId: 'wa-invalid-001',
+      producer: 'integrations.whatsapp',
+      aggregateId: 'lead-123',
+      payload: {
+        // payload sem waMessageId/phoneE164/direction válidos — não é WhatsAppMessageEventPayload
+        leadId: 'lead-123',
+        unexpected: 'campo arbitrário',
+      },
+    });
+
+    expect(syncActivitySpy).not.toHaveBeenCalled();
+  });
+
+  it('deve ignorar webhook Bitrix com payload fora do contrato (GATE-02)', async () => {
+    const findFirstSpy = vi.spyOn(prisma.lead, 'findFirst');
+
+    await domainEventMesh.publish({
+      eventType: 'BITRIX_WEBHOOK_RECEIVED',
+      eventVersion: '1.0.0',
+      organizationId: 'tenant-alpha',
+      correlationId: 'webhook-invalid-001',
+      producer: 'bitrix-webhook-service',
+      aggregateId: 'lead-123',
+      payload: {
+        // falta connectionId/bitrixRecordId/entityType válidos — não é BitrixWebhookEventPayload
+        leadId: 'lead-123',
+        stageId: 'PROPOSAL',
+      },
+    });
+
+    expect(findFirstSpy).not.toHaveBeenCalled();
+  });
+
   it('não deve falhar a emissão do evento quando o Bitrix24 estiver temporariamente fora do ar', async () => {
     syncActivitySpy.mockRejectedValueOnce(new Error('Bitrix API timeout 504'));
 
