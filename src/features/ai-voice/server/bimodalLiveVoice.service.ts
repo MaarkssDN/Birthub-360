@@ -22,6 +22,9 @@ export class BimodalLiveVoiceService implements IBimodalLiveVoicePort {
     const key = `${config.organizationId}:${config.sessionId}`;
     const now = new Date().toISOString();
 
+    // Reconciliação forense (2026-11): não existe transporte Live real — estes
+    // valores são placeholders ilustrativos, NÃO medições de áudio. isEstimate
+    // sinaliza isso a qualquer consumidor.
     const initialMetrics: LiveLatencyMetrics = {
       timeToFirstAudioMs: 240,
       latencyP50Ms: 380,
@@ -30,6 +33,7 @@ export class BimodalLiveVoiceService implements IBimodalLiveVoicePort {
       bargeInResponseMs: 120,
       reconnectCount: 0,
       packetsLost: 0,
+      isEstimate: true,
     };
 
     const session: BimodalLiveSession = {
@@ -41,6 +45,9 @@ export class BimodalLiveVoiceService implements IBimodalLiveVoicePort {
       turns: [],
       metrics: initialMetrics,
       isFallback: false,
+      // Sessão inteiramente simulada: sendAudioStream não transcreve nem
+      // sintetiza áudio real. Ver handoff forense 00-para-12 (EXP-01).
+      simulated: true,
       createdAt: now,
       updatedAt: now,
     };
@@ -106,9 +113,11 @@ export class BimodalLiveVoiceService implements IBimodalLiveVoicePort {
         audioDurationMs: 2500,
         interrupted: false,
         timestamp: new Date().toISOString(),
+        // Turno fabricado: o áudio real não é transcrito (sem STT).
+        simulated: true,
       });
 
-      // Assistente responde
+      // Assistente responde (resposta fixa de simulação, sem LLM)
       session.state = 'SPEAKING';
       session.turns.push({
         speaker: 'assistant',
@@ -116,6 +125,7 @@ export class BimodalLiveVoiceService implements IBimodalLiveVoicePort {
         audioDurationMs: 3200,
         interrupted: false,
         timestamp: new Date().toISOString(),
+        simulated: true,
       });
     } else {
       session.state = 'LISTENING';
@@ -151,7 +161,8 @@ export class BimodalLiveVoiceService implements IBimodalLiveVoicePort {
       lastTurn.interrupted = true;
     }
 
-    const latencyMs = Math.max(1, Date.now() - start + 85); // Resposta subsegundo verificável
+    // Medição real do tempo local decorrido — sem offset artificial.
+    const latencyMs = Math.max(0, Date.now() - start);
     session.metrics.bargeInResponseMs = latencyMs;
 
     // Retorna imediatamente para escuta ativa

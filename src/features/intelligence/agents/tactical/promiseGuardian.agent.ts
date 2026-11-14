@@ -192,12 +192,24 @@ export class PromiseGuardianAgent implements IPromiseGuardianPort {
     status: 'APPROVED';
     crmTaskId: string;
     commitment: CommercialPromiseCommitment;
+    /**
+     * true porque crmTaskId é um UUID local — nenhuma tarefa foi criada de
+     * fato no CRM. Consumidores NÃO devem tratar como tarefa real (reconciliação
+     * forense F04-04).
+     */
+    simulated: boolean;
   }> {
     const key = `${organizationId}:${commitmentId}`;
     let commitment = this.commitmentsStore.get(key);
     const crmTaskId = `task-${randomUUID().substring(0, 8)}`;
 
     if (!commitment) {
+      // Reconciliação forense: antes fabricávamos um compromisso "fantasma"
+      // quando o registro não existia. Mantido por compatibilidade de contrato,
+      // mas sinalizado via log e pelo flag `simulated` no retorno.
+      logger.warn(
+        `[PromiseGuardian] approveCommitment chamado para compromisso inexistente ${commitmentId} no tenant ${organizationId} — resposta é simulada, nenhuma tarefa CRM real foi criada.`,
+      );
       commitment = {
         id: commitmentId,
         organizationId,
@@ -230,6 +242,8 @@ export class PromiseGuardianAgent implements IPromiseGuardianPort {
       status: 'APPROVED',
       crmTaskId,
       commitment,
+      // crmTaskId é sempre um UUID local — não há integração real com o CRM.
+      simulated: true,
     };
   }
 
