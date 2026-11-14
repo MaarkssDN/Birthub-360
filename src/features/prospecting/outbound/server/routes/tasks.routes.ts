@@ -1,9 +1,20 @@
 import { Router, type Request, type Response } from 'express';
 import { getDatabase, saveDatabase, logActivity } from '../db.js';
-import { requireAuth, requireManager } from '../auth.js';
+import { requireAuth, requireManager, requireTenantScope, tenantCompany } from '../auth.js';
 import { isWithinMaxLength } from '../validators.js';
 
 export const tasksRouter = Router();
+
+// Handoff 12→05 (F2): defesa em profundidade — sessão + company obrigatórias
+// mesmo que este router seja montado fora do apiRouter.
+tasksRouter.use(requireTenantScope);
+
+// tasks não tem coluna `company` própria: o tenant é resolvido via JOIN em
+// `leads` (que tem `company`). Mesma comparação case-insensitive de
+// campaigns.routes.ts.
+function leadCompanyClause(): string {
+  return `LOWER(TRIM(COALESCE(l.company, ''))) = ?`;
+}
 
 // --- Tarefas por lead --------------------------------------------------------
 // Compromisso que o próprio vendedor cria (data + descrição livre), diferente de
@@ -36,7 +47,11 @@ tasksRouter.post('/leads/:id/tasks', requireAuth, async (req: Request, res: Resp
         .json({ error: 'Descrição da tarefa é longa demais (máx. 500 caracteres).' });
     }
     const db = await getDatabase();
-    const leadRes = await db.exec(`SELECT id FROM leads WHERE id = ?`, [id]);
+    const company = tenantCompany(req);
+    const leadRes = await db.exec(
+      `SELECT l.id FROM leads l WHERE l.id = ? AND LOWER(TRIM(COALESCE(l.company, ''))) = ?`,
+      [id, company],
+    );
     if (leadRes.length === 0 || leadRes[0].values.length === 0) {
       return res.status(404).json({ error: 'Lead não encontrado.' });
     }
@@ -59,14 +74,17 @@ tasksRouter.post('/leads/:id/tasks', requireAuth, async (req: Request, res: Resp
 });
 
 // Listar tarefas de um lead (mais recentes / pendentes primeiro)
-tasksRouter.get('/leads/:id/tasks', async (req: Request, res: Response) => {
+tasksRouter.get('/leads/:id/tasks', requireAuth, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const db = await getDatabase();
+    const company = tenantCompany(req);
+    // JOIN em leads para impor o escopo de company (tasks não tem coluna própria).
     const result = await db.exec(
-      `SELECT * FROM tasks WHERE lead_id = ?
-       ORDER BY (status = 'pending') DESC, due_date ASC NULLS LAST, created_at DESC`,
-      [id],
+      `SELECT t.* FROM tasks t JOIN leads l ON l.id = t.lead_id
+       WHERE t.lead_id = ? AND ${leadCompanyClause()}
+       ORDER BY (t.status = 'pending') DESC, t.due_date ASC NULLS LAST, t.created_at DESC`,
+      [id, company],
     );
     res.json(mapRows(result));
   } catch (err: any) {
@@ -116,7 +134,11 @@ tasksRouter.put('/tasks/:id', requireAuth, async (req: Request, res: Response) =
     }
 
     const db = await getDatabase();
-    const beforeRes = await db.exec(`SELECT lead_id, status FROM tasks WHERE id = ?`, [id]);
+    const company = tenantCompany(req);
+    const beforeRes = await db.exec(
+      `SELECT t.lead_id, t.status FROM tasks t JOIN leads l ON l.id = t.lead_id WHERE t.id = ? AND ${leadCompanyClause()}`,
+      [id, company],
+    );
     if (beforeRes.length === 0 || beforeRes[0].values.length === 0) {
       return res.status(404).json({ error: 'Tarefa não encontrada.' });
     }

@@ -26,9 +26,9 @@ const errorReportLimiter = rateLimit({
 });
 
 // 1. Health check & DB Stats
-systemRouter.get('/health', async (_req: Request, res: Response) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
+// NOTA: GET /health foi movido para server/routes.ts (registrado ANTES do
+// requireTenantScope) para continuar respondendo a sondas sem sessão — a
+// cópia que existia aqui ficava inalcançável e foi removida.
 
 // Wave 4 (CPI) - Provider Registry: expõe o catálogo real de providers, suas
 // capacidades declaradas e status de configuração/saúde - nenhum provider

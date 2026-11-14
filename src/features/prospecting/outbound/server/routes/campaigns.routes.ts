@@ -1,8 +1,28 @@
 import { Router, type Request, type Response } from 'express';
 import { getDatabase } from '../db.js';
 import { formatLeadRow } from '../utils/formatLead.js';
+import { requireTenantScope, tenantCompany } from '../auth.js';
+import { normalizeCompany } from './auth.routes.js';
 
 export const campaignsRouter = Router();
+
+// Handoff 12→05 (F2): TODAS as rotas deste router passam pelo guard de
+// tenant (sessão + company) — defesa em profundidade caso o router seja
+// montado fora do apiRouter. As queries abaixo filtram por `company` da
+// sessão; sem esse filtro qualquer autenticado lia campanhas/leads de
+// todas as empresas (cross-tenant/LGPD).
+campaignsRouter.use(requireTenantScope);
+
+// Comparação case-insensitive e tolerante a espaços — o valor gravado em
+// `company` vem do cadastro legado e pode divergir em caixa do valor da
+// sessão (ambos passam por normalizeCompany no login).
+function companyClause(column: string): string {
+  return `LOWER(TRIM(COALESCE(${column}, ''))) = ?`;
+}
+
+function sameCompany(a: unknown, b: string): boolean {
+  return (normalizeCompany(a) ?? String(a ?? '').trim().toLowerCase()) === b;
+}
 
 // 4. Campaigns API
 // Paginado (limit/offset opcionais) para não carregar a tabela inteira conforme a
@@ -12,16 +32,18 @@ campaignsRouter.get('/campaigns', async (req: Request, res: Response) => {
     const db = await getDatabase();
     const limit = Math.min(Math.max(1, Number(req.query.limit) || 50), 200);
     const offset = Math.max(0, Number(req.query.offset) || 0);
+    const company = tenantCompany(req);
     const result = await db.exec(
       `
       SELECT c.*,
-        (SELECT COUNT(*) FROM leads l WHERE l.campaign_id = c.id) as leads_count,
+        (SELECT COUNT(*) FROM leads l WHERE l.campaign_id = c.id AND ${companyClause('l.company')}) as leads_count,
         (SELECT COUNT(*) FROM messages m WHERE m.campaign_id = c.id) as messages_count
       FROM campaigns c
+      WHERE ${companyClause('c.company')}
       ORDER BY c.created_at DESC
       LIMIT ? OFFSET ?
     `,
-      [limit, offset],
+      [company, company, limit, offset],
     );
 
     if (result.length === 0) {
@@ -49,11 +71,21 @@ campaignsRouter.get('/users/:userId/leads', async (req: Request, res: Response) 
   try {
     const { userId } = req.params;
     const db = await getDatabase();
+    // O vendedor alvo precisa pertencer à MESMA company da sessão — sem isso,
+    // qualquer usuário autenticado lia a carteira de leads de outro tenant.
+    const userRes = await db.exec(`SELECT company FROM users WHERE id = ?`, [userId]);
+    if (userRes.length === 0 || userRes[0].values.length === 0) {
+      return res.status(404).json({ error: 'Vendedor não encontrado.' });
+    }
+    const company = tenantCompany(req);
+    if (!sameCompany(userRes[0].values[0][0], company)) {
+      return res.status(403).json({ error: 'Vendedor pertence a outra empresa.' });
+    }
     const limit = Math.min(Math.max(1, Number(req.query.limit) || 500), 2000);
     const offset = Math.max(0, Number(req.query.offset) || 0);
     const leadsRes = await db.exec(
-      `SELECT * FROM leads WHERE assigned_to = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`,
-      [userId, limit, offset],
+      `SELECT * FROM leads WHERE assigned_to = ? AND ${companyClause('company')} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      [userId, company, limit, offset],
     );
     const leads: any[] = [];
     if (leadsRes.length > 0) {
@@ -90,14 +122,17 @@ campaignsRouter.get('/users/:userId/leads', async (req: Request, res: Response) 
 });
 
 // Distribuição: leads atribuídos, agrupados por vendedor (para o painel do admin)
-campaignsRouter.get('/leads/distribution', async (_req: Request, res: Response) => {
+campaignsRouter.get('/leads/distribution', async (req: Request, res: Response) => {
   try {
     const db = await getDatabase();
+    const company = tenantCompany(req);
 
     // 'gestor' não é vendedor (não entra no rodízio de leads em /api/prospect) — só
     // role='user' representa um vendedor de verdade nessa visão de distribuição.
+    // Escopo: somente vendedores da MESMA company da sessão (antes listava todos).
     const usersRes = await db.exec(
-      `SELECT id, email, name, role, company FROM users WHERE role = 'user' ORDER BY name ASC`,
+      `SELECT id, email, name, role, company FROM users WHERE role = 'user' AND ${companyClause('company')} ORDER BY name ASC`,
+      [company],
     );
     const sellers: any[] = (usersRes[0]?.values || []).map((row) => ({
       id: row[0],
@@ -114,14 +149,15 @@ campaignsRouter.get('/leads/distribution', async (_req: Request, res: Response) 
     // Lista limitada a 200 por vendedor (renderização), mas totalLeads vem de um
     // COUNT(*) à parte — nunca subestimar o total mostrado ao gestor por causa do limite.
     for (const seller of sellers) {
-      const countRes = await db.exec(`SELECT COUNT(*) FROM leads WHERE assigned_to = ?`, [
-        seller.id,
-      ]);
+      const countRes = await db.exec(
+        `SELECT COUNT(*) FROM leads WHERE assigned_to = ? AND ${companyClause('company')}`,
+        [seller.id, company],
+      );
       const totalLeadsForSeller = Number(countRes[0]?.values[0]?.[0]) || 0;
 
       const leadsRes = await db.exec(
-        `SELECT id, name, segment, company_type, stage, domain, created_at FROM leads WHERE assigned_to = ? ORDER BY created_at DESC LIMIT 200`,
-        [seller.id],
+        `SELECT id, name, segment, company_type, stage, domain, created_at FROM leads WHERE assigned_to = ? AND ${companyClause('company')} ORDER BY created_at DESC LIMIT 200`,
+        [seller.id, company],
       );
       const leads: any[] = [];
       if (leadsRes.length > 0) {
@@ -153,8 +189,12 @@ campaignsRouter.get('/campaigns/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const db = await getDatabase();
+    const company = tenantCompany(req);
 
-    const campRes = await db.exec(`SELECT * FROM campaigns WHERE id = ?`, [id]);
+    const campRes = await db.exec(
+      `SELECT * FROM campaigns WHERE id = ? AND ${companyClause('company')}`,
+      [id, company],
+    );
     if (campRes.length === 0 || campRes[0].values.length === 0) {
       return res.status(404).json({ error: 'Campanha não encontrada.' });
     }
@@ -165,10 +205,10 @@ campaignsRouter.get('/campaigns/:id', async (req: Request, res: Response) => {
       campObj[col] = campRes[0].values[0][idx];
     });
 
-    // Get leads
+    // Get leads (mesma company da campanha/sessão)
     const leadsRes = await db.exec(
-      `SELECT * FROM leads WHERE campaign_id = ? ORDER BY created_at ASC`,
-      [id],
+      `SELECT * FROM leads WHERE campaign_id = ? AND ${companyClause('company')} ORDER BY created_at ASC`,
+      [id, company],
     );
     const leads: any[] = [];
     if (leadsRes.length > 0) {
