@@ -170,4 +170,9 @@ export class OutboxRelay {
     if (this.timer) clearInterval(this.timer);
     this.timer = undefined;
   }
+
+  /** Alias de `stop()` para o graceful shutdown genérico (EmbeddedWorkersHandle). */
+  close(): void {
+    this.stop();
+  }
 }
