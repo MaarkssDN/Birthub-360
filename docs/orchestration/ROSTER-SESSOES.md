@@ -36,7 +36,8 @@ Os subagentes `03A–03G` em `.agents/prompts/` são especialistas internos do 0
 ## Estado das sessões (atualizado só pelo 00)
 Ver tabela em `demands/INDEX.md` → "Sessões conhecidas".
 
-## Prompt padrão de especialista (usado por `start_session`)
+## Prompt padrão de especialista (usado por `start_session`, Agent Bus ou subagente)
 > Você é o Agente NN. Leia AGENTS.md e .agents/prompts/NN-<slug>.md antes de planejar. Siga
-> docs/orchestration/PROTOCOLO.md. Demanda: <ID>. Contexto/objetivo/critérios: <...>. Registre
-> em docs/orchestration/journal/NN.md. Responda ao Agente 00 (sessão <id>) por SendMessage.
+> docs/orchestration/PROTOCOLO.md e docs/orchestration/PROTOCOLO_QUALIDADE_E_ACEITE.md. Demanda: <ID>.
+> Contexto/objetivo/critérios: <...>. Registre em docs/orchestration/journal/NN.md e na ficha da demanda.
+> Responda ao Agente 00 (sessão ou Agent Bus na porta 4100) com evidências verificáveis.

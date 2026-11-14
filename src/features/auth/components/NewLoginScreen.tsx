@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext.js';
 import { useTheme } from '../../../contexts/ThemeContext.js';
 import { authClient } from '../../../lib/auth-client.js';
@@ -136,13 +136,18 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
   const { currentUser } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
+  const targetDestination = (location.state as { from?: { pathname?: string; search?: string } })
+    ?.from?.pathname
+    ? `${(location.state as { from: { pathname: string; search?: string } }).from.pathname}${(location.state as { from: { search?: string } }).from.search || ''}`
+    : '/app';
 
-  // Se já autenticado, vai para o dashboard
+  // Se já autenticado, vai para a rota pretendida ou Home
   useEffect(() => {
     if (currentUser) {
-      navigate('/app', { replace: true });
+      navigate(targetDestination, { replace: true });
     }
-  }, [currentUser, navigate]);
+  }, [currentUser, navigate, targetDestination]);
 
   // Estado do Modal de Autenticação
   const [showAuthModal, setShowAuthModal] = useState(initialScreen === 'login');
@@ -229,7 +234,7 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
           return;
         }
 
-        navigate('/app', { replace: true });
+        navigate(targetDestination, { replace: true });
       } else if (authMode === 'signup') {
         const result = await authClient.signUp.email({
           email: email.trim(),
