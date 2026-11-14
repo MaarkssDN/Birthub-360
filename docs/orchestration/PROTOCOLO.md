@@ -1,6 +1,7 @@
 # Protocolo permanente de orquestração multiagente
 
-Complementa `AGENTS.md` (autoridade sobre o roster, propriedade de arquivos, gates, handoffs §18).
+Complementa `AGENTS.md` (autoridade sobre o roster, propriedade de arquivos, gates, handoffs §18) e
+`docs/orchestration/PROTOCOLO_QUALIDADE_E_ACEITE.md` (critérios de qualidade, evidências e homologação).
 Em conflito, `AGENTS.md` e regras de segurança prevalecem; instruções diretas do usuário prevalecem
 sobre decisões anteriores de orquestração. Não edita prompts nem regras globais (AGENTS.md §5).
 
@@ -8,7 +9,7 @@ Para os critérios de aceite, correção e avaliação sem exigências retroativ
 [`PROTOCOLO_QUALIDADE_E_ACEITE.md`](PROTOCOLO_QUALIDADE_E_ACEITE.md).
 
 ## Fluxo obrigatório de toda demanda
-RECEBER → REGISTRAR → PLANEJAR → DELEGAR → ACOMPANHAR → CORRIGIR → VALIDAR → HOMOLOGAR → CONCLUIR
+RECEBER → REGISTRAR → DEFINIR ACEITE → PLANEJAR → DELEGAR → EXECUTAR → ACOMPANHAR → TESTAR → CORRIGIR → REVALIDAR → REVISÃO INDEPENDENTE → CONCLUIR
 
 Demandas antigas não são executadas automaticamente; só entram se o usuário pedir.
 
@@ -31,11 +32,14 @@ Demandas antigas não são executadas automaticamente; só entram se o usuário 
   slots exclusivos 01↔01A, 06↔06A, 08↔08A).
 
 ## Comunicação (nunca simular)
-Mecanismos, em ordem: (1) SendMessage/cross-session para sessão ativa; (2) start_session para
-sessão inexistente; (3) subagente (Agent) para trabalho interno com retorno no mesmo turno;
-(4) se nada disso for possível, registrar pendência na ficha e no INDEX (status BLOQUEADA/PENDENTE).
-Toda solicitação inclui: ID da demanda, contexto, objetivo, critérios de aceite, arquivos
-permitidos, e como responder (`SendMessage` para o 00). Mensagem enviada ≠ tarefa concluída.
+Mecanismos disponíveis, em ordem de prioridade:
+1. **Agent Bus Local (:4100)**: Mensageria persistida em SQLite (`.agents/bus/agent_bus.db`), REST/SSE e CLI (`node .agents/bus/agent-cli.mjs send --from XX --to YY --type TASK|ACK|INFO`). Permite que qualquer janela de terminal ou sessão se comunique rastreavelmente.
+2. **SendMessage / Cross-session**: Comunicação nativa entre sessões ativas no Claude Code / Claude Desktop.
+3. **Subagentes / Worker Swarm**: Execução delegada no mesmo turno com reporte ao Coordenador.
+4. **Registro Estruturado**: Se nenhum canal síncrono responder imediatamente, gravar na ficha da demanda (`docs/orchestration/demands/DEM-*.md`) e no diário (`journal/NN.md`), mantendo status PENDENTE/BLOQUEADA até confirmação.
+
+Toda solicitação inclui: ID da demanda, contexto, objetivo, critérios de aceite (obrigatórios vs opcionais), arquivos permitidos e instrução de resposta ao Agente 00.
+**Mensagem enviada ≠ tarefa concluída.**
 Ao receber resposta: analisar, registrar no diário, informar o 00 (decidido/executado).
 
 ## Papel do Agente 00

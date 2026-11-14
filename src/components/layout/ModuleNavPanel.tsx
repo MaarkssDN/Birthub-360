@@ -14,6 +14,7 @@ import {
   PRODUCT_MODULES,
   type ProductModule,
 } from './moduleRegistry.js';
+import { getModuleTheme } from './moduleThemes.js';
 import type { NavLaunch } from './NavLaunchTransition.js';
 import { NavLaunchTransition } from './NavLaunchTransition.js';
 import { TAB_META, type TabType } from './tabMeta.js';
@@ -163,11 +164,6 @@ export function ModuleNavPanel({
           <module.icon className="h-[18px] w-[18px] text-ink" aria-hidden="true" />
         </span>
         <div className="min-w-0">
-          <div className="flex items-center gap-1.5">
-            <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-ink-2">
-              {module.code}
-            </span>
-          </div>
           <h2 className="truncate font-display text-[14px] font-bold leading-tight tracking-[-0.02em] text-ink">
             {module.label}
           </h2>
@@ -241,6 +237,7 @@ export function ModuleNavPanel({
             {PRODUCT_MODULES.map((m) => {
               const Icon = m.icon;
               const mobileOnly = m.availability === 'mobile';
+              const theme = getModuleTheme(m.id);
               return (
                 <button
                   key={m.id}
@@ -255,14 +252,15 @@ export function ModuleNavPanel({
                   }`}
                 >
                   <span
-                    className={`${ICON_WELL} bg-surface-2 text-ink-2 border border-transparent group-hover:bg-surface group-hover:text-ink`}
+                    className={`${ICON_WELL} border border-transparent group-hover:border-[currentColor]/30`}
+                    style={{
+                      color: theme.primaryColor,
+                      backgroundColor: `color-mix(in srgb, ${theme.primaryColor} 12%, transparent)`,
+                    }}
                   >
                     <Icon className="h-4 w-4" aria-hidden="true" />
                   </span>
                   <span className="min-w-0 flex-1 truncate text-left font-medium">
-                    <span className="font-mono text-[9px] uppercase tracking-wide text-ink-2">
-                      {m.code}
-                    </span>{' '}
                     {m.label}
                   </span>
                 </button>
