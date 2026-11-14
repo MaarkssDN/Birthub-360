@@ -55,24 +55,6 @@
   },
   {
     "type": "dependency",
-    "from": "src/features/automations/application/cold-leads-scanner.service.ts",
-    "rule": {
-      "name": "no-cross-feature-imports",
-      "severity": "error"
-    },
-    "to": "src/features/intelligence/services/swarmScheduler.service.ts"
-  },
-  {
-    "type": "dependency",
-    "from": "src/features/automations/application/cold-leads-scanner.service.ts",
-    "rule": {
-      "name": "no-cross-feature-imports",
-      "severity": "error"
-    },
-    "to": "src/features/intelligence/services/vector-search.service.ts"
-  },
-  {
-    "type": "dependency",
     "from": "src/features/automations/automation-dry-run.service.ts",
     "rule": {
       "name": "no-cross-feature-imports",
@@ -190,15 +172,6 @@
   },
   {
     "type": "dependency",
-    "from": "src/features/commercial-intelligence/infra/CommercialIntelligenceAiService.ts",
-    "rule": {
-      "name": "no-cross-feature-imports",
-      "severity": "error"
-    },
-    "to": "src/features/intelligence/services/guardrails.service.ts"
-  },
-  {
-    "type": "dependency",
     "from": "src/features/companies/application/CompanyUseCases.ts",
     "rule": {
       "name": "no-cross-feature-imports",
@@ -280,15 +253,6 @@
   },
   {
     "type": "dependency",
-    "from": "src/features/crm/components/LeadDetailDrawer.tsx",
-    "rule": {
-      "name": "no-cross-feature-imports",
-      "severity": "error"
-    },
-    "to": "src/features/intelligence/components/PredictiveScoringNbaCard.tsx"
-  },
-  {
-    "type": "dependency",
     "from": "src/features/crm/jobs/followUp.worker.ts",
     "rule": {
       "name": "no-cross-feature-imports",
@@ -367,24 +331,6 @@
       "severity": "error"
     },
     "to": "src/features/knowledge/knowledge.api.ts"
-  },
-  {
-    "type": "dependency",
-    "from": "src/features/integrations/birth-voice/birthVoice.routes.ts",
-    "rule": {
-      "name": "no-cross-feature-imports",
-      "severity": "error"
-    },
-    "to": "src/features/intelligence/services/guardrails.service.ts"
-  },
-  {
-    "type": "dependency",
-    "from": "src/features/integrations/birth-voice/birthVoice.service.ts",
-    "rule": {
-      "name": "no-cross-feature-imports",
-      "severity": "error"
-    },
-    "to": "src/features/intelligence/services/guardrails.service.ts"
   },
   {
     "type": "dependency",
@@ -576,15 +522,6 @@
   },
   {
     "type": "dependency",
-    "from": "src/features/prospecting/routes/prospecting.routes.ts",
-    "rule": {
-      "name": "no-cross-feature-imports",
-      "severity": "error"
-    },
-    "to": "src/features/intelligence/services/IcebreakerService.ts"
-  },
-  {
-    "type": "dependency",
     "from": "src/features/prospecting/services/cold-email.service.ts",
     "rule": {
       "name": "no-cross-feature-imports",
@@ -600,24 +537,6 @@
       "severity": "error"
     },
     "to": "src/features/cadence/infra/PrismaOptOutRepository.ts"
-  },
-  {
-    "type": "dependency",
-    "from": "src/features/prospecting/services/enrichment.service.ts",
-    "rule": {
-      "name": "no-cross-feature-imports",
-      "severity": "error"
-    },
-    "to": "src/features/intelligence/services/IcebreakerService.ts"
-  },
-  {
-    "type": "dependency",
-    "from": "src/features/prospecting/services/ocr.service.ts",
-    "rule": {
-      "name": "no-cross-feature-imports",
-      "severity": "error"
-    },
-    "to": "src/features/intelligence/services/studio.service.ts"
   },
   {
     "type": "dependency",
@@ -756,32 +675,5 @@
         ]
       }
     ]
-  },
-  {
-    "type": "dependency",
-    "from": "src/features/hub/components/CommercialAgentCellPanel.tsx",
-    "rule": {
-      "name": "no-cross-feature-imports",
-      "severity": "error"
-    },
-    "to": "src/features/intelligence/commercial-v3/evaluation/commercialRedteamEvaluator.service.ts"
-  },
-  {
-    "type": "dependency",
-    "from": "src/features/hub/components/CommercialAgentCellPanel.tsx",
-    "rule": {
-      "name": "no-cross-feature-imports",
-      "severity": "error"
-    },
-    "to": "src/features/intelligence/commercial-v3/contracts/commercialAgentV3.types.ts"
-  },
-  {
-    "type": "dependency",
-    "from": "src/features/hub/commercialV3.api.ts",
-    "rule": {
-      "name": "no-cross-feature-imports",
-      "severity": "error"
-    },
-    "to": "src/features/intelligence/commercial-v3/contracts/commercialAgentV3.types.ts"
   }
 ]
