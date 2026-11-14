@@ -40,7 +40,9 @@ export async function scheduleConversationAnalysis(
   organizationId: string,
 ): Promise<void> {
   if (!whatsappSignalQueue) return;
-  const jobId = `conversation-signal:${leadId}`;
+  // MEL-21 (Onda 3): organizationId no jobId — leadId não é garantidamente único entre tenants;
+  // sem o discriminador, dois tenants com o mesmo leadId deduplicariam a análise um do outro.
+  const jobId = `conversation-signal:${organizationId}:${leadId}`;
 
   try {
     const existing = await whatsappSignalQueue.getJob(jobId);
