@@ -1,21 +1,17 @@
 import type { NextFunction, Request, Response } from 'express';
 import type { AuthRequest } from '../../shared/middlewares/authenticateToken.js';
 import { requestContext } from '../async-context.js';
-import { AuditService } from '../audit/audit.service.js';
+import { AuditService, type AuditAction } from '../audit/audit.service.js';
 
 /**
  * Middleware Express para trilha de auditoria genérica por rota (AuditLog).
  *
- * ⚠️ NOTA DE AUDITORIA (Onda roadmap-v2-transversais / Agente 15):
- * Este middleware possui implementação correta e testes unitários dedicados, mas
- * atualmente NÃO está montado no pipeline de rotas da aplicação (serviços específicos
- * hoje chamam `AuditService.log` diretamente).
- * Candidatas naturais para montagem futura: rotas de mutação crítica e exportação
- * (ex.: export de contatos/empresas, remoções em lote). A montagem efetiva cabe aos
- * respectivos proprietários de features ou conforme diretrizes de governança.
- * Ver `.agents/handoffs/roadmap-v2-transversais/15-para-00-auditaccessmiddleware-nao-utilizado.md`.
+ * Montado nas rotas sensíveis (DEM-20261114-003, follow-up Onda 2): exports de
+ * analytics/commercial-intelligence/leads/Bitrix e GETs de detalhe de Company/Contact
+ * (acesso a PII). `action` explícito cobre endpoints POST de exportação, que o
+ * mapeamento por método rotularia como UPDATE.
  */
-export function auditAccessMiddleware(entity: string) {
+export function auditAccessMiddleware(entity: string, action?: AuditAction) {
   return (req: Request, res: Response, next: NextFunction) => {
     const actorId = (req as AuthRequest).user?.id || 'anonymous';
     // tenantId vem exclusivamente do usuário autenticado — nunca de um header controlado pelo
@@ -24,6 +20,9 @@ export function auditAccessMiddleware(entity: string) {
     // se fosse legítimo daquele tenant forjado).
     const tenantId = (req as AuthRequest).user?.organizationId;
     const ipAddress = req.ip || req.socket.remoteAddress;
+    // entityId: primeiro parâmetro de rota presente (ex.: /companies/:id → id da empresa),
+    // para que o detalhe auditado aponte o registro acessado e não só a entidade.
+    const routeEntityId = Object.values(req.params)[0];
 
     // Ao finalizar a requisição, gravamos o log de auditoria. AuditLog tem FORCE ROW LEVEL
     // SECURITY (WITH CHECK exige app.current_tenant_id = tenantId, sem bypass — ver migration
@@ -36,8 +35,15 @@ export function auditAccessMiddleware(entity: string) {
       if (res.statusCode < 400) {
         requestContext.run({ tenantId }, () => {
           AuditService.log({
-            action: req.method === 'GET' ? 'EXPORT' : req.method === 'DELETE' ? 'DELETE' : 'UPDATE',
+            action:
+              action ??
+              (req.method === 'GET'
+                ? 'EXPORT'
+                : req.method === 'DELETE'
+                  ? 'DELETE'
+                  : 'UPDATE'),
             entity,
+            entityId: typeof routeEntityId === 'string' ? routeEntityId : undefined,
             actorId,
             tenantId,
             ipAddress,

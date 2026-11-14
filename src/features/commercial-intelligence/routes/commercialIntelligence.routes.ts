@@ -2,6 +2,7 @@ import { Router } from 'express';
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { env } from '../../../config/env.js';
 import { COMMERCIAL_INTELLIGENCE_ROLES } from '../../../lib/auth/authorization.js';
+import { auditAccessMiddleware } from '../../../lib/security/auditLog.middleware.js';
 import { container } from '../../../shared/di/container.js';
 import type { AuthRequest } from '../../../shared/middlewares/authenticateToken.js';
 import { requireRole } from '../../../shared/middlewares/requireRole.js';
@@ -61,7 +62,11 @@ router.get('/deals/:leadId/forecast', (req, res, next) =>
 router.get('/metrics-dictionary', (req, res) => resolve().getMetricsDictionary(req, res));
 // Exportação HTML/CSV/JSON do Relatório Executivo — devolve conteúdo cru (não o envelope
 // {success,data} do resto do router), ver comentário em `CommercialIntelligenceController.getExport`.
-router.get('/export', (req, res, next) => resolve().getExport(req, res, next));
+// DEM-20261114-003 (follow-up Onda 2): dump do relatório executivo (métricas + PII agregada do
+// tenant) passa a gravar AuditLog/EXPORT, mesmo padrão do export de leads.
+router.get('/export', auditAccessMiddleware('CommercialIntelligence'), (req, res, next) =>
+  resolve().getExport(req, res, next),
+);
 router.get('/filter-options', (req, res, next) => resolve().getFilterOptions(req, res, next));
 router.get('/trends', (req, res, next) => resolve().getHistoricalTrends(req, res, next));
 // Health Score composto + erro histórico do Forecast (snapshots reais), CLOSEDATE Intelligence e
