@@ -1,7 +1,7 @@
 - De: 00 (Coordenador)
 - Para: 00 (Coordenador - decisório)
 - Onda: techdebt-2026-09-29
-- Status: resolvido
+- Status: adiado
 - Prioridade: normal
 
 ## Problema
@@ -49,3 +49,5 @@ Observação: `tsc --noEmit` já passa no projeto, então muitos findings podem 
 - **Ação não executada:** Filtragem requer análise do JSON do audit (path externo ao repositório), será executada em momento oportuno ou quando necessário
 
 **Status parcialmente resolvido:** Decisão tomada, filtragem pendente por limitação de acesso ao arquivo de dados externo.
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto ADIADO — filtragem pendente por limitação de acesso. Ver RESULTADOS-RECONCILIACAO-20261114.md.

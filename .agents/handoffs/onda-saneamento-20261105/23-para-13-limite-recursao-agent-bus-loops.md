@@ -1,7 +1,7 @@
 ﻿De: 23 â€” Custo, Performance e Limites de IA
 Para: 13 â€” Enxame AutÃ´nomo e GovernanÃ§a de Agentes de Runtime
 Onda: onda-saneamento-20261105
-Status: resolvido
+Status: aberto
 Prioridade: alto
 Bloqueador-ref: DIV-AGENTE-13-001
 Sprint destino: Onda 4 â€” IA, Enxames e OtimizaÃ§Ã£o de Custos
@@ -33,4 +33,6 @@ Controle de custos de API de IA e estabilidade do enxame.
 - Data: 2026-11-06.
 - Implementado AgentBus em src/lib/agents/agentBus.ts com metadados obrigatorios de rastreabilidade (correlationId, hopCount, traceParent) e trava estrita que lanca LoopDetectedException se hopCount ultrapassar 5.
 - Testes: 	ests/unit/lib/agents/agentBus-recursion-limit.test.ts (2 passam).
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto DEFEITO-REAL — limite só no protótipo; bus real sem hopCount. Correção pendente de despacho. Ver RESULTADOS-RECONCILIACAO-20261114.md.
 

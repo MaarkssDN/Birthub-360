@@ -15,11 +15,11 @@ Os endpoints comerciais V3.1 montados em `/api/agent/commercial-v3/*` utilizam m
 5. Garantia de que handoffs respeitam `viaSupervisor: true` e que `evaluate-redteam` respeita cotas e isolamento estrito sem chamadas externas.
 
 ## Arquivo(s) envolvido(s)
-- `src/features/intelligence/commercial-v3/__tests__/commercialV3.security.test.ts`
+- `tests/security/commercialV3.security.test.ts`
 - `tests/unit/ci-main-protection-workflows.test.ts` (compatibilização cross-platform)
 
 ## Resolução
-1. Criada suíte completa de segurança e isolamento com 13 cenários de teste automatizados em `src/features/intelligence/commercial-v3/__tests__/commercialV3.security.test.ts`:
+1. Criada suíte completa de segurança e isolamento com 13 cenários de teste automatizados em `tests/security/commercialV3.security.test.ts` (path corrigido na reconciliação 2026-11-14 — o path original citado, `src/features/intelligence/commercial-v3/__tests__/`, não contém essa suíte; a suíte real fica em `tests/security/`):
    - **Matriz RBAC:** Validada a resposta de todos os 8 endpoints para Anônimo (401), VISUALIZADOR (403 em escrita/redteam; 200 em leitura), SDR (403 em redteam; 200 nos demais), CLOSER (403 em redteam; 200 nos demais), GESTOR (200 em todos) e ADMIN (200 em todos).
    - **Isolamento Multi-tenant E2E:** Comprovado que o `organizationId` originado da sessão autenticada é o único propagado para o AI Gateway, bloqueando qualquer tentativa de injeção de tenant no body ou headers entre Tenant A e Tenant B.
    - **Controle Operacional Fail-Closed:** Comprovado que `mode` é 'CONSULTIVO', `execution.performed = false` e `compliance.sendEligible = false`, tanto quando `allowOperational` é omitido quanto quando é informado como `true` sem executor homologado.

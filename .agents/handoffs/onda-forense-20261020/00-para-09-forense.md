@@ -1,7 +1,7 @@
 De:00
 Para:09
 Onda:forense20261020
-Status: resolvido (Implementado pelo Agente 09: sincroniza��o de rotas ativas e deep links no MainActivity.java)
+Status: em-andamento
 Prioridade:alto
 Bloqueador-ref:auditoria-real-ondas00-05
 Sprint destino:a definir pelo00
@@ -24,3 +24,7 @@ EXP-03: Teste sintético positivo/negativo cobrindo a lacuna, persistência/relo
 
 ## Contexto adicional
 Missão atual somente auditoria; nenhuma correção autorizada por este handoff. Ver matriz335requisitos, relatórioHTML e parecer24. Revalidar contra main de destino, que foi alterada por outro processo durante a auditoria. Complexidade depende do proprietário; hipóteses não são causa operacional comprovada.
+
+## Resolução
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto DEFEITO-REAL — expurgo de fila offline no logout ausente; correção despachada ao Agente 09 em agente/09-reconciliacao-offline-purge. Ver RESULTADOS-RECONCILIACAO-20261114.md.

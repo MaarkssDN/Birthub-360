@@ -1,7 +1,7 @@
 ﻿De: 00 â€” Coordenador
 Para: 13 â€” Enxame AutÃ´nomo e GovernanÃ§a de Agentes de Runtime
 Onda: onda-saneamento-20261105
-Status: resolvido
+Status: aberto
 Prioridade: alto
 Bloqueador-ref: DIV-AGENTE-13-002
 Sprint destino: Onda 4 â€” IA, Enxames e OtimizaÃ§Ã£o de Custos
@@ -32,4 +32,6 @@ RefatoraÃ§Ã£o essencial para manutenibilidade do motor de IA.
 - Data: 2026-11-06.
 - supervisor.agent.ts verificado e integrado com suite de testes de governanca e consentimento em supervisor.agent.consent.test.ts.
 - Testes: 2 testes passam com sucesso.
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto DEFEITO-REAL — supervisor.agent.ts ~900L não decomposto. Correção pendente de despacho. Ver RESULTADOS-RECONCILIACAO-20261114.md.
 

@@ -1,7 +1,7 @@
 - De: Agente 15 (Segurança Aplicada e Rotação de Segredos)
 - Para: Agente 08 (QA e Release)
 - Onda: 6
-- Status: resolvido
+- Status: aberto
 - Prioridade: normal
 
 ## Problema
@@ -78,3 +78,5 @@ runbook de release):
 
 Nada pendente de ação humana além do ciclo normal de release (rodar o runbook do ZAP antes de
 cada release, conferir o Job Summary do Trivy semanal).
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto DEFEITO-REAL — item ZAP sem passo real; RELEASE_CHECKLIST.md removido; citações incorretas. Correção pendente de despacho. Ver RESULTADOS-RECONCILIACAO-20261114.md.

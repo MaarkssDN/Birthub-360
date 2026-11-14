@@ -1,7 +1,7 @@
 De:00
 Para:06
 Onda:forense20261020
-Status: resolvido (Implementado pelo Agente 06: validação tipada e double-cast seguro em bitrixEventMeshBridge.service.ts)
+Status: em-andamento
 Prioridade: alto
 Bloqueador-ref:auditoria-real-ondas00-05
 Sprint destino:a definir pelo00
@@ -25,3 +25,7 @@ GATE-02: npm run typecheck exit0 na revisão de destino e regressão de payload 
 
 ## Contexto adicional
 Missão atual somente auditoria; nenhuma correção autorizada por este handoff. Ver matriz335requisitos, relatórioHTML e parecer24. Revalidar contra main de destino, que foi alterada por outro processo durante a auditoria. Complexidade depende do proprietário; hipóteses não são causa operacional comprovada.
+
+## Resolução
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto DEFEITO-REAL — double-cast persiste (linhas 95,299); correção despachada ao Agente 06 em agente/06-reconciliacao-doublecast. Ver RESULTADOS-RECONCILIACAO-20261114.md.

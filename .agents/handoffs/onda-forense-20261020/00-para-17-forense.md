@@ -1,7 +1,7 @@
 De:00
 Para:17
 Onda:forense20261020
-Status: resolvido (Implementado pelo Agente 17: isolamento multi-tenant por organizationId em mockLeadsStore, seedLead e detectStagnatedLeads)
+Status: em-andamento
 Prioridade: alto
 Bloqueador-ref:auditoria-real-ondas00-05
 Sprint destino:a definir pelo00
@@ -26,3 +26,7 @@ F04-05: Teste sintético positivo/negativo cobrindo a lacuna, persistência/relo
 
 ## Contexto adicional
 Missão atual somente auditoria; nenhuma correção autorizada por este handoff. Ver matriz335requisitos, relatórioHTML e parecer24. Revalidar contra main de destino, que foi alterada por outro processo durante a auditoria. Complexidade depende do proprietário; hipóteses não são causa operacional comprovada.
+
+## Resolução
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto DEFEITO-REAL — filtro tenant permissivo confirmado; correção despachada ao Agente 17 em agente/17-reconciliacao-tenant. Ver RESULTADOS-RECONCILIACAO-20261114.md.
