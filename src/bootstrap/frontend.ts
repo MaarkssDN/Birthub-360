@@ -52,15 +52,6 @@ export async function mountFrontend(app: Express): Promise<void> {
     (env.NODE_ENV === 'test' && hasDist);
 
   if (!useStaticDist) {
-    // FRONTEND-001: Serve estáticos do /tools protegido por autenticação para evitar
-    // acesso desprotegido a ferramentas e materiais de capacitação comercial
-    app.use(
-      '/tools',
-      toolsLimiter,
-      authenticateToken,
-      express.static(path.join(process.cwd(), 'public', 'tools')),
-    );
-
     // Protege arquivos estáticos do design-lab com autenticação em desenvolvimento
     app.use(
       '/design-lab',
@@ -77,33 +68,10 @@ export async function mountFrontend(app: Express): Promise<void> {
   } else {
     const distPath = path.join(process.cwd(), 'dist');
 
-    // Ferramentas estáticas legadas (public/tools/** — hoje só social-selling; propostas
-    // comerciais, portal comercial e treinamento foram aposentados em 09/2026, conteúdo
-    // proprietário da Birth Hub 360) dependem de <script> inline e onclick="" espalhados pelos
-    // arquivos HTML pré-existentes. A CSP estrita do Helmet (`script-src 'self'`, sem
-    // unsafe-inline — ver security.ts) bloqueia TODO esse JS em produção: nenhum botão desses
-    // HTMLs funciona (ex.: os botões de abrir ferramenta em Motor de Social Selling Birth Hub 360.html),
-    // sem nenhum erro visível ao usuário, só um "Refused to execute inline script" no console do
-    // navegador.
-    // Reescrever o JS inline de dezenas de arquivos legados para scripts externos é um retrabalho
-    // grande demais para este fix — em vez disso, relaxa script-src só para ESTE caminho estático
-    // (conteúdo próprio do produto, nunca dado de usuário refletido), sobrescrevendo aqui o header
-    // que o Helmet global já setou. O resto do app (rotas autenticadas do CRM, onde entrada de
-    // usuário é renderizada) mantém a CSP estrita — este relaxamento não amplia a superfície de
-    // XSS lá, só neste conjunto de arquivos estáticos que já é assim há tempos.
-    app.use('/tools', (_req, res, next) => {
-      res.setHeader(
-        'Content-Security-Policy',
-        "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'self'",
-      );
-      next();
-    });
-    app.use(
-      '/tools',
-      toolsLimiter,
-      authenticateToken,
-      express.static(path.join(distPath, 'tools')),
-    );
+    // (11/2026) O mount de `/tools` e o relaxamento de CSP (`script-src 'unsafe-inline'`)
+    // que o acompanhava foram removidos junto com `public/tools/social-selling/` — os
+    // últimos HTMLs estáticos legados da marca antiga. Sem diretório, o mount só servia
+    // index.html via fallback e o relaxamento de CSP ampliava a superfície sem ganho.
 
     // Protege arquivos estáticos do design-lab com autenticação
     app.use(
