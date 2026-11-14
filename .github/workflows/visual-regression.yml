@@ -41,7 +41,7 @@ jobs:
           # Escopo deliberado: frontend servido, specs/helpers visuais, configs de build/teste,
           # lockfiles (mudança de dependência pode alterar renderização) e o próprio workflow.
           # Docs, .agents, infra k8s/argocd e mobile ficam fora — não mudam pixels da web.
-          if printf '%s\n' "$FILES" | grep -Eq '^(src/|public/|server/|visual-regression/|tests/e2e/|scripts/db/|index\.html|vite\.config\.ts|playwright[^/]*\.config\.ts|tailwind\.config[^/]*|postcss\.config[^/]*|package\.json|package-lock\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|Dockerfile|\.github/workflows/visual-regression\.yml)'; then
+          if printf '%s\n' "$FILES" | grep -Eq '^(src/|public/|server/|server\.ts|worker.*\.ts|identidade-visual/|prisma/|visual-regression/|tests/e2e/|scripts/db/|index\.html|vite\.config\.ts|playwright[^/]*\.config\.ts|tailwind\.config[^/]*|postcss\.config[^/]*|package\.json|package-lock\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|Dockerfile|\.github/workflows/visual-regression\.yml)'; then
             echo "relevant=true" >> "$GITHUB_OUTPUT"
           else
             echo "relevant=false" >> "$GITHUB_OUTPUT"
