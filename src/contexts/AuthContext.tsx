@@ -129,6 +129,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch {
         // Ignora erro de CacheStorage indisponível (contexto inseguro / navegador restrito)
       }
+      // EXP-03: expurgo da fila offline criptografada (PII/LGPD e isolamento entre
+      // usuários no mesmo dispositivo). `clearQueue()` remove as chaves
+      // `birthhub_offline_sync_queue_v1` e `birthhub_offline_id_mappings_v1` do
+      // storage criptografado (AES-GCM via EncryptedStorageAdapter).
+      // Import dinâmico: mantém o subsistema mobile fora do bundle inicial de auth.
+      // Ressalva Agente 24: `clearQueue()` aguarda `service.ready`, que depende de
+      // IndexedDB/crypto — se travar, o logout ficaria pendurado SEM redirect.
+      // Timeout de 3s garante que o redirect para /login nunca seja bloqueado
+      // pelo expurgo (o resíduo, se houver, é purgado no próximo logout).
+      try {
+        const { offlineSyncService } = await import(
+          '../features/mobile/offlineSync.service.js'
+        );
+        const purge = offlineSyncService.clearQueue().then(() => 'done' as const);
+        const timeout = new Promise<'timeout'>((resolve) =>
+          setTimeout(() => resolve('timeout'), 3000),
+        );
+        const outcome = await Promise.race([purge, timeout]);
+        if (outcome === 'timeout') {
+          console.warn(
+            '[Auth] Expurgo da fila offline excedeu 3s no logout; seguindo para /login.',
+          );
+        }
+      } catch (err) {
+        console.error('Erro ao expurgar fila offline no logout:', err);
+      }
       window.location.href = '/login';
     }
   };
