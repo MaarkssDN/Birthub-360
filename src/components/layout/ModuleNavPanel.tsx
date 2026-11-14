@@ -180,7 +180,9 @@ export function ModuleNavPanel({
               color: isHub ? '#FFC107' : moduleTheme.primaryColor,
             }}
           >
-            <span aria-hidden="true" className="select-none text-[17px]">{moduleEmoji}</span>
+            <span aria-hidden="true" className="select-none text-[17px]">
+              {moduleEmoji}
+            </span>
             <span className="truncate">{module.label}</span>
           </h2>
           <p className="truncate text-[12px] text-ink-2 mt-0.5">{module.tagline}</p>
