@@ -307,6 +307,10 @@ model Company {
   @@index([tradeName])
   @@index([tradeName(ops: raw("gin_trgm_ops"))], type: Gin, map: "Company_tradeName_trgm_idx")
   @@index([bitrixCompanyId])
+  // Onda 3 / MEL-17 (DEM-20261113-004): listagem paginada de empresas
+  // (PrismaCompanyRepository.findAll → where {organizationId, deletedAt:null,...}
+  // orderBy createdAt desc) — ordenação por página sem sort do recorte inteiro.
+  @@index([organizationId, createdAt])
 }
 
 /// Snapshot rastreável e global. Só o importador com bypass de RLS pode gravar/publicar.
@@ -564,6 +568,9 @@ model Contact {
   @@index([whatsappIndex])
   @@index([whatsappLast8Index])
   @@index([whatsappLast9Index])
+  // Onda 3 / MEL-17 (DEM-20261113-004): listagem paginada de contatos
+  // (PrismaContactRepository.findAll → where {organizationId,...} orderBy createdAt desc).
+  @@index([organizationId, createdAt])
 }
 
 model Lead {
@@ -720,6 +727,18 @@ model Lead {
   @@index([organizationId, status])
   @@index([organizationId, funnel])
   @@index([organizationId, pipelineId, pipelineStageId])
+  // Onda 3 / MEL-17 (DEM-20261113-004): board Kanban do CRM360
+  // (PrismaCrm360Repository.getBoardLeads/getDeals) filtra
+  // { organizationId, funnel, pipelineId? } — nenhum índice existente cobria a
+  // tripla (org+funnel+pipeline); (org,funnel) e (org,pipelineId,stageId) deixavam
+  // o planner refinar linhas a mais. Ordem por probability/updatedAt continua
+  // em sort, mas sobre o recorte já filtrado.
+  @@index([organizationId, funnel, pipelineId])
+  // Onda 3 / MEL-17: listagem paginada de Leads
+  // (PrismaLeadRepository.findAllWithFilters e contagens de getOverviewData)
+  // filtra { organizationId, status?, funnel? } — cobre o par status+funnel que
+  // (organizationId,status) sozinho não resolve sem refino extra.
+  @@index([organizationId, status, funnel])
   @@index([pipelineStageId])
   @@index([bitrixLeadId])
   @@index([bitrixDealId])
@@ -754,6 +773,15 @@ model Activity {
   @@index([organizationId])
   @@index([leadId])
   @@index([organizationId, status])
+  // Onda 3 / MEL-17 (DEM-20261113-004): agenda/calendário
+  // (PrismaActivityRepository.findRange/findAllWithFilters,
+  // activity.service.findRange) filtra { organizationId, date: {gte,lt} } e
+  // ordena por date — range scan direto em vez de filtrar org inteira.
+  @@index([organizationId, date])
+  // Onda 3 / MEL-17: timeline de atividades do lead
+  // (PrismaLeadRepository.findById → include activities orderBy date desc)
+  // filtra por leadId e ordena por date.
+  @@index([leadId, date])
 }
 
 model TimelineEvent {
@@ -796,6 +824,9 @@ model Note {
   @@index([leadId])
   @@index([companyId])
   @@index([contactId])
+  // Onda 3 / MEL-17 (DEM-20261113-004): notas internas do lead
+  // (PrismaLeadRepository.findById → include internalNotes orderBy createdAt desc).
+  @@index([leadId, createdAt])
 }
 
 // CRM-005 (auditoria de débito técnico, `docs/audits/repository-debt-audit/agents/CRM.md`):
