@@ -23,11 +23,7 @@ async function flush(times = 10): Promise<void> {
 }
 
 async function createKey(): Promise<CryptoKey> {
-  return crypto.subtle.generateKey(
-    { name: 'AES-GCM', length: 256 },
-    false,
-    ['encrypt', 'decrypt'],
-  );
+  return crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
 }
 
 function makeService(cryptoKey: CryptoKey) {
