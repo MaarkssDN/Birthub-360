@@ -5,6 +5,8 @@ import { hasRequiredRole } from '../../lib/auth/authorization.js';
 import { SoundFX } from '../../lib/soundEffects.js';
 import { BirthHubLogo } from '../brand/BirthHubLogo.js';
 import { getActiveModuleId, getRailModules, type ProductModule } from './moduleRegistry.js';
+import { getModuleTheme } from './moduleThemes.js';
+import { getModuleEmoji } from './navItemThemes.js';
 
 interface ModuleRailProps {
   /** Painel contextual recolhido — rail ganha o botão de reabrir. */
@@ -15,7 +17,7 @@ interface ModuleRailProps {
 const ITEM_EASE =
   'motion-safe:transition-all motion-safe:duration-[220ms] motion-safe:ease-[cubic-bezier(0.22,1,0.36,1)]';
 
-const RAIL_BUTTON = `relative grid h-11 w-11 place-items-center rounded-[12px] border border-transparent text-ink-2 hover:bg-surface-2 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring ${ITEM_EASE}`;
+const RAIL_BUTTON = `relative grid h-11 w-11 place-items-center rounded-[16px] border border-transparent text-ink-2 hover:bg-surface-2 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring ${ITEM_EASE}`;
 
 type PanelAccent = 'cyan' | 'pink' | 'gold' | 'iris';
 
@@ -122,12 +124,13 @@ export function ModuleRail({ panelCollapsed, onTogglePanel }: ModuleRailProps) {
       />
 
       {/* 11 módulos oficiais */}
-      <div className="flex flex-1 flex-col items-center gap-1 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-line px-1.5">
+      <div className="flex flex-1 flex-col items-center gap-1.5 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-line px-1.5">
         {modules.map((module) => {
           const Icon = module.icon;
           const isActive = activeModuleId === module.id;
           const isMobileOnly = module.availability === 'mobile';
-          const accent = moduleAccent(module.accent);
+          const theme = getModuleTheme(module.id);
+          const emoji = getModuleEmoji(module.id);
           return (
             <button
               key={module.id}
@@ -137,23 +140,59 @@ export function ModuleRail({ panelCollapsed, onTogglePanel }: ModuleRailProps) {
               aria-disabled={isMobileOnly || undefined}
               title={
                 isMobileOnly
-                  ? `${module.label} — disponível no aplicativo mobile`
-                  : `${module.label} — ${module.tagline}`
+                  ? `${emoji} ${module.label} — disponível no aplicativo mobile`
+                  : `${emoji} ${module.label} — ${module.tagline}`
               }
               aria-label={module.label}
               aria-current={isActive ? 'page' : undefined}
               data-testid={`module-rail-${module.id}`}
-              className={`${RAIL_BUTTON} ${railAccentClass(accent, isActive)} ${
-                isMobileOnly ? 'opacity-50 cursor-not-allowed' : ''
+              className={`${RAIL_BUTTON} group transition-all duration-200 ${
+                isMobileOnly ? 'opacity-40 cursor-not-allowed' : 'hover:scale-105 active:scale-95'
               }`}
+              style={{
+                backgroundColor: isActive
+                  ? `color-mix(in srgb, ${theme.primaryColor} 16%, transparent)`
+                  : undefined,
+                borderColor: isActive
+                  ? `color-mix(in srgb, ${theme.primaryColor} 55%, transparent)`
+                  : undefined,
+                color: isActive ? theme.primaryColor : undefined,
+                boxShadow: isActive
+                  ? `0 0 16px color-mix(in srgb, ${theme.primaryColor} 28%, transparent)`
+                  : undefined,
+              }}
+              onMouseEnter={(e) => {
+                if (!isMobileOnly && !isActive) {
+                  e.currentTarget.style.borderColor = `color-mix(in srgb, ${theme.primaryColor} 45%, transparent)`;
+                  e.currentTarget.style.backgroundColor = `color-mix(in srgb, ${theme.primaryColor} 10%, transparent)`;
+                  e.currentTarget.style.color = theme.primaryColor;
+                  e.currentTarget.style.boxShadow = `0 0 12px color-mix(in srgb, ${theme.primaryColor} 20%, transparent)`;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isMobileOnly && !isActive) {
+                  e.currentTarget.style.borderColor = 'transparent';
+                  e.currentTarget.style.backgroundColor = '';
+                  e.currentTarget.style.color = '';
+                  e.currentTarget.style.boxShadow = 'none';
+                }
+              }}
             >
               {isActive && (
                 <span
                   aria-hidden="true"
-                  className={`absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full ${activeBarClass(accent)}`}
+                  className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full"
+                  style={{
+                    backgroundColor: theme.primaryColor,
+                    boxShadow: `0 0 10px ${theme.primaryColor}`,
+                  }}
                 />
               )}
-              <Icon isActive={isActive} className="h-5 w-5" aria-hidden="true" />
+              <Icon
+                isActive={isActive}
+                className="h-5 w-5 transition-transform duration-200 group-hover:scale-110"
+                aria-hidden="true"
+              />
             </button>
           );
         })}

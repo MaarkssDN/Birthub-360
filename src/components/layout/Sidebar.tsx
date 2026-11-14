@@ -61,7 +61,7 @@ export function Sidebar({ activeTab, mobileOpen = false, onCloseMobile }: Sideba
     <div className="bh-sidebar relative z-30 hidden h-full shrink-0 lg:flex">
       <ModuleRail panelCollapsed={panelCollapsed} onTogglePanel={togglePanel} />
       {!panelCollapsed && (
-        <div className="bh-sidebar-panel hidden w-[248px] shrink-0 border-r border-line/80 lg:flex lg:flex-col">
+        <div className="bh-sidebar-panel hidden w-[276px] shrink-0 border-r border-line/80 lg:flex lg:flex-col">
           <ModuleNavPanel activeTab={activeTab} />
         </div>
       )}
