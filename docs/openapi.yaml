@@ -1522,6 +1522,177 @@ paths:
                   success:
                     type: boolean
 
+  /auth-extra/sessions:
+    get:
+      tags: [Auth]
+      summary: Lista as sessões ativas do usuário autenticado
+      description: >-
+        Retorna os dispositivos/sessões do próprio usuário (nunca o token).
+        Cada item carrega `current: true` quando é a sessão da requisição atual.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  sessions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        userAgent:
+                          type: string
+                          nullable: true
+                        ipAddress:
+                          type: string
+                          nullable: true
+                        createdAt:
+                          type: string
+                          format: date-time
+                        expiresAt:
+                          type: string
+                          format: date-time
+                        current:
+                          type: boolean
+
+  /auth-extra/sessions/revoke-others:
+    post:
+      tags: [Auth]
+      summary: Revoga todas as sessões do usuário exceto a atual
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  revoked:
+                    type: integer
+
+  /auth-extra/sessions/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    delete:
+      tags: [Auth]
+      summary: Revoga uma sessão específica do usuário
+      description: >-
+        Não é possível revogar a sessão atual por aqui (use sign-out);
+        tentar isso retorna 400. Sessão de outro usuário ou inexistente retorna 404.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api-keys:
+    get:
+      tags: [API Keys]
+      summary: Lista as API keys do tenant (somente metadados, nunca o segredo)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  keys:
+                    type: array
+                    items:
+                      type: object
+    post:
+      tags: [API Keys]
+      summary: Cria uma API key para o tenant
+      description: >-
+        A chave bruta (`rawKey`) só é retornada nesta resposta — depois disso
+        é irrecuperável. Requer role ADMIN.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 80
+                scopes:
+                  type: array
+                  items:
+                    type: string
+                  maxItems: 30
+                  default: []
+                expiresInDays:
+                  type: integer
+                  minimum: 1
+                  maximum: 3650
+                  nullable: true
+      responses:
+        '201':
+          description: Criada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  key:
+                    type: object
+                  rawKey:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api-keys/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    delete:
+      tags: [API Keys]
+      summary: Revoga uma API key do tenant
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   # ───────────────────────────── Companies ─────────────────────────────
   /companies:
     get:
