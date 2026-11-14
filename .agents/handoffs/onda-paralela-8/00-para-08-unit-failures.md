@@ -1,7 +1,7 @@
 De: 00 — Coordenador
 Para: 08 — QA e Release
 Onda: paralela-8
-Status: resolvido
+Status: aberto
 Prioridade: alto
 
 ## Problema
@@ -31,3 +31,5 @@ Worktree: `.claude/worktrees/ag-08`, branch `agente/08-unit-failures`. Não alte
 - **Nota de cobertura:** a suíte coletou 771 arquivos; o arquivo `tests/unit/brand/fixtures-brand-hygiene.test.ts` (criado nesta mesma sessão, commit `95137518b`) não entrou na coleta porque foi escrito durante a execução — foi verificado separadamente com `npx vitest run -c vitest.unit.config.ts tests/unit/brand/` → 5/5 verdes.
 - **Gates:** `npx tsc --noEmit` → limpo (exit 0). `npm run lint` (`biome lint src`) → 0 erros, 1498 warnings pré-existentes em `src/**` (nenhum introduzido por esta entrega — os arquivos alterados estão fora de `src/`).
 - **Conclusão:** suíte unitária de `main` está verde; nenhuma correção de produto ou de teste foi necessária.
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto SEM-EVIDENCIA — resolução não anexa run de CI; rebaixado para aberto. Correção pendente de despacho (anexar run de CI ou manter aberto com evidência). Ver RESULTADOS-RECONCILIACAO-20261114.md.

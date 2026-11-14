@@ -1,7 +1,7 @@
 - De: 01 (Dados / Prisma)
 - Para: 08 (QA Release / Git / CI)
 - Onda: saneamento-onda-3 (follow-up de DATA-002 / DATA-007)
-- Status: resolvido
+- Status: adiado
 - Prioridade: alto
 
 ## Problema
@@ -65,3 +65,5 @@ que falta é pipeline. Por isso este handoff é **01 → 08**.
    - Conforme acordado pela Governança e Scope Freeze do RC1, `continue-on-error: true` é mantido temporariamente no CI para não bloquear a esteira de release com dívida estrutural pré-existente.
    - A tarefa de limpeza física do schema/migration foi agendada para a branch `agente/01-migration-drift-cleanup` no ciclo de saneamento estrutural pós-freeze.
    - Contrato formalizado e alinhamento concluído entre 01 e 08.
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto ADIADO — continue-on-error mantido por freeze (ci.yml:281); gate não-bloqueante. Ver RESULTADOS-RECONCILIACAO-20261114.md.

@@ -1,7 +1,7 @@
 - De: 00 (Coordenador)
 - Para: 00 (Coordenador - decisório)
 - Onda: techdebt-2026-09-29
-- Status: resolvido
+- Status: aberto
 - Prioridade: normal
 
 ## Problema
@@ -55,3 +55,5 @@ Classificados como P1 (Architecture) no audit, mas podem não ser código de pro
 - Justificativa: Skills/scripts externos não são código de produção crítico, podem ser tratados em momento oportuno
 
 **Ação executada:** `rm .claude/skills/impeccable/scripts/live-browser.js` (sucesso)
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto DEFEITO-REAL — live-browser.js duplicata regressão em .claude/. Correção pendente de despacho. Ver RESULTADOS-RECONCILIACAO-20261114.md.

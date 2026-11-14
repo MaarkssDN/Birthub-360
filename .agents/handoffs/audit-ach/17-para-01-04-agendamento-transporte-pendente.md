@@ -2,7 +2,7 @@
 - Para: 01/01A (schema) e 04 (agenda/booking público) — e usuário/Coordenador (00), decisão de
   priorização e arquitetura
 - Onda: audit-ach
-- Status: resolvido
+- Status: adiado
 - Prioridade: normal (P2)
 
 ## Problema
@@ -132,3 +132,7 @@ concreto e esperado** no mesmo arquivo `AUTONOMIA_COMERCIAL_24X7.md` dentro dest
 ainda no HEAD de `origin/main` usado como base) — aviso preventivo para quem for fazer o merge:
 as duas entradas de "Limitações conhecidas" (voz — ACH-17-03 — e agendamento — este item) devem ser
 combinadas na mesma seção, não sobrescritas uma pela outra.
+
+## Resolução
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto ADIADO — aguarda decisão arquitetural (caminho a vs b); nenhuma implementação feita. Ver RESULTADOS-RECONCILIACAO-20261114.md.

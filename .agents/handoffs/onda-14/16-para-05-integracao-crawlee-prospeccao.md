@@ -1,7 +1,7 @@
 - De: 16 (Runtime, Workers e Escala)
 - Para: 05 (Prospecção)
 - Onda: 14
-- Status: resolvido
+- Status: aberto
 - Prioridade: alto
 
 ## Problema
@@ -32,4 +32,6 @@ Eleva a taxa de qualificação do pipeline outbound eliminando enriquecimento ma
 2. O serviço de extração agora é acionado pelo workflow do Temporal para enriquecimento assíncrono de empresas, extraindo emails de contato, links sociais (LinkedIn, Instagram, Facebook, Twitter) e metadados de página.
 3. Integrado ao pipeline de ingestão de leads com persistência e deduplicação semântica.
 Status atualizado para **resolvido**.
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto DEFEITO-REAL — workflow existe mas sem persistência/dedupe/robots/rate-limit. Correção pendente de despacho. Ver RESULTADOS-RECONCILIACAO-20261114.md.
 
