@@ -25,8 +25,11 @@ const OUTPUT_PATH = path.join(ROOT, '.dependency-cruiser-known-violations.json')
 // com ENOENT, e `execFileSync(..., { shell: true })` dispara o aviso de depreciação DEP0190 do
 // Node por misturar `args` com `shell: true`. `execSync` com uma string já monta o comando dessa
 // forma sem gerar o aviso.
+// `worker*.ts` (glob resolvido pelo próprio depcruise) cobre worker.ts + os entrypoints
+// worker-<dominio>.ts — sem eles a baseline ignorava violações alcançáveis só via esses
+// processos (MEL-24/Onda 3). Manter em sincronia com verify-cruise-coverage.ts.
 const DEPCRUISE_CMD =
-  'npx depcruise --config .dependency-cruiser.cjs --output-type json src server.ts worker.ts';
+  'npx depcruise --config .dependency-cruiser.cjs --output-type json src server.ts worker*.ts';
 
 function runDepcruise() {
   const stdout = execSync(DEPCRUISE_CMD, {
