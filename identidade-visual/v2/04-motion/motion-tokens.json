@@ -1,0 +1,57 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "$description": "Birthub 360° — Motion Tokens V2.0 (PROPOSTA — PENDENTE DE HOMOLOGAÇÃO). Sincronizado com src/lib/motion.ts (EASE_*, MOTION_DURATION, SPRING_*) e com os --duration-*/--ease-* de birthhub360-v2.css.",
+  "level": {
+    "comercial": {
+      "$description": "Monumental/cinematográfico — landing, marketing, hero, reveals editoriais.",
+      "duration": {
+        "enter":     { "$type": "duration", "$value": "700ms" },
+        "emphasize":  { "$type": "duration", "$value": "900ms" },
+        "ambient":    { "$type": "duration", "$value": "2400ms" }
+      },
+      "stagger": { "$type": "duration", "$value": "90ms" }
+    },
+    "operacional": {
+      "$description": "Rápido, discreto, funcional — workspaces, dashboards, formulários.",
+      "duration": {
+        "instant":  { "$type": "duration", "$value": "100ms" },
+        "fast":     { "$type": "duration", "$value": "150ms" },
+        "normal":   { "$type": "duration", "$value": "250ms" },
+        "slow":     { "$type": "duration", "$value": "350ms" },
+        "gentle":   { "$type": "duration", "$value": "600ms" },
+        "ambient":  { "$type": "duration", "$value": "800ms" }
+      },
+      "stagger": { "$type": "duration", "$value": "40ms" }
+    }
+  },
+  "easing": {
+    "standard":    { "$type": "cubicBezier", "$value": [0.4, 0, 0.2, 1],  "$description": "ease-standard — transições gerais (MOTION: EASE_IN_OUT_SMOOTH)" },
+    "enter":       { "$type": "cubicBezier", "$value": [0.22, 1, 0.36, 1], "$description": "ease-enter — entradas (EASE_PREMIUM)" },
+    "exit":        { "$type": "cubicBezier", "$value": [0.4, 0, 1, 1],    "$description": "ease-exit — saídas" },
+    "emphasized":  { "$type": "cubicBezier", "$value": [0.16, 1, 0.3, 1],  "$description": "ease-emphasized — reveals, modais (EASE_OUT_EXPO)" },
+    "smooth":      { "$type": "cubicBezier", "$value": [0.25, 0.1, 0.25, 1], "$description": "EASE_SMOOTH — loops ambiente" }
+  },
+  "spring": {
+    "$description": "Valores equivalentes em Framer Motion (src/lib/motion.ts) para quando o nível exige física.",
+    "snappy":   { "$type": "spring", "$value": { "stiffness": 420, "damping": 32, "mass": 0.7 } },
+    "soft":     { "$type": "spring", "$value": { "stiffness": 260, "damping": 24, "mass": 0.9 } },
+    "tactile":  { "$type": "spring", "$value": { "stiffness": 500, "damping": 28, "mass": 0.6 } },
+    "momentum": { "$type": "spring", "$value": { "stiffness": 350, "damping": 25, "mass": 0.8 } }
+  },
+  "pattern": {
+    "screenEntrance":   { "$description": "pageTransition: opacity+y+blur leve; operacional 220ms, comercial até 900ms com blur maior" },
+    "scrollReveal":     { "$description": "scrollRevealFadeUp/Scale: viewport once, margin -40px, y 12–16px" },
+    "staggerGrid":      { "$description": "staggerGridContainer + gridItemEntrance: stagger 40ms (op) / 90ms (comercial)" },
+    "metricReveal":     { "$description": "metricReveal: y24+rotateX8+blur8, 550ms enter" },
+    "buttonTap":        { "$description": "buttonMotion: hover y-1.5 150ms, tap scale .97 80ms" },
+    "modal":            { "$description": "modalBackdrop 200ms / modalDialog 250ms scale .96→1" },
+    "orbit360":         { "$description": "anel cônico conic-gradient rotacionando; comercial 12–20s linear infinite, operacional apenas em hero de módulo" },
+    "skeletonShimmer":  { "$description": "shimmer 2.5s linear infinite; reduced-motion = estático" },
+    "scanLine":         { "$description": "scanLineEntry: 1.4s one-shot na montagem; NUNCA em loop" }
+  },
+  "accessibility": {
+    "prefersReducedMotion": { "$type": "string", "$value": "reduce → todas as durações = 0ms; loops viram estado estático" },
+    "manualToggle":         { "$type": "string", "$value": "html[data-motion='reduced'] tem o mesmo efeito" },
+    "rule": "Nenhuma informação pode depender exclusivamente de movimento."
+  }
+}

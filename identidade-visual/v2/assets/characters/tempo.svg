@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%" fill="none" role="img" aria-labelledby="tempo-title tempo-desc">
+  <title id="tempo-title">Tempo — Agente Tático de Chat</title>
+  <desc id="tempo-desc">Avatar não-humano representando Tempo: balão de diálogo relâmpago com pulso de resposta rápida e núcleo ciano.</desc>
+  <defs>
+    <linearGradient id="tempo-bubble-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#A5F3FC"/>
+      <stop offset="50%" stop-color="#67E8F9"/>
+      <stop offset="100%" stop-color="#0891B2"/>
+    </linearGradient>
+    <linearGradient id="tempo-bolt-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF2D9B" stop-opacity="0.95"/>
+      <stop offset="55%" stop-color="#FFC107" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#00D4FF" stop-opacity="0.95"/>
+    </linearGradient>
+    <filter id="tempo-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="tempo-halo-blur" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="blur2"/>
+    </filter>
+  </defs>
+
+  <circle cx="64" cy="64" r="46" fill="#67E8F9" fill-opacity="0.14" filter="url(#tempo-halo-blur)"/>
+
+  <!-- Balão de diálogo -->
+  <g filter="url(#tempo-glow)">
+    <path d="M 34 38 H 92 Q 98 38 98 44 V 74 Q 98 80 92 80 H 52 L 40 92 L 44 80 H 34 Q 28 80 28 74 V 44 Q 28 38 34 38 Z" fill="url(#tempo-bubble-grad)"/>
+    <path d="M 34 38 H 92 Q 98 38 98 44 V 74 Q 98 80 92 80 H 52 L 40 92 L 44 80 H 34 Q 28 80 28 74 V 44 Q 28 38 34 38 Z" fill="none" stroke="#A5F3FC" stroke-width="1.4" opacity="0.7"/>
+  </g>
+
+  <!-- Relâmpago tático -->
+  <path d="M 68 46 L 56 66 H 64 L 58 82 L 76 60 H 66 Z" fill="url(#tempo-bolt-grad)" filter="url(#tempo-glow)"/>
+
+  <!-- Pontos de digitação (cadência de chat) -->
+  <g fill="#0D0D0D" opacity="0.75">
+    <circle cx="76" cy="88" r="2.4"/>
+    <circle cx="86" cy="88" r="2.4"/>
+    <circle cx="96" cy="88" r="2.4"/>
+  </g>
+  <g fill="#FF2D9B" filter="url(#tempo-glow)">
+    <circle cx="76" cy="88" r="1"/>
+    <circle cx="86" cy="88" r="1"/>
+    <circle cx="96" cy="88" r="1"/>
+  </g>
+</svg>

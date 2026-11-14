@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Birthub 360° — Motion System V2.0 · Protótipo</title>
+<!-- PROTÓTIPO — demonstrações de motion. Não é produto. -->
+<link rel="stylesheet" href="../03-design-system/tokens/birthhub360-v2.css">
+<link rel="stylesheet" href="motion-tokens.css">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    font-family: var(--font-interface);
+    background: var(--color-background);
+    color: var(--color-text-primary);
+    min-height: 100vh;
+    transition: background var(--motion-duration-normal) var(--motion-ease-standard),
+                color var(--motion-duration-normal) var(--motion-ease-standard);
+  }
+  .wrap { max-width: 72rem; margin: 0 auto; padding: var(--space-7) var(--space-5) var(--space-9); }
+  .kicker { font-family: var(--font-data); font-size: var(--text-xs); letter-spacing: .12em; text-transform: uppercase; color: var(--color-text-secondary); }
+  h1 { font-family: var(--font-display); font-size: var(--text-4xl); letter-spacing: var(--tracking-display); margin: var(--space-2) 0 var(--space-3); }
+  h1 em { font-style: normal; background: var(--grad-brand); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lead { color: var(--color-text-secondary); max-width: 46rem; margin-bottom: var(--space-7); }
+  .controls { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-8); }
+  .btn {
+    font: 600 var(--text-sm)/1 var(--font-display); letter-spacing: var(--tracking-display);
+    border: 0; border-radius: var(--radius-control); padding: 12px 20px; cursor: pointer;
+    transition: transform var(--motion-duration-fast) var(--motion-ease-enter),
+                box-shadow var(--motion-duration-normal) var(--motion-ease-enter),
+                filter var(--motion-duration-fast) var(--motion-ease-standard);
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: var(--grad-cta); color: var(--color-on-brand); box-shadow: var(--glow-pink); }
+  .btn-primary:hover { transform: translateY(-1.5px); filter: brightness(1.08); }
+  .btn-ghost { background: var(--color-surface-elevated); color: var(--color-text-primary); border: 1px solid var(--color-border-subtle); }
+  .btn-ghost:hover { background: var(--color-surface-hover); }
+  .btn[aria-pressed="true"] { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+  section { margin-bottom: var(--space-9); }
+  h2 { font-family: var(--font-display); font-size: var(--text-2xl); letter-spacing: var(--tracking-display); margin-bottom: var(--space-4); }
+  h2 .tag { font-family: var(--font-data); font-size: var(--text-xs); color: var(--color-text-muted); margin-left: var(--space-3); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: var(--space-5); }
+  .card {
+    background: var(--color-surface); border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card); padding: var(--space-5); position: relative; overflow: hidden;
+  }
+  .card h3 { font-family: var(--font-display); font-size: var(--text-lg); margin-bottom: var(--space-2); }
+  .card p { font-size: var(--text-sm); color: var(--color-text-secondary); line-height: var(--leading-normal); }
+
+  /* 1. Entrada de tela */
+  .screen-enter { animation: screenIn var(--motion-duration-normal) var(--motion-ease-enter) both; }
+  @keyframes screenIn { from { opacity: 0; transform: translateY(14px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
+
+  /* 2. Stagger editorial */
+  .stagger > * { opacity: 0; animation: rise var(--motion-duration-normal) var(--motion-ease-enter) forwards; }
+  .stagger > *:nth-child(1){ animation-delay: 0ms; } .stagger > *:nth-child(2){ animation-delay: 40ms; }
+  .stagger > *:nth-child(3){ animation-delay: 80ms; } .stagger > *:nth-child(4){ animation-delay: 120ms; }
+  .stagger > *:nth-child(5){ animation-delay: 160ms; } .stagger > *:nth-child(6){ animation-delay: 200ms; }
+  @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+
+  /* 3. Botão glow já coberto por .btn-primary; spotlight no card */
+  .spot { position: relative; }
+  .spot::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0;
+    background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), rgba(0,212,255,.12), transparent 65%);
+    transition: opacity var(--motion-duration-fast) var(--motion-ease-standard);
+  }
+  .spot:hover::after { opacity: 1; }
+
+  /* 4. Órbita 360° */
+  .orbit-wrap { display: grid; place-items: center; padding: var(--space-6) 0; }
+  .orbit {
+    width: 11rem; height: 11rem; border-radius: 50%; position: relative;
+    background: var(--grad-orbit); padding: 6px;
+    animation: orbitSpin var(--motion-orbit-duration) var(--motion-orbit-ease) infinite;
+  }
+  .orbit::before {
+    content: ""; position: absolute; inset: -14px; border-radius: 50%;
+    border: 1px dashed color-mix(in srgb, var(--palette-neon-gold) 45%, transparent);
+    animation: orbitSpin 24s linear infinite reverse;
+  }
+  .orbit-core {
+    width: 100%; height: 100%; border-radius: 50%; background: var(--color-surface);
+    display: grid; place-items: center; font-family: var(--font-display); font-weight: 800; font-size: var(--text-2xl);
+    background: var(--grad-brand); -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  @keyframes orbitSpin { to { transform: rotate(360deg); } }
+
+  /* 5. Skeleton */
+  .skel { display: grid; gap: var(--space-3); }
+  .skel i {
+    display: block; height: 3.2rem; border-radius: var(--radius-card);
+    background: linear-gradient(90deg, var(--color-skeleton-base) 25%, var(--color-skeleton-highlight) 50%, var(--color-skeleton-base) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2.5s linear infinite;
+  }
+  .skel i:nth-child(2){ width: 82%; } .skel i:nth-child(3){ width: 64%; }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+
+  /* 6. KPI com reveal */
+  .metric { font-family: var(--font-data); font-size: var(--text-4xl); font-weight: 700; color: var(--color-heading-gold); }
+  .metric small { display: block; font-family: var(--font-interface); font-size: var(--text-xs); color: var(--color-text-secondary); font-weight: 400; margin-top: var(--space-1); }
+
+  /* Tema claro reduz glow — mantido via tokens */
+  .badge { display: inline-block; font-family: var(--font-data); font-size: var(--text-2xs); padding: 4px 10px; border-radius: var(--radius-pill); border: 1px solid var(--color-border-subtle); color: var(--color-text-secondary); }
+  .note { font-size: var(--text-xs); color: var(--color-text-muted); margin-top: var(--space-4); }
+  footer { border-top: 1px solid var(--color-border-subtle); padding-top: var(--space-5); font-size: var(--text-xs); color: var(--color-text-muted); }
+
+  /* Reduced-motion: loops viram estáticos, entradas colapsam */
+  @media (prefers-reduced-motion: reduce) {
+    .screen-enter, .stagger > * { animation: none; opacity: 1; transform: none; }
+    .orbit, .orbit::before { animation: none; }
+    .skel i { animation: none; }
+    .btn, .card, body { transition-duration: 0ms !important; }
+  }
+  :root[data-motion="reduced"] .screen-enter,
+  :root[data-motion="reduced"] .stagger > * { animation: none; opacity: 1; transform: none; }
+  :root[data-motion="reduced"] .orbit,
+  :root[data-motion="reduced"] .orbit::before { animation: none; }
+  :root[data-motion="reduced"] .skel i { animation: none; }
+  :root[data-motion="reduced"] .btn,
+  :root[data-motion="reduced"] .card,
+  :root[data-motion="reduced"] body { transition-duration: 0ms !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="screen-enter">
+    <p class="kicker">PROTÓTIPO · Motion System V2.0 · Pendente de homologação</p>
+    <h1>Movimento com <em>propósito</em>.</h1>
+    <p class="lead">Demonstrações funcionais dos dois níveis de motion — Comercial (cinematográfico) e Operacional (rápido e discreto). Tudo em HTML/CSS/JS puro, sem build.</p>
+    <div class="controls" role="group" aria-label="Controles do protótipo">
+      <button class="btn btn-primary" id="btnReplay" type="button">↻ Repetir entrada</button>
+      <button class="btn btn-ghost" id="btnTheme" type="button" aria-pressed="false">◐ Alternar tema</button>
+      <button class="btn btn-ghost" id="btnMotion" type="button" aria-pressed="false">🕘 Movimento reduzido</button>
+      <button class="btn btn-ghost" id="btnLevel" type="button" aria-pressed="false">🎬 Nível Comercial</button>
+    </div>
+  </header>
+
+  <section aria-labelledby="s1">
+    <h2 id="s1">Stagger editorial <span class="tag">comercial · 90ms</span></h2>
+    <div class="grid stagger" id="staggerGrid">
+      <article class="card"><h3>Headline primeiro</h3><p>A ordem de animação segue a ordem de leitura: título, contexto, prova, ação.</p></article>
+      <article class="card"><h3>Contexto</h3><p>Subtítulo entra 90ms depois do headline — delayChildren orquestra a cena.</p></article>
+      <article class="card"><h3>Prova</h3><p>Métricas e evidências entram em sequência, nunca simultâneas.</p></article>
+      <article class="card"><h3>Ação</h3><p>O CTA é o último a assentar — o olhar já está convencido.</p></article>
+      <article class="card"><h3>Respiro</h3><p>Máximo ~8 itens por sequência; além disso, agrupar.</p></article>
+      <article class="card"><h3>Quietude</h3><p>Depois da entrada, tudo para — movimento é evento, não decoração.</p></article>
+    </div>
+  </section>
+
+  <section aria-labelledby="s2">
+    <h2 id="s2">Interações operacionais <span class="tag">operacional · 150ms</span></h2>
+    <div class="grid">
+      <article class="card spot" id="spotCard"><h3>Spotlight de cursor</h3><p>Passe o mouse: um glow radial sutil segue o ponteiro (desktop apenas, desativado em touch e reduced-motion).</p><span class="badge">hover-only glow</span></article>
+      <article class="card"><h3>Botão com glow</h3><p>O CTA primário usa gradiente de assinatura + glow 24px. Hover sobe 1.5px; tap comprime a 0.97.</p>
+        <p style="margin-top:var(--space-4)"><button class="btn btn-primary" type="button">Executar ação</button></p></article>
+      <article class="card"><h3>Métrica KPI</h3><div class="metric">R$ 1.482.000<small>Receita recorrente · IBM Plex Mono tabular</small></div></article>
+    </div>
+  </section>
+
+  <section aria-labelledby="s3">
+    <h2 id="s3">Elemento 360° <span class="tag">anel cônico · dourado</span></h2>
+    <div class="orbit-wrap">
+      <div class="orbit" role="img" aria-label="Anel orbital 360 graus animado em conic-gradient">
+        <div class="orbit-core">360°</div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="s4">
+    <h2 id="s4">Skeleton de loading <span class="tag">shimmer 2.5s</span></h2>
+    <div class="grid">
+      <div class="card"><div class="skel" aria-hidden="true"><i></i><i></i><i></i></div><p class="note">Skeleton no formato exato do card — shimmer vira estado estático com movimento reduzido.</p></div>
+      <div class="card"><h3>Estado vazio</h3><p>Empty state teria ilustração vetorial + headline + CTA — nunca spinner infinito sem explicação.</p></div>
+      <div class="card"><h3>Stale</h3><p>"Dados sincronizados às 14:32" com cache visível — o operador nunca fica sem informação.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Birthub 360° · Design System V2.0 + Motion System V2.0 · PROTÓTIPO para homologação · Nenhum arquivo do produto foi alterado.</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var root = document.documentElement;
+
+  // Tema
+  var btnTheme = document.getElementById('btnTheme');
+  btnTheme.addEventListener('click', function () {
+    var light = root.getAttribute('data-theme') === 'light';
+    root.setAttribute('data-theme', light ? 'dark' : 'light');
+    btnTheme.setAttribute('aria-pressed', String(!light));
+    btnTheme.textContent = light ? '◐ Alternar tema' : '◑ Tema claro ativo';
+  });
+
+  // Movimento reduzido: respeita prefers-reduced-motion como estado inicial
+  var btnMotion = document.getElementById('btnMotion');
+  var mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+  function syncMotion() {
+    var reduced = root.getAttribute('data-motion') === 'reduced';
+    btnMotion.setAttribute('aria-pressed', String(reduced));
+    btnMotion.textContent = reduced ? '▶ Movimento normal' : '🕘 Movimento reduzido';
+  }
+  btnMotion.addEventListener('click', function () {
+    if (root.getAttribute('data-motion') === 'reduced') root.removeAttribute('data-motion');
+    else root.setAttribute('data-motion', 'reduced');
+    syncMotion();
+  });
+  syncMotion();
+  mq.addEventListener && mq.addEventListener('change', function (e) {
+    // se o SO pedir redução, refletimos no botão (sem sobrescrever escolha manual)
+    if (e.matches && !root.hasAttribute('data-motion')) syncMotion();
+  });
+
+  // Nível comercial
+  var btnLevel = document.getElementById('btnLevel');
+  btnLevel.addEventListener('click', function () {
+    var com = root.getAttribute('data-motion-level') === 'comercial';
+    if (com) root.removeAttribute('data-motion-level'); else root.setAttribute('data-motion-level', 'comercial');
+    btnLevel.setAttribute('aria-pressed', String(!com));
+    btnLevel.textContent = com ? '🎬 Nível Comercial' : '⚙ Nível Operacional';
+  });
+
+  // Replay de entrada
+  document.getElementById('btnReplay').addEventListener('click', function () {
+    var g = document.getElementById('staggerGrid');
+    g.style.animation = 'none';
+    void g.offsetWidth;
+    g.querySelectorAll(':scope > *').forEach(function (el) {
+      el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
+    });
+    document.querySelector('.screen-enter').style.animation = 'none';
+    void document.body.offsetWidth;
+    document.querySelector('.screen-enter').style.animation = '';
+  });
+
+  // Spotlight de cursor (desktop only, respeita reduced-motion)
+  var spot = document.getElementById('spotCard');
+  var fine = window.matchMedia('(pointer: fine)').matches;
+  if (fine) {
+    spot.addEventListener('pointermove', function (e) {
+      if (root.getAttribute('data-motion') === 'reduced' || mq.matches) return;
+      var r = spot.getBoundingClientRect();
+      spot.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      spot.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    });
+  }
+})();
+</script>
+</body>
+</html>

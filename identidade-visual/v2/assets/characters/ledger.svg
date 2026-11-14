@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%" fill="none" role="img" aria-labelledby="ledger-title ledger-desc">
+  <title id="ledger-title">Ledger — Auditor de Faturamento</title>
+  <desc id="ledger-desc">Avatar não-humano representando Ledger: livro-razão isométrico com colunas de auditoria e selo de conformidade.</desc>
+  <defs>
+    <linearGradient id="ledger-cover-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4ADE80"/>
+      <stop offset="55%" stop-color="#22C55E"/>
+      <stop offset="100%" stop-color="#15803D"/>
+    </linearGradient>
+    <linearGradient id="ledger-page-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F8F9FF"/>
+      <stop offset="100%" stop-color="#C9D4E8"/>
+    </linearGradient>
+    <filter id="ledger-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="ledger-halo-blur" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="blur2"/>
+    </filter>
+  </defs>
+
+  <circle cx="64" cy="64" r="46" fill="#22C55E" fill-opacity="0.13" filter="url(#ledger-halo-blur)"/>
+
+  <!-- Capa do livro-razão (perspectiva) -->
+  <path d="M 34 44 L 64 30 L 94 44 L 94 88 L 64 102 L 34 88 Z" fill="url(#ledger-cover-grad)" filter="url(#ledger-glow)"/>
+  <path d="M 34 44 L 64 58 L 94 44 L 94 48 L 64 62 L 34 48 Z" fill="#15803D" opacity="0.8"/>
+
+  <!-- Páginas internas -->
+  <path d="M 38 48 L 64 60 L 38 72 L 38 92 L 64 98 L 90 86 L 90 48 L 64 60 Z" fill="url(#ledger-page-grad)"/>
+
+  <!-- Linhas de lançamento -->
+  <g stroke="#15803D" stroke-width="1.6" opacity="0.75">
+    <line x1="46" y1="56" x2="84" y2="50"/>
+    <line x1="46" y1="64" x2="84" y2="58"/>
+    <line x1="46" y1="72" x2="70" y2="66"/>
+  </g>
+
+  <!-- Colunas de auditoria (sparkline) -->
+  <g fill="#FFC107" filter="url(#ledger-glow)">
+    <rect x="70" y="74" width="4" height="10" rx="1"/>
+    <rect x="77" y="68" width="4" height="16" rx="1"/>
+    <rect x="84" y="72" width="4" height="12" rx="1"/>
+  </g>
+
+  <!-- Selo de conformidade -->
+  <circle cx="64" cy="66" r="11" fill="#0D0D0D" stroke="#FFC107" stroke-width="2.2" filter="url(#ledger-glow)"/>
+  <path d="M 59 66 L 63 70 L 70 61" stroke="#22C55E" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>
