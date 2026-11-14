@@ -129,6 +129,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch {
         // Ignora erro de CacheStorage indisponível (contexto inseguro / navegador restrito)
       }
+      // EXP-03: expurgo da fila offline criptografada (PII/LGPD e isolamento entre
+      // usuários no mesmo dispositivo). `clearQueue()` remove as chaves
+      // `birthhub_offline_sync_queue_v1` e `birthhub_offline_id_mappings_v1` do
+      // storage criptografado (AES-GCM via EncryptedStorageAdapter).
+      // Import dinâmico: mantém o subsistema mobile fora do bundle inicial de auth.
+      try {
+        const { offlineSyncService } = await import(
+          '../features/mobile/offlineSync.service.js'
+        );
+        await offlineSyncService.clearQueue();
+      } catch (err) {
+        console.error('Erro ao expurgar fila offline no logout:', err);
+      }
       window.location.href = '/login';
     }
   };
