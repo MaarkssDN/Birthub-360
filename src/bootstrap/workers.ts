@@ -214,9 +214,16 @@ export function startEmbeddedWorkers(): EmbeddedWorkersHandle {
     coldCallWorker: null,
     swarmSchedulerWorker: null,
     webhookWorker: embeddedWorkersEnabled ? startWebhookWorker() : null,
-    // MEL-21: não depende de ENABLE_EMBEDDED_WORKERS nem de Redis — o relay fala direto com o
-    // Postgres (claimBatch/ConsumptionStore) e retorna null quando DOMAIN_EVENT_OUTBOX!=prisma.
-    domainEventOutboxRelay: startDomainEventOutboxRelay(),
+    // MEL-21: o relay fala direto com o Postgres (claimBatch/ConsumptionStore), mas só faz
+    // sentido onde os eventos são consumidos. Em topologia com worker.ts dedicado, cada
+    // réplica web iniciaria um relay próprio (scan listTenants + claimBatch por tenant a
+    // cada intervalo) — por isso o padrão segue ENABLE_EMBEDDED_WORKERS. Override explícito
+    // via DOMAIN_EVENT_OUTBOX_RELAY=1 para topologias web-only sem worker dedicado.
+    // Retorna null fora do modo DOMAIN_EVENT_OUTBOX=prisma — no-op seguro.
+    domainEventOutboxRelay:
+      embeddedWorkersEnabled || process.env.DOMAIN_EVENT_OUTBOX_RELAY === '1'
+        ? startDomainEventOutboxRelay()
+        : null,
   };
 
   // Sem Redis, `.add()` chega a enfileirar o comando e falha ao dar baixa nas retries —

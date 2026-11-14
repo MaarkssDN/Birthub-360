@@ -223,7 +223,11 @@ async function start() {
       if (coldCallWorker) await scheduleColdCallCampaigns();
       if (swarmSchedulerWorker) await scheduleSwarmScheduler();
     },
-    'all'
+    'all',
+    // MEL-21: o relay não é BullMQ Worker — fecha o timer do poll no shutdown.
+    async () => {
+      domainEventRelay?.close();
+    }
   );
 }
 
