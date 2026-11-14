@@ -535,10 +535,16 @@ export function CandidateCard({
                               verificação não informada
                             </span>
                           </a>
-                          <OriginBadge
-                            kind={dm.emailSource === 'hunter' ? 'hunter' : 'apollo'}
-                            title={`E-mail via ${dm.emailSource === 'hunter' ? 'Hunter.io' : 'Apollo'} — origem do dado, não verificação de caixa`}
-                          />
+                          {/* Badge de origem SÓ quando `emailSource` existe de fato —
+                              default "APOLLO" mentiria a origem de um produtor futuro que
+                              não grave o campo (ressalva do Agente 24). Sem a info, nenhum
+                              badge: o texto "verificação não informada" já cobre a ausência. */}
+                          {dm.emailSource && (
+                            <OriginBadge
+                              kind={dm.emailSource === 'hunter' ? 'hunter' : 'apollo'}
+                              title={`E-mail via ${dm.emailSource === 'hunter' ? 'Hunter.io' : 'Apollo'} — origem do dado, não verificação de caixa`}
+                            />
+                          )}
                         </>
                       )}
                       {tel && (

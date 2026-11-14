@@ -105,6 +105,27 @@ describe('CandidateCard — badges de proveniência', () => {
     expect(screen.getAllByText(/verificação não informada/)).toHaveLength(2);
   });
 
+  it('não exibe badge de origem do e-mail quando emailSource está ausente', () => {
+    renderCard({
+      ...baseCandidate,
+      decisionMakers: [
+        {
+          name: 'Carla Reis',
+          title: 'Sócia',
+          email: 'carla@paoquente.com.br',
+          // emailSource omitido — produtor que não grava o campo não pode
+          // ganhar badge "APOLLO" por default (ressalva do Agente 24).
+          phone: null,
+          linkedinUrl: null,
+        },
+      ],
+    });
+
+    expect(screen.queryByText('HUNTER')).not.toBeInTheDocument();
+    expect(screen.queryByText('APOLLO')).not.toBeInTheDocument();
+    expect(screen.getByText(/verificação não informada/)).toBeInTheDocument();
+  });
+
   it('não exibe badge de proveniência quando o candidato não tem provenance nem decisores', () => {
     renderCard(baseCandidate);
 
