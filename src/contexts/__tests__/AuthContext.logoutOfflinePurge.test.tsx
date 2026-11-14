@@ -49,8 +49,12 @@ function LogoutButton() {
 }
 
 beforeEach(() => {
-  clearQueueMock.mockClear();
-  signOutMock.mockClear();
+  // mockReset (não só mockClear): implementações pendentes/rejeitadas de um
+  // teste não podem vazar para o próximo.
+  clearQueueMock.mockReset();
+  clearQueueMock.mockResolvedValue(undefined);
+  signOutMock.mockReset();
+  signOutMock.mockResolvedValue({});
   hrefSet = [];
   eventOrder = [];
   Object.defineProperty(window, 'location', {
@@ -94,6 +98,30 @@ describe('AuthContext.logout — expurgo da fila offline (EXP-03)', () => {
     expect(clearQueueMock).toHaveBeenCalledTimes(1);
     // Expurgo deve ocorrer ANTES do redirect — senão a navegação pode abortar a limpeza.
     expect(eventOrder.indexOf('clearQueue')).toBeLessThan(eventOrder.indexOf('redirect'));
+  });
+
+  it('redireciona para /login mesmo se clearQueue nunca resolver (timeout de 3s — ressalva 24)', async () => {
+    // Simula o cenário apontado pelo Agente 24: `clearQueue()` trava em
+    // `await this.ready` (IndexedDB/crypto indisponível). O logout NÃO pode
+    // ficar pendurado — o redirect deve ocorrer após o timeout interno.
+    clearQueueMock.mockImplementation(() => new Promise<void>(() => {}));
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    render(
+      <AuthProvider>
+        <LogoutButton />
+      </AuthProvider>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'sair' }));
+
+    // Timeout interno é 3000ms; margem para o waitFor.
+    await waitFor(() => expect(hrefSet).toContain('/login'), { timeout: 8000 });
+    expect(signOutMock).toHaveBeenCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Expurgo da fila offline excedeu 3s'),
+    );
+    warnSpy.mockRestore();
   });
 
   it('ainda redireciona para /login se clearQueue falhar (best-effort)', async () => {
