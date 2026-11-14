@@ -798,7 +798,8 @@ function WorkflowPipelineView({ modules, onNavigate, isDark }: ProposalProps) {
               Esteira da Jornada de Vendas — Revenue Flow 360°
             </h3>
             <p className="text-xs text-ink-2">
-              Visualização sequencial dos 11 módulos distribuídos pelas 5 fases da esteira comercial de receita.
+              Visualização sequencial dos 11 módulos distribuídos pelas 5 fases da esteira comercial
+              de receita.
             </p>
           </div>
         </div>
@@ -826,9 +827,7 @@ function WorkflowPipelineView({ modules, onNavigate, isDark }: ProposalProps) {
                     {stage.step}
                   </span>
                   <div>
-                    <h4 className="font-display text-base font-bold text-ink">
-                      {stage.title}
-                    </h4>
+                    <h4 className="font-display text-base font-bold text-ink">{stage.title}</h4>
                     <p className="text-xs text-ink-2">{stage.subtitle}</p>
                   </div>
                 </div>
@@ -916,7 +915,9 @@ function WorkflowPipelineView({ modules, onNavigate, isDark }: ProposalProps) {
                           style={{ color: theme.primaryColor }}
                           className="flex items-center justify-between text-xs font-semibold"
                         >
-                          <span>{isMobileOnly ? 'App Mobile (Capacitor)' : 'Acessar Workspace'}</span>
+                          <span>
+                            {isMobileOnly ? 'App Mobile (Capacitor)' : 'Acessar Workspace'}
+                          </span>
                           {!isMobileOnly && (
                             <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
                           )}
