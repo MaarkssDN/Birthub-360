@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%" fill="none" role="img" aria-labelledby="anchor-title anchor-desc">
+  <title id="anchor-title">Anchor — Guardião de Retenção</title>
+  <desc id="anchor-desc">Avatar não-humano representando Anchor: âncora geométrica de retenção com anel de estabilidade e braços de sustentação.</desc>
+  <defs>
+    <linearGradient id="anchor-shaft-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#93C5FD"/>
+      <stop offset="55%" stop-color="#60A5FA"/>
+      <stop offset="100%" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <linearGradient id="anchor-fluke-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#60A5FA" stop-opacity="0.95"/>
+      <stop offset="55%" stop-color="#8B7DFF" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#FF2D9B" stop-opacity="0.9"/>
+    </linearGradient>
+    <filter id="anchor-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="anchor-halo-blur" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="blur2"/>
+    </filter>
+  </defs>
+
+  <circle cx="64" cy="64" r="46" fill="#60A5FA" fill-opacity="0.14" filter="url(#anchor-halo-blur)"/>
+
+  <!-- Anel de estabilidade (topo) -->
+  <circle cx="64" cy="34" r="10" stroke="url(#anchor-fluke-grad)" stroke-width="4" fill="none" filter="url(#anchor-glow)"/>
+  <circle cx="64" cy="34" r="4" fill="#93C5FD"/>
+
+  <!-- Haste central -->
+  <rect x="59" y="42" width="10" height="52" rx="4" fill="url(#anchor-shaft-grad)" filter="url(#anchor-glow)"/>
+  <rect x="57" y="56" width="14" height="5" rx="2.5" fill="#FF2D9B" opacity="0.9"/>
+
+  <!-- Barra transversal -->
+  <rect x="42" y="66" width="44" height="8" rx="4" fill="url(#anchor-shaft-grad)" filter="url(#anchor-glow)"/>
+  <circle cx="42" cy="70" r="4.5" fill="#8B7DFF" filter="url(#anchor-glow)"/>
+  <circle cx="86" cy="70" r="4.5" fill="#8B7DFF" filter="url(#anchor-glow)"/>
+
+  <!-- Patas (flukes) curvas -->
+  <g stroke="url(#anchor-fluke-grad)" stroke-width="6" stroke-linecap="round" fill="none" filter="url(#anchor-glow)">
+    <path d="M 50 92 Q 38 104 30 100"/>
+    <path d="M 78 92 Q 90 104 98 100"/>
+  </g>
+  <circle cx="30" cy="100" r="4" fill="#FF2D9B" filter="url(#anchor-glow)"/>
+  <circle cx="98" cy="100" r="4" fill="#FF2D9B" filter="url(#anchor-glow)"/>
+
+  <!-- Base de apoio -->
+  <ellipse cx="64" cy="106" rx="22" ry="5" fill="#0D0D0D" stroke="#60A5FA" stroke-width="1.6" opacity="0.85"/>
+</svg>

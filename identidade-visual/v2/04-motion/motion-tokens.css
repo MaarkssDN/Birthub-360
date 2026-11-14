@@ -1,0 +1,87 @@
+/* ==========================================================================
+   Birthub 360° — Motion Tokens V2.0 (PROPOSTA — PENDENTE DE HOMOLOGAÇÃO)
+   Sincronizado com src/lib/motion.ts (EASE_*, MOTION_DURATION, SPRING_*).
+   Importar DEPOIS de birthhub360-v2.css.
+   ========================================================================== */
+
+:root {
+  /* --- Nível Operacional (default do produto) ---------------------------- */
+  --motion-level: operacional;
+
+  --motion-duration-instant: 100ms;
+  --motion-duration-fast: 150ms;
+  --motion-duration-normal: 250ms;
+  --motion-duration-slow: 350ms;
+  --motion-duration-gentle: 600ms;
+  --motion-duration-ambient: 800ms;
+
+  /* --- Nível Comercial (landing/marketing — opt-in por superfície) -------- */
+  --motion-duration-enter: 700ms;
+  --motion-duration-emphasize: 900ms;
+  --motion-duration-ambient-long: 2400ms;
+
+  /* --- Easings nomeados (valores = EASE_* de src/lib/motion.ts) ----------- */
+  --motion-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-ease-enter: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --motion-ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+
+  /* --- Stagger ------------------------------------------------------------ */
+  --motion-stagger-operacional: 40ms;
+  --motion-stagger-comercial: 90ms;
+
+  /* --- Springs (documentação; em CSS aproximar com ease-elastic/overshoot) - */
+  --motion-spring-snappy: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* --- Variantes nomeadas (ver motion-system.md §4) ------------------------ */
+  --motion-fade-in: opacity 250ms var(--motion-ease-emphasized);
+  --motion-fade-up: opacity 300ms var(--motion-ease-emphasized), transform 300ms var(--motion-ease-emphasized);
+  --motion-screen-enter: opacity 220ms var(--motion-ease-enter), transform 220ms var(--motion-ease-enter);
+  --motion-modal: opacity 200ms var(--motion-ease-emphasized), transform 250ms var(--motion-ease-emphasized);
+
+  /* --- Órbita 360° ---------------------------------------------------------- */
+  --motion-orbit-duration: 16s;
+  --motion-orbit-ease: linear;
+}
+
+/* Superfície comercial: <html data-motion-level="comercial"> ou .motion-comercial */
+:root[data-motion-level="comercial"],
+.motion-comercial {
+  --motion-stagger-operacional: 90ms;
+  --motion-duration-normal: 400ms;
+  --motion-duration-slow: 600ms;
+  --motion-orbit-duration: 12s;
+}
+
+/* Movimento reduzido: prefers-reduced-motion OU toggle manual */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-duration-instant: 0ms;
+    --motion-duration-fast: 0ms;
+    --motion-duration-normal: 0ms;
+    --motion-duration-slow: 0ms;
+    --motion-duration-gentle: 0ms;
+    --motion-duration-ambient: 0ms;
+    --motion-duration-enter: 0ms;
+    --motion-duration-emphasize: 0ms;
+    --motion-duration-ambient-long: 0ms;
+    --motion-stagger-operacional: 0ms;
+    --motion-stagger-comercial: 0ms;
+    --motion-orbit-duration: 0s;
+  }
+}
+:root[data-motion="reduced"] {
+  --motion-duration-instant: 0ms;
+  --motion-duration-fast: 0ms;
+  --motion-duration-normal: 0ms;
+  --motion-duration-slow: 0ms;
+  --motion-duration-gentle: 0ms;
+  --motion-duration-ambient: 0ms;
+  --motion-duration-enter: 0ms;
+  --motion-duration-emphasize: 0ms;
+  --motion-duration-ambient-long: 0ms;
+  --motion-stagger-operacional: 0ms;
+  --motion-stagger-comercial: 0ms;
+  --motion-orbit-duration: 0s;
+}

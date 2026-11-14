@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%" fill="none" role="img" aria-labelledby="beacon-title beacon-desc">
+  <title id="beacon-title">Beacon — Prospecção Outbound</title>
+  <desc id="beacon-desc">Avatar não-humano representando Beacon: torre de sinal com arcos de transmissão concêntricos e núcleo dourado.</desc>
+  <defs>
+    <radialGradient id="beacon-core-grad" cx="45%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#FFF3B0"/>
+      <stop offset="45%" stop-color="#FBBF24"/>
+      <stop offset="100%" stop-color="#B45309"/>
+    </radialGradient>
+    <linearGradient id="beacon-tower-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24"/>
+      <stop offset="60%" stop-color="#FF2D9B"/>
+      <stop offset="100%" stop-color="#00D4FF"/>
+    </linearGradient>
+    <filter id="beacon-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="beacon-halo-blur" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="blur2"/>
+    </filter>
+  </defs>
+
+  <circle cx="64" cy="64" r="46" fill="#FBBF24" fill-opacity="0.14" filter="url(#beacon-halo-blur)"/>
+
+  <!-- Arcos de transmissão (topo) -->
+  <g stroke="#FBBF24" stroke-width="3" stroke-linecap="round" opacity="0.85" filter="url(#beacon-glow)">
+    <path d="M 44 46 A 26 26 0 0 1 84 46" fill="none"/>
+    <path d="M 52 34 A 40 40 0 0 1 76 34" fill="none" opacity="0.6"/>
+  </g>
+  <circle cx="64" cy="26" r="3" fill="#FF2D9B" filter="url(#beacon-glow)"/>
+
+  <!-- Torre de sinal geométrica -->
+  <path d="M 56 96 L 60 56 L 68 56 L 72 96 Z" fill="url(#beacon-tower-grad)" filter="url(#beacon-glow)"/>
+  <rect x="54" y="92" width="20" height="6" rx="2" fill="#0D0D0D" stroke="#FBBF24" stroke-width="1.4"/>
+
+  <!-- Emissor no topo -->
+  <circle cx="64" cy="46" r="9" fill="url(#beacon-core-grad)" filter="url(#beacon-glow)"/>
+  <circle cx="64" cy="46" r="4" fill="#FFF3B0"/>
+
+  <!-- Ondas laterais de alcance -->
+  <path d="M 40 62 Q 30 64 32 74" stroke="#00D4FF" stroke-width="2.4" stroke-linecap="round" fill="none" opacity="0.8"/>
+  <path d="M 88 62 Q 98 64 96 74" stroke="#FF2D9B" stroke-width="2.4" stroke-linecap="round" fill="none" opacity="0.8"/>
+  <circle cx="34" cy="70" r="2.4" fill="#00D4FF"/>
+  <circle cx="94" cy="70" r="2.4" fill="#FF2D9B"/>
+</svg>

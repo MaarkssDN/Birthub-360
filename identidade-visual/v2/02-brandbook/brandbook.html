@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brandbook Oficial V2.0 — Birthub 360°</title>
+<meta name="description" content="Brandbook oficial da identidade visual Birthub 360° — Sistema Operacional de Inteligência Comercial impulsionado por IA e Revenue Intelligence. Neon Editorial Cinematic.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   BIRTHUB 360° — BRANDBOOK OFICIAL V2.0
+   Neon Editorial Cinematic · dark-first · WCAG 2.2 AA
+   ============================================================ */
+:root{
+  /* Paleta Neon Oficial (fixada — FONTE-DE-VERDADE §3) */
+  --neon-cyan:#00D4FF; --neon-pink:#FF2D9B; --neon-gold:#FFC107;
+  --neon-iris:#8B7DFF; --neon-black:#0D0D0D; --neon-light:#F4F7FB;
+  /* Superfícies dark (tokens birthhub360.json / DESIGN.md) */
+  --bg:#0D0D0D; --surface:#14141A; --surface2:#1C1C24; --surface3:#252530;
+  --hover:#252532; --code-bg:#09090D;
+  --ink:#F8F9FF; --muted:#9EADC8; --muted-subtle:#A1A1B5;
+  --border:rgba(0,212,255,.22); --border-subtle:rgba(0,212,255,.18); --border-strong:rgba(0,212,255,.45);
+  --border-pink:rgba(255,45,155,.25); --border-gold:rgba(255,193,7,.3);
+  --shadow-card:0 6px 20px rgba(0,0,0,.25); --shadow-elev:0 12px 30px rgba(0,0,0,.65);
+  --success:#22C55E; --warning:#FFC107; --danger:#EF4444; --info:#3B82F6;
+  /* Gradientes de assinatura (DESIGN.md) */
+  --grad-brand:linear-gradient(135deg,#00D4FF 0%,#FF2D9B 50%,#FFC107 100%);
+  --grad-cta:linear-gradient(135deg,#FF2D9B 0%,#00D4FF 100%);
+  --grad-orbit:conic-gradient(from 0deg,#FFC107,#FF2D9B,#00D4FF,#FFC107);
+  --grad-cyan-pink:linear-gradient(135deg,#00D4FF 0%,#FF2D9B 100%);
+  --grad-gold:linear-gradient(135deg,#FFC107 0%,#FF8F00 100%);
+  --grad-glow:radial-gradient(circle at 50% 0%,rgba(0,212,255,.18),transparent 70%);
+  /* Glows oficiais */
+  --glow-cyan:0 0 24px rgba(0,212,255,.45); --glow-pink:0 0 24px rgba(255,45,155,.45);
+  --glow-gold:0 0 24px rgba(255,193,7,.45); --glow-iris:0 0 24px rgba(139,125,255,.45);
+  /* Tipografia */
+  --font-display:'Sora',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-interface:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,'Cascadia Mono',Consolas,monospace;
+  --track-display:-0.02em; --track-rounded:-0.012em;
+  --radius-control:12px; --radius-card:16px; --radius-modal:20px; --radius-pill:9999px;
+  /* Layout */
+  --sidebar-w:264px;
+}
+[data-theme="light"]{
+  /* Camada semântica light derivada dos tokens existentes (reconciliada V2) */
+  --bg:#F4F7FB; --surface:#FFFFFF; --surface2:#EDF2F7; --surface3:#E2E8F0;
+  --hover:#E2E8F0; --code-bg:#F8FAFC;
+  --ink:#0F172A; --muted:#64748B; --muted-subtle:#475569;
+  --border:rgba(2,132,199,.25); --border-subtle:rgba(11,19,43,.12); --border-strong:rgba(2,132,199,.5);
+  --border-pink:rgba(217,27,124,.25); --border-gold:rgba(217,119,6,.35);
+  --shadow-card:0 6px 20px rgba(0,0,0,.08); --shadow-elev:0 12px 30px rgba(15,23,42,.10);
+  --success:#16A34A; --danger:#DC2626; --info:#2563EB;
+  --glow-cyan:0 0 24px rgba(2,132,199,.28); --glow-pink:0 0 24px rgba(217,27,124,.28);
+  --glow-gold:0 0 24px rgba(217,119,6,.30); --glow-iris:0 0 24px rgba(124,58,237,.28);
+  --track-display:-0.02em;
+}
+/* tons semânticos light (rampas AA adaptadas — ver §3.4) */
+:root{
+  --brand-primary:#00D4FF; --brand-secondary:#FF2D9B; --brand-accent:#FFC107;
+  --heading-cyan:#00D4FF; --heading-pink:#FF2D9B; --heading-gold:#FFC107; --heading-iris:#8B7DFF;
+  --heading-blue:#3B82F6; --heading-success:#22C55E; --heading-danger:#EF4444;
+}
+[data-theme="light"]{
+  --brand-primary:#0284C7; --brand-secondary:#D91B7C; --brand-accent:#D97706;
+  --heading-cyan:color-mix(in srgb,#0284C7 85%,#0D0D0D);
+  --heading-blue:color-mix(in srgb,#3B82F6 80%,#0D0D0D);
+  --heading-gold:color-mix(in srgb,#D97706 70%,#0D0D0D);
+  --heading-pink:#D91B7C;
+  --heading-iris:color-mix(in srgb,#8B7DFF 65%,#0D0D0D);
+  --heading-success:color-mix(in srgb,#22C55E 60%,#0D0D0D);
+  --heading-danger:color-mix(in srgb,#EF4444 80%,#0D0D0D);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--font-interface);font-size:16px;line-height:1.65;
+  font-feature-settings:"cv05","cv11","ss01";letter-spacing:var(--track-rounded);
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:var(--font-display);letter-spacing:var(--track-display);line-height:1.12;margin:0 0 .5em}
+p{margin:0 0 1em}
+a{color:var(--brand-primary);text-decoration:none}
+a:hover{text-decoration:underline}
+code,.mono{font-family:var(--font-mono)}
+img{max-width:100%;display:block}
+:focus-visible{outline:2px solid var(--brand-primary);outline-offset:3px;border-radius:4px}
+::selection{background:var(--brand-secondary);color:#fff}
+
+/* ---------- chrome do brandbook ---------- */
+.topbar{
+  position:fixed;inset:0 0 auto 0;z-index:60;height:56px;display:flex;align-items:center;gap:14px;
+  padding:0 18px;background:color-mix(in srgb,var(--bg) 82%,transparent);
+  backdrop-filter:blur(14px);border-bottom:1px solid var(--border-subtle);
+}
+.topbar .brand-mini{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;font-size:14px;letter-spacing:var(--track-display)}
+.topbar .brand-mini img{height:26px;width:auto}
+.topbar .doc-tag{font-family:var(--font-mono);font-size:11px;color:var(--muted);border:1px solid var(--border-subtle);border-radius:var(--radius-pill);padding:3px 10px;letter-spacing:.04em}
+.theme-toggle{
+  margin-left:auto;display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+  background:var(--surface2);border:1px solid var(--border);color:var(--ink);
+  font-family:var(--font-interface);font-size:12.5px;font-weight:600;
+  border-radius:var(--radius-pill);padding:7px 14px;
+}
+.theme-toggle:hover{border-color:var(--border-strong);text-decoration:none}
+.menu-btn{display:none;background:none;border:1px solid var(--border);color:var(--ink);border-radius:var(--radius-control);padding:8px 12px;font-size:18px;cursor:pointer}
+
+.layout{display:grid;grid-template-columns:var(--sidebar-w) 1fr;min-height:100vh;padding-top:56px}
+.sidebar{
+  position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;
+  border-right:1px solid var(--border-subtle);padding:26px 14px 40px;
+  background:linear-gradient(180deg,var(--bg),var(--surface));
+}
+.sidebar .side-title{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding:0 12px 12px}
+.nav-link{
+  display:flex;align-items:baseline;gap:10px;padding:8px 12px;border-radius:10px;
+  color:var(--muted);font-size:13.5px;font-weight:500;border-left:2px solid transparent;
+}
+.nav-link .n{font-family:var(--font-mono);font-size:10.5px;color:var(--muted-subtle)}
+.nav-link:hover{color:var(--ink);text-decoration:none;background:var(--surface2)}
+.nav-link.active{color:var(--ink);background:var(--surface2);border-left-color:var(--brand-primary)}
+.nav-link.active .n{color:var(--brand-primary)}
+.side-foot{margin-top:26px;padding:12px;font-family:var(--font-mono);font-size:10.5px;color:var(--muted-subtle);line-height:1.6;border-top:1px solid var(--border-subtle)}
+
+main{min-width:0;padding:0 clamp(20px,4vw,56px) 120px;max-width:1180px}
+section{padding:72px 0 24px;scroll-margin-top:76px}
+section + section{border-top:1px solid var(--border-subtle)}
+.eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--brand-primary);margin-bottom:10px}
+h2.sec-title{font-size:clamp(26px,3.4vw,38px);font-weight:800}
+.sec-lede{font-size:17px;color:var(--muted);max-width:68ch;margin-bottom:34px}
+.grid{display:grid;gap:18px}
+.grid-2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.grid-3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.grid-4{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.card{
+  background:var(--surface);border:1px solid var(--border-subtle);border-radius:var(--radius-card);
+  padding:20px;box-shadow:var(--shadow-card);
+}
+.card h3,.card .card-h{font-size:16px;font-weight:700;margin-bottom:.4em}
+.card p,.card li{font-size:13.5px;color:var(--muted)}
+.card ul{margin:8px 0 0;padding-left:18px}
+.card li{margin-bottom:4px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.mono-sm{font-family:var(--font-mono);font-size:12px;color:var(--muted)}
+
+/* selo PENDENTE */
+.pendente{
+  display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:10.5px;
+  font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--neon-gold);background:rgba(255,193,7,.10);border:1px solid var(--border-gold);
+  border-radius:var(--radius-pill);padding:3px 10px;vertical-align:middle;white-space:nowrap;
+}
+[data-theme="light"] .pendente{color:#B45309;background:rgba(217,119,6,.10)}
+.note{
+  border-left:3px solid var(--brand-accent);background:var(--surface2);
+  border-radius:0 var(--radius-control) var(--radius-control) 0;
+  padding:14px 18px;font-size:13.5px;color:var(--muted);margin:18px 0;
+}
+.note strong{color:var(--ink)}
+.tag{font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;border-radius:var(--radius-pill);padding:2px 8px;border:1px solid var(--border-subtle);color:var(--muted)}
+.tag.proto{color:var(--heading-pink);border-color:var(--border-pink)}
+
+/* ---------- 1. identidade ---------- */
+.hero-id{position:relative;overflow:hidden;border-radius:var(--radius-modal);border:1px solid var(--border-subtle);
+  background:radial-gradient(120% 160% at 85% -10%,rgba(139,125,255,.16),transparent 55%),radial-gradient(90% 140% at 8% 110%,rgba(255,45,155,.12),transparent 55%),var(--surface);
+  padding:clamp(28px,4vw,52px)}
+.hero-id h1{font-size:clamp(30px,4.6vw,52px);font-weight:800;max-width:16ch}
+.hero-id h1 .grad-text{background:var(--grad-brand);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-id .posicionamento{font-family:var(--font-display);font-size:clamp(15px,1.8vw,19px);font-weight:600;color:var(--heading-cyan);margin:14px 0 8px}
+.pillars-strip{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.pillar-chip{font-family:var(--font-mono);font-size:11px;color:var(--muted);border:1px solid var(--border-subtle);border-radius:var(--radius-pill);padding:6px 12px;background:var(--bg)}
+.personality{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:8px}
+.persona{border-radius:var(--radius-control);padding:14px;background:var(--surface2)}
+.persona b{display:block;font-family:var(--font-display);font-size:14px;margin-bottom:2px}
+.persona span{font-size:12px;color:var(--muted)}
+.voice-split{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:720px){.voice-split{grid-template-columns:1fr}}
+.voice-col{border-radius:var(--radius-card);border:1px solid var(--border-subtle);padding:22px;background:var(--surface)}
+.voice-col.doa{border-color:var(--border-pink)}
+.voice-col.nao{border-color:var(--border-subtle);opacity:.85}
+.voice-col h3{font-size:15px}
+.voice-col ul{list-style:none;margin:0;padding:0}
+.voice-col li{padding:9px 0;border-bottom:1px dashed var(--border-subtle);font-size:14px}
+.voice-col li:last-child{border-bottom:none}
+.voice-col .vx{font-family:var(--font-mono);font-size:11px;color:var(--muted-subtle);display:block}
+
+/* ---------- 2. logotipo ---------- */
+.logo-stage{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+.logo-cell{border-radius:var(--radius-card);border:1px solid var(--border-subtle);overflow:hidden;background:var(--surface)}
+.logo-cell .stage{display:flex;align-items:center;justify-content:center;min-height:190px;padding:26px}
+.logo-cell .stage img{max-height:120px;width:auto}
+.logo-cell .meta{padding:14px 18px;border-top:1px solid var(--border-subtle);font-size:12.5px;color:var(--muted)}
+.logo-cell .meta b{color:var(--ink);font-family:var(--font-display)}
+.stage.dark{background:#0D0D0D}
+.stage.light{background:#F4F7FB}
+.stage.card{background:#14141A}
+.stage.gradient{background:var(--grad-brand)}
+.stage.gradient img{filter:drop-shadow(0 6px 24px rgba(0,0,0,.35))}
+.misuse{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:18px}
+.misuse .cell{border:1px dashed var(--danger);border-radius:var(--radius-control);padding:16px;text-align:center;background:var(--surface);position:relative}
+.misuse .cell::before{content:"PROIBIDO";position:absolute;top:8px;right:10px;font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;color:var(--danger)}
+.misuse img{max-height:80px;margin:14px auto 8px;opacity:.9}
+.misuse .cap{font-size:11.5px;color:var(--muted)}
+.okuse{border:1px solid var(--success);border-radius:var(--radius-control);padding:14px 18px;font-size:13px;color:var(--muted);margin-top:14px}
+.okuse b{color:var(--success)}
+.logo-spec{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.logo-spec td,.logo-spec th{padding:9px 12px;border-bottom:1px solid var(--border-subtle);text-align:left;vertical-align:top}
+.logo-spec th{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.logo-spec td:first-child{font-weight:600;white-space:nowrap}
+
+/* ---------- 3. paleta ---------- */
+.swatch{border-radius:var(--radius-card);overflow:hidden;border:1px solid var(--border-subtle);background:var(--surface)}
+.swatch .chip{height:110px;position:relative}
+.swatch .chip .hex{position:absolute;left:12px;bottom:10px;font-family:var(--font-mono);font-size:12px;font-weight:600;color:#0D0D0D}
+.swatch .chip .hex.on-light{color:#0D0D0D;text-shadow:none}
+.swatch .info{padding:12px 14px}
+.swatch .info b{font-family:var(--font-display);font-size:13.5px;display:block}
+.swatch .info span{font-size:12px;color:var(--muted)}
+.ratio-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+.ratio-table th,.ratio-table td{padding:10px 12px;border-bottom:1px solid var(--border-subtle);text-align:left}
+.ratio-table th{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.pass{color:var(--success);font-family:var(--font-mono);font-size:12px;font-weight:600}
+.fail{color:var(--danger);font-family:var(--font-mono);font-size:12px;font-weight:600}
+.fail-aa-large{color:var(--warning);font-family:var(--font-mono);font-size:12px;font-weight:600}
+.grad-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:14px}
+.grad-tile{border-radius:var(--radius-card);border:1px solid var(--border-subtle);overflow:hidden;background:var(--surface)}
+.grad-tile .bar{height:74px}
+.grad-tile .bar.brand{background:var(--grad-brand)}
+.grad-tile .bar.cta{background:var(--grad-cta)}
+.grad-tile .bar.orbit{background:var(--grad-orbit)}
+.grad-tile .bar.cyanpink{background:var(--grad-cyan-pink)}
+.grad-tile .bar.gold{background:var(--grad-gold)}
+.grad-tile .txt{padding:12px 14px;font-size:12px;color:var(--muted)}
+.grad-tile .txt code{display:block;margin-top:4px;font-size:10.5px;word-break:break-all;color:var(--muted-subtle)}
+.glow-demo{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px}
+.glow-dot{width:64px;height:64px;border-radius:50%;background:var(--neon-cyan)}
+.glow-pink{background:var(--neon-pink)}.glow-gold{background:var(--neon-gold)}.glow-iris{background:var(--neon-iris)}
+.glow-demo .g{display:flex;flex-direction:column;align-items:center;gap:8px;font-family:var(--font-mono);font-size:10.5px;color:var(--muted)}
+.g.c{box-shadow:var(--glow-cyan)}.g.p{box-shadow:var(--glow-pink)}.g.y{box-shadow:var(--glow-gold)}.g.i{box-shadow:var(--glow-iris)}
+.orbit-demo{width:190px;height:190px;border-radius:50%;background:var(--grad-orbit);margin:8px auto 0;position:relative}
+.orbit-demo::after{content:"";position:absolute;inset:14px;border-radius:50%;background:var(--bg)}
+.orbit-demo::before{content:"360°";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:800;font-size:20px;color:#fff;text-shadow:0 0 18px rgba(0,0,0,.5)}
+.dist-bar{display:flex;height:44px;border-radius:var(--radius-control);overflow:hidden;border:1px solid var(--border-subtle);font-family:var(--font-mono);font-size:11px}
+.dist-bar div{display:flex;align-items:center;justify-content:center;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+
+/* ---------- 4. tipografia ---------- */
+.type-sample{border:1px solid var(--border-subtle);border-radius:var(--radius-card);background:var(--surface);padding:24px;margin-bottom:16px}
+.type-sample .lbl{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.type-scale{width:100%;border-collapse:collapse;font-size:13px}
+.type-scale th,.type-scale td{padding:10px 12px;border-bottom:1px solid var(--border-subtle);text-align:left;vertical-align:middle}
+.type-scale th{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.type-scale .t-display{font-family:var(--font-display);font-weight:800;letter-spacing:var(--track-display)}
+.type-scale .t-body{font-family:var(--font-interface)}
+.type-scale .t-mono{font-family:var(--font-mono)}
+.grad-heading{background:var(--grad-brand);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* ---------- 5. linguagem visual ---------- */
+.orbit-figure{display:flex;align-items:center;gap:26px;flex-wrap:wrap;border:1px solid var(--border-subtle);border-radius:var(--radius-card);background:var(--surface);padding:26px}
+.orbit-ring{width:150px;height:150px;border-radius:50%;background:var(--grad-orbit);flex:none;position:relative;box-shadow:var(--glow-cyan)}
+.orbit-ring::after{content:"";position:absolute;inset:12px;border-radius:50%;background:var(--surface)}
+.orbit-ring::before{content:"360°";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:800;color:#fff}
+.grafismo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:16px}
+.grafismo{border:1px solid var(--border-subtle);border-radius:var(--radius-control);background:var(--surface);padding:18px;text-align:center}
+.grafismo .art{height:90px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.grafismo b{font-family:var(--font-display);font-size:13px;display:block}
+.grafismo span{font-size:11.5px;color:var(--muted)}
+.art-ring{width:74px;height:74px;border-radius:50%;background:var(--grad-orbit);position:relative}
+.art-ring::after{content:"";position:absolute;inset:8px;border-radius:50%;background:var(--surface)}
+.art-lines{width:80px;height:80px;position:relative}
+.art-lines::before,.art-lines::after{content:"";position:absolute;inset:0;border-radius:50%;border:1.5px solid var(--neon-cyan);opacity:.7}
+.art-lines::after{border-color:var(--neon-pink);transform:rotate(60deg) scale(.72)}
+.art-scan{width:80px;height:80px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);position:relative;overflow:hidden}
+.art-scan::before{content:"";position:absolute;left:0;right:0;top:30%;height:2px;background:var(--grad-brand);box-shadow:var(--glow-cyan)}
+.art-scan::after{content:"";position:absolute;inset:12px;border-radius:8px;border:1px dashed var(--border-gold)}
+.art-arc{width:80px;height:80px;border-radius:50%;border:3px solid transparent;border-top-color:var(--neon-cyan);border-right-color:var(--neon-pink);transform:rotate(-20deg)}
+
+/* ---------- 6. protótipos ---------- */
+.proto-frame{border:1px solid var(--border-subtle);border-radius:var(--radius-modal);overflow:hidden;background:var(--surface);box-shadow:var(--shadow-elev)}
+.proto-frame .proto-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border-subtle);background:var(--surface2);font-family:var(--font-mono);font-size:10.5px;color:var(--muted)}
+.proto-bar i{width:9px;height:9px;border-radius:50%;background:var(--surface3);display:inline-block}
+.proto-bar i:nth-child(1){background:var(--neon-pink)}.proto-bar i:nth-child(2){background:var(--neon-gold)}.proto-bar i:nth-child(3){background:var(--success)}
+.proto-body{padding:0}
+.proto-note{font-size:12px;color:var(--muted);margin-top:10px}
+
+/* landing hero */
+.lp{background:#0B0B10;color:#F8F9FF;position:relative;overflow:hidden;font-family:var(--font-interface)}
+.lp .glow-bg{position:absolute;inset:0;background:radial-gradient(60% 50% at 70% 0%,rgba(139,125,255,.20),transparent 60%),radial-gradient(50% 40% at 15% 90%,rgba(255,45,155,.14),transparent 60%),radial-gradient(40% 35% at 85% 80%,rgba(0,212,255,.12),transparent 60%)}
+.lp .lp-nav{position:relative;display:flex;align-items:center;justify-content:space-between;padding:18px 28px}
+.lp .lp-nav .logo{height:30px}
+.lp .lp-links{display:flex;gap:22px;font-size:13px;color:#9EADC8}
+.lp .lp-hero{position:relative;text-align:center;padding:60px 28px 80px}
+.lp .kicker{font-family:var(--font-mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#00D4FF}
+.lp h3{font-family:'Sora',var(--font-display);font-size:clamp(28px,4vw,46px);font-weight:800;letter-spacing:-.02em;line-height:1.08;margin:14px auto 16px;max-width:18ch}
+.lp h3 em{font-style:normal;background:linear-gradient(135deg,#00D4FF,#FF2D9B 55%,#FFC107);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lp .sub{color:#9EADC8;font-size:15px;max-width:52ch;margin:0 auto 26px}
+.lp .cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.lp .btn{font-family:'Sora',var(--font-display);font-weight:700;font-size:14px;border-radius:9999px;padding:13px 26px;border:none;cursor:pointer}
+.lp .btn-p{background:linear-gradient(135deg,#FF2D9B,#00D4FF);color:#0D0D0D;font-weight:800;box-shadow:0 0 24px rgba(255,45,155,.4)}
+.lp .btn-s{background:transparent;color:#F8F9FF;border:1px solid rgba(0,212,255,.4)}
+.lp .orbit-hero{width:min(420px,80%);aspect-ratio:1;margin:34px auto 0;border-radius:50%;
+  background:conic-gradient(from 0deg,#FFC107,#FF2D9B,#00D4FF,#8B7DFF,#FFC107);
+  position:relative;box-shadow:0 0 60px rgba(0,212,255,.25),0 0 90px rgba(255,45,155,.18)}
+.lp .orbit-hero::after{content:"";position:absolute;inset:18px;border-radius:50%;background:#0D0D0D;border:1px solid rgba(255,193,7,.35)}
+.lp .orbit-hero::before{content:"360°";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-weight:800;font-size:clamp(30px,5vw,52px);color:transparent;background:var(--grad-brand);-webkit-background-clip:text;background-clip:text}
+.lp .orbit-hero .node{position:absolute;width:14px;height:14px;border-radius:50%;background:#FFC107;box-shadow:0 0 16px rgba(255,193,7,.8);top:6%;left:50%;transform:translateX(-50%)}
+.lp .orbit-hero .node.n2{top:auto;bottom:6%;left:50%;background:#00D4FF;box-shadow:0 0 16px rgba(0,212,255,.8)}
+.lp .orbit-hero .node.n3{top:50%;left:6%;transform:translateY(-50%);background:#FF2D9B;box-shadow:0 0 16px rgba(255,45,155,.8)}
+.lp .orbit-hero .node.n4{top:50%;right:6%;left:auto;transform:translateY(-50%);background:#8B7DFF;box-shadow:0 0 16px rgba(139,125,255,.8)}
+.lp .stats{position:relative;display:flex;justify-content:center;gap:clamp(20px,6vw,64px);padding:26px;border-top:1px solid rgba(0,212,255,.15);flex-wrap:wrap}
+.lp .stat{text-align:center}
+.lp .stat b{font-family:'IBM Plex Mono',monospace;font-size:22px;display:block;color:#F8F9FF}
+.lp .stat span{font-size:11.5px;color:#9EADC8;text-transform:uppercase;letter-spacing:.08em}
+
+/* login */
+.lg{display:grid;grid-template-columns:1fr 1fr;min-height:430px;background:#0D0D0D;color:#F8F9FF}
+@media(max-width:640px){.lg{grid-template-columns:1fr}}
+.lg .brand-side{padding:36px;display:flex;flex-direction:column;justify-content:space-between;border-right:1px solid rgba(0,212,255,.15);background:radial-gradient(120% 120% at 0% 0%,rgba(0,212,255,.10),transparent 55%),radial-gradient(120% 120% at 100% 100%,rgba(255,45,155,.10),transparent 55%)}
+.lg .brand-side img{height:40px;align-self:flex-start}
+.lg .brand-side .quote{font-family:'Sora',var(--font-display);font-size:20px;font-weight:700;letter-spacing:-.02em;line-height:1.3}
+.lg .brand-side .quote em{font-style:normal;background:linear-gradient(135deg,#00D4FF,#FF2D9B);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lg .form-side{padding:36px;display:flex;flex-direction:column;justify-content:center;max-width:360px;width:100%;margin:0 auto}
+.lg h4{font-family:'Sora',sans-serif;font-size:22px;font-weight:700;margin-bottom:4px}
+.lg .lg-sub{font-size:13px;color:#9EADC8;margin-bottom:24px}
+.lg label{font-size:12px;font-weight:600;color:#9EADC8;display:block;margin-bottom:6px}
+.lg input{width:100%;background:#14141A;border:1px solid rgba(0,212,255,.22);border-radius:12px;color:#F8F9FF;font-family:'Inter',sans-serif;font-size:14px;padding:12px 14px;margin-bottom:16px}
+.lg input:focus{outline:none;border-color:#00D4FF;box-shadow:0 0 0 3px rgba(0,212,255,.2)}
+.lg .btn-lg{width:100%;background:linear-gradient(135deg,#FF2D9B,#00D4FF);color:#0D0D0D;border:none;border-radius:9999px;font-family:'Sora',sans-serif;font-weight:700;font-size:14px;padding:13px;cursor:pointer}
+.lg .lg-foot{margin-top:18px;text-align:center;font-size:12px;color:#9EADC8}
+
+/* SaaS shell / dashboard */
+.app{display:grid;grid-template-columns:190px 1fr;min-height:470px;background:#0D0D0D;color:#F8F9FF;font-family:var(--font-interface)}
+@media(max-width:680px){.app{grid-template-columns:1fr}.app .side{display:none}}
+.app .side{background:#14141A;border-right:1px solid rgba(0,212,255,.15);padding:18px 12px}
+.app .side img{height:24px;margin-bottom:20px;padding:0 6px}
+.app .side a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;font-size:13px;color:#9EADC8;margin-bottom:2px}
+.app .side a.on{background:rgba(0,212,255,.10);color:#00D4FF;border:1px solid rgba(0,212,255,.22)}
+.app .side .grp{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#A1A1B5;padding:16px 10px 6px}
+.app .main{padding:22px;overflow:hidden}
+.app .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.app .top h4{font-family:'Sora',sans-serif;font-size:17px;font-weight:700;margin:0}
+.app .top .search{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#9EADC8;border:1px solid rgba(0,212,255,.2);border-radius:9999px;padding:7px 14px;background:#14141A}
+.app .bento{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px}
+@media(max-width:560px){.app .bento{grid-template-columns:1fr}}
+.app .kpi{background:#14141A;border:1px solid rgba(0,212,255,.14);border-radius:16px;padding:14px}
+.app .kpi .k{font-size:10.5px;color:#9EADC8;text-transform:uppercase;letter-spacing:.08em;font-family:'IBM Plex Mono',monospace}
+.app .kpi .v{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;margin-top:6px}
+.app .kpi .d{font-size:11px;margin-top:4px}
+.app .kpi .d.up{color:#22C55E}.app .kpi .d.warn{color:#FFC107}
+.app .wide{background:#14141A;border:1px solid rgba(0,212,255,.14);border-radius:16px;padding:16px;grid-column:span 2}
+@media(max-width:560px){.app .wide{grid-column:span 1}}
+.app .wide h5{font-family:'Sora',sans-serif;font-size:13px;margin:0 0 12px;color:#9EADC8;font-weight:600}
+.bars{display:flex;align-items:flex-end;gap:8px;height:110px}
+.bars i{flex:1;border-radius:4px 4px 0 0;background:linear-gradient(180deg,#00D4FF,#8B7DFF);opacity:.85;min-height:8px}
+.bars i:nth-child(3n){background:linear-gradient(180deg,#FF2D9B,#FFC107)}
+.app .feed{background:#14141A;border:1px solid rgba(0,212,255,.14);border-radius:16px;padding:14px}
+.app .feed .f{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid rgba(0,212,255,.08);font-size:12px}
+.app .feed .f:last-child{border-bottom:none}
+.app .feed .dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex:none}
+.app .feed .t{color:#9EADC8;font-family:'IBM Plex Mono',monospace;font-size:10px}
+
+/* pilares cards */
+.pilar-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.pilar{border-radius:var(--radius-card);border:1px solid var(--border-subtle);background:var(--surface);padding:18px;position:relative;overflow:hidden}
+.pilar::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:var(--pg,var(--grad-brand));opacity:.9}
+.pilar .pn{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;color:var(--muted)}
+.pilar h4{font-family:'Sora',sans-serif;font-size:15px;font-weight:700;margin:8px 0 6px}
+.pilar p{font-size:12.5px;color:var(--muted);margin:0}
+
+/* social post */
+.social{background:#0D0D0D;padding:26px;display:flex;justify-content:center}
+.post{width:100%;max-width:420px;background:#14141A;border:1px solid rgba(0,212,255,.18);border-radius:20px;overflow:hidden}
+.post .ph{padding:16px 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(0,212,255,.1)}
+.post .av{width:38px;height:38px;border-radius:50%;background:conic-gradient(from 0deg,#FFC107,#FF2D9B,#00D4FF,#FFC107);display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;font-weight:800;font-size:14px;color:#0D0D0D}
+.post .ph b{font-size:13.5px;display:block}
+.post .ph span{font-size:11px;color:#9EADC8}
+.post .pt{padding:18px;font-size:14px;line-height:1.6;color:#F8F9FF}
+.post .pt strong{background:linear-gradient(135deg,#00D4FF,#FF2D9B);-webkit-background-clip:text;background-clip:text;color:transparent}
+.post .pf{padding:0 18px 18px;display:flex;gap:22px;font-size:12px;color:#9EADC8}
+.post .pchart{height:130px;margin:0 18px 18px;border-radius:12px;background:linear-gradient(135deg,rgba(0,212,255,.12),rgba(255,45,155,.10));border:1px solid rgba(0,212,255,.15);display:flex;align-items:flex-end;gap:6px;padding:12px}
+.post .pchart i{flex:1;background:linear-gradient(180deg,#00D4FF,#8B7DFF);border-radius:4px 4px 0 0;opacity:.8}
+.post .pchart i:nth-child(4n){background:linear-gradient(180deg,#FF2D9B,#FFC107)}
+
+/* mobile frame */
+.phone{width:280px;margin:0 auto;border-radius:36px;border:10px solid #1C1C24;background:#0D0D0D;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.5),0 0 30px rgba(0,212,255,.12)}
+.phone .notch{height:22px;background:#0D0D0D;display:flex;justify-content:center;align-items:flex-end}
+.phone .notch::after{content:"";width:90px;height:5px;border-radius:3px;background:#252530}
+.phone .mapp{padding:14px}
+.phone .mhero{border-radius:16px;padding:18px;background:radial-gradient(120% 140% at 80% 0%,rgba(139,125,255,.25),transparent 55%),linear-gradient(160deg,#14141A,#1C1C24);border:1px solid rgba(0,212,255,.2);margin-bottom:12px}
+.phone .mhero .t{font-family:'Sora',sans-serif;font-weight:800;font-size:17px;letter-spacing:-.02em}
+.phone .mhero .t em{font-style:normal;background:linear-gradient(135deg,#00D4FF,#FF2D9B);-webkit-background-clip:text;background-clip:text;color:transparent}
+.phone .mhero .ring{width:74px;height:74px;border-radius:50%;background:conic-gradient(from 0deg,#FFC107,#FF2D9B,#00D4FF,#FFC107);margin-top:12px;position:relative}
+.phone .mhero .ring::after{content:"";position:absolute;inset:7px;border-radius:50%;background:#1C1C24}
+.phone .mcard{background:#14141A;border:1px solid rgba(0,212,255,.14);border-radius:14px;padding:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.phone .mcard .k{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:#9EADC8;text-transform:uppercase}
+.phone .mcard .v{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600}
+.phone .mcard .v.g{color:#FFC107}.phone .mcard .v.c{color:#00D4FF}
+.phone .mnav{display:flex;justify-content:space-around;padding:12px 0 18px;border-top:1px solid rgba(0,212,255,.12);font-size:9px;color:#9EADC8;font-family:'IBM Plex Mono',monospace}
+.phone .mnav b{display:block;color:#00D4FF;font-size:12px}
+
+/* ---------- 7. personagens ---------- */
+.char-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.char{background:var(--surface);border:1px solid var(--border-subtle);border-radius:var(--radius-card);padding:14px;text-align:center;transition:border-color .2s,box-shadow .2s}
+.char:hover{border-color:var(--border-strong);box-shadow:var(--glow-cyan)}
+.char img{width:84px;height:84px;margin:0 auto 10px}
+.char b{font-family:'Sora',sans-serif;font-size:13px;display:block}
+.char .role{font-size:11px;color:var(--muted);display:block;margin-top:2px;line-height:1.35}
+.char .file{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--muted-subtle);display:block;margin-top:6px}
+.char-feature{display:grid;grid-template-columns:220px 1fr;gap:24px;align-items:center;border:1px solid var(--border-subtle);border-radius:var(--radius-card);background:var(--surface);padding:24px;margin-bottom:18px}
+@media(max-width:640px){.char-feature{grid-template-columns:1fr;text-align:center}}
+.char-feature img{width:150px;height:150px;margin:0 auto}
+.char-feature h3{font-size:20px;margin-bottom:6px}
+.char-feature .meta{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px}
+.char-feature p{font-size:14px;color:var(--muted);max-width:60ch}
+
+/* ---------- 8. tom de voz ---------- */
+.copy-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+@media(max-width:720px){.copy-row{grid-template-columns:1fr}}
+.copy-cell{border-radius:var(--radius-control);padding:16px 18px;font-size:14px;line-height:1.6;border:1px solid var(--border-subtle)}
+.copy-cell.ok{background:rgba(34,197,94,.06);border-color:rgba(34,197,94,.3)}
+.copy-cell.no{background:rgba(239,68,68,.05);border-color:rgba(239,68,68,.3)}
+.copy-cell .lbl{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:8px}
+.copy-cell.ok .lbl{color:var(--success)}.copy-cell.no .lbl{color:var(--danger)}
+.copy-cell p{margin:0}
+.copy-cell .why{font-size:12px;color:var(--muted);margin-top:8px}
+
+/* ---------- footer ---------- */
+footer{margin-top:80px;padding-top:28px;border-top:1px solid var(--border-subtle);font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{position:fixed;inset:56px auto 0 0;width:min(300px,84vw);z-index:55;transform:translateX(-105%);transition:transform .25s ease;height:auto;box-shadow:var(--shadow-elev)}
+  .sidebar.open{transform:none}
+  .menu-btn{display:inline-block}
+  .doc-tag{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+@media print{.sidebar,.topbar,.menu-btn{display:none}.layout{display:block}main{max-width:none}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <button class="menu-btn" id="menuBtn" aria-label="Abrir navegação" aria-expanded="false">☰</button>
+  <div class="brand-mini"><img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Birthub 360°"></div>
+  <span class="doc-tag">BRANDBOOK OFICIAL · V2.0 · DEM-20261113-004</span>
+  <button class="theme-toggle" id="themeToggle" aria-pressed="false">
+    <span aria-hidden="true">◐</span><span id="themeLabel">Modo claro</span>
+  </button>
+</header>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar" aria-label="Navegação do brandbook">
+    <div class="side-title">Sumário</div>
+    <a class="nav-link" href="#identidade"><span class="n">01</span>Identidade da marca</a>
+    <a class="nav-link" href="#logotipo"><span class="n">02</span>Logotipo</a>
+    <a class="nav-link" href="#paleta"><span class="n">03</span>Paleta Neon Oficial</a>
+    <a class="nav-link" href="#tipografia"><span class="n">04</span>Tipografia</a>
+    <a class="nav-link" href="#linguagem"><span class="n">05</span>Linguagem visual</a>
+    <a class="nav-link" href="#aplicacoes"><span class="n">06</span>Exemplos de aplicação</a>
+    <a class="nav-link" href="#personagens"><span class="n">07</span>Sistema de personagens</a>
+    <a class="nav-link" href="#tom"><span class="n">08</span>Tom de voz e escrita</a>
+    <div class="side-foot">
+      Fonte de verdade: <span class="mono-sm">identidade-visual/v2/FONTE-DE-VERDADE.md</span><br>
+      Tokens reconciliados: <span class="mono-sm">birthhub360.json · DESIGN.md</span><br>
+      Itens <span class="pendente">pendente</span> não são regra oficial.
+    </div>
+  </nav>
+
+  <main>
+
+  <!-- ================= 01 IDENTIDADE ================= -->
+  <section id="identidade">
+    <p class="eyebrow">Seção 01</p>
+    <h2 class="sec-title">Identidade da marca</h2>
+    <p class="sec-lede">Quem é a Birthub 360°, o que ela promete e como ela fala. Todas as decisões abaixo derivam da FONTE DE VERDADE V2.0.</p>
+
+    <div class="hero-id">
+      <h1>Birthub <span class="grad-text">360°</span> <span class="pendente">Pendente de homologação</span></h1>
+      <p class="posicionamento">Sistema Operacional de Inteligência Comercial, impulsionado por IA e Revenue Intelligence.</p>
+      <p class="muted" style="max-width:62ch;font-size:15px">
+        A Birthub 360° não é um CRM convencional: é o sistema operacional que unifica dados, decisões
+        automatizadas e cadências ativas de receita em uma única visão 360°. Opera sobre o Hub Central,
+        Workspaces Modulares e Assistentes Globais — um único Design System com identidade contextual
+        por módulo, nunca onze sistemas incompatíveis.
+      </p>
+      <div class="pillars-strip">
+        <span class="pillar-chip">P01 · HUB COMERCIAL</span>
+        <span class="pillar-chip">P02 · INTELIGÊNCIA DE MERCADO</span>
+        <span class="pillar-chip">P03 · ORQUESTRAÇÃO DE VENDAS</span>
+        <span class="pillar-chip">P04 · PERFORMANCE COMERCIAL</span>
+        <span class="pillar-chip">P05 · PREVISIBILIDADE COMERCIAL</span>
+        <span class="pillar-chip">P06 · INTELIGÊNCIA ARTIFICIAL</span>
+        <span class="pillar-chip">P07 · AUTOMAÇÃO &amp; CONECTIVIDADE</span>
+        <span class="pillar-chip">P08 · ENGAJAMENTO COMERCIAL</span>
+        <span class="pillar-chip">M09–M11 · COMPLEMENTARES</span>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:26px">
+      <div class="card">
+        <h2 class="card-h">Propósito</h2>
+        <p>Dar a operações comerciais B2B um sistema operacional de receita onde cada dado, decisão e
+        interação alimenta o próximo movimento — com inteligência preditiva e copiloto contextual
+        trabalhando no mesmo espaço da decisão.</p>
+      </div>
+      <div class="card">
+        <h2 class="card-h">Proposta de valor</h2>
+        <ul>
+          <li><strong>Dados em movimento:</strong> sincronização bidirecional resiliente, zero input manual.</li>
+          <li><strong>IA ativa:</strong> copiloto contextual, NBA e síntese executiva no HUD ao vivo.</li>
+          <li><strong>Velocidade:</strong> resposta sub-segundo, Command Palette ⌘K, bento grids de alta densidade.</li>
+          <li><strong>Resiliência:</strong> 4 estados obrigatórios em toda tela — Loading, Empty, Error, Stale.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2 class="card-h">Personalidade</h2>
+        <div class="personality" style="margin-top:12px">
+          <div class="persona"><b>Cinematográfica</b><span>composição editorial, profundidade, glow controlado</span></div>
+          <div class="persona"><b>Precisa</b><span>dados tabulares, KPIs em mono, zero ruído decorativo</span></div>
+          <div class="persona"><b>Confiável</b><span>estados explícitos, timestamps, proveniência de dados</span></div>
+          <div class="persona"><b>Viva</b><span>neon com propósito semântico, nunca neon gratuito</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2 class="card-h">Narrativa institucional</h2>
+        <p>A receita de uma empresa B2B não mora em planilhas nem em dashboards estáticos — ela é um
+        sistema vivo de sinais, decisões e cadências. A Birthub 360° foi desenhada como esse sistema:
+        um anel orbital de dados girando em torno do operador comercial, onde IA antecipa, agentes
+        executam e a liderança enxerga o todo sem perder o detalhe.</p>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Nome e grafia — pendência registrada.</strong> Existe divergência documental entre
+      "Birthub 360°" e "Birth Hub 360°" (inclusive nos assets SVG oficiais, que usam "Birth Hub 360"
+      em <code>aria-label</code> e <code>&lt;title&gt;</code>). Conforme a FONTE DE VERDADE, os documentos
+      V2 adotam <strong>Birthub 360°</strong> como grafia de trabalho, com este selo de pendência até a
+      homologação da Frente 01. Os logotipos exibidos neste documento são os arquivos oficiais
+      originais — não foram redesenhados nem alterados.
+    </div>
+  </section>
+
+  <!-- ================= 02 LOGOTIPO ================= -->
+  <section id="logotipo">
+    <p class="eyebrow">Seção 02</p>
+    <h2 class="sec-title">Logotipo</h2>
+    <p class="sec-lede">Três versões oficiais em SVG. O logotipo é ativo protegido: usar sempre os arquivos
+    de <code class="mono-sm">identidade-visual/birthhub360/logos/</code> (cópias estáveis em
+    <code class="mono-sm">v2/assets/logos/</code>). Nunca redesenhar, vetorizar ou recriar o emblema.</p>
+
+    <div class="logo-stage">
+      <div class="logo-cell">
+        <div class="stage dark"><img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Logotipo horizontal Birthub 360°"></div>
+        <div class="meta"><b>Horizontal</b> — <code>birthhub360-logo-horizontal.svg</code><br>Emblema + wordmark "BIRTH HUB 360". Versão primária para cabeçalhos, assinaturas e superfícies escuras.</div>
+      </div>
+      <div class="logo-cell">
+        <div class="stage dark"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo Birthub 360°" style="max-height:150px"></div>
+        <div class="meta"><b>Símbolo</b> — <code>birthhub360-simbolo.svg</code><br>Anel orbital cônico 360° com núcleo. Versão para espaços compactos e aplicações de marca.</div>
+      </div>
+      <div class="logo-cell">
+        <div class="stage dark"><img src="../assets/logos/birthhub360-icone.svg" alt="Ícone Birthub 360°" style="max-height:110px"></div>
+        <div class="meta"><b>Ícone</b> — <code>birthhub360-icone.svg</code><br>Versão mínima para favicon, avatar e contextos &lt; 48px.</div>
+      </div>
+      <div class="logo-cell">
+        <div class="stage light"><img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Logotipo horizontal em fundo claro" style="max-height:110px"></div>
+        <div class="meta"><b>Horizontal · fundo claro</b><br>O wordmark possui variantes de cor nos próprios SVGs; em fundos claros preferir a versão com contorno/wordmark escuro quando disponível. <span class="pendente">Homologar variante light dedicada</span>.</div>
+      </div>
+      <div class="logo-cell">
+        <div class="stage card"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo em superfície de card" style="max-height:140px"></div>
+        <div class="meta"><b>Símbolo · superfície card</b><br>Permitido sobre <code>#14141A</code> (surface) — o anel mantém contraste por glow embutido no asset.</div>
+      </div>
+      <div class="logo-cell">
+        <div class="stage gradient"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo sobre gradiente" style="max-height:130px"></div>
+        <div class="meta"><b>Símbolo · gradiente de marca</b><br>Uso excepcional (capa, hero). Exige versão monocromática/knockout do símbolo — <span class="pendente">pendente: exportar variante knockout</span>.</div>
+      </div>
+    </div>
+
+    <h3 style="font-size:18px;margin-top:34px">Proporções e área de proteção</h3>
+    <table class="logo-spec">
+      <tr><th>Medida</th><th>Regra</th></tr>
+      <tr><td>Módulo x</td><td>Unidade mínima = <strong>altura do símbolo</strong> (raio do anel orbital interno). Toda margem de respiro do logotipo é múltiplo de x.</td></tr>
+      <tr><td>Área de proteção</td><td>Mínimo de <strong>1x</strong> livre em todos os lados a partir da borda do emblema; <strong>2x</strong> preferencial em peças editoriais.</td></tr>
+      <tr><td>Tamanho mínimo</td><td>Horizontal: 120 px de largura (web) / 30 mm (impresso). Símbolo: 24 px. Ícone: 16 px.</td></tr>
+      <tr><td>Proporção</td><td>Mantenha a proporção do viewBox original — nunca esticar, comprimir ou rotacionar.</td></tr>
+      <tr><td>Espaçamento</td><td>No horizontal, a distância emblema↔wordmark é fixa no arquivo; não separar nem aproximar as partes.</td></tr>
+    </table>
+
+    <h3 style="font-size:18px;margin-top:34px">Aplicações corretas</h3>
+    <div class="okuse">
+      <b>✓ Permitido:</b> fundo dark canônico <code>#0D0D0D</code>, superfícies <code>#14141A</code>/<code>#1C1C24</code>,
+      fundos claros com a variante adequada, e gradiente de marca somente em contextos excepcionais com versão knockout.
+      Sempre respeitar área de proteção e usar o arquivo SVG original.
+    </div>
+
+    <h3 style="font-size:18px;margin-top:34px">Restrições</h3>
+    <div class="misuse">
+      <div class="cell"><img src="../assets/logos/birthhub360-simbolo.svg" alt="" style="filter:grayscale(1)"><div class="cap">Escala de cinza / remoção de cor</div></div>
+      <div class="cell"><img src="../assets/logos/birthhub360-simbolo.svg" alt="" style="transform:rotate(18deg);opacity:.8"><div class="cap">Rotação ou inclinação</div></div>
+      <div class="cell"><img src="../assets/logos/birthhub360-icone.svg" alt="" style="filter:brightness(2) contrast(0.6)"><div class="cap">Recolorir / aplicar filtros</div></div>
+      <div class="cell"><img src="../assets/logos/birthhub360-simbolo.svg" alt="" style="aspect-ratio:1/0.6;height:80px;width:auto"><div class="cap">Distorção de proporção</div></div>
+      <div class="cell"><img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="" style="filter:opacity(.35)"><div class="cap">Opacidade reduzida / marca d'água decorativa</div></div>
+      <div class="cell"><img src="../assets/logos/birthhub360-simbolo.svg" alt="" style="background:conic-gradient(#f0f,#0ff,#ff0);padding:8px;border-radius:8px"><div class="cap">Fundo colorido/ruidoso sem knockout</div></div>
+    </div>
+
+    <div class="note">
+      <strong>Não redesenhar.</strong> É vedado recriar o emblema, trocar o wordmark, aplicar efeitos
+      (sombra projetada, contorno, textura), posicionar o logo sobre fotografia sem tratamento ou
+      sobre fundos com contraste insuficiente. Em caso de necessidade não coberta aqui, abrir handoff
+      para a Frente 11 (Marca e Ativos Institucionais).
+    </div>
+  </section>
+
+  <!-- ================= 03 PALETA ================= -->
+  <section id="paleta">
+    <p class="eyebrow">Seção 03</p>
+    <h2 class="sec-title">Paleta Neon Oficial</h2>
+    <p class="sec-lede">Seis cores fixas de marca + camada semântica dark/light derivada dos tokens
+    <code class="mono-sm">birthhub360.json</code>. A paleta de marca é imutável; as rampas semânticas
+    são adaptadas por modo para garantir WCAG 2.2 AA.</p>
+
+    <h3 style="font-size:17px;margin-bottom:14px">3.1 · Cores fixas de marca</h3>
+    <div class="grid grid-3">
+      <div class="swatch"><div class="chip" style="background:#00D4FF"><span class="hex">#00D4FF</span></div>
+        <div class="info"><b>Azul Neon</b><span>Marca primária · halos · CTAs frios · anel 360°</span></div></div>
+      <div class="swatch"><div class="chip" style="background:#FF2D9B"><span class="hex">#FF2D9B</span></div>
+        <div class="info"><b>Rosa Neon</b><span>Energia · conversão · gradientes · IA de ação</span></div></div>
+      <div class="swatch"><div class="chip" style="background:#FFC107"><span class="hex">#FFC107</span></div>
+        <div class="info"><b>Dourado</b><span>Métricas · metas · avisos quentes · elemento 360°</span></div></div>
+      <div class="swatch"><div class="chip" style="background:#8B7DFF"><span class="hex">#8B7DFF</span></div>
+        <div class="info"><b>Íris</b><span>IA · copiloto · agentes autônomos · modais</span></div></div>
+      <div class="swatch"><div class="chip" style="background:#0D0D0D;border-bottom:1px solid var(--border-subtle)"><span class="hex" style="color:#F8F9FF;text-shadow:none">#0D0D0D</span></div>
+        <div class="info"><b>Dark</b><span>Fundo canônico dark · canvas principal</span></div></div>
+      <div class="swatch"><div class="chip" style="background:#F4F7FB"><span class="hex on-light">#F4F7FB</span></div>
+        <div class="info"><b>Light</b><span>Fundo canônico light · canvas principal</span></div></div>
+    </div>
+
+    <h3 style="font-size:17px;margin:30px 0 6px">3.2 · Camada semântica — superfícies e texto</h3>
+    <p class="small muted">Derivada de <code class="mono-sm">semantics.dark/light</code> dos tokens. O toggle
+    <button class="theme-toggle" id="themeToggle2" style="padding:4px 12px;font-size:11.5px" aria-pressed="false"><span aria-hidden="true">◐</span> alternar página</button>
+    demonstra os dois modos nesta própria página.</p>
+    <div class="grid grid-3">
+      <div class="card"><h3>Dark canônico</h3>
+        <table class="ratio-table">
+          <tr><td><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#0D0D0D;border:1px solid var(--border)"></span> background</td><td class="mono-sm">#0D0D0D</td></tr>
+          <tr><td><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#14141A;border:1px solid var(--border)"></span> surface</td><td class="mono-sm">#14141A</td></tr>
+          <tr><td><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#1C1C24;border:1px solid var(--border)"></span> elevated</td><td class="mono-sm">#1C1C24</td></tr>
+          <tr><td><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#252532;border:1px solid var(--border)"></span> hover</td><td class="mono-sm">#252532</td></tr>
+          <tr><td>texto primário</td><td class="mono-sm">#F8F9FF</td></tr>
+          <tr><td>texto secundário</td><td class="mono-sm">#9EADC8</td></tr>
+          <tr><td>texto muted</td><td class="mono-sm">#A1A1B5</td></tr>
+        </table></div>
+      <div class="card"><h3>Light canônico</h3>
+        <table class="ratio-table">
+          <tr><td><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#F4F7FB;border:1px solid var(--border)"></span> background</td><td class="mono-sm">#F4F7FB</td></tr>
+          <tr><td><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#FFFFFF;border:1px solid var(--border)"></span> surface</td><td class="mono-sm">#FFFFFF</td></tr>
+          <tr><td><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#EDF2F7;border:1px solid var(--border)"></span> elevated</td><td class="mono-sm">#EDF2F7</td></tr>
+          <tr><td><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#E2E8F0;border:1px solid var(--border)"></span> hover</td><td class="mono-sm">#E2E8F0</td></tr>
+          <tr><td>texto primário</td><td class="mono-sm">#0F172A</td></tr>
+          <tr><td>texto secundário</td><td class="mono-sm">#64748B</td></tr>
+          <tr><td>texto muted</td><td class="mono-sm">#475569</td></tr>
+        </table></div>
+      <div class="card"><h3>Rampas semânticas light (AA)</h3>
+        <table class="ratio-table">
+          <tr><td>brand primary</td><td class="mono-sm">#0284C7</td></tr>
+          <tr><td>brand secondary</td><td class="mono-sm">#D91B7C</td></tr>
+          <tr><td>brand accent</td><td class="mono-sm">#D97706</td></tr>
+          <tr><td>íris</td><td class="mono-sm">#8B7DFF*</td></tr>
+          <tr><td>success</td><td class="mono-sm">#16A34A</td></tr>
+          <tr><td>danger</td><td class="mono-sm">#DC2626</td></tr>
+          <tr><td>info</td><td class="mono-sm">#2563EB</td></tr>
+        </table>
+        <p class="small muted" style="margin-top:10px">*Em light mode, headings usam variantes
+        <code class="mono-sm">color-mix(...,#0D0D0D)</code> dos tokens para atingir AA — o hex puro
+        <code class="mono-sm">#8B7DFF</code> só atinge 3.24:1 sobre branco (falha em texto normal).</p></div>
+    </div>
+
+    <h3 style="font-size:17px;margin:30px 0 6px">3.3 · Contraste WCAG 2.2 AA — ratios reais</h3>
+    <p class="small muted">Calculados sobre as superfícies canônicas. AA exige ≥ 4.5:1 (texto normal) e ≥ 3:1 (texto grande ≥ 18.66px bold / 24px, e componentes de UI).</p>
+    <div class="card" style="overflow-x:auto">
+      <table class="ratio-table">
+        <tr><th>Combinação</th><th>Ratio</th><th>Avaliação</th><th>Regra de uso</th></tr>
+        <tr><td class="mono-sm">#F8F9FF / #0D0D0D (dark)</td><td class="mono-sm">18.50</td><td><span class="pass">AAA</span></td><td>Texto primário dark — uso livre</td></tr>
+        <tr><td class="mono-sm">#00D4FF / #0D0D0D (dark)</td><td class="mono-sm">10.98</td><td><span class="pass">AAA</span></td><td>CTAs frios, headings, links — uso livre</td></tr>
+        <tr><td class="mono-sm">#FFC107 / #0D0D0D (dark)</td><td class="mono-sm">11.92</td><td><span class="pass">AAA</span></td><td>Métricas e metas — uso livre</td></tr>
+        <tr><td class="mono-sm">#8B7DFF / #0D0D0D (dark)</td><td class="mono-sm">5.99</td><td><span class="pass">AA+</span></td><td>IA/agentes — texto normal ok</td></tr>
+        <tr><td class="mono-sm">#FF2D9B / #0D0D0D (dark)</td><td class="mono-sm">5.65</td><td><span class="pass">AA</span></td><td>Conversão/CTAs — texto normal ok</td></tr>
+        <tr><td class="mono-sm">#9EADC8 / #0D0D0D (dark)</td><td class="mono-sm">8.58</td><td><span class="pass">AAA</span></td><td>Texto secundário dark — uso livre</td></tr>
+        <tr><td class="mono-sm">#00D4FF / #14141A (card)</td><td class="mono-sm">10.36</td><td><span class="pass">AAA</span></td><td>Interativo sobre cards — uso livre</td></tr>
+        <tr><td class="mono-sm">#0F172A / #F4F7FB (light)</td><td class="mono-sm">16.61</td><td><span class="pass">AAA</span></td><td>Texto primário light — uso livre</td></tr>
+        <tr><td class="mono-sm">#0284C7 / #FFFFFF (light)</td><td class="mono-sm">4.10</td><td><span class="pass-aa-large">AA · texto grande/UI</span></td><td>Primária light: headings ≥24px, botões, ícones. Texto miúdo exige <code class="mono-sm">color-mix</code> mais escuro</td></tr>
+        <tr><td class="mono-sm">#D91B7C / #FFFFFF (light)</td><td class="mono-sm">4.77</td><td><span class="pass">AA</span></td><td>Secundária light — texto normal ok</td></tr>
+        <tr><td class="mono-sm">#64748B / #F4F7FB (light)</td><td class="mono-sm">4.43</td><td><span class="fail-aa-large">margem mínima</span></td><td>Secundário light: preferir sobre surface #FFFFFF (4.9+) ou texto grande</td></tr>
+        <tr><td class="mono-sm">#D97706 / #FFFFFF (light)</td><td class="mono-sm">3.19</td><td><span class="fail">abaixo de AA</span></td><td>Accent light: SÓ títulos grandes/bold ou ícones; nunca corpo de texto</td></tr>
+        <tr><td class="mono-sm">#8B7DFF / #FFFFFF (light)</td><td class="mono-sm">3.24</td><td><span class="fail">abaixo de AA</span></td><td>Íris light: usar variante color-mix nos tokens (headingIris)</td></tr>
+        <tr><td class="mono-sm">#FFFFFF / #0D0D0D (contraste puro)</td><td class="mono-sm">19.44</td><td><span class="fail">PROIBIDO como texto</span></td><td>Branco/preto puros são vetados para texto — usar #F8F9FF / #0F172A</td></tr>
+      </table>
+    </div>
+    <div class="note"><strong>Regra absoluta:</strong> texto nunca em branco puro (<code>#FFFFFF</code>) nem
+    preto puro (<code>#000000</code>). Dark usa <code>#F8F9FF</code>; light usa <code>#0F172A</code>.
+    Neon não é neutralizado nem substituído por pastéis — quando o hex de marca falha AA em light,
+    a correção acontece na <em>camada semântica</em>, nunca na cor de marca.</div>
+
+    <h3 style="font-size:17px;margin:30px 0 6px">3.4 · Hierarquia, distribuição e iluminação</h3>
+    <div class="grid grid-2">
+      <div class="card">
+        <h3>Distribuição ~60/30/10 adaptada</h3>
+        <div class="dist-bar" style="margin-top:14px">
+          <div style="flex:6;background:#14141A;color:#9EADC8">60% superfícies</div>
+          <div style="flex:3;background:#1C1C24;color:#9EADC8">30% estrutura</div>
+          <div style="flex:1;background:var(--grad-brand);color:#fff">10% neon</div>
+        </div>
+        <ul style="margin-top:14px">
+          <li><strong>60%</strong> — superfícies dark/light neutras carregam a interface.</li>
+          <li><strong>30%</strong> — estrutura: borders, elevações, agrupamentos.</li>
+          <li><strong>10%</strong> — neon reservado a ação, dado-chave e assinatura (heading gradiente, CTA, KPI hero).</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Iluminação, glow e profundidade</h3>
+        <p class="small" style="margin-top:10px">Glow oficial: <code class="mono-sm">0 0 24px rgba(R,G,B,.45)</code> — sempre com alpha .45, nunca maior. Profundidade vem de 3 níveis de superfície + sombras oficiais (<code class="mono-sm">shadowCard</code>, <code class="mono-sm">shadowElevated</code>), não de blur genérico.</p>
+        <div class="glow-demo">
+          <div class="g c"><span class="glow-dot"></span>cyan</div>
+          <div class="g p"><span class="glow-dot glow-pink"></span>pink</div>
+          <div class="g y"><span class="glow-dot glow-gold"></span>gold</div>
+          <div class="g i"><span class="glow-dot glow-iris"></span>iris</div>
+        </div>
+        <div class="orbit-demo" role="img" aria-label="Anel de órbita cônico 360°, gradiente de assinatura"></div>
+      </div>
+    </div>
+
+    <h3 style="font-size:17px;margin:30px 0 6px">3.5 · Gradientes de assinatura</h3>
+    <div class="grad-row">
+      <div class="grad-tile"><div class="bar brand"></div><div class="txt"><b>Gradiente de títulos (Brand)</b><code>linear-gradient(135deg,#00D4FF 0%,#FF2D9B 50%,#FFC107 100%)</code></div></div>
+      <div class="grad-tile"><div class="bar cta"></div><div class="txt"><b>CTA Neon</b><code>linear-gradient(135deg,#FF2D9B 0%,#00D4FF 100%)</code></div></div>
+      <div class="grad-tile"><div class="bar orbit"></div><div class="txt"><b>Anel de órbita cônico 360°</b><code>conic-gradient(from 0deg,#FFC107,#FF2D9B,#00D4FF,#FFC107)</code></div></div>
+      <div class="grad-tile"><div class="bar cyanpink"></div><div class="txt"><b>Ciano → Rosa (auxiliar)</b><code>linear-gradient(135deg,#00D4FF 0%,#FF2D9B 100%)</code></div></div>
+      <div class="grad-tile"><div class="bar gold"></div><div class="txt"><b>Dourado (métricas)</b><code>linear-gradient(135deg,#FFC107 0%,#FF8F00 100%)</code></div></div>
+    </div>
+    <p class="small muted" style="margin-top:12px">Estes gradientes são assinatura: não criar variações ad-hoc,
+não reordenar paradas, não usar em corpo de texto. Em light mode, headings com gradiente usam as
+variantes AA documentadas nos tokens (<code class="mono-sm">headingCyan…headingDanger</code>).</p>
+  </section>
+
+  <!-- ================= 04 TIPOGRAFIA ================= -->
+  <section id="tipografia">
+    <p class="eyebrow">Seção 04</p>
+    <h2 class="sec-title">Tipografia</h2>
+    <p class="sec-lede">Trinca exclusiva fixada pela FONTE DE VERDADE: <strong>Sora</strong> para display,
+    <strong>Inter</strong> para interface, <strong>IBM Plex Mono</strong> para dados. Nenhuma quarta família
+    é permitida em produto ou comunicação.</p>
+
+    <div class="type-sample">
+      <div class="lbl">Sora · Display — H1 hero</div>
+      <div class="t-display" style="font-family:var(--font-display);font-size:clamp(30px,4vw,44px);font-weight:800;letter-spacing:var(--track-display)">
+        Receita prevista cresce <span class="grad-heading">18,4%</span> este trimestre
+      </div>
+      <div class="lbl" style="margin-top:22px">Sora · H3 / botão</div>
+      <div style="font-family:var(--font-display);font-size:19px;font-weight:700;letter-spacing:var(--track-display)">Próxima melhor ação recomendada pela IA</div>
+      <button style="margin-top:10px;font-family:var(--font-display);font-weight:700;font-size:14px;border:none;border-radius:9999px;padding:11px 22px;background:var(--grad-cta);color:#fff;cursor:pointer">Explorar o pipeline</button>
+    </div>
+
+    <div class="type-sample">
+      <div class="lbl">Inter · Interface — corpo, menus, formulários</div>
+      <p style="font-family:var(--font-interface);font-feature-settings:'cv05','cv11','ss01';letter-spacing:var(--track-rounded);max-width:60ch">
+        O cockpit diário consolida alertas, metas e sinais do pipeline em uma única tela. A cadência
+        multicanal dispara follow-ups no momento exato, enquanto o copiloto resume a reunião e sugere
+        a próxima jogada — tudo com resposta sub-segundo.
+      </p>
+      <div class="mono-sm" style="margin-top:10px">font-feature-settings: "cv05", "cv11", "ss01" · letter-spacing: -0.012em</div>
+    </div>
+
+    <div class="type-sample">
+      <div class="lbl">IBM Plex Mono · Dados, KPIs, logs, código</div>
+      <div style="font-family:var(--font-mono);font-size:26px;font-weight:600;color:var(--heading-gold)">R$ 1.482.000</div>
+      <div style="font-family:var(--font-mono);font-size:12.5px;color:var(--muted);margin-top:8px">
+        14:32:07 · sync bitrix24 ✓ 1.284 registros<br>
+        14:32:09 · scoring batch concluído · 96 deals reordenados<br>
+        14:32:11 · alerta: deal #A-221 estagnado há 9 dias
+      </div>
+    </div>
+
+    <div class="card" style="overflow-x:auto">
+      <table class="type-scale">
+        <tr><th>Papel</th><th>Família / peso</th><th>Tamanho</th><th>Line-height</th><th>Tracking</th></tr>
+        <tr><td>Display hero (H1)</td><td class="t-display">Sora 800</td><td>clamp(30–52px)</td><td>1.08</td><td class="mono-sm">-0.02em</td></tr>
+        <tr><td>Seção (H2)</td><td class="t-display">Sora 800</td><td>26–38px</td><td>1.12</td><td class="mono-sm">-0.02em</td></tr>
+        <tr><td>Subseção (H3)</td><td class="t-display">Sora 700</td><td>18–22px</td><td>1.2</td><td class="mono-sm">-0.02em</td></tr>
+        <tr><td>Corpo / UI</td><td class="t-body">Inter 400</td><td>14–16px</td><td>1.65</td><td class="mono-sm">-0.012em</td></tr>
+        <tr><td>Label / meta</td><td class="t-body">Inter 500–600</td><td>11–13px</td><td>1.4</td><td class="mono-sm">-0.012em</td></tr>
+        <tr><td>Dado / KPI / log</td><td class="t-mono">IBM Plex Mono 400–600</td><td>12–26px</td><td>1.3</td><td class="mono-sm">0</td></tr>
+        <tr><td>Eyebrow / kicker</td><td class="t-mono">IBM Plex Mono 500</td><td>10.5–11px</td><td>1.2</td><td class="mono-sm">+0.14em · uppercase</td></tr>
+      </table>
+    </div>
+
+    <div class="note"><strong>Regras:</strong> títulos NUNCA em branco/preto puro — usar tons de superfície
+    (<code>#F8F9FF</code> dark / <code>#0F172A</code> light) ou variantes de heading dos tokens
+    (<code>headingCyan</code>, <code>headingGold</code>, <code>headingPink</code>, <code>headingIris</code>).
+    Inter sempre com as OpenType features oficiais. Mono é obrigatório para valores monetários,
+    timestamps, IDs e qualquer dado tabular — nunca em prosa corrida.</div>
+  </section>
+
+  <!-- ================= 05 LINGUAGEM VISUAL ================= -->
+  <section id="linguagem">
+    <p class="eyebrow">Seção 05</p>
+    <h2 class="sec-title">Linguagem visual — Neon Editorial Cinematic</h2>
+    <p class="sec-lede">O sistema visual da Birthub 360° é <strong>Neon Editorial Cinematic</strong>:
+    grafismos orbitais 360°, composição editorial com respiro, profundidade em camadas e glow
+    controlado. O N1 Final Candidate é referência criativa — as regras abaixo são a tradução normativa.</p>
+
+    <div class="orbit-figure">
+      <div class="orbit-ring" role="img" aria-label="Anel orbital cônico 360°, grafismo assinatura"></div>
+      <div>
+        <h3 style="font-size:19px">O grafismo 360°</h3>
+        <p class="muted" style="max-width:56ch;font-size:14px">O anel cônico
+        <code class="mono-sm">conic-gradient(#FFC107 → #FF2D9B → #00D4FF)</code> é a marca gráfica da
+        visão 360°: dados orbitando o operador. Uso canônico em heroes, empty states, loading rings e
+        divisores editoriais. Nunca como textura de fundo de tela inteira — sempre contido e intencional.</p>
+      </div>
+    </div>
+
+    <div class="grafismo-grid">
+      <div class="grafismo"><div class="art"><div class="art-ring"></div></div><b>Órbita</b><span>Anel cônico 360° — assinatura central</span></div>
+      <div class="grafismo"><div class="art"><div class="art-lines"></div></div><b>Órbitas concêntricas</b><span>Camadas de dados/sinais em composição</span></div>
+      <div class="grafismo"><div class="art"><div class="art-arc"></div></div><b>Arco de radar</b><span>Varredura, detecção, escopo</span></div>
+      <div class="grafismo"><div class="art"><div class="art-scan"></div></div><b>Scanline</b><span>Leitura de dados, HUD, terminal</span></div>
+      <div class="grafismo"><div class="art" style="font-family:var(--font-mono);font-size:26px;color:var(--heading-iris)">⌘K</div></div><b>Command palette</b><span>Acesso direto a qualquer ação</span></div>
+      <div class="grafismo"><div class="art" style="font-family:var(--font-mono);font-size:22px;color:var(--heading-gold)">00:00</div></div><b>Timestamp mono</b><span>Proveniência e frescor do dado</span></div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:26px">
+      <div class="card"><h3>Composição editorial</h3>
+        <p>Hierarquia por escala tipográfica e respiro generoso (seções com 72px+ de padding,
+        grids com gap ≥14px). Bento grids para densidade executiva; layouts simétricos só em
+        contextos formais (propostas, one-pagers).</p></div>
+      <div class="card"><h3>Profundidade</h3>
+        <p>Três níveis de superfície (<code>#0D0D0D → #14141A → #1C1C24</code>) + sombras oficiais
+        (<code>shadowCard</code>/<code>shadowElevated</code>). Glow apenas em elementos interativos
+        ou dados-chave — nunca como decoração difusa.</p></div>
+      <div class="card"><h3>Ilustração</h3>
+        <p>O sistema de personagens (Seção 07) é a ilustração oficial: avatares não-humanos
+        geométricos que representam agentes e pilares. Ilustrações editoriais seguem a mesma
+        gramática — formas geométricas, neon contido, zero fotorrealismo.</p></div>
+      <div class="card"><h3>Imagens e fotografia</h3>
+        <p><strong>Sem fotos humanas genéricas</strong> (stock de escritório, aperto de mão, equipe
+        sorrindo). Quando imagem for inevitável: abstrata, tecnológica, com tratamento dark + overlay
+        neon, e sempre contextualizada ao produto. Preferir grafismos, dados e personagens.</p></div>
+      <div class="card"><h3>Interfaces</h3>
+        <p>Workspaces seguem o modo <strong>Operate</strong>: alta densidade, 4 estados obrigatórios
+        (Loading/Empty/Error/Stale), Command Palette ⌘K, skeletons no formato exato dos cards.
+        Motion em nível Operacional: sofisticado, funcional, rápido e discreto.</p></div>
+      <div class="card"><h3>Aplicações</h3>
+        <p>Comercial (landing, social, propostas): motion <strong>Comercial</strong> — monumental,
+        cinematográfico. Digital/produto: Operacional. Mobile herda a mesma linguagem em frame
+        compacto, com áreas de toque ≥44px e tipografia mínima 12px.</p></div>
+    </div>
+  </section>
+
+  <!-- ================= 06 APLICAÇÕES ================= -->
+  <section id="aplicacoes">
+    <p class="eyebrow">Seção 06</p>
+    <h2 class="sec-title">Exemplos de aplicação</h2>
+    <p class="sec-lede">Protótipos HTML/CSS fiéis à linguagem — cada um marcado como
+    <span class="tag proto">Protótipo</span>. Nenhum deles altera a plataforma real.</p>
+
+    <div class="grid grid-2">
+      <div>
+        <span class="tag proto">Protótipo</span> <b style="font-size:13.5px">Landing Page — hero cinematográfico</b>
+        <div class="proto-frame" style="margin-top:10px">
+          <div class="proto-bar"><i></i><i></i><i></i><span>landing.html (conceito)</span></div>
+          <div class="proto-body lp">
+            <div class="glow-bg"></div>
+            <div class="lp-nav">
+              <img class="logo" src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Birthub 360°" style="height:30px">
+              <div class="lp-links"><span>Produto</span><span>Pilares</span><span>Preços</span><span>Entrar</span></div>
+            </div>
+            <div class="lp-hero">
+              <div class="kicker">Sistema Operacional de Inteligência Comercial</div>
+              <h3>Sua receita inteira, <em>girando</em> em 360°</h3>
+              <p class="sub">IA preditiva, cadências multicanal e copiloto contextual em um único sistema operacional de vendas.</p>
+              <div class="cta-row">
+                <button class="btn btn-p">Agendar demonstração</button>
+                <button class="btn btn-s">Ver o cockpit</button>
+              </div>
+              <div class="orbit-hero" role="img" aria-label="Órbita 360° com nós de dados">
+                <span class="node"></span><span class="node n2"></span><span class="node n3"></span><span class="node n4"></span>
+              </div>
+            </div>
+            <div class="stats">
+              <div class="stat"><b>38%</b><span>+ win rate médio</span></div>
+              <div class="stat"><b>R$ 2,1 mi</b><span>pipeline gerenciado</span></div>
+              <div class="stat"><b>&lt;400ms</b><span>tempo de resposta</span></div>
+            </div>
+          </div>
+        </div>
+        <p class="proto-note">Órbita cônica 360° com nós de dados nos 4 quadrantes, glow difuso por
+        cantos, headline com gradiente de títulos e CTA em gradiente rosa→ciano.</p>
+      </div>
+
+      <div>
+        <span class="tag proto">Protótipo</span> <b style="font-size:13.5px">Login</b>
+        <div class="proto-frame" style="margin-top:10px">
+          <div class="proto-bar"><i></i><i></i><i></i><span>login.html (conceito)</span></div>
+          <div class="proto-body">
+            <div class="lg">
+              <div class="brand-side">
+                <img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Birthub 360°">
+                <div class="quote">"O cockpit que sua operação comercial <em>sempre</em> mereceu."</div>
+                <div class="mono-sm">© 2026 Birthub 360° · SOC 2 em andamento</div>
+              </div>
+              <div class="form-side">
+                <h4>Acesse o cockpit</h4>
+                <p class="lg-sub">Entre com seu e-mail corporativo.</p>
+                <label for="lg-e">E-mail</label>
+                <input id="lg-e" type="email" placeholder="voce@empresa.com" autocomplete="email">
+                <label for="lg-p">Senha</label>
+                <input id="lg-p" type="password" placeholder="••••••••" autocomplete="current-password">
+                <button class="btn-lg">Entrar no sistema</button>
+                <p class="lg-foot">Esqueceu a senha? · Primeiro acesso</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="proto-note">Split editorial: lado marca com glow radial e wordmark, lado form com
+        inputs em surface + focus ring ciano oficial.</p>
+      </div>
+
+      <div>
+        <span class="tag proto">Protótipo</span> <b style="font-size:13.5px">Plataforma SaaS — shell + dashboard</b>
+        <div class="proto-frame" style="margin-top:10px">
+          <div class="proto-bar"><i></i><i></i><i></i><span>/app/dashboard (conceito)</span></div>
+          <div class="proto-body app">
+            <aside class="side">
+              <img src="../assets/logos/birthhub360-simbolo.svg" alt="Birthub 360°">
+              <a class="on" href="#">◈ Cockpit</a>
+              <a href="#">◎ Pipeline</a>
+              <a href="#">✦ Copiloto IA</a>
+              <a href="#">↻ Cadências</a>
+              <div class="grp">Pilares</div>
+              <a href="#">P01 Hub</a><a href="#">P02 Inteligência</a><a href="#">P03 Orquestração</a>
+              <a href="#">P04 Performance</a><a href="#">P05 Forecast</a><a href="#">P06 IA</a>
+              <a href="#">P07 Automações</a><a href="#">P08 Engajamento</a>
+            </aside>
+            <div class="main">
+              <div class="top">
+                <h4>Cockpit diário — Pipeline Q4</h4>
+                <span class="search">⌘K buscar ou agir…</span>
+              </div>
+              <div class="bento">
+                <div class="kpi"><div class="k">Receita ponderada</div><div class="v" style="color:#FFC107">R$ 1,48 mi</div><div class="d up">▲ 12,3% vs. semana</div></div>
+                <div class="kpi"><div class="k">Deals ativos</div><div class="v" style="color:#00D4FF">284</div><div class="d up">▲ 9 novos hoje</div></div>
+                <div class="kpi"><div class="k">Win rate proj.</div><div class="v" style="color:#8B7DFF">38,2%</div><div class="d warn">● 2 riscos de churn</div></div>
+                <div class="wide"><h5>Funil de receita — últimos 30 dias</h5>
+                  <div class="bars"><i style="height:30%"></i><i style="height:55%"></i><i style="height:40%"></i><i style="height:70%"></i><i style="height:52%"></i><i style="height:88%"></i><i style="height:64%"></i><i style="height:95%"></i><i style="height:74%"></i><i style="height:60%"></i></div>
+                </div>
+                <div class="feed"><h5 style="font-family:'Sora',sans-serif;font-size:13px;margin:0 0 6px;color:#9EADC8">Feed inteligente</h5>
+                  <div class="f"><span class="dot" style="background:#00D4FF"></span><div>Deal #A-221 recebeu proposta — <span class="t">14:32</span></div></div>
+                  <div class="f"><span class="dot" style="background:#FFC107"></span><div>Meta de Q4 em 82% — <span class="t">14:10</span></div></div>
+                  <div class="f"><span class="dot" style="background:#8B7DFF"></span><div>Copiloto sugeriu 3 follow-ups — <span class="t">13:55</span></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="proto-note">Bento grid de alta densidade, KPIs em IBM Plex Mono, sidebar escura com
+        item ativo em ciano, Command Palette ⌘K visível.</p>
+      </div>
+
+      <div>
+        <span class="tag proto">Protótipo</span> <b style="font-size:13.5px">Módulos — cards de pilares</b>
+        <div class="proto-frame" style="margin-top:10px">
+          <div class="proto-bar"><i></i><i></i><i></i><span>/app/modulos (conceito)</span></div>
+          <div class="proto-body" style="padding:22px;background:#0D0D0D">
+            <div class="pilar-grid">
+              <div class="pilar" style="--pg:linear-gradient(135deg,#00D4FF,#8B7DFF)"><div class="pn">P01</div><h4>Hub Central</h4><p>Visão 360°, feed de alertas e cockpit diário.</p></div>
+              <div class="pilar" style="--pg:linear-gradient(135deg,#00D4FF,#3B82F6)"><div class="pn">P02</div><h4>Intelligence &amp; Scoring</h4><p>Propensão, ICP matching e diagnósticos.</p></div>
+              <div class="pilar" style="--pg:linear-gradient(135deg,#10B981,#00D4FF)"><div class="pn">P03</div><h4>Sales Orchestration</h4><p>Playbooks vivos, roteiros e matriz de objeções.</p></div>
+              <div class="pilar" style="--pg:linear-gradient(135deg,#FF2D9B,#FFC107)"><div class="pn">P04</div><h4>Real-time Performance</h4><p>Métricas ao vivo, ranking de metas, saúde do pipeline.</p></div>
+              <div class="pilar" style="--pg:linear-gradient(135deg,#A855F7,#FF2D9B)"><div class="pn">P05</div><h4>Revenue Forecast</h4><p>Projeções ponderadas, dispersão e win/loss.</p></div>
+              <div class="pilar" style="--pg:linear-gradient(135deg,#6366F1,#00D4FF)"><div class="pn">P06</div><h4>Copiloto IA</h4><p>Agente conversacional B2B + roleplay.</p></div>
+              <div class="pilar" style="--pg:linear-gradient(135deg,#14B8A6,#D4F434)"><div class="pn">P07</div><h4>Automações</h4><p>Gatilhos, distribuição e syncs em background.</p></div>
+              <div class="pilar" style="--pg:linear-gradient(135deg,#FB7185,#00D4FF)"><div class="pn">P08</div><h4>Cadência &amp; Engajamento</h4><p>Multicanal: e-mail, WhatsApp, LinkedIn, voz.</p></div>
+            </div>
+          </div>
+        </div>
+        <p class="proto-note">Um Design System, identidade contextual por módulo: cada card usa a cor
+        do seu pilar apenas na barra de 3px — o resto permanece no sistema canônico.</p>
+      </div>
+
+      <div>
+        <span class="tag proto">Protótipo</span> <b style="font-size:13.5px">Material comercial — social post</b>
+        <div class="proto-frame" style="margin-top:10px">
+          <div class="proto-bar"><i></i><i></i><i></i><span>post-linkedin (conceito)</span></div>
+          <div class="proto-body social">
+            <div class="post">
+              <div class="ph"><div class="av">B</div><div><b>Birthub 360°</b><span>há 2h · Post de produto</span></div></div>
+              <div class="pt">Seu pipeline não está frio — está <strong>cego</strong>. O cockpit diário
+              da Birthub 360° mostra exatamente onde a receita vaza e qual é a próxima jogada,
+              antes do concorrente ligar.</div>
+              <div class="pchart"><i style="height:35%"></i><i style="height:50%"></i><i style="height:42%"></i><i style="height:66%"></i><i style="height:58%"></i><i style="height:80%"></i><i style="height:72%"></i><i style="height:95%"></i></div>
+              <div class="pf"><span>◈ 214</span><span>↗ 38</span><span>◌ 12 comentários</span></div>
+            </div>
+          </div>
+        </div>
+        <p class="proto-note">Card social em surface dark, headline com gradiente, gráfico neon e
+        metadados em mono — sem foto de banco de imagens.</p>
+      </div>
+
+      <div>
+        <span class="tag proto">Protótipo</span> <b style="font-size:13.5px">Mobile — app nativo</b>
+        <div class="proto-frame" style="margin-top:10px">
+          <div class="proto-bar"><i></i><i></i><i></i><span>capacitor app (conceito)</span></div>
+          <div class="proto-body" style="background:#050508;padding:18px">
+            <div class="phone">
+              <div class="notch"></div>
+              <div class="mapp">
+                <div class="mhero">
+                  <div class="t">Bom dia, <em>Marina</em></div>
+                  <div style="font-size:11px;color:#9EADC8;margin-top:4px">Cockpit · 3 alertas quentes</div>
+                  <div class="ring" role="img" aria-label="Órbita 360°"></div>
+                </div>
+                <div class="mcard"><div><div class="k">Receita do mês</div><div class="v g">R$ 486 mil</div></div><div style="font-size:10px;color:#22C55E;font-family:'IBM Plex Mono',monospace">+8,2%</div></div>
+                <div class="mcard"><div><div class="k">Deals em risco</div><div class="v" style="color:#EF4444">7</div></div><div style="font-size:10px;color:#9EADC8">copiloto sugeriu ação</div></div>
+                <div class="mcard"><div><div class="k">Meta do time</div><div class="v c">82%</div></div><div style="font-size:10px;color:#9EADC8">faltam 12 dias</div></div>
+                <div class="mnav"><div><b>◈</b>Início</div><div><b>◎</b>Pipeline</div><div><b>✦</b>IA</div><div><b>◌</b>Mais</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="proto-note">Frame de celular com safe areas, KPIs mono compactos, órbita no hero
+        e tab bar em mono — mesma linguagem, densidade mobile.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 07 PERSONAGENS ================= -->
+  <section id="personagens">
+    <p class="eyebrow">Seção 07</p>
+    <h2 class="sec-title">Sistema de personagens</h2>
+    <p class="sec-lede">29 avatares visuais oficiais — formas geométricas não-humanas que dão rosto
+    aos agentes e pilares do ecossistema. Arquivos em <code class="mono-sm">v2/assets/characters/</code>
+    (origem: <code class="mono-sm">identidade-visual/birthhub360/characters/</code>). <strong>Não
+    redesenhar, não recolorir fora da paleta, não usar como mascote decorativo.</strong></p>
+
+    <div class="note"><strong>Relação com agentes e módulos:</strong> os personagens representam
+    <em>papéis do produto</em> (guardião do CRM, copiloto, analista de dados), não os 26 agentes
+    técnicos nem os 11 módulos diretamente — embora cada pilar tenha seu personagem-símbolo.
+    Orbit = P01 Hub Comercial · Nexus = P02 · Aria = P03 · Vanguard = P04 · Oracle = P05 ·
+    Core = P06 · Spark = P07 · Echo = P08 · Sudo = Administração.</div>
+
+    <div class="char-feature">
+      <img src="../assets/characters/orbit.svg" alt="Orbit — Guardião do CRM">
+      <div>
+        <div class="meta">P01 · Hub Comercial · módulo crm</div>
+        <h3>Orbit — Guardião do CRM</h3>
+        <p>Núcleo esférico dourado com anel orbital giroscópico e pulso ciano. Comando: "Ei Orbit".
+        Paleta própria: <code class="mono-sm">#FFC107 + #00D4FF</code>. É o personagem-símbolo do
+        primeiro pilar e o mais reconhecível do sistema.</p>
+      </div>
+    </div>
+
+    <h3 style="font-size:17px;margin-bottom:14px">Os 9 personagens-pilares</h3>
+    <div class="char-grid">
+      <div class="char"><img src="../assets/characters/nexus.svg" alt="Nexus"><b>Nexus</b><span class="role">Analista de Dados · P02</span><span class="file">nexus.svg</span></div>
+      <div class="char"><img src="../assets/characters/aria.svg" alt="Aria"><b>Aria</b><span class="role">Maestrina de Fluxos · P03</span><span class="file">aria.svg</span></div>
+      <div class="char"><img src="../assets/characters/vanguard.svg" alt="Vanguard"><b>Vanguard</b><span class="role">Estrategista de Metas · P04</span><span class="file">vanguard.svg</span></div>
+      <div class="char"><img src="../assets/characters/oracle.svg" alt="Oracle"><b>Oracle</b><span class="role">Visionário de Forecast · P05</span><span class="file">oracle.svg</span></div>
+      <div class="char"><img src="../assets/characters/core.svg" alt="Core"><b>Core</b><span class="role">Mente Principal · P06</span><span class="file">core.svg</span></div>
+      <div class="char"><img src="../assets/characters/spark.svg" alt="Spark"><b>Spark</b><span class="role">Engenheiro de Integrações · P07</span><span class="file">spark.svg</span></div>
+      <div class="char"><img src="../assets/characters/echo.svg" alt="Echo"><b>Echo</b><span class="role">Especialista em Voz · P08</span><span class="file">echo.svg</span></div>
+      <div class="char"><img src="../assets/characters/sudo.svg" alt="Sudo"><b>Sudo</b><span class="role">Controlador de Sistema · Admin</span><span class="file">sudo.svg</span></div>
+    </div>
+
+    <h3 style="font-size:17px;margin:28px 0 14px">Os 20 personagens de funções especializadas</h3>
+    <div class="char-grid">
+      <div class="char"><img src="../assets/characters/aegis.svg" alt="Aegis"><b>Aegis</b><span class="role">Supervisor Central</span><span class="file">aegis.svg</span></div>
+      <div class="char"><img src="../assets/characters/anchor.svg" alt="Anchor"><b>Anchor</b><span class="role">Guardião de Retenção</span><span class="file">anchor.svg</span></div>
+      <div class="char"><img src="../assets/characters/apex.svg" alt="Apex"><b>Apex</b><span class="role">Diretor Executivo IA</span><span class="file">apex.svg</span></div>
+      <div class="char"><img src="../assets/characters/axiom.svg" alt="Axiom"><b>Axiom</b><span class="role">Guardião de Dados LDR</span><span class="file">axiom.svg</span></div>
+      <div class="char"><img src="../assets/characters/beacon.svg" alt="Beacon"><b>Beacon</b><span class="role">Prospecção Outbound</span><span class="file">beacon.svg</span></div>
+      <div class="char"><img src="../assets/characters/cipher.svg" alt="Cipher"><b>Cipher</b><span class="role">Guardião Bitrix24</span><span class="file">cipher.svg</span></div>
+      <div class="char"><img src="../assets/characters/forge.svg" alt="Forge"><b>Forge</b><span class="role">Closer Copilot</span><span class="file">forge.svg</span></div>
+      <div class="char"><img src="../assets/characters/harbinger.svg" alt="Harbinger"><b>Harbinger</b><span class="role">Oráculo de Receita</span><span class="file">harbinger.svg</span></div>
+      <div class="char"><img src="../assets/characters/helm.svg" alt="Helm"><b>Helm</b><span class="role">Gerente Comercial IA</span><span class="file">helm.svg</span></div>
+      <div class="char"><img src="../assets/characters/ledger.svg" alt="Ledger"><b>Ledger</b><span class="role">Auditor de Faturamento</span><span class="file">ledger.svg</span></div>
+      <div class="char"><img src="../assets/characters/meridian.svg" alt="Meridian"><b>Meridian</b><span class="role">Qualificação SDR</span><span class="file">meridian.svg</span></div>
+      <div class="char"><img src="../assets/characters/pledge.svg" alt="Pledge"><b>Pledge</b><span class="role">Guardião de Promessas</span><span class="file">pledge.svg</span></div>
+      <div class="char"><img src="../assets/characters/relay.svg" alt="Relay"><b>Relay</b><span class="role">Coordenador Comercial</span><span class="file">relay.svg</span></div>
+      <div class="char"><img src="../assets/characters/scope.svg" alt="Scope"><b>Scope</b><span class="role">Diagnóstico SDR</span><span class="file">scope.svg</span></div>
+      <div class="char"><img src="../assets/characters/scout.svg" alt="Scout"><b>Scout</b><span class="role">Detetive de Conta</span><span class="file">scout.svg</span></div>
+      <div class="char"><img src="../assets/characters/seal.svg" alt="Seal"><b>Seal</b><span class="role">Guardião Contratual</span><span class="file">seal.svg</span></div>
+      <div class="char"><img src="../assets/characters/tempo.svg" alt="Tempo"><b>Tempo</b><span class="role">Agente Tático de Chat</span><span class="file">tempo.svg</span></div>
+      <div class="char"><img src="../assets/characters/tracker.svg" alt="Tracker"><b>Tracker</b><span class="role">Hunter de Novas Contas</span><span class="file">tracker.svg</span></div>
+      <div class="char"><img src="../assets/characters/tribunal.svg" alt="Tribunal"><b>Tribunal</b><span class="role">Advogado do Diabo</span><span class="file">tribunal.svg</span></div>
+      <div class="char"><img src="../assets/characters/vox.svg" alt="Vox"><b>Vox</b><span class="role">Agente de Voz</span><span class="file">vox.svg</span></div>
+    </div>
+
+    <h3 style="font-size:17px;margin:30px 0 12px">Regras de uso</h3>
+    <div class="grid grid-3">
+      <div class="card"><h3>Contexto</h3><p>Personagens aparecem em avatares de agente, empty states
+        de módulo, onboarding e materiais que falam "com" o agente. Tamanho mínimo 32px; viewBox 128×128.</p></div>
+      <div class="card"><h3>Estados</h3><p>Cada personagem tem 6 expressões oficiais (idle, listening,
+        processing, speaking etc.) documentadas no Guia Mestre — respeitar a máquina de estados, não
+        improvisar expressões.</p></div>
+      <div class="card"><h3>Proibições</h3><p>Não redesenhar, não aplicar filtros/cores fora da paleta do
+        personagem, não usar em fundos sem contraste, não transformar em ilustração editorial genérica.</p></div>
+    </div>
+    <p class="small muted" style="margin-top:14px">Referência completa: <code class="mono-sm">identidade-visual/GUIA-MESTRE-PERSONAGENS-BIRTH-HUB-360.md</code> e tokens em <code class="mono-sm">birthhub360/tokens/characters.json</code>.</p>
+  </section>
+
+  <!-- ================= 08 TOM DE VOZ ================= -->
+  <section id="tom">
+    <p class="eyebrow">Seção 08</p>
+    <h2 class="sec-title">Tom de voz e escrita</h2>
+    <p class="sec-lede">A Birthub 360° fala como um operador sênior de receita: confiante sem ser
+    arrogante, técnico sem jargão vazio, orientado a resultado. Frases curtas, verbos fortes,
+    números concretos. Nunca "solução revolucionária", nunca "transforme seu negócio" sem prova.</p>
+
+    <div class="voice-split" style="margin-bottom:20px">
+      <div class="voice-col doa"><h3>✓ Como a marca fala</h3><ul>
+        <li><span>Clara</span><span class="vx">Frases curtas; uma ideia por frase.</span></li>
+        <li><span>Orientada a resultado</span><span class="vx">"Enxergue o pipeline inteiro antes da segunda-feira."</span></li>
+        <li><span>Precisa com dados</span><span class="vx">"Win rate projetado: 38,2%. 7 deals em risco."</span></li>
+        <li><span>Parceira, não vendedora</span><span class="vx">"O copiloto sugere a próxima jogada — você decide."</span></li>
+        <li><span>Honesta sobre limites</span><span class="vx">"Sem dados sincronizados, o cockpit mostra estado vazio — nunca inventa."</span></li>
+      </ul></div>
+      <div class="voice-col nao"><h3>✗ Como a marca NÃO fala</h3><ul>
+        <li><span>Hype vazio</span><span class="vx">"Revolucione sua receita com IA de ponta!"</span></li>
+        <li><span>Jargão sem tradução</span><span class="vx">"Nossa stack sinérgica de pipelines otimizados…"</span></li>
+        <li><span>Promessa absoluta</span><span class="vx">"Garanta 300% de aumento de vendas."</span></li>
+        <li><span>Tom de robô</span><span class="vx">"Prezado usuário, seu atendimento foi registrado."</span></li>
+        <li><span>Emoji decorativo em produto</span><span class="vx">"Seu deal está 🔥 quentinho 🔥"</span></li>
+      </ul></div>
+    </div>
+
+    <h3 style="font-size:17px;margin-bottom:14px">Exemplos de copy</h3>
+    <div class="copy-row">
+      <div class="copy-cell ok"><span class="lbl">✓ Correto — landing</span>
+        <p>"O cockpit diário mostra onde sua receita vaza — e qual é a próxima jogada, antes do
+        concorrente ligar."</p>
+        <p class="why">Resultado concreto, imagem comercial legítima, sem promessa numérica inventada.</p></div>
+      <div class="copy-cell no"><span class="lbl">✗ Incorreto — landing</span>
+        <p>"A solução de IA mais poderosa do mercado para transformar radicalmente suas vendas."</p>
+        <p class="why">Superlativo vazio, verbo abstrato, zero evidência ou especificidade.</p></div>
+    </div>
+    <div class="copy-row">
+      <div class="copy-cell ok"><span class="lbl">✓ Correto — empty state</span>
+        <p>"Nenhum deal sincronizado ainda. Conecte o Bitrix24 para o cockpit começar a enxergar
+        seu pipeline." + botão "Conectar agora".</p>
+        <p class="why">Estado vazio honesto (regra Zero Mock) com CTA claro — padrão dos 4 estados.</p></div>
+      <div class="copy-cell no"><span class="lbl">✗ Incorreto — empty state</span>
+        <p>"Ops! Algo deu errado. Tente novamente mais tarde."</p>
+        <p class="why">Causa opaca, sem ação, viola o Error State obrigatório (causa raiz + retentativa).</p></div>
+    </div>
+    <div class="copy-row">
+      <div class="copy-cell ok"><span class="lbl">✓ Correto — notificação do agente</span>
+        <p>"Orbit: 3 deals parados há mais de 9 dias no estágio Proposta. Sugestão: reenviar case
+        de cliente similar."</p>
+        <p class="why">Personagem identificado, dado concreto, ação proposta — tom de copiloto.</p></div>
+      <div class="copy-cell no"><span class="lbl">✗ Incorreto — notificação</span>
+        <p>"Sua atenção é necessária! O sistema detectou anomalias no módulo de vendas."</p>
+        <p class="why">Alarme genérico sem dado, sem dono, sem ação — ruído de notificação.</p></div>
+    </div>
+
+    <div class="note"><strong>Regras de escrita:</strong> português do Brasil; números com separador
+    correto (R$ 1.482.000); datas em formato claro; nunca primeiro nome de cliente em materiais
+    públicos sem autorização (LGPD); claims quantitativos só com fonte; CTA sempre verbo + objeto
+    ("Agendar demonstração", não "Saiba mais").</div>
+  </section>
+
+  <footer>
+    <div><strong>Birthub 360° — Brandbook Oficial V2.0</strong><br>
+      Frente 02 · DEM-20261113-004 · missao-identidade-v2</div>
+    <div class="mono-sm">Fonte de verdade: identidade-visual/v2/FONTE-DE-VERDADE.md<br>
+      Tokens: birthhub360.json · DESIGN.md · PRODUCT.md</div>
+  </footer>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var root=document.documentElement;
+  var btn=document.getElementById('themeToggle');
+  var btn2=document.getElementById('themeToggle2');
+  function setTheme(t){
+    root.setAttribute('data-theme',t);
+    var light=t==='light';
+    [btn,btn2].forEach(function(b){if(!b)return;b.setAttribute('aria-pressed',String(light));
+      var l=b.querySelector('span:last-child');if(l)l.textContent=light?'Modo escuro':'Modo claro';});
+    try{localStorage.setItem('bh-theme',t)}catch(e){}
+  }
+  try{var saved=localStorage.getItem('bh-theme');if(saved)setTheme(saved);}catch(e){}
+  if(btn)btn.addEventListener('click',function(){setTheme(root.getAttribute('data-theme')==='dark'?'light':'dark')});
+  if(btn2)btn2.addEventListener('click',function(){setTheme(root.getAttribute('data-theme')==='dark'?'light':'dark')});
+
+  /* scroll-spy */
+  var links=[].slice.call(document.querySelectorAll('.nav-link'));
+  var map={};links.forEach(function(l){map[l.getAttribute('href').slice(1)]=l});
+  if('IntersectionObserver' in window){
+    var obs=new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){
+          links.forEach(function(l){l.classList.remove('active')});
+          var l=map[e.target.id];if(l)l.classList.add('active');
+        }
+      });
+    },{rootMargin:'-30% 0px -60% 0px'});
+    document.querySelectorAll('main section[id]').forEach(function(s){obs.observe(s)});
+  }
+  /* mobile sidebar */
+  var menu=document.getElementById('menuBtn'),side=document.getElementById('sidebar');
+  if(menu&&side){
+    menu.addEventListener('click',function(){
+      var open=side.classList.toggle('open');
+      menu.setAttribute('aria-expanded',String(open));
+    });
+    side.addEventListener('click',function(e){if(e.target.tagName==='A')side.classList.remove('open')});
+  }
+})();
+</script>
+</body>
+</html>
