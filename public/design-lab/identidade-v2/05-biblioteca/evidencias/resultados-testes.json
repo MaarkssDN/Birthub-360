@@ -1,0 +1,619 @@
+{
+ "gerado": "2026-11-13T23:06:07.918Z",
+ "total": 121,
+ "passou": 120,
+ "falhou": [
+  {
+   "name": "mobile 390: alvos interativos >= 40px (pointer coarse deve elevar a 44)",
+   "ok": false,
+   "detail": "[{\"h\":28,\"t\":\"bh-switch\",\"c\":\"bh-switch\"},{\"h\":28,\"t\":\"bh-switch\",\"c\":\"bh-switch\"},{\"h\":28,\"t\":\"bh-switch\",\"c\":\"bh-switch\"}] total=3"
+  }
+ ],
+ "todos": [
+  {
+   "name": "[dark] modal abre (dialog[open])",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] modal: foco inicial na ação segura (Cancelar)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] modal: foco preso após 7 Tab",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] modal: foco preso com Shift+Tab",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] modal: Esc fecha",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] modal: foco volta ao gatilho",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] modal: confirmar fecha e dispara toast",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] menu abre e foca o 1º item",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] menu: seta pula item desabilitado",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] menu: Home",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] menu: End",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] menu: typeahead \"a\" -> Atribuir",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] menu: Esc fecha e foco volta ao gatilho",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] menu: Enter ativa item e mostra leitura",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] tabela: ordenação inicial valor desc (Épsilon Agro)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] tabela: ordenar por Conta asc -> aria-sort + Alfa primeiro",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] tabela: Conta desc -> Zeta primeiro",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] tabela: Valor asc -> Teta Seguros primeiro (38.900)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] tabela: selecionar todas -> 8 linhas selecionadas",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] tabela: desmarcar uma -> checkbox mestre indeterminado",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] tabela: filtro sem resultado -> estado vazio",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] tabela: loading -> aria-busy + skeleton",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] tabela: erro -> alert com tentar novamente",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] form: submit vazio -> resumo visível com foco",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] form: 4 erros (nome, email, valor, consentimento) e aria-invalid",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] form: e-mail inválido mostra mensagem acionável",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] form: válido -> botão busy",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] form: sucesso -> toast + form limpo",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] abas: seta direita seleciona e foca aba 2",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] abas: pula aba desabilitada (circular)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] abas: circular para a primeira",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] sidebar: colapsa (64px) e aria-expanded=false",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] sidebar: expande (256px)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] sidebar: módulo P03 -> data-module=p03, aria-current e título",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] sidebar: acento do módulo muda (--module-accent) mas botão primário segue rosa",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] dashboard: estado loading",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] dashboard: estado empty",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] dashboard: estado error",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] dashboard: estado stale",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] dashboard: estado ok",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] gráfico: setas movem cursor e atualizam leitura (Set)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] gráfico: alternativa em tabela",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] switch alterna aria-checked",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] botão: aria-busy durante loading",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] botão: estado success após loading",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[dark] toasts: máximo de 3 empilhados",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] modal abre (dialog[open])",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] modal: foco inicial na ação segura (Cancelar)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] modal: foco preso após 7 Tab",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] modal: foco preso com Shift+Tab",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] modal: Esc fecha",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] modal: foco volta ao gatilho",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] modal: confirmar fecha e dispara toast",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] menu abre e foca o 1º item",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] menu: seta pula item desabilitado",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] menu: Home",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] menu: End",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] menu: typeahead \"a\" -> Atribuir",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] menu: Esc fecha e foco volta ao gatilho",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] menu: Enter ativa item e mostra leitura",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] tabela: ordenação inicial valor desc (Épsilon Agro)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] tabela: ordenar por Conta asc -> aria-sort + Alfa primeiro",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] tabela: Conta desc -> Zeta primeiro",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] tabela: Valor asc -> Teta Seguros primeiro (38.900)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] tabela: selecionar todas -> 8 linhas selecionadas",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] tabela: desmarcar uma -> checkbox mestre indeterminado",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] tabela: filtro sem resultado -> estado vazio",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] tabela: loading -> aria-busy + skeleton",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] tabela: erro -> alert com tentar novamente",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] form: submit vazio -> resumo visível com foco",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] form: 4 erros (nome, email, valor, consentimento) e aria-invalid",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] form: e-mail inválido mostra mensagem acionável",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] form: válido -> botão busy",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] form: sucesso -> toast + form limpo",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] abas: seta direita seleciona e foca aba 2",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] abas: pula aba desabilitada (circular)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] abas: circular para a primeira",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] sidebar: colapsa (64px) e aria-expanded=false",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] sidebar: expande (256px)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] sidebar: módulo P03 -> data-module=p03, aria-current e título",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] sidebar: acento do módulo muda (--module-accent) mas botão primário segue rosa",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] dashboard: estado loading",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] dashboard: estado empty",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] dashboard: estado error",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] dashboard: estado stale",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] dashboard: estado ok",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] gráfico: setas movem cursor e atualizam leitura (Set)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] gráfico: alternativa em tabela",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] switch alterna aria-checked",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] botão: aria-busy durante loading",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] botão: estado success após loading",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "[light] toasts: máximo de 3 empilhados",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "split: cada demo tem painel Dark e Light, sem ids duplicados",
+   "ok": true,
+   "detail": "{\"stages\":44,\"clones\":22,\"dups\":0,\"light\":\"light\"}"
+  },
+  {
+   "name": "split: modal do painel Light abre com tema light",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "medidor ao vivo: pares reprovados (dark/light)",
+   "ok": true,
+   "detail": "[{\"th\":\"dark\",\"fail\":[]},{\"th\":\"light\",\"fail\":[]}]"
+  },
+  {
+   "name": "contraste de texto biblioteca dark 1440px (567 textos)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "sem overflow horizontal biblioteca dark 1440px",
+   "ok": true,
+   "detail": "scrollWidth=1440 clientWidth=1440"
+  },
+  {
+   "name": "contraste de texto biblioteca light 1440px (567 textos)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "sem overflow horizontal biblioteca light 1440px",
+   "ok": true,
+   "detail": "scrollWidth=1440 clientWidth=1440"
+  },
+  {
+   "name": "contraste de texto biblioteca dark 390px (517 textos)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "sem overflow horizontal biblioteca dark 390px",
+   "ok": true,
+   "detail": "scrollWidth=390 clientWidth=390"
+  },
+  {
+   "name": "contraste de texto biblioteca light 390px (517 textos)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "sem overflow horizontal biblioteca light 390px",
+   "ok": true,
+   "detail": "scrollWidth=390 clientWidth=390"
+  },
+  {
+   "name": "contraste de texto design-system dark 1440px (2092 textos)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "sem overflow horizontal design-system dark 1440px",
+   "ok": true,
+   "detail": "scrollWidth=1440 clientWidth=1440"
+  },
+  {
+   "name": "contraste de texto design-system light 1440px (2092 textos)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "sem overflow horizontal design-system light 1440px",
+   "ok": true,
+   "detail": "scrollWidth=1440 clientWidth=1440"
+  },
+  {
+   "name": "contraste de texto design-system dark 390px (2062 textos)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "sem overflow horizontal design-system dark 390px",
+   "ok": true,
+   "detail": "scrollWidth=390 clientWidth=390"
+  },
+  {
+   "name": "contraste de texto design-system light 390px (2062 textos)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "sem overflow horizontal design-system light 390px",
+   "ok": true,
+   "detail": "scrollWidth=390 clientWidth=390"
+  },
+  {
+   "name": "mobile 390: alvos interativos >= 40px (pointer coarse deve elevar a 44)",
+   "ok": false,
+   "detail": "[{\"h\":28,\"t\":\"bh-switch\",\"c\":\"bh-switch\"},{\"h\":28,\"t\":\"bh-switch\",\"c\":\"bh-switch\"},{\"h\":28,\"t\":\"bh-switch\",\"c\":\"bh-switch\"}] total=3"
+  },
+  {
+   "name": "mobile 390: sidebar do workspace inicia colapsada (rail)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "links âncora biblioteca: todos resolvem",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "links relativos/assets biblioteca: 5 verificados",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "fontes self-hosted carregadas biblioteca",
+   "ok": true,
+   "detail": "Sora:true,Inter:true,IBM Plex Mono:true"
+  },
+  {
+   "name": "links âncora design-system: todos resolvem",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "links relativos/assets design-system: 21 verificados",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "fontes self-hosted carregadas design-system",
+   "ok": true,
+   "detail": "Sora:true,Inter:true,IBM Plex Mono:true"
+  },
+  {
+   "name": "abre via file:// com JS pronto",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "console/rede sem erros em todas as sessões",
+   "ok": true,
+   "detail": ""
+  }
+ ]
+}

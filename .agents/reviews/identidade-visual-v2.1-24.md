@@ -68,4 +68,55 @@ Nenhum achado bloqueador ou crítico.
 
 Baixos. O pacote é estático e isolado. O principal é alguém tratar o material como homologado: os rótulos de rascunho cobrem isso.
 
+Decisão original (manifesto 37b6d39c…4a46): aprovado. Essa aprovação foi invalidada por mudança no conteúdo auditado; a linha de decisão vigente está no fim da seção "Reauditoria de delta (2026-11-14)".
+
+---
+
+## Reauditoria de delta (2026-11-14)
+
+O parecer acima fica preservado. Única alteração nele: a linha de decisão original virou uma frase descritiva, para que a linha de decisão vigente do documento seja única (no fim desta seção).
+
+- Motivo: a aprovação do manifesto 37b6d39c…4a46 foi invalidada por 2 mudanças em arquivos do manifesto, feitas para corrigir 3 alertas HIGH do CodeQL no PR #290.
+- Revisão auditada: head `d758a0da` + working tree não commitado; `MANIFEST.sha256` novo, SHA-256 = `f0a94343837a32c0b02aa4370570d2d7c0883786e0716f1a0a2a9f4942522124` (mesmos 148 caminhos).
+- Arquivos do delta: `02-brandbook/_src/montar.mjs` (a646e205…), `03-design-system/tokens/build.mjs` (301d638f…), `MANIFEST.sha256`. Lidos também, fora do manifesto: `scripts-verificacao/{qa,n1,sw}.cjs`.
+- Escopo da aprovação: documentação e protótipos estáticos do pacote identificado pelo manifesto. Este parecer NÃO atesta que o CI do PR está verde e NÃO autoriza merge com CI vermelho, push nem deploy.
+
+### Comandos e resultados
+
+| Comando | Resultado |
+|---|---|
+| `git rev-parse --short HEAD` / `git status --porcelain` | `d758a0da`; só os 3 arquivos acima modificados, exit 0 |
+| `sha256sum MANIFEST.sha256` e `sha256sum -c` | f0a94343…2124; 148/148 OK, exit 0 |
+| `diff /tmp/MANIFEST.old MANIFEST.sha256` | só as 2 linhas de `montar.mjs` e `build.mjs` |
+| `git diff` dos 2 scripts | lido por inteiro; mudanças restritas a `strip` e ao bloco de leitura do `index.html` |
+| Em CÓPIA (scratchpad): `node _src/montar.mjs` (exit 0) e `node tokens/build.mjs` (exit 0), depois `diff -rq` da cópia inteira contra o original | IDÊNTICO: nenhum gerado mudou (index.html, regras.json, tokens.css, tokens.json, tokens.contract.json byte a byte); `sha256sum -c` na cópia: 148 OK. O build ainda relata os mesmos 6 pares de contraste já documentados. |
+| Teste adversário da `strip` nova (9 entradas, função copiada do diff) | `<scr<b>ipt>alert(1)</scr</b>ipt>` → `ipt>alert(1)ipt>`; `<<script>script>x` → `script>x`; `<scr<script>ipt>a` → `ipt>a`; `<scr<b>ipt src=x` → `ipt src=x`; `<<a>script<a>>y` → `script>y`. Nenhuma remontagem de `<script`. `&amp;lt;script&amp;gt;` → `&lt;script&gt;` e `a &amp;amp; b` → `a &amp; b`: sem duplo unescape. |
+| Leitura de `scripts-verificacao/*.cjs` (49 linhas) + grep de segredo/e-mail/URL | sem segredo, token, e-mail ou chamada de rede; só Playwright local |
+| `git ls-files` contra o manifesto | 84 dos 148 arquivos do manifesto NÃO estão no git (todos em `*/evidencias/`); nenhum `href` das páginas aponta para arquivo ausente do git |
+
+### Julgamento das correções
+
+- `strip` (multi-character sanitization e double unescaping): correção real, não cosmética. O laço até ponto fixo elimina a remontagem de tag por aninhamento e a ordem `&lt;`, `&gt;`, `&amp;` faz uma única passada de decodificação. Observação: `&lt;script&gt;` vira `<script>` no texto, o que é a decodificação pretendida de entidade; a saída é texto de `regras.json`, não HTML. A entrada é conteúdo do próprio autor, então o risco real já era baixo.
+- `build.mjs` (race condition): correção real. A leitura direta com tratamento de `ENOENT` remove a janela entre checar e usar; outros erros continuam visíveis (relançados). Comportamento igual ao anterior quando o arquivo existe ou falta.
+- Não reexecutei o CodeQL. Que os 3 alertas fechem no PR é expectativa, não evidência.
+
+### Achados
+
+- D-1 (média, autor 00, exige ação antes do merge): 84 arquivos do manifesto não estão versionados, e não achei nota sobre isso no pacote. Não são só capturas pesadas: há JSON e TXT pequenos de evidência (ex.: `verificacao.json`, `reconciliacao-testes.json`, saídas do Impeccable). Num checkout do git, `sha256sum -c` falha em 84 linhas. Correção: nota explícita (no PR e em arquivo fora do manifesto, ou no índice) dizendo que o manifesto descreve o pacote em disco/zip e listando o que ficou fora do git e por quê; de preferência versionar as evidências de texto, que pesam pouco. Teste: `sha256sum -c` em checkout limpo com resultado explicado pela nota.
+- D-2 (média, autor 00): `06-conformidade/gerar.mjs` lê `08-referencia-n1/evidencias/n1-verificacao.json`, que não está no git. Num checkout limpo o gerador da matriz de conformidade quebra. Correção: versionar esse JSON. Teste: rodar o gerador em checkout limpo.
+- D-3 (baixa, autor 00): `_baseline-v2.0/v2.0-entregue.tar.gz` não está no git (o `.gitignore` tem `*.tar.gz`), mas o `MANIFEST.sha256` dele está. No git a baseline é só uma lista de hashes sem conteúdo. Registrar na mesma nota ou versionar por exceção.
+- D-4 (baixa): `scripts-verificacao/*.cjs` têm caminhos absolutos de `/home/user/...` e do clone externo. Não são sensíveis (nome de usuário genérico, sem segredo nem dado pessoal), mas os scripts não rodam em outra máquina e `qa.cjs`/`n1.cjs` sobrescrevem evidências e `qa-00.json` ao rodar. Estão fora do manifesto; se forem mantidos, declarar isso e, idealmente, trocar por caminhos relativos.
+- D-5 (informativa): `qa.cjs` abre as páginas por `file://`; a minha verificação original usou HTTP com raiz em `public/`. Os dois métodos deram 0 problemas, mas não são a mesma medição.
+
+### Não verificado
+
+- CI do PR: não é verde. CodeQL agregado em falha no head `d758a0da` (as correções ainda não estão commitadas). Application gate, build, SonarQube e Visual Regression falharam no run anterior, sem causa raiz determinada; não sei se são pré-existentes ou causados pela entrega ou pelo merge do main. Nada disso foi investigado por mim.
+- O merge do main (head `d758a0da`) em si: não auditado além de confirmar que o manifesto continua batendo.
+- Não repeti a rodada de navegador nem as capturas: os arquivos gerados e servidos são byte-idênticos aos da revisão anterior.
+- Demais itens "não verificado" do parecer original continuam valendo.
+
+### Decisão do delta
+
+Aprovado no escopo documental: as 2 correções são corretas, não alteram nenhum artefato gerado e o manifesto novo confere. D-1 e D-2 devem ser resolvidos antes do merge; resolvê-los com arquivos fora do manifesto (ou só versionando arquivos já listados, sem mudar conteúdo) não invalida esta aprovação. Qualquer mudança de conteúdo em arquivo do manifesto invalida. O merge depende ainda do CI verde e da autorização do proprietário, que este parecer não substitui.
+
 Decisão: APROVADO
