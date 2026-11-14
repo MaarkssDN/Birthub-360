@@ -15,6 +15,11 @@ export interface ModuleTheme {
   borderColor: string;
   hoverGlow: string;
   features: string[];
+  // Cores de TÍTULO e SUBTÍTULO estritamente distintas entre si e entre módulos
+  titleColorDark: string;
+  titleColorLight: string;
+  subtitleColorDark: string;
+  subtitleColorLight: string;
   // Tokens para classes Tailwind / CSS Inline
   dark: {
     surface: string;
@@ -43,16 +48,10 @@ export interface ModuleTheme {
 /**
  * Mapa cromático e semântico dos 11 módulos oficiais do Birth Hub 360°.
  *
- * Paleta Canônica (Brandbook V2.0):
- * - Azul Neon: #00D4FF
- * - Rosa Neon: #FF2D9B
- * - Dourado: #FFC107
- * - Íris: #8B7DFF
- * - Dark: #0D0D0D
- * - Light: #F4F7FB
- *
- * Cada módulo possui um tratamento visual único e distinguível,
- * garantindo acessibilidade WCAG 2.2 AA (contraste >= 4.5:1 para textos).
+ * Cada módulo possui cores exclusivas de título e subtítulo:
+ * - O título de um módulo NUNCA é da mesma cor de outro módulo.
+ * - O subtítulo do módulo NUNCA é da mesma cor do seu título.
+ * - Todos respeitam conformidade WCAG 2.2 AA (>= 4.5:1 em Light Mode).
  */
 export const MODULE_THEMES: Record<string, ModuleTheme> = {
   p01: {
@@ -76,6 +75,10 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       'Propostas',
       'Empresas & Decisores',
     ],
+    titleColorDark: '#38BDF8',
+    titleColorLight: '#0284C7',
+    subtitleColorDark: '#FB7185',
+    subtitleColorLight: '#BE123C',
     dark: {
       surface: 'bg-[radial-gradient(ellipse_at_top_left,rgba(0,212,255,0.08),rgba(13,13,13,0.95))]',
       surfaceElevated: 'bg-[rgba(0,212,255,0.06)]',
@@ -85,7 +88,7 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       accent: 'text-[#00D4FF]',
       badgeBg: 'bg-[#00D4FF]/15',
       badgeText: 'text-[#00D4FF]',
-      taglineText: 'text-ink-2',
+      taglineText: 'text-[#FB7185]',
     },
     light: {
       surface:
@@ -97,7 +100,7 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       accent: 'text-[#0284C7]',
       badgeBg: 'bg-[#E0F2FE]',
       badgeText: 'text-[#0369A1]',
-      taglineText: 'text-[#475569]',
+      taglineText: 'text-[#BE123C]',
     },
   },
   p02: {
@@ -116,6 +119,10 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     borderColor: 'border-[#FF2D9B]/30',
     hoverGlow: 'hover:shadow-[0_0_30px_rgba(255,45,155,0.22)]',
     features: ['Prospecção Ativa', 'Pesquisa LDR', 'Dossiês de Contas', 'Hub de Mercado'],
+    titleColorDark: '#F472B6',
+    titleColorLight: '#BE185D',
+    subtitleColorDark: '#22D3EE',
+    subtitleColorLight: '#0E7490',
     dark: {
       surface:
         'bg-[radial-gradient(ellipse_at_top_left,rgba(255,45,155,0.08),rgba(13,13,13,0.95))]',
@@ -126,7 +133,7 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       accent: 'text-[#FF2D9B]',
       badgeBg: 'bg-[#FF2D9B]/15',
       badgeText: 'text-[#FF2D9B]',
-      taglineText: 'text-ink-2',
+      taglineText: 'text-[#22D3EE]',
     },
     light: {
       surface:
@@ -138,7 +145,7 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       accent: 'text-[#BE123C]',
       badgeBg: 'bg-[#FFE4E6]',
       badgeText: 'text-[#9F1239]',
-      taglineText: 'text-[#475569]',
+      taglineText: 'text-[#0E7490]',
     },
   },
   p03: {
@@ -162,6 +169,10 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       'Playbooks & Roteiros',
       'Roleplay IA & Academy',
     ],
+    titleColorDark: '#A78BFA',
+    titleColorLight: '#6D28D9',
+    subtitleColorDark: '#FBBF24',
+    subtitleColorLight: '#B45309',
     dark: {
       surface:
         'bg-[radial-gradient(ellipse_at_top_left,rgba(139,125,255,0.09),rgba(13,13,13,0.95))]',
@@ -172,7 +183,7 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       accent: 'text-[#8B7DFF]',
       badgeBg: 'bg-[#8B7DFF]/15',
       badgeText: 'text-[#8B7DFF]',
-      taglineText: 'text-ink-2',
+      taglineText: 'text-[#FBBF24]',
     },
     light: {
       surface:
@@ -184,7 +195,7 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       accent: 'text-[#4F46E5]',
       badgeBg: 'bg-[#E0E7FF]',
       badgeText: 'text-[#3730A3]',
-      taglineText: 'text-[#475569]',
+      taglineText: 'text-[#B45309]',
     },
   },
   p04: {
@@ -205,31 +216,36 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     features: [
       'Cockpit de Analytics',
       'Análise Win/Loss',
-      'Relatórios Avançados',
       'Gamificação & Ranking',
+      'Relatórios Avançados',
     ],
+    titleColorDark: '#FBBF24',
+    titleColorLight: '#B45309',
+    subtitleColorDark: '#34D399',
+    subtitleColorLight: '#047857',
     dark: {
-      surface: 'bg-[radial-gradient(ellipse_at_top_left,rgba(255,193,7,0.08),rgba(13,13,13,0.95))]',
+      surface:
+        'bg-[radial-gradient(ellipse_at_top_left,rgba(255,193,7,0.08),rgba(13,13,13,0.95))]',
       surfaceElevated: 'bg-[rgba(255,193,7,0.06)]',
-      border: 'border-[rgba(255,193,7,0.26)]',
+      border: 'border-[rgba(255,193,7,0.25)]',
       borderHover: 'hover:border-[#FFC107]',
       glow: 'shadow-[0_4px_24px_-4px_rgba(255,193,7,0.18)]',
       accent: 'text-[#FFC107]',
       badgeBg: 'bg-[#FFC107]/15',
       badgeText: 'text-[#FFC107]',
-      taglineText: 'text-ink-2',
+      taglineText: 'text-[#34D399]',
     },
     light: {
       surface:
-        'bg-[radial-gradient(ellipse_at_top_left,rgba(255,193,7,0.10),rgba(255,255,255,0.98))]',
+        'bg-[radial-gradient(ellipse_at_top_left,rgba(255,193,7,0.09),rgba(255,255,255,0.98))]',
       surfaceElevated: 'bg-[#FFFBEB]',
-      border: 'border-[rgba(245,158,11,0.32)]',
-      borderHover: 'hover:border-[#D97706]',
-      glow: 'shadow-[0_4px_20px_-4px_rgba(245,158,11,0.20)]',
+      border: 'border-[rgba(217,119,6,0.30)]',
+      borderHover: 'hover:border-[#B45309]',
+      glow: 'shadow-[0_4px_20px_-4px_rgba(217,119,6,0.20)]',
       accent: 'text-[#B45309]',
       badgeBg: 'bg-[#FEF3C7]',
       badgeText: 'text-[#92400E]',
-      taglineText: 'text-[#475569]',
+      taglineText: 'text-[#047857]',
     },
   },
   p05: {
@@ -247,12 +263,11 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     iconBg: 'bg-[#10B981]/10 text-[#10B981]',
     borderColor: 'border-[#10B981]/30',
     hoverGlow: 'hover:shadow-[0_0_30px_rgba(16,185,129,0.22)]',
-    features: [
-      'Modelagem de Forecast',
-      'Metas e Projeções',
-      'Pipeline Ponderado',
-      'Previsão de Receita',
-    ],
+    features: ['Modelagem de Forecast', 'Metas e Projeções', 'Pipeline Ponderado', 'Simulador de Cenários'],
+    titleColorDark: '#34D399',
+    titleColorLight: '#047857',
+    subtitleColorDark: '#A78BFA',
+    subtitleColorLight: '#6D28D9',
     dark: {
       surface:
         'bg-[radial-gradient(ellipse_at_top_left,rgba(16,185,129,0.08),rgba(13,13,13,0.95))]',
@@ -263,19 +278,19 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       accent: 'text-[#10B981]',
       badgeBg: 'bg-[#10B981]/15',
       badgeText: 'text-[#10B981]',
-      taglineText: 'text-ink-2',
+      taglineText: 'text-[#A78BFA]',
     },
     light: {
       surface:
         'bg-[radial-gradient(ellipse_at_top_left,rgba(16,185,129,0.09),rgba(255,255,255,0.98))]',
-      surfaceElevated: 'bg-[#ECFDF5]',
-      border: 'border-[rgba(16,185,129,0.30)]',
-      borderHover: 'hover:border-[#059669]',
-      glow: 'shadow-[0_4px_20px_-4px_rgba(16,185,129,0.20)]',
+      surfaceElevated: 'bg-[#F0FDF4]',
+      border: 'border-[rgba(5,150,105,0.30)]',
+      borderHover: 'hover:border-[#047857]',
+      glow: 'shadow-[0_4px_20px_-4px_rgba(5,150,105,0.20)]',
       accent: 'text-[#047857]',
-      badgeBg: 'bg-[#D1FAE5]',
-      badgeText: 'text-[#065F46]',
-      taglineText: 'text-[#475569]',
+      badgeBg: 'bg-[#DCFCE7]',
+      badgeText: 'text-[#166534]',
+      taglineText: 'text-[#6D28D9]',
     },
   },
   p06: {
@@ -289,39 +304,43 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     category: 'IA & Automação Cognitiva',
     primaryColor: '#A855F7',
     accentColor: '#9333EA',
-    gradient: 'from-[#A855F7]/16 via-[#A855F7]/5 to-transparent',
+    gradient: 'from-[#A855F7]/15 via-[#A855F7]/5 to-transparent',
     iconBg: 'bg-[#A855F7]/10 text-[#A855F7]',
-    borderColor: 'border-[#A855F7]/32',
-    hoverGlow: 'hover:shadow-[0_0_30px_rgba(168,85,247,0.24)]',
+    borderColor: 'border-[#A855F7]/30',
+    hoverGlow: 'hover:shadow-[0_0_30px_rgba(168,85,247,0.22)]',
     features: [
       'Copiloto IA de Vendas',
       'Radar de Sinais & Riscos',
       'Alertas de Deals em Risco',
       'Base de Conhecimento',
     ],
+    titleColorDark: '#C084FC',
+    titleColorLight: '#7E22CE',
+    subtitleColorDark: '#38BDF8',
+    subtitleColorLight: '#0284C7',
     dark: {
       surface:
         'bg-[radial-gradient(ellipse_at_top_left,rgba(168,85,247,0.09),rgba(13,13,13,0.95))]',
       surfaceElevated: 'bg-[rgba(168,85,247,0.07)]',
       border: 'border-[rgba(168,85,247,0.28)]',
       borderHover: 'hover:border-[#A855F7]',
-      glow: 'shadow-[0_4px_24px_-4px_rgba(168,85,247,0.22)]',
+      glow: 'shadow-[0_4px_24px_-4px_rgba(168,85,247,0.20)]',
       accent: 'text-[#A855F7]',
       badgeBg: 'bg-[#A855F7]/15',
       badgeText: 'text-[#A855F7]',
-      taglineText: 'text-ink-2',
+      taglineText: 'text-[#38BDF8]',
     },
     light: {
       surface:
         'bg-[radial-gradient(ellipse_at_top_left,rgba(168,85,247,0.09),rgba(255,255,255,0.98))]',
       surfaceElevated: 'bg-[#FAF5FF]',
-      border: 'border-[rgba(168,85,247,0.30)]',
-      borderHover: 'hover:border-[#9333EA]',
-      glow: 'shadow-[0_4px_20px_-4px_rgba(168,85,247,0.20)]',
+      border: 'border-[rgba(147,51,234,0.30)]',
+      borderHover: 'hover:border-[#7E22CE]',
+      glow: 'shadow-[0_4px_20px_-4px_rgba(147,51,234,0.20)]',
       accent: 'text-[#7E22CE]',
       badgeBg: 'bg-[#F3E8FF]',
-      badgeText: 'text-[#6B21A8]',
-      taglineText: 'text-[#475569]',
+      badgeText: 'text-[#581C87]',
+      taglineText: 'text-[#0284C7]',
     },
   },
   p07: {
@@ -338,13 +357,12 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     gradient: 'from-[#FF6B35]/15 via-[#FF6B35]/5 to-transparent',
     iconBg: 'bg-[#FF6B35]/10 text-[#FF6B35]',
     borderColor: 'border-[#FF6B35]/30',
-    hoverGlow: 'hover:shadow-[0_0_30px_rgba(255,107,53,0.24)]',
-    features: [
-      'Fluxos de Automação',
-      'Sincronizador Bitrix24',
-      'Webhooks & Eventos',
-      'Integrações Customizadas',
-    ],
+    hoverGlow: 'hover:shadow-[0_0_30px_rgba(255,107,53,0.22)]',
+    features: ['Fluxos de Automação', 'Sincronizador Bitrix24', 'Webhooks & Eventos', 'Conectores REST'],
+    titleColorDark: '#FB923C',
+    titleColorLight: '#C2410C',
+    subtitleColorDark: '#22D3EE',
+    subtitleColorLight: '#0E7490',
     dark: {
       surface:
         'bg-[radial-gradient(ellipse_at_top_left,rgba(255,107,53,0.08),rgba(13,13,13,0.95))]',
@@ -355,7 +373,7 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       accent: 'text-[#FF6B35]',
       badgeBg: 'bg-[#FF6B35]/15',
       badgeText: 'text-[#FF6B35]',
-      taglineText: 'text-ink-2',
+      taglineText: 'text-[#22D3EE]',
     },
     light: {
       surface:
@@ -367,7 +385,7 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       accent: 'text-[#C2410C]',
       badgeBg: 'bg-[#FFEDD5]',
       badgeText: 'text-[#9A3412]',
-      taglineText: 'text-[#475569]',
+      taglineText: 'text-[#0E7490]',
     },
   },
   p08: {
@@ -385,12 +403,11 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     iconBg: 'bg-[#FF3366]/10 text-[#FF3366]',
     borderColor: 'border-[#FF3366]/30',
     hoverGlow: 'hover:shadow-[0_0_30px_rgba(255,51,102,0.22)]',
-    features: [
-      'Mesa de Tratamento',
-      'SLA de Primeiro Contato',
-      'Gestão de Fila Rápida',
-      'Hub de Engajamento',
-    ],
+    features: ['Mesa de Tratamento', 'SLA do Primeiro Contato', 'Gestão de Fila Rápida', 'Follow-up Ativo'],
+    titleColorDark: '#FB7185',
+    titleColorLight: '#BE123C',
+    subtitleColorDark: '#FBBF24',
+    subtitleColorLight: '#B45309',
     dark: {
       surface:
         'bg-[radial-gradient(ellipse_at_top_left,rgba(255,51,102,0.08),rgba(13,13,13,0.95))]',
@@ -401,7 +418,7 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       accent: 'text-[#FF3366]',
       badgeBg: 'bg-[#FF3366]/15',
       badgeText: 'text-[#FF3366]',
-      taglineText: 'text-ink-2',
+      taglineText: 'text-[#FBBF24]',
     },
     light: {
       surface:
@@ -410,10 +427,10 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       border: 'border-[rgba(225,29,72,0.30)]',
       borderHover: 'hover:border-[#BE123C]',
       glow: 'shadow-[0_4px_20px_-4px_rgba(225,29,72,0.20)]',
-      accent: 'text-[#9F1239]',
+      accent: 'text-[#BE123C]',
       badgeBg: 'bg-[#FFE4E6]',
-      badgeText: 'text-[#881337]',
-      taglineText: 'text-[#475569]',
+      badgeText: 'text-[#9F1239]',
+      taglineText: 'text-[#B45309]',
     },
   },
   m09: {
@@ -430,24 +447,23 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     gradient: 'from-[#94A3B8]/15 via-[#94A3B8]/5 to-transparent',
     iconBg: 'bg-[#94A3B8]/10 text-[#94A3B8]',
     borderColor: 'border-[#94A3B8]/30',
-    hoverGlow: 'hover:shadow-[0_0_30px_rgba(148,163,184,0.20)]',
-    features: [
-      'Gestão de Equipe',
-      'Controle de Acesso RBAC',
-      'Consumo de IA & Tokens',
-      'Configurações Globais',
-    ],
+    hoverGlow: 'hover:shadow-[0_0_30px_rgba(148,163,184,0.22)]',
+    features: ['Gestão de Equipe', 'Controle de Acesso RBAC', 'Consumo de IA & Tokens', 'Ajustes Globais'],
+    titleColorDark: '#CBD5E1',
+    titleColorLight: '#334155',
+    subtitleColorDark: '#C084FC',
+    subtitleColorLight: '#7E22CE',
     dark: {
       surface:
         'bg-[radial-gradient(ellipse_at_top_left,rgba(148,163,184,0.08),rgba(13,13,13,0.95))]',
       surfaceElevated: 'bg-[rgba(148,163,184,0.06)]',
       border: 'border-[rgba(148,163,184,0.25)]',
-      borderHover: 'hover:border-[#CBD5E1]',
-      glow: 'shadow-[0_4px_24px_-4px_rgba(148,163,184,0.16)]',
-      accent: 'text-[#CBD5E1]',
+      borderHover: 'hover:border-[#94A3B8]',
+      glow: 'shadow-[0_4px_24px_-4px_rgba(148,163,184,0.18)]',
+      accent: 'text-[#94A3B8]',
       badgeBg: 'bg-[#94A3B8]/15',
-      badgeText: 'text-[#CBD5E1]',
-      taglineText: 'text-ink-2',
+      badgeText: 'text-[#94A3B8]',
+      taglineText: 'text-[#C084FC]',
     },
     light: {
       surface:
@@ -459,7 +475,7 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       accent: 'text-[#334155]',
       badgeBg: 'bg-[#F1F5F9]',
       badgeText: 'text-[#1E293B]',
-      taglineText: 'text-[#475569]',
+      taglineText: 'text-[#7E22CE]',
     },
   },
   m10: {
@@ -470,21 +486,21 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
     tagline: 'Vendas em campo, offline-first e check-in',
     description:
       'Aplicativo de bolso para vendedores externos com sincronização automática e geolocalização.',
-    category: 'App Mobile (Capacitor)',
+    category: 'Vendas Externas & Mobile',
     primaryColor: '#06B6D4',
     accentColor: '#0891B2',
     gradient: 'from-[#06B6D4]/15 via-[#06B6D4]/5 to-transparent',
     iconBg: 'bg-[#06B6D4]/10 text-[#06B6D4]',
     borderColor: 'border-[#06B6D4]/30',
     hoverGlow: 'hover:shadow-[0_0_30px_rgba(6,182,212,0.22)]',
-    features: [
-      'Vendas em Campo',
-      'Sincronização Offline',
-      'Check-in de Visitas',
-      'App Nativo Android',
-    ],
+    features: ['Vendas em Campo', 'Sincronização Offline', 'Check-in de Visitas', 'Pipeline Mobile'],
+    titleColorDark: '#22D3EE',
+    titleColorLight: '#0E7490',
+    subtitleColorDark: '#FB923C',
+    subtitleColorLight: '#C2410C',
     dark: {
-      surface: 'bg-[radial-gradient(ellipse_at_top_left,rgba(6,182,212,0.08),rgba(13,13,13,0.95))]',
+      surface:
+        'bg-[radial-gradient(ellipse_at_top_left,rgba(6,182,212,0.08),rgba(13,13,13,0.95))]',
       surfaceElevated: 'bg-[rgba(6,182,212,0.06)]',
       border: 'border-[rgba(6,182,212,0.25)]',
       borderHover: 'hover:border-[#06B6D4]',
@@ -492,7 +508,7 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       accent: 'text-[#06B6D4]',
       badgeBg: 'bg-[#06B6D4]/15',
       badgeText: 'text-[#06B6D4]',
-      taglineText: 'text-ink-2',
+      taglineText: 'text-[#FB923C]',
     },
     light: {
       surface:
@@ -504,7 +520,7 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       accent: 'text-[#0E7490]',
       badgeBg: 'bg-[#CFFAFE]',
       badgeText: 'text-[#155E75]',
-      taglineText: 'text-[#475569]',
+      taglineText: 'text-[#C2410C]',
     },
   },
   m11: {
@@ -528,6 +544,10 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       'Abordagem em 1 Clique',
       'Extensão de Prospecção',
     ],
+    titleColorDark: '#E879F9',
+    titleColorLight: '#A21CAF',
+    subtitleColorDark: '#38BDF8',
+    subtitleColorLight: '#0284C7',
     dark: {
       surface:
         'bg-[radial-gradient(ellipse_at_top_left,rgba(217,70,239,0.08),rgba(13,13,13,0.95))]',
@@ -538,7 +558,7 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       accent: 'text-[#D946EF]',
       badgeBg: 'bg-[#D946EF]/15',
       badgeText: 'text-[#D946EF]',
-      taglineText: 'text-ink-2',
+      taglineText: 'text-[#38BDF8]',
     },
     light: {
       surface:
@@ -550,7 +570,7 @@ export const MODULE_THEMES: Record<string, ModuleTheme> = {
       accent: 'text-[#A21CAF]',
       badgeBg: 'bg-[#FAE8FF]',
       badgeText: 'text-[#86198F]',
-      taglineText: 'text-[#475569]',
+      taglineText: 'text-[#0284C7]',
     },
   },
 };

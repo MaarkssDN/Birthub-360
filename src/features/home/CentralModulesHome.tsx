@@ -250,7 +250,7 @@ export function CentralModulesHome() {
               >
                 <Workflow className="h-3.5 w-3.5" />
                 <span>Alternativa D: Esteira de Ciclo de Vendas</span>
-                <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-500">
+                <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                   Pipeline
                 </span>
               </button>
@@ -636,7 +636,9 @@ function HubOrbitalView({ modules, onNavigate, isDark }: ProposalProps) {
             </div>
             <div className="rounded-xl border border-line bg-surface/90 px-3.5 py-2 text-center">
               <span className="block font-mono text-[10px] text-ink-2 uppercase">Status</span>
-              <span className="font-display text-xs font-bold text-emerald-500">100% ONLINE</span>
+              <span className="font-display text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                100% ONLINE
+              </span>
             </div>
           </div>
         </div>

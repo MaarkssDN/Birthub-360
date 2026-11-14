@@ -1584,7 +1584,7 @@ export function Landing360({
                     contínua.
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-6">
-                    <div className="p-4 rounded-2xl border border-cyan-500/20 bg-slate-900/60 dark:bg-[#0B1A2E]/80">
+                    <div className="p-4 rounded-2xl border border-cyan-500/20 bg-slate-900 b360-dark-card dark:bg-[#0B1A2E]/80">
                       <div className="flex items-center gap-2 mb-1.5">
                         <Sparkles className="w-4 h-4 text-[#00D4FF]" />
                         <h3 className="text-sm font-bold text-[#00D4FF]">
@@ -1597,7 +1597,7 @@ export function Landing360({
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-2xl border border-pink-500/20 bg-slate-900/60 dark:bg-[#0B1A2E]/80">
+                    <div className="p-4 rounded-2xl border border-pink-500/20 bg-slate-900 b360-dark-card dark:bg-[#0B1A2E]/80">
                       <div className="flex items-center gap-2 mb-1.5">
                         <Target className="w-4 h-4 text-[#FF2D9B]" />
                         <h3 className="text-sm font-bold text-[#FF2D9B]">
@@ -1610,7 +1610,7 @@ export function Landing360({
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-2xl border border-amber-500/20 bg-slate-900/60 dark:bg-[#0B1A2E]/80">
+                    <div className="p-4 rounded-2xl border border-amber-500/20 bg-slate-900 b360-dark-card dark:bg-[#0B1A2E]/80">
                       <div className="flex items-center gap-2 mb-1.5">
                         <Clock className="w-4 h-4 text-[#FFC107]" />
                         <h3 className="text-sm font-bold text-[#FFC107]">Contexto histórico</h3>
@@ -1621,7 +1621,7 @@ export function Landing360({
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-2xl border border-indigo-500/20 bg-slate-900/60 dark:bg-[#0B1A2E]/80">
+                    <div className="p-4 rounded-2xl border border-indigo-500/20 bg-slate-900 b360-dark-card dark:bg-[#0B1A2E]/80">
                       <div className="flex items-center gap-2 mb-1.5">
                         <Bot className="w-4 h-4 text-[#8B7DFF]" />
                         <h3 className="text-sm font-bold text-[#8B7DFF]">Supervisor On-line</h3>
@@ -2579,7 +2579,7 @@ export function Landing360({
             </div>
 
             {/* Badges de Certificação e Conformidade Técnica */}
-            <div className="pt-4 border-t border-slate-200/60 dark:border-slate-800/60 flex flex-wrap items-center gap-2 font-mono text-[10px] text-slate-500 dark:text-slate-400">
+            <div className="pt-4 border-t border-slate-200/60 dark:border-slate-800/60 flex flex-wrap items-center gap-2 font-mono text-[10px] text-slate-600 dark:text-slate-400">
               <span className="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60">
                 SOC-2 TYPE II READY
               </span>

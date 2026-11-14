@@ -74,7 +74,9 @@ test.describe('Mesa de Tratamento — organização sem Bitrix conectado', () =>
         res.url().includes('period=30d') &&
         res.request().method() === 'GET',
     );
-    await page.getByRole('button', { name: 'Últimos 30 dias' }).click();
+    // Os seletores de período são role="tab" dentro de um tablist (SdrDashboard),
+    // não role="button" — getByRole('button') não os encontra.
+    await page.getByRole('tab', { name: 'Últimos 30 dias' }).click();
     const res = await periodResponse;
     expect(res.status()).toBe(200);
     const body = await res.json();

@@ -1435,6 +1435,7 @@ html:not(.dark) .b360-adaptive-landing .b360-feature-card,
 html.light .b360-adaptive-landing .b360-feature-card,
 [data-theme="light"] .b360-adaptive-landing .b360-feature-card {
   border: 1px solid rgba(203, 213, 225, 0.9);
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -1526,6 +1527,7 @@ html.light .b360-adaptive-landing .b360-flow-step,
 html:not(.dark) .b360-adaptive-landing .b360-copilot-card,
 html.light .b360-adaptive-landing .b360-copilot-card,
 [data-theme="light"] .b360-adaptive-landing .b360-copilot-card {
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -1538,22 +1540,22 @@ html.light .b360-adaptive-landing .b360-copilot-card,
 html:not(.dark) .b360-adaptive-landing .b360-copilot-top,
 html.light .b360-adaptive-landing .b360-copilot-top,
 [data-theme="light"] .b360-adaptive-landing .b360-copilot-top {
-  color: #0369a1;
+  color: #7dd3fc;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-copilot-top small,
 html.light .b360-adaptive-landing .b360-copilot-top small,
 [data-theme="light"] .b360-adaptive-landing .b360-copilot-top small {
-  color: #0369a1;
+  color: #94a3b8;
   font-weight: 600;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-copilot-top span,
 html.light .b360-adaptive-landing .b360-copilot-top span,
 [data-theme="light"] .b360-adaptive-landing .b360-copilot-top span {
-  background: rgba(2, 132, 199, 0.08);
-  border-color: rgba(2, 132, 199, 0.22);
-  color: #0369a1;
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.3);
+  color: #7dd3fc;
   font-weight: 600;
 }
 
@@ -1592,6 +1594,7 @@ html.light .b360-adaptive-landing .b360-suggestion-box p,
 html:not(.dark) .b360-adaptive-landing .b360-integration-card,
 html.light .b360-adaptive-landing .b360-integration-card,
 [data-theme="light"] .b360-adaptive-landing .b360-integration-card {
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -1645,7 +1648,7 @@ html.light .b360-adaptive-landing .b360-status-pill.in_dev,
 html:not(.dark) .b360-adaptive-landing .b360-status-pill.planned,
 html.light .b360-adaptive-landing .b360-status-pill.planned,
 [data-theme="light"] .b360-adaptive-landing .b360-status-pill.planned {
-  color: #94a3b8;
+  color: #64748b;
   background: rgba(100, 116, 139, 0.12);
   border: 1px solid rgba(71, 85, 105, 0.35);
 }
@@ -1654,9 +1657,9 @@ html.light .b360-adaptive-landing .b360-status-pill.planned,
 html:not(.dark) .b360-adaptive-landing .b360-copilot-deal-tag,
 html.light .b360-adaptive-landing .b360-copilot-deal-tag,
 [data-theme="light"] .b360-adaptive-landing .b360-copilot-deal-tag {
-  color: #9d174d;
-  background: rgba(219, 39, 119, 0.1);
-  border: 1px solid rgba(190, 24, 93, 0.3);
+  color: #f472b6;
+  background: rgba(244, 114, 182, 0.12);
+  border: 1px solid rgba(244, 114, 182, 0.35);
 }
 
 /* Final CTA Light */
@@ -1679,13 +1682,14 @@ html.light .b360-adaptive-landing .b360-final-cta h2,
 html:not(.dark) .b360-adaptive-landing .b360-final-cta p,
 html.light .b360-adaptive-landing .b360-final-cta p,
 [data-theme="light"] .b360-adaptive-landing .b360-final-cta p {
-  color: #94a3b8;
+  color: #475569;
 }
 
 /* Command Center Dashboard Light */
 html:not(.dark) .b360-adaptive-landing .b360-side,
 html.light .b360-adaptive-landing .b360-side,
 [data-theme="light"] .b360-adaptive-landing .b360-side {
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -1703,7 +1707,7 @@ html.light .b360-adaptive-landing .b360-side .b360-side-brand,
 html:not(.dark) .b360-adaptive-landing .b360-side small,
 html.light .b360-adaptive-landing .b360-side small,
 [data-theme="light"] .b360-adaptive-landing .b360-side small {
-  color: #0284c7;
+  color: #7dd3fc;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-side button,
@@ -1731,9 +1735,9 @@ html.light .b360-adaptive-landing .b360-side button.b360-active,
 html.light .b360-adaptive-landing .b360-side a.b360-active,
 [data-theme="light"] .b360-adaptive-landing .b360-side button.b360-active,
 [data-theme="light"] .b360-adaptive-landing .b360-side a.b360-active {
-  background: rgba(2, 132, 199, 0.1);
-  border: 1px solid rgba(2, 132, 199, 0.35);
-  color: #0284c7;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #7dd3fc;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-side .b360-dot,
@@ -1759,6 +1763,7 @@ html:not(.dark) .b360-adaptive-landing .b360-supervisor,
 html.light .b360-adaptive-landing .b360-supervisor,
 [data-theme="light"] .b360-adaptive-landing .b360-supervisor {
   border: 1px solid rgba(2, 132, 199, 0.22);
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -1780,6 +1785,7 @@ html.light .b360-adaptive-landing .b360-supervisor p,
 html:not(.dark) .b360-adaptive-landing .b360-metric,
 html.light .b360-adaptive-landing .b360-metric,
 [data-theme="light"] .b360-adaptive-landing .b360-metric {
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -1796,12 +1802,13 @@ html.light .b360-adaptive-landing .b360-metric small,
 html:not(.dark) .b360-adaptive-landing .b360-metric strong,
 html.light .b360-adaptive-landing .b360-metric strong,
 [data-theme="light"] .b360-adaptive-landing .b360-metric strong {
-  color: #0284c7;
+  color: #7dd3fc;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-module,
 html.light .b360-adaptive-landing .b360-module,
 [data-theme="light"] .b360-adaptive-landing .b360-module {
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -1833,7 +1840,7 @@ html:not(.dark) .b360-adaptive-landing .b360-footer,
 html.light .b360-adaptive-landing .b360-footer,
 [data-theme="light"] .b360-adaptive-landing .b360-footer {
   border-top: 1px solid rgba(226, 232, 240, 0.9);
-  color: #94a3b8;
+  color: #64748b;
 }
 
 /* Dialog Modals Light */
@@ -1846,6 +1853,7 @@ html.light .b360-adaptive-landing .b360-dialog-backdrop,
 html:not(.dark) .b360-adaptive-landing .b360-dialog-box,
 html.light .b360-adaptive-landing .b360-dialog-box,
 [data-theme="light"] .b360-adaptive-landing .b360-dialog-box {
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -1853,13 +1861,13 @@ html.light .b360-adaptive-landing .b360-dialog-box,
   box-shadow:
     0 25px 60px rgba(15, 23, 42, 0.2),
     0 0 20px rgba(2, 132, 199, 0.1);
-  color: #1e293b;
+  color: #e2e8f0;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-dialog-box h2,
 html.light .b360-adaptive-landing .b360-dialog-box h2,
 [data-theme="light"] .b360-adaptive-landing .b360-dialog-box h2 {
-  color: #0284c7;
+  color: #38bdf8;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-dialog-box p,
@@ -1872,7 +1880,7 @@ html:not(.dark) .b360-adaptive-landing .b360-modalclose,
 html.light .b360-adaptive-landing .b360-modalclose,
 [data-theme="light"] .b360-adaptive-landing .b360-modalclose {
   background: #f1f5f9;
-  color: #94a3b8;
+  color: #64748b;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-modalclose:hover,
@@ -2927,6 +2935,7 @@ html.light .b360-adaptive-landing .b360-hero-console,
     0 20px 45px rgba(15, 23, 42, 0.08),
     0 0 25px rgba(2, 132, 199, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  background-color: #0d1a32;
   background:
     radial-gradient(ellipse at 90% 0%, rgba(2, 132, 199, 0.08) 0%, transparent 60%),
     radial-gradient(ellipse at 10% 100%, rgba(219, 39, 119, 0.06) 0%, transparent 60%),
@@ -2955,6 +2964,7 @@ html.light .b360-adaptive-landing .b360-kpi-label,
 html:not(.dark) .b360-adaptive-landing .b360-stream-item,
 html.light .b360-adaptive-landing .b360-stream-item,
 [data-theme="light"] .b360-adaptive-landing .b360-stream-item {
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -3071,6 +3081,7 @@ html.light .b360-adaptive-landing .b360-card-visual,
 html:not(.dark) .b360-adaptive-landing .b360-kanban-card,
 html.light .b360-adaptive-landing .b360-kanban-card,
 [data-theme="light"] .b360-adaptive-landing .b360-kanban-card {
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -3098,6 +3109,7 @@ html.light .b360-adaptive-landing .b360-copilot-recommendation,
 html:not(.dark) .b360-adaptive-landing .b360-integ-chip,
 html.light .b360-adaptive-landing .b360-integ-chip,
 [data-theme="light"] .b360-adaptive-landing .b360-integ-chip {
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -3109,6 +3121,7 @@ html.light .b360-adaptive-landing .b360-integ-chip,
 html:not(.dark) .b360-adaptive-landing .b360-problem-card,
 html.light .b360-adaptive-landing .b360-problem-card,
 [data-theme="light"] .b360-adaptive-landing .b360-problem-card {
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -3140,6 +3153,7 @@ html.light .b360-adaptive-landing .b360-problem-kpi,
 html:not(.dark) .b360-adaptive-landing .b360-platform-card,
 html.light .b360-adaptive-landing .b360-platform-card,
 [data-theme="light"] .b360-adaptive-landing .b360-platform-card {
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -3170,6 +3184,7 @@ html.light .b360-adaptive-landing .b360-platform-badge,
 html:not(.dark) .b360-adaptive-landing .b360-flow-card,
 html.light .b360-adaptive-landing .b360-flow-card,
 [data-theme="light"] .b360-adaptive-landing .b360-flow-card {
+  background-color: #0d1a32;
   background:
     radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
     linear-gradient(160deg, #0d1a32 0%, #071122 100%);
@@ -3192,14 +3207,14 @@ html.light .b360-adaptive-landing .b360-flow-card p,
 html:not(.dark) .b360-adaptive-landing .b360-flow-num-badge,
 html.light .b360-adaptive-landing .b360-flow-num-badge,
 [data-theme="light"] .b360-adaptive-landing .b360-flow-num-badge {
-  color: #0369a1;
+  color: #7dd3fc;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-flow-kpi,
 html.light .b360-adaptive-landing .b360-flow-kpi,
 [data-theme="light"] .b360-adaptive-landing .b360-flow-kpi {
-  color: #0369a1;
-  background: rgba(3, 105, 161, 0.1);
+  color: #7dd3fc;
+  background: rgba(56, 189, 248, 0.12);
 }
 
 /* Console KPI & Stream Contrast fixes for Light Mode */
@@ -3333,7 +3348,7 @@ html.light .b360-adaptive-landing .b360-footer-grid,
 html:not(.dark) .b360-adaptive-landing .b360-footer-col h4,
 html.light .b360-adaptive-landing .b360-footer-col h4,
 [data-theme="light"] .b360-adaptive-landing .b360-footer-col h4 {
-  color: #38bdf8;
+  color: #0369a1;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-footer-col ul button,
@@ -3345,7 +3360,7 @@ html.light .b360-adaptive-landing .b360-footer-col ul span,
 [data-theme="light"] .b360-adaptive-landing .b360-footer-col ul button,
 [data-theme="light"] .b360-adaptive-landing .b360-footer-col ul a,
 [data-theme="light"] .b360-adaptive-landing .b360-footer-col ul span {
-  color: #94a3b8;
+  color: #64748b;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-footer-col ul button:hover,

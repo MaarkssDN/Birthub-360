@@ -95,7 +95,7 @@ export const KanbanColumn = React.memo(function KanbanColumn({
         {/* Telemetria da Coluna: Forecast e Score Médio */}
         <div className="text-xs font-semibold tabular-nums text-ink-2 flex items-center justify-between pt-0.5">
           {totalForecast > 0 ? (
-            <span className="text-ok font-mono">
+            <span className="text-ok-active dark:text-ok font-mono">
               Forecast:{' '}
               {new Intl.NumberFormat('pt-BR', {
                 style: 'currency',
