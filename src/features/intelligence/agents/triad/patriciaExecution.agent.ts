@@ -45,7 +45,7 @@ RETORNE APENAS JSON VÁLIDO.`,
       if (parsed.nextBestAction) {
         const contact = strategy.targetPersona;
         const nba: NextBestAction = {
-          actionId: `nba-ai-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+          actionId: `nba-ai-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
           title: parsed.nextBestAction.title || `📞 Ligar para ${contact.name}`,
           type: parsed.nextBestAction.type || 'CALL',
           accountName: strategy.account.companyName,
@@ -62,7 +62,7 @@ RETORNE APENAS JSON VÁLIDO.`,
         };
 
         return {
-          executionId: `exec-ai-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+          executionId: `exec-ai-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
           strategyId: strategy.strategyId,
           cadence: this.buildCadence(strategy),
           nextBestAction: nba,
@@ -80,7 +80,7 @@ RETORNE APENAS JSON VÁLIDO.`,
     const nextBestAction = this.deriveNextBestAction(strategy);
 
     return {
-      executionId: `exec-fallback-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      executionId: `exec-fallback-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
       strategyId: strategy.strategyId,
       cadence,
       nextBestAction,
@@ -156,7 +156,7 @@ RETORNE APENAS JSON VÁLIDO.`,
     ];
 
     return {
-      actionId: `nba-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      actionId: `nba-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
       title: `📞 Ligar para ${contact.name}`,
       type: 'CALL',
       accountName: strategy.account.companyName,

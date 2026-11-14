@@ -61,14 +61,14 @@ export const KanbanColumn = React.memo(function KanbanColumn({
       ref={setNodeRef}
       className={`relative flex max-h-full min-w-[320px] max-w-[320px] shrink-0 flex-col overflow-hidden rounded-card rounded-2xl border motion-safe:transition-colors motion-safe:duration-200 ${
         isOver
-          ? 'border-[#00D4FF] bg-[#00D4FF]/5 dark:bg-[#00D4FF]/10 ring-2 ring-[#00D4FF]/25'
-          : 'border-[#E2E8F0] dark:border-white/10 bg-[#F4F6F9]/80 dark:bg-[#0D0F14]'
+          ? 'border-brand bg-brand/5 dark:bg-brand/10 ring-2 ring-brand/25'
+          : 'border-line bg-surface-2/80 dark:bg-bg'
       }`}
     >
       {/* Sticky Sculpted Column Header */}
-      <div className="sticky top-0 z-10 flex flex-col gap-1.5 border-b border-line/60 bg-white/95 dark:bg-[#14161C]/95 backdrop-blur-xl px-4 pb-3.5 pt-4 table-sticky-header immobile-element">
+      <div className="sticky top-0 z-10 flex flex-col gap-1.5 border-b border-line/60 bg-surface/95 backdrop-blur-xl px-4 pb-3.5 pt-4 table-sticky-header immobile-element">
         <div className="flex items-center justify-between gap-2">
-          <h3 className="flex min-w-0 items-center gap-2 text-xs font-extrabold tracking-wide text-[#1E4E75] dark:text-[#90D2FF] uppercase font-display">
+          <h3 className="flex min-w-0 items-center gap-2 text-xs font-extrabold tracking-wide text-ink uppercase font-display">
             <span className="shrink-0 text-sm" aria-hidden="true">
               {STATUS_EMOJI[status] || '📌'}
             </span>
@@ -85,7 +85,7 @@ export const KanbanColumn = React.memo(function KanbanColumn({
             )}
             <span className="flex items-center gap-1.5 text-xs font-bold tabular-nums text-ink px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-white/10 border border-line/50">
               {leads.length > 0 && (
-                <span className="h-1.5 w-1.5 rounded-full bg-[#00D4FF] shadow-[0_0_6px_#00D4FF]" />
+                <span className="h-1.5 w-1.5 rounded-full bg-brand shadow-[0_0_6px_var(--color-brand)]" />
               )}
               {leads.length}
             </span>
@@ -95,7 +95,7 @@ export const KanbanColumn = React.memo(function KanbanColumn({
         {/* Telemetria da Coluna: Forecast e Score Médio */}
         <div className="text-xs font-semibold tabular-nums text-ink-2 flex items-center justify-between pt-0.5">
           {totalForecast > 0 ? (
-            <span className="text-[#059669] dark:text-[#34D399] font-mono">
+            <span className="text-ok font-mono">
               Forecast:{' '}
               {new Intl.NumberFormat('pt-BR', {
                 style: 'currency',
@@ -108,7 +108,7 @@ export const KanbanColumn = React.memo(function KanbanColumn({
           )}
           {avgScore > 0 && (
             <span className="text-[11px] font-mono text-ink-2">
-              ICP Médio: <b className="text-[#00D4FF] font-bold">{avgScore}</b>
+              ICP Médio: <b className="text-brand font-bold">{avgScore}</b>
             </span>
           )}
         </div>
