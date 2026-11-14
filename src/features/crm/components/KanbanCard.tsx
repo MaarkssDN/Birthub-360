@@ -17,9 +17,9 @@ import type { Lead } from '../../../types/index.js';
 
 const SCORE_BADGE_CLASS: Record<string, string> = {
   Quente:
-    'border-[#D4F434]/50 bg-[#D4F434]/15 text-[#415900] dark:text-[#D4F434] shadow-[0_0_8px_rgba(212,244,52,0.2)]',
+    'border-ok/50 bg-ok/15 text-emerald-800 dark:text-ok shadow-[0_0_8px_rgba(34,197,94,0.2)]',
   Morno:
-    'border-[#F59E0B]/50 bg-[#F59E0B]/15 text-[#B45309] dark:text-[#F59E0B] shadow-[0_0_8px_rgba(245,158,11,0.2)]',
+    'border-warning/50 bg-warning/15 text-amber-800 dark:text-warning shadow-[0_0_8px_rgba(245,158,11,0.2)]',
   Frio: 'border-line bg-surface-2 text-ink-2',
 };
 const DEFAULT_SCORE_BADGE_CLASS = SCORE_BADGE_CLASS.Morno;
@@ -145,10 +145,10 @@ export const KanbanCard = React.memo(function KanbanCard({
     <div
       ref={setNodeRef}
       style={style}
-      className={`group relative overflow-hidden rounded-card rounded-2xl border bg-white dark:bg-[#14161C] shadow-[0_4px_16px_-2px_rgba(0,0,0,0.04)] hover:shadow-[0_10px_28px_-4px_rgba(0,212,255,0.14)] motion-safe:transition-all motion-safe:duration-200 motion-safe:hover:-translate-y-0.5 active:scale-[0.99] motion-gpu ${
+      className={`group relative overflow-hidden rounded-card rounded-2xl border bg-surface shadow-[0_4px_16px_-2px_rgba(0,0,0,0.04)] hover:shadow-[0_10px_28px_-4px_rgba(0,212,255,0.14)] motion-safe:transition-all motion-safe:duration-200 motion-safe:hover:-translate-y-0.5 active:scale-[0.99] motion-gpu ${
         isSelected
-          ? 'border-[#00D4FF] bg-[color:color-mix(in_srgb,var(--brand)_8%,var(--surface))] ring-2 ring-[#00D4FF]/30'
-          : 'border-line/80 hover:border-[#00D4FF]/50'
+          ? 'border-brand bg-[color:color-mix(in_srgb,var(--brand)_8%,var(--surface))] ring-2 ring-brand/30'
+          : 'border-line/80 hover:border-brand/50'
       } ${isDragging ? 'z-50 shadow-card' : ''}`}
     >
       {(selectionMode || isSelected) && (
@@ -195,7 +195,7 @@ export const KanbanCard = React.memo(function KanbanCard({
           {hasCompanyName ? (
             <h4
               title={companyName}
-              className="line-clamp-2 text-sm font-extrabold leading-snug tracking-tight text-[#0F2942] dark:text-[#E2F1FF] group-hover:text-[#00D4FF] dark:group-hover:text-[#00D4FF] transition-colors"
+              className="line-clamp-2 text-sm font-extrabold leading-snug tracking-tight text-ink group-hover:text-brand transition-colors"
             >
               {companyName}
             </h4>
@@ -241,7 +241,7 @@ export const KanbanCard = React.memo(function KanbanCard({
           {lead.forecastProbabilityAi != null && (
             <span
               title="Probabilidade ajustada pelo Copiloto IA"
-              className="inline-flex items-center gap-1 rounded-full border border-[#8B7DFF]/30 bg-[#8B7DFF]/10 px-2 py-0.5 text-[10.5px] font-bold text-[#8B7DFF]"
+              className="inline-flex items-center gap-1 rounded-full border border-iris/30 bg-iris/10 px-2 py-0.5 text-[10.5px] font-bold text-iris"
             >
               <Sparkles className="w-2.5 h-2.5" />
               {lead.forecastProbabilityAi}% IA
@@ -258,7 +258,7 @@ export const KanbanCard = React.memo(function KanbanCard({
           )}
 
           {Boolean(lead.customFields?.voiceQualified) && (
-            <span className="inline-flex items-center rounded-full border border-[#FF2D9B]/30 bg-[#FF2D9B]/10 px-2 py-0.5 text-[10.5px] font-bold text-[#FF2D9B]">
+            <span className="inline-flex items-center rounded-full border border-brand-2/30 bg-brand-2/10 px-2 py-0.5 text-[10.5px] font-bold text-brand-2">
               Voz Qualificada
             </span>
           )}
@@ -300,7 +300,7 @@ export const KanbanCard = React.memo(function KanbanCard({
               }).format(lead.amount)}
             </span>
             {typeof lead.probability === 'number' && (
-              <span className="text-[11px] font-mono font-bold text-[#00D4FF]">
+              <span className="text-[11px] font-mono font-bold text-brand">
                 {lead.probability}% win
               </span>
             )}
@@ -310,8 +310,8 @@ export const KanbanCard = React.memo(function KanbanCard({
         {/* Dados de Contato e Segmento */}
         <div className="space-y-1.5 mt-2 text-xs">
           {lead.contact && (
-            <div className="flex items-center gap-1.5 text-[#305070] dark:text-[#90B0D0] font-medium">
-              <User className="w-3.5 h-3.5 text-[#00D4FF]/70" />
+            <div className="flex items-center gap-1.5 text-ink-2 font-medium">
+              <User className="w-3.5 h-3.5 text-brand/70" />
               <span className="truncate">{lead.contact.name}</span>
             </div>
           )}
@@ -353,7 +353,7 @@ export const KanbanCard = React.memo(function KanbanCard({
               onClick={handleConvert}
               disabled={converting}
               title="Converter em oportunidade"
-              className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold text-white bg-gradient-to-r from-[#00D4FF] to-[#0284c7] hover:opacity-95 disabled:opacity-50 transition-all shadow-xs"
+              className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold text-on-brand bg-gradient-to-r from-brand to-sky-700 hover:opacity-95 disabled:opacity-50 transition-all shadow-xs"
             >
               {converting ? (
                 <Loader2 className="w-3 h-3 animate-spin" />
@@ -378,7 +378,7 @@ export const KanbanCard = React.memo(function KanbanCard({
               {enriching || lead.company?.enrichmentStatus === 'Enriquecendo' ? (
                 <Loader2 className="w-3 h-3 animate-spin" />
               ) : (
-                <Sparkles className="w-3 h-3 text-[#FF2D9B]" />
+                <Sparkles className="w-3 h-3 text-brand-2" />
               )}
               {enriching || lead.company?.enrichmentStatus === 'Enriquecendo'
                 ? '...'

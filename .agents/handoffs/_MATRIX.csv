@@ -1,0 +1,473 @@
+path,de,para,onda,status,prio,dmin,dmax,mtime,resolucao,evid,aprov
+.agents/handoffs/00-para-01-02-settings-pilares-persistentes.md,00,01 (endpoint/schema ,F1 (pós-navegação),ABERTO,alto,2026-11-12,2026-11-12,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/00-para-02-cta-hub-ia-light-invisivel.md,00,02,vr-regressao-20261111,ABERTO,alto,,,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/00-para-04-10-08-relatorios-forecast.md,00,04 (crm/bi) + 10 (sr,F4,ABERTO,normal,2026-11-12,2026-11-12,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/00-para-04-crm-hotspots-refactor.md,00,04,W7 (pós-auditoria 2026-11-12),ABERTO,normal,2026-11-12,2026-11-12,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/00-para-08-cobertura-testes-modulos.md,00,08 (qa) + 24 (revisã,F5,ABERTO,normal,2026-11-12,2026-11-12,2026-11-13 19:30,2026-11-12,SIM,NAO
+.agents/handoffs/00-para-08-mesa-tratamento-e2e-jornada.md,00,08,W7,ABERTO,normal,,,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/00-para-10-decisao-k8s-helm-argocd.md,00,10,W7,ABERTO,normal,,,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/00-para-10-docker-2375-sem-autenticacao.md,00,10,pós-homologação 2026-11-10,ABERTO,**bloqueador**,2026-11-10,2026-11-12,2026-11-13 19:30,2026-11-10,SIM,NAO
+.agents/handoffs/00-para-12-17-voicehub-reactivacao.md,00,12 (voz e telefonia),F2,ABERTO,alto,2026-11-12,2026-11-12,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/00-para-16-warroom-sse-heartbeat.md,00,16,W7,ABERTO,normal,,,2026-11-13 19:30,,PARCIAL,NAO
+.agents/handoffs/00-para-17-07-orquestracao-sem-demo.md,00,17 (cadência) + 07 (,F3,ABERTO,normal,2026-11-12,2026-11-12,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/00-para-21-lgpd-portal-titular.md,00,21,W7,ABERTO,alto (conformidade),,,2026-11-13 19:30,,PARCIAL,NAO
+.agents/handoffs/00-para-24-revisao-leva-w7.md,00,24,W7,ABERTO,alto (gate antes de merge/push da integr,,,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/00-para-24-revisao-pos-homologacao.md,00,24,pós-homologação 2026-11-10,ABERTO,normal,2026-11-10,2026-11-10,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/08-para-00-cobertura-modulos-gaps-produto.md,08,00,decorrente de `.agents/handoffs/00-para-08-cobertura-testes-modulos.md` (Onda F5),ABERTO,normal,,,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/12-para-01-voicehub-identidade-schema-adapters.md,12,01,F2,ABERTO,bloqueador (para reabertura do voice-hub,,,2026-11-13 19:30,,NAO,NAO
+.agents/handoffs/12-para-05-outbound-api-legado-tenancy.md,12,05,F2,ABERTO,bloqueador (para reabertura do gate `out,,,2026-11-13 19:30,,NAO,NAO
+.agents/handoffs/15-para-00-rotacao-segredos-devstack-2375.md,15,00,pós-homologação 2026-11-10 / saneamento 2026-11-12,ABERTO,alto,2026-11-10,2026-11-12,2026-11-13 19:30,2026-11-12,SIM,NAO
+.agents/handoffs/15-para-02-03-sonar-new-coverage.md,15,02,Quality Gate da main `94f95097` (período de código novo desde 2026-10-27T21:30:30Z),ABERTO,"alto (bloqueia `new_coverage=60,7%`, lim",2026-10-27,2026-11-12,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/15-para-07-commercial-mission-trace-consent-prisma.md,00,07,cobertura de código novo (mission-trace comercial),ABERTO,médio,,,2026-11-13 19:30,,PARCIAL,NAO
+.agents/handoffs/onda-00/09-para-00-offline-storage-sqlite.md,09,00,"00 (auditoria ""persistência offline frágil"")",ABERTO,alto,,,2026-11-13 19:30,,NAO,NAO
+.agents/handoffs/onda-1/15-para-08-rls-coverage-ci.md,15,08,"1 (backlog DEM-20261113-002, item MEL-03)",ABERTO,alto,,,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/onda-1/15-para-24-revisao-onda1.md,15,24,1,ABERTO,alto,,,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/onda-2/15-para-07-webhook-fetch-safeFetch.md,15,07,2,ABERTO,normal,,,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/onda-landing-360-auditoria/02-para-21-validacao-consentimento-lgpd.md,02,21,landing-360-auditoria,ABERTO,alto,,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/onda-landing-360-auditoria/auditoria-para-02-form-lead-fake.md,auditoria ad-hoc (de,02,landing-360-auditoria,ABERTO,bloqueador,2026-11-12,2026-11-12,2026-11-13 19:30,2026-11-12,SIM,NAO
+.agents/handoffs/onda-landing-360-auditoria/auditoria-para-02-verdade-no-copy.md,auditoria ad-hoc (de,02,landing-360-auditoria,ABERTO,alto,2026-11-11,2026-11-12,2026-11-13 19:30,2026-11-12,SIM,NAO
+.agents/handoffs/onda-paralela-8/00-para-01a-tenancy-audit.md,00,01a,paralela-8,ABERTO,alto (tenancy/LGPD),,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-paralela-8/00-para-07-duplicate-exports.md,00,07,paralela-8,ABERTO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-s1/00-para-01-documentembedding-sem-policy-rls.md,00 (coordenador) — e,"01 (plataforma, segu",S1 (trilha técnica subordinada à Fase 02),ABERTO,bloqueador,,,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/onda-saneamento-20261110/00-para-00-ausencia-de-sincronizacao-automatizada-entre-a-matriz-de-propriedade-d.md,00,00,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-011),ABERTO,normal,2026-11-10,2026-11-10,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-00-leitura-obrigatoria-no-prompt-de-coordenacao-referencia-documento-de-o.md,00,00,Onda 0 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-043),ABERTO,normal,2026-11-10,2026-11-10,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-12-hotspots-severos-em-componentes-de-estudio-de-voz-overview-tsx-e-usest.md,00,12,Onda 3 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-008),ABERTO,alto,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/17-para-05-market-intelligence-start-cadence-sem-optout.md,17,05,Onda 3 (Plano Mestre de Saneamento — continuação de TAREFA-SANEAMENTO-035 / BT360-DT-0080),ABERTO,alto (LGPD — opt-out pode ser contornado,,,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/proposta-navegacao-modulos-isolados.md,devin (assessor de a,00,Onda 01–04 executadas; Onda 05 (QA/homologação) em consolidação,ABERTO,normal,,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/onda-v4-fase2/00-para-01-estruturacao-banco-rls.md,00,01,v4-fase2,BLOQUEADO,bloqueador,2026-11-10,2026-11-10,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/00-para-02-dashboard-greeting-testid.md,00,02,vr-regressao-20261111,RESOLVIDO,normal,2026-01-15,2026-11-12,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/00-para-02-gamification-forecast-rbac.md,00,02,pós-homologação 2026-11-10,RESOLVIDO,normal,2026-11-10,2026-11-11,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/00-para-02-hotspot-pillar-settings.md,15,02,F1 (pós-persistência de settings por pilar),RESOLVIDO,alto,2026-11-11,2026-11-30,2026-11-13 19:30,,PARCIAL,NAO
+.agents/handoffs/00-para-08-jornada-completa-fake-e2e-real.md,00,08,pós-homologação 2026-11-10,RESOLVIDO,alto,2026-11-10,2026-11-11,2026-11-12 11:34,2026-11-10,SIM,NAO
+.agents/handoffs/00-para-14-env-test-migrator-e-redis-compartilhado.md,00,14,pós-homologação 2026-11-10,RESOLVIDO,alto,2026-11-10,2026-11-11,2026-11-12 11:34,2026-11-10,SIM,NAO
+.agents/handoffs/00-para-dono-characters-hotspot-exception.md,00,07,navegação modular (Onda 05),RESOLVIDO,alto (bloqueia `npm run test:architectur,2026-11-10,2026-11-10,2026-11-12 11:34,2026-11-10,SIM,NAO
+.agents/handoffs/03-para-00-auditoria-visual-a11y-2026-10-10.md,03 (design e acessib,00 (coordenador) · c,freeze 2026-10-10 (só bug/a11y/consistência),RESOLVIDO,bloqueador (P0/P1 > 0 bloqueia o GA visu,2026-10-10,2026-10-10,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/07-para-02-typescript-error-sidebar.md,07,02,correção-CI-20261031,RESOLVIDO,alto,2026-10-31,2026-10-31,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/12-para-00-voicehub-tenancy-auditoria.md,12,00,F2,RESOLVIDO,alto,,,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/12-para-17-dialer-3cx-sem-auth.md,12,17,F2,RESOLVIDO,bloqueador (para reabertura do gate `dia,2026-11-13,2026-11-13,2026-11-13 19:30,2026-11-13,SIM,NAO
+.agents/handoffs/15-para-02-sonar-bugs-new-code.md,15,02,"Quality Gate da main `94f95097` (período de código novo desde 2026-10-27T21:30:30Z, `previous_version`)",RESOLVIDO,alto (bloqueia `new_reliability_rating` ,2026-10-27,2026-11-10,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/25-para-08-gitleaks-allowlist-atlasgr.md,25,08,Corrente,RESOLVIDO,bloqueador,2026-09-02,2026-10-29,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/analytics-suite/25-para-01-schema-atribuicao-multicanal.md,analytics-suite (ite,01 (dono de `prisma/,—,RESOLVIDO,normal — não impede os demais itens do r,2026-09-15,2026-09-15,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/audit-ach/05-para-00-gamificacao-xp-decisao-ja-tomada.md,05,00,audit-ach,RESOLVIDO,normal,,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/audit-ach/08-para-00-ship-script-bypass.md,08,00,audit-ach,RESOLVIDO,alto,2026-09-11,2026-09-11,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/audit-ach/09-para-05-ocr-camera-permission-declarada.md,09,05,audit-ach,RESOLVIDO,normal,2026-09-11,2026-09-11,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/audit-ach/09-para-08-android-build-trigger-decisao-pendente.md,09,08 (dono exclusivo d,audit-ach,RESOLVIDO,baixa (P3),,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/audit-ach/09-para-08-mobile-sweep-6-rotas.md,09,08,audit-ach,RESOLVIDO,media (P2),2026-09-11,2026-09-11,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/audit-ach/10-para-00-opa-middleware-decisao-pendente.md,10,00 (e usuário — deci,audit-ach,RESOLVIDO,normal (P2),2026-10-09,2026-10-09,2026-11-12 11:34,2026-10-09,SIM,NAO
+.agents/handoffs/audit-ach/15-para-00-24-opa-guard-removido.md,15,00 e 24,audit-ach,RESOLVIDO,P3,2026-10-11,2026-10-11,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/audit-ach/15-para-00-24-opa-removido-verificado.md,15,00 e 24,audit-ach,RESOLVIDO,normal,2026-10-11,2026-10-11,2026-11-12 11:34,2026-10-11,SIM,NAO
+.agents/handoffs/audit-ach/15-para-00-opa-decisao-pendente-ver-ach-10-03.md,15,00,audit-ach,RESOLVIDO,normal (P2),2026-10-10,2026-10-10,2026-11-12 11:34,2026-10-10,SIM,NAO
+.agents/handoffs/audit-ach/17-para-01-04-agendamento-transporte-pendente.md,17,01/01a (schema) e 04,audit-ach,RESOLVIDO,normal (P2),,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/audit-ach/17-para-06-12-voz-cadencia-dispatcher-pendente.md,17,12 e 17,Pos-Sprint 13,RESOLVIDO,normal (P2),,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/audit-ach/17-para-12-callsuppression-optoutrecord-cobertura.md,17,12 (voz e telefonia),audit-ach,RESOLVIDO,baixa (P3),,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/ci-recovery-final-20261101/03-SONARQUBE-COVERAGE.md,00,08,ci-recovery-final-20261101,RESOLVIDO,bloqueador,2026-10-27,2026-11-01,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/ci-recuperacao-onda-01/00-para-01-prisma-migrations-sequencing.md,00,01,Onda 01 — Governança e Inventário Forense,RESOLVIDO,bloqueador,2026-10-23,2026-10-23,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/ci-recuperacao-onda-01/00-para-02-03-e2e-contrast-selectors.md,00,02,Onda 01 — Governança e Inventário Forense,RESOLVIDO,alto,2026-10-23,2026-10-23,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/ci-recuperacao-onda-01/00-para-08-format-prettier-gate.md,00,08,Onda 01 — Governança e Inventário Forense,RESOLVIDO,bloqueador,2026-10-23,2026-10-23,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/ci-recuperacao-onda-01/00-para-13-agentes-capabilities-dedup.md,00,13,Onda 01 — Governança e Inventário Forense,RESOLVIDO,bloqueador,2026-10-23,2026-10-23,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/evolution-plano-2026-10-23/07-para-00-p2-1-resolvido.md,?,00,Evolução da Plataforma 2026-10-23,RESOLVIDO,alto,2026-10-23,2026-10-23,2026-11-12 11:34,,PARCIAL,NAO
+.agents/handoffs/evolution-plano-2026-10-23/08-para-00-p1-1-bloqueado.md,?,00,Evolução da Plataforma 2026-10-23,RESOLVIDO,alto,2026-10-23,2026-10-23,2026-11-12 11:34,,PARCIAL,NAO
+.agents/handoffs/evolution-plano-2026-10-23/08-para-00-p1-1-verificacao-bloqueada.md,08,00,Evolução da Plataforma 2026-10-23,RESOLVIDO,alto,2026-10-23,2026-10-23,2026-11-12 11:34,,PARCIAL,NAO
+.agents/handoffs/evolution-plano-2026-10-23/16-para-00-p1-3-resolvido.md,?,00,Evolução da Plataforma 2026-10-23,RESOLVIDO,alto,2026-10-23,2026-10-23,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/evolution-plano-2026-10-23/16-para-07-p1-3-ttl-checkpoints.md,coordenador (via dev,16,Evolução da Plataforma 2026-10-23,RESOLVIDO,alto,2026-10-23,2026-10-23,2026-11-12 11:34,,PARCIAL,NAO
+.agents/handoffs/evolution-plano-2026-10-23/16-para-24-p1-3-ttl-checkpoints-revisao.md,16,24,Evolução da Plataforma 2026-10-23,RESOLVIDO,alto,2026-10-23,2026-10-23,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/evolution-plano-2026-10-23/para-07-p2-1-dynamic-routing.md,?,07,Evolução da Plataforma 2026-10-23,RESOLVIDO,alto,2026-10-23,2026-10-23,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/evolution-plano-2026-10-23/para-16-p1-3-ttl-checkpoints.md,?,16,Evolução da Plataforma 2026-10-23,RESOLVIDO,alto,2026-10-23,2026-10-23,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/evolution-plano-2026-10-23/para-24-p1-3-revisao.md,?,24,Evolução da Plataforma 2026-10-23,RESOLVIDO,alto,2026-10-23,2026-10-23,2026-11-12 11:34,,PARCIAL,NAO
+.agents/handoffs/evolution-plano-2026-10-23/para-24-p2-1-revisao.md,?,24,Evolução da Plataforma 2026-10-23,RESOLVIDO,alto,2026-10-23,2026-10-23,2026-11-12 11:34,,PARCIAL,NAO
+.agents/handoffs/evolution-plano-2026-10-23/para-24-revisao-independente.md,?,24,Evolução da Plataforma 2026-10-23,RESOLVIDO,alto,2026-10-23,2026-10-24,2026-11-12 11:34,,PARCIAL,NAO
+.agents/handoffs/executor-f3-para-00-orquestracao-auditoria.md,executor onda f3 (au,00,F3,RESOLVIDO,normal,,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/jules-ci-20261024/08-para-24-pr112-trivy-gateway-vitest.md,00,24,jules-ci-20261024,RESOLVIDO,alto,2024-04-15,2026-10-31,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/jules-ci-20261024/jules-08-para-24-test-environment.md,08,24,jules-ci-20261024,RESOLVIDO,normal,2026-10-23,2026-10-31,2026-11-12 11:34,2026-10-31,SIM,SIM
+.agents/handoffs/landing-clip-20261010/05-para-03-clip-prospeccao-real.md,05,03,landing-clip-20261010,RESOLVIDO,alto,2026-10-11,2026-10-11,2026-11-12 11:34,2026-10-11,SIM,SIM
+.agents/handoffs/ldr-fase-0/00-para-01-catalogo-cnpj-pii-rls.md,00,01,LDR Fase 0 → Fase 1,RESOLVIDO,bloqueador,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/main-ci-recovery-20261027/08-para-00-workflow-gates.md,08,00,main-ci-recovery-20261027,RESOLVIDO,bloqueador,2026-11-10,2026-11-10,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/main-ci-recovery-20261027/14-para-00-visual.md,14,00,main-ci-recovery-20261027,RESOLVIDO,bloqueador,2026-01-15,2026-11-10,2026-11-12 11:34,2026-11-10,SIM,NAO
+.agents/handoffs/mapa-modulos-20261010/07-para-02-copiloto-alias-elite.md,07,02,mapa-modulos-20261010,RESOLVIDO,alto,2026-10-10,2026-10-10,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/mapa-modulos/P0-distribuicao.md,02,marks orquestrador (,mapa-modulos,RESOLVIDO,bloqueador (honestidade de produto / nav,2026-10-10,2026-10-11,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-0/00-para-patricia-voice-001-script-tenant-scoped.md,12 (voz e telefonia),00 (coordenador),0,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-00/01-para-07-17-cadence-enrollment-store.md,01,07,00 (coordenador-20261112),RESOLVIDO,alto,,,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/onda-00/04-para-00-alcada-desconto-deal-items.md,04,00,"coordenador-20261112 (pós-auditoria supervisor Onda 00, MOD-01/JOR-08)",RESOLVIDO,normal,,,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/onda-00/07-para-00-automation-dryrun-sandbox.md,07,00,"00 (relatório do supervisor — ""Dry-Run de automações: simulador atual em memória, exige rollback/sandbox real"")",RESOLVIDO,normal,,,2026-11-13 19:30,,NAO,NAO
+.agents/handoffs/onda-01/11-para-02-03-sistema-visual-personagens.md,11,02,Onda 01,RESOLVIDO,alto,2026-11-10,2026-11-10,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-02-ux/02-para-00-landing-lead-capture.md,02,00,02,RESOLVIDO,normal,,,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/onda-1/00-para-01-legacy-services-repo-migration.md,coordenador (00),01,1,RESOLVIDO,normal,2026-10-10,2026-10-10,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-1/01-para-02-contrato-api-leads.md,01,02,1,RESOLVIDO,alto,2026-11-02,2026-11-10,2026-11-12 11:34,,PARCIAL,NAO
+.agents/handoffs/onda-1/01-para-04-role-gates-crm.md,01,04,1,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-1/01-para-06-role-gates-integracoes.md,01,06,1,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-1/01-para-06-teste-integrations-ambiguo.md,01,06,1,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-1/01-para-07-role-gates-intelligence.md,01,07,1,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-1/02-para-06-contrato-navegacao-voz.md,02,06,1,RESOLVIDO,bloqueador,,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/onda-1/06-para-01-persistencia-3cx.md,06,01,1,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-1/06-para-01-schema-extracoes-bitrix-historico.md,06a,01,1,RESOLVIDO,normal,2026-08-18,2026-08-18,2026-11-12 11:34,2026-08-18,SIM,NAO
+.agents/handoffs/onda-1/06-para-01-schema-extracoes-bitrix.md,06,01,1,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-1/15-para-00-aprovacao-package-json.md,15,00,1,RESOLVIDO,alto,2026-11-13,2026-11-13,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/onda-10.1-p0-seguranca/00-para-patricia-sec-2026-001-pr-502.md,1,patricia (revisão de,10.1 (`PROMPT 10.1 — P0 SECURITY CLOSURE`),RESOLVIDO,alto,2026-09-15,2026-10-10,2026-11-12 11:34,2026-09-15,SIM,NAO
+.agents/handoffs/onda-10/06-para-01-backfill-lead-owner.md,06,01,10,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-11/02-para-00-server-ts-env.md,02,00,11,RESOLVIDO,alto,2026-08-18,2026-08-18,2026-11-12 11:34,2026-08-18,SIM,NAO
+.agents/handoffs/onda-11/02-para-04-commercial-intelligence-types.md,02,04,11,RESOLVIDO,alto,2026-08-17,2026-10-10,2026-11-12 11:34,2026-08-17,SIM,SIM
+.agents/handoffs/onda-11/09-para-00-server-ts-tsc-error.md,09,00,11,RESOLVIDO,alto,2026-08-18,2026-08-18,2026-11-12 11:34,2026-08-18,SIM,NAO
+.agents/handoffs/onda-11/09-para-04-commercial-intelligence-tsc-error.md,09,04,11,RESOLVIDO,alto,2026-08-18,2026-08-18,2026-11-12 11:34,2026-08-18,SIM,NAO
+.agents/handoffs/onda-12/ai-para-00-novos-crms.md,agente (ai),coordenador (00) e d,12,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-13/10-para-00-server-telemetry.md,10,00,13,RESOLVIDO,bloqueador,,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/onda-14/00-para-18-contratos-openapi-onda14.md,00 (coordenador),"18 (contratos, api e",14,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-14/06-para-01-schema-novos-crms.md,06 (integrações e bi,"01 (plataforma, segu",14,RESOLVIDO,bloqueador,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-14/06-para-02-ui-conectores-crm.md,06 (integrações e bi,02 (produto e ux),14,RESOLVIDO,alto,2026-10-08,2026-10-08,2026-11-12 11:34,2026-10-08,SIM,NAO
+.agents/handoffs/onda-14/06-para-04-contrato-entidades-pipeline.md,06 (integrações e bi,04 (crm e bi),14,RESOLVIDO,alto,2026-10-08,2026-10-08,2026-11-12 11:34,2026-10-08,SIM,NAO
+.agents/handoffs/onda-14/06-para-15-criptografia-tokens-crms.md,06 (integrações e bi,15 (segurança aplica,14,RESOLVIDO,bloqueador,2026-10-08,2026-10-08,2026-11-12 11:34,2026-10-08,SIM,NAO
+.agents/handoffs/onda-14/07-para-12-orquestracao-webrtc-telefonia.md,07 (ia e automações),12 (voz e telefonia),14,RESOLVIDO,bloqueador,2026-10-08,2026-10-08,2026-11-12 11:34,2026-10-08,SIM,NAO
+.agents/handoffs/onda-14/07-para-16-runtime-webrtc-streaming.md,07 (ia e automações),"16 (runtime, workers",14,RESOLVIDO,alto,2026-10-08,2026-10-08,2026-11-12 11:34,2026-10-08,SIM,NAO
+.agents/handoffs/onda-14/07-para-21-consentimento-retencao-audio.md,07 (ia e automações),21 (privacidade e lg,14,RESOLVIDO,bloqueador,2026-10-08,2026-10-08,2026-11-12 11:34,2026-10-08,SIM,NAO
+.agents/handoffs/onda-14/08-para-05-ts-errors-prospecting.md,08,05,14,RESOLVIDO,bloqueador,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-14/08-para-07-ts-errors-intelligence.md,08,07,14,RESOLVIDO,bloqueador,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-14/15-para-00-padronizacao-rotacao-segredos.md,15 (segurança aplica,00 (coordenador),14,RESOLVIDO,alto,,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/onda-14/15-para-06-criptografia-tokens-crms.md,15 (segurança aplica,06 (integrações e bi,14,RESOLVIDO,alto,,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/onda-14/16-para-01-tenant-context-temporal-activities.md,"16 (runtime, workers","01 (plataforma, segu",14,RESOLVIDO,bloqueador,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-14/16-para-05-integracao-crawlee-prospeccao.md,"16 (runtime, workers",05 (prospecção),14,RESOLVIDO,alto,2026-10-08,2026-10-08,2026-11-12 11:34,2026-10-08,SIM,NAO
+.agents/handoffs/onda-14/16-para-10-infra-temporal-crawlee.md,"16 (runtime, workers","10 (infraestrutura, ",14,RESOLVIDO,bloqueador,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-15/00-para-18-contratos-openapi-onda15.md,00 (coordenador),"18 (contratos, api e",15,RESOLVIDO,normal,2026-10-08,2026-10-08,2026-11-12 11:34,2026-10-08,SIM,NAO
+.agents/handoffs/onda-15/07-para-02-hud-copiloto-live.md,07 (ia e automações),02 (produto e ux),15,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-15/07-para-04-contrato-live-insights.md,07 (ia e automações),04 (crm e bi),15,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-15/09-para-02-shell-mobile-offline.md,09 (mobile),02 (produto e ux),15,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-15/10-para-23-metricas-tokens-otel.md,"10 (infraestrutura, ","23 (custo, performan",15,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-15/13-para-17-disparo-cadencia-enxame.md,13 (enxame autônomo ,17 (cadência multica,15,RESOLVIDO,bloqueador,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-15/17-para-21-validacao-optout-multicanal.md,17 (cadência multica,21 (privacidade e lg,15,RESOLVIDO,bloqueador,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-16/01-para-06-resposta-vinculos-externos-crm.md,"01 (plataforma, segu",06 (integrações e bi,,RESOLVIDO,,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-16/06-para-01-vinculos-externos-crm-e-mapeamento-etapas.md,06 (integrações e bi,"01 (plataforma, segu",16,RESOLVIDO,bloqueador (núcleo CRM externo + HubSpot,2026-10-11,2026-10-11,2026-11-12 11:34,2026-10-11,SIM,NAO
+.agents/handoffs/onda-2.5/00-para-08-pin-github-actions-sha.md,00,08,2.5,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-2/00-para-01-ailog-rls-violation.md,00,01,2,RESOLVIDO,alto,2026-08-15,2026-08-15,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-2/04-para-05-whatsapp-duplicado.md,04,05,2,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-2/05-para-04-whatsapp-consolidado.md,05,04,2,RESOLVIDO,bloqueador,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-2/07-para-01-automation-execution-history.md,07,01,2,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-3/07-para-11-lgpd-service-fix.md,07 (ia e automações),11 (marca e ativos i,3,RESOLVIDO,bloqueador,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-38/00-para-02-03-redesign-plataforma.md,00,02,38,RESOLVIDO,alto,2026-10-10,2026-10-10,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-39/01-para-00-pii-contact-revertida-quebra-integration.md,01,00,39,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-39/04-para-01-schema-forecast-snapshot.md,04,01,39 (auditoria CPI — gaps de forecast backtest/versionamento e Health Score composto),RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-39/04-para-16-cron-forecast-snapshot-semanal.md,04,16,39,RESOLVIDO,normal,,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/onda-39/13-para-07-evaluationmetrics-exclui-ops.md,13,07,39,RESOLVIDO,normal,,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/onda-39/13-para-07-rota-rollback-learning-profile.md,13,07,39,RESOLVIDO,normal,,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/onda-4/10-para-01-metricas-http-otel.md,10,01,4,RESOLVIDO,normal,2026-08-21,2026-08-21,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-4/10-para-02-tsc-quebrado-tab-route-set-crm360.md,10,02,4,RESOLVIDO,alto,,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/onda-4/10-para-06-metricas-sync-bitrix.md,10,06,4,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-4/10-para-07-metricas-fila-orcamento-ia.md,10,07,4,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-4/10-para-08-lint-quebrado-eslint-config.md,10,08,4,RESOLVIDO,alto,,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/onda-4/10-para-08-prisma-cli-imagem-producao.md,10,08,4,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-4/11-para-00-videos-institucionais-duplicados.md,11 (marca e ativos i,00 (coordenador),4,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-4/11-para-02-crm360-rota-ausente.md,11 (marca e ativos i,02 (produto e ux),4,RESOLVIDO,bloqueador,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-40/00-para-frontend-savedsearch-promote-ui.md,"00 (auditoria cpi, o",dono de `src/feature,40,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-40/06-para-16-bitrix-extraction-purge-worker-ausente.md,06,16,40,RESOLVIDO,normal,2026-08-15,2026-08-15,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-41/13-para-01-aigovernancepolicy-schema-morto.md,13,01,41,RESOLVIDO,baixa,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-43/13-para-00-instalacao-celula-comercial.md,13,00,43,RESOLVIDO,normal,2026-09-20,2026-09-20,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-43/13-para-17-leitura-signature-request.md,13,17,43,RESOLVIDO,normal,,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/onda-44/13-para-01-ailog-coluna-agentrole.md,13,01,44,RESOLVIDO,"média (ACH-13-03, sev P2, auditoria repo",,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-44/13-para-07-propagar-agentrole-ailog.md,13,07,44,RESOLVIDO,"média (ACH-13-03, sev P2, auditoria repo",,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-49/00-para-01-playbook-insight-schema-proposal.md,sessão de swarm (ite,01,49,RESOLVIDO,média,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-49/00-para-14-validacao-local-pre-push.md,00,14,49,RESOLVIDO,alto,2026-09-15,2026-09-20,2026-11-12 11:34,2026-09-15,SIM,NAO
+.agents/handoffs/onda-5/01-para-06-persistencia-3cx-implementada.md,01,06,"5 (rodada de remediação pontual, 3 handoffs técnicos)",RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-50/00-para-produto-scope-freeze.md,00,produto/ux,50,RESOLVIDO,bloqueador,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-51/00-para-08-e2e-timeout.md,00,08,51,RESOLVIDO,alto,2026-09-30,2026-09-30,2026-11-12 11:34,2026-09-30,SIM,NAO
+.agents/handoffs/onda-51/00-para-todos-evolucao-core-revops-ia-voz.md,00,todos os agentes (01,51,RESOLVIDO,normal,,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/onda-51/02-para-00-format-sidebar.md,02,00,51,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-52/00-para-04-pr741-signals-risks-boundary.md,00,04,52,RESOLVIDO,bloqueador,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-52/00-para-07-pr741-architecture-facade.md,00,07,52,RESOLVIDO,bloqueador,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-52/00-para-08-pr741-openapi-hotspots.md,00,08,52,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-52/01-para-24-rebalance-approval-drift-data-007.md,01,24,52,RESOLVIDO,alto,2026-10-27,2026-10-27,2026-11-12 11:34,2026-10-27,SIM,SIM
+.agents/handoffs/onda-52/01-para-24-typecheck-integrations-schema-decision.md,01,24,52,RESOLVIDO,normal,2026-10-08,2026-10-23,2026-11-12 11:34,,PARCIAL,NAO
+.agents/handoffs/onda-52/06-para-24-typecheck-integration-stubs.md,06,24,52,RESOLVIDO,alto,2026-10-27,2026-10-27,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-52/07-para-00-correlationid-supervisor-thread-id.md,07,00,52,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-52/15-para-24-credential-rotation-hardening.md,15,24,52,RESOLVIDO,alto (condição do 24 para qualquer rotaç,2026-10-25,2026-11-10,2026-11-12 11:34,2026-11-10,SIM,SIM
+.agents/handoffs/onda-52/15-para-24-integration-secrets-at-rest.md,15,24,52,RESOLVIDO,alto (achado ALTA),2026-10-27,2026-10-27,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-52/gha-para-01-typecheck-schema-prisma.md,08,01,52,RESOLVIDO,bloqueador,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-52/gha-para-02-sidebar-test.md,08,02,52,RESOLVIDO,alto,2026-10-23,2026-11-10,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-52/gha-para-06-typecheck-integrations.md,08,06,52,RESOLVIDO,alto,2026-11-10,2026-11-10,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-52/gha-para-07-typecheck-ai-agents.md,08,07,52,RESOLVIDO,bloqueador,2026-11-10,2026-11-10,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-6/01A-para-00-raw-sql-fora-de-rls-fail-closed.md,01a,00,6,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-6/01A-para-06-bitrix-extraction-run-schema.md,01a,06,6,RESOLVIDO,normal,2026-08-15,2026-08-18,2026-11-12 11:34,2026-08-18,SIM,NAO
+.agents/handoffs/onda-6/01A-para-07-agentmemory-sem-vinculo-titular.md,01a,07,6,RESOLVIDO,normal (a aplicação da migration propost,,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/onda-6/01A-para-14-lgpd-erasure-cross-tenant-test.md,01a,14,6,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-6/07-para-05-accountintelligence-singleton-quebrado.md,07,05 (prospecção),6,RESOLVIDO,normal,,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/onda-6/07-para-14-ambiente-integration-e-verify-ai.md,07,14 (harness),6,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-6/14-para-08-baselines-visuais-linux.md,14,08,6,RESOLVIDO,normal,2026-07-17,2026-08-21,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-6/15-para-01-bland-api-key-env-example.md,15,01,6,RESOLVIDO,normal,2026-08-15,2026-08-15,2026-11-12 11:34,2026-08-15,SIM,NAO
+.agents/handoffs/onda-6/15-para-08-zap-trivy-gate.md,15,08,6,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-6/16-para-00-remover-workers-de-server-ts.md,16,00,6,RESOLVIDO,bloqueador (bloqueia só o corte final de,2026-08-15,2026-08-18,2026-11-12 11:34,2026-08-18,SIM,NAO
+.agents/handoffs/onda-6/16-para-06-plano-migracao-baileys.md,16,06,6,RESOLVIDO,alto (não bloqueia esta onda — é plano p,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-6/16-para-07-cron-cold-leads-scanner-confirmacao.md,16,07,6,RESOLVIDO,normal,,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/onda-6/16-para-08-deploy-worker-service.md,16,08,6,RESOLVIDO,alto,2026-09-20,2026-09-20,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-6/16-para-10-observabilidade-worker.md,16,10,6,RESOLVIDO,normal,2026-09-20,2026-09-20,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-7/04-para-06-owner-bitrix-nome-nao-id.md,04,06,7,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-7/04-para-07-owner-fabricado-follow-up-ia.md,04,07,7,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-7/05-para-01-enrichmentlog-provenance-fields.md,05,01,7,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-7/05-para-02-rotulagem-confirmado-inferido.md,05,02,7,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-7/06-para-04-voice-trigger.md,06,04,7,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-7/06-para-12-3cx-webhook-persistencia.md,06,12,7,RESOLVIDO,normal (não é um dos bloqueadores desta ,2026-10-10,2026-10-11,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-7/07-para-00-wire-stagnation-scanner-boot.md,07,00,7,RESOLVIDO,normal (não bloqueia a onda — a varredur,2026-08-18,2026-08-18,2026-11-12 11:34,2026-08-18,SIM,NAO
+.agents/handoffs/onda-7/07-para-01-flaky-org-creation-mid-integration-test.md,07,01,7,RESOLVIDO,alto (não bloqueia esta onda — descrito ,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-7/12-para-00-test-db-contencao-cross-agente.md,12,00,7,RESOLVIDO,crítico (não é só contenção entre agente,2026-08-15,2026-08-15,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-7/12-para-01-3cx-call-event-persistence.md,12,01,7,RESOLVIDO,"normal (backlog — não bloqueia release, ",,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-7/12-para-06-fallback-whatsapp-informativo.md,12,06,7,RESOLVIDO,normal (informativo — nenhuma ação obrig,2026-08-18,2026-08-18,2026-11-12 11:34,2026-08-18,SIM,NAO
+.agents/handoffs/onda-7/12-para-07-gatilho-ligar-via-sdr-voz.md,12,07,7,RESOLVIDO,alto (risco real de discagem fora de hor,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-7/12-para-17-optout-unificado-voz.md,12,17,7,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-7/13-para-01-anomalia-visibilidade-entre-requestcontext-run.md,13,01,7,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-7/13-para-01-consentimento-lgpd-por-titular.md,13,01,7,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-7/13-para-07-rota-slo-swarm.md,13,07,7,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-7/17-para-01-schema-cadencia-optout-proposta.md,17,01/01a,7,RESOLVIDO,alto,2026-08-15,2026-08-15,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-7/17-para-02-rota-cadencia.md,17,02,7,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-7/17-para-05-06-12-contrato-optout.md,17,"05, 06, 12",7,RESOLVIDO,bloqueador,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-7/17-para-13-evento-fechamento.md,17,13,7,RESOLVIDO,alto,2026-08-18,2026-08-18,2026-11-12 11:34,2026-08-18,SIM,NAO
+.agents/handoffs/onda-8/02-para-00-decisao-gamificacao-xp.md,02,coordenador (00),8,RESOLVIDO,normal,,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/onda-8/09-para-02-downloads-blob-nao-funcionam-no-app.md,09,02,8,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-8/09-para-02-navigationbus-rotas-ausentes.md,09,02,8,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-8/09-para-02-offline-stale-state-ausente.md,09,02,8,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-8/09-para-02-voice-command-nao-funciona-no-app.md,09,02,8,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-8/09-para-08-10-dominio-producao-e-verificacao-deep-link.md,09,08,8,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-8/18-para-00-relatorio-conformidade-handoffs.md,18,00,8,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-8/18-para-00-varredura-duplicacao-contratos.md,18,00,8,RESOLVIDO,normal,2026-08-21,2026-08-21,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-8/18-para-02-unificar-overviewmetrics-frontend.md,18,02,8,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-8/18-para-04-as-any-crm360-prisma-aggregate.md,18,04,8,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-8/18-para-04-duplicacao-commercial-intelligence-contract.md,18,04,8,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-8/18-para-04-unificar-overviewmetrics.md,18,04,8,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-8/18-para-08-ci-openapi-drift.md,18,08,8,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-8/18-para-12-as-any-birthvoice-webhook-response.md,18,12,8,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-8/18-para-13-as-any-base-agent-langgraph.md,18,13,8,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-8/18-para-15-as-any-auditlog-reqattr.md,18,15,8,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-9/13-para-00-skills-dedup-decisao.md,13 (enxame autônomo ,00 (coordenador),9,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-9/13-para-08-toolbinding-verificacao-catalogo-392.md,13 (enxame autônomo ,08 (qa e release — a,9,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-D/08-para-00-qa-package-json.md,08,00,D,RESOLVIDO,normal,2026-08-11,2026-08-11,2026-11-12 11:34,2026-08-11,SIM,SIM
+.agents/handoffs/onda-E/10-para-08-refatorar-dockerfile.md,10,08,E,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-G/05-para-04-whatsapp.md,05,04,G,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-G/07-para-00-server-cron.md,07,00,G,RESOLVIDO,alto,2026-08-11,2026-08-11,2026-11-12 11:34,2026-08-11,SIM,SIM
+.agents/handoffs/onda-aws-release-2026-10-09/00-para-01-17-06-07-servicos-transversais.md,00,"01, 17, 06, 07",aws-release-2026-10-09,RESOLVIDO,bloqueador,2026-10-09,2026-10-09,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-aws-release-2026-10-09/08-para-03-drawer-test-backdrop.md,08,03,aws-release-2026-10-09,RESOLVIDO,alto,2026-10-09,2026-10-10,2026-11-12 11:34,2026-10-10,SIM,SIM
+.agents/handoffs/onda-aws-release-2026-10-09/08-para-03-globals-css-missed-semicolon.md,08,03,aws-release-2026-10-09,RESOLVIDO,bloqueador,2026-10-09,2026-10-10,2026-11-12 11:34,2026-10-10,SIM,NAO
+.agents/handoffs/onda-c0/02-para-00-daily-plan-nao-auditado.md,02,00,c0,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-c0/02-para-00-workspace-fixo-vs-configuravel.md,02,00,c0,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-c0/11-para-00-portais-estaticos-marca-antiga.md,11,00,c0,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-c0/11-para-01-url-hardcoded-tenant-especifico.md,11,01,c0,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-c0/11-para-03-cor-marca-antiga-em-producao.md,11,03,c0,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-c0/11-para-10-argocd-ghcr-nome-antigo.md,11,10,c0,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-c0/11-para-15-opa-tenancy-policy-morta.md,11,15,c0,RESOLVIDO,normal,2026-10-10,2026-10-10,2026-11-12 11:34,2026-10-10,SIM,NAO
+.agents/handoffs/onda-c0/18-para-00-agent-routes-fragmentadas.md,18,00,c0,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-c0/18-para-00-agente-12-sem-prompt.md,18,00,c0,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-c0/18-para-00-birth-voices-hub-orfao.md,18,00,c0,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-c0/18-para-06-chatwoot-nao-catalogado.md,18,06,c0,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-c0/18-para-11-atlaslogo-orfao.md,18,11,c0,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-00-debt-20261014-gov-001.md,00,00,onda-dividas-20261014,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-00-debt-20261014-gov-002.md,00,00,onda-dividas-20261014,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-01-debt-20261014-code-001.md,00,01,onda-dividas-20261014,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-01-debt-20261014-onb-001.md,00,01,onda-dividas-20261014,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-01-debt-20261014-perf-001.md,00,01,onda-dividas-20261014,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-01-debt-20261014-sec-001.md,00,01,onda-dividas-20261014,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-01-notificacoes-estado-individual-schema.md,00,01,onda-dividas-20261014,RESOLVIDO,alto,2026-10-17,2026-10-17,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-02-debt-20261014-not-001.md,00,02,onda-dividas-20261014,RESOLVIDO,normal,2026-10-17,2026-10-17,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-02-pwa-limpeza-troca-identidade.md,00,02,onda-dividas-20261014,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-04-debt-20261014-ux-002.md,00,04,onda-dividas-20261014,RESOLVIDO,normal,2026-10-17,2026-10-17,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-04-debt-20261014-ux-003.md,00,04,onda-dividas-20261014,RESOLVIDO,alto,2026-10-17,2026-10-17,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-04-debt-20261014-ux-004.md,00,04,onda-dividas-20261014,RESOLVIDO,normal,2026-09-30,2026-10-01,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-06-debt-20261014-int-001.md,00,06,onda-dividas-20261014,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-07-debt-20261014-ai-001.md,00,07,onda-dividas-20261014,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-07-debt-20261014-ux-007.md,00,07,onda-dividas-20261014,RESOLVIDO,normal,2026-10-17,2026-10-17,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-08-debt-20261014-ops-002.md,00,08,onda-dividas-20261014,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-08-debt-20261014-ops-003.md,00,08,onda-dividas-20261014,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-08-politica-publicacao-ghcr.md,00,08,onda-dividas-20261014,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-08-pwa-politica-cache-autenticado.md,00,08,onda-dividas-20261014,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-09-debt-20261014-ux-001.md,00,09,onda-dividas-20261014,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-09-debt-20261014-ux-005.md,00,09,onda-dividas-20261014,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-09-debt-20261014-ux-006.md,00,09,onda-dividas-20261014,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-10-debt-20261014-fin-001.md,00,10,onda-dividas-20261014,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-10-debt-20261014-ops-004.md,00,10,onda-dividas-20261014,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-11-pwa-assets-manifest.md,00,11,onda-dividas-20261014,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-12-debt-20261014-bill-003.md,00,12,onda-dividas-20261014,RESOLVIDO,normal,2024-02-29,2026-05-01,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-14-baseline-isolado.md,00,14,onda-dividas-20261014,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-14-debt-20261014-ops-001.md,00,14,onda-dividas-20261014,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-16-debt-20261014-ops-006.md,00,16,onda-dividas-20261014,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-16-debt-20261014-ops-007.md,00,16,onda-dividas-20261014,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-dividas-20261014/00-para-18-contrato-paginacao-busca.md,00,18,onda-dividas-20261014,RESOLVIDO,normal,2026-10-17,2026-10-17,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-ecossistema-01/00-para-02-integracao-cockpit-crm-layout.md,00,02,onda-ecossistema-01,RESOLVIDO,alto,2026-11-09,2026-11-09,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-ecossistema-01/00-para-03-ui-cockpit-estados-acessibilidade.md,00,03,onda-ecossistema-01,RESOLVIDO,alto,2026-11-09,2026-11-09,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-ecossistema-01/00-para-07-backend-sse-swarm-binding.md,00,07,onda-ecossistema-01,RESOLVIDO,bloqueador,2026-11-09,2026-11-09,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-ecossistema-01/00-para-18-contratos-streaming-cockpit.md,00,18,onda-ecossistema-01,RESOLVIDO,bloqueador,2026-11-09,2026-11-09,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-ecossistema-01/00-para-24-diretrizes-auditoria-onda-01.md,00,24,onda-ecossistema-01,RESOLVIDO,alto,2026-11-09,2026-11-09,2026-11-12 11:34,,PARCIAL,NAO
+.agents/handoffs/onda-enxuta/17-para-01-alinhar-schema-dialer-prisma.md,17,01,"onda-enxuta (P0 #693, item 8)",RESOLVIDO,normal,2026-10-11,2026-10-11,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-enxuta/17-para-02-dialer-redirect-cadence.md,17,02,"onda-enxuta (P0 #693, item 6)",RESOLVIDO,alto,2026-10-11,2026-10-11,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-evolucao-enxame-fase2/00-para-01-07-08-commercial-v3-security.md,00,agentes 01 (platafor,Fase 2 — Homologação e Qualidade,RESOLVIDO,bloqueador,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-evolucao-enxame-fase2/00-para-18-commercial-v3-contract-testing.md,00,18,Fase 2 — Homologação e Qualidade,RESOLVIDO,bloqueador,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-evolucao-enxame/00-para-01-flywheel-persistence-schema.md,00,01,Evolução Enxame IA,RESOLVIDO,alto,2026-11-01,2026-11-01,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-evolucao-enxame/00-para-02-03-inbox-aprovacao-ia.md,00,agentes 02 (produto/,Evolução Enxame IA,RESOLVIDO,alto,2026-11-01,2026-11-01,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-evolucao-enxame/00-para-07-18-tool-bindings-catalogo.md,00,agentes 07 (ia e aut,Evolução Enxame IA,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-evolucao-enxame/00-para-13-hierarquia-multi-swarm.md,00,agentes 13 (governan,Evolução Enxame IA,RESOLVIDO,normal,2026-11-01,2026-11-01,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-evolucao-enxame/00-para-14-08-golden-dataset-evals.md,00,agentes 14 (test har,Evolução Enxame IA,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-evolucao-enxame/00-para-16-10-semantic-cache-redis.md,00,agentes 16 (runtime),Evolução Enxame IA,RESOLVIDO,normal,2026-11-01,2026-11-01,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-forense-20261020/00-para-01-forense.md,00,01,forense20261020,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-forense-20261020/00-para-04-forense.md,00,04,forense20261020,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-forense-20261020/00-para-06-forense.md,00,06,forense20261020,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-forense-20261020/00-para-07-forense.md,00,07,forense20261020,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-forense-20261020/00-para-08-forense.md,00,08,forense20261020,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-forense-20261020/00-para-09-forense.md,00,09,forense20261020,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-forense-20261020/00-para-10-forense.md,00,10,forense20261020,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-forense-20261020/00-para-12-forense.md,00,12,forense20261020,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-forense-20261020/00-para-15-forense.md,00,15,forense20261020,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-forense-20261020/00-para-16-forense.md,00,16,forense20261020,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-forense-20261020/00-para-17-forense.md,00,17,forense20261020,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-forense-20261020/00-para-21-forense.md,00,21,forense20261020,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-forense-20261020/04-para-01-rebalance-approval-unique.md,04,01,forense20261020,RESOLVIDO,medio,,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/onda-ia-1/02-para-07-ux-upload-conhecimento.md,02,07,IA-1,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-ia-1/07-para-00-dependencias-guardrails.md,07,00,IA-1,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-ia-1/07-para-01-schema-document-embedding.md,07,01,IA-1,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-ia-1/14-para-15-resposta-avaliacao-pii.md,14,15,IA-1,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-ia-1/15-para-14-avaliacao-pii.md,15,14,IA-1,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-landing-360-auditoria/01-para-02-sticky-bar-zindex.md,01,02,landing-360-auditoria,RESOLVIDO,alta (desbloqueia o hang do E2E no Relea,2026-11-12,2026-11-12,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/onda-landing-360-auditoria/02-para-01-endpoint-captura-lead.md,02,01,landing-360-auditoria,RESOLVIDO,bloqueador,2026-11-11,2026-11-11,2026-11-13 19:30,2026-11-11,SIM,NAO
+.agents/handoffs/onda-landing-360-auditoria/auditoria-para-02-bugs-funcionais.md,auditoria ad-hoc (de,02,landing-360-auditoria,RESOLVIDO,alto,2026-11-12,2026-11-12,2026-11-13 19:30,2026-11-12,SIM,NAO
+.agents/handoffs/onda-landing-360-auditoria/auditoria-para-02-limpeza-deadcode.md,auditoria ad-hoc (de,02,landing-360-auditoria,RESOLVIDO,normal,2026-11-12,2026-11-12,2026-11-13 19:30,2026-11-12,SIM,NAO
+.agents/handoffs/onda-landing-360-auditoria/auditoria-para-02-ux-mobile-a11y.md,auditoria ad-hoc (de,02,landing-360-auditoria,RESOLVIDO,normal,2026-11-12,2026-11-12,2026-11-13 19:30,2026-11-12,SIM,NAO
+.agents/handoffs/onda-lint-main-20261025/07-para-03-hotspots-intelligence.md,07,03,lint-main-20261025,RESOLVIDO,alto,2026-11-08,2026-11-30,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-lint-main-20261025/07-para-24-correlationid-supervisor.md,07,24,lint-main-20261025,RESOLVIDO,alto,2026-10-25,2026-10-25,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-liquidacao-debitos/00-para-01-validacao-tenant-isolation.md,00 (coordenador),"01 (plataforma, segu",liquidacao-debitos,RESOLVIDO,alto (bloqueador B-10),2026-10-10,2026-10-10,2026-11-12 11:34,,PARCIAL,NAO
+.agents/handoffs/onda-liquidacao-debitos/00-para-02-03-validacao-wcag.md,00 (coordenador),03 (design e acessib,liquidacao-debitos,RESOLVIDO,alto (Trilha 5 da missão original),2026-10-10,2026-10-10,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-liquidacao-debitos/00-para-08-10-estrategia-deploy-unificada.md,00 (coordenador),08 (qa e release) e ,liquidacao-debitos,RESOLVIDO,alto (bloqueador de release/produção),2026-10-09,2026-10-09,2026-11-12 11:34,,PARCIAL,NAO
+.agents/handoffs/onda-liquidacao-debitos/00-para-15-06-auditoria-pii-logs.md,00 (coordenador),15 (segurança aplica,liquidacao-debitos,RESOLVIDO,alto (Bloqueador B-13),2026-10-10,2026-10-10,2026-11-12 11:34,,PARCIAL,NAO
+.agents/handoffs/onda-liquidacao-debitos/10-para-08-arquivar-deploy-aws.md,"10 (infraestrutura, ",08 (qa e release),liquidacao-debitos,RESOLVIDO,alto (bloqueador de clareza de pipeline),2026-10-10,2026-10-10,2026-11-12 11:34,2026-10-10,SIM,NAO
+.agents/handoffs/onda-liquidacao-debitos/10-para-08A-deploy-ec2-scripts.md,"10 (infraestrutura, ",08a (operações git e,liquidacao-debitos,RESOLVIDO,alto (melhoria de confiabilidade de depl,2026-10-10,2026-10-10,2026-11-12 11:34,2026-10-10,SIM,NAO
+.agents/handoffs/onda-os/15-para-10-mount-opa-middleware.md,15,10,os,RESOLVIDO,normal,2026-10-10,2026-10-10,2026-11-12 11:34,2026-10-10,SIM,NAO
+.agents/handoffs/onda-p0-dialer-503/12-para-00-inventario-503.md,12,00,p0-dialer-503,RESOLVIDO,alto,,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/onda-p0-dialer-503/12-para-17-dialer-sql-seguro.md,12,17,p0-dialer-503,RESOLVIDO,alto,2026-10-11,2026-10-11,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-paralela-8/00-para-02-asany-layout.md,00,02,paralela-8,RESOLVIDO,normal,2026-11-12,2026-11-12,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/onda-paralela-8/00-para-06-bitrix-dead-exports.md,00,06,paralela-8,RESOLVIDO,normal,,,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/onda-paralela-8/00-para-08-unit-failures.md,00,08,paralela-8,RESOLVIDO,alto,2026-11-12,2026-11-12,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/onda-paralela-8/00-para-11-hotspot-characters.md,00,11,paralela-8,RESOLVIDO,bloqueador (gate check:hotspots vermelho,2026-11-12,2026-11-12,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/onda-paralela-8/00-para-15-auth-import-fix.md,00,15,paralela-8,RESOLVIDO,bloqueador (import quebrado em caminho d,2026-11-12,2026-11-12,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/onda-paralela-8/00-para-18-asany-analytics.md,00,18,paralela-8,RESOLVIDO,normal,,,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/onda-resgate-20261010/08-para-00-voice-tests.md,08,00,resgate-20261010,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-resgate-20261010/12-para-00-voice.md,12,00,resgate-20261010,RESOLVIDO,alto,2026-10-10,2026-10-10,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/onda-saneamento-20261105/00-para-01-filtro-tenant-repositorios-discador.md,00,01,onda-saneamento-20261105,RESOLVIDO,bloqueador,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261105/00-para-01a-particionamento-retencao-logs.md,00,01a,onda-saneamento-20261105,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261105/00-para-02-modularizacao-crmboard-kanban.md,?,02 â€” produto e ux,onda-saneamento-20261105,RESOLVIDO,alto,2026-11-06,2026-11-06,2026-11-12 11:34,2026-11-06,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/00-para-03-remocao-important-css-globals.md,?,03 â€” design e aces,onda-saneamento-20261105,RESOLVIDO,alto,2026-11-06,2026-11-06,2026-11-12 11:34,2026-11-06,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/00-para-04-observabilidade-erros-analytics-sem-zeros.md,?,04 â€” crm e bi,onda-saneamento-20261105,RESOLVIDO,bloqueador,2026-11-06,2026-11-06,2026-11-12 11:34,2026-11-06,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/00-para-05-circuit-breaker-enriquecimento-leads.md,?,05 â€” prospecã§ã£o,onda-saneamento-20261105,RESOLVIDO,alto,2026-11-06,2026-11-06,2026-11-12 11:34,2026-11-06,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/00-para-06a-sanitizacao-csv-injection-bitrix.md,?,06a â€” extraã§ãµes ,onda-saneamento-20261105,RESOLVIDO,bloqueador,2026-11-06,2026-11-06,2026-11-12 11:34,2026-11-06,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/00-para-07-remocao-dados-fabricados-copiloto.md,?,07 â€” ia e automaã§,onda-saneamento-20261105,RESOLVIDO,bloqueador,2026-11-06,2026-11-06,2026-11-12 11:34,2026-11-06,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/00-para-08-blindagem-release-gate.md,00,08,onda-saneamento-20261105,RESOLVIDO,bloqueador,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/00-para-08a-gatilho-ghcr-docker-publish.md,00,08a,onda-saneamento-20261105,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/00-para-10-assercoes-rto-restore-drill.md,00,10,onda-saneamento-20261105,RESOLVIDO,alto,2026-11-06,2026-11-06,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/00-para-13-modularizacao-supervisor-agent-hotspot.md,?,13 â€” enxame autã´n,onda-saneamento-20261105,RESOLVIDO,alto,2026-11-06,2026-11-06,2026-11-12 11:34,2026-11-06,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/00-para-14-trava-seguranca-banco-test-harness.md,00,14,onda-saneamento-20261105,RESOLVIDO,alto,2026-11-06,2026-11-06,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/00-para-15-mascaramento-tokens-auth.md,00,15,onda-saneamento-20261105,RESOLVIDO,bloqueador,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/00-para-16-dead-letter-queue-whatsapp.md,00,16,onda-saneamento-20261105,RESOLVIDO,bloqueador,2026-11-06,2026-11-06,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/00-para-18-restauracao-contratos-openapi-modulos.md,?,"18 â€” contratos, ap",onda-saneamento-20261105,RESOLVIDO,bloqueador,2026-11-06,2026-11-06,2026-11-12 11:34,2026-11-06,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/00-para-24-reconciliacao-handoffs-historicos.md,00,24,onda-saneamento-20261105,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261105/01a-para-01-schema-agentmemory-titular-lgpd.md,01a,01,onda-saneamento-20261105,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261105/02-para-00-conclusao-fase-02-modais-comerciais.md,02,00,onda-saneamento-20261105,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261105/02-para-01-concorrencia-cas-organizacao-modulos.md,02,01,onda-saneamento-20261105,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261105/04-para-12-correcao-faturamento-meses-31-dias.md,?,12 â€” voz e telefon,onda-saneamento-20261105,RESOLVIDO,alto,2026-11-06,2026-11-06,2026-11-12 11:34,2026-11-06,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/05-para-17-trava-templates-cadencia-placeholders.md,?,17 â€” cadãªncia mul,onda-saneamento-20261105,RESOLVIDO,alto,2026-11-06,2026-11-06,2026-11-12 11:34,2026-11-06,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/06-para-06a-streaming-extracao-memoria-oom.md,?,06a â€” extraã§ãµes ,onda-saneamento-20261105,RESOLVIDO,alto,2026-11-06,2026-11-06,2026-11-12 11:34,2026-11-06,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/06-para-07-liberacao-ia.md,06,07,onda-saneamento-20261105,RESOLVIDO,alto,2026-11-09,2026-11-09,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261105/06-para-17-janela-horario-comercial-whatsapp.md,?,17 â€” cadãªncia mul,onda-saneamento-20261105,RESOLVIDO,alto,2026-11-06,2026-11-06,2026-11-12 11:34,2026-11-06,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/07-para-23-corte-tempo-real-streaming-sse.md,?,"23 â€” custo, perfor",onda-saneamento-20261105,RESOLVIDO,alto,2026-11-06,2026-11-06,2026-11-12 11:34,2026-11-06,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/10-para-16-shutdown-coordenado-sse-server.md,10,16,onda-saneamento-20261105,RESOLVIDO,normal,2026-11-06,2026-11-06,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/12-para-06-buffer-assincrono-webhooks-3cx.md,?,06 â€” integraã§ãµes,onda-saneamento-20261105,RESOLVIDO,bloqueador,2026-11-06,2026-11-06,2026-11-12 11:34,2026-11-06,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/15-para-09-particionamento-cache-pwa-logout.md,?,09 â€” mobile,onda-saneamento-20261105,RESOLVIDO,bloqueador,2026-11-06,2026-11-06,2026-11-12 11:34,2026-11-06,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/15-para-12-mascaramento-pii-transcricoes-voz.md,?,12 â€” voz e telefon,onda-saneamento-20261105,RESOLVIDO,bloqueador,2026-11-06,2026-11-06,2026-11-12 11:34,2026-11-06,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/16-para-10-circuit-guard-redis-especifico.md,16,10,onda-saneamento-20261105,RESOLVIDO,alto,2026-11-06,2026-11-06,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/21-para-01-dossie-portabilidade-titular.md,21,01,onda-saneamento-20261105,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261105/21-para-01-expurgo-transacional-optout.md,21,01,onda-saneamento-20261105,RESOLVIDO,bloqueador,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261105/22-para-02-persistencia-settings-placeholder.md,?,02 â€” produto e ux,onda-saneamento-20261105,RESOLVIDO,bloqueador,2026-11-06,2026-11-06,2026-11-12 11:34,2026-11-06,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/22-para-07-persistencia-real-next-best-action.md,?,07 â€” ia e automaã§,onda-saneamento-20261105,RESOLVIDO,bloqueador,2026-11-06,2026-11-06,2026-11-12 11:34,2026-11-06,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/23-para-13-limite-recursao-agent-bus-loops.md,?,13 â€” enxame autã´n,onda-saneamento-20261105,RESOLVIDO,alto,2026-11-06,2026-11-06,2026-11-12 11:34,2026-11-06,SIM,NAO
+.agents/handoffs/onda-saneamento-20261105/24-para-08a-trava-ci-aprovacao-revisao.md,24,08a,onda-saneamento-20261105,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-01-hotspot-arquitetural-critico-em-src-lib-prisma-ts-acumulando-multiplas.md,00,01,Onda 1 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-013),RESOLVIDO,normal,2026-11-10,2026-11-10,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-01-logica-de-criacao-de-primeiro-usuario-executa-user-count-redundante-pa.md,00,01,Onda 1 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-044),RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-01-resumo-de-consumo-de-inteligencia-artificial-carrega-todas-as-linhas-d.md,00,01,Onda 1 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-012),RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-01A-verificacao-de-integridade-referencial-foreign-keys-com-ondelete-casca.md,00,01a,Onda 1 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-014),RESOLVIDO,normal,2026-11-10,2026-11-10,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-02-acoplamento-excessivo-e-orquestracao-de-side-effects-em-src-app-tsx.md,00,02,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-016),RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-02-hotspot-estrutural-no-componente-central-crmboard-tsx-acumulando-multi.md,00,02,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-002),RESOLVIDO,alto,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-02-leitura-de-notificacao-broadcast-em-entidade-compartilhada-silencia-un.md,00,02,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-015),RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-03-instabilidade-e-tolerancia-frouxa-em-testes-de-regressao-visual-devido.md,00,03,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-017),RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-03-proliferacao-de-declaracoes-important-em-folhas-de-estilo-quebrando-a.md,00,03,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-003),RESOLVIDO,alto,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-04-hotspot-estrutural-e-queries-com-alto-custo-computacional-em-prismacrm.md,00,04,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-018),RESOLVIDO,normal,2026-11-10,2026-11-10,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-05-acumulo-de-cache-de-enriquecimento-sem-expurgo-automatico-em-tabelas-t.md,00,05,Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-019),RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-05-ausencia-de-validacao-previa-em-lote-de-listas-de-supressao-opt-out-em.md,00,05,Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-020),RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-06-tratamento-incompleto-de-promessas-assincronas-em-componentes-de-impor.md,00,06,Onda 3 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-045),RESOLVIDO,normal,2026-11-10,2026-11-10,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-06-tres-paineis-monoliticos-gigantescos-na-interface-de-gerenciamento-de.md,00,06,Onda 3 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-004),RESOLVIDO,alto,2026-11-10,2026-11-10,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-06A-ausencia-de-cancelamento-cooperativo-via-abortsignal-em-extracoes-bitr.md,00,06a,Onda 3 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-046),RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-06A-falta-de-rotina-de-purga-periodica-de-arquivos-temporarios-gerados-em.md,00,06a,Onda 3 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-021),RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-07-busca-textual-na-base-de-conhecimento-do-copiloto-engole-falhas-do-ban.md,00,07,Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-023),RESOLVIDO,normal,2026-11-10,2026-11-10,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-07-falha-inicial-da-api-prende-o-copiloto-executivo-em-estado-de-carregam.md,00,07,Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-022),RESOLVIDO,normal,2026-11-10,2026-11-10,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-07-hotspots-severos-em-componentes-de-painel-de-inteligencia-intelligence.md,00,07,Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-006),RESOLVIDO,alto,2026-11-10,2026-11-10,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-07-trace-de-missoes-autonomas-de-ia-e-consentimento-lgpd-retornados-de-fo.md,00,07,Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-005),RESOLVIDO,alto,2026-11-10,2026-11-10,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-08-62-arquivos-de-testes-unitarios-co-localizados-em-src-features-permane.md,00,08,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-007),RESOLVIDO,alto,2026-10-16,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-08-dockerfile-reinstala-prisma-cli-em-etapa-sem-lock-estrito-versionado-a.md,00,08,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-024),RESOLVIDO,normal,2026-10-14,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-08-instrucao-de-inicializacao-do-stack-local-omite-overlay-de-postgresql.md,00,08,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-047),RESOLVIDO,normal,2026-09-08,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-08A-ausencia-de-cache-compartilhado-de-dependencias-node-modules-e-prisma.md,00,08a,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-026),RESOLVIDO,normal,2026-11-10,2026-11-10,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-08A-falta-de-validacao-automatizada-de-integridade-de-tags-de-release-e-as.md,00,08a,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-027),RESOLVIDO,normal,2026-11-10,2026-11-10,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-08A-proliferacao-excessiva-de-branches-remotas-orfas-degradando-a-rastreab.md,00,08a,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-025),RESOLVIDO,normal,2026-11-10,2026-11-10,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-09-esquema-de-deep-links-nativos-no-androidmanifest-xml-diverge-das-rotas.md,00,09,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-028),RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-09-icones-declarados-no-manifest-json-do-pwa-nao-existem-fisicamente-na-p.md,00,09,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-048),RESOLVIDO,normal,2026-10-14,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-10-ausencia-de-limitacao-de-taxa-em-nivel-de-ingress-proxy-reverso-contra.md,00,10,Onda 2 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-029),RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-11-ativos-institucionais-pesados-em-public-sem-compressao-moderna-lossles.md,00,11,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-050),RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-11-divergencia-de-nomenclatura-entre-tokens-de-cores-na-brandconstitution.md,00,11,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-051),RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-11-ocorrencias-residuais-de-mencoes-a-marcas-legadas-em-fixtures-de-teste.md,00,11,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-049),RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-13-ausencia-de-timeout-individual-por-execucao-de-ferramenta-de-ia-travan.md,00,13,Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-031),RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-13-historico-de-conversas-e-decisoes-do-agent-bus-mantido-apenas-em-memor.md,00,13,Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-030),RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-13-supervisor-de-enxame-atinge-o-limite-exato-de-1000-linhas-com-acoplame.md,00,13,Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-009),RESOLVIDO,alto,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-14-ausencia-de-teardown-deterministico-para-containers-efemeros-em-caso-d.md,00,14,Onda 2 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-032),RESOLVIDO,normal,2026-11-10,2026-11-13,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-14-falta-de-seed-automatico-de-entidades-de-compliance-e-opt-out-no-provi.md,00,14,Onda 2 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-033),RESOLVIDO,normal,2026-11-10,2026-11-13,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-15-configuracao-permissiva-de-cors-em-server-ts-para-clientes-externos.md,00,15,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-034),RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-15-criptografia-de-credenciais-em-repouso-sem-suporte-a-envelope-encrypti.md,00,15,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-010),RESOLVIDO,alto,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-15-urls-de-autenticacao-com-tokens-magicos-e-links-de-redefinicao-de-senh.md,00,15,Onda 0 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-001),RESOLVIDO,bloqueador,2026-11-10,2026-11-10,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-17-ausencia-de-verificacao-em-lote-de-opt-out-no-momento-do-inicio-da-cad.md,00,17,Onda 3 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-035),RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-18-divergencia-de-validacao-entre-schemas-zod-de-backend-e-definicoes-dto.md,00,18,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-036),RESOLVIDO,normal,2026-11-10,2026-11-10,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-18-script-verify-openapi-drift-nao-cobre-rotas-criadas-recentemente-para.md,00,18,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-037),RESOLVIDO,normal,2026-11-10,2026-11-10,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-21-falta-de-inventario-de-tratamento-de-dados-ropa-automatizado-e-exporta.md,00,21,Onda 1 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-052),RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-21-hotspot-em-consentauditchain-service-ts-executando-hash-chaining-sincr.md,00,21,Onda 1 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-038),RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-22-ausencia-de-teste-continuo-de-verificacao-de-vazamento-de-pii-em-logs.md,00,22,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-040),RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-22-testes-e2e-do-playwright-validam-apenas-o-dom-sem-assercoes-diretas-no.md,00,22,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-039),RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-23-consulta-n-1-no-calculo-de-metricas-de-uso-de-ia-por-vendedor-no-paine.md,00,23,Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-042),RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/00-para-23-inexistencia-de-cache-semantico-ativo-para-pesquisas-e-analises-de-mer.md,00,23,Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-041),RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-saneamento-20261110/01-para-07-resumo-consumo-ia-findmany-sem-agregacao.md,01,07,W3 (saneamento-20261110) — originado de TAREFA-SANEAMENTO-012 / BT360-DT-0008,RESOLVIDO,alto,,,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/onda-saneamento-20261110/09-para-08-teste-de-paridade-valid-tabs-active-nav-tabs.md,09,08,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-028),RESOLVIDO,normal,2026-11-12,2026-11-12,2026-11-13 19:30,2026-11-12,SIM,NAO
+.agents/handoffs/onda-saneamento-20261110/11-para-00-pngs-orfaos-q1-q2-em-public-raiz-3mb-sem-referencia.md,11,00,Onda 5 (Plano Mestre de Saneamento — decorrente de TAREFA-SANEAMENTO-050 / BT360-DT-0059),RESOLVIDO,normal,,,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/onda-saneamento-20261110/11-para-03-divergencias-residuais-de-tokens-de-cor-e-fonte-entre-globals-e-tokens-canonicos.md,11,03,Onda 5 (Plano Mestre de Saneamento — decorrente de TAREFA-SANEAMENTO-051 / BT360-DT-0060),RESOLVIDO,normal,2026-11-12,2026-11-12,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/onda-saneamento-20261110/11-para-08-guard-de-fixtures-contra-reintroducao-de-marcas-legadas-em-tests-fixtures.md,11,08,Onda 5 (Plano Mestre de Saneamento — decorrente de TAREFA-SANEAMENTO-049 / BT360-DT-0058),RESOLVIDO,normal,2026-11-12,2026-11-12,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/onda-saneamento-20261110/15-para-01-consoleerror-cru-em-mount-auth-handler.md,15,01,onda-saneamento-20261110,RESOLVIDO,normal,,,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/onda-saneamento-20261110/17-para-01A-paginacao-list-optoutrepo.md,17,01a,Onda 1 / W3 (Plano Mestre de Saneamento),RESOLVIDO,alto — achado do Agente 24 na revisão W2,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
+.agents/handoffs/onda-techdebt/08-para-10-docker-postgres-e-qdrant-duplicados.md,08,10,techdebt,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-turbo-20261009/01-para-00-turbo-catalog.md,01,00,turbo-20261009,RESOLVIDO,normal,2026-10-09,2026-10-10,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-turbo-20261009/05-para-00-motor-backend.md,05,00,turbo-20261009,RESOLVIDO,alto,2026-10-10,2026-10-10,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-turbo-20261009/07-para-00-turbo-ai.md,07,00,turbo-20261009,RESOLVIDO,alto,2026-10-09,2026-10-10,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/onda-turbo-20261009/08-para-00-turbo-regression-tests.md,08,00,turbo-20261009,RESOLVIDO,normal,2026-10-11,2026-10-11,2026-11-12 11:34,2026-10-11,SIM,NAO
+.agents/handoffs/onda-ui-1/00-para-02-shell-canonico.md,00,02,"ui-1 (modernizacao visual, Onda A)",RESOLVIDO,normal,2026-10-11,2026-10-11,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-ui-1/00-para-03-design-system-onda-b.md,00,03,"ui-1 (modernizacao visual, Onda A)",RESOLVIDO,alto,2026-10-11,2026-10-11,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-ui-1/00-para-11-decisao-paleta-oficial.md,00,11 (+ decisao humana,"ui-1 (modernizacao visual, Onda A)",RESOLVIDO,alto,2026-10-11,2026-10-11,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-v4-fase2/00-para-16-infra-filas-event-mesh.md,00,16,v4-fase2,RESOLVIDO,bloqueador,2026-11-10,2026-11-10,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/personagens-29-20261110/00-para-02-ratificacao-rota-characters.md,00,02,personagens-29-20261110,RESOLVIDO,normal,2026-11-10,2026-11-10,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/personagens-29-20261110/00-para-03-ratificacao-widget-catalogo.md,00,03,personagens-29-20261110,RESOLVIDO,normal,2026-11-10,2026-11-10,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/personagens-29-20261110/00-para-08-ratificacao-testes.md,00,08,personagens-29-20261110,RESOLVIDO,normal,2026-11-10,2026-11-10,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/personagens-29-20261110/00-para-11-documento-mestre-integracao-runtime.md,00,11,integração runtime dos 29 personagens,RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/personagens-29-20261110/00-para-11-ratificacao-identidade-visual.md,00,11,personagens-29-20261110,RESOLVIDO,normal,2026-11-10,2026-11-10,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/roadmap-v2-onda-1/01-para-00-account-oauth-tokens-sem-cifra.md,01,00,roadmap-v2-onda-1,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/roadmap-v2-onda-1/02-para-01-rbac-ausente-usage-routes.md,02,01,roadmap-v2-onda-1,RESOLVIDO,bloqueador,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/roadmap-v2-onda-1/06-para-01-status-extracao-parcial.md,06,01,roadmap-v2-onda-1,RESOLVIDO,normal,,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/roadmap-v2-onda-3/03-para-04-label-sem-controle-propostaform.md,03,04,roadmap-v2-onda-3,RESOLVIDO,normal,,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/roadmap-v2-onda-3/08-para-00-worker-oci-sem-migracao-antes-do-boot.md,08,00,roadmap-v2-onda-3,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/roadmap-v2-onda-4/11-para-03-brand-2-default-nao-bate-com-atlasgr.md,11 (marca e ativos i,03 (design e acessib,roadmap-v2-onda-4,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/roadmap-v2-transversais-2/12-para-00-scratch-call-raiz.md,12,00,roadmap-v2-transversais-2,RESOLVIDO,normal,2026-08-21,2026-10-10,2026-11-12 11:34,2026-08-21,SIM,NAO
+.agents/handoffs/roadmap-v2-transversais-2/18-para-04-analytics-cohort-dados-ficticios.md,18,04,roadmap-v2-transversais-2,RESOLVIDO,alto,,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/roadmap-v2-transversais/14-para-00-passwithnotests.md,14,00,roadmap-v2-transversais,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/roadmap-v2-transversais/15-para-00-auditaccessmiddleware-nao-utilizado.md,15,00,roadmap-v2-transversais,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/roadmap-v2-transversais/15-para-01-runbook-incident-response-secret-desatualizado.md,15,01,roadmap-v2-transversais,RESOLVIDO,alto,,,2026-11-12 11:34,,NAO,NAO
+.agents/handoffs/saneamento-onda-3/00-para-patricia-relatorio-onda-3.md,01,patricia (revisão de,"saneamento-onda-3 (fonte: docs/audits/repository-debt-audit/, arquivo de coordenação",RESOLVIDO,,2026-10-10,2026-10-10,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/saneamento-onda-3/01-para-08-ci-migrate-diff-gate.md,01 (dados / prisma),08 (qa release / git,saneamento-onda-3 (follow-up de DATA-002 / DATA-007),RESOLVIDO,alto,2026-10-10,2026-10-11,2026-11-12 11:34,2026-10-11,SIM,NAO
+.agents/handoffs/techdebt-2026-09-29/00-para-00-arquivos-monoliticos-scripts.md,00 (coordenador),00 (coordenador - de,techdebt-2026-09-29,RESOLVIDO,normal,2026-09-29,2026-09-29,2026-11-12 11:34,2026-09-29,SIM,NAO
+.agents/handoffs/techdebt-2026-09-29/00-para-00-arquivos-monoliticos-voice-hub.md,00 (coordenador),00 (coordenador - de,techdebt-2026-09-29,RESOLVIDO,alto,2026-09-29,2026-09-29,2026-11-12 11:34,2026-09-29,SIM,NAO
+.agents/handoffs/techdebt-2026-09-29/00-para-00-typescript-quality.md,00 (coordenador),00 (coordenador - de,techdebt-2026-09-29,RESOLVIDO,normal,2026-09-29,2026-09-29,2026-11-12 11:34,2026-09-29,SIM,NAO
+.agents/handoffs/techdebt-2026-09-29/00-para-01-migrations-destrutivas-p1.md,00 (coordenador),"01 (plataforma, segu",techdebt-2026-09-29,RESOLVIDO,bloqueador,2026-09-29,2026-09-29,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/techdebt-2026-09-29/00-para-01-privacy-data-governance.md,00 (coordenador),"01 (plataforma, segu",techdebt-2026-09-29,RESOLVIDO,alto,2026-09-29,2026-09-29,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/techdebt-2026-09-29/00-para-04-arquivo-monolitico-commercial-intelligence.md,00 (coordenador),04 (crm e bi),techdebt-2026-09-29,RESOLVIDO,alto,2026-09-29,2026-09-29,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/techdebt-2026-09-29/00-para-05-arquivos-monoliticos-prospecting.md,00 (coordenador),05 (prospecção),techdebt-2026-09-29,RESOLVIDO,alto,2026-09-29,2026-09-29,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/techdebt-2026-09-29/00-para-10-performance.md,00 (coordenador),"10 (infraestrutura, ",techdebt-2026-09-29,RESOLVIDO,normal,2026-09-29,2026-09-29,2026-11-12 11:34,,SIM,SIM
+.agents/handoffs/techdebt-2026-09-29/00-para-12-arquivos-monoliticos-voice-hub.md,00 (coordenador),12 (voz e telefonia ,techdebt-2026-09-29,RESOLVIDO,alto,2026-09-29,2026-09-30,2026-11-12 11:34,2026-09-29,SIM,SIM
+.agents/handoffs/techdebt-2026-09-29/00-para-15-findings-seguranca-p1.md,00 (coordenador),15 (segurança aplica,techdebt-2026-09-29,RESOLVIDO,bloqueador,2026-09-29,2026-09-29,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/techdebt-2026-09-29/00-para-17-arquivo-monolitico-cadence.md,00 (coordenador),17 (cadência multica,techdebt-2026-09-29,RESOLVIDO,alto,2026-09-29,2026-09-29,2026-11-12 11:34,,SIM,NAO

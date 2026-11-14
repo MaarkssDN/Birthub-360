@@ -1,0 +1,37 @@
+# Worklist verificacao F - 30 handoffs
+
+- [ABERTO] `.agents/handoffs/00-para-21-lgpd-portal-titular.md` | De:00 Para:21 | -> | evid:PARCIAL aprov:NAO
+- [ABERTO] `.agents/handoffs/00-para-24-revisao-leva-w7.md` | De:00 Para:24 | -> | evid:SIM aprov:SIM
+- [ABERTO] `.agents/handoffs/00-para-24-revisao-pos-homologacao.md` | De:00 Para:24 | 2026-11-10->2026-11-10 | evid:NAO aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/evolution-plano-2026-10-23/16-para-24-p1-3-ttl-checkpoints-revisao.md` | De:16 Para:24 | 2026-10-23->2026-10-23 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/evolution-plano-2026-10-23/para-24-p1-3-revisao.md` | De:? Para:24 | 2026-10-23->2026-10-23 | evid:PARCIAL aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/evolution-plano-2026-10-23/para-24-p2-1-revisao.md` | De:? Para:24 | 2026-10-23->2026-10-23 | evid:PARCIAL aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/evolution-plano-2026-10-23/para-24-revisao-independente.md` | De:? Para:24 | 2026-10-23->2026-10-24 | evid:PARCIAL aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/jules-ci-20261024/08-para-24-pr112-trivy-gateway-vitest.md` | De:00 Para:24 | 2024-04-15->2026-10-31 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/jules-ci-20261024/jules-08-para-24-test-environment.md` | De:08 Para:24 | 2026-10-23->2026-10-31 | evid:SIM aprov:SIM
+- [ABERTO] `.agents/handoffs/onda-1/15-para-24-revisao-onda1.md` | De:15 Para:24 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-14/07-para-21-consentimento-retencao-audio.md` | De:07 (ia e automações) Para:21 (privacidade e lg | 2026-10-08->2026-10-08 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-15/10-para-23-metricas-tokens-otel.md` | De:10 (infraestrutura,  Para:23 (custo, performan | -> | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-15/17-para-21-validacao-optout-multicanal.md` | De:17 (cadência multica Para:21 (privacidade e lg | -> | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-52/01-para-24-rebalance-approval-drift-data-007.md` | De:01 Para:24 | 2026-10-27->2026-10-27 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-52/01-para-24-typecheck-integrations-schema-decision.md` | De:01 Para:24 | 2026-10-08->2026-10-23 | evid:PARCIAL aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-52/06-para-24-typecheck-integration-stubs.md` | De:06 Para:24 | 2026-10-27->2026-10-27 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-52/15-para-24-credential-rotation-hardening.md` | De:15 Para:24 | 2026-10-25->2026-11-10 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-52/15-para-24-integration-secrets-at-rest.md` | De:15 Para:24 | 2026-10-27->2026-10-27 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-ecossistema-01/00-para-24-diretrizes-auditoria-onda-01.md` | De:00 Para:24 | 2026-11-09->2026-11-09 | evid:PARCIAL aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-forense-20261020/00-para-21-forense.md` | De:00 Para:21 | -> | evid:SIM aprov:NAO
+- [ABERTO] `.agents/handoffs/onda-landing-360-auditoria/02-para-21-validacao-consentimento-lgpd.md` | De:02 Para:21 | -> | evid:NAO aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-lint-main-20261025/07-para-24-correlationid-supervisor.md` | De:07 Para:24 | 2026-10-25->2026-10-25 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261105/00-para-24-reconciliacao-handoffs-historicos.md` | De:00 Para:24 | -> | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261105/07-para-23-corte-tempo-real-streaming-sse.md` | De:? Para:23 â€” custo, perfor | 2026-11-06->2026-11-06 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-21-falta-de-inventario-de-tratamento-de-dados-ropa-automatizado-e-exporta.md` | De:00 Para:21 | 2026-11-10->2026-11-12 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-21-hotspot-em-consentauditchain-service-ts-executando-hash-chaining-sincr.md` | De:00 Para:21 | 2026-11-10->2026-11-12 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-22-ausencia-de-teste-continuo-de-verificacao-de-vazamento-de-pii-em-logs.md` | De:00 Para:22 | 2026-11-10->2026-11-12 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-22-testes-e2e-do-playwright-validam-apenas-o-dom-sem-assercoes-diretas-no.md` | De:00 Para:22 | 2026-11-10->2026-11-12 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-23-consulta-n-1-no-calculo-de-metricas-de-uso-de-ia-por-vendedor-no-paine.md` | De:00 Para:23 | 2026-11-10->2026-11-12 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-23-inexistencia-de-cache-semantico-ativo-para-pesquisas-e-analises-de-mer.md` | De:00 Para:23 | 2026-11-10->2026-11-12 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/mapa-modulos/P0-distribuicao.md` | De:02 Para:marks orquestrador ( | 2026-10-10->2026-10-11 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-10.1-p0-seguranca/00-para-patricia-sec-2026-001-pr-502.md` | De:1 Para:patricia (revisão de | 2026-09-15->2026-09-15 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-40/00-para-frontend-savedsearch-promote-ui.md` | De:00 (auditoria cpi, o Para:dono de `src/feature | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-50/00-para-produto-scope-freeze.md` | De:00 Para:produto/ux | -> | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/saneamento-onda-3/00-para-patricia-relatorio-onda-3.md` | De:01 Para:patricia (revisão de | 2026-10-10->2026-10-10 | evid:SIM aprov:NAO

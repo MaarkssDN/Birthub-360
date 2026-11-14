@@ -238,6 +238,7 @@ export function ModuleNavPanel({
               const Icon = m.icon;
               const mobileOnly = m.availability === 'mobile';
               const theme = getModuleTheme(m.id);
+              const isCurrentModule = m.id === moduleId;
               return (
                 <button
                   key={m.id}
@@ -245,22 +246,67 @@ export function ModuleNavPanel({
                   onClick={() => handleModuleLaunch(m)}
                   disabled={mobileOnly}
                   aria-disabled={mobileOnly || undefined}
+                  aria-current={isCurrentModule ? 'page' : undefined}
                   title={mobileOnly ? `${m.label} — disponível no aplicativo mobile` : m.label}
                   data-testid={`module-launch-${m.id}`}
-                  className={`${ITEM} sidebar-card-idle h-[42px] text-ink-2 hover:text-ink ${
-                    mobileOnly ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
+                  className={`${ITEM} h-[44px] transition-all duration-200 ${
+                    mobileOnly ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                  } ${isCurrentModule ? 'font-semibold text-ink shadow-sm' : 'text-ink-2 hover:text-ink'}`}
+                  style={{
+                    backgroundColor: isCurrentModule
+                      ? `color-mix(in srgb, ${theme.primaryColor} 12%, transparent)`
+                      : `color-mix(in srgb, ${theme.primaryColor} 4%, transparent)`,
+                    borderColor: isCurrentModule
+                      ? theme.primaryColor
+                      : `color-mix(in srgb, ${theme.primaryColor} 22%, transparent)`,
+                    boxShadow: isCurrentModule
+                      ? `0 0 14px color-mix(in srgb, ${theme.primaryColor} 22%, transparent)`
+                      : undefined,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!mobileOnly && !isCurrentModule) {
+                      e.currentTarget.style.borderColor = theme.primaryColor;
+                      e.currentTarget.style.backgroundColor = `color-mix(in srgb, ${theme.primaryColor} 10%, transparent)`;
+                      e.currentTarget.style.boxShadow = `0 0 16px color-mix(in srgb, ${theme.primaryColor} 24%, transparent)`;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!mobileOnly && !isCurrentModule) {
+                      e.currentTarget.style.borderColor = `color-mix(in srgb, ${theme.primaryColor} 22%, transparent)`;
+                      e.currentTarget.style.backgroundColor = `color-mix(in srgb, ${theme.primaryColor} 4%, transparent)`;
+                      e.currentTarget.style.boxShadow = 'none';
+                    }
+                  }}
                 >
+                  {isCurrentModule && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-0 top-[6px] bottom-[6px] w-[3px] rounded-r-full"
+                      style={{
+                        backgroundColor: theme.primaryColor,
+                        boxShadow: `0 0 10px ${theme.primaryColor}`,
+                      }}
+                    />
+                  )}
                   <span
-                    className={`${ICON_WELL} border border-transparent group-hover:border-[currentColor]/30`}
+                    className={`${ICON_WELL} border`}
                     style={{
                       color: theme.primaryColor,
-                      backgroundColor: `color-mix(in srgb, ${theme.primaryColor} 12%, transparent)`,
+                      backgroundColor: `color-mix(in srgb, ${theme.primaryColor} 15%, transparent)`,
+                      borderColor: `color-mix(in srgb, ${theme.primaryColor} 30%, transparent)`,
                     }}
                   >
                     <Icon className="h-4 w-4" aria-hidden="true" />
                   </span>
-                  <span className="min-w-0 flex-1 truncate text-left font-medium">{m.label}</span>
+                  <span className="min-w-0 flex-1 truncate text-left font-sans">{m.label}</span>
+                  <span
+                    className="h-2 w-2 rounded-full shrink-0 mr-0.5 transition-transform group-hover:scale-125"
+                    style={{
+                      backgroundColor: theme.primaryColor,
+                      boxShadow: `0 0 6px ${theme.primaryColor}`,
+                    }}
+                    aria-hidden="true"
+                  />
                 </button>
               );
             })}

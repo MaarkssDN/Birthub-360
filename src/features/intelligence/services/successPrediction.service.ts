@@ -54,7 +54,7 @@ export interface PredictionFactor {
  * Prediz a probabilidade de sucesso de uma missão antes de executar.
  */
 export async function predictMissionSuccess(context: MissionContext): Promise<SuccessPrediction> {
-  const missionId = `mission-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  const missionId = `mission-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
 
   // Buscar histórico similar
   const historicalData = await getHistoricalMissionData(context);
