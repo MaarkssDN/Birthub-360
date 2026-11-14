@@ -4,10 +4,18 @@
 De: 06 — Integrações e Bitrix
 Para: 00 — Coordenador
 Onda: 2 (regularização retroativa — DEM-20261114-003)
-Status: em-andamento
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: commit 3ec8c096d (mergeado em main); reprovação do Agente 24
 Sprint destino: regularização de governança
+
+## Resolução (Agente 00, 2026-11-14)
+
+APROVADO retroativamente. O `startWebhookWorker()` em `worker.ts` e
+`src/bootstrap/workers.ts` corrigia bug real de produção: a fila `webhooks`
+acumulava jobs sem consumidor (DLQ nunca esvaziava). Registrado que
+`worker.ts`/entrypoints de worker são domínio do Agente 16 — futuras
+alterações nesses arquivos exigem handoff 06→16 + aprovação do 00.
 ```
 
 ## Problema
