@@ -4,6 +4,9 @@ Complementa `AGENTS.md` (autoridade sobre o roster, propriedade de arquivos, gat
 Em conflito, `AGENTS.md` e regras de segurança prevalecem; instruções diretas do usuário prevalecem
 sobre decisões anteriores de orquestração. Não edita prompts nem regras globais (AGENTS.md §5).
 
+Para os critérios de aceite, correção e avaliação sem exigências retroativas, aplicar também
+[`PROTOCOLO_QUALIDADE_E_ACEITE.md`](PROTOCOLO_QUALIDADE_E_ACEITE.md).
+
 ## Fluxo obrigatório de toda demanda
 RECEBER → REGISTRAR → PLANEJAR → DELEGAR → ACOMPANHAR → CORRIGIR → VALIDAR → HOMOLOGAR → CONCLUIR
 
