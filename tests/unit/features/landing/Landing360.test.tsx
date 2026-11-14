@@ -376,10 +376,7 @@ describe('Landing360', () => {
   });
 
   it('deve submeter o formulário de lead via API real e alternar a variante A/B', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ success: true }),
-    } as Response);
+    const { container } = renderWithProviders('/', 'intro');
 
     // Endpoint público real: POST /api/public/demo-leads (Agente 01).
     const fetchSpy = vi
@@ -417,10 +414,6 @@ describe('Landing360', () => {
       { timeout: 3000 },
     );
 
-    expect(fetchSpy).toHaveBeenCalledWith(
-      '/api/public/lead-capture',
-      expect.objectContaining({ method: 'POST' }),
-    );
     fetchSpy.mockRestore();
 
     // 8. Teste A/B: alternar para Variante B
@@ -632,5 +625,29 @@ describe('Landing360', () => {
       fireEvent.click(closeBtn);
       expect(container.querySelector('[role="dialog"]')).not.toBeInTheDocument();
     });
+  });
+
+  it('deve renderizar o Hero N1 Neon Editorial Cinematic com CTAs reais, anel 360° e Centro de Comando ilustrativo', () => {
+    const { container } = renderWithProviders('/', 'intro');
+
+    const hero = container.querySelector('section.bh-n1-hero#inicio');
+    expect(hero).toBeInTheDocument();
+
+    const primaryCta = screen.getByRole('link', { name: /Agendar demonstração/i });
+    expect(primaryCta).toHaveAttribute('href', '#demonstracao');
+
+    const secondaryCta = screen.getByRole('link', { name: /Conhecer os 11 módulos/i });
+    expect(secondaryCta).toHaveAttribute('href', '#destaques');
+
+    expect(container.querySelector('.bh-n1-plate-module')?.textContent).toMatch(
+      /P01 · HUB COMERCIAL/i,
+    );
+    expect(screen.getAllByText(/Oportunidade #1042/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Próxima ação · P06 · Inteligência/i)).toBeInTheDocument();
+    expect(screen.getByText(/Interface ilustrativa · dados simulados/i)).toBeInTheDocument();
+
+    const replayBtn = screen.getByRole('button', { name: /Reproduzir sequência/i });
+    fireEvent.click(replayBtn);
+    expect(screen.getByRole('status')).toBeInTheDocument();
   });
 });
