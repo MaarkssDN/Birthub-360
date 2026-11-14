@@ -70,6 +70,8 @@ export class BimodalLiveVoiceService implements IBimodalLiveVoicePort {
         transport: session.transport,
         sampleRate: config.sampleRate ?? 24000,
         enableBargeIn: config.enableBargeIn ?? true,
+        // Sessão simulada localmente — sem transporte Live real.
+        simulated: true,
       },
     });
 
@@ -180,6 +182,8 @@ export class BimodalLiveVoiceService implements IBimodalLiveVoicePort {
         interruptionReason:
           params.interruptionReason ?? 'Voz do usuário detectada durante resposta da IA',
         latencyMs,
+        // Sessão simulada — barge-in não interrompe áudio real.
+        simulated: true,
       },
     });
 
@@ -222,6 +226,8 @@ export class BimodalLiveVoiceService implements IBimodalLiveVoicePort {
         sessionId: params.sessionId,
         reason: params.reason,
         turnsPreservedCount: session.turns.length,
+        // Sessão simulada localmente.
+        simulated: true,
       },
     });
 

@@ -115,6 +115,11 @@ export interface PromiseApprovalResult {
   status: 'APPROVED' | 'REJECTED';
   crmTaskId?: string;
   commitment?: CommercialPromiseCommitment;
+  /**
+   * true quando crmTaskId é um identificador local simulado — nenhuma tarefa
+   * foi criada de fato no CRM (reconciliação forense F04-04).
+   */
+  simulated?: boolean;
 }
 
 export interface IPromiseGuardianPort {

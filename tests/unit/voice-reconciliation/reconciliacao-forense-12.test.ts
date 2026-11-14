@@ -9,6 +9,8 @@ import { proposalAutomationService } from '../../../src/features/proposals/servi
 import { promiseGuardianAgent } from '../../../src/features/intelligence/agents/tactical/promiseGuardian.agent.js';
 import { bimodalLiveVoiceService } from '../../../src/features/ai-voice/server/bimodalLiveVoice.service.js';
 import { conversationalIntelligenceService } from '../../../src/features/ai-voice/server/conversationalIntelligence.service.js';
+import { domainEventMesh } from '../../../src/lib/queue/domainEventMesh.service.js';
+import type { DomainEventEnvelope } from '../../../src/shared/contracts/domainEventMesh.contract.js';
 
 const ORG = 'org-reconciliacao-12';
 
@@ -37,6 +39,36 @@ describe('F04-04: dados fabricados marcados como simulated', () => {
     expect(result.meetingScheduled?.simulated).toBe(true);
     // IDs/URL fabricados continuam existindo, mas agora sinalizados.
     expect(result.meetingScheduled?.googleMeetLink).toBeTruthy();
+  });
+
+  it('eventos do domainEventMesh carregam simulated:true nos payloads fabricados (ressalva 24)', async () => {
+    const received: DomainEventEnvelope[] = [];
+    const capture = async (event: DomainEventEnvelope) => {
+      received.push(event);
+    };
+    domainEventMesh.subscribe('SDR_CALL_COMPLETED', capture, 'test-reconciliacao-12-sdr-call');
+    domainEventMesh.subscribe(
+      'MEETING_SCHEDULED_CALENDAR',
+      capture,
+      'test-reconciliacao-12-meeting',
+    );
+
+    await autonomousSdrService.initiateOutboundCall({
+      organizationId: ORG,
+      leadId: 'lead-events',
+      leadName: 'Evento Test',
+      companyName: 'EvtCo',
+      phoneNumber: '+5511777777777',
+      sellerId: 'seller-1',
+      sellerEmail: 'seller@birthhub.com',
+      referenceTimestamp: '2026-10-20T15:00:00.000Z',
+    });
+
+    const callEvent = received.find((e) => e.eventType === 'SDR_CALL_COMPLETED');
+    const meetingEvent = received.find((e) => e.eventType === 'MEETING_SCHEDULED_CALENDAR');
+
+    expect(callEvent?.payload).toMatchObject({ simulated: true });
+    expect(meetingEvent?.payload).toMatchObject({ simulated: true });
   });
 
   it('SDR bloqueado por horário NÃO é marcado como simulado (política real)', async () => {

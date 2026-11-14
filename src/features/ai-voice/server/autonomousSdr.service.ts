@@ -109,6 +109,9 @@ export class AutonomousSdrService implements IAutonomousSdrPort {
         disposition: callResult.disposition,
         durationSeconds,
         meetingId: meetingProposal.meetingId,
+        // Chamada e reunião são simuladas localmente — consumidores do mesh
+        // não devem tratar meetingId como reunião real (ressalva do Agente 24).
+        simulated: true,
       },
     });
 
@@ -168,6 +171,9 @@ export class AutonomousSdrService implements IAutonomousSdrPort {
         googleMeetLink,
         startTime,
         sellerEmail: params.sellerEmail,
+        // googleCalendarEventId/googleMeetLink são UUIDs fabricados — nenhuma
+        // integração real com Google Calendar/Meet ocorreu.
+        simulated: true,
       },
     });
 
