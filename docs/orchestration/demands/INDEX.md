@@ -9,6 +9,7 @@
 | DEM-20261113-004 | Nova Tela Inicial (Home) e Identidade dos 11 Módulos | 00 → 02/03/08/24 | CONCLUÍDA | 2026-11-14 |
 | DEM-20261113-004† | Missão Mestre de Identidade Visual (auditoria + Brandbook V2 + DS + Motion) — colisão de ID com a DEM-004 acima; registros divergentes em branches distintas | 00 → subagentes (F01/F02/F03) | EM_VALIDAÇÃO (branch agente/00-identidade-v2, commit 07bfc7304) | 2026-10-14 |
 | DEM-20261114-001 | Consolidação do Protocolo Mestre Permanente (re-emissão) | 00 → 22/24 | CONCLUÍDA | 2026-11-14 |
+| DEM-20261114-002 | Matriz de handoffs e verificação dos resolvidos | 00 + clusters | EM_ANDAMENTO | 2026-11-14 |
 
 ## Sessões conhecidas
 | Agente | Sessão | Estado confirmado |
