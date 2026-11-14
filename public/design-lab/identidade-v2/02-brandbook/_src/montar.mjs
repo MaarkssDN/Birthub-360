@@ -41,7 +41,10 @@ html = html.replace(/@@rule (BB-[A-Z0-9]+-\d+) ([CP]) origem: (.*)\n([\s\S]*?)\n
 // secao de cada regra
 const secOf = {};
 { let cur = ''; const re = /<section[^>]*data-secao="([^"]+)"|<li class="rule" id="([^"]+)"/g; let m; while ((m = re.exec(html))) { if (m[1]) cur = m[1]; else secOf[m[2]] = cur; } }
-const strip = t => t.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim();
+// Remove tags até estabilizar (uma passada só deixaria '<scr<b>ipt>' virar '<script>') e desfaz
+// '&amp;' por último, para '&amp;lt;' não virar '<' por duplo unescape. Saída: texto de regras.json.
+const stripTags = t => { let s = t, prev; do { prev = s; s = s.replace(/<[^>]*>/g, ''); } while (s !== prev); return s; };
+const strip = t => stripTags(t).replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
 const ids = new Set(); rules.forEach(r => { if (ids.has(r.id)) throw new Error('ID duplicado ' + r.id); ids.add(r.id); });
 const nC = rules.filter(r => r.conf).length;
 

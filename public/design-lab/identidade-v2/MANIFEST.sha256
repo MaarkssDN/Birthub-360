@@ -28,7 +28,7 @@ c58ee48559e2d8d29d3ac6ef904e8cb0a63b4a2e142e48447113cb782f926a1d  ./02-brandbook
 9d15e43ece1239388796f3e16b6ff3ae87007d70603c6f7b7c8c94caae7c395c  ./02-brandbook/_src/60-personagens.part
 27adc88edb3f732ef4ec51653de0651722b90e98dfe6b4011afd0b70a85832e4  ./02-brandbook/_src/70-aplicacoes.part
 e8a2c19aeb03a76a28155a6826b42251dec4718898a062fafa27508267ff25fc  ./02-brandbook/_src/80-pendencias.part
-2244ee45277bdc5b4dc6695d994acd9cc52abbfc26e22ade7632b20ace2a00cc  ./02-brandbook/_src/montar.mjs
+a646e20599f39ba0bc392025588e02ff65d9610ec08033f601637b3de391d5af  ./02-brandbook/_src/montar.mjs
 897e6008d5a8e7da450719282c3c00ee34d4bf10f5a0706526c30344dd9f3f40  ./02-brandbook/_src/verificar.cjs
 cad17710d3f8354dd3dbda109b297a6448d9ad8dd7c19fcdb9199371e5c59205  ./02-brandbook/brandbook.css
 5e51bb0c5010c21402de35a819b8938314cfa36085efefb1bfbedcfdb38cce24  ./02-brandbook/brandbook.js
@@ -69,7 +69,7 @@ e558d9575c2820a52cacee23e07bd936c8492e988e3adc8e6b4be7684682e52e  ./03-design-sy
 08a4380a7ee08e88d69ae771bee90b2074fb623a26e05cfe55346c137b425ccd  ./03-design-system/icons.svg
 fa0ec6ae69349d928e494dbde4bdf2420f857eb91996e8d9f4432aa86177ee29  ./03-design-system/index.html
 ffe7525bf346a69d4e85d5138c4a10d63cfb22580458b8c60cea5e3739e91a04  ./03-design-system/tokens/README.md
-896e81738de2cfa0ecac4b5bdf12455fb7b15a5a75eb5c08cb7fa9ad75808260  ./03-design-system/tokens/build.mjs
+301d638f2b5ccb76cd6014c808204aa78de6ea302d7d90cca3e2cf31b37a65a2  ./03-design-system/tokens/build.mjs
 7888d39b8ebba4b957c31a1f0e48e919cf2266418ea635f80d6086f71712f861  ./03-design-system/tokens/tokens.contract.json
 4e6ba35a31ef6c94f222a6b67cfe7ff88fb1b7678f94bb369585f8eaeb66ec8f  ./03-design-system/tokens/tokens.css
 9134a0e691760cb5df0725364854fc97640acbb576855873f3e85b76a8990254  ./03-design-system/tokens/tokens.json

@@ -212,8 +212,11 @@ regions['counts-detail'] = Object.entries(stat).map(([k, v]) => `${v} ${k}`).joi
 
 /* ---------- injeção ---------- */
 const indexPath = path.join(root, 'index.html');
-if (fs.existsSync(indexPath)) {
-  let html = fs.readFileSync(indexPath, 'utf8');
+// Lê direto e trata ENOENT, em vez de existsSync + read (janela de corrida entre checar e usar).
+let indexHtml = null;
+try { indexHtml = fs.readFileSync(indexPath, 'utf8'); } catch (err) { if (err.code !== 'ENOENT') throw err; }
+if (indexHtml !== null) {
+  let html = indexHtml;
   let n = 0;
   html = html.replace(/<!--GEN:([\w-]+)-->[\s\S]*?<!--\/GEN-->/g, (m, name) => { if (!(name in regions)) { console.warn('região desconhecida', name); return m; } n++; return `<!--GEN:${name}-->${regions[name]}<!--/GEN-->`; });
   fs.writeFileSync(indexPath, html);
