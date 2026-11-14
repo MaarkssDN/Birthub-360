@@ -260,9 +260,7 @@ export function ModuleNavPanel({
                   >
                     <Icon className="h-4 w-4" aria-hidden="true" />
                   </span>
-                  <span className="min-w-0 flex-1 truncate text-left font-medium">
-                    {m.label}
-                  </span>
+                  <span className="min-w-0 flex-1 truncate text-left font-medium">{m.label}</span>
                 </button>
               );
             })}

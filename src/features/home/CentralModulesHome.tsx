@@ -19,10 +19,7 @@ import type React from 'react';
 import { useId, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { BirthHubLogo } from '../../components/brand/BirthHubLogo.js';
-import {
-  PRODUCT_MODULES,
-  type ProductModule,
-} from '../../components/layout/moduleRegistry.js';
+import { PRODUCT_MODULES, type ProductModule } from '../../components/layout/moduleRegistry.js';
 import { getModuleTheme, type ModuleTheme } from '../../components/layout/moduleThemes.js';
 import { useAuth } from '../../contexts/AuthContext.js';
 import { useOptionalTheme } from '../../contexts/ThemeContext.js';
@@ -145,8 +142,8 @@ export function CentralModulesHome() {
               Olá, {firstName} — Central de Módulos
             </h1>
             <p className="mt-1 text-sm md:text-base text-ink-2 max-w-2xl">
-              Navegue pelos 11 workspaces oficiais do sistema comercial integrado. Escolha o
-              módulo desejado ou alterne a proposta de visualização no laboratório.
+              Navegue pelos 11 workspaces oficiais do sistema comercial integrado. Escolha o módulo
+              desejado ou alterne a proposta de visualização no laboratório.
             </p>
           </div>
 
@@ -361,9 +358,7 @@ function BentoEditorialView({ modules, onNavigate, isDark }: ProposalProps) {
             transition={{ duration: 0.25 }}
             className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border ${
               themeStyles.border
-            } ${themeStyles.borderHover} ${
-              themeStyles.surface
-            } p-6 transition-all duration-300 ${
+            } ${themeStyles.borderHover} ${themeStyles.surface} p-6 transition-all duration-300 ${
               theme.hoverGlow
             } ${getBentoSpan(m.id)} ${
               isMobileOnly ? 'opacity-85' : 'cursor-pointer hover:-translate-y-1'
@@ -406,12 +401,8 @@ function BentoEditorialView({ modules, onNavigate, isDark }: ProposalProps) {
               <h3 className="font-display text-lg md:text-xl font-bold tracking-tight text-ink group-hover:text-[var(--brand)] transition-colors">
                 {m.label}
               </h3>
-              <p className="mt-1 text-xs md:text-sm text-ink-2 font-medium">
-                {m.tagline}
-              </p>
-              <p className="mt-2 text-xs text-ink-2/80 line-clamp-2">
-                {theme.description}
-              </p>
+              <p className="mt-1 text-xs md:text-sm text-ink-2 font-medium">{m.tagline}</p>
+              <p className="mt-2 text-xs text-ink-2/80 line-clamp-2">{theme.description}</p>
             </div>
 
             {/* Recursos principais / Features reais */}
@@ -513,9 +504,7 @@ function GridModularView({ modules, onNavigate, isDark }: ProposalProps) {
               <h3 className="font-display text-base font-bold text-ink group-hover:text-brand transition-colors">
                 {m.label}
               </h3>
-              <p className="mt-1 text-xs text-ink-2 font-medium line-clamp-1">
-                {m.tagline}
-              </p>
+              <p className="mt-1 text-xs text-ink-2 font-medium line-clamp-1">{m.tagline}</p>
               <p className="mt-2 text-xs text-ink-2/80 line-clamp-2 leading-relaxed">
                 {theme.description}
               </p>
@@ -640,9 +629,7 @@ function HubOrbitalView({ modules, onNavigate, isDark }: ProposalProps) {
                     style={{ backgroundColor: cluster.color }}
                   />
                   <div>
-                    <h3 className="font-display text-base font-bold text-ink">
-                      {cluster.title}
-                    </h3>
+                    <h3 className="font-display text-base font-bold text-ink">{cluster.title}</h3>
                     <p className="text-xs text-ink-2">{cluster.description}</p>
                   </div>
                 </div>
@@ -694,9 +681,7 @@ function HubOrbitalView({ modules, onNavigate, isDark }: ProposalProps) {
                         <h4 className="font-display text-sm font-bold text-ink group-hover:text-brand transition-colors">
                           {m.label}
                         </h4>
-                        <p className="mt-1 text-[11px] text-ink-2 line-clamp-2">
-                          {m.tagline}
-                        </p>
+                        <p className="mt-1 text-[11px] text-ink-2 line-clamp-2">{m.tagline}</p>
                       </div>
 
                       <div

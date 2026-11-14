@@ -137,10 +137,10 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  const targetDestination =
-    (location.state as { from?: { pathname?: string; search?: string } })?.from?.pathname
-      ? `${(location.state as { from: { pathname: string; search?: string } }).from.pathname}${(location.state as { from: { search?: string } }).from.search || ''}`
-      : '/app';
+  const targetDestination = (location.state as { from?: { pathname?: string; search?: string } })
+    ?.from?.pathname
+    ? `${(location.state as { from: { pathname: string; search?: string } }).from.pathname}${(location.state as { from: { search?: string } }).from.search || ''}`
+    : '/app';
 
   // Se já autenticado, vai para a rota pretendida ou Home
   useEffect(() => {
