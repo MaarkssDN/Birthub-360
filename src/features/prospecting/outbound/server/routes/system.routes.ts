@@ -14,7 +14,12 @@ import {
   type FeedbackMessageRecord,
   type FeedbackLeadRecord,
 } from '../feedbackLoop.js';
-import { requireAdmin, requireTenantScope, tenantCompany } from '../auth.js';
+import {
+  requireAdmin,
+  requireTenantScope,
+  tenantCompany,
+  normalizeTenantCompany,
+} from '../auth.js';
 import { rateLimit } from '../middleware/rateLimit.js';
 
 export const systemRouter = Router();
@@ -63,7 +68,14 @@ systemRouter.get('/providers/health', async (_req: Request, res: Response) => {
 systemRouter.get('/search-runs/:searchId', async (req: Request, res: Response) => {
   const { searchId } = req.params;
   const run = getSearchRun(searchId);
-  if (!run) {
+  // Escopo de tenant (parecer 24 PR #323): o SearchRun contém query, candidatos
+  // e dados de leads — PII de prospecção. Sem vínculo company↔searchId, um
+  // autenticado de outro tenant lia a busca alheia pelo ID. A company da busca
+  // fica registrada em run.request.company (gravada pelo /prospect); runs sem
+  // company registrada ou de outra company respondem 404 — não revelar
+  // existência cross-tenant.
+  const runCompany = normalizeTenantCompany(run?.request?.company);
+  if (!run || !runCompany || runCompany !== tenantCompany(req)) {
     return res.status(404).json({
       error:
         'Search-ID não encontrado. Buscas são retidas em memória por processo (últimas 200) - pode ter expirado, ter sido de outra instância do servidor, ou nunca ter existido.',
@@ -154,6 +166,12 @@ systemRouter.get('/error-reports', async (req: Request, res: Response) => {
 });
 
 // 2. Raw SQL Execution for Explorer
+// DÉBITO CONHECIDO (parecer 24 PR #323): SQL arbitrário executado como `admin`
+// NÃO tem escopo de tenant — um admin de company A pode ler/escrever dados de
+// company B. Mantido porque o SQL Explorer é ferramenta operacional do painel
+// legado e o módulo inteiro está atrás do gate 503; ANTES de reabrir o módulo,
+// o Agente 01/05 precisa decidir: restringir a um papel global explícito,
+// exigir confirmação, ou aposentar a rota. Ver handoff 05→01.
 systemRouter.post('/db/query', requireAdmin, async (req: Request, res: Response) => {
   try {
     const { sql } = req.body;

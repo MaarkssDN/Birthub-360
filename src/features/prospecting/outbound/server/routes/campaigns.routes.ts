@@ -83,8 +83,10 @@ campaignsRouter.get('/users/:userId/leads', async (req: Request, res: Response) 
       return res.status(404).json({ error: 'Vendedor não encontrado.' });
     }
     const company = tenantCompany(req);
+    // 404 (não 403): não revelar a existência de um userId de outro tenant —
+    // mesma política adotada nas rotas de leads.
     if (!sameCompany(userRes[0].values[0][0], company)) {
-      return res.status(403).json({ error: 'Vendedor pertence a outra empresa.' });
+      return res.status(404).json({ error: 'Vendedor não encontrado.' });
     }
     const limit = Math.min(Math.max(1, Number(req.query.limit) || 500), 2000);
     const offset = Math.max(0, Number(req.query.offset) || 0);

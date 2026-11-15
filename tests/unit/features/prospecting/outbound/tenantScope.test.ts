@@ -21,6 +21,7 @@ import {
   createSessionToken,
   SESSION_COOKIE_NAME,
 } from '@/features/prospecting/outbound/server/auth';
+import { startSearchRun } from '@/features/prospecting/outbound/server/observability';
 
 const dbMocks = vi.hoisted(() => ({
   exec: vi.fn(),
@@ -95,12 +96,12 @@ describe('outbound apiRouter — requireTenantScope', () => {
     expect(params[0]).toBe(COMPANY_A);
   });
 
-  it('GET /users/:userId/leads de vendedor de OUTRA company → 403', async () => {
+  it('GET /users/:userId/leads de vendedor de OUTRA company → 404 (não revelar existência)', async () => {
     dbMocks.exec.mockResolvedValueOnce(rows(['company'], [[COMPANY_B]]));
     const res = await request(buildApp())
       .get('/api/outbound/users/u-vendedor-b/leads')
       .set('Cookie', sessionCookie({ id: 'u1', role: 'admin', company: COMPANY_A }));
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(404);
   });
 
   it('GET /leads/:id/tasks une tasks a leads com filtro de company', async () => {
@@ -181,5 +182,52 @@ describe('outbound apiRouter — requireTenantScope', () => {
     const [sql, params] = dbMocks.exec.mock.calls[0];
     expect(String(sql)).toContain('company');
     expect(params).toContain(COMPANY_A);
+  });
+});
+
+describe('outbound apiRouter — search-runs com escopo de tenant (parecer 24 PR #323)', () => {
+  it('GET /search-runs/:id da MESMA company → 200', async () => {
+    const run = startSearchRun({ request: { query: 'clínicas', company: COMPANY_A } });
+    const res = await request(buildApp())
+      .get(`/api/outbound/search-runs/${run.searchId}`)
+      .set('Cookie', sessionCookie({ id: 'u1', role: 'user', company: COMPANY_A }));
+    expect(res.status).toBe(200);
+    expect(res.body.searchId).toBe(run.searchId);
+  });
+
+  it('GET /search-runs/:id de OUTRA company → 404 (PII de prospecção não vaza)', async () => {
+    const run = startSearchRun({ request: { query: 'clínicas', company: COMPANY_B } });
+    const res = await request(buildApp())
+      .get(`/api/outbound/search-runs/${run.searchId}`)
+      .set('Cookie', sessionCookie({ id: 'u1', role: 'user', company: COMPANY_A }));
+    expect(res.status).toBe(404);
+  });
+
+  it('GET /search-runs/:id de run sem company registrada → 404', async () => {
+    const run = startSearchRun({ request: { query: 'clínicas' } });
+    const res = await request(buildApp())
+      .get(`/api/outbound/search-runs/${run.searchId}`)
+      .set('Cookie', sessionCookie({ id: 'u1', role: 'user', company: COMPANY_A }));
+    expect(res.status).toBe(404);
+  });
+});
+
+describe('outbound apiRouter — POST /prospect ignora company do body (parecer 24 PR #323)', () => {
+  it('admin NÃO consegue prospectar com company de outro tenant via body', async () => {
+    // O dedupe de leads é a primeira query do handler — seu parâmetro company
+    // prova qual tenant foi efetivamente usado, mesmo que a busca falhe depois
+    // por falta de providers configurados.
+    const res = await request(buildApp())
+      .post('/api/outbound/prospect')
+      .set('Cookie', sessionCookie({ id: 'u1', role: 'admin', company: COMPANY_A }))
+      .send({ query: 'clínicas em São Paulo', company: COMPANY_B, limit: 1 });
+    expect(res.status).not.toBe(401);
+    expect(res.status).not.toBe(403);
+    const dedupeCall = dbMocks.exec.mock.calls.find(([sql]) =>
+      String(sql).includes('FROM leads'),
+    );
+    expect(dedupeCall).toBeDefined();
+    expect(dedupeCall![1][0]).toBe(COMPANY_A);
+    expect(dedupeCall![1]).not.toContain(COMPANY_B);
   });
 });

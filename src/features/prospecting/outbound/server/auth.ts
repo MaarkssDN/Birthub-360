@@ -223,21 +223,26 @@ export function requireTenantScope(req: Request, res: Response, next: NextFuncti
   next();
 }
 
-// Devolve a company da sessão já normalizada (mesma regra do login — ver
-// normalizeCompany em routes/auth.routes.ts), para uso direto em cláusulas
-// WHERE. Só chamar em rotas protegidas por requireTenantScope.
-export function tenantCompany(req: Request): string {
-  const raw = req.outboundUser?.company;
-  const trimmed = String(raw ?? '')
+// Normalização canônica de company (mesma regra de normalizeCompany do login
+// em auth.routes.ts): trim + lowercase + colapso das variações birthhub/360.
+// Exportada para comparar valores gravados em registros (ex.: SearchRun) com a
+// company da sessão sem depender de req.
+export function normalizeTenantCompany(value: unknown): string {
+  const trimmed = String(value ?? '')
     .trim()
     .toLowerCase();
   if (!trimmed) return '';
-  // Mesma normalização de normalizeCompany (auth.routes.ts): qualquer variação
-  // de "birthhub"/"birth hub"/"360" colapsa em 'birthhub360'.
   if (trimmed.includes('birthhub') || trimmed.includes('birth hub') || trimmed.includes('360')) {
     return 'birthhub360';
   }
   return trimmed;
+}
+
+// Devolve a company da sessão já normalizada (mesma regra do login — ver
+// normalizeCompany em routes/auth.routes.ts), para uso direto em cláusulas
+// WHERE. Só chamar em rotas protegidas por requireTenantScope.
+export function tenantCompany(req: Request): string {
+  return normalizeTenantCompany(req.outboundUser?.company);
 }
 
 // Exige sessão válida E role === 'admin'. Usar nas rotas mais sensíveis (ex:

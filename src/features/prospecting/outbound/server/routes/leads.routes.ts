@@ -860,12 +860,12 @@ leadsRouter.post('/prospect', heavyAiLimiter, requireAuth, async (req: Request, 
       bitrixWebhook,
     } = req.body;
 
-    const company =
-      (req as any).outboundUser &&
-      (req as any).outboundUser.role !== 'admin' &&
-      (req as any).outboundUser.company
-        ? (req as any).outboundUser.company
-        : bodyCompany;
+    // Handoff 12→05 (F2, parecer 24 PR #323): a company vem SEMPRE da sessão,
+    // normalizada como nas demais rotas (tenantCompany) — o bypass anterior
+    // `role !== 'admin' ? session : body` permitia a um admin gravar leads com
+    // a company de outro tenant via body. `bodyCompany` resta apenas como
+    // fallback defensivo (requireTenantScope já garante company na sessão).
+    const company = tenantCompany(req) || bodyCompany;
 
     const budgetTracker = createBudgetTracker(parseSearchBudget(req.body.budget));
     const searchIntent = parseSearchIntent(req.body);

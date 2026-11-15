@@ -67,3 +67,17 @@ Decidir e executar UMA das opções:
 - **Verificações:** `vitest run tests/unit/features/prospecting/outbound/` → **14/14 verde** (12 novos em `tenantScope.test.ts`: 401 sem sessão, 403 sem company, 404 cross-tenant, filtros WHERE com company); `npx tsc --noEmit` → **0 erros**.
 - **Ressalva conhecida:** `POST /error-reports` passou a exigir sessão — o botão da tela de login que usava o endpoint legado precisa migrar para `/api/error-reports` canônico (follow-up de frontend, não bloqueia o fechamento do tenancy).
 - **Revisão do Agente 24 (2026-11-14, `.agents/reviews/onda1-handoffs-24-20261114.md`): APROVADO-COM-RESSALVAS.** A frase "filtro company em todas as queries" estava imprecisa — residuais cross-tenant identificados: (1) `chat_sessions`/`chat_messages` sem coluna de tenant; (2) `POST /prospect` aceita `company` do body para role admin; (3) `GET /search-runs/:searchId` sem escopo; (4) `POST /db/query` = SQL arbitrário (exceção a registrar); (5) `normalizeCompany` colapsa "360"→birthhub360 (dívida pré-existente); (6) `POST /error-reports` exige sessão → botão da tela de login quebra (follow-up frontend). Mitigação: mount do apiRouter segue 503. Status devolvido para `em-andamento` até os follow-ups F1–F6.
+
+## Resolução — rodada 2 (2026-11-15, correções do parecer 24 PR #323)
+
+- **Executor:** Agente 00 (coordenador) executando diretamente na branch `agente/05-onda1-handoffs`.
+- **Corrigido:**
+  1. `POST /prospect`: bypass de admin removido — company agora SEMPRE da sessão via `tenantCompany(req)` (normalizada); `bodyCompany` só como fallback defensivo.
+  2. `GET /search-runs/:searchId`: escopo de tenant via `run.request.company` (gravada pelo /prospect); cross-tenant ou sem company → 404.
+  3. `GET /users/:userId/leads`: 403→404 (não revelar existência cross-tenant).
+  4. `observability.ts`: tipo `company?: 'atlas' | 'totaltrac'` corrigido para `string` (não correspondia ao uso real).
+  5. `POST /db/query`: comentário de débito registrado — decisão de modelo pendente (handoff 05→01).
+  6. Testes: `tenantScope.test.ts` ampliado para 16 testes (search-runs cross-tenant, prospect sem bypass de admin, 404 users/leads).
+- **Handoffs derivados:** `05-para-01-outbound-tenant-schema-decisao.md` (chat_sessions sem tenant + decisão /db/query), `05-para-02-error-reports-login.md`, `05-para-23-12-bland-call-abuse.md`.
+- **Verificações:** `vitest run tenantScope.test.ts` → 16/16 verde; `biome format` aplicado; `tsc --noEmit` → únicos erros são 6 módulos Capacitor não instalados no ambiente local (mesma falha em main, sem relação com o diff).
+- **Status:** em-andamento — aguarda re-verificação do Agente 24 e decisão do Agente 01 sobre schema/débito `/db/query` antes da reabertura do módulo.
