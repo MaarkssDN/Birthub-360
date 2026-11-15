@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%" fill="none" role="img" aria-labelledby="scout-title scout-desc">
+  <title id="scout-title">Scout — Detetive de Conta</title>
+  <desc id="scout-desc">Avatar não-humano representando Scout: lupa de investigação sobre mapa de sinais com pontos de evidência.</desc>
+  <defs>
+    <radialGradient id="scout-lens-grad" cx="42%" cy="38%" r="65%">
+      <stop offset="0%" stop-color="#DCFCE7"/>
+      <stop offset="45%" stop-color="#4ADE80"/>
+      <stop offset="100%" stop-color="#15803D"/>
+    </radialGradient>
+    <linearGradient id="scout-handle-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4ADE80" stop-opacity="0.95"/>
+      <stop offset="55%" stop-color="#00D4FF" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#FFC107" stop-opacity="0.9"/>
+    </linearGradient>
+    <filter id="scout-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="scout-halo-blur" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="blur2"/>
+    </filter>
+  </defs>
+
+  <circle cx="64" cy="64" r="46" fill="#4ADE80" fill-opacity="0.13" filter="url(#scout-halo-blur)"/>
+
+  <!-- Cabo da lupa -->
+  <rect x="76" y="76" width="14" height="30" rx="7" fill="url(#scout-handle-grad)" filter="url(#scout-glow)" transform="rotate(-45 83 91)"/>
+
+  <!-- Aro da lente -->
+  <circle cx="58" cy="58" r="34" fill="#0D0D0D" fill-opacity="0.4" stroke="url(#scout-handle-grad)" stroke-width="5" filter="url(#scout-glow)"/>
+
+  <!-- Mapa de sinais dentro da lente -->
+  <g stroke="#4ADE80" stroke-width="1.4" opacity="0.6" stroke-dasharray="5 5">
+    <line x1="34" y1="58" x2="82" y2="58"/>
+    <line x1="58" y1="34" x2="58" y2="82"/>
+    <line x1="41" y1="41" x2="75" y2="75"/>
+    <line x1="75" y1="41" x2="41" y2="75"/>
+  </g>
+
+  <!-- Pontos de evidência -->
+  <g filter="url(#scout-glow)">
+    <circle cx="48" cy="48" r="4" fill="#FFC107"/>
+    <circle cx="68" cy="62" r="4.5" fill="#00D4FF"/>
+    <circle cx="56" cy="70" r="3" fill="#FF2D9B"/>
+  </g>
+  <circle cx="48" cy="48" r="1.4" fill="#FFFFFF"/>
+  <circle cx="68" cy="62" r="1.6" fill="#FFFFFF"/>
+
+  <!-- Núcleo da lente -->
+  <circle cx="58" cy="58" r="12" fill="url(#scout-lens-grad)" filter="url(#scout-glow)"/>
+  <circle cx="58" cy="58" r="5" fill="#0D0D0D"/>
+  <circle cx="56" cy="56" r="1.8" fill="#4ADE80"/>
+</svg>

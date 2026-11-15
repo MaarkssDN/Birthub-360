@@ -1,0 +1,210 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "$description": "Birthub 360° — Design Tokens V2.0 (PROPOSTA — PENDENTE DE HOMOLOGAÇÃO). Espelha a nomenclatura canônica de identidade-visual/birthhub360/tokens/birthhub360.json; não substitui os tokens atuais. Paleta Neon Oficial fixada em ../FONTE-DE-VERDADE.md §3.",
+  "bh": {
+    "version": {
+      "$type": "string",
+      "$value": "v2.0-proposal",
+      "$description": "Status: proposta V2. Consumidores atuais continuam em birthhub360.json v2026.1."
+    }
+  },
+  "color": {
+    "palette": {
+      "neon": {
+        "blue":  { "$type": "color", "$value": "#00D4FF", "$description": "Marca primária, halos, CTAs frios — FIXO" },
+        "pink":  { "$type": "color", "$value": "#FF2D9B", "$description": "Energia, conversão, gradientes — FIXO" },
+        "gold":  { "$type": "color", "$value": "#FFC107", "$description": "Métricas, metas, avisos, elemento 360° — FIXO" },
+        "black": { "$type": "color", "$value": "#0D0D0D", "$description": "Fundo canônico dark — FIXO" },
+        "white": { "$type": "color", "$value": "#F8F9FF", "$description": "Texto primário dark — FIXO" },
+        "card":  { "$type": "color", "$value": "#14141A", "$description": "Superfície de cards dark — FIXO" }
+      },
+      "iris": { "$type": "color", "$value": "#8B7DFF", "$description": "IA, copiloto, agentes — FIXO" },
+      "canvas": {
+        "light": { "$type": "color", "$value": "#F4F7FB", "$description": "Fundo canônico light — FIXO" }
+      }
+    },
+    "semantic": {
+      "dark": {
+        "background":       { "$type": "color", "$value": "#0D0D0D" },
+        "surface":          { "$type": "color", "$value": "#14141A" },
+        "surfaceElevated":  { "$type": "color", "$value": "#1C1C24" },
+        "surfaceHover":     { "$type": "color", "$value": "#252532" },
+        "textPrimary":      { "$type": "color", "$value": "#F8F9FF" },
+        "textSecondary":    { "$type": "color", "$value": "#9EADC8" },
+        "textMuted":        { "$type": "color", "$value": "#A1A1B5" },
+        "border":           { "$type": "color", "$value": "rgba(0,212,255,0.22)" },
+        "borderSubtle":     { "$type": "color", "$value": "rgba(0,212,255,0.18)" },
+        "borderStrong":     { "$type": "color", "$value": "rgba(0,212,255,0.45)" },
+        "brandPrimary":     { "$type": "color", "$value": "#00D4FF" },
+        "brandSecondary":   { "$type": "color", "$value": "#FF2D9B" },
+        "brandAccent":      { "$type": "color", "$value": "#FFC107" },
+        "interactivePrimary": { "$type": "color", "$value": "#00D4FF" },
+        "interactiveHover": { "$type": "color", "$value": "#33DFFF" },
+        "focus":            { "$type": "color", "$value": "#00D4FF" },
+        "onBrand":          { "$type": "color", "$value": "#0D0D0D", "$description": "Texto sobre neon: preto-neon, nunca branco puro" },
+        "success":          { "$type": "color", "$value": "#22C55E" },
+        "warning":          { "$type": "color", "$value": "#FFC107" },
+        "danger":           { "$type": "color", "$value": "#EF4444" },
+        "info":             { "$type": "color", "$value": "#3B82F6" },
+        "iris":             { "$type": "color", "$value": "#8B7DFF" },
+        "codeBg":           { "$type": "color", "$value": "#09090D" },
+        "codeInk":          { "$type": "color", "$value": "#E6EDF3" },
+        "overlay":          { "$type": "color", "$value": "rgba(9,9,13,0.72)" },
+        "skeletonBase":     { "$type": "color", "$value": "#1C1C24" },
+        "skeletonHighlight":{ "$type": "color", "$value": "#252532" }
+      },
+      "light": {
+        "background":       { "$type": "color", "$value": "#F4F7FB" },
+        "surface":          { "$type": "color", "$value": "#FFFFFF" },
+        "surfaceElevated":  { "$type": "color", "$value": "#EDF2F7" },
+        "surfaceHover":     { "$type": "color", "$value": "#E2E8F0" },
+        "textPrimary":      { "$type": "color", "$value": "#0F172A" },
+        "textSecondary":    { "$type": "color", "$value": "#64748B" },
+        "textMuted":        { "$type": "color", "$value": "#475569" },
+        "border":           { "$type": "color", "$value": "rgba(2,132,199,0.25)" },
+        "borderSubtle":     { "$type": "color", "$value": "rgba(11,19,43,0.12)" },
+        "borderStrong":     { "$type": "color", "$value": "rgba(2,132,199,0.5)" },
+        "brandPrimary":     { "$type": "color", "$value": "#0284C7", "$description": "Rampa AA light — DESIGN.md" },
+        "brandSecondary":   { "$type": "color", "$value": "#D91B7C", "$description": "Rampa AA light — DESIGN.md" },
+        "brandAccent":      { "$type": "color", "$value": "#D97706", "$description": "Rampa AA light — DESIGN.md" },
+        "interactivePrimary": { "$type": "color", "$value": "#0284C7" },
+        "interactiveHover": { "$type": "color", "$value": "#0369A1" },
+        "focus":            { "$type": "color", "$value": "#0284C7" },
+        "onBrand":          { "$type": "color", "$value": "#FFFFFF" },
+        "success":          { "$type": "color", "$value": "#16A34A" },
+        "warning":          { "$type": "color", "$value": "#B45309" },
+        "danger":           { "$type": "color", "$value": "#DC2626" },
+        "info":             { "$type": "color", "$value": "#2563EB" },
+        "iris":             { "$type": "color", "$value": "#7C3AED" },
+        "codeBg":           { "$type": "color", "$value": "#F8FAFC" },
+        "codeInk":          { "$type": "color", "$value": "#0B132B" },
+        "overlay":          { "$type": "color", "$value": "rgba(15,23,42,0.45)" },
+        "skeletonBase":     { "$type": "color", "$value": "#EDF2F7" },
+        "skeletonHighlight":{ "$type": "color", "$value": "#E2E8F0" }
+      }
+    },
+    "heading": {
+      "cyan":   { "$type": "color", "$value": "#00D4FF" },
+      "blue":   { "$type": "color", "$value": "#3B82F6" },
+      "gold":   { "$type": "color", "$value": "#FFC107" },
+      "pink":   { "$type": "color", "$value": "#FF2D9B" },
+      "iris":   { "$type": "color", "$value": "#8B7DFF" },
+      "success":{ "$type": "color", "$value": "#22C55E" },
+      "danger": { "$type": "color", "$value": "#EF4444" }
+    }
+  },
+  "font": {
+    "display":   { "$type": "fontFamily", "$value": "Sora, system-ui, -apple-system, sans-serif" },
+    "interface": { "$type": "fontFamily", "$value": "Inter, system-ui, -apple-system, sans-serif" },
+    "data":      { "$type": "fontFamily", "$value": "IBM Plex Mono, ui-monospace, monospace" },
+    "tracking": {
+      "display":   { "$type": "number", "$value": -0.02 },
+      "interface": { "$type": "number", "$value": -0.012 }
+    },
+    "openType": {
+      "interface": { "$type": "string", "$value": "\"cv05\", \"cv11\", \"ss01\"" }
+    }
+  },
+  "text": {
+    "2xs":  { "$type": "dimension", "$value": "0.6875rem" },
+    "xs":   { "$type": "dimension", "$value": "0.75rem" },
+    "sm":   { "$type": "dimension", "$value": "0.8125rem" },
+    "md":   { "$type": "dimension", "$value": "0.9375rem" },
+    "lg":   { "$type": "dimension", "$value": "1.0625rem" },
+    "xl":   { "$type": "dimension", "$value": "1.25rem" },
+    "2xl":  { "$type": "dimension", "$value": "1.5rem" },
+    "3xl":  { "$type": "dimension", "$value": "1.875rem" },
+    "4xl":  { "$type": "dimension", "$value": "2.375rem" },
+    "5xl":  { "$type": "dimension", "$value": "3.25rem" },
+    "6xl":  { "$type": "dimension", "$value": "4.5rem" }
+  },
+  "space": {
+    "1":  { "$type": "dimension", "$value": "4px" },
+    "2":  { "$type": "dimension", "$value": "8px" },
+    "3":  { "$type": "dimension", "$value": "12px" },
+    "4":  { "$type": "dimension", "$value": "16px" },
+    "5":  { "$type": "dimension", "$value": "24px" },
+    "6":  { "$type": "dimension", "$value": "32px" },
+    "7":  { "$type": "dimension", "$value": "48px" },
+    "8":  { "$type": "dimension", "$value": "64px" },
+    "9":  { "$type": "dimension", "$value": "96px" },
+    "10": { "$type": "dimension", "$value": "128px" }
+  },
+  "radius": {
+    "xs":     { "$type": "dimension", "$value": "6px" },
+    "sm":     { "$type": "dimension", "$value": "8px" },
+    "control":{ "$type": "dimension", "$value": "12px" },
+    "card":   { "$type": "dimension", "$value": "16px" },
+    "modal":  { "$type": "dimension", "$value": "20px" },
+    "pill":   { "$type": "dimension", "$value": "9999px" }
+  },
+  "layout": {
+    "gridColumns": { "$type": "number", "$value": 12 },
+    "container": {
+      "sm":  { "$type": "dimension", "$value": "640px" },
+      "md":  { "$type": "dimension", "$value": "768px" },
+      "lg":  { "$type": "dimension", "$value": "1024px" },
+      "xl":  { "$type": "dimension", "$value": "1280px" },
+      "2xl": { "$type": "dimension", "$value": "1440px" }
+    },
+    "breakpoint": {
+      "sm":  { "$type": "dimension", "$value": "640px" },
+      "md":  { "$type": "dimension", "$value": "768px" },
+      "lg":  { "$type": "dimension", "$value": "1024px" },
+      "xl":  { "$type": "dimension", "$value": "1280px" },
+      "2xl": { "$type": "dimension", "$value": "1536px" }
+    }
+  },
+  "gradient": {
+    "brand":    { "$type": "string", "$value": "linear-gradient(135deg, #00D4FF 0%, #FF2D9B 50%, #FFC107 100%)" },
+    "cta":      { "$type": "string", "$value": "linear-gradient(135deg, #FF2D9B 0%, #00D4FF 100%)" },
+    "vancouver":{ "$type": "string", "$value": "linear-gradient(135deg, #0EA5E9 0%, #3B82F6 50%, #8B5CF6 100%)" },
+    "orbit":    { "$type": "string", "$value": "conic-gradient(from 0deg, #FFC107, #FF2D9B, #00D4FF, #FFC107)" },
+    "cyanPink": { "$type": "string", "$value": "linear-gradient(135deg, #00D4FF 0%, #FF2D9B 100%)" },
+    "gold":     { "$type": "string", "$value": "linear-gradient(135deg, #FFC107 0%, #FF8F00 100%)" },
+    "glow":     { "$type": "string", "$value": "radial-gradient(circle at 50% 0%, rgba(0,212,255,0.18), transparent 70%)" }
+  },
+  "shadow": {
+    "card":     { "$type": "shadow", "$value": "0 6px 20px rgba(0,0,0,0.25)" },
+    "elevated": { "$type": "shadow", "$value": "0 12px 30px rgba(0,0,0,0.65)" },
+    "overlay":  { "$type": "shadow", "$value": "0 24px 64px rgba(0,0,0,0.7)" },
+    "focus":    { "$type": "shadow", "$value": "0 0 0 3px rgba(0,212,255,0.2)" }
+  },
+  "glow": {
+    "blue": { "$type": "shadow", "$value": "0 0 24px rgba(0,212,255,0.45)" },
+    "pink": { "$type": "shadow", "$value": "0 0 24px rgba(255,45,155,0.45)" },
+    "gold": { "$type": "shadow", "$value": "0 0 24px rgba(255,193,7,0.45)" },
+    "iris": { "$type": "shadow", "$value": "0 0 24px rgba(139,125,255,0.45)" }
+  },
+  "moduleAccent": {
+    "$description": "Mecanismo V2 de identidade contextual: UM sistema, accent por módulo derivado da paleta. Mapeamento módulo→accent é PENDENTE DE HOMOLOGAÇÃO.",
+    "hub":  { "$type": "color", "$value": "{color.semantic.dark.interactivePrimary}" },
+    "p01":  { "$type": "color", "$value": "{color.semantic.dark.interactivePrimary}" },
+    "p02":  { "$type": "color", "$value": "{color.semantic.dark.brandSecondary}" },
+    "p03":  { "$type": "color", "$value": "{color.semantic.dark.brandAccent}" },
+    "p04":  { "$type": "color", "$value": "{color.semantic.dark.iris}" },
+    "p05":  { "$type": "color", "$value": "{color.semantic.dark.success}" },
+    "p06":  { "$type": "color", "$value": "{color.semantic.dark.info}" },
+    "p07":  { "$type": "color", "$value": "{color.semantic.dark.brandAccent}" },
+    "p08":  { "$type": "color", "$value": "{color.semantic.dark.brandSecondary}" },
+    "m09":  { "$type": "color", "$value": "{color.semantic.dark.iris}" },
+    "m10":  { "$type": "color", "$value": "{color.semantic.dark.interactivePrimary}" },
+    "m11":  { "$type": "color", "$value": "{color.semantic.dark.brandSecondary}" }
+  },
+  "motion": {
+    "duration": {
+      "instant":  { "$type": "duration", "$value": "100ms" },
+      "fast":     { "$type": "duration", "$value": "150ms" },
+      "normal":   { "$type": "duration", "$value": "250ms" },
+      "slow":     { "$type": "duration", "$value": "350ms" },
+      "gentle":   { "$type": "duration", "$value": "600ms" },
+      "ambient":  { "$type": "duration", "$value": "800ms" }
+    },
+    "easing": {
+      "standard":   { "$type": "cubicBezier", "$value": [0.4, 0, 0.2, 1] },
+      "enter":      { "$type": "cubicBezier", "$value": [0.22, 1, 0.36, 1] },
+      "exit":       { "$type": "cubicBezier", "$value": [0.4, 0, 1, 1] },
+      "emphasized": { "$type": "cubicBezier", "$value": [0.16, 1, 0.3, 1] }
+    }
+  }
+}
