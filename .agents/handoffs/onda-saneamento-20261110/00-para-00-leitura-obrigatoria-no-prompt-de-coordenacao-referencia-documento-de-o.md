@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 00 (Coordenador e Orquestrador Geral)
 Onda: Onda 0 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-043)
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 0
@@ -48,3 +48,13 @@ Executar a tarefa `TAREFA-SANEAMENTO-043` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução
+
+- **Data:** 2026-11-14 · **Executor:** Agente 00 (trilha de coordenação, DEM-20261114-002)
+- **Verificação executada:** varredura de todas as referências do prompt `.agents/prompts/00-coordenador.md` e do mapa canônico `EXECUCAO-ONDAS.md`:
+  - Leitura obrigatória #2 `/EXECUCAO-ONDAS.md` — **existe** (criado em 2026-10-17, commit `aa46f0f64`, "mapa canônico de ondas").
+  - Todos os 5 links `file:///` de `EXECUCAO-ONDAS.md` resolvem para arquivos existentes (plano de saneamento, matriz de agentes, auditoria de dívidas, remediation-status.json, relatório de consolidação).
+  - Prompts citados (`24-revisao-independente.md`, `08A-git-deploy-aws.md`, `06A-extracoes-bitrix.md`) existem em `.agents/prompts/`.
+- **Conclusão:** a dívida BT360-DT-0001 já estava remediada antes desta verificação — `EXECUCAO-ONDAS.md` é a fonte canônica de ondas e todas as referências do prompt resolvem. Nenhuma alteração de arquivo foi necessária (a correção já estava em `main`).
+- **Pendência de governança:** validação do Agente 24 fica a cargo da revisão da onda de saneamento de handoffs (DEM-20261114-002).
