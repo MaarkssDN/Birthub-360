@@ -61,7 +61,9 @@ describe('Agent Builder / Fábrica de Agentes (PROMPT 10)', () => {
     await requestContext.run({ tenantId: ORG_ID }, async () => {
       await prisma.agentBuildProposal.deleteMany({ where: { organizationId: ORG_ID } });
     });
-    await prisma.auditLog.deleteMany({ where: { entity: 'AgentBuildProposal' } });
+    // AuditLog é append-only desde 20261114160000_auditlog_append_only_immutability —
+    // DELETE é bloqueado para qualquer papel (inclusive o migrator). Nenhum teste desta
+    // suíte asserta contagem global de AuditLog; o resíduo não interfere em runs futuros.
     await prisma.userJobRole.deleteMany({
       where: { organizationId: { in: [ORG_ID, OTHER_ORG_ID] } },
     });

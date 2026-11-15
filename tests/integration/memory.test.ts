@@ -109,8 +109,10 @@ describe('Memória + Aprendizado Contínuo Governado (PROMPT 9)', () => {
       await prisma.organizationMemoryRecord.deleteMany({ where: { organizationId: ORG_ID } });
     });
     await prisma.agentExecution.deleteMany({ where: { organizationId: ORG_ID } });
-    await prisma.auditLog.deleteMany({ where: { entity: 'LearningCandidate' } });
-    await prisma.auditLog.deleteMany({ where: { entity: { contains: 'MemoryRecord' } } });
+    // AuditLog é append-only desde 20261114160000_auditlog_append_only_immutability —
+    // DELETE é bloqueado para qualquer papel (inclusive o migrator). As linhas de
+    // auditoria desta suíte usam entity/entityId de registros criados por execução
+    // (ids cuid, sem asserção de contagem global), então o resíduo não interfere.
     await prisma.userJobRole.deleteMany({
       where: { organizationId: { in: [ORG_ID, OTHER_ORG_ID] } },
     });
