@@ -1,5 +1,6 @@
 import { env } from '../../../config/env.js';
 import { AuditService } from '../../../lib/audit/audit.service.js';
+import { circuitGuard } from '../../../lib/circuitGuard.js';
 import { DisallowedHostError, fetchWithTimeout, HttpTimeoutError } from '../../../lib/http.js';
 import { logger } from '../../../lib/logger.js';
 import { prisma } from '../../../lib/prisma.js';
@@ -70,8 +71,14 @@ async function stripeRequest(
   path: string,
   init: { method?: string; body?: URLSearchParams; idempotencyKey?: string } = {},
 ): Promise<{ ok: boolean; status: number; json: Record<string, unknown> }> {
-  const res = await retryWithBackoff(
-    async () => {
+  // MEL-42: circuit breaker compartilhado (src/lib/circuitGuard.ts) — falhas de provedor
+  // (rede/timeout/429/5xx após esgotar o retry acima) abrem o circuito 'stripe' e as chamadas
+  // seguintes falham rápido com CircuitOpenError. Respostas HTTP "de negócio" (4xx como 401 de
+  // chave inválida) retornam normalmente e contam como sucesso — o provedor está saudável,
+  // o problema é a credencial, não a disponibilidade da API.
+  const res = await circuitGuard.execute('stripe', () =>
+    retryWithBackoff(
+      async () => {
       let response: Response;
       try {
         response = await fetchWithTimeout(
@@ -133,8 +140,9 @@ async function stripeRequest(
       // Qualquer outra resposta (2xx de sucesso, ou 4xx "de negócio" como 401/400) é definitiva —
       // retorna direto pro chamador interpretar, sem consumir mais tentativas.
       return response;
-    },
-    { label: 'stripe', maxAttempts: STRIPE_MAX_ATTEMPTS },
+      },
+      { label: 'stripe', maxAttempts: STRIPE_MAX_ATTEMPTS },
+    ),
   );
   const json = (await res.json().catch(() => ({}))) as Record<string, unknown>;
   return { ok: res.ok, status: res.status, json };

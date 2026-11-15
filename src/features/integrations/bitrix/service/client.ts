@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { circuitGuard } from '../../../../lib/circuitGuard.js';
 import { logger } from '../../../../lib/logger.js';
 import { prisma } from '../../../../lib/prisma.js';
 import {
@@ -537,6 +538,12 @@ export async function callBitrix<T>(
         options.signal,
       );
       if (CIRCUIT_BREAKER_ENABLED) recordCircuitSuccess(webhookUrl);
+      // MEL-42: alimenta o circuitGuard GLOBAL ('bitrix') só para observabilidade — o snapshot
+      // de /health/ready passa a refletir a saúde agregada do provedor. NÃO gateamos chamadas
+      // por este circuito global de propósito: o breaker local acima já é chaveado por
+      // webhookUrl (granularidade correta por conexão/tenant); um circuito global aberto por
+      // UMA conexão ruim faria TODOS os tenants falharem rápido por engano.
+      circuitGuard.recordSuccess('bitrix');
       return result;
     } catch (err: any) {
       if (err instanceof BitrixDefinitiveError) {
@@ -546,6 +553,12 @@ export async function callBitrix<T>(
         );
         if (CIRCUIT_BREAKER_ENABLED && (err.statusCode === 401 || err.statusCode === 403)) {
           recordCircuitFailure(webhookUrl);
+        }
+        // MEL-42: 401/403 = credencial/conexão quebrada — sinal de saúde do provedor para o
+        // circuitGuard global. Erros definitivos "comuns" (payload) não contam, mesma regra
+        // do breaker local.
+        if (err.statusCode === 401 || err.statusCode === 403) {
+          circuitGuard.recordFailure('bitrix', err);
         }
         throw err;
       }
@@ -563,6 +576,9 @@ export async function callBitrix<T>(
   }
 
   if (CIRCUIT_BREAKER_ENABLED) recordCircuitFailure(webhookUrl);
+  // MEL-42: esgotamento de tentativas por falha transitória sustentada = provedor
+  // indisponível — conta para o circuitGuard global (observabilidade em /health/ready).
+  circuitGuard.recordFailure('bitrix', lastError);
 
   // Tentativas esgotadas: converte pro tipo de erro público (AppError) que o resto do app espera,
   // preservando o correlationId no log (nunca na mensagem devolvida ao usuário, que não deve
