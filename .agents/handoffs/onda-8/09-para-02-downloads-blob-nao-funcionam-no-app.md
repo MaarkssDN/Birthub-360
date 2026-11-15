@@ -76,3 +76,55 @@ do Agente 09 proíbe explicitamente.
 
 ## Resolução
 (Coordenador): O comportamento está documentado e avaliado. Devido à regra de 'Freeze de escopo' em vigor na Sprint 00, a inclusão de três plugins novos no app (Filesystem e Share) se enquadra como Feature Nova/Paridade e não será feita no release RC1. Fica marcado como resolvido (postponed para Sprint pós-13).
+
+## Resolução — implementação (Agente 02 — 2026-11-14)
+
+A decisão de "postponed para Sprint pós-13" registrada acima foi superada
+por autorização explícita do usuário nesta missão (Onda 2), com aprovação
+do Agente 00 para as dependências de `package.json`/lockfile.
+
+Implementado:
+- Novo helper compartilhado `src/lib/nativeDownload.ts` —
+  `downloadBlob(blob, filename)`:
+  - Nativo (`Capacitor.isNativePlatform()`): Blob → base64 via `FileReader`
+    → `Filesystem.writeFile` em `Directory.Cache` (filename sanitizado,
+    sem separadores de caminho/controle — nunca path absoluto) →
+    `Share.share({ files: [written.uri] })` usando o `uri` retornado pelo
+    `writeFile`. Falhas nativas propagam erro para o chamador (toast).
+  - Web: fallback preservado `URL.createObjectURL` + `<a download>` +
+    `revokeObjectURL`.
+- Dependências adicionadas via `npm install` (versões publicadas >7 dias
+  antes, verificado via `npm view`): `@capacitor/filesystem@^8.1.5` e
+  `@capacitor/share@^8.0.3`.
+- Migração dos pontos de download Blob encontrados (somente o mecanismo de
+  entrega; a geração do conteúdo CSV/XLSX não foi duplicada nem alterada):
+  - `src/components/CrmBoard.tsx` (export CSV de leads)
+  - `src/features/intelligence/components/AutomationGuide.tsx`
+  - `src/features/intelligence/components/RobustScriptGenerator.tsx`
+  - `src/features/intelligence/components/SuperagentCreator.tsx`
+  - `src/features/intelligence/components/UniversalEcosystemPanel.tsx`
+    (export do ecossistema)
+  - `src/features/prospecting/components/ProspectingHub.tsx` (export de
+    prospects CSV/XLSX)
+
+Testes: `src/lib/__tests__/nativeDownload.unit.test.ts` — 4 testes (fallback
+web, caminho nativo writeFile+share, sanitização de filename, propagação de
+erro). `npx vitest run -c vitest.unit.config.ts` nos dois arquivos novos:
+10/10 passando.
+
+Gates: `npx tsc --noEmit` limpo; `npx biome check` nos arquivos tocados sem
+erros.
+
+Pendências honestas:
+- NÃO validado em dispositivo/emulador real (sem SDK Android/iOS nesta
+  sessão). O caminho nativo segue a API documentada dos plugins; recomenda-se
+  smoke test no app empacotado — propriedade do Agente 09.
+- `Directory.Cache` usa storage interno do app: no Android não requer
+  `WRITE_EXTERNAL_STORAGE`; `@capacitor/share` usa intents/folha nativa
+  padrão. Nenhuma alteração em `android/` foi necessária nesta entrega —
+  se o build nativo exigir merge/registro de permissões, abrir handoff para
+  o Agente 09.
+- Outros usos de `URL.createObjectURL` avaliados e NÃO migrados por não serem
+  "download de arquivo gerado" (pré-visualização de áudio/imagem, abertura de
+  URL, CohortAnalysis, commercial intelligence, UnifiedTimelineWidget,
+  outbound app): fora do escopo deste handoff, ficam como avaliação futura.
