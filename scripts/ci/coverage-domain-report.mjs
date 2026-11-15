@@ -15,6 +15,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import istanbulLibCoverage from 'istanbul-lib-coverage';
+import { COVERAGE_DOMAINS } from './coverage-domains.mjs';
 
 const { createCoverageMap } = istanbulLibCoverage;
 
@@ -28,53 +29,11 @@ if (!existsSync(coveragePath)) {
   process.exit(1);
 }
 
-// Domínios auditados pela Onda 6 — manter em sincronia com os thresholds por
-// domínio de vitest.unit.config.ts (chaves de `coverage.thresholds`).
-const DOMAINS = {
-  auth: [
-    'src/lib/auth/**',
-    'src/lib/auth.ts',
-    'src/lib/auth-client.ts',
-    'src/bootstrap/auth.ts',
-    'src/features/auth/**',
-    'src/shared/middlewares/authenticateToken.ts',
-    'src/shared/middlewares/authorization.ts',
-    'src/lib/voice-hub/lib/auth-tokens.ts',
-    'src/lib/voice-hub/routes/auth.routes.ts',
-    'src/lib/voice-hub/controllers/auth.controller.ts',
-    'src/features/prospecting/outbound/server/auth.ts',
-    'src/features/prospecting/outbound/server/routes/auth.routes.ts',
-  ],
-  billing: [
-    'src/features/billing/**',
-    'src/lib/voice-hub/controllers/billing.controller.ts',
-    'src/lib/voice-hub/repositories/billingRepository.ts',
-    'src/lib/voice-hub/routes/billing.routes.ts',
-    'src/lib/voice-hub/services/billingService.ts',
-    'src/features/voice-hub/pages/Dashboard/Billing.tsx',
-    'src/services/telephony/billing.service.ts',
-  ],
-  tenancy: [
-    'src/lib/tenant-prisma.ts',
-    'src/lib/tenant-scoping-registry.ts',
-    'src/lib/prisma-interceptors.ts',
-    'src/lib/context.ts',
-    'src/lib/async-context.ts',
-    'src/lib/queue/outbox/tenantGuard.ts',
-    'src/shared/middlewares/tenantRateLimiter.ts',
-    'src/lib/voice-hub/repositories/tenantRepository.ts',
-    'src/lib/voice-hub/repositories/tenantAiConsentRepository.ts',
-  ],
-  ia: [
-    'src/lib/ai/**',
-    'src/features/copiloto-ia/**',
-    'src/features/intelligence/**',
-    'src/features/ai-voice/**',
-    'src/lib/voice-hub/controllers/ai.controller.ts',
-    'src/lib/voice-hub/routes/ai.routes.ts',
-    'src/lib/voice-hub/middlewares/aiConsent.ts',
-  ],
-};
+// Domínios auditados pela Onda 6 — fonte única em coverage-domains.mjs, a
+// mesma que gera os thresholds por domínio de vitest.unit.config.ts.
+const DOMAINS = Object.fromEntries(
+  Object.entries(COVERAGE_DOMAINS).map(([name, d]) => [name, d.globs]),
+);
 
 // Converte glob simples ('**', '*', '?') em RegExp sobre caminhos com '/'.
 function globToRegExp(glob) {
@@ -160,14 +119,29 @@ console.log(
     `funcs=${globalSummary.functions.toFixed(2)}%`,
 );
 console.log('');
+const METRIC_KEY = {
+  lines: 'lines',
+  statements: 'statements',
+  branches: 'branches',
+  functions: 'functions',
+};
+
 for (const name of Object.keys(DOMAINS)) {
   const s = summary(maps[name]);
+  const floor = COVERAGE_DOMAINS[name]?.thresholds ?? {};
+  const checks = Object.entries(METRIC_KEY).map(([label, key]) => {
+    const min = floor[key];
+    if (min === undefined) return `${label}=?`;
+    const ok = s[key] >= min;
+    return `${label}=${s[key].toFixed(2)}%>=${min}%${ok ? '✓' : '✗'}`;
+  });
   console.log(
-    `${name.padEnd(10)} files=${String(s.files).padStart(4)} lines=${s.lines.toFixed(2).padStart(6)}% ` +
-      `stmts=${s.statements.toFixed(2).padStart(6)}% branches=${s.branches.toFixed(2).padStart(6)}% ` +
-      `funcs=${s.functions.toFixed(2).padStart(6)}%`,
+    `${name.padEnd(10)} files=${String(s.files).padStart(4)} ${checks.join(' ')}`,
   );
   if (showFiles) {
     for (const f of matchedFiles[name].sort()) console.log(`    - ${f}`);
   }
 }
+console.log('');
+console.log('Legenda: métrica=pct>=piso✓/✗ — o gate real é avaliado pelo Vitest');
+console.log('(coverage.thresholds em vitest.unit.config.ts); ✗ aqui antecipa falha.');
