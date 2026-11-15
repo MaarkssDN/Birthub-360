@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 00 (Coordenador e Orquestrador Geral)
 Onda: Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-011)
-Status: aberto
+Status: em-andamento (agendado para Onda 5 — decisão do 00 em 2026-11-14)
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 5
@@ -48,3 +48,17 @@ Executar a tarefa `TAREFA-SANEAMENTO-011` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Decisão do orquestrador (Agente 00 — 2026-11-14)
+
+- **Destino confirmado:** Onda 5 do programa de ondas (backlog HTML).
+- **Dono designado:** Agente 14 (Ambiente de Execução e Test Harness) — já entregou
+  MEL-24 (dependency-cruiser) na Onda 3 e conhece a config atual.
+- **Escopo da missão:** estender a verificação de fronteiras para cobrir os slots de
+  propriedade do `AGENTS.md` §15 (schema.prisma/migrations→01, workflows/docker→08,
+  android/capacitor→09, identidade-visual→11, prompts→humano, runs→00,
+  reviews→24/00, handoffs→cada agente), via regras depcruise ou verificador dedicado
+  com teste de sucesso e de falha. `package.json`/`server.ts` seguem exigindo
+  aprovação explícita do 00 — o verificador deve apenas detectar edição não
+  autorizada, não bloqueá-la automaticamente sem fluxo de aprovação.
+- **Revisão:** Agente 24 obrigatória antes do merge.

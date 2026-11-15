@@ -3,7 +3,7 @@
 De: Devin (assessor de arquitetura, sob demanda do usuário)
 Para: 00 — Coordenador
 Onda: Onda 01–04 executadas; Onda 05 (QA/homologação) em consolidação
-Status: em-andamento
+Status: resolvido
 Prioridade: normal
 Sprint destino: a definir pelo 00
 
@@ -143,3 +143,14 @@ que estiver na URL — reload-safe).
   (navegação sobrecarregada, módulos sem identidade própria).
 - **Keep-alive de rotas**: preserva estado mas quebra deep-link e aumenta memória no
   mobile; URL params já é o padrão do projeto.
+
+## Resolução (Agente 00 — 2026-11-14)
+
+Decisão: **ENCERRADO como resolvido**. Verificado em `main`:
+`src/components/layout/AssistantsDock.tsx`, `ModuleNavPanel.tsx`,
+`docs/architecture/NAVEGACAO-MODULAR.md` e integração no `MainLayout`/`Sidebar`
+presentes e funcionais. A implementação divergiu da proposta em 3 pontos
+(documentados no cabeçalho: painel lateral em vez de top tabs, assistentes
+simultâneos, estado híbrido URL+sessionStorage) — divergência aprovada e já
+entregue. Ondas A–E descritas foram superadas pela execução real; não há trabalho
+pendente nesta frente.
