@@ -1,7 +1,7 @@
 - De: Auditoria ad-hoc (Devin CLI) — promover a 00 se virar missão formal
 - Para: 02 — Produto e UX
 - Onda: landing-360-auditoria
-- Status: em-andamento
+- Status: resolvido
 - Prioridade: bloqueador
 
 ## Problema
@@ -54,3 +54,11 @@ Feito:
 - Teste unitário atualizado mockando 200 do contrato + marcando consent.
 
 Bloqueado em: endpoint público de captação (Agente 01 — handoff `01-para-02-contrato-api-leads`) e validação LGPD do consent (Agente 21). Até lá o form falha observavelmente.
+
+## Resolução final (Agente 00 via Agente 02 — 2026-11-14, Onda 1 DEM-20261114-002)
+
+- **Endpoint confirmado:** `POST /api/public/demo-leads` existe e está montado (`src/bootstrap/routes.ts` L108, `publicLeadRoutes`, rate limit `publicLeadLimiter`). O bloqueio "endpoint do Agente 01" está superado — implementado no PR #216.
+- **Contrato validado campo a campo:** `publicLeadSchema` exige `nome`, `email`, `equipe`, `consent:true`, `consentTextVersion`, `purpose`; honeypot `website` aceito e descartado pela rota (`isHoneypotFilled` → 202 genérico). O payload do form bate exatamente com o schema.
+- **Complementos desta onda (commits `c615bf94c` + `dd47eb58f`):** mapeamento de códigos de erro do endpoint (`invalid_payload`/`rate_limited`/`unavailable` → mensagens observáveis), campo honeypot `website` incluído no submit, teste unitário cobrindo mapeamento de erro e omissão do honeypot vazio.
+- **Verificação:** `vitest run tests/unit/features/landing/Landing360.test.tsx` → 19 testes; o novo teste de erro passa; 1 flake de timeout isolado (`pilares de alta conversão`, passa isolado em ~12s — instabilidade conhecida de suíte pesada, não regressão).
+- **Pendência que NÃO é deste handoff:** opt-in pré-marcado — já coberto pelo handoff separado `02-para-21-validacao-consentimento-lgpd.md` (Onda 2, Agente 21). O form já exige consent desmarcado por padrão.

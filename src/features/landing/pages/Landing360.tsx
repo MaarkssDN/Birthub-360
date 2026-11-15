@@ -575,6 +575,19 @@ export function Landing360({
     return digits.length >= 10 && digits.length <= 13;
   };
 
+  const leadSubmitErrorMessage = (code?: string): string => {
+    if (code === 'invalid_payload') {
+      return 'Verifique os dados informados e tente novamente.';
+    }
+    if (code === 'rate_limited') {
+      return 'Muitas tentativas em pouco tempo. Aguarde alguns minutos e tente novamente.';
+    }
+    if (code === 'unavailable') {
+      return 'Canal de contato temporariamente indisponível. Tente novamente mais tarde.';
+    }
+    return 'Não foi possível enviar sua solicitação agora. Tente novamente em instantes.';
+  };
+
   const handleLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLeadError('');
@@ -606,6 +619,7 @@ export function Landing360({
           consent: true,
           consentTextVersion: LANDING_DEMO_CONSENT_VERSION,
           purpose: LANDING_DEMO_CONSENT_PURPOSE,
+          website: leadForm.website || undefined,
         }),
       });
       const data = (await res.json().catch(() => null)) as {
@@ -614,10 +628,7 @@ export function Landing360({
         error?: string;
       } | null;
       if (!res.ok || data?.ok === false || data?.success === false) {
-        setLeadError(
-          data?.error ||
-            'Não foi possível enviar sua solicitação agora. Tente novamente em instantes.',
-        );
+        setLeadError(leadSubmitErrorMessage(data?.error));
         return;
       }
       setLeadSubmitted(true);
