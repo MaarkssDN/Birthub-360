@@ -673,7 +673,7 @@ export function Landing360({ initialScreen = 'intro' }: { initialScreen?: 'intro
                 transition={{ duration: 0.5, delay: i * 0.1 }}
               >
                 <div className="lp-metric-val">
-                  <CountUp to={m.value} suffix={m.suffix} decimals={m.suffix === '%' ? 1 : 0} />
+                  <CountUp to={m.value} suffix={m.suffix} decimals={0} />
                 </div>
                 <div className="lp-metric-lbl">{m.label}</div>
                 <div className="lp-metric-det">{m.detail}</div>

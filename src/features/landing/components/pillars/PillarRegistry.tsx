@@ -403,7 +403,7 @@ export function VisualizerAutomacao({ theme = 'dark' }: { theme?: 'dark' | 'ligh
             isDark ? 'text-amber-400' : 'text-amber-700'
           }`}
         >
-          <Network className="w-3.5 h-3.5" /> Gateway de APIs & Webhooks • Telemetria Ativa
+          <Network className="w-3.5 h-3.5" /> Gateway de APIs & Webhooks • Telemetria ilustrativa
         </span>
         <span
           className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
@@ -675,7 +675,7 @@ export function VisualizerFieldSales({ theme = 'dark' }: { theme?: 'dark' | 'lig
           <span
             className={`text-[11px] font-semibold ${isDark ? 'text-slate-200' : 'text-slate-900'}`}
           >
-            Visita técnica — Cliente Aurora
+            Visita técnica — Cliente Aurora (exemplo)
           </span>
           <span
             className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
