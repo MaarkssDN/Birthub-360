@@ -5,7 +5,7 @@ import {
   SystemMessage,
 } from '@langchain/core/messages';
 import type { RunnableConfig } from '@langchain/core/runnables';
-import { Annotation, StateGraph } from '@langchain/langgraph';
+import { StateGraph } from '@langchain/langgraph';
 import type { ChatOpenAI } from '@langchain/openai';
 import { checkpointer, ensureCheckpointerReady } from '../../../lib/ai/checkpointer.js';
 import { getAiModel, logAiUsage } from '../../../lib/ai/gateway.js';
@@ -21,6 +21,11 @@ import { assertPiiExternalConsent } from '../services/guardrails.service.js';
 // tool-calling/structured output — o wrapper só devolve texto livre, e a decisão de roteamento
 // precisa ser JSON confiável.
 import { buildModelWithFallback } from './fallback.util.js';
+import {
+  SwarmState,
+  type SwarmRoute,
+  type SwarmStateType,
+} from './supervisor/swarm.state.js';
 import { bdrNode, closerNode, crmNode, opsNode, sdrNode } from './supervisor/specialistNodes.js';
 import { buildEvent, toAiMessage, type SwarmEvent } from './supervisor/swarm.events.js';
 import {
@@ -79,7 +84,10 @@ function getSupervisorLlm() {
   return cachedSupervisorLlm;
 }
 
-export type SwarmRoute = SwarmAgentKey | 'finish';
+// SwarmRoute/SwarmStateType/SwarmState vivem em supervisor/swarm.state.ts (módulo folha)
+// para quebrar o ciclo type-only com supervisor/specialistNodes.ts — re-exportados aqui
+// para não quebrar consumidores que importam de supervisor.agent.ts.
+export type { SwarmRoute, SwarmStateType } from './supervisor/swarm.state.js';
 
 // Tipos de evento do enxame extraídos para supervisor/swarm.events.ts
 // (handoff 00-para-13) — re-exportados aqui para não quebrar consumidores.
@@ -128,59 +136,6 @@ const AGENT_INFO: Record<
       'A missão pede uma AÇÃO CONCRETA a ser executada agora (agendar, notificar, criar tarefa) — não escolha só para produzir mais uma análise ou opinião.',
   },
 };
-
-const SwarmState = Annotation.Root({
-  messages: Annotation<BaseMessage[]>({
-    reducer: (left, right) => left.concat(right),
-    default: () => [],
-  }),
-  mission: Annotation<string>({
-    reducer: (left, right) => right ?? left,
-    default: () => '',
-  }),
-  instruction: Annotation<string>({
-    reducer: (left, right) => right ?? left,
-    default: () => '',
-  }),
-  // ID real de Lead do CRM, opcional — ver sdrNode: sem isto, SDRQualificationAgent.run() recebia
-  // o texto livre da missão/instrução no lugar de um ID de lead de verdade e a ferramenta de
-  // contexto sempre falhava com "lead não encontrado" (IA-003).
-  leadId: Annotation<string>({
-    reducer: (left, right) => right ?? left,
-    default: () => '',
-  }),
-  subSwarm: Annotation<SubSwarmDomain>({
-    reducer: (left, right) => right ?? left,
-    default: () => 'commercial',
-  }),
-  catalogMatches: Annotation<SemanticAgentMatch[]>({
-    reducer: (left, right) => (right && right.length > 0 ? right : left),
-    default: () => [],
-  }),
-  selectedCatalogAgent: Annotation<string | null>({
-    reducer: (left, right) => right ?? left,
-    default: () => null,
-  }),
-  next: Annotation<SwarmRoute>({
-    reducer: (left, right) => right ?? left,
-    default: () => 'sdr',
-  }),
-  completed: Annotation<SwarmAgentKey[]>({
-    reducer: (left, right) => [...left, ...right],
-    default: () => [],
-  }),
-  results: Annotation<Partial<Record<SwarmAgentKey, string>>>({
-    reducer: (left, right) => ({ ...left, ...right }),
-    default: () => ({}),
-  }),
-  step: Annotation<number>({
-    reducer: (left, right) => right ?? left,
-    default: () => 0,
-  }),
-});
-
-// Exportado (type-only) para os nós especialistas extraídos em supervisor/specialistNodes.ts.
-export type SwarmStateType = typeof SwarmState.State;
 
 /**
  * Nó de roteamento semântico dinâmico que conecta a missão aos Sub-Swarms temáticos

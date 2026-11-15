@@ -280,6 +280,24 @@
   },
   {
     "type": "dependency",
+    "from": "src/features/crm360/infra/PrismaCrm360Repository.ts",
+    "rule": {
+      "name": "no-cross-feature-imports",
+      "severity": "error"
+    },
+    "to": "src/features/crm/application/dealClosureGate.ts"
+  },
+  {
+    "type": "dependency",
+    "from": "src/features/crm360/infra/PrismaCrm360Repository.ts",
+    "rule": {
+      "name": "no-cross-feature-imports",
+      "severity": "error"
+    },
+    "to": "src/features/crm/infra/PrismaDealClosureGate.ts"
+  },
+  {
+    "type": "dependency",
     "from": "src/features/crm360/infra/PrismaCrmDocumentRepository.ts",
     "rule": {
       "name": "no-cross-feature-imports",
@@ -307,30 +325,12 @@
   },
   {
     "type": "dependency",
-    "from": "src/features/crm360/infra/PrismaCrm360Repository.ts",
-    "rule": {
-      "name": "no-cross-feature-imports",
-      "severity": "error"
-    },
-    "to": "src/features/crm/application/dealClosureGate.ts"
-  },
-  {
-    "type": "dependency",
     "from": "src/features/crm360/infra/PrismaCrmDocumentRepository.ts",
     "rule": {
       "name": "no-cross-feature-imports",
       "severity": "error"
     },
     "to": "src/features/crm/application/dealClosureGate.ts"
-  },
-  {
-    "type": "dependency",
-    "from": "src/features/crm360/infra/PrismaCrm360Repository.ts",
-    "rule": {
-      "name": "no-cross-feature-imports",
-      "severity": "error"
-    },
-    "to": "src/features/crm/infra/PrismaDealClosureGate.ts"
   },
   {
     "type": "dependency",
@@ -609,15 +609,6 @@
       "severity": "error"
     },
     "to": "src/features/team/components/Team.tsx"
-  },
-  {
-    "type": "dependency",
-    "from": "src/features/temporal-workers/activities.ts",
-    "rule": {
-      "name": "no-cross-feature-imports",
-      "severity": "error"
-    },
-    "to": "src/features/prospecting/crawlee/crawler.ts"
   },
   {
     "type": "dependency",
