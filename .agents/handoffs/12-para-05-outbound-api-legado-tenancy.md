@@ -3,7 +3,7 @@
 De: 12 — Voz e Telefonia
 Para: 05 — Prospecção
 Onda: F2
-Status: aberto
+Status: resolvido
 Prioridade: bloqueador (para reabertura do gate `outbound`)
 Referência: `.agents/handoffs/12-para-00-voicehub-tenancy-auditoria.md`
 
@@ -53,3 +53,17 @@ Decidir e executar UMA das opções:
 
 - Request autenticado como company A não retorna leads/campaigns de company B.
 - Request sem sessão → 401 em todas as rotas de dados.
+
+## Resolução
+
+- **Data:** 2026-11-14 · **Executor:** Agente 05 (Onda 1, DEM-20261114-002) — implementação concluída pelo orquestrador a partir de trabalho parcial dos subagentes.
+- **Decisão:** Opção 1 — blindar o router legado (não aposentar `/api/outbound`, pois a UI legada ainda o consome).
+- **Implementação:**
+  - `auth.ts`: novos `requireTenantScope` (401 sem sessão, 403 sem `company`) e `tenantCompany` (normalização canônica, mesma regra do login).
+  - `routes.ts`: middleware aplicado no mount do apiRouter — toda rota de dados exige sessão + tenant.
+  - Filtro `company` em todas as queries de dados: `campaigns`, `leads` (todos os `:id` com `leadBelongsToCompany` → 404 cross-tenant), `tasks` (JOIN em leads), `chat`, `integrations`, `system` (error-reports, feedback/summary com escopo via lead), `auth` (rotas de sessão).
+  - Defesa em profundidade: `leadsRouter.use(requireTenantScope)` mesmo se montado fora do apiRouter.
+- **Commits:** `c10bc43c8` (WIP checkpoint) + `431c09e1b` (conclusão) na branch `agente/05-onda1-handoffs`.
+- **Verificações:** `vitest run tests/unit/features/prospecting/outbound/` → **14/14 verde** (12 novos em `tenantScope.test.ts`: 401 sem sessão, 403 sem company, 404 cross-tenant, filtros WHERE com company); `npx tsc --noEmit` → **0 erros**.
+- **Ressalva conhecida:** `POST /error-reports` passou a exigir sessão — o botão da tela de login que usava o endpoint legado precisa migrar para `/api/error-reports` canônico (follow-up de frontend, não bloqueia o fechamento do tenancy).
+- **Fechamento formal condicionado ao parecer APROVADO do Agente 24** (tenancy/security) — enfileirado na Onda 4.
