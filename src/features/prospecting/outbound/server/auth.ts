@@ -228,7 +228,9 @@ export function requireTenantScope(req: Request, res: Response, next: NextFuncti
 // WHERE. Só chamar em rotas protegidas por requireTenantScope.
 export function tenantCompany(req: Request): string {
   const raw = req.outboundUser?.company;
-  const trimmed = String(raw ?? '').trim().toLowerCase();
+  const trimmed = String(raw ?? '')
+    .trim()
+    .toLowerCase();
   if (!trimmed) return '';
   // Mesma normalização de normalizeCompany (auth.routes.ts): qualquer variação
   // de "birthhub"/"birth hub"/"360" colapsa em 'birthhub360'.

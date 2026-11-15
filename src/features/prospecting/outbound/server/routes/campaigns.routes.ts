@@ -21,7 +21,12 @@ function companyClause(column: string): string {
 }
 
 function sameCompany(a: unknown, b: string): boolean {
-  return (normalizeCompany(a) ?? String(a ?? '').trim().toLowerCase()) === b;
+  return (
+    (normalizeCompany(a) ??
+      String(a ?? '')
+        .trim()
+        .toLowerCase()) === b
+  );
 }
 
 // 4. Campaigns API

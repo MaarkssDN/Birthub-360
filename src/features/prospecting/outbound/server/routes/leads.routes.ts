@@ -82,11 +82,7 @@ const LEAD_COMPANY_CLAUSE = `LOWER(TRIM(COALESCE(leads.company, ''))) = ?`;
 // Confirma que o lead existe E pertence à company da sessão. Rotas que
 // recebem :id sem essa checagem permitiam ler/alterar leads de outra
 // empresa só pelo id (cross-tenant/LGPD).
-async function leadBelongsToCompany(
-  db: DbHandle,
-  id: string,
-  company: string,
-): Promise<boolean> {
+async function leadBelongsToCompany(db: DbHandle, id: string, company: string): Promise<boolean> {
   const res = await db.exec(
     `SELECT leads.id FROM leads WHERE leads.id = ? AND ${LEAD_COMPANY_CLAUSE}`,
     [id, company],
@@ -499,10 +495,10 @@ leadsRouter.post(
       const db = await getDatabase();
       const company = tenantCompany(req);
 
-      const leadRes = await db.exec(
-        `SELECT * FROM leads WHERE id = ? AND ${LEAD_COMPANY_CLAUSE}`,
-        [id, company],
-      );
+      const leadRes = await db.exec(`SELECT * FROM leads WHERE id = ? AND ${LEAD_COMPANY_CLAUSE}`, [
+        id,
+        company,
+      ]);
       if (leadRes.length === 0 || leadRes[0].values.length === 0) {
         return res.status(404).json({ error: 'Lead não encontrado.' });
       }
@@ -635,10 +631,10 @@ leadsRouter.post(
       const db = await getDatabase();
       const company = tenantCompany(req);
 
-      const leadRes = await db.exec(
-        `SELECT * FROM leads WHERE id = ? AND ${LEAD_COMPANY_CLAUSE}`,
-        [id, company],
-      );
+      const leadRes = await db.exec(`SELECT * FROM leads WHERE id = ? AND ${LEAD_COMPANY_CLAUSE}`, [
+        id,
+        company,
+      ]);
       if (leadRes.length === 0 || leadRes[0].values.length === 0) {
         return res.status(404).json({ error: 'Lead não encontrado.' });
       }
@@ -781,10 +777,10 @@ leadsRouter.post('/leads/:id/cnpj-refresh', requireAuth, async (req: Request, re
     const db = await getDatabase();
     const company = tenantCompany(req);
 
-    const leadRes = await db.exec(
-      `SELECT * FROM leads WHERE id = ? AND ${LEAD_COMPANY_CLAUSE}`,
-      [id, company],
-    );
+    const leadRes = await db.exec(`SELECT * FROM leads WHERE id = ? AND ${LEAD_COMPANY_CLAUSE}`, [
+      id,
+      company,
+    ]);
     if (leadRes.length === 0 || leadRes[0].values.length === 0) {
       return res.status(404).json({ error: 'Lead não encontrado.' });
     }

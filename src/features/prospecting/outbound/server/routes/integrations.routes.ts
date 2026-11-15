@@ -293,10 +293,10 @@ integrationsRouter.post(
       const db = await getDatabase();
       const company = tenantCompany(req);
 
-      const leadRes = await db.exec(
-        `SELECT * FROM leads WHERE id = ? AND ${LEAD_COMPANY_CLAUSE}`,
-        [id, company],
-      );
+      const leadRes = await db.exec(`SELECT * FROM leads WHERE id = ? AND ${LEAD_COMPANY_CLAUSE}`, [
+        id,
+        company,
+      ]);
       if (leadRes.length === 0 || leadRes[0].values.length === 0) {
         return res.status(404).json({ error: 'Lead não encontrado.' });
       }
