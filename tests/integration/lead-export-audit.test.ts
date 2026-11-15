@@ -89,11 +89,10 @@ describe('GET /api/leads/export/csv — trilha de auditoria (Etapa handoff 15)',
   }, 30_000);
 
   afterAll(async () => {
-    // AuditLog não aceita mais bypass de RLS nem para leitura/limpeza (ver comentário em
-    // waitForAuditLog) — apaga por tenant, um de cada vez.
-    for (const orgId of createdOrgIds) {
-      await withTenant(orgId, () => prisma.auditLog.deleteMany({ where: { tenantId: orgId } }));
-    }
+    // AuditLog é append-only desde 20261114160000_auditlog_append_only_immutability —
+    // DELETE/TRUNCATE são bloqueados para qualquer papel, então a limpeza não pode
+    // tocar a trilha. Os AuditLogs gravados usam organizationId únicos por execução
+    // (signUpRealUser), logo não interferem em runs futuros.
     await withRlsBypass(async () => {
       await prisma.lead.deleteMany({ where: { organizationId: { in: createdOrgIds } } });
       await prisma.user.deleteMany({ where: { id: { in: createdUserIds } } });
