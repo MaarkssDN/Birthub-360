@@ -46,5 +46,5 @@ A plataforma inteira é implantada via Docker Compose em uma única máquina (VM
 
 *   **`docs/deploy/producao.md`**: ARCHIVED / LEGACY
 *   **`docs/deploy/render.md`**: ARCHIVED / LEGACY
-*   **`k8s/` e `charts/`**: ARCHIVED / LEGACY
+*   **`k8s/`, `argocd/` e `charts/`**: `k8s/` e `argocd/` arquivados em `infrastructure/archive/` (ADR-011, decisão do usuário); `charts/` permanece como IaC não-ativo — nenhum cluster Kubernetes real registrado.
 

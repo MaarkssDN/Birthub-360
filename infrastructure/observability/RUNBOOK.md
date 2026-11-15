@@ -22,7 +22,7 @@ Runbook de resposta a incidentes e de go-live para os cenários já mapeados com
 | Caminho | Status (ver `docs/deploy/README.md` §1 para o estado sempre atualizado) | Onde |
 | --- | --- | --- |
 | Render (monólito Express: API + estático do Vite) + Supabase (Postgres/Storage) + Cloudflare (DNS/CDN) | **Ativo, fallback durante a transição** — continua recebendo tráfego real hoje; não desligar antes do cutover Oracle validado | `render.yaml`, `docs/deploy/producao.md` |
-| Kubernetes/Helm/ArgoCD (`k8s/`, `charts/`, `argocd/`) | Aspiracional/legado, nenhum cluster real registrado | `charts/README.md`, `argocd/README.md`, `k8s/README.md` |
+| Kubernetes/Helm/ArgoCD (`charts/`, `infrastructure/archive/k8s/`, `infrastructure/archive/argocd/`) | Aspiracional/legado, nenhum cluster real registrado; `k8s/`+`argocd/` arquivados (ADR-011) | `charts/README.md`, `infrastructure/archive/argocd/README.md`, `infrastructure/archive/k8s/README.md` |
 
 > **Correção de registro (Onda 8, ainda válida):** a missão citava "Render+Vercel" como caminho
 > real — verificado que **não existe Vercel neste projeto**, é um único serviço Render
@@ -600,7 +600,7 @@ rollback por padrão). Se a revisão que está sendo revertida introduziu uma mi
 avaliar com o Agente 01 se é necessária uma migration de compensação antes ou depois do rollback
 de código. Nunca assumir que "reverter o deploy" também reverte o banco.
 
-### Rollback via ArgoCD (caminho documentado como ativo em `argocd/README.md`, quando houver
+### Rollback via ArgoCD (manifests arquivados em `infrastructure/archive/argocd/`, quando houver
 
 cluster real)
 
