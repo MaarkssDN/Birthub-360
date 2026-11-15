@@ -101,6 +101,7 @@ describe('Act6PrivatePortal', () => {
     await user.type(screen.getByLabelText(/Empresa/i), 'Logística Nacional');
     await user.click(screen.getByRole('button', { name: '50+' }));
     expect(screen.getByRole('button', { name: '50+' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: '6 a 15' })).toHaveAttribute('aria-pressed', 'false');
     await user.click(screen.getByRole('checkbox'));
     await user.click(screen.getByRole('button', { name: /Confirmar Solicitação de Acesso/i }));
 
@@ -110,6 +111,7 @@ describe('Act6PrivatePortal', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(url).toBe('/api/public/lead-capture');
+    expect(init.method).toBe('POST');
     const body = JSON.parse(String(init.body));
     expect(body).toMatchObject({
       nome: 'Mariana Albuquerque',
