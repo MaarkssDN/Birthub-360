@@ -102,3 +102,10 @@ Reverificação sobre a `main` atual (refatoração já mergeada via PR #253):
   quick-actions confirmada pelos testes de interação de modal/navegação).
 
 **Pendente (inalterado):** parecer formal `APROVADO` do Agente 24.
+## Atualização (Agente 12 — 2026-11-14, branch `agente/12-onda2-handoffs`)
+
+`Overview.tsx` recebeu apenas reordenação de call sites do logger pino
+(`(obj, msg)`) no commit `c3e37014b` — nenhum comportamento alterado; a
+decomposição documentada acima permanece intacta. Gates da onda de
+saneamento seguem como registrados; **parecer formal do Agente 24 continua
+pendente** (condição de encerramento deste handoff).
