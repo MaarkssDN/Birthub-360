@@ -61,3 +61,5 @@ coordenação.
 
 ## Resolução
 O model \OptOutRecord\ já foi criado no banco pelo Agente 01A na Onda 10 com a abstração unificada. A lógica que fará as pontes entre os domínios (WhatsApp/Voz/E-mail) para unificar o Opt-out deve ser implementada no escopo do Agente 17.
+
+> Evidências 2026-11-14 (Agente 00): `OptOutRecord` em `prisma/schema.prisma:3143`; gravação em `whatsappMessage.service.ts:192` e `callSuppression.service.ts:129-146`; consulta em `cadenceEligibility.ts:18`, `cold-email.service.ts:56` e `:168`. Ver RESULTADOS-RECONCILIACAO-20261114.md.

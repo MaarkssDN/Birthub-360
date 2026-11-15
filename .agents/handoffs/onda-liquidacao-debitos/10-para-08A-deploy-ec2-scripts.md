@@ -1,7 +1,7 @@
 - De: 10 (Infraestrutura, Observabilidade e SRE)
 - Para: 08A (Operações Git e Deploy AWS)
 - Onda: liquidacao-debitos
-- Status: resolvido
+- Status: adiado
 - Prioridade: alto (melhoria de confiabilidade de deploy)
 
 ## Problema
@@ -81,3 +81,5 @@ Decisão Opção A do Agente 10: Manter EC2 via SSH (status quo)
 **Justificativa para itens pendentes:**
 - Healthcheck automático é a melhoria mais crítica e foi implementada
 - Verificação de migrações e rollback podem ser adicionados em uma segunda iteração após validação do healthcheck em produção
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto ADIADO — pendências de migrações e rollback automático admitidas na própria resolução. Ver RESULTADOS-RECONCILIACAO-20261114.md.

@@ -407,11 +407,14 @@ export class PrismaCrm360Repository implements ICrm360Repository {
         funnel: LeadFunnel.Negocio,
         deletedAt: null,
       },
+      // MEL-16 follow-up (DEM-20261114-003): sem `dealItems` — é relação to-many e a listagem
+      // baixava TODOS os itens de cada negócio da página (mesmo over-fetch corrigido em
+      // companies na Onda 2). Nenhum consumidor de /api/crm/deals usa dealItems — existe
+      // endpoint dedicado GET /api/crm/deals/:leadId/items para isso.
       include: {
         company: true,
         contact: true,
         pipelineStage: true,
-        dealItems: true,
       },
       orderBy: [{ probability: 'desc' }, { updatedAt: 'desc' }],
     });
@@ -445,7 +448,8 @@ export class PrismaCrm360Repository implements ICrm360Repository {
 
     const leads = await prisma.lead.findMany({
       where: { organizationId, funnel, ...(pipeline ? { pipelineId: pipeline.id } : {}) },
-      include: { company: true, contact: true, pipelineStage: true, dealItems: true },
+      // MEL-16 follow-up (DEM-20261114-003): sem `dealItems` — ver comentário em getDeals.
+      include: { company: true, contact: true, pipelineStage: true },
       orderBy: [{ probability: 'desc' }, { updatedAt: 'desc' }],
     });
 

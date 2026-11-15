@@ -28,8 +28,15 @@ test.describe('Gamificação — cockpit comercial', () => {
     ).toBeVisible({ timeout: 15_000 });
 
     // Perfil do vendedor logado: nível default e contadores zerados vindos do seller-profile.
-    await expect(page.getByText('Nível 1')).toBeVisible();
-    await expect(page.getByText('Consultor Trainee')).toBeVisible();
+    // Com a API de gamificação respondendo (prefixo /api/ corrigido), "Nível 1" aparece em DOIS
+    // lugares: no badge do GamificationWidget (Cristal 3D, topo da tela) e no Badge do card
+    // "Meu Perfil de Performance". O assert mirado é o do card de perfil — o badge é o
+    // following-sibling do heading, sem depender de texto ambíguo.
+    const perfilHeading = page.getByRole('heading', { name: 'Meu Perfil de Performance' });
+    await expect(perfilHeading).toBeVisible();
+    await expect(perfilHeading.locator('xpath=following-sibling::div[1]')).toHaveText('Nível 1');
+    await expect(page.getByText('Patente Comercial')).toBeVisible();
+    await expect(page.getByText('Consultor Trainee', { exact: true })).toBeVisible();
   });
 
   test('troca de período refaz a chamada real ao leaderboard com o período selecionado', async ({

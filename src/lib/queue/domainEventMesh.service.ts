@@ -4,6 +4,7 @@ import type {
   DomainEventType,
   IDomainEventMeshPort,
 } from '../../shared/contracts/domainEventMesh.contract.js';
+import { requestContext } from '../async-context.js';
 import { logger } from '../logger.js';
 import { type BackoffPolicy, computeBackoffMs, DEFAULT_BACKOFF } from './outbox/backoff.js';
 import { InMemoryConsumptionStore, InMemoryOutboxRepository } from './outbox/inMemory.js';
@@ -208,7 +209,14 @@ export class DomainEventMeshService implements IDomainEventMeshPort {
         throw new Error(`DomainEventMesh: consumidor ${consumer} em execução por outra instância`);
       }
       try {
-        await handler(event);
+        // MEL-21 (Onda 3): handlers rodam com o tenant do evento no requestContext — sem isso,
+        // qualquer prisma.* dentro do consumidor (ex.: bitrixEventMeshBridge) executava sem
+        // app.current_tenant_id e falhava/esvaziava sob FORCE ROW LEVEL SECURITY, sobretudo
+        // quando a entrega vem do relay no processo worker (sem request HTTP).
+        await requestContext.run(
+          { ...(requestContext.getStore() ?? {}), tenantId: event.organizationId },
+          () => handler(event),
+        );
       } catch (err) {
         await this.consumptions.release({ ...key, consumer, owner });
         logger.error(

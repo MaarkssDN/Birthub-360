@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { auditAccessMiddleware } from '../../../lib/security/auditLog.middleware.js';
 import { contactSchema } from '../../../lib/zod.js';
 import { container } from '../../../shared/di/container.js';
 import { requireRole } from '../../../shared/middlewares/requireRole.js';
@@ -12,7 +13,9 @@ router.get('/', (req, res, next) =>
   container.resolve<ContactController>('ContactController').getContacts(req, res, next),
 );
 
-router.get('/:id', (req, res, next) =>
+// DEM-20261114-003 (follow-up Onda 2): o detalhe do contato expõe PII direta (nome, e-mail,
+// telefone) — acesso registrado em AuditLog (GET → EXPORT; entityId = :id).
+router.get('/:id', auditAccessMiddleware('Contact'), (req, res, next) =>
   container.resolve<ContactController>('ContactController').getContactById(req, res, next),
 );
 

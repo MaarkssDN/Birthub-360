@@ -30,6 +30,7 @@ export async function startWorkerServer(
   registeredWorkers: Array<{ name: string; worker: CloseableWorker }>,
   scheduleJobs: () => Promise<void>,
   domainName: string,
+  onShutdown?: () => Promise<void>,
 ) {
   if (!queuesEnabled) {
     throw new Error('Worker dedicado requer ENABLE_QUEUES=true e REDIS_URL configurada.');
@@ -173,6 +174,11 @@ export async function startWorkerServer(
       );
       if (domainName === 'extracoes' || domainName === 'all') {
         await shutdownWhatsAppSessions();
+      }
+      if (onShutdown) {
+        await onShutdown().catch((err) =>
+          logger.error({ err, domain: domainName }, 'Erro no hook de shutdown adicional'),
+        );
       }
       await shutdownLangfuse().catch((err) => logger.error({ err }, 'Erro ao encerrar Langfuse'));
       await prisma

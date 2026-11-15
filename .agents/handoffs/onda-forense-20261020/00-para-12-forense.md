@@ -1,7 +1,7 @@
 De:00
 Para:12
 Onda:forense20261020
-Status: resolvido (Implementado pelo Agente 12: billing com clamp UTC de datas e hardening do dialer aprovado no PR #688)
+Status: aberto
 Prioridade:alto
 Bloqueador-ref:auditoria-real-ondas00-05
 Sprint destino:a definir pelo00
@@ -43,3 +43,7 @@ EXP-07: Teste sintético positivo/negativo cobrindo a lacuna, persistência/relo
 
 ## Contexto adicional
 Missão atual somente auditoria; nenhuma correção autorizada por este handoff. Ver matriz335requisitos, relatórioHTML e parecer24. Revalidar contra main de destino, que foi alterada por outro processo durante a auditoria. Complexidade depende do proprietário; hipóteses não são causa operacional comprovada.
+
+## Resolução
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto DEFEITO-REAL — métricas/dados fabricados em ai-voice/proposals/promiseGuardian; billing e maskPii órfãos. Correção pendente de despacho. Ver RESULTADOS-RECONCILIACAO-20261114.md.

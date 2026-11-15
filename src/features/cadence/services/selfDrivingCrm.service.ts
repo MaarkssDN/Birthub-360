@@ -200,9 +200,11 @@ export class SelfDrivingCrmService implements ISelfDrivingCrmPort {
     const now = new Date();
     const results: StagnantLeadAnalysis[] = [];
 
-    // Obter leads registrados para o tenant com isolamento multi-tenant estrito
+    // Isolamento multi-tenant fail-closed: somente leads explicitamente vinculados
+    // ao organizationId consultado são considerados. Leads sem organizationId
+    // (dado legado/não atribuído) nunca vazam para nenhum tenant.
     const leads = Array.from(this.mockLeadsStore.values())
-      .filter((lead) => !lead.organizationId || lead.organizationId === organizationId)
+      .filter((lead) => lead.organizationId === organizationId)
       .slice(0, limit);
 
     for (const lead of leads) {
@@ -386,7 +388,11 @@ export class SelfDrivingCrmService implements ISelfDrivingCrmPort {
     hasActiveDeal: boolean;
     isWonOrLost: boolean;
   }): void {
-    const key = lead.organizationId ? `${lead.organizationId}:${lead.leadId}` : lead.leadId;
+    // Chave sempre prefixada pelo tenant para nunca colidir entre organizações.
+    // Leads sem organizationId ficam sob um namespace isolado (`__unscoped__`)
+    // e, por serem invisíveis ao filtro fail-closed de detectStagnatedLeads,
+    // não vazam para nenhum tenant.
+    const key = `${lead.organizationId ?? '__unscoped__'}:${lead.leadId}`;
     this.mockLeadsStore.set(key, lead);
   }
 

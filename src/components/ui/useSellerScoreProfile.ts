@@ -21,6 +21,9 @@ export function useSellerScoreProfile(sellerName?: string): {
       .then((profile) => {
         if (mounted) setSellerScore(profile);
       })
+      .catch(() => {
+        if (mounted) setSellerScore(null);
+      })
       .finally(() => {
         if (mounted) setGamificationLoaded(true);
       });
