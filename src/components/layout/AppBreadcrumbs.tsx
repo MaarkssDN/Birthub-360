@@ -2,6 +2,7 @@ import { ChevronRight, Home } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../../lib/utils.js';
 import { TAB_META, type TabType } from './tabMeta.js';
+import { resolveSettingsPillarSlug, SETTINGS_PILLAR_LABEL } from './settingsPillarNav.js';
 
 export interface BreadcrumbItem {
   label: string;
@@ -27,6 +28,21 @@ function resolveAutoBreadcrumbs(pathname: string): BreadcrumbItem[] {
 
   // Remove o prefixo 'app' se presente
   const appSegments = segments[0] === 'app' ? segments.slice(1) : segments;
+
+  // MEL-30/Onda 4 (revisão 24, achado A1): /app/settings/pillars/<slug> tem trilha
+  // própria — Início › Ajustes Globais › <Pilar>. Sem este atalho o loop abaixo
+  // geraria "settings / pillars / hub" e o slug 'hub' cairia na regra
+  // 'hub'→"Hub de Inteligência", que pertence à rota market-intelligence/hub.
+  // Slug inválido/ausente resolve para 'hub' — mesmo destino do <Navigate> do
+  // PillarSettingsHub, então o breadcrumb já antecipa o pilar correto.
+  if (appSegments[0] === 'settings' && appSegments[1] === 'pillars') {
+    const slug = resolveSettingsPillarSlug(appSegments[2]);
+    return [
+      { label: 'Início', href: '/app' },
+      { label: 'Ajustes Globais', href: '/app/settings' },
+      { label: SETTINGS_PILLAR_LABEL[slug], current: true },
+    ];
+  }
 
   const breadcrumbs: BreadcrumbItem[] = [{ label: 'Início', href: '/app' }];
 

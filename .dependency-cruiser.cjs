@@ -81,10 +81,19 @@ module.exports = {
         'para outra feature no futuro. ' +
         'Exceção 2: `src/features/intelligence/` atua como uma camada de aplicação orquestradora (ex: CentralAISuiteService) ' +
         'que precisa consumir vários outros domínios de features para funcionar. ' +
-        'Exceção 3: `src/features/job-roles/` atua como uma camada transversal de controle de permissões e atribuições.',
+        'Exceção 3: `src/features/job-roles/` atua como uma camada transversal de controle de permissões e atribuições. ' +
+        'Exceção 4 (BT360-DT-0004/Onda 5): `src/features/temporal-workers/` é a camada de runtime/workers ' +
+        '(Agente 16) — activities e workflows do Temporal existem justamente para orquestrar serviços ' +
+        'de domínio de outras features (ex.: `scrapeProspect` em activities.ts consome crawler+persistência ' +
+        'de `prospecting/`). A direção inversa continua proibida: features não podem importar ' +
+        'temporal-workers (o `to.pathNot` com `$1` segue valendo para esse sentido).',
       from: {
         path: '^src/features/([^/]+)/',
-        pathNot: ['^src/features/intelligence/', '^src/features/job-roles/'],
+        pathNot: [
+          '^src/features/intelligence/',
+          '^src/features/job-roles/',
+          '^src/features/temporal-workers/',
+        ],
       },
       to: {
         path: '^src/features/([^/]+)/',

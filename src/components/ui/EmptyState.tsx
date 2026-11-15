@@ -21,7 +21,12 @@ export function EmptyState({ title, description, actionLabel, onAction, icon }: 
       transition={{ duration: 0.2, ease: 'easeOut' }}
       className="relative my-6 flex flex-col items-center justify-center overflow-hidden rounded-card border border-line bg-surface p-12 text-center shadow-card"
     >
-      <div className="relative z-10 mb-4 grid h-12 w-12 place-items-center rounded-full bg-[color:color-mix(in_srgb,var(--ink)_4%,var(--surface))] text-ink ring-1 ring-line">
+      {/* Ícone puramente decorativo — o título/descrição já carregam a informação
+          (evita anúncio redundante por leitor de tela). */}
+      <div
+        aria-hidden="true"
+        className="relative z-10 mb-4 grid h-12 w-12 place-items-center rounded-full bg-[color:color-mix(in_srgb,var(--ink)_4%,var(--surface))] text-ink ring-1 ring-line"
+      >
         {icon || <Sparkles className="h-5 w-5" strokeWidth={1.5} />}
       </div>
 

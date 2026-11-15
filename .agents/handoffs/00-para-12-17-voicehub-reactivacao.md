@@ -106,3 +106,21 @@ Recebido e avaliado pelo 02. Manter **oculto** (`voice-hub`, `outbound`, `dialer
 3. `dialer` permanece alias de `cadence` salvo decisão explícita em contrário.
 
 Sem alteração de código pelo 02 nesta onda — dependência externa.
+
+## Atualização (Agente 12 — 2026-11-14, branch `agente/12-onda2-handoffs`, commit `c3e37014b`)
+
+O bloco de adaptação do voice-hub foi concluído nesta branch: repositories e
+services migrados aos models canônicos (Organization/User/JobRole/AgentSession/
+OrganizationWebhookEndpoint/AuditLog/Notification/Birthub360CallResult), auth
+legada JWT/register/login **removida** em favor do Better Auth, e
+`attachAuthIfPresent`/`requireTenant` passam a popular `requestContext` com
+`tenantId` (pré-requisito do RLS). Evidência: `tsc -p tsconfig.voice.json`
+313→14 erros (restantes = deps `twilio`/`d3`/`openid-client` ausentes do
+package.json — decisão do Agente 00); 600/600 testes voice-hub verdes;
+`tenant-isolation.test.ts` 36/36.
+
+**`legacyModuleGate` permanece fechado** — `/api/voice-hub`, `/api/outbound` e
+`/api/dialer-3cx` seguem retornando 503. Pendências para GO: decisão de deps
+(00), teste de integração com RLS real, revisão do Agente 24, e os handoffs
+abertos ao 05 (`/api/outbound` sem auth) e ao 17 (`/api/dialer-3cx` sem
+auth/tenant). `dialer` na UI continua alias de `/app/cadence` — nada reaberto.

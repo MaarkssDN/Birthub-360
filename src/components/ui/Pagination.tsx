@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Loader2 } from 'lucide-react';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 
 export interface PaginationProps {
   page: number;
@@ -37,6 +37,11 @@ export function Pagination({
   loading = false,
 }: PaginationProps) {
   const [jumpPage, setJumpPage] = useState(String(page));
+  // IDs únicos por instância — duas paginações na mesma página não podem colidir
+  // no htmlFor/id (axe duplicate-id / label association).
+  const instanceId = useId();
+  const pageSizeId = `${instanceId}-page-size`;
+  const jumpInputId = `${instanceId}-jump`;
 
   useEffect(() => {
     setJumpPage(String(page));
@@ -61,10 +66,16 @@ export function Pagination({
   const formattedTotal = typeof totalItems === 'number' ? totalItems.toLocaleString('pt-BR') : null;
 
   return (
-    <div className="p-4 border-t border-line bg-surface-2/50 flex flex-wrap items-center justify-between gap-4">
+    // <nav> nomeado: landmark de navegação para teclado/leitor de tela (WCAG 1.3.1/4.1.2).
+    <nav
+      aria-label="Paginação"
+      className="p-4 border-t border-line bg-surface-2/50 flex flex-wrap items-center justify-between gap-4"
+    >
       {/* Informações da página e total */}
       <div className="flex items-center gap-3">
-        {loading && <Loader2 className="w-3.5 h-3.5 animate-spin text-brand shrink-0" />}
+        {loading && (
+          <Loader2 className="w-3.5 h-3.5 animate-spin text-brand shrink-0" aria-hidden="true" />
+        )}
         <span className="text-xs text-ink-2 font-semibold">
           Página {page} de {Math.max(1, totalPages)}
           {typeof totalItems === 'number' && itemLabel ? ` · ${formattedTotal} ${itemLabel}` : ''}
@@ -73,11 +84,11 @@ export function Pagination({
         {/* Seletor de registros por página */}
         {onPageSizeChange && pageSize && (
           <div className="flex items-center gap-1.5 ml-2 pl-3 border-l border-line text-xs text-ink-2">
-            <label htmlFor="pagination-page-size" className="font-medium text-[11px]">
+            <label htmlFor={pageSizeId} className="font-medium text-[11px]">
               Exibir:
             </label>
             <select
-              id="pagination-page-size"
+              id={pageSizeId}
               value={pageSize}
               disabled={loading}
               onChange={(e) => onPageSizeChange(Number(e.target.value))}
@@ -101,12 +112,12 @@ export function Pagination({
             onSubmit={handleJumpSubmit}
             className="flex items-center gap-1.5 mr-2 text-xs text-ink-2"
           >
-            <label htmlFor="pagination-jump-input" className="sr-only">
+            <label htmlFor={jumpInputId} className="sr-only">
               Ir para a página
             </label>
             <span className="text-[11px] font-medium hidden sm:inline">Ir para:</span>
             <input
-              id="pagination-jump-input"
+              id={jumpInputId}
               type="number"
               min={1}
               max={totalPages}
@@ -138,28 +149,32 @@ export function Pagination({
             aria-label="Primeira página"
             className="p-2 rounded-xl bg-surface/70 backdrop-blur-md border border-line text-ink-2 hover:bg-surface-elevated hover:shadow-sm active:scale-95 disabled:hover:scale-100 hover:scale-[1.02] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer text-xs font-semibold"
           >
-            <ChevronsLeft className="w-4 h-4" />
+            <ChevronsLeft className="w-4 h-4" aria-hidden="true" />
           </button>
         )}
 
-        {/* Botão Anterior */}
+        {/* Botão Anterior — o rótulo fica `sr-only` abaixo de sm (visual só-ícone) mas
+            permanece na árvore de acessibilidade, então o nome acessível é sempre
+            "Anterior" (WCAG 2.4.6 label-in-name / axe button-name). */}
         <button
           type="button"
           disabled={page === 1 || loading}
           onClick={() => onPageChange(Math.max(1, page - 1))}
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface/70 backdrop-blur-md border border-line text-ink-2 hover:bg-surface-elevated hover:shadow-sm active:scale-95 disabled:hover:scale-100 hover:scale-[1.02] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer text-xs font-semibold"
         >
-          <ChevronLeft className="w-4 h-4" /> <span className="hidden sm:inline">Anterior</span>
+          <ChevronLeft className="w-4 h-4" aria-hidden="true" />{' '}
+          <span className="sr-only sm:not-sr-only">Anterior</span>
         </button>
 
-        {/* Botão Próxima */}
+        {/* Botão Próxima — mesmo padrão do botão Anterior. */}
         <button
           type="button"
           disabled={page === totalPages || totalPages === 0 || loading}
           onClick={() => onPageChange(Math.min(totalPages, page + 1))}
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface/70 backdrop-blur-md border border-line text-ink-2 hover:bg-surface-elevated hover:shadow-sm active:scale-95 disabled:hover:scale-100 hover:scale-[1.02] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer text-xs font-semibold"
         >
-          <span className="hidden sm:inline">Próxima</span> <ChevronRight className="w-4 h-4" />
+          <span className="sr-only sm:not-sr-only">Próxima</span>{' '}
+          <ChevronRight className="w-4 h-4" aria-hidden="true" />
         </button>
 
         {/* Botão Última Página */}
@@ -172,10 +187,10 @@ export function Pagination({
             aria-label="Última página"
             className="p-2 rounded-xl bg-surface/70 backdrop-blur-md border border-line text-ink-2 hover:bg-surface-elevated hover:shadow-sm active:scale-95 disabled:hover:scale-100 hover:scale-[1.02] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer text-xs font-semibold"
           >
-            <ChevronsRight className="w-4 h-4" />
+            <ChevronsRight className="w-4 h-4" aria-hidden="true" />
           </button>
         )}
       </div>
-    </div>
+    </nav>
   );
 }

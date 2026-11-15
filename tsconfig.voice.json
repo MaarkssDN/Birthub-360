@@ -8,6 +8,7 @@
     "src/lib/voice-runtime/**/*",
     "src/features/voice-hub/**/*",
     "src/lib/logger.ts",
+    "src/vite-env.d.ts",
     "src/lib/prisma.ts",
     "src/config/env.ts"
   ],

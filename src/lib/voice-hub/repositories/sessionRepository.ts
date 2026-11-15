@@ -1,8 +1,13 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma.js';
 
+// Voice-hub "session" == canonical `AgentSession` (ver handoff
+// 01-para-12-voicehub-adaptacao-modelos-canonicos). O model `Session` do schema é a sessão de
+// LOGIN do Better Auth — nunca usar aqui. Os campos usados abaixo (organizationId, userId,
+// agentId, channel, status, metadata, deletedAt) existem em `AgentSession`.
+
 export function listSessionsForUser(organizationId: string, userId: string) {
-  return prisma.session.findMany({
+  return prisma.agentSession.findMany({
     where: { organizationId, userId, deletedAt: null },
     orderBy: { createdAt: 'desc' },
   });
@@ -13,7 +18,7 @@ export function createSession(
   userId: string,
   data: { agentId?: string; channel?: string; metadata?: unknown },
 ) {
-  return prisma.session.create({
+  return prisma.agentSession.create({
     data: {
       organizationId,
       userId,
@@ -26,24 +31,24 @@ export function createSession(
 }
 
 export function findSessionForUser(id: string, organizationId: string, userId: string) {
-  return prisma.session.findFirst({ where: { id, organizationId, userId, deletedAt: null } });
+  return prisma.agentSession.findFirst({ where: { id, organizationId, userId, deletedAt: null } });
 }
 
 export function updateSession(
   id: string,
   data: { status?: string; metadata?: Prisma.InputJsonValue },
 ) {
-  return prisma.session.update({ where: { id }, data });
+  return prisma.agentSession.update({ where: { id }, data });
 }
 
 export function deleteSession(id: string) {
-  return prisma.session.update({ where: { id }, data: { deletedAt: new Date() } });
+  return prisma.agentSession.update({ where: { id }, data: { deletedAt: new Date() } });
 }
 
 // Phone calls have no logged-in user (userId is null) — the caller is authenticated by the
 // Twilio request signature, not a JWT, and tenant scoping comes from the resolved Agent instead.
 export function createPhoneSession(organizationId: string, agentId: string, metadata: unknown) {
-  return prisma.session.create({
+  return prisma.agentSession.create({
     data: {
       organizationId,
       userId: null,
@@ -56,13 +61,13 @@ export function createPhoneSession(organizationId: string, agentId: string, meta
 }
 
 export function findSessionById(id: string) {
-  return prisma.session.findFirst({ where: { id, deletedAt: null } });
+  return prisma.agentSession.findFirst({ where: { id, deletedAt: null } });
 }
 
 // Twilio's status-callback webhook only ever gives us CallSid (its URL is configured statically
 // on the phone number, so we can't thread our own sessionId through it like we do for /gather).
 export function findActivePhoneSessionByCallSid(callSid: string) {
-  return prisma.session.findFirst({
+  return prisma.agentSession.findFirst({
     where: {
       channel: 'phone',
       status: 'active',
@@ -91,7 +96,7 @@ export async function createInboundPhoneSessionIfNoneForCallSid(
     // biome-ignore lint/plugin/no-prisma-tx-escape: uso legado congelado no baseline (parecer 15 #40 L1); migrar para runInTransaction
     return await prisma.$transaction(
       async (tx) => {
-        const existing = await tx.session.findFirst({
+        const existing = await tx.agentSession.findFirst({
           where: {
             channel: 'phone',
             status: 'active',
@@ -101,7 +106,7 @@ export async function createInboundPhoneSessionIfNoneForCallSid(
         });
         if (existing) return { session: existing, created: false as const };
 
-        const session = await tx.session.create({
+        const session = await tx.agentSession.create({
           data: {
             organizationId,
             userId: null,
@@ -144,7 +149,7 @@ export async function createOutboundPhoneSessionIfNoneInFlight(
   // biome-ignore lint/plugin/no-prisma-tx-escape: uso legado congelado no baseline (parecer 15 #40 L1); migrar para runInTransaction
   return prisma.$transaction(
     async (tx) => {
-      const inFlight = await tx.session.findFirst({
+      const inFlight = await tx.agentSession.findFirst({
         where: {
           organizationId,
           channel: 'phone',
@@ -160,7 +165,7 @@ export async function createOutboundPhoneSessionIfNoneInFlight(
         return { session: null, inFlight: true as const };
       }
 
-      const session = await tx.session.create({
+      const session = await tx.agentSession.create({
         data: {
           organizationId,
           userId: null,

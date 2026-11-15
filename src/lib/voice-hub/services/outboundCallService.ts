@@ -75,10 +75,13 @@ export async function initiateOutboundCall(
     );
   } catch (err: any) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2034') {
-      logger.warn('[OutboundCall] Concurrent dial to the same number lost the double-submit race', {
-        organizationId: agent.organizationId,
-        to: params.targetNumber,
-      });
+      logger.warn(
+        {
+          organizationId: agent.organizationId,
+          to: params.targetNumber,
+        },
+        '[OutboundCall] Concurrent dial to the same number lost the double-submit race',
+      );
       throw new DuplicateCallError('Já existe uma chamada em andamento para este número.');
     }
     throw err;
@@ -101,24 +104,30 @@ export async function initiateOutboundCall(
       metadata: metadata as unknown as Prisma.InputJsonValue,
     });
 
-    logger.info('[OutboundCall] Call queued', {
-      sessionId: session.id,
-      callSid: call.callId,
-      provider: provider.name,
-      organizationId: agent.organizationId,
-      agentId: agent.id,
-    });
+    logger.info(
+      {
+        sessionId: session.id,
+        callSid: call.callId,
+        provider: provider.name,
+        organizationId: agent.organizationId,
+        agentId: agent.id,
+      },
+      '[OutboundCall] Call queued',
+    );
 
     return { sessionId: session.id, callSid: call.callId, status: call.status };
   } catch (err: any) {
     // The session was already created, so leaving it "active" would block every future call to
     // this number via the duplicate guard above.
     await sessionRepository.updateSession(session.id, { status: 'failed' });
-    logger.error('[OutboundCall] Twilio rejected the call', {
-      sessionId: session.id,
-      to: params.targetNumber,
-      error: err instanceof Error ? err.message : String(err),
-    });
+    logger.error(
+      {
+        sessionId: session.id,
+        to: params.targetNumber,
+        error: err instanceof Error ? err.message : String(err),
+      },
+      '[OutboundCall] Twilio rejected the call',
+    );
     throw err;
   }
 }

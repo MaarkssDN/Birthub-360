@@ -1,4 +1,6 @@
-> **[ARCHIVED / NOT ACTIVE]** Esta arquitetura est depreciada. A nica fonte de verdade cannica atual  docs/operations/PRODUCTION_ARCHITECTURE.md. 
+> **[ARCHIVED / NOT ACTIVE]** Esta arquitetura est depreciada. A nica fonte de verdade cannica atual  docs/operations/PRODUCTION_ARCHITECTURE.md.
+> **Local fsico:** `infrastructure/archive/k8s/` — arquivado por decisao do usuario (ADR-011,
+> `docs/ADR/ADR-011-k8s-helm-argocd-decisao.md`). Ver `../README.md` para o indice do archive.
 
 # k8s/ — status real
 
@@ -14,7 +16,7 @@ sentido contra um cluster minikube local, nunca contra um domínio público real
 local-first (`docs/development/LOCAL_FIRST.md`). **Render** (`render.yaml` na raiz) foi a última
 arquitetura de produção real, mas está **congelado** (`autoDeployTrigger: off`) desde a migração
 para local-first; não há Vercel neste projeto (`vercel.json` tem `git.deploymentEnabled: false` e
-nunca serviu produção). Ver [`docs/deploy/README.md`](../docs/deploy/README.md) para o caminho
+nunca serviu produção). Ver [`docs/deploy/README.md`](../../../docs/deploy/README.md) para o caminho
 canônico atual por ambiente. O caminho Kubernetes "oficial"/versionado para um cluster real (se
 algum dia for ativado) é `charts/birthhub-360/` via ArgoCD (`argocd/application-*.yaml`), não
 estes manifests avulsos — ver `charts/README.md` e `argocd/README.md` para o mesmo aviso do lado

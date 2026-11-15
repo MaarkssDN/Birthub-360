@@ -25,100 +25,105 @@ import {
 
 beforeEach(() => vi.clearAllMocks());
 
+// Escopo canônico { organizationId, userId } — ver notificationRepository.ts: o model
+// Notification real exige organizationId e usa body/readAt (não message/isRead).
+const SCOPE = { organizationId: 'org-1', userId: 'user-1' };
+
 describe('notificationRepository.createNotification', () => {
-  it('creates a row scoped to userId', async () => {
+  it('creates a row scoped to organizationId+userId, mapping message→body', async () => {
     vi.mocked(prisma.notification.create).mockResolvedValue({ id: 'notif-1' } as any);
 
-    await createNotification({ userId: 'user-1', title: 'Título', message: 'Mensagem' });
+    await createNotification(SCOPE, { title: 'Título', message: 'Mensagem' });
 
     expect(prisma.notification.create).toHaveBeenCalledWith({
-      data: { userId: 'user-1', title: 'Título', message: 'Mensagem' },
+      data: {
+        organizationId: 'org-1',
+        userId: 'user-1',
+        title: 'Título',
+        body: 'Mensagem',
+      },
     });
   });
 });
 
 describe('notificationRepository.findNotificationsForUser', () => {
-  it('filters by userId, orders newest first, and paginates', async () => {
+  it('filters by organizationId+userId, orders newest first, and paginates', async () => {
     vi.mocked(prisma.notification.findMany).mockResolvedValue([{ id: 'notif-1' }] as any);
     vi.mocked(prisma.notification.count).mockResolvedValue(1);
 
-    const [items, total] = await findNotificationsForUser('user-1', { page: 2, pageSize: 10 });
+    const [items, total] = await findNotificationsForUser(SCOPE, { page: 2, pageSize: 10 });
 
+    const where = { organizationId: 'org-1', userId: 'user-1' };
     expect(prisma.notification.findMany).toHaveBeenCalledWith({
-      where: { userId: 'user-1' },
+      where,
       orderBy: { createdAt: 'desc' },
       skip: 10,
       take: 10,
     });
-    expect(prisma.notification.count).toHaveBeenCalledWith({ where: { userId: 'user-1' } });
+    expect(prisma.notification.count).toHaveBeenCalledWith({ where });
     expect(items).toEqual([{ id: 'notif-1' }]);
     expect(total).toBe(1);
   });
 });
 
 describe('notificationRepository.countUnreadForUser', () => {
-  it('counts only isRead:false rows for the user', async () => {
+  it('counts only readAt:null rows within the scope', async () => {
     vi.mocked(prisma.notification.count).mockResolvedValue(3);
 
-    const result = await countUnreadForUser('user-1');
+    const result = await countUnreadForUser(SCOPE);
 
     expect(prisma.notification.count).toHaveBeenCalledWith({
-      where: { userId: 'user-1', isRead: false },
+      where: { organizationId: 'org-1', userId: 'user-1', readAt: null },
     });
     expect(result).toBe(3);
   });
 });
 
 describe('notificationRepository.findNotificationByIdForUser', () => {
-  it("scopes the lookup to id AND userId so a cross-user id resolves to null, not another user's row", async () => {
+  it('scopes the lookup by id+organizationId+userId (cross-tenant resolve a null)', async () => {
     vi.mocked(prisma.notification.findFirst).mockResolvedValue(null);
 
-    const result = await findNotificationByIdForUser('notif-1', 'user-1');
+    const result = await findNotificationByIdForUser('notif-x', SCOPE);
 
     expect(prisma.notification.findFirst).toHaveBeenCalledWith({
-      where: { id: 'notif-1', userId: 'user-1' },
+      where: { id: 'notif-x', organizationId: 'org-1', userId: 'user-1' },
     });
     expect(result).toBeNull();
   });
 });
 
 describe('notificationRepository.markNotificationAsRead', () => {
-  it('returns null without calling update when the notification does not belong to userId (tenant-isolation fallback)', async () => {
+  it('returns null without writing when the notification is outside the scope', async () => {
     vi.mocked(prisma.notification.findFirst).mockResolvedValue(null);
 
-    const result = await markNotificationAsRead('notif-1', 'user-1');
+    const result = await markNotificationAsRead('notif-x', SCOPE);
 
     expect(result).toBeNull();
     expect(prisma.notification.update).not.toHaveBeenCalled();
   });
 
-  it('updates isRead:true by id once ownership is confirmed', async () => {
-    vi.mocked(prisma.notification.findFirst).mockResolvedValue({
-      id: 'notif-1',
-      userId: 'user-1',
-    } as any);
-    vi.mocked(prisma.notification.update).mockResolvedValue({ id: 'notif-1', isRead: true } as any);
+  it('sets readAt when the notification belongs to the scope', async () => {
+    vi.mocked(prisma.notification.findFirst).mockResolvedValue({ id: 'notif-1' } as any);
+    vi.mocked(prisma.notification.update).mockResolvedValue({ id: 'notif-1' } as any);
 
-    const result = await markNotificationAsRead('notif-1', 'user-1');
+    await markNotificationAsRead('notif-1', SCOPE);
 
     expect(prisma.notification.update).toHaveBeenCalledWith({
       where: { id: 'notif-1' },
-      data: { isRead: true },
+      data: { readAt: expect.any(Date) },
     });
-    expect(result).toEqual({ id: 'notif-1', isRead: true });
   });
 });
 
 describe('notificationRepository.markAllAsReadForUser', () => {
-  it("bulk-updates only the given user's unread notifications", async () => {
-    vi.mocked(prisma.notification.updateMany).mockResolvedValue({ count: 4 });
+  it('updates only readAt:null rows within the scope', async () => {
+    vi.mocked(prisma.notification.updateMany).mockResolvedValue({ count: 5 } as any);
 
-    const result = await markAllAsReadForUser('user-1');
+    await markAllAsReadForUser(SCOPE);
 
     expect(prisma.notification.updateMany).toHaveBeenCalledWith({
-      where: { userId: 'user-1', isRead: false },
-      data: { isRead: true },
+      where: { organizationId: 'org-1', userId: 'user-1', readAt: null },
+      data: { readAt: expect.any(Date) },
     });
-    expect(result).toEqual({ count: 4 });
   });
 });

@@ -26,26 +26,27 @@ import {
 beforeEach(() => vi.clearAllMocks());
 
 const NOW = new Date('2026-09-07T12:00:00.000Z');
+// Escopo canônico { organizationId, userId } — ver notificationService.ts.
+const SCOPE = { organizationId: 'org-1', userId: 'user-1' };
 
 describe('notificationService.createNotification', () => {
-  it('creates via the repository and maps the row to a DTO with an ISO timestamp', async () => {
+  it('creates via the repository and maps the canonical row (body/readAt) to a DTO', async () => {
     vi.mocked(createNotificationRow).mockResolvedValue({
       id: 'notif-1',
+      organizationId: 'org-1',
       userId: 'user-1',
       title: 'Plano atualizado',
-      message: 'Seu plano foi alterado.',
-      isRead: false,
+      body: 'Seu plano foi alterado.',
+      readAt: null,
       createdAt: NOW,
     } as any);
 
-    const result = await createNotification({
-      userId: 'user-1',
+    const result = await createNotification(SCOPE, {
       title: 'Plano atualizado',
       message: 'Seu plano foi alterado.',
     });
 
-    expect(createNotificationRow).toHaveBeenCalledWith({
-      userId: 'user-1',
+    expect(createNotificationRow).toHaveBeenCalledWith(SCOPE, {
       title: 'Plano atualizado',
       message: 'Seu plano foi alterado.',
     });
@@ -60,15 +61,16 @@ describe('notificationService.createNotification', () => {
 });
 
 describe('notificationService.listNotifications', () => {
-  it('combines paginated items and unread count, both scoped to userId', async () => {
+  it('combines paginated items and unread count, both scoped to organizationId+userId', async () => {
     vi.mocked(findNotificationsForUser).mockResolvedValue([
       [
         {
           id: 'notif-1',
+          organizationId: 'org-1',
           userId: 'user-1',
           title: 'A',
-          message: 'B',
-          isRead: false,
+          body: 'B',
+          readAt: null,
           createdAt: NOW,
         },
       ],
@@ -76,10 +78,10 @@ describe('notificationService.listNotifications', () => {
     ] as any);
     vi.mocked(countUnreadForUser).mockResolvedValue(1);
 
-    const result = await listNotifications('user-1', { page: 1, pageSize: 20 });
+    const result = await listNotifications(SCOPE, { page: 1, pageSize: 20 });
 
-    expect(findNotificationsForUser).toHaveBeenCalledWith('user-1', { page: 1, pageSize: 20 });
-    expect(countUnreadForUser).toHaveBeenCalledWith('user-1');
+    expect(findNotificationsForUser).toHaveBeenCalledWith(SCOPE, { page: 1, pageSize: 20 });
+    expect(countUnreadForUser).toHaveBeenCalledWith(SCOPE);
     expect(result).toEqual({
       items: [
         {
@@ -99,7 +101,7 @@ describe('notificationService.listNotifications', () => {
     vi.mocked(findNotificationsForUser).mockResolvedValue([[], 0] as any);
     vi.mocked(countUnreadForUser).mockResolvedValue(0);
 
-    const result = await listNotifications('user-1', { page: 1, pageSize: 20 });
+    const result = await listNotifications(SCOPE, { page: 1, pageSize: 20 });
 
     expect(result).toEqual({ items: [], total: 0, unreadCount: 0 });
   });
@@ -109,33 +111,34 @@ describe('notificationService.markAsRead', () => {
   it('returns the mapped notification when the repository confirms ownership', async () => {
     vi.mocked(markNotificationAsReadRow).mockResolvedValue({
       id: 'notif-1',
+      organizationId: 'org-1',
       userId: 'user-1',
       title: 'A',
-      message: 'B',
-      isRead: true,
+      body: 'B',
+      readAt: NOW,
       createdAt: NOW,
     } as any);
 
-    const result = await markAsRead('notif-1', 'user-1');
+    const result = await markAsRead('notif-1', SCOPE);
 
-    expect(markNotificationAsReadRow).toHaveBeenCalledWith('notif-1', 'user-1');
+    expect(markNotificationAsReadRow).toHaveBeenCalledWith('notif-1', SCOPE);
     expect(result.isRead).toBe(true);
   });
 
-  it('throws NotificationNotFoundError when the repository returns null (missing or belongs to another user — same fallback, AGENTS.md §15)', async () => {
+  it('throws NotificationNotFoundError when the repository returns null (missing or belongs to another tenant/user — same fallback, AGENTS.md §15)', async () => {
     vi.mocked(markNotificationAsReadRow).mockResolvedValue(null);
 
-    await expect(markAsRead('notif-1', 'user-1')).rejects.toBeInstanceOf(NotificationNotFoundError);
+    await expect(markAsRead('notif-1', SCOPE)).rejects.toBeInstanceOf(NotificationNotFoundError);
   });
 });
 
 describe('notificationService.markAllAsRead', () => {
-  it('returns the number of rows updated for that user', async () => {
+  it('returns the number of rows updated within the scope', async () => {
     vi.mocked(markAllAsReadForUser).mockResolvedValue({ count: 5 });
 
-    const result = await markAllAsRead('user-1');
+    const result = await markAllAsRead(SCOPE);
 
-    expect(markAllAsReadForUser).toHaveBeenCalledWith('user-1');
+    expect(markAllAsReadForUser).toHaveBeenCalledWith(SCOPE);
     expect(result).toEqual({ updatedCount: 5 });
   });
 });

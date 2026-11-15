@@ -186,7 +186,12 @@ describe('ai.controller', () => {
 
       const req = {
         organizationId: 'tenant-1',
-        user: { id: 'user-admin' },
+        voiceHubUser: {
+          id: 'user-admin',
+          email: 'a@b.c',
+          role: 'admin',
+          organizationId: 'tenant-1',
+        },
         body: { granted: true },
       } as unknown as Request;
       const res = fakeResponse();
@@ -208,7 +213,12 @@ describe('ai.controller', () => {
 
       const req = {
         organizationId: 'tenant-1',
-        user: { id: 'user-admin' },
+        voiceHubUser: {
+          id: 'user-admin',
+          email: 'a@b.c',
+          role: 'admin',
+          organizationId: 'tenant-1',
+        },
         body: { granted: false },
       } as unknown as Request;
       const res = fakeResponse();

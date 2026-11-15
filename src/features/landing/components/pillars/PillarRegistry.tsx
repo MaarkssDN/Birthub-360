@@ -335,7 +335,7 @@ export function VisualizerIaCopilot({ theme = 'dark' }: { theme?: 'dark' | 'ligh
             isDark ? 'text-pink-400' : 'text-pink-700'
           }`}
         >
-          <Bot className="w-3.5 h-3.5" /> Copiloto IA • Recomendação Tática em Tempo Real
+          <Bot className="w-3.5 h-3.5" /> Copiloto IA • Recomendação Tática Contextual
         </span>
         <span
           className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
@@ -382,7 +382,7 @@ export function VisualizerIaCopilot({ theme = 'dark' }: { theme?: 'dark' | 'ligh
   );
 }
 
-/** 07 — Automação e Conectividade: fluxos, gatilhos, APIs, webhooks comprovadamente implementados */
+/** 07 — Automação e Conectividade: exemplo ilustrativo de fluxos, gatilhos, APIs e webhooks */
 export function VisualizerAutomacao({ theme = 'dark' }: { theme?: 'dark' | 'light' } = {}) {
   const isDark = theme === 'dark';
   return (
@@ -403,7 +403,7 @@ export function VisualizerAutomacao({ theme = 'dark' }: { theme?: 'dark' | 'ligh
             isDark ? 'text-amber-400' : 'text-amber-700'
           }`}
         >
-          <Network className="w-3.5 h-3.5" /> Gateway de APIs & Webhooks • Telemetria Ativa
+          <Network className="w-3.5 h-3.5" /> Gateway de APIs & Webhooks • Telemetria ilustrativa
         </span>
         <span
           className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
@@ -412,7 +412,7 @@ export function VisualizerAutomacao({ theme = 'dark' }: { theme?: 'dark' | 'ligh
               : 'bg-emerald-100 text-emerald-800 border-emerald-300'
           }`}
         >
-          99.98% SLA
+          99.98% · simulação
         </span>
       </div>
 
@@ -465,7 +465,7 @@ export function VisualizerAutomacao({ theme = 'dark' }: { theme?: 'dark' | 'ligh
             <span
               className={`text-[10px] font-sans ${isDark ? 'text-slate-400' : 'text-slate-500'}`}
             >
-              Latência: 120ms
+              Latência simulada: 120ms
             </span>
           </div>
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10B981]" />
@@ -479,7 +479,7 @@ export function VisualizerAutomacao({ theme = 'dark' }: { theme?: 'dark' | 'ligh
             : 'bg-amber-50 border-amber-200 text-amber-900'
         }`}
       >
-        <strong>Conectores Reais:</strong> Integração via API REST aberta, fila idempotente e
+        <strong>Conectores disponíveis:</strong> Integração via API REST aberta, fila idempotente e
         webhooks seguros autenticados com chave HMAC.
       </div>
     </div>
@@ -507,7 +507,7 @@ export function VisualizerEngajamento({ theme = 'dark' }: { theme?: 'dark' | 'li
             isDark ? 'text-violet-400' : 'text-violet-700'
           }`}
         >
-          <PhoneCall className="w-3.5 h-3.5" /> VoiceHub • Chamada Gravada & Transcrita
+          <PhoneCall className="w-3.5 h-3.5" /> VoiceHub • Exemplo de transcrição
         </span>
         <span
           className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
@@ -516,7 +516,7 @@ export function VisualizerEngajamento({ theme = 'dark' }: { theme?: 'dark' | 'li
               : 'bg-emerald-100 text-emerald-800 border-emerald-300'
           }`}
         >
-          Sentimento: Positivo (88%)
+          Sentimento simulado: Positivo (88%)
         </span>
       </div>
 
@@ -675,7 +675,7 @@ export function VisualizerFieldSales({ theme = 'dark' }: { theme?: 'dark' | 'lig
           <span
             className={`text-[11px] font-semibold ${isDark ? 'text-slate-200' : 'text-slate-900'}`}
           >
-            Visita técnica — Cliente Aurora
+            Visita técnica — Cliente Aurora (exemplo)
           </span>
           <span
             className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
@@ -973,7 +973,7 @@ export const PILLARS_EDITORIAL_DATA: Record<string, PillarData> = {
       },
       {
         title: 'Gestão Dinâmica de Metas Operacionais',
-        desc: 'Acompanhamento de atingimento de metas com projeção de fechamento em tempo real.',
+        desc: 'Acompanhamento de atingimento de metas com projeção de fechamento baseada nos dados atualizados.',
       },
       {
         title: 'Relatórios de Produtividade do Time',
@@ -994,7 +994,7 @@ export const PILLARS_EDITORIAL_DATA: Record<string, PillarData> = {
         context: 'Simulação',
       },
       {
-        value: 'Tempo Real',
+        value: 'Contínua',
         label: 'Apuração de Metas',
         trend: 'Telemetria contínua',
         context: 'Simulação',
@@ -1078,8 +1078,8 @@ export const PILLARS_EDITORIAL_DATA: Record<string, PillarData> = {
     availability: 'Operacional',
     capabilities: [
       {
-        title: 'Diagnóstico em Tempo Real de Deals',
-        desc: 'Avaliação instantânea do risco de perda e sugestão de argumentos táticos corretivos.',
+        title: 'Diagnóstico Contextual de Deals',
+        desc: 'Avaliação do risco de perda e sugestão de argumentos táticos corretivos.',
       },
       {
         title: 'Matriz Inteligente de Objeções',
@@ -1125,9 +1125,9 @@ export const PILLARS_EDITORIAL_DATA: Record<string, PillarData> = {
     modalTitle: '07. Automação & Conectividade Multi-CRM',
     tagline: 'Sincronize CRMs, acione gatilhos e integre ferramentas por APIs e webhooks.',
     commercialDescription:
-      'Operação comercial sem silos. Conecte o Birth Hub 360 ao Bitrix24, HubSpot, Salesforce, ERPs e ferramentas financeiras através de APIs abertas, garantindo sincronização bidirecional, idempotência e entrega garantida de eventos.',
+      'Operação comercial sem silos. Conecte o Birth Hub 360 aos conectores em produção (Bitrix24, WhatsApp Official API, VoiceHub e Webhooks/REST APIs) por APIs abertas, com HubSpot, Salesforce e Pipedrive em homologação.',
     detailedDesc:
-      'Operação comercial sem silos. Conecte o Birth Hub 360 ao Bitrix24, HubSpot, Salesforce, ERPs e ferramentas financeiras através de APIs abertas, garantindo sincronização bidirecional, idempotência e entrega garantida de eventos.',
+      'Operação comercial sem silos. Conecte o Birth Hub 360 aos conectores em produção (Bitrix24, WhatsApp Official API, VoiceHub e Webhooks/REST APIs) por APIs abertas, com HubSpot, Salesforce e Pipedrive em homologação.',
     themeColor: 'gold',
     icon: Network,
     route: '/app/automations',
@@ -1135,8 +1135,8 @@ export const PILLARS_EDITORIAL_DATA: Record<string, PillarData> = {
     availability: 'Conector API Ativo',
     capabilities: [
       {
-        title: 'Sincronização Bidirecional em Tempo Real',
-        desc: 'Espelhamento automático de leads, empresas, contatos e etapas entre plataformas via API e Webhook.',
+        title: 'Sincronização Bidirecional por API/Webhook',
+        desc: 'Espelhamento de leads, empresas, contatos e etapas nos conectores em produção; HubSpot, Salesforce e Pipedrive seguem em homologação.',
       },
       {
         title: 'Webhooks Customizados com Retry Exponencial',

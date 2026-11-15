@@ -22,11 +22,11 @@ interface ConnectorSource {
 }
 
 const SOURCES: ConnectorSource[] = [
-  { name: 'Bitrix24', tag: 'SYNC REALTIME', color: '#00D4FF', side: 'left', yOffset: -0.65 },
-  { name: 'HubSpot', tag: 'INBOUND DEALS', color: '#FF7A59', side: 'left', yOffset: -0.15 },
-  { name: 'WhatsApp API', tag: 'WHATSAPP BOT', color: '#22C55E', side: 'left', yOffset: 0.45 },
-  { name: 'Salesforce', tag: 'ENTERPRISE CRM', color: '#00A1E0', side: 'right', yOffset: -0.65 },
-  { name: 'VoiceHub', tag: 'CALL TELEMETRY', color: '#8B7DFF', side: 'right', yOffset: -0.15 },
+  { name: 'Bitrix24', tag: 'API REST', color: '#00D4FF', side: 'left', yOffset: -0.65 },
+  { name: 'HubSpot', tag: 'HOMOLOGAÇÃO', color: '#FF7A59', side: 'left', yOffset: -0.15 },
+  { name: 'WhatsApp API', tag: 'API OFICIAL', color: '#22C55E', side: 'left', yOffset: 0.45 },
+  { name: 'Salesforce', tag: 'HOMOLOGAÇÃO', color: '#00A1E0', side: 'right', yOffset: -0.65 },
+  { name: 'VoiceHub', tag: 'WEBRTC', color: '#8B7DFF', side: 'right', yOffset: -0.15 },
   { name: 'Webhooks & APIs', tag: 'EVENT STREAM', color: '#FF2D9B', side: 'right', yOffset: 0.45 },
 ];
 
@@ -36,13 +36,13 @@ const PACKET_LABELS = ['LEAD', 'DEAL', 'EVENT', 'VOICE', 'SYNC', 'SLA', 'PIPELIN
  * B360UnifiedPipelineFlow — Visualização Cinematográfica de Pipeline Unificado
  * Substitui o mini-jogo de blocos caindo por pacotes luminosos que fluem dos
  * conectores do ecossistema em direção ao módulo central com desvio fluido
- * interativo em tempo real ao passar o mouse.
+ * interativo ao passar o mouse.
  */
 export function B360UnifiedPipelineFlow() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const reduceMotion = useReducedMotion();
-  const [pulseCount, setPulseCount] = useState(1482);
+  const [pulseCount, setPulseCount] = useState(0);
 
   useEffect(() => {
     if (reduceMotion) return;
@@ -310,10 +310,10 @@ export function B360UnifiedPipelineFlow() {
       >
         <div className="b360-pipeline-banner flex items-center justify-between p-4 rounded-2xl border border-slate-700/60">
           <span className="font-mono text-xs text-sky-400 font-bold uppercase">
-            ✦ Pipeline Unificado · Operação 360° em Tempo Real
+            ✦ Pipeline Unificado · Visão 360°
           </span>
           <span className="font-mono text-xs text-slate-300">
-            Conectores Ativos: Bitrix24, HubSpot, Salesforce, WhatsApp, VoiceHub
+            Conectores: Bitrix24, WhatsApp, VoiceHub, Webhooks · HubSpot/Salesforce em homologação
           </span>
         </div>
       </section>
@@ -332,7 +332,7 @@ export function B360UnifiedPipelineFlow() {
           FLUXO CONTÍNUO DE SINAIS & DADOS
         </span>
         <span className="b360-pipeline-kpi">
-          Eventos integrados: <strong>{pulseCount.toLocaleString('pt-BR')}</strong>
+          Eventos ilustrativos: <strong>{pulseCount.toLocaleString('pt-BR')}</strong>
         </span>
       </div>
       <canvas ref={canvasRef} className="b360-unified-pipeline-canvas" />

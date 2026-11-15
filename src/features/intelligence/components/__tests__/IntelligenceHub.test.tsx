@@ -79,7 +79,13 @@ describe('IntelligenceHub Redesigned', () => {
     renderHub();
 
     expect(screen.getByText('Célula Comercial de Agentes Autônomos')).toBeInTheDocument();
-    expect(screen.getByText('Acessar Célula Comercial')).toBeInTheDocument();
+    const cta = screen.getByRole('button', { name: /Acessar Célula Comercial/i });
+    expect(cta).toBeInTheDocument();
+    // Regressão do CTA invisível no tema light: o botão deve usar a variante
+    // primária compartilhada (gradiente + text-on-brand), não classes soltas de marca.
+    expect(cta.className).toContain('bg-gradient-to-b');
+    expect(cta.className).toContain('text-on-brand');
+    expect(cta.className).not.toContain('bg-brand');
   });
 
   it('filters tools by category when clicking category tabs', () => {

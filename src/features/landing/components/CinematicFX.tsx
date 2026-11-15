@@ -347,17 +347,17 @@ const DEFAULT_FANNED_CARDS: FannedCardItem[] = [
     title: 'Visão Unificada de Pipeline',
     tag: 'PIPELINE 360°',
     accentColor: '#00D4FF',
-    desc: 'Visão unificada de oportunidades, contas e negociações com sincronização em tempo real.',
-    kpi: 'R$ 4,2M pipeline',
+    desc: 'Visão unificada de oportunidades, contas e negociações com sincronização conforme os conectores ativos.',
+    kpi: 'Pipeline 360°',
   },
   {
     id: '06',
     num: '06',
     title: 'Íris IA & Enxame',
-    tag: '24 AGENTES IA',
+    tag: '20+ AGENTES IA',
     accentColor: '#8B7DFF',
     desc: 'Supervisor autônomo orquestrando agentes especializados em vendas, previsão e CRM.',
-    kpi: '24 agentes ativos',
+    kpi: '20+ agentes',
   },
   {
     id: '02',
@@ -366,7 +366,7 @@ const DEFAULT_FANNED_CARDS: FannedCardItem[] = [
     tag: 'ENRIQUECIMENTO B2B',
     accentColor: '#FF2D9B',
     desc: 'Mapeamento de decisores, detecção preditiva de sinais de compra e qualificação ICP.',
-    kpi: '96% match ICP',
+    kpi: 'Score ICP ilustrativo',
   },
 ];
 

@@ -656,8 +656,11 @@ export class LeadUseCases extends BaseUseCases<Lead, LeadRepository> {
 
     // biome-ignore lint/style/noNonNullAssertion: mesma garantia do `where` acima, ver comentário do map de jobs
     const companyIds = Array.from(new Set(leadsToEnrich.map((l) => l.companyId!)));
+    // organizationId no `where` por defesa em profundidade (auditoria de tenancy, onda
+    // paralela-8): os ids já vêm de leads escopados por tenant e a RLS protege, mas Company
+    // tem coluna organizationId própria e toda outra escrita do módulo a inclui no filtro.
     await prisma.company.updateMany({
-      where: { id: { in: companyIds } },
+      where: { id: { in: companyIds }, organizationId },
       data: { enrichmentStatus: 'Enriquecendo' },
     });
 
@@ -718,8 +721,12 @@ export class LeadUseCases extends BaseUseCases<Lead, LeadRepository> {
         }
 
         if (Object.keys(dataToUpdate).length > 0) {
+          // organizationId também no `where` (mesmo padrão de defesa-em-profundidade de
+          // PrismaLeadRepository.update/updateStatus e PrismaCrm360Repository.updateLeadStage):
+          // o id já veio de um findMany escopado por tenant e a RLS é a garantia real, mas a
+          // query de escrita fica autocontida em vez de depender só dessas duas camadas.
           await prisma.lead.update({
-            where: { id: lead.id },
+            where: { id: lead.id, organizationId },
             data: dataToUpdate,
           });
           if (dataToUpdate.owner !== undefined) {

@@ -7,10 +7,7 @@ export interface IEnrichmentRepository {
    * "www."). Usado pela ponte Crawlee→persistência quando o workflow recebe só a URL raspada,
    * sem `companyId` explícito. Retorna no máximo uma Company (a primeira que casa o domínio).
    */
-  findCompanyByWebsiteDomain(
-    organizationId: string,
-    domain: string,
-  ): Promise<Company | null>;
+  findCompanyByWebsiteDomain(organizationId: string, domain: string): Promise<Company | null>;
   /**
    * Resolve a Company dona de um Lead (Lead.companyId). Retorna null quando o lead não existe,
    * pertence a outro tenant ou ainda não foi vinculado a uma empresa.

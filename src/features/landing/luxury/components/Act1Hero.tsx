@@ -48,8 +48,8 @@ export function Act1Hero({ onOpenPrivateAccess }: Act1HeroProps) {
             <SculpturalReveal delay={0.22}>
               <p className="max-w-xl text-base sm:text-lg lg:text-xl text-[#9EADC8] font-normal leading-relaxed">
                 Conectando dados dispersos, IA preditiva, automação e orquestração de vendas em uma
-                única central executiva. Menos fragmentação. Decisões cirúrgicas. Execução em tempo
-                real.
+                única central executiva. Menos fragmentação. Decisões cirúrgicas. Execução
+                assistida.
               </p>
             </SculpturalReveal>
 
@@ -92,9 +92,7 @@ export function Act1Hero({ onOpenPrivateAccess }: Act1HeroProps) {
                   <Lock className="w-3.5 h-3.5 text-[#FFC107]" />
                   <span>Privacidade</span>
                 </div>
-                <div className="font-bold text-sm sm:text-base text-[#F8F9FF]">
-                  100% LGPD Nativo
-                </div>
+                <div className="font-bold text-sm sm:text-base text-[#F8F9FF]">LGPD por design</div>
               </div>
 
               <div>
@@ -103,7 +101,7 @@ export function Act1Hero({ onOpenPrivateAccess }: Act1HeroProps) {
                   <span>Velocidade</span>
                 </div>
                 <div className="font-bold text-sm sm:text-base text-[#F8F9FF]">
-                  Tempo Real / 120 FPS
+                  Interface 360° fluida
                 </div>
               </div>
             </div>
