@@ -17,6 +17,9 @@ export interface ButtonGroupProps<T extends string = string> {
   className?: string;
   size?: 'sm' | 'default' | 'lg';
   soundFeedback?: boolean;
+  /** Nome acessível do grupo (vira <legend> sr-only do fieldset). Sem ele o
+      fieldset é anunciado como grupo sem nome por leitor de tela. */
+  label?: string;
 }
 
 export function ButtonGroup<T extends string = string>({
@@ -26,6 +29,7 @@ export function ButtonGroup<T extends string = string>({
   className,
   size = 'default',
   soundFeedback = false,
+  label,
 }: ButtonGroupProps<T>) {
   const sizeClasses = {
     sm: 'text-xs py-1 px-3',
@@ -34,13 +38,14 @@ export function ButtonGroup<T extends string = string>({
   };
 
   return (
-    <div
-      role="group"
+    // <fieldset> é o elemento semântico nativo de grupo de controles (substitui div[role=group]).
+    <fieldset
       className={cn(
-        'inline-flex items-center rounded-full bg-surface-2 p-1 border border-line shadow-inner',
+        'm-0 inline-flex min-w-0 items-center rounded-full border border-line bg-surface-2 p-1 shadow-inner',
         className,
       )}
     >
+      {label && <legend className="sr-only">{label}</legend>}
       {items.map((item) => {
         const isSelected = item.value === value;
         return (
@@ -75,7 +80,7 @@ export function ButtonGroup<T extends string = string>({
           </button>
         );
       })}
-    </div>
+    </fieldset>
   );
 }
 
