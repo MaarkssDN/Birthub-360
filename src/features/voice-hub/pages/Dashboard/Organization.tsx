@@ -92,7 +92,7 @@ export default function OrganizationPage() {
       })
       .catch((err) => {
         if (cancelled) return;
-        logger.error( { err },'Failed to load organization name');
+        logger.error({ err }, 'Failed to load organization name');
         setOrgNameStatus('error');
       });
     return () => {
@@ -113,7 +113,7 @@ export default function OrganizationPage() {
       })
       .then((data) => setMembers(Array.isArray(data.users) ? data.users : []))
       .catch((err) => {
-        logger.error( { err },'Failed to load tenant members');
+        logger.error({ err }, 'Failed to load tenant members');
         setMembersError(true);
       });
   }, [isAdmin]);
@@ -138,7 +138,7 @@ export default function OrganizationPage() {
       })
       .catch((err) => {
         if (onCancelled?.()) return;
-        logger.error( { err },'Failed to load audit log');
+        logger.error({ err }, 'Failed to load audit log');
         setAuditState({ status: 'error' });
       });
   }, []);
@@ -172,7 +172,7 @@ export default function OrganizationPage() {
             setVideoOperation(null);
           }
         } catch (e: unknown) {
-          logger.error( { e },'Error polling video generation status');
+          logger.error({ e }, 'Error polling video generation status');
         }
       }, 5000); // poll every 5s
     }

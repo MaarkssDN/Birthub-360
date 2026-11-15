@@ -29,7 +29,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    logger.error( { error, errorInfo },'Uncaught error inside Birth Hub 360 Error Boundary');
+    logger.error({ error, errorInfo }, 'Uncaught error inside Birth Hub 360 Error Boundary');
   }
 
   private handleReload = () => {
