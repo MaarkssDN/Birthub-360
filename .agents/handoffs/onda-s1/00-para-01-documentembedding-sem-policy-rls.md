@@ -1,7 +1,7 @@
 De: 00 (Coordenador) — Etapa S1 (auditoria RLS)
 Para: 01 (Plataforma, Segurança e Dados)
 Onda: S1 (trilha técnica subordinada à Fase 02)
-Status: aberto
+Status: resolvido
 Prioridade: bloqueador
 Bloqueador-ref: B-10
 Sprint destino: próxima
@@ -54,3 +54,18 @@ deixaram de usar `bypassRls` (a policy não honra esse GUC) e passam a rodar em
 trocado por asserção da mensagem de policy/P2025; há controle positivo de DELETE
 do próprio embedding; o `beforeAll` confere `current_user = prospector_app` com
 `rolbypassrls = false`.
+
+### Re-verificação (Agente 01 — 2026-11-14, branch `agente/01-onda1-handoffs`)
+
+- Confirmado no worktree: `prisma/migrations/20261110120000_document_embedding_rls_policy/migration.sql`
+  contém `CREATE POLICY "tenant_isolation" ON "DocumentEmbedding" AS PERMISSIVE FOR ALL TO public
+  USING ("tenantId" = current_setting('app.current_tenant_id', true))`.
+- `node node_modules/vitest/vitest.mjs run -c vitest.unit.config.ts tests/unit/db/rls-coverage.test.ts`
+  → **6/6 testes verdes** (cobre ENABLE+FORCE+CREATE POLICY para 100% das tabelas).
+- `tenantId` guarda o mesmo valor de `organizationId` (o único escritor do model é o próprio teste
+  de integração `tests/integration/document-embedding-rls.test.ts`, que usa ids de `Organization`;
+  nenhum código de produção escreve `DocumentEmbedding` hoje — o payload equivalente no Qdrant usa
+  `tenantId` em `src/lib/ai/embeddings/qdrant.ts`).
+- `npx prisma validate` → schema válido. Nenhuma migration nova necessária; nenhuma migration
+  aplicada foi alterada. Teste de integração com Postgres não executado neste ambiente
+  (infra indisponível) — permanece como evidência pendente para o gate de integração.
