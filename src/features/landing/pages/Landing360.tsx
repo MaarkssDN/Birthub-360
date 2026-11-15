@@ -188,7 +188,7 @@ const ADAPTIVE_PILLARS = [
     kpi: '~12 ms sync',
     modalTitle: '07. Automação & Conectividade Multi-CRM',
     modalDesc:
-      'Sincronização bidirecional em tempo real via APIs abertas e webhooks com Bitrix24, Salesforce, HubSpot e Pipedrive.',
+      'Sincronização bidirecional em tempo real via APIs abertas e webhooks com Bitrix24. HubSpot, Salesforce e Pipedrive estão em homologação.',
   },
   {
     num: '08',
@@ -1418,9 +1418,9 @@ export function Landing360({
                   </div>
                   <h3>Dados e conectividade Multi-CRM</h3>
                   <p>
-                    Conexões bidirecionais via APIs abertas e webhooks com Bitrix24, HubSpot,
-                    Salesforce e Pipedrive mantêm os dados comerciais sincronizados em milissegundos
-                    sem duplicação.
+                    Conexões bidirecionais via APIs abertas e webhooks com Bitrix24 mantêm os dados
+                    comerciais sincronizados sem duplicação. HubSpot, Salesforce e Pipedrive seguem
+                    em homologação.
                   </p>
                   <div className="b360-platform-badge">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#00D4FF] animate-pulse" />
@@ -1739,7 +1739,7 @@ export function Landing360({
                 </div>
                 <div className="b360-seal-item">
                   <CheckCircle2 className="w-5 h-5 text-purple-400" />
-                  <span>100% Conforme com a LGPD (Audit Ledger)</span>
+                  <span>Conformidade LGPD por design (Audit Ledger)</span>
                 </div>
                 <div className="b360-seal-item">
                   <Award className="w-5 h-5 text-amber-400" />
@@ -1801,7 +1801,7 @@ export function Landing360({
                         </span>
                         <div>
                           <strong className="text-xs font-bold text-slate-200 block">
-                            Atendimento rápido em até 15 minutos
+                            Contato comercial direto e ágil
                           </strong>
                           <span className="text-xs text-slate-400">
                             Contato por WhatsApp para alinhar o melhor horário da sua agenda.
@@ -2536,7 +2536,7 @@ export function Landing360({
                       </h4>
                       <p className="font-sans text-xs text-slate-600 dark:text-slate-400 mt-0.5">
                         Postgres Row Level Security nativo, isolamento criptográfico por organização
-                        e latência de consulta inferior a 50ms.
+                        e consultas indexadas de baixa latência.
                       </p>
                     </div>
                   </div>
@@ -2584,10 +2584,10 @@ export function Landing360({
                 SOC-2 TYPE II READY
               </span>
               <span className="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60">
-                ISO 27001
+                ISO 27001 READY
               </span>
               <span className="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60">
-                LGPD COMPLIANT
+                LGPD POR DESIGN
               </span>
               <span className="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60">
                 AES-256-GCM

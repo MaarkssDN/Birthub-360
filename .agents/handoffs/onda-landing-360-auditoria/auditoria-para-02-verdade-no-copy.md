@@ -82,3 +82,37 @@ Feito:
 - Promessa "em até 15 minutos" removida do fluxo de lead.
 
 Pendente (decisão comercial/dono): alegações de certificação (ISO 27001 Ready mantido como "Ready"), número de agentes "20+" (consistente em todo o copy, mas sem lastro público), depoimentos nominados (mantidos sob rótulo ilustrativo).
+
+## Resolução — continuação (Agente 02 — 2026-11-14, branch `agente/02-onda2-produto`)
+
+Complemento à resolução parcial de `510bce4bd`, endereçando os itens que
+ainda tinham texto enganoso ou desalinhado do status real:
+
+Feito nesta rodada:
+- Conectividade Multi-CRM alinhada ao status real de integração: claims de
+  "tempo real" com Bitrix24, Salesforce, HubSpot e Pipedrive foram corrigidos
+  para Bitrix24 em tempo real e HubSpot/Salesforce/Pipedrive declarados
+  "em homologação" (pillar `ADAPTIVE_PILLARS` num 07 e seção "Dados e
+  conectividade Multi-CRM" em `src/features/landing/pages/Landing360.tsx`).
+- Selo "100% Conforme com a LGPD" → "Conformidade LGPD por design".
+- Claim "Atendimento rápido em até 15 minutos" → "Contato comercial direto e
+  ágil" (removida promessa de SLA não verificável; descrição de WhatsApp
+  mantida).
+- "latência de consulta inferior a 50ms" → "consultas indexadas de baixa
+  latência" (número de performance suavizado).
+- Selos de certificação: "ISO 27001" → "ISO 27001 READY" e "LGPD COMPLIANT"
+  → "LGPD POR DESIGN", alinhando ao padrão já existente "SOC-2 TYPE II READY"
+  e não afirmando certificação concluída.
+- `src/features/landing/components/RoiSimulatorModal.tsx`: comentário
+  "Recuperação comprovada" → "Premissa de simulação"; "+15 horas semanais"
+  → "Estimativa de +15 horas semanais"; adicionado disclaimer "Projeções
+  baseadas em premissas de simulação — não constituem garantia de
+  resultados."; "Setup em 5 minutos" → "Onboarding assistido".
+
+Mantido (pendente de decisão comercial/dono, já registrado na resolução
+parcial): número de agentes "20+" consistente no copy mas sem lastro
+público; depoimentos nominados sob o rótulo "Histórias ilustrativas de uso";
+headline "projeções de até 3.8x" já rotulada como projeção.
+
+Gates: `npx tsc --noEmit` limpo; `npx biome check` nos arquivos tocados sem
+erros novos (warnings pré-existentes não relacionados permanecem).

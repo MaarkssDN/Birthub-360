@@ -37,7 +37,7 @@ export function RoiSimulatorModal({
   // Cálculos dinâmicos de impacto financeiro
   const pipelineTotal = dealsCount * avgTicket;
   const monthlyLeakedRevenue = pipelineTotal * (leakRate / 100);
-  // Recuperação comprovada de até 34% dos negócios que seriam perdidos
+  // Premissa de simulação: recuperação estimada de até 34% dos negócios em risco
   const monthlyRecoverableRevenue = monthlyLeakedRevenue * 0.34;
   const annualRecoverableRevenue = monthlyRecoverableRevenue * 12;
 
@@ -256,11 +256,16 @@ export function RoiSimulatorModal({
             <div className="flex items-center gap-2 pt-2 border-t border-slate-200 dark:border-slate-800/80 text-xs font-mono text-slate-600 dark:text-slate-200">
               <Zap className="w-4 h-4 text-cyan-400 shrink-0" />
               <span>
-                <strong>+15 horas semanais</strong> liberadas por vendedor ao automatizar
+                <strong>Estimativa de +15 horas semanais</strong> por vendedor ao automatizar
                 preenchimento de CRM e cadências de contato.
               </span>
             </div>
           </div>
+
+          {/* Disclaimer de ilustração */}
+          <p className="text-center text-[10px] font-mono text-slate-400 dark:text-slate-500">
+            Projeções baseadas em premissas de simulação — não constituem garantia de resultados.
+          </p>
 
           {/* CTA de Decisão Imediata */}
           <div className="space-y-3 pt-2">
@@ -279,7 +284,7 @@ export function RoiSimulatorModal({
                 Sem compromisso
               </span>
               <span>•</span>
-              <span>Setup em 5 minutos</span>
+              <span>Onboarding assistido</span>
               <span>•</span>
               <span>Multi-CRM Pronto</span>
             </div>
