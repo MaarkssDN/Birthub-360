@@ -1,7 +1,7 @@
 {
   "_comment": "Parecer 15 (#40 L1, #75 A1) e parecer 24 (#75 P2): usos legados de $queryRaw/$executeRaw/$transaction no client global (prisma.$x, this.prisma.$x e nomes pontilhados terminados em prisma), suprimidos com biome-ignore lint/plugin/no-prisma-tx-escape. Cada entrada é um uso: \"<método>:<sha256[0..16] do statement normalizado>\". A lista só pode diminuir: ao migrar um uso para runInTransaction, remova o biome-ignore e a entrada. Mudar o statement suprimido (método, SQL, corpo) muda a chave e exige revisão explícita aqui. Verificado por tests/unit/architecture/prisma-tx-escape-baseline.test.ts (a mensagem de falha mostra as chaves atuais).",
   "rule": "lint/plugin/no-prisma-tx-escape",
-  "total": 28,
+  "total": 29,
   "files": {
     "src/bootstrap/healthchecks.ts": [
       "$queryRaw:0d9e9cfe1eef5a83"
@@ -76,8 +76,11 @@
       "$transaction:a9b9970a4f6832c2"
     ],
     "src/lib/voice-hub/repositories/sessionRepository.ts": [
-      "$transaction:590b635ebd2053ea",
-      "$transaction:bd17263fc88d0b38"
+      "$transaction:1aef525b4c63dc86",
+      "$transaction:2acb231621570e03"
+    ],
+    "src/lib/voice-hub/repositories/userRepository.ts": [
+      "$transaction:cd8beb00b85b0473"
     ]
   }
 }

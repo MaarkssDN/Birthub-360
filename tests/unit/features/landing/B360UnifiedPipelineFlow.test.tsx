@@ -60,7 +60,7 @@ describe('B360UnifiedPipelineFlow', () => {
       screen.getByRole('region', { name: /visualização de pipeline integrado/i }),
     ).toBeInTheDocument();
     expect(screen.getByText(/Pipeline Unificado/i)).toBeInTheDocument();
-    expect(screen.getByText(/Bitrix24, HubSpot, Salesforce, WhatsApp, VoiceHub/i)).toBeInTheDocument();
+    expect(screen.getByText(/Conectores: Bitrix24, WhatsApp, VoiceHub/i)).toBeInTheDocument();
     expect(document.querySelector('canvas')).not.toBeInTheDocument();
   });
 
@@ -75,8 +75,8 @@ describe('B360UnifiedPipelineFlow', () => {
       }),
     ).toBeInTheDocument();
     expect(screen.getByText(/FLUXO CONTÍNUO DE SINAIS/i)).toBeInTheDocument();
-    expect(screen.getByText(/Eventos integrados:/i)).toBeInTheDocument();
-    expect(screen.getByText('1.482')).toBeInTheDocument();
+    expect(screen.getByText(/Eventos ilustrativos:/i)).toBeInTheDocument();
+    expect(screen.getByText('0')).toBeInTheDocument();
     expect(document.querySelector('canvas.b360-unified-pipeline-canvas')).toBeInTheDocument();
     expect(raf.pendingCount()).toBe(0);
     expect(ctx.clearRect).not.toHaveBeenCalled();
@@ -126,7 +126,7 @@ describe('B360UnifiedPipelineFlow', () => {
     expect(ctx.arc).toHaveBeenCalled();
     const kpi = container.querySelector('.b360-pipeline-kpi') as HTMLElement;
     const numeric = Number((kpi.textContent || '').replace(/\D/g, ''));
-    expect(numeric).toBeGreaterThan(1482);
+    expect(numeric).toBeGreaterThan(0);
 
     dispatchPointer(canvas, 'pointerleave', 0, 0);
     act(() => {
