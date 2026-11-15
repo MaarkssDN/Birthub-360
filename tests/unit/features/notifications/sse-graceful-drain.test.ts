@@ -28,6 +28,8 @@ function createMockSseClient() {
   const res = {
     setHeader: vi.fn(),
     flushHeaders: vi.fn(),
+    on: vi.fn(),
+    off: vi.fn(),
     write: vi.fn((chunk: string) => {
       if (ended) throw new Error('write after end');
       chunks.push(chunk);
