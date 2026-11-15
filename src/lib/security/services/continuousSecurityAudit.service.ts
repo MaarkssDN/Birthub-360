@@ -9,6 +9,20 @@ import type { IGlobalSecurityEventSink } from '../events/globalSecurityEvent.por
 import { LoggerGlobalSecurityEventSink } from '../events/loggerGlobalSecurityEventSink.js';
 import { logger } from '../../logger.js';
 
+/**
+ * SIMULADOR DETERMINÍSTICO DE HOMOLOGAÇÃO — NÃO É AUDITORIA REAL (EXP-06).
+ *
+ * Todos os dados emitidos por este serviço são fabricados/determinísticos:
+ * contagem de dependências hardcoded (428), CVEs fixas (ex.: CVE-2026-4412),
+ * waivers semeados em memória (seedKnownWaivers) e SBOM sintético com timestamp.
+ * `complianceRating` é ILLUSTRATIVO — não constitui evidência de conformidade.
+ *
+ * Scanner real de dependências (npm audit / cyclonedx-npm) e waivers oficiais
+ * estão pendentes como demanda futura (ver handoff
+ * `.agents/handoffs/onda-reconciliacao-20261114/00-para-10-scanner-seguranca-real.md`).
+ * Todo relatório retornado carrega `simulated: true` para que consumidores não
+ * confundam estes dados com uma auditoria de segurança real.
+ */
 export class ContinuousSecurityAuditService implements IContinuousSecurityAuditPort {
   private latestReport: SecuritySweepReport | null = null;
 
@@ -32,7 +46,8 @@ export class ContinuousSecurityAuditService implements IContinuousSecurityAuditP
   }
 
   /**
-   * Executa a varredura contínua e determinística de dependências e segurança.
+   * Executa a varredura SIMULADA (determinística, de homologação) — ver JSDoc
+   * da classe. Não realiza scanner real de dependências/CVE.
    */
   async runSecuritySweep(params?: { forceFreshScan?: boolean }): Promise<SecuritySweepReport> {
     const sweepId = `sweep-${randomUUID().substring(0, 8)}`;
@@ -96,6 +111,7 @@ export class ContinuousSecurityAuditService implements IContinuousSecurityAuditP
       activeWaiversCount,
       sbomSummary,
       complianceRating,
+      simulated: true,
     };
 
     this.latestReport = report;
@@ -116,6 +132,7 @@ export class ContinuousSecurityAuditService implements IContinuousSecurityAuditP
         criticalCount,
         activeWaiversCount,
         sbomHash,
+        simulated: true,
       },
     });
 
