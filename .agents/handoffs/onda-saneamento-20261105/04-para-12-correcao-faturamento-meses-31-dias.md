@@ -34,3 +34,8 @@ PrecisÃ£o financeira e prevenÃ§Ã£o de disputas de cobranÃ§a.
 - Implementado TelephonyBillingService em src/services/telephony/billing.service.ts com calculo de calendario exato baseado no dia de corte contratual, ajustando fechamentos de meses com 28, 29, 30 e 31 dias.
 - Testes: 	ests/unit/services/telephony/billing-cycles-accuracy.test.ts (3 passam).
 
+
+
+## Reconciliacao forense 2026-11-14 (Agente 12)
+- O TelephonyBillingService implementado aqui NAO possui consumidores produtivos (orfaos: apenas testes unitarios). O faturamento real de planos/carteira vive em `src/lib/voice-hub/services/billingService.ts`, cuja funcao `computePeriodEnd` (L147) ja aplica o clamp de fim de mes exigido por este handoff para intervalos monthly/yearly.
+- Decisao: servico mantido como referencia/teste; nota de rodape adicionada em `src/services/telephony/billing.service.ts` deixando explicito que nao e o caminho de billing em producao. Remocao do orfao fica a criterio do Agente 00.

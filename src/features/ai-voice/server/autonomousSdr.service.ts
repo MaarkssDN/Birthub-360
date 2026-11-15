@@ -89,6 +89,9 @@ export class AutonomousSdrService implements IAutonomousSdrPort {
       meetingScheduled: meetingProposal,
       transcriptSnippet: `SDR: Olá ${input.leadName}, entendo que vocês buscam reduzir o custo operacional de frotas. Podemos agendar 20 minutos com nosso especialista? Cliente: Com certeza, na quinta-feira à tarde.`,
       wasWithinAllowedHours: true,
+      // Reconciliação forense (2026-11): chamada NÃO foi discada de verdade —
+      // duração, notas, transcrição e reunião são simulados localmente.
+      simulated: true,
     };
 
     this.callsStore.set(`${input.organizationId}:${callId}`, callResult);
@@ -106,6 +109,9 @@ export class AutonomousSdrService implements IAutonomousSdrPort {
         disposition: callResult.disposition,
         durationSeconds,
         meetingId: meetingProposal.meetingId,
+        // Chamada e reunião são simuladas localmente — consumidores do mesh
+        // não devem tratar meetingId como reunião real (ressalva do Agente 24).
+        simulated: true,
       },
     });
 
@@ -144,6 +150,9 @@ export class AutonomousSdrService implements IAutonomousSdrPort {
       googleCalendarEventId,
       googleMeetLink,
       status: 'confirmed',
+      // IDs/URL são UUIDs fabricados localmente — nenhuma chamada real foi
+      // feita ao Google Calendar/Meet. Ver handoff forense 00-para-12.
+      simulated: true,
     };
 
     this.meetingsStore.set(`${params.organizationId}:${meetingId}`, proposal);
@@ -162,6 +171,9 @@ export class AutonomousSdrService implements IAutonomousSdrPort {
         googleMeetLink,
         startTime,
         sellerEmail: params.sellerEmail,
+        // googleCalendarEventId/googleMeetLink são UUIDs fabricados — nenhuma
+        // integração real com Google Calendar/Meet ocorreu.
+        simulated: true,
       },
     });
 

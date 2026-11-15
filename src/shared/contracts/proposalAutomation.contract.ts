@@ -45,6 +45,11 @@ export interface CommercialProposalDraft {
     documentHashSha256: string;
     signerEmail: string;
     signatureUrl?: string;
+    /**
+     * true quando envelopeId/signatureUrl são simulados localmente, sem
+     * integração real com o provedor de assinatura (Clicksign/DocuSign).
+     */
+    simulated?: boolean;
   };
 }
 

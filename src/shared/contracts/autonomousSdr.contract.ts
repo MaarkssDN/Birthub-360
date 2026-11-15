@@ -38,6 +38,11 @@ export interface ScheduledMeetingProposal {
   googleCalendarEventId?: string;
   googleMeetLink?: string;
   status: 'confirmed' | 'rescheduled' | 'cancelled';
+  /**
+   * true quando o agendamento é simulado localmente (sem integração real com
+   * Google Calendar/Meet). Consumidores NÃO devem apresentar como reunião real.
+   */
+  simulated?: boolean;
 }
 
 export interface SdrCallExecutionResult {
@@ -52,6 +57,11 @@ export interface SdrCallExecutionResult {
   meetingScheduled?: ScheduledMeetingProposal;
   transcriptSnippet?: string;
   wasWithinAllowedHours: boolean;
+  /**
+   * true quando o resultado da chamada é simulado (sem discagem/STT real).
+   * durationSeconds, qualificationNotes e transcriptSnippet são fabricados.
+   */
+  simulated?: boolean;
 }
 
 export interface IAutonomousSdrPort {

@@ -30,6 +30,26 @@ export interface AnalyzeCallInput {
   expectedFramework?: 'SPIN' | 'CHALLENGER' | 'BANT' | 'MEDDPICC' | 'CONSULTATIVE';
 }
 
+/**
+ * Mescla intervalos [start, end] sobrepostos ou adjacentes, ordenados por
+ * início. Usado para medir overlap de fala sem dupla contagem.
+ */
+function mergeTimeSpans(spans: Array<[number, number]>): Array<[number, number]> {
+  const valid = spans
+    .filter(([s, e]) => Number.isFinite(s) && Number.isFinite(e) && e > s)
+    .sort((a, b) => a[0] - b[0]);
+  const merged: Array<[number, number]> = [];
+  for (const [s, e] of valid) {
+    const last = merged[merged.length - 1];
+    if (last && s <= last[1]) {
+      last[1] = Math.max(last[1], e);
+    } else {
+      merged.push([s, e]);
+    }
+  }
+  return merged;
+}
+
 export class ConversationalIntelligenceService {
   private reports = new Map<string, PostCallCoachingReport>();
 
@@ -80,18 +100,39 @@ export class ConversationalIntelligenceService {
     const customerRatio = speechSum > 0 ? Number((customerSeconds / speechSum).toFixed(2)) : 0;
     const avgTurn = turns.length > 0 ? Number((totalTurnDuration / turns.length).toFixed(1)) : 0;
 
+    // overlapTimeSeconds: interseção real entre os intervalos de fala do
+    // vendedor e do cliente. Os intervalos de cada locutor são mesclados antes
+    // do cálculo para não contar em dobro quando um turno do cliente se
+    // sobrepõe a mais de um turno do vendedor (reconciliação forense EXP-07).
+    const sellerSpans = mergeTimeSpans(
+      turns.filter((t) => t.speaker === 'seller').map((t) => [t.startTimeSeconds, t.endTimeSeconds]),
+    );
+    const customerSpans = mergeTimeSpans(
+      turns.filter((t) => t.speaker === 'customer').map((t) => [t.startTimeSeconds, t.endTimeSeconds]),
+    );
+    let overlapSeconds = 0;
+    for (const [cs, ce] of customerSpans) {
+      for (const [ss, se] of sellerSpans) {
+        overlapSeconds += Math.max(0, Math.min(ce, se) - Math.max(cs, ss));
+      }
+    }
+
     return {
       totalDurationSeconds,
       sellerTalkTimeSeconds: sellerSeconds,
       customerTalkTimeSeconds: customerSeconds,
       silenceTimeSeconds: Math.max(0, totalDurationSeconds - speechSum),
-      overlapTimeSeconds: 0,
+      overlapTimeSeconds: Number(overlapSeconds.toFixed(2)),
       sellerTalkRatio: sellerRatio,
       customerTalkRatio: customerRatio,
       totalTurns: turns.length,
       averageTurnDurationSeconds: avgTurn,
-      isEstimate: false,
-      diarizationQualityConfidence: 0.95,
+      // Honestidade (reconciliação forense): a qualidade da diarização NÃO é
+      // medida aqui — não existe ground truth nem confiança real do STT.
+      // 0.5 é um valor neutro/desconhecido, e isEstimate=true sinaliza que as
+      // métricas derivam de turnos potencialmente imperfeitos.
+      isEstimate: true,
+      diarizationQualityConfidence: 0.5,
     };
   }
 

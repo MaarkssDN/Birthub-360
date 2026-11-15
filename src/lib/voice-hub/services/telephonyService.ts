@@ -16,6 +16,7 @@ import {
   type WorkflowRuntimeState,
 } from './workflowRuntimeService.js';
 import { logger } from '../../../lib/logger.js';
+import { telephonyTranscriptionService } from '../../../services/telephony/transcription.service.js';
 
 const DEFAULT_GREETING =
   'Olá! Aqui é a assistente virtual do Birth Voices Hub. Como posso ajudar você hoje?';
@@ -301,7 +302,15 @@ export async function handleTurn(params: {
 
   const metadata = (session.metadata as unknown as PhoneSessionMetadata) || { turns: [] };
   metadata.turns = metadata.turns || [];
-  metadata.turns.push({ role: 'user', content: params.speechResult, timestamp: Date.now() });
+  // PII (LGPD/B-13, handoff 15-para-12): o turno persistido em session.metadata
+  // — e depois retransmitido como `transcript` no webhook `agent.call.ended` —
+  // é mascarado ANTES de gravar. O `speechResult` bruto continua sendo usado
+  // para workflow/LLM neste turno; apenas o registro é higienizado.
+  metadata.turns.push({
+    role: 'user',
+    content: telephonyTranscriptionService.maskPii(params.speechResult),
+    timestamp: Date.now(),
+  });
 
   let reply: string;
   let shouldEnd = false;
@@ -391,7 +400,14 @@ export async function handleTurn(params: {
     reply = gatewayResponse.text;
   }
 
-  metadata.turns.push({ role: 'assistant', content: reply, timestamp: Date.now() });
+  // Mesma máscara de PII do turno do usuário: a resposta do LLM pode ecoar
+  // dados pessoais ditados pelo cliente; o `reply` retornado para o TTS segue
+  // intacto — apenas o registro persistido é higienizado.
+  metadata.turns.push({
+    role: 'assistant',
+    content: telephonyTranscriptionService.maskPii(reply),
+    timestamp: Date.now(),
+  });
 
   await sessionRepository.updateSession(session.id, {
     metadata: metadata as unknown as Prisma.InputJsonValue,

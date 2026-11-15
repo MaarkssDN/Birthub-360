@@ -258,7 +258,9 @@ describe('Onda 05 — Validação de Contratos Canônicos', () => {
 
     expect(metrics.sellerTalkRatio).toBe(0.5);
     expect(metrics.customerTalkRatio).toBe(0.5);
-    expect(metrics.isEstimate).toBe(false);
+    // Reconciliação forense (Agente 12): a qualidade da diarização não é medida
+    // aqui, então as métricas são honestamente marcadas como estimativa.
+    expect(metrics.isEstimate).toBe(true);
   });
 
   it('Eixo 18: Bem-Estar e Carga Operacional — deve validar preferências voluntárias e microtreinamentos', async () => {
