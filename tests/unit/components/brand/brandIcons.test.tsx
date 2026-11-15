@@ -3,6 +3,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import * as BrandIcons from '@/components/icons/BrandIcons';
 import * as SectionIcons from '@/components/brand/title-icons/sectionIcons';
+import * as FlowIcons from '@/components/brand/title-icons/flowIcons';
 import {
   CompanyBadge,
   CompanyBrandIcon,
@@ -38,6 +39,16 @@ describe('sectionIcons (src/components/brand/title-icons)', () => {
     expect(svg).toHaveAttribute('width', '48');
     expect(svg).toHaveAttribute('height', '48');
     expect(svg).toHaveAttribute('aria-hidden', 'true');
+  });
+});
+
+describe('flowIcons (src/components/brand/title-icons)', () => {
+  const entries = iconEntries(FlowIcons as Record<string, unknown>);
+
+  it.each(entries.map(([name]) => name))('%s renderiza um svg', (name) => {
+    const Icon = (FlowIcons as Record<string, React.ComponentType>)[name];
+    const { container } = render(<Icon size={32} color="#ABCDEF" />);
+    expect(container.querySelector('svg')).toBeInTheDocument();
   });
 });
 
