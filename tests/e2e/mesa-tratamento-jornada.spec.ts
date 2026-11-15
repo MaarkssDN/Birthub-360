@@ -95,8 +95,12 @@ test.describe('Mesa de Tratamento — jornada completa com Bitrix mock', () => {
 
     // O lead "atual" é escolhido por score de prioridade — descobre o bitrixLeadId real dele
     // no Atlas para amarrar as asserções do portal mock ao registro certo.
+    // findFirst (não findUnique): a extensão global do Prisma (src/lib/prisma.ts) filtra soft
+    // delete em findUnique comparando `result.deletedAt !== null` — com `select` parcial que
+    // não inclui deletedAt o campo vem `undefined` e a guarda devolve null para um lead que
+    // existe. findFirst recebe `deletedAt: null` injetado no where (comportamento correto).
     requestContext.enterWith({ bypassRls: true });
-    const currentAtlasLead = await prisma.lead.findUnique({
+    const currentAtlasLead = await prisma.lead.findFirst({
       where: { id: currentLeadId },
       select: { bitrixLeadId: true },
     });
@@ -319,7 +323,8 @@ test.describe('Mesa de Tratamento — jornada completa com Bitrix mock', () => {
       where: { organizationId, leadId },
     });
     expect(treatmentsAfter).toBe(treatmentsBefore);
-    const leadAfter = await prisma.lead.findUnique({
+    // findFirst pelo mesmo motivo do teste acima (guarda de soft delete do findUnique).
+    const leadAfter = await prisma.lead.findFirst({
       where: { id: leadId },
       select: { status: true, lastInteraction: true, bitrixSyncStatus: true },
     });
