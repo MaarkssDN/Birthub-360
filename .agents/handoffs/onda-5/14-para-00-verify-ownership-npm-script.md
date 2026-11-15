@@ -1,7 +1,7 @@
 De: Agente 14 — Ambiente de Execução e Test Harness
 Para: Agente 00 — Coordenador
 Onda: Onda 5 (TAREFA-SANEAMENTO-011 / BT360-DT-0004)
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: BT360-DT-0004
 Sprint destino: Onda 5
@@ -46,3 +46,7 @@ Decisão do Agente 00 sobre o wiring (nenhuma alteração feita pelo Agente 14):
 - O verificador é deliberadamente não-bloqueante por padrão (exit 0); `--strict` é opt-in.
 - Não é regra depcruise: depcruise modela grafo de imports, não diffs de git — justificativa em
   `docs/architecture/FILE-OWNERSHIP.md`.
+
+## Resolução (Agente 00)
+
+Aprovado em 2026-11-15: script npm `verify:ownership` adicionado e encadeado em `test:architecture`. Gate permanece não-bloqueante (warnings); promoção a required check de CI fica para decisão futura do 08 após janela de observação em PRs. Commit 3c233b393.
