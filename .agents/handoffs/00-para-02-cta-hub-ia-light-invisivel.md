@@ -100,4 +100,45 @@ botão azul com texto visível sobre um hero escuro.
   foi alterada aqui.
 
 ## Resolução
-(preenchido pelo agente destino ao resolver)
+
+Resolvido pelo Agente 02 em 2026-11-14 (branch `agente/02-onda2-produto`,
+worktree `Birthub-360-wt-o2-02`).
+
+Causa raiz: em `src/features/intelligence/components/IntelligenceHub.tsx`
+(~linha 351, único CTA `commercial_cell` da página) a classe
+`bg-gradient-to-r` estava incompleta — sem `from-*`/`to-*` ela gera um
+`background-image` de gradiente inválido que neutralizava o `bg-brand`
+explícito; as classes manuais `bg-brand`/`hover:bg-brand-hover` ainda
+por cima mascaravam a variante `default` do `Button`, que já provê um
+gradiente real com paradas (`from-[#0369a1] to-[#075985]` no light,
+`from-[#00b4d8] to-[#0284c7]` no dark) e `text-on-brand`.
+
+Correção: removidas as classes quebradas/redundantes
+(`bg-gradient-to-r bg-brand hover:bg-brand-hover`). O botão passa a usar
+integralmente a variante `default` do `Button` (design system), mantendo
+`size="lg"`, o rótulo "Acessar Célula Comercial", o ícone `ArrowRight` e
+o `onClick={() => handleOpenTool('commercial_cell')}` — comportamento de
+clique inalterado.
+
+Contraste (WCAG AA): texto `text-on-brand` (#f8fafc no light) sobre o
+gradiente #0369a1→#075985 — contraste ≥ ~4.5:1 mesmo no extremo mais
+claro do gradiente; dark mantém o par cyan/`on-brand` da variante, sem
+regressão (o dark já estava correto e continua usando o mesmo variant).
+
+Gates executados:
+- `npx tsc --noEmit`: limpo (foi preciso `npx prisma generate` antes — o
+  worktree não tinha o Prisma Client gerado, o que produzia ~532 erros
+  ambientais pré-existentes em `@prisma/client`, nenhum nos arquivos
+  tocados).
+- `npx biome check` nos arquivos tocados: 0 erros; 16 warnings
+  pré-existentes não relacionados (a11y/exhaustive-deps em Landing360 e
+  ProspectingHub, linhas não alteradas).
+- `npx vitest run -c vitest.unit.config.ts` nos testes novos do pacote:
+  10/10 passando.
+
+Pendente honesto: a validação visual Playwright do CTA light
+(`npm run test:visual`) não foi executada nesta sessão. **As baselines
+`intelligence-light-*` NÃO foram atualizadas** — devem ser regeneradas
+somente após um run visual confirmar o CTA visível, conforme o próprio
+handoff determina. Recomenda-se ao Agente 08/QA rodar a suíte visual
+antes do update de baseline.
