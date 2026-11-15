@@ -586,7 +586,7 @@ describe('Landing360', () => {
       const consentCheckbox = container.querySelector(
         'input[type="checkbox"]',
       ) as HTMLInputElement;
-      fireEvent.click(consentCheckbox);
+      if (!consentCheckbox.checked) fireEvent.click(consentCheckbox);
       const submitBtn = screen.getByRole('button', {
         name: /SOLICITAR DEMONSTRAÇÃO GRATUITA/i,
       });
