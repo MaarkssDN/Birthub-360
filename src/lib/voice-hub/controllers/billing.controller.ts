@@ -67,26 +67,38 @@ export async function changePlanHandler(req: Request, res: Response) {
   if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0].message });
 
   try {
+    const actorId = req.voiceHubUser?.id;
+    // requireTenant garante sessão, mas o tipo é opcional — sem actorId não há como atribuir a
+    // mudança de plano (BillingWallet.updatedBy é NOT NULL) nem gravar auditoria correta.
+    if (!actorId) return res.status(401).json({ error: 'Não autorizado.' });
     const wallet = await changePlan(
       req.organizationId!,
       parsed.data.planId,
-      req.user?.id,
+      actorId,
       parsed.data.effectiveAt ?? 'immediate',
     );
-    writeAuditLog(req.organizationId, req.user?.id, 'BILLING_PLAN_CHANGED', {
+    writeAuditLog(req.organizationId, actorId, 'BILLING_PLAN_CHANGED', {
       planId: parsed.data.planId,
     });
     // Best-effort: a notification write failing must never fail the plan change itself (the
     // money/plan side-effect already succeeded). See notificationService.ts module doc — this is
     // the first of potentially several domains calling the same generic entry point, not a
     // billing-only notification path.
-    createNotification({
-      userId: req.user?.id,
-      title: 'Plano atualizado',
-      message: `Seu plano foi alterado com sucesso para ${wallet.planName ?? parsed.data.planId}.`,
-    }).catch((err) => {
-      logger.error('Failed to create plan-change notification', { err, userId: req.user?.id });
-    });
+    const notifyUserId = actorId;
+    if (notifyUserId) {
+      createNotification(
+        { organizationId: req.organizationId!, userId: notifyUserId },
+        {
+          title: 'Plano atualizado',
+          message: `Seu plano foi alterado com sucesso para ${wallet.planName ?? parsed.data.planId}.`,
+        },
+      ).catch((err) => {
+        logger.error(
+          { err, userId: notifyUserId },
+          'Failed to create plan-change notification',
+        );
+      });
+    }
     return res.json({ wallet });
   } catch (err: any) {
     if (err instanceof PlanNotFoundError) return res.status(404).json({ error: err.message });

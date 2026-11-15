@@ -1,123 +1,54 @@
 import type { Request, Response } from 'express';
-import { z } from 'zod';
+import { fromNodeHeaders } from 'better-auth/node';
+import { auth } from '../../../lib/auth.js';
+import { requestContext } from '../../../lib/async-context.js';
 import { logger } from '../../../lib/logger.js';
-import { loginSchema, registerSchema } from '../validators/index.js';
-
-const tokenSchema = z.object({
-  token: z.string().optional(),
-});
-
-import {
-  ACCESS_TOKEN_MAX_AGE_MS,
-  REFRESH_TOKEN_MAX_AGE_MS,
-  setCookie,
-  setLoggedInCookie,
-} from '../lib/cookies.js';
-import { createMetric } from '../repositories/metricRepository.js';
 import { getPermissionsForRoleName } from '../repositories/roleRepository.js';
-import { writeAuditLog } from '../services/audit.js';
-import { AuthError, login, refreshSession, register } from '../services/authService.js';
+import { voiceHubSessionOf } from '../middlewares/rbac.js';
 
-export async function registerHandler(req: Request, res: Response) {
-  const parsed = registerSchema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(400).json({ error: parsed.error.issues[0].message });
-  }
+// Auth do voice-hub — ADAPTADA ao Better Auth canônico (handoff
+// .agents/handoffs/01-para-12-voicehub-adaptacao-modelos-canonicos.md — Agente 01, Estratégia 1).
+//
+// REMOVIDOS: register/login/refresh com JWT próprio (cookies access_token/refresh_token,
+// registerSchema/loginSchema, AuthError). Cadastro e login agora são exclusivamente do Better
+// Auth (/api/auth/*) — o hook de criação de Organization/User vive em src/lib/auth.ts e o
+// voice-hub NUNCA cria tenants.
+//
+// Mantidos: /auth/me (introspecção da sessão + permissões de voz resolvidas live) e
+// /auth/logout (signOut do Better Auth).
 
-  const { email, password, companyName } = parsed.data;
-
-  try {
-    const result = await register(email, password, companyName);
-    writeAuditLog(result.organizationId, result.user.id, 'USER_REGISTER', {});
-    setCookie(res, 'access_token', result.token, ACCESS_TOKEN_MAX_AGE_MS);
-    setLoggedInCookie(res);
-    setCookie(res, 'refresh_token', result.refreshToken, REFRESH_TOKEN_MAX_AGE_MS);
-    return res.json(result);
-  } catch (err: unknown) {
-    logger.error(
-      { err: err instanceof Error ? { message: err.message, name: err.name } : 'Unknown error' },
-      'Register Error',
-    );
-    if (err instanceof AuthError) {
-      return res.status(err.status).json({ error: err.message });
-    }
-    return res.status(500).json({ error: 'Erro interno no servidor' });
-  }
+// GET /auth/me — sessão introspection endpoint. Resolves the httpOnly session cookie (or bearer
+// token) via voiceHubSessionOf (req.voiceHubUser populado por attachAuthIfPresent/requireTenant,
+// ou req.user canônico do authenticateToken). Also resolves the caller's effective permission set
+// live (never trusted from a client claim) so the frontend can decide what to show (e.g. the
+// LiveSupervisor "intervene" control) without a hardcoded role-name allowlist — UX-only; every
+// permission-gated action is still enforced server-side (requirePermission/hasPermission).
+export async function meHandler(req: Request, res: Response) {
+  const session = voiceHubSessionOf(req);
+  if (!session) return res.json({ user: null });
+  const permissions = await getPermissionsForRoleName(
+    session.role,
+    session.organizationId,
+    session.id,
+  );
+  return res.json({ user: { ...session, permissions } });
 }
 
-export async function loginHandler(req: Request, res: Response) {
-  const parsed = loginSchema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(400).json({ error: parsed.error.issues[0].message });
-  }
-
-  const { email, password } = parsed.data;
-
+// POST /auth/logout — encerra a sessão Better Auth (remove o registro Session e expira o cookie
+// de sessão no client). signOut toca a tabela Session que tem FORCE RLS — roda sob bypassRls,
+// mesmo padrão de authenticateToken para operações de identidade pré-tenant.
+export async function logoutHandler(req: Request, res: Response) {
   try {
-    const result = await login(email, password);
-    writeAuditLog(result.organizationId, result.user.id, 'USER_LOGIN', {});
-    createMetric(result.organizationId, result.user.id, {
-      name: 'user_login',
-      value: 1,
-      tags: { userId: result.user.id },
-    });
-    setCookie(res, 'access_token', result.token, ACCESS_TOKEN_MAX_AGE_MS);
-    setLoggedInCookie(res);
-    setCookie(res, 'refresh_token', result.refreshToken, REFRESH_TOKEN_MAX_AGE_MS);
-    return res.json(result);
-  } catch (err: unknown) {
-    logger.error(
-      { err: err instanceof Error ? { message: err.message, name: err.name } : 'Unknown error' },
-      'Login Error',
+    await requestContext.run({ bypassRls: true }, () =>
+      auth.api.signOut({ headers: fromNodeHeaders(req.headers) }),
     );
-    if (err instanceof AuthError) {
-      return res.status(err.status).json({ error: err.message });
-    }
-    return res.status(500).json({ error: 'Erro interno no servidor' });
+  } catch (err) {
+    // Logout é best-effort: mesmo que a sessão já tenha expirado ou o signOut falhe, o client
+    // deve poder limpar o estado local — logado para observabilidade, nunca bloqueia a resposta.
+    logger.warn({ err }, 'voice-hub logout: signOut falhou');
   }
-}
-
-export async function refreshHandler(req: Request, res: Response) {
-  const parsed = tokenSchema.safeParse(req.body);
-  const refreshToken = parsed.success ? parsed.data.token : req.cookies?.refresh_token;
-
-  if (!refreshToken) {
-    return res.status(401).json({ error: 'Refresh token não fornecido.' });
-  }
-
-  try {
-    const result = await refreshSession(refreshToken);
-    if (!result) {
-      res.clearCookie('access_token');
-      res.clearCookie('refresh_token');
-      return res.status(401).json({ error: 'Refresh token inválido.' });
-    }
-    setCookie(res, 'access_token', result.token, ACCESS_TOKEN_MAX_AGE_MS);
-    setLoggedInCookie(res);
-    return res.json(result);
-  } catch (err: any) {
-    logger.error(
-      { err: err instanceof Error ? { message: err.message, name: err.name } : 'Unknown error' },
-      'Refresh Token Error',
-    );
-    return res.status(500).json({ error: 'Erro interno no servidor.' });
-  }
-}
-
-export async function logoutHandler(_req: Request, res: Response) {
   res.clearCookie('access_token');
   res.clearCookie('refresh_token');
   res.clearCookie('logged_in');
   return res.json({ success: true, message: 'Logout realizado com sucesso' });
-}
-
-// Also resolves the caller's effective Permission set live (never trusted from the JWT claim) so
-// the frontend can decide what to show (e.g. the LiveSupervisor "intervene" control) without a
-// hardcoded role-name allowlist. This is UX-only information for the client — every
-// permission-gated action must still be enforced authoritatively server-side (requirePermission /
-// hasPermission in src/middlewares/rbac.ts), never trusted from this response alone.
-export async function meHandler(req: Request, res: Response) {
-  if (!req.user) return res.json({ user: null });
-  const permissions = await getPermissionsForRoleName(req.user.role, req.user.organizationId);
-  return res.json({ user: { ...req.user, permissions } });
 }

@@ -9,8 +9,7 @@ import { logger } from '../../../lib/logger.js';
  * handoff 16→05). Configurável via `CRAWLEE_USER_AGENT`; o default replica o UA já usado pelo
  * `WebScraperService` (scraper leve HTTP) para consistência entre os dois caminhos de scrape.
  */
-const DEFAULT_USER_AGENT =
-  'Mozilla/5.0 (compatible; BirthHubBot/1.0; +https://birthub360.com)';
+const DEFAULT_USER_AGENT = 'Mozilla/5.0 (compatible; BirthHubBot/1.0; +https://birthub360.com)';
 
 function getCrawlerUserAgent(environment: NodeJS.ProcessEnv = process.env): string {
   const configured = environment.CRAWLEE_USER_AGENT?.trim();

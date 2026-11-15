@@ -55,7 +55,7 @@ export function NotificationCenter({ className = '' }: { className?: string }) {
         setState({ status: 'ready', items: data.items, unreadCount: data.unreadCount }),
       )
       .catch((err) => {
-        logger.error('Failed to load notifications', { err });
+        logger.error( { err },'Failed to load notifications');
         setState({ status: 'error' });
       });
   }, []);
@@ -83,7 +83,7 @@ export function NotificationCenter({ className = '' }: { className?: string }) {
           : prev,
       );
     } catch (err: any) {
-      logger.error('Failed to mark notification as read', { err, id });
+      logger.error( { err, id },'Failed to mark notification as read');
     } finally {
       setPendingIds((prev) => {
         const next = new Set(prev);
@@ -108,7 +108,7 @@ export function NotificationCenter({ className = '' }: { className?: string }) {
           : prev,
       );
     } catch (err: any) {
-      logger.error('Failed to mark all notifications as read', { err });
+      logger.error( { err },'Failed to mark all notifications as read');
     } finally {
       setMarkingAll(false);
     }

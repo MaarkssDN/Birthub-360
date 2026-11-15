@@ -9,7 +9,7 @@ let lastWorkerProcessor: ((job: unknown) => unknown) | undefined;
 
 vi.mock('bullmq', () => ({
   Queue: vi.fn().mockImplementation(function Queue() {
-    return { add: mockAdd, close: mockQueueClose };
+    return { add: mockAdd, upsertJobScheduler: mockAdd, close: mockQueueClose };
   }),
   Worker: vi.fn().mockImplementation(function Worker(
     _name: string,
@@ -44,14 +44,16 @@ beforeEach(() => {
 describe('startRetentionScheduler', () => {
   it('registers a daily repeatable job on the callLogRetention queue', async () => {
     startRetentionScheduler();
-    // Allow the fire-and-forget queue.add().then() microtask to settle.
+    // Allow the fire-and-forget queue.upsertJobScheduler().then() microtask to settle.
     await new Promise((resolve) => setTimeout(resolve, 0));
 
+    // BullMQ v6: recorrência via upsertJobScheduler(schedulerId, repeatOpts, jobTemplate).
     expect(mockAdd).toHaveBeenCalledWith(
-      'purge',
-      {},
+      'callLogRetention-purge',
+      { pattern: '0 0 * * *' },
       expect.objectContaining({
-        repeat: { pattern: '0 0 * * *' },
+        name: 'purge',
+        data: {},
       }),
     );
   });

@@ -115,3 +115,67 @@ adaptação do 12, não a migration.
 **Sinalização:** ao concluir a adaptação, o 12 deve abrir revisão do Agente 24
 (tenancy/RLS em endpoints de voz) antes de qualquer pedido de abertura do
 `legacyModuleGate` — registrado também no handoff 00→12/17 de reativação.
+
+## Resolução (Agente 12 — 2026-11-14, branch `agente/12-onda2-handoffs`, commit `c3e37014b`)
+
+Estratégia 1 (adaptar aos models canônicos) **implementada** em `src/lib/voice-hub/**`:
+
+- `sessionRepository` → `agentSession`; `tenantRepository` → `organization`
+  (commit anterior `6a1394c5c`).
+- `userRepository` → `User`/`UserJobRole`/`JobRole`/`Account` (senha Argon2id em
+  `Account.password`, providerId `credential`); `updateUser` agora usa
+  `runInTransaction(fn, { organizationId })` — `prisma.$transaction` cru foi
+  rejeitado pelo plugin `no-prisma-tx-escape` e faria a operação escapar do
+  tenant/RLS.
+- `roleRepository` → `JobRole`/`RoleCapabilityGrant` via relação
+  `capabilityGrants` → `capabilityDefinition.code`; `voiceRoleForCanonicalRole`
+  traduz `UserRole` canônico (ADMIN/GESTOR/...) para o voice-role interno —
+  nada disso é persistido.
+- `notificationRepository`/`notificationService` → `body`/`readAt`/
+  `organizationId`/`userId` canônicos; `auditLogRepository`/`auditLogService`/
+  `services/audit.ts` → `tenantId`/`actorId`/`entity`/`entityId`/`details`.
+- `webhookEndpointRepository` → `organizationWebhookEndpoint`;
+  `birthhub360CallResultRepository` → delegate `birthub360CallResult` (grafia
+  canônica do schema).
+- **Auth**: `services/authService.ts` (JWT/register/login/refresh com tenants
+  paralelos) **deletado**. `routes/auth.routes.ts` reduzido a `GET /auth/me`
+  (requireTenant) e `POST /auth/logout` (signOut Better Auth). Login/Register do
+  frontend usam `authClient` (`signIn.email`/`signUp.email`); Sidebar usa
+  `authClient.signOut()`.
+- **requestContext/RLS**: `attachAuthIfPresent` (middlewares/index.ts) agora
+  envolve o downstream em `requestContext.run({ tenantId, userId, role })` —
+  devolvendo a promise de `isApiKeyRateLimitedIfNeeded` (bug anterior: `void`
+  descartava o `next()`). `rbac.voiceHubSessionOf` resolve sessão tanto de
+  `req.voiceHubUser` quanto de `req.user` canônico (populate por
+  `authenticateToken`); `requireTenant` rejeita 401 sem org e normaliza
+  `req.voiceHubUser`/`req.organizationId` para os controllers.
+- `express.d.ts`: `organizationId` declarado não-opcional — seguro porque todo
+  router do voice-hub passa por `requireTenant` (congelado por
+  `__tests__/tenant-isolation.test.ts`).
+
+**Evidência**:
+- `npx tsc --noEmit -p tsconfig.voice.json`: **313 → 14 erros**, todos causados
+  por dependências npm **ausentes do package.json**: `twilio`
+  (telephony.controller/routes/twilioClient), `d3` (D3Chart + 8× implicit-any),
+  `openid-client` (infrastructure/oidc.ts). Nenhum erro de delegate/campo
+  Prisma restante.
+- `npx vitest run -c vitest.unit.config.ts src/lib/voice-hub
+  src/features/voice-hub`: **66 arquivos / 600 testes, todos verdes**
+  (inclui `tenant-isolation.test.ts` 36/36: org autorizada vê só os próprios
+  dados; cross-tenant → 404/vazio sem update/delete).
+- `npx biome lint` nos arquivos do módulo: **0 erros** (149 warnings
+  pré-existentes de a11y/estilo, não introduzidos).
+
+**Pendente / fora do meu escopo**:
+- `package.json` não declara `twilio`, `d3`, `openid-client` → decisão do
+  Agente 00 (instalar ou remover os caminhos mortos). Sem isso o tsc.voice
+  não zera.
+- Teste de integração com Postgres real + RLS (`app.current_tenant_id`) ainda
+  não executado — os testes são de unidade/mock. Necessário antes de qualquer
+  pedido de abertura do `legacyModuleGate`.
+- Revisão formal do Agente 24 sobre tenancy/RLS — **gate permanece fechado**
+  (`src/bootstrap/routes.ts` intocado: `/api/voice-hub`, `/api/outbound`,
+  `/api/dialer-3cx` → `unavailableLegacyModule`).
+- `retentionScheduler`/`slaScheduler` corrigidos para BullMQ v6
+  (`upsertJobScheduler`), mas **não estão wired** em worker/boot — pendência
+  pré-existente registrada no checklist do 12-para-00.

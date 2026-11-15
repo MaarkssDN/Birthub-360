@@ -3,7 +3,7 @@
 De: 00 — Coordenador
 Para: 10 — Infraestrutura, Observabilidade e SRE
 Onda: W7
-Status: resolvido (execução na branch `agente/10-k8s-archive`, worktree `Birthub-360-wt-k8s`)
+Status: resolvido (execução na branch `agente/10-k8s-archive`, worktree `Birthub-360-wt-k8s`; decisão do usuário = arquivar k8s/+argocd/, manter charts/)
 Prioridade: normal
 Sprint destino: próxima onda
 

@@ -3,7 +3,7 @@
 De: 00 — Coordenador
 Para: 01 (endpoint/schema se preciso) + 02 (UI)
 Onda: F1 (pós-navegação)
-Status: em-andamento (implementado; aguardando consumidores, e2e do Agente 08 e revisão 24)
+Status: em-andamento (implementado; verificado por 01+02 na Onda 4 — ver seção final; aguardando e2e do Agente 08 e revisão 24)
 Prioridade: alto
 Referência: `docs/architecture/MATRIZ-FUNCIONAL-MODULOS.md` §3.2, §6
 
@@ -59,3 +59,25 @@ apenas `useState` local — **nenhuma chamada a API**: Salvar não persiste.
 ## Nota Agente 02 (2026-11-12)
 
 Lado UI permanece íntegro após o split do hotspot: `PillarSettingsPlaceholder.tsx` (663 linhas) + `PillarToolsForms.tsx` (680) mantêm GET/PUT `/api/settings/pillars/:pillar` e placeholders honestos. `check:hotspots` ✅ sem exceção. Segue aguardando consumidores/e2e (08) e revisão 24.
+
+## Verificação 01+02 (Onda 4, worktree `Birthub-360-wt-o4-0102`, branch `agente/01-02-onda4-settings`)
+
+- Persistência confirmada **sem migration**: reuso da tabela `Setting` por org
+  (`key = settings.pilar.<slug>`, `userId=null`) via `findSetting`/`upsertSetting`
+  (`src/lib/voice-hub/repositories/settingRepository.ts`) — mesmo padrão de
+  `organization-modules`. RLS por tenant via `authenticateToken` + `requireTenant`
+  no mount (`src/bootstrap/routes.ts` L235); PUT exige `requireRole(['ADMIN'])`.
+- Contrato OpenAPI já documentado em `docs/openapi.yaml` (`/settings/pillars/{pillar}`).
+- Lacuna encontrada e corrigida: o teste de serviço cobria isolamento **por pilar**
+  mas não **por tenant**. Adicionado caso "isolamento por tenant: valores de org-1
+  não vazam para org-2" em `tests/unit/features/settings/pillarSettings.service.test.ts`.
+- Gates executados neste worktree:
+  - `vitest` settings (8 arquivos, **57 testes, todos verdes**, incluindo o novo caso de tenant).
+  - `biome lint src/features/settings` + teste alterado ✅.
+  - `npx tsc --noEmit` ⚠️ falha **pré-existente** em `src/lib/nativeDownload.ts` /
+    `src/lib/nativeSpeech.ts` (módulos `@capacitor/*` ausentes no node_modules linkado
+    deste worktree) — reproduzido com `git stash` na árvore limpa; **não é regressão**
+    desta entrega. Pendente de ambiente (npm install completo) ou do dono do mobile (09).
+- Persistência "reload → valor salvo" em nível de serviço coberta pelo teste
+  PUT→GET; e2e real continua pendente do Agente 08 (fora do meu escopo).
+- Sem alteração de schema/migrations — nada para `prisma migrate` validar.

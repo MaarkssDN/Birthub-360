@@ -4,20 +4,22 @@
 // "Exemplo"-labeled notifications in components/Sidebar.tsx with a real, persisted, per-user
 // notification feed.
 //
+// Adaptado ao model canônico `Notification` (handoff
+// .agents/handoffs/01-para-12-voicehub-adaptacao-modelos-canonicos.md): o schema real tem
+// `organizationId` OBRIGATÓRIO, `body` (não `message`) e `readAt` (não `isRead`). Toda função
+// abaixo recebe o escopo `{ organizationId, userId }` — o `organizationId` vem SEMPRE da sessão
+// autenticada (requireTenant), nunca de input do cliente, e o `userId` da mesma sessão; o par é
+// aplicado no WHERE da query (AGENTS.md §15), então uma notificação de outro tenant é
+// indistinguível de uma inexistente.
+//
 // SCOPE OF THIS FIRST VERSION (deliberate, pragmatic choice — see the model comment directly
 // above `model Notification` in prisma/schema.prisma and this agent's report):
 //   - in-app only. `Notification` has no channel field (email/webhook) — every notification
 //     created here is an in-app item. Email/webhook delivery is future work, gated on a schema
 //     extension (see the handoff to Agente 01 this agent filed alongside this service).
-//   - scoped by `userId`, not `organizationId`. `Notification` has no `organizationId` column. A `User`
-//     belongs to exactly one `Tenant` (`User.organizationId`), so filtering by `userId` alone cannot
-//     leak a notification across tenants *as long as* `userId` always comes from `req.voiceHubUser.id`
-//     (never from a client-supplied payload/query param) — enforced in notification.controller.ts,
-//     never relaxed here. This mirrors the existing Session/Metric/Setting per-user pattern in the
-//     schema and is the same invariant AGENTS.md §16 item 12 (this agent's own LGPD
-//     responsibility: "o sistema de notificações não vaze evento/dado de um tenant para o
-//     e-mail/webhook de outro") requires — there is currently no email/webhook channel to leak
-//     through, and in-app delivery is bound to the same tenant transitively via userId.
+//   - scoped by `userId` within `organizationId` (per-user feed). O model também suporta
+//     `userId: null` = "toda a organização", mas este serviço só escreve/lê o feed pessoal —
+//     notificações broadcast ficam para um fluxo dedicado, não para este entry point.
 //
 // GENERIC ENGINE, NOT A BILLING-ONLY ONE (this agent's own prompt, "Sistema de notificações"):
 // `createNotification` below is the single entry point any domain can call to raise a
@@ -34,6 +36,7 @@ import {
   findNotificationsForUser,
   markAllAsReadForUser,
   markNotificationAsRead as markNotificationAsReadRow,
+  type NotificationScope,
 } from '../repositories/notificationRepository.js';
 
 export interface NotificationSummary {
@@ -61,49 +64,47 @@ function mapNotification(notification: Notification): NotificationSummary {
   return {
     id: notification.id,
     title: notification.title,
-    message: notification.message,
-    isRead: notification.isRead,
+    message: notification.body ?? '',
+    isRead: notification.readAt !== null,
     createdAt: notification.createdAt.toISOString(),
   };
 }
 
-// Generic creation entry point — see module doc above. `userId` must already be known-good
-// (resolved from `req.voiceHubUser.id` at the call site, or from a trusted internal domain event), never
-// taken from unvalidated external input.
-export async function createNotification(input: {
-  userId: string;
-  title: string;
-  message: string;
-}): Promise<NotificationSummary> {
-  const created = await createNotificationRow(input);
+// Generic creation entry point — see module doc above. O escopo deve vir da sessão
+// (`req.organizationId` + `req.voiceHubUser.id` no call site), nunca de input não validado.
+export async function createNotification(
+  scope: NotificationScope,
+  input: { title: string; message: string },
+): Promise<NotificationSummary> {
+  const created = await createNotificationRow(scope, input);
   return mapNotification(created);
 }
 
 // Paginated list for the NotificationCenter panel, plus the unread count the bell badge needs —
-// both scoped strictly to `userId` (AGENTS.md §15/§16 item 12: filter applied here in the
-// service/repository layer, never merely "remembered" in the controller or UI).
+// scoped strictly to `{ organizationId, userId }` da sessão (AGENTS.md §15/§16 item 12: filter
+// applied here in the service/repository layer, never merely "remembered" in the controller or UI).
 export async function listNotifications(
-  userId: string,
+  scope: NotificationScope,
   pagination: { page: number; pageSize: number },
 ): Promise<NotificationsPage> {
   const [[items, total], unreadCount] = await Promise.all([
-    findNotificationsForUser(userId, pagination),
-    countUnreadForUser(userId),
+    findNotificationsForUser(scope, pagination),
+    countUnreadForUser(scope),
   ]);
   return { items: items.map(mapNotification), total, unreadCount };
 }
 
-// Marks one notification read, verifying ownership by userId first (repository returns null for a
-// notification that does not exist OR belongs to a different user — same fallback, deliberately
-// indistinguishable from the caller's point of view per AGENTS.md §15 "comportamento de fallback
-// seguro, sem vazar se o recurso existe em outro tenant").
-export async function markAsRead(id: string, userId: string): Promise<NotificationSummary> {
-  const updated = await markNotificationAsReadRow(id, userId);
+// Marks one notification read, verifying ownership by scope first (repository returns null for a
+// notification that does not exist OR belongs to a different tenant/user — same fallback,
+// deliberately indistinguishable from the caller's point of view per AGENTS.md §15 "comportamento
+// de fallback seguro, sem vazar se o recurso existe em outro tenant").
+export async function markAsRead(id: string, scope: NotificationScope): Promise<NotificationSummary> {
+  const updated = await markNotificationAsReadRow(id, scope);
   if (!updated) throw new NotificationNotFoundError(id);
   return mapNotification(updated);
 }
 
-export async function markAllAsRead(userId: string): Promise<{ updatedCount: number }> {
-  const result = await markAllAsReadForUser(userId);
+export async function markAllAsRead(scope: NotificationScope): Promise<{ updatedCount: number }> {
+  const result = await markAllAsReadForUser(scope);
   return { updatedCount: result.count };
 }

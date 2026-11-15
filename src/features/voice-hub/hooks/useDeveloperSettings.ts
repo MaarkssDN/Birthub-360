@@ -114,7 +114,7 @@ export function useDeveloperSettings() {
         setKeysState({ status: 'ready', data: Array.isArray(data.apiKeys) ? data.apiKeys : [] });
       })
       .catch((err) => {
-        logger.error('Failed to load API keys', { err });
+        logger.error( { err },'Failed to load API keys');
         setKeysState({ status: 'error' });
       });
   }, [isAdmin]);
@@ -143,7 +143,7 @@ export function useDeveloperSettings() {
         });
       })
       .catch((err) => {
-        logger.error('Failed to load webhook endpoints', { err });
+        logger.error( { err },'Failed to load webhook endpoints');
         setWebhooksState({ status: 'error' });
       });
   }, [isAdmin]);
@@ -174,7 +174,7 @@ export function useDeveloperSettings() {
       setShowCreateModal(false);
       fetchKeys();
     } catch (err: any) {
-      logger.error('Failed to create API key', { err });
+      logger.error( { err },'Failed to create API key');
       setCreateError(err instanceof Error ? err.message : 'Não foi possível criar a chave de API.');
     } finally {
       setIsCreating(false);
@@ -198,7 +198,7 @@ export function useDeveloperSettings() {
           if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
           fetchKeys();
         } catch (err: any) {
-          logger.error('Failed to revoke API key', { err });
+          logger.error( { err },'Failed to revoke API key');
           setRevokeError(
             err instanceof Error ? err.message : 'Não foi possível revogar a chave de API.',
           );
@@ -260,7 +260,7 @@ export function useDeveloperSettings() {
       setShowCreateWebhookModal(false);
       fetchWebhooks();
     } catch (err: any) {
-      logger.error('Failed to create webhook endpoint', { err });
+      logger.error( { err },'Failed to create webhook endpoint');
       setCreateWebhookError(
         err instanceof Error ? err.message : 'Não foi possível criar o endpoint de webhook.',
       );
@@ -286,7 +286,7 @@ export function useDeveloperSettings() {
           if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
           fetchWebhooks();
         } catch (err: any) {
-          logger.error('Failed to delete webhook endpoint', { err });
+          logger.error( { err },'Failed to delete webhook endpoint');
           setWebhookActionError(
             err instanceof Error ? err.message : 'Não foi possível remover o endpoint de webhook.',
           );
@@ -319,7 +319,7 @@ export function useDeveloperSettings() {
           });
           fetchWebhooks();
         } catch (err: any) {
-          logger.error('Failed to regenerate webhook secret', { err });
+          logger.error( { err },'Failed to regenerate webhook secret');
           setWebhookActionError(
             err instanceof Error ? err.message : 'Não foi possível regenerar o segredo do webhook.',
           );

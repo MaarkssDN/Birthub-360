@@ -3,12 +3,14 @@ import * as React from 'react';
 import { cn } from '../../lib/utils.js';
 
 const selectVariants = cva(
-  'bh-official-control flex w-full rounded-control border bg-surface text-sm text-ink motion-safe:transition-colors motion-safe:duration-200 focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-surface-subtle disabled:opacity-60',
+  // focus-visible:ring fica na base (não por variante) para que filled/ghost/cosmic
+  // também mostrem foco visível — WCAG 2.4.7 (antes só a variante default tinha anel).
+  'bh-official-control flex w-full rounded-control border bg-surface text-sm text-ink motion-safe:transition-colors motion-safe:duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:cursor-not-allowed disabled:bg-surface-subtle disabled:opacity-60',
   {
     variants: {
       variant: {
         default:
-          'border-line hover:border-line-strong focus-visible:border-line-strong focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
+          'border-line hover:border-line-strong focus-visible:border-line-strong',
         filled: 'border-transparent bg-surface-2 hover:bg-surface-subtle focus-visible:bg-surface',
         ghost: 'border-transparent bg-transparent hover:bg-surface-interactive',
         cosmic: 'border-line bg-surface',

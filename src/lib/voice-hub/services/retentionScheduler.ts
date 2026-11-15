@@ -40,10 +40,10 @@ export function startRetentionScheduler(): { queue: Queue; worker: Worker } | un
       QUEUE_NAME,
       async () => {
         const { deletedCount, cutoff } = await purgeExpiredCallLogs();
-        logger.info('[RetentionScheduler] Purge job completed', {
+        logger.info( {
           deletedCount,
           cutoff: cutoff.toISOString(),
-        });
+        },'[RetentionScheduler] Purge job completed');
         return { deletedCount };
       },
       { connection },
@@ -55,20 +55,22 @@ export function startRetentionScheduler(): { queue: Queue; worker: Worker } | un
       logger.error(`[RetentionScheduler] Job ${job?.id} failed. Reason: ${err.message}`);
     });
 
+    // BullMQ v6 removeu `repeat` de JobsOptions — jobs recorrentes agora são "job schedulers"
+    // upsertados por id estável (upsertJobScheduler é idempotente: re-register no boot só atualiza).
     queue
-      .add(
-        JOB_NAME,
-        {},
+      .upsertJobScheduler(
+        `${QUEUE_NAME}-${JOB_NAME}`,
+        { pattern: REPEAT_CRON },
         {
-          repeat: { pattern: REPEAT_CRON },
-          removeOnComplete: true,
-          removeOnFail: 100,
+          name: JOB_NAME,
+          data: {},
+          opts: { removeOnComplete: true, removeOnFail: 100 },
         },
       )
       .then(() => {
-        logger.info('[RetentionScheduler] Registered daily CallLog retention purge job', {
+        logger.info( {
           cron: REPEAT_CRON,
-        });
+        },'[RetentionScheduler] Registered daily CallLog retention purge job');
       })
       .catch((err: unknown) => {
         const msg = err instanceof Error ? err.message : String(err);

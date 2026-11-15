@@ -1,7 +1,7 @@
 De: 15 — Segurança Aplicada e Rotação de Segredos
 Para: 24 — Revisão Independente
 Onda: 1
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: DEM-20261113-002
 Sprint destino: onda-1
@@ -76,3 +76,25 @@ Diff review + reexecução dos gates listados acima.
 - Itens MEL-08 (webhooks outbound HMAC) e MEL-10 (audit log) NÃO estão na
   Onda 1 — fora de escopo.
 - Handoff 15→08 aberto para ligar `verify:rls-coverage` no CI.
+
+## Resolução
+
+- **2026-11-13 — Agente 24:** parecer inicial
+  `.agents/reviews/onda-1/24-revisao-15-onda1.md` — **REPROVADO** (A-1
+  sanitizeLogValue corrompia Date/Buffer; A-2 allowlist MIME quebrava
+  octet-stream; A-3 gate RLS cego a tenantId; A-4 safeHashEqual morto; G-1
+  package.json sem aprovação do 00).
+- **2026-11-13 — Agente 24:** reauditoria pós-correção
+  `.agents/reviews/onda-1/24-revisao-15-onda1-pos-correcao.md` —
+  **APROVADO (condicionado)**: todos os achados A-1..A-4 resolvidos e
+  verificados por execução; única condição era a aprovação do 00 para o
+  script `verify:rls-coverage` em `package.json`.
+- **2026-11-13 — Agente 00:** condição G-1 resolvida — handoff
+  `onda-1/15-para-00-aprovacao-package-json.md` (status: resolvido, commit
+  `8e4b19ed9`); script presente em `package.json` de `main`.
+- **2026-11-13:** conteúdo mergeado em `main` via PR #275
+  (`integracao/onda-1`, MERGED 2026-11-13T19:13:39Z). Arquivos confirmados
+  em `origin/main`: `src/features/api-keys/*`, `src/lib/security/piiMask.ts`,
+  `scripts/security/check-rls-coverage.ts`, `tests/unit/lib/loggerPiiMask.test.ts`,
+  `verify:rls-coverage` no `package.json`. Handoff encerrado como **resolvido**
+  (não stale — a revisão foi executada e a entrega aprovada/mergeada).

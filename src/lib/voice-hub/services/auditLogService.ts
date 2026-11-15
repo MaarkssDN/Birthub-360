@@ -25,8 +25,10 @@ export async function listAuditLog(organizationId: string, page: number, pageSiz
   return {
     items: items.map((entry) => ({
       id: entry.id,
-      userId: entry.userId,
-      actorEmail: entry.user?.email ?? null,
+      // Contrato da API preservado: `userId` aqui carrega o actorId canônico do AuditLog
+      // (o model real não tem coluna `userId` — ver auditLogRepository.ts).
+      userId: entry.actorId,
+      actorEmail: entry.actorEmail,
       action: entry.action,
       details: entry.details,
       timestamp: entry.timestamp,

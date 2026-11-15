@@ -74,7 +74,12 @@ function makeTouch(templateRef: string, channel: 'whatsapp' | 'email' = 'whatsap
 describe('Pipeline real de cadência — renderização de placeholders via CadenceTemplateRendererService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    checkOptOutStatus.mockResolvedValue({ blocked: false, allowed: true, code: null, reason: null });
+    checkOptOutStatus.mockResolvedValue({
+      blocked: false,
+      allowed: true,
+      code: null,
+      reason: null,
+    });
     sendWhatsAppMessage.mockResolvedValue({});
     sendEmail.mockResolvedValue({ messageId: 'msg-1' });
     syncActivityToBitrix.mockResolvedValue(undefined);
