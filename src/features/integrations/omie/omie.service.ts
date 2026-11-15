@@ -1,4 +1,5 @@
 import { DisallowedHostError, fetchWithTimeout, HttpTimeoutError } from '../../../lib/http.js';
+import { circuitGuard } from '../../../lib/circuitGuard.js';
 import { logger } from '../../../lib/logger.js';
 import { prisma } from '../../../lib/prisma.js';
 import {
@@ -64,8 +65,13 @@ async function callOmieRpc(
   call: string,
   param: Record<string, unknown>,
 ): Promise<OmieResponse> {
-  const res = await retryWithBackoff(
-    async () => {
+  // MEL-42: circuit breaker compartilhado (src/lib/circuitGuard.ts) — falhas de provedor
+  // (rede/timeout/429/5xx após esgotar o retry) abrem o circuito 'omie' e as chamadas seguintes
+  // falham rápido com CircuitOpenError. `faultstring` no corpo (erro de negócio/credencial) é
+  // retornado normalmente e conta como sucesso — provedor alcançável.
+  const res = await circuitGuard.execute('omie', () =>
+    retryWithBackoff(
+      async () => {
       let response: Response;
       try {
         response = await fetchWithTimeout(
@@ -109,8 +115,9 @@ async function callOmieRpc(
         );
       }
       return response;
-    },
-    { label: 'omie', maxAttempts: OMIE_MAX_ATTEMPTS },
+      },
+      { label: 'omie', maxAttempts: OMIE_MAX_ATTEMPTS },
+    ),
   );
 
   const json = (await res.json().catch(() => ({}))) as OmieResponse;

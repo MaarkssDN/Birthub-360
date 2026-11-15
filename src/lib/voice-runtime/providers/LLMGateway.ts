@@ -1,4 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
+import { circuitGuard } from '../../circuitGuard.js';
 import { otelCollector, SYSTEM_TENANT_ID } from '../otel.js';
 import { getAiConsent } from '../../voice-hub/services/settingService.js';
 import { createMetric } from '../../voice-hub/services/metricService.js';
@@ -17,6 +18,17 @@ export interface GatewayResponse {
 }
 
 type ProviderName = 'GoogleGemini' | 'OpenAI' | 'Claude';
+
+// MEL-42 (Onda 6): um circuit breaker independente por provedor de IA, via circuitGuard
+// compartilhado (src/lib/circuitGuard.ts). A cadeia de fallback já existente ganha fail-fast:
+// quando o circuito de um provedor está OPEN, `execute` lança CircuitOpenError antes de qualquer
+// chamada de rede e o `catch` abaixo simplesmente passa para o próximo provedor da cadeia —
+// uma queda do OpenAI nunca bloqueia a tentativa no Gemini (e vice-versa).
+const AI_PROVIDER_CIRCUIT: Record<ProviderName, string> = {
+  GoogleGemini: 'ai:gemini',
+  OpenAI: 'ai:openai',
+  Claude: 'ai:claude',
+};
 
 class LLMProviderGateway {
   // Per-tenant rate limit buckets. A single shared bucket (the previous implementation) let one
@@ -132,104 +144,119 @@ class LLMProviderGateway {
 
     for (const provider of uniqueChain) {
       try {
-        if (provider === 'GoogleGemini') {
-          const apiKey = process.env.GEMINI_API_KEY;
-          if (!apiKey) throw new Error('GEMINI_API_KEY não configurado.');
+        // MEL-42: cada tentativa passa pelo circuit breaker do SEU provedor. CircuitOpenError
+        // (circuito OPEN) cai no mesmo `catch` de uma falha real — o loop segue para o próximo
+        // provedor da cadeia sem gastar timeout/rede num provedor sabidamente indisponível.
+        const outcome = await circuitGuard.execute(AI_PROVIDER_CIRCUIT[provider], async () => {
+          if (provider === 'GoogleGemini') {
+            const apiKey = process.env.GEMINI_API_KEY;
+            if (!apiKey) throw new Error('GEMINI_API_KEY não configurado.');
 
-          const ai = new GoogleGenAI({
-            apiKey,
-            httpOptions: {
-              headers: {
-                'User-Agent': 'aistudio-build',
+            const ai = new GoogleGenAI({
+              apiKey,
+              httpOptions: {
+                headers: {
+                  'User-Agent': 'aistudio-build',
+                },
               },
-            },
-          });
+            });
 
-          const response = await ai.models.generateContent({
-            model: process.env.GEMINI_MODEL || 'gemini-3.5-flash',
-            contents: prompt,
-            config: {
-              systemInstruction,
-              temperature: 0.7,
-            },
-          });
+            const response = await ai.models.generateContent({
+              model: process.env.GEMINI_MODEL || 'gemini-3.5-flash',
+              contents: prompt,
+              config: {
+                systemInstruction,
+                temperature: 0.7,
+              },
+            });
 
-          text = response.text || '';
-          if (!text) throw new Error('Gemini retornou resposta vazia.');
-          tokensUsed = response.usageMetadata?.totalTokenCount || tokensUsed;
-          successfulProvider = provider;
-          break;
-        }
-
-        if (provider === 'OpenAI') {
-          const apiKey = process.env.OPENAI_API_KEY;
-          if (!apiKey) throw new Error('OPENAI_API_KEY não configurado.');
-
-          const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${apiKey}`,
-            },
-            body: JSON.stringify({
-              model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
-              messages: [
-                { role: 'system', content: systemInstruction },
-                { role: 'user', content: prompt },
-              ],
-              temperature: 0.7,
-            }),
-          });
-
-          if (!response.ok) {
-            throw new Error(`OpenAI API Error: ${response.status} ${response.statusText}`);
+            const geminiText = response.text || '';
+            if (!geminiText) throw new Error('Gemini retornou resposta vazia.');
+            return {
+              text: geminiText,
+              tokensUsed: response.usageMetadata?.totalTokenCount || tokensUsed,
+            };
           }
 
-          const data = (await response.json()) as {
-            choices?: Array<{ message?: { content?: string } }>;
-            usage?: { total_tokens?: number };
-          };
-          text = data.choices?.[0]?.message?.content || '';
-          if (!text) throw new Error('OpenAI retornou resposta vazia.');
-          tokensUsed = data.usage?.total_tokens || tokensUsed;
-          successfulProvider = provider;
-          break;
-        }
+          if (provider === 'OpenAI') {
+            const apiKey = process.env.OPENAI_API_KEY;
+            if (!apiKey) throw new Error('OPENAI_API_KEY não configurado.');
 
-        if (provider === 'Claude') {
-          const apiKey = process.env.ANTHROPIC_API_KEY;
-          if (!apiKey) throw new Error('ANTHROPIC_API_KEY não configurado.');
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${apiKey}`,
+              },
+              body: JSON.stringify({
+                model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+                messages: [
+                  { role: 'system', content: systemInstruction },
+                  { role: 'user', content: prompt },
+                ],
+                temperature: 0.7,
+              }),
+            });
 
-          const response = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-api-key': apiKey,
-              'anthropic-version': '2023-06-01',
-            },
-            body: JSON.stringify({
-              model: process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022',
-              system: systemInstruction,
-              messages: [{ role: 'user', content: prompt }],
-              max_tokens: 1024,
-            }),
-          });
+            if (!response.ok) {
+              throw new Error(`OpenAI API Error: ${response.status} ${response.statusText}`);
+            }
 
-          if (!response.ok) {
-            throw new Error(`Claude API Error: ${response.status} ${response.statusText}`);
+            const data = (await response.json()) as {
+              choices?: Array<{ message?: { content?: string } }>;
+              usage?: { total_tokens?: number };
+            };
+            const openaiText = data.choices?.[0]?.message?.content || '';
+            if (!openaiText) throw new Error('OpenAI retornou resposta vazia.');
+            return {
+              text: openaiText,
+              tokensUsed: data.usage?.total_tokens || tokensUsed,
+            };
           }
 
-          const data = (await response.json()) as {
-            content?: Array<{ text?: string }>;
-            usage?: { input_tokens?: number; output_tokens?: number };
-          };
-          text = data.content?.[0]?.text || '';
-          if (!text) throw new Error('Claude retornou resposta vazia.');
-          tokensUsed =
-            (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0) || tokensUsed;
-          successfulProvider = provider;
-          break;
-        }
+          if (provider === 'Claude') {
+            const apiKey = process.env.ANTHROPIC_API_KEY;
+            if (!apiKey) throw new Error('ANTHROPIC_API_KEY não configurado.');
+
+            const response = await fetch('https://api.anthropic.com/v1/messages', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': apiKey,
+                'anthropic-version': '2023-06-01',
+              },
+              body: JSON.stringify({
+                model: process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022',
+                system: systemInstruction,
+                messages: [{ role: 'user', content: prompt }],
+                max_tokens: 1024,
+              }),
+            });
+
+            if (!response.ok) {
+              throw new Error(`Claude API Error: ${response.status} ${response.statusText}`);
+            }
+
+            const data = (await response.json()) as {
+              content?: Array<{ text?: string }>;
+              usage?: { input_tokens?: number; output_tokens?: number };
+            };
+            const claudeText = data.content?.[0]?.text || '';
+            if (!claudeText) throw new Error('Claude retornou resposta vazia.');
+            return {
+              text: claudeText,
+              tokensUsed:
+                (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0) || tokensUsed,
+            };
+          }
+
+          throw new Error(`Provedor de IA desconhecido: ${provider}`);
+        });
+
+        text = outcome.text;
+        tokensUsed = outcome.tokensUsed;
+        successfulProvider = provider;
+        break;
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
         errorLog.push(`${provider}: ${message}`);
