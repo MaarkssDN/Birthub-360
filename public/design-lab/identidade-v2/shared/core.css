@@ -1,0 +1,25 @@
+/* Birthub 360° — Identidade V2.0 (RASCUNHO — NÃO HOMOLOGADO). Núcleo compartilhado pelas 3 frentes.
+   Paleta oficial vem da missão (cores confirmadas). Variantes *-ink (texto em Light) são DERIVADAS e
+   PROVISÓRIAS: medidas por contraste WCAG contra --bg-light (#F4F7FB). Fontes: /fonts (public/fonts). */
+@font-face{font-family:'Sora';src:url('../../../fonts/sora-latin.woff2') format('woff2');font-weight:100 800;font-display:swap}
+@font-face{font-family:'Inter';src:url('../../../fonts/inter-latin.woff2') format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'IBM Plex Mono';src:url('../../../fonts/ibm-plex-mono-400-latin.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'IBM Plex Mono';src:url('../../../fonts/ibm-plex-mono-500-latin.woff2') format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:'IBM Plex Mono';src:url('../../../fonts/ibm-plex-mono-600-latin.woff2') format('woff2');font-weight:600;font-display:swap}
+:root{
+  --neon-blue:#00D4FF; --neon-pink:#FF2D9B; --neon-gold:#FFC107; --iris:#8B7DFF;
+  --dark:#0D0D0D; --light:#F4F7FB;
+  --font-display:'Sora',system-ui,sans-serif; --font-ui:'Inter',system-ui,sans-serif; --font-mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+[data-theme="dark"],:root{
+  --bg:#0D0D0D; --surface:#14141A; --surface-2:#1C1C24; --surface-3:#252530; --line:rgba(158,173,200,.18);
+  --ink:#E8EEFF; --ink-muted:#9EADC8;
+  --c-blue:#00D4FF; --c-pink:#FF2D9B; --c-gold:#FFC107; --c-iris:#8B7DFF;
+  --on-neon:#0D0D0D;
+}
+[data-theme="light"]{
+  --bg:#F4F7FB; --surface:#FBFCFE; --surface-2:#EEF2F8; --surface-3:#E3E9F2; --line:rgba(15,26,46,.14);
+  --ink:#0F1A2E; --ink-muted:#46546B;
+  --c-blue:#006C8C; --c-pink:#C4105F; --c-gold:#7A5800; --c-iris:#5B4BD6;
+  --on-neon:#0D0D0D;
+}

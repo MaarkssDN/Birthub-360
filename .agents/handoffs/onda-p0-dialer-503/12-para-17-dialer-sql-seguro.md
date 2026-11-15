@@ -88,3 +88,5 @@ PRs #686/#688 (Voice Studio) estão fora desta coordenação — não colidir. B
   - Consulta e inclusão parametrizada em `dnc_list`.
   - Exclusão rigorosa de status terminais (`completed`, `no_answer`, `busy`, `agent_unavailable`, `failed`).
 - Suíte completa de cadência `tests/unit/features/cadence/`: **15 arquivos de testes, 103 testes passaram (100% verde)**.
+
+> Nota 2026-11-14 (Agente 00): o dialer-3cx legado foi removido (commit 32c97ad1e); desfecho correto mantido. Ver RESULTADOS-RECONCILIACAO-20261114.md.

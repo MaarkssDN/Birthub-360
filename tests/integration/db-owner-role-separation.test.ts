@@ -276,6 +276,8 @@ describe('separação de papéis: prospector_app só DML, prospector_migrator do
       'consent_tombstone_immutable',
     'public.TenantKeyEnvelope:tenant_key_envelope_guard_row': 'tenant_key_envelope_guard',
     'public.TenantKeyEnvelope:tenant_key_envelope_no_truncate': 'tenant_key_envelope_guard',
+    'public.AuditLog:auditlog_no_mutation': 'audit_log_immutable',
+    'public.AuditLog:auditlog_no_truncate': 'audit_log_immutable',
   };
 
   it('P1: search_path do migrator é só public (pg_catalog implícito, buscado antes)', async () => {

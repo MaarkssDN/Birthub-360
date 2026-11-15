@@ -313,9 +313,9 @@ Processo já existente, não recriado:
 - **Agendado**: Trivy semanal (dependências + filesystem, não bloqueante, job `trivy-fs-scan`),
   SonarQube em push/PR. Scan de imagem Docker Trivy (bloqueante) roda em `production.yaml` antes
   do `docker push`.
-- **Manual, pré-produção**: ZAP contra staging (`docs/deploy/producao.md` §7 — o checklist de
-  release foi incorporado ali; `RELEASE_CHECKLIST.md` saiu do controle de versão em 22/08/2026, ver
-  `docs/REMOVED-DOCS.md`). `docs/reports/PENTEST_REPORT.md` (placeholder raso, sem pentest real
+- **Manual, pré-produção**: ZAP contra staging (`docs/deploy/producao.md` §7.1 — scan ZAP
+  pré-release; o checklist de release foi incorporado em `producao.md` §7;
+  `RELEASE_CHECKLIST.md` saiu do controle de versão em 22/08/2026, ver `docs/REMOVED-DOCS.md`). `docs/reports/PENTEST_REPORT.md` (placeholder raso, sem pentest real
   documentado) saiu do controle de versão em 30/08/2026 pelo mesmo motivo — nenhum substituto
   versionado existe hoje; ver `docs/REMOVED-DOCS.md`.
 - **Gap de frescor documental, não de processo** (fora de escopo desta mudança, registrado aqui

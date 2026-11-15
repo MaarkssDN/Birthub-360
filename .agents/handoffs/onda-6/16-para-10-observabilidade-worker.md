@@ -1,7 +1,7 @@
 - De: Agente 16 (Runtime, Workers e Escala)
 - Para: Agente 10 (Infraestrutura, Observabilidade e SRE)
 - Onda: 6
-- Status: resolvido (Observabilidade preparada e documentada no RUNBOOK.md)
+- Status: adiado
 - Prioridade: normal
 
 ## Problema
@@ -76,3 +76,5 @@ descrevendo o contrato ainda não aplicável. Documentado em
 observabilidade") o passo a passo exato — adicionar a regra em `alert.rules.yml`, atualizar
 `RUNBOOK.md` seção 7 e este handoff — para quando o Agente 08 confirmar que o serviço está
 rodando de verdade. Status permanece **pronto para aplicação**, não resolvido.
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto ADIADO — premissa Render obsoleta; reescopar para Local-First. Ver RESULTADOS-RECONCILIACAO-20261114.md.

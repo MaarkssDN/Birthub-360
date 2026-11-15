@@ -228,3 +228,16 @@ export function buildLocationLabel(criteria: ProspectCriteria): string {
   if (criteria.estado) return criteria.estado;
   return criteria.localizacao;
 }
+
+/**
+ * Sinais extraídos de uma página pelo crawler Crawlee (`crawlee/crawler.ts`), já normalizados
+ * (e-mails deduplicados, links sociais filtrados). Tipo de domínio para que a ponte de
+ * persistência (`services/webCrawlPersistence.service.ts`) não dependa do módulo `crawlee`
+ * (que é opcional/não instalado em todos os ambientes) nem do arquivo excluído do tsconfig.
+ */
+export interface CrawledPageSignals {
+  url: string;
+  title: string;
+  emails: string[];
+  socialMedia: string[];
+}

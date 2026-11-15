@@ -42,7 +42,14 @@ export async function queueCompanyEnrichment(
   options?: { force?: boolean },
 ): Promise<{ enqueued: boolean; executedDirectly?: boolean; reason?: string }> {
   if (queuesEnabled && enrichmentQueue) {
-    await enrichmentQueue.add('enrich-company', data);
+    // MEL-21 (Onda 3): jobId determinístico deduplica enqueues repetidos da mesma empresa
+    // (ex.: dois caminhos do LeadUseCases disparando juntos). O sufixo `force` preserva a
+    // semântica do refresh forçado — um job `force` nunca é engolido por um `auto` pendente.
+    // `removeOnComplete` (24h) limita a janela de dedup: re-enfileirar depois disso cria job novo.
+    const force = options?.force === true;
+    await enrichmentQueue.add('enrich-company', data, {
+      jobId: `enrich-company:${data.organizationId}:${data.companyId}:${force ? 'force' : 'auto'}`,
+    });
     return { enqueued: true };
   }
 

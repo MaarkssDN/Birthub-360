@@ -1,0 +1,4 @@
+$ sh .claude/skills/impeccable/scripts/impeccable detect public/design-lab/identidade-v2/01-auditoria/index.html
+(sem achados impressos) exit=0
+
+Primeira passada (antes de corrigir): 5x side-tab (.note border-left), 1x low-contrast (rótulo #0d0d0d sobre swatch #7C3AED, 3.4:1), 13x cramped-padding (.tablewrap sem inset). Corrigidos: borda completa, rótulo claro, padding 6px.

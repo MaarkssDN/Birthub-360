@@ -68,3 +68,39 @@ Status mantido `em-andamento`: itens dos Agentes 07, 02 e 08 seguem pendentes de
 Escopo 02 nesta onda: garantir que superfícies de Orquestração de Vendas expostas na UI não fabriquem dados operacionais — empty states honestos, sem métricas/depoimentos inventados na landing (já tratado em `auditoria-para-02-verdade-no-copy`).
 
 Backlog permanece com 17 (cadência), 07 (roleplay/IA) e 08 (QA/e2e). Sem alteração de código pelo 02 além do pacote landing.
+
+## Resolução — item do Agente 07 (2026-11-15, worktree `Birthub-360-wt-o3-07`, branch `agente/07-onda3-ia`)
+
+**Verificação: roleplay IA e matrizes de qualificação/objeções usam IA real, não template.**
+
+Caminhos vivos verificados no código (`origin/main` + esta branch):
+
+- `POST /api/intelligence/suite/roleplay/turn` e `/roleplay/evaluate` →
+  `RoleplayAiService.simulateCustomerResponse`/`evaluateSession`
+  (`src/features/roleplay/services/roleplay-ai.service.ts`) → `getAiModel` real
+  (`lib/ai/gateway.ts`). Falha de IA **propaga erro** (nunca devolve réplica/nota
+  fabricada) — comentário explícito em L116-127 e L196-203; rotas respondem
+  `success:false`.
+- Tela principal de roleplay → `studio/generators/roleplay.ts`
+  (`generateRoleplay`, `generateRoleplayEvaluation`) → `invokeStructured` →
+  `getAiModel` real; avaliação de fim de ligação persiste em `RoleplaySession` via
+  `roleplay-session.service.ts` (falha de IA propaga; só a escrita é best-effort,
+  sinalizada com `sessionId: null`).
+- Matrizes de qualificação/objeções (SPIN + contornos) →
+  `studio/generators/b2bMatrix.ts` (`generateB2bMatrix`) → `invokeStructured` real;
+  critérios de qualificação/objeções cadastrados chegam ao roleplay via
+  `qualificationCriteria`/`objections` do payload (dados do tenant, não template).
+
+**Pendência honesta (débito técnico, não bloqueia F3):**
+`src/features/roleplay/services/multimodalRoleplaySimulator.service.ts`
+(`MultimodalRoleplaySimulatorService`, port `IMultimodalRoleplayPort` em
+`src/shared/contracts/`) é uma implementação **heurística com réplicas de comprador
+fixas e notas fixas** (`objectionHandlingScore` hardcoded = 85, sessões em `Map`
+em memória). Verificado: **nenhum consumidor em `src/`** (sem rota/serviço que o
+importe) — não é alcançável em runtime hoje. Recomendação: remoção ou rewiring para
+`RoleplayAiService` quando/quando o port for ativado; abrir handoff se algum plano
+prevê expor esse simulador. Mantido intacto nesta onda (P3 — fora do caminho
+afetado pelo F3).
+
+Status do handoff: item 07 **resolvido** (verificação concluída, sem alteração de
+código necessária nos caminhos vivos). Itens 02 e 08 seguem com seus donos.

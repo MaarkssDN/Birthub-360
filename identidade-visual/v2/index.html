@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Birthub 360° — Identidade Visual V2.0 · Índice da Missão</title>
+<meta name="description" content="Entrega consolidada da Missão Mestre de Identidade Visual: auditoria, Brandbook V2, Design System, Motion System e biblioteca de componentes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0D0D0D; --surface:#14141A; --surface2:#1C1C24; --line:rgba(255,255,255,.08);
+    --ink:#F8F9FF; --muted:#9EADC8; --faint:#6B7A99;
+    --cyan:#00D4FF; --pink:#FF2D9B; --gold:#FFC107; --iris:#8B7DFF;
+    --grad-brand:linear-gradient(135deg,#00D4FF 0%,#FF2D9B 50%,#FFC107 100%);
+    --glow-cyan:0 0 24px rgba(0,212,255,.45); --glow-pink:0 0 24px rgba(255,45,155,.45);
+    --font-display:"Sora",system-ui,sans-serif; --font-body:"Inter",system-ui,sans-serif; --font-mono:"IBM Plex Mono",ui-monospace,monospace;
+    --r-card:16px; --r-control:12px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+  body{background:var(--bg);color:var(--ink);font-family:var(--font-body);line-height:1.6;-webkit-font-smoothing:antialiased}
+  .bg-orbit{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .bg-orbit::before{content:"";position:absolute;width:900px;height:900px;left:50%;top:-420px;transform:translateX(-50%);
+    background:conic-gradient(from 0deg,#FFC107,#FF2D9B,#00D4FF,#8B7DFF,#FFC107);
+    -webkit-mask:radial-gradient(circle,transparent 55%,#000 56%,#000 60%,transparent 61%);
+    mask:radial-gradient(circle,transparent 55%,#000 56%,#000 60%,transparent 61%);
+    opacity:.14;filter:blur(2px)}
+  .wrap{position:relative;z-index:1;max-width:1120px;margin:0 auto;padding:0 24px}
+  header{padding:96px 0 56px;text-align:center}
+  .kicker{font-family:var(--font-mono);font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--cyan);margin-bottom:20px}
+  h1{font-family:var(--font-display);font-size:clamp(40px,7vw,84px);font-weight:800;letter-spacing:-.02em;line-height:1.02;
+    background:var(--grad-brand);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{margin:22px auto 0;max-width:640px;color:var(--muted);font-size:17px}
+  .meta{margin-top:28px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .pill{font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;padding:6px 14px;border-radius:999px;
+    border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--muted)}
+  .pill.warn{color:var(--gold);border-color:rgba(255,193,7,.35)}
+  nav.toc{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin:8px 0 72px}
+  a.card{display:block;text-decoration:none;color:inherit;background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--r-card);padding:26px;transition:transform .25s cubic-bezier(.22,1,.36,1),border-color .25s,box-shadow .25s}
+  a.card:hover{transform:translateY(-3px);border-color:rgba(0,212,255,.4);box-shadow:var(--glow-cyan)}
+  a.card:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+  .card .num{font-family:var(--font-mono);font-size:12px;color:var(--pink);letter-spacing:.15em}
+  .card h2{font-family:var(--font-display);font-size:20px;font-weight:700;margin:8px 0 8px;letter-spacing:-.01em}
+  .card p{font-size:14px;color:var(--muted)}
+  .card .tag{display:inline-block;margin-top:14px;font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;
+    padding:4px 10px;border-radius:999px;background:rgba(139,125,255,.12);color:var(--iris);border:1px solid rgba(139,125,255,.3)}
+  .card .tag.pending{background:rgba(255,193,7,.1);color:var(--gold);border-color:rgba(255,193,7,.3)}
+  section.final{border-top:1px solid var(--line);padding:48px 0 80px}
+  .pend{background:var(--surface);border:1px solid rgba(255,193,7,.25);border-radius:var(--r-card);padding:28px}
+  .pend h2{font-family:var(--font-display);font-size:22px;margin-bottom:16px}
+  .pend ol{padding-left:20px;color:var(--muted);font-size:15px}
+  .pend li{margin-bottom:10px}
+  .pend strong{color:var(--ink)}
+  footer{border-top:1px solid var(--line);padding:32px 0 56px;text-align:center;color:var(--faint);font-size:12px;font-family:var(--font-mono)}
+</style>
+</head>
+<body>
+<div class="bg-orbit" aria-hidden="true"></div>
+<div class="wrap">
+
+<header>
+  <p class="kicker">Missão Mestre de Identidade Visual · DEM-20261113-004</p>
+  <h1>Identidade Visual V2.0</h1>
+  <p class="sub">Sistema unificado de marca e experiência do ecossistema: auditoria completa, Brandbook oficial, Design System e Motion System — neon, editorial, cinematográfico.</p>
+  <div class="meta">
+    <span class="pill">Proposta — não homologada</span>
+    <span class="pill">2026-10-14</span>
+    <span class="pill warn">Decisões pendentes: ver item 06</span>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Entregas">
+  <a class="card" href="01-auditoria/relatorio-auditoria.md">
+    <span class="num">ENTREGA 01</span>
+    <h2>Auditoria da Identidade Visual</h2>
+    <p>Relatório completo, inventário de ativos e matriz de decisões (confirmadas × provisórias × pendentes) de toda a identidade existente.</p>
+    <span class="tag">Markdown · 4 documentos</span>
+  </a>
+  <a class="card" href="02-brandbook/brandbook.html">
+    <span class="num">ENTREGA 02</span>
+    <h2>Brandbook Oficial V2.0</h2>
+    <p>HTML navegável: identidade, logotipo, paleta Neon Oficial, tipografia, linguagem visual, aplicações e personagens.</p>
+    <span class="tag">HTML interativo</span>
+  </a>
+  <a class="card" href="03-design-system/README.md">
+    <span class="num">ENTREGA 03</span>
+    <h2>Design System Oficial V2.0</h2>
+    <p>Tokens (JSON + CSS), cores semânticas dark/light, componentes, acessibilidade e arquitetura dos 11 módulos.</p>
+    <span class="tag">Docs + tokens</span>
+  </a>
+  <a class="card" href="04-motion/motion-system.md">
+    <span class="num">ENTREGA 04</span>
+    <h2>Motion System V2.0</h2>
+    <p>Princípios, durações, easings, stagger e dois níveis de intensidade: Comercial e Operacional. Demo funcional.</p>
+    <span class="tag">Docs + demo</span>
+  </a>
+  <a class="card" href="05-componentes/biblioteca.html">
+    <span class="num">ENTREGA 05</span>
+    <h2>Biblioteca de Componentes</h2>
+    <p>Página navegável com componentes demonstrativos, estados interativos e alternância Dark/Light.</p>
+    <span class="tag">HTML interativo</span>
+  </a>
+  <a class="card" href="06-matriz/matriz-conformidade-final.md">
+    <span class="num">ENTREGA 06</span>
+    <h2>Matriz de Conformidade</h2>
+    <p>Relação entre Brandbook, Design System, Motion e as restrições oficiais — com pendências consolidadas.</p>
+    <span class="tag">Markdown</span>
+  </a>
+  <a class="card" href="07-relatorio-00/relatorio-mestre.md">
+    <span class="num">ENTREGA 07</span>
+    <h2>Relatório Mestre — Agente 00</h2>
+    <p>Status, responsáveis, checklist, evidências de quality gates, riscos e decisões pendentes.</p>
+    <span class="tag">Markdown</span>
+  </a>
+  <a class="card" href="FONTE-DE-VERDADE.md">
+    <span class="num">BASE</span>
+    <h2>Fonte de Verdade V2</h2>
+    <p>Decisões pinadas que governaram as três frentes: paleta, fontes, posicionamento, arquitetura e limites.</p>
+    <span class="tag pending">Contém itens PENDENTES</span>
+  </a>
+</nav>
+
+<section class="final">
+  <div class="pend">
+    <h2>Decisões pendentes de homologação</h2>
+    <ol>
+      <li><strong>Grafia oficial:</strong> "Birthub 360°" vs "Birth Hub 360°" (e <code>°</code> vs <code>º</code>) — evidências documentadas na auditoria; V2 usa "Birthub 360°" com selo de pendência.</li>
+      <li><strong>Taxonomia de agentes:</strong> 20 personagens-agente no catálogo vs 24–26 citados em documentos — definir número oficial.</li>
+      <li><strong>Mapeamento módulo→accent:</strong> proposta nos tokens V2 aguardando homologação.</li>
+      <li><strong>Contraste do CTA em light:</strong> gradiente rosa→azul borderline (~3:1) — ajuste proposto no DS.</li>
+      <li><strong>Débitos fora do escopo:</strong> landing/login divergentes, CSS mortos, docs da era navy/gold, merge do N1, marca antiga residual.</li>
+    </ol>
+  </div>
+</section>
+
+<footer>
+  Birthub 360° · Identidade Visual V2.0 · DEM-20261113-004 · Agente 00 — Orquestrador · Proposta não homologada
+</footer>
+
+</div>
+</body>
+</html>

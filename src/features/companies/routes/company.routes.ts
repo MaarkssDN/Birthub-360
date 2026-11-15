@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { auditAccessMiddleware } from '../../../lib/security/auditLog.middleware.js';
 import { companySchema } from '../../../lib/zod.js';
 import { container } from '../../../shared/di/container.js';
 import { requireRole } from '../../../shared/middlewares/requireRole.js';
@@ -12,7 +13,9 @@ router.get('/', (req, res, next) =>
   container.resolve<CompanyController>('CompanyController').getCompanies(req, res, next),
 );
 
-router.get('/:id', (req, res, next) =>
+// DEM-20261114-003 (follow-up Onda 2): o detalhe da empresa expõe PII/dados cadastrais do tenant
+// (contatos, leads vinculados) — acesso registrado em AuditLog (GET → EXPORT; entityId = :id).
+router.get('/:id', auditAccessMiddleware('Company'), (req, res, next) =>
   container.resolve<CompanyController>('CompanyController').getCompanyById(req, res, next),
 );
 router.post('/', writeRoles, validateRequest(companySchema), (req, res, next) =>

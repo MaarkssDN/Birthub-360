@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%" fill="none" role="img" aria-labelledby="nexus-title nexus-desc">
+  <title id="nexus-title">Nexus — Analista de Dados</title>
+  <desc id="nexus-desc">Avatar não-humano representando Nexus: prisma hexagonal facetado em azul neon com constelação de vértices de inteligência.</desc>
+  <defs>
+    <linearGradient id="nexus-facet-1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00D4FF"/>
+      <stop offset="100%" stop-color="#0284C7"/>
+    </linearGradient>
+    <linearGradient id="nexus-facet-2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#0369A1"/>
+    </linearGradient>
+    <linearGradient id="nexus-facet-3" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#7DD3FC"/>
+      <stop offset="100%" stop-color="#0C4A6E"/>
+    </linearGradient>
+    <radialGradient id="nexus-core-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00D4FF" stop-opacity="0.9"/>
+      <stop offset="60%" stop-color="#0284C7" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#00D4FF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="nexus-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="nexus-halo" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="9" result="blur2"/>
+    </filter>
+  </defs>
+
+  <!-- Halo de Fundo -->
+  <polygon points="64,18 104,41 104,87 64,110 24,87 24,41" fill="#00D4FF" fill-opacity="0.18" filter="url(#nexus-halo)"/>
+
+  <!-- Estrutura Hexagonal Externa de Conectividade -->
+  <polygon points="64,14 108,39 108,89 64,114 20,89 20,39" stroke="#00D4FF" stroke-width="1.5" stroke-dasharray="6 4" stroke-opacity="0.6"/>
+
+  <!-- Hexágono Base Facetado -->
+  <!-- Faceta Superior Esquerda -->
+  <polygon points="64,24 64,64 29,44" fill="url(#nexus-facet-1)" fill-opacity="0.85"/>
+  <!-- Faceta Superior Direita -->
+  <polygon points="64,24 99,44 64,64" fill="url(#nexus-facet-2)" fill-opacity="0.95"/>
+  <!-- Faceta Lateral Direita -->
+  <polygon points="99,44 99,84 64,64" fill="url(#nexus-facet-1)" fill-opacity="0.75"/>
+  <!-- Faceta Inferior Direita -->
+  <polygon points="64,64 99,84 64,104" fill="url(#nexus-facet-3)" fill-opacity="0.85"/>
+  <!-- Faceta Inferior Esquerda -->
+  <polygon points="29,84 64,64 64,104" fill="url(#nexus-facet-2)" fill-opacity="0.7"/>
+  <!-- Faceta Lateral Esquerda -->
+  <polygon points="29,44 64,64 29,84" fill="url(#nexus-facet-3)" fill-opacity="0.9"/>
+
+  <!-- Arestas de Brilho Quântico -->
+  <g stroke="#BAE6FD" stroke-width="1.5" filter="url(#nexus-glow)">
+    <line x1="64" y1="24" x2="64" y2="64"/>
+    <line x1="29" y1="44" x2="64" y2="64"/>
+    <line x1="99" y1="44" x2="64" y2="64"/>
+    <line x1="29" y1="84" x2="64" y2="64"/>
+    <line x1="99" y1="84" x2="64" y2="64"/>
+    <line x1="64" y1="104" x2="64" y2="64"/>
+  </g>
+
+  <!-- Núcleo de Processamento de Dados (Glow) -->
+  <circle cx="64" cy="64" r="18" fill="url(#nexus-core-glow)"/>
+  <polygon points="64,54 73,59 73,69 64,74 55,69 55,59" fill="#0D0D0D" stroke="#00D4FF" stroke-width="2" filter="url(#nexus-glow)"/>
+  <circle cx="64" cy="64" r="3" fill="#BAE6FD"/>
+
+  <!-- Vértices da Constelação de Dados -->
+  <g fill="#00D4FF" filter="url(#nexus-glow)">
+    <circle cx="64" cy="14" r="3.5"/>
+    <circle cx="108" cy="39" r="3.5"/>
+    <circle cx="108" cy="89" r="3.5"/>
+    <circle cx="64" cy="114" r="3.5"/>
+    <circle cx="20" cy="89" r="3.5"/>
+    <circle cx="20" cy="39" r="3.5"/>
+  </g>
+
+  <!-- Sinais de Fluxo Analítico -->
+  <g fill="#FFFFFF">
+    <circle cx="64" cy="14" r="1.5"/>
+    <circle cx="108" cy="39" r="1.5"/>
+    <circle cx="64" cy="114" r="1.5"/>
+  </g>
+</svg>

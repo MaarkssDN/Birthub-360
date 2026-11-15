@@ -3,7 +3,7 @@
 - De: 00 — Coordenador
 - Para: 02 — Produto e UX
 - Onda: vr-regressao-20261111
-- Status: aberto
+- Status: resolvido
 - Prioridade: alto
 - Sprint destino: ciclo atual (não atualizar baseline light do Hub de IA até corrigir)
 
@@ -100,4 +100,86 @@ botão azul com texto visível sobre um hero escuro.
   foi alterada aqui.
 
 ## Resolução
-(preenchido pelo agente destino ao resolver)
+
+Resolvido pelo Agente 02 em 2026-11-14 (branch `agente/02-onda2-produto`,
+worktree `Birthub-360-wt-o2-02`).
+
+Causa raiz: em `src/features/intelligence/components/IntelligenceHub.tsx`
+(~linha 351, único CTA `commercial_cell` da página) a classe
+`bg-gradient-to-r` estava incompleta — sem `from-*`/`to-*` ela gera um
+`background-image` de gradiente inválido que neutralizava o `bg-brand`
+explícito; as classes manuais `bg-brand`/`hover:bg-brand-hover` ainda
+por cima mascaravam a variante `default` do `Button`, que já provê um
+gradiente real com paradas (`from-[#0369a1] to-[#075985]` no light,
+`from-[#00b4d8] to-[#0284c7]` no dark) e `text-on-brand`.
+
+Correção: removidas as classes quebradas/redundantes
+(`bg-gradient-to-r bg-brand hover:bg-brand-hover`). O botão passa a usar
+integralmente a variante `default` do `Button` (design system), mantendo
+`size="lg"`, o rótulo "Acessar Célula Comercial", o ícone `ArrowRight` e
+o `onClick={() => handleOpenTool('commercial_cell')}` — comportamento de
+clique inalterado.
+
+Contraste (WCAG AA): texto `text-on-brand` (#f8fafc no light) sobre o
+gradiente #0369a1→#075985 — contraste ≥ ~4.5:1 mesmo no extremo mais
+claro do gradiente; dark mantém o par cyan/`on-brand` da variante, sem
+regressão (o dark já estava correto e continua usando o mesmo variant).
+
+Gates executados:
+- `npx tsc --noEmit`: limpo (foi preciso `npx prisma generate` antes — o
+  worktree não tinha o Prisma Client gerado, o que produzia ~532 erros
+  ambientais pré-existentes em `@prisma/client`, nenhum nos arquivos
+  tocados).
+- `npx biome check` nos arquivos tocados: 0 erros; 16 warnings
+  pré-existentes não relacionados (a11y/exhaustive-deps em Landing360 e
+  ProspectingHub, linhas não alteradas).
+- `npx vitest run -c vitest.unit.config.ts` nos testes novos do pacote:
+  10/10 passando.
+
+Pendente honesto: a validação visual Playwright do CTA light
+(`npm run test:visual`) não foi executada nesta sessão. **As baselines
+`intelligence-light-*` NÃO foram atualizadas** — devem ser regeneradas
+somente após um run visual confirmar o CTA visível, conforme o próprio
+handoff determina. Recomenda-se ao Agente 08/QA rodar a suíte visual
+antes do update de baseline.
+
+**Agente 02 — Produto e UX — 2026-11-15**
+
+Correção aplicada em `src/features/intelligence/components/IntelligenceHub.tsx` (arquivo de domínio do Agente 07; alteração coordenada via este handoff e registrada aqui para revisão do 07/24).
+
+O que mudou:
+
+- O CTA flagship passou a usar `variant="primary"` do `Button` compartilhado, removendo as classes conflitantes `bg-gradient-to-r bg-brand hover:bg-brand-hover text-on-brand`.
+- O botão preserva `type="button"`, `size="lg"`, `onClick={() => handleOpenTool('commercial_cell')}`, o rótulo `Acessar Célula Comercial` e o ícone `<ArrowRight className="w-4 h-4" />`.
+- A variante `primary` aplica o gradiente compartilhado (`bg-gradient-to-b`) com `text-on-brand`, que é o par de tokens correto para os temas light/dark e evita o retângulo sem texto no light.
+
+Regressão adicionada:
+
+- `src/features/intelligence/components/__tests__/IntelligenceHub.test.tsx` agora valida que o CTA é um `button` nomeado "Acessar Célula Comercial", contém `bg-gradient-to-b` e `text-on-brand`, e **não** contém `bg-brand`.
+
+Evidências executadas nesta worktree (`agente/02w2-onda2-handoffs`):
+
+- Commit `6f876a55b` — `fix(intelligence): restaura CTA da célula comercial no tema light`.
+- Commit `b7deed879` — `test(intelligence): cobre contraste do CTA da célula comercial`.
+- `node node_modules/vitest/vitest.mjs run -c vitest.unit.config.ts src/features/intelligence/components/__tests__/IntelligenceHub.test.tsx --no-file-parallelism` → **7 testes passaram**.
+- Suíte focada landing + intelligence: `node node_modules/vitest/vitest.mjs run -c vitest.unit.config.ts tests/unit/features/landing/Landing360.test.tsx tests/unit/features/landing/RoiSimulatorModal.test.tsx tests/unit/features/landing/PillarDetailModal.test.tsx tests/unit/features/landing/pillars/PillarRegistry.visualizers.test.tsx src/features/intelligence/components/__tests__/IntelligenceHub.test.tsx --no-file-parallelism` → **5 arquivos, 46 testes passaram**.
+- `npm run typecheck` → **exit 0**.
+- `npm run lint` → **exit 0** (warnings preexistentes; nenhum erro novo).
+- `npm run build` → **exit 0**.
+
+Limitações / próximos passos:
+
+- Não executei `npm run test:visual` nem atualizei baselines `intelligence-light-*`; a validação visual final nos 4 viewports deve ser feita pelo QA (Agente 08/24) antes de qualquer update de snapshot, conforme o handoff.
+- A correção foi validada por teste unitário de classes/contraste e pelos gates locais; recomendo confirmação visual light/dark no Playwright quando a suíte estiver disponível.
+- Nenhum CSS de Login, landing ou PR #214 foi alterado para este CTA.
+
+**Atualização pós-rebase (PR #338, 2026-11-15):** durante o rebase sobre
+`origin/main` atualizado, a alteração de componente deste PR
+(`variant="primary"` em `IntelligenceHub.tsx`) foi **descartada como
+duplicada**: a main já havia mergeado correção equivalente via commit
+`0998a7745` (remoção das classes quebradas; o botão usa a variante
+`default` do `Button`, que é idêntica à `primary` em
+`src/components/ui/Button.tsx`). O teste de regressão de contraste
+(`IntelligenceHub.test.tsx`) foi **preservado** e continua válido com a
+versão da main. Resultado líquido neste arquivo: nenhuma alteração —
+`git diff origin/main` em `IntelligenceHub.tsx` é vazio.

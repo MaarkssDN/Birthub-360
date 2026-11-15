@@ -1,14 +1,4 @@
-import {
-  Activity,
-  Code,
-  Database,
-  FileText,
-  Play,
-  Server,
-  ShieldCheck,
-  Sparkles,
-  Users,
-} from 'lucide-react';
+import { Code, Database, Server, ShieldCheck, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { logger } from '../../../../lib/logger.js';
@@ -40,6 +30,7 @@ import {
   OnboardingPanel,
   PendingAlertsCard,
   PlatformStatusCard,
+  QuickActionsGrid,
 } from './overviewSections.js';
 import { RealStatCard } from './overviewWidgets.js';
 
@@ -91,7 +82,7 @@ export default function RebuiltExecutiveOverview() {
       setCallsState({ status: 'ready', data: Array.isArray(data.callLogs) ? data.callLogs : [] });
     } catch (err: any) {
       if (err?.name === 'AbortError') return;
-      logger.error('Error loading call logs', { err });
+      logger.error({ err }, 'Error loading call logs');
       setCallsState((prev) => ({ ...prev, status: 'error' }));
     }
   }, []);
@@ -105,7 +96,7 @@ export default function RebuiltExecutiveOverview() {
       setAgentsState({ status: 'ready', data: Array.isArray(data.agents) ? data.agents : [] });
     } catch (err: any) {
       if (err?.name === 'AbortError') return;
-      logger.error('Error loading agents', { err });
+      logger.error({ err }, 'Error loading agents');
       setAgentsState((prev) => ({ ...prev, status: 'error' }));
     }
   }, []);
@@ -118,7 +109,7 @@ export default function RebuiltExecutiveOverview() {
       setReadyState({ status: 'ready', checks: data.checks ?? null });
     } catch (err: any) {
       if (err?.name === 'AbortError') return;
-      logger.error('Error loading platform readiness', { err });
+      logger.error({ err }, 'Error loading platform readiness');
       setReadyState({ status: 'error', checks: null });
     }
   }, []);
@@ -135,7 +126,7 @@ export default function RebuiltExecutiveOverview() {
       setMetricsState({ status: 'ready', data: allMetrics });
     } catch (err: any) {
       if (err?.name === 'AbortError') return;
-      logger.error('Error loading metrics', { err });
+      logger.error({ err }, 'Error loading metrics');
       setMetricsState((prev) => ({ ...prev, status: 'error' }));
     }
   }, []);
@@ -154,7 +145,7 @@ export default function RebuiltExecutiveOverview() {
         setChecklist(data.checklist ?? {});
       } catch (err: any) {
         if (err?.name === 'AbortError') return;
-        logger.error('Error loading onboarding checklist from database', { err });
+        logger.error({ err }, 'Error loading onboarding checklist from database');
         setChecklistError(true);
         setChecklist({});
       }
@@ -189,7 +180,7 @@ export default function RebuiltExecutiveOverview() {
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
     } catch (err: any) {
-      logger.error('Error saving onboarding checklist to database', { err });
+      logger.error({ err }, 'Error saving onboarding checklist to database');
       showToast('Não foi possível salvar o checklist no servidor. Tente novamente.', 'error');
     }
   };
@@ -311,56 +302,12 @@ export default function RebuiltExecutiveOverview() {
       </div>
 
       {/* QUICK ACTIONS GRID */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <Card
-          className="p-4 hover:border-brand cursor-pointer transition-colors flex items-center gap-3"
-          onClick={() => setActiveActionModal('agent')}
-        >
-          <div className="p-2 bg-brand/10 text-brand rounded-lg">
-            <Users className="h-5 w-5" />
-          </div>
-          <div className="text-left">
-            <h4 className="font-bold text-slate-900 dark:text-white text-sm">Criar Agente</h4>
-            <p className="text-xs text-slate-500">Configurar novo agente</p>
-          </div>
-        </Card>
-        <Card
-          className="p-4 hover:border-brand cursor-pointer transition-colors flex items-center gap-3"
-          onClick={() => navigate('/dashboard/analytics')}
-        >
-          <div className="p-2 bg-indigo-50 dark:bg-iris/30 text-iris dark:text-iris rounded-lg">
-            <Activity className="h-5 w-5" />
-          </div>
-          <div className="text-left">
-            <h4 className="font-bold text-slate-900 dark:text-white text-sm">Ver Análises</h4>
-            <p className="text-xs text-slate-500">Métricas recentes</p>
-          </div>
-        </Card>
-        <Card
-          className="p-4 hover:border-brand cursor-pointer transition-colors flex items-center gap-3"
-          onClick={() => navigate('/dashboard/playground')}
-        >
-          <div className="p-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg">
-            <Play className="h-5 w-5" />
-          </div>
-          <div className="text-left">
-            <h4 className="font-bold text-slate-900 dark:text-white text-sm">Acessar Playground</h4>
-            <p className="text-xs text-slate-500">Testar chamadas</p>
-          </div>
-        </Card>
-        <Card
-          className="p-4 hover:border-brand cursor-pointer transition-colors flex items-center gap-3"
-          onClick={() => navigate('/dashboard/knowledge')}
-        >
-          <div className="p-2 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-lg">
-            <FileText className="h-5 w-5" />
-          </div>
-          <div className="text-left">
-            <h4 className="font-bold text-slate-900 dark:text-white text-sm">Nova Base</h4>
-            <p className="text-xs text-slate-500">Importar conhecimento</p>
-          </div>
-        </Card>
-      </div>
+      <QuickActionsGrid
+        onCreateAgent={() => setActiveActionModal('agent')}
+        onViewAnalytics={() => navigate('/dashboard/analytics')}
+        onOpenPlayground={() => navigate('/dashboard/playground')}
+        onNewKnowledge={() => navigate('/dashboard/knowledge')}
+      />
 
       {/* COMPACT ONBOARDING WIZARD & CHECKLIST */}
       <OnboardingPanel

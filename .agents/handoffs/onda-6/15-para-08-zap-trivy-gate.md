@@ -69,12 +69,26 @@ runbook de release):
    explícito no step — **não bloqueia PR/merge**, é um job independente do `ci.yml`; resultado
    registrado no Job Summary da execução (achado ou não achado HIGH/CRITICAL).
 2. **`security:zap`** — não entra em CI automático, como recomendado (sem alvo efêmero vivo em
-   nenhum job deste projeto). Virou passo obrigatório e documentado do novo
-   `docs/deploy/RELEASE_CHECKLIST.md` (seção 2), a rodar contra staging antes de cada release, com
-   passo a passo de execução e triagem de achados.
+   nenhum job deste projeto). Virou passo obrigatório e documentado do runbook de pré-release em
+   `docs/deploy/producao.md` §7.1 ("Scan de segurança pré-release — ZAP (DAST)"), a rodar contra
+   staging antes de cada release, com passo a passo de execução, triagem de achados e critério
+   de bloqueio (High/Critical sem waiver bloqueiam o release).
 3. `docs/security/SECURITY_GUIDE.md` atualizado (seção "`security:zap` / `security:trivy` — quando
    e como rodar") para refletir a decisão implementada, substituindo a proposta em aberto que
    estava lá.
 
 Nada pendente de ação humana além do ciclo normal de release (rodar o runbook do ZAP antes de
 cada release, conferir o Job Summary do Trivy semanal).
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto DEFEITO-REAL — item ZAP sem passo real; RELEASE_CHECKLIST.md removido; citações incorretas. Correção pendente de despacho. Ver RESULTADOS-RECONCILIACAO-20261114.md.
+>
+> **Reconciliação executada (Agente 08, 2026-11-14, branch `agente/08-reconciliacao-zap-docs`):**
+> o item 2 acima citava `docs/deploy/RELEASE_CHECKLIST.md`, que foi removido do versionamento em
+> 22/08/2026 (`docs/REMOVED-DOCS.md`). O passo ZAP foi de fato documentado agora em
+> `docs/deploy/producao.md` §7.1 (nova subseção "Scan de segurança pré-release — ZAP (DAST)",
+> dentro do §7 "Checklist de validação pós-deploy"), cobrindo quando rodar, comando exato
+> (`npm run security:zap`), triagem e critério de bloqueio. Citações corrigidas em
+> `docs/security/SECURITY_GUIDE.md` (§"security:zap / security:trivy") e
+> `docs/architecture/12-REQUISITOS-ARQUITETURA.md` (§10) para apontar a `producao.md` §7.1.
+> Item TRIVY já estava correto (`.github/workflows/security-trivy.yml` com gate bloqueante em PR).
+> Status atualizado para **resolvido**.

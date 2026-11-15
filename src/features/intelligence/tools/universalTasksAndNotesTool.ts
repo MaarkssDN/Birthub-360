@@ -4,7 +4,7 @@ import { getTenantId } from '../../../lib/context.js';
 import { integrationSettingsRepository } from '../../../lib/integrations/integrationSettings.repository.js';
 import { logger } from '../../../lib/logger.js';
 import { prisma } from '../../../lib/prisma.js';
-import { validateWebhookUrl } from '../../../lib/security/url-validator.js';
+import { assertSafeExternalUrl, safeFetch } from '../../../shared/security/urlGuard.js';
 import { getBitrixSettings } from '../../integrations/bitrix/service/settings.js';
 import { reconfigurationPayload } from './integrationConfigState.js';
 
@@ -331,8 +331,10 @@ export const universalTasksAndNotesTool = new DynamicStructuredTool({
             ? bitrixCfg.webhookUrl
             : `${bitrixCfg.webhookUrl}/`;
           const taskEndpoint = `${baseUrl}tasks.task.add.json`;
-          await validateWebhookUrl(taskEndpoint);
-          const res = await fetch(taskEndpoint, {
+          // safeFetch valida E fixa a conexão nos endereços já resolvidos (fecha DNS rebinding
+          // e redirect para host interno que `validateWebhookUrl` + fetch cru deixavam abertos).
+          await assertSafeExternalUrl(taskEndpoint);
+          const res = await safeFetch(taskEndpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

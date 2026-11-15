@@ -79,7 +79,6 @@ export const slackNotificationTool = tool(
 
 /**
  * Ferramenta Universal de Sincronização Multi-CRM (Bitrix24, HubSpot, Pipedrive, RD Station, Monday, Omie).
- * Mantém também o export `pipedriveSyncTool` por retrocompatibilidade.
  */
 export const multiCrmSyncTool = tool(
   async ({ organizationId: explicitOrgId, leadId, provider, action }) => {
@@ -231,8 +230,6 @@ export const multiCrmSyncTool = tool(
     }),
   },
 );
-
-export const pipedriveSyncTool = multiCrmSyncTool;
 
 import { fetchCnpjData } from '../../prospecting/services/enrichment/cnpjLookup.js';
 

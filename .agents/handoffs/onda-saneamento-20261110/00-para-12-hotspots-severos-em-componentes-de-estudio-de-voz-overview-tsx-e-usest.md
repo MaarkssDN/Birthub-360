@@ -73,3 +73,39 @@ Decomposição cirúrgica executada dentro de `src/features/voice-hub/**` (propr
 - `npx vitest run -c vitest.unit.config.ts src/features/voice-hub` → **24 arquivos / 194 testes, todos passando** (inclui `Overview.telemetria-ia.test.tsx` e `useStudioStore.versionHistory.test.ts` pré-existentes — não-regressão confirmada).
 
 **Pendente:** parecer formal `APROVADO` do Agente 24 (condição de encerramento deste handoff).
+
+## Atualização Onda 2 (Agente 12 — 2026-11-14, branch `agente/12-onda2-voz`, base `origin/main` @ d699f9c4f)
+
+Reverificação sobre a `main` atual (refatoração já mergeada via PR #253):
+
+- `Overview.tsx`: 708 → **654 linhas** (abaixo do limite de aviso de 700). Extração adicional
+  cirúrgica: o grid "Quick Actions" (~50 linhas de JSX puramente apresentacional) virou
+  `QuickActionsGrid` em `overviewSections.tsx` (682 linhas, também < 700), recebendo 4 callbacks
+  (`onCreateAgent`/`onViewAnalytics`/`onOpenPlayground`/`onNewKnowledge`) — comportamento de
+  navegação/modal idêntico, zero lógica movida. Imports de ícones órfãos removidos.
+- `useStudioStore.ts`: **421 linhas** — sem novas exceções necessárias.
+- `docs/architecture/HOTSPOT_EXCEPTIONS.md`: removidas as 2 entradas obsoletas
+  (`Overview.tsx` limite 1500 e `useStudioStore.ts` limite 1150) que o
+  `check:hotspots` apontava como "exceção sem arquivo correspondente" — limpeza recomendada
+  pelo próprio gate.
+- `npm run check:hotspots` → ✅ 1911 arquivos, 0 acima de 1000 sem exceção; nenhum arquivo de
+  `src/features/voice-hub/pages/Dashboard/Overview.tsx` ou `store/useStudioStore.ts` em aviso
+  ou exceção. Restam avisos não-bloqueantes pré-existentes fora do escopo deste handoff
+  (`KnowledgeManager.tsx` 812, `LandingInnovative.tsx` 703).
+
+**Gates executados (worktree `Birthub-360-wt-o2-12`):**
+- `npx tsc --noEmit` → limpo.
+- `npx biome check --write` nos 2 arquivos tocados → formatado, 0 erros.
+- `npx vitest run -c vitest.unit.config.ts src/features/voice-hub/pages/Dashboard` →
+  **7 arquivos / 72 testes, todos passando** (inclui `Overview.interactions.test.tsx`,
+  `Overview.telemetria-ia.test.tsx`, `overviewSections.test.tsx` — não-regressão do
+  quick-actions confirmada pelos testes de interação de modal/navegação).
+
+**Pendente (inalterado):** parecer formal `APROVADO` do Agente 24.
+## Atualização (Agente 12 — 2026-11-14, branch `agente/12-onda2-handoffs`)
+
+`Overview.tsx` recebeu apenas reordenação de call sites do logger pino
+(`(obj, msg)`) no commit `c3e37014b` — nenhum comportamento alterado; a
+decomposição documentada acima permanece intacta. Gates da onda de
+saneamento seguem como registrados; **parecer formal do Agente 24 continua
+pendente** (condição de encerramento deste handoff).

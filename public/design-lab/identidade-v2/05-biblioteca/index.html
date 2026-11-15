@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Biblioteca de componentes — Birthub 360° DS V2.0 (RASCUNHO)</title>
+<meta name="description" content="Biblioteca demonstrativa e interativa dos componentes do Design System V2.0 do Birthub 360°, em Dark e Light. Protótipo, dados fictícios.">
+<link rel="stylesheet" href="lib.css">
+</head>
+<body>
+<!--ICONS--><svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol><symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></symbol><symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.3 21a2 2 0 0 0 3.4 0"/></symbol><symbol id="i-sliders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></symbol><symbol id="i-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></symbol><symbol id="i-chevron-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></symbol><symbol id="i-chevron-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></symbol><symbol id="i-chevron-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></symbol><symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></symbol><symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol><symbol id="i-alert-triangle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 2.5 20h19z"/><path d="M12 10v4.5M12 17.5h.01"/></symbol><symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol><symbol id="i-alert-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5h.01"/></symbol><symbol id="i-check-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.5 3 3 5-6"/></symbol><symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></symbol><symbol id="i-minus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></symbol><symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol><symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.7a3.5 3.5 0 0 1 0 6.6M18 14a6 6 0 0 1 3.5 6"/></symbol><symbol id="i-layers" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/></symbol><symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></symbol><symbol id="i-bar-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20v-8M12 20V5M19 20V9M3 20h18"/></symbol><symbol id="i-trending" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 6-6 4 4 8-8"/><path d="M15 7h6v6"/></symbol><symbol id="i-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></symbol><symbol id="i-message" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></symbol><symbol id="i-map-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol><symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3A4 4 0 0 0 11 18.7l1-1"/></symbol><symbol id="i-sparkles" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3l1.9 5.1L18 10l-5.1 1.9L11 17l-1.9-5.1L4 10l5.1-1.9z"/><path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/></symbol><symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4.5 6v5.5c0 4.6 3.1 8.2 7.5 9.5 4.4-1.3 7.5-4.9 7.5-9.5V6z"/><path d="m9 12 2 2 4-4"/></symbol><symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></symbol><symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/></symbol><symbol id="i-panel-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></symbol><symbol id="i-columns" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M12 4v16"/></symbol><symbol id="i-arrow-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></symbol><symbol id="i-arrow-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></symbol><symbol id="i-arrow-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol><symbol id="i-arrows-updown" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5v14M4.5 8.5 8 5l3.5 3.5M16 19V5m-3.5 10.5L16 19l3.5-3.5"/></symbol><symbol id="i-loader" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></symbol><symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol><symbol id="i-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 6.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4M6.6 6.7C3.7 8.4 2 12 2 12s3.6 7 10 7a10 10 0 0 0 4.2-.9"/></symbol><symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol><symbol id="i-more" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="19" cy="12" r="1.3" fill="currentColor"/></symbol><symbol id="i-filter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></symbol><symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.5-3.5L4 9M4 4v5h5M4 13a8 8 0 0 0 14.5 3.5L20 15M20 20v-5h-5"/></symbol><symbol id="i-inbox" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h5l1 3h6l1-3h5M5 5h14l2 8v6H3v-6z"/></symbol><symbol id="i-cpu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/></symbol><symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></symbol><symbol id="i-orbit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2.5"/><ellipse cx="12" cy="12" rx="10" ry="4.5" transform="rotate(-30 12 12)"/></symbol><symbol id="i-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol><symbol id="i-command" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3z"/></symbol><symbol id="i-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="11" rx="3"/><path d="M12 8V4M9 13h.01M15 13h.01M9.5 16.5h5"/></symbol><symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol><symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z"/></symbol><symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol><symbol id="i-trending-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 6-6 4 4 8-8"/><path d="M15 7h6v6"/></symbol><symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m21 3-9.5 18-2.5-8-6-2.5z"/><path d="m9 13 12-10"/></symbol></defs></svg><!--/ICONS-->
+<a class="skip" href="#main">Pular para o conteúdo</a>
+
+<header class="dsh">
+  <div class="dsh-brand">
+    <img src="../assets/logos/birthhub360-icone.svg" alt="" width="28" height="28">
+    <strong><span data-brand-name>Birthub 360°</span> <span class="muted">Biblioteca de componentes</span></strong>
+  </div>
+  <span class="draft-flag">RASCUNHO V2.0 — NÃO HOMOLOGADO</span>
+  <span class="bh-sample">PROTÓTIPO · EXEMPLO — dados fictícios</span>
+  <a class="bh-btn bh-btn--sm bh-btn--ghost" href="../03-design-system/index.html">Documentação do DS</a>
+  <div class="bh-btn-group" role="group" aria-label="Tema da demonstração">
+    <button type="button" class="bh-btn" data-lib-theme="dark" aria-pressed="true"><svg class="bh-ico bh-ico--sm" aria-hidden="true"><use href="#i-moon"/></svg>Dark</button>
+    <button type="button" class="bh-btn" data-lib-theme="light" aria-pressed="false"><svg class="bh-ico bh-ico--sm" aria-hidden="true"><use href="#i-sun"/></svg>Light</button>
+    <button type="button" class="bh-btn" data-lib-theme="split" aria-pressed="false"><svg class="bh-ico bh-ico--sm" aria-hidden="true"><use href="#i-columns"/></svg>Lado a lado</button>
+  </div>
+  <button type="button" class="bh-btn bh-btn--sm bh-btn--ghost" id="motion-toggle" aria-pressed="false">Reduzir movimento</button>
+</header>
+
+<div class="dsl">
+<details class="dsn" id="toc" open>
+  <summary><svg class="bh-ico" aria-hidden="true"><use href="#i-menu"/></svg>Componentes</summary>
+  <nav aria-label="Componentes da biblioteca">
+    <ul>
+      <li><a href="#botoes">Botões</a></li><li><a href="#inputs">Inputs</a></li><li><a href="#formularios">Formulários</a></li>
+      <li><a href="#cards">Cards</a></li><li><a href="#modais">Modais</a></li><li><a href="#menus">Menus</a></li><li><a href="#tabs">Abas</a></li>
+      <li><a href="#sidebars">Sidebar e rails</a></li><li><a href="#tabelas">Tabelas</a></li><li><a href="#dashboards">Dashboards</a></li>
+      <li><a href="#graficos">Gráficos</a></li><li><a href="#vazios">Estados vazios</a></li><li><a href="#loading">Loading</a></li>
+      <li><a href="#feedback">Feedback e badges</a></li><li><a href="#notificacoes">Notificações</a></li>
+      <li><a href="#acessibilidade">Acessibilidade</a></li><li><a href="#temas">Temas</a></li>
+    </ul>
+  </nav>
+</details>
+
+<main id="main" tabindex="-1">
+<h1>Biblioteca de componentes</h1>
+<p class="lede" style="margin-block-start:var(--space-2)">Experiência Operacional: densa, rápida, discreta. Cada componente aparece em Dark e Light (alternar ou lado a lado) com seus estados. Tudo é protótipo isolado, sem integração com o app. Dados de exemplo são fictícios e rotulados.</p>
+
+<!-- ================= BOTÕES ================= -->
+<section class="lib-sec" id="botoes" aria-labelledby="h-botoes">
+<h2 id="h-botoes">Botões</h2>
+<p class="lede">Uma ação primária (rosa) por área. Texto sobre fill neon usa <code>--on-neon</code>.</p>
+<div class="demo"><h3>Variantes e tamanhos</h3>
+<div class="demo-stage">
+  <div class="bh-row"><button class="bh-btn bh-btn--primary" type="button" data-say="Criar proposta (EXEMPLO)">Criar proposta</button><button class="bh-btn" type="button">Secundário</button><button class="bh-btn bh-btn--ghost" type="button">Ghost</button><button class="bh-btn bh-btn--link" type="button">Link</button><button class="bh-btn bh-btn--danger" type="button">Excluir</button></div>
+  <div class="bh-row"><button class="bh-btn" data-tone="blue" type="button">Azul (info)</button><button class="bh-btn" data-tone="gold" type="button">Dourado (valor)</button><button class="bh-btn" data-tone="iris" type="button"><svg class="bh-ico" aria-hidden="true"><use href="#i-sparkles"/></svg>Perguntar à IA</button><button class="bh-btn bh-btn--primary bh-btn--cta bh-btn--lg" type="button">Chamada em Sora</button><button class="bh-btn bh-btn--primary bh-btn--pill" type="button">Pílula (DS-D02)</button></div>
+  <div class="bh-row"><button class="bh-btn bh-btn--primary bh-btn--sm" type="button">Pequeno 32</button><button class="bh-btn bh-btn--primary" type="button">Médio 40</button><button class="bh-btn bh-btn--primary bh-btn--lg" type="button">Grande 48</button><button class="bh-btn bh-btn--icon" type="button" aria-label="Filtrar" data-tip="Filtrar"><svg class="bh-ico" aria-hidden="true"><use href="#i-filter"/></svg></button><button class="bh-btn bh-btn--icon bh-btn--ghost" type="button" aria-label="Atualizar" data-tip="Atualizar"><svg class="bh-ico" aria-hidden="true"><use href="#i-refresh"/></svg></button></div>
+  <div class="bh-btn-group" role="group" aria-label="Período (exemplo)"><button class="bh-btn" type="button" data-group-pick aria-pressed="true">Mês</button><button class="bh-btn" type="button" data-group-pick aria-pressed="false">Trimestre</button><button class="bh-btn" type="button" data-group-pick aria-pressed="false">Ano</button></div>
+  <div class="bh-toast-region" aria-live="polite"></div>
+</div></div>
+
+<div class="demo"><h3>Matriz de estados</h3>
+<p class="note">Hover, foco e ativo são forçados (<code>data-force</code>) para documentação; os botões reais respondem a mouse, teclado e toque.</p>
+<div class="demo-stage"><div class="state-scroll"><div class="state-grid" role="group" aria-label="Matriz de estados dos botões">
+  <span></span><span>Padrão</span><span>Hover</span><span>Foco (teclado)</span><span>Ativo</span><span>Desabilitado</span><span>Carregando</span>
+  <span>Primário</span><button class="bh-btn bh-btn--primary" type="button">Salvar</button><button class="bh-btn bh-btn--primary" type="button" data-force="hover">Salvar</button><button class="bh-btn bh-btn--primary" type="button" data-force="focus">Salvar</button><button class="bh-btn bh-btn--primary" type="button" data-force="active">Salvar</button><button class="bh-btn bh-btn--primary" type="button" disabled>Salvar</button><button class="bh-btn bh-btn--primary" type="button" aria-busy="true"><svg class="bh-spinner" aria-hidden="true"><use href="#i-loader"/></svg>Salvar</button>
+  <span>Secundário</span><button class="bh-btn" type="button">Salvar</button><button class="bh-btn" type="button" data-force="hover">Salvar</button><button class="bh-btn" type="button" data-force="focus">Salvar</button><button class="bh-btn" type="button" data-force="active">Salvar</button><button class="bh-btn" type="button" disabled>Salvar</button><button class="bh-btn" type="button" aria-busy="true"><svg class="bh-spinner" aria-hidden="true"><use href="#i-loader"/></svg>Salvar</button>
+  <span>Ghost</span><button class="bh-btn bh-btn--ghost" type="button">Salvar</button><button class="bh-btn bh-btn--ghost" type="button" data-force="hover">Salvar</button><button class="bh-btn bh-btn--ghost" type="button" data-force="focus">Salvar</button><button class="bh-btn bh-btn--ghost" type="button" data-force="active">Salvar</button><button class="bh-btn bh-btn--ghost" type="button" disabled>Salvar</button><button class="bh-btn bh-btn--ghost" type="button" aria-busy="true"><svg class="bh-spinner" aria-hidden="true"><use href="#i-loader"/></svg>Salvar</button>
+  <span>Perigo</span><button class="bh-btn bh-btn--danger" type="button">Excluir</button><button class="bh-btn bh-btn--danger" type="button" data-force="hover">Excluir</button><button class="bh-btn bh-btn--danger" type="button" data-force="focus">Excluir</button><button class="bh-btn bh-btn--danger" type="button" data-force="active">Excluir</button><button class="bh-btn bh-btn--danger" type="button" disabled>Excluir</button><button class="bh-btn bh-btn--danger" type="button" aria-busy="true"><svg class="bh-spinner" aria-hidden="true"><use href="#i-loader"/></svg>Excluir</button>
+</div></div>
+<div class="bh-row"><span class="muted">Estado de sucesso:</span><button class="bh-btn" type="button" data-state="success"><svg class="bh-ico" aria-hidden="true"><use href="#i-check"/></svg>Salvo</button></div></div></div>
+
+<div class="demo"><h3>Loading interativo</h3>
+<div class="demo-stage"><div class="bh-row"><button class="bh-btn bh-btn--primary" type="button" data-demo-loading><span class="bh-btn__label">Salvar alterações</span></button><span class="muted">Clique: busy, depois sucesso, depois volta ao normal.</span></div></div></div>
+</section>
+
+<!-- ================= INPUTS ================= -->
+<section class="lib-sec" id="inputs" aria-labelledby="h-inputs">
+<h2 id="h-inputs">Inputs</h2>
+<p class="lede">Rótulo sempre visível; erro com ícone e texto; borda de campo com 3:1 contra a superfície.</p>
+<div class="demo"><h3>Estados do campo de texto</h3>
+<div class="demo-stage"><div class="fields-grid">
+  <div class="bh-field"><label class="bh-label" for="in-d">Padrão</label><div class="bh-control"><input class="bh-input" id="in-d" placeholder="Nome da conta"></div></div>
+  <div class="bh-field"><label class="bh-label" for="in-h">Hover (forçado)</label><div class="bh-control" data-force="hover"><input class="bh-input" id="in-h" placeholder="Nome da conta"></div></div>
+  <div class="bh-field"><label class="bh-label" for="in-f">Foco (forçado)</label><div class="bh-control" data-force="focus"><input class="bh-input" id="in-f" value="Alfa Logística"></div></div>
+  <div class="bh-field" data-disabled="true"><label class="bh-label" for="in-x">Desabilitado</label><div class="bh-control"><input class="bh-input" id="in-x" value="Campo bloqueado" disabled></div></div>
+  <div class="bh-field" data-state="error"><label class="bh-label" for="in-e">Erro</label><div class="bh-control"><input class="bh-input" id="in-e" value="maria@exemplo" aria-invalid="true" aria-describedby="in-e-m"></div><p class="bh-error" id="in-e-m"><svg class="bh-ico bh-ico--sm" aria-hidden="true"><use href="#i-alert-circle"/></svg><span>E-mail incompleto. Use nome@empresa.com.br.</span></p></div>
+  <div class="bh-field" data-state="success"><label class="bh-label" for="in-s">Sucesso</label><div class="bh-control"><input class="bh-input bh-input--mono" id="in-s" value="00.000.000/0001-00" aria-describedby="in-s-m"></div><p class="bh-success-msg" id="in-s-m"><svg class="bh-ico bh-ico--sm" aria-hidden="true"><use href="#i-check-circle"/></svg><span>Formato válido</span></p></div>
+  <div class="bh-field" data-loading="true"><label class="bh-label" for="in-l">Carregando</label><div class="bh-control" aria-busy="true"><input class="bh-input" id="in-l" value="Verificando CNPJ"></div><p class="bh-help">Consultando cadastro (EXEMPLO)…</p></div>
+  <div class="bh-field"><label class="bh-label" for="in-q">Busca</label><div class="bh-control"><svg class="bh-ico" aria-hidden="true"><use href="#i-search"/></svg><input class="bh-input" id="in-q" type="search" placeholder="Buscar contas"><span class="bh-kbd">Ctrl K</span></div></div>
+</div></div></div>
+<div class="demo"><h3>Select, texto longo, senha e seleção</h3>
+<div class="demo-stage"><div class="fields-grid">
+  <div class="bh-field"><label class="bh-label" for="in-sel">Etapa</label><div class="bh-control bh-control--select"><select class="bh-select" id="in-sel"><option>Qualificação</option><option>Proposta</option><option>Negociação</option></select><svg class="bh-ico" aria-hidden="true"><use href="#i-chevron-down"/></svg></div></div>
+  <div class="bh-field"><label class="bh-label" for="in-pw">Senha</label><div class="bh-control"><input class="bh-input" id="in-pw" type="password" value="exemplo123" autocomplete="off"><button type="button" class="bh-btn bh-btn--icon bh-btn--sm bh-btn--ghost" data-toggle-pw aria-pressed="false" aria-label="Mostrar senha"><svg class="bh-ico" aria-hidden="true"><use href="#i-eye"/></svg></button></div></div>
+  <div class="bh-field" style="grid-column:1/-1"><label class="bh-label" for="in-ta">Observações</label><div class="bh-control bh-control--area"><textarea class="bh-textarea" id="in-ta" placeholder="Contexto da conversa"></textarea></div><p class="bh-help">Evite dados pessoais desnecessários (minimização, LGPD).</p></div>
+</div>
+<div class="bh-row" style="align-items:flex-start;gap:var(--space-6)">
+  <fieldset class="bh-fieldset"><legend>Canais</legend><label class="bh-check"><input type="checkbox" checked> E-mail</label><label class="bh-check"><input type="checkbox"> Telefone</label><label class="bh-check"><input type="checkbox" disabled> Desabilitado</label></fieldset>
+  <fieldset class="bh-fieldset"><legend>Prioridade</legend><label class="bh-check"><input type="radio" name="in-prio" checked> Alta</label><label class="bh-check"><input type="radio" name="in-prio"> Normal</label><label class="bh-check"><input type="radio" name="in-prio" disabled> Desabilitado</label></fieldset>
+  <div class="bh-stack" style="gap:var(--space-2)"><span class="bh-label">Alternância</span><span class="bh-switch-row"><button type="button" role="switch" class="bh-switch" aria-checked="true" aria-labelledby="sw1-l"></button><span id="sw1-l">Alertas de risco</span></span><span class="bh-switch-row"><button type="button" role="switch" class="bh-switch" aria-checked="false" aria-labelledby="sw2-l"></button><span id="sw2-l">Resumo diário</span></span><span class="bh-switch-row"><button type="button" role="switch" class="bh-switch" aria-checked="false" disabled aria-labelledby="sw3-l"></button><span id="sw3-l" class="muted">Indisponível</span></span></div>
+</div></div></div>
+</section>
+
+<!-- ================= FORMULÁRIOS ================= -->
+<section class="lib-sec" id="formularios" aria-labelledby="h-formularios">
+<h2 id="h-formularios">Formulários</h2>
+<p class="lede">Validação ao sair do campo e ao enviar, resumo de erros com foco, envio em loading e toast de sucesso. Nada é gravado.</p>
+<div class="demo"><h3>Nova oportunidade (EXEMPLO)</h3>
+<div class="demo-stage demo-stage--tall">
+<form data-validate novalidate class="bh-stack" aria-label="Nova oportunidade (exemplo)">
+  <div class="bh-alert form-summary" data-tone="danger" role="alert" tabindex="-1" hidden>
+    <svg class="bh-ico" aria-hidden="true"><use href="#i-alert-circle"/></svg><div class="bh-alert__body"><span class="bh-alert__title form-summary__title"></span><ul></ul></div></div>
+  <div class="bh-grid-form">
+    <div class="bh-field span-2" data-rules="required,min3" data-label="Nome da oportunidade"><label class="bh-label" for="fm-n">Nome da oportunidade <span class="bh-req" aria-hidden="true">*</span></label><div class="bh-control"><input class="bh-input" id="fm-n" required aria-required="true" autocomplete="off" placeholder="Ex.: Renovação anual"></div><p class="bh-error"><svg class="bh-ico bh-ico--sm" aria-hidden="true"><use href="#i-alert-circle"/></svg><span></span></p></div>
+    <div class="bh-field" data-rules="required,email" data-label="E-mail do decisor"><label class="bh-label" for="fm-e">E-mail do decisor <span class="bh-req" aria-hidden="true">*</span></label><div class="bh-control"><input class="bh-input" id="fm-e" type="email" required aria-required="true" autocomplete="email" placeholder="nome@empresa.com.br"></div><p class="bh-error"><svg class="bh-ico bh-ico--sm" aria-hidden="true"><use href="#i-alert-circle"/></svg><span></span></p></div>
+    <div class="bh-field" data-rules="required,money" data-label="Valor estimado"><label class="bh-label" for="fm-v">Valor estimado (R$) <span class="bh-req" aria-hidden="true">*</span></label><div class="bh-control"><input class="bh-input bh-input--mono" id="fm-v" inputmode="decimal" required aria-required="true" placeholder="48000,00"></div><p class="bh-error"><svg class="bh-ico bh-ico--sm" aria-hidden="true"><use href="#i-alert-circle"/></svg><span></span></p></div>
+    <div class="bh-field span-2"><label class="bh-label" for="fm-s">Etapa</label><div class="bh-control bh-control--select"><select class="bh-select" id="fm-s"><option>Qualificação</option><option>Proposta</option><option>Negociação</option></select><svg class="bh-ico" aria-hidden="true"><use href="#i-chevron-down"/></svg></div></div>
+    <div class="span-2"><label class="bh-check"><input type="checkbox" required id="fm-c"> Tenho base legal para registrar este contato (LGPD)</label></div>
+  </div>
+  <div class="bh-row" style="justify-content:flex-end"><button type="button" class="bh-btn bh-btn--ghost" data-reset-form>Limpar</button><button type="submit" class="bh-btn bh-btn--primary"><span class="bh-btn__label">Criar oportunidade</span></button></div>
+</form>
+<div class="bh-toast-region" aria-live="polite"></div>
+</div></div>
+</section>
+
+<!-- ================= CARDS ================= -->
+<section class="lib-sec" id="cards" aria-labelledby="h-cards">
+<h2 id="h-cards">Cards</h2>
+<p class="lede">Um card por unidade de conteúdo. Métricas ficam em faixa, sem uma caixa por número.</p>
+<div class="demo"><h3>Interativo, selecionável, flat, carregando e desabilitado</h3>
+<div class="demo-stage">
+  <div class="bh-grid-form">
+    <article class="bh-card bh-card--interactive"><h4 class="bh-card__title"><a class="bh-card__link" href="#cards" data-say="Abrir conta (EXEMPLO)" style="color:inherit;text-decoration:none">Alfa Logística</a></h4><p class="bh-card__meta">Negociação · Marina Souza</p><div class="bh-card__foot"><span class="bh-badge" data-tone="value">R$ 320.000</span><span class="bh-badge" data-tone="ai"><svg class="bh-ico" aria-hidden="true"><use href="#i-sparkles"/></svg>Risco baixo</span></div></article>
+    <div class="bh-stack" style="gap:var(--space-3)">
+      <button type="button" class="bh-card" data-pressed-toggle aria-pressed="false" style="text-align:start;cursor:pointer;color:inherit;font:inherit"><strong>Beta Energia</strong><br><span class="bh-card__meta">Clique para selecionar (aria-pressed)</span></button>
+      <div class="bh-card bh-card--flat"><span class="bh-metric__label">Card flat</span><p>Informação secundária sem sombra.</p></div>
+    </div>
+    <article class="bh-card" data-skeleton="true" aria-busy="true"><span class="bh-skel bh-skel--title"></span><span class="bh-skel bh-skel--text" style="margin-block-start:var(--space-3);inline-size:80%"></span><span class="bh-skel bh-skel--text" style="margin-block-start:var(--space-2);inline-size:55%"></span><span class="sr-only">Carregando</span></article>
+    <article class="bh-card bh-card--flat" aria-disabled="true" style="opacity:.6"><h4 class="bh-card__title">Gama Saúde</h4><p class="bh-card__meta">Indisponível: sem permissão de leitura</p></article>
+  </div>
+  <div class="bh-ribbon"><div class="bh-metric bh-metric--lead"><span class="bh-metric__label">Receita prevista</span><span class="bh-metric__value">R$ 1.450.000</span><span class="bh-metric__delta" data-dir="up"><svg class="bh-ico bh-ico--sm" aria-hidden="true"><use href="#i-arrow-up"/></svg>+8,2%</span></div><div class="bh-metric"><span class="bh-metric__label">Negócios</span><span class="bh-metric__value">128</span></div><div class="bh-metric"><span class="bh-metric__label">Conversão</span><span class="bh-metric__value">24,3%</span></div></div>
+  <span class="bh-sample">EXEMPLO — dados fictícios</span>
+  <div class="bh-toast-region" aria-live="polite"></div>
+</div></div>
+</section>
+
+<!-- ================= MODAIS ================= -->
+<section class="lib-sec" id="modais" aria-labelledby="h-modais">
+<h2 id="h-modais">Modais</h2>
+<p class="lede"><code>&lt;dialog&gt;</code> nativo: foco preso, Esc fecha, clique no fundo fecha, o foco volta ao botão que abriu.</p>
+<div class="demo"><h3>Confirmação destrutiva, formulário e drawer</h3>
+<div class="demo-stage demo-stage--tall">
+  <div class="bh-row">
+    <button class="bh-btn bh-btn--danger" type="button" data-open-modal="dlg-del">Excluir oportunidade</button>
+    <button class="bh-btn bh-btn--primary" type="button" data-open-modal="dlg-form">Nova oportunidade</button>
+    <button class="bh-btn" type="button" data-open-modal="dlg-drawer"><svg class="bh-ico" aria-hidden="true"><use href="#i-panel-left"/></svg>Detalhes (drawer)</button>
+  </div>
+  <dialog class="bh-modal bh-modal--sm" id="dlg-del" aria-labelledby="dlg-del-t" aria-describedby="dlg-del-d">
+    <div class="bh-modal__head"><h3 id="dlg-del-t">Excluir oportunidade?</h3><button class="bh-btn bh-btn--icon bh-btn--sm bh-btn--ghost" type="button" aria-label="Fechar" data-close-modal><svg class="bh-ico" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+    <div class="bh-modal__body"><p id="dlg-del-d">A oportunidade "Alfa Logística" e seu histórico saem do pipeline. Esta ação não pode ser desfeita.</p></div>
+    <div class="bh-modal__foot"><button class="bh-btn" type="button" data-close-modal="cancel" autofocus>Cancelar</button><button class="bh-btn bh-btn--danger" type="button" data-confirm-delete>Excluir</button></div>
+  </dialog>
+  <dialog class="bh-modal" id="dlg-form" aria-labelledby="dlg-form-t">
+    <div class="bh-modal__head"><h3 id="dlg-form-t">Nova oportunidade</h3><button class="bh-btn bh-btn--icon bh-btn--sm bh-btn--ghost" type="button" aria-label="Fechar" data-close-modal><svg class="bh-ico" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+    <div class="bh-modal__body"><div class="bh-field"><label class="bh-label" for="dlg-f-n">Nome</label><div class="bh-control"><input class="bh-input" id="dlg-f-n" autofocus placeholder="Ex.: Renovação anual"></div></div><div class="bh-field"><label class="bh-label" for="dlg-f-v">Valor (R$)</label><div class="bh-control"><input class="bh-input bh-input--mono" id="dlg-f-v" placeholder="48000,00"></div></div></div>
+    <div class="bh-modal__foot"><button class="bh-btn" type="button" data-close-modal="cancel">Cancelar</button><button class="bh-btn bh-btn--primary" type="button" data-close-modal="ok">Criar</button></div>
+  </dialog>
+  <dialog class="bh-modal bh-modal--drawer" id="dlg-drawer" aria-labelledby="dlg-dr-t">
+    <div class="bh-modal__head"><h3 id="dlg-dr-t">Alfa Logística</h3><button class="bh-btn bh-btn--icon bh-btn--sm bh-btn--ghost" type="button" aria-label="Fechar painel" data-close-modal><svg class="bh-ico" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+    <div class="bh-modal__body"><p>Negociação · responsável Marina Souza. Dados de EXEMPLO.</p><div class="bh-metric"><span class="bh-metric__label">Valor</span><span class="bh-metric__value">R$ 320.000</span></div><button class="bh-btn" type="button">Registrar atividade</button></div>
+    <div class="bh-modal__foot"><button class="bh-btn" type="button" data-close-modal>Fechar</button></div>
+  </dialog>
+  <div class="bh-toast-region" aria-live="polite"></div>
+</div></div>
+</section>
+
+<!-- ================= MENUS ================= -->
+<section class="lib-sec" id="menus" aria-labelledby="h-menus">
+<h2 id="h-menus">Menus</h2>
+<p class="lede">Setas navegam, Home e End, digitar salta ao item, Esc fecha e devolve o foco, Tab fecha.</p>
+<div class="demo"><h3>Menu de ações e menu com itens marcáveis</h3>
+<div class="demo-stage demo-stage--tall">
+  <div><div class="bh-row">
+    <div class="bh-menu-wrap"><button class="bh-btn" type="button" data-menu-trigger aria-haspopup="menu" aria-expanded="false" aria-controls="menu-a">Ações<svg class="bh-ico" aria-hidden="true"><use href="#i-chevron-down"/></svg></button>
+      <div class="bh-menu" id="menu-a" role="menu" aria-label="Ações da oportunidade" hidden>
+        <button class="bh-menu-item" role="menuitem" type="button" tabindex="-1"><svg class="bh-ico" aria-hidden="true"><use href="#i-link"/></svg>Copiar link</button>
+        <button class="bh-menu-item" role="menuitem" type="button" tabindex="-1"><svg class="bh-ico" aria-hidden="true"><use href="#i-users"/></svg>Atribuir<span class="bh-kbd">A</span></button>
+        <button class="bh-menu-item" role="menuitem" type="button" tabindex="-1" aria-disabled="true"><svg class="bh-ico" aria-hidden="true"><use href="#i-send"/></svg>Enviar proposta</button>
+        <hr class="bh-menu-sep">
+        <button class="bh-menu-item" role="menuitem" type="button" tabindex="-1" data-tone="danger"><svg class="bh-ico" aria-hidden="true"><use href="#i-trash"/></svg>Excluir</button>
+      </div></div>
+    <div class="bh-menu-wrap"><button class="bh-btn" type="button" data-menu-trigger aria-haspopup="menu" aria-expanded="false" aria-controls="menu-b"><svg class="bh-ico" aria-hidden="true"><use href="#i-sliders"/></svg>Colunas<svg class="bh-ico" aria-hidden="true"><use href="#i-chevron-down"/></svg></button>
+      <div class="bh-menu" id="menu-b" role="menu" aria-label="Colunas visíveis" hidden>
+        <button class="bh-menu-item" role="menuitemcheckbox" aria-checked="true" type="button" tabindex="-1">Responsável</button>
+        <button class="bh-menu-item" role="menuitemcheckbox" aria-checked="true" type="button" tabindex="-1">Valor</button>
+        <button class="bh-menu-item" role="menuitemcheckbox" aria-checked="false" type="button" tabindex="-1">Fechamento</button>
+      </div></div>
+  </div><p class="bh-readout" aria-live="polite">Nenhuma ação escolhida.</p></div>
+</div></div>
+</section>
+
+<!-- ================= TABS ================= -->
+<section class="lib-sec" id="tabs" aria-labelledby="h-tabs">
+<h2 id="h-tabs">Abas</h2>
+<p class="lede">Setas esquerda e direita, Home e End; um único tab stop. O sublinhado usa o acento do módulo.</p>
+<div class="demo"><h3>Abas com contador e aba desabilitada</h3>
+<div class="demo-stage" data-module="p03">
+  <div class="bh-tabs" role="tablist" aria-label="Seções da conta (exemplo)">
+    <button class="bh-tab" role="tab" id="tb-1" aria-selected="true" aria-controls="tp-1" tabindex="0" type="button">Resumo</button>
+    <button class="bh-tab" role="tab" id="tb-2" aria-selected="false" aria-controls="tp-2" tabindex="-1" type="button">Atividades<span class="bh-badge" data-tone="module">3</span></button>
+    <button class="bh-tab" role="tab" id="tb-3" aria-selected="false" aria-controls="tp-3" tabindex="-1" type="button">Documentos</button>
+    <button class="bh-tab" role="tab" id="tb-4" aria-selected="false" aria-controls="tp-4" tabindex="-1" type="button" disabled>Auditoria</button>
+  </div>
+  <div class="bh-tabpanel" role="tabpanel" id="tp-1" aria-labelledby="tb-1" tabindex="0">Resumo da conta de EXEMPLO.</div>
+  <div class="bh-tabpanel" role="tabpanel" id="tp-2" aria-labelledby="tb-2" tabindex="0" hidden>3 atividades pendentes (EXEMPLO).</div>
+  <div class="bh-tabpanel" role="tabpanel" id="tp-3" aria-labelledby="tb-3" tabindex="0" hidden>Nenhum documento anexado.</div>
+  <div class="bh-tabpanel" role="tabpanel" id="tp-4" aria-labelledby="tb-4" hidden></div>
+</div></div>
+</section>
+
+<!-- ================= SIDEBARS ================= -->
+<section class="lib-sec" id="sidebars" aria-labelledby="h-sidebars">
+<h2 id="h-sidebars">Sidebar, rail e navegação inferior</h2>
+<p class="lede">Hub Central e os 11 módulos. Trocar de módulo muda só o acento (<code>--module-accent</code>): a ação primária continua rosa. Mapeamento de acentos é PROPOSTA provisória.</p>
+<div class="demo"><h3>Workspace com sidebar colapsável (256px para 64px)</h3>
+<div class="demo-stage">
+  <div class="bh-shell" data-module-shell data-module="p01" style="min-block-size:480px">
+    <aside class="bh-sidebar" id="sb-main" data-collapsed="false">
+      <div class="bh-sidebar__head"><span class="bh-mchip" data-shell-chip>P01</span><span class="bh-sidebar__brand"><span data-brand-name>Birthub 360°</span></span></div>
+      <nav class="bh-sidebar__nav" data-shell-nav aria-label="Módulos"></nav>
+      <div class="bh-sidebar__foot"><button type="button" class="bh-btn bh-btn--icon bh-btn--sm bh-btn--ghost" data-collapse-toggle aria-expanded="true" aria-controls="sb-main" aria-label="Recolher navegação"><svg class="bh-ico" aria-hidden="true"><use href="#i-panel-left"/></svg></button></div>
+    </aside>
+    <div class="bh-shell__main">
+      <header class="bh-topbar"><div class="bh-topbar__title"><h4 data-shell-title>Hub Comercial</h4></div><span class="bh-badge" data-tone="module">acento do módulo</span><button class="bh-btn bh-btn--sm bh-btn--primary" type="button">Nova ação</button></header>
+      <div class="bh-shell__content"><div class="bh-tabs" role="tablist" aria-label="Exemplo"><button class="bh-tab" role="tab" aria-selected="true" tabindex="0" type="button">Visão geral</button><button class="bh-tab" role="tab" aria-selected="false" tabindex="-1" type="button">Fila</button></div>
+        <div class="bh-progress" role="progressbar" aria-label="Progresso de exemplo" aria-valuenow="62" aria-valuemin="0" aria-valuemax="100" style="--_v:62%"><span></span></div>
+        <p class="muted">Conteúdo do workspace (EXEMPLO). <span class="bh-sr" role="status" data-shell-live></span></p></div>
+    </div>
+  </div>
+  <div class="sr-live" role="status" aria-live="polite" data-shell-live-out></div>
+</div></div>
+<div class="demo"><h3>Rail de 64px e barra inferior (mobile)</h3>
+<div class="demo-stage"><div class="bh-row" style="align-items:flex-start;gap:var(--space-6)" data-module="m10">
+  <nav class="bh-sidebar" data-collapsed="true" aria-label="Rail de exemplo" style="border:1px solid var(--line);border-radius:var(--radius-card)">
+    <div class="bh-sidebar__nav"><a class="bh-nav" href="#sidebars" aria-label="Hub Central" data-tip="Hub Central" data-tip-side="end"><svg class="bh-ico" aria-hidden="true"><use href="#i-orbit"/></svg></a><a class="bh-nav" href="#sidebars" aria-label="M10 Field Sales" aria-current="page" data-tip="M10 Field Sales" data-tip-side="end"><svg class="bh-ico" aria-hidden="true"><use href="#i-map-pin"/></svg></a><a class="bh-nav" href="#sidebars" aria-label="P08 Voice e WhatsApp" data-tip="P08 Voice &amp; WhatsApp" data-tip-side="end"><svg class="bh-ico" aria-hidden="true"><use href="#i-phone"/></svg></a></div>
+  </nav>
+  <div class="phone-frame" style="flex:1;min-inline-size:240px"><div class="body"><strong style="color:var(--ink)">Field Sales (mobile)</strong>Barra inferior com 4 destinos, rótulos visíveis e alvos de 44px.</div>
+    <nav class="bh-bottomnav" aria-label="Navegação inferior de exemplo"><a class="bh-nav" href="#sidebars"><svg class="bh-ico" aria-hidden="true"><use href="#i-orbit"/></svg><span class="bh-nav__label">Hub</span></a><a class="bh-nav" href="#sidebars" aria-current="page"><svg class="bh-ico" aria-hidden="true"><use href="#i-map-pin"/></svg><span class="bh-nav__label">Campo</span></a><a class="bh-nav" href="#sidebars"><svg class="bh-ico" aria-hidden="true"><use href="#i-message"/></svg><span class="bh-nav__label">Conversas</span></a><a class="bh-nav" href="#sidebars"><svg class="bh-ico" aria-hidden="true"><use href="#i-bell"/></svg><span class="bh-nav__label">Avisos</span></a></nav></div>
+</div></div></div>
+</section>
+
+<!-- ================= TABELAS ================= -->
+<section class="lib-sec" id="tabelas" aria-labelledby="h-tabelas">
+<h2 id="h-tabelas">Tabelas</h2>
+<p class="lede">Ordenação por cabeçalho (<code>aria-sort</code>), seleção em massa, filtro, densidade e estados de loading, vazio e erro.</p>
+<div class="demo"><h3>Oportunidades (EXEMPLO — dados fictícios)</h3>
+<div class="demo-stage" data-table data-state="ok" data-sort-key="valor" data-sort-dir="desc" data-density="default" data-sel="[]">
+  <div class="bh-toolbar">
+    <div class="bh-field"><label class="bh-label sr-only" for="tb-f">Filtrar oportunidades</label><div class="bh-control"><svg class="bh-ico" aria-hidden="true"><use href="#i-search"/></svg><input class="bh-input" id="tb-f" data-table-filter type="search" placeholder="Filtrar por conta, responsável ou etapa"></div></div>
+    <div class="bh-btn-group" role="group" aria-label="Densidade"><button class="bh-btn" type="button" data-density-set="compact" aria-pressed="false">Compacta</button><button class="bh-btn" type="button" data-density-set="default" aria-pressed="true">Padrão</button><button class="bh-btn" type="button" data-density-set="comfort" aria-pressed="false">Confortável</button></div>
+    <div class="bh-btn-group" role="group" aria-label="Estado da tabela (demonstração)"><button class="bh-btn" type="button" data-table-state="ok" aria-pressed="true">Normal</button><button class="bh-btn" type="button" data-table-state="loading" aria-pressed="false">Carregando</button><button class="bh-btn" type="button" data-table-state="empty" aria-pressed="false">Vazio</button><button class="bh-btn" type="button" data-table-state="error" aria-pressed="false">Erro</button></div>
+  </div>
+  <div class="bh-table-wrap" role="region" aria-label="Tabela de oportunidades, rolável" tabindex="0">
+    <table class="bh-table" data-density="default"><caption class="sr-only">Oportunidades de exemplo</caption>
+      <thead><tr>
+        <th scope="col" class="is-check"><label class="bh-check"><input type="checkbox" data-select-all aria-label="Selecionar todas"></label></th>
+        <th scope="col" data-col="conta"><button type="button" class="bh-th-btn" data-sort="conta">Conta<svg class="bh-ico" aria-hidden="true"><use href="#i-arrows-updown"/></svg></button></th>
+        <th scope="col" data-col="resp"><button type="button" class="bh-th-btn" data-sort="resp">Responsável<svg class="bh-ico" aria-hidden="true"><use href="#i-arrows-updown"/></svg></button></th>
+        <th scope="col" data-col="etapa"><button type="button" class="bh-th-btn" data-sort="etapa">Etapa<svg class="bh-ico" aria-hidden="true"><use href="#i-arrows-updown"/></svg></button></th>
+        <th scope="col" class="is-num" data-col="valor"><button type="button" class="bh-th-btn" data-sort="valor">Valor<svg class="bh-ico" aria-hidden="true"><use href="#i-arrows-updown"/></svg></button></th>
+        <th scope="col" class="is-num" data-col="data"><button type="button" class="bh-th-btn" data-sort="data">Fechamento<svg class="bh-ico" aria-hidden="true"><use href="#i-arrows-updown"/></svg></button></th>
+        <th scope="col">Status</th></tr></thead>
+      <tbody></tbody></table>
+  </div>
+  <div class="bh-table-foot"><span class="num" data-table-count></span><span class="bh-sample">EXEMPLO — dados fictícios</span></div>
+  <div class="sr-live" role="status" aria-live="polite" data-table-live></div>
+</div></div>
+</section>
+
+<!-- ================= DASHBOARDS ================= -->
+<section class="lib-sec" id="dashboards" aria-labelledby="h-dashboards">
+<h2 id="h-dashboards">Dashboards</h2>
+<p class="lede">Os cinco estados obrigatórios: normal, loading, empty, error e stale. Nenhuma métrica é fabricada para preencher a interface.</p>
+<div class="demo"><h3>Previsão de receita (EXEMPLO — dados fictícios)</h3>
+<div class="demo-stage" style="padding:var(--space-4)">
+  <section class="bh-panel" data-dash data-state="ok" aria-label="Previsão de receita, exemplo">
+    <div class="bh-panel__head"><h4>Previsão de receita</h4><span class="bh-sample">EXEMPLO — dados fictícios</span>
+      <div class="bh-btn-group" role="group" aria-label="Estado do painel (demonstração)"><button class="bh-btn" type="button" data-dash-state="ok" aria-pressed="true">Normal</button><button class="bh-btn" type="button" data-dash-state="loading" aria-pressed="false">Loading</button><button class="bh-btn" type="button" data-dash-state="empty" aria-pressed="false">Vazio</button><button class="bh-btn" type="button" data-dash-state="error" aria-pressed="false">Erro</button><button class="bh-btn" type="button" data-dash-state="stale" aria-pressed="false">Stale</button></div></div>
+    <div class="bh-stack" data-dash-body></div>
+    <div class="sr-live" role="status" aria-live="polite" data-dash-live></div>
+  </section>
+</div></div>
+</section>
+
+<!-- ================= GRÁFICOS ================= -->
+<section class="lib-sec" id="graficos" aria-labelledby="h-graficos">
+<h2 id="h-graficos">Gráficos</h2>
+<p class="lede">SVG com cor, traço, marcador e rótulo direto. Foco no gráfico e setas esquerda e direita leem cada mês; alternativa em tabela.</p>
+<div class="demo"><h3>Linhas: previsto versus realizado (EXEMPLO — dados fictícios)</h3>
+<div class="demo-stage">
+  <div class="bh-chart-frame" tabindex="0" role="group" aria-label="Gráfico de linhas. Use as setas esquerda e direita para ler cada mês." data-chart="line"></div>
+  <ul class="bh-legend"><li><svg viewBox="0 0 24 10" aria-hidden="true" style="color:var(--c-blue)"><path d="M0 5h24" stroke="currentColor" stroke-width="2.25"/></svg>Previsto</li><li><svg viewBox="0 0 24 10" aria-hidden="true" style="color:var(--c-pink)"><path d="M0 5h24" stroke="currentColor" stroke-width="2.25" stroke-dasharray="6 4"/></svg>Realizado</li></ul>
+  <p class="bh-readout" data-chart-readout aria-live="polite"></p>
+  <div class="bh-row"><button class="bh-btn bh-btn--sm" type="button" data-chart-table-toggle aria-expanded="false" aria-controls="gr-tab">Ver como tabela</button><span class="bh-sample">EXEMPLO — dados fictícios</span></div>
+  <div id="gr-tab" hidden><div class="bh-table-wrap"><table class="bh-table" data-density="compact"><caption class="sr-only">Previsto e realizado por mês</caption><thead><tr><th scope="col">Mês</th><th scope="col" class="is-num">Previsto</th><th scope="col" class="is-num">Realizado</th></tr></thead><tbody>
+    <tr><th scope="row">Jul</th><td class="is-num">R$ 210.000</td><td class="is-num">R$ 190.000</td></tr><tr><th scope="row">Ago</th><td class="is-num">R$ 240.000</td><td class="is-num">R$ 228.000</td></tr><tr><th scope="row">Set</th><td class="is-num">R$ 262.000</td><td class="is-num">R$ 241.000</td></tr><tr><th scope="row">Out</th><td class="is-num">R$ 301.000</td><td class="is-num">R$ 296.000</td></tr><tr><th scope="row">Nov</th><td class="is-num">R$ 338.000</td><td class="is-num">R$ 311.000</td></tr><tr><th scope="row">Dez</th><td class="is-num">R$ 372.000</td><td class="is-num">R$ 329.000</td></tr></tbody></table></div></div>
+</div></div>
+<div class="demo"><h3>Barras: funil por etapa (EXEMPLO — dados fictícios)</h3>
+<div class="demo-stage"><div class="bh-chart-frame" data-chart="bars"></div><span class="bh-sample">EXEMPLO — dados fictícios</span></div></div>
+</section>
+
+<!-- ================= VAZIOS ================= -->
+<section class="lib-sec" id="vazios" aria-labelledby="h-vazios">
+<h2 id="h-vazios">Estados vazios</h2>
+<p class="lede">Explicam por que está vazio e o que fazer.</p>
+<div class="demo"><h3>Primeiro uso, filtro sem resultado e sem permissão</h3>
+<div class="demo-stage">
+  <div class="bh-empty"><svg class="bh-ico" aria-hidden="true"><use href="#i-inbox"/></svg><h4>Nenhuma oportunidade ainda</h4><p>Crie a primeira oportunidade para começar a acompanhar o pipeline.</p><div class="bh-empty__actions"><button class="bh-btn bh-btn--primary bh-btn--sm" type="button" data-say="Criar oportunidade (EXEMPLO)">Criar oportunidade</button><button class="bh-btn bh-btn--sm bh-btn--ghost" type="button">Importar planilha</button></div></div>
+  <div class="bh-empty"><svg class="bh-ico" aria-hidden="true"><use href="#i-filter"/></svg><h4>Nenhum resultado para este filtro</h4><p>Revise os filtros ou limpe-os para ver todas as oportunidades.</p><div class="bh-empty__actions"><button class="bh-btn bh-btn--sm" type="button">Limpar filtros</button></div></div>
+  <div class="bh-empty"><svg class="bh-ico" aria-hidden="true"><use href="#i-shield"/></svg><h4>Você não tem acesso a este módulo</h4><p>Peça a um administrador da sua organização para liberar o módulo.</p></div>
+  <div class="bh-toast-region" aria-live="polite"></div>
+</div></div>
+</section>
+
+<!-- ================= LOADING ================= -->
+<section class="lib-sec" id="loading" aria-labelledby="h-loading">
+<h2 id="h-loading">Loading</h2>
+<p class="lede">Skeleton com a forma do conteúdo, spinner para ações pontuais e barra de progresso determinada.</p>
+<div class="demo"><h3>Skeleton, spinner e progresso</h3>
+<div class="demo-stage">
+  <div class="bh-row"><button class="bh-btn" type="button" data-skel-demo>Recarregar conteúdo</button><span class="bh-row muted"><svg class="bh-spinner" aria-hidden="true"><use href="#i-loader"/></svg>Spinner de ação</span></div>
+  <div data-skel-area aria-busy="false" class="bh-card" style="min-block-size:120px"><div class="skel-content"><h4 class="bh-card__title">Alfa Logística</h4><p class="bh-card__meta">Negociação · R$ 320.000 (EXEMPLO)</p></div><div class="skel-ph bh-stack" aria-hidden="true" style="gap:var(--space-2)"><span class="bh-skel bh-skel--title"></span><span class="bh-skel bh-skel--text" style="inline-size:80%"></span><span class="bh-skel bh-skel--text" style="inline-size:55%"></span></div></div>
+  <div class="bh-row"><button class="bh-btn" type="button" data-progress-demo>Simular importação</button></div>
+  <div class="bh-progress" role="progressbar" aria-label="Importação de exemplo" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" data-progress style="--_v:0%"><span></span></div>
+</div></div>
+</section>
+
+<!-- ================= FEEDBACK ================= -->
+<section class="lib-sec" id="feedback" aria-labelledby="h-feedback">
+<h2 id="h-feedback">Feedback e badges</h2>
+<p class="lede">Mensagens inline ligadas ao contexto. O ícone muda por tom, então a cor nunca é o único sinal.</p>
+<div class="demo"><h3>Alertas e badges</h3>
+<div class="demo-stage">
+  <div class="bh-alert" data-tone="info" role="status"><svg class="bh-ico" aria-hidden="true"><use href="#i-info"/></svg><div class="bh-alert__body"><span class="bh-alert__title">Importação em andamento</span><span class="bh-alert__text">Você pode continuar trabalhando.</span></div></div>
+  <div class="bh-alert" data-tone="success" role="status"><svg class="bh-ico" aria-hidden="true"><use href="#i-check-circle"/></svg><div class="bh-alert__body"><span class="bh-alert__title">Sincronizado</span><span class="bh-alert__text">CRM atualizado há 2 minutos.</span></div></div>
+  <div class="bh-alert" data-tone="warn" role="status"><svg class="bh-ico" aria-hidden="true"><use href="#i-alert-triangle"/></svg><div class="bh-alert__body"><span class="bh-alert__title">Limite de IA próximo</span><span class="bh-alert__text">92% do orçamento mensal consumido.</span></div><button class="bh-btn bh-btn--sm" type="button" data-dismiss-alert>Entendi</button></div>
+  <div class="bh-alert" data-tone="danger" role="alert"><svg class="bh-ico" aria-hidden="true"><use href="#i-alert-circle"/></svg><div class="bh-alert__body"><span class="bh-alert__title">Falha na integração</span><span class="bh-alert__text">O CRM não respondeu. Tente novamente.</span></div></div>
+  <div class="bh-alert" data-tone="ai" role="status"><svg class="bh-ico" aria-hidden="true"><use href="#i-sparkles"/></svg><div class="bh-alert__body"><span class="bh-alert__title">Sugestão do copiloto</span><span class="bh-alert__text">Priorize 3 contas com reunião esta semana.</span></div></div>
+  <div class="bh-alert" data-tone="value" role="status"><svg class="bh-ico" aria-hidden="true"><use href="#i-target"/></svg><div class="bh-alert__body"><span class="bh-alert__title">Meta do trimestre batida</span><span class="bh-alert__text">R$ 1.450.000 de R$ 1.400.000 (EXEMPLO).</span></div></div>
+  <div class="bh-row"><span class="bh-badge">Neutro</span><span class="bh-badge" data-tone="info"><svg class="bh-ico" aria-hidden="true"><use href="#i-info"/></svg>Info</span><span class="bh-badge" data-tone="action">Ação</span><span class="bh-badge" data-tone="value">R$ 48.000</span><span class="bh-badge" data-tone="ai"><svg class="bh-ico" aria-hidden="true"><use href="#i-sparkles"/></svg>IA</span><span class="bh-badge" data-tone="success"><svg class="bh-ico" aria-hidden="true"><use href="#i-check"/></svg>Ganho</span><span class="bh-badge" data-tone="warn"><svg class="bh-ico" aria-hidden="true"><use href="#i-clock"/></svg>Atenção</span><span class="bh-badge" data-tone="danger"><svg class="bh-ico" aria-hidden="true"><use href="#i-x"/></svg>Perdido</span></div>
+</div></div>
+</section>
+
+<!-- ================= NOTIFICAÇÕES ================= -->
+<section class="lib-sec" id="notificacoes" aria-labelledby="h-notificacoes">
+<h2 id="h-notificacoes">Notificações</h2>
+<p class="lede">Toasts: até 3, somem em 6 s, pausam em hover e foco, sempre fecháveis. Região <code>aria-live</code>; erro usa <code>role="alert"</code>.</p>
+<div class="demo"><h3>Disparar toasts</h3>
+<div class="demo-stage" style="min-block-size:340px">
+  <div class="bh-row"><button class="bh-btn" type="button" data-toast="success">Sucesso (com desfazer)</button><button class="bh-btn" type="button" data-toast="info">Info</button><button class="bh-btn" type="button" data-toast="warn">Atenção</button><button class="bh-btn" type="button" data-toast="danger">Erro</button><button class="bh-btn" type="button" data-toast="ai">IA</button></div>
+  <div class="bh-toast-region" aria-live="polite"></div>
+</div></div>
+</section>
+
+<!-- ================= ACESSIBILIDADE ================= -->
+<section class="lib-sec" id="acessibilidade" aria-labelledby="h-acessibilidade">
+<h2 id="h-acessibilidade">Acessibilidade</h2>
+<p class="lede">Medidor de contraste calculado agora, a partir dos estilos computados do tema de cada painel. Meta: texto 4,5:1; não-texto 3:1.</p>
+<div class="demo"><h3>Contraste ao vivo</h3>
+<div class="demo-stage" data-contrast>
+  <div class="bh-table-wrap"><table class="bh-table" data-density="compact"><caption class="sr-only">Contraste calculado dos pares de tokens no tema ativo</caption><thead><tr><th scope="col">Par</th><th scope="col">Tokens</th><th scope="col" class="is-num">Razão</th><th scope="col" class="is-num">Meta</th><th scope="col">Resultado</th></tr></thead><tbody></tbody></table></div>
+  <p class="bh-help">Restrição conhecida: <code>--c-pink</code> em Dark mede 4,40:1 sobre <code>--surface-3</code>; não usar texto rosa nessa superfície.</p>
+</div></div>
+<div class="demo"><h3>Checklist de componentes</h3>
+<div class="demo-stage"><ul style="margin:0;padding-inline-start:var(--space-5);display:grid;gap:var(--space-1)"><li>Foco visível: anel de 2px azul em todo controle (Tab para conferir).</li><li>Teclado: modal (foco preso, Esc), menu (setas, Home, End, typeahead), abas, gráfico, tabela ordenável.</li><li>Cor nunca é o único sinal: badges e alertas têm ícone e texto.</li><li>Alvos de 44px em ponteiro grosseiro; campos a 16px.</li><li><code>prefers-reduced-motion</code> e a chave "Reduzir movimento" zeram animações.</li></ul></div></div>
+</section>
+
+<!-- ================= TEMAS ================= -->
+<section class="lib-sec" id="temas" aria-labelledby="h-temas">
+<h2 id="h-temas">Temas Dark e Light</h2>
+<p class="lede">Mesmos componentes, dois temas compostos separadamente. Os dois painéis abaixo ficam sempre fixos, independentemente da chave do cabeçalho.</p>
+<div class="theme-pair">
+  <div class="fixed-pane" data-theme="dark"><h3>Dark</h3><div class="bh-row"><button class="bh-btn bh-btn--primary bh-btn--sm" type="button">Primário</button><button class="bh-btn bh-btn--sm" type="button">Secundário</button><span class="bh-badge" data-tone="ai">IA</span><span class="bh-badge" data-tone="value">R$ 48.000</span></div><div class="bh-alert" data-tone="info" role="note"><svg class="bh-ico" aria-hidden="true"><use href="#i-info"/></svg><div class="bh-alert__body"><span class="bh-alert__title">Informação</span><span class="bh-alert__text">Texto azul vem de <code>--c-blue</code>.</span></div></div></div>
+  <div class="fixed-pane" data-theme="light"><h3>Light</h3><div class="bh-row"><button class="bh-btn bh-btn--primary bh-btn--sm" type="button">Primário</button><button class="bh-btn bh-btn--sm" type="button">Secundário</button><span class="bh-badge" data-tone="ai">IA</span><span class="bh-badge" data-tone="value">R$ 48.000</span></div><div class="bh-alert" data-tone="info" role="note"><svg class="bh-ico" aria-hidden="true"><use href="#i-info"/></svg><div class="bh-alert__body"><span class="bh-alert__title">Informação</span><span class="bh-alert__text">Texto azul vem de <code>--c-blue</code>.</span></div></div></div>
+</div>
+</section>
+
+</main>
+</div>
+<script src="../03-design-system/brand-name.js"></script>
+<script src="lib.js"></script>
+</body>
+</html>

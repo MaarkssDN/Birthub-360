@@ -51,10 +51,13 @@ export async function purgeExpiredCallLogs(
 ) {
   const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
   const result = await callLogRepository.deleteCallLogsOlderThan(cutoff);
-  logger.info('[CallLogService] Retention purge complete', {
-    retentionDays,
-    cutoff: cutoff.toISOString(),
-    deletedCount: result.count,
-  });
+  logger.info(
+    {
+      retentionDays,
+      cutoff: cutoff.toISOString(),
+      deletedCount: result.count,
+    },
+    '[CallLogService] Retention purge complete',
+  );
   return { deletedCount: result.count, cutoff };
 }

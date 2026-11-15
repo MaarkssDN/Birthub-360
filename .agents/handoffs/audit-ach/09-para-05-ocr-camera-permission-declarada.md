@@ -1,7 +1,7 @@
 - De: 09 (auditoria ACH-09-03)
 - Para: 05
 - Onda: audit-ach
-- Status: resolvido
+- Status: adiado
 - Prioridade: normal
 
 ## Problema
@@ -76,3 +76,7 @@ Item de auditoria ACH-09-03 (P2, esforço P) do relatório `report-atualizado.ht
 numa worktree isolada (`fix/ach-09-03`), sem alteração em `OcrCapturePanel.tsx` (propriedade do
 Agente 05) — a mudança ficou restrita a `AndroidManifest.xml`, que é propriedade exclusiva do
 Agente 09 por `android/AGENTS.md`.
+
+## Resolução
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto ADIADO — manifest correto mas validação em device/emulador nunca executada. Ver RESULTADOS-RECONCILIACAO-20261114.md.

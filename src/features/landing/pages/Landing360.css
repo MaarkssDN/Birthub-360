@@ -1211,6 +1211,41 @@ html.dark .landing-neon-root .landing-section-footer .text-\[\#b45309\] {
   color: #fbbf24 !important;
 }
 
+/* Os 4 cards de feature do copiloto (`.b360-dark-card`) mantêm fundo escuro
+   opaco nos dois temas — as regras de light mode acima escurecem os textos
+   neon assumindo fundo claro e derrubariam o contraste WCAG dentro deles.
+   Mesmo precedente de `.landing-section-footer`: restaurar as cores neon e o
+   texto claro dentro do card escuro. */
+html:not(.dark) .landing-neon-root .b360-dark-card,
+html.light .landing-neon-root .b360-dark-card,
+[data-theme="light"] .landing-neon-root .b360-dark-card {
+  color: #cbd5e1;
+}
+
+html:not(.dark) .landing-neon-root .b360-dark-card p,
+html.light .landing-neon-root .b360-dark-card p,
+[data-theme="light"] .landing-neon-root .b360-dark-card p {
+  color: #cbd5e1 !important;
+}
+
+html:not(.dark) .landing-neon-root .b360-dark-card .text-\[\#00D4FF\],
+html.light .landing-neon-root .b360-dark-card .text-\[\#00D4FF\],
+html:not(.dark) .landing-neon-root .b360-dark-card .text-\[\#00d4ff\],
+html.light .landing-neon-root .b360-dark-card .text-\[\#00d4ff\],
+[data-theme="light"] .landing-neon-root .b360-dark-card .text-\[\#00D4FF\],
+[data-theme="light"] .landing-neon-root .b360-dark-card .text-\[\#00d4ff\] {
+  color: #00d4ff !important;
+}
+
+html:not(.dark) .landing-neon-root .b360-dark-card .text-\[\#FF2D9B\],
+html.light .landing-neon-root .b360-dark-card .text-\[\#FF2D9B\],
+html:not(.dark) .landing-neon-root .b360-dark-card .text-\[\#ff2d9b\],
+html.light .landing-neon-root .b360-dark-card .text-\[\#ff2d9b\],
+[data-theme="light"] .landing-neon-root .b360-dark-card .text-\[\#FF2D9B\],
+[data-theme="light"] .landing-neon-root .b360-dark-card .text-\[\#ff2d9b\] {
+  color: #ff2d9b !important;
+}
+
 /* ==========================================================================
    IMPECCABLE PREMIUM LOGIN AMBIENT & COCKPIT ENHANCEMENTS
    ========================================================================== */

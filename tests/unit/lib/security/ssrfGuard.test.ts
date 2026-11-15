@@ -39,6 +39,9 @@ describe('ssrfGuard — isPrivateOrInternalHost (checagem literal, sem DNS)', ()
     'fd12:3456::1',
     '::ffff:127.0.0.1', // IPv4-mapeado
     '::ffff:10.0.0.1',
+    '::ffff:7f00:1', // IPv4-mapeado em hex — forma que new URL() produz (127.0.0.1)
+    '::ffff:a00:1', // idem, 10.0.0.1
+    '::ffff:c0a8:1', // idem, 192.168.0.1
     'printer.local',
     'service.internal',
     'host.lan',
@@ -60,6 +63,7 @@ describe('ssrfGuard — isPrivateOrInternalHost (checagem literal, sem DNS)', ()
     '169.253.0.1',
     '2001:4860:4860::8888', // IPv6 público
     '2606:4700:4700::1111',
+    '::ffff:808:808', // IPv4-mapeado público (8.8.8.8)
   ])('aceita host público: %s', (host) => {
     expect(isPrivateOrInternalHost(host)).toBe(false);
   });
@@ -86,6 +90,9 @@ describe('ssrfGuard — assertSafeOutboundUrl', () => {
     'http://0.0.0.0/',
     'http://[::1]/',
     'https://[fd00::1]/',
+    'https://[::ffff:7f00:1]/', // IPv4-mapeado hex -> 127.0.0.1 (bypass A-1 do review 24)
+    'https://[::ffff:a00:1]/', // -> 10.0.0.1
+    'https://[::ffff:c0a8:1]/', // -> 192.168.0.1
     'http://2130706433/', // IPv4 decimal -> 127.0.0.1 (WHATWG URL normaliza)
     'http://0x7f.1/', // IPv4 hex -> 127.0.0.1
     'http://0177.0.0.1/', // IPv4 octal -> 127.0.0.1

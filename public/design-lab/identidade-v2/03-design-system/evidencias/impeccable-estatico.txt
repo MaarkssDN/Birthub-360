@@ -1,0 +1,26 @@
+
+7 files scanned with regex matching only (.css, .js).
+Rules that need a parsed page (tiny-text, low-contrast and other element rules) did not run on them; findings are an undercount, not a clean bill of health.
+For the full check, scan the running dev server (npx impeccable detect http://localhost:PORT) or a static site's built .html.
+
+/home/user/Birthub-360/public/design-lab/identidade-v2/03-design-system/index.html
+  [flat-type-hierarchy] Role sizes: body 16px, h1 16px, h3 16px, h4 16px (largest adjacent step 1.00:1; target 1.25:1)
+    → Dominant heading and body roles are separated by less than 1.25× at every step, leaving the size hierarchy flat. Add at least one stronger size step.
+
+/home/user/Birthub-360/public/design-lab/identidade-v2/05-biblioteca/index.html
+  [flat-type-hierarchy] Role sizes: body 16px, h1 16px, h2 16px, h3 16px, h4 16px (largest adjacent step 1.00:1; target 1.25:1)
+    → Dominant heading and body roles are separated by less than 1.25× at every step, leaving the size hierarchy flat. Add at least one stronger size step.
+
+2 anti-patterns found.
+
+── Advisory (not counted as failures) ──
+
+/home/user/Birthub-360/public/design-lab/identidade-v2/03-design-system/index.html
+  [em-dash-overuse] 221 em-dashes in body text
+    → Em-dash saturation in body copy is an AI cadence tell. Advisory only: humans use em-dashes legitimately, so this fires only on saturation — at least 8 em-dashes (— or --) at a density near one per 500 characters of body text — never on a long article that uses a few. Prefer commas, colons, periods, or parentheses.
+
+/home/user/Birthub-360/public/design-lab/identidade-v2/05-biblioteca/index.html
+  [em-dash-overuse] 18 em-dashes in body text
+    → Em-dash saturation in body copy is an AI cadence tell. Advisory only: humans use em-dashes legitimately, so this fires only on saturation — at least 8 em-dashes (— or --) at a density near one per 500 characters of body text — never on a long article that uses a few. Prefer commas, colons, periods, or parentheses.
+
+2 advisory notes. Suppress with --no-advisory.

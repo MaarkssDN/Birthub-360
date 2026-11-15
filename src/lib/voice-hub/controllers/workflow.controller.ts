@@ -26,8 +26,8 @@ export async function saveWorkflowHandler(req: Request, res: Response) {
   if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0].message });
 
   const data = { ...parsed.data, commitMessage: req.body.commitMessage };
-  const workflow = await saveWorkflow(req.organizationId!, req.voiceHubUser?.id, data);
-  writeAuditLog(req.organizationId, req.voiceHubUser?.id, 'WORKFLOW_SAVE', {
+  const workflow = await saveWorkflow(req.organizationId!, req.voiceHubUser!.id, data);
+  writeAuditLog(req.organizationId, req.voiceHubUser!.id, 'WORKFLOW_SAVE', {
     workflowId: workflow.id,
     name: workflow.name,
     version: workflow.version,
@@ -40,8 +40,8 @@ export async function updateWorkflowHandler(req: Request, res: Response) {
   if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0].message });
 
   try {
-    const workflow = await updateWorkflow(req.organizationId!, req.voiceHubUser?.id, parsed.data);
-    writeAuditLog(req.organizationId, req.voiceHubUser?.id, 'WORKFLOW_UPDATE', {
+    const workflow = await updateWorkflow(req.organizationId!, req.voiceHubUser!.id, parsed.data);
+    writeAuditLog(req.organizationId, req.voiceHubUser!.id, 'WORKFLOW_UPDATE', {
       workflowId: workflow.id,
       name: workflow.name,
     });
@@ -55,7 +55,7 @@ export async function updateWorkflowHandler(req: Request, res: Response) {
 export async function deleteWorkflowHandler(req: Request, res: Response) {
   try {
     const deleted = await removeWorkflow(req.organizationId!);
-    writeAuditLog(req.organizationId, req.voiceHubUser?.id, 'WORKFLOW_DELETE', {
+    writeAuditLog(req.organizationId, req.voiceHubUser!.id, 'WORKFLOW_DELETE', {
       workflowId: deleted.id,
     });
     return res.json({ success: true, message: 'Fluxo removido com sucesso.' });
@@ -77,10 +77,10 @@ export async function restoreWorkflowVersionHandler(req: Request, res: Response)
   try {
     const workflow = await restoreWorkflowVersion(
       req.organizationId!,
-      req.voiceHubUser?.id,
+      req.voiceHubUser!.id,
       Number(version),
     );
-    writeAuditLog(req.organizationId, req.voiceHubUser?.id, 'WORKFLOW_RESTORE', {
+    writeAuditLog(req.organizationId, req.voiceHubUser!.id, 'WORKFLOW_RESTORE', {
       workflowId: workflow.id,
       restoredVersion: version,
     });
@@ -93,8 +93,8 @@ export async function restoreWorkflowVersionHandler(req: Request, res: Response)
 
 export async function publishWorkflowHandler(req: Request, res: Response) {
   try {
-    const workflow = await publishWorkflow(req.organizationId!, req.voiceHubUser?.id);
-    writeAuditLog(req.organizationId, req.voiceHubUser?.id, 'WORKFLOW_PUBLISH', {
+    const workflow = await publishWorkflow(req.organizationId!, req.voiceHubUser!.id);
+    writeAuditLog(req.organizationId, req.voiceHubUser!.id, 'WORKFLOW_PUBLISH', {
       workflowId: workflow.id,
       version: workflow.version,
     });
@@ -138,11 +138,11 @@ export async function rollbackWorkflowVersionHandler(req: Request, res: Response
   try {
     const workflow = await rollbackToVersion(
       req.organizationId!,
-      req.voiceHubUser?.id,
+      req.voiceHubUser!.id,
       String(req.params.id),
       versionParam,
     );
-    writeAuditLog(req.organizationId, req.voiceHubUser?.id, 'WORKFLOW_ROLLBACK', {
+    writeAuditLog(req.organizationId, req.voiceHubUser!.id, 'WORKFLOW_ROLLBACK', {
       workflowId: workflow.id,
       rolledBackToVersion: versionParam,
       newVersion: workflow.version,
@@ -161,10 +161,10 @@ export async function duplicateWorkflowHandler(req: Request, res: Response) {
   try {
     const workflow = await duplicateWorkflow(
       req.organizationId!,
-      req.voiceHubUser?.id,
+      req.voiceHubUser!.id,
       req.body.sourceId,
     ); // mock param
-    writeAuditLog(req.organizationId, req.voiceHubUser?.id, 'WORKFLOW_DUPLICATE', {
+    writeAuditLog(req.organizationId, req.voiceHubUser!.id, 'WORKFLOW_DUPLICATE', {
       originalId: req.body.sourceId,
       newId: workflow.id,
     });

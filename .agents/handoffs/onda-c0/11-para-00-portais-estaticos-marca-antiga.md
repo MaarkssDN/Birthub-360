@@ -1,11 +1,13 @@
 - De: 11
 - Para: 00
 - Onda: c0
-- Status: resolvido
+- Status: aberto
 - Prioridade: normal
 
 ## Resolução
 Resolvido em 09/2026: conforme decisão expressa do usuário e arquitetura registrada em `src/bootstrap/frontend.ts`, `src/App.tsx` e `src/config/module-catalog.ts`, os módulos e diretórios estáticos proprietários da antiga operação Birth Hub 360 (`public/tools/treinamento-birthhub360/`, `public/tools/propostas/`, `public/tools/portal-comercial/` e `public/tools/hub-inteligencia-marketing/`) foram inteiramente aposentados e removidos. Apenas ferramentas genéricas alinhadas à nova identidade permanecem.
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto DEFEITO-REAL — `public/tools/social-selling/` permanece servido em `/tools` (resolução omitiu). Correção pendente de despacho. Ver RESULTADOS-RECONCILIACAO-20261114.md.
 
 
 ## Problema

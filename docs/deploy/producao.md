@@ -198,7 +198,7 @@ O Render **não** roda lint/typecheck/testes — só `buildCommand`. Quem gate i
 - Isso é **independente** do gate de aprovação manual já existente em
   `.github/workflows/production.yaml` (ambiente `production` do GitHub Actions) — aquele
   pipeline publica uma imagem Docker em `ghcr.io` para o caminho alternativo de deploy via
-  Kubernetes/Helm/ArgoCD (`charts/`, `argocd/`, `k8s/`), não é usado pelo Render. Os dois
+  Kubernetes/Helm/ArgoCD (`charts/`, `infrastructure/archive/argocd/`, `infrastructure/archive/k8s/`), não é usado pelo Render. Os dois
   pipelines coexistem sem conflito.
 
 ### 2.4 Redis (opcional)
@@ -279,6 +279,37 @@ GitHub Actions Secret, nunca hardcoded em `render.yaml`/workflow YAML.
 - [ ] IA: uma chamada a `/api/intelligence/*` completa sem erro de timeout/chave ausente
 - [ ] Certificado TLS válido (cadeado no navegador) em `app.birthhub360.com.br`
 - [ ] `ci.yml` verde no commit implantado (branch protection, seção 2.3)
+
+### 7.1 Scan de segurança pré-release — ZAP (DAST)
+
+O ZAP (`npm run security:zap`, serviço `zap` em `docker-compose.opensource.yml`, perfil
+`tools`) é um scan dinâmico de API: ele **precisa de uma instância da aplicação no ar** — não
+roda contra código estático nem entra em gate de PR (não há alvo efêmero vivo nos jobs de
+push/PR). Por isso ele é passo obrigatório **antes de qualquer deploy em staging ou produção**,
+executado manualmente contra a instância que será implantada.
+
+1. Suba a aplicação que será escaneada em `http://localhost:3000` (`npm run dev` para a stack
+   local, ou a instância de staging já publicada). O scan lê o spec em
+   `http://host.docker.internal:3000/api-docs/openapi.yaml` — ou seja, o Swagger precisa estar
+   exposto: em `NODE_ENV=development` ele monta automaticamente; em produção/staging, defina
+   `EXPOSE_API_DOCS=true` temporariamente na instância alvo (ver `docs/security/SECURITY_GUIDE.md`,
+   superfície `/api-docs`).
+2. Rode `npm run security:zap` (equivale a
+   `docker compose -f docker-compose.yml -f docker-compose.postgres-local.yml -f docker-compose.opensource.yml --profile tools run --rm zap`).
+   O relatório HTML é gravado em `reports/zap-report.html` (volume `./reports`).
+3. **Triagem de achados:** abrir `reports/zap-report.html` e classificar cada alerta por severidade
+   e por endpoint afetado. Falsos positivos e achados já aceitos devem ser registrados (ex.: em
+   `docs/security/AUDIT_WAIVERS.md`, mesma política dos demais scanners).
+4. **Critério de bloqueio:** o release fica **bloqueado** enquanto houver alerta ZAP de severidade
+   **High ou Critical** sem waiver/justificativa registrada; alertas **Medium** exigem decisão
+   documentada antes do deploy; Low/Informational podem seguir com registro no relatório. Só após
+   a triagem (e correção ou aceite formal dos achados) o deploy pode prosseguir para a seção 7
+   (checklist pós-deploy).
+
+> Complemento estático: `npm run security:trivy` (scan de dependências/filesystem) já roda
+> automaticamente — job bloqueante em PR (`trivy-fs-pr-gate`) e semanal agendado em
+> `.github/workflows/security-trivy.yml`. O ZAP cobre a camada que o Trivy não vê: comportamento
+> dinâmico da API no ar.
 
 ## 8. URLs finais
 

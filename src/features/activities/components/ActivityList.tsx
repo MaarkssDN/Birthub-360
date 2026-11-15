@@ -23,7 +23,7 @@ import {
   X,
 } from 'lucide-react';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../../../components/ui/Button.js';
 import { useConfirmDialog } from '../../../components/ui/ConfirmDialog.js';
@@ -212,18 +212,23 @@ export function ActivityList() {
     leadId: '',
   });
 
-  const filtered = activities.filter((a) => {
-    if (filterMineOnly && currentUser?.name) {
-      if (a.owner?.toLowerCase() !== currentUser.name.toLowerCase()) return false;
-    }
-    const q = searchTerm.toLowerCase();
-    return (
-      !q ||
-      a.owner?.toLowerCase().includes(q) ||
-      a.type?.toLowerCase().includes(q) ||
-      a.observations?.toLowerCase().includes(q)
-    );
-  });
+  // MEL-32 (Agente 23): memoizado — o grid renderiza até 100 cards com motion e
+  // `filtered` era recomputado a cada render (inclusive digitação no formulário,
+  // que não depende do filtro).
+  const filtered = useMemo(() => {
+    return activities.filter((a) => {
+      if (filterMineOnly && currentUser?.name) {
+        if (a.owner?.toLowerCase() !== currentUser.name.toLowerCase()) return false;
+      }
+      const q = searchTerm.toLowerCase();
+      return (
+        !q ||
+        a.owner?.toLowerCase().includes(q) ||
+        a.type?.toLowerCase().includes(q) ||
+        a.observations?.toLowerCase().includes(q)
+      );
+    });
+  }, [activities, filterMineOnly, currentUser?.name, searchTerm]);
 
   const handleToggleStatus = async (a: Activity) => {
     const isDone = a.status === 'Concluída';

@@ -229,9 +229,13 @@ export async function executeAction(action: ExecutableAction): Promise<Execution
       if (!webhookUrl) {
         return { sent: false, reason: 'not_configured' };
       }
-      const { validateWebhookUrl } = await import('../../../lib/security/url-validator.js');
-      await validateWebhookUrl(webhookUrl);
-      const res = await fetch(webhookUrl, {
+      // safeFetch valida e fixa a conexão nos endereços já resolvidos (sem DNS rebinding nem
+      // redirect para host interno — ver src/shared/security/urlGuard.ts).
+      const { assertSafeExternalUrl, safeFetch } = await import(
+        '../../../shared/security/urlGuard.js'
+      );
+      await assertSafeExternalUrl(webhookUrl);
+      const res = await safeFetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

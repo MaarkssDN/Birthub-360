@@ -50,7 +50,7 @@ export default function AdminPage() {
         setLoading(false);
       })
       .catch((err) => {
-        logger.error('Failed to load call logs for admin dashboard', { err });
+        logger.error({ err }, 'Failed to load call logs for admin dashboard');
         setError(true);
         setSessions([]);
         setLoading(false);
@@ -69,7 +69,7 @@ export default function AdminPage() {
         setAgentCountError(false);
       })
       .catch((err) => {
-        logger.error('Failed to load agent count for admin dashboard', { err });
+        logger.error({ err }, 'Failed to load agent count for admin dashboard');
         setAgentCountError(true);
       });
   };

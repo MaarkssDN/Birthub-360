@@ -67,4 +67,34 @@ describe('Table Component (Design System Primitives)', () => {
     const selectedRow = screen.getByText('Birth Hub 360').closest('tr');
     expect(selectedRow).toHaveClass('data-[state=selected]:bg-brand/10');
   });
+
+  it('região rolável é focável e nomeada; TableHead emite scope="col" por padrão', () => {
+    // axe scrollable-region-focusable (WCAG 2.1.1) + headers de coluna anunciados
+    render(
+      React.createElement(
+        Table,
+        { scrollRegionLabel: 'Tabela de empresas' },
+        React.createElement(
+          TableHeader,
+          null,
+          React.createElement(TableRow, null, React.createElement(TableHead, null, 'Empresa')),
+        ),
+        React.createElement(
+          TableBody,
+          null,
+          React.createElement(
+            TableRow,
+            null,
+            React.createElement(TableCell, null, 'Birth Hub 360'),
+          ),
+        ),
+      ),
+    );
+
+    const region = screen.getByRole('group', { name: 'Tabela de empresas' });
+    expect(region).toHaveAttribute('tabindex', '0');
+    expect(region.className).toContain('overflow-auto');
+
+    expect(screen.getByRole('columnheader', { name: 'Empresa' })).toHaveAttribute('scope', 'col');
+  });
 });

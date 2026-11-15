@@ -143,7 +143,7 @@ const ADAPTIVE_PILLARS = [
     kpi: '+24,8% conversão',
     modalTitle: '04. Performance Comercial',
     modalDesc:
-      'Telemetria de conversão, velocidade de ciclo entre etapas, metas operacionais e produtividade da equipe em tempo real.',
+      'Telemetria de conversão, velocidade de ciclo entre etapas, metas operacionais e produtividade da equipe com atualização contínua.',
   },
   {
     num: '05',
@@ -170,10 +170,10 @@ const ADAPTIVE_PILLARS = [
     accentColor: '#FF2D9B',
     tag: 'COPILOTO DE NEGOCIAÇÕES',
     kpiPrefix: 'Modo:',
-    kpi: 'NBA em tempo real',
+    kpi: 'NBA contextual',
     modalTitle: '06. Inteligência Artificial',
     modalDesc:
-      'Copiloto de negociações contextualizado com dados da organização, diagnóstico de entraves e recomendações acionáveis em tempo real.',
+      'Copiloto de negociações contextualizado com dados da organização, diagnóstico de entraves e recomendações acionáveis no contexto da conta.',
   },
   {
     num: '07',
@@ -183,12 +183,12 @@ const ADAPTIVE_PILLARS = [
     bg: '/landing/assets/pillar-automation.jpg',
     colorClass: 'b360-c-gold',
     accentColor: '#FFC107',
-    tag: 'MOTOR DE REGRAS & 9 CONECTORES',
+    tag: 'MOTOR DE REGRAS & CONECTORES',
     kpiPrefix: 'Simulação:',
-    kpi: '~12 ms sync',
+    kpi: 'Fila idempotente',
     modalTitle: '07. Automação & Conectividade Multi-CRM',
     modalDesc:
-      'Sincronização bidirecional em tempo real via APIs abertas e webhooks com Bitrix24, Salesforce, HubSpot e Pipedrive.',
+      'Sincronização por APIs abertas e webhooks com conectores em produção (Bitrix24, WhatsApp Official API, VoiceHub e Webhooks/REST); HubSpot, Salesforce e Pipedrive seguem em homologação.',
   },
   {
     num: '08',
@@ -203,7 +203,7 @@ const ADAPTIVE_PILLARS = [
     kpi: '94% sentimento',
     modalTitle: '08. Engajamento Comercial',
     modalDesc:
-      'Voice Hub com studio visual e supervisão ao vivo, cold call governado, WhatsApp via Chatwoot, mesa de tratamento e app Android dedicado.',
+      'Voice Hub com studio visual e supervisão de chamadas, cold call governado, WhatsApp Official API, mesa de tratamento e app Android dedicado.',
   },
   {
     num: '09',
@@ -277,42 +277,42 @@ const ADAPTIVE_INTEGRATIONS = [
   },
   {
     name: 'Webhooks & REST APIs',
-    desc: 'Disparo e recepção de eventos customizados em tempo real com autenticação segura.',
+    desc: 'Disparo e recepção de eventos customizados com autenticação segura.',
     icon: '/landing/assets/webhooks.svg',
     status: 'active' as const,
     statusLabel: 'Em Produção',
   },
   {
     name: 'HubSpot',
-    desc: 'Alinhamento contínuo entre inbound marketing e pipeline de vendas ativas.',
+    desc: 'Conector em homologação para alinhar inbound marketing e pipeline de vendas.',
     icon: '/landing/assets/hubspot.svg',
     status: 'in_dev' as const,
     statusLabel: 'Em Homologação',
   },
   {
     name: 'Salesforce',
-    desc: 'Mapeamento de contas estratégicas enterprise e histórico corporativo de negociações.',
+    desc: 'Conector em homologação para mapear contas estratégicas e histórico de negociações.',
     icon: '/landing/assets/salesforce.svg',
     status: 'in_dev' as const,
     statusLabel: 'Em Homologação',
   },
   {
     name: 'Pipedrive',
-    desc: 'Gestão visual de etapas e atividades operacionais de prospecção e fechamento.',
+    desc: 'Conector em homologação para gestão visual de etapas e atividades comerciais.',
     icon: '/landing/assets/pipedrive.svg',
     status: 'in_dev' as const,
     statusLabel: 'Em Homologação',
   },
   {
     name: 'Google Workspace',
-    desc: 'Agendamento sincronizado no Google Agenda, e-mails corporativos e documentos.',
+    desc: 'Integração planejada com Google Agenda, e-mails corporativos e documentos.',
     icon: '/landing/assets/google.svg',
     status: 'planned' as const,
     statusLabel: 'Planejado',
   },
   {
     name: 'Microsoft 365',
-    desc: 'Integração federada com Outlook, Teams e ecossistema de produtividade.',
+    desc: 'Integração planejada com Outlook, Teams e ecossistema de produtividade.',
     icon: '/landing/assets/microsoft.svg',
     status: 'planned' as const,
     statusLabel: 'Planejado',
@@ -575,6 +575,19 @@ export function Landing360({
     return digits.length >= 10 && digits.length <= 13;
   };
 
+  const leadSubmitErrorMessage = (code?: string): string => {
+    if (code === 'invalid_payload') {
+      return 'Verifique os dados informados e tente novamente.';
+    }
+    if (code === 'rate_limited') {
+      return 'Muitas tentativas em pouco tempo. Aguarde alguns minutos e tente novamente.';
+    }
+    if (code === 'unavailable') {
+      return 'Canal de contato temporariamente indisponível. Tente novamente mais tarde.';
+    }
+    return 'Não foi possível enviar sua solicitação agora. Tente novamente em instantes.';
+  };
+
   const handleLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLeadError('');
@@ -606,6 +619,7 @@ export function Landing360({
           consent: true,
           consentTextVersion: LANDING_DEMO_CONSENT_VERSION,
           purpose: LANDING_DEMO_CONSENT_PURPOSE,
+          website: leadForm.website || undefined,
         }),
       });
       const data = (await res.json().catch(() => null)) as {
@@ -614,10 +628,7 @@ export function Landing360({
         error?: string;
       } | null;
       if (!res.ok || data?.ok === false || data?.success === false) {
-        setLeadError(
-          data?.error ||
-            'Não foi possível enviar sua solicitação agora. Tente novamente em instantes.',
-        );
+        setLeadError(leadSubmitErrorMessage(data?.error));
         return;
       }
       setLeadSubmitted(true);
@@ -1345,7 +1356,7 @@ export function Landing360({
                     <div className="b360-problem-row">
                       <span className="b360-label-flag cyan">Solução Birth Hub</span>
                       <p>
-                        Telemetria em tempo real com alertas preditivos de gargalos e desvios de
+                        Telemetria operacional com alertas preditivos de gargalos e desvios de
                         velocidade de ciclo em D+0.
                       </p>
                     </div>
@@ -1383,8 +1394,8 @@ export function Landing360({
                     <div className="b360-problem-row">
                       <span className="b360-label-flag cyan">Solução Birth Hub</span>
                       <p>
-                        Orquestração automática de follow-ups com SLA garantido e recomendação da
-                        Próxima Melhor Ação (NBA).
+                        Orquestração automática de follow-ups com regras de SLA configuráveis e
+                        recomendação da Próxima Melhor Ação (NBA).
                       </p>
                     </div>
                   </div>
@@ -1418,9 +1429,9 @@ export function Landing360({
                   </div>
                   <h3>Dados e conectividade Multi-CRM</h3>
                   <p>
-                    Conexões bidirecionais via APIs abertas e webhooks com Bitrix24, HubSpot,
-                    Salesforce e Pipedrive mantêm os dados comerciais sincronizados em milissegundos
-                    sem duplicação.
+                    Conexões via APIs abertas e webhooks mantêm os conectores em produção (Bitrix24,
+                    WhatsApp Official API, VoiceHub e Webhooks/REST) sincronizados sem duplicação;
+                    HubSpot, Salesforce e Pipedrive seguem em homologação.
                   </p>
                   <div className="b360-platform-badge">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#00D4FF] animate-pulse" />
@@ -1547,7 +1558,7 @@ export function Landing360({
                     Histórico contextual, matriz de objeções e copiloto orientam as abordagens e
                     reuniões de negociação.
                   </p>
-                  <div className="b360-flow-kpi">NBA em Tempo Real</div>
+                  <div className="b360-flow-kpi">NBA contextual</div>
                 </div>
 
                 <div className="b360-flow-connector" aria-hidden="true">
@@ -1580,11 +1591,11 @@ export function Landing360({
                   </h2>
                   <p className="text-slate-400 text-base mb-6">
                     O copiloto analisa o estágio de cada negociação, o histórico das interações e as
-                    objeções recorrentes para apoiar sua equipe em tempo real com supervisão
+                    objeções recorrentes para apoiar sua equipe durante a negociação com supervisão
                     contínua.
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-6">
-                    <div className="p-4 rounded-2xl border border-cyan-500/20 bg-slate-900/60 dark:bg-[#0B1A2E]/80">
+                    <div className="p-4 rounded-2xl border border-cyan-500/20 bg-slate-900 b360-dark-card dark:bg-[#0B1A2E]/80">
                       <div className="flex items-center gap-2 mb-1.5">
                         <Sparkles className="w-4 h-4 text-[#00D4FF]" />
                         <h3 className="text-sm font-bold text-[#00D4FF]">
@@ -1597,7 +1608,7 @@ export function Landing360({
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-2xl border border-pink-500/20 bg-slate-900/60 dark:bg-[#0B1A2E]/80">
+                    <div className="p-4 rounded-2xl border border-pink-500/20 bg-slate-900 b360-dark-card dark:bg-[#0B1A2E]/80">
                       <div className="flex items-center gap-2 mb-1.5">
                         <Target className="w-4 h-4 text-[#FF2D9B]" />
                         <h3 className="text-sm font-bold text-[#FF2D9B]">
@@ -1610,7 +1621,7 @@ export function Landing360({
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-2xl border border-amber-500/20 bg-slate-900/60 dark:bg-[#0B1A2E]/80">
+                    <div className="p-4 rounded-2xl border border-amber-500/20 bg-slate-900 b360-dark-card dark:bg-[#0B1A2E]/80">
                       <div className="flex items-center gap-2 mb-1.5">
                         <Clock className="w-4 h-4 text-[#FFC107]" />
                         <h3 className="text-sm font-bold text-[#FFC107]">Contexto histórico</h3>
@@ -1621,7 +1632,7 @@ export function Landing360({
                       </p>
                     </div>
 
-                    <div className="p-4 rounded-2xl border border-indigo-500/20 bg-slate-900/60 dark:bg-[#0B1A2E]/80">
+                    <div className="p-4 rounded-2xl border border-indigo-500/20 bg-slate-900 b360-dark-card dark:bg-[#0B1A2E]/80">
                       <div className="flex items-center gap-2 mb-1.5">
                         <Bot className="w-4 h-4 text-[#8B7DFF]" />
                         <h3 className="text-sm font-bold text-[#8B7DFF]">Supervisor On-line</h3>
@@ -1739,11 +1750,11 @@ export function Landing360({
                 </div>
                 <div className="b360-seal-item">
                   <CheckCircle2 className="w-5 h-5 text-purple-400" />
-                  <span>100% Conforme com a LGPD (Audit Ledger)</span>
+                  <span>Conformidade LGPD por design (Audit Ledger)</span>
                 </div>
                 <div className="b360-seal-item">
                   <Award className="w-5 h-5 text-amber-400" />
-                  <span>Padrões de Governança ISO 27001 Ready</span>
+                  <span>Controles alinhados a ISO 27001 (Ready)</span>
                 </div>
               </div>
             </section>
@@ -1776,7 +1787,7 @@ export function Landing360({
                             Demonstração sem slides genéricos
                           </strong>
                           <span className="text-xs text-slate-400">
-                            Análise direta de casos reais aplicada ao seu modelo de negócio.
+                            Análise direta de cenários aplicados ao seu modelo de negócio.
                           </span>
                         </div>
                       </div>
@@ -1790,7 +1801,8 @@ export function Landing360({
                             Simulação de ROI e Previsibilidade
                           </strong>
                           <span className="text-xs text-slate-400">
-                            Cálculo detalhado de receita recuperável nos primeiros 90 dias.
+                            Estimativa ilustrativa de receita recuperável em um horizonte de 90
+                            dias.
                           </span>
                         </div>
                       </div>
@@ -1801,10 +1813,10 @@ export function Landing360({
                         </span>
                         <div>
                           <strong className="text-xs font-bold text-slate-200 block">
-                            Atendimento rápido em até 15 minutos
+                            Retorno por canal informado
                           </strong>
                           <span className="text-xs text-slate-400">
-                            Contato por WhatsApp para alinhar o melhor horário da sua agenda.
+                            Nossa equipe contata você para alinhar o melhor horário da agenda.
                           </span>
                         </div>
                       </div>
@@ -2037,7 +2049,7 @@ export function Landing360({
                 onClick={() =>
                   handleOpenModal(
                     'Command Center',
-                    'Centro unificado de operações de receita e monitoramento em tempo real.',
+                    'Centro unificado de operações de receita e monitoramento operacional.',
                   )
                 }
               >
@@ -2159,7 +2171,7 @@ export function Landing360({
                   onClick={() =>
                     handleOpenModal(
                       'Iniciar Missão Autônoma',
-                      'O Supervisor ativará os agentes de Enriquecimento, Qualificação e Copiloto para analisar seu pipeline em tempo real.',
+                      'O Supervisor ativará os agentes de Enriquecimento, Qualificação e Copiloto para analisar seu pipeline com contexto atualizado.',
                     )
                   }
                 >
@@ -2177,11 +2189,11 @@ export function Landing360({
                   <span>● Operação contínua</span>
                 </div>
                 <div className="b360-metric">
-                  <small>Agentes · especificação V4</small>
+                  <small>Agentes · catálogo público</small>
                   <strong>
-                    <B360CountUp to={24} suffix=" + Supervisor" />
+                    <B360CountUp to={20} suffix=" +" />
                   </strong>
-                  <span>● Arquitetura prevista</span>
+                  <span>● Copiloto Supervisor</span>
                 </div>
                 <div className="b360-metric">
                   <small>Oportunidades · simulação</small>
@@ -2536,7 +2548,7 @@ export function Landing360({
                       </h4>
                       <p className="font-sans text-xs text-slate-600 dark:text-slate-400 mt-0.5">
                         Postgres Row Level Security nativo, isolamento criptográfico por organização
-                        e latência de consulta inferior a 50ms.
+                        e consultas otimizadas por índices e políticas de tenant.
                       </p>
                     </div>
                   </div>
@@ -2569,8 +2581,8 @@ export function Landing360({
                         03. Governança & LGPD Nativa
                       </h4>
                       <p className="font-sans text-xs text-slate-600 dark:text-slate-400 mt-0.5">
-                        Criptografia AES-256-GCM em repouso e trânsito, gestão de consentimento e
-                        trilha de auditoria viva imutável.
+                        Criptografia AES-256-GCM em repouso para credenciais e PII, gestão de
+                        consentimento e trilha de auditoria viva imutável.
                       </p>
                     </div>
                   </div>
@@ -2579,15 +2591,15 @@ export function Landing360({
             </div>
 
             {/* Badges de Certificação e Conformidade Técnica */}
-            <div className="pt-4 border-t border-slate-200/60 dark:border-slate-800/60 flex flex-wrap items-center gap-2 font-mono text-[10px] text-slate-500 dark:text-slate-400">
+            <div className="pt-4 border-t border-slate-200/60 dark:border-slate-800/60 flex flex-wrap items-center gap-2 font-mono text-[10px] text-slate-600 dark:text-slate-400">
               <span className="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60">
                 SOC-2 TYPE II READY
               </span>
               <span className="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60">
-                ISO 27001
+                ISO 27001 READY
               </span>
               <span className="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60">
-                LGPD COMPLIANT
+                LGPD POR DESIGN
               </span>
               <span className="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60">
                 AES-256-GCM
@@ -3123,7 +3135,7 @@ export function Landing360({
                       Criptografia
                     </span>
                     <span className="font-sans text-[9px] font-medium text-slate-600 dark:text-slate-400">
-                      AES-256 Ponta a Ponta
+                      AES-256-GCM
                     </span>
                   </div>
                 </div>

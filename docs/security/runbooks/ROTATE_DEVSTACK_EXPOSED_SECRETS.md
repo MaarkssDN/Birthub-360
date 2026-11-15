@@ -24,27 +24,62 @@ potencialmente comprometidas** durante a janela de exposição.
 ### Segredos efetivamente expostos (variáveis de ambiente dos containers)
 
 Confirmados nos `docker-compose*.yml` do repositório — presença real em cada
-container deve ser confirmada no Passo 0:
+container deve ser confirmada no Passo 0.
 
-| Segredo | Variáveis | Serviço(s) |
+**Atenção — canal de exposição não é só `Config.Env`:** o compose interpola os
+`${VAR:-default}` **antes** de criar o container, então o valor resolvido também
+fica visível em `Config.Cmd` (ex.: `redis-server --requirepass <senha>`),
+`Config.Entrypoint`/`Config.Args` (ex.: `superset-init --password <senha>`,
+`minio-init ./mc alias set ... <senha>`), `Config.Healthcheck.Test`
+(`redis-cli -a <senha> ping`) e em strings de conexão embutidas
+(`DATABASE_URL`, `REDIS_URL`, `DB_CONNECTION_URI`, `dataSourceName`). O Passo 0
+deve inspecionar todos esses campos, não apenas `Config.Env`.
+
+#### Inventário completo (auditoria dos 4 composes — 2026-11-15)
+
+| Segredo | Variável(is) / local | Serviço(s) / canal |
 |---|---|---|
-| Senha do Postgres | `POSTGRES_PASSWORD`, `APP_DB_PASSWORD` | postgres + todos os serviços que compartilham o banco |
-| Senha do Redis | `REDIS_PASSWORD` | redis, chatwoot, plane, infisical |
+| Senha do Postgres (superuser) | `POSTGRES_PASSWORD`/`POSTGRES_PWD` | postgres, temporal (ambos os composes), langfuse (DATABASE_URL **hardcoded** `prospector:prospector_pass`) |
+| Senha do papel da aplicação | `APP_DB_PASSWORD` | flowise, n8n, superset, casdoor (`dataSourceName`), infisical (`DB_CONNECTION_URI`), chatwoot, plane (`DATABASE_URL`) |
+| Senha do migrator | `MIGRATOR_DB_PASSWORD` | postgres (bootstrap) |
+| Senha do Redis | `REDIS_PASSWORD` | redis (`--requirepass` em Cmd + healthcheck), superset, infisical (`REDIS_URL`), chatwoot, plane, langfuse (`REDIS_CONNECTION_STRING` **hardcoded** `prospector_redis_pass`) |
 | Chave do Meilisearch | `MEILI_MASTER_KEY` | meilisearch |
-| Credenciais do MinIO | `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD` | minio |
-| Chave do LiteLLM | `LITELLM_MASTER_KEY` | litellm |
+| Credenciais do MinIO principal | `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD` | minio, minio-init (entrypoint) |
+| Credenciais do MinIO do Langfuse | `LANGFUSE_MINIO_USER`, `LANGFUSE_MINIO_PASSWORD` | langfuse-minio, langfuse-minio-init, langfuse (`LANGFUSE_S3_EVENT_UPLOAD_*`) |
+| Chave do ClickHouse | `CLICKHOUSE_PASSWORD` | clickhouse, langfuse |
+| Segredos do Langfuse | `LANGFUSE_NEXTAUTH_SECRET`, `LANGFUSE_SALT`, `LANGFUSE_ENCRYPTION_KEY` | langfuse-web, langfuse-worker |
+| Chaves do LiteLLM→Langfuse | `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY` | litellm (overlay opensource) |
+| Chave do LiteLLM p/ clientes | `LITELLM_MASTER_KEY` | **não é env do container litellm** — aparece como `OPENAI_API_KEY` do open-webui e no `.env` do host |
+| Chave de API OpenRouter | `OPENROUTER_API_KEY` | referenciada em `litellm-config.yaml` via `os.environ/` — só exposta se presente no env do container (verificar no Passo 0) |
+| Credenciais Flowise | `FLOWISE_USERNAME`, `FLOWISE_PASSWORD`, `FLOWISE_SECRET_KEY` | flowise |
+| Segredo do Open WebUI | `OPENWEBUI_SECRET` | open-webui (`WEBUI_SECRET_KEY`) |
+| Credenciais n8n | `N8N_ENCRYPTION_KEY`, `N8N_USER`, `N8N_PASSWORD` | n8n |
+| Segredos do Superset | `SUPERSET_SECRET_KEY`, `SUPERSET_ADMIN_USERNAME`, `SUPERSET_ADMIN_PASSWORD` | superset, superset-init (**senha do admin no Entrypoint resolvido**) |
+| Segredo do Casdoor | `CASDOOR_CLIENT_SECRET`; admin default `admin/123456` (comentário do compose, `runmode: dev`) | casdoor |
+| Segredos do Infisical | `INFISICAL_ENCRYPTION_KEY` (default **todos os zeros**), `INFISICAL_AUTH_SECRET` | infisical |
+| Chaves do LiveKit | `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET` (`LIVEKIT_KEYS`) | livekit |
+| Segredo do Chatwoot | `CHATWOOT_SECRET_KEY` (`SECRET_KEY_BASE`) | chatwoot |
+| Segredo do Plane | `PLANE_SECRET_KEY` | plane-api |
+| Senha do Grafana | `GRAFANA_ADMIN_USER`, `GRAFANA_ADMIN_PASSWORD` | grafana |
+| Webhook do Alertmanager | `SLACK_WEBHOOK_URL` | alertmanager |
 | Segredos da aplicação | `BETTER_AUTH_SECRET`, `CREDENTIALS_ENCRYPTION_KEY`, `PII_BLIND_INDEX_KEY` | somente se presentes em env/volume de container no host 116 |
 
 > **Nota honesta de escopo:** os defaults dos composes (`prospector_pass`,
-> `prospector_redis_pass`, `birthhub_meili_master_key`,
-> `birthhub_minio_dev_only`, `sk-birthhub-master`) são documentados como
-> dev-only e não devem existir fora da máquina local — ver
+> `prospector_app_pass`, `prospector_redis_pass`, `birthhub_meili_master_key`,
+> `birthhub_minio_dev_only`, `sk-birthhub-master`, `clickhouse-local-password`,
+> `change-this-*`, `0000...0000` do Infisical) são documentados como dev-only e
+> não devem existir fora da máquina local — ver
 > `docs/security/incidents/SEC-2026-001-historical-tag-exposure.md`. Se o host
 > 116 usa esses defaults, a rotação é trivial (basta trocar para valores
 > fortes); se usa valores reais compartilhados com homologação/produção,
 > aplicar a rotação completa abaixo **e** verificar se os mesmos valores estão
 > em produção antes de prosseguir — nesse caso trate como incidente de
 > credencial de produção, não de dev.
+>
+> **Defaults especialmente críticos mesmo em dev:** `INFISICAL_ENCRYPTION_KEY`
+> all-zeros e `LANGFUSE_ENCRYPTION_KEY`/`DATABASE_URL`/`REDIS_CONNECTION_STRING`
+> com credenciais literais no compose — se o host 116 não sobrescreveu via
+> `.env`, esses valores são os que estiveram expostos.
 
 ---
 
@@ -71,13 +106,17 @@ container deve ser confirmada no Passo 0:
 No host 116 (ou via `ssh://` já provisionado):
 
 ```bash
-docker ps -aq | xargs -I{} docker inspect {} --format '{{.Name}} {{range .Config.Env}}{{println .}}{{end}}'
+# Env + todos os campos onde o compose interpola segredos resolvidos
+docker ps -aq | xargs -I{} docker inspect {} --format \
+  '{{.Name}}|ENV:{{range .Config.Env}}{{println .}}{{end}}|CMD:{{json .Config.Cmd}}|ENTRYPOINT:{{json .Config.Entrypoint}}|ARGS:{{json .Args}}|HEALTHCHECK:{{json .Config.Healthcheck.Test}}|MOUNTS:{{range .Mounts}}{{.Source}}->{{.Destination}};{{end}}'
 ```
 
-Cruzar a saída com a tabela da seção 1. Registrar quais segredos estavam
-presentes em env de container **e** quais estão em arquivos montados como
-volume (ex.: `.env` bind-mount). **Não copiar valores para tickets, logs ou
-relatórios** — registrar apenas nomes de variáveis.
+Cruzar a saída com a tabela da seção 1 — procurar segredos em **todos** os
+campos, não só em `ENV` (ver nota sobre interpolação do compose acima).
+Registrar também os mounts: `litellm-config.yaml` é bind-mounted no container
+litellm (`:ro`) e referencia segredos via `os.environ/<VAR>` — confirmar se as
+chaves referenciadas estavam no env do container. **Não copiar valores para
+tickets, logs ou relatórios** — registrar apenas nomes de variáveis e campos.
 
 ### Passo 1 — Contenção confirmada antes de rotacionar
 
@@ -96,10 +135,19 @@ openssl rand -base64 32   # → novo POSTGRES_PASSWORD / APP_DB_PASSWORD
 openssl rand -base64 24   # → novo REDIS_PASSWORD
 # Meilisearch
 openssl rand -hex 32      # → novo MEILI_MASTER_KEY
-# MinIO
+# MinIO (principal e langfuse-minio — credenciais independentes)
 openssl rand -base64 24   # → MINIO_ROOT_USER (alfanumérico) e MINIO_ROOT_PASSWORD
-# LiteLLM
+openssl rand -base64 24   # → LANGFUSE_MINIO_USER / LANGFUSE_MINIO_PASSWORD
+# LiteLLM (chave usada pelos clientes, ex.: OPENAI_API_KEY do open-webui)
 openssl rand -hex 32      # → novo LITELLM_MASTER_KEY
+# Demais serviços do inventário (mesmo padrão openssl rand -base64 24/32)
+# FLOWISE_*, OPENWEBUI_SECRET, N8N_ENCRYPTION_KEY/N8N_PASSWORD,
+# SUPERSET_SECRET_KEY/SUPERSET_ADMIN_PASSWORD, INFISICAL_ENCRYPTION_KEY/
+# INFISICAL_AUTH_SECRET, LIVEKIT_API_SECRET, CHATWOOT_SECRET_KEY,
+# PLANE_SECRET_KEY, GRAFANA_ADMIN_PASSWORD, CLICKHOUSE_PASSWORD,
+# LANGFUSE_NEXTAUTH_SECRET/LANGFUSE_SALT/LANGFUSE_ENCRYPTION_KEY,
+# LANGFUSE_PUBLIC_KEY/LANGFUSE_SECRET_KEY, CASDOOR_CLIENT_SECRET,
+# SLACK_WEBHOOK_URL, OPENROUTER_API_KEY (se presente no container)
 ```
 
 Atualização do Postgres (senha muda dentro do banco, não só no env):
@@ -116,7 +164,40 @@ infisical) precisam do novo `REDIS_PASSWORD` **antes** do recreate.
 
 Ordem segura sugerida: gerar todos os valores novos → atualizar `.env` de
 todas as estações → recreate dos serviços na ordem postgres → redis →
-meilisearch → minio → litellm.
+meilisearch → minio (+ langfuse-minio) → clickhouse → langfuse → litellm →
+demais overlays (flowise, open-webui, n8n, superset, casdoor, infisical,
+livekit, chatwoot, plane-api, grafana, temporal, alertmanager).
+
+Notas por serviço:
+
+- **postgres**: `APP_DB_PASSWORD`/`MIGRATOR_DB_PASSWORD` são senhas de roles
+  criados no bootstrap (`scripts/db/create-app-role.sql`) — além do
+  `ALTER USER`, se a senha estiver gravada em `pg_authid` de roles
+  secundários, aplicar `ALTER ROLE` para cada uma. O `POSTGRES_PASSWORD`
+  (superuser) só é relido no primeiro init do volume — para trocá-lo de
+  verdade use `ALTER USER <POSTGRES_USER> WITH PASSWORD` dentro do banco.
+- **langfuse**: `DATABASE_URL` e `REDIS_CONNECTION_STRING` têm credenciais
+  **literais no compose** (`prospector:prospector_pass`,
+  `prospector_redis_pass`) — não são parametrizadas por `.env`. Para rotacionar
+  de fato é preciso editar `docker-compose.opensource.yml` (arquivo do
+  repositório — mudança coordenada com o 00) ou aceitar que o valor real é o
+  default e tratá-lo como tal.
+- **superset-init**: a senha do admin vai no Entrypoint resolvido — recriar o
+  container após atualizar `.env`; se o admin já existe, `create-admin` falha
+  silenciosamente (`|| true`) e é preciso trocar a senha pelo Superset ou
+  recriar o volume `birthhub_superset_data`.
+- **casdoor**: admin default `admin/123456` em `runmode: dev` — se o serviço
+  estiver no ar, trocar a senha pela UI do Casdoor, não só no `.env`.
+- **infisical**: `ENCRYPTION_KEY` all-zeros é o default — se nunca foi
+  sobrescrita, os secrets guardados no Infisical estão cifrados com chave
+  conhecida; rotacionar a chave exige re-cifrar o vault (procedimento do
+  próprio Infisical) — avaliar se o vault tem conteúdo antes de recriar.
+- **livekit**: `--dev` mode com `LIVEKIT_KEYS` — em dev, basta trocar o par
+  chave/segredo e atualizar quem consome (app de voz, `.env` das estações).
+- **chatwoot/plane/n8n/flowise/superset/grafana**: segredos de framework —
+  trocar no `.env` e `docker compose up -d --force-recreate <serviço>`;
+  dados persistidos cifrados com a chave antiga (ex.: `N8N_ENCRYPTION_KEY`)
+  podem precisar de re-cifragem ou reset do credential store do serviço.
 
 ### Passo 3 — Segredos da aplicação (somente se confirmados no inventário)
 

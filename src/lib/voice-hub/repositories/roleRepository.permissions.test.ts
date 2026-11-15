@@ -2,28 +2,47 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('@/lib/prisma.js', () => ({
   prisma: {
-    role: {
-      findFirst: vi.fn(),
-      findUnique: vi.fn(),
-      create: vi.fn(),
+    jobRole: {
+      findMany: vi.fn(),
     },
   },
 }));
 
 import { prisma } from '@/lib/prisma.js';
 import {
-  getOrCreateSystemRole,
-  permissionNamesOf,
+  canonicalRoleForVoiceRole,
   getPermissionsForRoleName,
+  permissionNamesOf,
+  voiceRoleForCanonicalRole,
   PERMISSIONS,
   SYSTEM_ROLE_DEFAULT_PERMISSIONS,
 } from './roleRepository.js';
 
 beforeEach(() => vi.clearAllMocks());
 
-// Covers the Permission model wiring introduced for
-// .agents/handoffs/onda-4/11-para-01-supervisor-role-rbac.md — a Permission is attachable to any
-// Role instead of a hardcoded role-name allowlist like the old `ROLES_ALLOWED_TO_INTERVENE`.
+// Cobre a adaptação ao schema canônico (handoff
+// 01-para-12-voicehub-adaptacao-modelos-canonicos): não existem mais Role/Permission/Membership —
+// o voice-role ('admin'|'user'|'supervisor') é um mapeamento determinístico sobre User.role
+// (UserRole) e as concessões de capability vêm de UserJobRole→JobRole→RoleCapabilityGrant→
+// CapabilityDefinition.
+describe('roleRepository: mapeamento UserRole ↔ voice-role', () => {
+  it('mapeia ADMIN→admin, GESTOR→supervisor e todo o resto→user (fail closed)', () => {
+    expect(voiceRoleForCanonicalRole('ADMIN')).toBe('admin');
+    expect(voiceRoleForCanonicalRole('GESTOR')).toBe('supervisor');
+    expect(voiceRoleForCanonicalRole('CLOSER')).toBe('user');
+    expect(voiceRoleForCanonicalRole('SDR')).toBe('user');
+    expect(voiceRoleForCanonicalRole('VISUALIZADOR')).toBe('user');
+    expect(voiceRoleForCanonicalRole(null)).toBe('user');
+    expect(voiceRoleForCanonicalRole('QUALQUER_COISA')).toBe('user');
+  });
+
+  it('mapeia voice-role→UserRole canônico para atribuição de papel', () => {
+    expect(canonicalRoleForVoiceRole('admin')).toBe('ADMIN');
+    expect(canonicalRoleForVoiceRole('supervisor')).toBe('GESTOR');
+    expect(canonicalRoleForVoiceRole('user')).toBe('VISUALIZADOR');
+  });
+});
+
 describe('roleRepository: Permission catalog', () => {
   it('declares supervision:intervene', () => {
     expect(PERMISSIONS['supervision:intervene']).toBeTruthy();
@@ -33,57 +52,6 @@ describe('roleRepository: Permission catalog', () => {
     expect(SYSTEM_ROLE_DEFAULT_PERMISSIONS.admin).toContain('supervision:intervene');
     expect(SYSTEM_ROLE_DEFAULT_PERMISSIONS.supervisor).toContain('supervision:intervene');
     expect(SYSTEM_ROLE_DEFAULT_PERMISSIONS.user).toEqual([]);
-  });
-});
-
-describe('roleRepository.getOrCreateSystemRole (Permission wiring)', () => {
-  it('does not touch the create payload shape for a role with no default permissions (user)', async () => {
-    vi.mocked(prisma.role.findFirst).mockResolvedValue(null);
-    vi.mocked(prisma.role.create).mockResolvedValue({ id: 'role-user', name: 'user' } as any);
-
-    await getOrCreateSystemRole('user');
-
-    expect(prisma.role.create).toHaveBeenCalledWith({
-      data: { name: 'user', organizationId: null, description: 'System role: user' },
-    });
-  });
-
-  it('connects the default permission when creating the supervisor role for the first time', async () => {
-    vi.mocked(prisma.role.findFirst).mockResolvedValue(null);
-    vi.mocked(prisma.role.create).mockResolvedValue({
-      id: 'role-supervisor',
-      name: 'supervisor',
-    } as any);
-
-    await getOrCreateSystemRole('supervisor');
-
-    expect(prisma.role.create).toHaveBeenCalledWith({
-      data: {
-        name: 'supervisor',
-        organizationId: null,
-        description: 'System role: supervisor',
-        permissions: {
-          connectOrCreate: [
-            {
-              where: { name: 'supervision:intervene' },
-              create: {
-                name: 'supervision:intervene',
-                description: PERMISSIONS['supervision:intervene'],
-              },
-            },
-          ],
-        },
-      },
-    });
-  });
-
-  it('returns the existing role untouched without creating one', async () => {
-    vi.mocked(prisma.role.findFirst).mockResolvedValue({ id: 'role-admin', name: 'admin' } as any);
-
-    const result = await getOrCreateSystemRole('admin');
-
-    expect(prisma.role.create).not.toHaveBeenCalled();
-    expect(result).toEqual({ id: 'role-admin', name: 'admin' });
   });
 });
 
@@ -106,43 +74,61 @@ describe('roleRepository.permissionNamesOf', () => {
 });
 
 describe('roleRepository.getPermissionsForRoleName', () => {
-  it('prefers a tenant-scoped role of the same name over the system role', async () => {
-    vi.mocked(prisma.role.findFirst).mockResolvedValueOnce({
-      id: 'tenant-role',
-      permissions: [{ name: 'custom:thing' }],
-    } as any);
-
+  it('returns the static defaults of the voice-role without touching the database', async () => {
     const result = await getPermissionsForRoleName('supervisor', 'tenant-1');
 
-    expect(prisma.role.findFirst).toHaveBeenNthCalledWith(1, {
-      where: { name: 'supervisor', organizationId: 'tenant-1' },
-      include: { permissions: true },
-    });
-    expect(result).toEqual(['custom:thing']);
-  });
-
-  it('falls back to the system role (organizationId null) when no tenant-scoped role exists', async () => {
-    vi.mocked(prisma.role.findFirst)
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce({
-        id: 'system-role',
-        permissions: [{ name: 'supervision:intervene' }],
-      } as any);
-
-    const result = await getPermissionsForRoleName('supervisor', 'tenant-1');
-
-    expect(prisma.role.findFirst).toHaveBeenNthCalledWith(2, {
-      where: { name: 'supervisor', organizationId: null },
-      include: { permissions: true },
-    });
     expect(result).toEqual(['supervision:intervene']);
+    expect(prisma.jobRole.findMany).not.toHaveBeenCalled();
   });
 
-  it('returns an empty list (fail closed) when neither a tenant nor a system role matches', async () => {
-    vi.mocked(prisma.role.findFirst).mockResolvedValueOnce(null).mockResolvedValueOnce(null);
-
+  it('fails closed (empty list) for an unknown voice-role', async () => {
     const result = await getPermissionsForRoleName('nonexistent-role', 'tenant-1');
-
     expect(result).toEqual([]);
+  });
+
+  it('unions capability codes granted via active UserJobRole→RoleCapabilityGrant when userId is provided', async () => {
+    vi.mocked(prisma.jobRole.findMany).mockResolvedValue([
+      {
+        capabilityGrants: [
+          { capabilityDefinition: { code: 'call.supervise' } },
+          { capabilityDefinition: { code: 'lead.read' } },
+        ],
+      },
+    ] as any);
+
+    const result = await getPermissionsForRoleName('user', 'tenant-1', 'user-1');
+
+    expect(prisma.jobRole.findMany).toHaveBeenCalledWith({
+      where: {
+        isActive: true,
+        userJobRoles: { some: { userId: 'user-1', isActive: true, organizationId: 'tenant-1' } },
+      },
+      select: {
+        capabilityGrants: {
+          where: { isActive: true },
+          select: { capabilityDefinition: { select: { code: true } } },
+        },
+      },
+    });
+    expect(result).toEqual(expect.arrayContaining(['call.supervise', 'lead.read']));
+    expect(result).not.toContain('supervision:intervene');
+  });
+
+  it('keeps voice-role defaults AND capability grants together', async () => {
+    vi.mocked(prisma.jobRole.findMany).mockResolvedValue([
+      { capabilityGrants: [{ capabilityDefinition: { code: 'x.y' } }] },
+    ] as any);
+
+    const result = await getPermissionsForRoleName('admin', 'tenant-1', 'user-1');
+
+    expect(result).toEqual(expect.arrayContaining(['supervision:intervene', 'x.y']));
+  });
+
+  it('fails closed (defaults only) when the capability lookup throws', async () => {
+    vi.mocked(prisma.jobRole.findMany).mockRejectedValue(new Error('db down'));
+
+    const result = await getPermissionsForRoleName('admin', 'tenant-1', 'user-1');
+
+    expect(result).toEqual(['supervision:intervene']);
   });
 });

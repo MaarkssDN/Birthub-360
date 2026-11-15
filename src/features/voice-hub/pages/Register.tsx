@@ -2,7 +2,7 @@ import type React from 'react';
 import { useId, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import { auth } from '../../../lib/auth.js';
+import { authClient } from '../../../lib/auth-client.js';
 import { BirthubLogo } from '../components/design-system/index.js';
 import { getAccessibleTextOnBrand } from '../components/design-system/tokens.js';
 import { useSessionStore } from '../store/useSessionStore.js';
@@ -31,20 +31,20 @@ export default function RegisterPage() {
     setError('');
 
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password, companyName }),
+      // Autenticação canônica Better Auth (POST /api/auth/sign-up/email) — o endpoint legado
+      // /api/auth/register com JWT próprio do voice-hub foi removido na adaptação ao schema
+      // canônico (handoff 01-para-12-voicehub-adaptacao-modelos-canonicos). `companyName` vira o
+      // `name` do signup: o hook de criação de Organization em src/lib/auth.ts nomeia a org como
+      // "<name> - Operações", preservando a intenção do campo "Nome da Empresa".
+      const result = await authClient.signUp.email({
+        email: email.trim(),
+        password,
+        name: companyName.trim() || email.split('@')[0],
       });
 
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || 'Erro ao criar conta.');
+      if (result.error) {
+        throw new Error(result.error.message || 'Erro ao criar conta.');
       }
-
-      auth.setToken(data.token, data.user);
       // Populate the real session (id/email/role/organizationId) before navigating so the shell
       // renders the real user — and the onboarding checklist for this brand-new tenant —
       // correctly on the very first dashboard paint.

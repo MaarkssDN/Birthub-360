@@ -1,0 +1,55 @@
+/* Birthub 360° — Motion System V2.0 (RASCUNHO — NÃO HOMOLOGADO). Tokens de movimento.
+   Cores NÃO vivem aqui: vêm de ../../shared/core.css. Dois níveis via [data-motion].
+   Regra: animar só transform/opacity. Nada de repeat infinito sem comunicar estado. */
+:root, [data-motion="operational"]{
+  /* Operacional: rápido e discreto, 80–200ms, sem parallax, sem loops decorativos */
+  --dur-micro:80ms; --dur-fast:120ms; --dur-base:160ms; --dur-slow:200ms; --dur-cinematic:200ms;
+  --stagger-fast:15ms; --stagger-base:30ms; --stagger-slow:40ms; --stagger-max:200ms;
+  --distance-xs:2px; --distance-sm:4px; --distance-md:8px; --distance-lg:12px; --distance-xl:16px;
+  --parallax-depth:0px; --scale-hover:1.01; --scale-press:.98;
+  --glow-rest:.22; --glow-active:.45; --glow-pulse:0; /* 0 = sem pulso; 1 = pulso permitido */
+  --loop-decorative:0; --dur-opacity:var(--dur-base);
+}
+[data-motion="commercial"]{
+  /* Comercial: monumental, cinematográfico, até 1200ms */
+  --dur-micro:120ms; --dur-fast:200ms; --dur-base:360ms; --dur-slow:600ms; --dur-cinematic:1200ms;
+  --stagger-fast:40ms; --stagger-base:60ms; --stagger-slow:100ms; --stagger-max:600ms;
+  --distance-xs:4px; --distance-sm:8px; --distance-md:16px; --distance-lg:32px; --distance-xl:64px;
+  --parallax-depth:24px; --scale-hover:1.02; --scale-press:.97;
+  --glow-rest:.22; --glow-active:.45; --glow-pulse:1;
+  --loop-decorative:0; /* mesmo no Comercial, loop decorativo é proibido: só estado */
+  --dur-opacity:var(--dur-base); /* declarado por nível: var() resolve no elemento que declara */
+}
+:root{
+  --ease-standard:cubic-bezier(.4,0,.2,1);
+  --ease-out:cubic-bezier(.16,1,.3,1);       /* EASE_OUT_EXPO em src/lib/motion.ts: chegadas, CTA magnético */
+  --ease-premium:cubic-bezier(.22,1,.36,1);  /* EASE_PREMIUM: entradas editoriais */
+  --ease-in:cubic-bezier(.4,0,1,1);          /* saídas */
+  --ease-spring:cubic-bezier(.34,1.56,.64,1);/* sucesso/pulso discreto; nunca em fluxos críticos */
+  --ease-linear:linear;                      /* só rotação contínua de estado e progresso */
+  --dur-reduced-fade:120ms;                  /* único movimento que sobrevive em reduzido: fade */
+  --glow-color:0,212,255;
+  --orbit-period:6000ms; --orbit-period-fast:1200ms;
+}
+/* Movimento reduzido: sem transform, sem parallax, sem stagger, sem loops; só fade curto e cor. */
+@media (prefers-reduced-motion: reduce){
+  :root,[data-motion]{
+    --dur-micro:1ms; --dur-fast:1ms; --dur-base:1ms; --dur-slow:1ms; --dur-cinematic:1ms;
+    --stagger-fast:0ms; --stagger-base:0ms; --stagger-slow:0ms; --stagger-max:0ms;
+    --distance-xs:0px; --distance-sm:0px; --distance-md:0px; --distance-lg:0px; --distance-xl:0px;
+    --parallax-depth:0px; --scale-hover:1; --scale-press:1; --glow-pulse:0;
+    --dur-opacity:var(--dur-reduced-fade);
+  }
+  *,*::before,*::after{animation-duration:1ms!important;animation-iteration-count:1!important;animation-delay:0s!important;
+    transition-delay:0s!important;scroll-behavior:auto!important}
+}
+/* Simulação de reduzido (controle do playground e testes): mesmo bloco, escopo por atributo. */
+[data-reduce="true"],[data-reduce="true"] [data-motion]{
+  --dur-micro:1ms; --dur-fast:1ms; --dur-base:1ms; --dur-slow:1ms; --dur-cinematic:1ms;
+  --stagger-fast:0ms; --stagger-base:0ms; --stagger-slow:0ms; --stagger-max:0ms;
+  --distance-xs:0px; --distance-sm:0px; --distance-md:0px; --distance-lg:0px; --distance-xl:0px;
+  --parallax-depth:0px; --scale-hover:1; --scale-press:1; --glow-pulse:0;
+  --dur-opacity:var(--dur-reduced-fade);
+}
+[data-reduce="true"] *,[data-reduce="true"] *::before,[data-reduce="true"] *::after{
+  animation-duration:1ms!important;animation-iteration-count:1!important;animation-delay:0s!important;transition-delay:0s!important}

@@ -22,11 +22,13 @@ import { BitrixImportModal } from '../features/crm/components/BitrixImportModal.
 import { KanbanCard } from '../features/crm/components/KanbanCard.js';
 import { KanbanColumn } from '../features/crm/components/KanbanColumn.js';
 import { LeadDetailDrawer } from '../features/crm/components/LeadDetailDrawer.js';
-import { type SavedViewItem, SavedViewsPanel } from '../features/crm/components/SavedViewsPanel.js';
-import { bitrixApi } from '../features/integrations/bitrix/bitrix.api.js';
+import { SavedViewsPanel } from '../features/crm/components/SavedViewsPanel.js';
+import { useCrmBoardBatchActions } from '../hooks/useCrmBoardBatchActions.js';
 import { useCrmBoardController } from '../hooks/useCrmBoardController.js';
+import { useCrmBoardUrlParams } from '../hooks/useCrmBoardUrlParams.js';
 import { api } from '../lib/api.js';
 import { clientLogger } from '../lib/clientLogger.js';
+import { downloadBlob } from '../lib/nativeDownload.js';
 import { SoundFX } from '../lib/soundEffects.js';
 import { toast } from '../lib/toast.js';
 import type { Lead, LeadStatus } from '../types/index.js';
@@ -123,7 +125,6 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
   const [selectionMode, setSelectionMode] = useState(false);
   const [isBitrixModalOpen, setIsBitrixModalOpen] = useState(false);
   const [isSavedViewsOpen, setIsSavedViewsOpen] = useState(false);
-  const [isBatchUpdating, setIsBatchUpdating] = useState(false);
   const [users, setUsers] = useState<{ id: string; name: string }[]>([]);
 
   // Onda B2a (Agente 00, Commercial AI OS) — filtros reais do pipeline (dono + busca), persistidos
@@ -470,228 +471,29 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
     setSelectionMode(false);
   }, []);
 
-  const handleBatchMoveStage = async (newStatus: string) => {
-    if (selectedLeadIds.size === 0 || !newStatus) return;
-    setIsBatchUpdating(true);
-    try {
-      // Usa o resultado real da API (updatedCount/failedCount), não selectedLeadIds.size — o
-      // backend filtra ids inexistentes/de outro tenant e só conta como atualizado quando algo
-      // realmente mudou, então a contagem solicitada podia ser maior que a real sem o usuário
-      // nunca saber (achado de auditoria).
-      const result = await api.post<{ updatedCount: number; total: number; failedCount: number }>(
-        '/api/leads/batch-update',
-        { leadIds: Array.from(selectedLeadIds), updates: { status: newStatus } },
-      );
-      if (result.failedCount > 0) {
-        toast.error(
-          `${result.updatedCount} de ${result.total} leads movidos para "${newStatus}" — ${result.failedCount} falharam.`,
-        );
-      } else {
-        toast.success(`${result.updatedCount} lead(s) movido(s) para "${newStatus}"!`);
-      }
-      fetchLeads();
-      setSelectedLeadIds(new Set());
-    } catch (err: any) {
-      toast.error(err instanceof Error ? err.message : 'Falha ao mover leads em lote.');
-    } finally {
-      setIsBatchUpdating(false);
-    }
-  };
+  // Ações em lote e handlers de parâmetros de URL extraídos para hooks dedicados
+  // (`useCrmBoardBatchActions`/`useCrmBoardUrlParams`) na refatoração de hotspot — Onda 3,
+  // handoff 00→04. `clearSelection` replica exatamente o `setSelectedLeadIds(new Set())` que os
+  // handlers originais executavam (sem tocar em `selectionMode`, como antes).
+  const clearSelection = useCallback(() => setSelectedLeadIds(new Set()), []);
 
-  const handleBatchReassignOwner = async (ownerId: string) => {
-    if (selectedLeadIds.size === 0) return;
-    const ownerUser = users.find((u) => u.id === ownerId);
-    const ownerName = ownerUser?.name || ownerId;
-    setIsBatchUpdating(true);
-    try {
-      // Lead.owner é contrato User.id, não nome (DATA-003, mesma correção já aplicada em
-      // handleOwnerChange de LeadDetailDrawer.tsx) — este caminho de reatribuição em lote gravava
-      // o nome até aqui, divergindo do resto da aplicação (round-robin, import Bitrix, verificação
-      // de duplicidade em LeadUseCases.ts, que resolve `existing.owner` via
-      // `prisma.user.findUnique({ where: { id } })`) e do próprio KanbanCard.tsx, que já espera
-      // resolver o nome de exibição a partir do id (ver ownerNameById acima). `ownerName` aqui
-      // continua existindo só para a mensagem do toast, não para o payload.
-      const result = await api.post<{ updatedCount: number; total: number; failedCount: number }>(
-        '/api/leads/batch-update',
-        { leadIds: Array.from(selectedLeadIds), updates: { owner: ownerId } },
-      );
-      if (result.failedCount > 0) {
-        toast.error(
-          `${result.updatedCount} de ${result.total} leads reatribuídos para "${ownerName}" — ${result.failedCount} falharam.`,
-        );
-      } else {
-        toast.success(`${result.updatedCount} lead(s) reatribuído(s) para "${ownerName}"!`);
-      }
-      fetchLeads();
-      setSelectedLeadIds(new Set());
-    } catch (err: any) {
-      toast.error(err instanceof Error ? err.message : 'Falha ao reatribuir leads.');
-    } finally {
-      setIsBatchUpdating(false);
-    }
-  };
+  const {
+    isBatchUpdating,
+    handleBatchMoveStage,
+    handleBatchReassignOwner,
+    handleBatchExportBitrix,
+    handleBatchEnrichSelected,
+  } = useCrmBoardBatchActions({ selectedLeadIds, users, fetchLeads, clearSelection });
 
-  const handleBatchExportBitrix = async () => {
-    if (selectedLeadIds.size === 0) {
-      // Se nenhum lead selecionado, pergunta se deseja exportar todos
-      try {
-        const res = await bitrixApi.exportLeadsBatch();
-        toast.success(
-          `Exportação concluída: ${res.data.exportedCount} leads enviados para o Bitrix24!`,
-        );
-        fetchLeads();
-      } catch (err: any) {
-        toast.error(err instanceof Error ? err.message : 'Falha ao exportar para Bitrix24.');
-      }
-      return;
-    }
-
-    setIsBatchUpdating(true);
-    try {
-      const res = await bitrixApi.exportLeadsBatch(Array.from(selectedLeadIds));
-      toast.success(`${res.data.exportedCount} leads enviados com sucesso para o Bitrix24!`);
-      fetchLeads();
-      setSelectedLeadIds(new Set());
-    } catch (err: any) {
-      toast.error(err instanceof Error ? err.message : 'Falha ao exportar para Bitrix24.');
-    } finally {
-      setIsBatchUpdating(false);
-    }
-  };
-
-  const handleBatchEnrichSelected = async () => {
-    if (selectedLeadIds.size === 0) return;
-    setIsBatchUpdating(true);
-    try {
-      const res = await api.post<{
-        success: boolean;
-        data: { enqueued: number; enfileirado?: boolean; motivo?: string };
-      }>('/api/leads/enrich-batch', { leadIds: Array.from(selectedLeadIds) });
-      if (res.data?.enqueued > 0) {
-        toast.success(
-          `${res.data.enqueued} lead(s) selecionado(s) enviado(s) para enriquecimento com IA!`,
-        );
-        fetchLeads();
-        setSelectedLeadIds(new Set());
-      } else if (res.data?.enfileirado === false) {
-        toast.error(`Falha ao enfileirar: ${res.data.motivo}`);
-      } else {
-        toast.info('Nenhum lead com empresa associada encontrado na seleção.');
-      }
-    } catch (err: any) {
-      toast.error(err instanceof Error ? err.message : 'Falha ao enriquecer leads selecionados.');
-    } finally {
-      setIsBatchUpdating(false);
-    }
-  };
-
-  const handleFunnelChange = useCallback(
-    (next: 'Lead' | 'Negocio') => {
-      if (funnelProp) return; // funil fixado por prop — toggle não se aplica
-      SoundFX.play('navigate');
-      setSelectedLeadIds(new Set());
-      // remove `lead` junto — evita manter aberto o drawer de um lead que já não está no funil
-      // visível (mesmo comportamento de antes, agora expresso na URL em vez de em state local).
-      setSearchParams(next === 'Lead' ? {} : { funnel: next }, { replace: true });
-    },
-    [funnelProp, setSearchParams],
-  );
-
-  // Aplica funil+filtros de uma view salva de uma vez (Onda B2b) — mesma lógica de
-  // handleFunnelChange (não se aplica com funnel fixado por prop, fecha o drawer aberto), mas
-  // reconstrói a URL inteira em vez de alternar só o funil.
-  const handleApplySavedView = useCallback(
-    (view: SavedViewItem) => {
-      if (funnelProp) return;
-      SoundFX.play('navigate');
-      setSelectedLeadIds(new Set());
-      setSearchParams(
-        (() => {
-          const next = new URLSearchParams();
-          if (view.funnel === 'Negocio') next.set('funnel', 'Negocio');
-          if (view.filters.owner) next.set('owner', view.filters.owner);
-          if (view.filters.q) next.set('q', view.filters.q);
-          return next;
-        })(),
-        { replace: true },
-      );
-    },
-    [funnelProp, setSearchParams],
-  );
-
-  const handleOwnerFilterChange = useCallback(
-    (value: string) => {
-      setSearchParams(
-        (prev) => {
-          const next = new URLSearchParams(prev);
-          if (value) next.set('owner', value);
-          else next.delete('owner');
-          return next;
-        },
-        { replace: true },
-      );
-    },
-    [setSearchParams],
-  );
-
-  const handleEnrichmentFilterChange = useCallback(
-    (value: string) => {
-      setSearchParams(
-        (prev) => {
-          const next = new URLSearchParams(prev);
-          if (value) next.set('enrichment', value);
-          else next.delete('enrichment');
-          return next;
-        },
-        { replace: true },
-      );
-    },
-    [setSearchParams],
-  );
-
-  const handleTemperatureFilterChange = useCallback(
-    (value: string) => {
-      setSearchParams(
-        (prev) => {
-          const next = new URLSearchParams(prev);
-          if (value) next.set('temp', value);
-          else next.delete('temp');
-          return next;
-        },
-        { replace: true },
-      );
-    },
-    [setSearchParams],
-  );
-
-  const handleSearchQueryChange = useCallback(
-    (value: string) => {
-      setSearchParams(
-        (prev) => {
-          const next = new URLSearchParams(prev);
-          if (value) next.set('q', value);
-          else next.delete('q');
-          return next;
-        },
-        { replace: true },
-      );
-    },
-    [setSearchParams],
-  );
-
-  const handleClearFilters = useCallback(() => {
-    setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev);
-        next.delete('owner');
-        next.delete('q');
-        next.delete('enrichment');
-        next.delete('temp');
-        return next;
-      },
-      { replace: true },
-    );
-  }, [setSearchParams]);
+  const {
+    handleFunnelChange,
+    handleApplySavedView,
+    handleOwnerFilterChange,
+    handleEnrichmentFilterChange,
+    handleTemperatureFilterChange,
+    handleSearchQueryChange,
+    handleClearFilters,
+  } = useCrmBoardUrlParams({ funnelProp, setSearchParams, clearSelection });
 
   const handleExportCsv = async () => {
     try {
@@ -701,17 +503,8 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
       if (!response.ok) throw new Error('Falha ao exportar');
 
       const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute(
-        'download',
-        `leads_${BRAND.id}_${new Date().toISOString().slice(0, 10)}.csv`,
-      );
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode?.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      const filename = `leads_${BRAND.id}_${new Date().toISOString().slice(0, 10)}.csv`;
+      await downloadBlob(blob, filename);
     } catch {
       toast.error('Erro ao exportar leads. Tente novamente.');
     }

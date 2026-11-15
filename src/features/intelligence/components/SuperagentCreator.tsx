@@ -18,10 +18,11 @@ import {
   Zap,
 } from 'lucide-react';
 import { useState } from 'react';
+import { BorderBeam } from '../../../components/ui/BorderBeam.js';
 import { useActivePlaybook } from '../../../hooks/useActivePlaybook.js';
 import { useBrandAccent } from '../../../hooks/useBrandAccent.js';
 import { api } from '../../../lib/api.js';
-import { BorderBeam } from '../../../components/ui/BorderBeam.js';
+import { downloadBlob } from '../../../lib/nativeDownload.js';
 import { TerminalSafetyService } from '../../../shared/security/terminalSafety.service.js';
 
 const PROVIDERS = [
@@ -441,7 +442,7 @@ $status | ConvertTo-Json -Depth 3
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleDownloadCurrent = () => {
+  const handleDownloadCurrent = async () => {
     if (!result) return;
     let content = '';
     let filename = '';
@@ -470,12 +471,11 @@ $status | ConvertTo-Json -Depth 3
     }
 
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
+    try {
+      await downloadBlob(blob, filename);
+    } catch {
+      setError('Falha ao exportar o arquivo. Tente novamente.');
+    }
   };
 
   return (

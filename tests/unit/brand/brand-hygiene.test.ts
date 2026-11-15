@@ -30,8 +30,9 @@ describe('Brand Hygiene & Active Identity Gate (Issue #134)', () => {
   it('garante que manifests de deploy, Helm, ArgoCD, Dockerfile e CD workflows apontam para charts/birthhub-360', () => {
     const dockerfile = readUtf8('Dockerfile');
     const cdHomolog = readUtf8('.github/workflows/cd-homolog.yml');
-    const argoProd = readUtf8('argocd/application-production.yaml');
-    const argoHomolog = readUtf8('argocd/application-homolog.yaml');
+    // argocd/ arquivado em infrastructure/archive/argocd/ (ADR-011); charts/ permanece ativo-não-deployado.
+    const argoProd = readUtf8('infrastructure/archive/argocd/application-production.yaml');
+    const argoHomolog = readUtf8('infrastructure/archive/argocd/application-homolog.yaml');
     const chartYaml = readUtf8('charts/birthhub-360/Chart.yaml');
 
     expect(dockerfile).toContain('charts/birthhub-360/templates/migration-job.yaml');

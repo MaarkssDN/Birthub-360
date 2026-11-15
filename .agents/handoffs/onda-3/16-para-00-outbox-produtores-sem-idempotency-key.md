@@ -1,0 +1,64 @@
+# Handoff 16 → 00 — Produtores do DomainEventMesh sem `idempotencyKey`
+
+- De: 16 — Runtime, Workers e Escala
+- Para: 00 — Coordenador
+- Onda: 3 (backlog, DEM do ciclo 20261113-004 / MEL-21)
+- Status: aberto
+- Prioridade: alto
+- Bloqueador-ref: auditoria `.agents/runs/onda-3/16-mel21-outbox-auditoria.md` (G4)
+- Sprint destino: a definir pelo 00
+
+## Problema
+
+`domainEventMesh.publish(event, opts)` aceita `opts.idempotencyKey`
+(`src/lib/queue/domainEventMesh.service.ts:24-28`) — única proteção contra evento
+duplicado na outbox (UNIQUE parcial `(organizationId, idempotencyKey)`,
+`prisma/schema.prisma` e `prismaOutbox.repository.ts:99-101`). **Nenhum call site
+passa o segundo argumento.** Um retry de request, double-submit ou replay de webhook
+gera um segundo `eventId` e os consumidores executam 2x (o ConsumptionStore deduplica
+por `eventId`, que é novo a cada publish).
+
+## Inventário de produtores sem `idempotencyKey` (amostra representativa)
+
+| Arquivo | Evento |
+|---|---|
+| `src/features/ai-voice/server/autonomousSdr.service.ts:97,152` | SDR_CALL_COMPLETED etc. |
+| `src/features/ai-voice/server/bimodalLiveVoice.service.ts:52,160,203` | LIVE_VOICE_* |
+| `src/features/automations/automation.engine.ts:613` | LEAD_ENRICHMENT_REQUESTED |
+| `src/features/cadence/services/selfDrivingCrm.service.ts:78,280,295,341,355` | LEAD_REACTIVATED etc. |
+| `src/features/cadence/services/adaptiveMultichannelCadence.service.ts:135,209` | CADENCE_* |
+| `src/features/commercial-intelligence/services/predictiveRevenueOracle.service.ts:215,301` | REVENUE_FORECAST_PROJECTED |
+| `src/features/commercial-intelligence/services/valueRealization.service.ts:138` | VALUE_REALIZATION_MEASURED |
+| `src/features/gamification/services/behavioralEngine.service.ts:167,269,393,409` | SELLER_XP_REWARDED etc. |
+| `src/features/gamification/services/warRoomArena.service.ts:244` | WAR_ROOM_* |
+| `src/features/intelligence/services/*.ts` (vários) | AUTONOMY_*, WIN_LOSS_* |
+| `src/features/integrations/whatsapp/whatsappMessage.service.ts:231` | ENGAGEMENT_SIGNAL_RECEIVED (dono 06) |
+| `src/features/integrations/bitrix/bitrix.webhook.ts:190` | BITRIX_WEBHOOK_RECEIVED (dono 06) |
+| `src/features/knowledge/services/accountKnowledgeGraph.service.ts:74` | GRAPH_RELATIONSHIP_UPDATED |
+| `src/features/mobile/mobileEdgeAi.service.ts:70,156` | OFFLINE_BRIEFING_ACCESSED etc. |
+| `src/features/proposals/services/proposalAutomation.service.ts:89` | COMMERCIAL_PROPOSAL_DRAFTED |
+| `src/features/roleplay/services/multimodalRoleplaySimulator.service.ts:272` | MULTIMODAL_ROLEPLAY_EVALUATED |
+| `src/lib/runtime/services/multiRegionResilience.service.ts:114` | MULTI_REGION_FAILOVER_TRIGGERED |
+
+## Alteração necessária
+
+Para cada produtor, definir uma chave de idempotência estável derivada da identidade do
+fato de negócio (ex.: `deal-won:{dealId}`, `wa-msg:{waMessageId}`, `call:{callId}`) e
+passar `{ idempotencyKey }` como segundo argumento. Preferir chave determinística do
+domínio (não `randomUUID`) para que retries genuínos colidam.
+
+Sugestão de delegação: o 00 distribui por dono de feature (06 para integrations,
+07 para automations/intelligence, 04 para CRM/BI/commercial-intelligence,
+17 para cadence, etc.).
+
+## Teste esperado
+
+Publicar o mesmo evento duas vezes com a mesma `idempotencyKey` resulta em um único
+registro na outbox (ver `InMemoryOutboxRepository.append` e o `ON CONFLICT DO NOTHING`
+do adaptador Prisma).
+
+## Contexto adicional
+
+- Relacionado: handoff 16→06 sobre nomes de consumidor estáveis no bridge.
+- `publishInTransaction`/UoW existe mas nenhum caso de uso usa — decisão separada se o
+  outbox deve migrar para escrita transacional (ver G10 da auditoria).

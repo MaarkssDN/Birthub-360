@@ -1,0 +1,101 @@
+{
+ "desktop-dark": {
+  "ovf": false,
+  "bg": "rgb(13, 13, 13)",
+  "h1Color": "rgb(200, 208, 238)",
+  "h1Font": "Sora, sans-serif",
+  "bodyFont": "Inter, system-ui, sa",
+  "runningInfinite": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "title": "N1 Final Candidate · Neon Editorial Cinematic · Birth Hub 360°",
+  "errs": [
+   "Access to font at 'file:///home/user/maarkssdn/land-page/assets/fonts/sora-latin.woff2' from origin 'null' has been bloc",
+   "Failed to load resource: net::ERR_FAILED",
+   "Access to font at 'file:///home/user/maarkssdn/land-page/assets/fonts/inter-latin.woff2' from origin 'null' has been blo",
+   "Failed to load resource: net::ERR_FAILED"
+  ],
+  "fails": [
+   "/home/user/maarkssdn/land-page/assets/fonts/sora-latin.woff2",
+   "home/user/maarkssdn/land-page/assets/fonts/inter-latin.woff2"
+  ]
+ },
+ "desktop-light": {
+  "ovf": false,
+  "bg": "rgb(244, 247, 251)",
+  "h1Color": "rgb(51, 64, 106)",
+  "h1Font": "Sora, sans-serif",
+  "bodyFont": "Inter, system-ui, sa",
+  "runningInfinite": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "title": "N1 Final Candidate · Neon Editorial Cinematic · Birth Hub 360°",
+  "errs": [
+   "Access to font at 'file:///home/user/maarkssdn/land-page/assets/fonts/sora-latin.woff2' from origin 'null' has been bloc",
+   "Failed to load resource: net::ERR_FAILED",
+   "Access to font at 'file:///home/user/maarkssdn/land-page/assets/fonts/inter-latin.woff2' from origin 'null' has been blo",
+   "Failed to load resource: net::ERR_FAILED"
+  ],
+  "fails": [
+   "/home/user/maarkssdn/land-page/assets/fonts/sora-latin.woff2",
+   "home/user/maarkssdn/land-page/assets/fonts/inter-latin.woff2"
+  ]
+ },
+ "mobile-dark": {
+  "ovf": false,
+  "bg": "rgb(13, 13, 13)",
+  "h1Color": "rgb(200, 208, 238)",
+  "h1Font": "Sora, sans-serif",
+  "bodyFont": "Inter, system-ui, sa",
+  "runningInfinite": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "title": "N1 Final Candidate · Neon Editorial Cinematic · Birth Hub 360°",
+  "errs": [
+   "Access to font at 'file:///home/user/maarkssdn/land-page/assets/fonts/sora-latin.woff2' from origin 'null' has been bloc",
+   "Failed to load resource: net::ERR_FAILED",
+   "Access to font at 'file:///home/user/maarkssdn/land-page/assets/fonts/inter-latin.woff2' from origin 'null' has been blo",
+   "Failed to load resource: net::ERR_FAILED"
+  ],
+  "fails": [
+   "/home/user/maarkssdn/land-page/assets/fonts/sora-latin.woff2",
+   "home/user/maarkssdn/land-page/assets/fonts/inter-latin.woff2"
+  ]
+ },
+ "mobile-light": {
+  "ovf": false,
+  "bg": "rgb(244, 247, 251)",
+  "h1Color": "rgb(51, 64, 106)",
+  "h1Font": "Sora, sans-serif",
+  "bodyFont": "Inter, system-ui, sa",
+  "runningInfinite": 0,
+  "fonts": [
+   "Sora",
+   "Inter",
+   "IBM Plex Mono"
+  ],
+  "title": "N1 Final Candidate · Neon Editorial Cinematic · Birth Hub 360°",
+  "errs": [
+   "Access to font at 'file:///home/user/maarkssdn/land-page/assets/fonts/sora-latin.woff2' from origin 'null' has been bloc",
+   "Failed to load resource: net::ERR_FAILED",
+   "Access to font at 'file:///home/user/maarkssdn/land-page/assets/fonts/inter-latin.woff2' from origin 'null' has been blo",
+   "Failed to load resource: net::ERR_FAILED"
+  ],
+  "fails": [
+   "/home/user/maarkssdn/land-page/assets/fonts/sora-latin.woff2",
+   "home/user/maarkssdn/land-page/assets/fonts/inter-latin.woff2"
+  ]
+ },
+ "reduced": {
+  "running": 0
+ }
+}

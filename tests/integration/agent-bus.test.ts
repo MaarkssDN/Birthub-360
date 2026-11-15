@@ -112,8 +112,10 @@ describe('Agent Bus + Handoffs (PROMPT 8)', () => {
       await prisma.accessRequest.deleteMany({ where: { organizationId: ORG_ID } });
     });
     await prisma.agentExecution.deleteMany({ where: { organizationId: ORG_ID } });
-    await prisma.auditLog.deleteMany({ where: { entity: 'AgentHandoffMessage' } });
-    await prisma.auditLog.deleteMany({ where: { entity: 'AccessRequest' } });
+    // AuditLog é append-only desde 20261114160000_auditlog_append_only_immutability —
+    // DELETE é bloqueado para qualquer papel (inclusive o migrator). O teste de audit
+    // filtra por entityId do handoff (cuid único por execução), então o resíduo não
+    // interfere em runs futuros.
     await prisma.userJobRole.deleteMany({
       where: { organizationId: { in: [ORG_ID, OTHER_ORG_ID] } },
     });

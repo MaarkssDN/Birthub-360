@@ -37,7 +37,7 @@ export function RoiSimulatorModal({
   // Cálculos dinâmicos de impacto financeiro
   const pipelineTotal = dealsCount * avgTicket;
   const monthlyLeakedRevenue = pipelineTotal * (leakRate / 100);
-  // Recuperação comprovada de até 34% dos negócios que seriam perdidos
+  // Premissa de simulação: recuperação estimada de até 34% dos negócios em risco
   const monthlyRecoverableRevenue = monthlyLeakedRevenue * 0.34;
   const annualRecoverableRevenue = monthlyRecoverableRevenue * 12;
 
@@ -200,7 +200,7 @@ export function RoiSimulatorModal({
                   className="text-slate-700 dark:text-slate-300 font-semibold flex items-center gap-1.5"
                 >
                   <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-                  Taxa Atual de Perda por Falta de Follow-up:
+                  Taxa assumida de perda por falta de follow-up:
                 </label>
                 <span className="px-2.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-amber-400 font-bold">
                   {leakRate}%
@@ -217,9 +217,9 @@ export function RoiSimulatorModal({
                 className="w-full accent-[#F59E0B] cursor-pointer"
               />
               <div className="flex justify-between text-[10px] font-mono text-slate-500 dark:text-slate-300">
-                <span>10% (Funil Maduro)</span>
-                <span>35% (Média de Mercado)</span>
-                <span>60% (Sem Cadência)</span>
+                <span>10% (Funil maduro)</span>
+                <span>35% (Cenário intermediário)</span>
+                <span>60% (Sem cadência)</span>
               </div>
             </div>
           </div>
@@ -229,7 +229,7 @@ export function RoiSimulatorModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="p-3.5 rounded-xl bg-rose-50/80 dark:bg-slate-900/60 border border-rose-200 dark:border-rose-500/30">
                 <div className="text-[11px] font-mono text-rose-400 uppercase font-semibold">
-                  Receita Mensal em Risco
+                  Receita mensal em risco estimado
                 </div>
                 <div className="font-display text-xl font-black text-rose-600 dark:text-rose-300 mt-1">
                   {formatCurrency(monthlyLeakedRevenue)}
@@ -242,7 +242,7 @@ export function RoiSimulatorModal({
               <div className="p-3.5 rounded-xl bg-emerald-50/80 dark:bg-slate-900/60 border border-emerald-200 dark:border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
                 <div className="text-[11px] font-mono text-emerald-400 uppercase font-semibold flex items-center gap-1.5">
                   <TrendingUp className="w-3.5 h-3.5" />
-                  Receita Resgatável com IA
+                  Receita potencial com IA
                 </div>
                 <div className="font-display text-xl font-black text-emerald-700 dark:text-emerald-300 mt-1">
                   {formatCurrency(monthlyRecoverableRevenue)}
@@ -256,11 +256,17 @@ export function RoiSimulatorModal({
             <div className="flex items-center gap-2 pt-2 border-t border-slate-200 dark:border-slate-800/80 text-xs font-mono text-slate-600 dark:text-slate-200">
               <Zap className="w-4 h-4 text-cyan-400 shrink-0" />
               <span>
-                <strong>+15 horas semanais</strong> liberadas por vendedor ao automatizar
+                <strong>Estimativa de +15 horas semanais</strong> por vendedor ao automatizar
                 preenchimento de CRM e cadências de contato.
               </span>
             </div>
           </div>
+
+          {/* Disclaimer de ilustração */}
+          <p className="text-center font-mono text-[11px] text-slate-500 dark:text-slate-300">
+            Cenário ilustrativo · projeções baseadas em premissas de simulação — não constituem
+            garantia de resultados.
+          </p>
 
           {/* CTA de Decisão Imediata */}
           <div className="space-y-3 pt-2">
@@ -279,7 +285,7 @@ export function RoiSimulatorModal({
                 Sem compromisso
               </span>
               <span>•</span>
-              <span>Setup em 5 minutos</span>
+              <span>Onboarding assistido</span>
               <span>•</span>
               <span>Multi-CRM Pronto</span>
             </div>

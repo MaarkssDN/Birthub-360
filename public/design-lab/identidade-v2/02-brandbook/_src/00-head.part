@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0D0D0D">
+<meta name="robots" content="noindex,nofollow">
+<title>Birthub 360° · Brandbook V2.0 (RASCUNHO, NÃO HOMOLOGADO)</title>
+<link rel="stylesheet" href="../shared/core.css">
+<link rel="stylesheet" href="brandbook.css">
+<link rel="icon" href="../assets/logos/birthhub360-icone.svg" type="image/svg+xml">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-hub" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/></symbol>
+  <symbol id="i-intel" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.9-4.9M8 10.5h5M10.5 8v5"/></symbol>
+  <symbol id="i-orch" viewBox="0 0 24 24"><circle cx="5" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 6h3a4 4 0 0 1 4 4v0M7 18h3a4 4 0 0 0 4-4M14 12h3"/></symbol>
+  <symbol id="i-perf" viewBox="0 0 24 24"><path d="M5 20V11M12 20V4M19 20v-6M3 20h18"/></symbol>
+  <symbol id="i-forecast" viewBox="0 0 24 24"><path d="M3 18l5-5 4 3 4-6"/><path d="M16 10l5-4" stroke-dasharray="2 2.4"/><path d="M3 21h18"/></symbol>
+  <symbol id="i-ai" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 17v4M17 19h4"/></symbol>
+  <symbol id="i-auto" viewBox="0 0 24 24"><path d="M13 3L5 13.5h6L10 21l8-10.5h-6z"/></symbol>
+  <symbol id="i-voice" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+  <symbol id="i-admin" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-field" viewBox="0 0 24 24"><path d="M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11z"/><circle cx="12" cy="10" r="2.2"/></symbol>
+  <symbol id="i-social" viewBox="0 0 24 24"><path d="M4 5h16v10H9l-5 4z"/><path d="M8 9h8M8 12h5"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.4-4.4"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9H4z"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+</svg>
+<a class="skip" href="#conteudo">Pular para o conteúdo</a>
+
+<header class="hd">
+  <div class="draft" role="status"><b>V2.0 — RASCUNHO, NÃO HOMOLOGADO</b><span>Decisões provisórias estão marcadas. Não usar como regra homologada.</span></div>
+  <div class="bar">
+    <button class="btn menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="rail"><svg class="ic" aria-hidden="true"><use href="#i-menu"/></svg>Índice</button>
+    <a class="bar-brand" href="#topo"><img src="../assets/logos/birthhub360-icone.svg" alt="" width="28" height="28"><span><span data-brand>Birthub 360°</span> <small>Brandbook V2.0</small></span></a>
+    <span class="seg-label" id="filter-lbl">Regras:</span>
+    <div class="seg" role="group" aria-labelledby="filter-lbl">
+      <button type="button" data-filter="all" aria-pressed="true">Todas</button>
+      <button type="button" data-filter="confirmada" aria-pressed="false">Confirmadas</button>
+      <button type="button" data-filter="provisoria" aria-pressed="false">Provisórias</button>
+    </div>
+    <button class="btn" id="theme-btn" type="button" aria-pressed="false" aria-label="Alternar tema escuro e claro"><svg class="ic ico-moon" aria-hidden="true"><use href="#i-moon"/></svg><svg class="ic ico-sun" aria-hidden="true" style="display:none"><use href="#i-sun"/></svg><span class="lbl">Dark</span></button>
+  </div>
+  <p class="vh" id="filter-out" role="status" aria-live="polite"></p>
+</header>
+
+<div class="shell">
+<nav class="rail ac-blue" id="rail" aria-label="Índice do brandbook">
+  <div class="rail-ring">
+    <svg viewBox="0 0 56 56" aria-hidden="true"><circle class="tr" cx="28" cy="28" r="24"/><circle class="pr" cx="28" cy="28" r="24"/></svg>
+    <p>Leitura<b id="rail-pct">0%</b></p>
+  </div>
+  <ol>
+    <li><a href="#identidade">Identidade</a><ul>
+      <li><a href="#nome">Nome e grafia</a></li><li><a href="#posicionamento">Posicionamento</a></li><li><a href="#proposito">Propósito e narrativa</a></li><li><a href="#voz">Personalidade e voz</a></li></ul></li>
+    <li><a href="#logotipo">Logotipo</a><ul>
+      <li><a href="#versoes">Versões</a></li><li><a href="#proporcoes">Proporções</a></li><li><a href="#protecao">Área de proteção</a></li><li><a href="#minimos">Tamanhos mínimos</a></li><li><a href="#fundos">Fundos</a></li><li><a href="#restricoes">Restrições</a></li></ul></li>
+    <li><a href="#paleta">Paleta Neon</a><ul>
+      <li><a href="#cores">Cores oficiais</a></li><li><a href="#contraste">Contraste WCAG</a></li><li><a href="#distribuicao">Hierarquia e distribuição</a></li><li><a href="#superficies">Superfícies e profundidade</a></li><li><a href="#luz">Iluminação e glow</a></li><li><a href="#gradientes">Gradientes</a></li><li><a href="#estados">Estados e semântica</a></li><li><a href="#temas">Dark e Light</a></li></ul></li>
+    <li><a href="#tipografia">Tipografia</a><ul>
+      <li><a href="#familias">Famílias e usos</a></li><li><a href="#escala">Escala e pesos</a></li><li><a href="#cor-titulos">Cor dos títulos</a></li><li><a href="#hierarquia">Hierarquia em texto corrido</a></li></ul></li>
+    <li><a href="#linguagem">Linguagem visual</a><ul>
+      <li><a href="#direcao">Neon Editorial Cinematic</a></li><li><a href="#grafismos">Grafismos 360°</a></li><li><a href="#composicao">Composição editorial</a></li><li><a href="#profundidade">Profundidade</a></li><li><a href="#iconografia">Iconografia</a></li><li><a href="#imagens">Imagens</a></li><li><a href="#movimento">Movimento</a></li></ul></li>
+    <li><a href="#personagens">Personagens</a><ul>
+      <li><a href="#contagens">Quatro contagens</a></li><li><a href="#elenco">Elenco de 29</a></li><li><a href="#uso-personagens">Uso</a></li></ul></li>
+    <li><a href="#aplicacoes">Aplicações</a><ul>
+      <li><a href="#app-landing">Landing</a></li><li><a href="#app-login">Login</a></li><li><a href="#app-plataforma">Plataforma SaaS</a></li><li><a href="#app-dashboard">Dashboard</a></li><li><a href="#app-modulos">Módulos (11)</a></li><li><a href="#app-materiais">Materiais comerciais</a></li><li><a href="#app-social">Redes sociais</a></li><li><a href="#app-mobile">Mobile</a></li></ul></li>
+    <li><a href="#pendencias">Pendências</a><ul>
+      <li><a href="#decisoes">Matriz de decisões</a></li><li><a href="#divergencias">Divergências encontradas</a></li></ul></li>
+  </ol>
+  <p class="rail-foot">Regras: <span id="cnt-all">0</span> · confirmadas <span id="cnt-c">0</span> · provisórias <span id="cnt-p">0</span><br>Rascunho V2.0. Fonte de verdade: FONTE-DE-VERDADE.md e shared/core.css.</p>
+</nav>
+
+<main id="conteudo" tabindex="-1">
+<div class="wrap">
+
+<section class="mast" id="topo" aria-labelledby="h-topo">
+  <div>
+    <h1 id="h-topo"><span data-brand>Birthub 360°</span><span class="t2">Brandbook</span></h1>
+    <p class="lead">Sistema Operacional de Inteligência Comercial, impulsionado por IA e <em>Revenue Intelligence</em>.</p>
+    <p class="note">Este brandbook é a versão 2.0 em rascunho. Cada regra tem um ID estável e uma etiqueta: <b>CONFIRMADA</b> quando vem literalmente da missão (decisões C01 a C09) ou de documento oficial herdado, <b>PROVISÓRIA</b> quando é proposta derivada, ainda sem homologação. Os exemplos de aplicação são protótipos e usam valores ilustrativos.</p>
+    <dl class="stats">
+      <div><dt>Regras</dt><dd id="cnt-all2">{{count_all}}</dd></div>
+      <div class="c"><dt>Confirmadas</dt><dd>{{count_c}}</dd></div>
+      <div class="p"><dt>Provisórias</dt><dd>{{count_p}}</dd></div>
+    </dl>
+  </div>
+  {{dial}}
+</section>

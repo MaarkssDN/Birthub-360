@@ -1,7 +1,7 @@
 ﻿De: 00 â€” Coordenador
 Para: 13 â€” Enxame AutÃ´nomo e GovernanÃ§a de Agentes de Runtime
 Onda: onda-saneamento-20261105
-Status: resolvido
+Status: aberto
 Prioridade: alto
 Bloqueador-ref: DIV-AGENTE-13-002
 Sprint destino: Onda 4 â€” IA, Enxames e OtimizaÃ§Ã£o de Custos
@@ -32,4 +32,16 @@ RefatoraÃ§Ã£o essencial para manutenibilidade do motor de IA.
 - Data: 2026-11-06.
 - supervisor.agent.ts verificado e integrado com suite de testes de governanca e consentimento em supervisor.agent.consent.test.ts.
 - Testes: 2 testes passam com sucesso.
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto DEFEITO-REAL — supervisor.agent.ts ~900L não decomposto. Correção pendente de despacho. Ver RESULTADOS-RECONCILIACAO-20261114.md.
+
+## Resolução (reconciliação Agente 13 — 2026-11-14)
+
+- Extração PARCIAL de alto valor executada (a decomposição completa <200 linhas foi julgada grande demais para a sessão, conforme instrução do despacho):
+  - Novo `src/features/intelligence/agents/supervisor/specialistNodes.ts` (231 linhas): `swarmSessionId` + nós adaptadores `sdrNode`/`bdrNode`/`closerNode`/`crmNode`/`opsNode` — bloco coeso e independente (execução dos especialistas).
+  - Novo `src/features/intelligence/agents/supervisor/swarm.events.ts` (58 linhas): tipos `SwarmEvent`/`SwarmEventType` + helpers `buildEvent`/`toAiMessage`, compartilhados entre orquestrador e nós.
+  - `src/features/intelligence/agents/supervisor.agent.ts`: 900 → 640 linhas (abaixo do WARN_LIMIT=700 do gate de hotspots). API preservada: `SwarmEvent`/`SwarmEventType` re-exportados; `SwarmStateType` exportado type-only para os nós; `SupervisorAgent`/`SwarmOrchestrator`, `supervisorNode`, `semanticRouterNode`, `finishNode` e todos os re-exports de `supervisor.decision.ts`/`subSwarms.config.ts`/`swarm.constants.ts` inalterados.
+- Verificação: `npx tsc --noEmit` limpo; vitest dos arquivos tocados — 17 arquivos / 110 testes passando (`src/features/intelligence/agents/__tests__` + `tests/unit/features/intelligence/agents/supervisor.semanticRouter.test.ts`).
+- Commits: `e9699a9fb` (teste do bus — handoff 23) e `76d82d4c0` (extração do supervisor).
+- Pendências: decomposição completa do supervisor continua aberta — restam no arquivo principal `AGENT_INFO` (catálogo de prompts/descrições), o prompt de sistema de `supervisorNode` (~45 linhas), `finishNode` (prompt de síntese) e o grafo/`SwarmOrchestrator`. Próximos passos naturais: extrair `AGENT_INFO`+prompt para `supervisor/prompts.ts` e `finishNode` para `supervisor/finishNode.ts`, mirando <200 linhas no orquestrador.
 

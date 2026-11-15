@@ -75,11 +75,14 @@ async function sampleAndRecordPlatformReadiness(): Promise<{
     );
   }
 
-  logger.info('[SlaScheduler] Platform readiness sample recorded', {
-    ready,
-    checks,
-    tenantCount: organizationIds.length,
-  });
+  logger.info(
+    {
+      ready,
+      checks,
+      tenantCount: organizationIds.length,
+    },
+    '[SlaScheduler] Platform readiness sample recorded',
+  );
 
   return { ready, tenantCount: organizationIds.length };
 }
@@ -105,9 +108,7 @@ export function startSlaScheduler(): { queue: Queue; worker: Worker } | undefine
       commandTimeout: 2000,
       retryStrategy: getRedisRetryStrategy(),
     });
-    redisClient.on('error', (err) =>
-      logger.error('[SlaScheduler] Redis client error', err.message),
-    );
+    redisClient.on('error', (err) => logger.error({ err }, '[SlaScheduler] Redis client error'));
 
     worker = new Worker(QUEUE_NAME, () => sampleAndRecordPlatformReadiness(), { connection });
 
@@ -117,20 +118,25 @@ export function startSlaScheduler(): { queue: Queue; worker: Worker } | undefine
       logger.error(`[SlaScheduler] Job ${job?.id} failed. Reason: ${err.message}`);
     });
 
+    // BullMQ v6 removeu `repeat` de JobsOptions — jobs recorrentes agora são "job schedulers"
+    // upsertados por id estável (upsertJobScheduler é idempotente: re-register no boot só atualiza).
     queue
-      .add(
-        JOB_NAME,
-        {},
+      .upsertJobScheduler(
+        `${QUEUE_NAME}-${JOB_NAME}`,
+        { pattern: REPEAT_CRON },
         {
-          repeat: { pattern: REPEAT_CRON },
-          removeOnComplete: true,
-          removeOnFail: 100,
+          name: JOB_NAME,
+          data: {},
+          opts: { removeOnComplete: true, removeOnFail: 100 },
         },
       )
       .then(() => {
-        logger.info('[SlaScheduler] Registered platform readiness sampling job', {
-          cron: REPEAT_CRON,
-        });
+        logger.info(
+          {
+            cron: REPEAT_CRON,
+          },
+          '[SlaScheduler] Registered platform readiness sampling job',
+        );
       })
       .catch((err: unknown) => {
         const msg = err instanceof Error ? err.message : String(err);

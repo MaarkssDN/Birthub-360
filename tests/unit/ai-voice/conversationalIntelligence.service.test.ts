@@ -39,7 +39,9 @@ describe('ConversationalIntelligenceService — Onda 05 (Eixo 13)', () => {
     expect(metrics.customerTalkRatio).toBe(0.4); // 40% cliente
     expect(metrics.totalTurns).toBe(2);
     expect(metrics.averageTurnDurationSeconds).toBe(25);
-    expect(metrics.isEstimate).toBe(false);
+    // Reconciliação forense (EXP-07): sem ground truth de diarização, as
+    // métricas são honestamente marcadas como estimativa.
+    expect(metrics.isEstimate).toBe(true);
   });
 
   it('deve categorizar perguntas abertas vs fechadas formuladas pelo vendedor', () => {

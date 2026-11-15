@@ -79,40 +79,6 @@ propósito por estar fora de "## Exceções ativas"):
 - **Registrado em:** 2026-10-08
 - **Reavaliar até:** 2026-11-30
 
-### `src/features/crm360/infra/PrismaCrm360Repository.ts`
-
-- **Limite excepcional:** 1210 linhas
-- **Dono:** Agente 17 — Cadência Multicanal e Ciclo de Receita
-- **Motivo:** achado ACH-17-08 (auditoria multiagente) — `updateDocumentStatus` marcava uma
-  proposta como "Pago" sem passar pelo `dealClosureGate`, deixando o fechamento de negócio
-  dependente 100% da mudança manual de estágio no Kanban. A correção (gate de fechamento de
-  negócio + propagação de `actorUserId` pela cadeia de chamada, mesmo padrão já usado pelo
-  ACH-17-01 para o caminho de assinatura) levou o arquivo de ~1000 para 1028 linhas — crescimento
-  de lógica de negócio real, não bloat. **Onda 5 (2026-09-13), BILLING-003:** reconciliação real
-  Fatura x Stripe (`reconcileFaturaStripePayment`) antes de marcar "Pago" — mesma classe de
-  correção financeira real do ACH-17-08 original — levou o arquivo a 1178 linhas; a injeção de
-  `StripeChargePort` via construtor (fix de `no-cross-feature-imports`) soma mais algumas linhas
-  de infraestrutura. Modularizar (extrair os métodos de propostas/documentos para um repositório
-  próprio, separado do resto de `PrismaCrm360Repository`) fica para um item de dívida técnica
-  dedicado. A contagem atual chegou a 1203 linhas, 3 acima do teto anterior; o aumento do teto é
-  temporário e não substitui a modularização.
-- **Registrado em:** 2026-09-12
-- **Atualizado em:** 2026-09-13 (Onda 5, BILLING-003)
-- **Atualizado em:** 2026-10-14 (exceção temporária para a contagem atual)
-- **Reavaliar até:** 2026-11-30 (mesmo checkpoint dos demais itens desta lista)
-
-  linhas (2026-08-25), cresceu para 1193 linhas sem que o gate rodasse de verdade em CI pelo mesmo
-  motivo (mascarado por `no-cross-feature-imports` na etapa anterior). Não é regressão de nenhum
-  PR específico. Modularizar fica para um item de dívida técnica dedicado.
-- **Registrado em:** 2026-08-29
-- **Reavaliar até:** 2026-11-30 (mesmo checkpoint do `KNOWN_VIOLATIONS.md`)
-
-  subcomponentes é uma refatoração de UX/integração independente desta correção de CI e deve ser
-  planejada pelo dono do domínio. Exceção temporária para manter o gate executável sem alterar o
-  limite geral do repositório.
-- **Registrado em:** 2026-10-14
-- **Reavaliar até:** 2026-11-30
-
 ### `src/features/commercial-intelligence/domain/CommercialIntelligence.ts`
 
 - **Limite excepcional:** 1250 linhas
@@ -142,14 +108,6 @@ propósito por estar fora de "## Exceções ativas"):
 - **Atualizado em:** 2026-09-29 (correção de proprietário)
 - **Reavaliar até:** 2026-11-30
 
-### `src/features/voice-hub/pages/Dashboard/Overview.tsx`
-
-- **Limite excepcional:** 1500 linhas
-- **Dono:** Agente 06 — Integrações e Telefonia
-- **Motivo:** Integração massiva e bruta da aplicação satélite Voice Hub na onda 13.
-- **Registrado em:** 2026-09-24
-- **Reavaliar até:** 2026-11-30
-
 ### `src/features/auth/components/NewLoginScreen.tsx`
 
 - **Limite excepcional:** 2100 linhas
@@ -174,15 +132,6 @@ propósito por estar fora de "## Exceções ativas"):
   sem mudança funcional. A exceção mantém a formatação verificada e registra a modularização do
   serviço como trabalho posterior do dono do domínio.
 - **Registrado em:** 2026-10-14
-- **Reavaliar até:** 2026-11-30
-
-### `src/features/voice-hub/store/useStudioStore.ts`
-
-- **Limite excepcional:** 1150 linhas
-- **Dono:** Agente 12 — Voz e Telefonia
-- **Motivo:** Modularizado na campanha techdebt-2026-09-29 (extraídos studioTypes.ts, nodeRegistry.ts e initialData.ts), reduzindo de 1744 para 1084 linhas. Arquivo voltou a 1103 linhas (acima do teto 1100); bump temporário 1150 para desbloquear CI (#695/#692). Agente 12 deve re-modularizar ou confirmar teto.
-- **Registrado em:** 2026-09-29
-- **Atualizado em:** 2026-10-11 (Agente 08 — QA Release e Git)
 - **Reavaliar até:** 2026-11-30
 
 ### `src/lib/voice-hub/services/workflowRuntimeService.ts`
@@ -225,7 +174,7 @@ requerem exceção porque não quebram o gate, só ficam registrados aqui para n
 - `src/features/market-intelligence/server/accountIntelligence.service.ts` (857 linhas)
 - `src/features/intelligence/components/SwarmDashboard.tsx` (modularizado em 2026-11-10: 933 linhas, meta < 1000 atingida)
 - `src/features/crm/components/LeadDetailDrawer.tsx` (726 linhas)
-- `src/components/CrmBoard.tsx` (modularizado em 2026-11-12: 886 linhas + `CrmBoardToolbar.tsx`, meta < 1000 atingida)
+- `src/components/CrmBoard.tsx` (modularizado em 2026-11-12: 886 linhas + `CrmBoardToolbar.tsx`; nova extração em 2026-11-15 para `useCrmBoardBatchActions`/`useCrmBoardUrlParams` em `src/hooks/` — 687 linhas, abaixo do limite de aviso)
 
 Se qualquer um desses cruzar 1000 linhas num PR futuro sem uma exceção registrada acima, o gate
 bloqueia normalmente — esta lista é só contexto, não é uma isenção.
