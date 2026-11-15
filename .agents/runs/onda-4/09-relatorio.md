@@ -177,17 +177,26 @@ de runtime a cada iteração):
    chamável (exigida por minimatch@3/5), v3/v4 são ESM, v5 é objeto `.expand` (exigida
    por minimatch@11).
 
-### Estado final e recomendação
+### RESOLUÇÃO FINAL — residual eliminado (sugestão do Agente 24 implementada)
 
-- **MEL-27 (objetivo real — bomba do precache PWA): CORRIGIDO e verificado.** Todos os
-  consumidores de `glob@14` compartilham a única instância `node_modules/glob` →
-  `minimatch@11.0.5` → `brace-expansion@5.0.13`. `workbox-build`, `cacache`, `rimraf`,
-  `archiver-utils` e o plugin joshwooding estão cobertos.
-- **Residual (dev-only):** `ts-estree`/`ts-morph` ainda podem quebrar SE um padrão com
-  `{}` chegar ao `minimatch@11` deles (lint/typecheck tooling — não afeta build de
-  produção nem PWA). Caminhos de correção futura: `pnpm patch`/`patchedDependencies`
-  (o lado pnpm **já está correto**: o seletor `minimatch@^11.0.0>brace-expansion`
-  casa pela versão resolvida e cobre as 3 instâncias), aguardar bump do
-  typescript-eslint, ou override quando o npm corrigir o dedupe.
-- `pnpm-workspace.yaml` mantém `brace-expansion: ^2.1.7` +
-  `'minimatch@^11.0.0>brace-expansion': ^5.0.12` — semanticamente correto no pnpm.
+O Agente 24 sugeriu (não bloqueante) testar a forma aninhada com chave `"."`. Testada e
+**FUNCIONA** — `npm install --package-lock-only` + `npm ci` real + teste runtime:
+
+```json
+"@ts-morph/common": {
+  "minimatch": { ".": "^11.0.5", "brace-expansion": "^5.0.12" }
+},
+"@typescript-eslint/typescript-estree": {
+  "minimatch": { ".": "^11.0.5", "brace-expansion": "^5.0.12" }
+}
+```
+
+Resultado verificado em `npm ci` limpo: `brace-expansion@5.0.13` aninhado sob
+`@ts-morph/common/node_modules/`, `glob/node_modules/` e `minimatch/node_modules/` —
+**as 3 instâncias `minimatch@11` resolvem be5**, e a raiz mantém `2.1.7` chamável para
+minimatch@3/5. Teste runtime `Minimatch('src/{a,b}/**/*.ts')`: MATCH-OK nos 3 caminhos.
+
+- **MEL-27: CORRIGIDO por completo — produção E devDeps.**
+- `pnpm-workspace.yaml` já estava correto (`minimatch@^11.0.0>brace-expansion` casa por
+  versão resolvida → cobre as 3 instâncias); `pnpm-lock.yaml` segue pendente de
+  regeneração (handoff registrado pelo 24 — npm é o package manager do CI).
