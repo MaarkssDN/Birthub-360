@@ -59,7 +59,9 @@ export const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
 
     return (
       <div ref={ref} role="alert" className={cn(alertVariants({ severity }), className)} {...props}>
-        <div className={iconWellVariants({ severity })}>
+        {/* Ícone de severidade é redundante para leitor de tela — role="alert" já
+            anuncia o conteúdo textual; aria-hidden evita ruído. */}
+        <div aria-hidden="true" className={iconWellVariants({ severity })}>
           {icon ?? <IconComponent className="h-4 w-4" strokeWidth={1.5} />}
         </div>
         <div className="min-w-0 flex-1 pt-1">
