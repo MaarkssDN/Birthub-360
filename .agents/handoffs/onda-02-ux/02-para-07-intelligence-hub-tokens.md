@@ -56,3 +56,18 @@ visual nos dois temas.
 - `ProspectingHub.tsx` (P02) está 100% tokenizado — referência de padrão.
 - P06 é workspace da Frente 04; se a frente já cobrir redesign visual, este
   handoff pode ser absorvido por ela.
+
+## Atualização de triagem — Agente 00 (2026-11-14)
+
+Verificação executada em `main` (`528580fbf`):
+
+- **`Math.random` em `src/features/intelligence`: 0 ocorrências** — o risco de
+  dados fabricados apontado na auditoria foi resolvido (provável saneamento do
+  Agente 07 em ondas posteriores).
+- **Hex cru remanescente: 37 ocorrências em 3 arquivos `.tsx`** (o "78" original
+  já foi parcialmente saneado):
+  - `IntelligenceHub.tsx`: 16
+  - `PredictiveScoringNbaCard.tsx`: 18
+  - `RobustScriptGenerator.tsx`: 3
+- **Status sugerido:** `em-andamento` — resta apenas a tokenização visual dos 3
+  arquivos; o risco funcional (simulação disfarçada) está encerrado.
