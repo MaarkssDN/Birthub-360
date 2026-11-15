@@ -17,20 +17,40 @@ slots de propriedade.
 
 ## O que o verificador faz
 
-1. Coleta os arquivos alterados: `git diff --name-only <base>...HEAD` + staged + worktree
-   (ou lista explícita via `--files`).
+1. Coleta os arquivos alterados: `git diff --name-only --diff-filter=ACMRD <base>...HEAD`
+   (deleções incluídas — apagar arquivo de dono exclusivo também é alteração) + staged +
+   worktree (ou lista explícita via `--files`).
 2. Cruza cada caminho com `OWNERSHIP_RULES` — espelho executável do AGENTS.md §15:
 
    | Caminho | Dono |
    |---|---|
    | `prisma/schema.prisma`, `prisma/migrations/**` | Agente 01/01A |
-   | `.github/workflows/**`, `Dockerfile`, `docker-compose*.yml` | Agente 08 |
+   | `src/App.tsx`, `src/components/layout/**`, `src/bootstrap/routes.ts` | Agente 02 |
+   | `.github/workflows/**`, `Dockerfile` (raiz), `docker-compose.yml` | Agente 08 |
+   | `k8s/**`, `argocd/**`, `charts/**`, `infrastructure/**`, `docker/**` | Agente 10 |
    | `android/**`, `capacitor.config.ts` | Agente 09 |
    | `identidade-visual/**`, `documentacao-aplicacao/**` | Agente 11 |
    | `.agents/prompts/**` | decisão humana |
    | `.agents/runs/**` | Agente 00 |
    | `.agents/reviews/**` | Agente 24/00 |
    | `package.json`, lockfiles (`package-lock.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `yarn.lock`), `server.ts` | aprovação explícita do Agente 00 |
+
+   Notas sobre a tradução do §15 para regexes:
+
+   - **Agente 02:** o §15 lista "navegação principal" e "Sidebar" sem path literal.
+     A heurística adotada cobre `src/components/layout/**` (onde moram `Sidebar.tsx`,
+     `ModuleRail`, `MainLayout` — ver `src/components/layout/AGENTS.md`, dono Agente 02)
+     e `src/bootstrap/routes.ts` (registro de rotas). Páginas/features fora do layout
+     **não** são marcadas.
+   - **Agente 08:** o §15 reserva `docker-compose.yml` **literal**. Os arquivos
+     auxiliares `docker-compose.services.yml`, `docker-compose.postgres-local.yml`,
+     `docker-compose.qdrant.yml` e `docker-compose.opensource.yml` existem no repo mas
+     **não** são slot do 08 — não geram finding (decisão da correção pós-revisão 24:
+     restringir ao §15 em vez de alargar a regra).
+   - **Agente 10:** `docker/**` não consta do §15, mas entra como refino local
+     autorizado por `docker/AGENTS.md` (dono Agente 10 — infra auxiliar). É o que faz
+     `docker/postgres/Dockerfile` ser coberto pelo slot do 10, não do 08.
+   - **`Dockerfile`:** a regra do 08 só casa na raiz (`^dockerfile$`), como no §15.
 
    `.agents/handoffs/**` **não** é dono exclusivo: cada agente cria os próprios handoffs (§15) —
    e é justamente onde a evidência exigida pelo gate mora.
@@ -87,6 +107,15 @@ caminhos fora da matriz (incluindo `.agents/handoffs/**`).
   como bug deste script.
 - `ios/**` não consta do §15 (o slot do Agente 09 lista `android/**` e `capacitor.config.ts`) —
   portanto não é marcado. Se o §15 for estendido, estender `OWNERSHIP_RULES`.
+- **Paths não-ASCII:** o git é invocado com `core.quotepath=false`, então caminhos UTF-8 saem
+  sem escape octal. Permanecem invisíveis ao casamento paths que o próprio git continua
+  quotando por conter caracteres de controle, `"` ou `\` no nome.
+- **Untracked files:** `git diff` não lista arquivos não rastreados — um arquivo novo sob
+  slot exclusivo que ainda não foi adicionado (`git add`) não gera finding. Em PR/CI o
+  arquivo já estará tracked, então o risco é só em uso local antes do primeiro stage.
+- **Camada git/fs sem teste unitário:** `collectChangedFiles`/`loadHandoffs` são fina e
+  declaradamente não cobertas por teste — a lógica pura (`verifyOwnership`, `handoffCovers`,
+  `rulesForPath`) é a parte testada.
 
 ## Integração com CI / package.json
 

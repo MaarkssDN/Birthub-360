@@ -22,10 +22,18 @@ describe('verify-file-ownership (AGENTS.md §15 — TAREFA-SANEAMENTO-011)', () 
       const cases: Array<[string, string]> = [
         ['prisma/schema.prisma', 'agente-01-schema'],
         ['prisma/migrations/20261110_add_tabela/migration.sql', 'agente-01-schema'],
+        ['src/App.tsx', 'agente-02-app'],
+        ['src/components/layout/Sidebar.tsx', 'agente-02-app'],
+        ['src/components/layout/AGENTS.md', 'agente-02-app'],
+        ['src/bootstrap/routes.ts', 'agente-02-app'],
         ['.github/workflows/ci.yml', 'agente-08-ci'],
         ['Dockerfile', 'agente-08-ci'],
         ['docker-compose.yml', 'agente-08-ci'],
-        ['docker-compose.services.yml', 'agente-08-ci'],
+        ['k8s/deployment.yaml', 'agente-10-infra'],
+        ['argocd/app.yaml', 'agente-10-infra'],
+        ['charts/birthhub/values.yaml', 'agente-10-infra'],
+        ['infrastructure/terraform/main.tf', 'agente-10-infra'],
+        ['docker/postgres/Dockerfile', 'agente-10-infra'],
         ['android/app/build.gradle', 'agente-09-mobile'],
         ['capacitor.config.ts', 'agente-09-mobile'],
         ['identidade-visual/logo.svg', 'agente-11-marca'],
@@ -51,6 +59,13 @@ describe('verify-file-ownership (AGENTS.md §15 — TAREFA-SANEAMENTO-011)', () 
         'AGENTS.md',
         'tsconfig.json',
         'ios/App/App.xcodeproj', // §15 lista android/** e capacitor.config.ts; ios não é slot do 09
+        // §15 reserva "docker-compose.yml" literal — os auxiliares não são slot do 08
+        'docker-compose.services.yml',
+        'docker-compose.postgres-local.yml',
+        'docker-compose.qdrant.yml',
+        'docker-compose.opensource.yml',
+        // fora do layout/navegação — não é "navegação principal" do slot 02
+        'src/features/crm/pages/LeadPage.tsx',
       ]) {
         expect(rulesForPath(file), file).toEqual([]);
       }
@@ -75,6 +90,14 @@ describe('verify-file-ownership (AGENTS.md §15 — TAREFA-SANEAMENTO-011)', () 
       });
       expect(findings).toHaveLength(1);
       expect(findings[0].ruleId).toBe('aprovacao-00');
+    });
+
+    it('emite finding para slots 02 e 10 sem handoff', () => {
+      const findings = verifyOwnership({
+        changedFiles: ['src/App.tsx', 'k8s/deployment.yaml', 'src/features/x.ts'],
+        handoffs: [],
+      });
+      expect(findings.map((f) => f.ruleId).sort()).toEqual(['agente-02-app', 'agente-10-infra']);
     });
 
     it('emite um finding por regra quando o mesmo arquivo casa com mais de uma', () => {
@@ -157,6 +180,34 @@ describe('verify-file-ownership (AGENTS.md §15 — TAREFA-SANEAMENTO-011)', () 
         handoffCovers(handoff('Agente 00 aprova mudança em server.ts'), 'src/server.ts.bak', rule),
       ).toBe(false); // basename não casa
       expect(handoffCovers(handoff('aprovação do 00 para server.ts'), 'server.ts', rule)).toBe(true);
+    });
+
+    it('cobre slots 02 e 10 por caminho exato e por dono+área', () => {
+      expect(
+        handoffCovers(handoff('ajuste em src/App.tsx'), 'src/App.tsx', OWNERSHIP_RULES.find((r) => r.id === 'agente-02-app')!),
+      ).toBe(true);
+      expect(
+        handoffCovers(
+          handoff('De: Agente 02\nPara: Agente 00\nmudança na navegação principal'),
+          'src/components/layout/Sidebar.tsx',
+          OWNERSHIP_RULES.find((r) => r.id === 'agente-02-app')!,
+        ),
+      ).toBe(true);
+      expect(
+        handoffCovers(
+          handoff('De: Agente 00\nPara: Agente 10\natualizar manifests k8s'),
+          'k8s/deployment.yaml',
+          OWNERSHIP_RULES.find((r) => r.id === 'agente-10-infra')!,
+        ),
+      ).toBe(true);
+      // dono sem área não cobre
+      expect(
+        handoffCovers(
+          handoff('De: Agente 00\nPara: Agente 10\nrevisão de fila'),
+          'k8s/deployment.yaml',
+          OWNERSHIP_RULES.find((r) => r.id === 'agente-10-infra')!,
+        ),
+      ).toBe(false);
     });
 
     it('regra de agente cobre por caminho exato mesmo sem ownerRe/areaRe', () => {

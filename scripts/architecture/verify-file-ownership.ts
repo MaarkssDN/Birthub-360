@@ -83,11 +83,34 @@ export const OWNERSHIP_RULES: OwnershipRule[] = [
     areaRe: /\bprisma\b|schema\.prisma|migra(ç|c)(ã|a)o/i,
   },
   {
+    id: 'agente-02-app',
+    label: 'Agente 02 — src/App.tsx, navegação principal e Sidebar',
+    // "Navegação principal/Sidebar" do §15 é mapeado por heurística para
+    // src/components/layout/** (Sidebar.tsx, ModuleRail, MainLayout etc. — ver
+    // src/components/layout/AGENTS.md, dono Agente 02) e src/bootstrap/routes.ts.
+    match: [/^src\/app\.tsx$/, /^src\/components\/layout\//, /^src\/bootstrap\/routes\.ts$/],
+    ownerRe: /\b(?:agente|para|de)\s*-?\s*0?2\b/i,
+    areaRe: /app\.tsx|layout|sidebar|navega(ç|c)|rota|routes|shell|\bux\b|produto/i,
+  },
+  {
     id: 'agente-08-ci',
-    label: 'Agente 08 — .github/workflows/**, Dockerfile, docker-compose*.yml',
-    match: [/^\.github\/workflows\//, /^dockerfile$/, /^docker-compose[^/]*\.ya?ml$/],
+    label: 'Agente 08 — .github/workflows/**, Dockerfile, docker-compose.yml',
+    // §15 reserva "docker-compose.yml" literal — os arquivos auxiliares
+    // docker-compose.services/postgres-local/qdrant/opensource.yml NÃO são slot
+    // do 08 (correção pós-revisão 24: regex anterior era over-inclusive).
+    match: [/^\.github\/workflows\//, /^dockerfile$/, /^docker-compose\.yml$/],
     ownerRe: /\b(?:agente|para|de)\s*-?\s*0?8\b/i,
     areaRe: /github|workflow|docker|dockerfile|docker-compose|\bci\b|\bcd\b/i,
+  },
+  {
+    id: 'agente-10-infra',
+    label: 'Agente 10 — k8s/**, argocd/**, charts/**, infrastructure/** e docker/**',
+    // §15 lista k8s/argocd/charts/infrastructure. docker/** entra como refino
+    // local autorizado por docker/AGENTS.md (dono Agente 10, infra auxiliar);
+    // isso também cobre docker/postgres/Dockerfile, que o §15 não menciona.
+    match: [/^k8s\//, /^argocd\//, /^charts\//, /^infrastructure\//, /^docker\//],
+    ownerRe: /\b(?:agente|para|de)\s*-?\s*0?10\b/i,
+    areaRe: /k8s|argocd|charts?|infrastructure|infraestrutura|observabilidade|kubernetes|docker/i,
   },
   {
     id: 'agente-09-mobile',
@@ -220,7 +243,9 @@ export function verifyOwnership(opts: {
 // ---------------------------------------------------------------------------
 
 function git(args: string): string {
-  return execSync(`git ${args}`, { cwd: ROOT, encoding: 'utf8' });
+  // core.quotepath=false: sem isso o git emite paths não-ASCII entre aspas
+  // ("\303\251..."), o que impediria o casamento com OWNERSHIP_RULES.
+  return execSync(`git -c core.quotepath=false ${args}`, { cwd: ROOT, encoding: 'utf8' });
 }
 
 /**
@@ -236,7 +261,8 @@ export function collectChangedFiles(opts: { base?: string; files?: string[] }): 
   const out = new Set<string>();
   const base = opts.base ?? 'origin/main';
   try {
-    for (const f of git(`diff --name-only --diff-filter=ACMR ${base}...HEAD`).split('\n')) {
+    // ACMRD inclui deleções: apagar arquivo de dono exclusivo também é alteração (§15).
+    for (const f of git(`diff --name-only --diff-filter=ACMRD ${base}...HEAD`).split('\n')) {
       if (f.trim()) out.add(f.trim());
     }
   } catch {

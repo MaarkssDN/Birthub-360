@@ -21,7 +21,7 @@ pastas continuam no depcruise; este gate cobre os slots de propriedade sobre `gi
 | Arquivo | Conteúdo |
 |---|---|
 | `scripts/architecture/verify-file-ownership.ts` | Verificador: cruza `git diff --name-only` (base + staged + worktree, ou `--files`) com `OWNERSHIP_RULES` (espelho executável do §15) e exige handoff correspondente **dentro do mesmo diff**. Warnings, não bloqueio (default exit 0; `--strict` opt-in; `--json` para automação). |
-| `tests/unit/architecture/verify-file-ownership.test.ts` | 15 testes — sucesso e falha. |
+| `tests/unit/architecture/verify-file-ownership.test.ts` | 17 testes — sucesso e falha (15 originais + 2 adicionados na correção pós-revisão 24). |
 | `docs/architecture/FILE-OWNERSHIP.md` | Documentação de uso, matriz, limitações e decisão de não integração com depcruise. |
 | `.agents/handoffs/onda-5/14-para-00-verify-ownership-npm-script.md` | Handoff ao 00 propondo wiring opcional em `package.json`/CI (package.json não foi tocado — exige aprovação do 00). |
 
@@ -89,6 +89,43 @@ EXIT=0
   documentado aqui para transparência do revisor.
 - `tests/` (dono 08) recebeu o teste unitário exigido pela missão — padrão já existente em
   `tests/unit/architecture/` para gates do Agente 14 (check-hotspots, verify-cruise-coverage).
+
+## Correção pós-revisão 24
+
+Parecer: `.agents/reviews/onda-5/24-revisao-14-onda5.md` (veredito REPROVADO, 4 achados).
+Correções aplicadas neste mesmo branch:
+
+1. **[ALTA] OWNERSHIP_RULES incompleto vs §15** — adicionadas as regras `agente-02-app`
+   (`src/App.tsx`, `src/components/layout/**`, `src/bootstrap/routes.ts` — heurística para
+   "navegação principal/Sidebar", documentada em código e na doc) e `agente-10-infra`
+   (`k8s/**`, `argocd/**`, `charts/**`, `infrastructure/**`, mais `docker/**` como refino
+   local de `docker/AGENTS.md`). Tabela de `docs/architecture/FILE-OWNERSHIP.md` atualizada
+   com as duas linhas e notas de tradução §15→regex.
+2. **[MÉDIA] docker-compose over-inclusive** — decidido **restringir ao §15**: regex passou
+   de `docker-compose[^/]*\.ya?ml` para `docker-compose\.yml` literal. Os auxiliares
+   (`docker-compose.services/postgres-local/qdrant/opensource.yml`) saíram da regra do 08 e
+   foram fixados como casos negativos em teste e na doc.
+3. **[MÉDIA] Deleções invisíveis** — `--diff-filter=ACMR` → `ACMRD` no diff contra a base
+   (staged/worktree já incluem deleções por padrão). Deletar arquivo de dono exclusivo agora
+   gera finding.
+4. **[BAIXA] Limitações documentadas** em FILE-OWNERSHIP.md: paths não-ASCII (mitigado com
+   `git -c core.quotepath=false`; residuais com `"`/`\`/controle seguem quotados), untracked
+   files invisíveis ao `git diff`, camada git/fs sem teste unitário, e `Dockerfile` só na
+   raiz — `docker/postgres/Dockerfile` agora é coberto pelo slot do 10 via `docker/**`.
+
+Testes: `verify-file-ownership.test.ts` passou de 15 → **17 testes** (novos casos canônicos
+dos slots 02/10, casos negativos dos docker-compose auxiliares e de paths fora do layout,
+findings de falha para os novos slots, cobertura dono+área). `npx vitest run
+tests/unit/architecture/verify-file-ownership.test.ts` → **17/17 verde**;
+`npx tsc --noEmit` no script → 0 erros. Smoke test `--files` confirma: `src/App.tsx`,
+`k8s/deploy.yaml` e `docker/postgres/Dockerfile` geram WARN; `docker-compose.services.yml`
+não.
+
+**Observação fora de escopo:** `npx vitest run tests/unit/architecture/` completo tem 2
+falhas pré-existentes em `prisma-tx-escape-baseline.test.ts` (drift de baseline em
+`src/lib/voice-hub/repositories/{sessionRepository,userRepository}.ts` — `$transaction`
+novos vs baseline). Não relacionadas a este diff (nenhum arquivo de `src/` tocado); ownership
+do baseline/voice-hub não é do Agente 14 — reportado para o 00 decidir o encaminhamento.
 
 ## Pendências / handoffs abertos
 
