@@ -385,8 +385,12 @@ const extendedPrisma = basePrisma.$extends({
         }
 
         // --- Soft Delete (findUnique filtering) ---
+        // `!= null` (e não `!== null`): com `select` parcial que omite `deletedAt`,
+        // o Prisma devolve a chave como `undefined` — `undefined !== null` é true
+        // e a guarda tratava registro VIVO como deletado (findUnique → null,
+        // findUniqueOrThrow → P2025). Só um Date preenchido indica soft delete.
         if (isAuditable && (operation === 'findUnique' || operation === 'findUniqueOrThrow')) {
-          if (result && result.deletedAt !== null) {
+          if (result && result.deletedAt != null) {
             if (operation === 'findUniqueOrThrow') {
               throw new Prisma.PrismaClientKnownRequestError(
                 'An operation failed because it depends on one or more records that were required but not found.',
