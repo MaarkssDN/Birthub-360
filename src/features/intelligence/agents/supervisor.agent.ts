@@ -636,5 +636,5 @@ export class SwarmOrchestrator {
   }
 }
 
-export const SupervisorAgent = SwarmOrchestrator;
-export type SupervisorAgent = SwarmOrchestrator;
+// O alias `SupervisorAgent` (valor + tipo) foi removido: nenhum consumidor no repositório o
+// importava e ele duplicava o export de `SwarmOrchestrator` (knip "duplicate exports").

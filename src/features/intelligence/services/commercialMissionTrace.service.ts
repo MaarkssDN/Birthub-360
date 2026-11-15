@@ -1,14 +1,14 @@
 import type { Prisma } from '@prisma/client';
-import { prisma } from '../../../lib/prisma.js';
-import { consentAuditChain } from '../../../lib/security/consentChainFactory.js';
+import type { prisma } from '../../../lib/prisma.js';
 import {
   ConsentChainUnavailableError,
   type StoredConsentAuditEvent,
 } from '../../../lib/security/consentAuditChain.service.js';
+import { consentAuditChain } from '../../../lib/security/consentChainFactory.js';
 import type { getTenantPrisma } from '../../../lib/tenant-prisma.js';
 import { AppError } from '../../../shared/middlewares/errorHandler.js';
-import { hasPiiExternalConsent } from '../../../shared/services/aiPiiConsent.service.js';
 import { redactResidualPii } from '../../../shared/security/piiRedaction.js';
+import { hasPiiExternalConsent } from '../../../shared/services/aiPiiConsent.service.js';
 import { classifyAgentFromCatalog } from '../agents/triad/agentGraphTaxonomy.js';
 import type {
   AgentCenterDirector,
@@ -378,9 +378,15 @@ function toConsentEventTrace(event: StoredConsentAuditEvent) {
   };
 }
 
-async function loadConsentTrace(organizationId: string): Promise<MissionConsentTrace> {
+// Usa o mesmo cliente Prisma injetado em `getCommercialMissionTrace` (que pode ser o
+// `getTenantPrisma()` com escopo/RLS da requisição) — nunca o `prisma` global do módulo,
+// para não ler consentimento fora do escopo de tenant do caller.
+async function loadConsentTrace(
+  client: typeof prisma,
+  organizationId: string,
+): Promise<MissionConsentTrace> {
   const [consentRow, chainEvents, verification] = await Promise.all([
-    asClient(prisma).organizationAiConsent.findUnique({ where: { organizationId } }),
+    client.organizationAiConsent.findUnique({ where: { organizationId } }),
     consentAuditChain.getChain(organizationId),
     consentAuditChain.verifyChainIntegrity(organizationId),
   ]).catch((error: unknown) => {
@@ -501,7 +507,7 @@ export async function getCommercialMissionTrace(input: {
           select: { code: true, name: true, domain: true },
         })
       : Promise.resolve([]),
-    loadConsentTrace(organizationId),
+    loadConsentTrace(client, organizationId),
   ]);
 
   const agentNames = new Map(agentDefinitions.map((row) => [row.code, row.name]));

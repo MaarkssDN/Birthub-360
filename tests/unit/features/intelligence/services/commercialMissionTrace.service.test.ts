@@ -1046,8 +1046,8 @@ describe('getCommercialMissionTrace — isolamento por tenant', () => {
     }
   });
 
-  it('observa que loadConsentTrace usa o prisma do módulo, não o db injetado (acoplamento)', async () => {
-    const injectedConsent = vi.fn();
+  it('usa o db injetado para o consentimento (mesmo cliente do restante do trace)', async () => {
+    const injectedConsent = vi.fn().mockResolvedValue(null);
     const injectedDb = {
       agentHandoffMessage: db.agentHandoffMessage,
       agentExecution: db.agentExecution,
@@ -1065,7 +1065,8 @@ describe('getCommercialMissionTrace — isolamento por tenant', () => {
       requestedMissionId: 'mission-1',
     });
 
-    expect(consentFindUnique).toHaveBeenCalled();
-    expect(injectedConsent).not.toHaveBeenCalled();
+    expect(injectedConsent).toHaveBeenCalledWith({ where: { organizationId: ORG } });
+    // O prisma do módulo não deve ser consultado quando um db distinto é injetado.
+    expect(consentFindUnique).not.toHaveBeenCalled();
   });
 });
