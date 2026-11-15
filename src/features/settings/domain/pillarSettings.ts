@@ -34,6 +34,19 @@ export const PILLAR_NAME_TO_SLUG: Record<string, PillarSlug> = {
   'Engajamento Comercial': 'engagement',
 };
 
+/** Inverso de PILLAR_NAME_TO_SLUG — usado pelo hub consolidado (/app/settings/pillars/:pillar,
+ *  MEL-30/Onda 4) para resolver o nome de exibição a partir do slug da rota. */
+export const PILLAR_SLUG_TO_NAME: Record<PillarSlug, string> = {
+  hub: 'Hub Comercial',
+  market: 'Inteligência de Mercado',
+  sales: 'Orquestração de Vendas',
+  performance: 'Performance Comercial',
+  predictability: 'Previsibilidade Comercial',
+  ai: 'Inteligência Artificial',
+  automation: 'Automação & Conectividade',
+  engagement: 'Engajamento Comercial',
+};
+
 export const PILLAR_SETTING_KEY_PREFIX = 'settings.pilar.';
 
 export function pillarSettingKey(slug: PillarSlug): string {
