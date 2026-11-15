@@ -72,6 +72,32 @@ adaptadores de identidade/schema escalada ao 01. Evidências e checklist
 completo em `12-para-00-voicehub-tenancy-auditoria.md`; isolamento por tenant
 nos services sãos congelado em `src/lib/voice-hub/__tests__/tenant-isolation.test.ts`
 (36 testes verdes). Gate permanece fechado.
+## Re-verificação Onda 2 (Agente 12 — 2026-11-14, branch `agente/12-onda2-voz`, base `origin/main` @ d699f9c4f)
+
+Estado reconfirmado — **nada mudou desde o parecer NO-GO de 2026-11-12; a parte do Agente 12
+permanece bloqueada pelo Agente 01**:
+
+- `npx tsc --noEmit -p tsconfig.voice.json` → ainda **254 erros** (models `Tenant`/`Membership`/
+  `Role`/`Session` inexistentes, `req.user` não tipado nos controllers legados, imports quebrados
+  como `organizationRepository.js`). O backend do voice-hub continua sem compilar contra o
+  schema canônico.
+- `src/bootstrap/routes.ts` L210-217: `/api/voice-hub`, `/api/outbound`, `/api/dialer-3cx` seguem
+  montados apenas como `authenticateToken + requireTenant + unavailableLegacyModule` → 503
+  `MODULE_NOT_READY`. Nenhum router legado executa.
+- `src/lib/voice-hub/middlewares/index.ts` (JWT paralelo + auto-upsert de `prisma.tenant` em dev)
+  permanece dormente atrás do gate — reescrevê-lo antes da decisão do 01 seria retrabalho.
+- `src/lib/voice-hub/__tests__/tenant-isolation.test.ts` → **36/36 testes verdes** na main atual
+  (rede de regressão dos invariantes de isolamento por service continua válida).
+- Handoff dependente `12-para-01-voicehub-identidade-schema-adapters.md` segue **aberto** —
+  sem a decisão de estratégia (adaptar repositories aos models canônicos vs. criar models
+  legados) nenhuma alteração de repository/auth do voice-hub pode ser feita sem violar P1
+  (não fazer suposições silenciosas sobre contrato de schema — propriedade do Agente 01).
+
+**Pendências (fora do alcance do 12 nesta onda):**
+- Agente 01: decisão + implementação dos adaptadores de identidade/schema (handoff acima).
+- Agente 02: manter `voice-hub`/`outbound`/`dialer` em `NAV_HIDDEN_TABS` até backend 200.
+- Item 4 (`dialer` → alias de `cadence`): já resolvido pelo 17 — sem pendência.
+
 ## Avaliação Agente 02 (2026-11-12)
 
 Recebido e avaliado pelo 02. Manter **oculto** (`voice-hub`, `outbound`, `dialer` fora da navegação) até:
