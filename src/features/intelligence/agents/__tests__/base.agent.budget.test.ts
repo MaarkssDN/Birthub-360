@@ -34,6 +34,33 @@ vi.mock('../../../../lib/ai/checkpointer.js', () => ({
   closeCheckpointerPool: vi.fn().mockResolvedValue(undefined),
   __resetCheckpointerSetupForTests: vi.fn(),
 }));
+// Onda 6 / MEL-44 (causa raiz medida): `BDRAgent.run()` faz `await import()` de 6 módulos de
+// tools ANTES de chegar ao runWithTools/gates — e `capabilityToolRegistry.js` puxa ~20 módulos
+// (prisma, searchService/Meilisearch, ProposalAiService...). O transform+eval lazy disso dentro
+// do `it` media ~90s nesta máquina (reproduzido com timing por módulo: capabilityToolRegistry
+// sozinho ≈ 90s; os demais ≈ 40s somados), o que estourava o testTimeout mesmo com os gates
+// mockados — o orçamento nem chegava a ser consultado. Como o teste prova o bloqueio no gate
+// de orçamento (antes de montar modelo), as tools nunca são exercitadas: mockamos os 6 módulos
+// dinâmicos com stubs mínimos. Se o BDRAgent passar a importar outro módulo de tool, adicionar
+// o mock correspondente aqui.
+const stubTool = { name: 'stub-tool', description: 'stub', func: async () => '' };
+vi.mock('../../tools/marketResearchTool.js', () => ({ marketResearchTool: stubTool }));
+vi.mock('../../tools/playbookTool.js', () => ({ searchPlaybookTool: stubTool }));
+vi.mock('../../tools/crmTools.js', () => ({
+  searchLeadsTool: stubTool,
+  getLeadContextTool: stubTool,
+}));
+vi.mock('../../tools/battlecardTool.js', () => ({ getObjectionBattlecardTool: stubTool }));
+vi.mock('../../tools/advancedCommercialTools.js', () => ({ competitorAnalysisTool: stubTool }));
+vi.mock('../../tools/capabilityToolRegistry.js', () => ({
+  getToolsForSwarmRole: vi.fn().mockReturnValue([]),
+}));
+// learning.agent.ts entra no grafo via import estático do AgentExecutor e arrasta prisma +
+// authorization inteira no transform — mas `getLearningProfile` só roda DEPOIS dos gates de
+// segurança, que este teste bloqueia. Mockar remove ~40s de eval do caminho provado.
+vi.mock('../learning.agent.js', () => ({
+  getLearningProfile: vi.fn().mockResolvedValue(null),
+}));
 
 /**
  * AI-011: `BaseAgent.runWithTools` (base.agent.ts) fala direto com LangChain/Groq via
