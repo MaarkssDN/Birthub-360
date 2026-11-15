@@ -1,0 +1,155 @@
+<section class="ch ac-gold" id="logotipo" data-secao="Logotipo" aria-labelledby="h-logotipo">
+  <div class="ch-head">
+    <h2 id="h-logotipo">Logotipo</h2>
+    <div><p class="lede">Os três SVGs mestres entram sem nenhuma alteração. Tudo o que está desenhado em volta deles (medidas, proteção, fundos) é diagrama de apoio, nunca redesenho.</p>
+    <p class="meta">{{range BB-LOGO}}</p></div>
+  </div>
+
+  <div class="sub" id="versoes">
+    <h3>Versões</h3>
+    <div class="logo-set">
+      <figure class="lplate dk" style="margin:0"><div class="art"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo do Birth Hub 360 sobre fundo escuro" width="256" height="256" style="width:min(100%,15rem)"></div><figcaption><b>Símbolo</b>Emblema completo, com o anel de graduação. A partir de 96 px.</figcaption></figure>
+      <figure class="lplate dk" style="margin:0"><div class="art"><img src="../assets/logos/birthhub360-icone.svg" alt="Ícone do Birth Hub 360 sobre fundo escuro" width="180" height="180" style="width:min(100%,9rem)"></div><figcaption><b>Ícone</b>Redução estrutural, sem anel de graduação. De 32 a 96 px.</figcaption></figure>
+      <figure class="lplate dk" style="margin:0"><div class="art"><img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Logotipo horizontal do Birth Hub 360 sobre fundo escuro" width="473" height="128" style="width:min(100%,19rem)"></div><figcaption><b>Horizontal</b>Símbolo e wordmark, assinatura institucional.</figcaption></figure>
+    </div>
+    <p class="plate-cap">Arquivos: <code>assets/logos/birthhub360-simbolo.svg</code>, <code>-icone.svg</code>, <code>-logo-horizontal.svg</code>. Cópias idênticas (verificadas com cmp) dos mestres em <code>identidade-visual/birthhub360/logos/</code>.</p>
+    <ol class="rules">
+@@rule BB-LOGO-01 C origem: C06 da missão
+O logotipo original não é redesenhado, recolorido, vetorizado de novo nem "melhorado". Usar sempre os SVGs mestres copiados em <code>assets/logos/</code>.
+@@end
+@@rule BB-LOGO-02 C origem: src/config/brand.ts
+Três versões oficiais: símbolo (emblema completo, 96 px ou mais), ícone (32 a 96 px; favicon e avatar) e horizontal (emblema mais logotipo, assinatura institucional).
+@@end
+@@rule BB-LOGO-03 C origem: identidade-visual/README.md
+Os SVGs mestres têm cores históricas (incluindo #3B82F6 no anel e serifa no "B" e no wordmark) que diferem dos tokens neon atuais. Foram preservados por determinação do usuário e não são corrigidos nesta frente.
+@@end
+@@rule BB-LOGO-04 P origem: proposta deste brandbook
+Cada imagem de logotipo leva texto alternativo com o nome e a versão. Em um cabeçalho que já traz o nome em texto, o ícone é decorativo (alt vazio).
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="proporcoes">
+    <h3>Proporções</h3>
+    <div class="split rev">
+      <div class="geo dkp" role="img" aria-label="Símbolo com quatro circunferências de medida sobrepostas, de A a D">
+        <img src="../assets/logos/birthhub360-simbolo.svg" alt="" width="256" height="256">
+        <i style="width:96.9%;height:96.9%"></i><i style="width:70.3%;height:70.3%"></i><i style="width:57.8%;height:57.8%"></i><i style="width:48%;height:48%"></i>
+        <span class="lb" style="left:84.25%;top:15.75%;transform:translate(-50%,-50%)">A</span><span class="lb" style="left:74.86%;top:74.86%;transform:translate(-50%,-50%)">B</span><span class="lb" style="left:70.44%;top:29.56%;transform:translate(-50%,-50%)">C</span><span class="lb" style="left:66.99%;top:66.99%;transform:translate(-50%,-50%)">D</span>
+      </div>
+      <div class="tbl"><table>
+        <thead><tr><th scope="col">Marca</th><th scope="col">Elemento (viewBox 256)</th><th scope="col">Diâmetro</th><th scope="col">% do lado</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">A</td><td>Anel de graduação (traço r 118,12 e espessura 11,77)</td><td class="num">248</td><td class="num">96,9%</td></tr>
+          <tr><td class="mono">B</td><td>Órbita, borda externa (r 90)</td><td class="num">180</td><td class="num">70,3%</td></tr>
+          <tr><td class="mono">C</td><td>Disco central (r 74), borda interna da órbita</td><td class="num">148</td><td class="num">57,8%</td></tr>
+          <tr><td class="mono">D</td><td>Aro dourado interno (r 61,5, traço 5)</td><td class="num">123</td><td class="num">48,0%</td></tr>
+          <tr><td class="mono">-</td><td>Eixo horizontal: largura 128, altura 3</td><td class="num">128</td><td class="num">50,0%</td></tr>
+        </tbody></table></div>
+    </div>
+    <p class="plate-cap">Medidas lidas no código do SVG mestre (símbolo). A caixa visível mede 248 de 256 unidades (bounding box 4 a 252, medida por rasterização). São fatos do arquivo, não instrução de redesenho.</p>
+    <ol class="rules">
+@@rule BB-LOGO-05 C origem: medido no SVG mestre
+Geometria do símbolo (viewBox 256): anel de graduação com diâmetro 248, órbita 180, disco central 148, aro dourado 123 e eixo de 128 de largura. A órbita tem 16 de espessura em 6 arcos.
+@@end
+@@rule BB-LOGO-06 C origem: BRANDBOOK-OFICIAL-BIRTH-HUB-360.html, cap. 4
+O emblema não sofre distorção de proporção, rotação arbitrária dos anéis nem alteração dos gradientes neon que formam a assinatura óptica.
+@@end
+@@rule BB-LOGO-07 C origem: medido no SVG mestre
+O ícone é o recorte justo da órbita: viewBox 38 38 180 180, sem margem interna. O horizontal mede 946 por 256, com o símbolo ocupando a altura total.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="protecao">
+    <h3>Área de proteção <span class="st st-p">PROVISÓRIA</span></h3>
+    <div class="split even">
+      <div class="plate flat bd" style="display:grid;gap:1.25rem;justify-items:center">
+        <div class="clear" style="padding:calc(220px * 58 / 256)"><span class="in"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo cercado pela área de proteção X" width="220" height="220" style="width:220px"></span><span class="xmark" style="left:.4rem;top:.4rem">X</span></div>
+        <p class="plate-cap" style="color:#9EADC8;text-align:center">Símbolo: X = ¼ do diâmetro visível (62 unidades)</p>
+      </div>
+      <div class="plate flat bd" style="display:grid;gap:1.25rem;justify-items:center;align-content:space-between">
+        <div class="clear" style="padding:29px 23px 29px 29px"><span class="in"><img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Logotipo horizontal cercado pela área de proteção X" width="300" height="81" style="width:300px"></span><span class="xmark" style="left:.3rem;top:.3rem">X</span></div>
+        <div class="clear" style="padding:calc(90px * .25)"><span class="in"><img src="../assets/logos/birthhub360-icone.svg" alt="Ícone cercado pela área de proteção X" width="90" height="90" style="width:90px"></span><span class="xmark" style="left:.2rem;top:.2rem">X</span></div>
+        <p class="plate-cap" style="color:#9EADC8;text-align:center">Horizontal: X ≈ 62 unidades (29 px nesta escala). Ícone: X = ¼ do lado.</p>
+      </div>
+    </div>
+    <ol class="rules">
+@@rule BB-LOGO-08 P origem: proposta derivada da geometria medida
+Área de proteção X = ¼ do diâmetro visível do símbolo (62 de 248 unidades) em todo o contorno. Nenhum texto, borda, imagem ou outro elemento entra nela.
+@@end
+@@rule BB-LOGO-09 P origem: proposta deste brandbook
+No ícone, que não tem anel de graduação, X = ¼ do lado do recorte (45 de 180 unidades). A proteção é medida a partir da borda visível, não da borda do arquivo.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="minimos">
+    <h3>Tamanhos mínimos</h3>
+    <div class="plate flat bd"><div class="minrow">
+      <figure><img src="../assets/logos/birthhub360-icone.svg" alt="Ícone a 24 px" width="24" height="24"><figcaption>ícone 24 px</figcaption></figure>
+      <figure><img src="../assets/logos/birthhub360-icone.svg" alt="Ícone a 32 px" width="32" height="32"><figcaption>ícone 32 px</figcaption></figure>
+      <figure><img src="../assets/logos/birthhub360-icone.svg" alt="Ícone a 64 px" width="64" height="64"><figcaption>ícone 64 px</figcaption></figure>
+      <figure><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo a 64 px" width="64" height="64"><figcaption>símbolo 64 px</figcaption></figure>
+      <figure><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo a 96 px" width="96" height="96"><figcaption>símbolo 96 px</figcaption></figure>
+      <figure><img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Horizontal com 32 px de altura" width="118" height="32"><figcaption>horizontal h 32</figcaption></figure>
+      <figure><img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Horizontal com 48 px de altura" width="177" height="48"><figcaption>horizontal h 48</figcaption></figure>
+    </div></div>
+    <ol class="rules">
+@@rule BB-LOGO-10 C origem: src/config/brand.ts
+Símbolo completo: 96 px ou mais. Ícone: 32 a 96 px. Abaixo de 96 px o anel de graduação do símbolo deixa de ser legível e deve ser trocado pelo ícone.
+@@end
+@@rule BB-LOGO-11 P origem: proposta deste brandbook, não validada em dispositivo
+Logotipo horizontal: altura mínima de 32 px em tela e 12 mm em impressão. Favicon e avatar pequeno usam o ícone, com 24 px como piso. Estes pisos precisam de teste em dispositivo real.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="fundos">
+    <h3>Fundos permitidos e proibidos</h3>
+    <div class="bg-grid">
+      <div class="bgt ok" style="background:#0D0D0D"><span class="tag"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>OK</span><div class="art"><img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Horizontal sobre Dark" width="190" height="51" style="width:11.8rem"></div><span class="cap" style="color:#9EADC8">Dark #0D0D0D</span></div>
+      <div class="bgt ok" style="background:#14141A"><span class="tag"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>OK</span><div class="art"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo sobre superfície escura" width="88" height="88"></div><span class="cap" style="color:#9EADC8">Superfície #14141A</span></div>
+      <div class="bgt ok" style="background:#F4F7FB"><span class="tag"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>OK</span><div class="art"><img src="../assets/logos/birthhub360-icone.svg" alt="Ícone sobre Light" width="80" height="80"></div><span class="cap" style="color:#46546B">Light #F4F7FB (ícone e símbolo)</span></div>
+      <div class="bgt ok" style="background:#F4F7FB"><span class="tag"><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>OK</span><div class="art"><span style="background:#0D0D0D;padding:.9rem 1.1rem;border-radius:12px;display:block"><img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Horizontal sobre placa escura em fundo Light" width="150" height="41" style="width:9.4rem"></span></div><span class="cap" style="color:#46546B">Horizontal em Light: placa escura</span></div>
+      <div class="bgt no" style="background:#F4F7FB"><span class="tag"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>NÃO</span><div class="art"><img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Horizontal direto sobre Light, sem placa" width="190" height="51" style="width:11.8rem"></div><span class="cap" style="color:#46546B">Horizontal direto em Light: wordmark perde contraste</span></div>
+      <div class="bgt no" style="background:#00D4FF"><span class="tag"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>NÃO</span><div class="art"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo sobre azul neon" width="88" height="88"></div><span class="cap" style="color:#0D0D0D">Fundo neon sólido</span></div>
+      <div class="bgt no" style="background:var(--grad-orbit)"><span class="tag"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>NÃO</span><div class="art"><img src="../assets/logos/birthhub360-icone.svg" alt="Ícone sobre gradiente de órbita" width="80" height="80"></div><span class="cap" style="color:#0D0D0D">Gradiente ou imagem ocupada</span></div>
+      <div class="bgt no" style="background:#6B7280"><span class="tag"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>NÃO</span><div class="art"><img src="../assets/logos/birthhub360-logo-horizontal.svg" alt="Horizontal sobre cinza médio" width="190" height="51" style="width:11.8rem"></div><span class="cap" style="color:#F4F7FB">Cinza médio</span></div>
+    </div>
+    <p class="plate-cap">Contraste das cores do wordmark horizontal contra #F4F7FB: Azul Neon <span class="num" data-cr="#00D4FF|#F4F7FB">{{cr #00D4FF #F4F7FB}}:1</span>, Dourado <span class="num" data-cr="#FFC107|#F4F7FB">{{cr #FFC107 #F4F7FB}}:1</span>, Rosa Neon <span class="num" data-cr="#FF2D9B|#F4F7FB">{{cr #FF2D9B #F4F7FB}}:1</span>. Os três ficam abaixo de 3:1 em quase todo o traço.</p>
+    <ol class="rules">
+@@rule BB-LOGO-12 P origem: C02 e inspeção visual
+Fundos permitidos: Dark #0D0D0D, superfícies #14141A, #1C1C24 e #252530, e Light #F4F7FB para símbolo e ícone (o disco central escuro garante o contraste).
+@@end
+@@rule BB-LOGO-13 P origem: contraste medido (ver tabela abaixo do grid)
+O logotipo horizontal sobre Light exige placa escura #0D0D0D com área de proteção respeitada, porque o wordmark em gradiente neon fica abaixo de 3:1 sobre #F4F7FB.
+@@end
+@@rule BB-LOGO-14 P origem: proposta deste brandbook
+Proibido sobre fundo neon sólido, gradiente, imagem ocupada ou cinza médio. Se o fundo não puder ser controlado, usar a placa escura.
+@@end
+    </ol>
+  </div>
+
+  <div class="sub" id="restricoes">
+    <h3>Restrições de uso</h3>
+    <div class="misuse">
+      <div class="mu"><span class="no"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>NÃO</span><div class="art"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo esticado na horizontal (exemplo proibido)" width="88" height="88" style="transform:scaleX(1.7)"></div><span class="cap">Esticar ou comprimir</span></div>
+      <div class="mu"><span class="no"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>NÃO</span><div class="art"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo girado (exemplo proibido)" width="88" height="88" style="transform:rotate(35deg)"></div><span class="cap">Girar o emblema ou os anéis</span></div>
+      <div class="mu"><span class="no"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>NÃO</span><div class="art"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo com cores trocadas (exemplo proibido)" width="88" height="88" style="filter:hue-rotate(140deg)"></div><span class="cap">Trocar as cores ou o gradiente</span></div>
+      <div class="mu"><span class="no"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>NÃO</span><div class="art"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo em um tom só (exemplo proibido)" width="88" height="88" style="filter:grayscale(1) contrast(.8)"></div><span class="cap">Versão monocromática improvisada</span></div>
+      <div class="mu"><span class="no"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>NÃO</span><div class="art"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo com sombra projetada (exemplo proibido)" width="88" height="88" style="filter:drop-shadow(8px 8px 0 #FF2D9B)"></div><span class="cap">Sombra, contorno ou efeito extra</span></div>
+      <div class="mu"><span class="no"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>NÃO</span><div class="art"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo cortado (exemplo proibido)" width="88" height="88" style="margin-left:-3rem"></div><span class="cap">Cortar ou sangrar o emblema</span></div>
+      <div class="mu"><span class="no"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>NÃO</span><div class="art"><img src="../assets/logos/birthhub360-simbolo.svg" alt="Símbolo com opacidade baixa (exemplo proibido)" width="88" height="88" style="opacity:.3"></div><span class="cap">Baixar a opacidade</span></div>
+      <div class="mu"><span class="no"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>NÃO</span><div class="art" style="gap:.4rem"><img src="../assets/logos/birthhub360-icone.svg" alt="Ícone ao lado de texto digitado" width="44" height="44"><b style="font:700 1.1rem var(--font-ui);color:#E8EEFF">Birthub 360°</b></div><span class="cap">Remontar o horizontal com outra fonte</span></div>
+    </div>
+    <ol class="rules">
+@@rule BB-LOGO-15 C origem: BRANDBOOK-OFICIAL-BIRTH-HUB-360.html, cap. 4
+Proibido distorcer proporção, girar o emblema ou os anéis, e alterar os gradientes neon do emblema.
+@@end
+@@rule BB-LOGO-16 P origem: proposta deste brandbook
+Também proibido: recolorir ou fazer versão monocromática improvisada, aplicar sombra, contorno ou transparência, cortar o emblema, e montar um logotipo horizontal novo com outra fonte. Versão monocromática oficial depende de arte nova aprovada.
+@@end
+    </ol>
+  </div>
+</section>

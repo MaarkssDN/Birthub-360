@@ -1,0 +1,154 @@
+[
+ {
+  "arquivo": "identidade-visual/BRANDBOOK-OFICIAL-BIRTH-HUB-360.html",
+  "tema": "dark",
+  "analisados": 8,
+  "branco": 0,
+  "preto": 0,
+  "exemplos": []
+ },
+ {
+  "arquivo": "identidade-visual/BRANDBOOK-OFICIAL-BIRTH-HUB-360.html",
+  "tema": "light",
+  "analisados": 8,
+  "branco": 0,
+  "preto": 0,
+  "exemplos": []
+ },
+ {
+  "arquivo": "identidade-visual/MANUAL-DE-IDENTIDADE-VISUAL.html",
+  "tema": "dark",
+  "analisados": 22,
+  "branco": 0,
+  "preto": 0,
+  "exemplos": []
+ },
+ {
+  "arquivo": "identidade-visual/MANUAL-DE-IDENTIDADE-VISUAL.html",
+  "tema": "light",
+  "analisados": 22,
+  "branco": 0,
+  "preto": 0,
+  "exemplos": []
+ },
+ {
+  "arquivo": "identidade-visual/MANUAL-DE-IDENTIDADE-DO-PRODUTO.html",
+  "tema": "dark",
+  "analisados": 25,
+  "branco": 0,
+  "preto": 0,
+  "exemplos": []
+ },
+ {
+  "arquivo": "identidade-visual/MANUAL-DE-IDENTIDADE-DO-PRODUTO.html",
+  "tema": "light",
+  "analisados": 25,
+  "branco": 0,
+  "preto": 0,
+  "exemplos": []
+ },
+ {
+  "arquivo": "identidade-visual/CATALOGO-DE-COMPONENTES.html",
+  "tema": "dark",
+  "analisados": 34,
+  "branco": 0,
+  "preto": 0,
+  "exemplos": []
+ },
+ {
+  "arquivo": "identidade-visual/CATALOGO-DE-COMPONENTES.html",
+  "tema": "light",
+  "analisados": 34,
+  "branco": 0,
+  "preto": 0,
+  "exemplos": []
+ },
+ {
+  "arquivo": "identidade-visual/birthhub360/BirthHub360_Personagens.html",
+  "tema": "dark",
+  "analisados": 10,
+  "branco": 0,
+  "preto": 0,
+  "exemplos": []
+ },
+ {
+  "arquivo": "identidade-visual/birthhub360/BirthHub360_Personagens.html",
+  "tema": "light",
+  "analisados": 10,
+  "branco": 0,
+  "preto": 0,
+  "exemplos": []
+ },
+ {
+  "arquivo": "BIRTHUB360_DOCUMENTO_MESTRE_OFICIAL_V4.html",
+  "tema": "dark",
+  "analisados": 176,
+  "branco": 16,
+  "preto": 0,
+  "exemplos": [
+   "h3. \"29 Personagens: da Camada Vi\"",
+   "div.persona-title \"Diretor / Founder\"",
+   "div.persona-title \"Gestor Comercial\""
+  ]
+ },
+ {
+  "arquivo": "BIRTHUB360_DOCUMENTO_MESTRE_OFICIAL_V4.html",
+  "tema": "light",
+  "analisados": 176,
+  "branco": 16,
+  "preto": 0,
+  "exemplos": [
+   "h3. \"29 Personagens: da Camada Vi\"",
+   "div.persona-title \"Diretor / Founder\"",
+   "div.persona-title \"Gestor Comercial\""
+  ]
+ },
+ {
+  "arquivo": "BIRTHUB360_DOCUMENTO_MESTRE_OFICIAL_V4.10.html",
+  "tema": "dark",
+  "analisados": 170,
+  "branco": 0,
+  "preto": 0,
+  "exemplos": []
+ },
+ {
+  "arquivo": "BIRTHUB360_DOCUMENTO_MESTRE_OFICIAL_V4.10.html",
+  "tema": "light",
+  "analisados": 170,
+  "branco": 0,
+  "preto": 0,
+  "exemplos": []
+ },
+ {
+  "arquivo": "BIRTHUB360_DOCUMENTO_MESTRE_OFICIAL_V4_CINEMATIC.html",
+  "tema": "dark",
+  "analisados": 65,
+  "branco": 0,
+  "preto": 0,
+  "exemplos": []
+ },
+ {
+  "arquivo": "BIRTHUB360_DOCUMENTO_MESTRE_OFICIAL_V4_CINEMATIC.html",
+  "tema": "light",
+  "analisados": 65,
+  "branco": 0,
+  "preto": 0,
+  "exemplos": []
+ },
+ {
+  "arquivo": "BirthHub360-DesignSystem-Bible.html",
+  "tema": "dark",
+  "analisados": 67,
+  "branco": 0,
+  "preto": 0,
+  "exemplos": []
+ },
+ {
+  "arquivo": "BirthHub360-DesignSystem-Bible.html",
+  "tema": "light",
+  "analisados": 67,
+  "branco": 0,
+  "preto": 0,
+  "exemplos": []
+ }
+]

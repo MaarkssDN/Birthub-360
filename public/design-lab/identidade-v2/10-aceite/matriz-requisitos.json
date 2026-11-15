@@ -1,0 +1,104 @@
+[
+ {
+  "requisito": "Auditoria, Brandbook, Design System e Motion System consistentes entre si",
+  "resultado": "ATENDIDO",
+  "evidencia": "3 divergências reconciliadas (semânticas de estado, escalas tipográficas, nomes de tokens de motion); matriz 06 com 26/26 checagens automáticas aprovadas (06-conformidade/resultado.json); 02-brandbook/REGISTRO-AGENTE.md e 03-design-system/REGISTRO-AGENTE.md",
+  "responsavel": "00 com Agentes de Brandbook, Design System e Motion"
+ },
+ {
+  "requisito": "Fonte de verdade atualizada e sem contradições não documentadas",
+  "resultado": "ATENDIDO",
+  "evidencia": "FONTE-DE-VERDADE.md com Errata V2.1; itens antigos marcados como SUPERADOS; baseline V2.0 em _baseline-v2.0/MANIFEST.sha256",
+  "responsavel": "00"
+ },
+ {
+  "requisito": "Referência N1 efetivamente analisada ou impedimento comprovado",
+  "resultado": "ATENDIDO",
+  "evidencia": "Repo MaarkssDN/Land-page clonado (commit 0d08b31) e N1 renderizado em Chromium (08-referencia-n1/evidencias/n1-verificacao.json). Página publicada: impedimento comprovado (CONNECT 403), registrado em 08-referencia-n1/index.html",
+  "responsavel": "00"
+ },
+ {
+  "requisito": "Cores, tipografias e identidade oficiais preservadas",
+  "resultado": "ATENDIDO",
+  "evidencia": "Checagens C02, C03, C06-LOGO (cmp byte a byte) e C09 (29 SVGs) em 06-conformidade/index.html; logos do N1 idênticos aos oficiais",
+  "responsavel": "00"
+ },
+ {
+  "requisito": "Problemas corrigíveis da entrega tratados e revalidados",
+  "resultado": "ATENDIDO COM RESSALVAS",
+  "evidencia": "Corrigidos e revalidados: errata do N1 (auditoria, brandbook, fonte de verdade, relatório mestre) e as 3 reconciliações. Mantidos e justificados: 6 pares de contraste do DS tratados como restrição de uso; achados residuais do Impeccable nos protótipos (REGISTRO-AGENTE.md de cada frente). Área de toque dos switches mede 37 a 45 px em ponteiro grosseiro (WCAG 2.2 AA exige 24 px: atendido); não alterada",
+  "responsavel": "00"
+ },
+ {
+  "requisito": "Links, recursos e interações verificados",
+  "resultado": "ATENDIDO COM RESSALVAS",
+  "evidencia": "Links, âncoras, imagens, fontes, overflow e console: 0 problemas em 10 páginas × Dark/Light × 1440/390 (07-relatorio-mestre/qa-00.json), medido pelo 00. Interações (modal, menu, tabela, formulário, motion): 121 checagens do Agente de Design System, 120 aprovadas, e testes do Motion; não repetidas pelo 00",
+  "responsavel": "00; Agentes de Design System e Motion"
+ },
+ {
+  "requisito": "Exemplos e protótipos identificados como tais",
+  "resultado": "ATENDIDO",
+  "evidencia": "Selo RASCUNHO em todas as páginas (checagem HOMOL); rótulo PROTÓTIPO nos 8 exemplos do brandbook e dados fictícios rotulados na biblioteca",
+  "responsavel": "Agentes de Brandbook e Design System"
+ },
+ {
+  "requisito": "Evidências incluídas no pacote",
+  "resultado": "ATENDIDO",
+  "evidencia": "Pacote final contém as pastas evidencias/ de cada frente e do N1 (capturas, JSON de testes, saídas do Impeccable)",
+  "responsavel": "00"
+ },
+ {
+  "requisito": "Revisão independente registrada",
+  "resultado": "VER PARECER",
+  "evidencia": "Parecer do Agente 24 em .agents/reviews/, versão exata identificada por MANIFEST.sha256",
+  "responsavel": "Agente 24"
+ },
+ {
+  "requisito": "Decisões humanas apresentadas separadamente",
+  "resultado": "ATENDIDO",
+  "evidencia": "09-decisoes-humanas/index.html: H-01 a H-14, com evidência, alternativas e recomendação; nenhuma tomada em nome do proprietário",
+  "responsavel": "00"
+ },
+ {
+  "requisito": "Plataforma funcional, landing, login e assets oficiais não modificados; sem merge, push ou deploy",
+  "resultado": "ATENDIDO",
+  "evidencia": "Checagem LIMITES (git status só em identidade-v2/, mais o parecer em .agents/reviews/); nenhum commit ou push",
+  "responsavel": "00"
+ },
+ {
+  "requisito": "Índice principal navegável com todos os documentos e protótipos",
+  "resultado": "ATENDIDO",
+  "evidencia": "index.html na raiz de identidade-v2/ liga as frentes 01 a 10",
+  "responsavel": "00"
+ },
+ {
+  "requisito": "Quality gate: contrastes acessíveis",
+  "resultado": "ATENDIDO COM RESSALVAS",
+  "evidencia": "Texto renderizado: 0 falhas nas 4 combinações (DS e biblioteca), medido pelo Agente de Design System. 6 pares abaixo de 4,5:1 ficam como restrição de uso documentada. axe-core NÃO EXECUTADO (indisponível)",
+  "responsavel": "Agente de Design System"
+ },
+ {
+  "requisito": "Quality gate: Dark/Light, responsividade, movimento reduzido",
+  "resultado": "ATENDIDO",
+  "evidencia": "Fundos #0D0D0D e #F4F7FB, sem overflow em 1440 e 390 e prefers-reduced-motion tratado em todas as páginas (06-conformidade); motion com 0 animações infinitas em reduzido",
+  "responsavel": "00; Agente de Motion"
+ },
+ {
+  "requisito": "Quality gate: conformidade Impeccable",
+  "resultado": "ATENDIDO COM RESSALVAS",
+  "evidencia": "detect executado em cada frente e no N1; achados reais corrigidos; restantes classificados e justificados (assinatura neon, molduras de documentação, texto de exemplo proibido). Registros em cada REGISTRO-AGENTE.md",
+  "responsavel": "Todos os especialistas"
+ },
+ {
+  "requisito": "Gates de código do AGENTS.md §28 (tsc, lint, build, testes)",
+  "resultado": "NÃO APLICÁVEL",
+  "evidencia": "Nenhum arquivo de código funcional foi alterado (apenas HTML, CSS, JS e JSON de documentação e protótipo em public/design-lab/identidade-v2/); a decisão final de aplicabilidade é do Agente 24",
+  "responsavel": "00"
+ },
+ {
+  "requisito": "Cobertura de ambientes",
+  "resultado": "NÃO VERIFICADO",
+  "evidencia": "Safari, Firefox, Android/Capacitor, leitor de tela, zoom 200% e desempenho em dispositivo real não foram testados",
+  "responsavel": "—"
+ }
+]
