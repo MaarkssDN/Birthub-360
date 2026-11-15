@@ -133,4 +133,18 @@ describe('PillarDetailDialog', () => {
     );
     expect(inner?.className).toContain('border-violet-500/40');
   });
+
+  it.each([
+    ['dark', 'cyan'],
+    ['dark', 'pink'],
+    ['dark', 'gold'],
+    ['dark', 'iris'],
+    ['light', 'cyan'],
+    ['light', 'pink'],
+    ['light', 'gold'],
+    ['light', 'iris'],
+  ] as const)('renderiza tema %s/%s sem erro', (theme, themeColor) => {
+    renderDialog({ theme, themeColor });
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
 });

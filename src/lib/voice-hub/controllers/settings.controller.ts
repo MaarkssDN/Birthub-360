@@ -7,7 +7,7 @@ import {
 } from '../services/settingService.js';
 
 export async function getSettingsHandler(req: Request, res: Response) {
-  const settings = await getUserSettings(req.organizationId!, req.voiceHubUser?.id);
+  const settings = await getUserSettings(req.organizationId!, req.voiceHubUser!.id);
   return res.json({ settings });
 }
 
@@ -17,7 +17,7 @@ export async function createSettingsHandler(req: Request, res: Response) {
 
   const settings = await saveUserSettings(
     req.organizationId!,
-    req.voiceHubUser?.id,
+    req.voiceHubUser!.id,
     parsed.data.settings,
     false,
   );
@@ -30,7 +30,7 @@ export async function updateSettingsHandler(req: Request, res: Response) {
 
   const settings = await saveUserSettings(
     req.organizationId!,
-    req.voiceHubUser?.id,
+    req.voiceHubUser!.id,
     parsed.data.settings,
     true,
   );
@@ -38,6 +38,6 @@ export async function updateSettingsHandler(req: Request, res: Response) {
 }
 
 export async function resetSettingsHandler(req: Request, res: Response) {
-  await resetUserSettings(req.organizationId!, req.voiceHubUser?.id);
+  await resetUserSettings(req.organizationId!, req.voiceHubUser!.id);
   return res.json({ success: true, message: 'Configurações resetadas.' });
 }

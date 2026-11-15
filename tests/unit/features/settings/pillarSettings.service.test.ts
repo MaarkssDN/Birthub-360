@@ -106,6 +106,16 @@ describe('PillarSettingsService — persistência por pilar (Onda F1)', () => {
     expect(market.values.autoEnrich).toBe(true);
   });
 
+  it('isolamento por tenant: valores de org-1 não vazam para org-2', async () => {
+    const service = new PillarSettingsService(new InMemoryRepo());
+    await service.update(ORG, USER, 'hub', { stagnationDays: 90 });
+    const otherOrg = await service.get('org-2', 'hub');
+    expect(otherOrg.configured).toBe(false);
+    expect(otherOrg.values.stagnationDays).toBe(14);
+    const ownOrg = await service.get(ORG, 'hub');
+    expect(ownOrg.values.stagnationDays).toBe(90);
+  });
+
   it('GET e UPDATE exigem organizationId', async () => {
     const service = new PillarSettingsService(new InMemoryRepo());
     await expect(service.get('', 'hub')).rejects.toMatchObject({

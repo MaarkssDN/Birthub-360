@@ -233,6 +233,9 @@
     },
     "deepmerge-ts": "^8.0.2",
     "brace-expansion": "^2.1.7",
+    "minimatch@^11.0.0": {
+      "brace-expansion": "^5.0.12"
+    },
     "dompurify": "^3.4.17",
     "uuid": "^14.0.2",
     "fast-uri": "^3.1.9",
@@ -273,10 +276,16 @@
       "glob": "^14.0.4"
     },
     "@ts-morph/common": {
-      "minimatch": "^11.0.5"
+      "minimatch": {
+        ".": "^11.0.5",
+        "brace-expansion": "^5.0.12"
+      }
     },
     "@typescript-eslint/typescript-estree": {
-      "minimatch": "^11.0.5"
+      "minimatch": {
+        ".": "^11.0.5",
+        "brace-expansion": "^5.0.12"
+      }
     },
     "mammoth": {
       "@xmldom/xmldom": "^0.8.15"

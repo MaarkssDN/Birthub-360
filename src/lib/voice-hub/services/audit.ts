@@ -13,7 +13,7 @@ const connection = new Redis(redisUrl, {
   connectTimeout: 2000,
   retryStrategy: getRedisRetryStrategy(),
 });
-connection.on('error', (err) => logger.error('Audit Redis connection error', err.message));
+connection.on('error', (err) => logger.error({ err }, 'Audit Redis connection error'));
 
 const auditQueue = new Queue('auditLogs', { connection });
 
@@ -27,15 +27,22 @@ new Worker(
 
 export function writeAuditLog(
   organizationId: string | undefined,
-  userId: string,
+  userId: string | undefined,
   action: string,
   details: unknown,
 ) {
+  // AuditLog.tenantId é NOT NULL no schema canônico — sem organizationId não existe linha
+  // válida para gravar (e a RLS falharia fechado de qualquer forma). Pular o enqueue aqui é
+  // mais honesto que enfileirar um job condenado a falhar; o warning mantém o evento observável.
+  if (!organizationId) {
+    logger.warn({ action, userId }, 'writeAuditLog ignorado: organizationId ausente');
+    return;
+  }
   auditQueue
     .add(
       'log',
       { organizationId, userId, action, details },
       { removeOnComplete: true, removeOnFail: 100 },
     )
-    .catch((err) => logger.error('Audit queue enqueue failure', err));
+    .catch((err) => logger.error({ err }, 'Audit queue enqueue failure'));
 }

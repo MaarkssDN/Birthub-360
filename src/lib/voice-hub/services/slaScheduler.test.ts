@@ -33,7 +33,7 @@ let lastWorkerProcessor: (() => unknown) | undefined;
 
 vi.mock('bullmq', () => ({
   Queue: vi.fn().mockImplementation(function Queue() {
-    return { add: mockAdd, close: mockQueueClose };
+    return { add: mockAdd, upsertJobScheduler: mockAdd, close: mockQueueClose };
   }),
   Worker: vi.fn().mockImplementation(function Worker(_name: string, processor: () => unknown) {
     lastWorkerProcessor = processor;
@@ -89,14 +89,16 @@ beforeEach(() => {
 describe('startSlaScheduler', () => {
   it('registers a 5-minute repeatable job on the platformSlaCheck queue', async () => {
     startSlaScheduler();
-    // Allow the fire-and-forget queue.add().then() microtask to settle.
+    // Allow the fire-and-forget queue.upsertJobScheduler().then() microtask to settle.
     await new Promise((resolve) => setTimeout(resolve, 0));
 
+    // BullMQ v6: recorrência via upsertJobScheduler(schedulerId, repeatOpts, jobTemplate).
     expect(mockAdd).toHaveBeenCalledWith(
-      'check',
-      {},
+      'platformSlaCheck-check',
+      { pattern: '*/5 * * * *' },
       expect.objectContaining({
-        repeat: { pattern: '*/5 * * * *' },
+        name: 'check',
+        data: {},
       }),
     );
   });

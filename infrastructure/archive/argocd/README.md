@@ -1,5 +1,9 @@
 # argocd/ — status real
 
+> **[ARCHIVED]** Movido para `infrastructure/archive/argocd/` por decisao do usuario
+> (ADR-011, `docs/ADR/ADR-011-k8s-helm-argocd-decisao.md`). Nenhum cluster ArgoCD
+> registrado; ver `../README.md` para o indice do archive e caminho de reativacao.
+
 Estes manifests ArgoCD (`application-production.yaml`, `application-homolog.yaml`) são
 **aspiracionais/legados**, não são o caminho de deploy ativo hoje.
 
@@ -8,7 +12,7 @@ local-first (`docs/development/LOCAL_FIRST.md`). **Render** (`render.yaml` na ra
 repositório) foi a última arquitetura de produção real, mas está **congelado**
 (`autoDeployTrigger: off`) desde a migração para local-first; não há Vercel neste projeto
 (`vercel.json` tem `git.deploymentEnabled: false` e nunca serviu produção). Ver
-[`docs/deploy/README.md`](../docs/deploy/README.md) para o caminho canônico atual por ambiente e
+[`docs/deploy/README.md`](../../../docs/deploy/README.md) para o caminho canônico atual por ambiente e
 `docs/deploy/producao.md` para a arquitetura Render + Supabase + Cloudflare como candidata
 congelada.
 

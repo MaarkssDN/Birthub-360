@@ -1,27 +1,17 @@
 import express from 'express';
-import {
-  registerHandler,
-  loginHandler,
-  meHandler,
-  logoutHandler,
-  refreshHandler,
-} from '../controllers/auth.controller.js';
+import { meHandler, logoutHandler } from '../controllers/auth.controller.js';
 import { requireTenant } from '../middlewares/rbac.js';
 
 const router = express.Router();
 
-router.post('/auth/register', registerHandler);
-router.post('/auth/login', loginHandler);
-// `/auth/me` is the browser/session introspection endpoint. It must resolve the httpOnly access
-// cookie (or bearer token) before the controller reads req.voiceHubUser; previously this route called the
-// controller directly and could return `user: undefined` even for a valid logged-in session.
+// Auth canônica (Better Auth): /auth/register, /auth/login e /auth/refresh com JWT próprio foram
+// REMOVIDOS — cadastro/login/sessão são exclusivamente /api/auth/* do Better Auth (ver src/lib/
+// auth.ts e src/bootstrap/auth.ts). O voice-hub nunca cria tenants nem senhas próprias.
+//
+// `/auth/me` é a introspecção de sessão do voice-hub: resolve a sessão (cookie httpOnly ou bearer)
+// via requireTenant antes do controller ler a sessão — nunca devolve `user` para anônimo.
 router.get('/auth/me', requireTenant, meHandler);
+// Logout delega ao signOut do Better Auth (invalida a Session server-side), não a um JWT local.
 router.post('/auth/logout', logoutHandler);
-// refreshHandler existed in the controller but was never mounted on a route — passive refresh
-// still worked transparently via getAuthUser() (src/middlewares/index.ts) on any authenticated
-// request, but non-browser clients had no explicit way to rotate their access token ahead of
-// expiry without also holding a session-establishing endpoint. Wiring it here matches the
-// documented behavior in SECURITY.md ("Refresh Tokens ... used to obtain a new Access Token").
-router.post('/auth/refresh', refreshHandler);
 
 export default router;

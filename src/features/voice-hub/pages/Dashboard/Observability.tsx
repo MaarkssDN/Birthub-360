@@ -68,7 +68,7 @@ export default function ObservabilityPage() {
         setMetrics(data.metrics || []);
       }
     } catch (err: any) {
-      logger.error('Error fetching telemetry data', { err });
+      logger.error( { err },'Error fetching telemetry data');
     } finally {
       setLoading(false);
     }

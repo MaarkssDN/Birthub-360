@@ -139,3 +139,38 @@ superfícies têm exposição cross-tenant real se forem montadas como estavam.
   tsconfig — registrar que o gate de tipos não cobre o módulo).
 - `npx tsc --noEmit -p tsconfig.voice.json` → centenas de erros (evidência do
   item 1 acima; config não é usada por CI).
+
+## Atualização (Agente 12 — 2026-11-14, branch `agente/12-onda2-handoffs`, commit `c3e37014b`)
+
+Continuação da auditoria — a adaptação aos models canônicos foi **executada**
+(detalhes em `12-para-01-voicehub-identidade-schema-adapters.md#resolução`):
+
+- [x] Adaptadores de identidade/schema — implementados (Organization, User/
+      UserJobRole, AgentSession, OrganizationWebhookEndpoint, Notification,
+      AuditLog, Birthub360CallResult).
+- [x] `POST /api/voice-hub/auth/register|login|refresh` com JWT próprio —
+      **removidos** (`authService.ts` deletado; restam apenas `/auth/me` e
+      `/auth/logout` delegando ao Better Auth).
+- [x] `attachAuthIfPresent` agora popula `requestContext.run({ tenantId,
+      userId, role })` — pré-requisito do RLS `app.current_tenant_id`.
+- [x] `tsconfig.voice.json` alinhado (inclui `vite-env.d.ts`): 313 → 14 erros,
+      todos por deps ausentes (`twilio`, `d3`, `openid-client`) — decisão de
+      package.json é do Agente 00.
+- [x] Testes: 600/600 verdes em `src/lib/voice-hub` + `src/features/voice-hub`;
+      `tenant-isolation.test.ts` 36/36.
+
+**Checklist ainda aberto para o GO**:
+- [ ] Agente 00 decide deps ausentes (`twilio`, `d3`, `openid-client`) — sem
+      isso `tsc -p tsconfig.voice.json` não zera.
+- [ ] Teste de integração com RLS real (Postgres + `app.current_tenant_id`)
+      — ainda não executado; mocks não provam a policy.
+- [ ] Revisão do Agente 24 (tenancy/RLS) — **obrigatória antes de pedir GO**.
+- [ ] 05 blinda `/api/outbound` (handoff `12-para-05-outbound-api-legado-tenancy.md`).
+- [ ] 17 decide `/api/dialer-3cx` (handoff `12-para-17-dialer-3cx-sem-auth.md`).
+- [ ] Consentimento de gravação de chamadas (CallRecording 90d) — enforcement
+      ainda não existe.
+- [ ] `retentionScheduler`/`slaScheduler` corrigidos p/ BullMQ v6 mas **não
+      wired** no boot/worker — confirmar agendamento.
+
+**Parecer se mantém NO-GO** até os itens acima — o `legacyModuleGate` segue
+fechado e nenhum router foi montado.
