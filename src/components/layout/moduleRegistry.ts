@@ -134,6 +134,9 @@ export const PRODUCT_MODULES: ProductModule[] = [
     accent: 'blue',
     home: '/app/crm',
     extraTabs: ['settings_hub'],
+    // MEL-30/Onda 4: settings_* legadas redirecionam para /app/settings/pillars/<slug>;
+    // o prefixo mantém o realce do módulo correto na rota canônica do hub.
+    extraPaths: ['settings/pillars/hub'],
     items: [
       item('crm', 'Pipeline'),
       item('crm360', 'Gestão de Negócios'),
@@ -157,6 +160,7 @@ export const PRODUCT_MODULES: ProductModule[] = [
     accent: 'teal',
     home: '/app/prospect',
     extraTabs: ['settings_market'],
+    extraPaths: ['settings/pillars/market'],
     items: [
       item('prospect', 'Prospecção'),
       { tab: 'prospect', label: 'Prospecção Inteligente', path: 'prospect/inteligente' },
@@ -177,6 +181,7 @@ export const PRODUCT_MODULES: ProductModule[] = [
     accent: 'violet',
     home: '/app/jornadas',
     extraTabs: ['settings_sales'],
+    extraPaths: ['settings/pillars/sales'],
     items: [
       { tab: 'jornadas', label: 'Jornadas Comerciais', section: 'Orquestração' },
       item('playbooks', 'Playbooks Comerciais'),
@@ -214,7 +219,7 @@ export const PRODUCT_MODULES: ProductModule[] = [
     accent: 'gold',
     home: '/app/analytics',
     extraTabs: ['settings_performance'],
-    extraPaths: ['war-room'],
+    extraPaths: ['war-room', 'settings/pillars/performance'],
     items: [
       item('analytics', 'Analytics'),
       item('winloss', 'Win/Loss'),
@@ -231,6 +236,7 @@ export const PRODUCT_MODULES: ProductModule[] = [
     accent: 'gold',
     home: '/app/forecast',
     extraTabs: ['settings_predictability'],
+    extraPaths: ['settings/pillars/predictability'],
     items: [
       item('forecast', 'Forecast'),
       item('metas', 'Metas e Projeções'),
@@ -246,7 +252,12 @@ export const PRODUCT_MODULES: ProductModule[] = [
     accent: 'iris',
     home: '/app/intelligence',
     extraTabs: ['settings_ai'],
-    extraPaths: ['pending-actions', 'intelligence/elite-agent', 'intelligence/pending-actions'],
+    extraPaths: [
+      'pending-actions',
+      'intelligence/elite-agent',
+      'intelligence/pending-actions',
+      'settings/pillars/ai',
+    ],
     items: [
       item('intelligence', 'Hub de IA'),
       {
@@ -283,6 +294,7 @@ export const PRODUCT_MODULES: ProductModule[] = [
     accent: 'blue',
     home: '/app/integrations',
     extraTabs: ['settings_automation'],
+    extraPaths: ['settings/pillars/automation'],
     items: [
       {
         tab: 'automations',
@@ -308,7 +320,12 @@ export const PRODUCT_MODULES: ProductModule[] = [
     extraTabs: ['settings_engagement'],
     // Deep-links legados de voz/telefonia (voice-hub, outbound, dialer) seguem
     // resolvendo para o P08 mesmo estando fora da navegação (NAV_HIDDEN_TABS).
-    extraPaths: ['voice-hub', 'outbound', 'dialer'],
+    extraPaths: [
+      'voice-hub',
+      'outbound',
+      'dialer',
+      'settings/pillars/engagement',
+    ],
     items: [
       // voice-hub/outbound/dialer seguem em NAV_HIDDEN_TABS (503 MODULE_NOT_READY
       // intencional — handoff 17→12). Mesa de Tratamento é o único destino web

@@ -9,8 +9,48 @@ permissions:
   contents: read
 
 jobs:
+  # Detector de escopo: a suíte visual (88 snapshots × stack completa) só roda quando o PR
+  # toca caminhos que podem alterar pixels renderizados. O check `Visual Regression Gate`
+  # abaixo SEMPRE executa e consolida o veredito — assim o contexto existe em todo PR
+  # (required check não fica pendente) e reprova de verdade quando há regressão visual.
+  changes:
+    name: Detectar escopo visual
+    runs-on: ubuntu-latest
+    outputs:
+      relevant: ${{ steps.filter.outputs.relevant }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Filtrar caminhos relevantes
+        id: filter
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          # workflow_dispatch não tem diff de PR: trata como relevante para validar baselines.
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          FILES="$(git diff --name-only "${BASE_SHA}"...HEAD)"
+          echo "Arquivos alterados no PR:"
+          echo "$FILES"
+          # Escopo deliberado: frontend servido, specs/helpers visuais, configs de build/teste,
+          # lockfiles (mudança de dependência pode alterar renderização) e o próprio workflow.
+          # Docs, .agents, infra k8s/argocd e mobile ficam fora — não mudam pixels da web.
+          if printf '%s\n' "$FILES" | grep -Eq '^(src/|public/|server/|server\.ts|worker.*\.ts|identidade-visual/|prisma/|visual-regression/|tests/e2e/|scripts/db/|index\.html|vite\.config\.ts|playwright[^/]*\.config\.ts|tailwind\.config[^/]*|postcss\.config[^/]*|package\.json|package-lock\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|Dockerfile|\.github/workflows/visual-regression\.yml)'; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+          fi
+
   visual-regression:
     name: Visual Regression
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     timeout-minutes: 30
     runs-on: ubuntu-latest
 
@@ -68,59 +108,88 @@ jobs:
       PLATFORM_OPERATOR_TOKEN: ci-test-operator-token-not-for-production
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-    - name: Setup Node.js
-      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-      with:
-        node-version: 22
-        cache: 'npm'
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: 'npm'
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Bootstrap db
-      env:
-        PGPASSWORD: prospector_test_pass
-        APP_DB_PASSWORD: ci_app_test_pass
-        MIGRATOR_DB_PASSWORD: ci_migrator_test_pass
-      run: bash scripts/db/bootstrap-app-role.sh localhost 5434 prospector prospectordb_test
+      - name: Bootstrap db
+        env:
+          PGPASSWORD: prospector_test_pass
+          APP_DB_PASSWORD: ci_app_test_pass
+          MIGRATOR_DB_PASSWORD: ci_migrator_test_pass
+        run: bash scripts/db/bootstrap-app-role.sh localhost 5434 prospector prospectordb_test
 
-    - name: Generate Prisma Client
-      run: npx prisma generate
+      - name: Generate Prisma Client
+        run: npx prisma generate
 
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps chromium
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
 
-    - name: Prepare env
-      run: |
-        cat > .env.test <<EOF
-        NODE_ENV=$NODE_ENV
-        PORT=$PORT
-        DATABASE_URL=$DATABASE_URL
-        DIRECT_URL=$DIRECT_URL
-        REDIS_URL=$REDIS_URL
-        MEILI_HOST=$MEILI_HOST
-        MEILI_MASTER_KEY=$MEILI_MASTER_KEY
-        BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET
-        BETTER_AUTH_URL=$BETTER_AUTH_URL
-        ALLOW_DEV_AUTH_BYPASS=$ALLOW_DEV_AUTH_BYPASS
-        ALLOWED_ORIGINS=$ALLOWED_ORIGINS
-        AUTH_RATE_LIMIT_MAX=$AUTH_RATE_LIMIT_MAX
-        PLATFORM_OPERATOR_TOKEN=$PLATFORM_OPERATOR_TOKEN
-        EOF
+      - name: Prepare env
+        run: |
+          cat > .env.test <<EOF
+          NODE_ENV=$NODE_ENV
+          PORT=$PORT
+          DATABASE_URL=$DATABASE_URL
+          DIRECT_URL=$DIRECT_URL
+          REDIS_URL=$REDIS_URL
+          MEILI_HOST=$MEILI_HOST
+          MEILI_MASTER_KEY=$MEILI_MASTER_KEY
+          BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET
+          BETTER_AUTH_URL=$BETTER_AUTH_URL
+          ALLOW_DEV_AUTH_BYPASS=$ALLOW_DEV_AUTH_BYPASS
+          ALLOWED_ORIGINS=$ALLOWED_ORIGINS
+          AUTH_RATE_LIMIT_MAX=$AUTH_RATE_LIMIT_MAX
+          PLATFORM_OPERATOR_TOKEN=$PLATFORM_OPERATOR_TOKEN
+          EOF
 
-    - name: Apply database migrations
-      run: npx dotenv-cli -e .env.test -- npx prisma migrate deploy
+      - name: Apply database migrations
+        run: npx dotenv-cli -e .env.test -- npx prisma migrate deploy
 
-    - name: Run Visual Tests
-      run: npm run test:visual
+      - name: Run Visual Tests
+        run: npm run test:visual
 
-    - name: Upload Visual Diff Report
-      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-      if: always()
-      with:
-        name: visual-regression-report
-        path: visual-regression-report/
-        retention-days: 7
+      - name: Upload Visual Diff Report
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: visual-regression-report
+          path: visual-regression-report/
+          retention-days: 7
+
+  # Agregador fail-closed: é ESTE job que deve virar required check na branch protection
+  # (contexto `Visual Regression Gate`). Falha se a detecção de escopo falhar, se o PR era
+  # relevante e a suíte visual falhou/cancelou, ou se a suíte rodou fora de escopo e falhou.
+  visual-gate:
+    name: Visual Regression Gate
+    runs-on: ubuntu-latest
+    needs: [changes, visual-regression]
+    if: always()
+    steps:
+      - name: Consolidar veredito do gate visual
+        env:
+          CHANGES_RESULT: ${{ needs.changes.result }}
+          VISUAL_RESULT: ${{ needs.visual-regression.result }}
+          VISUAL_RELEVANT: ${{ needs.changes.outputs.relevant }}
+        run: |
+          set -euo pipefail
+          printf 'changes=%s visual=%s relevant=%s\n' "$CHANGES_RESULT" "$VISUAL_RESULT" "$VISUAL_RELEVANT"
+          test "$CHANGES_RESULT" = success
+          if [ "$VISUAL_RELEVANT" = "true" ]; then
+            # PR tocou caminhos visuais: a suíte é obrigatória e precisa ter passado.
+            test "$VISUAL_RESULT" = success
+          else
+            # Fora de escopo: o job pesado deve estar skipped; se rodou e falhou, reprova.
+            case "$VISUAL_RESULT" in
+              success|skipped) ;;
+              *) echo "::error::Suíte visual falhou fora do escopo esperado (result=$VISUAL_RESULT)"; exit 1 ;;
+            esac
+          fi
