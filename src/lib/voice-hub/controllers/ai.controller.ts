@@ -48,7 +48,7 @@ export async function chatHandler(req: Request, res: Response) {
 
     return res.json(gatewayResponse);
   } catch (error: unknown) {
-    logger.error('Chat handler error:', error);
+    logger.error( error,'Chat handler error:');
     return res.status(500).json({ error: getErrorMessage(error) });
   }
 }
@@ -64,9 +64,12 @@ export async function setAiConsentHandler(req: Request, res: Response) {
     return res.status(400).json({ error: '"granted" deve ser um booleano.' });
   }
 
+  // requireTenant garante voiceHubUser; actorUserId é NOT NULL no repositório de consentimento.
+  const actorUserId = req.voiceHubUser?.id;
+  if (!actorUserId) return res.status(401).json({ error: 'Não autorizado.' });
   const consent = granted
-    ? await grantAiConsent(req.organizationId!, req.user?.id)
-    : await revokeAiConsent(req.organizationId!, req.user?.id);
+    ? await grantAiConsent(req.organizationId, actorUserId)
+    : await revokeAiConsent(req.organizationId, actorUserId);
 
   return res.json({ success: true, consent });
 }
@@ -105,7 +108,7 @@ export async function generateMusicHandler(req: Request, res: Response) {
 
     return res.json({ audioBase64, mimeType });
   } catch (error: unknown) {
-    logger.error('Lyria API error:', error);
+    logger.error( error,'Lyria API error:');
     return res.status(500).json({ error: getErrorMessage(error) });
   }
 }
@@ -125,7 +128,7 @@ export async function generateVideoHandler(req: Request, res: Response) {
 
     return res.json({ operationName: operation.name });
   } catch (error: unknown) {
-    logger.error('Veo start error:', error);
+    logger.error( error,'Veo start error:');
     return res.status(500).json({ error: getErrorMessage(error) });
   }
 }
@@ -175,7 +178,7 @@ export async function videoDownloadHandler(req: Request, res: Response) {
       }),
     );
   } catch (error: unknown) {
-    logger.error('Video download error:', error);
+    logger.error( error,'Video download error:');
     return res.status(500).send(getErrorMessage(error));
   }
 }
@@ -244,7 +247,7 @@ Retorne os mesmos nós, mantendo seus IDs e posições intactos, mas modificando
     const result = JSON.parse(response.text || '{}');
     return res.json(result);
   } catch (error: unknown) {
-    logger.error('Refactor API error:', error);
+    logger.error( error,'Refactor API error:');
     return res.status(500).json({ error: getErrorMessage(error) });
   }
 }
@@ -338,7 +341,7 @@ Regras de posicionamento do layout:
     const result = JSON.parse(response.text || '{}');
     return res.json(result);
   } catch (error: unknown) {
-    logger.error('Generate Workflow API error:', error);
+    logger.error( error,'Generate Workflow API error:');
     return res.status(500).json({ error: getErrorMessage(error) });
   }
 }

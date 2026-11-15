@@ -17,6 +17,7 @@
 import crypto from 'node:crypto';
 import * as apiKeyRepository from '../repositories/apiKeyRepository.js';
 import * as userRepository from '../repositories/userRepository.js';
+import { voiceRoleForCanonicalRole } from '../repositories/roleRepository.js';
 import type { TokenPayload } from '../lib/auth-tokens.js';
 
 export class ApiKeyServiceError extends Error {
@@ -158,8 +159,9 @@ export async function authenticateApiKey(plaintextKey: string): Promise<ApiKeyAu
   const user = await userRepository.findUserById(apiKey.createdByUserId);
   if (!user || user.organizationId !== apiKey.organizationId) return null;
 
-  const membership = await userRepository.findMembershipWithRole(user.id, apiKey.organizationId);
-  if (!membership) return null;
+  // Canonical: o papel de autoridade é `user.role` (UserRole) — traduzido para o voice-role do
+  // voice-hub. Não existe mais Membership/Role para consultar (ver roleRepository.ts); o vínculo
+  // de cargo (UserJobRole) não é exigido para autenticar por API key.
 
   // Best-effort — never let bookkeeping failure block an otherwise-valid authenticated request.
   apiKeyRepository.touchLastUsed(apiKey.id).catch(() => undefined);
@@ -169,7 +171,7 @@ export async function authenticateApiKey(plaintextKey: string): Promise<ApiKeyAu
     session: {
       id: user.id,
       email: user.email,
-      role: membership.role.name,
+      role: voiceRoleForCanonicalRole(user.role),
       organizationId: apiKey.organizationId,
     },
   };

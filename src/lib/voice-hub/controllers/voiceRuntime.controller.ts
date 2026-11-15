@@ -38,7 +38,7 @@ export async function getVoiceRuntimeHandler(req: Request, res: Response) {
   const organizationId = requireOrganizationId(req, res);
   if (!organizationId) return;
 
-  const config = await getVoiceRuntimeConfig(organizationId, req.voiceHubUser?.id);
+  const config = await getVoiceRuntimeConfig(organizationId, req.voiceHubUser!.id);
   return res.json({ config });
 }
 
@@ -53,7 +53,7 @@ export async function createVoiceRuntimeHandler(req: Request, res: Response) {
 
   const config = await saveVoiceRuntimeConfig(
     organizationId,
-    req.voiceHubUser?.id,
+    req.voiceHubUser!.id,
     parsed.data.config,
     false,
   );
@@ -72,7 +72,7 @@ export async function updateVoiceRuntimeHandler(req: Request, res: Response) {
 
   const config = await saveVoiceRuntimeConfig(
     organizationId,
-    req.voiceHubUser?.id,
+    req.voiceHubUser!.id,
     parsed.data.config,
     true,
   );
@@ -84,7 +84,7 @@ export async function resetVoiceRuntimeHandler(req: Request, res: Response) {
   const organizationId = requireOrganizationId(req, res);
   if (!organizationId) return;
 
-  await resetVoiceRuntimeConfig(organizationId, req.voiceHubUser?.id);
+  await resetVoiceRuntimeConfig(organizationId, req.voiceHubUser!.id);
   return res.json({
     success: true,
     message: 'Configurações de voz restauradas ao padrão.',
@@ -120,7 +120,7 @@ export async function interactVoiceSessionHandler(req: Request, res: Response) {
   const organizationId = requireOrganizationId(req, res);
   if (!organizationId) return;
 
-  const { sessionId } = req.params;
+  const sessionId = String(req.params.sessionId);
   const { text } = req.body || {};
 
   if (!sessionId || !text) {
@@ -149,7 +149,7 @@ export async function endVoiceSessionHandler(req: Request, res: Response) {
   const organizationId = requireOrganizationId(req, res);
   if (!organizationId) return;
 
-  const { sessionId } = req.params;
+  const sessionId = String(req.params.sessionId);
   if (!sessionId) {
     return res.status(400).json({ error: 'sessionId é obrigatório.' });
   }

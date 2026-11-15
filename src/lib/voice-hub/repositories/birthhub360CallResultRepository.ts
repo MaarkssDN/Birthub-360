@@ -38,7 +38,7 @@ export function upsertBirthub360CallResult(input: UpsertBirthub360CallResultInpu
     callLength: input.callLength ?? null,
   };
 
-  return prisma.birthhub360CallResult.upsert({
+  return prisma.birthub360CallResult.upsert({
     where: { callId: input.callId },
     create: {
       callId: input.callId,
@@ -49,7 +49,7 @@ export function upsertBirthub360CallResult(input: UpsertBirthub360CallResultInpu
 }
 
 export function findBirthub360CallResultByCallId(callId: string) {
-  return prisma.birthhub360CallResult.findUnique({ where: { callId } });
+  return prisma.birthub360CallResult.findUnique({ where: { callId } });
 }
 
 /**
@@ -71,13 +71,13 @@ export async function listBirthub360CallResultsForTenant(
 ) {
   const skip = (page - 1) * pageSize;
   const [items, total] = await Promise.all([
-    prisma.birthhub360CallResult.findMany({
+    prisma.birthub360CallResult.findMany({
       where: { organizationId },
       orderBy: { receivedAt: 'desc' },
       skip,
       take: pageSize,
     }),
-    prisma.birthhub360CallResult.count({ where: { organizationId } }),
+    prisma.birthub360CallResult.count({ where: { organizationId } }),
   ]);
   return { items, total };
 }
