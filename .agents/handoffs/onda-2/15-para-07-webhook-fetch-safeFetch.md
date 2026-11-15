@@ -62,3 +62,40 @@ depende de `http:` fora de produção (ex.: webhook local de teste), alinhar com
   código; candidato a handoff para os donos de voice-hub se desejado.
 - `N8nWebhookDispatcher` usa `N8N_WEBHOOK_URL` de env do operador (não input de tenant) — fora do
   escopo SSRF por design; n8n auto-hospedado em IP privado continua funcionando.
+
+## Resolução (Agente 07 — 2026-11-15, worktree `Birthub-360-wt-o3-07`, branch `agente/07-onda3-ia`)
+
+Aplicado o padrão `assertSafeExternalUrl` + `safeFetch` de
+`src/shared/security/urlGuard.ts` (mesmo de `universalMessagingTool.ts`) nos call
+sites que faziam `validateWebhookUrl`/`assertSafeOutboundUrl` + `fetch` cru:
+
+- `src/features/intelligence/tools/universalNotificationsTool.ts` — push gateway
+  (`integration.push_gateway.webhookUrl`): `validateWebhookUrl` + `fetch` →
+  `assertSafeExternalUrl` + `safeFetch` (import trocado de `url-validator.js` para
+  `shared/security/urlGuard.js`).
+- `src/features/intelligence/tools/universalTasksAndNotesTool.ts` — endpoint Bitrix
+  `tasks.task.add.json` montado a partir de `bitrixCfg.webhookUrl`: idem. Os demais
+  fetches do arquivo (Trello/Monday/Notion) usam host de provedor fixo hardcoded —
+  fora do escopo SSRF por design (comentário em `urlGuard.ts`).
+- `src/features/intelligence/services/aiPendingAction.service.ts` — `send_sms`
+  (`integration.sms.webhookUrl`): o `import()` dinâmico de `url-validator.js` virou
+  `import()` dinâmico de `urlGuard.js` + `safeFetch`.
+- `src/features/intelligence/services/universalConnectors.service.ts` — **sem
+  alteração**: o arquivo só valida URLs de config no save
+  (`saveUniversalConnectorConfig`, L154-158); `testUniversalConnector` não faz fetch
+  algum. Validação-sem-fetch não tem janela de DNS rebinding — `validateWebhookUrl`
+  permanece correto ali.
+
+Testes: `tests/unit/intelligence/universalTools.integrationSecrets.test.ts` já
+mockava `urlGuard.js`; ajustados os asserts do POST de push e do `send_sms` para
+`safeFetchMock` (e `safeFetchMock` não chamado nos caminhos de falha fechada).
+`npx vitest run -c vitest.unit.config.ts tests/unit/intelligence
+ tests/unit/features/intelligence` → 360/360 verde; `npx tsc --noEmit` limpo;
+`npx biome check` nos arquivos limpo.
+
+**Atenção / alinhamento com o 15**: `safeFetch`/`urlGuard` exige **HTTPS sempre**,
+enquanto `validateWebhookUrl` tolerava `http:` fora de produção. Webhooks de
+tenant configurados com `http://` (ex.: gateway local de teste ntfy/sms-gw em dev)
+agora serão rejeitados com 400 em qualquer ambiente — mesmo comportamento que
+`universalMessagingTool` (Teams) já tinha. Se algum fluxo depende de `http:` local,
+precisa de decisão do 15/00 (não encontrei caso nos testes/código atuais).
