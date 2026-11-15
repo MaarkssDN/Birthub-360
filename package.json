@@ -94,7 +94,8 @@
     "mobile:sync": "cap sync android",
     "mobile:open": "cap open android",
     "typecheck": "node --max-old-space-size=8192 ./node_modules/typescript/bin/tsc --noEmit",
-    "verify:governance-reviews": "node scripts/ci/check-independent-review.js"
+    "verify:governance-reviews": "node scripts/ci/check-independent-review.js",
+    "verify:ownership-coverage": "tsx scripts/governance/check-ownership-coverage.ts"
   },
   "dependencies": {
     "@ai-sdk/react": "^4.0.172",

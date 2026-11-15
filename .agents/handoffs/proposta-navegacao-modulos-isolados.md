@@ -3,7 +3,7 @@
 De: Devin (assessor de arquitetura, sob demanda do usuário)
 Para: 00 — Coordenador
 Onda: Onda 01–04 executadas; Onda 05 (QA/homologação) em consolidação
-Status: em-andamento
+Status: resolvido
 Prioridade: normal
 Sprint destino: a definir pelo 00
 
@@ -143,3 +143,10 @@ que estiver na URL — reload-safe).
   (navegação sobrecarregada, módulos sem identidade própria).
 - **Keep-alive de rotas**: preserva estado mas quebra deep-link e aumenta memória no
   mobile; URL params já é o padrão do projeto.
+
+## Resolução
+
+- **Data:** 2026-11-14 · **Executor:** Agente 00 (trilha de coordenação, DEM-20261114-002)
+- **Evidência:** proposta aprovada e implementada — commit `f0af157bc` ("feat(nav): navegacao modular — rail de modulos + painel contextual"), documento `docs/architecture/NAVEGACAO-MODULAR.md` presente em `main`, componentes `src/components/layout/ModuleNavPanel.tsx` e `moduleThemes.ts` integrados.
+- A nota de atualização no corpo deste handoff já registrava a implementação; faltava apenas o fechamento formal do status.
+- **Pendência de governança:** se houver entrega formal a auditar, o Agente 24 revisa na onda de saneamento (DEM-20261114-002).
