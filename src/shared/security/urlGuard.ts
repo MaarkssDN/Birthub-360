@@ -151,10 +151,14 @@ async function resolveSafe(rawUrl: string): Promise<SafeResolution> {
     return { url, addresses: [hostname] };
   }
 
-  // Literal IPv6 chega com colchetes (`[::1]`) e `net.isIP` não o reconhece — sem este desvio
-  // ele cairia no DNS lookup e seria rejeitado por "não foi possível resolver".
-  if (loopbackHttp && hostname === '[::1]') {
-    return { url, addresses: ['::1'] };
+  // Literais IPv6 chegam com colchetes (`[::1]`, `[::ffff:7f00:1]`) e `net.isIP` não os
+  // reconhece — sem este desvio cairiam no dns.lookup e falhariam fechado. Quando a exceção
+  // loopback se aplica, resolve direto para o endereço literal já confirmado como loopback.
+  if (loopbackHttp && hostname.startsWith('[') && hostname.endsWith(']')) {
+    const bareIpv6 = hostname.slice(1, -1);
+    if (net.isIPv6(bareIpv6) && isLoopbackIp(bareIpv6)) {
+      return { url, addresses: [bareIpv6] };
+    }
   }
 
   const records = await dns.lookup(hostname, { all: true }).catch(() => []);
@@ -162,7 +166,19 @@ async function resolveSafe(rawUrl: string): Promise<SafeResolution> {
     throw new AppError('Não foi possível resolver o host informado.', 400);
   }
   for (const record of records) {
-    if (isPrivateOrReservedIp(record.address) && !(loopbackHttp && isLoopbackIp(record.address))) {
+    if (loopbackHttp) {
+      // Hostname loopback (localhost/*.localhost) só é exceção se TODOS os registros DNS
+      // forem loopback — um `localhost` envenenado/resolvido para IP público ou privado
+      // não-loopback não pode ser buscado em HTTP puro.
+      if (!isLoopbackIp(record.address)) {
+        throw new AppError(
+          'Endereço não permitido (host loopback resolveu para IP não-loopback).',
+          400,
+        );
+      }
+      continue;
+    }
+    if (isPrivateOrReservedIp(record.address)) {
       throw new AppError('Endereço não permitido (resolve para IP privado/reservado).', 400);
     }
   }
