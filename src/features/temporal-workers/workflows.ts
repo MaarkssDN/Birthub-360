@@ -6,6 +6,8 @@ const { scrapeProspect } = proxyActivities<typeof activities>({
   startToCloseTimeout: '5 minutes',
 });
 
-export async function prospectWorkflow(params: ScrapeProspectParams): Promise<ScrapeProspectResult> {
+export async function prospectWorkflow(
+  params: ScrapeProspectParams,
+): Promise<ScrapeProspectResult> {
   return await scrapeProspect(params);
 }

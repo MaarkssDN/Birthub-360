@@ -196,13 +196,9 @@ export const whatsAppCadenceDispatcher: Pick<CadenceDispatcher, 'dispatch'> = {
       };
     }
     try {
-      await sendWhatsAppMessage(
-        run.organizationId,
-        phone,
-        messageBody,
-        undefined,
-        { leadId: run.leadId },
-      );
+      await sendWhatsAppMessage(run.organizationId, phone, messageBody, undefined, {
+        leadId: run.leadId,
+      });
 
       // Registra Activity e TimelineEvent de saída para visualização no CRM
       await prisma.activity
