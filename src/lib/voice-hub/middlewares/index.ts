@@ -170,8 +170,10 @@ export const attachAuthIfPresent = async (
   if (session) {
     // req.user canônico (AuthUser) e req.voiceHubUser (TokenPayload) coexistem: quando
     // authenticateToken rodou upstream, req.user já é o usuário canônico e NÃO é sobrescrito —
-    // voiceHubUser é a visão normalizada que os controllers do voice-hub consomem.
-    (req as express.Request & { user?: TokenPayload }).user = session;
+    // voiceHubUser é a visão normalizada que os controllers do voice-hub consomem (handoff
+    // .agents/handoffs/onda-2/24-para-12-voicehub-attachauth-sobrescreve-req-user.md — Agente 24:
+    // sobrescrever req.user com o TokenPayload de voice-role violava o contrato canônico e
+    // quebrava qualquer consumidor downstream que esperasse AuthUser).
     req.voiceHubUser = session;
     req.organizationId = session.organizationId;
 
