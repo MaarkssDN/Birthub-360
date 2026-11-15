@@ -1,15 +1,8 @@
 import { z } from 'zod';
 
-export const registerSchema = z.object({
-  email: z.string().email('Formato de email inválido'),
-  password: z.string().min(6, 'A senha precisa de no mínimo 6 caracteres'),
-  companyName: z.string().min(2, 'Nome de empresa inválido'),
-});
-
-export const loginSchema = z.object({
-  email: z.string().email('Formato de email inválido'),
-  password: z.string().min(1, 'Senha é obrigatória'),
-});
+// registerSchema/loginSchema REMOVIDOS: cadastro/login são exclusivamente do Better Auth
+// (/api/auth/sign-up/email, /api/auth/sign-in/email) — o voice-hub não tem mais endpoints de
+// autenticação próprios (handoff 01-para-12-voicehub-adaptacao-modelos-canonicos).
 
 export const saveWorkflowSchema = z.object({
   name: z.string().optional(),

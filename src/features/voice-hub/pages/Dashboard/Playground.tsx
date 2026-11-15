@@ -42,7 +42,7 @@ export default function PlaygroundPage() {
   // Audio waveform refs
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
-  const dataArrayRef = useRef<Uint8Array | null>(null);
+  const dataArrayRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -132,7 +132,7 @@ export default function PlaygroundPage() {
         drawWaveform();
       });
     } catch (err: any) {
-      logger.error('Error fetching stream for waveform', { err });
+      logger.error( { err },'Error fetching stream for waveform');
     }
   };
 
@@ -203,11 +203,11 @@ export default function PlaygroundPage() {
             window.speechSynthesis.speak(utterance);
           }
         } catch (e: any) {
-          logger.error('Falha ao tocar áudio local', { e });
+          logger.error( { e },'Falha ao tocar áudio local');
         }
       }
     } catch (error: unknown) {
-      logger.error('Error sending message in playground', { error });
+      logger.error( { error },'Error sending message in playground');
       const message = error instanceof Error ? error.message : String(error);
       setMessages((prev) => [...prev, { role: 'agent', text: `[Erro]: ${message}` }]);
     } finally {
@@ -255,7 +255,7 @@ export default function PlaygroundPage() {
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEventLike) => {
-      logger.error('Erro de reconhecimento de voz', { error: event.error });
+      logger.error( { error: event.error },'Erro de reconhecimento de voz');
       setIsListening(false);
       stopAudioWave();
     };

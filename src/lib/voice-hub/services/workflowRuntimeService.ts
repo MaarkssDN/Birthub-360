@@ -500,7 +500,6 @@ export function validateRuntimeCompatibility(
         issues.push({
           id: `err-runtime-switch-edge-${invalidHandle.id}`,
           nodeId: node.id,
-          edgeId: invalidHandle.id,
           type: 'error',
           message:
             'Cada saída do Switch precisa usar um sourceHandle out-N ou ser marcada explicitamente como fallback.',
@@ -730,7 +729,9 @@ function applyToolFallback(state: WorkflowRuntimeState, node: RuntimeNode, reaso
   state.variables.tool_ok = 'false';
   state.variables.tool_status = reason;
   state.variables.tool_error = reason;
-  state.variables.tool_result = undefined;
+  // biome-ignore lint/performance/noDelete: variables é Record<string,string> — `= undefined` não
+  // compila; delete é a única forma de remover a chave e preservar a semântica de "ausente".
+  delete state.variables.tool_result;
   state.variables[`tool_${node.id}_ok`] = 'false';
   state.variables[`tool_${node.id}_error`] = reason;
 }
@@ -758,21 +759,21 @@ async function executeToolNodeAsync(state: WorkflowRuntimeState, node: RuntimeNo
   try {
     const consent = await getAiConsent(organizationId);
     if (!consent.granted) {
-      logger.warn('Workflow tool node blocked: tenant has not granted external data consent', {
+      logger.warn( {
         workflowId: state.workflowId,
         organizationId,
         nodeId: node.id,
-      });
+      },'Workflow tool node blocked: tenant has not granted external data consent');
       applyToolFallback(state, node, 'consent_not_granted');
       return;
     }
   } catch (error: any) {
-    logger.error('Failed to verify tenant consent before executing workflow tool node', {
+    logger.error( {
       workflowId: state.workflowId,
       organizationId,
       nodeId: node.id,
       error: error instanceof Error ? error.message : String(error),
-    });
+    },'Failed to verify tenant consent before executing workflow tool node');
     applyToolFallback(state, node, 'consent_check_unavailable');
     return;
   }
@@ -796,26 +797,27 @@ async function executeToolNodeAsync(state: WorkflowRuntimeState, node: RuntimeNo
     state.variables.tool_ok = 'true';
     state.variables.tool_status = String(result.status ?? '');
     state.variables.tool_result = result.body ?? '';
-    state.variables.tool_error = undefined;
+    // biome-ignore lint/performance/noDelete: idem applyToolFallback — Record<string,string>.
+    delete state.variables.tool_error;
     state.variables[`tool_${node.id}_ok`] = 'true';
     state.variables[`tool_${node.id}_result`] = result.body ?? '';
-    logger.info('Workflow tool node executed successfully', {
+    logger.info( {
       workflowId: state.workflowId,
       organizationId: getRuntimeTenantId(state),
       agentId: getRuntimeAgentId(state),
       nodeId: node.id,
       status: result.status,
-    });
+    },'Workflow tool node executed successfully');
     return;
   }
 
-  logger.warn('Workflow tool node failed; continuing the call on the fallback path', {
+  logger.warn( {
     workflowId: state.workflowId,
     organizationId: getRuntimeTenantId(state),
     agentId: getRuntimeAgentId(state),
     nodeId: node.id,
     reason: result.error,
-  });
+  },'Workflow tool node failed; continuing the call on the fallback path');
   applyToolFallback(state, node, result.error ?? 'unknown_error');
 }
 
@@ -832,11 +834,11 @@ async function loadAgentKnowledgeDocuments(
     const config = (agent.configuration as unknown as AgentConfiguration) || {};
     return Array.isArray(config.knowledge) ? config.knowledge : [];
   } catch (error: any) {
-    logger.error('Failed to load agent knowledge documents for workflow runtime', {
+    logger.error( {
       organizationId,
       agentId,
       error: error instanceof Error ? error.message : String(error),
-    });
+    },'Failed to load agent knowledge documents for workflow runtime');
     return [];
   }
 }
@@ -908,12 +910,11 @@ function skipUnresolvableHumanHandoff(
   node: RuntimeNode,
 ): string | null {
   logger.warn(
-    'Workflow human_handoff node has no fallbackNumber configured; skipping the transfer and continuing on the default path',
     {
       workflowId: state.workflowId,
       nodeId: node.id,
     },
-  );
+    'Workflow human_handoff node has no fallbackNumber configured; skipping the transfer and continuing on the default path');
   state.variables.handoff_ok = 'false';
   state.variables.handoff_error = 'fallback_number_missing';
   state.variables[`handoff_${node.id}_ok`] = 'false';
@@ -942,10 +943,10 @@ function advanceUntilInteraction(
     if (visited.has(currentId)) {
       state.ended = true;
       state.currentNodeId = null;
-      logger.error('Workflow runtime stopped an unexpected cycle', {
+      logger.error( {
         workflowId: state.workflowId,
         nodeId: currentId,
-      });
+      },'Workflow runtime stopped an unexpected cycle');
       return state;
     }
     visited.add(currentId);
@@ -954,10 +955,10 @@ function advanceUntilInteraction(
     if (!node) {
       state.ended = true;
       state.currentNodeId = null;
-      logger.error('Workflow runtime could not resolve node', {
+      logger.error( {
         workflowId: state.workflowId,
         nodeId: currentId,
-      });
+      },'Workflow runtime could not resolve node');
       return state;
     }
 
@@ -1008,10 +1009,10 @@ async function advanceUntilInteractionAsync(
     if (visited.has(currentId)) {
       state.ended = true;
       state.currentNodeId = null;
-      logger.error('Workflow runtime stopped an unexpected cycle', {
+      logger.error( {
         workflowId: state.workflowId,
         nodeId: currentId,
-      });
+      },'Workflow runtime stopped an unexpected cycle');
       return state;
     }
     visited.add(currentId);
@@ -1020,10 +1021,10 @@ async function advanceUntilInteractionAsync(
     if (!node) {
       state.ended = true;
       state.currentNodeId = null;
-      logger.error('Workflow runtime could not resolve node', {
+      logger.error( {
         workflowId: state.workflowId,
         nodeId: currentId,
-      });
+      },'Workflow runtime could not resolve node');
       return state;
     }
 
@@ -1114,11 +1115,11 @@ export async function initializeWorkflowRuntime(
   const { nodes, edges } = toStudioGraph(workflow.nodes, workflow.edges);
   const runtimeIssues = validateRuntimeCompatibility(nodes, edges);
   if (runtimeIssues.length > 0) {
-    logger.error('Active workflow is not runtime-compatible; refusing to execute it', {
+    logger.error( {
       organizationId,
       workflowId: workflow.id,
       issueIds: runtimeIssues.map((issue) => issue.id),
-    });
+    },'Active workflow is not runtime-compatible; refusing to execute it');
     return null;
   }
 
@@ -1346,10 +1347,10 @@ export async function resumeAfterTool(
   const toolNode = nodeById(next, node.id);
 
   if (toolNode?.type !== 'tool') {
-    logger.error('resumeAfterTool called without a matching pending tool node', {
+    logger.error( {
       workflowId: next.workflowId,
       nodeId: node.id,
-    });
+    },'resumeAfterTool called without a matching pending tool node');
     next.ended = true;
     return attachVoiceOverride({
       state: next,

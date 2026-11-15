@@ -9,10 +9,9 @@ const mockSetTheme = vi.fn();
 const mockShowToast = vi.fn();
 const mockLogout = vi.fn();
 
-vi.mock('../../../lib/auth.js', () => ({
-  auth: {
-    getToken: () => 'true',
-    logout: () => mockLogout(),
+vi.mock('../../../lib/auth-client.js', () => ({
+  authClient: {
+    signOut: () => mockLogout(),
   },
 }));
 
