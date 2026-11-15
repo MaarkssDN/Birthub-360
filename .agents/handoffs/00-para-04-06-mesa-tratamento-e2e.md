@@ -1,7 +1,7 @@
 De: 00 — Coordenador
 Para: 04 — CRM e BI; 06 — Integrações e Bitrix (mesa-tratamento + import Bitrix)
 Onda: gate da main (application gate E2E)
-Status: aberto
+Status: superseded — ver 00-para-08-mesa-tratamento-e2e-als-rls.md (evidência corrigida: findUnique→null, não bitrixSyncStatus)
 Prioridade: alto (últimos 2 failures do application gate — 157/159 E2E passando)
 Bloqueador-ref: run 43726090855 (PR #361) — `tests/e2e/mesa-tratamento-jornada.spec.ts`
 Sprint destino: desbloqueio do release gate
