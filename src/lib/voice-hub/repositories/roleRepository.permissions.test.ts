@@ -110,9 +110,7 @@ describe('roleRepository.getPermissionsForRoleName', () => {
         },
       },
     });
-    expect(result).toEqual(
-      expect.arrayContaining(['call.supervise', 'lead.read']),
-    );
+    expect(result).toEqual(expect.arrayContaining(['call.supervise', 'lead.read']));
     expect(result).not.toContain('supervision:intervene');
   });
 

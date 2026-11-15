@@ -9,8 +9,7 @@ const selectVariants = cva(
   {
     variants: {
       variant: {
-        default:
-          'border-line hover:border-line-strong focus-visible:border-line-strong',
+        default: 'border-line hover:border-line-strong focus-visible:border-line-strong',
         filled: 'border-transparent bg-surface-2 hover:bg-surface-subtle focus-visible:bg-surface',
         ghost: 'border-transparent bg-transparent hover:bg-surface-interactive',
         cosmic: 'border-line bg-surface',

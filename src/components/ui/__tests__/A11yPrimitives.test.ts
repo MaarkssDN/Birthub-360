@@ -173,9 +173,7 @@ describe('Alert (role=alert + ícone decorativo oculto)', () => {
   });
 
   it('botão de fechar tem nome acessível', () => {
-    render(
-      React.createElement(Alert, { onClose: () => {} }, 'Aviso'),
-    );
+    render(React.createElement(Alert, { onClose: () => {} }, 'Aviso'));
     expect(screen.getByRole('button', { name: 'Fechar alerta' })).toBeInTheDocument();
   });
 });
@@ -208,10 +206,7 @@ describe('CompareTable (região rolável focável + cabeçalhos de coluna)', () 
       name: 'Tabela comparativa com rolagem horizontal',
     });
     expect(region).toHaveAttribute('tabindex', '0');
-    expect(screen.getByRole('columnheader', { name: 'Plano A' })).toHaveAttribute(
-      'scope',
-      'col',
-    );
+    expect(screen.getByRole('columnheader', { name: 'Plano A' })).toHaveAttribute('scope', 'col');
   });
 });
 
@@ -219,9 +214,7 @@ describe('Textarea (WCAG 2.4.7 — foco visível em todas as variantes)', () => 
   it.each(['default', 'filled', 'ghost', 'holographic'] as const)(
     'variante %s expõe anel de foco (focus-visible:ring)',
     (variant) => {
-      const { container } = render(
-        React.createElement(Textarea, { variant }),
-      );
+      const { container } = render(React.createElement(Textarea, { variant }));
       const textarea = container.querySelector('textarea');
       expect(textarea?.className).toContain('focus-visible:ring-2');
       expect(textarea?.className).toContain('focus-visible:ring-focus-ring');

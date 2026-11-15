@@ -69,10 +69,13 @@ export async function scanBufferForViruses(
   try {
     clam = await createAntivirusScanner();
   } catch (error: any) {
-    logger.error( {
-      filename,
-      error: error instanceof Error ? error.message : String(error),
-    },'Antivirus scan rejected upload: ClamAV scanner could not be initialized');
+    logger.error(
+      {
+        filename,
+        error: error instanceof Error ? error.message : String(error),
+      },
+      'Antivirus scan rejected upload: ClamAV scanner could not be initialized',
+    );
     throw new AntivirusUnavailableError(error);
   }
 
@@ -80,27 +83,36 @@ export async function scanBufferForViruses(
   try {
     result = await clam.scanStream(Readable.from(buffer));
   } catch (error: any) {
-    logger.error( {
-      filename,
-      error: error instanceof Error ? error.message : String(error),
-    },'Antivirus scan rejected upload: ClamAV scan failed');
+    logger.error(
+      {
+        filename,
+        error: error instanceof Error ? error.message : String(error),
+      },
+      'Antivirus scan rejected upload: ClamAV scan failed',
+    );
     throw new AntivirusUnavailableError(error);
   }
 
   // `isInfected` is `null` when clamscan could not determine a definitive result (e.g. malformed
   // clamd response) — treated the same as "unavailable", never as "clean by default".
   if (result.isInfected === null) {
-    logger.error( {
-      filename,
-    },'Antivirus scan rejected upload: ClamAV returned an inconclusive result');
+    logger.error(
+      {
+        filename,
+      },
+      'Antivirus scan rejected upload: ClamAV returned an inconclusive result',
+    );
     throw new AntivirusUnavailableError(new Error('Inconclusive ClamAV result'));
   }
 
   if (result.isInfected) {
-    logger.warn( {
-      filename,
-      viruses: result.viruses,
-    },'Antivirus scan rejected upload: infected file');
+    logger.warn(
+      {
+        filename,
+        viruses: result.viruses,
+      },
+      'Antivirus scan rejected upload: infected file',
+    );
     throw new InfectedFileError(filename, result.viruses);
   }
 
