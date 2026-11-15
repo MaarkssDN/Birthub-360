@@ -36,7 +36,7 @@ export const gamificationApi = {
    */
   async getLeaderboard(period: LeaderboardPeriod = 'month'): Promise<LeaderboardRanking> {
     try {
-      const response = await api.get<any>(`/gamification/leaderboard?period=${period}`);
+      const response = await api.get<any>(`/api/gamification/leaderboard?period=${period}`);
       const data = response?.rankings ? response : (response?.data ?? response);
       return {
         period: data?.period ?? period,
@@ -55,7 +55,7 @@ export const gamificationApi = {
   async getSellerProfile(seller?: string): Promise<SellerScore | null> {
     try {
       const query = seller ? `?seller=${encodeURIComponent(seller)}` : '';
-      const response = await api.get<any>(`/gamification/profile${query}`);
+      const response = await api.get<any>(`/api/gamification/profile${query}`);
       const data = response?.sellerName ? response : (response?.data ?? response);
       if (!data || typeof data !== 'object' || !data.sellerName) {
         return null;
@@ -73,7 +73,7 @@ export const gamificationApi = {
   async getCoaching(seller?: string): Promise<CoachingData | null> {
     try {
       const query = seller ? `?seller=${encodeURIComponent(seller)}` : '';
-      const response = await api.get<any>(`/gamification/coaching${query}`);
+      const response = await api.get<any>(`/api/gamification/coaching${query}`);
       const data = response?.data ?? response;
       return data as CoachingData;
     } catch (error) {
@@ -87,7 +87,7 @@ export const gamificationApi = {
    */
   async getWeeklyCoaching(role?: string): Promise<CoachingData | null> {
     try {
-      const response = await api.post<any>('/gamification/coaching/weekly', { role });
+      const response = await api.post<any>('/api/gamification/coaching/weekly', { role });
       const data = response?.data ?? response;
       return data as CoachingData;
     } catch (error) {

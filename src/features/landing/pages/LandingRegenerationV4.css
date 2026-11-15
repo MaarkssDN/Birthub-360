@@ -1524,12 +1524,21 @@ html.light .b360-adaptive-landing .b360-final-cta h2,
   filter: drop-shadow(0 2px 8px rgba(2, 132, 199, 0.2)) !important;
 }
 
-/* Subtítulos em Modo Claro (Ardósia Profunda - NUNCA PRETO, NUNCA BRANCO) */
-html.light .b360-adaptive-landing :is(p, .b360-subtitle, .b360-sectionhead p):not(.bh-n1-hero *),
+/* Subtítulos em Modo Claro (Ardósia Profunda - NUNCA PRETO, NUNCA BRANCO)
+   `.b360-dark-card` e `.b360-footer` ficam escuros (#0f172b/#0a162b) nos DOIS temas —
+   o #335577 acima mede <3:1 neles (achado real do axe-core, accessibility.spec.ts).
+   Excluídos aqui para herdarem as cores claras próprias de cada superfície. */
+html.light
+  .b360-adaptive-landing
+  :is(p, .b360-subtitle, .b360-sectionhead p):not(.bh-n1-hero *):not(.b360-dark-card *):not(
+    .b360-footer *
+  ),
 html.light .b360-adaptive-landing .b360-hero-main > div:first-child > p,
 [data-theme="light"]
   .b360-adaptive-landing
-  :is(p, .b360-subtitle, .b360-sectionhead p):not(.bh-n1-hero *),
+  :is(p, .b360-subtitle, .b360-sectionhead p):not(.bh-n1-hero *):not(.b360-dark-card *):not(
+    .b360-footer *
+  ),
 [data-theme="light"] .b360-adaptive-landing .b360-hero-main > div:first-child > p {
   color: #335577 !important;
 }
