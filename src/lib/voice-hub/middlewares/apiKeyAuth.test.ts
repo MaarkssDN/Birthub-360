@@ -25,8 +25,14 @@ vi.mock('../services/apiKeyService.js', () => ({
   API_KEY_PREFIX: 'bvhk_live_',
 }));
 
-vi.mock('../services/authService.js', () => ({
-  refreshSession: vi.fn(),
+vi.mock('better-auth/node', () => ({
+  fromNodeHeaders: vi.fn(() => ({})),
+}));
+
+// Sessão Better Auth resolvida pelo fallback de getAuthUser — mockada para null (anônimo) para
+// que os testes de API key não dependam de banco/sessão real.
+vi.mock('../../../lib/auth.js', () => ({
+  auth: { api: { getSession: vi.fn().mockResolvedValue(null) } },
 }));
 
 vi.mock('@/lib/prisma.js', () => ({

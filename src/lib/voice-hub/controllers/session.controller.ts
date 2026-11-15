@@ -15,7 +15,7 @@ const updateSessionSchema = z.object({
 });
 
 export async function listSessionsHandler(req: Request, res: Response) {
-  const sessions = await listSessions(req.organizationId!, req.voiceHubUser?.id);
+  const sessions = await listSessions(req.organizationId!, req.voiceHubUser!.id);
   return res.json({ sessions });
 }
 
@@ -23,7 +23,7 @@ export async function createSessionHandler(req: Request, res: Response) {
   const parsed = sessionSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0].message });
 
-  const session = await createSession(req.organizationId!, req.voiceHubUser?.id, parsed.data);
+  const session = await createSession(req.organizationId!, req.voiceHubUser!.id, parsed.data);
   return res.json({ success: true, session });
 }
 
@@ -35,7 +35,7 @@ export async function updateSessionHandler(req: Request, res: Response) {
     const session = await updateSession(
       String(req.params.id),
       req.organizationId!,
-      req.voiceHubUser?.id,
+      req.voiceHubUser!.id,
       parsed.data,
     );
     return res.json({ success: true, session });
@@ -47,7 +47,7 @@ export async function updateSessionHandler(req: Request, res: Response) {
 
 export async function deleteSessionHandler(req: Request, res: Response) {
   try {
-    await deleteSession(String(req.params.id), req.organizationId!, req.voiceHubUser?.id);
+    await deleteSession(String(req.params.id), req.organizationId!, req.voiceHubUser!.id);
     return res.json({ success: true, message: 'Sessão encerrada e removida com sucesso.' });
   } catch (err: any) {
     if (err instanceof NotFoundError) return res.status(404).json({ error: err.message });

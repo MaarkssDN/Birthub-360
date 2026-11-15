@@ -120,7 +120,7 @@ export default function BillingPage() {
         setWalletState({ status: 'ready', wallet: data.wallet }),
       )
       .catch((err) => {
-        logger.error('Failed to load wallet summary', { err });
+        logger.error( { err },'Failed to load wallet summary');
         setWalletState({ status: 'error' });
       });
   }, [isAdmin]);
@@ -136,7 +136,7 @@ export default function BillingPage() {
         })
         .then((data: TransactionsPage) => setTransactionsState({ status: 'ready', data }))
         .catch((err) => {
-          logger.error('Failed to load billing transactions', { err });
+          logger.error( { err },'Failed to load billing transactions');
           setTransactionsState({ status: 'error' });
         });
     },
@@ -154,7 +154,7 @@ export default function BillingPage() {
         setPlansState({ status: 'ready', plans: data.plans }),
       )
       .catch((err) => {
-        logger.error('Failed to load billing plans', { err });
+        logger.error( { err },'Failed to load billing plans');
         setPlansState({ status: 'error' });
       });
   }, []);
@@ -182,7 +182,7 @@ export default function BillingPage() {
       if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
       setWalletState({ status: 'ready', wallet: data.wallet });
     } catch (err: any) {
-      logger.error('Failed to change plan', { err });
+      logger.error( { err },'Failed to change plan');
       setChangePlanError(err instanceof Error ? err.message : 'Não foi possível trocar de plano.');
     } finally {
       setChangingPlanId(null);

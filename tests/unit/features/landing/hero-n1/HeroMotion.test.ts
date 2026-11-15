@@ -3,6 +3,7 @@ import { act, renderHook } from '@testing-library/react';
 import { useHeroN1Motion } from '@/features/landing/components/hero-n1/HeroMotion';
 
 const originalMatchMedia = window.matchMedia;
+const originalHidden = Object.getOwnPropertyDescriptor(document, 'hidden');
 
 function stubMatchMedia(reduced: boolean) {
   window.matchMedia = vi.fn().mockImplementation((query: string) => ({
@@ -24,6 +25,9 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers();
   window.matchMedia = originalMatchMedia;
+  if (originalHidden) {
+    Object.defineProperty(document, 'hidden', originalHidden);
+  }
 });
 
 describe('useHeroN1Motion', () => {
@@ -84,5 +88,21 @@ describe('useHeroN1Motion', () => {
     expect(result.current.statusMessage).toBe(
       'Modo de movimento reduzido ativo · demonstração estática',
     );
+  });
+
+  it('visibilitychange com aba oculta limpa timers pendentes', () => {
+    stubMatchMedia(false);
+    const { result } = renderHook(() => useHeroN1Motion());
+
+    act(() => {
+      Object.defineProperty(document, 'hidden', { configurable: true, value: true });
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
+    // Timer foi limpo — status não deve ter avançado para concluído
+    expect(result.current.statusMessage).not.toContain('Sequência concluída');
   });
 });

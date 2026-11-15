@@ -30,7 +30,7 @@ export default function GovernancePage() {
       })
       .then((data) => setMembers(Array.isArray(data.users) ? data.users : []))
       .catch((err) => {
-        logger.error('Failed to load tenant members', { err });
+        logger.error( { err },'Failed to load tenant members');
         setMembersError(true);
       });
   }, [isAdmin]);

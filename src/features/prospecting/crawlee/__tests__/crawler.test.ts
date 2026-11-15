@@ -76,9 +76,7 @@ describe('runCrawler', () => {
     expect(options.navigationTimeoutSecs).toBe(30);
     expect(options.requestHandlerTimeoutSecs).toBe(300);
     expect(typeof options.preNavigationHooks).toBe('object');
-    const hooks = options.preNavigationHooks as Array<
-      (ctx: { page: FakePage }) => Promise<void>
-    >;
+    const hooks = options.preNavigationHooks as Array<(ctx: { page: FakePage }) => Promise<void>>;
     const setHeaders = vi.fn(async () => {});
     await hooks[0]({ page: { setExtraHTTPHeaders: setHeaders } as FakePage });
     expect(setHeaders).toHaveBeenCalledWith({
@@ -95,9 +93,7 @@ describe('runCrawler', () => {
       const options = crawlerInstances[0].options;
       expect(options.navigationTimeoutSecs).toBe(7);
       expect(options.requestHandlerTimeoutSecs).toBe(42);
-      const hooks = options.preNavigationHooks as Array<
-        (ctx: { page: FakePage }) => Promise<void>
-      >;
+      const hooks = options.preNavigationHooks as Array<(ctx: { page: FakePage }) => Promise<void>>;
       const setHeaders = vi.fn(async () => {});
       await hooks[0]({ page: { setExtraHTTPHeaders: setHeaders } as FakePage });
       expect(setHeaders).toHaveBeenCalledWith({ 'User-Agent': 'BirthHubTestBot/9.9' });

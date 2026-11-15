@@ -183,7 +183,7 @@ export function useVoiceConversation(questions: Question[], speed: number = 1.1)
         };
 
         recognition.onerror = (event: SpeechRecognitionErrorEventLike) => {
-          logger.error('Speech recognition error', { error: event.error });
+          logger.error( { error: event.error },'Speech recognition error');
           if (event.error === 'no-speech') {
             // Maybe restart listening?
           }

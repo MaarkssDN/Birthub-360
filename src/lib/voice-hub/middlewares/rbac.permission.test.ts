@@ -3,6 +3,10 @@ import type { Request, Response, NextFunction } from 'express';
 
 vi.mock('../repositories/roleRepository.js', () => ({
   getPermissionsForRoleName: vi.fn(),
+  // Implementação real (pura, sem I/O) — o mapeamento UserRole→voice-role é parte do contrato
+  // testado aqui, não um detalhe a mockar.
+  voiceRoleForCanonicalRole: (role: string | null | undefined) =>
+    role === 'ADMIN' ? 'admin' : role === 'GESTOR' ? 'supervisor' : 'user',
 }));
 
 import { getPermissionsForRoleName } from '../repositories/roleRepository.js';
@@ -41,7 +45,7 @@ describe('rbac.hasPermission', () => {
       'supervision:intervene',
     );
 
-    expect(getPermissionsForRoleName).toHaveBeenCalledWith('supervisor', 'tenant-1');
+    expect(getPermissionsForRoleName).toHaveBeenCalledWith('supervisor', 'tenant-1', undefined);
     expect(result).toBe(true);
   });
 
@@ -72,7 +76,7 @@ describe('rbac.requirePermission (Express middleware)', () => {
   it('rejects with 403 when the session lacks the permission', async () => {
     vi.mocked(getPermissionsForRoleName).mockResolvedValue([]);
     const req = {
-      user: { id: 'u1', email: 'u1@example.com', role: 'user', organizationId: 't1' },
+      user: { id: 'u1', email: 'u1@example.com', role: 'VISUALIZADOR', organizationId: 't1' },
     } as unknown as Request;
     const res = makeRes();
     const next = vi.fn() as unknown as NextFunction;
@@ -86,7 +90,7 @@ describe('rbac.requirePermission (Express middleware)', () => {
   it('calls next() when the session has the permission', async () => {
     vi.mocked(getPermissionsForRoleName).mockResolvedValue(['supervision:intervene']);
     const req = {
-      user: { id: 'u1', email: 'u1@example.com', role: 'supervisor', organizationId: 't1' },
+      user: { id: 'u1', email: 'u1@example.com', role: 'GESTOR', organizationId: 't1' },
     } as unknown as Request;
     const res = makeRes();
     const next = vi.fn() as unknown as NextFunction;
@@ -101,7 +105,7 @@ describe('rbac.requirePermission (Express middleware)', () => {
     const boom = new Error('db down');
     vi.mocked(getPermissionsForRoleName).mockRejectedValue(boom);
     const req = {
-      user: { id: 'u1', email: 'u1@example.com', role: 'user', organizationId: 't1' },
+      user: { id: 'u1', email: 'u1@example.com', role: 'VISUALIZADOR', organizationId: 't1' },
     } as unknown as Request;
     const res = makeRes();
     const next = vi.fn() as unknown as NextFunction;

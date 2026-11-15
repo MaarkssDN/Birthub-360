@@ -105,10 +105,14 @@ export class ConversationalIntelligenceService {
     // do cálculo para não contar em dobro quando um turno do cliente se
     // sobrepõe a mais de um turno do vendedor (reconciliação forense EXP-07).
     const sellerSpans = mergeTimeSpans(
-      turns.filter((t) => t.speaker === 'seller').map((t) => [t.startTimeSeconds, t.endTimeSeconds]),
+      turns
+        .filter((t) => t.speaker === 'seller')
+        .map((t) => [t.startTimeSeconds, t.endTimeSeconds]),
     );
     const customerSpans = mergeTimeSpans(
-      turns.filter((t) => t.speaker === 'customer').map((t) => [t.startTimeSeconds, t.endTimeSeconds]),
+      turns
+        .filter((t) => t.speaker === 'customer')
+        .map((t) => [t.startTimeSeconds, t.endTimeSeconds]),
     );
     let overlapSeconds = 0;
     for (const [cs, ce] of customerSpans) {

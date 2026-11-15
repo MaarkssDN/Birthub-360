@@ -17,7 +17,7 @@ const redisClient = new Redis(getRedisUrl(), {
   commandTimeout: 2000,
   retryStrategy: getRedisRetryStrategy(),
 });
-redisClient.on('error', (err) => logger.error('Rate limiter Redis error', err));
+redisClient.on('error', (err) => logger.error({ err }, 'Rate limiter Redis error'));
 
 export const createRateLimiter =
   (keyPrefix: string, limit: number, windowSeconds: number) =>

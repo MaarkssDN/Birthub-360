@@ -129,20 +129,20 @@ export async function uploadKnowledgeDocumentHandler(req: Request, res: Response
       await scanBufferForViruses(buffer, fileName);
     } catch (error: any) {
       if (error instanceof InfectedFileError) {
-        logger.warn('Knowledge upload rejected: infected file', {
+        logger.warn( {
           agentId,
           organizationId: req.organizationId,
           fileName,
           viruses: error.viruses,
-        });
+        },'Knowledge upload rejected: infected file');
         return res.status(422).json({ error: error.message });
       }
       if (error instanceof AntivirusUnavailableError) {
-        logger.error('Knowledge upload rejected: antivirus scan unavailable', {
+        logger.error( {
           agentId,
           organizationId: req.organizationId,
           fileName,
-        });
+        },'Knowledge upload rejected: antivirus scan unavailable');
         return res.status(503).json({ error: error.message });
       }
       throw error;
