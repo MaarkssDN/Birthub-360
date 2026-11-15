@@ -351,7 +351,7 @@ export function IntelligenceHub({ initialTab }: IntelligenceHubProps) {
                     type="button"
                     size="lg"
                     onClick={() => handleOpenTool('commercial_cell')}
-                    className="w-full sm:w-auto bg-gradient-to-r bg-brand hover:bg-brand-hover text-on-brand font-display font-bold shadow-glow-brand hover:opacity-95 transition-all text-sm gap-2"
+                    className="w-full sm:w-auto text-on-brand font-display font-bold shadow-glow-brand hover:opacity-95 transition-all text-sm gap-2"
                   >
                     Acessar Célula Comercial <ArrowRight className="w-4 h-4" />
                   </Button>

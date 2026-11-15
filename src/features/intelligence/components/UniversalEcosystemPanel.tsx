@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useId, useState } from 'react';
 import { api } from '../../../lib/api.js';
+import { downloadBlob } from '../../../lib/nativeDownload.js';
 import { SoundFX } from '../../../lib/soundEffects.js';
 import { EcosystemInboundEventSimulator } from './EcosystemInboundEventSimulator.js';
 
@@ -405,7 +406,7 @@ export function UniversalEcosystemPanel({
     }
   };
 
-  const triggerBrowserDownload = () => {
+  const triggerBrowserDownload = async () => {
     if (!officeDownload) return;
     const byteChars = atob(officeDownload.base64);
     const byteNumbers = new Array(byteChars.length);
@@ -414,14 +415,11 @@ export function UniversalEcosystemPanel({
     }
     const byteArray = new Uint8Array(byteNumbers);
     const blob = new Blob([byteArray], { type: officeDownload.mimeType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = officeDownload.filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    try {
+      await downloadBlob(blob, officeDownload.filename);
+    } catch {
+      setFeedback('Falha ao exportar o arquivo. Tente novamente.');
+    }
   };
 
   if (mode === 'connectors') {

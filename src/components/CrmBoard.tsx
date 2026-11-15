@@ -27,6 +27,7 @@ import { bitrixApi } from '../features/integrations/bitrix/bitrix.api.js';
 import { useCrmBoardController } from '../hooks/useCrmBoardController.js';
 import { api } from '../lib/api.js';
 import { clientLogger } from '../lib/clientLogger.js';
+import { downloadBlob } from '../lib/nativeDownload.js';
 import { SoundFX } from '../lib/soundEffects.js';
 import { toast } from '../lib/toast.js';
 import type { Lead, LeadStatus } from '../types/index.js';
@@ -701,17 +702,8 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
       if (!response.ok) throw new Error('Falha ao exportar');
 
       const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute(
-        'download',
-        `leads_${BRAND.id}_${new Date().toISOString().slice(0, 10)}.csv`,
-      );
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode?.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      const filename = `leads_${BRAND.id}_${new Date().toISOString().slice(0, 10)}.csv`;
+      await downloadBlob(blob, filename);
     } catch {
       toast.error('Erro ao exportar leads. Tente novamente.');
     }

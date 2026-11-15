@@ -16,6 +16,7 @@ import { useState } from 'react';
 import { useActivePlaybook } from '../../../hooks/useActivePlaybook.js';
 import { useBrandAccent } from '../../../hooks/useBrandAccent.js';
 import { api } from '../../../lib/api.js';
+import { downloadBlob } from '../../../lib/nativeDownload.js';
 
 const TRIGGERS = [
   {
@@ -332,7 +333,7 @@ if __name__ == "__main__":
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!result) return;
     let content = '';
     let filename = '';
@@ -348,12 +349,11 @@ if __name__ == "__main__":
     }
 
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
+    try {
+      await downloadBlob(blob, filename);
+    } catch {
+      setError('Falha ao exportar o arquivo. Tente novamente.');
+    }
   };
 
   return (

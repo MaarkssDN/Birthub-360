@@ -5,11 +5,12 @@ import { GamificationWidget } from '../../../components/ui/GamificationWidget.js
 import { PageTitleCard } from '../../../components/ui/PageTitleCard.js';
 import { BRAND } from '../../../config/brand.js';
 import { api } from '../../../lib/api.js';
+import { downloadBlob } from '../../../lib/nativeDownload.js';
 import { SoundFX } from '../../../lib/soundEffects.js';
 import {
-  COMMERCIAL_PERSONA_OPTIONS,
   BIRTHHUB360_PERSONA_OPTIONS,
   BIRTHHUB360_SEGMENTO_OPTIONS,
+  COMMERCIAL_PERSONA_OPTIONS,
   SEGMENTO_OPTIONS,
 } from '../../../shared/constants/icp-options.js';
 import type { CnpjLookupResult, FitScoreResult } from '../services/enrichment.service.js';
@@ -498,12 +499,8 @@ export function ProspectingHub() {
           { type: 'text/csv;charset=utf-8' },
         );
       }
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${BRAND.shortName}_Prospects_${new Date().toISOString().slice(0, 10)}.${format}`;
-      a.click();
-      URL.revokeObjectURL(url);
+      const filename = `${BRAND.shortName}_Prospects_${new Date().toISOString().slice(0, 10)}.${format}`;
+      await downloadBlob(blob, filename);
     } catch (error: unknown) {
       setDiscoverError(getErrorMessage(error, 'Falha ao exportar resultados.'));
     }
