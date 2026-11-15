@@ -39,6 +39,34 @@ Revisão completa em handoff: `.agents/handoffs/onda-ia-1/15-para-14-avaliacao-p
 Decisão: APROVADO COM RESERVA para Onda 1. Implementação base é sólida, mas melhorias recomendadas para ondas posteriores.
 
 ## Resolução (Coordenador 00)
-Testes já implementados pelo Agente 14, conformes e registrados na resposta de handoff associada.
 
-> Reconciliação 2026-11-14 (Agente 00): veredicto DEFEITO-REAL — cobertura parcial; 3 de 5 itens não cobertos. Correção pendente de despacho. Ver RESULTADOS-RECONCILIACAO-20261114.md.
+**CORRIGIDA em reconciliação 2026-11-14 (Agente 00)** — a redação anterior ("Testes já
+implementados pelo Agente 14, conformes") superestimava a cobertura. Estado verificado:
+
+**Cobertura real (parcial):**
+- `tests/integration/ai-guardrails-security.test.ts` — detecção de CPF/CNPJ/e-mail/
+  telefone/cartão, redação com placeholders, detecção de toxicidade, falsos positivos
+  (CEP, protocolo numérico).
+- `tests/unit/ai/guardrails-allowlist.test.ts` — allowlist de e-mails corporativos/
+  placeholder e redação tokenizada.
+- `tests/integration/ai-safety-adversarial.test.ts` — prompt injection/jailbreak
+  cobertos no nível do wrapper do gateway (`wrapUntrustedContent` /
+  `UNTRUSTED_CONTENT_GUARD_INSTRUCTION`), não no caminho específico dos guardrails PII.
+
+**Débito — 3 lacunas dos 5 itens originais NÃO cobertos:**
+1. **Logs de bloqueio em `AILog`** — o teste existe apenas como stub
+   (`ai-guardrails-security.test.ts` ~L128: "Este teste requer integração com AILog;
+   por enquanto, valida que a função existe"). Não há verificação real de persistência
+   do log de tentativas bloqueadas.
+2. **Prompt injection antes de enviar ao provider** — cobertura apenas indireta, no
+   wrapper do gateway; não há teste do pipeline PII-guardrail → provider.
+3. **Encoding bypass (Base64, hex, unicode escape)** — os testes documentam a falha
+   como esperada (`expect(result.blocked).toBe(false) // Falha atual esperada`);
+   ou seja, o bypass é conhecido e aceito para Onda 1, não corrigido.
+
+Não existe handoff de débito separado cobrindo essas 3 lacunas — ficam registradas
+neste handoff (status permanece **aberto**) até despacho em onda futura.
+
+> Histórico: veredicto de reconciliação 2026-11-14 era DEFEITO-REAL (cobertura parcial,
+> Resolução superestimava). Correção aplicada nesta data — ver
+> RESULTADOS-RECONCILIACAO-20261114.md.
