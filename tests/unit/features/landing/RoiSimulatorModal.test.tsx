@@ -36,8 +36,9 @@ describe('RoiSimulatorModal', () => {
     );
 
     expect(screen.getByText(/Simulador Executivo de Previsibilidade/i)).toBeInTheDocument();
-    expect(screen.getByText(/Receita Resgatável com IA/i)).toBeInTheDocument();
-    expect(screen.getByText(/Receita Mensal em Risco/i)).toBeInTheDocument();
+    expect(screen.getByText(/Receita potencial com IA/i)).toBeInTheDocument();
+    expect(screen.getByText(/Receita mensal em risco estimado/i)).toBeInTheDocument();
+    expect(screen.getByText(/Cenário ilustrativo/i)).toBeInTheDocument();
   });
 
   it('deve fechar ao pressionar Escape ou clicar no botão fechar', () => {

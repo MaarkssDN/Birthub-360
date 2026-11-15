@@ -86,9 +86,9 @@ export function Act2Dissonance() {
                 <li className="flex items-start gap-3">
                   <Database className="w-4 h-4 text-[#EF4444] shrink-0 mt-1" />
                   <span>
-                    <strong className="text-[#F8F9FF]">Deterioração contínua de dados:</strong> 70%
-                    dos contatos ficam desatualizados ou incompletos por falta de enriquecimento em
-                    tempo real.
+                    <strong className="text-[#F8F9FF]">Deterioração contínua de dados:</strong>{' '}
+                    Muitos contatos ficam desatualizados ou incompletos por falta de enriquecimento
+                    contínuo.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
@@ -112,7 +112,7 @@ export function Act2Dissonance() {
 
             <div className="mt-8 pt-6 border-t border-white/[0.08] flex items-center justify-between text-xs font-mono text-[#9EADC8]">
               <span>Custo Invisível</span>
-              <span className="text-[#EF4444] font-bold">~28% de Perda de Eficiência</span>
+              <span className="text-[#EF4444] font-bold">Risco de perda de eficiência</span>
             </div>
           </SpotlightCard>
 
@@ -155,8 +155,8 @@ export function Act2Dissonance() {
                   <CheckCircle2 className="w-4 h-4 text-[#FF2D9B] shrink-0 mt-1" />
                   <span>
                     <strong className="text-[#F8F9FF]">Enriquecimento contínuo autônomo:</strong>{' '}
-                    Sinais de compra e inteligência de decisores sincronizados a cada segundo com
-                    isolamento RLS.
+                    Sinais de compra e inteligência de decisores sincronizados conforme os
+                    conectores ativos, com isolamento RLS.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
@@ -180,7 +180,7 @@ export function Act2Dissonance() {
 
             <div className="mt-8 pt-6 border-t border-white/[0.08] flex items-center justify-between text-xs font-mono text-[#9EADC8]">
               <span>Ganho Operacional</span>
-              <span className="text-[#00D4FF] font-bold">+42% Velocidade no Pipeline</span>
+              <span className="text-[#00D4FF] font-bold">Ganho projetado no pipeline</span>
             </div>
           </SpotlightCard>
         </div>
@@ -192,7 +192,7 @@ export function Act2Dissonance() {
               Interoperabilidade Universal sem Rompimento de Legado
             </span>
             <p className="text-sm font-semibold text-[#F8F9FF]">
-              Conecta-se e sincroniza nativamente com o seu ecossistema atual
+              Conecta-se ao ecossistema atual conforme a disponibilidade de cada conector
             </p>
           </div>
 
@@ -213,6 +213,10 @@ export function Act2Dissonance() {
               </div>
             ))}
           </div>
+
+          <p className="mt-6 text-center font-mono text-[11px] text-[#9EADC8]">
+            Disponibilidade varia por conector: produção, homologação ou planejado.
+          </p>
         </div>
       </div>
     </section>
