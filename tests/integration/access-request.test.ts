@@ -85,8 +85,10 @@ describe('Cross-Role Authorization + Aprovações (PROMPT 7)', () => {
       await prisma.approvalDecision.deleteMany({ where: { organizationId: ORG_ID } });
       await prisma.accessRequest.deleteMany({ where: { organizationId: ORG_ID } });
     });
-    await prisma.auditLog.deleteMany({ where: { entity: 'AccessRequest' } });
-    await prisma.auditLog.deleteMany({ where: { entity: 'TemporaryCapabilityGrant' } });
+    // AuditLog é append-only desde 20261114160000_auditlog_append_only_immutability —
+    // DELETE é bloqueado para qualquer papel (inclusive o migrator). Os testes de audit
+    // filtram por entityId do AccessRequest (cuid único por execução), então o resíduo
+    // não interfere em runs futuros.
     await prisma.userJobRole.deleteMany({
       where: { organizationId: { in: [ORG_ID, OTHER_ORG_ID] } },
     });
