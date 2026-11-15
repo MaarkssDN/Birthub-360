@@ -44,7 +44,9 @@ afterEach(() => {
 
 describe('deriveActiveTabFromPath — /app/settings/pillars/<slug>', () => {
   it.each(SETTINGS_PILLAR_SLUGS)('resolve /app/settings/pillars/%s → settings_%s', (slug) => {
-    expect(deriveActiveTabFromPath(`/app/settings/pillars/${slug}`)).toBe(SETTINGS_PILLAR_TAB[slug]);
+    expect(deriveActiveTabFromPath(`/app/settings/pillars/${slug}`)).toBe(
+      SETTINGS_PILLAR_TAB[slug],
+    );
   });
 
   it.each(['hub', 'market', 'ai'] as const)('caso explícito do achado: %s', (slug) => {
@@ -96,23 +98,20 @@ describe('Topbar/H1 — label do pilar (não "Ajustes Globais")', () => {
 });
 
 describe('AppBreadcrumbs — trilha /app/settings/pillars/<slug>', () => {
-  it.each(['hub', 'market', 'ai'] as const)(
-    'breadcrumb final de %s é o nome do pilar',
-    (slug) => {
-      render(
-        React.createElement(
-          MemoryRouter,
-          { initialEntries: [`/app/settings/pillars/${slug}`] },
-          React.createElement(AppBreadcrumbs, null),
-        ),
-      );
-      const nav = screen.getByRole('navigation', { name: /navegação estrutural/i });
-      expect(nav).toHaveTextContent('Início');
-      expect(nav).toHaveTextContent('Ajustes Globais');
-      const current = nav.querySelector('[aria-current="page"]');
-      expect(current).toHaveTextContent(SETTINGS_PILLAR_LABEL[slug]);
-    },
-  );
+  it.each(['hub', 'market', 'ai'] as const)('breadcrumb final de %s é o nome do pilar', (slug) => {
+    render(
+      React.createElement(
+        MemoryRouter,
+        { initialEntries: [`/app/settings/pillars/${slug}`] },
+        React.createElement(AppBreadcrumbs, null),
+      ),
+    );
+    const nav = screen.getByRole('navigation', { name: /navegação estrutural/i });
+    expect(nav).toHaveTextContent('Início');
+    expect(nav).toHaveTextContent('Ajustes Globais');
+    const current = nav.querySelector('[aria-current="page"]');
+    expect(current).toHaveTextContent(SETTINGS_PILLAR_LABEL[slug]);
+  });
 
   it('slug "hub" de settings NÃO renderiza "Hub de Inteligência"', () => {
     render(

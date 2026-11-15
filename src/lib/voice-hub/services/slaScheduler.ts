@@ -75,11 +75,14 @@ async function sampleAndRecordPlatformReadiness(): Promise<{
     );
   }
 
-  logger.info( {
-    ready,
-    checks,
-    tenantCount: organizationIds.length,
-  },'[SlaScheduler] Platform readiness sample recorded');
+  logger.info(
+    {
+      ready,
+      checks,
+      tenantCount: organizationIds.length,
+    },
+    '[SlaScheduler] Platform readiness sample recorded',
+  );
 
   return { ready, tenantCount: organizationIds.length };
 }
@@ -105,9 +108,7 @@ export function startSlaScheduler(): { queue: Queue; worker: Worker } | undefine
       commandTimeout: 2000,
       retryStrategy: getRedisRetryStrategy(),
     });
-    redisClient.on('error', (err) =>
-      logger.error({ err }, '[SlaScheduler] Redis client error'),
-    );
+    redisClient.on('error', (err) => logger.error({ err }, '[SlaScheduler] Redis client error'));
 
     worker = new Worker(QUEUE_NAME, () => sampleAndRecordPlatformReadiness(), { connection });
 
@@ -130,9 +131,12 @@ export function startSlaScheduler(): { queue: Queue; worker: Worker } | undefine
         },
       )
       .then(() => {
-        logger.info( {
-          cron: REPEAT_CRON,
-        },'[SlaScheduler] Registered platform readiness sampling job');
+        logger.info(
+          {
+            cron: REPEAT_CRON,
+          },
+          '[SlaScheduler] Registered platform readiness sampling job',
+        );
       })
       .catch((err: unknown) => {
         const msg = err instanceof Error ? err.message : String(err);
