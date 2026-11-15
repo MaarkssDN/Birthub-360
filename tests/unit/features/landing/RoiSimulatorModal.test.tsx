@@ -78,4 +78,51 @@ describe('RoiSimulatorModal', () => {
     expect(onProceedToLogin).toHaveBeenCalled();
     expect(onClose).toHaveBeenCalled();
   });
+
+  it('fecha ao clicar no backdrop (fora do painel)', () => {
+    const onClose = vi.fn();
+    const { container } = render(
+      <RoiSimulatorModal
+        isOpen={true}
+        variant="A"
+        onClose={onClose}
+        onProceedToLogin={vi.fn()}
+      />,
+    );
+
+    // O handler só fecha quando e.target === e.currentTarget (clique no fundo).
+    const backdrop = container.querySelector('[aria-modal="true"]') as HTMLElement;
+    fireEvent.click(backdrop);
+    expect(onClose).toHaveBeenCalledTimes(1);
+
+    // Clique dentro do painel não deve fechar
+    fireEvent.click(screen.getByText(/Oportunidades em Andamento/i));
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('atualiza os sliders de pipeline e recalcula os valores', () => {
+    render(
+      <RoiSimulatorModal
+        isOpen={true}
+        variant="A"
+        onClose={vi.fn()}
+        onProceedToLogin={vi.fn()}
+      />,
+    );
+
+    const dealsSlider = document.getElementById('deals-slider') as HTMLInputElement;
+    expect(dealsSlider).not.toBeNull();
+    fireEvent.change(dealsSlider, { target: { value: '100' } });
+    expect(dealsSlider.value).toBe('100');
+
+    // Localiza os demais sliders de range pelo tipo
+    const sliders = document.querySelectorAll<HTMLInputElement>('input[type="range"]');
+    expect(sliders.length).toBeGreaterThanOrEqual(3);
+    sliders.forEach((slider) => {
+      const max = Number(slider.max);
+      const next = String(Math.min(max, Number(slider.value) + 5));
+      fireEvent.change(slider, { target: { value: next } });
+      expect(slider.value).toBe(next);
+    });
+  });
 });

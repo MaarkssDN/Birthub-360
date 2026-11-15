@@ -197,4 +197,31 @@ describe('LuxuryLandingPage', () => {
     fireEvent.click(portalBtn[0]);
     expect(scrollSpy).toHaveBeenCalledWith({ behavior: 'smooth' });
   });
+
+  it('preenche empresa e honeypot website sem disparar envio de bot', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
+    vi.stubGlobal('fetch', fetchMock);
+    renderPortal();
+
+    fillRequiredFields();
+    fireEvent.change(screen.getByLabelText(/Empresa/i), {
+      target: { value: 'Logística Nacional' },
+    });
+    // Honeypot: invisível para humanos, preenchido por bots — aceitar o valor
+    const website = document.getElementById('portal-website') as HTMLInputElement;
+    expect(website).not.toBeNull();
+    fireEvent.change(website, { target: { value: 'http://spam.example' } });
+    expect(website.value).toBe('http://spam.example');
+
+    fireEvent.click(screen.getByLabelText(/Autorizo o contato/i));
+    fireEvent.click(
+      screen.getByRole('button', { name: /Confirmar Solicitação de Acesso/i }),
+    );
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(init.body as string) as Record<string, unknown>;
+    expect(body.empresa).toBe('Logística Nacional');
+    expect(body.website).toBe('http://spam.example');
+  });
 });

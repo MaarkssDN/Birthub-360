@@ -84,6 +84,7 @@ describe('SculpturalReveal', () => {
     const el = screen.getByText('Subtítulo');
     expect(el.tagName).toBe('H3');
   });
+
 });
 
 describe('SpotlightCard', () => {
