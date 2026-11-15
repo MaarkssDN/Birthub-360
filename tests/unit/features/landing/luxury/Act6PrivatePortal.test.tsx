@@ -198,29 +198,28 @@ describe('LuxuryLandingPage', () => {
     expect(scrollSpy).toHaveBeenCalledWith({ behavior: 'smooth' });
   });
 
-  it('preenche empresa e honeypot website sem disparar envio de bot', async () => {
+  it('preenche empresa e honeypot website e envia o campo website no payload', async () => {
+    const user = userEvent.setup();
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
     vi.stubGlobal('fetch', fetchMock);
     renderPortal();
 
-    fillRequiredFields();
-    fireEvent.change(screen.getByLabelText(/Empresa/i), {
-      target: { value: 'Logística Nacional' },
-    });
-    // Honeypot: invisível para humanos, preenchido por bots — aceitar o valor
+    await fillRequiredFields(user)();
+    await user.type(screen.getByLabelText(/Empresa/i), 'Logística Nacional');
+    // Honeypot: invisível para humanos, preenchido por bots — o valor é enviado no payload
     const website = document.getElementById('portal-website') as HTMLInputElement;
     expect(website).not.toBeNull();
     fireEvent.change(website, { target: { value: 'http://spam.example' } });
     expect(website.value).toBe('http://spam.example');
 
-    fireEvent.click(screen.getByLabelText(/Autorizo o contato/i));
-    fireEvent.click(
+    await user.click(screen.getByRole('checkbox'));
+    await user.click(
       screen.getByRole('button', { name: /Confirmar Solicitação de Acesso/i }),
     );
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    const body = JSON.parse(init.body as string) as Record<string, unknown>;
+    const body = JSON.parse(String(init.body)) as Record<string, unknown>;
     expect(body.empresa).toBe('Logística Nacional');
     expect(body.website).toBe('http://spam.example');
   });
