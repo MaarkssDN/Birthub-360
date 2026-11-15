@@ -101,30 +101,12 @@ propósito por estar fora de "## Exceções ativas"):
 - **Atualizado em:** 2026-10-14 (exceção temporária para a contagem atual)
 - **Reavaliar até:** 2026-11-30 (mesmo checkpoint dos demais itens desta lista)
 
-### `src/features/integrations/components/BitrixImportPanel.tsx`
-
-- **Limite excepcional:** 1300 linhas
-- **Dono:** Agente 06 — Integrações e Bitrix
-- **Motivo:** mesma situação do `CadenceHub.tsx` acima — já listado como débito conhecido em 960
   linhas (2026-08-25), cresceu para 1193 linhas sem que o gate rodasse de verdade em CI pelo mesmo
   motivo (mascarado por `no-cross-feature-imports` na etapa anterior). Não é regressão de nenhum
   PR específico. Modularizar fica para um item de dívida técnica dedicado.
 - **Registrado em:** 2026-08-29
 - **Reavaliar até:** 2026-11-30 (mesmo checkpoint do `KNOWN_VIOLATIONS.md`)
 
-### `src/features/integrations/components/Integrations.tsx`
-
-- **Limite excepcional:** 1200 linhas
-- **Dono:** Agente 06 — Integrações e Bitrix
-- **Motivo:** Exceção criada para liberar o build, arquivo passou das 1000 linhas (1081).
-- **Registrado em:** 2026-09-23
-- **Reavaliar até:** 2026-11-30 (mesmo checkpoint dos demais itens desta lista)
-
-### `src/features/integrations/components/ExternalCrmPanel.tsx`
-
-- **Limite excepcional:** 1100 linhas
-- **Dono:** Agente 06 — Integrações e Bitrix
-- **Motivo:** arquivo preexistente com 1077 linhas, acima do limite geral. A extração de
   subcomponentes é uma refatoração de UX/integração independente desta correção de CI e deve ser
   planejada pelo dono do domínio. Exceção temporária para manter o gate executável sem alterar o
   limite geral do repositório.
@@ -218,14 +200,6 @@ propósito por estar fora de "## Exceções ativas"):
 - **Dono:** Agente 02 — Produto e UX
 - **Motivo:** O drawer de detalhes do lead reúne abas de informações da empresa, contatos, atividades, histórico e enriquecimento em um único componente coeso. Ultrapassou ligeiramente 1000 linhas (1008 linhas) ao exibir metadados avançados de enriquecimento. A exceção desbloqueia o gate enquanto os sub-painéis são extraídos para componentes filhos.
 - **Registrado em:** 2026-10-16
-- **Reavaliar até:** 2026-11-30
-
-### `src/features/intelligence/components/IntelligenceHub.tsx`
-
-- **Limite excepcional:** 1334 linhas (teto = tamanho atual; o arquivo não pode crescer)
-- **Dono:** Agente 07 — IA e Automações (redução; Agente 03 na parte de UI)
-- **Motivo:** exceção TEMPORÁRIA. O redesign do hub de IA em pilares operacionais (commits a96bb68d e 0774cd67, 2026-10-24) levou o arquivo a 1334 linhas sem exceção registrada, e o gate `check:hotspots` herdado da main passou a bloquear a validação dos PRs #67, #71 e #72. A exceção destrava o gate com teto no tamanho atual enquanto o Agente 07 (com o Agente 03 na UI) extrai os pilares/painéis para componentes próprios.
-- **Registrado em:** 2026-10-25
 - **Reavaliar até:** 2026-11-30
 
 ### `src/features/landing/components/pillars/PillarRegistry.tsx`

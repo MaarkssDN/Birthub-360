@@ -1,0 +1,95 @@
+# Worklist verificacao B - 93 handoffs
+
+- [ABERTO] `.agents/handoffs/00-para-02-cta-hub-ia-light-invisivel.md` | De:00 Para:02 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/00-para-02-dashboard-greeting-testid.md` | De:00 Para:02 | 2026-01-15->2026-11-12 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/00-para-02-gamification-forecast-rbac.md` | De:00 Para:02 | 2026-11-10->2026-11-11 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/00-para-02-hotspot-pillar-settings.md` | De:15 Para:02 | 2026-11-11->2026-11-30 | evid:PARCIAL aprov:NAO
+- [ABERTO] `.agents/handoffs/00-para-04-10-08-relatorios-forecast.md` | De:00 Para:04 (crm/bi) + 10 (sr | 2026-11-12->2026-11-12 | evid:SIM aprov:NAO
+- [ABERTO] `.agents/handoffs/00-para-04-crm-hotspots-refactor.md` | De:00 Para:04 | 2026-11-12->2026-11-12 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/07-para-02-typescript-error-sidebar.md` | De:07 Para:02 | 2026-10-31->2026-10-31 | evid:SIM aprov:NAO
+- [ABERTO] `.agents/handoffs/12-para-05-outbound-api-legado-tenancy.md` | De:12 Para:05 | -> | evid:NAO aprov:NAO
+- [ABERTO] `.agents/handoffs/15-para-02-03-sonar-new-coverage.md` | De:15 Para:02 | 2026-10-27->2026-11-12 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/15-para-02-sonar-bugs-new-code.md` | De:15 Para:02 | 2026-10-27->2026-11-10 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/audit-ach/09-para-05-ocr-camera-permission-declarada.md` | De:09 Para:05 | 2026-09-11->2026-09-11 | evid:NAO aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/ci-recuperacao-onda-01/00-para-02-03-e2e-contrast-selectors.md` | De:00 Para:02 | 2026-10-23->2026-10-23 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/landing-clip-20261010/05-para-03-clip-prospeccao-real.md` | De:05 Para:03 | 2026-10-11->2026-10-11 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/mapa-modulos-20261010/07-para-02-copiloto-alias-elite.md` | De:07 Para:02 | 2026-10-10->2026-10-10 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-01/11-para-02-03-sistema-visual-personagens.md` | De:11 Para:02 | 2026-11-10->2026-11-10 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-1/01-para-02-contrato-api-leads.md` | De:01 Para:02 | 2026-11-02->2026-11-10 | evid:PARCIAL aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-1/01-para-04-role-gates-crm.md` | De:01 Para:04 | -> | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-11/02-para-04-commercial-intelligence-types.md` | De:02 Para:04 | 2026-08-17->2026-08-17 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-11/09-para-04-commercial-intelligence-tsc-error.md` | De:09 Para:04 | 2026-08-18->2026-08-18 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-14/06-para-02-ui-conectores-crm.md` | De:06 (integrações e bi Para:02 (produto e ux) | 2026-10-08->2026-10-08 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-14/06-para-04-contrato-entidades-pipeline.md` | De:06 (integrações e bi Para:04 (crm e bi) | 2026-10-08->2026-10-08 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-14/08-para-05-ts-errors-prospecting.md` | De:08 Para:05 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-14/16-para-05-integracao-crawlee-prospeccao.md` | De:16 (runtime, workers Para:05 (prospecção) | 2026-10-08->2026-10-08 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-15/07-para-02-hud-copiloto-live.md` | De:07 (ia e automações) Para:02 (produto e ux) | -> | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-15/07-para-04-contrato-live-insights.md` | De:07 (ia e automações) Para:04 (crm e bi) | -> | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-15/09-para-02-shell-mobile-offline.md` | De:09 (mobile) Para:02 (produto e ux) | -> | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-2/04-para-05-whatsapp-duplicado.md` | De:04 Para:05 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-2/05-para-04-whatsapp-consolidado.md` | De:05 Para:04 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-38/00-para-02-03-redesign-plataforma.md` | De:00 Para:02 | 2026-10-10->2026-10-10 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-4/10-para-02-tsc-quebrado-tab-route-set-crm360.md` | De:10 Para:02 | -> | evid:NAO aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-4/11-para-02-crm360-rota-ausente.md` | De:11 (marca e ativos i Para:02 (produto e ux) | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-52/00-para-04-pr741-signals-risks-boundary.md` | De:00 Para:04 | -> | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-52/gha-para-02-sidebar-test.md` | De:08 Para:02 | 2026-10-23->2026-11-10 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-6/07-para-05-accountintelligence-singleton-quebrado.md` | De:07 Para:05 (prospecção) | -> | evid:NAO aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-7/05-para-02-rotulagem-confirmado-inferido.md` | De:05 Para:02 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-7/06-para-04-voice-trigger.md` | De:06 Para:04 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-7/17-para-02-rota-cadencia.md` | De:17 Para:02 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-7/17-para-05-06-12-contrato-optout.md` | De:17 Para:05, 06, 12 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-8/09-para-02-downloads-blob-nao-funcionam-no-app.md` | De:09 Para:02 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-8/09-para-02-navigationbus-rotas-ausentes.md` | De:09 Para:02 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-8/09-para-02-offline-stale-state-ausente.md` | De:09 Para:02 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-8/09-para-02-voice-command-nao-funciona-no-app.md` | De:09 Para:02 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-8/18-para-02-unificar-overviewmetrics-frontend.md` | De:18 Para:02 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-8/18-para-04-as-any-crm360-prisma-aggregate.md` | De:18 Para:04 | -> | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-8/18-para-04-duplicacao-commercial-intelligence-contract.md` | De:18 Para:04 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-8/18-para-04-unificar-overviewmetrics.md` | De:18 Para:04 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-G/05-para-04-whatsapp.md` | De:05 Para:04 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-aws-release-2026-10-09/08-para-03-drawer-test-backdrop.md` | De:08 Para:03 | 2026-10-09->2026-10-10 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-aws-release-2026-10-09/08-para-03-globals-css-missed-semicolon.md` | De:08 Para:03 | 2026-10-09->2026-10-10 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-c0/11-para-03-cor-marca-antiga-em-producao.md` | De:11 Para:03 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-dividas-20261014/00-para-02-debt-20261014-not-001.md` | De:00 Para:02 | 2026-10-17->2026-10-17 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-dividas-20261014/00-para-02-pwa-limpeza-troca-identidade.md` | De:00 Para:02 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-dividas-20261014/00-para-04-debt-20261014-ux-002.md` | De:00 Para:04 | 2026-10-17->2026-10-17 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-dividas-20261014/00-para-04-debt-20261014-ux-003.md` | De:00 Para:04 | 2026-10-17->2026-10-17 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-dividas-20261014/00-para-04-debt-20261014-ux-004.md` | De:00 Para:04 | 2026-09-30->2026-10-01 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-ecossistema-01/00-para-02-integracao-cockpit-crm-layout.md` | De:00 Para:02 | 2026-11-09->2026-11-09 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-ecossistema-01/00-para-03-ui-cockpit-estados-acessibilidade.md` | De:00 Para:03 | 2026-11-09->2026-11-09 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-enxuta/17-para-02-dialer-redirect-cadence.md` | De:17 Para:02 | 2026-10-11->2026-10-11 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-evolucao-enxame/00-para-02-03-inbox-aprovacao-ia.md` | De:00 Para:agentes 02 (produto/ | 2026-11-01->2026-11-01 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-forense-20261020/00-para-04-forense.md` | De:00 Para:04 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-landing-360-auditoria/01-para-02-sticky-bar-zindex.md` | De:01 Para:02 | 2026-11-12->2026-11-12 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-landing-360-auditoria/auditoria-para-02-bugs-funcionais.md` | De:auditoria ad-hoc (de Para:02 | 2026-11-12->2026-11-12 | evid:SIM aprov:NAO
+- [ABERTO] `.agents/handoffs/onda-landing-360-auditoria/auditoria-para-02-form-lead-fake.md` | De:auditoria ad-hoc (de Para:02 | 2026-11-12->2026-11-12 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-landing-360-auditoria/auditoria-para-02-limpeza-deadcode.md` | De:auditoria ad-hoc (de Para:02 | 2026-11-12->2026-11-12 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-landing-360-auditoria/auditoria-para-02-ux-mobile-a11y.md` | De:auditoria ad-hoc (de Para:02 | 2026-11-12->2026-11-12 | evid:SIM aprov:NAO
+- [ABERTO] `.agents/handoffs/onda-landing-360-auditoria/auditoria-para-02-verdade-no-copy.md` | De:auditoria ad-hoc (de Para:02 | 2026-11-11->2026-11-12 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-lint-main-20261025/07-para-03-hotspots-intelligence.md` | De:07 Para:03 | 2026-11-08->2026-11-30 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-liquidacao-debitos/00-para-02-03-validacao-wcag.md` | De:00 (coordenador) Para:03 (design e acessib | 2026-10-10->2026-10-10 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-paralela-8/00-para-02-asany-layout.md` | De:00 Para:02 | 2026-11-12->2026-11-12 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261105/00-para-02-modularizacao-crmboard-kanban.md` | De:? Para:02 â€” produto e ux | 2026-11-06->2026-11-06 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261105/00-para-03-remocao-important-css-globals.md` | De:? Para:03 â€” design e aces | 2026-11-06->2026-11-06 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261105/00-para-04-observabilidade-erros-analytics-sem-zeros.md` | De:? Para:04 â€” crm e bi | 2026-11-06->2026-11-06 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261105/00-para-05-circuit-breaker-enriquecimento-leads.md` | De:? Para:05 â€” prospecã§ã£o | 2026-11-06->2026-11-06 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261105/22-para-02-persistencia-settings-placeholder.md` | De:? Para:02 â€” produto e ux | 2026-11-06->2026-11-06 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-02-acoplamento-excessivo-e-orquestracao-de-side-effects-em-src-app-tsx.md` | De:00 Para:02 | 2026-11-10->2026-11-12 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-02-hotspot-estrutural-no-componente-central-crmboard-tsx-acumulando-multi.md` | De:00 Para:02 | 2026-11-10->2026-11-12 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-02-leitura-de-notificacao-broadcast-em-entidade-compartilhada-silencia-un.md` | De:00 Para:02 | 2026-11-10->2026-11-12 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-03-instabilidade-e-tolerancia-frouxa-em-testes-de-regressao-visual-devido.md` | De:00 Para:03 | 2026-11-10->2026-11-12 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-03-proliferacao-de-declaracoes-important-em-folhas-de-estilo-quebrando-a.md` | De:00 Para:03 | 2026-11-10->2026-11-12 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-04-hotspot-estrutural-e-queries-com-alto-custo-computacional-em-prismacrm.md` | De:00 Para:04 | 2026-11-10->2026-11-10 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-05-acumulo-de-cache-de-enriquecimento-sem-expurgo-automatico-em-tabelas-t.md` | De:00 Para:05 | 2026-11-10->2026-11-12 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-05-ausencia-de-validacao-previa-em-lote-de-listas-de-supressao-opt-out-em.md` | De:00 Para:05 | 2026-11-10->2026-11-12 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/11-para-03-divergencias-residuais-de-tokens-de-cor-e-fonte-entre-globals-e-tokens-canonicos.md` | De:11 Para:03 | 2026-11-12->2026-11-12 | evid:SIM aprov:NAO
+- [ABERTO] `.agents/handoffs/onda-saneamento-20261110/17-para-05-market-intelligence-start-cadence-sem-optout.md` | De:17 Para:05 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-ui-1/00-para-02-shell-canonico.md` | De:00 Para:02 | 2026-10-11->2026-10-11 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-ui-1/00-para-03-design-system-onda-b.md` | De:00 Para:03 | 2026-10-11->2026-10-11 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/personagens-29-20261110/00-para-02-ratificacao-rota-characters.md` | De:00 Para:02 | 2026-11-10->2026-11-10 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/personagens-29-20261110/00-para-03-ratificacao-widget-catalogo.md` | De:00 Para:03 | 2026-11-10->2026-11-10 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/roadmap-v2-onda-3/03-para-04-label-sem-controle-propostaform.md` | De:03 Para:04 | -> | evid:NAO aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/roadmap-v2-onda-4/11-para-03-brand-2-default-nao-bate-com-atlasgr.md` | De:11 (marca e ativos i Para:03 (design e acessib | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/roadmap-v2-transversais-2/18-para-04-analytics-cohort-dados-ficticios.md` | De:18 Para:04 | -> | evid:NAO aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/techdebt-2026-09-29/00-para-04-arquivo-monolitico-commercial-intelligence.md` | De:00 (coordenador) Para:04 (crm e bi) | 2026-09-29->2026-09-29 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/techdebt-2026-09-29/00-para-05-arquivos-monoliticos-prospecting.md` | De:00 (coordenador) Para:05 (prospecção) | 2026-09-29->2026-09-29 | evid:SIM aprov:NAO

@@ -87,7 +87,7 @@ export async function createPromptExperiment(params: {
   agentRole: PromptVariant['agentRole'];
   variants: Array<{ name: string; promptTemplate: string; weight: number }>;
 }): Promise<PromptExperiment> {
-  const experimentId = `exp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  const experimentId = `exp-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
 
   const totalWeight = params.variants.reduce((sum, v) => sum + v.weight, 0);
   if (totalWeight === 0) {

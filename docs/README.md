@@ -10,6 +10,11 @@ técnica) — nessa revisão, dois links quebrados foram corrigidos (apontavam p
 do controle de versão em 22/08/2026; ver [`docs/REMOVED-DOCS.md`](REMOVED-DOCS.md)) e a seção
 "Relatórios" abaixo foi corrigida para não listar relatórios que não existem mais.
 
+
+## Governança e qualidade da execução
+
+- [Protocolo de qualidade e aceite](orchestration/PROTOCOLO_QUALIDADE_E_ACEITE.md) — critérios congelados antes da execução, correções e evidências, sem ressalvas retroativas; complementa [orquestração multiagente](orchestration/PROTOCOLO.md) e [AGENTS.md](../AGENTS.md).
+
 ## Contrato de API
 
 - [OpenAPI (docs/openapi.yaml)](openapi.yaml) — servido em `/api-docs` (fora de produção por

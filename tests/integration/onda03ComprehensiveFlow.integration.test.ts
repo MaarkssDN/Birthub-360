@@ -14,7 +14,6 @@ import {
   ORACLE_FIXED_NOW,
   seedRealHistory,
 } from '../unit/commercial-intelligence/oracleTestDoubles.js';
-import { adaptiveMultichannelCadenceService } from '../../src/features/cadence/services/adaptiveMultichannelCadence.service.js';
 import { recordOptOut } from '../../src/features/cadence/application/optOutService.js';
 
 describe('ONDA 03 — Fluxo Abrangente Integrado e Cinco Jornadas Comerciais E2E', () => {
@@ -26,7 +25,9 @@ describe('ONDA 03 — Fluxo Abrangente Integrado e Cinco Jornadas Comerciais E2E
     selfDrivingCrmService.clear();
     valueRealizationService.clear();
     predictiveRevenueOracleService.clear();
-    adaptiveMultichannelCadenceService.clear();
+    // adaptiveMultichannelCadenceService não tem mais clear(): enrollments e opt-outs agora
+    // persistem no Postgres (MultichannelCadenceEnrollment/OptOutRecord) e são limpos pelo
+    // cleanDatabase/integration-setup entre testes — o serviço não é exercido diretamente aqui.
   });
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -95,6 +96,7 @@ describe('ONDA 03 — Fluxo Abrangente Integrado e Cinco Jornadas Comerciais E2E
 
     // 1. Lead estagnado cadastrado no CRM
     selfDrivingCrmService.seedLead({
+      organizationId: tenantA,
       leadId: 'lead-resgate-100',
       leadName: 'Logística Transbrasil',
       currentStage: 'Demonstração Técnica',
@@ -390,9 +392,21 @@ describe('ONDA 03 — Fluxo Abrangente Integrado e Cinco Jornadas Comerciais E2E
     });
 
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    // Mesmo leadId em dois tenants: prova que o opt-out de A não vaza para B
+    // e que o isolamento de leads é fail-closed por organizationId.
     selfDrivingCrmService.seedLead({
+      organizationId: tenantA,
       leadId: 'lead-compartilhado-id',
-      leadName: 'Lead Compartilhado',
+      leadName: 'Lead Compartilhado Alpha',
+      currentStage: 'Prospecção',
+      lastActivityAt: thirtyDaysAgo,
+      hasActiveDeal: false,
+      isWonOrLost: false,
+    });
+    selfDrivingCrmService.seedLead({
+      organizationId: tenantB,
+      leadId: 'lead-compartilhado-id',
+      leadName: 'Lead Compartilhado Beta',
       currentStage: 'Prospecção',
       lastActivityAt: thirtyDaysAgo,
       hasActiveDeal: false,

@@ -9,6 +9,7 @@
  * - Multi-tenant estrito por organizationId.
  */
 
+import { logger } from '../../../lib/logger.js';
 import type {
   ConversationalDynamicMetrics,
   ExplicitObjectionItem,
@@ -19,7 +20,6 @@ import type {
   RealtimeCoachingHint,
   SpeakerTurn,
 } from '../../../shared/contracts/conversationalCoaching.contract.js';
-import { logger } from '../../../lib/logger.js';
 
 export interface AnalyzeCallInput {
   organizationId: string;
@@ -317,7 +317,9 @@ export class ConversationalIntelligenceService {
       return {
         criterion: c.criterion,
         verified,
-        evidenceSnippet: verified ? 'Evidência identificada na condução do diálogo' : undefined,
+        // Heurística por regex: a "evidência" é o trecho literal que casou o
+        // padrão — nunca um texto genérico que finja análise semântica.
+        evidenceSnippet: verified ? c.pattern.exec(sellerText)?.[0] : undefined,
       };
     });
 

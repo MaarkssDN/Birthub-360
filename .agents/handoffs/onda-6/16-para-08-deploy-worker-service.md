@@ -1,7 +1,7 @@
 - De: Agente 16 (Runtime, Workers e Escala)
 - Para: Agente 08 (QA e Release)
 - Onda: 6
-- Status: resolvido (Documentado e pronto para ativação manual no Render)
+- Status: adiado
 - Prioridade: alto
   depende também do handoff `16-para-00-remover-workers-de-server-ts.md` ser aprovado/aplicado
   primeiro)
@@ -123,3 +123,5 @@ verificação/documentação, para deixar tudo pronto para um humano com acesso 
 Continua **pronto para aplicação**, não resolvido: falta (a) confirmar que
 `16-para-00-remover-workers-de-server-ts.md` foi aplicado, (b) autorização de gasto do usuário, e
 (c) uma pessoa com acesso ao Render seguir o passo a passo documentado.
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto ADIADO — Render desativado, render.yaml arquivado; worker roda via npm scripts no Local-First. Ver RESULTADOS-RECONCILIACAO-20261114.md.

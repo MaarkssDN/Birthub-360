@@ -171,6 +171,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Cache Prisma engines
+        # `npx prisma generate`/postinstall baixam os engines binários do Prisma a
+        # cada run; o cache por hash do lockfile elimina o download repetido sem
+        # risco de versão divergente (BT360-DT-0049 / TAREFA-SANEAMENTO-026).
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            node_modules/.prisma
+            node_modules/@prisma/engines
+            ~/.cache/prisma
+          key: prisma-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: prisma-${{ runner.os }}-
+
       - name: Bootstrap papel NOSUPERUSER da aplicação
         env:
           PGPASSWORD: prospector_test_pass
@@ -449,6 +462,19 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Cache Prisma engines
+        # `npx prisma generate`/postinstall baixam os engines binários do Prisma a
+        # cada run; o cache por hash do lockfile elimina o download repetido sem
+        # risco de versão divergente (BT360-DT-0049 / TAREFA-SANEAMENTO-026).
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            node_modules/.prisma
+            node_modules/@prisma/engines
+            ~/.cache/prisma
+          key: prisma-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: prisma-${{ runner.os }}-
 
       - name: Bootstrap papel NOSUPERUSER da aplicação
         env:

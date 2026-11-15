@@ -1,9 +1,9 @@
-import { randomUUID } from 'node:crypto';
 import { logger } from '../../lib/logger.js';
-import {
-  type MultichannelCadenceEnrollment,
-  sharedCadenceEnrollmentsStore,
+import type {
+  IMultichannelCadenceEnrollmentStore,
+  MultichannelCadenceEnrollment,
 } from '../../shared/contracts/multichannelCadence.contract.js';
+import { prismaMultichannelCadenceEnrollmentStore } from '../../shared/infra/PrismaMultichannelCadenceEnrollmentStore.js';
 import type { CadenceActionConfig } from './automation.types.js';
 
 export interface CadenceActionResult {
@@ -17,39 +17,33 @@ export interface CadenceActionResult {
 /**
  * P3.4: Serviço de integração entre o motor de automações e o motor de cadências multicanal.
  * Permite que regras automatizadas avancem passos, pausem, retomem ou reiniciem cadências de vendas.
+ *
+ * Enrollments persistem no store durável `IMultichannelCadenceEnrollmentStore` (Postgres via
+ * Prisma) — o antigo `sharedCadenceEnrollmentsStore` (Map volátil) foi substituído; mutações são
+ * sempre `update` explícito porque o store devolve cópias, não referências vivas.
  */
 export class CadenceIntegrationService {
-  private findEnrollmentByLead(
+  constructor(
+    private readonly enrollmentsStore: IMultichannelCadenceEnrollmentStore = prismaMultichannelCadenceEnrollmentStore,
+  ) {}
+
+  private async findEnrollmentByLead(
     organizationId: string,
     leadId: string,
-  ): MultichannelCadenceEnrollment | undefined {
-    for (const enrollment of sharedCadenceEnrollmentsStore.values()) {
-      if (enrollment.organizationId === organizationId && enrollment.leadId === leadId) {
-        return enrollment;
-      }
-    }
-    return undefined;
+  ): Promise<MultichannelCadenceEnrollment | undefined> {
+    return this.enrollmentsStore.findByLead(organizationId, leadId);
   }
 
-  private enrollLead(params: {
+  private async enrollLead(params: {
     organizationId: string;
     cadenceId: string;
     leadId: string;
-  }): MultichannelCadenceEnrollment {
-    const enrollmentId = `enr-${randomUUID()}`;
-    const enrollment: MultichannelCadenceEnrollment = {
-      enrollmentId,
+  }): Promise<MultichannelCadenceEnrollment> {
+    return this.enrollmentsStore.enroll({
       organizationId: params.organizationId,
       cadenceId: params.cadenceId,
       leadId: params.leadId,
-      contactEmail: '',
-      contactPhone: '',
-      currentStep: 1,
-      status: 'active',
-      enrolledAt: new Date().toISOString(),
-    };
-    sharedCadenceEnrollmentsStore.set(`${params.organizationId}:${enrollmentId}`, enrollment);
-    return enrollment;
+    });
   }
 
   async executeCadenceAction(
@@ -73,13 +67,15 @@ export class CadenceIntegrationService {
       case 'move_to_step': {
         const step = config.stepIndex ?? 1;
         const enrollment =
-          this.findEnrollmentByLead(organizationId, leadId) ??
-          this.enrollLead({
+          (await this.findEnrollmentByLead(organizationId, leadId)) ??
+          (await this.enrollLead({
             organizationId,
             cadenceId: config.cadenceId,
             leadId,
-          });
-        enrollment.currentStep = step;
+          }));
+        await this.enrollmentsStore.update(organizationId, enrollment.enrollmentId, {
+          currentStep: step,
+        });
         return {
           success: true,
           action: 'move_to_step',
@@ -91,9 +87,11 @@ export class CadenceIntegrationService {
 
       case 'pause': {
         const pausedDays = config.pauseDays ?? 7;
-        const enrollment = this.findEnrollmentByLead(organizationId, leadId);
+        const enrollment = await this.findEnrollmentByLead(organizationId, leadId);
         if (enrollment) {
-          enrollment.status = 'paused';
+          await this.enrollmentsStore.update(organizationId, enrollment.enrollmentId, {
+            status: 'paused',
+          });
         }
         return {
           success: true,
@@ -105,9 +103,11 @@ export class CadenceIntegrationService {
       }
 
       case 'resume': {
-        const enrollment = this.findEnrollmentByLead(organizationId, leadId);
+        const enrollment = await this.findEnrollmentByLead(organizationId, leadId);
         if (enrollment) {
-          enrollment.status = 'active';
+          await this.enrollmentsStore.update(organizationId, enrollment.enrollmentId, {
+            status: 'active',
+          });
         }
         return {
           success: true,
@@ -119,14 +119,16 @@ export class CadenceIntegrationService {
 
       case 'restart': {
         const enrollment =
-          this.findEnrollmentByLead(organizationId, leadId) ??
-          this.enrollLead({
+          (await this.findEnrollmentByLead(organizationId, leadId)) ??
+          (await this.enrollLead({
             organizationId,
             cadenceId: config.cadenceId,
             leadId,
-          });
-        enrollment.currentStep = 1;
-        enrollment.status = 'active';
+          }));
+        await this.enrollmentsStore.update(organizationId, enrollment.enrollmentId, {
+          currentStep: 1,
+          status: 'active',
+        });
         return {
           success: true,
           action: 'restart',

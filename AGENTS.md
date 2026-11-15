@@ -913,3 +913,8 @@ Cada parecer em `.agents/reviews/` deve identificar missão, autor, auditor, bas
 Auditorias históricas distinguem status declarado, conformidade documental e validação atual do comportamento. Um handoff com `Status: resolvido` não comprova persistência, segurança ou funcionamento. Pendência humana, resolução parcial e deploy simulado devem permanecer explícitos.
 
 O 08A executa operações Git e AWS somente para o escopo e ambiente autorizados na missão, após aprovação do 24 e gates pertinentes do 08, com coordenação do 00 e 10. Merge/push que dispare deploy automático também é operação de produção e depende dessa autorização. Não reescrever histórico, forçar push, expor credenciais ou aceitar deploy ignorado como concluído. Detalhes em `.agents/prompts/08A-git-deploy-aws.md`.
+
+## 41. Contrato de qualidade e aceite (decisão humana de 2026-11-13)
+O usuário autorizou incorporar o complemento `docs/orchestration/PROTOCOLO_QUALIDADE_E_ACEITE.md`.
+Antes de iniciar cada missão, fixar requisitos obrigatórios e evidências de aceite; executar, testar, corrigir e revalidar até atender o contrato ou comprovar bloqueio. A revisão avalia os **mesmos requisitos originais**: melhorias opcionais não reprovam retroativamente a entrega; decisões reservadas ao usuário não são defeitos de execução. A classificação e o relatório seguem o documento complementar.
+Permanecem integrais a autoridade deste AGENTS.md, a propriedade, as obrigações de segurança/LGPD/tenancy, os gates, o parecer APROVADO do Agente 24 (§40) e as autorizações necessárias para merge/push/deploy.

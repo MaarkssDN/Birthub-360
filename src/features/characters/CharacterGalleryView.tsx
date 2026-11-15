@@ -39,9 +39,9 @@ const STATE_LABELS: Record<CharacterState, string> = {
 };
 
 const RUNTIME_BADGE: Record<string, { label: string; color: string }> = {
-  available: { label: 'Disponível', color: '#10B981' },
-  degraded: { label: 'Degradado', color: '#FFC107' },
-  unavailable: { label: 'Indisponível', color: '#94A3B8' },
+  available: { label: 'Disponível', color: 'var(--ok)' },
+  degraded: { label: 'Degradado', color: 'var(--warn)' },
+  unavailable: { label: 'Indisponível', color: 'var(--ink-2)' },
 };
 
 function CharacterCard({
@@ -60,7 +60,7 @@ function CharacterCard({
     <button
       type="button"
       onClick={onSelect}
-      className="bh-character-card flex flex-col items-center gap-3 text-left w-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#00D4FF]"
+      className="bh-character-card flex flex-col items-center gap-3 text-left w-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand"
       data-testid={`character-card-${entry.id}`}
       aria-label={`${entry.name} — ${entry.role}. Abrir detalhes.`}
     >
@@ -107,8 +107,8 @@ function CharacterCard({
             className="px-2 py-0.5 rounded-full text-[9px] font-mono font-semibold border"
             style={{
               color: badge.color,
-              borderColor: `${badge.color}55`,
-              backgroundColor: `${badge.color}14`,
+              borderColor: `color-mix(in srgb, ${badge.color} 33%, transparent)`,
+              backgroundColor: `color-mix(in srgb, ${badge.color} 8%, transparent)`,
             }}
           >
             {badge.label}
@@ -198,12 +198,12 @@ export function CharacterGalleryView() {
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8" data-testid="character-gallery">
       <header className="space-y-2">
-        <p className="text-[11px] font-mono uppercase tracking-widest text-[#00D4FF]">
+        <p className="text-[11px] font-mono uppercase tracking-widest text-brand">
           Birth Hub 360° · Central de Personagens e Agentes
         </p>
         <h1
           className="text-2xl md:text-3xl font-bold"
-          style={{ color: '#FFC107', fontFamily: 'Sora, sans-serif' }}
+          style={{ color: 'var(--warn)', fontFamily: 'Sora, sans-serif' }}
         >
           29 Personagens Oficiais
         </h1>
@@ -235,14 +235,14 @@ export function CharacterGalleryView() {
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nome, id, papel ou agente..."
             aria-label="Buscar personagem"
-            className="w-full bg-white/5 border border-white/10 rounded-full pl-9 pr-4 py-2 text-xs text-white placeholder-white/30 focus:outline-none focus:border-[#00D4FF]/50"
+            className="w-full bg-white/5 border border-white/10 rounded-full pl-9 pr-4 py-2 text-xs text-white placeholder-white/30 focus:outline-none focus:border-brand/50"
           />
         </div>
         <select
           value={layerFilter}
           onChange={(e) => setLayerFilter(e.target.value as CharacterLayer | 'all')}
           aria-label="Filtrar por camada"
-          className="bg-white/5 border border-white/10 rounded-full px-3 py-2 text-[11px] font-mono text-white/80 focus:outline-none focus:border-[#00D4FF]/50"
+          className="bg-white/5 border border-white/10 rounded-full px-3 py-2 text-[11px] font-mono text-white/80 focus:outline-none focus:border-brand/50"
         >
           <option value="all">Todas as camadas</option>
           {LAYER_ORDER.map((l) => (
@@ -255,7 +255,7 @@ export function CharacterGalleryView() {
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
           aria-label="Filtrar por status de runtime"
-          className="bg-white/5 border border-white/10 rounded-full px-3 py-2 text-[11px] font-mono text-white/80 focus:outline-none focus:border-[#00D4FF]/50"
+          className="bg-white/5 border border-white/10 rounded-full px-3 py-2 text-[11px] font-mono text-white/80 focus:outline-none focus:border-brand/50"
         >
           <option value="all">Todos os status</option>
           <option value="available">Disponível</option>
@@ -272,9 +272,9 @@ export function CharacterGalleryView() {
               type="button"
               onClick={() => setVisualState(s)}
               aria-pressed={visualState === s}
-              className={`px-2.5 py-1 rounded-full text-[10px] font-mono border transition-colors focus:outline-none focus:ring-2 focus:ring-[#00D4FF] ${
+              className={`px-2.5 py-1 rounded-full text-[10px] font-mono border transition-colors focus:outline-none focus:ring-2 focus:ring-brand ${
                 visualState === s
-                  ? 'bg-[#00D4FF]/20 border-[#00D4FF] text-[#00D4FF]'
+                  ? 'bg-brand/20 border-brand text-brand'
                   : 'bg-white/5 border-white/10 text-white/60 hover:border-white/30'
               }`}
             >
@@ -315,7 +315,7 @@ export function CharacterGalleryView() {
           <h2
             id={`layer-${layer}`}
             className="text-lg font-semibold flex items-center gap-3"
-            style={{ color: '#00D4FF', fontFamily: 'Sora, sans-serif' }}
+            style={{ color: 'var(--brand)', fontFamily: 'Sora, sans-serif' }}
           >
             {label}
             <span className="text-[11px] font-mono text-white/40 font-normal">
@@ -351,7 +351,7 @@ export function CharacterGalleryView() {
           <h2
             id="recent-activity"
             className="text-lg font-semibold"
-            style={{ color: '#00D4FF', fontFamily: 'Sora, sans-serif' }}
+            style={{ color: 'var(--brand)', fontFamily: 'Sora, sans-serif' }}
           >
             Atividade recente do enxame
           </h2>

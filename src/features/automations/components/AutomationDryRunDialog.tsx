@@ -32,6 +32,18 @@ function describeOutcome(record: DryRunRecord): string {
       ? `Ligar para ${String(details.targetNumber)}`
       : 'Ligação de SDR de voz';
   }
+  if (action === 'Chamar webhook externo') {
+    return `${String(details.method ?? 'POST')} ${String(details.url ?? '?')} (não enviado)`;
+  }
+  if (action === 'Atualizar campo customizado') {
+    return `${String(details.field ?? '?')} em ${String(details.entityId ?? '?')} (não gravado)`;
+  }
+  if (action === 'Enrich lead') {
+    return `Enriquecimento do lead ${String(details.leadId ?? '?')} (não enfileirado)`;
+  }
+  if (action === 'Mover para outra etapa de cadência') {
+    return `Cadência ${String(details.cadenceId ?? '?')} → ${String(details.cadenceAction ?? '?')} para ${String(details.leadId ?? '?')} (não executado)`;
+  }
   return action;
 }
 

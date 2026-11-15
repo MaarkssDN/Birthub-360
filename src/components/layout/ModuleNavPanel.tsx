@@ -1,21 +1,22 @@
-import { useMemo } from 'react';
 import type { MouseEvent } from 'react';
+import { useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext.js';
 import { hasRequiredRole } from '../../lib/auth/authorization.js';
 import { BirthHubLogo } from '../brand/BirthHubLogo.js';
 import { useSidebarState } from './hooks/useSidebarState.js';
-import { NavLaunchTransition } from './NavLaunchTransition.js';
-import type { NavLaunch } from './NavLaunchTransition.js';
 import {
   getActiveModuleId,
   getModuleById,
   getVisibleModuleItems,
-  PRODUCT_MODULES,
   type ModuleNavItem,
   type ModuleNavPermissions,
+  PRODUCT_MODULES,
   type ProductModule,
 } from './moduleRegistry.js';
+import { getModuleTheme } from './moduleThemes.js';
+import type { NavLaunch } from './NavLaunchTransition.js';
+import { NavLaunchTransition } from './NavLaunchTransition.js';
 import { TAB_META, type TabType } from './tabMeta.js';
 
 interface ModuleNavPanelProps {
@@ -154,7 +155,7 @@ export function ModuleNavPanel({
   const showModuleLauncher = isHub || mobile;
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col bg-surface/95 dark:bg-[#111214]/95">
+    <div className="flex h-full min-h-0 w-full flex-col bg-surface/95 dark:bg-bg/95">
       {launch && <NavLaunchFallback launch={launch} onFinish={finishLaunch} />}
 
       {/* Cabeçalho do módulo */}
@@ -163,11 +164,6 @@ export function ModuleNavPanel({
           <module.icon className="h-[18px] w-[18px] text-ink" aria-hidden="true" />
         </span>
         <div className="min-w-0">
-          <div className="flex items-center gap-1.5">
-            <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-ink-2">
-              {module.code}
-            </span>
-          </div>
           <h2 className="truncate font-display text-[14px] font-bold leading-tight tracking-[-0.02em] text-ink">
             {module.label}
           </h2>
@@ -208,13 +204,13 @@ export function ModuleNavPanel({
                   {active && (
                     <span
                       aria-hidden="true"
-                      className="absolute left-0 top-[7px] bottom-[7px] w-[3px] rounded-r-full bg-[#00D4FF] shadow-[0_0_10px_#00D4FF]"
+                      className="absolute left-0 top-[7px] bottom-[7px] w-[3px] rounded-r-full bg-brand shadow-[0_0_10px_var(--color-brand)]"
                     />
                   )}
                   <span
                     className={`${ICON_WELL} ${
                       active
-                        ? 'bg-[#00D4FF]/15 text-[#0284c7] dark:text-[#00D4FF] border border-[#00D4FF]/40'
+                        ? 'bg-brand/15 text-sky-700 dark:text-brand border border-brand/40'
                         : 'bg-surface-2 text-ink-2 border border-transparent group-hover:bg-surface group-hover:text-ink'
                     }`}
                   >
@@ -241,6 +237,8 @@ export function ModuleNavPanel({
             {PRODUCT_MODULES.map((m) => {
               const Icon = m.icon;
               const mobileOnly = m.availability === 'mobile';
+              const theme = getModuleTheme(m.id);
+              const isCurrentModule = m.id === moduleId;
               return (
                 <button
                   key={m.id}
@@ -248,23 +246,67 @@ export function ModuleNavPanel({
                   onClick={() => handleModuleLaunch(m)}
                   disabled={mobileOnly}
                   aria-disabled={mobileOnly || undefined}
+                  aria-current={isCurrentModule ? 'page' : undefined}
                   title={mobileOnly ? `${m.label} — disponível no aplicativo mobile` : m.label}
                   data-testid={`module-launch-${m.id}`}
-                  className={`${ITEM} sidebar-card-idle h-[42px] text-ink-2 hover:text-ink ${
-                    mobileOnly ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
+                  className={`${ITEM} h-[44px] transition-all duration-200 ${
+                    mobileOnly ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                  } ${isCurrentModule ? 'font-semibold text-ink shadow-sm' : 'text-ink-2 hover:text-ink'}`}
+                  style={{
+                    backgroundColor: isCurrentModule
+                      ? `color-mix(in srgb, ${theme.primaryColor} 12%, transparent)`
+                      : `color-mix(in srgb, ${theme.primaryColor} 4%, transparent)`,
+                    borderColor: isCurrentModule
+                      ? theme.primaryColor
+                      : `color-mix(in srgb, ${theme.primaryColor} 22%, transparent)`,
+                    boxShadow: isCurrentModule
+                      ? `0 0 14px color-mix(in srgb, ${theme.primaryColor} 22%, transparent)`
+                      : undefined,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!mobileOnly && !isCurrentModule) {
+                      e.currentTarget.style.borderColor = theme.primaryColor;
+                      e.currentTarget.style.backgroundColor = `color-mix(in srgb, ${theme.primaryColor} 10%, transparent)`;
+                      e.currentTarget.style.boxShadow = `0 0 16px color-mix(in srgb, ${theme.primaryColor} 24%, transparent)`;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!mobileOnly && !isCurrentModule) {
+                      e.currentTarget.style.borderColor = `color-mix(in srgb, ${theme.primaryColor} 22%, transparent)`;
+                      e.currentTarget.style.backgroundColor = `color-mix(in srgb, ${theme.primaryColor} 4%, transparent)`;
+                      e.currentTarget.style.boxShadow = 'none';
+                    }
+                  }}
                 >
+                  {isCurrentModule && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-0 top-[6px] bottom-[6px] w-[3px] rounded-r-full"
+                      style={{
+                        backgroundColor: theme.primaryColor,
+                        boxShadow: `0 0 10px ${theme.primaryColor}`,
+                      }}
+                    />
+                  )}
                   <span
-                    className={`${ICON_WELL} bg-surface-2 text-ink-2 border border-transparent group-hover:bg-surface group-hover:text-ink`}
+                    className={`${ICON_WELL} border`}
+                    style={{
+                      color: theme.primaryColor,
+                      backgroundColor: `color-mix(in srgb, ${theme.primaryColor} 15%, transparent)`,
+                      borderColor: `color-mix(in srgb, ${theme.primaryColor} 30%, transparent)`,
+                    }}
                   >
                     <Icon className="h-4 w-4" aria-hidden="true" />
                   </span>
-                  <span className="min-w-0 flex-1 truncate text-left font-medium">
-                    <span className="font-mono text-[9px] uppercase tracking-wide text-ink-2">
-                      {m.code}
-                    </span>{' '}
-                    {m.label}
-                  </span>
+                  <span className="min-w-0 flex-1 truncate text-left font-sans">{m.label}</span>
+                  <span
+                    className="h-2 w-2 rounded-full shrink-0 mr-0.5 transition-transform group-hover:scale-125"
+                    style={{
+                      backgroundColor: theme.primaryColor,
+                      boxShadow: `0 0 6px ${theme.primaryColor}`,
+                    }}
+                    aria-hidden="true"
+                  />
                 </button>
               );
             })}

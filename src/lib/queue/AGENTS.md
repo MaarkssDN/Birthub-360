@@ -2,7 +2,10 @@
 
 ## Dono
 
-Agente 07 — IA e Automações
+Agente 16 — Runtime, Workers e Escala
+
+(Revisão Agente 00, Onda 3/2026-11: alinhado à missão MEL-21/22 e ao histórico REMED-05,
+ambos executados pelo 16. O Agente 07 mantém os consumidores de fila do domínio de IA.)
 
 Este arquivo governa esta pasta e todas as subpastas.
 

@@ -41,8 +41,14 @@ beforeEach(async () => {
   // `await import(...)` dentro do mesmo arquivo de teste — sem isto, falhas registradas por um
   // teste vazariam para o próximo e poderiam abrir o circuito de forma imprevisível conforme a
   // ordem de execução.
-  const { __resetBitrixCircuitBreakerForTests } = await import('../client.js');
+  const { __resetBitrixCircuitBreakerForTests, __resetBitrixRateLimiterForTests } = await import(
+    '../client.js'
+  );
   __resetBitrixCircuitBreakerForTests();
+  // O pacing por portal (BITRIX_MIN_INTERVAL_MS) também é estado module-level — sem reset, o
+  // timestamp da última request de um teste vazaria para o próximo e atrasaria a primeira
+  // chamada do teste seguinte de forma dependente da ordem de execução.
+  __resetBitrixRateLimiterForTests();
 });
 
 describe('callBitrix — resiliência (bloqueador #11: sincronização não pode falhar silenciosamente)', () => {
@@ -460,6 +466,105 @@ describe('callBitrix — cancelamento cooperativo via AbortSignal (TAREFA-SANEAM
 
     await expect(pending).rejects.toBeInstanceOf(BitrixCallAbortedError);
     expect(fetchMock).toHaveBeenCalledTimes(1);
+    fetchMock.mockRestore();
+  });
+});
+
+describe('callBitrix — pacing proativo do rate limit por portal (BITRIX_MIN_INTERVAL_MS)', () => {
+  afterEach(() => {
+    delete process.env.BITRIX_MIN_INTERVAL_MS;
+    // O intervalo é lido de process.env na carga do módulo — reimport limpo com o default (500ms)
+    // para não vazar a configuração rápida deste describe para os outros testes do arquivo.
+    vi.resetModules();
+  });
+
+  it('espaça chamadas SEQUENCIAIS à mesma conexão pelo intervalo mínimo (sem rajada back-to-back)', async () => {
+    process.env.BITRIX_MIN_INTERVAL_MS = '80';
+    vi.resetModules();
+
+    const timestamps: number[] = [];
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => {
+      timestamps.push(Date.now());
+      return jsonResponse({ result: [] });
+    });
+    const { callBitrix } = await import('../client.js');
+
+    await callBitrix(WEBHOOK, 'crm.lead.list', {}, { maxAttempts: 1 });
+    await callBitrix(WEBHOOK, 'crm.deal.list', {}, { maxAttempts: 1 });
+    await callBitrix(WEBHOOK, 'crm.contact.list', {}, { maxAttempts: 1 });
+
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(timestamps[1] - timestamps[0]).toBeGreaterThanOrEqual(75);
+    expect(timestamps[2] - timestamps[1]).toBeGreaterThanOrEqual(75);
+    fetchMock.mockRestore();
+  });
+
+  it('serializa chamadas CONCORRENTES à mesma conexão — N paralelas viram N slots espaçados, não um burst', async () => {
+    process.env.BITRIX_MIN_INTERVAL_MS = '80';
+    vi.resetModules();
+
+    const timestamps: number[] = [];
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => {
+      timestamps.push(Date.now());
+      return jsonResponse({ result: [] });
+    });
+    const { callBitrix } = await import('../client.js');
+
+    // Três syncs/entidades disparando juntos (ex.: extração multi-entidade) — sem a fila de
+    // pacing, as três requests sairiam no mesmo instante e estourariam o limite do plano.
+    await Promise.all([
+      callBitrix(WEBHOOK, 'crm.lead.list', {}, { maxAttempts: 1 }),
+      callBitrix(WEBHOOK, 'crm.deal.list', {}, { maxAttempts: 1 }),
+      callBitrix(WEBHOOK, 'crm.contact.list', {}, { maxAttempts: 1 }),
+    ]);
+
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    const sorted = [...timestamps].sort((a, b) => a - b);
+    expect(sorted[1] - sorted[0]).toBeGreaterThanOrEqual(75);
+    expect(sorted[2] - sorted[1]).toBeGreaterThanOrEqual(75);
+    fetchMock.mockRestore();
+  });
+
+  it('NÃO bloqueia portal diferente — o rate limit do Bitrix é por webhookUrl, não global', async () => {
+    process.env.BITRIX_MIN_INTERVAL_MS = '80';
+    vi.resetModules();
+
+    const OTHER_WEBHOOK = 'https://outro-portal.bitrix24.com.br/rest/9/outrotoken/';
+    const timestampsA: number[] = [];
+    const timestampsB: number[] = [];
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (url) => {
+      (String(url).startsWith(WEBHOOK) ? timestampsA : timestampsB).push(Date.now());
+      return jsonResponse({ result: [] });
+    });
+    const { callBitrix } = await import('../client.js');
+
+    await callBitrix(WEBHOOK, 'crm.lead.list', {}, { maxAttempts: 1 });
+    // Portal B dispara imediatamente depois do A — não precisa esperar o slot de A.
+    await callBitrix(OTHER_WEBHOOK, 'crm.lead.list', {}, { maxAttempts: 1 });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(timestampsB[0] - timestampsA[0]).toBeLessThan(75);
+    fetchMock.mockRestore();
+  });
+
+  it('BITRIX_MIN_INTERVAL_MS=0 desliga o pacing (planos com limite maior configuram o valor real)', async () => {
+    process.env.BITRIX_MIN_INTERVAL_MS = '0';
+    vi.resetModules();
+
+    const timestamps: number[] = [];
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => {
+      timestamps.push(Date.now());
+      return jsonResponse({ result: [] });
+    });
+    const { callBitrix } = await import('../client.js');
+
+    await Promise.all([
+      callBitrix(WEBHOOK, 'crm.lead.list', {}, { maxAttempts: 1 }),
+      callBitrix(WEBHOOK, 'crm.deal.list', {}, { maxAttempts: 1 }),
+    ]);
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(Math.abs(timestamps[1] - timestamps[0])).toBeLessThan(50);
     fetchMock.mockRestore();
   });
 });

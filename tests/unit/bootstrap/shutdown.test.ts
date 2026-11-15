@@ -39,6 +39,7 @@ function buildDeps(calls: string[], overrides: Partial<ShutdownDeps> = {}): Shut
     coldCallWorker: fakeWorker('coldCall', calls),
     swarmSchedulerWorker: null,
     webhookWorker: null,
+    domainEventOutboxRelay: null,
   };
 
   const httpServer = {
@@ -211,6 +212,7 @@ describe('bootstrap/shutdown', () => {
       'coldCallWorker',
       'swarmSchedulerWorker',
       'webhookWorker',
+      'domainEventOutboxRelay',
     ] as const satisfies readonly (keyof EmbeddedWorkersHandle)[];
 
     const fullCalls: string[] = [];

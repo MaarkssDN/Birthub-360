@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 07 (IA, Copiloto e Automações)
 Onda: Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-022)
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 4
@@ -48,3 +48,7 @@ Executar a tarefa `TAREFA-SANEAMENTO-022` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução
+
+TAREFA-022 — AISuiteHub.tsx usa isRunning com try/catch/finally (setIsRunning(false) garantido); estado de loading infinito nao reproduzivel no codigo atual.

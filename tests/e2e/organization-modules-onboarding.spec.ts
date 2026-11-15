@@ -33,7 +33,12 @@ test.describe('Onboarding de Módulos da Organização', () => {
     await expect(rail.getByTestId('module-rail-hub')).toHaveAttribute('aria-current', 'page');
     const hubNavigation = page.getByRole('navigation', { name: 'Navegação — Hub Central' });
     await expect(hubNavigation).toBeVisible();
-    await expect(hubNavigation.getByRole('button', { name: 'Visão Geral', exact: true })).toBeVisible();
+    // O registry do Hub Central (moduleRegistry.ts) não tem mais item "Visão Geral" —
+    // os itens atuais são "Portal dos 11 Módulos", "Cockpit Operacional", "Meu Espaço",
+    // "Plano Diário" e "Notificações".
+    await expect(
+      hubNavigation.getByRole('button', { name: 'Portal dos 11 Módulos', exact: true }),
+    ).toBeVisible();
 
     // 7. Se recarregar a página, não pode voltar pro setup
     await page.goto('/app');

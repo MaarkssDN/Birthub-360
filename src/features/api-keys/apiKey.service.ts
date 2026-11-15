@@ -108,8 +108,7 @@ export async function verifyApiKey(rawKey: string): Promise<VerifiedApiKey | nul
 
   // lastUsedAt é telemetria, não pode derrubar a autenticação — update
   // fire-and-forget com throttle simples (só grava se >5min desde a última).
-  const stale =
-    !row.lastUsedAt || Date.now() - row.lastUsedAt.getTime() > 5 * 60 * 1000;
+  const stale = !row.lastUsedAt || Date.now() - row.lastUsedAt.getTime() > 5 * 60 * 1000;
   if (stale) {
     prisma.aPIKey
       .update({ where: { id: row.id }, data: { lastUsedAt: new Date() } })
@@ -127,4 +126,3 @@ export function apiKeyMatchesScope(key: VerifiedApiKey, scope: string): boolean 
   // Escopo '*' ou lista vazia = acesso total (compatível com chaves legadas).
   return key.scopes.length === 0 || key.scopes.includes('*') || key.scopes.includes(scope);
 }
-

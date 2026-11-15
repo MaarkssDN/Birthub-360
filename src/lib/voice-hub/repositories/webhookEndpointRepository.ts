@@ -74,7 +74,7 @@ function toRecord(row: {
 }
 
 export async function countActiveEndpointsForTenant(organizationId: string): Promise<number> {
-  return prisma.tenantWebhookEndpoint.count({ where: { organizationId, active: true } });
+  return prisma.organizationWebhookEndpoint.count({ where: { organizationId, active: true } });
 }
 
 export async function createEndpoint(data: {
@@ -83,7 +83,7 @@ export async function createEndpoint(data: {
   secretHash: string;
   events: string[];
 }): Promise<TenantWebhookEndpointRecord> {
-  const created = await prisma.tenantWebhookEndpoint.create({
+  const created = await prisma.organizationWebhookEndpoint.create({
     data: {
       organizationId: data.organizationId,
       url: data.url,
@@ -101,7 +101,7 @@ export async function createEndpoint(data: {
 export async function listEndpointsForTenant(
   organizationId: string,
 ): Promise<TenantWebhookEndpointRecord[]> {
-  const rows = await prisma.tenantWebhookEndpoint.findMany({
+  const rows = await prisma.organizationWebhookEndpoint.findMany({
     where: { organizationId },
     orderBy: { createdAt: 'desc' },
   });
@@ -114,7 +114,7 @@ export async function listEndpointsForTenant(
 export async function listActiveEndpointsForTenant(
   organizationId: string,
 ): Promise<TenantWebhookEndpointRecord[]> {
-  const rows = await prisma.tenantWebhookEndpoint.findMany({
+  const rows = await prisma.organizationWebhookEndpoint.findMany({
     where: { organizationId, active: true },
   });
   return rows.map(toRecord);
@@ -127,7 +127,7 @@ export async function findEndpointForTenant(
   id: string,
   organizationId: string,
 ): Promise<TenantWebhookEndpointRecord | null> {
-  const row = await prisma.tenantWebhookEndpoint.findFirst({ where: { id, organizationId } });
+  const row = await prisma.organizationWebhookEndpoint.findFirst({ where: { id, organizationId } });
   return row ? toRecord(row) : null;
 }
 
@@ -139,19 +139,19 @@ export async function findEndpointForTenant(
 export async function findActiveEndpointById(
   id: string,
 ): Promise<TenantWebhookEndpointRecord | null> {
-  const row = await prisma.tenantWebhookEndpoint.findFirst({ where: { id, active: true } });
+  const row = await prisma.organizationWebhookEndpoint.findFirst({ where: { id, active: true } });
   return row ? toRecord(row) : null;
 }
 
 export async function deleteEndpoint(id: string): Promise<void> {
-  await prisma.tenantWebhookEndpoint.delete({ where: { id } });
+  await prisma.organizationWebhookEndpoint.delete({ where: { id } });
 }
 
 export async function regenerateSecret(
   id: string,
   secretHash: string,
 ): Promise<TenantWebhookEndpointRecord> {
-  const updated = await prisma.tenantWebhookEndpoint.update({
+  const updated = await prisma.organizationWebhookEndpoint.update({
     where: { id },
     data: { secretHash },
   });
@@ -163,7 +163,7 @@ export async function regenerateSecret(
 // function itself can reject like any other Prisma call (e.g. the endpoint was deleted between the
 // attempt and this write); the caller is the one responsible for treating it as fire-and-forget.
 export async function recordDeliveryResult(id: string, status: string): Promise<void> {
-  await prisma.tenantWebhookEndpoint.update({
+  await prisma.organizationWebhookEndpoint.update({
     where: { id },
     data: { lastDeliveryAt: new Date(), lastDeliveryStatus: status },
   });

@@ -217,31 +217,59 @@ async function isWithinCooldown(
   reason: DealRiskReason,
   now: Date,
 ): Promise<boolean> {
+  return isCoolingDown(await loadRecentDealRiskAlerts(organizationId, now), leadId, reason);
+}
+
+/**
+ * Janela de cooldown do alerta de risco — UMA query para a organização inteira (entity 'Lead',
+ * `createdAt` dentro das últimas `ALERT_COOLDOWN_HOURS`). Antes da correção de N+1, cada
+ * candidato da rodada pagava um `notification.findFirst` sequencial (até ~215 candidatos × 1
+ * query cada, mais um `user.findMany` por notificação em `notifyManagers`).
+ */
+async function loadRecentDealRiskAlerts(
+  organizationId: string,
+  now: Date,
+): Promise<Array<{ entityId: string | null; title: string }>> {
   const cutoff = new Date(now.getTime() - ALERT_COOLDOWN_HOURS * 60 * 60 * 1000);
-  const existing = await prisma.notification.findFirst({
-    where: {
-      organizationId,
-      entity: 'Lead',
-      entityId: leadId,
-      title: { startsWith: titlePrefix(reason) },
-      createdAt: { gte: cutoff },
-    },
+  return prisma.notification.findMany({
+    where: { organizationId, entity: 'Lead', createdAt: { gte: cutoff } },
+    select: { entityId: true, title: true },
+  });
+}
+
+/** Mesma regra de `isWithinCooldown`, mas sobre o lote já carregado — sem I/O. */
+function isCoolingDown(
+  recentAlerts: ReadonlyArray<{ entityId: string | null; title: string }>,
+  leadId: string,
+  reason: DealRiskReason,
+): boolean {
+  const prefix = titlePrefix(reason);
+  return recentAlerts.some((a) => a.entityId === leadId && a.title.startsWith(prefix));
+}
+
+/** Gestores/admins reais da organização — carregados UMA vez por rodada (ver `detectDealRisks`). */
+async function loadManagers(organizationId: string): Promise<Array<{ id: string }>> {
+  return prisma.user.findMany({
+    where: { organizationId, role: { in: ['ADMIN', 'GESTOR'] } },
     select: { id: true },
   });
-  return Boolean(existing);
 }
 
 /** Alerta vai para os gestores/admins reais da organização, um por pessoa — nunca broadcast
  * silencioso quando existe destinatário certo. Só cai no broadcast (toda a organização) se a
  * organização genuinamente não tiver nenhum ADMIN/GESTOR cadastrado. */
-async function notifyManagers(organizationId: string, candidate: RiskCandidate): Promise<void> {
-  const managers = await prisma.user.findMany({
-    where: { organizationId, role: { in: ['ADMIN', 'GESTOR'] } },
-    select: { id: true },
-  });
+async function notifyManagers(
+  organizationId: string,
+  candidate: RiskCandidate,
+  managers?: Array<{ id: string }>,
+): Promise<void> {
+  // `managers` pré-carregado pelo chamador em lote (`detectDealRisks`) evita um `user.findMany`
+  // por candidato; omitido, mantém o comportamento anterior (usado por `ingestLiveCallInsight`,
+  // que processa no máximo alguns candidatos por chamada ao vivo).
+  const recipients = managers ?? (await loadManagers(organizationId));
 
   const title = `${titlePrefix(candidate.reason)}`;
-  if (managers.length === 0) {
+  if (recipients.length === 0) {
     await notificationService.create({
       organizationId,
       title,
@@ -254,7 +282,7 @@ async function notifyManagers(organizationId: string, candidate: RiskCandidate):
   }
 
   await Promise.all(
-    managers.map((manager) =>
+    recipients.map((manager) =>
       notificationService.create({
         organizationId,
         title,
@@ -469,9 +497,17 @@ export async function detectDealRisks(
     errors: 0,
   };
 
-  const [silentLeads, conversationRisks] = await Promise.all([
+  // N+1 (auditoria BI): cooldown e lista de gestores eram reconsultados por candidato dentro do
+  // loop abaixo — até ~215 candidatos × (1 findFirst + 1 findMany) sequenciais por rodada. Agora
+  // ambos são carregados UMA vez, em paralelo com a coleta de candidatos; o loop só decide em
+  // memória e grava notificações. `alerted` cobre o caso de dois candidatos idênticos na mesma
+  // rodada (ex.: o mesmo LiveCallInsight repetido) — antes, o segundo era barrado pelo cooldown
+  // porque lia a notificação recém-gravada do primeiro.
+  const [silentLeads, conversationRisks, recentAlerts, managers] = await Promise.all([
     findSilentLeads(organizationId, now),
     findConversationRisks(organizationId, now),
+    loadRecentDealRiskAlerts(organizationId, now),
+    loadManagers(organizationId),
   ]);
 
   const liveCandidates: RiskCandidate[] = [];
@@ -484,13 +520,19 @@ export async function detectDealRisks(
   const candidates = [...silentLeads, ...conversationRisks, ...liveCandidates];
   result.scanned = candidates.length;
 
+  const alertedThisRound = new Set<string>();
   for (const candidate of candidates) {
     try {
-      if (await isWithinCooldown(organizationId, candidate.leadId, candidate.reason, now)) {
+      const cooldownKey = `${candidate.leadId}|${titlePrefix(candidate.reason)}`;
+      if (
+        alertedThisRound.has(cooldownKey) ||
+        isCoolingDown(recentAlerts, candidate.leadId, candidate.reason)
+      ) {
         result.skippedCooldown++;
         continue;
       }
-      await notifyManagers(organizationId, candidate);
+      await notifyManagers(organizationId, candidate, managers);
+      alertedThisRound.add(cooldownKey);
       result.alertsCreated++;
     } catch (error: any) {
       result.errors++;

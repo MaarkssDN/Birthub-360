@@ -7,7 +7,7 @@ import { logger } from '../../../../lib/logger.js';
 import { validContactEmails } from '../../../../shared/utils/contact-links.js';
 import type { ProspectCandidate, ProspectCriteria } from '../../domain/prospectTypes.js';
 import { ExclusionSet } from '../../utils/exclusionSet.js';
-import { assertProspectingBudgetNotExceeded } from '../providerBudget.js';
+import { consumeProspectingProviderCredit } from '../providerBudget.js';
 import { recordProviderCallCost } from '../providerCostMetrics.js';
 import { checkProviderRateLimit } from '../providerRateLimit.js';
 import { APOLLO_SEARCH_URL } from './client.js';
@@ -166,9 +166,10 @@ export async function fetchApolloCandidates(
   const rateLimit = checkProviderRateLimit('apollo');
   if (!rateLimit.allowed) return { candidates: [], error: rateLimit.message };
 
-  // DEC-09: bloqueio real de orçamento por organização — lança de propósito (ver
+  // DEC-09 + RN-MKT-03: débito atômico do custo estimado no ledger do mês ANTES da chamada —
+  // lança ProspectingBudgetExceededError de propósito quando o teto é atingido (ver
   // src/features/prospecting/services/providerBudget.ts).
-  await assertProspectingBudgetNotExceeded('apollo');
+  await consumeProspectingProviderCredit('apollo');
 
   const extraKeywords = criteria.palavrasChave
     ? criteria.palavrasChave

@@ -70,3 +70,9 @@ Executar dentro da propriedade do Agente 07 (`src/features/intelligence/**`):
 - `PrismaUsageRepository` (billing, Agente 01) já usa `groupBy`/`aggregate`/`$queryRaw`
   corretamente — serve de padrão de referência.
 - Revisão Agente 24 obrigatória.
+
+## Resolução
+
+TAREFA-042 — agentCostAnalysis.service.ts usa prisma.aILog.groupBy (W5 Agente 23, integrado em 38e8634f7).
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto DEFEITO-REAL — metade corrigida; heatmap segue com findMany sem take + custo fabricado. Correção pendente de despacho. Ver RESULTADOS-RECONCILIACAO-20261114.md.

@@ -11,6 +11,7 @@ import {
   InMemoryConsentExternalCheckpointStore,
   type StoredConsentAuditEvent,
   verifyConsentChain,
+  verifyConsentChainAsync,
 } from '../../../src/lib/security/consentAuditChain.service.js';
 import {
   assertConsentChainBootConfig,
@@ -767,5 +768,63 @@ describe('Issue #36: Ancoragem de Checkpoint Externo em S3 Object Lock / KMS (F5
 
     const tampered = await s3Store.getLatestCheckpoint('tenant-s3-test');
     expect(tampered).toBeNull();
+  });
+});
+
+describe('TAREFA-SANEAMENTO-038 — verificação assíncrona fracionada (offload do event loop)', () => {
+  const ORG = 'org-async-verify';
+  const SUBJECT = `hs256:${'a'.repeat(64)}`;
+
+  /** Cadeia sintética válida: gênese + `n` eventos CONSENT encadeados. */
+  function buildSyntheticChain(n: number): StoredConsentAuditEvent[] {
+    const out: StoredConsentAuditEvent[] = [];
+    let previousHash = GENESIS_HASH;
+    for (let i = 0; i <= n; i++) {
+      const isGenesis = i === 0;
+      const partial = {
+        formatVersion: CONSENT_CHAIN_FORMAT_VERSION,
+        id: `ev-${i}`,
+        kind: (isGenesis ? 'GENESIS' : 'CONSENT') as StoredConsentAuditEvent['kind'],
+        sequence: i,
+        organizationId: ORG,
+        subjectRef: isGenesis ? '' : SUBJECT,
+        purpose: isGenesis ? 'GENESIS' : 'COMMERCIAL_CONTACT',
+        termsVersion: 'consent-chain/v3',
+        status: 'GRANTED' as const,
+        previousHash,
+        occurredAt: new Date(1700000000000 + i * 1000).toISOString(),
+      };
+      const currentHash = computeConsentEventHash(partial);
+      out.push({ ...partial, currentHash });
+      previousHash = currentHash;
+    }
+    return out;
+  }
+
+  it('verifyConsentChainAsync produz o mesmo resultado do verificador síncrono', async () => {
+    const chainEvents = buildSyntheticChain(25);
+    const sync = verifyConsentChain(ORG, chainEvents);
+    const async = await verifyConsentChainAsync(ORG, chainEvents);
+    expect(async).toEqual(sync);
+    expect(async).toEqual({ valid: true, totalRecords: 26 });
+  });
+
+  it('verifyConsentChainAsync detecta adulteração como o síncrono', async () => {
+    const chainEvents = buildSyntheticChain(10);
+    const tampered = chainEvents.map((e) => ({ ...e }));
+    tampered[5].purpose = 'OUTRA_FINALIDADE';
+    const r = await verifyConsentChainAsync(ORG, tampered);
+    expect(r).toMatchObject({ valid: false, reason: 'HASH_MISMATCH', brokenAtId: 'ev-5' });
+  });
+
+  it('verifyConsentChainAsync cede o event loop durante cadeias longas', async () => {
+    const chainEvents = buildSyntheticChain(400);
+    let timerFired = false;
+    setTimeout(() => {
+      timerFired = true;
+    }, 0);
+    const r = await verifyConsentChainAsync(ORG, chainEvents, undefined, undefined, 16);
+    expect(r.valid).toBe(true);
+    expect(timerFired).toBe(true);
   });
 });

@@ -1,5 +1,6 @@
 import { type NextFunction, type Request, type Response, Router } from 'express';
 import { hasRequiredRole } from '../../../lib/auth/authorization.js';
+import { auditAccessMiddleware } from '../../../lib/security/auditLog.middleware.js';
 import { routeParam } from '../../../shared/http/routeParams.js';
 import type { AuthRequest } from '../../../shared/middlewares/authenticateToken.js';
 import { requireRole } from '../../../shared/middlewares/requireRole.js';
@@ -464,9 +465,11 @@ router.post(
 );
 
 // Exporta/atualiza um lead individual para o Bitrix24 manualmente sob demanda (botão "Enviar para o Bitrix")
+// DEM-20261114-003 (follow-up Onda 2): envia PII do lead a sistema externo — AuditLog/EXPORT.
 router.post(
   '/leads/:leadId/export',
   importRoles,
+  auditAccessMiddleware('BitrixLeadExport', 'EXPORT'),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { organizationId } = (req as AuthRequest).user;
@@ -492,9 +495,11 @@ router.post(
 );
 
 // Exporta leads em lote para o Bitrix24 sob demanda
+// DEM-20261114-003 (follow-up Onda 2): dump de leads para sistema externo — AuditLog/EXPORT.
 router.post(
   '/leads/export-batch',
   importRoles,
+  auditAccessMiddleware('BitrixLeadExport', 'EXPORT'),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { organizationId } = (req as AuthRequest).user;
@@ -809,6 +814,9 @@ const EXTRACTION_DOWNLOAD_FORMATS: readonly string[] = ['csv', 'xlsx', 'json'];
 router.get(
   '/extractions/:id/download',
   managementRoles,
+  // DEM-20261114-003 (follow-up Onda 2): download de extração Bitrix é dump de PII do tenant em
+  // CSV/XLSX/JSON — AuditLog/EXPORT (GET → EXPORT pelo mapeamento padrão do middleware).
+  auditAccessMiddleware('BitrixExtractionDownload'),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { organizationId } = (req as AuthRequest).user;

@@ -9,6 +9,33 @@ import type {
 import { postCommentToBitrix, syncActivityToBitrix } from '../service/outboundSync.js';
 
 /**
+ * Type guards de contrato (GATE-02): validam o payload do envelope ANTES de
+ * tratá-lo como WhatsAppMessageEventPayload / BitrixWebhookEventPayload.
+ * Campos obrigatórios conforme src/shared/contracts/domainEventMesh.contract.ts.
+ */
+function isWhatsAppMessageEventPayload(payload: unknown): payload is WhatsAppMessageEventPayload {
+  if (!payload || typeof payload !== 'object') return false;
+  const p = payload as Record<string, unknown>;
+  return (
+    typeof p.waMessageId === 'string' &&
+    typeof p.phoneE164 === 'string' &&
+    (typeof p.body === 'string' || p.body === null || p.body === undefined) &&
+    (p.direction === 'inbound' || p.direction === 'outbound')
+  );
+}
+
+function isBitrixWebhookEventPayload(payload: unknown): payload is BitrixWebhookEventPayload {
+  if (!payload || typeof payload !== 'object') return false;
+  const p = payload as Record<string, unknown>;
+  return (
+    typeof p.connectionId === 'string' &&
+    typeof p.eventType === 'string' &&
+    typeof p.bitrixRecordId === 'string' &&
+    (p.entityType === 'lead' || p.entityType === 'deal')
+  );
+}
+
+/**
  * Ponte entre o barramento canônico de eventos (DomainEventMesh) e as integrações
  * de CRM e Mensageria (Bitrix24 e WhatsApp).
  *
@@ -92,7 +119,18 @@ class BitrixEventMeshBridgeService {
     direction: 'inbound' | 'outbound',
   ): Promise<void> {
     try {
-      const payload = event.payload as unknown as WhatsAppMessageEventPayload;
+      if (!isWhatsAppMessageEventPayload(event.payload)) {
+        logger.warn(
+          {
+            eventId: event.eventId,
+            organizationId: event.organizationId,
+            eventType: event.eventType,
+          },
+          '[BitrixEventMeshBridge] Payload de WhatsApp inválido — evento ignorado (contrato violado).',
+        );
+        return;
+      }
+      const payload = event.payload;
       const leadId = payload.leadId;
       if (!leadId) {
         return;
@@ -296,8 +334,19 @@ class BitrixEventMeshBridgeService {
 
   private async handleBitrixWebhookInbound(event: DomainEventEnvelope): Promise<void> {
     try {
-      const payload = event.payload as unknown as BitrixWebhookEventPayload;
-      if (!payload?.leadId) return;
+      if (!isBitrixWebhookEventPayload(event.payload)) {
+        logger.warn(
+          {
+            eventId: event.eventId,
+            organizationId: event.organizationId,
+            eventType: event.eventType,
+          },
+          '[BitrixEventMeshBridge] Payload de webhook Bitrix inválido — evento ignorado (contrato violado).',
+        );
+        return;
+      }
+      const payload = event.payload;
+      if (!payload.leadId) return;
 
       // Se o webhook informou mudança de estágio para um lead local existente:
       // Podemos verificar se há automação de boas-vindas / notificação WhatsApp

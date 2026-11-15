@@ -257,7 +257,7 @@ async function createAlert(
     'id' | 'acknowledged' | 'acknowledgedBy' | 'acknowledgedAt' | 'createdAt'
   >,
 ): Promise<ProactiveAlert> {
-  const id = `alert-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  const id = `alert-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
 
   // Se o schema não tiver tabela de alertas, logamos e retornamos
   // Por enquanto, vamos assumir que existe ou usar log

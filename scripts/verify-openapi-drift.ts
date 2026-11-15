@@ -45,6 +45,7 @@
  */
 import { readFileSync, existsSync } from 'fs';
 import path from 'path';
+import { pathToFileURL } from 'url';
 import { parse as parseYaml } from 'yaml';
 import {
   computeOpenApiDrift,
@@ -99,29 +100,52 @@ interface TopLevelMount {
 }
 
 interface UseMount {
-  /** Path literal do primeiro argumento do `.use(...)`, ex.: '/api/analytics' ou '/suite'. */
+  /**
+   * Path literal do primeiro argumento do `.use(...)`, ex.: '/api/analytics' ou '/suite'.
+   * String vazia quando o mount não tem path (`router.use(subRouter)`) — o sub-router é montado
+   * na raiz do prefixo já composto pelo nível anterior (ex.: `agent.routes.ts` monta
+   * `router.use(commercialCellRoutes)` e `router.use(universalEcosystemRoutes)` sem path, o que
+   * antes tornava ~14 endpoints de `/api/agent/commercial-cell/*` e `/api/agent/ecosystem/*`
+   * invisíveis a este passe — TAREFA-SANEAMENTO-037 / BT360-DT-0083).
+   */
   path: string;
   routerVarName: string;
 }
 
 /**
- * Extrai `<callerVarName>.use('/prefixo', ...middlewares, identificadorSimples)` — ignora handlers
- * inline. Genérico o bastante para ler tanto `app.use(...)` no composition root quanto
- * `router.use(...)` (ou qualquer outro nome de variável local de router) dentro de um arquivo de
- * feature, o que é o que torna a resolução de sub-router aninhado (Passe 2 recursivo) possível sem
- * duplicar esta regra de extração.
+ * Extrai `<callerVarName>.use(...)` cujo último argumento é um identificador simples (nome de
+ * router importado) — ignora handlers inline. Genérico o bastante para ler tanto `app.use(...)`
+ * no composition root quanto `router.use(...)` dentro de um arquivo de feature, o que é o que
+ * torna a resolução de sub-router aninhado (Passe 2 recursivo) possível sem duplicar esta regra
+ * de extração.
+ *
+ * Cobre os dois formatos de mount do Express:
+ *   - com path:    `router.use('/subprefixo', ...middlewares, routerIdentificador);`
+ *   - sem path:    `router.use(...middlewares, routerIdentificador);`  → `path: ''`
+ *
+ * Mounts sem path só são seguidos adiante se o identificador resolver (via import estático) para
+ * um arquivo que exporta um `Router()` sob aquele nome — middlewares importados por nome
+ * (`router.use(writeRoles)`, `aiSuiteRouter.use(requireRole(...))`) falham nessa resolução e são
+ * pulados sem falso positivo, mesmo comportamento best-effort dos mounts com path.
  */
-function extractUseMounts(source: string, callerVarName: string): UseMount[] {
+export function extractUseMounts(source: string, callerVarName: string): UseMount[] {
   const mounts: UseMount[] = [];
   const safeName = escapeForRegex(callerVarName);
-  const useRegex = new RegExp(
-    `${safeName}\\.use\\(\\s*['"](\\/[^'"]*)['"]\\s*,([^;]*?)\\)\\s*;`,
-    'g',
-  );
+  const useRegex = new RegExp(`${safeName}\\.use\\(\\s*([^;]*?)\\)\\s*;`, 'g');
   let match: RegExpExecArray | null;
   while ((match = useRegex.exec(source)) !== null) {
-    const usePath = match[1];
-    const args = match[2].trim();
+    const argsRaw = match[1].trim();
+    let usePath = '';
+    let args = argsRaw;
+    // Primeiro argumento é um path literal seguido de vírgula → mount com path (comportamento
+    // original). Path literal sozinho (`router.use('/x');`) não tem router identificável — pula.
+    const pathMatch = /^['"](\/[^'"]*)['"]\s*,/.exec(argsRaw);
+    if (pathMatch) {
+      usePath = pathMatch[1];
+      args = argsRaw.slice(pathMatch[0].length);
+    } else if (argsRaw.startsWith("'") || argsRaw.startsWith('"')) {
+      continue;
+    }
     // último token da lista de argumentos precisa ser um identificador simples (nome de router
     // importado) — se terminar em '}', ')' etc. é um handler inline ou expressão, não um router
     // resolvível estaticamente, então pulamos esse mount (best-effort, sem falso positivo).
@@ -289,7 +313,7 @@ function resolveAndWalkRouter(
  * cada nível. Retorna também `resolvedFileCount` só para log informativo (quantos arquivos de
  * router — de qualquer nível de aninhamento — puderam ser lidos e verificados de fato).
  */
-function computeSubRouteDrift(
+export function computeSubRouteDrift(
   repoRoot: string,
   compositionRootSource: string,
   bootstrapDir: string,
@@ -431,4 +455,13 @@ function main(): void {
   );
 }
 
-main();
+// Só executa o CLI quando invocado diretamente (`tsx scripts/verify-openapi-drift.ts`) — os
+// exports acima existem para o teste de cobertura do Passe 2 em
+// `tests/unit/shared/verifyOpenapiDriftSubRoutes.test.ts` (TAREFA-SANEAMENTO-037). Mesmo padrão
+// de `scripts/import-agent-catalog.ts`, mas via `pathToFileURL` para funcionar no Windows.
+const isDirectExecution =
+  process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isDirectExecution) {
+  main();
+}

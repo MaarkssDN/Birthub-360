@@ -12,6 +12,30 @@ const BASE_URL = process.env.E2E_BASE_URL ?? `http://localhost:${PORT}`;
 // sozinho, exatamente como o CI faz depois de `npx playwright install --with-deps chromium`.
 const chromiumExecutablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE?.trim() || undefined;
 
+// TAREFA-SANEAMENTO-039 (BT360-DT-0089): os specs E2E agora fazem asserções diretas no banco
+// (tests/e2e/db-assertions.ts). Antes de qualquer worker subir, garante fail-fast que a URL de
+// banco aponta para um database de teste (`*_test`) — nunca para produção. Mesma regra da trava
+// assertTestDatabaseSafety do harness de integração (scripts/test/prepare-integration-env.js).
+function assertE2eTestDatabase(): void {
+  const urls = [process.env.DATABASE_URL, process.env.TEST_DATABASE_URL, process.env.DIRECT_URL]
+    .filter((u): u is string => typeof u === 'string' && u.trim() !== '');
+  for (const url of urls) {
+    let dbName = '';
+    try {
+      dbName = new URL(url).pathname.replace(/^\//, '');
+    } catch {
+      throw new Error(`playwright.config: DATABASE_URL inválida para asserções E2E: ${url}`);
+    }
+    if (!dbName.endsWith('_test')) {
+      throw new Error(
+        `playwright.config: recusando E2E contra database "${dbName}" — ` +
+          'asserções de persistência exigem database terminada em "_test"',
+      );
+    }
+  }
+}
+assertE2eTestDatabase();
+
 export default defineConfig({
   testDir: './tests/e2e',
   testIgnore: ['**/visual.spec.ts', '**/visual-audit.spec.ts'],

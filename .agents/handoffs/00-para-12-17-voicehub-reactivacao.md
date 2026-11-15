@@ -59,8 +59,19 @@ Parte do Agente 17 neste handoff:
   bloqueia esse trabalho — o run de cadência já consulta `VoiceCallPort` via DI
   (`src/features/cadence/jobs/cadenceRun.worker.ts`), sem acoplamento às rotas gated.
 
-Status mantido `em-andamento`: aguardando os demais destinatários (12/01/02). A parte do 17 está
-encerrada com evidência acima.
+## Resolução (Agente 12 — 2026-11-12, branch `agente/12-voicehub-reactivacao`)
+
+Auditoria concluída — parecer **NO-GO** para abrir o gate. Bloqueio raiz:
+voice-hub referencia models inexistentes no schema canônico (Tenant,
+Membership, Role, Session do Better Auth vs. AgentSession, User.companyName,
+TenantWebhookEndpoint vs. OrganizationWebhookEndpoint, Notification.message/
+isRead) e tem JWT/registro de tenants paralelos ao Better Auth. `/api/outbound`
+expõe banco legado sem auth em `campaigns.routes.ts` (handoff ao 05);
+`/api/dialer-3cx` é app Express sem auth/tenant (handoff ao 17). Decisão de
+adaptadores de identidade/schema escalada ao 01. Evidências e checklist
+completo em `12-para-00-voicehub-tenancy-auditoria.md`; isolamento por tenant
+nos services sãos congelado em `src/lib/voice-hub/__tests__/tenant-isolation.test.ts`
+(36 testes verdes). Gate permanece fechado.
 ## Avaliação Agente 02 (2026-11-12)
 
 Recebido e avaliado pelo 02. Manter **oculto** (`voice-hub`, `outbound`, `dialer` fora da navegação) até:

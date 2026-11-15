@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 18 (Contratos, API e Documentação Viva)
 Onda: Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-036)
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 5
@@ -48,3 +48,13 @@ Executar a tarefa `TAREFA-SANEAMENTO-036` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução
+
+Verificado na base `5d3f267e1` (W5): a divergência já estava saneada —
+`tests/unit/shared/contracts/lead-openapi-contract.test.ts` (DATA-008) compara
+`LEAD_STATUS`/`leadSchema.shape` com `LeadStatus`/`LeadInput` do
+`docs/openapi.yaml`, cobrindo sucesso (paridade campo-a-campo e enums) e
+restrições (funnel, amount, probability, title). Execução: 3/3 verde.
+Sem alteração de produção necessária nesta onda; evidência registrada no run
+report `.agents/runs/agente-18-tarefa-saneamento-036.md`.

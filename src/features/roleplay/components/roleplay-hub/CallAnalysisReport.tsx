@@ -63,7 +63,9 @@ export function CallAnalysisReport({
           <div className="mt-4 px-4 py-1.5 bg-emerald-500/20 text-emerald-400 rounded-full text-xs font-bold uppercase tracking-widest flex items-center gap-1.5">
             <Award className="w-3.5 h-3.5 text-amber-400" />
             <span>
-              {analysisResult.score >= 80 ? '+50 pts Gamificação' : 'Estimativa pedagógica'}
+              {analysisResult.score >= 80
+                ? 'Desempenho excelente nesta sessão'
+                : 'Avaliação desta sessão de roleplay'}
             </span>
           </div>
         </div>
@@ -76,17 +78,14 @@ export function CallAnalysisReport({
             </div>
             <div>
               <p className="font-black text-sm text-ink uppercase tracking-wide">
-                Conquista Desbloqueada: Mestre em Objeções
+                Excelente condução de objeções
               </p>
               <p className="text-xs text-ink-2 font-medium">
-                Desempenho de excelência no Roleplay (Score {analysisResult.score}/100) registrado
-                no ranking de gamificação do seu tenant.
+                Score {analysisResult.score}/100 nesta sessão de treinamento — use o feedback abaixo
+                para refinar a abordagem no próximo roleplay.
               </p>
             </div>
           </div>
-          <span className="shrink-0 text-xs font-black uppercase tracking-widest text-amber-500 bg-amber-500/10 px-3 py-1.5 rounded-xl border border-amber-500/20">
-            Nível Pro
-          </span>
         </div>
       )}
 

@@ -1,7 +1,7 @@
 De: Agente 09 — Mobile (Capacitor/Android)
 Para: Agente 08 — QA e Release
 Onda: Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-028)
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: BT360-DT-0053 (resolvido na branch `agente/09-mobile-saneamento`)
 Sprint destino: Onda 5
@@ -49,3 +49,7 @@ dos lados deve ser detectada.
 Não bloqueia o encerramento do handoff BT360-DT-0053 (correção já aplicada e verificada por diff
 programático). Este handoff evita regressão futura quando o Agente 02 alterar `TabType`/
 `TAB_ROUTE_SET`/`NAV_HIDDEN_TABS`. Manter também o teste existente `DEBT-UX-005` intacto.
+
+## Resolução
+
+TAREFA-028 — tests/unit/navigation/android-valid-tabs-parity.test.ts criado: extrai VALID_TABS de MainActivity.java e compara com ACTIVE_NAV_TABS (2/2 verde; conjuntos identicos, 53 destinos).

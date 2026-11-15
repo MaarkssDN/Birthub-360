@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LANDING_DEMO_CONSENT_VERSION } from '../publicLead.constants.js';
+import { LANDING_DEMO_CONSENT_VERSION } from '../../../shared/contracts/publicLead.constants.js';
 import { hashClientIp } from '../publicLead.ipHash.js';
 import {
   fieldErrorsFromZod,

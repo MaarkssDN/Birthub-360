@@ -3,7 +3,7 @@
 De: 00 — Coordenador
 Para: 08 (QA) + 24 (revisão)
 Onda: F5
-Status: em-andamento
+Status: em-andamento (entrega parcial — 3 specs E2E criadas em 2026-11-12)
 Prioridade: normal
 Referência: `docs/architecture/MATRIZ-FUNCIONAL-MODULOS.md` §5 item 5, §7
 
@@ -39,22 +39,56 @@ Módulos sem cobertura de teste dedicada identificados no inventário:
 - Não enfraquecer asserts existentes; não criar mocks que mascarem
   integração real.
 
-## Resolução (parcial — 2026-11-12, Agente 08)
+## Resolução parcial (Agente 08, 2026-11-12, branch `agente/08-e2e-cobertura-modulos`)
 
-**Diagnóstico:** a premissa do handoff (0 arquivos de teste por módulo) está desatualizada em relação a `main`. Todos os seis módulos já possuem specs dedicadas unitárias e/ou de integração:
+### Inventário real de cobertura (rotas `/app/*` vs specs em `tests/e2e/`)
 
-| Módulo | Specs existentes (exemplos) |
-|---|---|
-| market-intelligence | `tests/unit/market-intelligence/*` (6 arquivos: accountDecisionMakers, accountEconomicGroup, accountInsights, dataQualityReport, ldrIntegrityGuard, marketSensing), `tests/unit/features/market-intelligence/server/*` (3 contract tests), `src/features/market-intelligence/**/__tests__/*` (3) |
-| mesa-tratamento | `tests/unit/features/mesa-tratamento/*` (4: priority, routes, approachSuggestion, lossReasons), `src/features/mesa-tratamento/services/__tests__/mesa-triage.service.test.ts` (piso de severidade determinístico, fallback de IA) |
-| social-selling | `tests/unit/social-selling/*` (2: socialSelling.service, shadowCopywriting.service — cobre consentimento LGPD opt-in, revogação/expurgo, exigência de revisão humana), `tests/unit/features/social-selling/*`, `tests/integration/features/social-selling/*` (2 fluxos E2E-ish) |
-| signals-risks | `tests/unit/components/signals-risks/SignalsAndRisksHub.test.tsx`, `tests/integration/features/signals-risks/revOpsFlow.integration.test.tsx`, `tests/integration/conversation-signal-tenant-isolation.test.ts`, `tests/integration/whatsapp-signal-worker-tenant-context.test.ts` |
-| sales-orchestration | `tests/unit/features/sales-orchestration/*` (2), `tests/unit/sales-orchestration/orchestration.api.unit.test.ts` |
-| predictability | `tests/unit/features/predictability/predictability.api.test.ts`, `tests/unit/commercial-intelligence/predictive*.test.ts` (2), `src/features/commercial-intelligence/__tests__/predictiveForecast.unit.test.ts` |
+Já cobertos por E2E funcional real (não só render/mock): CRM board/kanban
+(`crm-kanban.spec.ts`, drag mouse+teclado, rollback, drawer, deep-link),
+propostas (`crm360-proposta.spec.ts`, criação com itens + reload),
+cadência (`cadence.spec.ts`, criar sequência + iniciar/pausar/retomar/parar run),
+leads/companies/contacts CRUD, commercial-intelligence RBAC, integrations.
 
-**Priorização pedida — situação real:**
-- **LGPD/social-selling:** a feature não faz scraping (gera copy a partir de amostras voluntárias do próprio vendedor); consentimento opt-in, revogação com expurgo e `requiresHumanReview` já estão cobertos por `shadowCopywriting.service.test.ts` e `socialSelling.service.test.ts`.
-- **mesa-tratamento triagem:** coberta por `mesa-triage.service.test.ts` (piso de severidade P0–P3, lockdown, fallback conservador quando a IA falha). Não existe conceito de "SLA" implementado na feature (busca por `sla|responseTime` não retorna lógica) — se SLA for requisito do Documento Mestre, é gap de produto, não de teste.
-- **market-intelligence AC-MKT-001/002/003:** **gaps de produto confirmados** — (a) não existe model de ledger/créditos no `prisma/schema.prisma` (só `EnrichmentLog`, que é auditoria, não saldo); AC-MKT-003 (débito atômico antes da chamada externa) não tem implementação para testar; (b) não há badge `FONTE_PARCIAL` nas respostas de market-intelligence (o termo só existe em `commercial-intelligence`, domínio diferente); (c) fallback de provedores existe parcialmente em `enrichment.service.ts` (Google Places → OpenStreetMap) mas sem marcação de fonte parcial. Escrever specs para comportamento inexistente violaria "não criar mocks que mascarem integração real" — os gaps precisam de dono de produto (05 prospecção / 01 schema) antes de QA formalizar ACs.
+### Gaps fechados nesta entrega (specs novas, backend real sem mocks)
 
-**Ação do 08:** aberto handoff `08-para-00-cobertura-modulos-gaps-produto.md` roteando os três gaps de produto. Status mantido `em-andamento` até o 00 decidir se os ACs do Documento Mestre são escopo atual do produto; se forem, os testes de aceite devem ser escritos junto com a implementação.
+1. `tests/e2e/mesa-tratamento.spec.ts` — EmptyState "Bitrix24 não conectado"
+   (contrato real de `/api/mesa-tratamento/queue` com `connectionId: null`),
+   aba Dashboard com KPIs zerados + troca de período (`?period=30d`),
+   contrato de validação do `/register` (400 sem outcome, 404 lead inexistente)
+   e RBAC VISUALIZADOR → "Acesso restrito" + 403 na API.
+2. `tests/e2e/signals-risks.spec.ts` — hub Sinais & Riscos: métricas de
+   cobertura reais, troca Radar ↔ Riscos de Deals com navegação de URL,
+   deep-link `/deal-risks`, botão "Atualizar Dados" disparando
+   `/api/commercial-intelligence/health-score`.
+3. `tests/e2e/gamification.spec.ts` — cockpit de gamificação: ranking vazio
+   real, perfil "Nível 1 / Consultor Trainee", troca de período
+   (`?period=week`), aba War Room Arena.
+
+### Limitação documentada
+
+A jornada completa da mesa de tratamento (triagem lead-a-lead, registrar
+resultado, reatribuir, comentar, decidir) exige `BitrixConnection` real +
+HTTP de saída para o portal Bitrix24 — indisponível no ambiente de teste e
+impossível de mockar no processo Express do `start:e2e`. Ficou pendente:
+cobrir esse fluxo quando houver um Bitrix fake/stub de integração ou
+seed de `BitrixConnection` apontando para um mock HTTP controlado pelo
+teste. Idem para social-selling/scraping e market-intelligence com
+provedores reais.
+
+### Execução
+
+- `npx tsc --noEmit`: PASS (exit 0).
+- `npx playwright test <specs>`: NÃO executável neste ambiente —
+  Postgres (`localhost:5434`), Redis (`localhost:6379`), Meilisearch e
+  Docker CLI indisponíveis, e browsers do Playwright não instalados
+  (`chromium_headless_shell-1243` ausente). O `webServer` do Playwright
+  chegou a subir o Express (`/login` → 200) mas os testes falham no
+  `browserType.launch` e o `signUp` falharia no banco. Rodar no CI ou em
+  ambiente com `docker compose up` + `npx playwright install chromium`.
+
+### Ainda sem cobertura E2E funcional (para próximas ondas)
+
+market-intelligence hub/deck/accounts, social-selling, sales-orchestration,
+predictability, voice-hub, playbooks/jornadas/processos/roteiros/chatbook/
+roleplay (só varredura), war-room standalone, automations, team, settings,
+forecast/metas, copiloto_ia, pending-actions, failover/resilience.

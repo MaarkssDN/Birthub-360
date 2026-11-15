@@ -1,9 +1,20 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { AdaptiveMultichannelCadenceService } from '../../../src/features/cadence/services/adaptiveMultichannelCadence.service.js';
+import { InMemoryOptOutRepository } from '../../../src/features/cadence/infra/InMemoryOptOutRepository.js';
+import { createInMemoryCadenceEnrollmentStore } from '../../mocks/inMemoryCadenceEnrollmentStore.js';
 
 describe('AdaptiveMultichannelCadenceService — Evolução 10 (Cadência Multicanal & Opt-Out Unificado)', () => {
-  const service = new AdaptiveMultichannelCadenceService();
+  let service: AdaptiveMultichannelCadenceService;
   const orgId = 'org-cadence-tenant-001';
+
+  beforeEach(() => {
+    // Store de enrollment e repositório de opt-out injetados: os testes unitários não tocam
+    // Postgres — o fake prova a mesma semântica da porta (cópias, update explícito).
+    service = new AdaptiveMultichannelCadenceService(
+      createInMemoryCadenceEnrollmentStore(),
+      new InMemoryOptOutRepository(),
+    );
+  });
 
   it('deve matricular lead e avançar passos multicanal com sucesso', async () => {
     const enrollment = await service.enrollLead({
@@ -30,6 +41,22 @@ describe('AdaptiveMultichannelCadenceService — Evolução 10 (Cadência Multic
     expect(step2Result.success).toBe(true);
   });
 
+  it('deve persistir avanços de passo via update do store (não mutação de referência)', async () => {
+    const enrollment = await service.enrollLead({
+      organizationId: orgId,
+      cadenceId: 'default-b2b-cadence',
+      leadId: 'lead-persistence-check',
+      contactEmail: 'ops@persistente.com.br',
+      contactPhone: '+5511900000000',
+    });
+
+    await service.executeNextStep(enrollment.enrollmentId, orgId);
+
+    const persisted = await service.getEnrollment(orgId, enrollment.enrollmentId);
+    expect(persisted?.currentStep).toBe(2);
+    expect(persisted?.lastActionAt).toBeDefined();
+  });
+
   it('deve aplicar trava de Opt-Out Unificado cross-channel e suprimir passos subsequentes', async () => {
     const enrollment = await service.enrollLead({
       organizationId: orgId,
@@ -51,6 +78,10 @@ describe('AdaptiveMultichannelCadenceService — Evolução 10 (Cadência Multic
     expect(optOut.channelsSuppressed).toContain('email');
     expect(optOut.channelsSuppressed).toContain('whatsapp');
     expect(optOut.channelsSuppressed).toContain('voice');
+
+    // A matrícula foi marcada como opted_out no store durável
+    const persisted = await service.getEnrollment(orgId, enrollment.enrollmentId);
+    expect(persisted?.status).toBe('opted_out');
 
     // Tentativa de executar próximo passo deve ser suprimida
     const nextStep = await service.executeNextStep(enrollment.enrollmentId, orgId);

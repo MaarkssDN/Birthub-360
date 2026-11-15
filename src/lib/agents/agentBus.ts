@@ -2,6 +2,13 @@
  * src/lib/agents/agentBus.ts
  * Barramento de mensageria entre agentes com trava estrita de recursao e prevencao de loops (maxHops = 5).
  * (Handoff 23-para-13 / DIV-AGENTE-13-001)
+ *
+ * NOTA DE GOVERNANÇA (TAREFA-SANEAMENTO-030 / BT360-DT-0067, 2026-11-12): este módulo é um
+ * protótipo de validação de roteamento — NÃO é o barramento de produção e NÃO persiste
+ * histórico. O Agent Bus real é `src/features/job-roles/services/agentBus.service.ts`,
+ * que grava cada handoff em `AgentHandoffMessage` e cada execução em `AgentExecution`
+ * (PostgreSQL, com trilha de auditoria completa). Não usar este módulo para histórico de
+ * conversas/decisões — ele não tem consumidores fora do próprio teste de recursion-limit.
  */
 import { randomUUID } from 'node:crypto';
 import { logger } from '../logger.js';

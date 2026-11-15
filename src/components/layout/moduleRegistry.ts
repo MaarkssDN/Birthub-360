@@ -116,7 +116,8 @@ export const HUB_MODULE: ProductModule = {
   accent: 'gold',
   home: '/app',
   items: [
-    item('dashboard', 'Visão Geral'),
+    item('dashboard', 'Portal dos 11 Módulos', { path: 'home' }),
+    item('dashboard', 'Cockpit Operacional', { path: 'dashboard' }),
     item('workspace', 'Meu Espaço'),
     item('daily-plan', 'Plano Diário'),
     item('notifications', 'Notificações'),
@@ -410,7 +411,7 @@ function matchesPrefix(appPath: string, prefix: string): boolean {
  */
 export function getActiveModuleId(pathname: string): ModuleId {
   const appPath = pathname.replace(/^\/app\/?/, '').replace(/\/+$/, '');
-  if (!appPath || appPath === 'dashboard') return 'hub';
+  if (!appPath || appPath === 'dashboard' || appPath === 'home') return 'hub';
 
   let best: { id: ModuleId; length: number } | null = null;
   for (const module of ALL_MODULES) {

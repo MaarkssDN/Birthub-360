@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 18 (Contratos, API e Documentação Viva)
 Onda: Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-037)
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 5
@@ -48,3 +48,18 @@ Executar a tarefa `TAREFA-SANEAMENTO-037` estritamente dentro da propriedade de 
 - **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
 - **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
 - O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução
+
+O Passe 2 do `scripts/verify-openapi-drift.ts` já é recursivo (commit
+`97ebdd73e`) e cobre sub-routers aninhados (`router.use`) do Hub de
+Inteligência/Timeline — `npx tsx scripts/verify-openapi-drift.ts` sai 0 com
+75 arquivos de router resolvidos e zero deriva.
+
+Para tornar a cobertura verificável por teste (e não só por execução manual),
+esta onda exportou os helpers do script (`computeSubRouteDrift` etc.), blindou
+`main()` contra execução em import, e adicionou
+`tests/unit/contracts/verify-openapi-drift.test.ts` com caminho feliz
+(sem deriva, >50 routers resolvidos), caminho de falha (documento vazio →
+findings `undocumented-path`) e regressão específica dos prefixos
+`/intelligence` e `/market-intelligence`. 13/13 testes de contrato verdes.

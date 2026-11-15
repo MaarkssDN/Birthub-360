@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 07 (IA, Copiloto e Automações)
 Onda: Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-005)
-Status: em-andamento
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 4
@@ -57,3 +57,7 @@ Executar a tarefa `TAREFA-SANEAMENTO-005` estritamente dentro da propriedade de 
 - **Testes:** `src/features/intelligence/routes/__tests__/commercial-agent.mission-trace.test.ts` — 4 testes (404 sem missão persistida, 200 com trace real, strip de prefixo `mission-`, propagação de erro). 4/4 verdes.
 - **Gates executados:** `npx tsc --noEmit` (0 erros), `npx biome lint` nos 4 arquivos alterados (0 warnings após remoção de variável órfã), `npx vitest run` do novo teste (4/4).
 - **Pendente:** parecer do Agente 24 (`.agents/reviews/`) — condição de encerramento do handoff. Status mantido `em-andamento` até lá.
+
+## Resolução
+
+TAREFA-005 — GET /api/commercial-agent/mission/:id/trace retorna trace REAL (AgentHandoffMessage + AgentExecution persistidos); consent LGPD via assertPiiExternalConsent/PiiConsentRequiredError em intelligence.routes.ts.

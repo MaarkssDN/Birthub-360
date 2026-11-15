@@ -51,6 +51,9 @@ vi.mock('@/features/characters/CharacterGalleryView.js', () => ({
 vi.mock('@/features/dashboard/components/AdaptiveDashboard.js', () => ({
   AdaptiveDashboard: () => <div>MOD_DASHBOARD</div>,
 }));
+vi.mock('@/features/home/CentralModulesHome.js', () => ({
+  CentralModulesHome: () => <div>MOD_CENTRAL_HOME</div>,
+}));
 vi.mock('@/features/workspace/components/WorkspaceHome.js', () => ({
   WorkspaceHome: () => <div>MOD_WORKSPACE</div>,
 }));
@@ -228,7 +231,8 @@ function renderAt(path: string) {
 
 /** Tabela path → marcador esperado. Cobre TODAS as rotas declaradas em AppLayout. */
 const ROUTE_CASES: Array<[string, string]> = [
-  ['/app', 'MOD_DASHBOARD'],
+  ['/app', 'MOD_CENTRAL_HOME'],
+  ['/app/home', 'MOD_CENTRAL_HOME'],
   ['/app/dashboard', 'MOD_DASHBOARD'],
   ['/app/workspace', 'MOD_WORKSPACE'],
   ['/app/prospect', 'MOD_PROSPECT'],
@@ -299,7 +303,7 @@ const ROUTE_CASES: Array<[string, string]> = [
   ['/app/settings_automation', 'MOD_PILLAR_SETTINGS:Automação & Conectividade'],
   ['/app/settings_engagement', 'MOD_PILLAR_SETTINGS:Engajamento Comercial'],
   ['/app/characters', 'MOD_CHARACTERS'],
-  ['/app/rota-inexistente', 'MOD_DASHBOARD'], // catch-all → /app
+  ['/app/rota-inexistente', 'MOD_CENTRAL_HOME'], // catch-all → /app
 ];
 
 describe('AppLayout — router /app/*', () => {
@@ -334,14 +338,14 @@ describe('AppLayout — router /app/*', () => {
     // localStorage vazio → showOnboardingTour=true → lazy OnboardingTour resolve.
     renderAt('/app');
     expect(await screen.findByText('MOD_ONBOARDING_TOUR')).toBeInTheDocument();
-    expect(await screen.findByText('MOD_DASHBOARD')).toBeInTheDocument();
+    expect(await screen.findByText('MOD_CENTRAL_HOME')).toBeInTheDocument();
     expect(await screen.findByText('MOD_LIVE_COPILOT')).toBeInTheDocument();
   });
 
   it('não monta OnboardingTour quando has_seen_tour já está gravado', async () => {
     window.localStorage.setItem('@prospector:has_seen_tour', '1');
     renderAt('/app');
-    await screen.findByText('MOD_DASHBOARD');
+    await screen.findByText('MOD_CENTRAL_HOME');
     expect(screen.queryByText('MOD_ONBOARDING_TOUR')).not.toBeInTheDocument();
   });
 

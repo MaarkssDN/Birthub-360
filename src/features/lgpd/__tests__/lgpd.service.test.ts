@@ -120,7 +120,13 @@ describe('LgpdService — direitos do titular (MEL-11)', () => {
           timelineEvents: [],
         },
         jsonPackage: '{"metadata":{}}',
-        encryptedPackage: { ciphertext: 'x', iv: 'y', tag: 'z', salt: 's', algorithm: 'aes-256-gcm' },
+        encryptedPackage: {
+          ciphertext: 'x',
+          iv: 'y',
+          tag: 'z',
+          salt: 's',
+          algorithm: 'aes-256-gcm',
+        },
       };
       exportDataSubjectDossierMock.mockResolvedValue(dossierResult);
 

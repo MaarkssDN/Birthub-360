@@ -352,20 +352,22 @@ describe('Landing360', () => {
 
     // 1. Proposta de valor clara & 6. Urgência responsável
     expect(screen.getByText(/Ciclo de Implantação Assistida/i)).toBeInTheDocument();
-    expect(screen.getByText(/Acelere o ciclo de vendas e aumente a conversão do pipeline — projeções de até 3.8x/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Acelere o ciclo de vendas e aumente a conversão do pipeline com IA aplicada ao dia a dia comercial/i,
+      ),
+    ).toBeInTheDocument();
 
     // 2. Design focado & 3. Foco no Call to Action
     const ctaLinks = screen.getAllByRole('link', { name: /Garantir Demonstração Gratuita/i });
     expect(ctaLinks.length).toBeGreaterThan(0);
 
-    // 5. Provas sociais, métricas e selos de credibilidade
-    expect(screen.getByText(/\+42%/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/3.8x/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/R\$ 180M\+/i)).toBeInTheDocument();
-    expect(screen.getByText(/Rodrigo Silveira/i)).toBeInTheDocument();
-    expect(screen.getByText(/Camila Duarte/i)).toBeInTheDocument();
+    // 5. Selos de credibilidade reais da plataforma (sem métricas/depoimentos fabricados)
     expect(screen.getByText(/Criptografia AES-256 Ponta a Ponta/i)).toBeInTheDocument();
     expect(screen.getByText(/Isolamento Multi-Tenant via Postgres RLS/i)).toBeInTheDocument();
+    expect(screen.queryByText(/\+42%/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/R\$ 180M\+/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Rodrigo Silveira/i)).not.toBeInTheDocument();
 
     // 4. Formulário objetivo de captura de lead
     expect(container.querySelector('#lead-nome')).toBeInTheDocument();
@@ -373,14 +375,13 @@ describe('Landing360', () => {
     expect(container.querySelector('#lead-whatsapp')).toBeInTheDocument();
   });
 
-  it('deve submeter o formulário de lead com sucesso e alternar a variante A/B', async () => {
+  it('deve submeter o formulário de lead via API real e alternar a variante A/B', async () => {
     const { container } = renderWithProviders('/', 'intro');
 
-    // Endpoint público de leads ainda não existe (handoff pendente do Agente 01):
-    // o teste mocka a resposta 200 do contrato POST /api/public/demo-requests.
+    // Endpoint público real: POST /api/public/demo-leads (Agente 01).
     const fetchSpy = vi
       .spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce(new Response('{}', { status: 200 }));
+      .mockResolvedValueOnce(new Response('{}', { status: 202 }));
 
     const nomeInput = container.querySelector('#lead-nome') as HTMLInputElement;
     const emailInput = container.querySelector('#lead-email') as HTMLInputElement;
@@ -403,15 +404,16 @@ describe('Landing360', () => {
 
     await waitFor(
       () => {
-        expect(screen.getByText(/Sessão Solicitada com Sucesso/i)).toBeInTheDocument();
+        expect(screen.getByText(/Solicitação Recebida!/i)).toBeInTheDocument();
         expect(screen.getByText(/mariana@vanguarda\.com\.br/i)).toBeInTheDocument();
         expect(fetchSpy).toHaveBeenCalledWith(
-          '/api/public/demo-requests',
+          '/api/public/demo-leads',
           expect.objectContaining({ method: 'POST' }),
         );
       },
       { timeout: 3000 },
     );
+
     fetchSpy.mockRestore();
 
     // 8. Teste A/B: alternar para Variante B
@@ -489,6 +491,41 @@ describe('Landing360', () => {
     fetchSpy.mockRestore();
   });
 
+  it('deve submeter o lead sem WhatsApp (campo opcional por decisão LGPD)', async () => {
+    const { container } = renderWithProviders('/', 'intro');
+
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(new Response('{}', { status: 202 }));
+
+    const nomeInput = container.querySelector('#lead-nome') as HTMLInputElement;
+    const emailInput = container.querySelector('#lead-email') as HTMLInputElement;
+    const submitBtn = screen.getByRole('button', {
+      name: /SOLICITAR DEMONSTRAÇÃO GRATUITA/i,
+    });
+    const leadFormEl = submitBtn.closest('form') as HTMLFormElement;
+
+    fireEvent.change(nomeInput, { target: { value: 'Sem WhatsApp' } });
+    fireEvent.change(emailInput, { target: { value: 'semwa@empresa.com.br' } });
+
+    const consentCheckbox = container.querySelector(
+      'input[type="checkbox"]',
+    ) as HTMLInputElement;
+    fireEvent.click(consentCheckbox);
+
+    fireEvent.submit(leadFormEl);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Solicitação Recebida!/i)).toBeInTheDocument();
+    });
+
+    const body = JSON.parse(fetchSpy.mock.calls[0][1]?.body as string);
+    expect(body.whatsapp).toBeUndefined();
+    expect(body.consent).toBe(true);
+
+    fetchSpy.mockRestore();
+  });
+
   it('deve exibir erro honesto quando o POST de lead falha e enviar payload com consentimento', async () => {
     const { container } = renderWithProviders('/', 'intro');
 
@@ -509,7 +546,7 @@ describe('Landing360', () => {
     fireEvent.change(whatsappInput, { target: { value: '11988887777' } });
 
     // Seleciona chip de tamanho de equipe "16 a 50".
-    fireEvent.click(screen.getAllByRole('button', { name: '16 a 50' })[0]);
+    fireEvent.click(within(leadFormEl).getByRole('button', { name: '16 a 50' }));
 
     const consentCheckbox = container.querySelector(
       'input[type="checkbox"]',
@@ -519,20 +556,21 @@ describe('Landing360', () => {
     fireEvent.submit(leadFormEl);
 
     await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent(/Não foi possível registrar/i);
+      expect(screen.getByRole('alert')).toHaveTextContent(/Não foi possível enviar/i);
     });
 
     expect(fetchSpy).toHaveBeenCalledWith(
-      '/api/public/demo-requests',
+      '/api/public/demo-leads',
       expect.objectContaining({
         method: 'POST',
-        body: expect.stringContaining('"consentimentoLgpd":true'),
+        body: expect.stringContaining('"consent":true'),
       }),
     );
     const body = JSON.parse(fetchSpy.mock.calls[0][1]?.body as string);
     expect(body.equipe).toBe('16 a 50');
-    expect(body.origem).toBe('landing_360');
-    expect(body.varianteAb).toBe('A');
+    expect(body.consent).toBe(true);
+    expect(body.consentTextVersion).toBe('landing-demo-v1');
+    expect(body.purpose).toBe('agendamento_demonstracao');
 
     fetchSpy.mockRestore();
   });
@@ -587,5 +625,29 @@ describe('Landing360', () => {
       fireEvent.click(closeBtn);
       expect(container.querySelector('[role="dialog"]')).not.toBeInTheDocument();
     });
+  });
+
+  it('deve renderizar o Hero N1 Neon Editorial Cinematic com CTAs reais, anel 360° e Centro de Comando ilustrativo', () => {
+    const { container } = renderWithProviders('/', 'intro');
+
+    const hero = container.querySelector('section.bh-n1-hero#inicio');
+    expect(hero).toBeInTheDocument();
+
+    const primaryCta = screen.getByRole('link', { name: /Agendar demonstração/i });
+    expect(primaryCta).toHaveAttribute('href', '#demonstracao');
+
+    const secondaryCta = screen.getByRole('link', { name: /Conhecer os 11 módulos/i });
+    expect(secondaryCta).toHaveAttribute('href', '#destaques');
+
+    expect(container.querySelector('.bh-n1-plate-module')?.textContent).toMatch(
+      /P01 · HUB COMERCIAL/i,
+    );
+    expect(screen.getAllByText(/Oportunidade #1042/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Próxima ação · P06 · Inteligência/i)).toBeInTheDocument();
+    expect(screen.getByText(/Interface ilustrativa · dados simulados/i)).toBeInTheDocument();
+
+    const replayBtn = screen.getByRole('button', { name: /Reproduzir sequência/i });
+    fireEvent.click(replayBtn);
+    expect(screen.getByRole('status')).toBeInTheDocument();
   });
 });

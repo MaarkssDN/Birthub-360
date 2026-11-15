@@ -10,7 +10,7 @@ import {
   LANDING_DEMO_CONSENT_TEXT,
   LANDING_DEMO_CONSENT_VERSION,
   LANDING_LEAD_SOURCE,
-} from './publicLead.constants.js';
+} from '../../shared/contracts/publicLead.constants.js';
 import type { PublicLeadInput } from './publicLead.schema.js';
 
 export class PublicLeadUnavailableError extends Error {

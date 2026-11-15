@@ -1,7 +1,7 @@
 De: Agente 11 — Marca e Ativos Institucionais
 Para: Agente 00 — Coordenador
 Onda: Onda 5 (Plano Mestre de Saneamento — decorrente de TAREFA-SANEAMENTO-050 / BT360-DT-0059)
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: BT360-DT-0059
 Sprint destino: Onda 5
@@ -45,3 +45,7 @@ se necessário). Nenhum consumidor conhecido — remoção é segura.
   `documentacao-aplicacao/`) foram otimizados nesta mesma onda com
   compressão lossless (Pillow): ~2,25 MB economizados, nomes de arquivo
   preservados, todas as referências intactas.
+
+## Resolução
+
+PNGs q1.png/q2.png removidos (~3MB, zero referencias) — commit do coordenador na integracao.

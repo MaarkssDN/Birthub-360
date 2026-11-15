@@ -1,7 +1,8 @@
-import confetti from 'canvas-confetti';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Award, Check, ChevronRight, Sparkles, Trophy, Volume2, VolumeX, Zap } from 'lucide-react';
+import { Check, ChevronRight, Sparkles, Trophy, Volume2, VolumeX, Zap } from 'lucide-react';
 import { useState } from 'react';
+import type { SellerScore } from '../../features/gamification/domain/Gamification.js';
+import { BADGE_DEFINITIONS } from '../../features/gamification/domain/Gamification.js';
 import { SoundFX } from '../../lib/soundEffects.js';
 import { cn } from '../../lib/utils.js';
 import { Button } from './Button.js';
@@ -14,9 +15,6 @@ import {
 } from './icons/Isometric3DIcons.js';
 import { TiltCard } from './TiltCard.js';
 
-import type { SellerScore } from '../../features/gamification/domain/Gamification.js';
-import { BADGE_DEFINITIONS } from '../../features/gamification/domain/Gamification.js';
-
 export interface GamificationWidgetProps {
   initialXp?: number;
   nextLevelXp?: number;
@@ -27,42 +25,51 @@ export interface GamificationWidgetProps {
 }
 
 export function GamificationWidget({
-  initialXp = 0,
   nextLevelXp = 2000,
-  level = 1,
-  streakDays = 0,
   show3DCore = true,
   sellerScore = null,
 }: GamificationWidgetProps) {
   const [activeTab, setActiveTab] = useState<'missions' | 'achievements'>('missions');
   const [showPanel, setShowPanel] = useState(false);
-  const currentLevel = sellerScore ? sellerScore.level : level;
-  const [localBonusXp, setLocalBonusXp] = useState(0);
-  const xp = sellerScore ? sellerScore.totalPoints + localBonusXp : initialXp + localBonusXp;
-  const streak = sellerScore ? sellerScore.streakDays : streakDays;
   const [soundActive, setSoundActive] = useState(() => SoundFX.isEnabled());
 
-  const [missions, setMissions] = useState([
-    { id: 1, title: 'Completar perfil do SDR e ICP', xp: 250, done: false },
+  // Sem perfil real de gamificação não há XP/nível/missões a exibir —
+  // estado vazio honesto em vez de números fabricados.
+  if (!sellerScore) {
+    return (
+      <div className="rounded-card-lg border border-dashed border-line bg-surface-elevated/60 p-5 text-center">
+        <p className="text-sm font-semibold text-ink">Gamificação indisponível</p>
+        <p className="mt-1 text-xs text-ink-2">
+          Nenhum perfil de vendedor encontrado para exibir XP, nível e conquistas reais.
+        </p>
+      </div>
+    );
+  }
+
+  const currentLevel = sellerScore.level;
+  const xp = sellerScore.totalPoints;
+  const streak = sellerScore.streakDays;
+
+  // Missões são indicadores de progresso derivados das métricas reais do
+  // perfil — somente leitura, sem concessão local de XP.
+  const missions = [
+    { id: 1, title: 'Completar perfil do SDR e ICP', done: false },
     {
       id: 2,
       title: 'Qualificar 5 novos leads corporativos hoje',
-      xp: 500,
-      done: Boolean(sellerScore && sellerScore.qualifiedCount >= 5),
+      done: sellerScore.qualifiedCount >= 5,
     },
     {
       id: 3,
       title: 'Agendar 2 reuniões de demonstração executiva',
-      xp: 800,
-      done: Boolean(sellerScore && sellerScore.meetingsCount >= 2),
+      done: sellerScore.meetingsCount >= 2,
     },
     {
       id: 4,
       title: 'Realizar ligações e contatos comerciais ativos',
-      xp: 450,
-      done: Boolean(sellerScore && sellerScore.callsCount >= 10),
+      done: sellerScore.callsCount >= 10,
     },
-  ]);
+  ];
 
   const achievements = sellerScore?.badges?.length
     ? sellerScore.badges.map((b) => ({
@@ -120,58 +127,6 @@ export function GamificationWidget({
     setSoundActive(next);
   };
 
-  const handleOrbBoost = () => {
-    setLocalBonusXp((prev) => {
-      const nextBonus = prev + 25;
-      const basePoints = sellerScore ? sellerScore.totalPoints : initialXp;
-      if (basePoints + nextBonus >= nextLevelXp) {
-        triggerLevelUp();
-      }
-      return nextBonus;
-    });
-  };
-
-  const triggerLevelUp = () => {
-    SoundFX.play('success');
-    confetti({
-      particleCount: 90,
-      spread: 80,
-      origin: { y: 0.6 },
-      colors: [
-        '--color-brand-accent',
-        '--color-brand-primary',
-        '--color-brand-secondary',
-        '--color-success',
-      ].map((token) => getComputedStyle(document.documentElement).getPropertyValue(token).trim()),
-    });
-  };
-
-  const toggleMission = (id: number) => {
-    setMissions((prev) =>
-      prev.map((m) => {
-        if (m.id === id) {
-          const newDone = !m.done;
-          if (newDone) {
-            SoundFX.play('confirm');
-            setLocalBonusXp((currentBonus) => {
-              const updatedBonus = currentBonus + m.xp;
-              const basePoints = sellerScore ? sellerScore.totalPoints : initialXp;
-              if (basePoints + updatedBonus >= nextLevelXp) {
-                setTimeout(triggerLevelUp, 300);
-              }
-              return updatedBonus;
-            });
-          } else {
-            SoundFX.play('click');
-            setLocalBonusXp((currentBonus) => Math.max(0, currentBonus - m.xp));
-          }
-          return { ...m, done: newDone };
-        }
-        return m;
-      }),
-    );
-  };
-
   const progressPercent = Math.min(100, Math.round((xp / nextLevelXp) * 100));
 
   return (
@@ -187,12 +142,7 @@ export function GamificationWidget({
         <div className="flex items-center gap-4">
           {show3DCore && (
             <div className="relative shrink-0">
-              <Gamified3DOrb
-                size={76}
-                interactive
-                onOrbClick={handleOrbBoost}
-                className="cursor-pointer"
-              />
+              <Gamified3DOrb size={76} interactive={false} className="cursor-default" />
               <span className="absolute -bottom-1 -right-1 rounded-full bg-surface-2 border border-brand/40 px-1.5 py-0.5 text-[9px] font-extrabold text-brand shadow">
                 3D
               </span>
@@ -210,10 +160,6 @@ export function GamificationWidget({
                   <FlameStreakIcon size={16} animate /> {streak} Dias Seguidos
                 </span>
               )}
-
-              <span className="text-[10px] font-bold uppercase tracking-wider text-ink-2">
-                Combo 1.5x Ativo
-              </span>
             </div>
 
             <h3 className="mt-1 font-display text-base font-bold text-ink flex items-center gap-2">
@@ -334,26 +280,19 @@ export function GamificationWidget({
                   Conquistas 3D
                 </button>
               </div>
-
-              <span className="text-[11px] font-bold text-brand flex items-center gap-1">
-                <Sparkles className="h-3 w-3" /> Toque no Cristal 3D (+25 XP)
-              </span>
             </div>
 
             {/* Conteúdo Tab: Missões Diárias */}
             {activeTab === 'missions' && (
               <div className="space-y-2">
                 {missions.map((mission) => (
-                  <button
+                  <div
                     key={mission.id}
-                    type="button"
-                    aria-pressed={mission.done}
-                    onClick={() => toggleMission(mission.id)}
                     className={cn(
-                      'group flex w-full items-center justify-between rounded-xl border p-3 text-xs text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand cursor-pointer',
+                      'flex w-full items-center justify-between rounded-xl border p-3 text-xs text-left transition-all duration-200',
                       mission.done
                         ? 'border-success/40 bg-success/10 text-ink-2'
-                        : 'border-line/70 bg-surface/70 hover:border-brand/40 hover:bg-surface-interactive text-ink',
+                        : 'border-line/70 bg-surface/70 text-ink',
                     )}
                   >
                     <span className="flex items-center gap-3">
@@ -362,7 +301,7 @@ export function GamificationWidget({
                           'flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors',
                           mission.done
                             ? 'border-success bg-success text-slate-950 font-bold'
-                            : 'border-line group-hover:border-brand/60',
+                            : 'border-line',
                         )}
                       >
                         {mission.done && <Check className="h-3.5 w-3.5 stroke-[3]" />}
@@ -376,11 +315,7 @@ export function GamificationWidget({
                         {mission.title}
                       </span>
                     </span>
-
-                    <span className="flex items-center gap-1 font-extrabold text-brand shrink-0">
-                      <Award className="h-3.5 w-3.5" /> +{mission.xp} XP
-                    </span>
-                  </button>
+                  </div>
                 ))}
               </div>
             )}

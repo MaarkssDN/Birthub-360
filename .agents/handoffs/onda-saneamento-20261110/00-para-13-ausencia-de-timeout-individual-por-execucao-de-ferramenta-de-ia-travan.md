@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 13 (Enxame Autônomo e Governança de Runtime)
 Onda: Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-031)
-Status: em-andamento
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 4
@@ -70,3 +70,7 @@ propagado aos use-cases — follow-up se necessário. Testes:
 (roundtrip, hang→TOOL_TIMEOUT, erro propagado, registry fail-closed preservado).
 Run report: `.agents/runs/agente-13-tarefa-saneamento-031.md`. Pendente: revisão do
 Agente 24.
+
+## Resolução
+
+TAREFA-031 — withToolTimeout/TOOL_TIMEOUT presente em toolExecutors.ts (integrado via merge 6ecfc6033 / PR #239).

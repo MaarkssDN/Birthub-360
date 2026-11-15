@@ -2,10 +2,15 @@ import { api } from '../../../lib/api.js';
 import type {
   GenerateApproachInput,
   GeneratedApproachResult,
+  LogSocialInteractionInput,
+  LogSocialInteractionResult,
 } from '../domain/socialSelling.types.js';
 export type {
   GenerateApproachInput,
   GeneratedApproachResult,
+  LogSocialInteractionInput,
+  LogSocialInteractionResult,
+  SocialInteractionKind,
   SocialSellingChannel,
   SocialSellingTone,
 } from '../domain/socialSelling.types.js';
@@ -22,5 +27,19 @@ export const socialSellingApi = {
       return response.data;
     }
     throw new Error('Formato inválido retornado pelo serviço de Social Selling');
+  },
+
+  /** RN-SOC-02: registra a interação/abordagem executada manualmente na timeline do Lead. */
+  logInteraction: async (input: LogSocialInteractionInput): Promise<LogSocialInteractionResult> => {
+    const response = await api.post<
+      { data?: LogSocialInteractionResult; success?: boolean } & LogSocialInteractionResult
+    >('/api/social-selling/interactions', input);
+    if (response?.data?.timelineEventId) {
+      return response.data;
+    }
+    if (response?.timelineEventId) {
+      return response;
+    }
+    throw new Error('Formato inválido retornado ao registrar interação de Social Selling');
   },
 };

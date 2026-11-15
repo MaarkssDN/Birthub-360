@@ -3,7 +3,7 @@
 - De: 00 — Coordenador
 - Para: 02 — Produto e UX
 - Onda: vr-regressao-20261111
-- Status: aberto
+- Status: resolvido
 - Prioridade: normal
 - Sprint destino: junto da atualização de baselines do Dashboard (lote posterior; não este PR)
 
@@ -92,4 +92,9 @@ O seletor não aparece em nenhum arquivo de produto (`src/`).
 - Este handoff é só documentação + evidência.
 
 ## Resolução
-(preenchido pelo agente destino ao resolver)
+
+Resolvido de fato antes deste handoff ser triado: o `data-testid="dashboard-greeting"`
+foi readicionado em `SinglePageDashboard.tsx` pelo commit `285400c12`
+(`fix(qa): alinhar E2E modular`, 2026-11-12). Verificado pelo Agente 24 na revisão
+do PR #223 (parecer `.agents/reviews/24-revisao-pr223-20261113-24.md`) — handoff
+encerrado como obsoleto para evitar retrabalho do Agente 02.

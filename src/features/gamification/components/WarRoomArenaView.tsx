@@ -113,13 +113,83 @@ export function WarRoomArenaView() {
     setArenaState('evaluating');
     SoundFX.play('focus');
 
-    // Simulação do motor pedagógico de scoring da IA
+    // Heurística local de treino (sem IA): scores determinísticos derivados do
+    // texto da resposta — palavras-chave de necessidade, valor/ROI e empatia,
+    // mais estrutura (extensão). Não é avaliação oficial nem persistida.
     setTimeout(() => {
-      const responseLength = defenderInput.trim().length;
-      const needScore = Math.min(95, Math.max(65, 75 + Math.floor(Math.random() * 20)));
-      const valueScore = Math.min(98, Math.max(60, 72 + Math.floor(Math.random() * 25)));
-      const playbookScore = Math.min(96, Math.max(70, responseLength > 80 ? 88 : 72));
-      const empathyScore = Math.min(94, Math.max(65, 80 + Math.floor(Math.random() * 16)));
+      const responseText = defenderInput.trim().toLowerCase();
+      const responseLength = responseText.length;
+      const keywordHits = (keywords: string[]) =>
+        keywords.filter((k) => responseText.includes(k)).length;
+      const heuristicScore = (keywords: string[], base: number) =>
+        Math.min(
+          95,
+          Math.max(55, base + keywordHits(keywords) * 9 + Math.min(responseLength, 400) / 50),
+        );
+
+      const needScore = Math.round(
+        heuristicScore(
+          [
+            'por que',
+            'como',
+            'qual',
+            'quando',
+            'me conta',
+            'entendo',
+            'preciso',
+            'desafio',
+            'situação',
+            'ajuda',
+            'o que',
+            'dor',
+          ],
+          62,
+        ),
+      );
+      const valueScore = Math.round(
+        heuristicScore(
+          [
+            'roi',
+            'retorno',
+            'economia',
+            'resultado',
+            'valor',
+            'custo',
+            'investimento',
+            'payback',
+            'case',
+            'prova',
+            'métrica',
+            'reduz',
+            'aumenta',
+            'ganho',
+            'receita',
+          ],
+          58,
+        ),
+      );
+      const playbookScore = Math.min(
+        96,
+        Math.max(70, responseLength > 80 ? 88 : responseLength > 40 ? 80 : 72),
+      );
+      const empathyScore = Math.round(
+        heuristicScore(
+          [
+            'entendo',
+            'faz sentido',
+            'preocupa',
+            'importante',
+            'junto',
+            'parceiro',
+            'ajudo',
+            'acompanh',
+            'suporte',
+            'clareza',
+            'confiança',
+          ],
+          60,
+        ),
+      );
       const composite = Math.round((needScore + valueScore + playbookScore + empathyScore) / 4);
       const awardedXp = composite >= 85 ? 120 : composite >= 75 ? 80 : 50;
 
@@ -155,7 +225,9 @@ export function WarRoomArenaView() {
       setTotalXpEarned((prev) => prev + awardedXp);
       setArenaState('evaluated');
       SoundFX.play('success');
-      toast.success(`Round avaliado pela IA: ${composite}/100 (+${awardedXp} XP)!`);
+      toast.success(
+        `Round avaliado pela heurística de treino: ${composite}/100 (+${awardedXp} XP de sessão)!`,
+      );
     }, 1400);
   };
 
@@ -164,7 +236,9 @@ export function WarRoomArenaView() {
     if (currentRoundIndex >= 2) {
       setArenaState('completed');
       SoundFX.play('success');
-      toast.success('Duelo finalizado com sucesso! XP computado no seu perfil.');
+      toast.success(
+        'Duelo finalizado! O XP ganho vale apenas nesta sessão e não é persistido no perfil.',
+      );
     } else {
       setCurrentRoundIndex((prev) => prev + 1);
       setTimeLeft(45);
@@ -188,7 +262,7 @@ export function WarRoomArenaView() {
               <Swords className="h-3.5 w-3.5" /> War Room Arena
             </Badge>
             <span className="text-xs font-semibold text-ink-2">
-              Treinamento & Duelos de Objeção com IA
+              Treinamento & Duelos de Objeção (modo treino local)
             </span>
           </div>
           <h1 className="text-2xl md:text-3xl font-extrabold text-ink tracking-tight mt-1 flex items-center gap-2">
@@ -196,8 +270,8 @@ export function WarRoomArenaView() {
             <Flame className="h-6 w-6 text-orange-500 animate-pulse" />
           </h1>
           <p className="text-sm text-ink-2 mt-0.5">
-            Coloque suas defesas de objeções à prova em tempo real. Avaliação pedagógica instantânea
-            da IA por SPIN, ROI e empatia.
+            Coloque suas defesas de objeções à prova em tempo real. Avaliação heurística local por
+            SPIN, ROI e empatia — modo treino, sem persistência de XP.
           </p>
         </div>
 
@@ -219,7 +293,7 @@ export function WarRoomArenaView() {
 
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 font-bold text-xs">
             <Trophy className="h-4 w-4" />
-            <span>XP Ganho: +{totalXpEarned}</span>
+            <span>XP de sessão: +{totalXpEarned}</span>
           </div>
         </div>
       </div>
@@ -251,76 +325,50 @@ export function WarRoomArenaView() {
               </div>
               <h3 className="font-display font-bold text-lg text-ink mt-3">Duelo de Objeções</h3>
               <p className="text-xs text-ink-2 mt-1 leading-relaxed">
-                Rounds cronometrados de 45 segundos contra clientes desafiadores gerados por IA.
+                Rounds cronometrados de 45 segundos contra cenários de objeção de treino.
               </p>
               <div className="mt-4 pt-3 border-t border-line/60 flex items-center justify-between text-xs font-semibold text-brand">
                 <span>3 Rounds · Feedback Instantâneo</span>
-                <span>Até 360 XP</span>
+                <span>Até 360 XP/sessão</span>
               </div>
             </Card>
 
-            {/* Modo 2: Desafio de Equipe */}
-            <Card
-              className={cn(
-                'p-5 cursor-pointer transition-all duration-200 border-2 relative overflow-hidden',
-                activeMode === 'team_challenge'
-                  ? 'border-brand bg-brand/5 shadow-lg shadow-brand/10'
-                  : 'border-line/70 hover:border-brand/40 bg-surface-elevated/70',
-              )}
-              onClick={() => {
-                SoundFX.play('click');
-                setActiveMode('team_challenge');
-              }}
-            >
+            {/* Modo 2: Desafio de Equipe — NÃO IMPLEMENTADO (mesmo fluxo do duelo 1v1) */}
+            <Card className="p-5 border-2 border-line/70 bg-surface-elevated/40 opacity-60 relative overflow-hidden">
+              <div className="absolute top-3 right-3">
+                <Badge variant="outline" className="text-[10px] font-bold text-ink-3">
+                  Em breve
+                </Badge>
+              </div>
               <div className="flex items-center justify-between">
                 <span className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-500">
                   <Users className="h-6 w-6" />
                 </span>
-                <Badge variant="outline" className="text-[10px] font-bold">
-                  Squad Mode
-                </Badge>
               </div>
               <h3 className="font-display font-bold text-lg text-ink mt-3">Desafio de Equipe</h3>
               <p className="text-xs text-ink-2 mt-1 leading-relaxed">
-                Toda a equipe responde ao mesmo caso crítico. A IA ranqueia a melhor abordagem do
-                squad.
+                Modo multiplayer planejado — ainda não disponível. Hoje apenas o duelo 1v1 está
+                operacional.
               </p>
-              <div className="mt-4 pt-3 border-t border-line/60 flex items-center justify-between text-xs font-semibold text-indigo-500">
-                <span>Multiplayer Assíncrono</span>
-                <span>Bônus de Squad</span>
-              </div>
             </Card>
 
-            {/* Modo 3: Torneio Sazonal */}
-            <Card
-              className={cn(
-                'p-5 cursor-pointer transition-all duration-200 border-2 relative overflow-hidden',
-                activeMode === 'seasonal_tournament'
-                  ? 'border-brand bg-brand/5 shadow-lg shadow-brand/10'
-                  : 'border-line/70 hover:border-brand/40 bg-surface-elevated/70',
-              )}
-              onClick={() => {
-                SoundFX.play('click');
-                setActiveMode('seasonal_tournament');
-              }}
-            >
+            {/* Modo 3: Torneio Sazonal — NÃO IMPLEMENTADO (sem chaveamento/troféu real) */}
+            <Card className="p-5 border-2 border-line/70 bg-surface-elevated/40 opacity-60 relative overflow-hidden">
+              <div className="absolute top-3 right-3">
+                <Badge variant="outline" className="text-[10px] font-bold text-ink-3">
+                  Em breve
+                </Badge>
+              </div>
               <div className="flex items-center justify-between">
                 <span className="p-2.5 rounded-xl bg-amber-500/10 text-amber-500">
                   <Crown className="h-6 w-6" />
                 </span>
-                <Badge variant="outline" className="text-[10px] font-bold">
-                  Torneio Q4
-                </Badge>
               </div>
               <h3 className="font-display font-bold text-lg text-ink mt-3">Torneio Sazonal</h3>
               <p className="text-xs text-ink-2 mt-1 leading-relaxed">
-                Mata-mata de closers em contas enterprise de alta complexidade. Troféu permanente no
-                perfil.
+                Modo torneio planejado — ainda não disponível. Não há chaveamento nem troféu
+                persistido no perfil.
               </p>
-              <div className="mt-4 pt-3 border-t border-line/60 flex items-center justify-between text-xs font-semibold text-amber-500">
-                <span>Chaveamento de Elite</span>
-                <span>Troféu & Badges</span>
-              </div>
             </Card>
           </div>
 
@@ -333,7 +381,7 @@ export function WarRoomArenaView() {
               <p className="text-xs text-ink-2">
                 Modo selecionado:{' '}
                 <strong className="text-ink">{activeMode.replace('_', ' ').toUpperCase()}</strong>.
-                Você defenderá o playbook contra o simulador cognitivo.
+                Você defenderá o playbook contra os cenários de objeção do modo treino.
               </p>
             </div>
 
@@ -390,7 +438,7 @@ export function WarRoomArenaView() {
                   <span className="text-xs font-bold text-rose-500 flex items-center gap-1">
                     <AlertCircle className="h-3.5 w-3.5" /> Objeção do Lead (Desafio)
                   </span>
-                  <span className="text-[11px] text-ink-3">Simulação Cognitiva</span>
+                  <span className="text-[11px] text-ink-3">Cenário de Treino</span>
                 </div>
                 <blockquote className="text-sm md:text-base text-ink italic font-medium leading-relaxed">
                   &ldquo;{activeObjection.prompt}&rdquo;
@@ -446,7 +494,7 @@ export function WarRoomArenaView() {
                 {arenaState === 'evaluating' && (
                   <div className="py-6 text-center text-sm font-semibold text-brand flex items-center justify-center gap-2 animate-pulse">
                     <Sparkles className="h-4 w-4 animate-spin" />
-                    Motor Pedagógico de IA avaliando SPIN, aderência ao playbook e tom...
+                    Heurística de treino avaliando SPIN, aderência ao playbook e tom...
                   </div>
                 )}
               </div>
@@ -464,7 +512,7 @@ export function WarRoomArenaView() {
                           Nota do Round: {evaluation.compositeScore}/100
                         </h4>
                         <span className="text-xs text-ink-2">
-                          +{evaluation.awardedXp} XP concedidos
+                          +{evaluation.awardedXp} XP de sessão
                         </span>
                       </div>
                     </div>
@@ -480,7 +528,9 @@ export function WarRoomArenaView() {
 
                   {/* Feedback Textual */}
                   <div className="p-3.5 rounded-xl bg-brand/5 border border-brand/20 text-xs text-ink leading-relaxed">
-                    <strong className="text-brand block mb-1">Feedback Pedagógico da IA:</strong>
+                    <strong className="text-brand block mb-1">
+                      Feedback de Treino (heurístico):
+                    </strong>
                     {evaluation.feedback}
                   </div>
 
@@ -524,11 +574,11 @@ export function WarRoomArenaView() {
               </h3>
 
               <div className="mt-3 space-y-3">
-                {/* Desafiador (IA) */}
+                {/* Desafiador (cenário de treino) */}
                 <div className="flex items-center justify-between p-2.5 rounded-lg border border-rose-500/20 bg-rose-500/5">
                   <div className="flex items-center gap-2">
                     <span className="h-7 w-7 rounded-full bg-rose-500/20 text-rose-500 flex items-center justify-center text-xs font-bold">
-                      IA
+                      CS
                     </span>
                     <div>
                       <span className="font-bold text-xs text-ink block">Lead B2B Decisor</span>
@@ -555,7 +605,7 @@ export function WarRoomArenaView() {
                     </div>
                   </div>
                   <span className="text-xs font-bold text-brand [font-variant-numeric:tabular-nums]">
-                    +{totalXpEarned} XP
+                    +{totalXpEarned} XP sessão
                   </span>
                 </div>
               </div>
@@ -595,12 +645,12 @@ export function WarRoomArenaView() {
             Duelo Concluído com Sucesso!
           </h2>
           <p className="text-sm text-ink-2 max-w-md mx-auto">
-            Você enfrentou 3 rounds intensos de objeções reais. Sua pontuação e aprendizado foram
-            computados na governança do perfil.
+            Você enfrentou 3 rounds de cenários de objeção. A pontuação foi estimada pela heurística
+            local de treino e o XP ganho vale apenas nesta sessão — nada foi gravado no perfil.
           </p>
 
           <div className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-surface border border-line text-lg font-black text-brand">
-            <span>+{totalXpEarned} XP Concedidos</span>
+            <span>+{totalXpEarned} XP de sessão</span>
           </div>
 
           <div className="pt-4 flex items-center justify-center gap-3">

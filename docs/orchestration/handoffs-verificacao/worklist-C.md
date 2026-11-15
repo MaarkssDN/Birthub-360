@@ -1,0 +1,58 @@
+# Worklist verificacao C - 56 handoffs
+
+- [RESOLVIDO] `.agents/handoffs/00-para-dono-characters-hotspot-exception.md` | De:00 Para:07 | 2026-11-10->2026-11-10 | evid:SIM aprov:NAO
+- [ABERTO] `.agents/handoffs/15-para-07-commercial-mission-trace-consent-prisma.md` | De:00 Para:07 | -> | evid:PARCIAL aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/evolution-plano-2026-10-23/para-07-p2-1-dynamic-routing.md` | De:? Para:07 | 2026-10-23->2026-10-23 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-00/01-para-07-17-cadence-enrollment-store.md` | De:01 Para:07 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-1/01-para-06-role-gates-integracoes.md` | De:01 Para:06 | -> | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-1/01-para-06-teste-integrations-ambiguo.md` | De:01 Para:06 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-1/01-para-07-role-gates-intelligence.md` | De:01 Para:07 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-1/02-para-06-contrato-navegacao-voz.md` | De:02 Para:06 | -> | evid:NAO aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-14/08-para-07-ts-errors-intelligence.md` | De:08 Para:07 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-14/15-para-06-criptografia-tokens-crms.md` | De:15 (segurança aplica Para:06 (integrações e bi | -> | evid:NAO aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-16/01-para-06-resposta-vinculos-externos-crm.md` | De:01 (plataforma, segu Para:06 (integrações e bi | -> | evid:SIM aprov:NAO
+- [ABERTO] `.agents/handoffs/onda-2/15-para-07-webhook-fetch-safeFetch.md` | De:15 Para:07 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-39/13-para-07-evaluationmetrics-exclui-ops.md` | De:13 Para:07 | -> | evid:NAO aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-39/13-para-07-rota-rollback-learning-profile.md` | De:13 Para:07 | -> | evid:NAO aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-4/10-para-06-metricas-sync-bitrix.md` | De:10 Para:06 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-4/10-para-07-metricas-fila-orcamento-ia.md` | De:10 Para:07 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-44/13-para-07-propagar-agentrole-ailog.md` | De:13 Para:07 | -> | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-5/01-para-06-persistencia-3cx-implementada.md` | De:01 Para:06 | -> | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-52/00-para-07-pr741-architecture-facade.md` | De:00 Para:07 | -> | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-52/gha-para-06-typecheck-integrations.md` | De:08 Para:06 | 2026-11-10->2026-11-10 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-52/gha-para-07-typecheck-ai-agents.md` | De:08 Para:07 | 2026-11-10->2026-11-10 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-6/01A-para-06-bitrix-extraction-run-schema.md` | De:01a Para:06 | 2026-08-15->2026-08-18 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-6/01A-para-07-agentmemory-sem-vinculo-titular.md` | De:01a Para:07 | -> | evid:NAO aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-6/16-para-06-plano-migracao-baileys.md` | De:16 Para:06 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-6/16-para-07-cron-cold-leads-scanner-confirmacao.md` | De:16 Para:07 | -> | evid:NAO aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-7/04-para-06-owner-bitrix-nome-nao-id.md` | De:04 Para:06 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-7/04-para-07-owner-fabricado-follow-up-ia.md` | De:04 Para:07 | -> | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-7/12-para-06-fallback-whatsapp-informativo.md` | De:12 Para:06 | 2026-08-18->2026-08-18 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-7/12-para-07-gatilho-ligar-via-sdr-voz.md` | De:12 Para:07 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-7/13-para-07-rota-slo-swarm.md` | De:13 Para:07 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-c0/18-para-06-chatwoot-nao-catalogado.md` | De:18 Para:06 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-dividas-20261014/00-para-06-debt-20261014-int-001.md` | De:00 Para:06 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-dividas-20261014/00-para-07-debt-20261014-ai-001.md` | De:00 Para:07 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-dividas-20261014/00-para-07-debt-20261014-ux-007.md` | De:00 Para:07 | 2026-10-17->2026-10-17 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-ecossistema-01/00-para-07-backend-sse-swarm-binding.md` | De:00 Para:07 | 2026-11-09->2026-11-09 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-evolucao-enxame/00-para-07-18-tool-bindings-catalogo.md` | De:00 Para:agentes 07 (ia e aut | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-forense-20261020/00-para-06-forense.md` | De:00 Para:06 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-forense-20261020/00-para-07-forense.md` | De:00 Para:07 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-ia-1/02-para-07-ux-upload-conhecimento.md` | De:02 Para:07 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-paralela-8/00-para-06-bitrix-dead-exports.md` | De:00 Para:06 | -> | evid:SIM aprov:NAO
+- [ABERTO] `.agents/handoffs/onda-paralela-8/00-para-07-duplicate-exports.md` | De:00 Para:07 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261105/00-para-06a-sanitizacao-csv-injection-bitrix.md` | De:? Para:06a â€” extraã§ãµes  | 2026-11-06->2026-11-06 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261105/00-para-07-remocao-dados-fabricados-copiloto.md` | De:? Para:07 â€” ia e automaã§ | 2026-11-06->2026-11-06 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261105/06-para-06a-streaming-extracao-memoria-oom.md` | De:? Para:06a â€” extraã§ãµes  | 2026-11-06->2026-11-06 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261105/06-para-07-liberacao-ia.md` | De:06 Para:07 | 2026-11-09->2026-11-09 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261105/12-para-06-buffer-assincrono-webhooks-3cx.md` | De:? Para:06 â€” integraã§ãµes | 2026-11-06->2026-11-06 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261105/22-para-07-persistencia-real-next-best-action.md` | De:? Para:07 â€” ia e automaã§ | 2026-11-06->2026-11-06 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-06-tratamento-incompleto-de-promessas-assincronas-em-componentes-de-impor.md` | De:00 Para:06 | 2026-11-10->2026-11-10 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-06-tres-paineis-monoliticos-gigantescos-na-interface-de-gerenciamento-de.md` | De:00 Para:06 | 2026-11-10->2026-11-10 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-06A-ausencia-de-cancelamento-cooperativo-via-abortsignal-em-extracoes-bitr.md` | De:00 Para:06a | 2026-11-10->2026-11-12 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-06A-falta-de-rotina-de-purga-periodica-de-arquivos-temporarios-gerados-em.md` | De:00 Para:06a | 2026-11-10->2026-11-12 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-07-busca-textual-na-base-de-conhecimento-do-copiloto-engole-falhas-do-ban.md` | De:00 Para:07 | 2026-11-10->2026-11-10 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-07-falha-inicial-da-api-prende-o-copiloto-executivo-em-estado-de-carregam.md` | De:00 Para:07 | 2026-11-10->2026-11-10 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-07-hotspots-severos-em-componentes-de-painel-de-inteligencia-intelligence.md` | De:00 Para:07 | 2026-11-10->2026-11-10 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-07-trace-de-missoes-autonomas-de-ia-e-consentimento-lgpd-retornados-de-fo.md` | De:00 Para:07 | 2026-11-10->2026-11-10 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/01-para-07-resumo-consumo-ia-findmany-sem-agregacao.md` | De:01 Para:07 | -> | evid:SIM aprov:NAO

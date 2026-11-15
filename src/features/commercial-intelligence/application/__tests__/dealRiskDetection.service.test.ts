@@ -8,7 +8,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
  */
 const leadFindManyMock = vi.fn();
 const whatsAppFindManyMock = vi.fn();
-const notificationFindFirstMock = vi.fn();
+const notificationFindManyMock = vi.fn();
 const userFindManyMock = vi.fn();
 const notificationCreateMock = vi.fn();
 const invokeMock = vi.fn();
@@ -19,7 +19,7 @@ vi.mock('../../../../lib/prisma.js', () => ({
   prisma: {
     lead: { findMany: (...args: unknown[]) => leadFindManyMock(...args) },
     whatsAppMessage: { findMany: (...args: unknown[]) => whatsAppFindManyMock(...args) },
-    notification: { findFirst: (...args: unknown[]) => notificationFindFirstMock(...args) },
+    notification: { findMany: (...args: unknown[]) => notificationFindManyMock(...args) },
     user: { findMany: (...args: unknown[]) => userFindManyMock(...args) },
   },
 }));
@@ -49,7 +49,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   leadFindManyMock.mockResolvedValue([]);
   whatsAppFindManyMock.mockResolvedValue([]);
-  notificationFindFirstMock.mockResolvedValue(null);
+  notificationFindManyMock.mockResolvedValue([]);
   userFindManyMock.mockResolvedValue([]);
   notificationCreateMock.mockResolvedValue({ id: 'notif-1' });
 });
@@ -111,7 +111,12 @@ describe('detectDealRisks', () => {
         company: null,
       },
     ]);
-    notificationFindFirstMock.mockResolvedValue({ id: 'existing-notif' });
+    notificationFindManyMock.mockResolvedValue([
+      {
+        entityId: 'lead-1',
+        title: 'Risco de perda — silêncio do lead',
+      },
+    ]);
 
     const result = await detectDealRisks('org-1', new Date('2026-09-10T00:00:00Z'));
 
@@ -250,7 +255,12 @@ describe('detectDealRisks', () => {
     });
 
     it('ingestLiveCallInsight respeita cooldown e não duplica notificação recente', async () => {
-      notificationFindFirstMock.mockResolvedValue({ id: 'existing-alert' });
+      notificationFindManyMock.mockResolvedValue([
+        {
+          entityId: 'deal-88',
+          title: 'Risco de perda — sentimento negativo em chamada',
+        },
+      ]);
 
       const result = await ingestLiveCallInsight('org-1', {
         callId: 'call-201',

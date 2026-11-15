@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import {
+  CACHE_TTL,
   createUntrustedContentGuard,
   generateStructuredOutput,
 } from '../../../../lib/ai/gateway.js';
@@ -191,6 +192,12 @@ export class CommercialAgentV3OrchestratorService {
         feature: 'commercial-v3',
         systemInstruction: contextResult.systemContext,
         prompt: `Demanda comercial do usuário:\n"${safeMission}"\n\nResponda estritamente no schema V3.1 com schemaVersion="3.1", agentId="${input.agentId}", status="COMPLETED", mode="CONSULTIVO", resumo_humano legível de até 600 caracteres, sendEligible=false e execution.performed=false.`,
+        // TAREFA-SANEAMENTO-041 (BT360-DT-0093): análises comerciais da mesma demanda no mesmo
+        // tenant são repetidas com frequência — ativa o cache semântico do gateway (chave por
+        // hash do prompt completo + organizationId, TTL de diagnóstico de conta). Respostas
+        // CONFIDENTIAL nunca são cacheadas pelo próprio SemanticCacheService.
+        useCache: true,
+        ttlSeconds: CACHE_TTL.ACCOUNT_DIAGNOSTIC,
         fallback: () => buildConsultiveEnvelope(),
       });
     } catch (err: unknown) {

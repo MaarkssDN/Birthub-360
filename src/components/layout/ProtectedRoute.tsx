@@ -1,6 +1,6 @@
 import { Loader2 } from 'lucide-react';
 import { lazy, type ReactNode, Suspense } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext.js';
 import { useDailyClosingGate } from '../../contexts/DailyClosingContext.js';
 
@@ -23,6 +23,7 @@ const FullScreenLoader = () => (
 );
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
+  const location = useLocation();
   const { currentUser, isPending } = useAuth();
   const { pendingClosing, markResolved } = useDailyClosingGate();
 
@@ -31,7 +32,7 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
   }
 
   if (!currentUser) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // Senha temporária/padrão definida por um admin — bloqueia o resto do app até trocar.

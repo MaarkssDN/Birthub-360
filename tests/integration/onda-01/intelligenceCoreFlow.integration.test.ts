@@ -19,16 +19,13 @@ describe('Onda 01 — Shared Intelligence Core End-to-End Integration Flow', () 
     // CONSENT_CHAIN_USE_PRISMA=1 (PR #216): ConsentSubjectKey/ConsentAuditRecord têm FK para
     // Organization — os tenants do fluxo precisam existir de verdade no banco de teste.
     await requestContext.run({ bypassRls: true }, async () => {
-      await prisma.organization.upsert({
-        where: { id: tenantA },
-        update: {},
-        create: { id: tenantA, name: 'Tenant Healthcare Corp (intelligence core)' },
-      });
-      await prisma.organization.upsert({
-        where: { id: tenantB },
-        update: {},
-        create: { id: tenantB, name: 'Tenant Logistics Corp (intelligence core)' },
-      });
+      for (const [id, name] of [
+        [tenantA, 'Tenant Healthcare Corp (intelligence core)'],
+        [tenantB, 'Tenant Logistics Corp (intelligence core)'],
+      ] as const) {
+        const exists = await prisma.organization.findUnique({ where: { id } });
+        if (!exists) await prisma.organization.create({ data: { id, name } });
+      }
     });
     domainEventMesh.clearProcessedEvents();
     curatedObjectionService.clear();

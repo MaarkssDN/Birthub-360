@@ -61,7 +61,10 @@ export const LEAD_STATUSES: string[] = [...LEAD_STATUS];
 
 /** Ver `automation-dry-run.service.ts` (backend) para a metodologia completa. */
 export interface DryRunActionOutcome {
-  action: AutomationAction;
+  /** Label da ação — pode ser qualquer ação do catálogo do motor (inclui as estendidas de
+   *  `automation.types.ts`, que a UI de criação ainda não oferece mas que regras existentes no
+   *  banco podem ter). */
+  action: AutomationAction | (string & {});
   wouldFire: boolean;
   blockedReason?: string;
   details: Record<string, unknown>;
@@ -78,7 +81,7 @@ export interface DryRunResult {
   automationId: string;
   automationName: string;
   trigger: AutomationTrigger;
-  action: AutomationAction;
+  action: AutomationAction | (string & {});
   enabled: boolean;
   generatedAt: string;
   sampleSize: number;

@@ -24,6 +24,12 @@ const DesignLabPage = lazy(() =>
   import('./features/design-lab/DesignLabPage.js').then((m) => ({ default: m.DesignLabPage })),
 );
 
+const CentralModulesHome = lazy(() =>
+  import('./features/home/CentralModulesHome.js').then((m) => ({
+    default: m.CentralModulesHome,
+  })),
+);
+
 const SocialSellingHub = lazy(() =>
   import('./features/social-selling/components/SocialSellingHub.js').then((m) => ({
     default: m.SocialSellingHub,
@@ -92,6 +98,14 @@ export default function App() {
                         element={
                           <ProtectedRoute>
                             <DesignLabPage section="components-v2" />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/design-lab/home-proposals"
+                        element={
+                          <ProtectedRoute>
+                            <CentralModulesHome />
                           </ProtectedRoute>
                         }
                       />

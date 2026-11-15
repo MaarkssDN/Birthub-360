@@ -104,31 +104,28 @@ router.get('/sessions', async (req: Request, res: Response, next: NextFunction) 
   }
 });
 
-router.delete(
-  '/sessions/:id',
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const user = (req as AuthRequest).user;
-      const { id: sessionId } = req.params;
-      const id = String(sessionId);
-      const currentId = await currentSessionId(req);
-      if (id === currentId) {
-        res.status(400).json({ success: false, error: 'Use sign-out para encerrar a sessão atual.' });
-        return;
-      }
-      const deleted = await requestContext.run({ bypassRls: true }, () =>
-        prisma.session.deleteMany({ where: { id: String(id), userId: user.id } }),
-      );
-      if (deleted.count === 0) {
-        res.status(404).json({ success: false, error: 'Sessão não encontrada.' });
-        return;
-      }
-      res.json({ success: true });
-    } catch (error) {
-      next(error);
+router.delete('/sessions/:id', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = (req as AuthRequest).user;
+    const { id: sessionId } = req.params;
+    const id = String(sessionId);
+    const currentId = await currentSessionId(req);
+    if (id === currentId) {
+      res.status(400).json({ success: false, error: 'Use sign-out para encerrar a sessão atual.' });
+      return;
     }
-  },
-);
+    const deleted = await requestContext.run({ bypassRls: true }, () =>
+      prisma.session.deleteMany({ where: { id: String(id), userId: user.id } }),
+    );
+    if (deleted.count === 0) {
+      res.status(404).json({ success: false, error: 'Sessão não encontrada.' });
+      return;
+    }
+    res.json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+});
 
 router.post('/sessions/revoke-others', async (req: Request, res: Response, next: NextFunction) => {
   try {

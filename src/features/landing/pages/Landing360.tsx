@@ -7,18 +7,14 @@ import {
   Award,
   Bot,
   Building2,
-  Check,
   CheckCircle2,
   Clock,
   Cpu,
   Database,
   Eye,
   EyeOff,
-  Gauge,
   GitBranch,
-  Headset,
   Layers,
-  LayoutGrid,
   LineChart,
   Loader2,
   Lock,
@@ -26,8 +22,6 @@ import {
   Menu,
   Moon,
   PhoneCall,
-  Radar,
-  Repeat,
   Settings,
   Share2,
   ShieldCheck,
@@ -63,21 +57,24 @@ import {
 import { authClient } from '@/lib/auth-client';
 import { SoundFX } from '@/lib/soundEffects';
 import {
-  B360AmbientFX,
+  LANDING_DEMO_CONSENT_PURPOSE,
+  LANDING_DEMO_CONSENT_TEXT,
+  LANDING_DEMO_CONSENT_VERSION,
+} from '@/shared/contracts/publicLead.constants';
+import {
   B360CountUp,
   B360DataStreamCursor,
   B360DecryptBlock,
   B360FloatingNodes,
-  B360NeonButton,
   B360ScrollProgress,
   B360UnifiedPipelineFlow,
-  B360Words,
   useB360CardTilt,
   useB360MagneticAttraction,
   useB360ScrollParallax,
   useB360ScrollVelocityInertia,
   useB360SectionProgress,
 } from '../components/CinematicFX.js';
+import { LandingHero } from '../components/hero-n1/index.js';
 import { PillarDetailModal } from '../components/PillarDetailModal.js';
 import { RoiSimulatorModal } from '../components/RoiSimulatorModal.js';
 import './LandingAdaptive.css';
@@ -420,77 +417,77 @@ function renderPillarVisual(num: string) {
 const COMMAND_MODULES = [
   {
     name: 'Hub Comercial',
-    ico: LayoutGrid,
+    ico: '▦',
     desc: 'Pipeline e contas 360°',
     modalDesc:
       'Núcleo operacional: pipeline kanban, gestão de negócios, propostas e cadastro unificado de contas e decisores — a base de dados sobre a qual todos os outros módulos operam.',
   },
   {
     name: 'Inteligência de Mercado',
-    ico: Radar,
+    ico: '◎',
     desc: 'Prospecção multi-fonte',
     modalDesc:
       'Motor de prospecção multi-fonte: consulta CNPJ, Apollo, Hunter, Google Places, LinkedIn e mais; enriquece contas com dados societários e monta um dossiê 360° antes da abordagem.',
   },
   {
     name: 'Orquestração de Vendas',
-    ico: Repeat,
+    ico: '⌘',
     desc: 'Cadências, execução & roleplay',
     modalDesc:
       'Motor próprio de cadências com opt-out e rate limit, plano diário priorizado, mesa de tratamento e ferramental de execução — playbooks, roteiros, matrizes, roleplay e academy.',
   },
   {
     name: 'Performance Comercial',
-    ico: TrendingUp,
+    ico: '✦',
     desc: 'Analytics & gamificação',
     modalDesc:
       'Analytics com coortes, win/loss estruturado, gamificação com coaching e ~18 tipos de relatórios executivos — de gargalo de funil a benchmark de vendedores.',
   },
   {
     name: 'Previsibilidade Comercial',
-    ico: Gauge,
+    ico: '◔',
     desc: 'Forecast preditivo',
     modalDesc:
       'Forecast com calibração contínua contra o realizado, pipeline ponderado, health score, detecção de risco por deal e simulador de cenários de contratação.',
   },
   {
     name: 'Inteligência Artificial',
-    ico: Bot,
+    ico: '✧',
     desc: 'Enxame de agentes',
     modalDesc:
       'Enxame de 20+ agentes especializados (BDR, Closer, SDR, Forecast, Pricing, Contract, Churn, Guardian do Bitrix), copiloto contextual com voz, RAG corporativo e aprovação humana para ações de alto impacto.',
   },
   {
     name: 'Automação & Conectividade',
-    ico: Workflow,
+    ico: '⇄',
     desc: 'Regras & 9 conectores',
     modalDesc:
       'Motor de regras com dry-run, versionamento e idempotência; scanners de leads frios e deals estagnados; smart lead router; e malha de 9 conectores — incluindo o extrator completo do Bitrix24.',
   },
   {
     name: 'Engajamento Comercial',
-    ico: Headset,
+    ico: '◈',
     desc: 'Voz, WhatsApp & agenda',
     modalDesc:
       'Voice Hub com studio visual e supervisão ao vivo, cold call governado por política e scoring, WhatsApp via Chatwoot, mesa de tratamento e página pública de agendamento — com app Android dedicado.',
   },
   {
     name: 'Admin & Operations',
-    ico: Settings,
+    ico: '⚙',
     desc: 'Fundação da plataforma',
     modalDesc:
       'Camada de administração: settings globais, gestão de equipe e papéis, controle de acesso a módulos, feature flags, catálogo por organização, relatórios de bug, consumo de IA e notificações.',
   },
   {
     name: 'Mobile & Field Sales',
-    ico: Smartphone,
+    ico: '▣',
     desc: 'Vendas em campo',
     modalDesc:
       'FieldMeetingRecorder para reuniões externas, sincronização offline, gravação de áudio e IA edge — o app Android via Capacitor mantém o vendedor produtivo fora do escritório.',
   },
   {
     name: 'Social Selling',
-    ico: Share2,
+    ico: '✺',
     desc: 'Venda via redes sociais',
     modalDesc:
       'Abordagens personalizadas por canal, copywriting assistido por IA, abordagem estruturada e persistência de interações — concedido por módulo à organização.',
@@ -520,7 +517,6 @@ export function Landing360({
   const [activeModal, setActiveModal] = useState<{ title: string; desc: string } | null>(null);
   const [selectedPillarId, setSelectedPillarId] = useState<string | null>(null);
   const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const { currentUser, isPending: isAuthPending } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -533,12 +529,10 @@ export function Landing360({
     if (typeof window === 'undefined') return 'A';
     try {
       const qv = searchParams.get('variant')?.toUpperCase();
-      // Variante 'C' existia na telemetria mas não tinha UI nem copy próprio — caía no
-      // copy da A enquanto era medida como C (achado da auditoria landing-360). Só A/B
-      // são variantes reais do experimento; qualquer outro valor cai no default 'A'.
-      if (qv === 'A' || qv === 'B') return qv;
+      if (qv === 'B' || qv === 'C') return qv as HeroVariant;
+      if (qv === 'A') return 'A';
       const saved = sessionStorage.getItem('bh_landing_variant');
-      if (saved === 'A' || saved === 'B') return saved;
+      if (saved === 'A' || saved === 'B' || saved === 'C') return saved as HeroVariant;
     } catch {}
     return 'A';
   });
@@ -560,17 +554,20 @@ export function Landing360({
   };
 
   // --- FORMULÁRIO OBJETIVO DE CAPTURA DE LEAD ---
-  // NOTA: consentimento NUNCA pré-marcado (LGPD — validação formal pendente com Agente 21).
+  // LGPD (validação Agente 21, 2026-11-13): consentimento NUNCA pré-marcado;
+  // o texto exibido é o canônico gravado pelo servidor (publicLead.constants).
   const [leadForm, setLeadForm] = useState({
     nome: '',
     email: '',
     whatsapp: '',
     equipe: '6 a 15',
     consent: false,
+    website: '',
   });
   const [leadLoading, setLeadLoading] = useState(false);
   const [leadSubmitted, setLeadSubmitted] = useState(false);
-  const [leadError, setLeadError] = useState<string | null>(null);
+  const [leadError, setLeadError] = useState('');
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   // Validação mínima de WhatsApp BR: DDI opcional + DDD + número (10–13 dígitos no total).
   const isValidWhatsapp = (raw: string): boolean => {
@@ -580,37 +577,48 @@ export function Landing360({
 
   const handleLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLeadError(null);
-
+    setLeadError('');
+    // LGPD: consentimento nunca pré-marcado — o envio exige a caixa marcada.
     if (!leadForm.consent) {
       setLeadError('É necessário concordar com o tratamento de dados (LGPD) para continuar.');
       return;
     }
-    if (!isValidWhatsapp(leadForm.whatsapp)) {
+    // WhatsApp é opcional (decisão LGPD confirmada): só valida formato se preenchido.
+    if (leadForm.whatsapp.trim() !== '' && !isValidWhatsapp(leadForm.whatsapp)) {
       setLeadError('Informe um WhatsApp válido com DDD (ex: (11) 99999-9999).');
       return;
     }
-
     setLeadLoading(true);
     SoundFX.play('click');
     try {
-      // Contrato pendente de entrega pelo Agente 01 (endpoint público de captação de leads).
-      // Até lá, qualquer falha é exibida de forma observável — nunca sucesso falso.
-      const res = await fetch('/api/public/demo-requests', {
+      // Contrato real: POST /api/public/demo-leads (Agente 01, PR #216).
+      // O servidor valida consent === true, consentTextVersion e purpose,
+      // e ancora a prova em ConsentAuditRecord com IP hasheado e timestamp do servidor.
+      // Qualquer falha é exibida de forma observável — nunca sucesso falso.
+      const res = await fetch('/api/public/demo-leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           nome: leadForm.nome,
           email: leadForm.email,
-          whatsapp: leadForm.whatsapp,
+          whatsapp: leadForm.whatsapp.trim() === '' ? undefined : leadForm.whatsapp,
           equipe: leadForm.equipe,
-          consentimentoLgpd: true,
-          origem: 'landing_360',
-          varianteAb: abVariant,
+          consent: true,
+          consentTextVersion: LANDING_DEMO_CONSENT_VERSION,
+          purpose: LANDING_DEMO_CONSENT_PURPOSE,
         }),
       });
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
+      const data = (await res.json().catch(() => null)) as {
+        ok?: boolean;
+        success?: boolean;
+        error?: string;
+      } | null;
+      if (!res.ok || data?.ok === false || data?.success === false) {
+        setLeadError(
+          data?.error ||
+            'Não foi possível enviar sua solicitação agora. Tente novamente em instantes.',
+        );
+        return;
       }
       setLeadSubmitted(true);
       trackLeadFormSubmitted(abVariant, {
@@ -618,9 +626,7 @@ export function Landing360({
         source: 'landing_form_objective',
       });
     } catch {
-      setLeadError(
-        'Não foi possível registrar sua solicitação agora. Tente novamente em instantes ou acesse a plataforma para agendar diretamente.',
-      );
+      setLeadError('Falha de conexão. Verifique sua internet e tente novamente.');
     } finally {
       setLeadLoading(false);
     }
@@ -716,10 +722,6 @@ export function Landing360({
   const [authMethod, setAuthMethod] = useState<'email' | 'sso'>('email');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  // Domínio SSO separado do e-mail de login — antes os dois campos dividiam o mesmo
-  // state `email`, então trocar de aba carregava um valor inválido para o outro contexto
-  // (achado da auditoria landing-360, bugs-funcionais item 4).
-  const [ssoDomain, setSsoDomain] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -745,12 +747,7 @@ export function Landing360({
     if (targets.length === 0) return;
 
     targets.forEach((el) => {
-      // Não readicionar .b360-reveal em elementos já revelados — alternar
-      // public↔command re-executava o effect e causava flicker (achado da
-      // auditoria landing-360, bugs-funcionais item 6).
-      if (!el.classList.contains('b360-reveal-in')) {
-        el.classList.add('b360-reveal');
-      }
+      el.classList.add('b360-reveal');
     });
     const io = new IntersectionObserver(
       (entries) => {
@@ -952,7 +949,7 @@ export function Landing360({
     setErrorMessage('');
     setSuccessMessage('');
 
-    const targetDomain = ssoDomain.trim();
+    const targetDomain = email.trim();
     if (!targetDomain) {
       setErrorMessage(
         'Por favor, informe o domínio corporativo da sua organização (ex: empresa.com.br).',
@@ -996,12 +993,8 @@ export function Landing360({
     }
   };
 
-  // Superfície de debug: LuxuryLandingPage só pode ser ativada em build de
-  // desenvolvimento — nunca em produção via query param (achado da auditoria
-  // landing-360, bugs-funcionais item 7).
   const isLuxuryMode =
-    import.meta.env.DEV &&
-    (searchParams.get('mode') === 'luxury' || searchParams.get('view') === 'luxury');
+    searchParams.get('mode') === 'luxury' || searchParams.get('view') === 'luxury';
   if (isLuxuryMode && activeScreen === 'intro') {
     return (
       <Suspense
@@ -1176,246 +1169,14 @@ export function Landing360({
         {/* MODO 1: PÁGINA PÚBLICA */}
         {viewMode === 'public' && (
           <div className="b360-shell">
-            {/* Hero Section */}
-            <section className="b360-hero" id="inicio">
-              <B360AmbientFX variant="hero" />
-
-              {/* Banner de Urgência Ética e Transparente */}
-              <div
-                className="b360-urgency-banner"
-                role="status"
-                aria-label="Aviso de disponibilidade de implantação assistida"
-              >
-                <div className="b360-urgency-content">
-                  <span className="b360-urgency-badge">Implantação Assistida</span>
-                  <span>
-                    <b>Ciclo de Implantação Assistida:</b> onboarding dedicado com Arquiteto de
-                    Vendas para acelerar a operação comercial.
-                  </span>
-                </div>
-                <a href="#demonstracao" className="b360-urgency-btn">
-                  Agendar implantação assistida →
-                </a>
-              </div>
-
-              <div className="b360-hero-main">
-                <div>
-                  <div className="b360-eyebrow">
-                    {abVariant === 'B'
-                      ? 'SISTEMA OPERACIONAL COMERCIAL · RECEITA MAXIMIZADA'
-                      : 'REVENUE COMMAND CENTER · ACELERAÇÃO DE PIPELINE 360°'}
-                  </div>
-                  <h1 className="b360-hero-title">
-                    <span className="b360-hero-line b360-hero-line-cyan">
-                      <B360Words text="Dados que conectam." baseDelay={220} />
-                    </span>
-                    <span className="b360-hero-line b360-hero-line-iris">
-                      <B360Words text="Inteligência que decide." baseDelay={360} />
-                    </span>
-                    <span className="b360-hero-line b360-hero-line-gold">
-                      <B360Words text="Execução que acontece." baseDelay={500} />
-                    </span>
-                  </h1>
-
-                  {/* Proposta de Valor Clara & Persuasiva focada em Benefícios */}
-                  <div className="mb-6 space-y-2">
-                    <p className="text-base sm:text-lg font-semibold leading-snug text-cyan-300">
-                      {abVariant === 'B' ? (
-                        <span>
-                          Multiplique a capacidade de vendas da sua equipe sem precisar dobrar o
-                          headcount comercial.
-                        </span>
-                      ) : (
-                        <span>
-                          Acelere o ciclo de vendas e aumente a conversão do pipeline — projeções de
-                          até 3.8x com IA aplicada.
-                        </span>
-                      )}
-                    </p>
-                    <p className="text-sm text-slate-300 dark:text-slate-400 leading-relaxed max-w-xl">
-                      {abVariant === 'B'
-                        ? 'Elimine o escuro operacional: recupere propostas esquecidas, unifique WhatsApp e CRM com conformidade LGPD e coloque agentes autônomos para antecipar objeções em tempo real.'
-                        : 'Chega de perder negócios por falta de follow-up ágil. Conecte dados, cadência multicanal e um copiloto de inteligência artificial que entrega a Próxima Melhor Ação para cada negociação.'}
-                    </p>
-                  </div>
-
-                  {/* Foco no Call to Action (CTA destacado e irresistível) */}
-                  <div className="flex flex-wrap items-center gap-3.5">
-                    <a
-                      href="#demonstracao"
-                      className="b360-aurora"
-                      style={{ transform: 'scale(1.04)' }}
-                      onClick={() =>
-                        trackHeroCtaPrimaryClick(abVariant, 'Agendar Demonstração Gratuita')
-                      }
-                    >
-                      <span
-                        className="b360-aurora-inner"
-                        style={{ fontSize: '14px', fontWeight: 800 }}
-                      >
-                        {abVariant === 'B'
-                          ? 'Quero Multiplicar Minhas Vendas'
-                          : 'Garantir Demonstração Gratuita'}{' '}
-                        <span aria-hidden="true">→</span>
-                      </span>
-                    </a>
-                    <button
-                      type="button"
-                      onClick={handleOpenRoiSimulator}
-                      className="b360-hero-pill-btn"
-                    >
-                      Simular ROI Comercial ↗
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleSwitchView('command')}
-                      className="b360-hero-secondary-btn"
-                    >
-                      Explorar Command Center
-                    </button>
-                    <B360NeonButton
-                      onClick={handleGoToLogin}
-                      className="b360-hero-neon-btn"
-                      variant="cyan"
-                    >
-                      Acessar Plataforma
-                    </B360NeonButton>
-                  </div>
-
-                  {/* Selos de Confiança Imediata */}
-                  <div className="b360-hero-trust">
-                    <span className="w-2 h-2 rounded-full bg-[#00D4FF] animate-pulse" />
-                    <span>
-                      ✦ <b>Resposta Técnica em 15 min</b> · Setup Guiado com Especialista · 100%
-                      LGPD Nativo
-                    </span>
-                  </div>
-                </div>
-
-                <div
-                  className="b360-hero-console"
-                  role="region"
-                  aria-label="Visão Executiva do Command Center"
-                >
-                  <div className="b360-console-topbar">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#00D4FF] animate-pulse" />
-                      <span className="font-mono text-[11px] font-bold tracking-wider uppercase text-[#00D4FF]">
-                        PRÉVIA ILUSTRATIVA · DADOS SIMULADOS
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400">
-                      <span className="px-2 py-0.5 rounded-md bg-slate-800/80 border border-slate-700/60 text-slate-300">
-                        RLS Multi-Tenant
-                      </span>
-                      <span className="px-2 py-0.5 rounded-md bg-[#00D4FF]/10 border border-[#00D4FF]/30 text-[#00D4FF]">
-                        INTERFACE DEMO
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="b360-console-kpis">
-                    <div className="b360-console-kpi">
-                      <span className="b360-kpi-label">Pipeline · simulação</span>
-                      <strong className="b360-kpi-value text-[#00D4FF]">
-                        <B360CountUp to={4280000} prefix="R$ " />
-                      </strong>
-                      <span className="b360-kpi-trend text-emerald-400">
-                        Dados ilustrativos, não reais
-                      </span>
-                    </div>
-                    <div className="b360-console-kpi">
-                      <span className="b360-kpi-label">Oportunidades · simulação</span>
-                      <strong className="b360-kpi-value text-[#FF2D9B]">
-                        <B360CountUp to={86} suffix=" ativas" />
-                      </strong>
-                      <span className="b360-kpi-trend text-slate-400">Cenário ilustrativo</span>
-                    </div>
-                    <div className="b360-console-kpi">
-                      <span className="b360-kpi-label">Forecast · simulação</span>
-                      <strong className="b360-kpi-value text-[#FFC107]">
-                        <B360CountUp to={94.2} decimals={1} suffix="%" />
-                      </strong>
-                      <span className="b360-kpi-trend text-emerald-400">
-                        Exemplo de previsão ponderada
-                      </span>
-                    </div>
-                    <div className="b360-console-kpi">
-                      <span className="b360-kpi-label">Agentes · especificação V4</span>
-                      <strong className="b360-kpi-value text-[#8B7DFF]">
-                        <B360CountUp to={24} suffix=" + Supervisor" />
-                      </strong>
-                      <span className="b360-kpi-trend text-cyan-400">Arquitetura prevista</span>
-                    </div>
-                  </div>
-
-                  <div className="b360-console-stream">
-                    <div className="b360-stream-item">
-                      <div className="b360-stream-badge bg-[#00D4FF]/15 text-[#00D4FF] border border-[#00D4FF]/30">
-                        Copiloto IA
-                      </div>
-                      <div className="b360-stream-content">
-                        <p className="b360-stream-title">
-                          Objeção de preço contornada · Deal #1042
-                        </p>
-                        <p className="b360-stream-desc">
-                          Proposta R$ 145k renegociada com ROI simulado de 3.8x. NBA aceita pelo
-                          Closer.
-                        </p>
-                      </div>
-                      <span className="b360-stream-time">Agora</span>
-                    </div>
-
-                    <div className="b360-stream-item">
-                      <div className="b360-stream-badge bg-[#FF2D9B]/15 text-[#FF2D9B] border border-[#FF2D9B]/30">
-                        Bitrix24 Sync
-                      </div>
-                      <div className="b360-stream-content">
-                        <p className="b360-stream-title">
-                          Sincronização bidirecional de 14 oportunidades
-                        </p>
-                        <p className="b360-stream-desc">
-                          Contas e histórico de mensagens unificados com persistência multi-tenant.
-                        </p>
-                      </div>
-                      <span className="b360-stream-time">há 2 min</span>
-                    </div>
-
-                    <div className="b360-stream-item">
-                      <div className="b360-stream-badge bg-[#8B7DFF]/15 text-[#8B7DFF] border border-[#8B7DFF]/30">
-                        VoiceHub
-                      </div>
-                      <div className="b360-stream-content">
-                        <p className="b360-stream-title">Chamada com CFO da Vanguarda transcrita</p>
-                        <p className="b360-stream-desc">
-                          Duração 14m 20s · Sentimento 94% Positivo · SLA de follow-up disparado.
-                        </p>
-                      </div>
-                      <span className="b360-stream-time">há 5 min</span>
-                    </div>
-                  </div>
-
-                  <div className="b360-console-footer">
-                    <div className="flex items-center gap-2 text-xs text-slate-300">
-                      <Sparkles className="w-3.5 h-3.5 text-[#00D4FF]" />
-                      <span>
-                        Supervisor pronto ·{' '}
-                        <em className="not-italic opacity-80">
-                          Dados ilustrativos de demonstração
-                        </em>
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleSwitchView('command')}
-                      className="b360-console-action-btn"
-                    >
-                      Ver Command Center →
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </section>
+            {/* Hero Section — N1 Neon Editorial Cinematic */}
+            <LandingHero
+              abVariant={abVariant}
+              onPrimaryCtaClick={() => trackHeroCtaPrimaryClick(abVariant, 'Agendar demonstração')}
+              onGoToLogin={handleGoToLogin}
+              onOpenRoiSimulator={handleOpenRoiSimulator}
+              onOpenCommandSandbox={() => handleSwitchView('command')}
+            />
 
             {/* 11 Módulos — Bento Cinematográfico Refinado (8 Pilares + 3 Complementares) */}
             <section id="destaques" className="b360-pillars-stage">
@@ -1527,9 +1288,7 @@ export function Landing360({
                 <article className="b360-problem-card">
                   <div className="b360-problem-header">
                     <span className="b360-problem-tag">SILOS DE INFORMAÇÃO</span>
-                    <span className="b360-problem-icon">
-                      <X className="w-4 h-4" aria-hidden="true" />
-                    </span>
+                    <span className="b360-problem-icon">❌</span>
                   </div>
                   <B360DecryptBlock
                     text="Chega de silos operacionais"
@@ -1568,9 +1327,7 @@ export function Landing360({
                 <article className="b360-problem-card">
                   <div className="b360-problem-header">
                     <span className="b360-problem-tag">DECISÕES TARDIAS</span>
-                    <span className="b360-problem-icon">
-                      <X className="w-4 h-4" aria-hidden="true" />
-                    </span>
+                    <span className="b360-problem-icon">❌</span>
                   </div>
                   <B360DecryptBlock
                     text="Decisões no tempo certo"
@@ -1608,9 +1365,7 @@ export function Landing360({
                 <article className="b360-problem-card">
                   <div className="b360-problem-header">
                     <span className="b360-problem-tag">OPORTUNIDADES NO ESCURO</span>
-                    <span className="b360-problem-icon">
-                      <X className="w-4 h-4" aria-hidden="true" />
-                    </span>
+                    <span className="b360-problem-icon">❌</span>
                   </div>
                   <B360DecryptBlock
                     text="Nenhuma oportunidade no escuro"
@@ -1829,7 +1584,7 @@ export function Landing360({
                     contínua.
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-6">
-                    <div className="b360-ai-feature-card p-4 rounded-2xl border border-cyan-500/20">
+                    <div className="p-4 rounded-2xl border border-cyan-500/20 bg-slate-900 b360-dark-card dark:bg-[#0B1A2E]/80">
                       <div className="flex items-center gap-2 mb-1.5">
                         <Sparkles className="w-4 h-4 text-[#00D4FF]" />
                         <h3 className="text-sm font-bold text-[#00D4FF]">
@@ -1842,7 +1597,7 @@ export function Landing360({
                       </p>
                     </div>
 
-                    <div className="b360-ai-feature-card p-4 rounded-2xl border border-pink-500/20">
+                    <div className="p-4 rounded-2xl border border-pink-500/20 bg-slate-900 b360-dark-card dark:bg-[#0B1A2E]/80">
                       <div className="flex items-center gap-2 mb-1.5">
                         <Target className="w-4 h-4 text-[#FF2D9B]" />
                         <h3 className="text-sm font-bold text-[#FF2D9B]">
@@ -1855,7 +1610,7 @@ export function Landing360({
                       </p>
                     </div>
 
-                    <div className="b360-ai-feature-card p-4 rounded-2xl border border-amber-500/20">
+                    <div className="p-4 rounded-2xl border border-amber-500/20 bg-slate-900 b360-dark-card dark:bg-[#0B1A2E]/80">
                       <div className="flex items-center gap-2 mb-1.5">
                         <Clock className="w-4 h-4 text-[#FFC107]" />
                         <h3 className="text-sm font-bold text-[#FFC107]">Contexto histórico</h3>
@@ -1866,7 +1621,7 @@ export function Landing360({
                       </p>
                     </div>
 
-                    <div className="b360-ai-feature-card p-4 rounded-2xl border border-indigo-500/20">
+                    <div className="p-4 rounded-2xl border border-indigo-500/20 bg-slate-900 b360-dark-card dark:bg-[#0B1A2E]/80">
                       <div className="flex items-center gap-2 mb-1.5">
                         <Bot className="w-4 h-4 text-[#8B7DFF]" />
                         <h3 className="text-sm font-bold text-[#8B7DFF]">Supervisor On-line</h3>
@@ -1964,98 +1719,12 @@ export function Landing360({
             {/* ================================================================= */}
             <section className="b360-section b360-proof-stage" id="provas-sociais">
               <div className="b360-sectionhead">
-                <div className="b360-eyebrow">RESULTADOS REAIS COMPROVADOS</div>
-                <h2>Acelerando operações comerciais de alta performance.</h2>
+                <div className="b360-eyebrow">CONFIANÇA E SEGURANÇA</div>
+                <h2>Garantias reais de plataforma, não promessas de marketing.</h2>
                 <p>
-                  Confiança construída com métricas auditáveis, isolamento multi-tenant e segurança
-                  enterprise.
+                  Isolamento multi-tenant, criptografia de dados e conformidade LGPD fazem parte da
+                  arquitetura do Birth Hub 360°.
                 </p>
-              </div>
-
-              {/* Faixa de Métricas de Alto Impacto */}
-              <div className="b360-metrics-strip">
-                <div className="b360-metric-card">
-                  <span className="b360-metric-num">+42%</span>
-                  <div className="b360-metric-label">Taxa de Conversão</div>
-                  <div className="b360-metric-sub">
-                    Projeção média de aumento no fechamento de propostas
-                  </div>
-                </div>
-                <div className="b360-metric-card">
-                  <span className="b360-metric-num">3.8x</span>
-                  <div className="b360-metric-label">Retorno sobre Investimento</div>
-                  <div className="b360-metric-sub">Projeção de payback no 1º trimestre</div>
-                </div>
-                <div className="b360-metric-card">
-                  <span className="b360-metric-num">R$ 180M+</span>
-                  <div className="b360-metric-label">Volume Transacionado</div>
-                  <div className="b360-metric-sub">
-                    Gerido sob supervisão de agentes inteligentes
-                  </div>
-                </div>
-                <div className="b360-metric-card">
-                  <span className="b360-metric-num">99.98%</span>
-                  <div className="b360-metric-label">Disponibilidade Operacional</div>
-                  <div className="b360-metric-sub">Meta de SLA com monitoramento contínuo</div>
-                </div>
-              </div>
-
-              <p className="mt-4 text-center text-[11px] font-mono text-slate-500">
-                Métricas ilustrativas baseadas em projeções de implantação — resultados variam por
-                operação.
-              </p>
-
-              {/* Grade de Depoimentos e Casos de Sucesso */}
-              <p className="mt-8 mb-4 text-center text-[11px] font-mono uppercase tracking-wider text-slate-500">
-                Histórias ilustrativas de uso da plataforma
-              </p>
-              <div className="b360-testimonials-grid">
-                <article className="b360-testimonial-card">
-                  <p className="b360-testimonial-quote">
-                    "Recuperamos mais de R$ 320 mil em negociações paradas já no primeiro mês de
-                    uso. O copiloto de IA recomenda exatamente qual argumento e proposta usar para
-                    fechar cada conta."
-                  </p>
-                  <div className="b360-testimonial-author">
-                    <div className="b360-testimonial-avatar">RS</div>
-                    <div>
-                      <div className="b360-author-name">Rodrigo Silveira</div>
-                      <div className="b360-author-role">
-                        Diretor Comercial · NeoLog B2B (+45 vendedores)
-                      </div>
-                    </div>
-                  </div>
-                </article>
-
-                <article className="b360-testimonial-card">
-                  <p className="b360-testimonial-quote">
-                    "Nossos SDRs e Closers economizam mais de 10 horas por semana em preenchimento
-                    de CRM e preparação de reuniões. A visibilidade 360° eliminou os silos entre
-                    vendas e marketing."
-                  </p>
-                  <div className="b360-testimonial-author">
-                    <div className="b360-testimonial-avatar">CD</div>
-                    <div>
-                      <div className="b360-author-name">Camila Duarte</div>
-                      <div className="b360-author-role">Head de RevOps · Vanguarda Tech</div>
-                    </div>
-                  </div>
-                </article>
-
-                <article className="b360-testimonial-card">
-                  <p className="b360-testimonial-quote">
-                    "O isolamento multi-tenant via RLS e a conformidade LGPD nativa foram
-                    fundamentais para aprovação técnica imediata pelo nosso comitê de segurança e
-                    jurídico."
-                  </p>
-                  <div className="b360-testimonial-author">
-                    <div className="b360-testimonial-avatar">MF</div>
-                    <div>
-                      <div className="b360-author-name">Marcelo Faccini</div>
-                      <div className="b360-author-role">VP de Tecnologia & Governança</div>
-                    </div>
-                  </div>
-                </article>
               </div>
 
               {/* Selos de Segurança e Certificações */}
@@ -2070,7 +1739,7 @@ export function Landing360({
                 </div>
                 <div className="b360-seal-item">
                   <CheckCircle2 className="w-5 h-5 text-purple-400" />
-                  <span>Conformidade LGPD por design (Audit Ledger)</span>
+                  <span>100% Conforme com a LGPD (Audit Ledger)</span>
                 </div>
                 <div className="b360-seal-item">
                   <Award className="w-5 h-5 text-amber-400" />
@@ -2099,8 +1768,8 @@ export function Landing360({
 
                     <div className="space-y-3.5 mb-6">
                       <div className="flex items-start gap-3">
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-cyan-500/20 text-[#00D4FF]">
-                          <Check className="w-3 h-3" aria-hidden="true" />
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-cyan-500/20 text-[#00D4FF] text-xs font-bold">
+                          ✓
                         </span>
                         <div>
                           <strong className="text-xs font-bold text-slate-200 block">
@@ -2113,8 +1782,8 @@ export function Landing360({
                       </div>
 
                       <div className="flex items-start gap-3">
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-pink-500/20 text-[#FF2D9B]">
-                          <Check className="w-3 h-3" aria-hidden="true" />
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-pink-500/20 text-[#FF2D9B] text-xs font-bold">
+                          ✓
                         </span>
                         <div>
                           <strong className="text-xs font-bold text-slate-200 block">
@@ -2127,8 +1796,8 @@ export function Landing360({
                       </div>
 
                       <div className="flex items-start gap-3">
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">
-                          <Check className="w-3 h-3" aria-hidden="true" />
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold">
+                          ✓
                         </span>
                         <div>
                           <strong className="text-xs font-bold text-slate-200 block">
@@ -2141,25 +1810,26 @@ export function Landing360({
                       </div>
                     </div>
 
-                    <div className="b360-lead-availability p-3.5 rounded-xl border border-cyan-500/20 text-xs flex items-center gap-2">
+                    <div className="p-3.5 rounded-xl border border-cyan-500/20 bg-cyan-950/20 text-xs text-cyan-200 flex items-center gap-2">
                       <Clock className="w-4 h-4 shrink-0 text-[#00D4FF]" />
-                      <span>4 vagas remanescentes para o ciclo assistido desta semana.</span>
+                      <span>Sessão assistida por um especialista de operações comerciais.</span>
                     </div>
                   </div>
 
                   {/* Bloco do Formulário ou Sucesso */}
                   <div>
                     {leadSubmitted ? (
-                      <div className="b360-lead-success text-center py-8 space-y-4 rounded-2xl p-6 border border-emerald-500/30">
+                      <div className="text-center py-8 space-y-4 rounded-2xl bg-slate-900/80 dark:bg-[#071322]/90 p-6 border border-emerald-500/30">
                         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">
                           <CheckCircle2 className="h-8 w-8" />
                         </div>
                         <h3 className="text-xl font-bold text-cyan-400">
-                          Sessão Solicitada com Sucesso!
+                          Solicitação Recebida! · Sessão Solicitada com Sucesso
                         </h3>
                         <p className="text-xs text-slate-300 leading-relaxed max-w-sm mx-auto">
                           Recebemos sua solicitação para <strong>{leadForm.email}</strong>. Nossa
-                          equipe entrará em contato pelo WhatsApp informado para agendar a
+                          equipe entrará em contato pelo e-mail informado
+                          {leadForm.whatsapp.trim() !== '' ? ' ou WhatsApp' : ''} para agendar a
                           demonstração.
                         </p>
                         <div className="pt-2 flex flex-col gap-2.5">
@@ -2174,6 +1844,17 @@ export function Landing360({
                       </div>
                     ) : (
                       <form onSubmit={handleLeadSubmit} className="space-y-3.5">
+                        {/* Honeypot anti-spam: invisível para humanos, bots preenchem. */}
+                        <input
+                          type="text"
+                          name="website"
+                          value={leadForm.website ?? ''}
+                          onChange={(e) => setLeadForm({ ...leadForm, website: e.target.value })}
+                          tabIndex={-1}
+                          autoComplete="off"
+                          aria-hidden="true"
+                          className="hidden"
+                        />
                         <div className="mb-2">
                           <h3 className="text-base font-bold text-cyan-400">
                             Reserve sua Demonstração Técnica
@@ -2224,12 +1905,11 @@ export function Landing360({
                             htmlFor="lead-whatsapp"
                             className="block text-xs font-mono text-slate-300 mb-1"
                           >
-                            WhatsApp Comercial com DDD *
+                            WhatsApp Comercial com DDD (opcional)
                           </label>
                           <input
                             id="lead-whatsapp"
                             type="tel"
-                            required
                             value={leadForm.whatsapp}
                             onChange={(e) => setLeadForm({ ...leadForm, whatsapp: e.target.value })}
                             placeholder="(11) 99999-9999"
@@ -2266,17 +1946,14 @@ export function Landing360({
                               required
                               className="mt-0.5 rounded border-slate-700 text-[#00D4FF] focus:ring-[#00D4FF]"
                             />
-                            <span>
-                              Concordo com o tratamento dos dados estritamente para agendamento da
-                              demonstração conforme a LGPD.
-                            </span>
+                            <span>{LANDING_DEMO_CONSENT_TEXT}</span>
                           </label>
                         </div>
 
                         {leadError && (
                           <p
                             role="alert"
-                            className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-[11px] font-mono text-rose-300"
+                            className="text-[11px] font-mono text-red-400 text-center"
                           >
                             {leadError}
                           </p>
@@ -2284,11 +1961,13 @@ export function Landing360({
 
                         <div className="pt-2">
                           <button type="submit" disabled={leadLoading} className="b360-submit-cta">
-                            {leadLoading ? 'Enviando...' : 'SOLICITAR DEMONSTRAÇÃO GRATUITA →'}
+                            {leadLoading
+                              ? 'Enviando Solicitação...'
+                              : 'SOLICITAR DEMONSTRAÇÃO GRATUITA →'}
                           </button>
                           <p className="mt-2 text-center text-[10px] font-mono text-slate-400">
                             <Lock className="inline w-3 h-3 mr-1" aria-hidden="true" />
-                            Zero spam · Cancelamento fácil com 1 clique · Dados protegidos
+                            Cancelamento a qualquer momento · Dados protegidos
                           </p>
                         </div>
                       </form>
@@ -2533,9 +2212,7 @@ export function Landing360({
                     className="b360-module"
                     onClick={() => handleOpenModal(mod.name, mod.modalDesc)}
                   >
-                    <span className="b360-ico">
-                      <mod.ico className="w-5 h-5" aria-hidden="true" />
-                    </span>
+                    <span className="b360-ico">{mod.ico}</span>
                     <b>{mod.name}</b>
                     <span>{mod.desc}</span>
                   </button>
@@ -2557,7 +2234,7 @@ export function Landing360({
             <span className="hidden md:inline text-xs text-slate-300">
               {abVariant === 'B'
                 ? 'Multiplique as vendas do seu time'
-                : 'Acelere seu pipeline em até 3.8x'}
+                : 'Revenue Intelligence para o time comercial'}
             </span>
             <a href="#demonstracao" className="b360-sticky-cta-btn">
               Agendar Demonstração Gratuita →
@@ -2648,24 +2325,16 @@ export function Landing360({
                 <h4>Conectividade</h4>
                 <ul>
                   <li>
-                    <a href="#ecossistema" className="hover:text-[#00D4FF] transition-colors">
-                      Bitrix24 (API Oficial)
-                    </a>
+                    <span>Bitrix24 (API Oficial)</span>
                   </li>
                   <li>
-                    <a href="#ecossistema" className="hover:text-[#00D4FF] transition-colors">
-                      WhatsApp Business API
-                    </a>
+                    <span>WhatsApp Business API</span>
                   </li>
                   <li>
-                    <a href="#ecossistema" className="hover:text-[#00D4FF] transition-colors">
-                      VoiceHub Telefonia em Nuvem
-                    </a>
+                    <span>VoiceHub Telefonia em Nuvem</span>
                   </li>
                   <li>
-                    <a href="#ecossistema" className="hover:text-[#00D4FF] transition-colors">
-                      Webhooks & Open REST API
-                    </a>
+                    <span>Webhooks & Open REST API</span>
                   </li>
                 </ul>
               </div>
@@ -2679,53 +2348,71 @@ export function Landing360({
                     </Link>
                   </li>
                   <li>
-                    <Link to="/terms" className="hover:text-[#00D4FF] transition-colors">
-                      Termos de Uso
-                    </Link>
+                    <span>Direitos do Titular (LGPD Art. 18)</span>
                   </li>
                   <li>
-                    <Link to="/privacy" className="hover:text-[#00D4FF] transition-colors">
-                      Direitos do Titular (LGPD Art. 18)
-                    </Link>
+                    <span>Sessão Segura HttpOnly</span>
                   </li>
                   <li>
-                    <span className="text-slate-500">
-                      Sessão Segura HttpOnly · Auditoria de Logs & RBAC
-                    </span>
+                    <span>Auditoria de Logs & RBAC</span>
                   </li>
                 </ul>
               </div>
             </div>
 
-            {/* Dock de Controle e Auditoria de Teste A/B — ferramenta interna, somente em DEV.
-                A variante ativa em produção é resolvida por query/session storage, sem toggle exposto. */}
-            {import.meta.env.DEV && (
-              <div className="flex items-center justify-center py-3 border-t border-slate-800/60 mb-4">
-                <div
-                  className="b360-ab-pill-dock"
-                  role="group"
-                  aria-label="Controle de Experimento A/B"
+            {/* Dock de Controle e Auditoria de Teste A/B */}
+            <div className="flex items-center justify-center py-3 border-t border-slate-800/60 mb-4">
+              <div
+                className="b360-ab-pill-dock"
+                role="group"
+                aria-label="Controle de Experimento A/B"
+              >
+                <span className="font-mono text-[10px]">🧪 Experimento A/B:</span>
+                <button
+                  type="button"
+                  className={`b360-ab-toggle-btn ${abVariant === 'A' ? 'active' : ''}`}
+                  onClick={() => handleSwitchAbVariant('A')}
+                  title="Variante A: Foco em Aceleração de Pipeline e Produtividade"
                 >
-                  <span className="font-mono text-[10px]">Experimento A/B:</span>
-                  <button
-                    type="button"
-                    className={`b360-ab-toggle-btn ${abVariant === 'A' ? 'active' : ''}`}
-                    onClick={() => handleSwitchAbVariant('A')}
-                    title="Variante A: Foco em Aceleração de Pipeline e Produtividade"
-                  >
-                    Variante A (Aceleração)
-                  </button>
-                  <button
-                    type="button"
-                    className={`b360-ab-toggle-btn ${abVariant === 'B' ? 'active' : ''}`}
-                    onClick={() => handleSwitchAbVariant('B')}
-                    title="Variante B: Foco em Multiplicação de Receita e Conversão"
-                  >
-                    Variante B (Multiplicação)
-                  </button>
-                </div>
+                  Variante A (Aceleração)
+                </button>
+                <button
+                  type="button"
+                  className={`b360-ab-toggle-btn ${abVariant === 'B' ? 'active' : ''}`}
+                  onClick={() => handleSwitchAbVariant('B')}
+                  title="Variante B: Foco em Multiplicação de Receita e Conversão"
+                >
+                  Variante B (Multiplicação)
+                </button>
               </div>
-            )}
+            </div>
+
+            {/* Dock de Controle e Auditoria de Teste A/B */}
+            <div className="flex items-center justify-center py-3 border-t border-slate-800/60 mb-4">
+              <div
+                className="b360-ab-pill-dock"
+                role="group"
+                aria-label="Controle de Experimento A/B"
+              >
+                <span className="font-mono text-[10px]">🧪 Experimento A/B:</span>
+                <button
+                  type="button"
+                  className={`b360-ab-toggle-btn ${abVariant === 'A' ? 'active' : ''}`}
+                  onClick={() => handleSwitchAbVariant('A')}
+                  title="Variante A: Foco em Aceleração de Pipeline e Produtividade"
+                >
+                  Variante A (Aceleração)
+                </button>
+                <button
+                  type="button"
+                  className={`b360-ab-toggle-btn ${abVariant === 'B' ? 'active' : ''}`}
+                  onClick={() => handleSwitchAbVariant('B')}
+                  title="Variante B: Foco em Multiplicação de Receita e Conversão"
+                >
+                  Variante B (Multiplicação)
+                </button>
+              </div>
+            </div>
 
             <div className="b360-footer-bottom">
               <span>© 2026 Birth Hub 360° · Todos os direitos reservados.</span>
@@ -2954,7 +2641,7 @@ export function Landing360({
                     className="mt-3.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-mono text-[11px] font-medium text-slate-600 dark:text-slate-400 hover:text-[#00D4FF] dark:hover:text-[#00D4FF] bg-slate-100 dark:bg-slate-800/60 hover:bg-[#00D4FF]/10 dark:hover:bg-[#00D4FF]/10 border border-slate-200 dark:border-slate-700/60 transition-all cursor-pointer"
                     title="Preencher com credenciais de demonstração homologadas"
                   >
-                    <span>Preencher demonstração</span>
+                    <span>⚡ Preencher demonstração</span>
                   </button>
                 )}
               </div>
@@ -3063,8 +2750,8 @@ export function Landing360({
                       <input
                         id="sso-domain"
                         type="text"
-                        value={ssoDomain}
-                        onChange={(e) => setSsoDomain(e.target.value)}
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                         aria-invalid={Boolean(errorMessage)}
                         aria-describedby={errorMessage ? 'auth-error-message' : undefined}
                         className="w-full h-11 bg-white dark:bg-[#0F172A] text-slate-900 dark:text-white border border-slate-300 dark:border-slate-700 focus:border-[#00D4FF] focus:ring-2 focus:ring-[#00D4FF]/20 rounded-xl px-4 text-sm font-sans outline-none placeholder:text-slate-400 transition-all"
@@ -3185,10 +2872,8 @@ export function Landing360({
                         </button>
                       </div>
 
-                      {/* Medidor de força de senha dinâmico — só faz sentido em signup
-                          (senha nova); no signin a senha é do usuário e não deve ser "avaliada"
-                          (achado da auditoria landing-360, bugs-funcionais item 5). */}
-                      {authMode === 'signup' && password.length > 0 && (
+                      {/* Medidor de força de senha dinâmico para novo acesso */}
+                      {password.length > 0 && (
                         <div className="pt-1.5 space-y-1">
                           <div className="flex items-center justify-between text-[10px] font-mono">
                             <span className="text-slate-500 dark:text-slate-400">
@@ -3468,7 +3153,6 @@ export function Landing360({
       {/* Modal Global do Simulador Executivo de Previsibilidade & ROI */}
       <RoiSimulatorModal
         isOpen={isSimulatorOpen}
-        variant={abVariant}
         onClose={() => setIsSimulatorOpen(false)}
         onProceedToLogin={handleGoToLogin}
       />
