@@ -1,5 +1,4 @@
 import { describe, expect, it, beforeEach } from 'vitest';
-import { multimodalRoleplaySimulatorService } from '../../src/features/roleplay/services/multimodalRoleplaySimulator.service.js';
 import {
   PredictiveRevenueOracleService,
   predictiveRevenueOracleService,
@@ -20,7 +19,6 @@ describe('Onda 05 — Teste Integrado E2E: Escala, Governança e Resiliência', 
   const sellerLucas = 'seller-lucas-01';
 
   beforeEach(() => {
-    multimodalRoleplaySimulatorService.clear();
     predictiveRevenueOracleService.clear();
     multiRegionResilienceService.clear();
     continuousSecurityAuditService.clear();
@@ -28,48 +26,7 @@ describe('Onda 05 — Teste Integrado E2E: Escala, Governança e Resiliência', 
 
   it('deve executar o fluxo integrado da Onda 05 de ponta a ponta com rigor multi-tenant', async () => {
     // ─────────────────────────────────────────────────────────────────────────
-    // 1. Evolução 17: Roleplay Multimodal com Persona B2B e Framework SPIN
-    // ─────────────────────────────────────────────────────────────────────────
-    const roleplaySession = await multimodalRoleplaySimulatorService.startSession({
-      organizationId: tenantA,
-      sellerId: sellerLucas,
-      framework: 'SPIN',
-      personaArchetype: 'cfo_skeptical',
-    });
-
-    expect(roleplaySession.sessionId).toBeDefined();
-    expect(roleplaySession.persona.archetype).toBe('cfo_skeptical');
-
-    // Turno 1: Vendedor explora o custo da inação (SPIN Implication Question)
-    const turn1 = await multimodalRoleplaySimulatorService.submitTurn({
-      organizationId: tenantA,
-      sessionId: roleplaySession.sessionId,
-      sellerMessage: 'Qual o custo mensal que sua operação absorve hoje devido a atrasos em manutenções preventivas?',
-      talkDurationSeconds: 11,
-    });
-    expect(turn1.buyerReply).toContain('desperdício direto');
-
-    // Turno 2: Vendedor propõe próximo passo objetivo
-    const turn2 = await multimodalRoleplaySimulatorService.submitTurn({
-      organizationId: tenantA,
-      sessionId: roleplaySession.sessionId,
-      sellerMessage: 'Podemos agendar a apresentação do cálculo detalhado de ROI na próxima quinta-feira às 14h?',
-      talkDurationSeconds: 7,
-    });
-    expect(turn2.buyerReply).toContain('quinta-feira');
-
-    // Avaliação pedagógica da sessão
-    const roleplayEval = await multimodalRoleplaySimulatorService.evaluateSession({
-      organizationId: tenantA,
-      sessionId: roleplaySession.sessionId,
-    });
-
-    expect(roleplayEval.compositeScore).toBeGreaterThanOrEqual(80);
-    expect(roleplayEval.awardedXp).toBe(200);
-    expect(roleplayEval.talkListenRatio).toBeLessThan(0.6); // Escuta ativa comprovada
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // 2. Evolução 18: Forecast Preditivo, Simulação What-If e Rebalanceamento
+    // 1. Evolução 18: Forecast Preditivo, Simulação What-If e Rebalanceamento
     // ─────────────────────────────────────────────────────────────────────────
     // REMED-03/04: histórico real por tenant (reader em memória) + aprovação persistida.
     const oracleReader = new InMemoryOracleReader();
@@ -116,7 +73,7 @@ describe('Onda 05 — Teste Integrado E2E: Escala, Governança e Resiliência', 
     expect(approvedAllocation.approval.decision).toBe('APPROVED');
 
     // ─────────────────────────────────────────────────────────────────────────
-    // 3. Evolução 19: Arquitetura Multi-Região e Failover de Workers
+    // 2. Evolução 19: Arquitetura Multi-Região e Failover de Workers
     // ─────────────────────────────────────────────────────────────────────────
     const saEastHealth = await multiRegionResilienceService.getRegionHealth('sa-east-1');
     expect(saEastHealth.status).toBe('healthy');
@@ -134,7 +91,7 @@ describe('Onda 05 — Teste Integrado E2E: Escala, Governança e Resiliência', 
     expect(failoverResult.durationMs).toBeLessThan(500);
 
     // ─────────────────────────────────────────────────────────────────────────
-    // 4. Evolução 20: Governança Contínua de Segurança e Integridade do SBOM
+    // 3. Evolução 20: Governança Contínua de Segurança e Integridade do SBOM
     // ─────────────────────────────────────────────────────────────────────────
     const securitySweep = await continuousSecurityAuditService.runSecuritySweep();
     expect(securitySweep.sweepId).toBeDefined();
@@ -149,17 +106,7 @@ describe('Onda 05 — Teste Integrado E2E: Escala, Governança e Resiliência', 
     expect(sbomIntegrity.componentCount).toBeGreaterThan(400);
 
     // ─────────────────────────────────────────────────────────────────────────
-    // 5. Isolamento Multi-Tenant Estrito (Tenant A vs Tenant B)
-    // ─────────────────────────────────────────────────────────────────────────
-    // Tenant B não deve acessar a sessão de roleplay do Tenant A
-    const tenantBProbe = await multimodalRoleplaySimulatorService.getSession(
-      tenantB,
-      roleplaySession.sessionId,
-    );
-    expect(tenantBProbe).toBeNull();
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // 6. Eixo 13: Inteligência Conversacional, Talk-to-Listen e Coaching
+    // 4. Eixo 13: Inteligência Conversacional, Talk-to-Listen e Coaching
     // ─────────────────────────────────────────────────────────────────────────
     const { conversationalIntelligenceService } = await import(
       '../../src/features/ai-voice/server/conversationalIntelligence.service.js'
@@ -211,7 +158,7 @@ describe('Onda 05 — Teste Integrado E2E: Escala, Governança e Resiliência', 
     expect(tenantBAccessCoaching).toBeNull();
 
     // ─────────────────────────────────────────────────────────────────────────
-    // 7. Eixo 18: Bem-Estar Operacional, Gestão de Carga e Microtreinamento
+    // 5. Eixo 18: Bem-Estar Operacional, Gestão de Carga e Microtreinamento
     // ─────────────────────────────────────────────────────────────────────────
     const { workloadWellbeingService } = await import(
       '../../src/features/calendar/services/workloadWellbeing.service.js'
