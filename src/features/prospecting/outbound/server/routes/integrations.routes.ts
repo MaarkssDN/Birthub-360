@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from 'express';
 import { getDatabase, saveDatabase } from '../db.js';
-import { requireAuth } from '../auth.js';
+import { requireAuth, requireTenantScope, tenantCompany } from '../auth.js';
 import { rateLimit } from '../middleware/rateLimit.js';
 import { exportLead } from '../search/providers/bitrix.provider.js';
 import {
@@ -16,6 +16,12 @@ import {
 import { isUrlSafeForOutboundWebhook, isWithinMaxLength, maskWebhookUrl } from '../validators.js';
 
 export const integrationsRouter = Router();
+
+// Handoff 12→05 (F2): defesa em profundidade — sessão + company obrigatórias.
+integrationsRouter.use(requireTenantScope);
+
+// Mesma comparação case-insensitive de campaigns.routes.ts.
+const LEAD_COMPANY_CLAUSE = `LOWER(TRIM(COALESCE(company, ''))) = ?`;
 
 const integrationLimiter = rateLimit({
   windowMs: 60_000,
@@ -106,6 +112,21 @@ integrationsRouter.post(
 
       if (!lead?.name) {
         return res.status(400).json({ error: 'Dados do lead são obrigatórios.' });
+      }
+
+      // Escopo de tenant: quando o payload referencia um lead persistido
+      // (lead.id), ele precisa pertencer à company da sessão — sem isso um
+      // autenticado exportava (e marcava bitrix_export_status em) lead de
+      // outro tenant.
+      const company = tenantCompany(req);
+      if (lead.id) {
+        const ownLead = await db.exec(
+          `SELECT id FROM leads WHERE id = ? AND ${LEAD_COMPANY_CLAUSE}`,
+          [lead.id, company],
+        );
+        if (ownLead.length === 0 || ownLead[0].values.length === 0) {
+          return res.status(404).json({ error: 'Lead não encontrado.' });
+        }
       }
 
       // Wave 11 (CPI) - SSRF: o webhook pode vir direto do body da requisição
@@ -270,8 +291,12 @@ integrationsRouter.post(
       const { id } = req.params;
       const { webhookUrl } = req.body;
       const db = await getDatabase();
+      const company = tenantCompany(req);
 
-      const leadRes = await db.exec(`SELECT * FROM leads WHERE id = ?`, [id]);
+      const leadRes = await db.exec(
+        `SELECT * FROM leads WHERE id = ? AND ${LEAD_COMPANY_CLAUSE}`,
+        [id, company],
+      );
       if (leadRes.length === 0 || leadRes[0].values.length === 0) {
         return res.status(404).json({ error: 'Lead não encontrado.' });
       }

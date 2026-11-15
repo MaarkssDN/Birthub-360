@@ -14,10 +14,15 @@ import {
   type FeedbackMessageRecord,
   type FeedbackLeadRecord,
 } from '../feedbackLoop.js';
-import { requireAdmin } from '../auth.js';
+import { requireAdmin, requireTenantScope, tenantCompany } from '../auth.js';
 import { rateLimit } from '../middleware/rateLimit.js';
 
 export const systemRouter = Router();
+
+// Handoff 12→05 (F2): defesa em profundidade — sessão + company obrigatórias
+// em TODAS as rotas deste router (antes várias eram efetivamente públicas:
+// /db/stats, /error-reports, /feedback/summary, /search-runs etc.).
+systemRouter.use(requireTenantScope);
 
 const errorReportLimiter = rateLimit({
   windowMs: 60_000,
@@ -90,6 +95,10 @@ systemRouter.get('/db/stats', async (_req: Request, res: Response) => {
 // relato para revisão posterior. Nunca deve travar o uso do app por causa de
 // um erro ao registrar o próprio erro — por isso segue com sucesso genérico
 // para o usuário mesmo que o log em si falhe, só reportando no servidor.
+// NOTA (handoff 12→05, F2): desde o requireTenantScope deste router, o POST
+// passou a exigir sessão + company — o botão da tela de login que usava este
+// endpoint legado precisará do endpoint canônico /api/error-reports (ver
+// Resolução do handoff).
 systemRouter.post('/error-reports', errorReportLimiter, async (req: Request, res: Response) => {
   const { message, page, userId, userEmail, userAgent } = req.body;
   if (!message || typeof message !== 'string' || !message.trim()) {
@@ -113,13 +122,22 @@ systemRouter.post('/error-reports', errorReportLimiter, async (req: Request, res
 
 // Lista os reportes para revisão (mais recentes primeiro) — sem isso, a única forma
 // de ver o que foi reportado seria consultar o Postgres diretamente.
+// Escopo de tenant: reportes anônimos (user_id NULL, ex.: tela de login) seguem
+// visíveis a todos os tenants; os vinculados a um usuário só aparecem para a
+// company dele — user_email é PII e não pode vazar cross-tenant.
 systemRouter.get('/error-reports', async (req: Request, res: Response) => {
   try {
     const db = await getDatabase();
+    const company = tenantCompany(req);
     const limit = Math.min(Math.max(1, Number(req.query.limit) || 50), 200);
-    const result = await db.exec(`SELECT * FROM error_reports ORDER BY created_at DESC LIMIT ?`, [
-      limit,
-    ]);
+    const result = await db.exec(
+      `SELECT * FROM error_reports
+       WHERE user_id IS NULL OR user_id IN (
+         SELECT id FROM users WHERE LOWER(TRIM(COALESCE(company, ''))) = ?
+       )
+       ORDER BY created_at DESC LIMIT ?`,
+      [company, limit],
+    );
     if (result.length === 0) return res.json([]);
     const cols = result[0].columns;
     const reports = result[0].values.map((row) => {
@@ -168,11 +186,21 @@ systemRouter.get('/cnpj/:cnpj', async (req: Request, res: Response) => {
 });
 
 // Wave 13 (CPI) - Feedback Loop: agregados honestos e determinísticos
-systemRouter.get('/feedback/summary', async (_req: Request, res: Response) => {
+systemRouter.get('/feedback/summary', async (req: Request, res: Response) => {
   try {
     const db = await getDatabase();
+    const company = tenantCompany(req);
+    // Escopo de tenant: o resumo agregava leads/messages de TODAS as companies.
+    // Messages não têm coluna company — o vínculo com o tenant é via lead_id.
 
-    const messagesRes = await db.exec(`SELECT channel, feedback FROM messages`);
+    const messagesRes = await db.exec(
+      `SELECT m.channel, m.feedback FROM messages m
+       WHERE EXISTS (
+         SELECT 1 FROM leads l
+         WHERE l.id = m.lead_id AND LOWER(TRIM(COALESCE(l.company, ''))) = ?
+       )`,
+      [company],
+    );
     const messages: FeedbackMessageRecord[] =
       messagesRes.length > 0
         ? messagesRes[0].values.map((row) => ({
@@ -182,7 +210,8 @@ systemRouter.get('/feedback/summary', async (_req: Request, res: Response) => {
         : [];
 
     const leadsRes = await db.exec(
-      `SELECT stage, loss_reason, win_reason, segment, company FROM leads`,
+      `SELECT stage, loss_reason, win_reason, segment, company FROM leads WHERE LOWER(TRIM(COALESCE(company, ''))) = ?`,
+      [company],
     );
     const leads: FeedbackLeadRecord[] =
       leadsRes.length > 0

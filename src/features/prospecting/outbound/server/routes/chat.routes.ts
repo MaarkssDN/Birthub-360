@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from 'express';
 import { getDatabase, saveDatabase } from '../db.js';
 import { checkOllamaConnection, chatWithLLaMA3 } from '../ai.js';
-import { requireAuth } from '../auth.js';
+import { requireAuth, requireTenantScope } from '../auth.js';
 import { rateLimit } from '../middleware/rateLimit.js';
 
 const heavyAiLimiter = rateLimit({
@@ -11,6 +11,14 @@ const heavyAiLimiter = rateLimit({
 });
 
 export const chatRouter = Router();
+
+// Handoff 12→05 (F2): defesa em profundidade — sessão + company obrigatórias.
+// GAP RESIDUAL conhecido: `chat_sessions`/`chat_messages` não têm coluna de
+// tenant nem de usuário — qualquer sessão autenticada de QUALQUER company
+// ainda consegue ler todas as conversas do chat legado. Isolar exige coluna
+// nova (decisão de schema → Agente 01) ou aposentadoria do módulo; registrado
+// na seção Resolução do handoff 12→05.
+chatRouter.use(requireTenantScope);
 
 // 6. Ollama Status Check
 chatRouter.post('/ollama/status', async (req: Request, res: Response) => {

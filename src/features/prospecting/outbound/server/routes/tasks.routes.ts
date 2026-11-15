@@ -170,13 +170,16 @@ tasksRouter.get('/users/:userId/tasks', requireAuth, async (req: Request, res: R
   try {
     const { userId } = req.params;
     const db = await getDatabase();
+    const company = tenantCompany(req);
+    // Escopo de tenant via JOIN em leads (tasks não tem coluna company própria):
+    // sem o filtro, qualquer autenticado lia as tarefas de outro vendedor/tenant.
     const result = await db.exec(
       `SELECT t.*, l.name AS lead_name, l.company AS lead_company
        FROM tasks t
        JOIN leads l ON l.id = t.lead_id
-       WHERE t.user_id = ?
+       WHERE t.user_id = ? AND ${leadCompanyClause()}
        ORDER BY (t.status = 'pending') DESC, t.due_date ASC NULLS LAST, t.created_at DESC`,
-      [userId],
+      [userId, company],
     );
     res.json(mapRows(result));
   } catch (err: any) {
@@ -186,16 +189,20 @@ tasksRouter.get('/users/:userId/tasks', requireAuth, async (req: Request, res: R
 
 // Painel gerencial: tarefas de TODOS os vendedores, agrupáveis por vendedor no
 // front — restrito a admin/gestor (um vendedor comum só vê as próprias em /users/:userId/tasks).
-tasksRouter.get('/tasks', requireManager, async (_req: Request, res: Response) => {
+tasksRouter.get('/tasks', requireManager, async (req: Request, res: Response) => {
   try {
     const db = await getDatabase();
+    const company = tenantCompany(req);
+    // Painel gerencial continua por tenant: gestor/admin só vê tarefas de
+    // leads da própria company (antes listava o banco inteiro).
     const result = await db.exec(
       `SELECT t.*, l.name AS lead_name, l.company AS lead_company, u.name AS user_name
        FROM tasks t
        JOIN leads l ON l.id = t.lead_id
        LEFT JOIN users u ON u.id = t.user_id
-       WHERE t.status != 'cancelled'
+       WHERE t.status != 'cancelled' AND ${leadCompanyClause()}
        ORDER BY (t.status = 'pending') DESC, t.due_date ASC NULLS LAST, t.created_at DESC`,
+      [company],
     );
     res.json(mapRows(result));
   } catch (err: any) {
