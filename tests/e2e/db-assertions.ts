@@ -15,6 +15,7 @@
  *   prepare-integration-env.js e reforçada no playwright.config.ts.
  */
 import type { Prisma } from '@prisma/client';
+import { requestContext } from '../../src/lib/async-context';
 import { prisma } from '../../src/lib/prisma';
 
 export { prisma as db };
@@ -43,12 +44,22 @@ function delegateFor(model: ModelName) {
   };
 }
 
+// Leituras de assertion rodam fora de request HTTP: sem tenantId e sem bypassRls
+// o wrapper de tenancy executa a query sem app.current_tenant_id e o RLS do
+// Postgres devolve zero linhas (fail-closed) — o helper reportaria "ausente"
+// mesmo com o dado persistido. bypassRls é honrado fora de produção para
+// qualquer model (ver resolveBypassRls em src/lib/prisma-interceptors.ts),
+// mesmo padrão de helpers.ts (enterWith({ bypassRls: true })).
+function read<T>(fn: () => Promise<T>): Promise<T> {
+  return requestContext.run({ bypassRls: true }, fn);
+}
+
 /** Busca um registro por campo único (ex.: { email }). Retorna null se não existir. */
 export async function dbFindBy<K extends string>(
   model: ModelName,
   where: Record<K, string>,
 ): Promise<Record<string, unknown> | null> {
-  const row = await delegateFor(model).findUnique({ where });
+  const row = await read(() => delegateFor(model).findUnique({ where }));
   return (row as Record<string, unknown> | null) ?? null;
 }
 
@@ -58,7 +69,7 @@ export async function dbFindFirst(
   where: Record<string, unknown>,
   orderBy?: Record<string, 'asc' | 'desc'>,
 ): Promise<Record<string, unknown> | null> {
-  const row = await delegateFor(model).findFirst({ where, orderBy });
+  const row = await read(() => delegateFor(model).findFirst({ where, orderBy }));
   return (row as Record<string, unknown> | null) ?? null;
 }
 
@@ -67,5 +78,5 @@ export async function dbCount(
   model: ModelName,
   where?: Record<string, unknown>,
 ): Promise<number> {
-  return delegateFor(model).count(where ? { where } : undefined);
+  return read(() => delegateFor(model).count(where ? { where } : undefined));
 }
