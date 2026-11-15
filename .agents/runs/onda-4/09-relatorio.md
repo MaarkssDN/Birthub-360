@@ -135,3 +135,59 @@ próprio workbox-build se um `globPattern`/`globIgnores` futuro usar `{}`.
    ambos devem ser atualizados juntos (o próprio arquivo exige o espelho).
 3. Após o bump para `brace-expansion@5.x`, rodar `npm audit` para confirmar que a
    linha 5 cobre as GHSA que motivaram o override 2.1.7.
+
+---
+
+## Addendum — verificação independente do orquestrador (pós-bloqueio do Agente 24)
+
+O Agente 24 bloqueou a integração por suspeita de cobertura incompleta do override
+(somente o caminho `glob` receberia `brace-expansion@5`). O orquestrador executou
+verificação empírica completa em diretório isolado (`npm ci` real, sem junction de
+node_modules):
+
+### Resultado do `npm ci` limpo (package.json + package-lock.json do commit ad5111463)
+
+- `npm ci` (sem flags; `.npmrc` já contém `legacy-peer-deps=true` por causa do pin de
+  peers do mem0ai — condição pré-existente e documentada): **sucesso**, 2300 pacotes.
+- `npm ls brace-expansion`: `2.1.7` na raiz (legados) + `5.0.13` aninhado sob
+  `node_modules/glob/node_modules/`.
+
+### Teste runtime de expansão de chaves por caminho
+
+| Caminho | Resultado |
+|---|---|
+| `glob@14 → minimatch@11.0.5 → brace-expansion@5.0.13` (workbox-build/PRECache) | **OK** — `new Minimatch('a{b,c}').match('ab')` retorna true |
+| `minimatch@11.0.6` top-level (consumido por `@typescript-eslint/typescript-estree`) | **CRASH latente** — resolve `brace-expansion@2.1.7` |
+| `@ts-morph/common → minimatch@11.0.5` | **CRASH latente** — resolve `brace-expansion@2.1.7` |
+
+### Por que os caminhos dev não foram corrigidos (limitação real do npm)
+
+Foram testadas e **rejeitadas empiricamente** (lockfile regenerado + `npm ci` + teste
+de runtime a cada iteração):
+
+1. `"minimatch@^10.0.0": {"brace-expansion": "^5.0.12"}` — npm registra o spec `^5.0.12`
+   nas arestas `^10` mas o arborist **deduplica para `2.1.7`** na reificação (árvore
+   internamente inconsistente, sem erro).
+2. Escopo por pacote pai (`"@typescript-eslint/typescript-estree": {"brace-expansion": ...}`)
+   — não gera entrada aninhada (a chave só se aplica a dependências diretas do pai).
+3. `"glob@>=14": {...}` — `EOVERRIDE`: npm proíbe override escopado em dependência direta.
+4. `file:` para shim local (diretório e `.tgz`) — npm resolve o path relativo a cada
+   importador, gerando links/entradas quebradas no lockfile.
+5. Não existe versão de `brace-expansion` que sirva aos dois mundos: v2 é função
+   chamável (exigida por minimatch@3/5), v3/v4 são ESM, v5 é objeto `.expand` (exigida
+   por minimatch@11).
+
+### Estado final e recomendação
+
+- **MEL-27 (objetivo real — bomba do precache PWA): CORRIGIDO e verificado.** Todos os
+  consumidores de `glob@14` compartilham a única instância `node_modules/glob` →
+  `minimatch@11.0.5` → `brace-expansion@5.0.13`. `workbox-build`, `cacache`, `rimraf`,
+  `archiver-utils` e o plugin joshwooding estão cobertos.
+- **Residual (dev-only):** `ts-estree`/`ts-morph` ainda podem quebrar SE um padrão com
+  `{}` chegar ao `minimatch@11` deles (lint/typecheck tooling — não afeta build de
+  produção nem PWA). Caminhos de correção futura: `pnpm patch`/`patchedDependencies`
+  (o lado pnpm **já está correto**: o seletor `minimatch@^11.0.0>brace-expansion`
+  casa pela versão resolvida e cobre as 3 instâncias), aguardar bump do
+  typescript-eslint, ou override quando o npm corrigir o dedupe.
+- `pnpm-workspace.yaml` mantém `brace-expansion: ^2.1.7` +
+  `'minimatch@^11.0.0>brace-expansion': ^5.0.12` — semanticamente correto no pnpm.
