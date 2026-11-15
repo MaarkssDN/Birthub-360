@@ -89,11 +89,11 @@ describe('GET /api/leads/export/csv — trilha de auditoria (Etapa handoff 15)',
   }, 30_000);
 
   afterAll(async () => {
-    // AuditLog não aceita mais bypass de RLS nem para leitura/limpeza (ver comentário em
-    // waitForAuditLog) — apaga por tenant, um de cada vez.
-    for (const orgId of createdOrgIds) {
-      await withTenant(orgId, () => prisma.auditLog.deleteMany({ where: { tenantId: orgId } }));
-    }
+    // AuditLog é append-only desde a migration 20261114160000 (trigger audit_log_immutable
+    // bloqueia UPDATE/DELETE/TRUNCATE para qualquer papel) — não existe caminho de limpeza, e
+    // AuditLog não tem FK para Organization (tenantId é string solta), então apagar a org não
+    // cascateia. As linhas de auditoria deste run ficam órfãs por tenantId único e inertes:
+    // toda leitura do spec é escopada por tenant via withTenant/RLS.
     await withRlsBypass(async () => {
       await prisma.lead.deleteMany({ where: { organizationId: { in: createdOrgIds } } });
       await prisma.user.deleteMany({ where: { id: { in: createdUserIds } } });
