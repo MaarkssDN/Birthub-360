@@ -139,9 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Timeout de 3s garante que o redirect para /login nunca seja bloqueado
       // pelo expurgo (o resíduo, se houver, é purgado no próximo logout).
       try {
-        const { offlineSyncService } = await import(
-          '../features/mobile/offlineSync.service.js'
-        );
+        const { offlineSyncService } = await import('../features/mobile/offlineSync.service.js');
         const purge = offlineSyncService.clearQueue().then(() => 'done' as const);
         const timeout = new Promise<'timeout'>((resolve) =>
           setTimeout(() => resolve('timeout'), 3000),

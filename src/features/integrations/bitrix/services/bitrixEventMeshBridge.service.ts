@@ -13,9 +13,7 @@ import { postCommentToBitrix, syncActivityToBitrix } from '../service/outboundSy
  * tratá-lo como WhatsAppMessageEventPayload / BitrixWebhookEventPayload.
  * Campos obrigatórios conforme src/shared/contracts/domainEventMesh.contract.ts.
  */
-function isWhatsAppMessageEventPayload(
-  payload: unknown,
-): payload is WhatsAppMessageEventPayload {
+function isWhatsAppMessageEventPayload(payload: unknown): payload is WhatsAppMessageEventPayload {
   if (!payload || typeof payload !== 'object') return false;
   const p = payload as Record<string, unknown>;
   return (
@@ -26,9 +24,7 @@ function isWhatsAppMessageEventPayload(
   );
 }
 
-function isBitrixWebhookEventPayload(
-  payload: unknown,
-): payload is BitrixWebhookEventPayload {
+function isBitrixWebhookEventPayload(payload: unknown): payload is BitrixWebhookEventPayload {
   if (!payload || typeof payload !== 'object') return false;
   const p = payload as Record<string, unknown>;
   return (
@@ -125,7 +121,11 @@ class BitrixEventMeshBridgeService {
     try {
       if (!isWhatsAppMessageEventPayload(event.payload)) {
         logger.warn(
-          { eventId: event.eventId, organizationId: event.organizationId, eventType: event.eventType },
+          {
+            eventId: event.eventId,
+            organizationId: event.organizationId,
+            eventType: event.eventType,
+          },
           '[BitrixEventMeshBridge] Payload de WhatsApp inválido — evento ignorado (contrato violado).',
         );
         return;
@@ -336,7 +336,11 @@ class BitrixEventMeshBridgeService {
     try {
       if (!isBitrixWebhookEventPayload(event.payload)) {
         logger.warn(
-          { eventId: event.eventId, organizationId: event.organizationId, eventType: event.eventType },
+          {
+            eventId: event.eventId,
+            organizationId: event.organizationId,
+            eventType: event.eventType,
+          },
           '[BitrixEventMeshBridge] Payload de webhook Bitrix inválido — evento ignorado (contrato violado).',
         );
         return;
