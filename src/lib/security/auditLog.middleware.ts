@@ -37,11 +37,7 @@ export function auditAccessMiddleware(entity: string, action?: AuditAction) {
           AuditService.log({
             action:
               action ??
-              (req.method === 'GET'
-                ? 'EXPORT'
-                : req.method === 'DELETE'
-                  ? 'DELETE'
-                  : 'UPDATE'),
+              (req.method === 'GET' ? 'EXPORT' : req.method === 'DELETE' ? 'DELETE' : 'UPDATE'),
             entity,
             entityId: typeof routeEntityId === 'string' ? routeEntityId : undefined,
             actorId,
