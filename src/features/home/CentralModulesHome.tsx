@@ -118,7 +118,7 @@ export function CentralModulesHome() {
     if (module.external) {
       window.location.assign(module.home);
     } else {
-      navigate(module.home);
+      void navigate(module.home);
     }
   };
 
