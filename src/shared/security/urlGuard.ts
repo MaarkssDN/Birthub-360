@@ -17,7 +17,8 @@ import { AppError } from '../middlewares/errorHandler.js';
 // qualquer outro campo futuro do tipo "URL de callback"/"URL de destino" armazenado no banco ou
 // recebido em input. Promovido de `src/lib/adapters/crm/Bitrix24Adapter.ts` (onde nasceu só para
 // o caso Bitrix, mas já era importado cross-feature pelo 3CX) para `src/shared/security/` —
-// mesmo comportamento, local e nome genéricos. Bloqueamos esquemas não-HTTPS e qualquer host que
+// mesmo comportamento, local e nome genéricos. Bloqueamos esquemas não-HTTPS (exceção: `http:`
+// para loopback fora de produção — ver `isLoopbackHttpAllowed`) e qualquer host que
 // resolva para um endereço privado/reservado/loopback/link-local antes de qualquer fetch real.
 //
 // NÃO usar para URLs de provedor fixas/hardcoded no próprio código (Apollo, Hunter, OpenAI,
@@ -64,6 +65,58 @@ interface SafeResolution {
 }
 
 /**
+ * Loopback estrito — SÓ para a exceção de desenvolvimento abaixo, não altera
+ * `isPrivateOrReservedIp`: IPv4 `127.0.0.0/8`, IPv6 `::1` e IPv4-mapeado-em-IPv6 de loopback.
+ */
+function isLoopbackIp(ip: string): boolean {
+  if (net.isIPv4(ip)) {
+    return ip.split('.')[0] === '127';
+  }
+  if (net.isIPv6(ip)) {
+    const lower = ip.toLowerCase();
+    if (lower === '::1') return true;
+    if (lower.startsWith('::ffff:')) {
+      // O parser WHATWG normaliza IPv4-mapeado para hex de 2 grupos (::ffff:7f00:1 =
+      // 127.0.0.1); aceitar também a forma dotted por robustez (chamadas diretas).
+      const tail = lower.slice('::ffff:'.length);
+      if (net.isIPv4(tail)) return isLoopbackIp(tail);
+      const groups = tail.split(':');
+      if (groups.length === 2 && groups.every((g) => /^[0-9a-f]{1,4}$/.test(g))) {
+        const hi = Number.parseInt(groups[0], 16);
+        const lo = Number.parseInt(groups[1], 16);
+        const ipv4 = `${(hi >> 8) & 0xff}.${hi & 0xff}.${(lo >> 8) & 0xff}.${lo & 0xff}`;
+        return isLoopbackIp(ipv4);
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ * Hostname de loopback: `localhost`, `*.localhost` ou IP literal de loopback (colchetes de
+ * literal IPv6, que `URL#hostname` preserva, são removidos antes da checagem).
+ */
+function isLoopbackHostname(hostname: string): boolean {
+  const host = hostname.toLowerCase().replace(/^\[|\]$/g, '');
+  if (host === 'localhost' || host.endsWith('.localhost')) return true;
+  return net.isIP(host) !== 0 && isLoopbackIp(host);
+}
+
+/**
+ * Exceção aprovada pelo usuário (decisão registrada no handoff
+ * `.agents/handoffs/onda-2/15-para-07-webhook-fetch-safeFetch.md`): `http:` é tolerado APENAS
+ * para loopback (`localhost`, `127.0.0.0/8`, `::1`) quando `NODE_ENV !== 'production'` — cobre
+ * receptores de webhook/gateway locais de dev (ntfy, sms-gw etc.). Em produção e para qualquer
+ * host não-loopback, HTTPS continua obrigatório. A exceção é SÓ de scheme/destino: o bloqueio
+ * de IP privado/reservado, a resolução DNS e o pinning de conexão (`safeFetch`) permanecem
+ * intactos — um `localhost` que resolvesse para IP não-loopback continua rejeitado.
+ */
+function isLoopbackHttpAllowed(url: URL): boolean {
+  if (process.env.NODE_ENV === 'production') return false;
+  return url.protocol === 'http:' && isLoopbackHostname(url.hostname);
+}
+
+/**
  * Valida `rawUrl` (esquema HTTPS, host que não é `localhost`, IP literal que não seja
  * privado/reservado) e resolve+valida cada endereço do host, se for um hostname. Lança
  * `AppError(..., 400)` no primeiro problema encontrado. Base compartilhada por
@@ -78,20 +131,30 @@ async function resolveSafe(rawUrl: string): Promise<SafeResolution> {
     throw new AppError('URL informada é inválida.', 400);
   }
 
-  if (url.protocol !== 'https:') {
+  const loopbackHttp = isLoopbackHttpAllowed(url);
+  if (url.protocol !== 'https:' && !loopbackHttp) {
     throw new AppError('A URL informada deve usar HTTPS.', 400);
   }
 
   const hostname = url.hostname.toLowerCase();
-  if (hostname === 'localhost' || hostname.endsWith('.localhost')) {
+  // `loopbackHttp` (= `isLoopbackHttpAllowed`: http: + loopback + não-produção) é a ÚNICA
+  // exceção — para https://loopback ou qualquer outro caso, o bloqueio original de
+  // localhost/IP privado/reservado permanece intacto em todos os ambientes.
+  if (!loopbackHttp && (hostname === 'localhost' || hostname.endsWith('.localhost'))) {
     throw new AppError('Endereço não permitido.', 400);
   }
 
   if (net.isIP(hostname)) {
-    if (isPrivateOrReservedIp(hostname)) {
+    if (isPrivateOrReservedIp(hostname) && !loopbackHttp) {
       throw new AppError('Endereço não permitido (IP privado/reservado).', 400);
     }
     return { url, addresses: [hostname] };
+  }
+
+  // Literal IPv6 chega com colchetes (`[::1]`) e `net.isIP` não o reconhece — sem este desvio
+  // ele cairia no DNS lookup e seria rejeitado por "não foi possível resolver".
+  if (loopbackHttp && hostname === '[::1]') {
+    return { url, addresses: ['::1'] };
   }
 
   const records = await dns.lookup(hostname, { all: true }).catch(() => []);
@@ -99,7 +162,7 @@ async function resolveSafe(rawUrl: string): Promise<SafeResolution> {
     throw new AppError('Não foi possível resolver o host informado.', 400);
   }
   for (const record of records) {
-    if (isPrivateOrReservedIp(record.address)) {
+    if (isPrivateOrReservedIp(record.address) && !(loopbackHttp && isLoopbackIp(record.address))) {
       throw new AppError('Endereço não permitido (resolve para IP privado/reservado).', 400);
     }
   }
@@ -107,8 +170,9 @@ async function resolveSafe(rawUrl: string): Promise<SafeResolution> {
 }
 
 /**
- * Valida que `rawUrl` é segura para o servidor buscar (fetch) de verdade: HTTPS, host que não
- * resolve para IP privado/reservado/loopback/link-local. Lança `AppError(..., 400)` caso
+ * Valida que `rawUrl` é segura para o servidor buscar (fetch) de verdade: HTTPS (ou `http:`
+ * para loopback fora de produção — exceção aprovada pelo usuário, ver `isLoopbackHttpAllowed`),
+ * host que não resolve para IP privado/reservado/loopback/link-local. Lança `AppError(..., 400)` caso
  * contrário.
  *
  * Use isto só para validar uma URL SEM fazer o fetch real na mesma chamada (ex.: `connect3CX`
@@ -139,11 +203,13 @@ export async function assertSafeExternalUrl(rawUrl: string): Promise<void> {
  */
 export async function safeFetch(rawUrl: string, init: RequestInit = {}): Promise<Response> {
   const safeUrl = new URL(rawUrl);
-  if (safeUrl.protocol !== 'https:') {
+  const safeHost = safeUrl.hostname.toLowerCase();
+  // Mesma exceção de `resolveSafe`: http:// loopback fora de produção (decisão do usuário).
+  const loopbackHttp = isLoopbackHttpAllowed(safeUrl);
+  if (safeUrl.protocol !== 'https:' && !loopbackHttp) {
     throw new AppError('A URL informada deve usar HTTPS.', 400);
   }
-  const safeHost = safeUrl.hostname.toLowerCase();
-  if (safeHost === 'localhost' || safeHost.endsWith('.localhost')) {
+  if (!loopbackHttp && (safeHost === 'localhost' || safeHost.endsWith('.localhost'))) {
     throw new AppError('Endereço não permitido.', 400);
   }
 

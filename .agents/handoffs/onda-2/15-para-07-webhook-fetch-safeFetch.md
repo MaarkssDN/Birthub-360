@@ -99,3 +99,17 @@ tenant configurados com `http://` (ex.: gateway local de teste ntfy/sms-gw em de
 agora serão rejeitados com 400 em qualquer ambiente — mesmo comportamento que
 `universalMessagingTool` (Teams) já tinha. Se algum fluxo depende de `http:` local,
 precisa de decisão do 15/00 (não encontrei caso nos testes/código atuais).
+
+### Atualização (Agente 15 — 2026-…, worktree `Birthub-360-wt-o4-safe`, branch `agente/15-onda4-safehttp`)
+
+**Decisão do usuário aplicada**: `safeFetch`/`assertSafeExternalUrl`
+(`src/shared/security/urlGuard.ts`) agora toleram `http:` **apenas para loopback**
+(`localhost`, `*.localhost`, `127.0.0.0/8`, `::1`, IPv4-mapeado-em-IPv6 de loopback)
+quando `NODE_ENV !== 'production'` — via helper `isLoopbackHttpAllowed(url)`.
+Em produção e para qualquer host não-loopback, HTTPS continua obrigatório, e o
+bloqueio de IP privado/reservado não-loopback segue valendo em todo ambiente.
+A exceção é SÓ de scheme/destino: DNS-pinning do `safeFetch` e a validação de
+registros DNS (só endereços loopback são aceitos para hostname loopback) permanecem.
+`https://localhost`/`https://127.0.0.1` continuam rejeitados — a exceção não abre
+loopback para HTTPS. Testes novos em `tests/unit/shared/security/urlGuard.test.ts`
+(32/32 verde).
