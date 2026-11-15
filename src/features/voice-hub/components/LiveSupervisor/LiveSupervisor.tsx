@@ -147,7 +147,8 @@ export function LiveSupervisor({ sessionId }: LiveSupervisorProps) {
             expected: sessionId,
             received: data.sessionId,
           },
-          'LiveSupervisor: telemetria ignorada — sessionId não corresponde à sessão observada');
+          'LiveSupervisor: telemetria ignorada — sessionId não corresponde à sessão observada',
+        );
         return;
       }
       setLastUpdateAt(Date.now());
@@ -179,9 +180,12 @@ export function LiveSupervisor({ sessionId }: LiveSupervisorProps) {
       // (see server.ts, which enforces the 'supervision:intervene' permission via hasPermission()).
       // If it rejects the request, roll back the optimistic state instead of showing an
       // intervention that never actually happened.
-      logger.warn( {
-        message: data?.message,
-      },'LiveSupervisor: intervenção rejeitada pelo servidor');
+      logger.warn(
+        {
+          message: data?.message,
+        },
+        'LiveSupervisor: intervenção rejeitada pelo servidor',
+      );
       setIntervention((prev) => (prev?.triggeredByMe ? null : prev));
     });
 

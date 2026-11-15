@@ -35,8 +35,7 @@ export function createAuditLog(data: {
     data.details && typeof data.details === 'object' && !Array.isArray(data.details)
       ? (data.details as Record<string, unknown>)
       : null;
-  const entityId =
-    typeof detailsObj?.entityId === 'string' ? detailsObj.entityId : null;
+  const entityId = typeof detailsObj?.entityId === 'string' ? detailsObj.entityId : null;
 
   return prisma.auditLog.create({
     data: {

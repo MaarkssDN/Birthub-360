@@ -128,9 +128,7 @@ describe('notificationService.markAsRead', () => {
   it('throws NotificationNotFoundError when the repository returns null (missing or belongs to another tenant/user — same fallback, AGENTS.md §15)', async () => {
     vi.mocked(markNotificationAsReadRow).mockResolvedValue(null);
 
-    await expect(markAsRead('notif-1', SCOPE)).rejects.toBeInstanceOf(
-      NotificationNotFoundError,
-    );
+    await expect(markAsRead('notif-1', SCOPE)).rejects.toBeInstanceOf(NotificationNotFoundError);
   });
 });
 

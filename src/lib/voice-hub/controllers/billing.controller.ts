@@ -93,10 +93,7 @@ export async function changePlanHandler(req: Request, res: Response) {
           message: `Seu plano foi alterado com sucesso para ${wallet.planName ?? parsed.data.planId}.`,
         },
       ).catch((err) => {
-        logger.error(
-          { err, userId: notifyUserId },
-          'Failed to create plan-change notification',
-        );
+        logger.error({ err, userId: notifyUserId }, 'Failed to create plan-change notification');
       });
     }
     return res.json({ wallet });

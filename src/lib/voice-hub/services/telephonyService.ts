@@ -90,7 +90,7 @@ export async function resolveAgent(toNumber: string) {
 export async function startCall(params: { callSid: string; from: string; to: string }) {
   const agent = await resolveAgent(params.to);
   if (!agent) {
-    logger.warn( { to: params.to, callSid: params.callSid },'Incoming call to unconfigured number');
+    logger.warn({ to: params.to, callSid: params.callSid }, 'Incoming call to unconfigured number');
     return { configured: false as const };
   }
 
@@ -131,10 +131,13 @@ export async function startCall(params: { callSid: string; from: string; to: str
   if (!result.created) {
     const persisted = result.session.metadata as unknown as PhoneSessionMetadata;
     const persistedGreeting = persisted?.turns?.find((turn) => turn.role === 'assistant')?.content;
-    logger.info( {
-      callSid: params.callSid,
-      sessionId: result.session.id,
-    },'Twilio initial webhook replay reused existing phone session');
+    logger.info(
+      {
+        callSid: params.callSid,
+        sessionId: result.session.id,
+      },
+      'Twilio initial webhook replay reused existing phone session',
+    );
     return {
       configured: true as const,
       sessionId: result.session.id,
@@ -222,10 +225,13 @@ async function resolvePreparedTurn(prepared: PreparedWorkflowTurn): Promise<Prep
   while (current.mode === 'tool_pending') {
     steps += 1;
     if (steps > MAX_TOOL_CHAIN_STEPS) {
-      logger.error( {
-        workflowId: current.state.workflowId,
-        currentNodeId: current.state.currentNodeId,
-      },'Workflow tool_pending chain exceeded the safety limit; ending the call');
+      logger.error(
+        {
+          workflowId: current.state.workflowId,
+          currentNodeId: current.state.currentNodeId,
+        },
+        'Workflow tool_pending chain exceeded the safety limit; ending the call',
+      );
       return {
         state: current.state,
         mode: 'direct',
@@ -239,10 +245,13 @@ async function resolvePreparedTurn(prepared: PreparedWorkflowTurn): Promise<Prep
     );
 
     if (!pendingNode) {
-      logger.error( {
-        workflowId: current.state.workflowId,
-        currentNodeId: current.state.currentNodeId,
-      },'tool_pending turn without a matching pending tool node in state.nodes');
+      logger.error(
+        {
+          workflowId: current.state.workflowId,
+          currentNodeId: current.state.currentNodeId,
+        },
+        'tool_pending turn without a matching pending tool node in state.nodes',
+      );
       return {
         state: current.state,
         mode: 'direct',
@@ -340,11 +349,14 @@ export async function handleTurn(params: {
         // `department` is only a label (never resolved to a number/PBX line — see the contract
         // doc above); logging it here is the observability use the contract suggests, not a
         // routing decision.
-        logger.info( {
-          sessionId: session.id,
-          organizationId: session.organizationId,
-          department: transferDetails.department ?? null,
-        },'Transferring call to a human agent');
+        logger.info(
+          {
+            sessionId: session.id,
+            organizationId: session.organizationId,
+            department: transferDetails.department ?? null,
+          },
+          'Transferring call to a human agent',
+        );
       } else {
         // Defensive only: the contract guarantees `transferDetails` is always present when
         // `mode === 'transfer'` — a missing one here would be a bug in `workflowRuntimeService.ts`
@@ -354,7 +366,8 @@ export async function handleTurn(params: {
             workflowId: prepared.state.workflowId,
             currentNodeId: prepared.state.currentNodeId,
           },
-          'transfer mode without transferDetails; ending the call instead of guessing a destination');
+          'transfer mode without transferDetails; ending the call instead of guessing a destination',
+        );
         reply = TRANSFER_MISSING_DETAILS_MESSAGE;
         shouldEnd = true;
       }

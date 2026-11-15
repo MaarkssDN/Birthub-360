@@ -133,10 +133,13 @@ async function archivePublishedVersion(
     });
   } catch (err: any) {
     if (workflowRepository.isUniqueConstraintViolation(err)) {
-      logger.error( {
-        workflowId,
-        versionToArchive,
-      },'Refusing to duplicate an already-archived workflow version');
+      logger.error(
+        {
+          workflowId,
+          versionToArchive,
+        },
+        'Refusing to duplicate an already-archived workflow version',
+      );
       return;
     }
     throw err;
