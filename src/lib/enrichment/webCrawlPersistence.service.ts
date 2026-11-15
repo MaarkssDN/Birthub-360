@@ -1,7 +1,7 @@
 /**
  * Ponte Crawlee → persistência (reconciliação do handoff 16→05, Onda 14).
  *
- * O `runCrawler` (`crawlee/crawler.ts`) extrai `{ url, title, emails, socialMedia }` em memória
+ * O `runCrawler` (`prospecting/crawlee/crawler.ts`) extrai `{ url, title, emails, socialMedia }` em memória
  * e o workflow Temporal `prospectWorkflow`/`scrapeProspect` não persistia nada — a "resolução"
  * anterior superestimava. Este serviço é a ponte mínima real: dado o resultado do crawl,
  * resolve a Company correspondente (por `companyId` explícito, `leadId` → company, ou domínio
@@ -22,27 +22,17 @@
  */
 
 import type { Company } from '@prisma/client';
-import { logger } from '../../../lib/logger.js';
-import type { CrawledPageSignals } from '../domain/prospectTypes.js';
+import type {
+  CrawlMatchBy,
+  CrawlPagePersistence,
+  CrawledPageSignals,
+} from '../../shared/contracts/webCrawl.contract.js';
 import {
   defaultEnrichmentRepository,
   type IEnrichmentRepository,
-} from '../infra/PrismaEnrichmentRepository.js';
-import { extractDomainFromWebsite } from './enrichment/domainGuess.js';
-
-export type CrawlMatchBy = 'companyId' | 'leadId' | 'websiteDomain' | 'none';
-
-export interface CrawlPagePersistence {
-  url: string;
-  companyId: string | null;
-  matchedBy: CrawlMatchBy;
-  persisted: boolean;
-  /** true quando a Company foi de fato alterada (e-mail/rede novos); false = já estava tudo lá. */
-  changed: boolean;
-  emailsAdded: number;
-  socialFieldsAdded: number;
-  reason?: string;
-}
+} from '../../features/prospecting/infra/PrismaEnrichmentRepository.js';
+import { extractDomainFromWebsite } from '../../features/prospecting/services/enrichment/domainGuess.js';
+import { logger } from '../logger.js';
 
 export interface PersistCrawledSignalsOptions {
   organizationId: string;

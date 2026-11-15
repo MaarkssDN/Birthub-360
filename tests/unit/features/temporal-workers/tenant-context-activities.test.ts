@@ -24,7 +24,9 @@ vi.mock('../../../../src/features/prospecting/crawlee/crawler.js', () => ({
 }));
 
 // Mock da ponte de persistência — scrapeProspect não deve tocar Prisma em teste unitário.
-vi.mock('../../../../src/features/prospecting/services/webCrawlPersistence.service.js', () => ({
+// A ponte vive em src/lib/enrichment/ (camada de composição de prospecção) desde a correção
+// das violações do depcruise — o mock precisa apontar para o novo caminho.
+vi.mock('../../../../src/lib/enrichment/webCrawlPersistence.service.js', () => ({
   persistCrawledSignals: vi.fn(async (pages: Array<{ url: string }>) =>
     pages.map((p) => ({
       url: p.url,

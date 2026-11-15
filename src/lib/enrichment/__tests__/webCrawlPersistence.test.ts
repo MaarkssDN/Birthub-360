@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { Company, Contact, EnrichmentLog, Prisma } from '@prisma/client';
-import type { CrawledPageSignals } from '../../domain/prospectTypes.js';
-import type { IEnrichmentRepository } from '../../infra/PrismaEnrichmentRepository.js';
+import type { CrawledPageSignals } from '../../../shared/contracts/webCrawl.contract.js';
+import type { IEnrichmentRepository } from '../../../features/prospecting/infra/PrismaEnrichmentRepository.js';
 import {
   mergeCrawledSignalsIntoCompany,
   persistCrawledSignals,

@@ -1,9 +1,9 @@
 import { runCrawler } from '../prospecting/crawlee/crawler.js';
-import type { CrawledPageSignals } from '../prospecting/domain/prospectTypes.js';
-import {
-  persistCrawledSignals,
-  type CrawlPagePersistence,
-} from '../prospecting/services/webCrawlPersistence.service.js';
+import type {
+  CrawlPagePersistence,
+  CrawledPageSignals,
+} from '../../shared/contracts/webCrawl.contract.js';
+import { persistCrawledSignals } from '../../lib/enrichment/webCrawlPersistence.service.js';
 import { logger } from '../../lib/logger.js';
 import {
   TenantContextMissingError,
@@ -36,6 +36,12 @@ export interface ScrapeProspectResult {
  * `organizationId` vem de `params.organizationId ?? params.tenantId` — o tenant validado por
  * `withTenantActivity`/`withTenantContext` é o mesmo valor, então o where explícito por
  * organizationId e a RLS do Postgres apontam para o mesmo tenant.
+ *
+ * A ponte de persistência vive em `src/lib/enrichment/` (camada de composição/adapters de
+ * prospecção, dono Agente 05) e os DTOs em `src/shared/contracts/webCrawl.contract.ts` —
+ * `temporal-workers` não pode importar internals de `prospecting` diretamente
+ * (regra `no-cross-feature-imports` do dependency-cruiser). O import de `runCrawler` já
+ * constava do baseline de violações conhecidas.
  */
 export const scrapeProspect = withTenantActivity(
   async (params: ScrapeProspectParams): Promise<ScrapeProspectResult> => {

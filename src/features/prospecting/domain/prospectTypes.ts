@@ -229,15 +229,6 @@ export function buildLocationLabel(criteria: ProspectCriteria): string {
   return criteria.localizacao;
 }
 
-/**
- * Sinais extraídos de uma página pelo crawler Crawlee (`crawlee/crawler.ts`), já normalizados
- * (e-mails deduplicados, links sociais filtrados). Tipo de domínio para que a ponte de
- * persistência (`services/webCrawlPersistence.service.ts`) não dependa do módulo `crawlee`
- * (que é opcional/não instalado em todos os ambientes) nem do arquivo excluído do tsconfig.
- */
-export interface CrawledPageSignals {
-  url: string;
-  title: string;
-  emails: string[];
-  socialMedia: string[];
-}
+// `CrawledPageSignals` foi movido para `src/shared/contracts/webCrawl.contract.ts` — é um DTO de
+// fronteira entre prospecting e o runtime Temporal (temporal-workers), e features não podem
+// importar internals de outras features (regra `no-cross-feature-imports` do depcruise).
