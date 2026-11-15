@@ -1,7 +1,7 @@
 ﻿De: 05 â€” ProspecÃ§Ã£o
 Para: 17 â€” CadÃªncia Multicanal e Ciclo de Receita
 Onda: onda-saneamento-20261105
-Status: resolvido
+Status: aberto
 Prioridade: alto
 Bloqueador-ref: DIV-AGENTE-05-001
 Sprint destino: Onda 3 â€” IntegraÃ§Ãµes, ExtraÃ§Ãµes e Telefonia
@@ -33,4 +33,6 @@ Qualidade da imagem comercial da marca.
 - Data: 2026-11-06.
 - Implementado CadenceTemplateRendererService em src/services/cadence/templateRenderer.service.ts com suporte a fallbacks (ex: {{lead.firstName | default: 'Ola'}}) e trava em modo strict que bloqueia envio lancando TemplateRenderError se faltar valor/fallback.
 - Testes: 	ests/unit/services/cadence/templateRenderer-fallbacks.test.ts (3 passam).
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto DEFEITO-REAL — templateRenderer sem consumidor produtivo. Correção pendente de despacho. Ver RESULTADOS-RECONCILIACAO-20261114.md.
 

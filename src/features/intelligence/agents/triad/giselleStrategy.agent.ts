@@ -62,7 +62,7 @@ RETORNE APENAS JSON VÁLIDO.`,
 
       if (parsed.scores && parsed.targetPersona) {
         return {
-          strategyId: `strat-ai-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+          strategyId: `strat-ai-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
           account,
           scores: parsed.scores,
           targetPersona: parsed.targetPersona,
@@ -99,7 +99,7 @@ RETORNE APENAS JSON VÁLIDO.`,
     const suggestedCta = this.createSuggestedCta(targetPersona, recommendedChannel);
 
     return {
-      strategyId: `strat-fallback-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      strategyId: `strat-fallback-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
       account,
       scores,
       targetPersona,

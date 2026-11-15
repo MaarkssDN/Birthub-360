@@ -25,7 +25,11 @@ export const WARN_LIMIT_LINES = 700;
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const EXCEPTIONS_PATH = path.join(ROOT, 'docs/architecture/HOTSPOT_EXCEPTIONS.md');
 
-const SCAN_ROOTS = ['src', 'server.ts', 'worker.ts'];
+// `worker-*.ts` cobre os entrypoints de worker por domínio (worker-core.ts, worker-crm.ts, ...),
+// que são processos separados de `worker.ts` e precisam entrar na contagem de arquivos-fonte
+// esperada pelo gate de cobertura do depcruise (MEL-24/Onda 3). O '*' é expandido abaixo por
+// `expandScanRoot` — SCAN_ROOTS continua uma lista de padrões, não só de caminhos literais.
+const SCAN_ROOTS = ['src', 'server.ts', 'worker*.ts'];
 
 const EXCLUDED_DIR_NAMES = new Set([
   'node_modules',
@@ -66,18 +70,37 @@ export function listSourceFiles(root: string = ROOT): string[] {
     }
   }
 
-  for (const scanRoot of SCAN_ROOTS) {
-    const absRoot = path.join(root, scanRoot);
-    let stat;
+  // Expande padrões com '*' (ex.: 'worker*.ts') contra os arquivos da raiz do repo. O glob é
+  // propositalmente mínimo — só '*' como curinga de trecho, sem '?'/'**'/classes — porque os
+  // padrões aqui são fixos neste arquivo, nunca input externo.
+  function expandScanRoot(scanRoot: string): string[] {
+    if (!scanRoot.includes('*')) return [scanRoot];
+    const pattern = new RegExp(
+      `^${scanRoot.split('*').map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('.*')}$`,
+    );
     try {
-      stat = statSync(absRoot);
+      return readdirSync(root, { withFileTypes: true })
+        .filter((entry) => entry.isFile() && pattern.test(entry.name))
+        .map((entry) => entry.name);
     } catch {
-      continue; // worker.ts pode não existir em todo checkout; não é erro do gate.
+      return [];
     }
-    if (stat.isDirectory()) {
-      walk(absRoot, scanRoot);
-    } else if (stat.isFile() && isSourceFile(scanRoot)) {
-      results.push(scanRoot);
+  }
+
+  for (const scanRoot of SCAN_ROOTS) {
+    for (const expandedRoot of expandScanRoot(scanRoot)) {
+      const absRoot = path.join(root, expandedRoot);
+      let stat;
+      try {
+        stat = statSync(absRoot);
+      } catch {
+        continue; // entrypoint pode não existir em todo checkout; não é erro do gate.
+      }
+      if (stat.isDirectory()) {
+        walk(absRoot, expandedRoot);
+      } else if (stat.isFile() && isSourceFile(expandedRoot)) {
+        results.push(expandedRoot);
+      }
     }
   }
 

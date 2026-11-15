@@ -11,9 +11,10 @@
 // não para gerar uma lista de violações pré-existentes sem dono.
 //
 // Rodar localmente: `npm run lint:architecture` (ou `npx depcruise --config .dependency-cruiser.cjs
-// --output-type err src server.ts worker.ts` para o mesmo resultado sem passar pelo script npm).
+// --output-type err src server.ts worker*.ts` para o mesmo resultado sem passar pelo script npm —
+// `worker*.ts` é glob do próprio depcruise e cobre worker.ts + worker-<dominio>.ts).
 // Gerar um gráfico para inspeção humana: `npx depcruise --config .dependency-cruiser.cjs
-// --output-type dot src server.ts worker.ts | dot -T svg > /tmp/deps.svg` (requer graphviz local,
+// --output-type dot src server.ts worker*.ts | dot -T svg > /tmp/deps.svg` (requer graphviz local,
 // não faz parte do gate de CI).
 
 /** @type {import('dependency-cruiser').IConfiguration} */

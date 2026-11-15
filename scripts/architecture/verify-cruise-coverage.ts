@@ -16,7 +16,9 @@
 // contagem de arquivos-fonte feita por uma varredura de sistema de arquivos independente
 // (`listSourceFiles()`, de check-hotspots.ts — não depende do parser TypeScript do
 // dependency-cruiser, só de `fs.readdirSync`), usando as mesmas raízes (`src/`, `server.ts`,
-// `worker.ts`) e as mesmas exclusões de diretório. Se a cobertura real cair muito abaixo do
+// `worker*.ts` — o glob cobre `worker.ts` e os entrypoints `worker-<dominio>.ts`, que são
+// processos separados e nunca eram cruzados quando só `worker.ts` era passado como argumento;
+// achado MEL-24/Onda 3) e as mesmas exclusões de diretório. Se a cobertura real cair muito abaixo do
 // esperado, ou se a saída do depcruise mencionar uma versão de TypeScript não suportada, o gate
 // falha alto e cedo — em vez de silenciosamente aprovar uma varredura incompleta.
 //
@@ -46,8 +48,10 @@ const UNSUPPORTED_TS_PATTERNS = [
   /unsupported typescript/i,
 ];
 
+// `worker*.ts` é glob resolvido pelo próprio depcruise (não pelo shell), então funciona igual
+// no cmd.exe do npm script e no bash — `worker.ts` + `worker-core.ts`, `worker-crm.ts`, etc.
 const DEPCRUISE_COMMAND =
-  'npx depcruise --config .dependency-cruiser.cjs --output-type json src server.ts worker.ts';
+  'npx depcruise --config .dependency-cruiser.cjs --output-type json src server.ts worker*.ts';
 
 export type CruiseCoverageResult = {
   cruisedModuleCount: number;
@@ -141,7 +145,7 @@ function main(): void {
     console.error(
       `❌ Cobertura do dependency-cruiser abaixo do esperado: cruzou ${cruisedModuleCount} ` +
         `módulo(s), mas há ${expectedSourceFileCount} arquivo(s)-fonte em src/, server.ts e ` +
-        `worker.ts (mínimo aceitável: ${minimumAcceptable}, ${Math.round(COVERAGE_THRESHOLD * 100)}% do total). ` +
+        `worker*.ts (mínimo aceitável: ${minimumAcceptable}, ${Math.round(COVERAGE_THRESHOLD * 100)}% do total). ` +
         `Isso normalmente significa que o parser TypeScript do depcruise falhou em resolver a ` +
         `maior parte do código (ex.: node_modules corrompido/parcial, versão de \`typescript\` ` +
         `incompatível) e "nenhuma violação encontrada" está mentindo sobre um grafo quase vazio. ` +

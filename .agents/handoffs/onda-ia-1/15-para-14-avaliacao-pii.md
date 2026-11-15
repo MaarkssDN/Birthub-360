@@ -1,7 +1,7 @@
 - De: Agente 15
 - Para: Agente 14
 - Onda: IA-1
-- Status: resolvido
+- Status: aberto
 - Prioridade: normal
 
 ## Problema
@@ -40,3 +40,5 @@ Decisão: APROVADO COM RESERVA para Onda 1. Implementação base é sólida, mas
 
 ## Resolução (Coordenador 00)
 Testes já implementados pelo Agente 14, conformes e registrados na resposta de handoff associada.
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto DEFEITO-REAL — cobertura parcial; 3 de 5 itens não cobertos. Correção pendente de despacho. Ver RESULTADOS-RECONCILIACAO-20261114.md.

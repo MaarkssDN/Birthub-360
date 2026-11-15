@@ -1,0 +1,50 @@
+name: Migration Safety Gate
+
+# Gate de migrations seguras (Expand -> Migrate -> Contract + bloco `-- ROLLBACK:`).
+# Roda scripts/db/check-migration-safety.ts, que varre prisma/migrations/** e falha
+# quando uma migration NOVA contém comandos destrutivos (DROP TABLE/COLUMN/CONSTRAINT)
+# sem o bloco `-- ROLLBACK:` exigido por docs/security/runbooks/MIGRATION_ROLLBACK.md
+# (Passo 4). Migrations históricas já aplicadas estão congeladas na whitelist interna
+# do script (FROZEN_HISTORICAL_DROPS).
+#
+# Teste local equivalente:
+#   npx tsx scripts/db/check-migration-safety.ts
+#
+# O check é full-scan e barato (somente leitura de arquivos .sql); não precisa de
+# diff — qualquer migration destrutiva nova já existente na branch reprova o gate.
+
+on:
+  pull_request:
+    paths:
+      - 'prisma/migrations/**'
+      - 'prisma/schema.prisma'
+      - 'scripts/db/check-migration-safety.ts'
+      - '.github/workflows/migration-safety.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: migration-safety-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  migration-safety:
+    name: Migration safety (non-destructive gate)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run migration safety gate
+        run: npx tsx scripts/db/check-migration-safety.ts

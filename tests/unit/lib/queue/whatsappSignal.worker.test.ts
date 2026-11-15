@@ -66,7 +66,10 @@ describe('WhatsApp conversation-signal debounce scheduler', () => {
     expect(add).toHaveBeenCalledWith(
       'analyze-conversation',
       { leadId: 'lead-1', organizationId: 'org-1' },
-      expect.objectContaining({ jobId: 'conversation-signal:lead-1', delay: expect.any(Number) }),
+      expect.objectContaining({
+        jobId: 'conversation-signal:org-1:lead-1',
+        delay: expect.any(Number),
+      }),
     );
   });
 

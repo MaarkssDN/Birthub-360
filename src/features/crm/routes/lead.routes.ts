@@ -24,8 +24,14 @@ router.get('/', (req, res, next) =>
 router.get('/export/csv', managementRoles, auditAccessMiddleware('Lead'), (req, res, next) =>
   container.resolve<LeadController>('LeadController').exportCsv(req, res, next),
 );
-router.post('/export/bitrix24', managementRoles, (req, res, next) =>
-  container.resolve<LeadController>('LeadController').exportToBitrix24(req, res, next),
+// DEM-20261114-003 (follow-up Onda 2): exportação de leads para o Bitrix vaza PII para sistema
+// externo — trilha AuditLog/EXPORT (action explícita: POST seria rotulado UPDATE pelo método).
+router.post(
+  '/export/bitrix24',
+  managementRoles,
+  auditAccessMiddleware('Lead', 'EXPORT'),
+  (req, res, next) =>
+    container.resolve<LeadController>('LeadController').exportToBitrix24(req, res, next),
 );
 router.post('/import/bitrix24', managementRoles, (req, res, next) =>
   container.resolve<LeadController>('LeadController').importFromBitrix24(req, res, next),
