@@ -3,7 +3,7 @@
 De: 12 — Voz e Telefonia
 Para: 05 — Prospecção
 Onda: F2
-Status: resolvido
+Status: em-andamento
 Prioridade: bloqueador (para reabertura do gate `outbound`)
 Referência: `.agents/handoffs/12-para-00-voicehub-tenancy-auditoria.md`
 
@@ -66,4 +66,4 @@ Decidir e executar UMA das opções:
 - **Commits:** `c10bc43c8` (WIP checkpoint) + `431c09e1b` (conclusão) na branch `agente/05-onda1-handoffs`.
 - **Verificações:** `vitest run tests/unit/features/prospecting/outbound/` → **14/14 verde** (12 novos em `tenantScope.test.ts`: 401 sem sessão, 403 sem company, 404 cross-tenant, filtros WHERE com company); `npx tsc --noEmit` → **0 erros**.
 - **Ressalva conhecida:** `POST /error-reports` passou a exigir sessão — o botão da tela de login que usava o endpoint legado precisa migrar para `/api/error-reports` canônico (follow-up de frontend, não bloqueia o fechamento do tenancy).
-- **Fechamento formal condicionado ao parecer APROVADO do Agente 24** (tenancy/security) — enfileirado na Onda 4.
+- **Revisão do Agente 24 (2026-11-14, `.agents/reviews/onda1-handoffs-24-20261114.md`): APROVADO-COM-RESSALVAS.** A frase "filtro company em todas as queries" estava imprecisa — residuais cross-tenant identificados: (1) `chat_sessions`/`chat_messages` sem coluna de tenant; (2) `POST /prospect` aceita `company` do body para role admin; (3) `GET /search-runs/:searchId` sem escopo; (4) `POST /db/query` = SQL arbitrário (exceção a registrar); (5) `normalizeCompany` colapsa "360"→birthhub360 (dívida pré-existente); (6) `POST /error-reports` exige sessão → botão da tela de login quebra (follow-up frontend). Mitigação: mount do apiRouter segue 503. Status devolvido para `em-andamento` até os follow-ups F1–F6.
