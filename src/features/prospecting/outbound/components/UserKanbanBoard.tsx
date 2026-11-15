@@ -55,7 +55,7 @@ export function UserKanbanBoard({ user, isDark }: UserKanbanBoardProps) {
   }
 
   const columns = [
-    { id: 'prospecto', label: 'Novos Atribuídos', color: 'bg-[#008FCE]' },
+    { id: 'prospecto', label: 'Novos Atribuídos', color: 'bg-[var(--orbit-blue)]' },
     { id: 'contatado', label: 'Em Contato / Tratamento', color: 'bg-yellow-500' },
     { id: 'negociacao', label: 'Negociação (Reunião)', color: 'bg-purple-500' },
     { id: 'ganho', label: 'Ganho', color: 'bg-green-500' },
@@ -66,7 +66,7 @@ export function UserKanbanBoard({ user, isDark }: UserKanbanBoardProps) {
     <div className="flex flex-col lg:flex-row gap-6">
       <div className="flex-1 space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className={`text-xl font-bold ${isDark ? 'text-[#FFC107]' : 'text-[#D97706]'}`}>
+          <h2 className={`text-xl font-bold ${isDark ? 'text-[var(--gold)]' : 'text-[var(--warn)]'}`}>
             Meus Leads (CRM / Bitrix)
           </h2>
           <span
@@ -161,10 +161,10 @@ export function UserKanbanBoard({ user, isDark }: UserKanbanBoardProps) {
         className={`w-full lg:w-80 shrink-0 p-4 rounded-xl border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}
       >
         <div className="flex items-center gap-2 mb-6">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#FF2D9B] to-[#8B5CF6] flex items-center justify-center">
-            <span className="text-[#F8F9FF] font-bold text-xs">AI</span>
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--pink)] to-[var(--iris)] flex items-center justify-center">
+            <span className="text-[var(--ink)] font-bold text-xs">AI</span>
           </div>
-          <h3 className={`font-bold ${isDark ? 'text-[#FF2D9B]' : 'text-[#E6007A]'}`}>
+          <h3 className={`font-bold ${isDark ? 'text-[var(--pink)]' : 'text-[var(--pink)]'}`}>
             Assistente LLaMA3
           </h3>
         </div>
@@ -204,7 +204,7 @@ export function UserKanbanBoard({ user, isDark }: UserKanbanBoardProps) {
             </p>
             <button
               type="button"
-              className="w-full py-1.5 text-xs bg-[#008FCE]/10 text-[#008FCE] hover:bg-[#008FCE]/20 rounded font-medium transition-colors"
+              className="w-full py-1.5 text-xs bg-[var(--orbit-blue)]/10 text-[var(--orbit-blue)] hover:bg-[var(--orbit-blue)]/20 rounded font-medium transition-colors"
             >
               Usar Template
             </button>

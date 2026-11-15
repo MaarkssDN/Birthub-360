@@ -78,12 +78,12 @@ export function AiReasoningPipeline({ currentStep, details }: AiReasoningPipelin
                 <motion.div
                   animate={{
                     borderColor: isActive
-                      ? 'rgba(212,175,55,0.5)'
+                      ? 'color-mix(in srgb, var(--gold) 50%, transparent)'
                       : isPast
                         ? 'rgba(255,255,255,0.2)'
                         : 'rgba(255,255,255,0.05)',
                     backgroundColor: isActive
-                      ? 'rgba(212,175,55,0.1)'
+                      ? 'color-mix(in srgb, var(--gold) 10%, transparent)'
                       : isPast
                         ? 'rgba(255,255,255,0.05)'
                         : 'rgba(0,0,0,0)',
@@ -91,7 +91,7 @@ export function AiReasoningPipeline({ currentStep, details }: AiReasoningPipelin
                   className={`w-6 h-6 rounded-full border flex items-center justify-center transition-colors duration-500`}
                 >
                   <Icon
-                    className={`w-3 h-3 ${isActive ? step.color : isPast ? 'text-[#F8F9FF]/50' : 'text-[#F8F9FF]/20'}`}
+                    className={`w-3 h-3 ${isActive ? step.color : isPast ? 'text-[var(--palette-neon-white)]/50' : 'text-[var(--palette-neon-white)]/20'}`}
                   />
                 </motion.div>
                 {isActive && (
@@ -107,7 +107,7 @@ export function AiReasoningPipeline({ currentStep, details }: AiReasoningPipelin
                 className={`flex flex-col pb-2 ${isActive ? 'opacity-100' : isPast ? 'opacity-50' : 'opacity-20'}`}
               >
                 <span
-                  className={`text-[11px] font-bold tracking-widest uppercase ${isActive ? step.color : 'text-[#F8F9FF]'}`}
+                  className={`text-[11px] font-bold tracking-widest uppercase ${isActive ? step.color : 'text-[var(--palette-neon-white)]'}`}
                 >
                   {step.label}
                 </span>
@@ -118,7 +118,7 @@ export function AiReasoningPipeline({ currentStep, details }: AiReasoningPipelin
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
-                      className="mt-1 text-[12px] font-sans text-[#F8F9FF]/70 max-w-sm overflow-hidden"
+                      className="mt-1 text-[12px] font-sans text-[var(--palette-neon-white)]/70 max-w-sm overflow-hidden"
                     >
                       {details[step.id as AiReasoningStep]}
                     </motion.div>

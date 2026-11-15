@@ -44,6 +44,32 @@ const toolsLimiter = rateLimit({
  * handler e do restante do boot em server.ts.
  */
 export async function mountFrontend(app: Express): Promise<void> {
+  // Guarda anti-bypass dos estáticos do design-lab (achado P0 da DEM-20261114-001/003).
+  // Os mounts `/design-lab` autenticados abaixo só casam o prefixo literal — um path como
+  // `/design-lab%2Fassets%2Flab.css`, `/%2Fdesign-lab%2F...`, `/public/design-lab/...` ou
+  // `/@fs/<abs>/public/design-lab/...` (aliases que o Vite dev serve fora do mount) não casa
+  // o prefixo, mas os express.static/vite.middlewares decodificam e servem o MESMO arquivo
+  // sem autenticação. Aqui o path é decodificado e qualquer segmento "design-lab" que não
+  // seja (a) o prefixo legítimo `/design-lab/` — que segue para o mount autenticado — ou
+  // (b) código-fonte `/src/features/design-lab/` (módulos lazy, não são os assets estáticos
+  // sensíveis e já vão no bundle) é bloqueado com 404 antes de qualquer static.
+  app.use((req, res, next) => {
+    let decodedPath = req.path;
+    try {
+      decodedPath = decodeURIComponent(req.path);
+    } catch {
+      // Path malformado: mantém o raw — o static downstream já rejeita encoding inválido.
+    }
+    const touchesLabAsset = /(?:^|\/)design-lab(?:\/|$)/i.test(decodedPath);
+    const isLegitStaticPrefix = /^\/design-lab(?:\/|$)/i.test(req.path);
+    const isSourceModule = /^\/src\/features\/design-lab\//i.test(req.path);
+    if (touchesLabAsset && !isLegitStaticPrefix && !isSourceModule) {
+      res.status(404).end();
+      return;
+    }
+    next();
+  });
+
   const distPath = path.join(process.cwd(), 'dist');
   const hasDist = fs.existsSync(path.join(distPath, 'index.html'));
   const useStaticDist =

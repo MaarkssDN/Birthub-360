@@ -104,7 +104,7 @@ export const RecentSearchModal: React.FC<RecentSearchModalProps> = ({
             onClick={onClose}
             className={`p-2 rounded-xl transition ${
               isDark
-                ? 'text-slate-400 hover:text-[#F8F9FF] hover:bg-slate-800'
+                ? 'text-slate-400 hover:text-[var(--ink)] hover:bg-slate-800'
                 : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'
             }`}
             title="Fechar"
@@ -214,7 +214,7 @@ export const RecentSearchModal: React.FC<RecentSearchModalProps> = ({
                 }`}
               >
                 <span className="text-slate-400 flex items-center gap-1.5">
-                  <Truck className="w-3.5 h-3.5 text-[#008FCE]" /> Porte da Frota
+                  <Truck className="w-3.5 h-3.5 text-[var(--orbit-blue)]" /> Porte da Frota
                 </span>
                 <span className="font-semibold text-right truncate max-w-[170px]">
                   {search.params?.fleetSize || 'Todos os Portes'}
@@ -307,7 +307,7 @@ export const RecentSearchModal: React.FC<RecentSearchModalProps> = ({
                 onApplyAndSearch(search);
                 onClose();
               }}
-              className="text-xs font-bold px-4 py-2 rounded-xl bg-[var(--brand-primary)] hover:bg-[#e04a12] text-[#F8F9FF] shadow-lg shadow-[var(--brand-primary)]/25 transition flex items-center gap-1.5"
+              className="text-xs font-bold px-4 py-2 rounded-xl bg-[var(--brand-primary)] hover:bg-[var(--brand)] text-[var(--ink)] shadow-lg shadow-[var(--brand-primary)]/25 transition flex items-center gap-1.5"
             >
               <Play className="w-3.5 h-3.5 fill-current" />
               <span>Executar Prospecção Agora</span>

@@ -491,7 +491,7 @@ export function ExternalCrmPanel({ providerKey, displayName, authType }: Externa
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-xl font-bold text-brand-ink dark:text-[#00D4FF] flex items-center gap-2">
+              <h2 className="text-xl font-bold text-brand-ink dark:text-[var(--orbit-blue)] flex items-center gap-2">
                 <CompanyBrandIcon name={providerKey} className="w-6 h-6 inline-block" />{' '}
                 {displayName}
               </h2>
@@ -509,7 +509,7 @@ export function ExternalCrmPanel({ providerKey, displayName, authType }: Externa
                 {isConnected ? 'Conectado' : 'Desconectado'}
               </span>
             </div>
-            <p className="text-sm text-sky-700 dark:text-[#70D6FF] mt-0.5">{meta.tagline}</p>
+            <p className="text-sm text-sky-700 dark:text-[var(--lux-ink-cyan)] mt-0.5">{meta.tagline}</p>
           </div>
         </div>
 

@@ -14,10 +14,10 @@ html.light .b360-adaptive-landing,
 [data-theme="light"] .b360-adaptive-landing,
 .dark .b360-adaptive-landing,
 :root.dark .b360-adaptive-landing {
-  --v4-cyan: #00d4ff;
-  --v4-pink: #ff2d9b;
-  --v4-iris: #8b7dff;
-  --v4-gold: #ffc107;
+  --v4-cyan: var(--orbit-blue);
+  --v4-pink: var(--pink);
+  --v4-iris: var(--iris);
+  --v4-gold: var(--gold);
   --v4-ink: #38bdf8;
   --v4-body: #94a3b8;
   --v4-line: rgba(56, 189, 248, 0.2);
@@ -42,7 +42,7 @@ html.light .b360-adaptive-landing,
 .b360-final-cta h2,
 .login-antessala-backdrop :is(h1, h2) {
   font-family: "Sora", system-ui, sans-serif !important;
-  background: linear-gradient(135deg, #00d4ff 0%, #8b7dff 50%, #ff2d9b 100%) !important;
+  background: linear-gradient(135deg, var(--orbit-blue) 0%, var(--iris) 50%, var(--pink) 100%) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
@@ -62,8 +62,8 @@ html.light .b360-adaptive-landing,
 }
 
 .b360-adaptive-landing .b360-eyebrow {
-  color: #00d4ff !important;
-  text-shadow: 0 0 12px rgba(0, 212, 255, 0.45);
+  color: var(--orbit-blue) !important;
+  text-shadow: 0 0 12px color-mix(in srgb, var(--orbit-blue) 45%, transparent);
 }
 
 /* Navegação: marca preservada, espaço real entre marca, modos e ações. */
@@ -136,7 +136,7 @@ html.light .b360-adaptive-landing .b360-topbar,
 }
 .b360-adaptive-landing :is(button, a):focus-visible,
 .login-antessala-backdrop :is(button, a, input):focus-visible {
-  outline: 3px solid #ff2d9b !important;
+  outline: 3px solid var(--pink) !important;
   outline-offset: 4px;
 }
 
@@ -144,10 +144,10 @@ html.light .b360-adaptive-landing .b360-topbar,
 .b360-adaptive-landing .b360-hero {
   margin-top: clamp(18px, 2.6vw, 34px);
   border-radius: clamp(24px, 3vw, 40px);
-  border: 1px solid rgba(0, 212, 255, 0.28) !important;
+  border: 1px solid color-mix(in srgb, var(--orbit-blue) 28%, transparent) !important;
   background:
-    radial-gradient(ellipse 80% 100% at 95% 0%, rgba(139, 125, 255, 0.18), transparent 70%),
-    radial-gradient(ellipse 65% 70% at 0% 100%, rgba(0, 212, 255, 0.13), transparent 70%),
+    radial-gradient(ellipse 80% 100% at 95% 0%, color-mix(in srgb, var(--iris) 18%, transparent), transparent 70%),
+    radial-gradient(ellipse 65% 70% at 0% 100%, color-mix(in srgb, var(--orbit-blue) 13%, transparent), transparent 70%),
     linear-gradient(125deg, #08162d 0%, #0d1a32 46%, #0a1730 100%) !important;
   box-shadow: 0 30px 78px -38px rgba(4, 17, 44, 0.65) !important;
 }
@@ -177,13 +177,13 @@ html.light .b360-adaptive-landing .b360-topbar,
   font-weight: 700 !important;
   letter-spacing: 0.24em !important;
   text-transform: uppercase !important;
-  border: 1px solid rgba(0, 212, 255, 0.28) !important;
+  border: 1px solid color-mix(in srgb, var(--orbit-blue) 28%, transparent) !important;
   box-shadow: none !important;
   border-radius: 999px !important;
   padding: 7px 14px !important;
   margin-bottom: 18px !important;
-  color: #00d4ff !important;
-  background: rgba(0, 212, 255, 0.08) !important;
+  color: var(--orbit-blue) !important;
+  background: color-mix(in srgb, var(--orbit-blue) 8%, transparent) !important;
 }
 
 .b360-adaptive-landing .b360-hero .b360-eyebrow::before,
@@ -191,8 +191,8 @@ html.light .b360-adaptive-landing .b360-topbar,
 .b360-adaptive-landing .b360-section .b360-eyebrow::before {
   content: "✦";
   font-size: 11px;
-  color: #00d4ff;
-  filter: drop-shadow(0 0 8px rgba(0, 212, 255, 0.7));
+  color: var(--orbit-blue);
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--orbit-blue) 70%, transparent));
 }
 
 .b360-adaptive-landing .b360-hero-title:not(.bh-n1-title) {
@@ -216,14 +216,14 @@ html.light .b360-adaptive-landing .b360-topbar,
   text-wrap: balance;
   background: linear-gradient(
     135deg,
-    #00d4ff 0%,
+    var(--orbit-blue) 0%,
     #38bdf8 30%,
-    #8b7dff 70%,
-    #ff2d9b 100%
+    var(--iris) 70%,
+    var(--pink) 100%
   ) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
-  filter: drop-shadow(0 0 32px rgba(0, 212, 255, 0.45)) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.55)) !important;
+  filter: drop-shadow(0 0 32px color-mix(in srgb, var(--orbit-blue) 45%, transparent)) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.55)) !important;
 }
 
 .b360-adaptive-landing .b360-hero-title .b360-hero-line-iris {
@@ -231,7 +231,7 @@ html.light .b360-adaptive-landing .b360-topbar,
     135deg,
     #a78bfa 0%,
     #c084fc 30%,
-    #8b7dff 70%,
+    var(--iris) 70%,
     #6366f1 100%
   ) !important;
   -webkit-background-clip: text !important;
@@ -322,7 +322,7 @@ html.light .b360-adaptive-landing .b360-hero-title .b360-hero-line-gold,
   border-radius: 24px;
   background: rgba(14, 28, 52, 0.94) !important;
   box-shadow:
-    0 35px 65px -42px rgba(0, 212, 255, 0.42),
+    0 35px 65px -42px color-mix(in srgb, var(--orbit-blue) 42%, transparent),
     0 20px 45px -30px rgba(2, 5, 18, 0.9) !important;
 }
 
@@ -376,7 +376,7 @@ html.light .b360-adaptive-landing .b360-hero-title .b360-hero-line-gold,
 }
 
 .b360-adaptive-landing .b360-aurora::before {
-  background: conic-gradient(from 10deg, #00d4ff, #8b7dff, #ff2d9b, #ffc107, #00d4ff);
+  background: conic-gradient(from 10deg, var(--orbit-blue), var(--iris), var(--pink), var(--gold), var(--orbit-blue));
   filter: blur(9px);
   opacity: 0.52;
 }
@@ -389,7 +389,7 @@ html.light .b360-adaptive-landing .b360-hero-title .b360-hero-line-gold,
   min-height: 48px;
   padding-inline: 23px;
   border-radius: 9999px;
-  border-color: rgba(0, 212, 255, 0.36) !important;
+  border-color: color-mix(in srgb, var(--orbit-blue) 36%, transparent) !important;
   background: #0a1730 !important;
   color: #8ae8ff !important;
   font-family: "Inter", sans-serif;
@@ -410,7 +410,7 @@ html.light .b360-adaptive-landing .b360-hero-title .b360-hero-line-gold,
   padding: 12px 22px;
   background: rgba(10, 26, 51, 0.93) !important;
   color: #8ae8ff !important;
-  box-shadow: 0 9px 22px -16px rgba(0, 212, 255, 0.8);
+  box-shadow: 0 9px 22px -16px color-mix(in srgb, var(--orbit-blue) 80%, transparent);
   font-family: "Inter", sans-serif;
   font-size: 13px;
   font-weight: 720;
@@ -436,8 +436,8 @@ html.light .b360-adaptive-landing .b360-hero-title .b360-hero-line-gold,
   ):hover,
 .b360-adaptive-landing .b360-aurora:hover {
   transform: translateY(-3px);
-  box-shadow: 0 15px 30px -15px rgba(0, 212, 255, 0.43);
-  border-color: #00d4ff;
+  box-shadow: 0 15px 30px -15px color-mix(in srgb, var(--orbit-blue) 43%, transparent);
+  border-color: var(--orbit-blue);
 }
 .b360-adaptive-landing :is(button, a):disabled {
   opacity: 0.48;
@@ -450,7 +450,7 @@ html.light .b360-adaptive-landing .b360-hero-title .b360-hero-line-gold,
   min-height: 49px;
   padding: 2px;
   border-radius: 9999px;
-  box-shadow: 0 13px 28px -18px rgba(0, 212, 255, 0.64);
+  box-shadow: 0 13px 28px -18px color-mix(in srgb, var(--orbit-blue) 64%, transparent);
   transition:
     transform 0.32s var(--v4-ease),
     box-shadow 0.32s ease;
@@ -458,7 +458,7 @@ html.light .b360-adaptive-landing .b360-hero-title .b360-hero-line-gold,
 .b360-adaptive-landing .b360-neon-halo-btn-content {
   min-height: 45px;
   padding: 11px 23px;
-  border: 1px solid rgba(0, 212, 255, 0.32);
+  border: 1px solid color-mix(in srgb, var(--orbit-blue) 32%, transparent);
   border-radius: 9999px;
   background: #0a1730;
   color: #88e8ff;
@@ -471,7 +471,7 @@ html.light .b360-adaptive-landing .b360-hero-title .b360-hero-line-gold,
 }
 .b360-adaptive-landing .b360-neon-halo-btn:hover {
   transform: translateY(-3px);
-  box-shadow: 0 17px 32px -18px rgba(0, 212, 255, 0.75);
+  box-shadow: 0 17px 32px -18px color-mix(in srgb, var(--orbit-blue) 75%, transparent);
 }
 
 /* O palco dos pilares deixa de parecer uma colagem irregular. */
@@ -482,8 +482,8 @@ html.light .b360-adaptive-landing .b360-hero-title .b360-hero-line-gold,
     clamp(40px, 5vw, 64px);
   border: 1px solid rgba(102, 195, 240, 0.26);
   background:
-    radial-gradient(ellipse 70% 50% at 5% 0%, rgba(0, 212, 255, 0.15), transparent 78%),
-    radial-gradient(ellipse 50% 60% at 100% 100%, rgba(255, 45, 155, 0.12), transparent 74%),
+    radial-gradient(ellipse 70% 50% at 5% 0%, color-mix(in srgb, var(--orbit-blue) 15%, transparent), transparent 78%),
+    radial-gradient(ellipse 50% 60% at 100% 100%, color-mix(in srgb, var(--pink) 12%, transparent), transparent 74%),
     #0b162c !important;
   box-shadow: 0 32px 82px -50px rgba(4, 12, 34, 0.85);
 }
@@ -497,10 +497,10 @@ html.light .b360-adaptive-landing .b360-hero-title .b360-hero-line-gold,
 .b360-adaptive-landing .b360-pillars-head h2 {
   font-size: clamp(30px, 3.8vw, 52px) !important;
   line-height: 1.1 !important;
-  background: linear-gradient(135deg, #00d4ff 0%, #8b7dff 45%, #ff2d9b 100%) !important;
+  background: linear-gradient(135deg, var(--orbit-blue) 0%, var(--iris) 45%, var(--pink) 100%) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
-  filter: drop-shadow(0 0 24px rgba(0, 212, 255, 0.35)) !important;
+  filter: drop-shadow(0 0 24px color-mix(in srgb, var(--orbit-blue) 35%, transparent)) !important;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-pillars-head h2,
@@ -521,13 +521,13 @@ html.light .b360-adaptive-landing .b360-pillars-head h2,
 
 .b360-adaptive-landing .b360-pillars-stage .b360-eyebrow {
   color: #80e3ff !important;
-  background: rgba(0, 212, 255, 0.1) !important;
+  background: color-mix(in srgb, var(--orbit-blue) 10%, transparent) !important;
 }
 
 .b360-adaptive-landing .b360-demo-disclaimer-banner {
   color: #a2eaff !important;
-  background: rgba(0, 212, 255, 0.09) !important;
-  border-color: rgba(0, 212, 255, 0.3) !important;
+  background: color-mix(in srgb, var(--orbit-blue) 9%, transparent) !important;
+  border-color: color-mix(in srgb, var(--orbit-blue) 30%, transparent) !important;
   text-wrap: wrap;
   white-space: normal;
   line-height: 1.45;
@@ -592,7 +592,7 @@ html.light .b360-adaptive-landing .b360-pillars-head h2,
   --title-tone: #ff5fb2;
 }
 .b360-adaptive-landing .b360-bento-grid :is(.b360-bento-p3, .b360-bento-p7, .b360-bento-p11) {
-  --title-tone: #ffc107;
+  --title-tone: var(--gold);
 }
 .b360-adaptive-landing .b360-bento-grid :is(.b360-bento-p4, .b360-bento-p8) {
   --title-tone: #a78bfa;
@@ -718,10 +718,10 @@ html.light .b360-adaptive-landing .b360-pillars-head h2,
   font-size: clamp(32px, 3.8vw, 52px) !important;
   line-height: 1.14 !important;
   margin-bottom: 16px;
-  background: linear-gradient(135deg, #00d4ff 0%, #8b7dff 50%, #ff2d9b 100%) !important;
+  background: linear-gradient(135deg, var(--orbit-blue) 0%, var(--iris) 50%, var(--pink) 100%) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
-  filter: drop-shadow(0 0 24px rgba(0, 212, 255, 0.35)) !important;
+  filter: drop-shadow(0 0 24px color-mix(in srgb, var(--orbit-blue) 35%, transparent)) !important;
 }
 
 html:not(.dark) .b360-adaptive-landing .b360-sectionhead h2,
@@ -762,7 +762,7 @@ html.light .b360-adaptive-landing .b360-sectionhead h2,
   border-radius: 28px 40px 28px 40px;
   border: 1px solid rgba(102, 174, 226, 0.28) !important;
   background:
-    radial-gradient(circle at 90% 0%, rgba(139, 125, 255, 0.13), transparent 60%),
+    radial-gradient(circle at 90% 0%, color-mix(in srgb, var(--iris) 13%, transparent), transparent 60%),
     linear-gradient(160deg, #0f2342, #0a172d) !important;
   box-shadow: 0 17px 38px -27px rgba(11, 37, 76, 0.8) !important;
   transition:
@@ -787,7 +787,7 @@ html.light .b360-adaptive-landing .b360-sectionhead h2,
     .b360-module
   ):hover {
   transform: translateY(-5px);
-  border-color: rgba(0, 212, 255, 0.67) !important;
+  border-color: color-mix(in srgb, var(--orbit-blue) 67%, transparent) !important;
   box-shadow: 0 24px 50px -29px rgba(0, 132, 204, 0.58) !important;
 }
 
@@ -828,8 +828,8 @@ html.light .b360-adaptive-landing .b360-sectionhead h2,
 }
 .b360-adaptive-landing .b360-problem-kpi {
   margin-top: auto;
-  background: rgba(0, 212, 255, 0.08) !important;
-  border-color: rgba(0, 212, 255, 0.24) !important;
+  background: color-mix(in srgb, var(--orbit-blue) 8%, transparent) !important;
+  border-color: color-mix(in srgb, var(--orbit-blue) 24%, transparent) !important;
   color: #b8dcf4 !important;
   font-size: 12px;
   line-height: 1.5;
@@ -876,7 +876,7 @@ html.light .b360-adaptive-landing .b360-sectionhead h2,
   color: #b3a8ff !important;
 }
 .b360-adaptive-landing .b360-copilot-card .b360-suggestion-box {
-  background: rgba(0, 212, 255, 0.08);
+  background: color-mix(in srgb, var(--orbit-blue) 8%, transparent);
   border-radius: 16px;
 }
 .b360-adaptive-landing .b360-copilot-card .b360-suggestion-box p {
@@ -927,10 +927,10 @@ html.light .b360-adaptive-landing .b360-sectionhead h2,
   padding: clamp(42px, 5vw, 80px) clamp(22px, 4vw, 52px);
   margin: clamp(42px, 5.5vw, 78px) 0;
   border-radius: 32px;
-  border: 1px solid rgba(0, 212, 255, 0.32) !important;
+  border: 1px solid color-mix(in srgb, var(--orbit-blue) 32%, transparent) !important;
   background:
-    radial-gradient(ellipse 70% 85% at 50% -5%, rgba(0, 212, 255, 0.18), transparent),
-    radial-gradient(ellipse 60% 60% at 92% 100%, rgba(255, 45, 155, 0.14), transparent), #0b1a32 !important;
+    radial-gradient(ellipse 70% 85% at 50% -5%, color-mix(in srgb, var(--orbit-blue) 18%, transparent), transparent),
+    radial-gradient(ellipse 60% 60% at 92% 100%, color-mix(in srgb, var(--pink) 14%, transparent), transparent), #0b1a32 !important;
   box-shadow: 0 30px 70px -44px rgba(6, 20, 45, 0.77);
 }
 .b360-adaptive-landing .b360-final-cta h2 {
@@ -969,7 +969,7 @@ html.light .b360-adaptive-landing .b360-sectionhead h2,
 /* Rodapé institucional com leitura real. */
 .b360-adaptive-landing .b360-footer {
   background: #0a162b !important;
-  border-top: 1px solid rgba(0, 212, 255, 0.2) !important;
+  border-top: 1px solid color-mix(in srgb, var(--orbit-blue) 20%, transparent) !important;
   padding-block: clamp(35px, 4vw, 60px);
 }
 .b360-adaptive-landing .b360-footer h4 {
@@ -990,14 +990,14 @@ html.light .b360-adaptive-landing .b360-sectionhead h2,
 .login-antessala-backdrop {
   --v4-ink: #1b6f9a;
   background:
-    radial-gradient(ellipse at 15% 0%, rgba(0, 212, 255, 0.12), transparent 55%),
-    radial-gradient(ellipse at 90% 100%, rgba(139, 125, 255, 0.11), transparent 56%), #edf3fb !important;
+    radial-gradient(ellipse at 15% 0%, color-mix(in srgb, var(--orbit-blue) 12%, transparent), transparent 55%),
+    radial-gradient(ellipse at 90% 100%, color-mix(in srgb, var(--iris) 11%, transparent), transparent 56%), #edf3fb !important;
 }
 .dark .login-antessala-backdrop {
   --v4-ink: #92eaff;
   background:
-    radial-gradient(ellipse at 10% 0%, rgba(0, 212, 255, 0.12), transparent 57%),
-    radial-gradient(ellipse at 85% 100%, rgba(139, 125, 255, 0.11), transparent 56%), #0a1428 !important;
+    radial-gradient(ellipse at 10% 0%, color-mix(in srgb, var(--orbit-blue) 12%, transparent), transparent 57%),
+    radial-gradient(ellipse at 85% 100%, color-mix(in srgb, var(--iris) 11%, transparent), transparent 56%), #0a1428 !important;
 }
 .login-antessala-backdrop .card-login-command {
   border-radius: 24px;
@@ -1013,7 +1013,7 @@ html.light .b360-adaptive-landing .b360-sectionhead h2,
 }
 .login-antessala-backdrop :is(input, select):focus {
   border-color: #00b7df !important;
-  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.15) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--orbit-blue) 15%, transparent) !important;
 }
 .login-antessala-backdrop .b360-neon-halo {
   border-radius: 9999px;
@@ -1294,10 +1294,10 @@ html:not(.dark)
     .b360-fanned-card
   ):hover {
   transform: translateY(-6px) scale(1.008) !important;
-  border-color: var(--card-accent, #00d4ff) !important;
+  border-color: var(--card-accent, var(--orbit-blue)) !important;
   box-shadow:
-    0 22px 50px -15px rgba(0, 212, 255, 0.35),
-    0 0 25px rgba(0, 212, 255, 0.15) !important;
+    0 22px 50px -15px color-mix(in srgb, var(--orbit-blue) 35%, transparent),
+    0 0 25px color-mix(in srgb, var(--orbit-blue) 15%, transparent) !important;
 }
 
 /* Cores específicas de cada card (NUNCA PRETO, NUNCA BRANCO) */
@@ -1307,46 +1307,46 @@ html:not(.dark)
   border-color: rgba(248, 113, 113, 0.28) !important;
 }
 .b360-problem-card:nth-child(2) {
-  --card-accent: #ff2d9b;
+  --card-accent: var(--pink);
   --card-accent-rgb: 255, 45, 155;
-  border-color: rgba(255, 45, 155, 0.28) !important;
+  border-color: color-mix(in srgb, var(--pink) 28%, transparent) !important;
 }
 .b360-problem-card:nth-child(3) {
-  --card-accent: #ffc107;
+  --card-accent: var(--gold);
   --card-accent-rgb: 255, 193, 7;
-  border-color: rgba(255, 193, 7, 0.28) !important;
+  border-color: color-mix(in srgb, var(--gold) 28%, transparent) !important;
 }
 
 .b360-platform-card:nth-child(1) {
-  --card-accent: #00d4ff;
+  --card-accent: var(--orbit-blue);
   --card-accent-rgb: 0, 212, 255;
-  border-color: rgba(0, 212, 255, 0.28) !important;
+  border-color: color-mix(in srgb, var(--orbit-blue) 28%, transparent) !important;
 }
 .b360-platform-card:nth-child(2) {
-  --card-accent: #ff2d9b;
+  --card-accent: var(--pink);
   --card-accent-rgb: 255, 45, 155;
-  border-color: rgba(255, 45, 155, 0.28) !important;
+  border-color: color-mix(in srgb, var(--pink) 28%, transparent) !important;
 }
 .b360-platform-card:nth-child(3) {
-  --card-accent: #ffc107;
+  --card-accent: var(--gold);
   --card-accent-rgb: 255, 193, 7;
-  border-color: rgba(255, 193, 7, 0.28) !important;
+  border-color: color-mix(in srgb, var(--gold) 28%, transparent) !important;
 }
 
 .b360-flow-card:nth-child(1) {
-  --card-accent: #00d4ff;
+  --card-accent: var(--orbit-blue);
   --card-accent-rgb: 0, 212, 255;
 }
 .b360-flow-card:nth-child(3) {
-  --card-accent: #ff2d9b;
+  --card-accent: var(--pink);
   --card-accent-rgb: 255, 45, 155;
 }
 .b360-flow-card:nth-child(5) {
-  --card-accent: #ffc107;
+  --card-accent: var(--gold);
   --card-accent-rgb: 255, 193, 7;
 }
 .b360-flow-card:nth-child(7) {
-  --card-accent: #8b7dff;
+  --card-accent: var(--iris);
   --card-accent-rgb: 139, 125, 255;
 }
 .b360-flow-card:nth-child(9) {
@@ -1365,42 +1365,42 @@ html:not(.dark)
   text-shadow: 0 0 14px rgba(248, 113, 113, 0.35);
 }
 .b360-problem-card:nth-child(2) h3 {
-  color: #ff2d9b !important;
-  text-shadow: 0 0 14px rgba(255, 45, 155, 0.35);
+  color: var(--pink) !important;
+  text-shadow: 0 0 14px color-mix(in srgb, var(--pink) 35%, transparent);
 }
 .b360-problem-card:nth-child(3) h3 {
-  color: #ffc107 !important;
-  text-shadow: 0 0 14px rgba(255, 193, 7, 0.35);
+  color: var(--gold) !important;
+  text-shadow: 0 0 14px color-mix(in srgb, var(--gold) 35%, transparent);
 }
 
 .b360-platform-card:nth-child(1) h3 {
-  color: #00d4ff !important;
-  text-shadow: 0 0 14px rgba(0, 212, 255, 0.35);
+  color: var(--orbit-blue) !important;
+  text-shadow: 0 0 14px color-mix(in srgb, var(--orbit-blue) 35%, transparent);
 }
 .b360-platform-card:nth-child(2) h3 {
-  color: #ff2d9b !important;
-  text-shadow: 0 0 14px rgba(255, 45, 155, 0.35);
+  color: var(--pink) !important;
+  text-shadow: 0 0 14px color-mix(in srgb, var(--pink) 35%, transparent);
 }
 .b360-platform-card:nth-child(3) h3 {
-  color: #ffc107 !important;
-  text-shadow: 0 0 14px rgba(255, 193, 7, 0.35);
+  color: var(--gold) !important;
+  text-shadow: 0 0 14px color-mix(in srgb, var(--gold) 35%, transparent);
 }
 
 .b360-flow-card:nth-child(1) h3 {
-  color: #00d4ff !important;
-  text-shadow: 0 0 12px rgba(0, 212, 255, 0.35);
+  color: var(--orbit-blue) !important;
+  text-shadow: 0 0 12px color-mix(in srgb, var(--orbit-blue) 35%, transparent);
 }
 .b360-flow-card:nth-child(3) h3 {
-  color: #ff2d9b !important;
-  text-shadow: 0 0 12px rgba(255, 45, 155, 0.35);
+  color: var(--pink) !important;
+  text-shadow: 0 0 12px color-mix(in srgb, var(--pink) 35%, transparent);
 }
 .b360-flow-card:nth-child(5) h3 {
-  color: #ffc107 !important;
-  text-shadow: 0 0 12px rgba(255, 193, 7, 0.35);
+  color: var(--gold) !important;
+  text-shadow: 0 0 12px color-mix(in srgb, var(--gold) 35%, transparent);
 }
 .b360-flow-card:nth-child(7) h3 {
-  color: #8b7dff !important;
-  text-shadow: 0 0 12px rgba(139, 125, 255, 0.35);
+  color: var(--iris) !important;
+  text-shadow: 0 0 12px color-mix(in srgb, var(--iris) 35%, transparent);
 }
 .b360-flow-card:nth-child(9) h3 {
   color: #10b981 !important;
@@ -1412,8 +1412,8 @@ html:not(.dark)
   text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
 }
 .b360-copilot-card h3 {
-  color: #8b7dff !important;
-  text-shadow: 0 0 14px rgba(139, 125, 255, 0.35);
+  color: var(--iris) !important;
+  text-shadow: 0 0 14px color-mix(in srgb, var(--iris) 35%, transparent);
 }
 
 /* Textos e subtítulos dos cards */
@@ -1451,9 +1451,9 @@ html:not(.dark)
 }
 
 .b360-card-action:hover {
-  background: rgba(0, 212, 255, 0.15);
-  border-color: #00d4ff;
-  color: #00d4ff !important;
+  background: color-mix(in srgb, var(--orbit-blue) 15%, transparent);
+  border-color: var(--orbit-blue);
+  color: var(--orbit-blue) !important;
   transform: translateX(4px);
 }
 
@@ -1570,7 +1570,7 @@ html.dark .b360-adaptive-landing .b360-topnav,
 
 html.dark .b360-adaptive-landing .b360-topnav a:hover,
 [data-theme="dark"] .b360-adaptive-landing .b360-topnav a:hover {
-  color: #00d4ff !important;
+  color: var(--orbit-blue) !important;
 }
 
 /* Títulos de Seção em Modo Escuro (Ciano/Íris/Rosa Neon - NUNCA PRETO, NUNCA BRANCO) */
@@ -1583,7 +1583,7 @@ html.dark .b360-adaptive-landing .b360-final-cta h2,
 [data-theme="dark"] .b360-adaptive-landing .b360-hero-title:not(.bh-n1-title),
 [data-theme="dark"] .b360-adaptive-landing .b360-final-cta h2 {
   font-family: "Sora", system-ui, sans-serif !important;
-  background: linear-gradient(135deg, #00d4ff 0%, #8b7dff 50%, #ff2d9b 100%) !important;
+  background: linear-gradient(135deg, var(--orbit-blue) 0%, var(--iris) 50%, var(--pink) 100%) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
@@ -1603,8 +1603,8 @@ html.dark .b360-adaptive-landing .b360-hero-main > div:first-child > p,
 
 html.dark .b360-adaptive-landing .b360-eyebrow,
 [data-theme="dark"] .b360-adaptive-landing .b360-eyebrow {
-  color: #00d4ff !important;
-  text-shadow: 0 0 12px rgba(0, 212, 255, 0.45);
+  color: var(--orbit-blue) !important;
+  text-shadow: 0 0 12px color-mix(in srgb, var(--orbit-blue) 45%, transparent);
 }
 
 /* ── 3. BENTO GRID COMPACTO (3 colunas, baixo, cantos orgânicos) ───────── */
@@ -1769,42 +1769,42 @@ html.dark .b360-adaptive-landing .b360-eyebrow,
   text-shadow: 0 0 14px rgba(248, 113, 113, 0.35);
 }
 .b360-adaptive-landing .b360-problem-card:nth-child(2) h3 {
-  color: #ff2d9b !important;
-  text-shadow: 0 0 14px rgba(255, 45, 155, 0.35);
+  color: var(--pink) !important;
+  text-shadow: 0 0 14px color-mix(in srgb, var(--pink) 35%, transparent);
 }
 .b360-adaptive-landing .b360-problem-card:nth-child(3) h3 {
-  color: #ffc107 !important;
-  text-shadow: 0 0 14px rgba(255, 193, 7, 0.35);
+  color: var(--gold) !important;
+  text-shadow: 0 0 14px color-mix(in srgb, var(--gold) 35%, transparent);
 }
 
 .b360-adaptive-landing .b360-platform-card:nth-child(1) h3 {
-  color: #00d4ff !important;
-  text-shadow: 0 0 14px rgba(0, 212, 255, 0.35);
+  color: var(--orbit-blue) !important;
+  text-shadow: 0 0 14px color-mix(in srgb, var(--orbit-blue) 35%, transparent);
 }
 .b360-adaptive-landing .b360-platform-card:nth-child(2) h3 {
-  color: #ff2d9b !important;
-  text-shadow: 0 0 14px rgba(255, 45, 155, 0.35);
+  color: var(--pink) !important;
+  text-shadow: 0 0 14px color-mix(in srgb, var(--pink) 35%, transparent);
 }
 .b360-adaptive-landing .b360-platform-card:nth-child(3) h3 {
-  color: #ffc107 !important;
-  text-shadow: 0 0 14px rgba(255, 193, 7, 0.35);
+  color: var(--gold) !important;
+  text-shadow: 0 0 14px color-mix(in srgb, var(--gold) 35%, transparent);
 }
 
 .b360-adaptive-landing .b360-flow-card:nth-child(1) h3 {
-  color: #00d4ff !important;
-  text-shadow: 0 0 12px rgba(0, 212, 255, 0.35);
+  color: var(--orbit-blue) !important;
+  text-shadow: 0 0 12px color-mix(in srgb, var(--orbit-blue) 35%, transparent);
 }
 .b360-adaptive-landing .b360-flow-card:nth-child(3) h3 {
-  color: #ff2d9b !important;
-  text-shadow: 0 0 12px rgba(255, 45, 155, 0.35);
+  color: var(--pink) !important;
+  text-shadow: 0 0 12px color-mix(in srgb, var(--pink) 35%, transparent);
 }
 .b360-adaptive-landing .b360-flow-card:nth-child(5) h3 {
-  color: #ffc107 !important;
-  text-shadow: 0 0 12px rgba(255, 193, 7, 0.35);
+  color: var(--gold) !important;
+  text-shadow: 0 0 12px color-mix(in srgb, var(--gold) 35%, transparent);
 }
 .b360-adaptive-landing .b360-flow-card:nth-child(7) h3 {
-  color: #8b7dff !important;
-  text-shadow: 0 0 12px rgba(139, 125, 255, 0.35);
+  color: var(--iris) !important;
+  text-shadow: 0 0 12px color-mix(in srgb, var(--iris) 35%, transparent);
 }
 .b360-adaptive-landing .b360-flow-card:nth-child(9) h3 {
   color: #10b981 !important;
@@ -1816,8 +1816,8 @@ html.dark .b360-adaptive-landing .b360-eyebrow,
   text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
 }
 .b360-adaptive-landing .b360-copilot-card h3 {
-  color: #8b7dff !important;
-  text-shadow: 0 0 14px rgba(139, 125, 255, 0.35);
+  color: var(--iris) !important;
+  text-shadow: 0 0 14px color-mix(in srgb, var(--iris) 35%, transparent);
 }
 
 /* Conteúdo textual dentro dos cards */

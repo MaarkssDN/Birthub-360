@@ -125,7 +125,7 @@ export function DiscoveryResultsPanel({
                 onSaveAll();
               }}
               disabled={isSavingBatch}
-              className="bg-brand text-on-brand px-4 py-2 rounded-xl text-xs font-bold hover:brightness-110 active:scale-95 transition-all shadow-[0_2px_10px_rgba(0,229,255,0.3)] hover:shadow-glow-brand flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+              className="bg-brand text-on-brand px-4 py-2 rounded-xl text-xs font-bold hover:brightness-110 active:scale-95 transition-all shadow-[0_2px_10px_color-mix(in_srgb,var(--orbit-blue)_30%,transparent)] hover:shadow-glow-brand flex items-center gap-2 disabled:opacity-50 cursor-pointer"
             >
               <UserPlus size={14} /> {isSavingBatch ? 'Salvando Lista...' : 'Salvar Lista de Leads'}
             </button>
@@ -138,7 +138,7 @@ export function DiscoveryResultsPanel({
                   csvDelimiter,
                 });
               }}
-              className="bg-emerald-600 text-[#F8F9FF] px-4 py-2 rounded-xl text-xs font-bold hover:bg-emerald-700 active:scale-95 transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+              className="bg-emerald-600 text-[var(--ink)] px-4 py-2 rounded-xl text-xs font-bold hover:bg-emerald-700 active:scale-95 transition-all shadow-sm flex items-center gap-2 cursor-pointer"
             >
               <Database size={14} /> Exportar Excel {exportTarget === 'complete' ? '(3 Abas)' : ''}
             </button>

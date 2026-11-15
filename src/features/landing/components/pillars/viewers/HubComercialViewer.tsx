@@ -80,7 +80,7 @@ export function HubComercialViewer({ theme = 'dark' }: PillarViewerProps) {
         <div
           className={`rounded-xl p-2.5 border space-y-1.5 ${
             isDark
-              ? 'bg-slate-950/90 border-sky-500/40 shadow-[0_0_12px_rgba(0,212,255,0.12)]'
+              ? 'bg-slate-950/90 border-sky-500/40 shadow-[0_0_12px_color-mix(in_srgb,var(--orbit-blue)_12%,transparent)]'
               : 'bg-white border-sky-300 shadow-sm'
           }`}
         >

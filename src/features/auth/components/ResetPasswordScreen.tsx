@@ -74,8 +74,8 @@ export function ResetPasswordScreen() {
     return {
       score: 4,
       label: 'Senha Forte',
-      color: 'bg-[#00D4FF]',
-      text: 'text-[#00D4FF]',
+      color: 'bg-orbit-blue',
+      text: 'text-orbit-blue',
       width: '100%',
     };
   };

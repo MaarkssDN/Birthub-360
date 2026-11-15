@@ -26,7 +26,7 @@ export function LuxuryLandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0D0D0D] text-[#F8F9FF] selection:bg-[#00D4FF] selection:text-[#0D0D0D] font-sans antialiased overflow-x-hidden">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--ink)] selection:bg-[var(--orbit-blue)] selection:text-[var(--bg)] font-sans antialiased overflow-x-hidden">
       {/* HUD Flutuante Superior */}
       <LuxuryHeaderHUD onOpenPrivateAccess={scrollToPrivateAccess} />
 

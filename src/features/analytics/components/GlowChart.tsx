@@ -27,9 +27,9 @@ const SERIES: Array<{
   color: string;
   fillId: string;
 }> = [
-  { key: 'created', label: 'Criados', color: '#8B7DFF', fillId: 'pulseCreated' },
-  { key: 'won', label: 'Ganhos', color: '#22c55e', fillId: 'pulseWon' },
-  { key: 'lost', label: 'Perdidos', color: '#EF4444', fillId: 'pulseLost' },
+  { key: 'created', label: 'Criados', color: 'var(--iris)', fillId: 'pulseCreated' },
+  { key: 'won', label: 'Ganhos', color: 'var(--ok)', fillId: 'pulseWon' },
+  { key: 'lost', label: 'Perdidos', color: 'var(--red)', fillId: 'pulseLost' },
 ];
 
 export function GlowChart({ data, error }: GlowChartProps) {
@@ -72,7 +72,7 @@ export function GlowChart({ data, error }: GlowChartProps) {
     >
       <motion.div
         aria-hidden="true"
-        className="pointer-events-none absolute -right-24 -top-28 h-72 w-72 rounded-full bg-[#8B7DFF]/10 blur-[90px]"
+        className="pointer-events-none absolute -right-24 -top-28 h-72 w-72 rounded-full bg-iris/10 blur-[90px]"
         animate={
           isCardInView
             ? { scale: [1, 1.08, 1], opacity: [0.34, 0.5, 0.34] }
@@ -84,13 +84,13 @@ export function GlowChart({ data, error }: GlowChartProps) {
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-[#8B7DFF]/20 to-transparent"
+        className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-iris/20 to-transparent"
       />
 
       <div className="relative z-10 flex h-full flex-col">
         <div className="mb-5 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div>
-            <div className="mb-1 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.22em] text-[#8B7DFF]">
+            <div className="mb-1 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.22em] text-iris">
               <CircleDot className="h-3.5 w-3.5" aria-hidden="true" /> Pulso comercial
             </div>
             <h3 className="text-lg font-black text-ink">Entrada, ganho e perda por mês</h3>
@@ -114,7 +114,7 @@ export function GlowChart({ data, error }: GlowChartProps) {
                   type="button"
                   onClick={() => toggleSeries(series.key)}
                   aria-pressed={active}
-                  className={`group/series flex min-w-[7.25rem] items-center gap-2 rounded-xl border px-3 py-2 text-left transition-[transform,border-color,background-color,box-shadow] duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B7DFF] ${
+                  className={`group/series flex min-w-[7.25rem] items-center gap-2 rounded-xl border px-3 py-2 text-left transition-[transform,border-color,background-color,box-shadow] duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-iris ${
                     active
                       ? 'border-line bg-surface-2 shadow-sm'
                       : 'border-transparent bg-transparent opacity-55'
@@ -180,34 +180,34 @@ export function GlowChart({ data, error }: GlowChartProps) {
                   </defs>
                   <CartesianGrid
                     vertical={false}
-                    stroke="rgba(255, 255, 255, 0.05)"
+                    stroke="color-mix(in srgb, var(--ink) 5%, transparent)"
                     strokeDasharray="4 8"
                   />
                   <XAxis
                     dataKey="name"
-                    stroke="#94a3b8"
+                    stroke="var(--ink-2)"
                     fontSize={11}
                     tickLine={false}
                     axisLine={false}
                     dy={10}
                   />
                   <YAxis
-                    stroke="#94a3b8"
+                    stroke="var(--ink-2)"
                     fontSize={11}
                     tickLine={false}
                     axisLine={false}
                     allowDecimals={false}
                   />
                   <Tooltip
-                    cursor={{ stroke: 'rgba(255, 255, 255, 0.1)', strokeWidth: 1 }}
+                    cursor={{ stroke: 'color-mix(in srgb, var(--ink) 10%, transparent)', strokeWidth: 1 }}
                     contentStyle={{
-                      backgroundColor: '#1C1D24',
-                      color: '#ffffff',
+                      backgroundColor: 'var(--surface-elevated)',
+                      color: 'var(--ink)',
                       borderRadius: '12px',
-                      border: '1px solid rgba(255, 255, 255, 0.05)',
+                      border: '1px solid color-mix(in srgb, var(--ink) 8%, transparent)',
                       boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
                     }}
-                    labelStyle={{ color: '#ffffff', fontWeight: 800, marginBottom: 6 }}
+                    labelStyle={{ color: 'var(--ink)', fontWeight: 800, marginBottom: 6 }}
                     itemStyle={{ fontSize: 12, fontWeight: 700 }}
                   />
                   {SERIES.map(
@@ -222,7 +222,7 @@ export function GlowChart({ data, error }: GlowChartProps) {
                           strokeWidth={series.key === 'won' ? 3.5 : 2.25}
                           fill={`url(#${series.fillId})`}
                           fillOpacity={1}
-                          activeDot={{ r: 5, strokeWidth: 2, fill: '#1C1D24' }}
+                          activeDot={{ r: 5, strokeWidth: 2, fill: 'var(--surface)' }}
                           animationDuration={900}
                           animationEasing="ease-out"
                         />

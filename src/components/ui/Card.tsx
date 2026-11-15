@@ -5,7 +5,7 @@ import { cn } from '../../lib/utils.js';
 import { BorderBeam, type BorderBeamProps } from './BorderBeam.js';
 
 const cardVariants = cva(
-  'bh-platform-card relative overflow-hidden rounded-2xl sm:rounded-3xl text-ink transition-all duration-200 ease-out border border-line bg-surface/95 dark:bg-[#16171B]/95 backdrop-blur-xl shadow-[0_4px_24px_-2px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.85)] dark:shadow-[0_4px_24px_-2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.07)] hover:shadow-[0_8px_32px_-4px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_32px_-4px_rgba(0,212,255,0.12)] hover:-translate-y-0.5',
+  'bh-platform-card relative overflow-hidden rounded-2xl sm:rounded-3xl text-ink transition-all duration-200 ease-out border border-line bg-surface/95 dark:bg-[var(--surface-2)]/95 backdrop-blur-xl shadow-[0_4px_24px_-2px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,0.85)] dark:shadow-[0_4px_24px_-2px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.07)] hover:shadow-[0_8px_32px_-4px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_32px_-4px_color-mix(in_srgb,var(--orbit-blue)_12%,transparent)] hover:-translate-y-0.5',
   {
     variants: {
       variant: {
@@ -13,7 +13,8 @@ const cardVariants = cva(
         stat: 'hover:border-brand/40',
         outline:
           'border border-line bg-transparent hover:border-line-strong hover:bg-surface-interactive',
-        accent: 'hover:border-brand/50 shadow-[0_4px_20px_rgba(0,212,255,0.12)]',
+        accent:
+          'hover:border-brand/50 shadow-[0_4px_20px_color-mix(in_srgb,var(--orbit-blue)_12%,transparent)]',
         elevated:
           'shadow-[0_12px_40px_-6px_rgba(0,0,0,0.08)] dark:shadow-[0_12px_40px_-6px_rgba(0,0,0,0.5)] border-line hover:border-line-strong',
         interactive:
@@ -22,17 +23,19 @@ const cardVariants = cva(
         panel: 'hover:border-line-strong',
         metric: 'hover:border-brand/40',
         data: 'bg-surface-2 border border-line shadow-none',
-        feature: 'border-brand/30 hover:border-brand/60 shadow-[0_4px_24px_rgba(0,212,255,0.12)]',
+        feature:
+          'border-brand/30 hover:border-brand/60 shadow-[0_4px_24px_color-mix(in_srgb,var(--orbit-blue)_12%,transparent)]',
         floating:
           'shadow-[0_16px_48px_-8px_rgba(0,0,0,0.12)] dark:shadow-[0_16px_48px_-8px_rgba(0,0,0,0.6)] border-line-strong',
         bento: 'hover:border-brand/35',
-        cosmic: 'border-brand/30 dark:border-brand/40 shadow-[0_4px_24px_rgba(0,212,255,0.15)]',
+        cosmic:
+          'border-brand/30 dark:border-brand/40 shadow-[0_4px_24px_color-mix(in_srgb,var(--orbit-blue)_15%,transparent)]',
         glass:
-          'border border-line bg-surface/80 dark:bg-[#16171B]/80 backdrop-blur-2xl shadow-card hover:border-line-strong',
-        neon: 'border-brand/40 shadow-[0_0_24px_rgba(0,212,255,0.18)] hover:border-brand',
+          'border border-line bg-surface/80 dark:bg-[var(--surface-2)]/80 backdrop-blur-2xl shadow-card hover:border-line-strong',
+        neon: 'border-brand/40 shadow-[0_0_24px_color-mix(in_srgb,var(--orbit-blue)_18%,transparent)] hover:border-brand',
         // Estilo orgânico inspirado em Ronas IT / Spatial UI (pill card)
         organic:
-          'rounded-3xl border border-line/70 bg-white dark:bg-[#18191E] shadow-[0_4px_24px_-2px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.9)] dark:shadow-[0_4px_24px_-2px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.08)] hover:scale-[1.01] transition-transform duration-200',
+          'rounded-3xl border border-line/70 bg-[var(--surface)] dark:bg-[var(--surface-2)] shadow-[0_4px_24px_-2px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.9)] dark:shadow-[0_4px_24px_-2px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.08)] hover:scale-[1.01] transition-transform duration-200',
       },
       padding: {
         default: 'p-6',
@@ -208,7 +211,7 @@ const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HT
     <h3
       ref={ref}
       className={cn(
-        'font-display font-bold leading-tight tracking-[-0.02em] text-[#0F2942] dark:text-[#E2F1FF]',
+        'font-display font-bold leading-tight tracking-[-0.02em] text-[var(--ink)]',
         className,
       )}
       {...props}
@@ -223,7 +226,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn('text-sm leading-relaxed text-[#3B5A75] dark:text-[#94B3CD]', className)}
+    className={cn('text-sm leading-relaxed text-[var(--ink-2)]', className)}
     {...props}
   />
 ));

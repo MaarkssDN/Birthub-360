@@ -100,7 +100,7 @@ export const DatabaseExplorerTab: React.FC<DatabaseExplorerTabProps> = ({
         >
           <div>
             <h2
-              className={`text-base font-bold flex items-center gap-2 ${isDark ? 'text-[#F8F9FF]' : 'text-slate-800'}`}
+              className={`text-base font-bold flex items-center gap-2 ${isDark ? 'text-[var(--ink)]' : 'text-slate-800'}`}
             >
               <Database className="w-5 h-5 text-[var(--brand-primary)]" />
               <span>Banco de Dados Relacional SQLite (Persistência de Mensagens)</span>
@@ -153,7 +153,7 @@ export const DatabaseExplorerTab: React.FC<DatabaseExplorerTabProps> = ({
               Tabela leads
             </div>
             <div
-              className={`text-xl font-bold mt-0.5 ${isDark ? 'text-[#F8F9FF]' : 'text-slate-800'}`}
+              className={`text-xl font-bold mt-0.5 ${isDark ? 'text-[var(--ink)]' : 'text-slate-800'}`}
             >
               {dbStats?.leadsCount ?? 0}
             </div>
@@ -229,7 +229,7 @@ export const DatabaseExplorerTab: React.FC<DatabaseExplorerTabProps> = ({
               }}
               className={`text-[11px] px-2.5 py-1 rounded-lg border transition ${
                 isDark
-                  ? 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-[#F8F9FF] border-slate-700'
+                  ? 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-[var(--ink)] border-slate-700'
                   : 'bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-800 border-slate-200'
               }`}
             >
@@ -261,7 +261,7 @@ export const DatabaseExplorerTab: React.FC<DatabaseExplorerTabProps> = ({
               type="button"
               onClick={() => runQuery()}
               disabled={isExecuting}
-              className="py-2 px-5 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] disabled:opacity-50 text-[#F8F9FF] font-bold rounded-xl text-xs transition shadow-md flex items-center gap-1.5"
+              className="py-2 px-5 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] disabled:opacity-50 text-[var(--ink)] font-bold rounded-xl text-xs transition shadow-md flex items-center gap-1.5"
             >
               <Play className="w-3.5 h-3.5 fill-current" />
               <span>{isExecuting ? 'Executando...' : 'Executar SQL'}</span>

@@ -84,7 +84,7 @@ export function MyTasksTab({ user, isDark }: MyTasksTabProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className={`text-xl font-bold ${isDark ? 'text-[#F8F9FF]' : 'text-slate-800'}`}>
+        <h2 className={`text-xl font-bold ${isDark ? 'text-[var(--ink)]' : 'text-slate-800'}`}>
           Minhas Tarefas
         </h2>
         <span

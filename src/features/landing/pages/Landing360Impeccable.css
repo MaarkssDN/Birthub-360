@@ -6,11 +6,11 @@
   --ink: #e4eaf4;
   --muted: #7e91ad;
   --line: rgba(100, 130, 170, 0.12);
-  --brand: #00d4ff;
+  --brand: var(--orbit-blue);
   --brand-on: #031422;
-  --accent: #ff2d9b;
-  --gold: #ffc107;
-  --iris: #8b7dff;
+  --accent: var(--pink);
+  --gold: var(--gold);
+  --iris: var(--iris);
   --r: 14px;
   --r-sm: 10px;
   --max: 1220px;
@@ -40,7 +40,7 @@ html.light .lp,
   --iris: #7c3aed;
 }
 .lp ::selection {
-  background: rgba(0, 212, 255, 0.24);
+  background: color-mix(in srgb, var(--orbit-blue) 24%, transparent);
   color: inherit;
 }
 .lp-c {
@@ -175,14 +175,14 @@ html.light .lp,
   color: var(--brand-on);
   box-shadow:
     0 0 0 0 transparent,
-    0 2px 12px -2px rgba(0, 212, 255, 0.3);
+    0 2px 12px -2px color-mix(in srgb, var(--orbit-blue) 30%, transparent);
   position: relative;
   overflow: hidden;
 }
 .lp-btn-p:hover {
   box-shadow:
-    0 0 24px -4px rgba(0, 212, 255, 0.45),
-    0 4px 20px -2px rgba(0, 212, 255, 0.4);
+    0 0 24px -4px color-mix(in srgb, var(--orbit-blue) 45%, transparent),
+    0 4px 20px -2px color-mix(in srgb, var(--orbit-blue) 40%, transparent);
   transform: translateY(-1px);
 }
 .lp-btn-p::after {
@@ -258,14 +258,14 @@ html.light .lp,
   height: 50%;
   top: -10%;
   left: 15%;
-  background: radial-gradient(circle, rgba(0, 212, 255, 0.12), transparent 70%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--orbit-blue) 12%, transparent), transparent 70%);
 }
 .lp-hero-orb-b {
   width: 40%;
   height: 40%;
   bottom: -5%;
   right: 10%;
-  background: radial-gradient(circle, rgba(255, 45, 155, 0.08), transparent 70%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--pink) 8%, transparent), transparent 70%);
 }
 .lp-hero-content {
   position: relative;

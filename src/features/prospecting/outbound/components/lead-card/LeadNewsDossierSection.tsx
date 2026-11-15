@@ -17,14 +17,14 @@ export const LeadNewsDossierSection: React.FC<LeadNewsDossierSectionProps> = ({
   return (
     <div
       className={`p-4 rounded-xl border space-y-3.5 animate-fadeIn ${
-        isDark ? 'bg-slate-950/80 border-[#008FCE]/30' : 'bg-slate-100/50 border-slate-300'
+        isDark ? 'bg-slate-950/80 border-[var(--orbit-blue)]/30' : 'bg-slate-100/50 border-slate-300'
       }`}
     >
       <div className="flex items-center justify-between border-b pb-2.5">
         <div className="flex items-center gap-2">
-          <Newspaper className="w-4 h-4 text-[#008FCE]" />
+          <Newspaper className="w-4 h-4 text-[var(--orbit-blue)]" />
           <h4
-            className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-[#93DBF2]' : 'text-[#374898]'}`}
+            className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-[var(--orbit-blue)]' : 'text-[var(--orbit-blue)]'}`}
           >
             Dossiê de Fontes Públicas & Notícias na Internet
           </h4>
@@ -66,7 +66,7 @@ export const LeadNewsDossierSection: React.FC<LeadNewsDossierSectionProps> = ({
       {/* Recent News Items */}
       {newsDossier.recent_news && newsDossier.recent_news.length > 0 && (
         <div className="space-y-2 pt-1">
-          <span className="text-[11px] font-bold text-[#008FCE] uppercase tracking-wider block">
+          <span className="text-[11px] font-bold text-[var(--orbit-blue)] uppercase tracking-wider block">
             Últimas Notícias Identificadas na Mídia:
           </span>
           <div className="space-y-2">
@@ -81,7 +81,7 @@ export const LeadNewsDossierSection: React.FC<LeadNewsDossierSectionProps> = ({
               >
                 <div className="flex items-center justify-between gap-2">
                   <span
-                    className={`font-bold text-xs ${isDark ? 'text-[#F8F9FF]' : 'text-slate-800'}`}
+                    className={`font-bold text-xs ${isDark ? 'text-[var(--ink)]' : 'text-slate-800'}`}
                   >
                     {item.title}
                   </span>

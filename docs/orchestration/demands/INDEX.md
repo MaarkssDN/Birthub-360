@@ -7,9 +7,17 @@
 | DEM-20261113-002 | Execução do Backlog de Ondas — programa de 17 ondas (Onda 1 mergeada via PR #275) | 00 → 15/01/21 | EM_ANDAMENTO | 2026-11-14 |
 | DEM-20261113-003 | Implantação Permanente do Protocolo Mestre Multiagente | 00 → 22/24 | EM_CORREÇÃO | 2026-11-14 |
 | DEM-20261113-004 | Nova Tela Inicial (Home) e Identidade dos 11 Módulos | 00 → 02/03/08/24 | CONCLUÍDA | 2026-11-14 |
-| DEM-20261113-004† | Missão Mestre de Identidade Visual (auditoria + Brandbook V2 + DS + Motion) — colisão de ID com a DEM-004 acima; registros divergentes em branches distintas | 00 → subagentes (F01/F02/F03) | EM_VALIDAÇÃO (branch agente/00-identidade-v2, commit 07bfc7304) | 2026-10-14 |
-| DEM-20261114-001 | Consolidação do Protocolo Mestre Permanente (re-emissão) | 00 → 22/24 | CONCLUÍDA | 2026-11-14 |
+| DEM-20261113-004† | Missão Mestre de Identidade Visual (auditoria + Brandbook V2 + DS + Motion) — colisão de ID com DEM-20261113-004; registros divergentes em branches distintas | 00 → subagentes (F01/F02/F03) | EM_VALIDAÇÃO (branch agente/00-identidade-v2, commit 07bfc7304) | 2026-10-14 |
+| DEM-20261113-004† | Execução do Backlog de Ondas — Onda 3 (banco/arquitetura) — colisão de ID com DEM-20261113-004; reconciliar | 00 → 01/16/08/14 | EM_ANDAMENTO | 2026-11-14 |
+| DEM-20261114-001 | Auditoria de Design, UX, Usabilidade e Rotas | 00 | CONCLUÍDA | 2026-11-14 |
+| DEM-20261114-001† | Consolidação do Protocolo Mestre Permanente (re-emissão) — colisão de ID: a ficha DEM-20261114-001.md nesta árvore é a Auditoria; provável registro de outra branch, reconciliar | 00 → 22/24 | CONCLUÍDA | 2026-11-14 |
 | DEM-20261114-002 | Matriz de handoffs e verificação dos resolvidos | 00 + clusters | EM_ANDAMENTO | 2026-11-14 |
+| DEM-20261114-003 | Correção priorizada P0/P1 da auditoria (4 frentes) | 00 → subagentes A–D | CONCLUÍDA | 2026-11-14 |
+
+| DEM-20261114-003† | Backlog de Ondas — Onda 4 (frontend/perf) + follow-ups Onda 2 — colisão de ID: a ficha DEM-20261114-003.md nesta árvore é a Correção P0; provável registro de outra branch, reconciliar | 00 → 23/09/03/08/02/06/01 | EM_ANDAMENTO | 2026-11-14 |
+| DEM-20261114-004 | Onda QA visual da paleta + correções P1 (frentes E–H) | 00 → subagentes | EM_ANDAMENTO | 2026-11-14 |
+| DEM-20261114-005 | Migração hex neon hardcoded → tokens (telas visíveis) | 00 → subagentes I–L | EM_ANDAMENTO | 2026-11-14 |
+| DEM-20261115-001 | Auditoria geral da plataforma por todos os agentes + consolidação em ondas (HTML na Área de Trabalho) | 00 → todos | CONCLUÍDA | 2026-11-15 |
 
 ## Sessões conhecidas
 | Agente | Sessão | Estado confirmado |

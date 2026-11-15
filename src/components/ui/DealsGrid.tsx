@@ -48,7 +48,7 @@ export function DealCard({
       className={cn(
         'group relative flex flex-col justify-between gap-2.5 rounded-2xl border border-l-[3.5px] bg-surface-elevated/85 p-4 shadow-sm backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 hover:shadow-card-hover overflow-hidden',
         borderTone,
-        isWon && 'shadow-[0_4px_20px_rgba(16,185,129,0.12)]',
+        isWon && 'shadow-[0_4px_20px_color-mix(in_srgb,var(--ok)_12%,transparent)]',
       )}
     >
       {/* Luz especular de topo para negócios ganhos */}

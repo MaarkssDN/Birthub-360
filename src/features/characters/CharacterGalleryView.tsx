@@ -69,7 +69,7 @@ function CharacterCard({
           className="bh-character-avatar flex items-center justify-center w-14 h-14 rounded-full"
           data-state={state}
           style={{
-            background: `linear-gradient(135deg, ${entry.palette.primary}33, ${entry.palette.secondary}1f)`,
+            background: `linear-gradient(135deg, color-mix(in srgb, ${entry.palette.primary} 20%, transparent), color-mix(in srgb, ${entry.palette.secondary} 12%, transparent))`,
             boxShadow: entry.palette.halo,
           }}
         >

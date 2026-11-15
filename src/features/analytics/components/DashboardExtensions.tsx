@@ -36,8 +36,8 @@ export function LostReasonsWidget({ data }: { data?: any }) {
 export function TmqTile({ value }: { value?: any }) {
   if (value == null) return null;
   return (
-    <div className="text-4xl font-black text-slate-200">
-      {value.toFixed(1)} <span className="text-lg font-normal text-slate-400">dias</span>
+    <div className="text-4xl font-black text-ink">
+      {value.toFixed(1)} <span className="text-lg font-normal text-ink-2">dias</span>
     </div>
   );
 }

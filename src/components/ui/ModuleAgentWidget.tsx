@@ -309,7 +309,7 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
               (e.currentTarget as HTMLImageElement).src = FALLBACK_CHARACTER_SVG;
             }}
           />
-          <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border border-surface shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+          <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border border-surface shadow-[0_0_8px_color-mix(in_srgb,var(--ok)_60%,transparent)]" />
         </div>
 
         <div className="ml-3 flex flex-col items-start justify-center">
@@ -375,14 +375,14 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="w-[400px] max-w-[calc(100vw-2rem)] rounded-2xl border border-[#F8F9FF]/10 shadow-2xl overflow-hidden flex flex-col max-h-[580px]"
+            className="w-[400px] max-w-[calc(100vw-2rem)] rounded-2xl border border-[var(--palette-neon-white)]/10 shadow-2xl overflow-hidden flex flex-col max-h-[580px]"
             style={{
-              background: 'rgba(6,13,26,0.97)',
+              background: 'color-mix(in srgb, var(--palette-neon-black) 97%, transparent)',
               backdropFilter: 'blur(24px)',
             }}
           >
             {/* Header do Card */}
-            <div className="px-5 py-4 border-b border-[#F8F9FF]/10 flex items-center justify-between">
+            <div className="px-5 py-4 border-b border-[var(--palette-neon-white)]/10 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div
                   className={`flex items-center justify-center w-11 h-11 rounded-full bg-gradient-to-br ${agent.badgeGradient} bh-character-avatar`}
@@ -419,15 +419,15 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
                   setIsExpanded(false);
                 }}
                 aria-label="Fechar painel do copiloto"
-                className="p-1.5 rounded-md hover:bg-[#F8F9FF]/10 text-[#F8F9FF]/40 hover:text-[#F8F9FF] transition-colors focus:outline-none focus:ring-1 focus:ring-brand"
+                className="p-1.5 rounded-md hover:bg-[var(--palette-neon-white)]/10 text-[var(--palette-neon-white)]/40 hover:text-[var(--palette-neon-white)] transition-colors focus:outline-none focus:ring-1 focus:ring-brand"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Contexto & Pipeline */}
-            <div className="px-5 py-4 border-b border-[#F8F9FF]/10 overflow-y-auto">
-              <p className="text-[#F8F9FF]/70 text-xs mb-4 flex items-center gap-2">
+            <div className="px-5 py-4 border-b border-[var(--palette-neon-white)]/10 overflow-y-auto">
+              <p className="text-[var(--palette-neon-white)]/70 text-xs mb-4 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                 {agent.contextMsg}
               </p>
@@ -467,7 +467,7 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
                 <div
                   role="status"
                   aria-live="polite"
-                  className="mt-4 p-3 rounded-xl bg-white/[0.03] border border-white/10 text-[#F8F9FF]/90 text-xs leading-relaxed max-h-48 overflow-y-auto"
+                  className="mt-4 p-3 rounded-xl bg-white/[0.03] border border-white/10 text-[var(--palette-neon-white)]/90 text-xs leading-relaxed max-h-48 overflow-y-auto"
                 >
                   <div className="flex items-center gap-1.5 text-brand text-[11px] font-semibold mb-1">
                     <Bot className="w-3.5 h-3.5" />
@@ -493,7 +493,7 @@ export function ModuleAgentWidget({ activeTab }: ModuleAgentWidgetProps) {
                   }}
                   aria-label={`Mensagem ou instrução para o copiloto ${agent.name}`}
                   placeholder={`Pergunte ao ${agent.name} sobre este módulo...`}
-                  className="w-full bg-[#F8F9FF]/5 border border-[#F8F9FF]/10 rounded-xl px-4 py-3 pr-12 text-sm text-[#F8F9FF] placeholder-[#F8F9FF]/30 focus:outline-none focus:border-brand/50 focus:ring-1 focus:ring-brand/50 resize-none h-16 disabled:opacity-50"
+                  className="w-full bg-[var(--palette-neon-white)]/5 border border-[var(--palette-neon-white)]/10 rounded-xl px-4 py-3 pr-12 text-sm text-[var(--palette-neon-white)] placeholder-[var(--palette-neon-white)]/30 focus:outline-none focus:border-brand/50 focus:ring-1 focus:ring-brand/50 resize-none h-16 disabled:opacity-50"
                 />
                 {isStreaming ? (
                   <button

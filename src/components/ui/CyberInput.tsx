@@ -54,16 +54,17 @@ export function CyberInput({
     },
     cosmic: {
       base: 'bg-surface-elevated/85 backdrop-blur-2xl border border-brand/30 shadow-[0_4px_20px_rgba(0,0,0,0.15)]',
-      focused: 'border-brand shadow-[0_0_25px_rgba(212,175,55,0.35)] ring-1 ring-brand/40',
+      focused:
+        'border-brand shadow-[0_0_25px_color-mix(in_srgb,var(--brand)_35%,transparent)] ring-1 ring-brand/40',
       unfocused: 'border-brand/25',
     },
   };
 
   const glowColors = {
-    cyan: 'shadow-[0_0_20px_rgba(34,211,238,0.5)]',
-    purple: 'shadow-[0_0_20px_rgba(168,85,247,0.5)]',
-    gold: 'shadow-[0_0_20px_rgba(250,204,21,0.5)]',
-    green: 'shadow-[0_0_20px_rgba(74,222,128,0.5)]',
+    cyan: 'shadow-[0_0_20px_color-mix(in_srgb,var(--accent-cyan)_50%,transparent)]',
+    purple: 'shadow-[0_0_20px_color-mix(in_srgb,var(--iris)_50%,transparent)]',
+    gold: 'shadow-[0_0_20px_color-mix(in_srgb,var(--gold)_50%,transparent)]',
+    green: 'shadow-[0_0_20px_color-mix(in_srgb,var(--ok)_50%,transparent)]',
   };
 
   const sizeStyles = {

@@ -34,7 +34,7 @@ export default function AnalyticsPage() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <StatCard icon={BarChart3} label="Total de Chamadas" value="1,240" color="blue" />
             <StatCard icon={PieChart} label="Taxa de Conversão" value="18.5%" color="green" />
             <StatCard icon={Activity} label="Custo Médio / Lead" value="R$ 4,20" color="orange" />

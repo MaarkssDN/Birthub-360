@@ -17,13 +17,13 @@ export interface Finding {
 const TONE = {
   win: {
     border: 'border-l-ok',
-    chip: 'bg-ok/15 text-ok-active dark:text-ok border-ok/30 shadow-[0_0_10px_rgba(16,185,129,0.2)]',
-    ring: 'rgba(15,157,100,.55)',
+    chip: 'bg-ok/15 text-ok-active dark:text-ok border-ok/30 shadow-[0_0_10px_color-mix(in_srgb,var(--ok)_20%,transparent)]',
+    ring: 'color-mix(in srgb, var(--ok) 55%, transparent)',
   },
   gap: {
     border: 'border-l-critical',
-    chip: 'bg-critical/15 text-critical border-critical/30 shadow-[0_0_10px_rgba(239,68,68,0.2)]',
-    ring: 'rgba(214,69,69,.55)',
+    chip: 'bg-critical/15 text-critical border-critical/30 shadow-[0_0_10px_color-mix(in_srgb,var(--critical)_20%,transparent)]',
+    ring: 'color-mix(in srgb, var(--critical) 55%, transparent)',
   },
 } as const;
 

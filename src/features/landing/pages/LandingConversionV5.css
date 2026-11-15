@@ -26,10 +26,10 @@
   max-width: 1200px;
   border-radius: 9999px;
   background: rgba(15, 23, 42, 0.75);
-  border: 1px solid rgba(0, 212, 255, 0.35);
+  border: 1px solid color-mix(in srgb, var(--orbit-blue) 35%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 4px 20px rgba(0, 212, 255, 0.12);
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--orbit-blue) 12%, transparent);
   transition: all 0.3s ease;
 }
 
@@ -57,9 +57,9 @@ html:not(.dark) .b360-urgency-content {
   gap: 6px;
   padding: 3px 10px;
   border-radius: 9999px;
-  background: rgba(255, 45, 155, 0.2);
-  border: 1px solid rgba(255, 45, 155, 0.4);
-  color: #ff2d9b;
+  background: color-mix(in srgb, var(--pink) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pink) 40%, transparent);
+  color: var(--pink);
   font-weight: 700;
   font-size: 11px;
   text-transform: uppercase;
@@ -79,7 +79,7 @@ html:not(.dark) .b360-urgency-badge {
   gap: 6px;
   padding: 6px 14px;
   border-radius: 9999px;
-  background: linear-gradient(135deg, #00d4ff 0%, #3b82f6 100%);
+  background: linear-gradient(135deg, var(--orbit-blue) 0%, #3b82f6 100%);
   color: #020617;
   font-size: 12px;
   font-weight: 700;
@@ -94,7 +94,7 @@ html:not(.dark) .b360-urgency-badge {
 
 .b360-urgency-btn:hover {
   transform: translateY(-1px) scale(1.02);
-  box-shadow: 0 0 14px rgba(0, 212, 255, 0.5);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--orbit-blue) 50%, transparent);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -134,7 +134,7 @@ html:not(.dark) .b360-metric-card {
 
 .b360-metric-card:hover {
   transform: translateY(-3px);
-  border-color: rgba(0, 212, 255, 0.4);
+  border-color: color-mix(in srgb, var(--orbit-blue) 40%, transparent);
 }
 
 .b360-metric-num {
@@ -142,7 +142,7 @@ html:not(.dark) .b360-metric-card {
   font-size: 38px;
   font-weight: 800;
   line-height: 1.1;
-  background: linear-gradient(135deg, #00d4ff 0%, #a855f7 100%);
+  background: linear-gradient(135deg, var(--orbit-blue) 0%, #a855f7 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   display: block;
@@ -196,8 +196,8 @@ html:not(.dark) .b360-testimonial-card {
 }
 
 .b360-testimonial-card:hover {
-  border-color: rgba(0, 212, 255, 0.4);
-  box-shadow: 0 12px 32px rgba(0, 212, 255, 0.08);
+  border-color: color-mix(in srgb, var(--orbit-blue) 40%, transparent);
+  box-shadow: 0 12px 32px color-mix(in srgb, var(--orbit-blue) 8%, transparent);
   transform: translateY(-2px);
 }
 
@@ -229,13 +229,13 @@ html:not(.dark) .b360-testimonial-author {
   width: 44px;
   height: 44px;
   border-radius: 9999px;
-  background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(255, 45, 155, 0.2));
-  border: 1px solid rgba(0, 212, 255, 0.4);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--orbit-blue) 20%, transparent), color-mix(in srgb, var(--pink) 20%, transparent));
+  border: 1px solid color-mix(in srgb, var(--orbit-blue) 40%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  color: #00d4ff;
+  color: var(--orbit-blue);
   font-size: 16px;
 }
 
@@ -303,10 +303,10 @@ html:not(.dark) .b360-seal-item {
   padding: 40px;
   border-radius: 28px;
   background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(10, 16, 30, 0.95) 100%);
-  border: 1px solid rgba(0, 212, 255, 0.25);
+  border: 1px solid color-mix(in srgb, var(--orbit-blue) 25%, transparent);
   box-shadow:
     0 20px 50px rgba(0, 0, 0, 0.4),
-    0 0 30px rgba(0, 212, 255, 0.08);
+    0 0 30px color-mix(in srgb, var(--orbit-blue) 8%, transparent);
   backdrop-filter: blur(20px);
 }
 
@@ -348,8 +348,8 @@ html:not(.dark) .b360-form-input {
 
 .b360-form-input:focus {
   outline: none;
-  border-color: #00d4ff;
-  box-shadow: 0 0 12px rgba(0, 212, 255, 0.3);
+  border-color: var(--orbit-blue);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--orbit-blue) 30%, transparent);
 }
 
 .b360-team-chips {
@@ -378,9 +378,9 @@ html:not(.dark) .b360-chip-btn {
 }
 
 .b360-chip-btn.active {
-  background: rgba(0, 212, 255, 0.2);
-  border-color: #00d4ff;
-  color: #00d4ff;
+  background: color-mix(in srgb, var(--orbit-blue) 20%, transparent);
+  border-color: var(--orbit-blue);
+  color: var(--orbit-blue);
   font-weight: 700;
 }
 
@@ -395,19 +395,19 @@ html:not(.dark) .b360-chip-btn.active {
   padding: 14px 20px;
   border-radius: 14px;
   border: none;
-  background: linear-gradient(135deg, #00d4ff 0%, #3b82f6 50%, #ff2d9b 100%);
+  background: linear-gradient(135deg, var(--orbit-blue) 0%, #3b82f6 50%, var(--pink) 100%);
   color: #020617;
   font-size: 15px;
   font-weight: 800;
   letter-spacing: 0.02em;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(0, 212, 255, 0.3);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--orbit-blue) 30%, transparent);
   transition: all 0.25s ease;
 }
 
 .b360-submit-cta:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(0, 212, 255, 0.5);
+  box-shadow: 0 12px 32px color-mix(in srgb, var(--orbit-blue) 50%, transparent);
   filter: brightness(1.08);
 }
 
@@ -443,12 +443,12 @@ html:not(.dark) .b360-chip-btn.active {
   padding: 8px 18px;
   border-radius: 9999px;
   background: rgba(15, 23, 42, 0.85);
-  border: 1px solid rgba(0, 212, 255, 0.4);
+  border: 1px solid color-mix(in srgb, var(--orbit-blue) 40%, transparent);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   box-shadow:
     0 8px 30px rgba(0, 0, 0, 0.5),
-    0 0 20px rgba(0, 212, 255, 0.2);
+    0 0 20px color-mix(in srgb, var(--orbit-blue) 20%, transparent);
   animation: b360FadeUp 0.3s ease-out;
 }
 
@@ -475,20 +475,20 @@ body:has(.b360-sticky-bar) .btn-floating-top {
   gap: 6px;
   padding: 8px 18px;
   border-radius: 9999px;
-  background: linear-gradient(135deg, #00d4ff 0%, #3b82f6 100%);
+  background: linear-gradient(135deg, var(--orbit-blue) 0%, #3b82f6 100%);
   color: #020617;
   font-weight: 700;
   font-size: 13px;
   text-decoration: none;
   cursor: pointer;
   border: none;
-  box-shadow: 0 4px 14px rgba(0, 212, 255, 0.3);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--orbit-blue) 30%, transparent);
   transition: all 0.2s ease;
 }
 
 .b360-sticky-cta-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(0, 212, 255, 0.5);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--orbit-blue) 50%, transparent);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -526,7 +526,7 @@ html:not(.dark) .b360-ab-pill-dock {
 }
 
 .b360-ab-toggle-btn.active {
-  background: #00d4ff;
+  background: var(--orbit-blue);
   color: #020617;
 }
 

@@ -99,7 +99,7 @@ export function RoiSimulatorModal({
         {/* Header do Simulador */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/70">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#00D4FF]/15 border border-[#00D4FF]/40 flex items-center justify-center text-[#00D4FF]">
+            <div className="w-8 h-8 rounded-lg bg-[var(--orbit-blue)]/15 border border-[var(--orbit-blue)]/40 flex items-center justify-center text-[var(--orbit-blue)]">
               <Calculator className="w-4 h-4" />
             </div>
             <div>
@@ -153,7 +153,7 @@ export function RoiSimulatorModal({
                 step="5"
                 value={dealsCount}
                 onChange={(e) => setDealsCount(Number(e.target.value))}
-                className="w-full accent-[#00D4FF] cursor-pointer"
+                className="w-full accent-[var(--orbit-blue)] cursor-pointer"
               />
               <div className="flex justify-between text-[10px] font-mono text-slate-500 dark:text-slate-300">
                 <span>10 deals</span>
@@ -183,7 +183,7 @@ export function RoiSimulatorModal({
                 step="5000"
                 value={avgTicket}
                 onChange={(e) => setAvgTicket(Number(e.target.value))}
-                className="w-full accent-[#FF2D9B] cursor-pointer"
+                className="w-full accent-[var(--pink)] cursor-pointer"
               />
               <div className="flex justify-between text-[10px] font-mono text-slate-500 dark:text-slate-300">
                 <span>R$ 5.000</span>
@@ -267,7 +267,7 @@ export function RoiSimulatorModal({
             <button
               type="button"
               onClick={handleAction}
-              className="btn-cta-light w-full py-4 rounded-xl font-mono text-sm sm:text-base font-bold uppercase tracking-wider flex items-center justify-center gap-3 cursor-pointer shadow-lg hover:shadow-[0_0_25px_rgba(0,212,255,0.4)] transition-all"
+              className="btn-cta-light w-full py-4 rounded-xl font-mono text-sm sm:text-base font-bold uppercase tracking-wider flex items-center justify-center gap-3 cursor-pointer shadow-lg hover:shadow-[0_0_25px_color-mix(in_srgb,var(--orbit-blue)_40%,transparent)] transition-all"
             >
               <span>Recuperar Minha Receita no BirthHub 360°</span>
               <ArrowRight className="w-5 h-5 text-slate-950" />

@@ -60,8 +60,8 @@ export function FloatingNavbar({
           'flex items-center justify-between px-3 sm:px-5 py-2 sm:py-2.5 rounded-full transition-all duration-300',
           'border border-black/5 dark:border-white/10 backdrop-blur-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)]',
           scrolled
-            ? 'bg-white/90 dark:bg-[#121316]/95 border-black/10 dark:border-white/15'
-            : 'bg-white/70 dark:bg-[#141519]/80',
+            ? 'bg-white/90 dark:bg-[var(--palette-neon-black)]/95 border-black/10 dark:border-white/15'
+            : 'bg-white/70 dark:bg-[var(--palette-neon-card)]/80',
         )}
       >
         {/* Logo Mark */}
@@ -71,7 +71,7 @@ export function FloatingNavbar({
           </div>
           <div className="flex flex-col">
             <span className="font-display text-base sm:text-lg font-bold leading-tight tracking-tight text-slate-900 dark:text-white">
-              Birth Hub <span className="text-[#00D4FF]">360°</span>
+              Birth Hub <span className="text-orbit-blue">360°</span>
             </span>
           </div>
         </a>
@@ -130,7 +130,7 @@ export function FloatingNavbar({
 
       {/* Menu Dropdown Mobile */}
       {mobileMenuOpen && (
-        <div className="md:hidden mt-2 p-4 rounded-3xl border border-black/5 dark:border-white/10 bg-white/95 dark:bg-[#141519]/95 backdrop-blur-2xl shadow-xl space-y-2">
+        <div className="md:hidden mt-2 p-4 rounded-3xl border border-black/5 dark:border-white/10 bg-white/95 dark:bg-[var(--palette-neon-card)]/95 backdrop-blur-2xl shadow-xl space-y-2">
           {links.map((link) => (
             <a
               key={link.href}

@@ -328,7 +328,7 @@ export function B360UnifiedPipelineFlow() {
     >
       <div className="b360-pipeline-hud-overlay">
         <span className="b360-pipeline-badge">
-          <span className="w-2 h-2 rounded-full bg-[#00D4FF] animate-pulse" />
+          <span className="w-2 h-2 rounded-full bg-[var(--orbit-blue)] animate-pulse" />
           FLUXO CONTÍNUO DE SINAIS & DADOS
         </span>
         <span className="b360-pipeline-kpi">

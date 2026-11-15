@@ -135,24 +135,24 @@ export function PredictiveScoringNbaCard({
 
   return (
     <div
-      className={`rounded-2xl border border-white/5 bg-[#1C1D24] p-5 space-y-5 transition-all shadow-lg ${className}`}
+      className={`rounded-2xl border border-white/5 bg-surface-2 p-5 space-y-5 transition-all shadow-lg ${className}`}
     >
       {/* Header com identidade RevOps IA */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#8B7DFF]/15 border border-[#8B7DFF]/25 text-[#8B7DFF]">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-iris/15 border border-iris/25 text-iris">
             <BrainCircuit className="h-4 w-4" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <h3 className="text-sm font-bold text-white tracking-tight">
+              <h3 className="text-sm font-bold text-ink tracking-tight">
                 Inteligência Preditiva & Ação Recomendada
               </h3>
               <Badge variant="holographic" className="text-[10px] py-0 px-1.5">
                 Qdrant + LiteLLM
               </Badge>
             </div>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-ink-2">
               Scoring por similaridade vetorial com histórico de ganhos e Next Best Action
             </p>
           </div>
@@ -163,9 +163,9 @@ export function PredictiveScoringNbaCard({
           onClick={handleRefresh}
           disabled={loading}
           aria-label="Recalcular pontuação preditiva"
-          className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 bg-[#13151A] text-slate-400 hover:text-white hover:border-[#8B7DFF]/40 transition-colors disabled:opacity-50"
+          className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 bg-surface text-ink-2 hover:text-ink hover:border-iris/40 transition-colors disabled:opacity-50"
         >
-          <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin text-[#8B7DFF]' : ''}`} />
+          <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin text-iris' : ''}`} />
         </button>
       </div>
 
@@ -184,7 +184,7 @@ export function PredictiveScoringNbaCard({
           <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
             <p className="font-semibold">Erro na análise preditiva</p>
-            <p className="text-[11px] text-slate-400 mt-0.5">{error}</p>
+            <p className="text-[11px] text-ink-2 mt-0.5">{error}</p>
             <Button
               type="button"
               variant="outline"
@@ -202,15 +202,15 @@ export function PredictiveScoringNbaCard({
         <div className="space-y-4">
           {/* Métricas de Score Preditivo */}
           <div className="grid grid-cols-3 gap-2.5">
-            <div className="rounded-xl border border-white/5 bg-[#13151A] p-3 text-center">
-              <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <div className="rounded-xl border border-white/5 bg-surface p-3 text-center">
+              <span className="block text-[10px] font-bold uppercase tracking-wider text-ink-2">
                 Score Preditivo
               </span>
               <div className="mt-1 flex items-baseline justify-center gap-1">
-                <span className="text-xl font-black text-white">
+                <span className="text-xl font-black text-ink">
                   {scoreData.finalPredictiveScore}
                 </span>
-                <span className="text-[11px] text-slate-500">/100</span>
+                <span className="text-[11px] text-ink-2">/100</span>
               </div>
               <div className="mt-1 flex items-center justify-center gap-1">
                 <Flame
@@ -222,52 +222,52 @@ export function PredictiveScoringNbaCard({
                         : 'text-sky-400'
                   }`}
                 />
-                <span className="text-[10px] font-semibold text-slate-300">
+                <span className="text-[10px] font-semibold text-ink">
                   {scoreData.temperature}
                 </span>
               </div>
             </div>
 
-            <div className="rounded-xl border border-white/5 bg-[#13151A] p-3 text-center">
-              <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <div className="rounded-xl border border-white/5 bg-surface p-3 text-center">
+              <span className="block text-[10px] font-bold uppercase tracking-wider text-ink-2">
                 ICP Fit
               </span>
               <div className="mt-1 flex items-baseline justify-center gap-1">
-                <span className="text-xl font-black text-[#8B7DFF]">
+                <span className="text-xl font-black text-iris">
                   {scoreData.deterministicIcpScore}
                 </span>
-                <span className="text-[11px] text-slate-500">/100</span>
+                <span className="text-[11px] text-ink-2">/100</span>
               </div>
-              <span className="mt-1 block text-[10px] text-slate-400">Regras de Perfil</span>
+              <span className="mt-1 block text-[10px] text-ink-2">Regras de Perfil</span>
             </div>
 
-            <div className="rounded-xl border border-white/5 bg-[#13151A] p-3 text-center">
-              <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <div className="rounded-xl border border-white/5 bg-surface p-3 text-center">
+              <span className="block text-[10px] font-bold uppercase tracking-wider text-ink-2">
                 Lookalike Vetorial
               </span>
               <div className="mt-1 flex items-baseline justify-center gap-1">
                 <span className="text-xl font-black text-emerald-400">
                   {scoreData.lookalikeSimilarityScore}
                 </span>
-                <span className="text-[11px] text-slate-500">/100</span>
+                <span className="text-[11px] text-ink-2">/100</span>
               </div>
-              <span className="mt-1 block text-[10px] text-slate-400">Histórico Qdrant</span>
+              <span className="mt-1 block text-[10px] text-ink-2">Histórico Qdrant</span>
             </div>
           </div>
 
           {/* Insights do Modelo */}
           {scoreData.insights.length > 0 && (
             <div className="space-y-1.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                <Info className="h-3 w-3 text-[#8B7DFF]" /> Sinais Identificados
+              <span className="text-[10px] font-bold uppercase tracking-wider text-ink-2 flex items-center gap-1">
+                <Info className="h-3 w-3 text-iris" /> Sinais Identificados
               </span>
               <div className="space-y-1">
                 {scoreData.insights.map((insight) => (
                   <div
                     key={insight}
-                    className="flex items-start gap-1.5 text-xs text-slate-300 leading-snug"
+                    className="flex items-start gap-1.5 text-xs text-ink leading-snug"
                   >
-                    <ChevronRight className="h-3.5 w-3.5 text-[#8B7DFF] shrink-0 mt-0.5" />
+                    <ChevronRight className="h-3.5 w-3.5 text-iris shrink-0 mt-0.5" />
                     <span>{insight}</span>
                   </div>
                 ))}
@@ -279,15 +279,15 @@ export function PredictiveScoringNbaCard({
 
       {/* Next Best Action Card */}
       {nbaData && (
-        <div className="rounded-xl border border-[#8B7DFF]/20 bg-[#13151A] p-4 space-y-3 relative overflow-hidden">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#8B7DFF]/40 to-transparent" />
+        <div className="rounded-xl border border-iris/20 bg-surface p-4 space-y-3 relative overflow-hidden">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-iris/40 to-transparent" />
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="flex h-5 w-5 items-center justify-center rounded-md bg-[#8B7DFF]/20 text-[#8B7DFF]">
+              <span className="flex h-5 w-5 items-center justify-center rounded-md bg-iris/20 text-iris">
                 <Sparkles className="h-3 w-3" />
               </span>
-              <span className="text-xs font-bold text-white">Next Best Action (NBA)</span>
+              <span className="text-xs font-bold text-ink">Next Best Action (NBA)</span>
             </div>
             <div className="flex items-center gap-2">
               <Badge
@@ -296,25 +296,25 @@ export function PredictiveScoringNbaCard({
               >
                 Urgência {nbaData.urgency.toUpperCase()}
               </Badge>
-              <span className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-[#1C1D24] px-2 py-0.5 text-[10px] font-semibold text-slate-300">
-                <ChannelIcon className="h-2.5 w-2.5 text-[#8B7DFF]" />
+              <span className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-surface-2 px-2 py-0.5 text-[10px] font-semibold text-ink">
+                <ChannelIcon className="h-2.5 w-2.5 text-iris" />
                 {CHANNEL_LABELS[nbaData.recommendedChannel] ?? nbaData.recommendedChannel}
               </span>
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <h4 className="text-xs font-bold text-[#8B7DFF] flex items-center gap-1.5">
+            <h4 className="text-xs font-bold text-iris flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5" />
               {nbaData.action}
             </h4>
-            <p className="text-xs text-slate-300 leading-relaxed">{nbaData.rationale}</p>
+            <p className="text-xs text-ink leading-relaxed">{nbaData.rationale}</p>
           </div>
 
           {nbaData.suggestedMessageTemplate && (
-            <div className="mt-2.5 rounded-lg border border-white/5 bg-[#1C1D24] p-3 space-y-2">
+            <div className="mt-2.5 rounded-lg border border-white/5 bg-surface-2 p-3 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-ink-2">
                   Rascunho Sugerido ({CHANNEL_LABELS[nbaData.recommendedChannel]})
                 </span>
                 <CopyButton
@@ -325,7 +325,7 @@ export function PredictiveScoringNbaCard({
                   className="h-6 text-[10px] px-2"
                 />
               </div>
-              <p className="text-xs text-slate-200 font-mono whitespace-pre-wrap leading-relaxed bg-[#13151A] p-2.5 rounded-md border border-white/5">
+              <p className="text-xs text-ink font-mono whitespace-pre-wrap leading-relaxed bg-surface p-2.5 rounded-md border border-white/5">
                 {nbaData.suggestedMessageTemplate}
               </p>
             </div>

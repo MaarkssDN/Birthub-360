@@ -107,7 +107,7 @@ export const LeadOutreachSection: React.FC<LeadOutreachSectionProps> = ({
             <div className="flex items-center gap-2">
               <Zap className="w-4 h-4 text-[var(--brand-primary)]" />
               <h4
-                className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-[#F8F9FF]' : 'text-slate-800'}`}
+                className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-[var(--ink)]' : 'text-slate-800'}`}
               >
                 Roteiros Comerciais & Copys com IA (Sob Demanda)
               </h4>
@@ -151,7 +151,7 @@ export const LeadOutreachSection: React.FC<LeadOutreachSectionProps> = ({
               type="button"
               onClick={handleGenerateCopies}
               disabled={isGeneratingCopies || isEnrichingNews}
-              className="px-5 py-2.5 bg-gradient-to-r from-[var(--brand-primary)] to-[#FF7010] hover:from-[var(--brand-secondary-hover)] hover:to-[var(--brand-secondary)] text-[#F8F9FF] font-bold text-xs rounded-xl transition shadow-md shadow-[var(--brand-primary)]/25 flex items-center gap-2"
+              className="px-5 py-2.5 bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand)] hover:from-[var(--brand-secondary-hover)] hover:to-[var(--brand-secondary)] text-[var(--ink)] font-bold text-xs rounded-xl transition shadow-md shadow-[var(--brand-primary)]/25 flex items-center gap-2"
             >
               {isGeneratingCopies ? (
                 <>
@@ -170,7 +170,7 @@ export const LeadOutreachSection: React.FC<LeadOutreachSectionProps> = ({
               type="button"
               onClick={handleEnrichNews}
               disabled={isEnrichingNews || isGeneratingCopies}
-              className="px-4 py-2.5 bg-[#008FCE]/20 hover:bg-[#008FCE]/30 text-[#008FCE] border border-[#008FCE]/40 font-bold text-xs rounded-xl transition flex items-center gap-1.5"
+              className="px-4 py-2.5 bg-[var(--orbit-blue)]/20 hover:bg-[var(--orbit-blue)]/30 text-[var(--orbit-blue)] border border-[var(--orbit-blue)]/40 font-bold text-xs rounded-xl transition flex items-center gap-1.5"
               title="Buscar notícias públicas na internet e gerar dossiê + roteiros"
             >
               <Sparkles className="w-3.5 h-3.5" />
@@ -202,7 +202,7 @@ export const LeadOutreachSection: React.FC<LeadOutreachSectionProps> = ({
             onClick={() => setActiveChannel('cold_call')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
               activeChannel === 'cold_call'
-                ? 'bg-[var(--brand-primary)] text-[#F8F9FF] shadow-sm'
+                ? 'bg-[var(--brand-primary)] text-[var(--ink)] shadow-sm'
                 : isDark
                   ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
                   : 'text-slate-600 hover:text-slate-800 hover:bg-slate-100'
@@ -216,7 +216,7 @@ export const LeadOutreachSection: React.FC<LeadOutreachSectionProps> = ({
             onClick={() => setActiveChannel('cold_email')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
               activeChannel === 'cold_email'
-                ? 'bg-[var(--brand-primary)] text-[#F8F9FF] shadow-sm'
+                ? 'bg-[var(--brand-primary)] text-[var(--ink)] shadow-sm'
                 : isDark
                   ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
                   : 'text-slate-600 hover:text-slate-800 hover:bg-slate-100'
@@ -230,7 +230,7 @@ export const LeadOutreachSection: React.FC<LeadOutreachSectionProps> = ({
             onClick={() => setActiveChannel('whatsapp')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
               activeChannel === 'whatsapp'
-                ? 'bg-[var(--brand-primary)] text-[#F8F9FF] shadow-sm'
+                ? 'bg-[var(--brand-primary)] text-[var(--ink)] shadow-sm'
                 : isDark
                   ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
                   : 'text-slate-600 hover:text-slate-800 hover:bg-slate-100'
@@ -244,7 +244,7 @@ export const LeadOutreachSection: React.FC<LeadOutreachSectionProps> = ({
             onClick={() => setActiveChannel('linkedin')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
               activeChannel === 'linkedin'
-                ? 'bg-[var(--brand-primary)] text-[#F8F9FF] shadow-sm'
+                ? 'bg-[var(--brand-primary)] text-[var(--ink)] shadow-sm'
                 : isDark
                   ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
                   : 'text-slate-600 hover:text-slate-800 hover:bg-slate-100'
@@ -258,7 +258,7 @@ export const LeadOutreachSection: React.FC<LeadOutreachSectionProps> = ({
             onClick={() => setActiveChannel('objection_matrix')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
               activeChannel === 'objection_matrix'
-                ? 'bg-[var(--brand-primary)] text-[#F8F9FF] shadow-sm'
+                ? 'bg-[var(--brand-primary)] text-[var(--ink)] shadow-sm'
                 : isDark
                   ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
                   : 'text-slate-600 hover:text-slate-800 hover:bg-slate-100'
@@ -272,7 +272,7 @@ export const LeadOutreachSection: React.FC<LeadOutreachSectionProps> = ({
             onClick={() => setActiveChannel('qualification_matrix')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
               activeChannel === 'qualification_matrix'
-                ? 'bg-[var(--brand-primary)] text-[#F8F9FF] shadow-sm'
+                ? 'bg-[var(--brand-primary)] text-[var(--ink)] shadow-sm'
                 : isDark
                   ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
                   : 'text-slate-600 hover:text-slate-800 hover:bg-slate-100'
@@ -286,7 +286,7 @@ export const LeadOutreachSection: React.FC<LeadOutreachSectionProps> = ({
             onClick={() => setActiveChannel('ice_breaker')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
               activeChannel === 'ice_breaker'
-                ? 'bg-[var(--brand-primary)] text-[#F8F9FF] shadow-sm'
+                ? 'bg-[var(--brand-primary)] text-[var(--ink)] shadow-sm'
                 : isDark
                   ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
                   : 'text-slate-600 hover:text-slate-800 hover:bg-slate-100'
@@ -300,13 +300,13 @@ export const LeadOutreachSection: React.FC<LeadOutreachSectionProps> = ({
             onClick={() => setActiveChannel('prompt')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
               activeChannel === 'prompt'
-                ? 'bg-[var(--brand-primary)] text-[#F8F9FF] shadow-sm'
+                ? 'bg-[var(--brand-primary)] text-[var(--ink)] shadow-sm'
                 : isDark
                   ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
                   : 'text-slate-600 hover:text-slate-800 hover:bg-slate-100'
             }`}
           >
-            <Terminal className="w-3.5 h-3.5 text-[#93DBF2]" />
+            <Terminal className="w-3.5 h-3.5 text-[var(--orbit-blue)]" />
             <span>Prompt Base</span>
           </button>
         </div>
@@ -413,7 +413,7 @@ export const LeadOutreachSection: React.FC<LeadOutreachSectionProps> = ({
         {activeChannel === 'prompt' ? (
           <pre
             className={`text-xs font-mono whitespace-pre-wrap leading-relaxed select-text ${
-              isDark ? 'text-[#93DBF2]' : 'text-[#374898]'
+              isDark ? 'text-[var(--orbit-blue)]' : 'text-[var(--orbit-blue)]'
             }`}
           >
             {`[PROMPT DO AGENTE / MOTOR DE ENRIQUECIMENTO ATLAS]
@@ -455,7 +455,7 @@ Objetivo: Conduzir abordagem comercial altamente personalizada de alto nível ex
               isDark ? 'border-slate-800/60 text-slate-400' : 'border-slate-200 text-slate-600'
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5 text-[#FFC500] shrink-0" />
+            <Sparkles className="w-3.5 h-3.5 text-[var(--gold)] shrink-0" />
             <span className={`font-semibold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
               Estratégia de Follow-up:
             </span>

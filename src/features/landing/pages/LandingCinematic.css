@@ -27,8 +27,8 @@
   width: 100%;
   transform-origin: left center;
   transform: scaleX(0);
-  background: linear-gradient(90deg, #00d4ff, #8b7dff, #ff2d9b, #ffc107);
-  box-shadow: 0 0 12px rgba(0, 212, 255, 0.55);
+  background: linear-gradient(90deg, var(--orbit-blue), var(--iris), var(--pink), var(--gold));
+  box-shadow: 0 0 12px color-mix(in srgb, var(--orbit-blue) 55%, transparent);
   will-change: transform;
 }
 
@@ -61,7 +61,7 @@
   height: 62%;
   top: -20%;
   left: -10%;
-  background: radial-gradient(circle, rgba(0, 212, 255, 0.22), transparent 65%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--orbit-blue) 22%, transparent), transparent 65%);
   animation: b360fx-blob-a 26s ease-in-out infinite alternate;
 }
 
@@ -70,7 +70,7 @@
   height: 55%;
   bottom: -24%;
   right: -8%;
-  background: radial-gradient(circle, rgba(255, 45, 155, 0.18), transparent 65%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--pink) 18%, transparent), transparent 65%);
   animation: b360fx-blob-b 32s ease-in-out infinite alternate;
 }
 
@@ -78,8 +78,8 @@
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(0, 212, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 212, 255, 0.05) 1px, transparent 1px);
+    linear-gradient(color-mix(in srgb, var(--orbit-blue) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--orbit-blue) 5%, transparent) 1px, transparent 1px);
   background-size: 48px 48px;
   mask-image: radial-gradient(ellipse 85% 75% at 50% 35%, black 15%, transparent 78%);
   -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 35%, black 15%, transparent 78%);
@@ -115,20 +115,20 @@
 }
 
 .b360-mote-cyan {
-  background: #00d4ff;
-  color: #00d4ff;
+  background: var(--orbit-blue);
+  color: var(--orbit-blue);
 }
 .b360-mote-pink {
-  background: #ff2d9b;
-  color: #ff2d9b;
+  background: var(--pink);
+  color: var(--pink);
 }
 .b360-mote-gold {
-  background: #ffc107;
-  color: #ffc107;
+  background: var(--gold);
+  color: var(--gold);
 }
 .b360-mote-iris {
-  background: #8b7dff;
-  color: #8b7dff;
+  background: var(--iris);
+  color: var(--iris);
 }
 
 @keyframes b360fx-mote-rise {
@@ -182,8 +182,8 @@
 
 .b360-hero-title {
   text-shadow:
-    0 0 40px rgba(0, 212, 255, 0.25),
-    0 0 90px rgba(255, 45, 155, 0.12);
+    0 0 40px color-mix(in srgb, var(--orbit-blue) 25%, transparent),
+    0 0 90px color-mix(in srgb, var(--pink) 12%, transparent);
 }
 
 /* ── 4. CARDS — profundidade em camadas sobre o .b360-reveal existente ───── */
@@ -284,11 +284,11 @@
   padding: 2px;
   background: conic-gradient(
     from var(--b360-halo-angle, 0deg),
-    #00d4ff,
-    #8b7dff,
-    #ff2d9b,
-    #ffc107,
-    #00d4ff
+    var(--orbit-blue),
+    var(--iris),
+    var(--pink),
+    var(--gold),
+    var(--orbit-blue)
   );
   -webkit-mask:
     linear-gradient(#fff 0 0) content-box,
@@ -307,11 +307,11 @@
   border-radius: inherit;
   background: conic-gradient(
     from var(--b360-halo-angle, 0deg),
-    rgba(0, 212, 255, 0.35),
-    rgba(255, 45, 155, 0.3),
-    rgba(255, 193, 7, 0.25),
-    rgba(139, 125, 255, 0.35),
-    rgba(0, 212, 255, 0.35)
+    color-mix(in srgb, var(--orbit-blue) 35%, transparent),
+    color-mix(in srgb, var(--pink) 30%, transparent),
+    color-mix(in srgb, var(--gold) 25%, transparent),
+    color-mix(in srgb, var(--iris) 35%, transparent),
+    color-mix(in srgb, var(--orbit-blue) 35%, transparent)
   );
   filter: blur(14px);
   opacity: 0.55;
@@ -364,8 +364,8 @@
 .card-login-command input:focus,
 .card-login-command select:focus {
   box-shadow:
-    0 0 0 1px rgba(0, 212, 255, 0.55),
-    0 0 18px rgba(0, 212, 255, 0.18);
+    0 0 0 1px color-mix(in srgb, var(--orbit-blue) 55%, transparent),
+    0 0 18px color-mix(in srgb, var(--orbit-blue) 18%, transparent);
 }
 
 /* No acesso, a mesma atmosfera tem densidade menor para priorizar o formulário. */
@@ -393,8 +393,8 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(0, 212, 255, 0.55),
-    rgba(255, 45, 155, 0.45),
+    color-mix(in srgb, var(--orbit-blue) 55%, transparent),
+    color-mix(in srgb, var(--pink) 45%, transparent),
     transparent
   );
   transform: translateX(-100%);
@@ -454,7 +454,7 @@
   width: 42px;
   height: 42px;
   border-radius: 14px;
-  color: var(--b360-node-color, #00d4ff);
+  color: var(--b360-node-color, var(--orbit-blue));
   border: 1px solid currentColor;
   background: rgba(10, 17, 33, 0.66);
   box-shadow: 0 0 20px color-mix(in srgb, currentColor 14%, transparent);
@@ -469,16 +469,16 @@
 }
 
 .b360-data-node-cyan {
-  --b360-node-color: #00d4ff;
+  --b360-node-color: var(--orbit-blue);
 }
 .b360-data-node-pink {
-  --b360-node-color: #ff2d9b;
+  --b360-node-color: var(--pink);
 }
 .b360-data-node-iris {
-  --b360-node-color: #8b7dff;
+  --b360-node-color: var(--iris);
 }
 .b360-data-node-gold {
-  --b360-node-color: #ffc107;
+  --b360-node-color: var(--gold);
 }
 
 .b360-data-node-network {
@@ -628,11 +628,11 @@
   padding: 2px;
   background: conic-gradient(
     from var(--b360-halo-angle, 0deg),
-    #00d4ff,
-    #8b7dff,
-    #ff2d9b,
-    #ffc107,
-    #00d4ff
+    var(--orbit-blue),
+    var(--iris),
+    var(--pink),
+    var(--gold),
+    var(--orbit-blue)
   );
   border: none;
   cursor: pointer;
@@ -651,11 +651,11 @@
   border-radius: inherit;
   background: conic-gradient(
     from var(--b360-halo-angle, 0deg),
-    rgba(0, 212, 255, 0.45),
-    rgba(139, 125, 255, 0.45),
-    rgba(255, 45, 155, 0.45),
-    rgba(255, 193, 7, 0.35),
-    rgba(0, 212, 255, 0.45)
+    color-mix(in srgb, var(--orbit-blue) 45%, transparent),
+    color-mix(in srgb, var(--iris) 45%, transparent),
+    color-mix(in srgb, var(--pink) 45%, transparent),
+    color-mix(in srgb, var(--gold) 35%, transparent),
+    color-mix(in srgb, var(--orbit-blue) 45%, transparent)
   );
   filter: blur(12px);
   opacity: 0.55;
@@ -675,7 +675,7 @@
   padding: 0.75rem 1.75rem;
   border-radius: 9999px;
   background: #0b1120;
-  color: #f8f9ff;
+  color: var(--ink);
   font-family: var(--b360-font-mono, "IBM Plex Mono", monospace);
   font-size: 0.8125rem;
   font-weight: 700;
@@ -700,7 +700,7 @@
 }
 
 .b360-neon-halo-btn:focus-visible {
-  outline: 2px solid #00d4ff;
+  outline: 2px solid var(--orbit-blue);
   outline-offset: 3px;
 }
 
@@ -712,26 +712,26 @@
 
 /* Variantes de botões halo */
 .b360-neon-halo-btn-pink {
-  background: conic-gradient(from var(--b360-halo-angle, 0deg), #ff2d9b, #ffc107, #00d4ff, #ff2d9b);
+  background: conic-gradient(from var(--b360-halo-angle, 0deg), var(--pink), var(--gold), var(--orbit-blue), var(--pink));
 }
 .b360-neon-halo-btn-pink::before {
   background: conic-gradient(
     from var(--b360-halo-angle, 0deg),
-    rgba(255, 45, 155, 0.5),
-    rgba(255, 193, 7, 0.4),
-    rgba(255, 45, 155, 0.5)
+    color-mix(in srgb, var(--pink) 50%, transparent),
+    color-mix(in srgb, var(--gold) 40%, transparent),
+    color-mix(in srgb, var(--pink) 50%, transparent)
   );
 }
 
 .b360-neon-halo-btn-iris {
-  background: conic-gradient(from var(--b360-halo-angle, 0deg), #8b7dff, #00d4ff, #ff2d9b, #8b7dff);
+  background: conic-gradient(from var(--b360-halo-angle, 0deg), var(--iris), var(--orbit-blue), var(--pink), var(--iris));
 }
 .b360-neon-halo-btn-iris::before {
   background: conic-gradient(
     from var(--b360-halo-angle, 0deg),
-    rgba(139, 125, 255, 0.5),
-    rgba(0, 212, 255, 0.4),
-    rgba(139, 125, 255, 0.5)
+    color-mix(in srgb, var(--iris) 50%, transparent),
+    color-mix(in srgb, var(--orbit-blue) 40%, transparent),
+    color-mix(in srgb, var(--iris) 50%, transparent)
   );
 }
 
@@ -786,7 +786,7 @@
   position: absolute;
   inset: -1px;
   border-radius: inherit;
-  border: 1px solid var(--card-accent, #00d4ff);
+  border: 1px solid var(--card-accent, var(--orbit-blue));
   opacity: 0.35;
   transition: opacity 0.3s ease;
   pointer-events: none;
@@ -797,10 +797,10 @@
 .b360-fanned-card.b360-fanned-card-active {
   transform: translateX(calc(var(--card-tx, 0px) * 1.5)) translateY(-18px)
     rotate(calc(var(--card-rot, 0deg) * 0.5)) scale(1.06);
-  border-color: var(--card-accent, #00d4ff);
+  border-color: var(--card-accent, var(--orbit-blue));
   box-shadow:
     0 24px 48px rgba(0, 0, 0, 0.65),
-    0 0 28px var(--card-accent, rgba(0, 212, 255, 0.35));
+    0 0 28px var(--card-accent, color-mix(in srgb, var(--orbit-blue) 35%, transparent));
   z-index: 20 !important;
   outline: none;
 }
@@ -821,7 +821,7 @@
   font-family: var(--b360-font-mono, monospace);
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--card-accent, #00d4ff);
+  color: var(--card-accent, var(--orbit-blue));
 }
 
 .b360-fanned-card-tag {
@@ -832,7 +832,7 @@
   padding: 0.2rem 0.55rem;
   border-radius: 9999px;
   background: rgba(148, 163, 184, 0.1);
-  color: var(--card-accent, #00d4ff);
+  color: var(--card-accent, var(--orbit-blue));
   border: 1px solid rgba(148, 163, 184, 0.2);
 }
 
@@ -866,7 +866,7 @@
   font-family: var(--b360-font-mono, monospace);
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--card-accent, #00d4ff);
+  color: var(--card-accent, var(--orbit-blue));
 }
 
 .b360-fanned-card-arrow {
@@ -879,7 +879,7 @@
 
 .b360-fanned-card:hover .b360-fanned-card-arrow {
   transform: translateX(4px);
-  color: var(--card-accent, #00d4ff);
+  color: var(--card-accent, var(--orbit-blue));
 }
 
 /* ── 12. FLOATING GRAVITY NODES CANVAS (FRAMES 00:11-00:15) ──────────────── */
@@ -969,9 +969,9 @@
   border-radius: 50%;
   background: #ffffff;
   box-shadow:
-    0 0 8px #00d4ff,
-    0 0 16px rgba(0, 212, 255, 0.75),
-    0 0 24px rgba(255, 45, 155, 0.45);
+    0 0 8px var(--orbit-blue),
+    0 0 16px color-mix(in srgb, var(--orbit-blue) 75%, transparent),
+    0 0 24px color-mix(in srgb, var(--pink) 45%, transparent);
   pointer-events: none;
   z-index: 9999;
   opacity: 0;
@@ -988,9 +988,9 @@
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  border: 1px solid rgba(0, 212, 255, 0.5);
-  background: radial-gradient(circle, rgba(0, 212, 255, 0.08) 0%, transparent 72%);
-  box-shadow: 0 0 14px rgba(0, 212, 255, 0.22);
+  border: 1px solid color-mix(in srgb, var(--orbit-blue) 50%, transparent);
+  background: radial-gradient(circle, color-mix(in srgb, var(--orbit-blue) 8%, transparent) 0%, transparent 72%);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--orbit-blue) 22%, transparent);
   pointer-events: none;
   z-index: 9998;
   opacity: 0;
@@ -1014,25 +1014,25 @@
   height: 44px;
   margin-top: -22px;
   margin-left: -22px;
-  border-color: rgba(255, 45, 155, 0.7);
-  background: radial-gradient(circle, rgba(255, 45, 155, 0.12) 0%, transparent 75%);
-  box-shadow: 0 0 22px rgba(255, 45, 155, 0.38);
+  border-color: color-mix(in srgb, var(--pink) 70%, transparent);
+  background: radial-gradient(circle, color-mix(in srgb, var(--pink) 12%, transparent) 0%, transparent 75%);
+  box-shadow: 0 0 22px color-mix(in srgb, var(--pink) 38%, transparent);
 }
 
 /* Sintonia magnética ao se aproximar de Inteligência de Mercado (P02 - Rosa Neon) */
 .b360-cursor-focus-ring.b360-cursor-magnetic-p2 {
-  border-color: rgba(255, 45, 155, 0.95);
+  border-color: color-mix(in srgb, var(--pink) 95%, transparent);
   box-shadow:
-    0 0 18px rgba(255, 45, 155, 0.65),
-    inset 0 0 8px rgba(255, 45, 155, 0.3);
+    0 0 18px color-mix(in srgb, var(--pink) 65%, transparent),
+    inset 0 0 8px color-mix(in srgb, var(--pink) 30%, transparent);
 }
 
 /* Sintonia magnética ao se aproximar de Engajamento Comercial (P08 - Íris Violeta) */
 .b360-cursor-focus-ring.b360-cursor-magnetic-p8 {
-  border-color: rgba(139, 125, 255, 0.95);
+  border-color: color-mix(in srgb, var(--iris) 95%, transparent);
   box-shadow:
-    0 0 18px rgba(139, 125, 255, 0.65),
-    inset 0 0 8px rgba(139, 125, 255, 0.3);
+    0 0 18px color-mix(in srgb, var(--iris) 65%, transparent),
+    inset 0 0 8px color-mix(in srgb, var(--iris) 30%, transparent);
 }
 
 /* Iluminação de Borda Glassmorphism Reativa (Contorno Magnético) */
@@ -1104,10 +1104,10 @@
     rgba(11, 20, 42, 0.75) 0%,
     rgba(6, 11, 24, 0.96) 100%
   );
-  border: 1px solid rgba(0, 212, 255, 0.22);
+  border: 1px solid color-mix(in srgb, var(--orbit-blue) 22%, transparent);
   box-shadow:
     0 24px 60px -20px rgba(0, 0, 0, 0.7),
-    inset 0 0 45px rgba(0, 212, 255, 0.06);
+    inset 0 0 45px color-mix(in srgb, var(--orbit-blue) 6%, transparent);
 }
 
 .b360-unified-pipeline-canvas {
@@ -1137,9 +1137,9 @@
   gap: 8px;
   padding: 4px 12px;
   border-radius: 9999px;
-  background: rgba(0, 212, 255, 0.12);
-  border: 1px solid rgba(0, 212, 255, 0.35);
-  color: #00d4ff;
+  background: color-mix(in srgb, var(--orbit-blue) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--orbit-blue) 35%, transparent);
+  color: var(--orbit-blue);
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -1165,10 +1165,10 @@
 }
 
 .b360-integration-card:hover {
-  border-color: rgba(0, 212, 255, 0.65) !important;
+  border-color: color-mix(in srgb, var(--orbit-blue) 65%, transparent) !important;
   box-shadow:
-    0 16px 36px -10px rgba(0, 212, 255, 0.25),
-    0 0 20px rgba(0, 212, 255, 0.15) !important;
+    0 16px 36px -10px color-mix(in srgb, var(--orbit-blue) 25%, transparent),
+    0 0 20px color-mix(in srgb, var(--orbit-blue) 15%, transparent) !important;
 }
 
 /* ── 17. LEVITAÇÃO ESTRUTURAL & INÉRCIA ROTACIONAL (GPU ONLY) ───────────── */
@@ -1203,21 +1203,21 @@
       rotateX(var(--scroll-tilt, 0deg));
     box-shadow:
       0 20px 48px rgba(0, 0, 0, 0.5),
-      0 0 24px rgba(0, 212, 255, 0.15);
+      0 0 24px color-mix(in srgb, var(--orbit-blue) 15%, transparent);
   }
   50% {
     transform: translate3d(0, calc(var(--parallax-y, 0px) - 8px), 0)
       rotateX(var(--scroll-tilt, 0deg));
     box-shadow:
       0 28px 58px rgba(0, 0, 0, 0.6),
-      0 0 34px rgba(0, 212, 255, 0.24);
+      0 0 34px color-mix(in srgb, var(--orbit-blue) 24%, transparent);
   }
   100% {
     transform: translate3d(0, calc(var(--parallax-y, 0px) + 0px), 0)
       rotateX(var(--scroll-tilt, 0deg));
     box-shadow:
       0 20px 48px rgba(0, 0, 0, 0.5),
-      0 0 24px rgba(0, 212, 255, 0.15);
+      0 0 24px color-mix(in srgb, var(--orbit-blue) 15%, transparent);
   }
 }
 
@@ -1276,7 +1276,7 @@
     90deg,
     transparent 0%,
     rgba(255, 255, 255, 0.15) 45%,
-    rgba(0, 212, 255, 0.35) 50%,
+    color-mix(in srgb, var(--orbit-blue) 35%, transparent) 50%,
     transparent 100%
   );
   backdrop-filter: blur(6px);

@@ -121,7 +121,7 @@ export function OnboardingPanel({
             </div>
 
             {/* Wizard Steps Layout */}
-            <div className="grid grid-cols-4 gap-2 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 pt-2">
               {[
                 { step: 0, title: 'Organização', active: !!checklist.orgCreated },
                 { step: 1, title: 'IA Agente', active: !!checklist.agentCreated },

@@ -41,7 +41,7 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
   };
 
   return (
-    <div className="w-full relative overflow-hidden rounded-[2.25rem] border border-line/80 bg-[#EAEAE2] dark:bg-[#121316] text-ink p-4 sm:p-6 lg:p-7 shadow-[0_16px_48px_-12px_rgba(0,0,0,0.08)] dark:shadow-[0_16px_48px_-12px_rgba(0,0,0,0.6)] transition-all duration-300">
+    <div className="w-full relative overflow-hidden rounded-[2.25rem] border border-line/80 bg-[#EAEAE2] dark:bg-[var(--bg)] text-ink p-4 sm:p-6 lg:p-7 shadow-[0_16px_48px_-12px_rgba(0,0,0,0.08)] dark:shadow-[0_16px_48px_-12px_rgba(0,0,0,0.6)] transition-all duration-300">
       {/* ── TOP SCULPTED HEADER ZONE (Referência: Ronas IT / Spatial UI) ── */}
       <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 mb-6">
         {/* Left Carved Title & Back/Close */}
@@ -50,7 +50,7 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
             <button
               type="button"
               onClick={onClose}
-              className="w-9 h-9 rounded-full bg-white dark:bg-[#1E2026] border border-line flex items-center justify-center text-ink-2 hover:text-ink hover:scale-105 transition-all shadow-xs"
+              className="w-9 h-9 rounded-full bg-white dark:bg-[var(--surface-2)] border border-line flex items-center justify-center text-ink-2 hover:text-ink hover:scale-105 transition-all shadow-xs"
               title="Fechar visão detalhada"
               aria-label="Fechar visão detalhada"
             >
@@ -61,15 +61,15 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
             <h2 className="text-xl sm:text-2xl font-display font-extrabold tracking-tight text-ink">
               Jornada Comercial 360°
             </h2>
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-[#D4F434] text-[#121316] shadow-xs">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#121316] animate-pulse" />
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-[var(--neon-lime)] text-[var(--palette-neon-black)] shadow-xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--palette-neon-black)] animate-pulse" />
               Ao Vivo
             </span>
           </div>
         </div>
 
         {/* Right Sculpted Pill Navigation Bar */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none p-1 bg-white/70 dark:bg-[#1A1C22]/80 backdrop-blur-xl border border-line/70 rounded-full shadow-xs">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none p-1 bg-white/70 dark:bg-[var(--surface-2)]/80 backdrop-blur-xl border border-line/70 rounded-full shadow-xs">
           {[
             { id: 'dynamics', label: 'Dinâmica do Funil', icon: Search },
             { id: 'stages', label: 'Estágios & Gates', icon: Layers },
@@ -90,11 +90,11 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
                 }}
                 className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer ${
                   isSelected
-                    ? 'bg-white dark:bg-[#252830] text-ink font-bold shadow-[0_2px_10px_rgba(0,0,0,0.06)] border border-line'
+                    ? 'bg-white dark:bg-[var(--surface-elevated)] text-ink font-bold shadow-[0_2px_10px_rgba(0,0,0,0.06)] border border-line'
                     : 'text-ink-2 hover:text-ink hover:bg-white/50 dark:hover:bg-white/[0.05]'
                 }`}
               >
-                <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-[#00D4FF]' : 'text-ink-2'}`} />
+                <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-[var(--orbit-blue)]' : 'text-ink-2'}`} />
                 <span>{item.label}</span>
               </button>
             );
@@ -108,17 +108,17 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
         <motion.div
           whileHover={{ y: -2 }}
           transition={{ duration: 0.15 }}
-          className="lg:col-span-4 p-4 rounded-3xl bg-white dark:bg-[#18191E] border border-line/80 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] flex items-center gap-3.5"
+          className="lg:col-span-4 p-4 rounded-3xl bg-white dark:bg-[var(--surface-2)] border border-line/80 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] flex items-center gap-3.5"
         >
-          <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-[#00D4FF]/20 to-[#D4F434]/20 border border-[#00D4FF]/30 flex items-center justify-center shrink-0 shadow-xs">
-            <Building2 className="w-6 h-6 text-[#00D4FF]" />
+          <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-[var(--orbit-blue)]/20 to-[var(--neon-lime)]/20 border border-[var(--orbit-blue)]/30 flex items-center justify-center shrink-0 shadow-xs">
+            <Building2 className="w-6 h-6 text-[var(--orbit-blue)]" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-ink-2">
                 Enterprise ICP Tier 1
               </span>
-              <span className="w-2 h-2 rounded-full bg-[#D4F434] shadow-[0_0_6px_#D4F434]" />
+              <span className="w-2 h-2 rounded-full bg-[var(--neon-lime)] shadow-[0_0_6px_var(--neon-lime)]" />
             </div>
             <h3 className="font-display font-bold text-sm text-ink truncate mt-0.5">
               VTech Telecom &amp; Cloud
@@ -141,7 +141,7 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
             ].map((metric) => (
               <div
                 key={metric.label}
-                className="p-3 rounded-2xl bg-white/70 dark:bg-[#18191E]/70 border border-line/60 shadow-xs"
+                className="p-3 rounded-2xl bg-white/70 dark:bg-[var(--surface-2)]/70 border border-line/60 shadow-xs"
               >
                 <span className="block text-[10px] font-mono uppercase tracking-wider text-ink-2 truncate">
                   {metric.label}
@@ -177,7 +177,7 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
                 }}
                 className={`px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-colors cursor-pointer border ${
                   activeSubFilter === filter.id
-                    ? 'bg-white dark:bg-[#252830] text-ink border-line font-bold shadow-xs'
+                    ? 'bg-white dark:bg-[var(--surface-elevated)] text-ink border-line font-bold shadow-xs'
                     : 'bg-white/40 dark:bg-white/[0.03] text-ink-2 border-line/50 hover:bg-white/80'
                 }`}
               >
@@ -195,7 +195,7 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
           <div className="flex-1 space-y-4 relative">
             {/* Timeline Marker Pin */}
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#D4F434] text-[#121316] font-mono font-bold text-xs flex items-center justify-center shadow-[0_0_12px_rgba(212,244,52,0.4)] shrink-0">
+              <div className="w-8 h-8 rounded-full bg-[var(--neon-lime)] text-[var(--palette-neon-black)] font-mono font-bold text-xs flex items-center justify-center shadow-[0_0_12px_color-mix(in_srgb,var(--neon-lime)_40%,transparent)] shrink-0">
                 <FileText className="w-4 h-4" />
               </div>
               <div>
@@ -211,8 +211,8 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
             {/* Split Pills & Connected Cards */}
             <div className="pl-4 border-l-2 border-line/70 dark:border-line/40 ml-4 space-y-4 pt-2">
               {/* Dual-lobed action pill 1 */}
-              <div className="inline-flex items-center rounded-full bg-white dark:bg-[#18191E] border border-line p-1 pr-3 shadow-xs gap-2">
-                <span className="w-6 h-6 rounded-full bg-[#121316] dark:bg-white text-white dark:text-[#121316] flex items-center justify-center">
+              <div className="inline-flex items-center rounded-full bg-white dark:bg-[var(--surface-2)] border border-line p-1 pr-3 shadow-xs gap-2">
+                <span className="w-6 h-6 rounded-full bg-[var(--palette-neon-black)] dark:bg-white text-white dark:text-[var(--palette-neon-black)] flex items-center justify-center">
                   <PhoneCall className="w-3 h-3" />
                 </span>
                 <span className="text-xs font-semibold text-ink font-mono">Cold Call SDR × 2</span>
@@ -221,7 +221,7 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
               {/* Card 1: Velocidade de Conversão (Waveform Sparkline) */}
               <motion.div
                 whileHover={{ y: -2 }}
-                className="p-4 rounded-3xl bg-white dark:bg-[#18191E] border border-line/80 shadow-[0_4px_24px_-2px_rgba(0,0,0,0.05)] space-y-3"
+                className="p-4 rounded-3xl bg-white dark:bg-[var(--surface-2)] border border-line/80 shadow-[0_4px_24px_-2px_rgba(0,0,0,0.05)] space-y-3"
               >
                 <div className="flex items-center justify-between">
                   <div>
@@ -232,7 +232,7 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
                       Sexta-feira · Tempo Médio
                     </span>
                   </div>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#D4F434] text-[#121316]">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[var(--neon-lime)] text-[var(--palette-neon-black)]">
                     +12% veloc.
                   </span>
                 </div>
@@ -247,8 +247,8 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
                   >
                     <defs>
                       <linearGradient id="waveGradient1" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#00D4FF" stopOpacity="0.4" />
-                        <stop offset="100%" stopColor="#00D4FF" stopOpacity="0.0" />
+                        <stop offset="0%" stopColor="var(--orbit-blue)" stopOpacity="0.4" />
+                        <stop offset="100%" stopColor="var(--orbit-blue)" stopOpacity="0.0" />
                       </linearGradient>
                     </defs>
                     <path
@@ -258,12 +258,12 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
                     <path
                       d="M0 35 Q 25 15, 50 30 T 100 25 T 150 40 T 200 20"
                       fill="none"
-                      stroke="#00D4FF"
+                      stroke="var(--orbit-blue)"
                       strokeWidth="2.5"
                     />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="px-2.5 py-1 rounded-full bg-[#121316] text-white text-[11px] font-mono font-bold shadow-md">
+                    <span className="px-2.5 py-1 rounded-full bg-[var(--palette-neon-black)] text-white text-[11px] font-mono font-bold shadow-md">
                       180 / 120
                     </span>
                   </div>
@@ -273,14 +273,14 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
                   <span className="text-ink-2 font-mono text-[11px]">
                     Média ICP: <strong className="text-ink">160k</strong>
                   </span>
-                  <span className="text-[#00D4FF] font-bold font-mono text-xs">+10 pts</span>
+                  <span className="text-[var(--orbit-blue)] font-bold font-mono text-xs">+10 pts</span>
                 </div>
               </motion.div>
 
               {/* Card 2: Fit do Decisor & Dores */}
               <motion.div
                 whileHover={{ y: -2 }}
-                className="p-4 rounded-3xl bg-white dark:bg-[#18191E] border border-line/80 shadow-[0_4px_24px_-2px_rgba(0,0,0,0.05)] space-y-2"
+                className="p-4 rounded-3xl bg-white dark:bg-[var(--surface-2)] border border-line/80 shadow-[0_4px_24px_-2px_rgba(0,0,0,0.05)] space-y-2"
               >
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-bold font-display text-ink">
@@ -307,13 +307,13 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
 
           {/* Center Connector Indicator & Add Action */}
           <div className="flex flex-col items-center justify-center pt-24 gap-3">
-            <div className="w-7 h-7 rounded-full bg-white dark:bg-[#18191E] border border-line flex items-center justify-center text-ink-2 shadow-xs">
+            <div className="w-7 h-7 rounded-full bg-white dark:bg-[var(--surface-2)] border border-line flex items-center justify-center text-ink-2 shadow-xs">
               <ChevronDown className="w-3.5 h-3.5" />
             </div>
             <button
               type="button"
               onClick={() => navigate('/app/prospect')}
-              className="w-10 h-10 rounded-full bg-[#121316] dark:bg-white text-white dark:text-[#121316] flex items-center justify-center shadow-lg hover:scale-105 transition-transform cursor-pointer"
+              className="w-10 h-10 rounded-full bg-[var(--palette-neon-black)] dark:bg-white text-white dark:text-[var(--palette-neon-black)] flex items-center justify-center shadow-lg hover:scale-105 transition-transform cursor-pointer"
               title="Adicionar Oportunidade"
               aria-label="Adicionar Oportunidade"
             >
@@ -325,7 +325,7 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
           <div className="flex-1 space-y-4 relative">
             {/* Timeline Marker Pin */}
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#D4F434] text-[#121316] font-mono font-bold text-xs flex items-center justify-center shadow-[0_0_12px_rgba(212,244,52,0.4)] shrink-0">
+              <div className="w-8 h-8 rounded-full bg-[var(--neon-lime)] text-[var(--palette-neon-black)] font-mono font-bold text-xs flex items-center justify-center shadow-[0_0_12px_color-mix(in_srgb,var(--neon-lime)_40%,transparent)] shrink-0">
                 <FileText className="w-4 h-4" />
               </div>
               <div>
@@ -342,14 +342,14 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
             <div className="pl-4 border-l-2 border-line/70 dark:border-line/40 ml-4 space-y-4 pt-2">
               {/* Dual-lobed action pills */}
               <div className="flex flex-wrap items-center gap-2">
-                <div className="inline-flex items-center rounded-full bg-white dark:bg-[#18191E] border border-line p-1 pr-3 shadow-xs gap-2">
-                  <span className="w-6 h-6 rounded-full bg-[#121316] dark:bg-white text-white dark:text-[#121316] flex items-center justify-center">
+                <div className="inline-flex items-center rounded-full bg-white dark:bg-[var(--surface-2)] border border-line p-1 pr-3 shadow-xs gap-2">
+                  <span className="w-6 h-6 rounded-full bg-[var(--palette-neon-black)] dark:bg-white text-white dark:text-[var(--palette-neon-black)] flex items-center justify-center">
                     <FileText className="w-3 h-3" />
                   </span>
                   <span className="text-xs font-semibold text-ink font-mono">Proposta v2 × 3</span>
                 </div>
-                <div className="inline-flex items-center rounded-full bg-white dark:bg-[#18191E] border border-line p-1 pr-3 shadow-xs gap-2">
-                  <span className="w-6 h-6 rounded-full bg-[#121316] dark:bg-white text-white dark:text-[#121316] flex items-center justify-center">
+                <div className="inline-flex items-center rounded-full bg-white dark:bg-[var(--surface-2)] border border-line p-1 pr-3 shadow-xs gap-2">
+                  <span className="w-6 h-6 rounded-full bg-[var(--palette-neon-black)] dark:bg-white text-white dark:text-[var(--palette-neon-black)] flex items-center justify-center">
                     <PhoneCall className="w-3 h-3" />
                   </span>
                   <span className="text-xs font-semibold text-ink font-mono">
@@ -361,7 +361,7 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
               {/* Card 3: Probabilidade de Fechamento (Waveform Sparkline) */}
               <motion.div
                 whileHover={{ y: -2 }}
-                className="p-4 rounded-3xl bg-white dark:bg-[#18191E] border border-line/80 shadow-[0_4px_24px_-2px_rgba(0,0,0,0.05)] space-y-3"
+                className="p-4 rounded-3xl bg-white dark:bg-[var(--surface-2)] border border-line/80 shadow-[0_4px_24px_-2px_rgba(0,0,0,0.05)] space-y-3"
               >
                 <div className="flex items-center justify-between">
                   <div>
@@ -372,7 +372,7 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
                       Quinta-feira · Score AI
                     </span>
                   </div>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#121316] text-[#D4F434] dark:bg-white dark:text-[#121316]">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[var(--palette-neon-black)] text-[var(--neon-lime)] dark:bg-white dark:text-[var(--palette-neon-black)]">
                     85% score
                   </span>
                 </div>
@@ -387,8 +387,8 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
                   >
                     <defs>
                       <linearGradient id="waveGradient2" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#D4F434" stopOpacity="0.5" />
-                        <stop offset="100%" stopColor="#D4F434" stopOpacity="0.0" />
+                        <stop offset="0%" stopColor="var(--neon-lime)" stopOpacity="0.5" />
+                        <stop offset="100%" stopColor="var(--neon-lime)" stopOpacity="0.0" />
                       </linearGradient>
                     </defs>
                     <path
@@ -403,7 +403,7 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
                     />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="px-2.5 py-1 rounded-full bg-[#121316] text-white text-[11px] font-mono font-bold shadow-md">
+                    <span className="px-2.5 py-1 rounded-full bg-[var(--palette-neon-black)] text-white text-[11px] font-mono font-bold shadow-md">
                       135 / 92
                     </span>
                   </div>
@@ -422,7 +422,7 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
               {/* Card 4: ECG de Ritmo Comercial & Cadência (Direct ECG representation!) */}
               <motion.div
                 whileHover={{ y: -2 }}
-                className="p-4 rounded-3xl bg-white dark:bg-[#18191E] border border-line/80 shadow-[0_4px_24px_-2px_rgba(0,0,0,0.05)] space-y-2"
+                className="p-4 rounded-3xl bg-white dark:bg-[var(--surface-2)] border border-line/80 shadow-[0_4px_24px_-2px_rgba(0,0,0,0.05)] space-y-2"
               >
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-bold font-display text-ink flex items-center gap-1.5">
@@ -457,7 +457,7 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
 
       {/* ── FLOATING BOTTOM HORIZON DOCK (Referência direta: bottom pill dock) ── */}
       <div className="mt-4 flex justify-center">
-        <div className="inline-flex items-center gap-1 sm:gap-2 p-1.5 px-3 rounded-full bg-white/90 dark:bg-[#181A20]/90 backdrop-blur-2xl border border-line/80 shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
+        <div className="inline-flex items-center gap-1 sm:gap-2 p-1.5 px-3 rounded-full bg-white/90 dark:bg-[var(--surface-2)]/90 backdrop-blur-2xl border border-line/80 shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
           {/* Calendar Chip */}
           <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-2 text-ink text-xs font-mono font-bold border border-line">
             <Calendar className="w-3.5 h-3.5 text-brand" />
@@ -485,14 +485,14 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
                   }}
                   className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-mono transition-all cursor-pointer ${
                     isSelected
-                      ? 'bg-[#121316] dark:bg-white text-white dark:text-[#121316] font-bold shadow-xs'
+                      ? 'bg-[var(--palette-neon-black)] dark:bg-white text-white dark:text-[var(--palette-neon-black)] font-bold shadow-xs'
                       : 'text-ink-2 hover:bg-surface-2 hover:text-ink'
                   }`}
                 >
                   <span>{node.label}</span>
                   <span
                     className={`w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center ${
-                      isSelected ? 'bg-[#D4F434] text-[#121316]' : 'bg-surface-2 text-ink-2'
+                      isSelected ? 'bg-[var(--neon-lime)] text-[var(--palette-neon-black)]' : 'bg-surface-2 text-ink-2'
                     }`}
                   >
                     {node.count}
@@ -506,7 +506,7 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
           <button
             type="button"
             onClick={() => navigate('/app/crm')}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4F434] hover:bg-[#C2E426] text-[#121316] text-xs font-bold font-display shadow-xs transition-transform hover:scale-105 cursor-pointer ml-1"
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--neon-lime)] hover:bg-[var(--neon-lime-hover)] text-[var(--palette-neon-black)] text-xs font-bold font-display shadow-xs transition-transform hover:scale-105 cursor-pointer ml-1"
           >
             <span>Ver Kanban 360°</span>
             <ArrowRight className="w-3 h-3" />

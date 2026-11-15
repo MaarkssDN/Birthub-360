@@ -33,7 +33,7 @@ export function ThreeCxConnectionCard() {
           </div>
           <div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white">PABX Telefonia 3CX</h3>
-            <p className="text-sm text-sky-700 dark:text-[#70D6FF] mt-1">
+            <p className="text-sm text-sky-700 dark:text-[var(--lux-ink-cyan)] mt-1">
               Cadastro de PABX 3CX e teste de comunicação; recursos avançados dependem da instalação
               3CX conectada e dos webhooks habilitados.
             </p>
@@ -113,7 +113,7 @@ export function ThreeCxConnectionCard() {
         )}
 
         <div className="p-5 rounded-xl border border-dashed border-line bg-surface-2/50 space-y-4">
-          <p className="text-sm font-bold text-brand-ink dark:text-[#00D4FF]">
+          <p className="text-sm font-bold text-brand-ink dark:text-[var(--orbit-blue)]">
             {threecxConnections.length > 0
               ? 'Conectar outro PABX 3CX'
               : 'Conectar Servidor 3CX PABX'}

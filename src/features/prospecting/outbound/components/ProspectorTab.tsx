@@ -350,7 +350,7 @@ export const ProspectorTab: React.FC<ProspectorTabProps> = ({
         >
           <div>
             <h2
-              className={`text-base font-bold flex items-center gap-2 ${isDark ? 'text-[#F8F9FF]' : 'text-slate-800'}`}
+              className={`text-base font-bold flex items-center gap-2 ${isDark ? 'text-[var(--ink)]' : 'text-slate-800'}`}
             >
               <Sparkles className="w-4 h-4 text-[var(--brand-primary)]" />
               <span>Painel de Busca Estruturada & Filtros Suspensos</span>
@@ -605,7 +605,7 @@ export const ProspectorTab: React.FC<ProspectorTabProps> = ({
               </span>
             </div>
             <p
-              className={`text-xs sm:text-sm font-semibold truncate ${isDark ? 'text-[#F8F9FF]' : 'text-slate-800'}`}
+              className={`text-xs sm:text-sm font-semibold truncate ${isDark ? 'text-[var(--ink)]' : 'text-slate-800'}`}
             >
               {query || 'Selecione os parâmetros acima para compor a busca...'}
             </p>
@@ -630,7 +630,7 @@ export const ProspectorTab: React.FC<ProspectorTabProps> = ({
               type="button"
               onClick={onStartSearch}
               disabled={isSearching || !query.trim()}
-              className="py-2.5 px-6 bg-gradient-to-r from-[var(--brand-primary)] to-[#FF7010] hover:from-[var(--brand-secondary-hover)] hover:to-[var(--brand-secondary)] disabled:opacity-50 disabled:cursor-not-allowed text-[#F8F9FF] font-bold rounded-xl transition shadow-lg shadow-[var(--brand-primary)]/25 flex items-center justify-center gap-2 text-sm"
+              className="py-2.5 px-6 bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand)] hover:from-[var(--brand-secondary-hover)] hover:to-[var(--brand-secondary)] disabled:opacity-50 disabled:cursor-not-allowed text-[var(--ink)] font-bold rounded-xl transition shadow-lg shadow-[var(--brand-primary)]/25 flex items-center justify-center gap-2 text-sm"
             >
               {isSearching ? (
                 <>
@@ -671,7 +671,7 @@ export const ProspectorTab: React.FC<ProspectorTabProps> = ({
             }`}
           >
             <div
-              className="bg-gradient-to-r from-[var(--brand-primary)] via-[#FF8008] to-[#FFC500] h-2.5 rounded-full transition-all duration-300"
+              className="bg-gradient-to-r from-[var(--brand-primary)] via-[var(--brand)] to-[var(--gold)] h-2.5 rounded-full transition-all duration-300"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -717,7 +717,7 @@ export const ProspectorTab: React.FC<ProspectorTabProps> = ({
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
               <div>
-                <h3 className={`text-sm font-bold ${isDark ? 'text-[#F8F9FF]' : 'text-slate-800'}`}>
+                <h3 className={`text-sm font-bold ${isDark ? 'text-[var(--ink)]' : 'text-slate-800'}`}>
                   {leads.length} Empresas Mapeadas (Places + CNPJ Oficial + Apollo)
                 </h3>
                 <p className="text-[11px] text-slate-400">

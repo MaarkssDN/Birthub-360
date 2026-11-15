@@ -34,7 +34,7 @@ export function ActionPlanSteps({
         >
           <span
             aria-hidden="true"
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-brand via-brand-2 to-brand font-mono text-xs font-black text-on-brand shadow-[0_2px_10px_rgba(212,175,55,0.3)] transition-transform duration-200 group-hover:scale-110"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-brand via-brand-2 to-brand font-mono text-xs font-black text-on-brand shadow-[0_2px_10px_color-mix(in_srgb,var(--brand)_30%,transparent)] transition-transform duration-200 group-hover:scale-110"
           >
             {index + 1}
           </span>

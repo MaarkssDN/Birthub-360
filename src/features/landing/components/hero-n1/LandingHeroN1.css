@@ -2,21 +2,21 @@
 /* ==========================================================================
    BIRTH HUB 360° — HERO N1 · NEON EDITORIAL CINEMATIC (MISSÃO 07 REACT PORT)
    Paleta oficial preservada:
-   - Azul Neon: #00D4FF
-   - Rosa Neon: #FF2D9B
-   - Dourado:   #FFC107
-   - Íris:      #8B7DFF
-   - Dark BG:   #0D0D0D
+   - Azul Neon: var(--orbit-blue)
+   - Rosa Neon: var(--pink)
+   - Dourado:   var(--gold)
+   - Íris:      var(--iris)
+   - Dark BG:   var(--bg)
    - Light BG:  #F4F7FB
    Tipografia oficial: Sora · Inter · IBM Plex Mono
    Títulos e subtítulos nunca usam #FFFFFF ou #000000 puros.
    ========================================================================== */
 
 .bh-n1-hero {
-  --bh-cyan: #00d4ff;
-  --bh-pink: #ff2d9b;
-  --bh-gold: #ffc107;
-  --bh-iris: #8b7dff;
+  --bh-cyan: var(--orbit-blue);
+  --bh-pink: var(--pink);
+  --bh-gold: var(--gold);
+  --bh-iris: var(--iris);
 
   --bh-font-display: "Sora", system-ui, -apple-system, sans-serif;
   --bh-font-sans: "Inter", system-ui, -apple-system, sans-serif;
@@ -25,25 +25,25 @@
   --bh-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 
   /* Default Dark Mode tokens */
-  --bh-bg: #0d0d0d;
+  --bh-bg: var(--bg);
   --bh-bg-elevated: #12151f;
   --bh-ink: #edf2f9;
   --bh-ink-2: #a9b4c7;
   --bh-ink-muted: #7e8ba3;
   --bh-line: rgba(237, 242, 249, 0.09);
-  --bh-line-strong: rgba(0, 212, 255, 0.28);
+  --bh-line-strong: color-mix(in srgb, var(--orbit-blue) 28%, transparent);
 
   --bh-plate-bg: linear-gradient(165deg, rgba(19, 23, 35, 0.94) 0%, rgba(12, 15, 24, 0.97) 100%);
   --bh-plate-border: rgba(237, 242, 249, 0.12);
-  --bh-plate-shadow: 0 28px 64px -24px rgba(2, 6, 18, 0.82), 0 0 0 1px rgba(0, 212, 255, 0.14);
+  --bh-plate-shadow: 0 28px 64px -24px rgba(2, 6, 18, 0.82), 0 0 0 1px color-mix(in srgb, var(--orbit-blue) 14%, transparent);
   --bh-band-bg: rgba(15, 19, 30, 0.82);
   --bh-band-border: rgba(237, 242, 249, 0.09);
 
-  --bh-cyan-text: #00d4ff;
-  --bh-pink-text: #ff2d9b;
-  --bh-gold-text: #ffc107;
-  --bh-iris-text: #8b7dff;
-  --bh-tick: rgba(0, 212, 255, 0.36);
+  --bh-cyan-text: var(--orbit-blue);
+  --bh-pink-text: var(--pink);
+  --bh-gold-text: var(--gold);
+  --bh-iris-text: var(--iris);
+  --bh-tick: color-mix(in srgb, var(--orbit-blue) 36%, transparent);
 
   --bh-cta-ink: #1a0611;
 
@@ -74,7 +74,7 @@ html:not(.dark) .bh-n1-hero,
 
   --bh-plate-bg: linear-gradient(165deg, #101626 0%, #151c30 100%);
   --bh-plate-border: rgba(18, 25, 43, 0.22);
-  --bh-plate-shadow: 0 28px 60px -24px rgba(15, 22, 42, 0.34), 0 0 0 1px rgba(0, 212, 255, 0.22);
+  --bh-plate-shadow: 0 28px 60px -24px rgba(15, 22, 42, 0.34), 0 0 0 1px color-mix(in srgb, var(--orbit-blue) 22%, transparent);
   --bh-band-bg: rgba(20, 27, 46, 0.9);
   --bh-band-border: rgba(237, 242, 249, 0.11);
 
@@ -91,13 +91,13 @@ html:not(.dark) .bh-n1-hero,
 
 html.dark .bh-n1-hero,
 [data-theme="dark"] .bh-n1-hero {
-  --bh-bg: #0d0d0d;
+  --bh-bg: var(--bg);
   --bh-bg-elevated: #12151f;
   --bh-ink: #edf2f9;
   --bh-ink-2: #a9b4c7;
   --bh-ink-muted: #7e8ba3;
   --bh-line: rgba(237, 242, 249, 0.09);
-  --bh-line-strong: rgba(0, 212, 255, 0.28);
+  --bh-line-strong: color-mix(in srgb, var(--orbit-blue) 28%, transparent);
   background: var(--bh-bg);
 }
 
@@ -154,7 +154,7 @@ html:not(.dark) .bh-n1-aura,
   inset: 0;
   background: radial-gradient(
     ellipse 76% 62% at 62% 38%,
-    rgba(0, 212, 255, 0.045) 0%,
+    color-mix(in srgb, var(--orbit-blue) 4.5%, transparent) 0%,
     transparent 72%
   );
   opacity: 0.65;
@@ -194,8 +194,8 @@ html:not(.dark) .bh-n1-aura,
   margin-bottom: 18px;
   padding: 5px 12px;
   border-radius: 999px;
-  background: rgba(0, 212, 255, 0.08);
-  border: 1px solid rgba(0, 212, 255, 0.24);
+  background: color-mix(in srgb, var(--orbit-blue) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--orbit-blue) 24%, transparent);
 }
 
 html.light .bh-n1-eyebrow,
@@ -259,17 +259,17 @@ html:not(.dark) .bh-n1-eyebrow,
 
 .bh-n1-r1 .bh-n1-word {
   color: var(--bh-cyan);
-  text-shadow: 0 0 26px rgba(0, 212, 255, 0.26);
+  text-shadow: 0 0 26px color-mix(in srgb, var(--orbit-blue) 26%, transparent);
 }
 
 .bh-n1-r2 .bh-n1-word {
   color: var(--bh-iris);
-  text-shadow: 0 0 26px rgba(139, 125, 255, 0.28);
+  text-shadow: 0 0 26px color-mix(in srgb, var(--iris) 28%, transparent);
 }
 
 .bh-n1-r3 .bh-n1-word {
   color: var(--bh-gold);
-  text-shadow: 0 0 24px rgba(255, 193, 7, 0.24);
+  text-shadow: 0 0 24px color-mix(in srgb, var(--gold) 24%, transparent);
 }
 
 .bh-n1-tag {
@@ -283,7 +283,7 @@ html:not(.dark) .bh-n1-eyebrow,
 /* --------------------------------------------------------------------------
    LIGHT MODE — LAYERED CHROMATIC EDITORIAL STAGE (SUPERFÍCIE UNIFICADA)
    Substitui retângulos pretos isolados por uma única superfície editorial
-   contínua que preserva as cores neon originais (#00D4FF, #8B7DFF, #FFC107)
+   contínua que preserva as cores neon originais (var(--orbit-blue), var(--iris), var(--gold))
    com contraste AAA.
    -------------------------------------------------------------------------- */
 html.light .bh-n1-hero .bh-n1-title,
@@ -293,9 +293,9 @@ html:not(.dark) .bh-n1-hero .bh-n1-title,
   padding: clamp(18px, 2.2vw, 26px) clamp(18px, 2.4vw, 28px);
   border-radius: 22px;
   background:
-    radial-gradient(120% 100% at 0% 0%, rgba(0, 212, 255, 0.16) 0%, transparent 55%),
-    radial-gradient(120% 100% at 50% 50%, rgba(139, 125, 255, 0.16) 0%, transparent 60%),
-    radial-gradient(120% 100% at 100% 100%, rgba(255, 193, 7, 0.14) 0%, transparent 55%),
+    radial-gradient(120% 100% at 0% 0%, color-mix(in srgb, var(--orbit-blue) 16%, transparent) 0%, transparent 55%),
+    radial-gradient(120% 100% at 50% 50%, color-mix(in srgb, var(--iris) 16%, transparent) 0%, transparent 60%),
+    radial-gradient(120% 100% at 100% 100%, color-mix(in srgb, var(--gold) 14%, transparent) 0%, transparent 55%),
     linear-gradient(140deg, #0d1222 0%, #12182c 52%, #17142d 100%);
   border: 1px solid rgba(18, 25, 43, 0.18);
   box-shadow:
@@ -367,9 +367,9 @@ html:not(.dark) .bh-n1-hero .bh-n1-tag,
   font-size: 0.95rem;
   letter-spacing: -0.01em;
   text-decoration: none;
-  border: 1px solid rgba(255, 45, 155, 0.65);
+  border: 1px solid color-mix(in srgb, var(--pink) 65%, transparent);
   box-shadow:
-    0 14px 32px -10px rgba(255, 45, 155, 0.52),
+    0 14px 32px -10px color-mix(in srgb, var(--pink) 52%, transparent),
     inset 0 1px 0 rgba(255, 255, 255, 0.28);
   transition:
     transform 180ms var(--bh-ease-out),
@@ -380,7 +380,7 @@ html:not(.dark) .bh-n1-hero .bh-n1-tag,
 .bh-n1-btn-primary:hover {
   transform: translateY(-2px);
   box-shadow:
-    0 18px 38px -10px rgba(255, 45, 155, 0.68),
+    0 18px 38px -10px color-mix(in srgb, var(--pink) 68%, transparent),
     inset 0 1px 0 rgba(255, 255, 255, 0.36);
 }
 
@@ -416,7 +416,7 @@ html:not(.dark) .bh-n1-btn-secondary,
 .bh-n1-btn-secondary:hover {
   transform: translateY(-1px);
   border-color: var(--bh-cyan-text);
-  background: rgba(0, 212, 255, 0.08);
+  background: color-mix(in srgb, var(--orbit-blue) 8%, transparent);
 }
 
 /* Discrete Context & Platform Access Strip */
@@ -478,7 +478,7 @@ html:not(.dark) .bh-n1-btn-secondary,
 .bh-n1-login-link:hover,
 .bh-n1-sandbox-link:hover {
   color: var(--bh-pink-text);
-  background: rgba(0, 212, 255, 0.08);
+  background: color-mix(in srgb, var(--orbit-blue) 8%, transparent);
 }
 
 /* Keyboard Focus Indicators */
@@ -682,9 +682,9 @@ html:not(.dark) .b360-adaptive-landing .bh-n1-hero .bh-n1-plate,
   letter-spacing: 0.08em;
   padding: 2px 7px;
   border-radius: 6px;
-  background: rgba(0, 212, 255, 0.12);
+  background: color-mix(in srgb, var(--orbit-blue) 12%, transparent);
   color: var(--bh-cyan);
-  border: 1px solid rgba(0, 212, 255, 0.28);
+  border: 1px solid color-mix(in srgb, var(--orbit-blue) 28%, transparent);
 }
 
 .bh-n1-sim-badge {
@@ -696,9 +696,9 @@ html:not(.dark) .b360-adaptive-landing .bh-n1-hero .bh-n1-plate,
   font-weight: 500;
   padding: 3px 9px;
   border-radius: 999px;
-  background: rgba(255, 193, 7, 0.12);
+  background: color-mix(in srgb, var(--gold) 12%, transparent);
   color: var(--bh-gold);
-  border: 1px solid rgba(255, 193, 7, 0.34);
+  border: 1px solid color-mix(in srgb, var(--gold) 34%, transparent);
   white-space: nowrap;
 }
 
@@ -780,8 +780,8 @@ html:not(.dark) .b360-adaptive-landing .bh-n1-hero .bh-n1-plate,
 }
 
 .bh-n1-step.is-done {
-  border-color: rgba(0, 212, 255, 0.24);
-  background: rgba(0, 212, 255, 0.05);
+  border-color: color-mix(in srgb, var(--orbit-blue) 24%, transparent);
+  background: color-mix(in srgb, var(--orbit-blue) 5%, transparent);
 }
 
 .bh-n1-step.is-done .bh-n1-step-node {
@@ -793,9 +793,9 @@ html:not(.dark) .b360-adaptive-landing .bh-n1-hero .bh-n1-plate,
 }
 
 .bh-n1-step.is-active {
-  border-color: rgba(255, 193, 7, 0.55);
-  background: rgba(255, 193, 7, 0.11);
-  box-shadow: 0 0 18px -6px rgba(255, 193, 7, 0.45);
+  border-color: color-mix(in srgb, var(--gold) 55%, transparent);
+  background: color-mix(in srgb, var(--gold) 11%, transparent);
+  box-shadow: 0 0 18px -6px color-mix(in srgb, var(--gold) 45%, transparent);
 }
 
 .bh-n1-step.is-active .bh-n1-step-node {
@@ -844,9 +844,9 @@ html:not(.dark) .b360-adaptive-landing .bh-n1-hero .bh-n1-plate,
   letter-spacing: 0.08em;
   padding: 3px 8px;
   border-radius: 6px;
-  background: rgba(255, 193, 7, 0.14);
+  background: color-mix(in srgb, var(--gold) 14%, transparent);
   color: var(--bh-gold);
-  border: 1px solid rgba(255, 193, 7, 0.35);
+  border: 1px solid color-mix(in srgb, var(--gold) 35%, transparent);
   white-space: nowrap;
 }
 
@@ -887,7 +887,7 @@ html:not(.dark) .b360-adaptive-landing .bh-n1-hero .bh-n1-plate,
 }
 
 .bh-n1-signal.is-pending {
-  border-color: rgba(255, 193, 7, 0.32);
+  border-color: color-mix(in srgb, var(--gold) 32%, transparent);
   color: var(--bh-gold);
 }
 
@@ -899,11 +899,11 @@ html:not(.dark) .b360-adaptive-landing .bh-n1-hero .bh-n1-plate,
 .bh-n1-band-copilot {
   background: linear-gradient(
     145deg,
-    rgba(139, 125, 255, 0.14) 0%,
+    color-mix(in srgb, var(--iris) 14%, transparent) 0%,
     rgba(15, 19, 30, 0.9) 65%,
-    rgba(255, 45, 155, 0.08) 100%
+    color-mix(in srgb, var(--pink) 8%, transparent) 100%
   );
-  border-color: rgba(139, 125, 255, 0.36);
+  border-color: color-mix(in srgb, var(--iris) 36%, transparent);
 }
 
 .bh-n1-copilot-head {
@@ -975,9 +975,9 @@ html:not(.dark) .b360-adaptive-landing .bh-n1-hero .bh-n1-plate,
   gap: 6px;
   padding: 5px 10px;
   border-radius: 8px;
-  background: rgba(0, 212, 255, 0.09);
+  background: color-mix(in srgb, var(--orbit-blue) 9%, transparent);
   color: var(--bh-cyan);
-  border: 1px solid rgba(0, 212, 255, 0.28);
+  border: 1px solid color-mix(in srgb, var(--orbit-blue) 28%, transparent);
   font-family: var(--bh-font-mono);
   font-size: 10.5px;
   font-weight: 500;
@@ -988,7 +988,7 @@ html:not(.dark) .b360-adaptive-landing .bh-n1-hero .bh-n1-plate,
 }
 
 .bh-n1-replay-btn:hover {
-  background: rgba(0, 212, 255, 0.16);
+  background: color-mix(in srgb, var(--orbit-blue) 16%, transparent);
   border-color: var(--bh-cyan);
 }
 

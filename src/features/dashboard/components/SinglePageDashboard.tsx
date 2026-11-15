@@ -880,7 +880,7 @@ export function SinglePageDashboard() {
               onClick={() => navigate('/app/prospect')}
               className="gap-2 rounded-full"
             >
-              <Search className="w-4 h-4 text-[#00D4FF]" />
+              <Search className="w-4 h-4 text-[var(--orbit-blue)]" />
               <span>Buscar Mercado</span>
             </Button>
 
@@ -913,7 +913,7 @@ export function SinglePageDashboard() {
                     onClick={() => setRole(r)}
                     className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-brand text-white shadow-xs'
+                        ? 'bg-brand text-on-brand shadow-xs'
                         : 'text-ink-2 hover:text-ink hover:bg-surface'
                     }`}
                   >

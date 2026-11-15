@@ -186,7 +186,7 @@ export const ChatTab: React.FC<ChatTabProps> = ({ aiConfig, theme = 'dark' }) =>
             <button
               type="button"
               onClick={createNewSession}
-              className="p-1.5 bg-[var(--brand-primary)] hover:bg-[#FF6B10] text-[#F8F9FF] rounded-lg transition"
+              className="p-1.5 bg-[var(--brand-primary)] hover:bg-[var(--brand)] text-[var(--ink)] rounded-lg transition"
               title="Nova Conversa"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -247,7 +247,7 @@ export const ChatTab: React.FC<ChatTabProps> = ({ aiConfig, theme = 'dark' }) =>
             </div>
             <div>
               <h3
-                className={`text-sm font-bold flex items-center gap-2 ${isDark ? 'text-[#F8F9FF]' : 'text-slate-800'}`}
+                className={`text-sm font-bold flex items-center gap-2 ${isDark ? 'text-[var(--ink)]' : 'text-slate-800'}`}
               >
                 <span>Assistente Birth Hub 360 LLaMA3</span>
                 <span className="text-[10px] bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 px-1.5 py-0.2 rounded font-mono font-semibold">
@@ -288,7 +288,7 @@ export const ChatTab: React.FC<ChatTabProps> = ({ aiConfig, theme = 'dark' }) =>
                 className={`flex gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}
               >
                 {!isUser && (
-                  <div className="w-8 h-8 rounded-lg bg-[var(--brand-primary)] text-[#F8F9FF] flex items-center justify-center font-bold text-xs shrink-0 shadow-md shadow-[var(--brand-primary)]/20">
+                  <div className="w-8 h-8 rounded-lg bg-[var(--brand-primary)] text-[var(--ink)] flex items-center justify-center font-bold text-xs shrink-0 shadow-md shadow-[var(--brand-primary)]/20">
                     A
                   </div>
                 )}
@@ -296,7 +296,7 @@ export const ChatTab: React.FC<ChatTabProps> = ({ aiConfig, theme = 'dark' }) =>
                 <div
                   className={`max-w-2xl rounded-2xl p-4 text-xs leading-relaxed space-y-1.5 ${
                     isUser
-                      ? 'bg-[var(--brand-primary)] text-[#F8F9FF] font-medium rounded-tr-sm shadow-md'
+                      ? 'bg-[var(--brand-primary)] text-[var(--ink)] font-medium rounded-tr-sm shadow-md'
                       : isDark
                         ? 'bg-slate-950 border border-slate-800 text-slate-200 rounded-tl-sm relative group'
                         : 'bg-white border border-slate-200 text-slate-800 shadow-sm rounded-tl-sm relative group'
@@ -355,7 +355,7 @@ export const ChatTab: React.FC<ChatTabProps> = ({ aiConfig, theme = 'dark' }) =>
 
           {isLoading && (
             <div className="flex gap-3 justify-start">
-              <div className="w-8 h-8 rounded-lg bg-[var(--brand-primary)] text-[#F8F9FF] flex items-center justify-center font-bold text-xs shrink-0 animate-pulse">
+              <div className="w-8 h-8 rounded-lg bg-[var(--brand-primary)] text-[var(--ink)] flex items-center justify-center font-bold text-xs shrink-0 animate-pulse">
                 A
               </div>
               <div
@@ -380,7 +380,7 @@ export const ChatTab: React.FC<ChatTabProps> = ({ aiConfig, theme = 'dark' }) =>
             isDark ? 'bg-slate-950/60 border-slate-800/80' : 'bg-slate-100 border-slate-200'
           }`}
         >
-          <Lightbulb className="w-3.5 h-3.5 text-[#FFC500] shrink-0 ml-1" />
+          <Lightbulb className="w-3.5 h-3.5 text-[var(--gold)] shrink-0 ml-1" />
           {quickPrompts.map((qp, i) => (
             <button
               type="button"
@@ -388,7 +388,7 @@ export const ChatTab: React.FC<ChatTabProps> = ({ aiConfig, theme = 'dark' }) =>
               onClick={() => handleSendMessage(qp)}
               className={`text-[11px] px-2.5 py-1 rounded-lg border whitespace-nowrap transition ${
                 isDark
-                  ? 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-[#F8F9FF] border-slate-700'
+                  ? 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-[var(--ink)] border-slate-700'
                   : 'bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-800 border-slate-200'
               }`}
             >
@@ -424,7 +424,7 @@ export const ChatTab: React.FC<ChatTabProps> = ({ aiConfig, theme = 'dark' }) =>
             <button
               type="submit"
               disabled={isLoading || !inputPrompt.trim()}
-              className="p-2.5 bg-[var(--brand-primary)] hover:bg-[#FF6B10] disabled:opacity-50 text-[#F8F9FF] rounded-xl transition shadow-md shadow-[var(--brand-primary)]/20"
+              className="p-2.5 bg-[var(--brand-primary)] hover:bg-[var(--brand)] disabled:opacity-50 text-[var(--ink)] rounded-xl transition shadow-md shadow-[var(--brand-primary)]/20"
             >
               <Send className="w-4 h-4" />
             </button>

@@ -86,7 +86,7 @@ export function AppTopbar({ activeTab, onOpenMobileNav }: AppTopbarProps) {
       <button
         type="button"
         onClick={onOpenMobileNav}
-        className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-[color:var(--color-text-secondary)] transition-all duration-300 hover:bg-[color:var(--surface-2)] hover:text-[color:var(--color-text-primary)] lg:hidden"
+        className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 cursor-pointer items-center justify-center rounded-full text-[color:var(--color-text-secondary)] transition-all duration-300 hover:bg-[color:var(--surface-2)] hover:text-[color:var(--color-text-primary)] lg:hidden"
         aria-label="Abrir menu de navegação"
         data-testid="topbar-open-mobile-nav"
       >
@@ -97,7 +97,7 @@ export function AppTopbar({ activeTab, onOpenMobileNav }: AppTopbarProps) {
         <button
           type="button"
           onClick={handleBack}
-          className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[color:var(--color-border-subtle)] text-[color:var(--color-text-secondary)] transition-all duration-300 hover:bg-[color:var(--surface-2)] hover:text-[color:var(--color-text-primary)] hover:border-[color:var(--color-brand-accent)] hover:-translate-x-0.5"
+          className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[color:var(--color-border-subtle)] text-[color:var(--color-text-secondary)] transition-all duration-300 hover:bg-[color:var(--surface-2)] hover:text-[color:var(--color-text-primary)] hover:border-[color:var(--color-brand-accent)] hover:-translate-x-0.5"
           aria-label="Voltar"
           title="Voltar"
           data-testid="topbar-back"
@@ -110,7 +110,7 @@ export function AppTopbar({ activeTab, onOpenMobileNav }: AppTopbarProps) {
         <BirthHubLogo
           variant="mark"
           animated
-          className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 drop-shadow-[0_0_12px_rgba(0,212,255,0.45)]"
+          className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 drop-shadow-[0_0_12px_color-mix(in_srgb,var(--orbit-blue)_45%,transparent)]"
         />
         <div
           className="hidden sm:grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[color:var(--color-border-strong)]"
@@ -176,7 +176,7 @@ export function AppTopbar({ activeTab, onOpenMobileNav }: AppTopbarProps) {
             SoundFX.play('navigate');
             toggleTheme();
           }}
-          className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[color:var(--color-border-subtle)] text-[color:var(--color-text-secondary)] transition-all duration-300 hover:border-[color:var(--color-brand-accent)] hover:text-[color:var(--color-brand-accent)]"
+          className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[color:var(--color-border-subtle)] text-[color:var(--color-text-secondary)] transition-all duration-300 hover:border-[color:var(--color-brand-accent)] hover:text-[color:var(--color-brand-accent)]"
           aria-label="Alternar tema"
           title={`Mudar para modo ${theme === 'dark' ? 'claro' : 'escuro'}`}
           data-testid="topbar-toggle-theme"
@@ -194,7 +194,7 @@ export function AppTopbar({ activeTab, onOpenMobileNav }: AppTopbarProps) {
           whileTap={{ scale: 0.92 }}
           transition={{ type: 'spring', stiffness: 400, damping: 25 }}
           onClick={toggleSound}
-          className={`hidden md:flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border transition-all duration-300 ${
+          className={`hidden md:flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border transition-all duration-300 ${
             soundEnabled
               ? 'border-[color:var(--color-brand-accent)] bg-[color:var(--color-brand-accent)]/10 text-[color:var(--color-brand-accent)]'
               : 'border-[color:var(--color-border-subtle)] text-[color:var(--color-text-secondary)] hover:border-[color:var(--color-brand-accent)] hover:text-[color:var(--color-brand-accent)]'
@@ -219,7 +219,7 @@ export function AppTopbar({ activeTab, onOpenMobileNav }: AppTopbarProps) {
             SoundFX.play('navigate');
             navigate('/app/notifications');
           }}
-          className="relative flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[color:var(--color-border-subtle)] text-[color:var(--color-text-secondary)] transition-all duration-300 hover:border-[color:var(--color-brand-secondary)] hover:text-[color:var(--color-brand-secondary)]"
+          className="relative flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[color:var(--color-border-subtle)] text-[color:var(--color-text-secondary)] transition-all duration-300 hover:border-[color:var(--color-brand-secondary)] hover:text-[color:var(--color-brand-secondary)]"
           aria-label={unreadCount > 0 ? `Notificações — ${unreadCount} não lidas` : 'Notificações'}
           data-testid="topbar-notifications"
         >
@@ -241,7 +241,7 @@ export function AppTopbar({ activeTab, onOpenMobileNav }: AppTopbarProps) {
           transition={{ type: 'spring', stiffness: 400, damping: 25 }}
           role="img"
           aria-label={`Avatar de ${currentUser?.name || 'Usuário'}`}
-          className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full font-sans text-xs sm:text-sm font-semibold text-[color:var(--color-text-primary)] cursor-pointer border border-[color:var(--color-brand-accent)]"
+          className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-full font-sans text-xs sm:text-sm font-semibold text-[color:var(--color-text-primary)] cursor-pointer border border-[color:var(--color-brand-accent)]"
           style={{ background: 'var(--color-surface-elevated)', boxShadow: 'var(--shadow-card)' }}
           title={`${currentUser?.name || 'Usuário'}`}
           data-testid="topbar-avatar"
@@ -255,7 +255,7 @@ export function AppTopbar({ activeTab, onOpenMobileNav }: AppTopbarProps) {
           whileTap={{ scale: 0.92 }}
           transition={{ type: 'spring', stiffness: 400, damping: 25 }}
           onClick={logout}
-          className="hidden sm:flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[color:var(--color-border-subtle)] text-[color:var(--color-text-secondary)] transition-all duration-300 hover:border-[color:var(--color-brand-secondary)] hover:text-[color:var(--color-brand-secondary)]"
+          className="hidden sm:flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[color:var(--color-border-subtle)] text-[color:var(--color-text-secondary)] transition-all duration-300 hover:border-[color:var(--color-brand-secondary)] hover:text-[color:var(--color-brand-secondary)]"
           aria-label="Sair da conta"
           title="Sair da conta"
           data-testid="topbar-logout"

@@ -23,7 +23,7 @@ const DIALOG_SURFACE =
   'fixed left-[50%] top-[50%] z-50 grid w-[calc(100%-2rem)] max-h-[calc(100dvh-2rem)] overflow-y-auto translate-x-[-50%] translate-y-[-50%] gap-4 rounded-[var(--radius-modal)] border border-line bg-surface-elevated p-6 text-ink duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95';
 
 const DIALOG_CLOSE_CLASS =
-  'absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full text-ink-2 hover:bg-[color:color-mix(in_srgb,var(--ink)_5%,transparent)] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:pointer-events-none';
+  'absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full text-ink-2 hover:bg-[color:color-mix(in_srgb,var(--ink)_5%,transparent)] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:pointer-events-none';
 
 const DialogPortal = DialogPrimitive.Portal;
 

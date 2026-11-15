@@ -22,36 +22,36 @@ const DEFAULT_STATS: StatItem[] = [
     label: 'Pipeline Gerado e Auditado',
     description: 'Volume sob gestão ativa nas cadências multicanal do ecossistema',
     trend: '+42% MoM',
-    highlightColor: '#D4F434',
-    titleColor: 'text-[#3f6212] dark:text-[#D4F434]',
-    descColor: 'text-slate-600 dark:text-[#dcf0a5]',
+    highlightColor: 'var(--neon-lime)',
+    titleColor: 'text-[#3f6212] dark:text-[var(--neon-lime)]',
+    descColor: 'text-[var(--ink-2)]',
   },
   {
     value: '3.8x',
     label: 'Aceleração de Resposta SDR',
     description: 'Sinais de compra triados e qualificados em menos de 3 minutos',
     trend: 'Tempo Real',
-    highlightColor: '#00D4FF',
-    titleColor: 'text-[#0284c7] dark:text-[#00D4FF]',
-    descColor: 'text-slate-600 dark:text-[#94d2f8]',
+    highlightColor: 'var(--orbit-blue)',
+    titleColor: 'text-[var(--orbit-blue)]',
+    descColor: 'text-[var(--ink-2)]',
   },
   {
     value: '99.4%',
     label: 'Acurácia de Enriquecimento',
     description: 'Decisores C-Level e telefones validados na Receita Federal',
     trend: 'Receita Federal & CNPJ',
-    highlightColor: '#FF2D9B',
-    titleColor: 'text-[#db2777] dark:text-[#FF2D9B]',
-    descColor: 'text-slate-600 dark:text-[#f8b4d8]',
+    highlightColor: 'var(--pink)',
+    titleColor: 'text-[var(--pink)]',
+    descColor: 'text-[var(--ink-2)]',
   },
   {
     value: '< 100ms',
     label: 'Latência Multi-CRM',
     description: 'Sincronização bidirecional Bitrix24, Salesforce e HubSpot',
     trend: 'Zero Latência',
-    highlightColor: '#F59E0B',
-    titleColor: 'text-[#d97706] dark:text-[#F59E0B]',
-    descColor: 'text-slate-600 dark:text-[#fed7aa]',
+    highlightColor: 'var(--warn)',
+    titleColor: 'text-[#d97706] dark:text-[var(--warn)]',
+    descColor: 'text-[var(--ink-2)]',
   },
 ];
 
@@ -67,9 +67,9 @@ export function StatsGrid({ stats = DEFAULT_STATS, className, ...props }: StatsG
       {stats.map((stat, i) => (
         <div
           key={stat.label}
-          className="relative group rounded-3xl border border-black/5 dark:border-white/10 bg-white/90 dark:bg-[#13151B]/90 backdrop-blur-xl p-6 sm:p-7 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] hover:border-black/15 dark:hover:border-white/20 transition-all duration-300 hover:-translate-y-1"
+          className="relative group rounded-3xl border border-black/5 dark:border-white/10 bg-[var(--surface)]/90 dark:bg-[var(--surface-2)]/90 backdrop-blur-xl p-6 sm:p-7 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] hover:border-black/15 dark:hover:border-white/20 transition-all duration-300 hover:-translate-y-1"
           style={{
-            borderColor: `${stat.highlightColor}30`,
+            borderColor: `color-mix(in srgb, ${stat.highlightColor} 19%, transparent)`,
           }}
         >
           {/* Luz de acento sutil no canto */}
@@ -84,8 +84,8 @@ export function StatsGrid({ stats = DEFAULT_STATS, className, ...props }: StatsG
               className="font-mono text-[11px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full"
               style={{
                 color: stat.highlightColor,
-                backgroundColor: `${stat.highlightColor}15`,
-                border: `1px solid ${stat.highlightColor}35`,
+                backgroundColor: `color-mix(in srgb, ${stat.highlightColor} 8%, transparent)`,
+                border: `1px solid color-mix(in srgb, ${stat.highlightColor} 21%, transparent)`,
               }}
             >
               Métrica 0{i + 1}
@@ -94,9 +94,9 @@ export function StatsGrid({ stats = DEFAULT_STATS, className, ...props }: StatsG
               <span
                 className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-mono text-[10px] font-bold"
                 style={{
-                  backgroundColor: `${stat.highlightColor}18`,
+                  backgroundColor: `color-mix(in srgb, ${stat.highlightColor} 9%, transparent)`,
                   color: stat.highlightColor,
-                  border: `1px solid ${stat.highlightColor}40`,
+                  border: `1px solid color-mix(in srgb, ${stat.highlightColor} 25%, transparent)`,
                 }}
               >
                 {stat.trend}

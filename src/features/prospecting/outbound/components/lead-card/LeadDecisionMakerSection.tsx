@@ -88,7 +88,7 @@ export const LeadDecisionMakerSection: React.FC<LeadDecisionMakerSectionProps> =
                 placeholder="Nome do Decisor"
                 className={`text-xs font-bold rounded px-2 py-1 border outline-none ${
                   isDark
-                    ? 'bg-slate-900 border-slate-700 text-[#F8F9FF]'
+                    ? 'bg-slate-900 border-slate-700 text-[var(--ink)]'
                     : 'bg-white border-slate-300 text-slate-800'
                 }`}
               />
@@ -106,7 +106,7 @@ export const LeadDecisionMakerSection: React.FC<LeadDecisionMakerSectionProps> =
             </div>
           ) : (
             <p
-              className={`text-sm font-bold truncate ${isDark ? 'text-[#F8F9FF]' : 'text-slate-800'}`}
+              className={`text-sm font-bold truncate ${isDark ? 'text-[var(--ink)]' : 'text-slate-800'}`}
             >
               {dmName}{' '}
               <span
@@ -130,7 +130,7 @@ export const LeadDecisionMakerSection: React.FC<LeadDecisionMakerSectionProps> =
             placeholder="Email do decisor"
             className={`text-xs font-mono rounded px-2 py-1 border outline-none ${
               isDark
-                ? 'bg-slate-900 border-slate-700 text-[#F8F9FF]'
+                ? 'bg-slate-900 border-slate-700 text-[var(--ink)]'
                 : 'bg-white border-slate-300 text-slate-800'
             }`}
           />
@@ -180,7 +180,7 @@ export const LeadDecisionMakerSection: React.FC<LeadDecisionMakerSectionProps> =
             placeholder="Telefone do decisor"
             className={`text-xs font-mono rounded px-2 py-1 border outline-none ${
               isDark
-                ? 'bg-slate-900 border-slate-700 text-[#F8F9FF]'
+                ? 'bg-slate-900 border-slate-700 text-[var(--ink)]'
                 : 'bg-white border-slate-300 text-slate-800'
             }`}
           />
@@ -241,7 +241,7 @@ export const LeadDecisionMakerSection: React.FC<LeadDecisionMakerSectionProps> =
             placeholder="URL do LinkedIn (ex: https://www.linkedin.com/in/...)"
             className={`text-xs font-mono rounded px-2 py-1 border outline-none ${
               isDark
-                ? 'bg-slate-900 border-slate-700 text-[#F8F9FF]'
+                ? 'bg-slate-900 border-slate-700 text-[var(--ink)]'
                 : 'bg-white border-slate-300 text-slate-800'
             }`}
           />

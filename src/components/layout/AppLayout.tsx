@@ -482,7 +482,18 @@ export function AppLayout() {
             <Route path="topic_training" element={<TopicTrainingAcademy />} />
             <Route path="bitrix" element={<BitrixGuideHub />} />
             <Route path="reports" element={<ReportsHub />} />
-            <Route path="integrations" element={<Integrations />} />
+            {/* P07 marca `integrations` com `requires: 'operations'` no moduleRegistry — mesmo
+              conjunto de canManageOperations do rail (ADMIN/GESTOR). As rotas de integração no
+              backend já exigem ADMIN/GESTOR (managementRoles em cada provider + externalCrm e
+              ping), então o gate de rota evita o 403 cru em acesso direto por URL. */}
+            <Route
+              path="integrations"
+              element={
+                <RequireRole allowedRoles={['ADMIN', 'GESTOR']}>
+                  <Integrations />
+                </RequireRole>
+              }
+            />
             <Route path="knowledge" element={<KnowledgeBase />} />
             <Route path="analytics" element={<Analytics />} />
             <Route path="gamification" element={<GamificationView />} />
@@ -510,7 +521,17 @@ export function AppLayout() {
             <Route path="sdr-diagnostic" element={<JoaoReisDiagnosticHub />} />
             <Route path="calendar" element={<Calendar />} />
             <Route path="notifications" element={<Notifications />} />
-            <Route path="automations" element={<Automations />} />
+            {/* Mesmo `requires: 'operations'` do registry (P07): automations no backend exige
+              ADMIN/GESTOR nas mutações (managementRoles em automation.routes.ts); o gate de rota
+              espelha a navegação e evita 403 cru em deep link. */}
+            <Route
+              path="automations"
+              element={
+                <RequireRole allowedRoles={['ADMIN', 'GESTOR']}>
+                  <Automations />
+                </RequireRole>
+              }
+            />
             {/* /api/usage já exige ADMIN no backend (bootstrap/routes.ts), mas a rota de frontend
               nunca tinha o mesmo gate — digitar a URL direto renderizava a casca da tela real, que
               só falhava com um 403 em inglês cru dentro do card de erro (achado do Piloto 022,

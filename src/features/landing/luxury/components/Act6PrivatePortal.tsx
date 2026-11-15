@@ -8,7 +8,7 @@ import { MagneticButton } from './MagneticButton.js';
 const TEAM_SIZES = ['1 a 5', '6 a 15', '16 a 50', '50+'] as const;
 
 const inputClass =
-  'w-full px-4 py-3 rounded-lg bg-black/50 border border-white/[0.12] text-[#F8F9FF] text-sm focus:outline-none focus:border-[#00D4FF] focus:ring-1 focus:ring-[#00D4FF] transition-colors placeholder:text-white/30';
+  'w-full px-4 py-3 rounded-lg bg-black/50 border border-white/[0.12] text-[var(--ink)] text-sm focus:outline-none focus:border-[var(--orbit-blue)] focus:ring-1 focus:ring-[var(--orbit-blue)] transition-colors placeholder:text-white/30';
 const labelClass = 'block text-xs font-mono uppercase text-[#9EADC8] mb-1.5 font-semibold';
 
 export function Act6PrivatePortal() {
@@ -70,23 +70,23 @@ export function Act6PrivatePortal() {
   return (
     <section
       id="acesso"
-      className="relative py-24 sm:py-32 bg-[#0D0D0D] border-t border-white/[0.06] overflow-hidden"
+      className="relative py-24 sm:py-32 bg-[var(--bg)] border-t border-white/[0.06] overflow-hidden"
     >
       {/* Luz dourada e azul no fechamento da página */}
-      <div className="pointer-events-none absolute -bottom-40 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-gradient-to-t from-[#FFC107]/10 via-[#00D4FF]/08 to-transparent blur-3xl opacity-70" />
+      <div className="pointer-events-none absolute -bottom-40 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-gradient-to-t from-[var(--gold)]/10 via-[var(--orbit-blue)]/08 to-transparent blur-3xl opacity-70" />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="p-8 sm:p-14 rounded-3xl bg-[#14141A] border border-white/[0.12] shadow-[0_24px_80px_rgba(0,0,0,0.8)] relative overflow-hidden backdrop-blur-xl">
+        <div className="p-8 sm:p-14 rounded-3xl bg-[var(--surface)] border border-white/[0.12] shadow-[0_24px_80px_rgba(0,0,0,0.8)] relative overflow-hidden backdrop-blur-xl">
           {/* Top Border Glow */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#FFC107] via-[#FF2D9B] to-[#00D4FF]" />
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[var(--gold)] via-[var(--pink)] to-[var(--orbit-blue)]" />
 
           <div className="max-w-2xl mx-auto text-center space-y-4 mb-10">
-            <div className="lux-hud-tag text-[#FFC107] border-[#FFC107]/30 bg-[#FFC107]/[0.08]">
-              <Lock className="w-3.5 h-3.5 text-[#FFC107]" />
+            <div className="lux-hud-tag text-[var(--gold)] border-[var(--gold)]/30 bg-[var(--gold)]/[0.08]">
+              <Lock className="w-3.5 h-3.5 text-[var(--gold)]" />
               Sessão Executiva Reservada
             </div>
 
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-[-0.02em] leading-tight text-[#F8F9FF]">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-[-0.02em] leading-tight text-[var(--ink)]">
               Transforme a sua área comercial em uma{' '}
               <span className="lux-headline-hero">central de comando.</span>
             </h2>
@@ -102,7 +102,7 @@ export function Act6PrivatePortal() {
               <div className="w-12 h-12 rounded-full bg-[#22C55E]/15 border border-[#22C55E]/30 flex items-center justify-center mx-auto text-[#22C55E]">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold text-[#F8F9FF]">Solicitação Recebida</h3>
+              <h3 className="text-xl font-bold text-[var(--ink)]">Solicitação Recebida</h3>
               <p className="text-sm text-[#9EADC8] max-w-md mx-auto">
                 Registramos seu interesse na sessão executiva. Nossa equipe entrará em contato pelos
                 canais informados para agendar a apresentação.
@@ -201,8 +201,8 @@ export function Act6PrivatePortal() {
                       aria-pressed={form.equipe === size}
                       className={`px-4 py-2 rounded-lg text-xs font-mono font-semibold border transition-colors ${
                         form.equipe === size
-                          ? 'bg-[#00D4FF]/15 border-[#00D4FF]/50 text-[#00D4FF]'
-                          : 'bg-black/40 border-white/[0.12] text-[#9EADC8] hover:border-[#00D4FF]/40 hover:text-[#F8F9FF]'
+                          ? 'bg-[var(--orbit-blue)]/15 border-[var(--orbit-blue)]/50 text-[var(--orbit-blue)]'
+                          : 'bg-black/40 border-white/[0.12] text-[#9EADC8] hover:border-[var(--orbit-blue)]/40 hover:text-[var(--ink)]'
                       }`}
                     >
                       {size}
@@ -218,7 +218,7 @@ export function Act6PrivatePortal() {
                   required
                   checked={form.consent}
                   onChange={(e) => setForm({ ...form, consent: e.target.checked })}
-                  className="mt-1 h-4 w-4 shrink-0 accent-[#00D4FF]"
+                  className="mt-1 h-4 w-4 shrink-0 accent-[var(--orbit-blue)]"
                 />
                 <label htmlFor="portal-consent" className="text-xs text-[#9EADC8] leading-relaxed">
                   Autorizo o contato da equipe Birth Hub 360° sobre esta solicitação de sessão
@@ -227,7 +227,7 @@ export function Act6PrivatePortal() {
               </div>
 
               {error && (
-                <p role="alert" className="text-xs text-[#FF2D9B] text-center">
+                <p role="alert" className="text-xs text-[var(--pink)] text-center">
                   {error}
                 </p>
               )}
@@ -247,10 +247,10 @@ export function Act6PrivatePortal() {
                 <Link
                   to="/login"
                   onClick={() => SoundFX.play('navigate')}
-                  className="text-xs text-[#9EADC8] hover:text-[#00D4FF] transition-colors font-medium"
+                  className="text-xs text-[#9EADC8] hover:text-[var(--orbit-blue)] transition-colors font-medium"
                 >
                   Já possui credenciais de acesso corporativo?{' '}
-                  <strong className="text-[#F8F9FF] underline">Entrar no Console</strong>
+                  <strong className="text-[var(--ink)] underline">Entrar no Console</strong>
                 </Link>
               </div>
             </form>

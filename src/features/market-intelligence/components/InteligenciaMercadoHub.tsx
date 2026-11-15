@@ -216,7 +216,7 @@ export function InteligenciaMercadoHub() {
           <div className="flex gap-2">
             <Link
               to="/app/market-intelligence"
-              className="inline-flex items-center h-8 px-3 text-xs font-semibold rounded-xl bg-[#8B7DFF] text-[#13151A]"
+              className="inline-flex items-center h-8 px-3 text-xs font-semibold rounded-xl bg-iris text-on-brand"
             >
               <Zap className="w-4 h-4 mr-2" /> Abrir LDR
             </Link>
@@ -339,7 +339,7 @@ export function InteligenciaMercadoHub() {
                       description="O snapshot está ativo, mas a consulta não retornou empresas. Ajuste filtros no LDR ou aguarde a próxima publicação."
                       actionLabel="Abrir LDR"
                       onAction={() => window.location.assign('/app/market-intelligence')}
-                      icon={<Building2 className="w-8 h-8 text-[#8B7DFF]" />}
+                      icon={<Building2 className="w-8 h-8 text-iris" />}
                     />
                   ) : (
                     companies.slice(0, 8).map((c) => (

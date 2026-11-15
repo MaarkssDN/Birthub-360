@@ -207,7 +207,7 @@ function CopilotoDockPanel({
               type="button"
               onClick={onClose}
               aria-label="Fechar Copiloto IA"
-              className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
             >
               <X className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
             </button>

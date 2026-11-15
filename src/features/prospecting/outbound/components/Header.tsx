@@ -73,7 +73,7 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={onToggleSidebar}
               className={`lg:hidden p-2 rounded-xl transition ${
                 isDark
-                  ? 'bg-slate-800 text-slate-300 hover:text-[#F8F9FF] hover:bg-slate-700'
+                  ? 'bg-slate-800 text-slate-300 hover:text-[var(--ink)] hover:bg-slate-700'
                   : 'bg-slate-100 text-slate-700 hover:text-slate-800 hover:bg-slate-200'
               }`}
               title="Abrir Barra Lateral de Configurações"
@@ -130,7 +130,7 @@ export const Header: React.FC<HeaderProps> = ({
                     onClick={() => setActiveTab(item.id)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition whitespace-nowrap ${
                       isActive
-                        ? 'bg-[var(--brand-primary)] text-[#F8F9FF] shadow-none shadow-[var(--brand-primary)]/20'
+                        ? 'bg-[var(--brand-primary)] text-[var(--ink)] shadow-none shadow-[var(--brand-primary)]/20'
                         : isDark
                           ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
                           : 'text-slate-600 hover:text-slate-800 hover:bg-slate-100'
@@ -177,7 +177,7 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={onOpenBrandGuide}
             className={`hidden md:flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition font-medium ${
               isDark
-                ? 'bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-[#F8F9FF] border-slate-700'
+                ? 'bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-[var(--ink)] border-slate-700'
                 : 'bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-800 border-slate-200'
             }`}
           >

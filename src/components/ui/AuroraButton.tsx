@@ -37,7 +37,7 @@ export function AuroraButton({
             )}
             style={{
               background:
-                'conic-gradient(from 0deg, #ff7358, #f797c2, #00d4ff, #41e5c5, #ac82ff, #f7ae6b, #ff7358)',
+                'conic-gradient(from 0deg, #ff7358, #f797c2, var(--orbit-blue), #41e5c5, #ac82ff, #f7ae6b, #ff7358)',
             }}
           />
           <span
@@ -45,7 +45,7 @@ export function AuroraButton({
             className="pointer-events-none absolute -inset-[1px] rounded-full z-[-1] animate-[spin_5.5s_linear_infinite] opacity-85 blur-[3px]"
             style={{
               background:
-                'conic-gradient(from 0deg, #ff7358, #f797c2, #00d4ff, #41e5c5, #ac82ff, #f7ae6b, #ff7358)',
+                'conic-gradient(from 0deg, #ff7358, #f797c2, var(--orbit-blue), #41e5c5, #ac82ff, #f7ae6b, #ff7358)',
             }}
           />
         </>
@@ -54,7 +54,7 @@ export function AuroraButton({
       {/* Núcleo do Botão (Inner Pill) */}
       <span
         className={cn(
-          'relative z-10 inline-flex items-center justify-center gap-2.5 rounded-full font-sans font-bold text-slate-100 bg-[#0b1117] group-hover:bg-[#131e29] border border-[#1a2634] transition-all duration-200 shadow-lg group-hover:-translate-y-0.5',
+          'relative z-10 inline-flex items-center justify-center gap-2.5 rounded-full font-sans font-bold text-slate-100 bg-[var(--palette-neon-black)] group-hover:bg-[var(--palette-surface3)] border border-[#1a2634] transition-all duration-200 shadow-lg group-hover:-translate-y-0.5',
           isSmall ? 'min-h-[36px] px-5 text-xs' : 'min-h-[48px] px-7 text-sm sm:text-base',
         )}
       >

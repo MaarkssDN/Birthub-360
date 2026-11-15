@@ -66,7 +66,7 @@ export function OrquestracaoViewer({ theme = 'dark' }: PillarViewerProps) {
         <div
           className={`flex items-center gap-3 p-2.5 rounded-xl border ${
             isDark
-              ? 'bg-slate-950/90 border-amber-500/50 shadow-[0_0_12px_rgba(255,193,7,0.12)]'
+              ? 'bg-slate-950/90 border-amber-500/50 shadow-[0_0_12px_color-mix(in_srgb,var(--gold)_12%,transparent)]'
               : 'bg-white border-amber-300 shadow-sm'
           }`}
         >

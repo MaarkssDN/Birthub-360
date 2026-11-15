@@ -135,7 +135,7 @@ export function ProspectingToolsHub() {
     return (
       <div className="space-y-6">
         <header>
-          <div className="text-[11px] font-bold uppercase tracking-wider text-[#D97706] dark:text-[#FFC107]">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--warn)] dark:text-[var(--gold)]">
             Fontes & Conectores
           </div>
           <h2 className="font-display text-2xl font-bold text-ink tracking-tight mt-0.5">

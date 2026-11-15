@@ -199,50 +199,51 @@
 
 :root {
   /* ==========================================================================
-     PALETA OFICIAL DE CORES NEON — BIRTH HUB 360°
-     Azul Neon:    #00D4FF (Tecnologia, confiança, inovação)
-     Rosa Neon:    #FF2D9B (Energia, criatividade, atitude)
-     Dourado Neon: #FFC107 (Sofisticação, prosperidade, previsibilidade e métricas)
-     Preto Neon:   #0D0D0D (Fundo principal Dark Mode — NUNCA para textos)
-     Azul Leitura: #70D6FF (Textos corridos de corpo, subtítulos secundários — SEM BRANCO)
-     Fundo Cards:  #14141A (Superfícies e cartões de conteúdo)
-     Bordas Glow:  rgba(0, 212, 255, 0.22) (Bordas com efeito neon sutil)
+     PALETA OFICIAL "STRATEGIC COMMAND CENTER" — BIRTH HUB 360° (09/2026)
+     Orbit Blue:   #1677FF (Tecnologia, confiança, inovação)
+     Rosa:         #FF4FA3 (Energia, criatividade, atitude)
+     Antique Gold: #D4AF37 (Sofisticação, ação primária — NUNCA texto branco em cima)
+     Deep Navy:    #061A3A (Âncora escura / texto sobre marca via --on-brand)
+     Blossom White:#FFF4F9 (Âncora clara do tema light)
+     Azul Leitura: #9CC0FF (Textos corridos de corpo no escuro — ver .dark)
+     Bordas Glow:  rgba(22, 119, 255, 0.22) (Bordas com efeito sutil)
      ========================================================================== */
-  --neon-blue: #00d4ff;
-  --neon-pink: #ff2d9b;
-  --neon-gold: #ffc107;
-  --neon-black: #0d0d0d;
+  --neon-blue: #1677ff;
+  --neon-pink: #ff4fa3;
+  --neon-gold: #d4af37;
+  --neon-black: #061a3a;
   /* Token divergente corrigido (handoff 11-para-03 / BT360-DT-0060): o canônico
-     --palette-neon-white / BRAND.colors.neonWhite é #F8F9FF. O azul de leitura
-     #70D6FF continua existindo — mas com o nome semântico correto, --neon-text. */
-  --neon-white: #f8f9ff;
-  --neon-text: #70d6ff;
-  --neon-card-bg: #14141a;
-  --neon-card-border: rgba(0, 212, 255, 0.22);
+     --palette-neon-white / BRAND.colors.neonWhite é #FFF4F9 (Blossom White). O azul
+     de leitura suave continua existindo — mas com o nome semântico correto,
+     --neon-text. */
+  --neon-white: #fff4f9;
+  --neon-text: #3b6fd4;
+  --neon-card-bg: #0e2450;
+  --neon-card-border: rgba(22, 119, 255, 0.22);
   --neon-lime: #d4f434;
   --neon-lime-hover: #c5e826;
   --lime-glow: rgba(212, 244, 52, 0.35);
 
-  /* Tons Light complementares — alinhados ao canônico (brand.ts /
-     tokens birthhub360.css): lightPink #D91B7C, lightBlue #0284C7, lightGold #D97706. */
-  --light-pink: #d91b7c;
-  --light-blue: #0284c7;
-  --light-gold: #d97706;
+  /* Tons Light complementares — alinhados à paleta Strategic Command Center:
+     pink #DB2777, orbit blue escurecido #1668D8, gold escurecido #B8962E. */
+  --light-pink: #db2777;
+  --light-blue: #1668d8;
+  --light-gold: #b8962e;
 
-  /* Gradientes Oficiais */
-  --grad-titles: linear-gradient(135deg, #00d4ff 0%, #ff2d9b 50%, #ffc107 100%);
-  --grad-cta: linear-gradient(135deg, #ff2d9b 0%, #00d4ff 100%);
+  /* Gradientes Oficiais — ordem da órbita 360º (ouro → vermelho → rosa → íris → azul) */
+  --grad-titles: linear-gradient(135deg, #d4af37 0%, #ff4fa3 50%, #1677ff 100%);
+  --grad-cta: linear-gradient(135deg, #ff4fa3 0%, #7c3aed 100%);
 
-  --bg: #f0efe9;
+  --bg: #fff4f9;
   --surface: #ffffff;
-  --surface-2: #f1f5f9;
-  --surface-subtle: #e2e8f0;
+  --surface-2: #fbeef5;
+  --surface-subtle: #f4e6ef;
   --surface-elevated: #ffffff;
-  --surface-interactive: #f1f5f9;
-  --overlay: rgba(11, 19, 43, 0.52);
-  --ink: #0b132b;
-  --ink-2: #475569;
-  --line: rgba(11, 19, 43, 0.12);
+  --surface-interactive: #fbeef5;
+  --overlay: rgba(6, 26, 58, 0.52);
+  --ink: #061a3a;
+  --ink-2: #4c5b7d;
+  --line: rgba(6, 26, 58, 0.12);
   /* A03-P1-09 — --line é DECORATIVO (divisores, ~1.2–1.3:1). Limite de controle de formulário
      (input/select/textarea/toggle/outline) precisa de >= 3:1 (WCAG 1.4.11): --border-input.
      --line-strong é o degrau de hover. Derivados de --ink/--surface para seguirem qualquer
@@ -254,29 +255,35 @@
      --brand-text é o mesmo tom, para uso como TEXTO (alias `primary`). */
   --brand-text: color-mix(in srgb, var(--brand) 53%, black);
   --focus-ring: var(--brand-text);
-  /* Paleta Oficial */
-  --midnight: #0b132b;
-  --sunset: #ef4444;
-  --red-violet: #8b5cf6;
+  /* Paleta Oficial Strategic Command Center */
+  --midnight: #061a3a;
+  --sunset: #e11d48;
+  --red-violet: #7c3aed;
   --red-violet-active: var(--red-violet);
-  --gold: #ffc107;
+  --gold: #d4af37;
   --white: #ffffff;
 
-  /* BirthHub 360 - Cores de Marca Neon */
-  --brand: #00d4ff;
-  --brand-2: #ff2d9b;
-  --on-brand: #041c32;
-  --iris: #8b5cf6;
-  --orbit-blue: #00d4ff;
-  --red: #ef4444;
-  --pink: #ff2d9b;
-  --warn: #ffc107;
+  /* BirthHub 360 - Cores de Marca (paleta Strategic Command Center) */
+  --brand: #d4af37;
+  --brand-2: #7c3aed;
+  --on-brand: #061a3a;
+  --iris: #7c3aed;
+  --orbit-blue: #1677ff;
+  --red: #e11d48;
+  --pink: #db2777;
+  --warn: #f59e0b;
   --ok: #22c55e;
 
+  /* Aliases legados consumidos por prospecting/outbound (~180 usos de
+     var(--brand-primary)/var(--brand-secondary) em classNames — sem definição
+     própria renderizavam transparente). Apontam para a paleta oficial. */
+  --brand-primary: var(--brand);
+  --brand-secondary: var(--gold);
+
   /* Gradientes e glows */
-  --grad-brand: linear-gradient(135deg, #00d4ff 0%, #ff2d9b 50%, #ffc107 100%);
-  --glow-brand: 0 0 22px rgba(0, 212, 255, 0.35);
-  --glow-iris: 0 0 22px rgba(255, 45, 155, 0.3);
+  --grad-brand: linear-gradient(135deg, #d4af37 0%, #ff4fa3 50%, #1677ff 100%);
+  --glow-brand: 0 0 22px rgba(212, 175, 55, 0.35);
+  --glow-iris: 0 0 22px rgba(124, 58, 237, 0.3);
   /* Indireção pro --color-info do @theme poder ser sobrescrito por tema (mesmo padrão de
      --warn/--ok acima e --critical mais abaixo) — sem isso, `.dark { --color-info: ... }` perderia
      pra `--color-info: #3b82f6` gerado pelo bloco `@theme` (que vem depois no arquivo e empata em
@@ -296,17 +303,15 @@
   --nav-c-violet: color-mix(in srgb, var(--coolors-purple) 80%, var(--coolors-blue));
   --nav-c-teal: color-mix(in srgb, var(--ok) 60%, var(--coolors-blue));
   --nav-c-slate: var(--ink-2);
-  --soft: rgba(255, 190, 11, 0.12);
+  --soft: rgba(212, 175, 55, 0.14);
   /* --- Acentos de interação - Paleta Coolors --- */
   --accent-violet: var(--coolors-purple);
   --accent-cyan: var(--coolors-blue);
   --pulse: var(--coolors-pink);
   /* Glow discreto no claro — "neon só no escuro" (regra do brief). Mesma fórmula de
      --shadow-glow-brand acima (20%, blur 15px), só trocando a cor de base. */
-  --shadow-glow-accent-violet-value: 0 0 15px -3px
-    color-mix(in srgb, var(--coolors-purple) 20%, transparent);
-  --shadow-glow-accent-cyan-value: 0 0 15px -3px
-    color-mix(in srgb, var(--coolors-blue) 20%, transparent);
+  --shadow-glow-accent-violet-value: 0 0 15px -3px color-mix(in srgb, var(--coolors-purple) 20%, transparent);
+  --shadow-glow-accent-cyan-value: 0 0 15px -3px color-mix(in srgb, var(--coolors-blue) 20%, transparent);
   --shadow-glow-pulse-value: 0 0 15px -3px color-mix(in srgb, var(--coolors-pink) 20%, transparent);
   /* Vermelho de estado crítico/risco (Comercial Inteligente: Centro de Decisão, Alertas, drill-down
      de negócios) — precisa ser redefinido por tema porque nenhum hex único passa 4.5:1 (WCAG AA)
@@ -373,11 +378,11 @@
   --font-brand-sans:
     "Inter", ui-rounded, -apple-system-subheadline, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, sans-serif;
-  --title-color-default: var(--color-heading-cyan, #0369a1);
-  --title-color-cyan: #0369a1;
-  --title-color-pink: #d91b7c;
-  --title-color-gold: #b45309;
-  --subtitle-color-default: #0369a1;
+  --title-color-default: var(--color-heading-cyan, #1668d8);
+  --title-color-cyan: #1668d8;
+  --title-color-pink: #db2777;
+  --title-color-gold: #b8962e;
+  --subtitle-color-default: #1668d8;
   --font-brand-display: "Sora", "Inter", system-ui, -apple-system, sans-serif;
   --font-brand-mono: "IBM Plex Mono", ui-monospace, monospace;
   --font-features-rounded: "cv05", "cv11", "ss01";
@@ -446,24 +451,20 @@
 
 /* Vancouver Plus Gradient Text */
 .text-gradient-coolors {
-  background: linear-gradient(
-    135deg,
-    var(--coolors-blue),
-    var(--coolors-purple),
-    var(--coolors-pink)
-  );
+  background: linear-gradient(135deg,
+      var(--coolors-blue),
+      var(--coolors-purple),
+      var(--coolors-pink));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
 .text-gradient-coolors-warm {
-  background: linear-gradient(
-    135deg,
-    var(--coolors-yellow),
-    var(--coolors-orange),
-    var(--coolors-pink)
-  );
+  background: linear-gradient(135deg,
+      var(--coolors-yellow),
+      var(--coolors-orange),
+      var(--coolors-pink));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -571,47 +572,48 @@
 
 .dark {
   /* Paleta Canônica de Títulos e Subtítulos — NUNCA BRANCO OU PRETO */
-  --title-color-default: #00d4ff;
-  --title-color-cyan: #00d4ff;
-  --title-color-pink: #ff2d9b;
-  --title-color-gold: #ffc107;
-  --subtitle-color-default: #70d6ff;
-  /* Paleta Oficial Neon — Dark Mode (0D0D0D fundo, 14141A cards, 70D6FF texto neon suave — SEM BRANCO OU PRETO) */
-  --bg: #0d0d0d;
-  --surface: #14141a;
-  --surface-2: #14141a;
-  --surface-subtle: #1c1c24;
-  --surface-elevated: #1f1f28;
-  --surface-interactive: #252530;
-  --overlay: rgba(13, 13, 13, 0.85);
-  --ink: #70d6ff;
-  --ink-2: #38bdf8;
-  --line: rgba(0, 212, 255, 0.18);
-  --soft: rgba(0, 212, 255, 0.12);
+  --title-color-default: #d4af37;
+  --title-color-cyan: #6ea8ff;
+  --title-color-pink: #ff4fa3;
+  --title-color-gold: #e3c565;
+  --subtitle-color-default: #9cc0ff;
+  /* Paleta Oficial Strategic Command Center — Dark Mode (Deep Navy #061A3A fundo,
+     superfícies derivadas, texto Blossom White/azul suave — SEM BRANCO OU PRETO PUROS) */
+  --bg: #061a3a;
+  --surface: #0e2450;
+  --surface-2: #122a58;
+  --surface-subtle: #0a1f45;
+  --surface-elevated: #16325f;
+  --surface-interactive: #1b3a6e;
+  --overlay: rgba(6, 26, 58, 0.85);
+  --ink: #fff4f9;
+  --ink-2: #9fb2d8;
+  --line: rgba(255, 244, 249, 0.14);
+  --soft: rgba(212, 175, 55, 0.16);
   /* Paleta Coolors - Dark mode versions */
-  --coolors-yellow: #ffc107;
+  --coolors-yellow: #d4af37;
   --coolors-orange: #ff6b35;
-  --coolors-pink: #ff2d9b;
-  --coolors-purple: #8b7dff;
-  --coolors-blue: #00d4ff;
+  --coolors-pink: #ff4fa3;
+  --coolors-purple: #a78bfa;
+  --coolors-blue: #5b9dff;
   /* Atualização de tokens oficiais */
-  --brand: #00d4ff;
-  --brand-2: #ff2d9b;
-  --iris: #8b7dff;
-  --orbit-blue: #00d4ff;
-  --red: #ef4444;
-  --pink: #ff2d9b;
-  --warn: #ffc107;
-  --gold: #ffc107;
-  /* Acentos de ícone da Sidebar, lado escuro: matizes neon vibrantes */
-  --nav-c-gold: #ffc107;
-  --nav-c-iris: #ff2d9b;
-  --nav-c-blue: #00d4ff;
-  --nav-c-red: #ff6b6b;
+  --brand: #d4af37;
+  --brand-2: #7c3aed;
+  --iris: #7c3aed;
+  --orbit-blue: #1677ff;
+  --red: #ff3158;
+  --pink: #ff4fa3;
+  --warn: #f59e0b;
+  --gold: #d4af37;
+  /* Acentos de ícone da Sidebar, lado escuro: matizes vibrantes da paleta oficial */
+  --nav-c-gold: #d4af37;
+  --nav-c-iris: #ff4fa3;
+  --nav-c-blue: #5b9dff;
+  --nav-c-red: #ff3158;
   --nav-c-green: #4ade80;
   --nav-c-violet: #c4b5fd;
   --nav-c-teal: #2dd4bf;
-  --nav-c-slate: #94a3b8;
+  --nav-c-slate: #8fa3c8;
   /* --ok cru (#0f9d64) sobre --surface-elevated escura mede 4.44:1 como texto de 12px, abaixo do
      mínimo AA de 4.5:1 (axe-core, "Volume de Leads" no Pipeline CRM). Clareado em ~14% rumo ao
      branco: 5.3:1. Mesmo padrão de --critical em .dark (hex cru + color-mix; o token do claro
@@ -691,7 +693,7 @@
      neste arquivo (ex.: --critical-active no escuro, 4.93:1). Clarear com branco (não escurecer com
      preto) porque no escuro a superfície de fundo já é escura — sentido oposto ao --critical-active
      dois blocos acima, mesmo raciocínio de "a mistura vai na direção contrária à do fundo". */
-  --info: color-mix(in srgb, #3b82f6 80%, white);
+  --info: color-mix(in srgb, #1677ff 80%, white);
   /* --info-active herda a correção acima de graça: já referencia var(--color-info), que por sua
      vez agora aponta pra --info (indireção adicionada no :root) — nenhuma mudança adicional
      necessária aqui. */
@@ -699,13 +701,13 @@
   --success-active: var(--color-success);
   --warning-active: var(--color-warning);
   --danger-active: var(--color-danger);
-  /* Só aqui --accent-violet/--accent-cyan divergem de --iris/--orbit-blue — versão vívida para
-     glow sobre superfície escura (contraste como texto verificado: 4.65:1 e 10.17:1 contra
-     --surface escura, cálculo de luminância relativa WCAG). --pulse também clareia para neon.
+  /* Só aqui --accent-violet/--accent-cyan divergem de --iris/--orbit-blue — versão clara o
+     suficiente para glow/texto sobre a superfície escura derivada de Deep Navy (QA visual
+     pendente para recalibrar se necessário). --pulse segue o vermelho oficial do tema escuro.
      --iris/--orbit-blue em si permanecem os mesmos do :root — nenhum outro componente muda. */
   --accent-violet: #8b5cf6;
-  --accent-cyan: #00e5ff;
-  --pulse: #ef4444;
+  --accent-cyan: #1677ff;
+  --pulse: #ff3158;
   /* Glow vívido, difuso (12-20px), duas camadas — só aqui, só hover/focus (nunca em repouso). */
   --shadow-glow-accent-violet-value:
     0 0 20px -2px color-mix(in srgb, var(--accent-violet) 55%, transparent),
@@ -723,35 +725,36 @@
   --font-display: var(--font-brand-display);
   --font-mono: var(--font-brand-mono);
 
-  /* Cores Neon Oficiais Birth Hub 360 — literais alinhados ao canônico
-     (identidade-visual/birthhub360/tokens + src/config/brand.ts). O azul de
-     leitura #70D6FF permanece apenas em --color-neon-text; official-identity.css
-     ainda sobrescreve estes tokens em runtime por tema. */
-  --color-neon-blue: #00d4ff;
-  --color-neon-pink: #ff2d9b;
-  --color-neon-gold: #ffc107;
-  --color-neon-black: #0d0d0d;
-  --color-neon-white: #f8f9ff;
-  --color-neon-text: #70d6ff;
-  --color-neon-card: #14141a;
-  --color-neon-border: rgba(0, 212, 255, 0.22);
+  /* Cores oficiais "Strategic Command Center" — literais alinhados ao canônico
+     (src/config/brand.ts). O azul de leitura suave permanece apenas em
+     --color-neon-text; official-identity.css ainda sobrescreve estes tokens em
+     runtime por tema. */
+  --color-neon-blue: #1677ff;
+  --color-neon-pink: #ff4fa3;
+  --color-neon-gold: #d4af37;
+  --color-neon-black: #061a3a;
+  --color-neon-white: #fff4f9;
+  --color-neon-text: #3b6fd4;
+  --color-neon-card: #0e2450;
+  --color-neon-border: rgba(22, 119, 255, 0.22);
 
-  /* Tons Light complementares — canônico: #D91B7C / #0284C7 / #D97706 */
-  --color-light-pink: #d91b7c;
-  --color-light-blue: #0284c7;
-  --color-light-gold: #d97706;
+  /* Tons Light complementares — paleta oficial: #DB2777 / #1668D8 / #B8962E */
+  --color-light-pink: #db2777;
+  --color-light-blue: #1668d8;
+  --color-light-gold: #b8962e;
 
-  /* Paleta oficial Birth Hub 360 */
-  --color-obsidian: #0d0d0d;
-  --color-midnight: #0d0d0d;
-  --color-sunset: #ef4444;
-  --color-red-violet: #ff2d9b;
-  --color-gold: #ffc107;
-  /* Branco/snow canônicos (#F8F9FF). official-identity.css já forçava estes
-     mesmos valores em runtime; o literal aqui deixou de divergir do token. */
-  --color-white: #f8f9ff;
-  --color-snow: #f8f9ff;
-  --color-parchment: #e9e4d9;
+  /* Paleta oficial Birth Hub 360 — Strategic Command Center */
+  --color-obsidian: #061a3a;
+  --color-midnight: #061a3a;
+  --color-sunset: #e11d48;
+  --color-red-violet: #7c3aed;
+  --color-gold: #d4af37;
+  /* Âncoras canônicas (Blossom White #FFF4F9 / Deep Navy #061A3A).
+     official-identity.css já forçava estes mesmos valores em runtime; o literal
+     aqui deixou de divergir do token. */
+  --color-white: #fff4f9;
+  --color-snow: #fff4f9;
+  --color-parchment: #f3e6ef;
   /* "Inteligência em movimento" — halos, indicadores, órbita. Não é fundo de
      botão: ver o comentário de --iris em :root. */
   --color-iris: var(--iris);
@@ -795,7 +798,7 @@
      declaração. */
   --color-info: var(--info);
 
-  /* Neutros do produto — ver :root/.dark acima (âncora Obsidian / Snow White) */
+  /* Neutros do produto — ver :root/.dark acima (âncora Deep Navy / Blossom White) */
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
@@ -816,15 +819,13 @@
   /* Cor de texto/ícone sobre superfície de marca sólida. Com a marca anterior
      (laranja escuro) o par era texto BRANCO, e --color-brand-active existia
      para escurecer o fundo até o branco passar 4.5:1. Com o Antique Gold a
-     direção se inverte: ouro é claro, branco em cima mede 2.10:1 e nunca passa
-     — o par correto (e o que o próprio brand book usa no CTA, p. 11) é
-     Obsidian sobre ouro, 8.74:1. Regra: `bg-brand` sempre com `text-on-brand`,
-     nunca com `text-white`. */
+     direção se inverte: ouro é claro, branco em cima mede ~2.1:1 e nunca passa
+     — o par correto é Deep Navy (#061A3A) sobre ouro (~8:1). Regra:
+     `bg-brand` sempre com `text-on-brand`, nunca com `text-white`. */
   --color-on-brand: var(--on-brand);
-  /* Estado hover/pressed da superfície de marca — ouro um degrau mais escuro,
-     ainda com Obsidian legível em cima (6.37:1 calculado). Não confundir com o
-     --color-brand-active anterior, que servia ao propósito oposto (escurecer o
-     suficiente para o texto BRANCO passar). */
+  /* Estado hover/pressed da superfície de marca — ouro um degrau mais escuro
+     (color-mix 85% + preto), ainda com Deep Navy legível em cima. Não confundir
+     com o --color-brand-active anterior, que servia ao propósito oposto. */
   --color-brand-active: color-mix(in srgb, var(--brand) 85%, black);
   /* Versão escurecida de --brand para uso como TEXTO sobre superfície clara:
      ouro cru sobre --surface branca mede 2.10:1. Idioma já usado no resto do
@@ -978,6 +979,7 @@
   }
 
   @keyframes float {
+
     0%,
     100% {
       transform: translateY(0);
@@ -989,6 +991,7 @@
   }
 
   @keyframes pulse-glow {
+
     0%,
     100% {
       filter: drop-shadow(0 0 12px color-mix(in srgb, var(--brand) 25%, transparent));
@@ -1000,6 +1003,7 @@
   }
 
   @keyframes gradient-xy {
+
     0%,
     100% {
       background-position: 0% 50%;
@@ -1047,6 +1051,7 @@
   }
 
   @keyframes pulse-slow {
+
     0%,
     100% {
       opacity: 0.6;
@@ -1079,16 +1084,12 @@
     -webkit-font-smoothing: antialiased;
     background-color: var(--bg);
     background-image:
-      radial-gradient(
-        at 0% 0%,
+      radial-gradient(at 0% 0%,
         color-mix(in srgb, var(--brand) 10%, transparent) 0px,
-        transparent 50%
-      ),
-      radial-gradient(
-        at 100% 100%,
+        transparent 50%),
+      radial-gradient(at 100% 100%,
         color-mix(in srgb, var(--brand-2) 10%, transparent) 0px,
-        transparent 50%
-      );
+        transparent 50%);
     background-attachment: fixed;
     color: var(--ink);
   }
@@ -1439,19 +1440,18 @@
 }
 
 @layer utilities {
+
   /* Órbita 360º de assinatura (dourado → vermelho → rosa → íris → azul) — atualização 09/2026 da
      órbita de 3 cores (dourado → íris → azul) para as 5 cores da nova direção. Reservada a
      halo/borda/hero por regra da marca (CLAUDE.md, seção 4, regra #3): nunca fundo de superfície
      com texto em cima, no máximo uma por composição. */
   .bg-gradient-orbit5 {
-    background-image: linear-gradient(
-      100deg,
-      var(--brand) 0%,
-      var(--red) 26%,
-      var(--pink) 48%,
-      var(--iris) 70%,
-      var(--orbit-blue) 100%
-    );
+    background-image: linear-gradient(100deg,
+        var(--brand) 0%,
+        var(--red) 26%,
+        var(--pink) 48%,
+        var(--iris) 70%,
+        var(--orbit-blue) 100%);
   }
 
   .text-gradient-brand {
@@ -1461,12 +1461,10 @@
   }
 
   .shimmer-bg {
-    background: linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.08) 50%,
-      rgba(255, 255, 255, 0) 100%
-    );
+    background: linear-gradient(90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.08) 50%,
+        rgba(255, 255, 255, 0) 100%);
     background-size: 200% 100%;
     animation: shimmer 2.5s infinite linear;
   }
@@ -1534,40 +1532,32 @@
 
   /* Shimmer dos skeletons */
   .bh-skeleton-shimmer {
-    background: linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--surface-2) 100%, transparent) 0%,
-      color-mix(in srgb, var(--surface-2) 60%, var(--surface)) 50%,
-      color-mix(in srgb, var(--surface-2) 100%, transparent) 100%
-    );
+    background: linear-gradient(90deg,
+        color-mix(in srgb, var(--surface-2) 100%, transparent) 0%,
+        color-mix(in srgb, var(--surface-2) 60%, var(--surface)) 50%,
+        color-mix(in srgb, var(--surface-2) 100%, transparent) 100%);
     background-size: 200% 100%;
     animation: shimmer 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 
   /* Padrões geométricos de atmosfera (60°) */
   .bh-pattern-diagonal-60 {
-    background-image: repeating-linear-gradient(
-      60deg,
-      transparent,
-      transparent 28px,
-      color-mix(in srgb, var(--brand) 4%, transparent) 28px,
-      color-mix(in srgb, var(--brand) 4%, transparent) 29px
-    );
+    background-image: repeating-linear-gradient(60deg,
+        transparent,
+        transparent 28px,
+        color-mix(in srgb, var(--brand) 4%, transparent) 28px,
+        color-mix(in srgb, var(--brand) 4%, transparent) 29px);
   }
 
   .bh-pattern-grid {
     background-size: 32px 32px;
     background-image:
-      linear-gradient(
-        to right,
+      linear-gradient(to right,
         color-mix(in srgb, var(--line) 40%, transparent) 1px,
-        transparent 1px
-      ),
-      linear-gradient(
-        to bottom,
+        transparent 1px),
+      linear-gradient(to bottom,
         color-mix(in srgb, var(--line) 40%, transparent) 1px,
-        transparent 1px
-      );
+        transparent 1px);
   }
 }
 
@@ -1580,6 +1570,7 @@
    árvore de rotas. Verificado na Onda 8: comentário anterior citava isso como backlog pendente,
    mas o MotionConfig já estava implementado — só o comentário estava desatualizado. */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -1672,12 +1663,10 @@
 /* Vancouver Plus Typography & Text Gradient */
 .vancouver-gradient-text,
 .gradient-text {
-  background-image: linear-gradient(
-    135deg,
-    var(--brand) 0%,
-    var(--iris) 50%,
-    var(--orbit-blue) 100%
-  );
+  background-image: linear-gradient(135deg,
+      var(--brand) 0%,
+      var(--iris) 50%,
+      var(--orbit-blue) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -1879,43 +1868,35 @@
    ============================================================ */
 
 /* Display font dos títulos — continua imposto sobre utilities .font-* */
-html
-  body
-  :is(
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6,
-    [role="heading"],
-    .font-display,
-    [class*="title" i],
-    [class*="Title"]
-  ) {
+html body :is(h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  [role="heading"],
+  .font-display,
+  [class*="title" i],
+  [class*="Title"]) {
   font-family: var(--font-brand-display);
 }
 
 /* Sobrescrever qualquer classe utilitária de branco ou preto quando aplicada a títulos */
-html
-  body
-  :is(h1, h2, h3, h4, h5, h6, [role="heading"], [class*="title" i], [class*="Title"]):is(
-    .text-white,
-    .text-black,
-    .text-ink,
-    .text-slate-900,
-    .text-slate-950,
-    .text-gray-900,
-    .text-gray-950,
-    .text-zinc-900,
-    .text-neutral-900,
-    .dark\:text-white,
-    .dark\:text-white\/90,
-    .text-white\/90,
-    .text-white\/80,
-    .text-gray-800,
-    .text-slate-800
-  ) {
+html body :is(h1, h2, h3, h4, h5, h6, [role="heading"], [class*="title" i], [class*="Title"]):is(.text-white,
+  .text-black,
+  .text-ink,
+  .text-slate-900,
+  .text-slate-950,
+  .text-gray-900,
+  .text-gray-950,
+  .text-zinc-900,
+  .text-neutral-900,
+  .dark\:text-white,
+  .dark\:text-white\/90,
+  .text-white\/90,
+  .text-white\/80,
+  .text-gray-800,
+  .text-slate-800) {
   color: var(--title-color-default);
 }
 
@@ -1936,55 +1917,45 @@ html body :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).text-neon-blue {
 }
 
 /* Subtítulos: NUNCA brancos e NUNCA pretos */
-html
-  body
-  :is(
-    [class*="subtitle" i],
-    [class*="Subtitle"],
-    .text-subtitle,
-    .card-subtitle,
-    [data-slot="description"],
-    header p,
-    .page-subtitle
-  ) {
+html body :is([class*="subtitle" i],
+  [class*="Subtitle"],
+  .text-subtitle,
+  .card-subtitle,
+  [data-slot="description"],
+  header p,
+  .page-subtitle) {
   color: var(--subtitle-color-default);
 }
 
 /* Subtítulos que seguem imediatamente um cabeçalho */
-html body :is(h1, h2, h3, h4, h5, h6) + p {
+html body :is(h1, h2, h3, h4, h5, h6)+p {
   color: var(--subtitle-color-default);
 }
 
-html
-  body
-  :is(
-    [class*="subtitle" i],
-    [class*="Subtitle"],
-    .text-subtitle,
-    .card-subtitle,
-    [data-slot="description"],
-    header p,
-    .page-subtitle,
-    :is(h1, h2, h3, h4, h5, h6) + p
-  ):is(
-    .text-white,
-    .text-black,
-    .text-ink,
-    .text-ink-2,
-    .text-slate-900,
-    .text-gray-900,
-    .text-zinc-900,
-    .text-neutral-900,
-    .dark\:text-white,
-    .text-white\/60,
-    .text-white\/70,
-    .text-white\/80,
-    .text-white\/90,
-    .text-gray-400,
-    .text-gray-500,
-    .text-slate-400,
-    .text-slate-500,
-    .text-muted-foreground
-  ) {
+html body :is([class*="subtitle" i],
+  [class*="Subtitle"],
+  .text-subtitle,
+  .card-subtitle,
+  [data-slot="description"],
+  header p,
+  .page-subtitle,
+  :is(h1, h2, h3, h4, h5, h6) + p):is(.text-white,
+  .text-black,
+  .text-ink,
+  .text-ink-2,
+  .text-slate-900,
+  .text-gray-900,
+  .text-zinc-900,
+  .text-neutral-900,
+  .dark\:text-white,
+  .text-white\/60,
+  .text-white\/70,
+  .text-white\/80,
+  .text-white\/90,
+  .text-gray-400,
+  .text-gray-500,
+  .text-slate-400,
+  .text-slate-500,
+  .text-muted-foreground) {
   color: var(--subtitle-color-default);
 }

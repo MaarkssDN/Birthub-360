@@ -114,7 +114,7 @@ export function ModuleRail({ panelCollapsed, onTogglePanel }: ModuleRailProps) {
         <BirthHubLogo
           variant="mark"
           animated={false}
-          className="h-6 w-6 drop-shadow-[0_0_10px_rgba(0,212,255,0.5)]"
+          className="h-6 w-6 drop-shadow-[0_0_10px_color-mix(in_srgb,var(--orbit-blue)_50%,transparent)]"
         />
       </button>
 

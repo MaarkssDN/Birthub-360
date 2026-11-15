@@ -34,7 +34,7 @@ export function LuxuryHeaderHUD({ onOpenPrivateAccess }: LuxuryHeaderHUDProps) {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'py-3 bg-[#0D0D0D]/85 backdrop-blur-xl border-b border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.6)]'
+          ? 'py-3 bg-[var(--bg)]/85 backdrop-blur-xl border-b border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.6)]'
           : 'py-6 bg-transparent'
       }`}
     >
@@ -44,12 +44,12 @@ export function LuxuryHeaderHUD({ onOpenPrivateAccess }: LuxuryHeaderHUDProps) {
           <Link
             to="/"
             onClick={() => SoundFX.play('navigate')}
-            className="flex items-center gap-3.5 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00D4FF] rounded-lg"
+            className="flex items-center gap-3.5 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--orbit-blue)] rounded-lg"
           >
             <BirthHubLogo variant="symbol" className="h-[34px] w-[34px]" />
             <div className="flex flex-col">
-              <span className="font-extrabold text-base tracking-tight text-[#F8F9FF] group-hover:text-[#00D4FF] transition-colors">
-                BIRTH HUB <span className="text-[#FFC107]">360º</span>
+              <span className="font-extrabold text-base tracking-tight text-[var(--ink)] group-hover:text-[var(--orbit-blue)] transition-colors">
+                BIRTH HUB <span className="text-[var(--gold)]">360º</span>
               </span>
               <span className="font-mono text-[10px] tracking-widest text-[#9EADC8] uppercase -mt-0.5">
                 Central de Comando
@@ -62,22 +62,22 @@ export function LuxuryHeaderHUD({ onOpenPrivateAccess }: LuxuryHeaderHUDProps) {
             <div className="flex items-center gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-[#22C55E] animate-pulse" />
               <span className="font-mono text-xs text-[#9EADC8]">
-                CORE: <span className="text-[#F8F9FF] font-semibold">ONLINE</span>
+                CORE: <span className="text-[var(--ink)] font-semibold">ONLINE</span>
               </span>
             </div>
             <span className="text-white/20 text-xs">|</span>
             <div className="flex items-center gap-1.5">
-              <Shield className="w-3.5 h-3.5 text-[#00D4FF]" />
+              <Shield className="w-3.5 h-3.5 text-[var(--orbit-blue)]" />
               <span className="font-mono text-xs text-[#9EADC8]">
-                RLS: <span className="text-[#00D4FF] font-semibold">100% ISOLADO</span>
+                RLS: <span className="text-[var(--orbit-blue)] font-semibold">100% ISOLADO</span>
               </span>
             </div>
             <span className="text-white/20 text-xs">|</span>
             <div className="flex items-center gap-1.5">
-              <Terminal className="w-3.5 h-3.5 text-[#FFC107]" />
+              <Terminal className="w-3.5 h-3.5 text-[var(--gold)]" />
               <span className="font-mono text-xs text-[#9EADC8]">
                 LATÊNCIA:{' '}
-                <span className="text-[#FFC107] font-semibold font-mono">{latency}ms</span>
+                <span className="text-[var(--gold)] font-semibold font-mono">{latency}ms</span>
               </span>
             </div>
           </div>
@@ -88,28 +88,28 @@ export function LuxuryHeaderHUD({ onOpenPrivateAccess }: LuxuryHeaderHUDProps) {
               <a
                 href="#tese"
                 onPointerDown={() => SoundFX.play('focus')}
-                className="hover:text-[#00D4FF] transition-colors focus:outline-none focus-visible:text-[#00D4FF]"
+                className="hover:text-[var(--orbit-blue)] transition-colors focus:outline-none focus-visible:text-[var(--orbit-blue)]"
               >
                 A Tese
               </a>
               <a
                 href="#orbita"
                 onPointerDown={() => SoundFX.play('focus')}
-                className="hover:text-[#FFC107] transition-colors focus:outline-none focus-visible:text-[#FFC107]"
+                className="hover:text-[var(--gold)] transition-colors focus:outline-none focus-visible:text-[var(--gold)]"
               >
                 Órbita 360º
               </a>
               <a
                 href="#motor"
                 onPointerDown={() => SoundFX.play('focus')}
-                className="hover:text-[#FF2D9B] transition-colors focus:outline-none focus-visible:text-[#FF2D9B]"
+                className="hover:text-[var(--pink)] transition-colors focus:outline-none focus-visible:text-[var(--pink)]"
               >
                 Enxame IA
               </a>
               <a
                 href="#metricas"
                 onPointerDown={() => SoundFX.play('focus')}
-                className="hover:text-[#F8F9FF] transition-colors focus:outline-none focus-visible:text-[#F8F9FF]"
+                className="hover:text-[var(--ink)] transition-colors focus:outline-none focus-visible:text-[var(--ink)]"
               >
                 Métricas
               </a>

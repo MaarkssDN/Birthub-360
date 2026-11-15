@@ -156,7 +156,7 @@ export const KanbanCard = React.memo(function KanbanCard({
           type="button"
           onClick={handleCheckboxClick}
           aria-label={isSelected ? `Desmarcar ${companyName}` : `Selecionar ${companyName}`}
-          className="absolute top-3 left-3 z-20 grid h-7 w-7 place-items-center rounded-full border border-line bg-surface text-ink-2 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+          className="absolute top-3 left-3 z-20 grid h-10 w-10 place-items-center rounded-full border border-line bg-surface text-ink-2 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
         >
           {isSelected ? (
             <CheckSquare className="w-4 h-4 text-brand fill-brand/20" />

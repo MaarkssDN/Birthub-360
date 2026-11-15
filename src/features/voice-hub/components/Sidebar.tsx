@@ -241,7 +241,7 @@ export function Sidebar() {
   ];
 
   return (
-    <div className="w-64 bg-white/95 dark:bg-[#0c121e]/95 text-slate-800 dark:text-slate-200 h-screen flex flex-col p-4 shrink-0 overflow-y-auto border-r border-slate-200/80 dark:border-slate-800/80 shadow-[4px_0_24px_rgba(0,0,0,0.03)] dark:shadow-[4px_0_24px_rgba(0,0,0,0.25)] backdrop-blur-2xl relative select-none">
+    <div className="w-64 bg-white/95 dark:bg-[var(--surface)]/95 text-slate-800 dark:text-slate-200 h-screen flex flex-col p-4 shrink-0 overflow-y-auto border-r border-slate-200/80 dark:border-slate-800/80 shadow-[4px_0_24px_rgba(0,0,0,0.03)] dark:shadow-[4px_0_24px_rgba(0,0,0,0.25)] backdrop-blur-2xl relative select-none">
       {/* Brand Header */}
       <div className="mb-4 flex items-center justify-between px-2">
         <div className="flex items-center gap-3">
@@ -251,11 +251,11 @@ export function Sidebar() {
           <div className="text-left">
             <h1 className="text-base font-extrabold leading-none tracking-tight text-slate-900 dark:text-white">
               Birth Hub{' '}
-              <span className="text-[#0369a1] dark:text-[#00D4FF] drop-shadow-[0_0_8px_rgba(0,212,255,0.4)]">
+              <span className="text-[#0369a1] dark:text-[var(--orbit-blue)] drop-shadow-[0_0_8px_color-mix(in_srgb,var(--orbit-blue)_40%,transparent)]">
                 360
               </span>
             </h1>
-            <span className="text-[9.5px] text-[#0369a1] dark:text-[#00D4FF] uppercase font-mono font-bold tracking-wider">
+            <span className="text-[9.5px] text-[#0369a1] dark:text-[var(--orbit-blue)] uppercase font-mono font-bold tracking-wider">
               Voice Enterprise
             </span>
           </div>
@@ -268,7 +268,7 @@ export function Sidebar() {
       <button
         type="button"
         onClick={triggerSearch}
-        className="mb-4 flex items-center justify-between gap-2 px-3 py-2 bg-slate-100/80 dark:bg-white/[0.04] hover:bg-slate-200/80 dark:hover:bg-white/[0.08] text-slate-600 dark:text-slate-300 rounded-xl text-xs transition-all border border-slate-200/80 dark:border-white/[0.08] text-left cursor-pointer shadow-sm hover:scale-[1.01] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D4FF]"
+        className="mb-4 flex items-center justify-between gap-2 px-3 py-2 bg-slate-100/80 dark:bg-white/[0.04] hover:bg-slate-200/80 dark:hover:bg-white/[0.08] text-slate-600 dark:text-slate-300 rounded-xl text-xs transition-all border border-slate-200/80 dark:border-white/[0.08] text-left cursor-pointer shadow-sm hover:scale-[1.01] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orbit-blue"
       >
         <div className="flex items-center gap-2">
           <Search className="h-3.5 w-3.5 text-slate-400" />

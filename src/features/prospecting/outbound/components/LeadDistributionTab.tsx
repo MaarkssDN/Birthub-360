@@ -34,7 +34,7 @@ interface LeadDistributionTabProps {
 const STAGE_LABELS: Record<string, { label: string; className: string }> = {
   prospecto: {
     label: 'Prospecto (Novo)',
-    className: 'bg-[#008FCE]/10 text-[#008FCE] border-[#008FCE]/30',
+    className: 'bg-[var(--orbit-blue)]/10 text-[var(--orbit-blue)] border-[var(--orbit-blue)]/30',
   },
   qualificado: {
     label: 'Qualificado',
@@ -109,7 +109,7 @@ export function LeadDistributionTab({ isDark }: LeadDistributionTabProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Users className={`w-5 h-5 ${isDark ? 'text-slate-300' : 'text-slate-700'}`} />
-          <h2 className={`text-xl font-bold ${isDark ? 'text-[#F8F9FF]' : 'text-slate-800'}`}>
+          <h2 className={`text-xl font-bold ${isDark ? 'text-[var(--ink)]' : 'text-slate-800'}`}>
             Distribuição de Leads por Vendedor
           </h2>
         </div>
@@ -154,7 +154,7 @@ export function LeadDistributionTab({ isDark }: LeadDistributionTabProps) {
                     >
                       <div>
                         <p
-                          className={`font-semibold text-sm ${isDark ? 'text-[#F8F9FF]' : 'text-slate-800'}`}
+                          className={`font-semibold text-sm ${isDark ? 'text-[var(--ink)]' : 'text-slate-800'}`}
                         >
                           {user.name}
                         </p>

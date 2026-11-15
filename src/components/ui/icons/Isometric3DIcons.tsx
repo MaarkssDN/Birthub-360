@@ -22,7 +22,7 @@ export function Trophy3DIcon({ size = 40, className, animate = true, ...props }:
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={cn(
-        'shrink-0 transition-all duration-300 hover:drop-shadow-[0_8px_16px_rgba(212,175,55,0.35)]',
+        'shrink-0 transition-all duration-300 hover:drop-shadow-[0_8px_16px_color-mix(in_srgb,var(--brand)_35%,transparent)]',
         className,
       )}
       whileHover={shouldAnimate ? { scale: 1.1, rotateY: 15 } : undefined}
@@ -137,7 +137,7 @@ export function Gem3DIcon({ size = 40, className, animate = true, ...props }: Ic
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={cn(
-        'shrink-0 transition-all duration-300 hover:drop-shadow-[0_8px_18px_rgba(22,119,255,0.4)]',
+        'shrink-0 transition-all duration-300 hover:drop-shadow-[0_8px_18px_color-mix(in_srgb,var(--orbit-blue)_40%,transparent)]',
         className,
       )}
       whileHover={shouldAnimate ? { scale: 1.12, rotate: 6 } : undefined}
@@ -297,7 +297,7 @@ export function ShieldSecurityIcon({
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={cn(
-        'shrink-0 transition-all duration-300 hover:drop-shadow-[0_8px_16px_rgba(212,175,55,0.3)]',
+        'shrink-0 transition-all duration-300 hover:drop-shadow-[0_8px_16px_color-mix(in_srgb,var(--brand)_30%,transparent)]',
         className,
       )}
       whileHover={shouldAnimate ? { scale: 1.1 } : undefined}

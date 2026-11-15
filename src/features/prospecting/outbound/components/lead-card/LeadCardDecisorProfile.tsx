@@ -33,7 +33,7 @@ export function LeadCardDecisorProfile({
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-sm text-slate-800 dark:text-[#F8F9FF] truncate">
+          <span className="font-semibold text-sm text-slate-800 dark:text-[var(--ink)] truncate">
             {name || 'Decisor não identificado'}
           </span>
           {linkedinUrl && (
@@ -51,12 +51,12 @@ export function LeadCardDecisorProfile({
           )}
         </div>
 
-        <p className="text-xs text-slate-500 dark:text-[#F8F9FF]/60 truncate">
+        <p className="text-xs text-slate-500 dark:text-[var(--ink)]/60 truncate">
           {title || 'Cargo não especificado'}
         </p>
       </div>
 
-      <div className="flex items-center gap-2 text-slate-400 dark:text-[#F8F9FF]/40">
+      <div className="flex items-center gap-2 text-slate-400 dark:text-[var(--ink)]/40">
         {phone && (
           <span title={phone} className="inline-flex items-center">
             <Phone className="w-3.5 h-3.5 text-emerald-500" />

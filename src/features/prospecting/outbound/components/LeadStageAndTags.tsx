@@ -42,11 +42,11 @@ export const STAGE_CONFIG: {
     label: 'Prospecto (Novo)',
     description: 'Lead recém-prospectado aguardando primeiro contato.',
     color: 'orange',
-    bgDark: 'bg-[#008FCE]/15',
+    bgDark: 'bg-[var(--orbit-blue)]/15',
     bgLight: 'bg-slate-100',
-    borderDark: 'border-[#008FCE]/40',
-    borderLight: 'border-[#93DBF2]',
-    textColor: 'text-[#93DBF2]',
+    borderDark: 'border-[var(--orbit-blue)]/40',
+    borderLight: 'border-[var(--orbit-blue)]',
+    textColor: 'text-[var(--orbit-blue)]',
     icon: <Clock className="w-3 h-3" />,
   },
   qualificado: {
@@ -447,7 +447,7 @@ export const LeadStageAndTags: React.FC<LeadStageAndTagsProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsTagPopoverOpen(false)}
-                  className="hover:text-[#F8F9FF]"
+                  className="hover:text-[var(--ink)]"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -468,7 +468,7 @@ export const LeadStageAndTags: React.FC<LeadStageAndTagsProps> = ({
                   placeholder="Nova tag personalizada..."
                   className={`w-full px-2.5 py-1 text-xs rounded-lg border outline-none ${
                     isDark
-                      ? 'bg-slate-950 border-slate-700 text-[#F8F9FF] placeholder-slate-500 focus:border-[var(--brand-primary)]'
+                      ? 'bg-slate-950 border-slate-700 text-[var(--ink)] placeholder-slate-500 focus:border-[var(--brand-primary)]'
                       : 'bg-slate-50 border-slate-300 text-slate-800 placeholder-slate-400 focus:border-[var(--brand-primary)]'
                   }`}
                 />
@@ -476,7 +476,7 @@ export const LeadStageAndTags: React.FC<LeadStageAndTagsProps> = ({
                   type="button"
                   onClick={() => handleAddTag(customTagInput)}
                   disabled={!customTagInput.trim()}
-                  className="px-2 py-1 bg-[var(--brand-primary)] hover:bg-[#e04a12] disabled:opacity-50 text-[#F8F9FF] rounded-lg text-xs font-bold transition"
+                  className="px-2 py-1 bg-[var(--brand-primary)] hover:bg-[var(--brand)] disabled:opacity-50 text-[var(--ink)] rounded-lg text-xs font-bold transition"
                 >
                   OK
                 </button>

@@ -11,7 +11,7 @@ interface SpotlightCardProps {
 export function SpotlightCard({
   children,
   className = '',
-  glowColor = 'rgba(0, 212, 255, 0.22)',
+  glowColor = 'color-mix(in srgb, var(--orbit-blue) 22%, transparent)',
   onClick,
 }: SpotlightCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -53,7 +53,7 @@ export function SpotlightCard({
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`relative rounded-2xl bg-[#14141A] border border-white/[0.08] overflow-hidden transition-all duration-300 ${className}`}
+      className={`relative rounded-2xl bg-[var(--surface)] border border-white/[0.08] overflow-hidden transition-all duration-300 ${className}`}
     >
       {/* Luz cáustica pontual reativa ao cursor (Spotlight Beam) */}
       <div

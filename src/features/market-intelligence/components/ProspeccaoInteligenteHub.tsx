@@ -165,7 +165,7 @@ export function ProspeccaoInteligenteHub() {
           <div className="flex gap-2">
             <Link
               to="/app/prospect"
-              className="inline-flex items-center h-8 px-3 text-xs font-semibold rounded-xl bg-[#8B7DFF] text-[#13151A]"
+              className="inline-flex items-center h-8 px-3 text-xs font-semibold rounded-xl bg-iris text-on-brand"
             >
               <Plus className="w-4 h-4 mr-2" /> Nova busca B2B
             </Link>
@@ -309,7 +309,7 @@ export function ProspeccaoInteligenteHub() {
                     description="Aprove contas pelo LDR ou descubra no Hub de Prospecção. Esta tela não inventa empresas."
                     actionLabel="Abrir LDR"
                     onAction={() => window.location.assign('/app/market-intelligence')}
-                    icon={<Building2 className="w-8 h-8 text-[#8B7DFF]" />}
+                    icon={<Building2 className="w-8 h-8 text-iris" />}
                   />
                 ) : (
                   companies.map((co) => (
@@ -336,7 +336,7 @@ export function ProspeccaoInteligenteHub() {
                         ) : null}
                         <Link
                           to={`/app/market-intelligence/accounts/${co.id}`}
-                          className="inline-flex items-center h-8 px-3 text-xs font-semibold rounded-xl bg-[#8B7DFF] text-[#13151A]"
+                          className="inline-flex items-center h-8 px-3 text-xs font-semibold rounded-xl bg-iris text-on-brand"
                         >
                           Account 360
                         </Link>
@@ -377,7 +377,7 @@ export function ProspeccaoInteligenteHub() {
                       description="Não há contatos persistidos para esta organização, ou o filtro não encontrou coincidências. Rode uma busca B2B real no Hub de Prospecção — esta tela não preenche nomes fictícios."
                       actionLabel="Ir para Hub de Prospecção"
                       onAction={() => window.location.assign('/app/prospect')}
-                      icon={<Users className="w-8 h-8 text-[#8B7DFF]" />}
+                      icon={<Users className="w-8 h-8 text-iris" />}
                     />
                   </div>
                 ) : (
@@ -415,7 +415,7 @@ export function ProspeccaoInteligenteHub() {
                           <TableCell className="text-right">
                             <Link
                               to="/app/prospect"
-                              className="inline-flex items-center h-8 px-3 text-xs font-semibold rounded-xl bg-[#8B7DFF] text-[#13151A]"
+                              className="inline-flex items-center h-8 px-3 text-xs font-semibold rounded-xl bg-iris text-on-brand"
                             >
                               Abrir Hub
                             </Link>

@@ -223,8 +223,8 @@
 
 /* Footer card iris glow on hover */
 .bh-sidebar-footer-card:hover {
-  border-color: var(--iris, #8b7dff);
-  background: color-mix(in srgb, var(--iris, #8b7dff) 4%, var(--surface));
+  border-color: var(--iris);
+  background: color-mix(in srgb, var(--iris) 4%, var(--surface));
 }
 
 .dark .bh-sidebar-footer-card:hover {

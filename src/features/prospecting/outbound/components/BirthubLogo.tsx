@@ -65,7 +65,7 @@ export const BirthubLogo: React.FC<BirthubLogoProps> = ({
             >
               Birth Hub 360
             </span>
-            <span className="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-[#FF5618]/20 text-[#FF5618] border border-[#FF5618]/30">
+            <span className="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-[var(--brand)]/20 text-[var(--brand)] border border-[var(--brand)]/30">
               AI
             </span>
           </div>

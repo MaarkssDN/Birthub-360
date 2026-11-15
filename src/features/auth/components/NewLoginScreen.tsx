@@ -360,9 +360,9 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
               title={theme === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro'}
             >
               {theme === 'dark' ? (
-                <Sun className="w-4 h-4 text-[#F59E0B]" />
+                <Sun className="w-4 h-4 text-[var(--color-heading-gold)]" />
               ) : (
-                <Moon className="w-4 h-4 text-[#00D4FF]" />
+                <Moon className="w-4 h-4 text-[var(--color-heading-cyan)]" />
               )}
             </button>
             <button
@@ -406,7 +406,7 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
           </div>
 
           {/* Título Principal Vancouver Plus com Texto em Gradiente */}
-          <h1 className="font-display text-4xl sm:text-6xl font-extrabold tracking-tight text-[#0284C7] dark:text-[#00D4FF] leading-[1.12] flex items-center justify-center gap-4">
+          <h1 className="font-display text-4xl sm:text-6xl font-extrabold tracking-tight text-[var(--color-heading-cyan)] leading-[1.12] flex items-center justify-center gap-4">
             <HeroTitleIcon size={44} />
             <span>
               <span className="vancouver-gradient-text">Personalizado</span> para Gerenciar Toda sua
@@ -415,7 +415,7 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
           </h1>
 
           {/* Subtítulo */}
-          <p className="max-w-3xl mx-auto text-base sm:text-lg text-[#475569] dark:text-[#70D6FF] leading-relaxed font-sans">
+          <p className="max-w-3xl mx-auto text-base sm:text-lg text-ink-2 dark:text-[var(--title-color-cyan)] leading-relaxed font-sans">
             Opere com previsibilidade, segurança e inteligência artificial em um dashboard intuitivo
             e integrado de ponta a ponta. Projetado para transformar dados brutos em decisões que
             fecham negócios.
@@ -533,10 +533,10 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 p-5 rounded-2xl border border-line bg-surface space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-display text-sm font-bold text-[#0369A1] dark:text-[#00D4FF]">
+                    <h3 className="font-display text-sm font-bold text-[var(--color-heading-cyan)]">
                       Fluxo de Negociação Unificado (CRM)
                     </h3>
-                    <span className="text-xs text-[#0369A1] dark:text-[#00D4FF] font-bold">
+                    <span className="text-xs text-[var(--color-heading-cyan)] font-bold">
                       Tempo Real
                     </span>
                   </div>
@@ -586,7 +586,7 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
                 <div className="p-5 rounded-2xl border border-purple-200 bg-purple-50/50 space-y-3">
                   <div className="flex items-center gap-2 text-purple-700">
                     <BrainCircuit className="w-4 h-4" />
-                    <h3 className="font-display text-sm font-bold text-[#A855F7] dark:text-[#FF2D9B]">
+                    <h3 className="font-display text-sm font-bold text-[var(--color-heading-iris)] dark:text-[var(--color-heading-pink)]">
                       Motor IA &amp; Diagnóstico
                     </h3>
                   </div>
@@ -607,7 +607,7 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
 
           {/* Logo Grid das Tecnologias Integradas */}
           <div className="mt-16 text-center space-y-4">
-            <p className="text-xs font-mono uppercase tracking-widest text-[#0369A1] dark:text-[#00D4FF]">
+            <p className="text-xs font-mono uppercase tracking-widest text-[var(--color-heading-cyan)]">
               Conectado via APIs e webhooks com os principais ecossistemas corporativos
             </p>
             <div className="vancouver-logo-grid">
@@ -633,13 +633,13 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
       >
         <div className="max-w-6xl mx-auto space-y-20">
           <div className="text-center max-w-3xl mx-auto space-y-4">
-            <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-[#0284C7] dark:text-[#00D4FF] flex items-center justify-center gap-3">
+            <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-[var(--color-heading-cyan)] flex items-center justify-center gap-3">
               <PlatformSectionIcon size={32} />
               <span>
                 Ajudamos você a gerenciar de ponta a ponta, todas as camadas da sua receita.
               </span>
             </h2>
-            <p className="text-base text-[#475569] dark:text-[#70D6FF]">
+            <p className="text-base text-ink-2 dark:text-[var(--title-color-cyan)]">
               Da inteligência de mercado à orquestração de cadências e previsão probabilística de
               fechamento.
             </p>
@@ -648,11 +648,11 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
           {/* Bloco 1: Gestão Holística */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
-              <h3 className="font-display text-2xl font-bold text-[#0284C7] dark:text-[#00D4FF] flex items-center gap-2.5">
+              <h3 className="font-display text-2xl font-bold text-[var(--color-heading-cyan)] flex items-center gap-2.5">
                 <FlowSectionIcon size={24} />
                 <span>Gestão Estratégica para Visão Holística da Receita</span>
               </h3>
-              <p className="text-sm text-[#475569] dark:text-[#70D6FF] leading-relaxed">
+              <p className="text-sm text-ink-2 dark:text-[var(--title-color-cyan)] leading-relaxed">
                 Centralize o pipeline e acompanhe em tempo real onde estão as melhores
                 oportunidades, eliminando planilhas fragmentadas e dados desatualizados.
               </p>
@@ -748,11 +748,11 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
             </div>
 
             <div className="order-1 lg:order-2 space-y-6">
-              <h3 className="font-display text-2xl font-bold text-[#0284C7] dark:text-[#00D4FF] flex items-center gap-2.5">
+              <h3 className="font-display text-2xl font-bold text-[var(--color-heading-cyan)] flex items-center gap-2.5">
                 <AutomationSectionIcon size={24} />
                 <span>Microgestão de Cada Dado Sem Gargalos Operacionais</span>
               </h3>
-              <p className="text-sm text-[#475569] dark:text-[#70D6FF] leading-relaxed">
+              <p className="text-sm text-ink-2 dark:text-[var(--title-color-cyan)] leading-relaxed">
                 Elimine o trabalho manual e o atrito na passagem de bastão entre pré-vendas (SDR),
                 vendas e pós-vendas com automações precisas e inteligência contextual.
               </p>
@@ -790,11 +790,11 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-50 border border-sky-200 text-brand text-xs font-bold font-mono">
               METODOLOGIA OFICIAL
             </div>
-            <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-[#F59E0B] flex items-center justify-center gap-3">
+            <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-[var(--color-heading-gold)] flex items-center justify-center gap-3">
               <PillarsSectionIcon size={32} />
               <span>Os 8 Pilares Oficiais do Birth Hub 360°</span>
             </h2>
-            <p className="text-base text-[#475569] dark:text-[#70D6FF]">
+            <p className="text-base text-ink-2 dark:text-[var(--title-color-cyan)]">
               Uma arquitetura modular robusta desenvolvida para governança, velocidade e
               previsibilidade na receita B2B.
             </p>
@@ -839,7 +839,7 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
                       </span>
                     </div>
 
-                    <p className="text-xs text-[#475569] dark:text-[#70D6FF] leading-relaxed">
+                    <p className="text-xs text-ink-2 dark:text-[var(--title-color-cyan)] leading-relaxed">
                       {p.desc}
                     </p>
                   </div>
@@ -867,13 +867,13 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
       >
         <div className="max-w-6xl mx-auto space-y-16">
           <div className="text-center max-w-3xl mx-auto space-y-4">
-            <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-[#0284C7] dark:text-[#00D4FF] flex items-center justify-center gap-3">
+            <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-[var(--color-heading-cyan)] flex items-center justify-center gap-3">
               <CockpitSectionIcon size={32} />
               <span>
                 Tudo em uma única plataforma: do mobile ao desktop tudo o que você precisa está aqui
               </span>
             </h2>
-            <p className="text-base text-[#475569] dark:text-[#70D6FF]">
+            <p className="text-base text-ink-2 dark:text-[var(--title-color-cyan)]">
               Alternância perfeita entre interfaces ricas para gestores e execução ágil na ponta
               para vendedores.
             </p>
@@ -909,10 +909,10 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
             {platformTab === 'crm' && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                 <div className="space-y-4">
-                  <h3 className="font-display text-2xl font-bold text-[#0284C7] dark:text-[#00D4FF]">
+                  <h3 className="font-display text-2xl font-bold text-[var(--color-heading-cyan)]">
                     Painel Central com Visão 360° do Negócio
                   </h3>
-                  <p className="text-sm text-[#475569] dark:text-[#70D6FF] leading-relaxed">
+                  <p className="text-sm text-ink-2 dark:text-[var(--title-color-cyan)] leading-relaxed">
                     Acompanhe cada conta, contato e estágio de negociação com telemetria unificada.
                     O Kanban interativo reage em tempo real com regras de validação que impedem
                     perdas no funil.
@@ -956,10 +956,10 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
             {platformTab === 'intel' && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                 <div className="space-y-4">
-                  <h3 className="font-display text-2xl font-bold text-[#0284C7] dark:text-[#00D4FF]">
+                  <h3 className="font-display text-2xl font-bold text-[var(--color-heading-cyan)]">
                     Enriquecimento de Decisores & Sinais B2B
                   </h3>
-                  <p className="text-sm text-[#475569] dark:text-[#70D6FF] leading-relaxed">
+                  <p className="text-sm text-ink-2 dark:text-[var(--title-color-cyan)] leading-relaxed">
                     Identifique decisores reais (C-Level, Diretores e Gerentes), e-mails
                     corporativos válidos e telefones diretos antes de iniciar o contato comercial.
                   </p>
@@ -1002,10 +1002,10 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
             {platformTab === 'voice' && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                 <div className="space-y-4">
-                  <h3 className="font-display text-2xl font-bold text-[#0284C7] dark:text-[#00D4FF]">
+                  <h3 className="font-display text-2xl font-bold text-[var(--color-heading-cyan)]">
                     Copiloto de Voz & Transcrição Inteligente
                   </h3>
-                  <p className="text-sm text-[#475569] dark:text-[#70D6FF] leading-relaxed">
+                  <p className="text-sm text-ink-2 dark:text-[var(--title-color-cyan)] leading-relaxed">
                     Grave e transcreva chamadas comerciais com separação de interlocutores, extração
                     imediata de pontos de dor, objeções e preenchimento automático no Bitrix24.
                   </p>
@@ -1046,11 +1046,11 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
       <section id="precos" className="py-24 px-6 sm:px-12 bg-surface">
         <div className="max-w-6xl mx-auto space-y-16">
           <div className="text-center max-w-3xl mx-auto space-y-4">
-            <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-[#F59E0B] flex items-center justify-center gap-3">
+            <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-[var(--color-heading-gold)] flex items-center justify-center gap-3">
               <PerfSectionIcon size={32} />
               <span>Nossos planos são transparentes e fáceis de entender</span>
             </h2>
-            <p className="text-base text-[#475569] dark:text-[#70D6FF]">
+            <p className="text-base text-ink-2 dark:text-[var(--title-color-cyan)]">
               Comece agora sem taxa de implantação oculta. Evolua conforme a sua operação expande.
             </p>
 
@@ -1165,11 +1165,11 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
       >
         <div className="max-w-5xl mx-auto text-center space-y-12">
           <div className="space-y-4">
-            <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-[#0284C7] dark:text-[#00D4FF] flex items-center justify-center gap-3">
+            <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-[var(--color-heading-cyan)] flex items-center justify-center gap-3">
               <EcosystemSectionIcon size={32} />
               <span>Conecte-se ao que sua operação realmente precisa</span>
             </h2>
-            <p className="text-base text-[#475569] dark:text-[#70D6FF]">
+            <p className="text-base text-ink-2 dark:text-[var(--title-color-cyan)]">
               Conectores robustos para o seu stack de vendas, mensageria e dados corporativos.
             </p>
           </div>
@@ -1230,7 +1230,7 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
               className="vancouver-quick-card"
             >
               <div>
-                <h3 className="font-display text-xl font-bold text-[#0284C7] dark:text-[#00D4FF]">
+                <h3 className="font-display text-xl font-bold text-[var(--color-heading-cyan)]">
                   Ajuda
                 </h3>
                 <p className="text-xs text-ink-2 mt-2">
@@ -1264,7 +1264,7 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
               className="vancouver-quick-card"
             >
               <div>
-                <h3 className="font-display text-xl font-bold text-[#FF2D9B]">Contato</h3>
+                <h3 className="font-display text-xl font-bold text-[var(--light-pink)] dark:text-[var(--color-heading-pink)]">Contato</h3>
                 <p className="text-xs text-ink-2 mt-2">comercial@birthhub360.com</p>
                 <p className="text-xs text-ink-2 mt-1">
                   Fale diretamente com nossa diretoria comercial.
@@ -1280,7 +1280,7 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
             {/* Card 3: Newsletter / Novidades */}
             <div className="vancouver-quick-card">
               <div>
-                <h3 className="font-display text-xl font-bold text-[#F59E0B]">Novidades</h3>
+                <h3 className="font-display text-xl font-bold text-[var(--color-heading-gold)]">Novidades</h3>
                 <p className="text-xs text-ink-2 mt-2">
                   Receba insights semanais sobre IA aplicada a vendas B2B.
                 </p>
@@ -1314,7 +1314,7 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
               className="vancouver-quick-card"
             >
               <div>
-                <h3 className="font-display text-xl font-bold text-[#10B981]">Segurança</h3>
+                <h3 className="font-display text-xl font-bold text-[var(--color-heading-success)]">Segurança</h3>
                 <p className="text-xs text-ink-2 mt-2">
                   Auditorias de segurança, RLS multi-tenant e governança de privacidade LGPD.
                 </p>
@@ -1336,11 +1336,11 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
         <div className="max-w-6xl mx-auto space-y-12">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center pb-12 border-b border-line">
             <div className="space-y-3">
-              <h3 className="font-display text-2xl font-bold text-[#0284C7] dark:text-[#00D4FF] flex items-center gap-3">
+              <h3 className="font-display text-2xl font-bold text-[var(--color-heading-cyan)] flex items-center gap-3">
                 <CtaSectionIcon size={28} />
                 <span>Pronto para estruturar sua operação comercial com rigor e inteligência?</span>
               </h3>
-              <p className="text-sm text-[#475569] dark:text-[#70D6FF]">
+              <p className="text-sm text-ink-2 dark:text-[var(--title-color-cyan)]">
                 Conheça a única plataforma desenhada especificamente para conectar dados a
                 fechamentos reais.
               </p>
@@ -1410,9 +1410,9 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
                 title={theme === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro'}
               >
                 {theme === 'dark' ? (
-                  <Sun className="w-4 h-4 text-[#F59E0B]" />
+                  <Sun className="w-4 h-4 text-[var(--color-heading-gold)]" />
                 ) : (
-                  <Moon className="w-4 h-4 text-[#00D4FF]" />
+                  <Moon className="w-4 h-4 text-[var(--color-heading-cyan)]" />
                 )}
               </button>
               <button
@@ -1432,7 +1432,7 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
               </div>
               <h2
                 id="auth-modal-title"
-                className="font-display text-2xl font-bold text-[#0284C7] dark:text-[#00D4FF] flex items-center justify-center gap-2.5"
+                className="font-display text-2xl font-bold text-[var(--color-heading-cyan)] flex items-center justify-center gap-2.5"
               >
                 <AuthModalSectionIcon size={24} />
                 <span>
@@ -1441,7 +1441,7 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
                   {authMode === 'forgot' && 'Recuperar Senha'}
                 </span>
               </h2>
-              <p className="text-xs text-[#475569] dark:text-[#70D6FF]">
+              <p className="text-xs text-ink-2 dark:text-[var(--title-color-cyan)]">
                 {authMode === 'signin' && 'Informe suas credenciais corporativas para entrar.'}
                 {authMode === 'signup' && 'Solicite provisionamento para sua equipe comercial.'}
                 {authMode === 'forgot' && 'Enviaremos um link de recuperação para seu e-mail.'}

@@ -173,19 +173,26 @@ export function ModuleNavPanel({
         >
           <module.icon className="h-5 w-5" aria-hidden="true" />
         </span>
-        <div className="min-w-0 flex-1">
-          <h2
-            className="truncate font-display text-[16px] font-bold leading-tight tracking-[-0.02em] flex items-center gap-1.5"
-            style={{
-              color: isHub ? '#FFC107' : moduleTheme.primaryColor,
-            }}
-          >
+        <div
+          className="min-w-0 flex-1"
+          style={
+            {
+              '--header-title-light': isHub ? '#B45309' : moduleTheme.titleColorLight,
+              '--header-title-dark': isHub ? '#FBBF24' : moduleTheme.titleColorDark,
+              '--header-sub-light': isHub ? '#0284C7' : moduleTheme.subtitleColorLight,
+              '--header-sub-dark': isHub ? '#38BDF8' : moduleTheme.subtitleColorDark,
+            } as CSSProperties
+          }
+        >
+          <h2 className="truncate font-display text-[16px] font-bold leading-tight tracking-[-0.02em] flex items-center gap-1.5 text-[var(--header-title-light)] dark:text-[var(--header-title-dark)]">
             <span aria-hidden="true" className="select-none text-[17px]">
               {moduleEmoji}
             </span>
             <span className="truncate">{module.label}</span>
           </h2>
-          <p className="truncate text-[12px] text-ink-2 mt-0.5">{module.tagline}</p>
+          <p className="truncate text-[12px] font-semibold mt-0.5 tracking-wide text-[var(--header-sub-light)] dark:text-[var(--header-sub-dark)]">
+            {module.tagline}
+          </p>
         </div>
       </header>
 
@@ -202,7 +209,7 @@ export function ModuleNavPanel({
               onNavigate?.();
               openTab('dashboard', 'home');
             }}
-            className="group mb-2 flex w-full items-center gap-2.5 rounded-[16px] border border-amber-500/30 bg-amber-500/8 px-3.5 py-2.5 text-[14px] font-semibold text-amber-600 dark:text-amber-400 transition-all duration-200 hover:border-amber-500/60 hover:bg-amber-500/16 hover:shadow-[0_0_16px_rgba(255,193,7,0.20)] hover:-translate-x-0.5 cursor-pointer"
+            className="group mb-2 flex w-full items-center gap-2.5 rounded-[16px] border border-amber-500/30 bg-amber-500/8 px-3.5 py-2.5 text-[14px] font-semibold text-amber-600 dark:text-amber-400 transition-all duration-200 hover:border-amber-500/60 hover:bg-amber-500/16 hover:shadow-[0_0_16px_color-mix(in_srgb,var(--gold)_20%,transparent)] hover:-translate-x-0.5 cursor-pointer"
             title="Voltar ao Portal dos 11 Módulos"
           >
             <span
@@ -367,8 +374,10 @@ export function ModuleNavPanel({
                   } ${isCurrentModule ? 'font-bold text-ink shadow-sm' : 'font-semibold'}`}
                   style={
                     {
-                      '--mod-light': theme.light.accent,
-                      '--mod-dark': theme.dark.accent,
+                      '--mod-title-light': theme.titleColorLight,
+                      '--mod-title-dark': theme.titleColorDark,
+                      '--mod-sub-light': theme.subtitleColorLight,
+                      '--mod-sub-dark': theme.subtitleColorDark,
                       backgroundColor: isCurrentModule
                         ? `color-mix(in srgb, ${theme.primaryColor} 14%, transparent)`
                         : `color-mix(in srgb, ${theme.primaryColor} 4%, transparent)`,
@@ -417,22 +426,18 @@ export function ModuleNavPanel({
                   >
                     <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
                   </span>
-                  <span className="min-w-0 flex-1 truncate text-left font-sans text-[15px] flex items-center">
-                    <span
-                      aria-hidden="true"
-                      className="mr-2 text-[16px] inline-block shrink-0 transition-transform duration-200 group-hover:scale-125 select-none"
-                    >
-                      {emoji}
+                  <span className="min-w-0 flex-1 truncate text-left font-sans flex flex-col justify-center">
+                    <span className="truncate flex items-center font-bold text-[14.5px] text-[var(--mod-title-light)] dark:text-[var(--mod-title-dark)]">
+                      <span
+                        aria-hidden="true"
+                        className="mr-1.5 text-[15px] inline-block shrink-0 transition-transform duration-200 group-hover:scale-125 select-none"
+                      >
+                        {emoji}
+                      </span>
+                      <span className="truncate">{m.label}</span>
                     </span>
-                    <span
-                      className="truncate text-[var(--mod-light)] dark:text-[var(--mod-dark)]"
-                      style={{
-                        textShadow: isCurrentModule
-                          ? `0 0 12px color-mix(in srgb, ${theme.primaryColor} 30%, transparent)`
-                          : undefined,
-                      }}
-                    >
-                      {m.label}
+                    <span className="truncate text-[11px] font-semibold tracking-wide text-[var(--mod-sub-light)] dark:text-[var(--mod-sub-dark)] pl-5">
+                      {m.tagline}
                     </span>
                   </span>
                   <span

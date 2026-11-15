@@ -28,7 +28,7 @@ export function PillarContent({
             titleText: 'text-pink-400',
             iconColor: 'text-pink-400',
             borderSubtle: 'border-pink-500/20',
-            haloGradient: 'from-[#FF2D9B] via-[#8B7DFF] via-[#00D4FF] to-[#FFC107]',
+            haloGradient: 'from-[var(--pink)] via-[var(--iris)] via-[var(--orbit-blue)] to-[var(--gold)]',
           };
         case 'gold':
           return {
@@ -36,7 +36,7 @@ export function PillarContent({
             titleText: 'text-amber-400',
             iconColor: 'text-amber-400',
             borderSubtle: 'border-amber-500/20',
-            haloGradient: 'from-[#FFC107] via-[#FF2D9B] via-[#00D4FF] to-[#8B7DFF]',
+            haloGradient: 'from-[var(--gold)] via-[var(--pink)] via-[var(--orbit-blue)] to-[var(--iris)]',
           };
         case 'iris':
           return {
@@ -44,7 +44,7 @@ export function PillarContent({
             titleText: 'text-violet-400',
             iconColor: 'text-violet-400',
             borderSubtle: 'border-violet-500/20',
-            haloGradient: 'from-[#8B7DFF] via-[#00D4FF] via-[#FF2D9B] to-[#FFC107]',
+            haloGradient: 'from-[var(--iris)] via-[var(--orbit-blue)] via-[var(--pink)] to-[var(--gold)]',
           };
         default:
           return {
@@ -52,7 +52,7 @@ export function PillarContent({
             titleText: 'text-cyan-400',
             iconColor: 'text-cyan-400',
             borderSubtle: 'border-cyan-500/20',
-            haloGradient: 'from-[#00D4FF] via-[#FF2D9B] via-[#FFC107] to-[#8B7DFF]',
+            haloGradient: 'from-[var(--orbit-blue)] via-[var(--pink)] via-[var(--gold)] to-[var(--iris)]',
           };
       }
     }
@@ -201,7 +201,7 @@ export function PillarContent({
         {/* Botões Cápsula com Glow Multicolorido Sleep Cycle */}
         <div className="pt-2 flex flex-wrap items-center gap-3">
           {/* Botão Primário Cápsula com Halo Multicolorido */}
-          <div className="relative inline-flex group p-[2px] rounded-full overflow-hidden transition-all duration-300 hover:scale-[1.02] shadow-[0_0_20px_rgba(0,212,255,0.2),0_0_25px_rgba(255,45,155,0.15)]">
+          <div className="relative inline-flex group p-[2px] rounded-full overflow-hidden transition-all duration-300 hover:scale-[1.02] shadow-[0_0_20px_color-mix(in_srgb,var(--orbit-blue)_20%,transparent),0_0_25px_color-mix(in_srgb,var(--pink)_15%,transparent)]">
             {/* Halo Multicolorido Vivo (Sleep Cycle Inspired) */}
             <span
               className={`absolute inset-0 bg-gradient-to-r ${accent.haloGradient} rounded-full opacity-90 group-hover:opacity-100 blur-[2px] transition-opacity duration-300 animate-pulse`}
@@ -217,7 +217,7 @@ export function PillarContent({
               }`}
             >
               <span>{pillar.ctaText}</span>
-              <ArrowRight className="w-4 h-4 text-[#00D4FF] group-hover:translate-x-0.5 transition-transform" />
+              <ArrowRight className="w-4 h-4 text-[var(--orbit-blue)] group-hover:translate-x-0.5 transition-transform" />
             </button>
           </div>
 

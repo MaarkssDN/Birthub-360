@@ -106,7 +106,7 @@ export function PillarDetailModal({
               Fechar
             </button>
             <div className="relative inline-flex group p-[2px] rounded-full overflow-hidden transition-all duration-300 hover:scale-[1.02]">
-              <span className="absolute inset-0 bg-gradient-to-r from-[#00D4FF] via-[#FF2D9B] to-[#FFC107] rounded-full opacity-80 group-hover:opacity-100 blur-[2px] transition-opacity duration-300 animate-pulse" />
+              <span className="absolute inset-0 bg-gradient-to-r from-[var(--orbit-blue)] via-[var(--pink)] to-[var(--gold)] rounded-full opacity-80 group-hover:opacity-100 blur-[2px] transition-opacity duration-300 animate-pulse" />
               <button
                 type="button"
                 data-primary-action="true"

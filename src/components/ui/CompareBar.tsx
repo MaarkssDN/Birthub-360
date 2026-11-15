@@ -93,7 +93,7 @@ export function CompareBar({ label, seriesA, seriesB, format = defaultFormat }: 
           widthPct={widthB}
           format={format}
           fillClassName="bg-brand"
-          labelClassName="text-[#F8F9FF]"
+          labelClassName="text-on-brand"
         />
       </div>
     </div>

@@ -39,7 +39,7 @@ export function CopilotTrigger() {
           type="button"
           onClick={handleOpenClick}
           aria-label={`Abrir copiloto comercial ${BRAND.shortName}`}
-          className={`group relative flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br ${accent.gradient} text-on-brand ${accent.glow} hover:scale-105 active:scale-95 transition-all duration-300 border border-brand/40 shadow-[0_6px_25px_rgba(212,175,55,0.4)] hover:shadow-[0_8px_30px_rgba(212,175,55,0.6)] cursor-pointer overflow-hidden`}
+          className={`group relative flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br ${accent.gradient} text-on-brand ${accent.glow} hover:scale-105 active:scale-95 transition-all duration-300 border border-brand/40 shadow-[0_6px_25px_color-mix(in_srgb,var(--brand)_40%,transparent)] hover:shadow-[0_8px_30px_color-mix(in_srgb,var(--brand)_60%,transparent)] cursor-pointer overflow-hidden`}
         >
           {/* Luz especular interna */}
           <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-2xl bg-gradient-to-b from-white/30 to-transparent pointer-events-none" />

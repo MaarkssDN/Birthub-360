@@ -66,7 +66,7 @@ export function VersionHistoryPanel() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
-      <div className="w-[560px] max-h-[80vh] bg-slate-900 rounded-3xl overflow-hidden shadow-2xl flex flex-col border border-slate-700/50">
+      <div className="w-[560px] max-w-[calc(100vw-2rem)] max-h-[calc(100dvh-2rem)] bg-slate-900 rounded-3xl overflow-y-auto shadow-2xl flex flex-col border border-slate-700/50">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-slate-800 shrink-0">
           <div className="flex items-center gap-3">

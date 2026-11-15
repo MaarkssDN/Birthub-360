@@ -47,7 +47,7 @@ const KPI_TONES = {
   orange: {
     chip: 'border-warning/40 text-warning bg-warning/10',
     trend: 'text-warning',
-    glow: 'color-mix(in srgb, var(--warning, #f97316) 22%, transparent)',
+    glow: 'color-mix(in srgb, var(--warn) 22%, transparent)',
   },
 } as const;
 
@@ -126,7 +126,7 @@ export function KpiCard({
   };
 
   const sharedClassName = cn(
-    'bh-platform-card group relative w-full overflow-hidden rounded-card border border-line bg-surface/90 dark:bg-[#0f172a]/85 backdrop-blur-md p-5 text-left text-ink shadow-card transition-all duration-200 border-t border-t-white/20 dark:border-t-white/10',
+    'bh-platform-card group relative w-full overflow-hidden rounded-card border border-line bg-surface/90 dark:bg-[var(--surface-2)]/85 backdrop-blur-md p-5 text-left text-ink shadow-card transition-all duration-200 border-t border-t-white/20 dark:border-t-white/10',
     onSelect &&
       'cursor-pointer active:scale-[0.98] hover:-translate-y-1 hover:border-line-strong hover:shadow-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
     active &&

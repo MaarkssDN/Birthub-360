@@ -36,42 +36,44 @@ export const BRAND = {
   /** Valores (brand book, p. 10). Em inglês no original. */
   values: ['Innovation', 'Data Intelligence', 'Efficiency', 'Scalability'] as const,
   colors: {
-    /** Azul Neon: Tecnologia, confiança, inovação. Cor padrão de títulos, bordas ativas e destaque */
-    neonBlue: '#00D4FF',
-    brand: '#00D4FF',
-    brandAccent: '#00D4FF',
-    /** Rosa Neon: Energia, criatividade, atitude. Destaques, tags, inteligência de mercado e gradientes */
-    neonPink: '#FF2D9B',
-    pink: '#FF2D9B',
-    redViolet: '#FF2D9B',
-    /** Dourado Neon: Sofisticação, prosperidade, previsibilidade e métricas */
-    neonGold: '#FFC107',
-    gold: '#FFC107',
-    /** Preto Neon (Fundo): Fundo principal Dark Mode */
-    neonBlack: '#0D0D0D',
-    obsidian: '#0D0D0D',
-    midnight: '#0D0D0D',
-    /** Branco Neon (Texto): Textos de corpo, subtítulos e leitura */
-    neonWhite: '#F8F9FF',
-    white: '#F8F9FF',
-    snow: '#F8F9FF',
-    blossom: '#F8F9FF',
-    /** Fundo de Cards: Superfícies e cartões de conteúdo */
-    neonCardBg: '#14141A',
-    surface: '#14141A',
-    card: '#14141A',
-    /** Bordas Glow */
-    neonCardBorder: 'rgba(0, 212, 255, 0.22)',
-    glowBorder: 'rgba(0, 212, 255, 0.22)',
-    /** Tons Light complementares */
-    lightPink: '#D91B7C',
-    lightBlue: '#0284C7',
-    lightGold: '#D97706',
-    /** Semânticos complementares */
-    sunsetOrange: '#EF4444',
-    red: '#EF4444',
-    iris: '#FF2D9B',
-    orbitBlue: '#00D4FF',
+    /** Orbit Blue #1677FF: Tecnologia, confiança, inovação */
+    neonBlue: '#1677FF',
+    /** Antique Gold #D4AF37: ação primária da marca */
+    brand: '#D4AF37',
+    brandAccent: '#D4AF37',
+    /** Rosa #FF4FA3 (variante clara do rosa oficial #DB2777): energia, criatividade, atitude */
+    neonPink: '#FF4FA3',
+    pink: '#FF4FA3',
+    /** Deep Iris #7C3AED */
+    redViolet: '#7C3AED',
+    /** Antique Gold #D4AF37: sofisticação, prosperidade, previsibilidade e métricas */
+    neonGold: '#D4AF37',
+    gold: '#D4AF37',
+    /** Deep Navy #061A3A: âncora escura (substitui o antigo "Preto Neon" #0D0D0D) */
+    neonBlack: '#061A3A',
+    obsidian: '#061A3A',
+    midnight: '#061A3A',
+    /** Blossom White #FFF4F9: âncora clara (substitui o antigo "Branco Neon" #F8F9FF) */
+    neonWhite: '#FFF4F9',
+    white: '#FFF4F9',
+    snow: '#FFF4F9',
+    blossom: '#FFF4F9',
+    /** Superfícies derivadas de Deep Navy (tema escuro) */
+    neonCardBg: '#0E2450',
+    surface: '#0E2450',
+    card: '#0E2450',
+    /** Bordas Glow (Orbit Blue) */
+    neonCardBorder: 'rgba(22, 119, 255, 0.22)',
+    glowBorder: 'rgba(22, 119, 255, 0.22)',
+    /** Tons Light complementares (variantes escuras para tema claro) */
+    lightPink: '#DB2777',
+    lightBlue: '#1668D8',
+    lightGold: '#B8962E',
+    /** Semânticos complementares — vermelho oficial #E11D48 */
+    sunsetOrange: '#E11D48',
+    red: '#E11D48',
+    iris: '#7C3AED',
+    orbitBlue: '#1677FF',
   },
   /**
    * Perfis sociais da plataforma.

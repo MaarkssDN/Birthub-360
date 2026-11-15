@@ -37,7 +37,9 @@ export function OrbitRing({
         className="absolute inset-0 rounded-full"
         style={{
           background: 'var(--grad-orbit)',
-          boxShadow: glow ? '0 0 20px rgba(0, 212, 255, 0.35)' : undefined,
+          boxShadow: glow
+            ? '0 0 20px color-mix(in srgb, var(--orbit-blue) 35%, transparent)'
+            : undefined,
         }}
         animate={spin && !shouldReduceMotion ? { rotate: 360 } : undefined}
         transition={{ repeat: Infinity, duration, ease: 'linear' }}

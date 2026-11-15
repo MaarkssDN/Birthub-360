@@ -137,7 +137,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           isOpenMobile ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         } overflow-y-auto ${
           isDark
-            ? 'bg-[#0c121e]/95 border-slate-800/80 text-slate-200 shadow-[4px_0_24px_rgba(0,0,0,0.25)]'
+            ? 'bg-[var(--surface)]/95 border-slate-800/80 text-slate-200 shadow-[4px_0_24px_rgba(0,0,0,0.25)]'
             : 'bg-white/95 border-slate-200/80 text-slate-800 shadow-[4px_0_24px_rgba(0,0,0,0.03)]'
         } backdrop-blur-2xl`}
       >
@@ -145,7 +145,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div
           className={`p-4 border-b sticky top-0 z-10 backdrop-blur ${
             isDark
-              ? 'border-slate-800/80 bg-[#0c121e]/85'
+              ? 'border-slate-800/80 bg-[var(--surface)]/85'
               : 'border-slate-200/80 bg-white/90 shadow-sm'
           }`}
         >
@@ -156,7 +156,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onClick={() => setIsOpenMobile(false)}
               className={`lg:hidden p-1.5 rounded-lg transition ${
                 isDark
-                  ? 'text-slate-400 hover:text-[#F8F9FF] hover:bg-slate-800'
+                  ? 'text-slate-400 hover:text-[var(--ink)] hover:bg-slate-800'
                   : 'text-slate-600 hover:text-slate-800 hover:bg-slate-200'
               }`}
             >
@@ -311,7 +311,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onClick={checkOllama}
                 disabled={isCheckingOllama}
                 title="Testar conexão com Ollama"
-                className="text-[11px] text-[var(--brand-primary)] hover:text-[#FF8008] flex items-center gap-1 transition"
+                className="text-[11px] text-[var(--brand-primary)] hover:text-[var(--brand)] flex items-center gap-1 transition"
               >
                 <RefreshCw className={`w-3 h-3 ${isCheckingOllama ? 'animate-spin' : ''}`} />
                 Testar
@@ -328,7 +328,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onClick={() => handleProviderChange('ollama')}
                 className={`py-1.5 px-2 rounded-md font-semibold transition ${
                   aiConfig.provider === 'ollama'
-                    ? 'bg-[var(--brand-primary)] text-[#F8F9FF] shadow-sm'
+                    ? 'bg-[var(--brand-primary)] text-[var(--ink)] shadow-sm'
                     : isDark
                       ? 'text-slate-400 hover:text-slate-200'
                       : 'text-slate-600 hover:text-slate-800'
@@ -341,7 +341,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onClick={() => handleProviderChange('groq')}
                 className={`py-1.5 px-2 rounded-md font-semibold transition ${
                   aiConfig.provider === 'groq'
-                    ? 'bg-[var(--brand-primary)] text-[#F8F9FF] shadow-sm'
+                    ? 'bg-[var(--brand-primary)] text-[var(--ink)] shadow-sm'
                     : isDark
                       ? 'text-slate-400 hover:text-slate-200'
                       : 'text-slate-600 hover:text-slate-800'
@@ -354,7 +354,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onClick={() => handleProviderChange('gemini')}
                 className={`py-1.5 px-2 rounded-md font-semibold transition ${
                   aiConfig.provider === 'gemini'
-                    ? 'bg-[var(--brand-primary)] text-[#F8F9FF] shadow-sm'
+                    ? 'bg-[var(--brand-primary)] text-[var(--ink)] shadow-sm'
                     : isDark
                       ? 'text-slate-400 hover:text-slate-200'
                       : 'text-slate-600 hover:text-slate-800'
@@ -497,7 +497,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             {aiConfig.provider === 'gemini' && (
               <div className="space-y-2 pt-1 text-xs">
-                <div className="p-2 rounded-lg bg-[var(--brand-primary)]/10 border border-[var(--brand-primary)]/20 text-[11px] text-[#FF8008]">
+                <div className="p-2 rounded-lg bg-[var(--brand-primary)]/10 border border-[var(--brand-primary)]/20 text-[11px] text-[var(--brand)]">
                   ✨ Motor Server-Side com Gemini 3.7 Flash ativo (sem necessidade de chave no
                   cliente).
                 </div>
@@ -620,7 +620,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onClick={() => setShowIntegrations(!showIntegrations)}
                 className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 text-left"
               >
-                <Key className="w-3.5 h-3.5 text-[#FFC500]" />
+                <Key className="w-3.5 h-3.5 text-[var(--gold)]" />
                 <span>Integrações & Conexões</span>
               </button>
               <button
@@ -816,7 +816,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <div
                 className={`p-2 rounded-lg border ${
                   isDark
-                    ? 'bg-slate-900 border-slate-800 text-[#F8F9FF]'
+                    ? 'bg-slate-900 border-slate-800 text-[var(--ink)]'
                     : 'bg-slate-100 border-slate-200 text-slate-800'
                 }`}
               >
@@ -826,7 +826,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <div
                 className={`p-2 rounded-lg border ${
                   isDark
-                    ? 'bg-slate-900 border-slate-800 text-[#F8F9FF]'
+                    ? 'bg-slate-900 border-slate-800 text-[var(--ink)]'
                     : 'bg-slate-100 border-slate-200 text-slate-800'
                 }`}
               >
@@ -854,7 +854,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div
           className={`p-3 border-t flex items-center justify-between ${
             isDark
-              ? 'border-slate-800/80 bg-[#0c121e]/90'
+              ? 'border-slate-800/80 bg-[var(--surface)]/90'
               : 'border-slate-200/80 bg-white/90 shadow-sm'
           }`}
         >
@@ -875,7 +875,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               className="w-2.5 h-2.5 rounded-full bg-[var(--brand-primary)]"
               title="Pantone 172 C"
             />
-            <span className="w-2.5 h-2.5 rounded-full bg-[#FFC500]" title="Pantone 109 C" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[var(--gold)]" title="Pantone 109 C" />
             <span
               className="w-2.5 h-2.5 rounded-full bg-[#333333] border border-slate-600"
               title="Pantone 447 C"

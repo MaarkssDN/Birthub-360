@@ -136,7 +136,7 @@ export function RoleplayHistoryPanel({ playbook }: { playbook: PlaybookKey }) {
               <p className="text-sm text-ink-2">{selected.summary}</p>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {[
                 { label: 'Clareza', value: selected.clarityScore },
                 { label: 'Objeções', value: selected.objectionHandlingScore },

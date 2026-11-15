@@ -181,7 +181,7 @@ export function LiveStatsWidget() {
               transition={{ delay: 0.08 * idx }}
               className="group p-4 rounded-xl border border-line/80 bg-surface/75 backdrop-blur-xl flex items-center gap-3.5 shadow-sm transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-card-hover"
             >
-              <div className="p-2.5 rounded-xl bg-brand/10 border border-brand/20 shadow-[0_0_12px_rgba(212,175,55,0.15)] shrink-0 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-3">
+              <div className="p-2.5 rounded-xl bg-brand/10 border border-brand/20 shadow-[0_0_12px_color-mix(in_srgb,var(--brand)_15%,transparent)] shrink-0 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-3">
                 {s.icon}
               </div>
               <div className="min-w-0">

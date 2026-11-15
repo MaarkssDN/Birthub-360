@@ -473,7 +473,7 @@ export const TechToolLogo: React.FC<TechToolLogoProps> = ({
       <span className="flex items-center justify-center shrink-0 group-hover:rotate-12 transition-transform duration-300">
         {getTechSvgIcon(normalized, info.color)}
       </span>
-      <span className="tracking-tight text-sky-100 group-hover:text-[#00D4FF] font-medium">
+      <span className="tracking-tight text-sky-100 group-hover:text-orbit-blue font-medium">
         {info.name}
       </span>
       {showCategory && (

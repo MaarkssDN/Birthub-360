@@ -388,8 +388,8 @@ export function HubScreen() {
       style={{
         background:
           theme === 'dark'
-            ? 'radial-gradient(ellipse at 50% 0%, #14141A 0%, #0D0D0D 75%)'
-            : 'radial-gradient(ellipse at 50% 0%, #FFFFFF 0%, #F8FAFC 85%)',
+            ? 'radial-gradient(ellipse at 50% 0%, var(--palette-neon-card) 0%, var(--palette-neon-black) 75%)'
+            : 'radial-gradient(ellipse at 50% 0%, var(--surface) 0%, #F8FAFC 85%)',
       }}
     >
       {/* Command Center Background Grid */}

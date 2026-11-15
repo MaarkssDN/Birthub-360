@@ -259,7 +259,7 @@ export function VisualizerPrevisibilidade({ theme = 'dark' }: { theme?: 'dark' |
         <div
           className={`p-2.5 rounded-xl border text-center ${
             isDark
-              ? 'bg-slate-950/90 border-sky-500/50 shadow-[0_0_12px_rgba(0,212,255,0.15)]'
+              ? 'bg-slate-950/90 border-sky-500/50 shadow-[0_0_12px_color-mix(in_srgb,var(--orbit-blue)_15%,transparent)]'
               : 'bg-white border-sky-300 shadow-sm'
           }`}
         >

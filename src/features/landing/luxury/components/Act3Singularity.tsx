@@ -38,9 +38,9 @@ export function Act3Singularity() {
       step: '01',
       title: 'DADOS',
       subtitle: 'Conexão Universal & Ingestão Limpa',
-      color: '#00D4FF',
-      gradient: 'from-[#00D4FF]/20 to-transparent',
-      borderColor: 'border-[#00D4FF]/40',
+      color: 'var(--orbit-blue)',
+      gradient: 'from-[var(--orbit-blue)]/20 to-transparent',
+      borderColor: 'border-[var(--orbit-blue)]/40',
       icon: Database,
       tag: 'INGESTÃO UNIFICADA',
       desc: 'Sincronização em tempo real de contatos, empresas, chamadas de voz, trocas no WhatsApp e eventos de mercado sem latência.',
@@ -54,9 +54,9 @@ export function Act3Singularity() {
       step: '02',
       title: 'INTELIGÊNCIA',
       subtitle: 'Diagnóstico Semântico & Predição',
-      color: '#FF2D9B',
-      gradient: 'from-[#FF2D9B]/20 to-transparent',
-      borderColor: 'border-[#FF2D9B]/40',
+      color: 'var(--pink)',
+      gradient: 'from-[var(--pink)]/20 to-transparent',
+      borderColor: 'border-[var(--pink)]/40',
       icon: Cpu,
       tag: 'CÉREBRO COGNITIVO',
       desc: 'Algoritmos semânticos analisam o histórico de conversas, sinais de mercado e objeções para mapear a probabilidade real de fechamento.',
@@ -70,9 +70,9 @@ export function Act3Singularity() {
       step: '03',
       title: 'DECISÃO',
       subtitle: 'Priorização & Next Best Action',
-      color: '#FFC107',
-      gradient: 'from-[#FFC107]/20 to-transparent',
-      borderColor: 'border-[#FFC107]/40',
+      color: 'var(--gold)',
+      gradient: 'from-[var(--gold)]/20 to-transparent',
+      borderColor: 'border-[var(--gold)]/40',
       icon: Sparkles,
       tag: 'DIREÇÃO ESTRATÉGICA',
       desc: 'O sistema elimina a dúvida da equipe: indica com precisão matemática qual oportunidade atacar agora, por qual canal e com qual argumento.',
@@ -104,20 +104,20 @@ export function Act3Singularity() {
     <section
       ref={sectionRef}
       id="orbita"
-      className="relative py-24 sm:py-32 bg-[#0D0D0D] border-t border-white/[0.06] overflow-hidden"
+      className="relative py-24 sm:py-32 bg-[var(--bg)] border-t border-white/[0.06] overflow-hidden"
     >
       {/* Luz ambiente de fundo */}
-      <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[radial-gradient(circle,_var(--tw-gradient-stops))] from-[#00D4FF]/05 via-[#FF2D9B]/03 to-transparent blur-3xl -z-10" />
+      <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[radial-gradient(circle,_var(--tw-gradient-stops))] from-[var(--orbit-blue)]/05 via-[var(--pink)]/03 to-transparent blur-3xl -z-10" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Cabeçalho */}
         <div className="max-w-3xl mx-auto text-center space-y-4 mb-16 sm:mb-20">
-          <div className="lux-hud-tag text-[#00D4FF] border-[#00D4FF]/30 bg-[#00D4FF]/[0.08]">
-            <Network className="w-3.5 h-3.5 text-[#00D4FF]" />A Matriz Contínua 360º
+          <div className="lux-hud-tag text-[var(--orbit-blue)] border-[var(--orbit-blue)]/30 bg-[var(--orbit-blue)]/[0.08]">
+            <Network className="w-3.5 h-3.5 text-[var(--orbit-blue)]" />A Matriz Contínua 360º
           </div>
 
           <SculpturalReveal delay={0.1}>
-            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-[-0.02em] leading-tight text-[#F8F9FF]">
+            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-[-0.02em] leading-tight text-[var(--ink)]">
               Quatro movimentos contínuos. <br />
               <span className="lux-headline-hero">Um único ciclo perpétuo de receita.</span>
             </h2>
@@ -135,11 +135,11 @@ export function Act3Singularity() {
             <span className="text-[#9EADC8]">Fluxo Orbital:</span>
             <div className="flex-1 h-1 bg-white/[0.08] rounded-full overflow-hidden relative">
               <motion.div
-                className="h-full bg-gradient-to-r from-[#00D4FF] via-[#FF2D9B] to-[#FFC107]"
+                className="h-full bg-gradient-to-r from-[var(--orbit-blue)] via-[var(--pink)] to-[var(--gold)]"
                 style={{ scaleX: smoothProgress, transformOrigin: '0%' }}
               />
             </div>
-            <span className="text-[#00D4FF] font-bold">{quadrants[activeQuadrant]?.title}</span>
+            <span className="text-[var(--orbit-blue)] font-bold">{quadrants[activeQuadrant]?.title}</span>
           </div>
         </div>
 
@@ -155,8 +155,8 @@ export function Act3Singularity() {
                 onClick={() => setActiveQuadrant(index)}
                 className={`text-left cursor-pointer rounded-2xl p-6 sm:p-8 transition-all duration-300 relative overflow-hidden flex flex-col justify-between ${
                   isSelected
-                    ? `bg-[#14141A] ${item.borderColor} shadow-[0_0_35px_rgba(0,212,255,0.18)] scale-[1.03] ring-1 ring-[#00D4FF]/30`
-                    : 'bg-[#14141A]/50 border border-white/[0.08] hover:border-white/[0.2] hover:bg-[#14141A]/80'
+                    ? `bg-[var(--surface)] ${item.borderColor} shadow-[0_0_35px_color-mix(in_srgb,var(--orbit-blue)_18%,transparent)] scale-[1.03] ring-1 ring-[var(--orbit-blue)]/30`
+                    : 'bg-[var(--surface)]/50 border border-white/[0.08] hover:border-white/[0.2] hover:bg-[var(--surface)]/80'
                 }`}
               >
                 {/* Linha de acento de cor no topo */}
@@ -192,7 +192,7 @@ export function Act3Singularity() {
                     >
                       {item.tag}
                     </span>
-                    <h3 className="text-xl font-extrabold text-[#F8F9FF]">{item.title}</h3>
+                    <h3 className="text-xl font-extrabold text-[var(--ink)]">{item.title}</h3>
                     <p className="text-xs text-[#9EADC8] mt-1 font-medium">{item.subtitle}</p>
                   </div>
 
@@ -202,7 +202,7 @@ export function Act3Singularity() {
                 {/* Lista de detalhes */}
                 <div className="mt-8 pt-6 border-t border-white/[0.08] space-y-2.5">
                   {item.details.map((detail) => (
-                    <div key={detail} className="flex items-start gap-2 text-xs text-[#F8F9FF]/80">
+                    <div key={detail} className="flex items-start gap-2 text-xs text-[var(--ink)]/80">
                       <Check
                         className="w-3.5 h-3.5 shrink-0 mt-0.5"
                         style={{ color: item.color }}

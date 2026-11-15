@@ -12,8 +12,8 @@ export function LuxuryFooter() {
           <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-3 max-w-sm">
             <div className="flex items-center gap-3">
               <BirthHubLogo variant="symbol" className="h-9 w-9" />
-              <span className="font-extrabold text-lg text-[#F8F9FF] tracking-tight">
-                BIRTH HUB <span className="text-[#FFC107]">360º</span>
+              <span className="font-extrabold text-lg text-[var(--ink)] tracking-tight">
+                BIRTH HUB <span className="text-[var(--gold)]">360º</span>
               </span>
             </div>
             <p className="text-xs text-[#9EADC8] leading-relaxed">
@@ -24,13 +24,13 @@ export function LuxuryFooter() {
 
           {/* Links Institucionais & Compliance */}
           <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 font-mono text-xs uppercase tracking-wider">
-            <Link to="/privacy" className="hover:text-[#00D4FF] transition-colors">
+            <Link to="/privacy" className="hover:text-[var(--orbit-blue)] transition-colors">
               Privacidade & LGPD
             </Link>
-            <Link to="/terms" className="hover:text-[#00D4FF] transition-colors">
+            <Link to="/terms" className="hover:text-[var(--orbit-blue)] transition-colors">
               Termos de Uso
             </Link>
-            <Link to="/login" className="hover:text-[#FFC107] transition-colors">
+            <Link to="/login" className="hover:text-[var(--gold)] transition-colors">
               Acesso ao Sistema
             </Link>
           </div>
@@ -40,7 +40,7 @@ export function LuxuryFooter() {
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-center sm:text-left text-[#6B7A99]">
           <div>© 2026 Birth Hub 360º. Todos os direitos reservados.</div>
           <div className="flex items-center gap-2">
-            <Shield className="w-3.5 h-3.5 text-[#00D4FF]" />
+            <Shield className="w-3.5 h-3.5 text-[var(--orbit-blue)]" />
             <span>{BRAND.credit}</span>
           </div>
         </div>

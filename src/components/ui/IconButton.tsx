@@ -20,8 +20,8 @@ const iconButtonVariants = cva(
           'bg-transparent text-ink-2 hover:bg-[color:color-mix(in_srgb,var(--ink)_5%,transparent)] hover:text-ink',
       },
       size: {
-        sm: 'h-8 w-8 text-xs',
-        default: 'h-9 w-9 text-sm',
+        sm: 'h-10 w-10 text-xs',
+        default: 'h-10 w-10 text-sm',
         md: 'h-10 w-10 text-base',
         lg: 'h-12 w-12 text-lg',
       },

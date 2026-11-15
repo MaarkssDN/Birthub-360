@@ -157,7 +157,7 @@ export const LeadEvidenceModal: React.FC<LeadEvidenceModalProps> = ({
             <FileSearch className="w-5 h-5 text-[var(--brand-primary)] shrink-0" />
             <div className="min-w-0">
               <h3
-                className={`text-sm font-bold truncate ${isDark ? 'text-[#F8F9FF]' : 'text-slate-800'}`}
+                className={`text-sm font-bold truncate ${isDark ? 'text-[var(--ink)]' : 'text-slate-800'}`}
               >
                 Evidências de campo — {leadName}
               </h3>
@@ -171,7 +171,7 @@ export const LeadEvidenceModal: React.FC<LeadEvidenceModalProps> = ({
             onClick={onClose}
             className={`p-2 rounded-xl shrink-0 transition ${
               isDark
-                ? 'bg-slate-800 text-slate-400 hover:text-[#F8F9FF] hover:bg-slate-700'
+                ? 'bg-slate-800 text-slate-400 hover:text-[var(--ink)] hover:bg-slate-700'
                 : 'bg-slate-100 text-slate-500 hover:text-slate-800 hover:bg-slate-200'
             }`}
           >

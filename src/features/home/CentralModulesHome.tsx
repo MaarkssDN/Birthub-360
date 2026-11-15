@@ -22,6 +22,7 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-do
 import { BirthHubLogo } from '../../components/brand/BirthHubLogo.js';
 import { PRODUCT_MODULES, type ProductModule } from '../../components/layout/moduleRegistry.js';
 import { getModuleTheme, type ModuleTheme } from '../../components/layout/moduleThemes.js';
+import { getModuleEmoji } from '../../components/layout/navItemThemes.js';
 import { useAuth } from '../../contexts/AuthContext.js';
 import { useOptionalTheme } from '../../contexts/ThemeContext.js';
 import { SoundFX } from '../../lib/soundEffects.js';
@@ -145,9 +146,9 @@ export function CentralModulesHome() {
               <span>Portal de Entrada · Birth Hub 360°</span>
             </div>
             <h1 className="font-display text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-tight text-ink">
-              Olá, {firstName} — Central de Módulos
+              Olá, {firstName} — <span className="text-[#0284C7] dark:text-[var(--orbit-blue)]">Central de Módulos</span>
             </h1>
-            <p className="mt-1 text-sm md:text-base text-ink-2 max-w-2xl">
+            <p className="mt-1.5 text-sm md:text-base font-semibold text-amber-700 dark:text-amber-400 max-w-2xl">
               Navegue pelos 11 workspaces oficiais do sistema comercial integrado. Escolha o módulo
               desejado ou alterne a proposta de visualização no laboratório.
             </p>
@@ -428,11 +429,25 @@ function BentoEditorialView({ modules, onNavigate, isDark }: ProposalProps) {
                 </div>
               </div>
 
-              {/* Título Oficial Comercial (sem prefixo técnico) */}
-              <h3 className="font-display text-lg md:text-xl font-bold tracking-tight text-ink group-hover:text-[var(--brand)] transition-colors">
-                {m.label}
+              {/* Título Oficial Comercial com Emoji e cor temática única */}
+              <h3
+                className="font-display text-lg md:text-xl font-bold tracking-tight transition-colors flex items-center gap-2"
+                style={{
+                  color: isDark ? theme.titleColorDark : theme.titleColorLight,
+                }}
+              >
+                <span aria-hidden="true" className="select-none text-xl">{getModuleEmoji(m.id)}</span>
+                <span>{m.label}</span>
               </h3>
-              <p className="mt-1 text-xs md:text-sm text-ink-2 font-medium">{m.tagline}</p>
+              {/* Subtítulo com cor estritamente DIFERENTE do Título */}
+              <p
+                className="mt-1 text-xs md:text-sm font-semibold tracking-wide"
+                style={{
+                  color: isDark ? theme.subtitleColorDark : theme.subtitleColorLight,
+                }}
+              >
+                {m.tagline}
+              </p>
               <p className="mt-2 text-xs text-ink-2/80 line-clamp-2">{theme.description}</p>
             </div>
 
@@ -532,10 +547,23 @@ function GridModularView({ modules, onNavigate, isDark }: ProposalProps) {
                 </span>
               </div>
 
-              <h3 className="font-display text-base font-bold text-ink group-hover:text-brand transition-colors">
-                {m.label}
+              <h3
+                className="font-display text-base font-bold transition-colors flex items-center gap-2"
+                style={{
+                  color: isDark ? theme.titleColorDark : theme.titleColorLight,
+                }}
+              >
+                <span aria-hidden="true" className="select-none text-lg">{getModuleEmoji(m.id)}</span>
+                <span>{m.label}</span>
               </h3>
-              <p className="mt-1 text-xs text-ink-2 font-medium line-clamp-1">{m.tagline}</p>
+              <p
+                className="mt-1 text-xs font-semibold line-clamp-1 tracking-wide"
+                style={{
+                  color: isDark ? theme.subtitleColorDark : theme.subtitleColorLight,
+                }}
+              >
+                {m.tagline}
+              </p>
               <p className="mt-2 text-xs text-ink-2/80 line-clamp-2 leading-relaxed">
                 {theme.description}
               </p>
@@ -582,21 +610,21 @@ function HubOrbitalView({ modules, onNavigate, isDark }: ProposalProps) {
         id: 'revenue',
         title: 'Cluster Comercial & Receita',
         description: 'Gestão direta de deals, clientes, contatos e jornadas de vendas.',
-        color: '#00D4FF',
+        color: 'var(--orbit-blue)',
         ids: ['p01', 'p02', 'p03', 'm11'],
       },
       {
         id: 'intelligence',
         title: 'Cluster Cognitivo & Previsão',
         description: 'Copiloto de IA, radar de riscos, metas ponderadas e relatórios.',
-        color: '#8B7DFF',
+        color: 'var(--iris)',
         ids: ['p04', 'p05', 'p06'],
       },
       {
         id: 'operations',
         title: 'Cluster Operacional & Conectividade',
         description: 'Automações com Bitrix24, telefonia, equipe e vendas em campo.',
-        color: '#FF2D9B',
+        color: 'var(--pink)',
         ids: ['p07', 'p08', 'm09', 'm10'],
       },
     ];
@@ -711,10 +739,23 @@ function HubOrbitalView({ modules, onNavigate, isDark }: ProposalProps) {
                             {m.label.split(' ')[0]}
                           </span>
                         </div>
-                        <h4 className="font-display text-sm font-bold text-ink group-hover:text-brand transition-colors">
-                          {m.label}
+                        <h4
+                          className="font-display text-sm font-bold transition-colors flex items-center gap-1.5"
+                          style={{
+                            color: isDark ? theme.titleColorDark : theme.titleColorLight,
+                          }}
+                        >
+                          <span aria-hidden="true" className="select-none text-base">{getModuleEmoji(m.id)}</span>
+                          <span>{m.label}</span>
                         </h4>
-                        <p className="mt-1 text-[11px] text-ink-2 line-clamp-2">{m.tagline}</p>
+                        <p
+                          className="mt-1 text-[11px] font-semibold line-clamp-2 tracking-wide"
+                          style={{
+                            color: isDark ? theme.subtitleColorDark : theme.subtitleColorLight,
+                          }}
+                        >
+                          {m.tagline}
+                        </p>
                       </div>
 
                       <div
@@ -750,7 +791,7 @@ function WorkflowPipelineView({ modules, onNavigate, isDark }: ProposalProps) {
         step: '01',
         title: 'Atração & Inteligência de Mercado',
         subtitle: 'Mapeamento de TAM, prospecção ativa e sinais sociais de compra',
-        color: '#FF2D9B',
+        color: 'var(--pink)',
         ids: ['p02', 'm11'],
       },
       {
@@ -758,7 +799,7 @@ function WorkflowPipelineView({ modules, onNavigate, isDark }: ProposalProps) {
         step: '02',
         title: 'Engajamento & Orquestração',
         subtitle: 'Playbooks, cadências multicanal, roteiros e mesa de tratamento',
-        color: '#8B7DFF',
+        color: 'var(--iris)',
         ids: ['p03', 'p08'],
       },
       {
@@ -766,7 +807,7 @@ function WorkflowPipelineView({ modules, onNavigate, isDark }: ProposalProps) {
         step: '03',
         title: 'Conversão & Inteligência Cognitiva',
         subtitle: 'Pipeline CRM 360°, propostas, decisores e copiloto IA em tempo real',
-        color: '#00D4FF',
+        color: 'var(--orbit-blue)',
         ids: ['p01', 'p06'],
       },
       {
@@ -774,7 +815,7 @@ function WorkflowPipelineView({ modules, onNavigate, isDark }: ProposalProps) {
         step: '04',
         title: 'Previsibilidade & Escala de Performance',
         subtitle: 'Analytics de funil, ranking, metas e forecast ponderado',
-        color: '#FFC107',
+        color: 'var(--gold)',
         ids: ['p04', 'p05'],
       },
       {
@@ -890,10 +931,21 @@ function WorkflowPipelineView({ modules, onNavigate, isDark }: ProposalProps) {
                           </span>
                         </div>
 
-                        <h5 className="font-display text-base font-bold text-ink group-hover:text-brand transition-colors">
-                          {m.label}
+                        <h5
+                          className="font-display text-base font-bold transition-colors flex items-center gap-2"
+                          style={{
+                            color: isDark ? theme.titleColorDark : theme.titleColorLight,
+                          }}
+                        >
+                          <span aria-hidden="true" className="select-none text-base">{getModuleEmoji(m.id)}</span>
+                          <span>{m.label}</span>
                         </h5>
-                        <p className="mt-1 text-xs text-ink-2 font-medium line-clamp-1">
+                        <p
+                          className="mt-1 text-xs font-semibold line-clamp-1 tracking-wide"
+                          style={{
+                            color: isDark ? theme.subtitleColorDark : theme.subtitleColorLight,
+                          }}
+                        >
                           {m.tagline}
                         </p>
                         <p className="mt-2 text-xs text-ink-2/80 line-clamp-2 leading-relaxed">

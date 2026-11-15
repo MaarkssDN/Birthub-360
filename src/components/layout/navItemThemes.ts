@@ -35,22 +35,22 @@ export function getModuleEmoji(moduleId: string): string {
  */
 const PALETTES = {
   cyan: {
-    color: '#00D4FF',
+    color: 'var(--orbit-blue)',
     lightColor: '#0284C7', // sky-600 / sky-700
     darkColor: '#38BDF8',
   },
   pink: {
-    color: '#FF2D9B',
+    color: 'var(--pink)',
     lightColor: '#BE185D', // pink-700
     darkColor: '#F472B6',
   },
   gold: {
-    color: '#FFC107',
+    color: 'var(--gold)',
     lightColor: '#B45309', // amber-700
     darkColor: '#FBBF24',
   },
   iris: {
-    color: '#8B7DFF',
+    color: 'var(--iris)',
     lightColor: '#6D28D9', // violet-700
     darkColor: '#A78BFA',
   },

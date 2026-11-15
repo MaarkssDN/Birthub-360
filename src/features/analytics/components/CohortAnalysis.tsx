@@ -63,11 +63,11 @@ export function CohortAnalysis() {
 
   return (
     <Card
-      className="mt-6 relative overflow-hidden group/cohort bg-[#1C1D24] border-white/5"
+      className="mt-6 relative overflow-hidden group/cohort bg-surface-2 border-white/5"
       padding="sm"
     >
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#8B7DFF]/40 to-transparent opacity-0 group-hover/cohort:opacity-100 transition-opacity duration-700 z-20"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-iris/40 to-transparent opacity-0 group-hover/cohort:opacity-100 transition-opacity duration-700 z-20"
         aria-hidden="true"
       />
       <CardHeader className="flex flex-row items-center justify-between relative z-30">
@@ -75,20 +75,20 @@ export function CohortAnalysis() {
         <button
           type="button"
           onClick={downloadCsv}
-          className="bg-[#8B7DFF] text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-[#8B7DFF]/90 transition-colors"
+          className="bg-iris text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-iris/90 transition-colors"
         >
           Baixar CSV
         </button>
       </CardHeader>
       <CardContent>
         {cohortData.length === 0 ? (
-          <div className="text-sm text-slate-400 text-center py-4">
+          <div className="text-sm text-ink-2 text-center py-4">
             Nenhum dado de cohort disponível.
           </div>
         ) : (
           <div className="overflow-x-auto rounded-xl border border-white/5">
             <table className="w-full text-sm text-left">
-              <thead className="bg-[#15151A]/50 text-slate-400">
+              <thead className="bg-surface/50 text-ink-2">
                 <tr>
                   <th className="px-4 py-3 font-semibold">Mês</th>
                   <th className="px-4 py-3 font-semibold">Leads Criados</th>
@@ -96,7 +96,7 @@ export function CohortAnalysis() {
                   <th className="px-4 py-3 font-semibold">Ganhos em 60 dias</th>
                 </tr>
               </thead>
-              <tbody className="text-slate-300">
+              <tbody className="text-ink">
                 {cohortData.map((row) => (
                   <tr key={row.month} className="border-t border-white/5 hover:bg-white/5">
                     <td className="px-4 py-3">{row.month}</td>

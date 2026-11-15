@@ -79,7 +79,7 @@ export function CharacterDetailPanel({
       initial={{ x: 40, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: 40, opacity: 0 }}
-      className="fixed inset-y-0 right-0 z-[950] w-full max-w-md border-l border-white/10 bg-[#0B0F1A]/95 backdrop-blur-xl flex flex-col"
+      className="fixed inset-y-0 right-0 z-[950] w-full max-w-md border-l border-white/10 bg-[var(--palette-neon-card)]/95 backdrop-blur-xl flex flex-col"
       role="dialog"
       aria-label={`Detalhes do personagem ${entry.name}`}
       data-testid="character-detail-panel"
@@ -91,7 +91,7 @@ export function CharacterDetailPanel({
             className="bh-character-avatar flex items-center justify-center w-12 h-12 rounded-full shrink-0"
             data-state={exec.visualState}
             style={{
-              background: `linear-gradient(135deg, ${entry.palette.primary}33, ${entry.palette.secondary}1f)`,
+              background: `linear-gradient(135deg, color-mix(in srgb, ${entry.palette.primary} 20%, transparent), color-mix(in srgb, ${entry.palette.secondary} 12%, transparent))`,
               boxShadow: entry.palette.halo,
             }}
           >

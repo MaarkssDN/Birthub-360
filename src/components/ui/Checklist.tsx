@@ -33,7 +33,7 @@ export function Checklist({
             className={cn(
               'flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border transition-transform duration-200 group-hover:scale-110',
               item.checked
-                ? 'border-ok/35 bg-ok/15 text-ok shadow-[0_0_10px_rgba(16,185,129,0.2)]'
+                ? 'border-ok/35 bg-ok/15 text-ok shadow-[0_0_10px_color-mix(in_srgb,var(--ok)_20%,transparent)]'
                 : 'border-brand/25 bg-brand/10 text-brand shadow-xs',
             )}
           >

@@ -91,13 +91,13 @@ export function PillarDetailDialog({
     if (theme === 'dark') {
       switch (themeColor) {
         case 'pink':
-          return 'border-pink-500/40 shadow-[0_0_50px_rgba(255,45,155,0.18),0_25px_70px_rgba(0,0,0,0.85)]';
+          return 'border-pink-500/40 shadow-[0_0_50px_color-mix(in_srgb,var(--pink)_18%,transparent),0_25px_70px_rgba(0,0,0,0.85)]';
         case 'gold':
-          return 'border-amber-500/40 shadow-[0_0_50px_rgba(255,193,7,0.18),0_25px_70px_rgba(0,0,0,0.85)]';
+          return 'border-amber-500/40 shadow-[0_0_50px_color-mix(in_srgb,var(--gold)_18%,transparent),0_25px_70px_rgba(0,0,0,0.85)]';
         case 'iris':
-          return 'border-violet-500/40 shadow-[0_0_50px_rgba(139,125,255,0.18),0_25px_70px_rgba(0,0,0,0.85)]';
+          return 'border-violet-500/40 shadow-[0_0_50px_color-mix(in_srgb,var(--iris)_18%,transparent),0_25px_70px_rgba(0,0,0,0.85)]';
         default:
-          return 'border-cyan-500/40 shadow-[0_0_50px_rgba(0,212,255,0.18),0_25px_70px_rgba(0,0,0,0.85)]';
+          return 'border-cyan-500/40 shadow-[0_0_50px_color-mix(in_srgb,var(--orbit-blue)_18%,transparent),0_25px_70px_rgba(0,0,0,0.85)]';
       }
     }
     // Light Mode

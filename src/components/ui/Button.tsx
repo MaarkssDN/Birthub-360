@@ -15,18 +15,18 @@ const buttonVariants = cva(
       variant: {
         // Padrão Executivo High-Contrast
         default:
-          'rounded-2xl bg-gradient-to-b from-[#0369a1] to-[#075985] dark:from-[#00b4d8] dark:to-[#0284c7] text-on-brand shadow-[0_2px_8px_rgba(2,132,199,0.25),inset_0_1px_0_rgba(255,255,255,0.25)] hover:shadow-[0_4px_16px_rgba(2,132,199,0.35)] hover:brightness-105 border-t border-t-white/30',
+          'rounded-2xl bg-gradient-to-b from-[color-mix(in_srgb,var(--orbit-blue)_80%,white)] to-[color-mix(in_srgb,var(--orbit-blue)_55%,black)] dark:from-[color-mix(in_srgb,var(--orbit-blue)_75%,white)] dark:to-[color-mix(in_srgb,var(--orbit-blue)_45%,black)] text-on-brand shadow-[0_2px_8px_color-mix(in_srgb,var(--orbit-blue)_25%,transparent),inset_0_1px_0_rgba(255,255,255,0.25)] hover:shadow-[0_4px_16px_color-mix(in_srgb,var(--orbit-blue)_35%,transparent)] hover:brightness-105 border-t border-t-white/30',
         primary:
-          'rounded-2xl bg-gradient-to-b from-[#0369a1] to-[#075985] dark:from-[#00b4d8] dark:to-[#0284c7] text-on-brand shadow-[0_2px_8px_rgba(2,132,199,0.25),inset_0_1px_0_rgba(255,255,255,0.25)] hover:shadow-[0_4px_16px_rgba(2,132,199,0.35)] hover:brightness-105 border-t border-t-white/30',
+          'rounded-2xl bg-gradient-to-b from-[color-mix(in_srgb,var(--orbit-blue)_80%,white)] to-[color-mix(in_srgb,var(--orbit-blue)_55%,black)] dark:from-[color-mix(in_srgb,var(--orbit-blue)_75%,white)] dark:to-[color-mix(in_srgb,var(--orbit-blue)_45%,black)] text-on-brand shadow-[0_2px_8px_color-mix(in_srgb,var(--orbit-blue)_25%,transparent),inset_0_1px_0_rgba(255,255,255,0.25)] hover:shadow-[0_4px_16px_color-mix(in_srgb,var(--orbit-blue)_35%,transparent)] hover:brightness-105 border-t border-t-white/30',
 
         // Acento Elétrico Lime/Chartreuse (Referência Ronas IT / Spatial UI)
         electric:
-          'rounded-full bg-[#D4F434] hover:bg-[#C5E826] text-[#121316] font-display font-bold shadow-[0_2px_12px_rgba(212,244,52,0.35),inset_0_1px_0_rgba(255,255,255,0.6)] hover:shadow-[0_4px_20px_rgba(212,244,52,0.45)] hover:scale-[1.02] border border-[#BDE01B]',
-        lime: 'rounded-full bg-[#D4F434] hover:bg-[#C5E826] text-[#121316] font-display font-bold shadow-[0_2px_12px_rgba(212,244,52,0.35),inset_0_1px_0_rgba(255,255,255,0.6)] hover:shadow-[0_4px_20px_rgba(212,244,52,0.45)] hover:scale-[1.02] border border-[#BDE01B]',
+          'rounded-full bg-[var(--neon-lime)] hover:bg-[var(--neon-lime-hover)] text-[#121316] font-display font-bold shadow-[0_2px_12px_color-mix(in_srgb,var(--neon-lime)_35%,transparent),inset_0_1px_0_rgba(255,255,255,0.6)] hover:shadow-[0_4px_20px_color-mix(in_srgb,var(--neon-lime)_45%,transparent)] hover:scale-[1.02] border border-[#BDE01B]',
+        lime: 'rounded-full bg-[var(--neon-lime)] hover:bg-[var(--neon-lime-hover)] text-[#121316] font-display font-bold shadow-[0_2px_12px_color-mix(in_srgb,var(--neon-lime)_35%,transparent),inset_0_1px_0_rgba(255,255,255,0.6)] hover:shadow-[0_4px_20px_color-mix(in_srgb,var(--neon-lime)_45%,transparent)] hover:scale-[1.02] border border-[#BDE01B]',
 
         // Dourado/Âmbar Executivo
         brand:
-          'rounded-2xl bg-gradient-to-b from-[#D4F434] to-[#BEE61C] text-[#121316] font-display font-bold shadow-[0_2px_12px_rgba(212,244,52,0.3),inset_0_1px_0_rgba(255,255,255,0.6)] hover:brightness-105 border-t border-t-white/40',
+          'rounded-2xl bg-gradient-to-b from-[var(--neon-lime)] to-[var(--neon-lime-hover)] text-[#121316] font-display font-bold shadow-[0_2px_12px_color-mix(in_srgb,var(--neon-lime)_30%,transparent),inset_0_1px_0_rgba(255,255,255,0.6)] hover:brightness-105 border-t border-t-white/40',
 
         // Card Superfície / Secundário Flutuante
         secondary:
@@ -49,7 +49,7 @@ const buttonVariants = cva(
         link: 'text-primary underline-offset-4 hover:underline',
 
         cosmic:
-          'rounded-2xl bg-gradient-to-r from-slate-900 via-[#14141A] to-slate-900 text-white border border-brand/30 shadow-[0_2px_14px_rgba(0,212,255,0.2)] hover:border-brand/60 hover:shadow-[0_4px_22px_rgba(0,212,255,0.3)]',
+          'rounded-2xl bg-gradient-to-r from-slate-900 via-[var(--palette-neon-black)] to-slate-900 text-white border border-brand/30 shadow-[0_2px_14px_color-mix(in_srgb,var(--orbit-blue)_20%,transparent)] hover:border-brand/60 hover:shadow-[0_4px_22px_color-mix(in_srgb,var(--orbit-blue)_30%,transparent)]',
 
         vancouver:
           'rounded-2xl border border-line bg-surface/40 hover:bg-surface/80 text-ink hover:border-brand/40 shadow-xs',
