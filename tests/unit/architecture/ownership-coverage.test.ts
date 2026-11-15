@@ -50,7 +50,7 @@ describe('parseOwnershipMatrix', () => {
     expect(entries).toContainEqual({ scope: 'prisma/schema.prisma', owner: 'Agente 01' });
     expect(entries).toContainEqual({ scope: 'src/App.tsx', owner: 'Agente 02' });
     expect(entries).toContainEqual({ scope: '.github/workflows/**', owner: 'Agente 08' });
-    expect(entries).toContainEqual({ scope: 'k8s/**', owner: 'Agente 10' });
+    expect(entries).toContainEqual({ scope: 'charts/**', owner: 'Agente 10' });
     expect(entries).toContainEqual({
       scope: '.agents/prompts/**',
       owner: 'decisão humana',
@@ -126,7 +126,7 @@ describe('helpers de escopo', () => {
   it('scopeExistsInRepo valida arquivos e diretórios-base de glob', () => {
     expect(scopeExistsInRepo('src/App.tsx', ROOT)).toBe(true);
     expect(scopeExistsInRepo('Dockerfile', ROOT)).toBe(true);
-    expect(scopeExistsInRepo('k8s/**', ROOT)).toBe(true);
+    expect(scopeExistsInRepo('charts/**', ROOT)).toBe(true);
     expect(scopeExistsInRepo('navegação principal', ROOT)).toBe(true); // prosa: não verificável
     expect(scopeExistsInRepo('path/que/nao/existe/**', ROOT)).toBe(false);
   });
