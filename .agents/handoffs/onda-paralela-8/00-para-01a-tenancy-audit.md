@@ -1,7 +1,7 @@
 De: 00 — Coordenador
 Para: 01A — Confiabilidade de Dados, RLS e Retenção
 Onda: paralela-8
-Status: aberto
+Status: resolvido
 Prioridade: alto (tenancy/LGPD)
 
 ## Problema
@@ -20,3 +20,9 @@ AGENTS.md exige preservação de RBAC, RLS e isolamento por `organizationId`. N�
 
 ## Contexto
 Worktree: `.claude/worktrees/ag-01a`, branch `agente/01a-tenancy-audit`. Não alterar `prisma/schema.prisma` nem migrations — se faltar policy/coluna, abrir handoff para 01.
+
+## Resolução
+
+Auditoria concluída em 2026-11-14 no worktree `C:\Github\Birthub-360-wt-o2-01a` (branch `agente/01a-onda2-tenancy-audit`). Relatório completo: `.agents/handoffs/onda-paralela-8/01a-para-00-tenancy-audit-relatorio-20261114.md`.
+
+Resumo: padrão de escopo por `organizationId` correto em todo o módulo; **nenhum vazamento cross-tenant comprovado em regime normal**. Achados: 1 MÉDIA composta (FKs referenciadas pelo cliente — `companyId`/`contactId`/`pipelineId`/`pipelineStageId` em leads, `productId` em deal items, `leadId`/`companyId`/`contactId` em documentos — gravadas sem validar tenant), 1 MÉDIA-BAIXA (gate de fechamento CYC-007 grava Note/DealClosureEvent antes de validar tenant do lead), 3 BAIXA (writes sem `organizationId` no `where`, defense-in-depth) e 1 BAIXA (nome de usuário em erro 409). Recomenda-se handoff ao Agente 04 para as correções — fora do escopo de auditoria do 01A. Gates: `tsc --noEmit` limpo; 107 testes unitários do módulo passando.
