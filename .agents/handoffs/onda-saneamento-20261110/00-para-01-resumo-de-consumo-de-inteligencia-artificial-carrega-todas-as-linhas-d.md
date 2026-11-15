@@ -59,3 +59,5 @@ Executar a tarefa `TAREFA-SANEAMENTO-012` estritamente dentro da propriedade de 
 - **Run report:** `.agents/runs/agente-01-tarefa-saneamento-012.md`. Aguardando 00 confirmar reatribuição e parecer do 24.
 
 > Reconciliação 2026-11-14 (Agente 00): veredicto DEFEITO-REAL — resolução é redirecionamento; ofensor persiste. Correção pendente de despacho. Ver RESULTADOS-RECONCILIACAO-20261114.md.
+
+**Atualização 2026-11 (Agente 07):** o ofensor real redirecionado ao 07 foi corrigido na branch `agente/07-reconciliacao-heatmap` — `agentUsageHeatmap.service.ts` agora usa `agentMemory.groupBy` (sem findMany sem limite), custo fabricado removido (`costUsd`/`avgLatencyMs` retornam `null`, pois não há fonte real por `agentType`; custo real segue em `/api/agent/cost-analysis`). Evidências no handoff `01-para-07-resumo-consumo-ia-findmany-sem-agregacao.md` (seção Resolução). Aguardando integração e parecer do Agente 24.
