@@ -34,7 +34,7 @@ export class IdempotencyManager {
 
   constructor(options: IdempotencyManagerOptions = {}) {
     this.ttlMs = options.ttlMs ?? DEFAULT_TTL_MS;
-    this.maxKeys = options.maxKeys ?? DEFAULT_MAX_KEYS;
+    this.maxKeys = Math.max(1, options.maxKeys ?? DEFAULT_MAX_KEYS);
     const sweepMs = options.sweepIntervalMs ?? DEFAULT_SWEEP_INTERVAL_MS;
     if (sweepMs <= 0) {
       this.sweepTimer = null;
@@ -46,16 +46,21 @@ export class IdempotencyManager {
     }
   }
 
-  /** Remove chaves expiradas; chamado pelo timer e defensivamente em cada acquire. */
-  private sweep(now = Date.now()): void {
-    for (const [key, expiresAt] of this.processedKeys) {
-      if (expiresAt <= now) this.processedKeys.delete(key);
-    }
+  /** Despeja as entradas mais antigas (Map preserva ordem de inserção) até caber no teto. */
+  private evictOverflow(): void {
     while (this.processedKeys.size > this.maxKeys) {
       const oldest = this.processedKeys.keys().next();
       if (oldest.done) break;
       this.processedKeys.delete(oldest.value);
     }
+  }
+
+  /** Remove chaves expiradas; chamado pelo timer e defensivamente em cada acquire. */
+  private sweep(now = Date.now()): void {
+    for (const [key, expiresAt] of this.processedKeys) {
+      if (expiresAt <= now) this.processedKeys.delete(key);
+    }
+    this.evictOverflow();
   }
 
   public async acquireLock(idempotencyKey: string): Promise<boolean> {
@@ -72,6 +77,8 @@ export class IdempotencyManager {
     // por idade depende da ordem de inserção).
     this.processedKeys.delete(idempotencyKey);
     this.processedKeys.set(idempotencyKey, now + this.ttlMs);
+    // O teto é aplicado DEPOIS do insert: evictar antes permitiria size = maxKeys + 1.
+    this.evictOverflow();
     return true;
   }
 

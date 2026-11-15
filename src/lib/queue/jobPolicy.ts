@@ -3,7 +3,7 @@ import type { JobsOptions } from 'bullmq';
 /**
  * Política padrão de governança BullMQ (MEL-48, Onda 6 — Agente 16).
  *
- * Por que existe: várias filas de domínio (`src/features/**/jobs/**`) são criadas com
+ * Por que existe: várias filas de domínio (jobs em `src/features/<dominio>/jobs/`) são criadas com
  * `new Queue(name, { connection })` sem `defaultJobOptions`. Sem isso o BullMQ assume
  * `attempts: 1` (nenhum retry — uma falha transitória vira perda) e `removeOnFail`
  * indefinido (falhas acumulam no Redis para sempre). Este objeto é o ponto único de adoção:
