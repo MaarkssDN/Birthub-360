@@ -77,8 +77,11 @@ describe('Capability & Permission Engine (PROMPT 3 + hardening PROMPT 3B)', () =
 
   describe('seed idempotente', () => {
     it('reexecutar o seed do Capability Engine não duplica nada', async () => {
-      // Timeout maior: o seed grava ~1000 grants sequencialmente (927 AgentCapabilityGrant + 113
-      // RoleCapabilityGrant) — rodar 2x dentro de um mesmo teste passa do timeout default (5s).
+      // Onda 6 / MEL-44: o beforeAll já rodou o seed uma vez — UMA re-execução prova idempotência
+      // (a segunda chamada extra dobrava ~2000 upserts sequenciais sem adicionar asserção). O
+      // seed grava ~1000 grants sequenciais (927 AgentCapabilityGrant + 113 RoleCapabilityGrant)
+      // e mede ~60s+ contra o Postgres remoto compartilhado sob carga do enxame — 180s finito
+      // cobre o trabalho real sem mascarar (o seed completa de verdade).
       const before = await prisma.capabilityDefinition.count({
         where: { code: { in: CAPABILITY_CODES } },
       });
@@ -89,7 +92,6 @@ describe('Capability & Permission Engine (PROMPT 3 + hardening PROMPT 3B)', () =
         where: { capabilityDefinition: { code: { in: CAPABILITY_CODES } } },
       });
 
-      await runCapabilityEngineSeed();
       await runCapabilityEngineSeed();
 
       const after = await prisma.capabilityDefinition.count({
@@ -105,7 +107,7 @@ describe('Capability & Permission Engine (PROMPT 3 + hardening PROMPT 3B)', () =
       expect(after).toBe(before);
       expect(afterAgentGrants).toBe(beforeAgentGrants);
       expect(afterRoleGrants).toBe(beforeRoleGrants);
-    }, 60000);
+    }, 180000);
 
     it('não existem dois CapabilityDefinition com o mesmo code (no schema duplication)', async () => {
       const rows = await prisma.capabilityDefinition.findMany({

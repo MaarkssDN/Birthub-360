@@ -47,7 +47,11 @@ describe('scripts/import-agent-catalog.ts — PROMPT 2 (Birth Hub 360)', () => {
       where: { agentDefinition: { code: { in: sourceAgentCodes } } },
     });
 
-    await runAgentCatalogImport();
+    // Onda 6 / MEL-44: antes rodava o import 2x aqui — mas o beforeAll já executou uma vez,
+    // então UMA re-execução já prova idempotência (a 2ª chamada extra só dobrava o tempo sem
+    // adicionar asserção). Uma passada basta: ~379 upserts sequenciais contra o Postgres
+    // remoto compartilhado mede ~30-60s sob carga do enxame — timeout calibrado para o trabalho
+    // real, finito (não é mascaramento: o seed roda de verdade até o fim).
     await runAgentCatalogImport();
 
     const after = await prisma.agentDefinition.count({ where: { code: { in: sourceAgentCodes } } });
@@ -56,10 +60,7 @@ describe('scripts/import-agent-catalog.ts — PROMPT 2 (Birth Hub 360)', () => {
     });
     expect(after).toBe(before);
     expect(afterGrants).toBe(beforeGrants);
-    // Timeout maior: importar os 379 agentes 2x é ~700 upserts sequenciais — dentro do timeout
-    // default (5s) quando este arquivo roda sozinho, mas passa disso quando a suíte de integração
-    // inteira acumula estado (mais linhas nas mesmas tabelas tornam cada upsert mais lento).
-  }, 30000);
+  }, 120000);
 
   it('não existem dois AgentDefinition com o mesmo code (unicidade)', async () => {
     const rows = await prisma.agentDefinition.findMany({
@@ -197,5 +198,8 @@ describe('scripts/import-agent-catalog.ts — PROMPT 2 (Birth Hub 360)', () => {
     const reloaded = await prisma.user.findUnique({ where: { id: admin.id } });
     expect(reloaded?.role).toBe('ADMIN');
     await prisma.user.delete({ where: { id: admin.id } });
-  }, 30000);
+    // Onda 6 / MEL-44: uma execução completa do importador (~379 upserts sequenciais) contra o
+    // Postgres remoto compartilhado mede ~30-60s sob carga — o timeout de 30s estourava com o
+    // import ainda progredindo. 120s finito cobre o trabalho real sem mascarar regressão.
+  }, 120000);
 });
