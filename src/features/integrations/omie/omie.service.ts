@@ -72,49 +72,54 @@ async function callOmieRpc(
   const res = await circuitGuard.execute('omie', () =>
     retryWithBackoff(
       async () => {
-      let response: Response;
-      try {
-        response = await fetchWithTimeout(
-          `${OMIE_API_BASE}${endpoint}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ call, app_key: appKey, app_secret: appSecret, param: [param] }),
-          },
-          OMIE_TIMEOUT_MS,
-          OMIE_ALLOWED_HOSTS,
-        );
-      } catch (err: any) {
-        if (err instanceof DisallowedHostError) throw err;
-        if (err instanceof HttpTimeoutError) {
+        let response: Response;
+        try {
+          response = await fetchWithTimeout(
+            `${OMIE_API_BASE}${endpoint}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                call,
+                app_key: appKey,
+                app_secret: appSecret,
+                param: [param],
+              }),
+            },
+            OMIE_TIMEOUT_MS,
+            OMIE_ALLOWED_HOSTS,
+          );
+        } catch (err: any) {
+          if (err instanceof DisallowedHostError) throw err;
+          if (err instanceof HttpTimeoutError) {
+            throw new TransientHttpError(
+              `Tempo limite esgotado ao comunicar com o Omie (timeout ${OMIE_TIMEOUT_MS / 1000}s).`,
+              undefined,
+              undefined,
+              err,
+            );
+          }
           throw new TransientHttpError(
-            `Tempo limite esgotado ao comunicar com o Omie (timeout ${OMIE_TIMEOUT_MS / 1000}s).`,
+            'Falha de rede ao comunicar com o Omie.',
             undefined,
             undefined,
             err,
           );
         }
-        throw new TransientHttpError(
-          'Falha de rede ao comunicar com o Omie.',
-          undefined,
-          undefined,
-          err,
-        );
-      }
-      if (response.status === 429) {
-        throw new TransientHttpError(
-          'Omie aplicou limite de chamadas (HTTP 429).',
-          429,
-          parseRetryAfterMs(response) ?? undefined,
-        );
-      }
-      if (response.status >= 500) {
-        throw new TransientHttpError(
-          `Omie respondeu com erro de servidor (HTTP ${response.status}).`,
-          response.status,
-        );
-      }
-      return response;
+        if (response.status === 429) {
+          throw new TransientHttpError(
+            'Omie aplicou limite de chamadas (HTTP 429).',
+            429,
+            parseRetryAfterMs(response) ?? undefined,
+          );
+        }
+        if (response.status >= 500) {
+          throw new TransientHttpError(
+            `Omie respondeu com erro de servidor (HTTP ${response.status}).`,
+            response.status,
+          );
+        }
+        return response;
       },
       { label: 'omie', maxAttempts: OMIE_MAX_ATTEMPTS },
     ),
