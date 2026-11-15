@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 /**
  * `assertSafeExternalUrl` (promovido de `src/lib/adapters/crm/Bitrix24Adapter.ts`, onde nasceu só
@@ -33,6 +33,10 @@ vi.mock('undici', async (importOriginal) => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
 });
 
 describe('assertSafeExternalUrl — rejeita IP privado/loopback/metadata', () => {
@@ -210,5 +214,173 @@ describe('safeFetch — mesmo guard de SSRF, conexão real fixada nos endereços
     // A validação (que já fez o `dns.lookup`) e a conexão real fixada não disparam uma
     // segunda resolução de DNS — só a checagem inicial.
     expect(lookupMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+/**
+ * Exceção aprovada pelo usuário (handoff `.agents/handoffs/onda-2/15-para-07-webhook-fetch-safeFetch.md`):
+ * `http:` é tolerado APENAS para loopback (`localhost`, `127.0.0.0/8`, `::1`) quando
+ * `NODE_ENV !== 'production'`. Em produção e para qualquer host não-loopback, HTTPS continua
+ * obrigatório — e o bloqueio de IP privado/reservado não-loopback (10.x, 192.168.x etc.) segue
+ * valendo em qualquer ambiente.
+ */
+describe('exceção http loopback fora de produção', () => {
+  it('aceita http://localhost fora de produção (DNS resolve para loopback)', async () => {
+    lookupMock.mockResolvedValue([{ address: '127.0.0.1', family: 4 }]);
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('http://localhost/hook')).resolves.toBeUndefined();
+  });
+
+  it('aceita http://127.0.0.1 fora de produção (IP literal, sem DNS)', async () => {
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('http://127.0.0.1:8080/hook')).resolves.toBeUndefined();
+    expect(lookupMock).not.toHaveBeenCalled();
+  });
+
+  it('aceita http://[::1] fora de produção (IPv6 loopback literal)', async () => {
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('http://[::1]:8080/hook')).resolves.toBeUndefined();
+  });
+
+  it('mantém https://localhost rejeitado — a exceção é SÓ de scheme http', async () => {
+    lookupMock.mockResolvedValue([{ address: '::1', family: 6 }]);
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('https://localhost/')).rejects.toThrow(/não permitido/i);
+  });
+
+  it('rejeita http://localhost em produção mesmo com DNS loopback', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    lookupMock.mockResolvedValue([{ address: '127.0.0.1', family: 4 }]);
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('http://localhost/')).rejects.toThrow(/https/i);
+  });
+
+  it('rejeita http://127.0.0.1 em produção', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('http://127.0.0.1/')).rejects.toThrow(/https/i);
+  });
+
+  it('rejeita http:// para host externo em qualquer ambiente', async () => {
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('http://webhook.exemplo.com/')).rejects.toThrow(/https/i);
+  });
+
+  it('rejeita http:// para IP privado não-loopback (10.x) mesmo fora de produção', async () => {
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('http://10.0.0.1/')).rejects.toThrow(/https/i);
+    vi.stubEnv('NODE_ENV', 'production');
+    await expect(assertSafeExternalUrl('http://10.0.0.1/')).rejects.toThrow(/https/i);
+  });
+
+  it('rejeita https://localhost em produção (loopback não é exceção em prod)', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    lookupMock.mockResolvedValue([{ address: '127.0.0.1', family: 4 }]);
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('https://localhost/')).rejects.toThrow(/não permitido/i);
+  });
+
+  it('safeFetch busca http://localhost fora de produção com conexão fixada no loopback', async () => {
+    lookupMock.mockResolvedValue([{ address: '127.0.0.1', family: 4 }]);
+    fetchMock.mockResolvedValue(new Response('ok', { status: 200 }));
+    const { safeFetch } = await import('@/shared/security/urlGuard');
+
+    const res = await safeFetch('http://localhost:8080/hook', { method: 'POST' });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0][0]).toBe('http://localhost:8080/hook');
+    expect(res.status).toBe(200);
+  });
+
+  it('safeFetch rejeita http://localhost em produção sem chamar fetch', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    const { safeFetch } = await import('@/shared/security/urlGuard');
+
+    await expect(safeFetch('http://localhost/')).rejects.toThrow(/https/i);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  // Registros DNS de hostname loopback precisam ser TODOS loopback — um `localhost` que
+  // resolve para IP público/privado-não-loopback não pode ser buscado em HTTP puro.
+  it('aceita http://foo.localhost quando o DNS resolve só para loopback', async () => {
+    lookupMock.mockResolvedValue([{ address: '::1', family: 6 }]);
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('http://foo.localhost/hook')).resolves.toBeUndefined();
+  });
+
+  it('rejeita http://foo.localhost quando o DNS resolve para IP público', async () => {
+    lookupMock.mockResolvedValue([{ address: '8.8.8.8', family: 4 }]);
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('http://foo.localhost/hook')).rejects.toThrow(
+      /não-loopback/i,
+    );
+  });
+
+  it('rejeita http://localhost quando o DNS resolve para IP público (localhost envenenado)', async () => {
+    lookupMock.mockResolvedValue([{ address: '8.8.8.8', family: 4 }]);
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('http://localhost/')).rejects.toThrow(/não-loopback/i);
+  });
+
+  it('rejeita http://localhost quando o DNS resolve para IP privado não-loopback', async () => {
+    lookupMock.mockResolvedValue([{ address: '10.0.0.5', family: 4 }]);
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('http://localhost/')).rejects.toThrow(/não-loopback/i);
+  });
+
+  it('rejeita http://localhost quando o DNS mistura loopback e IP público', async () => {
+    lookupMock.mockResolvedValue([
+      { address: '127.0.0.1', family: 4 },
+      { address: '8.8.8.8', family: 4 },
+    ]);
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('http://localhost/')).rejects.toThrow(/não-loopback/i);
+  });
+
+  it('aceita http://localhost quando o DNS resolve IPv4-mapeado-em-IPv6 de loopback', async () => {
+    lookupMock.mockResolvedValue([{ address: '::ffff:127.0.0.1', family: 6 }]);
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('http://localhost/')).resolves.toBeUndefined();
+  });
+
+  it('rejeita http://localhost.evil.com — sufixo não é .localhost', async () => {
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('http://localhost.evil.com/')).rejects.toThrow(/https/i);
+  });
+
+  it('rejeita http://127.0.0.1@evil.com — host real é evil.com (userinfo não é loopback)', async () => {
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('http://127.0.0.1@evil.com/')).rejects.toThrow(/https/i);
+  });
+
+  it('aceita http://[::ffff:7f00:1] — IPv6-mapped loopback em forma hex (literal)', async () => {
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('http://[::ffff:7f00:1]:8080/')).resolves.toBeUndefined();
+    expect(lookupMock).not.toHaveBeenCalled();
+  });
+
+  it('rejeita http://[::ffff:808:808] — IPv6-mapped NÃO-loopback (8.8.8.8) em forma hex', async () => {
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('http://[::ffff:808:808]/')).rejects.toThrow(/https/i);
+  });
+
+  it('safeFetch devolve resposta 3xx ao chamador sem seguir redirect no caminho mockado', async () => {
+    lookupMock.mockResolvedValue([{ address: '203.0.113.10', family: 4 }]);
+    fetchMock.mockResolvedValue(
+      new Response(null, {
+        status: 302,
+        headers: { location: 'https://outro-host.exemplo.com/novo' },
+      }),
+    );
+    const { safeFetch } = await import('@/shared/security/urlGuard');
+
+    const res = await safeFetch('https://webhook.exemplo.com/antigo');
+
+    // O guard não segue redirects: o fetch real usa dispatcher com lookup pinado, então um 3xx
+    // cross-host falha na conexão (SNI/TLS mismatch) em vez de abrir destino não validado; no
+    // caminho mockado a resposta 3xx volta intacta para o chamador decidir.
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(res.status).toBe(302);
+    expect(res.headers.get('location')).toBe('https://outro-host.exemplo.com/novo');
   });
 });

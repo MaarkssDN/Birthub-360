@@ -82,7 +82,7 @@ export default function RebuiltExecutiveOverview() {
       setCallsState({ status: 'ready', data: Array.isArray(data.callLogs) ? data.callLogs : [] });
     } catch (err: any) {
       if (err?.name === 'AbortError') return;
-      logger.error( { err },'Error loading call logs');
+      logger.error({ err }, 'Error loading call logs');
       setCallsState((prev) => ({ ...prev, status: 'error' }));
     }
   }, []);
@@ -96,7 +96,7 @@ export default function RebuiltExecutiveOverview() {
       setAgentsState({ status: 'ready', data: Array.isArray(data.agents) ? data.agents : [] });
     } catch (err: any) {
       if (err?.name === 'AbortError') return;
-      logger.error( { err },'Error loading agents');
+      logger.error({ err }, 'Error loading agents');
       setAgentsState((prev) => ({ ...prev, status: 'error' }));
     }
   }, []);
@@ -109,7 +109,7 @@ export default function RebuiltExecutiveOverview() {
       setReadyState({ status: 'ready', checks: data.checks ?? null });
     } catch (err: any) {
       if (err?.name === 'AbortError') return;
-      logger.error( { err },'Error loading platform readiness');
+      logger.error({ err }, 'Error loading platform readiness');
       setReadyState({ status: 'error', checks: null });
     }
   }, []);
@@ -126,7 +126,7 @@ export default function RebuiltExecutiveOverview() {
       setMetricsState({ status: 'ready', data: allMetrics });
     } catch (err: any) {
       if (err?.name === 'AbortError') return;
-      logger.error( { err },'Error loading metrics');
+      logger.error({ err }, 'Error loading metrics');
       setMetricsState((prev) => ({ ...prev, status: 'error' }));
     }
   }, []);
@@ -145,7 +145,7 @@ export default function RebuiltExecutiveOverview() {
         setChecklist(data.checklist ?? {});
       } catch (err: any) {
         if (err?.name === 'AbortError') return;
-        logger.error( { err },'Error loading onboarding checklist from database');
+        logger.error({ err }, 'Error loading onboarding checklist from database');
         setChecklistError(true);
         setChecklist({});
       }
@@ -180,7 +180,7 @@ export default function RebuiltExecutiveOverview() {
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
     } catch (err: any) {
-      logger.error( { err },'Error saving onboarding checklist to database');
+      logger.error({ err }, 'Error saving onboarding checklist to database');
       showToast('Não foi possível salvar o checklist no servidor. Tente novamente.', 'error');
     }
   };

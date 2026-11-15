@@ -124,7 +124,7 @@ export function GlobalHelpCenter() {
         },
       ]);
     } catch (error: any) {
-      logger.error( { error },'Failed to get response from Catarina help chat');
+      logger.error({ error }, 'Failed to get response from Catarina help chat');
       setMessages((prev) => [
         ...prev,
         {

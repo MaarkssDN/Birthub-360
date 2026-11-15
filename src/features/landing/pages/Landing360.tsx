@@ -1429,9 +1429,9 @@ export function Landing360({
                   </div>
                   <h3>Dados e conectividade Multi-CRM</h3>
                   <p>
-                    Conexões via APIs abertas e webhooks mantêm os conectores em produção
-                    (Bitrix24, WhatsApp Official API, VoiceHub e Webhooks/REST) sincronizados sem
-                    duplicação; HubSpot, Salesforce e Pipedrive seguem em homologação.
+                    Conexões via APIs abertas e webhooks mantêm os conectores em produção (Bitrix24,
+                    WhatsApp Official API, VoiceHub e Webhooks/REST) sincronizados sem duplicação;
+                    HubSpot, Salesforce e Pipedrive seguem em homologação.
                   </p>
                   <div className="b360-platform-badge">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#00D4FF] animate-pulse" />
@@ -1801,7 +1801,8 @@ export function Landing360({
                             Simulação de ROI e Previsibilidade
                           </strong>
                           <span className="text-xs text-slate-400">
-                            Estimativa ilustrativa de receita recuperável em um horizonte de 90 dias.
+                            Estimativa ilustrativa de receita recuperável em um horizonte de 90
+                            dias.
                           </span>
                         </div>
                       </div>

@@ -14,8 +14,8 @@ describe('Act4TacticalEngine', () => {
 
     expect(screen.getByText('A Verdade Operacional')).toBeInTheDocument();
     expect(screen.getByText(/CONSOLE EXECUTIVO · BIRTH-HUB-OS/i)).toBeInTheDocument();
-    expect(screen.getByText('Sessão de Voz Ativa #8291')).toBeInTheDocument();
-    expect(screen.getByText(/04:12 ao vivo/i)).toBeInTheDocument();
+    expect(screen.getByText('Sessão de voz ilustrativa #8291')).toBeInTheDocument();
+    expect(screen.getByText(/04:12 simulados/i)).toBeInTheDocument();
     expect(screen.getByText(/Prescrição do Copiloto/i)).toBeInTheDocument();
   });
 
@@ -27,7 +27,7 @@ describe('Act4TacticalEngine', () => {
     expect(screen.getByText('AGENTE 05 · PROSPECÇÃO')).toBeInTheDocument();
     expect(screen.getByText('AGENTE 07 · COPILOTO IA')).toBeInTheDocument();
     expect(screen.getByText(/AGENTE 12 · VOZ/)).toBeInTheDocument();
-    expect(screen.queryByText('Sessão de Voz Ativa #8291')).not.toBeInTheDocument();
+    expect(screen.queryByText('Sessão de voz ilustrativa #8291')).not.toBeInTheDocument();
   });
 
   it('alterna para a visão de telemetria de negócios', () => {
@@ -47,7 +47,7 @@ describe('Act4TacticalEngine', () => {
     fireEvent.click(screen.getByRole('button', { name: /Enxame de Agentes IA/i }));
     fireEvent.click(screen.getByRole('button', { name: /Copiloto em Chamada/i }));
 
-    expect(screen.getByText('Sessão de Voz Ativa #8291')).toBeInTheDocument();
-    expect(screen.getByText(/Objeção Detectada em Tempo Real/i)).toBeInTheDocument();
+    expect(screen.getByText('Sessão de voz ilustrativa #8291')).toBeInTheDocument();
+    expect(screen.getByText(/Exemplo de objeção detectada/i)).toBeInTheDocument();
   });
 });

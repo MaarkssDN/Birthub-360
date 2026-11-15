@@ -1,7 +1,7 @@
 De: 15 — Segurança Aplicada
 Para: 08 — QA e Release
 Onda: 1 (backlog DEM-20261113-002, item MEL-03)
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: nenhum
 Sprint destino: Onda 1
@@ -39,3 +39,16 @@ Adicionar step no job de quality gates do ci.yml, junto dos outros `verify:*`:
 ## Contexto adicional
 Allowlist no script cobre `user/session/account/verification` (better-auth,
 global). Models novos com `organizationId` entram no gate automaticamente.
+
+## Resolução (Agente 08, Onda 4, 2026-11-15, branch `agente/08-onda4-qa`)
+
+- Step `RLS coverage gate` (`npm run verify:rls-coverage`) adicionado ao
+  `.github/workflows/ci.yml`, logo após `verify:openapi-drift` e antes dos
+  testes unitários — junto dos demais gates `verify:*`, sem banco necessário
+  (análise estática de `prisma/schema.prisma` + `prisma/migrations`).
+- Evidência local: `npx tsx scripts/security/check-rls-coverage.ts` →
+  `check-rls-coverage: OK — 136 tabelas tenant-bearing com RLS + policy
+  verificadas (4 allowlist).` (exit 0).
+- Commit: `eb750d1a4` (`ci(08): adiciona gate verify:rls-coverage no pipeline`).
+- Pendente apenas a confirmação do CI verde no PR — o step é determinístico e
+  não depende de serviço externo.

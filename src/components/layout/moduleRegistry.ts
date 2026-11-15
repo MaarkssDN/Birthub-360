@@ -320,12 +320,7 @@ export const PRODUCT_MODULES: ProductModule[] = [
     extraTabs: ['settings_engagement'],
     // Deep-links legados de voz/telefonia (voice-hub, outbound, dialer) seguem
     // resolvendo para o P08 mesmo estando fora da navegação (NAV_HIDDEN_TABS).
-    extraPaths: [
-      'voice-hub',
-      'outbound',
-      'dialer',
-      'settings/pillars/engagement',
-    ],
+    extraPaths: ['voice-hub', 'outbound', 'dialer', 'settings/pillars/engagement'],
     items: [
       // voice-hub/outbound/dialer seguem em NAV_HIDDEN_TABS (503 MODULE_NOT_READY
       // intencional — handoff 17→12). Mesa de Tratamento é o único destino web

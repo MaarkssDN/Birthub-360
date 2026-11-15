@@ -198,7 +198,7 @@ O Render **não** roda lint/typecheck/testes — só `buildCommand`. Quem gate i
 - Isso é **independente** do gate de aprovação manual já existente em
   `.github/workflows/production.yaml` (ambiente `production` do GitHub Actions) — aquele
   pipeline publica uma imagem Docker em `ghcr.io` para o caminho alternativo de deploy via
-  Kubernetes/Helm/ArgoCD (`charts/`, `argocd/`, `k8s/`), não é usado pelo Render. Os dois
+  Kubernetes/Helm/ArgoCD (`charts/`, `infrastructure/archive/argocd/`, `infrastructure/archive/k8s/`), não é usado pelo Render. Os dois
   pipelines coexistem sem conflito.
 
 ### 2.4 Redis (opcional)

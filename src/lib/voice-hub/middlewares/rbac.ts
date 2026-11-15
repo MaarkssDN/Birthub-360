@@ -15,8 +15,9 @@ export function voiceHubSessionOf(req: Request): TokenPayload | null {
   if (req.voiceHubUser?.id && req.organizationId) {
     return req.voiceHubUser;
   }
-  const canonical = (req as { user?: { id?: string; email?: string; role?: string; organizationId?: string } })
-    .user;
+  const canonical = (
+    req as { user?: { id?: string; email?: string; role?: string; organizationId?: string } }
+  ).user;
   if (canonical?.id && canonical.organizationId) {
     return {
       id: canonical.id,
@@ -41,11 +42,7 @@ function ensureVoiceHubSession(req: Request): TokenPayload | null {
 
 export const requireTenant = async (req: Request, res: Response, next: NextFunction) => {
   const session = ensureVoiceHubSession(req);
-  if (
-    !session ||
-    !req.organizationId ||
-    session.organizationId !== req.organizationId
-  ) {
+  if (!session || !req.organizationId || session.organizationId !== req.organizationId) {
     return res.status(401).json({ error: 'Não autorizado.' });
   }
   return next();
@@ -79,11 +76,7 @@ export async function hasPermission(
   permission: string,
 ): Promise<boolean> {
   if (!user?.role || !user.organizationId) return false;
-  const permissions = await getPermissionsForRoleName(
-    user.role,
-    user.organizationId,
-    user.id,
-  );
+  const permissions = await getPermissionsForRoleName(user.role, user.organizationId, user.id);
   return permissions.includes(permission);
 }
 

@@ -94,3 +94,62 @@ Nota à parte, fora do escopo deste handoff: o disparo do workflow também rodou
 inválidos/rotacionados. Os demais 4 achados (`phase-12-manifest.json`) são falso-positivo —
 hashes SHA-256 de conteúdo de arquivo, não segredo. Nenhuma ação de remediação de histórico
 (reescrita/força) foi tomada — não fazia parte do escopo autorizado nesta rodada.
+
+## Resolução (Agente 08 — mecanismo permanente de regeneração, Onda 6/remediação)
+
+Decisão do usuário: em vez do fluxo manual de baixar artifact e commitar à mão, criar um
+mecanismo que gera `--update-snapshots` **dentro do runner Linux** e commita os PNGs
+automaticamente.
+
+Criado `.github/workflows/visual-baseline-update.yml` (`workflow_dispatch` apenas,
+`permissions: contents: write` restrito a este arquivo — nenhum outro workflow ganhou
+permissão de escrita). O job `update-visual-baselines` (ubuntu-latest, timeout 60min):
+
+1. sobe a mesma stack de serviços do `visual-regression.yml`/`ci.yml` (postgres pgvector,
+   redis, meilisearch) e replica env/bootstrap/`.env.test`/`prisma generate`/`migrate deploy`;
+2. instala Chromium via `npx playwright install --with-deps chromium` (mesmo binário do CI
+   de comparação — requisito crítico, ver diagnóstico original deste handoff);
+3. remove `visual.spec.ts` do `testIgnore` do `playwright.config.ts` **somente no checkout
+   efêmero do runner** (sed; a alteração nunca é commitada) e roda
+   `npx dotenv-cli -e .env.test -- playwright test tests/e2e/visual.spec.ts --update-snapshots`,
+   que grava `tests/e2e/visual.spec.ts-snapshots/*-chromium-linux.png` (path nativo do
+   snapshotPathTemplate default — nenhuma cópia manual necessária);
+4. roda também `npm run test:visual:update` (`playwright.visual.config.ts --update-snapshots`)
+   para regenerar `visual-regression/baselines/**`, que é a suíte do check obrigatório
+   "Visual Regression" (`visual-regression.yml` → `npm run test:visual`,
+   `updateSnapshots: 'none'`) — sem esse passo o mecanismo não cobriria o check que motivou
+   o handoff;
+5. commita os PNGs alterados em `tests/e2e/visual.spec.ts-snapshots/` e
+   `visual-regression/baselines/` na branch `ci/visual-baselines-linux` (criada a partir do
+   ref disparado) e faz `git push origin HEAD:refs/heads/ci/visual-baselines-linux` como
+   `github-actions[bot]`. Se nada mudou, não commita nem falha.
+
+**Como operar:**
+
+```bash
+gh workflow run visual-baseline-update.yml --ref <branch-ou-main>
+```
+
+(o mesmo efeito pela UI: Actions → "Visual Baseline Update" → Run workflow.) Disparar no
+ref que contém a mudança visual que originou a necessidade de baseline nova. O workflow
+commita sobre o próprio ref disparado — baselines sempre refletem a UI daquele commit.
+
+**Passo seguinte (humano, uma vez por geração):** abrir PR de `ci/visual-baselines-linux`
+para `main`. Se a branch protection exigir checks que não rodaram nessa branch de bot,
+usar `--admin` no merge **uma única vez** por baseline (decisão do usuário já registrada).
+
+**Verificação:** YAML validado localmente (`yaml.parse` OK) e o `sed` do `testIgnore`
+testado contra a linha real do `playwright.config.ts`. O workflow **não foi disparado**
+pelo agente (sem `gh` auth de Actions neste ambiente) — fica pronto para disparo manual.
+
+**Pendências/observações:**
+
+- `tests/e2e/e2e-server.ts`/`E2E_BITRIX_MOCK` citados no briefing da missão **não existem**
+  neste estado do repositório: `start:e2e` é `tsx server.ts` com `.env.test`, e
+  `playwright.config.ts` usa `npm run start:e2e` no webServer (sem migrate inline — o
+  workflow roda `prisma migrate deploy` como step próprio). Se a main avançar e mudar isso,
+  revalidar o webServer do `playwright.config.ts` antes de confiar no workflow.
+- `tests/e2e/visual.spec.ts` continua fora do `test:e2e` normal (testIgnore proposital —
+  suíte visual roda só via configs dedicadas); este workflow não altera isso.
+- Baselines `*-chromium-win32.png` são preservadas (o `--update-snapshots` no Linux não as
+  toca; `git add` restrito aos dois diretórios de baseline).

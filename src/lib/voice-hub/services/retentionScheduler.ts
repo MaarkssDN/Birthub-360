@@ -40,10 +40,13 @@ export function startRetentionScheduler(): { queue: Queue; worker: Worker } | un
       QUEUE_NAME,
       async () => {
         const { deletedCount, cutoff } = await purgeExpiredCallLogs();
-        logger.info( {
-          deletedCount,
-          cutoff: cutoff.toISOString(),
-        },'[RetentionScheduler] Purge job completed');
+        logger.info(
+          {
+            deletedCount,
+            cutoff: cutoff.toISOString(),
+          },
+          '[RetentionScheduler] Purge job completed',
+        );
         return { deletedCount };
       },
       { connection },
@@ -68,9 +71,12 @@ export function startRetentionScheduler(): { queue: Queue; worker: Worker } | un
         },
       )
       .then(() => {
-        logger.info( {
-          cron: REPEAT_CRON,
-        },'[RetentionScheduler] Registered daily CallLog retention purge job');
+        logger.info(
+          {
+            cron: REPEAT_CRON,
+          },
+          '[RetentionScheduler] Registered daily CallLog retention purge job',
+        );
       })
       .catch((err: unknown) => {
         const msg = err instanceof Error ? err.message : String(err);
