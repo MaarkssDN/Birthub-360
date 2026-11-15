@@ -21,11 +21,7 @@ import { assertPiiExternalConsent } from '../services/guardrails.service.js';
 // tool-calling/structured output — o wrapper só devolve texto livre, e a decisão de roteamento
 // precisa ser JSON confiável.
 import { buildModelWithFallback } from './fallback.util.js';
-import {
-  SwarmState,
-  type SwarmRoute,
-  type SwarmStateType,
-} from './supervisor/swarm.state.js';
+import { SwarmState, type SwarmRoute, type SwarmStateType } from './supervisor/swarm.state.js';
 import { bdrNode, closerNode, crmNode, opsNode, sdrNode } from './supervisor/specialistNodes.js';
 import { buildEvent, toAiMessage, type SwarmEvent } from './supervisor/swarm.events.js';
 import {
