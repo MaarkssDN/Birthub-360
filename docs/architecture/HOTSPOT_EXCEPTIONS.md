@@ -142,14 +142,6 @@ propósito por estar fora de "## Exceções ativas"):
 - **Atualizado em:** 2026-09-29 (correção de proprietário)
 - **Reavaliar até:** 2026-11-30
 
-### `src/features/voice-hub/pages/Dashboard/Overview.tsx`
-
-- **Limite excepcional:** 1500 linhas
-- **Dono:** Agente 06 — Integrações e Telefonia
-- **Motivo:** Integração massiva e bruta da aplicação satélite Voice Hub na onda 13.
-- **Registrado em:** 2026-09-24
-- **Reavaliar até:** 2026-11-30
-
 ### `src/features/auth/components/NewLoginScreen.tsx`
 
 - **Limite excepcional:** 2100 linhas
@@ -174,15 +166,6 @@ propósito por estar fora de "## Exceções ativas"):
   sem mudança funcional. A exceção mantém a formatação verificada e registra a modularização do
   serviço como trabalho posterior do dono do domínio.
 - **Registrado em:** 2026-10-14
-- **Reavaliar até:** 2026-11-30
-
-### `src/features/voice-hub/store/useStudioStore.ts`
-
-- **Limite excepcional:** 1150 linhas
-- **Dono:** Agente 12 — Voz e Telefonia
-- **Motivo:** Modularizado na campanha techdebt-2026-09-29 (extraídos studioTypes.ts, nodeRegistry.ts e initialData.ts), reduzindo de 1744 para 1084 linhas. Arquivo voltou a 1103 linhas (acima do teto 1100); bump temporário 1150 para desbloquear CI (#695/#692). Agente 12 deve re-modularizar ou confirmar teto.
-- **Registrado em:** 2026-09-29
-- **Atualizado em:** 2026-10-11 (Agente 08 — QA Release e Git)
 - **Reavaliar até:** 2026-11-30
 
 ### `src/lib/voice-hub/services/workflowRuntimeService.ts`
