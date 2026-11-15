@@ -3,7 +3,7 @@
 De: 00 — Coordenador
 Para: 08 (QA) + 24 (revisão)
 Onda: F5
-Status: em-andamento (entrega parcial — 3 specs E2E criadas em 2026-11-12)
+Status: em-andamento (mesa-tratamento fechada na Onda 4 — ver Resolução abaixo; demais módulos seguem abertos)
 Prioridade: normal
 Referência: `docs/architecture/MATRIZ-FUNCIONAL-MODULOS.md` §5 item 5, §7
 
@@ -92,3 +92,41 @@ market-intelligence hub/deck/accounts, social-selling, sales-orchestration,
 predictability, voice-hub, playbooks/jornadas/processos/roteiros/chatbook/
 roleplay (só varredura), war-room standalone, automations, team, settings,
 forecast/metas, copiloto_ia, pending-actions, failover/resilience.
+
+## Resolução Onda 4 (Agente 08, 2026-11-15, branch `agente/08-onda4-qa`)
+
+### Fechado nesta onda
+
+1. **mesa-tratamento** — o maior gap do inventário agora tem cobertura real nos
+   dois níveis:
+   - Unit: `src/features/mesa-tratamento/__tests__/mesaTratamento.dashboard.test.ts`
+     e `mesaTratamento.priority.test.ts` — 16 testes das funções puras de
+     agregação de dashboard e ordenação/score da fila (antes: só
+     `mesa-triage.service.test.ts`).
+   - E2E jornada completa: `tests/e2e/mesa-tratamento-jornada.spec.ts` com o
+     portal Bitrix falso de `tests/e2e/bitrix-mock/` (detalhes e evidências no
+     handoff `00-para-08-mesa-tratamento-e2e-jornada.md`, marcado resolvido).
+     Cobre importação, registro com escrita de volta, gestão e erros.
+
+### Inventário revisado (o quadro original estava desatualizado)
+
+Verificação na branch pós-Onda 3 mostra cobertura parcial já existente onde o
+handoff dizia "0": market-intelligence tem `domain/__tests__/
+accountSignalTaxonomy.test.ts`, `components/__tests__/honestHubs.b06.test.ts`,
+`server/__tests__/actionExecutor.tenancy.test.ts`; social-selling tem
+`server/__tests__/socialInteraction.service.test.ts`. signals-risks ganhou spec
+E2E na entrega parcial anterior (`signals-risks.spec.ts`).
+
+### Ainda sem cobertura dedicada (próximas ondas, honesto)
+
+- market-intelligence: cenários de fallback de provedores, badge
+  FONTE_PARCIAL e ledger de créditos (AC-MKT-001/002/003) — têm testes de
+  taxonomia/tenancy, não dos fluxos de provider.
+- social-selling: jornada E2E e a proibição de scraping/LGPD como critério de
+  aceite executável (o service tem spec unitária, mas não o gate de scraping).
+- sales-orchestration, predictability (só 1 spec antiga), voice-hub,
+  playbooks/jornadas/processos/roteiros/chatbook/roleplay, war-room standalone,
+  automations, team, settings, forecast/metas, copiloto_ia, pending-actions,
+  failover/resilience — sem spec dedicada.
+- Execução local de Playwright segue indisponível neste ambiente (sem
+  Postgres/Redis/Meilisearch/Docker/browsers) — as specs novas precisam do CI.
