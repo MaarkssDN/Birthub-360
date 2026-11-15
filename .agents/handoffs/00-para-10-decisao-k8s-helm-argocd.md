@@ -3,7 +3,7 @@
 De: 00 — Coordenador
 Para: 10 — Infraestrutura, Observabilidade e SRE
 Onda: W7
-Status: em-andamento
+Status: resolvido (execução na branch `agente/10-k8s-archive`, worktree `Birthub-360-wt-k8s`; decisão do usuário = arquivar k8s/+argocd/, manter charts/)
 Prioridade: normal
 Sprint destino: próxima onda
 
@@ -37,31 +37,36 @@ operador). É preciso decisão formal: manter, arquivar ou completar.
 
 - Nenhum workflow referenciando paths movidos sem atualização; docs coerentes.
 
-## Resolução (Agente 10, Onda 4 — parcial, aguardando decisão humana)
+## Resolução
 
-Análise completa, opções com trade-offs e recomendação produzidas em
-**`docs/ADR/ADR-011-k8s-helm-argocd-decisao.md`** (Status: PROPOSTO).
+**Decisão do usuário (sobre ADR-011, PR #348): Opção C parcial — `k8s/` e `argocd/`
+arquivados; `charts/` mantido ativo-inalterado.** Executado em 2026-11 pelo Agente 10:
 
-Resumo da auditoria:
+- `git mv k8s/ → infrastructure/archive/k8s/` e `git mv argocd/ → infrastructure/archive/argocd/`
+  (histórico preservado via rename).
+- `infrastructure/archive/README.md` criado (índice + precedente `render.yaml.disabled` +
+  caminho de reativação).
+- ADR-011 criado/atualizado nesta branch com **Status: DECIDIDO** e seção 8 de execução —
+  ATENÇÃO: o mesmo arquivo existe na branch `agente/10-onda4-k8s` (PR #348) com status
+  PROPOSTO; esta versão deve prevalecer, merge fica com o orquestrador.
+- Referências de path atualizadas: `docs/deploy/README.md`, `docs/deploy/producao.md`,
+  `docs/operations/PRODUCTION_ARCHITECTURE.md`, `charts/README.md`,
+  `charts/birthhub-360/{templates/migration-job.yaml,values.yaml}` (só comentários),
+  `infrastructure/observability/{RUNBOOK.md,alert.rules.yml}`, READMEs movidos
+  (links relativos corrigidos) e testes `tests/unit/infra/ingress-rate-limit.test.ts` +
+  `tests/unit/brand/brand-hygiene.test.ts` (somente paths; asserts inalterados).
+- Workflows: **nenhum** referencia `k8s/`/`argocd/`; `cd-homolog.yml` intacto (só toca
+  `charts/`). Não existe job kubeconform/checkov/helm-lint. Trivy fs scan é genérico por
+  repo — se o 00 quiser excluir `infrastructure/archive/` do scan, abrir handoff ao 08
+  (`skip-dirs` é propriedade de `.github/workflows/**`/`docker-compose.opensource.yml`).
 
-- `k8s/` — manifests avulsos minikube-only e **desatualizados** (`containerPort`/probes `:3000`
-  vs `ENV PORT=3024` do Dockerfile, `imagePullPolicy: Never`, secret legado `prospector-secrets`,
-  ingress `prospector.local`). Redundantes com o chart.
-- `charts/birthhub-360/` — **único artefato IaC-K8s correto e mantido** (corrigido na Onda 4:
-  migration hook, HPA/Rollout, PDB, worker probes). Alimentado por `cd-homolog.yml`
-  (`workflow_dispatch` apenas) que comita tag em `values.yaml` na branch `develop`.
-- `argocd/` — dois `Application` aspiracionais, sem cluster registrado.
-- `infrastructure/observability/` — **ativo** via `docker-compose.opensource.yml`;
-  `infrastructure/security/` e `infrastructure/qdrant/` — ativos/contingentes.
-- `RUNBOOK.md` estava factualmente desatualizado (citava Render/OCI como ativos) — corrigido
-  neste handoff para refletir `docs/deploy/README.md` (Render arquivado, OCI retirado
-  DEVOPS-010, produção = EC2 manual, canônico = Local-First).
+### Pendências para o orquestrador
 
-Recomendação registrada no ADR: **Opção C** — arquivar `k8s/` e `argocd/` (resíduo quebrado/
-recriável), manter `charts/` como IaC não-ativo alinhado ao ADR-009, manter `infrastructure/`.
-Decisão final (inclusive destino de `charts/` e do `cd-homolog.yml`, que é do Agente 08) é do
-operador/Agente 00.
-
-**Nota de propriedade:** `docs/` pertence ao Agente 08 (`docs/AGENTS.md`). O ADR-011 foi criado
-em `docs/ADR/` por ser o local indicado pelo handoff ("docs/architecture ou ADR") — registrar
-para ciência/revisão do 08 ou ratificação do 00. Nenhum outro arquivo de `docs/` foi tocado.
+1. **Merge/conflito ADR-011**: PR #348 (branch `agente/10-onda4-k8s`) traz a versão
+   PROPOSTO; esta branch traz DECIDIDO. Resolver mantendo a versão DECIDIDO.
+2. **`Dockerfile` (dono: 08)**: comentários nas linhas ~44-48 citam `k8s/migration-job.yaml`
+   — path agora é `infrastructure/archive/k8s/migration-job.yaml`. Não editado por
+   propriedade; ajuste cosmético de comentário fica para o 08 se desejado.
+3. **Testes (dono: 08)**: paths atualizados por necessidade do rename; revisar no gate.
+4. Itens cosméticos pendentes do ADR §6.5-6.6 (banner HISTÓRICO no RUNBOOK; AGENTS.md
+   movidos já declaram não-ativo — opcional revisar texto "deploy"→"arquivo").

@@ -1,8 +1,9 @@
 # ADR-011: Decisão formal sobre a stack Kubernetes / Helm / ArgoCD (`k8s/`, `charts/`, `argocd/`)
 
-**Data:** 2026-11-15
-**Status:** PROPOSTO — aguardando decisão do operador/Agente 00. Este documento **não executa** a
-mudança; ele produz a análise, as opções e a recomendação para decisão humana.
+**Data:** 2026-11-15 (decisão registrada em 2026-11, branch `agente/10-k8s-archive`)
+**Status:** **DECIDIDO — Opção C (parcial): `k8s/` e `argocd/` ARQUIVADOS; `charts/` MANTIDO
+ativo-não-deployado.** Decisão direta do usuário sobre este ADR (PR #348). Execução registrada
+na seção 8 abaixo.
 **Autor:** Agente 10 — Infraestrutura, Observabilidade e SRE
 **Origem:** Handoff `.agents/handoffs/00-para-10-decisao-k8s-helm-argocd.md` (Onda W7)
 **Escopo de propriedade:** `k8s/**`, `charts/**`, `argocd/**`, `infrastructure/**` (Agente 10);
@@ -186,3 +187,34 @@ não caminho viável.
   workflow; lacuna a registrar se o chart for mantido como ativo).
 - Registrar a decisão neste ADR (mudar Status para ACCEPTED/REJECTED) e no
   `docs/deploy/README.md` como fonte de verdade.
+
+## 8. Decisão tomada e execução (2026-11, Agente 10 — worktree `Birthub-360-wt-k8s`)
+
+**Decisão do usuário:** arquivar `k8s/` e `argocd/` — sem deletar histórico. `charts/`
+**permanece ativo-inalterado**; `cd-homolog.yml` não muda (escreve em `charts/values.yaml`,
+não em `k8s/`).
+
+Executado nesta branch:
+
+1. `git mv k8s/ infrastructure/archive/k8s/` e `git mv argocd/ infrastructure/archive/argocd/`
+   (rename preserva histórico).
+2. `infrastructure/archive/README.md` criado — índice do archive, precedente
+   `render.yaml.disabled`, caminho de reativação.
+3. Referências de path atualizadas: `docs/deploy/README.md`, `docs/deploy/producao.md`,
+   `docs/operations/PRODUCTION_ARCHITECTURE.md`, `charts/README.md`,
+   `infrastructure/observability/RUNBOOK.md`, `infrastructure/observability/alert.rules.yml`,
+   links relativos dentro dos READMEs movidos, e os testes
+   `tests/unit/infra/ingress-rate-limit.test.ts` e `tests/unit/brand/brand-hygiene.test.ts`
+   (somente paths — asserts inalterados).
+4. Nenhum workflow referencia `k8s/` ou `argocd/` — verificado em `.github/workflows/**`;
+   não há job de kubeconform/checkov/helm-lint. Trivy fs scan cobre o repo inteiro
+   genericamente (não por path); o archive não introduz findings novos — manifests YAML
+   sem dependências. Se o orquestrador quiser excluir `infrastructure/archive/` do scan,
+   cabe handoff ao Agente 08 (`.github/workflows/**` e `docker-compose.opensource.yml` são
+   dele) para `skip-dirs`/`--skip-dirs`.
+5. Itens 5 e 6 da seção 6 permanecem como decisões cosméticas pendentes do orquestrador
+   (banner HISTÓRICO no RUNBOOK; revisão dos AGENTS.md movidos — já declaram não-ativo).
+
+**Conflito conhecido:** este ADR também existe na branch `agente/10-onda4-k8s` (PR #348,
+não mergeado) com status PROPOSTO. Esta versão (status DECIDIDO + seção 8) deve prevalecer;
+o orquestrador resolve o merge.

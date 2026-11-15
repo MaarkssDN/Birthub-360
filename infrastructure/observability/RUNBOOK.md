@@ -23,7 +23,7 @@ Runbook de resposta a incidentes e de go-live para os cenários já mapeados com
 | **AWS EC2 — produção** | **Ativo** — deploy manual controlado pelo operador (sem workflow de deploy) | `docs/operations/DEPLOY_EC2.md`, `deploy-ec2.sh` |
 | Render + Supabase + Cloudflare | **Desativado / Arquivado** — blueprint em `infrastructure/archive/render.yaml.disabled`; sem tráfego de produção | `docs/deploy/producao.md` (histórico) |
 | Oracle Cloud (OCI) self-hosted | **Retirado** (DEVOPS-010, 2026-09-18) — seções `0-OCI.*` abaixo são histórico | `docker-compose.oci.yml` (removido) |
-| Kubernetes/Helm/ArgoCD (`k8s/`, `charts/`, `argocd/`) | Aspiracional/legado, nenhum cluster real registrado — decisão formal pendente (ADR-011) | `charts/README.md`, `argocd/README.md`, `k8s/README.md` |
+| Kubernetes/Helm/ArgoCD (`charts/`, `infrastructure/archive/k8s/`, `infrastructure/archive/argocd/`) | `charts/` mantido como IaC inativo; `k8s/`+`argocd/` **arquivados** (ADR-011 decidido) — nenhum cluster real registrado | `charts/README.md`, `infrastructure/archive/k8s/README.md`, `infrastructure/archive/argocd/README.md` |
 
 > **Correção de registro (Onda 8, ainda válida):** a missão citava "Render+Vercel" como caminho
 > real — verificado que **não existe Vercel neste projeto**, é um único serviço Render
@@ -603,7 +603,7 @@ rollback por padrão). Se a revisão que está sendo revertida introduziu uma mi
 avaliar com o Agente 01 se é necessária uma migration de compensação antes ou depois do rollback
 de código. Nunca assumir que "reverter o deploy" também reverte o banco.
 
-### Rollback via ArgoCD (caminho documentado como ativo em `argocd/README.md`, quando houver
+### Rollback via ArgoCD (manifests arquivados em `infrastructure/archive/argocd/`, quando houver
 
 cluster real)
 
