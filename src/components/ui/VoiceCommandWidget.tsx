@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { playbookInfo } from '../../config/playbooks.js';
 import { useActivePlaybook } from '../../hooks/useActivePlaybook.js';
 import { clientLogger } from '../../lib/clientLogger.js';
+import { createSpeechRecognition } from '../../lib/nativeSpeech.js';
 import { navigationBus } from '../../lib/navigationBus.js';
 import { SoundFX } from '../../lib/soundEffects.js';
 import { toast } from '../../lib/toast.js';
@@ -24,10 +25,10 @@ export function VoiceCommandWidget() {
   // handlers fecham sobre o binding real de `stopListening`, resolvido só quando disparados.
   // biome-ignore lint/correctness/useExhaustiveDependencies: ver comentário acima
   useEffect(() => {
-    // Inicializa Web Speech API se suportado pelo navegador
-    const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognitionAPI) {
-      const rec = new SpeechRecognitionAPI();
+    // Web Speech API no navegador ou plugin nativo no app Capacitor
+    // (createSpeechRecognition cobre os dois — ver src/lib/nativeSpeech.ts).
+    const rec = createSpeechRecognition();
+    if (rec) {
       rec.continuous = false;
       rec.interimResults = true;
       rec.lang = 'pt-BR';
