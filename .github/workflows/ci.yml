@@ -233,6 +233,13 @@ jobs:
       - name: Verificar deriva de OpenAPI
         run: npm run verify:openapi-drift
 
+      # Gate estático de cobertura RLS (DEM-20261113-002 / MEL-03, handoff
+      # onda-1/15-para-08-rls-coverage-ci.md): falha se um model com organizationId/
+      # tenantId não tiver ENABLE ROW LEVEL SECURITY + CREATE POLICY nas migrations.
+      # Análise estática de schema.prisma + prisma/migrations — não precisa de banco.
+      - name: RLS coverage gate
+        run: npm run verify:rls-coverage
+
       - name: Run Unit Tests
         run: npm run test:unit -- --coverage
 

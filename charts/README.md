@@ -18,7 +18,8 @@ Cloudflare como candidata congelada, não como estado atual.
 Este chart existe para um caminho de deploy Kubernetes/Helm/ArgoCD que não está em uso ativo —
 `.github/workflows/cd-homolog.yml` publica a imagem em `ghcr.io` e atualiza `values.yaml`, e
 `.github/workflows/production.yaml` faz o mesmo build com aprovação manual, mas nenhum cluster
-Kubernetes real está atualmente consumindo isso em produção. Ver `argocd/README.md` para o mesmo
+Kubernetes real está atualmente consumindo isso em produção. Ver
+`infrastructure/archive/argocd/README.md` (ArgoCD arquivado — ADR-011) para o mesmo
 aviso do lado do ArgoCD.
 
 Mantido no repositório como caminho alternativo documentado (não removido), mas qualquer decisão

@@ -48,7 +48,7 @@ export async function chatHandler(req: Request, res: Response) {
 
     return res.json(gatewayResponse);
   } catch (error: unknown) {
-    logger.error( error,'Chat handler error:');
+    logger.error(error, 'Chat handler error:');
     return res.status(500).json({ error: getErrorMessage(error) });
   }
 }
@@ -108,7 +108,7 @@ export async function generateMusicHandler(req: Request, res: Response) {
 
     return res.json({ audioBase64, mimeType });
   } catch (error: unknown) {
-    logger.error( error,'Lyria API error:');
+    logger.error(error, 'Lyria API error:');
     return res.status(500).json({ error: getErrorMessage(error) });
   }
 }
@@ -128,7 +128,7 @@ export async function generateVideoHandler(req: Request, res: Response) {
 
     return res.json({ operationName: operation.name });
   } catch (error: unknown) {
-    logger.error( error,'Veo start error:');
+    logger.error(error, 'Veo start error:');
     return res.status(500).json({ error: getErrorMessage(error) });
   }
 }
@@ -178,7 +178,7 @@ export async function videoDownloadHandler(req: Request, res: Response) {
       }),
     );
   } catch (error: unknown) {
-    logger.error( error,'Video download error:');
+    logger.error(error, 'Video download error:');
     return res.status(500).send(getErrorMessage(error));
   }
 }
@@ -247,7 +247,7 @@ Retorne os mesmos nós, mantendo seus IDs e posições intactos, mas modificando
     const result = JSON.parse(response.text || '{}');
     return res.json(result);
   } catch (error: unknown) {
-    logger.error( error,'Refactor API error:');
+    logger.error(error, 'Refactor API error:');
     return res.status(500).json({ error: getErrorMessage(error) });
   }
 }
@@ -341,7 +341,7 @@ Regras de posicionamento do layout:
     const result = JSON.parse(response.text || '{}');
     return res.json(result);
   } catch (error: unknown) {
-    logger.error( error,'Generate Workflow API error:');
+    logger.error(error, 'Generate Workflow API error:');
     return res.status(500).json({ error: getErrorMessage(error) });
   }
 }

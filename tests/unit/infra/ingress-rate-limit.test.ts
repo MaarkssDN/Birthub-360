@@ -10,11 +10,14 @@ import YAML from 'yaml';
 // anotações — a camada de borda é complemento dos limitadores express-rate-limit
 // da aplicação, não substituto.
 
-const ingress = readFileSync('k8s/ingress.yaml', 'utf8');
+// Nota: `k8s/` foi arquivado em `infrastructure/archive/k8s/` (ADR-011, decisão do usuário).
+// O manifesto segue referenciado aqui para impedir remoção silenciosa das anotações de rate
+// limit — o caminho ativo equivalente é `charts/birthhub-360` (ver teste abaixo).
+const ingress = readFileSync('infrastructure/archive/k8s/ingress.yaml', 'utf8');
 const values = readFileSync('charts/birthhub-360/values.yaml', 'utf8');
 
 describe('Ingress/k8s — rate limiting de borda (BT360-DT-0057)', () => {
-  it('k8s/ingress.yaml declara limit-rps e limit-connections', () => {
+  it('infrastructure/archive/k8s/ingress.yaml declara limit-rps e limit-connections', () => {
     const doc = YAML.parse(ingress) as {
       metadata: { annotations: Record<string, string> };
     };

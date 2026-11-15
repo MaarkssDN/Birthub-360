@@ -1,7 +1,7 @@
 {{- if .Values.migrations.enabled }}
 # Hook pre-install/pre-upgrade: roda `prisma migrate deploy` ANTES do Helm aplicar o
 # Deployment/Rollout novo. Se este Job falhar, o hook falha e o `helm upgrade`
-# (e, por extensão, o sync do ArgoCD nas Applications em argocd/) é abortado — o
+# (e, por extensão, o sync do ArgoCD nas Applications arquivadas em infrastructure/archive/argocd/) é abortado — o
 # Deployment/Rollout com a imagem nova nunca chega a ser aplicado contra um schema
 # desatualizado ou uma migração quebrada. Implementa, na camada de orquestração de
 # cluster, a mesma garantia que `render.yaml` já tem no caminho de deploy real

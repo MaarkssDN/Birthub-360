@@ -41,10 +41,7 @@ export function PillarSettingsHub() {
         className="shrink-0 border-b border-[var(--line)] bg-[var(--surface)] px-4 py-2"
       >
         <div className="flex items-center gap-1.5 overflow-x-auto">
-          <Settings2
-            className="w-4 h-4 shrink-0 text-[var(--ink-3)]"
-            aria-hidden="true"
-          />
+          <Settings2 className="w-4 h-4 shrink-0 text-[var(--ink-3)]" aria-hidden="true" />
           <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--ink-3)] mr-2 shrink-0">
             Pilares
           </span>
