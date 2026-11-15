@@ -1,7 +1,7 @@
 - De: Auditoria ad-hoc (Devin CLI) — promover a 00 se virar missão formal
 - Para: 02 — Produto e UX
 - Onda: landing-360-auditoria
-- Status: em-andamento
+- Status: resolvido
 - Prioridade: alto
 
 ## Problema
@@ -116,3 +116,56 @@ headline "projeções de até 3.8x" já rotulada como projeção.
 
 Gates: `npx tsc --noEmit` limpo; `npx biome check` nos arquivos tocados sem
 erros novos (warnings pré-existentes não relacionados permanecem).
+
+## Resolução — continuação (Agente 02 — 2026-11-15, branch `agente/02w2-onda2-handoffs`, PR #338)
+
+**Agente 02 — Produto e UX — 2026-11-15**
+
+Status: resolvido no escopo de copy público, com dependências de negócio ainda registradas abaixo.
+
+Commits nesta branch (`agente/02w2-onda2-handoffs`):
+
+- `510bce4bd` — remediação parcial anterior (projeções, rótulos ilustrativos, LGPD, urgência).
+- `2aa150c7b` — `RoiSimulatorModal` explicitamente ilustrativo/projetado.
+- `3d9f01637` — claims públicos alinhados a status reais de conectores e simulação.
+- `0b17b18fd` — métricas e cenários da experiência premium rotulados como ilustrativos/arquitetura.
+- `29b2ca68f` — reforço de rótulos ilustrativos em visualizadores e ajuste de tipagem de métricas.
+
+Principais arquivos alterados:
+
+- `src/features/landing/pages/Landing360.tsx`
+- `src/features/landing/pages/Landing360Impeccable.tsx`
+- `src/features/landing/components/RoiSimulatorModal.tsx`
+- `src/features/landing/components/pillars/PillarRegistry.tsx`
+- `src/features/landing/components/pillars/PillarContent.tsx`
+- `src/features/landing/components/B360UnifiedPipelineFlow.tsx`
+- `src/features/landing/components/CinematicFX.tsx`
+- `src/features/landing/luxury/components/Act1Hero.tsx`
+- `src/features/landing/luxury/components/Act2Dissonance.tsx`
+- `src/features/landing/luxury/components/Act3Singularity.tsx`
+- `src/features/landing/luxury/components/Act4TacticalEngine.tsx`
+- `src/features/landing/luxury/components/Act5SovereigntyMetrics.tsx`
+- `tests/unit/features/landing/RoiSimulatorModal.test.tsx`
+
+Comportamento aplicado:
+
+- Métricas quantitativas sem fonte passaram a carregar contexto explícito (`Simulação`, `Exemplo`, `Projeção`, `Arquitetura`, `Catálogo`) em vez de serem apresentadas como resultado real.
+- Conectores foram separados por status real: Bitrix24, WhatsApp Official API, VoiceHub e Webhooks/REST como produção; HubSpot, Salesforce e Pipedrive como homologação; Google Workspace e Microsoft 365 como planejado onde aplicável.
+- Promessas absolutas foram suavizadas: "SLA garantido", "latência inferior a 50ms", "sincronizados em milissegundos", "casos reais", "setup em 5 minutos", "resposta em 15 minutos" e "100% conforme" não permanecem como claims diretos.
+- Certificações foram reescritas para não afirmar conformidade/certificação inexistente: "Controles alinhados a ISO 27001 (Ready)", "ISO 27001 READY", "LGPD POR DESIGN".
+- Depoimentos/casos nominados permanecem apenas sob enquadramento ilustrativo; não foram apresentados como clientes reais.
+- Contagem pública de agentes foi padronizada para "20+ agentes" com rótulos de catálogo/arquitetura, sem afirmar agentes ativos não verificados.
+
+Evidências executadas nesta worktree:
+
+- `node node_modules/vitest/vitest.mjs run -c vitest.unit.config.ts tests/unit/features/landing/Landing360.test.tsx tests/unit/features/landing/RoiSimulatorModal.test.tsx tests/unit/features/landing/PillarDetailModal.test.tsx tests/unit/features/landing/pillars/PillarRegistry.visualizers.test.tsx src/features/intelligence/components/__tests__/IntelligenceHub.test.tsx --no-file-parallelism` → **5 arquivos, 46 testes passaram**.
+- `npm run typecheck` → **exit 0**.
+- `npm run lint` → **exit 0** (1530 warnings preexistentes, nenhum erro novo bloqueante).
+- `npm run build` → **exit 0** (`vite build` + `esbuild server.ts` + `verify:pwa-precache`; 252 entradas de precache verificadas).
+
+Dependências não resolvidas por decisão de negócio/conteúdo:
+
+- Confirmação oficial do número de agentes (hoje "20+" como catálogo público).
+- Confirmação de quais certificações/compliance são fato auditável vs. "Ready/design".
+- Substituição dos exemplos ilustrativos por cases/testemunhos reais somente se houver fonte verificável.
+- Atualização de baselines visuais permanece fora deste handoff e deve seguir o processo próprio de QA.
