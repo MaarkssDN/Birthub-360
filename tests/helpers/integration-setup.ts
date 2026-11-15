@@ -96,13 +96,39 @@ async function deleteOrganizationsAsOwner(args?: {
     // Permite bypass de RLS na conexão do owner para operações administrativas de teste
     await client.query(`SELECT set_config('app.bypass_rls', 'on', false)`).catch(() => {});
 
-    // Se nenhum filtro foi fornecido, descobre todos os IDs de Organization existentes
+    // Se nenhum filtro foi fornecido, apaga TODAS as organizações — o caso quente é o
+    // `prisma.organization.deleteMany()` sem where do afterAll abaixo. Onda 6 / MEL-44: a
+    // versão anterior descobria todos os ids e rodava ~25 DELETEs POR org (~2.500 queries no
+    // banco de teste compartilhado, que acumulava ~100 orgs de worktrees paralelos) — estourava
+    // o hookTimeout de 30s. Como o papel owner tem BYPASSRLS, o mesmo conjunto de deletes sai
+    // em ~25 queries globais com semântica idêntica (FK RESTRICT garante que não existem filhos
+    // órfãos de org já apagada).
+    //
+    // Exceção: ConsentAuditRecord/ConsentAuditChainHead têm trigger append-only que exige
+    // `app.lgpd_chain_retention_org` = organizationId DA LINHA (migration
+    // 20261021000000_lgpd_chain_restrict_org_no_app_delete) — GUC único não cobre orgs
+    // diferentes numa passada global. Por isso essas duas tabelas continuam por org, mas só
+    // para orgs que realmente têm registro de consentimento (na prática, quase nenhuma).
     if (targetIds.length === 0) {
-      const res = await client.query<{ id: string }>('SELECT id FROM "Organization"');
-      targetIds = res.rows.map((r) => r.id);
+      // Limpa primeiro as tabelas de consentimento, org a org, só onde há linhas.
+      const consentOrgs = await client.query<{ organizationId: string }>(
+        `SELECT DISTINCT "organizationId" FROM "ConsentAuditRecord"
+         UNION
+         SELECT DISTINCT "organizationId" FROM "ConsentAuditChainHead"`,
+      );
+      for (const { organizationId: orgId } of consentOrgs.rows) {
+        await client.query(`SELECT set_config('app.lgpd_chain_retention_org', $1, false)`, [orgId]);
+        await client.query(`DELETE FROM "ConsentAuditRecord" WHERE "organizationId" = $1`, [orgId]);
+        await client.query(`DELETE FROM "ConsentAuditChainHead" WHERE "organizationId" = $1`, [orgId]);
+      }
+      // Sem orgs com consentimento, as tabelas já estão vazias — nada a fazer.
+    } else {
+      for (const orgId of targetIds) {
+        await client.query(`SELECT set_config('app.lgpd_chain_retention_org', $1, false)`, [orgId]);
+        await client.query(`DELETE FROM "ConsentAuditRecord" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
+        await client.query(`DELETE FROM "ConsentAuditChainHead" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
+      }
     }
-
-    if (targetIds.length === 0) return { count: 0 };
 
     // Para cada organização, limpa as tabelas com FK RESTRICT ou triggers de retenção.
     // As 22 tabelas abaixo têm FK organizationId → Organization ON DELETE RESTRICT desde a
@@ -132,18 +158,29 @@ async function deleteOrganizationsAsOwner(args?: {
       'ProspectingSearchExecution',
       'FlywheelApproachRecord',
     ];
-    for (const orgId of targetIds) {
-      // Seta a flag LGPD oficial (ADR-006 / migration 20261021000000) para permitir DELETE na cadeia desta org
-      await client.query(`SELECT set_config('app.lgpd_chain_retention_org', $1, false)`, [orgId]);
-      await client.query(`DELETE FROM "ConsentAuditRecord" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
-      await client.query(`DELETE FROM "ConsentAuditChainHead" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
-      for (const table of RESTRICT_FK_TABLES) {
-        await client.query(`DELETE FROM "${table}" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
+    if (targetIds.length > 0) {
+      // Caminho filtrado (delete de org(s) específica(s)): mantém o loop por org — volume baixo.
+      for (const orgId of targetIds) {
+        // Seta a flag LGPD oficial (ADR-006 / migration 20261021000000) para permitir DELETE na cadeia desta org
+        await client.query(`SELECT set_config('app.lgpd_chain_retention_org', $1, false)`, [orgId]);
+        await client.query(`DELETE FROM "ConsentAuditRecord" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
+        await client.query(`DELETE FROM "ConsentAuditChainHead" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
+        for (const table of RESTRICT_FK_TABLES) {
+          await client.query(`DELETE FROM "${table}" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
+        }
+        await client.query(`DELETE FROM "user" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
       }
-      await client.query(`DELETE FROM "user" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
+
+      const deleted = await client.query('DELETE FROM "Organization" WHERE id = ANY($1::text[])', [targetIds]);
+      return { count: deleted.rowCount ?? 0 };
     }
 
-    const deleted = await client.query('DELETE FROM "Organization" WHERE id = ANY($1::text[])', [targetIds]);
+    // Caminho global (deleteMany sem where): uma query por tabela, sem loop por org.
+    for (const table of RESTRICT_FK_TABLES) {
+      await client.query(`DELETE FROM "${table}"`).catch(() => {});
+    }
+    await client.query(`DELETE FROM "user" WHERE "organizationId" IN (SELECT id FROM "Organization")`).catch(() => {});
+    const deleted = await client.query('DELETE FROM "Organization"');
     return { count: deleted.rowCount ?? 0 };
   } finally {
     await client.end();
