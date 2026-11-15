@@ -487,7 +487,10 @@ export class PrismaCrmDocumentRepository {
       const nextStatus =
         doc.status === CrmDocumentStatus.Enviado ? CrmDocumentStatus.Visualizado : doc.status;
       const updated = await prisma.crmCommercialDocument.update({
-        where: { id: doc.id },
+        // organizationId no `where` por defesa em profundidade (auditoria de tenancy, onda
+        // paralela-8): já roda dentro de requestContext.run({ tenantId }) com RLS real, mas a
+        // escrita fica autocontida como nas demais do repositório.
+        where: { id: doc.id, organizationId: doc.organizationId },
         data: {
           viewCount: { increment: 1 },
           firstViewedAt: doc.firstViewedAt ?? now,
