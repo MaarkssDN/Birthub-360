@@ -1,4 +1,4 @@
-# Agente 23 — Relatório Onda 4 (MEL-25 / MEL-26 / MEL-32 — DEM-20261113-004)
+# Agente 23 — Relatório Onda 4 (MEL-25 / MEL-26 / MEL-32 — DEM-20261114-003)
 
 Branch: `agente/23-onda4-perf` (base `integracao/onda-4`)
 Worktree: `C:\Github\Birthub-360-worktrees\agente-23-onda4-perf`
@@ -72,4 +72,4 @@ Não há testes unitários dedicados aos componentes de ícones/title-icons/home
 - `ActivityList.tsx` segue em 861 linhas (warning de hotspot, limite 1000) — modularização adicional fica para demanda futura; fora do escopo MEL-32.
 - Lint: warnings a11y (`noStaticElementInteractions`/`useKeyWithClickEvents`) e `noUnusedFunctionParameters` nos arquivos tocados são **pré-existentes** (código movido verbatim); não corrigidos para preservar diff cirúrgico. Recomendo handoff ao dono do domínio se quiserem saneamento.
 - `dist/` regenerado pelo build de comparação — artefato local, não commitado.
-- Sem impacto em tenancy/LGPD/contratos de API. Arquivos tocados: `src/components/icons/**`, `src/components/brand/**`, `src/features/home/**`, `src/features/activities/components/ActivityList.tsx` (domínio do Agente 04 — mudança cirúrgica de performance autorizada pela missão DEM-20261113-004; se o 04 contestar, reverter `e5684aaa5`), `vite.config.ts`.
+- Sem impacto em tenancy/LGPD/contratos de API. Arquivos tocados: `src/components/icons/**`, `src/components/brand/**`, `src/features/home/**`, `src/features/activities/components/ActivityList.tsx` (domínio do Agente 04 — mudança cirúrgica de performance autorizada pela missão DEM-20261114-003; se o 04 contestar, reverter `e5684aaa5`), `vite.config.ts`.
