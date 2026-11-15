@@ -54,3 +54,14 @@ O inventário `docs/architecture/RELATORIOS-EXECUTIVOS-INVENTARIO.md` (commit `3
   - **MAPE<8% medido em dados reais**: depende do worker semanal de snapshot em produção (infra 10/16) + baseline de 08.
 
 **Status mantido `em-andamento`** até os itens multi-agente acima serem endereçados; a parcela do Agente 04 está implementada e com gates verdes (`tsc`, `lint`, vitest 266/266 nos módulos tocados, openapi-drift, architecture).
+
+**Nota Onda 3 (Agente 04, 2026-11-15, worktree `agente/04-onda3-crm`):**
+re-verificado em `origin/main` atual — o inventário
+`docs/architecture/RELATORIOS-EXECUTIVOS-INVENTARIO.md` permanece íntegro e o checklist
+segue 17/17 (16 endpoints dedicados + `GET /api/commercial-intelligence/bitrix-sync-health`
+implementado na F4). Não há regressão nem novo relatório ausente no domínio CRM/BI.
+Pendências do handoff seguem fora do escopo do 04 ou dependem de decisão de produto/
+infra de outros agentes (War Room executivo SSE → 02/03+00; autópsia Win/Loss
+estatística → item de produto; p95/k6 e custo de forecast → 10/23; MAPE baseline → 08 +
+worker de snapshot em produção). Handoff 01A de tenancy/FKs (`01a-para-04-tenancy-fks-crm.md`)
+não existe em `origin/main` — bonus não aplicável nesta onda.
