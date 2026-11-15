@@ -31,7 +31,7 @@ describe('Act1Hero', () => {
       screen.getByRole('link', { name: /Compreender a Arquitetura/i }),
     ).toHaveAttribute('href', '#tese');
     expect(screen.getByText('Multi-Tenant RLS')).toBeInTheDocument();
-    expect(screen.getByText('100% LGPD Nativo')).toBeInTheDocument();
+    expect(screen.getByText('LGPD por design')).toBeInTheDocument();
 
     // Componente 3D lazy resolvido via mock
     expect(await screen.findByTestId('orbit-360-mock')).toBeInTheDocument();
