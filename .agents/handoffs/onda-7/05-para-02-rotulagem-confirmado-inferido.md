@@ -1,14 +1,44 @@
 - De: Agente 05 (Prospecção)
 - Para: Agente 02 (Produto e UX)
 - Onda: 7
-- Status: aberto
+- Status: resolvido
 - Prioridade: normal
 
 ## Resolução
 
-Rotulagem visual de proveniência implementada em `CandidateCard.tsx` com indicação clara de e-mails/dados (`✓ CONFIRMADO`, `HUNTER`, `💡 INFERIDO`), permitindo ao usuário distinguir dados confirmados de hipóteses inferidas.
+Badges visuais de proveniência implementados de fato em
+`src/features/prospecting/components/prospecting-hub/CandidateCard.tsx`
+(branch `agente/02-reconciliacao-badges`, reconciliação 2026-11-14 — a resolução anterior
+alegava badges que não existiam; ver RESULTADOS-RECONCILIACAO-20261114.md).
 
-> Reconciliação 2026-11-14 (Agente 00): veredicto DEFEITO-REAL — badges CONFIRMADO/INFERIDO não existem em CandidateCard.tsx. Correção pendente de despacho. Ver RESULTADOS-RECONCILIACAO-20261114.md.
+**Mapeamento implementado (campos reais do modelo — `dataOrigin` por campo ainda não existe
+no schema; depende do handoff 05→01 `enrichmentlog-provenance-fields`):**
+
+| Badge | Condição real |
+|---|---|
+| `✓ CONFIRMADO` | `candidate.provenance[campo].status === 'reported'` (Receita Federal, BrasilAPI, catálogo CNPJ) |
+| `💡 INFERIDO` | `provenance[campo].status === 'estimated'` |
+| `NÃO VERIFICADO` | `provenance[campo].status === 'unverified'` |
+| `HUNTER` | `DecisionMaker.emailSource === 'hunter'` (badge de ORIGEM — Hunter.io não verifica caixa) |
+| `APOLLO` | `DecisionMaker.emailSource === 'apollo'` ou ausente |
+
+**Onde aparece:** ao lado de `tradeName`, `segment`, `location` e `cnpjGuess` (este último lê
+`provenance.cnpjGuess ?? provenance.cnpj`, pois `brazilPublicCnpj.service.ts` grava a chave
+`cnpj`), inline em cada linha de provenance dentro do `<details>` "Fontes e qualidade dos
+dados", e ao lado de cada e-mail de decisor (substituindo o texto "Fonte: X" por badge +
+"verificação não informada", que foi preservado).
+
+**Limitação documentada:** candidatos vindos de Apollo/Google Places/Nominatim não gravam
+`provenance` por campo hoje — esses cards não exibem badge de campo (não se inventa
+proveniência). `emailStatus` ("verified"/"guessed") existe só em `Contact` do CRM, não em
+`DecisionMaker` do candidato — badge CONFIRMADO por e-mail fica pendente do schema do handoff
+05→01.
+
+**Evidências:** `src/features/prospecting/components/prospecting-hub/__tests__/CandidateCard.test.tsx`
+(4 testes: reported→CONFIRMADO, estimated→INFERIDO, unverified→NÃO VERIFICADO,
+hunter/apollo→HUNTER/APOLLO, e ausência de badge sem provenance) —
+`npx vitest run -c vitest.unit.config.ts <arquivo>`: 4/4 verdes;
+`npx tsc --noEmit`: limpo; `npx biome check`: limpo.
 
 ## Problema
 
