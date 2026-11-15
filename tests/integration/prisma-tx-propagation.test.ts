@@ -67,8 +67,9 @@ afterAll(async () => {
   await requestContext.run({ bypassRls: true }, async () => {
     await prisma.organization.deleteMany({ where: { id: { in: [ORG_A, ORG_B] } } });
   });
-  for (const org of [ORG_A, ORG_B])
-    await asTenant(org, `DELETE FROM "AuditLog" WHERE "tenantId"=$1`, [org]);
+  // AuditLog é append-only desde 20261114160000_auditlog_append_only_immutability —
+  // DELETE é bloqueado para qualquer papel. As linhas-sonda usam entityId/org únicos
+  // por execução (STAMP), então restos de runs anteriores não afetam as asserções.
   await pool.end();
 });
 
