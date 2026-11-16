@@ -15,6 +15,7 @@ import {
   applyPiiEncryptionToWriteArgs,
   applySoftDeleteReadFilter,
   decryptNestedContactPii,
+  injectSoftDeleteSelect,
   injectTenantIntoWriteArgs,
   isAuditableModel,
   resolveBypassRls,
@@ -201,6 +202,7 @@ const extendedPrisma = basePrisma.$extends({
         injectTenantIntoWriteArgs(args, model as string, operation, tenantId);
         applyPiiEncryptionToWriteArgs(args, model as string, operation);
         applySoftDeleteReadFilter(args, model as string, operation);
+        const injectedDeletedAt = injectSoftDeleteSelect(args, model as string, operation);
 
         // IMPORTANTE (Onda 9, bug crítico de RLS — ver .agents/runs/onda-9.md): `executeWithRls`
         // costumava combinar o `SET LOCAL` de tenant com a query real via `basePrisma.$transaction([
@@ -385,10 +387,10 @@ const extendedPrisma = basePrisma.$extends({
         }
 
         // --- Soft Delete (findUnique filtering) ---
-        // `!= null` (e não `!== null`): com `select` parcial que omite `deletedAt`,
-        // o Prisma devolve a chave como `undefined` — `undefined !== null` é true
-        // e a guarda tratava registro VIVO como deletado (findUnique → null,
-        // findUniqueOrThrow → P2025). Só um Date preenchido indica soft delete.
+        // Se o registro tem `deletedAt` preenchido (data), ele foi soft-deletado:
+        // findUnique → null, findUniqueOrThrow → P2025.
+        // Se `deletedAt: true` foi injetado para viabilizar essa verificação em selects parciais,
+        // removemos o campo injetado para respeitar a forma original solicitada pelo chamador.
         if (isAuditable && (operation === 'findUnique' || operation === 'findUniqueOrThrow')) {
           if (result && result.deletedAt != null) {
             if (operation === 'findUniqueOrThrow') {
@@ -398,6 +400,10 @@ const extendedPrisma = basePrisma.$extends({
               );
             }
             return null;
+          }
+          if (result && injectedDeletedAt) {
+            // biome-ignore lint/performance/noDelete: remove campo injetado para respeitar o shape do select pedido
+            delete (result as Record<string, unknown>).deletedAt;
           }
         }
 

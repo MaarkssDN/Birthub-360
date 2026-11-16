@@ -326,6 +326,25 @@ export function applySoftDeleteReadFilter(args: unknown, model: string, operatio
   a.where = { ...(a.where as Record<string, unknown>), deletedAt: null };
 }
 
+/**
+ * Injeta `deletedAt: true` no `select` de `findUnique` ou `findUniqueOrThrow` quando um `select`
+ * parcial foi fornecido pelo chamador mas omitiu `deletedAt`. Retorna `true` se a injeção ocorreu,
+ * para que a camada consumidora possa remover o campo injetado caso o registro esteja vivo.
+ */
+export function injectSoftDeleteSelect(args: unknown, model: string, operation: string): boolean {
+  if (!isAuditableModel(model)) return false;
+  if (operation !== 'findUnique' && operation !== 'findUniqueOrThrow') return false;
+  const a = args as Record<string, unknown> | undefined;
+  if (a && typeof a === 'object' && a.select && typeof a.select === 'object') {
+    const selectObj = a.select as Record<string, unknown>;
+    if (!selectObj.deletedAt) {
+      selectObj.deletedAt = true;
+      return true;
+    }
+  }
+  return false;
+}
+
 const CONTACT_PII_FIELDS = ['email', 'phone', 'whatsapp'] as const;
 const NESTED_CONTACT_PII_MAX_DEPTH = 6;
 

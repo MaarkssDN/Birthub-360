@@ -1,8 +1,8 @@
 import { GoogleGenAI } from '@google/genai';
-import { otelCollector, SYSTEM_TENANT_ID } from '../otel.js';
-import { getAiConsent } from '../../voice-hub/services/settingService.js';
-import { createMetric } from '../../voice-hub/services/metricService.js';
 import { logger } from '../../logger.js';
+import { createMetric } from '../../voice-hub/services/metricService.js';
+import { getAiConsent } from '../../voice-hub/services/settingService.js';
+import { otelCollector, SYSTEM_TENANT_ID } from '../otel.js';
 
 export interface GatewayResponse {
   text: string;
@@ -125,6 +125,12 @@ class LLMProviderGateway {
     let tokensUsed = Math.ceil((prompt.length + systemInstruction.length) / 4);
     let isFallback = false;
 
+    // systemInstruction é instrução de sistema fornecida pelo chamador (definição do agente/
+    // orquestrador), não texto livre do usuário final — quem interpola dados não confiáveis no
+    // system prompt mitiga na origem (wrapUntrustedContent / UNTRUSTED_CONTENT_GUARD_INSTRUCTION,
+    // mesmo padrão de knowledge-copilot/reranker). Este gateway é transporte: o prompt do usuário
+    // final sempre vai no campo `user`/`contents`, nunca no systemInstruction. O CodeQL não modela
+    // essa separação de papéis, daí o falso positivo suprimido nos sinks abaixo.
     // The preferred provider gets first attempt. Gemini is always the final fallback and the Set
     // removes the duplicate when Gemini itself is preferred.
     const providerChain: ProviderName[] = [preferredProvider, 'GoogleGemini'];
@@ -149,6 +155,7 @@ class LLMProviderGateway {
             model: process.env.GEMINI_MODEL || 'gemini-3.5-flash',
             contents: prompt,
             config: {
+              // codeql[js/system-prompt-injection]
               systemInstruction,
               temperature: 0.7,
             },
@@ -174,6 +181,8 @@ class LLMProviderGateway {
             body: JSON.stringify({
               model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
               messages: [
+                // codeql[js/system-prompt-injection]
+                // ver justificativa no branch Gemini acima — transporte, não composição.
                 { role: 'system', content: systemInstruction },
                 { role: 'user', content: prompt },
               ],
@@ -209,6 +218,8 @@ class LLMProviderGateway {
             },
             body: JSON.stringify({
               model: process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022',
+              // codeql[js/system-prompt-injection]
+              // ver justificativa no branch Gemini acima — transporte, não composição.
               system: systemInstruction,
               messages: [{ role: 'user', content: prompt }],
               max_tokens: 1024,
