@@ -3,6 +3,7 @@ import {
   applySoftDeleteReadFilter,
   AUDITABLE_MODELS,
   BYPASS_RLS_ALLOWED_MODELS,
+  handleSoftDeleteResult,
   injectSoftDeleteSelect,
   isAuditableModel,
   resolveBypassRls,
@@ -122,6 +123,57 @@ describe('prisma-interceptors', () => {
       expect(resolveBypassRls(true, 'Company', true)).toBe(false);
       expect(resolveBypassRls(true, 'Contact', true)).toBe(false);
       expect(resolveBypassRls(true, 'Activity', true)).toBe(false);
+    });
+  });
+
+  describe('handleSoftDeleteResult', () => {
+    it('deve retornar null se o registro foi soft-deletado em findUnique', () => {
+      const record = { id: 'l1', name: 'Lead 1', deletedAt: new Date() };
+      const res = handleSoftDeleteResult(record, 'findUnique', true, false);
+      expect(res).toBeNull();
+    });
+
+    it('deve lançar erro P2025 se o registro foi soft-deletado em findUniqueOrThrow', () => {
+      const record = { id: 'l1', name: 'Lead 1', deletedAt: new Date() };
+      expect(() => {
+        handleSoftDeleteResult(record, 'findUniqueOrThrow', true, false);
+      }).toThrow('An operation failed because it depends on one or more records');
+    });
+
+    it('deve usar o factory customizado quando fornecido em findUniqueOrThrow', () => {
+      const record = { id: 'l1', name: 'Lead 1', deletedAt: new Date() };
+      const factory = (msg: string, code: string) => {
+        const e = new Error(msg) as Error & { code: string };
+        e.code = code;
+        return e;
+      };
+      expect(() => {
+        handleSoftDeleteResult(record, 'findUniqueOrThrow', true, false, factory);
+      }).toThrow('An operation failed because it depends on one or more records');
+    });
+
+    it('deve remover deletedAt se injectedDeletedAt for true e o registro estiver ativo', () => {
+      const record = { id: 'l1', name: 'Lead 1', deletedAt: null };
+      const res = handleSoftDeleteResult(record, 'findUnique', true, true);
+      expect(res).toEqual({ id: 'l1', name: 'Lead 1' });
+      expect((res as Record<string, unknown>).deletedAt).toBeUndefined();
+    });
+
+    it('não deve alterar resultado se model não for auditável', () => {
+      const record = { id: 'u1', name: 'User 1', deletedAt: new Date() };
+      const res = handleSoftDeleteResult(record, 'findUnique', false, false);
+      expect(res).toEqual(record);
+    });
+
+    it('não deve alterar resultado se operação não for findUnique/findUniqueOrThrow', () => {
+      const record = { id: 'l1', name: 'Lead 1', deletedAt: new Date() };
+      const res = handleSoftDeleteResult(record, 'create', true, false);
+      expect(res).toEqual(record);
+    });
+
+    it('deve lidar com result null/undefined com segurança', () => {
+      expect(handleSoftDeleteResult(null, 'findUnique', true, false)).toBeNull();
+      expect(handleSoftDeleteResult(undefined, 'findUnique', true, false)).toBeUndefined();
     });
   });
 });

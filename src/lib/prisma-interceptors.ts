@@ -345,6 +345,45 @@ export function injectSoftDeleteSelect(args: unknown, model: string, operation: 
   return false;
 }
 
+/**
+ * Trata o resultado de findUnique / findUniqueOrThrow em models auditáveis com soft delete.
+ * - Se o registro tem `deletedAt != null`: findUnique retorna null, findUniqueOrThrow lança P2025.
+ * - Se o registro está vivo e `injectedDeletedAt` é true, remove a propriedade `deletedAt`
+ *   injetada para respeitar o shape estrito solicitado pelo chamador.
+ */
+export function handleSoftDeleteResult<T>(
+  result: T,
+  operation: string,
+  isAuditable: boolean,
+  injectedDeletedAt: boolean,
+  knownRequestErrorFactory?: (message: string, code: string) => Error,
+): T | null {
+  if (isAuditable && (operation === 'findUnique' || operation === 'findUniqueOrThrow')) {
+    if (result && (result as Record<string, unknown>).deletedAt != null) {
+      if (operation === 'findUniqueOrThrow') {
+        if (knownRequestErrorFactory) {
+          throw knownRequestErrorFactory(
+            'An operation failed because it depends on one or more records that were required but not found.',
+            'P2025',
+          );
+        }
+        const err = new Error(
+          'An operation failed because it depends on one or more records that were required but not found.',
+        ) as Error & { code: string };
+        err.name = 'PrismaClientKnownRequestError';
+        err.code = 'P2025';
+        throw err;
+      }
+      return null;
+    }
+    if (result && injectedDeletedAt) {
+      // biome-ignore lint/performance/noDelete: remove campo injetado para respeitar o shape do select pedido
+      delete (result as Record<string, unknown>).deletedAt;
+    }
+  }
+  return result;
+}
+
 const CONTACT_PII_FIELDS = ['email', 'phone', 'whatsapp'] as const;
 const NESTED_CONTACT_PII_MAX_DEPTH = 6;
 

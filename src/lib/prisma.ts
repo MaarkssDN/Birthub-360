@@ -15,6 +15,7 @@ import {
   applyPiiEncryptionToWriteArgs,
   applySoftDeleteReadFilter,
   decryptNestedContactPii,
+  handleSoftDeleteResult,
   injectSoftDeleteSelect,
   injectTenantIntoWriteArgs,
   isAuditableModel,
@@ -387,25 +388,18 @@ const extendedPrisma = basePrisma.$extends({
         }
 
         // --- Soft Delete (findUnique filtering) ---
-        // Se o registro tem `deletedAt` preenchido (data), ele foi soft-deletado:
-        // findUnique → null, findUniqueOrThrow → P2025.
-        // Se `deletedAt: true` foi injetado para viabilizar essa verificação em selects parciais,
-        // removemos o campo injetado para respeitar a forma original solicitada pelo chamador.
-        if (isAuditable && (operation === 'findUnique' || operation === 'findUniqueOrThrow')) {
-          if (result && result.deletedAt != null) {
-            if (operation === 'findUniqueOrThrow') {
-              throw new Prisma.PrismaClientKnownRequestError(
-                'An operation failed because it depends on one or more records that were required but not found.',
-                { code: 'P2025', clientVersion: Prisma.prismaVersion.client },
-              );
-            }
-            return null;
-          }
-          if (result && injectedDeletedAt) {
-            // biome-ignore lint/performance/noDelete: remove campo injetado para respeitar o shape do select pedido
-            delete (result as Record<string, unknown>).deletedAt;
-          }
-        }
+        // Tratamento de soft delete extraído para ./prisma-interceptors.ts (TAREFA-SANEAMENTO-013).
+        result = handleSoftDeleteResult(
+          result,
+          operation,
+          isAuditable,
+          injectedDeletedAt,
+          (msg, code) =>
+            new Prisma.PrismaClientKnownRequestError(msg, {
+              code,
+              clientVersion: Prisma.prismaVersion.client,
+            }),
+        );
 
         // --- 5. Audit Log & Search Queue ---
         if (isAuditable && ['create', 'update', 'delete'].includes(operation) && result) {
