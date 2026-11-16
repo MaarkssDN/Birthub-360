@@ -52,7 +52,7 @@ async function organizationIdOf(email: string): Promise<string> {
 /** Persiste a BitrixConnection do tenant apontando para o portal mock (webhookUrl cifrada
  *  transparentemente pela extensão Prisma, igual a uma conexão real). */
 async function seedConnection(organizationId: string): Promise<void> {
-  requestContext.enterWith({ bypassRls: true });
+  requestContext.enterWith({ tenantId: organizationId, bypassRls: true });
   await prisma.bitrixConnection.create({
     data: { organizationId, webhookUrl: MOCK_BITRIX_WEBHOOK_URL, label: 'Bitrix Mock E2E' },
   });
@@ -99,7 +99,7 @@ test.describe('Mesa de Tratamento — jornada completa com Bitrix mock', () => {
     // delete em findUnique comparando `result.deletedAt !== null` — com `select` parcial que
     // não inclui deletedAt o campo vem `undefined` e a guarda devolve null para um lead que
     // existe. findFirst recebe `deletedAt: null` injetado no where (comportamento correto).
-    requestContext.enterWith({ bypassRls: true });
+    requestContext.enterWith({ tenantId: organizationId, bypassRls: true });
     const currentAtlasLead = await prisma.lead.findFirst({
       where: { id: currentLeadId },
       select: { bitrixLeadId: true },
@@ -150,6 +150,7 @@ test.describe('Mesa de Tratamento — jornada completa com Bitrix mock', () => {
     expect(updates.some((c) => String(c.params.id) === currentBitrixId)).toBe(true);
 
     // Persistência local: histórico do desfecho (alimenta o dashboard).
+    requestContext.enterWith({ tenantId: organizationId, bypassRls: true });
     const treatment = await prisma.mesaTratamentoTreatment.findFirst({
       where: { organizationId, leadId: currentLeadId, outcome: 'reuniao_agendada' },
     });
@@ -204,6 +205,7 @@ test.describe('Mesa de Tratamento — jornada completa com Bitrix mock', () => {
     );
     await page.getByRole('button', { name: 'Marcar como decidido' }).click();
     expect((await decideResponsePromise).status()).toBe(200);
+    requestContext.enterWith({ tenantId: organizationId, bypassRls: true });
     const decided = await prisma.mesaTratamentoTreatment.findFirst({
       where: { organizationId, leadId: currentLeadId, outcome: 'decidido_pela_gestao' },
     });
@@ -264,7 +266,7 @@ test.describe('Mesa de Tratamento — jornada completa com Bitrix mock', () => {
 
     // E um lead de OUTRO vendedor não pode ser registrado nem por ID direto — mas aqui o
     // lead 9102 nem foi importado (não existe no Atlas), então o 404 já prova o isolamento.
-    requestContext.enterWith({ bypassRls: true });
+    requestContext.enterWith({ tenantId: organizationId, bypassRls: true });
     const foreignLead = await prisma.lead.findFirst({
       where: { organizationId, bitrixLeadId: '9102' },
       select: { id: true },
@@ -293,7 +295,7 @@ test.describe('Mesa de Tratamento — jornada completa com Bitrix mock', () => {
     const queueBody = await (await queueResponsePromise).json();
     const leadId = queueBody.data.current.id as string;
 
-    requestContext.enterWith({ bypassRls: true });
+    requestContext.enterWith({ tenantId: organizationId, bypassRls: true });
     const treatmentsBefore = await prisma.mesaTratamentoTreatment.count({
       where: { organizationId, leadId },
     });
@@ -319,6 +321,7 @@ test.describe('Mesa de Tratamento — jornada completa com Bitrix mock', () => {
 
     // Nada foi gravado: sem tratamento, lead continua com status aberto e sem lastInteraction
     // do atendimento (a escrita local só acontece depois das duas escritas no Bitrix).
+    requestContext.enterWith({ tenantId: organizationId, bypassRls: true });
     const treatmentsAfter = await prisma.mesaTratamentoTreatment.count({
       where: { organizationId, leadId },
     });
