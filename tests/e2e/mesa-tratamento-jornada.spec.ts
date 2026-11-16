@@ -204,10 +204,13 @@ test.describe('Mesa de Tratamento — jornada completa com Bitrix mock', () => {
       (res) => res.url().includes('/decide') && res.request().method() === 'POST',
     );
     await page.getByRole('button', { name: 'Marcar como decidido' }).click();
-    expect((await decideResponsePromise).status()).toBe(200);
+    const decideResponse = await decideResponsePromise;
+    expect(decideResponse.status()).toBe(200);
+    const decideMatch = decideResponse.url().match(/\/lead\/([^/]+)\/decide/);
+    const decidedLeadId = decideMatch ? decideMatch[1] : currentLeadId;
     requestContext.enterWith({ tenantId: organizationId, bypassRls: true });
     const decided = await prisma.mesaTratamentoTreatment.findFirst({
-      where: { organizationId, leadId: currentLeadId, outcome: 'decidido_pela_gestao' },
+      where: { organizationId, leadId: decidedLeadId, outcome: 'decidido_pela_gestao' },
     });
     expect(decided, 'decisão da gestão deve gerar MesaTratamentoTreatment').toBeTruthy();
   });
