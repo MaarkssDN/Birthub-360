@@ -13,6 +13,7 @@ import { BrandProvider } from './contexts/BrandContext.js';
 import { DailyClosingProvider } from './contexts/DailyClosingContext.js';
 import { ExperienceModeProvider } from './contexts/ExperienceModeContext.js';
 import { ThemeProvider } from './contexts/ThemeContext.js';
+import { I18nProvider } from './i18n/index.js';
 
 const SetupWizard = lazy(() =>
   import('./features/onboarding/components/SetupWizard.js').then((m) => ({
@@ -63,7 +64,8 @@ export default function App() {
     // complementando o @media (prefers-reduced-motion: reduce) já aplicado às animações CSS puras
     // em globals.css (que não cobre transitions/animate props do framer-motion).
     <MotionConfig reducedMotion="user">
-      <ThemeProvider>
+      <I18nProvider>
+        <ThemeProvider>
         <ExperienceModeProvider>
           <BrandProvider>
             <AuthProvider>
@@ -177,7 +179,8 @@ export default function App() {
             </AuthProvider>
           </BrandProvider>
         </ExperienceModeProvider>
-      </ThemeProvider>
+        </ThemeProvider>
+      </I18nProvider>
     </MotionConfig>
   );
 }
