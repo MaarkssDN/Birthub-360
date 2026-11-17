@@ -28,7 +28,11 @@ function readCompletedIds(key: string): Set<string> {
 
 function readDismissed(key: string): boolean {
   if (typeof window === 'undefined') return false;
-  return window.localStorage.getItem(`${key}:dismissed`) === 'true';
+  return (
+    window.localStorage.getItem(`${key}:dismissed`) === 'true' ||
+    window.localStorage.getItem('@birthhub360:first-steps:dismissed') === 'true' ||
+    window.localStorage.getItem('@prospector:has_seen_tour') === 'true'
+  );
 }
 
 export function FirstStepsChecklist() {

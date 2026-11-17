@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getFirstStepsForRole } from '../firstSteps.js';
+import { getFirstStepsForRole, matchesAudience, type StepAudience } from '../firstSteps.js';
 
 function stepIds(role: string): string[] {
   return getFirstStepsForRole(role).map((step) => step.id);
@@ -44,5 +44,9 @@ describe('getFirstStepsForRole (MEL-38)', () => {
     expect(viewerIds).not.toContain('prospect');
     expect(viewerIds).not.toContain('activities');
     expect(viewerIds).not.toContain('mesa');
+  });
+
+  it('retorna false para audiência desconhecida', () => {
+    expect(matchesAudience('unknown' as StepAudience, 'ADMIN')).toBe(false);
   });
 });
