@@ -46,7 +46,7 @@ import {
   type WidgetId,
 } from '../hooks/useDashboardLayout.js';
 import { DashboardBuilderModal } from './DashboardBuilderModal.js';
-import { FirstStepsChecklist } from '../../onboarding/components/FirstStepsChecklist.js';
+import { FirstStepsChecklist } from '../../../components/onboarding/FirstStepsChecklist.js';
 import { ProductivityHeatmapWidget } from './ProductivityHeatmapWidget.js';
 import { RealtimeCockpitWidget } from './RealtimeCockpitWidget.js';
 import { UnifiedTimelineWidget } from './UnifiedTimelineWidget.js';

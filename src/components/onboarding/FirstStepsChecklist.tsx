@@ -1,18 +1,12 @@
 import { Check, ChevronRight, ListChecks, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../../../components/ui/Button.js';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '../../../components/ui/Card.js';
-import { useAuth } from '../../../contexts/AuthContext.js';
-import { getFirstStepsForRole } from '../firstSteps.js';
-import { cn } from '../../../lib/utils.js';
-import { useI18n } from '../../../i18n/index.js';
+import { Button } from '../ui/Button.js';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/Card.js';
+import { useAuth } from '../../contexts/AuthContext.js';
+import { getFirstStepsForRole } from './firstSteps.js';
+import { cn } from '../../lib/utils.js';
+import { useI18n } from '../../i18n/index.js';
 
 function storageKeyFor(userId: string, role: string): string {
   return `@birthhub360:first-steps:${userId}:${role || 'unknown'}`;
