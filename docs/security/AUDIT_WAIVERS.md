@@ -33,6 +33,15 @@ Se um achado `HIGH`/`CRITICAL` precisar ser aceito temporariamente (ex.: sem fix
 
 ## Waivers ativos
 
+### `GHSA-FC5Q-39XC-VJPF` — `picomatch` (ReDoS through single-branch repeated extglobs)
+
+- **Advisory:** https://github.com/advisories/GHSA-fc5q-39xc-vjpf (`GHSA-FC5Q-39XC-VJPF`)
+- **Severidade reportada pelo `npm audit`:** high (CVSS 7.5 — propaga para `@rollup/plugin-*`, `@storybook/*`, `@typescript-eslint/*`, `dependency-cruiser`, `knip`, `tinyglobby`, `ts-morph`, `unplugin`, `vite`, `vite-plugin-pwa`, `vitest`, `workbox-build`, `node-gyp` e `libxmljs2`)
+- **Cadeia:** `picomatch@<=4.0.7` (`range: "*"` — nenhuma versão corrigida publicada no registro npm até 2026-11-17; `4.0.7` é a última release upstream)
+- **Motivo:** Advisory recém-publicado sem versão de patch upstream disponível (`range: <=4.0.7`). Toca exclusivamente ferramentas de build, lint e teste (`vite`, `vitest`, `rollup`, `typescript-eslint`, `dependency-cruiser`, `knip`), que avaliam globs estáticos controlados pelo repositório em tempo de desenvolvimento/CI e nunca processam padrões glob arbitrários vindos de entrada não confiável de usuário em runtime de produção. Aceito temporariamente até publicação de patch upstream em `picomatch`.
+- **Dono:** Agente 00 / Agente 15 (Segurança)
+- **Data de registro:** 2026-11-17. **Reavaliar em:** 2026-12-17
+
 ### `GHSA-44JH-23M7-HPCF`, `GHSA-R4XP-PRCW-77QF`, `GHSA-965C-763C-88JM` - `better-auth`
 
 - **Advisory:** https://github.com/advisories/GHSA-44jh-23m7-hpcf
