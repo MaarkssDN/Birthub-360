@@ -46,6 +46,7 @@ import {
   type WidgetId,
 } from '../hooks/useDashboardLayout.js';
 import { DashboardBuilderModal } from './DashboardBuilderModal.js';
+import { FirstStepsChecklist } from '../../onboarding/components/FirstStepsChecklist.js';
 import { ProductivityHeatmapWidget } from './ProductivityHeatmapWidget.js';
 import { RealtimeCockpitWidget } from './RealtimeCockpitWidget.js';
 import { UnifiedTimelineWidget } from './UnifiedTimelineWidget.js';
@@ -895,6 +896,8 @@ export function SinglePageDashboard() {
             </Button>
           </motion.div>
         </motion.header>
+
+        <FirstStepsChecklist />
 
         {/* ── ROLE SELECTOR & DASHBOARD BUILDER CONTROLS ───────────────────── */}
         <div className="flex flex-wrap items-center justify-between gap-3 p-2.5 rounded-2xl bg-surface/70 border border-line backdrop-blur-md shadow-xs">

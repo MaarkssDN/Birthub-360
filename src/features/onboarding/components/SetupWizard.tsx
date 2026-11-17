@@ -2,6 +2,8 @@ import type React from 'react';
 import { useEffect, useState } from 'react';
 import { Card } from '../../../components/ui/Card.js';
 import { Button } from '../../../components/ui/Button.js';
+import { OperationalStateContainer } from '../../../components/ui/OperationalStateContainer.js';
+import { Skeleton } from '../../../components/ui/Skeleton.js';
 import { PRODUCT_MODULES } from '../../../config/product-modules.js';
 import {
   setOrganizationModulesCache,
@@ -22,8 +24,8 @@ import {
   Check,
   ChevronRight,
   AlertTriangle,
-  RefreshCw,
 } from 'lucide-react';
+import { useI18n } from '../../../i18n/index.js';
 
 const iconMap: Record<string, React.ReactNode> = {
   Settings: <Settings className="w-8 h-8" />,
@@ -46,6 +48,7 @@ export function SetupWizard() {
     isLoading: isLoadingModules,
     reload,
   } = useOrganizationModules();
+  const { t } = useI18n();
 
   // Pré-seleciona o que a org já salvou (configured:true). Org sem save mantém só o obrigatório.
   useEffect(() => {
@@ -87,34 +90,28 @@ export function SetupWizard() {
       <div className="max-w-4xl w-full">
         {/* Header do Wizard */}
         <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-ink mb-2">Bem-vindo(a) ao Birth Hub 360</h1>
-          <p className="text-ink-2">Configure os módulos que sua organização vai utilizar.</p>
+          <h1 className="text-3xl font-bold text-ink mb-2">{t('setup.welcomeTitle')}</h1>
+          <p className="text-ink-2">{t('setup.welcomeSubtitle')}</p>
         </div>
-
-        {loadError && (
-          <div
-            role="alert"
-            className="mb-8 flex gap-3 p-4 rounded-xl border border-red-500/30 bg-red-500/5 text-left"
-          >
-            <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-red-600" aria-hidden="true" />
-            <div className="flex-1 text-sm">
-              <p className="font-semibold text-ink">Não foi possível carregar os módulos</p>
-              <p className="text-ink-2 mt-1">{loadError}</p>
-            </div>
-            <Button variant="outline" size="sm" onClick={reload}>
-              <RefreshCw className="w-4 h-4 mr-1" aria-hidden="true" /> Tentar novamente
-            </Button>
-          </div>
-        )}
-
-        {isLoadingModules && !loadError && (
-          <p className="mb-8 text-center text-sm text-ink-2" aria-live="polite">
-            Carregando módulos da organização...
-          </p>
-        )}
 
         {step === 1 && (
           <div className="space-y-8 animate-fade-in">
+            <OperationalStateContainer
+              state={loadError ? 'error' : isLoadingModules ? 'loading' : 'ready'}
+              error={{
+                title: t('setup.loadErrorTitle'),
+                message: loadError ?? undefined,
+                onRetry: reload,
+                retryLabel: t('common.retry'),
+              }}
+              loadingSkeleton={
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <Skeleton className="h-64 rounded-2xl" />
+                  <Skeleton className="h-64 rounded-2xl" />
+                  <Skeleton className="h-64 rounded-2xl" />
+                </div>
+              }
+            >
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {PRODUCT_MODULES.map((mod) => (
                 <Card
@@ -146,7 +143,7 @@ export function SetupWizard() {
                   )}
                   {mod.alwaysActive && (
                     <div className="mt-4 text-xs font-semibold text-ink-2 uppercase tracking-wide">
-                      Módulo Base Obrigatório
+                      {t('setup.requiredModule')}
                     </div>
                   )}
                 </Card>
@@ -160,9 +157,10 @@ export function SetupWizard() {
                 soundClick
                 className="bg-brand text-on-brand hover:bg-brand-active active:scale-95 transition-all shadow-md"
               >
-                Continuar <ChevronRight className="ml-2 w-5 h-5" />
+                {t('common.continue')} <ChevronRight className="ml-2 w-5 h-5" />
               </Button>
             </div>
+            </OperationalStateContainer>
           </div>
         )}
 
@@ -171,11 +169,9 @@ export function SetupWizard() {
             <div className="w-24 h-24 bg-brand/10 text-brand rounded-full flex items-center justify-center mx-auto mb-6">
               <Check className="w-12 h-12" />
             </div>
-            <h2 className="text-2xl font-bold text-ink">Confirmar configuração</h2>
+            <h2 className="text-2xl font-bold text-ink">{t('setup.confirmTitle')}</h2>
             <p className="text-ink-2 text-lg">
-              Você selecionou {selectedModules.size}{' '}
-              {selectedModules.size === 1 ? 'módulo' : 'módulos'}. A configuração só é gravada
-              quando você confirmar abaixo; depois, poderá alterá-la na aba de Administração.
+              {t('setup.confirmDescription', { count: selectedModules.size })}
             </p>
 
             {saveError && (
@@ -188,7 +184,7 @@ export function SetupWizard() {
                   aria-hidden="true"
                 />
                 <div className="text-sm">
-                  <p className="font-semibold text-ink">Configuração não foi salva</p>
+                  <p className="font-semibold text-ink">{t('setup.saveErrorTitle')}</p>
                   <p className="text-ink-2 mt-1">{saveError}</p>
                 </div>
               </div>
@@ -202,7 +198,7 @@ export function SetupWizard() {
                 soundClick
                 className="active:scale-95 transition-all"
               >
-                Voltar
+                {t('common.back')}
               </Button>
               <Button
                 onClick={handleComplete}
@@ -212,10 +208,10 @@ export function SetupWizard() {
                 className="bg-brand text-on-brand hover:bg-brand-active shadow-xl shadow-brand/20 active:scale-95 transition-all"
               >
                 {isLoading
-                  ? 'Salvando...'
+                  ? t('common.saving')
                   : saveError
-                    ? 'Tentar salvar novamente'
-                    : 'Salvar e ir para o Dashboard'}
+                    ? t('common.tryAgain')
+                    : t('common.saveAndOpenDashboard')}
               </Button>
             </div>
           </div>
