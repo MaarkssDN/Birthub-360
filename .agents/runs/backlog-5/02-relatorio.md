@@ -100,9 +100,22 @@ dependências e sem alterar arquivos de outros agentes.
   - `src/i18n/__tests__/i18n.test.ts` — 3/3 OK.
   - `src/features/onboarding/__tests__/firstSteps.test.ts` — 4/4 OK.
 - `npm run test:unit` (suíte completa, `vitest.unit.config.ts`,
-  `--no-file-parallelism`) — executada nesta worktree; todos os arquivos
-  observados passaram, sem falhas registradas até o encerramento da coleta.
-  Logs de WARN/ERROR são fixtures esperados dos próprios testes.
+  `--no-file-parallelism`) — executada nesta worktree. Resultado parcial
+  observado: 2 arquivos com falha foram identificados e tratados:
+  - `tests/unit/features/dashboard/SinglePageDashboard.test.tsx` (2 testes) —
+    regressão introduzida por esta run: `useI18n` lançava exceção sem
+    `I18nProvider` e o teste monta o dashboard isolado. **Corrigido**: `useI18n`
+    agora retorna fallback `pt-BR` quando não há provider; reexecução focada
+    passou 4/4.
+  - `tests/unit/architecture/ownership-coverage.test.ts` (2 testes) —
+    **falha pré-existente/ambiental, não relacionada ao diff**: os escopos
+    `k8s/**` e `argocd/**` do AGENTS.md §15 não existem nesta worktree/branch
+    (`ls` confirma ausência dos diretórios). Dono da correção: matriz de
+    propriedade é decisão humana/Agente 00 — registrado aqui, sem edição.
+  - Demais arquivos observados: todos verdes; logs de WARN/ERROR são fixtures
+    esperados dos próprios testes.
+- Reexecução focada pós-correção: `SinglePageDashboard` 4/4, `firstSteps` 4/4,
+  `i18n` 3/3 — **11/11 OK**.
 
 ## Arquivos alterados/criados
 
@@ -128,8 +141,10 @@ Criados:
 
 ## Riscos e limitações
 
-- `test:unit` completo é longo (~160 arquivos); ver seção de gates para o
-  resultado observado. Falhas futuras devem ser triadas por domínio.
+- `test:unit` completo é longo (~160 arquivos); falhas pré-existentes
+  conhecidas nesta worktree: `ownership-coverage.test.ts` espera diretórios
+  `k8s/` e `argocd/` ausentes na branch — drift da matriz AGENTS.md §15,
+  fora do escopo do Agente 02 (decisão humana/00).
 - Checklist de primeiros passos usa `localStorage` (por usuário+papel no
   navegador); não é sincronizado entre dispositivos — limitação aceita para P3,
   evolução exige contrato de backend (handoff futuro ao Agente 01 se priorizado).

@@ -181,10 +181,14 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 
+// Fallback pt-BR para renders isolados (testes de unidade, storybook-like) que montam
+// componentes consumidores sem o provider — evita crash e mantém copy padrão.
+const FALLBACK_I18N: I18nContextValue = {
+  locale: 'pt-BR',
+  setLocale: () => undefined,
+  t: (key, vars) => translate('pt-BR', key, vars),
+};
+
 export function useI18n(): I18nContextValue {
-  const context = useContext(I18nContext);
-  if (!context) {
-    throw new Error('useI18n deve ser usado dentro de <I18nProvider>.');
-  }
-  return context;
+  return useContext(I18nContext) ?? FALLBACK_I18N;
 }
