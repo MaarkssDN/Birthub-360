@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { AlertTriangle, Gauge } from 'lucide-react';
+import { Gauge } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import {
   Area,
@@ -11,6 +11,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { OperationalStateContainer } from '../../../components/ui/OperationalStateContainer.js';
 import { Skeleton } from '../../../components/ui/Skeleton.js';
 import { useTheme } from '../../../contexts/ThemeContext.js';
 import { api } from '../../../lib/api.js';
@@ -105,28 +106,26 @@ export function AiGatewayShowcase() {
         </p>
       </div>
 
-      {loading ? (
-        <div className="space-y-3">
-          <Skeleton className="h-16 w-full" />
-          <Skeleton className="h-48 w-full" />
-        </div>
-      ) : error ? (
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5 text-sm text-danger-active dark:text-danger">
-            <AlertTriangle className="w-4 h-4 shrink-0" />
-            {error}
+      <OperationalStateContainer
+        state={loading ? 'loading' : error ? 'error' : !data || data.isEmpty ? 'empty' : 'ready'}
+        error={{
+          title: 'Falha ao carregar o consumo de IA',
+          message: error ?? undefined,
+          onRetry: load,
+          retryLabel: 'Tentar novamente',
+        }}
+        empty={{
+          title: 'Nenhuma chamada de IA registrada ainda',
+          description: 'Quando o AI Gateway processar requisições, o consumo aparecerá aqui.',
+        }}
+        loadingSkeleton={
+          <div className="space-y-3">
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-48 w-full" />
           </div>
-          <button
-            type="button"
-            onClick={load}
-            className="text-xs font-bold text-danger-active dark:text-danger hover:underline cursor-pointer shrink-0"
-          >
-            Tentar novamente
-          </button>
-        </div>
-      ) : !data || data.isEmpty ? (
-        <p className="text-sm text-ink-2">Nenhuma chamada de IA registrada ainda.</p>
-      ) : (
+        }
+      >
+        {data && (
         <div className="space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 rounded-card bg-surface-2 border border-line">
@@ -216,7 +215,8 @@ export function AiGatewayShowcase() {
             </ResponsiveContainer>
           </div>
         </div>
-      )}
+        )}
+      </OperationalStateContainer>
     </motion.div>
   );
 }
