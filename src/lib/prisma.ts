@@ -15,6 +15,8 @@ import {
   applyPiiEncryptionToWriteArgs,
   applySoftDeleteReadFilter,
   decryptNestedContactPii,
+  handleSoftDeleteResult,
+  injectSoftDeleteSelect,
   injectTenantIntoWriteArgs,
   isAuditableModel,
   resolveBypassRls,
@@ -201,6 +203,7 @@ const extendedPrisma = basePrisma.$extends({
         injectTenantIntoWriteArgs(args, model as string, operation, tenantId);
         applyPiiEncryptionToWriteArgs(args, model as string, operation);
         applySoftDeleteReadFilter(args, model as string, operation);
+        const injectedDeletedAt = injectSoftDeleteSelect(args, model as string, operation);
 
         // IMPORTANTE (Onda 9, bug crítico de RLS — ver .agents/runs/onda-9.md): `executeWithRls`
         // costumava combinar o `SET LOCAL` de tenant com a query real via `basePrisma.$transaction([
@@ -385,17 +388,18 @@ const extendedPrisma = basePrisma.$extends({
         }
 
         // --- Soft Delete (findUnique filtering) ---
-        if (isAuditable && (operation === 'findUnique' || operation === 'findUniqueOrThrow')) {
-          if (result && result.deletedAt !== null) {
-            if (operation === 'findUniqueOrThrow') {
-              throw new Prisma.PrismaClientKnownRequestError(
-                'An operation failed because it depends on one or more records that were required but not found.',
-                { code: 'P2025', clientVersion: Prisma.prismaVersion.client },
-              );
-            }
-            return null;
-          }
-        }
+        // Tratamento de soft delete extraído para ./prisma-interceptors.ts (TAREFA-SANEAMENTO-013).
+        result = handleSoftDeleteResult(
+          result,
+          operation,
+          isAuditable,
+          injectedDeletedAt,
+          (msg, code) =>
+            new Prisma.PrismaClientKnownRequestError(msg, {
+              code,
+              clientVersion: Prisma.prismaVersion.client,
+            }),
+        );
 
         // --- 5. Audit Log & Search Queue ---
         if (isAuditable && ['create', 'update', 'delete'].includes(operation) && result) {
