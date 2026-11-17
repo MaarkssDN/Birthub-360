@@ -9,7 +9,9 @@ describe('getFirstStepsForRole (MEL-38)', () => {
   it('inclui os passos comuns para todos os papéis', () => {
     for (const role of ['ADMIN', 'GESTOR', 'CLOSER', 'SDR', 'VISUALIZADOR']) {
       const ids = stepIds(role);
-      expect(ids).toEqual(expect.arrayContaining(['workspace', 'crm', 'settings', 'dashboard', 'reports']));
+      expect(ids).toEqual(
+        expect.arrayContaining(['workspace', 'crm', 'settings', 'dashboard', 'reports']),
+      );
     }
   });
 

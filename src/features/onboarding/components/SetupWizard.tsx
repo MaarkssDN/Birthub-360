@@ -112,54 +112,54 @@ export function SetupWizard() {
                 </div>
               }
             >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {PRODUCT_MODULES.map((mod) => (
-                <Card
-                  key={mod.key}
-                  padding="lg"
-                  variant="bento"
-                  spotlight
-                  soundHover
-                  soundClick
-                  className={`cursor-pointer transition-all border relative active:scale-95 group/mod ${mod.alwaysActive ? 'opacity-70 pointer-events-none' : ''} ${selectedModules.has(mod.key) || mod.alwaysActive ? 'border-brand shadow-[0_8px_32px_-12px_rgba(212,175,55,0.4)]' : 'border-line hover:border-brand/40'}`}
-                  onClick={() => !mod.alwaysActive && toggleModule(mod.key)}
-                >
-                  <div
-                    className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-brand/40 to-transparent opacity-0 group-hover/mod:opacity-100 transition-opacity duration-700 z-20"
-                    aria-hidden="true"
-                  />
-                  <div
-                    className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 relative z-30 ${mod.colorTheme}`}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {PRODUCT_MODULES.map((mod) => (
+                  <Card
+                    key={mod.key}
+                    padding="lg"
+                    variant="bento"
+                    spotlight
+                    soundHover
+                    soundClick
+                    className={`cursor-pointer transition-all border relative active:scale-95 group/mod ${mod.alwaysActive ? 'opacity-70 pointer-events-none' : ''} ${selectedModules.has(mod.key) || mod.alwaysActive ? 'border-brand shadow-[0_8px_32px_-12px_rgba(212,175,55,0.4)]' : 'border-line hover:border-brand/40'}`}
+                    onClick={() => !mod.alwaysActive && toggleModule(mod.key)}
                   >
-                    {iconMap[mod.iconName] || <Settings />}
-                  </div>
-                  <h3 className="text-lg font-bold text-ink mb-2">{mod.label}</h3>
-                  <p className="text-sm text-ink-2">{mod.description}</p>
-
-                  {(selectedModules.has(mod.key) || mod.alwaysActive) && (
-                    <div className="absolute top-4 right-4 text-brand">
-                      <Check className="w-6 h-6" />
+                    <div
+                      className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-brand/40 to-transparent opacity-0 group-hover/mod:opacity-100 transition-opacity duration-700 z-20"
+                      aria-hidden="true"
+                    />
+                    <div
+                      className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 relative z-30 ${mod.colorTheme}`}
+                    >
+                      {iconMap[mod.iconName] || <Settings />}
                     </div>
-                  )}
-                  {mod.alwaysActive && (
-                    <div className="mt-4 text-xs font-semibold text-ink-2 uppercase tracking-wide">
-                      {t('setup.requiredModule')}
-                    </div>
-                  )}
-                </Card>
-              ))}
-            </div>
+                    <h3 className="text-lg font-bold text-ink mb-2">{mod.label}</h3>
+                    <p className="text-sm text-ink-2">{mod.description}</p>
 
-            <div className="flex justify-end pt-8 border-t border-line">
-              <Button
-                onClick={() => setStep(2)}
-                size="lg"
-                soundClick
-                className="bg-brand text-on-brand hover:bg-brand-active active:scale-95 transition-all shadow-md"
-              >
-                {t('common.continue')} <ChevronRight className="ml-2 w-5 h-5" />
-              </Button>
-            </div>
+                    {(selectedModules.has(mod.key) || mod.alwaysActive) && (
+                      <div className="absolute top-4 right-4 text-brand">
+                        <Check className="w-6 h-6" />
+                      </div>
+                    )}
+                    {mod.alwaysActive && (
+                      <div className="mt-4 text-xs font-semibold text-ink-2 uppercase tracking-wide">
+                        {t('setup.requiredModule')}
+                      </div>
+                    )}
+                  </Card>
+                ))}
+              </div>
+
+              <div className="flex justify-end pt-8 border-t border-line">
+                <Button
+                  onClick={() => setStep(2)}
+                  size="lg"
+                  soundClick
+                  className="bg-brand text-on-brand hover:bg-brand-active active:scale-95 transition-all shadow-md"
+                >
+                  {t('common.continue')} <ChevronRight className="ml-2 w-5 h-5" />
+                </Button>
+              </div>
             </OperationalStateContainer>
           </div>
         )}

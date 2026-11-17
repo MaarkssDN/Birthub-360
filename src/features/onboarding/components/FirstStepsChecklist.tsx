@@ -24,7 +24,9 @@ function readCompletedIds(key: string): Set<string> {
     const raw = window.localStorage.getItem(`${key}:completed`);
     if (!raw) return new Set();
     const parsed = JSON.parse(raw) as unknown;
-    return Array.isArray(parsed) ? new Set(parsed.filter((v): v is string => typeof v === 'string')) : new Set();
+    return Array.isArray(parsed)
+      ? new Set(parsed.filter((v): v is string => typeof v === 'string'))
+      : new Set();
   } catch {
     return new Set();
   }
@@ -73,7 +75,8 @@ export function FirstStepsChecklist() {
     });
   };
 
-  const progressPercent = steps.length === 0 ? 0 : Math.round((completedCount / steps.length) * 100);
+  const progressPercent =
+    steps.length === 0 ? 0 : Math.round((completedCount / steps.length) * 100);
 
   return (
     <Card variant="panel" padding="none" className="shadow-card">
@@ -84,9 +87,7 @@ export function FirstStepsChecklist() {
           </div>
           <div>
             <CardTitle className="text-base">{t('firstSteps.title')}</CardTitle>
-            <CardDescription className="mt-1 max-w-2xl">
-              {t('firstSteps.subtitle')}
-            </CardDescription>
+            <CardDescription className="mt-1 max-w-2xl">{t('firstSteps.subtitle')}</CardDescription>
           </div>
         </div>
         <Button
@@ -108,10 +109,13 @@ export function FirstStepsChecklist() {
             aria-valuemin={0}
             aria-valuemax={steps.length}
             aria-valuenow={completedCount}
-            aria-label={t('firstSteps.progress', { completed: completedCount, total: steps.length })}
+            aria-label={t('firstSteps.progress', {
+              completed: completedCount,
+              total: steps.length,
+            })}
           >
             <div
-              className={cn('h-full rounded-full bg-brand transition-all', )}
+              className={cn('h-full rounded-full bg-brand transition-all')}
               style={{ width: `${progressPercent}%` }}
             />
           </div>

@@ -66,15 +66,15 @@ export default function App() {
     <MotionConfig reducedMotion="user">
       <I18nProvider>
         <ThemeProvider>
-        <ExperienceModeProvider>
-          <BrandProvider>
-            <AuthProvider>
-              <DailyClosingProvider>
-                <ActiveRecordProvider>
-                  <ClickSpark />
-                  <Suspense fallback={<PageFallback />}>
-                    <Routes>
-                      {/* Porta de entrada do produto — revisado (11/09/2026) por pedido explícito
+          <ExperienceModeProvider>
+            <BrandProvider>
+              <AuthProvider>
+                <DailyClosingProvider>
+                  <ActiveRecordProvider>
+                    <ClickSpark />
+                    <Suspense fallback={<PageFallback />}>
+                      <Routes>
+                        {/* Porta de entrada do produto — revisado (11/09/2026) por pedido explícito
                         do usuário: a tentativa anterior (LoginScreen com linguagem visual do Hub,
                         formulário já visível) misturava o gate institucional com o formulário na
                         mesma tela, e não era "a tela do Hub" que o usuário pedia (referência
@@ -87,49 +87,49 @@ export default function App() {
                         guard de LoginScreen). Login/cadastro continuam levando direto ao Hub (ver
                         Pilot 031/032 em .claude/PILOTS.md) — o CRM (/app) não é o destino padrão
                         pós-login; continua existindo e acessível a partir dos círculos do Hub. */}
-                      <Route
-                        path="/design-lab/command-language"
-                        element={
-                          <ProtectedRoute>
-                            <DesignLabPage section="command-language" />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/design-lab/components-v2"
-                        element={
-                          <ProtectedRoute>
-                            <DesignLabPage section="components-v2" />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/design-lab/home-proposals"
-                        element={
-                          <ProtectedRoute>
-                            <CentralModulesHome />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route path="/" element={<Landing360 />} />
-                      <Route path="/welcome" element={<Landing360 initialScreen="intro" />} />
-                      <Route path="/landing-new" element={<LandingInnovative />} />
-                      <Route path="/privacy" element={<PrivacyPolicy />} />
-                      <Route path="/terms" element={<TermsOfUse />} />
-                      {/* `/select-brand` era a escolha entre as duas marcas anteriores. Com marca
+                        <Route
+                          path="/design-lab/command-language"
+                          element={
+                            <ProtectedRoute>
+                              <DesignLabPage section="command-language" />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/design-lab/components-v2"
+                          element={
+                            <ProtectedRoute>
+                              <DesignLabPage section="components-v2" />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/design-lab/home-proposals"
+                          element={
+                            <ProtectedRoute>
+                              <CentralModulesHome />
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route path="/" element={<Landing360 />} />
+                        <Route path="/welcome" element={<Landing360 initialScreen="intro" />} />
+                        <Route path="/landing-new" element={<LandingInnovative />} />
+                        <Route path="/privacy" element={<PrivacyPolicy />} />
+                        <Route path="/terms" element={<TermsOfUse />} />
+                        {/* `/select-brand` era a escolha entre as duas marcas anteriores. Com marca
                         única a tela deixou de existir; a rota permanece como redirecionamento
                         para não quebrar link salvo, atalho de app instalado ou bookmark. */}
-                      <Route path="/select-brand" element={<Navigate to="/welcome" replace />} />
-                      <Route path="/login" element={<Landing360 initialScreen="login" />} />
-                      <Route path="/reset-password" element={<ResetPasswordScreen />} />
-                      <Route path="/book/:slug" element={<PublicBookingPage />} />
-                      {/* Hub Executivo ("os círculos") — tela de destinos pós-login: Central
+                        <Route path="/select-brand" element={<Navigate to="/welcome" replace />} />
+                        <Route path="/login" element={<Landing360 initialScreen="login" />} />
+                        <Route path="/reset-password" element={<ResetPasswordScreen />} />
+                        <Route path="/book/:slug" element={<PublicBookingPage />} />
+                        {/* Hub Executivo ("os círculos") — tela de destinos pós-login: Central
                         Comercial (CRM) + módulos executivos concedidos individualmente via
                         ModuleAccessAdmin (/app/module-access) + atalhos para ferramentas externas
                         (Bitrix24, webmail, portais). Fica fora de /app/* de propósito — sem
                         MainLayout/Sidebar do CRM — mas ainda exige login (ProtectedRoute). */}
-                      <Route path="/hub" element={<Navigate to="/app" replace />} />
-                      {/* Módulos executivos — NUNCA parte do CRM: pedido explícito do usuário ("não
+                        <Route path="/hub" element={<Navigate to="/app" replace />} />
+                        {/* Módulos executivos — NUNCA parte do CRM: pedido explícito do usuário ("não
                         quero que apareça no CRM, só nos círculos") para tirar peso/navegação do
                         CRM. Por isso ficam fora de /app/* — sem MainLayout/Sidebar do CRM — mas
                         ainda exigem login (ProtectedRoute) e a concessão real do módulo
@@ -141,44 +141,44 @@ export default function App() {
                         proprietário da Birth Hub 360, pedido explícito do usuário ("Birth Hub 360 não é
                         ninguém, não é nem mais pra existir"). `social-selling` continua, rerotulado
                         para a marca Birth Hub 360. */}
-                      <Route
-                        path="/social-selling"
-                        element={
-                          <ProtectedRoute>
-                            <RequireModuleAccess moduleKey="social-selling">
-                              <SocialSellingHub />
-                            </RequireModuleAccess>
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/setup"
-                        element={
-                          <ProtectedRoute>
-                            <RequireRole allowedRoles={['ADMIN']}>
-                              <SetupWizard />
-                            </RequireRole>
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/app/*"
-                        element={
-                          <ProtectedRoute>
-                            <ErrorBoundary>
-                              <AppLayout />
-                            </ErrorBoundary>
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route path="*" element={<Navigate to="/welcome" replace />} />
-                    </Routes>
-                  </Suspense>
-                </ActiveRecordProvider>
-              </DailyClosingProvider>
-            </AuthProvider>
-          </BrandProvider>
-        </ExperienceModeProvider>
+                        <Route
+                          path="/social-selling"
+                          element={
+                            <ProtectedRoute>
+                              <RequireModuleAccess moduleKey="social-selling">
+                                <SocialSellingHub />
+                              </RequireModuleAccess>
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/setup"
+                          element={
+                            <ProtectedRoute>
+                              <RequireRole allowedRoles={['ADMIN']}>
+                                <SetupWizard />
+                              </RequireRole>
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/app/*"
+                          element={
+                            <ProtectedRoute>
+                              <ErrorBoundary>
+                                <AppLayout />
+                              </ErrorBoundary>
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route path="*" element={<Navigate to="/welcome" replace />} />
+                      </Routes>
+                    </Suspense>
+                  </ActiveRecordProvider>
+                </DailyClosingProvider>
+              </AuthProvider>
+            </BrandProvider>
+          </ExperienceModeProvider>
         </ThemeProvider>
       </I18nProvider>
     </MotionConfig>

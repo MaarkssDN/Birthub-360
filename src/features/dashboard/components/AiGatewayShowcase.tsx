@@ -126,95 +126,95 @@ export function AiGatewayShowcase() {
         }
       >
         {data && (
-        <div className="space-y-5">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 rounded-card bg-surface-2 border border-line">
-              <p className="text-[11px] text-ink-2 font-semibold uppercase tracking-wide">
-                Custo do mês
-              </p>
-              <p className="text-xl font-black text-ink mt-1">{formatUsd(data.costThisMonth)}</p>
+          <div className="space-y-5">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 rounded-card bg-surface-2 border border-line">
+                <p className="text-[11px] text-ink-2 font-semibold uppercase tracking-wide">
+                  Custo do mês
+                </p>
+                <p className="text-xl font-black text-ink mt-1">{formatUsd(data.costThisMonth)}</p>
+              </div>
+              <div className="p-4 rounded-card bg-surface-2 border border-line">
+                <p className="text-[11px] text-ink-2 font-semibold uppercase tracking-wide">
+                  Custo (30 dias)
+                </p>
+                <p className="text-xl font-black text-ink mt-1">{formatUsd(data.totalCost)}</p>
+              </div>
             </div>
-            <div className="p-4 rounded-card bg-surface-2 border border-line">
-              <p className="text-[11px] text-ink-2 font-semibold uppercase tracking-wide">
-                Custo (30 dias)
-              </p>
-              <p className="text-xl font-black text-ink mt-1">{formatUsd(data.totalCost)}</p>
-            </div>
-          </div>
 
-          {data.byModel.length > 0 && (
-            <div className="h-56">
+            {data.byModel.length > 0 && (
+              <div className="h-56">
+                <p className="text-[11px] text-ink-2 font-semibold uppercase tracking-wide mb-2">
+                  Custo e latência por modelo
+                </p>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={data.byModel} layout="vertical" margin={{ left: 24 }}>
+                    <XAxis
+                      type="number"
+                      stroke={axisColor}
+                      fontSize={11}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      type="category"
+                      dataKey="model"
+                      stroke={axisColor}
+                      fontSize={11}
+                      tickLine={false}
+                      axisLine={false}
+                      width={120}
+                    />
+                    <Tooltip
+                      formatter={(value, name) =>
+                        name === 'cost' && typeof value === 'number' ? formatUsd(value) : value
+                      }
+                      contentStyle={tooltipStyle}
+                    />
+                    <Bar dataKey="cost" name="cost" fill={accentColor} radius={[0, 6, 6, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+
+            <div className="h-40">
               <p className="text-[11px] text-ink-2 font-semibold uppercase tracking-wide mb-2">
-                Custo e latência por modelo
+                Chamadas por dia
               </p>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.byModel} layout="vertical" margin={{ left: 24 }}>
+                <AreaChart data={data.daily}>
+                  <defs>
+                    <linearGradient id="aiGatewayCalls" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={accentColor} stopOpacity={0.6} />
+                      <stop offset="95%" stopColor={accentColor} stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
                   <XAxis
-                    type="number"
+                    dataKey="day"
                     stroke={axisColor}
-                    fontSize={11}
+                    fontSize={10}
                     tickLine={false}
                     axisLine={false}
                   />
                   <YAxis
-                    type="category"
-                    dataKey="model"
                     stroke={axisColor}
-                    fontSize={11}
+                    fontSize={10}
                     tickLine={false}
                     axisLine={false}
-                    width={120}
+                    allowDecimals={false}
                   />
-                  <Tooltip
-                    formatter={(value, name) =>
-                      name === 'cost' && typeof value === 'number' ? formatUsd(value) : value
-                    }
-                    contentStyle={tooltipStyle}
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Area
+                    type="monotone"
+                    dataKey="calls"
+                    stroke={accentColor}
+                    strokeWidth={2}
+                    fill="url(#aiGatewayCalls)"
                   />
-                  <Bar dataKey="cost" name="cost" fill={accentColor} radius={[0, 6, 6, 0]} />
-                </BarChart>
+                </AreaChart>
               </ResponsiveContainer>
             </div>
-          )}
-
-          <div className="h-40">
-            <p className="text-[11px] text-ink-2 font-semibold uppercase tracking-wide mb-2">
-              Chamadas por dia
-            </p>
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data.daily}>
-                <defs>
-                  <linearGradient id="aiGatewayCalls" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={accentColor} stopOpacity={0.6} />
-                    <stop offset="95%" stopColor={accentColor} stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <XAxis
-                  dataKey="day"
-                  stroke={axisColor}
-                  fontSize={10}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  stroke={axisColor}
-                  fontSize={10}
-                  tickLine={false}
-                  axisLine={false}
-                  allowDecimals={false}
-                />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Area
-                  type="monotone"
-                  dataKey="calls"
-                  stroke={accentColor}
-                  strokeWidth={2}
-                  fill="url(#aiGatewayCalls)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
           </div>
-        </div>
         )}
       </OperationalStateContainer>
     </motion.div>
