@@ -37,8 +37,7 @@ const ptBR: Record<string, string> = {
   'firstSteps.complete': 'Marcar como concluído',
   'firstSteps.completed': 'Concluído',
   'firstSteps.step.workspace.title': 'Conheça seu workspace',
-  'firstSteps.step.workspace.description':
-    'Veja os módulos e atalhos liberados para o seu papel.',
+  'firstSteps.step.workspace.description': 'Veja os módulos e atalhos liberados para o seu papel.',
   'firstSteps.step.crm.title': 'Abra o pipeline comercial',
   'firstSteps.step.crm.description':
     'Revise o funil, os negócios ativos e o próximo passo de cada oportunidade.',
@@ -97,8 +96,7 @@ const enUS: Record<string, string> = {
   'firstSteps.complete': 'Mark as completed',
   'firstSteps.completed': 'Completed',
   'firstSteps.step.workspace.title': 'Meet your workspace',
-  'firstSteps.step.workspace.description':
-    'See the modules and shortcuts enabled for your role.',
+  'firstSteps.step.workspace.description': 'See the modules and shortcuts enabled for your role.',
   'firstSteps.step.crm.title': 'Open the sales pipeline',
   'firstSteps.step.crm.description':
     'Review the funnel, active deals, and the next step for each opportunity.',
@@ -109,8 +107,7 @@ const enUS: Record<string, string> = {
   'firstSteps.step.forecast.description':
     'Validate goals, forecast, and revenue reading with the management team.',
   'firstSteps.step.team.title': 'Set up the team',
-  'firstSteps.step.team.description':
-    'Invite users and confirm roles before enabling access.',
+  'firstSteps.step.team.description': 'Invite users and confirm roles before enabling access.',
   'firstSteps.step.moduleAccess.title': 'Enable modules per person',
   'firstSteps.step.moduleAccess.description':
     'Define which modules each user can access in the organization.',
@@ -127,8 +124,7 @@ const enUS: Record<string, string> = {
   'firstSteps.step.dashboard.description':
     'Use the indicators to follow operations without changing data.',
   'firstSteps.step.reports.title': 'Explore reports',
-  'firstSteps.step.reports.description':
-    'Check the available reports for reading and follow-up.',
+  'firstSteps.step.reports.description': 'Check the available reports for reading and follow-up.',
 };
 
 const MESSAGES: Record<Locale, Record<string, string>> = {
@@ -173,9 +169,10 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, [locale]);
 
   const setLocale = useCallback((next: Locale) => setLocaleState(next), []);
-  const t = useCallback((key: string, vars?: TranslationVars) => translate(locale, key, vars), [
-    locale,
-  ]);
+  const t = useCallback(
+    (key: string, vars?: TranslationVars) => translate(locale, key, vars),
+    [locale],
+  );
   const value = useMemo(() => ({ locale, setLocale, t }), [locale, setLocale, t]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;

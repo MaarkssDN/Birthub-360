@@ -1,18 +1,12 @@
 import { Check, ChevronRight, ListChecks, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../../../components/ui/Button.js';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '../../../components/ui/Card.js';
-import { useAuth } from '../../../contexts/AuthContext.js';
-import { getFirstStepsForRole } from '../firstSteps.js';
-import { cn } from '../../../lib/utils.js';
-import { useI18n } from '../../../i18n/index.js';
+import { Button } from '../ui/Button.js';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/Card.js';
+import { useAuth } from '../../contexts/AuthContext.js';
+import { getFirstStepsForRole } from './firstSteps.js';
+import { cn } from '../../lib/utils.js';
+import { useI18n } from '../../i18n/index.js';
 
 function storageKeyFor(userId: string, role: string): string {
   return `@birthhub360:first-steps:${userId}:${role || 'unknown'}`;
@@ -24,7 +18,9 @@ function readCompletedIds(key: string): Set<string> {
     const raw = window.localStorage.getItem(`${key}:completed`);
     if (!raw) return new Set();
     const parsed = JSON.parse(raw) as unknown;
-    return Array.isArray(parsed) ? new Set(parsed.filter((v): v is string => typeof v === 'string')) : new Set();
+    return Array.isArray(parsed)
+      ? new Set(parsed.filter((v): v is string => typeof v === 'string'))
+      : new Set();
   } catch {
     return new Set();
   }
@@ -32,7 +28,11 @@ function readCompletedIds(key: string): Set<string> {
 
 function readDismissed(key: string): boolean {
   if (typeof window === 'undefined') return false;
-  return window.localStorage.getItem(`${key}:dismissed`) === 'true';
+  return (
+    window.localStorage.getItem(`${key}:dismissed`) === 'true' ||
+    window.localStorage.getItem('@birthhub360:first-steps:dismissed') === 'true' ||
+    window.localStorage.getItem('@prospector:has_seen_tour') === 'true'
+  );
 }
 
 export function FirstStepsChecklist() {
@@ -73,7 +73,8 @@ export function FirstStepsChecklist() {
     });
   };
 
-  const progressPercent = steps.length === 0 ? 0 : Math.round((completedCount / steps.length) * 100);
+  const progressPercent =
+    steps.length === 0 ? 0 : Math.round((completedCount / steps.length) * 100);
 
   return (
     <Card variant="panel" padding="none" className="shadow-card">
@@ -84,9 +85,7 @@ export function FirstStepsChecklist() {
           </div>
           <div>
             <CardTitle className="text-base">{t('firstSteps.title')}</CardTitle>
-            <CardDescription className="mt-1 max-w-2xl">
-              {t('firstSteps.subtitle')}
-            </CardDescription>
+            <CardDescription className="mt-1 max-w-2xl">{t('firstSteps.subtitle')}</CardDescription>
           </div>
         </div>
         <Button
@@ -108,10 +107,13 @@ export function FirstStepsChecklist() {
             aria-valuemin={0}
             aria-valuemax={steps.length}
             aria-valuenow={completedCount}
-            aria-label={t('firstSteps.progress', { completed: completedCount, total: steps.length })}
+            aria-label={t('firstSteps.progress', {
+              completed: completedCount,
+              total: steps.length,
+            })}
           >
             <div
-              className={cn('h-full rounded-full bg-brand transition-all', )}
+              className={cn('h-full rounded-full bg-brand transition-all')}
               style={{ width: `${progressPercent}%` }}
             />
           </div>

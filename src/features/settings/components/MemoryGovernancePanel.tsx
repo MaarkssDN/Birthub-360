@@ -383,7 +383,9 @@ export function MemoryGovernancePanel() {
                   placeholder="Id da AgentExecution de origem"
                   error={!!newCandidateErrors.sourceExecutionId}
                   aria-describedby={
-                    newCandidateErrors.sourceExecutionId ? 'memory-source-execution-error' : undefined
+                    newCandidateErrors.sourceExecutionId
+                      ? 'memory-source-execution-error'
+                      : undefined
                   }
                   {...registerNewCandidate('sourceExecutionId')}
                 />
@@ -455,9 +457,7 @@ export function MemoryGovernancePanel() {
                     inputSize="sm"
                     placeholder="Tópico (ex: sdr.follow_up.melhor_horario)"
                     error={!!newCandidateErrors.topic}
-                    aria-describedby={
-                      newCandidateErrors.topic ? 'memory-topic-error' : undefined
-                    }
+                    aria-describedby={newCandidateErrors.topic ? 'memory-topic-error' : undefined}
                     {...registerNewCandidate('topic')}
                   />
                   {newCandidateErrors.topic?.message && (
@@ -478,9 +478,7 @@ export function MemoryGovernancePanel() {
                   placeholder="O que foi aprendido (resumo curto e factual)"
                   className="min-h-[50px] text-xs"
                   aria-invalid={!!newCandidateErrors.summary}
-                  aria-describedby={
-                    newCandidateErrors.summary ? 'memory-summary-error' : undefined
-                  }
+                  aria-describedby={newCandidateErrors.summary ? 'memory-summary-error' : undefined}
                   {...registerNewCandidate('summary')}
                 />
                 {newCandidateErrors.summary?.message && (
@@ -519,7 +517,12 @@ export function MemoryGovernancePanel() {
                 <Button size="sm" type="submit" disabled={creatingCandidate}>
                   Enviar para aprovação
                 </Button>
-                <Button size="sm" variant="ghost" type="button" onClick={() => setShowNewForm(false)}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  type="button"
+                  onClick={() => setShowNewForm(false)}
+                >
                   Cancelar
                 </Button>
               </div>
