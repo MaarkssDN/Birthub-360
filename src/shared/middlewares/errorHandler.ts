@@ -220,10 +220,5 @@ export const errorHandler = (
   }
 
   const status = sanitizeStatusCode(err.statusCode);
-  const errorMessage =
-    env.NODE_ENV === 'production' && status === 500
-      ? 'Erro Interno do Servidor'
-      : err.message || 'Erro Interno do Servidor';
-
-  sendError(req, res, status, errorMessage);
+  sendError(req, res, status, clientSafeMessage(err, status));
 };
