@@ -4,7 +4,7 @@
 De: 18 — Contratos, API e Documentação Viva
 Para: 08 — QA e Release
 Onda: backlog-5 (DEM-20261116-001)
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: MEL-39
 Sprint destino: Onda 5 backlog
@@ -27,3 +27,12 @@ gate e Schemathesis como job noturno/manual.
 ## Evidência
 
 `npm run verify:openapi-drift` → ✅ 0 deriva (2026-11-16).
+
+## Resolução (Agente 08, 2026-11-18)
+
+- **Workflow de CI implementado:** Criado `.github/workflows/schemathesis-fuzzing.yml`.
+- **Estratégia de execução (dupla cadência):**
+  1. *Pull Requests com alteração de API:* Disparo automático quando houver modificações em `docs/openapi.yaml`, `src/server/**` ou `src/routes/**`. Executa smoke fuzzing com 20 exemplos por endpoint (`--checks not_a_server_error`), protegendo contra 5xx sem inflar o tempo do pipeline principal.
+  2. *Noturno / Manual:* Agendamento diário via cron (`0 4 * * *`) e sob demanda via `workflow_dispatch` com parâmetros configuráveis de `hypothesis_max_examples` e `checks`, gerando artefato JUnit XML (`schemathesis-results.xml`).
+- **Harness e Infraestrutura:** Pipeline sobe containers Postgres (`pgvector`), Redis e Meilisearch, aplica migrations (`prisma migrate deploy`), executa build do Express, inicializa o servidor de teste em background e executa `schemathesis run` com autenticação e validação estrita.
+- **Status:** resolvido.
