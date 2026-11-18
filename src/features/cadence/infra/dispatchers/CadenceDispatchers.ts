@@ -87,10 +87,10 @@ const MEETING_TIME_FORMAT = new Intl.DateTimeFormat('pt-BR', {
 
 /**
  * Monta o contexto de placeholders dos templates de cadência (`{{contact_name}}`,
- * `{{company_name}}`, `{{meeting_url}}`, `{{meeting_time}}`). `booking_link` é propositalmente
- * omitido: não existe fonte de dados para ele hoje (link de agendamento self-service ainda não
- * foi construído — ver `application/scheduleMeeting.ts`), então toques que o referenciem sem
- * `| default:` falham em strict mode de forma explícita, em vez de vazar a tag crua.
+ * `{{company_name}}`, `{{meeting_url}}`, `{{meeting_time}}`, `{{booking_link}}`).
+ * `booking_link` é resolvido a partir do PublicBookingLink ativo do vendedor/organização
+ * (`/book/:slug`). Se ausente, toques que o usem devem contar com fallback `| default:`
+ * para não falharem em strict mode.
  */
 async function resolveCadenceTemplateContext(
   organizationId: string,
@@ -99,6 +99,7 @@ async function resolveCadenceTemplateContext(
   const lead = await prisma.lead.findFirst({
     where: { id: leadId, organizationId },
     select: {
+      assignedToId: true,
       contact: { select: { name: true } },
       company: { select: { tradeName: true, legalName: true } },
     },
@@ -109,11 +110,26 @@ async function resolveCadenceTemplateContext(
     select: { meetUrl: true, scheduledStart: true },
   });
 
+  let bookingLinkUrl: string | null = null;
+  const bookingLink = await prisma.publicBookingLink.findFirst({
+    where: {
+      organizationId,
+      active: true,
+      ...(lead?.assignedToId ? { userId: lead.assignedToId } : {}),
+    },
+    select: { slug: true },
+  });
+  if (bookingLink?.slug) {
+    const baseUrl = process.env.APP_URL?.replace(/\/$/, '') || 'https://app.birthub360.com.br';
+    bookingLinkUrl = `${baseUrl}/book/${bookingLink.slug}`;
+  }
+
   return {
     contact_name: lead?.contact?.name ?? null,
     company_name: lead?.company?.tradeName ?? lead?.company?.legalName ?? null,
     meeting_url: meeting?.meetUrl ?? null,
     meeting_time: meeting ? MEETING_TIME_FORMAT.format(meeting.scheduledStart) : null,
+    booking_link: bookingLinkUrl,
   };
 }
 

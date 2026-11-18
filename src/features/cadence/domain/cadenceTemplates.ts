@@ -65,7 +65,7 @@ export const DEFAULT_PLAYBOOK_TEMPLATES: CadenceJourneyTemplate[] = [
         delayHoursFromPrevious: 72,
         stepTitle: 'Convite para Teste Piloto & Agenda',
         templateRef:
-          'Assunto: Proposta de Piloto Operacional — {{company_name}}\n\nOlá {{contact_name}},\n\nCaso queira avaliar a aderência em 3 veículos da sua frota sem custo de implantação, você pode selecionar o melhor horário na minha agenda:\n\n👉 {{booking_link}}\n\nAbraço,\nEquipe Comercial',
+          'Assunto: Proposta de Piloto Operacional — {{company_name}}\n\nOlá {{contact_name}},\n\nCaso queira avaliar a aderência em 3 veículos da sua frota sem custo de implantação, você pode selecionar o melhor horário na minha agenda:\n\n👉 {{booking_link | default: "https://app.birthub360.com.br"}}\n\nAbraço,\nEquipe Comercial',
       },
     ],
   },
@@ -207,7 +207,7 @@ export const CADENCE_JOURNEY_TEMPLATES: CadenceJourneyTemplate[] = [
         delayHoursFromPrevious: 72,
         stepTitle: 'Link de Agendamento Direto',
         templateRef:
-          'Assunto: Próximos passos para teste piloto na {{company_name}}\n\nOlá {{contact_name}},\n\nSei que a rotina operacional é corrida. Caso faça sentido avaliar a implantação de um teste piloto em 3 a 5 veículos da sua frota sem custo de adesão, escolha o melhor horário diretamente na minha agenda:\n\n👉 {{booking_link}}\n\nUm abraço,\nEquipe Birth Hub 360',
+          'Assunto: Próximos passos para teste piloto na {{company_name}}\n\nOlá {{contact_name}},\n\nSei que a rotina operacional é corrida. Caso faça sentido avaliar a implantação de um teste piloto em 3 a 5 veículos da sua frota sem custo de adesão, escolha o melhor horário diretamente na minha agenda:\n\n👉 {{booking_link | default: "https://app.birthub360.com.br"}}\n\nUm abraço,\nEquipe Birth Hub 360',
       },
     ],
   },
@@ -281,7 +281,7 @@ export const CADENCE_JOURNEY_TEMPLATES: CadenceJourneyTemplate[] = [
         delayHoursFromPrevious: 24,
         stepTitle: 'Resumo em Vídeo & Remarcação',
         templateRef:
-          'Assunto: Reagendamento de demonstração — {{company_name}}\n\nOlá {{contact_name}},\n\nPara adiantar seu tempo, gravei uma visão geral da plataforma (3 minutos). Se quiser escolher um novo horário no seu ritmo, basta acessar meu calendário:\n\n👉 {{booking_link}}',
+          'Assunto: Reagendamento de demonstração — {{company_name}}\n\nOlá {{contact_name}},\n\nPara adiantar seu tempo, gravei uma visão geral da plataforma (3 minutos). Se quiser escolher um novo horário no seu ritmo, basta acessar meu calendário:\n\n👉 {{booking_link | default: "https://app.birthub360.com.br"}}',
       },
       {
         order: 3,
