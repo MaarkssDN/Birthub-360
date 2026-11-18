@@ -2,8 +2,8 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { prisma } from '../../src/lib/prisma';
 import { requestContext } from '../../src/lib/async-context';
 
-const RUN_ID = "${Date.now()}-${Math.random().toString(36).slice(2, 8)}";
-const ORG_A = "test-voicehub-org-a-${RUN_ID}";
+const RUN_ID = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+const ORG_A = `test-voicehub-org-a-${RUN_ID}`;
 
 const withRlsBypass = <T>(fn: () => Promise<T>): Promise<T> => requestContext.run({ bypassRls: true }, fn);
 const asOrg = <T>(organizationId: string, fn: () => Promise<T>): Promise<T> => requestContext.run({ tenantId: organizationId }, fn);

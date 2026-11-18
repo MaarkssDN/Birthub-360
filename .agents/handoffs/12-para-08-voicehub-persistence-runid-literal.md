@@ -4,7 +4,7 @@
 De: 12 — Voz e Telefonia
 Para: 08 — QA e Release
 Onda: saneamento-handoffs-20261117
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: nenhum
 Sprint destino: a definir
@@ -50,3 +50,17 @@ Encontrado durante a revisão para o handoff
 `onda-3/00-para-12-voicehub-teste-integracao-rls.md` (spec novo
 `tests/integration/voice-hub-rls.test.ts` usa `randomUUID()` para unicidade).
 Fora da propriedade do Agente 12 — registrado via handoff conforme AGENTS.md §16.
+
+## Resolução (Agente 08, 2026-11-18)
+
+- **Correção:** `tests/integration/voicehub-persistence.test.ts` L5-6 corrigido para template literals com backticks:
+  ```ts
+  const RUN_ID = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const ORG_A = `test-voicehub-org-a-${RUN_ID}`;
+  ```
+- **Teste de Regressão:** Criado `tests/unit/lib/voice-hub/voicehub-persistence-runid.test.ts` cobrindo:
+  1. Verificação AST/estática contra reintrodução de strings literais un-interpolated `"${Date.now()}"` ou `"${RUN_ID}"`.
+  2. Validação de geração de identificadores dinâmicos únicos sem colisão.
+- **Evidência:**
+  - `npx vitest run tests/unit/lib/voice-hub/voicehub-persistence-runid.test.ts` → 2/2 testes aprovados (17ms).
+- **Status:** resolvido.
