@@ -121,6 +121,52 @@ describe('assertSafeExternalUrl — rejeita IP privado/loopback/metadata', () =>
     );
   });
 
+  // IPv4-mapeado em forma hexadecimal (`::ffff:7f00:1` = 127.0.0.1) — o parser WHATWG
+  // normaliza o literal para essa forma; antes da correção `isPrivateOrReservedIp`
+  // não reconhecia e o host passava (débito registrado em
+  // `.agents/handoffs/onda-2/15-para-07-webhook-fetch-safeFetch.md`).
+  it('rejeita hostname cujo DNS resolve para IPv4-mapeado hex de IP privado (::ffff:7f00:1)', async () => {
+    lookupMock.mockResolvedValue([{ address: '::ffff:7f00:1', family: 6 }]);
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('https://webhook.exemplo.com/')).rejects.toThrow(
+      /não permitido/i,
+    );
+  });
+
+  // Mecanismos de transição IPv4-em-IPv6 (handoff
+  // `.agents/handoffs/onda-2/15-para-01-ssrf-ipv6-transition-ranges.md`): o IPv4
+  // embutido é o destino real — privado rejeita, público passa; Teredo é bloqueado
+  // por inteiro (IPv4 ofuscado por XOR, prefixo deprecado).
+  it.each([
+    '::ffff:a00:1', // mapeado -> 10.0.0.1
+    '2002:7f00:1::', // 6to4 -> 127.0.0.1
+    '2002:a00:1::', // 6to4 -> 10.0.0.1
+    '2001:0:4136:e378:8000:63bf:3fff:fdd2', // Teredo — bloqueado por inteiro
+    '64:ff9b::7f00:1', // NAT64 -> 127.0.0.1
+    '64:ff9b::a00:1', // NAT64 -> 10.0.0.1
+    '::7f00:1', // IPv4-compatível -> 127.0.0.1
+    '::a00:1', // IPv4-compatível -> 10.0.0.1
+  ])('rejeita hostname cujo DNS resolve para IPv6 de transição com IPv4 privado: %s', async (address) => {
+    lookupMock.mockResolvedValue([{ address, family: 6 }]);
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('https://webhook.exemplo.com/')).rejects.toThrow(
+      /não permitido/i,
+    );
+  });
+
+  it.each([
+    '::ffff:808:808', // mapeado -> 8.8.8.8
+    '2002:808:808::', // 6to4 -> 8.8.8.8
+    '64:ff9b::808:808', // NAT64 -> 8.8.8.8
+    '::808:808', // IPv4-compatível -> 8.8.8.8
+  ])('aceita hostname cujo DNS resolve para IPv6 de transição com IPv4 público: %s', async (address) => {
+    lookupMock.mockResolvedValue([{ address, family: 6 }]);
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(
+      assertSafeExternalUrl('https://webhook.exemplo.com/'),
+    ).resolves.toBeUndefined();
+  });
+
   it('rejeita "localhost" mesmo sem ser um IP literal', async () => {
     const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
     await expect(assertSafeExternalUrl('https://localhost/')).rejects.toThrow(/não permitido/i);

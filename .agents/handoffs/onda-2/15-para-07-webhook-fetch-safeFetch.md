@@ -135,3 +135,10 @@ loopback para HTTPS. Testes novos em `tests/unit/shared/security/urlGuard.test.t
 (`::ffff:7f00:1`) fora da exceção loopback — um hostname que resolva para esse
 formato passaria no guard de IP privado. Fora do escopo desta correção; registrar
 como débito de hardening do `urlGuard.ts`.
+
+**Atualização (Agente 15 — 2026-11-17):** o débito acima foi corrigido —
+`isPrivateOrReservedIp` agora expande o IPv6 para hextetos e delega o IPv4
+embutido (mapeado, 6to4, NAT64, compatível) à checagem IPv4; Teredo é bloqueado
+por inteiro. Mesma política aplicada em `ssrfGuard.ts`. Este handoff permanece
+**aberto** apenas pela parte endereçada ao Agente 07 (migração dos call sites de
+`fetch` cru para `safeFetch`).

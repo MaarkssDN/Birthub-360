@@ -80,23 +80,81 @@ function isPrivateOrInternalIpv6(ip: string): boolean {
   if (lower === '::1' || lower === '::') return true; // loopback / unspecified
   if (lower.startsWith('fe80:') || /^fe[89ab]/.test(lower)) return true; // link-local fe80::/10
   if (lower.startsWith('fc') || lower.startsWith('fd')) return true; // ULA fc00::/7
-  if (lower.startsWith('::ffff:')) {
-    // IPv4-mapeado-em-IPv6. O parser WHATWG normaliza para hex de 2 grupos
-    // (::ffff:7f00:1 para 127.0.0.1), mas aceitar também a forma dotted por
-    // robustez (chamadas diretas que não passaram por URL).
-    const tail = lower.slice('::ffff:'.length);
-    if (net.isIPv4(tail)) {
-      return isPrivateOrInternalIpv4(tail);
-    }
-    const groups = tail.split(':');
-    if (groups.length === 2 && groups.every((g) => /^[0-9a-f]{1,4}$/.test(g))) {
-      const hi = Number.parseInt(groups[0], 16);
-      const lo = Number.parseInt(groups[1], 16);
-      const ipv4 = `${(hi >> 8) & 0xff}.${hi & 0xff}.${(lo >> 8) & 0xff}.${lo & 0xff}`;
-      return isPrivateOrInternalIpv4(ipv4);
-    }
-  }
+  // IPv4-mapeado (`::ffff:`) e mecanismos de transição (6to4 `2002::/16`, NAT64
+  // `64:ff9b::/96`, IPv4-compatível `::/96`): o IPv4 embutido é o destino real —
+  // delega à checagem IPv4. Teredo (`2001::/32`) tem o IPv4 ofuscado por XOR e o
+  // prefixo é deprecado — rejeitado por inteiro.
+  const embedded = embeddedIpv4FromIpv6(lower);
+  if (embedded === 'block') return true;
+  if (embedded !== null) return isPrivateOrInternalIpv4(embedded);
   return false;
+}
+
+/**
+ * Expande um literal IPv6 para os 8 hextetos, aceitando compressão `::` e IPv4 embutido
+ * no final (`::ffff:1.2.3.4`, que o parser WHATWG de URL já entrega em hex — o dotted é
+ * aceito por robustez para chamadas diretas que não passaram por `new URL`).
+ * Retorna `null` quando a forma não pode ser expandida com segurança.
+ */
+function ipv6ToHextets(ip: string): number[] | null {
+  let s = ip.toLowerCase();
+  let dottedTail: number[] = [];
+  const dotted = s.match(/^(.*:)(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (dotted) {
+    const bytes = dotted.slice(2).map(Number);
+    if (bytes.some((b) => b > 255)) return null;
+    dottedTail = [(bytes[0] << 8) | bytes[1], (bytes[2] << 8) | bytes[3]];
+    s = dotted[1].replace(/:$/, '');
+  }
+  const halves = s.split('::');
+  if (halves.length > 2) return null;
+  const parsePart = (part: string): number[] | null => {
+    if (part === '') return [];
+    const out: number[] = [];
+    for (const group of part.split(':')) {
+      if (!/^[0-9a-f]{1,4}$/.test(group)) return null;
+      out.push(Number.parseInt(group, 16));
+    }
+    return out;
+  };
+  const head = parsePart(halves[0]);
+  const tail = halves.length === 2 ? parsePart(halves[1]) : [];
+  if (!head || !tail) return null;
+  if (halves.length === 1) {
+    const explicit = [...head, ...dottedTail];
+    return explicit.length === 8 ? explicit : null;
+  }
+  const missing = 8 - head.length - tail.length - dottedTail.length;
+  if (missing < 1) return null; // '::' precisa comprimir ao menos um hexteto
+  return [...head, ...new Array<number>(missing).fill(0), ...tail, ...dottedTail];
+}
+
+/**
+ * IPv4 de transição embutido no IPv6, `'block'` para prefixos rejeitados por inteiro,
+ * ou `null` quando o IPv6 não carrega IPv4 embutido. IPv6 malformado que escapou de
+ * `net.isIPv6` falha fechado (`'block'`).
+ */
+function embeddedIpv4FromIpv6(ip: string): string | 'block' | null {
+  const groups = ipv6ToHextets(ip);
+  if (!groups) return 'block';
+  const toIpv4 = (hi: number, lo: number) =>
+    `${(hi >> 8) & 0xff}.${hi & 0xff}.${(lo >> 8) & 0xff}.${lo & 0xff}`;
+  const allZero = (from: number, to: number) => groups.slice(from, to).every((g) => g === 0);
+  // ::ffff:0:0/96 — IPv4-mapeado (::ffff:a.b.c.d)
+  if (allZero(0, 5) && groups[5] === 0xffff) return toIpv4(groups[6], groups[7]);
+  // 2002::/16 — 6to4: IPv4 embutido nos hextetos 1-2 (bits 16-48)
+  if (groups[0] === 0x2002) return toIpv4(groups[1], groups[2]);
+  // 2001:0000::/32 — Teredo: IPv4 do cliente ofuscado por XOR nos últimos 32 bits;
+  // política conservadora = bloquear o prefixo inteiro.
+  if (groups[0] === 0x2001 && groups[1] === 0x0000) return 'block';
+  // 64:ff9b::/96 — NAT64 well-known prefix: IPv4 embutido nos últimos 32 bits
+  if (groups[0] === 0x0064 && groups[1] === 0xff9b && allZero(2, 6)) {
+    return toIpv4(groups[6], groups[7]);
+  }
+  // ::/96 — IPv4-compatível deprecado (RFC 4291 §2.5.5.1): IPv4 nos últimos 32 bits.
+  // (`::` e `::1` já retornaram true antes desta função.)
+  if (allZero(0, 6)) return toIpv4(groups[6], groups[7]);
+  return null;
 }
 
 /**

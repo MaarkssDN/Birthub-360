@@ -42,6 +42,14 @@ describe('ssrfGuard — isPrivateOrInternalHost (checagem literal, sem DNS)', ()
     '::ffff:7f00:1', // IPv4-mapeado em hex — forma que new URL() produz (127.0.0.1)
     '::ffff:a00:1', // idem, 10.0.0.1
     '::ffff:c0a8:1', // idem, 192.168.0.1
+    '2002:7f00:1::', // 6to4 -> IPv4 embutido 127.0.0.1
+    '2002:a00:1::', // 6to4 -> 10.0.0.1
+    '2002:c0a8:1::', // 6to4 -> 192.168.0.1
+    '2001:0:4136:e378:8000:63bf:3fff:fdd2', // Teredo (2001::/32) — prefixo bloqueado
+    '64:ff9b::7f00:1', // NAT64 -> IPv4 embutido 127.0.0.1
+    '64:ff9b::a00:1', // NAT64 -> 10.0.0.1
+    '::7f00:1', // IPv4-compatível deprecado -> 127.0.0.1
+    '::a00:1', // IPv4-compatível -> 10.0.0.1
     'printer.local',
     'service.internal',
     'host.lan',
@@ -64,6 +72,9 @@ describe('ssrfGuard — isPrivateOrInternalHost (checagem literal, sem DNS)', ()
     '2001:4860:4860::8888', // IPv6 público
     '2606:4700:4700::1111',
     '::ffff:808:808', // IPv4-mapeado público (8.8.8.8)
+    '2002:808:808::', // 6to4 com IPv4 embutido público (8.8.8.8)
+    '64:ff9b::808:808', // NAT64 com IPv4 embutido público (8.8.8.8)
+    '::808:808', // IPv4-compatível com IPv4 embutido público (8.8.8.8)
   ])('aceita host público: %s', (host) => {
     expect(isPrivateOrInternalHost(host)).toBe(false);
   });
