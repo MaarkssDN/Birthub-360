@@ -42,3 +42,14 @@ Sugestão de ordem: 04 (CRM/companies), 12 (voice-hub), 06 (integrações), 01 (
 
 - RHF e Zod já estão instalados; não é necessária aprovação de dependência.
 - A migração não deve ser forçada a 100% em formulários triviais/de uma tela sem ganho real; reportar cobertura incremental por onda.
+
+---
+
+## Resolução do Escopo do Agente 02 (2026-11-18)
+
+**Status no Domínio do Agente 02:** CONCLUÍDO (100% de conformidade com RHF + Zod).
+**Status Geral:** ABERTO para distribuição aos outros proprietários (04, 12, 06, 01) pelo Agente 00.
+
+1. Todos os formulários sob domínio do Agente 02 (`src/features/settings`, `src/features/onboarding`, `src/features/dashboard`, `src/components/layout`) utilizam `react-hook-form` + `zod` (ex.: `MemoryGovernancePanel.tsx`).
+2. O novo formulário público de direitos do titular DSR (`src/features/lgpd/pages/DsrRequestForm.tsx`) também foi concebido e implementado de raiz com `react-hook-form` + `zodResolver(dsrRequestFormSchema)`.
+3. Os demais formulários pertencem a outros agentes e devem ser migrados por seus respectivos donos conforme planejado pelo Agente 00.

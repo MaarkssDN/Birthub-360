@@ -38,3 +38,14 @@ Também é necessário um item de UX para seletor de idioma (hoje o locale é li
 
 - Nenhuma dependência foi adicionada pelo Agente 02.
 - A base criada evita bloquear MEL-36 e já permite adoção incremental por feature.
+
+---
+
+## Atualização e Resolução do Seletor (Agente 02 — 2026-11-18)
+
+**Status do Seletor de UX:** RESOLVIDO na UI de Configurações.
+**Status da Dependência Externa:** ABERTO para decisão do Agente 00 (`package.json`).
+
+O componente seletor de idioma foi implementado em `src/features/settings/components/Settings.tsx` integrado ao `useI18n()`, permitindo alternância instantânea entre `Português (Brasil)` e `English (US)` com persistência em `localStorage` (`@birthhub360:locale`), acessibilidade com `role="group"` e `aria-pressed`, além de feedback sonoro `SoundFX.play('confirm')`.
+Testes unitários adicionados em `tests/unit/features/settings/Settings.test.tsx` com 100% de aprovação.
+A infraestrutura zero-dependency atual suporta os casos de uso existentes sem introduzir pacotes externos sem aprovação.

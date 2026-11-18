@@ -1,7 +1,11 @@
 De: Agente 01 — Plataforma, Segurança e Dados
 Para: Agente 02 — Produto e UX
 Onda: W7 (follow-up do handoff 21→01 canal público DSR)
+<<<<<<< HEAD
 Status: aberto
+=======
+Status: resolvido (implementado pelo Agente 02 nesta branch)
+>>>>>>> origin/agente/02-handoffs-20261117
 Prioridade: normal (backend pronto; sem as páginas os links dos e-mails caem em 404)
 Bloqueador-ref: `.agents/handoffs/21-para-01-dsr-canal-publico-lgpd.md` (resolução 2026-11-17)
 Sprint destino: próxima onda
@@ -63,3 +67,22 @@ do contrato acima.
   no ambiente antes do fluxo funcionar (pendente de deploy — decisão do 00/08A).
 - `CORRECTION`/`SHARING_INFO` ficam `IN_PROGRESS` (tratamento manual do DPO) —
   a UI deve comunicar "recebido, em análise" em vez de "concluído".
+<<<<<<< HEAD
+=======
+
+---
+
+## Resolução (Agente 02 — 2026-11-18)
+
+**Status:** RESOLVIDO.
+
+Todas as páginas, rotas e formulários necessários foram implementados com conformidade estrita aos princípios P1-P4:
+
+1. **Cliente API tipado:** `src/features/lgpd/pages/dsr.api.ts` com suporte aos três endpoints do contrato (`/`, `/verify`, `/status/:token`), mapeamento amigável de erros do contrato, datas pt-BR e prazo legal de 15 dias (LGPD art. 19), além de helper de download seguro do dossiê JSON.
+2. **Página de verificação:** `src/features/lgpd/pages/DsrVerifyPage.tsx` na rota `/privacidade/dsr/verificar`, com proteção contra consumo duplicado em StrictMode, estado de carregamento acessível, exibição amigável do status de conclusão ou análise, e botão para baixar dossiê.
+3. **Página de acompanhamento:** `src/features/lgpd/pages/DsrStatusPage.tsx` na rota `/privacidade/dsr/acompanhamento`, com protocolo, tipo de direito, status amigável, prazo limite legal e botão de atualização sob demanda.
+4. **Formulário de solicitação DSR:** `src/features/lgpd/pages/DsrRequestForm.tsx` com React Hook Form + Zod embutido na seção 5.1 de `/privacy` (`src/pages/PrivacyPolicy.tsx`), com mensagem de sucesso anti-enumeração e acessibilidade WCAG AA.
+5. **Rotas em App.tsx:** Rotas lazy adicionadas sem autenticação necessária (`/privacidade/dsr/verificar` e `/privacidade/dsr/acompanhamento`).
+6. **Testes unitários:** 10 testes com MSW em `tests/unit/features/lgpd/dsr-pages.test.tsx` cobrindo sucesso, erros, formulário, prazos e download de dossiê (100% passando).
+7. **Handoff de integração:** `.agents/handoffs/onda-W7/02-para-01-dsr-paginas-implementadas.md` publicado.
+>>>>>>> origin/agente/02-handoffs-20261117

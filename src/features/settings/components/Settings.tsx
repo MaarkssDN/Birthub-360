@@ -3,6 +3,7 @@ import {
   Flag,
   GitMerge,
   Globe2,
+  Languages,
   Moon,
   Puzzle,
   Shield,
@@ -22,6 +23,7 @@ import {
 import { PageHeader } from '../../../components/ui/PageHeader.js';
 import { useAuth } from '../../../contexts/AuthContext.js';
 import { useTheme } from '../../../contexts/ThemeContext.js';
+import { useI18n } from '../../../i18n/index.js';
 import { hasRequiredRole } from '../../../lib/auth/authorization.js';
 import { SoundFX } from '../../../lib/soundEffects.js';
 import { FeatureFlagsPanel } from '../../feature-flags/components/FeatureFlagsPanel.js';
@@ -37,6 +39,7 @@ import { MultiRegionFailoverPanel } from './MultiRegionFailoverPanel.js';
 
 export function Settings() {
   const { theme, setThemeMode } = useTheme();
+  const { locale, setLocale } = useI18n();
   const { currentUser, isAdmin } = useAuth();
   // GESTOR também pode ler auditoria no backend (`lgpd.routes.ts`, `requireRole(['ADMIN',
   // 'GESTOR'])`, já coberto por teste), mas a aba só checava `isAdmin` — GESTOR nunca tinha como
@@ -284,6 +287,52 @@ export function Settings() {
                           }`}
                         >
                           <Sun size={18} /> Modo Claro
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <span
+                        id="settings-locale-label"
+                        className="text-xs font-bold text-ink-2 uppercase tracking-wider block mb-3"
+                      >
+                        Idioma da Interface
+                      </span>
+                      {/* biome-ignore lint/a11y/useSemanticElements: grupo de botões de alternância direta */}
+                      <div
+                        role="group"
+                        aria-labelledby="settings-locale-label"
+                        className="flex gap-4"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => {
+                            SoundFX.play('confirm');
+                            setLocale('pt-BR');
+                          }}
+                          aria-pressed={locale === 'pt-BR'}
+                          className={`flex items-center gap-3 px-4 py-3 rounded-xl border font-bold text-sm transition-colors ${
+                            locale === 'pt-BR'
+                              ? 'border-brand bg-brand/10 text-ink'
+                              : 'border-line bg-surface-2 text-ink-2 hover:text-ink'
+                          }`}
+                        >
+                          <Languages size={18} /> Português (Brasil)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            SoundFX.play('confirm');
+                            setLocale('en-US');
+                          }}
+                          aria-pressed={locale === 'en-US'}
+                          className={`flex items-center gap-3 px-4 py-3 rounded-xl border font-bold text-sm transition-colors ${
+                            locale === 'en-US'
+                              ? 'border-brand bg-brand/10 text-ink'
+                              : 'border-line bg-surface-2 text-ink-2 hover:text-ink'
+                          }`}
+                        >
+                          <Languages size={18} /> English (US)
                         </button>
                       </div>
                     </div>
