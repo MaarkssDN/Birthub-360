@@ -229,12 +229,10 @@ describe('LeadUseCases.batchUpdateLeads — status + owner/tags em escrita únic
     // Uma única via de escrita: o repository recebe status + owner + tags computadas numa
     // chamada só — não existe mais um prisma.lead.update separado que pudesse falhar depois
     // do status já persistido.
-    expect(repository.updateStatus).toHaveBeenCalledWith(
-      'org-1',
-      'lead-1',
-      'Qualificação (SDR)',
-      { owner: 'user-9', tags: ['a', 'vip'] },
-    );
+    expect(repository.updateStatus).toHaveBeenCalledWith('org-1', 'lead-1', 'Qualificação (SDR)', {
+      owner: 'user-9',
+      tags: ['a', 'vip'],
+    });
     expect(prismaMock.lead.update).not.toHaveBeenCalled();
   });
 
