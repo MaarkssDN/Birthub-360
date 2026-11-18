@@ -126,3 +126,43 @@ entrada self-service** (G1–G4) e um **sweep de retenção** (G5) — ambos dep
 schema/endpoint, propriedade do Agente 01. Enquanto G1 não existir, o canal real do
 titular é o e-mail do DPO documentado na Política de Privacidade, o que é defensável
 operacionalmente mas deve constar como pendência de conformidade formal.
+
+---
+
+## 4. Atualização — canal público DSR implementado (2026-11-18)
+
+Os gaps G1–G5 foram endereçados e **aprovados pelo Agente 24**
+(`.agents/reviews/24-revisao-pr381-agente01-handoffs.md`,
+`.agents/reviews/24-revisao-pr385-agente02-handoffs.md` — ambos APROVADO).
+Estado na data desta atualização: código em PRs aprovados, **pendente de merge e
+de aplicação da migration em deploy** (etapa de integração do Coordenador, não
+trabalho aberto do Agente 21).
+
+| # | Gap | Novo estado | Evidência |
+|---|---|---|---|
+| G1 | Canal público self-service de solicitação DSR | **IMPLEMENTADO (PR #381 + PR #385)** | Backend: `POST /api/public/data-subject-requests`, `POST .../verify`, `GET .../status/:statusToken` em `src/features/lgpd/dsrRequest.routes.ts`, montados em `src/bootstrap/routes.ts` sob `/api/public/data-subject-requests`, com `dsrLimiter` dedicado (10 req/15 min por IP, `src/bootstrap/rateLimiters.ts`). Frontend: `DsrRequestForm` embutido na `/privacy` (§5.1), páginas públicas `/privacidade/dsr/verificar` e `/privacidade/dsr/acompanhamento` (`src/features/lgpd/pages/`, rotas em `src/App.tsx`, PR #385). |
+| G2 | Verificação de identidade do titular | **IMPLEMENTADO** | Token de verificação de 32 bytes, uso único, expiração 72h, persistido só como SHA-256 (`verificationTokenHash`); `contactId` só é resolvido após o `/verify` (nunca confiado no submit). Resposta do `POST /` é 202 idêntica exista ou não o titular (anti-enumeração). E-mail do titular cifrado (`emailEncrypted`, AES-256-GCM) + blind index (`emailIndex`). |
+| G3 | Confirmação ao titular e protocolo/SLA | **IMPLEMENTADO** | E-mail transacional único na solicitação com protocolo opaco, prazo de resposta art. 19 (15 dias) e links de verificação/acompanhamento (`dsrRequest.service.ts`). Dossiê de portabilidade devolvido **uma única vez** na resposta do `/verify` — não persistido (evita duplicar PII em repouso). `CORRECTION`/`SHARING_INFO` caem em `IN_PROGRESS` para tratamento manual do DPO (`detailsEncrypted` guarda o texto do titular, cifrado). |
+| G4 | Modelo de solicitação DSR com status | **IMPLEMENTADO** | Model `DataSubjectRequest` + enums `DataSubjectRightType`/`DataSubjectRequestStatus` (`prisma/schema.prisma`), migration `20261117231500_data_subject_request_dsr` com RLS `tenant_isolation` forçada. `GET /status/:statusToken` retorna só metadados (protocolo, tipo, status) — sem PII. Auditoria `DSR_REQUEST_CREATED`/`DSR_COMPLETED`/`DSR_IN_PROGRESS`/`DSR_REJECTED` com `subjectHash` SHA-256 (sem PII). Direitos executados reusam `exportDataSubjectDossier`, `lgpdService.eraseContact` (encadeia `consentAuditChain.revokeConsent`) e `revokeConsent` com reason `TITULAR_REQUEST`. |
+| G5 | Sweep de retenção dos leads `landing_360` | **IMPLEMENTADO (PR #381)** | `src/features/lgpd/jobs/landingLeadRetention.worker.ts` — fila BullMQ dedicada, scheduler diário 04:15 (`upsertJobScheduler`), descoberta cross-tenant só sobre `Lead` via `bypassRls`, anonimização por tenant dentro de `eraseDataSubject` (que grava `OptOutRecord` antes de destruir — B-13). Critério conservador: `source='landing_360'` + `status='Lead_Recebido'` + `updatedAt <= 90d` (o prazo "demo+30d" não se aplica — não existe campo de demo agendada; decisão documentada no handoff `21-para-01-retencao-leads-landing-lgpd.md`). Guarda extra: pula titular com outro lead em andamento. Idempotente. Teste de integração escrito (`tests/integration/landing-lead-retention-sweep.test.ts`) — executa no gate de CI com Postgres real. |
+| G6 | Cobertura do dossiê de portabilidade | **ABERTO (baixo)** | Mantido como nota: `PublicLeadConsent`/`OptOutRecord`/propostas seguem fora do dossiê. Os campos PII do novo `DataSubjectRequest` já constam em `INVENTARIO_CAMPOS_PII.md` (regenerado nesta branch — 38 campos em 18 models). Reavaliar no próximo ROPA. |
+| G7 | Texto de consentimento da landing (rascunho legal) | **ABERTO (governança)** | Sem mudança — aguarda OK do Marcelo (`consentimento-lead.md` §4). Não é gap de código. |
+
+**Pendências operacionais pós-merge (não são trabalho aberto do Agente 21):**
+
+1. Merge de PR #381 antes/junto de PR #383 (dependência `company` em chat) e PR #385;
+   aplicar a migration `20261117231500_data_subject_request_dsr` no deploy.
+2. `tests/integration/landing-lead-retention-sweep.test.ts` e o fluxo DSR ponta a
+   ponta dependem de Postgres real — rodam no gate de integração/CI.
+3. Tenant do DSR público é único (organização da landing, `LANDING_LEAD_ORGANIZATION_ID`,
+   resolvido no servidor) — DSR multi-tenant exigiria canal por tenant; decisão
+   registrada no handoff `21-para-01-dsr-canal-publico-lgpd.md`. Avaliar se clientes
+   tenants precisarão de canal próprio no futuro (registrar no ROPA se virar escopo).
+
+**Veredito atualizado:** o fluxo completo do titular — solicitação self-service,
+verificação de identidade por token, execução do direito, protocolo/status com SLA
+de 15 dias, confirmação por e-mail e auditoria sem PII — está implementado de ponta
+a ponta (backend PR #381 + frontend PR #385, ambos aprovados pelo Agente 24). O
+canal manual via DPO permanece como fallback. Restam apenas G6 (avaliação de
+cobertura do dossiê) e G7 (aprovação legal do texto), nenhum bloqueador de
+conformidade técnica.
