@@ -124,3 +124,7 @@ package.json — decisão do Agente 00); 600/600 testes voice-hub verdes;
 (00), teste de integração com RLS real, revisão do Agente 24, e os handoffs
 abertos ao 05 (`/api/outbound` sem auth) e ao 17 (`/api/dialer-3cx` sem
 auth/tenant). `dialer` na UI continua alias de `/app/cadence` — nada reaberto.
+
+## Triagem Agente 17 — 2026-11-18 (branch `agente/17-handoffs-20261117`)
+
+Re-verificação de staleness da parcela do 17: **nada pendente**. Item 4 (decisão `dialer` → cadência) permanece implementado — hoje via `NAV_TAB_ALIASES` (`src/components/layout/tabMeta.ts` L268: `dialer → cadence`, arquivo do Agente 02; o alias de rota em `App.tsx` citado na resolução parcial de 2026-11-12 foi substituído por esse mecanismo de nav). Handoff correlato `12-para-17-dialer-3cx-sem-auth.md` já consta `resolvido`. Itens 1–3 seguem com Agentes 12/01/02 — `Status: em-andamento` correto.

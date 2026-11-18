@@ -110,3 +110,7 @@ código necessária nos caminhos vivos). Itens 02 e 08 seguem com seus donos.
 - **Desacoplamento em Cadência & Reativação:** O serviço `SelfDrivingCrmService` (`src/features/cadence/services/selfDrivingCrm.service.ts`) foi desacoplado de dados em memória — em runtime de produção, busca leads reais via `prisma.lead` e sinais de engajamento via `prisma.conversationSignal` com isolamento estrito de `organizationId`. `optOutRepo` agora injeta por padrão o repositório durável `prismaOptOutRepository`.
 - **Zero dados demo/fabricados:** Toda a esteira de orquestração de cadência opera sobre dados persistidos reais; ausência de dados produz empty state honesto (`source: 'none'`), cumprindo integralmente a diretriz de honestidade de dados.
 - **Evidências:** `tests/unit/cadence/selfDrivingCrm.service.test.ts` (11 testes verdes) e suíte de cadência completa (17 arquivos, 198 testes verdes). Parcela do Agente 17 100% concluída.
+
+## Triagem Agente 17 — 2026-11-18 (branch `agente/17-handoffs-20261117`)
+
+Re-verificação de staleness: a parcela do Agente 17 permanece **resolvida** — `selfDrivingCrm.service.ts` segue desacoplado de dados mock em produção (`prisma.lead` L263, `prisma.conversationSignal` L115, `prismaOptOutRepository` injetado por padrão L36). Nenhuma ação pendente para o 17 neste handoff; `Status: em-andamento` mantido pelos itens dos Agentes 02 e 08.
