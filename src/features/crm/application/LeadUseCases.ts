@@ -744,7 +744,12 @@ export class LeadUseCases extends BaseUseCases<Lead, LeadRepository> {
         // por item e vira failedCount, sem escrita parcial de status.
         let statusUpdatedLead: Lead | undefined;
         if (statusChanged && requestedStatusLabel) {
-          statusUpdatedLead = await this.updateLeadStatus(organizationId, lead.id, requestedStatusLabel, actorUserId);
+          statusUpdatedLead = await this.updateLeadStatus(
+            organizationId,
+            lead.id,
+            requestedStatusLabel,
+            actorUserId,
+          );
         }
 
         if (hasTagUpdate || hasOwnerUpdate) {
