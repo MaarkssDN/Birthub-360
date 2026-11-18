@@ -13,6 +13,8 @@
 
 | DEM-20261114-003 | Backlog de Ondas — Onda 4 (frontend/perf) + follow-ups Onda 2 | 00 → 23/09/03/08/02/06/01 | EM_ANDAMENTO | 2026-11-14 |
 
+| DEM-20261116-001 | Backlog Ondas — Onda 5 backlog (UX/forms/a11y/API) | 00 → 02/03/18 | EM_ANDAMENTO | 2026-11-16 |
+
 ## Sessões conhecidas
 | Agente | Sessão | Estado confirmado |
 |--------|--------|-------------------|

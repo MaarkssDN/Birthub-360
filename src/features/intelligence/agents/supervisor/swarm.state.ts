@@ -5,11 +5,7 @@
 // precise importar o orquestrador inteiro.
 import type { BaseMessage } from '@langchain/core/messages';
 import { Annotation } from '@langchain/langgraph';
-import type {
-  SemanticAgentMatch,
-  SubSwarmDomain,
-  SwarmAgentKey,
-} from '../subSwarms.config.js';
+import type { SemanticAgentMatch, SubSwarmDomain, SwarmAgentKey } from '../subSwarms.config.js';
 
 export type SwarmRoute = SwarmAgentKey | 'finish';
 

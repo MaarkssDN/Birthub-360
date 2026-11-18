@@ -6,12 +6,15 @@ import {
   Building2,
   CornerDownLeft,
   FileBarChart,
+  Globe,
+  Home,
   Loader2,
+  Radar,
   Search,
   Users,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api.js';
 import {
   OPEN_AI_CHAT_EVENT,
@@ -21,11 +24,12 @@ import {
 import { SoundFX } from '../../lib/soundEffects.js';
 import type { Company, Contact, PaginatedResponse } from '../../types/index.js';
 import type { TabNavIcon, TabType } from '../layout/tabMeta.js';
-import { isNavHiddenTab, TAB_META } from '../layout/tabMeta.js';
+import { isNavHiddenTab, NAV_TAB_ALIASES, TAB_META } from '../layout/tabMeta.js';
+import { deriveActiveTabFromPath } from '../layout/settingsPillarNav.js';
 
 type ResultItem = {
   id: string;
-  group: 'Ações rápidas' | 'Navegar' | 'Empresas' | 'Decisores';
+  group: 'Nesta página' | 'Ações rápidas' | 'Navegar' | 'Empresas' | 'Decisores';
   label: string;
   sublabel?: string;
   icon: TabNavIcon;
@@ -126,6 +130,7 @@ const MODULE_ORDER: TabType[] = [
 
 export function CommandPalette() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
@@ -308,6 +313,145 @@ export function CommandPalette() {
     ];
     result.push(...quickActions.filter((a) => !q || normalize(a.label).includes(q)));
 
+    // MEL-35 (handoff 02→03): grupo contextual "Nesta página" derivado da rota ativa. Só oferece
+    // ações reais: intents `open-create`/`prefill-search` que a tela de destino já consome
+    // (CompanyList/ContactList/ActivityList) ou navegação pura para tabs visíveis na nav. Como o
+    // grupo só aparece quando o usuário JÁ está na rota, não é preciso re-checar RequireRole — a
+    // própria rota já aplicou o gate; as ações contextuais de páginas restritas se limitam a
+    // navegação segura ("Voltar ao dashboard").
+    const rawTab = deriveActiveTabFromPath(pathname);
+    const activeTab = (NAV_TAB_ALIASES[rawTab as TabType] ?? rawTab) as TabType;
+    const go = (tab: TabType, intent?: PaletteIntent) => () => navigateAndClose(tab, intent);
+    const contextual: ResultItem[] = [];
+    switch (activeTab) {
+      case 'crm':
+        contextual.push(
+          {
+            id: 'ctx-crm-create',
+            group: 'Nesta página',
+            label: 'Nova oportunidade',
+            icon: Activity,
+            onSelect: go('crm', { type: 'open-create' }),
+          },
+          {
+            id: 'ctx-crm-companies',
+            group: 'Nesta página',
+            label: 'Ir para empresas',
+            icon: Building2,
+            onSelect: go('companies'),
+          },
+          {
+            id: 'ctx-crm-contacts',
+            group: 'Nesta página',
+            label: 'Ir para contatos',
+            icon: Users,
+            onSelect: go('contacts'),
+          },
+        );
+        break;
+      case 'companies':
+        contextual.push(
+          {
+            id: 'ctx-companies-create',
+            group: 'Nesta página',
+            label: 'Nova empresa',
+            icon: Building2,
+            onSelect: go('companies', { type: 'open-create' }),
+          },
+          {
+            id: 'ctx-companies-contacts',
+            group: 'Nesta página',
+            label: 'Ir para contatos',
+            icon: Users,
+            onSelect: go('contacts'),
+          },
+        );
+        break;
+      case 'contacts':
+        contextual.push(
+          {
+            id: 'ctx-contacts-create',
+            group: 'Nesta página',
+            label: 'Novo contato',
+            icon: Users,
+            onSelect: go('contacts', { type: 'open-create' }),
+          },
+          {
+            id: 'ctx-contacts-companies',
+            group: 'Nesta página',
+            label: 'Ir para empresas',
+            icon: Building2,
+            onSelect: go('companies'),
+          },
+        );
+        break;
+      case 'activities':
+        contextual.push({
+          id: 'ctx-activities-create',
+          group: 'Nesta página',
+          label: 'Criar nova atividade',
+          icon: Activity,
+          onSelect: go('activities', { type: 'open-create' }),
+        });
+        break;
+      case 'dashboard':
+      case 'analytics':
+        contextual.push(
+          {
+            id: `ctx-${activeTab}-reports`,
+            group: 'Nesta página',
+            label: 'Abrir Relatórios',
+            icon: FileBarChart,
+            onSelect: go('reports'),
+          },
+          {
+            id: `ctx-${activeTab}-market`,
+            group: 'Nesta página',
+            label: 'Buscar mercado',
+            icon: Radar,
+            onSelect: go('market-intelligence'),
+          },
+        );
+        break;
+      case 'settings':
+        contextual.push(
+          {
+            id: 'ctx-settings-dashboard',
+            group: 'Nesta página',
+            label: 'Voltar ao dashboard',
+            icon: Home,
+            onSelect: go('dashboard'),
+          },
+          {
+            id: 'ctx-settings-integrations',
+            group: 'Nesta página',
+            label: 'Abrir integrações',
+            icon: Globe,
+            onSelect: go('integrations'),
+          },
+        );
+        break;
+      case 'mesa-tratamento':
+      case 'forecast':
+      case 'metas':
+      case 'team':
+      case 'module-access':
+      case 'usage':
+        // Páginas atrás de RequireRole (ADMIN/GESTOR/SDR+): como o usuário já está nelas, o gate
+        // passou — a única ação contextual segura é navegar de volta, sem prometer ação de módulo.
+        contextual.push({
+          id: `ctx-${activeTab}-dashboard`,
+          group: 'Nesta página',
+          label: 'Voltar ao dashboard',
+          icon: Home,
+          onSelect: go('dashboard'),
+        });
+        break;
+      default:
+        break;
+    }
+    result.push(...contextual.filter((a) => !q || normalize(a.label).includes(q)));
+
     const moduleItems: ResultItem[] = MODULE_ORDER.filter(
       (tab) => !isNavHiddenTab(tab) && (!q || normalize(TAB_META[tab].label).includes(q)),
     ).map((tab) => ({
@@ -347,7 +491,7 @@ export function CommandPalette() {
     }
 
     return result;
-  }, [query, companies, contacts, navigateAndClose, close]);
+  }, [query, companies, contacts, navigateAndClose, close, pathname]);
 
   useEffect(() => {
     setActiveIndex(0);
