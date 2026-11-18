@@ -175,3 +175,7 @@ vulnerabilities:
     expired_at: 2026-12-17
     statement: >-
       picomatch <=4.0.7 ReDoS em ferramentas de build/lint/test sem versão de patch publicada upstream. Ver docs/security/AUDIT_WAIVERS.md.
+  - id: CVE-2026-112366
+    expired_at: 2026-12-17
+    statement: >-
+      Mesma vulnerabilidade de GHSA-FC5Q-39XC-VJPF (picomatch <=4.0.7 ReDoS em ferramentas de build/lint/test), sob o CVE ID usado pelo Trivy. Ver docs/security/AUDIT_WAIVERS.md.
