@@ -433,6 +433,72 @@ describe('BitrixEventMeshBridgeService — classificação de erro e handlers re
     ).resolves.toBeDefined();
   });
 
+  it('deve usar descrição padrão quando mensagem WhatsApp não tem body', async () => {
+    await domainEventMesh.publish({
+      eventType: 'WHATSAPP_MESSAGE_SENT',
+      eventVersion: '1.0.0',
+      organizationId: 'tenant-alpha',
+      correlationId: 'wa-sem-body',
+      producer: 'integrations.whatsapp',
+      aggregateId: 'lead-123',
+      payload: {
+        waMessageId: 'msg-nobody',
+        phoneE164: '+5511999998888',
+        body: null,
+        direction: 'outbound',
+        leadId: 'lead-123',
+      },
+    });
+
+    expect(syncActivitySpy).toHaveBeenCalledWith(
+      'tenant-alpha',
+      'lead-123',
+      expect.objectContaining({
+        type: 'whatsapp',
+        description: 'Mensagem sem texto ou anexo de mídia.',
+      }),
+      expect.anything(),
+    );
+  });
+
+  it('deve registrar DEAL_RISK_SPIKED usando fallback de risk quando reason está ausente', async () => {
+    await domainEventMesh.publish({
+      eventType: 'DEAL_RISK_SPIKED',
+      eventVersion: '1.0.0',
+      organizationId: 'tenant-alpha',
+      correlationId: 'risk-fallback',
+      producer: 'deal-risk-service',
+      aggregateId: 'lead-123',
+      payload: { leadId: 'lead-123', risk: 'Estagnação de 30 dias no funil.' },
+    });
+
+    expect(postCommentSpy).toHaveBeenCalledWith(
+      'tenant-alpha',
+      'lead-123',
+      expect.stringContaining('Estagnação de 30 dias no funil'),
+      expect.anything(),
+    );
+  });
+
+  it('deve registrar CROSS_CHANNEL_OPTOUT_ENFORCED com reason padrão quando payload não informa motivo', async () => {
+    await domainEventMesh.publish({
+      eventType: 'CROSS_CHANNEL_OPTOUT_ENFORCED',
+      eventVersion: '1.0.0',
+      organizationId: 'tenant-alpha',
+      correlationId: 'optout-default',
+      producer: 'optout-service',
+      aggregateId: 'lead-123',
+      payload: { leadId: 'lead-123' },
+    });
+
+    expect(postCommentSpy).toHaveBeenCalledWith(
+      'tenant-alpha',
+      'lead-123',
+      expect.stringContaining('Solicitação do titular (LGPD)'),
+      expect.anything(),
+    );
+  });
+
   it('deve propagar erro transitório do banco no webhook Bitrix para retry/DLQ', async () => {
     vi.spyOn(prisma.lead, 'findFirst').mockRejectedValueOnce(new Error('connection reset'));
 
