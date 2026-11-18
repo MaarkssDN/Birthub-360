@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { type StorageAdapter, OfflineSyncService } from '../offlineSync.service.js';
 import {
   createDefaultOfflineStorage,
@@ -132,8 +132,14 @@ describe('OfflineSyncService com storage criptografado', () => {
       meetingNotes: 'PII: paciente João, plano Ouro',
       consentGranted: true,
     });
-    // Aguarda persistência assíncrona
-    await new Promise((r) => setTimeout(r, 0));
+    // Aguarda persistência assíncrona (enqueue dispara persistQueue fire-and-forget;
+    // setTimeout(0) é insuficiente sob carga do CI/coverage — polling determinístico).
+    await vi.waitFor(
+      () => {
+        expect(base.rawGet('test_enc_queue')).not.toBeNull();
+      },
+      { timeout: 5000, interval: 25 },
+    );
 
     const rawQueue = base.rawGet('test_enc_queue');
     expect(rawQueue).not.toBeNull();

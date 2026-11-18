@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import type {
-  BuyerPersona,
-  MultimodalRoleplaySession,
-  RoleplayEvaluationScore,
-  SalesMethodologyFramework,
-} from '../../../src/shared/contracts/multimodalRoleplay.contract.js';
-import type {
   AccountAllocationRecommendation,
   BacktestValidationMetrics,
   ProjectedRevenueHorizon,
@@ -24,68 +18,6 @@ import type {
 import type { DomainEventType } from '../../../src/shared/contracts/domainEventMesh.contract.js';
 
 describe('Onda 05 — Validação de Contratos Canônicos', () => {
-  it('Evolução 17: Multimodal Roleplay — deve validar tipagem de persona, frameworks e avaliação objetiva', () => {
-    const persona: BuyerPersona = {
-      id: 'persona-cfo-01',
-      name: 'Roberto Valente',
-      title: 'Diretor Financeiro (CFO)',
-      archetype: 'cfo_skeptical',
-      companySize: 'Enterprise (500+ funcionários)',
-      primaryPainPoint: 'Falta de previsibilidade nos custos operacionais de frota',
-      hiddenObjection: 'Incerteza sobre o prazo real de retorno do investimento (ROI)',
-      decisionCriteria: ['Payback comprovado < 6 meses', 'Contrato com SLA de 99.9%'],
-    };
-
-    const evaluation: RoleplayEvaluationScore = {
-      framework: 'SPIN',
-      needDiscoveryScore: 90,
-      activeListeningScore: 85,
-      objectionHandlingScore: 88,
-      valueArticulationScore: 92,
-      nextStepAlignmentScore: 95,
-      compositeScore: 90,
-      talkListenRatio: 0.42, // Vendedor falou 42% do tempo (excelente escuta ativa)
-      awardedXp: 180,
-      feedbackSummary: 'Excelente condução com foco em perguntas de implicação e confirmação de próximo passo.',
-      actionableTips: ['Aprofundar na ancoragem de custos ocultos antes de revelar o valor total.'],
-    };
-
-    const session: MultimodalRoleplaySession = {
-      sessionId: 'sess-roleplay-123',
-      organizationId: 'org-tenant-01',
-      sellerId: 'user-seller-lucas',
-      persona,
-      framework: 'SPIN',
-      status: 'completed',
-      turns: [
-        {
-          turnNumber: 1,
-          speaker: 'buyer',
-          content: 'Qual o valor total do software e como isso justifica o gasto agora?',
-          timestamp: new Date().toISOString(),
-          detectedObjection: 'Preço / Timing',
-          talkDurationSeconds: 8,
-        },
-        {
-          turnNumber: 2,
-          speaker: 'seller',
-          content: 'Antes de falarmos sobre preços, quanto custa hoje para a sua operação cada caminhão parado por falta de telemetria?',
-          timestamp: new Date().toISOString(),
-          methodologyTechniqueUsed: 'SPIN_IMPLICATION_QUESTION',
-          talkDurationSeconds: 12,
-        },
-      ],
-      evaluation,
-      startedAt: new Date().toISOString(),
-      completedAt: new Date().toISOString(),
-    };
-
-    expect(session.sessionId).toBe('sess-roleplay-123');
-    expect(session.persona.archetype).toBe('cfo_skeptical');
-    expect(session.evaluation?.compositeScore).toBe(90);
-    expect(session.evaluation?.talkListenRatio).toBeLessThan(0.5);
-  });
-
   it('Evolução 18: Predictive Revenue Oracle — deve validar horizontes de projeção, simulação What-If e backtest', () => {
     const horizon: ProjectedRevenueHorizon = {
       horizonDays: 90,
@@ -258,7 +190,9 @@ describe('Onda 05 — Validação de Contratos Canônicos', () => {
 
     expect(metrics.sellerTalkRatio).toBe(0.5);
     expect(metrics.customerTalkRatio).toBe(0.5);
-    expect(metrics.isEstimate).toBe(false);
+    // Reconciliação forense (Agente 12): a qualidade da diarização não é medida
+    // aqui, então as métricas são honestamente marcadas como estimativa.
+    expect(metrics.isEstimate).toBe(true);
   });
 
   it('Eixo 18: Bem-Estar e Carga Operacional — deve validar preferências voluntárias e microtreinamentos', async () => {

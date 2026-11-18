@@ -1,7 +1,7 @@
 - De: Agente 15
 - Para: Agente 14
 - Onda: IA-1
-- Status: resolvido
+- Status: em-andamento
 - Prioridade: normal
 
 ## Problema
@@ -39,4 +39,65 @@ Revisão completa em handoff: `.agents/handoffs/onda-ia-1/15-para-14-avaliacao-p
 Decisão: APROVADO COM RESERVA para Onda 1. Implementação base é sólida, mas melhorias recomendadas para ondas posteriores.
 
 ## Resolução (Coordenador 00)
-Testes já implementados pelo Agente 14, conformes e registrados na resposta de handoff associada.
+
+**CORRIGIDA em reconciliação 2026-11-14 (Agente 00)** — a redação anterior ("Testes já
+implementados pelo Agente 14, conformes") superestimava a cobertura. Estado verificado:
+
+**Cobertura real (parcial):**
+- `tests/integration/ai-guardrails-security.test.ts` — detecção de CPF/CNPJ/e-mail/
+  telefone/cartão, redação com placeholders, detecção de toxicidade, falsos positivos
+  (CEP, protocolo numérico).
+- `tests/unit/ai/guardrails-allowlist.test.ts` — allowlist de e-mails corporativos/
+  placeholder e redação tokenizada.
+- `tests/integration/ai-safety-adversarial.test.ts` — prompt injection/jailbreak
+  cobertos no nível do wrapper do gateway (`wrapUntrustedContent` /
+  `UNTRUSTED_CONTENT_GUARD_INSTRUCTION`), não no caminho específico dos guardrails PII.
+
+**Débito — 3 lacunas dos 5 itens originais NÃO cobertos:**
+1. **Logs de bloqueio em `AILog`** — o teste existe apenas como stub
+   (`ai-guardrails-security.test.ts` ~L128: "Este teste requer integração com AILog;
+   por enquanto, valida que a função existe"). Não há verificação real de persistência
+   do log de tentativas bloqueadas.
+2. **Prompt injection antes de enviar ao provider** — cobertura apenas indireta, no
+   wrapper do gateway; não há teste do pipeline PII-guardrail → provider.
+3. **Encoding bypass (Base64, hex, unicode escape)** — os testes documentam a falha
+   como esperada (`expect(result.blocked).toBe(false) // Falha atual esperada`);
+   ou seja, o bypass é conhecido e aceito para Onda 1, não corrigido.
+
+Não existe handoff de débito separado cobrindo essas 3 lacunas — ficam registradas
+neste handoff (status permanece **aberto**) até despacho em onda futura.
+
+> Histórico: veredicto de reconciliação 2026-11-14 era DEFEITO-REAL (cobertura parcial,
+> Resolução superestimava). Correção aplicada nesta data — ver
+> RESULTADOS-RECONCILIACAO-20261114.md.
+
+## Resolução (Agente 14 — 2026-11-18)
+
+Nova suíte `tests/unit/lib/ai/gateway/chat-model-guardrails.test.ts` (4 testes,
+`npx vitest run` verde) exercita `getAiModel().invoke()` real com
+providers/budget/quota/routing mockados e guardrails reais
+(`detectPII`/`detectToxicity`/`wrapUntrustedContent` sem mock). Cobertura
+adicionada na seam real de bloqueio (`chat-model.ts` L260-299):
+
+- **Item 2 (logs de bloqueio em AILog) — COBERTO na seam `logAiUsage`.**
+  Resposta com PII (CPF) e resposta tóxica agora verificam: `invoke` rejeita;
+  `chatCompletion` chamado exatamente 1×; `logAiUsage` chamado 1× com
+  `{model, agentRole, latencyMs, usage}`; `traceAiGeneration` e
+  `recordAiUsageCost` NÃO chamados. Observação: a persistência real em
+  `AILog` (prisma/`$executeRaw`) permanece responsabilidade do caminho de
+  integração — aqui a seam mockada é `usage-log.js`, o mesmo ponto de
+  chamada usado em produção.
+- **Item 4 (prompt injection → provider) — COBERTO.** Payload com delimitador
+  forjado (`</untrusted_external_content>`) passa por `wrapUntrustedContent`
+  real e o teste afirma que a mensagem que chega ao provider termina em
+  `</untrusted_external_content>`, contém o payload intacto e o delimitador
+  forjado neutralizado em entidades (`&lt;/...&gt;`).
+- **Item 5 (encoding bypass Base64/hex/unicode) — DEBITO DE PRODUTO do
+  Agente 07.** `detectPII`/`detectToxicity` operam sobre o texto cru; PII
+  codificada não é decodificada antes da detecção — limitação de produto,
+  não de teste. Handoff de débito aberto:
+  `.agents/handoffs/onda-ia-1/14-para-07-encoding-bypass-guardrails-pii.md`.
+
+Status mantido **em-andamento**: pendente apenas a decisão do Agente 07 sobre
+o débito de encoding bypass. Itens 1 e 3 do pedido original (falsos positivos
+numéricos e redação) já tinham cobertura real conforme reconciliação anterior.

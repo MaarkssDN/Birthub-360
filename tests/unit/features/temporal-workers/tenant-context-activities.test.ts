@@ -13,10 +13,29 @@ import { getTenantId, withTenantContext } from '../../../../src/lib/async-contex
 
 // Mock crawler so unit test doesn't launch real browser
 vi.mock('../../../../src/features/prospecting/crawlee/crawler.js', () => ({
-  runCrawler: vi.fn(async (urls: string[]) => ({
-    crawled: urls,
-    status: 'success',
-  })),
+  runCrawler: vi.fn(async (urls: string[]) =>
+    urls.map((url) => ({
+      url,
+      title: 'Mocked Page',
+      emails: ['contato@example.com'],
+      socialMedia: ['https://linkedin.com/company/example'],
+    })),
+  ),
+}));
+
+// Mock da ponte de persistência — scrapeProspect não deve tocar Prisma em teste unitário.
+vi.mock('../../../../src/features/prospecting/services/webCrawlPersistence.service.js', () => ({
+  persistCrawledSignals: vi.fn(async (pages: Array<{ url: string }>) =>
+    pages.map((p) => ({
+      url: p.url,
+      companyId: 'company_mock_1',
+      matchedBy: 'websiteDomain',
+      persisted: true,
+      changed: true,
+      emailsAdded: 1,
+      socialFieldsAdded: 1,
+    })),
+  ),
 }));
 
 describe('Temporal Activities Multi-Tenant Isolation (B-10 & Rule §26)', () => {
@@ -59,17 +78,32 @@ describe('Temporal Activities Multi-Tenant Isolation (B-10 & Rule §26)', () => 
       );
     });
 
-    it('executes successfully and provides tenant context during execution', async () => {
-      let capturedTenant: string | undefined;
+    it('executes successfully, provides tenant context and persists crawled signals', async () => {
       const result = await scrapeProspect({
         tenantId: 'tenant_prospecting_001',
         url: 'https://birthub360.com',
       });
 
-      expect(result).toEqual({
-        crawled: ['https://birthub360.com'],
-        status: 'success',
-      });
+      expect(result.status).toBe('success');
+      expect(result.crawled).toEqual([
+        {
+          url: 'https://birthub360.com',
+          title: 'Mocked Page',
+          emails: ['contato@example.com'],
+          socialMedia: ['https://linkedin.com/company/example'],
+        },
+      ]);
+      expect(result.persistence).toEqual([
+        {
+          url: 'https://birthub360.com',
+          companyId: 'company_mock_1',
+          matchedBy: 'websiteDomain',
+          persisted: true,
+          changed: true,
+          emailsAdded: 1,
+          socialFieldsAdded: 1,
+        },
+      ]);
     });
 
     it('accepts organizationId as valid tenant parameter', async () => {
@@ -78,10 +112,9 @@ describe('Temporal Activities Multi-Tenant Isolation (B-10 & Rule §26)', () => 
         url: 'https://birthub360.com/test',
       });
 
-      expect(result).toEqual({
-        crawled: ['https://birthub360.com/test'],
-        status: 'success',
-      });
+      expect(result.status).toBe('success');
+      expect(result.crawled.map((c) => c.url)).toEqual(['https://birthub360.com/test']);
+      expect(result.persistence).toHaveLength(1);
     });
   });
 

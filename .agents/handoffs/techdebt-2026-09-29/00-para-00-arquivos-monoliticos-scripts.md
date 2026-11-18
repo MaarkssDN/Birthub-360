@@ -1,7 +1,7 @@
 - De: 00 (Coordenador)
 - Para: 00 (Coordenador - decisório)
 - Onda: techdebt-2026-09-29
-- Status: resolvido
+- Status: aberto
 - Prioridade: normal
 
 ## Problema
@@ -55,3 +55,18 @@ Classificados como P1 (Architecture) no audit, mas podem não ser código de pro
 - Justificativa: Skills/scripts externos não são código de produção crítico, podem ser tratados em momento oportuno
 
 **Ação executada:** `rm .claude/skills/impeccable/scripts/live-browser.js` (sucesso)
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto DEFEITO-REAL — live-browser.js duplicata regressão em .claude/. Correção pendente de despacho. Ver RESULTADOS-RECONCILIACAO-20261114.md.
+>
+> **Correção aplicada 2026-11-14 (Agente 00, branch `agente/00-reconciliacao-limpeza`):**
+> `git rm .claude/skills/impeccable/scripts/live-browser.js` (cópia canônica idêntica
+> confirmada em `.agents/skills/impeccable/scripts/live-browser.js` — `cmp` OK).
+> **Causa da regressão:** commit `8866423ae` ("sincronizacao de skills") recopiou o
+> arquivo; qualquer nova sincronização de skills pode restaurá-lo — tratar como
+> débito se voltar. **Risco residual:** a skill `impeccable` do Claude Code resolve
+> scripts por `<skill-base-dir>`; sem `live-browser.js` local, o recurso "live
+> browser" pode falhar em sessões Claude Code. Correção estrutural recomendada
+> (decisão do 00, fora do escopo mecânico): converter
+> `.claude/skills/impeccable/scripts/` em symlink git para
+> `../../.agents/skills/impeccable/scripts/` (padrão já usado pelas skills `mantis-*`
+> e por 6 skills na onda-9), ou reverter a remoção se o recurso for necessário.

@@ -3,7 +3,7 @@
 De: 00 — Coordenador
 Para: 24 — Revisão Independente
 Onda: pós-homologação 2026-11-10
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Sprint destino: antes do próximo ciclo de implementação
 
@@ -50,3 +50,17 @@ bloqueadores foram corretamente escalados (sem execução por este auditor).
 - Revisões anteriores relacionadas: `navmod-shell-modular-24.md`
   (APROVADO), `2026-11-10-expansao-personagens-9-29-24.md` (APROVADO).
 - O working tree permanece intocado — nenhum commit/merge/deploy.
+
+## Resolução
+
+- **2026-11-11 — Agente 24:** parecer principal emitido em
+  `.agents/reviews/24-revisao-missao-ordens-pos-homologacao-20261111.md` —
+  APROVADO COM RESSALVAS.
+- **2026-11-14 — Agente 24:** complemento de verificação emitido em
+  `.agents/reviews/24-revisao-relatorio-pos-homologacao-00-20261114.md` —
+  APROVADO COM RESSALVAS. Amostra da matriz confirmada ("Em breve" P03
+  persiste; War Room agora heurística determinística honesta; gamification
+  RBAC corrigido; jornadas completeCustomerJourney reais, não tautológicas);
+  não-commitáveis removidos do worktree; handoffs derivados: 3 resolvidos,
+  Docker 2375 em-andamento (bloqueador, ação humana no host — único risco
+  residual).

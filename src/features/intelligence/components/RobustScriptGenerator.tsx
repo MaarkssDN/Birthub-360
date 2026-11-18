@@ -16,10 +16,11 @@ import {
   TerminalSquare,
 } from 'lucide-react';
 import { useState } from 'react';
+import { BorderBeam } from '../../../components/ui/BorderBeam.js';
 import { useActivePlaybook } from '../../../hooks/useActivePlaybook.js';
 import { useBrandAccent } from '../../../hooks/useBrandAccent.js';
 import { api } from '../../../lib/api.js';
-import { BorderBeam } from '../../../components/ui/BorderBeam.js';
+import { downloadBlob } from '../../../lib/nativeDownload.js';
 import { TerminalSafetyService } from '../../../shared/security/terminalSafety.service.js';
 
 const LANGUAGES = [
@@ -150,7 +151,7 @@ export function RobustScriptGenerator() {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!result) return;
     const safety = TerminalSafetyService.analyzeCommand(result);
     if (safety.isBlocked) {
@@ -159,12 +160,11 @@ export function RobustScriptGenerator() {
     }
     const filename = `script_${purpose}_${language}.${selectedLangObj.ext}`;
     const blob = new Blob([result], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
+    try {
+      await downloadBlob(blob, filename);
+    } catch {
+      setError('Falha ao exportar o arquivo. Tente novamente.');
+    }
   };
 
   return (
@@ -476,7 +476,7 @@ export function RobustScriptGenerator() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-[#0D1117] border border-[#30363D] rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden group"
+            className="bg-obsidian border border-white/15 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden group"
           >
             <BorderBeam
               variant="cyan"
@@ -486,7 +486,7 @@ export function RobustScriptGenerator() {
               radius={40}
               glow
             />
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4 border-b border-[#30363D] pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4 border-b border-white/15 pb-4">
               <div className="flex items-center gap-3 text-slate-400 text-xs font-mono uppercase tracking-widest">
                 <TerminalSquare size={16} className={accent.text} />
                 {selectedLangObj.label} OUTPUT
@@ -527,7 +527,7 @@ export function RobustScriptGenerator() {
             </div>
 
             {/* Código style MacOS window */}
-            <div className="bg-[#010409] rounded-2xl border border-[#30363D] p-6 shadow-inner relative">
+            <div className="bg-black rounded-2xl border border-white/15 p-6 shadow-inner relative">
               <div className="absolute top-4 left-4 flex gap-2">
                 <div className="w-3 h-3 rounded-full bg-rose-500/80"></div>
                 <div className="w-3 h-3 rounded-full bg-amber-500/80"></div>

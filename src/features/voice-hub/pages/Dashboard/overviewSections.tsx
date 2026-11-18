@@ -2,31 +2,34 @@
 // (TAREFA-SANEAMENTO-008 / BT360-DT-0063). Each card/panel receives already-fetched state and
 // callbacks — no fetching or metric math lives here, so Overview.tsx stays a thin composition
 // shell and these blocks can be reviewed (and tested) in isolation.
-import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'motion/react';
+
 import {
-  Users,
-  Phone,
-  Sparkles,
-  CheckCircle2,
   Activity,
-  RefreshCw,
+  AlertTriangle,
+  CheckCircle2,
   Database,
+  FileText,
+  Phone,
+  Play,
+  RefreshCw,
   Server,
   ShieldAlert,
-  AlertTriangle,
+  Sparkles,
+  Users,
 } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { useNavigate } from 'react-router-dom';
 import {
-  Card,
-  Button,
+  Alert,
   Badge,
+  Button,
+  Card,
+  EmptyState,
   Progress,
   Skeleton,
-  EmptyState,
-  Alert,
 } from '../../components/design-system/index.js';
-import { ChecklistItem, PendingAlert } from './overviewWidgets.js';
 import type { AgentRecord, CallLogEntry, FetchStatus, ReadyChecks } from './overviewMetrics.js';
+import { ChecklistItem, PendingAlert } from './overviewWidgets.js';
 
 // Compact onboarding wizard + permanent checklist. `checklist === null` means the server state
 // has not loaded yet — the panel renders skeletons instead of flashing default "done" state.
@@ -606,5 +609,74 @@ export function PendingAlertsCard({
           )}
       </div>
     </Card>
+  );
+}
+
+// Quick-actions entry points shown at the top of the Overview. Purely presentational: every
+// action is delegated to the parent (navigation or modal), keeping this file free of routing
+// decisions — extracted from Overview.tsx to keep it under the 700-line hotspot warning
+// threshold (TAREFA-SANEAMENTO-008 follow-up).
+export function QuickActionsGrid({
+  onCreateAgent,
+  onViewAnalytics,
+  onOpenPlayground,
+  onNewKnowledge,
+}: {
+  onCreateAgent: () => void;
+  onViewAnalytics: () => void;
+  onOpenPlayground: () => void;
+  onNewKnowledge: () => void;
+}) {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <Card
+        className="p-4 hover:border-brand cursor-pointer transition-colors flex items-center gap-3"
+        onClick={onCreateAgent}
+      >
+        <div className="p-2 bg-brand/10 text-brand rounded-lg">
+          <Users className="h-5 w-5" />
+        </div>
+        <div className="text-left">
+          <h4 className="font-bold text-slate-900 dark:text-white text-sm">Criar Agente</h4>
+          <p className="text-xs text-slate-500">Configurar novo agente</p>
+        </div>
+      </Card>
+      <Card
+        className="p-4 hover:border-brand cursor-pointer transition-colors flex items-center gap-3"
+        onClick={onViewAnalytics}
+      >
+        <div className="p-2 bg-indigo-50 dark:bg-iris/30 text-iris dark:text-iris rounded-lg">
+          <Activity className="h-5 w-5" />
+        </div>
+        <div className="text-left">
+          <h4 className="font-bold text-slate-900 dark:text-white text-sm">Ver Análises</h4>
+          <p className="text-xs text-slate-500">Métricas recentes</p>
+        </div>
+      </Card>
+      <Card
+        className="p-4 hover:border-brand cursor-pointer transition-colors flex items-center gap-3"
+        onClick={onOpenPlayground}
+      >
+        <div className="p-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg">
+          <Play className="h-5 w-5" />
+        </div>
+        <div className="text-left">
+          <h4 className="font-bold text-slate-900 dark:text-white text-sm">Acessar Playground</h4>
+          <p className="text-xs text-slate-500">Testar chamadas</p>
+        </div>
+      </Card>
+      <Card
+        className="p-4 hover:border-brand cursor-pointer transition-colors flex items-center gap-3"
+        onClick={onNewKnowledge}
+      >
+        <div className="p-2 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-lg">
+          <FileText className="h-5 w-5" />
+        </div>
+        <div className="text-left">
+          <h4 className="font-bold text-slate-900 dark:text-white text-sm">Nova Base</h4>
+          <p className="text-xs text-slate-500">Importar conhecimento</p>
+        </div>
+      </Card>
+    </div>
   );
 }

@@ -7,7 +7,9 @@ import {
   Globe,
   HelpCircle,
   IdCard,
+  Lightbulb,
   Loader2,
+  type LucideIcon,
   Mail,
   MapPin,
   Phone,
@@ -86,6 +88,86 @@ function visibleRequirementEvaluations(
 ): RequirementEvaluation[] {
   if (!evaluations) return [];
   return evaluations.filter((e) => e.type === 'HARD_FILTER' || e.status !== 'unknown');
+}
+
+/** Badge de proveniência — materializa o handoff onda-7/05-para-02 (rótulo
+ * confirmado/inferido). Mapeamento sobre os campos REAIS do modelo (não há
+ * `dataOrigin` por campo no schema; a granularidade existente é
+ * `ProspectCandidate.provenance[field].status` + `DecisionMaker.emailSource`):
+ * - `reported` (fonte oficial: Receita/BrasilAPI/catálogo CNPJ) → ✓ CONFIRMADO;
+ * - `estimated` (heurística/estimativa do provider) → 💡 INFERIDO;
+ * - `unverified` → NÃO VERIFICADO (cinza, mesmo peso de "não confirmado");
+ * - e-mail com `emailSource: 'hunter'` → HUNTER (provider de enriquecimento —
+ *   Hunter.io não garante verificação do e-mail, por isso é badge de ORIGEM,
+ *   não de confirmação); `'apollo'` → APOLLO pelo mesmo motivo.
+ * Campos sem entrada em `provenance` (ex.: resultados Apollo/Google Places, que
+ * não gravam provenance por campo hoje) simplesmente não exibem badge — a
+ * limitação está documentada no handoff. */
+type OriginBadgeKind = 'confirmed' | 'inferred' | 'unverified' | 'hunter' | 'apollo';
+
+const ORIGIN_BADGE_CONFIG: Record<
+  OriginBadgeKind,
+  { label: string; className: string; Icon: LucideIcon }
+> = {
+  confirmed: {
+    label: 'CONFIRMADO',
+    className: 'bg-success/15 text-success-active dark:text-success border-success/30',
+    Icon: CheckCircle2,
+  },
+  inferred: {
+    label: 'INFERIDO',
+    className: 'bg-warning/15 text-warning-active dark:text-warning border-warning/30',
+    Icon: Lightbulb,
+  },
+  unverified: {
+    label: 'NÃO VERIFICADO',
+    className: 'bg-surface-2 text-ink-2 border-line',
+    Icon: HelpCircle,
+  },
+  hunter: {
+    label: 'HUNTER',
+    className: 'bg-info/15 text-info-active dark:text-info border-info/30',
+    Icon: Sparkles,
+  },
+  apollo: {
+    label: 'APOLLO',
+    className: 'bg-surface-2 text-ink-2 border-line',
+    Icon: Users,
+  },
+};
+
+function OriginBadge({ kind, title }: { kind: OriginBadgeKind; title?: string }) {
+  const { label, className, Icon } = ORIGIN_BADGE_CONFIG[kind];
+  return (
+    <span
+      title={title}
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border ${className}`}
+    >
+      <Icon size={10} /> {label}
+    </span>
+  );
+}
+
+type ProvenanceEntry = NonNullable<ProspectCandidate['provenance']>[string];
+
+const PROVENANCE_STATUS_KIND: Record<ProvenanceEntry['status'], OriginBadgeKind> = {
+  reported: 'confirmed',
+  estimated: 'inferred',
+  unverified: 'unverified',
+};
+
+/** Badge por campo: lê `candidate.provenance[campo]` (gravado por brasilapi,
+ * cnpjCatalog e receita_federal). Retorna null quando o campo não tem
+ * proveniência registrada — candidato de provider sem provenance não ganha
+ * badge inventado. */
+function FieldOriginBadge({ entry }: { entry?: ProvenanceEntry }) {
+  if (!entry) return null;
+  return (
+    <OriginBadge
+      kind={PROVENANCE_STATUS_KIND[entry.status]}
+      title={`${entry.source} · consultado em ${entry.queriedAt}`}
+    />
+  );
 }
 
 function formatUsd(value: number): string {
@@ -176,6 +258,7 @@ export function CandidateCard({
             <h3 className="font-black text-lg text-ink group-hover:text-brand transition-colors">
               {candidate.tradeName}
             </h3>
+            <FieldOriginBadge entry={candidate.provenance?.tradeName} />
             {/* Tier de Fit é um sinal de negócio (score), não uma cor de marca — usa o
                             token semântico bg-warning/text-warning (mesmo já usado 2 linhas abaixo
                             pro badge de rating do Google), não atlas-yellow. */}
@@ -205,16 +288,21 @@ export function CandidateCard({
             <span className="flex items-center gap-1.5">
               <Building2 size={14} className="text-ink-2" />{' '}
               {candidate.segmentObserved ? candidate.segment : 'Segmento não confirmado'}
+              <FieldOriginBadge entry={candidate.provenance?.segment} />
             </span>
             <span className="flex items-center gap-1.5">
               <Users size={14} className="text-ink-2" /> {candidate.size}
             </span>
             <span className="flex items-center gap-1.5">
               <MapPin size={14} className="text-ink-2" /> {candidate.location}
+              <FieldOriginBadge entry={candidate.provenance?.location} />
             </span>
             {candidate.cnpjGuess && (
               <span className="flex items-center gap-1.5">
                 <IdCard size={14} className="text-ink-2" /> {candidate.cnpjGuess}
+                <FieldOriginBadge
+                  entry={candidate.provenance?.cnpjGuess ?? candidate.provenance?.cnpj}
+                />
               </span>
             )}
             {candidate.foundedYear && (
@@ -336,7 +424,8 @@ export function CandidateCard({
               </div>
             )}
             {Object.entries(candidate.provenance ?? {}).map(([field, origin]) => (
-              <p key={field}>
+              <p key={field} className="flex items-center gap-1.5 flex-wrap">
+                <FieldOriginBadge entry={origin} />
                 {field}: {origin.source} ·{' '}
                 {origin.status === 'estimated'
                   ? 'estimado'
@@ -436,15 +525,27 @@ export function CandidateCard({
                         </span>
                       )}
                       {dm.email && (
-                        <a
-                          href={`mailto:${dm.email}`}
-                          className="flex items-center gap-1 text-success-active dark:text-success hover:underline"
-                        >
-                          <Mail size={12} /> {dm.email}
-                          <span className="text-[10px] text-ink-2">
-                            Fonte: {dm.emailSource ?? 'Apollo'} · verificação não informada
-                          </span>
-                        </a>
+                        <>
+                          <a
+                            href={`mailto:${dm.email}`}
+                            className="flex items-center gap-1 text-success-active dark:text-success hover:underline"
+                          >
+                            <Mail size={12} /> {dm.email}
+                            <span className="text-[10px] text-ink-2">
+                              verificação não informada
+                            </span>
+                          </a>
+                          {/* Badge de origem SÓ quando `emailSource` existe de fato —
+                              default "APOLLO" mentiria a origem de um produtor futuro que
+                              não grave o campo (ressalva do Agente 24). Sem a info, nenhum
+                              badge: o texto "verificação não informada" já cobre a ausência. */}
+                          {dm.emailSource && (
+                            <OriginBadge
+                              kind={dm.emailSource === 'hunter' ? 'hunter' : 'apollo'}
+                              title={`E-mail via ${dm.emailSource === 'hunter' ? 'Hunter.io' : 'Apollo'} — origem do dado, não verificação de caixa`}
+                            />
+                          )}
+                        </>
                       )}
                       {tel && (
                         <a

@@ -41,7 +41,8 @@ Todas já foram aplicadas e consolidadas nos bancos de dados de homologação e 
 
 ## 3. Regras para Novas Migrações
 A partir da Fase 1 do programa Enterprise Production-Ready:
-- Qualquer nova migração contendo `DROP TABLE`, `DROP COLUMN` ou quebras retroativas é **bloqueada automaticamente** pelo gate `scripts/db/check-migration-safety.ts`.
+- Qualquer nova migração contendo `DROP TABLE`, `DROP COLUMN` ou quebras retroativas é **bloqueada automaticamente** pelo gate `scripts/db/check-migration-safety.ts`, **a menos que** o `migration.sql` contenha o bloco `-- ROLLBACK:` exigido pelo runbook `docs/security/runbooks/MIGRATION_ROLLBACK.md` (Passo 4) — nesse caso o gate automatizado aprova e a exceção segue o fluxo de aprovação abaixo.
+- O gate roda no CI em `.github/workflows/migration-safety.yml` em todo PR que toque `prisma/migrations/**` ou `prisma/schema.prisma`. Teste local: `npx tsx scripts/db/check-migration-safety.ts`.
 - Exceções excepcionais exigem:
   - Justificativa técnica formal documentada.
   - Script de migração reversa (Rollback).

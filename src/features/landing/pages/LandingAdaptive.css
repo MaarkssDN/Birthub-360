@@ -1835,7 +1835,9 @@ html.light .b360-adaptive-landing .b360-module span:not(.b360-ico),
   color: #94a3b8;
 }
 
-/* Footer Light */
+/* Footer Light — o rodapé é SEMPRE escuro (#0a162b !important em
+   LandingRegenerationV4.css), nos dois temas. Textos devem ficar claros:
+   #64748b media só 3.79:1 sobre #0a162b (achado real do axe-core). */
 html:not(.dark) .b360-adaptive-landing .b360-footer,
 html.light .b360-adaptive-landing .b360-footer,
 [data-theme="light"] .b360-adaptive-landing .b360-footer {

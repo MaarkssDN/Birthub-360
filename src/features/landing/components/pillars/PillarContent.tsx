@@ -109,7 +109,7 @@ export function PillarContent({
             {pillar.badge}
           </span>
           <span className="font-mono text-[11px] text-slate-400 dark:text-slate-500 font-semibold">
-            Pilar {pillar.num} / 08
+            Pilar {pillar.num} / 11
           </span>
           <span className="ml-auto inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-mono text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -164,7 +164,7 @@ export function PillarContent({
                 theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
               }`}
             >
-              Capacidades Operacionais Comprovadas
+              Capacidades do Módulo
             </span>
           </div>
 

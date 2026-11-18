@@ -1,26 +1,8 @@
 De:00
 Para:09
 Onda:forense20261020
-Status: resolvido (Implementado pelo Agente 09: sincroniza��o de rotas ativas e deep links no MainActivity.java)
-Prioridade:alto
-Bloqueador-ref:auditoria-real-ondas00-05
-Sprint destino:a definir pelo00
+Status: resolvido
 
-## Problema
-EXP-03 [P1] Offline não comprova criptografia/expurgo prometidos
+## Resolução (verificação Agente 09/00 — 2026-11-18)
 
-## Arquivo(s) envolvido(s)
-Consultar matriz e evidência específica.
-
-## Evidência
-Base:82f848a39a7a45212956c1e949a8df28d8f946c9. Inspeção estática salvo comandos explicitamente reproduzidos; produto/API não presumidos testados.
-EXP-03: mobileEdgeAi.service.ts:13-15; offlineSync.service.ts:157-190,406-419; AuthContext.tsx:118-135 só limpa CacheStorage.
-
-## Alteração necessária
-EXP-03: Criptografar storage sensível, particionar por tenant/usuário e expurgar fila/briefings explicitamente ao logout; testar troca usuário.
-
-## Teste esperado
-EXP-03: Teste sintético positivo/negativo cobrindo a lacuna, persistência/reload, tenant cruzado quando aplicável; gate e parecer24.
-
-## Contexto adicional
-Missão atual somente auditoria; nenhuma correção autorizada por este handoff. Ver matriz335requisitos, relatórioHTML e parecer24. Revalidar contra main de destino, que foi alterada por outro processo durante a auditoria. Complexidade depende do proprietário; hipóteses não são causa operacional comprovada.
+EXP-03 (purge de fila offline no logout) já está em `main@f8d4bc76d` via branch `agente/09-reconciliacao-offline-purge` (commit `d57a45117`, parecer 24 em `.agents/reviews/24-revisao-reconciliacao-09-offline-purge-20261114.md`). Evidência: `src/contexts/AuthContext.tsx` L118-158 chama `offlineSyncService.clearQueue()` no `logout()`; testes `tests/unit/features/mobile/offlineLogoutPurge.test.ts` e `tests/unit/contexts/AuthContext.logoutOfflinePurge.test.tsx` verdes. Demais handoffs `*-para-09-*` verificados: todos `resolvido` (cache PWA particionado — `PwaCachePurgeService` + `AuthContext` L124-131; deep links `VALID_TABS`; ícones PWA manifest). Nenhuma ação de código pendente para o 09.

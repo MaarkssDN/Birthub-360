@@ -1,58 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- ver justificativa no local de uso (CloseableWorker) */
 import type { Worker } from 'bullmq';
 import { env } from '../config/env.js';
-import { logger } from '../lib/logger.js';
-import { queuesEnabled } from '../lib/queue/redis.js';
-import { createLeadsWorker } from '../lib/queue/index.js';
-import { createAgentWorker } from '../lib/queue/agent.worker.js';
-import { createKnowledgeIngestionWorker } from '../lib/queue/knowledgeIngestion.worker.js';
-import { createEnrichmentWorker } from '../lib/queue/enrichment.queue.js';
-import { createEnrichmentCascadeWorker } from '../lib/queue/enrichmentCascade.worker.js';
-import { createSearchWorker } from '../lib/queue/search.queue.js';
-import { initMeiliIndexes } from '../lib/search/index.js';
-import { createColdCallWorker, scheduleColdCallCampaigns } from '../lib/queue/coldCall.worker.js';
-import { createWhatsAppSignalWorker } from '../lib/queue/whatsappSignal.worker.js';
-import { enabledOrganizations } from '../features/integrations/birth-voice/coldCall.service.js';
-import {
-  createSwarmSchedulerWorker,
-  scheduleSwarmScheduler,
-} from '../lib/queue/swarmScheduler.worker.js';
-import { enabledOrganizations as swarmSchedulerEnabledOrganizations } from '../features/intelligence/services/swarmScheduler.service.js';
-import { createBitrixSyncWorker, scheduleBitrixSync } from '../lib/queue/bitrixSync.worker.js';
-import {
-  createBitrixExtractionPurgeWorker,
-  scheduleBitrixExtractionPurgeJob,
-} from '../features/integrations/bitrix/jobs/bitrixExtractionPurge.worker.js';
-import { createBitrixOutboundWorker } from '../lib/queue/bitrixOutbound.queue.js';
-import { createExternalCrmOutboundWorker } from '../lib/queue/externalCrmOutbound.queue.js';
-import {
-  createFollowUpWorker,
-  scheduleFollowUpJobs,
-} from '../features/crm/jobs/followUp.worker.js';
-import {
-  createExecutiveSummaryWorker,
-  scheduleExecutiveSummaryJob,
-} from '../features/crm/jobs/dailyExecutiveSummary.worker.js';
-import {
-  createDeduplicationWorker,
-  scheduleDeduplicationJob,
-} from '../features/crm/jobs/deduplication.worker.js';
-import {
-  createAccountIntelligenceSchedulerWorker,
-  accountIntelligenceSchedulerQueue,
-} from '../features/market-intelligence/jobs/accountIntelligenceScheduler.worker.js';
-import {
-  createWinLossAnalysisWorker,
-  scheduleWinLossAnalysisJob,
-} from '../features/intelligence/services/winLossAnalysis.worker.js';
-import {
-  createWeeklyPdfReportWorker,
-  scheduleWeeklyPdfReportJob,
-} from '../features/crm/jobs/weeklyPdfReport.worker.js';
-import {
-  createAutoAnonymizeWorker,
-  scheduleAutoAnonymizeJob,
-} from '../features/crm/jobs/autoAnonymizeDisqualified.worker.js';
 import {
   createColdLeadsScannerWorker,
   scheduleColdLeadsScannerJob,
@@ -72,13 +20,65 @@ import {
 } from '../features/commercial-intelligence/jobs/forecastSnapshotWeekly.worker.js';
 import { createCopilotoTranscriptionWorker } from '../features/copiloto-ia/jobs/transcribeConversation.worker.js';
 import {
+  createAutoAnonymizeWorker,
+  scheduleAutoAnonymizeJob,
+} from '../features/crm/jobs/autoAnonymizeDisqualified.worker.js';
+import {
+  createLandingLeadRetentionWorker,
+  scheduleLandingLeadRetentionJob,
+} from '../features/lgpd/jobs/landingLeadRetention.worker.js';
+import {
+  createExecutiveSummaryWorker,
+  scheduleExecutiveSummaryJob,
+} from '../features/crm/jobs/dailyExecutiveSummary.worker.js';
+import {
+  createDeduplicationWorker,
+  scheduleDeduplicationJob,
+} from '../features/crm/jobs/deduplication.worker.js';
+import {
+  createFollowUpWorker,
+  scheduleFollowUpJobs,
+} from '../features/crm/jobs/followUp.worker.js';
+import {
+  createWeeklyPdfReportWorker,
+  scheduleWeeklyPdfReportJob,
+} from '../features/crm/jobs/weeklyPdfReport.worker.js';
+import { enabledOrganizations } from '../features/integrations/birth-voice/coldCall.service.js';
+import {
+  createBitrixExtractionPurgeWorker,
+  scheduleBitrixExtractionPurgeJob,
+} from '../features/integrations/bitrix/jobs/bitrixExtractionPurge.worker.js';
+import {
   createAgentMemoryCleanupWorker,
   scheduleAgentMemoryCleanupJob,
 } from '../features/intelligence/jobs/agentMemoryCleanup.worker.js';
+import { enabledOrganizations as swarmSchedulerEnabledOrganizations } from '../features/intelligence/services/swarmScheduler.service.js';
+import {
+  createWinLossAnalysisWorker,
+  scheduleWinLossAnalysisJob,
+} from '../features/intelligence/services/winLossAnalysis.worker.js';
 import {
   createAccountIntelligenceInsightsWorker,
   scheduleAccountIntelligenceInsightsJob,
 } from '../features/market-intelligence/jobs/accountIntelligenceInsights.worker.js';
+import {
+  accountIntelligenceSchedulerQueue,
+  createAccountIntelligenceSchedulerWorker,
+} from '../features/market-intelligence/jobs/accountIntelligenceScheduler.worker.js';
+import { logger } from '../lib/logger.js';
+import { createAgentWorker } from '../lib/queue/agent.worker.js';
+import { createBitrixOutboundWorker } from '../lib/queue/bitrixOutbound.queue.js';
+import { createBitrixSyncWorker, scheduleBitrixSync } from '../lib/queue/bitrixSync.worker.js';
+import {
+  createCheckpointerPruneWorker,
+  scheduleCheckpointerPrune,
+} from '../lib/queue/checkpointerPrune.worker.js';
+import { createColdCallWorker, scheduleColdCallCampaigns } from '../lib/queue/coldCall.worker.js';
+import { createEnrichmentWorker } from '../lib/queue/enrichment.queue.js';
+import { createEnrichmentCascadeWorker } from '../lib/queue/enrichmentCascade.worker.js';
+import { createExternalCrmOutboundWorker } from '../lib/queue/externalCrmOutbound.queue.js';
+import { createLeadsWorker } from '../lib/queue/index.js';
+import { createKnowledgeIngestionWorker } from '../lib/queue/knowledgeIngestion.worker.js';
 // ACH-16-05: as 4 fábricas abaixo (agent-memory-cleanup acima, news-monitor e whatsapp-command
 // abaixo, account-intelligence-insights acima) já eram criadas em worker.ts (processo dedicado)
 // mas ficavam de fora do modo embutido — tests/unit/architecture/worker-registry-parity.test.ts
@@ -89,11 +89,21 @@ import {
   createNewsMonitorWorker,
   scheduleGlobalNewsScan,
 } from '../lib/queue/newsMonitor.worker.js';
+import type { OutboxRelay } from '../lib/queue/outbox/outboxRelay.service.js';
+// MEL-21 (Onda 3): relay da DomainEventOutbox no processo web — cobre o modo embutido
+// (ENABLE_EMBEDDED_WORKERS, sem worker.ts dedicado) e retries de FAILED/PENDING. No modo
+// com worker dedicado ambos os processos podem rodar relay: claimBatch usa
+// FOR UPDATE SKIP LOCKED e o ConsumptionStore deduplica por consumidor.
+import { startDomainEventOutboxRelay } from '../lib/queue/outbox/prismaRuntime.js';
+import { queuesEnabled } from '../lib/queue/redis.js';
+import { createSearchWorker } from '../lib/queue/search.queue.js';
 import {
-  createCheckpointerPruneWorker,
-  scheduleCheckpointerPrune,
-} from '../lib/queue/checkpointerPrune.worker.js';
+  createSwarmSchedulerWorker,
+  scheduleSwarmScheduler,
+} from '../lib/queue/swarmScheduler.worker.js';
 import { createWhatsAppCommandWorker } from '../lib/queue/whatsappCommand.worker.js';
+import { createWhatsAppSignalWorker } from '../lib/queue/whatsappSignal.worker.js';
+import { initMeiliIndexes } from '../lib/search/index.js';
 // MEL-08 (Onda 2): consumidor da fila BullMQ 'webhooks' — ver worker.ts (mesmo registro no
 // processo dedicado). Sem ele, o modo embutido (ENABLE_EMBEDDED_WORKERS) enfileirava entregas
 // de webhook que nunca eram processadas.
@@ -131,6 +141,8 @@ export interface EmbeddedWorkersHandle {
   winLossWorker: CloseableWorker;
   pdfWorker: CloseableWorker;
   autoAnonymizeWorker: CloseableWorker;
+  /** Sweep de retenção LGPD dos leads `landing_360` (>90d sem avanço → eraseDataSubject). */
+  landingLeadRetentionWorker: CloseableWorker;
   coldLeadsScannerWorker: CloseableWorker;
   stagnationScannerWorker: CloseableWorker;
   accountIntelligenceSchedulerWorker: CloseableWorker;
@@ -149,6 +161,8 @@ export interface EmbeddedWorkersHandle {
   swarmSchedulerWorker: CloseableWorker;
   /** Consumidor da fila 'webhooks' (entregas de saída com HMAC/retry/DLQ) — MEL-08, Onda 2. */
   webhookWorker: CloseableWorker;
+  /** MEL-21: relay da outbox transacional de eventos de domínio (null fora do modo prisma). */
+  domainEventOutboxRelay: OutboxRelay | null;
 }
 
 /**
@@ -186,6 +200,7 @@ export function startEmbeddedWorkers(): EmbeddedWorkersHandle {
     winLossWorker: embeddedWorkersEnabled ? createWinLossAnalysisWorker() : null,
     pdfWorker: embeddedWorkersEnabled ? createWeeklyPdfReportWorker() : null,
     autoAnonymizeWorker: embeddedWorkersEnabled ? createAutoAnonymizeWorker() : null,
+    landingLeadRetentionWorker: embeddedWorkersEnabled ? createLandingLeadRetentionWorker() : null,
     coldLeadsScannerWorker: embeddedWorkersEnabled ? createColdLeadsScannerWorker() : null,
     stagnationScannerWorker: embeddedWorkersEnabled ? createStagnationScannerWorker() : null,
     accountIntelligenceSchedulerWorker: embeddedWorkersEnabled
@@ -206,6 +221,16 @@ export function startEmbeddedWorkers(): EmbeddedWorkersHandle {
     coldCallWorker: null,
     swarmSchedulerWorker: null,
     webhookWorker: embeddedWorkersEnabled ? startWebhookWorker() : null,
+    // MEL-21: o relay fala direto com o Postgres (claimBatch/ConsumptionStore), mas só faz
+    // sentido onde os eventos são consumidos. Em topologia com worker.ts dedicado, cada
+    // réplica web iniciaria um relay próprio (scan listTenants + claimBatch por tenant a
+    // cada intervalo) — por isso o padrão segue ENABLE_EMBEDDED_WORKERS. Override explícito
+    // via DOMAIN_EVENT_OUTBOX_RELAY=1 para topologias web-only sem worker dedicado.
+    // Retorna null fora do modo DOMAIN_EVENT_OUTBOX=prisma — no-op seguro.
+    domainEventOutboxRelay:
+      embeddedWorkersEnabled || process.env.DOMAIN_EVENT_OUTBOX_RELAY === '1'
+        ? startDomainEventOutboxRelay()
+        : null,
   };
 
   // Sem Redis, `.add()` chega a enfileirar o comando e falha ao dar baixa nas retries —
@@ -236,6 +261,9 @@ export function startEmbeddedWorkers(): EmbeddedWorkersHandle {
     );
     scheduleAutoAnonymizeJob().catch((err) =>
       logger.error({ err }, 'Falha ao agendar job de anonimização automática'),
+    );
+    scheduleLandingLeadRetentionJob().catch((err) =>
+      logger.error({ err }, 'Falha ao agendar job de retenção de leads da landing'),
     );
     scheduleColdLeadsScannerJob().catch((err) =>
       logger.error({ err }, 'Falha ao agendar job do cold leads scanner'),

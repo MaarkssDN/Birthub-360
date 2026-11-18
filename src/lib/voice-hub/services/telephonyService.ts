@@ -16,6 +16,7 @@ import {
   type WorkflowRuntimeState,
 } from './workflowRuntimeService.js';
 import { logger } from '../../../lib/logger.js';
+import { telephonyTranscriptionService } from '../../../services/telephony/transcription.service.js';
 
 const DEFAULT_GREETING =
   'Olá! Aqui é a assistente virtual do Birth Voices Hub. Como posso ajudar você hoje?';
@@ -89,7 +90,7 @@ export async function resolveAgent(toNumber: string) {
 export async function startCall(params: { callSid: string; from: string; to: string }) {
   const agent = await resolveAgent(params.to);
   if (!agent) {
-    logger.warn('Incoming call to unconfigured number', { to: params.to, callSid: params.callSid });
+    logger.warn({ to: params.to, callSid: params.callSid }, 'Incoming call to unconfigured number');
     return { configured: false as const };
   }
 
@@ -130,10 +131,13 @@ export async function startCall(params: { callSid: string; from: string; to: str
   if (!result.created) {
     const persisted = result.session.metadata as unknown as PhoneSessionMetadata;
     const persistedGreeting = persisted?.turns?.find((turn) => turn.role === 'assistant')?.content;
-    logger.info('Twilio initial webhook replay reused existing phone session', {
-      callSid: params.callSid,
-      sessionId: result.session.id,
-    });
+    logger.info(
+      {
+        callSid: params.callSid,
+        sessionId: result.session.id,
+      },
+      'Twilio initial webhook replay reused existing phone session',
+    );
     return {
       configured: true as const,
       sessionId: result.session.id,
@@ -221,10 +225,13 @@ async function resolvePreparedTurn(prepared: PreparedWorkflowTurn): Promise<Prep
   while (current.mode === 'tool_pending') {
     steps += 1;
     if (steps > MAX_TOOL_CHAIN_STEPS) {
-      logger.error('Workflow tool_pending chain exceeded the safety limit; ending the call', {
-        workflowId: current.state.workflowId,
-        currentNodeId: current.state.currentNodeId,
-      });
+      logger.error(
+        {
+          workflowId: current.state.workflowId,
+          currentNodeId: current.state.currentNodeId,
+        },
+        'Workflow tool_pending chain exceeded the safety limit; ending the call',
+      );
       return {
         state: current.state,
         mode: 'direct',
@@ -238,10 +245,13 @@ async function resolvePreparedTurn(prepared: PreparedWorkflowTurn): Promise<Prep
     );
 
     if (!pendingNode) {
-      logger.error('tool_pending turn without a matching pending tool node in state.nodes', {
-        workflowId: current.state.workflowId,
-        currentNodeId: current.state.currentNodeId,
-      });
+      logger.error(
+        {
+          workflowId: current.state.workflowId,
+          currentNodeId: current.state.currentNodeId,
+        },
+        'tool_pending turn without a matching pending tool node in state.nodes',
+      );
       return {
         state: current.state,
         mode: 'direct',
@@ -301,7 +311,15 @@ export async function handleTurn(params: {
 
   const metadata = (session.metadata as unknown as PhoneSessionMetadata) || { turns: [] };
   metadata.turns = metadata.turns || [];
-  metadata.turns.push({ role: 'user', content: params.speechResult, timestamp: Date.now() });
+  // PII (LGPD/B-13, handoff 15-para-12): o turno persistido em session.metadata
+  // — e depois retransmitido como `transcript` no webhook `agent.call.ended` —
+  // é mascarado ANTES de gravar. O `speechResult` bruto continua sendo usado
+  // para workflow/LLM neste turno; apenas o registro é higienizado.
+  metadata.turns.push({
+    role: 'user',
+    content: telephonyTranscriptionService.maskPii(params.speechResult),
+    timestamp: Date.now(),
+  });
 
   let reply: string;
   let shouldEnd = false;
@@ -331,21 +349,24 @@ export async function handleTurn(params: {
         // `department` is only a label (never resolved to a number/PBX line — see the contract
         // doc above); logging it here is the observability use the contract suggests, not a
         // routing decision.
-        logger.info('Transferring call to a human agent', {
-          sessionId: session.id,
-          organizationId: session.organizationId,
-          department: transferDetails.department ?? null,
-        });
+        logger.info(
+          {
+            sessionId: session.id,
+            organizationId: session.organizationId,
+            department: transferDetails.department ?? null,
+          },
+          'Transferring call to a human agent',
+        );
       } else {
         // Defensive only: the contract guarantees `transferDetails` is always present when
         // `mode === 'transfer'` — a missing one here would be a bug in `workflowRuntimeService.ts`
         // (Agente 04's domain), never a case to paper over with an invented destination number.
         logger.error(
-          'transfer mode without transferDetails; ending the call instead of guessing a destination',
           {
             workflowId: prepared.state.workflowId,
             currentNodeId: prepared.state.currentNodeId,
           },
+          'transfer mode without transferDetails; ending the call instead of guessing a destination',
         );
         reply = TRANSFER_MISSING_DETAILS_MESSAGE;
         shouldEnd = true;
@@ -391,7 +412,14 @@ export async function handleTurn(params: {
     reply = gatewayResponse.text;
   }
 
-  metadata.turns.push({ role: 'assistant', content: reply, timestamp: Date.now() });
+  // Mesma máscara de PII do turno do usuário: a resposta do LLM pode ecoar
+  // dados pessoais ditados pelo cliente; o `reply` retornado para o TTS segue
+  // intacto — apenas o registro persistido é higienizado.
+  metadata.turns.push({
+    role: 'assistant',
+    content: telephonyTranscriptionService.maskPii(reply),
+    timestamp: Date.now(),
+  });
 
   await sessionRepository.updateSession(session.id, {
     metadata: metadata as unknown as Prisma.InputJsonValue,

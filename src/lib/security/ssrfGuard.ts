@@ -1,5 +1,6 @@
 import dns from 'node:dns/promises';
 import net from 'node:net';
+import { isPrivateIpv6Transition } from '../../shared/security/ipv6.js';
 import { AppError } from '../../shared/middlewares/errorHandler.js';
 
 /**
@@ -81,10 +82,25 @@ function isPrivateOrInternalIpv6(ip: string): boolean {
   if (lower.startsWith('fe80:') || /^fe[89ab]/.test(lower)) return true; // link-local fe80::/10
   if (lower.startsWith('fc') || lower.startsWith('fd')) return true; // ULA fc00::/7
   if (lower.startsWith('::ffff:')) {
-    const mapped = lower.split(':').pop();
-    if (mapped && net.isIPv4(mapped)) return isPrivateOrInternalIpv4(mapped);
+    // IPv4-mapeado-em-IPv6. O parser WHATWG normaliza para hex de 2 grupos
+    // (::ffff:7f00:1 para 127.0.0.1), mas aceitar também a forma dotted por
+    // robustez (chamadas diretas que não passaram por URL).
+    const tail = lower.slice('::ffff:'.length);
+    if (net.isIPv4(tail)) {
+      return isPrivateOrInternalIpv4(tail);
+    }
+    const groups = tail.split(':');
+    if (groups.length === 2 && groups.every((g) => /^[0-9a-f]{1,4}$/.test(g))) {
+      const hi = Number.parseInt(groups[0], 16);
+      const lo = Number.parseInt(groups[1], 16);
+      const ipv4 = `${(hi >> 8) & 0xff}.${hi & 0xff}.${(lo >> 8) & 0xff}.${lo & 0xff}`;
+      return isPrivateOrInternalIpv4(ipv4);
+    }
   }
-  return false;
+  // Mecanismos de transição IPv4-em-IPv6 (6to4, Teredo, NAT64, IPv4-compatible) —
+  // o IPv4 embutido é avaliado pela mesma política IPv4 (handoff
+  // `.agents/handoffs/onda-2/15-para-01-ssrf-ipv6-transition-ranges.md`).
+  return isPrivateIpv6Transition(ip, isPrivateOrInternalIpv4);
 }
 
 /**

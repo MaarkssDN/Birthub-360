@@ -1,7 +1,7 @@
 - De: Agente 09 (Mobile — Capacitor/Android/iOS)
 - Para: Agente 08 (QA e Release) / Agente 10 (Infraestrutura, Observabilidade e SRE)
 - Onda: 8
-- Status: resolvido
+- Status: adiado
 - Prioridade: normal
 
 ## Observação de Go-Live (Onda 38)
@@ -86,3 +86,5 @@ branch para confirmar compilação real antes do go-live.
 
 ## Resolução
 O usuário já aprovou a utilização do domínio Render como fallback imediato para manter o app vivo. A configuração final de DNS, manifestos de assinatura e Universal Links será efetuada no processo operacional do deploy.
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto ADIADO — DNS app.birthhub360.com.br não resolve, sem .well-known, backend cloud inexistente. Ver RESULTADOS-RECONCILIACAO-20261114.md.

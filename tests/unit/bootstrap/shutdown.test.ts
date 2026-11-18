@@ -25,6 +25,7 @@ function buildDeps(calls: string[], overrides: Partial<ShutdownDeps> = {}): Shut
     winLossWorker: null,
     pdfWorker: null,
     autoAnonymizeWorker: null,
+    landingLeadRetentionWorker: null,
     coldLeadsScannerWorker: null,
     stagnationScannerWorker: null,
     accountIntelligenceSchedulerWorker: null,
@@ -39,6 +40,7 @@ function buildDeps(calls: string[], overrides: Partial<ShutdownDeps> = {}): Shut
     coldCallWorker: fakeWorker('coldCall', calls),
     swarmSchedulerWorker: null,
     webhookWorker: null,
+    domainEventOutboxRelay: null,
   };
 
   const httpServer = {
@@ -197,6 +199,7 @@ describe('bootstrap/shutdown', () => {
       'winLossWorker',
       'pdfWorker',
       'autoAnonymizeWorker',
+      'landingLeadRetentionWorker',
       'coldLeadsScannerWorker',
       'stagnationScannerWorker',
       'accountIntelligenceSchedulerWorker',
@@ -211,6 +214,7 @@ describe('bootstrap/shutdown', () => {
       'coldCallWorker',
       'swarmSchedulerWorker',
       'webhookWorker',
+      'domainEventOutboxRelay',
     ] as const satisfies readonly (keyof EmbeddedWorkersHandle)[];
 
     const fullCalls: string[] = [];

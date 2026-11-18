@@ -1,11 +1,29 @@
 import type express from 'express';
 import { Redis } from 'ioredis';
-import { verifyToken, type TokenPayload } from '../lib/auth-tokens.js';
-import { refreshSession } from '../services/authService.js';
-import { setCookie, ACCESS_TOKEN_MAX_AGE_MS } from '../lib/cookies.js';
+import { fromNodeHeaders } from 'better-auth/node';
+import type { TokenPayload } from '../lib/auth-tokens.js';
+import { requestContext } from '../../../lib/async-context.js';
+import { auth } from '../../../lib/auth.js';
 import { authenticateApiKey, isApiKeyFormat } from '../services/apiKeyService.js';
+import { voiceRoleForCanonicalRole } from '../repositories/roleRepository.js';
 import { getRedisUrl, getRedisRetryStrategy } from '../lib/env.js';
 import { logger } from '../../../lib/logger.js';
+
+// Autenticação do voice-hub — ADAPTADA ao modelo canônico (handoff
+// .agents/handoffs/01-para-12-voicehub-adaptacao-modelos-canonicos.md — Agente 01, Estratégia 1):
+//
+// O JWT próprio do voice-hub (cookies access_token/refresh_token, verifyToken/refreshSession,
+// registro de tenants via POST /auth/register) foi REMOVIDO. A autenticação agora é:
+//   1. `authenticateToken` canônico (src/shared/middlewares) quando o router é montado atrás
+//      dele — ele já popula req.user e requestContext.run({ tenantId, userId, role });
+//   2. sessão Better Auth resolvida aqui via auth.api.getSession (mount standalone / rotas que
+//      não passam pelo authenticateToken) — SEMPRE sob requestContext.run({ bypassRls: true })
+//      na busca da sessão (mesmo padrão de authenticateToken: Session/User têm FORCE RLS);
+//   3. API key do tenant (Bearer bvhk_live_*) — inalterado, canonical APIKey model.
+//
+// requestContext.run({ tenantId }) é populado em volta do handler sempre que ESTA middleware
+// estabelecer a autenticação — sem isso as policies tenant_isolation das tabelas de voz
+// (migration 20260925000000_voice_hub_rls) ficam em fail-closed e bloqueiam tudo.
 
 export const csrfProtection = (
   req: express.Request,
@@ -52,17 +70,6 @@ export const csrfProtection = (
   return next();
 };
 
-function setAccessTokenCookie(res: express.Response, token: string) {
-  setCookie(res, 'access_token', token, ACCESS_TOKEN_MAX_AGE_MS);
-  // Non-httpOnly UI flag (no sensitive data) so the frontend can tell it has a live session
-  // without parsing the httpOnly access_token cookie.
-  res.cookie('logged_in', 'true', {
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 86400 * 30 * 1000,
-  });
-}
-
 // Redis-backed per-API-key rate limiter, applied to every request authenticated via an API key
 // (see the `req.apiKeyId` check in attachAuthIfPresent below). Reuses the same increment+expire
 // sliding-window pattern already used for the IP-based limiters in server.ts (Agente 00's file,
@@ -77,7 +84,7 @@ const rateLimitRedis = new Redis(getRedisUrl(), {
   commandTimeout: 2000,
   retryStrategy: getRedisRetryStrategy(),
 });
-rateLimitRedis.on('error', (err) => logger.error('API key rate limiter Redis error', err));
+rateLimitRedis.on('error', (err) => logger.error({ err }, 'API key rate limiter Redis error'));
 
 async function isApiKeyRateLimited(apiKeyId: string): Promise<boolean> {
   const key = `ratelimit:apikey:${apiKeyId}`;
@@ -92,19 +99,36 @@ async function isApiKeyRateLimited(apiKeyId: string): Promise<boolean> {
   }
 }
 
+interface CanonicalSessionUser {
+  id: string;
+  email: string;
+  role: string;
+  organizationId: string;
+}
+
+// Normaliza qualquer usuário canônico (req.user do authenticateToken ou session.user do Better
+// Auth) para o TokenPayload do voice-hub — `role` vira voice-role via voiceRoleForCanonicalRole.
+function toVoiceHubSession(user: CanonicalSessionUser): TokenPayload {
+  return {
+    id: user.id,
+    email: user.email,
+    role: voiceRoleForCanonicalRole(user.role),
+    organizationId: user.organizationId,
+  };
+}
+
 export async function getAuthUser(
   req: express.Request,
   res?: express.Response,
 ): Promise<TokenPayload | null> {
+  void res; // assinatura preservada para compatibilidade — não há mais refresh de token próprio
   const bearerToken = req.headers.authorization?.startsWith('Bearer ')
     ? req.headers.authorization.substring(7)
     : undefined;
 
   // Alternative authentication path: a Bearer token shaped like a tenant API key is resolved
-  // against APIKey.keyHash instead of verified as a JWT. This never replaces the JWT flow below —
-  // a request with a JWT cookie or a JWT Bearer token is unaffected and keeps working exactly as
-  // before. A revoked/expired/unknown key authenticates as nobody (401 downstream via
-  // requireTenant), never falls through to try JWT verification on the same string.
+  // against APIKey.keyHash instead of the session flow below — canonical APIKey model, live DB
+  // read on every request (revogação imediata). Nunca cai no fluxo de sessão com a mesma string.
   if (bearerToken && isApiKeyFormat(bearerToken)) {
     const result = await authenticateApiKey(bearerToken);
     if (!result) return null;
@@ -112,23 +136,26 @@ export async function getAuthUser(
     return result.session;
   }
 
-  let token = req.cookies?.access_token;
-  if (!token && bearerToken) {
-    token = bearerToken;
+  // Caminho canônico primário: authenticateToken já rodou upstream e populou req.user.
+  const canonicalUser = (req as { user?: CanonicalSessionUser }).user;
+  if (canonicalUser?.id && canonicalUser.organizationId) {
+    return toVoiceHubSession(canonicalUser);
   }
 
-  if (token) {
-    const decoded = verifyToken(token);
-    if (decoded) return decoded;
-  }
-
-  const refreshToken = req.cookies?.refresh_token;
-  if (refreshToken) {
-    const refreshed = await refreshSession(refreshToken);
-    if (refreshed) {
-      if (res) setAccessTokenCookie(res, refreshed.token);
-      return refreshed.session;
+  // Fallback: mount standalone (sem authenticateToken) — resolve a sessão Better Auth
+  // diretamente. bypassRls é obrigatório aqui: getSession localiza Session/User antes de
+  // qualquer tenantId ser conhecido e essas tabelas têm FORCE ROW LEVEL SECURITY (mesmo
+  // padrão documentado em src/shared/middlewares/authenticateToken.ts).
+  try {
+    const session = await requestContext.run({ bypassRls: true }, () =>
+      auth.api.getSession({ headers: fromNodeHeaders(req.headers) }),
+    );
+    const user = session?.user as CanonicalSessionUser | undefined;
+    if (user?.id && user.organizationId) {
+      return toVoiceHubSession(user);
     }
+  } catch (err) {
+    logger.error({ err }, 'voice-hub getAuthUser: falha ao resolver sessão Better Auth');
   }
 
   return null;
@@ -141,39 +168,43 @@ export const attachAuthIfPresent = async (
 ) => {
   const session = await getAuthUser(req, res);
   if (session) {
-    req.user = session;
+    // req.user canônico (AuthUser) e req.voiceHubUser (TokenPayload) coexistem: quando
+    // authenticateToken rodou upstream, req.user já é o usuário canônico e NÃO é sobrescrito —
+    // voiceHubUser é a visão normalizada que os controllers do voice-hub consomem (handoff
+    // .agents/handoffs/onda-2/24-para-12-voicehub-attachauth-sobrescreve-req-user.md — Agente 24:
+    // sobrescrever req.user com o TokenPayload de voice-role violava o contrato canônico e
+    // quebrava qualquer consumidor downstream que esperasse AuthUser).
     req.voiceHubUser = session;
     req.organizationId = session.organizationId;
 
-    // Auto-upsert User and Tenant in Dev environment so old JWT cookies don't break fresh databases
-    if (process.env.NODE_ENV !== 'production' && session.organizationId) {
-      try {
-        const { prisma } = await import('@/lib/prisma.js');
-        await prisma.tenant.upsert({
-          where: { id: session.organizationId },
-          update: {},
-          create: { id: session.organizationId, name: 'Local Dev Tenant' },
-        });
-        await prisma.user.upsert({
-          where: { id: session.id },
-          update: {},
-          create: {
-            id: session.id,
-            organizationId: session.organizationId,
-            email: session.email || 'dev@local.com',
-            companyName: 'Local Dev Corp',
-            passwordHash: 'dummy',
-          },
-        });
-      } catch (err: any) {
-        console.error('Failed to auto-upsert dev tenant/user:', err);
-      }
+    // requestContext.run({ tenantId }) em volta do handler — exigência do handoff do Agente 01:
+    // sem tenantId no contexto, as policies tenant_isolation das tabelas de voz ficam
+    // fail-closed. Se authenticateToken já populou o contexto upstream (tenantId presente),
+    // next() direto preserva a store existente — enterWith/run aqui só cobre o caso em que a
+    // autenticação foi estabelecida por ESTA middleware (API key ou getSession direto).
+    const store = requestContext.getStore();
+    if (!store?.tenantId || store.tenantId !== session.organizationId) {
+      // requestContext.run devolve o retorno do callback — a promise de
+      // isApiKeyRateLimitedIfNeeded é retornada (não `void`) para que o await do caller e o
+      // contexto AsyncLocalStorage cubram todo o downstream, incluindo o next().
+      return requestContext.run(
+        { tenantId: session.organizationId, userId: session.id, role: session.role },
+        () => isApiKeyRateLimitedIfNeeded(req, res, next),
+      );
     }
   }
 
-  // Basic per-key rate limit, applied only to requests that actually authenticated via an API
-  // key (req.apiKeyId set inside getAuthUser above) — JWT-authenticated requests are unaffected
-  // and continue to rely solely on the IP-based limiters in server.ts.
+  return isApiKeyRateLimitedIfNeeded(req, res, next);
+};
+
+// Rate limit por API key — extraído para poder rodar dentro do requestContext.run quando
+// necessário. Só se aplica a requests autenticadas via API key (req.apiKeyId setado em
+// getAuthUser); requests JWT/sessão não são afetadas e seguem sob os limiters por IP do server.ts.
+async function isApiKeyRateLimitedIfNeeded(
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) {
   if (req.apiKeyId) {
     const limited = await isApiKeyRateLimited(req.apiKeyId);
     if (limited) {
@@ -184,4 +215,4 @@ export const attachAuthIfPresent = async (
   }
 
   return next();
-};
+}

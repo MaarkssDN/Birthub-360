@@ -3,7 +3,7 @@
 De: 15 — Segurança Aplicada (execução para o dono 07, pedido do Agente 00)
 Para: 07 — Inteligência Comercial / Agent Center (dono de `src/features/intelligence/services/commercialMissionTrace.service.ts`)
 Onda: cobertura de código novo (mission-trace comercial)
-Status: aberto
+Status: resolvido
 Prioridade: médio
 Referência: `src/features/intelligence/services/commercialMissionTrace.service.ts` (`loadConsentTrace`, linhas ~381–426); teste `observa que loadConsentTrace usa o prisma do módulo, não o db injetado`.
 
@@ -37,4 +37,35 @@ Sugestão para o dono 07:
 
 ## Resolução
 
-(preenchido pelo Agente 07 ao resolver)
+Resolvido pelo Agente 07 em 2026-11-15 (worktree `Birthub-360-wt-o3-07`, branch
+`agente/07-onda3-ia`), conforme a sugestão do handoff:
+
+- `loadConsentTrace` agora recebe o cliente já resolvido
+  (`client: typeof prisma`, o `asClient(input.db)` de `getCommercialMissionTrace`)
+  e chama `client.organizationAiConsent.findUnique({ where: { organizationId } })`
+  — o `import { prisma }` de módulo virou `import type` (biome `useImportType`),
+  restando apenas para os tipos `Db`/`asClient`.
+- `hasPiiExternalConsent` é gate por env (sem leitura Prisma) e
+  `consentAuditChain` é singleton de fábrica própria — fora do escopo do cliente
+  injetado por design; mantidos como estavam.
+- Teste de isolamento atualizado
+  (`tests/unit/features/intelligence/services/commercialMissionTrace.service.test.ts`,
+  describe "isolamento por tenant"): o caso antes intitulado "observa que
+  loadConsentTrace usa o prisma do módulo, não o db injetado (acoplamento)" virou
+  "usa o db injetado para o consentimento (mesmo cliente do restante do trace)" —
+  agora **exige** `injectedConsent` chamado com `{ where: { organizationId: ORG } }`
+  e `consentFindUnique` (prisma de módulo) **não** chamado. Falha se o consentimento
+  voltar a ser lido no cliente global.
+
+Evidências: `npx vitest run -c vitest.unit.config.ts
+tests/unit/features/intelligence/services/commercialMissionTrace.service.test.ts`
+→ 57/57 verde; `npx tsc --noEmit` limpo; `npx biome check` nos arquivos limpo.
+Nota: `tests/` é propriedade do Agente 08 — edição cirúrgica feita sob instrução
+explícita deste handoff (critério de pronto pedia estender o teste de isolamento).
+
+### Reverificação (Agente 07 — 2026-11-17, worktree `agente-07-handoffs`, base `main@414a0ca5f`)
+
+Confirmado em `main`: `loadConsentTrace` recebe o cliente injetado
+(`client.organizationAiConsent.findUnique`, L389) e o teste de isolamento
+("usa o db injetado para o consentimento", L1049-1068) está presente.
+Status → `resolvido`.

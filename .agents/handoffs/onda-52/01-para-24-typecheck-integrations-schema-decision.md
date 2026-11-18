@@ -40,4 +40,4 @@ O 24 deve conferir quatro pontos:
 - Se o produto quiser mesmo essas integrações, o 06 abre `06-para-01` depois do freeze. O 01 então cria os modelos com `organizationId`, RLS FORCE com isolamento por tenant, DML pelo regime do `create-app-role.sql` e `piiFields` para os tokens.
 
 ## Resolução
-(preenchido pelo agente destino ao resolver)
+Parecer do Agente 24: **APROVADO COM RESERVA**, registrado em `.agents/reviews/onda-52-01-typecheck-integrations-schema-decision-24.md` (2026-10-27, PR #91). Decisão do Agente 01 mantida: schema correto, sem modelos/migrations novos; correção dos 11 erros de typecheck das integrações retorna ao Agente 06.

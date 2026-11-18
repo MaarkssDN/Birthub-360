@@ -60,19 +60,24 @@ vi.mock('../repositories/userRepository.js', () => ({
   findUserByEmail: vi.fn(),
   findUserById: vi.fn(),
   createUser: vi.fn(),
-  findMembershipWithRole: vi.fn(),
-  createMembership: vi.fn(),
   listUsersForTenant: vi.fn(),
   updateUser: vi.fn(),
-  softDeleteUser: vi.fn(),
+  deleteUser: vi.fn(),
   anonymizeUser: vi.fn(),
-  updateMembershipRole: vi.fn(),
+  updateUserRole: vi.fn(),
+  findPrimaryJobRoleForUser: vi.fn(),
 }));
 
 vi.mock('../repositories/roleRepository.js', () => ({
-  getOrCreateSystemRole: vi.fn(),
   getPermissionsForRoleName: vi.fn(),
   permissionNamesOf: vi.fn(() => []),
+  voiceRoleForCanonicalRole: vi.fn((role: string | null | undefined) =>
+    role === 'ADMIN' ? 'admin' : role === 'GESTOR' ? 'supervisor' : 'user',
+  ),
+  canonicalRoleForVoiceRole: vi.fn(
+    (name: string) =>
+      ({ admin: 'ADMIN', supervisor: 'GESTOR', user: 'VISUALIZADOR' })[name] ?? 'VISUALIZADOR',
+  ),
 }));
 
 vi.mock('../repositories/webhookEndpointRepository.js', () => ({
@@ -254,7 +259,7 @@ describe('userService — isolamento por organizationId', () => {
     await expect(deleteUser('user-de-A', ORG_B, 'admin-b')).rejects.toBeInstanceOf(
       UserServiceError,
     );
-    expect(userRepository.softDeleteUser).not.toHaveBeenCalled();
+    expect(userRepository.deleteUser).not.toHaveBeenCalled();
   });
 
   it('anonymizeUserData (LGPD) nega anonimização cross-tenant', async () => {

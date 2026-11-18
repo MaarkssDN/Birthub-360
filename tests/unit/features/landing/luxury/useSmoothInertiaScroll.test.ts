@@ -78,4 +78,53 @@ describe('useSmoothInertiaScroll', () => {
       expect.any(Function),
     );
   });
+
+  it('intercepta wheel fora de campos de formulário e chama scrollTo via rAF', async () => {
+    renderHook(() => useSmoothInertiaScroll(true));
+
+    const wheel = new WheelEvent('wheel', { deltaY: 120, cancelable: true });
+    window.dispatchEvent(wheel);
+
+    expect(wheel.defaultPrevented).toBe(true);
+    // rAF do jsdom dispara em ~16ms; aguarda o primeiro frame de interpolação
+    await new Promise((r) => setTimeout(r, 60));
+    expect(window.scrollTo).toHaveBeenCalled();
+  });
+
+  it('não intercepta wheel originado dentro de input/textarea', () => {
+    renderHook(() => useSmoothInertiaScroll(true));
+
+    const input = document.createElement('input');
+    document.body.appendChild(input);
+    const wheel = new WheelEvent('wheel', { deltaY: 120, cancelable: true });
+    input.dispatchEvent(wheel);
+
+    expect(wheel.defaultPrevented).toBe(false);
+    input.remove();
+  });
+
+  it('desativa em dispositivo touch estreito (ontouchstart + innerWidth < 1024)', () => {
+    const originalTouch = (window as { ontouchstart?: unknown }).ontouchstart;
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'ontouchstart', {
+      value: () => {},
+      configurable: true,
+    });
+    Object.defineProperty(window, 'innerWidth', { value: 500, configurable: true });
+
+    const addEventListenerSpy = vi.spyOn(window, 'addEventListener');
+    renderHook(() => useSmoothInertiaScroll(true));
+
+    expect(addEventListenerSpy).not.toHaveBeenCalledWith(
+      'wheel',
+      expect.any(Function),
+      expect.anything(),
+    );
+
+    Object.defineProperty(window, 'ontouchstart', {
+      value: originalTouch,
+      configurable: true,
+    });
+    Object.defineProperty(window, 'innerWidth', { value: originalWidth, configurable: true });
+  });
 });

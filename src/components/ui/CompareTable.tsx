@@ -30,16 +30,27 @@ export function CompareTable({
 }) {
   let lastGroup: string | undefined;
   return (
-    <div className="overflow-x-auto rounded-[10px] border border-line">
+    // biome-ignore lint/a11y/useSemanticElements: região rolável genérica de propósito — section/fieldset criariam landmark/semântica de formulário indevida (mesmo padrão de CrmBoard.tsx).
+    <div
+      role="group"
+      aria-label="Tabela comparativa com rolagem horizontal"
+      // biome-ignore lint/a11y/noNoninteractiveTabindex: scroll horizontal precisa ser focável por teclado (axe scrollable-region-focusable, WCAG 2.1.1).
+      tabIndex={0}
+      className="overflow-x-auto rounded-[10px] border border-line"
+    >
       <table className="w-full border-collapse text-[12.5px]">
         <thead>
           <tr>
-            <th className="sticky top-0 bg-surface px-2 py-2 text-left text-[10.5px] font-bold uppercase tracking-wide text-ink-2">
+            <th
+              scope="col"
+              className="sticky top-0 bg-surface px-2 py-2 text-left text-[10.5px] font-bold uppercase tracking-wide text-ink-2"
+            >
               Métrica
             </th>
             {columns.map((col) => (
               <th
                 key={col.key}
+                scope="col"
                 className="sticky top-0 bg-surface px-2 py-2 text-right text-[10.5px] font-bold uppercase tracking-wide text-ink-2"
               >
                 {col.label}

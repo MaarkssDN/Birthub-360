@@ -65,3 +65,60 @@ fato funcionar no dispositivo").
 
 ## Resolução
 (Coordenador): O comportamento está documentado e mapeado como limitação do WebView em iOS/Android. Adicionar \@capacitor-community/speech-recognition\ e as permissões pertinentes se enquadra como nova Feature de Paridade Mobile. Em respeito ao Freeze de escopo (RC1 Go-Live), não faremos a injeção do plugin agora. Fica resolvido (postponed para Sprint pós-13).
+
+## Resolução — implementação (Agente 02 — 2026-11-14)
+
+A decisão de "postponed" registrada acima foi superada por autorização
+explícita do usuário nesta missão (Onda 2), com aprovação do Agente 00 para
+dependências.
+
+Implementado:
+- Novo wrapper compartilhado `src/lib/nativeSpeech.ts` —
+  `createSpeechRecognition()`:
+  - Nativo (`Capacitor.isNativePlatform()`): adaptador sobre
+    `@capacitor-community/speech-recognition@^7.0.1` (publicado em 2025,
+    >7 dias) que implementa a interface `SpeechRecognitionLike` já existente
+    em `src/types/speech-recognition.d.ts` (`continuous`, `interimResults`,
+    `lang`, `onresult`/`onerror`/`onend`, `start()`/`stop()`). O adaptador
+    verifica `available()`, solicita `requestPermissions()` (speech
+    recognition), mapeia os eventos `partialResults`/`listeningState` e o
+    resultado final de `start()` para os callbacks do padrão Web Speech.
+    `continuous = true` é emulado reiniciando a escuta após cada resultado
+    final — limitação documentada: o plugin não possui modo contínuo real.
+  - Web: retorna `window.SpeechRecognition || window.webkitSpeechRecognition`
+    quando existir; `null` caso contrário (mesmo comportamento de "não
+    suportado" de antes).
+- Migração de `src/components/ui/VoiceCommandWidget.tsx`: a construção
+  direta da Web Speech API foi substituída por `createSpeechRecognition()`.
+  Toda a lógica de interpretação de comandos (`textLower.includes(...)`,
+  `navigationBus.requestNavigation`, `SoundFX`, toast de falha) foi
+  preservada — só a fonte do texto transcrito mudou. Comportamento na web
+  inalterado; no app nativo o microfone passa a funcionar via plugin.
+- Dependência adicional: `@capacitor-community/speech-recognition@^7.0.1`
+  (as demais — filesystem/share — são compartilhadas com o handoff de
+  downloads blob da mesma onda).
+
+Testes: `src/lib/__tests__/nativeSpeech.unit.test.ts` — 6 testes (web path,
+nativo indisponível, permissão negada, partial+final, stop, reinício em
+modo contínuo). Vitest unit nos dois arquivos novos: 10/10 passando.
+
+Gates: `npx tsc --noEmit` limpo; `npx biome check` nos arquivos tocados sem
+erros.
+
+Pendências honestas:
+- O wrapper foi integrado APENAS em `VoiceCommandWidget.tsx` (o consumidor
+  apontado por este handoff). Outros consumidores diretos da Web Speech API
+  permanecem sem paridade nativa e NÃO foram migrados nesta entrega:
+  - `src/features/mesa-tratamento/hooks/useVoiceDictation.ts`
+  - `src/features/roleplay/components/RoleplayHub.tsx`
+  - `src/features/voice-hub/hooks/useVoiceConversation.ts`
+  - `src/features/voice-hub/components/studio/panels/TestSimulatorModal.tsx`
+  - `src/features/voice-hub/pages/Playground.tsx` e
+    `src/features/voice-hub/pages/Dashboard/Playground.tsx`
+  Esses arquivos pertencem a outros domínios (Agente 12 — voice-hub;
+  mesa-tratamento/roleplay com donos próprios). A migração ampla fica como
+  handoff sugerido: `createSpeechRecognition()` já está pronto para reuso
+  e a interface é idêntica à Web Speech.
+- Não validado em dispositivo real; o plugin pode exigir ajustes de
+  permissão/manifest no Android (`RECORD_AUDIO`) — propriedade do Agente
+  09; se o build exigir declaração/merge adicional, abrir handoff para 09 (a permissão só deve ser declarada junto do código funcional, conforme este handoff já previa — o código funcional agora existe).

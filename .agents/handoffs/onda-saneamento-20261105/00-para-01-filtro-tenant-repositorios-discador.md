@@ -11,6 +11,8 @@ Sprint destino: Onda 1 — Segurança, Schema, Tenancy e LGPD
 - Cláusulas `organization_id = ${orgId}` rigorosamente parametrizadas em todas as queries e mutações (`$queryRaw` e `$executeRaw`).
 - Implementada suíte de testes de isolamento multi-tenant em `tests/unit/features/cadence/dialer/dialer-tenancy-isolation.test.ts` (7/7 aprovados), comprovando que o Tenant B jamais lê, reserva com lock ou agrega campanhas e leads pertencentes ao Tenant A.
 
+> Nota 2026-11-14 (Agente 00): os arquivos citados neste handoff (`src/infrastructure/repositories/dialer/PgCampaignRepository.ts`, `PgLeadRepository.ts`) foram removidos no corte do dialer-3cx legado (commits 32c97ad1e/18b3114f); `/api/dialer-3cx/*` está gated em 503 `MODULE_NOT_READY`. Risco de tenancy eliminado por remoção. Ver RESULTADOS-RECONCILIACAO-20261114.md.
+
 ## Problema
 Consultas SQL e Prisma nos repositórios do discador (PgCampaignRepository e PgLeadRepository) realizam leituras sem cláusula WHERE organizationId obrigatória.
 

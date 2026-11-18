@@ -203,9 +203,13 @@ const PipelinePonderadoHub = lazy(() =>
   })),
 );
 
-const PillarSettingsPlaceholder = lazy(() =>
-  import('../../features/settings/components/PillarSettingsPlaceholder.js').then((m) => ({
-    default: m.PillarSettingsPlaceholder,
+// MEL-30 (Onda 4): as 8 telas settings_* por pilar foram consolidadas em
+// PillarSettingsHub (/app/settings/pillars/:pillar). O placeholder por pilar
+// continua existindo, mas só é renderizado dentro do hub — não há mais rota
+// direta para ele aqui.
+const PillarSettingsHub = lazy(() =>
+  import('../../features/settings/components/PillarSettingsHub.js').then((m) => ({
+    default: m.PillarSettingsHub,
   })),
 );
 
@@ -464,8 +468,12 @@ export function AppLayout() {
               "Discador 3CX": vai direto pra Cadências. Voice Hub/Outbound não têm UI honesta pro
               503 (caíam em erro genérico/404), então deep-link volta pro dashboard até o 12
               reabrir o gate; os módulos saem da navegação via NAV_HIDDEN_TABS (tabMeta.ts). */}
-            <Route path="dialer" element={<Navigate to="/app/cadence" replace />} />
-            <Route path="voice-hub" element={<VoiceHubView />} />
+            {/* `dialer/*` casa `/app/dialer` e deep-links legados tipo /app/dialer/3cx
+              (splat vazio) — mesmo destino honesto (Cadências) em vez de cair no
+              catch-all. MEL-31/Onda 4: rota exata `dialer` removida por redundância. */}
+            <Route path="dialer/*" element={<Navigate to="/app/cadence" replace />} />
+            {/* `voice-hub/*` já casa `/app/voice-hub` (splat vazio) — a rota exata
+              `voice-hub` era redundante (MEL-31/Onda 4). */}
             <Route path="voice-hub/*" element={<VoiceHubView />} />
             <Route path="outbound/*" element={<Navigate to="/app/dashboard" replace />} />
 
@@ -496,7 +504,9 @@ export function AppLayout() {
             />
             <Route path="knowledge" element={<KnowledgeBase />} />
             <Route path="analytics" element={<Analytics />} />
-            <Route path="gamification" element={<GamificationView />} />
+            {/* MEL-31/Onda 4: a segunda declaração de `gamification` (duplicata exata,
+              logo abaixo de winloss) foi removida — o React Router já resolvia pela
+              primeira ocorrência; era código morto. */}
             <Route path="winloss" element={<WinLossAnalysis />} />
             <Route path="war-room" element={<WarRoomArenaView />} />
             <Route path="market-intelligence" element={<Ldr />} />
@@ -607,38 +617,49 @@ export function AppLayout() {
               }
             />
 
-            {/* SETTINGS PER PILLAR */}
+            {/* SETTINGS PER PILLAR — MEL-30 (DEM-20261114-003, Onda 4): as 8 telas
+              `settings_*` isoladas foram consolidadas no hub
+              `/app/settings/pillars/:pillar` (PillarSettingsHub), que mantém um
+              seletor de pilares sempre visível sobre o painel do pilar ativo.
+              As rotas antigas NÃO foram removidas: viraram redirects `replace`
+              para a forma canônica, preservando bookmarks, Command Palette,
+              navigationBus (voz) e qualquer deep-link salvo — nenhum 404. */}
+            <Route
+              path="settings/pillars"
+              element={<Navigate to="/app/settings/pillars/hub" replace />}
+            />
+            <Route path="settings/pillars/:pillar" element={<PillarSettingsHub />} />
             <Route
               path="settings_hub"
-              element={<PillarSettingsPlaceholder pillarName="Hub Comercial" />}
+              element={<Navigate to="/app/settings/pillars/hub" replace />}
             />
             <Route
               path="settings_market"
-              element={<PillarSettingsPlaceholder pillarName="Inteligência de Mercado" />}
+              element={<Navigate to="/app/settings/pillars/market" replace />}
             />
             <Route
               path="settings_sales"
-              element={<PillarSettingsPlaceholder pillarName="Orquestração de Vendas" />}
+              element={<Navigate to="/app/settings/pillars/sales" replace />}
             />
             <Route
               path="settings_performance"
-              element={<PillarSettingsPlaceholder pillarName="Performance Comercial" />}
+              element={<Navigate to="/app/settings/pillars/performance" replace />}
             />
             <Route
               path="settings_predictability"
-              element={<PillarSettingsPlaceholder pillarName="Previsibilidade Comercial" />}
+              element={<Navigate to="/app/settings/pillars/predictability" replace />}
             />
             <Route
               path="settings_ai"
-              element={<PillarSettingsPlaceholder pillarName="Inteligência Artificial" />}
+              element={<Navigate to="/app/settings/pillars/ai" replace />}
             />
             <Route
               path="settings_automation"
-              element={<PillarSettingsPlaceholder pillarName="Automação & Conectividade" />}
+              element={<Navigate to="/app/settings/pillars/automation" replace />}
             />
             <Route
               path="settings_engagement"
-              element={<PillarSettingsPlaceholder pillarName="Engajamento Comercial" />}
+              element={<Navigate to="/app/settings/pillars/engagement" replace />}
             />
 
             {/* Galeria interna de personagens — deliberadamente sem entrada em

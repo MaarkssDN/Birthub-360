@@ -294,6 +294,9 @@ const ROUTE_CASES: Array<[string, string]> = [
   ['/app/forecast', 'MOD_FORECAST'],
   ['/app/metas', 'MOD_METAS'],
   ['/app/pipeline_ponderado', 'MOD_PIPELINE_POND'],
+  // MEL-30/Onda 4: settings_* legadas redirecionam para o hub canônico
+  // /app/settings/pillars/<slug> — o marcador final é o mesmo (PillarSettingsPlaceholder
+  // renderizado dentro do PillarSettingsHub, que não é mockado de propósito).
   ['/app/settings_hub', 'MOD_PILLAR_SETTINGS:Hub Comercial'],
   ['/app/settings_market', 'MOD_PILLAR_SETTINGS:Inteligência de Mercado'],
   ['/app/settings_sales', 'MOD_PILLAR_SETTINGS:Orquestração de Vendas'],
@@ -302,6 +305,10 @@ const ROUTE_CASES: Array<[string, string]> = [
   ['/app/settings_ai', 'MOD_PILLAR_SETTINGS:Inteligência Artificial'],
   ['/app/settings_automation', 'MOD_PILLAR_SETTINGS:Automação & Conectividade'],
   ['/app/settings_engagement', 'MOD_PILLAR_SETTINGS:Engajamento Comercial'],
+  ['/app/settings/pillars', 'MOD_PILLAR_SETTINGS:Hub Comercial'], // índice → pillar hub
+  ['/app/settings/pillars/market', 'MOD_PILLAR_SETTINGS:Inteligência de Mercado'],
+  ['/app/settings/pillars/inexistente', 'MOD_PILLAR_SETTINGS:Hub Comercial'], // slug inválido → hub
+  ['/app/dialer/3cx', 'MOD_CADENCE'], // dialer/* → /app/cadence (MEL-31/Onda 4)
   ['/app/characters', 'MOD_CHARACTERS'],
   ['/app/rota-inexistente', 'MOD_CENTRAL_HOME'], // catch-all → /app
 ];

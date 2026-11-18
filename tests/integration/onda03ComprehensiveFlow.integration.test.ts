@@ -96,6 +96,7 @@ describe('ONDA 03 — Fluxo Abrangente Integrado e Cinco Jornadas Comerciais E2E
 
     // 1. Lead estagnado cadastrado no CRM
     selfDrivingCrmService.seedLead({
+      organizationId: tenantA,
       leadId: 'lead-resgate-100',
       leadName: 'Logística Transbrasil',
       currentStage: 'Demonstração Técnica',
@@ -391,9 +392,21 @@ describe('ONDA 03 — Fluxo Abrangente Integrado e Cinco Jornadas Comerciais E2E
     });
 
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    // Mesmo leadId em dois tenants: prova que o opt-out de A não vaza para B
+    // e que o isolamento de leads é fail-closed por organizationId.
     selfDrivingCrmService.seedLead({
+      organizationId: tenantA,
       leadId: 'lead-compartilhado-id',
-      leadName: 'Lead Compartilhado',
+      leadName: 'Lead Compartilhado Alpha',
+      currentStage: 'Prospecção',
+      lastActivityAt: thirtyDaysAgo,
+      hasActiveDeal: false,
+      isWonOrLost: false,
+    });
+    selfDrivingCrmService.seedLead({
+      organizationId: tenantB,
+      leadId: 'lead-compartilhado-id',
+      leadName: 'Lead Compartilhado Beta',
       currentStage: 'Prospecção',
       lastActivityAt: thirtyDaysAgo,
       hasActiveDeal: false,

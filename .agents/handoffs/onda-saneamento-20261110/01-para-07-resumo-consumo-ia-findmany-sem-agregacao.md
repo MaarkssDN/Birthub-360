@@ -74,3 +74,14 @@ Executar dentro da propriedade do Agente 07 (`src/features/intelligence/**`):
 ## Resolução
 
 TAREFA-042 — agentCostAnalysis.service.ts usa prisma.aILog.groupBy (W5 Agente 23, integrado em 38e8634f7).
+
+**Reconciliação 2026-11 (Agente 07, branch `agente/07-reconciliacao-heatmap`) — item 2 corrigido:**
+
+- `agentUsageHeatmap.service.ts` reescrito: `agentMemory.findMany` (sem `take`, todas as linhas do período) substituído por `agentMemory.groupBy({ by: ['agentType','status'], _count })` — uma única query agregada no banco, mesmo padrão do `agentCostAnalysis.service.ts`.
+- Custo fabricado removido: `costUsd: count * 0.01` eliminado. Decisão de campos reais vs omitidos: `AgentMemory` não grava custo nem latência; `AILog.cost/latencyMs` existem mas são indexados por `agentRole` (SDR/BDR/CLOSER/CRM/OPS), espaço de chaves diferente de `agentType` (SDR/OPS/LEARNING_PROFILE/SUPERVISOR) — mesclar seria fabricar KPI. Os campos `costUsd` e `avgLatencyMs` permanecem no DTO como `number | null` e retornam `null` (sem consumidor frontend do endpoint; envelope genérico no OpenAPI/Postman não fixa o shape). Custo real por agente continua disponível em `GET /api/agent/cost-analysis`.
+- `avgLatencyMs` não pode mais ser NaN (sempre `null`); `percentage` ganhou guarda contra divisão por zero.
+- Teste novo: `src/features/intelligence/services/__tests__/agentUsageHeatmap.service.test.ts` — 4 casos (agregação groupBy sem findMany, nulls sem NaN, período vazio, propagação de erro). `npx vitest run -c vitest.unit.config.ts` → 4/4 pass; `npx tsc --noEmit` → limpo; `biome check` → 0 erros (2 warnings pré-existentes de estilo).
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto DEFEITO-REAL — metade corrigida; heatmap segue com findMany sem take + custo fabricado. Correção pendente de despacho. Ver RESULTADOS-RECONCILIACAO-20261114.md.
+>
+> Reconciliação 2026-11 (Agente 07): item 2 (heatmap) efetivamente corrigido na branch `agente/07-reconciliacao-heatmap`. Item 1 já estava resolvido desde TAREFA-042/W5. Aguardando integração e parecer do Agente 24.

@@ -24,7 +24,7 @@ import {
   Shield,
   StarOff,
 } from 'lucide-react';
-import { auth } from '../../../lib/auth.js';
+import { authClient } from '../../../lib/auth-client.js';
 import { useSessionStore } from '../store/useSessionStore.js';
 import { useTheme } from './design-system/ThemeContext.js';
 import { useToast, BirthubLogo } from './design-system/index.js';
@@ -493,7 +493,13 @@ export function Sidebar() {
           )}
           <button
             type="button"
-            onClick={() => auth.logout()}
+            onClick={() => {
+              // Better Auth client-side signOut (o `auth` server-side não tem `.logout()` —
+              // importar lib/auth.js no bundle do cliente também vazaria o adapter Prisma).
+              void authClient.signOut().then(() => {
+                window.location.assign('/login');
+              });
+            }}
             className="text-xs text-slate-500 hover:text-red-600 dark:hover:text-red-400 mt-2 w-full text-left font-semibold block transition-colors"
           >
             Sair do Workspace

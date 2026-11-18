@@ -77,6 +77,18 @@ SSH/WinRM/admin remoto; requer operador no host (já escalado na ORDEM 01).
   ssh:// → demais portas expostas → resposta a incidente/rotação de
   credenciais com handoff sugerido ao Agente 15).
 
+**Complemento (Agente 10 — 2026-11-14 — branch `agente/10-onda1-handoffs`):**
+
+- `infrastructure/security/verify-docker-2375-restriction.sh` — script de
+  verificação executável de qualquer host da LAN: classifica a porta como
+  EXPOSTO/BLOQUEADO e valida contra `--expect blocked|allowed` (exit 0/1).
+  Runbook atualizado com os comandos de verificação.
+- **Re-verificação ao vivo em 2026-11-14:** `curl
+  http://192.168.0.116:2375/version` → HTTP 200; o script reporta
+  `EXPOSTO` a partir do workstation. A exposição **segue ativa** — a
+  contenção continua dependendo integralmente do operador executar o
+  Passo 1 no host.
+
 **Depende de ação humana (operador/Marcelo no host):**
 
 1. Executar o script de allowlist (Passo 1) — fecha a exposição para a LAN.

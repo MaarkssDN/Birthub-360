@@ -37,6 +37,8 @@ export interface LiveTurn {
   audioDurationMs: number;
   interrupted: boolean;
   timestamp: string;
+  /** true quando o turno é fabricado localmente (sem STT/TTS real). */
+  simulated?: boolean;
 }
 
 export interface LiveLatencyMetrics {
@@ -47,6 +49,11 @@ export interface LiveLatencyMetrics {
   bargeInResponseMs: number;
   reconnectCount: number;
   packetsLost: number;
+  /**
+   * true quando as métricas são placeholders/estimativas e NÃO medições reais
+   * de latência de áudio.
+   */
+  isEstimate?: boolean;
 }
 
 export interface BimodalLiveSession {
@@ -58,6 +65,11 @@ export interface BimodalLiveSession {
   turns: LiveTurn[];
   metrics: LiveLatencyMetrics;
   isFallback: boolean;
+  /**
+   * true quando a sessão é uma simulação local (sem transporte WebRTC/provedor
+   * Live real). Turnos e métricas não representam áudio real.
+   */
+  simulated?: boolean;
   createdAt: string;
   updatedAt: string;
 }

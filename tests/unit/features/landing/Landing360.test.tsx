@@ -516,7 +516,7 @@ describe('Landing360', () => {
     fireEvent.submit(leadFormEl);
 
     await waitFor(() => {
-      expect(screen.getByText(/Sessão Solicitada com Sucesso/i)).toBeInTheDocument();
+      expect(screen.getByText(/Solicitação Recebida!/i)).toBeInTheDocument();
     });
 
     const body = JSON.parse(fetchSpy.mock.calls[0][1]?.body as string);
@@ -546,7 +546,7 @@ describe('Landing360', () => {
     fireEvent.change(whatsappInput, { target: { value: '11988887777' } });
 
     // Seleciona chip de tamanho de equipe "16 a 50".
-    fireEvent.click(screen.getAllByRole('button', { name: '16 a 50' })[0]);
+    fireEvent.click(within(leadFormEl).getByRole('button', { name: '16 a 50' }));
 
     const consentCheckbox = container.querySelector(
       'input[type="checkbox"]',
@@ -571,6 +571,58 @@ describe('Landing360', () => {
     expect(body.consent).toBe(true);
     expect(body.consentTextVersion).toBe('landing-demo-v1');
     expect(body.purpose).toBe('agendamento_demonstracao');
+
+    fetchSpy.mockRestore();
+  });
+
+  it('deve mapear códigos de erro do endpoint (rate_limited/unavailable) e omitir honeypot vazio', async () => {
+    const { container } = renderWithProviders('/', 'intro');
+
+    const fillAndSubmit = async () => {
+      const nomeInput = container.querySelector('#lead-nome') as HTMLInputElement;
+      const emailInput = container.querySelector('#lead-email') as HTMLInputElement;
+      fireEvent.change(nomeInput, { target: { value: 'Erro Mapeado' } });
+      fireEvent.change(emailInput, { target: { value: 'erro@empresa.com.br' } });
+      const consentCheckbox = container.querySelector(
+        'input[type="checkbox"]',
+      ) as HTMLInputElement;
+      if (!consentCheckbox.checked) fireEvent.click(consentCheckbox);
+      const submitBtn = screen.getByRole('button', {
+        name: /SOLICITAR DEMONSTRAÇÃO GRATUITA/i,
+      });
+      fireEvent.submit(submitBtn.closest('form') as HTMLFormElement);
+    };
+
+    // 429 do rate limiter público: { ok:false, error:'rate_limited' }
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ ok: false, error: 'rate_limited' }), {
+          status: 429,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ ok: false, error: 'unavailable' }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+
+    await fillAndSubmit();
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(/Muitas tentativas/i);
+    });
+
+    await fillAndSubmit();
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(/temporariamente indisponível/i);
+    });
+
+    // Honeypot vazio não é enviado (campo omitido do payload).
+    const body = JSON.parse(fetchSpy.mock.calls[0][1]?.body as string);
+    expect(body.website).toBeUndefined();
+    expect(body.consent).toBe(true);
 
     fetchSpy.mockRestore();
   });

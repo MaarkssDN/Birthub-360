@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { getTenantId } from '../../../lib/context.js';
 import { integrationSettingsRepository } from '../../../lib/integrations/integrationSettings.repository.js';
 import { logger } from '../../../lib/logger.js';
-import { validateWebhookUrl } from '../../../lib/security/url-validator.js';
+import { assertSafeExternalUrl, safeFetch } from '../../../shared/security/urlGuard.js';
 import { notificationService } from '../../notifications/notification.service.js';
 import { sseService } from '../../notifications/sse.service.js';
 import { reconfigurationPayload } from './integrationConfigState.js';
@@ -108,8 +108,10 @@ export const universalNotificationsTool = new DynamicStructuredTool({
         let remotePushDispatched = false;
         if (pushWebhookUrl) {
           try {
-            await validateWebhookUrl(pushWebhookUrl);
-            const res = await fetch(pushWebhookUrl, {
+            // safeFetch valida e fixa a conexão nos endereços já resolvidos (sem DNS rebinding
+            // nem redirect para host interno — ver src/shared/security/urlGuard.ts).
+            await assertSafeExternalUrl(pushWebhookUrl);
+            const res = await safeFetch(pushWebhookUrl, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(wearablePayload),

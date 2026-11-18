@@ -2,6 +2,12 @@
  * src/services/telephony/billing.service.ts
  * Calculo e tarifacao precisa de ciclos de faturamento de telefonia (Handoff 04-para-12 / DIV-AGENTE-04-001).
  * Elimina incremento ingenuo de 30 dias usando manipulacao exata de meses de calendario com ajuste ao dia de corte.
+ *
+ * NOTA DE RECONCILIAÇÃO (2026-11, Agente 12): este serviço NÃO possui consumidores
+ * produtivos — o faturamento real de planos/carteira vive em
+ * `src/lib/voice-hub/services/billingService.ts` (`computePeriodEnd`, que já
+ * trata clamp de fim de mês para intervalos monthly/yearly). Mantido apenas
+ * como referência/teste unitário; não é o caminho de billing em produção.
  */
 
 export interface BillingCyclePeriod {

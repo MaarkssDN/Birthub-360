@@ -1,0 +1,353 @@
+{
+  "meta": {
+    "titulo": "Matriz de decisões — Auditoria da identidade visual Birthub 360° V2.0",
+    "frente": "01 — Auditoria",
+    "data": "2026-11-13",
+    "estado": "RASCUNHO V2.0 — NÃO HOMOLOGADO",
+    "regra": "Status das decisões C01–C09 (CONFIRMADA) e P-01–P-05 (PROVISÓRIA) vêm do FONTE-DE-VERDADE.md e NÃO foram alterados por esta auditoria. O campo auditoria_nota apenas anexa evidência. Itens novos (A-xx) são achados da auditoria.",
+    "status_validos": [
+      "CONFIRMADA",
+      "PROVISÓRIA",
+      "PENDENTE"
+    ],
+    "donos_homologacao": {
+      "usuario": "Usuário (decisão humana de marca)",
+      "00": "Agente 00 — Coordenador",
+      "11": "Agente 11 — Marca e Ativos Institucionais",
+      "03": "Agente 03 — Design e Acessibilidade",
+      "24": "Agente 24 — Revisão Independente (parecer, não decide marca)"
+    }
+  },
+  "decisoes": [
+    {
+      "id": "C01",
+      "decisao": "Posicionamento: Sistema Operacional de Inteligência Comercial, impulsionado por IA e Revenue Intelligence",
+      "status": "CONFIRMADA",
+      "evidencia": [
+        "PRODUCT.md:15",
+        "identidade-visual/MANUAL-DE-IDENTIDADE-DO-PRODUTO.html:682",
+        "identidade-visual/BRANDBOOK-OFICIAL-BIRTH-HUB-360.html:7",
+        "BIRTHUB360_DOCUMENTO_MESTRE_OFICIAL_V4_CINEMATIC.html:1530"
+      ],
+      "dono_homologacao": "usuario",
+      "auditoria_nota": "O repositório usa 'Sistema Operacional de Revenue Intelligence' (sem 'Inteligência Comercial' e sem 'impulsionado por IA'). A formulação da missão é uma evolução da redação existente, não contradição. Nenhuma ocorrência literal da frase da missão foi encontrada (grep)."
+    },
+    {
+      "id": "C02",
+      "decisao": "Paleta: Azul Neon #00D4FF · Rosa Neon #FF2D9B · Dourado #FFC107 · Íris #8B7DFF · Dark #0D0D0D · Light #F4F7FB",
+      "status": "CONFIRMADA",
+      "evidencia": [
+        "src/config/brand.ts:40-75",
+        "identidade-visual/birthhub360/tokens/birthhub360.json:72 (iris #8B7DFF)",
+        "identidade-visual/birthhub360/tokens/birthhub360.json:89 (bg light #F4F7FB)",
+        "identidade-visual/BRANDBOOK-OFICIAL-BIRTH-HUB-360.html:58 (--bg light #F4F7FB)",
+        "identidade-visual/MANUAL-DE-IDENTIDADE-VISUAL.html:63 (--iris #8b7dff)",
+        "BIRTHUB360_DOCUMENTO_MESTRE_OFICIAL_V4_CINEMATIC.html:20-25 (Paleta Neon Obrigatória + --fundo-light #F4F7FB)",
+        "src/styles/globals.css:595,600 (iris #8b7dff no .dark)",
+        "vite.config.ts:23-24 e index.html:8 (theme_color #F4F7FB)"
+      ],
+      "dono_homologacao": "usuario",
+      "auditoria_nota": "CORREÇÃO DE PREMISSA: a premissa do 00 de que Íris #8B7DFF e Light #F4F7FB 'não existem nas fontes (a)' é FALSA. Ambos já constam nos tokens oficiais, no Brandbook (Light) e no Manual Visual (Íris), e #8B7DFF está dentro dos SVGs mestres do logo. A paleta da missão é consistente com a identidade Neon pré-existente; o conflito real é com .claude/CLAUDE.md (Strategic Command Center), que está DESATUALIZADO frente ao globals.css atual (ver A-01)."
+    },
+    {
+      "id": "C03",
+      "decisao": "Tipografia: Sora (display) · Inter (UI) · IBM Plex Mono (dados/código)",
+      "status": "CONFIRMADA",
+      "evidencia": [
+        "src/styles/globals.css:5-8",
+        "DESIGN.md:39-43 (Trinca Tipográfica Exclusiva)",
+        "identidade-visual/BRANDBOOK-OFICIAL-BIRTH-HUB-360.html:688-700 (seção 'regras', proíbe Bodoni/Playfair/JetBrains)",
+        "identidade-visual/birthhub360/tokens/birthhub360.css:18-20"
+      ],
+      "dono_homologacao": "usuario",
+      "auditoria_nota": "Totalmente alinhada com o repositório. Detalhe adicional já oficial: Inter com font-feature-settings cv05/cv11/ss01 e tracking -0.012em (tokens birthhub360.css:27-28; globals.css:383,1077). .claude/CLAUDE.md ainda diz que Sora/Inter são 'inalteradas' mas descreve Bodoni removido — coerente."
+    },
+    {
+      "id": "C04",
+      "decisao": "Sem títulos/subtítulos em branco ou preto puro (#FFF/#000)",
+      "status": "CONFIRMADA",
+      "evidencia": [
+        "src/styles/globals.css:573 e 1899 (override de .text-white/.text-black em títulos)",
+        "identidade-visual/GUIA-MESTRE-PERSONAGENS-BIRTH-HUB-360.md:23 e :187",
+        "BIRTHUB360_DOCUMENTO_MESTRE_OFICIAL_V4.html:130,209,347,391,419,443,756-804 (violações: color:#fff em títulos/rótulos)"
+      ],
+      "dono_homologacao": "usuario",
+      "auditoria_nota": "A regra já existe no repo (globals.css e Guia Mestre) — C04 é continuidade. Violações medidas em navegador (cor computada, dark e light): 16 títulos em rgb(255,255,255) no Documento Mestre V4 (h3 '29 Personagens…', .persona-title, .ac-name…); 0 em Brandbook, Manual Visual, Manual do Produto, Catálogo, Personagens, Mestre V4.10, V4_CINEMATIC e Design System Bible. Landing/Login não medidos. Ver seção Títulos do relatório."
+    },
+    {
+      "id": "C05",
+      "decisao": "Linguagem: Neon Editorial Cinematic como referência criativa (não definição automática de regras)",
+      "status": "CONFIRMADA",
+      "evidencia": [
+        "NÃO-LOCALIZADO: grep -rIil 'Neon Editorial Cinematic|Editorial Cinematic' (0 resultados fora de identidade-v2)",
+        "Aproximação existente: BIRTHUB360_DOCUMENTO_MESTRE_OFICIAL_V4_CINEMATIC.html:12-14 ('Premium Dark Cinematic + Spatial UI + Neon Atmospheric Lighting')",
+        "src/features/landing/pages/LandingCinematic.css"
+      ],
+      "dono_homologacao": "usuario",
+      "auditoria_nota": "O termo 'Neon Editorial Cinematic' não existe no repositório (nem em branches locais/remotas via git grep em origin/main e HEAD). Existe vocabulário vizinho ('Cinematic'), mas NÃO foi tratado como equivalente. Como C05 é referência criativa sem regras automáticas, não há bloqueio."
+    },
+    {
+      "id": "C06",
+      "decisao": "Sem fotografia humana genérica; logotipo original NÃO é redesenhado; personagens NÃO são redesenhados",
+      "status": "CONFIRMADA",
+      "evidencia": [
+        "identidade-visual/GUIA-MESTRE-PERSONAGENS-BIRTH-HUB-360.md:16 (natureza não-humana, sem fotografias)",
+        "identidade-visual/BRANDBOOK-OFICIAL-BIRTH-HUB-360.html:688-700 (Proteção do Emblema Vetorial)",
+        "identidade-visual/README.md:25 (SVGs mestres preservados por determinação do usuário)",
+        "md5 dos 3 logos idênticos em identidade-visual/birthhub360/logos, public/brand e identidade-v2/assets/logos"
+      ],
+      "dono_homologacao": "usuario",
+      "auditoria_nota": "Em conformidade documental. Observação: README afirma que os SVGs 'contêm cores históricas que diferem dos tokens Neon'; ao extrair os hex dos 3 logos, só aparecem #00D4FF #FF2D9B #FFC107 #8B7DFF #3B82F6 (+ #FFFFFF/#000000 apenas como realces com stop-opacity) e #F8F9FF/#0D0D0D. Divergência por HEX não reproduzida; geometria/stops de gradiente não foram comparados com tokens (NÃO VERIFICADO)."
+    },
+    {
+      "id": "C07",
+      "decisao": "Arquitetura: Hub Central + Workspaces Modulares + Assistentes Globais; 11 módulos = P01–P08 (pilares) + M09–M11",
+      "status": "CONFIRMADA",
+      "evidencia": [
+        "src/components/layout/moduleRegistry.ts:16-22 (11 módulos: 8 Pilares + M09–M11; Hub fora da numeração)",
+        "src/components/layout/moduleRegistry.ts:128-353 (code/label de cada módulo)",
+        "BIRTHUB360_DOCUMENTO_MESTRE_OFICIAL_V4.10.html:1943-2435 (MOD-01..MOD-11 com title)",
+        "BIRTHUB360_DOCUMENTO_MESTRE_OFICIAL_V4_CINEMATIC.html:2211 (PILLARS_CONFIG P01–P08, M09–M11)"
+      ],
+      "dono_homologacao": "usuario",
+      "auditoria_nota": "Nomes CONFIRMADOS em 3 fontes independentes: P01 Hub Comercial · P02 Inteligência de Mercado · P03 Orquestração de Vendas · P04 Performance Comercial · P05 Previsibilidade Comercial · P06 Inteligência Artificial · P07 Automação & Conectividade · P08 Engajamento Comercial · M09 Admin & Operations · M10 Mobile & Field Sales · M11 Social Selling. Os rótulos do prompt do 00 ('Enxame de IA', 'Voice & WhatsApp', 'Field Sales') são alias de BIRTHUB360_DECISOES_PRODUTO.md:59-60 (planos comerciais) e da categoria 'PILAR 08 · VOICE & CHANNELS' — não são o nome do módulo."
+    },
+    {
+      "id": "C08",
+      "decisao": "Dois níveis de movimento: Experiência Comercial (cinematográfica) e Operacional (discreta/rápida); prefers-reduced-motion obrigatório",
+      "status": "CONFIRMADA",
+      "evidencia": [
+        "identidade-visual/birthhub360/tokens/characters.json:650 (reducedMotion: animation none, transition opacity 150ms)",
+        "public/design-lab/assets/lab.css:341 e lab.js:408 (reduced-motion no motion playground)",
+        "BIRTHUB360_DOCUMENTO_MESTRE_OFICIAL_V4_CINEMATIC.html:1402 e :2582",
+        "public/design-lab/README.md (140/240/420ms; easings standard/enter/exit/spring/emphasized)"
+      ],
+      "dono_homologacao": "usuario",
+      "auditoria_nota": "Existe base: tokens de motion em characters.json (200/350/600ms, idle 5000ms) e design-lab (140/240/420ms) — DOIS conjuntos de durações divergentes, a reconciliar na frente 04 (ver A-08)."
+    },
+    {
+      "id": "C09",
+      "decisao": "29 personagens ≠ 26 agentes técnicos ≠ 11 módulos (nunca confundir)",
+      "status": "CONFIRMADA",
+      "evidencia": [
+        "src/features/characters/characterCatalog.ts:30 (29 = 9 pilares + 20)",
+        "identidade-visual/birthhub360/tokens/characters.json:meta.totalCharacters=29",
+        "contagem de SVG: 29 em identidade-visual/birthhub360/characters e 29 em public/brand/characters (diff -rq idêntico)",
+        "BIRTHUB360_CONTRATOS_AGENTES.md:71 (MATRIZ DOS 24 AGENTES ESPECIALISTAS; entradas 00..24)",
+        "AGENTS.md §3 / docs/orchestration/ROSTER-SESSOES.md:3 (26 agentes do roster de ENGENHARIA)"
+      ],
+      "dono_homologacao": "usuario",
+      "auditoria_nota": "ALERTA DE CONTAGEM: no repositório, o número 26 refere-se ao roster de agentes de ENGENHARIA (AGENTS.md §3), e não aos agentes de IA do produto. Os agentes de IA do produto são 24 especialistas + Supervisor (CONTRATOS_AGENTES.md; CinematicFX.tsx:360/456 exibe '24 Agentes IA'). 'Agentes técnicos = 26' da missão NÃO foi confirmado como contagem do enxame de IA — ver A-05 (PENDENTE). A distinção 29 ≠ N ≠ 11 se mantém em qualquer das leituras."
+    },
+    {
+      "id": "P-01",
+      "decisao": "Grafia: 'Birthub 360°' nos novos textos (grau °, não º)",
+      "status": "PROVISÓRIA",
+      "evidencia": [
+        "contagens grep em A-02",
+        "src/config/brand.ts:22 ('Birth Hub 360º')",
+        "identidade-visual/BRANDBOOK-OFICIAL-BIRTH-HUB-360.html:6 ('Birth Hub 360°')",
+        "BIRTHUB360_DOCUMENTO_MESTRE_OFICIAL_V4.html:6 e V4_CINEMATIC:6 ('Birthub 360°')",
+        "src/components/layout/moduleRegistry.ts:16 ('Birthub 360°')"
+      ],
+      "dono_homologacao": "usuario",
+      "auditoria_nota": "CORREÇÃO DE PREMISSA: 'Birthub 360°' NÃO é exclusivo de migration/schema. Aparece em 80 arquivos (28 docs, 21 .agents, 20 src, incl. moduleRegistry.ts e títulos de V4/V4_CINEMATIC). Ainda assim a marca institucional (brandbook, manuais, index.html, brand.ts) usa 'Birth Hub'. Sem evidência definitiva → permanece PROVISÓRIA; ver A-02 (PENDENTE)."
+    },
+    {
+      "id": "P-02",
+      "decisao": "Variantes de texto em Light (--c-* em [data-theme=light]) derivadas",
+      "status": "PROVISÓRIA",
+      "evidencia": [
+        "public/design-lab/identidade-v2/shared/core.css:20-25",
+        "contraste medido (WCAG 2.x): #006C8C 5.55, #C4105F 5.45, #7A5800 6.06, #5B4BD6 5.71 sobre #F4F7FB"
+      ],
+      "dono_homologacao": "03",
+      "auditoria_nota": "CORREÇÃO DE PREMISSA: já existem variantes Light OFICIAIS (Brandbook:55-57 e tokens birthhub360.css:130-132): #0284C7 (3.81:1), #D91B7C (4.44:1), #D97706 (2.96:1) sobre #F4F7FB. Nenhuma delas atinge 4.5:1 como texto normal; #D97706 falha até 3:1. Heading tokens do repo usam color-mix com #0D0D0D (cyan 85% = #0472AB 4.89; iris 65% = #5F56AA 5.75). As variantes derivadas do core.css são mais escuras e não são as oficiais — a frente 03 deve decidir entre elas ou aproximar dos color-mix já existentes."
+    },
+    {
+      "id": "P-03",
+      "decisao": "Ink de texto #E8EEFF (dark) / #0F1A2E (light)",
+      "status": "PROVISÓRIA",
+      "evidencia": [
+        "public/design-lab/identidade-v2/shared/core.css:17-18,21-22",
+        "contraste: #E8EEFF/#0D0D0D 16.76; #0F1A2E/#F4F7FB 16.19"
+      ],
+      "dono_homologacao": "03",
+      "auditoria_nota": "Existem inks oficiais divergentes: dark #F8F9FF 'Branco Neon' (brand.ts:55; 18.50:1) mas o runtime usa #70D6FF 'Azul Leitura' (globals.css:207,587); light #0F172A (Brandbook) vs #0B132B (Manual Visual/DESIGN.md). #F8F9FF/#E8EEFF não são branco puro, portanto não violam C04 literalmente."
+    },
+    {
+      "id": "P-04",
+      "decisao": "Superfícies #14141A/#1C1C24/#252530 (dark); Light derivadas",
+      "status": "PROVISÓRIA",
+      "evidencia": [
+        "identidade-visual/birthhub360/tokens/birthhub360.css:49-52,199-200 (#14141A, #1C1C24, #252530)",
+        "src/config/brand.ts:60-61 (card #14141A)"
+      ],
+      "dono_homologacao": "03",
+      "auditoria_nota": "Dark: confirmado como herdado dos tokens (escopo da própria P-04). Light: tokens oficiais já definem surface #FFFFFF / #EDF2F7 / #E2E8F0 (birthhub360.css:134-136) — as 'derivadas' do core.css (#FBFCFE/#EEF2F8/#E3E9F2) diferem das oficiais. Também documentado: dark do V4_CINEMATIC usa #07070B/#0B0B12/#101018 (não #0D0D0D)."
+    },
+    {
+      "id": "P-05",
+      "decisao": "Light oficial = #F4F7FB (missão) vs #F8F9FF (tokens atuais 'neon-white')",
+      "status": "PROVISÓRIA",
+      "evidencia": [
+        "identidade-visual/birthhub360/tokens/birthhub360.json:216 (campo 'conflicts': Light Brandbook #F4F7FB vs Visual/Catálogo #F8FAFC)",
+        "src/styles/globals.css:236 (--bg light = #f0efe9)",
+        "DESIGN.md:19 (Light Oficial #F8FAFC)",
+        "identidade-visual/MANUAL-DE-IDENTIDADE-DO-PRODUTO.html:60 e BRANDBOOK:58 (#F4F7FB)"
+      ],
+      "dono_homologacao": "usuario",
+      "auditoria_nota": "CORREÇÃO DA FORMULAÇÃO: #F8F9FF é 'Branco Neon' (cor de TEXTO no dark), não fundo Light. O conflito real de fundo Light tem QUATRO valores: #F4F7FB (Brandbook, tokens, PWA theme_color, V4_CINEMATIC), #F8FAFC (Manual Visual, Catálogo, DESIGN.md), #F0EFE9 (globals.css:236 runtime, quente/parchment) e #FBFCFE (core.css V2). A missão escolhe #F4F7FB, que coincide com a fonte de maior precedência (Brandbook). A decisão final permanece do usuário."
+    },
+    {
+      "id": "A-01",
+      "decisao": ".claude/CLAUDE.md descreve a paleta 'Strategic Command Center' (Antique Gold #D4AF37, Deep Iris #7C3AED, Orbit Blue #1677FF, Deep Navy #061A3A) que já NÃO reflete o runtime",
+      "status": "PENDENTE",
+      "evidencia": [
+        ".claude/CLAUDE.md (seção 1, 'paleta Strategic Command Center')",
+        "src/styles/globals.css:266 (--brand #00d4ff), :598 (--brand #00d4ff dark), :260 e :269 (--red-violet/--iris #8b5cf6 no root/light)",
+        "src/styles/luxury-tokens.css:31,35,64-74 (#D4AF37 e #8B7DFF coexistem como tokens 'lux')",
+        "src/styles/official-identity.css:10,26 (override para --color-heading-iris)"
+      ],
+      "dono_homologacao": "usuario",
+      "auditoria_nota": "A constituição de design (arquivo de governança) e o CSS atual divergem. Não editado (fora de escopo e arquivo protegido). Handoff sugerido ao 00/03: sincronizar texto de CLAUDE.md com a decisão C02 após homologação. Também: Íris tem três valores no runtime (#8b7dff dark, #8b5cf6 light/--red-violet, #7C3AED em comentários/DESIGN.md light)."
+    },
+    {
+      "id": "A-02",
+      "decisao": "Grafia da marca — contagens reais (grep) e decisão",
+      "status": "PENDENTE",
+      "evidencia": [
+        "grep -rIlE/-o excluindo node_modules,.git,dist,identidade-v2: 'Birth Hub 360°' 1880 ocorr. / 491 arq.; 'Birth Hub 360º' 553 / 487; 'Birthub 360°' 135 / 80; 'Birthub 360º' 2 / 2; 'Birthub 360' 328 / 175; 'BirthHub360' 99 / 47; 'BirthHub 360' 57 / 38",
+        "somente identidade-visual/: 'Birth Hub 360°' 37, 'Birth Hub 360º' 16, 'Birth Hub 360' (sem grau) 66, 'Birthub 360' 4",
+        "design-system-guide/ e design-system-capture/ concentram ~250-300 das ocorrências (artefatos gerados)"
+      ],
+      "dono_homologacao": "usuario",
+      "auditoria_nota": "Grau '°' domina sobre 'º' na identidade (≈3.4:1 geral; 37:16 em identidade-visual/), mas 'º' é o valor de BRAND.name em código (brand.ts:22) e no Login oficial. 'Birthub 360°' (sem espaço) é a grafia dos Documentos Mestre V4/CINEMATIC e do moduleRegistry. Sem decisão definitiva do usuário: PENDENTE. Contagens são de substring e incluem artefatos gerados."
+    },
+    {
+      "id": "A-03",
+      "decisao": "Três paletas coexistem: Neon (oficial em identidade-visual/ + brand.ts + globals.css), 'Strategic Command Center' (CLAUDE.md) e luxury-tokens.css (ouro clássico #D4AF37). A missão (C02) alinha-se com a Neon",
+      "status": "PROVISÓRIA",
+      "evidencia": [
+        "src/config/brand.ts:40-75",
+        "src/styles/luxury-tokens.css:31-74",
+        ".claude/CLAUDE.md seção 1",
+        "DESIGN.md:13-30"
+      ],
+      "dono_homologacao": "usuario",
+      "auditoria_nota": "Recomendação da auditoria: tratar Neon como paleta de marca, #D4AF37/lux como legado a mapear (não eliminar sem decisão). Não promove nenhuma decisão existente."
+    },
+    {
+      "id": "A-04",
+      "decisao": "brand.ts define colors.iris = '#FF2D9B' (rosa) — Íris com valor de Rosa",
+      "status": "PENDENTE",
+      "evidencia": [
+        "src/config/brand.ts:73 (iris: '#FF2D9B')",
+        "identidade-visual/birthhub360/tokens/birthhub360.json:72 (iris: '#8B7DFF')"
+      ],
+      "dono_homologacao": "03",
+      "auditoria_nota": "INCONSISTENTE: token de código contradiz o token oficial; também aliases 'midnight'/'obsidian' = #0D0D0D e 'blossom'/'snow'/'white' = #F8F9FF (nomes herdados da paleta anterior). Requer handoff para quem detém src/config/brand.ts; não editado por esta frente."
+    },
+    {
+      "id": "A-05",
+      "decisao": "Contagens reais: personagens, agentes de IA, agentes de engenharia, módulos",
+      "status": "PROVISÓRIA",
+      "evidencia": [
+        "Personagens = 29: characterCatalog.ts:30; layers: 9 pillar + 15 commercial-agent + 4 channel-agent + 1 orchestration (grep layer: em characterCatalog*.ts)",
+        "SVGs = 29 (ls | wc -l) em 2 diretórios idênticos",
+        "characters.json: 9 em 'characters' + 20 em 'agentCharacters' = 29; expressões: idle, listening, processing, speaking, success, error",
+        "Agentes de IA: 24 especialistas + Supervisor (CONTRATOS_AGENTES.md:71; entradas 00..24); 19 prompts SYSTEM em src/features/intelligence/commercial-v3/assets/01_PROMPTS",
+        "Agentes de engenharia (roster) = 26 (AGENTS.md §3; ROSTER-SESSOES.md:3)",
+        "Módulos = 11 (moduleRegistry.ts)",
+        "BirthHub360_Personagens.html:6,284,316 diz '9 Personagens' (desatualizado)"
+      ],
+      "dono_homologacao": "usuario",
+      "auditoria_nota": "O '26 agentes técnicos' da missão coincide numericamente com o roster de ENGENHARIA, não com o enxame de IA (24+Supervisor). Pedir confirmação ao usuário sobre qual conjunto a missão chama de 'agentes técnicos' antes de publicar o número 26 em qualquer material de marca. Status PROVISÓRIA por haver ambiguidade de definição, não de contagem."
+    },
+    {
+      "id": "A-06",
+      "decisao": "N1 Final Candidate / Land-Hero-Lab / 'Neon Editorial Cinematic': NÃO localizados neste repo; LOCALIZADOS no repo externo MaarkssDN/Land-page (mission-06/n1-final, commit 0d08b31) — errata V2.1",
+      "status": "CONFIRMADA",
+      "evidencia": [
+        "grep -rIil -- 'Neon Editorial Cinematic' | 'Editorial Cinematic' | 'N1 Final' | 'Final Candidate' | 'Land-Hero-Lab' | 'Hero-Lab' | 'HeroLab' | 'hero-lab' (exclui node_modules,.git,dist,identidade-v2): 0 arquivos",
+        "find -iname '*n1*final*' -o '*hero*lab*' -o '*land-hero*' -o '*editorial*': 0 resultados",
+        "git grep -il ... origin/main HEAD: 0 resultados; git branch -a: main, claude/dazzling-allen-yqlyow (+origin)",
+        "git log --all --grep (hero-lab|N1 final|editorial cinematic): 0 commits"
+      ],
+      "dono_homologacao": "usuario",
+      "auditoria_nota": "Errata V2.1 (Agente 00): N1 analisado a partir de clone anônimo do repo externo. Página publicada (GitHub Pages) inacessível neste ambiente (proxy 403): não verificada. Ver 08-referencia-n1."
+    },
+    {
+      "id": "A-07",
+      "decisao": "Contraste dos neons como TEXTO: sobre Light (#F4F7FB) reprovam; sobre Dark (#0D0D0D) passam",
+      "status": "PROVISÓRIA",
+      "evidencia": [
+        "cálculo WCAG 2.x (luminância relativa) — scratchpad contrast.js",
+        "Light: #00D4FF 1.65, #FFC107 1.52, #FF2D9B 3.20, #8B7DFF 3.02",
+        "Dark: #00D4FF 10.98, #FFC107 11.92, #FF2D9B 5.65, #8B7DFF 5.99",
+        "Texto #0D0D0D sobre neon: azul 10.98, ouro 11.92, rosa 5.65, íris 5.99; branco sobre neon: 1.77/1.63/3.44/3.24"
+      ],
+      "dono_homologacao": "03",
+      "auditoria_nota": "Regra decorrente: sobre Light, neon só como superfície/borda/halo (com texto #0D0D0D), nunca como texto; branco sobre neon reprova em todos os 4 (rosa 3.44 só passa para texto grande). O 00 já havia medido os 4 valores de Light; reproduzidos exatamente."
+    },
+    {
+      "id": "A-08",
+      "decisao": "Duas escalas de duração de motion coexistem",
+      "status": "PENDENTE",
+      "evidencia": [
+        "identidade-visual/birthhub360/tokens/characters.json:639 (motion.standardTiming: 200/350/600ms; idleCycle 5000ms)",
+        "public/design-lab/README.md (140/240/420ms)"
+      ],
+      "dono_homologacao": "03",
+      "auditoria_nota": "Frente 04 (motion) deve escolher uma escala por nível (Comercial vs Operacional, C08) e registrar a divergência."
+    },
+    {
+      "id": "A-09",
+      "decisao": "Gradiente em texto (background-clip:text) é usado nos HTMLs oficiais e na Landing, mas proibido pela constituição .claude/CLAUDE.md regra 3",
+      "status": "PENDENTE",
+      "evidencia": [
+        "identidade-visual/BRANDBOOK-OFICIAL-BIRTH-HUB-360.html:135 e :231 (background-clip:text)",
+        "impeccable detect: gradient-text — 1 achado em identidade-visual/, 1 em birthhub360/, 22 em src/features/landing/pages/*.css",
+        "identidade-visual/birthhub360/tokens/birthhub360.css:34 (--grad-brand)"
+      ],
+      "dono_homologacao": "usuario",
+      "auditoria_nota": "O gradiente de títulos é 'Gradiente Oficial de Assinatura' no DESIGN.md:32-37 e no Brandbook, mas proibido em CLAUDE.md. Conflito entre fontes oficiais; Landing/Login não podem ser alterados. A V2 não deve usar gradiente em texto até decisão."
+    },
+    {
+      "id": "A-10",
+      "decisao": "Cor de módulo difere entre fontes (11 módulos)",
+      "status": "PENDENTE",
+      "evidencia": [
+        "BIRTHUB360_DOCUMENTO_MESTRE_OFICIAL_V4.10.html:1948-2438 (MODULES_DATA: P01 #FFC107, P02 #00D4FF, P03 #10B981, P04 #FF2D9B, P05 #A855F7, P06 #6366F1, P07 #14B8A6, P08 #FB7185, M09 #94A3B8, M10 #FFC107, M11 #FF2D9B)",
+        "BIRTHUB360_DOCUMENTO_MESTRE_OFICIAL_V4_CINEMATIC.html:2211 (PILLARS_CONFIG: P01 #00D4FF, P02 #FF2D9B, P03 #FFC107, P04 #8B7DFF, P05 #3B82F6, P06 #FF2D9B, P07 #00D4FF, P08 #22C55E, M09 #22C55E, M10 #F97316, M11 #EC4899)",
+        "src/components/layout/moduleRegistry.ts (accent: NavAccent)",
+        "GUIA-MESTRE-PERSONAGENS-BIRTH-HUB-360.md:31-45 (matriz) (cores por personagem: verde esmeralda, púrpura #A855F7, índigo #6366F1)"
+      ],
+      "dono_homologacao": "03",
+      "auditoria_nota": "Três mapeamentos de cor por módulo conflitantes; vários fora da paleta C02 (#10B981, #A855F7, #6366F1, #14B8A6, #FB7185, #94A3B8, #F97316, #EC4899). A frente 03/05 precisa de uma única tabela módulo→acento."
+    },
+    {
+      "id": "A-11",
+      "decisao": "Brandbook/Manuais em Light usam variantes de texto neon que não atingem AA",
+      "status": "PENDENTE",
+      "evidencia": [
+        "identidade-visual/BRANDBOOK-OFICIAL-BIRTH-HUB-360.html:55-57 (--cyan #0284C7, --pink #D91B7C, --gold #D97706)",
+        "contraste sobre #F4F7FB: 3.81 / 4.44 / 2.96",
+        "impeccable detect: low-contrast 7 em identidade-visual/, 31 em birthhub360/"
+      ],
+      "dono_homologacao": "03",
+      "auditoria_nota": "Documentos oficiais declaram 'contraste calibrado' mas ouro Light falha 3:1 e rosa fica 0.06 abaixo de 4.5. Nenhuma correção feita nos arquivos oficiais (read-only)."
+    },
+    {
+      "id": "A-12",
+      "decisao": "Dependências externas nos HTMLs oficiais (CDN)",
+      "status": "PENDENTE",
+      "evidencia": [
+        "identidade-visual/README.md:25 (Landing e Login carregam fontes externas; Landing usa Tailwind CDN e Lucide)",
+        "BIRTHUB360_DOCUMENTO_MESTRE_OFICIAL_V4_CINEMATIC.html:7-9 (Google Fonts)"
+      ],
+      "dono_homologacao": "03",
+      "auditoria_nota": "A V2 usa fontes locais (core.css). Nenhum arquivo existente foi alterado."
+    }
+  ]
+}

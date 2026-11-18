@@ -25,7 +25,7 @@ export function Act2Dissonance() {
   return (
     <section
       id="tese"
-      className="relative py-24 sm:py-32 bg-[var(--bg)] border-t border-white/[0.06] overflow-hidden"
+      className="relative py-24 sm:py-32 bg-[#0D0D0D] border-t border-white/[0.06] overflow-hidden"
     >
       {/* Sutil gradiente de alerta/fundo */}
       <div className="pointer-events-none absolute -right-40 top-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#EF4444]/[0.03] blur-3xl rounded-full -z-10" />
@@ -37,7 +37,7 @@ export function Act2Dissonance() {
             <AlertTriangle className="w-3.5 h-3.5 text-[#EF4444]" />A Anatomia da Fuga de Receita
           </div>
 
-          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-[-0.02em] leading-tight text-[var(--ink)]">
+          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-[-0.02em] leading-tight text-[#F8F9FF]">
             A ilusão das <span className="text-[#EF4444]">ferramentas isoladas</span> está custando
             o seu crescimento.
           </h2>
@@ -54,7 +54,7 @@ export function Act2Dissonance() {
           {/* Card: O Modelo Tradicional Fragmentado com Spotlight Vermelho */}
           <SpotlightCard
             glowColor="rgba(239, 68, 68, 0.18)"
-            className="p-8 sm:p-10 border-[#EF4444]/25 bg-[var(--surface)]/70 flex flex-col justify-between"
+            className="p-8 sm:p-10 border-[#EF4444]/25 bg-[#14141A]/70 flex flex-col justify-between"
           >
             <div>
               <div className="flex items-center justify-between pb-6 border-b border-white/[0.08] mb-8">
@@ -63,7 +63,7 @@ export function Act2Dissonance() {
                     <Ban className="w-5 h-5" />
                   </span>
                   <div>
-                    <h3 className="text-lg font-bold text-[var(--ink)]">O Ecossistema Retalhado</h3>
+                    <h3 className="text-lg font-bold text-[#F8F9FF]">O Ecossistema Retalhado</h3>
                     <span className="font-mono text-xs text-[#EF4444]">
                       CRMs Legados & Plugins Avulsos
                     </span>
@@ -78,7 +78,7 @@ export function Act2Dissonance() {
                 <li className="flex items-start gap-3">
                   <Unlink className="w-4 h-4 text-[#EF4444] shrink-0 mt-1" />
                   <span>
-                    <strong className="text-[var(--ink)]">Silos cegos de informação:</strong> O CRM não
+                    <strong className="text-[#F8F9FF]">Silos cegos de informação:</strong> O CRM não
                     conversa com a cadência, que ignora o canal de voz, que não alimenta o
                     financeiro.
                   </span>
@@ -86,15 +86,15 @@ export function Act2Dissonance() {
                 <li className="flex items-start gap-3">
                   <Database className="w-4 h-4 text-[#EF4444] shrink-0 mt-1" />
                   <span>
-                    <strong className="text-[var(--ink)]">Deterioração contínua de dados:</strong> 70%
-                    dos contatos ficam desatualizados ou incompletos por falta de enriquecimento em
-                    tempo real.
+                    <strong className="text-[#F8F9FF]">Deterioração contínua de dados:</strong>{' '}
+                    Muitos contatos ficam desatualizados ou incompletos por falta de enriquecimento
+                    contínuo.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Cpu className="w-4 h-4 text-[#EF4444] shrink-0 mt-1" />
                   <span>
-                    <strong className="text-[var(--ink)]">IA cosmética e sem contexto:</strong> Bots
+                    <strong className="text-[#F8F9FF]">IA cosmética e sem contexto:</strong> Bots
                     genéricos de mercado que inventam dados (alucinação) por não estarem ancorados
                     no histórico corporativo real.
                   </span>
@@ -102,7 +102,7 @@ export function Act2Dissonance() {
                 <li className="flex items-start gap-3">
                   <EyeOff className="w-4 h-4 text-[#EF4444] shrink-0 mt-1" />
                   <span>
-                    <strong className="text-[var(--ink)]">Gestão reativa e tardia:</strong> O diretor
+                    <strong className="text-[#F8F9FF]">Gestão reativa e tardia:</strong> O diretor
                     só descobre que a meta não será batida no final do mês, quando nada mais pode
                     ser corrigido.
                   </span>
@@ -112,57 +112,57 @@ export function Act2Dissonance() {
 
             <div className="mt-8 pt-6 border-t border-white/[0.08] flex items-center justify-between text-xs font-mono text-[#9EADC8]">
               <span>Custo Invisível</span>
-              <span className="text-[#EF4444] font-bold">~28% de Perda de Eficiência</span>
+              <span className="text-[#EF4444] font-bold">Risco de perda de eficiência</span>
             </div>
           </SpotlightCard>
 
           {/* Card: A Central de Comando Birth Hub 360 com Spotlight Ciano */}
           <SpotlightCard
-            glowColor="color-mix(in srgb, var(--orbit-blue) 28%, transparent)"
-            className="p-8 sm:p-10 border-[var(--orbit-blue)]/35 bg-[var(--surface)] shadow-[0_0_40px_color-mix(in_srgb,var(--orbit-blue)_12%,transparent)] flex flex-col justify-between"
+            glowColor="rgba(0, 212, 255, 0.28)"
+            className="p-8 sm:p-10 border-[#00D4FF]/35 bg-[#14141A] shadow-[0_0_40px_rgba(0,212,255,0.12)] flex flex-col justify-between"
           >
             <div>
               {/* Brilho sutil no topo do card */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[var(--orbit-blue)] via-[var(--pink)] to-[var(--gold)]" />
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#00D4FF] via-[#FF2D9B] to-[#FFC107]" />
 
               <div className="flex items-center justify-between pb-6 border-b border-white/[0.08] mb-8">
                 <div className="flex items-center gap-3">
-                  <span className="p-2.5 rounded-lg bg-[var(--orbit-blue)]/10 text-[var(--orbit-blue)]">
+                  <span className="p-2.5 rounded-lg bg-[#00D4FF]/10 text-[#00D4FF]">
                     <Layers className="w-5 h-5" />
                   </span>
                   <div>
-                    <h3 className="text-lg font-bold text-[var(--ink)]">Birth Hub 360º</h3>
-                    <span className="font-mono text-xs text-[var(--orbit-blue)]">
+                    <h3 className="text-lg font-bold text-[#F8F9FF]">Birth Hub 360º</h3>
+                    <span className="font-mono text-xs text-[#00D4FF]">
                       Central de Comando Unificada
                     </span>
                   </div>
                 </div>
-                <span className="px-3 py-1 rounded text-xs font-mono font-semibold bg-[var(--orbit-blue)]/15 text-[var(--orbit-blue)]">
+                <span className="px-3 py-1 rounded text-xs font-mono font-semibold bg-[#00D4FF]/15 text-[#00D4FF]">
                   SOBERANO
                 </span>
               </div>
 
               <ul className="space-y-5 text-sm text-[#9EADC8]">
                 <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-4 h-4 text-[var(--orbit-blue)] shrink-0 mt-1" />
+                  <CheckCircle2 className="w-4 h-4 text-[#00D4FF] shrink-0 mt-1" />
                   <span>
-                    <strong className="text-[var(--ink)]">Fluxo contínuo 360º:</strong> Da prospecção
+                    <strong className="text-[#F8F9FF]">Fluxo contínuo 360º:</strong> Da prospecção
                     outbound à mesa de fechamento, cada interação alimenta o mesmo cérebro
                     operacional.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-4 h-4 text-[var(--pink)] shrink-0 mt-1" />
+                  <CheckCircle2 className="w-4 h-4 text-[#FF2D9B] shrink-0 mt-1" />
                   <span>
-                    <strong className="text-[var(--ink)]">Enriquecimento contínuo autônomo:</strong>{' '}
-                    Sinais de compra e inteligência de decisores sincronizados a cada segundo com
-                    isolamento RLS.
+                    <strong className="text-[#F8F9FF]">Enriquecimento contínuo autônomo:</strong>{' '}
+                    Sinais de compra e inteligência de decisores sincronizados conforme os
+                    conectores ativos, com isolamento RLS.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-4 h-4 text-[var(--gold)] shrink-0 mt-1" />
+                  <CheckCircle2 className="w-4 h-4 text-[#FFC107] shrink-0 mt-1" />
                   <span>
-                    <strong className="text-[var(--ink)]">Copiloto IA proprietário:</strong> Respostas
+                    <strong className="text-[#F8F9FF]">Copiloto IA proprietário:</strong> Respostas
                     ancoradas estritamente no seu playbook, dados históricos e matriz de objeções
                     validada.
                   </span>
@@ -170,7 +170,7 @@ export function Act2Dissonance() {
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="w-4 h-4 text-[#22C55E] shrink-0 mt-1" />
                   <span>
-                    <strong className="text-[var(--ink)]">Previsibilidade matemática:</strong>{' '}
+                    <strong className="text-[#F8F9FF]">Previsibilidade matemática:</strong>{' '}
                     Modelagem estatística de probabilidade que antecipa gargalos e alerta a próxima
                     melhor ação (NBA).
                   </span>
@@ -180,7 +180,7 @@ export function Act2Dissonance() {
 
             <div className="mt-8 pt-6 border-t border-white/[0.08] flex items-center justify-between text-xs font-mono text-[#9EADC8]">
               <span>Ganho Operacional</span>
-              <span className="text-[var(--orbit-blue)] font-bold">+42% Velocidade no Pipeline</span>
+              <span className="text-[#00D4FF] font-bold">Ganho projetado no pipeline</span>
             </div>
           </SpotlightCard>
         </div>
@@ -191,8 +191,8 @@ export function Act2Dissonance() {
             <span className="font-mono text-xs uppercase tracking-widest text-[#9EADC8]">
               Interoperabilidade Universal sem Rompimento de Legado
             </span>
-            <p className="text-sm font-semibold text-[var(--ink)]">
-              Conecta-se e sincroniza nativamente com o seu ecossistema atual
+            <p className="text-sm font-semibold text-[#F8F9FF]">
+              Conecta-se ao ecossistema atual conforme a disponibilidade de cada conector
             </p>
           </div>
 
@@ -207,12 +207,16 @@ export function Act2Dissonance() {
                   alt={item.name}
                   className="h-6 w-6 object-contain opacity-70 group-hover:opacity-100 transition-opacity filter brightness-110"
                 />
-                <span className="mt-2 text-[11px] font-mono text-[#9EADC8] group-hover:text-[var(--ink)] transition-colors">
+                <span className="mt-2 text-[11px] font-mono text-[#9EADC8] group-hover:text-[#F8F9FF] transition-colors">
                   {item.name}
                 </span>
               </div>
             ))}
           </div>
+
+          <p className="mt-6 text-center font-mono text-[11px] text-[#9EADC8]">
+            Disponibilidade varia por conector: produção, homologação ou planejado.
+          </p>
         </div>
       </div>
     </section>

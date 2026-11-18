@@ -16,6 +16,9 @@ describe('ContinuousSecurityAuditService — Evolução 20', () => {
     expect(report.sbomSummary.sha256Digest).toHaveLength(64);
     expect(report.sbomSummary.isReproducible).toBe(true);
     expect(['PASS', 'WARN_WAIVED']).toContain(report.complianceRating);
+    // EXP-06: o serviço é um simulador de homologação — o relatório DEVE ser
+    // marcado como simulado para que nenhum consumidor o trate como auditoria real.
+    expect(report.simulated).toBe(true);
   });
 
   it('deve validar a integridade criptográfica do manifesto SBOM via SHA-256', async () => {

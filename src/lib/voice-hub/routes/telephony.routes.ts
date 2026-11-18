@@ -35,7 +35,7 @@ function validateTwilioSignature(req: Request, res: Response, next: NextFunction
   const fullUrl = `${baseUrl.replace(/\/$/, '')}${req.originalUrl}`;
   const isValid = twilio.validateRequest(authToken, signature, fullUrl, req.body);
   if (!isValid) {
-    logger.warn('Telephony webhook rejected: invalid Twilio signature', { url: fullUrl });
+    logger.warn({ url: fullUrl }, 'Telephony webhook rejected: invalid Twilio signature');
     return res.status(403).send();
   }
 

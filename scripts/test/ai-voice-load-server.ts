@@ -3,7 +3,6 @@ import express, { type Request, type Response } from 'express';
 import { WebSocketServer, type WebSocket } from 'ws';
 import { bimodalLiveVoiceService } from '../../src/features/ai-voice/server/bimodalLiveVoice.service.js';
 import { conversationalIntelligenceService } from '../../src/features/ai-voice/server/conversationalIntelligence.service.js';
-import { multimodalRoleplaySimulatorService } from '../../src/features/roleplay/services/multimodalRoleplaySimulator.service.js';
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
@@ -81,54 +80,6 @@ app.post('/api/voice/sessions/:id/barge-in', async (req: Request, res: Response)
       sessionId,
       organizationId,
       interruptionReason,
-    });
-
-    res.status(200).json(result);
-  } catch (err: any) {
-    res.status(404).json({ error: err.message });
-  }
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-// ROLEPLAY MULTIMODAL & IA COGNITIVA (Onda 04/05)
-// ─────────────────────────────────────────────────────────────────────────────
-
-app.post('/api/roleplay/sessions', async (req: Request, res: Response) => {
-  try {
-    const { organizationId, sellerId, framework, personaArchetype, industry } = req.body;
-    if (!organizationId || organizationId.trim() === '') {
-      res.status(400).json({ error: 'Tenancy violation: organizationId obrigatório' });
-      return;
-    }
-
-    const session = await multimodalRoleplaySimulatorService.startSession({
-      organizationId,
-      sellerId: sellerId || 'seller-01',
-      framework: framework || 'SPIN',
-      personaArchetype: personaArchetype || 'cfo_skeptical',
-      industry: industry || 'Tecnologia B2B',
-    });
-
-    res.status(201).json(session);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-app.post('/api/roleplay/sessions/:id/turns', async (req: Request, res: Response) => {
-  try {
-    const sessionId = req.params.id;
-    const { organizationId, sellerSpeech, talkDurationSeconds } = req.body;
-    if (!organizationId) {
-      res.status(400).json({ error: 'Tenancy violation: organizationId obrigatório' });
-      return;
-    }
-
-    const result = await multimodalRoleplaySimulatorService.submitTurn({
-      organizationId,
-      sessionId,
-      sellerMessage: sellerSpeech || 'Argumentação do vendedor.',
-      talkDurationSeconds: talkDurationSeconds || 5,
     });
 
     res.status(200).json(result);

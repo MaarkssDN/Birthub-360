@@ -72,6 +72,7 @@ describe('quem cifra em src/ está coberto por algum alvo da rotação', () => {
     'src/lib/prisma-interceptors.ts': 'extensão do Prisma (encryptSensitiveFields) extraída de prisma.ts → TARGET_MODELS',
     'src/lib/integrations/integrationSettings.repository.ts': 'Setting (integration.* + legado bitrix)',
     'src/features/integrations/whatsapp/useRedisAuthState.ts': '--target=redis-wa-auth',
+    'src/features/lgpd/dsrRequest.service.ts': 'DataSubjectRequest (emailEncrypted, detailsEncrypted) → TARGET_MODELS',
     'src/lib/security/credentialCrypto.ts': 'definição de encryptCredential (sem chamadores em src/)',
   };
   const CALL = /\b(encryptField|encryptCredential|encryptCredentialSync|encryptSensitiveFields)\(/;

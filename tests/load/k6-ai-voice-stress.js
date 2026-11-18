@@ -5,9 +5,8 @@
 // Exercita os serviços de produção:
 //   1. BimodalLiveVoiceService (Eixo 5 / Onda 04) — TTFB áudio, chunking PCM 24kHz, barge-in subsegundo.
 //   2. ConversationalIntelligenceService (Eixo 13 / Onda 05) — Talk-to-Listen, objeções, coaching post-call.
-//   3. MultimodalRoleplaySimulatorService (Onda 04/05) — personas executivas (CFO/CTO/COO), frameworks SPIN/MEDDPICC.
-//   4. WebSockets / SSE — streaming bidirecional de eventos e áudio em tempo real sob alta concorrência.
-//   5. Multi-tenancy Rígido — garantia de isolamento por organizationId sob carga cruzada intensa.
+//   3. WebSockets / SSE — streaming bidirecional de eventos e áudio em tempo real sob alta concorrência.
+//   4. Multi-tenancy Rígido — garantia de isolamento por organizationId sob carga cruzada intensa.
 //
 // Alinhado com os SLOs de docs/SRE.md e .agents/runs/onda-04-latencia-voz.md:
 //   - TTFB Áudio: < 800ms
@@ -25,7 +24,6 @@ import { Trend, Rate, Counter } from 'k6/metrics';
 // Métricas customizadas de SLO/SRE
 const voiceTtfbTrend = new Trend('voice_ttfb_ms');
 const voiceBargeInTrend = new Trend('voice_barge_in_ms');
-const aiTurnDurationTrend = new Trend('ai_turn_duration_ms');
 const conversationalAnalysisTrend = new Trend('conversational_analysis_ms');
 const wsRoundtripTrend = new Trend('ws_roundtrip_ms');
 const tenantIsolationRate = new Rate('tenant_isolation_success_rate');
@@ -51,7 +49,6 @@ export const options = {
     'http_req_failed{expected_fail:false}': ['rate<0.01'], // Menos de 1% de falhas nas rotas de negócio
     'http_req_duration{endpoint:voice_chunk}': ['p(95)<400'],
     'http_req_duration{endpoint:voice_barge_in}': ['p(95)<400'],
-    'http_req_duration{endpoint:roleplay_turn}': ['p(95)<500'],
     'http_req_duration{endpoint:conversational_analysis}': ['p(95)<600'],
     voice_ttfb_ms: ['p(95)<800'],
     voice_barge_in_ms: ['p(95)<300'],
@@ -68,15 +65,6 @@ const TENANTS = [
   'org-birthub-logistics-gamma',
   'org-birthub-retail-delta',
 ];
-
-const BUYER_PERSONAS = [
-  'cfo_skeptical',
-  'cto_pragmatic',
-  'coo_efficiency_obsessed',
-  'procurement_aggressive',
-];
-
-const FRAMEWORKS = ['SPIN', 'MEDDPICC', 'CHALLENGER', 'BANT'];
 
 function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -167,59 +155,9 @@ export default function () {
   });
 
   // ───────────────────────────────────────────────────────────────────────────
-  // 2. IA: ROLEPLAY MULTIMODAL & COGNIÇÃO COMERCIAL (Onda 04/05)
+  // 2. IA: ANÁLISE CONVERSACIONAL, OBJEÇÕES E COACHING (Eixo 13 / Onda 05)
   // ───────────────────────────────────────────────────────────────────────────
-  group('02_multimodal_roleplay_turn', () => {
-    const persona = pickRandom(BUYER_PERSONAS);
-    const framework = pickRandom(FRAMEWORKS);
-
-    // Iniciar sessão de Roleplay
-    const roleplayRes = http.post(
-      `${baseUrl}/api/roleplay/sessions`,
-      JSON.stringify({
-        organizationId: tenant,
-        sellerId,
-        personaArchetype: persona,
-        framework,
-      }),
-      { headers, tags: { endpoint: 'roleplay_start', expected_fail: 'false' } },
-    );
-
-    const roleplayOk = check(roleplayRes, {
-      'Roleplay session criada com 201': (r) => r.status === 201,
-      'Persona atribuída corretamente': (r) => r.json('persona.archetype') === persona,
-      'Isolamento multi-tenant confirmado': (r) => r.json('organizationId') === tenant,
-    });
-    tenantIsolationRate.add(roleplayOk);
-
-    if (roleplayOk) {
-      const rpSessionId = roleplayRes.json('sessionId');
-
-      // Processar Turno de Argumentação Comercial da IA
-      const turnStart = Date.now();
-      const turnRes = http.post(
-        `${baseUrl}/api/roleplay/sessions/${rpSessionId}/turns`,
-        JSON.stringify({
-          organizationId: tenant,
-          sellerSpeech: 'Compreendo sua preocupação orçamentária, Dr. Roberto. Nossa arquitetura demonstrou payback médio de 4.2 meses.',
-          talkDurationSeconds: 8,
-        }),
-        { headers, tags: { endpoint: 'roleplay_turn', expected_fail: 'false' } },
-      );
-      aiTurnDurationTrend.add(Date.now() - turnStart);
-
-      check(turnRes, {
-        'Turno de IA respondeu 200': (r) => r.status === 200,
-        'Resposta do comprador gerada': (r) => r.json('buyerReply') !== undefined,
-      });
-      successfulTransactions.add(1);
-    }
-  });
-
-  // ───────────────────────────────────────────────────────────────────────────
-  // 3. IA: ANÁLISE CONVERSACIONAL, OBJEÇÕES E COACHING (Eixo 13 / Onda 05)
-  // ───────────────────────────────────────────────────────────────────────────
-  group('03_conversational_intelligence_analysis', () => {
+  group('02_conversational_intelligence_analysis', () => {
     const callStart = Date.now();
     const turns = [
       { turnId: 't1', speaker: 'seller', text: 'Bom dia Carlos! Como estão as rotas logísticas hoje?', startTimeSeconds: 0, endTimeSeconds: 5, durationSeconds: 5 },
@@ -253,9 +191,9 @@ export default function () {
   });
 
   // ───────────────────────────────────────────────────────────────────────────
-  // 4. WEBSOCKET / SSE: STREAMING DUPLEX EM TEMPO REAL
+  // 3. WEBSOCKET / SSE: STREAMING DUPLEX EM TEMPO REAL
   // ───────────────────────────────────────────────────────────────────────────
-  group('04_websocket_duplex_streaming', () => {
+  group('03_websocket_duplex_streaming', () => {
     const wsSessionId = `ws-live-${__VU}-${Date.now()}`;
     const wsEndpoint = `${wsUrl}/ws/live-voice?orgId=${tenant}&sessionId=${wsSessionId}`;
 
@@ -291,9 +229,9 @@ export default function () {
   });
 
   // ───────────────────────────────────────────────────────────────────────────
-  // 5. TESTE DE VIOLAÇÃO INTENCIONAL DE TENANCY (Defesa Ativa / RLS)
+  // 4. TESTE DE VIOLAÇÃO INTENCIONAL DE TENANCY (Defesa Ativa / RLS)
   // ───────────────────────────────────────────────────────────────────────────
-  group('05_active_tenancy_violation_rejection', () => {
+  group('04_active_tenancy_violation_rejection', () => {
     // Chamada sem organizationId deve ser REJEITADA com 400 ou 403
     const badRes = http.post(
       `${baseUrl}/api/voice/sessions`,

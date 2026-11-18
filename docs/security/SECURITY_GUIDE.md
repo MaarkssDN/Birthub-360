@@ -95,8 +95,9 @@ Decisão implementada pelo Agente 08 (Onda 6, remediação) a partir da proposta
 - **`npm run security:zap`** (scan dinâmico de API, exige a aplicação já no ar) — **não** entra em
   CI automático (não existe alvo efêmero vivo em nenhum job de push/PR deste projeto) — continua
   manual, mas agora como passo obrigatório do runbook de pré-release, rodado contra staging:
-  ver `docs/deploy/producao.md` §7 (o checklist de release foi incorporado ali — `RELEASE_CHECKLIST.md`
-  saiu do controle de versão em 22/08/2026, ver `docs/REMOVED-DOCS.md`).
+  ver `docs/deploy/producao.md` §7.1 (scan ZAP pré-release — o checklist de release foi
+  incorporado em `producao.md` §7 e o passo ZAP em §7.1; `RELEASE_CHECKLIST.md` saiu do
+  controle de versão em 22/08/2026, ver `docs/REMOVED-DOCS.md`).
 
 ## `npm audit` — vulnerabilidades `uuid <11.1.1` (Onda 6, Agente 08)
 

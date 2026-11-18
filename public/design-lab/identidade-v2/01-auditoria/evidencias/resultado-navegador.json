@@ -1,0 +1,64 @@
+[
+ {
+  "nome": "desktop-1440 dark",
+  "scrollWidth": 1440,
+  "innerWidth": 1440,
+  "overflow": false,
+  "fontes": "Sora/100 800:loaded Inter/100 900:loaded IBM Plex Mono/400:loaded IBM Plex Mono/500:unloaded IBM Plex Mono/600:loaded | h1=Sora corpo=Inter code=\"IBM Plex Mono\"",
+  "h1cor": "rgb(0, 212, 255)",
+  "arquivo": "index-desktop-1440-dark.png",
+  "tema": "dark",
+  "bg": "rgb(13, 13, 13)",
+  "reqExternos": 0,
+  "errosConsole": 0
+ },
+ {
+  "nome": "desktop-1440 light",
+  "scrollWidth": 1440,
+  "innerWidth": 1440,
+  "overflow": false,
+  "fontes": "Sora/100 800:loaded Inter/100 900:loaded IBM Plex Mono/400:loaded IBM Plex Mono/500:unloaded IBM Plex Mono/600:loaded | h1=Sora corpo=Inter code=\"IBM Plex Mono\"",
+  "h1cor": "rgb(0, 108, 140)",
+  "arquivo": "index-desktop-1440-light.png",
+  "tema": "light",
+  "bg": "rgb(244, 247, 251)",
+  "reqExternos": 0,
+  "errosConsole": 0
+ },
+ {
+  "nome": "mobile-390 dark",
+  "scrollWidth": 390,
+  "innerWidth": 390,
+  "overflow": false,
+  "fontes": "Sora/100 800:loaded Inter/100 900:loaded IBM Plex Mono/400:loaded IBM Plex Mono/500:unloaded IBM Plex Mono/600:loaded | h1=Sora corpo=Inter code=\"IBM Plex Mono\"",
+  "h1cor": "rgb(0, 212, 255)",
+  "arquivo": "index-mobile-390-dark.png",
+  "tema": "dark",
+  "bg": "rgb(13, 13, 13)",
+  "reqExternos": 0,
+  "errosConsole": 0
+ },
+ {
+  "nome": "mobile-390 light",
+  "scrollWidth": 390,
+  "innerWidth": 390,
+  "overflow": false,
+  "fontes": "Sora/100 800:loaded Inter/100 900:loaded IBM Plex Mono/400:loaded IBM Plex Mono/500:unloaded IBM Plex Mono/600:loaded | h1=Sora corpo=Inter code=\"IBM Plex Mono\"",
+  "h1cor": "rgb(0, 108, 140)",
+  "arquivo": "index-mobile-390-light.png",
+  "tema": "light",
+  "bg": "rgb(244, 247, 251)",
+  "reqExternos": 0,
+  "errosConsole": 0
+ },
+ {
+  "nome": "reduced-motion desktop",
+  "scrollWidth": 0,
+  "innerWidth": 0,
+  "overflow": false,
+  "fontes": "animações em execução: 0",
+  "h1cor": "-",
+  "arquivo": "index-desktop-1440-dark.png",
+  "reqExternos": 0
+ }
+]

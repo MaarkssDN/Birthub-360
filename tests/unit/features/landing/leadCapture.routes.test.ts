@@ -127,4 +127,10 @@ describe('POST /api/public/lead-capture', () => {
     expect(res.status).toBe(503);
     expect(res.body.success).toBe(false);
   });
+
+  it('propaga erro inesperado do envio para o errorHandler (500)', async () => {
+    sendEmailMock.mockRejectedValue(new Error('smtp explodiu'));
+    const res = await request(app).post('/api/public/lead-capture').send(VALID_LEAD);
+    expect(res.status).toBe(500);
+  });
 });

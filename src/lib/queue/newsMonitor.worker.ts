@@ -134,7 +134,18 @@ async function scanAllCompaniesNews(): Promise<void> {
     );
     for (const company of companies) {
       const data: ScanCompanyNewsJobData = { companyId: company.id, organizationId };
-      await newsMonitorQueue.add('scan-company-news', data);
+      // MEL-21 (Onda 3): jobId deduplica varreduras sobrepostas da mesma empresa (ex.: retry do
+      // job pai 'scan-all-companies-news' ou execução manual concorrente com o cron diário).
+      // removeOnComplete/removeOnFail curtos mantêm o jobId reutilizável na varredura do dia
+      // seguinte — sem eles o job concluído bloquearia re-enfileiramentos para sempre.
+      // `getJob` antes do `add`: empresa já enfileirada não consome a cota do scan.
+      const jobId = `news-scan:${organizationId}:${company.id}`;
+      if (await newsMonitorQueue.getJob(jobId)) continue;
+      await newsMonitorQueue.add('scan-company-news', data, {
+        jobId,
+        removeOnComplete: { age: 24 * 60 * 60 },
+        removeOnFail: { age: 7 * 24 * 60 * 60 },
+      });
       scanned += 1;
     }
   }

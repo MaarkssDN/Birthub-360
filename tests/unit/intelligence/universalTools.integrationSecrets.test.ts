@@ -270,6 +270,8 @@ describe('universalNotificationsTool', () => {
       'integration.push_gateway': { webhookUrl: encryptField(PUSH_URL) },
       'integration.sms': { webhookUrl: encryptField(SMS_URL) },
     });
+    // O POST ao gateway vai por safeFetch (urlGuard), não pelo fetch global — ver MEL-13.
+    safeFetchMock.mockResolvedValue(okResponse());
     const out = await inTenant(() =>
       universalNotificationsTool.invoke({
         channels: ['mobile_push', 'sms_alert'],
@@ -278,7 +280,7 @@ describe('universalNotificationsTool', () => {
         kind: 'Alert',
       }),
     );
-    expect(fetchMock.mock.calls[0][0]).toBe(PUSH_URL);
+    expect(safeFetchMock.mock.calls[0][0]).toBe(PUSH_URL);
     const parsed = JSON.parse(out as string);
     expect(parsed.deliveries.mobile_push.remotePushGatewayDispatched).toBe(true);
     expect(parsed.deliveries.sms_alert.gatewayConfigured).toBe(true);
@@ -290,6 +292,7 @@ describe('aiPendingAction.executeAction send_sms', () => {
   it('POST no webhookUrl decifrado do integration.sms', async () => {
     const SMS_URL = 'https://sms-gw.example.com/hook/secret-sms-path';
     seedSettings({ 'integration.sms': { webhookUrl: encryptField(SMS_URL) } });
+    safeFetchMock.mockResolvedValue(okResponse());
     const res = await inTenant(() =>
       executeAction({
         id: 'pa-1',
@@ -300,7 +303,7 @@ describe('aiPendingAction.executeAction send_sms', () => {
       } as never),
     );
     expect(res).toEqual({ sent: true });
-    expect(fetchMock.mock.calls[0][0]).toBe(SMS_URL);
+    expect(safeFetchMock.mock.calls[0][0]).toBe(SMS_URL);
   });
 
   it('orgId da ação divergente do tenant → falha fechada (send_failed), sem query nem fetch', async () => {
@@ -317,6 +320,7 @@ describe('aiPendingAction.executeAction send_sms', () => {
     expect(res).toEqual({ sent: false, reason: 'send_failed' });
     expect(prismaMock.setting.findFirst).not.toHaveBeenCalled();
     expect(fetchMock).not.toHaveBeenCalled();
+    expect(safeFetchMock).not.toHaveBeenCalled();
   });
 });
 
@@ -482,6 +486,7 @@ describe('falha fechada: credencial ILEGÍVEL ≠ não configurada (sem fallback
       }),
     );
     expect(fetchMock).not.toHaveBeenCalled();
+    expect(safeFetchMock).not.toHaveBeenCalled();
     const d = JSON.parse(out as string).deliveries;
     expect(d.mobile_push.remotePushGatewayDispatched).toBe(false);
     expect(d.mobile_push.remotePushGateway.status).toBe('reconfiguration_required');
@@ -514,5 +519,6 @@ describe('falha fechada: credencial ILEGÍVEL ≠ não configurada (sem fallback
     );
     expect(res).toEqual({ sent: false, reason: 'credentials_unreadable' });
     expect(fetchMock).not.toHaveBeenCalled();
+    expect(safeFetchMock).not.toHaveBeenCalled();
   });
 });

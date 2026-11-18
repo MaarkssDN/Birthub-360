@@ -38,8 +38,8 @@ html {
   100% {
     background: radial-gradient(
       circle,
-      color-mix(in srgb, var(--orbit-blue) 40%, transparent) 0%,
-      color-mix(in srgb, var(--pink) 22%, transparent) 50%,
+      rgba(0, 212, 255, 0.4) 0%,
+      rgba(255, 45, 155, 0.22) 50%,
       transparent 70%
     );
     transform: scale(0.95);
@@ -48,7 +48,7 @@ html {
   50% {
     background: radial-gradient(
       circle,
-      color-mix(in srgb, var(--pink) 50%, transparent) 0%,
+      rgba(255, 45, 155, 0.5) 0%,
       rgba(245, 158, 11, 0.35) 50%,
       transparent 70%
     );
@@ -78,7 +78,7 @@ html {
   position: relative;
   z-index: 1;
   animation: birthhub-logo-float 4.5s ease-in-out infinite;
-  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--orbit-blue) 45%, transparent));
+  filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.45));
   transition:
     transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
     filter 0.35s ease;
@@ -86,8 +86,8 @@ html {
 
 .birthhub-logo-animated-wrapper:hover .birthhub-logo-animated {
   transform: scale(1.1) translateY(-2px);
-  filter: drop-shadow(0 0 18px color-mix(in srgb, var(--orbit-blue) 75%, transparent))
-    drop-shadow(0 0 30px color-mix(in srgb, var(--pink) 50%, transparent));
+  filter: drop-shadow(0 0 18px rgba(0, 212, 255, 0.75))
+    drop-shadow(0 0 30px rgba(255, 45, 155, 0.5));
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -188,7 +188,7 @@ html {
 }
 :root.dark .landing-neon-root .landing-title-cyan,
 .dark .landing-neon-root .landing-title-cyan {
-  color: var(--orbit-blue) !important; /* Dark: Azul Neon */
+  color: #00d4ff !important; /* Dark: Azul Neon */
 }
 
 .landing-neon-root .landing-title-pink {
@@ -196,7 +196,7 @@ html {
 }
 :root.dark .landing-neon-root .landing-title-pink,
 .dark .landing-neon-root .landing-title-pink {
-  color: var(--pink) !important; /* Dark: Rosa Neon */
+  color: #ff2d9b !important; /* Dark: Rosa Neon */
 }
 
 .landing-neon-root .landing-title-gold {
@@ -212,7 +212,7 @@ html {
 }
 :root.dark .landing-neon-root .landing-title-purple,
 .dark .landing-neon-root .landing-title-purple {
-  color: var(--iris) !important; /* Dark: Íris / Roxo Neon */
+  color: #8b7dff !important; /* Dark: Íris / Roxo Neon */
 }
 
 .landing-neon-root .landing-title-gradient {
@@ -226,7 +226,7 @@ html {
 
 :root.dark .landing-neon-root .landing-title-gradient,
 .dark .landing-neon-root .landing-title-gradient {
-  background-image: linear-gradient(135deg, var(--orbit-blue) 0%, var(--pink) 50%, #f59e0b 100%) !important;
+  background-image: linear-gradient(135deg, #00d4ff 0%, #ff2d9b 50%, #f59e0b 100%) !important;
   -webkit-background-clip: text !important;
   background-clip: text !important;
   color: transparent !important;
@@ -322,7 +322,7 @@ h1:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"
 .dark
   .landing-neon-root
   h6:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"]) {
-  color: var(--orbit-blue);
+  color: #00d4ff;
 }
 
 /* Títulos temáticos de cards semânticos — cores vivas garantidas em Light e Dark */
@@ -334,7 +334,7 @@ h1:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"
 :root.dark .landing-neon-root .card-semantic-cyan h4,
 .dark .landing-neon-root .card-semantic-cyan h3,
 .dark .landing-neon-root .card-semantic-cyan h4 {
-  color: var(--orbit-blue) !important;
+  color: #00d4ff !important;
 }
 
 .landing-neon-root .card-semantic-pink h3,
@@ -345,7 +345,7 @@ h1:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"
 :root.dark .landing-neon-root .card-semantic-pink h4,
 .dark .landing-neon-root .card-semantic-pink h3,
 .dark .landing-neon-root .card-semantic-pink h4 {
-  color: var(--pink) !important;
+  color: #ff2d9b !important;
 }
 
 .landing-neon-root .card-semantic-gold h3,
@@ -367,7 +367,7 @@ h1:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"
 :root.dark .landing-neon-root .card-semantic-iris h4,
 .dark .landing-neon-root .card-semantic-iris h3,
 .dark .landing-neon-root .card-semantic-iris h4 {
-  color: var(--iris) !important;
+  color: #8b7dff !important;
 }
 
 .landing-neon-root .card-semantic-green h3,
@@ -415,7 +415,7 @@ h1:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"
 .landing-neon-root .btn-primary-gradient:hover,
 .landing-neon-root .vancouver-btn-gradient:hover {
   transform: translateY(-2px) scale(1.02);
-  background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 50%, var(--iris) 100%) !important;
+  background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 50%, #8b5cf6 100%) !important;
   color: #ffffff !important;
   box-shadow:
     0 14px 32px -4px rgba(2, 132, 199, 0.55),
@@ -435,14 +435,14 @@ h1:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"
   100% {
     transform: scale(1);
     box-shadow:
-      0 0 0 0 color-mix(in srgb, var(--orbit-blue) 70%, transparent),
+      0 0 0 0 rgba(0, 212, 255, 0.7),
       0 10px 25px -4px rgba(2, 132, 199, 0.42);
     filter: brightness(1);
   }
   50% {
     transform: scale(1.03);
     box-shadow:
-      0 0 22px 6px color-mix(in srgb, var(--orbit-blue) 75%, transparent),
+      0 0 22px 6px rgba(0, 212, 255, 0.75),
       0 14px 34px -4px rgba(2, 132, 199, 0.65);
     filter: brightness(1.18);
   }
@@ -553,19 +553,19 @@ h1:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"
 }
 
 .nav-pill-btn:hover {
-  border-color: color-mix(in srgb, var(--orbit-blue) 75%, transparent);
+  border-color: rgba(0, 212, 255, 0.75);
   color: #0284c7;
-  background-color: color-mix(in srgb, var(--orbit-blue) 8%, transparent);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--orbit-blue) 22%, transparent);
+  background-color: rgba(0, 212, 255, 0.08);
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.22);
   transform: translateY(-1px);
 }
 
 :root.dark .nav-pill-btn:hover,
 .dark .nav-pill-btn:hover {
-  border-color: color-mix(in srgb, var(--orbit-blue) 85%, transparent);
-  color: var(--orbit-blue);
-  background-color: color-mix(in srgb, var(--orbit-blue) 14%, transparent);
-  box-shadow: 0 0 14px color-mix(in srgb, var(--orbit-blue) 35%, transparent);
+  border-color: rgba(0, 212, 255, 0.85);
+  color: #00d4ff;
+  background-color: rgba(0, 212, 255, 0.14);
+  box-shadow: 0 0 14px rgba(0, 212, 255, 0.35);
   transform: translateY(-1px);
 }
 
@@ -665,7 +665,7 @@ h1:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--orbit-blue) 35%, transparent));
+  filter: drop-shadow(0 0 8px rgba(0, 212, 255, 0.35));
   transition: transform 0.25s ease;
 }
 
@@ -706,8 +706,8 @@ h1:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"
 :root.dark .landing-theme-toggle-btn:hover,
 .dark .landing-theme-toggle-btn:hover {
   background: #1e293b;
-  color: var(--orbit-blue);
-  border-color: var(--orbit-blue);
+  color: #00d4ff;
+  border-color: #00d4ff;
 }
 
 /* ==========================================================================
@@ -765,7 +765,7 @@ h1:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"
 .dark .btn-social-dark:hover {
   background: #1e293b;
   color: #ffffff;
-  border-color: var(--orbit-blue);
+  border-color: #00d4ff;
 }
 
 /* ==========================================================================
@@ -775,9 +775,9 @@ h1:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"
 .login-antessala-backdrop {
   background-color: #f4f7fb;
   background-image:
-    radial-gradient(ellipse 900px 520px at 50% 25%, color-mix(in srgb, var(--orbit-blue) 7%, transparent) 0%, transparent 70%),
-    linear-gradient(color-mix(in srgb, var(--orbit-blue) 3.5%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in srgb, var(--orbit-blue) 3.5%, transparent) 1px, transparent 1px);
+    radial-gradient(ellipse 900px 520px at 50% 25%, rgba(0, 212, 255, 0.07) 0%, transparent 70%),
+    linear-gradient(rgba(0, 212, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.035) 1px, transparent 1px);
   background-size:
     100% 100%,
     36px 36px,
@@ -792,9 +792,9 @@ h1:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"
 .dark .login-antessala-backdrop {
   background-color: #0b1120 !important;
   background-image:
-    radial-gradient(ellipse 900px 520px at 50% 25%, color-mix(in srgb, var(--orbit-blue) 12%, transparent) 0%, transparent 70%),
-    linear-gradient(color-mix(in srgb, var(--orbit-blue) 4.5%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in srgb, var(--orbit-blue) 4.5%, transparent) 1px, transparent 1px);
+    radial-gradient(ellipse 900px 520px at 50% 25%, rgba(0, 212, 255, 0.12) 0%, transparent 70%),
+    linear-gradient(rgba(0, 212, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.045) 1px, transparent 1px);
   background-size:
     100% 100%,
     36px 36px,
@@ -815,47 +815,47 @@ h1:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"
 
 .landing-neon-root .card-semantic-cyan {
   background: linear-gradient(180deg, #ffffff 0%, rgba(240, 249, 255, 0.95) 100%) !important;
-  border: 2.5px solid color-mix(in srgb, var(--orbit-blue) 75%, transparent) !important;
+  border: 2.5px solid rgba(0, 212, 255, 0.75) !important;
   box-shadow:
-    0 10px 32px -2px color-mix(in srgb, var(--orbit-blue) 28%, transparent),
-    0 0 20px 2px color-mix(in srgb, var(--orbit-blue) 18%, transparent) !important;
+    0 10px 32px -2px rgba(0, 212, 255, 0.28),
+    0 0 20px 2px rgba(0, 212, 255, 0.18) !important;
 }
 :root.dark .landing-neon-root .card-semantic-cyan,
 .dark .landing-neon-root .card-semantic-cyan {
   background: linear-gradient(180deg, #0f172a 0%, rgba(8, 28, 48, 0.96) 100%) !important;
-  border-color: color-mix(in srgb, var(--orbit-blue) 85%, transparent) !important;
+  border-color: rgba(0, 212, 255, 0.85) !important;
   box-shadow:
-    0 12px 40px -4px color-mix(in srgb, var(--orbit-blue) 45%, transparent),
-    0 0 28px 4px color-mix(in srgb, var(--orbit-blue) 30%, transparent) !important;
+    0 12px 40px -4px rgba(0, 212, 255, 0.45),
+    0 0 28px 4px rgba(0, 212, 255, 0.3) !important;
 }
 .landing-neon-root .card-semantic-cyan:hover {
-  border-color: var(--orbit-blue) !important;
+  border-color: rgba(0, 212, 255, 1) !important;
   box-shadow:
-    0 16px 48px -4px color-mix(in srgb, var(--orbit-blue) 55%, transparent),
-    0 0 36px 6px color-mix(in srgb, var(--orbit-blue) 40%, transparent) !important;
+    0 16px 48px -4px rgba(0, 212, 255, 0.55),
+    0 0 36px 6px rgba(0, 212, 255, 0.4) !important;
   transform: translateY(-3px);
 }
 
 .landing-neon-root .card-semantic-pink {
   background: linear-gradient(180deg, #ffffff 0%, rgba(255, 241, 248, 0.95) 100%) !important;
-  border: 2.5px solid color-mix(in srgb, var(--pink) 75%, transparent) !important;
+  border: 2.5px solid rgba(255, 45, 155, 0.75) !important;
   box-shadow:
-    0 10px 32px -2px color-mix(in srgb, var(--pink) 28%, transparent),
-    0 0 20px 2px color-mix(in srgb, var(--pink) 18%, transparent) !important;
+    0 10px 32px -2px rgba(255, 45, 155, 0.28),
+    0 0 20px 2px rgba(255, 45, 155, 0.18) !important;
 }
 :root.dark .landing-neon-root .card-semantic-pink,
 .dark .landing-neon-root .card-semantic-pink {
   background: linear-gradient(180deg, #0f172a 0%, rgba(48, 10, 32, 0.96) 100%) !important;
-  border-color: color-mix(in srgb, var(--pink) 85%, transparent) !important;
+  border-color: rgba(255, 45, 155, 0.85) !important;
   box-shadow:
-    0 12px 40px -4px color-mix(in srgb, var(--pink) 45%, transparent),
-    0 0 28px 4px color-mix(in srgb, var(--pink) 30%, transparent) !important;
+    0 12px 40px -4px rgba(255, 45, 155, 0.45),
+    0 0 28px 4px rgba(255, 45, 155, 0.3) !important;
 }
 .landing-neon-root .card-semantic-pink:hover {
-  border-color: var(--pink) !important;
+  border-color: rgba(255, 45, 155, 1) !important;
   box-shadow:
-    0 16px 48px -4px color-mix(in srgb, var(--pink) 55%, transparent),
-    0 0 36px 6px color-mix(in srgb, var(--pink) 40%, transparent) !important;
+    0 16px 48px -4px rgba(255, 45, 155, 0.55),
+    0 0 36px 6px rgba(255, 45, 155, 0.4) !important;
   transform: translateY(-3px);
 }
 
@@ -884,24 +884,24 @@ h1:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"
 
 .landing-neon-root .card-semantic-iris {
   background: linear-gradient(180deg, #ffffff 0%, rgba(245, 243, 255, 0.95) 100%) !important;
-  border: 2.5px solid color-mix(in srgb, var(--iris) 75%, transparent) !important;
+  border: 2.5px solid rgba(139, 125, 255, 0.75) !important;
   box-shadow:
-    0 10px 32px -2px color-mix(in srgb, var(--iris) 28%, transparent),
-    0 0 20px 2px color-mix(in srgb, var(--iris) 18%, transparent) !important;
+    0 10px 32px -2px rgba(139, 125, 255, 0.28),
+    0 0 20px 2px rgba(139, 125, 255, 0.18) !important;
 }
 :root.dark .landing-neon-root .card-semantic-iris,
 .dark .landing-neon-root .card-semantic-iris {
   background: linear-gradient(180deg, #0f172a 0%, rgba(28, 16, 52, 0.96) 100%) !important;
-  border-color: color-mix(in srgb, var(--iris) 85%, transparent) !important;
+  border-color: rgba(139, 125, 255, 0.85) !important;
   box-shadow:
-    0 12px 40px -4px color-mix(in srgb, var(--iris) 45%, transparent),
-    0 0 28px 4px color-mix(in srgb, var(--iris) 30%, transparent) !important;
+    0 12px 40px -4px rgba(139, 125, 255, 0.45),
+    0 0 28px 4px rgba(139, 125, 255, 0.3) !important;
 }
 .landing-neon-root .card-semantic-iris:hover {
-  border-color: var(--iris) !important;
+  border-color: rgba(139, 125, 255, 1) !important;
   box-shadow:
-    0 16px 48px -4px color-mix(in srgb, var(--iris) 55%, transparent),
-    0 0 36px 6px color-mix(in srgb, var(--iris) 40%, transparent) !important;
+    0 16px 48px -4px rgba(139, 125, 255, 0.55),
+    0 0 36px 6px rgba(139, 125, 255, 0.4) !important;
   transform: translateY(-3px);
 }
 
@@ -953,11 +953,11 @@ h1:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"
 @keyframes hero-glow-cyan {
   0%,
   100% {
-    filter: drop-shadow(0 0 8px color-mix(in srgb, var(--orbit-blue) 30%, transparent));
+    filter: drop-shadow(0 0 8px rgba(0, 212, 255, 0.3));
     transform: translateY(0);
   }
   50% {
-    filter: drop-shadow(0 0 20px color-mix(in srgb, var(--orbit-blue) 75%, transparent));
+    filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.75));
     transform: translateY(-2px);
   }
 }
@@ -965,11 +965,11 @@ h1:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"
 @keyframes hero-glow-purple {
   0%,
   100% {
-    filter: drop-shadow(0 0 8px color-mix(in srgb, var(--pink) 30%, transparent));
+    filter: drop-shadow(0 0 8px rgba(255, 45, 155, 0.3));
     transform: translateY(0);
   }
   50% {
-    filter: drop-shadow(0 0 20px color-mix(in srgb, var(--pink) 75%, transparent));
+    filter: drop-shadow(0 0 20px rgba(255, 45, 155, 0.75));
     transform: translateY(-2px);
   }
 }
@@ -1024,21 +1024,21 @@ h1:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"
 
 .landing-neon-root .card-login-command {
   background: linear-gradient(180deg, #ffffff 0%, rgba(240, 249, 255, 0.96) 100%) !important;
-  border: 1px solid color-mix(in srgb, var(--orbit-blue) 60%, transparent) !important;
+  border: 1px solid rgba(0, 212, 255, 0.6) !important;
   border-radius: 1.5rem !important;
   box-shadow:
     0 12px 36px -4px rgba(15, 23, 42, 0.08),
-    0 0 14px 0 color-mix(in srgb, var(--orbit-blue) 10%, transparent) !important;
+    0 0 14px 0 rgba(0, 212, 255, 0.1) !important;
   transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 :root.dark .landing-neon-root .card-login-command,
 .dark .landing-neon-root .card-login-command {
   background: linear-gradient(180deg, #0f172a 0%, rgba(8, 28, 48, 0.98) 100%) !important;
-  border: 1px solid color-mix(in srgb, var(--orbit-blue) 70%, transparent) !important;
+  border: 1px solid rgba(0, 212, 255, 0.7) !important;
   box-shadow:
     0 14px 40px -4px rgba(0, 0, 0, 0.6),
-    0 0 14px 0 color-mix(in srgb, var(--orbit-blue) 14%, transparent) !important;
+    0 0 14px 0 rgba(0, 212, 255, 0.14) !important;
 }
 
 /* ==========================================================================
@@ -1054,11 +1054,11 @@ h1:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"
     rgba(240, 249, 255, 0.9) 50%,
     rgba(254, 243, 248, 0.95) 100%
   ) !important;
-  border: 1px solid color-mix(in srgb, var(--orbit-blue) 65%, transparent) !important;
+  border: 1px solid rgba(0, 212, 255, 0.65) !important;
   border-radius: 1.75rem !important;
   box-shadow:
     0 16px 44px -8px rgba(15, 23, 42, 0.08),
-    0 0 18px 0 color-mix(in srgb, var(--orbit-blue) 10%, transparent) !important;
+    0 0 18px 0 rgba(0, 212, 255, 0.1) !important;
   transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -1070,18 +1070,18 @@ h1:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"
     rgba(8, 28, 48, 0.92) 50%,
     rgba(36, 10, 32, 0.95) 100%
   ) !important;
-  border: 1px solid color-mix(in srgb, var(--orbit-blue) 75%, transparent) !important;
+  border: 1px solid rgba(0, 212, 255, 0.75) !important;
   box-shadow:
     0 16px 48px -8px rgba(0, 0, 0, 0.65),
-    0 0 20px 0 color-mix(in srgb, var(--orbit-blue) 14%, transparent) !important;
+    0 0 20px 0 rgba(0, 212, 255, 0.14) !important;
 }
 
 .landing-neon-root .cta-command-deck:hover {
   transform: translateY(-3px);
-  border-color: color-mix(in srgb, var(--orbit-blue) 95%, transparent) !important;
+  border-color: rgba(0, 212, 255, 0.95) !important;
   box-shadow:
     0 20px 54px -8px rgba(0, 0, 0, 0.75),
-    0 0 24px 2px color-mix(in srgb, var(--orbit-blue) 22%, transparent) !important;
+    0 0 24px 2px rgba(0, 212, 255, 0.22) !important;
 }
 
 /* ==========================================================================
@@ -1102,11 +1102,11 @@ h1:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"
   background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid color-mix(in srgb, var(--orbit-blue) 60%, transparent);
+  border: 1px solid rgba(0, 212, 255, 0.6);
   color: #0284c7;
   box-shadow:
     0 6px 18px -2px rgba(0, 0, 0, 0.08),
-    0 0 10px color-mix(in srgb, var(--orbit-blue) 12%, transparent);
+    0 0 10px rgba(0, 212, 255, 0.12);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -1114,21 +1114,21 @@ h1:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"
 :root.dark .btn-floating-top,
 .dark .btn-floating-top {
   background: rgba(15, 23, 42, 0.85);
-  border-color: color-mix(in srgb, var(--orbit-blue) 70%, transparent);
-  color: var(--orbit-blue);
+  border-color: rgba(0, 212, 255, 0.7);
+  color: #00d4ff;
   box-shadow:
     0 8px 20px -2px rgba(0, 0, 0, 0.5),
-    0 0 10px color-mix(in srgb, var(--orbit-blue) 14%, transparent);
+    0 0 10px rgba(0, 212, 255, 0.14);
 }
 
 .btn-floating-top:hover {
   transform: translateY(-4px) scale(1.08);
-  border-color: var(--orbit-blue);
+  border-color: #00d4ff;
   color: #ffffff;
   background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
   box-shadow:
-    0 12px 28px -4px color-mix(in srgb, var(--orbit-blue) 45%, transparent),
-    0 0 18px color-mix(in srgb, var(--orbit-blue) 35%, transparent);
+    0 12px 28px -4px rgba(0, 212, 255, 0.45),
+    0 0 18px rgba(0, 212, 255, 0.35);
 }
 
 .btn-floating-top:active {
@@ -1137,16 +1137,18 @@ h1:not([class*="text-"]):not([class*="landing-title-"]):not([class*="grad-text-"
 
 /* Light mode: ciano #00D4FF no fundo claro da antessala fica abaixo de 4.5:1.
    O dark mantém o neon. Cobre texto e ícones que usam a classe arbitrária. */
-html.light .login-antessala-backdrop [class*="text-[var(--orbit-blue)]"],
-[data-theme="light"] .login-antessala-backdrop [class*="text-[var(--orbit-blue)]"] {
+html.light .login-antessala-backdrop [class*="text-[#00D4FF]"],
+[data-theme="light"] .login-antessala-backdrop [class*="text-[#00D4FF]"] {
   color: #0369a1 !important;
 }
 
 /* WCAG AA em fundo claro: texto neon puro mantém a cor somente no tema dark.
    As versões de leitura abaixo preservam o matiz da marca com contraste >= 4.5:1
    para badges e textos pequenos da landing (axe-core, E2E de acessibilidade). */
-html:not(.dark) .landing-neon-root [class~="text-[var(--orbit-blue)]"],
-html:not(.dark) .landing-neon-root [class*="text-[var(--orbit-blue)]"] {
+html:not(.dark) .landing-neon-root [class~="text-[#00D4FF]"],
+html:not(.dark) .landing-neon-root [class~="text-[#00d4ff]"],
+html:not(.dark) .landing-neon-root .text-\[\#00D4FF\],
+html:not(.dark) .landing-neon-root .text-\[\#00d4ff\] {
   color: #0369a1 !important;
 }
 
@@ -1159,8 +1161,10 @@ html:not(.dark) .landing-neon-root .text-\[\#b45309\] {
   color: #92400e !important;
 }
 
-html:not(.dark) .landing-neon-root [class~="text-[var(--pink)]"],
-html:not(.dark) .landing-neon-root [class*="text-[var(--pink)]"] {
+html:not(.dark) .landing-neon-root [class~="text-[#FF2D9B]"],
+html:not(.dark) .landing-neon-root [class~="text-[#ff2d9b]"],
+html:not(.dark) .landing-neon-root .text-\[\#FF2D9B\],
+html:not(.dark) .landing-neon-root .text-\[\#ff2d9b\] {
   color: #be185d !important;
 }
 
@@ -1190,13 +1194,13 @@ html:not(.dark) .landing-neon-root .text-\[\#db2777\] {
 
 /* O rodapé usa fundo escuro em ambos os temas: sobrepor as regras globais
    de texto claro, cuja especificidade antes prevalecia sobre o rodapé. */
-html:not(.dark) .landing-neon-root .landing-section-footer [class*="text-[var(--orbit-blue)]"],
-html.dark .landing-neon-root .landing-section-footer [class*="text-[var(--orbit-blue)]"] {
+html:not(.dark) .landing-neon-root .landing-section-footer .text-\[\#00D4FF\],
+html.dark .landing-neon-root .landing-section-footer .text-\[\#00D4FF\] {
   color: #38bdf8 !important;
 }
 
-html:not(.dark) .landing-neon-root .landing-section-footer [class*="text-[var(--pink)]"],
-html.dark .landing-neon-root .landing-section-footer [class*="text-[var(--pink)]"] {
+html:not(.dark) .landing-neon-root .landing-section-footer .text-\[\#FF2D9B\],
+html.dark .landing-neon-root .landing-section-footer .text-\[\#FF2D9B\] {
   color: #f472b6 !important;
 }
 
@@ -1224,16 +1228,22 @@ html.light .landing-neon-root .b360-dark-card p,
   color: #cbd5e1 !important;
 }
 
-html:not(.dark) .landing-neon-root .b360-dark-card [class*="text-[var(--orbit-blue)]"],
-html.light .landing-neon-root .b360-dark-card [class*="text-[var(--orbit-blue)]"],
-[data-theme="light"] .landing-neon-root .b360-dark-card [class*="text-[var(--orbit-blue)]"] {
-  color: var(--orbit-blue) !important;
+html:not(.dark) .landing-neon-root .b360-dark-card .text-\[\#00D4FF\],
+html.light .landing-neon-root .b360-dark-card .text-\[\#00D4FF\],
+html:not(.dark) .landing-neon-root .b360-dark-card .text-\[\#00d4ff\],
+html.light .landing-neon-root .b360-dark-card .text-\[\#00d4ff\],
+[data-theme="light"] .landing-neon-root .b360-dark-card .text-\[\#00D4FF\],
+[data-theme="light"] .landing-neon-root .b360-dark-card .text-\[\#00d4ff\] {
+  color: #00d4ff !important;
 }
 
-html:not(.dark) .landing-neon-root .b360-dark-card [class*="text-[var(--pink)]"],
-html.light .landing-neon-root .b360-dark-card [class*="text-[var(--pink)]"],
-[data-theme="light"] .landing-neon-root .b360-dark-card [class*="text-[var(--pink)]"] {
-  color: var(--pink) !important;
+html:not(.dark) .landing-neon-root .b360-dark-card .text-\[\#FF2D9B\],
+html.light .landing-neon-root .b360-dark-card .text-\[\#FF2D9B\],
+html:not(.dark) .landing-neon-root .b360-dark-card .text-\[\#ff2d9b\],
+html.light .landing-neon-root .b360-dark-card .text-\[\#ff2d9b\],
+[data-theme="light"] .landing-neon-root .b360-dark-card .text-\[\#FF2D9B\],
+[data-theme="light"] .landing-neon-root .b360-dark-card .text-\[\#ff2d9b\] {
+  color: #ff2d9b !important;
 }
 
 /* ==========================================================================
@@ -1265,7 +1275,7 @@ html.dark .b360-orb,
   height: 480px;
   top: -120px;
   left: -80px;
-  background: radial-gradient(circle, color-mix(in srgb, var(--orbit-blue) 45%, transparent) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(0, 212, 255, 0.45) 0%, transparent 70%);
   animation: orbFloatA 18s ease-in-out infinite alternate;
 }
 
@@ -1274,7 +1284,7 @@ html.dark .b360-orb,
   height: 520px;
   bottom: -140px;
   right: -100px;
-  background: radial-gradient(circle, color-mix(in srgb, var(--iris) 35%, transparent) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.35) 0%, transparent 70%);
   animation: orbFloatB 22s ease-in-out infinite alternate;
 }
 
@@ -1294,7 +1304,7 @@ html.dark .b360-orb,
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  border: 1px dashed color-mix(in srgb, var(--orbit-blue) 12%, transparent);
+  border: 1px dashed rgba(0, 212, 255, 0.12);
   border-radius: 9999px;
   pointer-events: none;
 }

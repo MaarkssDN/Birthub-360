@@ -150,3 +150,79 @@ Quality Gate após o merge dos PRs #230 e deste lote.
 
 Gates locais deste lote: suíte nova + testes pré-existentes de settings/
 layout/widget, `typecheck`, `lint` (apenas warnings pré-existentes) e `build` ok.
+
+---
+
+Parcial — lote 3 (Onda 2: residual da landing/characters), branch
+`agente/02-03-onda2-sonar-coverage`, worktree `Birthub-360-wt-o2-cov`.
+
+Testes reais (Vitest 4 + jsdom + Testing Library + supertest) para os arquivos
+de código novo que ainda estavam sem cobertura no domínio 02/03, **sem alterar
+código de produção, limiar do Sonar ou exclusions**. `BirthHubOrbit360` (r3f)
+segue stubado via `vi.mock` — o componente em si continua fora de escopo por
+ser WebGL.
+
+### Arquivos cobertos neste lote
+
+| arquivo | linhas antes | linhas depois |
+|---------|-------------:|--------------:|
+| `characters/characterRuntime.routes.ts` | 0% (0/32) | 90,6% (29/32) |
+| `landing/hooks/useAuthForm.ts` | 0% (0/15) | 93,3% (14/15) |
+| `landing/luxury/LuxuryLandingPage.tsx` | 0% (0/8) | 100% (8/8) |
+| `luxury/components/Act1Hero.tsx` | 0% (0/6) | 100% (6/6) |
+| `luxury/components/Act3Singularity.tsx` | 0% (0/20) | 65% (13/20) |
+| `luxury/components/Act4TacticalEngine.tsx` | 0% (0/17) | 94,1% (16/17) |
+| `luxury/components/Act5SovereigntyMetrics.tsx` | 0% (0/3) | 100% (3/3) |
+| `luxury/components/Act6PrivatePortal.tsx` | 0% (0/36) | 94,4% (34/36) |
+| `luxury/components/SculpturalReveal.tsx` | 0% (0/6) | 100% (6/6) |
+| `luxury/components/MagneticButton.tsx` | ~55% | 100% (20/20) |
+| `luxury/components/SpotlightCard.tsx` | ~50% | 100% (16/16) |
+| `luxury/components/LuxuryHeaderHUD.tsx` | 60% (12/20) | interações de scroll/nav/intervalo adicionadas (medir no QG) |
+| `luxury/hooks/useSmoothInertiaScroll.ts` | 50% | +3 testes (wheel, input, touch) — medir no QG |
+| `hero-n1/HeroEditorialHeadline.tsx` | 20% | 100% (15/15) |
+| `hero-n1/HeroMotion.ts` | 70% | 91,7% (55/60) |
+| `pillars/PillarDetailDialog.tsx` | 67% | 85,5% (47/55) |
+
+Testes adicionados: 63 novos casos em 9 arquivos (`LuxuryActs`,
+`Act6PrivatePortal`, `LuxuryMicroComponents`, `LuxuryHeaderHUD.interactions`,
+`useSmoothInertiaScroll` (+3), `useAuthForm`, `HeroEditorialHeadline`,
+`HeroMotion`, `PillarDetailDialog`, `characterRuntime.routes`).
+
+O que ficou de fora e por quê:
+- `Act3Singularity` linhas 24-31: handler `smoothProgress.on('change')` do
+  framer-motion — disparo depende de scroll real do motion value; cobrir
+  exigiria mock profundo do framer-motion (custo/benefício ruim).
+- `commercialMissionTrace.service.ts` (173 uncov, dono 07) e
+  `src/shared/di/setup.ts` (114 uncov, dono 01): fora da propriedade 02/03 —
+  permanecem para os donos; `di/setup.ts` é composition root intestável mas
+  pertence ao 01.
+- `BirthHubOrbit360` (r3f) e `CharacterDetailPanel` residual (~5 linhas:
+  render de capabilities + Enter na missão) — painel já coberto em 76% pela
+  suíte da galeria; ganho marginal.
+- `src/components` residual (~321 uncov no período): `CrmBoard`,
+  `BirthHubOrbit360` e afins são candidatos do próximo lote.
+
+Gates locais: 63 testes novos verdes (+ suites vizinhas re-executadas),
+`npx tsc --noEmit` ok. `npm run lint` cobre apenas `src/` (testes fora do
+escopo do biome).
+
+---
+
+Nota Agente 02 (2026-11-18, branch `agente/02-handoffs-20261117`, base main@414a0ca5f):
+
+Triagem de staleness: **todo o escopo 02/03 deste handoff já está mergeado na main**.
+
+- Lote 1 (landing): PR #230 mergeado — `tests/unit/features/landing/` contém
+  `B360DataStreamCursor.test.tsx`, `Landing360Impeccable.test.tsx`, `CinematicFX.test.tsx`,
+  `B360UnifiedPipelineFlow.test.tsx`, `B360CinematicEngine.test.tsx`.
+- Lote 2 (settings + `src/components`): PR #232 mergeado —
+  `tests/unit/features/settings/pillarSettings.*.test.ts(x)` e
+  `tests/unit/components/layout/AssistantsDock.test.tsx`,
+  `ModuleAgentWidget*.test.tsx` presentes.
+- Lote 3 (Onda 2, residual landing/characters do 02/03): PR #334 mergeado —
+  `useAuthForm.test.ts`, `luxury/*`, `hero-n1/*`, `PillarDetailDialog` etc. presentes.
+
+O que permanece descoberto no período é de **outros donos**: `commercialMissionTrace.service.ts`
+(07), `src/shared/di/setup.ts` (01) e o residual de `characters/*` (dono de characters) +
+`BirthHubOrbit360` (r3f, inviável em jsdom). Este handoff deve permanecer aberto apenas para
+esses donos — a parte do Agente 02 está encerrada.

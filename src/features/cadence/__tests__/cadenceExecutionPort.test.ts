@@ -28,7 +28,7 @@ describe('CadenceExecutionPort (Integração Swarm ↔ Cadência)', () => {
   const leadId = 'lead-42';
 
   const mockSubjectResolver: LeadSubjectResolver = {
-    async resolve(orgId, lId) {
+    async resolve(_orgId, lId) {
       return {
         leadId: lId,
         email: 'diretor@transportadora.com.br',

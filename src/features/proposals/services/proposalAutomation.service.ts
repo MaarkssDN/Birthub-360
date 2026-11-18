@@ -181,6 +181,9 @@ export class ProposalAutomationService implements IProposalAutomationPort {
       documentHashSha256,
       signerEmail: params.signerEmail,
       signatureUrl: `https://${provider}.com/sign/${envelopeId}`,
+      // envelopeId e signatureUrl são fabricados localmente — nenhuma
+      // integração real com Clicksign/DocuSign ocorreu. Ver handoff forense.
+      simulated: true,
     };
 
     this.proposalsStore.set(key, proposal);

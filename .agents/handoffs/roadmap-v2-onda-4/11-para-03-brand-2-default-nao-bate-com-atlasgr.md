@@ -6,7 +6,9 @@
 
 ## Resolução
 Resolvido pela unificação de marca em Birth Hub 360 (conforme documentado em `src/contexts/BrandContext.tsx` e `src/styles/globals.css`).
-O mecanismo legado de alternância de marcas em runtime (`birthhub360` que reescrevia `--brand`/`--brand-2` para `#FF6B10`/`#FF8008`) foi completamente descontinuado a pedido explícito do produto. As variáveis canônicas da plataforma são definidas globalmente em `src/styles/globals.css` (`--brand: #d4af37` Antique Gold, `--brand-2: #f0d77b` Gold Soft), eliminando qualquer divergência entre fallback inicial e estado hidratado.
+O mecanismo legado de alternância de marcas em runtime (`birthhub360` que reescrevia `--brand`/`--brand-2` para `#FF6B10`/`#FF8008`) foi completamente descontinuado a pedido explícito do produto. As variáveis canônicas da plataforma são definidas globalmente em `src/styles/globals.css` (`--brand: #d4af37` Antique Gold, `--brand-2` resolvendo para `#7C3AED` via token `--color-brand-secondary`), eliminando qualquer divergência entre fallback inicial e estado hidratado.
+
+> Correção 2026-11-14 (Agente 00): o hex `#f0d77b` citado nesta Resolução estava incorreto; o valor efetivo de `--brand-2` é `#7C3AED` (token `--color-brand-secondary`). Ver RESULTADOS-RECONCILIACAO-20261114.md.
 
 
 ## Problema

@@ -94,7 +94,7 @@ export default function KnowledgeManager() {
         return list.length > 0 ? list[0].id : null;
       });
     } catch (err: any) {
-      logger.error('Failed to load agents for knowledge manager', { err });
+      logger.error({ err }, 'Failed to load agents for knowledge manager');
       setAgentsState({ status: 'error', agents: [] });
     }
   }, []);
@@ -154,7 +154,7 @@ export default function KnowledgeManager() {
       setUploadFile(null);
       await fetchAgents();
     } catch (err: any) {
-      logger.error('Knowledge upload failed', { err });
+      logger.error({ err }, 'Knowledge upload failed');
       setUploadError(err instanceof Error ? err.message : 'Falha ao enviar documento.');
     } finally {
       setUploading(false);
@@ -191,7 +191,7 @@ export default function KnowledgeManager() {
       setAddContent('');
       await fetchAgents();
     } catch (err: any) {
-      logger.error('Manual knowledge add failed', { err });
+      logger.error({ err }, 'Manual knowledge add failed');
       setAddError(err instanceof Error ? err.message : 'Falha ao adicionar documento.');
     } finally {
       setAdding(false);
@@ -220,7 +220,7 @@ export default function KnowledgeManager() {
 
       await fetchAgents();
     } catch (err: any) {
-      logger.error('Failed to delete knowledge document', { err });
+      logger.error({ err }, 'Failed to delete knowledge document');
     } finally {
       setDeletingId(null);
     }
@@ -251,7 +251,7 @@ export default function KnowledgeManager() {
 
       setRagResult(data.result);
     } catch (err: any) {
-      logger.error('RAG test failed', { err });
+      logger.error({ err }, 'RAG test failed');
       setRagError(err instanceof Error ? err.message : 'Falha ao avaliar pergunta no RAG.');
     } finally {
       setRagTesting(false);

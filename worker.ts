@@ -57,6 +57,10 @@ import {
   scheduleAutoAnonymizeJob,
 } from './src/features/crm/jobs/autoAnonymizeDisqualified.worker.js';
 import {
+  createLandingLeadRetentionWorker,
+  scheduleLandingLeadRetentionJob,
+} from './src/features/lgpd/jobs/landingLeadRetention.worker.js';
+import {
   createColdLeadsScannerWorker,
   scheduleColdLeadsScannerJob,
 } from './src/features/automations/application/cold-leads-scanner.service.js';
@@ -97,10 +101,27 @@ import { MeetingSynthesisService } from './src/features/chatbook/services/meetin
 // MEL-08 (Onda 2): consumidor da fila BullMQ 'webhooks' (webhook.service.ts enfileira, este
 // worker entrega com HMAC/retry/DLQ). Sem este registro as entregas nunca saíam do processo.
 import { startWebhookWorker } from './src/lib/voice-hub/services/webhook.worker.js';
+// MEL-21 (Onda 3): relay da DomainEventOutbox + registro dos consumidores de domínio.
+// Sem o relay, registros FAILED/PENDING da outbox transacional nunca eram reprocessados
+// (startDomainEventOutboxRelay existia mas nenhum entrypoint o chamava). Os consumidores
+// precisam estar registrados NESTE processo antes do relay despachar — deliver() só itera
+// handlers locais e marca o registro DISPATCHED ao final.
+import { bitrixEventMeshBridge } from './src/features/integrations/bitrix/services/bitrixEventMeshBridge.service.js';
+import { startDomainEventOutboxRelay } from './src/lib/queue/outbox/prismaRuntime.js';
 
 async function start() {
   // Papel do banco com menor privilégio (sem superuser/BYPASSRLS/posse) — fatal em produção.
   await assertDbRoleIsLeastPrivilege(prisma, { logger });
+
+  // MEL-21: consumidores do DomainEventMesh neste processo (mesmos do processo web via
+  // setupDI → bitrixEventMeshBridge.register) e o relay que reprocessa FAILED/PENDING.
+  // Retorna null fora do modo DOMAIN_EVENT_OUTBOX=prisma (memória/dev) — no-op seguro.
+  bitrixEventMeshBridge.register();
+  const domainEventRelay = startDomainEventOutboxRelay();
+  if (domainEventRelay) {
+    logger.info('DomainEventOutbox relay iniciado no processo worker');
+  }
+
   const leadsWorker = createLeadsWorker();
   const agentWorker = createAgentWorker();
   const enrichmentWorker = createEnrichmentWorker();
@@ -116,6 +137,7 @@ async function start() {
   const winLossWorker = createWinLossAnalysisWorker();
   const pdfWorker = createWeeklyPdfReportWorker();
   const autoAnonymizeWorker = createAutoAnonymizeWorker();
+  const landingLeadRetentionWorker = createLandingLeadRetentionWorker();
   const coldLeadsScannerWorker = createColdLeadsScannerWorker();
   const stagnationScannerWorker = createStagnationScannerWorker();
   const cadenceRunWorker = createCadenceRunWorker();
@@ -164,6 +186,7 @@ async function start() {
     { name: 'win-loss-analysis-queue', worker: winLossWorker },
     { name: 'weekly-pdf-report-queue', worker: pdfWorker },
     { name: 'auto-anonymize-disqualified-queue', worker: autoAnonymizeWorker },
+    { name: 'landing-lead-retention-queue', worker: landingLeadRetentionWorker },
     { name: 'sdr-cold-call', worker: coldCallWorker },
     { name: 'swarm-scheduler', worker: swarmSchedulerWorker },
     { name: 'cold-leads-scanner-queue', worker: coldLeadsScannerWorker },
@@ -189,6 +212,7 @@ async function start() {
       await scheduleWinLossAnalysisJob();
       await scheduleWeeklyPdfReportJob();
       await scheduleAutoAnonymizeJob();
+      await scheduleLandingLeadRetentionJob();
       await scheduleColdLeadsScannerJob();
       await scheduleStagnationScannerJob();
       await scheduleCadenceRunJob();
@@ -206,7 +230,11 @@ async function start() {
       if (coldCallWorker) await scheduleColdCallCampaigns();
       if (swarmSchedulerWorker) await scheduleSwarmScheduler();
     },
-    'all'
+    'all',
+    // MEL-21: o relay não é BullMQ Worker — fecha o timer do poll no shutdown.
+    async () => {
+      domainEventRelay?.close();
+    }
   );
 }
 

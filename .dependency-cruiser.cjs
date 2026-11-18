@@ -11,9 +11,10 @@
 // não para gerar uma lista de violações pré-existentes sem dono.
 //
 // Rodar localmente: `npm run lint:architecture` (ou `npx depcruise --config .dependency-cruiser.cjs
-// --output-type err src server.ts worker.ts` para o mesmo resultado sem passar pelo script npm).
+// --output-type err src server.ts worker*.ts` para o mesmo resultado sem passar pelo script npm —
+// `worker*.ts` é glob do próprio depcruise e cobre worker.ts + worker-<dominio>.ts).
 // Gerar um gráfico para inspeção humana: `npx depcruise --config .dependency-cruiser.cjs
-// --output-type dot src server.ts worker.ts | dot -T svg > /tmp/deps.svg` (requer graphviz local,
+// --output-type dot src server.ts worker*.ts | dot -T svg > /tmp/deps.svg` (requer graphviz local,
 // não faz parte do gate de CI).
 
 /** @type {import('dependency-cruiser').IConfiguration} */
@@ -80,10 +81,19 @@ module.exports = {
         'para outra feature no futuro. ' +
         'Exceção 2: `src/features/intelligence/` atua como uma camada de aplicação orquestradora (ex: CentralAISuiteService) ' +
         'que precisa consumir vários outros domínios de features para funcionar. ' +
-        'Exceção 3: `src/features/job-roles/` atua como uma camada transversal de controle de permissões e atribuições.',
+        'Exceção 3: `src/features/job-roles/` atua como uma camada transversal de controle de permissões e atribuições. ' +
+        'Exceção 4 (BT360-DT-0004/Onda 5): `src/features/temporal-workers/` é a camada de runtime/workers ' +
+        '(Agente 16) — activities e workflows do Temporal existem justamente para orquestrar serviços ' +
+        'de domínio de outras features (ex.: `scrapeProspect` em activities.ts consome crawler+persistência ' +
+        'de `prospecting/`). A direção inversa continua proibida: features não podem importar ' +
+        'temporal-workers (o `to.pathNot` com `$1` segue valendo para esse sentido).',
       from: {
         path: '^src/features/([^/]+)/',
-        pathNot: ['^src/features/intelligence/', '^src/features/job-roles/'],
+        pathNot: [
+          '^src/features/intelligence/',
+          '^src/features/job-roles/',
+          '^src/features/temporal-workers/',
+        ],
       },
       to: {
         path: '^src/features/([^/]+)/',

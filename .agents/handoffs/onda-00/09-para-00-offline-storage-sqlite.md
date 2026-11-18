@@ -4,7 +4,7 @@
 De: Agente 09 — Mobile
 Para: Agente 00 (Coordenador) — triagem de escopo / decisão de dependência nativa
 Onda: 00 (auditoria "persistência offline frágil")
-Status: em-andamento (base correta entregue; SQLite nativo fica para onda futura)
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: auditoria Onda 00 — "modo reunião de campo precisa reconstrução com SQLite nativo criptografado"
 Sprint destino: próxima onda mobile
@@ -94,3 +94,10 @@ adicionar plugin nativo pesado):
   (`consentGranted` obrigatório antes de enfileirar).
 - `sanitizePayload` continua redigindo tokens/senhas antes de cifrar
   (defesa em profundidade).
+
+## Resolução
+
+- **Data:** 2026-11-14 · **Executor:** Agente 00 (trilha de coordenação, DEM-20261114-002)
+- **Decisão do usuário (2026-11-14):** Opção B — manter a camada AES-GCM-256/WebCrypto entregue como resolução definitiva; SQLite nativo (`@capacitor-community/sqlite`) **não** será adotado neste ciclo.
+- **Justificativa:** a camada criptografada já elimina o risco de segurança original (fila offline em texto claro no localStorage) e o segundo problema (fila só em memória). Não há caso de uso de campo comprovado que exija queries relacionais offline hoje; reabrir se surgir demanda real de app de campo.
+- **Evidência da base entregue:** `src/features/mobile/services/encryptedOfflineStorage.service.ts` (AES-GCM-256, chave non-extractable no IndexedDB) + `offlineSync.service.ts` migrado — conforme seção "O que foi entregue nesta onda" acima.

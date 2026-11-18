@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Birthub 360° — Biblioteca de Componentes V2.0 · Protótipo</title>
+<!-- PROTÓTIPO — biblioteca demonstrativa em HTML/CSS puro. Não é produto. -->
+<link rel="stylesheet" href="../03-design-system/tokens/birthhub360-v2.css">
+<link rel="stylesheet" href="../04-motion/motion-tokens.css">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--font-interface);
+    font-feature-settings: "cv05", "cv11", "ss01";
+    letter-spacing: var(--tracking-interface);
+    background: var(--color-background);
+    color: var(--color-text-primary);
+    font-size: var(--text-md);
+    line-height: var(--leading-normal);
+    transition: background var(--motion-duration-normal) var(--motion-ease-standard),
+                color var(--motion-duration-normal) var(--motion-ease-standard);
+  }
+  a { color: var(--color-interactive-primary); }
+  :focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; border-radius: var(--radius-xs); }
+  .skip { position: absolute; left: -999px; top: 0; background: var(--color-interactive-primary); color: var(--color-on-brand); padding: 8px 16px; z-index: 100; border-radius: 0 0 var(--radius-control) 0; }
+  .skip:focus { left: 0; }
+
+  /* ===== Layout: nav lateral + conteúdo ===== */
+  .layout { display: grid; grid-template-columns: 16rem 1fr; min-height: 100vh; }
+  nav.side {
+    position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    background: var(--color-surface); border-right: 1px solid var(--color-border-subtle);
+    padding: var(--space-5) var(--space-4);
+  }
+  nav.side .brand { font-family: var(--font-display); font-weight: 800; font-size: var(--text-lg); letter-spacing: var(--tracking-display); margin-bottom: var(--space-1); }
+  nav.side .brand em { font-style: normal; background: var(--grad-brand); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  nav.side .sub { font-family: var(--font-data); font-size: var(--text-2xs); color: var(--color-text-muted); margin-bottom: var(--space-5); }
+  nav.side a {
+    display: block; padding: 8px 12px; margin: 2px 0; border-radius: var(--radius-control);
+    color: var(--color-text-secondary); text-decoration: none; font-size: var(--text-sm);
+    border-left: 2px solid transparent; transition: background var(--motion-duration-fast), color var(--motion-duration-fast);
+  }
+  nav.side a:hover { background: var(--color-surface-hover); color: var(--color-text-primary); }
+  nav.side a.active { background: var(--module-accent-soft, color-mix(in srgb, var(--color-interactive-primary) 14%, transparent)); color: var(--module-accent, var(--color-interactive-primary)); box-shadow: inset 2px 0 0 var(--module-accent, var(--color-interactive-primary)); font-weight: 600; }
+  main { padding: var(--space-7) var(--space-6) var(--space-10); max-width: 72rem; }
+  .topbar { display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-8); flex-wrap: wrap; }
+  .topbar h1 { font-family: var(--font-display); font-size: var(--text-3xl); letter-spacing: var(--tracking-display); }
+  .topbar .spacer { flex: 1; }
+
+  section.demo { margin-bottom: var(--space-9); scroll-margin-top: var(--space-5); }
+  section.demo > h2 { font-family: var(--font-display); font-size: var(--text-xl); letter-spacing: var(--tracking-display); margin-bottom: var(--space-2); display: flex; align-items: baseline; gap: var(--space-3); flex-wrap: wrap; }
+  section.demo > h2 .idx { font-family: var(--font-data); font-size: var(--text-xs); color: var(--color-text-muted); }
+  section.demo > .desc { color: var(--color-text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-5); max-width: 44rem; }
+  .frame {
+    background: var(--color-surface); border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-card); padding: var(--space-5); margin-bottom: var(--space-4);
+  }
+  .frame + .frame { margin-top: 0; }
+  .frame h3 { font-family: var(--font-data); font-size: var(--text-2xs); text-transform: uppercase; letter-spacing: .1em; color: var(--color-text-muted); margin-bottom: var(--space-4); }
+  .row { display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: center; }
+  .col { display: flex; flex-direction: column; gap: var(--space-3); }
+
+  /* ===== Botões ===== */
+  .btn {
+    font: 600 var(--text-sm)/1 var(--font-display); letter-spacing: var(--tracking-display);
+    border-radius: var(--radius-control); padding: 11px 18px; cursor: pointer; border: 1px solid transparent;
+    display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+    transition: transform var(--motion-duration-fast) var(--motion-ease-enter),
+                box-shadow var(--motion-duration-normal) var(--motion-ease-enter),
+                background var(--motion-duration-fast) var(--motion-ease-standard),
+                border-color var(--motion-duration-fast) var(--motion-ease-standard),
+                filter var(--motion-duration-fast) var(--motion-ease-standard),
+                opacity var(--motion-duration-fast);
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:active { transform: translateY(0) scale(.97); }
+  .btn:disabled, .btn[aria-disabled="true"] { opacity: .45; cursor: not-allowed; transform: none; filter: none; box-shadow: none; }
+  .btn-primary { background: var(--grad-cta); color: var(--color-on-brand); box-shadow: var(--glow-pink); }
+  .btn-primary:hover { filter: brightness(1.08); }
+  .btn-secondary { background: var(--color-surface-elevated); color: var(--color-text-primary); border-color: var(--color-border-subtle); }
+  .btn-secondary:hover { background: var(--color-surface-hover); }
+  .btn-tertiary { background: color-mix(in srgb, var(--color-interactive-primary) 12%, transparent); color: var(--color-interactive-primary); }
+  .btn-tertiary:hover { background: color-mix(in srgb, var(--color-interactive-primary) 20%, transparent); }
+  .btn-outline { background: transparent; color: var(--color-text-primary); border-color: var(--color-border); }
+  .btn-outline:hover { border-color: var(--color-border-strong); background: var(--color-surface-hover); }
+  .btn-ghost { background: transparent; color: var(--color-text-secondary); }
+  .btn-ghost:hover { background: var(--color-surface-hover); color: var(--color-text-primary); }
+  .btn-danger { background: #dc2626; color: #fff; }
+  .btn-danger:hover { background: #b91c1c; }
+  .btn-success { background: var(--color-success); color: var(--color-on-brand); }
+  .btn-pill { border-radius: var(--radius-pill); }
+  .btn-sm { padding: 7px 12px; font-size: var(--text-xs); }
+  .btn-lg { padding: 14px 26px; font-size: var(--text-md); }
+  .btn-icon { width: 40px; height: 40px; padding: 0; justify-content: center; border-radius: var(--radius-control); }
+  .spinner { width: 14px; height: 14px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .btn[aria-busy="true"] { pointer-events: none; }
+
+  /* ===== Formulários ===== */
+  .field { display: flex; flex-direction: column; gap: 6px; max-width: 22rem; }
+  .field label { font-size: var(--text-sm); font-weight: 600; color: var(--color-text-primary); }
+  .field .hint { font-size: var(--text-xs); color: var(--color-text-muted); }
+  .input, .select, .textarea {
+    font: 400 var(--text-sm)/1.4 var(--font-interface); color: var(--color-text-primary);
+    background: var(--color-input-bg); border: 1px solid var(--color-input-border);
+    border-radius: var(--radius-control); padding: 10px 14px; width: 100%;
+    transition: border-color var(--motion-duration-fast), box-shadow var(--motion-duration-fast);
+  }
+  .input::placeholder, .textarea::placeholder { color: color-mix(in srgb, var(--color-text-secondary) 75%, transparent); }
+  .input:hover, .select:hover, .textarea:hover { border-color: var(--color-border-strong); }
+  .input:focus-visible, .select:focus-visible, .textarea:focus-visible {
+    outline: none; border-color: var(--color-focus); box-shadow: var(--focus-shadow);
+  }
+  .input[aria-invalid="true"], .select[aria-invalid="true"] { border-color: var(--color-danger); }
+  .input[aria-invalid="true"]:focus-visible { box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-danger) 25%, transparent); }
+  .field .error { display: none; font-size: var(--text-xs); color: var(--color-heading-danger); align-items: center; gap: 6px; }
+  .field.invalid .error { display: flex; }
+  .field.invalid .hint { display: none; }
+  .field.valid .input { border-color: var(--color-success); }
+  .textarea { min-height: 6rem; resize: vertical; }
+  .select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--color-text-secondary) 50%), linear-gradient(135deg, var(--color-text-secondary) 50%, transparent 50%); background-position: calc(100% - 18px) 55%, calc(100% - 13px) 55%; background-size: 5px 5px; background-repeat: no-repeat; }
+  .switch-row { display: flex; align-items: center; gap: var(--space-3); }
+  .switch { position: relative; width: 44px; height: 24px; border-radius: var(--radius-pill); background: var(--color-surface-hover); border: 1px solid var(--color-border-subtle); cursor: pointer; transition: background var(--motion-duration-fast); flex: none; }
+  .switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: var(--color-text-secondary); transition: transform var(--motion-duration-fast) var(--motion-ease-enter), background var(--motion-duration-fast); }
+  .switch[aria-checked="true"] { background: var(--color-interactive-primary); border-color: var(--color-interactive-primary); }
+  .switch[aria-checked="true"]::after { transform: translateX(20px); background: var(--color-on-brand); }
+  .switch:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+  /* ===== Badges / chips ===== */
+  .badge { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-data); font-size: var(--text-2xs); font-weight: 600; padding: 4px 10px; border-radius: var(--radius-pill); border: 1px solid var(--color-border-subtle); color: var(--color-text-secondary); letter-spacing: .04em; }
+  .badge-success { color: var(--color-heading-success); border-color: color-mix(in srgb, var(--color-success) 40%, transparent); background: color-mix(in srgb, var(--color-success) 10%, transparent); }
+  .badge-warning { color: var(--color-heading-gold); border-color: var(--color-border-gold); background: color-mix(in srgb, var(--color-warning) 10%, transparent); }
+  .badge-danger  { color: var(--color-heading-danger); border-color: color-mix(in srgb, var(--color-danger) 40%, transparent); background: color-mix(in srgb, var(--color-danger) 10%, transparent); }
+  .badge-info    { color: color-mix(in srgb, var(--color-info) 80%, var(--color-text-primary)); border-color: color-mix(in srgb, var(--color-info) 40%, transparent); background: color-mix(in srgb, var(--color-info) 10%, transparent); }
+  .badge-iris    { color: var(--color-heading-iris); border-color: color-mix(in srgb, var(--color-iris) 40%, transparent); background: color-mix(in srgb, var(--color-iris) 10%, transparent); }
+  .module-accent-chip { background: var(--module-accent-soft); color: var(--module-accent); border-color: color-mix(in srgb, var(--module-accent) 35%, transparent); }
+
+  /* ===== Cards ===== */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: var(--space-4); }
+  .kpi { background: var(--color-surface); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-card); padding: var(--space-5); position: relative; overflow: hidden; transition: transform var(--motion-duration-normal) var(--motion-ease-enter), box-shadow var(--motion-duration-normal) var(--motion-ease-enter), border-color var(--motion-duration-fast); }
+  .kpi:hover { transform: translateY(-2px); box-shadow: var(--shadow-elevated); border-color: var(--color-border); }
+  .kpi .label { font-size: var(--text-xs); color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: .06em; }
+  .kpi .value { font-family: var(--font-data); font-size: var(--text-3xl); font-weight: 700; margin: var(--space-2) 0 var(--space-1); font-variant-numeric: tabular-nums; }
+  .kpi .delta { font-size: var(--text-xs); font-family: var(--font-data); }
+  .kpi .delta.up { color: var(--color-heading-success); } .kpi .delta.down { color: var(--color-heading-danger); }
+  .kpi .icon-chip { position: absolute; top: var(--space-4); right: var(--space-4); width: 34px; height: 34px; border-radius: var(--radius-control); display: grid; place-items: center; background: var(--module-accent-soft); color: var(--module-accent); border: 1px solid color-mix(in srgb, var(--module-accent) 30%, transparent); font-size: var(--text-sm); }
+  .panel { background: var(--color-surface-elevated); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-card); padding: var(--space-5); }
+  .feature-card { border-color: var(--color-border-gold); }
+  .feature-card::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; background: var(--grad-gold); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; opacity: .5; pointer-events: none; }
+
+  /* ===== Tabela ===== */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--color-border-subtle); border-radius: var(--radius-card); padding: var(--space-2); }
+  table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+  thead th { position: sticky; top: 0; text-align: left; font-family: var(--font-data); font-size: var(--text-2xs); text-transform: uppercase; letter-spacing: .08em; color: var(--color-text-secondary); background: var(--color-surface-elevated); padding: 12px 16px; border-bottom: 1px solid var(--color-border-subtle); }
+  tbody td { padding: 12px 16px; border-bottom: 1px solid var(--color-border-subtle); color: var(--color-text-primary); }
+  tbody tr { transition: background var(--motion-duration-fast); }
+  tbody tr:hover { background: var(--color-surface-hover); }
+  tbody tr.selected { background: color-mix(in srgb, var(--module-accent, var(--color-interactive-primary)) 10%, transparent); }
+  td.num, th.num { text-align: right; font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+  .row-actions { display: flex; gap: 6px; }
+
+  /* ===== Navegação: tabs, rail ===== */
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--color-border-subtle); }
+  .tab { font: 600 var(--text-sm)/1 var(--font-interface); background: none; border: 0; padding: 10px 16px; color: var(--color-text-secondary); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tab:hover { color: var(--color-text-primary); }
+  .tab[aria-selected="true"] { color: var(--module-accent, var(--color-interactive-primary)); border-bottom-color: var(--module-accent, var(--color-interactive-primary)); }
+  .rail-demo { display: flex; gap: var(--space-5); align-items: flex-start; }
+  .rail { display: flex; flex-direction: column; gap: 4px; background: var(--color-surface); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-card); padding: 8px; width: 64px; }
+  .rail button { width: 48px; height: 48px; border-radius: var(--radius-control); border: 0; background: none; color: var(--color-text-muted); cursor: pointer; font-size: var(--text-lg); display: grid; place-items: center; transition: background var(--motion-duration-fast), color var(--motion-duration-fast); }
+  .rail button:hover { background: var(--color-surface-hover); color: var(--color-text-primary); }
+  .rail button.active { background: var(--module-accent-soft); color: var(--module-accent); }
+  .rail-note { font-size: var(--text-sm); color: var(--color-text-secondary); max-width: 20rem; padding-top: var(--space-3); }
+
+  /* ===== Sidebar mini (workspace) ===== */
+  .ws { display: grid; grid-template-columns: 13rem 1fr; border: 1px solid var(--color-border-subtle); border-radius: var(--radius-card); overflow: hidden; min-height: 16rem; }
+  .ws-side { background: var(--color-surface-elevated); padding: var(--space-4) var(--space-3); border-right: 1px solid var(--color-border-subtle); }
+  .ws-side .ws-title { font-family: var(--font-data); font-size: var(--text-2xs); text-transform: uppercase; letter-spacing: .1em; color: var(--color-text-muted); padding: 0 8px 10px; }
+  .ws-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: var(--radius-control); color: var(--color-text-muted); font-size: var(--text-sm); cursor: pointer; transition: background var(--motion-duration-fast), color var(--motion-duration-fast); }
+  .ws-item:hover { color: var(--color-text-secondary); }
+  .ws-item.active { background: var(--module-accent-soft); color: var(--module-accent); box-shadow: inset 2px 0 0 var(--module-accent); font-weight: 600; }
+  .ws-body { padding: var(--space-5); background: var(--color-background); }
+  .ws-body h5 { font-family: var(--font-display); font-size: var(--text-md); margin-bottom: var(--space-2); }
+  .ws-body p { font-size: var(--text-sm); color: var(--color-text-secondary); }
+
+  /* ===== Estados ===== */
+  .empty { text-align: center; padding: var(--space-8) var(--space-5); border: 1px dashed var(--color-border); border-radius: var(--radius-card); }
+  .empty .glyph { width: 64px; height: 64px; margin: 0 auto var(--space-4); border-radius: 50%; background: var(--grad-orbit); padding: 3px; }
+  .empty .glyph::after { content: ""; display: block; width: 100%; height: 100%; border-radius: 50%; background: var(--color-surface); }
+  .empty h4 { font-family: var(--font-display); font-size: var(--text-lg); margin-bottom: var(--space-2); }
+  .empty p { color: var(--color-text-secondary); font-size: var(--text-sm); max-width: 26rem; margin: 0 auto var(--space-4); }
+  .error-box { border: 1px solid color-mix(in srgb, var(--color-danger) 40%, transparent); background: color-mix(in srgb, var(--color-danger) 8%, transparent); border-radius: var(--radius-card); padding: var(--space-4) var(--space-5); display: flex; gap: var(--space-3); align-items: flex-start; }
+  .error-box .ico { color: var(--color-heading-danger); font-size: var(--text-lg); }
+  .error-box h4 { font-size: var(--text-sm); font-weight: 700; margin-bottom: 2px; }
+  .error-box p { font-size: var(--text-xs); color: var(--color-text-secondary); }
+  .alert { border-radius: var(--radius-control); padding: var(--space-3) var(--space-4); font-size: var(--text-sm); display: flex; gap: var(--space-3); align-items: flex-start; border: 1px solid; }
+  .alert-info { border-color: color-mix(in srgb, var(--color-info) 35%, transparent); background: color-mix(in srgb, var(--color-info) 8%, transparent); }
+  .alert-warn { border-color: var(--color-border-gold); background: color-mix(in srgb, var(--color-warning) 8%, transparent); }
+  .alert-ok   { border-color: color-mix(in srgb, var(--color-success) 35%, transparent); background: color-mix(in srgb, var(--color-success) 8%, transparent); }
+
+  /* ===== Skeletons ===== */
+  .skel { display: grid; gap: var(--space-3); }
+  .skel i { display: block; height: 3rem; border-radius: var(--radius-card); background: linear-gradient(90deg, var(--color-skeleton-base) 25%, var(--color-skeleton-highlight) 50%, var(--color-skeleton-base) 75%); background-size: 200% 100%; animation: shimmer 2.5s linear infinite; }
+  .skel i:nth-child(2){ width: 78%; } .skel i:nth-child(3){ width: 55%; }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+
+  /* ===== Toasts ===== */
+  .toasts { position: fixed; top: var(--space-4); right: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); z-index: 90; max-width: 22rem; }
+  .toast { background: var(--color-surface-elevated); border: 1px solid var(--color-border); border-radius: var(--radius-control); padding: 12px 16px; font-size: var(--text-sm); box-shadow: var(--shadow-elevated); display: flex; gap: var(--space-3); align-items: center; animation: toastIn var(--motion-duration-normal) var(--motion-ease-enter); }
+  .toast.out { animation: toastOut var(--motion-duration-fast) var(--motion-ease-exit) forwards; }
+  @keyframes toastIn { from { opacity: 0; transform: translateX(24px); } }
+  @keyframes toastOut { to { opacity: 0; transform: translateX(24px); } }
+  .toast .t-ico { color: var(--color-heading-success); }
+
+  /* ===== Modal ===== */
+  .modal-backdrop { position: fixed; inset: 0; background: var(--color-overlay); display: none; place-items: center; z-index: 80; padding: var(--space-5); }
+  .modal-backdrop.open { display: grid; animation: fadeIn var(--motion-duration-normal) var(--motion-ease-emphasized); }
+  @keyframes fadeIn { from { opacity: 0; } }
+  .modal { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-modal); box-shadow: var(--shadow-overlay); max-width: 26rem; width: 100%; padding: var(--space-6); animation: modalIn var(--motion-duration-normal) var(--motion-ease-emphasized); }
+  @keyframes modalIn { from { opacity: 0; transform: translateY(10px) scale(.97); } }
+  .modal h3 { font-family: var(--font-display); font-size: var(--text-xl); margin-bottom: var(--space-2); }
+  .modal p { font-size: var(--text-sm); color: var(--color-text-secondary); margin-bottom: var(--space-5); }
+  .modal .row { justify-content: flex-end; }
+
+  /* ===== Gráfico neon (CSS puro) ===== */
+  .chart { display: flex; align-items: flex-end; gap: 10px; height: 10rem; padding: var(--space-4) 0 0; border-bottom: 1px solid var(--color-border-subtle); }
+  .chart i { flex: 1; border-radius: var(--radius-xs) var(--radius-xs) 0 0; background: var(--module-accent, var(--color-interactive-primary)); opacity: .85; min-height: 8%; transition: opacity var(--motion-duration-fast), transform var(--motion-duration-normal) var(--motion-ease-enter); transform-origin: bottom; }
+  .chart i:hover { opacity: 1; transform: scaleY(1.04); }
+
+  footer { border-top: 1px solid var(--color-border-subtle); padding-top: var(--space-5); font-size: var(--text-xs); color: var(--color-text-muted); }
+
+  @media (max-width: 60rem) { .layout { grid-template-columns: 1fr; } nav.side { position: static; height: auto; } .ws { grid-template-columns: 1fr; } .ws-side { border-right: 0; border-bottom: 1px solid var(--color-border-subtle); } }
+
+  /* Movimento reduzido */
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    .skel i { animation: none; }
+  }
+  :root[data-motion="reduced"] *, :root[data-motion="reduced"] *::before, :root[data-motion="reduced"] *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  :root[data-motion="reduced"] .skel i { animation: none; }
+</style>
+</head>
+<body>
+<a class="skip" href="#conteudo">Pular para o conteúdo</a>
+<div class="layout">
+  <nav class="side" aria-label="Navegação da biblioteca">
+    <div class="brand">Birthub <em>360°</em></div>
+    <div class="sub">Design System V2.0 · protótipo</div>
+    <a href="#botoes">Botões</a>
+    <a href="#formularios">Formulários</a>
+    <a href="#badges">Badges &amp; chips</a>
+    <a href="#cards">Cards &amp; KPIs</a>
+    <a href="#tabela">Tabela</a>
+    <a href="#navegacao">Navegação</a>
+    <a href="#modulo">Acento por módulo</a>
+    <a href="#estados">Estados</a>
+    <a href="#feedback">Feedback &amp; overlays</a>
+    <a href="#graficos">Gráficos</a>
+  </nav>
+
+  <main id="conteudo">
+    <div class="topbar">
+      <h1>Biblioteca de Componentes</h1>
+      <span class="badge badge-iris">PROTÓTIPO</span>
+      <div class="spacer"></div>
+      <button class="btn btn-ghost btn-sm" id="themeToggle" type="button" aria-pressed="false">◐ Tema</button>
+      <button class="btn btn-ghost btn-sm" id="motionToggle" type="button" aria-pressed="false">🕘 Movimento reduzido</button>
+      <button class="btn btn-primary btn-sm" id="openModal" type="button">Abrir modal</button>
+    </div>
+
+    <!-- BOTÕES -->
+    <section class="demo" id="botoes" data-module="hub">
+      <h2><span class="idx">01</span>Botões <span class="badge">variants · estados</span></h2>
+      <p class="desc">Variantes oficiais, alturas 32/40/44px implícitas, hover com lift de 1px, active scale .97, disabled a 45% opacity, loading com spinner e aria-busy.</p>
+      <div class="frame"><h3>Variantes</h3>
+        <div class="row">
+          <button class="btn btn-primary" type="button">Primário CTA</button>
+          <button class="btn btn-secondary" type="button">Secundário</button>
+          <button class="btn btn-tertiary" type="button">Terciário</button>
+          <button class="btn btn-outline" type="button">Outline</button>
+          <button class="btn btn-ghost" type="button">Ghost</button>
+          <button class="btn btn-danger" type="button">Destrutivo</button>
+          <button class="btn btn-success" type="button">Sucesso</button>
+          <button class="btn btn-primary btn-pill" type="button">Pill</button>
+        </div>
+      </div>
+      <div class="frame"><h3>Tamanhos, ícone e estados</h3>
+        <div class="row">
+          <button class="btn btn-secondary btn-sm" type="button">Small</button>
+          <button class="btn btn-secondary" type="button">Default</button>
+          <button class="btn btn-secondary btn-lg" type="button">Large</button>
+          <button class="btn btn-icon btn-secondary" type="button" aria-label="Ação com ícone">⌘</button>
+          <button class="btn btn-primary" type="button" id="loadingBtn"><span class="spinner" aria-hidden="true"></span> Processando…</button>
+          <button class="btn btn-primary" type="button" disabled>Desabilitado</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- FORMULÁRIOS -->
+    <section class="demo" id="formularios">
+      <h2><span class="idx">02</span>Formulários <span class="badge">inputs · select · switch</span></h2>
+      <p class="desc">Altura 40px, focus ring --color-focus, erro com borda danger + mensagem (nunca cor sozinha). Teste o campo de e-mail: erro em blur, sucesso com valor válido.</p>
+      <div class="frame"><h3>Campos</h3>
+        <div class="row" style="align-items:flex-start">
+          <div class="field" id="emailField">
+            <label for="email">E-mail do operador</label>
+            <input class="input" id="email" type="email" placeholder="voce@empresa.com" autocomplete="email">
+            <span class="hint">Usado para relatórios diários.</span>
+            <span class="error" role="alert">⚠ Informe um e-mail válido.</span>
+          </div>
+          <div class="field">
+            <label for="segment">Segmento</label>
+            <select class="select" id="segment">
+              <option>Todos os segmentos</option><option>Clínicas</option><option>Odontologia</option><option>Saúde</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="notes">Observações</label>
+            <textarea class="textarea" id="notes" placeholder="Contexto opcional…"></textarea>
+          </div>
+        </div>
+        <div class="row" style="margin-top:var(--space-4)">
+          <div class="switch-row">
+            <button class="switch" id="notifySwitch" role="switch" aria-checked="false" aria-label="Notificações por e-mail"></button>
+            <span style="font-size:var(--text-sm)">Notificações por e-mail</span>
+          </div>
+          <div class="switch-row">
+            <button class="switch" role="switch" aria-checked="true" aria-label="Sincronização automática"></button>
+            <span style="font-size:var(--text-sm)">Sincronização automática</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BADGES -->
+    <section class="demo" id="badges">
+      <h2><span class="idx">03</span>Badges &amp; chips <span class="badge">status semântico</span></h2>
+      <div class="frame"><h3>Variantes</h3>
+        <div class="row">
+          <span class="badge">Neutro</span>
+          <span class="badge badge-success">✓ Sincronizado</span>
+          <span class="badge badge-warning">◷ Meta 92%</span>
+          <span class="badge badge-danger">✕ API desconectada</span>
+          <span class="badge badge-info">ℹ Processando</span>
+          <span class="badge badge-iris">✦ IA ativa</span>
+          <span class="badge module-accent-chip">accent do módulo (P03)</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- CARDS -->
+    <section class="demo" id="cards" data-module="p03">
+      <h2><span class="idx">04</span>Cards &amp; KPIs <span class="badge">bento · métrica</span></h2>
+      <div class="cards">
+        <article class="kpi"><span class="icon-chip">↗</span><div class="label">Receita recorrente</div><div class="value">R$ 1.482.000</div><div class="delta up">▲ 12,4% vs mês anterior</div></article>
+        <article class="kpi"><span class="icon-chip">◎</span><div class="label">Conversão</div><div class="value">38,2%</div><div class="delta up">▲ 2,1 p.p.</div></article>
+        <article class="kpi"><span class="icon-chip">◷</span><div class="label">Ciclo médio</div><div class="value">14 dias</div><div class="delta down">▼ 1,3 dias</div></article>
+        <article class="kpi feature-card"><span class="icon-chip">★</span><div class="label">Feature</div><div class="value" style="font-size:var(--text-lg)">Meta trimestral</div><div class="delta">Borda dourada sutil + feixe periférico</div></article>
+      </div>
+      <div class="frame" style="margin-top:var(--space-4)"><h3>Panel</h3>
+        <div class="panel"><h4 style="font-family:var(--font-display);margin-bottom:6px;font-size:var(--text-md)">Painel de contexto</h4><p>Superfície elevada para agrupamentos — usada em drawers, resumos e blocos auxiliares.</p></div>
+      </div>
+    </section>
+
+    <!-- TABELA -->
+    <section class="demo" id="tabela">
+      <h2><span class="idx">05</span>Tabela <span class="badge">sticky · mono numérico</span></h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Lead</th><th>Estágio</th><th>Origem</th><th class="num">Valor (R$)</th><th>Ações</th></tr></thead>
+          <tbody>
+            <tr class="selected"><td>Clínica Sorriso Total</td><td><span class="badge badge-info">Negociação</span></td><td>Indicação</td><td class="num">48.500,00</td><td><div class="row-actions"><button class="btn btn-ghost btn-sm" type="button">Ver</button><button class="btn btn-ghost btn-sm" type="button">Editar</button></div></td></tr>
+            <tr><td>Odonto Prime SP</td><td><span class="badge badge-success">Fechado</span></td><td>Campanha Q4</td><td class="num">32.100,00</td><td><div class="row-actions"><button class="btn btn-ghost btn-sm" type="button">Ver</button><button class="btn btn-ghost btn-sm" type="button">Editar</button></div></td></tr>
+            <tr><td>Dental Care RJ</td><td><span class="badge badge-warning">Qualificação</span></td><td>LinkedIn</td><td class="num">21.750,00</td><td><div class="row-actions"><button class="btn btn-ghost btn-sm" type="button">Ver</button><button class="btn btn-ghost btn-sm" type="button">Editar</button></div></td></tr>
+            <tr><td>Sorrisos &amp; Saúde</td><td><span class="badge">Novo</span></td><td>Site</td><td class="num">9.800,00</td><td><div class="row-actions"><button class="btn btn-ghost btn-sm" type="button">Ver</button><button class="btn btn-ghost btn-sm" type="button">Editar</button></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- NAVEGAÇÃO -->
+    <section class="demo" id="navegacao">
+      <h2><span class="idx">06</span>Navegação <span class="badge">tabs · rail · sidebar</span></h2>
+      <div class="frame"><h3>Tabs</h3>
+        <div class="tabs" role="tablist">
+          <button class="tab" role="tab" aria-selected="true" type="button">Visão geral</button>
+          <button class="tab" role="tab" aria-selected="false" type="button">Pipeline</button>
+          <button class="tab" role="tab" aria-selected="false" type="button">Relatórios</button>
+          <button class="tab" role="tab" aria-selected="false" type="button">Configurações</button>
+        </div>
+      </div>
+      <div class="frame"><h3>Navigation rail (workspaces densos)</h3>
+        <div class="rail-demo">
+          <div class="rail" role="navigation" aria-label="Rail de módulos">
+            <button class="active" type="button" title="Hub" aria-label="Hub">⌂</button>
+            <button type="button" title="Módulo 01" aria-label="Módulo 01">◈</button>
+            <button type="button" title="Módulo 02" aria-label="Módulo 02">◉</button>
+            <button type="button" title="Módulo 03" aria-label="Módulo 03">◎</button>
+            <button type="button" title="Assistente IA" aria-label="Assistente IA">✦</button>
+          </div>
+          <p class="rail-note">Rail de 64px para workspaces de alta densidade; em &lt;lg colapsa para este formato. Item ativo usa o accent do módulo ativo.</p>
+        </div>
+      </div>
+      <div class="frame"><h3>Sidebar de workspace (mini)</h3>
+        <div class="ws">
+          <div class="ws-side" role="navigation" aria-label="Sidebar do workspace">
+            <div class="ws-title">Workspace · Módulo 03</div>
+            <div class="ws-item active">◈ Visão geral</div>
+            <div class="ws-item">◎ Metas &amp; forecast</div>
+            <div class="ws-item">◷ Histórico</div>
+            <div class="ws-item">⚙ Configurações</div>
+          </div>
+          <div class="ws-body">
+            <h4 style="font-family:var(--font-display);font-size:var(--text-md);margin-bottom:var(--space-2)">Identidade contextual por módulo</h4>
+            <p>Este painel usa <code>data-module="p03"</code>: só o accent muda (aqui, dourado). Superfícies, tipografia, raios e motion são idênticos em todos os módulos — UM sistema, onze identidades contextuais.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACENTO POR MÓDULO -->
+    <section class="demo" id="modulo">
+      <h2><span class="idx">07</span>Acento por módulo <span class="badge">data-module</span></h2>
+      <p class="desc">Mecanismo V2: <code>data-module</code> injeta <code>--module-accent</code> derivado da paleta Neon Oficial + rampas AA do tema. Mapeamento é PENDENTE DE HOMOLOGAÇÃO.</p>
+      <div class="frame"><h3>Acentos propostos</h3>
+        <div class="row">
+          <span class="badge module-accent-chip">hub · azul</span>
+          <span style="--module-accent: var(--color-interactive-primary); --module-accent-soft: color-mix(in srgb, var(--color-interactive-primary) 14%, transparent); --module-accent-glow: var(--glow-blue)"><span class="badge module-accent-chip">P01 · azul</span></span>
+          <span style="--module-accent: var(--color-brand-secondary); --module-accent-soft: color-mix(in srgb, var(--color-brand-secondary) 14%, transparent)"><span class="badge module-accent-chip">P02 · rosa</span></span>
+          <span style="--module-accent: var(--color-brand-accent); --module-accent-soft: color-mix(in srgb, var(--color-brand-accent) 14%, transparent)"><span class="badge module-accent-chip">P03 · dourado</span></span>
+          <span style="--module-accent: var(--color-iris); --module-accent-soft: color-mix(in srgb, var(--color-iris) 14%, transparent)"><span class="badge module-accent-chip">P04 · íris</span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ESTADOS -->
+    <section class="demo" id="estados">
+      <h2><span class="idx">08</span>Estados operacionais <span class="badge">4 obrigatórios</span></h2>
+      <div class="frame"><h3>Loading → skeleton no formato exato</h3>
+        <div class="skel" role="status" aria-label="Carregando dados"><i></i><i></i><i></i></div>
+      </div>
+      <div class="frame"><h3>Empty state</h3>
+        <div class="empty">
+          <div class="glyph" aria-hidden="true"></div>
+          <h4>Nenhum lead nesta visão</h4>
+          <p>Ajuste os filtros ou importe uma lista para começar a montar o pipeline. O estado vazio sempre oferece um próximo passo.</p>
+          <button class="btn btn-primary" type="button">Importar leads</button>
+        </div>
+      </div>
+      <div class="frame"><h3>Error state</h3>
+        <div class="error-box" role="alert">
+          <span class="ico" aria-hidden="true">⚠</span>
+          <div>
+            <h4>Falha ao sincronizar com o CRM</h4>
+            <p>Timeout na última tentativa às 14:32. Os dados anteriores continuam visíveis em cache (stale state). <a href="#">Tentar novamente</a></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEEDBACK -->
+    <section class="demo" id="feedback">
+      <h2><span class="idx">09</span>Feedback &amp; overlays <span class="badge">alerts · toast · modal</span></h2>
+      <div class="frame"><h3>Alerts contextuais</h3>
+        <div class="col">
+          <div class="alert alert-info" role="status"><span aria-hidden="true">ℹ</span><span>Sincronização agendada para 15:00 — os dados atuais permanecem disponíveis.</span></div>
+          <div class="alert alert-warn" role="status"><span aria-hidden="true">◷</span><span>Meta do mês a 92% — restam 6 dias úteis.</span></div>
+          <div class="alert alert-ok" role="status"><span aria-hidden="true">✓</span><span>Relatório exportado com sucesso para o e-mail do operador.</span></div>
+        </div>
+      </div>
+      <div class="frame"><h3>Toast</h3>
+        <div class="row">
+          <button class="btn btn-secondary" id="toastBtn" type="button">Disparar notificação</button>
+          <span style="font-size:var(--text-xs);color:var(--color-text-muted)">role="status", máx. 3 empilhados, auto-dismiss ≥5s.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- GRÁFICOS -->
+    <section class="demo" id="graficos">
+      <h2><span class="idx">10</span>Gráficos neon <span class="badge">CSS puro</span></h2>
+      <div class="frame"><h3>Receita por semana (accent do módulo p03)</h3>
+        <div class="chart" role="img" aria-label="Gráfico de barras: receita subiu de 42 para 78 mil nas últimas 7 semanas">
+          <i style="height:35%"></i><i style="height:42%"></i><i style="height:38%"></i><i style="height:55%"></i><i style="height:60%"></i><i style="height:52%"></i><i style="height:78%"></i><i style="height:88%"></i>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <p>Birthub 360° · Biblioteca de Componentes V2.0 · PROTÓTIPO para homologação — HTML/CSS puro, file://, sem build. Tokens: <code>../03-design-system/tokens/birthhub360-v2.css</code>.</p>
+    </footer>
+  </main>
+</div>
+
+<!-- Toasts -->
+<div class="toasts" id="toastRoot" aria-live="polite"></div>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h3 id="modalTitle">Confirmar exportação</h3>
+    <p>O relatório de receita será exportado em PDF e enviado ao e-mail do operador. Nenhum dado sai do tenant atual.</p>
+    <div class="row">
+      <button class="btn btn-ghost" id="modalCancel" type="button">Cancelar</button>
+      <button class="btn btn-primary" id="modalConfirm" type="button">Exportar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var root = document.documentElement;
+
+  /* Tema */
+  var tt = document.getElementById('themeToggle');
+  tt.addEventListener('click', function () {
+    var light = root.getAttribute('data-theme') === 'light';
+    root.setAttribute('data-theme', light ? 'dark' : 'light');
+    tt.setAttribute('aria-pressed', String(!light));
+    tt.textContent = light ? '◐ Tema' : '◑ Claro';
+  });
+
+  /* Movimento reduzido */
+  var mt = document.getElementById('motionToggle');
+  function syncM() {
+    var r = root.getAttribute('data-motion') === 'reduced';
+    mt.setAttribute('aria-pressed', String(r));
+    mt.textContent = r ? '▶ Movimento' : '🕘 Movimento reduzido';
+  }
+  mt.addEventListener('click', function () {
+    if (root.getAttribute('data-motion') === 'reduced') root.removeAttribute('data-motion');
+    else root.setAttribute('data-motion', 'reduced');
+    syncM();
+  });
+  syncM();
+
+  /* Switches */
+  document.querySelectorAll('.switch').forEach(function (s) {
+    s.addEventListener('click', function () {
+      s.setAttribute('aria-checked', String(s.getAttribute('aria-checked') !== 'true'));
+    });
+  });
+
+  /* Tabs */
+  document.querySelectorAll('.tab').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      document.querySelectorAll('.tab').forEach(function (t) { t.setAttribute('aria-selected', 'false'); });
+      tab.setAttribute('aria-selected', 'true');
+    });
+  });
+
+  /* Sidebar items */
+  document.querySelectorAll('.ws-item').forEach(function (it) {
+    it.addEventListener('click', function () {
+      document.querySelectorAll('.ws-item').forEach(function (i) { i.classList.remove('active'); });
+      it.classList.add('active');
+    });
+  });
+
+  /* Rail */
+  document.querySelectorAll('.rail button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.rail button').forEach(function (x) { x.classList.remove('active'); });
+      b.classList.add('active');
+    });
+  });
+
+  /* Validação de e-mail */
+  var email = document.getElementById('email');
+  var field = document.getElementById('emailField');
+  email.addEventListener('blur', function () {
+    field.classList.remove('invalid', 'valid');
+    if (email.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) field.classList.add('invalid');
+    else if (email.value) field.classList.add('valid');
+  });
+  email.addEventListener('input', function () { field.classList.remove('invalid'); });
+
+  /* Toast */
+  var toastRoot = document.getElementById('toastRoot');
+  document.getElementById('toastBtn').addEventListener('click', function () {
+    var t = document.createElement('div');
+    t.className = 'toast'; t.setAttribute('role', 'status');
+    t.innerHTML = '<span class="t-ico" aria-hidden="true">✓</span><span>Lead importado com sucesso.</span>';
+    toastRoot.appendChild(t);
+    setTimeout(function () { t.classList.add('out'); setTimeout(function () { t.remove(); }, 200); }, 5000);
+    while (toastRoot.children.length > 3) toastRoot.firstChild.remove();
+  });
+
+  /* Modal */
+  var backdrop = document.getElementById('modalBackdrop');
+  var lastFocus = null;
+  function openModal() { lastFocus = document.activeElement; backdrop.classList.add('open'); document.getElementById('modalCancel').focus(); }
+  function closeModal() { backdrop.classList.remove('open'); if (lastFocus) lastFocus.focus(); }
+  document.getElementById('openModal').addEventListener('click', openModal);
+  document.getElementById('modalCancel').addEventListener('click', closeModal);
+  document.getElementById('modalConfirm').addEventListener('click', function () {
+    closeModal();
+    var t = document.createElement('div');
+    t.className = 'toast'; t.setAttribute('role', 'status');
+    t.innerHTML = '<span class="t-ico" aria-hidden="true">✓</span><span>Exportação iniciada.</span>';
+    toastRoot.appendChild(t);
+    setTimeout(function () { t.classList.add('out'); setTimeout(function () { t.remove(); }, 200); }, 5000);
+  });
+  backdrop.addEventListener('click', function (e) { if (e.target === backdrop) closeModal(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && backdrop.classList.contains('open')) closeModal(); });
+
+  /* Nav ativa por scroll */
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.side a'));
+  var sections = links.map(function (a) { return document.querySelector(a.getAttribute('href')); });
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (en.isIntersecting) {
+        links.forEach(function (a) { a.classList.remove('active'); });
+        var idx = sections.indexOf(en.target);
+        if (idx > -1) links[idx].classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(function (s) { if (s) io.observe(s); });
+})();
+</script>
+</body>
+</html>

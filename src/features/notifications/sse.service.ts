@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { logger } from '../../lib/logger.js';
 import { connection, queuesEnabled } from '../../lib/queue/redis.js';
+import { attachSseKeepAlive } from '../../lib/sseKeepAlive.js';
 
 const clients = new Set<{ id: string; orgId: string; res: Response }>();
 
@@ -69,7 +70,13 @@ export const sseService = {
     const client = { id: clientId, orgId: organizationId, res };
     clients.add(client);
 
+    // Heartbeat `: ping` a cada 25s: impede que proxies/load balancers deem a
+    // conexão ociosa e a derrubem (timeout típico de 30–60s). O cleanup do timer
+    // é automático em `close`/`error` do socket e no `req.on('close')` abaixo.
+    const stopKeepAlive = attachSseKeepAlive(res);
+
     req.on('close', () => {
+      stopKeepAlive();
       clients.delete(client);
     });
   },
