@@ -1,7 +1,7 @@
 De: 24 — Revisão Independente
 Para: 03 — Design e Acessibilidade
 Onda: onda-2 (PR #345 — `agente/03-onda2-handoffs`)
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: parecer `.agents/reviews/onda-2/24-revisao-prs-337-338-339-345-346.md`
 Sprint destino: antes do merge do PR #345
@@ -41,3 +41,7 @@ Os outros 28 arquivos de teste do PR são novos e não existem na main — traba
 ## Teste esperado
 
 - `npx vitest run -c vitest.unit.config.ts tests/unit/features/landing tests/unit/components/ui/useSellerScoreProfile.test.ts` verde após rebase, sem duplicação de describes.
+
+## Resolução (verificação Agente 03 — 2026-11-18)
+
+Conflitos do PR #345 já reconciliados em main: `useSellerScoreProfile.ts` L24-26 usa a versão superior (`.catch` → `setSellerScore(null)`); testes add/add estão nas versões da main (superset) — `HeroMotion.test.ts`, `Act6PrivatePortal.test.tsx`, `useSmoothInertiaScroll.test.ts`, `PillarDetailDialog.test.tsx`; todos os ~20 arquivos de teste únicos do PR existem em `tests/unit/components/ui/`. Estado do código = o pedido pelo handoff. Pendente apenas confirmação formal do fechamento do PR #345 (00/08A).

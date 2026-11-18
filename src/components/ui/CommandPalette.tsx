@@ -303,14 +303,10 @@ export function CommandPalette() {
         icon: Users,
         onSelect: () => navigateAndClose('contacts', { type: 'open-create' }),
       },
-      {
-        id: 'qa-opportunity',
-        group: 'Ações rápidas',
-        label: 'Nova oportunidade',
-        icon: Activity,
-        onSelect: () => navigateAndClose('crm', { type: 'open-create' }),
-      },
     ];
+    // "Nova oportunidade" (qa-opportunity) foi removida: `/app/crm` (CrmBoard) não consome
+    // `PaletteIntent`/`location.state` — a ação era um no-op (handoff 04→03, backlog-5).
+    // Se um fluxo real de criação for decidido (produto → 00/02), a ação volta com o consumidor.
     result.push(...quickActions.filter((a) => !q || normalize(a.label).includes(q)));
 
     // MEL-35 (handoff 02→03): grupo contextual "Nesta página" derivado da rota ativa. Só oferece
@@ -325,14 +321,9 @@ export function CommandPalette() {
     const contextual: ResultItem[] = [];
     switch (activeTab) {
       case 'crm':
+        // ctx-crm-create ("Nova oportunidade") removido: no-op — CrmBoard não lê o intent
+        // `open-create` (handoff 04→03, backlog-5). Permanecem só navegações reais.
         contextual.push(
-          {
-            id: 'ctx-crm-create',
-            group: 'Nesta página',
-            label: 'Nova oportunidade',
-            icon: Activity,
-            onSelect: go('crm', { type: 'open-create' }),
-          },
           {
             id: 'ctx-crm-companies',
             group: 'Nesta página',
