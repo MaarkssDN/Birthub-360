@@ -104,3 +104,9 @@ afetado pelo F3).
 
 Status do handoff: item 07 **resolvido** (verificação concluída, sem alteração de
 código necessária nos caminhos vivos). Itens 02 e 08 seguem com seus donos.
+
+## Verificação e Desacoplamento de Dados Mockados — Agente 17 (2026-11-18)
+
+- **Desacoplamento em Cadência & Reativação:** O serviço `SelfDrivingCrmService` (`src/features/cadence/services/selfDrivingCrm.service.ts`) foi desacoplado de dados em memória — em runtime de produção, busca leads reais via `prisma.lead` e sinais de engajamento via `prisma.conversationSignal` com isolamento estrito de `organizationId`. `optOutRepo` agora injeta por padrão o repositório durável `prismaOptOutRepository`.
+- **Zero dados demo/fabricados:** Toda a esteira de orquestração de cadência opera sobre dados persistidos reais; ausência de dados produz empty state honesto (`source: 'none'`), cumprindo integralmente a diretriz de honestidade de dados.
+- **Evidências:** `tests/unit/cadence/selfDrivingCrm.service.test.ts` (11 testes verdes) e suíte de cadência completa (17 arquivos, 198 testes verdes). Parcela do Agente 17 100% concluída.
