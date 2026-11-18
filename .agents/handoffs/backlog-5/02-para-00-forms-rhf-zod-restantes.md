@@ -42,3 +42,19 @@ Sugestão de ordem: 04 (CRM/companies), 12 (voice-hub), 06 (integrações), 01 (
 
 - RHF e Zod já estão instalados; não é necessária aprovação de dependência.
 - A migração não deve ser forçada a 100% em formulários triviais/de uma tela sem ganho real; reportar cobertura incremental por onda.
+
+---
+
+Nota Agente 02 (2026-11-18, triagem de staleness): avaliado — **a parte do Agente
+02 está concluída**. Verificação executada nesta branch:
+
+```
+grep -rln "<form" em src/features/settings src/features/onboarding
+              src/features/dashboard src/components/layout
+→ 0 arquivos sem useForm (todo formulário do meu escopo já usa RHF)
+```
+
+Os ~43 formulários restantes pertencem a outros domínios (04 CRM, 12 voz, 06
+integrações, 01 auth/landing) — a distribuição por proprietário segue sendo
+decisão do Agente 00, como o próprio handoff propõe. Nenhuma ação adicional do
+02 neste item.

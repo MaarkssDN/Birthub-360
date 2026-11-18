@@ -1,3 +1,5 @@
+import { DsrRequestForm } from '../features/lgpd/pages/DsrRequestForm.js';
+
 export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-bg py-12 px-4 sm:px-6 lg:px-8 font-sans text-ink">
@@ -54,12 +56,28 @@ export default function PrivacyPolicy() {
         </section>
 
         <section className="mb-6 space-y-2">
-          <h2 className="text-xl font-semibold font-display text-ink">5. Direitos do Titular</h2>
+          <h2 className="text-xl font-semibold font-display text-ink">
+            5. Direitos do Titular
+          </h2>
           <p className="text-sm text-ink-2 leading-relaxed">
             O titular possui direito a acesso, correção, anonimização, bloqueio ou eliminação de
             dados desnecessários ou tratados em desconformidade, além de portabilidade e revogação
             de consentimento.
           </p>
+        </section>
+
+        <section className="mb-6 space-y-3">
+          <h2 className="text-xl font-semibold font-display text-ink">
+            5.1 Exercer seus direitos (LGPD, art. 18)
+          </h2>
+          <p className="text-sm text-ink-2 leading-relaxed">
+            Você pode solicitar o exercício dos seus direitos pelo formulário abaixo. Enviaremos um
+            link de confirmação ao e-mail cadastrado — nenhuma alteração é feita sem essa
+            confirmação. O prazo de resposta é de até 15 dias (art. 19). Se você já recebeu um
+            e-mail com link de verificação ou acompanhamento, use os links enviados — eles abrem
+            as páginas de confirmação e status do pedido.
+          </p>
+          <DsrRequestForm />
         </section>
 
         <section className="mb-6 space-y-2">

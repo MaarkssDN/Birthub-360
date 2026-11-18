@@ -44,6 +44,10 @@ const ResetPasswordScreen = lazy(() =>
 );
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy.js'));
 const TermsOfUse = lazy(() => import('./pages/TermsOfUse.js'));
+// Páginas públicas do canal DSR (LGPD art. 18) — destinos dos links enviados
+// por e-mail na verificação/acompanhamento de solicitações do titular.
+const DsrVerifyPage = lazy(() => import('./features/lgpd/pages/DsrVerifyPage.js'));
+const DsrStatusPage = lazy(() => import('./features/lgpd/pages/DsrStatusPage.js'));
 const Landing360 = lazy(() =>
   import('./features/landing/pages/Landing360.js').then((m) => ({ default: m.Landing360 })),
 );
@@ -116,6 +120,10 @@ export default function App() {
                         <Route path="/landing-new" element={<LandingInnovative />} />
                         <Route path="/privacy" element={<PrivacyPolicy />} />
                         <Route path="/terms" element={<TermsOfUse />} />
+                        {/* Canal público DSR — o backend responde em /api/public/data-subject-requests
+                        (PR do Agente 01); estas páginas são públicas e não exigem sessão. */}
+                        <Route path="/privacidade/dsr/verificar" element={<DsrVerifyPage />} />
+                        <Route path="/privacidade/dsr/acompanhamento" element={<DsrStatusPage />} />
                         {/* `/select-brand` era a escolha entre as duas marcas anteriores. Com marca
                         única a tela deixou de existir; a rota permanece como redirecionamento
                         para não quebrar link salvo, atalho de app instalado ou bookmark. */}

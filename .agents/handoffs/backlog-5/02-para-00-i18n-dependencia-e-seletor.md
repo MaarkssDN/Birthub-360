@@ -38,3 +38,17 @@ Também é necessário um item de UX para seletor de idioma (hoje o locale é li
 
 - Nenhuma dependência foi adicionada pelo Agente 02.
 - A base criada evita bloquear MEL-36 e já permite adoção incremental por feature.
+
+---
+
+Nota Agente 02 (2026-11-18, triagem de staleness): avaliado — **permanece aberto
+para o 00**, por dois bloqueios fora do meu domínio:
+
+1. Decisão de dependência (i18next/react-i18next vs. base atual sem deps) exige
+   aprovação de `package.json`/lockfile — dono: Agente 00.
+2. Seletor de idioma: ainda **prematuro** implementar agora — a cobertura real de
+   strings traduzidas é propositalmente mínima (~30 chaves, onboarding/first-steps);
+   um seletor visível hoje prometeria um app bilíngue que não existe. Depende de
+   (a) decisão de produto sobre onde expor (Settings vs. onboarding) e (b) revisão
+   de design com o Agente 03. Quando a cobertura de i18n crescer, a UI do seletor
+   é trivial e entra no meu escopo (Settings/navigation).
