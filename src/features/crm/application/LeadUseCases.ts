@@ -708,6 +708,7 @@ export class LeadUseCases extends BaseUseCases<Lead, LeadRepository> {
 
     let updatedCount = 0;
     let failedCount = 0;
+    const statusChangedLeads: Lead[] = [];
     for (const lead of leads) {
       // Cada lead vive no seu próprio try/catch: antes, uma falha no meio do lote (ex.: erro de
       // rede/DB no update de um item) lançava sem ser capturada e derrubava a função inteira —
@@ -741,8 +742,9 @@ export class LeadUseCases extends BaseUseCases<Lead, LeadRepository> {
         // com isWon/isLost, timeline, broadcasts DEAL_WON/DEAL_LOST e re-sync Bitrix — idêntico
         // aos demais caminhos de escrita de status. Uma rejeição do gate (401/403) cai no catch
         // por item e vira failedCount, sem escrita parcial de status.
+        let statusUpdatedLead: Lead | undefined;
         if (statusChanged && requestedStatusLabel) {
-          await this.updateLeadStatus(organizationId, lead.id, requestedStatusLabel, actorUserId);
+          statusUpdatedLead = await this.updateLeadStatus(organizationId, lead.id, requestedStatusLabel, actorUserId);
         }
 
         if (hasTagUpdate || hasOwnerUpdate) {
@@ -783,6 +785,9 @@ export class LeadUseCases extends BaseUseCases<Lead, LeadRepository> {
         // primeira ter sucesso, o status já persistiu mas o item conta como failedCount — o log
         // de erro identifica qual escrita falhou. Preferimos isso a duplicar a lógica de
         // pipeline/gate/closedAt no caminho direto.
+        if (statusChanged && statusUpdatedLead) {
+          statusChangedLeads.push(statusUpdatedLead);
+        }
         updatedCount++;
       } catch (err: any) {
         failedCount++;
@@ -792,6 +797,6 @@ export class LeadUseCases extends BaseUseCases<Lead, LeadRepository> {
         );
       }
     }
-    return { updatedCount, total: leads.length, failedCount };
+    return { updatedCount, total: leads.length, failedCount, statusChangedLeads };
   }
 }

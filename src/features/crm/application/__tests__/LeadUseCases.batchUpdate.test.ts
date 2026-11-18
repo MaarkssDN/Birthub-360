@@ -79,7 +79,12 @@ describe('LeadUseCases.batchUpdateLeads — item falho não derruba o lote intei
       status: 'Qualificação (SDR)',
     });
 
-    expect(result).toEqual({ updatedCount: 1, total: 2, failedCount: 1 });
+    expect(result).toEqual({
+      updatedCount: 1,
+      total: 2,
+      failedCount: 1,
+      statusChangedLeads: [{ id: 'lead-1', bitrixLeadId: null }],
+    });
     expect(repository.updateStatus).toHaveBeenCalledTimes(2);
   });
 
@@ -95,7 +100,12 @@ describe('LeadUseCases.batchUpdateLeads — item falho não derruba o lote intei
       owner: 'user-9',
     });
 
-    expect(result).toEqual({ updatedCount: 2, total: 2, failedCount: 0 });
+    expect(result).toEqual({
+      updatedCount: 2,
+      total: 2,
+      failedCount: 0,
+      statusChangedLeads: [],
+    });
   });
 });
 
@@ -110,7 +120,12 @@ describe('LeadUseCases.batchUpdateLeads — status chega como rótulo da UI (reg
       status: 'Qualificação (SDR)',
     });
 
-    expect(result).toEqual({ updatedCount: 1, total: 1, failedCount: 0 });
+    expect(result).toEqual({
+      updatedCount: 1,
+      total: 1,
+      failedCount: 0,
+      statusChangedLeads: [{ id: 'lead-x', bitrixLeadId: null }],
+    });
     // O status NÃO vai mais pelo prisma.lead.update cru — delega a updateLeadStatus, que
     // internamente converte o rótulo para 'Qualificacao_SDR' (toPrismaLeadStatus) e grava
     // status + closedAt + pipelineStageId/probability + LeadStageHistory.
@@ -139,7 +154,12 @@ describe('LeadUseCases.batchUpdateLeads — status chega como rótulo da UI (reg
       status: 'Qualificação (SDR)',
     });
 
-    expect(result).toEqual({ updatedCount: 0, total: 1, failedCount: 0 });
+    expect(result).toEqual({
+      updatedCount: 0,
+      total: 1,
+      failedCount: 0,
+      statusChangedLeads: [],
+    });
     expect(repository.updateStatus).not.toHaveBeenCalled();
     expect(prismaMock.lead.update).not.toHaveBeenCalled();
   });
@@ -188,7 +208,12 @@ describe('LeadUseCases.batchUpdateLeads — status chega como rótulo da UI (reg
       'user-42',
     );
 
-    expect(result).toEqual({ updatedCount: 1, total: 2, failedCount: 1 });
+    expect(result).toEqual({
+      updatedCount: 1,
+      total: 2,
+      failedCount: 1,
+      statusChangedLeads: [{ id: 'lead-x', bitrixLeadId: null }],
+    });
     expect(broadcastEvent).toHaveBeenCalledTimes(1); // só o item que passou no gate
     expect(broadcastEvent).toHaveBeenCalledWith({
       type: 'DEAL_WON',
@@ -207,7 +232,12 @@ describe('LeadUseCases.batchUpdateLeads — status chega como rótulo da UI (reg
       status: 'Negócios Ganhos',
     });
 
-    expect(result).toEqual({ updatedCount: 0, total: 1, failedCount: 1 });
+    expect(result).toEqual({
+      updatedCount: 0,
+      total: 1,
+      failedCount: 1,
+      statusChangedLeads: [],
+    });
     expect(repository.updateStatus).not.toHaveBeenCalled();
   });
 });
