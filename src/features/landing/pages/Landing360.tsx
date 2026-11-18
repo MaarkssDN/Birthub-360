@@ -522,6 +522,10 @@ export function Landing360({
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const targetDestination = (location.state as { from?: { pathname?: string; search?: string } })
+    ?.from?.pathname
+    ? `${(location.state as { from: { pathname: string; search?: string } }).from.pathname}${(location.state as { from: { search?: string } }).from.search || ''}`
+    : '/app';
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // --- CRO & TESTES A/B (Variante A: Aceleração de Pipeline / Variante B: Multiplicação de Receita) ---
@@ -816,9 +820,9 @@ export function Landing360({
   // Redirecionamento se já autenticado
   useEffect(() => {
     if (currentUser) {
-      navigate('/app', { replace: true });
+      navigate(targetDestination, { replace: true });
     }
-  }, [currentUser, navigate]);
+  }, [currentUser, navigate, targetDestination]);
 
   // Limpeza de estado de modais e simuladores em mudanças de rota
   useEffect(() => {
@@ -913,7 +917,7 @@ export function Landing360({
           return;
         }
 
-        navigate('/app', { replace: true });
+        navigate(targetDestination, { replace: true });
       } else if (authMode === 'signup') {
         const result = await authClient.signUp.email({
           email: email.trim(),
