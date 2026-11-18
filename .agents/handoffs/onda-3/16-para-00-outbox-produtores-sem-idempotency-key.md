@@ -3,7 +3,7 @@
 - De: 16 — Runtime, Workers e Escala
 - Para: 00 — Coordenador
 - Onda: 3 (backlog, DEM do ciclo 20261113-004 / MEL-21)
-- Status: aberto
+- Status: em-andamento (parte de runtime executada pelo 16 em 2026-11-17 — ver "Atualização" abaixo; chaves por produtor seguem pendentes, decisão de contrato do 00)
 - Prioridade: alto
 - Bloqueador-ref: auditoria `.agents/runs/onda-3/16-mel21-outbox-auditoria.md` (G4)
 - Sprint destino: a definir pelo 00
@@ -62,3 +62,26 @@ do adaptador Prisma).
 - Relacionado: handoff 16→06 sobre nomes de consumidor estáveis no bridge.
 - `publishInTransaction`/UoW existe mas nenhum caso de uso usa — decisão separada se o
   outbox deve migrar para escrita transacional (ver G10 da auditoria).
+
+## Atualização — Agente 16 (2026-11-17, branch `agente/16-handoffs-20261117`)
+
+**Parte de runtime executada (escopo `src/lib/queue/**`):**
+
+- `DomainEventMeshService.appendTo` agora emite `logger.warn` **uma vez por `eventType` por
+  processo** quando `publish`/`publishInTransaction` é chamado sem `opts.idempotencyKey`
+  (`src/lib/queue/domainEventMesh.service.ts`). Campos logados: `eventType`, `producer`,
+  `organizationId`, `aggregateId` — sem PII. Isso torna observável quais produtores ainda
+  publicam sem chave, sem spam de log e sem mudar o contrato.
+- Teste adicionado em `tests/unit/queue/domainEventMesh.service.test.ts`:
+  dedup por `idempotencyKey` (mesma chave → 1 registro na outbox — o "Teste esperado" deste
+  handoff já estava coberto em `tests/unit/queue/outbox.remed05.test.ts:56`) e warn
+  throttled (1x por eventType; publish COM chave não gera warn).
+
+**Decisão de contrato que permanece com o 00:** definir se `idempotencyKey` vira obrigatória
+(quebra de contrato para produtores existentes) ou se cada dono de feature adota chaves
+estáveis gradualmente. O inventário de produtores acima já está distribuído por domínio
+(06 integrations, 07 IA/automations, 04 CRM/BI, 17 cadence etc.) — recomendo manter a
+decisão por dono com o warn do runtime como instrumento de verificação.
+
+**Status permanece `em-andamento`**: nenhum call site de produtor foi alterado (arquivos de
+outros donos — ver regra de propriedade §15/§16 do AGENTS.md).

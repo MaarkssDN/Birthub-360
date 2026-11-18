@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DomainEventMeshService } from '../../../src/lib/queue/domainEventMesh.service.js';
+import { logger } from '../../../src/lib/logger.js';
 
 describe('DomainEventMeshService Unit Tests', () => {
   let mesh: DomainEventMeshService;
@@ -125,5 +126,49 @@ describe('DomainEventMeshService Unit Tests', () => {
       payload: { meetingId: 'meet-1' },
     });
     expect(handlerMeeting).toHaveBeenCalledTimes(1);
+  });
+
+  it('deduplica publish com a mesma idempotencyKey (uma única linha na outbox)', async () => {
+    const input = {
+      eventType: 'DEAL_RISK_SPIKED' as const,
+      eventVersion: '1.0.0',
+      organizationId: 'org-idem',
+      correlationId: 'corr-idem',
+      producer: 'test',
+      aggregateId: 'deal-idem',
+      payload: { riskScore: 50 },
+    };
+    await mesh.publish(input, { idempotencyKey: 'deal-won:deal-idem' });
+    await mesh.publish(input, { idempotencyKey: 'deal-won:deal-idem' });
+
+    expect(mesh.getOutbox()).toHaveLength(1);
+  });
+
+  it('warn observável (1x por eventType) quando publish vai sem idempotencyKey', async () => {
+    const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => logger);
+    const base = {
+      eventVersion: '1.0.0',
+      organizationId: 'org-warn',
+      correlationId: 'corr-warn',
+      producer: 'test-producer',
+      aggregateId: 'agg-1',
+      payload: {},
+    };
+
+    await mesh.publish({ ...base, eventType: 'DEAL_RISK_SPIKED' });
+    await mesh.publish({ ...base, eventType: 'DEAL_RISK_SPIKED' });
+    await mesh.publish({ ...base, eventType: 'VALUE_REALIZATION_MEASURED' });
+    await mesh.publish(
+      { ...base, eventType: 'DEAL_RISK_SPIKED' },
+      { idempotencyKey: 'deal-won:agg-1' },
+    );
+
+    const missingKeyWarns = warnSpy.mock.calls.filter((call) =>
+      String(call[1]).includes('sem idempotencyKey'),
+    );
+    // Uma vez por eventType sem chave: DEAL_RISK_SPIKED (2 publishes) + VALUE_REALIZATION_MEASURED.
+    // O publish COM chave não gera warn.
+    expect(missingKeyWarns).toHaveLength(2);
+    warnSpy.mockRestore();
   });
 });

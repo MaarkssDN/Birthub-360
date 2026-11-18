@@ -39,6 +39,12 @@ export class DomainEventMeshService implements IDomainEventMeshPort {
   private outbox: OutboxRepository;
   private consumptions: ConsumptionStore;
   private backoff: BackoffPolicy;
+  // Handoff 16→00 (onda-3, produtores do outbox sem idempotencyKey): publicar sem chave
+  // deixa o evento sem proteção contra duplicata (o UNIQUE parcial da outbox só cobre quem
+  // passa a chave). A chave estável por fato de negócio é decisão de contrato do 00 e dos
+  // donos de cada feature; o runtime aqui apenas torna a ausência OBSERVÁVEL — warn uma
+  // única vez por eventType por processo, sem spam de log.
+  private readonly warnedMissingIdempotencyKey = new Set<string>();
   private static MAX_CAUSATION_DEPTH = 5;
   private static INLINE_LEASE_MS = 30_000;
   private static CONSUMER_LEASE_MS = 60_000;
@@ -92,6 +98,18 @@ export class DomainEventMeshService implements IDomainEventMeshPort {
     opts: PublishOptions,
     claimFor?: { workerId: string; leaseMs: number },
   ) {
+    if (!opts.idempotencyKey && !this.warnedMissingIdempotencyKey.has(envelope.eventType)) {
+      this.warnedMissingIdempotencyKey.add(envelope.eventType);
+      logger.warn(
+        {
+          eventType: envelope.eventType,
+          producer: envelope.producer,
+          organizationId: envelope.organizationId,
+          aggregateId: envelope.aggregateId,
+        },
+        'DomainEventMesh: publish sem idempotencyKey — retry/replay pode duplicar o evento na outbox. Produtores devem passar opts.idempotencyKey estável (ver handoff 16→00, onda-3).',
+      );
+    }
     return repo.append(
       {
         id: `outbox-${randomUUID()}`,
