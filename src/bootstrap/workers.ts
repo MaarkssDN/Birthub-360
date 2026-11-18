@@ -200,9 +200,7 @@ export function startEmbeddedWorkers(): EmbeddedWorkersHandle {
     winLossWorker: embeddedWorkersEnabled ? createWinLossAnalysisWorker() : null,
     pdfWorker: embeddedWorkersEnabled ? createWeeklyPdfReportWorker() : null,
     autoAnonymizeWorker: embeddedWorkersEnabled ? createAutoAnonymizeWorker() : null,
-    landingLeadRetentionWorker: embeddedWorkersEnabled
-      ? createLandingLeadRetentionWorker()
-      : null,
+    landingLeadRetentionWorker: embeddedWorkersEnabled ? createLandingLeadRetentionWorker() : null,
     coldLeadsScannerWorker: embeddedWorkersEnabled ? createColdLeadsScannerWorker() : null,
     stagnationScannerWorker: embeddedWorkersEnabled ? createStagnationScannerWorker() : null,
     accountIntelligenceSchedulerWorker: embeddedWorkersEnabled

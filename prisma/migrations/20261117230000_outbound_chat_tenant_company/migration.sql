@@ -36,8 +36,15 @@ ALTER TABLE IF EXISTS "chat_sessions"
 ALTER TABLE IF EXISTS "chat_messages"
   ADD COLUMN IF NOT EXISTS "company" TEXT;
 
-CREATE INDEX IF NOT EXISTS "chat_sessions_company_idx"
-  ON "chat_sessions" ("company");
-
-CREATE INDEX IF NOT EXISTS "chat_messages_company_idx"
-  ON "chat_messages" ("company");
+DO $$
+BEGIN
+  IF to_regclass('public.chat_sessions') IS NOT NULL THEN
+    CREATE INDEX IF NOT EXISTS "chat_sessions_company_idx"
+      ON "chat_sessions" ("company");
+  END IF;
+  IF to_regclass('public.chat_messages') IS NOT NULL THEN
+    CREATE INDEX IF NOT EXISTS "chat_messages_company_idx"
+      ON "chat_messages" ("company");
+  END IF;
+END
+$$;

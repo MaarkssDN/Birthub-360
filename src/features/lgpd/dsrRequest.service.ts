@@ -189,9 +189,7 @@ export type CreateDsrResult = 'created' | 'no_subject';
  * verificação, que só sai quando o contato é encontrado (o submit em si não
  * vaza existência: a resposta HTTP é a mesma).
  */
-export async function createDataSubjectRequest(
-  input: DsrRequestInput,
-): Promise<CreateDsrResult> {
+export async function createDataSubjectRequest(input: DsrRequestInput): Promise<CreateDsrResult> {
   const organizationId = resolveDsrOrganizationId();
   const emailIndex = contactEmailIndex(input.email);
   if (!emailIndex) throw new DsrUnavailableError();
@@ -258,9 +256,7 @@ export interface DsrVerifyResult {
  * mesma chamada (o titular já provou posse do e-mail — não há motivo para um
  * segundo passo manual em direitos automatizáveis).
  */
-export async function verifyDataSubjectRequest(
-  input: DsrVerifyInput,
-): Promise<DsrVerifyResult> {
+export async function verifyDataSubjectRequest(input: DsrVerifyInput): Promise<DsrVerifyResult> {
   const organizationId = resolveDsrOrganizationId();
 
   return requestContext.run({ tenantId: organizationId }, async () => {
@@ -314,13 +310,9 @@ export async function verifyDataSubjectRequest(
         break;
       }
       case 'CONSENT_REVOCATION': {
-        await consentAuditChain.revokeConsent(
-          organizationId,
-          email,
-          'TITULAR_REQUEST',
-          undefined,
-          { detail: `dsr:${request.protocol}` },
-        );
+        await consentAuditChain.revokeConsent(organizationId, email, 'TITULAR_REQUEST', undefined, {
+          detail: `dsr:${request.protocol}`,
+        });
         resultSummary = { revoked: true };
         break;
       }
