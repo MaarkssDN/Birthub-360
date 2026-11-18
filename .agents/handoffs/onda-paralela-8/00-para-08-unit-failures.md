@@ -1,7 +1,7 @@
 De: 00 — Coordenador
 Para: 08 — QA e Release
 Onda: paralela-8
-Status: aberto
+Status: resolvido
 Prioridade: alto
 
 ## Problema
