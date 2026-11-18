@@ -24,6 +24,10 @@ import {
   scheduleAutoAnonymizeJob,
 } from '../features/crm/jobs/autoAnonymizeDisqualified.worker.js';
 import {
+  createLandingLeadRetentionWorker,
+  scheduleLandingLeadRetentionJob,
+} from '../features/lgpd/jobs/landingLeadRetention.worker.js';
+import {
   createExecutiveSummaryWorker,
   scheduleExecutiveSummaryJob,
 } from '../features/crm/jobs/dailyExecutiveSummary.worker.js';
@@ -137,6 +141,8 @@ export interface EmbeddedWorkersHandle {
   winLossWorker: CloseableWorker;
   pdfWorker: CloseableWorker;
   autoAnonymizeWorker: CloseableWorker;
+  /** Sweep de retenção LGPD dos leads `landing_360` (>90d sem avanço → eraseDataSubject). */
+  landingLeadRetentionWorker: CloseableWorker;
   coldLeadsScannerWorker: CloseableWorker;
   stagnationScannerWorker: CloseableWorker;
   accountIntelligenceSchedulerWorker: CloseableWorker;
@@ -194,6 +200,9 @@ export function startEmbeddedWorkers(): EmbeddedWorkersHandle {
     winLossWorker: embeddedWorkersEnabled ? createWinLossAnalysisWorker() : null,
     pdfWorker: embeddedWorkersEnabled ? createWeeklyPdfReportWorker() : null,
     autoAnonymizeWorker: embeddedWorkersEnabled ? createAutoAnonymizeWorker() : null,
+    landingLeadRetentionWorker: embeddedWorkersEnabled
+      ? createLandingLeadRetentionWorker()
+      : null,
     coldLeadsScannerWorker: embeddedWorkersEnabled ? createColdLeadsScannerWorker() : null,
     stagnationScannerWorker: embeddedWorkersEnabled ? createStagnationScannerWorker() : null,
     accountIntelligenceSchedulerWorker: embeddedWorkersEnabled
@@ -254,6 +263,9 @@ export function startEmbeddedWorkers(): EmbeddedWorkersHandle {
     );
     scheduleAutoAnonymizeJob().catch((err) =>
       logger.error({ err }, 'Falha ao agendar job de anonimização automática'),
+    );
+    scheduleLandingLeadRetentionJob().catch((err) =>
+      logger.error({ err }, 'Falha ao agendar job de retenção de leads da landing'),
     );
     scheduleColdLeadsScannerJob().catch((err) =>
       logger.error({ err }, 'Falha ao agendar job do cold leads scanner'),
