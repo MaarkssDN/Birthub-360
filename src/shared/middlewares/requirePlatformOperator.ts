@@ -1,6 +1,7 @@
 import { timingSafeEqual } from 'node:crypto';
 import type { NextFunction, Request, Response } from 'express';
 import { env } from '../../config/env.js';
+import { sendApiError } from './errorHandler.js';
 
 const HEADER_NAME = 'x-platform-operator-token';
 const QUERY_NAME = 'operator_token';
@@ -67,11 +68,12 @@ function readRawCookie(req: Request, name: string): string | null {
  */
 export function requirePlatformOperator(req: Request, res: Response, next: NextFunction): void {
   if (!isPlatformOperatorTokenConfigured()) {
-    res.status(503).json({
-      success: false,
-      error:
-        'Recurso de operador de plataforma não habilitado — configure PLATFORM_OPERATOR_TOKEN.',
-    });
+    sendApiError(
+      req,
+      res,
+      503,
+      'Recurso de operador de plataforma não habilitado — configure PLATFORM_OPERATOR_TOKEN.',
+    );
     return;
   }
 
@@ -86,7 +88,7 @@ export function requirePlatformOperator(req: Request, res: Response, next: NextF
     null;
 
   if (!isValidPlatformOperatorToken(candidate)) {
-    res.status(403).json({ success: false, error: 'Acesso negado.' });
+    sendApiError(req, res, 403, 'Acesso negado.');
     return;
   }
 

@@ -3,33 +3,13 @@ import type { NextFunction, Request, Response } from 'express';
 import { ZodError } from 'zod';
 import { env } from '../../config/env.js';
 import { logger } from '../../lib/logger.js';
+import type { ApiErrorCode } from '../contracts/apiEnvelope.contract.js';
 import type { IObservabilityRequest } from './observability.js';
 
-/**
- * Taxonomia estável de `code` de erro, exposta no corpo da resposta (ver checklist de contratos
- * do produto — Agente 18). Deriva do status HTTP e, quando o tipo de erro já lançado no código
- * permite mais precisão (ZodError, `AppError`, `Prisma.PrismaClientKnownRequestError`), do próprio
- * tipo. Propositalmente pequena: cobre os status HTTP que este backend já lança hoje via
- * `AppError`/rotas (400, 401, 403, 404, 405, 409, 410, 415, 422, 429, 500, 502, 503, 504) — não é
- * uma taxonomia inventada do zero, e novos códigos só devem ser adicionados quando um novo status
- * HTTP passar a ser lançado de verdade.
- */
-export type ApiErrorCode =
-  | 'VALIDATION_ERROR'
-  | 'UNAUTHORIZED'
-  | 'FORBIDDEN'
-  | 'NOT_FOUND'
-  | 'METHOD_NOT_ALLOWED'
-  | 'CONFLICT'
-  | 'GONE'
-  | 'UNSUPPORTED_MEDIA_TYPE'
-  | 'UNPROCESSABLE_ENTITY'
-  | 'RATE_LIMITED'
-  | 'INTERNAL_ERROR'
-  | 'BAD_GATEWAY'
-  | 'SERVICE_UNAVAILABLE'
-  | 'TIMEOUT'
-  | 'BAD_REQUEST';
+// Re-exporta os tipos canônicos do contrato de envelope (MEL-40, Onda 5) para não quebrar
+// imports existentes de `errorHandler.js` — a fonte única de verdade agora é
+// `src/shared/contracts/apiEnvelope.contract.ts`.
+export type { ApiErrorCode };
 
 export interface ApiResponse<T = unknown> {
   success: boolean;
@@ -110,10 +90,13 @@ function resolveRequestId(req: Request, res: Response): string | undefined {
   if (typeof fromObservability === 'string' && fromObservability) return fromObservability;
   if (Array.isArray(fromObservability) && fromObservability[0]) return fromObservability[0];
 
-  const headerValue = res.getHeader('x-request-id');
+  // Guards defensivos: testes unitários e callers fora do pipeline Express podem montar
+  // req/res parciais sem `headers`/`getHeader` — o requestId é best-effort, nunca derruba a resposta.
+  const headerValue =
+    typeof res.getHeader === 'function' ? res.getHeader('x-request-id') : undefined;
   if (typeof headerValue === 'string' && headerValue) return headerValue;
 
-  const rawReqHeader = req.headers['x-request-id'];
+  const rawReqHeader = req.headers?.['x-request-id'];
   if (typeof rawReqHeader === 'string' && rawReqHeader) return rawReqHeader;
   if (Array.isArray(rawReqHeader) && rawReqHeader[0]) return rawReqHeader[0];
 
@@ -137,6 +120,25 @@ function sendError(
   };
   if (options?.details !== undefined) body.details = options.details;
   res.status(status).json(body);
+}
+
+/**
+ * Helper público para rotas que precisam responder um erro de domínio sem lançar exceção
+ * (MEL-40, Onda 5). Emite exatamente o mesmo envelope do middleware global — `success:false`,
+ * `error`, `code` derivado do status (ou explícito via `options.code`), `retryable` e
+ * `requestId` reaproveitado de `x-request-id` — em vez do `{ success:false, error }` parcial que
+ * vários handlers legados ainda retornam inline. Rotas novas devem preferir este helper (ou
+ * `throw new AppError(...)`, que cai no mesmo envelope via `errorHandler`); a migração dos
+ * handlers inline existentes é gradual e por domínio (ver `docs/api/README.md`).
+ */
+export function sendApiError(
+  req: Request,
+  res: Response,
+  status: number,
+  error: string,
+  options?: { code?: ApiErrorCode; details?: unknown },
+): void {
+  sendError(req, res, status, error, options);
 }
 
 export const errorHandler = (

@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import { env } from '../../config/env.js';
+import { sendApiError } from '../middlewares/errorHandler.js';
 
 /**
  * Proteção CSRF por validação estrita de Origin/Referer (SEC-002).
@@ -54,8 +55,8 @@ function isAllowedOrigin(origin: string, allowed: Set<string>): boolean {
   return env.NODE_ENV !== 'production' && isLocalDevOrigin(origin);
 }
 
-function deny(res: Response, error: string): void {
-  res.status(403).json({ success: false, error });
+function deny(req: Request, res: Response, error: string): void {
+  sendApiError(req, res, 403, error);
 }
 
 export function csrfGuard(req: Request, res: Response, next: NextFunction): void {
@@ -81,21 +82,21 @@ export function csrfGuard(req: Request, res: Response, next: NextFunction): void
   const referer = req.headers.referer;
 
   if (!origin && !referer) {
-    deny(res, 'CSRF: cabeçalho Origin/Referer ausente.');
+    deny(req, res, 'CSRF: cabeçalho Origin/Referer ausente.');
     return;
   }
 
   const allowed = buildAllowedOrigins();
 
   if (origin && !isAllowedOrigin(origin, allowed)) {
-    deny(res, 'CSRF: Origin não permitida.');
+    deny(req, res, 'CSRF: Origin não permitida.');
     return;
   }
 
   if (referer) {
     const refererOrigin = originOf(referer);
     if (!refererOrigin || !isAllowedOrigin(refererOrigin, allowed)) {
-      deny(res, 'CSRF: Referer não permitido.');
+      deny(req, res, 'CSRF: Referer não permitido.');
       return;
     }
   }

@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 import { prisma } from '../../lib/prisma.js';
 import { routeParam } from '../http/routeParams.js';
 import type { AuthRequest } from './authenticateToken.js';
+import { sendApiError } from './errorHandler.js';
 
 /**
  * CLOSER/SDR só pode editar/excluir/reenriquecer os leads que capturou — GESTOR/ADMIN já são
@@ -34,7 +35,7 @@ export function requireLeadOwnership() {
     });
 
     if (!lead) {
-      res.status(404).json({ success: false, error: 'Lead not found' });
+      sendApiError(req, res, 404, 'Lead not found');
       return;
     }
 
@@ -43,10 +44,7 @@ export function requireLeadOwnership() {
       !ownsById && lead.owner != null && (await ownerMatchesUserName(lead.owner, authReq.user.id));
 
     if (!ownsById && !ownsByLegacyName) {
-      res.status(403).json({
-        success: false,
-        error: 'Você só pode editar leads que você capturou.',
-      });
+      sendApiError(req, res, 403, 'Você só pode editar leads que você capturou.');
       return;
     }
 

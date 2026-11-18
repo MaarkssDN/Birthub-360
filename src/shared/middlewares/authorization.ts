@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 import { logger } from '../../lib/logger.js';
 import { getTenantPrisma } from '../../lib/tenant-prisma.js';
 import type { AuthRequest } from './authenticateToken.js';
+import { sendApiError } from './errorHandler.js';
 // Nota de RBAC: este arquivo já teve `requirePermission`/`requireAnyPermission`, baseados num
 // sistema de permissões (SUPER_ADMIN/TENANT_OWNER/.../GUEST) que nunca esteve conectado a nenhuma
 // rota e divergia do papel realmente gravado no banco (User.role, ADMIN/GESTOR/CLOSER/SDR/
@@ -13,9 +14,7 @@ export const requireTenant = (req: Request, res: Response, next: NextFunction): 
   const authReq = req as unknown as AuthRequest;
   if (!authReq.user?.organizationId) {
     logger.warn({ userId: authReq.user?.id }, 'Access denied: Tenant ID missing');
-    res
-      .status(403)
-      .json({ success: false, error: 'User is not associated with any tenant/organization.' });
+    sendApiError(req, res, 403, 'User is not associated with any tenant/organization.');
     return;
   }
   try {
@@ -23,6 +22,6 @@ export const requireTenant = (req: Request, res: Response, next: NextFunction): 
     next();
   } catch (err: any) {
     logger.error({ err }, 'Failed to set db instance');
-    res.status(500).json({ success: false, error: 'Internal Server Error.' });
+    sendApiError(req, res, 500, 'Internal Server Error.');
   }
 };

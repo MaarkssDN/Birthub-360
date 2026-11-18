@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import { hasRequiredRole } from '../../lib/auth/authorization.js';
 import type { AuthRequest } from './authenticateToken.js';
+import { sendApiError } from './errorHandler.js';
 
 /**
  * RBAC middleware — garante que o usuário autenticado possui pelo menos um dos
@@ -19,18 +20,17 @@ export function requireRole(allowedRoles: string[]) {
 
     // authenticateToken deve ter sido chamado antes deste middleware
     if (!authReq.user) {
-      res.status(401).json({
-        success: false,
-        error: 'Authentication required.',
-      });
+      sendApiError(req, res, 401, 'Authentication required.');
       return;
     }
 
     if (!hasRequiredRole(authReq.user.role, allowedRoles)) {
-      res.status(403).json({
-        success: false,
-        error: `Insufficient permissions. Required: ${allowedRoles.join(' or ')}. Your role: ${authReq.user.role}.`,
-      });
+      sendApiError(
+        req,
+        res,
+        403,
+        `Insufficient permissions. Required: ${allowedRoles.join(' or ')}. Your role: ${authReq.user.role}.`,
+      );
       return;
     }
 
