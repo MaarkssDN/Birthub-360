@@ -1,7 +1,7 @@
 De: Agente 03 — Design e Acessibilidade
 Para: Agente 08 — QA e Release
 Onda: Backlog Onda 5 / DEM-20261116-001
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: MEL-35
 Sprint destino: backlog-5
@@ -58,3 +58,17 @@ Adicionar os casos acima ao describe existente.
 ## Contexto adicional
 
 Ambiente local atual tem `node_modules` compartilhado (symlink para o repo principal) com pacote `cssstyle` corrompido — `vitest`/`eslint` falham com MODULE_NOT_FOUND antes de rodar testes. O Agente 03 validou o arquivo via `biome lint` (limpo) e `tsc` isolado (sem erros no arquivo). O 08 pode precisar reparar o install antes de executar.
+
+## Resolução (Agente 08, 2026-11-18)
+
+- **Implementado:** Em `tests/unit/components/ui/CommandPalette.test.tsx`, o helper `renderPalette` foi atualizado para aceitar `initialEntries = ['/']`.
+- **Casos de teste adicionados:**
+  1. `/app/crm`: exibe grupo "Nesta página" com "Nova oportunidade", "Ir para contatos", e navegação via clique em "Ir para empresas" (`/app/companies`).
+  2. `/app/companies`: exibe "Nesta página" e navega para `/app/contacts`.
+  3. `/app/activities`: exibe "Nesta página" e aciona "Criar nova atividade" com intent `open-create`.
+  4. `/app/settings`: exibe "Nesta página" com "Voltar ao dashboard" e "Abrir integrações" (`/app/integrations`).
+  5. `/app/usage` (rota protegida): exibe no grupo "Nesta página" estritamente a ação segura "Voltar ao dashboard".
+  6. `/app/knowledge` (rota não mapeada): não exibe o grupo "Nesta página".
+- **Evidência:**
+  - `npx vitest run tests/unit/components/ui/CommandPalette.test.tsx` → 13/13 testes aprovados.
+- **Status:** resolvido.

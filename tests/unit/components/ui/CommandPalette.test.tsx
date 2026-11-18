@@ -21,9 +21,9 @@ vi.mock('@/lib/soundEffects', () => ({
   SoundFX: { play: vi.fn(), isEnabled: vi.fn(() => true) },
 }));
 
-function renderPalette() {
+function renderPalette(initialEntries = ['/']) {
   return render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={initialEntries}>
       <CommandPalette />
     </MemoryRouter>,
   );
@@ -135,6 +135,65 @@ describe('CommandPalette', () => {
     // Ações rápidas são filtradas por similaridade de texto — 'zzzz' não casa nada.
     await waitFor(() => expect(screen.getByText(/Nenhum resultado/)).toBeInTheDocument(), {
       timeout: 2000,
+    });
+  });
+
+  describe('Ações contextuais da página ativa (MEL-35)', () => {
+    it('mostra ações contextuais da página em /app/crm', async () => {
+      renderPalette(['/app/crm']);
+      openWithCtrlK();
+      expect(screen.getByText('Nesta página')).toBeInTheDocument();
+      const oppElements = screen.getAllByText('Nova oportunidade');
+      expect(oppElements.length).toBeGreaterThanOrEqual(2);
+      expect(screen.getByText('Ir para contatos')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByText('Ir para empresas'));
+      expect(navigateMock).toHaveBeenCalledWith('/app/companies', undefined);
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('mostra ações contextuais em /app/companies', async () => {
+      renderPalette(['/app/companies']);
+      openWithCtrlK();
+      expect(screen.getByText('Nesta página')).toBeInTheDocument();
+      fireEvent.click(screen.getByText('Ir para contatos'));
+      expect(navigateMock).toHaveBeenCalledWith('/app/contacts', undefined);
+    });
+
+    it('mostra ações contextuais em /app/activities', async () => {
+      renderPalette(['/app/activities']);
+      openWithCtrlK();
+      expect(screen.getByText('Nesta página')).toBeInTheDocument();
+      const activityButtons = screen.getAllByText('Criar nova atividade');
+      expect(activityButtons.length).toBeGreaterThanOrEqual(2);
+      fireEvent.click(activityButtons[1]);
+      expect(navigateMock).toHaveBeenCalledWith(
+        '/app/activities',
+        expect.objectContaining({ state: { type: 'open-create' } }),
+      );
+    });
+
+    it('mostra ações contextuais em /app/settings', async () => {
+      renderPalette(['/app/settings']);
+      openWithCtrlK();
+      expect(screen.getByText('Nesta página')).toBeInTheDocument();
+      expect(screen.getByText('Voltar ao dashboard')).toBeInTheDocument();
+      fireEvent.click(screen.getByText('Abrir integrações'));
+      expect(navigateMock).toHaveBeenCalledWith('/app/integrations', undefined);
+    });
+
+    it('em página restrita (/app/usage), exibe apenas Voltar ao dashboard no grupo Nesta página', async () => {
+      renderPalette(['/app/usage']);
+      openWithCtrlK();
+      expect(screen.getByText('Nesta página')).toBeInTheDocument();
+      fireEvent.click(screen.getByText('Voltar ao dashboard'));
+      expect(navigateMock).toHaveBeenCalledWith('/app/dashboard', undefined);
+    });
+
+    it('não exibe o grupo Nesta página quando a rota não possui mapeamento contextual', async () => {
+      renderPalette(['/app/knowledge']);
+      openWithCtrlK();
+      expect(screen.queryByText('Nesta página')).not.toBeInTheDocument();
     });
   });
 });
