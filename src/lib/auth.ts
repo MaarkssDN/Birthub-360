@@ -29,6 +29,17 @@ const ACCOUNT_LOCKED_MESSAGE =
 // bloqueada, em vez de só a primeira leva de MAX_FAILED_LOGIN_ATTEMPTS contar.
 const ACCOUNT_LOCKED_ERROR_CODE = 'ACCOUNT_LOCKED';
 
+// Cookies `Secure`: env.SECURE_COOKIES já vem resolvido com default seguro de produção por
+// src/config/env.ts (unset + NODE_ENV=production => true; SECURE_COOKIES=false explícito é
+// override respeitado). BETTER_AUTH_URL https continua ligando a flag — preserva túneis/
+// proxies de dev e o comportamento anterior a esta mudança. `process.env.SECURE_COOKIES`
+// cobre o caminho de fallback de env.ts (parse falho em NODE_ENV=test, onde `env` é o
+// process.env cru e o valor continua string).
+const SECURE_COOKIES_ENABLED =
+  env.SECURE_COOKIES === true ||
+  process.env.SECURE_COOKIES === 'true' ||
+  process.env.BETTER_AUTH_URL?.startsWith('https://') === true;
+
 const socialProviders = {
   ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
     ? {
@@ -292,9 +303,7 @@ export const auth = betterAuth({
     updateAge: 60 * 60 * 24, // renova a sessão a cada 24h de uso
   },
   advanced: {
-    useSecureCookies: Boolean(
-      process.env.SECURE_COOKIES === 'true' || process.env.BETTER_AUTH_URL?.startsWith('https://'),
-    ),
+    useSecureCookies: SECURE_COOKIES_ENABLED,
     crossSubDomainCookies: {
       enabled: Boolean(process.env.COOKIE_DOMAIN),
       domain: process.env.COOKIE_DOMAIN,
@@ -302,10 +311,7 @@ export const auth = betterAuth({
     defaultCookieAttributes: {
       httpOnly: true,
       sameSite: 'lax',
-      secure: Boolean(
-        process.env.SECURE_COOKIES === 'true' ||
-          process.env.BETTER_AUTH_URL?.startsWith('https://'),
-      ),
+      secure: SECURE_COOKIES_ENABLED,
     },
   },
   user: {
