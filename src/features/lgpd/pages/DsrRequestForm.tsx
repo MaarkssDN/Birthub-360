@@ -66,9 +66,9 @@ export function DsrRequestForm() {
     return (
       <DsrAlert tone="success">
         <strong>Solicitação recebida.</strong> Se o e-mail informado estiver cadastrado, você
-        receberá em instantes uma mensagem com o link de confirmação. Nada é alterado nos seus
-        dados sem essa confirmação. Verifique também a pasta de spam. O prazo de resposta é de até
-        15 dias (LGPD, art. 19).
+        receberá em instantes uma mensagem com o link de confirmação. Nada é alterado nos seus dados
+        sem essa confirmação. Verifique também a pasta de spam. O prazo de resposta é de até 15 dias
+        (LGPD, art. 19).
       </DsrAlert>
     );
   }

@@ -1,11 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import {
-  type DsrVerifyResult,
-  downloadDsrPackage,
-  dsrErrorMessage,
-  dsrApi,
-} from './dsr.api.js';
+import { type DsrVerifyResult, downloadDsrPackage, dsrApi, dsrErrorMessage } from './dsr.api.js';
 import { DsrAlert, DsrShell } from './dsrShared.js';
 
 type VerifyState =
@@ -78,8 +73,8 @@ export default function DsrVerifyPage() {
           <DsrAlert tone="success">
             {state.result.status === 'COMPLETED' ? (
               <>
-                <strong>Solicitação concluída.</strong> Seus dados foram tratados conforme o tipo
-                de direito solicitado. Uma confirmação foi enviada ao seu e-mail.
+                <strong>Solicitação concluída.</strong> Seus dados foram tratados conforme o tipo de
+                direito solicitado. Uma confirmação foi enviada ao seu e-mail.
               </>
             ) : (
               <>
@@ -93,8 +88,8 @@ export default function DsrVerifyPage() {
           {state.result.package && (
             <div className="rounded-xl border border-slate-200 p-4 space-y-2">
               <p className="text-sm text-ink-2">
-                Seus dados pessoais exportados estão prontos para download em formato JSON.
-                Guarde este arquivo em local seguro — ele contém dados pessoais.
+                Seus dados pessoais exportados estão prontos para download em formato JSON. Guarde
+                este arquivo em local seguro — ele contém dados pessoais.
               </p>
               <button
                 type="button"

@@ -1,8 +1,8 @@
 import { MotionConfig } from 'framer-motion';
 import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { AppLayout, PageFallback } from './components/layout/AppLayout.js';
 import { ErrorBoundary } from './components/ErrorBoundary.js';
+import { AppLayout, PageFallback } from './components/layout/AppLayout.js';
 import { ProtectedRoute } from './components/layout/ProtectedRoute.js';
 import { RequireModuleAccess } from './components/layout/RequireModuleAccess.js';
 import { RequireRole } from './components/layout/RequireRole.js';

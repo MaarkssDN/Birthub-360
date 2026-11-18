@@ -56,9 +56,7 @@ export default function PrivacyPolicy() {
         </section>
 
         <section className="mb-6 space-y-2">
-          <h2 className="text-xl font-semibold font-display text-ink">
-            5. Direitos do Titular
-          </h2>
+          <h2 className="text-xl font-semibold font-display text-ink">5. Direitos do Titular</h2>
           <p className="text-sm text-ink-2 leading-relaxed">
             O titular possui direito a acesso, correção, anonimização, bloqueio ou eliminação de
             dados desnecessários ou tratados em desconformidade, além de portabilidade e revogação
@@ -74,8 +72,8 @@ export default function PrivacyPolicy() {
             Você pode solicitar o exercício dos seus direitos pelo formulário abaixo. Enviaremos um
             link de confirmação ao e-mail cadastrado — nenhuma alteração é feita sem essa
             confirmação. O prazo de resposta é de até 15 dias (art. 19). Se você já recebeu um
-            e-mail com link de verificação ou acompanhamento, use os links enviados — eles abrem
-            as páginas de confirmação e status do pedido.
+            e-mail com link de verificação ou acompanhamento, use os links enviados — eles abrem as
+            páginas de confirmação e status do pedido.
           </p>
           <DsrRequestForm />
         </section>

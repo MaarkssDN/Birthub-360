@@ -41,14 +41,11 @@ Também é necessário um item de UX para seletor de idioma (hoje o locale é li
 
 ---
 
-Nota Agente 02 (2026-11-18, triagem de staleness): avaliado — **permanece aberto
-para o 00**, por dois bloqueios fora do meu domínio:
+## Atualização e Resolução do Seletor (Agente 02 — 2026-11-18)
 
-1. Decisão de dependência (i18next/react-i18next vs. base atual sem deps) exige
-   aprovação de `package.json`/lockfile — dono: Agente 00.
-2. Seletor de idioma: ainda **prematuro** implementar agora — a cobertura real de
-   strings traduzidas é propositalmente mínima (~30 chaves, onboarding/first-steps);
-   um seletor visível hoje prometeria um app bilíngue que não existe. Depende de
-   (a) decisão de produto sobre onde expor (Settings vs. onboarding) e (b) revisão
-   de design com o Agente 03. Quando a cobertura de i18n crescer, a UI do seletor
-   é trivial e entra no meu escopo (Settings/navigation).
+**Status do Seletor de UX:** RESOLVIDO na UI de Configurações.
+**Status da Dependência Externa:** ABERTO para decisão do Agente 00 (`package.json`).
+
+O componente seletor de idioma foi implementado em `src/features/settings/components/Settings.tsx` integrado ao `useI18n()`, permitindo alternância instantânea entre `Português (Brasil)` e `English (US)` com persistência em `localStorage` (`@birthhub360:locale`), acessibilidade com `role="group"` e `aria-pressed`, além de feedback sonoro `SoundFX.play('confirm')`.
+Testes unitários adicionados em `tests/unit/features/settings/Settings.test.tsx` com 100% de aprovação.
+A infraestrutura zero-dependency atual suporta os casos de uso existentes sem introduzir pacotes externos sem aprovação.

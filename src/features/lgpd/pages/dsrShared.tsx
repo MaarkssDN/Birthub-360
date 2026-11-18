@@ -5,13 +5,7 @@ import type { ReactNode } from 'react';
  * linguagem da `/privacy` (vancouver-card, tokens bg/ink). Sem dependência de
  * auth: são rotas públicas acessadas pelo titular via links de e-mail.
  */
-export function DsrShell({
-  title,
-  children,
-}: {
-  title: string;
-  children: ReactNode;
-}) {
+export function DsrShell({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="min-h-screen bg-bg py-12 px-4 sm:px-6 lg:px-8 font-sans text-ink">
       <div className="max-w-2xl mx-auto vancouver-card p-8 md:p-10 shadow-vancouver">
@@ -20,8 +14,8 @@ export function DsrShell({
         </h1>
         {children}
         <p className="mt-8 text-xs text-ink-2/70 leading-relaxed">
-          Birth Hub 360º — Encarregado de Dados (DPO): marcelo.nascimento@birthub360.com. Este
-          canal nunca altera seus dados sem confirmação enviada ao seu e-mail cadastrado.
+          Birth Hub 360º — Encarregado de Dados (DPO): marcelo.nascimento@birthub360.com. Este canal
+          nunca altera seus dados sem confirmação enviada ao seu e-mail cadastrado.
         </p>
       </div>
     </div>

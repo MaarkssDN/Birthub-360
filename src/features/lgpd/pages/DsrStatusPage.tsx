@@ -4,10 +4,10 @@ import {
   DSR_RIGHT_TYPE_LABELS,
   DSR_STATUS_LABELS,
   type DsrStatusResult,
+  dsrApi,
   dsrDeadlineDate,
   dsrErrorMessage,
   formatDsrDate,
-  dsrApi,
 } from './dsr.api.js';
 import { DsrAlert, DsrShell } from './dsrShared.js';
 
@@ -113,20 +113,22 @@ export default function DsrStatusPage() {
             </div>
             <div>
               <dt className="text-ink-2/70">Prazo de resposta (art. 19 LGPD)</dt>
-              <dd className="font-semibold text-ink">até {dsrDeadlineDate(state.result.createdAt)}</dd>
+              <dd className="font-semibold text-ink">
+                até {dsrDeadlineDate(state.result.createdAt)}
+              </dd>
             </div>
           </dl>
 
           {state.result.status === 'PENDING_VERIFICATION' && (
             <DsrAlert tone="info">
-              Sua solicitação ainda aguarda a confirmação pelo link enviado ao seu e-mail.
-              Verifique a caixa de entrada (e o spam) e clique no link para concluir.
+              Sua solicitação ainda aguarda a confirmação pelo link enviado ao seu e-mail. Verifique
+              a caixa de entrada (e o spam) e clique no link para concluir.
             </DsrAlert>
           )}
           {state.result.status === 'REJECTED' && (
             <DsrAlert tone="error">
-              Não foi possível localizar seus dados para concluir esta solicitação. Fale com o
-              DPO pelo e-mail da Política de Privacidade.
+              Não foi possível localizar seus dados para concluir esta solicitação. Fale com o DPO
+              pelo e-mail da Política de Privacidade.
             </DsrAlert>
           )}
           {(state.result.status === 'IN_PROGRESS' || state.result.status === 'VERIFIED') && (

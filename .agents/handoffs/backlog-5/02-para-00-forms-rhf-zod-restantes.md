@@ -45,16 +45,11 @@ Sugestão de ordem: 04 (CRM/companies), 12 (voice-hub), 06 (integrações), 01 (
 
 ---
 
-Nota Agente 02 (2026-11-18, triagem de staleness): avaliado — **a parte do Agente
-02 está concluída**. Verificação executada nesta branch:
+## Resolução do Escopo do Agente 02 (2026-11-18)
 
-```
-grep -rln "<form" em src/features/settings src/features/onboarding
-              src/features/dashboard src/components/layout
-→ 0 arquivos sem useForm (todo formulário do meu escopo já usa RHF)
-```
+**Status no Domínio do Agente 02:** CONCLUÍDO (100% de conformidade com RHF + Zod).
+**Status Geral:** ABERTO para distribuição aos outros proprietários (04, 12, 06, 01) pelo Agente 00.
 
-Os ~43 formulários restantes pertencem a outros domínios (04 CRM, 12 voz, 06
-integrações, 01 auth/landing) — a distribuição por proprietário segue sendo
-decisão do Agente 00, como o próprio handoff propõe. Nenhuma ação adicional do
-02 neste item.
+1. Todos os formulários sob domínio do Agente 02 (`src/features/settings`, `src/features/onboarding`, `src/features/dashboard`, `src/components/layout`) utilizam `react-hook-form` + `zod` (ex.: `MemoryGovernancePanel.tsx`).
+2. O novo formulário público de direitos do titular DSR (`src/features/lgpd/pages/DsrRequestForm.tsx`) também foi concebido e implementado de raiz com `react-hook-form` + `zodResolver(dsrRequestFormSchema)`.
+3. Os demais formulários pertencem a outros agentes e devem ser migrados por seus respectivos donos conforme planejado pelo Agente 00.
