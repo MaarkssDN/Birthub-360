@@ -50,6 +50,11 @@ const { LeadUseCases } = await import('../LeadUseCases.js');
 
 function makeUseCases() {
   const repository = {
+    findById: vi
+      .fn()
+      .mockImplementation((_orgId: string, id: string) =>
+        Promise.resolve({ id, bitrixLeadId: null }),
+      ),
     updateStatus: vi.fn().mockResolvedValue({ id: 'lead-x', bitrixLeadId: null }),
   };
   return { useCases: new LeadUseCases(repository as never), repository };

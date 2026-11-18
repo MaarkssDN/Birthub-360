@@ -416,6 +416,12 @@ export class PrismaCrm360Repository implements ICrm360Repository {
       include: { pipeline: true },
     });
 
+    // Tenancy (handoff 01A→04, onda-paralela-8): valida existência e tenancy do lead ANTES de
+    // invocar o gate CYC-007 — evita criar Note e DealClosureEvent órfãos para um leadId estrangeiro.
+    const previousLead = await prisma.lead.findFirstOrThrow({
+      where: { id: leadId, organizationId },
+    });
+
     // CYC-007 (onda 24): mover para uma etapa mapeada em "Negócios Ganhos" é o 3º caminho de
     // escrita real (junto com LeadUseCases.updateLeadStatus/updateLead) que precisa do gate de
     // fechamento determinístico — sem isto, o módulo CRM360 continuaria fechando negócios sem
@@ -429,10 +435,6 @@ export class PrismaCrm360Repository implements ICrm360Repository {
         actorUserId,
       });
     }
-
-    const previousLead = await prisma.lead.findFirstOrThrow({
-      where: { id: leadId, organizationId },
-    });
 
     const updateData: Prisma.LeadUpdateInput = {
       pipeline: { connect: { id: stage.pipelineId } },
