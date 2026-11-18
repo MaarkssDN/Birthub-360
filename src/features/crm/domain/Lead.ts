@@ -14,6 +14,11 @@ export interface LeadRepository extends Repository<Lead> {
     funnel?: LeadFunnel,
     query?: string,
   ): Promise<{ data: Lead[]; meta: unknown }>;
-  updateStatus(organizationId: string, id: string, newStatus: string): Promise<Lead>;
+  updateStatus(
+    organizationId: string,
+    id: string,
+    newStatus: string,
+    extraFields?: { owner?: string | null; tags?: string[] },
+  ): Promise<Lead>;
   findAllForExport(organizationId: string): Promise<Lead[]>;
 }
