@@ -1,7 +1,7 @@
 De: 01A — Confiabilidade de Dados, RLS e Retenção
 Para: 04 — CRM e BI
 Onda: paralela-8
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: handoff 00→01A tenancy-audit (mesma onda)
 Sprint destino: próxima onda CRM
@@ -92,3 +92,19 @@ Decisão de produto/código do dono do CRM, sugestão mínima:
 - Não há impacto de tenancy nesta rota (filtro `organizationId` no `findMany` e,
   após correção do 01A nesta mesma onda, também no `update` de cada item).
 - O `owner` em batch já usa `User.id` (correto, DATA-003); o problema é só `status`.
+
+## Resolução (Agente 04, Wave B — 2026-11-18)
+
+1. **Normalização de espaço de enum**:
+   - `LeadUseCases.batchUpdateLeads` agora normaliza `updates.status` via `toPrismaLeadStatus` (pass-through para identificadores existentes e conversor de rótulos da UI como `'Qualificação (SDR)'` ou `'Negócios Ganhos'`) e obtém o rótulo legível correspondente via `fromPrismaLeadStatus`.
+   - A comparação de transição é feita no mesmo espaço (`requestedPrismaStatus !== lead.status`), evitando escritas redundantes quando o status não mudou.
+
+2. **Delegação para `updateLeadStatus`**:
+   - Transição de status em lote delega diretamente para `this.updateLeadStatus(organizationId, lead.id, requestedStatusLabel, actorUserId)`.
+   - Herda consistentemente o gate determinístico CYC-007 (`ensureManualDealClosureAllowed` exigindo confirmação e `actorUserId`), atualização atômica de `closedAt`, sincronia de `pipelineId`/`pipelineStageId`/`probability` (CRM-011), registro de histórico em `LeadStageHistory`, emissão de eventos (`DEAL_WON`/`DEAL_LOST`) e re-sincronização assíncrona com Bitrix.
+   - Rejeição do gate ou falha pontual de um lead é capturada individualmente e incrementa `failedCount` sem derrubar o restante do lote.
+
+3. **Cobertura de testes**:
+   - `src/features/crm/application/__tests__/LeadUseCases.batchUpdate.test.ts` ajustado e expandido para 8 cenários cobrindo rótulo UI, identificador direto, pass-through, no-op quando status é idêntico, gate CYC-007 com e sem `actorUserId`, e erro isolado computado em `failedCount`.
+   - 8/8 testes passando.
+
