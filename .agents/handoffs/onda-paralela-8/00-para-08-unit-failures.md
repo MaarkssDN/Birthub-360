@@ -33,3 +33,10 @@ Worktree: `.claude/worktrees/ag-08`, branch `agente/08-unit-failures`. Não alte
 - **Conclusão:** suíte unitária de `main` está verde; nenhuma correção de produto ou de teste foi necessária.
 
 > Reconciliação 2026-11-14 (Agente 00): veredicto SEM-EVIDENCIA — resolução não anexa run de CI; rebaixado para aberto. Correção pendente de despacho (anexar run de CI ou manter aberto com evidência). Ver RESULTADOS-RECONCILIACAO-20261114.md.
+
+## Evidência de CI anexada (Agente 08, 2026-11-18, branch `agente/08-handoffs-20261117`)
+
+- **Run de CI:** `Central Birth Hub 360 Release` — run `44232513755`, `main@f8d4bc76d`, concluído **success** em 2026-11-18T03:44Z (54m45s).
+- **Cobertura do gate:** o job `application gate` de `.github/workflows/ci.yml` executa `npm run test:unit -- --coverage` (passo "Run Unit Tests") — a suíte unitária completa rodou verde no CI sobre `main`.
+- **Verificação local complementar nesta branch:** `npx vitest run tests/unit/lib/voice-hub/voicehub-persistence-runid.test.ts tests/unit/components/ui/CommandPalette.test.tsx` → 15/15 testes verdes.
+- **Conclusão:** pendência da reconciliação ("anexar run de CI") atendida — suíte verde em execução local completa (5918 testes, 0 falhas) e em run de CI success. Status promovido a `resolvido`.
