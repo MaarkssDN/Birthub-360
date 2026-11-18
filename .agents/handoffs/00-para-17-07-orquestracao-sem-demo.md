@@ -104,3 +104,20 @@ afetado pelo F3).
 
 Status do handoff: item 07 **resolvido** (verificação concluída, sem alteração de
 código necessária nos caminhos vivos). Itens 02 e 08 seguem com seus donos.
+
+## Reverificação — item do Agente 07 (2026-11-17, worktree `agente-07-handoffs`, base `main@414a0ca5f`)
+
+Reconfirmado em `main` e **débito técnico encerrado**:
+
+- `src/features/roleplay/services/roleplay-ai.service.ts` segue usando
+  `getAiModel` real (`local-llama3`/`local-llama3-fast`); falha de IA propaga
+  erro (sem réplica/nota fabricada).
+- Geradores do studio migraram para
+  `src/features/intelligence/services/studio/generators/{roleplay,b2bMatrix}.ts`
+  e usam `invokeStructured` real.
+- **`MultimodalRoleplaySimulatorService` não existe mais no repositório**
+  (0 ocorrências em `src/` e `tests/`) — o simulador heurístico sem consumidor
+  sinalizado como pendência em 2026-11-15 foi removido. Nada a fazer.
+
+Item 07 permanece **resolvido**. Status do handoff mantido `em-andamento`
+(itens dos Agentes 02 e 08 pendentes de verificação/execução por seus donos).
