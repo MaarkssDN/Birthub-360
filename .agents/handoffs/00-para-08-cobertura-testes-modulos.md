@@ -130,3 +130,23 @@ E2E na entrega parcial anterior (`signals-risks.spec.ts`).
   failover/resilience — sem spec dedicada.
 - Execução local de Playwright segue indisponível neste ambiente (sem
   Postgres/Redis/Meilisearch/Docker/browsers) — as specs novas precisam do CI.
+
+## Registro de verificação (Agente 08, 2026-11-18, branch `agente/08-handoffs-20261117`)
+
+Handoff mantido `em-andamento` — escalado ao humano por gaps de produto (AC-MKT-002/003, SLA mesa-tratamento). Nenhuma feature foi implementada nesta sessão, conforme orientação.
+
+### Verificação de parte executável de teste
+
+Inventário atualizado nesta branch mostra que a cobertura dos módulos listados avançou desde a redação original:
+
+- **social-selling**: `tests/integration/features/social-selling/socialSellingFlow.integration.test.ts`, `ApproachGeneratorCard.test.tsx`, `tests/unit/features/social-selling/` — o gap restante é o gate executável da proibição de scraping/LGPD, que depende de contrato de produto ainda não definido (não há módulo/função de "scraping" localizado em `src/features/social-selling` para testar sem inventar comportamento).
+- **market-intelligence**: `tests/unit/market-intelligence/` (6 specs) + `tests/unit/features/market-intelligence/server/` + `domain/__tests__/accountSignalTaxonomy.test.ts`. O badge `FONTE_PARCIAL` reside em `src/features/intelligence/agents/` e `src/features/hub/` — os fluxos de provider/fallback e ledger de créditos (AC-MKT-001/002/003) seguem bloqueados por decisão de produto (escalação humana), não por ausência de harness de teste.
+- **sales-orchestration**: `tests/unit/features/sales-orchestration/` + `tests/unit/sales-orchestration/orchestration.api.unit.test.ts`.
+- **predictability**: `tests/unit/features/predictability/predictability.api.test.ts`.
+- **voice-hub**: `tests/integration/features/voice-hub/`, `src/features/voice-hub/**/__tests__`, `src/lib/voice-hub/**/__tests__` (inclui `voicehub-persistence-runid.test.ts` criado nesta branch).
+- **mesa-tratamento**: unit (dashboard, priority, lossReasons, approachSuggestion) + E2E jornada com Bitrix falso (resolvido na Onda 4).
+- **signals-risks**: `tests/unit/components/signals-risks/SignalsAndRisksHub.test.tsx` + `tests/integration/features/signals-risks/revOpsFlow.integration.test.tsx`.
+
+### Conclusão do registro
+
+Não foi identificada parte de teste executável segura sem implementar features ou inventar contratos: os gaps remanescentes são (a) fluxos de produto pendentes de decisão humana (AC-MKT-002/003, SLA) e (b) jornadas E2E que exigem provedores/infra indisponíveis no harness local. Handoff permanece `em-andamento` aguardando o humano; nenhuma alteração de status aplicada.
