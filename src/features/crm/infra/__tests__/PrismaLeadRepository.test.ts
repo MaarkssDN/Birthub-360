@@ -7,9 +7,19 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
  * (não N+1) com o `forecastProbabilityAi` mais recente do Copiloto IA.
  */
 const prismaMock = {
-  lead: { findMany: vi.fn(), count: vi.fn(), findFirst: vi.fn(), update: vi.fn() },
+  lead: {
+    findMany: vi.fn(),
+    count: vi.fn(),
+    findFirst: vi.fn(),
+    update: vi.fn(),
+    create: vi.fn(),
+  },
   copilotoDealHealthSnapshot: { findMany: vi.fn() },
   crmPipelineStage: { findFirst: vi.fn() },
+  // Modelos consultados por assertLeadRelationsInTenant (tenancy, handoff 01A→04).
+  company: { findFirst: vi.fn() },
+  contact: { findFirst: vi.fn() },
+  crmPipeline: { findFirst: vi.fn() },
 };
 
 vi.mock('../../../../lib/prisma', () => ({ prisma: prismaMock }));
@@ -205,6 +215,10 @@ describe('PrismaLeadRepository — sincronia CRM-011 (status ⇄ pipelineStage)'
   });
 
   it('update(): não sincroniza a partir de `status` quando o payload já traz pipelineId/pipelineStageId explícitos', async () => {
+    // assertLeadRelationsInTenant valida as FKs explícitas do payload contra o tenant —
+    // o findFirst do stage aqui é a checagem de tenancy, não a sincronia CRM-011.
+    prismaMock.crmPipeline.findFirst.mockResolvedValue({ id: 'pipeline-custom' });
+    prismaMock.crmPipelineStage.findFirst.mockResolvedValue({ id: 'stage-custom' });
     prismaMock.lead.update.mockResolvedValue({
       id: 'lead-1',
       status: 'Proposta_Enviada',
@@ -219,7 +233,85 @@ describe('PrismaLeadRepository — sincronia CRM-011 (status ⇄ pipelineStage)'
       pipelineStageId: 'stage-custom',
     });
 
-    expect(prismaMock.crmPipelineStage.findFirst).not.toHaveBeenCalled();
+    // A etapa explícita do payload é preservada (sem sobrescrita pela etapa "casada" do status)…
+    const call = prismaMock.lead.update.mock.calls[0][0];
+    expect(call.data.pipelineStageId).toBe('stage-custom');
+    // …e nenhuma transição de estágio é registrada (recordStageTransition é o marcador da
+    // sincronia CRM-011, que não rodou porque o payload já gerencia o pipeline).
     expect(recordStageTransitionMock).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * Tenancy (handoff 01A→04, onda-paralela-8): `companyId`/`contactId`/`pipelineId`/
+ * `pipelineStageId` chegavam do body via leadSchema e eram gravados por spread sem verificar se
+ * pertenciam ao organizationId — vínculo cross-tenant persistia (e vazava PII sob ausência de
+ * RLS). Agora cada FK referenciada é validada com findFirst escopado por tenant; id estrangeiro
+ * → AppError 404 antes de qualquer escrita.
+ */
+describe('PrismaLeadRepository — validação de tenant das FKs (handoff 01A→04)', () => {
+  it('create(): rejeita companyId de outro tenant com 404, sem gravar', async () => {
+    prismaMock.company.findFirst.mockResolvedValue(null);
+    const repo = new PrismaLeadRepository();
+
+    await expect(
+      repo.create('org-1', { status: 'Lead Recebido', companyId: 'company-de-outro-tenant' }),
+    ).rejects.toMatchObject({ statusCode: 404 });
+    expect(prismaMock.lead.create).not.toHaveBeenCalled();
+  });
+
+  it('create(): rejeita contactId de outro tenant com 404, sem gravar', async () => {
+    prismaMock.company.findFirst.mockResolvedValue({ id: 'company-1' });
+    prismaMock.contact.findFirst.mockResolvedValue(null);
+    const repo = new PrismaLeadRepository();
+
+    await expect(
+      repo.create('org-1', {
+        status: 'Lead Recebido',
+        companyId: 'company-1',
+        contactId: 'contact-de-outro-tenant',
+      }),
+    ).rejects.toMatchObject({ statusCode: 404 });
+  });
+
+  it('create(): rejeita pipelineStageId cujo pipeline é de outro tenant com 404', async () => {
+    prismaMock.crmPipelineStage.findFirst.mockResolvedValue(null);
+    const repo = new PrismaLeadRepository();
+
+    await expect(
+      repo.create('org-1', { status: 'Lead Recebido', pipelineStageId: 'stage-estrangeira' }),
+    ).rejects.toMatchObject({ statusCode: 404 });
+    // A query de validação é escopada pelo tenant do pipeline, nunca pelo id solto.
+    expect(prismaMock.crmPipelineStage.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'stage-estrangeira', pipeline: { organizationId: 'org-1' } },
+      }),
+    );
+  });
+
+  it('update(): rejeita companyId estrangeiro com 404 antes do update', async () => {
+    prismaMock.company.findFirst.mockResolvedValue(null);
+    const repo = new PrismaLeadRepository();
+
+    await expect(
+      repo.update('org-1', 'lead-1', { companyId: 'company-de-outro-tenant' }),
+    ).rejects.toMatchObject({ statusCode: 404 });
+    expect(prismaMock.lead.update).not.toHaveBeenCalled();
+  });
+
+  it('update(): FKs nulas (limpeza de vínculo) não disparam validação nem bloqueiam', async () => {
+    prismaMock.lead.update.mockResolvedValue({
+      id: 'lead-1',
+      status: 'Lead_Recebido',
+      company: null,
+      contact: null,
+    });
+    const repo = new PrismaLeadRepository();
+
+    await repo.update('org-1', 'lead-1', { companyId: null, contactId: null });
+
+    expect(prismaMock.company.findFirst).not.toHaveBeenCalled();
+    expect(prismaMock.contact.findFirst).not.toHaveBeenCalled();
+    expect(prismaMock.lead.update).toHaveBeenCalled();
   });
 });

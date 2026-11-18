@@ -7,8 +7,8 @@ import {
   Loader2,
   RefreshCw,
   Table2,
-  TrendingUp,
   TrendingDown,
+  TrendingUp,
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { BarChart, LineChart } from '../../../components/charts/index.js';
@@ -45,7 +45,7 @@ function DecisionInstrument({
   target?: string;
 }) {
   const toneClass =
-    tone === 'good' ? 'text-[#22c55e]' : tone === 'critical' ? 'text-[#EF4444]' : 'text-slate-200';
+    tone === 'good' ? 'text-[#22c55e]' : tone === 'critical' ? 'text-[#F87171]' : 'text-slate-200';
 
   const trend = previousValue && (
     <div className="flex items-center gap-1 text-[10px] font-semibold">
@@ -57,10 +57,10 @@ function DecisionInstrument({
       ) : tone === 'critical' ? (
         <>
           <TrendingDown className="w-3 h-3" />
-          <span className="text-[#EF4444]">Atenção necessária</span>
+          <span className="text-[#F87171]">Atenção necessária</span>
         </>
       ) : (
-        <span className="text-slate-500">Estável</span>
+        <span className="text-slate-400">Estável</span>
       )}
     </div>
   );
@@ -79,9 +79,9 @@ function DecisionInstrument({
       <div className="relative z-10">
         <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{label}</p>
         <p className={`text-2xl lg:text-3xl font-black mt-1 ${toneClass}`}>{value}</p>
-        {target && <p className="text-[10px] text-slate-500 mt-0.5">Meta: {target}</p>}
+        {target && <p className="text-[10px] text-slate-400 mt-0.5">Meta: {target}</p>}
         {trend && <div className="mt-1">{trend}</div>}
-        {hint && <p className="text-[10px] text-slate-500 mt-1">{hint}</p>}
+        {hint && <p className="text-[10px] text-slate-400 mt-1">{hint}</p>}
       </div>
     </Card>
   );
