@@ -1,3 +1,4 @@
+import { LeadStatus } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
 import type {
   CadenceRecommendation,
@@ -10,14 +11,15 @@ import type {
 import type { OptOutRepository } from '../../../shared/domain/optOut.js';
 import { isOptedOut } from '../application/optOutService.js';
 import { InMemoryOptOutRepository } from '../infra/InMemoryOptOutRepository.js';
+import { prismaOptOutRepository } from '../infra/PrismaOptOutRepository.js';
 import { domainEventMesh } from '../../../lib/queue/domainEventMesh.service.js';
 import { logger } from '../../../lib/logger.js';
+import { prisma } from '../../../lib/prisma.js';
 import { adaptiveMultichannelCadenceService } from './adaptiveMultichannelCadence.service.js';
 
 export class SelfDrivingCrmService implements ISelfDrivingCrmPort {
   private signalsStore = new Map<string, EngagementSignal[]>(); // key: `${orgId}:${leadId}`
   private recommendationsStore = new Map<string, CadenceRecommendation>(); // key: `${orgId}:${recId}`
-  private optOutRepo: OptOutRepository = new InMemoryOptOutRepository();
   private mockLeadsStore = new Map<
     string,
     {
@@ -30,6 +32,8 @@ export class SelfDrivingCrmService implements ISelfDrivingCrmPort {
       isWonOrLost: boolean;
     }
   >();
+
+  constructor(private optOutRepo: OptOutRepository = prismaOptOutRepository) {}
 
   setOptOutRepository(repo: OptOutRepository): void {
     this.optOutRepo = repo;
@@ -104,7 +108,40 @@ export class SelfDrivingCrmService implements ISelfDrivingCrmPort {
   }): Promise<CadenceRecommendation | null> {
     const { organizationId, leadId } = params;
     const key = `${organizationId}:${leadId}`;
-    const signals = params.recentSignals || this.signalsStore.get(key) || [];
+    let signals = params.recentSignals || this.signalsStore.get(key) || [];
+
+    if (signals.length === 0) {
+      try {
+        const dbSignals = await prisma.conversationSignal.findMany({
+          where: { organizationId, leadId },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+        });
+
+        if (dbSignals.length > 0) {
+          signals = dbSignals.map((ds) => ({
+            id: ds.id,
+            organizationId: ds.organizationId,
+            leadId: ds.leadId,
+            channel: (ds.channel === 'whatsapp'
+              ? 'whatsapp'
+              : ds.channel === 'email'
+                ? 'email'
+                : 'voice_call') as EngagementChannel,
+            signalType: (ds.intent?.includes('interesse') || ds.intent === 'alta_intencao_compra'
+              ? ds.channel === 'whatsapp'
+                ? 'WHATSAPP_REPLIED'
+                : 'EMAIL_REPLIED'
+              : 'CALL_UNANSWERED') as EngagementSignalType,
+            timestamp: ds.createdAt.toISOString(),
+            verified: true,
+            confidence: ds.confidence ?? 0.9,
+          }));
+        }
+      } catch {
+        // Fallback resiliente se o banco não estiver disponível em teste unitário isolado
+      }
+    }
 
     if (signals.length === 0) {
       return null;
@@ -203,9 +240,58 @@ export class SelfDrivingCrmService implements ISelfDrivingCrmPort {
     // Isolamento multi-tenant fail-closed: somente leads explicitamente vinculados
     // ao organizationId consultado são considerados. Leads sem organizationId
     // (dado legado/não atribuído) nunca vazam para nenhum tenant.
-    const leads = Array.from(this.mockLeadsStore.values())
+    // Prioriza leads semeados em memória (testes unitários); em produção, busca
+    // diretamente do banco via Prisma com isolamento por organizationId.
+    const seededLeads = Array.from(this.mockLeadsStore.values())
       .filter((lead) => lead.organizationId === organizationId)
       .slice(0, limit);
+
+    let leads: Array<{
+      organizationId?: string;
+      leadId: string;
+      leadName: string;
+      currentStage: string;
+      lastActivityAt: Date;
+      hasActiveDeal: boolean;
+      isWonOrLost: boolean;
+    }>;
+
+    if (seededLeads.length > 0) {
+      leads = seededLeads;
+    } else {
+      try {
+        const dbLeads = await prisma.lead.findMany({
+          where: { organizationId },
+          take: limit,
+          orderBy: { updatedAt: 'asc' },
+          select: {
+            id: true,
+            title: true,
+            status: true,
+            lastInteraction: true,
+            updatedAt: true,
+            createdAt: true,
+            contact: { select: { name: true } },
+            company: { select: { tradeName: true, legalName: true } },
+          },
+        });
+
+        leads = dbLeads.map((l) => ({
+          organizationId,
+          leadId: l.id,
+          leadName: l.contact?.name || l.company?.tradeName || l.title || 'Lead sem nome',
+          currentStage: l.status,
+          lastActivityAt: l.lastInteraction || l.updatedAt || l.createdAt,
+          hasActiveDeal: false,
+          isWonOrLost:
+            l.status === LeadStatus.Negocios_Ganhos ||
+            l.status === LeadStatus.Negocios_Perdidos ||
+            l.status === LeadStatus.Lead_Desqualificado,
+        }));
+      } catch {
+        leads = [];
+      }
+    }
 
     for (const lead of leads) {
       const daysInactive = Math.floor(

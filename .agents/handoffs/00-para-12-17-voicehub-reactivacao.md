@@ -151,3 +151,7 @@ deps (00) e execução do teste de integração RLS (spec pronto, aguardando amb
 com Postgres). Dos handoffs dependentes: `12-para-17-dialer-3cx-sem-auth.md` já
 consta **resolvido**; `12-para-05-outbound-api-legado-tenancy.md` segue **aberto**
 (destinatário: Agente 05 — PR #383 em andamento pode cobri-lo).
+
+## Triagem Agente 17 — 2026-11-18 (branch `agente/17-handoffs-20261117`)
+
+Re-verificação de staleness da parcela do 17: **nada pendente**. Item 4 (decisão `dialer` → cadência) permanece implementado — hoje via `NAV_TAB_ALIASES` (`src/components/layout/tabMeta.ts` L268: `dialer → cadence`, arquivo do Agente 02; o alias de rota em `App.tsx` citado na resolução parcial de 2026-11-12 foi substituído por esse mecanismo de nav). Handoff correlato `12-para-17-dialer-3cx-sem-auth.md` já consta `resolvido`. Itens 1–3 seguem com Agentes 12/01/02 — `Status: em-andamento` correto.
