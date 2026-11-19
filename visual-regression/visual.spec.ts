@@ -107,7 +107,9 @@ test.describe('Visual Regression', () => {
           timeout: 15_000,
         });
         if (theme === 'light') {
-          await expect(commercialCta).toHaveCSS('color', 'rgb(248, 250, 252)');
+          // Paleta oficial: texto sobre marca no claro é Deep Navy (--on-brand: #061A3A),
+          // nunca branco — globals.css: "Antique Gold ... NUNCA texto branco em cima".
+          await expect(commercialCta).toHaveCSS('color', 'rgb(6, 26, 58)');
         }
         await waitForVisualFonts(page);
         await expect(page).toHaveScreenshot(`intelligence-${theme}.png`, SCREENSHOT_OPTIONS);
