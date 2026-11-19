@@ -11,7 +11,7 @@ Autor: Agente 00 · 2026-11-19 · Base: HEAD 03546a77 + PR #420 · Revisão 24: 
 | `npm ci` | EXIT 0 (avisos de deprecação + `npm audit` com vulnerabilidades — não detalhadas; PRÉ-EXISTENTE, tratar no gate de release) |
 | `npm run typecheck` | TESTADO: sem erros (saída vazia, ~66 s) |
 | `npm run lint` (biome) | TESTADO: 0 erros, **1561 warnings + 2 infos** (PRÉ-EXISTENTE; amostra mostra `!important` em `globals.css` ~l.660) |
-| `npm run test:unit` | EM EXECUÇÃO no momento deste commit (limite 15 min); resultado será anexado em commit seguinte — NÃO EXECUTADO até lá |
+| `npm run test:unit` | **INCONCLUSIVO / NÃO CONCLUÍDO**: encerrado por timeout de 900 s (EXIT 124) com `--no-file-parallelism`; sem sumário final de arquivos/testes no log (ruído de logs de worker; as linhas "ERROR … HTTP 500" são saída esperada de testes de falha, não prova de falha). Não declarar verde nem vermelho; reexecutar por domínio com mais tempo (a cargo do 08/14). |
 | `test:e2e`, `test:visual`, axe | **NÃO EXECUTADO / BLOQUEADO**: exigem `.env.test` (inexistente), Postgres + Redis e webServer `tests/e2e/e2e-server.ts`; `psql`/`redis-server`/`docker` existem no container, mas o provisionamento de DB de teste e credenciais é decisão/segredo — pedir ao 14. |
 Consequência: inventário visual (desktop/mobile × light/dark) das rotas autenticadas NÃO realizado; classe de cobertura abaixo é "auditado só no código".
 
