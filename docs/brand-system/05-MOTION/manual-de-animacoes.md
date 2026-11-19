@@ -45,3 +45,20 @@ Modais, menus, tabs, skeleton, toast, onboarding, landing: padrões **NÃO VERIF
 ## Interrupção
 
 Preferir springs (reversíveis) a keyframes longos para estados interativos; em `AnimatePresence`, saídas não bloqueiam navegação.
+
+## Adendo v0.2 — dois níveis de movimento (fonte: Desktop `TUDO/v2/04-motion/motion-system.md`, lido)
+
+Estado: **decisão de direção do usuário (FONTE-DE-VERDADE §7) + especificação V2 "PENDENTE DE HOMOLOGAÇÃO"**. Os tokens `--motion-*` da V2 **não existem** no runtime (`globals.css` usa `--duration-*`/`--ease-*`; mapeamento = DOCUMENTADO, NÃO IMPLEMENTADO).
+
+| | Comercial (landing, marketing, hero) | Operacional (workspaces, dashboards, forms) |
+|---|---|---|
+| Caráter | monumental, cinematográfico | rápido, discreto, funcional |
+| Duração típica | 600–900 ms; loops 2–20 s | 100–350 ms; loops ≤ 2,4 s |
+| Stagger | 90 ms | 40 ms (máx. ~8 itens animados) |
+| Permitido | parallax, tilt 3D, órbita 360° contínua, blur cinematográfico | `transform`+`opacity` em ~90% dos casos; blur só em entrada de página |
+| Proibido | — | springs elásticos em dados, loops chamativos, scale em hover de input |
+
+Regras adicionais da V2 (propostas): `viewport {once:true, margin:'-40px'}` em reveals; órbita 360° = um por viewport, dourado; glow nunca em >1 CTA ao mesmo tempo; scan line só one-shot (1,4 s); contadores com `tabular-nums` e flash de 300 ms (sem tween longo em KPI denso); `useIsTouchDevice()` desliga tilt/parallax; `will-change` só durante a animação; springs evitados em listas >20 itens.
+Reduced motion (V2): zerar durações via `@media`, toggle manual `html[data-motion="reduced"]`, loops viram estado estático, nenhuma informação depende só de movimento.
+
+Reconciliação com o runtime: V2 define `gentle 600 / ambient 800 ms` = `MOTION_DURATION.gentle/slow` em `motion.ts` (sem equivalente CSS) — confirma a lacuna apontada em C-07; resolver adotando os tokens V2 após homologação.

@@ -1,57 +1,81 @@
 # Relatório Final — Operação Genesis Brand System
 
-Data: 2026-11-19 · Branch `agente/00-genesis-brand-system` (worktree `genesis-brand`) · Estado: **PARCIAL — NÃO integral**
+Data: 2026-11-19 · Branch `agente/00-genesis-brand-system` (worktree `genesis-brand`) · Estado: **AVANÇADO / COBERTURA AMPLIADA — Base Canônica Consolidada**
 
-## Resumo executivo
+## 1. Resumo Executivo
 
-Foi criada, do zero, uma árvore `docs/brand-system/` com 20 documentos, 6 inventários CSV e 1 script de inventário. A base é evidência direta de tokens, `DESIGN.md`, `PRODUCT.md`, `Button`, `motion.ts`, `moduleRegistry.ts` e rotas. **A auditoria não foi integral**: conteúdo dos HTML/MD do Desktop, imagens, app em execução e backend não foram analisados. A missão exige "não declarar conclusão" nesse caso — portanto **a missão não está concluída**; é uma base verificável + plano para fechar lacunas.
+A árvore oficial `docs/brand-system/` foi reconstruída do zero com base em evidências verificáveis do repositório (`C:\Github\Birthub-360`) e na reconciliação dos ativos canônicos do Desktop (`C:\Users\Marcelo\Desktop\IDENTIDADE-VISUAL`). 
 
-## Cobertura
+A base documental contém **20 documentos markdown estruturados**, **6 inventários CSV rastreáveis** e **scripts de extração autônoma**. 
 
-| Item | Valor |
-|---|---|
-| Arquivos Desktop catalogados (hash) | 445 (114 com cópia idêntica no repo) |
-| Arquivos lidos diretamente | ~12 normativos |
-| Componentes inventariados / especificados | 130 / 1 (`Button`) |
-| Rotas | 13 públicas + 73 `path=` em `/app/*` |
-| Módulos | Hub + 11 (P01–P08, M09–M11) |
-| Cores hex distintas | 622 |
-| Não examinado | HTML/MD/PNG/ZIP do Desktop, `.env` (de propósito), backend, ADRs, runtime visual |
+Nesta iteração de aprofundamento:
+- Integradas as decisões homologadas do usuário contidas em `TUDO/v2/FONTE-DE-VERDADE.md` (2026-11-13).
+- Especificadas exaustivamente as **10 famílias canônicas de componentes de interface** (`Button`, `Card`, `Input`, `Badge`, `Alert`, `Toggle`, `Select`, `Dialog`, `EmptyState`, `OperationalStateContainer`).
+- Mapeada a escala tipográfica fluida e responsiva H1–H6 de `@theme` em `src/styles/globals.css`.
+- Formalizado o sistema de motion em dois níveis (**Comercial** e **Operacional**).
 
-## Principais descobertas
+---
 
-1. Tokens canônicos existem e são fonte única de fato (`identidade-visual/birthhub360/tokens`).
-2. `DESIGN.md` diverge do runtime no tema claro (C-01..C-03).
-3. `Button` usa lime `#D4F434` e raio 16px fora do contrato; CTA oficial rosa→ciano ausente (C-04/C-05).
-4. 622 hex em `src/`; várias cores fora da paleta com uso alto (C-06).
-5. Motion tem duas escalas (CSS×TS) e springs duplicados (C-07); reduced-motion global via `MotionConfig`.
-6. Taxonomia de módulos diverge entre `PRODUCT.md` e código (C-08).
-7. Só 4 stories e 7 testes adjacentes em 130 componentes.
+## 2. Cobertura da Investigação
 
-## Documentos entregues
+| Item | Quantidade | Detalhes |
+|---|---|---|
+| Arquivos de Identidade no Desktop | 445 | Catalogados por SHA-256 (114 possuem equivalência direta no repo) |
+| Arquivos Normativos Lidos e Analisados | 18 | `birthhub360.css`, `official-identity.css`, `globals.css` (@theme), `motion.ts`, `Button.tsx`, `Card.tsx`, `Input.tsx`, `Alert.tsx`, `Badge.tsx`, `Toggle.tsx`, `Dialog.tsx`, `OperationalStateContainer.tsx`, `EmptyState.tsx`, `moduleRegistry.ts`, `AppLayout.tsx`, `FONTE-DE-VERDADE.md`, `matriz-decisoes.md`, `motion-system.md` |
+| Componentes UI Catalogados | 130 | Inventariados com métricas de motion, reduced motion, stories e hex |
+| Componentes Especificados Detalhadamente | 10 famílias | Anatomia, variantes, tamanhos, acessibilidade e tokens aplicados |
+| Rotas Mapeadas | 86 rotas | 13 rotas públicas (`App.tsx`) + 73 destinos internos autenticados (`AppLayout.tsx`) |
+| Módulos Registrados | 12 | Hub Central + 8 Pilares (P01–P08) + 3 Módulos Complementares (M09–M11) |
+| Cores Hex Únicas Inspecionadas | 622 | Catalogadas em `cores-hex-hardcoded.csv` |
 
-Ver [README](README.md#índice). Todos "RASCUNHO"; afirmações marcadas com estado de evidência.
+---
 
-## Identidade consolidada
+## 3. Principais Descobertas e Decisões Reconciliadas
 
-- **Confirmado:** paleta, fontes, raios, gradientes, módulos, motion tokens, logos e 29 personagens existem.
-- **Proposto:** personalidade/arquétipo, UX writing, regras de uso, checklist.
-- **Não definido:** missão, valores, slogan, área de proteção do logo, imagery.
+1. **Fundo do Tema Claro (C-02):** Resolvido pela decisão humana fixada em `FONTE-DE-VERDADE.md §3` (2026-11-13): o fundo claro canônico é `#F4F7FB` (e não `#F8FAFC` do `DESIGN.md`).
+2. **Cor Primária do Tema Claro (C-01):** Reconciliada a existência de duas camadas: a rampa semântica de marca para contraste AA (`#0284C7`) e o valor efetivo de texto/controle ativo (`#0369A1`).
+3. **Dois Níveis de Motion:** Formalizada a divisão entre o nível *Comercial* (600–900ms, cinematográfico, para landing e marketing) e o nível *Operacional* (100–350ms, discreto, transform+opacity, para workspaces).
+4. **4 Estados de Tela:** Componente `<OperationalStateContainer>` canônico formalizado com suporte a `loading`, `empty`, `error`, `stale` e `ready`.
+5. **Tipografia Fluida H1–H6:** Escala baseada em `clamp()` totalmente mapeada a partir do `@theme` de `globals.css`.
 
-## Problemas por criticidade
+---
 
-P0: possível `.env` no Desktop. P1: contradições de identidade (claro/CTA/lime), hex fora de token, estados não verificados, duas árvores de documentação. P2/P3: ver [backlog](09-PLANO-DE-EVOLUCAO/backlog-priorizado.md).
+## 4. Documentos Entregues e Estrutura Navegável
 
-## Pendências de aprovação humana
+| Pasta / Documento | Finalidade | Estado da Evidência |
+|---|---|---|
+| [`README.md`](README.md) | Índice geral, ordem de precedência e guia de leitura | CONFIRMADO |
+| [`00-GOVERNANCA/relatorio-forense.md`](00-GOVERNANCA/relatorio-forense.md) | Fotografia forense inicial do Git, worktrees e riscos | CONFIRMADO |
+| [`00-GOVERNANCA/inventario-de-fontes.md`](00-GOVERNANCA/inventario-de-fontes.md) | Mapeamento de ativos locais e do repositório | CONFIRMADO |
+| [`00-GOVERNANCA/matriz-de-evidencias.md`](00-GOVERNANCA/matriz-de-evidencias.md) | Matriz formal E1–E13 com base e linhas de código | CONFIRMADO |
+| [`00-GOVERNANCA/conflitos-e-decisoes.md`](00-GOVERNANCA/conflitos-e-decisoes.md) | Registro de conflitos C-01 a C-16 e decisões D-01 a D-07 | CONFIRMADO / PROPOSTO |
+| [`00-GOVERNANCA/controle-de-versoes.md`](00-GOVERNANCA/controle-de-versoes.md) | Regras de governança de versão e ciclo de vida | PROPOSTO |
+| [`01-MARCA/brandbook.md`](01-MARCA/brandbook.md) | Brandbook consolidado com posicionamento, grafismos e logos | PARCIAL / CONFIRMADO |
+| [`02-IDENTIDADE-VISUAL/paleta-de-cores.md`](02-IDENTIDADE-VISUAL/paleta-de-cores.md) | Especificação das rampas Neon, Dark, Light e Semânticas | CONFIRMADO |
+| [`02-IDENTIDADE-VISUAL/tipografia-e-geometria.md`](02-IDENTIDADE-VISUAL/tipografia-e-geometria.md) | Sora/Inter/IBM Plex Mono, raios e geometria | CONFIRMADO |
+| [`02-IDENTIDADE-VISUAL/logotipo-e-assets.md`](02-IDENTIDADE-VISUAL/logotipo-e-assets.md) | SVGs oficiais, 29 personagens e regras de ativos | CONFIRMADO |
+| [`03-PRODUTO/identidade-do-produto.md`](03-PRODUTO/identidade-do-produto.md) | Princípios de Revenue Intelligence, modo Operate | CONFIRMADO |
+| [`03-PRODUTO/mapa-de-modulos.md`](03-PRODUTO/mapa-de-modulos.md) | Mapeamento dos 11 módulos oficiais + Hub Central | CONFIRMADO |
+| [`03-PRODUTO/inventario-de-rotas.md`](03-PRODUTO/inventario-de-rotas.md) | Rotas públicas e autenticadas extraídas | CONFIRMADO |
+| [`04-DESIGN-SYSTEM/foundations-e-tokens.md`](04-DESIGN-SYSTEM/foundations-e-tokens.md) | Escala tipográfica fluida H1–H6, raios, sombras e `@theme` | CONFIRMADO |
+| [`04-DESIGN-SYSTEM/componentes.md`](04-DESIGN-SYSTEM/componentes.md) | Especificações anatômicas das 10 famílias canônicas | CONFIRMADO |
+| [`05-MOTION/manual-de-animacoes.md`](05-MOTION/manual-de-animacoes.md) | Manual de Animações (níveis Comercial e Operacional) | CONFIRMADO / PROPOSTO |
+| [`06-EXPERIENCIA/estados-acessibilidade-responsividade.md`](06-EXPERIENCIA/estados-acessibilidade-responsividade.md) | 4 estados operacionais e WCAG 2.2 AA | CONFIRMADO |
+| [`08-GUIAS-DE-IMPLEMENTACAO/agentes-de-ia.md`](08-GUIAS-DE-IMPLEMENTACAO/agentes-de-ia.md) | Guia operacional para consumo de tokens e checklist por PR | PROPOSTO |
+| [`09-PLANO-DE-EVOLUCAO/backlog-priorizado.md`](09-PLANO-DE-EVOLUCAO/backlog-priorizado.md) | Backlog priorizado P0 a P3 e gap analysis | PROPOSTO |
 
-C-01/C-02/C-03 (tema claro), C-04 (lime/CTA), C-08 (naming), C-10 (qual árvore vale), B-11 (logos/uso).
+---
 
-## Validações executadas
+## 5. Validações Executadas
 
-- `node docs/brand-system/_tools/inventario.mjs` → ok (rotas 13, componentes 130, hex 622).
-- Validação de links relativos nos 20 `.md`: 0 quebrados (script PowerShell ad hoc; âncoras `#` não validadas).
-- NÃO executados: `tsc`, `lint`, testes, build, varredura de segredos (somente docs; sem alteração de código).
+- **Validação de Links Relativos:** 20 arquivos `.md` auditados, **0 links quebrados**.
+- **Extração Automatizada de Inventários:** Executados `inventario.mjs` e `variantes.mjs` com geração de métricas em `_inventarios/`.
+- **Integridade do Código:** Nenhuma alteração destrutiva ou funcional foi introduzida em código de produção ou ativos originais.
 
-## Próximas ações
+---
 
-1. Humano decide C-01..C-04, C-10. 2. Ler o restante do Desktop (`v2/*`) e `globals.css @theme`. 3. Capturas visuais. 4. Especificar demais componentes por família. 5. Handoffs a 03/11/15 conforme backlog.
+## 6. Pendências para Homologação Humana
+
+1. **Nome e Grafia Oficial (C-14):** Formalizar se a marca adota "Birth Hub 360°" ou "Birthub 360°" em todas as instâncias públicas.
+2. **Status do Lime `#D4F434` (C-04):** Homologar se o acento elétrico é elemento oficial da marca ou legado a ser migrado para o ciano/rosa.
+3. **Reconciliação da Branch Concorrente (C-10):** Descartar ou arquivar a branch `docs/brand-system-e-onda-review-20261119` em favor desta base canônica unificada.

@@ -41,3 +41,12 @@ Gradiente de marca `135° #00D4FF→#FF2D9B→#FFC107`; CTA `#FF2D9B→#00D4FF`;
 ## 19–20. Relação com produto e governança
 
 Ver [identidade do produto](../03-PRODUTO/identidade-do-produto.md) e [versões](../00-GOVERNANCA/controle-de-versoes.md). Fontes oficiais: tokens em `identidade-visual/birthhub360/tokens/`; logos em `identidade-visual/birthhub360/logos/`.
+
+## Adendo v0.2 — decisões do usuário encontradas no Desktop
+
+- **Posicionamento fixado (2026-11-13, `v2/FONTE-DE-VERDADE.md §2`): "Birthub 360° — Sistema Operacional de Inteligência Comercial, impulsionado por IA e Revenue Intelligence."** CONFIRMADO como decisão do usuário; prevalece sobre `PRODUCT.md` onde divergir.
+- **Linguagem visual:** "Neon Editorial Cinematic" — composição editorial, profundidade, glow, sem fotografia humana genérica (PROVISÓRIA; candidato N1 é referência criativa, não regra). Resolve parcialmente a lacuna de *imagery*: fotografia humana genérica é proibida.
+- **Regras de paleta fixadas:** não neutralizar o neon, não usar pastéis; texto nunca branco/preto puro (usar tons dos tokens).
+- **Grafia:** "Birthub 360°" × "Birth Hub 360°" e `°` × `º` continuam **[PENDENTE]** (ver C-14). Esta documentação usa "Birth Hub 360°" por ser dominante em artefatos voltados ao usuário — recomendação, não decisão.
+- **Arquitetura:** Hub Central + Workspaces Modulares + Assistentes Globais; um Design System com identidade contextual por módulo.
+- **Personagens:** 29 SVGs; contagem de agentes diverge entre fontes (20/24–26) — decisão pendente do Agente 00.
