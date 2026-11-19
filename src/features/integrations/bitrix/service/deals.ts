@@ -1,7 +1,7 @@
 import { LeadFunnel, LeadStatus, type Prisma } from '@prisma/client';
 import { AuditService } from '../../../../lib/audit/audit.service.js';
 import { logger } from '../../../../lib/logger.js';
-import { prisma } from '../../../../lib/prisma.js';
+import { prisma, runInTransaction } from '../../../../lib/prisma.js';
 import { enrichmentQueue } from '../../../../lib/queue/enrichment.queue.js';
 import { AppError } from '../../../../shared/middlewares/errorHandler.js';
 import { BITRIX_FIELD_MAP } from '../bitrixFieldMap.js';
@@ -434,71 +434,83 @@ export async function importSelectedBitrixDeals(
       }
 
       try {
-        const company = await prisma.company.create({
-          data: {
-            legalName: tradeName,
-            tradeName,
-            phones: phone ? [phone] : [],
-            emails: email ? [email] : [],
-            segment: 'Importado do Bitrix24 (Negócio)',
-            observations: deal.COMMENTS || null,
-            organizationId,
-            tags: ['Bitrix24'],
-            // Habilita o writeback do Copiloto Comercial IA (entityType COMPANY) — ver
-            // Company.bitrixCompanyId no schema.
-            bitrixCompanyId: deal.COMPANY_ID || null,
+        // DEBT-0020 (mesmo débito de leads.ts): Company, Contact e Lead precisam comitar
+        // JUNTOS — antes, uma falha no `lead.create` deixava Company/Contact órfãos commitados.
+        // `runInTransaction` faz rollback de tudo se qualquer etapa falhar; o enriquecimento
+        // (enrichmentQueue) é efeito externo e fica DEPOIS do commit.
+        const created = await runInTransaction(
+          async () => {
+            const company = await prisma.company.create({
+              data: {
+                legalName: tradeName,
+                tradeName,
+                phones: phone ? [phone] : [],
+                emails: email ? [email] : [],
+                segment: 'Importado do Bitrix24 (Negócio)',
+                observations: deal.COMMENTS || null,
+                organizationId,
+                tags: ['Bitrix24'],
+                // Habilita o writeback do Copiloto Comercial IA (entityType COMPANY) — ver
+                // Company.bitrixCompanyId no schema.
+                bitrixCompanyId: deal.COMPANY_ID || null,
+              },
+            });
+
+            const contact = contactName
+              ? await prisma.contact.create({
+                  data: {
+                    name: contactName,
+                    phone,
+                    email,
+                    role: contactRole || contactRoleFromApi,
+                    companyId: company.id,
+                    organizationId,
+                    // Habilita o writeback do Copiloto Comercial IA (entityType CONTACT) — ver
+                    // Contact.bitrixContactId no schema.
+                    bitrixContactId: deal.CONTACT_ID || null,
+                  },
+                })
+              : null;
+
+            const lead = await prisma.lead.create({
+              data: {
+                status: LeadStatus.Lead_Recebido,
+                // DATA-005 (Sprint 05/Onda 17): importado via crm.deal.get — sem isto o Lead
+                // ficava no default do schema (LeadFunnel.Lead), quebrando a segmentação usada
+                // por PrismaCommercialIntelligenceRepository/crm360.service.ts (que esperam
+                // funnel=Negocio para todo negócio real).
+                funnel: LeadFunnel.Negocio,
+                source: 'Bitrix24 (importado via Negócio)',
+                companyId: company.id,
+                contactId: contact?.id,
+                organizationId,
+                owner: ownerId,
+                bitrixDealId: deal.ID,
+                bitrixStageLabel: stageLabel,
+                qualification:
+                  Object.keys(qualification).length > 0 ? qualification : undefined,
+                ...leadFields,
+              } as Prisma.LeadUncheckedCreateInput,
+            });
+            await AuditService.log({
+              action: 'IMPORT',
+              entity: 'Lead',
+              entityId: lead.id,
+              tenantId: organizationId,
+              afterState: { bitrixDealId: deal.ID, source: 'crm.deal.get' },
+            });
+            return { companyId: company.id, leadId: lead.id };
           },
-        });
+          { organizationId },
+        );
+        imported++;
+        importedLeadIds.push(created.leadId);
         // Mesmo motivo do leads.ts: importação de Negócio também não traz CNPJ do Bitrix,
         // então usa o mesmo enfileiramento de POST /companies para enriquecer depois.
+        // Pós-commit: se o tx acima fez rollback, esta empresa não existe.
         await enrichmentQueue?.add('enrich-company', {
-          companyId: company.id,
+          companyId: created.companyId,
           organizationId,
-        });
-
-        const contact = contactName
-          ? await prisma.contact.create({
-              data: {
-                name: contactName,
-                phone,
-                email,
-                role: contactRole || contactRoleFromApi,
-                companyId: company.id,
-                organizationId,
-                // Habilita o writeback do Copiloto Comercial IA (entityType CONTACT) — ver
-                // Contact.bitrixContactId no schema.
-                bitrixContactId: deal.CONTACT_ID || null,
-              },
-            })
-          : null;
-
-        const lead = await prisma.lead.create({
-          data: {
-            status: LeadStatus.Lead_Recebido,
-            // DATA-005 (Sprint 05/Onda 17): importado via crm.deal.get — sem isto o Lead
-            // ficava no default do schema (LeadFunnel.Lead), quebrando a segmentação usada
-            // por PrismaCommercialIntelligenceRepository/crm360.service.ts (que esperam
-            // funnel=Negocio para todo negócio real).
-            funnel: LeadFunnel.Negocio,
-            source: 'Bitrix24 (importado via Negócio)',
-            companyId: company.id,
-            contactId: contact?.id,
-            organizationId,
-            owner: ownerId,
-            bitrixDealId: deal.ID,
-            bitrixStageLabel: stageLabel,
-            qualification: Object.keys(qualification).length > 0 ? qualification : undefined,
-            ...leadFields,
-          } as Prisma.LeadUncheckedCreateInput,
-        });
-        imported++;
-        importedLeadIds.push(lead.id);
-        await AuditService.log({
-          action: 'IMPORT',
-          entity: 'Lead',
-          entityId: lead.id,
-          tenantId: organizationId,
-          afterState: { bitrixDealId: deal.ID, source: 'crm.deal.get' },
         });
       } catch (err: any) {
         if ((err as { code?: string })?.code === 'P2002') {
