@@ -85,3 +85,21 @@ decisão por dono com o warn do runtime como instrumento de verificação.
 
 **Status permanece `em-andamento`**: nenhum call site de produtor foi alterado (arquivos de
 outros donos — ver regra de propriedade §15/§16 do AGENTS.md).
+
+## Resolução parcial — Agente 10 (2026-11-19, branch `agente/10-waveE-outbox-idem`)
+
+Parcela do Agente 10 executada: `src/lib/runtime/services/multiRegionResilience.service.ts`
+(`MULTI_REGION_FAILOVER_TRIGGERED`, ex-linha 114) — confirmado via grep que era o único call
+site de `domainEventMesh.publish` sem `idempotencyKey` em `src/lib/runtime/`.
+
+- **Chave adotada:** `multi-region-failover:{fromRegion}->{toRegion}:{failoverId}`.
+  O `failoverId` é gerado uma única vez por execução de `triggerFailover` e identifica o fato
+  de negócio "failover de {from} para {to} nesta transição". Retry de publish do mesmo evento
+  reutiliza a chave (dedup pela UNIQUE parcial `(organizationId, idempotencyKey)`); failover
+  genuinamente novo gera novo `failoverId` → nova chave. Não usa `randomUUID` por publish.
+- **Teste:** `tests/unit/runtime/multiRegionResilience.service.test.ts` — novo caso
+  "publica MULTI_REGION_FAILOVER_TRIGGERED com idempotencyKey determinística por failover"
+  (spy em `domainEventMesh.publish`; 2 failovers → 2 chaves distintas e determinísticas).
+- **Gate local:** `npx tsc --noEmit` limpo; `vitest` do arquivo 5/5; `biome check`/`lint`
+  limpos nos arquivos alterados.
+- Demais produtores do inventário seguem com seus donos — status do handoff inalterado.
