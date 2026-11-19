@@ -157,7 +157,7 @@ jobs:
           CHECKS: ${{ inputs.checks || 'not_a_server_error' }}
         run: |
           schemathesis run docs/openapi.yaml \
-            --base-url http://127.0.0.1:3000 \
+            --url http://127.0.0.1:3000 \
             --checks $CHECKS \
             --hypothesis-max-examples $EXAMPLES \
             --workers 2 \
