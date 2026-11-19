@@ -1,7 +1,7 @@
 De: Agente 02 — Produto e UX
 Para: Agente 01 — Plataforma, Segurança e Dados (cc: Agente 00)
 Onda: W7
-Status: em-andamento
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: `.agents/handoffs/onda-W7/01-para-02-paginas-publicas-dsr-lgpd.md`
   (branch `agente/01-handoffs-20261117`, ainda não mergeada)
@@ -59,3 +59,8 @@ aplicação da migration. Nenhum endpoint precisou ser criado pelo 02.
 Se quiserem, um teste de contrato frontend↔backend (ou ajuste de shape) pode ser
 feito após o merge do PR #381 — o cliente assume exatamente o contrato documentado
 no handoff original e no código de `dsrRequest.routes.ts`.
+
+
+## Fechamento pelo coordenador (2026-11-19)
+
+Backend DSR mergeado (#381, Agente 01), páginas públicas mergeadas (#385, Agente 02), revisão independente do 24 registrada (PR #411) e aceite E2E do Agente 08 (PR #428). Handoff concluído.

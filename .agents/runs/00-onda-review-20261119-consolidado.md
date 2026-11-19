@@ -20,9 +20,9 @@ Decisão original (versão anterior deste run, commit 9b08b7bbd):
 
 | Agente | Worktree | Missão |
 |---|---|---|
-| 05 | `wt-368-rebase` (`agente/00-paleta-oficial-migracao`) | Colapsar 3 ternários mortos S3923 em `src/features/prospecting/**` + varredura do mesmo padrão |
+| 05 | `wt-368-rebase` (`agente/00-paleta-oficial-migracao`) | ✅ **CONCLUÍDO**: 3 S3923 corrigidos + 10 ocorrências extras do mesmo padrão em prospecting (9 arquivos, commits `af5f65d9d`+`8935555c7`, pushed). Varredura global do 00 no worktree: 0 ternários idênticos restantes em `src/` |
 | 08 | `wt-08-baseline-fix` (`agente/08-baseline-fetch-depth`) | ~~Verificar fetch-depth~~ → **RESOLVIDO sem PR**: #442 já aplicou `fetch` + `force-with-lease` em main. Handoff fechado na branch do #368; re-dispatch do baseline workflow executado pelo 00 (run `44610937967`) |
-| 08 | `wt-310-extract` (`agente/00-p0-security-extract-310`) | Subir `new_coverage` do #415 para ≥80% com testes do código novo |
+| 08 | `wt-310-extract` (`agente/00-p0-security-extract-310`) | ✅ **CONCLUÍDO**: +6 testes (middleware design-lab via supertest+express real; ErrorBoundary.app sem stack trace + reload). `frontend.ts` linhas novas 100% cobertas; new_coverage estimado ~95%+. Commits `6f8fca2d3`+`a9b45efcd`. CI re-rodando — SonarQube confirmará |
 
 ## Pendências registradas (não despachadas)
 
