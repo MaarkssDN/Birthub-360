@@ -159,7 +159,7 @@ jobs:
           schemathesis run docs/openapi.yaml \
             --url http://127.0.0.1:3000 \
             --checks $CHECKS \
-            --hypothesis-max-examples $EXAMPLES \
+            --max-examples $EXAMPLES \
             --workers 2 \
             --header "Authorization: Bearer ci-test-token" \
             --junit-xml schemathesis-results.xml
