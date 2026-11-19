@@ -1,6 +1,7 @@
 import { logger } from '../../../../lib/logger.js';
 import { prisma } from '../../../../lib/prisma.js';
 import { domainEventMesh } from '../../../../lib/queue/domainEventMesh.service.js';
+import { AppError } from '../../../../shared/middlewares/errorHandler.js';
 import type {
   BitrixWebhookEventPayload,
   DomainEventEnvelope,
@@ -36,6 +37,23 @@ function isBitrixWebhookEventPayload(payload: unknown): payload is BitrixWebhook
 }
 
 /**
+ * Classificação permanente/transitória (handoff 16→06, MEL-21): erros 4xx do AppError
+ * (lead sem vínculo, conexão ausente, payload recusado pelo Bitrix) não mudam com retentativa
+ * — seguem best-effort (warn + consumo concluído). Todo o resto (rede, timeout, 5xx, erros de
+ * banco, TransientBitrixError) é transitório e DEVE propagar: o mesh libera o lease do
+ * consumidor, marca o outbox como FAILED e reagenda com backoff até DLQ.
+ */
+function isPermanentBitrixSyncError(err: unknown): boolean {
+  return (
+    err instanceof AppError &&
+    err.statusCode >= 400 &&
+    err.statusCode < 500 &&
+    err.statusCode !== 408 &&
+    err.statusCode !== 429
+  );
+}
+
+/**
  * Ponte entre o barramento canônico de eventos (DomainEventMesh) e as integrações
  * de CRM e Mensageria (Bitrix24 e WhatsApp).
  *
@@ -52,64 +70,116 @@ class BitrixEventMeshBridgeService {
     this.isRegistered = true;
 
     // ── 1. Espelhamento de WhatsApp no CRM Bitrix24 ─────────────────────────────
-    domainEventMesh.subscribe('WHATSAPP_MESSAGE_RECEIVED', async (event) => {
-      await this.handleWhatsAppMessage(event, 'inbound');
-    });
+    domainEventMesh.subscribe(
+      'WHATSAPP_MESSAGE_RECEIVED',
+      async (event) => {
+        await this.handleWhatsAppMessage(event, 'inbound');
+      },
+      'bitrix-bridge:whatsapp-message-received',
+    );
 
-    domainEventMesh.subscribe('WHATSAPP_MESSAGE_SENT', async (event) => {
-      await this.handleWhatsAppMessage(event, 'outbound');
-    });
+    domainEventMesh.subscribe(
+      'WHATSAPP_MESSAGE_SENT',
+      async (event) => {
+        await this.handleWhatsAppMessage(event, 'outbound');
+      },
+      'bitrix-bridge:whatsapp-message-sent',
+    );
 
     // ── 2. Espelhamento de Chamadas e Voz no CRM Bitrix24 ───────────────────────
-    domainEventMesh.subscribe('VOICE_CALL_COMPLETED', async (event) => {
-      await this.handleVoiceCall(event);
-    });
+    domainEventMesh.subscribe(
+      'VOICE_CALL_COMPLETED',
+      async (event) => {
+        await this.handleVoiceCall(event);
+      },
+      'bitrix-bridge:voice-call-completed',
+    );
 
-    domainEventMesh.subscribe('SDR_CALL_COMPLETED', async (event) => {
-      await this.handleVoiceCall(event);
-    });
+    domainEventMesh.subscribe(
+      'SDR_CALL_COMPLETED',
+      async (event) => {
+        await this.handleVoiceCall(event);
+      },
+      'bitrix-bridge:sdr-call-completed',
+    );
 
     // ── 3. Espelhamento de Reuniões no CRM Bitrix24 ─────────────────────────────
-    domainEventMesh.subscribe('CRM_MEETING_SCHEDULED', async (event) => {
-      await this.handleMeetingScheduled(event);
-    });
+    domainEventMesh.subscribe(
+      'CRM_MEETING_SCHEDULED',
+      async (event) => {
+        await this.handleMeetingScheduled(event);
+      },
+      'bitrix-bridge:crm-meeting-scheduled',
+    );
 
-    domainEventMesh.subscribe('MEETING_SCHEDULED_CALENDAR', async (event) => {
-      await this.handleMeetingScheduled(event);
-    });
+    domainEventMesh.subscribe(
+      'MEETING_SCHEDULED_CALENDAR',
+      async (event) => {
+        await this.handleMeetingScheduled(event);
+      },
+      'bitrix-bridge:meeting-scheduled-calendar',
+    );
 
     // ── 4. Alertas Comerciais e Riscos na Timeline do Bitrix24 ──────────────────
-    domainEventMesh.subscribe('DEAL_RISK_SPIKED', async (event) => {
-      await this.handleDealRisk(event);
-    });
+    domainEventMesh.subscribe(
+      'DEAL_RISK_SPIKED',
+      async (event) => {
+        await this.handleDealRisk(event);
+      },
+      'bitrix-bridge:deal-risk-spiked',
+    );
 
-    domainEventMesh.subscribe('DEVILS_ADVOCATE_ALERT', async (event) => {
-      await this.handleDealRisk(event);
-    });
+    domainEventMesh.subscribe(
+      'DEVILS_ADVOCATE_ALERT',
+      async (event) => {
+        await this.handleDealRisk(event);
+      },
+      'bitrix-bridge:devils-advocate-alert',
+    );
 
-    domainEventMesh.subscribe('COMMERCIAL_BOTTLENECK_DETECTED', async (event) => {
-      await this.handleCommercialBottleneck(event);
-    });
+    domainEventMesh.subscribe(
+      'COMMERCIAL_BOTTLENECK_DETECTED',
+      async (event) => {
+        await this.handleCommercialBottleneck(event);
+      },
+      'bitrix-bridge:commercial-bottleneck-detected',
+    );
 
     // ── 5. Propostas Comerciais na Timeline do Bitrix24 ─────────────────────────
-    domainEventMesh.subscribe('COMMERCIAL_PROPOSAL_DRAFTED', async (event) => {
-      await this.handleProposalDrafted(event);
-    });
+    domainEventMesh.subscribe(
+      'COMMERCIAL_PROPOSAL_DRAFTED',
+      async (event) => {
+        await this.handleProposalDrafted(event);
+      },
+      'bitrix-bridge:commercial-proposal-drafted',
+    );
 
     // ── 6. Opt-Out e LGPD Unificado na Timeline do Bitrix24 ────────────────────
-    domainEventMesh.subscribe('CROSS_CHANNEL_OPTOUT_ENFORCED', async (event) => {
-      await this.handleOptOutEnforced(event);
-    });
+    domainEventMesh.subscribe(
+      'CROSS_CHANNEL_OPTOUT_ENFORCED',
+      async (event) => {
+        await this.handleOptOutEnforced(event);
+      },
+      'bitrix-bridge:cross-channel-optout-enforced',
+    );
 
     // ── 7. Reativação de Leads na Timeline do Bitrix24 ──────────────────────────
-    domainEventMesh.subscribe('LEAD_REACTIVATED', async (event) => {
-      await this.handleLeadReactivated(event);
-    });
+    domainEventMesh.subscribe(
+      'LEAD_REACTIVATED',
+      async (event) => {
+        await this.handleLeadReactivated(event);
+      },
+      'bitrix-bridge:lead-reactivated',
+    );
 
     // ── 8. Webhooks de Entrada do Bitrix24 -> Automações e Mensageria ───────────
-    domainEventMesh.subscribe('BITRIX_WEBHOOK_RECEIVED', async (event) => {
-      await this.handleBitrixWebhookInbound(event);
-    });
+    domainEventMesh.subscribe(
+      'BITRIX_WEBHOOK_RECEIVED',
+      async (event) => {
+        await this.handleBitrixWebhookInbound(event);
+      },
+      'bitrix-bridge:bitrix-webhook-received',
+    );
 
     logger.info('[BitrixEventMeshBridge] Registrado com sucesso nos eventos do DomainEventMesh.');
   }
@@ -145,23 +215,34 @@ class BitrixEventMeshBridgeService {
         ? `Conteúdo: "${payload.body.slice(0, 500)}"`
         : 'Mensagem sem texto ou anexo de mídia.';
 
-      await syncActivityToBitrix(event.organizationId, leadId, {
-        type: 'whatsapp',
-        subject,
-        description,
-        direction,
-        completed: true,
-      });
+      await syncActivityToBitrix(
+        event.organizationId,
+        leadId,
+        {
+          type: 'whatsapp',
+          subject,
+          description,
+          direction,
+          completed: true,
+        },
+        { propagateErrors: true, dedupRef: event.eventId },
+      );
 
       logger.info(
         { organizationId: event.organizationId, leadId, eventId: event.eventId },
         '[BitrixEventMeshBridge] Mensagem WhatsApp sincronizada com Bitrix24 com sucesso.',
       );
     } catch (err) {
-      logger.warn(
-        { err, eventId: event.eventId, organizationId: event.organizationId },
-        '[BitrixEventMeshBridge] Falha não-bloqueante ao sincronizar WhatsApp com Bitrix24.',
-      );
+      if (isPermanentBitrixSyncError(err)) {
+        logger.warn(
+          { err, eventId: event.eventId, organizationId: event.organizationId },
+          '[BitrixEventMeshBridge] Falha não-bloqueante ao sincronizar WhatsApp com Bitrix24 — erro permanente (4xx), retentativa não altera o resultado.',
+        );
+        return;
+      }
+      // Transitório (rede, timeout, 5xx, banco): propaga — o mesh libera o lease do
+      // consumidor, marca o outbox como FAILED e reagenda com backoff até DLQ.
+      throw err;
     }
   }
 
@@ -180,19 +261,30 @@ class BitrixEventMeshBridgeService {
         typeof payload.durationSeconds === 'number' ? payload.durationSeconds : undefined;
       const summary = typeof payload.summary === 'string' ? payload.summary : '';
 
-      await syncActivityToBitrix(event.organizationId, leadId, {
-        type: 'call',
-        subject: `Ligação telefônica / VoiceHub (${event.eventType})`,
-        description: summary ? `Resumo da chamada: ${summary}` : 'Chamada de voz finalizada.',
-        durationSeconds: duration,
-        direction: 'outbound',
-        completed: true,
-      });
-    } catch (err) {
-      logger.warn(
-        { err, eventId: event.eventId, organizationId: event.organizationId },
-        '[BitrixEventMeshBridge] Falha não-bloqueante ao sincronizar chamada de voz com Bitrix24.',
+      await syncActivityToBitrix(
+        event.organizationId,
+        leadId,
+        {
+          type: 'call',
+          subject: `Ligação telefônica / VoiceHub (${event.eventType})`,
+          description: summary ? `Resumo da chamada: ${summary}` : 'Chamada de voz finalizada.',
+          durationSeconds: duration,
+          direction: 'outbound',
+          completed: true,
+        },
+        { propagateErrors: true, dedupRef: event.eventId },
       );
+    } catch (err) {
+      if (isPermanentBitrixSyncError(err)) {
+        logger.warn(
+          { err, eventId: event.eventId, organizationId: event.organizationId },
+          '[BitrixEventMeshBridge] Falha não-bloqueante ao sincronizar chamada de voz com Bitrix24 — erro permanente (4xx), retentativa não altera o resultado.',
+        );
+        return;
+      }
+      // Transitório (rede, timeout, 5xx, banco): propaga — o mesh libera o lease do
+      // consumidor, marca o outbox como FAILED e reagenda com backoff até DLQ.
+      throw err;
     }
   }
 
@@ -211,19 +303,30 @@ class BitrixEventMeshBridgeService {
         typeof payload.title === 'string' ? payload.title : 'Reunião comercial agendada';
       const scheduledAt = typeof payload.scheduledAt === 'string' ? payload.scheduledAt : '';
 
-      await syncActivityToBitrix(event.organizationId, leadId, {
-        type: 'meeting',
-        subject: `📅 ${title}`,
-        description: scheduledAt
-          ? `Data agendada: ${scheduledAt}`
-          : 'Reunião confirmada no calendário.',
-        completed: false,
-      });
-    } catch (err) {
-      logger.warn(
-        { err, eventId: event.eventId, organizationId: event.organizationId },
-        '[BitrixEventMeshBridge] Falha não-bloqueante ao sincronizar reunião com Bitrix24.',
+      await syncActivityToBitrix(
+        event.organizationId,
+        leadId,
+        {
+          type: 'meeting',
+          subject: `📅 ${title}`,
+          description: scheduledAt
+            ? `Data agendada: ${scheduledAt}`
+            : 'Reunião confirmada no calendário.',
+          completed: false,
+        },
+        { propagateErrors: true, dedupRef: event.eventId },
       );
+    } catch (err) {
+      if (isPermanentBitrixSyncError(err)) {
+        logger.warn(
+          { err, eventId: event.eventId, organizationId: event.organizationId },
+          '[BitrixEventMeshBridge] Falha não-bloqueante ao sincronizar reunião com Bitrix24 — erro permanente (4xx), retentativa não altera o resultado.',
+        );
+        return;
+      }
+      // Transitório (rede, timeout, 5xx, banco): propaga — o mesh libera o lease do
+      // consumidor, marca o outbox como FAILED e reagenda com backoff até DLQ.
+      throw err;
     }
   }
 
@@ -244,12 +347,18 @@ class BitrixEventMeshBridgeService {
 
       const comment = `⚠️ [Alerta IA Birth Hub 360 - ${event.eventType}]${score}\n${reason}\nRecomendação: Avaliar histórico do cliente ou acionar roleplay com o gestor.`;
 
-      await postCommentToBitrix(event.organizationId, leadId, comment);
+      await postCommentToBitrix(event.organizationId, leadId, comment, { dedupRef: event.eventId });
     } catch (err) {
-      logger.warn(
-        { err, eventId: event.eventId, organizationId: event.organizationId },
-        '[BitrixEventMeshBridge] Falha não-bloqueante ao registrar alerta de risco na timeline do Bitrix24.',
-      );
+      if (isPermanentBitrixSyncError(err)) {
+        logger.warn(
+          { err, eventId: event.eventId, organizationId: event.organizationId },
+          '[BitrixEventMeshBridge] Falha não-bloqueante ao registrar alerta de risco na timeline do Bitrix24 — erro permanente (4xx), retentativa não altera o resultado.',
+        );
+        return;
+      }
+      // Transitório (rede, timeout, 5xx, banco): propaga — o mesh libera o lease do
+      // consumidor, marca o outbox como FAILED e reagenda com backoff até DLQ.
+      throw err;
     }
   }
 
@@ -264,12 +373,18 @@ class BitrixEventMeshBridgeService {
         typeof payload.bottleneck === 'string' ? payload.bottleneck : 'Gargalo no funil de vendas';
       const comment = `🔍 [Gargalo Comercial Detectado]\n${bottleneck}\nSugerido avanço de etapa ou contato ativo.`;
 
-      await postCommentToBitrix(event.organizationId, leadId, comment);
+      await postCommentToBitrix(event.organizationId, leadId, comment, { dedupRef: event.eventId });
     } catch (err) {
-      logger.warn(
-        { err, eventId: event.eventId, organizationId: event.organizationId },
-        '[BitrixEventMeshBridge] Falha não-bloqueante ao registrar gargalo comercial no Bitrix24.',
-      );
+      if (isPermanentBitrixSyncError(err)) {
+        logger.warn(
+          { err, eventId: event.eventId, organizationId: event.organizationId },
+          '[BitrixEventMeshBridge] Falha não-bloqueante ao registrar gargalo comercial no Bitrix24 — erro permanente (4xx), retentativa não altera o resultado.',
+        );
+        return;
+      }
+      // Transitório (rede, timeout, 5xx, banco): propaga — o mesh libera o lease do
+      // consumidor, marca o outbox como FAILED e reagenda com backoff até DLQ.
+      throw err;
     }
   }
 
@@ -284,12 +399,18 @@ class BitrixEventMeshBridgeService {
       const totalValue = payload.totalValue != null ? `Valor: R$ ${payload.totalValue}` : '';
       const comment = `📄 [Proposta Comercial Elaborada]\nProposta ${proposalId} gerada no Birth Hub 360. ${totalValue}\nPronta para apresentação e assinatura.`;
 
-      await postCommentToBitrix(event.organizationId, leadId, comment);
+      await postCommentToBitrix(event.organizationId, leadId, comment, { dedupRef: event.eventId });
     } catch (err) {
-      logger.warn(
-        { err, eventId: event.eventId, organizationId: event.organizationId },
-        '[BitrixEventMeshBridge] Falha não-bloqueante ao registrar proposta comercial no Bitrix24.',
-      );
+      if (isPermanentBitrixSyncError(err)) {
+        logger.warn(
+          { err, eventId: event.eventId, organizationId: event.organizationId },
+          '[BitrixEventMeshBridge] Falha não-bloqueante ao registrar proposta comercial no Bitrix24 — erro permanente (4xx), retentativa não altera o resultado.',
+        );
+        return;
+      }
+      // Transitório (rede, timeout, 5xx, banco): propaga — o mesh libera o lease do
+      // consumidor, marca o outbox como FAILED e reagenda com backoff até DLQ.
+      throw err;
     }
   }
 
@@ -304,12 +425,18 @@ class BitrixEventMeshBridgeService {
         typeof payload.reason === 'string' ? payload.reason : 'Solicitação do titular (LGPD)';
       const comment = `🛑 [LGPD / Opt-out Unificado Aplicado]\nO lead solicitou cancelamento de abordagens comerciais.\nMotivo: ${reason}\nTodos os canais automatizados (WhatsApp, Voz, E-mail) foram bloqueados para este contato.`;
 
-      await postCommentToBitrix(event.organizationId, leadId, comment);
+      await postCommentToBitrix(event.organizationId, leadId, comment, { dedupRef: event.eventId });
     } catch (err) {
-      logger.warn(
-        { err, eventId: event.eventId, organizationId: event.organizationId },
-        '[BitrixEventMeshBridge] Falha não-bloqueante ao registrar opt-out unificado no Bitrix24.',
-      );
+      if (isPermanentBitrixSyncError(err)) {
+        logger.warn(
+          { err, eventId: event.eventId, organizationId: event.organizationId },
+          '[BitrixEventMeshBridge] Falha não-bloqueante ao registrar opt-out unificado no Bitrix24 — erro permanente (4xx), retentativa não altera o resultado.',
+        );
+        return;
+      }
+      // Transitório (rede, timeout, 5xx, banco): propaga — o mesh libera o lease do
+      // consumidor, marca o outbox como FAILED e reagenda com backoff até DLQ.
+      throw err;
     }
   }
 
@@ -323,12 +450,18 @@ class BitrixEventMeshBridgeService {
       const channel = typeof payload.channel === 'string' ? `Canal: ${payload.channel}` : '';
       const comment = `🚀 [Lead Reativado com Sucesso]\nLead recuperado via automação autônoma do Birth Hub 360. ${channel}\nOportunidade restabelecida no funil.`;
 
-      await postCommentToBitrix(event.organizationId, leadId, comment);
+      await postCommentToBitrix(event.organizationId, leadId, comment, { dedupRef: event.eventId });
     } catch (err) {
-      logger.warn(
-        { err, eventId: event.eventId, organizationId: event.organizationId },
-        '[BitrixEventMeshBridge] Falha não-bloqueante ao registrar reativação no Bitrix24.',
-      );
+      if (isPermanentBitrixSyncError(err)) {
+        logger.warn(
+          { err, eventId: event.eventId, organizationId: event.organizationId },
+          '[BitrixEventMeshBridge] Falha não-bloqueante ao registrar reativação no Bitrix24 — erro permanente (4xx), retentativa não altera o resultado.',
+        );
+        return;
+      }
+      // Transitório (rede, timeout, 5xx, banco): propaga — o mesh libera o lease do
+      // consumidor, marca o outbox como FAILED e reagenda com backoff até DLQ.
+      throw err;
     }
   }
 
@@ -373,10 +506,16 @@ class BitrixEventMeshBridgeService {
         '[BitrixEventMeshBridge] Webhook Bitrix processado com sucesso para lead local.',
       );
     } catch (err) {
-      logger.warn(
-        { err, eventId: event.eventId, organizationId: event.organizationId },
-        '[BitrixEventMeshBridge] Falha não-bloqueante ao processar webhook de entrada do Bitrix24.',
-      );
+      if (isPermanentBitrixSyncError(err)) {
+        logger.warn(
+          { err, eventId: event.eventId, organizationId: event.organizationId },
+          '[BitrixEventMeshBridge] Falha não-bloqueante ao processar webhook de entrada do Bitrix24 — erro permanente (4xx), retentativa não altera o resultado.',
+        );
+        return;
+      }
+      // Transitório (rede, timeout, 5xx, banco): propaga — o mesh libera o lease do
+      // consumidor, marca o outbox como FAILED e reagenda com backoff até DLQ.
+      throw err;
     }
   }
 }
