@@ -45,7 +45,8 @@ Os 7 agentes `.claude/agents/birthhub-*` (a11y-auditor, design-director, design-
 | ID | Sev. | Classe | Achado | Evidência | Owner |
 |---|---|---|---|---|---|
 | DS-001 | P1 | inconsistência objetiva | `.claude/CLAUDE.md` descreve paleta ouro obsoleta | `globals.css`, DL v2.0 | humano (proposta pronta) |
-| A11Y-001 | P1 | risco fundamentado | Títulos neon obrigatórios no tema claro: contraste do spec sobre `#f0efe9` = 3,55 / 3,92 / 2,77:1 (<4,5; dourado <3) | cálculo WCAG sobre valores do DL | 03C + 03E + 11, decisão humana |
+| A11Y-001 | P2 (rebaixado; antes P1) | risco fundamentado | CORREÇÃO: o spec do DL (azul/rosa/dourado claros) dá 3,55 / 3,92 / 2,77:1, mas os tokens REAIS do tema claro (`globals.css` l.376-380) já são variantes escuras: cyan `#0369a1` 5,15:1 (passa), pink `#d91b7c` 4,14:1 e gold `#b45309` 4,36:1 (<4,5 para texto normal; ok como texto grande). Resíduo: h4–h6/texto pequeno em pink/gold; falta medir em renderização real (Agente 14) | cálculo WCAG sobre `globals.css` | 03C + 03E, decisão humana |
+| DS-003 | P2 | inconsistência objetiva | Tipografia: DL v2.0 é internamente inconsistente (Font Roles: Plus Jakarta Sans; Scale: Sora/IBM Plex Mono) e diverge de CLAUDE.md (Sora+Inter) e de `globals.css` (Inter/Sora/IBM Plex Mono). Fonte governante não definida | DL §3, CLAUDE.md §1, globals.css l.373-382 | decisão humana |
 | DS-002 | P2 | inconsistência objetiva | `identidade-visual/` e `.claude/CLAUDE.md` fora de sincronia | CLAUDE.md §1 | 11 |
 | CSS-001 | P2 | inconsistência objetiva | `!important` em `globals.css` (ex.: l.660 `scroll-behavior`), 1561 warnings biome | saída do lint | 03C |
 | GOV-003 | P2 | risco | Gates E2E/visual/axe não reproduzíveis sem `.env.test`/DB | `playwright.config.ts` l.89 | 14 |

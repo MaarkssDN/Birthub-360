@@ -50,15 +50,24 @@ Nenhum novo.
 - Banco em /tmp: perdido em reboot; reprovisionar.
 
 ## Como reproduzir (sem expor segredos)
+Cluster NOVO (`/tmp/pgd/data` não existe). Se o cluster já existe, use o bloco "Reinício" mais abaixo (não gere `.su` nem rode `initdb`).
 ```
 apt-get update && apt-get install -y postgresql-16-pgvector
 install -d -o postgres /tmp/pgd; openssl rand -hex 12 > /tmp/pgd/.su; chown postgres /tmp/pgd/.su; chmod 600 /tmp/pgd/.su
 su postgres -c "/usr/lib/postgresql/16/bin/initdb -D /tmp/pgd/data -U prospector --pwfile=/tmp/pgd/.su --auth=scram-sha-256 && /usr/lib/postgresql/16/bin/pg_ctl -D /tmp/pgd/data -o '-p 5434 -k /tmp/pgd' -l /tmp/pgd/log -w start"
 redis-server --port 6379 --daemonize yes
 PGPASSWORD=$(cat /tmp/pgd/.su) psql -h localhost -p 5434 -U prospector -d postgres -c "create database prospectordb_test"
-PGPASSWORD=... psql ... -d prospectordb_test -c 'create extension vector'
+PGPASSWORD=$(cat /tmp/pgd/.su) psql -h localhost -p 5434 -U prospector -d prospectordb_test -c 'create extension vector'
 # gerar APP/MIGRATOR com openssl rand, escrever .env.test conforme o handoff, e:
-PGPASSWORD=... APP_DB_PASSWORD=... MIGRATOR_DB_PASSWORD=... bash scripts/db/bootstrap-app-role.sh localhost 5434 prospector prospectordb_test
+PGPASSWORD=$(cat /tmp/pgd/.su) APP_DB_PASSWORD=<gerado-localmente> MIGRATOR_DB_PASSWORD=<gerado-localmente> bash scripts/db/bootstrap-app-role.sh localhost 5434 prospector prospectordb_test
 npx prisma generate && npx dotenv-cli -e .env.test -- npx prisma migrate deploy
 PLAYWRIGHT_CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium-1243/chrome-linux64/chrome npx dotenv-cli -e .env.test -- npx playwright test tests/e2e/auth.spec.ts --trace off
 ```
+
+### Reinício (cluster existente em /tmp/pgd/data)
+Preserva `/tmp/pgd/.su` e o `.env.test`; não rode `openssl rand` para o `.su` nem `initdb`:
+```
+su postgres -c "/usr/lib/postgresql/16/bin/pg_ctl -D /tmp/pgd/data -o '-p 5434 -k /tmp/pgd' -l /tmp/pgd/log -w start"
+redis-server --port 6379 --daemonize yes
+```
+Se o container foi recriado e `/tmp/pgd` sumiu, volte ao bloco de cluster novo. (Ajuste 00 após comentários do CodeRabbit no PR #420: comando do `create extension` completo e caminho de reinício.)
