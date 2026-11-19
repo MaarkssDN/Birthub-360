@@ -125,3 +125,16 @@ Executado (sem acesso a produção — tudo verificável no repositório):
 
 Status mantido: **em-andamento** até a execução humana do runbook e registro
 das validações ± na seção 6.
+
+**Verificação de documentação (Agente 15 — 2026-11-17, worktree
+`agente-15-handoffs`, base `main@f8d4bc76d`):**
+
+- `docs/security/runbooks/ROTATE_DEVSTACK_EXPOSED_SECRETS.md` presente e
+  completo: inventário expandido (§1, ~25 classes de segredos), pré-requisitos
+  (§2), Passos 0–3 (§3), validação positiva (§4), validação negativa (§5) e
+  registro de conclusão (§6). Nenhuma lacuna documental identificada.
+- Runbooks correlatos citados no handoff existem em `docs/security/runbooks/`
+  (`ROTATE_BETTER_AUTH_SECRET.md`, `ROTATE_CREDENTIALS_ENCRYPTION_KEY.md`,
+  `ROTATE_PII_BLIND_INDEX_KEY.md`).
+- Pendência residual é exclusivamente ação humana no host 116/estações — não
+  há trabalho de documentação pendente do Agente 15.
