@@ -135,22 +135,27 @@ export class ValueRealizationService implements IValueRealizationPort {
 
     this.trackersStore.set(key, tracker);
 
-    await domainEventMesh.publish({
-      eventType: 'VALUE_REALIZATION_MEASURED',
-      eventVersion: '1.0.0',
-      organizationId,
-      correlationId: `val-evt-${trackerId}`,
-      producer: 'value-realization-service',
-      aggregateId: trackerId,
-      payload: {
-        trackerId,
-        customerCompanyName: tracker.customerCompanyName,
-        indicatorName: tracker.indicatorName,
-        observedValue,
-        targetValue: tracker.targetValue,
-        status: newStatus,
+    await domainEventMesh.publish(
+      {
+        eventType: 'VALUE_REALIZATION_MEASURED',
+        eventVersion: '1.0.0',
+        organizationId,
+        correlationId: `val-evt-${trackerId}`,
+        producer: 'value-realization-service',
+        aggregateId: trackerId,
+        payload: {
+          trackerId,
+          customerCompanyName: tracker.customerCompanyName,
+          indicatorName: tracker.indicatorName,
+          observedValue,
+          targetValue: tracker.targetValue,
+          status: newStatus,
+        },
       },
-    });
+      // Fato de negócio: a N-ésima medição do tracker (history.length após o push).
+      // Cada medição é um fato distinto; retries do mesmo publish colidem na mesma chave.
+      { idempotencyKey: `value-realization:${trackerId}:${tracker.history.length}` },
+    );
 
     logger.info(
       `[ValueRealization] Medição de valor registrada para o tracker ${trackerId}: ${observedValue} ${tracker.unit} (Status: ${newStatus}).`,
