@@ -85,3 +85,28 @@ decisão por dono com o warn do runtime como instrumento de verificação.
 
 **Status permanece `em-andamento`**: nenhum call site de produtor foi alterado (arquivos de
 outros donos — ver regra de propriedade §15/§16 do AGENTS.md).
+
+## Resolução parcial — Agente 04 (2026-11-19, branch `agente/04-waveE-outbox-idem`)
+
+Parcela CRM/BI/commercial-intelligence executada conforme a decisão de contrato do 00
+(`idempotencyKey` = `dominio:{entityId}`, nunca `randomUUID()`):
+
+| Arquivo | Evento | Chave adotada |
+|---|---|---|
+| `src/features/commercial-intelligence/services/predictiveRevenueOracle.service.ts` (~L215) | REVENUE_FORECAST_PROJECTED | `revenue-forecast:{organizationId}:{YYYY-MM}` — fato = projeção do período corrente; recomputar o cockpit no mesmo mês não duplica |
+| `src/features/commercial-intelligence/services/predictiveRevenueOracle.service.ts` (~L301) | WHAT_IF_SCENARIO_SIMULATED | `what-if:{simulationId}` — id da execução |
+| `src/features/commercial-intelligence/services/valueRealization.service.ts` (~L138) | VALUE_REALIZATION_MEASURED | `value-realization:{trackerId}:{history.length}` — índice da medição no tracker |
+| `src/features/proposals/services/proposalAutomation.service.ts` (~L89) | COMMERCIAL_PROPOSAL_DRAFTED | `proposal:{proposalId}` — id do rascunho |
+
+Testes: `tests/unit/commercial-intelligence/outboxIdempotency.test.ts` (novo — chave
+determinística do oracle e do value realization, incluindo estabilidade entre chamadas)
+e `tests/unit/proposals/proposalAutomation.service.test.ts` (assert do 2º argumento).
+Gate local: `npx tsc --noEmit` limpo; `biome lint`/`format` limpos nos arquivos;
+21 testes dos 4 arquivos do domínio verdes.
+
+**Gamificação (`src/features/gamification/**`) NÃO foi alterada pelo 04**: a pasta tem
+dono diverso declarado em `src/features/gamification/AGENTS.md` (Agente 02). Handoff
+aberto: `.agents/handoffs/onda-3/04-para-02-gamification-outbox-idempotency.md`.
+
+Demais linhas do inventário (06 integrations, 07 IA/automations/intelligence, 09 mobile,
+17 cadence, 10 multiRegionResilience, 12 ai-voice, etc.) seguem pendentes com seus donos.
