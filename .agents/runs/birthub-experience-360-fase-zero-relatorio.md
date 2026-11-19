@@ -63,3 +63,29 @@ Os 7 agentes `.claude/agents/birthhub-*` (a11y-auditor, design-director, design-
 
 ## 9. Atualização pós-autorização (2026-11-19)
 Autorizado pelo Orquestrador Humano: (1) diff do `.claude/CLAUDE.md` — APLICADO (paleta neon, gradiente de título restrito ao DL v2.0 §2, regra de contraste claro A11Y-001); (2) política A11Y-001: títulos no tema claro devem usar variantes escurecidas AA — implementação em tokens fica para a Onda 1, após #415 e #419 entrarem na `main` (arquivos de `src/styles`/`ui` em disputa); (3) skills `birthhub-*` espelhadas em `.claude/skills/` (9; `birthhub-impeccable` não existe na origem); (4) `.env.test`/Postgres/Redis: autorizado ao Agente 14 — NÃO provisionado nesta sessão (requer ambiente e credenciais de teste locais, sem segredos reais). Revisão do Agente 24: PENDENTE.
+
+## 10. Fechamento da Fase Zero — matriz de candidatos externos para o Gate Humano (Seção 7.2)
+Inventário local: `.agents/skills` = 440 skills; `.claude/skills` = 46 (35 + 9 `birthhub-*` espelhadas + `impeccable`, `frontend-design` etc.). Nenhum candidato foi instalado. Auditoria de supply chain (mantenedor, licença, commits, scripts, telemetria) **NÃO EXECUTADA**: exige acesso aos repositórios externos (fora do escopo de rede desta sessão) — pré-condição para qualquer instalação.
+| Candidato | Sobreposição com o que já existe | Recomendação |
+|---|---|---|
+| `pbakaus/impeccable` | `impeccable` já em `.agents/skills` e `.claude/skills` + agentes `impeccable-*` e `birthhub-impeccable-guardian` | NÃO instalar (redundante); verificar versão da skill local |
+| `cuellarfr/design-skills` | `frontend-design`, `birthhub-frontend-design`, `birthhub-taste`, `design-system` | NÃO instalar |
+| `84emllc/claude-wcag-skill` | `accessibility`, `birthhub-accessibility`, `wcag-color-contrast`, `wcag-compliance-reporter`, `wcag-keyboard-navigation`, `axe-a11y`, `a11y-violation-gate` | NÃO instalar |
+| skill oficial `shadcn/ui` | `birthhub-shadcn-system`, `design-system` | Avaliar só se faltar cobertura de CLI/registry; baixa prioridade |
+| `TailwindCSS-Claude-Skill-Package` | `tailwind-token-auditor` + Tailwind 4 CSS-first documentado em `CLAUDE.md` | NÃO instalar |
+| Anthropic `frontend-design` | `frontend-design` (já em `.claude/skills` e `anthropic-skills:frontend-design`) | NÃO instalar |
+| `MikelMartinC/frontend-doctor`, `wonjyou/design-audit`, `AslanMazhidov/design-review-skill` | `web-design-guidelines`, `birthhub-visual-qa`, `birthhub-web-interface-guidelines`, `code-review`, `agent-review-gate` | NÃO instalar; revisar só se achado novo provar lacuna |
+| Anthropic TypeScript LSP plugin | `npm run typecheck` já verde; sem LSP configurado (nenhum `.mcp.json`) | Opcional; baixo valor |
+| Anthropic PR Review Toolkit | `code-review` skill + Agente 24 (§40) | NÃO instalar (duplica o papel do 24) |
+| Microsoft Playwright MCP/plugin | `agent-browser`, `playwright-*`, `@playwright/test` 1.63 local | Único candidato com ganho potencial (browser interativo); só se o 14 não destravar o harness (handoff `00-para-14`) |
+Pedido ao Gate Humano: aprovar "instalar nenhum agora" e reavaliar apenas Playwright MCP após o retorno do 14.
+
+## 11. Gates executados nesta etapa (sem baseline visual)
+| Comando | Resultado |
+|---|---|
+| `npm run test:architecture` | TESTADO: EXIT 0 (depcruise + coverage + hotspots + baseline-freshness: 70 violações conhecidas conferem) |
+| `npm run typecheck` / `npm run lint` | TESTADO (ver §2): sem erros / 0 erros e 1561 warnings PRÉ-EXISTENTES |
+| `test:unit` (vitest, paralelo, reporter dot) | ver checkpoint (`birthub-experience-360-state.md`) — resultado final só após término da execução |
+
+## 12. Achado de CI (QA-002, P2, risco fundamentado)
+`visual-regression.yml` → job `Detectar escopo visual`: `git diff BASE_SHA...HEAD` sobre o merge ref inclui arquivos que entraram na `main` depois da base do PR (observado: `src/features/crm/application/LeadUseCases.ts` na lista do PR #420), marcando `relevant=true` e disparando Visual Regression em PR documental. Dono: 08 (`.github/workflows/**`). Handoff a abrir pelo 08/00; não editado aqui. Correção do que afirmei no comentário do PR: o PR altera só docs/`.claude`, mas o gatilho do Visual Regression vem de arquivos da `main`.

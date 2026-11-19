@@ -1,18 +1,27 @@
-# Checkpoint — Operação Birthub Experience 360 (Fase Zero)
-Data: 2026-11-19 · Autor: Agente 00 (sessão Claude Code, cloud) · Estado: FASE ZERO PARCIAL (somente leitura)
+# Checkpoint — Operação Birthub Experience 360
+Atualizado: 2026-11-19 · Agente 00 · Branch `claude/sleepy-hamilton-umhot9` · PR #420 (rascunho)
+Estado: FASE ZERO CONCLUÍDA EM MODO LEITURA/DOCUMENTAÇÃO — pendências abaixo.
 
-## Baseline (VERIFICADO NO CÓDIGO)
-- HEAD `03546a77` (merge PR #417) · branch `claude/sleepy-hamilton-umhot9` · working tree limpo · 1 worktree.
-- Stack: React 19 + Vite 6 + react-router-dom 7 (SPA, NÃO Next.js) · Tailwind 4 CSS-first (`src/styles/globals.css`) · Framer Motion 13 · Playwright 1.63 + axe · Vitest 4 · Biome (lint) · TS 6.
-- Scripts reais: `typecheck`, `lint` (biome), `test:unit`, `test:integration`, `test:e2e`, `test:visual`, `test:architecture`, `build`. Não existe `design-lab` de CI específico verificado.
-- `node_modules` ausente → NENHUM gate executado nesta fase (NÃO EXECUTADO).
-- PRs abertos relevantes: #419 (baselines visuais Linux), #415 (P0 segurança design-lab/ErrorBoundary), #412 (retorno de login), #404/#403 (QA Onda 6). Evitar tocar esses arquivos.
+## Onde retomar (próximo ciclo)
+1. Aguardar parecer do Agente 24 sobre o PR #420 (revisão exata: HEAD da branch) — NENHUM parecer emitido ainda.
+2. Aguardar #415 e #419 em `main`; então iniciar Onda 1 (A11Y-001 em `src/styles`/`ui` via 03C/03E/11; CSS-001; axe das rotas prioritárias). Arquivos dos PRs #403/#404/#412/#415/#419 não devem ser tocados antes.
+3. Agente 14 executa `.agents/handoffs/onda-1/00-para-14-env-test-playwright-local.md` → só então inventário visual real (hoje 0% em execução).
+4. Gate Humano: matriz de candidatos externos em `birthub-experience-360-fase-zero-relatorio.md` §10 (recomendação: instalar nenhum).
 
-## Divergências de governança (exigem decisão humana)
-1. **DS-001 (P1, inconsistência objetiva):** `docs/design/BIRTHHUB-360-DESIGN-LANGUAGE.md` v2.0 (neon #00D4FF/#FF2D9B/#FFC107, títulos obrigatoriamente neon/gradiente) vs `.claude/CLAUDE.md` (ouro #D4AF37, Deep Iris, "gradiente em texto proibido", Sora/Inter, Deep Navy) vs `globals.css` real (`--brand:#00d4ff`, `--bg:#0d0d0d` dark / `#f0efe9` light). O código segue o Design Language v2; `.claude/CLAUDE.md` está obsoleto OU o DL é que deve mudar. Regra "gradiente em título" também conflita com o seu pedido de "sem gradientes decorativos".
-2. **GOV-001:** skills `birthhub-*` NÃO existem como skills (`.claude/skills`, `skills-lock.json`). Existem 7 *agents* `birthhub-*` em `.claude/agents/` e prompts `03A–03G` em `.agents/prompts/`. O mapa skill↔agente do prompt mestre é hipótese não confirmada.
-3. **GOV-002:** `.agents/skills` tem ~440 skills (testland/qa etc.) — avaliar sobreposição antes de qualquer instalação externa. Nenhuma instalação feita.
+## Decisões humanas vigentes
+DS-001 ratificado (DL v2.0 neon; gradiente de título só nos casos do DL §2) · CLAUDE.md atualizado (b57673bd) · skills `birthhub-*` espelhadas em `.claude/skills/` · A11Y-001 agendado como prioridade da Onda 1 · não tocar snapshots/`src/styles`/`src/components/ui` até #415 e #419 · Landing e Login intocáveis (03A/03G).
 
-## Pendente na Fase Zero
-- `npm ci` + gates base; Playwright em desktop/mobile light/dark; inventário completo de rotas internas (`/app/*`, lazy modules); matriz de ownership por diretório (ler `AGENTS.md` por subpasta); auditoria de candidatos externos.
-- Rotas públicas confirmadas em `src/App.tsx`: `/`, `/welcome`, `/landing-new`, `/login`, `/reset-password`, `/privacy`, `/terms`, `/privacidade/dsr/*`, `/book/:slug`, `/design-lab/*`, `/social-selling`, `/setup`, `/app/*`.
+## Baseline e gates
+Base HEAD 03546a77 (+ commits docs do PR #420). Stack: React 19/Vite 6/RR7 SPA, Tailwind 4 CSS-first, Biome, Vitest 4, Playwright 1.63. `npm ci` OK. `typecheck` OK; `lint` 0 erros/1561 warnings pré-existentes; `test:architecture` EXIT 0; `test:unit` ver relatório §11 (a execução anterior estourou 900 s = INCONCLUSIVO). E2E/visual/axe: NÃO EXECUTADO (sem `.env.test`/DB).
+
+## Cobertura de rotas
+Públicas: 13 + protegidas `/social-selling`, `/setup`, `/design-lab/*` (3). `/app/*`: 73 `path=` em `AppLayout.tsx` (+ index, wildcard e 2 redirects) — lista completa no relatório §3. Execução visual: 0%.
+
+## Ownership
+Matriz em relatório §4. Agentes `.claude/agents/birthhub-*` ↔ 03A–03G (1:1), sem propriedade própria de arquivo. Landing/Login fora de escopo.
+
+## Achados abertos
+DS-001 (resolvido por decisão), A11Y-001 (P1, agendado), DS-002 (identidade-visual desatualizada, 11), CSS-001 (!important, 03C), GOV-003 (harness, 14), QA-001 (npm audit, 15+08), QA-002 (escopo do job visual, 08). GOV-001 corrigido: skills birthhub-* existem em `.agents/skills` (agora também em `.claude/skills`); falta `birthhub-impeccable`.
+
+## Handoffs/artefatos
+`.agents/handoffs/onda-1/00-para-14-env-test-playwright-local.md` (aberto) · `.agents/runs/birthub-experience-360-fase-zero-relatorio.md` · `...-proposta-claude-md.md` (aplicada).
