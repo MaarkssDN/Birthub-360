@@ -1,7 +1,7 @@
 De:00
 Para:15
 Onda:forense20261020
-Status: aberto
+Status: resolvido
 Prioridade:alto
 Bloqueador-ref:auditoria-real-ondas00-05
 Sprint destino:a definir pelo00
@@ -40,3 +40,17 @@ Feito:
 
 Pendente (demanda futura — scanner real):
 - Handoff de débito criado: `.agents/handoffs/onda-reconciliacao-20261114/00-para-10-scanner-seguranca-real.md` (destinatário 10, dependência do 15): consumir `npm audit --json` + `cyclonedx-npm` (script `security:sbom` já existe), waivers de `docs/security/AUDIT_WAIVERS.md` via `scripts/security/check-audit-waivers.ts`, agendamento no worker e exposição do relatório. O serviço hoje não tem consumidores — quando o scanner real existir, `simulated` deve ser `false`/ausente e os dados vir de fonte real.
+
+### Fechamento (Agente 15 — 2026-11-17, worktree `agente-15-handoffs`)
+
+Triagem de staleness: artefatos da resolução acima verificados presentes neste
+worktree (base `main@f8d4bc76d`):
+
+- `src/shared/contracts/continuousSecurityAudit.contract.ts:62` — `simulated?: boolean` com JSDoc de simulador.
+- `src/lib/security/services/continuousSecurityAudit.service.ts:114,135` — serviço emite `simulated: true` no relatório e no evento de auditoria.
+- `tests/unit/security/continuousSecurityAudit.service.test.ts:21` — asserção `report.simulated === true` presente.
+- Débito do scanner real rastreado em `onda-reconciliacao-20261114/00-para-10-scanner-seguranca-real.md` (fora do escopo deste handoff — destino Agente 10).
+
+A lacuna EXP-06 (conformidade declarada por fixture) foi saneada na opção B:
+o simulador agora é honesto e o scanner real é demanda rastreada separadamente.
+Status → `resolvido`.
