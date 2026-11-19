@@ -120,3 +120,67 @@ Total: 130 componentes mapeados. Abaixo, detalhamento exaustivo das 10 famílias
    - Modais e janelas flutuantes: `--radius-modal` (20px).
    - Botões de ação rápida e tags em pílula: `--radius-pill` (9999px).
 3. **Gerenciamento de Estados:** Nenhum módulo de produto deve gerenciar estados de tela via condicionais manuais desconexas. A casca do módulo deve ser envelopada pelo `<OperationalStateContainer>`.
+
+
+---
+
+## 4. Componentes de Domínio & Inteligência Artificial (IA)
+
+### 4.1 Pipeline de Raciocínio IA — AiReasoningPipeline (`src/components/ui/AiReasoningPipeline.tsx`)
+- **Finalidade:** Visualização sequencial e transparente do fluxo de inferência e deliberação autônoma da IA.
+- **Etapas do Ciclo (`AiReasoningStep`):**
+  1. `CONTEXT`: Extração e recuperação de contexto em base de dados vetoriais/CRM (ícone `Database`, cor `text-blue-400`).
+  2. `ANALYSIS`: Processamento analítico profundo e modelagem preditiva (ícone `Brain`, cor `text-indigo-400`).
+  3. `RECOMMENDATION`: Síntese de próximas melhores ações / NBA (ícone `Sparkles`, cor `text-brand` ciano).
+  4. `APPROVAL`: Verificação de guardrails de governança e alçada humana (ícone `CheckCircle2`, cor `text-amber-400`).
+  5. `EXECUTION`: Disparo de chamadas de ferramentas e gravação de dados (ícone `Zap`, cor `text-emerald-400`).
+- **Animação:** Envelopado por `AnimatePresence` com transições de estado suaves, indicando o estágio ativo em tempo real.
+
+### 4.2 Popover de Contexto de IA — AIContextPopover (`src/components/ui/AIContextPopover.tsx`)
+- **Finalidade:** Microinteração de superfície que projeta insights imediatos de IA diretamente sobre o campo, contato ou oportunidade em foco, eliminando perda de contexto.
+- **Tecnologia:** Ancoragem de alta precisão via `@floating-ui/react` com posicionamento dinâmico (`flip`, `shift`, `offset`, `arrow`).
+- **Integração:** Conecta-se às APIs de enriquecimento para exibir propensão, riscos e sugestões sem abrir modais intrusivos.
+
+### 4.3 Acionador do Copiloto — CopilotTrigger (`src/components/ui/CopilotTrigger.tsx`)
+- **Finalidade:** Ponto de entrada fixo para o agente conversacional de vendas B2B.
+- **Comportamento:**
+  - Carregamento sob demanda (`React.lazy`) do `FloatingChatbook` para preservar o bundle inicial.
+  - Escuta o barramento de eventos globais `OPEN_AI_CHAT_EVENT`, permitindo disparo por atalho de teclado, Command Palette ou clique.
+  - Efeito tátil auditivo via `SoundFX.play('focus')`.
+
+### 4.4 Cockpit de Comandos por Voz — VoiceCommandWidget (`src/components/ui/VoiceCommandWidget.tsx`)
+- **Finalidade:** Interface HUD de execução de comandos rápidos e navegação guiada por voz.
+- **Arquitetura:**
+  - Híbrida: Utiliza Web Speech API no desktop e SDK nativo do dispositivo via Capacitor em ambiente mobile.
+  - Integração com `voiceCommandBus` e `navigationBus` para alternância de telas e ativação de playbooks sem toque.
+  - Transcrição ao vivo em tipografia de interface com feedback luminoso e indicação de escuta ativa.
+
+### 4.5 Agente Especialista do Módulo — ModuleAgentWidget (`src/components/ui/ModuleAgentWidget.tsx`)
+- **Finalidade:** Projeta o personagem/agente guardião específico daquele pilar de negócios (baseado em `CHARACTER_CATALOG`).
+- **Composição:** Exibe o avatar SVG vetorial oficial do personagem correspondente ao pilar com fallback automático para o avatar canônico `core.svg`.
+
+---
+
+## 5. Componentes de Navegação Executiva e Shell
+
+### 5.1 Trilho de Módulos — ModuleRail (`src/components/layout/ModuleRail.tsx`)
+- **Finalidade:** Barra vertical minimalista que organiza o acesso de alta velocidade ao Hub Central, aos 8 Pilares (P01–P08) e aos 3 Módulos Complementares (M09–M11).
+- **Geometria:** Botões de `h-11 w-11` (44px) com raio `--radius-control` (`12px`) perfeitamente alinhados ao grid.
+- **Acentos Perceptuais (`PanelAccent`):**
+  - `cyan`: Destaque ciano neon para módulos comerciais e analíticos.
+  - `pink`: Destaque rosa neon para conversão e engajamento.
+  - `gold`: Destaque dourado para performance, receita e cockpit central.
+  - `iris`: Destaque violeta/íris para módulos de inteligência preditiva e IA.
+- **Transição:** `motion-safe:transition-all duration-[220ms] ease-[cubic-bezier(0.22,1,0.36,1)]`.
+
+### 5.2 Painel Contextual de Navegação — ModuleNavPanel (`src/components/layout/ModuleNavPanel.tsx`)
+- **Finalidade:** Painel retrátil associado ao módulo ativo no `ModuleRail`.
+- **Governança de Acesso:** Filtragem dinâmica de destinos baseada em RBAC (`hasRequiredRole`), ocultando rotas sem permissão.
+- **Motion:** Orquestrado com `NavLaunchTransition` para transição cinemática suave entre diferentes seções do produto.
+
+### 5.3 Central de Comando Global — CommandPalette (`src/components/ui/CommandPalette.tsx`)
+- **Finalidade:** Modal de busca rápida universal acionado por `⌘K` / `Ctrl+K`.
+- **Recursos:**
+  - Busca unificada por rotas, entidades de negócio (empresas, contatos, propostas) e comandos diretos de IA.
+  - Navegação por teclado completa com `ArrowUp`, `ArrowDown` e seleção por `Enter`.
+  - Resposta sonora tátil a cada interação através da biblioteca `SoundFX`.
