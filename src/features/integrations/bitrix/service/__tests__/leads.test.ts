@@ -18,8 +18,8 @@ const prismaMock = {
 // runInTransaction (rollback atômico por item). O mock executa `fn` direto com o prismaMock —
 // os delegates são os mesmos, só sem tx/rollback real (rollback é responsabilidade do Postgres,
 // coberta pela integração, não por este unitário).
-const runInTransactionMock = vi.fn(
-  async (fn: (tx: unknown) => Promise<unknown>, _opts?: unknown) => fn(prismaMock),
+const runInTransactionMock = vi.fn(async (fn: (tx: unknown) => Promise<unknown>, _opts?: unknown) =>
+  fn(prismaMock),
 );
 vi.mock('@/lib/prisma', () => ({ prisma: prismaMock, runInTransaction: runInTransactionMock }));
 
