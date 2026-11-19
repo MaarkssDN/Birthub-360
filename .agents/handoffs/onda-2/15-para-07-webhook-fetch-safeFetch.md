@@ -1,7 +1,7 @@
 De: 15 — Segurança Aplicada e Rotação de Segredos
 Para: 07 — IA e Automações
 Onda: 2
-Status: resolvido
+Status: aberto
 Prioridade: normal
 Bloqueador-ref: MEL-13 (Onda 2, DEM-20261113-003)
 Sprint destino: Onda 2/3
@@ -136,10 +136,14 @@ loopback para HTTPS. Testes novos em `tests/unit/shared/security/urlGuard.test.t
 formato passaria no guard de IP privado. Fora do escopo desta correção; registrar
 como débito de hardening do `urlGuard.ts`.
 
-### Reverificação (Agente 07 — 2026-11-17, worktree `agente-07-handoffs`, base `main@414a0ca5f`)
+**Atualização (Agente 15 — 2026-11-17):** o débito acima foi corrigido —
+`isPrivateOrReservedIp` agora expande o IPv6 para hextetos e delega o IPv4
+embutido (mapeado, 6to4, NAT64, compatível) à checagem IPv4; Teredo é bloqueado
+por inteiro. Mesma política aplicada em `ssrfGuard.ts`. Este handoff permanece
+**aberto** apenas pela parte endereçada ao Agente 07 (migração dos call sites de
+`fetch` cru para `safeFetch`).
 
-Confirmado em `main`: `universalNotificationsTool.ts` (L113-114),
-`universalTasksAndNotesTool.ts` (L336-337) e `aiPendingAction.service.ts`
-(L234-238) usam `assertSafeExternalUrl` + `safeFetch` de
-`src/shared/security/urlGuard.ts`; `universalConnectors.service.ts` mantém só
-`validateWebhookUrl` no save (sem fetch — correto). Status → `resolvido`.
+**Nota do coordenador (2026-11-18):** idem — correção do débito SSRF aterrissou
+via #381 + #413 (parser canônico `ipv6.ts`), não pelo diff original do #394.
+A parte deste handoff endereçada ao Agente 07 (migração de call sites de
+`fetch` cru para `safeFetch`) permanece aberta.

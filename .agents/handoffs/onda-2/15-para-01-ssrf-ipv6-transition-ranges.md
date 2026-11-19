@@ -39,24 +39,46 @@ interno; IPv6 público de transição legítimo → comportamento documentado.
 
 Parecer: `.agents/reviews/onda-2/24-revisao-hotfix-ssrf-mel13.md`.
 
-## Resolução (Agente 01 — 2026-11-17, branch `agente/01-handoffs-20261117`)
+## Resolução (Agente 15 — 2026-11-17, worktree `agente-15-handoffs`)
 
-- **Decisão de política:** extrair o IPv4 embutido e delegar à política IPv4 de cada camada
-  (em vez de bloquear todo o prefixo de transição). IPv6 de transição com IPv4 embutido
-  PÚBLICO segue permitido (mesmo nível de confiança de um A/AAAA público); com IPv4 privado/
-  reservado é bloqueado; **Teredo é sempre bloqueado** (IPv4 ofuscado por XOR, deprecado,
-  sem extração confiável).
-- **Implementação:** novo utilitário compartilhado `src/shared/security/ipv6.ts`
-  (`ipv6ToBytes`, `classifyIpv6Transition`, `isPrivateIpv6Transition`) cobrindo 6to4
-  `2002::/16`, Teredo `2001:0000::/32`, NAT64 `64:ff9b::/96` e IPv4-compatible `::/96`.
-- **Guard 1 — validação:** `src/lib/security/ssrfGuard.ts` → `isPrivateOrInternalIpv6`
-  agora delega mecanismos de transição a `isPrivateIpv6Transition(ip, isPrivateOrInternalIpv4)`.
-- **Guard 2 — fetch real:** `src/shared/security/urlGuard.ts` → `isPrivateOrReservedIp`
-  (ramo IPv6) aplica a mesma checagem — cobre `safeFetch`/`assertSafeExternalUrl` e todos os
-  endereços resolvidos via DNS (janela de DNS rebinding fechada pelo pinning existente).
-- **Testes:** `tests/unit/lib/security/ssrfGuard.test.ts` (+14 casos: literais de host e
-  URLs `[...]`) e `tests/unit/shared/security/urlGuard.test.ts` (+5 casos via DNS mockado).
-  143 testes passando nos dois arquivos.
-- **Observação:** literal IPv6 de transição na URL do `urlGuard` já era fail-closed (cai no
-  dns.lookup por causa dos colchetes e é rejeitado como "não resolvido"); a lacuna real era
-  em endereços RESOLVIDOS via DNS e no `ssrfGuard`, ambos cobertos agora.
+O destinatário era "Agente 01 (ou 15)"; assumido pelo Agente 15 por ser domínio de
+segurança aplicada. Política adotada (conservadora): **delegar ao IPv4 embutido**
+quando a extração é determinística e **bloquear o prefixo inteiro** quando o IPv4
+é ofuscado.
+
+Implementado em AMBOS os guards (o handoff pedia avaliar `urlGuard.ts`/`safeFetch` —
+a mesma lacuna existia nos dois):
+
+- `src/lib/security/ssrfGuard.ts` (`isPrivateOrInternalIpv6`) e
+  `src/shared/security/urlGuard.ts` (`isPrivateOrReservedIp`): novo parser
+  `ipv6ToHextets` (expande `::` e IPv4 dotted no final) + `embeddedIpv4FromIpv6`:
+  - `::ffff:` IPv4-mapeado (dotted e hex) → IPv4 embutido → checagem IPv4;
+  - 6to4 `2002::/16` → IPv4 embutido nos hextetos 1-2 → checagem IPv4;
+  - NAT64 `64:ff9b::/96` → IPv4 embutido nos últimos 32 bits → checagem IPv4;
+  - IPv4-compatível `::/96` (deprecado, RFC 4291 §2.5.5.1) → IPv4 embutido →
+    checagem IPv4;
+  - Teredo `2001:0000::/32` → `'block'` (IPv4 do cliente ofuscado por XOR; prefixo
+    deprecado, nunca destino legítimo de webhook);
+  - IPv6 malformado que escape de `net.isIPv6` → falha fechado (`block`).
+- Bônus no mesmo diff: `urlGuard.ts` alinha o link-local `fe80::/10` com a regex
+  `/^fe[89ab]/` já usada no `ssrfGuard` (antes só `fe80:` literal era coberto).
+
+Testes adicionados:
+- `tests/unit/lib/security/ssrfGuard.test.ts` — 7 vetores rejeitados + 3 públicos
+  na camada literal (`isPrivateOrInternalHost`), sem DNS.
+- `tests/unit/shared/security/urlGuard.test.ts` — DNS resolvendo para mapeado hex
+  e cada vetor de transição (privado rejeita / público aceita), cobrindo o caminho
+  real de `assertSafeExternalUrl`.
+
+Evidência: `npx vitest run tests/unit/lib/security/ssrfGuard.test.ts
+tests/unit/shared/security/urlGuard.test.ts` → 146/146 verde;
+`npx tsc --noEmit` limpo; `npm run lint` exit 0 (warnings pré-existentes de baseline,
+nenhum nos arquivos tocados).
+
+**Nota do coordenador (2026-11-18):** a implementação final em `main` diverge
+da descrição acima por deduplicação — o parser canônico ficou em
+`src/shared/security/ipv6.ts` (PR #381, Agente 01) e os guards consomem
+`isPrivateIpv6Transition`/`ipv6ToBytes`; os deltas exclusivos do PR #394
+(`fe80::/10` completo e `::ffff:` hex em `urlGuard.ts`) foram portados sem
+duplicação pelo PR #413, aprovado pelo Agente 24. O parser `ipv6ToHextets`
+descrito acima NÃO existe em main — não reintroduzir.
