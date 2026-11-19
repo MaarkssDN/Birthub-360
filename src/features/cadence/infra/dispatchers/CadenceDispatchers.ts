@@ -99,7 +99,7 @@ async function resolveCadenceTemplateContext(
   const lead = await prisma.lead.findFirst({
     where: { id: leadId, organizationId },
     select: {
-      assignedToId: true,
+      owner: true,
       contact: { select: { name: true } },
       company: { select: { tradeName: true, legalName: true } },
     },
@@ -115,7 +115,7 @@ async function resolveCadenceTemplateContext(
     where: {
       organizationId,
       active: true,
-      ...(lead?.assignedToId ? { userId: lead.assignedToId } : {}),
+      ...(lead?.owner ? { userId: lead.owner } : {}),
     },
     select: { slug: true },
   });
