@@ -1,3 +1,7 @@
+// @vitest-environment node
+// frontend.ts importa `vite` (→ esbuild), que quebra no jsdom: o realm do jsdom faz
+// `TextEncoder().encode("") instanceof Uint8Array` ser false e o esbuild aborta no import.
+// O predicado testado é puro — ambiente node é o correto (mesmo padrão de tests/unit/ci/*).
 import { describe, expect, it } from 'vitest';
 import { isBlockedDesignLabPath } from '../../../src/bootstrap/frontend.js';
 
