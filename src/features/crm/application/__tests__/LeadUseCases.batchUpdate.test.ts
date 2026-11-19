@@ -241,3 +241,70 @@ describe('LeadUseCases.batchUpdateLeads — status chega como rótulo da UI (reg
     expect(repository.updateStatus).not.toHaveBeenCalled();
   });
 });
+
+describe('LeadUseCases.batchUpdateLeads — status + owner/tags em escrita única (sem gravação parcial)', () => {
+  it('status + owner viajam juntos em updateLeadStatus/extraFields — prisma.lead.update não é chamado uma segunda vez', async () => {
+    prismaMock.lead.findMany.mockResolvedValue([
+      { id: 'lead-1', status: 'Lead_Recebido', tags: ['a'], owner: 'old-owner' },
+    ]);
+    const { useCases, repository } = makeUseCases();
+
+    const result = await useCases.batchUpdateLeads('org-1', ['lead-1'], {
+      status: 'Qualificação (SDR)',
+      owner: 'user-9',
+      addTags: ['vip'],
+    });
+
+    expect(result).toEqual({ updatedCount: 1, total: 1, failedCount: 0 });
+    // Uma única via de escrita: o repository recebe status + owner + tags computadas numa
+    // chamada só — não existe mais um prisma.lead.update separado que pudesse falhar depois
+    // do status já persistido.
+    expect(repository.updateStatus).toHaveBeenCalledWith('org-1', 'lead-1', 'Qualificação (SDR)', {
+      owner: 'user-9',
+      tags: ['a', 'vip'],
+    });
+    expect(prismaMock.lead.update).not.toHaveBeenCalled();
+  });
+
+  it('falha na escrita única conta failedCount sem tentativa de segunda escrita parcial', async () => {
+    prismaMock.lead.findMany.mockResolvedValue([
+      { id: 'lead-1', status: 'Lead_Recebido', tags: null, owner: null },
+      { id: 'lead-2', status: 'Lead_Recebido', tags: null, owner: null },
+    ]);
+    const { useCases, repository } = makeUseCases();
+    repository.updateStatus
+      .mockRejectedValueOnce(new Error('Falha de conexão com o banco'))
+      .mockResolvedValueOnce({ id: 'lead-2', bitrixLeadId: null });
+
+    const result = await useCases.batchUpdateLeads('org-1', ['lead-1', 'lead-2'], {
+      status: 'Qualificação (SDR)',
+      owner: 'user-9',
+    });
+
+    expect(result).toEqual({ updatedCount: 1, total: 2, failedCount: 1 });
+    // Nenhum prisma.lead.update direto: com status no payload, owner/tags só são gravados
+    // dentro da escrita de status — se ela falha, nada parcial fica para trás.
+    expect(prismaMock.lead.update).not.toHaveBeenCalled();
+    expect(repository.updateStatus).toHaveBeenCalledTimes(2);
+  });
+
+  it('somente owner/tags (sem mudança de status) continua no update direto de campo único', async () => {
+    prismaMock.lead.findMany.mockResolvedValue([
+      { id: 'lead-1', status: 'Lead_Recebido', tags: ['a'], owner: 'old-owner' },
+    ]);
+    prismaMock.lead.update.mockResolvedValue({});
+    const { useCases, repository } = makeUseCases();
+
+    const result = await useCases.batchUpdateLeads('org-1', ['lead-1'], {
+      owner: 'user-9',
+      removeTags: ['a'],
+    });
+
+    expect(result).toEqual({ updatedCount: 1, total: 1, failedCount: 0 });
+    expect(repository.updateStatus).not.toHaveBeenCalled();
+    expect(prismaMock.lead.update).toHaveBeenCalledWith({
+      where: { id: 'lead-1', organizationId: 'org-1' },
+      data: { owner: 'user-9', tags: [] },
+    });
+  });
+});
