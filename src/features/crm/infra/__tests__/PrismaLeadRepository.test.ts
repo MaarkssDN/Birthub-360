@@ -184,6 +184,44 @@ describe('PrismaLeadRepository — sincronia CRM-011 (status ⇄ pipelineStage)'
     expect(recordStageTransitionMock).not.toHaveBeenCalled();
   });
 
+  it('updateStatus: extraFields (owner/tags) entram na MESMA prisma.lead.update do status — sem segunda escrita', async () => {
+    // Regressão do risco de gravação parcial no batchUpdateLeads: status + owner/tags em duas
+    // updates separadas deixava o status persistido quando a segunda falhava. Com extraFields
+    // os campos de formulário são gravados atomicamente junto do status, numa única query.
+    prismaMock.lead.findFirst.mockResolvedValue({
+      id: 'lead-1',
+      status: 'Nova_Oportunidade',
+      pipelineId: 'pipeline-negocio',
+      pipelineStageId: 'stage-nova-oportunidade',
+    });
+    prismaMock.crmPipelineStage.findFirst.mockResolvedValue(null);
+    prismaMock.lead.update.mockResolvedValue({
+      id: 'lead-1',
+      status: 'Qualificacao_SDR',
+      company: null,
+      contact: null,
+      timeline: [],
+    });
+
+    const repo = new PrismaLeadRepository();
+    await repo.updateStatus('org-1', 'lead-1', 'Qualificação (SDR)', {
+      owner: 'user-9',
+      tags: ['vip', 'evento'],
+    });
+
+    expect(prismaMock.lead.update).toHaveBeenCalledTimes(1);
+    expect(prismaMock.lead.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'lead-1', organizationId: 'org-1' },
+        data: expect.objectContaining({
+          status: 'Qualificacao_SDR',
+          owner: 'user-9',
+          tags: ['vip', 'evento'],
+        }),
+      }),
+    );
+  });
+
   it('update(): quando o payload muda `status` sem gerenciar pipeline explicitamente, sincroniza pipelineId/pipelineStageId/probability', async () => {
     prismaMock.lead.findFirst.mockResolvedValue({
       expectedCloseAt: null,

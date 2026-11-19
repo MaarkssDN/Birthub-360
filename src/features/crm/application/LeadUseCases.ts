@@ -208,6 +208,9 @@ export class LeadUseCases extends BaseUseCases<Lead, LeadRepository> {
     id: string,
     newStatus: string,
     actorUserId?: string,
+    // Repasse para repository.updateStatus: permite gravar owner/tags na mesma escrita do
+    // status (usado por batchUpdateLeads para evitar gravação parcial entre duas updates).
+    extraFields?: { owner?: string | null; tags?: string[] },
   ) {
     if (newStatus === WON_STATUS_LABEL) {
       if (!actorUserId)
@@ -220,7 +223,9 @@ export class LeadUseCases extends BaseUseCases<Lead, LeadRepository> {
         actorUserId,
       });
     }
-    const updated = await this.repository.updateStatus(organizationId, id, newStatus);
+    const updated = extraFields
+      ? await this.repository.updateStatus(organizationId, id, newStatus, extraFields)
+      : await this.repository.updateStatus(organizationId, id, newStatus);
 
     if (newStatus === WON_STATUS_LABEL) {
       broadcastEvent({ type: 'DEAL_WON', organizationId, payload: { leadId: id } });
@@ -741,48 +746,52 @@ export class LeadUseCases extends BaseUseCases<Lead, LeadRepository> {
         // com isWon/isLost, timeline, broadcasts DEAL_WON/DEAL_LOST e re-sync Bitrix — idêntico
         // aos demais caminhos de escrita de status. Uma rejeição do gate (401/403) cai no catch
         // por item e vira failedCount, sem escrita parcial de status.
-        if (statusChanged && requestedStatusLabel) {
-          await this.updateLeadStatus(organizationId, lead.id, requestedStatusLabel, actorUserId);
+        const hasFieldUpdates = hasTagUpdate || hasOwnerUpdate;
+        const fieldUpdates: { owner?: string | null; tags?: string[] } = {};
+        if (hasOwnerUpdate) {
+          fieldUpdates.owner = updates.owner as string | null;
+        }
+        if (updates.tags) {
+          fieldUpdates.tags = updates.tags;
+        } else if (hasTagUpdate) {
+          fieldUpdates.tags = currentTags;
         }
 
-        if (hasTagUpdate || hasOwnerUpdate) {
-          const dataToUpdate: Record<string, unknown> = {};
-          if (hasOwnerUpdate) {
-            dataToUpdate.owner = updates.owner;
-          }
-          if (updates.tags) {
-            dataToUpdate.tags = updates.tags;
-          } else if (hasTagUpdate) {
-            dataToUpdate.tags = currentTags;
-          }
-
+        if (statusChanged && requestedStatusLabel) {
+          // Status + owner/tags na MESMA escrita do repository (extraFields): antes eram duas
+          // prisma.lead.update separadas e, se a segunda falhasse após a primeira persistir, o
+          // status ficava gravado mas o item contava como failedCount — gravação parcial
+          // reportada como falha total.
+          await this.updateLeadStatus(
+            organizationId,
+            lead.id,
+            requestedStatusLabel,
+            actorUserId,
+            hasFieldUpdates ? fieldUpdates : undefined,
+          );
+        } else if (hasFieldUpdates) {
           // organizationId também no `where` (mesmo padrão de defesa-em-profundidade de
           // PrismaLeadRepository.update/updateStatus e PrismaCrm360Repository.updateLeadStage):
           // o id já veio de um findMany escopado por tenant e a RLS é a garantia real, mas a
           // query de escrita fica autocontida em vez de depender só dessas duas camadas.
           await prisma.lead.update({
             where: { id: lead.id, organizationId },
-            data: dataToUpdate,
+            data: fieldUpdates,
           });
-          if (hasOwnerUpdate) {
-            // Handoffs (Jornada): troca de responsável em lote também é uma troca real.
-            const { recordLeadFieldChanges } = await import(
-              '../../../shared/services/leadFieldChangeHistory.service.js'
-            );
-            await recordLeadFieldChanges(
-              organizationId,
-              lead.id,
-              { owner: lead.owner },
-              { owner: dataToUpdate.owner as string | null },
-              { source: 'batch', changedBy: actorUserId ?? null },
-            );
-          }
         }
-        // Nota de atomicidade: quando o item muda status E owner/tags, são duas escritas (a de
-        // status via repository, a de campos via update direto). Se a segunda falhar depois da
-        // primeira ter sucesso, o status já persistiu mas o item conta como failedCount — o log
-        // de erro identifica qual escrita falhou. Preferimos isso a duplicar a lógica de
-        // pipeline/gate/closedAt no caminho direto.
+        if (hasOwnerUpdate) {
+          // Handoffs (Jornada): troca de responsável em lote também é uma troca real.
+          const { recordLeadFieldChanges } = await import(
+            '../../../shared/services/leadFieldChangeHistory.service.js'
+          );
+          await recordLeadFieldChanges(
+            organizationId,
+            lead.id,
+            { owner: lead.owner },
+            { owner: fieldUpdates.owner ?? null },
+            { source: 'batch', changedBy: actorUserId ?? null },
+          );
+        }
         updatedCount++;
       } catch (err: any) {
         failedCount++;
