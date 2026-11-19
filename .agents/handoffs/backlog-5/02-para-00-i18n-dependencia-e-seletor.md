@@ -1,7 +1,7 @@
 De: Agente 02 — Produto e UX
 Para: Agente 00 — Coordenador
 Onda: Backlog Onda 5 / DEM-20261116-001
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: MEL-36
 Sprint destino: backlog-5
@@ -49,3 +49,17 @@ Também é necessário um item de UX para seletor de idioma (hoje o locale é li
 O componente seletor de idioma foi implementado em `src/features/settings/components/Settings.tsx` integrado ao `useI18n()`, permitindo alternância instantânea entre `Português (Brasil)` e `English (US)` com persistência em `localStorage` (`@birthhub360:locale`), acessibilidade com `role="group"` e `aria-pressed`, além de feedback sonoro `SoundFX.play('confirm')`.
 Testes unitários adicionados em `tests/unit/features/settings/Settings.test.tsx` com 100% de aprovação.
 A infraestrutura zero-dependency atual suporta os casos de uso existentes sem introduzir pacotes externos sem aprovação.
+
+---
+
+## Resolução Formal e Ratificação Arquitetural (Agente 00 / Agente 02 — Onda 2)
+
+**Status:** RESOLVIDO.
+
+1. **Ratificação da Arquitetura Zero-Dependency (P2 - Simplicidade Primeiro):**
+   - O Agente 00 (Coordenador) ratificou e homologou a solução Zero-Dependency implementada em `src/i18n/index.tsx` e integrada no PR #385.
+   - Conforme o princípio P2 de governança (`AGENTS.md`), a implementação nativa com React Context (`I18nProvider`, `useI18n`, `translate`), fallback automático para `pt-BR`, interpolação `{{var}}` e persistência no `localStorage` sob a chave `@birthhub360:locale` atende integralmente à demanda sem introduzir dependências de terceiros no `package.json`, evitando inchaço desnecessário do bundle e riscos de compatibilidade.
+2. **Validação do Seletor de Idioma e UX:**
+   - O seletor em `src/features/settings/components/Settings.tsx` oferece alternância entre `pt-BR` e `en-US`, suporte a acessibilidade WCAG (`role="group"`, `aria-pressed`), feedback sonoro e cobertura total de testes unitários.
+3. **Conclusão:**
+   - Handoff formalmente encerrado com status **resolvido**. Novos módulos que requeiram internacionalização devem consumir a API unificada via `useI18n()`.
