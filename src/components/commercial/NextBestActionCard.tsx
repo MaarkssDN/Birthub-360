@@ -63,9 +63,7 @@ export const NextBestActionCard: React.FC<NextBestActionCardProps> = ({
         <h3 className="text-sm font-semibold tracking-tight text-slate-900 dark:text-slate-100">
           {title}
         </h3>
-        <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-          {description}
-        </p>
+        <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">{description}</p>
       </div>
       {status === 'ACCEPTED' ? (
         <output
