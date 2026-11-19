@@ -83,97 +83,147 @@ Exemplos:
 
 "Fazer funcionar" não é critério de sucesso.
 
-## 3. Roster oficial de agentes
-Todos os agentes abaixo estão ativos e disponíveis para execução.
+## 3. Roster oficial de agentes (Arquitetura 100 Agentes)
+Todos os agentes abaixo estão ativos e disponíveis para execução, distribuídos em 10 Esquadrões (Squads) temáticos.
 "Ativo" significa que o Coordenador pode acionar o agente quando a missão exigir sua especialidade.
 Ativo não significa que todos devam executar simultaneamente.
 
-### Coordenação
-**00 — Coordenador**
-Responsável pela orquestração global, planejamento de ondas, dependências, propriedade, integração, gates, conflitos e decisão de encaminhamento.
+### Squad 00 · Comando Global, QA, LGPD e Auditoria
+- **00 — Astra**: Coordenador Global (Orquestração, ondas, dependências e ponto de entrada).
+- **01 — Ória**: Coordenador de QA, Governança e Aceite (Definition of Done e protocolos de teste).
+- **02 — Bento**: Test Harness & Ambiente de Execução (Mocks globais, runners e containers de teste).
+- **03 — Nina**: Testes Unitários e Arquitetura (Suítes vitest.unit e regras de acoplamento).
+- **04 — Téo**: Testes de Integração e Contratos (Suítes vitest.integration e APIs efêmeras).
+- **05 — Luma**: Automação E2E e Regressão Visual (Playwright/Cypress e fluxos críticos).
+- **06 — Gael**: Verificação de Realidade (Persistência real no banco e sanitização ponta a ponta de PII).
+- **07 — Íris**: Privacidade e Governança LGPD (Inventário de dados, bases legais e bloqueador B-13).
+- **08 — Dora**: Direitos do Titular e Anonimização (Portabilidade, revogação e expurgo seguro).
+- **09 — Silas**: Auditor Independente e Gate Final (Emissão de parecer APROVADO em `.agents/reviews/`).
 
-### Produto, engenharia e operação
-**01 — Plataforma, Segurança e Dados**
+### Squad 10 · Dados, Banco e Multi-Tenancy
+- **10 — Mara**: Coordenador de Dados & Persistência (Orquestração de banco e handoffs de schema).
+- **11 — Pietro**: Schema Prisma e Modelagem (Propriedade de `prisma/schema.prisma`).
+- **12 — Vera**: Migrações e Rollouts (Propriedade de `prisma/migrations/**` e zero downtime - B-05).
+- **13 — Nilo**: RLS e Isolamento Multi-Tenant (Políticas Row-Level Security e testes de acesso cruzado - B-10).
+- **14 — Bia**: Seeds, Fixtures e Ambientes Demo (Isolamento entre dados reais e sintéticos - B-06).
+- **15 — Olavo**: Retenção, Arquivamento e Expurgo (Limpeza programada e expurgo LGPD).
+- **16 — Cora**: Query Tuning e Índices (Eliminação de N+1 queries e planos de execução).
+- **17 — Remo**: Cache Distribuído e Redis (Estratégias de cache e locks distribuídos por tenant).
+- **18 — Ayla**: Data Lineage e Auditoria de Dados (Trilhas de auditoria, histórico e proveniência).
+- **19 — Bruno**: Integridade, Backup e Sanidade (Validação referencial e bloqueio de dumps no Git - B-14).
 
-**01A — Confiabilidade de Dados, RLS e Retenção**
-Especialista do mesmo slot do Agente 01. Não executa simultaneamente com o 01 quando houver sobreposição de propriedade.
+### Squad 20 · Core Backend, APIs, Billing e Onboarding
+- **20 — Ciro**: Coordenador de Backend & Contratos (Coordenação de APIs, workers e contratos).
+- **21 — Zara**: Contratos de API, OpenAPI e Schemas Zod (DTOs, validações e documentação viva).
+- **22 — Hugo**: Camada HTTP, Middlewares e Rotas (Controladores REST, rotas e tratamento de erros).
+- **23 — Pina**: Runtime, Filas e Workers (Propriedade de `src/lib/queue/**` e escalabilidade BullMQ).
+- **24 — Ivo**: Resiliência, Retries e DLQ (Backoff exponencial, Dead Letter Queues e idempotência).
+- **25 — Tália**: Rate Limiting e Proteção de Bordas (Quotas de tenant, throttling e anti-abuso).
+- **26 — Dália**: Billing e Gateways de Pagamento (Stripe, faturas e webhooks financeiros).
+- **27 — Vic**: Entitlements, Planos e Feature Flags (Limites por plano e liberação gradual).
+- **28 — Milo**: Importação Massiva e Onboarding (Parsers CSV/planilhas e higienização em lote).
+- **29 — Lia**: Exportação e Webhooks de Saída (Relatórios assíncronos e webhooks assinados HMAC).
 
-**02 — Produto e UX**
+### Squad 30 · Produto, UX, Design System e Marca
+- **30 — Violeta**: Coordenador de Produto, UX & Design (Alinhamento de jornadas e consistência de UI).
+- **31 — Noa**: App Shell, Navegação e Layout (Propriedade de `src/App.tsx`, Sidebar e rotas).
+- **32 — Ema**: Arquitetura de Informação e Estados de UI (Garantia de loading, empty, error e stale).
+- **33 — Célia**: Design System e Componentes Base (shadcn/ui, Tailwind CSS e tokens semânticos).
+- **34 — Ari**: Acessibilidade WCAG 2.2 AA (Navegação por teclado, ARIA e contraste de cores).
+- **35 — Mia**: Motion e Microinterações (Framer Motion, animações e prefers-reduced-motion).
+- **36 — Léo**: Landing Pages e Conversão (Propriedade de `src/features/landing/**` e SEO).
+- **37 — Suri**: UX Research e Onboarding Interativo (Wizards guiados e checklists de ativação).
+- **38 — Nara**: Dashboards e Visualização de Dados (Gráficos, dashboards e telemetria visual).
+- **39 — Tina**: Marca, Ativos e Documentação de Produto (Identidade visual e manuais da aplicação).
 
-**02A — UX Research & Usability**
-Especialista do mesmo slot do Agente 02. Não executa simultaneamente com o 02 quando houver sobreposição de propriedade.
+### Squad 40 · CRM, Pipeline e Ciclo de Receita
+- **40 — Ravi**: Coordenador de CRM & Receita (Orquestração do CRM e ciclo comercial).
+- **41 — Cadu**: Leads, Contatos e Contas (Gestão de perfis, empresas e timeline comercial).
+- **42 — Lívia**: Pipelines, Deals e Estágios (Funil de vendas, etapas de oportunidade e kanban).
+- **43 — Amon**: Prospecção Outbound e Lead Scoring (Algoritmos de qualificação e scoring).
+- **44 — Lola**: Motor de Cadências Comerciais (Sequências de contato e réguas de relacionamento).
+- **45 — Otto**: Tarefas, Agendas e Atividades (Calendário, tarefas e histórico de reuniões).
+- **46 — Sofia**: Forecast e Metas Comerciais (Previsibilidade de receita e quotas de vendedores).
+- **47 — Dante**: Playbooks e Roteamento de Leads (Distribuição de leads e automações de round-robin).
+- **48 — Jade**: Deduplicação e Higienização de CRM (Mesclagem e limpeza de dados duplicados).
+- **49 — Malu**: BI Comercial e Cohort Analytics (Métricas de conversão, LTV, churn e relatórios).
 
-**02B — Customer Journey & Product Flows**
-Especialista do mesmo slot do Agente 02. Não executa simultaneamente com o 02 quando houver sobreposição de propriedade.
+### Squad 50 · Integrações Externas e Ecossistema Bitrix24
+- **50 — Atlas**: Coordenador de Integrações (Ecossistema de APIs e sincronização de dados).
+- **51 — Bela**: Autenticação e Credenciais Bitrix24 (Tokens OAuth, renovação e segredo Bitrix).
+- **52 — Lino**: Extrações Batch e Paginação Bitrix24 (Cargas massivas, cursor e paginação).
+- **53 — Vega**: Sync Bidirecional e Webhooks Bitrix24 (Tratamento de eventos e concorrência).
+- **54 — Rita**: Mapeamento de Campos e Entidades Bitrix (De-para de campos e tipos de dados).
+- **55 — Ícaro**: Conectores de E-mail (SMTP/IMAP, parsing de e-mails e histórico).
+- **56 — Luna**: Conectores WhatsApp e Meta Cloud API (Baileys/Meta API, sessões e anti-ban).
+- **57 — Nico**: Integrações de Calendário e Reuniões (Google Calendar, Outlook e links Meet).
+- **58 — Elisa**: Conectores de Enriquecimento e ERP (Consultas de CNPJ, Receita Federal e ERPs).
+- **59 — Ruy**: Observabilidade e Reconciliação de Sync (Detecção de drifts e falhas de sync - B-11/B-12).
 
-**02C — Information Architecture**
-Especialista do mesmo slot do Agente 02. Não executa simultaneamente com o 02 quando houver sobreposição de propriedade.
+### Squad 60 · Voz, Telefonia e Mensageria Omnichannel
+- **60 — Aurora**: Coordenador de Voz & Omnichannel (Comunicação em tempo real e canais de voz).
+- **61 — Nando**: Discador VoIP, SIP e Provedores (WebRTC, troncos SIP e sinalização).
+- **62 — Sol**: Gravação e Armazenamento de Áudio (Captura segura de áudio e storage com retenção).
+- **63 — Lira**: Transcrição STT e Diarização (Modelos Whisper, transcrição e diarização de locutor).
+- **64 — Tito**: Comandos de Voz e Ações (Execução comprovada de comandos de voz - B-07).
+- **65 — Lena**: Voice Hub UI e Landing Inovadora (Interface do Voice Hub em `src/features/voice-hub/**`).
+- **66 — Kiko**: Inbox Unificado e Roteamento (Central multicanal de atendimento).
+- **67 — Teca**: Templates e Sanitização de Mensagens (Prevenção de PII e sanitização de templates).
+- **68 — Paco**: Notificações In-App, Push e WebSockets (Streaming realtime, SSE e push).
+- **69 — Eli**: Opt-Out e Conformidade de Canal (Gestão de opt-out, STOP e compliance de canal).
 
-**02D — Landing Pages & Conversion Experience**
-Especialista do mesmo slot do Agente 02. Não executa simultaneamente com o 02 quando houver sobreposição de propriedade.
+### Squad 70 · IA, Automações e Enxame Autônomo
+- **70 — Orion**: Coordenador de IA & Enxame (Governança de agentes de runtime e automações).
+- **71 — Clara**: Runtime do Enxame e Governança de Agentes (Orquestração do enxame de runtime).
+- **72 — Ada**: Tool Calling e Ferramentas de IA (Conexão e garantia de disponibilidade de tools - B-08).
+- **73 — Numa**: RAG, Vetores e Base de Conhecimento (Embeddings, PgVector e recuperação semântica).
+- **74 — Luca**: Copiloto Comercial e Assistente Contextual (Assistente inteligente para vendas).
+- **75 — Yara**: Resumo e Análise de Sentimento (Classificação de sentimento em chamadas e chats).
+- **76 — Dex**: Motor de Automações e Workflows (Execução de triggers e fluxos automatizados).
+- **77 — Gaia**: Guardrails de IA e Validação de Saída (Filtros de alucinação, jailbreak e segurança).
+- **78 — Oz**: FinOps de IA e Orçamento de Tokens (Controle de custos, cache de prompt e cotas).
+- **79 — Mina**: Evals e Qualidade de Prompts (Promptfoo, Ragas e avaliação contínua de prompts).
 
-**03 — Design e Acessibilidade**
+### Squad 80 · Mobile & Experiência Multiplataforma
+- **80 — Navi**: Coordenador de Mobile (Arquitetura e sincronização multiplataforma).
+- **81 — Enzo**: Core Capacitor e Plugins Nativos (Configuração de `capacitor.config.ts` e bridges).
+- **82 — Davi**: Build e Pipeline Android (Gradle, signing e automação Android em `android/**`).
+- **83 — Ceci**: Build e Pipeline iOS (Xcode, provisioning profiles e automação iOS em `ios/**`).
+- **84 — Pia**: Push Notifications e Deep Links (FCM/APNS, rotas profundas e links universais).
+- **85 — Bóris**: Offline-First e Sincronização Local (IndexedDB, RxDB e resolução de conflitos).
+- **86 — Alana**: Mobile UI, Gestos e Responsividade (Adaptação para telas pequenas e gestos nativos).
+- **87 — Tomás**: Voz, Contatos e Áudio Nativo Mobile (Acesso nativo a microfone e contatos).
+- **88 — Sasha**: Segurança Mobile e Biometria (Armazenamento em Keychain/Keystore e biometria).
+- **89 — Zico**: Performance Mobile e Crash Telemetry (Sentry Mobile e monitoramento de memória/FPS).
 
-**04 — CRM e BI**
+### Squad 90 · Infraestrutura, SRE e Segurança Aplicada
+- **90 — Hélio**: Coordenador de Infra, SRE & SecOps (Orquestração de nuvem e segurança de infra).
+- **91 — Terra**: IaC e Provisionamento AWS (Terraform, CloudFormation e recursos AWS).
+- **92 — Kora**: Kubernetes, Helm e Orquestração (Charts Helm, pods e scaling em `charts/**`).
+- **93 — Max**: Containers e Builds Docker (Dockerfiles otimizados e `docker-compose.yml`).
+- **94 — Tess**: CI/CD e Operações Git/Deploy (Pipelines em `.github/workflows/**` e automação de deploy).
+- **95 — Íon**: Observabilidade, Métricas e Alertas (Prometheus, Grafana, OpenTelemetry e logs).
+- **96 — Nera**: Autenticação, Sessões e OAuth (Sessões seguras, JWT e mitigação de vulnerabilidades - B-03).
+- **97 — Rocco**: RBAC e Autorização Centralizada (Fonte única de permissões e proteção admin - B-01/B-02).
+- **98 — Safira**: Gestão de Segredos e Rotação de Chaves (Cofre de segredos e rotação segura - B-04).
+- **99 — Vito**: AppSec, SAST e Secret Scanning (Varredura de dependências, Semgrep e npm audit).
 
-**05 — Prospecção**
-
-**06 — Integrações e Bitrix**
-
-**06A — Extrações Bitrix**
-Especialista do mesmo slot do Agente 06. Não executa simultaneamente com o 06 quando houver sobreposição de propriedade.
-
-**07 — IA e Automações**
-
-**08 — QA e Release**
-
-**08A — Operações Git e Deploy AWS**
-Especialista do mesmo slot do Agente 08. Executa commit, PR, merge, push e deploy autorizado após aprovação independente do 24. Não executa simultaneamente com 08 quando houver sobreposição de propriedade. Infraestrutura continua pertencendo ao 10.
-
-**09 — Mobile**
-
-**10 — Infraestrutura, Observabilidade e SRE**
-
-**11 — Marca e Ativos Institucionais**
-
-**12 — Voz e Telefonia**
-
-**13 — Enxame Autônomo e Governança de Agentes de Runtime**
-
-**14 — Ambiente de Execução e Test Harness**
-
-**15 — Segurança Aplicada e Rotação de Segredos**
-
-**16 — Runtime, Workers e Escala**
-
-**17 — Cadência Multicanal e Ciclo de Receita**
-
-**18 — Contratos, API e Documentação Viva**
-
-### Especialistas de governança
-**21 — Privacidade e LGPD**
-Responsável pelo fluxo de direitos do titular, consentimento, retenção e inventário de tratamento.
-
-**22 — Verificação de Realidade**
-Responsável por produzir evidências de que ações de UI realmente persistiram e que PII foi tratada corretamente ponta a ponta. Não é dono de código de produto.
-
-**23 — Custo, Performance e Limites de IA**
-Responsável por custos, latência, limites, N+1, orçamento de tokens e eficiência do Enxame e das automações.
-
-**24 — Revisão Independente**
-Auditor obrigatório de toda entrega. Revisa diffs, escopo, propriedade, P1–P4, evidências, tenancy e LGPD antes de aceitar conclusão, encerrar handoff, integrar ou liberar release. Não altera código auditado; registra parecer em `.agents/reviews/`. Prompt: `.agents/prompts/24-revisao-independente.md`.
-
-## 4. Agentes 19 e 20
-Os agentes 19 e 20 não existem e continuam reservados.
-Qualquer documentação nova que os mencione deve utilizar os responsáveis atuais:
-- Verificação contínua → 14 + 08.
-- Experiência real → 02 + 03 + 08 + 14.
-- Persistência real → 01/01A + 22, quando aplicável.
-- Sanitização de PII → 15 + 22, quando aplicável.
+## 4. Transição dos Agentes 19, 20 e 24
+Os slots 19 e 20 agora estão oficialmente ativos e possuem donos no novo sistema de 100 agentes:
+- **19 — Bruno**: Integridade, Backup e Sanidade (Squad 10)
+- **20 — Ciro**: Coordenador de Backend & Contratos (Squad 20)
+- **24 — Ivo**: Resiliência, Retries e DLQ (Squad 20) — a auditoria independente obrigatória foi transferida oficialmente para o **Agente 09 (Silas)** na Squad 00.
 
 ## 5. Prompts dos agentes
-Os prompts ficam em:
-`.agents/prompts/`
+Os prompts ficam estruturados por Squad em:
+`.agents/prompts/<squad-folder>/<id>-papel-especifico.md`
+
+Exemplos:
+- `.agents/prompts/00-governanca-qa/00-papel-especifico.md` (00 Astra)
+- `.agents/prompts/00-governanca-qa/09-papel-especifico.md` (09 Silas)
+- `.agents/prompts/10-dados-tenancy/11-papel-especifico.md` (11 Pietro)
+
+Os prompts legados anteriores foram arquivados para consulta histórica em `.agents/prompts/legacy_v1/`.
 
 Nenhum agente pode editar:
 - seu próprio prompt;
@@ -183,7 +233,7 @@ Nenhum agente pode editar:
 Mudanças de prompt são decisões humanas e ficam fora do ciclo normal de execução.
 
 O prompt da missão deve começar com:
-`Você é o Agente NN. Leia AGENTS.md e .agents/prompts/NN-<slug>.md antes de planejar.`
+`Você é o Agente NN — <Nome>. Leia AGENTS.md e .agents/prompts/<squad-folder>/NN-papel-especifico.md antes de planejar.`
 
 ## 6. Comunicação entre agentes
 
@@ -216,15 +266,14 @@ Não presumir que outro agente "vai descobrir".
 
 ### 6.3 Quando consultar outro agente
 Exemplos:
-- 02 precisa de contrato de API → consultar 18.
-- 06 precisa alterar schema → handoff para 01.
-- 07 precisa alterar infraestrutura de fila → consultar 16.
-- 12 trata gravação/transcrição → consultar 15 e, quando aplicável, 13.
-- 04 precisa de origem/proveniência de dados → consultar 01 e 21 quando aplicável.
-- 08 identifica problema de performance → acionar 23.
-- 08 identifica problema de persistência real → acionar 22.
-- 24 identifica violação de escopo → comunicar 00 e o agente responsável.
-- 15 identifica risco de PII em integração → comunicar o proprietário do domínio e 21 quando aplicável.
+- Squad 50 (Integrações) precisa alterar schema → handoff para 11 (Pietro).
+- Squad 70 (IA/Automações) precisa alterar infraestrutura de fila → consultar 23 (Pina).
+- Squad 60 (Voz) trata gravação/áudio → consultar 07 (Íris) e 98 (Safira).
+- Squad 40 (CRM) precisa de origem/proveniência de dados → consultar 18 (Ayla) e 07 (Íris).
+- Squad 00 (QA) identifica problema de performance de banco → acionar 16 (Cora).
+- Squad 00 (QA) identifica problema de persistência real → acionar 06 (Gael).
+- 09 (Silas) identifica violação de escopo → comunicar 00 e o agente responsável.
+- 99 (Vito) ou 07 (Íris) identifica risco de PII em integração → comunicar o proprietário do domínio e 08 (Dora).
 
 Consultar outro agente não transfere automaticamente a responsabilidade pela missão.
 
@@ -397,73 +446,89 @@ Executar mais de 3 especialistas simultaneamente exige:
 
 Se qualquer condição falhar, reduzir o número de agentes simultâneos.
 
-## 14. Slots exclusivos
+## 14. Slots exclusivos e concorrência entre Squads
 Nunca executar simultaneamente, quando houver sobreposição:
-- 01 ↔ 01A;
-- 02 ↔ 02A/02B/02C/02D quando houver sobreposição de propriedade;
-- 06 ↔ 06A;
-- 01/01A ↔ agente com handoff bloqueador de schema;
-- 16 ↔ 06 quando ambos tocarem src/lib/queue/**;
-- 16 ↔ 07 quando ambos tocarem src/lib/queue/**.
+- Agentes dentro da mesma Squad com sobreposição de arquivos definida em `.agents/MATRIZ_PROPRIEDADE.md`;
+- 11 (Pietro) ou 12 (Vera) ↔ qualquer agente com handoff bloqueador de schema/migração;
+- 23 (Pina) ↔ 24 (Ivo) quando ambos tocarem `src/lib/queue/**` ou resiliência;
+- 31 (Noa) ↔ qualquer agente que tente alterar rotas ou navegação central em `src/App.tsx`;
+- 51 a 54 (Bitrix) ↔ agentes de ingestão com dependência de mapping não resolvido.
 
 A ativação de todos os agentes não elimina as regras de propriedade e exclusão mútua.
+Toda dependência inter-squad deve ser escalada pelos Coordenadores das respectivas Squads (IDs terminados em 0).
 
 ## 15. Propriedade exclusiva de arquivos
-Os seguintes arquivos e diretórios possuem proprietário:
+A autoridade estrita e completa de propriedade está documentada em `.agents/MATRIZ_PROPRIEDADE.md`.
+Resumo das principais atribuições por domínio:
 
 ```
+server.ts, package.json, .agents/ESTADO_ATUAL.md
+→ Agente 00 (exige aprovação humana)
+
+.agents/reviews/**
+→ Agente 09 (Auditor Independente Silas)
+
 prisma/schema.prisma
-→ Agente 01
+→ Agente 11 (Pietro)
 
 prisma/migrations/**
-→ Agente 01
+→ Agente 12 (Vera)
 
-src/App.tsx
-navegação principal
-Sidebar
-→ Agente 02
+src/lib/db/rls/**
+→ Agente 13 (Nilo)
+
+src/lib/queue/**, src/workers/**
+→ Agente 23 (Pina)
+
+src/features/billing/**
+→ Agente 26 (Dália)
+
+src/App.tsx, src/components/layout/**
+→ Agente 31 (Noa)
+
+src/components/ui/**, tailwind.config.js
+→ Agente 33 (Célia)
 
 src/features/landing/**
-→ Agente 02
+→ Agente 36 (Léo) (exceção: voice landing inovadora em src/features/voice-hub/ pertence ao 65 Lena)
 
-.github/workflows/**
-Dockerfile
-docker-compose.yml
-→ Agente 08
+src/features/crm/**
+→ Squad 40 (41 a 49 conforme MATRIZ_PROPRIEDADE.md)
 
-charts/**
-infrastructure/**
-→ Agente 10
+src/lib/integrations/**
+→ Squad 50 (51 a 59)
 
-android/**
-capacitor.config.ts
-→ Agente 09
+src/features/voice-hub/**
+→ Squad 60 (61 a 65)
 
-identidade-visual/**
-documentacao-aplicacao/**
-→ Agente 11
+src/lib/ai/**
+→ Squad 70 (70 a 79)
+
+android/**, ios/**, capacitor.config.ts, src/mobile/**
+→ Squad 80 (80 a 89)
+
+infrastructure/**, charts/**, Dockerfile, docker-compose.yml
+→ Squad 90 (91 a 93)
+
+.github/workflows/**, scripts/deploy/**
+→ Agente 94 (Tess)
+
+src/lib/auth/**, src/lib/auth/rbac/**
+→ Agentes 96 (Nera) e 97 (Rocco)
 
 .agents/prompts/**
-→ decisão humana
+→ Decisão humana
 
 .agents/runs/**
 → Agente 00
 
-.agents/reviews/**
-→ Agente 24 ou 00
-
 .agents/handoffs/**
-→ cada agente cria seus próprios handoffs
+→ Cada agente cria seus próprios handoffs usando .agents/templates/HANDOFF.md
 ```
 
-`server.ts` exige aprovação explícita do 00.
+`server.ts` exige aprovação explícita do 00 e do orquestrador humano.
 `package.json` e lockfile exigem aprovação explícita do 00.
-
-`src/features/landing/**` pertence ao Agente 02 (perfil 02D para conversão); a
-camada visual compartilhada continua do Agente 03. Exceção: `/landing-new` →
-`LandingInnovative` vive em `src/features/voice-hub/` e pertence ao Agente 12.
-
-Integrações não criam migrações. Devem abrir handoff para 01.
+Integrações não criam migrações no banco: devem abrir handoff para o Agente 11 e 12.
 
 ## 16. Regra de conflito
 Quando um agente encontrar arquivo pertencente a outro agente:
@@ -577,7 +642,7 @@ Cada transição exige evidência.
 O Coordenador deve:
 1. revisar o diff;
 2. verificar propriedade;
-3. acionar obrigatoriamente o 24 e consumir seu parecer APROVADO referente à revisão exata da entrega;
+3. acionar obrigatoriamente o Agente 09 (Silas) e consumir seu parecer APROVADO referente à revisão exata da entrega;
 4. integrar em levas de 2–3 merges;
 5. executar gate após cada leva;
 6. identificar o merge causador de falha;
@@ -808,7 +873,7 @@ Uma tarefa só está concluída quando:
 - aprendizados relevantes foram registrados;
 - handoffs necessários foram criados;
 - agentes impactados foram comunicados.
-- o Agente 24 emitiu parecer APROVADO com evidências para a revisão exata da entrega.
+- o Agente 09 (Silas) emitiu parecer APROVADO com evidências para a revisão exata da entrega.
 
 ## 33. Proibição de "auditoria sem correção"
 Encontrou um problema corrigível dentro do escopo?
@@ -918,21 +983,23 @@ Não invente. Não assuma silenciosamente. Não altere fora do escopo. Não esco
 
 Pesquise. Pense. Consulte. Implemente. Teste. Comunique. Registre. Aprenda.
 
-## 40. Auditoria independente obrigatória (decisão humana de 2026-10-09)
+## 40. Auditoria independente obrigatória (Decisão humana de adoção dos 100 Agentes)
 
-O usuário autorizou a criação dos prompts 24 e 08A e esta atualização de governança. Isso não concede autorização permanente para agentes modificarem prompts ou regras globais.
+O usuário autorizou formalmente a migração do sistema para a Arquitetura de 100 Agentes em 10 Squads Decimais (00 a 90). Isso não concede autorização permanente para agentes modificarem prompts ou regras globais sem ordem explícita.
 
-O Coordenador deve SEMPRE acionar o Agente 24 antes de declarar qualquer trabalho concluído, fechar handoffs, aprovar ondas, integrar PRs ou autorizar release/deploy. A regra também cobre documentação, scripts, HTML, configuração e trabalhos realizados pelo próprio Coordenador ou pelo 08A. O autor nunca aprova a própria entrega. Toda missão deve prever essa revisão no critério final de sucesso.
+Com a migração, o papel de **Auditor Independente e Gate Final** passa a ser exercido oficialmente e exclusivamente pelo **Agente 09 (Silas)** (Squad 00). O antigo Agente 24 foi redesignado para Ivo (Resiliência, Retries e DLQ na Squad 20).
 
-O parecer é um destes: APROVADO, REPROVADO ou BLOQUEADO. Somente APROVADO permite avançar. Ausência de auditor, evidência insuficiente, teste obrigatório não executado ou ambiente indisponível não equivalem a aprovação. O auditor pode justificar um teste como não aplicável ao escopo; falhas pré-existentes devem ser identificadas e não podem ser anunciadas como gate verde.
+O Coordenador deve SEMPRE acionar o **Agente 09 (Silas)** antes de declarar qualquer trabalho concluído, fechar handoffs, aprovar ondas, integrar PRs ou autorizar release/deploy. A regra também cobre documentação, scripts, HTML, configuração e trabalhos realizados pelo próprio Coordenador ou pela Squad 90. O autor nunca aprova a própria entrega. Toda missão deve prever essa revisão no critério final de sucesso.
 
-Cada parecer em `.agents/reviews/` deve identificar missão, autor, auditor, base, commit/revisão ou hashes dos arquivos auditados, escopo, critérios, comandos/resultados, evidências, achados, pendências e decisão. Qualquer mudança no conteúdo auditado invalida a aprovação e exige nova revisão. Comentários e marcações pessoais de checklist não são pareceres oficiais.
+O parecer emitido por 09 é um destes: `APROVADO`, `REPROVADO` ou `BLOQUEADO`. Somente `APROVADO` permite avançar. Ausência de auditor, evidência insuficiente, teste obrigatório não executado ou ambiente indisponível não equivalem a aprovação. O auditor pode justificar um teste como não aplicável ao escopo; falhas pré-existentes devem ser identificadas e não podem ser anunciadas como gate verde.
+
+Cada parecer em `.agents/reviews/` deve seguir o template `.agents/templates/PARECER_REVIEW.md` e identificar missão, autor, auditor, base, commit/revisão ou hashes dos arquivos auditados, escopo, critérios, comandos/resultados, evidências, achados, pendências e decisão. Qualquer mudança no conteúdo auditado invalida a aprovação e exige nova revisão. Comentários e marcações pessoais de checklist não são pareceres oficiais.
 
 Auditorias históricas distinguem status declarado, conformidade documental e validação atual do comportamento. Um handoff com `Status: resolvido` não comprova persistência, segurança ou funcionamento. Pendência humana, resolução parcial e deploy simulado devem permanecer explícitos.
 
-O 08A executa operações Git e AWS somente para o escopo e ambiente autorizados na missão, após aprovação do 24 e gates pertinentes do 08, com coordenação do 00 e 10. Merge/push que dispare deploy automático também é operação de produção e depende dessa autorização. Não reescrever histórico, forçar push, expor credenciais ou aceitar deploy ignorado como concluído. Detalhes em `.agents/prompts/08A-git-deploy-aws.md`.
+O Agente 94 (Tess) executa operações Git e CI/CD somente para o escopo e ambiente autorizados na missão, após aprovação do Agente 09 (Silas) e gates pertinentes da Squad 00, com coordenação do 00 (Astra) e 90 (Hélio). Merge/push que dispare deploy automático também é operação de produção e depende dessa autorização. Não reescrever histórico, forçar push, expor credenciais ou aceitar deploy ignorado como concluído.
 
 ## 41. Contrato de qualidade e aceite (decisão humana de 2026-11-13)
 O usuário autorizou incorporar o complemento `docs/orchestration/PROTOCOLO_QUALIDADE_E_ACEITE.md`.
 Antes de iniciar cada missão, fixar requisitos obrigatórios e evidências de aceite; executar, testar, corrigir e revalidar até atender o contrato ou comprovar bloqueio. A revisão avalia os **mesmos requisitos originais**: melhorias opcionais não reprovam retroativamente a entrega; decisões reservadas ao usuário não são defeitos de execução. A classificação e o relatório seguem o documento complementar.
-Permanecem integrais a autoridade deste AGENTS.md, a propriedade, as obrigações de segurança/LGPD/tenancy, os gates, o parecer APROVADO do Agente 24 (§40) e as autorizações necessárias para merge/push/deploy.
+Permanecem integrais a autoridade deste AGENTS.md, a `.agents/MATRIZ_PROPRIEDADE.md`, as obrigações de segurança/LGPD/tenancy, os gates, o parecer APROVADO do Agente 09 Silas (§40) e as autorizações necessárias para merge/push/deploy.

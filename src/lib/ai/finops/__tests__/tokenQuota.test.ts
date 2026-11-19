@@ -41,6 +41,7 @@ import { cacheConnection } from '../../../queue/redis.js';
 import {
   aiTokenQuotaAlertTotal,
   aiTokenQuotaBlockedTotal,
+  aiTokenQuotaFailOpenTotal,
   aiTokenQuotaFallbackTotal,
   aiTokenUsageTotal,
 } from '../../metrics.js';
@@ -498,6 +499,25 @@ describe('TokenQuotaService — Governança e FinOps de Tokens de IA (Onda 15)',
           }),
         }),
       );
+    });
+  });
+
+  describe('DEBT-0014 — Observabilidade do fail-open', () => {
+    it('incrementa ai_token_quota_fail_open_total quando aggregate ou findUnique falham no Postgres', async () => {
+      const failOpenSpy = vi.spyOn(aiTokenQuotaFailOpenTotal, 'inc');
+      findUniqueMock.mockRejectedValue(new Error('Postgres offline (org)'));
+      aggregateMock.mockRejectedValue(new Error('Postgres offline (usage)'));
+
+      const result = await tokenQuotaService.checkTokenQuota({
+        organizationId: 'org-db-down',
+        requestedModel: 'groq/llama-3.3-70b-versatile',
+      });
+
+      expect(result.allowed).toBe(true);
+      expect(result.tier).toBe('starter');
+      expect(result.consumedTokens).toBe(0);
+      expect(failOpenSpy).toHaveBeenCalledWith({ reason: 'tier_resolution_db_unavailable' });
+      expect(failOpenSpy).toHaveBeenCalledWith({ reason: 'usage_db_unavailable' });
     });
   });
 });
