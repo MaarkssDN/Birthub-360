@@ -143,8 +143,9 @@ describe('CommandPalette', () => {
       renderPalette(['/app/crm']);
       openWithCtrlK();
       expect(screen.getByText('Nesta página')).toBeInTheDocument();
-      const oppElements = screen.getAllByText('Nova oportunidade');
-      expect(oppElements.length).toBeGreaterThanOrEqual(2);
+      // "Nova oportunidade" foi removida da paleta (no-op — CrmBoard não consome
+      // o intent; handoff 04→03). Restam apenas navegações reais.
+      expect(screen.queryByText('Nova oportunidade')).not.toBeInTheDocument();
       expect(screen.getByText('Ir para contatos')).toBeInTheDocument();
 
       fireEvent.click(screen.getByText('Ir para empresas'));
