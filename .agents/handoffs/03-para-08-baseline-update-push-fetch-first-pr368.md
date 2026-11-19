@@ -74,3 +74,15 @@ antes do push no step "Commitar baselines". `fetch-depth: 0` é o fix mínimo.
   `.github/`).
 - Relacionado: handoff `03-para-00-sonar-newcode-pr368-cobertura-duplicacao.md`
   cobre os demais gates vermelhos do mesmo PR.
+
+## Resolução (Agente 08 via 00, 2026-11-19)
+
+Resolvido pelo PR #442 (commit `f029da376`, já em main): o step de push agora faz
+`git fetch` da ref remota de `ci/visual-baselines-linux` e `git push --force-with-lease`,
+eliminando a rejeição "fetch first" mesmo com clone raso do `actions/checkout`.
+`fetch-depth: 0` avaliado e considerado desnecessário — a branch é efêmera e 100%
+regenerada a cada run; force-with-lease é a correção mais segura.
+
+Follow-up executado pelo 00: re-dispatch do workflow no ref da branch do PR
+(run `44610937967`) para regenerar as baselines; cherry-pick para a branch do PR
+permanece pendente após o run concluir.
