@@ -371,7 +371,15 @@ export class PrismaLeadRepository implements LeadRepository {
     return serializeLead(lead) as unknown as Lead;
   }
 
-  async updateStatus(organizationId: string, id: string, newStatus: string): Promise<Lead> {
+  async updateStatus(
+    organizationId: string,
+    id: string,
+    newStatus: string,
+    // Campos de formulário (owner/tags) opcionais: quando o caller já tem outros campos para
+    // gravar junto da mudança de etapa (ex.: batchUpdateLeads), eles entram na MESMA
+    // prisma.lead.update — duas escritas separadas abriria janela de gravação parcial.
+    extraFields?: { owner?: string | null; tags?: string[] },
+  ): Promise<Lead> {
     // Busca o status atual para compor a mensagem de timeline, e valida a existência + tenant
     // numa única query. Se não encontrar, lança Error que o errorHandler converte em 404.
     const currentLead = await prisma.lead.findFirst({ where: { id, organizationId } });
@@ -420,6 +428,8 @@ export class PrismaLeadRepository implements LeadRepository {
               probability: matchedStage.probability,
             }
           : {}),
+        ...(extraFields?.owner !== undefined ? { owner: extraFields.owner } : {}),
+        ...(extraFields?.tags !== undefined ? { tags: extraFields.tags } : {}),
         timeline: {
           create: {
             type: 'movement',
