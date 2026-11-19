@@ -85,7 +85,10 @@ Pedido ao Gate Humano: aprovar "instalar nenhum agora" e reavaliar apenas Playwr
 |---|---|
 | `npm run test:architecture` | TESTADO: EXIT 0 (depcruise + coverage + hotspots + baseline-freshness: 70 violações conhecidas conferem) |
 | `npm run typecheck` / `npm run lint` | TESTADO (ver §2): sem erros / 0 erros e 1561 warnings PRÉ-EXISTENTES |
-| `test:unit` (vitest, paralelo, reporter dot) | ver checkpoint (`birthub-experience-360-state.md`) — resultado final só após término da execução |
+| `test:unit` (`npx vitest run -c vitest.unit.config.ts --reporter=dot`, paralelo) | TESTADO: EXIT 0 — 921 arquivos passed (921); 7366 testes passed, 1 skipped (7367). Substitui a execução inconclusiva de §2 (timeout de 900 s com `--no-file-parallelism`). Nota: usei execução paralela, não o script exato `npm run test:unit`. |
 
 ## 12. Achado de CI (QA-002, P2, risco fundamentado)
 `visual-regression.yml` → job `Detectar escopo visual`: `git diff BASE_SHA...HEAD` sobre o merge ref inclui arquivos que entraram na `main` depois da base do PR (observado: `src/features/crm/application/LeadUseCases.ts` na lista do PR #420), marcando `relevant=true` e disparando Visual Regression em PR documental. Dono: 08 (`.github/workflows/**`). Handoff a abrir pelo 08/00; não editado aqui. Correção do que afirmei no comentário do PR: o PR altera só docs/`.claude`, mas o gatilho do Visual Regression vem de arquivos da `main`.
+
+## 13. Atualização (2026-11-19, pós #419)
+`test:unit` verde (ver §11). #419 mergeado; branch do PR #420 atualizada com a `main` (102db1fb); `Visual Regression` passou a `skipped` nessa revisão (escopo visual não inclui mais arquivos de `src/` da `main` desalinhados). Agente 14: `auth.spec.ts` 4/4 e `accessibility.spec.ts` 34/34 locais (`14-harness-playwright-local-20261119.md`); inventário visual das rotas `/app/*` e `mobile-sweep` seguem NÃO EXECUTADOS. Agente 24: parecer APROVADO apenas para 73dcc992; nova revisão solicitada para a revisão final.
