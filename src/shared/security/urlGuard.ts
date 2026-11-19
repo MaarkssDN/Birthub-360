@@ -3,6 +3,7 @@ import type { LookupFunction } from 'node:net';
 import net from 'node:net';
 import { Agent, fetch as undiciFetch } from 'undici';
 import { AppError } from '../middlewares/errorHandler.js';
+import { isPrivateIpv6Transition } from './ipv6.js';
 
 // Usamos o `RequestInit` do próprio `undici` (não o `RequestInit` global do lib "DOM" do
 // tsconfig, compartilhado com o frontend) porque só o tipo do undici já declara `dispatcher`
@@ -53,6 +54,10 @@ function isPrivateOrReservedIp(ip: string): boolean {
       const mapped = lower.split(':').pop();
       if (mapped && net.isIPv4(mapped)) return isPrivateOrReservedIp(mapped);
     }
+    // Mecanismos de transição IPv4-em-IPv6 (6to4, Teredo, NAT64, IPv4-compatible):
+    // o IPv4 embutido é avaliado pela mesma política IPv4; Teredo (sem IPv4
+    // extraível, deprecado) é sempre tratado como privado/reservado.
+    if (isPrivateIpv6Transition(ip, (v4) => isPrivateOrReservedIp(v4))) return true;
     return false;
   }
   return true;

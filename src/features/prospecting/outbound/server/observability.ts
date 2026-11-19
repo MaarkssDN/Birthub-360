@@ -120,7 +120,11 @@ export interface SearchRunRequest {
   employeeCount?: string;
   annualRevenue?: string;
   decisionMakerRole?: string;
-  company?: 'atlas' | 'totaltrac';
+  // Company do tenant que executou a busca (gravada pelo /prospect a partir da
+  // sessão — nunca do body). Usada pelo GET /search-runs/:id para escopo de
+  // tenant. O tipo literal antigo ('atlas' | 'totaltrac') não correspondia ao
+  // uso real e foi corrigido no parecer 24 do PR #323.
+  company?: string;
   limit?: number;
 }
 

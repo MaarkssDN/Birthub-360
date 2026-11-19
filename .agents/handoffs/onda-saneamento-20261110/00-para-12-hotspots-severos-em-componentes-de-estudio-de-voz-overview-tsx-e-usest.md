@@ -109,3 +109,27 @@ Reverificação sobre a `main` atual (refatoração já mergeada via PR #253):
 decomposição documentada acima permanece intacta. Gates da onda de
 saneamento seguem como registrados; **parecer formal do Agente 24 continua
 pendente** (condição de encerramento deste handoff).
+
+## Re-verificação (Agente 12 — 2026-11-17, branch `agente/12-handoffs-20261117`, base `main@414a0ca5f`)
+
+Estado reconfirmado em `main` — implementação íntegra, sem regressão:
+
+- `src/features/voice-hub/pages/Dashboard/Overview.tsx` → **654 linhas**;
+  `store/useStudioStore.ts` → **421 linhas**; `overviewSections.tsx` → 682 linhas.
+  Todos abaixo dos limites de aviso (700) do `check:hotspots`.
+- `npx vitest run -c vitest.unit.config.ts src/features/voice-hub/pages/Dashboard`
+  → **8 arquivos / 108 testes, todos passando** (inclui `overviewMetrics.test.ts`,
+  `overviewWidgets.test.tsx`, `Overview.telemetria-ia.test.tsx`,
+  `Overview.interactions.test.tsx`, `KnowledgeManager.test.tsx`).
+- `tenant-isolation.test.ts` (lib/voice-hub) → 36/36 verdes.
+- `npx tsc --noEmit` (tsconfig principal) → limpo. `tsconfig.voice.json` → 14 erros,
+  todos por deps `twilio`/`d3`/`openid-client` ausentes (decisão do 00, ver
+  handoff `01-para-12-voicehub-adaptacao-modelos-canonicos.md`).
+
+**Status mantido: em-andamento** — a condição de encerramento (parecer formal
+`APROVADO` do Agente 24 com validação de hashes e não-regressão) **não foi
+localizada** em `.agents/reviews/` até esta data. Não encontrei parecer
+específico da TAREFA-SANEAMENTO-008/BT360-DT-0063; os pareceres de saneamento do
+24 (`24-revisao-onda-saneamento-*`, `24-revisao-pos-homologacao-w7-20261113.md`)
+mencionam os hotspots voice-hub apenas como pendência/exceção datada, não como
+veredito sobre esta decomposição. Aguarda o Agente 24.
