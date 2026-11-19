@@ -109,6 +109,7 @@ do mesh.
 | `src/features/intelligence/services/autonomyCircuitBreaker.service.ts` (~L118, ~L160) | AUTONOMY_CIRCUIT_BREAKER_TRIPPED / _RECOVERED | `circuit-breaker-{tripped,recovered}:{orgId}:{lastDowngradeAt|lastUpgradeAt}` — timestamp da transição distingue trips futuros legítimos de retries da mesma transição |
 | `src/features/intelligence/agents/tactical/promiseGuardian.agent.ts` (~L117) | PROMISE_COMMITMENT_DETECTED | `promise-commitment:{commitmentId}` |
 | `src/features/intelligence/agents/tactical/devilsAdvocate.agent.ts` (~L135) | DEVILS_ADVOCATE_ALERT | `devils-advocate:{dealId}:{analysisDate}` — analysisDate identifica a execução; reavaliações futuras do mesmo deal não são suprimidas |
+| `src/features/knowledge/services/accountKnowledgeGraph.service.ts` (~L74, follow-up) | GRAPH_RELATIONSHIP_UPDATED | `graph-relationship:{sourceId}:{targetId}:{type}` — o `edge.id` é `edge-${randomUUID()}` por chamada, então a identidade estável da relação é a tupla (source, target, type): retry/replay da mesma relação colide na outbox; relações distintas não |
 
 **Testes:**
 - Novo `src/features/intelligence/services/__tests__/outboxIdempotencyKeys.test.ts`
@@ -118,6 +119,9 @@ do mesh.
   mock de `buildTriggerIdempotencyKey` trocado para implementação real (função pura);
   assert de `idempotencyKey` `lead-enrichment:{sha256}` + teste de determinismo
   (mesmo evento → mesma chave; evento distinto → chave distinta).
+- `src/features/knowledge/services/__tests__/accountKnowledgeGraph.outboxIdempotency.test.ts`
+  (3 testes, follow-up): GRAPH_RELATIONSHIP_UPDATED publica com a chave da tupla;
+  mesma relação republicada → mesma chave com edgeIds distintos; tipo diferente → chave distinta.
 - Dedup efetivo na outbox já coberto por `tests/unit/queue/outbox.remed05.test.ts` (16).
 
 **Gate:** `npx tsc --noEmit` limpo; `npx vitest run -c vitest.unit.config.ts` nos arquivos
@@ -125,6 +129,12 @@ afetados 48/48; `biome check` limpo nos arquivos alterados (2 warnings pré-exis
 relacionados: `noNonNullAssertion` em autonomyGovernor e variável não usada em
 promiseGuardian — fora do escopo, P3).
 
+**Follow-up (2026-11-19, mesmo commit stream na branch):** call site de knowledge
+`accountKnowledgeGraph.service.ts` incluído — parcela do 07 completa (9 call sites em 8
+arquivos). Gate re-executado: `npx tsc --noEmit` limpo; vitest unitário dos arquivos
+afetados 13/13 (4 knowledge existentes + 3 novos + 6 intelligence); `biome check` limpo.
+
 **Restante (outros donos):** ai-voice (12?), integrations (06), cadence (17),
-commercial-intelligence/CRM-BI (04), gamification, knowledge, mobile, proposals,
-market-intelligence, `src/lib/runtime` — seguem pendentes conforme inventário original.
+commercial-intelligence/CRM-BI (04), gamification, mobile, proposals,
+market-intelligence, `src/lib/runtime` — seguem pendentes conforme inventário original
+(knowledge removido da lista — parcela do 07 concluída).
