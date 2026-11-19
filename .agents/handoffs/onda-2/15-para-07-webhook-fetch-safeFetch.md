@@ -1,7 +1,7 @@
 De: 15 — Segurança Aplicada e Rotação de Segredos
 Para: 07 — IA e Automações
 Onda: 2
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: MEL-13 (Onda 2, DEM-20261113-003)
 Sprint destino: Onda 2/3
@@ -135,3 +135,11 @@ loopback para HTTPS. Testes novos em `tests/unit/shared/security/urlGuard.test.t
 (`::ffff:7f00:1`) fora da exceção loopback — um hostname que resolva para esse
 formato passaria no guard de IP privado. Fora do escopo desta correção; registrar
 como débito de hardening do `urlGuard.ts`.
+
+### Reverificação (Agente 07 — 2026-11-17, worktree `agente-07-handoffs`, base `main@414a0ca5f`)
+
+Confirmado em `main`: `universalNotificationsTool.ts` (L113-114),
+`universalTasksAndNotesTool.ts` (L336-337) e `aiPendingAction.service.ts`
+(L234-238) usam `assertSafeExternalUrl` + `safeFetch` de
+`src/shared/security/urlGuard.ts`; `universalConnectors.service.ts` mantém só
+`validateWebhookUrl` no save (sem fetch — correto). Status → `resolvido`.

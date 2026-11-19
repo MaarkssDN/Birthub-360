@@ -1,7 +1,7 @@
 De: 00 — Coordenador
 Para: 07 — IA e Automações
 Onda: paralela-8
-Status: aberto
+Status: resolvido
 Prioridade: normal
 
 ## Problema
@@ -43,3 +43,9 @@ vitest `tests/unit/intelligence` + `tests/unit/features/intelligence` → 360/36
 verde (inclui `supervisor.semanticRouter.test.ts`, `supervisor.commercialV3.test.ts`,
 `supervisor.agent.consent.test.ts` e os testes de tools). Nenhum import quebrado —
 os símbolos removidos não tinham referências.
+
+### Reverificação (Agente 07 — 2026-11-17, worktree `agente-07-handoffs`, base `main@414a0ca5f`)
+
+Confirmado em `main`: `supervisor.agent.ts` só exporta `SwarmOrchestrator`
+(comentário da remoção em L589-590) e `integrationTools.ts` só exporta
+`multiCrmSyncTool` (L83). Status → `resolvido`.

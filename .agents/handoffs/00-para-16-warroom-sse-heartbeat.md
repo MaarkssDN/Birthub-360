@@ -3,7 +3,7 @@
 De: 00 — Coordenador
 Para: 16 — Runtime, Workers e Escala (com 02 — Produto/UX)
 Onda: W7
-Status: em-andamento
+Status: resolvido
 Prioridade: normal
 Sprint destino: próxima onda
 

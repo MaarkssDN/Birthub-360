@@ -62,3 +62,5 @@ Testes: `src/features/prospecting/services/__tests__/cold-email.service.test.ts`
 Observação para o 24 (mantida da resolução original): a checagem por item usa `isOptedOut` (1 query por campanha) — filtro em lote por consulta única ficou fora do escopo cirúrgico; se o volume de listas crescer, avaliar `findMatches` batch (melhoria futura, não bloqueia).
 
 Gates nesta sessão: `npx tsc --noEmit` ✓, `npx biome lint` nos 2 arquivos alterados ✓ (0 diagnósticos), `vitest run -c vitest.unit.config.ts` cold-email 9/9 ✓ e enrichmentRetention 10/10 ✓.
+
+**Re-verificação Agente 05 — 2026-11-17** (`agente/05-handoffs-20261117`, base `main@414a0ca5f`): implementação segue presente e íntegra — `sendColdEmailBatch` em `src/features/prospecting/services/cold-email.service.ts` (~L180) mantém filtro sanitizador de opt-out para toda a lista antes do envio, fail-closed sem `organizationId`, propagação de erro do supressor e contagens agregadas. Teste `cold-email.service.test.ts` re-executado nesta branch: 9/9 ✓. Nenhuma ação adicional necessária.

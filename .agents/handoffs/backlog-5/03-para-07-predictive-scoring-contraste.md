@@ -1,7 +1,7 @@
 De: Agente 03 — Design e Acessibilidade
 Para: Agente 07 — IA e Automações
 Onda: Backlog Onda 5 / DEM-20261116-001
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: MEL-37
 Sprint destino: backlog-5
@@ -32,3 +32,14 @@ Lint + smoke visual do drawer de lead em tema claro e escuro; contraste do "/100
 ## Contexto adicional
 
 Se a decisão de produto for tornar o card theme-aware no futuro, aí sim valeria migrar para tokens `bg-surface`/`text-ink` — mas isso é redesign, fora do escopo MEL-37.
+
+## Resolução (Agente 07 — 2026-11-17, worktree `agente-07-handoffs`, branch `agente/07-handoffs-20261117`)
+
+Aplicada a alteração cirúrgica pedida: `text-slate-500` → `text-slate-400`
+nas 3 ocorrências do "/100" (linhas 213, 239, 252 de
+`src/features/intelligence/components/PredictiveScoringNbaCard.tsx`).
+Contraste resultante ~6.5:1 sobre `#1C1D24`/`#13151A` (WCAG AA ≥ 4.5:1).
+
+Decisão registrada: o card permanece com hex fixo (dark cockpit embedado no
+`LeadDetailDrawer`, conforme evidência deste handoff) — NÃO foi tokenizado,
+ver nota de interseção no handoff `onda-02-ux/02-para-07-intelligence-hub-tokens.md`.

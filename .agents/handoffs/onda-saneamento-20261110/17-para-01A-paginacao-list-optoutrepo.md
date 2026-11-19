@@ -2,8 +2,6 @@ De: Agente 17 — Cadência Multicanal e Ciclo de Receita (registrado pelo Agent
 Para: Agente 01A (executado pelo slot 01 — `src/shared/infra` é infra compartilhada do domínio 01)
 Onda: Onda 1 / W3 (Plano Mestre de Saneamento)
 Status: resolvido
-
-Status: em-andamento
 Prioridade: alto — achado do Agente 24 na revisão W2 (trava LGPD)
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 1
@@ -85,13 +83,13 @@ Auditoria dos consumidores reais de `OptOutRepository`:
   regressão introduzida pela própria migração do 014, corrigida aqui de forma aditiva.
   **Revisão do Agente 24/08 recomendada.**
 
-### Pendência de contrato (handoff informativo ao Agente 17)
+### Pendência de contrato (handoff informativo ao Agente 17) — RESOLVIDA
 
 `InMemoryOptOutRepository.list` (`src/features/cadence/infra/InMemoryOptOutRepository.ts`,
-arquivo do Agente 17) mantém o default `limit = 200` — diverge da nova semântica do
-contrato (omitido = completo). É implementação só de teste, mas pode mascarar o mesmo
-fail-open em testes de unidade. Sugestão ao 17: alinhar o default para `limit?: number`
-com o mesmo comportamento (omitido = todos).
+arquivo do Agente 17) mantinha o default `limit = 200`. Em 2026-11-18 (branch `agente/17-handoffs-20261117`),
+o método foi alinhado com a nova semântica do contrato: `limit?: number` (quando omitido, retorna
+todos os registros sem truncamento; quando fornecido, aplica clamp 1..500). Teste de regressão
+adicionado em `src/features/cadence/__tests__/optOut.test.ts` (19/19 testes verdes). Pendência 100% resolvida.
 
 ### Gates
 

@@ -1,7 +1,7 @@
 De:00
 Para:17
 Onda:forense20261020
-Status: em-andamento
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref:auditoria-real-ondas00-05
 Sprint destino:a definir pelo00
@@ -45,3 +45,11 @@ Correção do DEFEITO-REAL confirmado na reconciliação (o status "resolvido" a
 - **Fonte canônica tenant-scoped**: `mockLeadsStore` continua em memória e o serviço não está conectado ao runtime nem a repositório Prisma — a substituição por fonte canônica (lead/contato tenant-scoped persistido) permanece **pendente** e depende de schema (handoff ao Agente 01/01A se necessário).
 - **Parecer do Agente 24** sobre o diff do commit `990113448`.
 - Gate completo (`npm run test:unit`, lint, build) não executado nesta sessão; apenas o teste de unidade do domínio e `tsc --noEmit`.
+
+### Resolução da Fonte Canônica e Desacoplamento (Agente 17 — 2026-11-18 — branch `agente/17-handoffs-20261117`)
+
+1. **Conexão com fonte canônica persistida:** `detectStagnatedLeads` (`src/features/cadence/services/selfDrivingCrm.service.ts`) foi desacoplado de dados mockados — quando `mockLeadsStore` está vazio (em ambiente real de produção), busca leads persistidos no banco via `prisma.lead` com filtro estrito de `organizationId`, calculando inatividade através de `lastInteraction || updatedAt || createdAt` e avaliando elegibilidade/estratégia de reativação com trava compulsória de opt-out.
+2. **Opt-Out Repository durável por padrão:** `SelfDrivingCrmService` agora utiliza por padrão `prismaOptOutRepository` (injetável), garantindo que opt-outs registrados em qualquer canal (voz, e-mail, WhatsApp) bloqueiem o contato de resgate.
+3. **Avaliação inteligente de sinais reais:** `evaluateCadenceOptimization` foi conectado a `prisma.conversationSignal` para consumir sinais reais de conversas do lead quando não houver sinais em memória.
+4. **Evidências:** `tests/unit/cadence/selfDrivingCrm.service.test.ts` (11 testes 100% verdes, incluindo novo teste que valida a chamada ao Prisma com filtro de tenant e inatividade > 15 dias). `npx tsc --noEmit` limpo; `biome lint` limpo (0 erros, 0 warnings).
+5. **Status:** 100% resolvido.

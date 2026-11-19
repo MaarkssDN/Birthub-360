@@ -1,8 +1,9 @@
 import type { LeadFunnel } from '@prisma/client';
 import type { z } from 'zod';
-import { fromPrismaLeadStatus } from '../../../lib/enumMap.js';
+import { fromPrismaLeadStatus, toPrismaLeadStatus } from '../../../lib/enumMap.js';
 import { broadcastEvent } from '../../../lib/eventsBus.js';
 import { logger } from '../../../lib/logger.js';
+import type { LeadStatus } from '../../../lib/zod.js';
 import { leadSchema } from '../../../lib/zod.js';
 import { BaseUseCases } from '../../../shared/application/BaseUseCases.js';
 import { AppError } from '../../../shared/middlewares/errorHandler.js';
@@ -153,6 +154,8 @@ export class LeadUseCases extends BaseUseCases<Lead, LeadRepository> {
     if (data.status === WON_STATUS_LABEL) {
       if (!actorUserId)
         throw new AppError('Fechar um negócio exige um usuário autenticado identificado.', 401);
+      const existing = await this.findById(organizationId, id);
+      if (!existing) throw new AppError('Lead não encontrado.', 404);
       await ensureManualDealClosureAllowed(prismaDealClosureGate, {
         organizationId,
         leadId: id,
@@ -205,17 +208,24 @@ export class LeadUseCases extends BaseUseCases<Lead, LeadRepository> {
     id: string,
     newStatus: string,
     actorUserId?: string,
+    // Repasse para repository.updateStatus: permite gravar owner/tags na mesma escrita do
+    // status (usado por batchUpdateLeads para evitar gravação parcial entre duas updates).
+    extraFields?: { owner?: string | null; tags?: string[] },
   ) {
     if (newStatus === WON_STATUS_LABEL) {
       if (!actorUserId)
         throw new AppError('Fechar um negócio exige um usuário autenticado identificado.', 401);
+      const existing = await this.findById(organizationId, id);
+      if (!existing) throw new AppError('Lead não encontrado.', 404);
       await ensureManualDealClosureAllowed(prismaDealClosureGate, {
         organizationId,
         leadId: id,
         actorUserId,
       });
     }
-    const updated = await this.repository.updateStatus(organizationId, id, newStatus);
+    const updated = extraFields
+      ? await this.repository.updateStatus(organizationId, id, newStatus, extraFields)
+      : await this.repository.updateStatus(organizationId, id, newStatus);
 
     if (newStatus === WON_STATUS_LABEL) {
       broadcastEvent({ type: 'DEAL_WON', organizationId, payload: { leadId: id } });
@@ -688,6 +698,19 @@ export class LeadUseCases extends BaseUseCases<Lead, LeadRepository> {
       select: { id: true, status: true, tags: true, owner: true },
     });
 
+    // `updates.status` chega da UI como rótulo legível ('Negócios Ganhos', 'Qualificação (SDR)')
+    // enquanto `lead.status` lido do banco é o identificador do enum Prisma ('Negocios_Ganhos',
+    // 'Qualificacao_SDR'). Normaliza para o espaço do enum ANTES de comparar e gravar — sem isso a
+    // comparação nunca batia e o Prisma rejeitava o rótulo cru (handoff 01A→04, onda paralela-8).
+    // `toPrismaLeadStatus` é pass-through para valores já no espaço do enum, então callers que
+    // enviam o identificador continuam funcionando.
+    const requestedPrismaStatus = updates.status
+      ? toPrismaLeadStatus(updates.status as LeadStatus)
+      : undefined;
+    const requestedStatusLabel = requestedPrismaStatus
+      ? fromPrismaLeadStatus(requestedPrismaStatus)
+      : undefined;
+
     let updatedCount = 0;
     let failedCount = 0;
     for (const lead of leads) {
@@ -698,72 +721,78 @@ export class LeadUseCases extends BaseUseCases<Lead, LeadRepository> {
       // de saber quantos já tinham sido aplicados. Agora um item falho é contado em `failedCount`
       // e o lote continua para os demais.
       try {
-        const dataToUpdate: Record<string, unknown> = {};
-        if (updates.status && updates.status !== lead.status) {
-          dataToUpdate.status = updates.status;
+        const statusChanged =
+          requestedPrismaStatus !== undefined && requestedPrismaStatus !== lead.status;
+
+        let currentTags = Array.isArray(lead.tags) ? [...lead.tags] : [];
+        if (updates.addTags) {
+          for (const tag of updates.addTags) {
+            if (!currentTags.includes(tag)) currentTags.push(tag);
+          }
         }
-        if (updates.owner !== undefined) {
-          dataToUpdate.owner = updates.owner;
+        if (updates.removeTags) {
+          currentTags = currentTags.filter((t) => !updates.removeTags?.includes(t));
+        }
+        const hasTagUpdate =
+          updates.tags !== undefined ||
+          updates.addTags !== undefined ||
+          updates.removeTags !== undefined;
+        const hasOwnerUpdate = updates.owner !== undefined;
+        if (!statusChanged && !hasTagUpdate && !hasOwnerUpdate) continue;
+
+        // Mudança de status delegada a updateLeadStatus (mesma recomendação do handoff 01A→04):
+        // herda de graça o gate CYC-007 (ensureManualDealClosureAllowed para "Negócios Ganhos"),
+        // closedAt, sincronia pipelineId/pipelineStageId/probability (CRM-011), LeadStageHistory
+        // com isWon/isLost, timeline, broadcasts DEAL_WON/DEAL_LOST e re-sync Bitrix — idêntico
+        // aos demais caminhos de escrita de status. Uma rejeição do gate (401/403) cai no catch
+        // por item e vira failedCount, sem escrita parcial de status.
+        const hasFieldUpdates = hasTagUpdate || hasOwnerUpdate;
+        const fieldUpdates: { owner?: string | null; tags?: string[] } = {};
+        if (hasOwnerUpdate) {
+          fieldUpdates.owner = updates.owner as string | null;
         }
         if (updates.tags) {
-          dataToUpdate.tags = updates.tags;
-        } else if (updates.addTags || updates.removeTags) {
-          let currentTags = Array.isArray(lead.tags) ? [...lead.tags] : [];
-          if (updates.addTags) {
-            for (const tag of updates.addTags) {
-              if (!currentTags.includes(tag)) currentTags.push(tag);
-            }
-          }
-          if (updates.removeTags) {
-            currentTags = currentTags.filter((t) => !updates.removeTags?.includes(t));
-          }
-          dataToUpdate.tags = currentTags;
+          fieldUpdates.tags = updates.tags;
+        } else if (hasTagUpdate) {
+          fieldUpdates.tags = currentTags;
         }
 
-        if (Object.keys(dataToUpdate).length > 0) {
+        if (statusChanged && requestedStatusLabel) {
+          // Status + owner/tags na MESMA escrita do repository (extraFields): antes eram duas
+          // prisma.lead.update separadas e, se a segunda falhasse após a primeira persistir, o
+          // status ficava gravado mas o item contava como failedCount — gravação parcial
+          // reportada como falha total.
+          await this.updateLeadStatus(
+            organizationId,
+            lead.id,
+            requestedStatusLabel,
+            actorUserId,
+            hasFieldUpdates ? fieldUpdates : undefined,
+          );
+        } else if (hasFieldUpdates) {
           // organizationId também no `where` (mesmo padrão de defesa-em-profundidade de
           // PrismaLeadRepository.update/updateStatus e PrismaCrm360Repository.updateLeadStage):
           // o id já veio de um findMany escopado por tenant e a RLS é a garantia real, mas a
           // query de escrita fica autocontida em vez de depender só dessas duas camadas.
           await prisma.lead.update({
             where: { id: lead.id, organizationId },
-            data: dataToUpdate,
+            data: fieldUpdates,
           });
-          if (dataToUpdate.owner !== undefined) {
-            // Handoffs (Jornada): troca de responsável em lote também é uma troca real.
-            const { recordLeadFieldChanges } = await import(
-              '../../../shared/services/leadFieldChangeHistory.service.js'
-            );
-            await recordLeadFieldChanges(
-              organizationId,
-              lead.id,
-              { owner: lead.owner },
-              { owner: dataToUpdate.owner as string | null },
-              { source: 'batch', changedBy: actorUserId ?? null },
-            );
-          }
-          if (dataToUpdate.status) {
-            await prisma.leadStageHistory
-              .create({
-                data: {
-                  leadId: lead.id,
-                  organizationId,
-                  stageName: String(dataToUpdate.status),
-                },
-              })
-              .catch((err) => {
-                // Achado real (auditoria de release-readiness, error-resilience): o lead
-                // principal já foi salvo com sucesso acima (side-effect apenas de histórico),
-                // mas perder esse registro sem log algum dificulta investigar buracos na
-                // trilha de mudança de estágio depois.
-                logger.error(
-                  { err, leadId: lead.id, organizationId },
-                  'batchUpdateLeads: falha ao registrar histórico de estágio (lead já foi salvo).',
-                );
-              });
-          }
-          updatedCount++;
         }
+        if (hasOwnerUpdate) {
+          // Handoffs (Jornada): troca de responsável em lote também é uma troca real.
+          const { recordLeadFieldChanges } = await import(
+            '../../../shared/services/leadFieldChangeHistory.service.js'
+          );
+          await recordLeadFieldChanges(
+            organizationId,
+            lead.id,
+            { owner: lead.owner },
+            { owner: fieldUpdates.owner ?? null },
+            { source: 'batch', changedBy: actorUserId ?? null },
+          );
+        }
+        updatedCount++;
       } catch (err: any) {
         failedCount++;
         logger.error(

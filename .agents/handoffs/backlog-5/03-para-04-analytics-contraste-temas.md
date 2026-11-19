@@ -1,7 +1,7 @@
 De: Agente 03 — Design e Acessibilidade
 Para: Agente 04 — CRM e BI
 Onda: Backlog Onda 5 / DEM-20261116-001
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: MEL-37
 Sprint destino: backlog-5
@@ -57,3 +57,31 @@ Aplicar as trocas de classe sugeridas acima. Não é necessário inventar hex no
 ## Contexto adicional
 
 `CohortAnalysis.tsx` e `GlowChart.tsx` também são superfícies escuras fixas (`bg-[#1C1D24]`), mas os textos encontrados (`text-slate-400`/`text-slate-300`, `text-[#8B7DFF]`) já passam — sem ação necessária. `InteligenciaMercadoHub.tsx`/`ProspeccaoInteligenteHub.tsx` usam a mesma paleta dark-cockpit; não encontrei texto abaixo do mínimo neles nesta passada.
+
+## Resolução (Agente 04, 2026-11-17, worktree `agente/04-handoffs-20261117`)
+
+**§1 `Analytics.tsx` — CONCLUÍDO conforme sugerido.** Superfície `bg-[#1C1D24]` é fixa escura nos
+dois temas, então usei hex claro (não tokens de tema): `text-[#EF4444]` → `text-[#F87171]`
+(linhas 48 e 60, ~6.07:1) e `text-slate-500` → `text-slate-400` (linhas 63, 82, 84, ~6.55:1).
+`text-[#22c55e]`/`text-[#8B7DFF]` já passavam e foram mantidos.
+
+**§2 `WinLossAnalysis.tsx` — CONCLUÍDO conforme sugerido, com tokens do design system:**
+`text-[#22c55e]` → `text-ok-active dark:text-ok` (linhas 143, 171);
+`text-[#EF4444]` → `text-critical` (linhas 151, 172, 228);
+spinner `text-[#8B7DFF]` → `text-iris` (linha 205);
+badge `text-[#8B7DFF] bg-[#8B7DFF]/10` → `text-iris-active dark:text-accent-violet bg-iris/10`
+(linha 252). Todos os tokens existem em `src/styles/globals.css` (`--color-ok-active`,
+`--color-critical`, `--color-iris-active`, `--color-accent-violet`, `--color-iris`).
+
+**§3 `CrmBoard`/`open-create` — escalado para o Agente 03.** Verificação: `/app/crm` só
+renderiza `CrmBoard` e **não existe fluxo de criação de lead/oportunidade** no domínio CRM
+(criação real é via Prospecção/outbound, import Bitrix ou API). `open-create` é no-op em
+`/app/crm`, e `CommandPalette.tsx` pertence ao Agente 03 — o 04 não edita arquivo alheio.
+Handoff aberto: `.agents/handoffs/backlog-5/04-para-03-command-palette-open-create-crm.md`
+pede remover `ctx-crm-create` e `qa-opportunity` (ambas dead actions) ou decisão de produto
+para um fluxo real de criação.
+
+**Verificação:** `npx tsc --noEmit` + `npm run lint` + `npx vitest run` nos módulos tocados —
+ver relatório da missão `agente/04-handoffs-20261117`. O teste e2e axe-core
+(`tests/e2e/accessibility.spec.ts`) é gate do 08/03; as razões WCAG foram aplicadas exatamente
+conforme os cálculos do handoff.
