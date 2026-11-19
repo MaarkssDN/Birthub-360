@@ -1,7 +1,14 @@
 import { Router, type Request, type Response } from 'express';
 import crypto from 'node:crypto';
 import { getDatabase } from '../db.js';
-import { requireAuth, createSessionToken, buildSessionCookie, buildLogoutCookie } from '../auth.js';
+import {
+  requireAuth,
+  requireTenantScope,
+  tenantCompany,
+  createSessionToken,
+  buildSessionCookie,
+  buildLogoutCookie,
+} from '../auth.js';
 
 export const SCRYPT_PREFIX = 'scrypt$';
 
@@ -109,10 +116,19 @@ authRouter.get('/auth/me', async (req: Request, res: Response) => {
   res.json({ user: (req as any).outboundUser ?? null });
 });
 
-authRouter.get('/users', requireAuth, async (_req: Request, res: Response) => {
+// Handoff 12→05 (F2): este router é montado ANTES do requireTenantScope do
+// apiRouter (é a porta de entrada), então a rota precisa do guard explícito.
+// Antes listava TODOS os usuários de TODAS as companies para qualquer sessão
+// válida (diretório de usuários cross-tenant). Agora exige tenant e filtra
+// pela company da sessão.
+authRouter.get('/users', requireAuth, requireTenantScope, async (req: Request, res: Response) => {
   try {
     const db = await getDatabase();
-    const result = await db.exec(`SELECT id, email, name, role FROM users`);
+    const company = tenantCompany(req);
+    const result = await db.exec(
+      `SELECT id, email, name, role FROM users WHERE LOWER(TRIM(COALESCE(company, ''))) = ?`,
+      [company],
+    );
     if (result.length === 0) return res.json([]);
     const users = result[0].values.map((row) => ({
       id: row[0],

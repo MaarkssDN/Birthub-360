@@ -140,7 +140,7 @@ export function WinLossAnalysis() {
               <p className="text-[11px] uppercase tracking-wide text-ink-2 font-semibold">
                 Ganhos no mês
               </p>
-              <p className="text-2xl font-black mt-1 text-[#22c55e]">
+              <p className="text-2xl font-black mt-1 text-ok-active dark:text-ok">
                 {snapshot.overview.closedThisMonth}
               </p>
             </Card>
@@ -148,7 +148,7 @@ export function WinLossAnalysis() {
               <p className="text-[11px] uppercase tracking-wide text-ink-2 font-semibold">
                 Perdidos no mês
               </p>
-              <p className="text-2xl font-black mt-1 text-[#EF4444]">
+              <p className="text-2xl font-black mt-1 text-critical">
                 {snapshot.overview.lostThisMonth}
               </p>
             </Card>
@@ -168,8 +168,8 @@ export function WinLossAnalysis() {
           <Card padding="lg" className="text-center border-dashed">
             <div className="flex flex-col items-center gap-4 py-6">
               <div className="flex gap-6 text-4xl">
-                <TrendingUp className="w-12 h-12 text-[#22c55e]" />
-                <TrendingDown className="w-12 h-12 text-[#EF4444]" />
+                <TrendingUp className="w-12 h-12 text-ok-active dark:text-ok" />
+                <TrendingDown className="w-12 h-12 text-critical" />
               </div>
               <h3 className="text-lg font-bold text-ink">
                 Análise Inteligente de Ciclos Comerciais
@@ -202,7 +202,7 @@ export function WinLossAnalysis() {
         {/* Loading state */}
         {loading && (
           <Card padding="lg" className="text-center">
-            <Loader2 className="w-10 h-10 mx-auto mb-4 animate-spin text-[#8B7DFF]" />
+            <Loader2 className="w-10 h-10 mx-auto mb-4 animate-spin text-iris" />
             <h3 className="text-base font-semibold text-ink mb-2">IA analisando os dados…</h3>
             <p className="text-sm text-ink-2">
               Processando transcrições de WhatsApp, timelines de atividades e histórico de leads
@@ -225,7 +225,7 @@ export function WinLossAnalysis() {
         {/* Error state */}
         {error && (
           <Card padding="lg" className="text-center border-red-500/20">
-            <AlertCircle className="w-8 h-8 mx-auto mb-3 text-[#EF4444]" />
+            <AlertCircle className="w-8 h-8 mx-auto mb-3 text-critical" />
             <p className="text-sm font-semibold text-ink mb-1">Falha ao gerar análise</p>
             <p className="text-xs text-ink-2 mb-4">{error}</p>
             <Button variant="outline" onClick={runAnalysis}>
@@ -249,7 +249,7 @@ export function WinLossAnalysis() {
                   <span className="text-2xl shrink-0 mt-0.5">{section.icon}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#8B7DFF] bg-[#8B7DFF]/10 px-2 py-0.5 rounded-full">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-iris-active dark:text-accent-violet bg-iris/10 px-2 py-0.5 rounded-full">
                         Insight {i + 1}
                       </span>
                       <ChevronRight className="w-3 h-3 text-ink-2" />

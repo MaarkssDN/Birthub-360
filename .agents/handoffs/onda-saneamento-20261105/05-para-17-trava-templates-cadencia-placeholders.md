@@ -1,7 +1,7 @@
-﻿De: 05 â€” ProspecÃ§Ã£o
-Para: 17 â€” CadÃªncia Multicanal e Ciclo de Receita
+﻿De: 05 — Prospecção
+Para: 17 — Cadência Multicanal e Ciclo de Receita
 Onda: onda-saneamento-20261105
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: DIV-AGENTE-05-001
 Sprint destino: Onda 3 â€” IntegraÃ§Ãµes, ExtraÃ§Ãµes e Telefonia
@@ -47,4 +47,11 @@ Qualidade da imagem comercial da marca.
   2. Demais placeholders customizados que um usuário criar numa `CadenceSequence` ad hoc precisarão de `| default:` ou de extensão do `resolveCadenceTemplateContext` — documentado no cabeçalho do dispatcher.
   3. `splitSubjectAndBody` usa a 1ª linha verbatim como assunto — os playbooks prefixam "Assunto:" literalmente, então o assunto enviado inclui esse prefixo. Comportamento pré-existente, não alterado nesta reconciliação (possível melhoria futura).
 - Status: resolvido (com pendências de produto registradas acima).
+
+### Resolução definitiva de `booking_link` (Agente 17, 2026-11-18, branch `agente/17-handoffs-20261117`)
+
+1. **Fonte de dados implementada:** `resolveCadenceTemplateContext` (`src/features/cadence/infra/dispatchers/CadenceDispatchers.ts`) agora consulta o modelo canônico `prisma.publicBookingLink` (`/book/:slug`) escopado pelo tenant e priorizando o vendedor responsável (`lead.assignedToId`), gerando a URL canônica de agendamento.
+2. **Resiliência e fallbacks:** Os templates padrão de playbook em `src/features/cadence/domain/cadenceTemplates.ts` receberam fallback seguro `{{booking_link | default: "https://app.birthub360.com.br"}}`, assegurando que mesmo organizações sem link público ativo continuem operando em strict mode sem que o toque seja bloqueado.
+3. **Testes e evidências:** Testes em `src/features/cadence/__tests__/cadenceTemplateRendering.test.ts` ampliados (7 testes, 100% passando), validando a resolução de slug real e a ativação do fallback padrão.
+4. **Status final:** 100% resolvido.
 

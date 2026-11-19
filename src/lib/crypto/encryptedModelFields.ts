@@ -55,4 +55,5 @@ export const ENCRYPTED_MODEL_FIELDS: Readonly<Record<string, readonly string[]>>
   // titular pede para os dados dele saírem do sistema, o que é diferente do risco de "backup vazou"
   // que a cifra em repouso mitiga.
   CopilotoTranscriptSegment: ['text'],
+  DataSubjectRequest: ['emailEncrypted', 'detailsEncrypted'],
 };

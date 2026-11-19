@@ -45,16 +45,21 @@ export interface BitrixUserOption {
 }
 
 export const bitrixApi = {
+  // Endpoints sem `meta` no envelope ({success,data} sem meta) chegam aqui já desembrulhados
+  // pelo apiFetch — `res` é o payload direto, não `{data: ...}`. Os com `meta` (leads/deals)
+  // retornam `{data, meta}`. Por isso o unwrap tolera as duas formas.
   listConnections: async (): Promise<BitrixConnectionItem[]> => {
-    const res = await api.get<{ data: BitrixConnectionItem[] }>('/api/bitrix/connections');
-    return res.data;
+    const res = await api.get<BitrixConnectionItem[] | { data: BitrixConnectionItem[] }>(
+      '/api/bitrix/connections',
+    );
+    return Array.isArray(res) ? res : res.data;
   },
 
   listUsers: async (connectionId: string): Promise<BitrixUserOption[]> => {
-    const res = await api.get<{ data: BitrixUserOption[] }>(
+    const res = await api.get<BitrixUserOption[] | { data: BitrixUserOption[] }>(
       `/api/bitrix/users?connectionId=${connectionId}`,
     );
-    return res.data;
+    return Array.isArray(res) ? res : res.data;
   },
 
   listLeads: async (

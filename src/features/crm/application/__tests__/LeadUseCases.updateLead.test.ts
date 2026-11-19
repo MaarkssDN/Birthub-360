@@ -42,6 +42,7 @@ const { LeadUseCases } = await import('../LeadUseCases.js');
 
 function makeUseCases(overrides: Record<string, unknown> = {}) {
   const repository = {
+    findById: vi.fn().mockResolvedValue({ id: 'lead-1', bitrixLeadId: null }),
     update: vi.fn().mockResolvedValue({ id: 'lead-1', bitrixLeadId: null }),
     updateStatus: vi.fn().mockResolvedValue({ id: 'lead-1', bitrixLeadId: null }),
     ...overrides,
@@ -58,6 +59,18 @@ afterEach(() => {
 });
 
 describe('LeadUseCases.updateLead', () => {
+  it('rejeita com 404 se o lead não pertencer ao tenant antes de chamar o gate CYC-007', async () => {
+    const { useCases } = makeUseCases({
+      findById: vi.fn().mockResolvedValue(null),
+    });
+
+    await expect(
+      useCases.updateLead('org-1', 'lead-estrangeiro', { status: 'Negócios Ganhos' }, 'user-42'),
+    ).rejects.toMatchObject({ statusCode: 404 });
+
+    expect(ensureManualDealClosureAllowed).not.toHaveBeenCalled();
+  });
+
   it('rejeita fechar negócio (Negócios Ganhos) sem actorUserId, sem chamar o gate nem persistir', async () => {
     const { useCases, repository } = makeUseCases();
 
@@ -165,6 +178,19 @@ describe('LeadUseCases.updateLead', () => {
 });
 
 describe('LeadUseCases.updateLeadStatus', () => {
+  it('rejeita com 404 se o lead não pertencer ao tenant antes de chamar o gate CYC-007', async () => {
+    const { useCases, repository } = makeUseCases({
+      findById: vi.fn().mockResolvedValue(null),
+    });
+
+    await expect(
+      useCases.updateLeadStatus('org-1', 'lead-estrangeiro', 'Negócios Ganhos', 'user-42'),
+    ).rejects.toMatchObject({ statusCode: 404 });
+
+    expect(ensureManualDealClosureAllowed).not.toHaveBeenCalled();
+    expect(repository.updateStatus).not.toHaveBeenCalled();
+  });
+
   it('rejeita fechar negócio sem actorUserId, sem chamar updateStatus', async () => {
     const { useCases, repository } = makeUseCases();
 

@@ -367,5 +367,64 @@ describe('LeadController', () => {
         data: { updatedCount: 2, total: 2, failedCount: 0 },
       });
     });
+
+    it('dispara uma automação por lead que mudou de status, com o id real de cada um', async () => {
+      useCases.batchUpdateLeads.mockResolvedValue({
+        updatedCount: 2,
+        total: 2,
+        failedCount: 0,
+        statusChangedLeads: [
+          { id: 'lead-1', status: 'Qualificacao_SDR' },
+          { id: 'lead-2', status: 'Qualificacao_SDR' },
+        ],
+      });
+      const res = buildResponse();
+
+      await controller.batchUpdate(
+        buildRequest({ body: { leadIds: ['lead-1', 'lead-2'], updates: { status: 'x' } } }),
+        res,
+        next,
+      );
+      await flushMicrotasks();
+
+      expect(handleAutomation).toHaveBeenCalledTimes(2);
+      expect(handleAutomation).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          trigger: 'Lead mudou de status',
+          entity: 'Lead',
+          entityId: 'lead-1',
+          organizationId: 'org-1',
+        }),
+      );
+      expect(handleAutomation).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          trigger: 'Lead mudou de status',
+          entity: 'Lead',
+          entityId: 'lead-2',
+          organizationId: 'org-1',
+        }),
+      );
+    });
+
+    it('não dispara automação quando nenhum lead mudou de status de fato', async () => {
+      useCases.batchUpdateLeads.mockResolvedValue({
+        updatedCount: 1,
+        total: 1,
+        failedCount: 0,
+        statusChangedLeads: [],
+      });
+      const res = buildResponse();
+
+      await controller.batchUpdate(
+        buildRequest({ body: { leadIds: ['lead-1'], updates: { owner: 'user-9' } } }),
+        res,
+        next,
+      );
+      await flushMicrotasks();
+
+      expect(handleAutomation).not.toHaveBeenCalled();
+    });
   });
 });

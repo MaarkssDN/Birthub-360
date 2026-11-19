@@ -34,11 +34,16 @@ export class InMemoryOptOutRepository implements OptOutRepository {
     );
   }
 
-  async list(organizationId: string, limit = 200): Promise<OptOutRecord[]> {
-    return this.records
+  async list(organizationId: string, limit?: number): Promise<OptOutRecord[]> {
+    const sorted = this.records
       .filter((r) => r.organizationId === organizationId)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-      .slice(0, Math.min(Math.max(limit, 1), 500));
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+    if (limit === undefined) {
+      return sorted;
+    }
+    const clampedLimit = Math.min(Math.max(limit, 1), 500);
+    return sorted.slice(0, clampedLimit);
   }
 
   /** Só para teste: esvazia o estado entre casos. */

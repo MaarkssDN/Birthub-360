@@ -2819,6 +2819,134 @@ paths:
                   error:
                     type: string
 
+  /public/data-subject-requests:
+    post:
+      tags: [LGPD]
+      summary: Registra solicitação pública de exercício de direitos do titular (LGPD art. 18)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, rightType]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  maxLength: 160
+                rightType:
+                  type: string
+                  enum: [ACCESS, PORTABILITY, CORRECTION, ERASURE, CONSENT_REVOCATION, SHARING_INFO]
+                preferredChannel:
+                  type: string
+                  enum: [email, whatsapp]
+                details:
+                  type: string
+                  maxLength: 2000
+      responses:
+        '202':
+          description: Solicitação recebida (resposta idêntica exista ou não o titular — anti-enumeração)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok]
+                properties:
+                  ok:
+                    type: boolean
+                    enum: [true]
+        '400':
+          description: Payload inválido
+        '429':
+          description: Rate limit excedido
+        '503':
+          description: Canal público DSR indisponível
+
+  /public/data-subject-requests/verify:
+    post:
+      tags: [LGPD]
+      summary: Confere o token de uso único enviado por e-mail e executa o direito solicitado
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [protocol, token]
+              properties:
+                protocol:
+                  type: string
+                token:
+                  type: string
+      responses:
+        '200':
+          description: Direito verificado e processado
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, status]
+                properties:
+                  ok:
+                    type: boolean
+                  status:
+                    type: string
+                  package:
+                    type: string
+        '400':
+          description: Token ou protocolo inválido/expirado
+        '404':
+          description: Titular não encontrado no momento da verificação
+        '429':
+          description: Rate limit excedido
+        '503':
+          description: Canal público DSR indisponível
+
+  /public/data-subject-requests/status/{statusToken}:
+    get:
+      tags: [LGPD]
+      summary: Consulta metadados de acompanhamento da solicitação DSR pelo token opaco
+      security: []
+      parameters:
+        - name: statusToken
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Metadados do protocolo (sem PII)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, protocol, rightType, status, createdAt]
+                properties:
+                  ok:
+                    type: boolean
+                  protocol:
+                    type: string
+                  rightType:
+                    type: string
+                  status:
+                    type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+                  verifiedAt:
+                    type: string
+                    format: date-time
+                    nullable: true
+        '400':
+          description: Token de status inválido
+        '429':
+          description: Rate limit excedido
+        '503':
+          description: Canal público DSR indisponível
+
   # ───────────────────────────── Prospecting ─────────────────────────────
   /prospecting/apollo/reconnect:
     post:
