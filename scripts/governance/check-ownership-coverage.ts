@@ -7,7 +7,7 @@
 // O dependency-cruiser (.dependency-cruiser.cjs, via `npm run lint:architecture`) só enxerga o
 // grafo de imports de `src/`, `server.ts` e `worker.ts` — e mesmo dentro dele só protege
 // fronteiras de camadas/pastas, nunca "quem é dono de qual arquivo". Os caminhos de propriedade
-// exclusiva do AGENTS.md §15 (`prisma/schema.prisma`, `.github/workflows/**`, `k8s/**` etc.) estão
+// exclusiva do AGENTS.md §15 (`prisma/schema.prisma`, `.github/workflows/**`, `charts/**` etc.) estão
 // majoritariamente FORA desse grafo: para eles o depcruise não tem como oferecer proteção
 // automática, e a proteção real é revisão de diff + handoff. O risco documentado na dívida é que
 // essa classificação fique implícita e derive em silêncio — um path novo entra no §15 sem ninguém

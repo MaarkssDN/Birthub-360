@@ -1,5 +1,5 @@
 import { Router, type Request, type Response } from 'express';
-import { getDatabase, saveDatabase, logActivity } from '../db.js';
+import { getDatabase, saveDatabase, logActivity, type DbHandle } from '../db.js';
 import { generateCopiesWithEngine, enrichLeadWithPublicNewsAndScripts } from '../ai.js';
 import { resolveAndEnrichCnpjForLead, type CnpjData } from '../cnpj.js';
 import { parseSearchIntent, validateSearchIntent } from '../searchIntent.js';
@@ -38,7 +38,7 @@ import {
   parseSearchBudget,
   getCircuitState,
 } from '../resilience.js';
-import { requireAuth } from '../auth.js';
+import { requireAuth, requireTenantScope, tenantCompany } from '../auth.js';
 import type { Lead, DecisionMaker } from '../../types.js';
 import { validateChangedLeadFields, upsertMessageWithVersioning } from '../utils/formatLead.js';
 import {
@@ -70,6 +70,26 @@ const updateTagsSchema = z.object({
 
 export const leadsRouter = Router();
 
+// Handoff 12→05 (F2): defesa em profundidade — sessão + company obrigatórias
+// mesmo que este router seja montado fora do apiRouter.
+leadsRouter.use(requireTenantScope);
+
+// Escopo de tenant (mesma regra de campaigns.routes.ts/tasks.routes.ts):
+// `leads.company` é string livre normalizada no login; a comparação ignora
+// caixa/espaços para tolerar divergências do cadastro legado.
+const LEAD_COMPANY_CLAUSE = `LOWER(TRIM(COALESCE(leads.company, ''))) = ?`;
+
+// Confirma que o lead existe E pertence à company da sessão. Rotas que
+// recebem :id sem essa checagem permitiam ler/alterar leads de outra
+// empresa só pelo id (cross-tenant/LGPD).
+async function leadBelongsToCompany(db: DbHandle, id: string, company: string): Promise<boolean> {
+  const res = await db.exec(
+    `SELECT leads.id FROM leads WHERE leads.id = ? AND ${LEAD_COMPANY_CLAUSE}`,
+    [id, company],
+  );
+  return res.length > 0 && res[0].values.length > 0;
+}
+
 // Update Lead Stage directly
 leadsRouter.put('/leads/:id/stage', requireAuth, async (req: Request, res: Response) => {
   try {
@@ -82,8 +102,15 @@ leadsRouter.put('/leads/:id/stage', requireAuth, async (req: Request, res: Respo
     }
     const { stage, userId, lossReason, winReason } = parsed.data;
     const db = await getDatabase();
-    const beforeRes = await db.exec(`SELECT stage FROM leads WHERE id = ?`, [id]);
-    const previousStage = beforeRes[0]?.values[0]?.[0] ?? null;
+    const company = tenantCompany(req);
+    const beforeRes = await db.exec(
+      `SELECT stage FROM leads WHERE id = ? AND ${LEAD_COMPANY_CLAUSE}`,
+      [id, company],
+    );
+    if (beforeRes.length === 0 || beforeRes[0].values.length === 0) {
+      return res.status(404).json({ error: 'Lead não encontrado.' });
+    }
+    const previousStage = beforeRes[0].values[0][0] ?? null;
 
     if (lossReason !== undefined && winReason !== undefined) {
       await db.run(`UPDATE leads SET stage = ?, loss_reason = ?, win_reason = ? WHERE id = ?`, [
@@ -137,8 +164,15 @@ leadsRouter.put('/leads/:id/tags', requireAuth, async (req: Request, res: Respon
       return res.status(400).json({ error: 'Tags deve ser um array de strings' });
     }
     const db = await getDatabase();
-    const beforeRes = await db.exec(`SELECT tags FROM leads WHERE id = ?`, [id]);
-    const previousTags = beforeRes[0]?.values[0]?.[0] ?? null;
+    const company = tenantCompany(req);
+    const beforeRes = await db.exec(
+      `SELECT tags FROM leads WHERE id = ? AND ${LEAD_COMPANY_CLAUSE}`,
+      [id, company],
+    );
+    if (beforeRes.length === 0 || beforeRes[0].values.length === 0) {
+      return res.status(404).json({ error: 'Lead não encontrado.' });
+    }
+    const previousTags = beforeRes[0].values[0][0] ?? null;
     const tagsJson = JSON.stringify(tags);
 
     await db.run(`UPDATE leads SET tags = ? WHERE id = ?`, [tagsJson, id]);
@@ -178,12 +212,16 @@ leadsRouter.put('/leads/:id', requireAuth, async (req: Request, res: Response) =
     } = req.body;
 
     const db = await getDatabase();
+    const company = tenantCompany(req);
 
     const currentRes = await db.exec(
-      `SELECT cnpj, phone, corporate_email, decision_maker_email FROM leads WHERE id = ?`,
-      [id],
+      `SELECT cnpj, phone, corporate_email, decision_maker_email FROM leads WHERE id = ? AND ${LEAD_COMPANY_CLAUSE}`,
+      [id, company],
     );
-    const currentRow = currentRes[0]?.values[0] || [];
+    if (currentRes.length === 0 || currentRes[0].values.length === 0) {
+      return res.status(404).json({ error: 'Lead não encontrado.' });
+    }
+    const currentRow = currentRes[0].values[0] || [];
     const validationErrors = validateChangedLeadFields(
       { cnpj, phone, corporate_email, decision_maker_email },
       {
@@ -267,12 +305,16 @@ leadsRouter.post('/leads/:id/save', requireAuth, async (req: Request, res: Respo
     const leadData = req.body;
 
     const db = await getDatabase();
+    const company = tenantCompany(req);
 
     const currentRes = await db.exec(
-      `SELECT cnpj, phone, corporate_email, decision_maker_email FROM leads WHERE id = ?`,
-      [id],
+      `SELECT cnpj, phone, corporate_email, decision_maker_email FROM leads WHERE id = ? AND ${LEAD_COMPANY_CLAUSE}`,
+      [id, company],
     );
-    const currentRow = currentRes[0]?.values[0] || [];
+    if (currentRes.length === 0 || currentRes[0].values.length === 0) {
+      return res.status(404).json({ error: 'Lead não encontrado.' });
+    }
+    const currentRow = currentRes[0].values[0] || [];
     const validationErrors = validateChangedLeadFields(
       {
         cnpj: leadData.cnpj,
@@ -451,8 +493,12 @@ leadsRouter.post(
       const { id } = req.params;
       const { pitch, aiConfig, tone, force } = req.body;
       const db = await getDatabase();
+      const company = tenantCompany(req);
 
-      const leadRes = await db.exec(`SELECT * FROM leads WHERE id = ?`, [id]);
+      const leadRes = await db.exec(`SELECT * FROM leads WHERE id = ? AND ${LEAD_COMPANY_CLAUSE}`, [
+        id,
+        company,
+      ]);
       if (leadRes.length === 0 || leadRes[0].values.length === 0) {
         return res.status(404).json({ error: 'Lead não encontrado.' });
       }
@@ -583,8 +629,12 @@ leadsRouter.post(
       const { id } = req.params;
       const { pitch, aiConfig, force } = req.body;
       const db = await getDatabase();
+      const company = tenantCompany(req);
 
-      const leadRes = await db.exec(`SELECT * FROM leads WHERE id = ?`, [id]);
+      const leadRes = await db.exec(`SELECT * FROM leads WHERE id = ? AND ${LEAD_COMPANY_CLAUSE}`, [
+        id,
+        company,
+      ]);
       if (leadRes.length === 0 || leadRes[0].values.length === 0) {
         return res.status(404).json({ error: 'Lead não encontrado.' });
       }
@@ -705,6 +755,10 @@ leadsRouter.post(
           .json({ error: `feedback deve ser um de: ${VALID_COPY_FEEDBACK.join(', ')}` });
       }
       const db = await getDatabase();
+      const company = tenantCompany(req);
+      if (!(await leadBelongsToCompany(db, id, company))) {
+        return res.status(404).json({ error: 'Lead não encontrado.' });
+      }
       const msgId = `msg-${id}-${channel}`;
       await db.run(`UPDATE messages SET feedback = ? WHERE id = ?`, [feedback, msgId]);
       saveDatabase();
@@ -721,8 +775,12 @@ leadsRouter.post('/leads/:id/cnpj-refresh', requireAuth, async (req: Request, re
     const { id } = req.params;
     const { cnpj } = req.body;
     const db = await getDatabase();
+    const company = tenantCompany(req);
 
-    const leadRes = await db.exec(`SELECT * FROM leads WHERE id = ?`, [id]);
+    const leadRes = await db.exec(`SELECT * FROM leads WHERE id = ? AND ${LEAD_COMPANY_CLAUSE}`, [
+      id,
+      company,
+    ]);
     if (leadRes.length === 0 || leadRes[0].values.length === 0) {
       return res.status(404).json({ error: 'Lead não encontrado.' });
     }
@@ -773,10 +831,14 @@ leadsRouter.post('/leads/:id/cnpj-refresh', requireAuth, async (req: Request, re
 });
 
 // Evidence & Provenance
-leadsRouter.get('/leads/:id/evidence', async (req: Request, res: Response) => {
+leadsRouter.get('/leads/:id/evidence', requireAuth, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const db = await getDatabase();
+    const company = tenantCompany(req);
+    if (!(await leadBelongsToCompany(db, id, company))) {
+      return res.status(404).json({ error: 'Lead não encontrado.' });
+    }
     const evidence = await getFieldEvidence(db, 'lead', id);
     res.json({ leadId: id, evidence });
   } catch (err: any) {
@@ -798,12 +860,12 @@ leadsRouter.post('/prospect', heavyAiLimiter, requireAuth, async (req: Request, 
       bitrixWebhook,
     } = req.body;
 
-    const company =
-      (req as any).outboundUser &&
-      (req as any).outboundUser.role !== 'admin' &&
-      (req as any).outboundUser.company
-        ? (req as any).outboundUser.company
-        : bodyCompany;
+    // Handoff 12→05 (F2, parecer 24 PR #323): a company vem SEMPRE da sessão,
+    // normalizada como nas demais rotas (tenantCompany) — o bypass anterior
+    // `role !== 'admin' ? session : body` permitia a um admin gravar leads com
+    // a company de outro tenant via body. `bodyCompany` resta apenas como
+    // fallback defensivo (requireTenantScope já garante company na sessão).
+    const company = tenantCompany(req) || bodyCompany;
 
     const budgetTracker = createBudgetTracker(parseSearchBudget(req.body.budget));
     const searchIntent = parseSearchIntent(req.body);
@@ -851,7 +913,13 @@ leadsRouter.post('/prospect', heavyAiLimiter, requireAuth, async (req: Request, 
     const now = new Date().toISOString();
     const db = await getDatabase();
 
-    const existingLeadsRes = await db.exec(`SELECT id, domain, name, cnpj FROM leads`);
+    // Handoff 12→05 (F2): dedupe deve considerar só os leads da MESMA company —
+    // antes lia a tabela inteira (vazamento cross-tenant) e podia descartar
+    // candidatos por homônimo de outro tenant.
+    const existingLeadsRes = await db.exec(
+      `SELECT id, domain, name, cnpj FROM leads WHERE ${LEAD_COMPANY_CLAUSE}`,
+      [effectiveCompany],
+    );
     const existingCompanyKeys: Array<{
       key: CompanyKey;
       entry: { id: string; domain: string; name: string };
@@ -969,8 +1037,8 @@ leadsRouter.post('/prospect', heavyAiLimiter, requireAuth, async (req: Request, 
     if (sellerIds.length > 0) {
       const placeholders = sellerIds.map(() => '?').join(',');
       const activeLeadsRes = await db.exec(
-        `SELECT assigned_to, COUNT(*) as count FROM leads WHERE assigned_to IN (${placeholders}) AND stage IN ('prospecto', 'contatado', 'negociacao') GROUP BY assigned_to`,
-        sellerIds,
+        `SELECT assigned_to, COUNT(*) as count FROM leads WHERE assigned_to IN (${placeholders}) AND stage IN ('prospecto', 'contatado', 'negociacao') AND ${LEAD_COMPANY_CLAUSE} GROUP BY assigned_to`,
+        [...sellerIds, effectiveCompany],
       );
       (activeLeadsRes[0]?.values || []).forEach((row: any) => {
         if (row[0] && sdrLoads[row[0] as string] !== undefined) {
