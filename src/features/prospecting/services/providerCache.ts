@@ -15,8 +15,20 @@
 
 import { logger } from '../../../lib/logger.js';
 import { cacheConnection, redisConfigured } from '../../../lib/queue/redis.js';
+import { getTenantId } from '../../../lib/async-context.js';
 
-const CACHE_KEY_PREFIX = 'prospecting:provider-cache:v1:';
+// v2: o segmento de tenant (organizationId do requestContext) entrou na chave —
+// na v1 o cache era global e um resultado pago de provider (Apollo/Hunter, com
+// dados de contato) buscado pelo tenant A era servido a qualquer outro tenant
+// (handoff onda-3/16-para-05-provider-cache-sem-tenant). Chaves antigas expiram
+// sozinhas pelo TTL (1h).
+const CACHE_KEY_PREFIX = 'prospecting:provider-cache:v2:';
+
+// Chamadas sem tenant conhecido no requestContext (workers mal configurados,
+// scripts, testes unitários) caem num bucket próprio 'no-tenant' — nunca no
+// bucket de uma organização real, então não há como um tenant "herdar" cache
+// de contexto anônimo nem vice-versa.
+const NO_TENANT_CACHE_SEGMENT = 'no-tenant';
 
 // TTL default: 1h. Escolhido (não os 24h já usados para Company inteira) porque este cache é POR
 // CHAMADA INDIVIDUAL (um decisor, um domínio, uma combinação de critérios) — o ganho real que
@@ -51,7 +63,12 @@ export function buildProviderCacheKey(
       return `${key}=${JSON.stringify(normalizedValue ?? null)}`;
     })
     .join('&');
-  return `${CACHE_KEY_PREFIX}${provider}:${operation}:${normalized}`;
+  // Tenant é segmento OBRIGATÓRIO da chave (mesmo padrão de
+  // `semcache:{organizationId}:{hash}` do semanticCache e `ci:report:{org}:...`
+  // do reportCache): sem ele, o resultado de um provider pago — que pode conter
+  // dados de contato de uma pessoa — vazaria entre tenants via cache.
+  const tenantId = getTenantId() ?? NO_TENANT_CACHE_SEGMENT;
+  return `${CACHE_KEY_PREFIX}${tenantId}:${provider}:${operation}:${normalized}`;
 }
 
 // Fallback em memória — bounded (nunca cresce sem limite num processo de vida longa) e com

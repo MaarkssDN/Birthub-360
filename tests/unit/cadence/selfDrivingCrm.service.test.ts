@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { prisma } from '../../../src/lib/prisma.js';
 import { selfDrivingCrmService } from '../../../src/features/cadence/services/selfDrivingCrm.service.js';
 import { recordOptOut } from '../../../src/features/cadence/application/optOutService.js';
 
@@ -288,6 +289,40 @@ describe('SelfDrivingCrmService — Eixo 7 (Cadências Adaptativas & Resgate Int
 
       expect(forA).toHaveLength(0);
       expect(forB).toHaveLength(0);
+    });
+
+    it('deve buscar leads reais via Prisma com filtro de tenant quando mockLeadsStore estiver vazio', async () => {
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const findManySpy = vi.spyOn(prisma.lead, 'findMany').mockResolvedValueOnce([
+        {
+          id: 'lead-db-10',
+          title: 'Transportes DB LTDA',
+          status: 'Lead_Recebido',
+          lastInteraction: thirtyDaysAgo,
+          updatedAt: thirtyDaysAgo,
+          createdAt: thirtyDaysAgo,
+          contact: { name: 'Carlos Gerente' },
+          company: { tradeName: 'Transportes DB', legalName: 'Transportes DB LTDA' },
+        } as any,
+      ]);
+
+      const results = await selfDrivingCrmService.detectStagnatedLeads({
+        organizationId: orgA,
+        inactivityThresholdDays: 15,
+      });
+
+      expect(findManySpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { organizationId: orgA },
+        }),
+      );
+      expect(results).toHaveLength(1);
+      expect(results[0].leadId).toBe('lead-db-10');
+      expect(results[0].leadName).toBe('Carlos Gerente');
+      expect(results[0].daysInactive).toBeGreaterThanOrEqual(30);
+      expect(results[0].eligibleForReactivation).toBe(true);
+
+      findManySpy.mockRestore();
     });
   });
 });

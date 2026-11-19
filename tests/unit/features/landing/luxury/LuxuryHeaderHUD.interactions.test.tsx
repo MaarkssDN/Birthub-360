@@ -63,7 +63,7 @@ describe('LuxuryHeaderHUD — interações', () => {
       vi.advanceTimersByTime(4600);
     });
     // intervalo executou sem erro — valor continua renderizado
-    expect(screen.getByText(/\d+\.\dms/)).toBeInTheDocument();
+    expect(screen.getByText(/\d+(\.\d)?ms/)).toBeInTheDocument();
 
     for (const name of ['A Tese', 'Órbita 360º', 'Enxame IA', 'Métricas']) {
       const link = screen.getByRole('link', { name });

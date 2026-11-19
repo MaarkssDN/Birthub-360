@@ -603,7 +603,10 @@ export function AppLayout() {
               As rotas antigas NÃO foram removidas: viraram redirects `replace`
               para a forma canônica, preservando bookmarks, Command Palette,
               navigationBus (voz) e qualquer deep-link salvo — nenhum 404. */}
-            <Route path="settings/pillars" element={<Navigate to="/app/settings/pillars/hub" replace />} />
+            <Route
+              path="settings/pillars"
+              element={<Navigate to="/app/settings/pillars/hub" replace />}
+            />
             <Route path="settings/pillars/:pillar" element={<PillarSettingsHub />} />
             <Route
               path="settings_hub"

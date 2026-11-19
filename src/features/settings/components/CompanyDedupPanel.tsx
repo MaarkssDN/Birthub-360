@@ -2,6 +2,7 @@ import { Building2, GitMerge, Loader2, RefreshCw } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Badge } from '../../../components/ui/Badge.js';
 import { Button } from '../../../components/ui/Button.js';
+import { OperationalStateContainer } from '../../../components/ui/OperationalStateContainer.js';
 import {
   Card,
   CardContent,
@@ -92,14 +93,22 @@ export function CompanyDedupPanel() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {loading ? (
-            <p className="text-sm text-ink-2">Carregando…</p>
-          ) : error ? (
-            <p className="text-sm text-danger-active dark:text-danger">{error}</p>
-          ) : groups.length === 0 ? (
-            <p className="text-sm text-ink-2">Nenhuma duplicidade encontrada.</p>
-          ) : (
-            <>
+          <OperationalStateContainer
+            state={loading ? 'loading' : error ? 'error' : groups.length === 0 ? 'empty' : 'ready'}
+            error={{
+              title: 'Não foi possível carregar duplicados',
+              message: error ?? undefined,
+              onRetry: () => void loadPreview(),
+              retryLabel: 'Tentar novamente',
+            }}
+            empty={{
+              title: 'Nenhuma duplicidade encontrada',
+              description:
+                'Quando houver empresas duplicadas por CNPJ ou nome fantasia, elas aparecerão aqui para revisão antes da mesclagem.',
+            }}
+            loadingSkeleton={<p className="text-sm text-ink-2">Carregando…</p>}
+          >
+            <div className="space-y-4">
               <div className="flex items-center justify-between gap-4">
                 <p className="text-sm text-ink flex items-center gap-2">
                   <Building2 className="w-4 h-4 text-ink-2" />
@@ -170,8 +179,8 @@ export function CompanyDedupPanel() {
                   </div>
                 ))}
               </div>
-            </>
-          )}
+            </div>
+          </OperationalStateContainer>
         </CardContent>
       </Card>
     </div>

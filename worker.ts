@@ -57,6 +57,10 @@ import {
   scheduleAutoAnonymizeJob,
 } from './src/features/crm/jobs/autoAnonymizeDisqualified.worker.js';
 import {
+  createLandingLeadRetentionWorker,
+  scheduleLandingLeadRetentionJob,
+} from './src/features/lgpd/jobs/landingLeadRetention.worker.js';
+import {
   createColdLeadsScannerWorker,
   scheduleColdLeadsScannerJob,
 } from './src/features/automations/application/cold-leads-scanner.service.js';
@@ -133,6 +137,7 @@ async function start() {
   const winLossWorker = createWinLossAnalysisWorker();
   const pdfWorker = createWeeklyPdfReportWorker();
   const autoAnonymizeWorker = createAutoAnonymizeWorker();
+  const landingLeadRetentionWorker = createLandingLeadRetentionWorker();
   const coldLeadsScannerWorker = createColdLeadsScannerWorker();
   const stagnationScannerWorker = createStagnationScannerWorker();
   const cadenceRunWorker = createCadenceRunWorker();
@@ -181,6 +186,7 @@ async function start() {
     { name: 'win-loss-analysis-queue', worker: winLossWorker },
     { name: 'weekly-pdf-report-queue', worker: pdfWorker },
     { name: 'auto-anonymize-disqualified-queue', worker: autoAnonymizeWorker },
+    { name: 'landing-lead-retention-queue', worker: landingLeadRetentionWorker },
     { name: 'sdr-cold-call', worker: coldCallWorker },
     { name: 'swarm-scheduler', worker: swarmSchedulerWorker },
     { name: 'cold-leads-scanner-queue', worker: coldLeadsScannerWorker },
@@ -206,6 +212,7 @@ async function start() {
       await scheduleWinLossAnalysisJob();
       await scheduleWeeklyPdfReportJob();
       await scheduleAutoAnonymizeJob();
+      await scheduleLandingLeadRetentionJob();
       await scheduleColdLeadsScannerJob();
       await scheduleStagnationScannerJob();
       await scheduleCadenceRunJob();

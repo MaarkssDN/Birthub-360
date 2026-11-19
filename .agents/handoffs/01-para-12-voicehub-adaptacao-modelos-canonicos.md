@@ -3,7 +3,7 @@
 De: 01 — Plataforma, Segurança e Dados
 Para: 12 — Voz e Telefonia
 Onda: F2
-Status: aberto
+Status: resolvido
 Prioridade: bloqueador (para reabertura do voice-hub)
 Referência: `.agents/handoffs/12-para-01-voicehub-identidade-schema-adapters.md`
 (decisão de estratégia registrada na seção "## Resolução" daquele handoff)
@@ -83,3 +83,31 @@ congelados em `src/lib/voice-hub/__tests__/tenant-isolation.test.ts`.
   `00-para-12-17-voicehub-reactivacao.md`,
   `12-para-05-outbound-api-legado-tenancy.md`,
   `12-para-17-dialer-3cx-sem-auth.md`.
+
+## Resolução (Agente 12 — 2026-11-17, verificação em `main@414a0ca5f`, branch `agente/12-handoffs-20261117`)
+
+A adaptação foi implementada e mergeada via **PR #339** (`agente/12-onda2-handoffs`, commits
+`c6bea7eb5` + `db0b3173a` + `529ce4f39`, merge `c995c8b9b`) e revisada pelo Agente 24 com
+veredito **APROVADO-COM-RESSALVAS** (`.agents/reviews/onda-2/24-revisao-prs-337-338-339-345-346.md`;
+a ressalva ACH-1 — `req.user` sobrescrito — foi corrigida em `bfc3d2e67`, também em `main`).
+
+Verificação executada nesta data:
+
+- `npx tsc --noEmit -p tsconfig.voice.json` → **14 erros, todos explicados**: deps
+  `twilio`/`d3`/`openid-client` ausentes do `package.json` (decisão pendente do Agente 00 —
+  não instalar até reativação do módulo) + `any` implícitos decorrentes da falta dos tipos
+  do `d3` + 1 erro em `oidc.ts` causado pelo `openid-client` ausente. **Zero erros de
+  delegate/campo de model** — cada item da "Alteração necessária" está coberto.
+- Repositories confirmados sobre os models canônicos: `sessionRepository` → `prisma.agentSession`
+  (L9-182), `tenantRepository` → `prisma.organization` (L12-30),
+  `birthhub360CallResultRepository` → `prisma.birthub360CallResult` (delegate correto,
+  L41-53), `middlewares/index.ts` popula `req.voiceHubUser`/`req.organizationId` sem
+  sobrescrever `req.user` canônico e envolve o handler em `requestContext` com `tenantId`
+  (pré-requisito do RLS fail-closed).
+- `src/lib/voice-hub/__tests__/tenant-isolation.test.ts` → **36/36 testes verdes** (re-executado
+  em 2026-11-17).
+- `legacyModuleGate` permanece **fechado** por decisão registrada (`src/bootstrap/routes.ts`
+  L210-216 → 503 `MODULE_NOT_READY`) — a reabertura depende de: decisão de deps (00), teste de
+  integração RLS real (handoff `onda-3/00-para-12-voicehub-teste-integracao-rls.md`, spec criado
+  nesta branch, execução pendente de ambiente com Postgres) e handoffs abertos ao 05/17.
+  Nenhum model legado foi criado — Estratégia 1 integralmente aplicada.

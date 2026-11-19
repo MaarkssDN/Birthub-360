@@ -122,13 +122,23 @@ export default defineConfig({
     // `npm run preview` (vite preview) servia só o SPA estático, sem `/api` — nenhum teste que
     // dependesse de login real podia funcionar. `start:e2e` sobe o servidor Express de verdade
     // (auth, Prisma/RLS, todas as rotas), igual ao que roda em produção.
-    command: 'npm run start:e2e',
+    //
+    // O entrypoint é tests/e2e/e2e-server.ts (e não `npm run start:e2e` direto): ele instala
+    // ANTES um stub de fetch que permite exercitar a jornada real da Mesa de Tratamento contra
+    // um portal Bitrix24 falso em 127.0.0.1 (tests/e2e/bitrix-mock/) — só ativo com
+    // E2E_BITRIX_MOCK=1, que só este webServer seta. Sem a variável o servidor se comporta
+    // idêntico ao start:e2e. BITRIX_MIN_INTERVAL_MS=0 desliga o pacing de ~500ms entre chamadas
+    // REST do Bitrix — otimização de teste, sem efeito no que é assertado.
+    command: 'npx dotenv-cli -e .env.test -- tsx tests/e2e/e2e-server.ts',
     url: `http://localhost:${PORT}/login`,
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
     env: {
       NODE_ENV: process.env.NODE_ENV ?? 'test',
       PORT,
+      E2E_BITRIX_MOCK: '1',
+      E2E_BITRIX_MOCK_PORT: process.env.E2E_BITRIX_MOCK_PORT ?? '4799',
+      BITRIX_MIN_INTERVAL_MS: '0',
       // O apiLimiter genérico envolve /api/auth antes do authLimiter dedicado. A suíte E2E inteira
       // faz centenas de GETs de sessão + chamadas de API a partir do mesmo IP do runner e pode
       // ultrapassar o default de produção (600/15min), mesmo com AUTH_RATE_LIMIT_MAX elevado.

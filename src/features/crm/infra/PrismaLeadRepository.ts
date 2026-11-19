@@ -1,5 +1,4 @@
-import type { LeadFunnel, LeadStatus as PrismaLeadStatus, Prisma } from '@prisma/client';
-import { recordStageTransition } from '../../../shared/services/leadStageHistory.service.js';
+import type { LeadFunnel, Prisma, LeadStatus as PrismaLeadStatus } from '@prisma/client';
 import {
   fromPrismaActivityStatus,
   fromPrismaActivityType,
@@ -11,7 +10,9 @@ import {
 import { prisma } from '../../../lib/prisma.js';
 import { searchLeadIds } from '../../../lib/search/index.js';
 import type { LeadStatus } from '../../../lib/zod.js';
+import { AppError } from '../../../shared/middlewares/errorHandler.js';
 import { recordLeadFieldChanges } from '../../../shared/services/leadFieldChangeHistory.service.js';
+import { recordStageTransition } from '../../../shared/services/leadStageHistory.service.js';
 import type { Lead, LeadRepository } from '../domain/Lead.js';
 
 /**
@@ -45,6 +46,54 @@ async function findMatchingPipelineStage(
   return prisma.crmPipelineStage.findFirst({
     where: { leadStatus: status, pipeline: { organizationId, active: true, isDefault: true } },
   });
+}
+
+/**
+ * Tenancy defense-in-depth (handoff 01A→04, onda-paralela-8): `companyId`/`contactId`/
+ * `pipelineId`/`pipelineStageId` chegam do body do cliente via `leadSchema` e eram gravados por
+ * spread sem verificar se pertencem ao `organizationId` do requisitante. A RLS mitiga a leitura,
+ * mas o vínculo cross-tenant persistia (e vazava PII se a RLS estivesse inativa). Cada FK
+ * referenciada é validada com `findFirst` escopado por tenant antes de qualquer escrita — id
+ * estrangeiro vira 404, sem escrita órfã. Campos nulos/ausentes (limpeza de vínculo) não são
+ * validados: não há o que conferir.
+ */
+async function assertLeadRelationsInTenant(
+  organizationId: string,
+  data: {
+    companyId?: string | null;
+    contactId?: string | null;
+    pipelineId?: string | null;
+    pipelineStageId?: string | null;
+  },
+): Promise<void> {
+  if (data.companyId) {
+    const found = await prisma.company.findFirst({
+      where: { id: data.companyId, organizationId },
+      select: { id: true },
+    });
+    if (!found) throw new AppError('Empresa vinculada não encontrada.', 404);
+  }
+  if (data.contactId) {
+    const found = await prisma.contact.findFirst({
+      where: { id: data.contactId, organizationId },
+      select: { id: true },
+    });
+    if (!found) throw new AppError('Contato vinculado não encontrado.', 404);
+  }
+  if (data.pipelineId) {
+    const found = await prisma.crmPipeline.findFirst({
+      where: { id: data.pipelineId, organizationId },
+      select: { id: true },
+    });
+    if (!found) throw new AppError('Pipeline vinculado não encontrado.', 404);
+  }
+  if (data.pipelineStageId) {
+    const found = await prisma.crmPipelineStage.findFirst({
+      where: { id: data.pipelineStageId, pipeline: { organizationId } },
+      select: { id: true },
+    });
+    if (!found) throw new AppError('Etapa de pipeline vinculada não encontrada.', 404);
+  }
 }
 
 function serializeLead<
@@ -173,6 +222,7 @@ export class PrismaLeadRepository implements LeadRepository {
   }
 
   async create(organizationId: string, data: Partial<Lead> & { status: string }): Promise<Lead> {
+    await assertLeadRelationsInTenant(organizationId, data);
     const expectedCloseAt = data.expectedCloseAt
       ? new Date(data.expectedCloseAt as unknown as string | Date)
       : data.expectedCloseAt;
@@ -210,6 +260,9 @@ export class PrismaLeadRepository implements LeadRepository {
     // `toPrismaLeadStatus` logo abaixo, que já assumia o rótulo).
     data: Omit<Partial<Lead>, 'status'> & { status?: string },
   ): Promise<Lead> {
+    // FKs referenciadas pelo cliente validadas contra o tenant antes de qualquer escrita
+    // (handoff 01A→04) — ver assertLeadRelationsInTenant no topo do arquivo.
+    await assertLeadRelationsInTenant(organizationId, data);
     // Não fazemos findFirst prévio: se o lead não existir (ou não pertencer ao org),
     // o Prisma lança P2025 que o errorHandler mapeia para 404 — sem N+1 queries.
     // O `where` inclui organizationId para garantir isolamento de tenant.
@@ -318,7 +371,15 @@ export class PrismaLeadRepository implements LeadRepository {
     return serializeLead(lead) as unknown as Lead;
   }
 
-  async updateStatus(organizationId: string, id: string, newStatus: string): Promise<Lead> {
+  async updateStatus(
+    organizationId: string,
+    id: string,
+    newStatus: string,
+    // Campos de formulário (owner/tags) opcionais: quando o caller já tem outros campos para
+    // gravar junto da mudança de etapa (ex.: batchUpdateLeads), eles entram na MESMA
+    // prisma.lead.update — duas escritas separadas abriria janela de gravação parcial.
+    extraFields?: { owner?: string | null; tags?: string[] },
+  ): Promise<Lead> {
     // Busca o status atual para compor a mensagem de timeline, e valida a existência + tenant
     // numa única query. Se não encontrar, lança Error que o errorHandler converte em 404.
     const currentLead = await prisma.lead.findFirst({ where: { id, organizationId } });
@@ -367,6 +428,8 @@ export class PrismaLeadRepository implements LeadRepository {
               probability: matchedStage.probability,
             }
           : {}),
+        ...(extraFields?.owner !== undefined ? { owner: extraFields.owner } : {}),
+        ...(extraFields?.tags !== undefined ? { tags: extraFields.tags } : {}),
         timeline: {
           create: {
             type: 'movement',
