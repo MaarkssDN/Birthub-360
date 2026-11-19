@@ -67,8 +67,7 @@ export type TabNavIcon = ComponentType<TabNavIconProps>;
  * `CommandPalette.tsx`) — eram destinos "fantasma", alcançáveis só via `navigationBus` (comando de
  * voz/deep link), que caíam silenciosamente no catch-all `/app`. Removidos por não corresponderem
  * a nenhuma tela real hoje: enriquecimento de empresa já vive dentro de `prospect`
- * (`ProspectingHub`), e não há uma tela "Commercial OS"/Prompt Studio real e navegável — só um
- * componente órfão (`PromptStudio.tsx`) sem rota. Ver
+ * (`ProspectingHub`), e não há uma tela "Commercial OS"/Prompt Studio navegável. Ver
  * `.agents/handoffs/onda-8/09-para-02-navigationbus-rotas-ausentes.md`.
  *
  * `social-selling`, `treinamento-birthhub360`, `proposta-comercial` e `hub-inteligencia-marketing`
