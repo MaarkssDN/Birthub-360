@@ -100,6 +100,18 @@ Especialista do mesmo slot do Agente 01. Não executa simultaneamente com o 01 q
 
 **02 — Produto e UX**
 
+**02A — UX Research & Usability**
+Especialista do mesmo slot do Agente 02. Não executa simultaneamente com o 02 quando houver sobreposição de propriedade.
+
+**02B — Customer Journey & Product Flows**
+Especialista do mesmo slot do Agente 02. Não executa simultaneamente com o 02 quando houver sobreposição de propriedade.
+
+**02C — Information Architecture**
+Especialista do mesmo slot do Agente 02. Não executa simultaneamente com o 02 quando houver sobreposição de propriedade.
+
+**02D — Landing Pages & Conversion Experience**
+Especialista do mesmo slot do Agente 02. Não executa simultaneamente com o 02 quando houver sobreposição de propriedade.
+
 **03 — Design e Acessibilidade**
 
 **04 — CRM e BI**
@@ -388,6 +400,7 @@ Se qualquer condição falhar, reduzir o número de agentes simultâneos.
 ## 14. Slots exclusivos
 Nunca executar simultaneamente, quando houver sobreposição:
 - 01 ↔ 01A;
+- 02 ↔ 02A/02B/02C/02D quando houver sobreposição de propriedade;
 - 06 ↔ 06A;
 - 01/01A ↔ agente com handoff bloqueador de schema;
 - 16 ↔ 06 quando ambos tocarem src/lib/queue/**;
@@ -408,6 +421,9 @@ prisma/migrations/**
 src/App.tsx
 navegação principal
 Sidebar
+→ Agente 02
+
+src/features/landing/**
 → Agente 02
 
 .github/workflows/**
@@ -442,6 +458,10 @@ documentacao-aplicacao/**
 
 `server.ts` exige aprovação explícita do 00.
 `package.json` e lockfile exigem aprovação explícita do 00.
+
+`src/features/landing/**` pertence ao Agente 02 (perfil 02D para conversão); a
+camada visual compartilhada continua do Agente 03. Exceção: `/landing-new` →
+`LandingInnovative` vive em `src/features/voice-hub/` e pertence ao Agente 12.
 
 Integrações não criam migrações. Devem abrir handoff para 01.
 
