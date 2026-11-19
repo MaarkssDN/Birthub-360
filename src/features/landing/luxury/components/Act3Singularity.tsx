@@ -139,7 +139,9 @@ export function Act3Singularity() {
                 style={{ scaleX: smoothProgress, transformOrigin: '0%' }}
               />
             </div>
-            <span className="text-[var(--orbit-blue)] font-bold">{quadrants[activeQuadrant]?.title}</span>
+            <span className="text-[var(--orbit-blue)] font-bold">
+              {quadrants[activeQuadrant]?.title}
+            </span>
           </div>
         </div>
 
@@ -202,7 +204,10 @@ export function Act3Singularity() {
                 {/* Lista de detalhes */}
                 <div className="mt-8 pt-6 border-t border-white/[0.08] space-y-2.5">
                   {item.details.map((detail) => (
-                    <div key={detail} className="flex items-start gap-2 text-xs text-[var(--ink)]/80">
+                    <div
+                      key={detail}
+                      className="flex items-start gap-2 text-xs text-[var(--ink)]/80"
+                    >
                       <Check
                         className="w-3.5 h-3.5 shrink-0 mt-0.5"
                         style={{ color: item.color }}

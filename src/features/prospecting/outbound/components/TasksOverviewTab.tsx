@@ -66,7 +66,9 @@ export function TasksOverviewTab({ isDark }: TasksOverviewTabProps) {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
           <ListChecks className={`w-5 h-5 ${isDark ? 'text-slate-300' : 'text-slate-700'}`} />
-          <h2 className={`text-xl font-bold ${isDark ? 'text-[var(--gold)]' : 'text-[var(--warn)]'}`}>
+          <h2
+            className={`text-xl font-bold ${isDark ? 'text-[var(--gold)]' : 'text-[var(--warn)]'}`}
+          >
             Tarefas por Vendedor
           </h2>
         </div>

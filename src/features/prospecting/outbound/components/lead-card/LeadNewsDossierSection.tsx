@@ -17,7 +17,9 @@ export const LeadNewsDossierSection: React.FC<LeadNewsDossierSectionProps> = ({
   return (
     <div
       className={`p-4 rounded-xl border space-y-3.5 animate-fadeIn ${
-        isDark ? 'bg-slate-950/80 border-[var(--orbit-blue)]/30' : 'bg-slate-100/50 border-slate-300'
+        isDark
+          ? 'bg-slate-950/80 border-[var(--orbit-blue)]/30'
+          : 'bg-slate-100/50 border-slate-300'
       }`}
     >
       <div className="flex items-center justify-between border-b pb-2.5">

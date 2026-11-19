@@ -229,7 +229,11 @@ html:not(.dark) .b360-testimonial-author {
   width: 44px;
   height: 44px;
   border-radius: 9999px;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--orbit-blue) 20%, transparent), color-mix(in srgb, var(--pink) 20%, transparent));
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--orbit-blue) 20%, transparent),
+    color-mix(in srgb, var(--pink) 20%, transparent)
+  );
   border: 1px solid color-mix(in srgb, var(--orbit-blue) 40%, transparent);
   display: flex;
   align-items: center;

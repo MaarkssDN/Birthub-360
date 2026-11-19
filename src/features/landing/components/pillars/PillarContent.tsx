@@ -28,7 +28,8 @@ export function PillarContent({
             titleText: 'text-pink-400',
             iconColor: 'text-pink-400',
             borderSubtle: 'border-pink-500/20',
-            haloGradient: 'from-[var(--pink)] via-[var(--iris)] via-[var(--orbit-blue)] to-[var(--gold)]',
+            haloGradient:
+              'from-[var(--pink)] via-[var(--iris)] via-[var(--orbit-blue)] to-[var(--gold)]',
           };
         case 'gold':
           return {
@@ -36,7 +37,8 @@ export function PillarContent({
             titleText: 'text-amber-400',
             iconColor: 'text-amber-400',
             borderSubtle: 'border-amber-500/20',
-            haloGradient: 'from-[var(--gold)] via-[var(--pink)] via-[var(--orbit-blue)] to-[var(--iris)]',
+            haloGradient:
+              'from-[var(--gold)] via-[var(--pink)] via-[var(--orbit-blue)] to-[var(--iris)]',
           };
         case 'iris':
           return {
@@ -44,7 +46,8 @@ export function PillarContent({
             titleText: 'text-violet-400',
             iconColor: 'text-violet-400',
             borderSubtle: 'border-violet-500/20',
-            haloGradient: 'from-[var(--iris)] via-[var(--orbit-blue)] via-[var(--pink)] to-[var(--gold)]',
+            haloGradient:
+              'from-[var(--iris)] via-[var(--orbit-blue)] via-[var(--pink)] to-[var(--gold)]',
           };
         default:
           return {
@@ -52,7 +55,8 @@ export function PillarContent({
             titleText: 'text-cyan-400',
             iconColor: 'text-cyan-400',
             borderSubtle: 'border-cyan-500/20',
-            haloGradient: 'from-[var(--orbit-blue)] via-[var(--pink)] via-[var(--gold)] to-[var(--iris)]',
+            haloGradient:
+              'from-[var(--orbit-blue)] via-[var(--pink)] via-[var(--gold)] to-[var(--iris)]',
           };
       }
     }

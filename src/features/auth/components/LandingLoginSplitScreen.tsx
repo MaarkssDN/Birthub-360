@@ -80,7 +80,15 @@ function BH360Mark({ size = 40, animated = false }: { size?: number; animated?: 
       <circle cx="128" cy="128" r="78" fill={`url(#mark-core-${uid})`} />
 
       {/* Anel interno cyan */}
-      <circle cx="128" cy="128" r="64" fill="none" stroke="var(--orbit-blue)" strokeWidth="3" opacity="0.8" />
+      <circle
+        cx="128"
+        cy="128"
+        r="64"
+        fill="none"
+        stroke="var(--orbit-blue)"
+        strokeWidth="3"
+        opacity="0.8"
+      />
 
       {/* Barra horizontal equatorial */}
       <line x1="64" y1="128" x2="192" y2="128" stroke="#33EBFF" strokeWidth="2" opacity="0.45" />

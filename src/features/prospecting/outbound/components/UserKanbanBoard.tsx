@@ -66,7 +66,9 @@ export function UserKanbanBoard({ user, isDark }: UserKanbanBoardProps) {
     <div className="flex flex-col lg:flex-row gap-6">
       <div className="flex-1 space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className={`text-xl font-bold ${isDark ? 'text-[var(--gold)]' : 'text-[var(--warn)]'}`}>
+          <h2
+            className={`text-xl font-bold ${isDark ? 'text-[var(--gold)]' : 'text-[var(--warn)]'}`}
+          >
             Meus Leads (CRM / Bitrix)
           </h2>
           <span

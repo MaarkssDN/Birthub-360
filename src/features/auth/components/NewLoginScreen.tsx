@@ -1264,7 +1264,9 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
               className="vancouver-quick-card"
             >
               <div>
-                <h3 className="font-display text-xl font-bold text-[var(--light-pink)] dark:text-[var(--color-heading-pink)]">Contato</h3>
+                <h3 className="font-display text-xl font-bold text-[var(--light-pink)] dark:text-[var(--color-heading-pink)]">
+                  Contato
+                </h3>
                 <p className="text-xs text-ink-2 mt-2">comercial@birthhub360.com</p>
                 <p className="text-xs text-ink-2 mt-1">
                   Fale diretamente com nossa diretoria comercial.
@@ -1280,7 +1282,9 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
             {/* Card 3: Newsletter / Novidades */}
             <div className="vancouver-quick-card">
               <div>
-                <h3 className="font-display text-xl font-bold text-[var(--color-heading-gold)]">Novidades</h3>
+                <h3 className="font-display text-xl font-bold text-[var(--color-heading-gold)]">
+                  Novidades
+                </h3>
                 <p className="text-xs text-ink-2 mt-2">
                   Receba insights semanais sobre IA aplicada a vendas B2B.
                 </p>
@@ -1314,7 +1318,9 @@ export function NewLoginScreen({ initialScreen }: { initialScreen?: string } = {
               className="vancouver-quick-card"
             >
               <div>
-                <h3 className="font-display text-xl font-bold text-[var(--color-heading-success)]">Segurança</h3>
+                <h3 className="font-display text-xl font-bold text-[var(--color-heading-success)]">
+                  Segurança
+                </h3>
                 <p className="text-xs text-ink-2 mt-2">
                   Auditorias de segurança, RLS multi-tenant e governança de privacidade LGPD.
                 </p>

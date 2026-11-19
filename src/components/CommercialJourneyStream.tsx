@@ -94,7 +94,9 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
                     : 'text-ink-2 hover:text-ink hover:bg-white/50 dark:hover:bg-white/[0.05]'
                 }`}
               >
-                <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-[var(--orbit-blue)]' : 'text-ink-2'}`} />
+                <Icon
+                  className={`w-3.5 h-3.5 ${isSelected ? 'text-[var(--orbit-blue)]' : 'text-ink-2'}`}
+                />
                 <span>{item.label}</span>
               </button>
             );
@@ -273,7 +275,9 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
                   <span className="text-ink-2 font-mono text-[11px]">
                     Média ICP: <strong className="text-ink">160k</strong>
                   </span>
-                  <span className="text-[var(--orbit-blue)] font-bold font-mono text-xs">+10 pts</span>
+                  <span className="text-[var(--orbit-blue)] font-bold font-mono text-xs">
+                    +10 pts
+                  </span>
                 </div>
               </motion.div>
 
@@ -492,7 +496,9 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
                   <span>{node.label}</span>
                   <span
                     className={`w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center ${
-                      isSelected ? 'bg-[var(--neon-lime)] text-[var(--palette-neon-black)]' : 'bg-surface-2 text-ink-2'
+                      isSelected
+                        ? 'bg-[var(--neon-lime)] text-[var(--palette-neon-black)]'
+                        : 'bg-surface-2 text-ink-2'
                     }`}
                   >
                     {node.count}

@@ -35,7 +35,9 @@
 
   --bh-plate-bg: linear-gradient(165deg, rgba(19, 23, 35, 0.94) 0%, rgba(12, 15, 24, 0.97) 100%);
   --bh-plate-border: rgba(237, 242, 249, 0.12);
-  --bh-plate-shadow: 0 28px 64px -24px rgba(2, 6, 18, 0.82), 0 0 0 1px color-mix(in srgb, var(--orbit-blue) 14%, transparent);
+  --bh-plate-shadow:
+    0 28px 64px -24px rgba(2, 6, 18, 0.82),
+    0 0 0 1px color-mix(in srgb, var(--orbit-blue) 14%, transparent);
   --bh-band-bg: rgba(15, 19, 30, 0.82);
   --bh-band-border: rgba(237, 242, 249, 0.09);
 
@@ -74,7 +76,9 @@ html:not(.dark) .bh-n1-hero,
 
   --bh-plate-bg: linear-gradient(165deg, #101626 0%, #151c30 100%);
   --bh-plate-border: rgba(18, 25, 43, 0.22);
-  --bh-plate-shadow: 0 28px 60px -24px rgba(15, 22, 42, 0.34), 0 0 0 1px color-mix(in srgb, var(--orbit-blue) 22%, transparent);
+  --bh-plate-shadow:
+    0 28px 60px -24px rgba(15, 22, 42, 0.34),
+    0 0 0 1px color-mix(in srgb, var(--orbit-blue) 22%, transparent);
   --bh-band-bg: rgba(20, 27, 46, 0.9);
   --bh-band-border: rgba(237, 242, 249, 0.11);
 
@@ -293,9 +297,21 @@ html:not(.dark) .bh-n1-hero .bh-n1-title,
   padding: clamp(18px, 2.2vw, 26px) clamp(18px, 2.4vw, 28px);
   border-radius: 22px;
   background:
-    radial-gradient(120% 100% at 0% 0%, color-mix(in srgb, var(--orbit-blue) 16%, transparent) 0%, transparent 55%),
-    radial-gradient(120% 100% at 50% 50%, color-mix(in srgb, var(--iris) 16%, transparent) 0%, transparent 60%),
-    radial-gradient(120% 100% at 100% 100%, color-mix(in srgb, var(--gold) 14%, transparent) 0%, transparent 55%),
+    radial-gradient(
+      120% 100% at 0% 0%,
+      color-mix(in srgb, var(--orbit-blue) 16%, transparent) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      120% 100% at 50% 50%,
+      color-mix(in srgb, var(--iris) 16%, transparent) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      120% 100% at 100% 100%,
+      color-mix(in srgb, var(--gold) 14%, transparent) 0%,
+      transparent 55%
+    ),
     linear-gradient(140deg, #0d1222 0%, #12182c 52%, #17142d 100%);
   border: 1px solid rgba(18, 25, 43, 0.18);
   box-shadow:

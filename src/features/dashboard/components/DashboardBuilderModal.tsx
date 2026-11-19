@@ -264,7 +264,9 @@ export function DashboardBuilderModal({
                       <span className="text-[11px] leading-tight font-display">{meta.label}</span>
                       <div
                         className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${
-                          isChecked ? 'bg-brand border-brand text-on-brand' : 'border-line bg-surface'
+                          isChecked
+                            ? 'bg-brand border-brand text-on-brand'
+                            : 'border-line bg-surface'
                         }`}
                       >
                         {isChecked && <Check className="w-2.5 h-2.5" />}

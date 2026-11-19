@@ -61,7 +61,11 @@
   height: 62%;
   top: -20%;
   left: -10%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--orbit-blue) 22%, transparent), transparent 65%);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--orbit-blue) 22%, transparent),
+    transparent 65%
+  );
   animation: b360fx-blob-a 26s ease-in-out infinite alternate;
 }
 
@@ -70,7 +74,11 @@
   height: 55%;
   bottom: -24%;
   right: -8%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--pink) 18%, transparent), transparent 65%);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--pink) 18%, transparent),
+    transparent 65%
+  );
   animation: b360fx-blob-b 32s ease-in-out infinite alternate;
 }
 
@@ -79,7 +87,11 @@
   inset: 0;
   background-image:
     linear-gradient(color-mix(in srgb, var(--orbit-blue) 5%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in srgb, var(--orbit-blue) 5%, transparent) 1px, transparent 1px);
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--orbit-blue) 5%, transparent) 1px,
+      transparent 1px
+    );
   background-size: 48px 48px;
   mask-image: radial-gradient(ellipse 85% 75% at 50% 35%, black 15%, transparent 78%);
   -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 35%, black 15%, transparent 78%);
@@ -712,7 +724,13 @@
 
 /* Variantes de botões halo */
 .b360-neon-halo-btn-pink {
-  background: conic-gradient(from var(--b360-halo-angle, 0deg), var(--pink), var(--gold), var(--orbit-blue), var(--pink));
+  background: conic-gradient(
+    from var(--b360-halo-angle, 0deg),
+    var(--pink),
+    var(--gold),
+    var(--orbit-blue),
+    var(--pink)
+  );
 }
 .b360-neon-halo-btn-pink::before {
   background: conic-gradient(
@@ -724,7 +742,13 @@
 }
 
 .b360-neon-halo-btn-iris {
-  background: conic-gradient(from var(--b360-halo-angle, 0deg), var(--iris), var(--orbit-blue), var(--pink), var(--iris));
+  background: conic-gradient(
+    from var(--b360-halo-angle, 0deg),
+    var(--iris),
+    var(--orbit-blue),
+    var(--pink),
+    var(--iris)
+  );
 }
 .b360-neon-halo-btn-iris::before {
   background: conic-gradient(
@@ -989,7 +1013,11 @@
   height: 26px;
   border-radius: 50%;
   border: 1px solid color-mix(in srgb, var(--orbit-blue) 50%, transparent);
-  background: radial-gradient(circle, color-mix(in srgb, var(--orbit-blue) 8%, transparent) 0%, transparent 72%);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--orbit-blue) 8%, transparent) 0%,
+    transparent 72%
+  );
   box-shadow: 0 0 14px color-mix(in srgb, var(--orbit-blue) 22%, transparent);
   pointer-events: none;
   z-index: 9998;
@@ -1015,7 +1043,11 @@
   margin-top: -22px;
   margin-left: -22px;
   border-color: color-mix(in srgb, var(--pink) 70%, transparent);
-  background: radial-gradient(circle, color-mix(in srgb, var(--pink) 12%, transparent) 0%, transparent 75%);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--pink) 12%, transparent) 0%,
+    transparent 75%
+  );
   box-shadow: 0 0 22px color-mix(in srgb, var(--pink) 38%, transparent);
 }
 

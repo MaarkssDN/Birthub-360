@@ -167,11 +167,11 @@ export function LiveSupervisor({ sessionId }: LiveSupervisorProps) {
         prev?.triggeredByMe
           ? prev
           : {
-            active: true,
-            triggeredByMe: false,
-            actorLabel: data?.by || 'Outro supervisor',
-            at: data?.at ?? Date.now(),
-          },
+              active: true,
+              triggeredByMe: false,
+              actorLabel: data?.by || 'Outro supervisor',
+              at: data?.at ?? Date.now(),
+            },
       );
     });
 
@@ -403,10 +403,11 @@ export function LiveSupervisor({ sessionId }: LiveSupervisorProps) {
                       key={alert.id}
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      className={`p-3 rounded-lg border text-xs ${alert.level === 'critical'
-                        ? 'bg-red-500/10 border-red-500/30 text-red-300'
-                        : 'bg-orange-500/10 border-orange-500/30 text-orange-300'
-                        }`}
+                      className={`p-3 rounded-lg border text-xs ${
+                        alert.level === 'critical'
+                          ? 'bg-red-500/10 border-red-500/30 text-red-300'
+                          : 'bg-orange-500/10 border-orange-500/30 text-orange-300'
+                      }`}
                     >
                       <div className="flex justify-between items-start mb-1">
                         <span className="font-bold uppercase tracking-wider text-[10px]">
@@ -435,12 +436,13 @@ export function LiveSupervisor({ sessionId }: LiveSupervisorProps) {
                 title={
                   !canIntervene ? 'Apenas supervisores podem intervir nesta chamada.' : undefined
                 }
-                className={`w-full py-2 text-white text-sm font-bold rounded-lg shadow-lg transition-colors disabled:cursor-not-allowed ${intervention?.active
-                  ? 'bg-emerald-600 shadow-emerald-900/50'
-                  : canIntervene
-                    ? 'bg-red-600 hover:bg-red-700 shadow-red-900/50'
-                    : 'bg-slate-700 shadow-none opacity-60'
-                  }`}
+                className={`w-full py-2 text-white text-sm font-bold rounded-lg shadow-lg transition-colors disabled:cursor-not-allowed ${
+                  intervention?.active
+                    ? 'bg-emerald-600 shadow-emerald-900/50'
+                    : canIntervene
+                      ? 'bg-red-600 hover:bg-red-700 shadow-red-900/50'
+                      : 'bg-slate-700 shadow-none opacity-60'
+                }`}
               >
                 {intervention?.active
                   ? intervention.triggeredByMe

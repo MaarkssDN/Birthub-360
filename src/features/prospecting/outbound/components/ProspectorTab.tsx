@@ -717,7 +717,9 @@ export const ProspectorTab: React.FC<ProspectorTabProps> = ({
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
               <div>
-                <h3 className={`text-sm font-bold ${isDark ? 'text-[var(--ink)]' : 'text-slate-800'}`}>
+                <h3
+                  className={`text-sm font-bold ${isDark ? 'text-[var(--ink)]' : 'text-slate-800'}`}
+                >
                   {leads.length} Empresas Mapeadas (Places + CNPJ Oficial + Apollo)
                 </h3>
                 <p className="text-[11px] text-slate-400">

@@ -68,42 +68,42 @@ html.light,
 :root.light,
 [data-theme="light"],
 :root[data-theme="light"] {
-  --brand: #D4AF37;
-  --color-brand: #D4AF37;
-  --color-brand-primary: #D4AF37;
-  --color-interactive-primary: #D4AF37;
-  --color-interactive-hover: #B8962E;
-  --color-brand-active: #B8962E;
-  --on-brand: #061A3A;
-  --color-on-brand: #061A3A;
-  --color-heading-gold: #B8962E;
-  --color-heading-cyan: #1668D8;
-  --color-text-secondary: #4C5B7D;
-  --palette-muted: #4C5B7D;
-  --ink-2: #4C5B7D;
+  --brand: #d4af37;
+  --color-brand: #d4af37;
+  --color-brand-primary: #d4af37;
+  --color-interactive-primary: #d4af37;
+  --color-interactive-hover: #b8962e;
+  --color-brand-active: #b8962e;
+  --on-brand: #061a3a;
+  --color-on-brand: #061a3a;
+  --color-heading-gold: #b8962e;
+  --color-heading-cyan: #1668d8;
+  --color-text-secondary: #4c5b7d;
+  --palette-muted: #4c5b7d;
+  --ink-2: #4c5b7d;
 }
 
 [data-theme="light"] .text-brand,
 html.light .text-brand {
-  color: #B8962E;
+  color: #b8962e;
 }
 
 [data-theme="light"] .text-ink-2,
 html.light .text-ink-2 {
-  color: #4C5B7D;
+  color: #4c5b7d;
 }
 
 [data-theme="light"] .vancouver-gradient-text,
 html.light .vancouver-gradient-text,
 [data-theme="light"] .gradient-text,
 html.light .gradient-text {
-  color: #B8962E;
+  color: #b8962e;
 }
 
 [data-theme="light"] .vancouver-btn-outline,
 html.light .vancouver-btn-outline {
-  color: #B8962E;
-  border-color: #B8962E;
+  color: #b8962e;
+  border-color: #b8962e;
 }
 
 /* Utility compatibility without changing the official focus shorthand. */
@@ -446,7 +446,7 @@ html:not(.dark) .text-\[\#ef4444\] {
 /* Botões do Catálogo Oficial (#5 e #6) */
 .btn-neon-cta {
   background: var(--grad-cta);
-  color: #061A3A;
+  color: #061a3a;
   font-family: var(--font-display);
   font-weight: 800;
   border-radius: var(--radius-pill);

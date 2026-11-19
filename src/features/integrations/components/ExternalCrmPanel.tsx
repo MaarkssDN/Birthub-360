@@ -509,7 +509,9 @@ export function ExternalCrmPanel({ providerKey, displayName, authType }: Externa
                 {isConnected ? 'Conectado' : 'Desconectado'}
               </span>
             </div>
-            <p className="text-sm text-sky-700 dark:text-[var(--lux-ink-cyan)] mt-0.5">{meta.tagline}</p>
+            <p className="text-sm text-sky-700 dark:text-[var(--lux-ink-cyan)] mt-0.5">
+              {meta.tagline}
+            </p>
           </div>
         </div>
 

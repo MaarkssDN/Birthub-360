@@ -141,8 +141,7 @@ export function ReportErrorButton({ user, page, isDark = true }: ReportErrorButt
                   }`}
                   style={
                     {
-                      '--tw-ring-color':
-                        'color-mix(in srgb, var(--color-danger) 20%, transparent)',
+                      '--tw-ring-color': 'color-mix(in srgb, var(--color-danger) 20%, transparent)',
                     } as React.CSSProperties
                   }
                 />

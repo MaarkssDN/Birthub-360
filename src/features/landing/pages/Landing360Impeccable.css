@@ -258,14 +258,22 @@ html.light .lp,
   height: 50%;
   top: -10%;
   left: 15%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--orbit-blue) 12%, transparent), transparent 70%);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--orbit-blue) 12%, transparent),
+    transparent 70%
+  );
 }
 .lp-hero-orb-b {
   width: 40%;
   height: 40%;
   bottom: -5%;
   right: 10%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--pink) 8%, transparent), transparent 70%);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--pink) 8%, transparent),
+    transparent 70%
+  );
 }
 .lp-hero-content {
   position: relative;

@@ -199,7 +199,10 @@ export function GlowChart({ data, error }: GlowChartProps) {
                     allowDecimals={false}
                   />
                   <Tooltip
-                    cursor={{ stroke: 'color-mix(in srgb, var(--ink) 10%, transparent)', strokeWidth: 1 }}
+                    cursor={{
+                      stroke: 'color-mix(in srgb, var(--ink) 10%, transparent)',
+                      strokeWidth: 1,
+                    }}
                     contentStyle={{
                       backgroundColor: 'var(--surface-elevated)',
                       color: 'var(--ink)',

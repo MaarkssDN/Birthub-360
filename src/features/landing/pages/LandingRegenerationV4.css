@@ -42,7 +42,12 @@ html.light .b360-adaptive-landing,
 .b360-final-cta h2,
 .login-antessala-backdrop :is(h1, h2) {
   font-family: "Sora", system-ui, sans-serif !important;
-  background: linear-gradient(135deg, var(--orbit-blue) 0%, var(--iris) 50%, var(--pink) 100%) !important;
+  background: linear-gradient(
+    135deg,
+    var(--orbit-blue) 0%,
+    var(--iris) 50%,
+    var(--pink) 100%
+  ) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
@@ -146,8 +151,16 @@ html.light .b360-adaptive-landing .b360-topbar,
   border-radius: clamp(24px, 3vw, 40px);
   border: 1px solid color-mix(in srgb, var(--orbit-blue) 28%, transparent) !important;
   background:
-    radial-gradient(ellipse 80% 100% at 95% 0%, color-mix(in srgb, var(--iris) 18%, transparent), transparent 70%),
-    radial-gradient(ellipse 65% 70% at 0% 100%, color-mix(in srgb, var(--orbit-blue) 13%, transparent), transparent 70%),
+    radial-gradient(
+      ellipse 80% 100% at 95% 0%,
+      color-mix(in srgb, var(--iris) 18%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 65% 70% at 0% 100%,
+      color-mix(in srgb, var(--orbit-blue) 13%, transparent),
+      transparent 70%
+    ),
     linear-gradient(125deg, #08162d 0%, #0d1a32 46%, #0a1730 100%) !important;
   box-shadow: 0 30px 78px -38px rgba(4, 17, 44, 0.65) !important;
 }
@@ -223,7 +236,8 @@ html.light .b360-adaptive-landing .b360-topbar,
   ) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
-  filter: drop-shadow(0 0 32px color-mix(in srgb, var(--orbit-blue) 45%, transparent)) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.55)) !important;
+  filter: drop-shadow(0 0 32px color-mix(in srgb, var(--orbit-blue) 45%, transparent))
+    drop-shadow(0 3px 6px rgba(0, 0, 0, 0.55)) !important;
 }
 
 .b360-adaptive-landing .b360-hero-title .b360-hero-line-iris {
@@ -376,7 +390,14 @@ html.light .b360-adaptive-landing .b360-hero-title .b360-hero-line-gold,
 }
 
 .b360-adaptive-landing .b360-aurora::before {
-  background: conic-gradient(from 10deg, var(--orbit-blue), var(--iris), var(--pink), var(--gold), var(--orbit-blue));
+  background: conic-gradient(
+    from 10deg,
+    var(--orbit-blue),
+    var(--iris),
+    var(--pink),
+    var(--gold),
+    var(--orbit-blue)
+  );
   filter: blur(9px);
   opacity: 0.52;
 }
@@ -482,8 +503,16 @@ html.light .b360-adaptive-landing .b360-hero-title .b360-hero-line-gold,
     clamp(40px, 5vw, 64px);
   border: 1px solid rgba(102, 195, 240, 0.26);
   background:
-    radial-gradient(ellipse 70% 50% at 5% 0%, color-mix(in srgb, var(--orbit-blue) 15%, transparent), transparent 78%),
-    radial-gradient(ellipse 50% 60% at 100% 100%, color-mix(in srgb, var(--pink) 12%, transparent), transparent 74%),
+    radial-gradient(
+      ellipse 70% 50% at 5% 0%,
+      color-mix(in srgb, var(--orbit-blue) 15%, transparent),
+      transparent 78%
+    ),
+    radial-gradient(
+      ellipse 50% 60% at 100% 100%,
+      color-mix(in srgb, var(--pink) 12%, transparent),
+      transparent 74%
+    ),
     #0b162c !important;
   box-shadow: 0 32px 82px -50px rgba(4, 12, 34, 0.85);
 }
@@ -497,7 +526,12 @@ html.light .b360-adaptive-landing .b360-hero-title .b360-hero-line-gold,
 .b360-adaptive-landing .b360-pillars-head h2 {
   font-size: clamp(30px, 3.8vw, 52px) !important;
   line-height: 1.1 !important;
-  background: linear-gradient(135deg, var(--orbit-blue) 0%, var(--iris) 45%, var(--pink) 100%) !important;
+  background: linear-gradient(
+    135deg,
+    var(--orbit-blue) 0%,
+    var(--iris) 45%,
+    var(--pink) 100%
+  ) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   filter: drop-shadow(0 0 24px color-mix(in srgb, var(--orbit-blue) 35%, transparent)) !important;
@@ -718,7 +752,12 @@ html.light .b360-adaptive-landing .b360-pillars-head h2,
   font-size: clamp(32px, 3.8vw, 52px) !important;
   line-height: 1.14 !important;
   margin-bottom: 16px;
-  background: linear-gradient(135deg, var(--orbit-blue) 0%, var(--iris) 50%, var(--pink) 100%) !important;
+  background: linear-gradient(
+    135deg,
+    var(--orbit-blue) 0%,
+    var(--iris) 50%,
+    var(--pink) 100%
+  ) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   filter: drop-shadow(0 0 24px color-mix(in srgb, var(--orbit-blue) 35%, transparent)) !important;
@@ -762,7 +801,11 @@ html.light .b360-adaptive-landing .b360-sectionhead h2,
   border-radius: 28px 40px 28px 40px;
   border: 1px solid rgba(102, 174, 226, 0.28) !important;
   background:
-    radial-gradient(circle at 90% 0%, color-mix(in srgb, var(--iris) 13%, transparent), transparent 60%),
+    radial-gradient(
+      circle at 90% 0%,
+      color-mix(in srgb, var(--iris) 13%, transparent),
+      transparent 60%
+    ),
     linear-gradient(160deg, #0f2342, #0a172d) !important;
   box-shadow: 0 17px 38px -27px rgba(11, 37, 76, 0.8) !important;
   transition:
@@ -929,8 +972,17 @@ html.light .b360-adaptive-landing .b360-sectionhead h2,
   border-radius: 32px;
   border: 1px solid color-mix(in srgb, var(--orbit-blue) 32%, transparent) !important;
   background:
-    radial-gradient(ellipse 70% 85% at 50% -5%, color-mix(in srgb, var(--orbit-blue) 18%, transparent), transparent),
-    radial-gradient(ellipse 60% 60% at 92% 100%, color-mix(in srgb, var(--pink) 14%, transparent), transparent), #0b1a32 !important;
+    radial-gradient(
+      ellipse 70% 85% at 50% -5%,
+      color-mix(in srgb, var(--orbit-blue) 18%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      ellipse 60% 60% at 92% 100%,
+      color-mix(in srgb, var(--pink) 14%, transparent),
+      transparent
+    ),
+    #0b1a32 !important;
   box-shadow: 0 30px 70px -44px rgba(6, 20, 45, 0.77);
 }
 .b360-adaptive-landing .b360-final-cta h2 {
@@ -990,14 +1042,32 @@ html.light .b360-adaptive-landing .b360-sectionhead h2,
 .login-antessala-backdrop {
   --v4-ink: #1b6f9a;
   background:
-    radial-gradient(ellipse at 15% 0%, color-mix(in srgb, var(--orbit-blue) 12%, transparent), transparent 55%),
-    radial-gradient(ellipse at 90% 100%, color-mix(in srgb, var(--iris) 11%, transparent), transparent 56%), #edf3fb !important;
+    radial-gradient(
+      ellipse at 15% 0%,
+      color-mix(in srgb, var(--orbit-blue) 12%, transparent),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse at 90% 100%,
+      color-mix(in srgb, var(--iris) 11%, transparent),
+      transparent 56%
+    ),
+    #edf3fb !important;
 }
 .dark .login-antessala-backdrop {
   --v4-ink: #92eaff;
   background:
-    radial-gradient(ellipse at 10% 0%, color-mix(in srgb, var(--orbit-blue) 12%, transparent), transparent 57%),
-    radial-gradient(ellipse at 85% 100%, color-mix(in srgb, var(--iris) 11%, transparent), transparent 56%), #0a1428 !important;
+    radial-gradient(
+      ellipse at 10% 0%,
+      color-mix(in srgb, var(--orbit-blue) 12%, transparent),
+      transparent 57%
+    ),
+    radial-gradient(
+      ellipse at 85% 100%,
+      color-mix(in srgb, var(--iris) 11%, transparent),
+      transparent 56%
+    ),
+    #0a1428 !important;
 }
 .login-antessala-backdrop .card-login-command {
   border-radius: 24px;
@@ -1592,7 +1662,12 @@ html.dark .b360-adaptive-landing .b360-final-cta h2,
 [data-theme="dark"] .b360-adaptive-landing .b360-hero-title:not(.bh-n1-title),
 [data-theme="dark"] .b360-adaptive-landing .b360-final-cta h2 {
   font-family: "Sora", system-ui, sans-serif !important;
-  background: linear-gradient(135deg, var(--orbit-blue) 0%, var(--iris) 50%, var(--pink) 100%) !important;
+  background: linear-gradient(
+    135deg,
+    var(--orbit-blue) 0%,
+    var(--iris) 50%,
+    var(--pink) 100%
+  ) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;

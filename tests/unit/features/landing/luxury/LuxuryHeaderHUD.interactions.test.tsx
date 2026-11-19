@@ -50,7 +50,7 @@ describe('LuxuryHeaderHUD — interações', () => {
 
     setScrollY(120);
     fireEvent.scroll(window);
-    expect(header.className).toContain('bg-[#0D0D0D]/85');
+    expect(header.className).toContain('bg-[var(--bg)]/85');
     expect(header.className).toContain('backdrop-blur-xl');
   });
 
