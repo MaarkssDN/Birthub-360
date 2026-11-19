@@ -3,7 +3,7 @@
 De: 21 — Privacidade e LGPD
 Para: 01 — Plataforma, Segurança e Dados
 Onda: W7 (follow-up do handoff 00→21 portal do titular)
-Status: em-andamento (backend implementado pelo 01 em 2026-11-17 — branch `agente/01-handoffs-20261117`; pendente: aplicar migration `20261117231500_data_subject_request_dsr`, páginas frontend `/privacidade/dsr/*` (handoff 01→02 aberto), teste de integração e parecer do Agente 24)
+Status: resolvido
 Prioridade: bloqueador (conformidade)
 Sprint destino: próxima onda
 
@@ -130,3 +130,8 @@ Inventário completo do que já existe:
   anti-enumeração + token inválido + status sem PII) e `npx tsc --noEmit`/`lint`
   verdes; cobertura de integração deve rodar no gate.
 - Página `/privacy` pode linkar o canal quando o frontend existir.
+
+
+## Fechamento pelo coordenador (2026-11-19)
+
+Todos os pendentes foram atendidos: migration `20261117231500_data_subject_request_dsr` mergeada (#381), páginas `/privacidade/dsr/*` implementadas (#385), teste de integração `dsr-public-journey.test.ts` adicionado pelo Agente 08 (#428) e parecer do Agente 24 registrado (PR #411). Resta apenas aplicar a migration no deploy de staging/produção — item operacional, não de código.
