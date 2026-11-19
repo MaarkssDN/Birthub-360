@@ -307,6 +307,7 @@ export async function postCommentToBitrix(
   organizationId: string,
   leadId: string,
   comment: string,
+  opts: PostCommentToBitrixOptions = {},
 ): Promise<{ entityType: 'lead' | 'deal'; bitrixRecordId: string }> {
   const correlationId = randomUUID();
   const lead = await prisma.lead.findFirst({
@@ -327,12 +328,34 @@ export async function postCommentToBitrix(
   });
   if (!connection) throw new AppError('Bitrix24 não está conectado para esta organização.', 400);
 
+  const dedupMarker = dedupMarkerOf(opts.dedupRef);
+  if (dedupMarker) {
+    const alreadyPosted = await hasBitrixTimelineCommentByDedupRef(
+      connection.webhookUrl,
+      bitrixRecordId,
+      entityType,
+      dedupMarker,
+      correlationId,
+    );
+    if (alreadyPosted) {
+      logger.info(
+        { organizationId, leadId, entityType, bitrixRecordId, dedupRef: opts.dedupRef },
+        '[bitrix] Comentário já existe na timeline do Bitrix24 (dedupRef) — crm.timeline.comment.add ignorado.',
+      );
+      return { entityType, bitrixRecordId };
+    }
+  }
+
   try {
     await callBitrix(
       connection.webhookUrl,
       'crm.timeline.comment.add',
       {
-        fields: { ENTITY_ID: bitrixRecordId, ENTITY_TYPE: entityType, COMMENT: comment },
+        fields: {
+          ENTITY_ID: bitrixRecordId,
+          ENTITY_TYPE: entityType,
+          COMMENT: dedupMarker ? `${comment}\n${dedupMarker}` : comment,
+        },
       },
       { correlationId },
     );
@@ -361,6 +384,46 @@ export async function postCommentToBitrix(
       correlationId,
     });
     throw err;
+  }
+}
+
+interface BitrixTimelineCommentListResult {
+  result?: { comments?: Array<{ COMMENT?: string }> } | Array<{ COMMENT?: string }>;
+}
+
+/**
+ * Checagem best-effort de dedup para comentários de timeline: consulta
+ * `crm.timeline.comment.list` procurando o marcador `[ref:<dedupRef>]` já postado.
+ * Qualquer falha na consulta retorna `false` (segue com o add) — dedup é melhoria,
+ * não requisito bloqueante, mesmo padrão de `findDuplicateBitrixLeadId`.
+ */
+async function hasBitrixTimelineCommentByDedupRef(
+  webhookUrl: string,
+  entityId: string,
+  entityType: 'lead' | 'deal',
+  marker: string,
+  correlationId: string,
+): Promise<boolean> {
+  try {
+    const data = await callBitrix<BitrixTimelineCommentListResult>(
+      webhookUrl,
+      'crm.timeline.comment.list',
+      {
+        filter: { ENTITY_ID: entityId, ENTITY_TYPE: entityType },
+        select: ['ID', 'COMMENT'],
+      },
+      { correlationId, maxAttempts: 1 },
+    );
+    const comments = Array.isArray(data.result)
+      ? data.result
+      : ((data.result as { comments?: Array<{ COMMENT?: string }> } | undefined)?.comments ?? []);
+    return comments.some((c) => typeof c?.COMMENT === 'string' && c.COMMENT.includes(marker));
+  } catch (err: any) {
+    logger.warn(
+      { err, correlationId },
+      '[bitrix] crm.timeline.comment.list indisponível — seguindo sem checagem de dedup de comentário',
+    );
+    return false;
   }
 }
 
@@ -509,6 +572,22 @@ export interface SyncActivityToBitrixParams {
   durationSeconds?: number;
 }
 
+export interface SyncActivityToBitrixOptions {
+  /** Repropaga falhas — uso exclusivo de consumidores de fila/outbox (ex.: bitrixEventMeshBridge). */
+  propagateErrors?: boolean;
+  /** Marcador `[ref:<dedupRef>]` na DESCRIPTION + checagem crm.activity.list antes do add. */
+  dedupRef?: string;
+}
+
+export interface PostCommentToBitrixOptions {
+  /** Marcador `[ref:<dedupRef>]` no COMMENT + checagem crm.timeline.comment.list antes do add. */
+  dedupRef?: string;
+}
+
+function dedupMarkerOf(ref?: string): string | null {
+  return ref ? `[ref:${ref}]` : null;
+}
+
 /**
  * Espelha atividades de contato (ligações de voz, WhatsApp, e-mail) do Lead no CRM do Bitrix24
  * via `crm.activity.add`. Fire-and-forget: nunca quebra fluxos principais se o Bitrix estiver
@@ -518,6 +597,7 @@ export async function syncActivityToBitrix(
   organizationId: string,
   leadId: string,
   params: SyncActivityToBitrixParams,
+  opts: SyncActivityToBitrixOptions = {},
 ): Promise<{ bitrixActivityId?: number } | null> {
   try {
     const connection = await prisma.bitrixConnection.findFirst({
@@ -556,6 +636,23 @@ export async function syncActivityToBitrix(
 
     const webhookUrl = await getConnectionWebhookUrl(organizationId, connection.id);
 
+    const dedupMarker = dedupMarkerOf(opts.dedupRef);
+    if (dedupMarker) {
+      const existingActivityId = await findBitrixActivityIdByDedupRef(
+        webhookUrl,
+        ownerTypeId,
+        ownerId,
+        dedupMarker,
+      );
+      if (existingActivityId != null) {
+        logger.info(
+          { organizationId, leadId, bitrixActivityId: existingActivityId, dedupRef: opts.dedupRef },
+          '[bitrix] Atividade já existe no Bitrix24 (dedupRef) — crm.activity.add ignorado.',
+        );
+        return { bitrixActivityId: existingActivityId };
+      }
+    }
+
     // Mapeamento Bitrix TYPE_ID: 1 = Meeting, 2 = Call, 4 = Email
     const typeId = params.type === 'meeting' ? 1 : params.type === 'email' ? 4 : 2;
 
@@ -567,7 +664,9 @@ export async function syncActivityToBitrix(
       OWNER_ID: ownerId,
       TYPE_ID: typeId,
       SUBJECT: params.subject,
-      DESCRIPTION: params.description || '',
+      DESCRIPTION: dedupMarker
+        ? `${params.description || ''}\n${dedupMarker}`
+        : params.description || '',
       COMPLETED: params.completed === false ? 'N' : 'Y',
       DIRECTION: params.direction === 'inbound' ? 1 : 2,
       START_TIME: new Date().toISOString(),
@@ -593,9 +692,53 @@ export async function syncActivityToBitrix(
 
     return { bitrixActivityId: response?.result };
   } catch (err: any) {
+    // Consumidores de fila/outbox (bitrixEventMeshBridge) precisam da falha para o mesh
+    // reagendar via outbox; os demais chamadores mantêm o comportamento fire-and-forget.
+    if (opts.propagateErrors) {
+      throw err;
+    }
     logger.warn(
       { err, organizationId, leadId, params },
       '[bitrix] Falha ao sincronizar atividade CRM no Bitrix24 (efeito secundário não-bloqueante).',
+    );
+    return null;
+  }
+}
+
+interface BitrixActivityListResult {
+  result?: Array<{ ID?: number | string; DESCRIPTION?: string }>;
+}
+
+/**
+ * Checagem best-effort de dedup para atividades CRM: consulta `crm.activity.list` do owner
+ * procurando o marcador `[ref:<dedupRef>]` na DESCRIPTION. Falha na consulta retorna `null`
+ * (segue com o add) — dedup é melhoria, não requisito bloqueante.
+ */
+async function findBitrixActivityIdByDedupRef(
+  webhookUrl: string,
+  ownerTypeId: number,
+  ownerId: string,
+  marker: string,
+): Promise<number | null> {
+  try {
+    const data = await callBitrix<BitrixActivityListResult>(
+      webhookUrl,
+      'crm.activity.list',
+      {
+        filter: { OWNER_TYPE_ID: ownerTypeId, OWNER_ID: ownerId },
+        select: ['ID', 'DESCRIPTION'],
+        order: { ID: 'DESC' },
+      },
+      { maxAttempts: 1 },
+    );
+    const found = (data.result ?? []).find(
+      (a) => typeof a?.DESCRIPTION === 'string' && a.DESCRIPTION.includes(marker),
+    );
+    return found?.ID != null ? Number(found.ID) : null;
+  } catch (err: any) {
+    logger.warn(
+      { err, marker },
+      '[bitrix] crm.activity.list indisponível — seguindo sem checagem de dedup de atividade',
     );
     return null;
   }

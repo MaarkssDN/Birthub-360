@@ -8,9 +8,18 @@
       name="description"
       content="Ecossistema inteligente que conecta dados, IA, automações e processos e transforma o que está disperso em direção clara para a sua operação comercial."
     />
-    <meta name="theme-color" content="#0b132b" />
+    <meta name="theme-color" content="#0D0D0D" />
     <link rel="icon" type="image/svg+xml" href="/brand/birthhub360-icone.svg" />
-    <link rel="preload" href="/fonts/cabin-variable.ttf" as="font" type="font/ttf" crossorigin />
+    <script>
+      (() => {
+        try {
+          const t = localStorage.getItem('birthhub_theme');
+          if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+        } catch {}
+      })();
+    </script>
+    <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
   </head>
   <body>
     <div id="root"></div>

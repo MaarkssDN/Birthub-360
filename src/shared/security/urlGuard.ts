@@ -3,7 +3,7 @@ import type { LookupFunction } from 'node:net';
 import net from 'node:net';
 import { Agent, fetch as undiciFetch } from 'undici';
 import { AppError } from '../middlewares/errorHandler.js';
-import { isPrivateIpv6Transition } from './ipv6.js';
+import { isPrivateIpv6Transition, ipv6ToBytes } from './ipv6.js';
 
 // Usamos o `RequestInit` do próprio `undici` (não o `RequestInit` global do lib "DOM" do
 // tsconfig, compartilhado com o frontend) porque só o tipo do undici já declara `dispatcher`
@@ -48,11 +48,17 @@ function isPrivateOrReservedIp(ip: string): boolean {
   if (net.isIPv6(ip)) {
     const lower = ip.toLowerCase();
     if (lower === '::1' || lower === '::') return true;
-    if (lower.startsWith('fe80:')) return true;
+    if (/^fe[89ab]/.test(lower)) return true; // link-local fe80::/10
     if (lower.startsWith('fc') || lower.startsWith('fd')) return true;
     if (lower.startsWith('::ffff:')) {
       const mapped = lower.split(':').pop();
       if (mapped && net.isIPv4(mapped)) return isPrivateOrReservedIp(mapped);
+      // Forma hex (::ffff:HHHH:LLLL) — o parser WHATWG entrega IPv4-mapeado
+      // como hextetos, não dotted-quad; extrai os últimos 32 bits e reavalia.
+      const bytes = ipv6ToBytes(ip);
+      if (bytes && bytes[10] === 0xff && bytes[11] === 0xff) {
+        return isPrivateOrReservedIp(`${bytes[12]}.${bytes[13]}.${bytes[14]}.${bytes[15]}`);
+      }
     }
     // Mecanismos de transição IPv4-em-IPv6 (6to4, Teredo, NAT64, IPv4-compatible):
     // o IPv4 embutido é avaliado pela mesma política IPv4; Teredo (sem IPv4
