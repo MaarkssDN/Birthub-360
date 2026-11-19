@@ -2,8 +2,29 @@
 // frontend.ts importa `vite` (→ esbuild), que quebra no jsdom: o realm do jsdom faz
 // `TextEncoder().encode("") instanceof Uint8Array` ser false e o esbuild aborta no import.
 // O predicado testado é puro — ambiente node é o correto (mesmo padrão de tests/unit/ci/*).
-import { describe, expect, it } from 'vitest';
-import { isBlockedDesignLabPath } from '../../../src/bootstrap/frontend.js';
+import express from 'express';
+import request from 'supertest';
+import { describe, expect, it, vi } from 'vitest';
+import { isBlockedDesignLabPath, mountFrontend } from '../../../src/bootstrap/frontend.js';
+
+// mountFrontend chama createViteServer no branch de dev/test — mockado para não subir um
+// servidor Vite de verdade dentro do teste unitário. O middleware fake responde 200 para
+// qualquer path que sobreviver à guarda, provando que a requisição passou por ela.
+vi.mock('vite', () => ({
+  // frontend.ts importa `createServer as createViteServer` — o mock precisa expor o
+  // nome original do export para o Vitest resolver o alias.
+  createServer: vi.fn(async () => ({
+    middlewares: (_req: unknown, res: { status: (n: number) => { end: (b: string) => void } }) => {
+      res.status(200).end('vite-dev');
+    },
+  })),
+}));
+
+// authenticateToken real dependeria de better-auth/prisma (sessão no banco). Aqui só
+// interessa a guarda anti-bypass — o mount autenticado é reduzido a next().
+vi.mock('../../../src/shared/middlewares/authenticateToken.js', () => ({
+  authenticateToken: (_req: unknown, _res: unknown, next: () => void) => next(),
+}));
 
 /**
  * Guarda anti-bypass dos estáticos do design-lab (P0, DEM-20261114-001/003).
@@ -36,5 +57,48 @@ describe('isBlockedDesignLabPath', () => {
   it('mantém raw path quando o encoding é malformado', () => {
     expect(isBlockedDesignLabPath('/design-lab%ZZ/assets')).toBe(false);
     expect(isBlockedDesignLabPath('/public/design-lab/%ZZ')).toBe(true);
+  });
+});
+
+/**
+ * Middleware de guarda registrado por mountFrontend (P0, DEM-20261114-001/003):
+ * qualquer path que toque um asset do design-lab por alias não autorizado precisa
+ * receber 404 ANTES de express.static/vite.middlewares — senão o alias decodificado
+ * serviria o arquivo sem passar pelo mount autenticado `/design-lab`.
+ */
+describe('mountFrontend — guarda anti-bypass design-lab', () => {
+  async function buildApp() {
+    const app = express();
+    await mountFrontend(app);
+    return app;
+  }
+
+  it('responde 404 para aliases de design-lab antes de qualquer static', async () => {
+    const app = await buildApp();
+    for (const alias of [
+      '/public/design-lab/assets/lab.css',
+      '/@fs/abs/path/public/design-lab/secret.json',
+      '/foo/design-lab/bar.png',
+      '/PUBLIC/design-lab/secret.json',
+    ]) {
+      const res = await request(app).get(alias);
+      expect(res.status, alias).toBe(404);
+    }
+  });
+
+  it('deixa passar o prefixo legítimo /design-lab para o mount autenticado', async () => {
+    const app = await buildApp();
+    const res = await request(app).get('/design-lab/assets/lab.css');
+    // Sobreviveu à guarda (não é 404) e seguiu a cadeia /design-lab → vite mock.
+    expect(res.status).not.toBe(404);
+    expect(res.status).toBe(200);
+  });
+
+  it('deixa passar paths comuns e módulos fonte do design-lab', async () => {
+    const app = await buildApp();
+    for (const path of ['/app/crm', '/src/features/design-lab/pages/Lab.tsx', '/tools/x']) {
+      const res = await request(app).get(path);
+      expect(res.status, path).toBe(200);
+    }
   });
 });
