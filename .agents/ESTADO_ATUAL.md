@@ -1,18 +1,25 @@
 # ESTADO DA ONDA ATUAL — BIRTH HUB 360
-*Última atualização: (Adicionar Timestamp)*
-*Atualizado por: (Agente Coordenador ou 09)*
+*Última atualização: 2026-11-19 19:42:00 BRT*
+*Atualizado por: Agente 00 (Astra) — Coordenador Global*
 
 > **Atenção Runtimes:** Consulte este ficheiro para obter o contexto de execução atual sem necessidade de varrer os relatórios da pasta `.agents/runs/`.
 
 ## 1. Contexto da Onda
-- **Onda Ativa:** Onda N
-- **Fase Atual:** `[PLANEJADA | EM_EXECUCAO | EM_REVISAO | GATE_VERDE | RELEASE_APPROVED]`
-- **Branch de Integração:** `integracao/onda-<n>`
-- **Objetivo Principal:** (Breve descrição da meta da onda)
+- **Onda Ativa:** Onda 1 — Resolução dos Bloqueadores Críticos P0 (B-01 a B-14)
+- **Fase Atual:** `PLANEJADA`
+- **Branch de Integração:** `integracao/onda-1-bloqueadores`
+- **Objetivo Principal:** Eliminar e validar os 16 itens críticos P0 de segurança, RLS, tenancy, locks de migrações e conformidade LGPD.
+- **Checklist Mestre da Onda:** `.agents/audits/technical-debt/2026-11-19/CHECKLIST_RESOLUCAO_ONDAS.md`
 
-## 2. Esquadrões (Squads) Acionados
-- (Ex: Squad 20 - Backend)
-- (Ex: Squad 30 - UI)
+## 2. Esquadrões (Squads) Acionados na Onda 1
+- **Squad 00** (06 Gael, 07 Íris, 09 Silas)
+- **Squad 10** (12 Vera, 13 Nilo, 19 Bruno)
+- **Squad 20** (24 Ivo)
+- **Squad 50** (50 Atlas, 52 Lino, 56 Luna)
+- **Squad 60** (62 Sol, 64 Tito, 69 Eli)
+- **Squad 70** (72 Ada, 76 Dex)
+- **Squad 80** (88 Sasha)
+- **Squad 90** (96 Nera, 97 Rocco, 98 Safira)
 
 ## 3. Estado dos Bloqueadores Prioritários (B-01 a B-14)
 *Marcar com [x] quando validado ou mitigado na onda atual. Se for um problema contínuo, indicar o Agente responsável pelo Handoff.*
