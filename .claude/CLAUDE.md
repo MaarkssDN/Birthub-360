@@ -19,15 +19,16 @@ aprendizado incorporado aqui e um registro curto em `.claude/PILOTS.md`. Ver Pil
   potencializando decisões e acelerando a execução". Um CRM B2B com IA (prospecção, pipeline,
   roleplay de vendas, automações, analytics).
   - **Marca única, paleta neon do Design Language v2.0 (autoridade visual máxima, ratificada pelo
-    usuário em 19/11/2026).** Azul Neon `#00D4FF` (cor de marca e de ação), Rosa Neon `#FF2D9B` e
-    Dourado Neon `#FFC107`, sobre `#0d0d0d` (dark) e `#f0efe9` (light). Fonte da verdade:
-    `docs/design/BIRTHHUB-360-DESIGN-LANGUAGE.md`, `src/styles/globals.css` (tokens reais) e
-    `src/config/brand.ts`; `identidade-visual/birthhub360/` documenta identidades ANTERIORES e
-    ainda não foi sincronizada com a paleta neon — não usar como referência de cor até então.
-  - **Contraste sobre marca:** `bg-brand` sempre com `text-on-brand` (`#041c32`); branco sobre
-    superfície sólida de marca é proibido. No tema claro, as cores neon de título do Design
-    Language não atingem AA sobre `#f0efe9` (A11Y-001): títulos no tema claro usam variantes
-    escurecidas que cumpram 4.5:1 (3:1 só para texto grande).
+    usuário em 19/11/2026; ver `DESIGN.md` e `src/styles/official-identity.css`).** Azul Neon `#00D4FF` (cor
+    de marca e de ação), Rosa Neon `#FF2D9B` e Dourado Neon `#FFC107`, sobre `#0d0d0d` (dark) e
+    `#f0efe9` (light). Fonte da verdade: `docs/design/BIRTHHUB-360-DESIGN-LANGUAGE.md`,
+    `src/styles/official-identity.css`, `src/styles/globals.css` (tokens reais) e `src/config/brand.ts`;
+    `identidade-visual/birthhub360/` documenta identidades ANTERIORES e ainda não foi sincronizada
+    com a paleta neon — não usar como referência de cor até então.
+  - **Contraste e acessibilidade sobre marca:** `bg-brand` sempre com `text-on-brand` (`#041c32`);
+    branco sobre superfície sólida de marca é proibido. No tema claro, as cores neon de título do
+    Design Language não atingem AA sobre `#f0efe9` (A11Y-001): títulos no tema claro usam variantes
+    escurecidas que cumpram 4.5:1 (3:1 só para texto grande), com contraste validado em `tokens.test.ts`.
   - Até 09/2026 a plataforma trocava de marca em runtime entre Birth Hub 360
     (`BrandContext`, `data-brand` no `<html>`, `--brand` reescrito por JS). Isso não existe mais:
     a cor vive só em CSS. O eixo que aquele seletor de fato controlava no CONTEÚDO (playbook,
@@ -203,15 +204,15 @@ comentário de PR) a estas perguntas, na ordem:
    hardcoded? H1-H3 já têm tamanho/peso definidos em `@layer base` — reuse, não redefina.
 4. **Escala e densidade** — este é um dashboard/CRM de uso repetido, não uma landing page. Prefira
    densidade de informação alta e espaçamento eficiente a espaço em branco decorativo excessivo.
-5. **Contraste** — texto sobre `--brand`/`--brand-2` já tem um problema documentado (DQA-19).
-   A regra é dura: **branco sobre superfície sólida de marca não passa em AA**. Use
-   `text-on-brand`. Não reintroduza `text-white` sobre cor sólida de marca.
+5. **Contraste** — texto sobre `--brand`/`--brand-2` exige atenção a acessibilidade WCAG 2.2 AA (4.5:1).
+   A regra é dura: **branco sobre superfície sólida de marca não passa em AA**. Use sempre
+   `text-on-brand`. Não reintroduza `text-white` cego sobre cor sólida de marca.
 6. **Ritmo visual e grid** — mantenha consistência com o grid já usado nas telas vizinhas do mesmo
    módulo antes de inventar um novo.
 7. **Cor** — use os tokens (`bg-brand`, `text-ink-2`, `border-line` etc.), não hex cru. Hex só é
    aceitável onde não existe CSS: three.js, canvas, PDF, e-mail — e mesmo aí vindo de
-   `BRAND.colors`, nunca digitado à mão. **Ouro é claro**: qualquer superfície de marca sólida
-   pede `text-on-brand`; cor de marca como texto sobre fundo claro pede `text-brand-ink`.
+   `BRAND.colors` ou tokens tipados (`tokens.ts`), nunca digitado à mão. Superfície de marca sólida
+   clara pede `text-on-brand`; cor de marca como texto sobre fundo claro pede `text-brand-ink`.
 8. **Estados** — todo componente interativo precisa de hover, focus-visible, active, disabled,
    loading e erro definidos antes de ser considerado pronto. Ver `ui-ux/SKILL.md`.
 9. **Microinterações e movimento** — ver seção 8 e `motion-design/SKILL.md`.
