@@ -3,7 +3,10 @@
 
 <head><script>window.process = { env: {} };</script>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- viewport-fit=cover é obrigatório para env(safe-area-inset-*) resolver valores reais em
+       devices com notch/Dynamic Island (app Capacitor e PWA mobile); sem ele os insets são 0.
+       Auditoria DEM-20261115-001 (Agente 09). -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <!-- Cor inicial do tema light oficial; ThemeProvider acompanha a alternância. -->
   <meta name="theme-color" content="#F4F7FB" />
   <meta name="description"
