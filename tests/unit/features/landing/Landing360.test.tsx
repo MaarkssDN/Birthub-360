@@ -1,22 +1,27 @@
 import { readFileSync } from 'node:fs';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { Landing360 } from '@/features/landing/pages/Landing360';
 
-const { signInEmailMock, signUpEmailMock, requestPasswordResetMock, signInSocialMock } = vi.hoisted(
-  () => ({
-    signInEmailMock: vi.fn(),
-    signUpEmailMock: vi.fn(),
-    requestPasswordResetMock: vi.fn(),
-    signInSocialMock: vi.fn(),
-  }),
-);
+const {
+  signInEmailMock,
+  signUpEmailMock,
+  requestPasswordResetMock,
+  signInSocialMock,
+  authState,
+} = vi.hoisted(() => ({
+  signInEmailMock: vi.fn(),
+  signUpEmailMock: vi.fn(),
+  requestPasswordResetMock: vi.fn(),
+  signInSocialMock: vi.fn(),
+  authState: { currentUser: null as unknown },
+}));
 
 vi.mock('../../../contexts/AuthContext.js', () => ({
   useAuth: () => ({
-    currentUser: null,
+    currentUser: authState.currentUser,
     isPending: false,
     signOut: vi.fn(),
   }),
@@ -24,7 +29,7 @@ vi.mock('../../../contexts/AuthContext.js', () => ({
 
 vi.mock('@/contexts/AuthContext', () => ({
   useAuth: () => ({
-    currentUser: null,
+    currentUser: authState.currentUser,
     isPending: false,
     signOut: vi.fn(),
   }),
@@ -83,13 +88,28 @@ describe('Landing360', () => {
     signUpEmailMock.mockReset();
     requestPasswordResetMock.mockReset();
     signInSocialMock.mockReset();
+    authState.currentUser = null;
   });
 
-  const renderWithProviders = (initialRoute = '/', initialScreen: 'intro' | 'login' = 'intro') => {
+  function LocationProbe() {
+    const location = useLocation();
+    return (
+      <div data-testid="location-probe">
+        {location.pathname}
+        {location.search}
+      </div>
+    );
+  }
+
+  const renderWithProviders = (
+    initialRoute: string | { pathname: string; state?: unknown } = '/',
+    initialScreen: 'intro' | 'login' = 'intro',
+  ) => {
     return render(
       <MemoryRouter initialEntries={[initialRoute]}>
         <ThemeProvider>
           <Landing360 initialScreen={initialScreen} />
+          <LocationProbe />
         </ThemeProvider>
       </MemoryRouter>,
     );
@@ -121,6 +141,79 @@ describe('Landing360', () => {
 
     expect(screen.getByText(/Entrar na Plataforma/i)).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/nome@empresa\.com\.br/i)).toBeInTheDocument();
+  });
+
+  it('deve retornar à rota original protegida (pathname + search) após login por e-mail/senha', async () => {
+    const { container } = renderWithProviders(
+      {
+        pathname: '/login',
+        state: { from: { pathname: '/app/crm/leads', search: '?status=novo&pagina=2' } },
+      },
+      'login',
+    );
+
+    const form = container.querySelector('#auth-panel-email') as HTMLFormElement;
+    fireEvent.change(container.querySelector('#login-email') as HTMLInputElement, {
+      target: { value: 'executivo@empresa.com.br' },
+    });
+    fireEvent.change(container.querySelector('#login-password') as HTMLInputElement, {
+      target: { value: 'SenhaForte123!' },
+    });
+
+    signInEmailMock.mockResolvedValueOnce({ error: null });
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(signInEmailMock).toHaveBeenCalledWith(
+        expect.objectContaining({ callbackURL: '/app/crm/leads?status=novo&pagina=2' }),
+      );
+    });
+    await waitFor(() => {
+      expect(screen.getByTestId('location-probe')).toHaveTextContent(
+        '/app/crm/leads?status=novo&pagina=2',
+      );
+    });
+  });
+
+  it('deve navegar para a rota original quando o usuário já está autenticado ao abrir /login', async () => {
+    authState.currentUser = { id: 'user-1' };
+    renderWithProviders(
+      {
+        pathname: '/login',
+        state: { from: { pathname: '/app/negocios/42', search: '?aba=timeline' } },
+      },
+      'login',
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('location-probe')).toHaveTextContent(
+        '/app/negocios/42?aba=timeline',
+      );
+    });
+  });
+
+  it('deve manter o fallback /app no login quando não há state.from', async () => {
+    const { container } = renderWithProviders('/login', 'login');
+
+    const form = container.querySelector('#auth-panel-email') as HTMLFormElement;
+    fireEvent.change(container.querySelector('#login-email') as HTMLInputElement, {
+      target: { value: 'executivo@empresa.com.br' },
+    });
+    fireEvent.change(container.querySelector('#login-password') as HTMLInputElement, {
+      target: { value: 'SenhaForte123!' },
+    });
+
+    signInEmailMock.mockResolvedValueOnce({ error: null });
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(signInEmailMock).toHaveBeenCalledWith(
+        expect.objectContaining({ callbackURL: '/app' }),
+      );
+    });
+    await waitFor(() => {
+      expect(screen.getByTestId('location-probe')).toHaveTextContent('/app');
+    });
   });
 
   it('deve permitir abrir e fechar detalhes dos pilares e acionar o simulador de ROI', () => {
