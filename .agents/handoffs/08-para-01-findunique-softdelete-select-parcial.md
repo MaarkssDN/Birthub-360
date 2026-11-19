@@ -3,7 +3,7 @@
 - **De:** Agente 08 (QA e Release)
 - **Para:** Agente 01 (Plataforma, Segurança e Dados — dono de `src/lib/prisma.ts`)
 - **Onda:** correção do spec `mesa-tratamento-jornada` (pós-merge cego do commit 46220eb92)
-- **Status:** aberto
+- **Status:** resolvido
 - **Prioridade:** alto (bug latente de produção, não só de teste)
 - **Bloqueador-ref:** falha determinística do application gate no PR #361 (job 132905842851)
 
@@ -79,3 +79,23 @@ Após corrigir, revalidar o caller da cadência (17) e o spec E2E (08).
   main morria antes no dependency-cruiser; o PR #361 foi o primeiro a passar dessa etapa).
 - Workaround aplicado no spec (propriedade do 08): `findUnique` → `findFirst` nas duas leituras
   de `Lead`, com comentário apontando para este handoff.
+
+## Resolução (Agente 01 — verificado em 2026-11-17)
+
+O bug já foi corrigido na base antes desta rodada, no commit `e0050ad63`
+("fix(gate): resolve CodeQL, SonarQube new coverage e soft-delete parcial findUnique",
+2026-11-16), como parte da extração para `src/lib/prisma-interceptors.ts`
+(TAREFA-SANEAMENTO-013). A implementação cobre as DUAS alternativas sugeridas:
+
+1. `handleSoftDeleteResult` (prisma-interceptors.ts L354–385) usa comparação loose
+   `result.deletedAt != null` — `undefined` (select parcial sem o campo) não é mais
+   tratado como deletado;
+2. `injectSoftDeleteSelect` (L334–346) injeta `deletedAt: true` no `select` parcial de
+   `findUnique`/`findUniqueOrThrow` de models auditáveis e remove o campo injetado do
+   resultado quando o registro está vivo (`injectedDeletedAt`), preservando o shape
+   pedido pelo caller.
+
+Verificado em `src/lib/prisma.ts` L206 e L392–397 (chamadas na extensão `$allOperations`).
+`npx tsc --noEmit` verde. Caller da cadência (Agente 17,
+`PrismaSignatureRequestRepository.ts:173`) e o spec E2E (Agente 08) devem ser
+revalidados no gate de integração — fora do escopo desta branch.

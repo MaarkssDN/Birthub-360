@@ -4,7 +4,7 @@
 De: 06 — Integrações e Bitrix
 Para: 12 — Voz e Telefonia
 Onda: 2 (regularização retroativa — DEM-20261114-003)
-Status: em-andamento
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: commit 3ec8c096d (mergeado em main)
 Sprint destino: regularização de governança
@@ -63,3 +63,37 @@ ao 06 e o 06 executou sem abrir handoff — violação de propriedade (AGENTS.md
   MEL-12 ausente, violação de propriedade sem handoff).
 - Documentação de governança relacionada: `docs/architecture/GOVERNANCA-WHATSAPP-BAILEYS.md`
   (MEL-12, mesmo follow-up).
+
+## Resolução (Agente 12 — 2026-11-17, revisão do arquivo atual em `main@414a0ca5f`)
+
+Revisei `src/lib/voice-hub/services/webhook.worker.ts` (199 linhas) e
+`webhook.worker.test.ts` no estado atual — o código do commit `3ec8c096d` está
+íntegro e **compatível com o domínio de voz/telefonia**:
+
+1. **DLQ via `recordDeadLetter`** (`worker.on('failed')`, L158-194): dispara só em
+   `isFinalAttempt` (helper compartilhado de `src/lib/queue/deadLetter.js`), para
+   TODO job da fila `webhooks` — inclusive os sem `endpointId`. O `data` enviado à DLQ é
+   deliberadamente mínimo (`url`, `endpointId`, `event`, `webhookEventId`) com comentário
+   explícito de que `payload.data` (possível PII de chamada/lead) **não** vai para a DLQ.
+   `recordDeadLetter` nunca lança e o `.catch(() => undefined)` impede que falha de
+   auditoria mascare a falha original do job. Correto.
+2. **`recordDeliveryResult(endpointId, 'failed')`** só roda quando há `endpointId` —
+   jobs sem endpoint não têm bookkeeping de endpoint para atualizar. Correto.
+3. **SSRF defense-in-depth** (`isSafeWebhookUrl`, L24-38) e **HMAC por endpoint**
+   (`signBody`, L58-71) permanecem intactos — a alteração do 06 não tocou o caminho de
+   entrega, apenas o de falha terminal.
+
+**Decisão sobre localização (item 3 do pedido):** `webhook.worker.ts` **permanece em
+`src/lib/voice-hub/services/`**. Justificativa: o worker serve exclusivamente a fila
+`webhooks` alimentada por `webhook.service.ts`/`webhookEndpointService.ts`, que vivem no
+mesmo diretório e são do domínio do 12; o enqueue sempre passa por
+`webhookService.dispatch(...)`. Não há consumidor de outro domínio chamando o worker
+diretamente — migrá-lo para local neutro criaria acoplamento invertido (fila de voz
+passando a depender de módulo alheio) sem ganho. Se o 00 decidir no futuro por uma fila
+de webhooks genérica multi-domínio, a migração deve vir com handoff próprio.
+
+**Registro no bootstrap (verificado):** `startWebhookWorker` já está wired em
+`src/bootstrap/workers.ts` L216 (`webhookWorker: embeddedWorkersEnabled ?
+startWebhookWorker() : null`, mesmo padrão `ENABLE_EMBEDDED_WORKERS` dos demais
+workers) — a dependência do handoff `06-para-00-aprovacao-retroativa-bootstrap-workers.md`
+foi superada; não há pendência aqui.

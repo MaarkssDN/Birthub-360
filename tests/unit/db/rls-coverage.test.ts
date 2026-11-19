@@ -182,7 +182,8 @@ describe('Row Level Security (RLS) - Cobertura e Isolamento Semântico no Banco 
     // REMED-05: +DomainEventOutbox, +DomainEventConsumption (142 -> 144)
     // REMED-04: +RebalanceApproval (144 -> 145)
     // PR #216: +PublicLeadConsent (145 -> 146); cadência multicanal: +MultichannelCadenceEnrollment (146 -> 147)
-    expect(tenantScopedCount).toBe(147);
+    // DSR público (handoff 21→01): +DataSubjectRequest (147 -> 148)
+    expect(tenantScopedCount).toBe(148);
     expect(globalCatalogCount).toBe(14);
     expect(systemInternalCount).toBe(1);
   });

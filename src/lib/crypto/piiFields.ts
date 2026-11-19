@@ -47,7 +47,11 @@ export function encryptSensitiveFields(
   if (!fields) return data;
   const out = { ...data };
   for (const field of fields) {
-    if (typeof out[field] === 'string' && out[field]) {
+    if (
+      typeof out[field] === 'string' &&
+      out[field] &&
+      !(out[field] as string).startsWith('enc:v1:')
+    ) {
       out[field] = encryptField(out[field] as string);
     }
   }
