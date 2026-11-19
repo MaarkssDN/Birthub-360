@@ -4,7 +4,7 @@
 De: 02A — UX Research & Usability
 Para: 04 — CRM e BI
 Onda: WB-1
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: DEBT-0032
 Sprint destino: a definir pelo 00
@@ -39,3 +39,14 @@ Tenant sem pipeline de pilotos: funil Negócio mostra estágios do próprio tena
 Relacionado a UX-01 (mesma tela, handoff paralelo) e DEBT-0017 (Mesa de Tratamento altera `Lead.status` fora do fluxo canônico — mesma família de divergência status↔pipelineStageId).
 
 **Nota v2:** dono de `CrmBoard.tsx` confirmado como Agente 04 em 2026-11-18 (`src/components/AGENTS.md`).
+
+## Resolução
+
+- **Agente / Onda:** 04 — CRM e BI / WB-1
+- **Arquivo alterado:** `src/components/CrmBoard.tsx`
+- **Implementação:**
+  1. Adicionado `resolveDealPipelineColumns(pipelines, activeLeads)` e consumo de `GET /api/crm/pipelines` (`api.get<CrmPipeline[]>('/api/crm/pipelines')`) quando `funnel === 'Negocio'`.
+  2. As colunas do funil de Negócios e o mapa `stageLabelsByStatus` agora são derivados dinamicamente dos estágios (`CrmPipelineStage`) configurados para a organização (ordenados por `sortOrder` e convertidos de `leadStatus` Prisma via `fromPrismaLeadStatus`), preservando rótulos customizados do tenant.
+  3. Quando o nome do estágio no banco ainda for o literal legado de piloto (`'Piloto VTECH'`, `'Piloto Birthub 360 Profile'`, `'Piloto Logística'`, etc.) ou enquanto a API estiver carregando/offline/vazia, aplica o fallback imediato `DEAL_COLUMNS` + `STAGE_DISPLAY_LABELS` (`'Piloto Técnico (PoC)'`, `'Piloto Hub 360° — Em Curso'`, `'Piloto Operacional — Em Curso'`), garantindo que **nenhum rótulo visível exiba nomes de clientes legados** nos cabeçalhos das colunas (`KanbanColumn`), nos anúncios de acessibilidade do `dnd-kit` ou no seletor de movimentação em lote (`CrmBoardBatchBar`).
+  4. Qualquer `LeadStatus` presente em leads ativos da organização é preservado nas colunas visíveis mesmo se ausente do pipeline customizado, evitando ocultação silenciosa de negócios.
+  5. `resolveStatusFromOverId` e `columnKeyboardCoordinateGetter` aceitam tanto a chave `LeadStatus` quanto o rótulo traduzido da coluna, mantendo compatibilidade total com drag-and-drop por mouse e teclado.
