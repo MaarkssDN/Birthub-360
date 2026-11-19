@@ -104,3 +104,32 @@ afetado pelo F3).
 
 Status do handoff: item 07 **resolvido** (verificação concluída, sem alteração de
 código necessária nos caminhos vivos). Itens 02 e 08 seguem com seus donos.
+
+<<<<<<< HEAD
+## Reverificação — item do Agente 07 (2026-11-17, worktree `agente-07-handoffs`, base `main@414a0ca5f`)
+
+Reconfirmado em `main` e **débito técnico encerrado**:
+
+- `src/features/roleplay/services/roleplay-ai.service.ts` segue usando
+  `getAiModel` real (`local-llama3`/`local-llama3-fast`); falha de IA propaga
+  erro (sem réplica/nota fabricada).
+- Geradores do studio migraram para
+  `src/features/intelligence/services/studio/generators/{roleplay,b2bMatrix}.ts`
+  e usam `invokeStructured` real.
+- **`MultimodalRoleplaySimulatorService` não existe mais no repositório**
+  (0 ocorrências em `src/` e `tests/`) — o simulador heurístico sem consumidor
+  sinalizado como pendência em 2026-11-15 foi removido. Nada a fazer.
+
+Item 07 permanece **resolvido**. Status do handoff mantido `em-andamento`
+(itens dos Agentes 02 e 08 pendentes de verificação/execução por seus donos).
+=======
+## Verificação e Desacoplamento de Dados Mockados — Agente 17 (2026-11-18)
+
+- **Desacoplamento em Cadência & Reativação:** O serviço `SelfDrivingCrmService` (`src/features/cadence/services/selfDrivingCrm.service.ts`) foi desacoplado de dados em memória — em runtime de produção, busca leads reais via `prisma.lead` e sinais de engajamento via `prisma.conversationSignal` com isolamento estrito de `organizationId`. `optOutRepo` agora injeta por padrão o repositório durável `prismaOptOutRepository`.
+- **Zero dados demo/fabricados:** Toda a esteira de orquestração de cadência opera sobre dados persistidos reais; ausência de dados produz empty state honesto (`source: 'none'`), cumprindo integralmente a diretriz de honestidade de dados.
+- **Evidências:** `tests/unit/cadence/selfDrivingCrm.service.test.ts` (11 testes verdes) e suíte de cadência completa (17 arquivos, 198 testes verdes). Parcela do Agente 17 100% concluída.
+
+## Triagem Agente 17 — 2026-11-18 (branch `agente/17-handoffs-20261117`)
+
+Re-verificação de staleness: a parcela do Agente 17 permanece **resolvida** — `selfDrivingCrm.service.ts` segue desacoplado de dados mock em produção (`prisma.lead` L263, `prisma.conversationSignal` L115, `prismaOptOutRepository` injetado por padrão L36). Nenhuma ação pendente para o 17 neste handoff; `Status: em-andamento` mantido pelos itens dos Agentes 02 e 08.
+>>>>>>> origin/agente/17-handoffs-20261117

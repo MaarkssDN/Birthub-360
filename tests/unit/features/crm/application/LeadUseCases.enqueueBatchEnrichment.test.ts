@@ -75,7 +75,7 @@ describe('LeadUseCases.enqueueBatchEnrichment', () => {
     expect(result).toEqual({ enqueued: 2, enfileirado: true });
     expect(addBulk).toHaveBeenCalledTimes(1);
     expect(companyUpdateMany).toHaveBeenCalledWith({
-      where: { id: { in: ['company-1', 'company-2'] } },
+      where: { id: { in: ['company-1', 'company-2'] }, organizationId: ORG },
       data: { enrichmentStatus: 'Enriquecendo' },
     });
   });
@@ -113,7 +113,7 @@ describe('LeadUseCases.enqueueBatchEnrichment', () => {
     expect(result).toEqual({ enqueued: 1, enfileirado: true });
     expect(addBulk).toHaveBeenCalledTimes(1);
     expect(companyUpdateMany).toHaveBeenCalledWith({
-      where: { id: { in: ['company-1'] } },
+      where: { id: { in: ['company-1'] }, organizationId: ORG },
       data: { enrichmentStatus: 'Enriquecendo' },
     });
   });

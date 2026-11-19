@@ -210,7 +210,7 @@ export function PredictiveScoringNbaCard({
                 <span className="text-xl font-black text-white">
                   {scoreData.finalPredictiveScore}
                 </span>
-                <span className="text-[11px] text-slate-500">/100</span>
+                <span className="text-[11px] text-slate-400">/100</span>
               </div>
               <div className="mt-1 flex items-center justify-center gap-1">
                 <Flame
@@ -236,7 +236,7 @@ export function PredictiveScoringNbaCard({
                 <span className="text-xl font-black text-[#8B7DFF]">
                   {scoreData.deterministicIcpScore}
                 </span>
-                <span className="text-[11px] text-slate-500">/100</span>
+                <span className="text-[11px] text-slate-400">/100</span>
               </div>
               <span className="mt-1 block text-[10px] text-slate-400">Regras de Perfil</span>
             </div>
@@ -249,7 +249,7 @@ export function PredictiveScoringNbaCard({
                 <span className="text-xl font-black text-emerald-400">
                   {scoreData.lookalikeSimilarityScore}
                 </span>
-                <span className="text-[11px] text-slate-500">/100</span>
+                <span className="text-[11px] text-slate-400">/100</span>
               </div>
               <span className="mt-1 block text-[10px] text-slate-400">Histórico Qdrant</span>
             </div>

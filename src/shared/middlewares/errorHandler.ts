@@ -37,6 +37,44 @@ export class AppError extends Error {
   }
 }
 
+/**
+ * `err.statusCode` vem de fontes heterogêneas: `AppError` (a convenção é inteiro 4xx/5xx, mas
+ * nada impede um dev de passar valor inválido), middlewares de terceiros (`http-errors`,
+ * `multer`, `body-parser`) e erros arbitrários. Um status fora de 400–599 faria `res.status()`
+ * lançar `RangeError` DENTRO do próprio error handler — o que faz o Express cair no handler de
+ * erro default e devolver uma página HTML de erro (em dev, com stack). Normalizar aqui mantém o
+ * contrato JSON garantido para qualquer entrada.
+ */
+function sanitizeStatusCode(statusCode: unknown): number {
+  return typeof statusCode === 'number' &&
+    Number.isInteger(statusCode) &&
+    statusCode >= 400 &&
+    statusCode < 600
+    ? statusCode
+    : 500;
+}
+
+/**
+ * Regra de exposição de `error.message` ao cliente (checklist de contratos — nunca vazar
+ * stack/PII): em produção, TODO erro 5xx recebe mensagem genérica, independente do tipo —
+ * `AppError` com 502/503/504 também pode carregar detalhe de upstream no `message`
+ * (ex.: `faultstring` do Omie, erro bruto do Slack/Stripe em integrações externas).
+ * Em desenvolvimento/teste a mensagem real é preservada para
+ * depuração. Erros 4xx mantêm a mensagem: são erros do pedido, escritos para o usuário final.
+ */
+function clientSafeMessage(err: Error, status: number): string {
+  if (env.NODE_ENV === 'production' && status >= 500) {
+    return 'Erro Interno do Servidor';
+  }
+  return err.message || 'Erro Interno do Servidor';
+}
+
+/** `details` pode carregar payload de upstream — suprimido junto com a mensagem mascarada. */
+function clientSafeDetails(err: Error & { details?: unknown }, status: number): unknown {
+  if (env.NODE_ENV === 'production' && status >= 500) return undefined;
+  return err.details;
+}
+
 /** Mapeia status HTTP -> `code` estável. Ver o comentário de `ApiErrorCode` acima. */
 function codeForStatus(status: number): ApiErrorCode {
   switch (status) {
@@ -165,7 +203,10 @@ export const errorHandler = (
   }
 
   if (err instanceof AppError) {
-    sendError(req, res, err.statusCode, err.message, { details: err.details });
+    const status = sanitizeStatusCode(err.statusCode);
+    sendError(req, res, status, clientSafeMessage(err, status), {
+      details: clientSafeDetails(err, status),
+    });
     return;
   }
 
@@ -180,11 +221,6 @@ export const errorHandler = (
     }
   }
 
-  const status = err.statusCode ?? 500;
-  const errorMessage =
-    env.NODE_ENV === 'production' && status === 500
-      ? 'Erro Interno do Servidor'
-      : err.message || 'Erro Interno do Servidor';
-
-  sendError(req, res, status, errorMessage);
+  const status = sanitizeStatusCode(err.statusCode);
+  sendError(req, res, status, clientSafeMessage(err, status));
 };

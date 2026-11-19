@@ -35,7 +35,7 @@ import {
   Zap,
 } from 'lucide-react';
 import type React from 'react';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 
 const LuxuryLandingPage = lazy(() =>
   import('../luxury/LuxuryLandingPage.js').then((m) => ({ default: m.LuxuryLandingPage })),
@@ -524,6 +524,20 @@ export function Landing360({
   const [searchParams] = useSearchParams();
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  // Destino pós-autenticação: o ProtectedRoute envia `state.from` ao redirecionar para
+  // /login; sem honrá-lo toda autenticação caía em /app e a rota originalmente pedida
+  // (ex.: /app/crm?filtro=x) era perdida. Só caminhos internos são aceitos.
+  const postLoginTarget = (() => {
+    const from = (location.state as { from?: { pathname?: string; search?: string } } | null)?.from;
+    if (!from?.pathname || !from.pathname.startsWith('/') || from.pathname.startsWith('//')) {
+      return '/app';
+    }
+    return `${from.pathname}${from.search || ''}`;
+  })();
+  // Congela o alvo no mount: depois do primeiro navigate o state é limpo e o
+  // fallback '/app' não deve sobrescrever o destino original num re-render.
+  const postLoginTargetRef = useRef(postLoginTarget);
+
   // --- CRO & TESTES A/B (Variante A: Aceleração de Pipeline / Variante B: Multiplicação de Receita) ---
   const [abVariant, setAbVariant] = useState<HeroVariant>(() => {
     if (typeof window === 'undefined') return 'A';
@@ -816,7 +830,7 @@ export function Landing360({
   // Redirecionamento se já autenticado
   useEffect(() => {
     if (currentUser) {
-      navigate('/app', { replace: true });
+      void navigate(postLoginTargetRef.current, { replace: true });
     }
   }, [currentUser, navigate]);
 
@@ -904,7 +918,7 @@ export function Landing360({
           email: email.trim(),
           password: password.trim(),
           rememberMe,
-          callbackURL: '/app',
+          callbackURL: postLoginTarget,
         });
 
         if (result.error) {
@@ -913,13 +927,13 @@ export function Landing360({
           return;
         }
 
-        navigate('/app', { replace: true });
+        void navigate(postLoginTarget, { replace: true });
       } else if (authMode === 'signup') {
         const result = await authClient.signUp.email({
           email: email.trim(),
           password: password.trim(),
           name: name.trim() || email.split('@')[0],
-          callbackURL: '/app',
+          callbackURL: postLoginTarget,
         });
 
         if (result.error) {
@@ -988,7 +1002,7 @@ export function Landing360({
       setSuccessMessage(`Conectando ao provedor empresarial ${data.providerName}...`);
       await authClient.signIn.social({
         provider: data.provider,
-        callbackURL: '/app',
+        callbackURL: postLoginTarget,
       });
     } catch (err: any) {
       setErrorMessage(err.message || 'Falha ao contatar serviço de autenticação SSO.');
@@ -1429,9 +1443,9 @@ export function Landing360({
                   </div>
                   <h3>Dados e conectividade Multi-CRM</h3>
                   <p>
-                    Conexões via APIs abertas e webhooks mantêm os conectores em produção
-                    (Bitrix24, WhatsApp Official API, VoiceHub e Webhooks/REST) sincronizados sem
-                    duplicação; HubSpot, Salesforce e Pipedrive seguem em homologação.
+                    Conexões via APIs abertas e webhooks mantêm os conectores em produção (Bitrix24,
+                    WhatsApp Official API, VoiceHub e Webhooks/REST) sincronizados sem duplicação;
+                    HubSpot, Salesforce e Pipedrive seguem em homologação.
                   </p>
                   <div className="b360-platform-badge">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#00D4FF] animate-pulse" />
@@ -1801,7 +1815,8 @@ export function Landing360({
                             Simulação de ROI e Previsibilidade
                           </strong>
                           <span className="text-xs text-slate-400">
-                            Estimativa ilustrativa de receita recuperável em um horizonte de 90 dias.
+                            Estimativa ilustrativa de receita recuperável em um horizonte de 90
+                            dias.
                           </span>
                         </div>
                       </div>
@@ -2996,7 +3011,10 @@ export function Landing360({
                       type="button"
                       onClick={() => {
                         SoundFX.play('confirm');
-                        void authClient.signIn.social({ provider: 'google', callbackURL: '/app' });
+                        void authClient.signIn.social({
+                          provider: 'google',
+                          callbackURL: postLoginTarget,
+                        });
                       }}
                       className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-[#070D18] hover:bg-slate-50 dark:hover:bg-slate-800/50 text-xs font-mono font-medium text-slate-700 dark:text-slate-300 transition-all cursor-pointer"
                     >
@@ -3027,7 +3045,7 @@ export function Landing360({
                         SoundFX.play('confirm');
                         void authClient.signIn.social({
                           provider: 'microsoft',
-                          callbackURL: '/app',
+                          callbackURL: postLoginTarget,
                         });
                       }}
                       className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-[#070D18] hover:bg-slate-50 dark:hover:bg-slate-800/50 text-xs font-mono font-medium text-slate-700 dark:text-slate-300 transition-all cursor-pointer"

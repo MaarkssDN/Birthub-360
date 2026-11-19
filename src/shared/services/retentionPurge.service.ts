@@ -83,7 +83,10 @@ export async function executeRetentionPurge(options: PurgeOptions = {}): Promise
 
       const ids = records.map((r) => r.id);
       const deleteResult = await prisma.aILog.deleteMany({
-        where: { id: { in: ids } },
+        where: {
+          id: { in: ids },
+          ...(options.organizationId ? { organizationId: options.organizationId } : {}),
+        },
       });
 
       deletedAILogs += deleteResult.count;
@@ -119,7 +122,10 @@ export async function executeRetentionPurge(options: PurgeOptions = {}): Promise
 
       const ids = records.map((r) => r.id);
       const deleteResult = await prisma.bitrixSyncLog.deleteMany({
-        where: { id: { in: ids } },
+        where: {
+          id: { in: ids },
+          ...(options.organizationId ? { organizationId: options.organizationId } : {}),
+        },
       });
 
       deletedBitrixSyncLogs += deleteResult.count;
@@ -155,7 +161,10 @@ export async function executeRetentionPurge(options: PurgeOptions = {}): Promise
 
       const ids = records.map((r) => r.id);
       const deleteResult = await prisma.externalCrmSyncLog.deleteMany({
-        where: { id: { in: ids } },
+        where: {
+          id: { in: ids },
+          ...(options.organizationId ? { organizationId: options.organizationId } : {}),
+        },
       });
 
       deletedExternalCrmSyncLogs += deleteResult.count;

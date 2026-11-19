@@ -1,7 +1,7 @@
 De: 15 — Segurança Aplicada e Rotação de Segredos
 Para: 07 — IA e Automações
 Onda: 2
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: MEL-13 (Onda 2, DEM-20261113-003)
 Sprint destino: Onda 2/3
@@ -99,3 +99,47 @@ tenant configurados com `http://` (ex.: gateway local de teste ntfy/sms-gw em de
 agora serão rejeitados com 400 em qualquer ambiente — mesmo comportamento que
 `universalMessagingTool` (Teams) já tinha. Se algum fluxo depende de `http:` local,
 precisa de decisão do 15/00 (não encontrei caso nos testes/código atuais).
+
+### Atualização (Agente 15 — 2026-…, worktree `Birthub-360-wt-o4-safe`, branch `agente/15-onda4-safehttp`)
+
+**Decisão do usuário aplicada**: `safeFetch`/`assertSafeExternalUrl`
+(`src/shared/security/urlGuard.ts`) agora toleram `http:` **apenas para loopback**
+(`localhost`, `*.localhost`, `127.0.0.0/8`, `::1`, IPv4-mapeado-em-IPv6 de loopback)
+quando `NODE_ENV !== 'production'` — via helper `isLoopbackHttpAllowed(url)`.
+Em produção e para qualquer host não-loopback, HTTPS continua obrigatório, e o
+bloqueio de IP privado/reservado não-loopback segue valendo em todo ambiente.
+A exceção é SÓ de scheme/destino: DNS-pinning do `safeFetch` e a validação de
+registros DNS (só endereços loopback são aceitos para hostname loopback) permanecem.
+`https://localhost`/`https://127.0.0.1` continuam rejeitados — a exceção não abre
+loopback para HTTPS. Testes novos em `tests/unit/shared/security/urlGuard.test.ts`
+(32/32 verde).
+
+#### Correções pós-revisão Agente 24 (mesma branch)
+
+- **Bloqueador corrigido**: quando `loopbackHttp` e o host é hostname loopback
+  (`localhost`, `*.localhost`), `resolveSafe` agora exige que **TODOS** os registros
+  DNS retornados sejam loopback (`isLoopbackIp`); qualquer IP público ou
+  privado-não-loopback rejeita com "host loopback resolveu para IP não-loopback".
+  Antes, `http://localhost` resolvendo para IP público passava em HTTP puro.
+- **IPv6 literal**: todos os literais IPv6 com colchetes loopback (`[::1]`,
+  `[::ffff:7f00:1]` etc.) são resolvidos direto antes do `dns.lookup` quando a
+  exceção se aplica; não-loopback segue falhando fechado.
+- **Testes adicionados** (43/43 verde): `foo.localhost` ok/rejeita conforme DNS;
+  `localhost`→IP público/privado-não-loopback/misto rejeita; DNS `::ffff:127.0.0.1`
+  aceita; `localhost.evil.com` e `127.0.0.1@evil.com` rejeitam; `[::ffff:7f00:1]`
+  aceito / `[::ffff:808:808]` rejeitado; resposta 3xx devolvida ao chamador sem
+  seguir redirect (cross-host redirect falha no pinning em produção real).
+
+**Risco residual pré-existente (débito para 15/01, não introduzido aqui)**:
+`isPrivateOrReservedIp` não reconhece IPv4-mapped IPv6 em forma hexadecimal
+(`::ffff:7f00:1`) fora da exceção loopback — um hostname que resolva para esse
+formato passaria no guard de IP privado. Fora do escopo desta correção; registrar
+como débito de hardening do `urlGuard.ts`.
+
+### Reverificação (Agente 07 — 2026-11-17, worktree `agente-07-handoffs`, base `main@414a0ca5f`)
+
+Confirmado em `main`: `universalNotificationsTool.ts` (L113-114),
+`universalTasksAndNotesTool.ts` (L336-337) e `aiPendingAction.service.ts`
+(L234-238) usam `assertSafeExternalUrl` + `safeFetch` de
+`src/shared/security/urlGuard.ts`; `universalConnectors.service.ts` mantém só
+`validateWebhookUrl` no save (sem fetch — correto). Status → `resolvido`.

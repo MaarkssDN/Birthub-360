@@ -98,7 +98,10 @@ export async function listNotifications(
 // notification that does not exist OR belongs to a different tenant/user — same fallback,
 // deliberately indistinguishable from the caller's point of view per AGENTS.md §15 "comportamento
 // de fallback seguro, sem vazar se o recurso existe em outro tenant").
-export async function markAsRead(id: string, scope: NotificationScope): Promise<NotificationSummary> {
+export async function markAsRead(
+  id: string,
+  scope: NotificationScope,
+): Promise<NotificationSummary> {
   const updated = await markNotificationAsReadRow(id, scope);
   if (!updated) throw new NotificationNotFoundError(id);
   return mapNotification(updated);

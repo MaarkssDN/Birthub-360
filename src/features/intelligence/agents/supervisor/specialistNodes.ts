@@ -8,8 +8,8 @@ import { CRMAgent } from '../crm.agent.js';
 import { OpsAgent } from '../ops.agent.js';
 import { SDRQualificationAgent } from '../sdrQualification.agent.js';
 import type { SwarmAgentKey } from '../subSwarms.config.js';
-import type { SwarmStateType } from '../supervisor.agent.js';
 import { buildEvent, toAiMessage } from './swarm.events.js';
+import type { SwarmStateType } from './swarm.state.js';
 
 // Monta o sessionId (chave de AgentMemory) de cada especialista do enxame incluindo o leadId
 // quando disponível, por dois motivos:

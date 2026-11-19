@@ -95,7 +95,7 @@ describe('Landing360Impeccable', () => {
     expect(screen.getByText('11 Módulos Integrados')).toBeInTheDocument();
     expect(screen.getByText('Hub Comercial')).toBeInTheDocument();
     expect(screen.getByText('Social Selling')).toBeInTheDocument();
-    expect(screen.getByText('Conectores & APIs')).toBeInTheDocument();
+    expect(screen.getByText('Automação & Conectividade')).toBeInTheDocument();
     expect(screen.getByText('Command Center')).toBeInTheDocument();
     expect(screen.getByText('Pipeline ao Vivo')).toBeInTheDocument();
 

@@ -26,7 +26,7 @@ path,de,para,onda,status,prio,dmin,dmax,mtime,resolucao,evid,aprov
 .agents/handoffs/onda-landing-360-auditoria/02-para-21-validacao-consentimento-lgpd.md,02,21,landing-360-auditoria,ABERTO,alto,,,2026-11-12 11:34,,NAO,NAO
 .agents/handoffs/onda-landing-360-auditoria/auditoria-para-02-form-lead-fake.md,auditoria ad-hoc (de,02,landing-360-auditoria,ABERTO,bloqueador,2026-11-12,2026-11-12,2026-11-13 19:30,2026-11-12,SIM,NAO
 .agents/handoffs/onda-landing-360-auditoria/auditoria-para-02-verdade-no-copy.md,auditoria ad-hoc (de,02,landing-360-auditoria,ABERTO,alto,2026-11-11,2026-11-12,2026-11-13 19:30,2026-11-12,SIM,NAO
-.agents/handoffs/onda-paralela-8/00-para-01a-tenancy-audit.md,00,01a,paralela-8,ABERTO,alto (tenancy/LGPD),,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-paralela-8/00-para-01a-tenancy-audit.md,00,01a,paralela-8,RESOLVIDO,alto (tenancy/LGPD),,,2026-11-12 11:34,2026-11-14,SIM,NAO
 .agents/handoffs/onda-paralela-8/00-para-07-duplicate-exports.md,00,07,paralela-8,ABERTO,normal,,,2026-11-12 11:34,,SIM,NAO
 .agents/handoffs/onda-s1/00-para-01-documentembedding-sem-policy-rls.md,00 (coordenador) — e,"01 (plataforma, segu",S1 (trilha técnica subordinada à Fase 02),ABERTO,bloqueador,,,2026-11-13 19:30,,SIM,NAO
 .agents/handoffs/onda-saneamento-20261110/00-para-00-ausencia-de-sincronizacao-automatizada-entre-a-matriz-de-propriedade-d.md,00,00,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-011),ABERTO,normal,2026-11-10,2026-11-10,2026-11-12 11:34,,SIM,SIM
@@ -427,6 +427,7 @@ path,de,para,onda,status,prio,dmin,dmax,mtime,resolucao,evid,aprov
 .agents/handoffs/onda-saneamento-20261110/00-para-23-consulta-n-1-no-calculo-de-metricas-de-uso-de-ia-por-vendedor-no-paine.md,00,23,Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-042),RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
 .agents/handoffs/onda-saneamento-20261110/00-para-23-inexistencia-de-cache-semantico-ativo-para-pesquisas-e-analises-de-mer.md,00,23,Onda 4 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-041),RESOLVIDO,normal,2026-11-10,2026-11-12,2026-11-13 19:30,,SIM,SIM
 .agents/handoffs/onda-saneamento-20261110/01-para-07-resumo-consumo-ia-findmany-sem-agregacao.md,01,07,W3 (saneamento-20261110) — originado de TAREFA-SANEAMENTO-012 / BT360-DT-0008,ABERTO,alto,,,2026-11-13 19:30,,SIM,NAO
+.agents/handoffs/onda-saneamento-20261110/01A-para-17-inmemory-optout-list-default-200.md,01a,17,Onda 1 / W3 (pendência do handoff 17→01A resolvido),ABERTO,normal,,,2026-11-18,,SIM,NAO
 .agents/handoffs/onda-saneamento-20261110/09-para-08-teste-de-paridade-valid-tabs-active-nav-tabs.md,09,08,Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-028),RESOLVIDO,normal,2026-11-12,2026-11-12,2026-11-13 19:30,2026-11-12,SIM,NAO
 .agents/handoffs/onda-saneamento-20261110/11-para-00-pngs-orfaos-q1-q2-em-public-raiz-3mb-sem-referencia.md,11,00,Onda 5 (Plano Mestre de Saneamento — decorrente de TAREFA-SANEAMENTO-050 / BT360-DT-0059),RESOLVIDO,normal,,,2026-11-13 19:30,,SIM,NAO
 .agents/handoffs/onda-saneamento-20261110/11-para-03-divergencias-residuais-de-tokens-de-cor-e-fonte-entre-globals-e-tokens-canonicos.md,11,03,Onda 5 (Plano Mestre de Saneamento — decorrente de TAREFA-SANEAMENTO-051 / BT360-DT-0060),RESOLVIDO,normal,2026-11-12,2026-11-12,2026-11-13 19:30,,SIM,NAO
