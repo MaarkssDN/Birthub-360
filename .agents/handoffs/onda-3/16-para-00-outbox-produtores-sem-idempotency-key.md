@@ -85,3 +85,43 @@ decisão por dono com o warn do runtime como instrumento de verificação.
 
 **Status permanece `em-andamento`**: nenhum call site de produtor foi alterado (arquivos de
 outros donos — ver regra de propriedade §15/§16 do AGENTS.md).
+
+## Resolução parcial — Agente 17 (Cadência Multicanal e Ciclo de Receita), 2026-11-19
+
+Branch `agente/17-waveE-outbox-idem`. Parcela: produtores do DomainEventMesh em
+`src/features/cadence/**` (inventário: `selfDrivingCrm.service.ts` e
+`adaptiveMultichannelCadence.service.ts` — confirmado via grep que são os únicos
+arquivos do domínio com `domainEventMesh.publish`).
+
+**Call sites cobertos (8/8) — `{ idempotencyKey }` como 2º argumento de `publish`:**
+
+| Arquivo | Evento | Chave escolhida |
+|---|---|---|
+| `selfDrivingCrm.service.ts:97` | ENGAGEMENT_SIGNAL_RECEIVED | `engagement-signal:{signalId}` |
+| `selfDrivingCrm.service.ts:227` | CADENCE_RECOMMENDATION_CREATED | `cadence-recommendation:{recId}` |
+| `selfDrivingCrm.service.ts:388` | LEAD_STAGNATED | `lead-stagnated:{leadId}:{daysInactive}` |
+| `selfDrivingCrm.service.ts:405` | LEAD_REACTIVATION_SUGGESTED | `lead-reactivation-suggested:{leadId}:{daysInactive}` |
+| `selfDrivingCrm.service.ts:455` | CADENCE_CHANGE_APPROVED | `cadence-change-approved:{recommendationId}` |
+| `selfDrivingCrm.service.ts:471` | LEAD_REACTIVATED | `lead-reactivated:{leadId}:{recommendationId}` |
+| `adaptiveMultichannelCadence.service.ts:149` | CROSS_CHANNEL_OPTOUT_ENFORCED (executeNextStep) | `optout-step-enforced:{enrollmentId}:{stepNumber}` |
+| `adaptiveMultichannelCadence.service.ts:226` | CROSS_CHANNEL_OPTOUT_ENFORCED (registerOptOutAndHalt) | `optout-registered:{leadId}` |
+
+**Racional das chaves:** identidade estável do fato de negócio, sem `randomUUID`.
+`LEAD_STAGNATED`/`LEAD_REACTIVATION_SUGGESTED` não têm id de execução — usei
+`{leadId}:{daysInactive}` (fato "lead X estagnado há N dias"): retries no mesmo estado
+do lead colidem; uma nova detecção em estado diferente gera chave nova (correto — é um
+fato novo). `LEAD_REACTIVATED`/`CADENCE_CHANGE_APPROVED` são por execução de aprovação →
+chave por `recommendationId` (equivale ao `sequenceId` do exemplo do 00).
+
+**Verificação:** `InMemoryOutboxRepository.append` deduplica por
+`(organizationId, idempotencyKey)` (confirmado em `src/lib/queue/outbox/inMemory.ts:17-27`;
+UNIQUE parcial equivalente no adaptador Prisma). Testes novos em
+`src/features/cadence/__tests__/outboxIdempotency.test.ts` (4 testes): retry real com a
+mesma chave gera 1 único registro na outbox (approve duplicado, registerOptOutAndHalt
+duplicado, detectStagnatedLeads duplicado) + formato estável da chave no caminho de
+opt-out por step. `npx tsc --noEmit` limpo; `biome check` limpo nos 3 arquivos;
+`vitest run -c vitest.unit.config.ts tests/unit/cadence src/features/cadence/__tests__`
+verde (196+4 testes).
+
+**Status da parcela: resolvido.** Handoff permanece `em-andamento` — demais donos de
+feature pendentes (06, 07, 04, etc.).
