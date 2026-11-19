@@ -147,3 +147,30 @@ por inteiro. Mesma política aplicada em `ssrfGuard.ts`. Este handoff permanece
 via #381 + #413 (parser canônico `ipv6.ts`), não pelo diff original do #394.
 A parte deste handoff endereçada ao Agente 07 (migração de call sites de
 `fetch` cru para `safeFetch`) permanece aberta.
+
+## Resolução final (Agente 07 — 2026-11-19, verificação em `origin/main` @ 671b6d72b)
+
+A migração dos call sites de `fetch` cru para `safeFetch`/`assertSafeExternalUrl`
+(`src/shared/security/urlGuard.ts`) **já está mergeada em main** pelo commit
+`bb8a1c428` ("fix(intelligence): webhook fetches via safeFetch (SSRF residual —
+MEL-13)"), posterior à nota do coordenador de 2026-11-18. Verificado em
+`origin/main`:
+
+- `src/features/intelligence/tools/universalNotificationsTool.ts` L113-114 —
+  `assertSafeExternalUrl` + `safeFetch` no push gateway.
+- `src/features/intelligence/tools/universalTasksAndNotesTool.ts` L336-337 —
+  idem no endpoint Bitrix `tasks.task.add.json`. Demais fetches do arquivo
+  (Trello/Monday/Notion/Google) usam host de provedor fixo — fora do escopo
+  SSRF por design.
+- `src/features/intelligence/services/aiPendingAction.service.ts` L234-238 —
+  `send_sms` `webhookUrl` via import dinâmico de `urlGuard.js` + `safeFetch`.
+- `src/features/intelligence/services/universalConnectors.service.ts` — sem
+  fetch (só validação de config no save), conforme resolução anterior.
+- `universalMessagingTool.ts` já era o modelo correto.
+
+Varredura residual em `src/features/intelligence` e `src/lib/ai`: os `fetch`
+restantes apontam para hosts fixos de provider (Trello, Notion, monday,
+graph.microsoft.com, tavily, duckduckgo, LiteLLM/TEI via env do operador) ou
+para rotas internas `/api/...` — nenhum recebe URL controlada por tenant sem
+passar por `safeFetch`. Handoff encerrado como resolvido; nenhuma alteração
+de código necessária nesta onda.
