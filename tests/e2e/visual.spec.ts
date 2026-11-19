@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { signUp, uniqueTestEmail, waitForAppReady } from './helpers';
+import { navigateViaSidebar, signUp, uniqueTestEmail, waitForAppReady } from './helpers';
 
 // Regressão visual das telas-chave, light e dark. Primeira execução (`npx playwright test
 // tests/e2e/visual.spec.ts --update-snapshots`) gera os PNGs de baseline em
@@ -85,8 +85,19 @@ test.describe('Regressão visual', () => {
     test(`Pipeline CRM — ${theme}`, async ({ page }) => {
       await setTheme(page, theme);
       await signUp(page, { email: uniqueTestEmail(`visual-crm-${theme}`) });
-      await page.getByRole('button', { name: 'Pipeline CRM' }).click();
+      // Navegação modular (rail + painel contextual): não existe mais botão "Pipeline CRM" na
+      // sidebar plana — ver APP_NAV/navigateViaSidebar em ./helpers. Clique em label inexistente
+      // estourava os 60s do teste inteiro (era a causa da falha do workflow
+      // visual-baseline-update, run 43682350083).
+      await navigateViaSidebar(page, 'crm');
       await waitForAppReady(page);
+      // As colunas do Kanban (h3 com o nome da etapa, ex.: "Lead Recebido") só renderizam depois
+      // que `loading` do CrmBoard termina — enquanto carrega aparece "Carregando pipeline
+      // comercial..." e em erro aparece o EmptyState (que não tem esses headings, então o teste
+      // falha honestamente em vez de baselinear uma tela de erro).
+      await expect(page.getByRole('heading', { name: 'Lead Recebido' }).first()).toBeVisible({
+        timeout: 30_000,
+      });
       await page.waitForTimeout(1000);
       await expect(page).toHaveScreenshot(`crm-board-${theme}.png`, SCREENSHOT_OPTIONS);
     });
@@ -95,10 +106,18 @@ test.describe('Regressão visual', () => {
   test('Formulário de novo contato aberto — light', async ({ page }) => {
     await setTheme(page, 'light');
     await signUp(page, { email: uniqueTestEmail('visual-contact-form') });
-    await page.getByRole('button', { name: 'Decisores' }).click();
+    // Idem Pipeline CRM: "Decisores" era o rótulo da sidebar plana antiga. Hoje a tela é
+    // "Contatos & Decisores", destino `contacts` da navegação modular.
+    await navigateViaSidebar(page, 'contacts');
     await waitForAppReady(page);
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(500);
+    // Sinal determinístico de que a lista terminou de carregar: o subtítulo do PageTitleCard
+    // troca "Carregando..." por "N contatos no banco de dados". Substitui o
+    // waitForLoadState('networkidle') removido — networkidle é desencorajado pelo próprio
+    // Playwright e já provou não funcionar neste app (EventSource /api/notifications/stream
+    // mantém a rede ocupada — ver helpers.ts).
+    await expect(page.getByText(/contatos? no banco de dados/).first()).toBeVisible({
+      timeout: 30_000,
+    });
 
     await page
       .getByRole('button', { name: /Novo Contato|Adicionar Primeiro Contato/ })

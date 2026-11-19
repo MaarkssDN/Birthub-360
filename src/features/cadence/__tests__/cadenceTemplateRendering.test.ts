@@ -16,6 +16,7 @@ const syncActivityToBitrix = vi.fn();
 
 let leadRow: Record<string, unknown> | null;
 let calendarEventRow: Record<string, unknown> | null;
+let bookingLinkRow: Record<string, unknown> | null;
 
 vi.mock('../../../lib/prisma.js', () => ({
   prisma: {
@@ -24,6 +25,9 @@ vi.mock('../../../lib/prisma.js', () => ({
     },
     cadenceCalendarEvent: {
       findFirst: vi.fn(async () => calendarEventRow),
+    },
+    publicBookingLink: {
+      findFirst: vi.fn(async () => bookingLinkRow),
     },
     activity: { create: vi.fn(async () => ({})) },
     timelineEvent: { create: vi.fn(async () => ({})) },
@@ -94,6 +98,7 @@ describe('Pipeline real de cadência — renderização de placeholders via Cade
       company: { tradeName: 'Acme', legalName: 'Acme LTDA' },
     };
     calendarEventRow = null;
+    bookingLinkRow = null;
   });
 
   it('WhatsApp: renderiza {{contact_name}} e {{company_name}} antes de enviar', async () => {
@@ -183,5 +188,40 @@ describe('Pipeline real de cadência — renderização de placeholders via Cade
     expect(sent.text).toContain('https://meet.google.com/abc-defg-hij');
     expect(sent.text).not.toContain('{{');
     expect(sent.text).toContain('Maria Silva');
+  });
+
+  it('E-mail: booking_link é resolvido a partir do PublicBookingLink da organização', async () => {
+    bookingLinkRow = {
+      slug: 'demo-comercial-30min',
+    };
+
+    const outcome = await emailCadenceDispatcher.dispatch(
+      makeTouch(
+        'Assunto: Agende uma demonstração\n\nOlá {{contact_name}}, acesse: {{booking_link}}',
+        'email',
+      ),
+      makeRun(),
+    );
+
+    expect(outcome.result).toBe('sent');
+    const sent = sendEmail.mock.calls[0][0] as { subject: string; text: string };
+    expect(sent.text).toContain('/book/demo-comercial-30min');
+    expect(sent.text).not.toContain('{{booking_link}}');
+  });
+
+  it('E-mail: booking_link usa fallback seguro | default: quando não há link configurado', async () => {
+    bookingLinkRow = null;
+
+    const outcome = await emailCadenceDispatcher.dispatch(
+      makeTouch(
+        'Assunto: Convite\n\nOlá {{contact_name}}, link: {{booking_link | default: "https://app.birthub360.com.br"}}',
+        'email',
+      ),
+      makeRun(),
+    );
+
+    expect(outcome.result).toBe('sent');
+    const sent = sendEmail.mock.calls[0][0] as { subject: string; text: string };
+    expect(sent.text).toContain('https://app.birthub360.com.br');
   });
 });

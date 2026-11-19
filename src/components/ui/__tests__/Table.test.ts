@@ -77,11 +77,7 @@ describe('Table Component (Design System Primitives)', () => {
         React.createElement(
           TableHeader,
           null,
-          React.createElement(
-            TableRow,
-            null,
-            React.createElement(TableHead, null, 'Empresa'),
-          ),
+          React.createElement(TableRow, null, React.createElement(TableHead, null, 'Empresa')),
         ),
         React.createElement(
           TableBody,
@@ -99,9 +95,6 @@ describe('Table Component (Design System Primitives)', () => {
     expect(region).toHaveAttribute('tabindex', '0');
     expect(region.className).toContain('overflow-auto');
 
-    expect(screen.getByRole('columnheader', { name: 'Empresa' })).toHaveAttribute(
-      'scope',
-      'col',
-    );
+    expect(screen.getByRole('columnheader', { name: 'Empresa' })).toHaveAttribute('scope', 'col');
   });
 });

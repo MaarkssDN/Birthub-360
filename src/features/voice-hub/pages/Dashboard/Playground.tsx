@@ -132,7 +132,7 @@ export default function PlaygroundPage() {
         drawWaveform();
       });
     } catch (err: any) {
-      logger.error( { err },'Error fetching stream for waveform');
+      logger.error({ err }, 'Error fetching stream for waveform');
     }
   };
 
@@ -203,11 +203,11 @@ export default function PlaygroundPage() {
             window.speechSynthesis.speak(utterance);
           }
         } catch (e: any) {
-          logger.error( { e },'Falha ao tocar áudio local');
+          logger.error({ e }, 'Falha ao tocar áudio local');
         }
       }
     } catch (error: unknown) {
-      logger.error( { error },'Error sending message in playground');
+      logger.error({ error }, 'Error sending message in playground');
       const message = error instanceof Error ? error.message : String(error);
       setMessages((prev) => [...prev, { role: 'agent', text: `[Erro]: ${message}` }]);
     } finally {
@@ -255,7 +255,7 @@ export default function PlaygroundPage() {
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEventLike) => {
-      logger.error( { error: event.error },'Erro de reconhecimento de voz');
+      logger.error({ error: event.error }, 'Erro de reconhecimento de voz');
       setIsListening(false);
       stopAudioWave();
     };

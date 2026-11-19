@@ -415,8 +415,6 @@ Dockerfile
 docker-compose.yml
 → Agente 08
 
-k8s/**
-argocd/**
 charts/**
 infrastructure/**
 → Agente 10

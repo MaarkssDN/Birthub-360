@@ -51,10 +51,11 @@
     "security:backfill-contact-pii": "tsx scripts/security/backfill-contact-pii.ts",
     "lint:architecture": "depcruise --config .dependency-cruiser.cjs --ignore-known .dependency-cruiser-known-violations.json --output-type err src server.ts worker*.ts",
     "lint:architecture:baseline": "node scripts/architecture/generate-known-violations-baseline.mjs",
+    "verify:baseline-freshness": "node scripts/architecture/verify-baseline-freshness.mjs",
     "verify:architecture-coverage": "tsx scripts/architecture/verify-cruise-coverage.ts",
     "check:hotspots": "tsx scripts/architecture/check-hotspots.ts",
     "verify:ownership": "tsx scripts/architecture/verify-file-ownership.ts",
-    "test:architecture": "npm run lint:architecture && npm run verify:architecture-coverage && npm run check:hotspots && npm run verify:ownership",
+    "test:architecture": "npm run lint:architecture && npm run verify:architecture-coverage && npm run check:hotspots && npm run verify:baseline-freshness && npm run verify:ownership",
     "verify:pwa-precache": "tsx scripts/pwa/verify-precache.ts",
     "security:codeql-sarif": "tsx scripts/security/check-codeql-sarif.ts",
     "clean": "rm -rf dist server.js",
@@ -94,7 +95,8 @@
     "mobile:sync": "cap sync android",
     "mobile:open": "cap open android",
     "typecheck": "node --max-old-space-size=8192 ./node_modules/typescript/bin/tsc --noEmit",
-    "verify:governance-reviews": "node scripts/ci/check-independent-review.js"
+    "verify:governance-reviews": "node scripts/ci/check-independent-review.js",
+    "verify:ownership-coverage": "tsx scripts/governance/check-ownership-coverage.ts"
   },
   "dependencies": {
     "@ai-sdk/react": "^4.0.172",

@@ -154,3 +154,9 @@ presentes e funcionais. A implementação divergiu da proposta em 3 pontos
 simultâneos, estado híbrido URL+sessionStorage) — divergência aprovada e já
 entregue. Ondas A–E descritas foram superadas pela execução real; não há trabalho
 pendente nesta frente.
+## Resolução
+
+- **Data:** 2026-11-14 · **Executor:** Agente 00 (trilha de coordenação, DEM-20261114-002)
+- **Evidência:** proposta aprovada e implementada — commit `f0af157bc` ("feat(nav): navegacao modular — rail de modulos + painel contextual"), documento `docs/architecture/NAVEGACAO-MODULAR.md` presente em `main`, componentes `src/components/layout/ModuleNavPanel.tsx` e `moduleThemes.ts` integrados.
+- A nota de atualização no corpo deste handoff já registrava a implementação; faltava apenas o fechamento formal do status.
+- **Pendência de governança:** se houver entrega formal a auditar, o Agente 24 revisa na onda de saneamento (DEM-20261114-002).

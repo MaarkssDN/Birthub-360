@@ -75,7 +75,8 @@ vi.mock('../repositories/roleRepository.js', () => ({
     role === 'ADMIN' ? 'admin' : role === 'GESTOR' ? 'supervisor' : 'user',
   ),
   canonicalRoleForVoiceRole: vi.fn(
-    (name: string) => ({ admin: 'ADMIN', supervisor: 'GESTOR', user: 'VISUALIZADOR' })[name] ?? 'VISUALIZADOR',
+    (name: string) =>
+      ({ admin: 'ADMIN', supervisor: 'GESTOR', user: 'VISUALIZADOR' })[name] ?? 'VISUALIZADOR',
   ),
 }));
 

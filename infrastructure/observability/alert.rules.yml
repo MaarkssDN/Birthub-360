@@ -123,7 +123,7 @@ groups:
   - name: birthhub-360.migracao.pendente-instrumentacao
     rules:
       # Requer kube-state-metrics rodando num cluster Kubernetes real — não existe hoje (nenhum
-      # cluster registrado, ver charts/README.md/argocd/README.md) e NÃO é o caminho de deploy
+      # cluster registrado, ver charts/README.md e infrastructure/archive/argocd/README.md) e NÃO é o caminho de deploy
       # ativo (Render, ver RUNBOOK.md → "Go-live"). Esta regra cobre o Job criado por
       # charts/birthhub-360/templates/migration-job.yaml (hook pre-upgrade) e só passa a
       # fazer sentido operacional se/quando o caminho k8s/Helm/ArgoCD virar o deploy real. Para o

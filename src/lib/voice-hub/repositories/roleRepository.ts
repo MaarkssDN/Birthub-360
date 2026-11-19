@@ -85,10 +85,7 @@ export function permissionNamesOf(role: { permissions?: unknown } | null | undef
 // Códigos de capability concedidos ao usuário via JobRole(s) ativo(s) — UserJobRole (por
 // organização, RLS) → JobRole (catálogo) → RoleCapabilityGrant (ativo) → CapabilityDefinition.
 // Falha fechada: qualquer erro/shape inesperado contribui conjunto vazio, nunca lança.
-async function capabilityCodesForUser(
-  userId: string,
-  organizationId: string,
-): Promise<string[]> {
+async function capabilityCodesForUser(userId: string, organizationId: string): Promise<string[]> {
   try {
     const jobRoles = await prisma.jobRole.findMany({
       where: {
