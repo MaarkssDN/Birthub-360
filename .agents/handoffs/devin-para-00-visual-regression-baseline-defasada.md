@@ -122,3 +122,12 @@ Rollback: git revert do commit de baseline.
 Ao concluir: atualizar Status para resolvido, preencher esta secao, e registrar
 em `.agents/runs/` referenciando este handoff.
 Fim do handoff.
+## Atualizacao (2026-11-19, Devin)
+
+Evidencia de que o debito pode estar resolvido sem execucao do 08:
+- PR #419 `ci/visual-baselines-linux` foi mergeado em `main` — baselines
+  aparentemente regeneradas.
+- PR #422 (fix SonarQube floating promise, sem relacao visual) passou
+  Visual Regression + Gate verdes (run 44557156887, 2026-11-19).
+- Recomendacao: 08/00 verificam se main segue verde no gate visual e, se
+  sim, encerram este handoff como resolvido-por-#419 com a evidencia acima.
