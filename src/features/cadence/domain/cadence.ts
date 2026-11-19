@@ -185,6 +185,25 @@ function attemptsForTouch(run: CadenceRunState, touchOrder: number): CadenceTouc
   return run.attempts.filter((a) => a.touchOrder === touchOrder);
 }
 
+/**
+ * DEBT-0009 — o que conta como "confirmação assíncrona ainda não resolvida".
+ *
+ * No domínio em memória o resultado é `'pending'` literal. Mas o enum
+ * `CadenceTouchResult` do PostgreSQL só tem `Sent`/`Failed`/`Skipped` — o adaptador Prisma
+ * (`PrismaCadenceRunRepository`) persiste `pending` como `skipped` mantendo
+ * `providerMessageId` (handoff ao Agente 01 para adicionar `Pending` ao enum). Um `skipped`
+ * COM `providerMessageId` é, portanto, a forma durável de um `pending`: `skipped` legítimos
+ * (fora da janela comercial, rate limit, opt-out) nunca carregam `providerMessageId`, porque só
+ * o dispatcher assíncrono (voz) devolve um. Tratar essa forma como pendente é o que impede o
+ * run de re-despachar o toque de voz em loop enquanto o webhook não chega.
+ */
+export function isPendingConfirmation(attempt: CadenceTouchAttempt): boolean {
+  return (
+    attempt.result === 'pending' ||
+    (attempt.result === 'skipped' && attempt.providerMessageId != null)
+  );
+}
+
 /** `stopped`/`completed`/`failed` são todos terminais — nenhum admite nova ação nem retomada (só `paused` retoma, via `resumeCadenceRun`). */
 function isTerminalStatus(status: CadenceRunStatus): boolean {
   return status === 'stopped' || status === 'completed' || status === 'failed';
@@ -217,9 +236,7 @@ export function decideCadenceAction(
   const touch = touchesForOrder(sequence, run.currentTouchOrder);
   if (!touch) return { type: 'stop', reason: 'completed' };
 
-  const pendingAttempt = attemptsForTouch(run, run.currentTouchOrder).find(
-    (a) => a.result === 'pending',
-  );
+  const pendingAttempt = attemptsForTouch(run, run.currentTouchOrder).find(isPendingConfirmation);
   if (pendingAttempt) {
     return { type: 'wait', reason: 'locked' };
   }
@@ -402,6 +419,22 @@ export function recordTouchAttempt(
   };
 }
 
+/**
+ * DEBT-0009 — TTL de uma tentativa `pending` (hoje só o toque de voz, que resolve de forma
+ * assíncrona via webhook do provedor — ver `resolvePendingTouchAttempt`/`cadenceWebhookResolver`).
+ * Sem expiração, um webhook perdido deixava o run preso em `wait/locked` para sempre: o scanner
+ * de cadência (`cadenceRun.worker.ts`, tick de 5 min) re-avalia o run, mas `decideCadenceAction`
+ * sempre devolvia `locked` enquanto houvesse `pending`. 24h é folgado o suficiente para cobrir
+ * callbacks atrasados de voz sem transformar uma confirmação perdida em espera infinita; um
+ * webhook que chegar DEPOIS do TTL simplesmente não encontra mais `pending` e é ignorado
+ * (idempotente), e o toque já contabilizado como `failed` segue a política normal de retry/avanço
+ * do `maxAttempts` do toque.
+ */
+export const PENDING_TOUCH_CONFIRMATION_TTL_MS = 24 * 60 * 60 * 1000;
+
+export const PENDING_TOUCH_EXPIRED_ERROR =
+  'Confirmação do provedor não recebida dentro do prazo — tentativa pendente expirada.';
+
 export function resolvePendingTouchAttempt(
   run: CadenceRunState,
   sequence: CadenceSequenceDefinition,
@@ -413,7 +446,7 @@ export function resolvePendingTouchAttempt(
   },
 ): CadenceRunState {
   const attemptIndex = run.attempts.findIndex(
-    (a) => a.result === 'pending' && a.providerMessageId === providerMessageId,
+    (a) => isPendingConfirmation(a) && a.providerMessageId === providerMessageId,
   );
   if (attemptIndex === -1) return run; // Idempotente se não achar
 
@@ -445,6 +478,85 @@ export function resolvePendingTouchAttempt(
     exhausted && touch.fallbackTouchOrder != null ? touch.fallbackTouchOrder : touch.order + 1;
   const hasNext = touchesForOrder(sequence, nextOrder) !== undefined;
 
+  return {
+    ...run,
+    attempts,
+    currentTouchOrder: nextOrder,
+    ...(hasNext
+      ? {}
+      : { status: 'completed' as const, stopReason: 'completed' as const, stoppedAt: now }),
+  };
+}
+
+/**
+ * DEBT-0009 — expira tentativas pendentes de confirmação mais antigas que `ttlMs` (default
+ * `PENDING_TOUCH_CONFIRMATION_TTL_MS`), convertendo-as em `failed` com erro descritivo.
+ * "Pendente" aqui é `isPendingConfirmation` — cobre o `pending` literal e a forma persistida
+ * (`skipped` + `providerMessageId`, ver comentário do helper). É o
+ * "sweeper" da pendência: em vez de um job novo, o próprio scanner de cadência
+ * (`advanceCadenceRun`, tick de 5 min) chama esta função a cada ciclo — quando o webhook do
+ * provedor de voz nunca chega, o toque deixa de travar o run em `wait/locked` e passa a seguir
+ * a mesma política de retry/avanço de uma falha real (`maxAttempts`/`fallbackTouchOrder`).
+ *
+ * Regras:
+ * - nunca reescreve histórico de run terminal (`stopped`/`completed`/`failed`);
+ * - `pending` mais novo que o TTL é preservado — webhook ainda pode chegar;
+ * - se o `pending` expirado era do `currentTouchOrder`, aplica o MESMO avanço de
+ *   `resolvePendingTouchAttempt` com resultado `failed` (esgotou `maxAttempts` → próximo toque
+ *   ou `fallbackTouchOrder`; ainda tem tentativa → permanece no toque para retry);
+ * - um webhook tardio após a expiração é inócuo: `resolvePendingTouchAttempt` não encontra mais
+ *   `pending` com aquele `providerMessageId` e devolve o run inalterado.
+ */
+export function expireStalePendingTouchAttempts(
+  run: CadenceRunState,
+  sequence: CadenceSequenceDefinition,
+  now: Date,
+  ttlMs: number = PENDING_TOUCH_CONFIRMATION_TTL_MS,
+): CadenceRunState {
+  if (isTerminalStatus(run.status)) return run;
+
+  const cutoff = now.getTime() - ttlMs;
+  const expiredOrders = new Set<number>();
+  let changed = false;
+  const attempts = run.attempts.map((attempt) => {
+    if (isPendingConfirmation(attempt) && attempt.attemptedAt.getTime() < cutoff) {
+      changed = true;
+      expiredOrders.add(attempt.touchOrder);
+      return {
+        ...attempt,
+        result: 'failed' as const,
+        error: PENDING_TOUCH_EXPIRED_ERROR,
+      };
+    }
+    return attempt;
+  });
+  if (!changed) return run;
+
+  // Só o `pending` do toque corrente trava a decisão (`decideCadenceAction` → `wait/locked`);
+  // pendings expirados de toques já superados são saneados no histórico sem efeito no avanço.
+  if (!expiredOrders.has(run.currentTouchOrder)) {
+    return { ...run, attempts };
+  }
+
+  const touch = touchesForOrder(sequence, run.currentTouchOrder);
+  if (!touch) return { ...run, attempts };
+
+  // Mesma matemática de avanço de `resolvePendingTouchAttempt`/`recordTouchAttempt` para
+  // `result: 'failed'`: `shouldAdvance` só quando as tentativas não-puladas do toque esgotam
+  // `maxAttempts`; caso contrário o toque permanece para retry (o delay é medido de
+  // `lastTouchAt`, já gravado na criação do `pending`).
+  const maxAttempts = touch.maxAttempts ?? 1;
+  const attemptsSoFar = attempts.filter(
+    (a) => a.touchOrder === touch.order && a.result !== 'skipped',
+  ).length;
+  const exhausted = attemptsSoFar >= maxAttempts;
+
+  if (!exhausted) {
+    return { ...run, attempts };
+  }
+
+  const nextOrder = touch.fallbackTouchOrder ?? touch.order + 1;
+  const hasNext = touchesForOrder(sequence, nextOrder) !== undefined;
   return {
     ...run,
     attempts,
