@@ -32,6 +32,11 @@ import {
 } from './src/lib/queue/swarmScheduler.worker.js';
 import { enabledOrganizations as swarmSchedulerEnabledOrganizations } from './src/features/intelligence/services/swarmScheduler.service.js';
 import { createBitrixSyncWorker, scheduleBitrixSync } from './src/lib/queue/bitrixSync.worker.js';
+// DEBT-0003: consumidores das filas outbound existiam só no modo embedded
+// (bootstrap/workers.ts). Na topologia dedicada (worker.ts) os jobs enfileirados
+// em 'bitrix-outbound-sync'/'external-crm-outbound-sync' nunca eram processados.
+import { createBitrixOutboundWorker } from './src/lib/queue/bitrixOutbound.queue.js';
+import { createExternalCrmOutboundWorker } from './src/lib/queue/externalCrmOutbound.queue.js';
 import {
   createFollowUpWorker,
   scheduleFollowUpJobs,
@@ -131,6 +136,8 @@ async function start() {
   const knowledgeIngestionWorker = createKnowledgeIngestionWorker();
   const checkpointerPruneWorker = createCheckpointerPruneWorker();
   const bitrixSyncWorker = createBitrixSyncWorker();
+  const bitrixOutboundWorker = createBitrixOutboundWorker();
+  const externalCrmOutboundWorker = createExternalCrmOutboundWorker();
   const followUpWorker = createFollowUpWorker();
   const execSummaryWorker = createExecutiveSummaryWorker();
   const deduplicationWorker = createDeduplicationWorker();
@@ -180,6 +187,8 @@ async function start() {
     { name: 'knowledge-ingestion-queue', worker: knowledgeIngestionWorker },
     { name: 'checkpointer-prune', worker: checkpointerPruneWorker },
     { name: 'bitrix-sync', worker: bitrixSyncWorker },
+    { name: 'bitrix-outbound-sync', worker: bitrixOutboundWorker },
+    { name: 'external-crm-outbound-sync', worker: externalCrmOutboundWorker },
     { name: 'whatsapp-followup-queue', worker: followUpWorker },
     { name: 'daily-executive-summary-queue', worker: execSummaryWorker },
     { name: 'deduplication-queue', worker: deduplicationWorker },

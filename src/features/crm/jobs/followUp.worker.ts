@@ -5,6 +5,7 @@ import { prisma } from '../../../lib/prisma.js';
 import { isFinalAttempt, recordDeadLetter } from '../../../lib/queue/deadLetter.js';
 import { registerQueueForMetrics } from '../../../lib/queue/metrics.js';
 import { connection } from '../../../lib/queue/redis.js';
+import { SCHEDULER_SCAN_DEFAULTS } from '../../../lib/queue/queueDefaults.js';
 import { sendWhatsAppMessage } from '../../integrations/whatsapp/whatsapp.service.js';
 
 export const FOLLOWUP_QUEUE_NAME = 'whatsapp-followup-queue';
@@ -123,6 +124,7 @@ export function createFollowUpWorker() {
 export async function scheduleFollowUpJobs() {
   const queue = new Queue(FOLLOWUP_QUEUE_NAME, {
     connection: connection as ConnectionOptions,
+    defaultJobOptions: SCHEDULER_SCAN_DEFAULTS,
   });
   registerQueueForMetrics(FOLLOWUP_QUEUE_NAME, queue);
 
