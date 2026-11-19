@@ -63,7 +63,7 @@ export default function DsrStatusPage() {
 
   useEffect(() => {
     mountedRef.current = true;
-    load();
+    void load();
     return () => {
       mountedRef.current = false;
     };

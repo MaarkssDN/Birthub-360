@@ -1,7 +1,7 @@
 De:00
 Para:06
 Onda:forense20261020
-Status: em-andamento
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref:auditoria-real-ondas00-05
 Sprint destino:a definir pelo00
@@ -44,3 +44,7 @@ Evidência:
 - Commit: ver git log da branch `agente/06-reconciliacao-doublecast` (mensagem `fix(06): validação de contrato no bitrixEventMeshBridge (reconciliação forense GATE-02)`).
 
 Pendências: o handoff cobria apenas o GATE-02 (double-cast). Demais handlers do bridge (`handleVoiceCall`, `handleMeetingScheduled`, `handleDealRisk`, `handleCommercialBottleneck`, `handleProposalDrafted`, `handleOptOutEnforced`, `handleLeadReactivated`) usam `(event.payload || {}) as Record<string, unknown>` com narrowing defensivo campo a campo — não há double-cast, mas também não há validação formal de contrato para esses eventos; fica registrado como melhoria futura caso o 00 julgue necessário.
+
+### Revalidação 2026-11-18 (Agente 06, branch `agente/06-handoffs-20261117`)
+
+Confirmado na base `main@f8d4bc76d`: `isWhatsAppMessageEventPayload` e `isBitrixWebhookEventPayload` presentes em `bitrixEventMeshBridge.service.ts` (type guards de contrato, sem double-cast) e os 2 testes de regressão GATE-02 presentes em `tests/unit/integrations/bitrixEventMeshBridge.test.ts`. `npx tsc --noEmit` exit 0 e suíte do bridge 13/13 verde. Status → resolvido.

@@ -50,7 +50,10 @@ public class MainActivity extends BridgeActivity {
 
     // Espelha ACTIVE_NAV_TABS de src/lib/navigationBus.ts (TAB_ROUTE_SET menos NAV_HIDDEN_TABS:
     // voice-hub, outbound, dialer). Mantenha sincronizado sempre que o Agente 02 alterar o
-    // contrato de navegação (validado por teste automatizado de paridade).
+    // contrato de navegação — o mesmo espelho existe em SceneDelegate.swift (iOS,
+    // `validTabs`); a paridade dos três lados é validada por
+    // tests/unit/navigation/android-valid-tabs-parity.test.ts e ios-valid-tabs-parity.test.ts
+    // (auditoria DEM-20261115-001).
     private static final Set<String> VALID_TABS = new HashSet<>(Arrays.asList(
         "dashboard", "workspace", "companies", "contacts", "crm", "crm360", "mesa-tratamento",
         "activities", "cadence", "prospect", "signals-risks", "intelligence", "market-intelligence",

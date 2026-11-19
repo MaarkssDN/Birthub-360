@@ -102,3 +102,9 @@ SSH/WinRM/admin remoto; requer operador no host (já escalado na ORDEM 01).
 operador executar o Passo 1 no host; todo o material versionável está pronto.
 Critério de `resolvido`: `curl http://192.168.0.116:2375/version` de IP não
 autorizado → recusado, e `docker ps` do workstation autorizado funcionando.
+
+**Verificação de sanidade (Agente 10 — 2026-10-18→2026-11-18, branch `agente/10-handoffs-20261117`):**
+runbook e artefatos versionados íntegros neste branch — `infrastructure/security/DOCKER-REMOTE-DAEMON.md`,
+`apply-docker-2375-allowlist.ps1`, `verify-docker-2375-restriction.sh` e
+`docs/security/runbooks/ROTATE_DEVSTACK_EXPOSED_SECRETS.md`. Sem re-verificação ao vivo (sem execução
+de rede no worktree). Ação segue 100% pendente do operador no host; `Status` permanece `em-andamento`.

@@ -42,6 +42,21 @@
 			</array>
 		</dict>
 	</array>
+	<!-- Permissões de uso (iOS exige NS*UsageDescription declarada — sem ela, getUserMedia /
+	     MediaRecorder / geolocation encerram o app com SIGKILL, não apenas falham).
+	     Auditoria DEM-20261115-001 (Agente 09): adicionadas porque o WebView roda o mesmo
+	     src/** do app web, que já usa câmera (OCR de prospecção) e microfone (gravação de
+	     áudio de campo). Justificativas espelham as permissões equivalentes do
+	     android/app/src/main/AndroidManifest.xml — manter as duas plataformas em sincronia.
+	     NSLocationWhenInUseUsageDescription NÃO foi declarada: não existe nenhuma chamada a
+	     geolocation/getCurrentPosition/watchPosition em src/ (verificado por grep na
+	     auditoria) — declarar permissão sem uso funcional viola a regra do AGENTS.md do
+	     Agente 09; as permissões de localização do lado Android foram removidas no mesmo
+	     handoff por divergirem dessa regra. -->
+	<key>NSCameraUsageDescription</key>
+	<string>O Birth Hub 360 usa a câmera para capturar documentos e imagens em OCR de prospecção, com pré-visualização ao vivo antes da captura.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>O Birth Hub 360 usa o microfone para gravar reuniões de campo com consentimento prévio dos participantes (LGPD), com sincronização posterior dos áudios.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>
