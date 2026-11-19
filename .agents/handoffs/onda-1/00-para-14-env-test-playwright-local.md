@@ -1,7 +1,7 @@
 De: 00
 Para: 14
 Onda: 1
-Status: aberto
+Status: em-andamento
 Prioridade: alto
 Bloqueador-ref: GOV-003 (Fase Zero, Operação Birthub Experience 360)
 Sprint destino: Onda 1
@@ -40,3 +40,10 @@ Restrições: usar apenas valores gerados localmente; não reutilizar segredos r
 
 ## Contexto adicional
 Achado de CI: o job `Detectar escopo visual` calcula `git diff BASE_SHA...HEAD` sobre o merge ref; quando a `main` avança depois da base do PR, arquivos de `src/` vindos da `main` marcam `relevant=true` e disparam Visual Regression mesmo em PR só de documentação (ex.: PR #420). Sugestão ao 08: comparar contra `github.event.pull_request.head.sha`/`merge-base` ou `pull_request` files API. Handoff separado a abrir pelo 08.
+
+## Resolução (Agente 14, 2026-11-19)
+Status: em-andamento (ambiente funcional; falta parecer do 24 e itens opcionais).
+- Provisionado localmente sem docker: Postgres 16 + pgvector (5434), Redis (6379), `.env.test` local gitignored com valores aleatórios.
+- TESTADO: `auth.spec.ts` 4/4 verde; `accessibility.spec.ts` 34/34 verde (Chromium via `PLAYWRIGHT_CHROMIUM_EXECUTABLE`, sem `playwright install`).
+- NÃO EXECUTADO: `mobile-sweep.spec.ts`, visual (snapshots); Meilisearch não provisionado (opcional; app sobe sem ele).
+- Passos e evidências: `.agents/runs/14-harness-playwright-local-20261119.md`.
