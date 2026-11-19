@@ -14,12 +14,20 @@ const prismaMock = {
   bitrixConnection: { findFirst: vi.fn() },
   user: { findFirst: vi.fn() },
 };
-vi.mock('@/lib/prisma', () => ({ prisma: prismaMock }));
+// DEBT-0020: a importação agora roda company/contact/lead.create dentro de
+// runInTransaction (rollback atômico por item). O mock executa `fn` direto com o prismaMock —
+// os delegates são os mesmos, só sem tx/rollback real (rollback é responsabilidade do Postgres,
+// coberta pela integração, não por este unitário).
+const runInTransactionMock = vi.fn(
+  async (fn: (tx: unknown) => Promise<unknown>, _opts?: unknown) => fn(prismaMock),
+);
+vi.mock('@/lib/prisma', () => ({ prisma: prismaMock, runInTransaction: runInTransactionMock }));
 
 // Mesmo padrão de CompanyUseCases.test.ts — leads.ts agora enfileira enriquecimento após criar a
 // Company importada (ver comentário em leads.ts), então precisa do mesmo mock pra não puxar o
 // Queue/Redis real no import do módulo.
-vi.mock('@/lib/queue/enrichment.queue', () => ({ enrichmentQueue: { add: vi.fn() } }));
+const enrichmentQueueMock = { add: vi.fn() };
+vi.mock('@/lib/queue/enrichment.queue', () => ({ enrichmentQueue: enrichmentQueueMock }));
 
 const clientMock = {
   callBitrix: vi.fn(),
@@ -274,5 +282,89 @@ describe('importSelectedBitrixLeads — owner grava User.id, não User.name (Ond
     expect(prismaMock.lead.create).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ owner: null }) }),
     );
+  });
+});
+
+/**
+ * DEBT-0020 — importação Bitrix não atômica → órfãos parciais. Antes, company.create /
+ * contact.create / lead.create eram transações independentes: uma falha no lead.create (ex.:
+ * P2002 da unique constraint numa corrida, ou queda de conexão) deixava Company e Contact
+ * commitados órfãos, sem Lead. Agora os três creates + o audit IMPORT rodam dentro de UM
+ * runInTransaction por item — rollback de tudo em qualquer falha — e o enrichmentQueue (efeito
+ * externo) só é enfileirado DEPOIS do commit.
+ */
+describe('importSelectedBitrixLeads — atomicidade por item (DEBT-0020)', () => {
+  it('executa os creates do item dentro de runInTransaction com o tenant da organização', async () => {
+    prismaMock.lead.findFirst.mockResolvedValue(null);
+    prismaMock.user.findFirst.mockResolvedValue(null);
+    clientMock.callBitrix.mockResolvedValue({
+      result: { ID: '42', TITLE: 'Lead ok', NAME: 'Ana', LAST_NAME: 'Souza' },
+    });
+    prismaMock.company.create.mockResolvedValue({ id: 'company-1' });
+    prismaMock.contact.create.mockResolvedValue({ id: 'contact-1' });
+    prismaMock.lead.create.mockResolvedValue({ id: 'lead-1' });
+
+    const { importSelectedBitrixLeads } = await import('../leads.js');
+    const result = await importSelectedBitrixLeads('org-1', 'conn-1', ['42']);
+
+    expect(result.imported).toBe(1);
+    // Uma transação por item, escopada no tenant — nunca uma transação pro lote inteiro
+    // (lotes de até 100 itens estourariam o timeout de 45s do runInTransaction).
+    expect(runInTransactionMock).toHaveBeenCalledTimes(1);
+    expect(runInTransactionMock).toHaveBeenCalledWith(expect.any(Function), {
+      organizationId: 'org-1',
+    });
+    // company -> contact -> lead todos dentro do mesmo runInTransaction (chamados durante o fn).
+    expect(prismaMock.company.create).toHaveBeenCalledTimes(1);
+    expect(prismaMock.contact.create).toHaveBeenCalledTimes(1);
+    expect(prismaMock.lead.create).toHaveBeenCalledTimes(1);
+    // Enriquecimento enfileirado uma vez, pós-commit, com o id da empresa criada.
+    expect(enrichmentQueueMock.add).toHaveBeenCalledTimes(1);
+    expect(enrichmentQueueMock.add).toHaveBeenCalledWith('enrich-company', {
+      companyId: 'company-1',
+      organizationId: 'org-1',
+    });
+  });
+
+  it('falha no meio do item (lead.create rejeita) conta como failed e NÃO enfileira enriquecimento — rollback remove os órfãos parciais', async () => {
+    prismaMock.lead.findFirst.mockResolvedValue(null);
+    clientMock.callBitrix.mockResolvedValue({ result: { ID: '42', TITLE: 'Lead', NAME: 'Ana' } });
+    prismaMock.company.create.mockResolvedValue({ id: 'company-orfa' });
+    prismaMock.contact.create.mockResolvedValue({ id: 'contact-orfa' });
+    prismaMock.lead.create.mockRejectedValue(new Error('connection lost mid-import'));
+
+    const { importSelectedBitrixLeads } = await import('../leads.js');
+    const result = await importSelectedBitrixLeads('org-1', 'conn-1', ['42']);
+
+    expect(result).toEqual({
+      imported: 0,
+      skipped: 0,
+      skippedConflicts: 0,
+      skippedNotOwned: 0,
+      failed: 1,
+      importedLeadIds: [],
+    });
+    // A empresa "criada" dentro do tx que deu rollback não pode ir para a fila de
+    // enriquecimento — seria enriquecer um registro que não existe.
+    expect(enrichmentQueueMock.add).not.toHaveBeenCalled();
+    // Audit IMPORT também não roda (está dentro do tx — só executa se os creates passarem).
+    expect(auditServiceMock.log).not.toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'IMPORT' }),
+    );
+  });
+
+  it('P2002 no lead.create continua contado como skipped (corrida de importação) sem enfileirar enriquecimento', async () => {
+    prismaMock.lead.findFirst.mockResolvedValue(null);
+    clientMock.callBitrix.mockResolvedValue({ result: { ID: '42', TITLE: 'Lead' } });
+    prismaMock.company.create.mockResolvedValue({ id: 'company-1' });
+    const p2002 = Object.assign(new Error('Unique constraint failed'), { code: 'P2002' });
+    prismaMock.lead.create.mockRejectedValue(p2002);
+
+    const { importSelectedBitrixLeads } = await import('../leads.js');
+    const result = await importSelectedBitrixLeads('org-1', 'conn-1', ['42']);
+
+    expect(result.skipped).toBe(1);
+    expect(result.failed).toBe(0);
+    expect(enrichmentQueueMock.add).not.toHaveBeenCalled();
   });
 });
