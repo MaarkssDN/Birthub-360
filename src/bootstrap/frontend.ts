@@ -36,6 +36,24 @@ const toolsLimiter = rateLimit({
 });
 
 /**
+ * Predicado puro da guarda anti-bypass do design-lab — extraído para teste unitário.
+ * Recebe o path cru (req.path); devolve true quando o path toca um asset do design-lab
+ * por um alias não autorizado (encoding, /public/, /@fs/, etc.).
+ */
+export function isBlockedDesignLabPath(rawPath: string): boolean {
+  let decodedPath = rawPath;
+  try {
+    decodedPath = decodeURIComponent(rawPath);
+  } catch {
+    // Path malformado: mantém o raw — o static downstream já rejeita encoding inválido.
+  }
+  const touchesLabAsset = /(?:^|\/)design-lab(?:\/|$)/i.test(decodedPath);
+  const isLegitStaticPrefix = /^\/design-lab(?:\/|$)/i.test(rawPath);
+  const isSourceModule = /^\/src\/features\/design-lab\//i.test(rawPath);
+  return touchesLabAsset && !isLegitStaticPrefix && !isSourceModule;
+}
+
+/**
  * Serve o frontend: em desenvolvimento (ou em testes quando não houver build), monta o middleware
  * do Vite (HMR, SPA fallback) em modo middleware embutido no mesmo processo Express; em produção
  * (ou em testes quando `dist/index.html` estiver compilado), serve os estáticos já buildados em
@@ -54,16 +72,7 @@ export async function mountFrontend(app: Express): Promise<void> {
   // (b) código-fonte `/src/features/design-lab/` (módulos lazy, não são os assets estáticos
   // sensíveis e já vão no bundle) é bloqueado com 404 antes de qualquer static.
   app.use((req, res, next) => {
-    let decodedPath = req.path;
-    try {
-      decodedPath = decodeURIComponent(req.path);
-    } catch {
-      // Path malformado: mantém o raw — o static downstream já rejeita encoding inválido.
-    }
-    const touchesLabAsset = /(?:^|\/)design-lab(?:\/|$)/i.test(decodedPath);
-    const isLegitStaticPrefix = /^\/design-lab(?:\/|$)/i.test(req.path);
-    const isSourceModule = /^\/src\/features\/design-lab\//i.test(req.path);
-    if (touchesLabAsset && !isLegitStaticPrefix && !isSourceModule) {
+    if (isBlockedDesignLabPath(req.path)) {
       res.status(404).end();
       return;
     }
