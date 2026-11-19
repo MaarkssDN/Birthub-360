@@ -1,0 +1,101 @@
+{
+  "audit": "release-readiness-forense-2026-11-18",
+  "coordinator": "00",
+  "phase": "RECONCILIADO_2026-11-19_NO_GO_MANTIDO",
+  "reconciliation_20261119": {
+    "date": "2026-11-19",
+    "by": "00",
+    "originMain": "1bca0a9e4f492121a213f52de6688c03baaa8297",
+    "report": ".agents/runs/00-reconciliacao-release-readiness-20261119.md",
+    "summary": "P0: 0 resolvidos, 3 pendentes em código (0001 deploy, 0002 backup, 0003 consumers worker), 1 bloqueado por decisão (0004 mobile). P1: 1 resolvido em main (0016 batchUpdate via #390+#395), ~6 parciais, ~11 pendentes acionáveis, 4 dependem de decisões humanas (escopo voz/mobile, consentimento IA).",
+    "priorEtapa0": ".agents/runs/reconciliacao-etapa0-20261118.md (executada durante a onda de merges)",
+    "verdictImpact": "NO-GO mantido — Trava de Mutação/Etapa 0 cumprida, mas bloqueadores de código P0/P1 seguem abertos; aguarda decisões humanas listadas no relatório."
+  },
+  "snapshot": {
+    "date": "2026-11-18",
+    "branch": "main",
+    "localHead": "b54060ad1a3ee749e21d33ba27a730addd231a9e",
+    "originMain": "f8d4bc76dade5d50ec7220e26fc58083d1b4dbec",
+    "localAhead": 8,
+    "localBehind": 0,
+    "unpushedCommitsNote": "main local contém merges de agente/01-handoffs e agente/01A-handoffs (conteúdo já coberto pelos PRs abertos #381 e #387). Decisão pendente: push de main vs merge dos PRs no GitHub.",
+    "dirtyFiles": ["src/components/layout/moduleRegistry.ts", "src/components/layout/moduleThemes.ts"],
+    "dirtyNote": "WIP não commitado removendo campo 'code' de ProductModule/ModuleTheme — de outra sessão, não tocar.",
+    "untrackedReviews": "12 pareceres 24-revisao-pr38X-*.md + 00-fila-handoffs-20261117.md não commitados",
+    "worktrees": "20 worktrees de agentes + 6 wt-base-* detached",
+    "issues_open": ["#200 sonar coverage 76->80%", "#201 11 visual snapshots divergentes"]
+  },
+  "openPRs": {
+    "total": 22,
+    "handoffsWave": [381, 382, 383, 384, 385, 386, 387, 388, 389, 390, 391, 392, 393],
+    "older": [310, 347, 353, 361, 366, 367, 368, 372, 378, 379],
+    "conflicting": [366, 368, 361],
+"checksSummary": {
+      "381-390-391-392-393": "application gate PASS; SonarQube FAIL em #383, #385, #390 (provável quality gate de new code); demais checks verdes",
+      "366": "application gate FAIL + build FAIL + SonarQube FAIL (CONFLICTING)",
+      "368": "CONFLICTING, só CodeRabbit reportado",
+      "361": "application gate FAIL (CONFLICTING)",
+      "310": "application gate FAIL + Visual Regression FAIL + SonarQube FAIL",
+      "372": "SonarQube FAIL apenas",
+      "378": "application gate FAIL + SonarQube FAIL — SUPERADO por e0050ad63/94b82eefd em main (candidato a close)",
+      "main_ci": "verde nos últimos runs (CodeQL, SonarQube, Release, Endpoint Latency)"
+    },
+    "pending24": "PR #390 aguarda adendo do 24 sobre nota de atomicidade do batchUpdateLeads; demais #381-#393 com parecer APROVADO segundo 00-fila-handoffs-20261117.md"
+  },
+  "historicalDebt": {
+    "file": "BirthHub360-TechDebt-Data-20260929-120403.json",
+    "total": 5505,
+    "bySeverity": {"P0": 0, "P1": 215, "P2": 3371, "P3": 1918, "P4": 1},
+    "note": "Relatório de 29/09 — estático e majoritariamente ruído (TypeScript quality 2247, 'segredos' em scripts de skills, migrations históricas já aplicadas). NÃO representa dívida atual. Reconciliação por amostragem durante as ondas.",
+    "healthIndex": 96
+  },
+  "priorVerdicts": {
+    "GA_RELEASE_READINESS_REPORT": "NOT GA READY (15/09, SHA 17e0e36b) — unit/integration/e2e locais falharam; CI remoto do SHA estava verde",
+    "FINAL_RELEASE_GATE": "BLOCKED (stale — bloqueios de sandbox Docker, não do código)",
+    "GO-LIVE-CHECKLIST": "docs/release/GO-LIVE-CHECKLIST.md existe — reconciliar com estado atual"
+  },
+  "auditMatrix": {
+    "lote1": [
+      {"agent": "15+01", "scope": "segurança, authn/authz, RBAC, IDOR/BOLA, RLS, SQL cru, webhooks, SSRF, segredos, PII em logs, prompt injection", "subagent": "explore"},
+      {"agent": "01A", "scope": "Prisma schema, migrations (drift, destrutivas, idempotência), integridade, N+1, transações, soft delete, retenção", "subagent": "explore"},
+      {"agent": "18", "scope": "server.ts mount map vs routes (auth coverage), OpenAPI drift, contratos UI↔API, rotas públicas", "subagent": "explore"},
+      {"agent": "02", "scope": "rotas/páginas acessíveis, botões sem ação, formulários que não persistem, mocks em prod, estados vazios falsos, navegação", "subagent": "explore"}
+    ],
+    "lote2": [
+      {"agent": "04", "scope": "CRM/BI: pipelines, forecast, batchUpdate, tenancy FKs, métricas vs dados reais", "subagent": "explore"},
+      {"agent": "05+17", "scope": "prospecção/outbound/cadência: opt-out, consentimento, dedup, tenant scope, envios duplicados", "subagent": "explore"},
+      {"agent": "07+13+23", "scope": "IA/LLM/RAG: mocks, tool calling sem autorização, vazamento cross-tenant, custos, limites, persistência", "subagent": "explore"},
+      {"agent": "12+16", "scope": "voz/telefonia/webhooks + workers/filas BullMQ: retries, DLQ, perda silenciosa, concorrência", "subagent": "explore"}
+    ],
+    "lote3": [
+      {"agent": "10+09+11", "scope": "Docker, workflows CI/CD, deploy/rollback, backups, Capacitor/mobile, marca/ativos", "subagent": "explore"},
+      {"agent": "08+14", "scope": "scripts de teste reais vs package.json, cobertura efetiva, flakes, E2E, gates de release", "subagent": "explore"},
+      {"agent": "00-cross", "scope": "arquitetura: hotspots, código morto, ciclos, any/ts-ignore, TODOs relevantes, reconciliação techdebt JSON", "subagent": "explore"}
+    ],
+    "ondaE": ["24 revisão independente do consolidado", "08/14 revalidação de gates"]
+  },
+  "baselineGates": {
+    "date": "2026-11-18",
+    "branch": "main@b54060ad1 (dirty: moduleRegistry/moduleThemes WIP)",
+    "typecheck": "PASS (exit 0) após npx prisma generate — primeira execução falhou com 5 erros TS2339 'dataSubjectRequest' por client Prisma stale (schema já continha o model); NÃO é bug de código, mas confirma que merges de PR com migration nova exigem prisma generate local",
+    "lint": "PASS (exit 0) — 1563 warnings biome (majoritariamente !important em CSS e unused params); 2 infos",
+    "verify:rls-coverage": "PASS — 137 tabelas tenant-bearing com RLS+policy (4 allowlist)",
+    "verify:openapi-drift": "PASS — 81 prefixes montados, 509 paths documentados, sem deriva estrutural",
+    "verify:governance-reviews": "PASS — 251 revisões, 50 aprovadas auditadas",
+    "verify:ownership-coverage": "PASS — 18 escopos cobertos",
+    "test:architecture": "PASS (exit 0) — depcruise 0 violações (1985 módulos), coverage real 1985/1934, hotspots: 47 avisos 700-1000 linhas + 13 exceções ativas, baseline fresca (70 known violations)",
+    "test:unit/integration/e2e/build": "pendentes (pesados; unit~400s+, integration/e2e exigem Postgres+Redis)"
+  },
+  "sonarQubeNote": "PRs #383/#385/#390 falham no job SonarQube (quality gate new code) apesar de application gate verde — provável quality gate de cobertura/bugs em código novo; correlaciona com issue #200 (cobertura new code 76% -> meta 80%). #310/#366/#361/#372/#378 também com SonarQube fail.",
+  "marco1Result": {
+    "verdict": "NO-GO",
+    "reports": ".agents/runs/audit-2026-11-18/ (11 dominios + transversal)",
+    "deliverables": ["inventario-mestre.md (4 P0, 22 P1, ~34 P2)", "relatorio-executivo.md", "plano-saneamento.md (trilhas 1-4 + GO-LIVE checklist + ordem merge PRs)"],
+    "agent24Review": "CONCLUÍDO — .agents/reviews/24-revisao-release-readiness-audit-2026-11-18.md: NO-GO APROVADO, inventário APROVADO c/ ressalvas (5 omissões corrigidas: DEBT-0061..0065), plano APROVADO c/ ressalvas (3 itens checklist adicionados). 12/12 achados amostrados confirmados no código.",
+    "p0": ["DEBT-0001 deploy sem migrate/healthcheck", "DEBT-0002 zero backup real", "DEBT-0003 worker dedicado sem consumidores outbound (verificar topologia)", "DEBT-0004 mobile sem backend (depende escopo)"],
+    "p1Count": 22,
+    "keyDecisionsPending": ["envs EC2 (BITRIX24_WEBHOOK_URL, THREECX_WEBHOOK_SECRET, EXPOSE_METRICS, ENABLE_QUEUES)", "escopo mobile/voz Day-1", "janelas retencao oficiais", "consentimento IA persistido vs env", "ordem de merge PRs #381-#393"],
+    "mutationLock": "NENHUM fix P0/P1 antes de reconciliar PRs abertos (Etapa 0 do plano)"
+  },
+  "nextStep": "RECONCILIACAO 2026-11-19 CONCLUIDA (ver reconciliation_20261119 + .agents/runs/00-reconciliacao-release-readiness-20261119.md). Veredito NO-GO mantido. Para Marco 2: (a) decisoes humanas pendentes — envs EC2, escopo mobile/voz Day-1, janelas retencao, consentimento IA, fechamento de PRs abertos/conflitantes (#401 recomendado merge, #415, #423, #399-#403, #386, #361/#366/#368/#310/#372/#378/#379); (b) executar Trilhas A-G do plano de saneamento por dono; (c) cada fix com revisao 24 na revisao exata."
+}

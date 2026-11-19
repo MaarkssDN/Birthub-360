@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Auditoria de Dívida Técnica — Squad 60 · Voz, Telefonia e Mensageria Omnichannel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #8b5cf6;
+      --p0: #ef4444;
+      --p1: #f97316;
+      --p2: #eab308;
+      --p3: #3b82f6;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 24px;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header {
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-p0 { background: rgba(239, 68, 68, 0.2); color: var(--p0); border: 1px solid var(--p0); }
+    .badge-p1 { background: rgba(249, 115, 22, 0.2); color: var(--p1); border: 1px solid var(--p1); }
+    .badge-p2 { background: rgba(234, 179, 8, 0.2); color: var(--p2); border: 1px solid var(--p2); }
+    .badge-p3 { background: rgba(59, 130, 246, 0.2); color: var(--p3); border: 1px solid var(--p3); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; background: var(--card-bg); border-radius: 8px; overflow: hidden; }
+    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: #111827; font-size: 13px; text-transform: uppercase; color: var(--muted); }
+    tr:hover { background: rgba(255, 255, 255, 0.02); }
+    .agent-tag { font-weight: 600; color: var(--accent); }
+    .file-tag { font-family: monospace; font-size: 12px; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; color: #38bdf8; }
+    .nav-back { display: inline-block; margin-bottom: 16px; color: var(--muted); text-decoration: none; font-size: 14px; }
+    .nav-back:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="../dashboard/index.html" class="nav-back">← Voltar ao Dashboard Global de Dívidas Técnicas</a>
+    <header>
+      <div style="font-size: 12px; text-transform: uppercase; color: var(--accent); font-weight: bold; letter-spacing: 1px;">Auditoria Independente por Squad</div>
+      <h1 style="margin: 8px 0 4px 0;">Squad 60 · Voz, Telefonia e Mensageria Omnichannel</h1>
+      <p style="color: var(--muted); margin: 0;"><strong>Coordenador Responsável:</strong> 60 — Aurora (Coordenador de Voz & Omnichannel)</p>
+      <p style="color: var(--muted); font-size: 13px; margin-top: 4px;">Data de Auditoria: 2026-11-19 | Total de Especialistas: 10 | Status: CONSOLIDADO</p>
+    </header>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Especialista</th>
+          <th>Papel Técnico</th>
+          <th>Severidade</th>
+          <th>Dívida Técnica Identificada</th>
+          <th>Impacto Potencial</th>
+          <th>Esforço</th>
+          <th>Arquivo Alvo</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+          <tr>
+            <td class="agent-tag">60</td>
+            <td style="font-weight: 600;">Aurora</td>
+            <td style="color: var(--muted); font-size: 13px;">Coordenador de Voz</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Ausência de monitoramento de jitter e perda de pacotes UDP/RTP nas chamadas de voz ativas.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Queda na qualidade de áudio sem que a equipe de engenharia seja notificada.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/features/voice-hub/index.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">61</td>
+            <td style="font-weight: 600;">Nando</td>
+            <td style="color: var(--muted); font-size: 13px;">Discador VoIP & SIP</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Biblioteca SIP.js no frontend não realiza renegociação de ICE (ICE restart) na troca de Wi-Fi/4G.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Chamada em andamento fica muda quando o usuário muda de cômodo ou conexão.</td>
+            <td style="font-size: 13px;">Alto</td>
+            <td><span class="file-tag">src/features/voice-hub/voip/dialer.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">62</td>
+            <td style="font-weight: 600;">Sol</td>
+            <td style="color: var(--muted); font-size: 13px;">Gravação & Storage</td>
+            <td><span class="badge badge-p0">P0</span></td>
+            <td>Áudios de ligações armazenados no bucket S3 sem criptografia do lado do servidor (SSE-KMS).</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Não conformidade regulatória para dados de voz médica e sigilo profissional.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/features/voice-hub/recording/storage.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">63</td>
+            <td style="font-weight: 600;">Lira</td>
+            <td style="color: var(--muted); font-size: 13px;">STT & Diarização</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Modelos Whisper recebem áudio em mono em vez de estéreo, misturando vozes do operador e cliente.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Diarização errática atribuindo falas do atendente ao paciente.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/features/voice-hub/transcription/whisper.worker.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">64</td>
+            <td style="font-weight: 600;">Tito</td>
+            <td style="color: var(--muted); font-size: 13px;">Comandos de Voz</td>
+            <td><span class="badge badge-p0">P0</span></td>
+            <td>B-07: Comandos de voz com intents detectadas retornam confirmação na UI antes da gravação real no DB.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Comando de voz 'agendar consulta' diz que agendou, mas não gravou nada.</td>
+            <td style="font-size: 13px;">Alto</td>
+            <td><span class="file-tag">src/features/voice-hub/commands/command.processor.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">65</td>
+            <td style="font-weight: 600;">Lena</td>
+            <td style="color: var(--muted); font-size: 13px;">Voice Hub UI</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Indicador de atividade de microfone não reflete a taxa de amostragem real capturada pela Web Audio API.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Feedback visual falso de gravação quando o microfone está mudo pelo sistema operacional.</td>
+            <td style="font-size: 13px;">Baixo</td>
+            <td><span class="file-tag">src/features/voice-hub/ui/Visualizer.tsx</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">66</td>
+            <td style="font-weight: 600;">Kiko</td>
+            <td style="color: var(--muted); font-size: 13px;">Inbox Unificado</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Fila de atendimento não distribui novas conversas por capacidade ativa de atendentes online.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Atendente sobrecarregado com 10 chats simultâneos enquanto outros ficam ociosos.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/features/notifications/inbox/router.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">67</td>
+            <td style="font-weight: 600;">Teca</td>
+            <td style="color: var(--muted); font-size: 13px;">Templates & Sanitização</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Templates de mensagem não possuem validação contra injeção de PII não autorizada em variáveis livres.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Vazamento de dados cadastrais sensíveis em comunicações automáticas.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/features/notifications/templates/sanitizer.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">68</td>
+            <td style="font-weight: 600;">Paco</td>
+            <td style="color: var(--muted); font-size: 13px;">Notificações & Realtime</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Servidor WebSocket sem heartbeat agressivo (ping/pong a cada 30s), acumulando conexões zumbis.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Esgotamento de descritores de arquivo e memória do Node.js.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/features/notifications/realtime/websocket.server.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">69</td>
+            <td style="font-weight: 600;">Eli</td>
+            <td style="color: var(--muted); font-size: 13px;">Opt-Out & Conformidade</td>
+            <td><span class="badge badge-p0">P0</span></td>
+            <td>Solicitação de opt-out ('SAIR' / 'STOP') não cancela mensagens que já foram enfileiradas no BullMQ.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Violação de opt-out e risco de denúncia por envio de spam indesejado.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/features/notifications/opt-out/optout.service.ts</span></td>
+          </tr>
+        
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

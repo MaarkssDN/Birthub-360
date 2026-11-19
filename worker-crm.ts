@@ -28,6 +28,7 @@ import {
   createAutoAnonymizeWorker,
   scheduleAutoAnonymizeJob,
 } from './src/features/crm/jobs/autoAnonymizeDisqualified.worker.js';
+import { createExternalCrmOutboundWorker } from './src/lib/queue/externalCrmOutbound.queue.js';
 
 async function start() {
   const followUpWorker = createFollowUpWorker();
@@ -35,6 +36,7 @@ async function start() {
   const deduplicationWorker = createDeduplicationWorker();
   const pdfWorker = createWeeklyPdfReportWorker();
   const autoAnonymizeWorker = createAutoAnonymizeWorker();
+  const externalCrmOutboundWorker = createExternalCrmOutboundWorker();
 
   const workers = [
     { name: 'whatsapp-followup-queue', worker: followUpWorker },
@@ -42,6 +44,7 @@ async function start() {
     { name: 'deduplication-queue', worker: deduplicationWorker },
     { name: 'weekly-pdf-report-queue', worker: pdfWorker },
     { name: 'auto-anonymize-disqualified-queue', worker: autoAnonymizeWorker },
+    { name: 'external-crm-outbound-sync', worker: externalCrmOutboundWorker },
   ];
 
   await startWorkerServer(

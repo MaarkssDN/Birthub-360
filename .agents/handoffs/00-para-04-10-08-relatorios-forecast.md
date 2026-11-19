@@ -66,5 +66,11 @@ estatística → item de produto; p95/k6 e custo de forecast → 10/23; MAPE bas
 worker de snapshot em produção). Handoff 01A de tenancy/FKs (`01a-para-04-tenancy-fks-crm.md`)
 não existe em `origin/main` — bonus não aplicável nesta onda.
 
-**Nota Wave B (Agente 04, 2026-11-18, worktree `agente/04-handoffs-20261117`):**
+**Nota Wave B (Agente 04, 2026-11-18, worktree `agente-04-handoffs-20261117`):**
 Re-verificado em `main` atual: inventário 17/17 permanece íntegro com 271 testes de `commercial-intelligence` e `analytics` passando (100% verde). Handoffs de tenancy/FKs (`01a-para-04-tenancy-fks-crm.md`) e `batchUpdateLeads` (`01a-para-04-batchupdate-status-label-sem-mapeamento.md`) foram integralmente implementados e testados nesta mesma onda pelo 04. Status permanece `em-andamento` exclusivamente aguardando métricas de infra/QA dos agentes 10, 23 e 08.
+
+## Nota Agente 10 (2026-11-18)
+
+- p95 analytics: harness k6 existe (`tests/load/k6-*.js` + workflow `endpoint-latency-budget.yml`), mas nenhum cenário cobre endpoints de analytics/commercial-intelligence. Estender o cenário = `tests/**` (dono 08) + paths do workflow (dono 08). Execução do benchmark requer app+Postgres+Redis — não executável neste worktree; pendente de ambiente/operador.
+- MAPE: worker semanal `forecastSnapshotWeekly.worker.ts` existe e está registrado em `worker.ts`, `worker-mercado.ts` e modo embutido; depende de produção efetivamente rodar o worker (deploy EC2 manual; ativação do worker dedicado segue `adiado` em `onda-6/16-para-10-observabilidade-worker.md`).
+- Custo de forecast → Agente 23; baseline MAPE → Agente 08.
