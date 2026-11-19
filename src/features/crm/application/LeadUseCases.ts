@@ -713,6 +713,7 @@ export class LeadUseCases extends BaseUseCases<Lead, LeadRepository> {
 
     let updatedCount = 0;
     let failedCount = 0;
+    const statusChangedLeads: Lead[] = [];
     for (const lead of leads) {
       // Cada lead vive no seu próprio try/catch: antes, uma falha no meio do lote (ex.: erro de
       // rede/DB no update de um item) lançava sem ser capturada e derrubava a função inteira —
@@ -762,13 +763,14 @@ export class LeadUseCases extends BaseUseCases<Lead, LeadRepository> {
           // prisma.lead.update separadas e, se a segunda falhasse após a primeira persistir, o
           // status ficava gravado mas o item contava como failedCount — gravação parcial
           // reportada como falha total.
-          await this.updateLeadStatus(
+          const statusUpdatedLead = await this.updateLeadStatus(
             organizationId,
             lead.id,
             requestedStatusLabel,
             actorUserId,
             hasFieldUpdates ? fieldUpdates : undefined,
           );
+          statusChangedLeads.push(statusUpdatedLead);
         } else if (hasFieldUpdates) {
           // organizationId também no `where` (mesmo padrão de defesa-em-profundidade de
           // PrismaLeadRepository.update/updateStatus e PrismaCrm360Repository.updateLeadStage):
@@ -801,6 +803,6 @@ export class LeadUseCases extends BaseUseCases<Lead, LeadRepository> {
         );
       }
     }
-    return { updatedCount, total: leads.length, failedCount };
+    return { updatedCount, total: leads.length, failedCount, statusChangedLeads };
   }
 }
