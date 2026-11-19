@@ -1,7 +1,7 @@
 De: Agente 02 — Produto e UX
 Para: Agente 03 — Design e Acessibilidade
 Onda: Backlog Onda 5 / DEM-20261116-001
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: MEL-35
 Sprint destino: backlog-5
@@ -49,3 +49,7 @@ Restrições:
 ## Contexto adicional
 
 - O Agente 02 preparou o restante do backlog 5 (estados compartilhados, checklist por papel, base de i18n sem dependência, migração RHF+Zod em settings). Este handoff é o único bloqueio de propriedade para MEL-35.
+
+## Resolução (verificação Agente 03 — 2026-11-18)
+
+Já implementado em main: `src/components/ui/CommandPalette.tsx` — union de tabs inclui `'Nesta página'` (L32), grupo contextual implementado via `deriveActiveTabFromPath` com intents `open-create`/`prefill-search` e gates por `NAV_TAB_ALIASES` (L312-435). Consumidores de `PaletteIntent` confirmados (`CompanyList`, `ContactList`, `ActivityList`). Ver também `02-para-03-...-resolucao.md` no mesmo diretório.
