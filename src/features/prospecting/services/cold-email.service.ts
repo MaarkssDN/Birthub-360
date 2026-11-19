@@ -258,10 +258,7 @@ export async function sendColdEmail(campaign: ColdEmailCampaign): Promise<boolea
     try {
       await persistColdEmailDispatch(campaign, messageId);
     } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002'
-      ) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
         logger.warn(
           { campaignId: campaign.id, toDomain },
           'Cold email enviado, mas a persistência bateu na trava de dedupe (corrida) — linha já existia.',
