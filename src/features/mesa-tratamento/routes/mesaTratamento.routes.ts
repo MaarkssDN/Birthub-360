@@ -332,12 +332,14 @@ router.post(
         body.bitrixStatusId ? { statusId: body.bitrixStatusId } : undefined,
       );
 
-      await container.resolve<LeadUseCases>('LeadUseCases').updateLead(
-        organizationId,
-        id,
-        data as unknown as Parameters<LeadUseCases['updateLead']>[2],
-        userId,
-      );
+      await container
+        .resolve<LeadUseCases>('LeadUseCases')
+        .updateLead(
+          organizationId,
+          id,
+          data as unknown as Parameters<LeadUseCases['updateLead']>[2],
+          userId,
+        );
 
       // Histórico próprio pro dashboard — antes desta rodada o único registro do desfecho ficava
       // só no comentário de texto livre do Bitrix, ilegível pra agregação. Vem depois da escrita
@@ -510,12 +512,9 @@ router.post(
       // `PrismaLeadRepository.update` registra a troca de responsável em LeadFieldChange
       // (recordLeadFieldChanges), que o prisma.lead.update direto não fazia.
       const { id: actorUserId } = (req as AuthRequest).user;
-      await container.resolve<LeadUseCases>('LeadUseCases').updateLead(
-        organizationId,
-        id,
-        { owner: newOwnerId },
-        actorUserId,
-      );
+      await container
+        .resolve<LeadUseCases>('LeadUseCases')
+        .updateLead(organizationId, id, { owner: newOwnerId }, actorUserId);
 
       await postCommentToBitrix(
         organizationId,
