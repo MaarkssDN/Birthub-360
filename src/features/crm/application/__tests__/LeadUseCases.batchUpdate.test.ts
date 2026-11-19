@@ -255,7 +255,12 @@ describe('LeadUseCases.batchUpdateLeads — status + owner/tags em escrita únic
       addTags: ['vip'],
     });
 
-    expect(result).toEqual({ updatedCount: 1, total: 1, failedCount: 0 });
+    expect(result).toEqual({
+      updatedCount: 1,
+      total: 1,
+      failedCount: 0,
+      statusChangedLeads: [{ id: 'lead-x', bitrixLeadId: null }],
+    });
     // Uma única via de escrita: o repository recebe status + owner + tags computadas numa
     // chamada só — não existe mais um prisma.lead.update separado que pudesse falhar depois
     // do status já persistido.
@@ -281,7 +286,12 @@ describe('LeadUseCases.batchUpdateLeads — status + owner/tags em escrita únic
       owner: 'user-9',
     });
 
-    expect(result).toEqual({ updatedCount: 1, total: 2, failedCount: 1 });
+    expect(result).toEqual({
+      updatedCount: 1,
+      total: 2,
+      failedCount: 1,
+      statusChangedLeads: [{ id: 'lead-2', bitrixLeadId: null }],
+    });
     // Nenhum prisma.lead.update direto: com status no payload, owner/tags só são gravados
     // dentro da escrita de status — se ela falha, nada parcial fica para trás.
     expect(prismaMock.lead.update).not.toHaveBeenCalled();
@@ -300,7 +310,12 @@ describe('LeadUseCases.batchUpdateLeads — status + owner/tags em escrita únic
       removeTags: ['a'],
     });
 
-    expect(result).toEqual({ updatedCount: 1, total: 1, failedCount: 0 });
+    expect(result).toEqual({
+      updatedCount: 1,
+      total: 1,
+      failedCount: 0,
+      statusChangedLeads: [],
+    });
     expect(repository.updateStatus).not.toHaveBeenCalled();
     expect(prismaMock.lead.update).toHaveBeenCalledWith({
       where: { id: 'lead-1', organizationId: 'org-1' },
