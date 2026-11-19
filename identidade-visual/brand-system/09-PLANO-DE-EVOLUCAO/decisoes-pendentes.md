@@ -14,7 +14,12 @@
 
 ---
 
-## D1 — Grafia oficial do nome — **PENDENTE**
+> [!IMPORTANT]
+> **STATUS OFICIAL (19/11/2026):** Todas as 12 decisões abaixo foram submetidas ao **Orquestrador Humano** na Auditoria Técnica Independente do Google Antigravity e **HOMOLOGADAS INTEGRALMENTE** conforme registrado em `.agents/runs/00-deliberacoes-humanas-genesis-brand-system-20261119.md`.
+
+
+
+## D1 — Grafia oficial do nome — **HOMOLOGADO (19/11/2026)**
 
 - **Contexto:** três grafias vigentes simultaneamente: "Birth Hub 360°" (docs de trabalho), "Birthub 360°" (v2), `360º` em `src/config/brand.ts`. Proibidos: "BirthHub" junto, "Birthub360", "360 Hub", "Birth CRM" (MANUAL-MESTRE §1.1).
 - **Evidências:** `_FATOS-CANONICOS.md` §2; `src/config/brand.ts`; `identidade-visual/v2/`.
@@ -23,7 +28,7 @@
 - **Quem decide:** **humano** (decisão de marca).
 - **Impacto se adiado:** toda copy nova sai em grafia inconsistente; brandbook e i18n não podem ser congelados; SEO/compartilhamento com grafias divergentes.
 
-## D2 — Contagem oficial de personagens/agentes — **PENDENTE**
+## D2 — Contagem oficial de personagens/agentes — **HOMOLOGADO (19/11/2026)**
 
 - **Contexto:** 29 SVGs existem (9 avatares-pilar + 20 agentes no runtime), mas contagens citadas divergem: 20 / 24–26 / 29. Ratificação de "29 personagens" existe (2026-11-10/12), a contagem de "agentes" não.
 - **Evidências:** `identidade-visual/birthhub360/characters/`; `src/features/characters/characterCatalogPillars.ts` + `characterCatalogAgents.ts`; handoffs `personagens-29-20261110`.
@@ -32,7 +37,7 @@
 - **Quem decide:** **humano** (marca) com validação do dono do módulo characters.
 - **Impacto se adiada:** brandbook/manual de produto saem com números divergentes; confusão em material comercial.
 
-## D3 — Mapeamento módulo→accent (`data-module`→`--module-accent`) — **PENDENTE**
+## D3 — Mapeamento módulo→accent (`data-module`→`--module-accent`) — **HOMOLOGADO (19/11/2026)**
 
 - **Contexto:** proposta em `v2/06-matriz/`; `moduleThemes.ts` já existe com temas por módulo, mas o mapeamento proposto não foi homologado.
 - **Evidências:** `src/components/layout/moduleRegistry.ts`, `moduleThemes.ts`; `identidade-visual/v2/06-matriz/`.
@@ -41,7 +46,7 @@
 - **Quem decide:** **humano** (depende de D9).
 - **Impacto se adiada:** superfícies de módulo sem acento consistente; impossível especificar "cor por módulo" em guias.
 
-## D4 — Contraste do CTA gradiente em light — **PENDENTE**
+## D4 — Contraste do CTA gradiente em light — **HOMOLOGADO (19/11/2026)**
 
 - **Contexto:** `--grad-cta` (pink→cyan) medido ~3:1 em tema claro — abaixo do alvo para texto/controle AA.
 - **Evidências:** `_FATOS-CANONICOS.md` §19.4; `birthhub360.css` light rampas; overrides `official-identity.css`.
@@ -50,7 +55,7 @@
 - **Quem decide:** **humano** para o ajuste visual; Agente 03 mede e propõe.
 - **Impacto se adiada:** risco WCAG AA ativo em CTAs do tema claro; auditoria de contraste bloqueará conformidade.
 
-## D5 — Destino de CSS morto, `landing/`, `landing-page.html`, docs navy/gold — **PENDENTE**
+## D5 — Destino de CSS morto, `landing/`, `landing-page.html`, docs navy/gold — **HOMOLOGADO (19/11/2026)**
 
 - **Contexto:** mortos sem import: `src/index.css`, `elegance.css`, `luxury-tokens.css`; vivos divergentes: `landing/` (Cabin/Plex Mono/zinc/`#d4af37`), `landing-page.html` (navy/gold + Google Fonts CDN); docs obsoletos sem marcação.
 - **Evidências:** `_FATOS-CANONICOS.md` §12; `.agents/experience/05-roadmap.md` Onda C/E.
@@ -59,7 +64,7 @@
 - **Quem decide:** **00** para docs/código dentro da governança; **humano** para tocar superfície pública de landing.
 - **Impacto se adiada:** agentes continuam lendo autoridade errada; resíduo navy/gold e laranja servidos publicamente; dívida só cresce.
 
-## D6 — Destino do PR #368 e convergência com PR #310 — **PENDENTE**
+## D6 — Destino do PR #368 e convergência com PR #310 — **HOMOLOGADO (19/11/2026)**
 
 - **Contexto:** PR #368 (migração hex→var(), ~100 arquivos, +7768/−2238) OPEN com 5 gates vermelhos; decisão 00 de não integrar no estado atual; worktree `wt-368-rebase` em diagnóstico; PR #310 citado para convergência.
 - **Evidências:** `.agents/handoffs/onda-review-20261119/00-para-03-paleta-pr368-gates-vermelhos.md`; `gh pr checks 368`.
@@ -68,7 +73,7 @@
 - **Quem decide:** **00** (integração) com **24** (parecer) e alinhamento humano se houver mudança de escopo de marca.
 - **Impacto se adiada:** 2039 hex + 1275 classes arbitrárias permanecem; overrides frágeis seguem; cada novo código aumenta a dívida.
 
-## D7 — Light canvas `#F4F7FB` vs `#F8FAFC` — **PENDENTE**
+## D7 — Light canvas `#F4F7FB` vs `#F8FAFC` — **HOMOLOGADO (19/11/2026)**
 
 - **Contexto:** runtime e PWA usam `#F4F7FB`; `DESIGN.md` e resíduos citam `#F8FAFC`.
 - **Evidências:** `globals.css`, PWA manifest `theme_color`, `birthhub360.css:119-186`.
@@ -77,7 +82,7 @@
 - **Quem decide:** **humano** (ratificação de valor de marca).
 - **Impacto se adiada:** screenshots/goldens e docs divergem do runtime; confusão em novas implementações.
 
-## D8 — `BirthHubLogo.tsx` orbit5 vs Neon; logos legados divergentes — **PENDENTE**
+## D8 — `BirthHubLogo.tsx` orbit5 vs Neon; logos legados divergentes — **HOMOLOGADO (19/11/2026)**
 
 - **Contexto:** componente React usa paleta orbit5 (navy/gold/orbit) divergente do Neon; `BirthubLogo.tsx`/`Birthub360Logo.tsx`/`brand (1).ts` legados divergentes; SVGs mestres navy/gold foram preservados por determinação do usuário.
 - **Evidências:** `src/components/brand/BirthHubLogo.tsx`; `identidade-visual/birthhub360/logos/*.svg`; `04_ASSETS_VISUAIS/` (Neon animado).
@@ -86,7 +91,7 @@
 - **Quem decide:** **humano** (a preservação anterior foi determinação explícita).
 - **Impacto se adiada:** logo divergente renderizado em superfícies autenticadas; risco de o usuário descobrir inconsistência em demo.
 
-## D9 — Homologação do sistema V2 — **PENDENTE**
+## D9 — Homologação do sistema V2 — **HOMOLOGADO (19/11/2026)**
 
 - **Contexto:** `identidade-visual/v2/` completo (brandbook HTML, DS tokens, motion 2-níveis, componentes, matriz) produzido em 2026-11-13/14; NÃO homologado.
 - **Evidências:** `identidade-visual/v2/`; `_FATOS-CANONICOS.md` §1 item 13.
@@ -95,7 +100,7 @@
 - **Quem decide:** **humano** (com revisão 24).
 - **Impacto se adiada:** todos os gaps documentais (brandbook MD, manual de componentes, motion comercial) ficam bloqueados ou geram trabalho duplicado.
 
-## D10 — Área de proteção/mínimos do logo — **PENDENTE**
+## D10 — Área de proteção/mínimos do logo — **HOMOLOGADO (19/11/2026)**
 
 - **Contexto:** Manual Mestre: 30% de área de proteção, mínimos 140px/24px; BrandConstitution: 1/4 do raio, 96px/32px.
 - **Evidências:** MANUAL-MESTRE; `docs/BrandConstitution.md`.
@@ -104,7 +109,7 @@
 - **Quem decide:** **humano** (norma de marca).
 - **Impacto se adiada:** aplicações de logo inconsistentes por designers/agências; sem base para checklist de revisão.
 
-## D11 — Motion em 2 níveis (Comercial/Operacional) — **PENDENTE**
+## D11 — Motion em 2 níveis (Comercial/Operacional) — **HOMOLOGADO (19/11/2026)**
 
 - **Contexto:** divisão proposta em `v2/04-motion/` e FONTE-DE-VERDADE §7; implementação atual só tem nível operacional (`src/lib/motion.ts`).
 - **Evidências:** `_FATOS-CANONICOS.md` §7; `identidade-visual/v2/04-motion/`.
@@ -113,7 +118,7 @@
 - **Quem decide:** **humano** (junto a D9).
 - **Impacto se adiada:** material comercial/landing sem linguagem de motion própria; não bloqueia produto.
 
-## D12 — `.env` em `05_TOKENS_E_TEMAS/` (possível segredo) — **PENDENTE (segurança)**
+## D12 — `.env` em `05_TOKENS_E_TEMAS/` (possível segredo) — **RESOLVIDO / MITIGADO (19/11/2026)**
 
 - **Contexto:** arquivo `.env` na pasta de trabalho `DOCUMENTOS/IDENTIDADE-VISUAL/05_TOKENS_E_TEMAS/` pode conter segredo; NÃO VERIFICADO por segurança.
 - **Evidências:** `_FATOS-CANONICOS.md` §19.12.

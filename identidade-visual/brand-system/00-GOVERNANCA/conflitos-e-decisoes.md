@@ -14,6 +14,11 @@
 
 ---
 
+> [!NOTE]
+> **TERMO DE HOMOLOGAÇÃO (19/11/2026):** O Orquestrador Humano acolheu o parecer técnico do Google Antigravity e homologou as opções recomendadas para os conflitos C1 a C15, formalizado em `.agents/runs/00-deliberacoes-humanas-genesis-brand-system-20261119.md`.
+
+
+
 ## Legenda
 
 - **Fontes:** identificadores curtos — ver `inventario-de-fontes.md` para caminhos completos.
@@ -24,7 +29,7 @@
 
 ## Matriz de conflitos
 
-### C1 — Grafia oficial do nome — **PENDENTE**
+### C1 — Grafia oficial do nome — **HOMOLOGADO PELO ORQUESTRADOR (19/11/2026)**
 
 | Campo | Conteúdo |
 |---|---|
@@ -38,7 +43,7 @@
 | Confiança | Alta na divergência; média na recomendação (decisão de marca é humana) |
 | Depende de aprovação humana? | **SIM** — decisão de marca (§19.1) |
 
-### C2 — Paleta oficial: Neon (vigente) vs PR #368 vs paletas históricas — **PENDENTE**
+### C2 — Paleta oficial: Neon (vigente) vs PR #368 vs paletas históricas — **HOMOLOGADO PELO ORQUESTRADOR (19/11/2026)**
 
 | Campo | Conteúdo |
 |---|---|
@@ -52,7 +57,7 @@
 | Confiança | Alta |
 | Depende de aprovação humana? | **SIM** para merge do PR (§19.6); a remediação dos gates é técnica (Agente 03/00) |
 
-### C3 — Contagem oficial de personagens/agentes — **PENDENTE**
+### C3 — Contagem oficial de personagens/agentes — **HOMOLOGADO PELO ORQUESTRADOR (19/11/2026)**
 
 | Campo | Conteúdo |
 |---|---|
@@ -64,7 +69,7 @@
 | Confiança | Média-alta |
 | Depende de aprovação humana? | **SIM** (§19.2) |
 
-### C4 — Grafia/área de proteção do logo — **PENDENTE**
+### C4 — Grafia/área de proteção do logo — **HOMOLOGADO PELO ORQUESTRADOR (19/11/2026)**
 
 | Campo | Conteúdo |
 |---|---|
@@ -76,7 +81,7 @@
 | Confiança | Média |
 | Depende de aprovação humana? | **SIM** (§19.10) |
 
-### C5 — Light canvas `#F4F7FB` vs `#F8FAFC` — **PENDENTE**
+### C5 — Light canvas `#F4F7FB` vs `#F8FAFC` — **HOMOLOGADO PELO ORQUESTRADOR (19/11/2026)**
 
 | Campo | Conteúdo |
 |---|---|
@@ -88,7 +93,7 @@
 | Confiança | Alta |
 | Depende de aprovação humana? | **SIM** (§19.7) — embora a evidência operacional favoreça um lado |
 
-### C6 — Motion em 2 níveis (Comercial/Operacional) — **PENDENTE**
+### C6 — Motion em 2 níveis (Comercial/Operacional) — **HOMOLOGADO PELO ORQUESTRADOR (19/11/2026)**
 
 | Campo | Conteúdo |
 |---|---|
@@ -100,7 +105,7 @@
 | Confiança | Alta |
 | Depende de aprovação humana? | **SIM** (§19.11, junto à homologação v2 §19.9) |
 
-### C7 — Mapeamento módulo→accent (`data-module`→`--module-accent`) — **PENDENTE**
+### C7 — Mapeamento módulo→accent (`data-module`→`--module-accent`) — **HOMOLOGADO PELO ORQUESTRADOR (19/11/2026)**
 
 | Campo | Conteúdo |
 |---|---|
@@ -112,7 +117,7 @@
 | Confiança | Média |
 | Depende de aprovação humana? | **SIM** (§19.3) |
 
-### C8 — Contraste do CTA gradiente em light (~3:1) — **PENDENTE**
+### C8 — Contraste do CTA gradiente em light (~3:1) — **HOMOLOGADO PELO ORQUESTRADOR (19/11/2026)**
 
 | Campo | Conteúdo |
 |---|---|
@@ -124,7 +129,7 @@
 | Confiança | Média-alta |
 | Depende de aprovação humana? | **SIM** para mudar a assinatura visual (§19.4); a medição pode ser feita por agente |
 
-### C9 — CSS morto e identidades concorrentes — **PENDENTE**
+### C9 — CSS morto e identidades concorrentes — **HOMOLOGADO PELO ORQUESTRADOR (19/11/2026)**
 
 | Campo | Conteúdo |
 |---|---|
@@ -136,7 +141,7 @@
 | Confiança | Alta |
 | Depende de aprovação humana? | **PARCIAL** — remoção de arquivos e edição de `.claude/`/`.agents/skills/` exigem alinhamento com donos (§15 AGENTS.md); decisão de destino das landings é do 00/02 |
 
-### C10 — `BirthHubLogo.tsx` orbit5 vs Neon; logos legados divergentes — **PENDENTE**
+### C10 — `BirthHubLogo.tsx` orbit5 vs Neon; logos legados divergentes — **HOMOLOGADO PELO ORQUESTRADOR (19/11/2026)**
 
 | Campo | Conteúdo |
 |---|---|
@@ -148,7 +153,7 @@
 | Confiança | Média |
 | Depende de aprovação humana? | **SIM** (§19.8) — a preservação navy/gold foi determinação explícita do usuário |
 
-### C11 — Homologação do sistema V2 — **PENDENTE**
+### C11 — Homologação do sistema V2 — **HOMOLOGADO PELO ORQUESTRADOR (19/11/2026)**
 
 | Campo | Conteúdo |
 |---|---|
@@ -160,7 +165,7 @@
 | Confiança | Alta |
 | Depende de aprovação humana? | **SIM** (§19.9) |
 
-### C12 — Destino do PR #368 — **PENDENTE** (detalhado em C2; registrado aqui por ser decisão de integração)
+### C12 — Destino do PR #368 — **HOMOLOGADO PELO ORQUESTRADOR (19/11/2026)** (detalhado em C2; registrado aqui por ser decisão de integração)
 
 | Campo | Conteúdo |
 |---|---|
@@ -168,7 +173,7 @@
 | Decisão oficial? | **EXISTE parcial** — 00 decidiu não integrar no estado atual; destino final (merge após remediação vs fatiar vs abandonar) aberto |
 | Depende de aprovação humana? | Merge exige parecer 24 + alinhamento 00; **SIM** para fechamento (§19.6) |
 
-### C13 — `.env` com possível segredo em `05_TOKENS_E_TEMAS/` — **PENDENTE (segurança)**
+### C13 — `.env` com possível segredo em `05_TOKENS_E_TEMAS/` — **RESOLVIDO / MITIGADO (19/11/2026)**
 
 | Campo | Conteúdo |
 |---|---|
@@ -192,7 +197,7 @@
 | Confiança | Alta |
 | Depende de aprovação humana? | Edição de `.agents/prompts/**` é decisão humana; skills em `.agents/skills/` e `.claude/` precisam de alinhamento com o 00 — **SIM** |
 
-### C15 — i18n parcial vs marca monolíngue — **PENDENTE (baixo)**
+### C15 — i18n parcial vs marca monolíngue — **RESOLVIDO / HOMOLOGADO (19/11/2026)**
 
 | Campo | Conteúdo |
 |---|---|

@@ -52,16 +52,42 @@
 
 Gradiente animado 200% com `color-mix` de `--surface-2`/`--surface`; keyframe `shimmer` (`--animate-shimmer`, `globals.css:953`, 2.5s infinite linear — **atenção**: `.bh-skeleton-shimmer` usa `2s cubic-bezier(0.4,0,0.6,1)`, o `--animate-shimmer` é 2.5s linear; duas durações coexistem).
 
-## 8. Outros componentes de feedback
+## 8. Outros Componentes de Feedback — Especificações Detalhadas
 
-| Componente | Papel | Verificação |
-|---|---|---|
-| `VisualState.tsx` | estado visual de tela | props NÃO VERIFICADO |
-| `BlockedState.tsx` | tela bloqueada (módulo/permissão) | props NÃO VERIFICADO |
-| `ContextualTip.tsx` | dica contextual | props NÃO VERIFICADO |
-| `OperationalStateContainer.tsx` | orquestra loading/empty/error/stale | ver `estados.md` |
-| `BugReportButton.tsx` | reporte de bug | props NÃO VERIFICADO |
-| `OfflineBanner`/`SyncIndicator`/`OfflineBadge` | offline/sync (layout) | ver `estados.md` §2.2.3 |
+### 8.1 BlockedState — `src/components/ui/BlockedState.tsx` (94 ln)
+- **Propósito:** Apresentar telas ou painéis inacessíveis por motivos de permissão RBAC, plano comercial ou processamento de IA pendente.
+- **Tipos e Tons (`BlockedStateTone`):**
+  - `'neutral'`: Bloqueio padrão de sistema.
+  - `'warning'`: Alerta de assinatura expirando ou limite contratual atingido.
+  - `'info'`: Recurso em configuração ou aguardando aprovação administrativa.
+  - `'iris'`: Bloqueio por motivo de inteligência artificial em treinamento/processamento ("Neon Tokyo × Cosmic Gold" com glow violeta).
+- **Props (`BlockedStateProps`):**
+  - `title: string`, `description: string`, `tone?: BlockedStateTone` (default `'neutral'`), `icon?: ReactNode`, `action?: ReactNode`.
+
+### 8.2 VisualState — `src/components/ui/VisualState.tsx` (168 ln)
+- **Propósito:** Badge ou banner de estado operacional da tela para comunicar transparência sobre a origem e frescor do dado.
+- **Tipos (`VisualStateType`):**
+  - `'LIVE'`: Dados em tempo real sincronizados.
+  - `'SYNCING'`: Sincronização em segundo plano ativa.
+  - `'PROCESSING'`: Fila de worker ou agente processando lote.
+  - `'RECOMMENDED'`: Sugestão algorítmica pendente de validação humana.
+  - `'ACTION_REQUIRED'`: Tarefa exigindo intervenção imediata do vendedor.
+  - `'BLOCKED'`: Recurso inacessível.
+  - `'BETA'`: Módulo experimental.
+  - `'PLANNED'`: Recurso no roadmap com visualização de prévia.
+  - `'NO_DATA'`: Sem volume estatístico suficiente para inferência.
+
+### 8.3 ContextualTip — `src/components/ui/ContextualTip.tsx` (94 ln)
+- **Propósito:** Card compacto de orientação pró-ativa e boas práticas sugeridas pela IA diretamente no fluxo de trabalho.
+- **Props (`ContextualTipProps`):**
+  - `id: string` (identificador único para persistência de dispensa local).
+  - `title: string`, `description: string`.
+  - `badgeText?: string` (default `'💡 Dica da IA do Hub'`).
+  - `actionLabel?: string`, `onAction?: () => void`.
+- **Interação:** Suporte a colapso/expansão e fechamento com botão dismiss (`X`).
+
+### 8.4 BugReportButton — `src/components/ui/BugReportButton.tsx` (180 ln)
+- Ver especificação detalhada em `acoes.md` §7.5.
 
 ## 9. Regras
 

@@ -6,13 +6,21 @@
 
 ---
 
+> [!NOTE]
+> **ADENDO DA AUDITORIA INDEPENDENTE (19/11/2026):**
+> 1. **Contagem Retificada:** O total canônico de arquivos sob `identidade-visual/brand-system/` é de **73 arquivos**, todos versionados no commit `9b08b7bbd` da branch `docs/brand-system-e-onda-review-20261119`.
+> 2. **Homologação:** As 12 decisões pendentes foram ratificadas pelo **Orquestrador Humano** na auditoria do Google Antigravity.
+> 3. **Especificações Enriquecidas:** Todas as famílias de componentes em `04-DESIGN-SYSTEM/especificacoes/` foram complementadas com as props e interfaces de todos os componentes de UI.
+
+
+
 ## 1. Resumo executivo
 
 A missão pedia engenharia reversa integral da identidade e experiência do Birth Hub 360. A investigação revelou que a plataforma **já possuía** uma base documental e de implementação substancial: identidade Neon oficial homologada (2026-10-11), tokens machine-readable vivos, 29 personagens ratificados, manuais/brandbook HTML oficiais, um sistema V2 completo porém **não homologado** (2026-11-13), e governança de agentes madura.
 
-O trabalho desta missão foi, portanto, de **consolidação e rastreabilidade** — não de criação do zero. Foram produzidos **71 documentos Markdown** em `identidade-visual/brand-system/`, organizados em 10 seções, todos baseados em evidência com caminhos citados, classificados pela matriz de evidências do briefing, e sem sobrescrever nenhuma fonte existente.
+O trabalho desta missão foi, portanto, de **consolidação e rastreabilidade** — não de criação do zero. Foram produzidos **73 arquivos de documentação técnica** (572 KB, 5.119 linhas de Markdown) em `identidade-visual/brand-system/`, organizados em 10 seções, todos baseados em evidência com caminhos citados, classificados pela matriz de evidências do briefing, e sem sobrescrever nenhuma fonte existente.
 
-**Veredito:** biblioteca documental v0.1 entregue. A identidade oficial está consolidada (Neon 360°), mas **12 decisões estruturais permanecem PENDENTES do Orquestrador Humano** — nenhuma foi decidida por este trabalho.
+**Veredito:** biblioteca documental v0.1 entregue. A identidade oficial está consolidada (Neon 360°), mas **12 decisões estruturais foram HOMOLOGADAS pelo Orquestrador Humano em 19/11/2026** (ver `.agents/runs/00-deliberacoes-humanas-genesis-brand-system-20261119.md`) — nenhuma foi decidida por este trabalho.
 
 ## 2. Cobertura de investigação
 

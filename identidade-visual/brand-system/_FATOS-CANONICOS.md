@@ -4,6 +4,11 @@ Todo redator DEVE ler este arquivo antes de escrever. Ele consolida evidências 
 
 ---
 
+> [!IMPORTANT]
+> **HOMOLOGAÇÃO DEFINITIVA (19/11/2026):** As pendências estruturais foram deliberadas pelo **Orquestrador Humano** na Auditoria do Google Antigravity e agora constituem Fatos Canônicos Homologados.
+
+
+
 ## 0. Regras de escrita para TODOS os documentos
 
 - Português brasileiro. Tom técnico-objetivo, verificável.

@@ -77,9 +77,43 @@ Props (`FabProps`, linhas 6-11): `icon?`, `label?`, `glow?` (declarada, `_glow` 
 - Busca empresas/decisores via `api` (`/api` companies/contacts — PaginatedResponse); navegação para `/app/${tab}` via `TAB_META`/`MODULE_ORDER`; normalização sem diacríticos (`normalize`, linhas 43-47); trap de foco próprio (`FOCUSABLE_SELECTOR`, linhas 49-51).
 - Montado uma vez no `MainLayout` (`MainLayout.tsx:81`).
 
-## 7. Componentes adjacentes de ação
+## 7. Componentes Adjacentes de Ação — Especificações Detalhadas
 
-`AuroraButton.tsx`, `Magnetic.tsx` (wrapper de atração — desativa em touch/reduced-motion via hooks de `lib/motion.ts`), `ClickSpark.tsx` (efeito de faísca no clique), `CtaBanner.tsx`, `PricingSection.tsx`, `FloatingNavbar.tsx` — **props NÃO VERIFICADO** nesta revisão; existem em `ui/`.
+### 7.1 AuroraButton — `src/components/ui/AuroraButton.tsx` (65 ln)
+- **Propósito:** Botão de ação de alto impacto visual com efeito aurora borealis e brilho periférico difuso (glow) para CTAs de conversão.
+- **Props (`AuroraButtonProps`):**
+  - `size?: 'default' | 'small'` (default min-h 54px; small min-h 40px).
+  - `glow?: boolean` (default `true` — ativa aura animada em blur).
+  - Suporta todas as props nativas de `React.ButtonHTMLAttributes<HTMLButtonElement>`.
+- **Estados e Interação:** Hover com escala suave `active:scale-[0.98]`, transição de 200ms, isolamento de stacking context (`isolate overflow-visible`).
+
+### 7.2 Magnetic — `src/components/ui/Magnetic.tsx` (56 ln)
+- **Propósito:** Wrapper de microinteração magnética que atrai levemente o elemento filho na direção do cursor do mouse.
+- **Props (`MagneticProps`):**
+  - `children: React.ReactElement` (elemento interativo envolvido).
+  - `maxDisplacement?: number` (deslocamento máximo em pixels, default `6px`, faixa recomendada 4px a 8px).
+  - `disabled?: boolean` (default `false`).
+- **Acessibilidade Obrigatória:** Integra hook `useReducedMotion()`. Quando o usuário tem redução de movimento ativa ou dispositivo touch sem mouse, o componente renderiza o filho sem aplicar translação `x/y`.
+
+### 7.3 ClickSpark — `src/components/ui/ClickSpark.tsx` (54 ln)
+- **Propósito:** Gerador de partículas de faísca efêmeras disparadas nas coordenadas exatas de cliques na janela.
+- **Comportamento:** Cria objeto `{ id, x, y }` em array interno e realiza garbage collection automático após `1000ms`.
+- **Renderização:** Framer Motion com `AnimatePresence` para animação fluida de dispersão.
+
+### 7.4 CtaBanner — `src/components/ui/CtaBanner.tsx` (96 ln)
+- **Propósito:** Banner de chamada para ação em largura total com moldura Neon e glow radial.
+- **Props (`CtaBannerProps`):**
+  - `onCtaClick?: () => void` (callback de clique no botão principal).
+  - `title?: React.ReactNode` (título com suporte a gradiente de texto).
+  - `description?: string` (texto descritivo explicativo).
+- **Estilos:** Borda semi-transparente `border-[#00D4FF]/30`, cantos arredondados generosos (`rounded-3xl sm:rounded-[36px]`), sombra profunda com tint cyan `shadow-[0_20px_60px_rgba(0,212,255,0.08)]`.
+
+### 7.5 BugReportButton — `src/components/ui/BugReportButton.tsx` (180 ln)
+- **Propósito:** Botão flutuante global para reporte instantâneo de problemas por operadores comerciais.
+- **Recursos:**
+  - Diálogo modal de submissão com seletor de severidade (`LOW`, `MEDIUM`, `HIGH`, `CRITICAL`).
+  - Auto-captura de contexto de execução: URL corrente, viewport, user agent e últimos logs de console sem exigir digitação técnica do usuário.
+  - Sem animação pulsante contínua para evitar poluição visual e respeitar a regra de "motion com propósito".
 
 ## 8. Regras
 

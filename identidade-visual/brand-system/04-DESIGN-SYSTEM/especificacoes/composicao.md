@@ -63,13 +63,53 @@ Props: `{ title: string; subtitle?; icon?; badge?; actions?; glow? }` — `glow`
 | `.bh-orbit-ring` | marcador visual de órbita (animação `spin-slow`, desativada em reduced-motion) | `globals.css:1655-1665` |
 | `.bh-pattern-diagonal-60` / `.bh-pattern-grid` | padrões de atmosfera 60° | `globals.css:1548-1571` |
 
-## 5. Utilitários de efeito (referência)
+## 5. Componentes de Composição e Efeitos — Especificações Detalhadas
 
-- Texto: `.text-gradient-brand`, `.text-gradient-cta` (`official-identity.css:368-377`), `.text-gradient-coolors(-warm)` (`globals.css:448-470`), `.vancouver-gradient-text`/`.gradient-text` (`globals.css:1673-1685`).
-- Glow/borda: `.border-glow-{brand,cyan,pink,gold}`, `.shadow-glow-{blue,pink,gold}`, `.glow-coolors-*`.
-- Botões utilitários: `.btn-neon-cta` (grad-cta + pill + glow), `.btn-vancouver-outline`.
-- Órbita: `.bg-orbit-conic` (anel cônico 360°, `official-identity.css:380-382`), `.bg-gradient-orbit5` (`globals.css:1446-1455`).
-- Badges: `.badge-coolors-*` (duas famílias — ver `dados.md` §6).
+### 5.1 BorderBeam — `src/components/ui/BorderBeam.tsx` (144 ln)
+- **Propósito:** Borda animada de alta sofisticação com feixe de luz itinerante estilo laser que percorre o perímetro de cards e containers em destaque.
+- **Props (`BorderBeamProps`):**
+  - `size?: number`: Comprimento do feixe de luz em pixels (padrão: `220`).
+  - `duration?: number`: Duração em segundos de uma volta completa (padrão: `12s`).
+  - `borderWidth?: number`: Espessura do traço (padrão: `1.5px`).
+  - `anchor?: number`: Posição da cabeça do feixe ao longo do caminho em % (padrão: `90`).
+  - `variant?: 'cyan' | 'brand' | 'violet' | 'emerald'`: Presets cromáticos oficiais da plataforma (default `'cyan'`).
+  - `colorFrom?: string`, `colorMid?: string`, `colorTo?: string`: Cores customizadas do gradiente do feixe.
+  - `delay?: number`, `reverse?: boolean`: Controle de sentido e atraso.
+  - `glow?: boolean`: Adiciona halo difuso de bloom atmosférico ao redor da borda.
+
+### 5.2 CommandCenterHeader — `src/components/ui/CommandCenterHeader.tsx` (93 ln)
+- **Propósito:** Cabeçalho mestre unificado para páginas operacionais do sistema ("Command Center").
+- **Props (`CommandCenterHeaderProps`):**
+  - `title: string`: Nome do módulo operacional.
+  - `description?: ReactNode`: Descrição funcional da tela.
+  - `pillar?: string`: Identificador do pilar de negócio (ex.: `"01 · HUB"`, `"06 · IA"`).
+  - `state?: VisualStateType`: Badge operacional de estado (`LIVE`, `SYNCING`, `BETA`, etc.).
+  - `actions?: ReactNode`: Slot de botões de ação e exportação no canto direito.
+  - `accent?: PageTitleAccent`: Cor temática de destaque da tela.
+
+### 5.3 BentoShowcase — `src/components/ui/BentoShowcase.tsx` (184 ln)
+- **Propósito:** Showcase responsivo em Bento Grid com cartões estilizados de alta densidade destacando os pilares de produto (Enxame de IA, Voice Hub, Governança).
+- **Estilos:** Cartões assimétricos (`col-span-2`), gradientes suaves com backdrop-blur, orbes difusos em background e bordas neon.
+
+### 5.4 BrandOrb — `src/components/ui/BrandOrb.tsx` (138 ln)
+- **Propósito:** Esfera 3D procedural interativa renderizada via Three.js (`@react-three/fiber` e `@react-three/drei`).
+- **Recursos:** Deformação orgânica via `MeshDistortMaterial`, partículas orbitais (`Sparkles`), feedback sonoro (`SoundFX`) e suspensão automática de movimento quando `useReducedMotion()` é detectado.
+
+### 5.5 Carousel — `src/components/ui/Carousel.tsx` (163 ln)
+- **Propósito:** Carrossel acessível e responsivo construído com `embla-carousel-react`, utilizado no OnboardingTour e na Academia de Treinamentos de Vendas.
+- **Props (`CarouselProps`):**
+  - `autoPlay?: number`: Intervalo de reprodução automática em milissegundos (default `0` = desabilitado; pausa automaticamente no hover/focus).
+  - `showDots?: boolean`: Indicadores paginados circulares navegáveis.
+  - `showArrows?: boolean`: Botões de navegação lateral anterior/próximo (`ChevronLeft`/`ChevronRight`).
+  - `loop?: boolean`: Rolagem contínua infinita.
+  - `className?: string`.
+- **Subcomponentes:** `CarouselSlide` com padding e largura ajustável por slide.
+- **Acessibilidade:** Suporte a toque/swipe mobile e navegação por setas de teclado sem depender de bibliotecas externas de CSS.
+
+### 5.6 Utilitários de Efeito em CSS
+- Texto: `.text-gradient-brand`, `.text-gradient-cta` (`official-identity.css:368-377`), `.text-gradient-coolors(-warm)` (`globals.css:448-470`).
+- Glow/borda: `.border-glow-{brand,cyan,pink,gold}`, `.shadow-glow-{blue,pink,gold}`.
+- Órbita: `.bg-orbit-conic` (anel cônico 360°, `official-identity.css:380-382`).
 
 ## 6. Regras
 

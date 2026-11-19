@@ -53,16 +53,78 @@ Exports (`bento/index.ts`): `BentoGrid`, `BentoCard`, `BentoHero`, `BentoInsight
 - Não há wrapper `ui/Chart` — gráficos são implementados nas features (`features/analytics`, `features/dashboard` etc.). **NÃO VERIFICADO** inventário de wrappers por feature.
 - Skeleton dedicado: `ChartSkeleton` (`ui/Skeleton.tsx:114`).
 
-## 8. Componentes de domínio em `ui/`
+## 8. Componentes de Domínio e Métricas — Especificações Detalhadas
 
-| Componente | Notas |
-|---|---|
-| `DealsGrid.tsx` | `DealCardData { id,title,status:'won'|'lost'|'open',statusLabel,value }`; `DealCard` + `DealsGrid` (linhas 6-92+); `formatValue` default `Intl pt-BR BRL` |
-| `CompareTable.tsx` | `CompareTableColumn{key,label}`, `CompareTableCell{value,tone?:'melhor'|'pior'|'neutral'}`, `CompareTableRow{id,group?,label,cells}` — `group` insere separador de seção; região rolável focável |
-| `CompareBar.tsx` | `CompareBar` (`label`, `seriesA`, `seriesB`, `format`) + `DeltaPill` (`value`, `suffix='%'`, `note`) |
-| `CalendarHeatmap.tsx` | heatmap de calendário — props NÃO VERIFICADO |
-| `ChannelDonut.tsx`, `FunnelBars.tsx` | gráficos de domínio — props NÃO VERIFICADO |
-| `Timeline.tsx`, `Checklist.tsx` | listas temporais/tarefas — props NÃO VERIFICADO |
+### 8.1 DealsGrid — `src/components/ui/DealsGrid.tsx`
+- **Props e Tipos:**
+  - `DealCardData`: `{ id: string, title: string, status: 'won' | 'lost' | 'open', statusLabel: string, value: number }`.
+  - `DealsGridProps`: `{ deals: DealCardData[], onDealClick?: (id: string) => void, formatValue?: (val: number) => string }`.
+  - Formatação monetária padrão: `Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })`.
+  - Layout responsivo em grid com cards interativos e badge de status semântico.
+
+### 8.2 CompareTable — `src/components/ui/CompareTable.tsx`
+- **Props e Tipos:**
+  - `CompareTableColumn`: `{ key: string, label: string }`.
+  - `CompareTableCell`: `{ value: ReactNode, tone?: 'melhor' | 'pior' | 'neutral' }`.
+  - `CompareTableRow`: `{ id: string, group?: string, label: string, cells: Record<string, CompareTableCell> }`.
+  - Destaque semântico de tons (`melhor` com fundo sutil verde/ok, `pior` com crítico).
+  - Suporte a agrupamento de linhas por seção e scroll horizontal com acessibilidade de teclado.
+
+### 8.3 CompareBar — `src/components/ui/CompareBar.tsx`
+- **Props e Tipos:**
+  - `CompareBarSeries`: `{ value: number, label: string, color?: string }`.
+  - `CompareBarProps`: `{ label: string, seriesA: CompareBarSeries, seriesB: CompareBarSeries, format?: (val: number) => string }`.
+  - Exporta `DeltaPill`: `{ value: number, suffix?: string, note?: string }` para exibição rápida de variação percentual.
+
+### 8.4 CalendarHeatmap — `src/components/ui/CalendarHeatmap.tsx` (101 ln)
+- **Props e Tipos:**
+  - `HeatmapDay`: `{ date: string, count: number, level?: 0 | 1 | 2 | 3 | 4 }`.
+  - `CalendarHeatmapProps`: `{ data: HeatmapDay[], startDate?: string, endDate?: string, onDayClick?: (day: HeatmapDay) => void }`.
+  - Escala de 5 intensidades de cor (de cinza/surface a neon cyan `#00E5FF`) com tooltip de contagem diária.
+
+### 8.5 ChannelDonut — `src/components/ui/ChannelDonut.tsx` (91 ln)
+- **Props e Tipos:**
+  - `ChannelDonutProps`: `{ data: Array<{ name: string, value: number, color: string }>, totalLabel?: string, centerValue?: string | number }`.
+  - Gráfico donut em SVG nativo de alta performance com legenda lateral e hover interativo.
+
+### 8.6 FunnelBars — `src/components/ui/FunnelBars.tsx` (65 ln)
+- **Props e Tipos:**
+  - `FunnelBarItem`: `{ stage: string, count: number, conversionRate?: number, color?: string }`.
+  - Barras horizontais escalonadas proporcionalmente com taxa de conversão entre etapas sucessivas do funil.
+
+### 8.7 Timeline — `src/components/ui/Timeline.tsx` (76 ln)
+- **Props e Tipos:**
+  - `TimelineItem`: `{ id: string, title: string, timestamp: string, description?: ReactNode, icon?: ReactNode, status?: 'completed' | 'current' | 'pending' }`.
+  - Linha do tempo vertical com nós conectados e estados de progresso.
+
+### 8.8 Checklist — `src/components/ui/Checklist.tsx` (47 ln)
+- **Props e Tipos:**
+  - `ChecklistItemData`: `{ id: string, label: string, checked: boolean, disabled?: boolean }`.
+  - `ChecklistProps`: `{ items: ChecklistItemData[], onChange?: (id: string, checked: boolean) => void }`.
+
+## 9. Componentes de IA e Raciocínio
+
+### 9.1 AIContextPopover — `src/components/ui/AIContextPopover.tsx` (216 ln)
+- **Propósito:** Popover flutuante para inspeção rápida de contexto sintetizado por agentes de IA associado a leads, empresas ou negócios.
+- **Tipos e Props:**
+  - `EntityType`: `'lead' | 'company' | 'deal' | 'activity'`.
+  - `AIInsight`: `{ id: string, category: 'risk' | 'opportunity' | 'action', text: string, confidence: number }`.
+  - `AIContextPopoverProps`: `{ entityId: string, entityType: EntityType, trigger: ReactNode, insights?: AIInsight[] }`.
+  - Renderiza badge de confiança de IA (`confidence`), lista de recomendações e botão de aprovação rápida.
+
+### 9.2 AiReasoningPipeline — `src/components/ui/AiReasoningPipeline.tsx` (134 ln)
+- **Propósito:** Visualizador sequencial das 5 fases de decisão de um agente autônomo.
+- **Tipos e Etapas:**
+  - `AiReasoningStep`: `'CONTEXT' | 'ANALYSIS' | 'RECOMMENDATION' | 'APPROVAL' | 'EXECUTION'`.
+  - `AiReasoningPipelineProps`: `{ currentStep: AiReasoningStep, stepsState?: Record<AiReasoningStep, 'waiting' | 'running' | 'done' | 'error'> }`.
+  - Ícones animados de progresso e pulse glow neon no estágio ativo.
+
+### 9.3 AiReasoningVisualizer — `src/components/ui/AiReasoningVisualizer.tsx` (72 ln)
+- **Propósito:** Painel expandido de exibição de grafos de pensamento e cadeias de raciocínio (Chain-of-Thought) para auditoria e explicabilidade da IA.
+
+### 9.4 ActionPlanSteps — `src/components/ui/ActionPlanSteps.tsx` (63 ln)
+- **Propósito:** Lista estruturada de planos de ação gerados por agentes de vendas com checkboxes de execução e prazos.
+- **Tipos:** `PlanStep`: `{ id: string, title: string, description?: string, owner?: string, dueDate?: string, completed: boolean }`.
 
 ## 9. Regras
 
