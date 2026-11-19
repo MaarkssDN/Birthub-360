@@ -1,5 +1,6 @@
 import dns from 'node:dns/promises';
 import net from 'node:net';
+import { isPrivateIpv6Transition } from '../../shared/security/ipv6.js';
 import { AppError } from '../../shared/middlewares/errorHandler.js';
 
 /**
@@ -96,7 +97,10 @@ function isPrivateOrInternalIpv6(ip: string): boolean {
       return isPrivateOrInternalIpv4(ipv4);
     }
   }
-  return false;
+  // Mecanismos de transição IPv4-em-IPv6 (6to4, Teredo, NAT64, IPv4-compatible) —
+  // o IPv4 embutido é avaliado pela mesma política IPv4 (handoff
+  // `.agents/handoffs/onda-2/15-para-01-ssrf-ipv6-transition-ranges.md`).
+  return isPrivateIpv6Transition(ip, isPrivateOrInternalIpv4);
 }
 
 /**

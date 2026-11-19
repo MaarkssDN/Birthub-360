@@ -204,6 +204,47 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
   next();
 }
 
+// Escopo de tenant do outbound legado (handoff 12→05, F2): o modelo antigo usa
+// `company` (string livre, ex.: 'birthhub360') em vez do `organizationId`
+// canônico. Este middleware exige sessão válida E `company` preenchida — sem
+// tenant não há como isolar queries, então 403 é a resposta correta (sessão
+// existe, mas não identifica uma empresa). Aplicado uma única vez no mount dos
+// routers de dados em server/routes.ts; rotas públicas (login/logout/me,
+// /health) ficam de fora dele.
+export function requireTenantScope(req: Request, res: Response, next: NextFunction) {
+  if (!req.outboundUser) {
+    return res.status(401).json({ error: 'Sessão ausente ou expirada. Faça login novamente.' });
+  }
+  if (!req.outboundUser.company || !String(req.outboundUser.company).trim()) {
+    return res
+      .status(403)
+      .json({ error: 'Conta sem empresa associada. Fale com o administrador.' });
+  }
+  next();
+}
+
+// Normalização canônica de company (mesma regra de normalizeCompany do login
+// em auth.routes.ts): trim + lowercase + colapso das variações birthhub/360.
+// Exportada para comparar valores gravados em registros (ex.: SearchRun) com a
+// company da sessão sem depender de req.
+export function normalizeTenantCompany(value: unknown): string {
+  const trimmed = String(value ?? '')
+    .trim()
+    .toLowerCase();
+  if (!trimmed) return '';
+  if (trimmed.includes('birthhub') || trimmed.includes('birth hub') || trimmed.includes('360')) {
+    return 'birthhub360';
+  }
+  return trimmed;
+}
+
+// Devolve a company da sessão já normalizada (mesma regra do login — ver
+// normalizeCompany em routes/auth.routes.ts), para uso direto em cláusulas
+// WHERE. Só chamar em rotas protegidas por requireTenantScope.
+export function tenantCompany(req: Request): string {
+  return normalizeTenantCompany(req.outboundUser?.company);
+}
+
 // Exige sessão válida E role === 'admin'. Usar nas rotas mais sensíveis (ex:
 // SQL Explorer). 401 quando não há sessão nenhuma (não autenticado); 403
 // quando a sessão é válida mas a role não autoriza (autenticado, mas sem
