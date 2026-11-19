@@ -85,3 +85,36 @@ decisão por dono com o warn do runtime como instrumento de verificação.
 
 **Status permanece `em-andamento`**: nenhum call site de produtor foi alterado (arquivos de
 outros donos — ver regra de propriedade §15/§16 do AGENTS.md).
+
+## Resolução parcial — Agente 06 (2026-11-19, branch `agente/06-waveE-outbox-idem`)
+
+Parcela de `src/features/integrations/**` concluída — **todos** os `domainEventMesh.publish`
+do domínio de integrações agora passam `{ idempotencyKey }` (o inventário listava 2 call sites;
+a varredura real encontrou 4):
+
+| Arquivo | Evento | `idempotencyKey` |
+|---|---|---|
+| `src/features/integrations/whatsapp/whatsappMessage.service.ts` (~L147) | `WHATSAPP_MESSAGE_RECEIVED`/`_SENT` | `wa-message:{waMessageId}` |
+| `src/features/integrations/whatsapp/whatsappMessage.service.ts` (~L230) | `ENGAGEMENT_SIGNAL_RECEIVED` | `wa-engagement:{waMessageId}` |
+| `src/features/integrations/bitrix/bitrix.webhook.ts` (~L163) | `BITRIX_WEBHOOK_RECEIVED` | `bitrix-webhook:{deliveryFingerprint}` |
+| `src/features/integrations/bitrix/bitrix.webhook.ts` (~L189) | `ENGAGEMENT_SIGNAL_RECEIVED` | `bitrix-engagement:{deliveryFingerprint}` |
+
+Decisões de chave:
+
+- **WhatsApp**: `waMessageId` é a identidade estável da mensagem (já UNIQUE por organização em
+  `WhatsAppMessage`) — reentregas do Baileys colidem na outbox.
+- **Bitrix**: o webhook de saída do Bitrix **não envia id de evento**. Usado o
+  `webhookDeliveryFingerprint` já existente (`webhookReplayGuard.ts`) — hash determinístico do
+  corpo autenticado, a mesma identidade que o replay guard usa. Como o UNIQUE da outbox é
+  `(organizationId, idempotencyKey)` sem `eventType`, cada publish da mesma entrega usa prefixo
+  distinto (`bitrix-webhook:` vs `bitrix-engagement:`) para não se descartarem mutuamente.
+- Nenhum `randomUUID()` em nenhuma chave.
+
+Verificação: `npx tsc --noEmit` limpo; `vitest run -c vitest.unit.config.ts` nos dois arquivos
+de teste do domínio → 25/25 verdes, incluindo testes novos que fixam as chaves determinísticas
+e a não-colisão entre os dois eventos da mesma entrega. `biome lint` limpo nos 4 arquivos
+(`biome check` aponta `organizeImports` pré-existente em `main` nos 2 services — não introduzido
+por esta mudança).
+
+Demais produtores do inventário (07/04/17 etc.) permanecem pendentes — handoff segue
+`em-andamento` para os outros donos.
