@@ -72,5 +72,41 @@ describe('hasLeadReplied', () => {
       select: { id: true },
     });
   });
+
+  // DEBT-0008 — sem `since`, uma réplica histórica (anterior ao início do run) encerrava a
+  // cadência nova no primeiro tick. O corte temporal usa `receivedAt` em WhatsApp/EmailMessage
+  // (esses models não têm `createdAt`) e `createdAt` em VoiceCallLog.
+  it('propaga `since` como corte temporal nas três queries (DEBT-0008)', async () => {
+    const since = new Date('2026-11-19T12:00:00.000Z');
+    await hasLeadReplied('org-1', 'lead-1', since);
+
+    expect(whatsAppFindFirst).toHaveBeenCalledWith({
+      where: {
+        organizationId: 'org-1',
+        leadId: 'lead-1',
+        direction: 'inbound',
+        receivedAt: { gte: since },
+      },
+      select: { id: true },
+    });
+    expect(emailFindFirst).toHaveBeenCalledWith({
+      where: {
+        organizationId: 'org-1',
+        leadId: 'lead-1',
+        direction: 'inbound',
+        receivedAt: { gte: since },
+      },
+      select: { id: true },
+    });
+    expect(voiceCallFindFirst).toHaveBeenCalledWith({
+      where: {
+        organizationId: 'org-1',
+        leadId: 'lead-1',
+        outcome: { in: ['completed', 'conversa'] },
+        createdAt: { gte: since },
+      },
+      select: { id: true },
+    });
+  });
 });
 

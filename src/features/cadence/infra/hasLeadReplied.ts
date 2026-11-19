@@ -8,15 +8,39 @@ import { prisma } from '../../../lib/prisma.js';
  * nunca chega a virar linha, ver `src/features/integrations/email/emailReply.webhook.ts`). Voz
  * ainda não tem transporte de entrada persistido — uma cadência com toques de voz que recebe
  * resposta só por ligação não vai parar sozinha por esta checagem.
+ *
+ * DEBT-0008: `since` é o corte temporal obrigatório para quem avança uma cadência — sem ele,
+ * uma resposta ANTERIOR ao início do run (histórica, de uma cadência ou campanha passada)
+ * encerrava o run novo no primeiro tick com `stopReason: 'lead-reply'`. Quem chama
+ * `advanceCadenceRun` deve passar `run.startedAt`; omitir `since` mantém o comportamento
+ * histórico (qualquer réplica já registrada conta) para usos fora do ciclo de cadência.
+ *
+ * Campos temporais por modelo (schema.prisma): `WhatsAppMessage`/`EmailMessage` usam
+ * `receivedAt` (não existe `createdAt`); `VoiceCallLog` usa `createdAt`.
  */
-export async function hasLeadReplied(organizationId: string, leadId: string): Promise<boolean> {
+export async function hasLeadReplied(
+  organizationId: string,
+  leadId: string,
+  since?: Date,
+): Promise<boolean> {
+  const receivedSince = since ? { gte: since } : undefined;
   const [inboundWhatsApp, inboundEmail, completedVoiceCall] = await Promise.all([
     prisma.whatsAppMessage.findFirst({
-      where: { organizationId, leadId, direction: 'inbound' },
+      where: {
+        organizationId,
+        leadId,
+        direction: 'inbound',
+        ...(receivedSince ? { receivedAt: receivedSince } : {}),
+      },
       select: { id: true },
     }),
     prisma.emailMessage.findFirst({
-      where: { organizationId, leadId, direction: 'inbound' },
+      where: {
+        organizationId,
+        leadId,
+        direction: 'inbound',
+        ...(receivedSince ? { receivedAt: receivedSince } : {}),
+      },
       select: { id: true },
     }),
     prisma.voiceCallLog.findFirst({
@@ -24,6 +48,7 @@ export async function hasLeadReplied(organizationId: string, leadId: string): Pr
         organizationId,
         leadId,
         outcome: { in: ['completed', 'conversa'] },
+        ...(receivedSince ? { createdAt: receivedSince } : {}),
       },
       select: { id: true },
     }),

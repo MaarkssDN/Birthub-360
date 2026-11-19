@@ -78,6 +78,23 @@ export function ipv6ToBytes(ip: string): Uint8Array | null {
   return new Uint8Array(bytes);
 }
 
+/**
+ * Extrai o IPv4 embutido de um endereço **IPv4-mapeado** (RFC 4291 §2.5.5.2)
+ * pela forma binária: bytes 0–9 zerados e bytes 10–11 = `0xffff`. Independe da
+ * forma textual — `::ffff:7f00:1`, `0:0:0:0:0:ffff:7f00:1` e
+ * `::ffff:127.0.0.1` são o mesmo endereço e produzem o mesmo resultado
+ * (`127.0.0.1`). Retorna `null` para qualquer outra entrada (IPv6 nativo,
+ * NAT64/6to4/Teredo — esses têm seus próprios mecanismos de extração em
+ * `classifyIpv6Transition`).
+ */
+export function embeddedIpv4FromIpv6(ip: string): string | null {
+  const bytes = ipv6ToBytes(ip);
+  if (!bytes) return null;
+  if (!allZero(bytes, 0, 10)) return null;
+  if (bytes[10] !== 0xff || bytes[11] !== 0xff) return null;
+  return dottedQuad(bytes, 12);
+}
+
 export interface Ipv6Transition {
   mechanism: '6to4' | 'teredo' | 'nat64' | 'ipv4-compatible';
   /**

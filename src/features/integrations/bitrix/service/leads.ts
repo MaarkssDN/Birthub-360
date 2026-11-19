@@ -1,7 +1,7 @@
 import { LeadStatus, type Prisma } from '@prisma/client';
 import { AuditService } from '../../../../lib/audit/audit.service.js';
 import { logger } from '../../../../lib/logger.js';
-import { prisma } from '../../../../lib/prisma.js';
+import { prisma, runInTransaction } from '../../../../lib/prisma.js';
 import { enrichmentQueue } from '../../../../lib/queue/enrichment.queue.js';
 import { AppError } from '../../../../shared/middlewares/errorHandler.js';
 import { BITRIX_FIELD_MAP } from '../bitrixFieldMap.js';
@@ -319,61 +319,78 @@ export async function importSelectedBitrixLeads(
       }
 
       try {
-        const company = await prisma.company.create({
-          data: {
-            legalName: tradeName,
-            tradeName,
-            phones: phone ? [phone] : [],
-            emails: email ? [email] : [],
-            segment: 'Importado do Bitrix24',
-            observations: raw.COMMENTS || null,
-            organizationId,
-            tags: ['Bitrix24'],
+        // DEBT-0020 (importação Bitrix não atômica → órfãos parciais): Company, Contact e Lead
+        // precisam comitar JUNTOS. Antes, cada create era uma transação independente — uma falha
+        // no `lead.create` (ex.: P2002 da unique constraint numa corrida de importação, ou queda
+        // de conexão) deixava Company e Contact commitados órfãos, sem Lead apontando pra eles.
+        // `runInTransaction` faz rollback de tudo se qualquer etapa falhar. O enriquecimento
+        // (enrichmentQueue) é efeito externo — fica DEPOIS do commit, só para empresa que
+        // realmente persistiu.
+        const created = await runInTransaction(
+          async () => {
+            const company = await prisma.company.create({
+              data: {
+                legalName: tradeName,
+                tradeName,
+                phones: phone ? [phone] : [],
+                emails: email ? [email] : [],
+                segment: 'Importado do Bitrix24',
+                observations: raw.COMMENTS || null,
+                organizationId,
+                tags: ['Bitrix24'],
+              },
+            });
+
+            const contact = contactName
+              ? await prisma.contact.create({
+                  data: {
+                    name: contactName,
+                    phone,
+                    email,
+                    role: contactRole,
+                    companyId: company.id,
+                    organizationId,
+                  },
+                })
+              : null;
+
+            const lead = await prisma.lead.create({
+              data: {
+                status: LeadStatus.Lead_Recebido,
+                source: 'Bitrix24 (importado)',
+                companyId: company.id,
+                contactId: contact?.id,
+                organizationId,
+                owner: ownerId,
+                bitrixLeadId: raw.ID,
+                bitrixStageLabel:
+                  (raw.STATUS_ID && labels.get(raw.STATUS_ID)) || raw.STATUS_ID || null,
+                qualification:
+                  Object.keys(qualification).length > 0 ? qualification : undefined,
+                ...leadFields,
+              } as Prisma.LeadUncheckedCreateInput,
+            });
+            await AuditService.log({
+              action: 'IMPORT',
+              entity: 'Lead',
+              entityId: lead.id,
+              tenantId: organizationId,
+              afterState: { bitrixLeadId: raw.ID, source: 'crm.lead.get' },
+            });
+            return { companyId: company.id, leadId: lead.id };
           },
-        });
+          { organizationId },
+        );
+        imported++;
+        importedLeadIds.push(created.leadId);
         // Bitrix não manda CNPJ — mesmo enfileiramento que POST /companies usa, para que a
         // empresa importada ganhe o mesmo enriquecimento (Receita/Apollo/heurísticas) de uma
         // criada direto no Atlas, em vez de ficar permanentemente sem dado enriquecido.
+        // Pós-commit: se o tx acima fez rollback, esta empresa não existe e não deve ser
+        // enfileirada.
         await enrichmentQueue?.add('enrich-company', {
-          companyId: company.id,
+          companyId: created.companyId,
           organizationId,
-        });
-
-        const contact = contactName
-          ? await prisma.contact.create({
-              data: {
-                name: contactName,
-                phone,
-                email,
-                role: contactRole,
-                companyId: company.id,
-                organizationId,
-              },
-            })
-          : null;
-
-        const lead = await prisma.lead.create({
-          data: {
-            status: LeadStatus.Lead_Recebido,
-            source: 'Bitrix24 (importado)',
-            companyId: company.id,
-            contactId: contact?.id,
-            organizationId,
-            owner: ownerId,
-            bitrixLeadId: raw.ID,
-            bitrixStageLabel: (raw.STATUS_ID && labels.get(raw.STATUS_ID)) || raw.STATUS_ID || null,
-            qualification: Object.keys(qualification).length > 0 ? qualification : undefined,
-            ...leadFields,
-          } as Prisma.LeadUncheckedCreateInput,
-        });
-        imported++;
-        importedLeadIds.push(lead.id);
-        await AuditService.log({
-          action: 'IMPORT',
-          entity: 'Lead',
-          entityId: lead.id,
-          tenantId: organizationId,
-          afterState: { bitrixLeadId: raw.ID, source: 'crm.lead.get' },
         });
       } catch (err: any) {
         // P2002 = violação da unique constraint (organizationId, bitrixLeadId) — corrida real
