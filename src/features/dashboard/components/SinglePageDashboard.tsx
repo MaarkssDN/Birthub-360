@@ -79,7 +79,7 @@ export function SinglePageDashboard() {
   } = useDashboardLayout();
 
   const overview = stats?.overview;
-  const pipelineValue = overview?.pipelineValue ?? 0;
+  const pipelineValue = overview?.pipelineValue ?? null;
   const totalLeads = overview?.totalLeads ?? 0;
 
   // Perfil gamificado real — sem fallback fabricado a partir de KPIs de pipeline.
@@ -171,13 +171,15 @@ export function SinglePageDashboard() {
               </span>
             </div>
             <p className="text-2xl sm:text-3xl font-bold text-ink font-mono tracking-tight tabular-nums numeric-tabular-cell">
-              {pipelineValue > 0
-                ? new Intl.NumberFormat('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL',
-                    maximumFractionDigits: 0,
-                  }).format(pipelineValue)
-                : 'R$ 0'}
+              {pipelineValue == null
+                ? '—'
+                : pipelineValue > 0
+                  ? new Intl.NumberFormat('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL',
+                      maximumFractionDigits: 0,
+                    }).format(pipelineValue)
+                  : 'R$ 0'}
             </p>
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-line/40 text-xs text-ink-2">
               <span>{totalLeads} oportunidades ativas</span>
