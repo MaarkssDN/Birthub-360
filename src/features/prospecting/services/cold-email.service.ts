@@ -1,6 +1,9 @@
+import { Prisma } from '@prisma/client';
+import { env } from '../../../config/env.js';
 import { MailerNotConfiguredError, sendEmail } from '../../../lib/email/mailer.js';
 import { logger } from '../../../lib/logger.js';
 import { toE164BR } from '../../../lib/phone.js';
+import { prisma } from '../../../lib/prisma.js';
 import { isOptedOut } from '../../cadence/application/optOutService.js';
 import { prismaOptOutRepository } from '../../cadence/infra/PrismaOptOutRepository.js';
 import { resolveEmailStatus } from './enrichment/domainGuess.js';
@@ -38,6 +41,104 @@ function emailDomain(email: string | undefined): string | undefined {
 }
 
 /**
+ * Chave de idempotência do disparo (DEBT-0011): `campaignId + target` normalizado.
+ *
+ * É gravada em `EmailMessage.providerMessageId` — a única coluna com UNIQUE por organização
+ * (`@@unique([organizationId, providerMessageId])`) que pode servir de trava durável de
+ * dedupe sem mudança de schema (schema.prisma é do Agente 01; colunas dedicadas
+ * `campaignId`/`legalBasis`/`dataSource` foram pedidas por handoff — ver
+ * `.agents/handoffs/onda-liquidacao-debitos/05-para-01-emailmessage-cold-email-schema.md`).
+ * Para linhas OUTBOUND de cold email essa coluna carrega a chave sintética em vez do
+ * Message-Id real do SMTP (que vai para log e para `Activity.observations`): nenhum consumidor
+ * atual faz join `inReplyTo → providerMessageId` de outbound (ver `emailReply.webhook.ts`, que
+ * usa `direction`+`body` das mensagens anteriores para classificar intenção), então a troca é
+ * segura hoje — mas fica registrada como débito de modelagem para o 01.
+ */
+function coldEmailDedupeKey(campaign: ColdEmailCampaign): string {
+  const target = campaign.targetEmail.trim().toLowerCase();
+  return `cold-email:${campaign.id}:${target}`;
+}
+
+/**
+ * Persiste o disparo confirmado em `EmailMessage` (direction 'outbound') — o mesmo modelo que o
+ * webhook de entrada (`integrations/email/emailReply.webhook.ts`, dono 06) já usa, então a
+ * resposta do lead passa a ter histórico outbound real para `hasLeadReplied`/classificação de
+ * intenção. Só é chamada DEPOIS de `sendEmail` confirmar entrega ao SMTP — falha de envio nunca
+ * gera linha ("falha não persiste parcial").
+ *
+ * `legalBasis`/`dataSource` não têm coluna em `EmailMessage` hoje — a trilha LGPD completa fica
+ * em `Activity.observations`/`TimelineEvent.description` (quando há `leadId`) e na Activity; o
+ * handoff ao 01 pede as colunas dedicadas.
+ */
+async function persistColdEmailDispatch(
+  campaign: ColdEmailCampaign,
+  smtpMessageId: string | null,
+): Promise<void> {
+  // Mesmo remetente efetivo do mailer (`from: env.SMTP_FROM || env.SMTP_USER`).
+  const fromEmail = env.SMTP_FROM || env.SMTP_USER || '';
+  await prisma.emailMessage.create({
+    data: {
+      organizationId: campaign.organizationId,
+      providerMessageId: coldEmailDedupeKey(campaign),
+      direction: 'outbound',
+      fromEmail,
+      toEmail: campaign.targetEmail,
+      subject: campaign.subject,
+      body: campaign.body,
+      leadId: campaign.leadId ?? null,
+      receivedAt: new Date(),
+    },
+  });
+
+  if (!campaign.leadId) return; // Activity/TimelineEvent exigem leadId (FK NOT NULL no schema).
+
+  const complianceLines = [
+    'Cold email de prospecção enviado.',
+    `Base legal (LGPD): ${campaign.legalBasis}`,
+    `Fonte dos dados: ${campaign.dataSource}`,
+    `Assunto: ${campaign.subject}`,
+    smtpMessageId ? `Message-Id SMTP: ${smtpMessageId}` : null,
+    `\n${campaign.body}`,
+  ].filter((line): line is string => line !== null);
+
+  // Mesma disciplina best-effort do dispatcher de cadência (CadenceDispatchers.ts): a mensagem
+  // já saiu de verdade — falha ao espelhar no CRM não pode reclassificar o envio como falha.
+  await prisma.activity
+    .create({
+      data: {
+        organizationId: campaign.organizationId,
+        leadId: campaign.leadId,
+        type: 'Email',
+        status: 'Concluida',
+        owner: 'Prospecção — Cold Email',
+        date: new Date(),
+        observations: complianceLines.join('\n'),
+      },
+    })
+    .catch((err) =>
+      logger.warn(
+        { err, campaignId: campaign.id, leadId: campaign.leadId },
+        'Cold email enviado mas falhou ao registrar Activity no CRM',
+      ),
+    );
+
+  await prisma.timelineEvent
+    .create({
+      data: {
+        type: 'email',
+        description: `Cold email de prospecção enviado: "${campaign.subject}" (base legal: ${campaign.legalBasis}, fonte: ${campaign.dataSource})`,
+        leadId: campaign.leadId,
+      },
+    })
+    .catch((err) =>
+      logger.warn(
+        { err, campaignId: campaign.id, leadId: campaign.leadId },
+        'Cold email enviado mas falhou ao registrar TimelineEvent no CRM',
+      ),
+    );
+}
+
+/**
  * Envia um cold email de prospecção via SMTP (mesmo transporte real de src/lib/email/mailer.ts,
  * já usado por aiPendingAction.service.ts e src/lib/auth.ts).
  *
@@ -63,6 +164,12 @@ function emailDomain(email: string | undefined): string | undefined {
  *    usada em `enrichment.service.ts`/`enrichmentCascade.service.ts` ao salvar Contact) roda antes
  *    do envio; `emailStatus === 'invalid'` bloqueia o disparo com a mesma disciplina de honestidade
  *    do opt-out (nunca tratado como enviado).
+ * 5. Persistência e idempotência (DEBT-0011): antes, o disparo não gravava NADA — nem
+ *    `EmailMessage`, nem `Activity`, nem trilha de `legalBasis`/`dataSource`, e um duplo clique
+ *    reenviava. Agora, após `sendEmail` confirmar, o disparo é gravado em `EmailMessage`
+ *    (direction 'outbound', `providerMessageId` = chave de dedupe `campaignId+target`) e, quando
+ *    há `leadId`, em `Activity`/`TimelineEvent` com base legal e fonte dos dados — e uma
+ *    tentativa repetida para o mesmo campaignId+target é bloqueada antes do SMTP.
  *
  * NOTA para o handoff: o ideal de UX (distinguir "não enviado por falta de config"/"bloqueado por
  * opt-out" de "falhou de verdade", sem responder 500 para os dois primeiros casos) exige mudar como
@@ -117,10 +224,61 @@ export async function sendColdEmail(campaign: ColdEmailCampaign): Promise<boolea
       return false;
     }
 
-    await sendEmail({ to: campaign.targetEmail, subject: campaign.subject, text: campaign.body });
+    // DEBT-0011 — dedupe durável por campaignId+target: se já existe EmailMessage outbound com a
+    // chave de idempotência deste disparo, o envio já aconteceu (ou está sendo confirmado por uma
+    // chamada concorrente) e esta tentativa é descartada antes de tocar o SMTP.
+    const dedupeKey = coldEmailDedupeKey(campaign);
+    const alreadySent = await prisma.emailMessage.findUnique({
+      where: {
+        organizationId_providerMessageId: {
+          organizationId: campaign.organizationId,
+          providerMessageId: dedupeKey,
+        },
+      },
+      select: { id: true },
+    });
+    if (alreadySent) {
+      logger.info(
+        { campaignId: campaign.id, toDomain, reason: 'duplicate' },
+        'Cold email não enviado: disparo idêntico (campaignId+target) já persistido — dedupe.',
+      );
+      return false;
+    }
+
+    const sendResult = await sendEmail({
+      to: campaign.targetEmail,
+      subject: campaign.subject,
+      text: campaign.body,
+    });
+    const messageId = sendResult?.messageId ?? null;
+
+    // Persistência SÓ depois do envio confirmado — falha acima nunca gera linha parcial.
+    // P2002 aqui = corrida entre duas chamadas que passaram no findUnique acima: o e-mail DESTA
+    // chamada saiu de verdade (retorna true), mas a outra já gravou a linha de dedupe.
+    try {
+      await persistColdEmailDispatch(campaign, messageId);
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        logger.warn(
+          { campaignId: campaign.id, toDomain },
+          'Cold email enviado, mas a persistência bateu na trava de dedupe (corrida) — linha já existia.',
+        );
+      } else {
+        // O e-mail saiu de verdade; a falha é de trilha/auditoria, não de envio. Log de erro
+        // (não warn) porque sem a linha de dedupe uma nova tentativa pode reenviar — o retry
+        // manual/duplo clique fica sem proteção até a próxima persistência bem-sucedida.
+        logger.error(
+          { err: error, campaignId: campaign.id, toDomain },
+          'Cold email enviado mas FALHOU ao persistir EmailMessage/Activity — disparo sem trilha de dedupe.',
+        );
+      }
+    }
 
     logger.info(
-      { campaignId: campaign.id, toDomain, basis: campaign.legalBasis },
+      { campaignId: campaign.id, toDomain, basis: campaign.legalBasis, smtpMessageId: messageId },
       'Cold email enviado',
     );
     return true;
