@@ -830,7 +830,7 @@ export function Landing360({
   // Redirecionamento se já autenticado
   useEffect(() => {
     if (currentUser) {
-      navigate(postLoginTargetRef.current, { replace: true });
+      void navigate(postLoginTargetRef.current, { replace: true });
     }
   }, [currentUser, navigate]);
 
@@ -927,7 +927,7 @@ export function Landing360({
           return;
         }
 
-        navigate(postLoginTarget, { replace: true });
+        void navigate(postLoginTarget, { replace: true });
       } else if (authMode === 'signup') {
         const result = await authClient.signUp.email({
           email: email.trim(),
