@@ -4,7 +4,6 @@ import { ZodError } from 'zod';
 import { env } from '../../config/env.js';
 import { logger } from '../../lib/logger.js';
 import type { ApiErrorCode } from '../contracts/apiEnvelope.contract.js';
-import type { IObservabilityRequest } from './observability.js';
 
 // Re-exporta os tipos canônicos do contrato de envelope (MEL-40, Onda 5) para não quebrar
 // imports existentes de `errorHandler.js` — a fonte única de verdade agora é
@@ -124,7 +123,12 @@ function isRetryableStatus(status: number): boolean {
 
 /** Reaproveita o `x-request-id` já gerado por `observabilityMiddleware` — nunca gera um segundo id. */
 function resolveRequestId(req: Request, res: Response): string | undefined {
-  const fromObservability = (req as IObservabilityRequest).observability?.requestId;
+  // Tipo estrutural local em vez de `import type { IObservabilityRequest }`: o import criava
+  // a aresta errorHandler → observability que fechava o ciclo depcruise
+  // authenticateToken → errorHandler → observability → authenticateToken.
+  const fromObservability = (
+    req as Request & { observability?: { requestId?: string | string[] } }
+  ).observability?.requestId;
   if (typeof fromObservability === 'string' && fromObservability) return fromObservability;
   if (Array.isArray(fromObservability) && fromObservability[0]) return fromObservability[0];
 
