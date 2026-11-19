@@ -41,9 +41,10 @@ Restrições: usar apenas valores gerados localmente; não reutilizar segredos r
 ## Contexto adicional
 Achado de CI: o job `Detectar escopo visual` calcula `git diff BASE_SHA...HEAD` sobre o merge ref; quando a `main` avança depois da base do PR, arquivos de `src/` vindos da `main` marcam `relevant=true` e disparam Visual Regression mesmo em PR só de documentação (ex.: PR #420). Sugestão ao 08: comparar contra `github.event.pull_request.head.sha`/`merge-base` ou `pull_request` files API. Handoff separado a abrir pelo 08.
 
-## Resolução (Agente 14, 2026-11-19)
-Status: em-andamento (ambiente funcional; falta parecer do 24 e itens opcionais).
-- Provisionado localmente sem docker: Postgres 16 + pgvector (5434), Redis (6379), `.env.test` local gitignored com valores aleatórios.
-- TESTADO: `auth.spec.ts` 4/4 verde; `accessibility.spec.ts` 34/34 verde (Chromium via `PLAYWRIGHT_CHROMIUM_EXECUTABLE`, sem `playwright install`).
-- NÃO EXECUTADO: `mobile-sweep.spec.ts`, visual (snapshots); Meilisearch não provisionado (opcional; app sobe sem ele).
-- Passos e evidências: `.agents/runs/14-harness-playwright-local-20261119.md`.
+## Resolução (Agente 14, 2026-11-19, atualização)
+Status: em-andamento (aguarda parecer do 24; achados do inventário encaminhados ao 00).
+- Reprovisionado após queda dos processos: Postgres 16 + pgvector (5434, dados em /tmp/pgd preservados) e Redis (6379); `prisma migrate deploy`: sem migrações pendentes. `.env.test` local (gitignored) intacto.
+- TESTADO (reexecução): `auth.spec.ts` 4 passed (41s); `accessibility.spec.ts` 34 passed (3,8m); `mobile-sweep.spec.ts` 1 passed (54,7s).
+- TESTADO (observação): inventário visual de 70 rotas `/app/*` (4 variantes: 1280x800/390x844 x claro/escuro) + axe + contraste de títulos A11Y-001: 0 overflow a 390px; 19 rotas com axe crítico/sério; 1 título claro reprovado (`/app/characters`, 1,52:1). Relatório: `.agents/runs/14-inventario-visual-app-20261119.md`.
+- NÃO EXECUTADO: visual com snapshots; papéis não-ADMIN; Meilisearch; revisão do 24.
+- Passos anteriores e evidências: `.agents/runs/14-harness-playwright-local-20261119.md`.
