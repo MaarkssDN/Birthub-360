@@ -85,3 +85,24 @@ decisão por dono com o warn do runtime como instrumento de verificação.
 
 **Status permanece `em-andamento`**: nenhum call site de produtor foi alterado (arquivos de
 outros donos — ver regra de propriedade §15/§16 do AGENTS.md).
+
+## Atualização — Agente 02 (2026-11-19, branch `agente/02-waveE-outbox-idem`)
+
+**Resolução parcial — Agente 02**: parcela de gamificação concluída.
+
+- `src/features/gamification/services/behavioralEngine.service.ts` — 4 call sites:
+  `COMMERCIAL_BOTTLENECK_DETECTED` → `bottleneck-detected:{b.id}`;
+  `ADAPTIVE_MISSION_SUGGESTED` → `adaptive-mission:{missionId}`;
+  `ADAPTIVE_MISSION_COMPLETED` → `adaptive-mission-completed:{missionId}`;
+  `SELLER_XP_REWARDED` → `seller-xp:{sellerId}:{missionId}`.
+- `src/features/gamification/services/warRoomArena.service.ts` — 1 call site:
+  `WAR_ROOM_DUEL_RESOLVED` → `war-room:{roomId}`.
+
+Detalhes e evidências no handoff resolvido
+`.agents/handoffs/onda-3/04-para-02-gamification-outbox-idempotency.md` (entregue nesta
+branch pois ainda não existia em `main`). Teste:
+`tests/unit/gamification/outboxIdempotency.test.ts`. `grep -rn "domainEventMesh.publish"
+src/features/gamification/` confirma que não restou call site sem chave na pasta.
+
+Demais produtores do inventário seguem pendentes com seus donos (06, 07, 04, 17 etc.) —
+o warn throttled do runtime continua sendo o instrumento de verificação.
