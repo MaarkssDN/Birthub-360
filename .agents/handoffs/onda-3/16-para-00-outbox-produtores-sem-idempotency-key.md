@@ -85,3 +85,40 @@ decisão por dono com o warn do runtime como instrumento de verificação.
 
 **Status permanece `em-andamento`**: nenhum call site de produtor foi alterado (arquivos de
 outros donos — ver regra de propriedade §15/§16 do AGENTS.md).
+
+## Resolução parcial — Agente 09 (Mobile), 2026-11-19
+
+Branch `agente/09-waveE-outbox-idem`. Parcela: `src/features/mobile/mobileEdgeAi.service.ts`
+— confirmado via grep que são os únicos 2 call sites de `domainEventMesh.publish` do domínio
+mobile (`OFFLINE_BRIEFING_ACCESSED`, `GEOFENCE_PROXIMITY_DETECTED`).
+
+**Call sites cobertos (2/2) — `{ idempotencyKey }` como 2º argumento de `publish`:**
+
+| Arquivo | Evento | Chave escolhida |
+|---|---|---|
+| `mobileEdgeAi.service.ts:90` | OFFLINE_BRIEFING_ACCESSED | `briefing-access:{briefingId}:{online\|offline}` |
+| `mobileEdgeAi.service.ts:185` | GEOFENCE_PROXIMITY_DETECTED | `geofence-proximity:{geofenceId}:{sellerId}:{YYYY-MM-DD}` |
+
+**Racional das chaves:** identidade estável do fato de negócio, sem `randomUUID`.
+- `OFFLINE_BRIEFING_ACCESSED`: o fato é "briefing em cache X foi acessado". `briefingId` é
+  estável por entrada de cache (um novo `cacheVisitBriefing` gera novo `briefingId` = fato
+  novo); o sufixo `online|offline` separa contextos distintos do mesmo briefing para não
+  colapsar acessos em modos diferentes.
+- `GEOFENCE_PROXIMITY_DETECTED`: não há id de evento do cliente nem id de execução — usei
+  `{geofenceId}:{sellerId}:{data}` (mesmo padrão do Agente 17 com `{leadId}:{daysInactive}`):
+  retries/double-submit no mesmo dia colidem; uma detecção em outro dia é fato novo e gera
+  evento novo. O bucket usa `event.timestamp` (ISO) para ser determinístico por chamada.
+
+**Verificação:** `InMemoryOutboxRepository.append` deduplica por
+`(organizationId, idempotencyKey)` (`src/lib/queue/outbox/inMemory.ts:17-27`). Testes novos em
+`src/features/mobile/__tests__/outboxIdempotency.test.ts` (3 testes): `getVisitBriefing`
+repetido gera 1 único `OFFLINE_BRIEFING_ACCESSED`; acesso online+offline do mesmo briefing
+gera 2 registros com chaves distintas; `processGeofenceLocation` repetido gera 1 único
+`GEOFENCE_PROXIMITY_DETECTED` com chave no formato `geofence-proximity:{geoId}:{seller}:{data}`.
+`npx tsc --noEmit` limpo; `biome lint` limpo nos 2 arquivos (observação: `biome check`
+reporta `organizeImports` pré-existente no service — imports não tocados por esta parcela,
+mesmo estado de `origin/main`); `vitest run -c vitest.unit.config.ts` nos 2 arquivos de
+mobile verde (9/9 testes).
+
+**Status da parcela: resolvido.** Handoff permanece `em-andamento` — demais donos de
+feature pendentes (04, 06, 07, 12 etc.).
