@@ -28,6 +28,15 @@ vi.mock('../../../../lib/logger.js', () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
+// Handoff 16→00 (onda-3): produtores do outbox devem passar idempotencyKey estável — estes
+// testes fixam as chaves wa-message:{waMessageId} / wa-engagement:{waMessageId}.
+const { publishMock } = vi.hoisted(() => ({
+  publishMock: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock('../../../../lib/queue/domainEventMesh.service.js', () => ({
+  domainEventMesh: { publish: publishMock },
+}));
+
 import { prisma } from '../../../../lib/prisma.js';
 import {
   extractMessageText,
@@ -174,6 +183,47 @@ describe('persistWhatsAppMessage', () => {
 
     expect(messageMock.create).toHaveBeenCalled();
     expect(timelineMock.create).not.toHaveBeenCalled();
+  });
+
+  it('publica WHATSAPP_MESSAGE_RECEIVED com idempotencyKey estável wa-message:{waMessageId}', async () => {
+    queryRawMock.mockResolvedValue([]);
+
+    await persistWhatsAppMessage({
+      organizationId: ORG,
+      waMessageId: 'm-idem',
+      direction: 'inbound',
+      remoteJid: '5511999998888@s.whatsapp.net',
+      body: 'oi',
+    });
+
+    expect(publishMock).toHaveBeenCalledWith(
+      expect.objectContaining({ eventType: 'WHATSAPP_MESSAGE_RECEIVED' }),
+      { idempotencyKey: 'wa-message:m-idem' },
+    );
+  });
+
+  it('publica ENGAGEMENT_SIGNAL_RECEIVED com idempotencyKey wa-engagement:{waMessageId} quando há lead', async () => {
+    queryRawMock.mockResolvedValue([{ id: 'cont-1' }]);
+    leadMock.findFirst.mockResolvedValue({ id: 'lead-1' });
+
+    await persistWhatsAppMessage({
+      organizationId: ORG,
+      waMessageId: 'm-eng',
+      direction: 'inbound',
+      remoteJid: '5511999998888@s.whatsapp.net',
+      body: 'Quero saber mais',
+    });
+
+    expect(publishMock).toHaveBeenCalledWith(
+      expect.objectContaining({ eventType: 'ENGAGEMENT_SIGNAL_RECEIVED' }),
+      { idempotencyKey: 'wa-engagement:m-eng' },
+    );
+    // As duas chaves da mesma mensagem são distintas — o UNIQUE da outbox é
+    // (organizationId, idempotencyKey) e não pode descartar um dos eventos.
+    const keys = publishMock.mock.calls.map(
+      (c) => (c[1] as { idempotencyKey: string }).idempotencyKey,
+    );
+    expect(new Set(keys).size).toBe(keys.length);
   });
 });
 
