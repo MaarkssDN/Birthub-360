@@ -22,6 +22,7 @@ import { AppError } from '../../../shared/middlewares/errorHandler.js';
 import {
   recordTokenQuotaAlert,
   recordTokenQuotaBlocked,
+  recordTokenQuotaFailOpen,
   recordTokenQuotaFallback,
   recordTokenUsage,
   setTokenQuotaLimitGauge,
@@ -206,6 +207,10 @@ export class TokenQuotaService {
       });
       fresh = agg._sum.tokens ?? 0;
     } catch (err: unknown) {
+      // DEBT-0014: o fail-open é intencional (não derrubar IA por indisponibilidade transitória
+      // do banco), mas precisa ser observável — sem este contador, uma janela de outage do
+      // Postgres tornaria a governança de quota silenciosamente inerte.
+      recordTokenQuotaFailOpen('usage_db_unavailable');
       logger.warn(
         { err, organizationId },
         '[TokenQuota] Falha ao calcular uso de tokens (Postgres indisponível) — tratando como 0 (fail-open)',
@@ -256,6 +261,9 @@ export class TokenQuotaService {
         planName: org?.wallet?.plan?.name,
       };
     } catch (err: unknown) {
+      // DEBT-0014: fallback para 'starter' também é fail-open parcial (tenants enterprise
+      // passam a ser avaliados com quota menor que a contratada) — registrar para observabilidade.
+      recordTokenQuotaFailOpen('tier_resolution_db_unavailable');
       logger.warn(
         { err, organizationId },
         '[TokenQuota] Falha ao ler organização/plano — adotando fallback tier starter',
