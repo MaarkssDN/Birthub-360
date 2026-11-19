@@ -130,7 +130,7 @@ export function LeadDistributionTab({ isDark }: LeadDistributionTabProps) {
               >
                 Birth Hub 360
               </span>
-              <span className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
+              <span className="text-xs text-slate-500">
                 {group.sellers.length} {group.sellers.length === 1 ? 'vendedor' : 'vendedores'} ·{' '}
                 {group.totalLeads} leads
               </span>
@@ -158,7 +158,7 @@ export function LeadDistributionTab({ isDark }: LeadDistributionTabProps) {
                         >
                           {user.name}
                         </p>
-                        <p className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
+                        <p className="text-xs text-slate-500">
                           {user.email}
                         </p>
                       </div>
@@ -193,7 +193,7 @@ export function LeadDistributionTab({ isDark }: LeadDistributionTabProps) {
                               </div>
                               {lead.segment && (
                                 <p
-                                  className={`text-[10px] truncate ml-5 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}
+                                  className="text-[10px] truncate ml-5 text-slate-500"
                                 >
                                   {lead.segment}
                                 </p>

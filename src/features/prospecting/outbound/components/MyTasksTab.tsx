@@ -141,7 +141,7 @@ export function MyTasksTab({ user, isDark }: MyTasksTabProps) {
                             {task.description}
                           </p>
                           <div
-                            className={`mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs ${isDark ? 'text-slate-500' : 'text-slate-500'}`}
+                            className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500"
                           >
                             <span className="flex items-center gap-1">
                               <Building2 className="w-3 h-3" />

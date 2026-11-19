@@ -151,7 +151,7 @@ export function TasksOverviewTab({ isDark }: TasksOverviewTabProps) {
                                 {task.description}
                               </p>
                               <div
-                                className={`flex items-center gap-2 mt-0.5 text-[10px] ${isDark ? 'text-slate-500' : 'text-slate-500'}`}
+                                className="flex items-center gap-2 mt-0.5 text-[10px] text-slate-500"
                               >
                                 <span className="flex items-center gap-1 truncate">
                                   <Building2 className="w-3 h-3 shrink-0" />

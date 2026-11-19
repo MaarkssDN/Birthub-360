@@ -412,9 +412,7 @@ export const LeadOutreachSection: React.FC<LeadOutreachSectionProps> = ({
       >
         {activeChannel === 'prompt' ? (
           <pre
-            className={`text-xs font-mono whitespace-pre-wrap leading-relaxed select-text ${
-              isDark ? 'text-[var(--orbit-blue)]' : 'text-[var(--orbit-blue)]'
-            }`}
+            className="text-xs font-mono whitespace-pre-wrap leading-relaxed select-text text-[var(--orbit-blue)]"
           >
             {`[PROMPT DO AGENTE / MOTOR DE ENRIQUECIMENTO ATLAS]
 Empresa Alvo: ${leadName}

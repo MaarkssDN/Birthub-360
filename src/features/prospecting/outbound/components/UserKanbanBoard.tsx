@@ -166,7 +166,7 @@ export function UserKanbanBoard({ user, isDark }: UserKanbanBoardProps) {
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--pink)] to-[var(--iris)] flex items-center justify-center">
             <span className="text-[var(--ink)] font-bold text-xs">AI</span>
           </div>
-          <h3 className={`font-bold ${isDark ? 'text-[var(--pink)]' : 'text-[var(--pink)]'}`}>
+          <h3 className="font-bold text-[var(--pink)]">
             Assistente LLaMA3
           </h3>
         </div>

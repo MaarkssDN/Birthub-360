@@ -26,7 +26,7 @@ export const LeadNewsDossierSection: React.FC<LeadNewsDossierSectionProps> = ({
         <div className="flex items-center gap-2">
           <Newspaper className="w-4 h-4 text-[var(--orbit-blue)]" />
           <h4
-            className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-[var(--orbit-blue)]' : 'text-[var(--orbit-blue)]'}`}
+            className="text-xs font-bold uppercase tracking-wider text-[var(--orbit-blue)]"
           >
             Dossiê de Fontes Públicas & Notícias na Internet
           </h4>

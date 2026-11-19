@@ -146,13 +146,13 @@ export const RequirementEvaluationsBadge: React.FC<RequirementEvaluationsBadgePr
                     >
                       {TYPE_LABEL[ev.type]}
                     </span>
-                    <span className={isDark ? 'text-slate-500' : 'text-slate-500'}>
+                    <span className="text-slate-500">
                       pedido:{' '}
                       <strong className={isDark ? 'text-slate-300' : 'text-slate-700'}>
                         {String(ev.expected)}
                       </strong>
                     </span>
-                    <span className={isDark ? 'text-slate-500' : 'text-slate-500'}>
+                    <span className="text-slate-500">
                       observado:{' '}
                       <strong className={isDark ? 'text-slate-300' : 'text-slate-700'}>
                         {ev.observed === null ? 'desconhecido' : String(ev.observed)}

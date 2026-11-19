@@ -82,7 +82,7 @@ export const LeadTasksAndActivitySection: React.FC<LeadTasksAndActivitySectionPr
               <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
             </div>
           ) : tasks.length === 0 ? (
-            <p className={`text-xs mb-3 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
+            <p className="text-xs mb-3 text-slate-500">
               Nenhuma tarefa criada para este lead ainda.
             </p>
           ) : (
@@ -131,9 +131,7 @@ export const LeadTasksAndActivitySection: React.FC<LeadTasksAndActivitySectionPr
                             className={`mt-0.5 flex items-center gap-1 ${
                               isOverdue
                                 ? 'text-red-500 font-semibold'
-                                : isDark
-                                  ? 'text-slate-500'
-                                  : 'text-slate-500'
+                                : 'text-slate-500'
                             }`}
                           >
                             <Calendar className="w-3 h-3" />

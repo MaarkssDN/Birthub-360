@@ -730,7 +730,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <option value="birthhub360">Birth Hub 360</option>
                     <option value="custom">Personalizado</option>
                   </select>
-                  <p className={`text-[10px] mt-1 ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
+                  <p className="text-[10px] mt-1 text-slate-500">
                     No modo automático, o lead vai para o Bitrix24 configurado para sua marca.
                   </p>
                 </div>
