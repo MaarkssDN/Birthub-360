@@ -3,7 +3,7 @@
 De: 03 — Design e Acessibilidade
 Para: 05 — Prospecção
 Onda: PR #368 (`agente/00-paleta-oficial-migracao`, paleta oficial hex→var())
-Status: aberto
+Status: resolvido (05, commit `af5f65d9d` em `agente/00-paleta-oficial-migracao` — 3 issues do Sonar + 10 ternários idênticos `isDark ? 'text-slate-500' : 'text-slate-500'` colapsados no mesmo domínio; gates locais verdes)
 Prioridade: alto (bloqueia `new_reliability_rating` do Quality Gate Sonar — nota C, limiar A)
 Bloqueador-ref: Quality Gate SonarCloud PR 368 (análise de 2026-11-19)
 
