@@ -18,19 +18,19 @@ aprendizado incorporado aqui e um registro curto em `.claude/PILOTS.md`. Ver Pil
 - **Produto:** **Birth Hub 360º** — "sua central de comando inteligente: integrando dados,
   potencializando decisões e acelerando a execução". Um CRM B2B com IA (prospecção, pipeline,
   roleplay de vendas, automações, analytics).
-  - **Marca única, paleta "Strategic Command Center" (atualizada 09/2026, pedido explícito do
-    usuário).** Cinco cores: Antique Gold `#D4AF37` (ação primária, inalterada), Deep Iris
-    `#7C3AED`, Orbit Blue `#1677FF`, vermelho `#E11D48`/`#FF3158` e rosa `#DB2777`/`#FF4FA3`
-    (claro/escuro — ver `src/styles/globals.css`). **Nenhuma âncora é preto ou branco puro**: o
-    tema claro parte de um branco rosado (Blossom White `#FFF4F9`), o escuro de um azul-marinho
-    profundo (Deep Navy `#061A3A`) — substituem Snow White/Obsidian. Fonte da verdade:
-    `src/styles/globals.css` (tokens reais) e `src/config/brand.ts`; `identidade-visual/
-    birthhub360/` documenta a identidade ANTERIOR (Obsidian/Snow White, 3 cores) e ainda não foi
-    sincronizada com esta paleta — não usar como referência de cor até essa sincronização
-    acontecer.
-  - **Ouro é uma cor CLARA.** Texto branco sobre `--brand` mede 2.10:1 e é proibido — o par
-    correto é `text-on-brand` (Deep Navy `#061A3A`, 8.21:1). Essa regra não mudou com a nova
-    paleta; só o valor exato de `--on-brand` (antes Obsidian) mudou.
+  - **Marca única, paleta oficial "Strategic Command Center & Neon System" (atualizada 2026,
+    ver `DESIGN.md` e `src/styles/official-identity.css`).** Cores canônicas: Azul Neon `--neon-blue` /
+    `--brand` (`#00D4FF` / `#0284C7`), Rosa Neon `--neon-pink` / `--brand-2` (`#FF2D9B` / `#D91B7C`),
+    Dourado Neon `--gold` (`#FFC107` / `#D97706`), Deep Iris `#7C3AED` e Orbit Blue `#1677FF`.
+    A identidade visual canônica é alimentada por `src/styles/official-identity.css` e
+    `src/styles/globals.css`. **Superfícies de alto contraste**: o tema claro parte de um Canvas Claro
+    (`--bg: #F8FAFC` / Blossom White `#FFF4F9`), e o tema escuro de Preto Neon / Deep Navy
+    (`--bg: #0D0D0D` / `#061A3A`). Fonte da verdade: `src/styles/official-identity.css`,
+    `src/styles/globals.css` (tokens reais) e `DESIGN.md`.
+  - **Regra canônica de contraste de marca:** Texto sobre superfícies sólidas claras (como ouro/amarelo
+    ou fundos de baixa luminância invertida) deve sempre atender à WCAG 2.2 AA (4.5:1). Superfície sólida
+    de marca exige obrigatoriamente `text-on-brand` (contraste validado em `tokens.test.ts`). Nunca use
+    `text-white` cego sobre cores claras de marca.
   - Até 09/2026 a plataforma trocava de marca em runtime entre Birth Hub 360
     (`BrandContext`, `data-brand` no `<html>`, `--brand` reescrito por JS). Isso não existe mais:
     a cor vive só em CSS. O eixo que aquele seletor de fato controlava no CONTEÚDO (playbook,
@@ -208,15 +208,15 @@ comentário de PR) a estas perguntas, na ordem:
    hardcoded? H1-H3 já têm tamanho/peso definidos em `@layer base` — reuse, não redefina.
 4. **Escala e densidade** — este é um dashboard/CRM de uso repetido, não uma landing page. Prefira
    densidade de informação alta e espaçamento eficiente a espaço em branco decorativo excessivo.
-5. **Contraste** — texto sobre `--brand`/`--brand-2` já tem um problema documentado (DQA-19).
-   Com o Antique Gold a regra é dura: **branco sobre marca nunca passa** (2.10:1). Use
-   `text-on-brand`. Não reintroduza `text-white` sobre cor sólida de marca.
+5. **Contraste** — texto sobre `--brand`/`--brand-2` exige atenção a acessibilidade WCAG 2.2 AA (4.5:1).
+   Em superfícies sólidas claras (como dourado ou tons pastéis), **branco sobre marca não passa** (2.10:1).
+   Use `text-on-brand`. Não reintroduza `text-white` cego sobre cor sólida de marca.
 6. **Ritmo visual e grid** — mantenha consistência com o grid já usado nas telas vizinhas do mesmo
    módulo antes de inventar um novo.
 7. **Cor** — use os tokens (`bg-brand`, `text-ink-2`, `border-line` etc.), não hex cru. Hex só é
    aceitável onde não existe CSS: three.js, canvas, PDF, e-mail — e mesmo aí vindo de
-   `BRAND.colors`, nunca digitado à mão. **Ouro é claro**: qualquer superfície de marca sólida
-   pede `text-on-brand`; cor de marca como texto sobre fundo claro pede `text-brand-ink`.
+   `BRAND.colors` ou tokens tipados (`tokens.ts`), nunca digitado à mão. Superfície de marca sólida
+   clara pede `text-on-brand`; cor de marca como texto sobre fundo claro pede `text-brand-ink`.
 8. **Estados** — todo componente interativo precisa de hover, focus-visible, active, disabled,
    loading e erro definidos antes de ser considerado pronto. Ver `ui-ux/SKILL.md`.
 9. **Microinterações e movimento** — ver seção 8 e `motion-design/SKILL.md`.
