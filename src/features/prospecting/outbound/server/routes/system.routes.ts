@@ -14,10 +14,20 @@ import {
   type FeedbackMessageRecord,
   type FeedbackLeadRecord,
 } from '../feedbackLoop.js';
-import { requireAdmin } from '../auth.js';
+import {
+  requireAdmin,
+  requireTenantScope,
+  tenantCompany,
+  normalizeTenantCompany,
+} from '../auth.js';
 import { rateLimit } from '../middleware/rateLimit.js';
 
 export const systemRouter = Router();
+
+// Handoff 12→05 (F2): defesa em profundidade — sessão + company obrigatórias
+// em TODAS as rotas deste router (antes várias eram efetivamente públicas:
+// /db/stats, /error-reports, /feedback/summary, /search-runs etc.).
+systemRouter.use(requireTenantScope);
 
 const errorReportLimiter = rateLimit({
   windowMs: 60_000,
@@ -26,9 +36,9 @@ const errorReportLimiter = rateLimit({
 });
 
 // 1. Health check & DB Stats
-systemRouter.get('/health', async (_req: Request, res: Response) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
+// NOTA: GET /health foi movido para server/routes.ts (registrado ANTES do
+// requireTenantScope) para continuar respondendo a sondas sem sessão — a
+// cópia que existia aqui ficava inalcançável e foi removida.
 
 // Wave 4 (CPI) - Provider Registry: expõe o catálogo real de providers, suas
 // capacidades declaradas e status de configuração/saúde - nenhum provider
@@ -58,7 +68,14 @@ systemRouter.get('/providers/health', async (_req: Request, res: Response) => {
 systemRouter.get('/search-runs/:searchId', async (req: Request, res: Response) => {
   const { searchId } = req.params;
   const run = getSearchRun(searchId);
-  if (!run) {
+  // Escopo de tenant (parecer 24 PR #323): o SearchRun contém query, candidatos
+  // e dados de leads — PII de prospecção. Sem vínculo company↔searchId, um
+  // autenticado de outro tenant lia a busca alheia pelo ID. A company da busca
+  // fica registrada em run.request.company (gravada pelo /prospect); runs sem
+  // company registrada ou de outra company respondem 404 — não revelar
+  // existência cross-tenant.
+  const runCompany = normalizeTenantCompany(run?.request?.company);
+  if (!run || !runCompany || runCompany !== tenantCompany(req)) {
     return res.status(404).json({
       error:
         'Search-ID não encontrado. Buscas são retidas em memória por processo (últimas 200) - pode ter expirado, ter sido de outra instância do servidor, ou nunca ter existido.',
@@ -90,6 +107,10 @@ systemRouter.get('/db/stats', async (_req: Request, res: Response) => {
 // relato para revisão posterior. Nunca deve travar o uso do app por causa de
 // um erro ao registrar o próprio erro — por isso segue com sucesso genérico
 // para o usuário mesmo que o log em si falhe, só reportando no servidor.
+// NOTA (handoff 12→05, F2): desde o requireTenantScope deste router, o POST
+// passou a exigir sessão + company — o botão da tela de login que usava este
+// endpoint legado precisará do endpoint canônico /api/error-reports (ver
+// Resolução do handoff).
 systemRouter.post('/error-reports', errorReportLimiter, async (req: Request, res: Response) => {
   const { message, page, userId, userEmail, userAgent } = req.body;
   if (!message || typeof message !== 'string' || !message.trim()) {
@@ -113,13 +134,22 @@ systemRouter.post('/error-reports', errorReportLimiter, async (req: Request, res
 
 // Lista os reportes para revisão (mais recentes primeiro) — sem isso, a única forma
 // de ver o que foi reportado seria consultar o Postgres diretamente.
+// Escopo de tenant: reportes anônimos (user_id NULL, ex.: tela de login) seguem
+// visíveis a todos os tenants; os vinculados a um usuário só aparecem para a
+// company dele — user_email é PII e não pode vazar cross-tenant.
 systemRouter.get('/error-reports', async (req: Request, res: Response) => {
   try {
     const db = await getDatabase();
+    const company = tenantCompany(req);
     const limit = Math.min(Math.max(1, Number(req.query.limit) || 50), 200);
-    const result = await db.exec(`SELECT * FROM error_reports ORDER BY created_at DESC LIMIT ?`, [
-      limit,
-    ]);
+    const result = await db.exec(
+      `SELECT * FROM error_reports
+       WHERE user_id IS NULL OR user_id IN (
+         SELECT id FROM users WHERE LOWER(TRIM(COALESCE(company, ''))) = ?
+       )
+       ORDER BY created_at DESC LIMIT ?`,
+      [company, limit],
+    );
     if (result.length === 0) return res.json([]);
     const cols = result[0].columns;
     const reports = result[0].values.map((row) => {
@@ -136,6 +166,12 @@ systemRouter.get('/error-reports', async (req: Request, res: Response) => {
 });
 
 // 2. Raw SQL Execution for Explorer
+// DÉBITO CONHECIDO (parecer 24 PR #323): SQL arbitrário executado como `admin`
+// NÃO tem escopo de tenant — um admin de company A pode ler/escrever dados de
+// company B. Mantido porque o SQL Explorer é ferramenta operacional do painel
+// legado e o módulo inteiro está atrás do gate 503; ANTES de reabrir o módulo,
+// o Agente 01/05 precisa decidir: restringir a um papel global explícito,
+// exigir confirmação, ou aposentar a rota. Ver handoff 05→01.
 systemRouter.post('/db/query', requireAdmin, async (req: Request, res: Response) => {
   try {
     const { sql } = req.body;
@@ -168,11 +204,21 @@ systemRouter.get('/cnpj/:cnpj', async (req: Request, res: Response) => {
 });
 
 // Wave 13 (CPI) - Feedback Loop: agregados honestos e determinísticos
-systemRouter.get('/feedback/summary', async (_req: Request, res: Response) => {
+systemRouter.get('/feedback/summary', async (req: Request, res: Response) => {
   try {
     const db = await getDatabase();
+    const company = tenantCompany(req);
+    // Escopo de tenant: o resumo agregava leads/messages de TODAS as companies.
+    // Messages não têm coluna company — o vínculo com o tenant é via lead_id.
 
-    const messagesRes = await db.exec(`SELECT channel, feedback FROM messages`);
+    const messagesRes = await db.exec(
+      `SELECT m.channel, m.feedback FROM messages m
+       WHERE EXISTS (
+         SELECT 1 FROM leads l
+         WHERE l.id = m.lead_id AND LOWER(TRIM(COALESCE(l.company, ''))) = ?
+       )`,
+      [company],
+    );
     const messages: FeedbackMessageRecord[] =
       messagesRes.length > 0
         ? messagesRes[0].values.map((row) => ({
@@ -182,7 +228,8 @@ systemRouter.get('/feedback/summary', async (_req: Request, res: Response) => {
         : [];
 
     const leadsRes = await db.exec(
-      `SELECT stage, loss_reason, win_reason, segment, company FROM leads`,
+      `SELECT stage, loss_reason, win_reason, segment, company FROM leads WHERE LOWER(TRIM(COALESCE(company, ''))) = ?`,
+      [company],
     );
     const leads: FeedbackLeadRecord[] =
       leadsRes.length > 0
