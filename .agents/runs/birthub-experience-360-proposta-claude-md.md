@@ -1,6 +1,6 @@
 # PROPOSTA DE DIFF — `.claude/CLAUDE.md` (arquivo protegido; NÃO APLICADA)
 Autor: Agente 00 · Data: 2026-11-19 · Decisão humana de origem: ratificação do DL v2.0 como autoridade visual (DS-001).
-Status: AGUARDA APROVAÇÃO EXPLÍCITA DO ORQUESTRADOR HUMANO. Nada foi editado em `.claude/CLAUDE.md`.
+Status: APROVADA E APLICADA em 2026-11-19 ("Tudinho autorizado", Orquestrador Humano). Pendente: parecer do Agente 24.
 
 ## Evidência de obsolescência (VERIFICADO NO CÓDIGO)
 - `src/styles/globals.css`: `--brand:#00d4ff`, `--on-brand:#041c32`, `--iris:#8b5cf6`, `--orbit-blue:#00d4ff`; dark `--bg:#0d0d0d`; light `--bg:#f0efe9`. Nenhum `#D4AF37`.

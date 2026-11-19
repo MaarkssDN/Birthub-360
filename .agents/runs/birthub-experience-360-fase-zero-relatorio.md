@@ -60,3 +60,6 @@ Os 7 agentes `.claude/agents/birthhub-*` (a11y-auditor, design-director, design-
 
 ## 8. Pendências e decisões humanas
 1. Aprovar/ajustar a proposta do `.claude/CLAUDE.md`. 2. Decidir a política de contraste dos títulos no tema claro (A11Y-001). 3. Autorizar espelhar skills `birthhub-*` para `.claude/skills/`. 4. Autorizar o 14 a criar `.env.test` e subir Postgres/Redis locais (sem segredos reais).
+
+## 9. Atualização pós-autorização (2026-11-19)
+Autorizado pelo Orquestrador Humano: (1) diff do `.claude/CLAUDE.md` — APLICADO (paleta neon, gradiente de título restrito ao DL v2.0 §2, regra de contraste claro A11Y-001); (2) política A11Y-001: títulos no tema claro devem usar variantes escurecidas AA — implementação em tokens fica para a Onda 1, após #415 e #419 entrarem na `main` (arquivos de `src/styles`/`ui` em disputa); (3) skills `birthhub-*` espelhadas em `.claude/skills/` (9; `birthhub-impeccable` não existe na origem); (4) `.env.test`/Postgres/Redis: autorizado ao Agente 14 — NÃO provisionado nesta sessão (requer ambiente e credenciais de teste locais, sem segredos reais). Revisão do Agente 24: PENDENTE.
