@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Auditoria de Dívida Técnica — Squad 50 · Integrações Externas e Ecossistema Bitrix24</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #ec4899;
+      --p0: #ef4444;
+      --p1: #f97316;
+      --p2: #eab308;
+      --p3: #3b82f6;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 24px;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header {
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-p0 { background: rgba(239, 68, 68, 0.2); color: var(--p0); border: 1px solid var(--p0); }
+    .badge-p1 { background: rgba(249, 115, 22, 0.2); color: var(--p1); border: 1px solid var(--p1); }
+    .badge-p2 { background: rgba(234, 179, 8, 0.2); color: var(--p2); border: 1px solid var(--p2); }
+    .badge-p3 { background: rgba(59, 130, 246, 0.2); color: var(--p3); border: 1px solid var(--p3); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; background: var(--card-bg); border-radius: 8px; overflow: hidden; }
+    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: #111827; font-size: 13px; text-transform: uppercase; color: var(--muted); }
+    tr:hover { background: rgba(255, 255, 255, 0.02); }
+    .agent-tag { font-weight: 600; color: var(--accent); }
+    .file-tag { font-family: monospace; font-size: 12px; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; color: #38bdf8; }
+    .nav-back { display: inline-block; margin-bottom: 16px; color: var(--muted); text-decoration: none; font-size: 14px; }
+    .nav-back:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="../dashboard/index.html" class="nav-back">← Voltar ao Dashboard Global de Dívidas Técnicas</a>
+    <header>
+      <div style="font-size: 12px; text-transform: uppercase; color: var(--accent); font-weight: bold; letter-spacing: 1px;">Auditoria Independente por Squad</div>
+      <h1 style="margin: 8px 0 4px 0;">Squad 50 · Integrações Externas e Ecossistema Bitrix24</h1>
+      <p style="color: var(--muted); margin: 0;"><strong>Coordenador Responsável:</strong> 50 — Atlas (Coordenador de Integrações)</p>
+      <p style="color: var(--muted); font-size: 13px; margin-top: 4px;">Data de Auditoria: 2026-11-19 | Total de Especialistas: 10 | Status: CONSOLIDADO</p>
+    </header>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Especialista</th>
+          <th>Papel Técnico</th>
+          <th>Severidade</th>
+          <th>Dívida Técnica Identificada</th>
+          <th>Impacto Potencial</th>
+          <th>Esforço</th>
+          <th>Arquivo Alvo</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+          <tr>
+            <td class="agent-tag">50</td>
+            <td style="font-weight: 600;">Atlas</td>
+            <td style="color: var(--muted); font-size: 13px;">Coordenador de Integrações</td>
+            <td><span class="badge badge-p0">P0</span></td>
+            <td>B-11: Falta de Circuit Breaker para chamadas à API da Bitrix24 quando o serviço remoto entra em manutenção.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Esgotamento de workers e travamento de threads do backend.</td>
+            <td style="font-size: 13px;">Alto</td>
+            <td><span class="file-tag">src/lib/integrations/bitrix/client.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">51</td>
+            <td style="font-weight: 600;">Bela</td>
+            <td style="color: var(--muted); font-size: 13px;">Autenticação Bitrix24</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Renovação de refresh token do Bitrix sem lock atômico distribuído no Redis (condição de corrida).</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Dois processos tentam renovar simultaneamente: um invalida o outro e desautentica a integração.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/lib/integrations/bitrix/auth/token.manager.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">52</td>
+            <td style="font-weight: 600;">Lino</td>
+            <td style="color: var(--muted); font-size: 13px;">Extrações Batch Bitrix</td>
+            <td><span class="badge badge-p0">P0</span></td>
+            <td>B-12: Extrações batch tratam timeout parcial de rede como extração final sem checar total de registros.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Carga massiva incompleta de clientes tratada como bem-sucedida, ocultando dados.</td>
+            <td style="font-size: 13px;">Alto</td>
+            <td><span class="file-tag">src/lib/integrations/bitrix/batch/extractor.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">53</td>
+            <td style="font-weight: 600;">Vega</td>
+            <td style="color: var(--muted); font-size: 13px;">Sync Bidirecional & Webhooks</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Webhooks da Bitrix processados de forma síncrona na rota de entrada antes de responder status 200.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Timeout de 5 segundos no Bitrix24, disparando retentativas infinitas e duplicadas.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/lib/integrations/bitrix/webhooks/receiver.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">54</td>
+            <td style="font-weight: 600;">Rita</td>
+            <td style="color: var(--muted); font-size: 13px;">Mapeamento de Entidades</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Campos customizados do tipo 'UF_CRM' sem fallback tipado quando excluídos na instância do Bitrix.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Erros 500 silenciosos ao tentar desserializar payload de webhook com campos órfãos.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/lib/integrations/bitrix/mapping/mapper.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">55</td>
+            <td style="font-weight: 600;">Ícaro</td>
+            <td style="color: var(--muted); font-size: 13px;">Conectores de E-mail</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Serviço de parsing de e-mails IMAP não remove scripts e trackers maliciosos embutidos no HTML do corpo.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Risco de segurança ao renderizar visualização do e-mail no CRM.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/lib/integrations/email/parser.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">56</td>
+            <td style="font-weight: 600;">Luna</td>
+            <td style="color: var(--muted); font-size: 13px;">WhatsApp & Baileys</td>
+            <td><span class="badge badge-p0">P0</span></td>
+            <td>Conector WhatsApp não implementa delay anti-ban randômico (humanizado) em mensagens em lote.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Risco imediato de bloqueio definitivo do número de WhatsApp da clínica.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/lib/integrations/whatsapp/baileys.client.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">57</td>
+            <td style="font-weight: 600;">Nico</td>
+            <td style="color: var(--muted); font-size: 13px;">Calendários & Reuniões</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Eventos excluídos no Google Calendar não sincronizam a exclusão se o canal de webhook expirar.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Vendedores comparecendo a reuniões que já foram canceladas pelos clientes.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/lib/integrations/calendar/google.sync.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">58</td>
+            <td style="font-weight: 600;">Elisa</td>
+            <td style="color: var(--muted); font-size: 13px;">Enriquecimento & ERP</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Consultas de CNPJ e dados de Receita Federal sem cache em banco: mesma empresa consultada várias vezes.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Gasto financeiro desnecessário com provedores de enriquecimento pago.</td>
+            <td style="font-size: 13px;">Baixo</td>
+            <td><span class="file-tag">src/lib/integrations/erp/cnpj.service.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">59</td>
+            <td style="font-weight: 600;">Ruy</td>
+            <td style="color: var(--muted); font-size: 13px;">Observabilidade de Sync</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Falta de painel em tempo real indicando drift e divergências entre registros do Bitrix e do banco local.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Equipe comercial descobre descompasso de dados semanas depois.</td>
+            <td style="font-size: 13px;">Alto</td>
+            <td><span class="file-tag">src/lib/integrations/monitoring/sync.monitor.ts</span></td>
+          </tr>
+        
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

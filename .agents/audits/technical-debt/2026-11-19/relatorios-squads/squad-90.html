@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Auditoria de Dívida Técnica — Squad 90 · Infraestrutura, SRE e Segurança Aplicada</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #64748b;
+      --p0: #ef4444;
+      --p1: #f97316;
+      --p2: #eab308;
+      --p3: #3b82f6;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 24px;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header {
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-p0 { background: rgba(239, 68, 68, 0.2); color: var(--p0); border: 1px solid var(--p0); }
+    .badge-p1 { background: rgba(249, 115, 22, 0.2); color: var(--p1); border: 1px solid var(--p1); }
+    .badge-p2 { background: rgba(234, 179, 8, 0.2); color: var(--p2); border: 1px solid var(--p2); }
+    .badge-p3 { background: rgba(59, 130, 246, 0.2); color: var(--p3); border: 1px solid var(--p3); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; background: var(--card-bg); border-radius: 8px; overflow: hidden; }
+    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: #111827; font-size: 13px; text-transform: uppercase; color: var(--muted); }
+    tr:hover { background: rgba(255, 255, 255, 0.02); }
+    .agent-tag { font-weight: 600; color: var(--accent); }
+    .file-tag { font-family: monospace; font-size: 12px; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; color: #38bdf8; }
+    .nav-back { display: inline-block; margin-bottom: 16px; color: var(--muted); text-decoration: none; font-size: 14px; }
+    .nav-back:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="../dashboard/index.html" class="nav-back">← Voltar ao Dashboard Global de Dívidas Técnicas</a>
+    <header>
+      <div style="font-size: 12px; text-transform: uppercase; color: var(--accent); font-weight: bold; letter-spacing: 1px;">Auditoria Independente por Squad</div>
+      <h1 style="margin: 8px 0 4px 0;">Squad 90 · Infraestrutura, SRE e Segurança Aplicada</h1>
+      <p style="color: var(--muted); margin: 0;"><strong>Coordenador Responsável:</strong> 90 — Hélio (Coordenador de Infra, SRE & SecOps)</p>
+      <p style="color: var(--muted); font-size: 13px; margin-top: 4px;">Data de Auditoria: 2026-11-19 | Total de Especialistas: 10 | Status: CONSOLIDADO</p>
+    </header>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Especialista</th>
+          <th>Papel Técnico</th>
+          <th>Severidade</th>
+          <th>Dívida Técnica Identificada</th>
+          <th>Impacto Potencial</th>
+          <th>Esforço</th>
+          <th>Arquivo Alvo</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+          <tr>
+            <td class="agent-tag">90</td>
+            <td style="font-weight: 600;">Hélio</td>
+            <td style="color: var(--muted); font-size: 13px;">Coordenador de Infra</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Ausência de runbook formal e automatizado de Disaster Recovery com simulação de failover de zona.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Risco de demora excessiva (>4 horas) para restaurar a operação em caso de queda de AZ na AWS.</td>
+            <td style="font-size: 13px;">Alto</td>
+            <td><span class="file-tag">infrastructure/README.md</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">91</td>
+            <td style="font-weight: 600;">Terra</td>
+            <td style="color: var(--muted); font-size: 13px;">IaC & Terraform</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>State do Terraform sem trava atômica distribuída (DynamoDB lock) habilitada no backend S3.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Risco de corrupção do arquivo de estado em execuções concorrentes de CI.</td>
+            <td style="font-size: 13px;">Baixo</td>
+            <td><span class="file-tag">infrastructure/terraform/main.tf</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">92</td>
+            <td style="font-weight: 600;">Kora</td>
+            <td style="color: var(--muted); font-size: 13px;">Kubernetes & Helm</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Deployment do Kubernetes sem probes de startup configurados, matando pods pesados antes do boot.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Restart loops durante momentos de escalabilidade horizontal automática.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">charts/birthub-api/templates/deployment.yaml</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">93</td>
+            <td style="font-weight: 600;">Max</td>
+            <td style="color: var(--muted); font-size: 13px;">Containers & Docker</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Dockerfile da API roda como usuário root em vez de usuário node sem privilégios.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Vulnerabilidade em caso de escape de container permitindo privilégios no host.</td>
+            <td style="font-size: 13px;">Baixo</td>
+            <td><span class="file-tag">Dockerfile</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">94</td>
+            <td style="font-weight: 600;">Tess</td>
+            <td style="color: var(--muted); font-size: 13px;">CI/CD & Pipelines</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Pipelines do GitHub Actions compilam imagens sem cache de dependências em layers Docker BuildKit.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Deploys demorando 12 minutos a mais do que o necessário a cada commit.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">.github/workflows/deploy.yml</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">95</td>
+            <td style="font-weight: 600;">Íon</td>
+            <td style="color: var(--muted); font-size: 13px;">Observabilidade & Métricas</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Métricas do OpenTelemetry registram rota HTTP com parâmetros de ID cru (/api/leads/uuid), explodindo cardinalidade.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Esgotamento de memória do Prometheus e custos elevados de armazenamento de métricas.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/lib/telemetry/opentelemetry.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">96</td>
+            <td style="font-weight: 600;">Nera</td>
+            <td style="color: var(--muted); font-size: 13px;">Autenticação & Sessões</td>
+            <td><span class="badge badge-p0">P0</span></td>
+            <td>B-03: Refresh tokens JWT sem mecanismo de rotação de token e sem verificação de IP/User-Agent.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Se um refresh token for interceptado, o invasor mantém acesso perpétuo.</td>
+            <td style="font-size: 13px;">Alto</td>
+            <td><span class="file-tag">src/lib/auth/session.service.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">97</td>
+            <td style="font-weight: 600;">Rocco</td>
+            <td style="color: var(--muted); font-size: 13px;">RBAC & Autorização</td>
+            <td><span class="badge badge-p0">P0</span></td>
+            <td>B-01/B-02: Algumas rotas de administração de tenant dependem de checagem condicional no controller em vez de middleware central.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Falha de autorização onde usuário comum consegue invocar endpoint administrativo.</td>
+            <td style="font-size: 13px;">Alto</td>
+            <td><span class="file-tag">src/lib/auth/rbac/enforcer.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">98</td>
+            <td style="font-weight: 600;">Safira</td>
+            <td style="color: var(--muted); font-size: 13px;">Gestão de Segredos</td>
+            <td><span class="badge badge-p0">P0</span></td>
+            <td>B-04: Credenciais e chaves de API em arquivos .env lidas diretamente pelo process.env sem validação em cofre central.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Risco de vazamento em logs de erro ou dumps de processo.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">infrastructure/secrets/vault.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">99</td>
+            <td style="font-weight: 600;">Vito</td>
+            <td style="color: var(--muted); font-size: 13px;">AppSec & SAST</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Varredura do Semgrep e auditoria de dependências (npm audit) configuradas apenas como aviso no CI (não bloqueiam merge).</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Bibliotecas com vulnerabilidades conhecidas (CVEs) são mergeadas na main.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">scripts/security/semgrep.sh</span></td>
+          </tr>
+        
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

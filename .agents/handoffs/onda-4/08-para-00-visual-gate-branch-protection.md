@@ -1,7 +1,7 @@
 - De: Agente 08 (QA e Release)
 - Para: Agente 00 (Coordenador)
 - Onda: 4
-- Status: aberto
+- Status: resolvido
 - Prioridade: alto
 - Bloqueador-ref: DEM-20261114-003 / MEL-29
 - Sprint destino: Onda 4
@@ -60,3 +60,11 @@ Após o merge e a configuração da branch protection:
   de validação de baselines.
 - Não enfraqueci nenhum gate existente; o `continue-on-error` citado na missão já havia
   sido removido do workflow no commit `e9578780b`.
+
+## Resolução (coordenador, 2026-11-19)
+
+Branch protection de `main` atualizada via API do GitHub:
+required status checks agora são **`Visual Regression Gate`** (novo contexto
+fail-closed do workflow) e **`Central Birth Hub 360 / application gate`**.
+O contexto antigo `Visual Regression` (job pesado, `skipped` fora de escopo)
+foi substituído. Verificado via `gh api .../branches/main/protection`.
