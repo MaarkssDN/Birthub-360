@@ -97,12 +97,17 @@ Parcela CRM/BI/commercial-intelligence executada conforme a decisão de contrato
 | `src/features/commercial-intelligence/services/predictiveRevenueOracle.service.ts` (~L301) | WHAT_IF_SCENARIO_SIMULATED | `what-if:{simulationId}` — id da execução |
 | `src/features/commercial-intelligence/services/valueRealization.service.ts` (~L138) | VALUE_REALIZATION_MEASURED | `value-realization:{trackerId}:{history.length}` — índice da medição no tracker |
 | `src/features/proposals/services/proposalAutomation.service.ts` (~L89) | COMMERCIAL_PROPOSAL_DRAFTED | `proposal:{proposalId}` — id do rascunho |
+| `src/features/market-intelligence/server/marketSensing.service.ts` (~L83) | MARKET_SIGNAL_DETECTED | `market-signal:{contentHash}` — `signal.id` é `sig-${randomUUID()}` (não determinístico); a chave deriva do mesmo `contentHash` sha256(org+companyName+title) usado na deduplicação do serviço, então retry após restart/replay colide na outbox |
 
 Testes: `tests/unit/commercial-intelligence/outboxIdempotency.test.ts` (novo — chave
-determinística do oracle e do value realization, incluindo estabilidade entre chamadas)
-e `tests/unit/proposals/proposalAutomation.service.test.ts` (assert do 2º argumento).
-Gate local: `npx tsc --noEmit` limpo; `biome lint`/`format` limpos nos arquivos;
-21 testes dos 4 arquivos do domínio verdes.
+determinística do oracle e do value realization, incluindo estabilidade entre chamadas),
+`tests/unit/proposals/proposalAutomation.service.test.ts` (assert do 2º argumento) e
+`tests/unit/market-intelligence/marketSensing.service.test.ts` (mock do mesh + assert de
+chave `market-signal:[0-9a-f]{64}` idêntica entre duas instências — simula restart).
+Gate local: `npx tsc --noEmit` limpo; `biome lint`/`format` limpos nos arquivos
+(1 warning pré-existente de `useOptionalChain` em marketSensing, fora do diff);
+13 testes verdes nos 3 arquivos de teste do domínio (marketSensing 6,
+proposalAutomation 4, outboxIdempotency 3).
 
 **Gamificação (`src/features/gamification/**`) NÃO foi alterada pelo 04**: a pasta tem
 dono diverso declarado em `src/features/gamification/AGENTS.md` (Agente 02). Handoff
