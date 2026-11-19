@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { prisma, runInTransaction } from '../../../lib/prisma.js';
+import { AppError } from '../../../shared/middlewares/errorHandler.js';
 import type { CrmDealItemInput, CrmProductInput } from '../crm360.schema.js';
 import type { CrmDealItem, CrmProduct } from '../crm360.types.js';
 import { calculateItem, roundMoney } from './crm360Calculations.js';
@@ -83,6 +84,19 @@ export class PrismaCrmDealItemsRepository {
     // comitam juntos.
     return runInTransaction(
       async (tx) => {
+        // Tenancy (handoff 01A→04, onda-paralela-8): `productId` vinha do body sem checar se o
+        // CrmProduct pertence ao tenant — o item gravava um vínculo cross-tenant e o
+        // `include: { product: true }` devolvia o produto estrangeiro na resposta. O `leadId` já
+        // é coberto pelo `tx.lead.update({ where: { id, organizationId } })` abaixo (P2025
+        // reverte a transação inteira), mas o produto não tinha nenhuma checagem.
+        if (calculated.productId) {
+          const product = await tx.crmProduct.findFirst({
+            where: { id: calculated.productId, organizationId },
+            select: { id: true },
+          });
+          if (!product) throw new AppError('Produto vinculado não encontrado.', 404);
+        }
+
         await assertDiscountAuthorityWithinTransaction(tx, {
           organizationId,
           actorUserId,

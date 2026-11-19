@@ -1,28 +1,9 @@
-import {
-  type AIMessage,
-  type BaseMessage,
-  HumanMessage,
-  SystemMessage,
-} from '@langchain/core/messages';
-import type { RunnableConfig } from '@langchain/core/runnables';
-import { Annotation, StateGraph } from '@langchain/langgraph';
-import type { ChatOpenAI } from '@langchain/openai';
+import { type AIMessage, type BaseMessage, HumanMessage } from '@langchain/core/messages';
+import { StateGraph } from '@langchain/langgraph';
 import { checkpointer, ensureCheckpointerReady } from '../../../lib/ai/checkpointer.js';
-import { getAiModel, logAiUsage } from '../../../lib/ai/gateway.js';
 import { getTenantId } from '../../../lib/async-context.js';
 import { logger } from '../../../lib/logger.js';
 import { assertPiiExternalConsent } from '../services/guardrails.service.js';
-// Lazy + memoizado: monta o cliente só no primeiro uso real, nunca na carga do módulo —
-// process.env.GROQ_API_KEY lido numa const de topo de arquivo ficava congelado como vazio se este
-// módulo fosse importado antes de `dotenv/config` terminar de rodar. Motor local (Ollama via
-// LiteLLM) removido de propósito: processa uma completion por vez nesta máquina, travando o
-// roteamento do enxame inteiro por vários segundos a cada decisão. Groq é rápido e não tem esse
-// gargalo. Usar ChatOpenAI "cru" (em vez do wrapper AiChatModel do gateway) é o que habilita
-// tool-calling/structured output — o wrapper só devolve texto livre, e a decisão de roteamento
-// precisa ser JSON confiável.
-import { buildModelWithFallback } from './fallback.util.js';
-import { bdrNode, closerNode, crmNode, opsNode, sdrNode } from './supervisor/specialistNodes.js';
-import { buildEvent, toAiMessage, type SwarmEvent } from './supervisor/swarm.events.js';
 import {
   detectSubSwarm,
   getAllCatalogAgents,
@@ -34,30 +15,41 @@ import {
   type SwarmAgentKey,
   semanticRouteMission,
 } from './subSwarms.config.js';
+import { finishNode } from './supervisor/finishNode.js';
+import { AGENT_INFO } from './supervisor/prompts.js';
+import { bdrNode, closerNode, crmNode, opsNode, sdrNode } from './supervisor/specialistNodes.js';
+import {
+  getSupervisorLlm,
+  routerCondition,
+  semanticRouterNode,
+  supervisorNode,
+} from './supervisor/supervisorNode.js';
+import { buildEvent, type SwarmEvent } from './supervisor/swarm.events.js';
+import { SwarmState } from './supervisor/swarm.state.js';
 import {
   buildSwarmCorrelationId,
   enforceLeadGuard,
   fallbackDecision,
-  type SupervisorDecision,
   supervisorDecisionSchema,
 } from './supervisor.decision.js';
 import {
   SWARM_CATALOG_TOTAL_AGENTS,
   SWARM_DEFAULT_SUB_SWARM,
-  SWARM_IDENTITY,
   SWARM_MAX_STEPS,
-  SWARM_OUTPUT_CONTRACT,
-  SWARM_UNTRUSTED_CONTENT_GUARD,
 } from './swarm.constants.js';
 
-// Re-exporta a API de decisão extraída para supervisor.decision.ts (TAREFA-SANEAMENTO-009)
-// — consumidores continuam importando tudo de supervisor.agent.ts.
+export type { SwarmEvent, SwarmEventType } from './supervisor/swarm.events.js';
+
+export type { SwarmRoute, SwarmStateType } from './supervisor/swarm.state.js';
+// Re-exporta a API canônica para preservar compatibilidade com todos os consumidores
 export {
+  AGENT_INFO,
   buildSwarmCorrelationId,
   detectSubSwarm,
   enforceLeadGuard,
   fallbackDecision,
   getAllCatalogAgents,
+  getSupervisorLlm,
   matchCatalogAgents,
   type SemanticAgentMatch,
   type SemanticRoutingPlan,
@@ -68,435 +60,10 @@ export {
   SWARM_MAX_STEPS,
   type SwarmAgentKey,
   semanticRouteMission,
+  semanticRouterNode,
   supervisorDecisionSchema,
+  supervisorNode,
 };
-
-let cachedSupervisorLlm: ReturnType<typeof buildModelWithFallback> | null = null;
-function getSupervisorLlm() {
-  if (cachedSupervisorLlm) return cachedSupervisorLlm;
-
-  cachedSupervisorLlm = buildModelWithFallback('openai/gpt-oss-20b');
-  return cachedSupervisorLlm;
-}
-
-export type SwarmRoute = SwarmAgentKey | 'finish';
-
-// Tipos de evento do enxame extraídos para supervisor/swarm.events.ts
-// (handoff 00-para-13) — re-exportados aqui para não quebrar consumidores.
-export type { SwarmEvent, SwarmEventType } from './supervisor/swarm.events.js';
-
-// Limite de saltos entre especialistas antes de forçar a síntese final (evita loops infinitos).
-const MAX_STEPS = SWARM_MAX_STEPS;
-
-const AGENT_INFO: Record<
-  SwarmAgentKey,
-  { label: string; description: string; chooseWhen: string }
-> = {
-  sdr: {
-    label: 'SDR Autônomo',
-    description:
-      'Qualifica um lead no CRM (fit com o ICP, enriquecimento profundo, leitura de e-mails Outlook/M365/Gmail/IMAP para identificar oportunidades, agendamento de reuniões Meet/Teams/Zoom/Calendly, geração de scripts/prompts e battlecards de objeção) e atualiza o status de qualificação.',
-    chooseWhen:
-      'A missão pede para qualificar/analisar um lead específico que já existe no CRM ou localizar por nome da empresa.',
-  },
-  bdr: {
-    label: 'BDR (Outbound)',
-    description:
-      'Realiza descoberta B2B de novas empresas (Apollo, Google Places, BrasilAPI), promove e enriquece empresas e decisores no CRM, varre caixas de e-mail (Outlook, Gmail, IMAP) atrás de sinais de compra, gera scripts/prompts comerciais e prepara cadências multicanal (WhatsApp, LinkedIn, E-mail, Telegram).',
-    chooseWhen:
-      'A missão é sobre prospecção fria, identificação de contas no CRM, priorização por aderência ao ICP ou sugestão de abertura de contato.',
-  },
-  closer: {
-    label: 'Closer Autônomo',
-    description:
-      'Conduz estratégia de negociação para oportunidades qualificadas: gera propostas comerciais, documentos Word/Google Docs, planilhas Excel/Sheets e apresentações PowerPoint/Slides, sintetiza atas de reuniões (Meet/Teams/Zoom), analisa objeções/battlecards e prontidão contratual. Jamais fecha negócios autonomamente.',
-    chooseWhen:
-      'A missão envolve oportunidade qualificada, proposta enviada, reunião comercial, piloto, negociação, objeção, decisão ou prontidão contratual. Não use para primeiro contato frio.',
-  },
-  crm: {
-    label: 'Gestor de CRM',
-    description:
-      'Diagnostica pipeline, forecast ponderado, cross-sell e risco de churn; sincroniza dados com CRMs/ERPs externos (Bitrix24, HubSpot, Pipedrive, RD Station, Monday.com, Omie) e gera relatórios em Excel/Google Sheets.',
-    chooseWhen:
-      'A missão é sobre uma negociação/deal que já está em andamento (não um lead novo) — risco de estagnação, tempo sem interação, pipeline parado ou reenriquecimento.',
-  },
-  ops: {
-    label: 'Agente de Operações',
-    description:
-      'Executa e propõe ações operacionais multi-plataforma: cria cards/tarefas e notas no Trello, Monday.com, Bitrix24, ClickUp, Asana, Notion e CRM; gera arquivos Word, Excel (.xlsx), PowerPoint e Google Docs/Sheets/Slides; envia mensagens em WhatsApp, Telegram, Teams, Slack e SMS; e dispara notificações em Pop-up na tela, Push no Celular, Relógio (Smartwatch) e SMS.',
-    chooseWhen:
-      'A missão pede uma AÇÃO CONCRETA a ser executada agora (agendar, notificar, criar tarefa) — não escolha só para produzir mais uma análise ou opinião.',
-  },
-};
-
-const SwarmState = Annotation.Root({
-  messages: Annotation<BaseMessage[]>({
-    reducer: (left, right) => left.concat(right),
-    default: () => [],
-  }),
-  mission: Annotation<string>({
-    reducer: (left, right) => right ?? left,
-    default: () => '',
-  }),
-  instruction: Annotation<string>({
-    reducer: (left, right) => right ?? left,
-    default: () => '',
-  }),
-  // ID real de Lead do CRM, opcional — ver sdrNode: sem isto, SDRQualificationAgent.run() recebia
-  // o texto livre da missão/instrução no lugar de um ID de lead de verdade e a ferramenta de
-  // contexto sempre falhava com "lead não encontrado" (IA-003).
-  leadId: Annotation<string>({
-    reducer: (left, right) => right ?? left,
-    default: () => '',
-  }),
-  subSwarm: Annotation<SubSwarmDomain>({
-    reducer: (left, right) => right ?? left,
-    default: () => 'commercial',
-  }),
-  catalogMatches: Annotation<SemanticAgentMatch[]>({
-    reducer: (left, right) => (right && right.length > 0 ? right : left),
-    default: () => [],
-  }),
-  selectedCatalogAgent: Annotation<string | null>({
-    reducer: (left, right) => right ?? left,
-    default: () => null,
-  }),
-  next: Annotation<SwarmRoute>({
-    reducer: (left, right) => right ?? left,
-    default: () => 'sdr',
-  }),
-  completed: Annotation<SwarmAgentKey[]>({
-    reducer: (left, right) => [...left, ...right],
-    default: () => [],
-  }),
-  results: Annotation<Partial<Record<SwarmAgentKey, string>>>({
-    reducer: (left, right) => ({ ...left, ...right }),
-    default: () => ({}),
-  }),
-  step: Annotation<number>({
-    reducer: (left, right) => right ?? left,
-    default: () => 0,
-  }),
-});
-
-// Exportado (type-only) para os nós especialistas extraídos em supervisor/specialistNodes.ts.
-export type SwarmStateType = typeof SwarmState.State;
-
-/**
- * Nó de roteamento semântico dinâmico que conecta a missão aos Sub-Swarms temáticos
- * e aos 379 especialistas do catálogo oficial da plataforma.
- */
-async function semanticRouterNode(state: SwarmStateType, config?: RunnableConfig) {
-  const subSwarm =
-    state.subSwarm && state.subSwarm !== 'commercial'
-      ? state.subSwarm
-      : detectSubSwarm(state.mission);
-
-  const catalogMatches = matchCatalogAgents(state.mission, subSwarm, { topK: 3 });
-  const correlationId = buildSwarmCorrelationId(config);
-
-  const topMatch = catalogMatches[0];
-  const content = topMatch
-    ? `Roteamento semântico dinâmico: Sub-Swarm '${SUB_SWARMS[subSwarm].label}' ativado. Especialista sugerido do catálogo amplo (${SWARM_CATALOG_TOTAL_AGENTS} agentes): ${topMatch.name} (${topMatch.code}) [Aderência: ${Math.round(topMatch.similarityScore * 100)}%].`
-    : `Roteamento semântico dinâmico: Sub-Swarm '${SUB_SWARMS[subSwarm].label}' ativado com especialistas primários.`;
-
-  return {
-    subSwarm,
-    catalogMatches,
-    messages: [
-      toAiMessage(
-        buildEvent(
-          'routing',
-          'supervisor',
-          content,
-          0,
-          topMatch?.matchReason || `Sub-Swarm ${subSwarm}`,
-          undefined,
-          0.9,
-          undefined,
-          undefined,
-          false,
-          correlationId,
-        ),
-      ),
-    ],
-  };
-}
-
-export async function supervisorNode(state: SwarmStateType, config?: RunnableConfig) {
-  const step = state.step + 1;
-
-  if (step > MAX_STEPS) {
-    const reasoning = `Limite de ${MAX_STEPS} etapas do enxame atingido. Terminação determinística de ciclo garantida.`;
-    return {
-      step,
-      next: 'finish' as const,
-      instruction: '',
-      messages: [
-        toAiMessage(
-          buildEvent(
-            'routing',
-            'supervisor',
-            `Encerrando o roteamento: ${reasoning} Preparando síntese final.`,
-            step,
-            reasoning,
-            undefined,
-            1.0,
-            undefined,
-            undefined,
-            false,
-            buildSwarmCorrelationId(config),
-          ),
-        ),
-      ],
-    };
-  }
-
-  const completedList =
-    state.completed.length > 0
-      ? state.completed.map((agent) => AGENT_INFO[agent].label).join(', ')
-      : 'nenhum ainda';
-  const resultsSummary =
-    (Object.entries(state.results) as [SwarmAgentKey, string][])
-      .map(([agent, content]) => `- ${AGENT_INFO[agent].label}: ${content.slice(0, 400)}`)
-      .join('\n') || 'Nenhum resultado produzido até agora.';
-
-  // Derivado de AGENT_INFO (não hardcoded) — um especialista novo adicionado ali aparece aqui
-  // automaticamente.
-  const agentKeys = Object.keys(AGENT_INFO) as SwarmAgentKey[];
-
-  const activeSubSwarm =
-    state.subSwarm && state.subSwarm !== 'commercial'
-      ? state.subSwarm
-      : detectSubSwarm(state.mission);
-  const subSwarmConfig = SUB_SWARMS[activeSubSwarm];
-  const subSwarmContextLine = `Sub-Swarm detectado para esta missão: ${subSwarmConfig.label} — Especialistas prioritários: ${subSwarmConfig.primaryAgents.join(', ')}.`;
-
-  const leadContextLine = state.leadId
-    ? `Lead ID disponível para esta missão: ${state.leadId} (o especialista 'sdr' pode usá-lo).`
-    : `Nenhum Lead ID foi informado para esta missão — NÃO escolha 'sdr' enquanto isso não mudar, pois ele depende de um lead real do CRM e sempre falharia sem um ID.`;
-
-  const catalogMatches =
-    state.catalogMatches && state.catalogMatches.length > 0
-      ? state.catalogMatches
-      : matchCatalogAgents(state.mission, activeSubSwarm, { topK: 3 });
-
-  const catalogSpecialistsBlock =
-    catalogMatches.length > 0
-      ? `\n<especialistas_catalogo_amplo_379>\nEspecialistas recomendados do catálogo de ${SWARM_CATALOG_TOTAL_AGENTS} agentes para esta missão:\n${catalogMatches
-          .map(
-            (m) =>
-              `- '${m.code}' (${m.name} - Domínio: ${m.domain}): ${m.description} [Score: ${m.similarityScore}]`,
-          )
-          .join('\n')}\n</especialistas_catalogo_amplo_379>`
-      : '';
-
-  const systemPrompt = `${SWARM_IDENTITY} Você é o Supervisor: coordena ${agentKeys.length} especialistas e decide, a cada rodada, qual deve atuar a seguir (ou se a missão está concluída).
-
-<sub_swarm_ativo>
-${subSwarmContextLine}
-</sub_swarm_ativo>
-
-<especialistas_disponiveis>
-${(
-  Object.entries(AGENT_INFO) as [
-    SwarmAgentKey,
-    { label: string; description: string; chooseWhen: string },
-  ][]
-)
-  .map(
-    ([key, info]) =>
-      `- '${key}' (${info.label}): ${info.description}\n  Escolha quando: ${info.chooseWhen}`,
-  )
-  .join('\n')}
-</especialistas_disponiveis>
-${catalogSpecialistsBlock}
-
-<contexto_missao>
-Missão original do usuário:
-"""${state.mission}"""
-
-${leadContextLine}
-
-Especialistas já acionados nesta missão: ${completedList}.
-Resultados produzidos até agora:
-${resultsSummary}
-</contexto_missao>
-
-<diretrizes_roteamento>
-1. Escolha o especialista cujo critério "Escolha quando" bate com a missão — se mais de um parecer plausível, prefira o mais específico.
-2. Não repita um especialista que já respondeu de forma satisfatória, a não ser que haja uma lacuna clara que só ele resolve.
-3. Se a missão já foi suficientemente atendida, escolha 'finish'.
-4. A instrução para o especialista deve ser objetiva, em português, citar o dado concreto da missão que ele precisa usar, e nunca ser genérica. Se a ação for 'finish', deixe a instrução vazia.
-</diretrizes_roteamento>
-
-<processo_pensamento>
-Antes de usar a ferramenta de decisão estruturada de roteamento, faça uma breve ponderação (se aplicável internamente) analisando: O que o usuário pediu? Qual dado essencial faltou ser analisado? Existe ID do Lead?
-</processo_pensamento>
-
-${SWARM_UNTRUSTED_CONTENT_GUARD}`;
-
-  const correlationId = buildSwarmCorrelationId(config);
-
-  let decision: SupervisorDecision;
-  const startTime = Date.now();
-  let fallbackTriggered = false;
-  let modelUsed: string | undefined;
-  let tokensUsed: number | undefined;
-
-  try {
-    const structuredModel = (getSupervisorLlm() as ChatOpenAI).withStructuredOutput(
-      supervisorDecisionSchema,
-      { name: 'route_decision', includeRaw: true },
-    );
-
-    const result = await structuredModel.invoke([
-      new SystemMessage(systemPrompt),
-      new HumanMessage('Qual é o próximo passo?'),
-    ]);
-    const raw = result.raw as AIMessage;
-
-    const usage = raw?.usage_metadata;
-    if (usage) {
-      modelUsed = (raw.response_metadata?.model_name as string) || 'local-llama3-fast';
-      tokensUsed = usage.total_tokens;
-
-      await logAiUsage({
-        model: modelUsed,
-        usage: {
-          totalTokens: usage.total_tokens,
-          promptTokens: usage.input_tokens,
-          completionTokens: usage.output_tokens,
-        },
-        latencyMs: Date.now() - startTime,
-      });
-    }
-
-    if (!result.parsed) {
-      throw new Error('Supervisor não retornou uma decisão estruturada válida.');
-    }
-    decision = supervisorDecisionSchema.parse(result.parsed);
-  } catch (error: any) {
-    logger.error({ err: error }, 'Swarm supervisor routing failed, using fallback heuristic');
-    decision = fallbackDecision(
-      state.completed,
-      Boolean(state.leadId),
-      state.mission,
-      activeSubSwarm,
-    );
-    fallbackTriggered = true;
-  }
-
-  decision = enforceLeadGuard(decision, { ...state, subSwarm: activeSubSwarm });
-
-  const content =
-    decision.action === 'finish'
-      ? `Missão avaliada como concluída. ${decision.reasoning}`.trim()
-      : `Encaminhando para ${AGENT_INFO[decision.action as SwarmAgentKey].label}: ${decision.instruction}`;
-
-  // Confidence score baseado em se usou structured output ou fallback
-  const confidence = fallbackTriggered ? 0.3 : 0.8;
-
-  return {
-    step,
-    subSwarm: activeSubSwarm,
-    selectedCatalogAgent: decision.catalogAgentCode || null,
-    next: decision.action,
-    instruction: decision.instruction,
-    messages: [
-      toAiMessage(
-        buildEvent(
-          'routing',
-          'supervisor',
-          content,
-          step,
-          decision.reasoning,
-          decision.action === 'finish' ? undefined : decision.action,
-          confidence,
-          modelUsed,
-          tokensUsed,
-          fallbackTriggered,
-          correlationId,
-        ),
-      ),
-    ],
-  };
-}
-
-// Os nós adaptadores dos especialistas (sdrNode/bdrNode/closerNode/crmNode/opsNode) e o helper
-// swarmSessionId foram extraídos para supervisor/specialistNodes.ts (handoff 00-para-13 /
-// DIV-AGENTE-13-002) — decomposição parcial; supervisorNode/finishNode permanecem aqui.
-
-async function finishNode(state: SwarmStateType) {
-  const resultsSummary = (Object.entries(state.results) as [SwarmAgentKey, string][])
-    .map(([agent, content]) => `${AGENT_INFO[agent].label}:\n${content}`)
-    .join('\n\n');
-
-  if (!resultsSummary) {
-    const content = 'Nenhum especialista precisou ser acionado para esta missão.';
-    return { messages: [toAiMessage(buildEvent('final', 'supervisor', content, state.step))] };
-  }
-
-  let synthesis: string;
-  try {
-    const model = getAiModel('local-llama3-fast', 0.2, 'supervisor-synthesis');
-    const response = await model.invoke([
-      new SystemMessage(
-        `${SWARM_IDENTITY} Você é o Supervisor de Operações (RevOps) encerrando a missão. Com base na missão do usuário e nos resultados retornados pelo seu esquadrão de especialistas de elite, escreva uma Síntese Executiva brutalmente honesta e visualmente deslumbrante.
-
-<diretrizes_comportamento>
-1. Nunca comece com "Aqui está o resumo...". Vá direto ao ponto.
-2. Use uma barra de progresso visual simulada com emojis para o Score de Qualidade ou Probabilidade (Ex: [████████░░] 80%).
-3. Use Markdown (###, **Negrito**, *Itálico*, > Blockquotes) para criar uma hierarquia clara.
-</diretrizes_comportamento>
-
-<processo_pensamento>
-Antes de estruturar a resposta, reflita via tag <thought>:
-1. Qual o maior bloqueador revelado pelos especialistas?
-2. Qual o Score de Viabilidade mais realista, agregando a visão do SDR/BDR/Closer?
-3. Qual a ação imediata que fará o negócio avançar agora?
-</processo_pensamento>
-
-<estrutura_output_final>
-### 🚁 Visão Panorâmica
-[O que descobrimos de fato? Resuma o cenário em 1 ou 2 frases curtas de alto impacto. Qual a temperatura geral do negócio?]
-**Score de Viabilidade:** [████████░░] 80%
-
----
-
-### 🚨 Gargalos e Riscos (Red Flags)
-- [Alerte para o principal risco estrutural ou ausência crítica, ex: "Falta validação do CFO"]
-- [Qualquer outro bloqueador imediato]
-
----
-
-### 🎯 Diretriz Estratégica (Ação Imediata)
-> **[Qual o ÚNICO próximo passo matador que a equipe deve executar AGORA?]**
-[Indique de quem é a bola: BDR, Closer, ou Marketing, e o que exatamente deve ser feito para destravar a oportunidade]
-</estrutura_output_final>
-
-${SWARM_OUTPUT_CONTRACT}
-
-${SWARM_UNTRUSTED_CONTENT_GUARD}`,
-      ),
-      new HumanMessage(
-        `Missão original: ${state.mission}\n\nIntel recebida dos especialistas:\n${resultsSummary}`,
-      ),
-    ]);
-    synthesis = response.content.trim() || resultsSummary;
-  } catch (error: any) {
-    logger.error({ err: error }, 'Swarm synthesis failed, falling back to raw results');
-    synthesis = resultsSummary;
-  }
-
-  return {
-    messages: [toAiMessage(buildEvent('final', 'supervisor', synthesis, state.step))],
-  };
-}
-
-function routerCondition(state: SwarmStateType): SwarmRoute {
-  return state.next;
-}
 
 const workflow = new StateGraph(SwarmState)
   .addNode('semanticRouter', semanticRouterNode)
@@ -540,18 +107,9 @@ export class SwarmOrchestrator {
     };
 
     try {
-      // AI-007 (parte 3): mesmo gate fail-closed já em vigor em base.agent.ts/
-      // sdrQualification.agent.ts/ops.agent.ts — até esta correção, o próprio Supervisor
-      // (supervisorNode/finishNode, abaixo) enviava `mission` em texto livre (que chega cru do
-      // corpo de POST /swarm/mission, digitado por um operador humano, e pode conter PII de um
-      // titular real) direto a um provedor de IA externo (getSupervisorLlm/getAiModel), sem
-      // passar pela mesma checagem de base legal LGPD que os especialistas do enxame (sdrNode
-      // etc.) já aplicam individualmente. Checado uma vez aqui, antes do grafo começar a rodar
-      // — os nodes dos especialistas mantêm suas próprias checagens (defesa em profundidade,
-      // e cobrem o caminho em que são chamados fora deste orquestrador).
+      // AI-007 (parte 3): gate fail-closed antes de enviar PII a provedor externo
       assertPiiExternalConsent(getTenantId());
-      // AI-002 (onda 32): garante que as tabelas do checkpointer Postgres existam antes da
-      // primeira invocação real deste processo — memoizado.
+      // AI-002 (onda 32): garante que as tabelas do checkpointer Postgres existam
       await ensureCheckpointerReady();
       const finalState = await swarmApp.invoke(
         { messages: [new HumanMessage(mission)], mission, leadId: leadId || '' },
@@ -571,15 +129,12 @@ export class SwarmOrchestrator {
     leadId?: string,
   ) {
     const sid = sessionId || `swarm-mission-${Date.now()}`;
-    // Mesmo motivo do prefixo em executeMission acima.
     const config = {
       configurable: { thread_id: `${getTenantId() ?? 'unknown-tenant'}:${sid}` },
       recursionLimit: 25,
     };
 
     try {
-      // Mesmo gate de executeMission acima — a variante em streaming passa pelo mesmo
-      // supervisorNode/finishNode e precisa da mesma checagem antes de começar a emitir chunks.
       assertPiiExternalConsent(getTenantId());
       await ensureCheckpointerReady();
       const stream = await swarmApp.stream(
@@ -634,6 +189,3 @@ export class SwarmOrchestrator {
     });
   }
 }
-
-// O alias `SupervisorAgent` (valor + tipo) foi removido: nenhum consumidor no repositório o
-// importava e ele duplicava o export de `SwarmOrchestrator` (knip "duplicate exports").

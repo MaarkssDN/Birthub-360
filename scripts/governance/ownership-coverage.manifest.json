@@ -1,0 +1,114 @@
+{
+  "$comment": "Manifesto de cobertura de propriedade (TAREFA-SANEAMENTO-011 / BT360-DT-0004). Cada entrada DEVE corresponder a um escopo do bloco de código de AGENTS.md §15, com o mesmo dono — divergência falha `npm run verify:ownership-coverage`. coverage=\"depcruise\" só é válido para paths dentro do grafo de `npm run lint:architecture` (src/, server.ts, worker.ts) e exige a regra nomeada em forbidden[] de .dependency-cruiser.cjs. coverage=\"review\" exige justificativa: a proteção real é revisão de diff/handoff, não regra automática.",
+  "entries": [
+    {
+      "scope": "prisma/schema.prisma",
+      "owner": "Agente 01",
+      "coverage": "review",
+      "justification": "Fora do grafo do depcruise (lint:architecture só cruza src/, server.ts e worker.ts). Schema Prisma não tem aresta de import para o cruiser verificar; proteção real é a regra de propriedade do AGENTS.md §15/§16 (integrações não criam migrações — handoff obrigatório para o Agente 01) aplicada na revisão de diff."
+    },
+    {
+      "scope": "prisma/migrations/**",
+      "owner": "Agente 01",
+      "coverage": "review",
+      "justification": "Fora do grafo do depcruise. Migrações são SQL/DML, não módulos TypeScript importáveis; o controle é o mesmo do schema — somente o Agente 01 escreve em prisma/**, demais agentes abrem handoff."
+    },
+    {
+      "scope": "src/App.tsx",
+      "owner": "Agente 02",
+      "coverage": "review",
+      "justification": "Dentro do grafo do depcruise, mas nenhuma regra forbidden existente modela 'propriedade de arquivo' — o cruiser verifica fronteiras de importação entre camadas, não quem pode editar um arquivo. App.tsx é o shell de navegação/Sidebar (escopo do Agente 02 por AGENTS.md §15); a proteção é revisão de diff contra a matriz de propriedade."
+    },
+    {
+      "scope": "navegação principal",
+      "owner": "Agente 02",
+      "coverage": "review",
+      "justification": "Descritor em prosa da matriz (não é path nem glob): refere-se aos componentes de navegação/Sidebar sob src/, cujo detalhe de arquivos pertence ao Agente 02 via AGENTS.md §15 e AGENTS.md locais de src/components e src/features. Sem path literal, não há regex de depcruise aplicável — proteção via revisão de diff."
+    },
+    {
+      "scope": "Sidebar",
+      "owner": "Agente 02",
+      "coverage": "review",
+      "justification": "Descritor em prosa da matriz: o componente Sidebar (shell de navegação) é propriedade do Agente 02. Não é um path verificável por depcruise; proteção via revisão de diff e AGENTS.md locais."
+    },
+    {
+      "scope": ".github/workflows/**",
+      "owner": "Agente 08",
+      "coverage": "review",
+      "justification": "Fora do grafo do depcruise. Workflows de CI são YAML de pipeline, não código TypeScript importável; a proteção é a propriedade do Agente 08 (AGENTS.md §15) aplicada na revisão de diff. O teste tests/unit/ci-main-protection-workflows.test.ts cobre invariantes dos workflows, mas não é gate de propriedade."
+    },
+    {
+      "scope": "Dockerfile",
+      "owner": "Agente 08",
+      "coverage": "review",
+      "justification": "Fora do grafo do depcruise (raiz do repo, não é src/server/worker). Dockerfile é infra de build de release — propriedade do Agente 08; proteção via revisão de diff."
+    },
+    {
+      "scope": "docker-compose.yml",
+      "owner": "Agente 08",
+      "coverage": "review",
+      "justification": "Fora do grafo do depcruise. Compose de serviços locais/de desenvolvimento pertence ao Agente 08 (infra de execução de QA/release); proteção via revisão de diff."
+    },
+    {
+      "scope": "charts/**",
+      "owner": "Agente 10",
+      "coverage": "review",
+      "justification": "Fora do grafo do depcruise. Charts Helm são infraestrutura do Agente 10; proteção via revisão de diff."
+    },
+    {
+      "scope": "infrastructure/**",
+      "owner": "Agente 10",
+      "coverage": "review",
+      "justification": "Fora do grafo do depcruise. IaC/scripts de infraestrutura pertencem ao Agente 10 (AGENTS.md §15); proteção via revisão de diff."
+    },
+    {
+      "scope": "android/**",
+      "owner": "Agente 09",
+      "coverage": "review",
+      "justification": "Fora do grafo do depcruise. Projeto Android/Capacitor é do Agente 09 (AGENTS.md §15); o depcruise já exclui android/ do grafo (exclude em options). Proteção via revisão de diff."
+    },
+    {
+      "scope": "capacitor.config.ts",
+      "owner": "Agente 09",
+      "coverage": "review",
+      "justification": "Fora do grafo do depcruise (raiz do repo; lint:architecture só varre src/, server.ts, worker.ts). Config nativa do app mobile pertence ao Agente 09; proteção via revisão de diff."
+    },
+    {
+      "scope": "identidade-visual/**",
+      "owner": "Agente 11",
+      "coverage": "review",
+      "justification": "Fora do grafo do depcruise. Ativos de marca e design institucional pertencem ao Agente 11 (AGENTS.md §15); proteção via revisão de diff."
+    },
+    {
+      "scope": "documentacao-aplicacao/**",
+      "owner": "Agente 11",
+      "coverage": "review",
+      "justification": "Fora do grafo do depcruise. Documentação institucional da aplicação pertence ao Agente 11 (AGENTS.md §15); proteção via revisão de diff."
+    },
+    {
+      "scope": ".agents/prompts/**",
+      "owner": "decisão humana",
+      "coverage": "review",
+      "justification": "Fora do grafo do depcruise. Prompts de agentes exigem decisão humana (AGENTS.md §5 e §15) — nenhum agente pode editá-los, nem o 00; a proteção é o gate de revisão humana, não automação."
+    },
+    {
+      "scope": ".agents/runs/**",
+      "owner": "Agente 00",
+      "coverage": "review",
+      "justification": "Fora do grafo do depcruise. Registros de execução do orquestrador pertencem ao Agente 00 (AGENTS.md §15); proteção via revisão de diff."
+    },
+    {
+      "scope": ".agents/reviews/**",
+      "owner": "Agente 24 ou 00",
+      "coverage": "review",
+      "justification": "Fora do grafo do depcruise. Pareceres de revisão independente pertencem ao Agente 24 ou 00 (AGENTS.md §15); o gate verify:governance-reviews valida a estrutura dos pareceres, e a autoria é controlada por revisão de diff.",
+      "alternateCheck": "verify:governance-reviews"
+    },
+    {
+      "scope": ".agents/handoffs/**",
+      "owner": "cada agente cria seus próprios handoffs",
+      "coverage": "review",
+      "justification": "Fora do grafo do depcruise. Cada agente só cria/atualiza os próprios handoffs (AGENTS.md §18); a proteção é a regra de propriedade aplicada na revisão de diff — não há gate automatizado de autoria por arquivo."
+    }
+  ]
+}

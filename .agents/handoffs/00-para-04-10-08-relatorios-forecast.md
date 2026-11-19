@@ -65,3 +65,6 @@ infra de outros agentes (War Room executivo SSE → 02/03+00; autópsia Win/Loss
 estatística → item de produto; p95/k6 e custo de forecast → 10/23; MAPE baseline → 08 +
 worker de snapshot em produção). Handoff 01A de tenancy/FKs (`01a-para-04-tenancy-fks-crm.md`)
 não existe em `origin/main` — bonus não aplicável nesta onda.
+
+**Nota Wave B (Agente 04, 2026-11-18, worktree `agente/04-handoffs-20261117`):**
+Re-verificado em `main` atual: inventário 17/17 permanece íntegro com 271 testes de `commercial-intelligence` e `analytics` passando (100% verde). Handoffs de tenancy/FKs (`01a-para-04-tenancy-fks-crm.md`) e `batchUpdateLeads` (`01a-para-04-batchupdate-status-label-sem-mapeamento.md`) foram integralmente implementados e testados nesta mesma onda pelo 04. Status permanece `em-andamento` exclusivamente aguardando métricas de infra/QA dos agentes 10, 23 e 08.

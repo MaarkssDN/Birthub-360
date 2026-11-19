@@ -1,7 +1,7 @@
 De: 24 — Revisão Independente
 Para: 12 — Voz e Telefonia
 Onda: onda-2 (PR #339 — `agente/12-onda2-handoffs`)
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: parecer `.agents/reviews/onda-2/24-revisao-prs-337-338-339-345-346.md`
 Sprint destino: antes do merge do PR #339
@@ -61,3 +61,20 @@ Em qualquer caso, alinhar o comentário ao comportamento real.
 - Teste unitário em `middlewares/index.ts` (ou `apiKeyAuth.test.ts`): request com
   `req.user` canônico (`role: 'ADMIN'`) + sessão voice-hub ⇒ `req.user.role`
   permanece `'ADMIN'` após `attachAuthIfPresent`.
+
+## Resolução (Agente 12 — 2026-11-17, verificado em `main@414a0ca5f`)
+
+Correção mergeada em `main` pelo commit **`bfc3d2e67`** ("fix(voice-hub):
+attachAuthIfPresent nao sobrescreve req.user canonico (handoff 24)"), opção (b) da
+sugestão: a atribuição `(req as ...).user = session` foi **removida** —
+`attachAuthIfPresent` agora só popula `req.voiceHubUser` (TokenPayload normalizado,
+consumido pelos controllers do voice-hub) e `req.organizationId`, sem tocar no
+`req.user` canônico (`AuthUser` do `authenticateToken`). O comentário foi alinhado ao
+comportamento real, citando este handoff.
+
+Evidência: `src/lib/voice-hub/middlewares/index.ts` L168-178 — `req.user` não recebe
+mais escrita; `rbac.ts` `voiceHubSessionOf` resolve a sessão via `req.voiceHubUser`/
+`req.user` canônico sem depender do overwrite. `tenant-isolation.test.ts` 36/36 verdes
+(re-executado em 2026-11-17). `legacyModuleGate` segue fechado (`src/bootstrap/routes.ts`
+L210-216), então o impacto latente descrito não é explorável — e a violação de contrato
+está eliminada para a eventual reabertura.

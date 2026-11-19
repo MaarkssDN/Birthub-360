@@ -1,7 +1,7 @@
 De:00
 Para:12
 Onda:forense20261020
-Status: aberto
+Status: em-andamento
 Prioridade:alto
 Bloqueador-ref:auditoria-real-ondas00-05
 Sprint destino:a definir pelo00
@@ -72,3 +72,14 @@ Missão atual somente auditoria; nenhuma correção autorizada por este handoff.
 > **Pendências explícitas:** implementação de integrações reais (Google Calendar/Meet, Clicksign/DocuSign, CRM tasks, transporte Live, STT/TTS real, diarização com ground truth) continua fora do escopo — este handoff agora apenas garante que simulações sejam honestamente sinalizadas.
 >
 > **Ressalva do Agente 24 (enderrçada no mesmo dia):** os eventos `SDR_CALL_COMPLETED` e `MEETING_SCHEDULED_CALENDAR` do domainEventMesh carregavam IDs fabricados sem flag. Corrigido: payloads agora incluem `simulated: true`; idem nos eventos `LIVE_VOICE_SESSION_STARTED`/`LIVE_VOICE_BARGE_IN_TRIGGERED`/`LIVE_VOICE_FALLBACK_ENGAGED` do bimodal Live. `PromiseApprovalResult` (tacticalSwarm.contract.ts) ganhou `simulated?: boolean` para que consumidores via `IPromiseGuardianPort` enxerguem o flag. Teste de regressão cobre `payload.simulated === true` nos dois eventos SDR.
+
+> **Atualização (Agente 12 — 2026-11-17, verificação em `main@414a0ca5f`):** as correções
+> estão mergeadas em `main` — commits `33742cc01` (flags `simulated` em
+> ai-voice/proposals/promiseGuardian + `maskPii` integrado em `telephonyService`) e
+> `3bf56d71a` (propagação aos eventos do domainEventMesh, ressalva do 24). O header de
+> `Status` foi alinhado de `aberto` para `em-andamento`, coerente com a Resolução acima:
+> **falta apenas o parecer formal do Agente 24** sobre esta reconciliação de voz
+> (não localizado em `.agents/reviews/` até esta data — existem pareceres do 24 para as
+> reconciliações dos agentes 00, 06, 09 e 17 de 2026-11-14, mas não para a do 12).
+> Integrações reais (Calendar/Meet, Clicksign, CRM tasks, transporte Live, STT/TTS,
+> diarização) permanecem explicitamente fora do escopo conforme registrado.

@@ -121,6 +121,41 @@ describe('assertSafeExternalUrl — rejeita IP privado/loopback/metadata', () =>
     );
   });
 
+  // Handoff `.agents/handoffs/onda-2/15-para-01-ssrf-ipv6-transition-ranges.md`:
+  // mecanismos de transição IPv4-em-IPv6 resolvidos via DNS têm o IPv4 embutido
+  // avaliado pela mesma política de IP privado/reservado.
+  it('rejeita hostname cujo DNS resolve para 6to4 com IPv4 privado embutido', async () => {
+    lookupMock.mockResolvedValue([{ address: '2002:7f00:1::', family: 6 }]);
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('https://webhook.exemplo.com/')).rejects.toThrow(
+      /não permitido/i,
+    );
+  });
+
+  it('rejeita hostname cujo DNS resolve para NAT64 com IPv4 privado embutido', async () => {
+    lookupMock.mockResolvedValue([{ address: '64:ff9b::a00:1', family: 6 }]);
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('https://webhook.exemplo.com/')).rejects.toThrow(
+      /não permitido/i,
+    );
+  });
+
+  it('rejeita hostname cujo DNS resolve para Teredo (IPv4 ofuscado, bloqueio conservador)', async () => {
+    lookupMock.mockResolvedValue([{ address: '2001:0:4136:e378:8000:63bf:3fff:fdd2', family: 6 }]);
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('https://webhook.exemplo.com/')).rejects.toThrow(
+      /não permitido/i,
+    );
+  });
+
+  it('rejeita hostname cujo DNS resolve para IPv4-compatible com IPv4 privado embutido', async () => {
+    lookupMock.mockResolvedValue([{ address: '::a00:1', family: 6 }]);
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('https://webhook.exemplo.com/')).rejects.toThrow(
+      /não permitido/i,
+    );
+  });
+
   it('rejeita "localhost" mesmo sem ser um IP literal', async () => {
     const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
     await expect(assertSafeExternalUrl('https://localhost/')).rejects.toThrow(/não permitido/i);
@@ -171,6 +206,16 @@ describe('assertSafeExternalUrl — aceita URL pública normal', () => {
       assertSafeExternalUrl('https://webhook.exemplo.com/rest/1/token/'),
     ).resolves.toBeUndefined();
     expect(lookupMock).toHaveBeenCalledWith('webhook.exemplo.com', { all: true });
+  });
+
+  it('aceita hostname cujo DNS resolve para transição IPv6 com IPv4 embutido público', async () => {
+    // 6to4 2002:0808:0808:: embute 8.8.8.8 — IPv4 público, mesmo nível de confiança
+    // de um A record público direto.
+    lookupMock.mockResolvedValue([{ address: '2002:808:808::', family: 6 }]);
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(
+      assertSafeExternalUrl('https://webhook.exemplo.com/rest/1/token/'),
+    ).resolves.toBeUndefined();
   });
 });
 

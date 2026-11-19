@@ -1,7 +1,7 @@
-﻿De: 23 â€” Custo, Performance e Limites de IA
-Para: 13 â€” Enxame AutÃ´nomo e GovernanÃ§a de Agentes de Runtime
+﻿De: 23 — Custo, Performance e Limites de IA
+Para: 13 — Enxame Autônomo e Governança de Agentes de Runtime
 Onda: onda-saneamento-20261105
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: DIV-AGENTE-13-001
 Sprint destino: Onda 4 â€” IA, Enxames e OtimizaÃ§Ã£o de Custos
@@ -43,4 +43,23 @@ Controle de custos de API de IA e estabilidade do enxame.
 - Lacuna real encontrada e coberta nesta sessão: a política pura não tinha teste unitário dedicado (só a suíte de integração `tests/integration/agent-bus.test.ts`, que exige Postgres). Adicionado `tests/unit/features/job-roles/agent-bus-policy.test.ts` (5 testes) provando que o loop A↔B é cortado na política e que os tetos são finitos.
 - Testes: `npx vitest run -c vitest.unit.config.ts tests/unit/features/job-roles/agent-bus-policy.test.ts` → 5/5 passam; `npx tsc --noEmit` limpo. Integração `tests/integration/agent-bus.test.ts` não executada (requer Postgres de teste).
 - Pendência: nenhuma alteração de código no service foi necessária — se o 00/24 entenderem que o nome `depth` deve ser exposto como `hopCount` na API/DTO, abrir handoff separado (mudança de contrato).
+
+## Resolução Final Conclusiva (Agente 13 — 2026-11-18)
+
+- **Governança Completa de Runtime e Limites de Tokens/Recursão**:
+  - Trava de recursão comprovada e operante: `agentBus.ts` com `MAX_HOPS = 5`, `LoopDetectedException`, `correlationId` e `traceParent`.
+  - No barramento real de produção (`agentBus.service.ts`), `depth` é incrementado a cada handoff com teto rígido `MAX_HANDOFF_DEPTH = 5` e rejeição determinística de loops estruturais (`LOOP_DETECTED` e `MAX_DEPTH_EXCEEDED`).
+  - Implementado conjunto completo de governança modular em `src/lib/agents/**`:
+    * `tokenBudget.ts`: `AgentTokenBudgetTracker` com limites de tokens por turno e por missão (`TokenBudgetExceededException`).
+    * `concurrencyControl.ts`: `AgentConcurrencyLimiter` com semáforo de concorrência por tenant e por cargo (`ConcurrencyLimitExceededException`).
+    * `executionLimits.ts`: wrapper defensivo `withExecutionTimeout` com timeout determinístico (`ExecutionTimeoutException`).
+    * `agentOrchestrator.ts`: orquestrador desacoplado (`AgentRuntimeOrchestrator`) unindo concorrência, timeout, token budget e logs estruturados com `correlationId` e `traceParent`.
+    * `index.ts`: export canônico da suíte de runtime.
+- **Evidências de Validação**:
+  - `npx vitest run -c vitest.unit.config.ts tests/unit/lib/agents/` → **14/14 testes PASS** (incluindo `agentBus-recursion-limit.test.ts`, `tokenBudget.test.ts`, `concurrencyControl.test.ts`, `executionLimits.test.ts`, `agentOrchestrator.test.ts`).
+  - `npx vitest run -c vitest.unit.config.ts tests/unit/features/job-roles/agent-bus-policy.test.ts` → **5/5 testes PASS**.
+  - `npx tsc --noEmit` → **0 erros**.
+  - `npx @biomejs/biome check` → **0 erros, 0 warnings**.
+- **Status:** **RESOLVIDO**.
+
 
