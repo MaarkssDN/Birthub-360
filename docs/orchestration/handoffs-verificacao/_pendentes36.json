@@ -1,0 +1,314 @@
+{
+ ".agents/handoffs/00-para-01-02-settings-pilares-persistentes.md": {
+  "de": "00",
+  "para": "01 (endpoint/schema ",
+  "prio": "alto",
+  "status": "ABERTO",
+  "onda": "F1 (pós-navegação)",
+  "prob": "As 8 rotas `settings_<pillar>` (`/app/settings_hub`, `settings_market`, `settings_sales`, `settings_performance`, `settings_predictability`, `settings_ai`, `settings_automation`, `settings_engagement`) renderizam `src/features/settings/components/PillarSettingsPlaceholder.tsx`, que usa apenas `useState` local — **nenhuma chamada a API**: Salvar não persiste."
+ },
+ ".agents/handoffs/00-para-02-cta-hub-ia-light-invisivel.md": {
+  "de": "00",
+  "para": "02",
+  "prio": "alto",
+  "status": "ABERTO",
+  "onda": "vr-regressao-20261111",
+  "prob": "No Hub de Inteligência (`/app/intelligence`), tema **light**, o botão \"Acessar Célula Comercial\" do banner flagship renderiza como um **retângulo sólido sem texto visível**. O mesmo CTA no tema **dark** mostra o rótulo e o ícone normalmente. Isso foi encontrado no diagnóstico só-leitura das 88 falhas pré-existentes de regressão visual Playwright (11 telas × 2 temas × 4 viewports) contra a `main`. "
+ },
+ ".agents/handoffs/00-para-04-10-08-relatorios-forecast.md": {
+  "de": "00",
+  "para": "04 (crm/bi) + 10 (sr",
+  "prio": "normal",
+  "status": "ABERTO",
+  "onda": "F4",
+  "prob": "O Documento Mestre prevê para P04 \"17 relatórios executivos (<800ms), autópsia Win/Loss, War Room SSE\" e para P05 \"forecast calibrado MAPE<8%, health score\". É preciso inventariar o que existe de fato em `/app/reports`, `/app/analytics`, `/app/winloss`, `/app/war-room`, `/app/forecast`, `/app/metas`, `/app/pipeline_ponderado` e medir a calibragem contra dados reais."
+ },
+ ".agents/handoffs/00-para-04-crm-hotspots-refactor.md": {
+  "de": "00",
+  "para": "04",
+  "prio": "normal",
+  "status": "ABERTO",
+  "onda": "W7 (pós-auditoria 2026-11-12)",
+  "prob": "Relatório do supervisor Onda 00 marcou hotspots de manutenibilidade: `CrmBoard.tsx` (~1258 linhas) e `PrismaCrm360Repository.ts` (~1205 linhas na epocha do relatório). A tentativa de refatoração na W7 foi interrompida (sessão reiniciou) com extração parcial órfã — descartada sem commit."
+ },
+ ".agents/handoffs/00-para-08-cobertura-testes-modulos.md": {
+  "de": "00",
+  "para": "08 (qa) + 24 (revisã",
+  "prio": "normal",
+  "status": "ABERTO",
+  "onda": "F5",
+  "prob": "Módulos sem cobertura de teste dedicada identificados no inventário: | Módulo | Test files hoje | |---|---| | market-intelligence (P02) | 0 | | mesa-tratamento (P08) | 0 (só service unit) | | social-selling (M11) | 0 | | signals-risks (P06) | 0 | | sales-orchestration (P03) | 0 | | predictability (P05) | 1 |"
+ },
+ ".agents/handoffs/00-para-08-mesa-tratamento-e2e-jornada.md": {
+  "de": "00",
+  "para": "08",
+  "prio": "normal",
+  "status": "ABERTO",
+  "onda": "W7",
+  "prob": "A spec `tests/e2e/mesa-tratamento.spec.ts` cobre empty-state, dashboard e RBAC. Falta a jornada completa de triagem inbound: fila → claim/atribuir → registrar resultado → timeline/CRM. Exige `BitrixConnection` + HTTP de saída ao Bitrix24."
+ },
+ ".agents/handoffs/00-para-10-decisao-k8s-helm-argocd.md": {
+  "de": "00",
+  "para": "10",
+  "prio": "normal",
+  "status": "ABERTO",
+  "onda": "W7",
+  "prob": "k8s/, charts/birthhub-360/, argocd/, infrastructure/ contêm manifests sem cluster ativo — \"aspiracional\". Produção real = EC2 manual (decisão do operador). É preciso decisão formal: manter, arquivar ou completar."
+ },
+ ".agents/handoffs/00-para-10-docker-2375-sem-autenticacao.md": {
+  "de": "00",
+  "para": "10",
+  "prio": "**bloqueador**",
+  "status": "ABERTO",
+  "onda": "pós-homologação 2026-11-10",
+  "prob": "O daemon Docker do host `192.168.0.116` está exposto via TCP 2375 **sem TLS e sem autenticação** na LAN `192.168.0.0/24`. O workstation de desenvolvimento (`192.168.0.179`) usa `DOCKER_HOST=tcp://192.168.0.116:2375`."
+ },
+ ".agents/handoffs/00-para-12-17-voicehub-reactivacao.md": {
+  "de": "00",
+  "para": "12 (voz e telefonia)",
+  "prio": "alto",
+  "status": "ABERTO",
+  "onda": "F2",
+  "prob": "`voice-hub`, `outbound`, `dialer` estão atrás de `legacyModuleGate` → 503 `MODULE_NOT_READY` intencional (handoff 17→12), ocultos em `NAV_HIDDEN_TABS` (`src/components/layout/tabMeta.ts` L248). O Documento Mestre V4.1 prevê VoiceHub WebRTC, CallRecording (retenção 90d criptografada), WhatsAppMessage, ScheduledMeeting no MOD-08."
+ },
+ ".agents/handoffs/00-para-16-warroom-sse-heartbeat.md": {
+  "de": "00",
+  "para": "16",
+  "prio": "normal",
+  "status": "ABERTO",
+  "onda": "W7",
+  "prob": "Auditoria: \"heartbeat SSE e reconexão precisam estabilizar\" e \"War Room é simulação client-side sem backend\". Procurar implementação SSE em src/features/gamification ou war-room (EventSource, text/event-stream)."
+ },
+ ".agents/handoffs/00-para-17-07-orquestracao-sem-demo.md": {
+  "de": "00",
+  "para": "17 (cadência) + 07 (",
+  "prio": "normal",
+  "status": "ABERTO",
+  "onda": "F3",
+  "prob": "Jornadas Comerciais, Playbooks, Processos de Vendas e Roteiros consomem `/api/sales-orchestration/overview` com `source: 'real'|'none'` e exibem `DemoDataNotice` quando o conteúdo é template/seed (`src/features/sales-orchestration/`). O módulo está funcionalmente parcial: cadências e atividades são reais, mas 4 superfícies de conteúdo podem estar em modo demo."
+ },
+ ".agents/handoffs/00-para-21-lgpd-portal-titular.md": {
+  "de": "00",
+  "para": "21",
+  "prio": "alto (conformidade)",
+  "status": "ABERTO",
+  "onda": "W7",
+  "prob": "Auditoria marcou \"Portal do titular LGPD — em andamento\". O fluxo completo (solicitação → verificação de identidade → exportação → eliminação/ anonimização → confirmação → auditoria) precisa ser inventariado e completado."
+ },
+ ".agents/handoffs/00-para-24-revisao-leva-w7.md": {
+  "de": "00",
+  "para": "24",
+  "prio": "alto (gate antes de merge/push da integr",
+  "status": "ABERTO",
+  "onda": "W7",
+  "prob": "A branch `integracao/coordenador-20261112` acumulou merges da coordenação (17 auto-stop, 04 desconto×2, 07 dry-run, 05 créditos+social, 12 voice-audit, 09 offline AES-GCM, 01 enrollment store + migração consumers + cleanup, 08 specs E2E, 23 cache L2 BI, 17 corte dialer-3cx, 02 settings honestos) + merges paralelos das ondas W5/W6 de outros coordenadores + merge com origin/main."
+ },
+ ".agents/handoffs/00-para-24-revisao-pos-homologacao.md": {
+  "de": "00",
+  "para": "24",
+  "prio": "normal",
+  "status": "ABERTO",
+  "onda": "pós-homologação 2026-11-10",
+  "prob": "Missão pós-homologação exige \"Parecer independente do Agente 24\" sobre o relatório de consolidação produzido pelo Agente 00."
+ },
+ ".agents/handoffs/08-para-00-cobertura-modulos-gaps-produto.md": {
+  "de": "08",
+  "para": "00",
+  "prio": "normal",
+  "status": "ABERTO",
+  "onda": "decorrente de `.agents/handoffs/00-para-08-cobertura-testes-modulos.md` (Onda F5)",
+  "prob": "Ao executar o handoff de cobertura de testes dos módulos restantes, verifiquei que todos os seis módulos já possuem specs dedicadas, mas três critérios de aceite priorizados pelo handoff original **não têm implementação de produto** — portanto não há comportamento real para testar (e criar mocks que simulem o comportamento violaria \"não mascarar integração real\"): 1. **AC-MKT-003 — ledger de crédi"
+ },
+ ".agents/handoffs/12-para-01-voicehub-identidade-schema-adapters.md": {
+  "de": "12",
+  "para": "01",
+  "prio": "bloqueador (para reabertura do voice-hub",
+  "status": "ABERTO",
+  "onda": "F2",
+  "prob": "`src/lib/voice-hub/**` (backend do `/api/voice-hub/*`) foi portado do app standalone Birth Voices Hub e referencia models/campos que **não existem** em `prisma/schema.prisma`. Evidência: `npx tsc --noEmit -p tsconfig.voice.json` falha com centenas de erros; exemplos: | Uso no voice-hub | Realidade no schema canônico | |---|---| | `prisma.tenant` (`repositories/tenantRepository.ts`) | model é `Orga"
+ },
+ ".agents/handoffs/12-para-05-outbound-api-legado-tenancy.md": {
+  "de": "12",
+  "para": "05",
+  "prio": "bloqueador (para reabertura do gate `out",
+  "status": "ABERTO",
+  "onda": "F2",
+  "prob": "`src/features/prospecting/outbound/server/routes.ts` monta `apiRouter` com `attachUser` (cookie próprio `birthhub360_session`, HMAC + `SESSION_SECRET`) — identidade e tenant (`company`, string livre) **independentes** do `organizationId` canônico. O banco é próprio (`getDatabase()` em `server/db.ts`). Rotas sem nenhum `requireAuth`/`requireAdmin`/`requireManager` (`routes/campaigns.routes.ts`, 208"
+ },
+ ".agents/handoffs/15-para-00-rotacao-segredos-devstack-2375.md": {
+  "de": "15",
+  "para": "00",
+  "prio": "alto",
+  "status": "ABERTO",
+  "onda": "pós-homologação 2026-11-10 / saneamento 2026-11-12",
+  "prob": "O daemon Docker de `192.168.0.116:2375` ficou exposto sem autenticação na LAN. Durante a janela de exposição, qualquer host podia `docker inspect` os containers e ler variáveis de ambiente — ou seja, as credenciais do dev stack (`POSTGRES_PASSWORD`/`APP_DB_PASSWORD`, `REDIS_PASSWORD`, `MEILI_MASTER_KEY`, `MINIO_ROOT_*`, `LITELLM_MASTER_KEY` e, se presentes em env/volume, os segredos de aplicação) "
+ },
+ ".agents/handoffs/15-para-02-03-sonar-new-coverage.md": {
+  "de": "15",
+  "para": "02",
+  "prio": "alto (bloqueia `new_coverage=60,7%`, lim",
+  "status": "ABERTO",
+  "onda": "Quality Gate da main `94f95097` (período de código novo desde 2026-10-27T21:30:30Z)",
+  "prob": "O Quality Gate do SonarCloud (`MarksNN_Birthub-360`, `main`) falha com `new_coverage=60.657%` (limiar 80%), `new_lines_to_cover=6835`, `new_uncovered_lines=2595` (`api/measures/component` e `component_tree`, branch=main, período 1). A suspeita de que só o commit `75dee1ab` (settings por pilar) derrubasse a métrica **não se confirma**: `src/features/settings` tem 90 linhas novas descobertas / 205 a"
+ },
+ ".agents/handoffs/15-para-07-commercial-mission-trace-consent-prisma.md": {
+  "de": "00",
+  "para": "07",
+  "prio": "médio",
+  "status": "ABERTO",
+  "onda": "cobertura de código novo (mission-trace comercial)",
+  "prob": "`getCommercialMissionTrace({ db, organizationId, requestedMissionId })` aceita um cliente Prisma injetado e usa esse `db` para handoffs, execuções, definições de agente e leads. A carga da cadeia de consentimento (`loadConsentTrace`) **não recebe esse cliente**: chama `asClient(prisma).organizationAiConsent.findUnique(...)`, onde `prisma` é o import de módulo de `src/lib/prisma.js`. O teste unitár"
+ },
+ ".agents/handoffs/onda-00/09-para-00-offline-storage-sqlite.md": {
+  "de": "09",
+  "para": "00",
+  "prio": "alto",
+  "status": "ABERTO",
+  "onda": "00 (auditoria \"persistência offline frágil\")",
+  "prob": "Auditoria do estado offline antes da correção: - `src/features/mobile/offlineSync.service.ts` persistia a fila de mutações (notas de reunião, `meetingNotes`, `audioData` base64, dados de leads) em **localStorage em texto claro** (`birthhub_offline_sync_queue_v1`). - `src/features/mobile/services/offlineSyncQueue.service.ts` é uma segunda fila **só em memória** (perde tudo em reload/kill do app) e "
+ },
+ ".agents/handoffs/onda-1/15-para-08-rls-coverage-ci.md": {
+  "de": "15",
+  "para": "08",
+  "prio": "alto",
+  "status": "ABERTO",
+  "onda": "1 (backlog DEM-20261113-002, item MEL-03)",
+  "prob": "Criado gate estático de cobertura RLS (`scripts/security/check-rls-coverage.ts`, `npm run verify:rls-coverage`) que falha se um model com `organizationId` não tiver ENABLE ROW LEVEL SECURITY + CREATE POLICY nas migrations. Precisa ser ligado no CI (`.github/workflows/ci.yml` é propriedade do Agente 08)."
+ },
+ ".agents/handoffs/onda-1/15-para-24-revisao-onda1.md": {
+  "de": "15",
+  "para": "24",
+  "prio": "alto",
+  "status": "ABERTO",
+  "onda": "1",
+  "prob": "Onda 1 do backlog de plataforma (segurança e fundação) implementada pelo Agente 15. Precisa de revisão independente antes de qualquer marcação de \"Aprovado\" no checklist e antes de integração."
+ },
+ ".agents/handoffs/onda-2/15-para-07-webhook-fetch-safeFetch.md": {
+  "de": "15",
+  "para": "07",
+  "prio": "normal",
+  "status": "ABERTO",
+  "onda": "2",
+  "prob": "`validateWebhookUrl` (`src/lib/security/url-validator.ts`) foi endurecido na Onda 2 e agora delega para `assertSafeOutboundUrl` (`src/lib/security/ssrfGuard.ts`): HTTPS obrigatório em produção, bloqueio de IP literal interno/reservado e resolução DNS validando TODOS os endereços do host. O bypass que existia em `NODE_ENV=development|test` foi removido. Porém, três call sites em `src/features/intel"
+ },
+ ".agents/handoffs/onda-landing-360-auditoria/02-para-21-validacao-consentimento-lgpd.md": {
+  "de": "02",
+  "para": "21",
+  "prio": "alto",
+  "status": "ABERTO",
+  "onda": "landing-360-auditoria",
+  "prob": "O checkbox de consentimento do formulário de demonstração inicia com `checked={true}` (`leadForm.consent = true` no estado inicial). Opt-in pré-marcado não configura consentimento válido na LGPD — o titular deve realizar ato afirmativo livre."
+ },
+ ".agents/handoffs/onda-landing-360-auditoria/auditoria-para-02-form-lead-fake.md": {
+  "de": "auditoria ad-hoc (de",
+  "para": "02",
+  "prio": "bloqueador",
+  "status": "ABERTO",
+  "onda": "landing-360-auditoria",
+  "prob": "O formulário de captura de lead da landing (`#demonstracao`) é cenográfico: `handleLeadSubmit` executa apenas `setTimeout(650ms)` e exibe a tela de sucesso — nenhum `fetch`, nenhum endpoint, nenhum lead persistido. Nome, e-mail e WhatsApp são descartados. A tela de sucesso ainda afirma \"Enviamos a confirmação para {email}\" e \"entrará em contato via WhatsApp em até 15 minutos\", o que não ocorre. Al"
+ },
+ ".agents/handoffs/onda-landing-360-auditoria/auditoria-para-02-verdade-no-copy.md": {
+  "de": "auditoria ad-hoc (de",
+  "para": "02",
+  "prio": "alto",
+  "status": "ABERTO",
+  "onda": "landing-360-auditoria",
+  "prob": "A landing exibe como \"RESULTADOS REAIS COMPROVADOS\" métricas e depoimentos que aparentam ser fabricados: - \"+42% taxa de conversão\", \"3.8x ROI\", \"R$ 180M+ volume transacionado\", \"99.98% disponibilidade\" — sem fonte citada. - 3 depoimentos com nomes/empresas provavelmente fictícios (\"NeoLog B2B\", \"Vanguarda Tech\", \"Marcelo Faccini — VP de Tecnologia\"). - Hero promete \"aumente a conversão do pipelin"
+ },
+ ".agents/handoffs/onda-paralela-8/00-para-01a-tenancy-audit.md": {
+  "de": "00",
+  "para": "01a",
+  "prio": "alto (tenancy/LGPD)",
+  "status": "ABERTO",
+  "onda": "paralela-8",
+  "prob": "Auditar isolamento multi-tenant no escopo `src/features/crm/**` e `src/features/crm360/**`: queries Prisma que tocam modelos com `organizationId` sem filtro/escopo de tenant, ou uso de client Prisma sem contexto de tenant."
+ },
+ ".agents/handoffs/onda-paralela-8/00-para-07-duplicate-exports.md": {
+  "de": "00",
+  "para": "07",
+  "prio": "normal",
+  "status": "ABERTO",
+  "onda": "paralela-8",
+  "prob": "Exports duplicados reportados pelo knip em módulos de IA: - `src/features/intelligence/agents/supervisor.agent.ts`: `SwarmOrchestrator` e `SupervisorAgent` (duplo export do mesmo símbolo ou símbolos ambíguos) - `src/features/intelligence/tools/integrationTools.ts`: `multiCrmSyncTool`, `pipedriveSyncTool`"
+ },
+ ".agents/handoffs/onda-s1/00-para-01-documentembedding-sem-policy-rls.md": {
+  "de": "00 (coordenador) — e",
+  "para": "01 (plataforma, segu",
+  "prio": "bloqueador",
+  "status": "ABERTO",
+  "onda": "S1 (trilha técnica subordinada à Fase 02)",
+  "prob": "`\"DocumentEmbedding\"` tem `ENABLE` + `FORCE ROW LEVEL SECURITY`, mas nenhuma `CREATE POLICY` em nenhuma migration. Com `FORCE` e papel `NOBYPASSRLS`, todo acesso do app é default-deny (leitura/escrita falham ou retornam vazio)."
+ },
+ ".agents/handoffs/onda-saneamento-20261110/00-para-00-ausencia-de-sincronizacao-automatizada-entre-a-matriz-de-propriedade-d.md": {
+  "de": "00",
+  "para": "00",
+  "prio": "normal",
+  "status": "ABERTO",
+  "onda": "Onda 5 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-011)",
+  "prob": "**Ausência de sincronização automatizada entre a matriz de propriedade de arquivos e o Dependency Cruiser** - **Dívida técnica:** BT360-DT-0004 - **Esforço estimado:** Médio - **Status atual da dívida:** NÃO INICIADO **Causa raiz:** O dependency-cruiser foi configurado para checar fronteiras de pastas, mas não os slots dos 26 agentes documentados no `AGENTS.md`. **Impacto:** Risco contínuo de acop"
+ },
+ ".agents/handoffs/onda-saneamento-20261110/00-para-00-leitura-obrigatoria-no-prompt-de-coordenacao-referencia-documento-de-o.md": {
+  "de": "00",
+  "para": "00",
+  "prio": "normal",
+  "status": "ABERTO",
+  "onda": "Onda 0 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-043)",
+  "prob": "**Leitura obrigatória no prompt de coordenação referencia documento de ondas inexistente** - **Dívida técnica:** BT360-DT-0001 - **Esforço estimado:** Pequeno - **Status atual da dívida:** NÃO INICIADO **Causa raiz:** O documento foi renomeado ou consolidado durante a reorganização documental de ondas, sem a respectiva atualização no prompt mestre. **Impacto:** Novos agentes de orquestração operam"
+ },
+ ".agents/handoffs/onda-saneamento-20261110/00-para-12-hotspots-severos-em-componentes-de-estudio-de-voz-overview-tsx-e-usest.md": {
+  "de": "00",
+  "para": "12",
+  "prio": "alto",
+  "status": "ABERTO",
+  "onda": "Onda 3 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-008)",
+  "prob": "**Hotspots severos em componentes de estúdio de voz (Overview.tsx e useStudioStore.ts)** - **Dívida técnica:** BT360-DT-0063 - **Esforço estimado:** Médio - **Status atual da dívida:** NÃO INICIADO **Causa raiz:** O módulo Voice Hub foi desenvolvido como uma aplicação completa embutida em uma única pasta sem modularização de serviços de áudio. **Impacto:** Lentidão na renderização de gráficos de o"
+ },
+ ".agents/handoffs/onda-saneamento-20261110/17-para-05-market-intelligence-start-cadence-sem-optout.md": {
+  "de": "17",
+  "para": "05",
+  "prio": "alto (LGPD — opt-out pode ser contornado",
+  "status": "ABERTO",
+  "onda": "Onda 3 (Plano Mestre de Saneamento — continuação de TAREFA-SANEAMENTO-035 / BT360-DT-0080)",
+  "prob": "`src/features/market-intelligence/server/actionExecutor.service.ts`, ação `START_SDR_CADENCE` (linhas ~77–123), cria um `CadenceRun` via `startCadenceRun` + `prismaCadenceRunRepository.save` **sem nenhuma verificação de opt-out** — nem `checkOptOutStatus`, nem o `OptOutRecord` unificado. Um lead que pediu opt-out pode ser recolocado em cadência por este caminho, contornando a trava que a Onda 7 e "
+ },
+ ".agents/handoffs/proposta-navegacao-modulos-isolados.md": {
+  "de": "devin (assessor de a",
+  "para": "00",
+  "prio": "normal",
+  "status": "ABERTO",
+  "onda": "Onda 01–04 executadas; Onda 05 (QA/homologação) em consolidação",
+  "prob": "# Proposta — Navegação por Módulos Isolados + Painéis Globais De: Devin (assessor de arquitetura, sob demanda do usuário) Para: 00 — Coordenador Onda: Onda 01–04 executadas; Onda 05 (QA/homologação) em consolidação Status: em-andamento Prioridade: normal Sprint destino: a definir pelo 00 > **Atualização (implementação):** a proposta foi aprovada e implementada. > A arquitetura efetiva difere da pr"
+ },
+ ".agents/handoffs/onda-v4-fase2/00-para-01-estruturacao-banco-rls.md": {
+  "de": "00",
+  "para": "01",
+  "prio": "bloqueador",
+  "status": "BLOQUEADO",
+  "onda": "v4-fase2",
+  "prob": "A especificação definitiva V4 ([BIRTHUB360_MODELO_DADOS.md](file:///c:/Users/Marks/Documents/GitHub/Birthub-360/BIRTHUB360_MODELO_DADOS.md)) define 21 entidades centrais para o ciclo de receita. Atualmente, `prisma/schema.prisma` possui `Organization`, `Company`, `Contact`, `User` e `AuditLog`, mas não possui as entidades estruturais do core de vendas e previsão: - `pipelines` e `pipeline_stages` "
+ },
+ ".agents/handoffs/onda-8/09-para-02-downloads-blob-nao-funcionam-no-app.md": {
+  "de": "09",
+  "para": "02",
+  "prio": "alto",
+  "status": "ADIADO",
+  "onda": "pós-freeze RC1",
+  "prob": "Downloads via blob não funcionam no app (Capacitor/Android). Estava postponed por Scope Freeze — nada implementado. Reativar e implementar."
+ },
+ ".agents/handoffs/onda-8/09-para-02-voice-command-nao-funciona-no-app.md": {
+  "de": "09",
+  "para": "02",
+  "prio": "alto",
+  "status": "ADIADO",
+  "onda": "pós-freeze RC1",
+  "prob": "Comando de voz não funciona no app; plugin não instalado. Estava postponed por Scope Freeze — reativar e implementar."
+ },
+ ".agents/handoffs/onda-38/00-para-02-03-redesign-plataforma.md": {
+  "de": "00",
+  "para": "02+03",
+  "prio": "normal",
+  "status": "ADIADO",
+  "onda": "vr-regressao / freeze",
+  "prob": "Redesign da plataforma isolado em agente/03-impeccable-vancouver sob Scope Freeze; corpo diz em-andamento. Decidir retomar ou fechar."
+ }
+}
