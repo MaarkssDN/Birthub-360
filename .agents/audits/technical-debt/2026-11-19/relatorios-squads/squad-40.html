@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Auditoria de Dívida Técnica — Squad 40 · CRM, Pipeline e Ciclo de Receita</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #ef4444;
+      --p0: #ef4444;
+      --p1: #f97316;
+      --p2: #eab308;
+      --p3: #3b82f6;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 24px;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header {
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-p0 { background: rgba(239, 68, 68, 0.2); color: var(--p0); border: 1px solid var(--p0); }
+    .badge-p1 { background: rgba(249, 115, 22, 0.2); color: var(--p1); border: 1px solid var(--p1); }
+    .badge-p2 { background: rgba(234, 179, 8, 0.2); color: var(--p2); border: 1px solid var(--p2); }
+    .badge-p3 { background: rgba(59, 130, 246, 0.2); color: var(--p3); border: 1px solid var(--p3); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; background: var(--card-bg); border-radius: 8px; overflow: hidden; }
+    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: #111827; font-size: 13px; text-transform: uppercase; color: var(--muted); }
+    tr:hover { background: rgba(255, 255, 255, 0.02); }
+    .agent-tag { font-weight: 600; color: var(--accent); }
+    .file-tag { font-family: monospace; font-size: 12px; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; color: #38bdf8; }
+    .nav-back { display: inline-block; margin-bottom: 16px; color: var(--muted); text-decoration: none; font-size: 14px; }
+    .nav-back:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="../dashboard/index.html" class="nav-back">← Voltar ao Dashboard Global de Dívidas Técnicas</a>
+    <header>
+      <div style="font-size: 12px; text-transform: uppercase; color: var(--accent); font-weight: bold; letter-spacing: 1px;">Auditoria Independente por Squad</div>
+      <h1 style="margin: 8px 0 4px 0;">Squad 40 · CRM, Pipeline e Ciclo de Receita</h1>
+      <p style="color: var(--muted); margin: 0;"><strong>Coordenador Responsável:</strong> 40 — Ravi (Coordenador de CRM & Receita)</p>
+      <p style="color: var(--muted); font-size: 13px; margin-top: 4px;">Data de Auditoria: 2026-11-19 | Total de Especialistas: 10 | Status: CONSOLIDADO</p>
+    </header>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Especialista</th>
+          <th>Papel Técnico</th>
+          <th>Severidade</th>
+          <th>Dívida Técnica Identificada</th>
+          <th>Impacto Potencial</th>
+          <th>Esforço</th>
+          <th>Arquivo Alvo</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+          <tr>
+            <td class="agent-tag">40</td>
+            <td style="font-weight: 600;">Ravi</td>
+            <td style="color: var(--muted); font-size: 13px;">Coordenador de CRM</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Operações de alteração de estágio de Deals em lote sem transação atômica isolada no banco.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Inconsistência entre valores totais do pipeline e estágios individuais em concorrência.</td>
+            <td style="font-size: 13px;">Alto</td>
+            <td><span class="file-tag">src/features/crm/deals/deals.service.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">41</td>
+            <td style="font-weight: 600;">Cadu</td>
+            <td style="color: var(--muted); font-size: 13px;">Leads, Contatos & Contas</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Timeline do lead carrega todas as centenas de eventos em uma única consulta sem paginação por cursor.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Lentidão extrema ao abrir leads antigos e histórico pesado.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/features/crm/leads/timeline.service.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">42</td>
+            <td style="font-weight: 600;">Lívia</td>
+            <td style="color: var(--muted); font-size: 13px;">Pipelines & Kanban</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Kanban comercial com atualização otimista sem mecanismo de rollback automático se a API falhar.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Vendedor vê lead no estágio ganho na tela, mas no banco a alteração falhou.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/features/crm/pipelines/KanbanBoard.tsx</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">43</td>
+            <td style="font-weight: 600;">Amon</td>
+            <td style="color: var(--muted); font-size: 13px;">Prospecção & Scoring</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Cálculo de Lead Scoring roda de forma bloqueante na requisição de criação do lead na API.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Aumento desnecessário de 400ms na latência de cadastro de oportunidades.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/features/crm/scoring/scoring.engine.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">44</td>
+            <td style="font-weight: 600;">Lola</td>
+            <td style="color: var(--muted); font-size: 13px;">Cadências Comerciais</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Worker de cadências não valida fuso horário comercial local do lead antes de enviar e-mails.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Envio de comunicações comerciais automáticas às 03:00 da madrugada.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/features/crm/cadences/cadence.worker.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">45</td>
+            <td style="font-weight: 600;">Otto</td>
+            <td style="color: var(--muted); font-size: 13px;">Tarefas & Agendas</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Divergência de timezone na conversão de tarefas agendadas entre clientes UTC e horário de Brasília.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Tarefas marcadas aparecendo com 3 horas de deslocamento no calendário.</td>
+            <td style="font-size: 13px;">Baixo</td>
+            <td><span class="file-tag">src/features/crm/tasks/calendar.utils.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">46</td>
+            <td style="font-weight: 600;">Sofia</td>
+            <td style="color: var(--muted); font-size: 13px;">Forecast & Metas</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Projeção de forecast financeiro usa soma bruta de deals sem aplicar probabilidade ponderada da etapa.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Distorção irreal nas projeções de faturamento apresentadas aos diretores.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/features/crm/forecast/forecast.service.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">47</td>
+            <td style="font-weight: 600;">Dante</td>
+            <td style="color: var(--muted); font-size: 13px;">Playbooks & Roteamento</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Algoritmo de round-robin atribui leads para usuários com flag de ausência/férias ativada.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Leads quentes parados sem atendimento por dias.</td>
+            <td style="font-size: 13px;">Baixo</td>
+            <td><span class="file-tag">src/features/crm/routing/round-robin.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">48</td>
+            <td style="font-weight: 600;">Jade</td>
+            <td style="color: var(--muted); font-size: 13px;">Deduplicação & Higienização</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Algoritmo de deduplicação verifica apenas e-mails exatos, ignorando telefones em formato E.164.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Proliferação de contatos duplicados cadastrados com grafias distintas de telefone.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/features/crm/deduplication/dedup.service.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">49</td>
+            <td style="font-weight: 600;">Malu</td>
+            <td style="color: var(--muted); font-size: 13px;">BI Comercial & Cohort</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Tabelas de coorte e métricas de LTV/churn recalculadas em tempo real a cada visita à página.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Consultas pesadas de agregação travando o banco de produção desnecessariamente.</td>
+            <td style="font-size: 13px;">Alto</td>
+            <td><span class="file-tag">src/features/crm/analytics/cohort.service.ts</span></td>
+          </tr>
+        
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

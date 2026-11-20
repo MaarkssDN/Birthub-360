@@ -25,6 +25,46 @@ jobs:
   sonarcloud:
     name: SonarQube
     runs-on: ubuntu-latest
+    # DEBT-0026: a cobertura de integração (coverage/integration/lcov.info) passa a alimentar o
+    # SonarQube, então o job precisa dos mesmos serviços do build-and-test do ci.yml — sem eles
+    # `npm run test:integration -- --coverage` não sobe.
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: prospector
+          POSTGRES_PASSWORD: prospector_test_pass
+          POSTGRES_DB: prospectordb_test
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd "pg_isready -h 127.0.0.1 -U prospector -d prospectordb_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli -h 127.0.0.1 ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      meilisearch:
+        image: getmeili/meilisearch:v1.12
+        env:
+          MEILI_MASTER_KEY: ci-test-meili-key
+        ports:
+          - 7700:7700
+        options: >-
+          --health-cmd "wget --no-verbose --tries=1 -O - http://127.0.0.1:7700/health >/dev/null 2>&1 || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-start-period 30s
+          --health-retries 12
     env:
       # Credencial ausente deve reprovar o check, nunca transformar scan ignorado em verde.
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -36,8 +76,21 @@ jobs:
       # seta isso pro job build-and-test; este workflow ficou de fora dessa correção.
       NODE_ENV: test
       DATABASE_URL: postgresql://prospector_app:ci_app_test_pass@localhost:5434/prospectordb_test?schema=public
+      # Migrations rodam como o papel DONO (prospector_migrator); app e testes como prospector_app.
+      # Mesmo contrato do job build-and-test do ci.yml.
+      DIRECT_URL: postgresql://prospector_migrator:ci_migrator_test_pass@localhost:5434/prospectordb_test?schema=public
+      REDIS_URL: redis://localhost:6379
+      MEILI_HOST: http://localhost:7700
+      MEILI_MASTER_KEY: ci-test-meili-key
+      PORT: 3000
       JWT_SECRET: ci-test-jwt-secret-not-for-production
       BETTER_AUTH_SECRET: ci-e2e-test-only-secret-not-for-production
+      BETTER_AUTH_URL: http://localhost:3000
+      ALLOW_DEV_AUTH_BYPASS: true
+      ALLOWED_ORIGINS: http://localhost:3000
+      AUTH_RATE_LIMIT_MAX: 500
+      PLATFORM_OPERATOR_TOKEN: ci-test-operator-token-not-for-production
+      BOOTSTRAP_SUPERUSER_URL: postgresql://prospector:prospector_test_pass@localhost:5434/prospectordb_test
     steps:
       - name: Validate SonarQube configuration
         shell: bash
@@ -82,6 +135,50 @@ jobs:
 
       - name: Run Tests with Coverage
         run: npm run test:unit -- --coverage
+
+      # DEBT-0026: a suíte de integração também gera LCOV (coverage/integration/lcov.info,
+      # reporter 'lcov' em vitest.integration.config.ts) que alimenta
+      # sonar.javascript.lcov.reportPaths. Os passos abaixo replicam a ordem do job
+      # build-and-test do ci.yml: bootstrap do papel → migrate deploy → re-bootstrap →
+      # .env.test → test:integration --coverage.
+      - name: Bootstrap papel NOSUPERUSER da aplicação
+        env:
+          PGPASSWORD: prospector_test_pass
+          APP_DB_PASSWORD: ci_app_test_pass
+          MIGRATOR_DB_PASSWORD: ci_migrator_test_pass
+        run: bash scripts/db/bootstrap-app-role.sh localhost 5434 prospector prospectordb_test
+
+      - name: Run Migrations (para testes de integração)
+        run: npx prisma migrate deploy
+
+      - name: Re-bootstrap pós-migrate
+        env:
+          PGPASSWORD: prospector_test_pass
+          APP_DB_PASSWORD: ci_app_test_pass
+          MIGRATOR_DB_PASSWORD: ci_migrator_test_pass
+        run: bash scripts/db/bootstrap-app-role.sh localhost 5434 prospector prospectordb_test
+
+      - name: Criar .env.test para os testes de integração
+        run: |
+          cat > .env.test <<EOF
+          NODE_ENV=$NODE_ENV
+          PORT=$PORT
+          DATABASE_URL=$DATABASE_URL
+          DIRECT_URL=$DIRECT_URL
+          REDIS_URL=$REDIS_URL
+          MEILI_HOST=$MEILI_HOST
+          MEILI_MASTER_KEY=$MEILI_MASTER_KEY
+          BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET
+          BETTER_AUTH_URL=$BETTER_AUTH_URL
+          ALLOW_DEV_AUTH_BYPASS=$ALLOW_DEV_AUTH_BYPASS
+          ALLOWED_ORIGINS=$ALLOWED_ORIGINS
+          AUTH_RATE_LIMIT_MAX=$AUTH_RATE_LIMIT_MAX
+          PLATFORM_OPERATOR_TOKEN=$PLATFORM_OPERATOR_TOKEN
+          BOOTSTRAP_SUPERUSER_URL=$BOOTSTRAP_SUPERUSER_URL
+          EOF
+
+      - name: Run Integration Tests with Coverage
+        run: npm run test:integration -- --coverage
 
       - name: Python coverage for MONTAR_CONTEXT
         shell: bash
