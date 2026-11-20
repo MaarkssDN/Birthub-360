@@ -53,7 +53,7 @@ Data: 2026-11-20 · Revisão: origin/agente/03-onda1-contraste (feb08a746) vs or
 - Razões de contraste (4.5:1) das novas regras: NÃO EXECUTADO (sem axe/medição); o PR deve anexar medição antes de merge.
 
 ### Evidências (comando → resultado)
-- `git diff origin/main...origin/agente/03-onda1-contraste -- Gamified3DOrb.tsx official-identity.css` → +1 linha TSX, +34 linhas CSS, sem outras alterações nesses arquivos.
+- `git diff origin/main...origin/agente/03-onda1-contraste -- src/components/ui/Gamified3DOrb.tsx src/styles/official-identity.css` → +1 linha TSX, +34 linhas CSS, sem outras alterações nesses arquivos.
 - `npx vitest run tests/unit/components/ui/Gamified3DOrb.test.tsx tests/unit/components/ui/GamificationWidget.test.tsx` (worktree /tmp, branch do #463) → 2 arquivos, 8 testes passados (não cobrem o nome acessível).
 - `npx biome format src/components/ui/Gamified3DOrb.tsx src/styles/official-identity.css` → "Checked 2 files, No fixes applied".
 - axe `/app/gamification`, `tsc`, `lint`, `test:e2e`: NÃO EXECUTADO.
