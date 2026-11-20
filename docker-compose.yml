@@ -95,6 +95,8 @@ services:
   litellm:
     image: ghcr.io/berriai/litellm:main-stable
     container_name: birthhub_litellm
+    environment:
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:?defina LITELLM_MASTER_KEY no .env}
     ports:
       - '4000:4000'
     volumes:

@@ -80,23 +80,30 @@ export class MarketSensingService implements IMarketSignalsPort {
     this.signalsStore.set(storageKey, signal);
 
     // Publicar evento comercial no DomainEventMesh
-    await domainEventMesh.publish({
-      eventType: 'MARKET_SIGNAL_DETECTED',
-      eventVersion: '1.0.0',
-      organizationId: signalInput.organizationId,
-      correlationId: `sig-corr-${id}`,
-      producer: 'market-sensing-engine',
-      aggregateId: signalInput.companyId || id,
-      payload: {
-        signalId: id,
-        companyName: signalInput.companyName,
-        signalType: signalInput.signalType,
-        source: signalInput.source,
-        confidence: signalInput.confidence,
-        title: signalInput.title,
-        summary: signalInput.summary,
+    await domainEventMesh.publish(
+      {
+        eventType: 'MARKET_SIGNAL_DETECTED',
+        eventVersion: '1.0.0',
+        organizationId: signalInput.organizationId,
+        correlationId: `sig-corr-${id}`,
+        producer: 'market-sensing-engine',
+        aggregateId: signalInput.companyId || id,
+        payload: {
+          signalId: id,
+          companyName: signalInput.companyName,
+          signalType: signalInput.signalType,
+          source: signalInput.source,
+          confidence: signalInput.confidence,
+          title: signalInput.title,
+          summary: signalInput.summary,
+        },
       },
-    });
+      // Fato de negócio: este sinal de mercado. `signal.id` é `sig-${randomUUID()}` (novo a
+      // cada ingestão), então a chave estável deriva do mesmo contentHash usado na
+      // deduplicação (org + companyName + title) — retry após restart/replay colide na
+      // UNIQUE parcial da outbox em vez de duplicar MARKET_SIGNAL_DETECTED.
+      { idempotencyKey: `market-signal:${contentHash}` },
+    );
 
     logger.info(
       `[MarketSensing] Novo sinal exógeno [${signal.signalType}] registrado para ${signal.companyName} no tenant ${signal.organizationId}.`,

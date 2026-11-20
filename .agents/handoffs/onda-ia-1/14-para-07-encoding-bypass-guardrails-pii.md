@@ -77,10 +77,10 @@ mínimo conforme P2/P3:
     aceitos somente se o resultado for >= 90% imprimível. Teto de 64 spans e
     8KB por decode; falhas de decode são descartadas silenciosamente.
 - `pii.guard.ts`: `detectPII`/`redactPII` agora rodam sobre a visão
-  decodificada + spans decodificados. Em `redactPII`, spans codificados com
-  PII são substituídos por `[ENCODED_PII_REDACTED]` (não há como redigir
-  dentro do token); escapes são normalizados antes da redação normal.
-  Sem PII, `redactPII` devolve o texto original (encoding preservado).
+    decodificada + spans decodificados. Em `redactPII`, spans codificados com
+    PII são substituídos por `[ENCODED_PII_REDACTED]` (não há como redigir
+    dentro do token); escapes são normalizados antes da redação normal.
+    Sem PII, `redactPII` devolve o texto original (encoding preservado).
 - `toxicity.guard.ts`: mesma mitigação em `detectToxicity`/`redactToxicity`
   (span tóxico → `[REDACTED]`).
 
@@ -107,3 +107,12 @@ tests/unit/ai` verde (inclui `guardrails.test.ts`,
 `guardrails-allowlist.test.ts`, `guardrails-encoding.test.ts` e
 `chat-model-guardrails.test.ts`), `npx tsc --noEmit` limpo, `npx biome
 check` nos arquivos de `src/` limpo.
+
+## Conclusão e Aceite (Agente 14, 2026-11-19)
+
+Status: **resolvido**.
+
+- O Agente 07 implementou a solução no PR #441 (Wave D) através do módulo `src/lib/ai/guardrails/encoding.ts` (`findEncodedTokenSpans`, `decodeTextEscapes`, tetos de complexidade `MAX_DECODED_LENGTH` de 8KB e `MAX_TOKEN_SPANS` de 64).
+- O PR #441 foi submetido à auditoria independente e APROVADO pelo Agente 24 em `.agents/reviews/pr441-waveD-guardrails-pii-encoding-24.md`.
+- Cobertura de testes unitários anti-encoding confirmada (85/85 testes unitários na suíte de IA).
+- Com isso, o débito de decoding bypass foi integralmente sanado pelo proprietário do domínio.
