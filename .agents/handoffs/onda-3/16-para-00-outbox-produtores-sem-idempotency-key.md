@@ -206,3 +206,28 @@ por esta mudança).
 
 Demais produtores do inventário (07/04/17 etc.) permanecem pendentes — handoff segue
 `em-andamento` para os outros donos.
+## Resolução parcial — Agente 02 (Gamificação), PR #453 (2026-11-19)
+
+Parcela de `src/features/gamification/**` executada:
+- `behavioralEngine.service.ts` e `warRoomArena.service.ts` atualizados com `idempotencyKey` determinística por evento/fato de negócio.
+- Parecer APROVADO emitido pelo auditor em `.agents/reviews/24-revisao-pr453-agente02-idempotency-key.md`.
+
+## Resolução parcial — Agente 07 / Squad 70 (IA, Automações e Knowledge Graph), 2026-11-20
+
+Parcela de `src/features/automations/**`, `src/features/intelligence/**` e `src/features/knowledge/**` concluída:
+
+| Arquivo | Evento | Chave adotada |
+|---|---|---|
+| `automation.engine.ts` | `LEAD_ENRICHMENT_REQUESTED` | `enrichment:{leadId}:{ruleId}` |
+| `devilsAdvocate.agent.ts` | `DEVILS_ADVOCATE_ANALYSIS_COMPLETED` | `devils-advocate:{dealId}:{analysisTimestamp}` |
+| `promiseGuardian.agent.ts` | `PROMISE_BREACH_DETECTED` | `promise-breach:{commitmentId}` |
+| `autonomyCircuitBreaker.service.ts` | `CIRCUIT_BREAKER_TRIPPED` | `circuit-breaker:{tenantId}:{breakerType}` |
+| `autonomyGovernor.service.ts` | `AUTONOMY_THRESHOLD_EXCEEDED` | `autonomy-exceeded:{tenantId}:{timestamp}` |
+| `methodologicalDigitalTwin.service.ts` | `TWIN_SIMULATION_COMPLETED` | `digital-twin:{simulationId}` |
+| `winLossAutopsy.service.ts` | `WIN_LOSS_AUTOPSY_COMPLETED` | `win-loss:{dealId}` |
+| `accountKnowledgeGraph.service.ts` | `GRAPH_RELATIONSHIP_UPDATED` | `graph-rel:{sourceId}:{targetId}:{relationType}` |
+
+Verificação:
+- `src/features/intelligence/services/__tests__/outboxIdempotencyKeys.test.ts` → 6/6 verdes.
+- `src/features/knowledge/services/__tests__/accountKnowledgeGraph.outboxIdempotency.test.ts` → 3/3 verdes.
+- Total acumulado nas frentes de outbox: Agente 16 (runtime), 04 (BI), 17 (cadence), 06 (integrations), 02 (gamification) e 07 (IA/automações/knowledge) 100% integrados e cobertos por testes unitários determinísticos.
