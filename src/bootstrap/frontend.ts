@@ -54,6 +54,30 @@ export function isBlockedDesignLabPath(rawPath: string): boolean {
 }
 
 /**
+ * Predicado puro da guarda anti-bypass de /tools — extraído para teste unitário.
+ * Recebe o path cru (req.path); devolve true quando o path toca um asset de /tools
+ * por um alias não autorizado (encoding como /tools%2F... ou /%74ools/..., /public/tools/...,
+ * /@fs/.../public/tools/..., /foo/tools/..., etc.), preservando o prefixo legítimo /tools
+ * (que segue para o mount autenticado) e os módulos de código-fonte sob /src/
+ * (ex.: /src/features/intelligence/tools/*, /src/features/prospecting/.../tools/*, /src/lib/ai/tools/*).
+ */
+export function isBlockedToolsPath(rawPath: string): boolean {
+  let decodedPath = rawPath;
+  try {
+    decodedPath = decodeURIComponent(rawPath);
+  } catch {
+    // Path malformado: mantém o raw — o static downstream já rejeita encoding inválido.
+  }
+  const touchesToolsAsset = /(?:^|\/)tools(?:\/|$)/i.test(decodedPath);
+  const isLegitStaticPrefix = /^\/tools(?:\/|$)/i.test(rawPath);
+  const isSourceModule =
+    /^\/src\//i.test(rawPath) &&
+    !decodedPath.includes('..') &&
+    !/(?:^|\/)public(?:\/|$)/i.test(decodedPath);
+  return touchesToolsAsset && !isLegitStaticPrefix && !isSourceModule;
+}
+
+/**
  * Serve o frontend: em desenvolvimento (ou em testes quando não houver build), monta o middleware
  * do Vite (HMR, SPA fallback) em modo middleware embutido no mesmo processo Express; em produção
  * (ou em testes quando `dist/index.html` estiver compilado), serve os estáticos já buildados em
@@ -62,17 +86,16 @@ export function isBlockedDesignLabPath(rawPath: string): boolean {
  * handler e do restante do boot em server.ts.
  */
 export async function mountFrontend(app: Express): Promise<void> {
-  // Guarda anti-bypass dos estáticos do design-lab (achado P0 da DEM-20261114-001/003).
-  // Os mounts `/design-lab` autenticados abaixo só casam o prefixo literal — um path como
-  // `/design-lab%2Fassets%2Flab.css`, `/%2Fdesign-lab%2F...`, `/public/design-lab/...` ou
-  // `/@fs/<abs>/public/design-lab/...` (aliases que o Vite dev serve fora do mount) não casa
-  // o prefixo, mas os express.static/vite.middlewares decodificam e servem o MESMO arquivo
-  // sem autenticação. Aqui o path é decodificado e qualquer segmento "design-lab" que não
-  // seja (a) o prefixo legítimo `/design-lab/` — que segue para o mount autenticado — ou
-  // (b) código-fonte `/src/features/design-lab/` (módulos lazy, não são os assets estáticos
-  // sensíveis e já vão no bundle) é bloqueado com 404 antes de qualquer static.
+  // Guarda anti-bypass dos estáticos do design-lab e de /tools (achados P0 DEM-20261114-001/003 e PR #415).
+  // Os mounts `/design-lab` e `/tools` autenticados abaixo só casam o prefixo literal — um path como
+  // `/design-lab%2Fassets%2Flab.css`, `/tools%2F...`, `/%74ools/...`, `/public/tools/...` ou
+  // `/@fs/<abs>/public/tools/...` (aliases que o Vite dev ou express.static servem fora do mount)
+  // não casa o prefixo, mas os middlewares estáticos decodificam e servem o MESMO arquivo
+  // sem autenticação. Aqui o path é decodificado e qualquer segmento "design-lab" ou "tools" que não
+  // seja (a) o prefixo legítimo `/design-lab` ou `/tools` — que segue para o mount autenticado — ou
+  // (b) código-fonte legítimo sob `/src/` é bloqueado com 404 antes de qualquer static.
   app.use((req, res, next) => {
-    if (isBlockedDesignLabPath(req.path)) {
+    if (isBlockedDesignLabPath(req.path) || isBlockedToolsPath(req.path)) {
       res.status(404).end();
       return;
     }

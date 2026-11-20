@@ -5,7 +5,11 @@
 import express from 'express';
 import request from 'supertest';
 import { describe, expect, it, vi } from 'vitest';
-import { isBlockedDesignLabPath, mountFrontend } from '../../../src/bootstrap/frontend.js';
+import {
+  isBlockedDesignLabPath,
+  isBlockedToolsPath,
+  mountFrontend,
+} from '../../../src/bootstrap/frontend.js';
 
 // mountFrontend chama createViteServer no branch de dev/test — mockado para não subir um
 // servidor Vite de verdade dentro do teste unitário. O middleware fake responde 200 para
@@ -61,12 +65,50 @@ describe('isBlockedDesignLabPath', () => {
 });
 
 /**
+ * Guarda anti-bypass dos estáticos de /tools (P0, handoff 24→00 PR #415).
+ * Cobre os aliases que o Express/Vite decodificam e servem fora do mount
+ * autenticado `/tools`: encoding, `/public/`, `/@fs/` e variações de caixa,
+ * preservando módulos legítimos sob `/src/`.
+ */
+describe('isBlockedToolsPath', () => {
+  it.each([
+    '/tools/social-selling',
+    '/tools',
+    '/src/features/intelligence/tools/crmTools.ts',
+    '/src/features/prospecting/components/prospecting-hub/tools/ApolloTool.tsx',
+    '/src/lib/ai/tools/registry.ts',
+    '/app/crm',
+    '/design-lab/assets/lab.css',
+    '/',
+  ])('permite caminho legítimo: %s', (path) => {
+    expect(isBlockedToolsPath(path)).toBe(false);
+  });
+
+  it.each([
+    '/public/tools/social-selling/index.html',
+    '/@fs/abs/path/public/tools/social-selling/index.html',
+    '/foo/tools/bar.html',
+    '/PUBLIC/tools/secret.html',
+    '/tools%2Fsocial-selling',
+    '/%74ools/social-selling',
+    '/x%2Ftools%2Fsocial-selling',
+  ])('bloqueia bypass de /tools: %s', (path) => {
+    expect(isBlockedToolsPath(path)).toBe(true);
+  });
+
+  it('mantém raw path quando o encoding é malformado', () => {
+    expect(isBlockedToolsPath('/tools%ZZ/assets')).toBe(false);
+    expect(isBlockedToolsPath('/public/tools/%ZZ')).toBe(true);
+  });
+});
+
+/**
  * Middleware de guarda registrado por mountFrontend (P0, DEM-20261114-001/003):
  * qualquer path que toque um asset do design-lab por alias não autorizado precisa
  * receber 404 ANTES de express.static/vite.middlewares — senão o alias decodificado
  * serviria o arquivo sem passar pelo mount autenticado `/design-lab`.
  */
-describe('mountFrontend — guarda anti-bypass design-lab', () => {
+describe('mountFrontend — guarda anti-bypass design-lab e /tools', () => {
   async function buildApp() {
     const app = express();
     await mountFrontend(app);
@@ -86,6 +128,21 @@ describe('mountFrontend — guarda anti-bypass design-lab', () => {
     }
   });
 
+  it('responde 404 para aliases e encodings de /tools antes de qualquer static', async () => {
+    const app = await buildApp();
+    for (const alias of [
+      '/public/tools/social-selling/index.html',
+      '/@fs/abs/path/public/tools/social-selling/index.html',
+      '/tools%2Fsocial-selling',
+      '/%74ools/social-selling',
+      '/foo/tools/bar.html',
+      '/PUBLIC/tools/secret.html',
+    ]) {
+      const res = await request(app).get(alias);
+      expect(res.status, alias).toBe(404);
+    }
+  });
+
   it('deixa passar o prefixo legítimo /design-lab para o mount autenticado', async () => {
     const app = await buildApp();
     const res = await request(app).get('/design-lab/assets/lab.css');
@@ -94,9 +151,22 @@ describe('mountFrontend — guarda anti-bypass design-lab', () => {
     expect(res.status).toBe(200);
   });
 
-  it('deixa passar paths comuns e módulos fonte do design-lab', async () => {
+  it('deixa passar o prefixo legítimo /tools/x para o mount autenticado', async () => {
     const app = await buildApp();
-    for (const path of ['/app/crm', '/src/features/design-lab/pages/Lab.tsx', '/tools/x']) {
+    const res = await request(app).get('/tools/x');
+    expect(res.status).not.toBe(404);
+    expect(res.status).toBe(200);
+  });
+
+  it('deixa passar paths comuns e módulos fonte do design-lab e de tools', async () => {
+    const app = await buildApp();
+    for (const path of [
+      '/app/crm',
+      '/src/features/design-lab/pages/Lab.tsx',
+      '/src/features/intelligence/tools/crmTools.ts',
+      '/src/lib/ai/tools/registry.ts',
+      '/tools/x',
+    ]) {
       const res = await request(app).get(path);
       expect(res.status, path).toBe(200);
     }
