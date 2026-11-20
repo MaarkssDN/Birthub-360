@@ -1,8 +1,15 @@
 /**
  * Guardrails para PII (Informações Pessoais Identificáveis)
  * Bloqueia CPF, CNPJ, telefone, email e cartão de crédito em respostas de IA
+ *
+ * Antes da detecção, o texto passa por `decodeTextEscapes` (unicode/hex
+ * escapes e percent-encoding) e tokens codificados (Base64/hex) são
+ * decodificados e revalidados — mitiga o bypass de PII por encoding
+ * (handoff 14→07). Payloads com encoding múltiplo ou tokens < 12 chars
+ * permanecem como limitação residual documentada.
  */
 import { z } from 'zod';
+import { decodeTextEscapes, findEncodedTokenSpans } from './encoding.js';
 
 const CPF_PATTERN = /\d{3}\.?\d{3}\.?\d{3}-?\d{2}/g;
 const CNPJ_PATTERN = /\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}/g;
@@ -41,7 +48,8 @@ export interface GuardrailResult {
   matches: string[];
 }
 
-export function detectPII(text: string): GuardrailResult {
+/** Coleta todos os matches de PII de um texto (já decodificado ou candidato). */
+function collectPiiMatches(text: string): string[] {
   const matches: string[] = [];
 
   const cpfMatches = text.match(CPF_PATTERN);
@@ -62,6 +70,18 @@ export function detectPII(text: string): GuardrailResult {
   const creditCardMatches = text.match(CREDIT_CARD_PATTERN);
   if (creditCardMatches) matches.push(...creditCardMatches);
 
+  return matches;
+}
+
+export function detectPII(text: string): GuardrailResult {
+  // Visão decodificada de escapes (unicode/hex/%XX) + tokens codificados
+  // (Base64/hex) revalidados — fecha o bypass de PII por encoding.
+  const normalized = decodeTextEscapes(text);
+  const matches = collectPiiMatches(normalized);
+  for (const span of findEncodedTokenSpans(normalized)) {
+    matches.push(...collectPiiMatches(span.decoded));
+  }
+
   if (matches.length > 0) {
     return {
       blocked: true,
@@ -78,27 +98,28 @@ export function detectPII(text: string): GuardrailResult {
 
 export function redactPII(text: string): { redacted: string; matches: string[] } {
   const matches: string[] = [];
-  let redacted = text;
+  const normalized = decodeTextEscapes(text);
+  let redacted = normalized;
 
-  const cpfMatches = text.match(CPF_PATTERN);
+  const cpfMatches = normalized.match(CPF_PATTERN);
   if (cpfMatches) {
     matches.push(...cpfMatches);
     redacted = redacted.replace(CPF_PATTERN, '[CPF_REDACTED]');
   }
 
-  const cnpjMatches = text.match(CNPJ_PATTERN);
+  const cnpjMatches = normalized.match(CNPJ_PATTERN);
   if (cnpjMatches) {
     matches.push(...cnpjMatches);
     redacted = redacted.replace(CNPJ_PATTERN, '[CNPJ_REDACTED]');
   }
 
-  const phoneMatches = text.match(PHONE_PATTERN);
+  const phoneMatches = normalized.match(PHONE_PATTERN);
   if (phoneMatches) {
     matches.push(...phoneMatches);
     redacted = redacted.replace(PHONE_PATTERN, '[PHONE_REDACTED]');
   }
 
-  const emailMatches = text.match(EMAIL_PATTERN);
+  const emailMatches = normalized.match(EMAIL_PATTERN);
   if (emailMatches) {
     const externalEmails = emailMatches.filter((e) => !isAllowedEmail(e));
     if (externalEmails.length > 0) {
@@ -109,10 +130,26 @@ export function redactPII(text: string): { redacted: string; matches: string[] }
     }
   }
 
-  const creditCardMatches = text.match(CREDIT_CARD_PATTERN);
+  const creditCardMatches = normalized.match(CREDIT_CARD_PATTERN);
   if (creditCardMatches) {
     matches.push(...creditCardMatches);
     redacted = redacted.replace(CREDIT_CARD_PATTERN, '[CREDIT_CARD_REDACTED]');
+  }
+
+  // Tokens codificados (Base64/hex) cujo conteúdo decodificado contém PII:
+  // não é possível redigir dentro do token, então o span inteiro é substituído.
+  for (const span of findEncodedTokenSpans(normalized)) {
+    const spanMatches = collectPiiMatches(span.decoded);
+    if (spanMatches.length > 0) {
+      matches.push(...spanMatches);
+      redacted = redacted.split(span.raw).join('[ENCODED_PII_REDACTED]');
+    }
+  }
+
+  if (matches.length === 0) {
+    // Sem PII: devolve o texto original (não a visão decodificada), preservando
+    // escapes/percent-encoding legítimos do conteúdo.
+    return { redacted: text, matches: [] };
   }
 
   return { redacted, matches };

@@ -1,4 +1,6 @@
 import { randomUUID } from 'node:crypto';
+import { logger } from '../../../lib/logger.js';
+import { domainEventMesh } from '../../../lib/queue/domainEventMesh.service.js';
 import type {
   AccountGraphView,
   GraphEdge,
@@ -7,8 +9,6 @@ import type {
   IAccountKnowledgeGraphPort,
   MultiThreadingApproach,
 } from '../../../shared/contracts/accountKnowledgeGraph.contract.js';
-import { domainEventMesh } from '../../../lib/queue/domainEventMesh.service.js';
-import { logger } from '../../../lib/logger.js';
 import {
   type AccountGraphRepository,
   PrismaAccountGraphRepository,
@@ -71,22 +71,31 @@ export class AccountKnowledgeGraphService implements IAccountKnowledgeGraphPort 
     await this.repo.createEdge(edge);
 
     // Publicar evento no DomainEventMesh
-    await domainEventMesh.publish({
-      eventType: 'GRAPH_RELATIONSHIP_UPDATED',
-      eventVersion: '1.0.0',
-      organizationId: edgeInput.organizationId,
-      correlationId: `graph-${id}`,
-      producer: 'account-knowledge-graph',
-      aggregateId: edgeInput.sourceId,
-      payload: {
-        edgeId: id,
-        sourceId: edgeInput.sourceId,
-        targetId: edgeInput.targetId,
-        type: edgeInput.type,
-        confidence: edgeInput.confidence,
-        source: edgeInput.source,
+    await domainEventMesh.publish(
+      {
+        eventType: 'GRAPH_RELATIONSHIP_UPDATED',
+        eventVersion: '1.0.0',
+        organizationId: edgeInput.organizationId,
+        correlationId: `graph-${id}`,
+        producer: 'account-knowledge-graph',
+        aggregateId: edgeInput.sourceId,
+        payload: {
+          edgeId: id,
+          sourceId: edgeInput.sourceId,
+          targetId: edgeInput.targetId,
+          type: edgeInput.type,
+          confidence: edgeInput.confidence,
+          source: edgeInput.source,
+        },
       },
-    });
+      {
+        // Handoff 16→00 (onda-3): chave estável do fato de negócio. O edge.id é
+        // `edge-${randomUUID()}` por chamada, então a identidade estável da relação
+        // é a tupla (source, target, type) — retry/replay da mesma relação colide,
+        // relações distintas não.
+        idempotencyKey: `graph-relationship:${edgeInput.sourceId}:${edgeInput.targetId}:${edgeInput.type}`,
+      },
+    );
 
     return edge;
   }
