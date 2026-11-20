@@ -63,7 +63,7 @@
       "justification": "Dentro do grafo do depcruise, mas nenhuma regra forbidden modela 'propriedade de arquivo' — o cruiser verifica fronteiras de importação, não quem edita. Shell/navegação é do Agente 31 (slot exclusivo, AGENTS.md §14); proteção é revisão de diff."
     },
     {
-      "scope": "src/components/ui/**, tailwind.config.js",
+      "scope": "src/components/ui/**, tailwind.config.js, src/styles/**",
       "owner": "Agente 33 (Célia)",
       "coverage": "review",
       "justification": "Nenhuma regra forbidden do depcruise modela propriedade de arquivo. Design system base é do Agente 33; proteção é revisão de diff contra a matriz."

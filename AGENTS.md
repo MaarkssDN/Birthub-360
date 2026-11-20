@@ -488,7 +488,7 @@ src/features/billing/**
 src/App.tsx, src/components/layout/**
 → Agente 31 (Noa)
 
-src/components/ui/**, tailwind.config.js
+src/components/ui/**, tailwind.config.js, src/styles/**
 → Agente 33 (Célia)
 
 src/features/landing/**
