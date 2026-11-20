@@ -35,7 +35,7 @@ flowchart LR
 - [ ] **[12 · Vera]** Bloqueador B-05: Corrigir migrações com `DEFAULT` dinâmico em colunas `NOT NULL` que causam lock exclusivo.  
   *Arquivo:* `prisma/migrations/**` | *Critério:* Deploy de migração executado sem travar novas conexões na tabela de leads.
 - [ ] **[13 · Nilo]** Bloqueador B-10: Criar índices compostos com `tenantId` em todas as tabelas com políticas RLS ativas.  
-  *Arquivo:* `src/lib/db/rls/policies.sql` | *Critério:* `EXPLAIN ANALYZE` confirma `Index Scan` eliminando `Seq Scan`.
+  *Arquivo:* `prisma/schema.prisma` (`@@index`, Agente 11) + nova migração em `prisma/migrations/**` (Agente 12) — `src/lib/db/rls/` não existe; RLS vive em migrações e `src/lib/tenant-prisma.ts` | *Critério:* `EXPLAIN ANALYZE` confirma `Index Scan` eliminando `Seq Scan`.
 - [ ] **[19 · Bruno]** Bloqueador B-14: Implementar pre-commit hook bloqueando extensões de dump (`.sql`, `.sql.gz`, `.dump`).  
   *Arquivo:* `scripts/backup/verify-integrity.ts` | *Critério:* Hook aborta commit caso arquivo de dump seja colocado em staging.
 
