@@ -87,11 +87,11 @@ flowchart LR
 - [ ] **[00 · Astra]** Graceful shutdown em `server.ts` fechando pools do Prisma, conexões Redis e filas BullMQ.
 - [ ] **[02 · Bento]** Substituição de mocks estáticos de Redis por Testcontainers nos testes de integração.
 - [ ] **[08 · Dora]** Rotina de expurgo LGPD propagando deleção física para logs de auditoria e telemetria agregada.
-- [ ] **[09 · Silas]** Automação de verificação de hash SHA em `.agents/reviews/` para validação em CI.
+- [x] **[09 · Silas]** Automação de verificação de hash SHA em `.agents/reviews/` para validação em CI. (Validado em `scripts/governance/verify-review-hashes.ts` e `tests/unit/governance/verify-review-hashes.test.ts`)
 - [ ] **[10 · Mara]** Linters automáticos de SQL no build para checagem estrita de predicados `tenantId`.
-- [ ] **[11 · Pietro]** Remoção de `onDelete: Cascade` em tabelas massivas (`Activity`, `TimelineEvent`), substituindo por soft delete.
+- [ ] **[11 · Pietro]** Remoção de `onDelete: Cascade` em tabelas massivas (`Activity`, `TimelineEvent`), substituindo por soft delete. (Handoff/proposta em 2 fases em `.agents/handoffs/onda-2-10-para-11-12-soft-delete-activity-timeline.md` — aguardando aprovação humana)
 - [ ] **[14 · Bia]** Isolamento estrito em `prisma/seed.ts` utilizando geradores UUID v4 randômicos sem IDs estáticos.
-- [ ] **[16 · Cora]** Resolução de N+1 queries na listagem de CRM e leads usando Prisma `include` otimizado.
+- [x] **[16 · Cora]** Resolução de N+1 queries na listagem de CRM e leads usando Prisma `include` otimizado. (Validado em `src/features/crm/infra/__tests__/PrismaLeadRepository.test.ts` e `tests/unit/db/crm-repositories-n-plus-one.test.ts`)
 - [ ] **[17 · Remo]** Prefixo obrigatório `${tenantId}:` em todas as chaves distribuídas de cache Redis.
 
 ### Squad 20 & 50 (Backend & Integrações)
