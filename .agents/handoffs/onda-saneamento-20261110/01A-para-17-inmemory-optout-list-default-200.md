@@ -53,7 +53,17 @@ Não alterar o contrato nem o `PrismaOptOutRepository` — já estão corretos.
   produção depende dela. Ainda assim, testes que exercitem lotes >200 opt-outs herdariam o
   mesmo fail-open latente que a correção eliminou em produção.
 
+## Resolução (Agente 17 — Onda 2)
 
-## Resolução (verificado pelo coordenador, 2026-11-19)
-
-`InMemoryOptOutRepository.list` corrigido em `8cccf5abb` (mergeado em main): assinatura agora `limit?: number` sem default 200 — omitido retorna a lista completa do tenant, alinhado ao `PrismaOptOutRepository` e ao contrato. Divergência sanada.
+- **Status**: Resolvido.
+- **Implementação verificada**: `InMemoryOptOutRepository.list(organizationId: string, limit?: number)` em `src/features/cadence/infra/InMemoryOptOutRepository.ts` já implementa estritamente a semântica canônica do contrato `OptOutRepository`:
+  - Se `limit === undefined`: retorna todos os registros ordenados por data sem truncamento / sem `slice`.
+  - Se `limit` for fornecido: aplica clamping estrito entre `1` e `500`.
+- **Cobertura de testes**:
+  - `tests/unit/features/cadence/infra/InMemoryOptOutRepository.test.ts` criado com casos explícitos:
+    - `list(orgId)` sem limit semeado com 250 registros retorna todos os 250 itens (comprovando ausência de truncamento em 200).
+    - `list(orgId, limit)` com limit respeita o valor e o clamp de 1..500.
+    - Isolamento multi-tenant estrito por `organizationId`.
+    - `findMatches` por identificadores normalizados e `clear()`.
+  - `src/features/cadence/__tests__/optOut.test.ts` (linhas 206-228) já validava semântica semelhante com 210 registros.
+- **Validação**: Testes unitários 100% verdes (`17/17 passed`), `npx tsc --noEmit` limpo.

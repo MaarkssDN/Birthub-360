@@ -42,6 +42,15 @@ const prismaMock = {
 };
 vi.mock('@/lib/prisma', () => ({ prisma: prismaMock }));
 
+// Handoff 16→00 (onda-3): os publishes do webhook devem carregar idempotencyKey derivada do
+// fingerprint da entrega (o Bitrix não envia id de evento). Mock para fixar as chaves.
+const { meshPublishMock } = vi.hoisted(() => ({
+  meshPublishMock: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock('@/lib/queue/domainEventMesh.service', () => ({
+  domainEventMesh: { publish: meshPublishMock },
+}));
+
 const clientMock = { callBitrix: vi.fn() };
 vi.mock('../service/client.js', () => clientMock);
 
@@ -248,6 +257,39 @@ describe('POST /webhook/:connectionId', () => {
     expect(metric.values).toContainEqual(
       expect.objectContaining({ labels: { tenant: 'org-1', entity: 'lead' }, value: 1 }),
     );
+  });
+
+  it('publica no domainEventMesh com idempotencyKey estável derivada do fingerprint da entrega (webhook reentregue não duplica evento)', async () => {
+    prismaMock.bitrixConnection.findUnique.mockResolvedValue(CONNECTION);
+    prismaMock.lead.findFirst.mockResolvedValue({
+      id: 'lead-local-1',
+      organizationId: 'org-1',
+      bitrixLeadId: '123',
+      contactId: null,
+      qualification: null,
+    });
+    clientMock.callBitrix.mockResolvedValue({ result: { ID: '123', STATUS_ID: 'IN_PROCESS' } });
+
+    const app = await buildApp();
+    await request(app)
+      .post('/webhook/conn-1')
+      .send('auth[application_token]=segredo-correto&event=ONCRMLEADUPDATE&data[FIELDS][ID]=123');
+
+    // webhookDeliveryFingerprint está mockado para 'fingerprint-de-teste' neste arquivo —
+    // a chave é determinística por entrega: uma reentrega byte-a-byte do Bitrix gera a mesma
+    // chave e o UNIQUE parcial da outbox descarta a duplicata.
+    expect(meshPublishMock).toHaveBeenCalledWith(
+      expect.objectContaining({ eventType: 'BITRIX_WEBHOOK_RECEIVED' }),
+      { idempotencyKey: 'bitrix-webhook:fingerprint-de-teste' },
+    );
+    expect(meshPublishMock).toHaveBeenCalledWith(
+      expect.objectContaining({ eventType: 'ENGAGEMENT_SIGNAL_RECEIVED' }),
+      { idempotencyKey: 'bitrix-engagement:fingerprint-de-teste' },
+    );
+    const keys = meshPublishMock.mock.calls.map(
+      (c) => (c[1] as { idempotencyKey: string }).idempotencyKey,
+    );
+    expect(new Set(keys).size).toBe(keys.length);
   });
 
   it('RETORNA 200 E IGNORA PROCESSAMENTO se a entrega for um webhook repetido (replay attack ou retry forçado)', async () => {
