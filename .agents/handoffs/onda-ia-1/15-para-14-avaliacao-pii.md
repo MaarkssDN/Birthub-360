@@ -1,7 +1,7 @@
 - De: Agente 15
 - Para: Agente 14
 - Onda: IA-1
-- Status: em-andamento
+- Status: resolvido
 - Prioridade: normal
 
 ## Problema
@@ -101,3 +101,23 @@ adicionada na seam real de bloqueio (`chat-model.ts` L260-299):
 Status mantido **em-andamento**: pendente apenas a decisão do Agente 07 sobre
 o débito de encoding bypass. Itens 1 e 3 do pedido original (falsos positivos
 numéricos e redação) já tinham cobertura real conforme reconciliação anterior.
+
+## Resolução (Agente 14 — 2026-11-19 — Formalização de Conclusão)
+
+Status: **resolvido**.
+
+Todos os 5 itens do pedido de segurança do Agente 15 encontram-se concluídos, testados e validados:
+
+1. **Falsos positivos em padrões numéricos (CEP, protocolos, IDs):**
+   - COBERTO em `tests/integration/ai-guardrails-security.test.ts` e `tests/unit/ai/guardrails-allowlist.test.ts`.
+2. **Logs de tentativas bloqueadas em `AILog`:**
+   - COBERTO na suíte `tests/unit/lib/ai/gateway/chat-model-guardrails.test.ts` (4/4 testes verdes). Bloqueio por CPF ou toxicidade verifica rejeição em `invoke()`, 1 chamada ao provider, registro em `logAiUsage` (seam canônica de produção) e supressão de métricas de cobrança/telemetria.
+3. **Redação reversível (placeholders estáticos vs tamanho dinâmico):**
+   - COBERTO em `tests/unit/ai/guardrails-allowlist.test.ts` e `tests/integration/ai-guardrails-security.test.ts` (redação sem vazamento de metadados de tamanho).
+4. **Prompt injection no prompt antes de enviar ao provider:**
+   - COBERTO em `tests/unit/lib/ai/gateway/chat-model-guardrails.test.ts` (delimitação com tags `<untrusted_external_content>` e neutralização via escape seguro) e `tests/integration/ai-safety-adversarial.test.ts`.
+5. **Encoding bypass (Base64, hex, unicode escape):**
+   - RESOLVIDO pelo Agente 07 no PR #441 (Wave D: implementação em `src/lib/ai/guardrails/encoding.ts` com decodificação segura, tetos de consumo e proteção anti-bypass para Base64, hex, unicode escapes e percent-encoding).
+   - REVISÃO INDEPENDENTE APROVADA pelo Agente 24 em `.agents/reviews/pr441-waveD-guardrails-pii-encoding-24.md` (85/85 testes unitários passando, ausência de unhandled exceptions, conservação semântica e limites de complexidade validados).
+
+Handoff de débito subordinado `.agents/handoffs/onda-ia-1/14-para-07-encoding-bypass-guardrails-pii.md` consolidado como resolvido pelo PR #441.

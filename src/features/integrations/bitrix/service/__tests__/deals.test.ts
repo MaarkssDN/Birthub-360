@@ -15,8 +15,8 @@ const prismaMock = {
 };
 // DEBT-0020: mesmo padrão de leads.test.ts — creates de import rodam dentro de
 // runInTransaction; o mock executa `fn` direto com o prismaMock (sem tx/rollback real).
-const runInTransactionMock = vi.fn(
-  async (fn: (tx: unknown) => Promise<unknown>, _opts?: unknown) => fn(prismaMock),
+const runInTransactionMock = vi.fn(async (fn: (tx: unknown) => Promise<unknown>, _opts?: unknown) =>
+  fn(prismaMock),
 );
 vi.mock('@/lib/prisma', () => ({ prisma: prismaMock, runInTransaction: runInTransactionMock }));
 

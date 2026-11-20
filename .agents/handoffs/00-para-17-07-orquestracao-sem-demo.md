@@ -103,7 +103,7 @@ prevê expor esse simulador. Mantido intacto nesta onda (P3 — fora do caminho
 afetado pelo F3).
 
 Status do handoff: item 07 **resolvido** (verificação concluída, sem alteração de
-código necessária nos caminhos vivos). Itens 02 e 08 seguem com seus donos.
+código necessária nos caminhos vivos). Item 17 **resolvido** (desacoplamento verificado e persistido). Itens 02 e 08 seguem com seus donos.
 
 ## Reverificação — item do Agente 07 (2026-11-17, worktree `agente-07-handoffs`, base `main@414a0ca5f`)
 
@@ -119,8 +119,7 @@ Reconfirmado em `main` e **débito técnico encerrado**:
   (0 ocorrências em `src/` e `tests/`) — o simulador heurístico sem consumidor
   sinalizado como pendência em 2026-11-15 foi removido. Nada a fazer.
 
-Item 07 permanece **resolvido**. Status do handoff mantido `em-andamento`
-(itens dos Agentes 02 e 08 pendentes de verificação/execução por seus donos).
+Item 07 permanece **resolvido**.
 
 ## Verificação e Desacoplamento de Dados Mockados — Agente 17 (2026-11-18)
 
