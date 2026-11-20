@@ -505,3 +505,128 @@ describe('advanceCadenceRun — re-verificação pré-envio (auto-stop atômico)
     expect(dispatcher.calls).toHaveLength(1);
   });
 });
+
+// DEBT-0008 + DEBT-0009 — regressões do pacote Trilha C.
+describe('advanceCadenceRun — DEBT-0008/0009', () => {
+  function depsWithOverrides(
+    runRepo: CadenceRunRepository,
+    optOutRepo: InMemoryOptOutRepository,
+    dispatcher: CadenceDispatcher,
+    hasLeadReplied: (organizationId: string, leadId: string, since?: Date) => Promise<boolean>,
+  ) {
+    return {
+      runRepo,
+      optOutRepo,
+      subjectResolver: alwaysResolveSubject(),
+      dispatcher,
+      lock: noopLock(),
+      rateLimit: noopRateLimit(),
+      isWithinBusinessWindow: () => true,
+      hasLeadReplied,
+    };
+  }
+
+  it('DEBT-0008: hasLeadReplied recebe run.startedAt como corte temporal em ambas as checagens', async () => {
+    const runRepo = new InMemoryCadenceRunRepository();
+    runRepo.seed(
+      startCadenceRun({
+        id: 'run-1',
+        organizationId: ORG,
+        leadId: LEAD,
+        sequenceId: 'seq-1',
+        startedAt: NOW,
+      }),
+    );
+    const optOutRepo = new InMemoryOptOutRepository();
+    const dispatcher = new ScriptedDispatcher({ result: 'sent' });
+    const seenSince: Array<Date | undefined> = [];
+
+    await advanceCadenceRun(
+      depsWithOverrides(runRepo, optOutRepo, dispatcher, async (_o, _l, since) => {
+        seenSince.push(since);
+        return false;
+      }),
+      ORG,
+      'run-1',
+      SEQUENCE,
+      NOW,
+    );
+
+    // Checagem inicial + re-verificação pré-envio — ambas com o startedAt do run.
+    expect(seenSince.length).toBe(2);
+    expect(seenSince.every((s) => s?.getTime() === NOW.getTime())).toBe(true);
+  });
+
+  it('DEBT-0009: pending recente mantém o run em wait/locked sem despachar', async () => {
+    const { recordTouchAttempt } = await import('../domain/cadence.js');
+    let run = startCadenceRun({
+      id: 'run-1',
+      organizationId: ORG,
+      leadId: LEAD,
+      sequenceId: 'seq-1',
+      startedAt: NOW,
+    });
+    // Toque de voz pendente criado há 1h — webhook ainda pode chegar.
+    const pendingAt = new Date(NOW.getTime() - 60 * 60 * 1000);
+    run = recordTouchAttempt(run, SEQUENCE, SEQUENCE.touches[0], pendingAt, {
+      result: 'pending',
+      providerMessageId: 'call-1',
+    });
+    const runRepo = new InMemoryCadenceRunRepository();
+    runRepo.seed(run);
+    const optOutRepo = new InMemoryOptOutRepository();
+    const dispatcher = new ScriptedDispatcher({ result: 'sent' });
+
+    const { decision } = await advanceCadenceRun(
+      depsWithOverrides(runRepo, optOutRepo, dispatcher, async () => false),
+      ORG,
+      'run-1',
+      SEQUENCE,
+      NOW,
+    );
+
+    expect(decision).toEqual({ type: 'wait', reason: 'locked' });
+    expect(dispatcher.calls).toHaveLength(0);
+  });
+
+  it('DEBT-0009: pending stale é expirado para failed e o run avança para o próximo toque', async () => {
+    const { recordTouchAttempt, PENDING_TOUCH_EXPIRED_ERROR } = await import(
+      '../domain/cadence.js'
+    );
+    let run = startCadenceRun({
+      id: 'run-1',
+      organizationId: ORG,
+      leadId: LEAD,
+      sequenceId: 'seq-1',
+      startedAt: NOW,
+    });
+    // Pending criado há 25h — além do TTL de 24h, webhook perdido.
+    const pendingAt = new Date(NOW.getTime() - 25 * 60 * 60 * 1000);
+    run = recordTouchAttempt(run, SEQUENCE, SEQUENCE.touches[0], pendingAt, {
+      result: 'pending',
+      providerMessageId: 'call-1',
+    });
+    const runRepo = new InMemoryCadenceRunRepository();
+    runRepo.seed(run);
+    const optOutRepo = new InMemoryOptOutRepository();
+    const dispatcher = new ScriptedDispatcher({ result: 'sent' });
+
+    const { run: updated, decision } = await advanceCadenceRun(
+      depsWithOverrides(runRepo, optOutRepo, dispatcher, async () => false),
+      ORG,
+      'run-1',
+      SEQUENCE,
+      NOW,
+    );
+
+    // Expiração converteu o pending em failed e a sequência avançou para o toque 2
+    // (delay de 24h já cumprido: lastTouchAt = pendingAt = NOW-25h).
+    expect(updated.attempts[0].result).toBe('failed');
+    expect(updated.attempts[0].error).toBe(PENDING_TOUCH_EXPIRED_ERROR);
+    expect(decision.type).toBe('dispatch');
+    expect(dispatcher.calls).toHaveLength(1);
+    expect(dispatcher.calls[0].order).toBe(2);
+    // Toque 2 enviado com sucesso → sequência completa (só 2 toques).
+    expect(updated.status).toBe('completed');
+  });
+});

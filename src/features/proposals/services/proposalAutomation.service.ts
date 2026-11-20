@@ -86,21 +86,25 @@ export class ProposalAutomationService implements IProposalAutomationPort {
     const key = `${params.organizationId}:${id}`;
     this.proposalsStore.set(key, proposal);
 
-    await domainEventMesh.publish({
-      eventType: 'COMMERCIAL_PROPOSAL_DRAFTED',
-      eventVersion: '1.0.0',
-      organizationId: params.organizationId,
-      correlationId: `prop-${id}`,
-      producer: 'proposal-automation-service',
-      aggregateId: params.dealId,
-      payload: {
-        proposalId: id,
-        dealId: params.dealId,
-        totalCents,
-        requiresAlcadaApproval,
-        status,
+    await domainEventMesh.publish(
+      {
+        eventType: 'COMMERCIAL_PROPOSAL_DRAFTED',
+        eventVersion: '1.0.0',
+        organizationId: params.organizationId,
+        correlationId: `prop-${id}`,
+        producer: 'proposal-automation-service',
+        aggregateId: params.dealId,
+        payload: {
+          proposalId: id,
+          dealId: params.dealId,
+          totalCents,
+          requiresAlcadaApproval,
+          status,
+        },
       },
-    });
+      // Fato de negócio: este rascunho de proposta (id próprio gerado por execução).
+      { idempotencyKey: `proposal:${id}` },
+    );
 
     logger.info(
       `[ProposalAutomation] Proposta ${id} gerada para o deal ${params.dealId} no tenant ${params.organizationId}. Status: ${status}.`,

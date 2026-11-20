@@ -27,7 +27,8 @@ jobs:
       - name: Filtrar caminhos relevantes
         id: filter
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
           # workflow_dispatch não tem diff de PR: trata como relevante para validar baselines.
@@ -35,7 +36,10 @@ jobs:
             echo "relevant=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          FILES="$(git diff --name-only "${BASE_SHA}"...HEAD)"
+          # Só as mudanças do próprio PR (equivalente a "Files changed"): merge-base entre o TIP ATUAL
+          # da base e o head do PR. Não usar base.sha (congelado na abertura do PR) nem o merge ref
+          # (HEAD do checkout): ambos arrastam para a lista arquivos que entraram na main depois.
+          FILES="$(git diff --name-only "origin/${BASE_REF}...${HEAD_SHA}")"
           echo "Arquivos alterados no PR:"
           echo "$FILES"
           # Escopo deliberado: frontend servido, specs/helpers visuais, configs de build/teste,

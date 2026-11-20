@@ -4,10 +4,10 @@
 De: 02A — UX Research & Usability
 Para: 17 — Cadência Multicanal e Ciclo de Receita
 Onda: WB-1
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: DEBT-0060
-Sprint destino: a definir pelo 00
+Sprint destino: Onda B (WB-1)
 ```
 
 ## Problema
@@ -35,3 +35,9 @@ Clique em "Abrir Roteiros & Checklists" navega para `/app/roteiros` com o playbo
 ## Contexto adicional
 
 O restante do hub já está honesto (KPIs "Indisponível", `DemoDataNotice`, "Novo Playbook" disabled com tooltip) — a correção é cirúrgica, sem refatorar o arquivo.
+
+## Resolução (Agente 17 — 2026-11-19)
+
+- Implementado `onClick={() => navigate('/app/roteiros')}` no botão `"Abrir Roteiros & Checklists"` em `src/features/sales-orchestration/components/PlaybooksHub.tsx:221-228`.
+- Botão `ArrowUpRight` configurado com `disabled`, `title="Em breve — detalhe do playbook ainda não disponível"` e `aria-label="Detalhe do playbook (em breve)"` (`:229-237`).
+- Validação: `tsc --noEmit` (exit 0) e `biome lint` (0 diagnósticos). Relatório completo em `.agents/runs/correcoes-wb1/17-ux02-playbooks.md`.

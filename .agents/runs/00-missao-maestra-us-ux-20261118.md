@@ -172,3 +172,25 @@ WB-1: todos os achados agora têm dono decidido e destino definido.
 já existia no commit `3356c2e65` (branch `agente/00-integracao-skills`,
 backlog-5). Intents `open-create` remanescentes têm consumidores reais
 (activities/companies/contacts). Falta apenas o merge para main.
+
+## Adendo 7 — Correções WB-1 executadas (2026-11-19)
+
+Três correções cirúrgicas P2/P3 executadas por subagentes nos papéis dos
+donos, consolidadas e revisadas:
+
+- UX-02 (17): `PlaybooksHub.tsx` — navegação `/app/roteiros` + botão
+  secundário disabled+tooltip. Commit `f2d4d596b`.
+- UX-07 (02): `SinglePageDashboard.tsx` — `pipelineValue` null → "—"
+  (contrato), 0 real → "R$ 0". Commit separado `bc061e229` (outra frente).
+- UX-11 (04): `LeadDetailDrawer.tsx` — 404 fecha c/ msg específica;
+  erro de rede mantém drawer + retry. Commit `f2d4d596b`.
+
+Gate combinado: `npx tsc --noEmit` exit 0; lint sem diagnósticos novos.
+Parecer 24: **APROVADO** (`.agents/reviews/24-revisao-correcoes-wb1-20261119.md`).
+Observações não-bloqueantes: propagação de `status` em `apiFetch` (handoff
+futuro), smoke e2e de `/app/roteiros` e `?lead=` pendentes, verificar MSW
+no gate de integração.
+
+Restante WB-1: UX-09 (perfil editável — 02), UX-10 (funil dinâmico — 04),
+UX-05a (auth morta — 01), UX-05b (outbound SPA — 05+08), UX-08 (decisão de
+produto pendente), UX-06 (bloqueado NO-GO cadência).
