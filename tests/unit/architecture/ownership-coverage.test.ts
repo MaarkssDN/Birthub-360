@@ -48,6 +48,7 @@ describe('parseOwnershipMatrix', () => {
     const entries = parseOwnershipMatrix(readFileSync(AGENTS_PATH, 'utf-8'));
     expect(entries.length).toBeGreaterThanOrEqual(15);
     expect(entries).toContainEqual({ scope: 'prisma/schema.prisma', owner: 'Agente 11 (Pietro)' });
+    expect(entries).toContainEqual({ scope: 'prisma/migrations/**', owner: 'Agente 12 (Vera)' });
     expect(entries).toContainEqual({
       scope: 'src/App.tsx, src/components/layout/**',
       owner: 'Agente 31 (Noa)',
