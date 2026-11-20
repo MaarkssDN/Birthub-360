@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 01 — Plataforma, Segurança e Dados
 Onda: handoffs-20261117 (follow-up revisão 24 do PR #413)
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: parecer 24 em `.agents/reviews/handoffs-20261118-pr413-urlguard-ipv6-residual.md`
 Sprint destino: próxima onda de segurança
@@ -47,3 +47,28 @@ guards — eliminando a dependência do prefixo textual `::ffff:`.
 
 Não é bloqueador de merge (risco baixo, callers canonicalizam). Registrar como
 débito de hardening.
+
+## Resolução (Agente 01 — 2026-11-18, branch `agente/01-waveD-ipv6-canonico`)
+
+Implementado exatamente o pedido: novo helper `embeddedIpv4FromIpv6(ip)` em
+`src/shared/security/ipv6.ts` que reconhece IPv4-mapeado **byte-level**
+(bytes 0–9 zerados + bytes 10–11 = `0xffff`, RFC 4291 §2.5.5.2), independente
+da forma textual. Consumido pelos dois guards:
+
+- `src/shared/security/urlGuard.ts` — `isPrivateOrReservedIp` e `isLoopbackIp`
+  substituíram os blocos `startsWith('::ffff:')` + parsing manual por
+  `embeddedIpv4FromIpv6`; import de `ipv6ToBytes` removido (ficou sem uso).
+- `src/lib/security/ssrfGuard.ts` — `isPrivateOrInternalIpv6` idem.
+- `classifyIpv6Transition`/`isPrivateIpv6Transition` **inalterados** (o
+  IPv4-compatible `::/96` exige bytes 10–11 ≠ 0xffff por definição — sem
+  sobreposição com o mapeado).
+
+Testes novos:
+- `ssrfGuard.test.ts`: rejeita `0:0:0:0:0:ffff:7f00:1`, `...:a00:1`,
+  `...:c0a8:1` e `0000:...:ffff:0a00:0001`; aceita `0:0:0:0:0:ffff:808:808`
+  (8.8.8.8 público).
+- `urlGuard.test.ts`: DNS resolvendo para `0:0:0:0:0:ffff:a00:1` e
+  `0000:...:ffff:0a00:0001` → rejeitado; `0:0:0:0:0:ffff:808:808` → aceito.
+
+Gate: `npx vitest run -c vitest.unit.config.ts` nos dois arquivos →
+154/154 verde; `npx tsc --noEmit` limpo; `npx biome format --write` sem fixes.

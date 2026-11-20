@@ -701,3 +701,37 @@ grupos `ativos-hoje` deste arquivo) para promover isso a uma regra real.
 Depois de qualquer ação acima: confirmar `GET /health/ready` voltou a `200`, confirmar no painel
 `/admin/queues` (se aplicável) que a fila voltou a processar, e registrar causa raiz + ação
 tomada — este runbook não substitui um post-mortem quando o incidente afetou produção real.
+
+## 10. Backup & Disaster Recovery (DR) — Pós-PR #435 / DEBT-0002
+
+Runbook operacional para execução, validação e recuperação de desastres com scripts fail-closed:
+
+### 10.1 Scripts Canônicos
+- **Backup Criptografado:** `scripts/db/backup-encrypted.sh`
+  - Gera dump PostgreSQL via pipeline streaming: `pg_dump` -> `gzip` -> `openssl enc -aes-256-cbc -pbkdf2`.
+  - Dados em claro nunca tocam o disco.
+  - Validação de integridade automática (decifra teste + `gzip -t` antes de emitir SHA-256).
+  - Retenção configurável via `BACKUP_RETENTION_DAYS` (padrão 30 dias).
+  - Verificação de cifra: `bash scripts/db/backup-encrypted.sh --verify-crypto`.
+- **Drill Automatizado de Restauração:** `scripts/db/restore-test.sh`
+  - Restaura snapshot mais recente em banco efêmero isolado (`birthhub_restore_drill_<timestamp>`).
+  - Executa sanity checks (contagem de tabelas públicas e integridade de `_prisma_migrations`).
+  - Emite laudo em `BACKUP-RESTORE-DRILL-RESULT.json` (exit 0=passed, 1=failed, 2=not_executable).
+- **Simulação de DR e RPO/RTO:** `scripts/ops/dr-simulation.sh`
+  - Calcula RPO real a partir da idade do último backup vs `DR_RPO_TARGET_SECONDS` (padrão 24h).
+  - Mede RTO apenas se `DR_FAILOVER_CMD` for configurado (caso contrário, reporta honestamente `NOT_MEASURED` / exit 2).
+
+### 10.2 Procedimento de Restauração Manual em Caso de Desastre
+```bash
+export BACKUP_ENCRYPTION_PASSPHRASE="<chave-de-cifra>"
+openssl enc -d -aes-256-cbc -pbkdf2 \
+  -pass env:BACKUP_ENCRYPTION_PASSPHRASE \
+  -in "/path/to/backup_file.sql.gz.enc" | \
+  gunzip | \
+  psql "$TARGET_DATABASE_URL"
+
+npx prisma migrate status
+```
+
+### 10.3 Pendência Operacional de Produção
+Os scripts e playbooks estão homologados e versionados. O agendamento periódico (cron/systemd) na instância de produção depende do provisionamento de secrets no host (`BACKUP_DATABASE_URL`, `BACKUP_ENCRYPTION_PASSPHRASE`).

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   BookOpen,
   CheckCircle2,
@@ -30,6 +31,7 @@ import {
 import { formatMetric, useOrchestrationOverview } from './useOrchestrationOverview.js';
 
 export function PlaybooksHub() {
+  const navigate = useNavigate();
   const { data, isTemplate, noRealData, loading, error, reload } = useOrchestrationOverview();
   const playbooks = data?.playbooks ?? [];
   const [searchTerm, setSearchTerm] = useState('');
@@ -216,10 +218,21 @@ export function PlaybooksHub() {
                     <span>Atualizado: {pb.lastUpdated}</span>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="default" size="sm" className="w-full">
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => navigate('/app/roteiros')}
+                    >
                       Abrir Roteiros & Checklists
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled
+                      title="Em breve — detalhe do playbook ainda não disponível"
+                      aria-label="Detalhe do playbook (em breve)"
+                    >
                       <ArrowUpRight className="w-4 h-4" />
                     </Button>
                   </div>

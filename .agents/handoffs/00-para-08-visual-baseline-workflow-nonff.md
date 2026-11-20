@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 08 — QA e Release
 Onda: handoffs-20261117 (follow-up)
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: run 44374905634 (visual-baseline-update.yml em main)
 Sprint destino: próxima onda de QA/CI
@@ -44,3 +44,23 @@ Hoje a branch remota só existe se um run anterior falhou após o push ou se o
 PR de baselines não foi mergeado — o caso comum (PR mergeado + branch deletada)
 não dispara o bug. Ainda assim, qualquer resquício bloqueia silenciosamente a
 regen de baselines, que é o mecanismo de correção de VR flakes sistêmicos.
+
+## Resolução (Agente 08)
+
+Abordagem escolhida: `git push --force-with-lease` precedido de
+`git fetch origin "+refs/heads/$BASELINE_BRANCH:refs/remotes/origin/$BASELINE_BRANCH"`.
+
+Justificativa: a branch `ci/visual-baselines-linux` é efêmera e 100%
+regenerada a cada run — todo o conteúdo de baseline é reescrito do zero, logo o
+histórico remoto (resquício de run falho ou PR não mergeado) é sempre
+descartável e um rebase/merge sobre ele só criaria conflitos artificiais.
+O `--force-with-lease` (e não `--force` puro) mantém proteção contra push
+concorrente: se outro processo alterar a branch remota depois do fetch, o push
+falha em vez de sobrescrever cegamente. Se a branch remota não existir, o lease
+espera ausência e o push a cria normalmente.
+
+Alteração aplicada em `.github/workflows/visual-baseline-update.yml`, passo
+"Commitar baselines na branch ci/visual-baselines-linux": fetch da ref remota
+(erro suprimido com `|| true` quando a branch não existe) antes do
+`git checkout -B`, e push com `--force-with-lease`. Sintaxe YAML validada com
+`yaml.safe_load`. Comentário no próprio workflow documenta a decisão.
