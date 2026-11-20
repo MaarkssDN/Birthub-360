@@ -1,5 +1,5 @@
 De: 02 — Produto e UX
-Para: 03 — Design e Acessibilidade
+Para: 33 (Célia) — Design System e Componentes Base (numeração do roster atual; antes citado como 03)
 Onda: 1
 Status: aberto
 Prioridade: alto
@@ -10,8 +10,8 @@ Sprint destino: Onda 1
 `/app/gamification` mantém 1 violação axe crítica `button-name` (reproduzida no HEAD de main em 2026-11-19, tema claro e escuro, 1280x800; seletor `.appearance-none`). O `GamificationWidget` renderiza `<Gamified3DOrb interactive={false} />`, que emite um `<button disabled>` sem texto, sem `aria-label` e sem `title` (o `title` só existe quando `interactive`).
 
 ## Arquivo(s) envolvido(s)
-- `src/components/ui/Gamified3DOrb.tsx` (linhas ~185-193, `<button ... disabled={!interactive} title={interactive ? ... : undefined}>`) — dono 03.
-- Consumidor: `src/components/ui/GamificationWidget.tsx:145` (também `ui/`, dono 03).
+- `src/components/ui/Gamified3DOrb.tsx` (linhas ~185-193, `<button ... disabled={!interactive} title={interactive ? ... : undefined}>`) — dono 33 (Célia).
+- Consumidor: `src/components/ui/GamificationWidget.tsx:145` (também `ui/`, dono 33).
 - O 02 não consegue corrigir a partir da página: o componente não aceita `aria-label` por prop e o botão está dentro do widget.
 
 ## Evidência
