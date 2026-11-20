@@ -30,3 +30,6 @@ CI do head cd846e9cb (gh api check-runs): CodeRabbit in_progress; SonarQube, Cod
 
 ## Decisão
 APROVADO para a revisão exata cd846e9cba0a543b0fcd1fe09fbc4b5196e933da (escopo: documentação/handoffs; não implica correção do 500).
+
+## Reconferência (rodada 3)
+Head remoto reconferido por git ls-remote: INALTERADO. Parecer segue válido para o hash acima. CI atual do head detalhado no parecer do Silas na consulta; itens ainda queued/in_progress não são declarados verdes (#459: SonarQube in_progress, "Central" scans queued; #462: application gate e Visual Regression Gate queued, demais checks concluídos com success).
