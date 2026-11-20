@@ -1,11 +1,7 @@
 De: Agente 01 — Plataforma, Segurança e Dados
 Para: Agente 02 — Produto e UX
 Onda: W7 (follow-up do handoff 21→01 canal público DSR)
-<<<<<<< HEAD
-Status: aberto
-=======
-Status: resolvido (implementado pelo Agente 02 nesta branch)
->>>>>>> origin/agente/02-handoffs-20261117
+Status: resolvido (implementado pelo Agente 02 — PR #385 mergeado em main; backend do Agente 01 mergeado no PR #381; aceite do Agente 08 no PR #428)
 Prioridade: normal (backend pronto; sem as páginas os links dos e-mails caem em 404)
 Bloqueador-ref: `.agents/handoffs/21-para-01-dsr-canal-publico-lgpd.md` (resolução 2026-11-17)
 Sprint destino: próxima onda
