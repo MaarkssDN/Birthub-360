@@ -81,6 +81,12 @@ export type OwnershipManifestEntry = {
   rule?: string;
   /** coverage "review": script npm alternativo que cobre a verificação (opcional). */
   alternateCheck?: string;
+  /**
+   * Exceção estreita e auditável ao passo 4 (existência do path): o AGENTS.md §15 reserva o path
+   * para um dono, mas o diretório ainda não foi criado (ex.: src/lib/db/rls/**). Exige
+   * "justification" explicando a ausência; sem este campo, path inexistente continua violação.
+   */
+  allowMissingPath?: boolean;
 };
 
 export type OwnershipManifest = {
@@ -233,9 +239,7 @@ function loadDepcruiseForbiddenRules(): DepcruiseForbiddenRule[] {
   try {
     config = require(DEPCRUISE_CONFIG_PATH) as { forbidden?: DepcruiseForbiddenRule[] };
   } catch (err) {
-    throw new Error(
-      `Não foi possível carregar .dependency-cruiser.cjs: ${(err as Error).message}`,
-    );
+    throw new Error(`Não foi possível carregar .dependency-cruiser.cjs: ${(err as Error).message}`);
   }
   if (!Array.isArray(config.forbidden)) {
     throw new Error('.dependency-cruiser.cjs não expõe um array `forbidden` — formato inesperado.');
@@ -380,7 +384,11 @@ export function evaluateOwnershipCoverage(input: CoverageCheckInput): string[] {
 
     if (
       isPathLikeScope(scope) &&
-      !scopeExistsInRepo(scope, root)
+      !scopeExistsInRepo(scope, root) &&
+      !(
+        manifestEntry.allowMissingPath === true &&
+        (manifestEntry.justification?.trim().length ?? 0) >= MIN_JUSTIFICATION_LENGTH
+      )
     ) {
       violations.push(
         `Escopo "${scope}": path não existe no repositório — a matriz do AGENTS.md §15 (ou o ` +
@@ -397,9 +405,7 @@ function main(): void {
   const matrixEntries = parseOwnershipMatrix(agentsMarkdown);
   const manifest = loadJsonFile<OwnershipManifest>(MANIFEST_PATH, 'manifesto de ownership');
   if (!Array.isArray(manifest.entries)) {
-    throw new Error(
-      `${MANIFEST_PATH}: formato inesperado — esperado objeto com array "entries".`,
-    );
+    throw new Error(`${MANIFEST_PATH}: formato inesperado — esperado objeto com array "entries".`);
   }
   const depcruiseRules = loadDepcruiseForbiddenRules();
   const npmScriptNames = loadNpmScriptNames();
