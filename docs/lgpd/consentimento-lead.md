@@ -111,6 +111,14 @@ Reaproveitar `ConsentAuditRecord` (`purpose`, `termsVersion`, `occurredAt`) e gu
 
 Prazos operacionais confirmados pelo Marcelo em 2026-11-11 (America/Sao_Paulo): retenção de 90 dias sem avanço, ou duração da demonstração + 30 dias, o que for maior. Não são prazo legal automaticamente exigido; após o OK do texto legal, alinhar com o ROPA.
 
+> **Atualização 2026-11-18 (Agente 21):** o sweep de retenção foi implementado pelo
+> Agente 01 no PR #381 — `src/features/lgpd/jobs/landingLeadRetention.worker.ts`
+> (diário 04:15, BullMQ), critério conservador `source='landing_360'` +
+> `status='Lead_Recebido'` + `updatedAt <= 90d`, pois não existe campo de "demo
+> agendada em" para aplicar o prazo alternativo demo+30d. Decisão registrada no
+> handoff `.agents/handoffs/21-para-01-retencao-leads-landing-lgpd.md`. A linha
+> correspondente já consta no ROPA (`INVENTARIO_TRATAMENTO_ROPA.md`).
+
 ### 3.5 Direito de exclusão e opt-out
 
 O titular da landing precisa de canal **público**, independente de login:

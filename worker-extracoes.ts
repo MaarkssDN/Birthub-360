@@ -11,6 +11,7 @@ import { setWorkerProcessUp } from './src/lib/queue/metrics.js';
 import { createWhatsAppSignalWorker } from './src/lib/queue/whatsappSignal.worker.js';
 import { createWhatsAppCommandWorker } from './src/lib/queue/whatsappCommand.worker.js';
 import { createBitrixSyncWorker, scheduleBitrixSync } from './src/lib/queue/bitrixSync.worker.js';
+import { createBitrixOutboundWorker } from './src/lib/queue/bitrixOutbound.queue.js';
 import {
   createBitrixExtractionPurgeWorker,
   scheduleBitrixExtractionPurgeJob,
@@ -20,12 +21,14 @@ async function start() {
   const whatsappSignalWorker = createWhatsAppSignalWorker();
   const whatsappCommandWorker = createWhatsAppCommandWorker();
   const bitrixSyncWorker = createBitrixSyncWorker();
+  const bitrixOutboundWorker = createBitrixOutboundWorker();
   const bitrixExtractionPurgeWorker = createBitrixExtractionPurgeWorker();
 
   const workers = [
     { name: 'whatsapp-conversation-signal', worker: whatsappSignalWorker },
     { name: 'whatsapp-command', worker: whatsappCommandWorker },
     { name: 'bitrix-sync', worker: bitrixSyncWorker },
+    { name: 'bitrix-outbound-sync', worker: bitrixOutboundWorker },
     { name: 'bitrix-extraction-purge', worker: bitrixExtractionPurgeWorker },
   ];
 

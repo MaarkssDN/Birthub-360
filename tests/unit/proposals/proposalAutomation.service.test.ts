@@ -1,9 +1,22 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+// Handoff 16→00 (onda-3): COMMERCIAL_PROPOSAL_DRAFTED deve carregar
+// opts.idempotencyKey estável derivada do id do rascunho.
+const publishMock = vi.hoisted(() => vi.fn(async () => undefined));
+vi.mock('../../../src/lib/queue/domainEventMesh.service.js', () => ({
+  domainEventMesh: { publish: publishMock },
+}));
+
 import { ProposalAutomationService } from '../../../src/features/proposals/services/proposalAutomation.service.js';
 
 describe('ProposalAutomationService — Evolução 11 (Automação de Propostas & Assinatura Digital)', () => {
   const service = new ProposalAutomationService();
   const orgId = 'org-propostas-tenant-001';
+
+  beforeEach(() => {
+    publishMock.mockClear();
+    service.clear();
+  });
 
   it('deve gerar rascunho de proposta sem exceder alçada', async () => {
     const proposal = await service.generateDraftProposal({
@@ -87,6 +100,34 @@ describe('ProposalAutomationService — Evolução 11 (Automação de Propostas 
     expect(signedRef.digitalSignatureRef).toBeDefined();
     expect(signedRef.digitalSignatureRef?.documentHashSha256).toBeDefined();
     expect(signedRef.digitalSignatureRef?.envelopeId).toBeDefined();
+  });
+
+  it('COMMERCIAL_PROPOSAL_DRAFTED publica com idempotencyKey estável por rascunho', async () => {
+    const proposal = await service.generateDraftProposal({
+      organizationId: orgId,
+      dealId: 'deal-prop-idem',
+      customerId: 'cust-idem',
+      customerName: 'Cliente Idem',
+      customerDocument: '00.000.000/0001-00',
+      title: 'Proposta Idem',
+      items: [
+        {
+          id: 'item-1',
+          sku: 'SKU-1',
+          name: 'Item',
+          quantity: 1,
+          unitPriceCents: 10000,
+          discountPercent: 0,
+          totalPriceCents: 10000,
+        },
+      ],
+      paymentTerms: '30 dias',
+    });
+
+    expect(publishMock).toHaveBeenCalledTimes(1);
+    const [event, opts] = publishMock.mock.calls[0];
+    expect(event.eventType).toBe('COMMERCIAL_PROPOSAL_DRAFTED');
+    expect(opts).toEqual({ idempotencyKey: `proposal:${proposal.id}` });
   });
 
   it('deve rejeitar geração sem organizationId (Tenancy Guard)', async () => {

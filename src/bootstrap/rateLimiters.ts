@@ -150,6 +150,23 @@ export function applyRateLimiters(app: Express): void {
   });
   app.use('/api/public/lead-capture', leadCaptureLimiter);
 
+  // Canal público de solicitação DSR (LGPD art. 18) — endpoint sem auth que pode
+  // disparar e-mails transacionais e, após verificação, exportar/excluir dados
+  // do titular. Cota apertada por IP: cada POST gera registro + SMTP real.
+  const dsrLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => ipKeyGenerator(req.ip || 'unknown'),
+    store: redisStoreOrMemory(),
+    message: {
+      ok: false,
+      error: 'rate_limited',
+    },
+  });
+  app.use('/api/public/data-subject-requests', dsrLimiter);
+
   // Rate Limiting dedicado de EXPORTAÇÃO (DEM-20261113-002 / MEL-05): gerar
   // CSV/PDF/Excel varre tabelas inteiras do tenant e consome CPU/memória —
   // não pode dividir a cota folgada do apiLimiter. Chave por tenant quando a

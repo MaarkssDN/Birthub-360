@@ -242,6 +242,20 @@ export class LeadController {
         return;
       }
       const result = await this.leadUseCases.batchUpdateLeads(orgId, leadIds, updates, actorUserId);
+
+      // Um evento por lead que mudou de status de fato — cada um com o próprio id real,
+      // para que ações de automação (ligação, atividade, cadência) recebam um entityId
+      // válido em vez do id sintético 'BATCH'.
+      for (const lead of result.statusChangedLeads ?? []) {
+        fireAutomations({
+          organizationId: orgId,
+          trigger: 'Lead mudou de status',
+          entity: 'Lead',
+          entityId: (lead as { id: string }).id,
+          data: { ...(lead as unknown as Record<string, unknown>) },
+        });
+      }
+
       res.json({ success: true, data: result });
     } catch (error: any) {
       next(error);

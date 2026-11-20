@@ -31,6 +31,7 @@ import {
   resetProviderCacheForTests,
   withProviderCache,
 } from '../providerCache.js';
+import { requestContext } from '@/lib/async-context.js';
 
 beforeEach(async () => {
   vi.clearAllMocks();
@@ -62,6 +63,30 @@ describe('buildProviderCacheKey', () => {
     const b = buildProviderCacheKey('hunter', 'op-a', { domain: 'x.com' });
     const c = buildProviderCacheKey('apollo', 'op-b', { domain: 'x.com' });
     expect(new Set([a, b, c]).size).toBe(3);
+  });
+
+  // Handoff onda-3/16-para-05-provider-cache-sem-tenant: o cache de providers
+  // pagos (Apollo/Hunter, dados de contato) não pode ser compartilhado entre
+  // organizações — o tenant (organizationId do requestContext) é segmento da chave.
+  it('produz chaves distintas por organização para os mesmos parâmetros', () => {
+    const keyA = requestContext.run({ tenantId: 'org-a' }, () =>
+      buildProviderCacheKey('apollo', 'people-match', { domain: 'empresa.com' }),
+    );
+    const keyB = requestContext.run({ tenantId: 'org-b' }, () =>
+      buildProviderCacheKey('apollo', 'people-match', { domain: 'empresa.com' }),
+    );
+    expect(keyA).not.toBe(keyB);
+    expect(keyA).toContain('org-a');
+    expect(keyB).toContain('org-b');
+  });
+
+  it('sem tenant no requestContext usa bucket próprio — nunca o de uma org real', () => {
+    const anonymous = buildProviderCacheKey('hunter', 'email-finder', { domain: 'x.com' });
+    const orgA = requestContext.run({ tenantId: 'org-a' }, () =>
+      buildProviderCacheKey('hunter', 'email-finder', { domain: 'x.com' }),
+    );
+    expect(anonymous).not.toBe(orgA);
+    expect(anonymous).toContain('no-tenant');
   });
 });
 

@@ -212,19 +212,26 @@ export class PredictiveRevenueOracleService implements IPredictiveRevenueOracleP
     const status = days30.status === 'ok' ? 'ok' : 'insufficient_data';
 
     if (status === 'ok') {
-      await domainEventMesh.publish({
-        eventType: 'REVENUE_FORECAST_PROJECTED',
-        eventVersion: '1.0.0',
-        organizationId,
-        correlationId: `fc-exec-${Date.now()}`,
-        producer: 'predictive-revenue-oracle-service',
-        aggregateId: organizationId,
-        payload: {
-          horizon30DaysRevenue: days30.expectedRevenue,
-          horizon90DaysRevenue: days90.expectedRevenue,
-          modelConfidence: backtest.isModelCalibrated ? 'CALIBRATED_PROJECTION' : 'ESTIMATED_ONLY',
+      await domainEventMesh.publish(
+        {
+          eventType: 'REVENUE_FORECAST_PROJECTED',
+          eventVersion: '1.0.0',
+          organizationId,
+          correlationId: `fc-exec-${Date.now()}`,
+          producer: 'predictive-revenue-oracle-service',
+          aggregateId: organizationId,
+          payload: {
+            horizon30DaysRevenue: days30.expectedRevenue,
+            horizon90DaysRevenue: days90.expectedRevenue,
+            modelConfidence: backtest.isModelCalibrated
+              ? 'CALIBRATED_PROJECTION'
+              : 'ESTIMATED_ONLY',
+          },
         },
-      });
+        // Fato de negócio: projeção de receita do período corrente do tenant.
+        // Chave estável por (org, período) — recomputar o cockpit no mesmo mês não duplica o evento.
+        { idempotencyKey: `revenue-forecast:${organizationId}:${monthKey(now)}` },
+      );
     }
 
     return {
@@ -298,15 +305,19 @@ export class PredictiveRevenueOracleService implements IPredictiveRevenueOracleP
     const simulatedRevenue = Math.max(0, Math.round(baselineRevenue + netRevenueDelta));
     const deltaPercent = Math.round((netRevenueDelta / baselineRevenue) * 1000) / 10;
 
-    await domainEventMesh.publish({
-      eventType: 'WHAT_IF_SCENARIO_SIMULATED',
-      eventVersion: '1.0.0',
-      organizationId: input.organizationId,
-      correlationId: `sim-evt-${simulationId}`,
-      producer: 'predictive-revenue-oracle-service',
-      aggregateId: input.organizationId,
-      payload: { simulationId, baselineRevenue, simulatedRevenue, deltaPercent },
-    });
+    await domainEventMesh.publish(
+      {
+        eventType: 'WHAT_IF_SCENARIO_SIMULATED',
+        eventVersion: '1.0.0',
+        organizationId: input.organizationId,
+        correlationId: `sim-evt-${simulationId}`,
+        producer: 'predictive-revenue-oracle-service',
+        aggregateId: input.organizationId,
+        payload: { simulationId, baselineRevenue, simulatedRevenue, deltaPercent },
+      },
+      // Fato de negócio: esta simulação What-If (id próprio gerado por execução).
+      { idempotencyKey: `what-if:${simulationId}` },
+    );
 
     return {
       simulationId,

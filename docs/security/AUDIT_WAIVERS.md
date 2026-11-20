@@ -33,6 +33,15 @@ Se um achado `HIGH`/`CRITICAL` precisar ser aceito temporariamente (ex.: sem fix
 
 ## Waivers ativos
 
+### `GHSA-FC5Q-39XC-VJPF` / `CVE-2026-112366` — `picomatch` (ReDoS through single-branch repeated extglobs)
+
+- **Advisory:** https://github.com/advisories/GHSA-fc5q-39xc-vjpf (`GHSA-FC5Q-39XC-VJPF` / `CVE-2026-112366`)
+- **Severidade reportada pelo `npm audit`:** high (CVSS 7.5 — propaga para `@rollup/plugin-*`, `@storybook/*`, `@typescript-eslint/*`, `dependency-cruiser`, `knip`, `tinyglobby`, `ts-morph`, `unplugin`, `vite`, `vite-plugin-pwa`, `vitest`, `workbox-build`, `node-gyp` e `libxmljs2`)
+- **Cadeia:** `picomatch@<=4.0.7` (`range: "*"` — nenhuma versão corrigida publicada no registro npm até 2026-11-17; `4.0.7` é a última release upstream)
+- **Motivo:** Advisory recém-publicado sem versão de patch upstream disponível (`range: <=4.0.7`). Toca exclusivamente ferramentas de build, lint e teste (`vite`, `vitest`, `rollup`, `typescript-eslint`, `dependency-cruiser`, `knip`), que avaliam globs estáticos controlados pelo repositório em tempo de desenvolvimento/CI e nunca processam padrões glob arbitrários vindos de entrada não confiável de usuário em runtime de produção. Aceito temporariamente até publicação de patch upstream em `picomatch`.
+- **Dono:** Agente 00 / Agente 15 (Segurança)
+- **Data de registro:** 2026-11-17. **Reavaliar em:** 2026-12-17
+
 ### `GHSA-44JH-23M7-HPCF`, `GHSA-R4XP-PRCW-77QF`, `GHSA-965C-763C-88JM` - `better-auth`
 
 - **Advisory:** https://github.com/advisories/GHSA-44jh-23m7-hpcf
@@ -114,6 +123,16 @@ Se um achado `HIGH`/`CRITICAL` precisar ser aceito temporariamente (ex.: sem fix
 - **Escopo do waiver:** só estes dois advisory IDs (mesmo achado, dois catálogos), só via esta
   cadeia de dependência. Qualquer outro achado `HIGH`/`CRITICAL` novo continua bloqueando o gate
   normalmente.
+
+### `GHSA-7589-6FVF-X4PW` — `effect` (via `@prisma/config` / `prisma`) — ReDoS em `Schema.TemplateLiteral`
+
+- **Advisory:** https://github.com/advisories/GHSA-7589-6fvf-x4pw
+- **Severidade reportada pelo `npm audit`:** high (CWE-1333; `effect@<=3.22.0`, propagando para `@prisma/config` e `prisma`)
+- **Cadeia:** `prisma` → `@prisma/config` → `effect`. O `fixAvailable` do `npm audit` é um downgrade semver-major (`prisma@6.12.0`), inaceitável sem uma onda própria de migração do Prisma.
+- **Motivo:** o `effect` é usado pelo CLI/config do Prisma (migrate/generate) em tempo de build e deploy, não processa entrada não confiável de usuário em runtime da aplicação. Aceito temporariamente até haver `effect` corrigido na cadeia do Prisma sem downgrade major.
+- **Dono:** Agente 00 / Agente 99 (Vito). **Aprovação:** decisão humana do usuário em 2026-11-20 (PR de B-14/B-04/ciclos de automação).
+- **Data de registro:** 2026-11-20. **Reavaliar em:** 2026-12-20
+- **Espelhos pendentes:** o ID ainda NÃO foi espelhado em `.trivyignore.yaml` nem em `allow-ghsas` (`.github/workflows/dependency-review.yml` e `ci.yml`), conforme o procedimento acima. Isso afrouxa gates de CI (Agente 94) e depende de aprovação explícita; sem o espelho, um PR futuro que toque dependências pode voltar a falhar neste advisory.
 
 ## Débito conhecido, fora do escopo deste waiver (severidade abaixo do gate)
 

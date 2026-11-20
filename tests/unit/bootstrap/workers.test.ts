@@ -78,6 +78,10 @@ vi.mock('../../../src/features/crm/jobs/autoAnonymizeDisqualified.worker.js', ()
   createAutoAnonymizeWorker: vi.fn(workerStub),
   scheduleAutoAnonymizeJob: vi.fn(async () => undefined),
 }));
+vi.mock('../../../src/features/lgpd/jobs/landingLeadRetention.worker.js', () => ({
+  createLandingLeadRetentionWorker: vi.fn(workerStub),
+  scheduleLandingLeadRetentionJob: vi.fn(async () => undefined),
+}));
 vi.mock('../../../src/features/automations/application/cold-leads-scanner.service.js', () => ({
   createColdLeadsScannerWorker: vi.fn(workerStub),
   scheduleColdLeadsScannerJob: vi.fn(async () => undefined),
