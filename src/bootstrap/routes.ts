@@ -51,6 +51,7 @@ import { roleSupervisorRoutes } from '../features/job-roles/routes/roleSuperviso
 import { workspaceRoutes } from '../features/job-roles/routes/workspace.routes.js';
 import { knowledgeRoutes } from '../features/knowledge/knowledge.routes.js';
 import { lgpdRouter } from '../features/lgpd/lgpd.routes.js';
+import { dsrRequestRoutes } from '../features/lgpd/dsrRequest.routes.js';
 import { publicLeadCaptureRouter } from '../features/landing/routes/leadCapture.routes.js';
 import { accountIntelligenceRoutes } from '../features/market-intelligence/server/accountIntelligence.routes.js';
 import { marketIntelligenceCompanyRoutes } from '../features/market-intelligence/server/marketIntelligenceCompany.routes.js';
@@ -258,6 +259,11 @@ export function mountFeatureRoutes(app: Express): void {
   app.use('/api/cadence', authenticateToken, requireTenant, cadenceRoutes);
   app.use('/api/calendar/booking-links', privateBookingRouter);
   app.use('/api/calendar/book', publicBookingRouter);
+  // Canal público de solicitação DSR (LGPD art. 18) — sem authenticateToken/
+  // requireTenant (o titular não tem conta); tenant resolvido no servidor,
+  // rate limit dedicado em rateLimiters.ts. Montado ANTES de '/api/public'
+  // para não depender da ordem de fallthrough do router da landing.
+  app.use('/api/public/data-subject-requests', dsrRequestRoutes);
   // Captura pública de lead da landing — sem authenticateToken/requireTenant (o lead
   // ainda não tem conta). Rate limit dedicado em rateLimiters.ts; sem persistência em
   // banco, o envio real é por e-mail (ver leadCapture.routes.ts).

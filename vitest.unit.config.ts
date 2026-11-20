@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitest/config';
 import { fileURLToPath } from 'node:url';
+import { COVERAGE_DOMAINS, domainThresholdKey } from './scripts/ci/coverage-domains.mjs';
 
 // Permite override local via `VITEST_MAX_WORKERS=8 npm run test:unit` para quem não tem outros
 // worktrees do enxame disputando CPU no momento, sem precisar editar este arquivo toda vez. Vazio,
@@ -159,6 +160,21 @@ export default defineConfig({
           functions: 17,
           lines: 33,
         },
+        // Domínios críticos da Onda 6 (MEL-46 / DEM-20261114-007): auth, billing,
+        // tenancy e fluxos de IA. Globs, baselines e pisos vivem em
+        // scripts/ci/coverage-domains.mjs — fonte única também usada por
+        // scripts/ci/coverage-domain-report.mjs (step informativo do ci.yml).
+        // Cada chave `{glob1,glob2,...}` é expandida pelo picomatch do Vitest
+        // (resolveThresholds → pm(glob)) como UNIÃO dos arquivos do domínio —
+        // o agregado cobrado é o do domínio inteiro. Pisos = baseline medido em
+        // 2026-11-15 (coverage:unit completo) − margem pequena; ver comentários
+        // por domínio em coverage-domains.mjs.
+        ...Object.fromEntries(
+          Object.entries(COVERAGE_DOMAINS).map(([name, domain]) => [
+            domainThresholdKey(domain.globs),
+            domain.thresholds,
+          ]),
+        ),
       },
     },
   },

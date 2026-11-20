@@ -32,6 +32,8 @@ import {
 } from './src/lib/queue/swarmScheduler.worker.js';
 import { enabledOrganizations as swarmSchedulerEnabledOrganizations } from './src/features/intelligence/services/swarmScheduler.service.js';
 import { createBitrixSyncWorker, scheduleBitrixSync } from './src/lib/queue/bitrixSync.worker.js';
+import { createBitrixOutboundWorker } from './src/lib/queue/bitrixOutbound.queue.js';
+import { createExternalCrmOutboundWorker } from './src/lib/queue/externalCrmOutbound.queue.js';
 import {
   createFollowUpWorker,
   scheduleFollowUpJobs,
@@ -56,6 +58,10 @@ import {
   createAutoAnonymizeWorker,
   scheduleAutoAnonymizeJob,
 } from './src/features/crm/jobs/autoAnonymizeDisqualified.worker.js';
+import {
+  createLandingLeadRetentionWorker,
+  scheduleLandingLeadRetentionJob,
+} from './src/features/lgpd/jobs/landingLeadRetention.worker.js';
 import {
   createColdLeadsScannerWorker,
   scheduleColdLeadsScannerJob,
@@ -127,12 +133,15 @@ async function start() {
   const knowledgeIngestionWorker = createKnowledgeIngestionWorker();
   const checkpointerPruneWorker = createCheckpointerPruneWorker();
   const bitrixSyncWorker = createBitrixSyncWorker();
+  const bitrixOutboundWorker = createBitrixOutboundWorker();
+  const externalCrmOutboundWorker = createExternalCrmOutboundWorker();
   const followUpWorker = createFollowUpWorker();
   const execSummaryWorker = createExecutiveSummaryWorker();
   const deduplicationWorker = createDeduplicationWorker();
   const winLossWorker = createWinLossAnalysisWorker();
   const pdfWorker = createWeeklyPdfReportWorker();
   const autoAnonymizeWorker = createAutoAnonymizeWorker();
+  const landingLeadRetentionWorker = createLandingLeadRetentionWorker();
   const coldLeadsScannerWorker = createColdLeadsScannerWorker();
   const stagnationScannerWorker = createStagnationScannerWorker();
   const cadenceRunWorker = createCadenceRunWorker();
@@ -175,12 +184,15 @@ async function start() {
     { name: 'knowledge-ingestion-queue', worker: knowledgeIngestionWorker },
     { name: 'checkpointer-prune', worker: checkpointerPruneWorker },
     { name: 'bitrix-sync', worker: bitrixSyncWorker },
+    { name: 'bitrix-outbound-sync', worker: bitrixOutboundWorker },
+    { name: 'external-crm-outbound-sync', worker: externalCrmOutboundWorker },
     { name: 'whatsapp-followup-queue', worker: followUpWorker },
     { name: 'daily-executive-summary-queue', worker: execSummaryWorker },
     { name: 'deduplication-queue', worker: deduplicationWorker },
     { name: 'win-loss-analysis-queue', worker: winLossWorker },
     { name: 'weekly-pdf-report-queue', worker: pdfWorker },
     { name: 'auto-anonymize-disqualified-queue', worker: autoAnonymizeWorker },
+    { name: 'landing-lead-retention-queue', worker: landingLeadRetentionWorker },
     { name: 'sdr-cold-call', worker: coldCallWorker },
     { name: 'swarm-scheduler', worker: swarmSchedulerWorker },
     { name: 'cold-leads-scanner-queue', worker: coldLeadsScannerWorker },
@@ -206,6 +218,7 @@ async function start() {
       await scheduleWinLossAnalysisJob();
       await scheduleWeeklyPdfReportJob();
       await scheduleAutoAnonymizeJob();
+      await scheduleLandingLeadRetentionJob();
       await scheduleColdLeadsScannerJob();
       await scheduleStagnationScannerJob();
       await scheduleCadenceRunJob();

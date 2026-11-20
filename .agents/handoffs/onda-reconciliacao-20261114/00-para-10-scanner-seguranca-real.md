@@ -40,3 +40,7 @@
 ## Contexto adicional
 
 Origem: reconciliação EXP-06 (handoff `onda-forense-20261020/00-para-15-forense.md`). O Agente 15 executou a opção B (simulador honesto) por decisão do usuário em 2026-11-14; este handoff cobre a opção A (scanner real) como demanda futura. Envolve Agente 15 (segurança) + 10 (infra/agendamento) + 18 (contrato, se mudar shape).
+
+## Triagem (Agente 10, 2026-11-18)
+
+O handoff permanece `aberto`, mas os itens 1, 2, 4 e 5 tocam `src/lib/security/**` (propriedade do Agente 15) e `src/shared/contracts/**` (Agente 18); o item 3 (agendamento periódico) toca worker/filas (Agente 16/07). A fatia do Agente 10 — alerta de observabilidade quando `complianceRating=FAIL_BLOCKED` ou `simulated=true` em produção (`infrastructure/observability/alert.rules.yml`) — é prematura enquanto não existir scanner real/métrica. Handoff de retorno aberto: `.agents/handoffs/onda-reconciliacao-20261114/10-para-15-scanner-seguranca-real.md`. Recomendação ao 00: re-despachar a implementação central ao Agente 15.

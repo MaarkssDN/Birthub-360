@@ -10,7 +10,7 @@ Fontes: `prisma/schema.prisma` (anotações de PII em comentários) +
 Narrativa legal/finalidades/bases legais: ver `INVENTARIO_TRATAMENTO_ROPA.md` e
 `docs/lgpd-base-legal.md`.
 
-Total: 32 campos em 17 models.
+Total: 38 campos em 18 models.
 
 | Model | Campo | Tipo | Cifrado em repouso | Anotação no schema |
 |---|---|---|---|---|
@@ -27,6 +27,12 @@ Total: 32 campos em 17 models.
 | Contact | phone | String? | sim | phone/whatsapp/email cifrados em repouso (AES-256-GCM, ver src/lib/crypto/piiFields.ts) desde a reativação do CPI "PII de lead/contato não cifrada em repouso" — |
 | Contact | whatsapp | String? | sim | — |
 | CopilotoTranscriptSegment | text | String | sim | — |
+| DataSubjectRequest | detailsEncrypted | String? | sim | Texto livre do titular (ex.: correção desejada, detalhe do pedido) — pode conter dados pessoais; cifrado em repouso como emailEncrypted. |
+| DataSubjectRequest | emailEncrypted | String | sim | E-mail do titular cifrado em repouso (encryptField de lib/crypto/secretFields) — necessário para (re)enviar o token de verificação e o e-mail de conclusão. Nunc |
+| DataSubjectRequest | emailIndex | String | não | Blind index determinístico (contactEmailIndex) — dedupe/lookup do titular sem expor o e-mail em claro em WHEREs e índices. |
+| DataSubjectRequest | preferredChannel | String? | não | Canal de contato preferencial declarado pelo titular (email/whatsapp) — informativo; o canal real de verificação é sempre o e-mail cadastrado. |
+| DataSubjectRequest | protocol | String | não | Protocolo opaco exibido ao titular (ex.: DSR-XXXXXXXX-XXXX) — nunca é o contactId nem qualquer identificador interno. |
+| DataSubjectRequest | resultSummary | Json? | não | Resumo NÃO-PII do resultado (exportId, contagens, motivo de rejeição) — nunca o dossiê nem dados do titular. O dossiê de portabilidade é devolvido uma única vez |
 | ExternalCrmConnection | config | String | sim | JSON object containing the encrypted configuration/credentials. For OAuth: { accessToken, refreshToken, expiresAt, domain } For API Key: { apiKey, domain } It i |
 | ExternalCrmConnection | tokenExpiresAt | DateTime? | não | Espelho NÃO sensível de `config.expiresAt`. Tokens NUNCA saem de `config` (cifrado via piiFields). |
 | GoogleWorkspaceConnection | accessToken | String | sim | Cifrados em repouso (AES-256-GCM) de forma transparente pela extensão Prisma em src/lib/prisma.ts — ver src/lib/crypto/secretFields.ts. |

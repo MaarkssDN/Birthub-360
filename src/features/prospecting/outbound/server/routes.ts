@@ -31,7 +31,7 @@ import {
   normalizeLinkedInUrl,
   APOLLO_PREFERRED_TITLES,
 } from './services/leadSearch.service.js';
-import { attachUser } from './auth.js';
+import { attachUser, requireTenantScope } from './auth.js';
 
 // Re-exports for backwards compatibility
 export { formatLeadRow, validateChangedLeadFields, upsertMessageWithVersioning };
@@ -52,8 +52,21 @@ export const apiRouter = Router();
 // Auth & RBAC: popula req.outboundUser a partir do cookie de sessão assinado
 apiRouter.use(attachUser);
 
-// Mount modular sub-routers
+// Rotas públicas: auth (login/logout/me) e health check de sondas — ficam
+// ANTES do guard de tenant de propósito.
 apiRouter.use(authRouter);
+apiRouter.get('/health', (_req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Handoff 12→05 (F2): TODO router de dados abaixo exige sessão válida E
+// `company` preenchida (requireTenantScope → 401 sem sessão, 403 sem tenant).
+// O isolamento por company nas queries ainda é parcial — ver a seção Resolução
+// do handoff; o mount em bootstrap/routes.ts permanece fechado (503) até a
+// migração completa para o tenant canônico.
+apiRouter.use(requireTenantScope);
+
+// Mount modular sub-routers
 apiRouter.use(systemRouter);
 apiRouter.use(campaignsRouter);
 apiRouter.use(tasksRouter);

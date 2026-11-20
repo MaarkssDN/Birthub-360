@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Auditoria de Dívida Técnica — Squad 20 · Core Backend, APIs, Billing e Onboarding</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #10b981;
+      --p0: #ef4444;
+      --p1: #f97316;
+      --p2: #eab308;
+      --p3: #3b82f6;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 24px;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header {
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-p0 { background: rgba(239, 68, 68, 0.2); color: var(--p0); border: 1px solid var(--p0); }
+    .badge-p1 { background: rgba(249, 115, 22, 0.2); color: var(--p1); border: 1px solid var(--p1); }
+    .badge-p2 { background: rgba(234, 179, 8, 0.2); color: var(--p2); border: 1px solid var(--p2); }
+    .badge-p3 { background: rgba(59, 130, 246, 0.2); color: var(--p3); border: 1px solid var(--p3); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; background: var(--card-bg); border-radius: 8px; overflow: hidden; }
+    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: #111827; font-size: 13px; text-transform: uppercase; color: var(--muted); }
+    tr:hover { background: rgba(255, 255, 255, 0.02); }
+    .agent-tag { font-weight: 600; color: var(--accent); }
+    .file-tag { font-family: monospace; font-size: 12px; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; color: #38bdf8; }
+    .nav-back { display: inline-block; margin-bottom: 16px; color: var(--muted); text-decoration: none; font-size: 14px; }
+    .nav-back:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="../dashboard/index.html" class="nav-back">← Voltar ao Dashboard Global de Dívidas Técnicas</a>
+    <header>
+      <div style="font-size: 12px; text-transform: uppercase; color: var(--accent); font-weight: bold; letter-spacing: 1px;">Auditoria Independente por Squad</div>
+      <h1 style="margin: 8px 0 4px 0;">Squad 20 · Core Backend, APIs, Billing e Onboarding</h1>
+      <p style="color: var(--muted); margin: 0;"><strong>Coordenador Responsável:</strong> 20 — Ciro (Coordenador de Backend & Contratos)</p>
+      <p style="color: var(--muted); font-size: 13px; margin-top: 4px;">Data de Auditoria: 2026-11-19 | Total de Especialistas: 10 | Status: CONSOLIDADO</p>
+    </header>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Especialista</th>
+          <th>Papel Técnico</th>
+          <th>Severidade</th>
+          <th>Dívida Técnica Identificada</th>
+          <th>Impacto Potencial</th>
+          <th>Esforço</th>
+          <th>Arquivo Alvo</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+          <tr>
+            <td class="agent-tag">20</td>
+            <td style="font-weight: 600;">Ciro</td>
+            <td style="color: var(--muted); font-size: 13px;">Coordenador de Backend</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Divergência nos envelopes de resposta de erro HTTP entre controllers legados e rotas novas.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Dificuldade no tratamento de erros uniforme pelo cliente frontend e mobile.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/api/router.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">21</td>
+            <td style="font-weight: 600;">Zara</td>
+            <td style="color: var(--muted); font-size: 13px;">Contratos de API & Zod</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Schemas Zod sem sanitização de strings (trim/escape) permitindo payloads com espaços e tags sujas.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Inconsistência de dados cadastrais e risco de XSS armazenado.</td>
+            <td style="font-size: 13px;">Baixo</td>
+            <td><span class="file-tag">src/api/schemas/lead.schema.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">22</td>
+            <td style="font-weight: 600;">Hugo</td>
+            <td style="color: var(--muted); font-size: 13px;">Camada HTTP & Middlewares</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Middleware de erro expõe stack trace em ambiente de homologação/staging para usuários externos.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Vazamento de detalhes de infraestrutura e código interno.</td>
+            <td style="font-size: 13px;">Baixo</td>
+            <td><span class="file-tag">src/api/middlewares/error.middleware.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">23</td>
+            <td style="font-weight: 600;">Pina</td>
+            <td style="color: var(--muted); font-size: 13px;">Runtime & Filas BullMQ</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Fila única do BullMQ compartilhada para e-mails transacionais rápidos e relatórios pesados de 50MB.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Fila congestionada: e-mails de recuperação de senha atrasam devido a relatórios longos.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/lib/queue/bullmq.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">24</td>
+            <td style="font-weight: 600;">Ivo</td>
+            <td style="color: var(--muted); font-size: 13px;">Resiliência & DLQ</td>
+            <td><span class="badge badge-p0">P0</span></td>
+            <td>Processamento de webhooks de pagamento sem Dead Letter Queue (DLQ) com alerta automático em falha final.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Perda silenciosa de notificações de pagamento aprovado após 5 retentativas.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/lib/resilience/retry.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">25</td>
+            <td style="font-weight: 600;">Tália</td>
+            <td style="color: var(--muted); font-size: 13px;">Rate Limiting & Proteção</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Rate limiter baseado puramente em IP do gateway em vez de identificador da organização/chave API.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Usuários atrás de NAT corporativo compartilham o mesmo limite de requisições.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/api/middlewares/rate-limit.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">26</td>
+            <td style="font-weight: 600;">Dália</td>
+            <td style="color: var(--muted); font-size: 13px;">Billing & Gateways</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Webhook do gateway de pagamento não valida timestamp contra ataques de repetição (replay attack).</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Possibilidade de reprocessamento malicioso de assinaturas.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/features/billing/webhooks/stripe.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">27</td>
+            <td style="font-weight: 600;">Vic</td>
+            <td style="color: var(--muted); font-size: 13px;">Entitlements & Planos</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Verificação de limites de plano mantida em cache de longa duração sem expiração em upgrade imediato.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Usuário paga por plano maior mas precisa esperar 30min para liberar novos limites.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/features/billing/entitlements/checker.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">28</td>
+            <td style="font-weight: 600;">Milo</td>
+            <td style="color: var(--muted); font-size: 13px;">Importação & Onboarding</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Parser de importação de CSV carrega todo o arquivo na memória RAM sem usar stream por chunks.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Crash por esgotamento de memória (OOM) ao importar bases com mais de 100.000 linhas.</td>
+            <td style="font-size: 13px;">Alto</td>
+            <td><span class="file-tag">src/features/onboarding/import/csv.parser.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">29</td>
+            <td style="font-weight: 600;">Lia</td>
+            <td style="color: var(--muted); font-size: 13px;">Exportação & Webhooks Outbound</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Webhooks disparados para clientes externos não possuem mecanismo de exponential backoff com jitter.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Tempestade de requisições aos servidores de clientes que passam por instabilidade.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/features/webhooks/outbound/dispatcher.ts</span></td>
+          </tr>
+        
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

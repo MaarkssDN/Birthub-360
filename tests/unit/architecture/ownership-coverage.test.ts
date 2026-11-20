@@ -47,17 +47,21 @@ describe('parseOwnershipMatrix', () => {
   it('extrai todos os pares escopo→dono do AGENTS.md real', () => {
     const entries = parseOwnershipMatrix(readFileSync(AGENTS_PATH, 'utf-8'));
     expect(entries.length).toBeGreaterThanOrEqual(15);
-    expect(entries).toContainEqual({ scope: 'prisma/schema.prisma', owner: 'Agente 01' });
-    expect(entries).toContainEqual({ scope: 'src/App.tsx', owner: 'Agente 02' });
-    expect(entries).toContainEqual({ scope: '.github/workflows/**', owner: 'Agente 08' });
-    expect(entries).toContainEqual({ scope: 'k8s/**', owner: 'Agente 10' });
+    expect(entries).toContainEqual({ scope: 'prisma/schema.prisma', owner: 'Agente 11 (Pietro)' });
+    expect(entries).toContainEqual({ scope: 'prisma/migrations/**', owner: 'Agente 12 (Vera)' });
     expect(entries).toContainEqual({
-      scope: '.agents/prompts/**',
-      owner: 'decisão humana',
+      scope: 'src/App.tsx, src/components/layout/**',
+      owner: 'Agente 31 (Noa)',
     });
-    // Descritores em prosa da matriz também viram entradas (devem ser cobertos pelo manifesto).
-    expect(entries).toContainEqual({ scope: 'navegação principal', owner: 'Agente 02' });
-    expect(entries).toContainEqual({ scope: 'Sidebar', owner: 'Agente 02' });
+    expect(entries).toContainEqual({
+      scope: '.github/workflows/**, scripts/deploy/**',
+      owner: 'Agente 94 (Tess)',
+    });
+    expect(entries).toContainEqual({
+      scope: 'infrastructure/**, charts/**, Dockerfile, docker-compose.yml',
+      owner: 'Squad 90 (91 a 93)',
+    });
+    expect(entries).toContainEqual({ scope: '.agents/prompts/**', owner: 'Decisão humana' });
   });
 
   it('suporta múltiplos escopos por dono', () => {
@@ -126,7 +130,7 @@ describe('helpers de escopo', () => {
   it('scopeExistsInRepo valida arquivos e diretórios-base de glob', () => {
     expect(scopeExistsInRepo('src/App.tsx', ROOT)).toBe(true);
     expect(scopeExistsInRepo('Dockerfile', ROOT)).toBe(true);
-    expect(scopeExistsInRepo('k8s/**', ROOT)).toBe(true);
+    expect(scopeExistsInRepo('charts/**', ROOT)).toBe(true);
     expect(scopeExistsInRepo('navegação principal', ROOT)).toBe(true); // prosa: não verificável
     expect(scopeExistsInRepo('path/que/nao/existe/**', ROOT)).toBe(false);
   });

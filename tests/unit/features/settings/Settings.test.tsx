@@ -39,12 +39,15 @@ vi.mock('@/features/lgpd/components/DataSubjectRights', () => ({
 import { Settings } from '@/features/settings/components/Settings';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { BrandProvider } from '@/contexts/BrandContext';
+import { I18nProvider } from '@/i18n';
 
 function render(ui: React.ReactElement) {
   return rtlRender(
-    <ThemeProvider>
-      <BrandProvider>{ui}</BrandProvider>
-    </ThemeProvider>,
+    <I18nProvider>
+      <ThemeProvider>
+        <BrandProvider>{ui}</BrandProvider>
+      </ThemeProvider>
+    </I18nProvider>,
   );
 }
 
@@ -87,6 +90,31 @@ describe('Settings — tema', () => {
     expect(screen.getByRole('button', { name: /Modo Escuro/ }).getAttribute('aria-pressed')).toBe(
       'false',
     );
+  });
+});
+
+describe('Settings — idioma da interface', () => {
+  it('renderiza botões de idioma e alterna entre pt-BR e en-US', async () => {
+    const user = userEvent.setup();
+    render(<Settings />);
+
+    const ptBtn = screen.getByRole('button', { name: /Português \(Brasil\)/ });
+    const enBtn = screen.getByRole('button', { name: /English \(US\)/ });
+
+    expect(ptBtn.getAttribute('aria-pressed')).toBe('true');
+    expect(enBtn.getAttribute('aria-pressed')).toBe('false');
+
+    await user.click(enBtn);
+
+    expect(enBtn.getAttribute('aria-pressed')).toBe('true');
+    expect(ptBtn.getAttribute('aria-pressed')).toBe('false');
+    expect(localStorage.getItem('@birthhub360:locale')).toBe('en-US');
+
+    await user.click(ptBtn);
+
+    expect(ptBtn.getAttribute('aria-pressed')).toBe('true');
+    expect(enBtn.getAttribute('aria-pressed')).toBe('false');
+    expect(localStorage.getItem('@birthhub360:locale')).toBe('pt-BR');
   });
 });
 

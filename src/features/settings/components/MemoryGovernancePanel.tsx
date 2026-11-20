@@ -9,6 +9,9 @@ import {
   X,
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 import { Badge } from '../../../components/ui/Badge.js';
 import { Button } from '../../../components/ui/Button.js';
 import {
@@ -18,6 +21,8 @@ import {
   CardHeader,
   CardTitle,
 } from '../../../components/ui/Card.js';
+import { Input } from '../../../components/ui/Input.js';
+import { Label } from '../../../components/ui/Label.js';
 import { Textarea } from '../../../components/ui/Textarea.js';
 import { useAuth } from '../../../contexts/AuthContext.js';
 import { api } from '../../../lib/api.js';
@@ -125,6 +130,35 @@ const EMPTY_NEW_CANDIDATE = {
   rationale: '',
 };
 
+const memoryCandidateSchema = z.object({
+  sourceExecutionId: z.string().trim().min(1, 'Informe o id da execução de origem.'),
+  targetScope: z.enum(['AGENT', 'ROLE', 'ORGANIZATION']),
+  topic: z.string().trim().min(1, 'Informe o tópico aprendido.').max(180, 'Tópico muito longo.'),
+  category: z.enum([
+    'OPERATIONAL',
+    'PRICING',
+    'DISCOUNT',
+    'FORECAST_RULE',
+    'CONTRACT',
+    'FINANCE',
+    'COMPLIANCE',
+    'WRITE_AUTOMATION',
+    'CAPABILITY',
+  ]),
+  summary: z
+    .string()
+    .trim()
+    .min(1, 'Informe o resumo do aprendizado.')
+    .max(500, 'Resumo muito longo.'),
+  rationale: z
+    .string()
+    .trim()
+    .min(1, 'Informe o racional da memória.')
+    .max(1000, 'Racional muito longo.'),
+});
+
+type MemoryCandidateFormValues = z.infer<typeof memoryCandidateSchema>;
+
 export function MemoryGovernancePanel() {
   const { currentUser } = useAuth();
   const [candidates, setCandidates] = useState<LearningCandidateDto[]>([]);
@@ -135,9 +169,17 @@ export function MemoryGovernancePanel() {
   const [processingId, setProcessingId] = useState<string | null>(null);
 
   const [showNewForm, setShowNewForm] = useState(false);
-  const [newCandidate, setNewCandidate] = useState(EMPTY_NEW_CANDIDATE);
-  const [newCandidateError, setNewCandidateError] = useState<string | null>(null);
-  const [creatingCandidate, setCreatingCandidate] = useState(false);
+  const {
+    register: registerNewCandidate,
+    handleSubmit: handleNewCandidateSubmit,
+    reset: resetNewCandidate,
+    setError: setNewCandidateFormError,
+    clearErrors: clearNewCandidateFormErrors,
+    formState: { errors: newCandidateErrors, isSubmitting: creatingCandidate },
+  } = useForm<MemoryCandidateFormValues>({
+    resolver: zodResolver(memoryCandidateSchema),
+    defaultValues: EMPTY_NEW_CANDIDATE,
+  });
 
   const [scope, setScope] = useState<MemoryScope>('ORGANIZATION');
   const [codeInput, setCodeInput] = useState('');
@@ -215,38 +257,27 @@ export function MemoryGovernancePanel() {
     }
   };
 
-  const handleCreateCandidate = async () => {
-    setNewCandidateError(null);
-    if (
-      !newCandidate.sourceExecutionId.trim() ||
-      !newCandidate.topic.trim() ||
-      !newCandidate.summary.trim() ||
-      !newCandidate.rationale.trim()
-    ) {
-      setNewCandidateError('Preencha execução de origem, tópico, resumo e racional.');
-      return;
-    }
-    setCreatingCandidate(true);
+  const handleCreateCandidate = handleNewCandidateSubmit(async (data) => {
+    clearNewCandidateFormErrors('root');
     try {
       await api.post('/api/memory/candidates', {
-        sourceExecutionId: newCandidate.sourceExecutionId.trim(),
-        targetScope: newCandidate.targetScope,
-        topic: newCandidate.topic.trim(),
-        category: newCandidate.category,
-        proposedContent: { summary: newCandidate.summary.trim() },
-        reflection: { rationale: newCandidate.rationale.trim() },
+        sourceExecutionId: data.sourceExecutionId,
+        targetScope: data.targetScope,
+        topic: data.topic,
+        category: data.category,
+        proposedContent: { summary: data.summary },
+        reflection: { rationale: data.rationale },
       });
-      setNewCandidate(EMPTY_NEW_CANDIDATE);
+      resetNewCandidate(EMPTY_NEW_CANDIDATE);
       setShowNewForm(false);
       await loadCandidates();
     } catch (err: any) {
-      setNewCandidateError(
-        err instanceof Error ? err.message : 'Erro ao propor candidato de memória.',
-      );
-    } finally {
-      setCreatingCandidate(false);
+      setNewCandidateFormError('root', {
+        type: 'server',
+        message: err instanceof Error ? err.message : 'Erro ao propor candidato de memória.',
+      });
     }
-  };
+  });
 
   const loadRecords = useCallback(async () => {
     if (scope !== 'ORGANIZATION' && !codeInput.trim()) {
@@ -325,104 +356,177 @@ export function MemoryGovernancePanel() {
         </CardHeader>
         <CardContent>
           {showNewForm && (
-            <div className="border border-line rounded-xl p-4 mb-4 space-y-3 bg-surface-2/40">
+            <form
+              onSubmit={handleCreateCandidate}
+              noValidate
+              className="border border-line rounded-xl p-4 mb-4 space-y-3 bg-surface-2/40"
+            >
               <p className="text-xs text-ink-2">
                 Registra manualmente o que uma execução de agente ensinou — sempre ancorado numa
                 execução real e terminal (`AgentExecution.id`), nunca especulativo. Fica{' '}
                 <strong>proposto</strong> aqui até um decisor aprovar.
               </p>
-              {newCandidateError && (
-                <div className="p-2.5 bg-danger/10 border border-danger/30 text-danger-active dark:text-danger rounded-lg text-xs">
-                  {newCandidateError}
+              {typeof newCandidateErrors.root?.message === 'string' && (
+                <div
+                  role="alert"
+                  className="p-2.5 bg-danger/10 border border-danger/30 text-danger-active dark:text-danger rounded-lg text-xs"
+                >
+                  {newCandidateErrors.root.message}
                 </div>
               )}
-              <input
-                type="text"
-                value={newCandidate.sourceExecutionId}
-                onChange={(e) =>
-                  setNewCandidate((prev) => ({ ...prev, sourceExecutionId: e.target.value }))
-                }
-                placeholder="Id da AgentExecution de origem"
-                className="w-full bg-surface-2 border border-line rounded-lg px-2.5 py-1.5 text-xs text-ink outline-none focus-visible:ring-2 focus-visible:ring-brand placeholder:text-ink-2"
-              />
-              <div className="flex flex-wrap gap-2">
-                <select
-                  value={newCandidate.targetScope}
-                  onChange={(e) =>
-                    setNewCandidate((prev) => ({
-                      ...prev,
-                      targetScope: e.target.value as MemoryScope,
-                    }))
+
+              <div className="space-y-1.5">
+                <Label htmlFor="memory-source-execution">Execução de origem</Label>
+                <Input
+                  id="memory-source-execution"
+                  inputSize="sm"
+                  placeholder="Id da AgentExecution de origem"
+                  error={!!newCandidateErrors.sourceExecutionId}
+                  aria-describedby={
+                    newCandidateErrors.sourceExecutionId
+                      ? 'memory-source-execution-error'
+                      : undefined
                   }
-                  className="bg-surface-2 border border-line rounded-lg px-2.5 py-1.5 text-xs text-ink outline-none focus-visible:ring-2 focus-visible:ring-brand"
-                >
-                  <option value="AGENT">Escopo: Agente</option>
-                  <option value="ROLE">Escopo: Cargo</option>
-                  <option value="ORGANIZATION">Escopo: Organização</option>
-                </select>
-                <select
-                  value={newCandidate.category}
-                  onChange={(e) =>
-                    setNewCandidate((prev) => ({
-                      ...prev,
-                      category: e.target.value as MemoryCategory,
-                    }))
-                  }
-                  className="bg-surface-2 border border-line rounded-lg px-2.5 py-1.5 text-xs text-ink outline-none focus-visible:ring-2 focus-visible:ring-brand"
-                >
-                  {(
-                    [
-                      'OPERATIONAL',
-                      'PRICING',
-                      'DISCOUNT',
-                      'FORECAST_RULE',
-                      'CONTRACT',
-                      'FINANCE',
-                      'COMPLIANCE',
-                      'WRITE_AUTOMATION',
-                      'CAPABILITY',
-                    ] as MemoryCategory[]
-                  ).map((c) => (
-                    <option key={c} value={c}>
-                      {categoryLabel(c)}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  type="text"
-                  value={newCandidate.topic}
-                  onChange={(e) => setNewCandidate((prev) => ({ ...prev, topic: e.target.value }))}
-                  placeholder="Tópico (ex: sdr.follow_up.melhor_horario)"
-                  className="flex-1 min-w-[200px] bg-surface-2 border border-line rounded-lg px-2.5 py-1.5 text-xs text-ink outline-none focus-visible:ring-2 focus-visible:ring-brand placeholder:text-ink-2"
+                  {...registerNewCandidate('sourceExecutionId')}
                 />
+                {newCandidateErrors.sourceExecutionId?.message && (
+                  <p
+                    id="memory-source-execution-error"
+                    className="text-[11px] text-danger-active dark:text-danger"
+                  >
+                    {newCandidateErrors.sourceExecutionId.message}
+                  </p>
+                )}
               </div>
-              <Textarea
-                placeholder="O que foi aprendido (resumo curto e factual)"
-                value={newCandidate.summary}
-                onChange={(e) => setNewCandidate((prev) => ({ ...prev, summary: e.target.value }))}
-                className="min-h-[50px] text-xs"
-              />
-              <Textarea
-                placeholder="Por que vale a pena lembrar disso (racional)"
-                value={newCandidate.rationale}
-                onChange={(e) =>
-                  setNewCandidate((prev) => ({ ...prev, rationale: e.target.value }))
-                }
-                className="min-h-[50px] text-xs"
-              />
+
+              <div className="flex flex-wrap gap-2">
+                <div className="space-y-1.5">
+                  <Label htmlFor="memory-target-scope">Escopo</Label>
+                  <select
+                    id="memory-target-scope"
+                    {...registerNewCandidate('targetScope')}
+                    className="bg-surface-2 border border-line rounded-lg px-2.5 py-1.5 text-xs text-ink outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                    aria-invalid={!!newCandidateErrors.targetScope}
+                  >
+                    <option value="AGENT">Agente</option>
+                    <option value="ROLE">Cargo</option>
+                    <option value="ORGANIZATION">Organização</option>
+                  </select>
+                  {newCandidateErrors.targetScope?.message && (
+                    <p className="text-[11px] text-danger-active dark:text-danger">
+                      {newCandidateErrors.targetScope.message}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="memory-category">Categoria</Label>
+                  <select
+                    id="memory-category"
+                    {...registerNewCandidate('category')}
+                    className="bg-surface-2 border border-line rounded-lg px-2.5 py-1.5 text-xs text-ink outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                    aria-invalid={!!newCandidateErrors.category}
+                  >
+                    {(
+                      [
+                        'OPERATIONAL',
+                        'PRICING',
+                        'DISCOUNT',
+                        'FORECAST_RULE',
+                        'CONTRACT',
+                        'FINANCE',
+                        'COMPLIANCE',
+                        'WRITE_AUTOMATION',
+                        'CAPABILITY',
+                      ] as MemoryCategory[]
+                    ).map((c) => (
+                      <option key={c} value={c}>
+                        {categoryLabel(c)}
+                      </option>
+                    ))}
+                  </select>
+                  {newCandidateErrors.category?.message && (
+                    <p className="text-[11px] text-danger-active dark:text-danger">
+                      {newCandidateErrors.category.message}
+                    </p>
+                  )}
+                </div>
+                <div className="flex-1 min-w-[200px] space-y-1.5">
+                  <Label htmlFor="memory-topic">Tópico</Label>
+                  <Input
+                    id="memory-topic"
+                    inputSize="sm"
+                    placeholder="Tópico (ex: sdr.follow_up.melhor_horario)"
+                    error={!!newCandidateErrors.topic}
+                    aria-describedby={newCandidateErrors.topic ? 'memory-topic-error' : undefined}
+                    {...registerNewCandidate('topic')}
+                  />
+                  {newCandidateErrors.topic?.message && (
+                    <p
+                      id="memory-topic-error"
+                      className="text-[11px] text-danger-active dark:text-danger"
+                    >
+                      {newCandidateErrors.topic.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="memory-summary">Resumo do aprendizado</Label>
+                <Textarea
+                  id="memory-summary"
+                  placeholder="O que foi aprendido (resumo curto e factual)"
+                  className="min-h-[50px] text-xs"
+                  aria-invalid={!!newCandidateErrors.summary}
+                  aria-describedby={newCandidateErrors.summary ? 'memory-summary-error' : undefined}
+                  {...registerNewCandidate('summary')}
+                />
+                {newCandidateErrors.summary?.message && (
+                  <p
+                    id="memory-summary-error"
+                    className="text-[11px] text-danger-active dark:text-danger"
+                  >
+                    {newCandidateErrors.summary.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="memory-rationale">Racional</Label>
+                <Textarea
+                  id="memory-rationale"
+                  placeholder="Por que vale a pena lembrar disso (racional)"
+                  className="min-h-[50px] text-xs"
+                  aria-invalid={!!newCandidateErrors.rationale}
+                  aria-describedby={
+                    newCandidateErrors.rationale ? 'memory-rationale-error' : undefined
+                  }
+                  {...registerNewCandidate('rationale')}
+                />
+                {newCandidateErrors.rationale?.message && (
+                  <p
+                    id="memory-rationale-error"
+                    className="text-[11px] text-danger-active dark:text-danger"
+                  >
+                    {newCandidateErrors.rationale.message}
+                  </p>
+                )}
+              </div>
+
               <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  disabled={creatingCandidate}
-                  onClick={() => void handleCreateCandidate()}
-                >
+                <Button size="sm" type="submit" disabled={creatingCandidate}>
                   Enviar para aprovação
                 </Button>
-                <Button size="sm" variant="ghost" onClick={() => setShowNewForm(false)}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  type="button"
+                  onClick={() => setShowNewForm(false)}
+                >
                   Cancelar
                 </Button>
               </div>
-            </div>
+            </form>
           )}
 
           {candidateError && (

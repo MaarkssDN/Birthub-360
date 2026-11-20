@@ -3,7 +3,7 @@
 - De: 16 — Runtime, Workers e Escala
 - Para: 06 — Integrações e Bitrix
 - Onda: 3 (MEL-21)
-- Status: aberto
+- Status: resolvido
 - Prioridade: alto
 - Bloqueador-ref: `.agents/runs/onda-3/16-mel21-outbox-auditoria.md` (G3, G6)
 - Sprint destino: a definir pelo 00
@@ -54,3 +54,48 @@ Sugestão: passar nomes estáveis, ex.:
   o contrato de consumo do mesh e o arquivo do bridge (seu domínio).
 - Produtores do 06 (`whatsappMessage.service.ts:231`, `bitrix.webhook.ts:190`) também
   estão no inventário de `idempotencyKey` do handoff 16→00.
+
+## Resolução
+
+Implementado pelo Agente 06 na `agente/06-handoffs-20261117` (worktree `agente-06-handoffs`):
+
+1. **Nomes de consumidor estáveis** — as 13 chamadas `domainEventMesh.subscribe` em
+   `bitrixEventMeshBridge.service.ts` agora passam o 3º argumento `consumer`
+   (`bitrix-bridge:<slug>`), substituindo o default instável `${eventType}#${index}`.
+   A deduplicação durável `(organizationId, eventId, consumer)` passa a ser reutilizada
+   entre deploys/processos.
+
+2. **Propagação de erro transitório** — os 9 `catch { warn; return; }` foram substituídos
+   por classificação permanente/transitória via `isPermanentBitrixSyncError`:
+   `AppError` 4xx (exceto 408/429) segue best-effort (warn + consumo concluído); todo o
+   resto (rede, timeout, 5xx, `TransientBitrixError`, erros de banco como
+   `prisma.lead.findFirst` do webhook inbound) é propagado → o mesh libera o lease,
+   marca o outbox FAILED e reagenda com backoff até DEAD_LETTER.
+
+3. **Idempotência do efeito externo** — `syncActivityToBitrix` e `postCommentToBitrix`
+   ganharam `opts` opcionais (`propagateErrors`, `dedupRef`). O bridge passa
+   `dedupRef: event.eventId` (chave estável): o marcador `[ref:<eventId>]` é sufixado em
+   DESCRIPTION/COMMENT e uma checagem best-effort (`crm.activity.list` /
+   `crm.timeline.comment.list`, `maxAttempts: 1`) evita `add` duplicado. Chamadores
+   existentes não passam `opts` → comportamento inalterado.
+
+### Mudança de contrato de dedup — janela única de reexecução
+
+Eventos já `completed` sob o nome de consumidor antigo (`${eventType}#N`) serão
+re-executados **uma vez** após o deploy, pois o `consumer` novo não consta como
+concluído no ConsumptionStore. A duplicidade residual é mitigada pelo `dedupRef`:
+o marcador `[ref:<eventId>]` + `crm.activity.list`/`crm.timeline.comment.list` impedem
+o segundo `add` no Bitrix para eventos cujo sync já ocorreu. Após essa janela única,
+a dedup durável volta a valer normalmente.
+
+### Evidência
+
+- `npx tsc --noEmit` → exit 0.
+- `npm run lint` (biome) → exit 0 (apenas warnings pré-existentes fora do escopo).
+- `npx vitest run tests/unit/integrations/bitrixEventMeshBridge.test.ts
+  tests/unit/features/integrations/bitrix/` → 7 arquivos, 56/56 testes passando,
+  incluindo: falha transitória → publish rejeita + outbox FAILED; AppError 400 →
+  DISPATCHED; `dedupRef === eventId`; dedup em `crm.activity.list` e
+  `crm.timeline.comment.list` (novo `tests/unit/features/integrations/bitrix/outboundSync-dedup.test.ts`).
+- Teste do bridge reescrito: "Bitrix fora do ar" agora espera propagação + FAILED
+  (edição estritamente necessária ao handoff — domínio `tests/` é do 08, documentado no PR).

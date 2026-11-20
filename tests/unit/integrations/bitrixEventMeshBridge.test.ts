@@ -3,6 +3,7 @@ import { bitrixEventMeshBridge } from '../../../src/features/integrations/bitrix
 import { domainEventMesh } from '../../../src/lib/queue/domainEventMesh.service.js';
 import * as outboundSync from '../../../src/features/integrations/bitrix/service/outboundSync.js';
 import { prisma } from '../../../src/lib/prisma.js';
+import { AppError } from '../../../src/shared/middlewares/errorHandler.js';
 
 describe('BitrixEventMeshBridgeService — Sincronização de Webhooks Bitrix24 & WhatsApp', () => {
   const syncActivitySpy = vi.spyOn(outboundSync, 'syncActivityToBitrix').mockResolvedValue({ bitrixActivityId: 101 });
@@ -44,6 +45,7 @@ describe('BitrixEventMeshBridgeService — Sincronização de Webhooks Bitrix24 
         subject: expect.stringContaining('+5511999998888'),
         description: expect.stringContaining('proposta'),
       }),
+      expect.objectContaining({ propagateErrors: true, dedupRef: expect.any(String) }),
     );
   });
 
@@ -72,6 +74,7 @@ describe('BitrixEventMeshBridgeService — Sincronização de Webhooks Bitrix24 
         direction: 'outbound',
         completed: true,
       }),
+      expect.objectContaining({ propagateErrors: true, dedupRef: expect.any(String) }),
     );
   });
 
@@ -98,6 +101,7 @@ describe('BitrixEventMeshBridgeService — Sincronização de Webhooks Bitrix24 
         durationSeconds: 145,
         description: expect.stringContaining('alto interesse'),
       }),
+      expect.objectContaining({ propagateErrors: true, dedupRef: expect.any(String) }),
     );
   });
 
@@ -124,6 +128,7 @@ describe('BitrixEventMeshBridgeService — Sincronização de Webhooks Bitrix24 
         subject: expect.stringContaining('Demo Executiva'),
         completed: false,
       }),
+      expect.objectContaining({ propagateErrors: true, dedupRef: expect.any(String) }),
     );
   });
 
@@ -146,6 +151,7 @@ describe('BitrixEventMeshBridgeService — Sincronização de Webhooks Bitrix24 
       'tenant-alpha',
       'lead-123',
       expect.stringContaining('Score de Risco: 85'),
+      expect.objectContaining({ dedupRef: expect.any(String) }),
     );
   });
 
@@ -168,6 +174,7 @@ describe('BitrixEventMeshBridgeService — Sincronização de Webhooks Bitrix24 
       'tenant-alpha',
       'lead-123',
       expect.stringContaining('PROP-2026-99'),
+      expect.objectContaining({ dedupRef: expect.any(String) }),
     );
   });
 
@@ -189,6 +196,7 @@ describe('BitrixEventMeshBridgeService — Sincronização de Webhooks Bitrix24 
       'tenant-alpha',
       'lead-123',
       expect.stringContaining('LGPD / Opt-out Unificado Aplicado'),
+      expect.objectContaining({ dedupRef: expect.any(String) }),
     );
   });
 
@@ -263,7 +271,7 @@ describe('BitrixEventMeshBridgeService — Sincronização de Webhooks Bitrix24 
     expect(findFirstSpy).not.toHaveBeenCalled();
   });
 
-  it('não deve falhar a emissão do evento quando o Bitrix24 estiver temporariamente fora do ar', async () => {
+  it('deve propagar falha transitória do Bitrix24 — publish rejeita e outbox fica FAILED para retry', async () => {
     syncActivitySpy.mockRejectedValueOnce(new Error('Bitrix API timeout 504'));
 
     await expect(
@@ -282,6 +290,56 @@ describe('BitrixEventMeshBridgeService — Sincronização de Webhooks Bitrix24 
           leadId: 'lead-123',
         },
       }),
+    ).rejects.toThrow('Bitrix API timeout 504');
+
+    const records = domainEventMesh.getOutboxRecords();
+    expect(records.some((r) => r.status === 'FAILED' && r.lastError)).toBe(true);
+  });
+
+  it('deve tratar erro permanente (4xx) como best-effort — publish resolve e outbox fica DISPATCHED', async () => {
+    syncActivitySpy.mockRejectedValueOnce(new AppError('Lead sem vínculo Bitrix', 400));
+
+    await expect(
+      domainEventMesh.publish({
+        eventType: 'WHATSAPP_MESSAGE_RECEIVED',
+        eventVersion: '1.0.0',
+        organizationId: 'tenant-alpha',
+        correlationId: 'wa-permanent-001',
+        producer: 'integrations.whatsapp',
+        aggregateId: 'lead-123',
+        payload: {
+          waMessageId: 'msg-perm',
+          phoneE164: '+5511999998888',
+          body: 'Lead sem vínculo no Bitrix',
+          direction: 'inbound',
+          leadId: 'lead-123',
+        },
+      }),
     ).resolves.toBeDefined();
+
+    const records = domainEventMesh.getOutboxRecords();
+    expect(records.some((r) => r.status === 'DISPATCHED')).toBe(true);
+  });
+
+  it('deve usar o eventId como dedupRef estável nas chamadas de sync com o Bitrix24', async () => {
+    const envelope = await domainEventMesh.publish({
+      eventType: 'WHATSAPP_MESSAGE_RECEIVED',
+      eventVersion: '1.0.0',
+      organizationId: 'tenant-alpha',
+      correlationId: 'wa-dedup-001',
+      producer: 'integrations.whatsapp',
+      aggregateId: 'lead-123',
+      payload: {
+        waMessageId: 'msg-dedup',
+        phoneE164: '+5511999998888',
+        body: 'Verificação de dedup',
+        direction: 'inbound',
+        leadId: 'lead-123',
+      },
+    });
+
+    expect(syncActivitySpy).toHaveBeenCalled();
+    const opts = syncActivitySpy.mock.calls[0][3] as { dedupRef?: string };
+    expect(opts.dedupRef).toBe(envelope.eventId);
   });
 });
