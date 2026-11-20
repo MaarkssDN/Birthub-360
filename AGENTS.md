@@ -474,7 +474,9 @@ prisma/schema.prisma
 prisma/migrations/**
 → Agente 12 (Vera)
 
-src/lib/db/rls/**
+src/lib/tenant-prisma.ts
+scripts/security/rls-coverage.ts
+scripts/security/check-rls-coverage.ts
 → Agente 13 (Nilo)
 
 src/lib/queue/**, src/workers/**
