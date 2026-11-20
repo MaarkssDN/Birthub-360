@@ -35,3 +35,18 @@ Mock do processo de scan (fixture de `npm audit`/Trivy), não dados fabricados n
 ## Contexto adicional
 
 Origem: reconciliação EXP-06 / handoff `onda-forense-20261020/00-para-15-forense.md`. O simulador honesto foi entregue por decisão do usuário em 2026-11-14; este handoff cobre a opção A (scanner real) como demanda futura.
+
+## Resolução (Agente 10, 2026-11-20 — branch `agente/10-waveF-scanner-real`)
+
+O scanner real foi implementado pelo Agente 10 na branch `agente/10-waveF-scanner-real`
+(escopo estava em `src/lib/security/**`, sem dono explícito na MATRIZ_PROPRIEDADE
+vigente; o contrato não mudou de shape). Ver seção "## Resolução" em
+`00-para-10-scanner-seguranca-real.md` para o detalhamento.
+
+Pontos que merecem revisão do Agente 15/99 (domínio segurança/AppSec):
+- Semântica de `complianceRating`: HIGH/CRITICAL **com waiver ativo** não bloqueia
+  (WARN_WAIVED); só HIGH/CRITICAL **sem waiver** → FAIL_BLOCKED. Se a política for
+  "CRITICAL sempre bloqueia", ajustar em `continuousSecurityAudit.service.ts`.
+- Waiver sem data de reavaliação parseável é tratado como expirado (fail-closed).
+- `checkWaiverValidity(waiverId)` agora usa advisory ID (GHSA/CVE), não ID interno.
+- Handoff aberto para Agente 23 (Pina): agendamento periódico do sweep no worker.

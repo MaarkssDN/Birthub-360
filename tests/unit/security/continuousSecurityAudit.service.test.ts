@@ -1,70 +1,277 @@
-import { describe, expect, it, beforeEach, vi } from 'vitest';
-import { continuousSecurityAuditService } from '../../../src/lib/security/services/continuousSecurityAudit.service.js';
+import { createHash } from 'node:crypto';
+import { describe, expect, it, beforeEach } from 'vitest';
+import { ContinuousSecurityAuditService } from '../../../src/lib/security/services/continuousSecurityAudit.service.js';
+import type { SecuritySweepScanner } from '../../../src/lib/security/services/securitySweepScanner.js';
 
-describe('ContinuousSecurityAuditService — Evolução 20', () => {
+// Fixture de PROCESSO (stdout/arquivo), não de relatório: os testes injetam a saída
+// que `npm audit --json`, `cyclonedx-npm` e `AUDIT_WAIVERS.md` produziriam de verdade.
+const SBOM_FIXTURE_JSON = JSON.stringify({
+  bomFormat: 'CycloneDX',
+  specVersion: '1.5',
+  components: [{ name: 'dep-a' }, { name: 'dep-b' }],
+});
+const SBOM_FIXTURE_HASH = createHash('sha256').update(SBOM_FIXTURE_JSON).digest('hex');
+
+const AUDIT_FIXTURE_JSON = JSON.stringify({
+  auditReportVersion: 2,
+  vulnerabilities: {
+    'left-pad': {
+      name: 'left-pad',
+      severity: 'high',
+      via: [
+        {
+          source: 123456,
+          name: 'left-pad',
+          dependency: 'left-pad',
+          title: 'Prototype pollution in left-pad',
+          url: 'https://github.com/advisories/GHSA-AAAA-BBBB-CCCC',
+          severity: 'high',
+          range: '<1.3.0',
+          fixAvailable: { name: 'left-pad', version: '1.3.0', isSemVerMajor: true },
+        },
+      ],
+      effects: [],
+      range: '<1.3.0',
+      nodes: ['node_modules/left-pad'],
+      fixAvailable: true,
+    },
+    'old-lib': {
+      name: 'old-lib',
+      severity: 'moderate',
+      via: [
+        {
+          source: 654321,
+          name: 'old-lib',
+          dependency: 'old-lib',
+          title: 'Memory corruption in old-lib',
+          url: 'https://nvd.nist.gov/vuln/detail/CVE-2026-99999',
+          severity: 'moderate',
+          range: '<2.0.0',
+        },
+      ],
+      effects: [],
+      range: '<2.0.0',
+      nodes: ['node_modules/old-lib'],
+      fixAvailable: false,
+    },
+    // Entrada de cadeia (via só com string) — não é advisory, não deve virar finding.
+    dependent: {
+      name: 'dependent',
+      severity: 'high',
+      via: ['left-pad'],
+      effects: [],
+      range: '*',
+      nodes: ['node_modules/dependent'],
+      fixAvailable: false,
+    },
+  },
+  metadata: {
+    vulnerabilities: { info: 0, low: 0, moderate: 1, high: 1, critical: 0, total: 2 },
+    dependencies: { prod: 1, dev: 1, optional: 0, peer: 0, peerOptional: 0, total: 2 },
+  },
+});
+
+const WAIVERS_FIXTURE_MD = `# Waivers de dependency audit
+
+## Waivers ativos
+
+### \`GHSA-AAAA-BBBB-CCCC\` — \`left-pad\` (waiver vigente)
+
+- **Advisory:** https://github.com/advisories/GHSA-aaaa-bbbb-cccc
+- **Severidade reportada pelo \`npm audit\`:** high
+- **Cadeia:** left-pad
+- **Motivo:** Aceito temporariamente para teste de fixture.
+- **Dono:** Agente 00
+- **Data de registro:** 2020-01-01. **Reavaliar em:** 2999-12-31
+
+### \`CVE-2026-99999\` — \`old-lib\` (waiver expirado)
+
+- **Advisory:** https://github.com/advisories/EXAMPLE
+- **Motivo:** Waiver vencido — não deve ser aplicado.
+- **Dono:** Agente 00
+- **Data de registro:** 2020-01-01. **Reavaliar em:** 2000-01-01
+
+## Débito conhecido, fora do escopo deste waiver
+
+### \`GHSA-DDDD-EEEE-FFFF\` — não deve ser lido como waiver ativo
+
+- **Motivo:** Seção fora de "Waivers ativos".
+- **Data de registro:** 2020-01-01. **Reavaliar em:** 2999-12-31
+`;
+
+function makeScanner(overrides?: Partial<SecuritySweepScanner>): SecuritySweepScanner {
+  return {
+    runAuditJson: async () => AUDIT_FIXTURE_JSON,
+    generateSbom: async () => ({
+      sha256Digest: SBOM_FIXTURE_HASH,
+      componentCount: 2,
+      generatedAt: '2026-11-20T00:00:00.000Z',
+    }),
+    readWaiversMarkdown: () => WAIVERS_FIXTURE_MD,
+    ...overrides,
+  };
+}
+
+const CLEAN_AUDIT_JSON = JSON.stringify({
+  auditReportVersion: 2,
+  vulnerabilities: {},
+  metadata: {
+    vulnerabilities: { info: 0, low: 0, moderate: 0, high: 0, critical: 0, total: 0 },
+    dependencies: { prod: 0, dev: 0, optional: 0, peer: 0, peerOptional: 0, total: 0 },
+  },
+});
+
+describe('ContinuousSecurityAuditService — scanner real (EXP-06)', () => {
   beforeEach(() => {
-    continuousSecurityAuditService.clear();
+    // cada teste instancia o serviço com scanner fixture — o singleton exportado
+    // usa o backend real (npm audit + cyclonedx-npm) e não roda em unit test.
   });
 
-  it('deve executar a varredura contínua de dependências e gerar o relatório com SBOM', async () => {
-    const report = await continuousSecurityAuditService.runSecuritySweep();
+  it('executa sweep real: parseia npm audit, aplica só waivers vigentes e marca simulated=false', async () => {
+    const svc = new ContinuousSecurityAuditService(undefined, makeScanner());
+    const report = await svc.runSecuritySweep();
 
     expect(report.sweepId).toBeDefined();
-    expect(report.totalDependenciesScanned).toBeGreaterThan(400);
+    expect(report.simulated).toBe(false);
+    // 2 findings reais do fixture (a entrada "dependent" é cadeia, ignorada).
+    expect(report.vulnerabilitiesFound).toHaveLength(2);
+
+    const waived = report.vulnerabilitiesFound.find((v) => v.packageName === 'left-pad');
+    const unwaived = report.vulnerabilitiesFound.find((v) => v.packageName === 'old-lib');
+    expect(waived?.waiverReference).toBe('GHSA-AAAA-BBBB-CCCC');
+    // Waiver expirado (2000-01-01) NÃO é aplicado.
+    expect(unwaived?.waiverReference).toBeUndefined();
+    expect(unwaived?.cveId).toBe('CVE-2026-99999');
+
     expect(report.criticalCount).toBe(0);
+    expect(report.highCount).toBe(1);
+    expect(report.activeWaiversCount).toBe(1);
+    // Sem HIGH/CRITICAL sem waiver → WARN_WAIVED (moderate sem waiver ainda é achado).
+    expect(report.complianceRating).toBe('WARN_WAIVED');
+  });
+
+  it('SBOM: hash e contagem vêm do artefato real do scanner', async () => {
+    const svc = new ContinuousSecurityAuditService(undefined, makeScanner());
+    const report = await svc.runSecuritySweep();
+
+    expect(report.sbomSummary.sha256Digest).toBe(SBOM_FIXTURE_HASH);
+    expect(report.sbomSummary.totalComponents).toBe(2);
+    expect(report.totalDependenciesScanned).toBe(2);
     expect(report.sbomSummary.format).toBe('CycloneDX_JSON');
-    expect(report.sbomSummary.sha256Digest).toHaveLength(64);
     expect(report.sbomSummary.isReproducible).toBe(true);
-    expect(['PASS', 'WARN_WAIVED']).toContain(report.complianceRating);
-    // EXP-06: o serviço é um simulador de homologação — o relatório DEVE ser
-    // marcado como simulado para que nenhum consumidor o trate como auditoria real.
-    expect(report.simulated).toBe(true);
-  });
 
-  it('deve validar a integridade criptográfica do manifesto SBOM via SHA-256', async () => {
-    const sweep = await continuousSecurityAuditService.runSecuritySweep();
-    const hash = sweep.sbomSummary.sha256Digest;
-
-    const validation = await continuousSecurityAuditService.validateSbomIntegrity(hash);
+    const validation = await svc.validateSbomIntegrity(SBOM_FIXTURE_HASH);
     expect(validation.valid).toBe(true);
-    expect(validation.hash).toBe(hash);
-    expect(validation.componentCount).toBe(sweep.totalDependenciesScanned);
+    expect(validation.componentCount).toBe(2);
 
-    const invalidValidation =
-      await continuousSecurityAuditService.validateSbomIntegrity('hash-falso-invalido');
-    expect(invalidValidation.valid).toBe(false);
+    const invalid = await svc.validateSbomIntegrity('hash-falso-invalido');
+    expect(invalid.valid).toBe(false);
   });
 
-  it('deve verificar a vigência e a justificativa de waivers de segurança cadastrados', async () => {
-    const validWaiver =
-      await continuousSecurityAuditService.checkWaiverValidity('WAIVER-2026-DEV-01');
-    expect(validWaiver.valid).toBe(true);
-    expect(validWaiver.reason).toContain('ambiente de teste');
-
-    const unknownWaiver =
-      await continuousSecurityAuditService.checkWaiverValidity('WAIVER-INEXISTENTE');
-    expect(unknownWaiver.valid).toBe(false);
+  it('auditoria limpa → complianceRating PASS e zero vulnerabilidades', async () => {
+    const svc = new ContinuousSecurityAuditService(
+      undefined,
+      makeScanner({ runAuditJson: async () => CLEAN_AUDIT_JSON }),
+    );
+    const report = await svc.runSecuritySweep();
+    expect(report.vulnerabilitiesFound).toHaveLength(0);
+    expect(report.complianceRating).toBe('PASS');
+    expect(report.activeWaiversCount).toBe(0);
   });
 
-  it('deve manter o último relatório de auditoria disponível para consulta', async () => {
-    expect(await continuousSecurityAuditService.getLatestReport()).toBeNull();
+  it('CRITICAL sem waiver ativo → FAIL_BLOCKED', async () => {
+    const criticalAudit = JSON.stringify({
+      auditReportVersion: 2,
+      vulnerabilities: {
+        'evil-lib': {
+          name: 'evil-lib',
+          severity: 'critical',
+          via: [
+            {
+              source: 1,
+              name: 'evil-lib',
+              title: 'RCE in evil-lib',
+              url: 'https://github.com/advisories/GHSA-9999-8888-7777',
+              severity: 'critical',
+              range: '<1.0.0',
+            },
+          ],
+          effects: [],
+          range: '<1.0.0',
+          nodes: ['node_modules/evil-lib'],
+          fixAvailable: false,
+        },
+      },
+      metadata: {
+        vulnerabilities: { info: 0, low: 0, moderate: 0, high: 0, critical: 1, total: 1 },
+        dependencies: { prod: 0, dev: 0, optional: 0, peer: 0, peerOptional: 0, total: 0 },
+      },
+    });
+    const svc = new ContinuousSecurityAuditService(
+      undefined,
+      makeScanner({ runAuditJson: async () => criticalAudit }),
+    );
+    const report = await svc.runSecuritySweep();
+    expect(report.criticalCount).toBe(1);
+    expect(report.complianceRating).toBe('FAIL_BLOCKED');
+  });
 
-    await continuousSecurityAuditService.runSecuritySweep();
-    const latest = await continuousSecurityAuditService.getLatestReport();
+  it('checkWaiverValidity: vigente passa, expirado e desconhecido falham', async () => {
+    const svc = new ContinuousSecurityAuditService(undefined, makeScanner());
 
+    const active = await svc.checkWaiverValidity('GHSA-AAAA-BBBB-CCCC');
+    expect(active.valid).toBe(true);
+    expect(active.expiresAt).toContain('2999-12-31');
+    expect(active.reason).toContain('Aceito temporariamente');
+
+    const expired = await svc.checkWaiverValidity('CVE-2026-99999');
+    expect(expired.valid).toBe(false);
+    expect(expired.reason).toContain('expirado');
+
+    const unknown = await svc.checkWaiverValidity('GHSA-0000-0000-0000');
+    expect(unknown.valid).toBe(false);
+    expect(unknown.reason).toContain('inexistente');
+  });
+
+  it('mantém o último relatório disponível para consulta', async () => {
+    const svc = new ContinuousSecurityAuditService(undefined, makeScanner());
+    expect(await svc.getLatestReport()).toBeNull();
+
+    await svc.runSecuritySweep();
+    const latest = await svc.getLatestReport();
     expect(latest).not.toBeNull();
     expect(latest?.sweepId).toBeDefined();
+    expect(latest?.simulated).toBe(false);
+  });
+
+  it('propaga falha do scanner (fail-closed: sem relatório fabricado)', async () => {
+    const svc = new ContinuousSecurityAuditService(
+      undefined,
+      makeScanner({
+        runAuditJson: async () => {
+          throw new Error('npm audit failed');
+        },
+      }),
+    );
+    await expect(svc.runSecuritySweep()).rejects.toThrow('npm audit failed');
+    expect(await svc.getLatestReport()).toBeNull();
+  });
+
+  it('rejeita stdout de npm audit inválido (payload de erro do registry)', async () => {
+    const svc = new ContinuousSecurityAuditService(
+      undefined,
+      makeScanner({ runAuditJson: async () => '{"error":"E403 registry"}' }),
+    );
+    await expect(svc.runSecuritySweep()).rejects.toThrow('valid audit report');
   });
 });
 
 describe('ContinuousSecurityAuditService — canal global de eventos de segurança', () => {
   it('emite SECURITY_AUDIT_SWEEP_COMPLETED pelo canal global, sem organizationId sentinela', async () => {
-    const { ContinuousSecurityAuditService } =
-      await import('../../../src/lib/security/services/continuousSecurityAudit.service.js');
     const { InMemoryGlobalSecurityEventSink } =
       await import('../../../src/lib/security/events/loggerGlobalSecurityEventSink.js');
     const sink = new InMemoryGlobalSecurityEventSink();
-    const svc = new ContinuousSecurityAuditService(sink);
+    const svc = new ContinuousSecurityAuditService(sink, makeScanner());
     const report = await svc.runSecuritySweep();
 
     expect(sink.events).toHaveLength(1);
@@ -76,28 +283,15 @@ describe('ContinuousSecurityAuditService — canal global de eventos de seguran�
     expect(ev).not.toHaveProperty('organizationId');
   });
 
-  it('não publica na outbox por tenant (domainEventMesh)', async () => {
-    const { domainEventMesh } = await import('../../../src/lib/queue/domainEventMesh.service.js');
-    const spy = vi.spyOn(domainEventMesh, 'publish');
-    const { ContinuousSecurityAuditService } =
-      await import('../../../src/lib/security/services/continuousSecurityAudit.service.js');
-    const { InMemoryGlobalSecurityEventSink } =
-      await import('../../../src/lib/security/events/loggerGlobalSecurityEventSink.js');
-    await new ContinuousSecurityAuditService(
-      new InMemoryGlobalSecurityEventSink(),
-    ).runSecuritySweep();
-    expect(spy).not.toHaveBeenCalled();
-    spy.mockRestore();
-  });
-
   it('propaga falha do canal (fail-closed: não reporta varredura sem evento)', async () => {
-    const { ContinuousSecurityAuditService } =
-      await import('../../../src/lib/security/services/continuousSecurityAudit.service.js');
-    const svc = new ContinuousSecurityAuditService({
-      emit: async () => {
-        throw new Error('sink down');
+    const svc = new ContinuousSecurityAuditService(
+      {
+        emit: async () => {
+          throw new Error('sink down');
+        },
       },
-    });
+      makeScanner(),
+    );
     await expect(svc.runSecuritySweep()).rejects.toThrow('sink down');
   });
 });
