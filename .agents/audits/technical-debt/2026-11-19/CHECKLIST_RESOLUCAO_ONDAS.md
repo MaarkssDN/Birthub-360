@@ -100,11 +100,11 @@ flowchart LR
 - [ ] **[22 · Hugo]** Ocultação completa de stack traces em respostas de erro em ambientes de staging e produção.
 - [ ] **[23 · Pina]** Segregação de filas do BullMQ: fila `critical-mail` separada de fila `batch-reports`.
 - [ ] **[26 · Dália]** Validação de timestamp contra ataques de repetição (replay attack) nos webhooks da Stripe.
-- [ ] **[28 · Milo]** Parser de importação CSV refatorado para streaming por chunks via Node streams.
-- [ ] **[51 · Bela]** Lock atômico distribuído no Redis para renovação concorrente de tokens Bitrix24.
-- [ ] **[53 · Vega]** Rota de recebimento de webhooks Bitrix alterada para resposta 200 imediata com enfileiramento assíncrono.
-- [ ] **[55 · Ícaro]** Sanitização de e-mails IMAP removendo pixels espiões e scripts antes do armazenamento.
-- [ ] **[59 · Ruy]** Monitor de drift em tempo real comparando checksums de registros do Bitrix vs banco local.
+- [x] **[28 · Milo]** Parser de importação CSV refatorado para streaming por chunks via Node streams.
+- [x] **[51 · Bela]** Lock atômico distribuído no Redis para renovação concorrente de tokens Bitrix24.
+- [x] **[53 · Vega]** Rota de recebimento de webhooks Bitrix alterada para resposta 200 imediata com enfileiramento assíncrono.
+- [x] **[55 · Ícaro]** Sanitização de e-mails IMAP removendo pixels espiões e scripts antes do armazenamento.
+- [x] **[59 · Ruy]** Monitor de drift em tempo real comparando checksums de registros do Bitrix vs banco local.
 
 ### Squad 90 (Infra & SRE)
 - [ ] **[90 · Hélio]** Elaboração de Runbook automatizado de Disaster Recovery com simulação de failover RDS.
