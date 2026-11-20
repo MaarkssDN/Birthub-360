@@ -51,6 +51,18 @@ Sem teste de acesso negado encontrado: `team`, `api-keys`, `module-access`, `org
 flags, copiloto IA, inteligência comercial, BullBoard, usage, bug-reports, birth-voice, 3cx,
 stripe/bitrix (parcial), pillars, LGPD.
 
+### Tratamento (mesma branch)
+`tests/unit/security/admin-routes-access-denied.contract.test.ts` — 140 testes de contrato (router
+REAL + `authenticateToken` REAL, só a sessão simulada) provando 403 padronizado para papel
+insuficiente e 401 sem sessão em: `team`, `module-access`, `organization-modules`, `job-roles`,
+`api-keys`, `settings/pillars` (PUT), `omie`, `slack`, `whatsapp` (conectar/desconectar),
+`automations` (gestão e `stagnation-scan`) e `knowledge` (DELETE). TESTADO localmente (sem Postgres):
+140/140 passam; controle negativo — remover a guarda de `team` e de `omie /connect` quebra 19 testes.
+Ainda SEM teste de acesso negado: `access-requests`, `memory`, `agent-builder` e `google` (a proteção
+destes está na camada de serviço, não no middleware — exigem testes de serviço/integração, outro escopo).
+O caminho de SUCESSO com sessão e RLS reais segue nos `tests/integration/rbac-e2e-*` (precisam de
+Postgres; NÃO EXECUTADO aqui).
+
 ## Recomendações de endurecimento (OPCIONAL — não são defeitos comprovados)
 - `POST /api/prospecting/enrich` (scraper web com Playwright): hoje qualquer usuário autenticado,
   inclusive VISUALIZADOR, aciona. Há guarda SSRF (`isSafeUrl`); sugerir piso `writeRoles` como
@@ -61,10 +73,9 @@ stripe/bitrix (parcial), pillars, LGPD.
   é informação desnecessária ao cliente.
 
 ## Pendências / próximos passos propostos
-1. Adicionar testes de integração de acesso negado (VISUALIZADOR/SDR → 403) para os routers
-   administrativos listados acima, no padrão de `tests/integration/rbac-e2e-*.test.ts`
-   (propriedade de testes de integração: Agente 04; RBAC: 97).
-2. Decidir os pisos de papel opcionais acima (decisão humana).
+1. (Feito) testes de acesso negado por contrato — ver "Tratamento".
+2. Testes de serviço para as proteções em camada de serviço (`access-requests`, `memory`, `agent-builder`).
+3. Decidir os pisos de papel opcionais acima (decisão humana).
 
 Handoffs abertos: nenhum novo. Riscos: nenhum defeito de código confirmado; risco residual é
 regressão futura sem teste de 403 nas rotas listadas.
