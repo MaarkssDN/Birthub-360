@@ -144,8 +144,10 @@ describe('CommandPalette', () => {
       openWithCtrlK();
 
       expect(screen.getByText('Nesta página')).toBeInTheDocument();
-      // "Nova oportunidade" também existe em Ações rápidas — a ocorrência extra é a contextual.
-      expect(screen.getAllByText('Nova oportunidade').length).toBeGreaterThanOrEqual(2);
+      // "Nova oportunidade" foi removida de propósito (commit 3356c2e6): /app/crm (CrmBoard) não
+      // consome o intent open-create, então a ação era um no-op silencioso. Não deve reaparecer
+      // antes de existir um fluxo real de criação.
+      expect(screen.queryByText('Nova oportunidade')).not.toBeInTheDocument();
       expect(screen.getByText('Ir para empresas')).toBeInTheDocument();
       expect(screen.getByText('Ir para contatos')).toBeInTheDocument();
 
