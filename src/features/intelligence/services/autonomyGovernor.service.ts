@@ -1,12 +1,12 @@
 import { randomUUID } from 'node:crypto';
+import { logger } from '../../../lib/logger.js';
+import { domainEventMesh } from '../../../lib/queue/domainEventMesh.service.js';
 import type {
   AgentActionEvaluation,
   AgentSloMetrics,
   AutonomyPolicyConfig,
   IAutonomyGovernorPort,
 } from '../../../shared/contracts/autonomyLimits.contract.js';
-import { domainEventMesh } from '../../../lib/queue/domainEventMesh.service.js';
-import { logger } from '../../../lib/logger.js';
 
 export class AutonomyGovernorService implements IAutonomyGovernorPort {
   private policiesStore = new Map<string, AutonomyPolicyConfig>();
@@ -73,21 +73,27 @@ export class AutonomyGovernorService implements IAutonomyGovernorPort {
           requiresHumanReview = true;
           reason = `Valor estimado (R$ ${(valueCents / 100).toFixed(2)}) ultrapassa a alçada autônoma do tenant (R$ ${(policy.financialAlcadaLimitCents / 100).toFixed(2)}).`;
 
-          await domainEventMesh.publish({
-            eventType: 'AUTONOMY_LIMIT_EXCEEDED',
-            eventVersion: '1.0.0',
-            organizationId: params.organizationId,
-            correlationId: `alcada-${actionId}`,
-            producer: 'autonomy-governor-engine',
-            aggregateId: params.agentRole,
-            payload: {
-              actionId,
-              agentRole: params.agentRole,
-              actionType: params.actionType,
-              estimatedValueCents: valueCents,
-              limitCents: policy.financialAlcadaLimitCents,
+          await domainEventMesh.publish(
+            {
+              eventType: 'AUTONOMY_LIMIT_EXCEEDED',
+              eventVersion: '1.0.0',
+              organizationId: params.organizationId,
+              correlationId: `alcada-${actionId}`,
+              producer: 'autonomy-governor-engine',
+              aggregateId: params.agentRole,
+              payload: {
+                actionId,
+                agentRole: params.agentRole,
+                actionType: params.actionType,
+                estimatedValueCents: valueCents,
+                limitCents: policy.financialAlcadaLimitCents,
+              },
             },
-          });
+            {
+              // Evento por avaliação: actionId é o id desta execução (`eval-${randomUUID()}`).
+              idempotencyKey: `autonomy-eval:${actionId}`,
+            },
+          );
         } else if (
           policy.requireApprovalForExternalDispatches &&
           (params.actionType === 'send_contract' || params.actionType === 'delete_lead')

@@ -1,11 +1,12 @@
 # Handoff — piiDetection.service.ts sem mitigação anti-encoding
 
 De: 00 — Coordenador
-Para: 07 — IA e Automações
+Para: 77 — Gaia (Guardrails de IA) / Squad 70
 Onda: Wave E (follow-up do parecer 24 sobre PR #441)
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Referência: `.agents/reviews/pr441-waveD-guardrails-pii-encoding-24.md`
+Resolução-ref: `src/features/intelligence/services/piiDetection.service.ts` integrado com `encoding.ts`, coberto por 13 testes em `src/features/intelligence/services/__tests__/piiDetection.service.test.ts` e 17 testes em `tests/unit/ai/guardrails-encoding.test.ts` (30/30 verdes).
 
 ## Problema
 
