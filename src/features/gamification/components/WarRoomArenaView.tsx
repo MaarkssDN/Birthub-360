@@ -25,6 +25,9 @@ import type {
   WarRoomMode,
 } from '../../../shared/contracts/warRoomArena.contract.js';
 
+/** Teto de XP de sessão por round (nota composta >= 85); base do limite exibido no lobby. */
+const MAX_XP_PER_ROUND = 120;
+
 const SAMPLE_OBJECTIONS = [
   {
     theme: 'Preço & Concorrência',
@@ -191,7 +194,7 @@ export function WarRoomArenaView() {
         ),
       );
       const composite = Math.round((needScore + valueScore + playbookScore + empathyScore) / 4);
-      const awardedXp = composite >= 85 ? 120 : composite >= 75 ? 80 : 50;
+      const awardedXp = composite >= 85 ? MAX_XP_PER_ROUND : composite >= 75 ? 80 : 50;
 
       const feedback =
         composite >= 85
@@ -233,7 +236,7 @@ export function WarRoomArenaView() {
 
   const handleNextRound = () => {
     SoundFX.play('confirm');
-    if (currentRoundIndex >= 2) {
+    if (currentRoundIndex >= SAMPLE_OBJECTIONS.length - 1) {
       setArenaState('completed');
       SoundFX.play('success');
       toast.success(
@@ -328,8 +331,8 @@ export function WarRoomArenaView() {
                 Rounds cronometrados de 45 segundos contra cenários de objeção de treino.
               </p>
               <div className="mt-4 pt-3 border-t border-line/60 flex items-center justify-between text-xs font-semibold text-brand">
-                <span>3 Rounds · Feedback Instantâneo</span>
-                <span>Até 360 XP/sessão</span>
+                <span>{SAMPLE_OBJECTIONS.length} Rounds · Feedback Instantâneo</span>
+                <span>Até {SAMPLE_OBJECTIONS.length * MAX_XP_PER_ROUND} XP/sessão</span>
               </div>
             </Card>
 
@@ -411,7 +414,7 @@ export function WarRoomArenaView() {
                     variant="outline"
                     className="font-bold text-xs bg-brand/10 text-brand border-brand/30"
                   >
-                    Round {currentRoundIndex + 1} de 3
+                    Round {currentRoundIndex + 1} de {SAMPLE_OBJECTIONS.length}
                   </Badge>
                   <span className="text-xs font-semibold text-ink-2">
                     Tema: {activeObjection.theme}
@@ -522,7 +525,9 @@ export function WarRoomArenaView() {
                       onClick={handleNextRound}
                       className="bg-brand text-on-brand font-bold gap-1.5"
                     >
-                      {currentRoundIndex >= 2 ? 'Finalizar Duelo' : 'Próximo Round'}
+                      {currentRoundIndex >= SAMPLE_OBJECTIONS.length - 1
+                        ? 'Finalizar Duelo'
+                        : 'Próximo Round'}
                     </Button>
                   </div>
 
@@ -645,8 +650,9 @@ export function WarRoomArenaView() {
             Duelo Concluído com Sucesso!
           </h2>
           <p className="text-sm text-ink-2 max-w-md mx-auto">
-            Você enfrentou 3 rounds de cenários de objeção. A pontuação foi estimada pela heurística
-            local de treino e o XP ganho vale apenas nesta sessão — nada foi gravado no perfil.
+            Você enfrentou {SAMPLE_OBJECTIONS.length} rounds de cenários de objeção. A pontuação foi
+            estimada pela heurística local de treino e o XP ganho vale apenas nesta sessão — nada
+            foi gravado no perfil.
           </p>
 
           <div className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-surface border border-line text-lg font-black text-brand">

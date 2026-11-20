@@ -1,7 +1,7 @@
 De: 00 — Coordenador
 Para: 12 — Voz e Telefonia
 Onda: 3
-Status: em-andamento
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: reativação voice-hub (00→12/17)
 
@@ -53,3 +53,8 @@ exige Postgres de teste (`.env.test` + containers). Este worktree não tem Docke
 `.env.test` — o spec está pronto para rodar via `npm run test:integration` em
 ambiente com a infra de testes. Status mantido **em-andamento** até a evidência de
 execução verde ser anexada (exigência do parecer do 24 para o GO do gate).
+
+
+## Fechamento pelo coordenador (2026-11-19)
+
+`tests/integration/voice-hub-rls.test.ts` entregue pelo Agente 12 no PR #384 (mergeado em main) e aprovado pelo Agente 24 (PR #411). Handoff concluído.

@@ -296,3 +296,39 @@ Ordem de merge sugerida: #381 → #383 (dependência coluna `company`) → demai
 1. **PR #390:** exigir **adendo do Agente 24** sobre a nota de atomicidade do `batchUpdateLeads` antes do merge → handoff `.agents/handoffs/00-para-24-adendo-pr390-atomicidade-batchupdate.md` (status: aberto).
 2. **PostgreSQL descartável sob role da aplicação:** **escalado ao operador** — sem Docker/psql neste host; merges de schema/RLS seguem baseados em testes unitários + check estático até execução pelo operador.
 3. **Ordem de merge:** #381 → #383 (dependência coluna `company`) → #385, #386, #387, #388, #389; **#390 somente após adendo do 24**.
+
+---
+
+## Wave D + Wave E + triagem do coordenador (2026-11-19, continuação)
+
+### Wave D — handoffs gerados pela onda anterior
+
+| Item | Dono | Resultado |
+|---|---|---|
+| IPv4-mapeado não-canônico (SSRF) | 01 | PR #436 — `embeddedIpv4FromIpv6` byte-level; 154 testes; **24 APROVOU** |
+| Command Palette open-create/no-op | 03 | PR #438 (docs) — auditoria: nenhuma ação no-op restante; handoffs fechados |
+| PII encoding bypass + safeFetch | 07 | PR #441 — `encoding.ts` anti-bypass; safeFetch já estava resolvido em main; **24 APROVADO-COM-RESSALVAS** (ressalva → novo handoff 00→07 para `piiDetection.service.ts`) |
+| Chat tenant / optout list / cadence | 05/17 | Verificado: já resolvidos em main pelos merges #383/#416 |
+
+Revisão independente do 24 publicada no PR #443.
+
+### Wave E — outbox `idempotencyKey` (handoff 16→00)
+
+Decisão de contrato do 00: chave determinística `dominio:{entityId}`, nunca randomUUID.
+Todos os produtores do inventário cobertos:
+
+- #444 (17 cadência, 8 call sites) · #445 (04 CRM/BI + market-intelligence) · #447 (07 IA/automações/knowledge, 9 call sites) · #448 (06 integrations, 4 call sites) · #450 (12 voz, 5 call sites) · #451 (09 mobile, 2 call sites) · #452 (10 runtime resilience) · #453 (02 gamification, 5 call sites)
+- Handoff 16→00 permanece `em-andamento` até os PRs mergearem (cada agente atualizou sua seção).
+
+### Triagem do coordenador
+
+- **Visual gate branch protection: RESOLVIDO** — required checks de `main` agora `Visual Regression Gate` + `Central Birth Hub 360 / application gate` (antes: `Visual Regression`, que ficava skipped fora de escopo).
+- **Visual-baseline non-FF: RESOLVIDO em código** — PR #442 (fetch + `--force-with-lease`).
+- **Release-readiness audit: RESOLVIDO** — parecer 24 já existia; pendências do parecer registradas no handoff (omissões do inventário, GO-LIVE checklist, renovações de exceções/waivers até 2026-11-30).
+- **Ação humana pendente**: Docker 2375 sem auth (`00-para-10-docker-2375`) + rotação de segredos devstack (`15-para-00-rotacao-segredos-devstack-2375`) — exigem acesso ao host 192.168.0.116 e estações; não resolúveis por código.
+- **Decisão de produto pendente**: War Room executivo vs arena, Win/Loss autopsy estatístico, escopo demo/orquestração (`00-para-17-07-orquestracao-sem-demo` itens 02/08).
+- **Próxima onda candidata**: scanner real (`00-para-10-scanner-seguranca-real` + `10-para-15-scanner-seguranca-real`) e gate de prosa do ownership (`00-para-00-estender-gate-prosa-aprovacao`).
+
+### Estado dos PRs
+
+Aguardando CI: #386 (schemathesis corrigido), #433 (triagem docs), #436/#441/#442/#443 (waveD), #444-#453 (waveE). Backlog de PRs de outras sessões também aberto (#353-#431) — merge em ordem de dependência após checks verdes.

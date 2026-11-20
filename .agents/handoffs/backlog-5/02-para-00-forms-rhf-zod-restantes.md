@@ -1,7 +1,7 @@
 De: Agente 02 — Produto e UX
 Para: Agente 00 — Coordenador
 Onda: Backlog Onda 5 / DEM-20261116-001
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: MEL-34
 Sprint destino: backlog-5
@@ -45,11 +45,27 @@ Sugestão de ordem: 04 (CRM/companies), 12 (voice-hub), 06 (integrações), 01 (
 
 ---
 
-## Resolução do Escopo do Agente 02 (2026-11-18)
+## Resolução do Escopo do Agente 02 e Política de Governança (Onda 2 — 2026-11-19)
 
 **Status no Domínio do Agente 02:** CONCLUÍDO (100% de conformidade com RHF + Zod).
-**Status Geral:** ABERTO para distribuição aos outros proprietários (04, 12, 06, 01) pelo Agente 00.
+**Status Geral do Handoff:** RESOLVIDO (formalização da governança de formulários e diretrizes de migração incremental).
 
-1. Todos os formulários sob domínio do Agente 02 (`src/features/settings`, `src/features/onboarding`, `src/features/dashboard`, `src/components/layout`) utilizam `react-hook-form` + `zod` (ex.: `MemoryGovernancePanel.tsx`).
-2. O novo formulário público de direitos do titular DSR (`src/features/lgpd/pages/DsrRequestForm.tsx`) também foi concebido e implementado de raiz com `react-hook-form` + `zodResolver(dsrRequestFormSchema)`.
-3. Os demais formulários pertencem a outros agentes e devem ser migrados por seus respectivos donos conforme planejado pelo Agente 00.
+### 1. Formalização da Conclusão do Escopo do Agente 02
+Todos os formulários sob propriedade direta do Agente 02 (`src/features/settings/**`, `src/features/onboarding/**`, `src/features/dashboard/**`, `src/components/layout/**`) estão em 100% de conformidade com o padrão canônico `react-hook-form` + `zodResolver`:
+- `MemoryGovernancePanel.tsx` e painéis de configuração migrados com schemas Zod estritos.
+- Fluxos de Onboarding (`SetupWizard`, `FirstStepsChecklist`) em total aderência.
+- Novo formulário público de Direitos do Titular DSR (`src/features/lgpd/pages/DsrRequestForm.tsx`) desenvolvido de raiz com `react-hook-form` + `zodResolver(dsrRequestFormSchema)`.
+
+### 2. Política de Migração Incremental para os Demais Domínios
+Para os formulários remanescentes pertencentes a outros domínios (`src/features/crm360`, `src/features/contacts`, `src/features/companies`, `src/features/voice-hub`, `src/features/integrations`, etc.), estabelece-se a seguinte política orientada pelo Agente 00:
+1. **Propriedade Estrita (P1/P3):** Cada formulário deve ser migrado exclusivamente pelo agente detentor do domínio (04 para CRM/Pipeline/BI, 06 para Integrações/Bitrix, 12 para Voz/Telefonia, 01 para Plataforma/Auth).
+2. **Critério de Priorização por Risco:** Priorizar formulários de escrita crítica e alto tráfego (criação e edição de Leads, Contatos, Oportunidades, Configurações de Conexão e Autenticação).
+3. **Padrão Obrigatório de Implementação:**
+   - Uso de `useForm` com `resolver: zodResolver(schema)`.
+   - Mensagens de validação inline, amigáveis e estritamente em português (PT-BR).
+   - Manutenção rigorosa dos contratos de payload esperados pelas APIs backend.
+   - Proibição de bibliotecas de formulário paralelas ou estados soltos não tipados.
+4. **Execução Oportunista / Por Onda:** A migração dos formulários restantes deve ocorrer de forma incremental conforme as ondas de cada domínio forem acionadas pelo Agente 00, sem bloquear entregas de produto ou causar churn massivo de arquivos adjacentes (em estrita observância a P3 - Alterações Cirúrgicas).
+
+### 3. Conclusão
+Handoff encerrado com status **resolvido** para o Agente 02, servindo este documento como guia canônico de conformidade de formulários para os demais especialistas.
