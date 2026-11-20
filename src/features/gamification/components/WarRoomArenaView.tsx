@@ -328,7 +328,7 @@ export function WarRoomArenaView() {
                 Rounds cronometrados de 45 segundos contra cenários de objeção de treino.
               </p>
               <div className="mt-4 pt-3 border-t border-line/60 flex items-center justify-between text-xs font-semibold text-brand">
-                <span>3 Rounds · Feedback Instantâneo</span>
+                <span>{SAMPLE_OBJECTIONS.length} Rounds · Feedback Instantâneo</span>
                 <span>Até 360 XP/sessão</span>
               </div>
             </Card>
