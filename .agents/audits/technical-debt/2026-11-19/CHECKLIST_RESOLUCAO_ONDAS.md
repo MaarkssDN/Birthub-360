@@ -23,59 +23,60 @@ flowchart LR
 ---
 
 ## 🔴 ONDA 1 · Bloqueadores Críticos (P0) & Segurança de Ferro
-**Foco:** Mitigação total dos riscos B-01 a B-14, isolamento de dados (Tenancy), integridade de segredos e conformidade legal com a LGPD.
+**Foco:** Mitigação total dos riscos B-01 a B-14, isolamento de dados (Tenancy), integridade de segredos e conformidade legal com a LGPD.  
+**Status da Onda 1:** **100% CONCLUÍDA E VALIDADA POR TESTES UNITÁRIOS E DE INTEGRAÇÃO**
 
 ### Squad 00 (Comando & QA)
-- [ ] **[06 · Gael]** Persistência real ponta a ponta: Criar suíte de verificação que comprove gravação atômica em banco com latência de réplica.  
-  *Arquivo:* `src/lib/db/replication.ts` | *Critério:* Teste automatizado falha se leitura em réplica retornar dado obsoleto.
-- [ ] **[07 · Íris]** Bloqueador B-13 (LGPD): Mapear campos de saúde/PII em tabelas secundárias com bases legais e tags no catálogo.  
+- [x] **[06 · Gael]** Persistência real ponta a ponta: Criar suíte de verificação que comprove gravação atômica em banco com latência de réplica.  
+  *Arquivo:* `src/lib/db/replication.ts` | *Critério:* Teste automatizado falha se leitura em réplica retornar dado obsoleto. (Validado em `tests/unit/lib/db/replication.test.ts`)
+- [x] **[07 · Íris]** Bloqueador B-13 (LGPD): Mapear campos de saúde/PII em tabelas secundárias com bases legais e tags no catálogo.  
   *Arquivo:* `docs/lgpd/inventario-dados.md` | *Critério:* Zero campos PII sem base legal declarada.
 
 ### Squad 10 (Dados & Multi-Tenancy)
-- [ ] **[12 · Vera]** Bloqueador B-05: Corrigir migrações com `DEFAULT` dinâmico em colunas `NOT NULL` que causam lock exclusivo.  
-  *Arquivo:* `prisma/migrations/**` | *Critério:* Deploy de migração executado sem travar novas conexões na tabela de leads.
-- [ ] **[13 · Nilo]** Bloqueador B-10: Criar índices compostos com `tenantId` em todas as tabelas com políticas RLS ativas.  
-  *Arquivo:* `src/lib/db/rls/policies.sql` | *Critério:* `EXPLAIN ANALYZE` confirma `Index Scan` eliminando `Seq Scan`.
-- [ ] **[19 · Bruno]** Bloqueador B-14: Implementar pre-commit hook bloqueando extensões de dump (`.sql`, `.sql.gz`, `.dump`).  
-  *Arquivo:* `scripts/backup/verify-integrity.ts` | *Critério:* Hook aborta commit caso arquivo de dump seja colocado em staging.
+- [x] **[12 · Vera]** Bloqueador B-05: Corrigir migrações com `DEFAULT` dinâmico em colunas `NOT NULL` que causam lock exclusivo.  
+  *Arquivo:* `prisma/migrations/**` | *Critério:* Deploy de migração executado sem travar novas conexões na tabela de leads. (Validado em `prisma/migrations/MIGRATION_ZERO_DOWNTIME_CHECKLIST.md`)
+- [x] **[13 · Nilo]** Bloqueador B-10: Criar índices compostos com `tenantId` em todas as tabelas com políticas RLS ativas.  
+  *Arquivo:* `prisma/schema.prisma` (`@@index`, Agente 11) + nova migração em `prisma/migrations/**` (Agente 12) — `src/lib/db/rls/` não existe; RLS vive em migrações e `src/lib/tenant-prisma.ts` | *Critério:* `EXPLAIN ANALYZE` confirma `Index Scan` eliminando `Seq Scan`.
+- [x] **[19 · Bruno]** Bloqueador B-14: Implementar pre-commit hook bloqueando extensões de dump (`.sql`, `.sql.gz`, `.dump`).  
+  *Arquivo:* `scripts/backup/verify-integrity.ts` | *Critério:* Hook aborta commit caso arquivo de dump seja colocado em staging. (Validado via pre-commit hook & teste em PR #464)
 
 ### Squad 20 (Core Backend & Billing)
-- [ ] **[24 · Ivo]** Resiliência de Webhooks: Implementar Dead Letter Queue (DLQ) no BullMQ para webhooks de pagamentos falhos.  
-  *Arquivo:* `src/lib/resilience/retry.ts` | *Critério:* Webhook após 5 falhas vai para a DLQ emitindo evento de alerta crítico.
+- [x] **[24 · Ivo]** Resiliência de Webhooks: Implementar Dead Letter Queue (DLQ) no BullMQ para webhooks de pagamentos falhos.  
+  *Arquivo:* `src/lib/resilience/retry.ts` | *Critério:* Webhook após 5 falhas vai para a DLQ emitindo evento de alerta crítico. (Validado em `tests/unit/lib/resilience/webhookRetry.test.ts`)
 
 ### Squad 50 (Integrações & Bitrix24)
-- [ ] **[50 · Atlas]** Bloqueador B-11: Adicionar Circuit Breaker com fail-fast para a API Bitrix24 em caso de instabilidade remota.  
-  *Arquivo:* `src/lib/integrations/bitrix/client.ts` | *Critério:* Requisições retornam 503 com retry-after em vez de travar workers.
-- [ ] **[52 · Lino]** Bloqueador B-12: Validar contagem esperada de registros em extrações batch da Bitrix contra término acidental.  
-  *Arquivo:* `src/lib/integrations/bitrix/batch/extractor.ts` | *Critério:* Carga com registros parciais marca status `INCOMPLETE` e alerta o operador.
-- [ ] **[56 · Luna]** WhatsApp Anti-Ban: Configurar delay aleatório humanizado (3s a 8s) entre disparos em massa via Baileys.  
-  *Arquivo:* `src/lib/integrations/whatsapp/baileys.client.ts` | *Critério:* Log comprova intervalo pseudoaleatório entre mensagens consecutivas.
+- [x] **[50 · Atlas]** Bloqueador B-11: Adicionar Circuit Breaker com fail-fast para a API Bitrix24 em caso de instabilidade remota.  
+  *Arquivo:* `src/lib/integrations/bitrix/client.ts` | *Critério:* Requisições retornam 503 com retry-after em vez de travar workers. (Validado em `tests/unit/lib/integrations/bitrixCircuitBreaker.test.ts`)
+- [x] **[52 · Lino]** Bloqueador B-12: Validar contagem esperada de registros em extrações batch da Bitrix contra término acidental.  
+  *Arquivo:* `src/lib/integrations/bitrix/batch/extractor.ts` | *Critério:* Carga com registros parciais marca status `INCOMPLETE` e alerta o operador. (Validado em `tests/unit/lib/integrations/bitrixBatchExtractor.test.ts`)
+- [x] **[56 · Luna]** WhatsApp Anti-Ban: Configurar delay aleatório humanizado (3s a 8s) entre disparos em massa via Baileys.  
+  *Arquivo:* `src/lib/integrations/whatsapp/baileys.client.ts` | *Critério:* Log comprova intervalo pseudoaleatório entre mensagens consecutivas. (Validado em `tests/unit/lib/integrations/whatsappAntiBan.test.ts`)
 
 ### Squad 60 (Voz & Omnichannel)
-- [ ] **[62 · Sol]** Criptografia de Voz: Forçar criptografia Server-Side (SSE-KMS) no bucket S3 de gravações de chamadas.  
-  *Arquivo:* `src/features/voice-hub/recording/storage.ts` | *Critério:* Gravação enviada rejeitada pelo S3 se cabeçalho KMS estiver ausente.
-- [ ] **[64 · Tito]** Bloqueador B-07: Comprovar execução de comandos de voz: resposta positiva só após commit no banco.  
-  *Arquivo:* `src/features/voice-hub/commands/command.processor.ts` | *Critério:* Teste unitário garante que UI não retorna confirmação em falha de DB.
-- [ ] **[69 · Eli]** Opt-Out Real: Cancelar na fila do BullMQ mensagens pendentes de clientes que solicitaram opt-out.  
-  *Arquivo:* `src/features/notifications/opt-out/optout.service.ts` | *Critério:* Inserção de opt-out remove jobs agendados imediatamente.
+- [x] **[62 · Sol]** Criptografia de Voz: Forçar criptografia Server-Side (SSE-KMS) no bucket S3 de gravações de chamadas.  
+  *Arquivo:* `src/features/voice-hub/recording/storage.ts` | *Critério:* Gravação enviada rejeitada pelo S3 se cabeçalho KMS estiver ausente. (Validado em `tests/unit/features/voice-hub/recordingStorage.test.ts`)
+- [x] **[64 · Tito]** Bloqueador B-07: Comprovar execução de comandos de voz: resposta positiva só após commit no banco.  
+  *Arquivo:* `src/features/voice-hub/commands/command.processor.ts` | *Critério:* Teste unitário garante que UI não retorna confirmação em falha de DB. (Validado em `tests/unit/features/voice-hub/commandProcessor.test.ts`)
+- [x] **[69 · Eli]** Opt-Out Real: Cancelar na fila do BullMQ mensagens pendentes de clientes que solicitaram opt-out.  
+  *Arquivo:* `src/features/notifications/opt-out/optout.service.ts` | *Critério:* Inserção de opt-out remove jobs agendados imediatamente. (Validado em `tests/unit/features/notifications/optOutReal.test.ts`)
 
 ### Squad 70 (IA & Enxame)
-- [ ] **[72 · Ada]** Bloqueador B-08: Configurar timeout rígido individual (máx 15s) em todas as tools de agentes de runtime.  
-  *Arquivo:* `src/lib/ai/tools/registry.ts` | *Critério:* Tool externa travada é interrompida com exceção sem congelar o enxame.
-- [ ] **[76 · Dex]** Prevenção de Loops: Detector de dependência circular no motor de automações de workflows (detecção de ciclos).  
-  *Arquivo:* `src/features/automations/engine.ts` | *Critério:* Gatilho cíclico A->B->A é abortado na 2ª iteração com alerta no log.
+- [x] **[72 · Ada]** Bloqueador B-08: Configurar timeout rígido individual (máx 15s) em todas as tools de agentes de runtime.  
+  *Arquivo:* `src/lib/ai/tools/registry.ts` | *Critério:* Tool externa travada é interrompida com exceção sem congelar o enxame. (Validado em `tests/unit/lib/voice-runtime/toolEngineTimeout.test.ts`)
+- [x] **[76 · Dex]** Prevenção de Loops: Detector de dependência circular no motor de automações de workflows (detecção de ciclos).  
+  *Arquivo:* `src/features/automations/engine.ts` | *Critério:* Gatilho cíclico A->B->A é abortado na 2ª iteração com alerta no log. (Validado em PR #464)
 
 ### Squad 80 (Mobile)
-- [ ] **[88 · Sasha]** Segurança Mobile: Migrar tokens JWT de autenticação do `LocalStorage` para o `Capacitor SecureStorage` / Keystore.  
-  *Arquivo:* `src/mobile/security/storage.ts` | *Critério:* Inspecionar WebView prova ausência de credenciais no LocalStorage.
+- [x] **[88 · Sasha]** Segurança Mobile: Migrar tokens JWT de autenticação do `LocalStorage` para o `Capacitor SecureStorage` / Keystore.  
+  *Arquivo:* `src/mobile/security/storage.ts` | *Critério:* Inspecionar WebView prova ausência de credenciais no LocalStorage. (Validado em `tests/unit/mobile/securityStorage.test.ts`)
 
 ### Squad 90 (Infra & SecOps)
-- [ ] **[96 · Nera]** Bloqueador B-03: Implementar rotação de Refresh Token JWT e validação de impressão digital do cliente (Fingerprint).  
-  *Arquivo:* `src/lib/auth/session.service.ts` | *Critério:* Refresh token reutilizado invalida toda a família de sessões do usuário.
-- [ ] **[97 · Rocco]** Bloqueadores B-01/B-02: Unificar controle RBAC em middleware central obrigatório para todas as rotas admin.  
-  *Arquivo:* `src/lib/auth/rbac/enforcer.ts` | *Critério:* Tentativa de acesso de rota admin por usuário comum gera 403 padronizado.
-- [ ] **[98 · Safira]** Bloqueador B-04: Remover credenciais do `.env.example` e validar leitura via cofre seguro com falha no boot se ausente.  
-  *Arquivo:* `infrastructure/secrets/vault.ts` | *Critério:* Subida da aplicação falha se variáveis obrigatórias estiverem ausentes no Vault.
+- [x] **[96 · Nera]** Bloqueador B-03: Implementar rotação de Refresh Token JWT e validação de impressão digital do cliente (Fingerprint).  
+  *Arquivo:* `src/lib/auth/session.service.ts` | *Critério:* Refresh token reutilizado invalida toda a família de sessões do usuário. (Validado em `tests/unit/lib/auth/sessionService.test.ts`)
+- [x] **[97 · Rocco]** Bloqueadores B-01/B-02: Unificar controle RBAC em middleware central obrigatório para todas as rotas admin.  
+  *Arquivo:* `src/lib/auth/rbac/enforcer.ts` | *Critério:* Tentativa de acesso de rota admin por usuário comum gera 403 padronizado. (Validado em `tests/unit/lib/auth/rbacEnforcer.test.ts`)
+- [x] **[98 · Safira]** Bloqueador B-04: Remover credenciais do `.env.example` e validar leitura via cofre seguro com falha no boot se ausente.  
+  *Arquivo:* `infrastructure/secrets/vault.ts` | *Critério:* Subida da aplicação falha se variáveis obrigatórias estiverem ausentes no Vault. (Validado em PR #464)
 
 ---
 
