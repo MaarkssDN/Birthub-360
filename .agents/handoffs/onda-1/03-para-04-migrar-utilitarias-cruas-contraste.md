@@ -20,7 +20,7 @@ Cinco telas usam utilitárias cruas que não passam em AA. O 03 mitigou TODAS po
 axe antes: failover/resilience 6 nós cada (claro), roleplay 3, market-intelligence/hub 1, deal-risks 1 (claro) + 1 (escuro), dashboard 1 (escuro). Depois das regras de piso: 0 nos temas claro e escuro nessas rotas.
 
 ## Alteração necessária
-Migração nos arquivos acima; antes de remover qualquer regra de piso do `official-identity.css`, mapear TODOS os usos das utilitárias remapeadas (`rg 'text-emerald-500|text-amber-500|text-indigo-400'` etc., não só as telas listadas) e confirmar com axe claro/escuro; só então remover a regra correspondente (cada uma está comentada com a origem). Aviso: remapeamento global de `text-emerald-500`, `text-amber-500` e `text-indigo-400` no claro altera todas as telas que as usam (cores mais escuras, só no tema claro).
+Migração nos arquivos acima; antes de remover qualquer regra de piso do `official-identity.css`, mapear TODOS os usos das utilitárias remapeadas (`rg 'text-emerald-500|text-amber-500|text-indigo-400|nav-c-teal|text-slate-500|bg-critical/10|bg-warning-active|bg-brand.*text-white'`, cobrindo TODOS os seletores do bloco "Piso de legibilidade WCAG AA" de `official-identity.css`, não só as telas listadas) e confirmar com axe claro/escuro; só então remover a regra correspondente (cada uma está comentada com a origem). Aviso: remapeamento global de `text-emerald-500`, `text-amber-500` e `text-indigo-400` no claro altera todas as telas que as usam (cores mais escuras, só no tema claro).
 
 ## Teste esperado
 `accessibility.spec.ts` e varredura axe das rotas listadas, claro e escuro, sem as regras de piso.

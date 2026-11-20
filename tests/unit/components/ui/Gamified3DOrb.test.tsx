@@ -31,6 +31,16 @@ describe('Gamified3DOrb', () => {
     expect(btn).not.toHaveAttribute('title');
   });
 
+  it('expõe nome acessível nos dois estados (axe button-name)', () => {
+    const { rerender } = render(<Gamified3DOrb interactive />);
+    expect(
+      screen.getByRole('button', { name: 'Interagir com o cristal de energia 3D' }),
+    ).toBeEnabled();
+
+    rerender(<Gamified3DOrb interactive={false} />);
+    expect(screen.getByRole('button', { name: 'Cristal de energia 3D' })).toBeDisabled();
+  });
+
   it('clique dispara som, confete e callback quando interativo', async () => {
     const confetti = (await import('canvas-confetti')).default as ReturnType<typeof vi.fn>;
     const { SoundFX } = await import('@/lib/soundEffects');
