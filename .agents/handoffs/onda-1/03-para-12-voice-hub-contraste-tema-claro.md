@@ -1,4 +1,4 @@
-De: 03 (design/a11y — 03C/03E)
+De: 03C/03E (agentes `birthhub-*` de design/a11y; "03" é numeração do roster antigo — sem propriedade de arquivo; dono de `src/components/ui/**` é o 33)
 Para: 12 (dono de src/features/voice-hub/**)
 Onda: 1
 Status: aberto

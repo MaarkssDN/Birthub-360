@@ -1,4 +1,4 @@
-De: 03 (design/a11y — 03C/03E)
+De: 03C/03E (agentes `birthhub-*` de design/a11y; "03" é numeração do roster antigo — sem propriedade de arquivo; dono de `src/components/ui/**` é o 33)
 Para: 13 (dono de src/features/characters/**; 00 decide se outro agente assume)
 Onda: 1
 Status: aberto
@@ -13,7 +13,7 @@ O H1 "29 Personagens Oficiais" de `/app/characters` no tema claro mede 1,52:1 (c
 `src/features/characters/CharacterGalleryView.tsx` linha ~206: `style={{ color: 'var(--warn)', fontFamily: 'Sora, sans-serif' }}`.
 
 ## Evidência
-Medição antes (light): H1 `rgb(255, 193, 7)`, razão 1,52, large=true, mínimo 3. `--warn` vale `#ffc107` nos DOIS temas (globals.css), portanto não é corrigível por CSS no design system: o `style` inline vence qualquer regra de folha sem `!important` (removido por 0a6015a9f) e o 03 não edita arquivo de feature de outro dono (AGENTS.md §16).
+Medição antes (light): H1 `rgb(255, 193, 7)`, razão 1,52, large=true, mínimo 3. `--warn` vale `#ffc107` nos DOIS temas (globals.css), portanto não é corrigível por CSS no design system: o `style` inline vence qualquer regra de folha sem `!important` (removido por 0a6015a9f) e 03C/03E não editam arquivo de feature de outro dono (AGENTS.md §16).
 
 ## Alteração necessária
 Trocar `color: 'var(--warn)'` por `color: 'var(--title-color-gold)'` (token existente em globals.css: `#b45309` no claro = ~4,7:1 sobre `#F4F7FB`; `#ffc107` no escuro, inalterado). Opcional equivalente: remover o `style.color` e usar a classe `text-gold`/`neon-title-gold`, que já resolve para `--title-color-gold`.

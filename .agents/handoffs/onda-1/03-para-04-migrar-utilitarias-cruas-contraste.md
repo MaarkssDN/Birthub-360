@@ -1,4 +1,4 @@
-De: 03 (design/a11y — 03C/03E)
+De: 03C/03E (agentes `birthhub-*` de design/a11y; "03" é numeração do roster antigo — sem propriedade de arquivo; dono de `src/components/ui/**` é o 33)
 Para: 04 (signals-risks, market-intelligence, dashboard); cópia informativa 02 (settings: MultiRegionFailoverPanel) e 07 (roleplay)
 Onda: 1
 Status: aberto
@@ -20,7 +20,7 @@ Cinco telas usam utilitárias cruas que não passam em AA. O 03 mitigou TODAS po
 axe antes: failover/resilience 6 nós cada (claro), roleplay 3, market-intelligence/hub 1, deal-risks 1 (claro) + 1 (escuro), dashboard 1 (escuro). Depois das regras de piso: 0 nos temas claro e escuro nessas rotas.
 
 ## Alteração necessária
-Migração nos arquivos acima; ao concluir, remover do `official-identity.css` a regra correspondente (cada uma está comentada com a origem). Aviso: remapeamento global de `text-emerald-500`, `text-amber-500` e `text-indigo-400` no claro altera todas as telas que as usam (cores mais escuras, só no tema claro).
+Migração nos arquivos acima; antes de remover qualquer regra de piso do `official-identity.css`, mapear TODOS os usos das utilitárias remapeadas (`rg 'text-emerald-500|text-amber-500|text-indigo-400'` etc., não só as telas listadas) e confirmar com axe claro/escuro; só então remover a regra correspondente (cada uma está comentada com a origem). Aviso: remapeamento global de `text-emerald-500`, `text-amber-500` e `text-indigo-400` no claro altera todas as telas que as usam (cores mais escuras, só no tema claro).
 
 ## Teste esperado
 `accessibility.spec.ts` e varredura axe das rotas listadas, claro e escuro, sem as regras de piso.
