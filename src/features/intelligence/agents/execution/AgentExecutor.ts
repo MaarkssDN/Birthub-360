@@ -19,12 +19,18 @@
  * - Compatível com BaseAgent existente (migration path)
  */
 
+import { BaseCallbackHandler } from '@langchain/core/callbacks/base';
+import type { Serialized } from '@langchain/core/load/serializable';
 import { AIMessage, type BaseMessage, HumanMessage, SystemMessage } from '@langchain/core/messages';
+import type { LLMResult } from '@langchain/core/outputs';
 import type { StructuredToolInterface } from '@langchain/core/tools';
 import { MessagesAnnotation, StateGraph } from '@langchain/langgraph';
 import { assertAiBudgetNotExceeded } from '../../../../lib/ai/budget.js';
 import { checkpointer, ensureCheckpointerReady } from '../../../../lib/ai/checkpointer.js';
-import { getAiModel, logAiUsage } from '../../../../lib/ai/gateway.js';
+import { tokenQuotaService } from '../../../../lib/ai/finops/tokenQuota.service.js';
+import { estimateCostUsd, getAiModel, logAiUsage } from '../../../../lib/ai/gateway.js';
+import { recordAiUsageCost } from '../../../../lib/ai/metrics.js';
+import { requestContext } from '../../../../lib/async-context.js';
 import { logger } from '../../../../lib/logger.js';
 import { assertPiiExternalConsent } from '../../services/guardrails.service.js';
 import { recordAgentFailure, saveAgentMemory } from '../agentMemory.store.js';
@@ -119,6 +125,241 @@ async function applySecurityGates(context: AgentExecutionContext): Promise<void>
       errorMessage: message,
     });
     throw new Error(message);
+  }
+}
+
+/**
+ * Callback handler de governança FinOps/Quota/Telemetria para cada iteração de LLM no loop ReAct.
+ *
+ * DEBT-0012: como `executeWithTools` executa o loop ReAct via `createReactAgent` + `buildModelWithFallback`
+ * (fora de `getAiModel().invoke()`), cada chamada individual ao LLM dentro do loop deve validar
+ * quota de tokens e orçamento antes da inferência (`handleLLMStart` / `handleChatModelStart`) e
+ * contabilizar uso incremental, custo e `AILog` ao término de cada geração (`handleLLMEnd`).
+ */
+export class ReactLoopGovernanceCallbackHandler extends BaseCallbackHandler {
+  name = 'ReactLoopGovernanceCallbackHandler';
+
+  private readonly runStartState = new Map<
+    string,
+    { startedAt: number; estimatedPromptTokens: number }
+  >();
+  private lastRunState: { startedAt: number; estimatedPromptTokens: number } | null = null;
+
+  constructor(
+    private readonly options: {
+      organizationId?: string | null;
+      agentType: string;
+      sessionId: string;
+      toolsModelName: string;
+    },
+  ) {
+    super({ raiseError: true, _awaitHandler: true });
+    this.raiseError = true;
+    this.awaitHandlers = true;
+  }
+
+  private resolveOrganizationId(): string | null {
+    return this.options.organizationId ?? requestContext.getStore()?.tenantId ?? null;
+  }
+
+  override async handleChatModelStart(
+    llm: Serialized,
+    messages: BaseMessage[][],
+    runId: string,
+  ): Promise<void> {
+    const prompts = messages.map((group) =>
+      group
+        .map((m) => (typeof m?.content === 'string' ? m.content : JSON.stringify(m?.content ?? '')))
+        .join('\n'),
+    );
+    await this.handleLLMStart(llm, prompts, runId);
+  }
+
+  override async handleLLMStart(
+    _llm: Serialized,
+    prompts: string[],
+    runId?: string,
+  ): Promise<void> {
+    const promptText = Array.isArray(prompts) ? prompts.join('\n') : String(prompts ?? '');
+    const estimatedPromptTokens = Math.max(1, Math.ceil(promptText.length / 4));
+    const state = { startedAt: Date.now(), estimatedPromptTokens };
+    if (runId) {
+      this.runStartState.set(runId, state);
+    }
+    this.lastRunState = state;
+
+    const effectiveOrgId = this.resolveOrganizationId();
+
+    const enforceIterationGates = async (): Promise<void> => {
+      if (effectiveOrgId) {
+        await tokenQuotaService.enforceTokenQuota({
+          organizationId: effectiveOrgId,
+          requestedModel: this.options.toolsModelName,
+          estimatedTokens: estimatedPromptTokens,
+        });
+      }
+      await assertAiBudgetNotExceeded();
+    };
+
+    try {
+      const activeTenantId = requestContext.getStore()?.tenantId;
+      if (effectiveOrgId && activeTenantId !== effectiveOrgId) {
+        await requestContext.run(
+          { ...(requestContext.getStore() ?? {}), tenantId: effectiveOrgId },
+          enforceIterationGates,
+        );
+      } else {
+        await enforceIterationGates();
+      }
+    } catch (error: any) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : `Quota ou orçamento de IA excedido no Agente ${this.options.agentType}.`;
+      logger.warn(
+        {
+          err: error,
+          sessionId: this.options.sessionId,
+          agentType: this.options.agentType,
+          organizationId: effectiveOrgId,
+        },
+        `Agente ${this.options.agentType} abortado durante loop ReAct: quota ou orçamento de IA excedido.`,
+      );
+      await recordAgentFailure({
+        sessionId: this.options.sessionId,
+        agentType: this.options.agentType,
+        organizationId: effectiveOrgId,
+        errorMessage: message,
+      });
+      throw error;
+    }
+  }
+
+  override async handleLLMEnd(output: LLMResult, runId?: string): Promise<void> {
+    const startState = (runId ? this.runStartState.get(runId) : undefined) ?? this.lastRunState;
+    if (runId) {
+      this.runStartState.delete(runId);
+    }
+    const latencyMs = startState ? Math.max(0, Date.now() - startState.startedAt) : 0;
+    const fallbackPromptTokens = startState?.estimatedPromptTokens ?? 1;
+
+    const firstGen = output?.generations?.[0]?.[0] as
+      | {
+          text?: string;
+          generationInfo?: Record<string, any>;
+          message?: {
+            content?: unknown;
+            usage_metadata?: {
+              input_tokens?: number;
+              output_tokens?: number;
+              total_tokens?: number;
+            };
+            response_metadata?: Record<string, any>;
+          };
+        }
+      | undefined;
+
+    const llmTokenUsage =
+      output?.llmOutput?.tokenUsage ??
+      output?.llmOutput?.estimatedTokenUsage ??
+      output?.llmOutput?.usage ??
+      firstGen?.message?.response_metadata?.tokenUsage ??
+      firstGen?.message?.response_metadata?.usage ??
+      firstGen?.generationInfo?.tokenUsage ??
+      firstGen?.generationInfo?.usage;
+
+    const usageMeta = firstGen?.message?.usage_metadata;
+
+    const rawPromptTokens =
+      llmTokenUsage?.promptTokens ?? llmTokenUsage?.prompt_tokens ?? usageMeta?.input_tokens;
+
+    const rawCompletionTokens =
+      llmTokenUsage?.completionTokens ??
+      llmTokenUsage?.completion_tokens ??
+      usageMeta?.output_tokens;
+
+    const rawTotalTokens =
+      llmTokenUsage?.totalTokens ?? llmTokenUsage?.total_tokens ?? usageMeta?.total_tokens;
+
+    const completionText =
+      typeof firstGen?.text === 'string' && firstGen.text.length > 0
+        ? firstGen.text
+        : typeof firstGen?.message?.content === 'string'
+          ? firstGen.message.content
+          : JSON.stringify(firstGen?.message?.content ?? '');
+    const fallbackCompletionTokens = Math.max(1, Math.ceil(completionText.length / 4));
+
+    const promptTokens =
+      typeof rawPromptTokens === 'number' && Number.isFinite(rawPromptTokens)
+        ? rawPromptTokens
+        : fallbackPromptTokens;
+    const completionTokens =
+      typeof rawCompletionTokens === 'number' && Number.isFinite(rawCompletionTokens)
+        ? rawCompletionTokens
+        : fallbackCompletionTokens;
+    const totalTokens =
+      typeof rawTotalTokens === 'number' && Number.isFinite(rawTotalTokens) && rawTotalTokens > 0
+        ? rawTotalTokens
+        : promptTokens + completionTokens;
+
+    const resolvedModel =
+      (output?.llmOutput?.modelName as string | undefined) ??
+      (output?.llmOutput?.model as string | undefined) ??
+      (firstGen?.message?.response_metadata?.model_name as string | undefined) ??
+      (firstGen?.message?.response_metadata?.model as string | undefined) ??
+      this.options.toolsModelName;
+
+    const effectiveOrgId = this.resolveOrganizationId();
+    const usage = {
+      promptTokens,
+      completionTokens,
+      totalTokens,
+    };
+
+    const costInUsd = estimateCostUsd(resolvedModel, usage);
+    const providerUsed =
+      resolvedModel.startsWith('gpt-') && !this.options.toolsModelName.startsWith('gpt-')
+        ? 'openai'
+        : 'groq';
+
+    recordAiUsageCost(providerUsed, effectiveOrgId, costInUsd);
+
+    const recordQuotaUsage =
+      typeof tokenQuotaService.recordUsage === 'function'
+        ? tokenQuotaService.recordUsage.bind(tokenQuotaService)
+        : typeof (tokenQuotaService as any).recordTokenUsage === 'function'
+          ? (tokenQuotaService as any).recordTokenUsage.bind(tokenQuotaService)
+          : null;
+
+    if (totalTokens > 0 && recordQuotaUsage) {
+      await Promise.resolve(
+        recordQuotaUsage({
+          organizationId: effectiveOrgId,
+          model: resolvedModel,
+          tokens: totalTokens,
+        }),
+      ).catch(() => {});
+    }
+
+    const persistUsageLog = async (): Promise<void> => {
+      await logAiUsage({
+        model: resolvedModel,
+        usage,
+        costInUsd,
+        latencyMs,
+        agentRole: this.options.agentType,
+      });
+    };
+
+    const activeTenantId = requestContext.getStore()?.tenantId;
+    if (effectiveOrgId && activeTenantId !== effectiveOrgId) {
+      await requestContext.run(
+        { ...(requestContext.getStore() ?? {}), tenantId: effectiveOrgId },
+        persistUsageLog,
+      );
+    } else {
+      await persistUsageLog();
+    }
   }
 }
 
@@ -236,12 +477,24 @@ export class AgentExecutor {
       const model = buildModelWithFallback(toolsModelName, tools);
       const agent = createReactAgent({ llm: model, tools: tools as any });
 
-      const result = await agent.invoke({
-        messages: [
-          new SystemMessage(buildSystemPrompt(learnedStyle)),
-          new HumanMessage(buildHumanMessage(inputData)),
-        ],
+      const governanceCallback = new ReactLoopGovernanceCallbackHandler({
+        organizationId: context.organizationId,
+        agentType,
+        sessionId,
+        toolsModelName,
       });
+
+      const result = await agent.invoke(
+        {
+          messages: [
+            new SystemMessage(buildSystemPrompt(learnedStyle)),
+            new HumanMessage(buildHumanMessage(inputData)),
+          ],
+        },
+        {
+          callbacks: [governanceCallback],
+        },
+      );
 
       const messages = result.messages as BaseMessage[];
       const lastMessage = messages[messages.length - 1];

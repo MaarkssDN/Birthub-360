@@ -27,14 +27,17 @@ export class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="p-8 bg-black min-h-screen z-50 fixed inset-0">
-          <h1 className="text-2xl font-bold text-red-400">Ops, ocorreu um erro inesperado.</h1>
-          <pre className="mt-4 text-xs whitespace-pre-wrap text-white">
-            {this.state.error?.message}
-          </pre>
-          <pre className="mt-4 text-[10px] whitespace-pre-wrap text-gray-400">
-            {this.state.error?.stack}
-          </pre>
+        <div className="p-8 bg-black min-h-screen z-50 fixed inset-0 flex flex-col items-center justify-center">
+          <h1 className="text-2xl font-bold text-red-400">
+            Algo deu errado. Tente recarregar a página.
+          </h1>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="mt-6 px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-200 transition-colors"
+          >
+            Recarregar página
+          </button>
         </div>
       );
     }
