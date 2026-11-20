@@ -7,6 +7,8 @@ import {
   type CadenceSequenceDefinition,
   type CadenceTouch,
   decideCadenceAction,
+  expireStalePendingTouchAttempts,
+  isPendingConfirmation,
   recordTouchAttempt,
   resolvePendingTouchAttempt,
 } from '../domain/cadence.js';
@@ -81,7 +83,12 @@ export interface AdvanceCadenceRunDeps {
   dispatcher: CadenceDispatcher;
   lock: CadenceRunLockPort;
   isWithinBusinessWindow: (now: Date) => boolean;
-  hasLeadReplied: (organizationId: string, leadId: string) => Promise<boolean>;
+  /**
+   * `since` (DEBT-0008): quando presente, só conta réplica/comunicação ocorrida a partir daquele
+   * instante — `advanceCadenceRun` sempre passa `run.startedAt`, para que uma resposta histórica
+   * (anterior ao run) não encerre a cadência nova no primeiro tick.
+   */
+  hasLeadReplied: (organizationId: string, leadId: string, since?: Date) => Promise<boolean>;
   /** Porta de contagem do rate limit por contato/domínio (auditoria transversal, Agente 17) — ver `rateLimitService.ts`. */
   rateLimit: CadenceRateLimitPort;
   /** Override de política de rate limit — omitido usa `loadCadenceRateLimitPolicy()` (env var com default), ver `rateLimitConfig.ts`. */
@@ -157,9 +164,10 @@ export async function advanceCadenceRun(
   sequence: CadenceSequenceDefinition,
   now: Date,
 ): Promise<AdvanceCadenceRunResult> {
-  const run = await deps.runRepo.findById(organizationId, runId);
-  if (!run)
+  const loadedRun = await deps.runRepo.findById(organizationId, runId);
+  if (!loadedRun)
     throw new Error(`CadenceRun ${runId} não encontrado para a organização ${organizationId}.`);
+  let run: CadenceRunState = loadedRun;
 
   // Trava todo o ciclo (leitura já feita → decisão → despacho real → gravação) para este runId.
   // Sem isso, dois ciclos concorrentes (dois workers, ou um retry de fila) para o MESMO run podiam
@@ -177,7 +185,24 @@ export async function advanceCadenceRun(
   }
 
   try {
-    const hasLeadReplied = await deps.hasLeadReplied(organizationId, run.leadId);
+    // DEBT-0009 — sweeper de confirmações assíncronas expiradas (toque de voz cujo webhook do
+    // provedor nunca chegou). Roda a cada ciclo do scanner (5 min) sobre o run já carregado:
+    // pending dentro do TTL continua bloqueando via `decideCadenceAction` → `wait/locked`;
+    // expirado vira `failed` e o toque segue a política normal de retry/avanço — o run nunca
+    // fica preso para sempre nem re-despacha em loop.
+    const pendingBefore = run.attempts.filter(isPendingConfirmation).length;
+    const expiredRun = expireStalePendingTouchAttempts(run, sequence, now);
+    if (expiredRun !== run) {
+      const expiredCount = pendingBefore - expiredRun.attempts.filter(isPendingConfirmation).length;
+      await deps.runRepo.save(expiredRun);
+      logger.info(
+        { organizationId, runId, leadId: run.leadId, expiredCount },
+        'Tentativas de cadência pendentes expiradas convertidas em falha (webhook do provedor não recebido no prazo).',
+      );
+      run = expiredRun;
+    }
+
+    const hasLeadReplied = await deps.hasLeadReplied(organizationId, run.leadId, run.startedAt);
 
     // Opt-out e rate limit são checados para o canal do PRÓXIMO toque (ou global, coberto por
     // isOptedOut) — se o run já terminou (sem próximo toque), não há canal a checar e
@@ -295,7 +320,7 @@ export async function advanceCadenceRun(
         decision: { type: 'stop', reason: freshRun.stopReason ?? 'completed' },
       };
     }
-    if (await deps.hasLeadReplied(organizationId, run.leadId)) {
+    if (await deps.hasLeadReplied(organizationId, run.leadId, run.startedAt)) {
       const stopped: CadenceRunState = applyStopDecision(run, 'lead-reply', now);
       await deps.runRepo.save(stopped);
       logger.info(

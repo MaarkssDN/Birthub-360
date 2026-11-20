@@ -233,7 +233,7 @@ export function WarRoomArenaView() {
 
   const handleNextRound = () => {
     SoundFX.play('confirm');
-    if (currentRoundIndex >= 2) {
+    if (currentRoundIndex >= SAMPLE_OBJECTIONS.length - 1) {
       setArenaState('completed');
       SoundFX.play('success');
       toast.success(
@@ -411,7 +411,7 @@ export function WarRoomArenaView() {
                     variant="outline"
                     className="font-bold text-xs bg-brand/10 text-brand border-brand/30"
                   >
-                    Round {currentRoundIndex + 1} de 3
+                    Round {currentRoundIndex + 1} de {SAMPLE_OBJECTIONS.length}
                   </Badge>
                   <span className="text-xs font-semibold text-ink-2">
                     Tema: {activeObjection.theme}
@@ -522,7 +522,9 @@ export function WarRoomArenaView() {
                       onClick={handleNextRound}
                       className="bg-brand text-on-brand font-bold gap-1.5"
                     >
-                      {currentRoundIndex >= 2 ? 'Finalizar Duelo' : 'Próximo Round'}
+                      {currentRoundIndex >= SAMPLE_OBJECTIONS.length - 1
+                        ? 'Finalizar Duelo'
+                        : 'Próximo Round'}
                     </Button>
                   </div>
 

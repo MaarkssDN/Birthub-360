@@ -18,7 +18,7 @@ sonar.projectVersion=1.0
 sonar.sources=src
 sonar.tests=tests
 sonar.exclusions=**/node_modules/**,**/dist/**,**/*.test.ts,**/*.test.tsx,**/__tests__/**
-sonar.javascript.lcov.reportPaths=coverage/unit/lcov.info
+sonar.javascript.lcov.reportPaths=coverage/unit/lcov.info,coverage/integration/lcov.info
 sonar.sourceEncoding=UTF-8
 `;
 
@@ -208,7 +208,9 @@ sonar.javascript.lcov.reportPaths=coverage/unit/lcov.info
     const content = fs.readFileSync(realPropertiesPath, 'utf8');
     const parsed = parseProperties(content);
 
-    expect(parsed['sonar.javascript.lcov.reportPaths']).toBe('coverage/unit/lcov.info');
+    expect(parsed['sonar.javascript.lcov.reportPaths']).toBe(
+      'coverage/unit/lcov.info,coverage/integration/lcov.info',
+    );
     expect(parsed['sonar.python.coverage.reportPaths']).toBe('coverage/python/coverage.xml');
     expect(parsed['sonar.sources']).toBe('src');
     expect(parsed['sonar.tests']).toBe('tests');

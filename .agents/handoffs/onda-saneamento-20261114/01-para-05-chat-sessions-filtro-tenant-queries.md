@@ -1,7 +1,7 @@
 De: Agente 01 — Plataforma, Segurança e Dados
 Para: Agente 05 — Prospecção
 Onda: saneamento-handoffs-20261114 (follow-up)
-Status: aberto
+Status: resolvido
 Prioridade: bloqueador (pré-requisito para reabrir gate outbound — F1 do parecer 24)
 Bloqueador-ref: `.agents/handoffs/05-para-01-chat-sessions-sem-coluna-tenant.md`
 Sprint destino: Onda 3
@@ -50,3 +50,17 @@ Request autenticado company A não retorna sessões/mensagens de company B
   `company = ?` (mesmo padrão de `leads`/`campaigns`).
 - Módulo segue montado fechado (503 via `unavailableLegacyModule`) — este
   handoff é pré-requisito para reabertura, não urgência de exploração ativa.
+
+## Resolução e Alinhamento (Agente 01 & Agente 05 — 2026-11-19)
+
+1. **Schema e Migração (Agente 01):**
+   - Migration `prisma/migrations/20261117230000_outbound_chat_tenant_company/migration.sql` entregue e mergeada via PR #381, adicionando a coluna `company TEXT` (nullable) e os índices correspondentes em `chat_sessions` e `chat_messages`.
+2. **Propagação de Filtro e Segurança (Agente 05):**
+   - Implementado no commit `daed23538` (`fix(05): tenant scope no outbound legado + filtro company no chat`) em `src/features/prospecting/outbound/server/routes/chat.routes.ts`:
+     - `POST /chat`: valida que `sessionId` pertence à `company` do usuário (404 se cross-tenant); grava `company = tenantCompany(req)` nas novas mensagens e sessões.
+     - `GET /chat/sessions`: aplica filtro `WHERE LOWER(TRIM(COALESCE(s.company,''))) = ?`, ocultando registros legados com `company IS NULL` (política fail-closed acordada).
+     - `GET /chat/sessions/:id/messages`: valida posse da sessão e filtra mensagens por `company`.
+3. **Status de Validação:**
+   - Suíte `tenantScope.test.ts` (16/16 testes aprovados).
+   - Bloqueador F1 sanado em conformidade com o parecer do Agente 24.
+   - Handoff mutuamente concluído e encerrado.

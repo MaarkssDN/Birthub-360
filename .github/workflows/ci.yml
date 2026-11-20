@@ -318,6 +318,18 @@ jobs:
       - name: Run Integration Tests (auth, RBAC and tenant isolation)
         run: npm run test:integration -- --coverage
 
+      # DEBT-0026: verify:integrations/verify:ai existiam só no workflow não-gate
+      # onda-2.5-validation.yml (PRs para validation/onda-2.5-base). Aqui eles entram no
+      # application gate. verify:integrations é bloqueante (mesma semântica do workflow de
+      # validação); integrações pagas sem credencial retornam SKIPPED por design do script.
+      - name: Verify integrations (provedores externos)
+        run: npm run verify:integrations
+
+      # verify:ai gera conteúdo real via GROQ_API_KEY/OPENAI_API_KEY (env do job). Bloqueante:
+      # sem motor configurado o script aborta — falha aqui é sinal real de regressão no Hub de IA.
+      - name: Verify AI (Hub de IA — geração real)
+        run: npm run verify:ai
+
       - name: Run Build
         run: npm run build
 
