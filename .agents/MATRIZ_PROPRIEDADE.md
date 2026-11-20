@@ -20,7 +20,7 @@
 | `10` | `src/lib/db/index.ts` |
 | `11` | `prisma/schema.prisma` |
 | `12` | `prisma/migrations/**` |
-| `13` | `src/lib/db/rls/**`, `supabase/migrations/**` (se aplicável) |
+| `13` | `src/lib/tenant-prisma.ts`, `scripts/security/rls-coverage.ts`, `scripts/security/check-rls-coverage.ts`, `supabase/migrations/**` (se aplicável) |
 | `14` | `prisma/seed.ts`, `tests/fixtures/**` |
 | `15` | `src/lib/db/retention/**` |
 | `16` | `src/lib/db/queries/**` |
