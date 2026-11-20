@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Auditoria de Dívida Técnica — Squad 00 · Comando Global, QA, LGPD e Auditoria</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #6366f1;
+      --p0: #ef4444;
+      --p1: #f97316;
+      --p2: #eab308;
+      --p3: #3b82f6;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 24px;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header {
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-p0 { background: rgba(239, 68, 68, 0.2); color: var(--p0); border: 1px solid var(--p0); }
+    .badge-p1 { background: rgba(249, 115, 22, 0.2); color: var(--p1); border: 1px solid var(--p1); }
+    .badge-p2 { background: rgba(234, 179, 8, 0.2); color: var(--p2); border: 1px solid var(--p2); }
+    .badge-p3 { background: rgba(59, 130, 246, 0.2); color: var(--p3); border: 1px solid var(--p3); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; background: var(--card-bg); border-radius: 8px; overflow: hidden; }
+    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: #111827; font-size: 13px; text-transform: uppercase; color: var(--muted); }
+    tr:hover { background: rgba(255, 255, 255, 0.02); }
+    .agent-tag { font-weight: 600; color: var(--accent); }
+    .file-tag { font-family: monospace; font-size: 12px; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; color: #38bdf8; }
+    .nav-back { display: inline-block; margin-bottom: 16px; color: var(--muted); text-decoration: none; font-size: 14px; }
+    .nav-back:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="../dashboard/index.html" class="nav-back">← Voltar ao Dashboard Global de Dívidas Técnicas</a>
+    <header>
+      <div style="font-size: 12px; text-transform: uppercase; color: var(--accent); font-weight: bold; letter-spacing: 1px;">Auditoria Independente por Squad</div>
+      <h1 style="margin: 8px 0 4px 0;">Squad 00 · Comando Global, QA, LGPD e Auditoria</h1>
+      <p style="color: var(--muted); margin: 0;"><strong>Coordenador Responsável:</strong> 01 — Ória (Coordenador de QA, Governança e Aceite) / Liderado por 00 — Astra</p>
+      <p style="color: var(--muted); font-size: 13px; margin-top: 4px;">Data de Auditoria: 2026-11-19 | Total de Especialistas: 10 | Status: CONSOLIDADO</p>
+    </header>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Especialista</th>
+          <th>Papel Técnico</th>
+          <th>Severidade</th>
+          <th>Dívida Técnica Identificada</th>
+          <th>Impacto Potencial</th>
+          <th>Esforço</th>
+          <th>Arquivo Alvo</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+          <tr>
+            <td class="agent-tag">00</td>
+            <td style="font-weight: 600;">Astra</td>
+            <td style="color: var(--muted); font-size: 13px;">Coordenador Global</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Ausência de graceful shutdown centralizado para pools de conexões e workers assíncronos em server.ts.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Interrupção abrupta de transações em deploys.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">server.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">01</td>
+            <td style="font-weight: 600;">Ória</td>
+            <td style="color: var(--muted); font-size: 13px;">QA & Aceite</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Definition of Done (DoD) de qualidade não valida automaticamente contratos de migração antes do aceite.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Testes manuais repetitivos necessários para validar estabilidade.</td>
+            <td style="font-size: 13px;">Baixo</td>
+            <td><span class="file-tag">docs/orchestration/PROTOCOLO_QUALIDADE_E_ACEITE.md</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">02</td>
+            <td style="font-weight: 600;">Bento</td>
+            <td style="color: var(--muted); font-size: 13px;">Test Harness</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Mocks estáticos de Redis em tests/setup mascaram comportamentos reais de concorrência e chave expirada.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Bugs de concorrência só aparecem em produção.</td>
+            <td style="font-size: 13px;">Alto</td>
+            <td><span class="file-tag">tests/setup/redis-mock.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">03</td>
+            <td style="font-weight: 600;">Nina</td>
+            <td style="color: var(--muted); font-size: 13px;">Testes Unitários & Arquitetura</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Acoplamento direto entre serviços de domínio e controladores HTTP violando regras do depcruise.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Dificuldade de desacoplamento e refatoração de regras de negócio.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">.dependency-cruiser.cjs</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">04</td>
+            <td style="font-weight: 600;">Téo</td>
+            <td style="color: var(--muted); font-size: 13px;">Testes de Integração & Contratos</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Bancos efêmeros de teste deixam conexões zumbis se o runner do Vitest for abortado.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Esgotamento de conexões no Postgres de testes em CI.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">vitest.integration.config.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">05</td>
+            <td style="font-weight: 600;">Luma</td>
+            <td style="color: var(--muted); font-size: 13px;">Automação E2E & Regressão Visual</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Testes E2E utilizam pausas fixas (page.waitForTimeout) em fluxos de autenticação em vez de web-first assertions.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Flakiness em pipelines de CI sob alta carga.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">playwright.config.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">06</td>
+            <td style="font-weight: 600;">Gael</td>
+            <td style="color: var(--muted); font-size: 13px;">Verificação de Realidade</td>
+            <td><span class="badge badge-p0">P0</span></td>
+            <td>Falta de suíte de testes comprovando persistência ponta a ponta em réplica com latência de rede real.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Risco de leituras inconsistentes após operações de escrita.</td>
+            <td style="font-size: 13px;">Alto</td>
+            <td><span class="file-tag">src/lib/db/replication.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">07</td>
+            <td style="font-weight: 600;">Íris</td>
+            <td style="color: var(--muted); font-size: 13px;">Privacidade & LGPD</td>
+            <td><span class="badge badge-p0">P0</span></td>
+            <td>B-13: Campos sensíveis de saúde em tabelas auxiliares sem marcação de finalidade e base legal no catálogo.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Risco de sanções da ANPD e violação legal da LGPD.</td>
+            <td style="font-size: 13px;">Alto</td>
+            <td><span class="file-tag">docs/lgpd/inventario-dados.md</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">08</td>
+            <td style="font-weight: 600;">Dora</td>
+            <td style="color: var(--muted); font-size: 13px;">Direitos do Titular & Expurgo</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Rotina de exclusão de dados do titular não propaga deleção para logs consolidados de telemetria.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Persistência residual de PII após solicitação de expurgo.</td>
+            <td style="font-size: 13px;">Alto</td>
+            <td><span class="file-tag">src/features/privacy/expurgo.service.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">09</td>
+            <td style="font-weight: 600;">Silas</td>
+            <td style="color: var(--muted); font-size: 13px;">Auditor Independente</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Verificação de integridade de hash de commit em .agents/reviews/ ainda é manual em alguns fluxos.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Risco de aprovação de código que sofreu commits posteriores ao parecer.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">.agents/reviews/VERIFY_GATE.ts</span></td>
+          </tr>
+        
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

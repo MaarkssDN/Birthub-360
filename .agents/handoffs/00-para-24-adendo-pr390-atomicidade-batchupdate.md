@@ -4,7 +4,7 @@
 De: 00 — Coordenador
 Para: 24 — Revisão Independente
 Onda: Saneamento de Handoffs 2026-11-17/18 (Wave A/B)
-Status: aberto
+Status: resolvido
 Prioridade: alto (gate de merge do PR #390)
 Bloqueador-ref: PR #390 head 54b117f53446536b4dbb837ac6020b6e0c6f1dc9
 Sprint destino: integração Wave A/B
@@ -54,3 +54,11 @@ Veredito do adendo: `APROVADO` / `REPROVADO` / `APROVADO COM RESSALVAS` para o m
 - PR #390 também resolve handoffs de tenancy FKs (assertLeadRelationsInTenant), gate CYC-007 em lote e contraste WCAG — escopo maior que este adendo; a revisão anterior já validou esses pontos.
 - Ordem de merge sugerida da onda: #381 → #383 (dependência coluna `company`) → demais; #390 depende deste adendo.
 - Relacionado: `.agents/runs/00-fila-handoffs-20261117.md`, seção "Atualização — 2026-11-18 (relatório final Agente 01/01A)".
+
+## Resolução
+
+- **Data da Resolução:** 2026-11-19
+- **Auditor:** Agente 24 — Revisão Independente
+- **Parecer Emitido:** `.agents/reviews/24-revisao-pr390-adendo-atomicidade.md`
+- **Veredito:** **STATUS: APROVADO**
+- **Síntese:** A análise de atomicidade confirmou que o trade-off temporário de duas escritas sequenciais do commit `54b117f53` foi sanado e superado pelo commit `ff9b5143b`. O `repository.updateStatus` foi parametrizado com `extraFields`, gravando `status`, `closedAt`, `pipelineId`, `pipelineStageId`, `probability`, `owner`, `tags` e `timeline` em uma única instrução `prisma.lead.update` atômica por item. A semântica de `failedCount` é resiliente e adequada para o Kanban do CRM. Testes automatizados cobrem o cenário de sucesso atômico e rejeição sem estado parcial (`LeadUseCases.batchUpdate.test.ts` 11/11 aprovados, `PrismaLeadRepository.test.ts` 13/13 aprovados). O PR #390 está formalmente aprovado e liberado para merge. Handoff encerrado.

@@ -13,12 +13,18 @@ const prismaMock = {
   contact: { create: vi.fn() },
   user: { findFirst: vi.fn() },
 };
-vi.mock('@/lib/prisma', () => ({ prisma: prismaMock }));
+// DEBT-0020: mesmo padrão de leads.test.ts — creates de import rodam dentro de
+// runInTransaction; o mock executa `fn` direto com o prismaMock (sem tx/rollback real).
+const runInTransactionMock = vi.fn(async (fn: (tx: unknown) => Promise<unknown>, _opts?: unknown) =>
+  fn(prismaMock),
+);
+vi.mock('@/lib/prisma', () => ({ prisma: prismaMock, runInTransaction: runInTransactionMock }));
 
 // Mesmo padrão de CompanyUseCases.test.ts — deals.ts agora enfileira enriquecimento após criar a
 // Company importada (ver comentário em deals.ts), então precisa do mesmo mock pra não puxar o
 // Queue/Redis real no import do módulo.
-vi.mock('@/lib/queue/enrichment.queue', () => ({ enrichmentQueue: { add: vi.fn() } }));
+const enrichmentQueueMock = { add: vi.fn() };
+vi.mock('@/lib/queue/enrichment.queue', () => ({ enrichmentQueue: enrichmentQueueMock }));
 
 const clientMock = {
   callBitrix: vi.fn(),
@@ -212,5 +218,59 @@ describe('importSelectedBitrixDeals — grava bitrixCompanyId/bitrixContactId (O
       expect.objectContaining({ data: expect.objectContaining({ bitrixCompanyId: null }) }),
     );
     expect(prismaMock.contact.create).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * DEBT-0020 — mesmo débito de leads.test.ts, no caminho de importação via Negócio:
+ * company/contact/lead.create rodam dentro de UM runInTransaction por item (rollback atômico)
+ * e o enrichmentQueue só é enfileirado após o commit.
+ */
+describe('importSelectedBitrixDeals — atomicidade por item (DEBT-0020)', () => {
+  it('executa os creates dentro de runInTransaction e enfileira enriquecimento só após o commit', async () => {
+    prismaMock.lead.findFirst.mockResolvedValue(null);
+    prismaMock.company.create.mockResolvedValue({ id: 'company-1' });
+    prismaMock.lead.create.mockResolvedValue({ id: 'lead-1' });
+
+    clientMock.callBitrix.mockImplementation(async (_url: string, method: string) => {
+      if (method === 'crm.deal.get') {
+        return { result: { ID: '300', TITLE: 'Negócio atômico' } };
+      }
+      throw new Error(`método Bitrix inesperado neste teste: ${method}`);
+    });
+
+    const { importSelectedBitrixDeals } = await import('../deals.js');
+    const result = await importSelectedBitrixDeals('org-1', 'conn-1', ['300']);
+
+    expect(result.imported).toBe(1);
+    expect(runInTransactionMock).toHaveBeenCalledTimes(1);
+    expect(runInTransactionMock).toHaveBeenCalledWith(expect.any(Function), {
+      organizationId: 'org-1',
+    });
+    expect(enrichmentQueueMock.add).toHaveBeenCalledTimes(1);
+    expect(enrichmentQueueMock.add).toHaveBeenCalledWith('enrich-company', {
+      companyId: 'company-1',
+      organizationId: 'org-1',
+    });
+  });
+
+  it('falha no lead.create conta como failed e NÃO enfileira enriquecimento (rollback descarta os órfãos)', async () => {
+    prismaMock.lead.findFirst.mockResolvedValue(null);
+    prismaMock.company.create.mockResolvedValue({ id: 'company-orfa' });
+    prismaMock.lead.create.mockRejectedValue(new Error('connection lost mid-import'));
+
+    clientMock.callBitrix.mockImplementation(async (_url: string, method: string) => {
+      if (method === 'crm.deal.get') {
+        return { result: { ID: '301', TITLE: 'Negócio que falha' } };
+      }
+      throw new Error(`método Bitrix inesperado neste teste: ${method}`);
+    });
+
+    const { importSelectedBitrixDeals } = await import('../deals.js');
+    const result = await importSelectedBitrixDeals('org-1', 'conn-1', ['301']);
+
+    expect(result.failed).toBe(1);
+    expect(result.imported).toBe(0);
+    expect(enrichmentQueueMock.add).not.toHaveBeenCalled();
   });
 });
