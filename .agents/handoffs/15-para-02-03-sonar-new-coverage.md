@@ -205,3 +205,24 @@ O que ficou de fora e por quê:
 Gates locais: 63 testes novos verdes (+ suites vizinhas re-executadas),
 `npx tsc --noEmit` ok. `npm run lint` cobre apenas `src/` (testes fora do
 escopo do biome).
+
+---
+
+Nota Agente 02 (2026-11-18, branch `agente/02-handoffs-20261117`, base main@414a0ca5f):
+
+Triagem de staleness: **todo o escopo 02/03 deste handoff já está mergeado na main**.
+
+- Lote 1 (landing): PR #230 mergeado — `tests/unit/features/landing/` contém
+  `B360DataStreamCursor.test.tsx`, `Landing360Impeccable.test.tsx`, `CinematicFX.test.tsx`,
+  `B360UnifiedPipelineFlow.test.tsx`, `B360CinematicEngine.test.tsx`.
+- Lote 2 (settings + `src/components`): PR #232 mergeado —
+  `tests/unit/features/settings/pillarSettings.*.test.ts(x)` e
+  `tests/unit/components/layout/AssistantsDock.test.tsx`,
+  `ModuleAgentWidget*.test.tsx` presentes.
+- Lote 3 (Onda 2, residual landing/characters do 02/03): PR #334 mergeado —
+  `useAuthForm.test.ts`, `luxury/*`, `hero-n1/*`, `PillarDetailDialog` etc. presentes.
+
+O que permanece descoberto no período é de **outros donos**: `commercialMissionTrace.service.ts`
+(07), `src/shared/di/setup.ts` (01) e o residual de `characters/*` (dono de characters) +
+`BirthHubOrbit360` (r3f, inviável em jsdom). Este handoff deve permanecer aberto apenas para
+esses donos — a parte do Agente 02 está encerrada.

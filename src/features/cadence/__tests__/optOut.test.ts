@@ -202,4 +202,28 @@ describe('recordOptOut + isOptedOut — matriz canal × canal', () => {
     expect(list.length).toBe(2); // auditoria preserva ambos os pedidos, não é preciso deduplicar para estar seguro
     expect(await isOptedOut(repo, ORG, { leadId: LEAD_ID }, 'email')).toBe(true);
   });
+
+  it('list retorna todos os registros do tenant quando limit for omitido (>200), e clamp quando fornecido', async () => {
+    // Inserir 210 registros no repo
+    for (let i = 0; i < 210; i++) {
+      await repo.create({
+        organizationId: ORG,
+        scope: 'email',
+        email: `lead${i}@empresa.com`,
+        phoneE164: null,
+        leadId: `lead-${i}`,
+        reason: 'Solicitação formal',
+        evidenceRef: 'msg-ref',
+        originChannel: 'email',
+      });
+    }
+
+    // Limit omitido: retorna todos os 210 registros
+    const all = await repo.list(ORG);
+    expect(all.length).toBe(210);
+
+    // Limit especificado: respeita o valor fornecido
+    const page = await repo.list(ORG, 15);
+    expect(page.length).toBe(15);
+  });
 });

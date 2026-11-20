@@ -105,7 +105,7 @@ export async function outboundCallHandler(req: Request, res: Response) {
   const result = await telephonyService.startOutboundCall({ sessionId, callSid });
 
   if (!result.found) {
-    logger.warn('Outbound TwiML requested for an unknown session', { sessionId, callSid });
+    logger.warn({ sessionId, callSid }, 'Outbound TwiML requested for an unknown session');
     twiml.hangup();
     return sendTwiml(res, twiml);
   }
@@ -198,7 +198,7 @@ export async function statusCallbackHandler(req: Request, res: Response) {
       await telephonyService.endCall({ callSid, status, durationSeconds });
     }
   } catch (err: any) {
-    logger.error('Failed to finalize call from status callback', err);
+    logger.error(err, 'Failed to finalize call from status callback');
   }
 
   return res.status(200).send();
@@ -215,11 +215,14 @@ export async function dialStatusHandler(req: Request, res: Response) {
   const dialCallDuration = Number(req.body.DialCallDuration || 0);
   const twiml = new VoiceResponse();
 
-  logger.info('Twilio Dial status callback received', {
-    sessionId,
-    dialCallStatus,
-    dialCallDuration,
-  });
+  logger.info(
+    {
+      sessionId,
+      dialCallStatus,
+      dialCallDuration,
+    },
+    'Twilio Dial status callback received',
+  );
 
   if (dialCallStatus === 'completed') {
     twiml.hangup();

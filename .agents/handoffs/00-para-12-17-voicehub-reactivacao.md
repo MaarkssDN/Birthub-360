@@ -106,3 +106,52 @@ Recebido e avaliado pelo 02. Manter **oculto** (`voice-hub`, `outbound`, `dialer
 3. `dialer` permanece alias de `cadence` salvo decisão explícita em contrário.
 
 Sem alteração de código pelo 02 nesta onda — dependência externa.
+
+## Atualização (Agente 12 — 2026-11-14, branch `agente/12-onda2-handoffs`, commit `c3e37014b`)
+
+O bloco de adaptação do voice-hub foi concluído nesta branch: repositories e
+services migrados aos models canônicos (Organization/User/JobRole/AgentSession/
+OrganizationWebhookEndpoint/AuditLog/Notification/Birthub360CallResult), auth
+legada JWT/register/login **removida** em favor do Better Auth, e
+`attachAuthIfPresent`/`requireTenant` passam a popular `requestContext` com
+`tenantId` (pré-requisito do RLS). Evidência: `tsc -p tsconfig.voice.json`
+313→14 erros (restantes = deps `twilio`/`d3`/`openid-client` ausentes do
+package.json — decisão do Agente 00); 600/600 testes voice-hub verdes;
+`tenant-isolation.test.ts` 36/36.
+
+**`legacyModuleGate` permanece fechado** — `/api/voice-hub`, `/api/outbound` e
+`/api/dialer-3cx` seguem retornando 503. Pendências para GO: decisão de deps
+(00), teste de integração com RLS real, revisão do Agente 24, e os handoffs
+abertos ao 05 (`/api/outbound` sem auth) e ao 17 (`/api/dialer-3cx` sem
+auth/tenant). `dialer` na UI continua alias de `/app/cadence` — nada reaberto.
+
+## Atualização (Agente 12 — 2026-11-17, branch `agente/12-handoffs-20261117`, base `main@414a0ca5f`)
+
+Reverificação do estado em `main` — a parcela do Agente 12 permanece **concluída e
+estável**; os bloqueios externos seguem de pé:
+
+- Adaptação aos models canônicos mergeada (PR #339) e revisada pelo 24
+  (APROVADO-COM-RESSALVAS; ressalva ACH-1 corrigida em `bfc3d2e67`). Handoff
+  `01-para-12-voicehub-adaptacao-modelos-canonicos.md` marcado **resolvido**.
+- `npx tsc --noEmit -p tsconfig.voice.json` → 14 erros, todos por deps
+  `twilio`/`d3`/`openid-client` ausentes do `package.json` (decisão do 00 — não
+  instalar antes da reativação). Zero erros de model/delegate.
+- `src/bootstrap/routes.ts` L210-216: `/api/voice-hub`, `/api/outbound`,
+  `/api/dialer-3cx` seguem `authenticateToken + requireTenant +
+  unavailableLegacyModule` → 503. Gate fechado, conforme decisão.
+- `tenant-isolation.test.ts` → 36/36 verdes (re-executado hoje).
+- Novo nesta data: spec de integração RLS real criado em
+  `tests/integration/voice-hub-rls.test.ts` (handoff
+  `onda-3/00-para-12-voicehub-teste-integracao-rls.md`) — cobre AgentSession,
+  Birthub360CallResult e Organization (tenantRepository) contra Postgres/RLS;
+  execução pendente de ambiente com banco de teste (worktree sem Docker/`.env.test`).
+
+**Sem ação do 12 pendente neste handoff.** GO continua condicionado a: decisão de
+deps (00) e execução do teste de integração RLS (spec pronto, aguardando ambiente
+com Postgres). Dos handoffs dependentes: `12-para-17-dialer-3cx-sem-auth.md` já
+consta **resolvido**; `12-para-05-outbound-api-legado-tenancy.md` segue **aberto**
+(destinatário: Agente 05 — PR #383 em andamento pode cobri-lo).
+
+## Triagem Agente 17 — 2026-11-18 (branch `agente/17-handoffs-20261117`)
+
+Re-verificação de staleness da parcela do 17: **nada pendente**. Item 4 (decisão `dialer` → cadência) permanece implementado — hoje via `NAV_TAB_ALIASES` (`src/components/layout/tabMeta.ts` L268: `dialer → cadence`, arquivo do Agente 02; o alias de rota em `App.tsx` citado na resolução parcial de 2026-11-12 foi substituído por esse mecanismo de nav). Handoff correlato `12-para-17-dialer-3cx-sem-auth.md` já consta `resolvido`. Itens 1–3 seguem com Agentes 12/01/02 — `Status: em-andamento` correto.

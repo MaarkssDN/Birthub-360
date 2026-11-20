@@ -143,11 +143,11 @@ export function LiveSupervisor({ sessionId }: LiveSupervisorProps) {
     socket.on('telemetry_stream', (data: TelemetryPayload) => {
       if (data?.sessionId && data.sessionId !== sessionId) {
         logger.warn(
-          'LiveSupervisor: telemetria ignorada — sessionId não corresponde à sessão observada',
           {
             expected: sessionId,
             received: data.sessionId,
           },
+          'LiveSupervisor: telemetria ignorada — sessionId não corresponde à sessão observada',
         );
         return;
       }
@@ -180,9 +180,12 @@ export function LiveSupervisor({ sessionId }: LiveSupervisorProps) {
       // (see server.ts, which enforces the 'supervision:intervene' permission via hasPermission()).
       // If it rejects the request, roll back the optimistic state instead of showing an
       // intervention that never actually happened.
-      logger.warn('LiveSupervisor: intervenção rejeitada pelo servidor', {
-        message: data?.message,
-      });
+      logger.warn(
+        {
+          message: data?.message,
+        },
+        'LiveSupervisor: intervenção rejeitada pelo servidor',
+      );
       setIntervention((prev) => (prev?.triggeredByMe ? null : prev));
     });
 

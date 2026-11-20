@@ -31,8 +31,8 @@ describe('Act1Hero', () => {
     expect(screen.getByText('A inteligência de negócios.')).toBeInTheDocument();
     expect(screen.getByText('Unificada e soberana.')).toBeInTheDocument();
     expect(screen.getByText('Multi-Tenant RLS')).toBeInTheDocument();
-    expect(screen.getByText('100% LGPD Nativo')).toBeInTheDocument();
-    expect(screen.getByText('Tempo Real / 120 FPS')).toBeInTheDocument();
+    expect(screen.getByText('LGPD por design')).toBeInTheDocument();
+    expect(screen.getByText('Interface 360° fluida')).toBeInTheDocument();
 
     // Lazy Suspense resolve o stub da órbita 360
     expect(await screen.findByTestId('birthhub-orbit-360')).toBeInTheDocument();
@@ -89,11 +89,11 @@ describe('Act4TacticalEngine', () => {
     render(<Act4TacticalEngine />);
 
     expect(screen.getByText('CONSOLE EXECUTIVO · BIRTH-HUB-OS v2.0')).toBeInTheDocument();
-    expect(screen.getByText('Sessão de Voz Ativa #8291')).toBeInTheDocument();
-    expect(screen.getByText(/04:12 ao vivo/)).toBeInTheDocument();
-    expect(screen.getByText(/Objeção Detectada em Tempo Real/i)).toBeInTheDocument();
+    expect(screen.getByText('Sessão de voz ilustrativa #8291')).toBeInTheDocument();
+    expect(screen.getByText(/04:12 simulados/)).toBeInTheDocument();
+    expect(screen.getByText(/Exemplo de objeção detectada/i)).toBeInTheDocument();
     expect(screen.getByText(/Prescrição do Copiloto/i)).toBeInTheDocument();
-    expect(screen.getByText('84% de Fechamento')).toBeInTheDocument();
+    expect(screen.getByText(/84% de fechamento/i)).toBeInTheDocument();
   });
 
   it('alterna para a visão Enxame de Agentes IA e para Telemetria de Negócios', () => {
@@ -103,7 +103,7 @@ describe('Act4TacticalEngine', () => {
     expect(screen.getByText('AGENTE 05 · PROSPECÇÃO')).toBeInTheDocument();
     expect(screen.getByText('AGENTE 07 · COPILOTO IA')).toBeInTheDocument();
     expect(screen.getByText('AGENTE 12 · VOZ & CALLS')).toBeInTheDocument();
-    expect(screen.getByText(/1\.240 contas analisadas hoje/)).toBeInTheDocument();
+    expect(screen.getByText(/análise contínua de contas-alvo/)).toBeInTheDocument();
     expect(playMock).toHaveBeenCalledWith('click');
 
     fireEvent.click(screen.getByRole('button', { name: 'Telemetria de Negócios' }));
@@ -111,7 +111,7 @@ describe('Act4TacticalEngine', () => {
     expect(screen.getByText('R$ 2.940.000')).toBeInTheDocument();
     expect(screen.getByText('3 Contas')).toBeInTheDocument();
     expect(screen.getByText('114% Atingimento')).toBeInTheDocument();
-    expect(screen.getByText(/Zero latência de dados/i)).toBeInTheDocument();
+    expect(screen.getByText(/Latência depende da infraestrutura/i)).toBeInTheDocument();
   });
 });
 
@@ -120,16 +120,16 @@ describe('Act5SovereigntyMetrics', () => {
     render(<Act5SovereigntyMetrics />);
 
     expect(screen.getByText('O Índice de Soberania')).toBeInTheDocument();
-    expect(screen.getByText('+42%')).toBeInTheDocument();
-    expect(screen.getByText('< 12ms')).toBeInTheDocument();
-    expect(screen.getByText('100%')).toBeInTheDocument();
-    expect(screen.getByText('360º')).toBeInTheDocument();
-    expect(screen.getByText('Velocidade de Avanço no Pipeline')).toBeInTheDocument();
-    expect(screen.getByText('Isolamento Multi-Tenant (RLS)')).toBeInTheDocument();
+    expect(screen.getByText('Cenário')).toBeInTheDocument();
+    expect(screen.getByText('Baixa')).toBeInTheDocument();
+    expect(screen.getByText('RLS')).toBeInTheDocument();
+    expect(screen.getByText('360°')).toBeInTheDocument();
+    expect(screen.getByText('Projeção de velocidade no pipeline')).toBeInTheDocument();
+    expect(screen.getByText('Isolamento multi-tenant')).toBeInTheDocument();
 
-    expect(screen.getByText('Criptografia Ponta a Ponta')).toBeInTheDocument();
+    expect(screen.getByText('Criptografia AES-256-GCM')).toBeInTheDocument();
     expect(screen.getByText('Conformidade LGPD Nativa')).toBeInTheDocument();
     expect(screen.getByText('PostgreSQL com RLS')).toBeInTheDocument();
-    expect(screen.getByText('Infraestrutura de Baixa Latência')).toBeInTheDocument();
+    expect(screen.getByText('Observabilidade de eventos')).toBeInTheDocument();
   });
 });

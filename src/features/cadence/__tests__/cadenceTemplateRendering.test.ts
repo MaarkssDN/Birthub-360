@@ -16,6 +16,7 @@ const syncActivityToBitrix = vi.fn();
 
 let leadRow: Record<string, unknown> | null;
 let calendarEventRow: Record<string, unknown> | null;
+let bookingLinkRow: Record<string, unknown> | null;
 
 vi.mock('../../../lib/prisma.js', () => ({
   prisma: {
@@ -24,6 +25,9 @@ vi.mock('../../../lib/prisma.js', () => ({
     },
     cadenceCalendarEvent: {
       findFirst: vi.fn(async () => calendarEventRow),
+    },
+    publicBookingLink: {
+      findFirst: vi.fn(async () => bookingLinkRow),
     },
     activity: { create: vi.fn(async () => ({})) },
     timelineEvent: { create: vi.fn(async () => ({})) },
@@ -74,7 +78,12 @@ function makeTouch(templateRef: string, channel: 'whatsapp' | 'email' = 'whatsap
 describe('Pipeline real de cadência — renderização de placeholders via CadenceTemplateRendererService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    checkOptOutStatus.mockResolvedValue({ blocked: false, allowed: true, code: null, reason: null });
+    checkOptOutStatus.mockResolvedValue({
+      blocked: false,
+      allowed: true,
+      code: null,
+      reason: null,
+    });
     sendWhatsAppMessage.mockResolvedValue({});
     sendEmail.mockResolvedValue({ messageId: 'msg-1' });
     syncActivityToBitrix.mockResolvedValue(undefined);
@@ -89,6 +98,7 @@ describe('Pipeline real de cadência — renderização de placeholders via Cade
       company: { tradeName: 'Acme', legalName: 'Acme LTDA' },
     };
     calendarEventRow = null;
+    bookingLinkRow = null;
   });
 
   it('WhatsApp: renderiza {{contact_name}} e {{company_name}} antes de enviar', async () => {
@@ -101,7 +111,7 @@ describe('Pipeline real de cadência — renderização de placeholders via Cade
     expect(sendWhatsAppMessage).toHaveBeenCalledWith(
       'org-1',
       '+5511999990000',
-      'Olá Maria Silva, tudo bem? Falo da Acme.',
+      'Olá Maria Silva, tudo bem? Falo da Acme.\n\nPara não receber mais mensagens como esta, responda SAIR.',
       undefined,
       { leadId: 'lead-1' },
     );
@@ -134,7 +144,7 @@ describe('Pipeline real de cadência — renderização de placeholders via Cade
     expect(sendWhatsAppMessage).toHaveBeenCalledWith(
       'org-1',
       '+5511999990000',
-      'Olá Prezado(a), tudo bem?',
+      'Olá Prezado(a), tudo bem?\n\nPara não receber mais mensagens como esta, responda SAIR.',
       undefined,
       { leadId: 'lead-1' },
     );
@@ -155,8 +165,33 @@ describe('Pipeline real de cadência — renderização de placeholders via Cade
       // splitSubjectAndBody usa a 1ª linha verbatim como assunto (comportamento pré-existente:
       // os playbooks prefixam com "Assunto:" literal — não alterado nesta reconciliação).
       subject: 'Assunto: Proposta — Acme',
-      text: 'Olá Maria Silva, segue a proposta.',
+      text: 'Olá Maria Silva, segue a proposta.\n\n--\nPara não receber mais e-mails como este, responda esta mensagem com "SAIR" ou "descadastrar".',
     });
+  });
+
+  // DEBT-0010 — nenhuma mensagem outbound de cadência sai sem instrução de opt-out; as
+  // palavras usadas são as que `isOptOutKeyword` reconhece na réplica do lead.
+  it('DEBT-0010: WhatsApp sempre envia com instrução de opt-out (SAIR)', async () => {
+    const outcome = await whatsAppCadenceDispatcher.dispatch(
+      makeTouch('Lembrete gentil.'),
+      makeRun(),
+    );
+
+    expect(outcome.result).toBe('sent');
+    const body = sendWhatsAppMessage.mock.calls[0][2] as string;
+    expect(body).toContain('responda SAIR');
+  });
+
+  it('DEBT-0010: e-mail sempre envia com instrução de opt-out processável por isOptOutKeyword', async () => {
+    const outcome = await emailCadenceDispatcher.dispatch(
+      makeTouch('Assunto: Oi\n\nCorpo.', 'email'),
+      makeRun(),
+    );
+
+    expect(outcome.result).toBe('sent');
+    const sent = sendEmail.mock.calls[0][0] as { text: string };
+    expect(sent.text).toContain('SAIR');
+    expect(sent.text).toContain('descadastrar');
   });
 
   it('E-mail: meeting_url/meeting_time são preenchidos a partir do CadenceCalendarEvent agendado', async () => {
@@ -178,5 +213,40 @@ describe('Pipeline real de cadência — renderização de placeholders via Cade
     expect(sent.text).toContain('https://meet.google.com/abc-defg-hij');
     expect(sent.text).not.toContain('{{');
     expect(sent.text).toContain('Maria Silva');
+  });
+
+  it('E-mail: booking_link é resolvido a partir do PublicBookingLink da organização', async () => {
+    bookingLinkRow = {
+      slug: 'demo-comercial-30min',
+    };
+
+    const outcome = await emailCadenceDispatcher.dispatch(
+      makeTouch(
+        'Assunto: Agende uma demonstração\n\nOlá {{contact_name}}, acesse: {{booking_link}}',
+        'email',
+      ),
+      makeRun(),
+    );
+
+    expect(outcome.result).toBe('sent');
+    const sent = sendEmail.mock.calls[0][0] as { subject: string; text: string };
+    expect(sent.text).toContain('/book/demo-comercial-30min');
+    expect(sent.text).not.toContain('{{booking_link}}');
+  });
+
+  it('E-mail: booking_link usa fallback seguro | default: quando não há link configurado', async () => {
+    bookingLinkRow = null;
+
+    const outcome = await emailCadenceDispatcher.dispatch(
+      makeTouch(
+        'Assunto: Convite\n\nOlá {{contact_name}}, link: {{booking_link | default: "https://app.birthub360.com.br"}}',
+        'email',
+      ),
+      makeRun(),
+    );
+
+    expect(outcome.result).toBe('sent');
+    const sent = sendEmail.mock.calls[0][0] as { subject: string; text: string };
+    expect(sent.text).toContain('https://app.birthub360.com.br');
   });
 });

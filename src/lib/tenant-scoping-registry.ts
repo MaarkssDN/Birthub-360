@@ -71,4 +71,8 @@ export const TENANT_INJECTED_MODELS = [
   // publicLead.service dentro de requestContext.run({ tenantId }); injeção adiciona a mesma
   // rede de segurança dos demais models com organizationId.
   'PublicLeadConsent',
+  // DataSubjectRequest (handoff 21→01, canal público DSR): solicitações de direitos do
+  // titular escritas só via dsrRequest.service dentro de requestContext.run({ tenantId }) —
+  // mesmo padrão de PublicLeadConsent; a RLS `tenant_isolation` é a garantia real.
+  'DataSubjectRequest',
 ];

@@ -86,11 +86,27 @@ const MEETING_TIME_FORMAT = new Intl.DateTimeFormat('pt-BR', {
 });
 
 /**
+ * DEBT-0010 — instrução de opt-out obrigatória em TODA mensagem outbound de cadência.
+ * Sem ela, o lead não tinha como saber que pode pedir descadastro — e o registro unificado de
+ * opt-out (entrega 1) só funciona se o titular souber que existe. As palavras usadas ("SAIR",
+ * "descadastrar") são exatamente as que `isOptOutKeyword`
+ * (`src/shared/services/optOutCheck.service.ts`) já reconhece nas respostas — o webhook de
+ * WhatsApp (`whatsappMessage.service.ts`) e o de e-mail (`emailReply.webhook.ts`) convertem a
+ * resposta em `OptOutRecord` sem nenhum código novo. Não usamos header `List-Unsubscribe`:
+ * `sendEmail` (`src/lib/email/mailer.ts`) não expõe headers e não existe endpoint de
+ * descadastro self-service para a URL apontar — a instrução textual é o mecanismo real de
+ * descadastro hoje, e é processável de ponta a ponta.
+ */
+const WHATSAPP_OPTOUT_SUFFIX = '\n\nPara não receber mais mensagens como esta, responda SAIR.';
+const EMAIL_OPTOUT_SUFFIX =
+  '\n\n--\nPara não receber mais e-mails como este, responda esta mensagem com "SAIR" ou "descadastrar".';
+
+/**
  * Monta o contexto de placeholders dos templates de cadência (`{{contact_name}}`,
- * `{{company_name}}`, `{{meeting_url}}`, `{{meeting_time}}`). `booking_link` é propositalmente
- * omitido: não existe fonte de dados para ele hoje (link de agendamento self-service ainda não
- * foi construído — ver `application/scheduleMeeting.ts`), então toques que o referenciem sem
- * `| default:` falham em strict mode de forma explícita, em vez de vazar a tag crua.
+ * `{{company_name}}`, `{{meeting_url}}`, `{{meeting_time}}`, `{{booking_link}}`).
+ * `booking_link` é resolvido a partir do PublicBookingLink ativo do vendedor/organização
+ * (`/book/:slug`). Se ausente, toques que o usem devem contar com fallback `| default:`
+ * para não falharem em strict mode.
  */
 async function resolveCadenceTemplateContext(
   organizationId: string,
@@ -99,6 +115,7 @@ async function resolveCadenceTemplateContext(
   const lead = await prisma.lead.findFirst({
     where: { id: leadId, organizationId },
     select: {
+      owner: true,
       contact: { select: { name: true } },
       company: { select: { tradeName: true, legalName: true } },
     },
@@ -109,11 +126,26 @@ async function resolveCadenceTemplateContext(
     select: { meetUrl: true, scheduledStart: true },
   });
 
+  let bookingLinkUrl: string | null = null;
+  const bookingLink = await prisma.publicBookingLink.findFirst({
+    where: {
+      organizationId,
+      active: true,
+      ...(lead?.owner ? { userId: lead.owner } : {}),
+    },
+    select: { slug: true },
+  });
+  if (bookingLink?.slug) {
+    const baseUrl = process.env.APP_URL?.replace(/\/$/, '') || 'https://app.birthub360.com.br';
+    bookingLinkUrl = `${baseUrl}/book/${bookingLink.slug}`;
+  }
+
   return {
     contact_name: lead?.contact?.name ?? null,
     company_name: lead?.company?.tradeName ?? lead?.company?.legalName ?? null,
     meeting_url: meeting?.meetUrl ?? null,
     meeting_time: meeting ? MEETING_TIME_FORMAT.format(meeting.scheduledStart) : null,
+    booking_link: bookingLinkUrl,
   };
 }
 
@@ -186,7 +218,9 @@ export const whatsAppCadenceDispatcher: Pick<CadenceDispatcher, 'dispatch'> = {
     if ('error' in rendered) {
       return { result: 'failed' as const, error: rendered.error };
     }
-    const messageBody = rendered.content;
+    // DEBT-0010: sufixo de opt-out é anexado ao conteúdo REALMENTE enviado — e, por isso, também
+    // é o que fica registrado em Activity/TimelineEvent/Bitrix abaixo (registro honesto).
+    const messageBody = `${rendered.content}${WHATSAPP_OPTOUT_SUFFIX}`;
 
     const phone = await resolveLeadPhone(run.organizationId, run.leadId);
     if (!phone) {
@@ -196,13 +230,9 @@ export const whatsAppCadenceDispatcher: Pick<CadenceDispatcher, 'dispatch'> = {
       };
     }
     try {
-      await sendWhatsAppMessage(
-        run.organizationId,
-        phone,
-        messageBody,
-        undefined,
-        { leadId: run.leadId },
-      );
+      await sendWhatsAppMessage(run.organizationId, phone, messageBody, undefined, {
+        leadId: run.leadId,
+      });
 
       // Registra Activity e TimelineEvent de saída para visualização no CRM
       await prisma.activity
@@ -317,7 +347,10 @@ export const emailCadenceDispatcher: Pick<CadenceDispatcher, 'dispatch'> = {
     if (!email) {
       return { result: 'failed' as const, error: 'Lead sem e-mail cadastrado no contato.' };
     }
-    const { subject, body } = splitSubjectAndBody(rendered.content, run.sequenceId);
+    const { subject, body: renderedBody } = splitSubjectAndBody(rendered.content, run.sequenceId);
+    // DEBT-0010: sufixo de opt-out no corpo — processável pelo webhook de e-mail
+    // (`isOptOutKeyword` reconhece "SAIR"/"descadastrar" na réplica do lead).
+    const body = `${renderedBody}${EMAIL_OPTOUT_SUFFIX}`;
     try {
       const { messageId } = await sendEmail({ to: email, subject, text: body });
 

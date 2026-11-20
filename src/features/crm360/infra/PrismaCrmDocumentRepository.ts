@@ -91,6 +91,33 @@ export class PrismaCrmDocumentRepository {
     // do tx interativo já basta: ou a trava reprova e nada grava, ou grava tudo.
     return runInTransaction(
       async (tx) => {
+        // Tenancy (handoff 01A→04, onda-paralela-8): `leadId`/`companyId`/`contactId` vinham do
+        // body sem checar tenant — o documento gravava vínculo cross-tenant e o
+        // `include: { lead, company, contact }` devolvia as entidades estrangeiras na resposta.
+        // Cada FK presente é validada com findFirst escopado por tenant; id estrangeiro → 404,
+        // sem escrita órfã (tudo dentro da mesma transação).
+        if (input.leadId) {
+          const lead = await tx.lead.findFirst({
+            where: { id: input.leadId, organizationId },
+            select: { id: true },
+          });
+          if (!lead) throw new AppError('Lead vinculado não encontrado.', 404);
+        }
+        if (input.companyId) {
+          const company = await tx.company.findFirst({
+            where: { id: input.companyId, organizationId },
+            select: { id: true },
+          });
+          if (!company) throw new AppError('Empresa vinculada não encontrada.', 404);
+        }
+        if (input.contactId) {
+          const contact = await tx.contact.findFirst({
+            where: { id: input.contactId, organizationId },
+            select: { id: true },
+          });
+          if (!contact) throw new AppError('Contato vinculado não encontrado.', 404);
+        }
+
         await assertDiscountAuthorityWithinTransaction(tx, {
           organizationId,
           actorUserId,
@@ -279,6 +306,7 @@ export class PrismaCrmDocumentRepository {
       where: { id: documentId, organizationId },
       select: { sentAt: true, status: true, leadId: true, type: true },
     });
+    if (!current) throw new AppError('Documento não encontrado.', 404);
 
     // BILLING-003 (onda 5, auditoria de débito técnico — risco financeiro real): "Pago" numa
     // Fatura era uma transição manual livre, sem NENHUM vínculo com Stripe/Omie/qualquer fonte
@@ -487,7 +515,10 @@ export class PrismaCrmDocumentRepository {
       const nextStatus =
         doc.status === CrmDocumentStatus.Enviado ? CrmDocumentStatus.Visualizado : doc.status;
       const updated = await prisma.crmCommercialDocument.update({
-        where: { id: doc.id },
+        // organizationId no `where` por defesa em profundidade (auditoria de tenancy, onda
+        // paralela-8): já roda dentro de requestContext.run({ tenantId }) com RLS real, mas a
+        // escrita fica autocontida como nas demais do repositório.
+        where: { id: doc.id, organizationId: doc.organizationId },
         data: {
           viewCount: { increment: 1 },
           firstViewedAt: doc.firstViewedAt ?? now,

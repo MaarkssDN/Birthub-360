@@ -1099,6 +1099,7 @@ model Organization {
   domainEventOutbox           DomainEventOutbox[]
   domainEventConsumptions     DomainEventConsumption[]
   rebalanceApprovals          RebalanceApproval[]
+  dataSubjectRequests         DataSubjectRequest[]
 }
 
 // ─── Comercial Inteligente (Revenue Command Center) ────────────────────────
@@ -3574,6 +3575,7 @@ enum CadenceTouchResult {
   Sent
   Failed
   Skipped
+  Pending
 }
 
 /// Definição reutilizável de uma sequência de toques multicanal (ex.: e-mail → WhatsApp → voz →
@@ -5681,6 +5683,81 @@ model PublicLeadConsent {
   @@index([organizationId])
   @@index([organizationId, leadId])
   @@index([leadId])
+}
+
+// Canal público de solicitação DSR (LGPD art. 18) — handoff
+// `.agents/handoffs/21-para-01-dsr-canal-publico-lgpd.md` (Agente 21, W7).
+// O titular que preencheu a landing exerce direitos sem login: protocolo opaco
+// + token de verificação de uso único enviado ao e-mail cadastrado. NENHUM dado
+// do titular é exportado/excluído antes da verificação de identidade, e as
+// respostas públicas são genéricas (anti-enumeração).
+enum DataSubjectRightType {
+  ACCESS
+  PORTABILITY
+  CORRECTION
+  ERASURE
+  CONSENT_REVOCATION
+  SHARING_INFO
+}
+
+enum DataSubjectRequestStatus {
+  PENDING_VERIFICATION
+  VERIFIED
+  IN_PROGRESS
+  COMPLETED
+  REJECTED
+}
+
+model DataSubjectRequest {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  /// Protocolo opaco exibido ao titular (ex.: DSR-XXXXXXXX-XXXX) — nunca é o
+  /// contactId nem qualquer identificador interno.
+  protocol   String                @unique
+  rightType  DataSubjectRightType
+  status     DataSubjectRequestStatus @default(PENDING_VERIFICATION)
+
+  /// E-mail do titular cifrado em repouso (encryptField de lib/crypto/secretFields)
+  /// — necessário para (re)enviar o token de verificação e o e-mail de conclusão.
+  /// Nunca retornado em resposta pública nem gravado em log.
+  emailEncrypted String       @db.Text
+  /// Blind index determinístico (contactEmailIndex) — dedupe/lookup do titular
+  /// sem expor o e-mail em claro em WHEREs e índices.
+  emailIndex     String
+
+  /// Contact resolvido SOMENTE após verificação de identidade (nunca confiado
+  /// no submit inicial — o cliente não informa contactId).
+  contactId String?
+
+  /// SHA-256 do token de verificação de uso único (o token em si só existe no
+  /// e-mail). Expiração curta (72h) — ver dsrRequest.service.ts.
+  verificationTokenHash  String?
+  verificationExpiresAt  DateTime?
+  verifiedAt             DateTime?
+
+  /// Token opaco de acompanhamento (status) — hash guardado; o token em claro
+  /// vai no e-mail de protocolo/confirmação. É a "chave" do GET de status.
+  statusTokenHash String @unique
+
+  /// Resumo NÃO-PII do resultado (exportId, contagens, motivo de rejeição) —
+  /// nunca o dossiê nem dados do titular. O dossiê de portabilidade é devolvido
+  /// uma única vez na resposta da verificação e não é persistido aqui.
+  resultSummary Json?
+
+  /// Canal de contato preferencial declarado pelo titular (email/whatsapp) —
+  /// informativo; o canal real de verificação é sempre o e-mail cadastrado.
+  preferredChannel String?
+  /// Texto livre do titular (ex.: correção desejada, detalhe do pedido) —
+  /// pode conter dados pessoais; cifrado em repouso como emailEncrypted.
+  detailsEncrypted String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId, emailIndex])
+  @@index([organizationId, status])
 }
 
 // REMED-06 (handoff 21→01, PR #33): cadeia de consentimento append-only + Flywheel durável.

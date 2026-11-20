@@ -12,6 +12,7 @@ import { MobileNavDrawer } from './MobileNavDrawer.js';
 import { CommandPalette } from '../ui/CommandPalette.js';
 import { Toaster } from '../ui/Toaster.js';
 import { PageTransition } from './PageTransition.js';
+import { deriveActiveTabFromPath } from './settingsPillarNav.js';
 import type { TabType } from './tabMeta.js';
 
 interface MainLayoutProps {
@@ -23,9 +24,11 @@ export function MainLayout({ children, activeTab: activeTabProp }: MainLayoutPro
   const { mobileNavOpen, toggleMobileNav, closeMobileNav } = useNavigationState();
   // App.tsx monta <MainLayout> sem `activeTab` — sem isto a Sidebar nunca marcava o item ativo
   // (nem expandia o grupo) e o Topbar caía sempre no meta de `dashboard`. Deriva de /app/<tab>/…;
-  // a prop explícita continua tendo precedência.
+  // a prop explícita continua tendo precedência. Exceção MEL-30/Onda 4 (revisão 24, achado A1):
+  // /app/settings/pillars/<slug> resolve para `settings_<slug>` — sem isso o shell inteiro
+  // (topbar, breadcrumbs, widget de agente) tratava o pilar como "Ajustes Globais".
   const { pathname } = useLocation();
-  const activeTab = activeTabProp ?? (pathname.split('/')[2] || 'dashboard');
+  const activeTab = activeTabProp ?? deriveActiveTabFromPath(pathname);
   const domainAccent =
     /forecast|revenue|dashboard|analytics|pipeline|performance|metas|predictability/.test(activeTab)
       ? 'gold'

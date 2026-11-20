@@ -43,7 +43,7 @@ export function Act3Singularity() {
       borderColor: 'border-[#00D4FF]/40',
       icon: Database,
       tag: 'INGESTÃO UNIFICADA',
-      desc: 'Sincronização em tempo real de contatos, empresas, chamadas de voz, trocas no WhatsApp e eventos de mercado sem latência.',
+      desc: 'Sincronização de contatos, empresas, chamadas de voz, trocas no WhatsApp e eventos de mercado conforme os conectores ativos.',
       details: [
         'Isolamento RLS Multi-Tenant no PostgreSQL',
         'Ingestão bidirecional sem duplicação de entidades',
@@ -77,7 +77,7 @@ export function Act3Singularity() {
       tag: 'DIREÇÃO ESTRATÉGICA',
       desc: 'O sistema elimina a dúvida da equipe: indica com precisão matemática qual oportunidade atacar agora, por qual canal e com qual argumento.',
       details: [
-        'Motor Next Best Action (NBA) em tempo real',
+        'Motor Next Best Action (NBA) contextual',
         'Previsibilidade de pipeline ponderado e metas diárias',
         'Prescrição de cadência ideal por perfil de decisor',
       ],
@@ -94,7 +94,7 @@ export function Act3Singularity() {
       desc: 'Disparo coordenado de cadências multicanal, geração automática de propostas e suporte ao vivo em chamadas comerciais.',
       details: [
         'Cadências orquestradas (Voz, E-mail, WhatsApp, LinkedIn)',
-        'Copiloto em tempo real na tela do closer durante a call',
+        'Copiloto contextual na tela do closer durante a call',
         'Passagem de bastão automatizada entre SDR e Closer',
       ],
     },

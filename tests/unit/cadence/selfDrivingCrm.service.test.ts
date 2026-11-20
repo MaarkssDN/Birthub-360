@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { prisma } from '../../../src/lib/prisma.js';
 import { selfDrivingCrmService } from '../../../src/features/cadence/services/selfDrivingCrm.service.js';
 import { recordOptOut } from '../../../src/features/cadence/application/optOutService.js';
 
@@ -96,6 +97,46 @@ describe('SelfDrivingCrmService — Eixo 7 (Cadências Adaptativas & Resgate Int
       });
 
       expect(recommendation).toBeNull();
+    });
+
+    it('deve buscar ConversationSignal reais via Prisma com filtro de tenant quando signalsStore estiver vazio', async () => {
+      const leadId = 'lead-prisma-signals-05';
+      const findManySignalsSpy = vi.spyOn(prisma.conversationSignal, 'findMany').mockResolvedValueOnce([
+        {
+          id: 'sig-db-1',
+          organizationId: orgA,
+          leadId,
+          channel: 'voice_call',
+          intent: 'sem_contato',
+          confidence: 0.9,
+          createdAt: new Date(),
+        } as any,
+        {
+          id: 'sig-db-2',
+          organizationId: orgA,
+          leadId,
+          channel: 'whatsapp',
+          intent: 'alta_intencao_compra',
+          confidence: 0.95,
+          createdAt: new Date(),
+        } as any,
+      ]);
+
+      const recommendation = await selfDrivingCrmService.evaluateCadenceOptimization({
+        organizationId: orgA,
+        leadId,
+      });
+
+      expect(findManySignalsSpy).toHaveBeenCalledWith({
+        where: { organizationId: orgA, leadId },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+      });
+      expect(recommendation).not.toBeNull();
+      expect(recommendation?.recommendedAction).toBe('reduce_calls_shift_whatsapp');
+      expect(recommendation?.prioritizedChannel).toBe('whatsapp');
+
+      findManySignalsSpy.mockRestore();
     });
 
     it('deve aplicar recomendação mediante aprovação humana com rastro de auditoria', async () => {
@@ -288,6 +329,40 @@ describe('SelfDrivingCrmService — Eixo 7 (Cadências Adaptativas & Resgate Int
 
       expect(forA).toHaveLength(0);
       expect(forB).toHaveLength(0);
+    });
+
+    it('deve buscar leads reais via Prisma com filtro de tenant quando mockLeadsStore estiver vazio', async () => {
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const findManySpy = vi.spyOn(prisma.lead, 'findMany').mockResolvedValueOnce([
+        {
+          id: 'lead-db-10',
+          title: 'Transportes DB LTDA',
+          status: 'Lead_Recebido',
+          lastInteraction: thirtyDaysAgo,
+          updatedAt: thirtyDaysAgo,
+          createdAt: thirtyDaysAgo,
+          contact: { name: 'Carlos Gerente' },
+          company: { tradeName: 'Transportes DB', legalName: 'Transportes DB LTDA' },
+        } as any,
+      ]);
+
+      const results = await selfDrivingCrmService.detectStagnatedLeads({
+        organizationId: orgA,
+        inactivityThresholdDays: 15,
+      });
+
+      expect(findManySpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { organizationId: orgA },
+        }),
+      );
+      expect(results).toHaveLength(1);
+      expect(results[0].leadId).toBe('lead-db-10');
+      expect(results[0].leadName).toBe('Carlos Gerente');
+      expect(results[0].daysInactive).toBeGreaterThanOrEqual(30);
+      expect(results[0].eligibleForReactivation).toBe(true);
+
+      findManySpy.mockRestore();
     });
   });
 });

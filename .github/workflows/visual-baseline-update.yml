@@ -1,0 +1,197 @@
+name: Visual Baseline Update
+
+# Geração manual de baselines visuais Linux com commit automático.
+#
+# Contexto: o check obrigatório "Visual Regression" (visual-regression.yml) e a suíte
+# tests/e2e/visual.spec.ts comparam screenshots pixel a pixel contra baselines cujo nome
+# inclui a plataforma (`-linux` no CI ubuntu-latest, `-win32` local). Baselines geradas no
+# Windows nunca batem no CI — e o Chromium local do agente também rasteriza diferente do
+# que `npx playwright install` resolve no runner (ver handoff
+# .agents/handoffs/onda-6/14-para-08-baselines-visuais-linux.md). Por isso a baseline só
+# pode nascer dentro do próprio runner Linux.
+#
+# Este workflow é workflow_dispatch apenas: dispara sob demanda (ex.: após mudança visual
+# intencional ou bump de Playwright/Chromium), regenera TODAS as baselines Linux no runner
+# e commita os PNGs numa branch `ci/visual-baselines-linux` a partir do ref disparado.
+# O passo seguinte é humano: abrir PR dessa branch (uma única vez por baseline nova,
+# via --admin se necessário) para mergear em main.
+#
+# Escopo das suítes regeneradas:
+#   1. visual-regression/visual.spec.ts  → visual-regression/baselines/** (check
+#      obrigatório "Visual Regression", via `npm run test:visual:update`);
+#   2. tests/e2e/visual.spec.ts          → tests/e2e/visual.spec.ts-snapshots/*-chromium-linux.png
+#      (spec excluído do test:e2e por testIgnore no playwright.config.ts — removido só no
+#      checkout efêmero deste job, nunca commitado).
+
+on:
+  workflow_dispatch:
+
+# Permissão mínima para este workflow: push da branch de baselines. Não toca em mais nada.
+permissions:
+  contents: write
+
+jobs:
+  update-visual-baselines:
+    name: Gerar e commitar baselines visuais Linux
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: prospector
+          POSTGRES_PASSWORD: prospector_test_pass
+          POSTGRES_DB: prospectordb_test
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd "pg_isready -h 127.0.0.1 -U prospector -d prospectordb_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli -h 127.0.0.1 ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      meilisearch:
+        image: getmeili/meilisearch:v1.12
+        env:
+          MEILI_MASTER_KEY: ci-test-meili-key
+        ports:
+          - 7700:7700
+        options: >-
+          --health-cmd "wget --no-verbose --tries=1 --spider http://127.0.0.1:7700/health || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-start-period 30s
+          --health-retries 10
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://prospector_app:ci_app_test_pass@localhost:5434/prospectordb_test?schema=public
+      DIRECT_URL: postgresql://prospector_migrator:ci_migrator_test_pass@localhost:5434/prospectordb_test?schema=public
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: ci-test-jwt-secret-not-for-production
+      MEILI_HOST: http://localhost:7700
+      MEILI_MASTER_KEY: ci-test-meili-key
+      PORT: 3000
+      BETTER_AUTH_SECRET: ci-e2e-test-only-secret-not-for-production
+      BETTER_AUTH_URL: http://localhost:3000
+      ALLOW_DEV_AUTH_BYPASS: true
+      ALLOWED_ORIGINS: http://localhost:3000
+      AUTH_RATE_LIMIT_MAX: 5000
+      PLATFORM_OPERATOR_TOKEN: ci-test-operator-token-not-for-production
+      BASELINE_BRANCH: ci/visual-baselines-linux
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Prisma engines
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            node_modules/.prisma
+            node_modules/@prisma/engines
+            ~/.cache/prisma
+          key: prisma-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: prisma-${{ runner.os }}-
+
+      - name: Bootstrap papel NOSUPERUSER da aplicação
+        env:
+          PGPASSWORD: prospector_test_pass
+          APP_DB_PASSWORD: ci_app_test_pass
+          MIGRATOR_DB_PASSWORD: ci_migrator_test_pass
+        run: bash scripts/db/bootstrap-app-role.sh localhost 5434 prospector prospectordb_test
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Criar .env.test para os testes E2E
+        run: |
+          cat > .env.test <<EOF
+          NODE_ENV=$NODE_ENV
+          PORT=$PORT
+          DATABASE_URL=$DATABASE_URL
+          DIRECT_URL=$DIRECT_URL
+          REDIS_URL=$REDIS_URL
+          MEILI_HOST=$MEILI_HOST
+          MEILI_MASTER_KEY=$MEILI_MASTER_KEY
+          BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET
+          BETTER_AUTH_URL=$BETTER_AUTH_URL
+          ALLOW_DEV_AUTH_BYPASS=$ALLOW_DEV_AUTH_BYPASS
+          ALLOWED_ORIGINS=$ALLOWED_ORIGINS
+          AUTH_RATE_LIMIT_MAX=$AUTH_RATE_LIMIT_MAX
+          PLATFORM_OPERATOR_TOKEN=$PLATFORM_OPERATOR_TOKEN
+          EOF
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Apply database migrations
+        run: npx dotenv-cli -e .env.test -- npx prisma migrate deploy
+
+      # tests/e2e/visual.spec.ts está em testIgnore no playwright.config.ts (ele não faz
+      # parte do test:e2e normal). Removido apenas neste checkout efêmero para que o
+      # --update-snapshots consiga rodá-lo; a alteração nunca é commitada.
+      - name: Liberar visual.spec.ts do testIgnore (só neste runner)
+        run: |
+          sed -i "s|testIgnore: \['\*\*/visual.spec.ts', '\*\*/visual-audit.spec.ts'\],|testIgnore: ['**/visual-audit.spec.ts'],|" playwright.config.ts
+          grep -n "testIgnore" playwright.config.ts
+
+      - name: Gerar baselines tests/e2e/visual.spec.ts (chromium-linux)
+        run: npx dotenv-cli -e .env.test -- playwright test tests/e2e/visual.spec.ts --update-snapshots
+
+      - name: Gerar baselines visual-regression (check obrigatório)
+        run: npm run test:visual:update
+
+      - name: Commitar baselines na branch ci/visual-baselines-linux
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # A branch de baselines é efêmera e 100% regenerada a cada run: o histórico
+          # remoto (se existir — ex.: resquício de run anterior falho ou PR não
+          # mergeado) é sempre descartável. Por isso fazemos fetch prévio para
+          # registrar a ref remota e push com --force-with-lease, que sobrescreve
+          # histórico divergente de forma segura (falha se outro push concorrente
+          # tiver alterado a branch depois do nosso fetch). Sem isso, um `git push`
+          # simples é rejeitado com "fetch first" e as baselines geradas se perdem
+          # (ver .agents/handoffs/00-para-08-visual-baseline-workflow-nonff.md).
+          git fetch origin "+refs/heads/$BASELINE_BRANCH:refs/remotes/origin/$BASELINE_BRANCH" 2>/dev/null || true
+          git checkout -B "$BASELINE_BRANCH"
+          git add tests/e2e/visual.spec.ts-snapshots/ visual-regression/baselines/
+          if git diff --cached --quiet; then
+            echo "Nenhuma baseline alterada — nada a commitar."
+          else
+            git commit -m "chore(ci): atualiza baselines visuais Linux (workflow_dispatch)"
+            git push --force-with-lease origin "HEAD:refs/heads/$BASELINE_BRANCH"
+            echo "Baselines publicadas em $BASELINE_BRANCH."
+          fi
+
+      - name: Upload Playwright report (se falhar)
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: failure()
+        with:
+          name: visual-baseline-update-report
+          path: |
+            playwright-report/
+            visual-regression-report/
+          if-no-files-found: ignore

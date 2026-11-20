@@ -3,7 +3,7 @@
 - De: 00 — Coordenador
 - Para: 02 — Produto e UX
 - Onda: vr-regressao-20261111
-- Status: aberto
+- Status: resolvido
 - Prioridade: alto
 - Sprint destino: ciclo atual (não atualizar baseline light do Hub de IA até corrigir)
 
@@ -142,3 +142,44 @@ Pendente honesto: a validação visual Playwright do CTA light
 somente após um run visual confirmar o CTA visível, conforme o próprio
 handoff determina. Recomenda-se ao Agente 08/QA rodar a suíte visual
 antes do update de baseline.
+
+**Agente 02 — Produto e UX — 2026-11-15**
+
+Correção aplicada em `src/features/intelligence/components/IntelligenceHub.tsx` (arquivo de domínio do Agente 07; alteração coordenada via este handoff e registrada aqui para revisão do 07/24).
+
+O que mudou:
+
+- O CTA flagship passou a usar `variant="primary"` do `Button` compartilhado, removendo as classes conflitantes `bg-gradient-to-r bg-brand hover:bg-brand-hover text-on-brand`.
+- O botão preserva `type="button"`, `size="lg"`, `onClick={() => handleOpenTool('commercial_cell')}`, o rótulo `Acessar Célula Comercial` e o ícone `<ArrowRight className="w-4 h-4" />`.
+- A variante `primary` aplica o gradiente compartilhado (`bg-gradient-to-b`) com `text-on-brand`, que é o par de tokens correto para os temas light/dark e evita o retângulo sem texto no light.
+
+Regressão adicionada:
+
+- `src/features/intelligence/components/__tests__/IntelligenceHub.test.tsx` agora valida que o CTA é um `button` nomeado "Acessar Célula Comercial", contém `bg-gradient-to-b` e `text-on-brand`, e **não** contém `bg-brand`.
+
+Evidências executadas nesta worktree (`agente/02w2-onda2-handoffs`):
+
+- Commit `6f876a55b` — `fix(intelligence): restaura CTA da célula comercial no tema light`.
+- Commit `b7deed879` — `test(intelligence): cobre contraste do CTA da célula comercial`.
+- `node node_modules/vitest/vitest.mjs run -c vitest.unit.config.ts src/features/intelligence/components/__tests__/IntelligenceHub.test.tsx --no-file-parallelism` → **7 testes passaram**.
+- Suíte focada landing + intelligence: `node node_modules/vitest/vitest.mjs run -c vitest.unit.config.ts tests/unit/features/landing/Landing360.test.tsx tests/unit/features/landing/RoiSimulatorModal.test.tsx tests/unit/features/landing/PillarDetailModal.test.tsx tests/unit/features/landing/pillars/PillarRegistry.visualizers.test.tsx src/features/intelligence/components/__tests__/IntelligenceHub.test.tsx --no-file-parallelism` → **5 arquivos, 46 testes passaram**.
+- `npm run typecheck` → **exit 0**.
+- `npm run lint` → **exit 0** (warnings preexistentes; nenhum erro novo).
+- `npm run build` → **exit 0**.
+
+Limitações / próximos passos:
+
+- Não executei `npm run test:visual` nem atualizei baselines `intelligence-light-*`; a validação visual final nos 4 viewports deve ser feita pelo QA (Agente 08/24) antes de qualquer update de snapshot, conforme o handoff.
+- A correção foi validada por teste unitário de classes/contraste e pelos gates locais; recomendo confirmação visual light/dark no Playwright quando a suíte estiver disponível.
+- Nenhum CSS de Login, landing ou PR #214 foi alterado para este CTA.
+
+**Atualização pós-rebase (PR #338, 2026-11-15):** durante o rebase sobre
+`origin/main` atualizado, a alteração de componente deste PR
+(`variant="primary"` em `IntelligenceHub.tsx`) foi **descartada como
+duplicada**: a main já havia mergeado correção equivalente via commit
+`0998a7745` (remoção das classes quebradas; o botão usa a variante
+`default` do `Button`, que é idêntica à `primary` em
+`src/components/ui/Button.tsx`). O teste de regressão de contraste
+(`IntelligenceHub.test.tsx`) foi **preservado** e continua válido com a
+versão da main. Resultado líquido neste arquivo: nenhuma alteração —
+`git diff origin/main` em `IntelligenceHub.tsx` é vazio.

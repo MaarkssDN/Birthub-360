@@ -147,10 +147,10 @@ const PILLARS = [
   },
 ] as const;
 const METRICS = [
-  { value: 50, suffix: '+', label: 'Conectores & APIs', detail: 'Bitrix24 REST e CRMs' },
+  { value: 20, suffix: '+', label: 'Agentes IA', detail: 'Catálogo público de agentes' },
   { value: 360, suffix: '°', label: 'Visão do Cliente', detail: 'Prospecção ao fechamento' },
-  { value: 10, suffix: '×', label: 'Velocidade', detail: 'Diagnósticos IA' },
-  { value: 99.9, suffix: '%', label: 'Disponibilidade', detail: 'Arquitetura resiliente' },
+  { value: 11, suffix: '', label: 'Módulos', detail: 'Integrados à plataforma' },
+  { value: 1, suffix: '', label: 'Camada de governança', detail: 'RBAC, LGPD e auditoria' },
 ] as const;
 const FLOW = [
   { title: 'Conecte dados', desc: 'Bitrix24, CRMs e fontes B2B em minutos.' },
@@ -673,7 +673,7 @@ export function Landing360({ initialScreen = 'intro' }: { initialScreen?: 'intro
                 transition={{ duration: 0.5, delay: i * 0.1 }}
               >
                 <div className="lp-metric-val">
-                  <CountUp to={m.value} suffix={m.suffix} decimals={m.suffix === '%' ? 1 : 0} />
+                  <CountUp to={m.value} suffix={m.suffix} decimals={0} />
                 </div>
                 <div className="lp-metric-lbl">{m.label}</div>
                 <div className="lp-metric-det">{m.detail}</div>
@@ -751,7 +751,7 @@ export function Landing360({ initialScreen = 'intro' }: { initialScreen?: 'intro
             transition={{ duration: 0.6 }}
           >
             <h2>Command Center</h2>
-            <p>Visão unificada de pipeline, forecast, agentes IA e métricas em tempo real.</p>
+            <p>Visão unificada de pipeline, forecast, agentes IA e métricas operacionais.</p>
           </motion.div>
           <motion.div
             ref={cmdRef}
@@ -768,9 +768,9 @@ export function Landing360({ initialScreen = 'intro' }: { initialScreen?: 'intro
                 </p>
               </div>
               <div className="lp-cmd-widget">
-                <h3>Agentes IA Ativos</h3>
+                <h3>Agentes IA</h3>
                 <p style={{ color: 'var(--muted)', fontSize: '.875rem' }}>
-                  Enxame de 20+ agentes executando tarefas de prospecção, análise e follow-up.
+                  Enxame de 20+ agentes para tarefas de prospecção, análise e follow-up.
                 </p>
               </div>
               <div className="lp-cmd-widget">

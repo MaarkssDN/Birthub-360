@@ -80,7 +80,7 @@ export default function PreferencesPage() {
         setLoaded(true);
       })
       .catch((err) => {
-        logger.error('Failed to load user preferences', { err });
+        logger.error({ err }, 'Failed to load user preferences');
         setLoadError(true);
         setLoaded(true);
       });
@@ -118,7 +118,7 @@ export default function PreferencesPage() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       showToast('Preferências salvas com sucesso no seu perfil!', 'success');
     } catch (err: any) {
-      logger.error('Failed to save user preferences', { err });
+      logger.error({ err }, 'Failed to save user preferences');
       showToast('Não foi possível salvar suas preferências. Tente novamente.', 'error');
     } finally {
       setSaving(false);

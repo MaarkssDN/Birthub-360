@@ -1,7 +1,7 @@
 - De: Agente 15
 - Para: Agente 14
 - Onda: IA-1
-- Status: aberto
+- Status: resolvido
 - Prioridade: normal
 
 ## Problema
@@ -70,3 +70,54 @@ neste handoff (status permanece **aberto**) até despacho em onda futura.
 > Histórico: veredicto de reconciliação 2026-11-14 era DEFEITO-REAL (cobertura parcial,
 > Resolução superestimava). Correção aplicada nesta data — ver
 > RESULTADOS-RECONCILIACAO-20261114.md.
+
+## Resolução (Agente 14 — 2026-11-18)
+
+Nova suíte `tests/unit/lib/ai/gateway/chat-model-guardrails.test.ts` (4 testes,
+`npx vitest run` verde) exercita `getAiModel().invoke()` real com
+providers/budget/quota/routing mockados e guardrails reais
+(`detectPII`/`detectToxicity`/`wrapUntrustedContent` sem mock). Cobertura
+adicionada na seam real de bloqueio (`chat-model.ts` L260-299):
+
+- **Item 2 (logs de bloqueio em AILog) — COBERTO na seam `logAiUsage`.**
+  Resposta com PII (CPF) e resposta tóxica agora verificam: `invoke` rejeita;
+  `chatCompletion` chamado exatamente 1×; `logAiUsage` chamado 1× com
+  `{model, agentRole, latencyMs, usage}`; `traceAiGeneration` e
+  `recordAiUsageCost` NÃO chamados. Observação: a persistência real em
+  `AILog` (prisma/`$executeRaw`) permanece responsabilidade do caminho de
+  integração — aqui a seam mockada é `usage-log.js`, o mesmo ponto de
+  chamada usado em produção.
+- **Item 4 (prompt injection → provider) — COBERTO.** Payload com delimitador
+  forjado (`</untrusted_external_content>`) passa por `wrapUntrustedContent`
+  real e o teste afirma que a mensagem que chega ao provider termina em
+  `</untrusted_external_content>`, contém o payload intacto e o delimitador
+  forjado neutralizado em entidades (`&lt;/...&gt;`).
+- **Item 5 (encoding bypass Base64/hex/unicode) — DEBITO DE PRODUTO do
+  Agente 07.** `detectPII`/`detectToxicity` operam sobre o texto cru; PII
+  codificada não é decodificada antes da detecção — limitação de produto,
+  não de teste. Handoff de débito aberto:
+  `.agents/handoffs/onda-ia-1/14-para-07-encoding-bypass-guardrails-pii.md`.
+
+Status mantido **em-andamento**: pendente apenas a decisão do Agente 07 sobre
+o débito de encoding bypass. Itens 1 e 3 do pedido original (falsos positivos
+numéricos e redação) já tinham cobertura real conforme reconciliação anterior.
+
+## Resolução (Agente 14 — 2026-11-19 — Formalização de Conclusão)
+
+Status: **resolvido**.
+
+Todos os 5 itens do pedido de segurança do Agente 15 encontram-se concluídos, testados e validados:
+
+1. **Falsos positivos em padrões numéricos (CEP, protocolos, IDs):**
+   - COBERTO em `tests/integration/ai-guardrails-security.test.ts` e `tests/unit/ai/guardrails-allowlist.test.ts`.
+2. **Logs de tentativas bloqueadas em `AILog`:**
+   - COBERTO na suíte `tests/unit/lib/ai/gateway/chat-model-guardrails.test.ts` (4/4 testes verdes). Bloqueio por CPF ou toxicidade verifica rejeição em `invoke()`, 1 chamada ao provider, registro em `logAiUsage` (seam canônica de produção) e supressão de métricas de cobrança/telemetria.
+3. **Redação reversível (placeholders estáticos vs tamanho dinâmico):**
+   - COBERTO em `tests/unit/ai/guardrails-allowlist.test.ts` e `tests/integration/ai-guardrails-security.test.ts` (redação sem vazamento de metadados de tamanho).
+4. **Prompt injection no prompt antes de enviar ao provider:**
+   - COBERTO em `tests/unit/lib/ai/gateway/chat-model-guardrails.test.ts` (delimitação com tags `<untrusted_external_content>` e neutralização via escape seguro) e `tests/integration/ai-safety-adversarial.test.ts`.
+5. **Encoding bypass (Base64, hex, unicode escape):**
+   - RESOLVIDO pelo Agente 07 no PR #441 (Wave D: implementação em `src/lib/ai/guardrails/encoding.ts` com decodificação segura, tetos de consumo e proteção anti-bypass para Base64, hex, unicode escapes e percent-encoding).
+   - REVISÃO INDEPENDENTE APROVADA pelo Agente 24 em `.agents/reviews/pr441-waveD-guardrails-pii-encoding-24.md` (85/85 testes unitários passando, ausência de unhandled exceptions, conservação semântica e limites de complexidade validados).
+
+Handoff de débito subordinado `.agents/handoffs/onda-ia-1/14-para-07-encoding-bypass-guardrails-pii.md` consolidado como resolvido pelo PR #441.

@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from 'express';
 import { getDatabase, saveDatabase } from '../db.js';
 import { checkOllamaConnection, chatWithLLaMA3 } from '../ai.js';
-import { requireAuth } from '../auth.js';
+import { requireAuth, requireTenantScope, tenantCompany, normalizeTenantCompany } from '../auth.js';
 import { rateLimit } from '../middleware/rateLimit.js';
 
 const heavyAiLimiter = rateLimit({
@@ -11,6 +11,15 @@ const heavyAiLimiter = rateLimit({
 });
 
 export const chatRouter = Router();
+
+// Handoff 12→05 (F2): defesa em profundidade — sessão + company obrigatórias.
+// Escopo de tenant nas queries (handoffs 01→05 / 05→01): `chat_sessions` e
+// `chat_messages` ganharam coluna `company` via migration
+// `20261117230000_outbound_chat_tenant_company` (PR #381, Agente 01) — todas
+// as queries abaixo filtram por ela. DEPENDÊNCIA DE MERGE: sem essa migration
+// aplicada estas rotas falham (coluna inexistente); o módulo segue montado
+// fechado (503) até a reabertura, então a ordem exigida é PR #381 → este PR.
+chatRouter.use(requireTenantScope);
 
 // 6. Ollama Status Check
 chatRouter.post('/ollama/status', async (req: Request, res: Response) => {
@@ -30,25 +39,34 @@ chatRouter.post('/chat', heavyAiLimiter, requireAuth, async (req: Request, res: 
     const db = await getDatabase();
     const effectiveSessionId = sessionId || `session-${Date.now()}`;
     const now = new Date().toISOString();
+    const company = tenantCompany(req);
 
-    // Ensure session exists
-    const sessCheck = await db.exec(`SELECT id FROM chat_sessions WHERE id = ?`, [
+    // Ensure session exists — e pertence ao tenant da sessão. Um sessionId
+    // adivinhado de OUTRA company devolve 404 (não revela existência), sem
+    // escrita cross-tenant em chat_sessions/chat_messages (handoff 01→05).
+    const sessCheck = await db.exec(`SELECT company FROM chat_sessions WHERE id = ?`, [
       effectiveSessionId,
     ]);
-    if (sessCheck.length === 0 || sessCheck[0].values.length === 0) {
+    if (sessCheck.length > 0 && sessCheck[0].values.length > 0) {
+      const sessionCompany = normalizeTenantCompany(sessCheck[0].values[0][0]);
+      if (sessionCompany !== company) {
+        return res.status(404).json({ error: 'Sessão de chat não encontrada.' });
+      }
+    } else {
       const modelTitle =
         aiConfig?.provider === 'ollama'
           ? aiConfig.ollamaModel || 'llama3'
           : aiConfig?.groqModel || 'gemini-3.7';
       await db.run(
         `
-        INSERT INTO chat_sessions (id, title, model, created_at)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO chat_sessions (id, title, model, company, created_at)
+        VALUES (?, ?, ?, ?, ?)
       `,
         [
           effectiveSessionId,
           `Conversa ${modelTitle} (${new Date().toLocaleDateString('pt-BR')})`,
           modelTitle,
+          company,
           now,
         ],
       );
@@ -58,16 +76,17 @@ chatRouter.post('/chat', heavyAiLimiter, requireAuth, async (req: Request, res: 
     const userMsgId = `cmsg-u-${Date.now()}`;
     await db.run(
       `
-      INSERT INTO chat_messages (id, session_id, role, content, model, created_at)
-      VALUES (?, ?, 'user', ?, ?, ?)
+      INSERT INTO chat_messages (id, session_id, role, content, model, company, created_at)
+      VALUES (?, ?, 'user', ?, ?, ?, ?)
     `,
-      [userMsgId, effectiveSessionId, message, aiConfig?.ollamaModel || 'llama3', now],
+      [userMsgId, effectiveSessionId, message, aiConfig?.ollamaModel || 'llama3', company, now],
     );
 
-    // Fetch conversation history from SQLite
+    // Fetch conversation history — só mensagens do próprio tenant (a coluna
+    // company em chat_messages é desnormalizada de propósito, ver migration).
     const histRes = await db.exec(
-      `SELECT role, content FROM chat_messages WHERE session_id = ? ORDER BY created_at ASC`,
-      [effectiveSessionId],
+      `SELECT role, content FROM chat_messages WHERE session_id = ? AND LOWER(TRIM(COALESCE(company, ''))) = ? ORDER BY created_at ASC`,
+      [effectiveSessionId, company],
     );
     const history: { role: string; content: string }[] = [];
     if (histRes.length > 0) {
@@ -91,8 +110,8 @@ chatRouter.post('/chat', heavyAiLimiter, requireAuth, async (req: Request, res: 
     const botMsgId = `cmsg-a-${Date.now()}`;
     await db.run(
       `
-      INSERT INTO chat_messages (id, session_id, role, content, model, tokens, created_at)
-      VALUES (?, ?, 'assistant', ?, ?, ?, ?)
+      INSERT INTO chat_messages (id, session_id, role, content, model, tokens, company, created_at)
+      VALUES (?, ?, 'assistant', ?, ?, ?, ?, ?)
     `,
       [
         botMsgId,
@@ -100,6 +119,7 @@ chatRouter.post('/chat', heavyAiLimiter, requireAuth, async (req: Request, res: 
         result.text,
         result.modelUsed,
         result.tokensEstimated,
+        company,
         new Date().toISOString(),
       ],
     );
@@ -120,16 +140,22 @@ chatRouter.post('/chat', heavyAiLimiter, requireAuth, async (req: Request, res: 
 });
 
 // 8. Chat Sessions & Messages List
-chatRouter.get('/chat/sessions', async (_req: Request, res: Response) => {
+chatRouter.get('/chat/sessions', async (req: Request, res: Response) => {
   try {
     const db = await getDatabase();
-    const result = await db.exec(`
-      SELECT s.*, 
-        (SELECT COUNT(*) FROM chat_messages m WHERE m.session_id = s.id) as messages_count,
-        (SELECT content FROM chat_messages m WHERE m.session_id = s.id ORDER BY m.created_at DESC LIMIT 1) as last_message
+    // Linhas legadas com company NULL ficam invisíveis (fail-closed — dono
+    // desconhecido), mesmo critério das demais rotas do módulo.
+    const result = await db.exec(
+      `
+      SELECT s.*,
+        (SELECT COUNT(*) FROM chat_messages m WHERE m.session_id = s.id AND LOWER(TRIM(COALESCE(m.company, ''))) = LOWER(TRIM(COALESCE(s.company, '')))) as messages_count,
+        (SELECT content FROM chat_messages m WHERE m.session_id = s.id AND LOWER(TRIM(COALESCE(m.company, ''))) = LOWER(TRIM(COALESCE(s.company, ''))) ORDER BY m.created_at DESC LIMIT 1) as last_message
       FROM chat_sessions s
+      WHERE LOWER(TRIM(COALESCE(s.company, ''))) = ?
       ORDER BY s.created_at DESC
-    `);
+    `,
+      [tenantCompany(req)],
+    );
 
     if (result.length === 0) return res.json([]);
     const cols = result[0].columns;
@@ -150,9 +176,21 @@ chatRouter.get('/chat/sessions/:id/messages', async (req: Request, res: Response
   try {
     const { id } = req.params;
     const db = await getDatabase();
+    const company = tenantCompany(req);
+
+    // Valida a sessão antes de listar mensagens: sessão de outra company (ou
+    // inexistente) → 404, sem revelar existência cross-tenant.
+    const sessCheck = await db.exec(`SELECT company FROM chat_sessions WHERE id = ?`, [id]);
+    if (sessCheck.length === 0 || sessCheck[0].values.length === 0) {
+      return res.status(404).json({ error: 'Sessão de chat não encontrada.' });
+    }
+    if (normalizeTenantCompany(sessCheck[0].values[0][0]) !== company) {
+      return res.status(404).json({ error: 'Sessão de chat não encontrada.' });
+    }
+
     const result = await db.exec(
-      `SELECT * FROM chat_messages WHERE session_id = ? ORDER BY created_at ASC`,
-      [id],
+      `SELECT * FROM chat_messages WHERE session_id = ? AND LOWER(TRIM(COALESCE(company, ''))) = ? ORDER BY created_at ASC`,
+      [id, company],
     );
 
     if (result.length === 0) return res.json([]);

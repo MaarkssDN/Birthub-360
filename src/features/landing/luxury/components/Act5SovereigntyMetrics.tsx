@@ -4,34 +4,34 @@ import { SpotlightCard } from './SpotlightCard.js';
 export function Act5SovereigntyMetrics() {
   const metrics = [
     {
-      value: '+42%',
-      label: 'Velocidade de Avanço no Pipeline',
+      value: 'Cenário',
+      label: 'Projeção de velocidade no pipeline',
       description:
-        'Redução média do ciclo de vendas através de prescrições em tempo real do Copiloto Comercial.',
+        'Exemplo ilustrativo de como prescrições do Copiloto Comercial podem reduzir o ciclo de vendas.',
       color: '#00D4FF',
       glow: 'rgba(0, 212, 255, 0.22)',
     },
     {
-      value: '< 12ms',
-      label: 'Latência de Telemetria Operacional',
+      value: 'Baixa',
+      label: 'Latência de telemetria operacional',
       description:
-        'Processamento imediato de eventos e inteligência de decisores sem atrasos perceptíveis.',
+        'Processamento de eventos projetado para baixa latência; o desempenho real depende de carga e conectores.',
       color: '#FFC107',
       glow: 'rgba(255, 193, 7, 0.2)',
     },
     {
-      value: '100%',
-      label: 'Isolamento Multi-Tenant (RLS)',
+      value: 'RLS',
+      label: 'Isolamento multi-tenant',
       description:
-        'Segurança absoluta de banco de dados onde cada organização tem seus dados estritamente segregados.',
+        'Postgres Row Level Security aplica segregação por organização; políticas e testes verificam o escopo dos dados.',
       color: '#22C55E',
       glow: 'rgba(34, 197, 94, 0.2)',
     },
     {
-      value: '360º',
-      label: 'Visibilidade Unificada de Ponta a Ponta',
+      value: '360°',
+      label: 'Visibilidade unificada',
       description:
-        'Zero pontos cegos entre captação outbound, cadências, chamadas telefônicas e fechamento contratual.',
+        'Consolida interações disponíveis nos módulos conectados, da captação ao fechamento contratual.',
       color: '#FF2D9B',
       glow: 'rgba(255, 45, 155, 0.2)',
     },
@@ -50,13 +50,14 @@ export function Act5SovereigntyMetrics() {
           </div>
 
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-[-0.02em] leading-tight text-[#F8F9FF]">
-            Métricas comprovadas. <br />
-            <span className="lux-headline-hero">Autoridade corporativa em números.</span>
+            Capacidades reais. <br />
+            <span className="lux-headline-hero">Cenários ilustrativos e conformidade.</span>
           </h2>
 
           <p className="text-base sm:text-lg text-[#9EADC8] leading-relaxed">
             Desenvolvido para operações que não podem aceitar falhas, perda de dados ou promessas
-            vazias. Cada indicador reflete a capacidade real do sistema em escala.
+            vazias. Os indicadores abaixo combinam capacidades verificáveis da plataforma com
+            cenários claramente identificados como ilustrativos.
           </p>
         </div>
 
@@ -91,12 +92,19 @@ export function Act5SovereigntyMetrics() {
           ))}
         </div>
 
+        <p className="mt-10 text-center font-mono text-[11px] text-[#9EADC8]">
+          Cenários ilustrativos e capacidades da plataforma; não representam SLA ou resultado de
+          clientes.
+        </p>
+
         {/* Selos de Conformidade Enterprise */}
         <div className="mt-16 pt-12 border-t border-white/[0.08] grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           <div className="flex flex-col items-center gap-2">
             <ShieldCheck className="w-6 h-6 text-[#00D4FF]" />
-            <span className="text-xs font-bold text-[#F8F9FF]">Criptografia Ponta a Ponta</span>
-            <span className="text-[11px] font-mono text-[#9EADC8]">AES-256 &amp; TLS 1.3</span>
+            <span className="text-xs font-bold text-[#F8F9FF]">Criptografia AES-256-GCM</span>
+            <span className="text-[11px] font-mono text-[#9EADC8]">
+              Em repouso para credenciais e PII
+            </span>
           </div>
 
           <div className="flex flex-col items-center gap-2">
@@ -115,10 +123,8 @@ export function Act5SovereigntyMetrics() {
 
           <div className="flex flex-col items-center gap-2">
             <Zap className="w-6 h-6 text-[#FF2D9B]" />
-            <span className="text-xs font-bold text-[#F8F9FF]">
-              Infraestrutura de Baixa Latência
-            </span>
-            <span className="text-[11px] font-mono text-[#9EADC8]">Edge Network Global</span>
+            <span className="text-xs font-bold text-[#F8F9FF]">Observabilidade de eventos</span>
+            <span className="text-[11px] font-mono text-[#9EADC8]">Telemetria operacional</span>
           </div>
         </div>
       </div>

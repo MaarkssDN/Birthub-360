@@ -3,7 +3,7 @@
 - De: 01A (Confiabilidade de Dados, RLS e Retenção)
 - Para: 04 (CRM e BI)
 - Onda: reconciliacao-20261114 / onda-paralela-8
-- Status: aberto
+- Status: resolvido
 - Prioridade: alto
 - Bloqueador-ref: auditoria `01a-para-00-tenancy-audit-relatorio-20261114.md`
 - Sprint destino: Onda 3 (backend/dados)
@@ -37,3 +37,23 @@ Relatório completo: `.agents/handoffs/onda-paralela-8/01a-para-00-tenancy-audit
 ## Contexto adicional
 
 Veredito geral da auditoria: padrão dominante correto — `organizationId` sempre de `req.user`, rotas com `authenticateToken`+`requireTenant`, queries com filtro de tenant. Nenhum vazamento cross-tenant comprovado em regime normal com RLS ativa. Observação fora de escopo registrada para o 00: `batchUpdateLeads` bypassa deal closure gate/closedAt/sync de pipeline (gap CYC-007, não tenancy).
+
+## Resolução (Agente 04, Wave B — 2026-11-18)
+
+Todos os 5 itens foram implementados e verificados com testes unitários:
+
+1. **`PrismaLeadRepository.create` e `.update`**:
+   - Função `assertLeadRelationsInTenant(organizationId, data)` valida `companyId`, `contactId`, `pipelineId` e `pipelineStageId` com `findFirst({ where: { id, organizationId } })` (e `pipeline: { organizationId }` para stages) antes de qualquer escrita. IDs pertencentes a outro tenant lançam `AppError(..., 404)`, impedindo vínculos cross-tenant. Coberto em `PrismaLeadRepository.test.ts` (12 testes passando).
+
+2. **`PrismaCrmDealItemsRepository.addDealItem`**:
+   - `input.productId` validado com `findFirst({ where: { id: calculated.productId, organizationId } })` dentro da transação antes de persistir `CrmDealItem`. Coberto em `dealItemDiscountAuthority.test.ts` e `PrismaCrm360Repository.test.ts`.
+
+3. **`PrismaCrmDocumentRepository.createDocument`**:
+   - `leadId`, `companyId` e `contactId` validados individualmente com `findFirst({ where: { id, organizationId } })` dentro da transação `runInTransaction`. Id estrangeiro → `AppError(..., 404)` imediato, sem persistência órfã de documento ou versão.
+
+4. **Gate CYC-007 (`dealClosureGate.ts`)**:
+   - Nos 3 call sites (`LeadUseCases.updateLead`, `LeadUseCases.updateLeadStatus` e `PrismaCrm360Repository.updateLeadStage`), a existência do lead e o pertencimento ao `organizationId` são validados ANTES de invocar `ensureManualDealClosureAllowed` (lança 404 se lead for de outro tenant sem criar `Note` nem `DealClosureEvent`).
+   - Defesa em profundidade no port `PrismaDealClosureGate`: `createConfirmationNote` e `saveDealClosureEvent` também executam `assertLeadInTenant(organizationId, leadId)` antes de criar a nota ou evento. Coberto em `PrismaDealClosureGate.test.ts` (4 testes) e `LeadUseCases.updateLead.test.ts` (15 testes).
+
+5. **Defesa em profundidade (`organizationId` no `where`)**:
+   - `batchUpdateLeads`, `enqueueBatchEnrichment`, `company.updateMany`, `lead.update` devidamente escopados com `{ where: { id, organizationId } }`. Coberto em `LeadUseCases.batchUpdate.test.ts` (8 testes passando).

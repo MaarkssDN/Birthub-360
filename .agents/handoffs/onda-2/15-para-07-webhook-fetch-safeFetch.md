@@ -99,3 +99,51 @@ tenant configurados com `http://` (ex.: gateway local de teste ntfy/sms-gw em de
 agora serão rejeitados com 400 em qualquer ambiente — mesmo comportamento que
 `universalMessagingTool` (Teams) já tinha. Se algum fluxo depende de `http:` local,
 precisa de decisão do 15/00 (não encontrei caso nos testes/código atuais).
+
+### Atualização (Agente 15 — 2026-…, worktree `Birthub-360-wt-o4-safe`, branch `agente/15-onda4-safehttp`)
+
+**Decisão do usuário aplicada**: `safeFetch`/`assertSafeExternalUrl`
+(`src/shared/security/urlGuard.ts`) agora toleram `http:` **apenas para loopback**
+(`localhost`, `*.localhost`, `127.0.0.0/8`, `::1`, IPv4-mapeado-em-IPv6 de loopback)
+quando `NODE_ENV !== 'production'` — via helper `isLoopbackHttpAllowed(url)`.
+Em produção e para qualquer host não-loopback, HTTPS continua obrigatório, e o
+bloqueio de IP privado/reservado não-loopback segue valendo em todo ambiente.
+A exceção é SÓ de scheme/destino: DNS-pinning do `safeFetch` e a validação de
+registros DNS (só endereços loopback são aceitos para hostname loopback) permanecem.
+`https://localhost`/`https://127.0.0.1` continuam rejeitados — a exceção não abre
+loopback para HTTPS. Testes novos em `tests/unit/shared/security/urlGuard.test.ts`
+(32/32 verde).
+
+#### Correções pós-revisão Agente 24 (mesma branch)
+
+- **Bloqueador corrigido**: quando `loopbackHttp` e o host é hostname loopback
+  (`localhost`, `*.localhost`), `resolveSafe` agora exige que **TODOS** os registros
+  DNS retornados sejam loopback (`isLoopbackIp`); qualquer IP público ou
+  privado-não-loopback rejeita com "host loopback resolveu para IP não-loopback".
+  Antes, `http://localhost` resolvendo para IP público passava em HTTP puro.
+- **IPv6 literal**: todos os literais IPv6 com colchetes loopback (`[::1]`,
+  `[::ffff:7f00:1]` etc.) são resolvidos direto antes do `dns.lookup` quando a
+  exceção se aplica; não-loopback segue falhando fechado.
+- **Testes adicionados** (43/43 verde): `foo.localhost` ok/rejeita conforme DNS;
+  `localhost`→IP público/privado-não-loopback/misto rejeita; DNS `::ffff:127.0.0.1`
+  aceita; `localhost.evil.com` e `127.0.0.1@evil.com` rejeitam; `[::ffff:7f00:1]`
+  aceito / `[::ffff:808:808]` rejeitado; resposta 3xx devolvida ao chamador sem
+  seguir redirect (cross-host redirect falha no pinning em produção real).
+
+**Risco residual pré-existente (débito para 15/01, não introduzido aqui)**:
+`isPrivateOrReservedIp` não reconhece IPv4-mapped IPv6 em forma hexadecimal
+(`::ffff:7f00:1`) fora da exceção loopback — um hostname que resolva para esse
+formato passaria no guard de IP privado. Fora do escopo desta correção; registrar
+como débito de hardening do `urlGuard.ts`.
+
+**Atualização (Agente 15 — 2026-11-17):** o débito acima foi corrigido —
+`isPrivateOrReservedIp` agora expande o IPv6 para hextetos e delega o IPv4
+embutido (mapeado, 6to4, NAT64, compatível) à checagem IPv4; Teredo é bloqueado
+por inteiro. Mesma política aplicada em `ssrfGuard.ts`. Este handoff permanece
+**aberto** apenas pela parte endereçada ao Agente 07 (migração dos call sites de
+`fetch` cru para `safeFetch`).
+
+**Nota do coordenador (2026-11-18):** idem — correção do débito SSRF aterrissou
+via #381 + #413 (parser canônico `ipv6.ts`), não pelo diff original do #394.
+A parte deste handoff endereçada ao Agente 07 (migração de call sites de
+`fetch` cru para `safeFetch`) permanece aberta.

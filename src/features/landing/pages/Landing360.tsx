@@ -35,7 +35,7 @@ import {
   Zap,
 } from 'lucide-react';
 import type React from 'react';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 
 const LuxuryLandingPage = lazy(() =>
   import('../luxury/LuxuryLandingPage.js').then((m) => ({ default: m.LuxuryLandingPage })),
@@ -143,7 +143,7 @@ const ADAPTIVE_PILLARS = [
     kpi: '+24,8% conversão',
     modalTitle: '04. Performance Comercial',
     modalDesc:
-      'Telemetria de conversão, velocidade de ciclo entre etapas, metas operacionais e produtividade da equipe em tempo real.',
+      'Telemetria de conversão, velocidade de ciclo entre etapas, metas operacionais e produtividade da equipe com atualização contínua.',
   },
   {
     num: '05',
@@ -170,10 +170,10 @@ const ADAPTIVE_PILLARS = [
     accentColor: '#FF2D9B',
     tag: 'COPILOTO DE NEGOCIAÇÕES',
     kpiPrefix: 'Modo:',
-    kpi: 'NBA em tempo real',
+    kpi: 'NBA contextual',
     modalTitle: '06. Inteligência Artificial',
     modalDesc:
-      'Copiloto de negociações contextualizado com dados da organização, diagnóstico de entraves e recomendações acionáveis em tempo real.',
+      'Copiloto de negociações contextualizado com dados da organização, diagnóstico de entraves e recomendações acionáveis no contexto da conta.',
   },
   {
     num: '07',
@@ -183,12 +183,12 @@ const ADAPTIVE_PILLARS = [
     bg: '/landing/assets/pillar-automation.jpg',
     colorClass: 'b360-c-gold',
     accentColor: '#FFC107',
-    tag: 'MOTOR DE REGRAS & 9 CONECTORES',
+    tag: 'MOTOR DE REGRAS & CONECTORES',
     kpiPrefix: 'Simulação:',
-    kpi: '~12 ms sync',
+    kpi: 'Fila idempotente',
     modalTitle: '07. Automação & Conectividade Multi-CRM',
     modalDesc:
-      'Sincronização bidirecional em tempo real via APIs abertas e webhooks com Bitrix24. HubSpot, Salesforce e Pipedrive estão em homologação.',
+      'Sincronização por APIs abertas e webhooks com conectores em produção (Bitrix24, WhatsApp Official API, VoiceHub e Webhooks/REST); HubSpot, Salesforce e Pipedrive seguem em homologação.',
   },
   {
     num: '08',
@@ -203,7 +203,7 @@ const ADAPTIVE_PILLARS = [
     kpi: '94% sentimento',
     modalTitle: '08. Engajamento Comercial',
     modalDesc:
-      'Voice Hub com studio visual e supervisão ao vivo, cold call governado, WhatsApp via Chatwoot, mesa de tratamento e app Android dedicado.',
+      'Voice Hub com studio visual e supervisão de chamadas, cold call governado, WhatsApp Official API, mesa de tratamento e app Android dedicado.',
   },
   {
     num: '09',
@@ -277,42 +277,42 @@ const ADAPTIVE_INTEGRATIONS = [
   },
   {
     name: 'Webhooks & REST APIs',
-    desc: 'Disparo e recepção de eventos customizados em tempo real com autenticação segura.',
+    desc: 'Disparo e recepção de eventos customizados com autenticação segura.',
     icon: '/landing/assets/webhooks.svg',
     status: 'active' as const,
     statusLabel: 'Em Produção',
   },
   {
     name: 'HubSpot',
-    desc: 'Alinhamento contínuo entre inbound marketing e pipeline de vendas ativas.',
+    desc: 'Conector em homologação para alinhar inbound marketing e pipeline de vendas.',
     icon: '/landing/assets/hubspot.svg',
     status: 'in_dev' as const,
     statusLabel: 'Em Homologação',
   },
   {
     name: 'Salesforce',
-    desc: 'Mapeamento de contas estratégicas enterprise e histórico corporativo de negociações.',
+    desc: 'Conector em homologação para mapear contas estratégicas e histórico de negociações.',
     icon: '/landing/assets/salesforce.svg',
     status: 'in_dev' as const,
     statusLabel: 'Em Homologação',
   },
   {
     name: 'Pipedrive',
-    desc: 'Gestão visual de etapas e atividades operacionais de prospecção e fechamento.',
+    desc: 'Conector em homologação para gestão visual de etapas e atividades comerciais.',
     icon: '/landing/assets/pipedrive.svg',
     status: 'in_dev' as const,
     statusLabel: 'Em Homologação',
   },
   {
     name: 'Google Workspace',
-    desc: 'Agendamento sincronizado no Google Agenda, e-mails corporativos e documentos.',
+    desc: 'Integração planejada com Google Agenda, e-mails corporativos e documentos.',
     icon: '/landing/assets/google.svg',
     status: 'planned' as const,
     statusLabel: 'Planejado',
   },
   {
     name: 'Microsoft 365',
-    desc: 'Integração federada com Outlook, Teams e ecossistema de produtividade.',
+    desc: 'Integração planejada com Outlook, Teams e ecossistema de produtividade.',
     icon: '/landing/assets/microsoft.svg',
     status: 'planned' as const,
     statusLabel: 'Planejado',
@@ -523,6 +523,20 @@ export function Landing360({
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Destino pós-autenticação: o ProtectedRoute envia `state.from` ao redirecionar para
+  // /login; sem honrá-lo toda autenticação caía em /app e a rota originalmente pedida
+  // (ex.: /app/crm?filtro=x) era perdida. Só caminhos internos são aceitos.
+  const postLoginTarget = (() => {
+    const from = (location.state as { from?: { pathname?: string; search?: string } } | null)?.from;
+    if (!from?.pathname || !from.pathname.startsWith('/') || from.pathname.startsWith('//')) {
+      return '/app';
+    }
+    return `${from.pathname}${from.search || ''}`;
+  })();
+  // Congela o alvo no mount: depois do primeiro navigate o state é limpo e o
+  // fallback '/app' não deve sobrescrever o destino original num re-render.
+  const postLoginTargetRef = useRef(postLoginTarget);
 
   // --- CRO & TESTES A/B (Variante A: Aceleração de Pipeline / Variante B: Multiplicação de Receita) ---
   const [abVariant, setAbVariant] = useState<HeroVariant>(() => {
@@ -816,7 +830,7 @@ export function Landing360({
   // Redirecionamento se já autenticado
   useEffect(() => {
     if (currentUser) {
-      navigate('/app', { replace: true });
+      void navigate(postLoginTargetRef.current, { replace: true });
     }
   }, [currentUser, navigate]);
 
@@ -904,7 +918,7 @@ export function Landing360({
           email: email.trim(),
           password: password.trim(),
           rememberMe,
-          callbackURL: '/app',
+          callbackURL: postLoginTarget,
         });
 
         if (result.error) {
@@ -913,13 +927,13 @@ export function Landing360({
           return;
         }
 
-        navigate('/app', { replace: true });
+        void navigate(postLoginTarget, { replace: true });
       } else if (authMode === 'signup') {
         const result = await authClient.signUp.email({
           email: email.trim(),
           password: password.trim(),
           name: name.trim() || email.split('@')[0],
-          callbackURL: '/app',
+          callbackURL: postLoginTarget,
         });
 
         if (result.error) {
@@ -988,7 +1002,7 @@ export function Landing360({
       setSuccessMessage(`Conectando ao provedor empresarial ${data.providerName}...`);
       await authClient.signIn.social({
         provider: data.provider,
-        callbackURL: '/app',
+        callbackURL: postLoginTarget,
       });
     } catch (err: any) {
       setErrorMessage(err.message || 'Falha ao contatar serviço de autenticação SSO.');
@@ -1356,7 +1370,7 @@ export function Landing360({
                     <div className="b360-problem-row">
                       <span className="b360-label-flag cyan">Solução Birth Hub</span>
                       <p>
-                        Telemetria em tempo real com alertas preditivos de gargalos e desvios de
+                        Telemetria operacional com alertas preditivos de gargalos e desvios de
                         velocidade de ciclo em D+0.
                       </p>
                     </div>
@@ -1394,8 +1408,8 @@ export function Landing360({
                     <div className="b360-problem-row">
                       <span className="b360-label-flag cyan">Solução Birth Hub</span>
                       <p>
-                        Orquestração automática de follow-ups com SLA garantido e recomendação da
-                        Próxima Melhor Ação (NBA).
+                        Orquestração automática de follow-ups com regras de SLA configuráveis e
+                        recomendação da Próxima Melhor Ação (NBA).
                       </p>
                     </div>
                   </div>
@@ -1429,9 +1443,9 @@ export function Landing360({
                   </div>
                   <h3>Dados e conectividade Multi-CRM</h3>
                   <p>
-                    Conexões bidirecionais via APIs abertas e webhooks com Bitrix24 mantêm os dados
-                    comerciais sincronizados sem duplicação. HubSpot, Salesforce e Pipedrive seguem
-                    em homologação.
+                    Conexões via APIs abertas e webhooks mantêm os conectores em produção (Bitrix24,
+                    WhatsApp Official API, VoiceHub e Webhooks/REST) sincronizados sem duplicação;
+                    HubSpot, Salesforce e Pipedrive seguem em homologação.
                   </p>
                   <div className="b360-platform-badge">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#00D4FF] animate-pulse" />
@@ -1558,7 +1572,7 @@ export function Landing360({
                     Histórico contextual, matriz de objeções e copiloto orientam as abordagens e
                     reuniões de negociação.
                   </p>
-                  <div className="b360-flow-kpi">NBA em Tempo Real</div>
+                  <div className="b360-flow-kpi">NBA contextual</div>
                 </div>
 
                 <div className="b360-flow-connector" aria-hidden="true">
@@ -1591,7 +1605,7 @@ export function Landing360({
                   </h2>
                   <p className="text-slate-400 text-base mb-6">
                     O copiloto analisa o estágio de cada negociação, o histórico das interações e as
-                    objeções recorrentes para apoiar sua equipe em tempo real com supervisão
+                    objeções recorrentes para apoiar sua equipe durante a negociação com supervisão
                     contínua.
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-6">
@@ -1754,7 +1768,7 @@ export function Landing360({
                 </div>
                 <div className="b360-seal-item">
                   <Award className="w-5 h-5 text-amber-400" />
-                  <span>Padrões de Governança ISO 27001 Ready</span>
+                  <span>Controles alinhados a ISO 27001 (Ready)</span>
                 </div>
               </div>
             </section>
@@ -1787,7 +1801,7 @@ export function Landing360({
                             Demonstração sem slides genéricos
                           </strong>
                           <span className="text-xs text-slate-400">
-                            Análise direta de casos reais aplicada ao seu modelo de negócio.
+                            Análise direta de cenários aplicados ao seu modelo de negócio.
                           </span>
                         </div>
                       </div>
@@ -1801,7 +1815,8 @@ export function Landing360({
                             Simulação de ROI e Previsibilidade
                           </strong>
                           <span className="text-xs text-slate-400">
-                            Cálculo detalhado de receita recuperável nos primeiros 90 dias.
+                            Estimativa ilustrativa de receita recuperável em um horizonte de 90
+                            dias.
                           </span>
                         </div>
                       </div>
@@ -1812,10 +1827,10 @@ export function Landing360({
                         </span>
                         <div>
                           <strong className="text-xs font-bold text-slate-200 block">
-                            Contato comercial direto e ágil
+                            Retorno por canal informado
                           </strong>
                           <span className="text-xs text-slate-400">
-                            Contato por WhatsApp para alinhar o melhor horário da sua agenda.
+                            Nossa equipe contata você para alinhar o melhor horário da agenda.
                           </span>
                         </div>
                       </div>
@@ -2048,7 +2063,7 @@ export function Landing360({
                 onClick={() =>
                   handleOpenModal(
                     'Command Center',
-                    'Centro unificado de operações de receita e monitoramento em tempo real.',
+                    'Centro unificado de operações de receita e monitoramento operacional.',
                   )
                 }
               >
@@ -2170,7 +2185,7 @@ export function Landing360({
                   onClick={() =>
                     handleOpenModal(
                       'Iniciar Missão Autônoma',
-                      'O Supervisor ativará os agentes de Enriquecimento, Qualificação e Copiloto para analisar seu pipeline em tempo real.',
+                      'O Supervisor ativará os agentes de Enriquecimento, Qualificação e Copiloto para analisar seu pipeline com contexto atualizado.',
                     )
                   }
                 >
@@ -2188,11 +2203,11 @@ export function Landing360({
                   <span>● Operação contínua</span>
                 </div>
                 <div className="b360-metric">
-                  <small>Agentes · especificação V4</small>
+                  <small>Agentes · catálogo público</small>
                   <strong>
-                    <B360CountUp to={24} suffix=" + Supervisor" />
+                    <B360CountUp to={20} suffix=" +" />
                   </strong>
-                  <span>● Arquitetura prevista</span>
+                  <span>● Copiloto Supervisor</span>
                 </div>
                 <div className="b360-metric">
                   <small>Oportunidades · simulação</small>
@@ -2547,7 +2562,7 @@ export function Landing360({
                       </h4>
                       <p className="font-sans text-xs text-slate-600 dark:text-slate-400 mt-0.5">
                         Postgres Row Level Security nativo, isolamento criptográfico por organização
-                        e consultas indexadas de baixa latência.
+                        e consultas otimizadas por índices e políticas de tenant.
                       </p>
                     </div>
                   </div>
@@ -2580,8 +2595,8 @@ export function Landing360({
                         03. Governança & LGPD Nativa
                       </h4>
                       <p className="font-sans text-xs text-slate-600 dark:text-slate-400 mt-0.5">
-                        Criptografia AES-256-GCM em repouso e trânsito, gestão de consentimento e
-                        trilha de auditoria viva imutável.
+                        Criptografia AES-256-GCM em repouso para credenciais e PII, gestão de
+                        consentimento e trilha de auditoria viva imutável.
                       </p>
                     </div>
                   </div>
@@ -2996,7 +3011,10 @@ export function Landing360({
                       type="button"
                       onClick={() => {
                         SoundFX.play('confirm');
-                        void authClient.signIn.social({ provider: 'google', callbackURL: '/app' });
+                        void authClient.signIn.social({
+                          provider: 'google',
+                          callbackURL: postLoginTarget,
+                        });
                       }}
                       className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-[#070D18] hover:bg-slate-50 dark:hover:bg-slate-800/50 text-xs font-mono font-medium text-slate-700 dark:text-slate-300 transition-all cursor-pointer"
                     >
@@ -3027,7 +3045,7 @@ export function Landing360({
                         SoundFX.play('confirm');
                         void authClient.signIn.social({
                           provider: 'microsoft',
-                          callbackURL: '/app',
+                          callbackURL: postLoginTarget,
                         });
                       }}
                       className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-[#070D18] hover:bg-slate-50 dark:hover:bg-slate-800/50 text-xs font-mono font-medium text-slate-700 dark:text-slate-300 transition-all cursor-pointer"
@@ -3134,7 +3152,7 @@ export function Landing360({
                       Criptografia
                     </span>
                     <span className="font-sans text-[9px] font-medium text-slate-600 dark:text-slate-400">
-                      AES-256 Ponta a Ponta
+                      AES-256-GCM
                     </span>
                   </div>
                 </div>

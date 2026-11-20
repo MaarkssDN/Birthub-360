@@ -47,9 +47,8 @@ export function Act4TacticalEngine() {
           </h2>
 
           <p className="text-base sm:text-lg text-[#9EADC8] leading-relaxed">
-            Veja a central de comando em tempo real. Cada agente opera com dados isolados por
-            tenant, processando telemetria em milissegundos e auxiliando o time de vendas exatamente
-            no momento do fechamento.
+            Veja uma demonstração ilustrativa da central de comando. Cada agente opera com dados
+            isolados por tenant e auxilia o time de vendas no contexto da negociação.
           </p>
         </div>
 
@@ -67,6 +66,9 @@ export function Act4TacticalEngine() {
               <span className="font-mono text-xs text-[#F8F9FF] font-semibold flex items-center gap-2">
                 <Terminal className="w-3.5 h-3.5 text-[#00D4FF]" />
                 CONSOLE EXECUTIVO · BIRTH-HUB-OS v2.0
+              </span>
+              <span className="px-2 py-1 rounded-md border border-[#FFC107]/30 bg-[#FFC107]/10 font-mono text-[10px] font-bold text-[#FFC107]">
+                CENÁRIO ILUSTRATIVO
               </span>
             </div>
 
@@ -117,11 +119,11 @@ export function Act4TacticalEngine() {
                   <div className="p-5 rounded-xl bg-black/40 border border-white/[0.08] space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-xs text-[#00D4FF] uppercase tracking-wider font-semibold">
-                        Sessão de Voz Ativa #8291
+                        Sessão de voz ilustrativa #8291
                       </span>
                       <span className="flex items-center gap-1.5 text-xs font-mono text-[#22C55E]">
                         <span className="h-2 w-2 rounded-full bg-[#22C55E] animate-ping" />
-                        {formatCallTime(callSeconds)} ao vivo
+                        {formatCallTime(callSeconds)} simulados
                       </span>
                     </div>
 
@@ -135,14 +137,14 @@ export function Act4TacticalEngine() {
                     </div>
 
                     <div className="pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs font-mono">
-                      <span className="text-[#9EADC8]">Probabilidade Preditiva:</span>
-                      <span className="text-[#FFC107] font-bold">84% de Fechamento</span>
+                      <span className="text-[#9EADC8]">Probabilidade ilustrativa:</span>
+                      <span className="text-[#FFC107] font-bold">84% de fechamento</span>
                     </div>
                   </div>
 
                   <div className="p-5 rounded-xl bg-black/40 border border-white/[0.08] space-y-3">
                     <span className="font-mono text-xs text-[#FF2D9B] uppercase tracking-wider font-semibold">
-                      Objeção Detectada em Tempo Real
+                      Exemplo de objeção detectada
                     </span>
                     <p className="text-sm text-[#F8F9FF] italic">
                       &quot;Precisamos entender como vocês garantem que os dados dos nossos clientes
@@ -168,7 +170,7 @@ export function Act4TacticalEngine() {
                         tem acesso aos dados de outro.
                       </p>
                       <p className="text-xs text-[#9EADC8] font-mono">
-                        SLA de conformidade LGPD com auditoria contínua e criptografia AES-256 em
+                        Conformidade LGPD por design, auditoria contínua e criptografia AES-256 em
                         repouso.
                       </p>
                     </div>
@@ -178,7 +180,7 @@ export function Act4TacticalEngine() {
                         Playbook: Matriz de Objeções §4.2
                       </span>
                       <span className="px-3 py-1 rounded-md text-xs font-mono bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/20">
-                        Taxa de Sucesso Histórica: 91%
+                        Exemplo de playbook validado
                       </span>
                     </div>
                   </div>
@@ -203,7 +205,7 @@ export function Act4TacticalEngine() {
                     decisores-alvo.
                   </p>
                   <div className="text-xs font-mono text-[#F8F9FF] pt-2 border-t border-white/[0.08]">
-                    Status: 1.240 contas analisadas hoje
+                    Status: análise contínua de contas-alvo
                   </div>
                 </SpotlightCard>
 
@@ -222,7 +224,7 @@ export function Act4TacticalEngine() {
                     para closers.
                   </p>
                   <div className="text-xs font-mono text-[#F8F9FF] pt-2 border-t border-white/[0.08]">
-                    Status: 42 recomendações ativas
+                    Status: recomendações contextuais ativas
                   </div>
                 </SpotlightCard>
 
@@ -237,11 +239,10 @@ export function Act4TacticalEngine() {
                     <span className="h-2 w-2 rounded-full bg-[#FFC107] animate-pulse" />
                   </div>
                   <p className="text-xs text-[#9EADC8]">
-                    Transcrição semântica ultrarrápida com detecção instantânea de sentimento e
-                    intenção de compra.
+                    Transcrição semântica com detecção de sentimento e intenção de compra.
                   </p>
                   <div className="text-xs font-mono text-[#F8F9FF] pt-2 border-t border-white/[0.08]">
-                    Status: Latência média de transcrição: 140ms
+                    Status: processamento local e retorno ao pipeline
                   </div>
                 </SpotlightCard>
               </div>
@@ -251,14 +252,16 @@ export function Act4TacticalEngine() {
               <div className="space-y-6">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   <div className="p-4 rounded-xl bg-black/40 border border-white/[0.08]">
-                    <span className="font-mono text-xs text-[#9EADC8] block">Pipeline Ativo</span>
+                    <span className="font-mono text-xs text-[#9EADC8] block">
+                      Pipeline ativo (exemplo)
+                    </span>
                     <span className="text-xl sm:text-2xl font-bold font-mono text-[#F8F9FF]">
                       R$ 4.280.000
                     </span>
                   </div>
                   <div className="p-4 rounded-xl bg-black/40 border border-white/[0.08]">
                     <span className="font-mono text-xs text-[#9EADC8] block">
-                      Pipeline Ponderado
+                      Pipeline ponderado (exemplo)
                     </span>
                     <span className="text-xl sm:text-2xl font-bold font-mono text-[#FFC107]">
                       R$ 2.940.000
@@ -266,14 +269,16 @@ export function Act4TacticalEngine() {
                   </div>
                   <div className="p-4 rounded-xl bg-black/40 border border-white/[0.08]">
                     <span className="font-mono text-xs text-[#9EADC8] block">
-                      Negócios em Risco
+                      Negócios em risco (exemplo)
                     </span>
                     <span className="text-xl sm:text-2xl font-bold font-mono text-[#EF4444]">
                       3 Contas
                     </span>
                   </div>
                   <div className="p-4 rounded-xl bg-black/40 border border-white/[0.08]">
-                    <span className="font-mono text-xs text-[#9EADC8] block">Meta Prevista</span>
+                    <span className="font-mono text-xs text-[#9EADC8] block">
+                      Meta prevista (exemplo)
+                    </span>
                     <span className="text-xl sm:text-2xl font-bold font-mono text-[#22C55E]">
                       114% Atingimento
                     </span>
@@ -281,8 +286,11 @@ export function Act4TacticalEngine() {
                 </div>
 
                 <div className="p-4 rounded-xl bg-black/40 border border-white/[0.08] flex items-center justify-between text-xs font-mono text-[#9EADC8]">
-                  <span>Telemetria atualizada a cada 10 segundos com sincronização omnicanal.</span>
-                  <span className="text-[#00D4FF]">Zero latência de dados</span>
+                  <span>
+                    Exemplo de painel com atualização periódica e sincronização conforme os
+                    conectores ativos.
+                  </span>
+                  <span className="text-[#00D4FF]">Latência depende da infraestrutura</span>
                 </div>
               </div>
             )}

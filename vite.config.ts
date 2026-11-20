@@ -154,8 +154,31 @@ export default defineConfig(() => {
         output: {
           manualChunks(id) {
             const normalizedId = id.replaceAll('\\', '/');
+            // O helper de preload do Vite (`\0vite/preload-helper.js`) é importado
+            // estaticamente por TODO chunk com import dinâmico, inclusive o entry.
+            // Sem regra própria, o Rollup o aloja dentro do primeiro chunk manual
+            // que encontrar (na prática vendor-3d) — e como o entry passa a
+            // importá-lo estaticamente, o Vite marca vendor-3d (~240KB gzip de
+            // three.js) como modulepreload do index.html, punindo o load inicial
+            // de todas as rotas. Forçá-lo para vendor-react (chunk já eager)
+            // elimina essa aresta sem mudar o comportamento do preload.
+            if (normalizedId.includes('vite/preload-helper')) {
+              return 'vendor-react';
+            }
             if (!normalizedId.includes('/node_modules/')) return undefined;
 
+            // clsx/tailwind-merge são deps minúsculas compartilhadas por dezenas de
+            // componentes. O Rollup as aloja dentro de um chunk manual quando uma
+            // lib pesada também as usa como dependência (clsx é dep do recharts) —
+            // resultado observado: o entry importava `clsx` de vendor-charts,
+            // forçando modulepreload de ~120KB gzip (recharts + d3) no load inicial.
+            // Fixá-las em vendor-react (já eager) remove a aresta entry→vendor-charts.
+            if (
+              normalizedId.includes('/clsx/') ||
+              normalizedId.includes('/tailwind-merge/')
+            ) {
+              return 'vendor-react';
+            }
             if (
               normalizedId.includes('/react/') ||
               normalizedId.includes('/react-dom/') ||

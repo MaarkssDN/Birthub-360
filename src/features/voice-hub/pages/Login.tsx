@@ -5,6 +5,7 @@ import { ArrowRight } from 'lucide-react';
 import { BirthubLogo } from '../components/design-system/index.js';
 import { getAccessibleTextOnBrand } from '../components/design-system/tokens.js';
 import { useSessionStore } from '../store/useSessionStore.js';
+import { authClient } from '../../../lib/auth-client.js';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -28,17 +29,16 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+      // Autenticação canônica Better Auth (POST /api/auth/sign-in/email) — o endpoint legado
+      // /api/auth/login com JWT próprio do voice-hub foi removido na adaptação ao schema
+      // canônico (handoff 01-para-12-voicehub-adaptacao-modelos-canonicos).
+      const result = await authClient.signIn.email({
+        email: email.trim(),
+        password,
       });
 
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || 'Erro ao realizar login.');
+      if (result.error) {
+        throw new Error(result.error.message || 'Erro ao realizar login.');
       }
 
       // Populate the real session (id/email/role/organizationId) before navigating so the shell

@@ -2,6 +2,12 @@ name: Postman sync
 on:
   push:
     branches: ["main"]
+    paths:
+      - "postman/**"
+      - ".postman/**"
+      - "docs/openapi.yaml"
+      - ".github/workflows/postman-sync.yml"
+  workflow_dispatch:
 
 concurrency:
   group: postman-sync-${{ github.ref }}
@@ -19,6 +25,14 @@ jobs:
         with:
           persist-credentials: false
       - name: Push workspace
+        id: push_attempt_1
+        continue-on-error: true
+        uses: postmanlabs/postman-cli-action@f4cd5fda93190809fff5a5ea6a9a5c5d3d8ef1e8 # v1.0.0
+        with:
+          api-key: ${{ secrets.POSTMAN_API_KEY }}
+          command: postman workspace push --yes --verbose
+      - name: Retry Push workspace after transient Postman Gateway error
+        if: steps.push_attempt_1.outcome == 'failure'
         uses: postmanlabs/postman-cli-action@f4cd5fda93190809fff5a5ea6a9a5c5d3d8ef1e8 # v1.0.0
         with:
           api-key: ${{ secrets.POSTMAN_API_KEY }}

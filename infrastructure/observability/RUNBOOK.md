@@ -6,33 +6,36 @@ Runbook de resposta a incidentes e de go-live para os cenários já mapeados com
 
 **Antes de tudo: qual é o deploy ativo?** Verifique o ambiente real antes de agir.
 
-> **Correção (ACH-10-01, ver relatório de auditoria): a tabela abaixo estava desatualizada em
-> relação a `docs/deploy/README.md` e ao ADR-004.** A correção anterior (ITEM-12, 2026-08-25)
-> dizia "hoje não há nenhum deploy cloud ativo" (modo local-first) — isso já não é verdade desde
-> `docs/ADR/ADR-004-Producao-Oracle-Cloud.md` (2026-09-05): o dono do produto decidiu que o
-> destino definitivo de produção passa a ser **Oracle Cloud Infrastructure, self-hosted**
-> (`docker-compose.oci.yml`), com uma instância real já provisionada e recebendo tráfego. Render
-> continua ativo em paralelo como **fallback durante a transição** (não descontinuado, não recebe
-> mais investimento de infraestrutura novo) até o cutover Oracle estar validado (backup/restore/
-> smoke = PASS) — ver [`docs/deploy/README.md`](../../docs/deploy/README.md) para o inventário
-> completo e sempre atualizado dos quatro caminhos. Esta página é a fonte de verdade sobre "qual é
-> o ambiente real" — se este runbook e `docs/deploy/README.md` voltarem a divergir no futuro,
-> `docs/deploy/README.md` prevalece e este arquivo deve ser corrigido para bater com ele.
+> **Correção (2026-11, handoff `00-para-10-decisao-k8s-helm-argocd.md`):** a tabela abaixo foi
+> novamente desatualizada em relação a `docs/deploy/README.md` — o caminho OCI self-hosted foi
+> **retirado** (DEVOPS-010, 2026-09-18; `docker-compose.oci.yml` não existe mais na raiz), o
+> Render foi **arquivado** (`infrastructure/archive/render.yaml.disabled`, `autoDeployTrigger:
+> off`), e a produção real hoje é uma instância **AWS EC2** com deploy **manual** pelo operador
+> (`deploy-ec2.sh`/`deploy-ec2.ps1`; procedimento em `docs/operations/DEPLOY_EC2.md`). O ambiente
+> canônico segue sendo **Local-First** (`docker-compose.yml`). O histórico OCI/Render abaixo
+> (seções `0-OCI.*`, "Go-live (Render)", rollback OCI/Render) permanece como referência —
+> `docs/deploy/README.md` prevalece em caso de divergência. Decisão formal pendente sobre
+> `k8s/`/`charts/`/`argocd/`: ver `docs/ADR/ADR-011-k8s-helm-argocd-decisao.md`.
 
 | Caminho | Status (ver `docs/deploy/README.md` §1 para o estado sempre atualizado) | Onde |
 | --- | --- | --- |
-| Render (monólito Express: API + estático do Vite) + Supabase (Postgres/Storage) + Cloudflare (DNS/CDN) | **Ativo, fallback durante a transição** — continua recebendo tráfego real hoje; não desligar antes do cutover Oracle validado | `render.yaml`, `docs/deploy/producao.md` |
-| Kubernetes/Helm/ArgoCD (`k8s/`, `charts/`, `argocd/`) | Aspiracional/legado, nenhum cluster real registrado | `charts/README.md`, `argocd/README.md`, `k8s/README.md` |
+| **Local-First** (`docker-compose.yml`) | **Ativo e Canônico** — único ambiente operacional da Central | `docs/development/LOCAL_FIRST.md` |
+| **AWS EC2 — produção** | **Ativo** — deploy manual controlado pelo operador (sem workflow de deploy) | `docs/operations/DEPLOY_EC2.md`, `deploy-ec2.sh` |
+| Render + Supabase + Cloudflare | **Desativado / Arquivado** — blueprint em `infrastructure/archive/render.yaml.disabled`; sem tráfego de produção | `docs/deploy/producao.md` (histórico) |
+| Oracle Cloud (OCI) self-hosted | **Retirado** (DEVOPS-010, 2026-09-18) — seções `0-OCI.*` abaixo são histórico | `docker-compose.oci.yml` (removido) |
+| Kubernetes/Helm/ArgoCD (`charts/`, `infrastructure/archive/k8s/`, `infrastructure/archive/argocd/`) | `charts/` mantido como IaC inativo; `k8s/`+`argocd/` **arquivados** (ADR-011 decidido) — nenhum cluster real registrado | `charts/README.md`, `infrastructure/archive/k8s/README.md`, `infrastructure/archive/argocd/README.md` |
 
 > **Correção de registro (Onda 8, ainda válida):** a missão citava "Render+Vercel" como caminho
 > real — verificado que **não existe Vercel neste projeto**, é um único serviço Render
 > (`birthhub-360`, `srv-d9qtn8bm8hqs7395qtpg`) servindo API e frontend estático do mesmo
 > processo Express. A seção "Go-live (Render)" abaixo usa "Render" para esse caminho.
 
-Os passos abaixo cobrem os três caminhos com tráfego real ou potencial (Oracle Cloud, Render, k8s
-aspiracional); identifique qual se aplica antes de agir — comandos `docker compose -f docker-
-compose.oci.yml ...` não têm efeito nenhum se o incidente é no Render, e vice-versa, e comandos
-`kubectl`/`helm`/`argocd` não têm efeito nenhum enquanto não existir cluster real.
+Os passos abaixo cobrem os caminhos históricos/documentados (OCI, Render, k8s aspiracional); o
+ambiente com tráfego real hoje é o **EC2 manual** (`docs/operations/DEPLOY_EC2.md`) e o canônico é
+o Local-First — as seções `0-OCI.*` e "Go-live (Render)" são referência histórica. Identifique qual
+se aplica antes de agir — comandos `docker compose -f docker-compose.oci.yml ...` não têm efeito
+nenhum (arquivo removido), e comandos `kubectl`/`helm`/`argocd` não têm efeito nenhum enquanto não
+existir cluster real.
 
 
 ## 0-OCI. Guia Operacional de SRE & Observabilidade — Oracle Cloud Infrastructure (OCI)
@@ -600,7 +603,7 @@ rollback por padrão). Se a revisão que está sendo revertida introduziu uma mi
 avaliar com o Agente 01 se é necessária uma migration de compensação antes ou depois do rollback
 de código. Nunca assumir que "reverter o deploy" também reverte o banco.
 
-### Rollback via ArgoCD (caminho documentado como ativo em `argocd/README.md`, quando houver
+### Rollback via ArgoCD (manifests arquivados em `infrastructure/archive/argocd/`, quando houver
 
 cluster real)
 
@@ -698,3 +701,37 @@ grupos `ativos-hoje` deste arquivo) para promover isso a uma regra real.
 Depois de qualquer ação acima: confirmar `GET /health/ready` voltou a `200`, confirmar no painel
 `/admin/queues` (se aplicável) que a fila voltou a processar, e registrar causa raiz + ação
 tomada — este runbook não substitui um post-mortem quando o incidente afetou produção real.
+
+## 10. Backup & Disaster Recovery (DR) — Pós-PR #435 / DEBT-0002
+
+Runbook operacional para execução, validação e recuperação de desastres com scripts fail-closed:
+
+### 10.1 Scripts Canônicos
+- **Backup Criptografado:** `scripts/db/backup-encrypted.sh`
+  - Gera dump PostgreSQL via pipeline streaming: `pg_dump` -> `gzip` -> `openssl enc -aes-256-cbc -pbkdf2`.
+  - Dados em claro nunca tocam o disco.
+  - Validação de integridade automática (decifra teste + `gzip -t` antes de emitir SHA-256).
+  - Retenção configurável via `BACKUP_RETENTION_DAYS` (padrão 30 dias).
+  - Verificação de cifra: `bash scripts/db/backup-encrypted.sh --verify-crypto`.
+- **Drill Automatizado de Restauração:** `scripts/db/restore-test.sh`
+  - Restaura snapshot mais recente em banco efêmero isolado (`birthhub_restore_drill_<timestamp>`).
+  - Executa sanity checks (contagem de tabelas públicas e integridade de `_prisma_migrations`).
+  - Emite laudo em `BACKUP-RESTORE-DRILL-RESULT.json` (exit 0=passed, 1=failed, 2=not_executable).
+- **Simulação de DR e RPO/RTO:** `scripts/ops/dr-simulation.sh`
+  - Calcula RPO real a partir da idade do último backup vs `DR_RPO_TARGET_SECONDS` (padrão 24h).
+  - Mede RTO apenas se `DR_FAILOVER_CMD` for configurado (caso contrário, reporta honestamente `NOT_MEASURED` / exit 2).
+
+### 10.2 Procedimento de Restauração Manual em Caso de Desastre
+```bash
+export BACKUP_ENCRYPTION_PASSPHRASE="<chave-de-cifra>"
+openssl enc -d -aes-256-cbc -pbkdf2 \
+  -pass env:BACKUP_ENCRYPTION_PASSPHRASE \
+  -in "/path/to/backup_file.sql.gz.enc" | \
+  gunzip | \
+  psql "$TARGET_DATABASE_URL"
+
+npx prisma migrate status
+```
+
+### 10.3 Pendência Operacional de Produção
+Os scripts e playbooks estão homologados e versionados. O agendamento periódico (cron/systemd) na instância de produção depende do provisionamento de secrets no host (`BACKUP_DATABASE_URL`, `BACKUP_ENCRYPTION_PASSPHRASE`).

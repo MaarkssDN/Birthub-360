@@ -11,7 +11,6 @@ vi.mock('../repositories/apiKeyRepository.js', () => ({
 
 vi.mock('../repositories/userRepository.js', () => ({
   findUserById: vi.fn(),
-  findMembershipWithRole: vi.fn(),
 }));
 
 import * as apiKeyRepository from '../repositories/apiKeyRepository.js';
@@ -231,13 +230,12 @@ describe('apiKeyService.authenticateApiKey', () => {
       revokedAt: null,
       expiresAt: null,
     } as any);
+    // UserRole canônico 'ADMIN' → voice-role 'admin' (roleRepository.voiceRoleForCanonicalRole).
     vi.mocked(userRepository.findUserById).mockResolvedValue({
       id: 'user-1',
       email: 'admin@tenant-1.com',
       organizationId: 'tenant-1',
-    } as any);
-    vi.mocked(userRepository.findMembershipWithRole).mockResolvedValue({
-      role: { name: 'admin' },
+      role: 'ADMIN',
     } as any);
 
     const result = await authenticateApiKey(`${API_KEY_PREFIX}anything`);

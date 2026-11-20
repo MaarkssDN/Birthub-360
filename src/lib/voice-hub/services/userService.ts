@@ -1,6 +1,10 @@
+import { prisma } from '@/lib/prisma.js';
 import * as userRepository from '../repositories/userRepository.js';
-import { getOrCreateSystemRole, type SystemRoleName } from '../repositories/roleRepository.js';
-import { hashPassword } from '../lib/auth-tokens.js';
+import {
+  canonicalRoleForVoiceRole,
+  voiceRoleForCanonicalRole,
+  type SystemRoleName,
+} from '../repositories/roleRepository.js';
 
 export class UserServiceError extends Error {
   status: number;
@@ -10,18 +14,32 @@ export class UserServiceError extends Error {
   }
 }
 
-function toSafeUser(user: {
+// Adaptação ao schema canônico (handoff 01-para-12-voicehub-adaptacao-modelos-canonicos):
+// `User` canônico não tem `companyName` (a "empresa" é Organization.name — renomear a org por
+// causa de um perfil de usuário seria errado) nem `deletedAt`/`memberships`. O papel de
+// autoridade é `user.role` (UserRole) e o cargo funcional é UserJobRole→JobRole.
+//
+// O vocabulário de voice-role ('admin'|'user'|'supervisor') é preservado na BORDA (API/DTO),
+// traduzido para UserRole via roleRepository — nunca persistido.
+
+interface SafeUserInput {
   id: string;
   email: string;
-  companyName: string;
+  name: string;
+  role: string;
   createdAt: Date;
-  memberships: { role: { name: string } }[];
-}) {
+  jobRoles?: { jobRole: { code: string; name: string } | null }[];
+}
+
+function toSafeUser(user: SafeUserInput) {
   return {
     id: user.id,
     email: user.email,
-    companyName: user.companyName,
-    role: user.memberships[0]?.role.name || 'user',
+    name: user.name,
+    // voice-role derivado do UserRole canônico — o frontend do voice-hub continua vendo
+    // 'admin'/'user'/'supervisor' sem que esses valores existam no banco.
+    role: voiceRoleForCanonicalRole(user.role),
+    jobRole: user.jobRoles?.[0]?.jobRole?.name ?? null,
     createdAt: user.createdAt,
   };
 }
@@ -37,20 +55,23 @@ export async function createUserInTenant(
 ) {
   const existing = await userRepository.findUserByEmail(data.email);
   if (existing) {
-    throw new UserServiceError('Este email já está cadastrado.');
+    throw new UserServiceError('Este email já está cadastrado.', 409);
   }
 
+  // `companyName` não existe no User canônico (a organização já tem nome próprio) — aceito no
+  // contrato por compatibilidade, mas não persistido. O `name` exibido é derivado do e-mail até
+  // o usuário/painel de equipe atualizar.
+  void data.companyName;
+  const voiceRole = data.role ?? 'user';
   const user = await userRepository.createUser({
     email: data.email,
-    passwordHash: hashPassword(data.password),
-    companyName: data.companyName || 'Organização Associada',
+    password: data.password,
+    name: data.email.split('@')[0],
     organizationId,
+    role: canonicalRoleForVoiceRole(voiceRole),
   });
 
-  const role = await getOrCreateSystemRole(data.role ?? 'user');
-  await userRepository.createMembership(user.id, organizationId, role.id);
-
-  return { id: user.id, email: user.email, role: role.name };
+  return { id: user.id, email: user.email, role: voiceRole };
 }
 
 export async function updateUserProfile(
@@ -68,20 +89,31 @@ export async function updateUserProfile(
     throw new UserServiceError('Usuário não encontrado.', 404);
   }
 
-  await userRepository.updateUser(targetId, {
-    companyName: data.companyName,
-    passwordHash: data.password ? hashPassword(data.password) : undefined,
+  // companyName não tem destino canônico (ver createUserInTenant) — não persistido.
+  void data.companyName;
+
+  await userRepository.updateUser(targetId, organizationId, {
+    password: data.password,
   });
 
+  // Mudança de papel de autoridade é ação de admin e vai para User.role (UserRole canônico) —
+  // atualizada via updateMany com organizationId no WHERE (dupla checagem de tenant).
   if (data.role && requester.role === 'admin') {
-    const role = await getOrCreateSystemRole(data.role);
-    await userRepository.updateMembershipRole(targetId, organizationId, role.id);
+    await userRepository.updateUserRole(
+      targetId,
+      organizationId,
+      canonicalRoleForVoiceRole(data.role),
+    );
   }
 }
 
-export async function deleteUser(targetId: string, organizationId: string, requesterId: string) {
+export async function deleteUser(
+  targetId: string,
+  organizationId: string,
+  requesterId: string | undefined,
+) {
   if (requesterId === targetId) {
-    throw new UserServiceError('Você não pode excluir o seu próprio usuário admin.');
+    throw new UserServiceError('Você não pode excluir o seu próprio usuário admin.', 400);
   }
 
   const target = await userRepository.findUserById(targetId);
@@ -89,7 +121,20 @@ export async function deleteUser(targetId: string, organizationId: string, reque
     throw new UserServiceError('Usuário não encontrado.', 404);
   }
 
-  await userRepository.softDeleteUser(targetId);
+  // Mesma trava de team.service.ts#deleteTeamMember: nunca deixar a organização sem ADMIN.
+  if (target.role === 'ADMIN') {
+    const remainingAdmins = await prisma.user.count({
+      where: { organizationId, role: 'ADMIN' },
+    });
+    if (remainingAdmins <= 1) {
+      throw new UserServiceError(
+        'Não é possível excluir o único ADMIN da organização. Promova outro usuário a ADMIN antes.',
+        400,
+      );
+    }
+  }
+
+  await userRepository.deleteUser(targetId);
 }
 
 // LGPD data-subject erasure/anonymization request. Self-service (a titular exercising their own

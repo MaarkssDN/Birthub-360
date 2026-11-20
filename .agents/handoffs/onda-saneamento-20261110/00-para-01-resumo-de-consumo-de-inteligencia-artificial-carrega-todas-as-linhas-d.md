@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 01 (Plataforma, Segurança e Dados)
 Onda: Onda 1 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-012)
-Status: aberto
+Status: resolvido
 
 Status (histórico): em-andamento
 Prioridade: normal
@@ -61,3 +61,9 @@ Executar a tarefa `TAREFA-SANEAMENTO-012` estritamente dentro da propriedade de 
 > Reconciliação 2026-11-14 (Agente 00): veredicto DEFEITO-REAL — resolução é redirecionamento; ofensor persiste. Correção pendente de despacho. Ver RESULTADOS-RECONCILIACAO-20261114.md.
 
 **Atualização 2026-11 (Agente 07):** o ofensor real redirecionado ao 07 foi corrigido na branch `agente/07-reconciliacao-heatmap` — `agentUsageHeatmap.service.ts` agora usa `agentMemory.groupBy` (sem findMany sem limite), custo fabricado removido (`costUsd`/`avgLatencyMs` retornam `null`, pois não há fonte real por `agentType`; custo real segue em `/api/agent/cost-analysis`). Evidências no handoff `01-para-07-resumo-consumo-ia-findmany-sem-agregacao.md` (seção Resolução). Aguardando integração e parecer do Agente 24.
+
+**Verificação 2026-11-17 (Agente 01, branch `agente/01-handoffs-20261117`):** a correção do
+ofensor JÁ ESTÁ INTEGRADA nesta base — `agentUsageHeatmap.service.ts` usa
+`agentMemory.groupBy` (L51) e `agentCostAnalysis.service.ts` usa `aILog.groupBy` (L43),
+ambos com comentário documentando a remoção do `findMany` sem limite. Nenhuma ação
+restante para o 01 neste handoff; fechamento formal aguarda parecer do Agente 24.
