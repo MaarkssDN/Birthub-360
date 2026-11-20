@@ -63,7 +63,14 @@ reduzindo correlação de falha entre as duas cópias.
 
 > **Atualização (02/11/2026):** o workflow `backup-production.yml` foi **removido** por decisão do
 > Marcelo (o Cloudflare R2 não é usado e a AWS não será configurada para isso). Ele nunca chegou a
-> rodar. **Hoje não existe backup automático de produção**; o texto abaixo é histórico.
+> rodar. O texto abaixo sobre o workflow de Actions é histórico.
+>
+> **Atualização pós-PR #435 / DEBT-0002 (19/11/2026 — Agente 10):**
+> Os scripts de backup, restore drill e DR foram completamente reimplementados como ferramentas reais e fail-closed (sem placeholders e sem falso sucesso):
+> - `scripts/db/backup-encrypted.sh`: dump real via `pg_dump`/`pg_dumpall` -> gzip -> AES-256-CBC (`openssl pbkdf2`) em pipeline contínuo (dados em claro nunca tocam o disco), validação de integridade round-trip (`--verify-crypto`), retenção configurável (`BACKUP_RETENTION_DAYS`, padrão 30 dias) e suporte a cópia remota segura (`BACKUP_SCP_TARGET`).
+> - `scripts/db/restore-test.sh`: drill automatizado em banco temporário isolado (`birthhub_restore_drill_<ts>`), validando contagem de tabelas e aplicação de `_prisma_migrations`, gravando relatório estruturado em `BACKUP-RESTORE-DRILL-RESULT.json` (exit 0=passed, 1=failed, 2=not_executable).
+> - `scripts/ops/dr-simulation.sh`: cálculo fail-closed de RPO real contra a idade do backup mais recente (`DR_RPO_TARGET_SECONDS`); medição de RTO exige `DR_FAILOVER_CMD` (caso contrário reporta `NOT_MEASURED` / exit 2).
+> - **Status Operacional de Produção:** O mecanismo existe no repositório. O **agendamento automático em produção** (cron/systemd ou runner) permanece como pendência operacional no host de produção (requer provisionamento de `BACKUP_DATABASE_URL` e `BACKUP_ENCRYPTION_PASSPHRASE`). Ver `docs/ops/DISASTER_RECOVERY_PLAYBOOK.md` para o playbook executável.
 
 - **Mecanismo**: `.github/workflows/backup-production.yml` — `pg_dump` diário (05:00 UTC) contra o
   Postgres real, via papel dedicado `prospector_backup` (somente leitura, `BYPASSRLS` — necessário

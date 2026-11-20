@@ -1,7 +1,7 @@
 De: Agente 04 — CRM e BI
 Para: Agente 03 — Design e Acessibilidade
 Onda: backlog-5 (desdobramento do handoff 03→04 `analytics-contraste-temas`)
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: MEL-35 / handoff `03-para-04-analytics-contraste-temas.md` §3
 Sprint destino: backlog-5
@@ -56,3 +56,24 @@ Decisão do 03 (dono do arquivo), duas opções:
 Os itens de contraste WCAG do mesmo handoff original foram resolvidos pelo 04 em
 `Analytics.tsx`/`WinLossAnalysis.tsx` (ver `## Resolução` em
 `backlog-5/03-para-04-analytics-contraste-temas.md`).
+
+## Resolução (verificação Agente 03 — 2026-11-19, waveD)
+
+Opção 1 adotada (remover as ações no-op), já implementada e mergeada em `origin/main`:
+
+- Commit `3356c2e65 fix(03): remove ações no-op da Command Palette (handoff 04→03)` —
+  removeu `ctx-crm-create` e `qa-opportunity` de `src/components/ui/CommandPalette.tsx`,
+  com comentários no código registrando a decisão (L307-308, L324-325).
+- Decisão de produto reforçada pelo handoff `onda-WB1/00-para-03-remover-intents-open-create-palette.md`
+  (UX-01, 2026-11-18): leads nascem somente de prospecção/promote/Bitrix — não haverá
+  criação manual de lead/oportunidade na UI.
+- Verificação em `origin/main` (2026-11-19): nenhum `open-create` residual aponta para
+  `/app/crm`; os intents `open-create` remanescentes (`activities`, `companies`,
+  `contacts` — quick actions e grupo "Nesta página") têm consumidores reais
+  (`ActivityList.tsx:200`, `CompanyList.tsx:53`, `ContactList.tsx:76`). Auditoria das
+  demais ações da palette (navegação pura, `prefill-search` → companies/contacts,
+  evento `OPEN_AI_CHAT_EVENT`) não encontrou outra ação morta.
+- Teste de regressão: `tests/unit/components/ui/CommandPalette.test.tsx` atualizado na
+  branch `agente/08-handoffs-20261117` (PR #386, aberto) — inclui caso explícito
+  `queryByText('Nova oportunidade')` ausente em `/app/crm` e os casos contextuais do
+  grupo "Nesta página".
