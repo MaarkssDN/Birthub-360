@@ -1,10 +1,11 @@
 De: 15 — Segurança Aplicada e Rotação de Segredos
 Para: 07 — IA e Automações
 Onda: 2
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: MEL-13 (Onda 2, DEM-20261113-003)
 Sprint destino: Onda 2/3
+Resolução-ref: Auditado e verificado pelo Agente 24 no parecer .agents/reviews/pr441-waveD-guardrails-pii-encoding-24.md (item 7)
 
 ## Problema
 

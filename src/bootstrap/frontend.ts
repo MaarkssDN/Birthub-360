@@ -36,6 +36,24 @@ const toolsLimiter = rateLimit({
 });
 
 /**
+ * Predicado puro da guarda anti-bypass do design-lab — extraído para teste unitário.
+ * Recebe o path cru (req.path); devolve true quando o path toca um asset do design-lab
+ * por um alias não autorizado (encoding, /public/, /@fs/, etc.).
+ */
+export function isBlockedDesignLabPath(rawPath: string): boolean {
+  let decodedPath = rawPath;
+  try {
+    decodedPath = decodeURIComponent(rawPath);
+  } catch {
+    // Path malformado: mantém o raw — o static downstream já rejeita encoding inválido.
+  }
+  const touchesLabAsset = /(?:^|\/)design-lab(?:\/|$)/i.test(decodedPath);
+  const isLegitStaticPrefix = /^\/design-lab(?:\/|$)/i.test(rawPath);
+  const isSourceModule = /^\/src\/features\/design-lab\//i.test(rawPath);
+  return touchesLabAsset && !isLegitStaticPrefix && !isSourceModule;
+}
+
+/**
  * Predicado puro da guarda anti-bypass dos estáticos de /tools — mesma classe de
  * vulnerabilidade P0 que o design-lab (DEM-20261114-001/003, guarda do PR #415):
  * os mounts `/tools` autenticados abaixo só casam o prefixo literal, mas
@@ -80,12 +98,16 @@ export function isBlockedToolsPath(rawPath: string): boolean {
  * handler e do restante do boot em server.ts.
  */
 export async function mountFrontend(app: Express): Promise<void> {
-  // Guarda anti-bypass dos estáticos de /tools (mesma classe P0 do design-lab,
-  // ver isBlockedToolsPath). Registrada antes de qualquer static/vite para que
-  // aliases codificados (/%74ools, /tools%2F, //tools, /public/tools, /@fs/…)
-  // recebam 404 em vez de servirem dist/tools ou public/tools sem autenticação.
+  // Guarda anti-bypass dos estáticos do design-lab e de /tools (achados P0 DEM-20261114-001/003 e PR #415).
+  // Os mounts `/design-lab` e `/tools` autenticados abaixo só casam o prefixo literal — um path como
+  // `/design-lab%2Fassets%2Flab.css`, `/tools%2F...`, `/%74ools/...`, `/public/tools/...` ou
+  // `/@fs/<abs>/public/tools/...` (aliases que o Vite dev ou express.static servem fora do mount)
+  // não casa o prefixo, mas os middlewares estáticos decodificam e servem o MESMO arquivo
+  // sem autenticação. Aqui o path é decodificado e qualquer segmento "design-lab" ou "tools" que não
+  // seja (a) o prefixo legítimo `/design-lab` ou `/tools` — que segue para o mount autenticado — ou
+  // (b) código-fonte legítimo sob `/src/` é bloqueado com 404 antes de qualquer static.
   app.use((req, res, next) => {
-    if (isBlockedToolsPath(req.path)) {
+    if (isBlockedDesignLabPath(req.path) || isBlockedToolsPath(req.path)) {
       res.status(404).end();
       return;
     }
