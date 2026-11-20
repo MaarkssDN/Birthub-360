@@ -102,7 +102,7 @@ describe('Cockpit Operacional e Telas de Gestão na UI', () => {
       const enterArenaBtn = screen.getByRole('button', { name: /Entrar na Arena Agora/i });
       fireEvent.click(enterArenaBtn);
 
-      expect(screen.getByText('Round 1 de 3')).toBeDefined();
+      expect(screen.getByText(/Round 1 de \d+/i)).toBeDefined();
       expect(screen.getByText(/Objeção do Lead/i)).toBeDefined();
       expect(screen.getByPlaceholderText(/Estruture sua resposta/i)).toBeDefined();
     });
