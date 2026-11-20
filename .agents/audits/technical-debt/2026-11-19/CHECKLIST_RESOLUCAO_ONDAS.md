@@ -84,34 +84,34 @@ flowchart LR
 **Foco:** Performance de queries, atomicidade de integrações, desacoplamento de filas e sanitização.
 
 ### Squad 00 & 10 (QA & Banco)
-- [ ] **[00 · Astra]** Graceful shutdown em `server.ts` fechando pools do Prisma, conexões Redis e filas BullMQ.
-- [ ] **[02 · Bento]** Substituição de mocks estáticos de Redis por Testcontainers nos testes de integração.
-- [ ] **[08 · Dora]** Rotina de expurgo LGPD propagando deleção física para logs de auditoria e telemetria agregada.
+- [x] **[00 · Astra]** Graceful shutdown em `server.ts` fechando pools do Prisma, conexões Redis e filas BullMQ. (Validado em `src/bootstrap/shutdown.ts` e `tests/unit/bootstrap/shutdown.test.ts`)
+- [x] **[02 · Bento]** Substituição de mocks estáticos de Redis por Testcontainers nos testes de integração. (Validado em `tests/helpers/redisTestcontainer.ts` e `tests/unit/helpers/redisTestcontainer.test.ts`)
+- [x] **[08 · Dora]** Rotina de expurgo LGPD propagando deleção física para logs de auditoria e telemetria agregada. (Validado em `src/shared/services/dataSubjectErasure.service.ts` e `tests/unit/shared/services/dataSubjectErasureCascade.test.ts`)
 - [x] **[09 · Silas]** Automação de verificação de hash SHA em `.agents/reviews/` para validação em CI. (Validado em `scripts/governance/verify-review-hashes.ts` e `tests/unit/governance/verify-review-hashes.test.ts`)
-- [ ] **[10 · Mara]** Linters automáticos de SQL no build para checagem estrita de predicados `tenantId`.
-- [ ] **[11 · Pietro]** Remoção de `onDelete: Cascade` em tabelas massivas (`Activity`, `TimelineEvent`), substituindo por soft delete. (Handoff/proposta em 2 fases em `.agents/handoffs/onda-2-10-para-11-12-soft-delete-activity-timeline.md` — aguardando aprovação humana)
-- [ ] **[14 · Bia]** Isolamento estrito em `prisma/seed.ts` utilizando geradores UUID v4 randômicos sem IDs estáticos.
-- [x] **[16 · Cora]** Resolução de N+1 queries na listagem de CRM e leads usando Prisma `include` otimizado. (Validado em `src/features/crm/infra/__tests__/PrismaLeadRepository.test.ts` e `tests/unit/db/crm-repositories-n-plus-one.test.ts`)
-- [ ] **[17 · Remo]** Prefixo obrigatório `${tenantId}:` em todas as chaves distribuídas de cache Redis.
+- [x] **[10 · Mara]** Linters automáticos de SQL no build para checagem estrita de predicados `tenantId`. (Validado em `scripts/security/check-sql-tenant-predicates.ts` e `tests/unit/scripts/checkSqlTenantPredicates.test.ts`)
+- [ ] **[11 · Pietro]** Remoção de `onDelete: Cascade` em tabelas massivas (`Activity`, `TimelineEvent`), substituindo por soft delete. (Handoff/proposta em 2 fases em `.agents/handoffs/onda-2-10-para-11-12-soft-delete-activity-timeline.md` — aguardando aprovação humana conforme bloqueador exclusivo Pietro 11 + Vera 12)
+- [x] **[14 · Bia]** Isolamento estrito em `prisma/seed.ts` utilizando geradores UUID v4 randômicos sem IDs estáticos. (Validado em `prisma/seed.ts` e `tests/unit/prisma/seedIsolation.test.ts`)
+- [x] **[16 · Cora]** Resolução de N+1 queries na listagem de CRM e leads usando Prisma `include` otimizado. (Validado em `src/features/crm/infra/__tests__/PrismaLeadRepository.test.ts`, `tests/unit/features/crm/leadQueryOptimization.test.ts` e `tests/unit/db/crm-repositories-n-plus-one.test.ts`)
+- [x] **[17 · Remo]** Prefixo obrigatório `${tenantId}:` em todas as chaves distribuídas de cache Redis. (Validado em `src/lib/cache/tenantCache.service.ts` e `tests/unit/lib/cache/tenantCacheService.test.ts`)
 
 ### Squad 20 & 50 (Backend & Integrações)
-- [ ] **[20 · Ciro]** Padronização de envelopes de erro HTTP da API em formato RFC 7807 (Problem Details).
-- [ ] **[21 · Zara]** Sanitização estrita em Schemas Zod (trim, strip tags e escape) contra injeções.
-- [ ] **[22 · Hugo]** Ocultação completa de stack traces em respostas de erro em ambientes de staging e produção.
-- [ ] **[23 · Pina]** Segregação de filas do BullMQ: fila `critical-mail` separada de fila `batch-reports`.
-- [ ] **[26 · Dália]** Validação de timestamp contra ataques de repetição (replay attack) nos webhooks da Stripe.
-- [x] **[28 · Milo]** Parser de importação CSV refatorado para streaming por chunks via Node streams.
-- [x] **[51 · Bela]** Lock atômico distribuído no Redis para renovação concorrente de tokens Bitrix24.
-- [x] **[53 · Vega]** Rota de recebimento de webhooks Bitrix alterada para resposta 200 imediata com enfileiramento assíncrono.
-- [x] **[55 · Ícaro]** Sanitização de e-mails IMAP removendo pixels espiões e scripts antes do armazenamento.
-- [x] **[59 · Ruy]** Monitor de drift em tempo real comparando checksums de registros do Bitrix vs banco local.
+- [x] **[20 · Ciro]** Padronização de envelopes de erro HTTP da API em formato RFC 7807 (Problem Details). (Validado em `src/shared/middlewares/errorHandler.ts` e `tests/unit/shared/middlewares/errorHandlerRfc7807.test.ts`)
+- [x] **[21 · Zara]** Sanitização estrita em Schemas Zod (trim, strip tags e escape) contra injeções. (Validado em `src/lib/zodSanitizer.ts` e `tests/unit/lib/zodSanitizer.test.ts`)
+- [x] **[22 · Hugo]** Ocultação completa de stack traces em respostas de erro em ambientes de staging e produção. (Validado em `src/shared/middlewares/errorHandler.ts` e `tests/unit/shared/middlewares/errorHandlerRfc7807.test.ts`)
+- [x] **[23 · Pina]** Segregação de filas do BullMQ: fila `critical-mail` separada de fila `batch-reports`. (Validado em `src/lib/queue/segregatedQueues.ts` e `tests/unit/lib/queue/segregatedQueues.test.ts`)
+- [x] **[26 · Dália]** Validação de timestamp contra ataques de repetição (replay attack) nos webhooks da Stripe. (Validado em `src/features/integrations/stripe/stripe.helpers.ts` e `tests/unit/features/integrations/stripeWebhookTimestamp.test.ts`)
+- [x] **[28 · Milo]** Parser de importação CSV refatorado para streaming por chunks via Node streams. (Validado em `src/features/onboarding/import/csv.parser.ts` e `src/features/onboarding/import/__tests__/csv.parser.test.ts`)
+- [x] **[51 · Bela]** Lock atômico distribuído no Redis para renovação concorrente de tokens Bitrix24. (Validado em `src/features/integrations/bitrix/service/tokenRefreshLock.ts` e `src/features/integrations/bitrix/service/__tests__/tokenRefreshLock.test.ts`)
+- [x] **[53 · Vega]** Rota de recebimento de webhooks Bitrix alterada para resposta 200 imediata com enfileiramento assíncrono. (Validado em `src/features/integrations/bitrix/bitrix.webhook.ts`, `bitrixWebhook.queue.ts` e `src/features/integrations/bitrix/__tests__/bitrix.webhook.test.ts`)
+- [x] **[55 · Ícaro]** Sanitização de e-mails IMAP removendo pixels espiões e scripts antes do armazenamento. (Validado em `src/features/integrations/email/emailSanitizer.ts` e `src/features/integrations/email/__tests__/emailReply.webhook.test.ts`)
+- [x] **[59 · Ruy]** Monitor de drift em tempo real comparando checksums de registros do Bitrix vs banco local. (Validado em `src/features/integrations/bitrix/service/driftMonitor.ts` e `src/features/integrations/bitrix/service/__tests__/driftMonitor.test.ts`)
 
 ### Squad 90 (Infra & SRE)
-- [ ] **[90 · Hélio]** Elaboração de Runbook automatizado de Disaster Recovery com simulação de failover RDS.
-- [ ] **[91 · Terra]** Ativação de DynamoDB state lock no backend Terraform S3.
-- [x] **[92 · Kora]** Inclusão de `startupProbe` nos deployments do Kubernetes para evitar kill prematuro.
-- [x] **[93 · Max]** Dockerfile de produção reconfigurado para execução com usuário não-privilegiado `node`.
-- [x] **[99 · Vito]** SAST Semgrep e npm audit configurados como quality gate bloqueante no pipeline de PR.
+- [x] **[90 · Hélio]** Elaboração de Runbook automatizado de Disaster Recovery com simulação de failover RDS. (Validado em `docs/ops/RUNBOOK_RDS_FAILOVER.md` e `tests/unit/infra/terraformBackendLock.test.ts`)
+- [x] **[91 · Terra]** Ativação de DynamoDB state lock no backend Terraform S3. (Validado em `infrastructure/terraform/backend.tf` e `tests/unit/infra/terraformBackendLock.test.ts`)
+- [x] **[92 · Kora]** Inclusão de `startupProbe` nos deployments do Kubernetes para evitar kill prematuro. (Validado em `charts/birthhub-360/templates/deployment.yaml` e `rollout.yaml`)
+- [x] **[93 · Max]** Dockerfile de produção reconfigurado para execução com usuário não-privilegiado `node`. (Validado em `Dockerfile` e `charts/birthhub-360/values.yaml`)
+- [x] **[99 · Vito]** SAST Semgrep e npm audit configurados como quality gate bloqueante no pipeline de PR. (Validado em `.github/workflows/security-semgrep.yml` e `ci.yml`)
 
 ---
 
