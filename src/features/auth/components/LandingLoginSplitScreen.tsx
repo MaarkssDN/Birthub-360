@@ -955,7 +955,7 @@ export function LandingLoginSplitScreen() {
                   <button
                     type="submit"
                     disabled={isSubmitting || !email || !password}
-                    className="w-full h-[48px] rounded-[var(--radius-control)] bg-[#00E5FF] text-[#0D0D0D] text-base font-extrabold uppercase tracking-wide shadow-lg transition-all hover:bg-[#1565E0] hover:text-[#F8F9FF] active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00E5FF]"
+                    className="w-full h-[48px] rounded-[var(--radius-control)] bg-[#00D4FF] text-[#041c32] text-base font-extrabold uppercase tracking-wide shadow-lg transition-all hover:bg-[#0284C7] hover:text-white active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00D4FF]"
                   >
                     {isSubmitting ? (
                       <Loader2 className="animate-spin h-5 w-5" aria-hidden="true" />
@@ -963,7 +963,7 @@ export function LandingLoginSplitScreen() {
                       'Criar conta'
                     ) : (
                       <>
-                        Entrar no Birth Hub <span aria-hidden="true">→</span>
+                        Entrar no Birth Hub 360° <span aria-hidden="true">→</span>
                       </>
                     )}
                   </button>

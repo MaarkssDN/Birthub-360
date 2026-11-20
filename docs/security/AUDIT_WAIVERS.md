@@ -33,6 +33,15 @@ Se um achado `HIGH`/`CRITICAL` precisar ser aceito temporariamente (ex.: sem fix
 
 ## Waivers ativos
 
+### `GHSA-7589-6fvf-x4pw` — `effect` (ReDoS in Schema.TemplateLiteral) via `@prisma/config`/`prisma`
+
+- **Advisory:** https://github.com/advisories/GHSA-7589-6fvf-x4pw (`GHSA-7589-6fvf-x4pw`)
+- **Severidade reportada pelo `npm audit`:** high (propaga para `@prisma/config` e `prisma`)
+- **Cadeia:** `effect@<=3.22.0` via `@prisma/config` e `prisma`
+- **Motivo:** Dependência transitiva de tooling de build/CLI do Prisma (`@prisma/config`). Não é importado nem executado no runtime de produção e não processa entrada não confiável de usuário.
+- **Dono:** Agente 00 / Agente 99 (Segurança)
+- **Data de registro:** 2026-11-20. **Reavaliar em:** 2026-12-20
+
 ### `GHSA-FC5Q-39XC-VJPF` / `CVE-2026-112366` — `picomatch` (ReDoS through single-branch repeated extglobs)
 
 - **Advisory:** https://github.com/advisories/GHSA-fc5q-39xc-vjpf (`GHSA-FC5Q-39XC-VJPF` / `CVE-2026-112366`)

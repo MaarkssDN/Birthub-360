@@ -124,7 +124,7 @@ function BH360LogoMark({ size = 44 }: { size?: number }) {
     <span style={{ width: size, height: size }} className="inline-block">
       <BirthHubLogo
         variant="icon"
-        title="Birth Hub 360º"
+        title="Birth Hub 360°"
         className="h-full w-full"
         animated={true}
       />

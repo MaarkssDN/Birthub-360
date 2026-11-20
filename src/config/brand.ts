@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Identidade da plataforma — fonte de verdade única em código.
  *
  * Espelha `identidade-visual/birthhub360/` (Brandbook, Manual Visual, Manual de Produto e Catálogo oficiais de 2026). Qualquer texto institucional da aplicação (título da aba,
@@ -19,7 +19,7 @@
 export const BRAND = {
   id: 'birthhub360',
   /** Nome institucional completo, com o grau. Use em títulos e assinaturas. */
-  name: 'Birth Hub 360º',
+  name: 'Birth Hub 360°',
   /** Sem o grau — para espaços estreitos (sidebar recolhida, chip, breadcrumb). */
   shortName: 'Birth Hub',
   /** O que a plataforma é, em uma linha. */
@@ -30,7 +30,7 @@ export const BRAND = {
   /** Subtítulo institucional sob o wordmark na tela de entrada (`WelcomeScreen`). */
   ecosystemLabel: 'Ecossistema de Alta Performance',
   description:
-    'Ecossistema inteligente e unificado que atua como central de comando 360º para negócios — conectando dados, IA, automações e processos, e transformando o que está disperso em direção clara.',
+    'Ecossistema inteligente e unificado que atua como central de comando 360° para negócios — conectando dados, IA, automações e processos, e transformando o que está disperso em direção clara.',
   /** Os três movimentos da marca: dados → decisões → execução (brand book, p. 02). */
   pillars: ['Inteligência', 'Conexão', 'Execução'] as const,
   /** Valores (brand book, p. 10). Em inglês no original. */
@@ -98,3 +98,4 @@ export const BRAND = {
 } as const;
 
 export type BrandInfo = typeof BRAND;
+

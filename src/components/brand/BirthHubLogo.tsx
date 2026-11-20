@@ -1,4 +1,4 @@
-import symbol from '../../../identidade-visual/birthhub360/logos/birthhub360-simbolo.svg';
+﻿import symbol from '../../../identidade-visual/birthhub360/logos/birthhub360-simbolo.svg';
 import icon from '../../../identidade-visual/birthhub360/logos/birthhub360-icone.svg';
 import horizontal from '../../../identidade-visual/birthhub360/logos/birthhub360-logo-horizontal.svg';
 
@@ -47,7 +47,7 @@ export function BirthHubLogo({
 }
 
 export function BirthHubSignature({ className }: { className?: string }) {
-  return <BirthHubLogo variant="horizontal" className={className} title="Birth Hub 360º" />;
+  return <BirthHubLogo variant="horizontal" className={className} title="Birth Hub 360°" />;
 }
 
 export function BirthHubWordmark({ className }: { className?: string }) {
@@ -202,3 +202,4 @@ export function BirthHubOfficialEmblem({
     </svg>
   );
 }
+
