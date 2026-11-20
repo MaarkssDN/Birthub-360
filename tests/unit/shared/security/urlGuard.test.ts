@@ -156,6 +156,41 @@ describe('assertSafeExternalUrl — rejeita IP privado/loopback/metadata', () =>
     );
   });
 
+  it('rejeita link-local IPv6 fora do prefixo textual fe80: (fe80::/10 → febf::)', async () => {
+    lookupMock.mockResolvedValue([{ address: 'febf::1', family: 6 }]);
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('https://webhook.exemplo.com/')).rejects.toThrow(
+      /não permitido/i,
+    );
+  });
+
+  it('rejeita IPv4-mapeado em forma hex com IPv4 privado embutido (::ffff:a00:1 = 10.0.0.1)', async () => {
+    lookupMock.mockResolvedValue([{ address: '::ffff:a00:1', family: 6 }]);
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('https://webhook.exemplo.com/')).rejects.toThrow(
+      /não permitido/i,
+    );
+  });
+
+  // Handoff `.agents/handoffs/00-para-01-ipv6-mapeado-forma-nao-canonica.md`:
+  // a forma expandida não-canônica (mesmos bytes, sem compressão `::`) deve ser
+  // classificada igual — o guard não pode depender do prefixo textual `::ffff:`.
+  it('rejeita IPv4-mapeado em forma expandida não-canônica (0:0:0:0:0:ffff:a00:1 = 10.0.0.1)', async () => {
+    lookupMock.mockResolvedValue([{ address: '0:0:0:0:0:ffff:a00:1', family: 6 }]);
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('https://webhook.exemplo.com/')).rejects.toThrow(
+      /não permitido/i,
+    );
+  });
+
+  it('rejeita IPv4-mapeado em forma totalmente expandida (0000:...:ffff:0a00:0001 = 10.0.0.1)', async () => {
+    lookupMock.mockResolvedValue([{ address: '0000:0000:0000:0000:0000:ffff:0a00:0001', family: 6 }]);
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(assertSafeExternalUrl('https://webhook.exemplo.com/')).rejects.toThrow(
+      /não permitido/i,
+    );
+  });
+
   it('rejeita "localhost" mesmo sem ser um IP literal', async () => {
     const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
     await expect(assertSafeExternalUrl('https://localhost/')).rejects.toThrow(/não permitido/i);
@@ -212,6 +247,22 @@ describe('assertSafeExternalUrl — aceita URL pública normal', () => {
     // 6to4 2002:0808:0808:: embute 8.8.8.8 — IPv4 público, mesmo nível de confiança
     // de um A record público direto.
     lookupMock.mockResolvedValue([{ address: '2002:808:808::', family: 6 }]);
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(
+      assertSafeExternalUrl('https://webhook.exemplo.com/rest/1/token/'),
+    ).resolves.toBeUndefined();
+  });
+
+  it('aceita IPv4-mapeado em forma hex com IPv4 público embutido (::ffff:808:808 = 8.8.8.8)', async () => {
+    lookupMock.mockResolvedValue([{ address: '::ffff:808:808', family: 6 }]);
+    const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
+    await expect(
+      assertSafeExternalUrl('https://webhook.exemplo.com/rest/1/token/'),
+    ).resolves.toBeUndefined();
+  });
+
+  it('aceita IPv4-mapeado em forma expandida com IPv4 público embutido (0:0:0:0:0:ffff:808:808 = 8.8.8.8)', async () => {
+    lookupMock.mockResolvedValue([{ address: '0:0:0:0:0:ffff:808:808', family: 6 }]);
     const { assertSafeExternalUrl } = await import('@/shared/security/urlGuard');
     await expect(
       assertSafeExternalUrl('https://webhook.exemplo.com/rest/1/token/'),

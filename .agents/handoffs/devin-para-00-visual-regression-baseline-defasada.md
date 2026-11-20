@@ -1,7 +1,7 @@
 De: Devin (Coordenacao)
 Para: Agente 08 (QA e Release) — executor da investigacao; Agente 08A condicionado para dispatch/commit de baseline; Agente 24 revisor obrigatorio antes do merge
 Onda: release-readiness / saneamento CI
-Status: em-andamento
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: nenhum (nao bloqueia merge funcionalmente, mas deixa todo PR vermelho)
 Sprint destino: proximo ciclo de saneamento, na reconciliacao PR x achados do audit
@@ -96,14 +96,27 @@ Evidencias:
 
 ## Resolucao
 
-(preencher pelo agente executor)
-Status: aberto
-Responsavel:
+Status: resolvido
+Responsavel: Agente 00 (papel Agente 08) — verificacao e baixa formal; execucao
+real da rebaseline feita via PR #419 (Agente 08A/Devin)
 Commit/Evidencia:
-Data:
-Risco residual:
-Handoff reverso:
-Proximo passo:
+- PR #419 `ci/visual-baselines-linux` mergeado em `main` (commit `c93f9a4be`).
+- Run de verificacao na `main`: workflow "Visual Regression Tests",
+  run `44573014428`, headSha `30cdbdc28` (2026-11-19T17:03:39Z) —
+  "Visual Regression" success, "Visual Regression Gate" success,
+  "Detectar escopo visual" success, conclusion=success.
+- Evidencia complementar ja registrada: PR #422 verde no mesmo gate
+  (run 44557156887, 2026-11-19); origin/main em `30cdbdc28`+ pos-#422.
+Data: 2026-11-19
+Risco residual: baixo. A verificacao cobre o gate em `main` no headSha
+`30cdbdc28`. Se merges futuros de UI regenerarem o episodio (baseline
+defasada de novo), o handoff e o precedente ficam como referencia; o
+criterio de aceite ja foi atendido (run verde em gate de controle).
+Handoff reverso: nenhum.
+Proximo passo: observacao passiva — os proximos PRs com mudanca em
+`src/features/intelligence/**` ou tokens globais devem manter o gate
+visual verde; se falhar novamente com diff estavel, reabrir como novo
+episodio. Licao registrada em `.agents/runs/00-baixa-handoff-visual-baseline-20261119.md`.
 Handoff aberto em: 2026-11-18 por Devin, a pedido do usuario (item 3 do ciclo
 pos-#418: "1, 2 e 3" — fechar PR redundante, monitorar CI, registrar debito
 visual).

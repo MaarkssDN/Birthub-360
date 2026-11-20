@@ -88,16 +88,13 @@ conflito (ex.: só 1 ou 2 dos três containers de pé), pare os containers parci
 (`docker stop birthhub_postgres birthhub_redis birthhub_meilisearch`) e rode de novo, ou alinhe
 `COMPOSE_PROJECT_NAME` com o worktree que os criou primeiro.
 
-### 6. Testes marcados como skip e o motivo de cada um
+### 6. Testes marcados como skip e status das suítes especiais
 
-- `tests/e2e/visual.spec.ts` — `describe.skip` no arquivo inteiro (5 testes). Baseline commitada é
-  só `*-chromium-win32.png` (Windows); o CI (`ubuntu-latest`) sempre buscaria `*-chromium-linux.png`,
-  que nunca existiu. Gerar a baseline Linux exige rodar `--update-snapshots` **dentro do CI** — o
-  Chromium local (`chromium-1194`) é um build diferente do que o CI instala
-  (`chromium_headless_shell-1228` na verificação de 2026-08-15), e builds diferentes rasterizam
-  fonte/anti-aliasing de forma sutilmente distinta o bastante para produzir falso positivo/negativo
-  numa comparação pixel-a-pixel. Handoff aberto:
-  `.agents/handoffs/onda-6/14-para-08-baselines-visuais-linux.md`.
+- `tests/e2e/visual.spec.ts` — **ATIVO** (não mais skipado; reativado a partir do commit `dff5677d8`).
+  Baselines oficiais para Linux (`*-chromium-linux.png`) e Windows (`*-chromium-win32.png`) já se
+  encontram commitadas em `tests/e2e/visual.spec.ts-snapshots/`. A suíte roda no pipeline com
+  `maxDiffPixels: 1300` para absorver variações normais de anti-aliasing entre runners efêmeros
+  e o relógio dinâmico sem mascarar regressões de layout reais (conforme PR #407 e #501).
 - `tests/container/postgres.test.ts` — `describe.skip` a menos que `RUN_INFRA_TESTS=1` esteja
   setado (usa `testcontainers`, sobe sua própria imagem `birthhub360/postgres-intelligence:16` — mais
   pesado que o resto do gate, por isso opt-in). Passa 1/1 com a variável setada.

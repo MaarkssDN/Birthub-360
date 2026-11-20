@@ -103,9 +103,8 @@ prevê expor esse simulador. Mantido intacto nesta onda (P3 — fora do caminho
 afetado pelo F3).
 
 Status do handoff: item 07 **resolvido** (verificação concluída, sem alteração de
-código necessária nos caminhos vivos). Itens 02 e 08 seguem com seus donos.
+código necessária nos caminhos vivos). Item 17 **resolvido** (desacoplamento verificado e persistido). Itens 02 e 08 seguem com seus donos.
 
-<<<<<<< HEAD
 ## Reverificação — item do Agente 07 (2026-11-17, worktree `agente-07-handoffs`, base `main@414a0ca5f`)
 
 Reconfirmado em `main` e **débito técnico encerrado**:
@@ -120,9 +119,8 @@ Reconfirmado em `main` e **débito técnico encerrado**:
   (0 ocorrências em `src/` e `tests/`) — o simulador heurístico sem consumidor
   sinalizado como pendência em 2026-11-15 foi removido. Nada a fazer.
 
-Item 07 permanece **resolvido**. Status do handoff mantido `em-andamento`
-(itens dos Agentes 02 e 08 pendentes de verificação/execução por seus donos).
-=======
+Item 07 permanece **resolvido**.
+
 ## Verificação e Desacoplamento de Dados Mockados — Agente 17 (2026-11-18)
 
 - **Desacoplamento em Cadência & Reativação:** O serviço `SelfDrivingCrmService` (`src/features/cadence/services/selfDrivingCrm.service.ts`) foi desacoplado de dados em memória — em runtime de produção, busca leads reais via `prisma.lead` e sinais de engajamento via `prisma.conversationSignal` com isolamento estrito de `organizationId`. `optOutRepo` agora injeta por padrão o repositório durável `prismaOptOutRepository`.
@@ -132,4 +130,3 @@ Item 07 permanece **resolvido**. Status do handoff mantido `em-andamento`
 ## Triagem Agente 17 — 2026-11-18 (branch `agente/17-handoffs-20261117`)
 
 Re-verificação de staleness: a parcela do Agente 17 permanece **resolvida** — `selfDrivingCrm.service.ts` segue desacoplado de dados mock em produção (`prisma.lead` L263, `prisma.conversationSignal` L115, `prismaOptOutRepository` injetado por padrão L36). Nenhuma ação pendente para o 17 neste handoff; `Status: em-andamento` mantido pelos itens dos Agentes 02 e 08.
->>>>>>> origin/agente/17-handoffs-20261117

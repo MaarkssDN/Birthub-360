@@ -145,23 +145,28 @@ export async function persistWhatsAppMessage(input: PersistWhatsAppMessageInput)
   const waEventType =
     input.direction === 'inbound' ? 'WHATSAPP_MESSAGE_RECEIVED' : 'WHATSAPP_MESSAGE_SENT';
   await domainEventMesh
-    .publish<WhatsAppMessageEventPayload>({
-      eventType: waEventType,
-      eventVersion: '1.0.0',
-      organizationId: input.organizationId,
-      correlationId: `wa-${input.waMessageId}`,
-      producer: 'integrations.whatsapp',
-      aggregateId: lead?.id || contact?.id || phoneE164,
-      payload: {
-        waMessageId: input.waMessageId,
-        phoneE164,
-        body: input.body,
-        direction: input.direction,
-        contactId: contact?.id ?? null,
-        leadId: lead?.id ?? null,
-        remoteJid: input.remoteJid,
+    .publish<WhatsAppMessageEventPayload>(
+      {
+        eventType: waEventType,
+        eventVersion: '1.0.0',
+        organizationId: input.organizationId,
+        correlationId: `wa-${input.waMessageId}`,
+        producer: 'integrations.whatsapp',
+        aggregateId: lead?.id || contact?.id || phoneE164,
+        payload: {
+          waMessageId: input.waMessageId,
+          phoneE164,
+          body: input.body,
+          direction: input.direction,
+          contactId: contact?.id ?? null,
+          leadId: lead?.id ?? null,
+          remoteJid: input.remoteJid,
+        },
       },
-    })
+      // waMessageId é a identidade estável da mensagem no WhatsApp — reentregas do Baileys
+      // (comuns após reconexão) colidem aqui e não duplicam o evento na outbox.
+      { idempotencyKey: `wa-message:${input.waMessageId}` },
+    )
     .catch((err) => {
       logger.warn(
         { err, waMessageId: input.waMessageId },
@@ -228,22 +233,28 @@ export async function persistWhatsAppMessage(input: PersistWhatsAppMessageInput)
 
     // Onda 05 - Opção 3: Publicação de sinal de engajamento no domainEventMesh
     await domainEventMesh
-      .publish({
-        eventType: 'ENGAGEMENT_SIGNAL_RECEIVED',
-        eventVersion: '1.0.0',
-        organizationId: input.organizationId,
-        correlationId: `wa-msg-${input.waMessageId}`,
-        producer: 'whatsapp-message-service',
-        aggregateId: lead.id,
-        payload: {
-          integration: 'whatsapp',
-          waMessageId: input.waMessageId,
-          direction: input.direction,
-          phoneE164,
-          bodyLength: input.body?.length ?? 0,
-          hasContent: Boolean(input.body),
+      .publish(
+        {
+          eventType: 'ENGAGEMENT_SIGNAL_RECEIVED',
+          eventVersion: '1.0.0',
+          organizationId: input.organizationId,
+          correlationId: `wa-msg-${input.waMessageId}`,
+          producer: 'whatsapp-message-service',
+          aggregateId: lead.id,
+          payload: {
+            integration: 'whatsapp',
+            waMessageId: input.waMessageId,
+            direction: input.direction,
+            phoneE164,
+            bodyLength: input.body?.length ?? 0,
+            hasContent: Boolean(input.body),
+          },
         },
-      })
+        // Prefixo distinto do evento WHATSAPP_MESSAGE_* acima: o UNIQUE da outbox é
+        // (organizationId, idempotencyKey) — sem ele, os dois eventos da mesma mensagem
+        // colidiriam e um deles seria descartado.
+        { idempotencyKey: `wa-engagement:${input.waMessageId}` },
+      )
       .catch((meshErr) => {
         logger.warn(
           { meshErr, leadId: lead.id },

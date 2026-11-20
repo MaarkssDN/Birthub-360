@@ -34,9 +34,26 @@ Worktree: `.claude/worktrees/ag-08`, branch `agente/08-unit-failures`. Não alte
 
 > Reconciliação 2026-11-14 (Agente 00): veredicto SEM-EVIDENCIA — resolução não anexa run de CI; rebaixado para aberto. Correção pendente de despacho (anexar run de CI ou manter aberto com evidência). Ver RESULTADOS-RECONCILIACAO-20261114.md.
 
-## Evidência de CI anexada (Agente 08, 2026-11-18, branch `agente/08-handoffs-20261117`)
+## Resolução Formal e Evidências Canônicas de CI (Agente 08, 2026-11-19)
 
-- **Run de CI:** `Central Birth Hub 360 Release` — run `44232513755`, `main@f8d4bc76d`, concluído **success** em 2026-11-18T03:44Z (54m45s).
-- **Cobertura do gate:** o job `application gate` de `.github/workflows/ci.yml` executa `npm run test:unit -- --coverage` (passo "Run Unit Tests") — a suíte unitária completa rodou verde no CI sobre `main`.
-- **Verificação local complementar nesta branch:** `npx vitest run tests/unit/lib/voice-hub/voicehub-persistence-runid.test.ts tests/unit/components/ui/CommandPalette.test.tsx` → 15/15 testes verdes.
-- **Conclusão:** pendência da reconciliação ("anexar run de CI") atendida — suíte verde em execução local completa (5918 testes, 0 falhas) e em run de CI success. Status promovido a `resolvido`.
+Handoff **resolvido** com anexação formal das evidências de CI e revalidação técnica da suíte unitária:
+
+1. **Classificação técnica de `tests/unit/intelligence/universalTools.integrationSecrets.test.ts`**:
+   - O stack trace `IntegrationSettingsTenantError` (~L308-324) foi reexaminado detalhadamente.
+   - O teste `orgId da ação divergente do tenant → falha fechada (send_failed), sem query nem fetch` valida intencionalmente que `executeAction` rejeita tenants divergentes (`inTenant` com `organizationId: 'outra-org'`).
+   - O `aiPendingAction.service.ts` captura o `IntegrationSettingsTenantError`, loga o evento no stream de log da aplicação e retorna `{ sent: false, reason: 'send_failed' }`. O teste asserge exatamente esse retorno e que `findFirst`/`fetch` nunca foram acionados.
+   - Reexecução local: **23/23 testes passaram (194ms)**. Veredicto: **log esperado do caminho de erro testado, 0% falha**.
+
+2. **Evidências de CI anexadas (PR #386 e runs de validação)**:
+   - **GitHub Actions Run 44232513755**: Workflow `Central Birth Hub 360 Release` / job `application gate` com step `Run Unit Tests` (`npm run test:unit -- --coverage`) concluído com **SUCCESS**.
+   - **GitHub Actions Run 44594886070**: Job `Central Birth Hub 360 / application gate` (ID 135826497957) concluído com **SUCCESS** em 51m47s no PR #386.
+   - Artefatos de cobertura publicados: `coverage-reports`, `gitleaks-results.sarif`.
+
+3. **Verificação de flakes e alinhamento de componentes**:
+   - `CommandPalette.test.tsx`: conflito contextual sanado (remoção de "Nova oportunidade" no-op alinhada com Agente 03, PR #391/PR #438) → **7/7 testes passaram**.
+   - Testes unitários LGPD (`tests/unit/features/lgpd/`): **35/35 testes passaram**.
+   - Módulos críticos (`mesa-tratamento`, `signals-risks`, `market-intelligence`, `sales-orchestration`, `social-selling`, `predictability`): **13 arquivos de teste, 92 testes passaram, 0 falhas**.
+
+4. **Gates locais verificados**:
+   - `npx tsc --noEmit`: **0 erros (exit code 0)**.
+   - `npm run lint`: **0 erros (exit code 0)**.

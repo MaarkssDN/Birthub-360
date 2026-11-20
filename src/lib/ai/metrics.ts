@@ -208,3 +208,21 @@ export function setTokenQuotaLimitGauge(
     quotaTokens,
   );
 }
+
+/**
+ * FINOPS-006 (DEBT-0014): contador de eventos em que o TokenQuotaService degradou em modo
+ * fail-open — ou seja, a checagem de quota foi pulada/zerada porque Postgres ou Redis estavam
+ * indisponíveis. Sem este sinal, um outage de banco torna a governança de tokens invisível
+ * (tudo retorna "uso = 0" e nenhuma chamada é bloqueada ou alertada). O fail-open em si é
+ * decisão documentada em tokenQuota.service.ts; este contador existe para que a degradação
+ * seja observável e alertável em vez de silenciosa.
+ */
+export const aiTokenQuotaFailOpenTotal = new client.Counter({
+  name: 'ai_token_quota_fail_open_total',
+  help: 'Eventos em que a governança de quota de tokens degradou para fail-open por indisponibilidade de Postgres/Redis.',
+  labelNames: ['reason'] as const,
+});
+
+export function recordTokenQuotaFailOpen(reason: string): void {
+  aiTokenQuotaFailOpenTotal.inc({ reason: reason || 'unknown' });
+}

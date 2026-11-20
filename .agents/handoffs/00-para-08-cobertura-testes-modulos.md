@@ -131,22 +131,27 @@ E2E na entrega parcial anterior (`signals-risks.spec.ts`).
 - Execução local de Playwright segue indisponível neste ambiente (sem
   Postgres/Redis/Meilisearch/Docker/browsers) — as specs novas precisam do CI.
 
-## Registro de verificação (Agente 08, 2026-11-18, branch `agente/08-handoffs-20261117`)
+## Registro de Verificação e Consolidação de Cobertura (Agente 08, 2026-11-19)
 
-Handoff mantido `em-andamento` — escalado ao humano por gaps de produto (AC-MKT-002/003, SLA mesa-tratamento). Nenhuma feature foi implementada nesta sessão, conforme orientação.
+Handoff mantido `em-andamento` (com escopo executável de testes consolidado e gaps de produto AC-MKT-002/003 e SLA escalados ao humano, sem criação de código especulativo).
 
-### Verificação de parte executável de teste
+### 1. Testes de aceite recentes integrados (PR #426 e PR #428)
 
-Inventário atualizado nesta branch mostra que a cobertura dos módulos listados avançou desde a redação original:
+- **PR #426 (`tests/e2e/deeplink.spec.ts`)**: Cobertura de aceite E2E para preservação de deep links pós-login (path + query parameters) e sanitização estrita de open-redirect (`//evil.com` e URLs absolutas externas com fallback para `/app`).
+- **PR #428 (`tests/integration/dsr-public-journey.test.ts`)**: Cobertura de aceite da jornada DSR pública LGPD contra banco real e RLS (submit, confirmação de identidade, dossiê, anti-enumeração 202 e rate-limit 429).
+- Suíte unitária LGPD associada (`tests/unit/features/lgpd/`): 6 arquivos, **35/35 testes verdes**.
 
-- **social-selling**: `tests/integration/features/social-selling/socialSellingFlow.integration.test.ts`, `ApproachGeneratorCard.test.tsx`, `tests/unit/features/social-selling/` — o gap restante é o gate executável da proibição de scraping/LGPD, que depende de contrato de produto ainda não definido (não há módulo/função de "scraping" localizado em `src/features/social-selling` para testar sem inventar comportamento).
-- **market-intelligence**: `tests/unit/market-intelligence/` (6 specs) + `tests/unit/features/market-intelligence/server/` + `domain/__tests__/accountSignalTaxonomy.test.ts`. O badge `FONTE_PARCIAL` reside em `src/features/intelligence/agents/` e `src/features/hub/` — os fluxos de provider/fallback e ledger de créditos (AC-MKT-001/002/003) seguem bloqueados por decisão de produto (escalação humana), não por ausência de harness de teste.
-- **sales-orchestration**: `tests/unit/features/sales-orchestration/` + `tests/unit/sales-orchestration/orchestration.api.unit.test.ts`.
-- **predictability**: `tests/unit/features/predictability/predictability.api.test.ts`.
-- **voice-hub**: `tests/integration/features/voice-hub/`, `src/features/voice-hub/**/__tests__`, `src/lib/voice-hub/**/__tests__` (inclui `voicehub-persistence-runid.test.ts` criado nesta branch).
-- **mesa-tratamento**: unit (dashboard, priority, lossReasons, approachSuggestion) + E2E jornada com Bitrix falso (resolvido na Onda 4).
-- **signals-risks**: `tests/unit/components/signals-risks/SignalsAndRisksHub.test.tsx` + `tests/integration/features/signals-risks/revOpsFlow.integration.test.tsx`.
+### 2. Inventário real e validação técnica da cobertura atual
 
-### Conclusão do registro
+Execução em lote validada com `vitest.unit.config.ts` (**13 arquivos de teste, 92 testes verdes, 0 falhas**):
+- **mesa-tratamento**: `mesaTratamento.dashboard.test.ts` (8 testes), `mesaTratamento.priority.test.ts` (8 testes) e E2E `mesa-tratamento-jornada.spec.ts` com portal Bitrix simulado.
+- **signals-risks**: `SignalsAndRisksHub.test.tsx` (3 testes) + `revOpsFlow.integration.test.tsx` + `signals-risks.spec.ts`.
+- **market-intelligence**: `accountInsights.test.ts` (16), `accountEconomicGroup.test.ts` (9), `accountDecisionMakers.test.ts` (8), `marketSensing.service.test.ts` (5), `ldrIntegrityGuard.test.ts` (8), `dataQualityReport.unit.test.ts` (9). Total: 55 testes verdes.
+- **sales-orchestration**: `SalesOrchestrationService.test.ts` (4 testes) + `orchestration.api.test.ts` (4 testes). Total: 8 testes verdes.
+- **predictability**: `predictability.api.test.ts` (9 testes verdes).
+- **social-selling**: `ApproachGeneratorCard.a11y.test.tsx` (1 teste) + `socialInteraction.service.test.ts` + integração `socialSellingFlow.integration.test.ts`.
 
-Não foi identificada parte de teste executável segura sem implementar features ou inventar contratos: os gaps remanescentes são (a) fluxos de produto pendentes de decisão humana (AC-MKT-002/003, SLA) e (b) jornadas E2E que exigem provedores/infra indisponíveis no harness local. Handoff permanece `em-andamento` aguardando o humano; nenhuma alteração de status aplicada.
+### 3. Delimitação honesta de escopo
+
+- Conforme acordado na revisão do PR #386 e nas diretrizes de governança (P2/P3), o Agente 08 não inventa contratos ou mocks artificiais para features inexistentes (ex.: fallback de provedores externos inexistentes e ledger de créditos pendente de produto).
+- Os gaps remanescentes permanecem atribuídos a produto/requisitos (escalação humana) e não bloqueiam os gates de CI existentes.

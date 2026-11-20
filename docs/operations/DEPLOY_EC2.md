@@ -96,9 +96,14 @@ npm run build
 Os scripts de deploy executam os seguintes passos:
 
 1. **Build local:** Compila TypeScript, cria bundle Vite e server bundle
-2. **SCP:** Transfere `dist/` para o servidor EC2
-3. **Docker restart:** Reinicia o container `birthhub-app`
-4. **Healthcheck automático:** Verifica se a aplicação está respondendo
+2. **SCP:** Transfere `dist/`, `node_modules/` e `prisma/` para o servidor EC2
+3. **Migrações (fail-closed):** `docker exec birthhub-app npx prisma migrate deploy` roda **antes** do restart — se falhar, o deploy aborta sem reiniciar o container
+4. **Docker restart:** Reinicia o container `birthhub-app`
+5. **Healthcheck fail-closed:** `/health/ready` com retry (intervalo de 5s, timeout de 90s, configurável via `HEALTHCHECK_TIMEOUT`/`HEALTHCHECK_INTERVAL`); em falha o script aborta com exit != 0 e imprime os últimos logs do container
+6. **Versão registrada:** `DEPLOY_VERSION` (git SHA + timestamp UTC) é gravado em `/home/ubuntu/birthhub-360/DEPLOY_VERSION` para auditoria/rollback — este fluxo não reconstrói imagem Docker, então a "tag" é a versão de deploy registrada
+
+> [!NOTE]
+> O `deploy-ec2.ps1` ainda não implementa os passos 3–6 (migração, healthcheck fail-closed e versão) — paridade pendente, ver handoff DEBT-0001.
 
 ---
 

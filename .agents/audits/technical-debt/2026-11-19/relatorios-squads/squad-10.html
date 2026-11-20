@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Auditoria de Dívida Técnica — Squad 10 · Dados, Banco e Multi-Tenancy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #0ea5e9;
+      --p0: #ef4444;
+      --p1: #f97316;
+      --p2: #eab308;
+      --p3: #3b82f6;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 24px;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header {
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-p0 { background: rgba(239, 68, 68, 0.2); color: var(--p0); border: 1px solid var(--p0); }
+    .badge-p1 { background: rgba(249, 115, 22, 0.2); color: var(--p1); border: 1px solid var(--p1); }
+    .badge-p2 { background: rgba(234, 179, 8, 0.2); color: var(--p2); border: 1px solid var(--p2); }
+    .badge-p3 { background: rgba(59, 130, 246, 0.2); color: var(--p3); border: 1px solid var(--p3); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; background: var(--card-bg); border-radius: 8px; overflow: hidden; }
+    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: #111827; font-size: 13px; text-transform: uppercase; color: var(--muted); }
+    tr:hover { background: rgba(255, 255, 255, 0.02); }
+    .agent-tag { font-weight: 600; color: var(--accent); }
+    .file-tag { font-family: monospace; font-size: 12px; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; color: #38bdf8; }
+    .nav-back { display: inline-block; margin-bottom: 16px; color: var(--muted); text-decoration: none; font-size: 14px; }
+    .nav-back:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="../dashboard/index.html" class="nav-back">← Voltar ao Dashboard Global de Dívidas Técnicas</a>
+    <header>
+      <div style="font-size: 12px; text-transform: uppercase; color: var(--accent); font-weight: bold; letter-spacing: 1px;">Auditoria Independente por Squad</div>
+      <h1 style="margin: 8px 0 4px 0;">Squad 10 · Dados, Banco e Multi-Tenancy</h1>
+      <p style="color: var(--muted); margin: 0;"><strong>Coordenador Responsável:</strong> 10 — Mara (Coordenador de Dados & Persistência)</p>
+      <p style="color: var(--muted); font-size: 13px; margin-top: 4px;">Data de Auditoria: 2026-11-19 | Total de Especialistas: 10 | Status: CONSOLIDADO</p>
+    </header>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Especialista</th>
+          <th>Papel Técnico</th>
+          <th>Severidade</th>
+          <th>Dívida Técnica Identificada</th>
+          <th>Impacto Potencial</th>
+          <th>Esforço</th>
+          <th>Arquivo Alvo</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+          <tr>
+            <td class="agent-tag">10</td>
+            <td style="font-weight: 600;">Mara</td>
+            <td style="color: var(--muted); font-size: 13px;">Coordenador de Dados</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Consultas raw SQL no repositório sem validação automatizada de predicado tenantId.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Risco de vazamento de dados entre clientes.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/lib/db/index.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">11</td>
+            <td style="font-weight: 600;">Pietro</td>
+            <td style="color: var(--muted); font-size: 13px;">Schema Prisma & Modelagem</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Cascatas de deleção (onDelete: Cascade) em tabelas volumosas como Activity e TimelineEvent.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Locks exclusivos severos e lentidão extrema ao excluir tenants ou contatos.</td>
+            <td style="font-size: 13px;">Alto</td>
+            <td><span class="file-tag">prisma/schema.prisma</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">12</td>
+            <td style="font-weight: 600;">Vera</td>
+            <td style="color: var(--muted); font-size: 13px;">Migrações & Rollouts</td>
+            <td><span class="badge badge-p0">P0</span></td>
+            <td>B-05: Migrações adicionam colunas NOT NULL com valor DEFAULT dinâmico travando tabelas de produção.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Downtime durante deploy e bloqueio de novas conexões.</td>
+            <td style="font-size: 13px;">Alto</td>
+            <td><span class="file-tag">prisma/migrations/**</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">13</td>
+            <td style="font-weight: 600;">Nilo</td>
+            <td style="color: var(--muted); font-size: 13px;">RLS & Multi-Tenant</td>
+            <td><span class="badge badge-p0">P0</span></td>
+            <td>B-10: Índices ausentes na coluna tenantId em tabelas secundárias, gerando sequential scan em RLS.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Degradação exponencial da latência do banco sob volume.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/lib/db/rls/policies.sql</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">14</td>
+            <td style="font-weight: 600;">Bia</td>
+            <td style="color: var(--muted); font-size: 13px;">Seeds & Ambientes Demo</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>B-06: Seeds de demonstração utilizam IDs estáticos que colidem com bancos reais em migrações.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Poluição acidental de dados de produção com registros fictícios.</td>
+            <td style="font-size: 13px;">Baixo</td>
+            <td><span class="file-tag">prisma/seed.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">15</td>
+            <td style="font-weight: 600;">Olavo</td>
+            <td style="color: var(--muted); font-size: 13px;">Retenção & Expurgo</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Rotina de limpeza de dados expirados executa em lote único em vez de particionamento com pausas.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Picos de utilização de CPU e I/O no banco durante a madrugada.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/lib/db/retention/cleanup.job.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">16</td>
+            <td style="font-weight: 600;">Cora</td>
+            <td style="color: var(--muted); font-size: 13px;">Query Tuning & Índices</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Padrão N+1 queries na renderização de timelines e listagens de leads com contatos e tarefas.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Dezenas de queries desnecessárias por requisição no endpoint principal de CRM.</td>
+            <td style="font-size: 13px;">Alto</td>
+            <td><span class="file-tag">src/features/crm/leads.service.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">17</td>
+            <td style="font-weight: 600;">Remo</td>
+            <td style="color: var(--muted); font-size: 13px;">Cache & Redis</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Chaves de cache secundárias sem prefixo de tenant (tenantId) isolado, gerando colisões.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Possibilidade de visualização de cache de outro cliente em cenários de alta concorrência.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/lib/cache/redis.client.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">18</td>
+            <td style="font-weight: 600;">Ayla</td>
+            <td style="color: var(--muted); font-size: 13px;">Data Lineage & Auditoria</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Tabela audit_logs sem trigger de bloqueio de UPDATE/DELETE no PostgreSQL (não é estritamente append-only).</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Possibilidade teórica de adulteração de trilha de auditoria por usuários privilegiados.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">prisma/schema.prisma</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">19</td>
+            <td style="font-weight: 600;">Bruno</td>
+            <td style="color: var(--muted); font-size: 13px;">Integridade & Backup</td>
+            <td><span class="badge badge-p0">P0</span></td>
+            <td>B-14: Ausência de pre-commit hook rígido para bloquear arquivos de dump .sql e backups no repositório Git.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Vazamento catastrófico de dados e credenciais em commits acidentais.</td>
+            <td style="font-size: 13px;">Baixo</td>
+            <td><span class="file-tag">scripts/backup/verify-integrity.ts</span></td>
+          </tr>
+        
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
