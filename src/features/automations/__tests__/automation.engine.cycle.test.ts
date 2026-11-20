@@ -65,10 +65,11 @@ describe('AutomationEngine — detecção de ciclos', () => {
 
     await automationEngine.handle(event);
 
-    // A e B rodam uma vez cada na cadeia; a reentrada de A é abortada, sem recursão infinita.
-    expect(mocks.notificationCreate.mock.calls.length).toBeLessThan(10);
+    // Fluxo esperado: A→(B aninhado), depois B→(A aninhado) = 4 execuções; toda reentrada na própria
+    // cadeia é abortada. Valor exato detecta tanto recursão sem guarda quanto bloqueio excessivo.
+    expect(mocks.notificationCreate.mock.calls.length).toBe(4);
     expect(mocks.loggerError).toHaveBeenCalledWith(
-      expect.objectContaining({ automationId: 'A' }),
+      expect.objectContaining({ automationId: 'A', chain: ['A', 'B', 'A'] }),
       expect.stringContaining('Ciclo de automação detectado'),
     );
   });
