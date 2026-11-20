@@ -124,6 +124,16 @@ Se um achado `HIGH`/`CRITICAL` precisar ser aceito temporariamente (ex.: sem fix
   cadeia de dependência. Qualquer outro achado `HIGH`/`CRITICAL` novo continua bloqueando o gate
   normalmente.
 
+### `GHSA-7589-6FVF-X4PW` — `effect` (via `@prisma/config` / `prisma`) — ReDoS em `Schema.TemplateLiteral`
+
+- **Advisory:** https://github.com/advisories/GHSA-7589-6fvf-x4pw
+- **Severidade reportada pelo `npm audit`:** high (CWE-1333; `effect@<=3.22.0`, propagando para `@prisma/config` e `prisma`)
+- **Cadeia:** `prisma` → `@prisma/config` → `effect`. O `fixAvailable` do `npm audit` é um downgrade semver-major (`prisma@6.12.0`), inaceitável sem uma onda própria de migração do Prisma.
+- **Motivo:** o `effect` é usado pelo CLI/config do Prisma (migrate/generate) em tempo de build e deploy, não processa entrada não confiável de usuário em runtime da aplicação. Aceito temporariamente até haver `effect` corrigido na cadeia do Prisma sem downgrade major.
+- **Dono:** Agente 00 / Agente 99 (Vito). **Aprovação:** decisão humana do usuário em 2026-11-20 (PR de B-14/B-04/ciclos de automação).
+- **Data de registro:** 2026-11-20. **Reavaliar em:** 2026-12-20
+- **Espelhos:** `.trivyignore.yaml` e `allow-ghsas` do Dependency Review não precisaram de entrada — ambos passaram em CI sem ela. Se passarem a falhar, espelhar este ID.
+
 ## Débito conhecido, fora do escopo deste waiver (severidade abaixo do gate)
 
 ### `GHSA-8988-4f7v-96qf` / `CVE-2026-54285` — `@opentelemetry/core` (Unbounded memory allocation em W3C Baggage propagation)
