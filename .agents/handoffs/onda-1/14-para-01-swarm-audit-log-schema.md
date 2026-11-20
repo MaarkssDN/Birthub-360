@@ -25,7 +25,7 @@ Stack do servidor: `TypeError ... at getSwarmAuditLogs (src/features/intelligenc
 Relatório completo: `.agents/runs/14-repro-500-404-agentes-20261119.md`.
 
 ## Alteração necessária
-Decisão do 01 (com 07/21): (a) criar model `SwarmAuditLog` (organizationId, agentType, action, parameters Json, result,
+Decisão do 01 (com 07/21): (a) criar model `SwarmAuditLog` (id — chave primária única, ex.: `String @id @default(cuid())` —, organizationId, agentType, action, parameters Json, result,
 errorMessage, userId, sessionId, correlationId, ipAddress, userAgent, createdAt) com migração, índice
 (organizationId, createdAt) e RLS por tenant; ip/userAgent são dado pessoal (LGPD, definir retenção com 21/01A); ou
 (b) declarar a auditoria fora do produto e avisar 07 para remover o serviço. Rodar `npx prisma generate`.
