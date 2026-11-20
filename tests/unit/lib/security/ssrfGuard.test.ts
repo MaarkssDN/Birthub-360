@@ -42,6 +42,12 @@ describe('ssrfGuard — isPrivateOrInternalHost (checagem literal, sem DNS)', ()
     '::ffff:7f00:1', // IPv4-mapeado em hex — forma que new URL() produz (127.0.0.1)
     '::ffff:a00:1', // idem, 10.0.0.1
     '::ffff:c0a8:1', // idem, 192.168.0.1
+    // IPv4-mapeado em forma expandida não-canônica (mesmos bytes, sem `::`) —
+    // handoff `.agents/handoffs/00-para-01-ipv6-mapeado-forma-nao-canonica.md`.
+    '0:0:0:0:0:ffff:7f00:1', // = ::ffff:7f00:1 -> 127.0.0.1
+    '0:0:0:0:0:ffff:a00:1', // = ::ffff:a00:1 -> 10.0.0.1
+    '0:0:0:0:0:ffff:c0a8:1', // = ::ffff:c0a8:1 -> 192.168.0.1
+    '0000:0000:0000:0000:0000:ffff:0a00:0001', // forma totalmente expandida -> 10.0.0.1
     // Mecanismos de transição IPv4-em-IPv6 com IPv4 embutido privado
     // (handoff `.agents/handoffs/onda-2/15-para-01-ssrf-ipv6-transition-ranges.md`):
     '2002:7f00:1::', // 6to4 -> 127.0.0.1
@@ -74,6 +80,7 @@ describe('ssrfGuard — isPrivateOrInternalHost (checagem literal, sem DNS)', ()
     '2001:4860:4860::8888', // IPv6 público
     '2606:4700:4700::1111',
     '::ffff:808:808', // IPv4-mapeado público (8.8.8.8)
+    '0:0:0:0:0:ffff:808:808', // forma expandida do mapeado público (8.8.8.8)
     '2002:808:808::', // 6to4 com IPv4 embutido público (8.8.8.8)
     '64:ff9b::808:808', // NAT64 com IPv4 embutido público (8.8.8.8)
     '::808:808', // IPv4-compatible com IPv4 embutido público (8.8.8.8)

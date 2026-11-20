@@ -3,6 +3,21 @@ import { logger } from '../../../lib/logger.js';
 import { advanceCadenceRunPendingTouch } from '../application/cadenceService.js';
 import { buildDeps, parseCadenceSequenceDefinition } from '../jobs/cadenceRun.worker.js';
 
+/**
+ * DEBT-0009 — o enum `CadenceTouchResult` do banco não tem `Pending` (handoff ao Agente 01);
+ * o adaptador Prisma persiste a tentativa pendente de voz como `Skipped` mantendo
+ * `providerMessageId`. Portanto, no banco, "pendente de confirmação" = resultado `Skipped` (ou
+ * `Pending`, caso o enum venha a existir) COM o `providerMessageId` do webhook — `skipped`
+ * legítimos (janela comercial/rate limit) nunca têm `providerMessageId`.
+ */
+function isUnresolvedPendingAttempt(attempt: {
+  result: unknown;
+  providerMessageId: string | null;
+}): boolean {
+  const result = String(attempt.result);
+  return attempt.providerMessageId != null && (result === 'Pending' || result === 'Skipped');
+}
+
 export async function resolveCadencePendingVoiceTouch(
   organizationId: string,
   leadId: string,
@@ -16,13 +31,16 @@ export async function resolveCadencePendingVoiceTouch(
       leadId,
       status: { in: ['Active', 'Paused'] },
     },
-    select: { id: true, sequenceId: true, attempts: true },
+    select: {
+      id: true,
+      sequenceId: true,
+      touchAttempts: { select: { result: true, providerMessageId: true } },
+    },
   });
 
   for (const row of runs) {
-    const attempts = row.attempts as any[];
-    const hasPending = attempts.some(
-      (a) => a.result === 'pending' && a.providerMessageId === providerMessageId,
+    const hasPending = row.touchAttempts.some(
+      (a) => a.providerMessageId === providerMessageId && isUnresolvedPendingAttempt(a),
     );
     if (!hasPending) continue;
 

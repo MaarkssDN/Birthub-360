@@ -208,11 +208,15 @@ export function validateSonarConfig(options = {}) {
     }
 
     // Verify coverage report path
+    // DEBT-0026: o Sonar deve medir unitário E integração — ambos os lcov.info são
+    // gerados no job sonarcloud do sonarqube.yml (test:unit e test:integration --coverage).
     const reportPaths = props['sonar.javascript.lcov.reportPaths'];
-    if (!reportPaths || !reportPaths.includes('coverage/unit/lcov.info')) {
-      errors.push(
-        `sonar-project.properties 'sonar.javascript.lcov.reportPaths' must point to 'coverage/unit/lcov.info' (found: '${reportPaths || 'none'}').`
-      );
+    for (const requiredPath of ['coverage/unit/lcov.info', 'coverage/integration/lcov.info']) {
+      if (!reportPaths || !reportPaths.includes(requiredPath)) {
+        errors.push(
+          `sonar-project.properties 'sonar.javascript.lcov.reportPaths' must include '${requiredPath}' (found: '${reportPaths || 'none'}').`
+        );
+      }
     }
   }
 
