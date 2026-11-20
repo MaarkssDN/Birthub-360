@@ -85,25 +85,27 @@ const CHANNEL_FROM_DB: Record<'Email' | 'WhatsApp' | 'Voice', CadenceChannel> = 
   Voice: 'voice',
 };
 
-const TOUCH_RESULT_TO_DB: Record<CadenceTouchResult, 'Sent' | 'Failed' | 'Skipped'> = {
+const TOUCH_RESULT_TO_DB: Record<CadenceTouchResult, 'Sent' | 'Failed' | 'Skipped' | 'Pending'> = {
   sent: 'Sent',
   failed: 'Failed',
   skipped: 'Skipped',
-  pending: 'Skipped',
+  pending: 'Pending',
 };
 
-const TOUCH_RESULT_FROM_DB: Record<'Sent' | 'Failed' | 'Skipped', CadenceTouchResult> = {
-  Sent: 'sent',
-  Failed: 'failed',
-  Skipped: 'skipped',
-};
+const TOUCH_RESULT_FROM_DB: Record<'Sent' | 'Failed' | 'Skipped' | 'Pending', CadenceTouchResult> =
+  {
+    Sent: 'sent',
+    Failed: 'failed',
+    Skipped: 'skipped',
+    Pending: 'pending',
+  };
 
 type CadenceTouchAttemptRow = {
   touchOrder: number;
   attemptNumber: number;
   channel: 'Email' | 'WhatsApp' | 'Voice';
   attemptedAt: Date;
-  result: 'Sent' | 'Failed' | 'Skipped';
+  result: 'Sent' | 'Failed' | 'Skipped' | 'Pending';
   skipReason: string | null;
   error: string | null;
   providerMessageId: string | null;

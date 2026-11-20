@@ -31,6 +31,8 @@ import { clientLogger } from '../lib/clientLogger.js';
 import { downloadBlob } from '../lib/nativeDownload.js';
 import { SoundFX } from '../lib/soundEffects.js';
 import { toast } from '../lib/toast.js';
+import { fromPrismaLeadStatus } from '../lib/enumMap.js';
+import type { CrmPipeline } from '../features/crm360/crm360.types.js';
 import type { Lead, LeadStatus } from '../types/index.js';
 import {
   CrmBoardBatchBar,
@@ -92,6 +94,46 @@ export function formatStageLabel(stage: LeadStatus): string {
   return STAGE_DISPLAY_LABELS[stage] ?? stage;
 }
 
+export function resolveDealPipelineColumns(
+  pipelines: CrmPipeline[],
+  activeLeads: Lead[] = [],
+): { columns: LeadStatus[]; stageLabelsByStatus: Partial<Record<LeadStatus, string>> } {
+  const dealPipeline =
+    pipelines.find((p) => p.entity === 'Negocio' && p.active) ??
+    pipelines.find((p) => p.entity === 'Negocio');
+  const rawStages = dealPipeline?.stages ?? [];
+  const sortedStages = [...rawStages].sort((a, b) => a.sortOrder - b.sortOrder);
+
+  const dynamicColumns: LeadStatus[] = [];
+  const stageLabelsByStatus: Partial<Record<LeadStatus, string>> = { ...STAGE_DISPLAY_LABELS };
+
+  for (const stage of sortedStages) {
+    if (!stage.leadStatus) continue;
+    const status = fromPrismaLeadStatus(stage.leadStatus);
+    if (!dynamicColumns.includes(status)) {
+      dynamicColumns.push(status);
+    }
+    const trimmedName = stage.name?.trim();
+    // Se o estágio no banco foi customizado pelo tenant (diferente do nome bruto da chave enum),
+    // preserva o rótulo customizado; caso seja o nome legado bruto de piloto (ex: 'Piloto VTECH'),
+    // mantém o rótulo neutro desacoplado de STAGE_DISPLAY_LABELS.
+    if (trimmedName && trimmedName !== status) {
+      stageLabelsByStatus[status] = trimmedName;
+    } else if (!stageLabelsByStatus[status]) {
+      stageLabelsByStatus[status] = status;
+    }
+  }
+
+  const baseColumns = dynamicColumns.length > 0 ? dynamicColumns : [...DEAL_COLUMNS];
+  for (const lead of activeLeads) {
+    if (lead.status && !baseColumns.includes(lead.status)) {
+      baseColumns.push(lead.status);
+    }
+  }
+
+  return { columns: baseColumns, stageLabelsByStatus };
+}
+
 interface CrmBoardProps {
   funnel?: 'Lead' | 'Negocio';
   embedded?: boolean;
@@ -102,7 +144,6 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
   const [searchParams, setSearchParams] = useSearchParams();
   const funnel: 'Lead' | 'Negocio' =
     funnelProp ?? (searchParams.get('funnel') === 'Negocio' ? 'Negocio' : 'Lead');
-  const columns = funnel === 'Lead' ? LEAD_COLUMNS : DEAL_COLUMNS;
   const {
     leads,
     setLeads,
@@ -113,6 +154,40 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
     handleCardEnrich,
     handleBatchEnrich,
   } = useCrmBoardController(funnel);
+  const [dealPipelines, setDealPipelines] = useState<CrmPipeline[]>([]);
+
+  useEffect(() => {
+    if (funnel !== 'Negocio') return;
+    let cancelled = false;
+    api
+      .get<CrmPipeline[]>('/api/crm/pipelines')
+      .then((res) => {
+        if (!cancelled && Array.isArray(res)) {
+          setDealPipelines(res);
+        }
+      })
+      .catch(() => {
+        // Mantém fallback imediato (DEAL_COLUMNS + STAGE_DISPLAY_LABELS) em caso de falha/offline.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [funnel]);
+
+  const { columns, stageLabelsByStatus } = useMemo(() => {
+    if (funnel === 'Lead') {
+      return {
+        columns: LEAD_COLUMNS,
+        stageLabelsByStatus: STAGE_DISPLAY_LABELS,
+      };
+    }
+    return resolveDealPipelineColumns(dealPipelines, leads);
+  }, [funnel, dealPipelines, leads]);
+
+  const getStageLabel = useCallback(
+    (stage: LeadStatus): string => stageLabelsByStatus[stage] ?? formatStageLabel(stage),
+    [stageLabelsByStatus],
+  );
   // Deep link do registro aberto: o lead/negócio selecionado vive no parâmetro `lead` da URL (não
   // em useState local) para que a URL seja a fonte de verdade — compartilhável, sobrevive a
   // reload, e o botão Voltar do navegador fecha o drawer antes de sair da tela (Onda A, Agente 00).
@@ -263,7 +338,9 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
       const nextStatus = columns[nextIndex];
       if (!nextStatus) return undefined; // já está na primeira/última coluna
 
-      const rect = context.droppableRects.get(nextStatus);
+      const rect =
+        context.droppableRects.get(nextStatus) ??
+        context.droppableRects.get(getStageLabel(nextStatus));
       if (!rect) return undefined;
 
       event.preventDefault();
@@ -276,7 +353,7 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
       // real da coluna, ela sempre vence essa comparação pra ela mesma.
       return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
     },
-    [columns],
+    [columns, getStageLabel],
   );
 
   const sensors = useSensors(
@@ -295,13 +372,19 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
         coluna (drop numa coluna vazia) ou o id de um card dentro dela (drop entre dois cards). */
   const resolveStatusFromOverId = useCallback(
     (overId: string | number): LeadStatus | null => {
-      if (typeof overId === 'string' && columns.includes(overId as LeadStatus)) {
-        return overId as LeadStatus;
+      if (typeof overId === 'string') {
+        if (columns.includes(overId as LeadStatus)) {
+          return overId as LeadStatus;
+        }
+        const matchedByLabel = columns.find((col) => getStageLabel(col) === overId);
+        if (matchedByLabel) {
+          return matchedByLabel;
+        }
       }
       const overLead = leads.find((l) => l.id === overId);
       return overLead ? overLead.status : null;
     },
-    [leads, columns],
+    [leads, columns, getStageLabel],
   );
 
   const leadLabel = useCallback((lead: Lead | null | undefined) => {
@@ -394,28 +477,30 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
     () => ({
       onDragStart({ active }) {
         const lead = leads.find((l) => l.id === active.id);
-        return `${leadLabel(lead)} selecionado para mover, coluna atual ${lead?.status ?? ''}. Use as setas para escolher o destino, espaço para soltar, Esc para cancelar.`;
+        const currentLabel = lead?.status ? getStageLabel(lead.status) : '';
+        return `${leadLabel(lead)} selecionado para mover, coluna atual ${currentLabel}. Use as setas para escolher o destino, espaço para soltar, Esc para cancelar.`;
       },
       onDragOver({ active, over }) {
         const lead = leads.find((l) => l.id === active.id);
         const status = over ? resolveStatusFromOverId(over.id) : null;
         if (!status) return `${leadLabel(lead)} não está sobre nenhuma coluna.`;
-        return `${leadLabel(lead)} sobre a coluna ${status}.`;
+        return `${leadLabel(lead)} sobre a coluna ${getStageLabel(status)}.`;
       },
       onDragEnd({ active, over }) {
         const lead = leads.find((l) => l.id === active.id);
         const status = over ? resolveStatusFromOverId(over.id) : null;
         if (!status) return `Movimentação de ${leadLabel(lead)} cancelada.`;
-        return `${leadLabel(lead)} movido para ${status}.`;
+        return `${leadLabel(lead)} movido para ${getStageLabel(status)}.`;
       },
       onDragCancel({ active }) {
         const lead = leads.find((l) => l.id === active.id);
+        const currentLabel = lead?.status ? getStageLabel(lead.status) : '';
         // `leads` nunca é tocado durante o drag (só no drop, em handleDragEnd), então
         // lead.status aqui já é a coluna de origem, sem precisar de nenhuma ref à parte.
-        return `Movimentação de ${leadLabel(lead)} cancelada. O card permanece em ${lead?.status ?? ''}.`;
+        return `Movimentação de ${leadLabel(lead)} cancelada. O card permanece em ${currentLabel}.`;
       },
     }),
-    [leads, leadLabel, resolveStatusFromOverId],
+    [leads, leadLabel, resolveStatusFromOverId, getStageLabel],
   );
 
   const handleToggleSelect = useCallback((leadId: string) => {
@@ -610,7 +695,7 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
               {columns.map((status) => (
                 <KanbanColumn
                   key={status}
-                  status={status}
+                  status={getStageLabel(status) as LeadStatus}
                   leads={groupedLeads[status] ?? []}
                   onCardClick={handleCardClick}
                   onCardEnrich={handleCardEnrich}
@@ -641,7 +726,7 @@ export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps
         selectedLeadIds={selectedLeadIds}
         filteredCount={filteredLeads.length}
         handleSelectAll={handleSelectAll}
-        stageOptions={columns.map((col) => ({ value: col, label: formatStageLabel(col) }))}
+        stageOptions={columns.map((col) => ({ value: col, label: getStageLabel(col) }))}
         handleBatchMoveStage={handleBatchMoveStage}
         isBatchUpdating={isBatchUpdating}
         users={users}

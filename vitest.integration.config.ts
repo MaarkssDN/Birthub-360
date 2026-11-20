@@ -56,7 +56,11 @@ export default defineConfig({
     testTimeout: 30000,
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'json-summary', 'html'],
+      // 'lcov' adicionado (DEBT-0026, agente 08): sonar-project.properties aponta
+      // sonar.javascript.lcov.reportPaths para coverage/integration/lcov.info — sem o
+      // reporter 'lcov' nenhum arquivo era escrito ali e a cobertura de integração
+      // nunca alimentava o SonarQube.
+      reporter: ['text', 'json', 'json-summary', 'html', 'lcov'],
       // Diretório próprio — ver o mesmo comentário em vitest.unit.config.ts. Sem isto, este run
       // sobrescrevia (por rodar depois, no script `coverage`/no job de CI) o relatório de
       // cobertura unitária no './coverage' default compartilhado.

@@ -84,6 +84,7 @@ async function processEvent(
   webhookUrl: string,
   eventType: string,
   bitrixRecordId: string,
+  deliveryFingerprint: string,
 ): Promise<void> {
   const spec = SUPPORTED_EVENTS[eventType];
   if (!spec) return;
@@ -160,25 +161,32 @@ async function processEvent(
       });
 
       // Onda 05 - Opção 3: Publicação em tempo real no domainEventMesh para disparar agentes e workflows
+      // O webhook de saída do Bitrix não traz id de evento — a identidade estável da entrega é o
+      // fingerprint do corpo autenticado (o mesmo que o replay guard usa). Prefixos distintos por
+      // evento do mesh: o UNIQUE da outbox é (organizationId, idempotencyKey) e os dois publishes
+      // desta mesma entrega não podem colidir entre si.
       await domainEventMesh
-        .publish<BitrixWebhookEventPayload>({
-          eventType: 'BITRIX_WEBHOOK_RECEIVED',
-          eventVersion: '1.0.0',
-          organizationId,
-          correlationId: `bitrix-inbound-${bitrixRecordId}-${Date.now()}`,
-          producer: 'bitrix-webhook-service',
-          aggregateId: lead.id,
-          payload: {
-            connectionId,
-            eventType,
-            entityType: spec.entity,
-            bitrixRecordId,
-            leadId: lead.id,
-            stageId,
-            qualification,
-            leadFields,
+        .publish<BitrixWebhookEventPayload>(
+          {
+            eventType: 'BITRIX_WEBHOOK_RECEIVED',
+            eventVersion: '1.0.0',
+            organizationId,
+            correlationId: `bitrix-inbound-${bitrixRecordId}-${Date.now()}`,
+            producer: 'bitrix-webhook-service',
+            aggregateId: lead.id,
+            payload: {
+              connectionId,
+              eventType,
+              entityType: spec.entity,
+              bitrixRecordId,
+              leadId: lead.id,
+              stageId,
+              qualification,
+              leadFields,
+            },
           },
-        })
+          { idempotencyKey: `bitrix-webhook:${deliveryFingerprint}` },
+        )
         .catch((meshErr) => {
           logger.warn(
             { meshErr, leadId: lead.id },
@@ -187,22 +195,25 @@ async function processEvent(
         });
 
       await domainEventMesh
-        .publish({
-          eventType: 'ENGAGEMENT_SIGNAL_RECEIVED',
-          eventVersion: '1.0.0',
-          organizationId,
-          correlationId: `bitrix-sync-${bitrixRecordId}-${Date.now()}`,
-          producer: 'bitrix-webhook-service',
-          aggregateId: lead.id,
-          payload: {
-            integration: 'bitrix24',
-            eventType,
-            entityType: spec.entity,
-            bitrixRecordId,
-            leadId: lead.id,
-            stageId,
+        .publish(
+          {
+            eventType: 'ENGAGEMENT_SIGNAL_RECEIVED',
+            eventVersion: '1.0.0',
+            organizationId,
+            correlationId: `bitrix-sync-${bitrixRecordId}-${Date.now()}`,
+            producer: 'bitrix-webhook-service',
+            aggregateId: lead.id,
+            payload: {
+              integration: 'bitrix24',
+              eventType,
+              entityType: spec.entity,
+              bitrixRecordId,
+              leadId: lead.id,
+              stageId,
+            },
           },
-        })
+          { idempotencyKey: `bitrix-engagement:${deliveryFingerprint}` },
+        )
         .catch((meshErr) => {
           logger.warn(
             { meshErr, leadId: lead.id },
@@ -303,10 +314,13 @@ async function handleWebhook(req: Request, res: Response): Promise<void> {
   // só evento+registro faria o segundo, legítimo, ser descartado como replay do primeiro. O corpo
   // completo (inclui `ts` quando o Bitrix o envia) diferencia entregas reais distintas; só bate
   // quando os bytes são efetivamente os mesmos. Ver webhookReplayGuard.ts.
-  const replayCheck = await claimWebhookDelivery(
-    'bitrix',
-    webhookDeliveryFingerprint(connectionId, eventType, bitrixRecordId, JSON.stringify(body)),
+  const deliveryFingerprint = webhookDeliveryFingerprint(
+    connectionId,
+    eventType,
+    bitrixRecordId,
+    JSON.stringify(body),
   );
+  const replayCheck = await claimWebhookDelivery('bitrix', deliveryFingerprint);
   if (replayCheck === 'replay') {
     res.status(200).json({ success: true, outcome: 'duplicate-delivery' });
     return;
@@ -319,6 +333,7 @@ async function handleWebhook(req: Request, res: Response): Promise<void> {
       connection.webhookUrl,
       eventType,
       bitrixRecordId,
+      deliveryFingerprint,
     );
     res.status(200).json({ success: true });
   } catch (error: any) {

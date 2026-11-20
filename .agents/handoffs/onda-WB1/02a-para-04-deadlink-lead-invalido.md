@@ -4,10 +4,10 @@
 De: 02A — UX Research & Usability
 Para: 04 — CRM e BI
 Onda: WB-1
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: DEBT-0065
-Sprint destino: a definir pelo 00
+Sprint destino: Onda B (WB-1)
 ```
 
 ## Problema
@@ -34,3 +34,9 @@ No catch: (a) se erro for 404 → toast "Lead não encontrado ou sem permissão 
 ## Contexto adicional
 
 Mesmo padrão de honestidade de estados já aplicado em `CrmBoard.tsx:592-599` (EmptyState de erro com retry) e `SinglePageDashboard.tsx:100-131`.
+
+## Resolução (Agente 04 — 2026-11-19)
+
+- Implementado helper `isLeadNotFoundError` e estado `loadError: 'network' | null` em `src/features/crm/components/LeadDetailDrawer.tsx`.
+- Erros 404 disparam `toast.error('Lead não encontrado ou sem permissão de acesso')` e fecham o drawer; falhas de rede mantêm o drawer aberto com painel de erro e botão `"Tentar novamente"`.
+- Validação: `tsc --noEmit` (exit 0) e `biome lint` (0 diagnósticos). Relatório completo em `.agents/runs/correcoes-wb1/04-ux11-deadlink-lead.md`.
