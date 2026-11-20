@@ -1,23 +1,41 @@
 #!/usr/bin/env bash
-# scripts/db/backup-encrypted.sh — Backup do PostgreSQL criptografado (AES-256)
-# DEBT-0002: rotina padrão agora executa pg_dump REAL + cifra AES-256.
-# Antes gravava um placeholder que reportava sucesso falso.
+# scripts/db/backup-encrypted.sh — Backup criptografado do PostgreSQL (AES-256-CBC)
+# DEBT-0002 / Agente 10 — Infraestrutura, Observabilidade e SRE
 #
 # Uso:
-#   ./backup-encrypted.sh                 # dump + cifra -> $BACKUP_DIR/*.dump.enc
-#   ./backup-encrypted.sh --verify-crypto # somente teste de round-trip AES-256
+#   ./scripts/db/backup-encrypted.sh                  # backup real: pg_dump -> gzip -> AES-256
+#   ./scripts/db/backup-encrypted.sh --verify-crypto   # self-test do pipeline criptográfico
 #
-# Variáveis:
-#   BACKUP_DIR              destino dos backups (default: /tmp/birthhub_backups)
-#   BACKUP_ENCRYPTION_KEY   chave AES-256 (obrigatória para backup real; nunca commitar)
-#   DATABASE_URL            URL de conexão pg_dump (ou PGHOST/PGUSER/PGPASSWORD/PGDATABASE)
-#   BACKUP_RETENTION_DAYS   remove backups mais antigos que N dias (default: 30; 0=desativa)
+# Variáveis de ambiente (backup real):
+#   BACKUP_DATABASE_URL         (obrigatória) — connection string do banco alvo.
+#                                Fallback: DATABASE_URL (com aviso no log).
+#   BACKUP_ENCRYPTION_PASSPHRASE (obrigatória) — senha simétrica AES-256.
+#                                NUNCA usar valor default; falha fechada sem ela.
+#   BACKUP_DEST_DIR             destino local dos artefatos .sql.gz.enc
+#                                (default: /var/backups/birthhub; BACKUP_DIR é alias legado).
+#   BACKUP_RETENTION_DAYS       retenção local em dias (default: 30; 0 desativa).
+#   BACKUP_SCP_TARGET           opcional — "user@host:/dir/remoto" para cópia via scp.
+#                                Se definido e a cópia falhar, o script FALHA (exit != 0).
+#   BACKUP_ALL_DATABASES=1      usa pg_dumpall (cluster inteiro) em vez de pg_dump.
+#   BACKUP_DOCKER_CONTAINER     fallback docker quando pg_dump/pg_dumpall não existem
+#                                no PATH (default: birthhub_postgres, convenção do repo).
+#
+# PENDENTE OPERACIONAL (decisão humana/ops — ver handoff do Agente 10):
+#   Este script NÃO se auto-agenda. Em produção é necessário um cron/systemd timer
+#   ou agendador externo apontando para cá, com as envs acima provisionadas via
+#   secret manager. A cópia fora do host (BACKUP_SCP_TARGET ou equivalente) também
+#   é configuração operacional, não embutida.
 set -euo pipefail
 
-BACKUP_DIR="${BACKUP_DIR:-/tmp/birthhub_backups}"
-mkdir -p "$BACKUP_DIR"
+die() {
+  echo "[backup-encrypted] ERRO: $*" >&2
+  exit 1
+}
 
 if [[ "${1:-}" == "--verify-crypto" ]]; then
+  # Self-test não exige destino de backup gravável em /var; usa tmpdir como fallback.
+  BACKUP_DIR="${BACKUP_DIR:-${TMPDIR:-/tmp}}"
+  mkdir -p "$BACKUP_DIR"
   echo "[Crypto-Check] Testando cifra e decifra AES-256 simétrica..."
   TEST_PAYLOAD="BIRTHUB360_CANONICAL_TEST_PAYLOAD_$(date +%s)_$$"
   CIPHER_FILE="$BACKUP_DIR/test_crypto.enc"
@@ -53,57 +71,106 @@ if [[ "${1:-}" == "--verify-crypto" ]]; then
   exit 0
 fi
 
-fail() { echo "[Backup] ERRO: $1" >&2; exit 1; }
+# ---------------------------------------------------------------------------
+# Backup real: pg_dump (ou pg_dumpall) -> gzip -> AES-256-CBC, tudo em pipeline
+# (o dump em claro nunca toca o disco). Qualquer falha -> exit != 0.
+# ---------------------------------------------------------------------------
 
-command -v pg_dump >/dev/null 2>&1 || fail "pg_dump não encontrado no PATH."
-command -v openssl >/dev/null 2>&1 || fail "openssl não encontrado no PATH."
+BACKUP_DIR="${BACKUP_DIR:-/var/backups/birthhub}"
+BACKUP_DEST_DIR="${BACKUP_DEST_DIR:-$BACKUP_DIR}"
+mkdir -p "$BACKUP_DEST_DIR" \
+  || die "não foi possível criar o diretório de destino $BACKUP_DEST_DIR."
 
-KEY="${BACKUP_ENCRYPTION_KEY:-}"
-[[ -n "$KEY" ]] || fail "BACKUP_ENCRYPTION_KEY não definida. Backup exige chave AES-256 (nunca commitar)."
-
-if [[ -z "${DATABASE_URL:-}" && -z "${PGHOST:-}" ]]; then
-  fail "Nenhuma conexão configurada: defina DATABASE_URL ou PGHOST/PGUSER/PGPASSWORD/PGDATABASE."
+DB_URL="${BACKUP_DATABASE_URL:-${DATABASE_URL:-}}"
+[[ -n "$DB_URL" ]] || die "BACKUP_DATABASE_URL (ou DATABASE_URL) não definida. Configure a connection string do banco alvo."
+if [[ -z "${BACKUP_DATABASE_URL:-}" ]]; then
+  echo "[backup-encrypted] AVISO: BACKUP_DATABASE_URL ausente; usando DATABASE_URL." >&2
 fi
+
+PASSPHRASE="${BACKUP_ENCRYPTION_PASSPHRASE:-}"
+[[ -n "$PASSPHRASE" ]] || die "BACKUP_ENCRYPTION_PASSPHRASE não definida. Backup sem criptografia é proibido."
+
+RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-30}"
+DOCKER_CONTAINER="${BACKUP_DOCKER_CONTAINER:-birthhub_postgres}"
+ALL_DATABASES="${BACKUP_ALL_DATABASES:-0}"
+
+command -v openssl >/dev/null 2>&1 || die "openssl não encontrado no PATH."
+command -v gzip >/dev/null 2>&1 || die "gzip não encontrado no PATH."
+
+DUMP_BIN=""
+if [[ "$ALL_DATABASES" == "1" ]]; then
+  DUMP_BIN="pg_dumpall"
+else
+  DUMP_BIN="pg_dump"
+fi
+
+run_dump() {
+  # Emite o dump SQL em stdout. Falha do dump propaga via pipefail.
+  if command -v "$DUMP_BIN" >/dev/null 2>&1; then
+    if [[ "$ALL_DATABASES" == "1" ]]; then
+      "$DUMP_BIN" "$DB_URL" --clean --if-exists
+    else
+      "$DUMP_BIN" "$DB_URL" --clean --if-exists --no-owner --no-privileges
+    fi
+  elif docker ps --format '{{.Names}}' 2>/dev/null | grep -qx "$DOCKER_CONTAINER"; then
+    echo "[backup-encrypted] $DUMP_BIN não encontrado; usando container $DOCKER_CONTAINER..." >&2
+    if [[ "$ALL_DATABASES" == "1" ]]; then
+      docker exec "$DOCKER_CONTAINER" pg_dumpall -U "${POSTGRES_USER:-prospector}" --clean --if-exists
+    else
+      docker exec "$DOCKER_CONTAINER" pg_dump -U "${POSTGRES_USER:-prospector}" -d "${POSTGRES_DB:-prospectordb}" \
+        --clean --if-exists --no-owner --no-privileges
+    fi
+  else
+    die "$DUMP_BIN não encontrado no PATH e container '$DOCKER_CONTAINER' não está ativo."
+  fi
+}
 
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-RAW_FILE="$BACKUP_DIR/birthhub_backup_${TIMESTAMP}.dump"
-BACKUP_FILE="${RAW_FILE}.enc"
-MANIFEST="$BACKUP_DIR/birthhub_backup_${TIMESTAMP}.manifest.json"
+FINAL_FILE="$BACKUP_DEST_DIR/birthhub_backup_${TIMESTAMP}.sql.gz.enc"
+TMP_ENC="$(mktemp "$BACKUP_DEST_DIR/.backup_tmp.XXXXXX")"
+trap 'rm -f "$TMP_ENC"' EXIT
 
-cleanup() { rm -f "$RAW_FILE"; }
-trap cleanup EXIT
-
-echo "[Backup] pg_dump -> $RAW_FILE ..."
-if [[ -n "${DATABASE_URL:-}" ]]; then
-  pg_dump "$DATABASE_URL" --format=custom --compress=6 --file="$RAW_FILE"
-else
-  pg_dump --format=custom --compress=6 --file="$RAW_FILE"
-fi
-[[ -s "$RAW_FILE" ]] || fail "pg_dump produziu arquivo vazio."
-
-echo "[Backup] Cifrando AES-256 -> $BACKUP_FILE ..."
-openssl enc -aes-256-cbc -pbkdf2 -pass "pass:$KEY" -in "$RAW_FILE" -out "$BACKUP_FILE"
-[[ -s "$BACKUP_FILE" ]] || fail "arquivo cifrado vazio."
-
-# Manifesto com integridade (hash do cifrado + tamanho) para verificação futura
-SHA256="$(sha256sum "$BACKUP_FILE" | awk '{print $1}')"
-SIZE="$(stat -c%s "$BACKUP_FILE" 2>/dev/null || stat -f%z "$BACKUP_FILE")"
-cat > "$MANIFEST" <<EOF
-{
-  "file": "$(basename "$BACKUP_FILE")",
-  "createdAt": "$(date -Is)",
-  "format": "pg_dump custom + AES-256-CBC/PBKDF2",
-  "sha256": "$SHA256",
-  "bytes": $SIZE,
-  "retentionDays": ${BACKUP_RETENTION_DAYS:-30}
-}
-EOF
-
-# Retenção: remove .dump.enc + .manifest mais antigos que N dias
-RETENTION="${BACKUP_RETENTION_DAYS:-30}"
-if [[ "$RETENTION" =~ ^[0-9]+$ && "$RETENTION" -gt 0 ]]; then
-  find "$BACKUP_DIR" -name 'birthhub_backup_*.dump.enc' -mtime "+$RETENTION" -delete
-  find "$BACKUP_DIR" -name 'birthhub_backup_*.manifest.json' -mtime "+$RETENTION" -delete
+TARGET_LABEL="${DB_URL##*@}"
+[[ "$TARGET_LABEL" == "$DB_URL" ]] && TARGET_LABEL="[connection-string]"
+echo "[backup-encrypted] Iniciando dump de $TARGET_LABEL -> $FINAL_FILE"
+if ! run_dump | gzip -c | openssl enc -aes-256-cbc -pbkdf2 -salt -pass "pass:$PASSPHRASE" -out "$TMP_ENC" 2>/dev/null; then
+  die "pipeline de backup falhou (dump/gzip/openssl). Nenhum backup foi gerado."
 fi
 
-echo "[Backup] Concluído: $BACKUP_FILE (${SIZE} bytes, sha256=$SHA256)"
+[[ -s "$TMP_ENC" ]] || die "arquivo cifrado vazio ou ausente — backup inválido."
+
+# Verificação de integridade ponta a ponta: decifra e testa o gzip ANTES de
+# declarar sucesso. Se a cifra estiver corrompida ou a chave errada, falha aqui.
+if ! openssl enc -d -aes-256-cbc -pbkdf2 -pass "pass:$PASSPHRASE" -in "$TMP_ENC" 2>/dev/null | gzip -t; then
+  die "verificação de integridade falhou (decifragem/gunzip). Backup NÃO é restaurável."
+fi
+
+mv "$TMP_ENC" "$FINAL_FILE"
+trap - EXIT
+
+SIZE_BYTES=$(stat -c %s "$FINAL_FILE" 2>/dev/null || stat -f %z "$FINAL_FILE")
+SHA256=$(sha256sum "$FINAL_FILE" | awk '{print $1}')
+[[ "$SIZE_BYTES" -gt 0 ]] || die "arquivo final vazio após move."
+
+echo "[backup-encrypted] Backup real gerado e verificado:"
+echo "  arquivo : $FINAL_FILE"
+echo "  tamanho : $SIZE_BYTES bytes"
+echo "  sha256  : $SHA256"
+
+# Retenção local configurável.
+if [[ "$RETENTION_DAYS" =~ ^[0-9]+$ ]] && [[ "$RETENTION_DAYS" -gt 0 ]]; then
+  PURGED=$(find "$BACKUP_DEST_DIR" -maxdepth 1 -name 'birthhub_backup_*.sql.gz.enc' -type f -mtime +"$RETENTION_DAYS" -print -delete | wc -l)
+  echo "[backup-encrypted] Retenção: ${RETENTION_DAYS}d — $PURGED arquivo(s) antigo(s) removido(s)."
+fi
+
+# Cópia remota opcional via scp. Falha aqui = falha real do backup (exit != 0).
+if [[ -n "${BACKUP_SCP_TARGET:-}" ]]; then
+  command -v scp >/dev/null 2>&1 || die "BACKUP_SCP_TARGET definido mas scp não encontrado no PATH."
+  TARGET_DIR="${BACKUP_SCP_TARGET%/}"
+  echo "[backup-encrypted] Enviando cópia remota para $TARGET_DIR ..."
+  scp -q "$FINAL_FILE" "$TARGET_DIR/" || die "scp para $TARGET_DIR falhou. Backup local existe mas a cópia remota não foi confirmada."
+  echo "[backup-encrypted] Cópia remota confirmada em $TARGET_DIR/$(basename "$FINAL_FILE")"
+fi
+
+echo "[backup-encrypted] Backup concluído com sucesso (verificado, criptografado, retido)."
+exit 0
