@@ -7,7 +7,7 @@ Onda: saneamento-handoffs-20261117
 Status: resolvido
 Prioridade: normal
 Bloqueador-ref: nenhum
-Sprint destino: a definir
+Sprint destino: Onda 4
 ```
 
 ## Problema
@@ -64,3 +64,7 @@ Fora da propriedade do Agente 12 — registrado via handoff conforme AGENTS.md �
 - **Evidência:**
   - `npx vitest run tests/unit/lib/voice-hub/voicehub-persistence-runid.test.ts` → 2/2 testes aprovados (17ms).
 - **Status:** resolvido.
+
+## Resolução (Onda 4 — Agente 04 / Téo)
+
+- Substituídas as aspas duplas por template literals (`backticks`) nas constantes `RUN_ID` e `ORG_A` em `tests/integration/voicehub-persistence.test.ts` (linhas 5-6), garantindo interpolação dinâmica por execução, em paridade com `tests/integration/voice-transcript-encryption.test.ts`.

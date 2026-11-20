@@ -9,10 +9,15 @@ vi.mock('../../../lib/queue/redis.js', () => ({
   queuesEnabled: false,
 }));
 
-vi.mock('../automation-idempotency.service.js', () => ({
-  buildTriggerIdempotencyKey: () => 'test-idemp-key',
-  claimAutomationTrigger: vi.fn().mockResolvedValue('claimed'),
-}));
+// buildTriggerIdempotencyKey real (função pura, sha256 estável): a chave de idempotência
+// do outbox para "Enrich lead" deriva dela, então o teste valida determinismo de verdade.
+vi.mock('../automation-idempotency.service.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../automation-idempotency.service.js')>();
+  return {
+    ...actual,
+    claimAutomationTrigger: vi.fn().mockResolvedValue('claimed'),
+  };
+});
 
 vi.mock('../automation-history.service.js', () => ({
   automationHistoryService: {
@@ -207,7 +212,42 @@ describe('AutomationEngine — Extended Actions (P3.1 & P3.4)', () => {
           organizationId: 'org-1',
           aggregateId: 'lead-300',
         }),
+        expect.objectContaining({
+          idempotencyKey: expect.stringMatching(/^lead-enrichment:[0-9a-f]{64}$/),
+        }),
       );
+    });
+
+    it('idempotencyKey é determinística: mesmo evento → mesma chave; evento distinto → chave distinta', async () => {
+      const automation = {
+        id: 'auto-4',
+        name: 'Enriquecer Lead Criado',
+        action: 'Enrich lead',
+        actionConfig: {},
+      };
+      const event = {
+        organizationId: 'org-1',
+        trigger: 'Lead criado' as const,
+        entity: 'Lead' as const,
+        entityId: 'lead-300',
+        data: { status: 'Novo' },
+      };
+
+      await (automationEngine as any).runAction(automation, event);
+      const key1 = (domainEventMesh.publish as any).mock.calls.at(-1)[1].idempotencyKey;
+
+      // Retry da mesma ação sobre o mesmo evento de gatilho → mesma chave (dedup na outbox).
+      await (automationEngine as any).runAction(automation, event);
+      const key2 = (domainEventMesh.publish as any).mock.calls.at(-1)[1].idempotencyKey;
+      expect(key2).toBe(key1);
+
+      // Evento de gatilho genuinamente distinto (outro status) → chave distinta.
+      await (automationEngine as any).runAction(automation, {
+        ...event,
+        data: { status: 'Qualificado' },
+      });
+      const key3 = (domainEventMesh.publish as any).mock.calls.at(-1)[1].idempotencyKey;
+      expect(key3).not.toBe(key1);
     });
   });
 

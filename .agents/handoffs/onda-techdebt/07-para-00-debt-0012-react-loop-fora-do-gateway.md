@@ -3,7 +3,7 @@
 De: 07/13 (IA e Automações / Enxame)
 Para: 00 (Coordenador)
 Onda: techdebt / Trilha D (2026-11-19)
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: DEBT-0012 (🟡, release readiness)
 Sprint destino: próxima onda de governança de runtime de IA
@@ -73,3 +73,13 @@ Atenção a slots: `src/features/intelligence/agents/**` é propriedade do 13;
 - `src/config/env.ts:345` já documenta gap correlato: agentes BDR/Closer/CRM do enxame
   (autonomyRoleRunner) não passam pela trava `AI_PII_EXTERNAL_CONSENT_ORGANIZATIONS` —
   bloqueado por DEBT-0013/decisão humana, fora desta entrega.
+
+## Resolução (Onda 4 — Squad 70: Agentes 70 Orion, 71 Clara e 78 Oz)
+
+- **Implementação (`src/features/intelligence/agents/execution/AgentExecutor.ts`):**
+  - Criado `ReactLoopGovernanceCallbackHandler` (estendendo `BaseCallbackHandler` com `raiseError: true` e `awaitHandlers: true`) injetado em `agent.invoke(..., { callbacks: [governanceCallback] })` dentro de `AgentExecutor.executeWithTools`.
+  - **Pré-inferência por iteração (`handleChatModelStart` / `handleLLMStart`):** estima os tokens do prompt da iteração atual e executa `tokenQuotaService.enforceTokenQuota({ organizationId, requestedModel: toolsModelName, estimatedTokens })` (quando `organizationId` está presente) e `assertAiBudgetNotExceeded()`. Caso a quota ou o orçamento estourem no meio do loop ReAct, registra a falha via `recordAgentFailure` e lança imediatamente a exceção para abortar a chamada antes da inferência no provedor e sem persistir memória parcial como `'Completed'`.
+  - **Pós-inferência por iteração (`handleLLMEnd`):** extrai o consumo real de tokens (ou estimativa de fallback), contabiliza custo na métrica Prometheus `recordAiUsageCost`, incrementa o consumo da organização via `tokenQuotaService.recordUsage` e persiste o registro individual em `AILog` via `logAiUsage`.
+- **Evidência de Testes (`tests/unit/ai/agentExecutor.reactQuota.test.ts`):**
+  - `cmd /c npx vitest run -c vitest.unit.config.ts tests/unit/ai/agentExecutor.reactQuota.test.ts src/features/intelligence/agents/execution/__tests__/AgentExecutor.test.ts src/features/intelligence/agents/__tests__/base.agent.budget.test.ts` — **18/18 testes passando (100%)**.
+  - Coberto loop ReAct multi-iteração (tool call -> resposta final) comprovando chamadas por iteração de `enforceTokenQuota`, `assertAiBudgetNotExceeded`, `logAiUsage`, `recordUsage` e `recordAiUsageCost`, além do cenário de bloqueio na 2ª iteração por `AiTokenQuotaExceededError` abortando antes da 2ª geração e sem persistir resposta parcial.
