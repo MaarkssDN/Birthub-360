@@ -76,7 +76,10 @@ export function BottomSheet({
           )}
 
           {/* Conteúdo com scroll próprio */}
-          <div className="flex-1 overflow-y-auto px-6 pb-safe-area-inset-bottom pb-6">
+          {/* pb = 1.5rem (pb-6) + safe-area-inset-bottom: a classe `pb-safe-area-inset-bottom`
+              não existia em nenhum CSS/Tailwind (referência morta — auditoria DEM-20261115-001);
+              substituída por arbitrary value que soma o inset real do notch/home indicator. */}
+          <div className="flex-1 overflow-y-auto px-6 pb-[calc(1.5rem_+_env(safe-area-inset-bottom,0px))]">
             {children}
           </div>
         </Drawer.Content>

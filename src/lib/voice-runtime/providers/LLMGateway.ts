@@ -137,6 +137,12 @@ class LLMProviderGateway {
     let tokensUsed = Math.ceil((prompt.length + systemInstruction.length) / 4);
     let isFallback = false;
 
+    // systemInstruction é instrução de sistema fornecida pelo chamador (definição do agente/
+    // orquestrador), não texto livre do usuário final — quem interpola dados não confiáveis no
+    // system prompt mitiga na origem (wrapUntrustedContent / UNTRUSTED_CONTENT_GUARD_INSTRUCTION,
+    // mesmo padrão de knowledge-copilot/reranker). Este gateway é transporte: o prompt do usuário
+    // final sempre vai no campo `user`/`contents`, nunca no systemInstruction. O CodeQL não modela
+    // essa separação de papéis, daí o falso positivo suprimido nos sinks abaixo.
     // The preferred provider gets first attempt. Gemini is always the final fallback and the Set
     // removes the duplicate when Gemini itself is preferred.
     const providerChain: ProviderName[] = [preferredProvider, 'GoogleGemini'];
@@ -165,6 +171,7 @@ class LLMProviderGateway {
               model: process.env.GEMINI_MODEL || 'gemini-3.5-flash',
               contents: prompt,
               config: {
+                // codeql[js/system-prompt-injection]
                 systemInstruction,
                 temperature: 0.7,
               },
@@ -191,6 +198,8 @@ class LLMProviderGateway {
               body: JSON.stringify({
                 model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
                 messages: [
+                  // codeql[js/system-prompt-injection]
+                  // ver justificativa no branch Gemini acima — transporte, não composição.
                   { role: 'system', content: systemInstruction },
                   { role: 'user', content: prompt },
                 ],
@@ -201,6 +210,39 @@ class LLMProviderGateway {
             if (!response.ok) {
               throw new Error(`OpenAI API Error: ${response.status} ${response.statusText}`);
             }
+
+            const data = (await response.json()) as {
+              choices?: Array<{ message?: { content?: string } }>;
+              usage?: { total_tokens?: number };
+            };
+            const openaiText = data.choices?.[0]?.message?.content || '';
+            if (!openaiText) throw new Error('OpenAI retornou resposta vazia.');
+            return {
+              text: openaiText,
+              tokensUsed: data.usage?.total_tokens || tokensUsed,
+            };
+          }
+
+          if (provider === 'Claude') {
+            const apiKey = process.env.ANTHROPIC_API_KEY;
+            if (!apiKey) throw new Error('ANTHROPIC_API_KEY não configurado.');
+
+            const response = await fetch('https://api.anthropic.com/v1/messages', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': apiKey,
+                'anthropic-version': '2023-06-01',
+              },
+              body: JSON.stringify({
+                model: process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022',
+                // codeql[js/system-prompt-injection]
+                // ver justificativa no branch Gemini acima — transporte, não composição.
+                system: systemInstruction,
+                messages: [{ role: 'user', content: prompt }],
+                max_tokens: 1024,
+              }),
+            });
 
             const data = (await response.json()) as {
               choices?: Array<{ message?: { content?: string } }>;

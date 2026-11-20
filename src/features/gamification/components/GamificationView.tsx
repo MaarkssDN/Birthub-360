@@ -32,11 +32,13 @@ export function GamificationView() {
   const [profile, setProfile] = useState<SellerScore | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const currentSellerName = currentUser?.name || 'Consultor';
 
   const loadData = useCallback(
     async (selectedPeriod: LeaderboardPeriod = period) => {
+      setLoadError(null);
       try {
         const [ranking, sellerProfile] = await Promise.all([
           gamificationApi.getLeaderboard(selectedPeriod),
@@ -46,6 +48,9 @@ export function GamificationView() {
         setProfile(sellerProfile);
       } catch (err) {
         console.warn('[GamificationView] Erro ao carregar dados:', err);
+        setLoadError(
+          'Falha ao carregar o ranking e a pontuação comercial. Verifique sua conexão e tente novamente.',
+        );
       } finally {
         setLoading(false);
         setRefreshing(false);
@@ -206,6 +211,18 @@ export function GamificationView() {
                     <div className="py-12 text-center text-sm text-ink-2">
                       <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2 text-brand" />
                       Calculando pontuações e ranking em tempo real...
+                    </div>
+                  ) : loadError ? (
+                    <div
+                      role="alert"
+                      className="py-10 px-4 text-center text-sm text-ink-2 space-y-3 rounded-xl border border-line/60 bg-surface/50"
+                    >
+                      <p className="font-semibold text-ink">{loadError}</p>
+                      <div>
+                        <Button type="button" variant="outline" size="sm" onClick={handleRefresh}>
+                          Tentar novamente
+                        </Button>
+                      </div>
                     </div>
                   ) : rankingData.rankings.length === 0 ? (
                     <div className="py-12 text-center text-sm text-ink-2">

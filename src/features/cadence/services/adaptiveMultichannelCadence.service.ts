@@ -1,22 +1,22 @@
 import { randomUUID } from 'node:crypto';
 import { logger } from '../../../lib/logger.js';
 import { domainEventMesh } from '../../../lib/queue/domainEventMesh.service.js';
+import type {
+  CadenceChannel,
+  CadenceStep,
+  IMultichannelCadenceEnrollmentStore,
+  IMultichannelCadencePort,
+  MultichannelCadenceEnrollment,
+  StepDispatchResult,
+} from '../../../shared/contracts/multichannelCadence.contract.js';
+import { prismaMultichannelCadenceEnrollmentStore } from '../../../shared/infra/PrismaMultichannelCadenceEnrollmentStore.js';
 import {
   isOptedOut,
   normalizeOptOutSubject,
-  recordOptOut,
   type OptOutRepository,
+  recordOptOut,
 } from '../application/optOutService.js';
 import { prismaOptOutRepository } from '../infra/PrismaOptOutRepository.js';
-import {
-  type CadenceChannel,
-  type CadenceStep,
-  type IMultichannelCadencePort,
-  type IMultichannelCadenceEnrollmentStore,
-  type MultichannelCadenceEnrollment,
-  type StepDispatchResult,
-} from '../../../shared/contracts/multichannelCadence.contract.js';
-import { prismaMultichannelCadenceEnrollmentStore } from '../../../shared/infra/PrismaMultichannelCadenceEnrollmentStore.js';
 
 export class AdaptiveMultichannelCadenceService implements IMultichannelCadencePort {
   private cadenceStepsStore = new Map<string, CadenceStep[]>();
@@ -132,19 +132,22 @@ export class AdaptiveMultichannelCadenceService implements IMultichannelCadenceP
 
       await this.enrollmentsStore.update(organizationId, enrollmentId, { status: 'opted_out' });
 
-      await domainEventMesh.publish({
-        eventType: 'CROSS_CHANNEL_OPTOUT_ENFORCED',
-        eventVersion: '1.0.0',
-        organizationId,
-        correlationId: `optout-${enrollment.leadId}`,
-        producer: 'multichannel-cadence-engine',
-        aggregateId: enrollment.leadId,
-        payload: {
-          leadId: enrollment.leadId,
-          channel: step.channel,
-          reason: 'Opt-out unificado detectado e aplicado a todos os canais',
+      await domainEventMesh.publish(
+        {
+          eventType: 'CROSS_CHANNEL_OPTOUT_ENFORCED',
+          eventVersion: '1.0.0',
+          organizationId,
+          correlationId: `optout-${enrollment.leadId}`,
+          producer: 'multichannel-cadence-engine',
+          aggregateId: enrollment.leadId,
+          payload: {
+            leadId: enrollment.leadId,
+            channel: step.channel,
+            reason: 'Opt-out unificado detectado e aplicado a todos os canais',
+          },
         },
-      });
+        { idempotencyKey: `optout-step-enforced:${enrollment.enrollmentId}:${step.stepNumber}` },
+      );
 
       return {
         stepNumber: step.stepNumber,
@@ -206,19 +209,22 @@ export class AdaptiveMultichannelCadenceService implements IMultichannelCadenceP
       status: 'opted_out',
     });
 
-    await domainEventMesh.publish({
-      eventType: 'CROSS_CHANNEL_OPTOUT_ENFORCED',
-      eventVersion: '1.0.0',
-      organizationId: params.organizationId,
-      correlationId: `optout-${params.leadId}`,
-      producer: 'multichannel-cadence-engine',
-      aggregateId: params.leadId,
-      payload: {
-        leadId: params.leadId,
-        channelSource: params.channelSource,
-        reason: params.reason,
+    await domainEventMesh.publish(
+      {
+        eventType: 'CROSS_CHANNEL_OPTOUT_ENFORCED',
+        eventVersion: '1.0.0',
+        organizationId: params.organizationId,
+        correlationId: `optout-${params.leadId}`,
+        producer: 'multichannel-cadence-engine',
+        aggregateId: params.leadId,
+        payload: {
+          leadId: params.leadId,
+          channelSource: params.channelSource,
+          reason: params.reason,
+        },
       },
-    });
+      { idempotencyKey: `optout-registered:${params.leadId}` },
+    );
 
     logger.info(
       `[MultichannelCadence] Opt-out cross-channel registrado para lead ${params.leadId} via ${params.channelSource}. Todos os canais bloqueados.`,
