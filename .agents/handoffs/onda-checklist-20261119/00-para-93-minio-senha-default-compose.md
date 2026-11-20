@@ -1,7 +1,7 @@
 De: 00 (Astra)
 Para: 93 (Max) / 90 (Hélio)
 Onda: Checklist 2026-11-19 · Onda 1
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: B-04
 Sprint destino: próximo
@@ -22,3 +22,8 @@ Trocar o fallback por `${MINIO_ROOT_PASSWORD:?defina MINIO_ROOT_PASSWORD}` (fail
 
 ## Teste esperado
 `docker compose config` falha sem a variável definida.
+
+## Resolução (Agente 93 — 2026-11-20)
+
+- Substituído `${MINIO_ROOT_PASSWORD:-birthhub_minio_dev_only}` por `${MINIO_ROOT_PASSWORD:?defina MINIO_ROOT_PASSWORD}` (fail-fast) nos serviços `minio` (linha 60) e `minio-init` (linha 87) de `docker-compose.yml`.
+- Comentário das linhas 51–53 atualizado para refletir a obrigatoriedade explícita de `MINIO_ROOT_PASSWORD` sem fallback default.
