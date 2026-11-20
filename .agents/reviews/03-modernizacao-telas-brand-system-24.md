@@ -5,7 +5,7 @@
 **Executor:** Agente 03 / Google Antigravity  
 **Auditor Independente:** Agente 24 (Google Antigravity)  
 **Branch:** `agente/03-telas-brand-system`  
-**Commit de Referência:** `29b4af750`  
+**Commit de Referência:** `dfaec121` (inclui merge com `main` e expansão de telas)  
 
 ---
 
@@ -23,12 +23,19 @@ As alterações implementam em código as decisões D1 a D8 homologadas pelo Orq
    - `src/features/landing/pages/Landing360.tsx`: título e marcas retificados para `Birth Hub 360°` e contraste calibrado no botão de login.
    - `src/features/auth/components/NewLoginScreen.tsx`: título do logo retificado para `Birth Hub 360°`.
    - `src/features/auth/components/LandingLoginSplitScreen.tsx`: marca canônica e paleta alinhada.
-4. **Shell & Arquitetura Modular (Decisão D3):**
+   - `src/features/voice-hub/components/Sidebar.tsx`: marca canônica `360°` no cabeçalho do módulo Voice Enterprise.
+   - `src/features/voice-hub/pages/Login.tsx`: título unificado para `Birth Hub 360° · Voice Hub`.
+   - `src/features/voice-hub/pages/Register.tsx`: título unificado para `Birth Hub 360° · Voice Hub`.
+4. **Alinhamento de Superfícies & Tokens Oficiais:**
+   - `src/components/CommercialJourneyStream.tsx`: fundo do container alinhado para o Light Canvas canônico `#F4F7FB` e Obsidian `#0D0D0D` (Decisão D7), com substituição de cores fixas por `text-brand`.
+   - `src/components/ui/BentoShowcase.tsx`: pilar de orquestração de vendas e telefonia 3CX alinhado para o Dourado Neon Oficial `#FFC107`.
+5. **Shell & Arquitetura Modular (Decisão D3):**
    - `src/components/layout/MainLayout.tsx`: injeção de atributo `data-module={activeModuleId}` e CSS vars (`--module-primary`, `--module-accent`, `--module-gradient`, `--module-glow`).
-5. **Dashboard Operacional:**
+6. **Dashboard Operacional:**
    - `src/features/dashboard/components/SinglePageDashboard.tsx`: higienizado uso de `#00D4FF` inline substituído pelo token canônico `text-brand`.
-6. **Segurança e Dependências:**
+7. **Segurança e Dependências:**
    - `docs/security/AUDIT_WAIVERS.md`: waiver documentado para tooling Prisma (`effect`).
+   - `package.json`: remoção de chave duplicada de override.
 
 ---
 
