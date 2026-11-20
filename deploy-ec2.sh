@@ -2,26 +2,35 @@
 # Script de deploy para AWS EC2 - Birth Hub 360
 # Uso: ./deploy-ec2.sh [caminho/chave.pem]
 #
-# DEBT-0001: deploy agora aplica `prisma migrate deploy` e exige healthcheck
-# fail-closed antes de declarar sucesso. Registra o SHA implantado.
+# DEBT-0001: o deploy agora é fail-closed —
+#   1. `prisma migrate deploy` roda DENTRO do container ANTES do restart;
+#      se a migração falhar, o restart não acontece (schema novo nunca sobe
+#      contra banco não migrado).
+#   2. Healthcheck pós-deploy em /health/ready com retry+timeout; falha
+#      aborta o script com exit != 0 e despeja os últimos logs do container.
+#   3. Cada deploy grava DEPLOY_VERSION (git SHA + timestamp) no diretório
+#      remoto para auditoria/rollback — não há rebuild de imagem neste fluxo
+#      (o container monta o diretório e só é reiniciado), então "tag de imagem"
+#      se traduz em versão de deploy registrada.
 
-set -euo pipefail
+set -e
 
 # Configurações
 EC2_HOST="3.143.251.44"
 EC2_USER="ubuntu"
 KEY_PATH="${1:-C:/Users/marce/OneDrive/Desktop/Birthub360.pem}"
 REMOTE_DIR="/home/ubuntu/birthhub-360"
-APP_PORT="${APP_PORT:-3000}"
-HEALTH_PATH="${HEALTH_PATH:-/health/ready}"
-HEALTH_RETRIES="${HEALTH_RETRIES:-12}"
-HEALTH_INTERVAL="${HEALTH_INTERVAL:-5}"
+APP_PORT="${APP_PORT:-3024}"
+HEALTHCHECK_TIMEOUT="${HEALTHCHECK_TIMEOUT:-90}"   # segundos totais de espera pelo /health/ready
+HEALTHCHECK_INTERVAL="${HEALTHCHECK_INTERVAL:-5}"  # intervalo entre tentativas
 
-GIT_SHA="$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")"
+# Versão do deploy: SHA curto do commit (fallback: timestamp) + data/hora.
+DEPLOY_GIT_SHA="$(git rev-parse --short HEAD 2>/dev/null || echo 'unknown')"
+DEPLOY_VERSION="${DEPLOY_GIT_SHA}-$(date -u +%Y%m%dT%H%M%SZ)"
 
 echo "🚀 Iniciando deploy para AWS EC2: $EC2_HOST"
 echo "📁 Chave SSH: $KEY_PATH"
-echo "🏷️  SHA: $GIT_SHA"
+echo "🏷️  Versão do deploy: $DEPLOY_VERSION"
 
 # 1. Build local
 echo ""
@@ -33,63 +42,70 @@ echo ""
 echo "📤 Copiando arquivos para EC2..."
 scp -i "$KEY_PATH" -r dist/ "$EC2_USER@$EC2_HOST:$REMOTE_DIR/dist-new/"
 scp -i "$KEY_PATH" -r node_modules/ "$EC2_USER@$EC2_HOST:$REMOTE_DIR/node_modules-new/"
+scp -i "$KEY_PATH" -r prisma/ "$EC2_USER@$EC2_HOST:$REMOTE_DIR/prisma-new/"
 scp -i "$KEY_PATH" package.json "$EC2_USER@$EC2_HOST:$REMOTE_DIR/"
 scp -i "$KEY_PATH" server.ts "$EC2_USER@$EC2_HOST:$REMOTE_DIR/"
-scp -i "$KEY_PATH" prisma/ "$EC2_USER@$EC2_HOST:$REMOTE_DIR/prisma-new/" 2>/dev/null || true
 
-# 3. Atualizar aplicação no servidor + migrate + healthcheck
+# 3. Atualizar aplicação no servidor (migrate -> restart -> healthcheck fail-closed)
 echo ""
 echo "🔄 Atualizando aplicação no servidor..."
-ssh -i "$KEY_PATH" "$EC2_USER@$EC2_HOST" "DEPLOY_SHA='$GIT_SHA' APP_PORT='$APP_PORT' HEALTH_PATH='$HEALTH_PATH' HEALTH_RETRIES='$HEALTH_RETRIES' HEALTH_INTERVAL='$HEALTH_INTERVAL'" << 'ENDSSH'
+ssh -i "$KEY_PATH" "$EC2_USER@$EC2_HOST" \
+  "APP_PORT=$APP_PORT HEALTHCHECK_TIMEOUT=$HEALTHCHECK_TIMEOUT HEALTHCHECK_INTERVAL=$HEALTHCHECK_INTERVAL DEPLOY_VERSION='$DEPLOY_VERSION' bash -s" << 'ENDSSH'
 set -e
 cd /home/ubuntu/birthhub-360
-TS=$(date +%Y%m%d-%H%M%S)
 
-# Backup do dist atual
+# Backup do dist atual (rollback manual: ver docs/operations/DEPLOY_EC2.md)
 if [ -d "dist" ]; then
-  mv dist "dist-backup-$TS"
+  mv dist "dist-backup-$(date +%Y%m%d-%H%M%S)"
 fi
 
 # Mover novos arquivos
 mv dist-new dist
 mv node_modules-new node_modules
-if [ -d prisma-new ]; then
-  rm -rf prisma-old
-  [ -d prisma ] && mv prisma prisma-old
+if [ -d "prisma-new" ]; then
+  mv prisma prisma-backup-$(date +%Y%m%d-%H%M%S) 2>/dev/null || true
   mv prisma-new prisma
 fi
 
-# Migrar banco ANTES do restart (fail-closed: erro de migration aborta o deploy)
-echo "🗄️  prisma migrate deploy..."
+# Registra a versão do deploy para auditoria/rollback.
+echo "$DEPLOY_VERSION" > DEPLOY_VERSION
+
+# 4. Migrações ANTES do restart — falha aqui aborta o deploy sem derrubar a versão atual.
+echo "🗄️  Aplicando migrações (prisma migrate deploy)..."
 docker exec birthhub-app npx prisma migrate deploy
 
-# Reiniciar container Docker
+# 5. Reiniciar container Docker
+echo "🔁 Reiniciando container birthhub-app..."
 docker restart birthhub-app
 
-# Healthcheck fail-closed: o script falha se o app não responder /health/ready
-echo "🩺 Healthcheck $HEALTH_PATH (até $((HEALTH_RETRIES * HEALTH_INTERVAL))s)..."
-OK=0
-for i in $(seq 1 "$HEALTH_RETRIES"); do
-  if curl -fsS --max-time 5 "http://localhost:${APP_PORT}${HEALTH_PATH}" >/dev/null 2>&1; then
-    OK=1
+# Verificar status do container
+docker ps | grep birthhub-app || { echo "❌ Container birthhub-app não está rodando"; exit 1; }
+
+# 6. Healthcheck fail-closed: /health/ready com retry até HEALTHCHECK_TIMEOUT segundos.
+echo "🩺 Aguardando /health/ready (timeout ${HEALTHCHECK_TIMEOUT}s)..."
+elapsed=0
+ready=0
+while [ "$elapsed" -lt "$HEALTHCHECK_TIMEOUT" ]; do
+  if curl -fsS --max-time 5 "http://127.0.0.1:${APP_PORT}/health/ready" >/dev/null 2>&1; then
+    ready=1
     break
   fi
-  sleep "$HEALTH_INTERVAL"
+  sleep "$HEALTHCHECK_INTERVAL"
+  elapsed=$((elapsed + HEALTHCHECK_INTERVAL))
 done
 
-if [ "$OK" != "1" ]; then
-  echo "❌ DEPLOY FALHOU: healthcheck não respondeu após $((HEALTH_RETRIES * HEALTH_INTERVAL))s" >&2
-  echo "Container logs:" >&2
-  docker logs --tail 50 birthhub-app >&2 || true
+if [ "$ready" -ne 1 ]; then
+  echo "❌ Healthcheck FALHOU após ${elapsed}s. Últimos logs do container:"
+  docker logs birthhub-app --tail 50 || true
+  echo ""
+  echo "❌ Deploy abortado: aplicação não ficou pronta. Verifique os logs acima."
   exit 1
 fi
 
-# Registrar SHA implantado para rollback rastreável
-echo "$DEPLOY_SHA $(date -Is)" >> deploy-history.log
-docker ps | grep birthhub-app
-echo "✅ Deploy $DEPLOY_SHA concluído — healthcheck OK"
+echo "✅ Healthcheck OK: /health/ready respondeu 200."
 ENDSSH
 
 echo ""
 echo "✅ Deploy concluído!"
 echo "🌐 Acesse: http://$EC2_HOST"
+echo "📋 Versão registrada no servidor: $DEPLOY_VERSION"
