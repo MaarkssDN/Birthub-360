@@ -4,10 +4,10 @@
 De: 12 — Voz e Telefonia
 Para: 08 — QA e Release
 Onda: saneamento-handoffs-20261117
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: nenhum
-Sprint destino: a definir
+Sprint destino: Onda 4
 ```
 
 ## Problema
@@ -50,3 +50,7 @@ Encontrado durante a revisão para o handoff
 `onda-3/00-para-12-voicehub-teste-integracao-rls.md` (spec novo
 `tests/integration/voice-hub-rls.test.ts` usa `randomUUID()` para unicidade).
 Fora da propriedade do Agente 12 — registrado via handoff conforme AGENTS.md §16.
+
+## Resolução (Onda 4 — Agente 04 / Téo)
+
+- Substituídas as aspas duplas por template literals (`backticks`) nas constantes `RUN_ID` e `ORG_A` em `tests/integration/voicehub-persistence.test.ts` (linhas 5-6), garantindo interpolação dinâmica por execução, em paridade com `tests/integration/voice-transcript-encryption.test.ts`.

@@ -115,21 +115,28 @@ export async function checkCircuitBreaker(organizationId: string): Promise<void>
         newState.lastDowngradeAt = new Date().toISOString();
         newState.consecutiveChecks = 0;
 
-        await domainEventMesh.publish({
-          eventType: 'AUTONOMY_CIRCUIT_BREAKER_TRIPPED' as any,
-          eventVersion: '1.0.0',
-          organizationId,
-          correlationId: `circuit-breaker-${organizationId}`,
-          producer: 'autonomy-circuit-breaker',
-          aggregateId: organizationId,
-          payload: {
-            previousLevel,
-            newLevel,
-            errorRate,
-            threshold: ERROR_RATE_THRESHOLD_DOWNGRADE,
-            reason: `Taxa de erro (${(errorRate * 100).toFixed(1)}%) ultrapassou threshold (${ERROR_RATE_THRESHOLD_DOWNGRADE * 100}%)`,
+        await domainEventMesh.publish(
+          {
+            eventType: 'AUTONOMY_CIRCUIT_BREAKER_TRIPPED' as any,
+            eventVersion: '1.0.0',
+            organizationId,
+            correlationId: `circuit-breaker-${organizationId}`,
+            producer: 'autonomy-circuit-breaker',
+            aggregateId: organizationId,
+            payload: {
+              previousLevel,
+              newLevel,
+              errorRate,
+              threshold: ERROR_RATE_THRESHOLD_DOWNGRADE,
+              reason: `Taxa de erro (${(errorRate * 100).toFixed(1)}%) ultrapassou threshold (${ERROR_RATE_THRESHOLD_DOWNGRADE * 100}%)`,
+            },
           },
-        });
+          {
+            // Fato de negócio = esta transição CLOSED/HALF_OPEN → OPEN; o timestamp da
+            // transição distingue trips futuros legítimos de retries desta mesma transição.
+            idempotencyKey: `circuit-breaker-tripped:${organizationId}:${newState.lastDowngradeAt}`,
+          },
+        );
 
         logger.warn(
           { organizationId, errorRate, previousLevel, newLevel },
@@ -157,21 +164,27 @@ export async function checkCircuitBreaker(organizationId: string): Promise<void>
           newState.lastUpgradeAt = new Date().toISOString();
           newState.consecutiveChecks = 0;
 
-          await domainEventMesh.publish({
-            eventType: 'AUTONOMY_CIRCUIT_BREAKER_RECOVERED' as any,
-            eventVersion: '1.0.0',
-            organizationId,
-            correlationId: `circuit-breaker-${organizationId}`,
-            producer: 'autonomy-circuit-breaker',
-            aggregateId: organizationId,
-            payload: {
-              previousLevel: 'L0',
-              newLevel: 'L2',
-              errorRate,
-              consecutiveChecks: newState.consecutiveChecks,
-              reason: `Taxa de erro estabilizada (${(errorRate * 100).toFixed(1)}%) abaixo de threshold (${ERROR_RATE_THRESHOLD_UPGRADE * 100}%)`,
+          await domainEventMesh.publish(
+            {
+              eventType: 'AUTONOMY_CIRCUIT_BREAKER_RECOVERED' as any,
+              eventVersion: '1.0.0',
+              organizationId,
+              correlationId: `circuit-breaker-${organizationId}`,
+              producer: 'autonomy-circuit-breaker',
+              aggregateId: organizationId,
+              payload: {
+                previousLevel: 'L0',
+                newLevel: 'L2',
+                errorRate,
+                consecutiveChecks: newState.consecutiveChecks,
+                reason: `Taxa de erro estabilizada (${(errorRate * 100).toFixed(1)}%) abaixo de threshold (${ERROR_RATE_THRESHOLD_UPGRADE * 100}%)`,
+              },
             },
-          });
+            {
+              // Fato de negócio = esta transição → CLOSED; idem ao TRIPPED acima.
+              idempotencyKey: `circuit-breaker-recovered:${organizationId}:${newState.lastUpgradeAt}`,
+            },
+          );
 
           logger.info(
             { organizationId, errorRate },

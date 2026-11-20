@@ -1,3 +1,5 @@
+import { decodeTextEscapes, findEncodedTokenSpans } from './encoding.js';
+
 export const TOXIC_WORDS_PT = [
   'palavrão',
   'ofensa',
@@ -61,7 +63,8 @@ function getWordRegex(word: string): RegExp {
   return new RegExp(`(^|[^\\p{L}\\p{N}_])${body}${ending}(?=[^\\p{L}\\p{N}_]|$)`, 'gui');
 }
 
-export function detectToxicity(text: string): ToxicityResult {
+/** Coleta os matches de toxicidade de um texto (já decodificado ou candidato). */
+function collectToxicMatches(text: string): string[] {
   const matchesSet = new Set<string>();
 
   for (const word of TOXIC_WORDS_PT) {
@@ -76,6 +79,17 @@ export function detectToxicity(text: string): ToxicityResult {
     }
   }
 
+  return Array.from(matchesSet);
+}
+
+export function detectToxicity(text: string): ToxicityResult {
+  // Mesma mitigação de encoding dos guardrails de PII: escapes de texto
+  // (unicode/hex/%XX) e tokens Base64/hex são decodificados e revalidados.
+  const normalized = decodeTextEscapes(text);
+  const matchesSet = new Set(collectToxicMatches(normalized));
+  for (const span of findEncodedTokenSpans(normalized)) {
+    for (const m of collectToxicMatches(span.decoded)) matchesSet.add(m);
+  }
   const matches = Array.from(matchesSet);
 
   if (matches.length > 0) {
@@ -94,7 +108,8 @@ export function detectToxicity(text: string): ToxicityResult {
 
 export function redactToxicity(text: string): { redacted: string; matches: string[] } {
   const matchesSet = new Set<string>();
-  let redacted = text;
+  const normalized = decodeTextEscapes(text);
+  let redacted = normalized;
 
   for (const word of TOXIC_WORDS_PT) {
     const regex = getWordRegex(word);
@@ -109,5 +124,20 @@ export function redactToxicity(text: string): { redacted: string; matches: strin
     }
   }
 
-  return { redacted, matches: Array.from(matchesSet) };
+  // Tokens codificados cujo conteúdo decodificado é tóxico: o span inteiro é
+  // substituído (não há como redigir dentro do token).
+  for (const span of findEncodedTokenSpans(normalized)) {
+    const spanMatches = collectToxicMatches(span.decoded);
+    if (spanMatches.length > 0) {
+      for (const m of spanMatches) matchesSet.add(m);
+      redacted = redacted.split(span.raw).join('[REDACTED]');
+    }
+  }
+
+  const matches = Array.from(matchesSet);
+  if (matches.length === 0) {
+    return { redacted: text, matches: [] };
+  }
+
+  return { redacted, matches };
 }
