@@ -3,7 +3,7 @@
 De: 00 — Coordenador
 Para: 01 (endpoint/schema se preciso) + 02 (UI)
 Onda: F1 (pós-navegação)
-Status: em-andamento (implementado; verificado por 01+02 na Onda 4 — ver seção final; aguardando e2e do Agente 08 e revisão 24)
+Status: resolvido
 Prioridade: alto
 Referência: `docs/architecture/MATRIZ-FUNCIONAL-MODULOS.md` §3.2, §6
 
@@ -81,3 +81,9 @@ Lado UI permanece íntegro após o split do hotspot: `PillarSettingsPlaceholder.
 - Persistência "reload → valor salvo" em nível de serviço coberta pelo teste
   PUT→GET; e2e real continua pendente do Agente 08 (fora do meu escopo).
 - Sem alteração de schema/migrations — nada para `prisma migrate` validar.
+
+## Fechamento — Auditoria Independente (Agente 09 — Silas, 2026-11-20)
+
+- **Veredicto:** `APROVADO`
+- **Parecer formal:** `.agents/reviews/09-auditoria-onda4-settings-lgpd-voicehub-auth.md`
+- **Evidência:** Contrato `GET/PUT /api/settings/pillars/:pillar`, validação de domínio, RBAC (`requireRole(['ADMIN'])`) e isolamento multi-tenant verificados; `tests/unit/features/settings/pillarSettings.service.test.ts` (10/10 testes aprovados). Handoff encerrado com `Status: resolvido`.

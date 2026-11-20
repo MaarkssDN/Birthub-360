@@ -1,10 +1,10 @@
 import { randomUUID } from 'node:crypto';
+import { logger } from '../../../../lib/logger.js';
+import { domainEventMesh } from '../../../../lib/queue/domainEventMesh.service.js';
 import type {
   CommercialPromiseCommitment,
   IPromiseGuardianPort,
 } from '../../../../shared/contracts/tacticalSwarm.contract.js';
-import { domainEventMesh } from '../../../../lib/queue/domainEventMesh.service.js';
-import { logger } from '../../../../lib/logger.js';
 
 export class PromiseGuardianAgent implements IPromiseGuardianPort {
   private commitmentsStore = new Map<string, CommercialPromiseCommitment>();
@@ -114,21 +114,28 @@ export class PromiseGuardianAgent implements IPromiseGuardianPort {
         detectedCommitments.push(commitment);
 
         // Publicar no DomainEventMesh
-        await domainEventMesh.publish({
-          eventType: 'PROMISE_COMMITMENT_DETECTED',
-          eventVersion: '1.0.0',
-          organizationId: params.organizationId,
-          correlationId: `prom-evt-${id}`,
-          producer: 'promise-guardian-agent',
-          aggregateId: params.dealId || params.interactionId,
-          payload: {
-            commitmentId: id,
-            type: p.type,
-            promiserName: params.sellerName,
-            dueDate,
-            evidenceSnippet: commitment.evidenceSnippet,
+        await domainEventMesh.publish(
+          {
+            eventType: 'PROMISE_COMMITMENT_DETECTED',
+            eventVersion: '1.0.0',
+            organizationId: params.organizationId,
+            correlationId: `prom-evt-${id}`,
+            producer: 'promise-guardian-agent',
+            aggregateId: params.dealId || params.interactionId,
+            payload: {
+              commitmentId: id,
+              type: p.type,
+              promiserName: params.sellerName,
+              dueDate,
+              evidenceSnippet: commitment.evidenceSnippet,
+            },
           },
-        });
+          {
+            // Um compromisso detectado = um id (`prom-${randomUUID()}`); retry do publish
+            // não duplica a detecção na outbox.
+            idempotencyKey: `promise-commitment:${id}`,
+          },
+        );
       }
     }
 
