@@ -132,7 +132,7 @@ Se um achado `HIGH`/`CRITICAL` precisar ser aceito temporariamente (ex.: sem fix
 - **Motivo:** o `effect` é usado pelo CLI/config do Prisma (migrate/generate) em tempo de build e deploy, não processa entrada não confiável de usuário em runtime da aplicação. Aceito temporariamente até haver `effect` corrigido na cadeia do Prisma sem downgrade major.
 - **Dono:** Agente 00 / Agente 99 (Vito). **Aprovação:** decisão humana do usuário em 2026-11-20 (PR de B-14/B-04/ciclos de automação).
 - **Data de registro:** 2026-11-20. **Reavaliar em:** 2026-12-20
-- **Espelhos:** `.trivyignore.yaml` e `allow-ghsas` do Dependency Review não precisaram de entrada — ambos passaram em CI sem ela. Se passarem a falhar, espelhar este ID.
+- **Espelhos pendentes:** o ID ainda NÃO foi espelhado em `.trivyignore.yaml` nem em `allow-ghsas` (`.github/workflows/dependency-review.yml` e `ci.yml`), conforme o procedimento acima. Isso afrouxa gates de CI (Agente 94) e depende de aprovação explícita; sem o espelho, um PR futuro que toque dependências pode voltar a falhar neste advisory.
 
 ## Débito conhecido, fora do escopo deste waiver (severidade abaixo do gate)
 

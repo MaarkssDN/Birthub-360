@@ -647,8 +647,9 @@ export function WarRoomArenaView() {
             Duelo Concluído com Sucesso!
           </h2>
           <p className="text-sm text-ink-2 max-w-md mx-auto">
-            Você enfrentou 3 rounds de cenários de objeção. A pontuação foi estimada pela heurística
-            local de treino e o XP ganho vale apenas nesta sessão — nada foi gravado no perfil.
+            Você enfrentou {SAMPLE_OBJECTIONS.length} rounds de cenários de objeção. A pontuação foi
+            estimada pela heurística local de treino e o XP ganho vale apenas nesta sessão — nada
+            foi gravado no perfil.
           </p>
 
           <div className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-surface border border-line text-lg font-black text-brand">

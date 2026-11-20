@@ -1,27 +1,25 @@
 De: 00 (Astra)
 Para: 11 (Pietro) e 12 (Vera)
 Onda: Checklist 2026-11-19 · Onda 1
-Status: aberto
-Prioridade: bloqueador
+Status: resolvido
+Prioridade: normal
 Bloqueador-ref: gate de typecheck do `main`
-Sprint destino: imediato
+Sprint destino: encerrado
 
 ## Problema
-`npm run typecheck` está vermelho no `main` (e em todo PR): `PrismaCadenceRunRepository.ts` (commit
-`1634b41c`, "mapeia status Pending em CadenceTouchResult") grava `result: 'Pending'`, mas o enum
-`CadenceTouchResult` em `prisma/schema.prisma` só tem `Sent`, `Failed`, `Skipped`.
+`PrismaCadenceRunRepository.ts` (commit `1634b41c`) grava `result: 'Pending'`, mas o enum
+`CadenceTouchResult` do schema ainda não tinha `Pending`; o `npm run typecheck` falhava (TS2322).
 
 ## Arquivo(s) envolvido(s)
-`prisma/schema.prisma` (enum `CadenceTouchResult`, ~linha 3574), nova migração em `prisma/migrations/**`,
-`src/features/cadence/infra/PrismaCadenceRunRepository.ts` (linha ~208).
+`prisma/schema.prisma` (enum `CadenceTouchResult`), `prisma/migrations/20261119220000_cadence_touch_result_pending/`,
+`src/features/cadence/infra/PrismaCadenceRunRepository.ts`.
 
 ## Evidência
-`npm run typecheck` → `TS2322 ... Type '"Pending"' is not assignable to type 'CadenceTouchResult'`
-(PrismaCadenceRunRepository.ts:201). Reproduz no `origin/main` (código usa `Pending`, schema não tem).
+Resolvido no `main` pelo commit `9c3b2d97` (migração `20261119220000_cadence_touch_result_pending` + `Pending`
+no enum). Após o merge do `main` neste branch e `npx prisma generate`, `npm run typecheck` passa.
 
 ## Alteração necessária
-Decidir: (a) adicionar `Pending` ao enum + migração `ALTER TYPE ... ADD VALUE` (zero-downtime, B-05), ou
-(b) reverter o mapeamento do `1634b41c` para `Skipped` se `Pending` não deve ser persistido.
+Nenhuma neste PR. Pendente apenas operacional: aplicar a migração `20261119220000` nos ambientes (B-05).
 
-## Teste esperado
-`npm run typecheck` verde; teste de persistência de tentativa `pending` no repositório de cadência.
+## Resolução
+Resolvido no `main`; este handoff foi aberto antes do merge e fica registrado só como histórico.
