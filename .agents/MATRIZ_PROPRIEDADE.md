@@ -138,4 +138,4 @@
 | `96` | `src/lib/auth/**` |
 | `97` | `src/lib/auth/rbac/**` |
 | `98` | `infrastructure/secrets/**` |
-| `99` | `scripts/security/**`, `.semgrep.yml` (e similares) |
+| `99` | `scripts/security/**` (exceto `rls-coverage.ts` e `check-rls-coverage.ts`, do Agente 13), `.semgrep.yml` (e similares) |
