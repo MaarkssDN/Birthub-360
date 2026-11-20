@@ -87,22 +87,23 @@ describe('AI Guardrails - Security Integration', () => {
   });
 
   describe('Encoding Bypass Prevention', () => {
+    // Implementado pelo Agente 07 (handoff 14→07): guardrails decodificam
+    // Base64/hex e escapes (unicode/\xNN/%XX) antes de revalidar.
     it('deve detectar PII em Base64', () => {
       // CPF 123.456.789-09 em Base64
       const text = 'MTIzLjQ1Ni43ODktMDk=';
       const result = detectPII(text);
-      
-      // Padrão regex direto não detecta Base64, mas deveria haver validação
-      // Este teste marca a lacuna para implementação futura
-      expect(result.blocked).toBe(false); // Falha atual esperada
+
+      expect(result.blocked).toBe(true);
     });
 
     it('deve detectar PII em Unicode escape', () => {
-      const text = 'CPF: \\u0031\\u0032\\u0033';
+      // CPF 123.456.789-09 com cada caractere como escape \uXXXX
+      const text =
+        'CPF: \\u0031\\u0032\\u0033\\u002e\\u0034\\u0035\\u0036\\u002e\\u0037\\u0038\\u0039\\u002d\\u0030\\u0039';
       const result = detectPII(text);
-      
-      // Similar ao Base64, requer normalização prévia
-      expect(result.blocked).toBe(false); // Falha atual esperada
+
+      expect(result.blocked).toBe(true);
     });
   });
 
