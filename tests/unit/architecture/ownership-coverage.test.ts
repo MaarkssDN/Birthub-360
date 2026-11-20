@@ -47,17 +47,20 @@ describe('parseOwnershipMatrix', () => {
   it('extrai todos os pares escopo→dono do AGENTS.md real', () => {
     const entries = parseOwnershipMatrix(readFileSync(AGENTS_PATH, 'utf-8'));
     expect(entries.length).toBeGreaterThanOrEqual(15);
-    expect(entries).toContainEqual({ scope: 'prisma/schema.prisma', owner: 'Agente 01' });
-    expect(entries).toContainEqual({ scope: 'src/App.tsx', owner: 'Agente 02' });
-    expect(entries).toContainEqual({ scope: '.github/workflows/**', owner: 'Agente 08' });
-    expect(entries).toContainEqual({ scope: 'charts/**', owner: 'Agente 10' });
+    expect(entries).toContainEqual({ scope: 'prisma/schema.prisma', owner: 'Agente 11 (Pietro)' });
     expect(entries).toContainEqual({
-      scope: '.agents/prompts/**',
-      owner: 'decisão humana',
+      scope: 'src/App.tsx, src/components/layout/**',
+      owner: 'Agente 31 (Noa)',
     });
-    // Descritores em prosa da matriz também viram entradas (devem ser cobertos pelo manifesto).
-    expect(entries).toContainEqual({ scope: 'navegação principal', owner: 'Agente 02' });
-    expect(entries).toContainEqual({ scope: 'Sidebar', owner: 'Agente 02' });
+    expect(entries).toContainEqual({
+      scope: '.github/workflows/**, scripts/deploy/**',
+      owner: 'Agente 94 (Tess)',
+    });
+    expect(entries).toContainEqual({
+      scope: 'infrastructure/**, charts/**, Dockerfile, docker-compose.yml',
+      owner: 'Squad 90 (91 a 93)',
+    });
+    expect(entries).toContainEqual({ scope: '.agents/prompts/**', owner: 'Decisão humana' });
   });
 
   it('suporta múltiplos escopos por dono', () => {
@@ -353,6 +356,44 @@ describe('evaluateOwnershipCoverage', () => {
       ...baseInput,
       matrixEntries: matrixGhost,
       manifest,
+    });
+    expect(violations.some((v) => v.includes('não existe no repositório'))).toBe(true);
+  });
+});
+
+describe('allowMissingPath', () => {
+  const matrix: OwnershipEntry[] = [{ scope: 'pasta-reservada-xyz/**', owner: 'Agente 13' }];
+  const baseInput = { depcruiseRules, npmScriptNames: realNpmScripts, root: ROOT };
+  const entry = {
+    scope: 'pasta-reservada-xyz/**',
+    owner: 'Agente 13',
+    coverage: 'review' as const,
+    justification: JUSTIFICATION,
+  };
+
+  it('sem allowMissingPath, path inexistente continua violação', () => {
+    const violations = evaluateOwnershipCoverage({
+      ...baseInput,
+      matrixEntries: matrix,
+      manifest: manifestWith([entry]),
+    });
+    expect(violations.some((v) => v.includes('não existe no repositório'))).toBe(true);
+  });
+
+  it('com allowMissingPath e justificativa, path reservado inexistente é aceito', () => {
+    const violations = evaluateOwnershipCoverage({
+      ...baseInput,
+      matrixEntries: matrix,
+      manifest: manifestWith([{ ...entry, allowMissingPath: true }]),
+    });
+    expect(violations).toEqual([]);
+  });
+
+  it('allowMissingPath sem justificativa suficiente não isenta', () => {
+    const violations = evaluateOwnershipCoverage({
+      ...baseInput,
+      matrixEntries: matrix,
+      manifest: manifestWith([{ ...entry, justification: 'curta', allowMissingPath: true }]),
     });
     expect(violations.some((v) => v.includes('não existe no repositório'))).toBe(true);
   });
