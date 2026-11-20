@@ -31,6 +31,10 @@
 //          correspondente em package.json.
 //   4. Verifica que escopos path-like existem de fato no repositório (path exato ou diretório-base
 //      de um glob), impedindo entradas fantasmas na matriz.
+//   5. Aplica as regras de aprovação em prosa do §15 (server.ts, package.json e lockfiles):
+//      se o diff da branch (base OWNERSHIP_GATE_BASE/origin/main/main/master...HEAD + working
+//      tree) tocar esses paths, exige registro de aprovação do Agente 00 (e do orquestrador
+//      humano para server.ts) em .agents/runs/** ou .agents/approvals/** no mesmo diff.
 //
 // Qualquer inconsistência é reportada de uma vez (lista completa de violações) e o processo sai
 // com código 1. Falhas de leitura/parse (AGENTS.md sem §15, JSON inválido, config do depcruise
@@ -38,6 +42,7 @@
 //
 // Uso: `npm run verify:ownership-coverage` (ou `tsx scripts/governance/check-ownership-coverage.ts`).
 
+import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
@@ -251,6 +256,143 @@ function loadNpmScriptNames(): Set<string> {
   return new Set(Object.keys(pkg.scripts));
 }
 
+// ---------------------------------------------------------------------------
+// Regras de aprovação em prosa do AGENTS.md §15 (linhas logo após o bloco fenced):
+//   "`server.ts` exige aprovação explícita do 00 e do orquestrador humano.
+//    `package.json` e lockfile exigem aprovação explícita do 00."
+// Elas não são pares escopo→dono do bloco de código, então o manifesto não as
+// modela. Em vez disso, este gate verifica o diff da branch contra a base:
+// se um path protegido foi alterado, o MESMO diff precisa conter um registro
+// de aprovação em .agents/runs/** ou .agents/approvals/** que cite o path, a
+// aprovação do "Agente 00" e, para server.ts, o orquestrador humano.
+// Base de comparação: OWNERSHIP_GATE_BASE > origin/main > main > master.
+// Se nenhum ref for resolvível (ex.: checkout sem .git), o check é ignorado
+// com aviso explícito no stdout — nunca silencioso (AGENTS.md §30).
+// ---------------------------------------------------------------------------
+
+/** Paths exatos na raiz do repositório que exigem aprovação do Agente 00 (prosa §15). */
+const APPROVAL_PROTECTED_EXACT_PATHS = ['server.ts', 'package.json'];
+/** Lockfiles em qualquer profundidade (prosa §15: "package.json e lockfile"). */
+const APPROVAL_PROTECTED_LOCKFILE_PATTERN =
+  /(?:^|\/)(?:package-lock\.json|npm-shrinkwrap\.json|yarn\.lock|pnpm-lock\.yaml|bun\.lockb?|composer\.lock|Gemfile\.lock|poetry\.lock|Pipfile\.lock)$/i;
+/** Diretórios onde um registro de aprovação do Agente 00 pode ser commitado. */
+const APPROVAL_RECORD_PREFIXES = ['.agents/runs/', '.agents/approvals/'];
+
+export function isApprovalProtectedPath(filePath: string): boolean {
+  const normalized = filePath.replace(/\\/g, '/');
+  if (APPROVAL_PROTECTED_EXACT_PATHS.includes(normalized)) return true;
+  return APPROVAL_PROTECTED_LOCKFILE_PATTERN.test(normalized);
+}
+
+export function isApprovalRecordPath(filePath: string): boolean {
+  const normalized = filePath.replace(/\\/g, '/');
+  return APPROVAL_RECORD_PREFIXES.some((prefix) => normalized.startsWith(prefix));
+}
+
+function git(args: string[], cwd: string): string | null {
+  try {
+    // Sem .trim() no stdout inteiro: `git status --porcelain` usa o primeiro
+    // caractere da linha como código de status e um trim comeria esse espaço.
+    return execFileSync('git', args, {
+      cwd,
+      encoding: 'utf-8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+  } catch {
+    return null;
+  }
+}
+
+/** Resolve o ref base do diff de aprovação; null quando nenhum ref é verificável. */
+export function resolveApprovalGateBase(root: string = ROOT): string | null {
+  const envBase = process.env.OWNERSHIP_GATE_BASE?.trim();
+  const candidates = envBase
+    ? [envBase, 'origin/main', 'main', 'master']
+    : ['origin/main', 'main', 'master'];
+  for (const ref of candidates) {
+    if (git(['rev-parse', '--verify', '--quiet', `${ref}^{commit}`], root) !== null) {
+      return ref;
+    }
+  }
+  return null;
+}
+
+/**
+ * Lista os arquivos alterados na branch: diff commitado (base...HEAD, inclui
+ * renomeações/deleções) + alterações ainda não commitadas (git status).
+ * Retorna null se o git não puder responder — o chamador decide como reportar.
+ */
+export function collectChangedFiles(root: string, baseRef: string): string[] | null {
+  const committed = git(['diff', '--name-only', `${baseRef}...HEAD`], root);
+  // -uall: sem ele o porcelain colapsa diretórios não rastreados ("?? .agents/approvals/")
+  // e um registro de aprovação novo dentro deles ficaria invisível ao gate.
+  const status = git(['status', '--porcelain', '-uall'], root);
+  if (committed === null || status === null) return null;
+
+  const files = new Set<string>();
+  for (const line of committed.split('\n')) {
+    const file = line.trim();
+    if (file) files.add(file);
+  }
+  for (const rawLine of status.split('\n')) {
+    const line = rawLine.replace(/\r$/, '');
+    if (line.trim().length < 4) continue;
+    let file = line.slice(3).trim();
+    const renameArrow = file.indexOf(' -> ');
+    if (renameArrow !== -1) file = file.slice(renameArrow + 4);
+    file = file.replace(/^"|"$/g, '');
+    if (file) files.add(file);
+  }
+  return [...files];
+}
+
+export type ApprovalGateInput = {
+  /** Paths alterados no diff (repo-relativos, qualquer status). */
+  changedFiles: string[];
+  /** Conteúdo dos arquivos de registro de aprovação que constam em changedFiles. */
+  approvalDocs: Array<{ path: string; content: string }>;
+};
+
+/**
+ * Regra de prosa do §15: server.ts/package.json/lockfile alterados exigem
+ * registro de aprovação explícita do Agente 00 (e do orquestrador humano para
+ * server.ts) no mesmo diff. Um documento de aprovação vale para um path quando
+ * menciona o path literal, contém "Agente 00" e "aprova"; para server.ts,
+ * também precisa mencionar o orquestrador humano.
+ */
+export function evaluateApprovalGate(input: ApprovalGateInput): string[] {
+  const protectedTouched = [
+    ...new Set(
+      input.changedFiles
+        .map((file) => file.replace(/\\/g, '/'))
+        .filter(isApprovalProtectedPath),
+    ),
+  ].sort();
+  if (protectedTouched.length === 0) return [];
+
+  const violations: string[] = [];
+  for (const target of protectedTouched) {
+    const approved = input.approvalDocs.some((doc) => {
+      if (!isApprovalRecordPath(doc.path)) return false;
+      if (!doc.content.includes(target)) return false;
+      if (!/agente\s*0{2}/i.test(doc.content)) return false;
+      if (!/aprova/i.test(doc.content)) return false;
+      if (target === 'server.ts' && !/humano/i.test(doc.content)) return false;
+      return true;
+    });
+    if (!approved) {
+      violations.push(
+        `"${target}" foi alterado no diff sem registro de aprovação — a prosa do ` +
+          'AGENTS.md §15 exige aprovação explícita do Agente 00 (e do orquestrador ' +
+          'humano, para server.ts). Adicione ao mesmo diff um registro em ' +
+          '.agents/runs/** ou .agents/approvals/** citando o path e a aprovação, ' +
+          'ou remova a alteração.',
+      );
+    }
+  }
+  return violations;
+}
+
 export type CoverageCheckInput = {
   matrixEntries: OwnershipEntry[];
   manifest: OwnershipManifest;
@@ -410,6 +552,39 @@ function main(): void {
     depcruiseRules,
     npmScriptNames,
   });
+
+  // Check determinístico das regras de aprovação em prosa do §15
+  // (server.ts, package.json e lockfiles — ver bloco de constantes acima).
+  const approvalBase = resolveApprovalGateBase(ROOT);
+  if (approvalBase === null) {
+    console.warn(
+      '⚠️  verify:ownership-coverage — check de aprovação do §15 (prosa) ignorado: ' +
+        'nenhum ref base (OWNERSHIP_GATE_BASE/origin/main/main/master) resolvível via git.',
+    );
+  } else {
+    const changedFiles = collectChangedFiles(ROOT, approvalBase);
+    if (changedFiles === null) {
+      console.warn(
+        `⚠️  verify:ownership-coverage — check de aprovação do §15 (prosa) ignorado: ` +
+          `git diff/status falhou contra "${approvalBase}".`,
+      );
+    } else {
+      const approvalDocs: Array<{ path: string; content: string }> = [];
+      for (const file of changedFiles) {
+        const normalized = file.replace(/\\/g, '/');
+        if (!isApprovalRecordPath(normalized)) continue;
+        try {
+          approvalDocs.push({
+            path: normalized,
+            content: readFileSync(path.join(ROOT, normalized), 'utf-8'),
+          });
+        } catch {
+          // Registro deletado no diff não pode aprovar nada — ignorar.
+        }
+      }
+      violations.push(...evaluateApprovalGate({ changedFiles, approvalDocs }));
+    }
+  }
 
   if (violations.length > 0) {
     console.error(
