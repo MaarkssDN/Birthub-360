@@ -25,6 +25,9 @@ import type {
   WarRoomMode,
 } from '../../../shared/contracts/warRoomArena.contract.js';
 
+/** Teto de XP de sessão por round (nota composta >= 85); base do limite exibido no lobby. */
+const MAX_XP_PER_ROUND = 120;
+
 const SAMPLE_OBJECTIONS = [
   {
     theme: 'Preço & Concorrência',
@@ -191,7 +194,7 @@ export function WarRoomArenaView() {
         ),
       );
       const composite = Math.round((needScore + valueScore + playbookScore + empathyScore) / 4);
-      const awardedXp = composite >= 85 ? 120 : composite >= 75 ? 80 : 50;
+      const awardedXp = composite >= 85 ? MAX_XP_PER_ROUND : composite >= 75 ? 80 : 50;
 
       const feedback =
         composite >= 85
@@ -329,7 +332,7 @@ export function WarRoomArenaView() {
               </p>
               <div className="mt-4 pt-3 border-t border-line/60 flex items-center justify-between text-xs font-semibold text-brand">
                 <span>{SAMPLE_OBJECTIONS.length} Rounds · Feedback Instantâneo</span>
-                <span>Até 360 XP/sessão</span>
+                <span>Até {SAMPLE_OBJECTIONS.length * MAX_XP_PER_ROUND} XP/sessão</span>
               </div>
             </Card>
 
