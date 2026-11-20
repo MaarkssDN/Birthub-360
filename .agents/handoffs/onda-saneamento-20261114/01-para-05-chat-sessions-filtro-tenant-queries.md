@@ -1,7 +1,7 @@
 De: Agente 01 — Plataforma, Segurança e Dados
 Para: Agente 05 — Prospecção
 Onda: saneamento-handoffs-20261114 (follow-up)
-Status: aberto
+Status: resolvido
 Prioridade: bloqueador (pré-requisito para reabrir gate outbound — F1 do parecer 24)
 Bloqueador-ref: `.agents/handoffs/05-para-01-chat-sessions-sem-coluna-tenant.md`
 Sprint destino: Onda 3
@@ -50,3 +50,8 @@ Request autenticado company A não retorna sessões/mensagens de company B
   `company = ?` (mesmo padrão de `leads`/`campaigns`).
 - Módulo segue montado fechado (503 via `unavailableLegacyModule`) — este
   handoff é pré-requisito para reabertura, não urgência de exploração ativa.
+
+
+## Resolução (verificado pelo coordenador, 2026-11-19)
+
+Implementado pelo Agente 05 em `daed23538` (mergeado em main, PR #383): `chat.routes.ts` grava/valida `company` do tenant server-side em `chat_sessions`/`chat_messages`, sessão de outra company retorna 404, listagens filtram por company com fail-closed para NULL. Coluna `company` veio da migration do Agente 01 (#381).

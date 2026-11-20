@@ -1,7 +1,7 @@
 De: Agente 01A — Confiabilidade de Dados, RLS e Retenção
 Para: Agente 17 — Cadência Multicanal e Ciclo de Receita
 Onda: Onda 1 / W3 (Plano Mestre de Saneamento) — pendência herdada do handoff `17-para-01A-paginacao-list-optoutrepo.md` (resolvido)
-Status: aberto
+Status: resolvido
 Prioridade: normal — divergência de implementação apenas de teste, sem impacto em produção
 Bloqueador-ref: nenhum
 Sprint destino: próxima onda do Agente 17
@@ -52,3 +52,8 @@ Não alterar o contrato nem o `PrismaOptOutRepository` — já estão corretos.
 - Risco atual é baixo: a implementação em memória só é usada em testes; nenhum consumidor de
   produção depende dela. Ainda assim, testes que exercitem lotes >200 opt-outs herdariam o
   mesmo fail-open latente que a correção eliminou em produção.
+
+
+## Resolução (verificado pelo coordenador, 2026-11-19)
+
+`InMemoryOptOutRepository.list` corrigido em `8cccf5abb` (mergeado em main): assinatura agora `limit?: number` sem default 200 — omitido retorna a lista completa do tenant, alinhado ao `PrismaOptOutRepository` e ao contrato. Divergência sanada.

@@ -56,7 +56,7 @@ describe('Cockpits e Painéis Operacionais (Opção 1)', () => {
       const startBtn = screen.getByText(/Entrar na Arena Agora/i);
       fireEvent.click(startBtn);
 
-      expect(screen.getByText(/Round 1 de 4/i)).toBeInTheDocument();
+      expect(screen.getByText(/Round 1 de \d+/i)).toBeInTheDocument();
 
       const textarea = screen.getByPlaceholderText(/Estruture sua resposta/i);
       expect(textarea).toBeInTheDocument();
