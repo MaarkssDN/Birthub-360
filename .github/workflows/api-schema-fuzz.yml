@@ -1,0 +1,266 @@
+name: API Schema Fuzz (Schemathesis)
+
+# MEL-39 (Backlog Onda 5 / DEM-20261116-001, handoff 18→08): teste de contrato
+# orientado a propriedade do docs/openapi.yaml contra a API real.
+#
+# Decisão de escopo (registrada no handoff .agents/handoffs/backlog-5/18-para-08-schemathesis-ci.md):
+# - NÃO entra no required check `build` do ci.yml. O gate bloqueante de contrato
+#   continua sendo `npm run verify:openapi-drift` (80 prefixos, 506 paths, 0 deriva),
+#   que já roda em todo PR/push. Schemathesis é fuzzing: a primeira execução completa
+#   tende a produzir findings que exigem triagem própria (baseline, --exclude-checks),
+#   então um job bloqueante nasceria vermelho.
+# - Roda em schedule noturno + workflow_dispatch, com app de teste de verdade
+#   (Postgres pgvector + Redis + Meilisearch efêmeros, migrations aplicadas,
+#   NODE_ENV=test, banco prospectordb_test — mesma receita do job build-and-test
+#   do ci.yml). Falhas aparecem como run agendado/manual falho, não como bloqueio
+#   de PR.
+#
+# Autenticação: o spec declara `security: sessionCookie` em ~todos os paths.
+# O job provisiona um usuário descartável via POST /api/auth/sign-up/email +
+# sign-in/email (better-auth, mesmo fluxo dos specs E2E em tests/e2e/helpers.ts)
+# e injeta o cookie de sessão + Origin (exigido pelo csrfGuard em mutações,
+# ver playwright.config.ts) via `schemathesis run -H`.
+#
+# Relatórios: JUnit XML em schemathesis-report/ sobe como artefato em todo run
+# (sucesso ou falha) para triagem. `--max-time` limita o orçamento da fase de
+# fuzzing/stateful; `--report junit` gera o arquivo consumível por qualquer CI.
+
+on:
+  schedule:
+    # Diário 05:37 UTC — fora do horário dos scans semanais de Trivy (seg 06:00),
+    # CodeQL (qua) e SBOM (qui 06:00) para não disputar runner.
+    - cron: '37 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: api-schema-fuzz
+  cancel-in-progress: false
+
+jobs:
+  schemathesis:
+    name: Schemathesis — fuzz do OpenAPI contra app de teste
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: prospector
+          POSTGRES_PASSWORD: prospector_test_pass
+          POSTGRES_DB: prospectordb_test
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd "pg_isready -h 127.0.0.1 -U prospector -d prospectordb_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli -h 127.0.0.1 ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      meilisearch:
+        image: getmeili/meilisearch:v1.12
+        env:
+          MEILI_MASTER_KEY: ci-test-meili-key
+        ports:
+          - 7700:7700
+        options: >-
+          --health-cmd "wget --no-verbose --tries=1 -O - http://127.0.0.1:7700/health >/dev/null 2>&1 || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-start-period 30s
+          --health-retries 12
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://prospector_app:ci_app_test_pass@localhost:5434/prospectordb_test?schema=public
+      # Migrations rodam como o papel DONO (prospector_migrator); app e testes como prospector_app
+      # (só DML, dono de nada). prisma.config.ts prefere DIRECT_URL para a CLI; o runtime ignora.
+      DIRECT_URL: postgresql://prospector_migrator:ci_migrator_test_pass@localhost:5434/prospectordb_test?schema=public
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: ci-test-jwt-secret-not-for-production
+      MEILI_HOST: http://localhost:7700
+      MEILI_MASTER_KEY: ci-test-meili-key
+      PORT: 3000
+      BETTER_AUTH_SECRET: ci-e2e-test-only-secret-not-for-production
+      BETTER_AUTH_URL: http://localhost:3000
+      ALLOW_DEV_AUTH_BYPASS: true
+      ALLOWED_ORIGINS: http://localhost:3000
+      AUTH_RATE_LIMIT_MAX: 5000
+      # Schemathesis dispara centenas de requests por operação; os limiters de
+      # teste precisam de teto alto para o fuzz medir contrato, não rate limit
+      # (mesmo racional de playwright.config.ts para a suíte E2E).
+      API_RATE_LIMIT_MAX: 100000
+      PLATFORM_OPERATOR_TOKEN: ci-test-operator-token-not-for-production
+      APP_BASE_URL: http://127.0.0.1:3000
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Prisma engines
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            node_modules/.prisma
+            node_modules/@prisma/engines
+            ~/.cache/prisma
+          key: prisma-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: prisma-${{ runner.os }}-
+
+      - name: Bootstrap papel NOSUPERUSER da aplicação
+        env:
+          PGPASSWORD: prospector_test_pass
+          APP_DB_PASSWORD: ci_app_test_pass
+          MIGRATOR_DB_PASSWORD: ci_migrator_test_pass
+        run: bash scripts/db/bootstrap-app-role.sh localhost 5434 prospector prospectordb_test
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Criar .env.test
+        run: |
+          cat > .env.test <<EOF
+          NODE_ENV=$NODE_ENV
+          PORT=$PORT
+          DATABASE_URL=$DATABASE_URL
+          DIRECT_URL=$DIRECT_URL
+          REDIS_URL=$REDIS_URL
+          MEILI_HOST=$MEILI_HOST
+          MEILI_MASTER_KEY=$MEILI_MASTER_KEY
+          BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET
+          BETTER_AUTH_URL=$BETTER_AUTH_URL
+          ALLOW_DEV_AUTH_BYPASS=$ALLOW_DEV_AUTH_BYPASS
+          ALLOWED_ORIGINS=$ALLOWED_ORIGINS
+          AUTH_RATE_LIMIT_MAX=$AUTH_RATE_LIMIT_MAX
+          API_RATE_LIMIT_MAX=$API_RATE_LIMIT_MAX
+          PLATFORM_OPERATOR_TOKEN=$PLATFORM_OPERATOR_TOKEN
+          BOOTSTRAP_SUPERUSER_URL=postgresql://prospector:prospector_test_pass@localhost:5434/prospectordb_test
+          EOF
+
+      - name: Run Migrations
+        run: npx dotenv-cli -e .env.test -- npx prisma migrate deploy
+
+      - name: Re-bootstrap pós-migrate
+        env:
+          PGPASSWORD: prospector_test_pass
+          APP_DB_PASSWORD: ci_app_test_pass
+          MIGRATOR_DB_PASSWORD: ci_migrator_test_pass
+        run: bash scripts/db/bootstrap-app-role.sh localhost 5434 prospector prospectordb_test
+
+      - name: Subir app de teste (tsx server.ts, mesmo entrypoint do E2E)
+        run: |
+          npx dotenv-cli -e .env.test -- tsx server.ts > server.log 2>&1 &
+          echo "Aguardando boot do servidor (até 5 min — tsx compila o bundle inteiro na primeira carga)..."
+          for i in $(seq 1 150); do
+            if curl -fsS http://127.0.0.1:3000/health/live >/dev/null 2>&1; then
+              echo "Servidor online após ~$((i*2))s."
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::Servidor não respondeu /health/live em 5 minutos. Últimas linhas do log:"
+          tail -100 server.log
+          exit 1
+
+      - name: Provisionar sessão de teste (sign-up + sign-in better-auth)
+        id: session
+        env:
+          BASE_URL: http://127.0.0.1:3000
+          TEST_EMAIL: schemathesis-${{ github.run_id }}-${{ github.run_attempt }}@birthhub360.com.br
+          TEST_PASSWORD: SchemathesisCi-${{ github.run_id }}Aa1
+        run: |
+          set -euo pipefail
+          # Domínio @birthhub360.com.br é obrigatório pela access-policy do signup
+          # (mesmo domínio usado por tests/e2e/helpers.ts).
+          SIGNUP=$(curl -sS -X POST "$BASE_URL/api/auth/sign-up/email" \
+            -H "Content-Type: application/json" \
+            -H "Origin: $BASE_URL" \
+            --data "{\"name\":\"Schemathesis CI\",\"email\":\"$TEST_EMAIL\",\"password\":\"$TEST_PASSWORD\"}")
+          echo "$SIGNUP" | grep -q '"email"' || { echo "::error::sign-up falhou: $SIGNUP"; exit 1; }
+
+          # Captura TODOS os Set-Cookie do sign-in (better-auth pode emitir
+          # session_token + session_data) e monta o header Cookie manualmente.
+          COOKIE_HEADER=$(curl -sS -D - -o /dev/null -X POST "$BASE_URL/api/auth/sign-in/email" \
+            -H "Content-Type: application/json" \
+            -H "Origin: $BASE_URL" \
+            --data "{\"email\":\"$TEST_EMAIL\",\"password\":\"$TEST_PASSWORD\"}" \
+            | tr -d '\r' \
+            | awk 'tolower($1) == "set-cookie:" { $1 = ""; sub(/^ /, ""); sub(/;.*/, ""); printf "%s; ", $0 }')
+          [ -n "$COOKIE_HEADER" ] || { echo "::error::sign-in não retornou Set-Cookie"; exit 1; }
+
+          SESSION_JSON=$(curl -sS "$BASE_URL/api/auth/get-session" -H "Cookie: $COOKIE_HEADER")
+          echo "$SESSION_JSON" | grep -q "$TEST_EMAIL" || { echo "::error::sessão não validada: $SESSION_JSON"; exit 1; }
+
+          # O cookie é credencial de sessão descartável de banco efêmero — vai para
+          # GITHUB_ENV (não para outputs/log) para não vazar em sumário de run.
+          echo "SESSION_COOKIE=$COOKIE_HEADER" >> "$GITHUB_ENV"
+          echo "Sessão provisionada para $TEST_EMAIL"
+
+      - name: Instalar Schemathesis (Python do runner, venv local)
+        run: |
+          python3 -m venv .venv-schemathesis
+          .venv-schemathesis/bin/pip install --quiet --upgrade pip
+          .venv-schemathesis/bin/pip install --quiet "schemathesis==4.33.4"
+          .venv-schemathesis/bin/schemathesis --version
+
+      - name: Rodar Schemathesis contra docs/openapi.yaml
+        run: |
+          .venv-schemathesis/bin/schemathesis run docs/openapi.yaml \
+            -u http://127.0.0.1:3000 \
+            -H "Cookie: $SESSION_COOKIE" \
+            -H "Origin: http://127.0.0.1:3000" \
+            --report junit \
+            --report-dir schemathesis-report \
+            --report-junit-path schemathesis-junit.xml \
+            --max-time 3600 \
+            -w auto
+
+      - name: Upload relatório Schemathesis
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: schemathesis-report-${{ github.run_id }}
+          path: schemathesis-report/
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Dump do log do servidor em caso de falha
+        if: failure()
+        run: tail -200 server.log || true
+
+      - name: Publicar diagnóstico no step summary
+        if: always()
+        run: |
+          {
+            echo "## API Schema Fuzz (Schemathesis)"
+            echo ""
+            echo "- Spec: \`docs/openapi.yaml\`"
+            echo "- Alvo: \`http://127.0.0.1:3000\` (app de teste efêmero)"
+            echo "- Autenticação: sessão better-auth de usuário descartável"
+            echo "- Orçamento de fuzzing: \`--max-time 3600\`"
+            echo ""
+            echo "Este job NÃO é required check. O gate bloqueante de contrato continua sendo"
+            echo "\`verify:openapi-drift\` no ci.yml. Findings deste run devem ser triados"
+            echo "(corrigir contrato/código ou registrar em baseline via \`--baseline\`)."
+          } >> "$GITHUB_STEP_SUMMARY"

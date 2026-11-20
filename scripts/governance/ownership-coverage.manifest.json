@@ -109,6 +109,12 @@
       "owner": "cada agente cria seus próprios handoffs",
       "coverage": "review",
       "justification": "Fora do grafo do depcruise. Cada agente só cria/atualiza os próprios handoffs (AGENTS.md §18); a proteção é a regra de propriedade aplicada na revisão de diff — não há gate automatizado de autoria por arquivo."
+    },
+    {
+      "scope": "src/features/landing/**",
+      "owner": "Agente 02",
+      "coverage": "review",
+      "justification": "Dentro do grafo do depcruise, mas nenhuma regra forbidden modela 'propriedade de arquivo' — o cruiser verifica fronteiras de importação entre camadas, não quem pode editar. Landing pages são superfícies públicas protegidas (mudança visível exige autorização humana, AGENTS.md §15 e src/features/landing/AGENTS.md); a proteção real é revisão de diff contra a matriz de propriedade. Exceção declarada em prosa: /landing-new → LandingInnovative pertence ao Agente 12 (src/features/voice-hub/)."
     }
   ]
 }

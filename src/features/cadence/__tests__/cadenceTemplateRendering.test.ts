@@ -111,7 +111,7 @@ describe('Pipeline real de cadência — renderização de placeholders via Cade
     expect(sendWhatsAppMessage).toHaveBeenCalledWith(
       'org-1',
       '+5511999990000',
-      'Olá Maria Silva, tudo bem? Falo da Acme.',
+      'Olá Maria Silva, tudo bem? Falo da Acme.\n\nPara não receber mais mensagens como esta, responda SAIR.',
       undefined,
       { leadId: 'lead-1' },
     );
@@ -144,7 +144,7 @@ describe('Pipeline real de cadência — renderização de placeholders via Cade
     expect(sendWhatsAppMessage).toHaveBeenCalledWith(
       'org-1',
       '+5511999990000',
-      'Olá Prezado(a), tudo bem?',
+      'Olá Prezado(a), tudo bem?\n\nPara não receber mais mensagens como esta, responda SAIR.',
       undefined,
       { leadId: 'lead-1' },
     );
@@ -165,8 +165,33 @@ describe('Pipeline real de cadência — renderização de placeholders via Cade
       // splitSubjectAndBody usa a 1ª linha verbatim como assunto (comportamento pré-existente:
       // os playbooks prefixam com "Assunto:" literal — não alterado nesta reconciliação).
       subject: 'Assunto: Proposta — Acme',
-      text: 'Olá Maria Silva, segue a proposta.',
+      text: 'Olá Maria Silva, segue a proposta.\n\n--\nPara não receber mais e-mails como este, responda esta mensagem com "SAIR" ou "descadastrar".',
     });
+  });
+
+  // DEBT-0010 — nenhuma mensagem outbound de cadência sai sem instrução de opt-out; as
+  // palavras usadas são as que `isOptOutKeyword` reconhece na réplica do lead.
+  it('DEBT-0010: WhatsApp sempre envia com instrução de opt-out (SAIR)', async () => {
+    const outcome = await whatsAppCadenceDispatcher.dispatch(
+      makeTouch('Lembrete gentil.'),
+      makeRun(),
+    );
+
+    expect(outcome.result).toBe('sent');
+    const body = sendWhatsAppMessage.mock.calls[0][2] as string;
+    expect(body).toContain('responda SAIR');
+  });
+
+  it('DEBT-0010: e-mail sempre envia com instrução de opt-out processável por isOptOutKeyword', async () => {
+    const outcome = await emailCadenceDispatcher.dispatch(
+      makeTouch('Assunto: Oi\n\nCorpo.', 'email'),
+      makeRun(),
+    );
+
+    expect(outcome.result).toBe('sent');
+    const sent = sendEmail.mock.calls[0][0] as { text: string };
+    expect(sent.text).toContain('SAIR');
+    expect(sent.text).toContain('descadastrar');
   });
 
   it('E-mail: meeting_url/meeting_time são preenchidos a partir do CadenceCalendarEvent agendado', async () => {
