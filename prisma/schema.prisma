@@ -3575,6 +3575,7 @@ enum CadenceTouchResult {
   Sent
   Failed
   Skipped
+  Pending
 }
 
 /// Definição reutilizável de uma sequência de toques multicanal (ex.: e-mail → WhatsApp → voz →
