@@ -93,4 +93,21 @@ describe('src/lib/ai/metrics.ts', () => {
     const budget = metrics.find((m) => m.name === 'ai_usage_budget_usd_total');
     expect(budget).toBeUndefined();
   });
+
+  it('records ai_token_quota_fail_open_total with reason label and falls back to "unknown"', async () => {
+    vi.doMock('../../../../src/config/env.js', () => ({ env: {} }));
+    const { recordTokenQuotaFailOpen } = await import('../../../../src/lib/ai/metrics.js');
+
+    recordTokenQuotaFailOpen('usage_db_unavailable');
+    recordTokenQuotaFailOpen('');
+
+    const metrics = await client.register.getMetricsAsJSON();
+    const failOpen = metrics.find((m) => m.name === 'ai_token_quota_fail_open_total');
+    const values = (
+      failOpen as unknown as { values: Array<{ value: number; labels: Record<string, string> }> }
+    )?.values;
+
+    expect(values?.find((v) => v.labels.reason === 'usage_db_unavailable')?.value).toBe(1);
+    expect(values?.find((v) => v.labels.reason === 'unknown')?.value).toBe(1);
+  });
 });

@@ -6,7 +6,7 @@ path,de,para,onda,status,prio,dmin,dmax,mtime,resolucao,evid,aprov
 .agents/handoffs/00-para-08-cobertura-testes-modulos.md,00,08 (qa) + 24 (revisã,F5,ABERTO,normal,2026-11-12,2026-11-12,2026-11-13 19:30,2026-11-12,SIM,NAO
 .agents/handoffs/00-para-08-mesa-tratamento-e2e-jornada.md,00,08,W7,ABERTO,normal,,,2026-11-13 19:30,,SIM,NAO
 .agents/handoffs/00-para-10-decisao-k8s-helm-argocd.md,00,10,W7,ABERTO,normal,,,2026-11-13 19:30,,SIM,NAO
-.agents/handoffs/00-para-10-docker-2375-sem-autenticacao.md,00,10,pós-homologação 2026-11-10,ABERTO,**bloqueador**,2026-11-10,2026-11-12,2026-11-13 19:30,2026-11-10,SIM,NAO
+.agents/handoffs/00-para-10-docker-2375-sem-autenticacao.md,00,10,pós-homologação 2026-11-10,RESOLVIDO,**bloqueador**,2026-11-10,2026-11-12,2026-11-13 19:30,2026-11-19,SIM,NAO
 .agents/handoffs/00-para-12-17-voicehub-reactivacao.md,00,12 (voz e telefonia),F2,ABERTO,alto,2026-11-12,2026-11-12,2026-11-13 19:30,,SIM,NAO
 .agents/handoffs/00-para-16-warroom-sse-heartbeat.md,00,16,W7,ABERTO,normal,,,2026-11-13 19:30,,PARCIAL,NAO
 .agents/handoffs/00-para-17-07-orquestracao-sem-demo.md,00,17 (cadência) + 07 (,F3,ABERTO,normal,2026-11-12,2026-11-12,2026-11-13 19:30,,SIM,NAO
@@ -92,6 +92,7 @@ path,de,para,onda,status,prio,dmin,dmax,mtime,resolucao,evid,aprov
 .agents/handoffs/onda-01/11-para-02-03-sistema-visual-personagens.md,11,02,Onda 01,RESOLVIDO,alto,2026-11-10,2026-11-10,2026-11-12 11:34,,SIM,NAO
 .agents/handoffs/onda-02-ux/02-para-00-landing-lead-capture.md,02,00,02,RESOLVIDO,normal,,,2026-11-13 19:30,,SIM,NAO
 .agents/handoffs/onda-1/00-para-01-legacy-services-repo-migration.md,coordenador (00),01,1,RESOLVIDO,normal,2026-10-10,2026-10-10,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-1/00-para-14-env-test-playwright-local.md,00,14,1,RESOLVIDO,alto,2026-11-19,2026-11-19,2026-11-19,2026-11-19,SIM,NAO
 .agents/handoffs/onda-1/01-para-02-contrato-api-leads.md,01,02,1,RESOLVIDO,alto,2026-11-02,2026-11-10,2026-11-12 11:34,,PARCIAL,NAO
 .agents/handoffs/onda-1/01-para-04-role-gates-crm.md,01,04,1,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,SIM
 .agents/handoffs/onda-1/01-para-06-role-gates-integracoes.md,01,06,1,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,SIM
@@ -315,7 +316,7 @@ path,de,para,onda,status,prio,dmin,dmax,mtime,resolucao,evid,aprov
 .agents/handoffs/onda-ia-1/07-para-00-dependencias-guardrails.md,07,00,IA-1,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,SIM
 .agents/handoffs/onda-ia-1/07-para-01-schema-document-embedding.md,07,01,IA-1,RESOLVIDO,alto,,,2026-11-12 11:34,,SIM,NAO
 .agents/handoffs/onda-ia-1/14-para-15-resposta-avaliacao-pii.md,14,15,IA-1,RESOLVIDO,normal,,,2026-11-12 11:34,,SIM,NAO
-.agents/handoffs/onda-ia-1/15-para-14-avaliacao-pii.md,15,14,IA-1,ABERTO,normal,,,2026-11-12 11:34,,SIM,NAO
+.agents/handoffs/onda-ia-1/15-para-14-avaliacao-pii.md,15,14,IA-1,RESOLVIDO,normal,,,2026-11-19,2026-11-19,SIM,NAO
 .agents/handoffs/onda-landing-360-auditoria/01-para-02-sticky-bar-zindex.md,01,02,landing-360-auditoria,RESOLVIDO,alta (desbloqueia o hang do E2E no Relea,2026-11-12,2026-11-12,2026-11-13 19:30,,SIM,NAO
 .agents/handoffs/onda-landing-360-auditoria/02-para-01-endpoint-captura-lead.md,02,01,landing-360-auditoria,RESOLVIDO,bloqueador,2026-11-11,2026-11-11,2026-11-13 19:30,2026-11-11,SIM,NAO
 .agents/handoffs/onda-landing-360-auditoria/auditoria-para-02-bugs-funcionais.md,auditoria ad-hoc (de,02,landing-360-auditoria,RESOLVIDO,alto,2026-11-12,2026-11-12,2026-11-13 19:30,2026-11-12,SIM,NAO

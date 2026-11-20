@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Auditoria de Dívida Técnica — Squad 30 · Produto, UX, Design System e Marca</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #f59e0b;
+      --p0: #ef4444;
+      --p1: #f97316;
+      --p2: #eab308;
+      --p3: #3b82f6;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 24px;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header {
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-p0 { background: rgba(239, 68, 68, 0.2); color: var(--p0); border: 1px solid var(--p0); }
+    .badge-p1 { background: rgba(249, 115, 22, 0.2); color: var(--p1); border: 1px solid var(--p1); }
+    .badge-p2 { background: rgba(234, 179, 8, 0.2); color: var(--p2); border: 1px solid var(--p2); }
+    .badge-p3 { background: rgba(59, 130, 246, 0.2); color: var(--p3); border: 1px solid var(--p3); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; background: var(--card-bg); border-radius: 8px; overflow: hidden; }
+    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: #111827; font-size: 13px; text-transform: uppercase; color: var(--muted); }
+    tr:hover { background: rgba(255, 255, 255, 0.02); }
+    .agent-tag { font-weight: 600; color: var(--accent); }
+    .file-tag { font-family: monospace; font-size: 12px; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; color: #38bdf8; }
+    .nav-back { display: inline-block; margin-bottom: 16px; color: var(--muted); text-decoration: none; font-size: 14px; }
+    .nav-back:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="../dashboard/index.html" class="nav-back">← Voltar ao Dashboard Global de Dívidas Técnicas</a>
+    <header>
+      <div style="font-size: 12px; text-transform: uppercase; color: var(--accent); font-weight: bold; letter-spacing: 1px;">Auditoria Independente por Squad</div>
+      <h1 style="margin: 8px 0 4px 0;">Squad 30 · Produto, UX, Design System e Marca</h1>
+      <p style="color: var(--muted); margin: 0;"><strong>Coordenador Responsável:</strong> 30 — Violeta (Coordenador de Produto, UX & Design)</p>
+      <p style="color: var(--muted); font-size: 13px; margin-top: 4px;">Data de Auditoria: 2026-11-19 | Total de Especialistas: 10 | Status: CONSOLIDADO</p>
+    </header>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Especialista</th>
+          <th>Papel Técnico</th>
+          <th>Severidade</th>
+          <th>Dívida Técnica Identificada</th>
+          <th>Impacto Potencial</th>
+          <th>Esforço</th>
+          <th>Arquivo Alvo</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+          <tr>
+            <td class="agent-tag">30</td>
+            <td style="font-weight: 600;">Violeta</td>
+            <td style="color: var(--muted); font-size: 13px;">Coordenador de UX/UI</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Divergência de espaçamento e ritmo vertical entre componentes de Landing e App Shell.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Sensação visual de fragmentação de produto.</td>
+            <td style="font-size: 13px;">Baixo</td>
+            <td><span class="file-tag">src/components/index.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">31</td>
+            <td style="font-weight: 600;">Noa</td>
+            <td style="color: var(--muted); font-size: 13px;">App Shell & Navegação</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Rotas do App Shell em src/App.tsx importadas de forma síncrona sem React.lazy(), inflando o bundle.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Tempo de carregamento inicial (FCP) de quase 3 segundos em redes móveis.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/App.tsx</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">32</td>
+            <td style="font-weight: 600;">Ema</td>
+            <td style="color: var(--muted); font-size: 13px;">Arquitetura de Informação</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Tabelas e dashboards sem componentes padronizados de Empty State e Feedback de Erro recuperável.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Telas em branco ou travadas sem instrução de como o usuário deve proceder.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/components/feedback/EmptyState.tsx</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">33</td>
+            <td style="font-weight: 600;">Célia</td>
+            <td style="color: var(--muted); font-size: 13px;">Design System & Tailwind</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Presença de classes arbitrárias de cores e tamanhos em componentes novos ignorando tokens semânticos.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Dificuldade de manutenção do Dark Mode e consistência de marca.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/components/ui/Button.tsx</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">34</td>
+            <td style="font-weight: 600;">Ari</td>
+            <td style="color: var(--muted); font-size: 13px;">Acessibilidade WCAG 2.2</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Modais e gavetas laterais sem aprisionamento de foco (focus trap) e sem suporte à tecla Escape.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Navegação por teclado inacessível para usuários com deficiência visual/motora.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/components/ui/Modal.tsx</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">35</td>
+            <td style="font-weight: 600;">Mia</td>
+            <td style="color: var(--muted); font-size: 13px;">Motion & Microinterações</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Animações do Framer Motion sem checagem de prefers-reduced-motion em cards e transições de página.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Desconforto visual e tontura para usuários com sensibilidade vestibular.</td>
+            <td style="font-size: 13px;">Baixo</td>
+            <td><span class="file-tag">src/components/motion/MotionWrapper.tsx</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">36</td>
+            <td style="font-weight: 600;">Léo</td>
+            <td style="color: var(--muted); font-size: 13px;">Landing & Conversão</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Imagens promocionais da landing page sem dimensões explícitas (width/height), gerando CLS alto.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Penalização nas pontuações de Core Web Vitals do Google e SEO.</td>
+            <td style="font-size: 13px;">Baixo</td>
+            <td><span class="file-tag">src/features/landing/Hero.tsx</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">37</td>
+            <td style="font-weight: 600;">Suri</td>
+            <td style="color: var(--muted); font-size: 13px;">UX Research & Onboarding</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Checklists de onboarding sem persistência em LocalStorage: F5 reinicia o fluxo do usuário.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Fricção na ativação e frustração de novos clientes na primeira sessão.</td>
+            <td style="font-size: 13px;">Baixo</td>
+            <td><span class="file-tag">src/features/onboarding/ui/Checklist.tsx</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">38</td>
+            <td style="font-weight: 600;">Nara</td>
+            <td style="color: var(--muted); font-size: 13px;">Dashboards & Gráficos</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Componentes gráficos re-renderizam a cada mensagem recebida via WebSocket sem useMemo.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Queda brusca de taxa de quadros (FPS) e travamento de interface em desktops modestos.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/components/charts/RevenueChart.tsx</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">39</td>
+            <td style="font-weight: 600;">Tina</td>
+            <td style="color: var(--muted); font-size: 13px;">Marca & Documentação</td>
+            <td><span class="badge badge-p3">P3</span></td>
+            <td>Manual de design tokens e guia de componentes desatualizados em relação à versão final do Tailwind v4.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Inconsistência na criação de novas telas por diferentes agentes.</td>
+            <td style="font-size: 13px;">Baixo</td>
+            <td><span class="file-tag">identidade-visual/tokens.md</span></td>
+          </tr>
+        
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
