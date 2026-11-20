@@ -1,10 +1,11 @@
 De: 08 — QA e Release
 Para: 00 — Coordenador
 Onda: débitos da auditoria 2026-11-18 (DEBT-0001)
-Status: em-andamento
+Status: resolvido
 Prioridade: bloqueador
 Bloqueador-ref: DEBT-0001 (inventario-mestre.md, INF-01)
 Sprint destino: saneamento de débitos P0
+Resolução-ref: PR #427 (commit 2b748ad4a) / Parecer APROVADO .agents/reviews/debt0001-deploy-ec2-2b748ad4a-24.md
 
 ## Problema
 
