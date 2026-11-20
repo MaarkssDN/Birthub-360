@@ -21,9 +21,9 @@ vi.mock('@/lib/soundEffects', () => ({
   SoundFX: { play: vi.fn(), isEnabled: vi.fn(() => true) },
 }));
 
-function renderPalette() {
+function renderPaletteAt(route = '/') {
   return render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[route]}>
       <CommandPalette />
     </MemoryRouter>,
   );
@@ -45,7 +45,7 @@ afterEach(() => {
 
 describe('CommandPalette', () => {
   it('permanece fechado até Ctrl+K e abre com role=dialog acessível', () => {
-    renderPalette();
+    renderPaletteAt();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
     openWithCtrlK();
@@ -55,7 +55,7 @@ describe('CommandPalette', () => {
   });
 
   it('também abre via evento OPEN_COMMAND_PALETTE_EVENT e fecha com Escape', () => {
-    renderPalette();
+    renderPaletteAt();
     act(() => {
       window.dispatchEvent(new Event(OPEN_COMMAND_PALETTE_EVENT));
     });
@@ -66,7 +66,7 @@ describe('CommandPalette', () => {
   });
 
   it('Ctrl+K alterna (abre e fecha)', () => {
-    renderPalette();
+    renderPaletteAt();
     openWithCtrlK();
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     openWithCtrlK();
@@ -74,7 +74,7 @@ describe('CommandPalette', () => {
   });
 
   it('filtra ações rápidas por texto e navega ao confirmar com Enter', async () => {
-    renderPalette();
+    renderPaletteAt();
     openWithCtrlK();
     const input = screen.getByPlaceholderText(/Buscar empresa/);
 
@@ -92,7 +92,7 @@ describe('CommandPalette', () => {
   });
 
   it('setas movem a seleção e Enter aciona o item ativo', async () => {
-    renderPalette();
+    renderPaletteAt();
     openWithCtrlK();
     const input = screen.getByPlaceholderText(/Buscar empresa/);
 
@@ -113,7 +113,7 @@ describe('CommandPalette', () => {
       return Promise.resolve({ data: [{ id: 'p1', name: 'João Silva', role: 'CEO' }] });
     });
 
-    renderPalette();
+    renderPaletteAt();
     openWithCtrlK();
     const input = screen.getByPlaceholderText(/Buscar empresa/);
     fireEvent.change(input, { target: { value: 'acme' } });
@@ -127,7 +127,7 @@ describe('CommandPalette', () => {
   });
 
   it('exibe empty state quando a busca não retorna nada', async () => {
-    renderPalette();
+    renderPaletteAt();
     openWithCtrlK();
     const input = screen.getByPlaceholderText(/Buscar empresa/);
     fireEvent.change(input, { target: { value: 'zzzz' } });
@@ -135,6 +135,85 @@ describe('CommandPalette', () => {
     // Ações rápidas são filtradas por similaridade de texto — 'zzzz' não casa nada.
     await waitFor(() => expect(screen.getByText(/Nenhum resultado/)).toBeInTheDocument(), {
       timeout: 2000,
+    });
+  });
+
+  describe('grupo "Nesta página" (MEL-35)', () => {
+    it('em /app/crm oferece ações da página e navegação para empresas/contatos', () => {
+      renderPaletteAt('/app/crm');
+      openWithCtrlK();
+
+      expect(screen.getByText('Nesta página')).toBeInTheDocument();
+      // "Nova oportunidade" também existe em Ações rápidas — a ocorrência extra é a contextual.
+      expect(screen.getAllByText('Nova oportunidade').length).toBeGreaterThanOrEqual(2);
+      expect(screen.getByText('Ir para empresas')).toBeInTheDocument();
+      expect(screen.getByText('Ir para contatos')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByText('Ir para empresas'));
+      expect(navigateMock).toHaveBeenCalledWith('/app/companies', undefined);
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('em /app/companies oferece "Nova empresa" contextual e ir para contatos', () => {
+      renderPaletteAt('/app/companies');
+      openWithCtrlK();
+
+      expect(screen.getByText('Nesta página')).toBeInTheDocument();
+      expect(screen.getAllByText('Nova empresa').length).toBeGreaterThanOrEqual(2);
+      expect(screen.getByText('Ir para contatos')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByText('Ir para contatos'));
+      expect(navigateMock).toHaveBeenCalledWith('/app/contacts', undefined);
+    });
+
+    it('em /app/activities oferece "Criar nova atividade" contextual', () => {
+      renderPaletteAt('/app/activities');
+      openWithCtrlK();
+
+      expect(screen.getByText('Nesta página')).toBeInTheDocument();
+      expect(screen.getAllByText('Criar nova atividade').length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('em /app/settings oferece voltar ao dashboard e abrir integrações', () => {
+      renderPaletteAt('/app/settings');
+      openWithCtrlK();
+
+      expect(screen.getByText('Nesta página')).toBeInTheDocument();
+      expect(screen.getByText('Voltar ao dashboard')).toBeInTheDocument();
+      expect(screen.getByText('Abrir integrações')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByText('Abrir integrações'));
+      expect(navigateMock).toHaveBeenCalledWith('/app/integrations', undefined);
+    });
+
+    it('em /app/usage (ADMIN-only) só oferece "Voltar ao dashboard", sem ação de módulo', () => {
+      renderPaletteAt('/app/usage');
+      openWithCtrlK();
+
+      expect(screen.getByText('Nesta página')).toBeInTheDocument();
+      expect(screen.getByText('Voltar ao dashboard')).toBeInTheDocument();
+      // Nenhuma ação de módulo/contextual além da navegação segura.
+      expect(screen.queryByText('Ir para empresas')).not.toBeInTheDocument();
+      expect(screen.queryByText('Ir para contatos')).not.toBeInTheDocument();
+      expect(screen.queryByText('Abrir integrações')).not.toBeInTheDocument();
+    });
+
+    it('em rota sem mapeamento (/app/knowledge) o grupo "Nesta página" não aparece', () => {
+      renderPaletteAt('/app/knowledge');
+      openWithCtrlK();
+
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      expect(screen.queryByText('Nesta página')).not.toBeInTheDocument();
+    });
+
+    it('o filtro por texto continua valendo para itens contextuais', async () => {
+      renderPaletteAt('/app/crm');
+      openWithCtrlK();
+      const input = screen.getByPlaceholderText(/Buscar empresa/);
+
+      fireEvent.change(input, { target: { value: 'contatos' } });
+      await waitFor(() => expect(screen.getByText('Ir para contatos')).toBeInTheDocument());
+      expect(screen.queryByText('Ir para empresas')).not.toBeInTheDocument();
     });
   });
 });
