@@ -1,9 +1,21 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+// Handoff 16→00 (onda-3): MARKET_SIGNAL_DETECTED deve carregar
+// opts.idempotencyKey estável derivada da identidade do sinal de negócio.
+const publishMock = vi.hoisted(() => vi.fn(async () => undefined));
+vi.mock('../../../src/lib/queue/domainEventMesh.service.js', () => ({
+  domainEventMesh: { publish: publishMock },
+}));
+
 import { MarketSensingService } from '../../../src/features/market-intelligence/server/marketSensing.service.js';
 
 describe('MarketSensingService — Eixo 12 (Market Sensing & Inteligência Exógena)', () => {
   const service = new MarketSensingService();
   const orgId = 'org-tenant-sensing-001';
+
+  beforeEach(() => {
+    publishMock.mockClear();
+  });
 
   it('deve ingerir sinal de mercado e normalizar com metadados e confiança', async () => {
     const signal = await service.ingestSignal({
@@ -62,6 +74,35 @@ describe('MarketSensingService — Eixo 12 (Market Sensing & Inteligência Exóg
     expect(gazetteSignal.signalType).toBe('regulatory_change');
     expect(gazetteSignal.source).toBe('official_gazette');
     expect(gazetteSignal.confidence).toBe('high');
+  });
+
+  it('MARKET_SIGNAL_DETECTED publica com idempotencyKey determinística por fato de negócio', async () => {
+    const input = {
+      organizationId: orgId,
+      companyId: 'company-idem',
+      companyName: 'Transportadora Idem',
+      signalType: 'funding_round' as const,
+      source: 'news' as const,
+      title: 'Transportadora Idem capta aporte para frota',
+      summary: 'Resumo do sinal.',
+      confidence: 'high' as const,
+    };
+
+    // Duas instâncias simulam restart/replay: o signal.id muda (randomUUID), mas a
+    // chave de idempotência deve ser idêntica — derivada do contentHash estável.
+    const first = await new MarketSensingService().ingestSignal(input);
+    const second = await new MarketSensingService().ingestSignal(input);
+
+    expect(first.id).not.toBe(second.id);
+    expect(publishMock).toHaveBeenCalledTimes(2);
+    for (const call of publishMock.mock.calls) {
+      expect(call[0].eventType).toBe('MARKET_SIGNAL_DETECTED');
+      expect(call[1].idempotencyKey).toMatch(/^market-signal:[0-9a-f]{64}$/);
+    }
+    expect(publishMock.mock.calls[0][1].idempotencyKey).toBe(
+      publishMock.mock.calls[1][1].idempotencyKey,
+    );
+    expect(publishMock.mock.calls[0][1].idempotencyKey).not.toContain(first.id);
   });
 
   it('deve buscar sinais por empresa isolados por tenant', async () => {

@@ -243,6 +243,15 @@ jobs:
       - name: Run Unit Tests
         run: npm run test:unit -- --coverage
 
+      - name: Domain coverage report (auth, billing, tenancy, IA — MEL-46)
+        # Informativo: os gates reais são os thresholds por domínio de
+        # vitest.unit.config.ts (avaliados dentro do step acima). Este passo só
+        # imprime o agregado por domínio no log para facilitar revisão de PRs —
+        # coverage-final.json existe mesmo quando a suíte falha (reportOnFailure).
+        if: always()
+        continue-on-error: true
+        run: node scripts/ci/coverage-domain-report.mjs
+
       - name: Run AI Resilience Tests (TD-009)
         run: npm run test:unit -- src/lib/ai/gateway/__tests__/http-client.test.ts src/lib/ai/gateway/__tests__/circuit-breaker.test.ts src/lib/ai/gateway/__tests__/retry.test.ts
 
@@ -308,6 +317,18 @@ jobs:
 
       - name: Run Integration Tests (auth, RBAC and tenant isolation)
         run: npm run test:integration -- --coverage
+
+      # DEBT-0026: verify:integrations/verify:ai existiam só no workflow não-gate
+      # onda-2.5-validation.yml (PRs para validation/onda-2.5-base). Aqui eles entram no
+      # application gate. verify:integrations é bloqueante (mesma semântica do workflow de
+      # validação); integrações pagas sem credencial retornam SKIPPED por design do script.
+      - name: Verify integrations (provedores externos)
+        run: npm run verify:integrations
+
+      # verify:ai gera conteúdo real via GROQ_API_KEY/OPENAI_API_KEY (env do job). Bloqueante:
+      # sem motor configurado o script aborta — falha aqui é sinal real de regressão no Hub de IA.
+      - name: Verify AI (Hub de IA — geração real)
+        run: npm run verify:ai
 
       - name: Run Build
         run: npm run build

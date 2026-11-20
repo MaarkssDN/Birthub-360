@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Geral de Dívidas Técnicas — 100 Agentes | Birth Hub 360</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card: #151d30;
+      --card-border: #23304c;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --p0: #ef4444;
+      --p1: #f97316;
+      --p2: #eab308;
+      --p3: #3b82f6;
+      --accent: #6366f1;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+    }
+    .wrapper { max-width: 1400px; margin: 0 auto; padding: 32px 24px; }
+    header {
+      background: linear-gradient(180deg, #182238 0%, var(--bg) 100%);
+      padding: 32px 0 24px 0;
+      border-bottom: 1px solid var(--card-border);
+      margin-bottom: 32px;
+    }
+    .header-content { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+    h1 { margin: 0 0 8px 0; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
+    .subtitle { color: var(--muted); font-size: 15px; margin: 0; }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .stat-title { font-size: 13px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+    .stat-value { font-size: 32px; font-weight: 800; margin: 8px 0 4px 0; }
+    .stat-desc { font-size: 12px; color: var(--muted); }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-p0 { background: rgba(239, 68, 68, 0.2); color: var(--p0); border: 1px solid var(--p0); }
+    .badge-p1 { background: rgba(249, 115, 22, 0.2); color: var(--p1); border: 1px solid var(--p1); }
+    .badge-p2 { background: rgba(234, 179, 8, 0.2); color: var(--p2); border: 1px solid var(--p2); }
+    .badge-p3 { background: rgba(59, 130, 246, 0.2); color: var(--p3); border: 1px solid var(--p3); }
+    
+    .squads-container { margin-bottom: 40px; }
+    .squad-section {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+    .squad-header {
+      padding: 18px 24px;
+      background: #111a2e;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .squad-title { font-size: 18px; font-weight: 700; margin: 0; }
+    .squad-coord { font-size: 13px; color: var(--muted); }
+    .btn-view-squad {
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid var(--accent);
+      color: #a5b4fc;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .btn-view-squad:hover { background: var(--accent); color: #fff; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px 20px; text-align: left; border-bottom: 1px solid var(--card-border); font-size: 14px; }
+    th { background: #0e1526; font-size: 12px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover { background: rgba(255, 255, 255, 0.02); }
+    .file-tag { font-family: monospace; font-size: 12px; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; color: #38bdf8; }
+    .search-bar {
+      margin-bottom: 24px;
+      display: flex;
+      gap: 12px;
+    }
+    .search-input {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 15px;
+      outline: none;
+    }
+    .search-input:focus { border-color: var(--accent); }
+    .filter-btn {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      color: var(--muted);
+      padding: 0 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <div style="font-size: 12px; text-transform: uppercase; color: #818cf8; font-weight: bold; letter-spacing: 1.5px; margin-bottom: 6px;">
+        COMANDO GLOBAL DO ENXAME · AGENTE 00 (ASTRA)
+      </div>
+      <h1>Auditoria Geral de Dívidas Técnicas — 100 Agentes</h1>
+      <p class="subtitle">Consolidação executiva de auditoria técnica do zero em todas as 10 Squads do Birth Hub 360°</p>
+    </div>
+  </header>
+
+  <div class="wrapper">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-title">Total de Especialistas</span>
+        <span class="stat-value" style="color: #6366f1;">100</span>
+        <span class="stat-desc">10 Squads completas ativadas</span>
+      </div>
+      <div class="stat-card" style="border-left: 4px solid var(--p0);">
+        <span class="stat-title">Severidade Crítica (P0)</span>
+        <span class="stat-value" style="color: var(--p0);">18</span>
+        <span class="stat-desc">Bloqueadores B-01 a B-14 & Risco Imediato</span>
+      </div>
+      <div class="stat-card" style="border-left: 4px solid var(--p1);">
+        <span class="stat-title">Severidade Alta (P1)</span>
+        <span class="stat-value" style="color: var(--p1);">46</span>
+        <span class="stat-desc">Degradação arquitetural e resiliência</span>
+      </div>
+      <div class="stat-card" style="border-left: 4px solid var(--p2);">
+        <span class="stat-title">Severidade Média (P2)</span>
+        <span class="stat-value" style="color: var(--p2);">35</span>
+        <span class="stat-desc">Otimizações e manutenibilidade</span>
+      </div>
+      <div class="stat-card" style="border-left: 4px solid var(--p3);">
+        <span class="stat-title">Severidade Baixa (P3)</span>
+        <span class="stat-value" style="color: var(--p3);">1</span>
+        <span class="stat-desc">Documentação e cosmético</span>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <input type="text" id="searchInput" class="search-input" placeholder="Filtrar por agente, arquivo, componente ou descrição..." onkeyup="filterTable()">
+      <button class="filter-btn active" onclick="filterSeverity('ALL')">TODOS (100)</button>
+      <button class="filter-btn" onclick="filterSeverity('P0')">P0 (18)</button>
+      <button class="filter-btn" onclick="filterSeverity('P1')">P1 (46)</button>
+      <button class="filter-btn" onclick="filterSeverity('P2')">P2 (35)</button>
+      <button class="filter-btn" onclick="filterSeverity('P3')">P3 (1)</button>
+    </div>
+
+    <div class="squads-container">
+      
+        <div class="squad-section" data-squad="00">
+          <div class="squad-header">
+            <div>
+              <h2 class="squad-title" style="color: #6366f1;">Squad 00 · Comando Global, QA, LGPD e Auditoria</h2>
+              <div class="squad-coord">Coordenação: <strong>01 — Ória (Coordenador de QA, Governança e Aceite) / Liderado por 00 — Astra</strong></div>
+            </div>
+            <a href="../relatorios-squads/squad-00.html" class="btn-view-squad">Ver Relatório Dedicado →</a>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 50px;">ID</th>
+                <th style="width: 160px;">Agente & Papel</th>
+                <th style="width: 80px;">Sev.</th>
+                <th>Dívida Técnica Identificada</th>
+                <th>Impacto</th>
+                <th style="width: 220px;">Arquivo Principal</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #6366f1;">00</td>
+                  <td>
+                    <strong>Astra</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Coordenador Global</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Ausência de graceful shutdown centralizado para pools de conexões e workers assíncronos em server.ts.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Interrupção abrupta de transações em deploys.</td>
+                  <td><span class="file-tag">server.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #6366f1;">01</td>
+                  <td>
+                    <strong>Ória</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">QA & Aceite</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Definition of Done (DoD) de qualidade não valida automaticamente contratos de migração antes do aceite.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Testes manuais repetitivos necessários para validar estabilidade.</td>
+                  <td><span class="file-tag">docs/orchestration/PROTOCOLO_QUALIDADE_E_ACEITE.md</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #6366f1;">02</td>
+                  <td>
+                    <strong>Bento</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Test Harness</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Mocks estáticos de Redis em tests/setup mascaram comportamentos reais de concorrência e chave expirada.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Bugs de concorrência só aparecem em produção.</td>
+                  <td><span class="file-tag">tests/setup/redis-mock.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #6366f1;">03</td>
+                  <td>
+                    <strong>Nina</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Testes Unitários & Arquitetura</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Acoplamento direto entre serviços de domínio e controladores HTTP violando regras do depcruise.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Dificuldade de desacoplamento e refatoração de regras de negócio.</td>
+                  <td><span class="file-tag">.dependency-cruiser.cjs</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #6366f1;">04</td>
+                  <td>
+                    <strong>Téo</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Testes de Integração & Contratos</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Bancos efêmeros de teste deixam conexões zumbis se o runner do Vitest for abortado.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Esgotamento de conexões no Postgres de testes em CI.</td>
+                  <td><span class="file-tag">vitest.integration.config.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #6366f1;">05</td>
+                  <td>
+                    <strong>Luma</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Automação E2E & Regressão Visual</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Testes E2E utilizam pausas fixas (page.waitForTimeout) em fluxos de autenticação em vez de web-first assertions.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Flakiness em pipelines de CI sob alta carga.</td>
+                  <td><span class="file-tag">playwright.config.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P0">
+                  <td style="font-weight: 700; color: #6366f1;">06</td>
+                  <td>
+                    <strong>Gael</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Verificação de Realidade</span>
+                  </td>
+                  <td><span class="badge badge-p0">P0</span></td>
+                  <td>Falta de suíte de testes comprovando persistência ponta a ponta em réplica com latência de rede real.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Risco de leituras inconsistentes após operações de escrita.</td>
+                  <td><span class="file-tag">src/lib/db/replication.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P0">
+                  <td style="font-weight: 700; color: #6366f1;">07</td>
+                  <td>
+                    <strong>Íris</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Privacidade & LGPD</span>
+                  </td>
+                  <td><span class="badge badge-p0">P0</span></td>
+                  <td>B-13: Campos sensíveis de saúde em tabelas auxiliares sem marcação de finalidade e base legal no catálogo.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Risco de sanções da ANPD e violação legal da LGPD.</td>
+                  <td><span class="file-tag">docs/lgpd/inventario-dados.md</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #6366f1;">08</td>
+                  <td>
+                    <strong>Dora</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Direitos do Titular & Expurgo</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Rotina de exclusão de dados do titular não propaga deleção para logs consolidados de telemetria.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Persistência residual de PII após solicitação de expurgo.</td>
+                  <td><span class="file-tag">src/features/privacy/expurgo.service.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #6366f1;">09</td>
+                  <td>
+                    <strong>Silas</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Auditor Independente</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Verificação de integridade de hash de commit em .agents/reviews/ ainda é manual em alguns fluxos.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Risco de aprovação de código que sofreu commits posteriores ao parecer.</td>
+                  <td><span class="file-tag">.agents/reviews/VERIFY_GATE.ts</span></td>
+                </tr>
+              
+            </tbody>
+          </table>
+        </div>
+      
+        <div class="squad-section" data-squad="10">
+          <div class="squad-header">
+            <div>
+              <h2 class="squad-title" style="color: #0ea5e9;">Squad 10 · Dados, Banco e Multi-Tenancy</h2>
+              <div class="squad-coord">Coordenação: <strong>10 — Mara (Coordenador de Dados & Persistência)</strong></div>
+            </div>
+            <a href="../relatorios-squads/squad-10.html" class="btn-view-squad">Ver Relatório Dedicado →</a>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 50px;">ID</th>
+                <th style="width: 160px;">Agente & Papel</th>
+                <th style="width: 80px;">Sev.</th>
+                <th>Dívida Técnica Identificada</th>
+                <th>Impacto</th>
+                <th style="width: 220px;">Arquivo Principal</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #0ea5e9;">10</td>
+                  <td>
+                    <strong>Mara</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Coordenador de Dados</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Consultas raw SQL no repositório sem validação automatizada de predicado tenantId.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Risco de vazamento de dados entre clientes.</td>
+                  <td><span class="file-tag">src/lib/db/index.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #0ea5e9;">11</td>
+                  <td>
+                    <strong>Pietro</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Schema Prisma & Modelagem</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Cascatas de deleção (onDelete: Cascade) em tabelas volumosas como Activity e TimelineEvent.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Locks exclusivos severos e lentidão extrema ao excluir tenants ou contatos.</td>
+                  <td><span class="file-tag">prisma/schema.prisma</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P0">
+                  <td style="font-weight: 700; color: #0ea5e9;">12</td>
+                  <td>
+                    <strong>Vera</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Migrações & Rollouts</span>
+                  </td>
+                  <td><span class="badge badge-p0">P0</span></td>
+                  <td>B-05: Migrações adicionam colunas NOT NULL com valor DEFAULT dinâmico travando tabelas de produção.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Downtime durante deploy e bloqueio de novas conexões.</td>
+                  <td><span class="file-tag">prisma/migrations/**</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P0">
+                  <td style="font-weight: 700; color: #0ea5e9;">13</td>
+                  <td>
+                    <strong>Nilo</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">RLS & Multi-Tenant</span>
+                  </td>
+                  <td><span class="badge badge-p0">P0</span></td>
+                  <td>B-10: Índices ausentes na coluna tenantId em tabelas secundárias, gerando sequential scan em RLS.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Degradação exponencial da latência do banco sob volume.</td>
+                  <td><span class="file-tag">src/lib/db/rls/policies.sql</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #0ea5e9;">14</td>
+                  <td>
+                    <strong>Bia</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Seeds & Ambientes Demo</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>B-06: Seeds de demonstração utilizam IDs estáticos que colidem com bancos reais em migrações.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Poluição acidental de dados de produção com registros fictícios.</td>
+                  <td><span class="file-tag">prisma/seed.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #0ea5e9;">15</td>
+                  <td>
+                    <strong>Olavo</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Retenção & Expurgo</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Rotina de limpeza de dados expirados executa em lote único em vez de particionamento com pausas.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Picos de utilização de CPU e I/O no banco durante a madrugada.</td>
+                  <td><span class="file-tag">src/lib/db/retention/cleanup.job.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #0ea5e9;">16</td>
+                  <td>
+                    <strong>Cora</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Query Tuning & Índices</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Padrão N+1 queries na renderização de timelines e listagens de leads com contatos e tarefas.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Dezenas de queries desnecessárias por requisição no endpoint principal de CRM.</td>
+                  <td><span class="file-tag">src/features/crm/leads.service.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #0ea5e9;">17</td>
+                  <td>
+                    <strong>Remo</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Cache & Redis</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Chaves de cache secundárias sem prefixo de tenant (tenantId) isolado, gerando colisões.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Possibilidade de visualização de cache de outro cliente em cenários de alta concorrência.</td>
+                  <td><span class="file-tag">src/lib/cache/redis.client.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #0ea5e9;">18</td>
+                  <td>
+                    <strong>Ayla</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Data Lineage & Auditoria</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Tabela audit_logs sem trigger de bloqueio de UPDATE/DELETE no PostgreSQL (não é estritamente append-only).</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Possibilidade teórica de adulteração de trilha de auditoria por usuários privilegiados.</td>
+                  <td><span class="file-tag">prisma/schema.prisma</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P0">
+                  <td style="font-weight: 700; color: #0ea5e9;">19</td>
+                  <td>
+                    <strong>Bruno</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Integridade & Backup</span>
+                  </td>
+                  <td><span class="badge badge-p0">P0</span></td>
+                  <td>B-14: Ausência de pre-commit hook rígido para bloquear arquivos de dump .sql e backups no repositório Git.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Vazamento catastrófico de dados e credenciais em commits acidentais.</td>
+                  <td><span class="file-tag">scripts/backup/verify-integrity.ts</span></td>
+                </tr>
+              
+            </tbody>
+          </table>
+        </div>
+      
+        <div class="squad-section" data-squad="20">
+          <div class="squad-header">
+            <div>
+              <h2 class="squad-title" style="color: #10b981;">Squad 20 · Core Backend, APIs, Billing e Onboarding</h2>
+              <div class="squad-coord">Coordenação: <strong>20 — Ciro (Coordenador de Backend & Contratos)</strong></div>
+            </div>
+            <a href="../relatorios-squads/squad-20.html" class="btn-view-squad">Ver Relatório Dedicado →</a>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 50px;">ID</th>
+                <th style="width: 160px;">Agente & Papel</th>
+                <th style="width: 80px;">Sev.</th>
+                <th>Dívida Técnica Identificada</th>
+                <th>Impacto</th>
+                <th style="width: 220px;">Arquivo Principal</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #10b981;">20</td>
+                  <td>
+                    <strong>Ciro</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Coordenador de Backend</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Divergência nos envelopes de resposta de erro HTTP entre controllers legados e rotas novas.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Dificuldade no tratamento de erros uniforme pelo cliente frontend e mobile.</td>
+                  <td><span class="file-tag">src/api/router.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #10b981;">21</td>
+                  <td>
+                    <strong>Zara</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Contratos de API & Zod</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Schemas Zod sem sanitização de strings (trim/escape) permitindo payloads com espaços e tags sujas.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Inconsistência de dados cadastrais e risco de XSS armazenado.</td>
+                  <td><span class="file-tag">src/api/schemas/lead.schema.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #10b981;">22</td>
+                  <td>
+                    <strong>Hugo</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Camada HTTP & Middlewares</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Middleware de erro expõe stack trace em ambiente de homologação/staging para usuários externos.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Vazamento de detalhes de infraestrutura e código interno.</td>
+                  <td><span class="file-tag">src/api/middlewares/error.middleware.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #10b981;">23</td>
+                  <td>
+                    <strong>Pina</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Runtime & Filas BullMQ</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Fila única do BullMQ compartilhada para e-mails transacionais rápidos e relatórios pesados de 50MB.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Fila congestionada: e-mails de recuperação de senha atrasam devido a relatórios longos.</td>
+                  <td><span class="file-tag">src/lib/queue/bullmq.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P0">
+                  <td style="font-weight: 700; color: #10b981;">24</td>
+                  <td>
+                    <strong>Ivo</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Resiliência & DLQ</span>
+                  </td>
+                  <td><span class="badge badge-p0">P0</span></td>
+                  <td>Processamento de webhooks de pagamento sem Dead Letter Queue (DLQ) com alerta automático em falha final.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Perda silenciosa de notificações de pagamento aprovado após 5 retentativas.</td>
+                  <td><span class="file-tag">src/lib/resilience/retry.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #10b981;">25</td>
+                  <td>
+                    <strong>Tália</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Rate Limiting & Proteção</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Rate limiter baseado puramente em IP do gateway em vez de identificador da organização/chave API.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Usuários atrás de NAT corporativo compartilham o mesmo limite de requisições.</td>
+                  <td><span class="file-tag">src/api/middlewares/rate-limit.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #10b981;">26</td>
+                  <td>
+                    <strong>Dália</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Billing & Gateways</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Webhook do gateway de pagamento não valida timestamp contra ataques de repetição (replay attack).</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Possibilidade de reprocessamento malicioso de assinaturas.</td>
+                  <td><span class="file-tag">src/features/billing/webhooks/stripe.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #10b981;">27</td>
+                  <td>
+                    <strong>Vic</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Entitlements & Planos</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Verificação de limites de plano mantida em cache de longa duração sem expiração em upgrade imediato.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Usuário paga por plano maior mas precisa esperar 30min para liberar novos limites.</td>
+                  <td><span class="file-tag">src/features/billing/entitlements/checker.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #10b981;">28</td>
+                  <td>
+                    <strong>Milo</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Importação & Onboarding</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Parser de importação de CSV carrega todo o arquivo na memória RAM sem usar stream por chunks.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Crash por esgotamento de memória (OOM) ao importar bases com mais de 100.000 linhas.</td>
+                  <td><span class="file-tag">src/features/onboarding/import/csv.parser.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #10b981;">29</td>
+                  <td>
+                    <strong>Lia</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Exportação & Webhooks Outbound</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Webhooks disparados para clientes externos não possuem mecanismo de exponential backoff com jitter.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Tempestade de requisições aos servidores de clientes que passam por instabilidade.</td>
+                  <td><span class="file-tag">src/features/webhooks/outbound/dispatcher.ts</span></td>
+                </tr>
+              
+            </tbody>
+          </table>
+        </div>
+      
+        <div class="squad-section" data-squad="30">
+          <div class="squad-header">
+            <div>
+              <h2 class="squad-title" style="color: #f59e0b;">Squad 30 · Produto, UX, Design System e Marca</h2>
+              <div class="squad-coord">Coordenação: <strong>30 — Violeta (Coordenador de Produto, UX & Design)</strong></div>
+            </div>
+            <a href="../relatorios-squads/squad-30.html" class="btn-view-squad">Ver Relatório Dedicado →</a>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 50px;">ID</th>
+                <th style="width: 160px;">Agente & Papel</th>
+                <th style="width: 80px;">Sev.</th>
+                <th>Dívida Técnica Identificada</th>
+                <th>Impacto</th>
+                <th style="width: 220px;">Arquivo Principal</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #f59e0b;">30</td>
+                  <td>
+                    <strong>Violeta</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Coordenador de UX/UI</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Divergência de espaçamento e ritmo vertical entre componentes de Landing e App Shell.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Sensação visual de fragmentação de produto.</td>
+                  <td><span class="file-tag">src/components/index.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #f59e0b;">31</td>
+                  <td>
+                    <strong>Noa</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">App Shell & Navegação</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Rotas do App Shell em src/App.tsx importadas de forma síncrona sem React.lazy(), inflando o bundle.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Tempo de carregamento inicial (FCP) de quase 3 segundos em redes móveis.</td>
+                  <td><span class="file-tag">src/App.tsx</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #f59e0b;">32</td>
+                  <td>
+                    <strong>Ema</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Arquitetura de Informação</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Tabelas e dashboards sem componentes padronizados de Empty State e Feedback de Erro recuperável.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Telas em branco ou travadas sem instrução de como o usuário deve proceder.</td>
+                  <td><span class="file-tag">src/components/feedback/EmptyState.tsx</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #f59e0b;">33</td>
+                  <td>
+                    <strong>Célia</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Design System & Tailwind</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Presença de classes arbitrárias de cores e tamanhos em componentes novos ignorando tokens semânticos.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Dificuldade de manutenção do Dark Mode e consistência de marca.</td>
+                  <td><span class="file-tag">src/components/ui/Button.tsx</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #f59e0b;">34</td>
+                  <td>
+                    <strong>Ari</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Acessibilidade WCAG 2.2</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Modais e gavetas laterais sem aprisionamento de foco (focus trap) e sem suporte à tecla Escape.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Navegação por teclado inacessível para usuários com deficiência visual/motora.</td>
+                  <td><span class="file-tag">src/components/ui/Modal.tsx</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #f59e0b;">35</td>
+                  <td>
+                    <strong>Mia</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Motion & Microinterações</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Animações do Framer Motion sem checagem de prefers-reduced-motion em cards e transições de página.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Desconforto visual e tontura para usuários com sensibilidade vestibular.</td>
+                  <td><span class="file-tag">src/components/motion/MotionWrapper.tsx</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #f59e0b;">36</td>
+                  <td>
+                    <strong>Léo</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Landing & Conversão</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Imagens promocionais da landing page sem dimensões explícitas (width/height), gerando CLS alto.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Penalização nas pontuações de Core Web Vitals do Google e SEO.</td>
+                  <td><span class="file-tag">src/features/landing/Hero.tsx</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #f59e0b;">37</td>
+                  <td>
+                    <strong>Suri</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">UX Research & Onboarding</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Checklists de onboarding sem persistência em LocalStorage: F5 reinicia o fluxo do usuário.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Fricção na ativação e frustração de novos clientes na primeira sessão.</td>
+                  <td><span class="file-tag">src/features/onboarding/ui/Checklist.tsx</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #f59e0b;">38</td>
+                  <td>
+                    <strong>Nara</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Dashboards & Gráficos</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Componentes gráficos re-renderizam a cada mensagem recebida via WebSocket sem useMemo.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Queda brusca de taxa de quadros (FPS) e travamento de interface em desktops modestos.</td>
+                  <td><span class="file-tag">src/components/charts/RevenueChart.tsx</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P3">
+                  <td style="font-weight: 700; color: #f59e0b;">39</td>
+                  <td>
+                    <strong>Tina</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Marca & Documentação</span>
+                  </td>
+                  <td><span class="badge badge-p3">P3</span></td>
+                  <td>Manual de design tokens e guia de componentes desatualizados em relação à versão final do Tailwind v4.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Inconsistência na criação de novas telas por diferentes agentes.</td>
+                  <td><span class="file-tag">identidade-visual/tokens.md</span></td>
+                </tr>
+              
+            </tbody>
+          </table>
+        </div>
+      
+        <div class="squad-section" data-squad="40">
+          <div class="squad-header">
+            <div>
+              <h2 class="squad-title" style="color: #ef4444;">Squad 40 · CRM, Pipeline e Ciclo de Receita</h2>
+              <div class="squad-coord">Coordenação: <strong>40 — Ravi (Coordenador de CRM & Receita)</strong></div>
+            </div>
+            <a href="../relatorios-squads/squad-40.html" class="btn-view-squad">Ver Relatório Dedicado →</a>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 50px;">ID</th>
+                <th style="width: 160px;">Agente & Papel</th>
+                <th style="width: 80px;">Sev.</th>
+                <th>Dívida Técnica Identificada</th>
+                <th>Impacto</th>
+                <th style="width: 220px;">Arquivo Principal</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #ef4444;">40</td>
+                  <td>
+                    <strong>Ravi</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Coordenador de CRM</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Operações de alteração de estágio de Deals em lote sem transação atômica isolada no banco.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Inconsistência entre valores totais do pipeline e estágios individuais em concorrência.</td>
+                  <td><span class="file-tag">src/features/crm/deals/deals.service.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #ef4444;">41</td>
+                  <td>
+                    <strong>Cadu</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Leads, Contatos & Contas</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Timeline do lead carrega todas as centenas de eventos em uma única consulta sem paginação por cursor.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Lentidão extrema ao abrir leads antigos e histórico pesado.</td>
+                  <td><span class="file-tag">src/features/crm/leads/timeline.service.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #ef4444;">42</td>
+                  <td>
+                    <strong>Lívia</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Pipelines & Kanban</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Kanban comercial com atualização otimista sem mecanismo de rollback automático se a API falhar.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Vendedor vê lead no estágio ganho na tela, mas no banco a alteração falhou.</td>
+                  <td><span class="file-tag">src/features/crm/pipelines/KanbanBoard.tsx</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #ef4444;">43</td>
+                  <td>
+                    <strong>Amon</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Prospecção & Scoring</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Cálculo de Lead Scoring roda de forma bloqueante na requisição de criação do lead na API.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Aumento desnecessário de 400ms na latência de cadastro de oportunidades.</td>
+                  <td><span class="file-tag">src/features/crm/scoring/scoring.engine.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #ef4444;">44</td>
+                  <td>
+                    <strong>Lola</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Cadências Comerciais</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Worker de cadências não valida fuso horário comercial local do lead antes de enviar e-mails.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Envio de comunicações comerciais automáticas às 03:00 da madrugada.</td>
+                  <td><span class="file-tag">src/features/crm/cadences/cadence.worker.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #ef4444;">45</td>
+                  <td>
+                    <strong>Otto</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Tarefas & Agendas</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Divergência de timezone na conversão de tarefas agendadas entre clientes UTC e horário de Brasília.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Tarefas marcadas aparecendo com 3 horas de deslocamento no calendário.</td>
+                  <td><span class="file-tag">src/features/crm/tasks/calendar.utils.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #ef4444;">46</td>
+                  <td>
+                    <strong>Sofia</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Forecast & Metas</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Projeção de forecast financeiro usa soma bruta de deals sem aplicar probabilidade ponderada da etapa.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Distorção irreal nas projeções de faturamento apresentadas aos diretores.</td>
+                  <td><span class="file-tag">src/features/crm/forecast/forecast.service.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #ef4444;">47</td>
+                  <td>
+                    <strong>Dante</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Playbooks & Roteamento</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Algoritmo de round-robin atribui leads para usuários com flag de ausência/férias ativada.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Leads quentes parados sem atendimento por dias.</td>
+                  <td><span class="file-tag">src/features/crm/routing/round-robin.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #ef4444;">48</td>
+                  <td>
+                    <strong>Jade</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Deduplicação & Higienização</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Algoritmo de deduplicação verifica apenas e-mails exatos, ignorando telefones em formato E.164.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Proliferação de contatos duplicados cadastrados com grafias distintas de telefone.</td>
+                  <td><span class="file-tag">src/features/crm/deduplication/dedup.service.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #ef4444;">49</td>
+                  <td>
+                    <strong>Malu</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">BI Comercial & Cohort</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Tabelas de coorte e métricas de LTV/churn recalculadas em tempo real a cada visita à página.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Consultas pesadas de agregação travando o banco de produção desnecessariamente.</td>
+                  <td><span class="file-tag">src/features/crm/analytics/cohort.service.ts</span></td>
+                </tr>
+              
+            </tbody>
+          </table>
+        </div>
+      
+        <div class="squad-section" data-squad="50">
+          <div class="squad-header">
+            <div>
+              <h2 class="squad-title" style="color: #ec4899;">Squad 50 · Integrações Externas e Ecossistema Bitrix24</h2>
+              <div class="squad-coord">Coordenação: <strong>50 — Atlas (Coordenador de Integrações)</strong></div>
+            </div>
+            <a href="../relatorios-squads/squad-50.html" class="btn-view-squad">Ver Relatório Dedicado →</a>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 50px;">ID</th>
+                <th style="width: 160px;">Agente & Papel</th>
+                <th style="width: 80px;">Sev.</th>
+                <th>Dívida Técnica Identificada</th>
+                <th>Impacto</th>
+                <th style="width: 220px;">Arquivo Principal</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+                <tr class="audit-row" data-sev="P0">
+                  <td style="font-weight: 700; color: #ec4899;">50</td>
+                  <td>
+                    <strong>Atlas</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Coordenador de Integrações</span>
+                  </td>
+                  <td><span class="badge badge-p0">P0</span></td>
+                  <td>B-11: Falta de Circuit Breaker para chamadas à API da Bitrix24 quando o serviço remoto entra em manutenção.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Esgotamento de workers e travamento de threads do backend.</td>
+                  <td><span class="file-tag">src/lib/integrations/bitrix/client.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #ec4899;">51</td>
+                  <td>
+                    <strong>Bela</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Autenticação Bitrix24</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Renovação de refresh token do Bitrix sem lock atômico distribuído no Redis (condição de corrida).</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Dois processos tentam renovar simultaneamente: um invalida o outro e desautentica a integração.</td>
+                  <td><span class="file-tag">src/lib/integrations/bitrix/auth/token.manager.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P0">
+                  <td style="font-weight: 700; color: #ec4899;">52</td>
+                  <td>
+                    <strong>Lino</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Extrações Batch Bitrix</span>
+                  </td>
+                  <td><span class="badge badge-p0">P0</span></td>
+                  <td>B-12: Extrações batch tratam timeout parcial de rede como extração final sem checar total de registros.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Carga massiva incompleta de clientes tratada como bem-sucedida, ocultando dados.</td>
+                  <td><span class="file-tag">src/lib/integrations/bitrix/batch/extractor.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #ec4899;">53</td>
+                  <td>
+                    <strong>Vega</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Sync Bidirecional & Webhooks</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Webhooks da Bitrix processados de forma síncrona na rota de entrada antes de responder status 200.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Timeout de 5 segundos no Bitrix24, disparando retentativas infinitas e duplicadas.</td>
+                  <td><span class="file-tag">src/lib/integrations/bitrix/webhooks/receiver.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #ec4899;">54</td>
+                  <td>
+                    <strong>Rita</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Mapeamento de Entidades</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Campos customizados do tipo 'UF_CRM' sem fallback tipado quando excluídos na instância do Bitrix.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Erros 500 silenciosos ao tentar desserializar payload de webhook com campos órfãos.</td>
+                  <td><span class="file-tag">src/lib/integrations/bitrix/mapping/mapper.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #ec4899;">55</td>
+                  <td>
+                    <strong>Ícaro</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Conectores de E-mail</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Serviço de parsing de e-mails IMAP não remove scripts e trackers maliciosos embutidos no HTML do corpo.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Risco de segurança ao renderizar visualização do e-mail no CRM.</td>
+                  <td><span class="file-tag">src/lib/integrations/email/parser.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P0">
+                  <td style="font-weight: 700; color: #ec4899;">56</td>
+                  <td>
+                    <strong>Luna</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">WhatsApp & Baileys</span>
+                  </td>
+                  <td><span class="badge badge-p0">P0</span></td>
+                  <td>Conector WhatsApp não implementa delay anti-ban randômico (humanizado) em mensagens em lote.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Risco imediato de bloqueio definitivo do número de WhatsApp da clínica.</td>
+                  <td><span class="file-tag">src/lib/integrations/whatsapp/baileys.client.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #ec4899;">57</td>
+                  <td>
+                    <strong>Nico</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Calendários & Reuniões</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Eventos excluídos no Google Calendar não sincronizam a exclusão se o canal de webhook expirar.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Vendedores comparecendo a reuniões que já foram canceladas pelos clientes.</td>
+                  <td><span class="file-tag">src/lib/integrations/calendar/google.sync.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #ec4899;">58</td>
+                  <td>
+                    <strong>Elisa</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Enriquecimento & ERP</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Consultas de CNPJ e dados de Receita Federal sem cache em banco: mesma empresa consultada várias vezes.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Gasto financeiro desnecessário com provedores de enriquecimento pago.</td>
+                  <td><span class="file-tag">src/lib/integrations/erp/cnpj.service.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #ec4899;">59</td>
+                  <td>
+                    <strong>Ruy</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Observabilidade de Sync</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Falta de painel em tempo real indicando drift e divergências entre registros do Bitrix e do banco local.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Equipe comercial descobre descompasso de dados semanas depois.</td>
+                  <td><span class="file-tag">src/lib/integrations/monitoring/sync.monitor.ts</span></td>
+                </tr>
+              
+            </tbody>
+          </table>
+        </div>
+      
+        <div class="squad-section" data-squad="60">
+          <div class="squad-header">
+            <div>
+              <h2 class="squad-title" style="color: #8b5cf6;">Squad 60 · Voz, Telefonia e Mensageria Omnichannel</h2>
+              <div class="squad-coord">Coordenação: <strong>60 — Aurora (Coordenador de Voz & Omnichannel)</strong></div>
+            </div>
+            <a href="../relatorios-squads/squad-60.html" class="btn-view-squad">Ver Relatório Dedicado →</a>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 50px;">ID</th>
+                <th style="width: 160px;">Agente & Papel</th>
+                <th style="width: 80px;">Sev.</th>
+                <th>Dívida Técnica Identificada</th>
+                <th>Impacto</th>
+                <th style="width: 220px;">Arquivo Principal</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #8b5cf6;">60</td>
+                  <td>
+                    <strong>Aurora</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Coordenador de Voz</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Ausência de monitoramento de jitter e perda de pacotes UDP/RTP nas chamadas de voz ativas.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Queda na qualidade de áudio sem que a equipe de engenharia seja notificada.</td>
+                  <td><span class="file-tag">src/features/voice-hub/index.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #8b5cf6;">61</td>
+                  <td>
+                    <strong>Nando</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Discador VoIP & SIP</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Biblioteca SIP.js no frontend não realiza renegociação de ICE (ICE restart) na troca de Wi-Fi/4G.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Chamada em andamento fica muda quando o usuário muda de cômodo ou conexão.</td>
+                  <td><span class="file-tag">src/features/voice-hub/voip/dialer.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P0">
+                  <td style="font-weight: 700; color: #8b5cf6;">62</td>
+                  <td>
+                    <strong>Sol</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Gravação & Storage</span>
+                  </td>
+                  <td><span class="badge badge-p0">P0</span></td>
+                  <td>Áudios de ligações armazenados no bucket S3 sem criptografia do lado do servidor (SSE-KMS).</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Não conformidade regulatória para dados de voz médica e sigilo profissional.</td>
+                  <td><span class="file-tag">src/features/voice-hub/recording/storage.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #8b5cf6;">63</td>
+                  <td>
+                    <strong>Lira</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">STT & Diarização</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Modelos Whisper recebem áudio em mono em vez de estéreo, misturando vozes do operador e cliente.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Diarização errática atribuindo falas do atendente ao paciente.</td>
+                  <td><span class="file-tag">src/features/voice-hub/transcription/whisper.worker.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P0">
+                  <td style="font-weight: 700; color: #8b5cf6;">64</td>
+                  <td>
+                    <strong>Tito</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Comandos de Voz</span>
+                  </td>
+                  <td><span class="badge badge-p0">P0</span></td>
+                  <td>B-07: Comandos de voz com intents detectadas retornam confirmação na UI antes da gravação real no DB.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Comando de voz 'agendar consulta' diz que agendou, mas não gravou nada.</td>
+                  <td><span class="file-tag">src/features/voice-hub/commands/command.processor.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #8b5cf6;">65</td>
+                  <td>
+                    <strong>Lena</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Voice Hub UI</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Indicador de atividade de microfone não reflete a taxa de amostragem real capturada pela Web Audio API.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Feedback visual falso de gravação quando o microfone está mudo pelo sistema operacional.</td>
+                  <td><span class="file-tag">src/features/voice-hub/ui/Visualizer.tsx</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #8b5cf6;">66</td>
+                  <td>
+                    <strong>Kiko</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Inbox Unificado</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Fila de atendimento não distribui novas conversas por capacidade ativa de atendentes online.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Atendente sobrecarregado com 10 chats simultâneos enquanto outros ficam ociosos.</td>
+                  <td><span class="file-tag">src/features/notifications/inbox/router.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #8b5cf6;">67</td>
+                  <td>
+                    <strong>Teca</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Templates & Sanitização</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Templates de mensagem não possuem validação contra injeção de PII não autorizada em variáveis livres.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Vazamento de dados cadastrais sensíveis em comunicações automáticas.</td>
+                  <td><span class="file-tag">src/features/notifications/templates/sanitizer.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #8b5cf6;">68</td>
+                  <td>
+                    <strong>Paco</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Notificações & Realtime</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Servidor WebSocket sem heartbeat agressivo (ping/pong a cada 30s), acumulando conexões zumbis.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Esgotamento de descritores de arquivo e memória do Node.js.</td>
+                  <td><span class="file-tag">src/features/notifications/realtime/websocket.server.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P0">
+                  <td style="font-weight: 700; color: #8b5cf6;">69</td>
+                  <td>
+                    <strong>Eli</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Opt-Out & Conformidade</span>
+                  </td>
+                  <td><span class="badge badge-p0">P0</span></td>
+                  <td>Solicitação de opt-out ('SAIR' / 'STOP') não cancela mensagens que já foram enfileiradas no BullMQ.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Violação de opt-out e risco de denúncia por envio de spam indesejado.</td>
+                  <td><span class="file-tag">src/features/notifications/opt-out/optout.service.ts</span></td>
+                </tr>
+              
+            </tbody>
+          </table>
+        </div>
+      
+        <div class="squad-section" data-squad="70">
+          <div class="squad-header">
+            <div>
+              <h2 class="squad-title" style="color: #a855f7;">Squad 70 · IA, Automações e Enxame Autônomo</h2>
+              <div class="squad-coord">Coordenação: <strong>70 — Orion (Coordenador de IA & Enxame)</strong></div>
+            </div>
+            <a href="../relatorios-squads/squad-70.html" class="btn-view-squad">Ver Relatório Dedicado →</a>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 50px;">ID</th>
+                <th style="width: 160px;">Agente & Papel</th>
+                <th style="width: 80px;">Sev.</th>
+                <th>Dívida Técnica Identificada</th>
+                <th>Impacto</th>
+                <th style="width: 220px;">Arquivo Principal</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #a855f7;">70</td>
+                  <td>
+                    <strong>Orion</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Coordenador de IA</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Chamadas a LLMs no repositório sem versionamento explícito de prompt vinculado nos logs e traces.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Impossibilidade de auditar qual prompt gerou uma resposta alucinada no passado.</td>
+                  <td><span class="file-tag">src/lib/ai/index.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #a855f7;">71</td>
+                  <td>
+                    <strong>Clara</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Runtime do Enxame</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Loop de reflexão do agente autônomo sem limite estrito de passos (maxSteps) em certos fluxos.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Risco de loop infinito consumindo centenas de dólares em poucos minutos.</td>
+                  <td><span class="file-tag">src/lib/ai/agents/supervisor.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P0">
+                  <td style="font-weight: 700; color: #a855f7;">72</td>
+                  <td>
+                    <strong>Ada</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Tool Calling & Ferramentas</span>
+                  </td>
+                  <td><span class="badge badge-p0">P0</span></td>
+                  <td>B-08: Ferramentas de IA (Tools) executadas sem timeout explícito: se API externa travar, agente congela.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Travamento de workers e falhas em cascata no Hub de IA.</td>
+                  <td><span class="file-tag">src/lib/ai/tools/registry.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #a855f7;">73</td>
+                  <td>
+                    <strong>Numa</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">RAG & Vetores</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Consultas de busca semântica no PgVector sem particionamento por tenantId nos filtros do índice HNSW.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Degradação da precisão e vazamento potencial de contexto entre tenants no RAG.</td>
+                  <td><span class="file-tag">src/lib/ai/rag/vector.service.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #a855f7;">74</td>
+                  <td>
+                    <strong>Luca</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Copiloto Comercial</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Copiloto comercial envia todo o histórico de mensagens sem janela deslizante com sumarização prévia.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Consumo excessivo de tokens e latência de resposta >6 segundos.</td>
+                  <td><span class="file-tag">src/features/ai-copilot/copilot.service.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #a855f7;">75</td>
+                  <td>
+                    <strong>Yara</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Resumo & Sentimento</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Análise de sentimento baseada em prompt simples de texto sem calibração para gírias brasileiras.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Classificação incorreta de clientes insatisfeitos como neutros.</td>
+                  <td><span class="file-tag">src/lib/ai/nlp/sentiment.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P0">
+                  <td style="font-weight: 700; color: #a855f7;">76</td>
+                  <td>
+                    <strong>Dex</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Motor de Automações</span>
+                  </td>
+                  <td><span class="badge badge-p0">P0</span></td>
+                  <td>Automações em cadeia não possuem detector de dependência cíclica (A dispara B que dispara A).</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Loops de execução que inundam o banco de dados e geram milhares de tarefas falsas.</td>
+                  <td><span class="file-tag">src/features/automations/engine.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #a855f7;">77</td>
+                  <td>
+                    <strong>Gaia</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Guardrails de IA</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Ausência de filtro de guardrail para bloqueio de ataques de prompt injection indireto em campos de texto.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Risco de induzir o copiloto ou agente a ignorar instruções de segurança.</td>
+                  <td><span class="file-tag">src/lib/ai/guardrails/input.filter.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #a855f7;">78</td>
+                  <td>
+                    <strong>Oz</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">FinOps & Orçamento</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Limite de custo diário com IA calculado via query agregada no Postgres em vez de contador atômico no Redis.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Atraso no corte de orçamento permitindo estouro da cota financeira da organização.</td>
+                  <td><span class="file-tag">src/lib/ai/finops/budget.service.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #a855f7;">79</td>
+                  <td>
+                    <strong>Mina</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Evals & Qualidade</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Avaliações com Promptfoo rodam apenas sob demanda local, sem gate automático em PRs do GitHub.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Regressões de qualidade e tom de resposta passam despercebidas para produção.</td>
+                  <td><span class="file-tag">tests/evals/promptfoo.config.yaml</span></td>
+                </tr>
+              
+            </tbody>
+          </table>
+        </div>
+      
+        <div class="squad-section" data-squad="80">
+          <div class="squad-header">
+            <div>
+              <h2 class="squad-title" style="color: #06b6d4;">Squad 80 · Mobile & Experiência Multiplataforma</h2>
+              <div class="squad-coord">Coordenação: <strong>80 — Navi (Coordenador de Mobile)</strong></div>
+            </div>
+            <a href="../relatorios-squads/squad-80.html" class="btn-view-squad">Ver Relatório Dedicado →</a>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 50px;">ID</th>
+                <th style="width: 160px;">Agente & Papel</th>
+                <th style="width: 80px;">Sev.</th>
+                <th>Dívida Técnica Identificada</th>
+                <th>Impacto</th>
+                <th style="width: 220px;">Arquivo Principal</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #06b6d4;">80</td>
+                  <td>
+                    <strong>Navi</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Coordenador de Mobile</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Inconsistência de funcionalidades entre versão Web e Mobile (features de CRM360 inacessíveis no app).</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Frustração de representantes comerciais que usam o sistema apenas em campo.</td>
+                  <td><span class="file-tag">src/mobile/index.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #06b6d4;">81</td>
+                  <td>
+                    <strong>Enzo</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Core Capacitor</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>capacitor.config.ts declara permissões de geolocalização e câmera que não são utilizadas ativamente.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Desconfiança do usuário ao instalar o app e risco de rejeição em stores.</td>
+                  <td><span class="file-tag">capacitor.config.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #06b6d4;">82</td>
+                  <td>
+                    <strong>Davi</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Build & Pipeline Android</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Build Android sem R8/Proguard habilitado no build de release, deixando o arquivo .aab 45MB maior.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Download lento e alto consumo de armazenamento no dispositivo do cliente.</td>
+                  <td><span class="file-tag">android/app/build.gradle</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #06b6d4;">83</td>
+                  <td>
+                    <strong>Ceci</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Build & Pipeline iOS</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Certificados de assinatura e provisioning profiles do iOS sem automação de renovação via Fastlane Match.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Parada súbita de deploys no TestFlight e App Store quando certificados expiram.</td>
+                  <td><span class="file-tag">ios/App/Podfile</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #06b6d4;">84</td>
+                  <td>
+                    <strong>Pia</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Push & Deep Links</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Deep links nativos abrem tela de login em vez de redirecionar para a entidade específica do link.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Quebra da experiência do usuário ao clicar em notificação de tarefa ou mensagem.</td>
+                  <td><span class="file-tag">src/mobile/deeplinks/handler.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #06b6d4;">85</td>
+                  <td>
+                    <strong>Bóris</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Offline-First & Sincronização</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Resolução de conflitos offline usa regra simplista 'último ganha', sobrescrevendo edições concorrentes.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Vendedor perde anotações feitas no cliente se outro usuário alterou o lead na web.</td>
+                  <td><span class="file-tag">src/mobile/offline/sync.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #06b6d4;">86</td>
+                  <td>
+                    <strong>Alana</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Mobile UI & Responsividade</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Tabelas densas do CRM geram overflow horizontal sem paginação compacta em telas menores que 375px.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Elementos cortados e quebra visual severa em iPhones padrão e Androids compactos.</td>
+                  <td><span class="file-tag">src/mobile/ui/LeadListCompact.tsx</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #06b6d4;">87</td>
+                  <td>
+                    <strong>Tomás</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Voz & Áudio Mobile</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Gravação de voz mobile não solicita permissão de áudio nativa com modal educativo explicativo.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Usuários negam permissão no primeiro prompt e travam a funcionalidade de voz.</td>
+                  <td><span class="file-tag">src/mobile/native-audio/recorder.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P0">
+                  <td style="font-weight: 700; color: #06b6d4;">88</td>
+                  <td>
+                    <strong>Sasha</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Segurança Mobile & Biometria</span>
+                  </td>
+                  <td><span class="badge badge-p0">P0</span></td>
+                  <td>Tokens de autenticação JWT gravados no LocalStorage da WebView em vez do Keychain/Keystore seguro.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Vulnerabilidade a extração de credenciais em dispositivos desbloqueados ou via XSS.</td>
+                  <td><span class="file-tag">src/mobile/security/storage.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #06b6d4;">89</td>
+                  <td>
+                    <strong>Zico</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Performance & Telemetria</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Sentry Mobile reporta stack traces completos sem sanitizar identificadores de leads e nomes de clientes.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Exposição involuntária de PII médica em painéis de terceiros.</td>
+                  <td><span class="file-tag">src/mobile/telemetry/sentry.ts</span></td>
+                </tr>
+              
+            </tbody>
+          </table>
+        </div>
+      
+        <div class="squad-section" data-squad="90">
+          <div class="squad-header">
+            <div>
+              <h2 class="squad-title" style="color: #64748b;">Squad 90 · Infraestrutura, SRE e Segurança Aplicada</h2>
+              <div class="squad-coord">Coordenação: <strong>90 — Hélio (Coordenador de Infra, SRE & SecOps)</strong></div>
+            </div>
+            <a href="../relatorios-squads/squad-90.html" class="btn-view-squad">Ver Relatório Dedicado →</a>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 50px;">ID</th>
+                <th style="width: 160px;">Agente & Papel</th>
+                <th style="width: 80px;">Sev.</th>
+                <th>Dívida Técnica Identificada</th>
+                <th>Impacto</th>
+                <th style="width: 220px;">Arquivo Principal</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #64748b;">90</td>
+                  <td>
+                    <strong>Hélio</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Coordenador de Infra</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Ausência de runbook formal e automatizado de Disaster Recovery com simulação de failover de zona.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Risco de demora excessiva (>4 horas) para restaurar a operação em caso de queda de AZ na AWS.</td>
+                  <td><span class="file-tag">infrastructure/README.md</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #64748b;">91</td>
+                  <td>
+                    <strong>Terra</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">IaC & Terraform</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>State do Terraform sem trava atômica distribuída (DynamoDB lock) habilitada no backend S3.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Risco de corrupção do arquivo de estado em execuções concorrentes de CI.</td>
+                  <td><span class="file-tag">infrastructure/terraform/main.tf</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #64748b;">92</td>
+                  <td>
+                    <strong>Kora</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Kubernetes & Helm</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Deployment do Kubernetes sem probes de startup configurados, matando pods pesados antes do boot.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Restart loops durante momentos de escalabilidade horizontal automática.</td>
+                  <td><span class="file-tag">charts/birthub-api/templates/deployment.yaml</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #64748b;">93</td>
+                  <td>
+                    <strong>Max</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Containers & Docker</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Dockerfile da API roda como usuário root em vez de usuário node sem privilégios.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Vulnerabilidade em caso de escape de container permitindo privilégios no host.</td>
+                  <td><span class="file-tag">Dockerfile</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #64748b;">94</td>
+                  <td>
+                    <strong>Tess</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">CI/CD & Pipelines</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Pipelines do GitHub Actions compilam imagens sem cache de dependências em layers Docker BuildKit.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Deploys demorando 12 minutos a mais do que o necessário a cada commit.</td>
+                  <td><span class="file-tag">.github/workflows/deploy.yml</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P2">
+                  <td style="font-weight: 700; color: #64748b;">95</td>
+                  <td>
+                    <strong>Íon</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Observabilidade & Métricas</span>
+                  </td>
+                  <td><span class="badge badge-p2">P2</span></td>
+                  <td>Métricas do OpenTelemetry registram rota HTTP com parâmetros de ID cru (/api/leads/uuid), explodindo cardinalidade.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Esgotamento de memória do Prometheus e custos elevados de armazenamento de métricas.</td>
+                  <td><span class="file-tag">src/lib/telemetry/opentelemetry.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P0">
+                  <td style="font-weight: 700; color: #64748b;">96</td>
+                  <td>
+                    <strong>Nera</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Autenticação & Sessões</span>
+                  </td>
+                  <td><span class="badge badge-p0">P0</span></td>
+                  <td>B-03: Refresh tokens JWT sem mecanismo de rotação de token e sem verificação de IP/User-Agent.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Se um refresh token for interceptado, o invasor mantém acesso perpétuo.</td>
+                  <td><span class="file-tag">src/lib/auth/session.service.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P0">
+                  <td style="font-weight: 700; color: #64748b;">97</td>
+                  <td>
+                    <strong>Rocco</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">RBAC & Autorização</span>
+                  </td>
+                  <td><span class="badge badge-p0">P0</span></td>
+                  <td>B-01/B-02: Algumas rotas de administração de tenant dependem de checagem condicional no controller em vez de middleware central.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Falha de autorização onde usuário comum consegue invocar endpoint administrativo.</td>
+                  <td><span class="file-tag">src/lib/auth/rbac/enforcer.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P0">
+                  <td style="font-weight: 700; color: #64748b;">98</td>
+                  <td>
+                    <strong>Safira</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">Gestão de Segredos</span>
+                  </td>
+                  <td><span class="badge badge-p0">P0</span></td>
+                  <td>B-04: Credenciais e chaves de API em arquivos .env lidas diretamente pelo process.env sem validação em cofre central.</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Risco de vazamento em logs de erro ou dumps de processo.</td>
+                  <td><span class="file-tag">infrastructure/secrets/vault.ts</span></td>
+                </tr>
+              
+                <tr class="audit-row" data-sev="P1">
+                  <td style="font-weight: 700; color: #64748b;">99</td>
+                  <td>
+                    <strong>Vito</strong><br>
+                    <span style="font-size: 12px; color: var(--muted);">AppSec & SAST</span>
+                  </td>
+                  <td><span class="badge badge-p1">P1</span></td>
+                  <td>Varredura do Semgrep e auditoria de dependências (npm audit) configuradas apenas como aviso no CI (não bloqueiam merge).</td>
+                  <td style="font-size: 13px; color: #cbd5e1;">Bibliotecas com vulnerabilidades conhecidas (CVEs) são mergeadas na main.</td>
+                  <td><span class="file-tag">scripts/security/semgrep.sh</span></td>
+                </tr>
+              
+            </tbody>
+          </table>
+        </div>
+      
+    </div>
+  </div>
+
+  <script>
+    let currentSev = 'ALL';
+
+    function filterSeverity(sev) {
+      currentSev = sev;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.innerText.includes(sev));
+      });
+      filterTable();
+    }
+
+    function filterTable() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      document.querySelectorAll('.audit-row').forEach(row => {
+        const text = row.innerText.toLowerCase();
+        const sev = row.getAttribute('data-sev');
+        const matchText = text.includes(q);
+        const matchSev = (currentSev === 'ALL' || sev === currentSev);
+        row.style.display = (matchText && matchSev) ? '' : 'none';
+      });
+
+      // Esconde cabeçalhos de squad se todas as linhas estiverem ocultas
+      document.querySelectorAll('.squad-section').forEach(sec => {
+        const visibleRows = sec.querySelectorAll('.audit-row:not([style*="display: none"])');
+        sec.style.display = visibleRows.length > 0 ? '' : 'none';
+      });
+    }
+  </script>
+</body>
+</html>

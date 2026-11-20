@@ -18,19 +18,17 @@ aprendizado incorporado aqui e um registro curto em `.claude/PILOTS.md`. Ver Pil
 - **Produto:** **Birth Hub 360º** — "sua central de comando inteligente: integrando dados,
   potencializando decisões e acelerando a execução". Um CRM B2B com IA (prospecção, pipeline,
   roleplay de vendas, automações, analytics).
-  - **Marca única, paleta "Strategic Command Center" (atualizada 09/2026, pedido explícito do
-    usuário).** Cinco cores: Antique Gold `#D4AF37` (ação primária, inalterada), Deep Iris
-    `#7C3AED`, Orbit Blue `#1677FF`, vermelho `#E11D48`/`#FF3158` e rosa `#DB2777`/`#FF4FA3`
-    (claro/escuro — ver `src/styles/globals.css`). **Nenhuma âncora é preto ou branco puro**: o
-    tema claro parte de um branco rosado (Blossom White `#FFF4F9`), o escuro de um azul-marinho
-    profundo (Deep Navy `#061A3A`) — substituem Snow White/Obsidian. Fonte da verdade:
-    `src/styles/globals.css` (tokens reais) e `src/config/brand.ts`; `identidade-visual/
-    birthhub360/` documenta a identidade ANTERIOR (Obsidian/Snow White, 3 cores) e ainda não foi
-    sincronizada com esta paleta — não usar como referência de cor até essa sincronização
-    acontecer.
-  - **Ouro é uma cor CLARA.** Texto branco sobre `--brand` mede 2.10:1 e é proibido — o par
-    correto é `text-on-brand` (Deep Navy `#061A3A`, 8.21:1). Essa regra não mudou com a nova
-    paleta; só o valor exato de `--on-brand` (antes Obsidian) mudou.
+  - **Marca única, paleta neon do Design Language v2.0 (autoridade visual máxima, ratificada pelo
+    usuário em 19/11/2026; ver `DESIGN.md` e `src/styles/official-identity.css`).** Azul Neon `#00D4FF` (cor
+    de marca e de ação), Rosa Neon `#FF2D9B` e Dourado Neon `#FFC107`, sobre `#0d0d0d` (dark) e
+    `#f0efe9` (light). Fonte da verdade: `docs/design/BIRTHHUB-360-DESIGN-LANGUAGE.md`,
+    `src/styles/official-identity.css`, `src/styles/globals.css` (tokens reais) e `src/config/brand.ts`;
+    `identidade-visual/birthhub360/` documenta identidades ANTERIORES e ainda não foi sincronizada
+    com a paleta neon — não usar como referência de cor até então.
+  - **Contraste e acessibilidade sobre marca:** `bg-brand` sempre com `text-on-brand` (`#041c32`);
+    branco sobre superfície sólida de marca é proibido. No tema claro, as cores neon de título do
+    Design Language não atingem AA sobre `#f0efe9` (A11Y-001): títulos no tema claro usam variantes
+    escurecidas que cumpram 4.5:1 (3:1 só para texto grande), com contraste validado em `tokens.test.ts`.
   - Até 09/2026 a plataforma trocava de marca em runtime entre Birth Hub 360
     (`BrandContext`, `data-brand` no `<html>`, `--brand` reescrito por JS). Isso não existe mais:
     a cor vive só em CSS. O eixo que aquele seletor de fato controlava no CONTEÚDO (playbook,
@@ -69,7 +67,7 @@ aprendizado incorporado aqui e um registro curto em `.claude/PILOTS.md`. Ver Pil
 Não recrie o que já existe. Nesta ordem:
 
 1. **`src/styles/globals.css`** — único lugar onde tokens de design (`@theme`) são definidos.
-   Neutros ancorados em Obsidian/Snow White: `--bg`, `--surface`, `--surface-2`, `--ink`,
+   Neutros do Design Language v2.0: `--bg`, `--surface`, `--surface-2`, `--ink`,
    `--ink-2`, `--line`, `--brand`, `--brand-2`, `--on-brand`, `--iris`, `--orbit-blue`, `--warn`,
    `--ok`, `--soft`. Dark mode via classe `.dark` (`@custom-variant dark`). Dois tokens de radius
    (`--radius-card`, `--radius-card-lg`) e um de sombra (`--shadow-card`).
@@ -127,14 +125,12 @@ lugares — se uma explicação detalhada já existe numa skill, referencie-a em
    usa composição centralizada de propósito — é uma exceção justificada pelos critérios da seção 5,
    não o padrão a copiar em telas novas. Ver `.claude/PILOTS.md`, Pilotos 001 e o piloto de
    rebranding, para o raciocínio completo.)
-3. **Sem gradiente genérico de "IA".** Este produto tem paleta própria, definida em tokens. O
-   único gradiente multicolorido autorizado é a **órbita 360º** — dourado → vermelho → rosa →
-   íris → azul (5 cores desde 09/2026; antes eram 3: ouro → íris → azul), utilitário
-   `.bg-gradient-orbit5` em `globals.css` — reservado a "halos, bordas, indicadores e hero
-   sections": nunca como fundo de superfície com texto em cima, e no máximo um gradiente
-   dominante por composição. **Gradiente em texto (`background-clip: text`) continua proibido em
-   qualquer contexto** — inclusive antes da atualização de paleta isso já valia; ênfase vem de
-   peso/tamanho, nunca de gradiente na própria tipografia.
+3. **Sem gradiente genérico de "IA".** Gradiente em título só nos casos explicitamente
+   previstos no Design Language v2.0 §2 ("Gradiente de Títulos" e "Gradiente de Ação (CTA)");
+   nunca em texto corrido, nunca como fundo de superfície com texto em cima, nunca decorativo
+   arbitrário, e no máximo um gradiente dominante por composição. Fora desses casos, gradiente
+   continua proibido. `.bg-gradient-orbit5` (`globals.css`) segue existente para halos, bordas e
+   indicadores — não para texto.
 4. **Sem três cards iguais só para preencher espaço.** Se o conteúdo não sustenta 3 itens
    simetricamente iguais, não force a grade. Densidade de informação real > simetria decorativa.
 5. **Sombra, blur ou glassmorphism só com propósito.** `.glass-panel`/`.glass-card` já existem em
@@ -208,15 +204,15 @@ comentário de PR) a estas perguntas, na ordem:
    hardcoded? H1-H3 já têm tamanho/peso definidos em `@layer base` — reuse, não redefina.
 4. **Escala e densidade** — este é um dashboard/CRM de uso repetido, não uma landing page. Prefira
    densidade de informação alta e espaçamento eficiente a espaço em branco decorativo excessivo.
-5. **Contraste** — texto sobre `--brand`/`--brand-2` já tem um problema documentado (DQA-19).
-   Com o Antique Gold a regra é dura: **branco sobre marca nunca passa** (2.10:1). Use
-   `text-on-brand`. Não reintroduza `text-white` sobre cor sólida de marca.
+5. **Contraste** — texto sobre `--brand`/`--brand-2` exige atenção a acessibilidade WCAG 2.2 AA (4.5:1).
+   A regra é dura: **branco sobre superfície sólida de marca não passa em AA**. Use sempre
+   `text-on-brand`. Não reintroduza `text-white` cego sobre cor sólida de marca.
 6. **Ritmo visual e grid** — mantenha consistência com o grid já usado nas telas vizinhas do mesmo
    módulo antes de inventar um novo.
 7. **Cor** — use os tokens (`bg-brand`, `text-ink-2`, `border-line` etc.), não hex cru. Hex só é
    aceitável onde não existe CSS: three.js, canvas, PDF, e-mail — e mesmo aí vindo de
-   `BRAND.colors`, nunca digitado à mão. **Ouro é claro**: qualquer superfície de marca sólida
-   pede `text-on-brand`; cor de marca como texto sobre fundo claro pede `text-brand-ink`.
+   `BRAND.colors` ou tokens tipados (`tokens.ts`), nunca digitado à mão. Superfície de marca sólida
+   clara pede `text-on-brand`; cor de marca como texto sobre fundo claro pede `text-brand-ink`.
 8. **Estados** — todo componente interativo precisa de hover, focus-visible, active, disabled,
    loading e erro definidos antes de ser considerado pronto. Ver `ui-ux/SKILL.md`.
 9. **Microinterações e movimento** — ver seção 8 e `motion-design/SKILL.md`.

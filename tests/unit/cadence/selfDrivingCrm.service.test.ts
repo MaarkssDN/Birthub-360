@@ -99,6 +99,46 @@ describe('SelfDrivingCrmService — Eixo 7 (Cadências Adaptativas & Resgate Int
       expect(recommendation).toBeNull();
     });
 
+    it('deve buscar ConversationSignal reais via Prisma com filtro de tenant quando signalsStore estiver vazio', async () => {
+      const leadId = 'lead-prisma-signals-05';
+      const findManySignalsSpy = vi.spyOn(prisma.conversationSignal, 'findMany').mockResolvedValueOnce([
+        {
+          id: 'sig-db-1',
+          organizationId: orgA,
+          leadId,
+          channel: 'voice_call',
+          intent: 'sem_contato',
+          confidence: 0.9,
+          createdAt: new Date(),
+        } as any,
+        {
+          id: 'sig-db-2',
+          organizationId: orgA,
+          leadId,
+          channel: 'whatsapp',
+          intent: 'alta_intencao_compra',
+          confidence: 0.95,
+          createdAt: new Date(),
+        } as any,
+      ]);
+
+      const recommendation = await selfDrivingCrmService.evaluateCadenceOptimization({
+        organizationId: orgA,
+        leadId,
+      });
+
+      expect(findManySignalsSpy).toHaveBeenCalledWith({
+        where: { organizationId: orgA, leadId },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+      });
+      expect(recommendation).not.toBeNull();
+      expect(recommendation?.recommendedAction).toBe('reduce_calls_shift_whatsapp');
+      expect(recommendation?.prioritizedChannel).toBe('whatsapp');
+
+      findManySignalsSpy.mockRestore();
+    });
+
     it('deve aplicar recomendação mediante aprovação humana com rastro de auditoria', async () => {
       const leadId = 'lead-appr-04';
       await selfDrivingCrmService.registerEngagementSignal({
