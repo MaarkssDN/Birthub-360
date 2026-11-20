@@ -71,6 +71,13 @@ const TIMELINE_ITEM_TYPE: Record<string, TimelineItem['type']> = {
 
 const LEAD_STATUSES: LeadStatus[] = [...LEAD_STATUS];
 
+// UX-11 (DEBT-0065): apiFetch (src/lib/api.ts) propaga erros HTTP como `Error(message)` sem
+// expor status — o backend responde 404 de GET /api/leads/:id com {error:'Lead not found'}
+// (LeadController.ts:53); falhas de rede/timeout têm mensagens próprias ("Não foi possível
+// conectar ao servidor." / timeout). A distinção 404↔rede é feita pela mensagem do erro.
+const isLeadNotFoundError = (err: unknown): boolean =>
+  err instanceof Error && /lead not found|status 404/i.test(err.message);
+
 const QUALIFICATION_GROUPS = [
   {
     category: 'budget',
@@ -156,6 +163,7 @@ export function LeadDetailDrawer({ leadId, onClose, onChanged }: LeadDetailDrawe
   const [owners, setOwners] = useState<{ id: string; name: string }[]>([]);
   const [savingOwner, setSavingOwner] = useState(false);
   const [exportingBitrix, setExportingBitrix] = useState(false);
+  const [loadError, setLoadError] = useState<'network' | null>(null);
 
   const handleExportToBitrix = async () => {
     setExportingBitrix(true);
@@ -173,6 +181,7 @@ export function LeadDetailDrawer({ leadId, onClose, onChanged }: LeadDetailDrawe
   const fetchLead = useCallback(async () => {
     try {
       setLoading(true);
+      setLoadError(null);
       const data = await api.get<Lead>(`/api/leads/${leadId}`);
       setLead(data);
       setQualDraft((data.qualification as LeadQualification) || {});
@@ -181,9 +190,16 @@ export function LeadDetailDrawer({ leadId, onClose, onChanged }: LeadDetailDrawe
         id: data.id,
         label: data.title || data.company?.legalName || 'Lead',
       });
-    } catch {
-      toast.error('Erro ao carregar detalhes do lead');
-      onClose();
+    } catch (err) {
+      if (isLeadNotFoundError(err)) {
+        toast.error('Lead não encontrado ou sem permissão de acesso');
+        onClose();
+      } else {
+        // Erro de rede/5xx/timeout: mantém o drawer aberto em estado de erro com retry,
+        // em vez de fechar e perder o contexto do deep link ?lead=<id> (UX-11).
+        toast.error('Falha ao carregar detalhes do lead');
+        setLoadError('network');
+      }
     } finally {
       setLoading(false);
     }
@@ -461,6 +477,18 @@ export function LeadDetailDrawer({ leadId, onClose, onChanged }: LeadDetailDrawe
         {loading ? (
           <div className="flex-1 flex items-center justify-center p-8">
             <Loader2 className="w-8 h-8 text-brand animate-spin" />
+          </div>
+        ) : loadError && !lead ? (
+          <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8 text-center">
+            <p className="text-sm text-ink-2">Falha ao carregar — tente novamente.</p>
+            <div className="flex items-center gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => fetchLead()}>
+                Tentar novamente
+              </Button>
+              <Button type="button" variant="ghost" size="sm" onClick={onClose}>
+                Fechar
+              </Button>
+            </div>
           </div>
         ) : !lead ? null : (
           <>

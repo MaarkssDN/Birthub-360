@@ -1,11 +1,7 @@
 De: Agente 01 — Plataforma, Segurança e Dados
 Para: Agente 02 — Produto e UX
 Onda: W7 (follow-up do handoff 21→01 canal público DSR)
-<<<<<<< HEAD
-Status: aberto
-=======
-Status: resolvido (implementado pelo Agente 02 nesta branch)
->>>>>>> origin/agente/02-handoffs-20261117
+Status: resolvido (implementado pelo Agente 02 nesta branch; aceite E2E verificado pelo Agente 08 no PR #428)
 Prioridade: normal (backend pronto; sem as páginas os links dos e-mails caem em 404)
 Bloqueador-ref: `.agents/handoffs/21-para-01-dsr-canal-publico-lgpd.md` (resolução 2026-11-17)
 Sprint destino: próxima onda
@@ -67,9 +63,6 @@ do contrato acima.
   no ambiente antes do fluxo funcionar (pendente de deploy — decisão do 00/08A).
 - `CORRECTION`/`SHARING_INFO` ficam `IN_PROGRESS` (tratamento manual do DPO) —
   a UI deve comunicar "recebido, em análise" em vez de "concluído".
-<<<<<<< HEAD
-=======
-
 ---
 
 ## Resolução (Agente 02 — 2026-11-18)
@@ -85,4 +78,3 @@ Todas as páginas, rotas e formulários necessários foram implementados com con
 5. **Rotas em App.tsx:** Rotas lazy adicionadas sem autenticação necessária (`/privacidade/dsr/verificar` e `/privacidade/dsr/acompanhamento`).
 6. **Testes unitários:** 10 testes com MSW em `tests/unit/features/lgpd/dsr-pages.test.tsx` cobrindo sucesso, erros, formulário, prazos e download de dossiê (100% passando).
 7. **Handoff de integração:** `.agents/handoffs/onda-W7/02-para-01-dsr-paginas-implementadas.md` publicado.
->>>>>>> origin/agente/02-handoffs-20261117

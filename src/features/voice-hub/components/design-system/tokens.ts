@@ -53,8 +53,21 @@ export function getAccessibleBrandForeground(
   return isDark ? '#38bdf8' : '#0369a1';
 }
 
+/**
+ * Tokens do Design System consolidados (2026).
+ * Alinhados com a identidade visual canônica documentada em DESIGN.md e
+ * src/styles/official-identity.css.
+ */
 export const colors = {
+  // Paleta Oficial Neon (DESIGN.md / official-identity.css)
+  neonBlue: '#00D4FF',
+  neonPink: '#FF2D9B',
+  neonGold: '#FFC107',
+  // Chaves com retrocompatibilidade total para consumidores de componentes
   brand: '#ff5618',
+  brandNeon: '#00D4FF',
+  brandSecondary: '#FF2D9B',
+  gold: '#FFC107',
   slate: {
     50: '#f8fafc',
     100: '#f1f5f9',
@@ -63,8 +76,10 @@ export const colors = {
   },
   light: {
     surface: '#ffffff',
+    bg: '#f8fafc',
   },
   dark: {
     surface: '#0f172a',
+    bg: '#0d0d0d',
   },
 };

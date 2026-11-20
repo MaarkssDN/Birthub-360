@@ -8,7 +8,11 @@ import { describe, expect, it } from 'vitest';
 // algum entrypoint". Nenhum desses casos quebrou nenhum teste existente antes deste arquivo.
 //
 // Este teste faz glob de todos os arquivos que exportam uma fábrica `createXWorker` nos dois
-// diretórios onde workers de fila deste projeto vivem, e confirma que cada fábrica aparece
+// diretórios onde workers de fila deste projeto vivem (`*.worker.ts` e `*.queue.ts` — os
+// arquivos `.queue.ts` como `bitrixOutbound.queue.ts`/`externalCrmOutbound.queue.ts` exportam
+// fábricas `createXWorker` do mesmo jeito; o glob restrito a `.worker.ts` foi a causa raiz do
+// DEBT-0003, com consumers de outbound-sync registrados só no modo embutido), e confirma que
+// cada fábrica aparece
 // importada tanto em `worker.ts` (processo dedicado, obrigatório em produção — ver
 // `src/lib/queue/redis.ts`, que aborta o boot se `ENABLE_EMBEDDED_WORKERS=true` em produção)
 // quanto em `src/bootstrap/workers.ts` (modo embutido, usado em dev/staging via
@@ -44,11 +48,11 @@ interface WorkerExport {
 function listWorkerFilesInDir(dir: string): string[] {
   if (!statSync(dir, { throwIfNoEntry: false })?.isDirectory()) return [];
   return readdirSync(dir)
-    .filter((name) => name.endsWith('.worker.ts'))
+    .filter((name) => name.endsWith('.worker.ts') || name.endsWith('.queue.ts'))
     .map((name) => path.join(dir, name));
 }
 
-/** Glob manual de `src/lib/queue/*.worker.ts` — um único nível, sem subdiretórios. */
+/** Glob manual de `src/lib/queue/*.{worker,queue}.ts` — um único nível, sem subdiretórios. */
 function globQueueWorkers(): string[] {
   return listWorkerFilesInDir(path.join(ROOT, 'src/lib/queue'));
 }
@@ -117,7 +121,7 @@ describe('paridade do registro de workers (worker.ts vs. src/bootstrap/workers.t
   ];
 
   for (const { label, filePath } of entrypoints) {
-    it(`todo worker de src/lib/queue/*.worker.ts e src/features/*/jobs/*.worker.ts está importado em ${label}`, () => {
+    it(`todo worker de src/lib/queue/*.{worker,queue}.ts e src/features/*/jobs/*.worker.ts está importado em ${label}`, () => {
       const importBlocksText = extractImportBlocksText(filePath);
 
       const missing = discovered.filter(
