@@ -2,119 +2,143 @@
   "$comment": "Manifesto de cobertura de propriedade (TAREFA-SANEAMENTO-011 / BT360-DT-0004). Cada entrada DEVE corresponder a um escopo do bloco de código de AGENTS.md §15, com o mesmo dono — divergência falha `npm run verify:ownership-coverage`. coverage=\"depcruise\" só é válido para paths dentro do grafo de `npm run lint:architecture` (src/, server.ts, worker.ts) e exige a regra nomeada em forbidden[] de .dependency-cruiser.cjs. coverage=\"review\" exige justificativa: a proteção real é revisão de diff/handoff, não regra automática.",
   "entries": [
     {
-      "scope": "prisma/schema.prisma",
-      "owner": "Agente 01",
+      "scope": "server.ts, package.json, .agents/ESTADO_ATUAL.md",
+      "owner": "Agente 00 (exige aprovação humana)",
       "coverage": "review",
-      "justification": "Fora do grafo do depcruise (lint:architecture só cruza src/, server.ts e worker.ts). Schema Prisma não tem aresta de import para o cruiser verificar; proteção real é a regra de propriedade do AGENTS.md §15/§16 (integrações não criam migrações — handoff obrigatório para o Agente 01) aplicada na revisão de diff."
+      "justification": "Arquivos de raiz/controle sem aresta de import verificável para o depcruise. Mudanças exigem aprovação explícita do Agente 00 e do orquestrador humano (AGENTS.md §15); a proteção real é a revisão de diff contra a matriz."
+    },
+    {
+      "scope": ".agents/reviews/**",
+      "owner": "Agente 09 (Auditor Independente Silas)",
+      "coverage": "review",
+      "justification": "Fora do grafo do depcruise (artefatos Markdown). Pareceres são emitidos exclusivamente pelo Agente 09 (AGENTS.md §40); a validação de forma/hash é feita pelo gate de governança de pareceres e pela revisão de diff.",
+      "alternateCheck": "verify:governance-reviews"
+    },
+    {
+      "scope": "prisma/schema.prisma",
+      "owner": "Agente 11 (Pietro)",
+      "coverage": "review",
+      "justification": "Fora do grafo do depcruise (lint:architecture só cruza src/, server.ts e worker.ts). Schema Prisma não tem aresta de import; a proteção real é a regra de propriedade do AGENTS.md §15/§16 (integrações não criam migrações — handoff para os Agentes 11 e 12) aplicada na revisão de diff."
     },
     {
       "scope": "prisma/migrations/**",
-      "owner": "Agente 01",
+      "owner": "Agente 12 (Vera)",
       "coverage": "review",
-      "justification": "Fora do grafo do depcruise. Migrações são SQL/DML, não módulos TypeScript importáveis; o controle é o mesmo do schema — somente o Agente 01 escreve em prisma/**, demais agentes abrem handoff."
+      "justification": "Fora do grafo do depcruise. Migrações são SQL, não módulos TypeScript importáveis; somente o Agente 12 escreve em prisma/migrations/**, demais agentes abrem handoff (AGENTS.md §15/§16), verificado na revisão de diff."
     },
     {
-      "scope": "src/App.tsx",
-      "owner": "Agente 02",
+      "scope": "src/lib/tenant-prisma.ts",
+      "owner": "Agente 13 (Nilo)",
       "coverage": "review",
-      "justification": "Dentro do grafo do depcruise, mas nenhuma regra forbidden existente modela 'propriedade de arquivo' — o cruiser verifica fronteiras de importação entre camadas, não quem pode editar um arquivo. App.tsx é o shell de navegação/Sidebar (escopo do Agente 02 por AGENTS.md §15); a proteção é revisão de diff contra a matriz de propriedade."
+      "justification": "Nenhuma regra forbidden do depcruise modela propriedade de arquivo (só fronteiras de importação entre camadas). Isolamento multi-tenant/RLS é do Agente 13; as políticas SQL ficam em prisma/migrations/** (Agente 12). A proteção real é revisão de diff contra a matriz, os testes de acesso cruzado e o gate de CI 'RLS — cobertura de Row Level Security'."
     },
     {
-      "scope": "navegação principal",
-      "owner": "Agente 02",
+      "scope": "scripts/security/rls-coverage.ts",
+      "owner": "Agente 13 (Nilo)",
       "coverage": "review",
-      "justification": "Descritor em prosa da matriz (não é path nem glob): refere-se aos componentes de navegação/Sidebar sob src/, cujo detalhe de arquivos pertence ao Agente 02 via AGENTS.md §15 e AGENTS.md locais de src/components e src/features. Sem path literal, não há regex de depcruise aplicável — proteção via revisão de diff."
+      "justification": "Nenhuma regra forbidden do depcruise modela propriedade de arquivo (só fronteiras de importação entre camadas). Isolamento multi-tenant/RLS é do Agente 13; as políticas SQL ficam em prisma/migrations/** (Agente 12). A proteção real é revisão de diff contra a matriz, os testes de acesso cruzado e o gate de CI 'RLS — cobertura de Row Level Security'."
     },
     {
-      "scope": "Sidebar",
-      "owner": "Agente 02",
+      "scope": "scripts/security/check-rls-coverage.ts",
+      "owner": "Agente 13 (Nilo)",
       "coverage": "review",
-      "justification": "Descritor em prosa da matriz: o componente Sidebar (shell de navegação) é propriedade do Agente 02. Não é um path verificável por depcruise; proteção via revisão de diff e AGENTS.md locais."
+      "justification": "Nenhuma regra forbidden do depcruise modela propriedade de arquivo (só fronteiras de importação entre camadas). Isolamento multi-tenant/RLS é do Agente 13; as políticas SQL ficam em prisma/migrations/** (Agente 12). A proteção real é revisão de diff contra a matriz, os testes de acesso cruzado e o gate de CI 'RLS — cobertura de Row Level Security'."
     },
     {
-      "scope": ".github/workflows/**",
-      "owner": "Agente 08",
+      "scope": "src/lib/queue/**, src/workers/**",
+      "owner": "Agente 23 (Pina)",
       "coverage": "review",
-      "justification": "Fora do grafo do depcruise. Workflows de CI são YAML de pipeline, não código TypeScript importável; a proteção é a propriedade do Agente 08 (AGENTS.md §15) aplicada na revisão de diff. O teste tests/unit/ci-main-protection-workflows.test.ts cobre invariantes dos workflows, mas não é gate de propriedade."
+      "justification": "Nenhuma regra forbidden do depcruise modela quem pode editar o arquivo. Filas e workers são do Agente 23 (exclusão mútua com o 24 em resiliência, AGENTS.md §14); proteção real é revisão de diff."
     },
     {
-      "scope": "Dockerfile",
-      "owner": "Agente 08",
+      "scope": "src/features/billing/**",
+      "owner": "Agente 26 (Dália)",
       "coverage": "review",
-      "justification": "Fora do grafo do depcruise (raiz do repo, não é src/server/worker). Dockerfile é infra de build de release — propriedade do Agente 08; proteção via revisão de diff."
+      "justification": "Nenhuma regra forbidden do depcruise modela propriedade de arquivo; billing é do Agente 26 e a proteção é revisão de diff contra a matriz de propriedade."
     },
     {
-      "scope": "docker-compose.yml",
-      "owner": "Agente 08",
+      "scope": "src/App.tsx, src/components/layout/**",
+      "owner": "Agente 31 (Noa)",
       "coverage": "review",
-      "justification": "Fora do grafo do depcruise. Compose de serviços locais/de desenvolvimento pertence ao Agente 08 (infra de execução de QA/release); proteção via revisão de diff."
+      "justification": "Dentro do grafo do depcruise, mas nenhuma regra forbidden modela 'propriedade de arquivo' — o cruiser verifica fronteiras de importação, não quem edita. Shell/navegação é do Agente 31 (slot exclusivo, AGENTS.md §14); proteção é revisão de diff."
     },
     {
-      "scope": "charts/**",
-      "owner": "Agente 10",
+      "scope": "src/components/ui/**, tailwind.config.js",
+      "owner": "Agente 33 (Célia)",
       "coverage": "review",
-      "justification": "Fora do grafo do depcruise. Charts Helm são infraestrutura do Agente 10; proteção via revisão de diff."
+      "justification": "Nenhuma regra forbidden do depcruise modela propriedade de arquivo. Design system base é do Agente 33; proteção é revisão de diff contra a matriz."
     },
     {
-      "scope": "infrastructure/**",
-      "owner": "Agente 10",
+      "scope": "src/features/landing/**",
+      "owner": "Agente 36 (Léo) (exceção: voice landing inovadora em src/features/voice-hub/ pertence ao 65 Lena)",
       "coverage": "review",
-      "justification": "Fora do grafo do depcruise. IaC/scripts de infraestrutura pertencem ao Agente 10 (AGENTS.md §15); proteção via revisão de diff."
+      "justification": "Nenhuma regra forbidden do depcruise modela propriedade de arquivo. Landing é do Agente 36 (exceção: voice-hub pertence ao 65); proteção é revisão de diff."
     },
     {
-      "scope": "android/**",
-      "owner": "Agente 09",
+      "scope": "src/features/crm/**",
+      "owner": "Squad 40 (41 a 49 conforme MATRIZ_PROPRIEDADE.md)",
       "coverage": "review",
-      "justification": "Fora do grafo do depcruise. Projeto Android/Capacitor é do Agente 09 (AGENTS.md §15); o depcruise já exclui android/ do grafo (exclude em options). Proteção via revisão de diff."
+      "justification": "Nenhuma regra forbidden do depcruise modela propriedade de arquivo. CRM é da Squad 40 (subdivisão em .agents/MATRIZ_PROPRIEDADE.md); proteção é revisão de diff."
     },
     {
-      "scope": "capacitor.config.ts",
-      "owner": "Agente 09",
+      "scope": "src/lib/integrations/**",
+      "owner": "Squad 50 (51 a 59)",
       "coverage": "review",
-      "justification": "Fora do grafo do depcruise (raiz do repo; lint:architecture só varre src/, server.ts, worker.ts). Config nativa do app mobile pertence ao Agente 09; proteção via revisão de diff."
+      "justification": "Nenhuma regra forbidden do depcruise modela propriedade de arquivo. Integrações são da Squad 50 (sem criar migrações, AGENTS.md §15); proteção é revisão de diff."
     },
     {
-      "scope": "identidade-visual/**",
-      "owner": "Agente 11",
+      "scope": "src/features/voice-hub/**",
+      "owner": "Squad 60 (61 a 65)",
       "coverage": "review",
-      "justification": "Fora do grafo do depcruise. Ativos de marca e design institucional pertencem ao Agente 11 (AGENTS.md §15); proteção via revisão de diff."
+      "justification": "Nenhuma regra forbidden do depcruise modela propriedade de arquivo. Voice Hub é da Squad 60; proteção é revisão de diff contra a matriz."
     },
     {
-      "scope": "documentacao-aplicacao/**",
-      "owner": "Agente 11",
+      "scope": "src/lib/ai/**",
+      "owner": "Squad 70 (70 a 79)",
       "coverage": "review",
-      "justification": "Fora do grafo do depcruise. Documentação institucional da aplicação pertence ao Agente 11 (AGENTS.md §15); proteção via revisão de diff."
+      "justification": "Nenhuma regra forbidden do depcruise modela propriedade de arquivo. IA/enxame é da Squad 70; proteção é revisão de diff contra a matriz."
+    },
+    {
+      "scope": "android/**, ios/**, capacitor.config.ts, src/mobile/**",
+      "owner": "Squad 80 (80 a 89)",
+      "coverage": "review",
+      "justification": "Em grande parte fora do grafo do depcruise (projetos nativos) e sem regra que modele propriedade. Mobile é da Squad 80; proteção é revisão de diff contra a matriz."
+    },
+    {
+      "scope": "infrastructure/**, charts/**, Dockerfile, docker-compose.yml",
+      "owner": "Squad 90 (91 a 93)",
+      "coverage": "review",
+      "justification": "Fora do grafo do depcruise (IaC, Helm, Docker). Infra é da Squad 90; proteção é revisão de diff contra a matriz de propriedade."
+    },
+    {
+      "scope": ".github/workflows/**, scripts/deploy/**",
+      "owner": "Agente 94 (Tess)",
+      "coverage": "review",
+      "justification": "Fora do grafo do depcruise (YAML/scripts de deploy). CI/CD é do Agente 94 e exige parecer do Agente 09 (AGENTS.md §40); proteção é revisão de diff."
+    },
+    {
+      "scope": "src/lib/auth/**, src/lib/auth/rbac/**",
+      "owner": "Agentes 96 (Nera) e 97 (Rocco)",
+      "coverage": "review",
+      "justification": "Nenhuma regra forbidden do depcruise modela propriedade de arquivo. Auth e RBAC são dos Agentes 96 e 97; proteção é revisão de diff e os testes de autorização."
     },
     {
       "scope": ".agents/prompts/**",
-      "owner": "decisão humana",
+      "owner": "Decisão humana",
       "coverage": "review",
-      "justification": "Fora do grafo do depcruise. Prompts de agentes exigem decisão humana (AGENTS.md §5 e §15) — nenhum agente pode editá-los, nem o 00; a proteção é o gate de revisão humana, não automação."
+      "justification": "Fora do grafo do depcruise (Markdown). Mudança de prompt é decisão humana (AGENTS.md §5); nenhum agente edita, verificado na revisão de diff."
     },
     {
       "scope": ".agents/runs/**",
       "owner": "Agente 00",
       "coverage": "review",
-      "justification": "Fora do grafo do depcruise. Registros de execução do orquestrador pertencem ao Agente 00 (AGENTS.md §15); proteção via revisão de diff."
-    },
-    {
-      "scope": ".agents/reviews/**",
-      "owner": "Agente 24 ou 00",
-      "coverage": "review",
-      "justification": "Fora do grafo do depcruise. Pareceres de revisão independente pertencem ao Agente 24 ou 00 (AGENTS.md §15); o gate verify:governance-reviews valida a estrutura dos pareceres, e a autoria é controlada por revisão de diff.",
-      "alternateCheck": "verify:governance-reviews"
+      "justification": "Fora do grafo do depcruise (relatórios Markdown). Pertence ao Agente 00 (AGENTS.md §15); proteção é revisão de diff."
     },
     {
       "scope": ".agents/handoffs/**",
-      "owner": "cada agente cria seus próprios handoffs",
+      "owner": "Cada agente cria seus próprios handoffs usando .agents/templates/HANDOFF.md",
       "coverage": "review",
-      "justification": "Fora do grafo do depcruise. Cada agente só cria/atualiza os próprios handoffs (AGENTS.md §18); a proteção é a regra de propriedade aplicada na revisão de diff — não há gate automatizado de autoria por arquivo."
-    },
-    {
-      "scope": "src/features/landing/**",
-      "owner": "Agente 02",
-      "coverage": "review",
-      "justification": "Dentro do grafo do depcruise, mas nenhuma regra forbidden modela 'propriedade de arquivo' — o cruiser verifica fronteiras de importação entre camadas, não quem pode editar. Landing pages são superfícies públicas protegidas (mudança visível exige autorização humana, AGENTS.md §15 e src/features/landing/AGENTS.md); a proteção real é revisão de diff contra a matriz de propriedade. Exceção declarada em prosa: /landing-new → LandingInnovative pertence ao Agente 12 (src/features/voice-hub/)."
+      "justification": "Fora do grafo do depcruise (Markdown). Cada agente cria os próprios handoffs com o template oficial (AGENTS.md §18); proteção é revisão de diff."
     }
   ]
 }
