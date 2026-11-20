@@ -42,10 +42,7 @@ export class WhatsAppAntiBanThrottler {
    * Aplica throttling com jitter humanizado antes do próximo disparo para a organização especificada.
    * Retorna os milissegundos esperados.
    */
-  public async throttle(
-    organizationId: string,
-    customDelayMs?: number,
-  ): Promise<number> {
+  public async throttle(organizationId: string, customDelayMs?: number): Promise<number> {
     const record = this.organizationRecords.get(organizationId);
     const now = Date.now();
     const plannedDelay = customDelayMs ?? calculateAntiBanDelay();

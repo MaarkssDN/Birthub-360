@@ -10,7 +10,6 @@ import {
   type RecordOptOutInput,
 } from '../domain/optOut.js';
 
-
 /**
  * Camada de aplicação do opt-out unificado: orquestra a porta `OptOutRepository` em cima das
  * regras puras de `domain/optOut.ts`. Nenhuma função aqui assume qual adaptador (memória, Prisma)
@@ -103,13 +102,7 @@ export async function assertNotOptedOut(
   }
 }
 
-export type {
-  CadenceChannel,
-  OptOutRecord,
-  OptOutRepository,
-  OptOutSubject,
-  RecordOptOutInput,
-};
+export type { CadenceChannel, OptOutRecord, OptOutRepository, OptOutSubject, RecordOptOutInput };
 export { normalizeOptOutSubject };
 
 export {
