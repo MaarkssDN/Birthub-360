@@ -487,8 +487,7 @@ export async function importSelectedBitrixDeals(
                 owner: ownerId,
                 bitrixDealId: deal.ID,
                 bitrixStageLabel: stageLabel,
-                qualification:
-                  Object.keys(qualification).length > 0 ? qualification : undefined,
+                qualification: Object.keys(qualification).length > 0 ? qualification : undefined,
                 ...leadFields,
               } as Prisma.LeadUncheckedCreateInput,
             });

@@ -143,6 +143,29 @@ describe('PrismaCadenceRunRepository.findById', () => {
       skipReason: 'opt-out',
     });
   });
+
+  it('mapeia tentativa com result Pending no banco para pending no domínio', async () => {
+    mockedPrisma.cadenceRun.findFirst.mockResolvedValue({
+      ...DB_ROW,
+      touchAttempts: [
+        {
+          touchOrder: 1,
+          attemptNumber: 1,
+          channel: 'Voice' as const,
+          attemptedAt: new Date('2026-08-01T10:05:00Z'),
+          result: 'Pending' as const,
+          skipReason: null,
+          error: null,
+          providerMessageId: 'call-123',
+        },
+      ],
+    });
+
+    const run = await repo.findById(ORG, 'run-1');
+
+    expect(run?.attempts[0].result).toBe('pending');
+    expect(run?.attempts[0].providerMessageId).toBe('call-123');
+  });
 });
 
 describe('PrismaCadenceRunRepository.listByOrganization', () => {
@@ -304,6 +327,36 @@ describe('PrismaCadenceRunRepository.save', () => {
 
     expect(mockedPrisma.cadenceTouchAttempt.createMany).toHaveBeenCalledWith({
       data: [expect.objectContaining({ result: 'Failed', error: 'provedor recusou' })],
+    });
+  });
+
+  it('persiste tentativa com result pending mapeada como Pending no enum do banco (DEBT-0009)', async () => {
+    mockedPrisma.cadenceTouchAttempt.count.mockResolvedValue(0);
+    mockedPrisma.cadenceRun.upsert.mockResolvedValue({});
+    mockedPrisma.cadenceTouchAttempt.createMany.mockResolvedValue({ count: 1 });
+
+    const pendingRun: CadenceRunState = {
+      ...RUN,
+      attempts: [
+        {
+          touchOrder: 1,
+          attemptNumber: 1,
+          channel: 'voice',
+          attemptedAt: new Date(),
+          result: 'pending',
+          providerMessageId: 'call-abc-123',
+        },
+      ],
+    };
+    await repo.save(pendingRun);
+
+    expect(mockedPrisma.cadenceTouchAttempt.createMany).toHaveBeenCalledWith({
+      data: [
+        expect.objectContaining({
+          result: 'Pending',
+          providerMessageId: 'call-abc-123',
+        }),
+      ],
     });
   });
 });
