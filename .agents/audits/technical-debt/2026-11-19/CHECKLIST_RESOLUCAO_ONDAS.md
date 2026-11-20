@@ -109,9 +109,9 @@ flowchart LR
 ### Squad 90 (Infra & SRE)
 - [ ] **[90 · Hélio]** Elaboração de Runbook automatizado de Disaster Recovery com simulação de failover RDS.
 - [ ] **[91 · Terra]** Ativação de DynamoDB state lock no backend Terraform S3.
-- [ ] **[92 · Kora]** Inclusão de `startupProbe` nos deployments do Kubernetes para evitar kill prematuro.
-- [ ] **[93 · Max]** Dockerfile de produção reconfigurado para execução com usuário não-privilegiado `node`.
-- [ ] **[99 · Vito]** SAST Semgrep e npm audit configurados como quality gate bloqueante no pipeline de PR.
+- [x] **[92 · Kora]** Inclusão de `startupProbe` nos deployments do Kubernetes para evitar kill prematuro.
+- [x] **[93 · Max]** Dockerfile de produção reconfigurado para execução com usuário não-privilegiado `node`.
+- [x] **[99 · Vito]** SAST Semgrep e npm audit configurados como quality gate bloqueante no pipeline de PR.
 
 ---
 
