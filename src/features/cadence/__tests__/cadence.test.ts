@@ -7,8 +7,12 @@ import {
   type CadenceDecisionContext,
   type CadenceSequenceDefinition,
   decideCadenceAction,
+  expireStalePendingTouchAttempts,
+  PENDING_TOUCH_CONFIRMATION_TTL_MS,
+  PENDING_TOUCH_EXPIRED_ERROR,
   pauseCadenceRun,
   recordTouchAttempt,
+  resolvePendingTouchAttempt,
   resumeCadenceRun,
   sanitizeTouchError,
   startCadenceRun,
@@ -684,5 +688,148 @@ describe('applyOptOutStop / applyReplyStop — idempotência', () => {
     run = applyReplyStop(run, NOW);
     const reapplied = applyOptOutStop(run, new Date(NOW.getTime() + 1000));
     expect(reapplied.stopReason).toBe('lead-reply'); // primeiro motivo prevalece
+  });
+});
+
+// DEBT-0009 — toque `pending` (voz, confirmação assíncrona via webhook) sem TTL travava o run
+// em `wait/locked` para sempre quando o webhook se perdia; e, pior, a forma persistida pelo
+// adaptador Prisma (`skipped` + `providerMessageId`, pois o enum do banco não tem `Pending`)
+// não era reconhecida como pendente — o run re-despachava o toque de voz em loop.
+describe('DEBT-0009 — confirmação pendente de toque assíncrono (voz)', () => {
+  const VOICE_SEQ: CadenceSequenceDefinition = {
+    id: 'seq-voice',
+    name: 'Só voz',
+    touches: [{ order: 1, channel: 'voice', delayHoursFromPrevious: 0 }],
+  };
+
+  function runWithPending(attemptedAt: Date) {
+    let run = startCadenceRun({
+      id: 'r-voice',
+      organizationId: 'org',
+      leadId: 'lead',
+      sequenceId: 'seq-voice',
+      startedAt: NOW,
+    });
+    run = recordTouchAttempt(run, VOICE_SEQ, VOICE_SEQ.touches[0], attemptedAt, {
+      result: 'pending',
+      providerMessageId: 'call-123',
+    });
+    return run;
+  }
+
+  /** Simula o round-trip pelo PostgreSQL: `pending` volta como `skipped` + `providerMessageId`. */
+  function asPersisted(run: ReturnType<typeof runWithPending>) {
+    return {
+      ...run,
+      attempts: run.attempts.map((a) => ({ ...a, result: 'skipped' as const })),
+    };
+  }
+
+  it('decideCadenceAction aguarda (locked) enquanto há pending dentro do TTL', () => {
+    const run = runWithPending(NOW);
+    expect(decideCadenceAction(run, VOICE_SEQ, NOW, ctx())).toEqual({
+      type: 'wait',
+      reason: 'locked',
+    });
+  });
+
+  it('a forma persistida (skipped + providerMessageId) TAMBÉM bloqueia novo despacho', () => {
+    const run = asPersisted(runWithPending(NOW));
+    // Antes da correção isto devolvia `dispatch` — re-chamada ao lead a cada ciclo do scanner.
+    expect(decideCadenceAction(run, VOICE_SEQ, NOW, ctx())).toEqual({
+      type: 'wait',
+      reason: 'locked',
+    });
+  });
+
+  it('skipped legítimo (rate limit/janela) SEM providerMessageId não é tratado como pendente', () => {
+    let run = startCadenceRun({
+      id: 'r-voice',
+      organizationId: 'org',
+      leadId: 'lead',
+      sequenceId: 'seq-voice',
+      startedAt: NOW,
+    });
+    run = recordTouchAttempt(run, VOICE_SEQ, VOICE_SEQ.touches[0], NOW, {
+      result: 'skipped',
+      skipReason: 'contact-rate-limit',
+    });
+    expect(decideCadenceAction(run, VOICE_SEQ, NOW, ctx())).toEqual({
+      type: 'dispatch',
+      touch: VOICE_SEQ.touches[0],
+    });
+  });
+
+  it('pending recente NÃO é expirado', () => {
+    const run = runWithPending(NOW);
+    const later = new Date(NOW.getTime() + 60_000);
+    expect(expireStalePendingTouchAttempts(run, VOICE_SEQ, later)).toBe(run);
+  });
+
+  it('pending stale vira failed e a sequência avança/completa conforme maxAttempts', () => {
+    const run = runWithPending(NOW);
+    const afterTtl = new Date(NOW.getTime() + PENDING_TOUCH_CONFIRMATION_TTL_MS + 1);
+    const expired = expireStalePendingTouchAttempts(run, VOICE_SEQ, afterTtl);
+
+    expect(expired).not.toBe(run);
+    expect(expired.attempts[0].result).toBe('failed');
+    expect(expired.attempts[0].error).toBe(PENDING_TOUCH_EXPIRED_ERROR);
+    // maxAttempts default 1 → esgotado → avança; sequência de 1 toque → completed.
+    expect(expired.currentTouchOrder).toBe(2);
+    expect(expired.status).toBe('completed');
+    expect(expired.stopReason).toBe('completed');
+  });
+
+  it('pending stale com maxAttempts > 1 permanece no toque para retry (não avança)', () => {
+    const seqRetry: CadenceSequenceDefinition = {
+      id: 'seq-voice-retry',
+      name: 'Voz com retry',
+      touches: [{ order: 1, channel: 'voice', delayHoursFromPrevious: 0, maxAttempts: 2 }],
+    };
+    let run = startCadenceRun({
+      id: 'r-voice',
+      organizationId: 'org',
+      leadId: 'lead',
+      sequenceId: 'seq-voice-retry',
+      startedAt: NOW,
+    });
+    run = recordTouchAttempt(run, seqRetry, seqRetry.touches[0], NOW, {
+      result: 'pending',
+      providerMessageId: 'call-123',
+    });
+    const afterTtl = new Date(NOW.getTime() + PENDING_TOUCH_CONFIRMATION_TTL_MS + 1);
+    const expired = expireStalePendingTouchAttempts(run, seqRetry, afterTtl);
+
+    expect(expired.attempts[0].result).toBe('failed');
+    expect(expired.currentTouchOrder).toBe(1); // retry ainda disponível
+    expect(expired.status).toBe('active');
+  });
+
+  it('run terminal nunca tem tentativas reescritas pelo sweeper', () => {
+    let run = runWithPending(NOW);
+    run = applyReplyStop(run, NOW);
+    const afterTtl = new Date(NOW.getTime() + PENDING_TOUCH_CONFIRMATION_TTL_MS + 1);
+    expect(expireStalePendingTouchAttempts(run, VOICE_SEQ, afterTtl)).toBe(run);
+  });
+
+  it('webhook tardio após expiração é inócuo (resolvePendingTouchAttempt não acha pending)', () => {
+    const run = runWithPending(NOW);
+    const afterTtl = new Date(NOW.getTime() + PENDING_TOUCH_CONFIRMATION_TTL_MS + 1);
+    const expired = expireStalePendingTouchAttempts(run, VOICE_SEQ, afterTtl);
+    const resolved = resolvePendingTouchAttempt(expired, VOICE_SEQ, 'call-123', afterTtl, {
+      result: 'sent',
+    });
+    expect(resolved).toBe(expired);
+  });
+
+  it('resolvePendingTouchAttempt resolve a forma persistida (skipped + providerMessageId)', () => {
+    const run = asPersisted(runWithPending(NOW));
+    const later = new Date(NOW.getTime() + 60_000);
+    const resolved = resolvePendingTouchAttempt(run, VOICE_SEQ, 'call-123', later, {
+      result: 'sent',
+    });
+    expect(resolved).not.toBe(run);
+    expect(resolved.attempts[0].result).toBe('sent');
+    expect(resolved.status).toBe('completed'); // único toque enviado → fim natural
   });
 });

@@ -3,7 +3,7 @@ import type { LookupFunction } from 'node:net';
 import net from 'node:net';
 import { Agent, fetch as undiciFetch } from 'undici';
 import { AppError } from '../middlewares/errorHandler.js';
-import { isPrivateIpv6Transition, ipv6ToBytes } from './ipv6.js';
+import { embeddedIpv4FromIpv6, isPrivateIpv6Transition } from './ipv6.js';
 
 // Usamos o `RequestInit` do próprio `undici` (não o `RequestInit` global do lib "DOM" do
 // tsconfig, compartilhado com o frontend) porque só o tipo do undici já declara `dispatcher`
@@ -50,16 +50,11 @@ function isPrivateOrReservedIp(ip: string): boolean {
     if (lower === '::1' || lower === '::') return true;
     if (/^fe[89ab]/.test(lower)) return true; // link-local fe80::/10
     if (lower.startsWith('fc') || lower.startsWith('fd')) return true;
-    if (lower.startsWith('::ffff:')) {
-      const mapped = lower.split(':').pop();
-      if (mapped && net.isIPv4(mapped)) return isPrivateOrReservedIp(mapped);
-      // Forma hex (::ffff:HHHH:LLLL) — o parser WHATWG entrega IPv4-mapeado
-      // como hextetos, não dotted-quad; extrai os últimos 32 bits e reavalia.
-      const bytes = ipv6ToBytes(ip);
-      if (bytes && bytes[10] === 0xff && bytes[11] === 0xff) {
-        return isPrivateOrReservedIp(`${bytes[12]}.${bytes[13]}.${bytes[14]}.${bytes[15]}`);
-      }
-    }
+    // IPv4-mapeado (::ffff:a.b.c.d) — reconhecido byte-level pelo helper, então
+    // formas textuais não-canônicas equivalentes (ex.: `0:0:0:0:0:ffff:7f00:1`)
+    // recebem a mesma avaliação do IPv4 embutido.
+    const mappedIpv4 = embeddedIpv4FromIpv6(ip);
+    if (mappedIpv4 !== null) return isPrivateOrReservedIp(mappedIpv4);
     // Mecanismos de transição IPv4-em-IPv6 (6to4, Teredo, NAT64, IPv4-compatible):
     // o IPv4 embutido é avaliado pela mesma política IPv4; Teredo (sem IPv4
     // extraível, deprecado) é sempre tratado como privado/reservado.
@@ -86,19 +81,9 @@ function isLoopbackIp(ip: string): boolean {
   if (net.isIPv6(ip)) {
     const lower = ip.toLowerCase();
     if (lower === '::1') return true;
-    if (lower.startsWith('::ffff:')) {
-      // O parser WHATWG normaliza IPv4-mapeado para hex de 2 grupos (::ffff:7f00:1 =
-      // 127.0.0.1); aceitar também a forma dotted por robustez (chamadas diretas).
-      const tail = lower.slice('::ffff:'.length);
-      if (net.isIPv4(tail)) return isLoopbackIp(tail);
-      const groups = tail.split(':');
-      if (groups.length === 2 && groups.every((g) => /^[0-9a-f]{1,4}$/.test(g))) {
-        const hi = Number.parseInt(groups[0], 16);
-        const lo = Number.parseInt(groups[1], 16);
-        const ipv4 = `${(hi >> 8) & 0xff}.${hi & 0xff}.${(lo >> 8) & 0xff}.${lo & 0xff}`;
-        return isLoopbackIp(ipv4);
-      }
-    }
+    // IPv4-mapeado byte-level — cobre também formas textuais não-canônicas.
+    const mappedIpv4 = embeddedIpv4FromIpv6(ip);
+    if (mappedIpv4 !== null) return isLoopbackIp(mappedIpv4);
   }
   return false;
 }

@@ -167,13 +167,22 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # A branch de baselines é efêmera e 100% regenerada a cada run: o histórico
+          # remoto (se existir — ex.: resquício de run anterior falho ou PR não
+          # mergeado) é sempre descartável. Por isso fazemos fetch prévio para
+          # registrar a ref remota e push com --force-with-lease, que sobrescreve
+          # histórico divergente de forma segura (falha se outro push concorrente
+          # tiver alterado a branch depois do nosso fetch). Sem isso, um `git push`
+          # simples é rejeitado com "fetch first" e as baselines geradas se perdem
+          # (ver .agents/handoffs/00-para-08-visual-baseline-workflow-nonff.md).
+          git fetch origin "+refs/heads/$BASELINE_BRANCH:refs/remotes/origin/$BASELINE_BRANCH" 2>/dev/null || true
           git checkout -B "$BASELINE_BRANCH"
           git add tests/e2e/visual.spec.ts-snapshots/ visual-regression/baselines/
           if git diff --cached --quiet; then
             echo "Nenhuma baseline alterada — nada a commitar."
           else
             git commit -m "chore(ci): atualiza baselines visuais Linux (workflow_dispatch)"
-            git push origin "HEAD:refs/heads/$BASELINE_BRANCH"
+            git push --force-with-lease origin "HEAD:refs/heads/$BASELINE_BRANCH"
             echo "Baselines publicadas em $BASELINE_BRANCH."
           fi
 
