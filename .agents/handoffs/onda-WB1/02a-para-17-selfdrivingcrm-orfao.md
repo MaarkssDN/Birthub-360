@@ -4,7 +4,7 @@
 De: 02A — UX Research & Usability
 Para: 17 — Cadência Multicanal e Ciclo de Receita
 Onda: WB-1
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: DEBT-0063, DEBT-0008…0011
 Sprint destino: APÓS desbloqueio do NO-GO de cadência
@@ -38,3 +38,20 @@ Se remoção: `npx tsc --noEmit` + `npm run build` verdes; grep sem referências
 ## Contexto adicional
 
 **NÃO executar antes do desbloqueio da cadência** — o módulo está em NO-GO (DEBT-0008…0011). Este handoff é registro de decisão, não autorização de implementação.
+
+## Resolução (Agente 17 — Onda 2)
+
+- **Status**: Resolvido.
+- **Decisão e Confirmação de Arquitetura**:
+  - `SelfDrivingCrmService` mantido como serviço central de orquestração adaptativa e inteligência de cadência, integralmente desacoplado de dependências exclusivas em memória e conectado aos modelos Prisma reais com isolamento rigoroso por `organizationId`.
+  - **Repositório de Opt-Out**: Construtor utiliza por padrão o `prismaOptOutRepository` durável (`private optOutRepo: OptOutRepository = prismaOptOutRepository`). `InMemoryOptOutRepository` é restrito a redefinição de mocks em ambientes de teste (`clear()`).
+  - **Sinais de Conversa (Prisma `ConversationSignal`)**: `evaluateCadenceOptimization` consulta diretamente `prisma.conversationSignal.findMany({ where: { organizationId, leadId }, orderBy: { createdAt: 'desc' }, take: 10 })` quando não há sinais voláteis em memória, mapeando canais e intenções reais do banco.
+  - **Leads Estagnados (Prisma `Lead`)**: `detectStagnatedLeads` busca diretamente no banco de dados via `prisma.lead.findMany({ where: { organizationId }, take: limit, ... })` em modo fail-closed, ignorando leads sem tenant e aplicando as travas canônicas de opt-out (Art. 18 LGPD) e status final (Ganho/Perdido).
+- **Cobertura de Testes**:
+  - `tests/unit/cadence/selfDrivingCrm.service.test.ts` (12 testes verdes) validando:
+    - Consulta e mapeamento de `prisma.conversationSignal` via spy com filtro de `organizationId`.
+    - Consulta e mapeamento de `prisma.lead` via spy com filtro de `organizationId`.
+    - Trava fail-closed de opt-out formal bloqueando categoricamente reativações.
+    - Isolamento de tenant impedindo vazamento entre organizações.
+  - `tests/integration/onda03ComprehensiveFlow.integration.test.ts` cobrindo o fluxo integrado.
+- **Validação**: Testes unitários do módulo de cadência 100% aprovados (`132/132 tests passed`), `npx tsc --noEmit` limpo.

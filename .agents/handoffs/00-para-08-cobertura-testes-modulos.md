@@ -130,3 +130,28 @@ E2E na entrega parcial anterior (`signals-risks.spec.ts`).
   failover/resilience — sem spec dedicada.
 - Execução local de Playwright segue indisponível neste ambiente (sem
   Postgres/Redis/Meilisearch/Docker/browsers) — as specs novas precisam do CI.
+
+## Registro de Verificação e Consolidação de Cobertura (Agente 08, 2026-11-19)
+
+Handoff mantido `em-andamento` (com escopo executável de testes consolidado e gaps de produto AC-MKT-002/003 e SLA escalados ao humano, sem criação de código especulativo).
+
+### 1. Testes de aceite recentes integrados (PR #426 e PR #428)
+
+- **PR #426 (`tests/e2e/deeplink.spec.ts`)**: Cobertura de aceite E2E para preservação de deep links pós-login (path + query parameters) e sanitização estrita de open-redirect (`//evil.com` e URLs absolutas externas com fallback para `/app`).
+- **PR #428 (`tests/integration/dsr-public-journey.test.ts`)**: Cobertura de aceite da jornada DSR pública LGPD contra banco real e RLS (submit, confirmação de identidade, dossiê, anti-enumeração 202 e rate-limit 429).
+- Suíte unitária LGPD associada (`tests/unit/features/lgpd/`): 6 arquivos, **35/35 testes verdes**.
+
+### 2. Inventário real e validação técnica da cobertura atual
+
+Execução em lote validada com `vitest.unit.config.ts` (**13 arquivos de teste, 92 testes verdes, 0 falhas**):
+- **mesa-tratamento**: `mesaTratamento.dashboard.test.ts` (8 testes), `mesaTratamento.priority.test.ts` (8 testes) e E2E `mesa-tratamento-jornada.spec.ts` com portal Bitrix simulado.
+- **signals-risks**: `SignalsAndRisksHub.test.tsx` (3 testes) + `revOpsFlow.integration.test.tsx` + `signals-risks.spec.ts`.
+- **market-intelligence**: `accountInsights.test.ts` (16), `accountEconomicGroup.test.ts` (9), `accountDecisionMakers.test.ts` (8), `marketSensing.service.test.ts` (5), `ldrIntegrityGuard.test.ts` (8), `dataQualityReport.unit.test.ts` (9). Total: 55 testes verdes.
+- **sales-orchestration**: `SalesOrchestrationService.test.ts` (4 testes) + `orchestration.api.test.ts` (4 testes). Total: 8 testes verdes.
+- **predictability**: `predictability.api.test.ts` (9 testes verdes).
+- **social-selling**: `ApproachGeneratorCard.a11y.test.tsx` (1 teste) + `socialInteraction.service.test.ts` + integração `socialSellingFlow.integration.test.ts`.
+
+### 3. Delimitação honesta de escopo
+
+- Conforme acordado na revisão do PR #386 e nas diretrizes de governança (P2/P3), o Agente 08 não inventa contratos ou mocks artificiais para features inexistentes (ex.: fallback de provedores externos inexistentes e ledger de créditos pendente de produto).
+- Os gaps remanescentes permanecem atribuídos a produto/requisitos (escalação humana) e não bloqueiam os gates de CI existentes.

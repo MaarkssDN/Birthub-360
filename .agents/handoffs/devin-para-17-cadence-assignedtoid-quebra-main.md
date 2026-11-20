@@ -3,7 +3,7 @@
 - **De:** Devin (verificação pós-push dos PRs #412/#390)
 - **Para:** 17 — Cadência Multicanal e Ciclo de Receita
 - **Onda:** fila de handoffs 20261117 / release-readiness 2026-11-18
-- **Status:** em-andamento (correção entregue no PR #418, aguardando merge)
+- **Status:** resolvido
 - **Prioridade:** bloqueador
 - **Bloqueador-ref:** application gate do CI falhando em `main` e em todos os PRs novos
 - **Sprint destino:** correção imediata em `main`
@@ -68,3 +68,8 @@ forem necessários dados de usuário do lead.
 - **Risco residual:** `owner` legado com nome livre não casa `userId` → `booking_link`
   resolve `null` (fallback `| default:` cobre); nunca casa link de usuário errado.
   Saneamento de `owner` legado é do CRM (Agente 04), fora do escopo.
+
+
+## Fechamento (coordenador, 2026-11-19)
+
+Correção equivalente mergeada via PR #416 (`assignedToId`→`owner` em `CadenceDispatchers.resolveCadenceTemplateContext`), aprovada pelo Agente 24. Main verde no application gate.
