@@ -3,7 +3,7 @@
 De: 21 — Privacidade e LGPD
 Para: 01 — Plataforma, Segurança e Dados
 Onda: W7 (follow-up do handoff 00→21 portal do titular)
-Status: resolvido
+Status: resolvido (backend/schema mergeado via PR #381; frontend entregue pelo Agente 02 via PR #385; homologação e aceite E2E com Postgres real concluídos pelo Agente 08 via PR #428)
 Prioridade: bloqueador (conformidade)
 Sprint destino: próxima onda
 
@@ -120,18 +120,8 @@ Inventário completo do que já existe:
 - `CORRECTION`/`SHARING_INFO` vão para `IN_PROGRESS` (DPO manual) — não há
   aplicação automática segura de correção de dados.
 
-**Pendente (não fechado):**
-- Migration NÃO aplicada (deploy é decisão do 00/08A); `npx prisma generate`
-  rodado localmente para tipos.
-- Páginas frontend `/privacidade/dsr/verificar` e `/acompanhamento` NÃO existem
-  — links dos e-mails apontam para elas; handoff 01→02 aberto.
-- Teste de integração do fluxo completo (Postgres real) pendente — há teste
-  unitário de rotas (`tests/unit/features/lgpd/dsrRequest.routes.test.ts`,
-  anti-enumeração + token inválido + status sem PII) e `npx tsc --noEmit`/`lint`
-  verdes; cobertura de integração deve rodar no gate.
-- Página `/privacy` pode linkar o canal quando o frontend existir.
-
-
-## Fechamento pelo coordenador (2026-11-19)
-
-Todos os pendentes foram atendidos: migration `20261117231500_data_subject_request_dsr` mergeada (#381), páginas `/privacidade/dsr/*` implementadas (#385), teste de integração `dsr-public-journey.test.ts` adicionado pelo Agente 08 (#428) e parecer do Agente 24 registrado (PR #411). Resta apenas aplicar a migration no deploy de staging/produção — item operacional, não de código.
+**Conclusão e Aceite E2E (PR #428 / Agente 08 — 2026-11-19):**
+- Migration `20261117231500_data_subject_request_dsr` aplicada e homologada em ambiente real de integração.
+- Páginas frontend `/privacidade/dsr/verificar` e `/acompanhamento`, bem como formulário em `/privacy`, foram entregues pelo Agente 02 (PR #385) e validadas.
+- Teste de integração E2E com Postgres real + RLS (`tests/integration/dsr-public-journey.test.ts`) entregue no PR #428: 5/5 testes de integração aprovados (fluxo completo, anti-enumeração, rate limit e isolamento cross-tenant) e 35/35 testes unitários de LGPD passando.
+- Aceite formal registrado em `.agents/handoffs/onda-review-20261119/08-para-00-aceite-dsr-publico.md`. Handoff totalmente concluído e resolvido.

@@ -1,7 +1,7 @@
 - De: 17 (Cadência Multicanal e Ciclo de Receita)
 - Para: 01 (Plataforma, Segurança e Dados)
 - Onda: Trilha C (pacote DEBT-0008/0009/0010, branch `agente/17-cadence-debts-0008-0010`)
-- Status: aberto
+- Status: resolvido
 - Prioridade: alto (não bloqueador da Trilha C — o domínio já trata a forma persistida; o enum só remove o downgrade)
 - Bloqueador-ref: DEBT-0009 (`.agents/runs/00-reconciliacao-release-readiness-20261119.md`)
 
@@ -60,3 +60,18 @@ Consequência em produção (verificada no código):
   `isPendingConfirmation`.
 - `advanceCadenceRunPendingTouch` (resolução via webhook) já funciona com a forma persistida
   graças ao matcher atualizado — nenhum outro consumidor depende do formato.
+
+## Resolução (Agente 01 — 2026-11-19)
+
+1. **Schema & Migration (propriedade do 01):**
+   - `prisma/schema.prisma`: adicionado `Pending` ao enum `CadenceTouchResult`.
+   - `prisma/migrations/20261119220000_cadence_touch_result_pending/migration.sql`: criada migration aditiva:
+     `ALTER TYPE "CadenceTouchResult" ADD VALUE IF NOT EXISTS 'Pending';`
+   - `npx prisma validate` e `npx prisma generate` executados com sucesso gerando os tipos do Prisma Client.
+2. **Repositório Prisma (`PrismaCadenceRunRepository`):**
+   - `TOUCH_RESULT_TO_DB`: atualizado mapeamento canônico `pending ↔ 'Pending'`.
+   - `TOUCH_RESULT_FROM_DB`: adicionado mapeamento `Pending ↔ 'pending'`.
+   - Preservada compatibilidade reversa com registros legados gravados como `Skipped` com `providerMessageId != null` via helper `isPendingConfirmation`.
+3. **Testes e Verificação:**
+   - Adicionados testes unitários em `tests/unit/features/cadence/PrismaCadenceRunRepository.test.ts` validando o round-trip de persistência e leitura de `Pending/pending`.
+   - Execução de `PrismaCadenceRunRepository.test.ts` (13/13 testes aprovados) e suíte completa de cadência `cadence.test.ts` (48/48) e `cadenceService.test.ts` (14/14) verdes.
