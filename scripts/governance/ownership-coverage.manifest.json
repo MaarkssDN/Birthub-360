@@ -27,13 +27,6 @@
       "justification": "Fora do grafo do depcruise (lint:architecture só cruza src/, server.ts e worker.ts); migrações são SQL, não módulos importáveis; proteção real: revisão de diff contra .agents/MATRIZ_PROPRIEDADE.md e handoff do dono (AGENTS.md §15/§16)."
     },
     {
-      "scope": "src/lib/db/rls/**",
-      "owner": "Agente 13 (Nilo)",
-      "coverage": "review",
-      "justification": "Dentro do grafo do depcruise, mas nenhuma regra forbidden modela propriedade de arquivo (o cruiser verifica fronteiras de importação, não autoria); RLS multi-tenant (B-10); o diretório src/lib/db/rls/ ainda não existe no repositório (as políticas RLS vivem hoje em prisma/migrations/**, do Agente 12) — path reservado pelo AGENTS.md §15 para o 13, ver handoff do 03 ao 00; proteção real: revisão de diff contra .agents/MATRIZ_PROPRIEDADE.md e handoff do dono (AGENTS.md §15/§16).",
-      "allowMissingPath": true
-    },
-    {
       "scope": "src/lib/queue/**, src/workers/**",
       "owner": "Agente 23 (Pina)",
       "coverage": "review",
@@ -128,6 +121,24 @@
       "owner": "Cada agente cria seus próprios handoffs usando .agents/templates/HANDOFF.md",
       "coverage": "review",
       "justification": "Fora do grafo do depcruise (lint:architecture só cruza src/, server.ts e worker.ts); cada agente só cria/atualiza os próprios handoffs (AGENTS.md §18); não há gate automatizado de autoria por arquivo; proteção real: revisão de diff contra .agents/MATRIZ_PROPRIEDADE.md e handoff do dono (AGENTS.md §15/§16)."
+    },
+    {
+      "scope": "src/lib/tenant-prisma.ts",
+      "owner": "Agente 13 (Nilo)",
+      "coverage": "review",
+      "justification": "Client Prisma com tenant enforcement em runtime (B-10); dentro do grafo do depcruise, mas proteção é revisão de diff contra a matriz."
+    },
+    {
+      "scope": "scripts/security/rls-coverage.ts",
+      "owner": "Agente 13 (Nilo)",
+      "coverage": "review",
+      "justification": "Script de governança e cálculo de cobertura RLS (B-10); proteção real é a revisão de diff contra a matriz de propriedade."
+    },
+    {
+      "scope": "scripts/security/check-rls-coverage.ts",
+      "owner": "Agente 13 (Nilo)",
+      "coverage": "review",
+      "justification": "Script de CI/gate de verificação de cobertura RLS (B-10); proteção real é a revisão de diff contra a matriz de propriedade."
     }
   ]
 }
