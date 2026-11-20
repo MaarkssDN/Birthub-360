@@ -27,10 +27,10 @@
       "justification": "Fora do grafo do depcruise. Migrações são SQL, não módulos TypeScript importáveis; somente o Agente 12 escreve em prisma/migrations/**, demais agentes abrem handoff (AGENTS.md §15/§16), verificado na revisão de diff."
     },
     {
-      "scope": "src/lib/db/rls/**",
+      "scope": "src/lib/tenant-prisma.ts, scripts/security/rls-coverage.ts, scripts/security/check-rls-coverage.ts",
       "owner": "Agente 13 (Nilo)",
       "coverage": "review",
-      "justification": "Nenhuma regra forbidden do depcruise modela propriedade de arquivo (só fronteiras de importação entre camadas). Políticas RLS são do Agente 13; a proteção é revisão de diff contra a matriz e os testes de acesso cruzado."
+      "justification": "Nenhuma regra forbidden do depcruise modela propriedade de arquivo (só fronteiras de importação entre camadas). Isolamento multi-tenant/RLS é do Agente 13; as políticas SQL ficam em prisma/migrations/** (Agente 12). A proteção real é revisão de diff contra a matriz, os testes de acesso cruzado e o gate de CI 'RLS — cobertura de Row Level Security'."
     },
     {
       "scope": "src/lib/queue/**, src/workers/**",
