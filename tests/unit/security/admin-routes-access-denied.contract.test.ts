@@ -1,5 +1,4 @@
-import express, { type Router } from 'express';
-import rateLimit from 'express-rate-limit';
+import express from 'express';
 import request from 'supertest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -7,9 +6,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 //
 // A auditoria `.agents/runs/00-auditoria-b02-rotas-admin-20261120.md` confirmou por leitura que
 // estas rotas têm guarda de papel, mas não existia teste que quebrasse se alguém a removesse.
-// Aqui o router REAL é montado atrás do `authenticateToken` REAL (só a sessão do Better Auth é
-// simulada, com o papel desejado) e a requisição de um papel insuficiente tem de voltar 403 com o
-// corpo padronizado de `requireRole`. Como o papel é checado antes do handler, nenhum serviço /
+// Aqui o app é montado EXATAMENTE como `server.ts` faz (`applyRateLimiters` → `express.json` →
+// `mountFeatureRoutes`), então tanto a guarda dentro do router quanto a do mount em
+// `src/bootstrap/routes.ts` (ex.: `/api/api-keys`) são as de produção. Só a sessão do Better Auth
+// é simulada, com o papel desejado; um papel insuficiente tem de voltar 403 com o corpo
+// padronizado de `requireRole`. Como o papel é checado antes do handler, nenhum serviço /
 // banco é tocado — o teste roda sem Postgres (os `rbac-e2e-*` de tests/integration cobrem o
 // caminho de sucesso com sessão e RLS reais).
 
@@ -20,21 +21,9 @@ vi.mock('@/lib/auth.js', () => ({
 }));
 vi.mock('@/config/access-policy.js', () => ({ isAuthorizedLoginEmail: () => true }));
 
-import { apiKeyRoutes } from '@/features/api-keys/apiKey.routes.js';
-import { automationRoutes } from '@/features/automations/routes/automation.routes.js';
-import { omieRoutes } from '@/features/integrations/omie/omie.routes.js';
-import { slackRoutes } from '@/features/integrations/slack/slack.routes.js';
-import { whatsappRoutes } from '@/features/integrations/whatsapp/whatsapp.routes.js';
-import { jobRoleRoutes } from '@/features/job-roles/routes/jobRole.routes.js';
-import { knowledgeRoutes } from '@/features/knowledge/knowledge.routes.js';
-import { moduleAccessRoutes } from '@/features/module-access/routes/moduleAccess.routes.js';
-import { organizationModulesRoutes } from '@/features/organization-modules/routes/organizationModules.routes.js';
-import { pillarSettingsRoutes } from '@/features/settings/routes/pillarSettings.routes.js';
-import { teamRoutes } from '@/features/team/routes/team.routes.js';
-import { authenticateToken } from '@/shared/middlewares/authenticateToken.js';
-import { requireTenant } from '@/shared/middlewares/authorization.js';
+import { applyRateLimiters } from '@/bootstrap/rateLimiters.js';
+import { mountFeatureRoutes } from '@/bootstrap/routes.js';
 import { errorHandler } from '@/shared/middlewares/errorHandler.js';
-import { requireRole } from '@/shared/middlewares/requireRole.js';
 
 type Role = 'ADMIN' | 'GESTOR' | 'CLOSER' | 'SDR' | 'VISUALIZADOR';
 type Method = 'post' | 'put' | 'delete';
@@ -47,11 +36,8 @@ interface Probe {
 interface Surface {
   name: string;
   mount: string;
-  router: Router;
   /** Papel mínimo que o código de produção exige; papéis abaixo dele devem receber 403. */
   minimumRole: Role;
-  /** Middlewares aplicados em `routes.ts` no mount, antes do router (espelha produção). */
-  mountGuards?: express.RequestHandler[];
   probes: Probe[];
 }
 
@@ -62,7 +48,6 @@ const SURFACES: Surface[] = [
   {
     name: 'time (convite, papel, remoção de membros)',
     mount: '/api/team',
-    router: teamRoutes,
     minimumRole: 'ADMIN',
     probes: [
       { method: 'post', path: '/' },
@@ -74,7 +59,6 @@ const SURFACES: Surface[] = [
   {
     name: 'acesso a módulos por usuário',
     mount: '/api/module-access',
-    router: moduleAccessRoutes,
     minimumRole: 'ADMIN',
     probes: [
       { method: 'put', path: '/user-1/crm' },
@@ -84,7 +68,6 @@ const SURFACES: Surface[] = [
   {
     name: 'módulos da organização',
     mount: '/api/organization-modules',
-    router: organizationModulesRoutes,
     minimumRole: 'ADMIN',
     probes: [
       { method: 'post', path: '/onboarding/complete' },
@@ -96,7 +79,6 @@ const SURFACES: Surface[] = [
   {
     name: 'cargos (atribuição)',
     mount: '/api/job-roles',
-    router: jobRoleRoutes,
     minimumRole: 'ADMIN',
     probes: [
       { method: 'post', path: '/assignments' },
@@ -106,10 +88,9 @@ const SURFACES: Surface[] = [
   {
     name: 'chaves de API',
     mount: '/api/api-keys',
-    router: apiKeyRoutes,
     minimumRole: 'ADMIN',
-    // Em produção o papel é exigido no mount (routes.ts), não dentro do router.
-    mountGuards: [requireRole(['ADMIN'])],
+    // Em produção o papel é exigido no mount (`routes.ts`), não dentro do router: este caso falha
+    // se alguém remover o `requireRole(['ADMIN'])` de lá.
     probes: [
       { method: 'post', path: '/' },
       { method: 'delete', path: '/key-1' },
@@ -118,14 +99,12 @@ const SURFACES: Surface[] = [
   {
     name: 'preferências de pilares (PUT)',
     mount: '/api/settings/pillars',
-    router: pillarSettingsRoutes,
     minimumRole: 'ADMIN',
     probes: [{ method: 'put', path: '/geral' }],
   },
   {
     name: 'integração Omie',
     mount: '/api/integrations/omie',
-    router: omieRoutes,
     minimumRole: 'GESTOR',
     probes: [
       { method: 'post', path: '/connect' },
@@ -137,7 +116,6 @@ const SURFACES: Surface[] = [
   {
     name: 'integração Slack',
     mount: '/api/integrations/slack',
-    router: slackRoutes,
     minimumRole: 'GESTOR',
     probes: [
       { method: 'post', path: '/connect' },
@@ -149,7 +127,6 @@ const SURFACES: Surface[] = [
   {
     name: 'WhatsApp (conectar/desconectar)',
     mount: '/api/whatsapp',
-    router: whatsappRoutes,
     minimumRole: 'GESTOR',
     probes: [
       { method: 'post', path: '/connect' },
@@ -159,7 +136,6 @@ const SURFACES: Surface[] = [
   {
     name: 'automações (gestão)',
     mount: '/api/automations',
-    router: automationRoutes,
     minimumRole: 'GESTOR',
     probes: [
       { method: 'post', path: '/' },
@@ -171,14 +147,12 @@ const SURFACES: Surface[] = [
   {
     name: 'automações (varredura de estagnação)',
     mount: '/api/automations',
-    router: automationRoutes,
     minimumRole: 'ADMIN',
     probes: [{ method: 'post', path: '/stagnation-scan' }],
   },
   {
     name: 'base de conhecimento (exclusão)',
     mount: '/api/knowledge',
-    router: knowledgeRoutes,
     minimumRole: 'GESTOR',
     probes: [{ method: 'delete', path: '/doc-1' }],
   },
@@ -193,19 +167,11 @@ const session = (role: Role) => ({
   },
 });
 
-function buildApp(surface: Surface) {
+function buildApp() {
   const app = express();
+  applyRateLimiters(app);
   app.use(express.json());
-  app.use(
-    surface.mount,
-    // Espelha o apiLimiter que produção aplica em toda rota /api (evita o alerta
-    // js/missing-rate-limiting do CodeQL num app de teste isolado). Generoso: nunca dispara aqui.
-    rateLimit({ windowMs: 15 * 60 * 1000, max: 100_000, standardHeaders: true, legacyHeaders: false }),
-    authenticateToken,
-    requireTenant,
-    ...(surface.mountGuards ?? []),
-    surface.router,
-  );
+  mountFeatureRoutes(app);
   app.use(errorHandler);
   return app;
 }
@@ -224,7 +190,7 @@ describe('B-02 — rotas administrativas negam papéis insuficientes (403) e an�
           it(`${probe.method.toUpperCase()} ${surface.mount}${probe.path}: ${role} recebe 403 padronizado`, async () => {
             authGetSessionMock.mockResolvedValue(session(role));
 
-            const res = await request(buildApp(surface))
+            const res = await request(buildApp())
               [probe.method](`${surface.mount}${probe.path}`)
               .send({});
 
@@ -238,7 +204,7 @@ describe('B-02 — rotas administrativas negam papéis insuficientes (403) e an�
         it(`${probe.method.toUpperCase()} ${surface.mount}${probe.path}: sem sessão recebe 401`, async () => {
           authGetSessionMock.mockResolvedValue(null);
 
-          const res = await request(buildApp(surface))
+          const res = await request(buildApp())
             [probe.method](`${surface.mount}${probe.path}`)
             .send({});
 

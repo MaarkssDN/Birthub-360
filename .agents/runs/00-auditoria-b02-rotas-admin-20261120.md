@@ -52,12 +52,14 @@ flags, copiloto IA, inteligência comercial, BullBoard, usage, bug-reports, birt
 stripe/bitrix (parcial), pillars, LGPD.
 
 ### Tratamento (mesma branch)
-`tests/unit/security/admin-routes-access-denied.contract.test.ts` — 140 testes de contrato (router
-REAL + `authenticateToken` REAL, só a sessão simulada) provando 403 padronizado para papel
+`tests/unit/security/admin-routes-access-denied.contract.test.ts` — 140 testes de contrato (app montado como `server.ts`:
+`applyRateLimiters` → `express.json` → `mountFeatureRoutes`, ou seja, guardas de router E de mount de produção;
+só a sessão simulada) provando 403 padronizado para papel
 insuficiente e 401 sem sessão em: `team`, `module-access`, `organization-modules`, `job-roles`,
 `api-keys`, `settings/pillars` (PUT), `omie`, `slack`, `whatsapp` (conectar/desconectar),
 `automations` (gestão e `stagnation-scan`) e `knowledge` (DELETE). TESTADO localmente (sem Postgres):
-140/140 passam; controle negativo — remover a guarda de `team` e de `omie /connect` quebra 19 testes.
+140/140 passam; controle negativo — remover a guarda de `team`/`omie /connect` quebra 19 testes e remover o
+`requireRole(['ADMIN'])` do mount de `/api/api-keys` em `routes.ts` quebra 8.
 Ainda SEM teste de acesso negado: `access-requests`, `memory`, `agent-builder` e `google` (a proteção
 destes está na camada de serviço, não no middleware — exigem testes de serviço/integração, outro escopo).
 O caminho de SUCESSO com sessão e RLS reais segue nos `tests/integration/rbac-e2e-*` (precisam de
