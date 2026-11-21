@@ -20,7 +20,9 @@ export class CachedCnpjEnrichmentService {
   private readonly cache = new Map<string, CnpjCompanyProfile>();
 
   constructor(
-    private readonly providerFetch: (cleanCnpj: string) => Promise<Omit<CnpjCompanyProfile, 'fetchedAtMs'>>,
+    private readonly providerFetch: (
+      cleanCnpj: string,
+    ) => Promise<Omit<CnpjCompanyProfile, 'fetchedAtMs'>>,
   ) {}
 
   async lookupCnpj(

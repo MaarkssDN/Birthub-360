@@ -21,9 +21,7 @@ export function buildSlidingWindowCopilotContext(params: {
   const older = params.messages.slice(0, params.messages.length - windowSize);
   const recent = params.messages.slice(params.messages.length - windowSize);
 
-  const bulletPoints = older
-    .map((m) => `${m.role}: ${m.content.trim().slice(0, 80)}`)
-    .join(' | ');
+  const bulletPoints = older.map((m) => `${m.role}: ${m.content.trim().slice(0, 80)}`).join(' | ');
 
   const summaryMessage: CopilotChatMessage = {
     role: 'system',

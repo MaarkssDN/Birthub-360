@@ -203,6 +203,8 @@ describe('eraseDataSubject — mecanismo técnico de exclusão/anonimização LG
       copilotoTranscriptSegmentsRedacted: 6,
       copilotoInsightsRedacted: 7,
       copilotoAudiosDeleted: 1,
+      // Expurgo físico de logs de auditoria (Onda 2, Agente 08): sem `auditLog` no tx simulado, 0.
+      priorAuditLogsPurged: 0,
       alreadyAnonymized: false,
     });
   });

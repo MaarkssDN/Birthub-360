@@ -46,8 +46,8 @@ Heurística por citação do arquivo de rota/prefixo em testes que também afirm
 testes que montam routers sem o prefixo — **confirmar antes de corrigir**.
 
 Sem teste de acesso negado encontrado: `team`, `api-keys`, `module-access`, `organization-modules`,
-`omie`, `slack`, `whatsapp`, `automations`, `job-roles`, `access-requests`, `memory`,
-`agent-builder`, `knowledge`, `google`. Com cobertura de 403: CRM (writes/operations), feature
+`omie`, `slack`, `whatsapp`, `automations`, `job-roles`, `knowledge`, `google` (por URL; ver correção abaixo
+para `access-requests`, `memory`, `agent-builder`, que têm testes de serviço). Com cobertura de 403: CRM (writes/operations), feature
 flags, copiloto IA, inteligência comercial, BullBoard, usage, bug-reports, birth-voice, 3cx,
 stripe/bitrix (parcial), pillars, LGPD.
 
@@ -60,10 +60,15 @@ insuficiente e 401 sem sessão em: `team`, `module-access`, `organization-module
 `automations` (gestão e `stagnation-scan`) e `knowledge` (DELETE). TESTADO localmente (sem Postgres):
 140/140 passam; controle negativo — remover a guarda de `team`/`omie /connect` quebra 19 testes e remover o
 `requireRole(['ADMIN'])` do mount de `/api/api-keys` em `routes.ts` quebra 8.
-Ainda SEM teste de acesso negado: `access-requests`, `memory`, `agent-builder` e `google` (a proteção
-destes está na camada de serviço, não no middleware — exigem testes de serviço/integração, outro escopo).
-O caminho de SUCESSO com sessão e RLS reais segue nos `tests/integration/rbac-e2e-*` (precisam de
-Postgres; NÃO EXECUTADO aqui).
+CORREÇÃO (2026-11-21): a versão anterior deste relatório afirmou que `access-requests`, `memory` e
+`agent-builder` não tinham teste de acesso negado. **Erro da heurística** (busca por prefixo de URL):
+esses módulos são testados direto na camada de serviço, em `tests/integration/access-request.test.ts`
+(`SELF_APPROVAL_DENIED`, `APPROVER_NOT_ELIGIBLE` por papel e por cargo, isolamento de tenant, AuditLog),
+`memory.test.ts` (SDR não decide/revoga → `FORBIDDEN`), `agent-builder.test.ts` (SDR não aprova → `FORBIDDEN`)
+e `agent-bus.test.ts` (fora do `toRole` não aceita → `FORBIDDEN`). Não há lacuna nesses módulos.
+A única lacuna real remanescente era `google` (`POST /api/google/disconnect`, ADMIN/GESTOR), agora coberta
+no teste de contrato (144 testes; controle negativo: remover a guarda quebra 3). Esses testes de integração
+precisam de Postgres e NÃO foram executados aqui.
 
 ## Recomendações de endurecimento (OPCIONAL — não são defeitos comprovados)
 - `POST /api/prospecting/enrich` (scraper web com Playwright): hoje qualquer usuário autenticado,
@@ -76,7 +81,7 @@ Postgres; NÃO EXECUTADO aqui).
 
 ## Pendências / próximos passos propostos
 1. (Feito) testes de acesso negado por contrato — ver "Tratamento".
-2. Testes de serviço para as proteções em camada de serviço (`access-requests`, `memory`, `agent-builder`).
+2. (Descartado) testes de serviço para `access-requests`/`memory`/`agent-builder`: já existem (ver correção).
 3. Decidir os pisos de papel opcionais acima (decisão humana).
 
 Handoffs abertos: nenhum novo. Riscos: nenhum defeito de código confirmado; risco residual é

@@ -62,19 +62,22 @@ export function sanitizeWhatsAppTemplatePayload(
     );
   }
 
-  const renderedText = input.templateBody.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_, varName) => {
-    const key = String(varName);
-    if (!allowedSet.has(key)) {
-      blockedForbiddenVariables.push(key);
-      return '';
-    }
-    const rawVal = input.variables[key] ?? '';
-    const { cleanValue, wasRedacted } = sanitizeFreeTextVariable(String(rawVal));
-    if (wasRedacted) {
-      redactedVariables.push(key);
-    }
-    return cleanValue;
-  });
+  const renderedText = input.templateBody.replace(
+    /\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g,
+    (_, varName) => {
+      const key = String(varName);
+      if (!allowedSet.has(key)) {
+        blockedForbiddenVariables.push(key);
+        return '';
+      }
+      const rawVal = input.variables[key] ?? '';
+      const { cleanValue, wasRedacted } = sanitizeFreeTextVariable(String(rawVal));
+      if (wasRedacted) {
+        redactedVariables.push(key);
+      }
+      return cleanValue;
+    },
+  );
 
   return {
     renderedText,

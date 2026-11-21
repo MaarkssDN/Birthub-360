@@ -27,7 +27,9 @@ export function buildHnswTenantVectorQuery(input: VectorSearchQueryInput): {
   hnswEfSearch: number;
 } {
   if (!input.tenantId?.trim()) {
-    throw new Error('tenantId é obrigatório na busca semântica do PgVector (isolamento multi-tenant).');
+    throw new Error(
+      'tenantId é obrigatório na busca semântica do PgVector (isolamento multi-tenant).',
+    );
   }
   if (!Array.isArray(input.embedding) || input.embedding.length === 0) {
     throw new Error('embedding vetorial não pode ser vazio.');

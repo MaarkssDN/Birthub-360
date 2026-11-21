@@ -14,7 +14,9 @@ FOR EACH ROW
 EXECUTE FUNCTION prevent_audit_logs_mutation();
 `.trim();
 
-export function assertAuditLogOperationAllowed(operation: 'INSERT' | 'SELECT' | 'UPDATE' | 'DELETE'): void {
+export function assertAuditLogOperationAllowed(
+  operation: 'INSERT' | 'SELECT' | 'UPDATE' | 'DELETE',
+): void {
   if (operation === 'UPDATE' || operation === 'DELETE') {
     throw new Error(
       `Operação "${operation}" bloqueada: a tabela audit_logs é estritamente append-only ([18 · Ayla]).`,

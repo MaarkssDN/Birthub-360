@@ -134,6 +134,12 @@ const SURFACES: Surface[] = [
     ],
   },
   {
+    name: 'Google (desconectar conta)',
+    mount: '/api/google',
+    minimumRole: 'GESTOR',
+    probes: [{ method: 'post', path: '/disconnect' }],
+  },
+  {
     name: 'automações (gestão)',
     mount: '/api/automations',
     minimumRole: 'GESTOR',

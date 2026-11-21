@@ -11,9 +11,8 @@ vi.mock('@/lib/logger', () => ({
 }));
 
 const { acquireDistributedLockMock } = vi.hoisted(() => ({
-  acquireDistributedLockMock: vi.fn<
-    (key: string, ttlSeconds: number) => Promise<DistributedLock>
-  >(),
+  acquireDistributedLockMock:
+    vi.fn<(key: string, ttlSeconds: number) => Promise<DistributedLock>>(),
 }));
 
 vi.mock('../../../../../lib/queue/distributedLock.js', () => ({
@@ -87,10 +86,7 @@ describe('[51 · Bela] Lock atômico distribuído no Redis para renovação de t
       release: vi.fn().mockResolvedValue(undefined),
     });
 
-    const loadTokens = vi
-      .fn()
-      .mockResolvedValueOnce(expired)
-      .mockResolvedValueOnce(renewed);
+    const loadTokens = vi.fn().mockResolvedValueOnce(expired).mockResolvedValueOnce(renewed);
     const performRefresh = vi.fn();
 
     const result = await refreshBitrixTokenWithLock({
