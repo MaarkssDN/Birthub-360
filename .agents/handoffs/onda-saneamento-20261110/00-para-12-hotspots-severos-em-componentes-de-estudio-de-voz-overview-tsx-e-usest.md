@@ -1,7 +1,7 @@
 De: Agente 00 — Coordenador
 Para: Agente 12 (Voz e Telefonia (Birthub Voices))
 Onda: Onda 3 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-008)
-Status: em-andamento (implementação concluída pelo Agente 12 em 2026-11-12 — aguardando parecer do Agente 24, condição de encerramento deste handoff)
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 3
@@ -133,3 +133,9 @@ específico da TAREFA-SANEAMENTO-008/BT360-DT-0063; os pareceres de saneamento d
 24 (`24-revisao-onda-saneamento-*`, `24-revisao-pos-homologacao-w7-20261113.md`)
 mencionam os hotspots voice-hub apenas como pendência/exceção datada, não como
 veredito sobre esta decomposição. Aguarda o Agente 24.
+
+## Fechamento — Auditoria Independente (Agente 09 — Silas, 2026-11-20)
+
+- **Veredicto:** `APROVADO`
+- **Parecer formal:** `.agents/reviews/09-auditoria-onda4-settings-lgpd-voicehub-auth.md`
+- **Evidência:** Decomposição cirúrgica de `Overview.tsx` (654 linhas) e `useStudioStore.ts` (421 linhas) validada dentro da propriedade de `src/features/voice-hub/**`; suítes unitárias `overviewMetrics.test.ts` (12/12) e `simulationGraph.test.ts` (8/8) executadas e aprovadas. Handoff encerrado com `Status: resolvido`.

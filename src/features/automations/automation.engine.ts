@@ -635,18 +635,33 @@ export class AutomationEngine {
         );
       }
       const { domainEventMesh } = await import('../../lib/queue/domainEventMesh.service.js');
-      await domainEventMesh.publish({
-        eventType: 'LEAD_ENRICHMENT_REQUESTED' as any,
-        eventVersion: '1.0.0',
-        organizationId: event.organizationId,
-        correlationId: `enrich-${leadId}`,
-        producer: 'automation-engine',
-        aggregateId: leadId,
-        payload: {
-          leadId,
-          trigger: event.trigger,
+      await domainEventMesh.publish(
+        {
+          eventType: 'LEAD_ENRICHMENT_REQUESTED' as any,
+          eventVersion: '1.0.0',
+          organizationId: event.organizationId,
+          correlationId: `enrich-${leadId}`,
+          producer: 'automation-engine',
+          aggregateId: leadId,
+          payload: {
+            leadId,
+            trigger: event.trigger,
+          },
         },
-      });
+        {
+          // Mesma identidade do dedupe de disparo (automation-idempotency.service.ts):
+          // retry da ação ou re-execução do mesmo evento não duplica o pedido de enrich;
+          // um evento de gatilho genuinamente distinto gera hash distinto e publica normal.
+          idempotencyKey: `lead-enrichment:${buildTriggerIdempotencyKey({
+            automationId: automation.id,
+            organizationId: event.organizationId,
+            entity: event.entity,
+            entityId: event.entityId,
+            trigger: event.trigger,
+            data: event.data,
+          })}`,
+        },
+      );
       return;
     }
 

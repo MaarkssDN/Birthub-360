@@ -1,0 +1,24 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Sincroniza e renova certificados e provisioning profiles iOS via Fastlane Match ([83 · Ceci])"
+  lane :sync_certificates do |options|
+    readonly_mode = options[:readonly].nil? ? true : options[:readonly]
+    match(
+      type: "appstore",
+      app_identifier: ["com.birthhub360.mobile"],
+      readonly: readonly_mode,
+      force_for_new_devices: !readonly_mode
+    )
+  end
+
+  desc "Renovação automatizada de perfis expirando (<14 dias) em CI"
+  lane :renew_certificates do
+    match(
+      type: "appstore",
+      app_identifier: ["com.birthhub360.mobile"],
+      readonly: false,
+      force: true
+    )
+  end
+end

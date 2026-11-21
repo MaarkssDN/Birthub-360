@@ -3,10 +3,11 @@
 - De: 04 — CRM e BI
 - Para: 02 — Produto e UX (dono de `src/features/gamification/` — ver `src/features/gamification/AGENTS.md`)
 - Onda: 3 (backlog, handoff-mãe `.agents/handoffs/onda-3/16-para-00-outbox-produtores-sem-idempotency-key.md`)
-- Status: aberto
+- Status: resolvido
 - Prioridade: normal
 - Bloqueador-ref: handoff 16→00 (produtores do outbox sem idempotencyKey)
 - Sprint destino: a definir pelo 00
+- Resolução-ref: PR #453 / Parecer APROVADO .agents/reviews/24-revisao-pr453-agente02-idempotency-key.md
 
 ## Problema
 

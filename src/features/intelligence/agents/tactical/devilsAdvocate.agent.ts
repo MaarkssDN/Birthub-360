@@ -1,9 +1,9 @@
+import { logger } from '../../../../lib/logger.js';
+import { domainEventMesh } from '../../../../lib/queue/domainEventMesh.service.js';
 import type {
   DevilsAdvocateAnalysis,
   IDevilsAdvocatePort,
 } from '../../../../shared/contracts/tacticalSwarm.contract.js';
-import { domainEventMesh } from '../../../../lib/queue/domainEventMesh.service.js';
-import { logger } from '../../../../lib/logger.js';
 
 export class DevilsAdvocateAgent implements IDevilsAdvocatePort {
   /**
@@ -132,22 +132,29 @@ export class DevilsAdvocateAgent implements IDevilsAdvocatePort {
 
     // Se detectado viés de otimismo, publicar alerta no DomainEventMesh
     if (optimismBiasDetected) {
-      await domainEventMesh.publish({
-        eventType: 'DEVILS_ADVOCATE_ALERT',
-        eventVersion: '1.0.0',
-        organizationId,
-        correlationId: `devils-deal-${dealId}`,
-        producer: 'devils-advocate-agent',
-        aggregateId: dealId,
-        payload: {
-          dealId,
-          dealTitle: title,
-          currentProbability: currentProb,
-          recommendedProbability: recommendedProb,
-          rationale,
-          evidences,
+      await domainEventMesh.publish(
+        {
+          eventType: 'DEVILS_ADVOCATE_ALERT',
+          eventVersion: '1.0.0',
+          organizationId,
+          correlationId: `devils-deal-${dealId}`,
+          producer: 'devils-advocate-agent',
+          aggregateId: dealId,
+          payload: {
+            dealId,
+            dealTitle: title,
+            currentProbability: currentProb,
+            recommendedProbability: recommendedProb,
+            rationale,
+            evidences,
+          },
         },
-      });
+        {
+          // Fato de negócio = esta análise de forecast do deal; analysisDate identifica
+          // a execução, então reavaliações futuras legítimas do mesmo deal não são suprimidas.
+          idempotencyKey: `devils-advocate:${dealId}:${analysis.analysisDate}`,
+        },
+      );
     }
 
     logger.info(
