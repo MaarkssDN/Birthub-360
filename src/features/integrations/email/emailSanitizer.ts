@@ -56,10 +56,23 @@ function isTrackingPixelImgTag(imgTag: string): boolean {
   return false;
 }
 
-export function sanitizeInboundEmailBody(rawBody: string | null | undefined): string {
-  if (!rawBody) return '';
+// Uma única passada de `replace` pode REMONTAR o que removeu (`<scr<script></script>ipt>`,
+// `oonnerror=`): por isso cada passada é repetida até não haver mais mudança.
+const MAX_SANITIZE_PASSES = 20;
 
-  let clean = rawBody;
+// Aplica a remoção repetidamente até o texto estabilizar (um replace único pode remontar o padrão).
+function replaceUntilStable(input: string, pattern: RegExp, replacement: string): string {
+  let current = input;
+  for (let i = 0; i < MAX_SANITIZE_PASSES; i++) {
+    const next = current.replace(pattern, replacement);
+    if (next === current) return current;
+    current = next;
+  }
+  return current;
+}
+
+function sanitizeOnce(input: string): string {
+  let clean = input;
 
   // 1. Remove blocos perigosos com seu conteúdo (<script>...</script>, <iframe>...</iframe>, etc.)
   for (const tag of DANGEROUS_BLOCK_TAGS) {
@@ -71,11 +84,9 @@ export function sanitizeInboundEmailBody(rawBody: string | null | undefined): st
   // 2. Remove pixels espiões (<img ...> 1x1, 0x0, display:none, visibility:hidden ou URLs de tracker)
   clean = clean.replace(/<img\b[^>]*>/gi, (match) => (isTrackingPixelImgTag(match) ? '' : match));
 
-  // 3. Remove atributos de eventos inline (onload=, onerror=, onclick=, etc.)
-  clean = clean.replace(
-    /\s+on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi,
-    '',
-  );
+  // 3. Remove atributos de eventos inline (onload=, onerror=, onclick=, etc.).
+  // O separador pode ser espaço OU "/" (`<img/onerror=x>` é executado pelos navegadores).
+  clean = replaceUntilStable(clean, /[\s/]+on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
 
   // 4. Neutraliza URIs javascript:, vbscript: e data:text/html em href/src/action
   clean = clean.replace(
@@ -83,5 +94,17 @@ export function sanitizeInboundEmailBody(rawBody: string | null | undefined): st
     '$1=""',
   );
 
+  return clean;
+}
+
+export function sanitizeInboundEmailBody(rawBody: string | null | undefined): string {
+  if (!rawBody) return '';
+
+  let clean = rawBody;
+  for (let pass = 0; pass < MAX_SANITIZE_PASSES; pass++) {
+    const next = sanitizeOnce(clean);
+    if (next === clean) return clean;
+    clean = next;
+  }
   return clean;
 }

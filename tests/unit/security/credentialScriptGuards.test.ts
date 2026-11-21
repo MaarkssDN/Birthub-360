@@ -16,6 +16,7 @@ import {
   parseReencryptScope,
   parseSnapshotConfirmed,
   requireRedisUrl,
+  resolveDbSsl,
   ScriptPreconditionError,
 } from '../../../scripts/security/credential-script-guards.js';
 
@@ -229,5 +230,64 @@ describe('requireRedisUrl', () => {
     expect(() => requireRedisUrl({})).toThrow(/REDIS_URL/);
     expect(() => requireRedisUrl({ REDIS_URL: '  ' })).toThrow(/REDIS_URL/);
     expect(requireRedisUrl({ REDIS_URL: 'redis://example.invalid:6379' })).toBe('redis://example.invalid:6379');
+  });
+});
+
+describe('resolveDbSsl — TLS do banco nos scripts de credenciais', () => {
+  const noFile = () => {
+    throw new Error('não deveria ler arquivo');
+  };
+
+  it('host local não usa TLS (localhost, 127.0.0.1, ::1)', () => {
+    for (const url of [
+      'postgresql://u:p@localhost:5432/db',
+      'postgresql://u:p@127.0.0.1:5432/db',
+      'postgresql://u:p@[::1]:5432/db',
+    ]) {
+      expect(resolveDbSsl(url, {}, noFile)).toEqual({ ssl: false, insecure: false });
+    }
+  });
+
+  it('host remoto verifica o certificado por padrão (rejectUnauthorized=true)', () => {
+    expect(resolveDbSsl('postgresql://u:p@db.exemplo.com:5432/db', {}, noFile)).toEqual({
+      ssl: { rejectUnauthorized: true },
+      insecure: false,
+    });
+  });
+
+  it('"localhost" em outra parte da URL NÃO desliga o TLS de um host remoto', () => {
+    for (const url of [
+      'postgresql://u:p@db.exemplo.com/db?application_name=localhost',
+      'postgresql://localhost:x@db.exemplo.com/db',
+      'postgresql://u:p@localhost.exemplo.com/db',
+    ]) {
+      expect(resolveDbSsl(url, {}, noFile).ssl).toEqual({ rejectUnauthorized: true });
+    }
+  });
+
+  it('URL ilegível é tratada como remota (seguro), nunca como local', () => {
+    expect(resolveDbSsl('isto não é uma url', {}, noFile).ssl).toEqual({ rejectUnauthorized: true });
+  });
+
+  it('PGSSLROOTCERT carrega o CA próprio mantendo a verificação', () => {
+    const readFile = (path: string) => {
+      expect(path).toBe('/certs/ca.pem');
+      return 'PEM-DO-CA';
+    };
+    expect(
+      resolveDbSsl('postgresql://u:p@db.exemplo.com/db', { PGSSLROOTCERT: '/certs/ca.pem' }, readFile),
+    ).toEqual({ ssl: { rejectUnauthorized: true, ca: 'PEM-DO-CA' }, insecure: false });
+  });
+
+  it('só DB_SSL_INSECURE_SKIP_VERIFY=true explícito desliga a verificação, e sinaliza insecure', () => {
+    expect(
+      resolveDbSsl('postgresql://u:p@db.exemplo.com/db', { DB_SSL_INSECURE_SKIP_VERIFY: 'true' }, noFile),
+    ).toEqual({ ssl: { rejectUnauthorized: false }, insecure: true });
+    for (const v of ['false', '1', 'yes', '', undefined]) {
+      expect(
+        resolveDbSsl('postgresql://u:p@db.exemplo.com/db', { DB_SSL_INSECURE_SKIP_VERIFY: v }, noFile)
+          .insecure,
+      ).toBe(false);
+    }
   });
 });
