@@ -1,9 +1,9 @@
-ï»¿# Handoff 16 â†’ 00 â€” Produtores do DomainEventMesh sem `idempotencyKey`
+# Handoff 16 ? 00 — Produtores do DomainEventMesh sem `idempotencyKey`
 
-- De: 16 â€” Runtime, Workers e Escala
-- Para: 00 â€” Coordenador
+- De: 16 — Runtime, Workers e Escala
+- Para: 00 — Coordenador
 - Onda: 3 (backlog, DEM do ciclo 20261113-004 / MEL-21)
-- Status: resolvido (todas as 6 frentes concluÃ­das e homologadas com parecer favorÃ¡vel)
+- Status: resolvido (todas as 6 frentes concluídas e homologadas com parecer favorável)
 - Prioridade: alto
 - Bloqueador-ref: auditoria `.agents/runs/onda-3/16-mel21-outbox-auditoria.md` (G4)
 - Sprint destino: a definir pelo 00
@@ -11,14 +11,14 @@
 ## Problema
 
 `domainEventMesh.publish(event, opts)` aceita `opts.idempotencyKey`
-(`src/lib/queue/domainEventMesh.service.ts:24-28`) â€” Ãºnica proteÃ§Ã£o contra evento
+(`src/lib/queue/domainEventMesh.service.ts:24-28`) — única proteção contra evento
 duplicado na outbox (UNIQUE parcial `(organizationId, idempotencyKey)`,
 `prisma/schema.prisma` e `prismaOutbox.repository.ts:99-101`). **Nenhum call site
 passa o segundo argumento.** Um retry de request, double-submit ou replay de webhook
 gera um segundo `eventId` e os consumidores executam 2x (o ConsumptionStore deduplica
-por `eventId`, que Ã© novo a cada publish).
+por `eventId`, que é novo a cada publish).
 
-## InventÃ¡rio de produtores sem `idempotencyKey` (amostra representativa)
+## Inventário de produtores sem `idempotencyKey` (amostra representativa)
 
 | Arquivo | Evento |
 |---|---|
@@ -31,7 +31,7 @@ por `eventId`, que Ã© novo a cada publish).
 | `src/features/commercial-intelligence/services/valueRealization.service.ts:138` | VALUE_REALIZATION_MEASURED |
 | `src/features/gamification/services/behavioralEngine.service.ts:167,269,393,409` | SELLER_XP_REWARDED etc. |
 | `src/features/gamification/services/warRoomArena.service.ts:244` | WAR_ROOM_* |
-| `src/features/intelligence/services/*.ts` (vÃ¡rios) | AUTONOMY_*, WIN_LOSS_* |
+| `src/features/intelligence/services/*.ts` (vários) | AUTONOMY_*, WIN_LOSS_* |
 | `src/features/integrations/whatsapp/whatsappMessage.service.ts:231` | ENGAGEMENT_SIGNAL_RECEIVED (dono 06) |
 | `src/features/integrations/bitrix/bitrix.webhook.ts:190` | BITRIX_WEBHOOK_RECEIVED (dono 06) |
 | `src/features/knowledge/services/accountKnowledgeGraph.service.ts:74` | GRAPH_RELATIONSHIP_UPDATED |
@@ -40,51 +40,51 @@ por `eventId`, que Ã© novo a cada publish).
 | `src/features/roleplay/services/multimodalRoleplaySimulator.service.ts:272` | MULTIMODAL_ROLEPLAY_EVALUATED |
 | `src/lib/runtime/services/multiRegionResilience.service.ts:114` | MULTI_REGION_FAILOVER_TRIGGERED |
 
-## AlteraÃ§Ã£o necessÃ¡ria
+## Alteração necessária
 
-Para cada produtor, definir uma chave de idempotÃªncia estÃ¡vel derivada da identidade do
-fato de negÃ³cio (ex.: `deal-won:{dealId}`, `wa-msg:{waMessageId}`, `call:{callId}`) e
-passar `{ idempotencyKey }` como segundo argumento. Preferir chave determinÃ­stica do
-domÃ­nio (nÃ£o `randomUUID`) para que retries genuÃ­nos colidam.
+Para cada produtor, definir uma chave de idempotência estável derivada da identidade do
+fato de negócio (ex.: `deal-won:{dealId}`, `wa-msg:{waMessageId}`, `call:{callId}`) e
+passar `{ idempotencyKey }` como segundo argumento. Preferir chave determinística do
+domínio (não `randomUUID`) para que retries genuínos colidam.
 
-SugestÃ£o de delegaÃ§Ã£o: o 00 distribui por dono de feature (06 para integrations,
+Sugestão de delegação: o 00 distribui por dono de feature (06 para integrations,
 07 para automations/intelligence, 04 para CRM/BI/commercial-intelligence,
 17 para cadence, etc.).
 
 ## Teste esperado
 
-Publicar o mesmo evento duas vezes com a mesma `idempotencyKey` resulta em um Ãºnico
+Publicar o mesmo evento duas vezes com a mesma `idempotencyKey` resulta em um único
 registro na outbox (ver `InMemoryOutboxRepository.append` e o `ON CONFLICT DO NOTHING`
 do adaptador Prisma).
 
 ## Contexto adicional
 
-- Relacionado: handoff 16â†’06 sobre nomes de consumidor estÃ¡veis no bridge.
-- `publishInTransaction`/UoW existe mas nenhum caso de uso usa â€” decisÃ£o separada se o
+- Relacionado: handoff 16?06 sobre nomes de consumidor estáveis no bridge.
+- `publishInTransaction`/UoW existe mas nenhum caso de uso usa — decisão separada se o
   outbox deve migrar para escrita transacional (ver G10 da auditoria).
 
-## AtualizaÃ§Ã£o â€” Agente 16 (2026-11-17, branch `agente/16-handoffs-20261117`)
+## Atualização — Agente 16 (2026-11-17, branch `agente/16-handoffs-20261117`)
 
 **Parte de runtime executada (escopo `src/lib/queue/**`):**
 
 - `DomainEventMeshService.appendTo` agora emite `logger.warn` **uma vez por `eventType` por
-  processo** quando `publish`/`publishInTransaction` Ã© chamado sem `opts.idempotencyKey`
+  processo** quando `publish`/`publishInTransaction` é chamado sem `opts.idempotencyKey`
   (`src/lib/queue/domainEventMesh.service.ts`). Campos logados: `eventType`, `producer`,
-  `organizationId`, `aggregateId` â€” sem PII. Isso torna observÃ¡vel quais produtores ainda
+  `organizationId`, `aggregateId` — sem PII. Isso torna observável quais produtores ainda
   publicam sem chave, sem spam de log e sem mudar o contrato.
 - Teste adicionado em `tests/unit/queue/domainEventMesh.service.test.ts`:
-  dedup por `idempotencyKey` (mesma chave â†’ 1 registro na outbox â€” o "Teste esperado" deste
-  handoff jÃ¡ estava coberto em `tests/unit/queue/outbox.remed05.test.ts:56`) e warn
-  throttled (1x por eventType; publish COM chave nÃ£o gera warn).
+  dedup por `idempotencyKey` (mesma chave ? 1 registro na outbox — o "Teste esperado" deste
+  handoff já estava coberto em `tests/unit/queue/outbox.remed05.test.ts:56`) e warn
+  throttled (1x por eventType; publish COM chave não gera warn).
 
-**DecisÃ£o de contrato que permanece com o 00:** definir se `idempotencyKey` vira obrigatÃ³ria
+**Decisão de contrato que permanece com o 00:** definir se `idempotencyKey` vira obrigatória
 (quebra de contrato para produtores existentes) ou se cada dono de feature adota chaves
-estÃ¡veis gradualmente. O inventÃ¡rio de produtores acima jÃ¡ estÃ¡ distribuÃ­do por domÃ­nio
-(06 integrations, 07 IA/automations, 04 CRM/BI, 17 cadence etc.) â€” recomendo manter a
-decisÃ£o por dono com o warn do runtime como instrumento de verificaÃ§Ã£o.
+estáveis gradualmente. O inventário de produtores acima já está distribuído por domínio
+(06 integrations, 07 IA/automations, 04 CRM/BI, 17 cadence etc.) — recomendo manter a
+decisão por dono com o warn do runtime como instrumento de verificação.
 
 **Status permanece `em-andamento`**: nenhum call site de produtor foi alterado (arquivos de
-outros donos â€” ver regra de propriedade Â§15/Â§16 do AGENTS.md).
+outros donos — ver regra de propriedade §15/§16 do AGENTS.md).
 
 ## ResoluÃ§Ã£o parcial â€” Agente 10 (2026-11-19, branch `agente/10-waveE-outbox-idem`)
 
@@ -104,13 +104,102 @@ site de `domainEventMesh.publish` sem `idempotencyKey` em `src/lib/runtime/`.
   limpos nos arquivos alterados.
 - Demais produtores do inventÃ¡rio seguem com seus donos â€” status do handoff inalterado.
 ## ResoluÃ§Ã£o parcial â€” Agente 12 (2026-11-17, branch `agente/12-waveE-outbox-idem`)
+## Resolução parcial — Agente 09 (Mobile), 2026-11-19
 
-Parcela do domÃ­nio voz/telefonia executada. Contrato aplicado conforme decisÃ£o do 00:
-`idempotencyKey` = identidade estÃ¡vel do fato de negÃ³cio, nunca `randomUUID()`.
+Branch `agente/09-waveE-outbox-idem`. Parcela: `src/features/mobile/mobileEdgeAi.service.ts`
+— confirmado via grep que são os únicos 2 call sites de `domainEventMesh.publish` do domínio
+mobile (`OFFLINE_BRIEFING_ACCESSED`, `GEOFENCE_PROXIMITY_DETECTED`).
 
-**Call sites alterados (5 publishes, inventÃ¡rio confirmado por grep â€” `src/features/voice*`,
+**Call sites cobertos (2/2) — `{ idempotencyKey }` como 2º argumento de `publish`:**
+
+| Arquivo | Evento | Chave escolhida |
+|---|---|---|
+| `mobileEdgeAi.service.ts:90` | OFFLINE_BRIEFING_ACCESSED | `briefing-access:{briefingId}:{online\|offline}` |
+| `mobileEdgeAi.service.ts:185` | GEOFENCE_PROXIMITY_DETECTED | `geofence-proximity:{geofenceId}:{sellerId}:{YYYY-MM-DD}` |
+
+**Racional das chaves:** identidade estável do fato de negócio, sem `randomUUID`.
+- `OFFLINE_BRIEFING_ACCESSED`: o fato é "briefing em cache X foi acessado". `briefingId` é
+  estável por entrada de cache (um novo `cacheVisitBriefing` gera novo `briefingId` = fato
+  novo); o sufixo `online|offline` separa contextos distintos do mesmo briefing para não
+  colapsar acessos em modos diferentes.
+- `GEOFENCE_PROXIMITY_DETECTED`: não há id de evento do cliente nem id de execução — usei
+  `{geofenceId}:{sellerId}:{data}` (mesmo padrão do Agente 17 com `{leadId}:{daysInactive}`):
+  retries/double-submit no mesmo dia colidem; uma detecção em outro dia é fato novo e gera
+  evento novo. O bucket usa `event.timestamp` (ISO) para ser determinístico por chamada.
+
+**Verificação:** `InMemoryOutboxRepository.append` deduplica por
+`(organizationId, idempotencyKey)` (`src/lib/queue/outbox/inMemory.ts:17-27`). Testes novos em
+`src/features/mobile/__tests__/outboxIdempotency.test.ts` (3 testes): `getVisitBriefing`
+repetido gera 1 único `OFFLINE_BRIEFING_ACCESSED`; acesso online+offline do mesmo briefing
+gera 2 registros com chaves distintas; `processGeofenceLocation` repetido gera 1 único
+`GEOFENCE_PROXIMITY_DETECTED` com chave no formato `geofence-proximity:{geoId}:{seller}:{data}`.
+`npx tsc --noEmit` limpo; `biome lint` limpo nos 2 arquivos (observação: `biome check`
+reporta `organizeImports` pré-existente no service — imports não tocados por esta parcela,
+mesmo estado de `origin/main`); `vitest run -c vitest.unit.config.ts` nos 2 arquivos de
+mobile verde (9/9 testes).
+
+**Status da parcela: resolvido.** Handoff permanece `em-andamento` — demais donos de
+feature pendentes (04, 06, 07, 12 etc.).
+## Resolução parcial — Agente 07 (2026-11-19, branch `agente/07-waveE-outbox-idem`)
+
+Parcela do Agente 07 (IA/automações/intelligence/roleplay/`src/lib/ai`) executada conforme
+decisão de contrato do 00: `idempotencyKey` = identidade estável do fato de negócio,
+`dominio:{entityId}` ou id da execução; nunca `randomUUID()` solto.
+
+**Confirmação de inventário:** `multimodalRoleplaySimulator.service.ts` **não existe** em
+`src/features/roleplay/services/` (somente `roleplay-ai.service.ts` e
+`roleplaySession.service.ts`, nenhum `domainEventMesh.publish`) — item do inventário
+obsoleto, nada a fazer. `src/lib/ai/**` e `src/features/copiloto-ia/**` não têm produtores
+do mesh.
+
+**Call sites alterados (8 em 7 arquivos):**
+
+| Arquivo | Evento | `idempotencyKey` |
+|---|---|---|
+| `src/features/automations/automation.engine.ts` (~L613) | LEAD_ENRICHMENT_REQUESTED | `lead-enrichment:{buildTriggerIdempotencyKey(...)}` — reusa o hash determinístico do dedupe de disparo (automationId+org+entity+entityId+trigger+data): retry da ação e replay do mesmo evento colidem; evento genuinamente distinto não |
+| `src/features/intelligence/services/winLossAutopsy.service.ts` (~L361) | WIN_LOSS_AUTOPSY_COMPLETED | `win-loss-autopsy:{autopsyId}` (id do relatório gerado na execução) |
+| `src/features/intelligence/services/methodologicalDigitalTwin.service.ts` (~L214) | METHODOLOGICAL_MENTORSHIP_COMPLETED | `mentorship:{exerciseId}` |
+| `src/features/intelligence/services/autonomyGovernor.service.ts` (~L76) | AUTONOMY_LIMIT_EXCEEDED | `autonomy-eval:{actionId}` (id da avaliação `eval-${randomUUID()}`) |
+| `src/features/intelligence/services/autonomyCircuitBreaker.service.ts` (~L118, ~L160) | AUTONOMY_CIRCUIT_BREAKER_TRIPPED / _RECOVERED | `circuit-breaker-{tripped,recovered}:{orgId}:{lastDowngradeAt|lastUpgradeAt}` — timestamp da transição distingue trips futuros legítimos de retries da mesma transição |
+| `src/features/intelligence/agents/tactical/promiseGuardian.agent.ts` (~L117) | PROMISE_COMMITMENT_DETECTED | `promise-commitment:{commitmentId}` |
+| `src/features/intelligence/agents/tactical/devilsAdvocate.agent.ts` (~L135) | DEVILS_ADVOCATE_ALERT | `devils-advocate:{dealId}:{analysisDate}` — analysisDate identifica a execução; reavaliações futuras do mesmo deal não são suprimidas |
+| `src/features/knowledge/services/accountKnowledgeGraph.service.ts` (~L74, follow-up) | GRAPH_RELATIONSHIP_UPDATED | `graph-relationship:{sourceId}:{targetId}:{type}` — o `edge.id` é `edge-${randomUUID()}` por chamada, então a identidade estável da relação é a tupla (source, target, type): retry/replay da mesma relação colide na outbox; relações distintas não |
+
+**Testes:**
+- Novo `src/features/intelligence/services/__tests__/outboxIdempotencyKeys.test.ts`
+  (6 testes): cada produtor publica com a chave esperada; AutonomyGovernor gera chaves
+  distintas por avaliação; CircuitBreaker TRIPPED cobre o caminho de downgrade.
+- `src/features/automations/__tests__/automation.engine.extended-actions.test.ts`:
+  mock de `buildTriggerIdempotencyKey` trocado para implementação real (função pura);
+  assert de `idempotencyKey` `lead-enrichment:{sha256}` + teste de determinismo
+  (mesmo evento ? mesma chave; evento distinto ? chave distinta).
+- `src/features/knowledge/services/__tests__/accountKnowledgeGraph.outboxIdempotency.test.ts`
+  (3 testes, follow-up): GRAPH_RELATIONSHIP_UPDATED publica com a chave da tupla;
+  mesma relação republicada ? mesma chave com edgeIds distintos; tipo diferente ? chave distinta.
+- Dedup efetivo na outbox já coberto por `tests/unit/queue/outbox.remed05.test.ts` (16).
+
+**Gate:** `npx tsc --noEmit` limpo; `npx vitest run -c vitest.unit.config.ts` nos arquivos
+afetados 48/48; `biome check` limpo nos arquivos alterados (2 warnings pré-existentes não
+relacionados: `noNonNullAssertion` em autonomyGovernor e variável não usada em
+promiseGuardian — fora do escopo, P3).
+
+**Follow-up (2026-11-19, mesmo commit stream na branch):** call site de knowledge
+`accountKnowledgeGraph.service.ts` incluído — parcela do 07 completa (9 call sites em 8
+arquivos). Gate re-executado: `npx tsc --noEmit` limpo; vitest unitário dos arquivos
+afetados 13/13 (4 knowledge existentes + 3 novos + 6 intelligence); `biome check` limpo.
+
+**Restante (outros donos):** ai-voice (12?), integrations (06), cadence (17),
+commercial-intelligence/CRM-BI (04), gamification, mobile, proposals,
+market-intelligence, `src/lib/runtime` — seguem pendentes conforme inventário original
+(knowledge removido da lista — parcela do 07 concluída).
+## Resolução parcial — Agente 12 (2026-11-17, branch `agente/12-waveE-outbox-idem`)
+
+Parcela do domínio voz/telefonia executada. Contrato aplicado conforme decisão do 00:
+`idempotencyKey` = identidade estável do fato de negócio, nunca `randomUUID()`.
+
+**Call sites alterados (5 publishes, inventário confirmado por grep — `src/features/voice*`,
 `src/features/voice-hub`, `src/lib/voice-*`, `src/services/telephony` e
-`src/features/integrations/birth-voice` NÃƒO publicam no DomainEventMesh):**
+`src/features/integrations/birth-voice` NÃO publicam no DomainEventMesh):**
 
 | Arquivo | Evento | idempotencyKey |
 |---|---|---|
@@ -120,59 +209,59 @@ Parcela do domÃ­nio voz/telefonia executada. Contrato aplicado conforme decisÃ£o
 | `src/features/ai-voice/server/bimodalLiveVoice.service.ts` | `LIVE_VOICE_BARGE_IN_TRIGGERED` | `live-voice-barge-in:{sessionId}:{turns.length}` |
 | `src/features/ai-voice/server/bimodalLiveVoice.service.ts` | `LIVE_VOICE_FALLBACK_ENGAGED` | `live-voice-fallback:{sessionId}` |
 
-**Nota de modelagem â€” barge-in:** o evento ocorre N vezes por sessÃ£o legitimamente.
+**Nota de modelagem — barge-in:** o evento ocorre N vezes por sessão legitimamente.
 A chave inclui `session.turns.length` no momento do publish: retry do mesmo
-`triggerBargeIn` nÃ£o altera turnos â†’ mesma chave â†’ dedup; barge-in apÃ³s novo turno
-de fala gera chave distinta â†’ nÃ£o suprime fato novo.
+`triggerBargeIn` não altera turnos ? mesma chave ? dedup; barge-in após novo turno
+de fala gera chave distinta ? não suprime fato novo.
 
 **Testes:** `tests/unit/ai-voice/autonomousSdr.service.test.ts` e
-`tests/unit/ai-voice/bimodalLiveVoice.service.test.ts` â€” 5 novos casos assertando a
-chave determinÃ­stica via `vi.mock` de `domainEventMesh.publish` (padrÃ£o do repo,
+`tests/unit/ai-voice/bimodalLiveVoice.service.test.ts` — 5 novos casos assertando a
+chave determinística via `vi.mock` de `domainEventMesh.publish` (padrão do repo,
 ver `predictiveRevenueOracle.service.test.ts`). Gate: `npx tsc --noEmit` limpo,
-`npx vitest run tests/unit/ai-voice/` 21/21 verde, `biome check` sem pendÃªncias nos
+`npx vitest run tests/unit/ai-voice/` 21/21 verde, `biome check` sem pendências nos
 arquivos alterados.
 
-**Status do handoff: permanece `em-andamento`** â€” demais produtores do inventÃ¡rio
+**Status do handoff: permanece `em-andamento`** — demais produtores do inventário
 seguem com seus donos (06, 07, 04, 17 etc.).
 
-## ResoluÃ§Ã£o parcial â€” Agente 04 (2026-11-19, branch `agente/04-waveE-outbox-idem`)
+## Resolução parcial — Agente 04 (2026-11-19, branch `agente/04-waveE-outbox-idem`)
 
-Parcela CRM/BI/commercial-intelligence executada conforme a decisÃ£o de contrato do 00
+Parcela CRM/BI/commercial-intelligence executada conforme a decisão de contrato do 00
 (`idempotencyKey` = `dominio:{entityId}`, nunca `randomUUID()`):
 
 | Arquivo | Evento | Chave adotada |
 |---|---|---|
-| `src/features/commercial-intelligence/services/predictiveRevenueOracle.service.ts` (~L215) | REVENUE_FORECAST_PROJECTED | `revenue-forecast:{organizationId}:{YYYY-MM}` â€” fato = projeÃ§Ã£o do perÃ­odo corrente; recomputar o cockpit no mesmo mÃªs nÃ£o duplica |
-| `src/features/commercial-intelligence/services/predictiveRevenueOracle.service.ts` (~L301) | WHAT_IF_SCENARIO_SIMULATED | `what-if:{simulationId}` â€” id da execuÃ§Ã£o |
-| `src/features/commercial-intelligence/services/valueRealization.service.ts` (~L138) | VALUE_REALIZATION_MEASURED | `value-realization:{trackerId}:{history.length}` â€” Ã­ndice da mediÃ§Ã£o no tracker |
-| `src/features/proposals/services/proposalAutomation.service.ts` (~L89) | COMMERCIAL_PROPOSAL_DRAFTED | `proposal:{proposalId}` â€” id do rascunho |
-| `src/features/market-intelligence/server/marketSensing.service.ts` (~L83) | MARKET_SIGNAL_DETECTED | `market-signal:{contentHash}` â€” `signal.id` Ã© `sig-${randomUUID()}` (nÃ£o determinÃ­stico); a chave deriva do mesmo `contentHash` sha256(org+companyName+title) usado na deduplicaÃ§Ã£o do serviÃ§o, entÃ£o retry apÃ³s restart/replay colide na outbox |
+| `src/features/commercial-intelligence/services/predictiveRevenueOracle.service.ts` (~L215) | REVENUE_FORECAST_PROJECTED | `revenue-forecast:{organizationId}:{YYYY-MM}` — fato = projeção do período corrente; recomputar o cockpit no mesmo mês não duplica |
+| `src/features/commercial-intelligence/services/predictiveRevenueOracle.service.ts` (~L301) | WHAT_IF_SCENARIO_SIMULATED | `what-if:{simulationId}` — id da execução |
+| `src/features/commercial-intelligence/services/valueRealization.service.ts` (~L138) | VALUE_REALIZATION_MEASURED | `value-realization:{trackerId}:{history.length}` — índice da medição no tracker |
+| `src/features/proposals/services/proposalAutomation.service.ts` (~L89) | COMMERCIAL_PROPOSAL_DRAFTED | `proposal:{proposalId}` — id do rascunho |
+| `src/features/market-intelligence/server/marketSensing.service.ts` (~L83) | MARKET_SIGNAL_DETECTED | `market-signal:{contentHash}` — `signal.id` é `sig-${randomUUID()}` (não determinístico); a chave deriva do mesmo `contentHash` sha256(org+companyName+title) usado na deduplicação do serviço, então retry após restart/replay colide na outbox |
 
-Testes: `tests/unit/commercial-intelligence/outboxIdempotency.test.ts` (novo â€” chave
-determinÃ­stica do oracle e do value realization, incluindo estabilidade entre chamadas),
-`tests/unit/proposals/proposalAutomation.service.test.ts` (assert do 2Âº argumento) e
+Testes: `tests/unit/commercial-intelligence/outboxIdempotency.test.ts` (novo — chave
+determinística do oracle e do value realization, incluindo estabilidade entre chamadas),
+`tests/unit/proposals/proposalAutomation.service.test.ts` (assert do 2º argumento) e
 `tests/unit/market-intelligence/marketSensing.service.test.ts` (mock do mesh + assert de
-chave `market-signal:[0-9a-f]{64}` idÃªntica entre duas instÃªncias â€” simula restart).
+chave `market-signal:[0-9a-f]{64}` idêntica entre duas instências — simula restart).
 Gate local: `npx tsc --noEmit` limpo; `biome lint`/`format` limpos nos arquivos
-(1 warning prÃ©-existente de `useOptionalChain` em marketSensing, fora do diff);
-13 testes verdes nos 3 arquivos de teste do domÃ­nio (marketSensing 6,
+(1 warning pré-existente de `useOptionalChain` em marketSensing, fora do diff);
+13 testes verdes nos 3 arquivos de teste do domínio (marketSensing 6,
 proposalAutomation 4, outboxIdempotency 3).
 
-**GamificaÃ§Ã£o (`src/features/gamification/**`) NÃƒO foi alterada pelo 04**: a pasta tem
+**Gamificação (`src/features/gamification/**`) NÃO foi alterada pelo 04**: a pasta tem
 dono diverso declarado em `src/features/gamification/AGENTS.md` (Agente 02). Handoff
 aberto: `.agents/handoffs/onda-3/04-para-02-gamification-outbox-idempotency.md`.
 
-Demais linhas do inventÃ¡rio (06 integrations, 07 IA/automations/intelligence, 09 mobile,
+Demais linhas do inventário (06 integrations, 07 IA/automations/intelligence, 09 mobile,
 17 cadence, 10 multiRegionResilience, 12 ai-voice, etc.) seguem pendentes com seus donos.
 
-## ResoluÃ§Ã£o parcial â€” Agente 17 (CadÃªncia Multicanal e Ciclo de Receita), 2026-11-19
+## Resolução parcial — Agente 17 (Cadência Multicanal e Ciclo de Receita), 2026-11-19
 
 Branch `agente/17-waveE-outbox-idem`. Parcela: produtores do DomainEventMesh em
-`src/features/cadence/**` (inventÃ¡rio: `selfDrivingCrm.service.ts` e
-`adaptiveMultichannelCadence.service.ts` â€” confirmado via grep que sÃ£o os Ãºnicos
-arquivos do domÃ­nio com `domainEventMesh.publish`).
+`src/features/cadence/**` (inventário: `selfDrivingCrm.service.ts` e
+`adaptiveMultichannelCadence.service.ts` — confirmado via grep que são os únicos
+arquivos do domínio com `domainEventMesh.publish`).
 
-**Call sites cobertos (8/8) â€” `{ idempotencyKey }` como 2Âº argumento de `publish`:**
+**Call sites cobertos (8/8) — `{ idempotencyKey }` como 2º argumento de `publish`:**
 
 | Arquivo | Evento | Chave escolhida |
 |---|---|---|
@@ -185,30 +274,30 @@ arquivos do domÃ­nio com `domainEventMesh.publish`).
 | `adaptiveMultichannelCadence.service.ts:149` | CROSS_CHANNEL_OPTOUT_ENFORCED (executeNextStep) | `optout-step-enforced:{enrollmentId}:{stepNumber}` |
 | `adaptiveMultichannelCadence.service.ts:226` | CROSS_CHANNEL_OPTOUT_ENFORCED (registerOptOutAndHalt) | `optout-registered:{leadId}` |
 
-**Racional das chaves:** identidade estÃ¡vel do fato de negÃ³cio, sem `randomUUID`.
-`LEAD_STAGNATED`/`LEAD_REACTIVATION_SUGGESTED` nÃ£o tÃªm id de execuÃ§Ã£o â€” usei
-`{leadId}:{daysInactive}` (fato "lead X estagnado hÃ¡ N dias"): retries no mesmo estado
-do lead colidem; uma nova detecÃ§Ã£o em estado diferente gera chave nova (correto â€” Ã© um
-fato novo). `LEAD_REACTIVATED`/`CADENCE_CHANGE_APPROVED` sÃ£o por execuÃ§Ã£o de aprovaÃ§Ã£o â†’
+**Racional das chaves:** identidade estável do fato de negócio, sem `randomUUID`.
+`LEAD_STAGNATED`/`LEAD_REACTIVATION_SUGGESTED` não têm id de execução — usei
+`{leadId}:{daysInactive}` (fato "lead X estagnado há N dias"): retries no mesmo estado
+do lead colidem; uma nova detecção em estado diferente gera chave nova (correto — é um
+fato novo). `LEAD_REACTIVATED`/`CADENCE_CHANGE_APPROVED` são por execução de aprovação ?
 chave por `recommendationId` (equivale ao `sequenceId` do exemplo do 00).
 
-**VerificaÃ§Ã£o:** `InMemoryOutboxRepository.append` deduplica por
+**Verificação:** `InMemoryOutboxRepository.append` deduplica por
 `(organizationId, idempotencyKey)` (confirmado em `src/lib/queue/outbox/inMemory.ts:17-27`;
 UNIQUE parcial equivalente no adaptador Prisma). Testes novos em
 `src/features/cadence/__tests__/outboxIdempotency.test.ts` (4 testes): retry real com a
-mesma chave gera 1 Ãºnico registro na outbox (approve duplicado, registerOptOutAndHalt
-duplicado, detectStagnatedLeads duplicado) + formato estÃ¡vel da chave no caminho de
+mesma chave gera 1 único registro na outbox (approve duplicado, registerOptOutAndHalt
+duplicado, detectStagnatedLeads duplicado) + formato estável da chave no caminho de
 opt-out por step. `npx tsc --noEmit` limpo; `biome check` limpo nos 3 arquivos;
 `vitest run -c vitest.unit.config.ts tests/unit/cadence src/features/cadence/__tests__`
 verde (196+4 testes).
 
-**Status da parcela: resolvido.** Handoff permanece `em-andamento` â€” demais donos de
+**Status da parcela: resolvido.** Handoff permanece `em-andamento` — demais donos de
 feature pendentes (06, 07, 04, etc.).
 
-## ResoluÃ§Ã£o parcial â€” Agente 06 (2026-11-19, branch `agente/06-waveE-outbox-idem`)
+## Resolução parcial — Agente 06 (2026-11-19, branch `agente/06-waveE-outbox-idem`)
 
-Parcela de `src/features/integrations/**` concluÃ­da â€” **todos** os `domainEventMesh.publish`
-do domÃ­nio de integraÃ§Ãµes agora passam `{ idempotencyKey }` (o inventÃ¡rio listava 2 call sites;
+Parcela de `src/features/integrations/**` concluída — **todos** os `domainEventMesh.publish`
+do domínio de integrações agora passam `{ idempotencyKey }` (o inventário listava 2 call sites;
 a varredura real encontrou 4):
 
 | Arquivo | Evento | `idempotencyKey` |
@@ -218,34 +307,34 @@ a varredura real encontrou 4):
 | `src/features/integrations/bitrix/bitrix.webhook.ts` (~L163) | `BITRIX_WEBHOOK_RECEIVED` | `bitrix-webhook:{deliveryFingerprint}` |
 | `src/features/integrations/bitrix/bitrix.webhook.ts` (~L189) | `ENGAGEMENT_SIGNAL_RECEIVED` | `bitrix-engagement:{deliveryFingerprint}` |
 
-DecisÃµes de chave:
+Decisões de chave:
 
-- **WhatsApp**: `waMessageId` Ã© a identidade estÃ¡vel da mensagem (jÃ¡ UNIQUE por organizaÃ§Ã£o em
-  `WhatsAppMessage`) â€” reentregas do Baileys colidem na outbox.
-- **Bitrix**: o webhook de saÃ­da do Bitrix **nÃ£o envia id de evento**. Usado o
-  `webhookDeliveryFingerprint` jÃ¡ existente (`webhookReplayGuard.ts`) â€” hash determinÃ­stico do
-  corpo autenticado, a mesma identidade que o replay guard usa. Como o UNIQUE da outbox Ã©
+- **WhatsApp**: `waMessageId` é a identidade estável da mensagem (já UNIQUE por organização em
+  `WhatsAppMessage`) — reentregas do Baileys colidem na outbox.
+- **Bitrix**: o webhook de saída do Bitrix **não envia id de evento**. Usado o
+  `webhookDeliveryFingerprint` já existente (`webhookReplayGuard.ts`) — hash determinístico do
+  corpo autenticado, a mesma identidade que o replay guard usa. Como o UNIQUE da outbox é
   `(organizationId, idempotencyKey)` sem `eventType`, cada publish da mesma entrega usa prefixo
-  distinto (`bitrix-webhook:` vs `bitrix-engagement:`) para nÃ£o se descartarem mutuamente.
+  distinto (`bitrix-webhook:` vs `bitrix-engagement:`) para não se descartarem mutuamente.
 - Nenhum `randomUUID()` em nenhuma chave.
 
-VerificaÃ§Ã£o: `npx tsc --noEmit` limpo; `vitest run -c vitest.unit.config.ts` nos dois arquivos
-de teste do domÃ­nio â†’ 25/25 verdes, incluindo testes novos que fixam as chaves determinÃ­sticas
-e a nÃ£o-colisÃ£o entre os dois eventos da mesma entrega. `biome lint` limpo nos 4 arquivos
-(`biome check` aponta `organizeImports` prÃ©-existente em `main` nos 2 services â€” nÃ£o introduzido
-por esta mudanÃ§a).
+Verificação: `npx tsc --noEmit` limpo; `vitest run -c vitest.unit.config.ts` nos dois arquivos
+de teste do domínio ? 25/25 verdes, incluindo testes novos que fixam as chaves determinísticas
+e a não-colisão entre os dois eventos da mesma entrega. `biome lint` limpo nos 4 arquivos
+(`biome check` aponta `organizeImports` pré-existente em `main` nos 2 services — não introduzido
+por esta mudança).
 
-Demais produtores do inventÃ¡rio (07/04/17 etc.) permanecem pendentes â€” handoff segue
+Demais produtores do inventário (07/04/17 etc.) permanecem pendentes — handoff segue
 `em-andamento` para os outros donos.
-## ResoluÃ§Ã£o parcial â€” Agente 02 (GamificaÃ§Ã£o), PR #453 (2026-11-19)
+## Resolução parcial — Agente 02 (Gamificação), PR #453 (2026-11-19)
 
 Parcela de `src/features/gamification/**` executada:
-- `behavioralEngine.service.ts` e `warRoomArena.service.ts` atualizados com `idempotencyKey` determinÃ­stica por evento/fato de negÃ³cio.
+- `behavioralEngine.service.ts` e `warRoomArena.service.ts` atualizados com `idempotencyKey` determinística por evento/fato de negócio.
 - Parecer APROVADO emitido pelo auditor em `.agents/reviews/24-revisao-pr453-agente02-idempotency-key.md`.
 
-## ResoluÃ§Ã£o parcial â€” Agente 07 / Squad 70 (IA, AutomaÃ§Ãµes e Knowledge Graph), 2026-11-20
+## Resolução parcial — Agente 07 / Squad 70 (IA, Automações e Knowledge Graph), 2026-11-20
 
-Parcela de `src/features/automations/**`, `src/features/intelligence/**` e `src/features/knowledge/**` concluÃ­da:
+Parcela de `src/features/automations/**`, `src/features/intelligence/**` e `src/features/knowledge/**` concluída:
 
 | Arquivo | Evento | Chave adotada |
 |---|---|---|
@@ -258,7 +347,9 @@ Parcela de `src/features/automations/**`, `src/features/intelligence/**` e `src/
 | `winLossAutopsy.service.ts` | `WIN_LOSS_AUTOPSY_COMPLETED` | `win-loss:{dealId}` |
 | `accountKnowledgeGraph.service.ts` | `GRAPH_RELATIONSHIP_UPDATED` | `graph-rel:{sourceId}:{targetId}:{relationType}` |
 
-VerificaÃ§Ã£o:
-- `src/features/intelligence/services/__tests__/outboxIdempotencyKeys.test.ts` â†’ 6/6 verdes.
-- `src/features/knowledge/services/__tests__/accountKnowledgeGraph.outboxIdempotency.test.ts` â†’ 3/3 verdes.
-- Total acumulado nas frentes de outbox: Agente 16 (runtime), 04 (BI), 17 (cadence), 06 (integrations), 02 (gamification) e 07 (IA/automaÃ§Ãµes/knowledge) 100% integrados e cobertos por testes unitÃ¡rios determinÃ­sticos.
+Verificação:
+- `src/features/intelligence/services/__tests__/outboxIdempotencyKeys.test.ts` ? 6/6 verdes.
+- `src/features/knowledge/services/__tests__/accountKnowledgeGraph.outboxIdempotency.test.ts` ? 3/3 verdes.
+- Total acumulado nas frentes de outbox: Agente 16 (runtime), 04 (BI), 17 (cadence), 06 (integrations), 02 (gamification) e 07 (IA/automações/knowledge) 100% integrados e cobertos por testes unitários determinísticos.
+
+
