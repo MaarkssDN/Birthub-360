@@ -13,6 +13,11 @@ import {
 import { callBitrix } from './service/client.js';
 import { applyInboundCustomFields, resolveEnumMaps } from './service/customFields.js';
 import { bitrixSyncFailuresTotal } from './service/metrics.js';
+import {
+  type BitrixWebhookJobData,
+  createBitrixWebhookWorker as buildQueueWorker,
+  enqueueBitrixWebhookEvent,
+} from './bitrixWebhook.queue.js';
 import { domainEventMesh } from '../../../lib/queue/domainEventMesh.service.js';
 import type { BitrixWebhookEventPayload } from '../../../shared/contracts/domainEventMesh.contract.js';
 
@@ -78,7 +83,7 @@ async function logInbound(params: {
     );
 }
 
-async function processEvent(
+export async function processEvent(
   organizationId: string,
   connectionId: string,
   webhookUrl: string,
@@ -326,23 +331,69 @@ async function handleWebhook(req: Request, res: Response): Promise<void> {
     return;
   }
 
+  const jobData: BitrixWebhookJobData = {
+    organizationId: connection.organizationId,
+    connectionId: connection.id,
+    eventType,
+    bitrixRecordId,
+    deliveryFingerprint,
+  };
+
   try {
-    await processEvent(
+    const enqueued = await enqueueBitrixWebhookEvent(jobData);
+    if (enqueued) {
+      res.status(200).json({ success: true, queued: true });
+      return;
+    }
+
+    // Sem fila BullMQ ativa (REDIS_URL/ENABLE_QUEUES desligados): responde 200 imediato e dispara
+    // processEvent em background para não bloquear a resposta HTTP do portal Bitrix24.
+    res.status(200).json({ success: true, queued: false });
+    void processEvent(
       connection.organizationId,
       connection.id,
       connection.webhookUrl,
       eventType,
       bitrixRecordId,
       deliveryFingerprint,
-    );
-    res.status(200).json({ success: true });
+    ).catch((error: any) => {
+      logger.error(
+        { err: error, connectionId, eventType, bitrixRecordId },
+        '[bitrix] Falha ao processar evento do webhook de entrada em background',
+      );
+    });
   } catch (error: any) {
     logger.error(
       { err: error, connectionId, eventType, bitrixRecordId },
-      '[bitrix] Falha ao processar evento do webhook de entrada',
+      '[bitrix] Falha ao enfileirar evento do webhook de entrada',
     );
     res.status(500).json({ success: false, error: 'Falha ao processar evento.' });
   }
+}
+
+export async function processQueuedWebhookEvent(data: BitrixWebhookJobData): Promise<void> {
+  const connection = await requestContext.run({ tenantId: data.organizationId }, () =>
+    prisma.bitrixConnection.findUnique({ where: { id: data.connectionId } }),
+  );
+  if (
+    !connection ||
+    connection.organizationId !== data.organizationId ||
+    !connection.inboundEventsEnabled
+  ) {
+    return;
+  }
+  await processEvent(
+    data.organizationId,
+    data.connectionId,
+    connection.webhookUrl,
+    data.eventType,
+    data.bitrixRecordId,
+    data.deliveryFingerprint,
+  );
+}
+
+export function createBitrixWebhookWorker() {
+  return buildQueueWorker(processQueuedWebhookEvent);
 }
 
 const router = Router();
