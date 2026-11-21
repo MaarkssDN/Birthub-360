@@ -1,0 +1,28 @@
+﻿name: Security - Semgrep
+
+# Agente 99 (Vito) / Onda 2: SAST Semgrep bloqueante em PR. `--error` faz o job falhar em qualquer
+# achado das regras selecionadas. npm audit ja e gate bloqueante em ci.yml (`security:audit-waivers`)
+# e dependency-review.yml; nao duplicado aqui. Para o check ser obrigatorio, adicionar o contexto
+# "Semgrep SAST" na branch protection (acao humana).
+
+on:
+  pull_request:
+    branches: [ main, master ]
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  semgrep:
+    name: Semgrep SAST
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: semgrep/semgrep:latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Semgrep scan (bloqueante)
+        run: semgrep scan --config p/typescript --config p/nodejs --config p/secrets --error --metrics=off --exclude node_modules --exclude dist --exclude tests src server.ts worker.ts scripts
