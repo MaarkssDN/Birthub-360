@@ -1,4 +1,6 @@
 import { randomUUID } from 'node:crypto';
+import { logger } from '../../../lib/logger.js';
+import { domainEventMesh } from '../../../lib/queue/domainEventMesh.service.js';
 import type {
   ArenaParticipant,
   ArenaPedagogicalScore,
@@ -7,8 +9,6 @@ import type {
   WarRoomArenaRoom,
   WarRoomMode,
 } from '../../../shared/contracts/warRoomArena.contract.js';
-import { domainEventMesh } from '../../../lib/queue/domainEventMesh.service.js';
-import { logger } from '../../../lib/logger.js';
 
 export class WarRoomArenaService implements IWarRoomArenaPort {
   private rooms = new Map<string, WarRoomArenaRoom>(); // key: `${orgId}:${roomId}`
@@ -241,21 +241,24 @@ export class WarRoomArenaService implements IWarRoomArenaPort {
       }
     }
 
-    await domainEventMesh.publish({
-      eventType: 'WAR_ROOM_DUEL_RESOLVED',
-      eventVersion: '1.0.0',
-      organizationId: params.organizationId,
-      correlationId: `duel-${room.roomId}`,
-      producer: 'war-room-arena-service',
-      aggregateId: room.roomId,
-      payload: {
-        roomId: room.roomId,
-        winnerUserId: winner?.userId ?? null,
-        winnerName: winner?.name ?? null,
-        roundsPlayed: room.rounds.length,
-        totalXpDistributed: totalXp,
+    await domainEventMesh.publish(
+      {
+        eventType: 'WAR_ROOM_DUEL_RESOLVED',
+        eventVersion: '1.0.0',
+        organizationId: params.organizationId,
+        correlationId: `duel-${room.roomId}`,
+        producer: 'war-room-arena-service',
+        aggregateId: room.roomId,
+        payload: {
+          roomId: room.roomId,
+          winnerUserId: winner?.userId ?? null,
+          winnerName: winner?.name ?? null,
+          roundsPlayed: room.rounds.length,
+          totalXpDistributed: totalXp,
+        },
       },
-    });
+      { idempotencyKey: `war-room:${room.roomId}` },
+    );
 
     logger.info(
       `[WarRoomArena] Sala ${room.roomId} encerrada. Vencedor: ${winner?.name ?? 'Empate'}. XP total concedido: ${totalXp}.`,

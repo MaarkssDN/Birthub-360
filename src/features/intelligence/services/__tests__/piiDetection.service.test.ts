@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  containsSpecificPII,
-  detectPII,
-  getPIITypes,
-  redactPII,
-} from '../piiDetection.service.js';
+import { containsSpecificPII, detectPII, getPIITypes, redactPII } from '../piiDetection.service.js';
 
 describe('piiDetection.service (com mitigação anti-encoding)', () => {
   describe('detecção em texto cru', () => {
@@ -45,7 +40,9 @@ describe('piiDetection.service (com mitigação anti-encoding)', () => {
       const result = detectPII(input);
       expect(result.hasPII).toBe(true);
       expect(result.types).toContain('cpf');
-      expect(result.redactedText).toBe(`Payload com documento ${'*'.repeat(b64Cpf.length)} anexado`);
+      expect(result.redactedText).toBe(
+        `Payload com documento ${'*'.repeat(b64Cpf.length)} anexado`,
+      );
       expect(result.redactedText).not.toContain(b64Cpf);
     });
 

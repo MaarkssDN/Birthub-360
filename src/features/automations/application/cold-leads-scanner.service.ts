@@ -155,6 +155,7 @@ import { type ConnectionOptions, Queue, Worker } from 'bullmq';
 import { isFinalAttempt, recordDeadLetter } from '../../../lib/queue/deadLetter.js';
 import { registerQueueForMetrics } from '../../../lib/queue/metrics.js';
 import { connection } from '../../../lib/queue/redis.js';
+import { SCHEDULER_SCAN_DEFAULTS } from '../../../lib/queue/queueDefaults.js';
 
 export const COLD_LEADS_SCANNER_QUEUE_NAME = 'cold-leads-scanner-queue';
 
@@ -193,6 +194,7 @@ export function createColdLeadsScannerWorker() {
 export async function scheduleColdLeadsScannerJob() {
   const queue = new Queue(COLD_LEADS_SCANNER_QUEUE_NAME, {
     connection: connection as ConnectionOptions,
+    defaultJobOptions: SCHEDULER_SCAN_DEFAULTS,
   });
   registerQueueForMetrics(COLD_LEADS_SCANNER_QUEUE_NAME, queue);
 

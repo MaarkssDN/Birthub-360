@@ -67,20 +67,29 @@ export class MobileEdgeAiService implements IMobileEdgeAiPort {
     const isExpired = new Date(briefing.expiresAt).getTime() < Date.now();
     briefing.isStale = isExpired;
 
-    await domainEventMesh.publish({
-      eventType: 'OFFLINE_BRIEFING_ACCESSED',
-      eventVersion: '1.0.0',
-      organizationId: params.organizationId,
-      correlationId: `briefing-access-${params.dealId}`,
-      producer: 'mobile-edge-ai-service',
-      aggregateId: params.dealId,
-      payload: {
-        dealId: params.dealId,
-        companyName: briefing.companyName,
-        offlineMode: Boolean(params.offlineMode),
-        isStale: briefing.isStale,
+    await domainEventMesh.publish(
+      {
+        eventType: 'OFFLINE_BRIEFING_ACCESSED',
+        eventVersion: '1.0.0',
+        organizationId: params.organizationId,
+        correlationId: `briefing-access-${params.dealId}`,
+        producer: 'mobile-edge-ai-service',
+        aggregateId: params.dealId,
+        payload: {
+          dealId: params.dealId,
+          companyName: briefing.companyName,
+          offlineMode: Boolean(params.offlineMode),
+          isStale: briefing.isStale,
+        },
       },
-    });
+      {
+        // Handoff 16→00 (onda-3): chave estável do fato "briefing X acessado".
+        // briefingId identifica o briefing em cache (novo cache = novo fato); o sufixo
+        // online/offline separa contextos distintos do mesmo acesso. Retry da mesma
+        // leitura colide na mesma chave e não duplica na outbox.
+        idempotencyKey: `briefing-access:${briefing.briefingId}:${params.offlineMode ? 'offline' : 'online'}`,
+      },
+    );
 
     return briefing;
   }
@@ -153,19 +162,29 @@ export class MobileEdgeAiService implements IMobileEdgeAiPort {
             recordingTriggered: false, // Inviolável: microfone não é ligado
           };
 
-          await domainEventMesh.publish({
-            eventType: 'GEOFENCE_PROXIMITY_DETECTED',
-            eventVersion: '1.0.0',
-            organizationId: params.organizationId,
-            correlationId: `geo-prox-${rule.geofenceId}`,
-            producer: 'mobile-edge-ai-service',
-            aggregateId: params.sellerId,
-            payload: {
-              companyName: rule.companyName,
-              suggestedAction: event.suggestedAction,
-              recordingTriggered: event.recordingTriggered,
+          await domainEventMesh.publish(
+            {
+              eventType: 'GEOFENCE_PROXIMITY_DETECTED',
+              eventVersion: '1.0.0',
+              organizationId: params.organizationId,
+              correlationId: `geo-prox-${rule.geofenceId}`,
+              producer: 'mobile-edge-ai-service',
+              aggregateId: params.sellerId,
+              payload: {
+                companyName: rule.companyName,
+                suggestedAction: event.suggestedAction,
+                recordingTriggered: event.recordingTriggered,
+              },
             },
-          });
+            {
+              // Handoff 16→00 (onda-3): o fato é "vendedor X detectado no raio da
+              // geofence Y". Sem id de evento do cliente, a identidade estável é o
+              // par seller+geofence com bucket de data (mesmo padrão de cadência com
+              // `:daysInactive`): retries do mesmo dia colidem; uma nova detecção em
+              // outro dia é um fato novo e gera novo evento.
+              idempotencyKey: `geofence-proximity:${rule.geofenceId}:${params.sellerId}:${event.timestamp.slice(0, 10)}`,
+            },
+          );
 
           logger.info(
             `[MobileEdgeAI] Vendedor ${params.sellerId} próximo à empresa ${rule.companyName}. Sugestão de briefing enviada sem gravação.`,
