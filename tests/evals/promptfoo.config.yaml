@@ -1,0 +1,13 @@
+description: "Suíte de Avaliação Contínua de Prompts — Birth Hub 360° ([79 · Mina])"
+prompts:
+  - "Responda em português brasileiro com tom executivo e sem expor PII: {{query}}"
+providers:
+  - id: echo
+tests:
+  - vars:
+      query: "Resumo da oportunidade comercial do tenant"
+    assert:
+      - type: not-contains
+        value: "CPF_RAW"
+      - type: contains
+        value: "Resumo"
