@@ -1,13 +1,13 @@
 import { randomUUID } from 'node:crypto';
+import { logger } from '../../../lib/logger.js';
+import { domainEventMesh } from '../../../lib/queue/domainEventMesh.service.js';
 import type {
   IAutonomousSdrPort,
   ScheduledMeetingProposal,
   SdrCallExecutionResult,
   SdrCallInput,
 } from '../../../shared/contracts/autonomousSdr.contract.js';
-import { isWithinCallWindow, type CallWindow } from '../../../shared/policies/coldCall.policy.js';
-import { domainEventMesh } from '../../../lib/queue/domainEventMesh.service.js';
-import { logger } from '../../../lib/logger.js';
+import { type CallWindow, isWithinCallWindow } from '../../../shared/policies/coldCall.policy.js';
 
 export class AutonomousSdrService implements IAutonomousSdrPort {
   private meetingsStore = new Map<string, ScheduledMeetingProposal>();
@@ -97,23 +97,28 @@ export class AutonomousSdrService implements IAutonomousSdrPort {
     this.callsStore.set(`${input.organizationId}:${callId}`, callResult);
 
     // Publicar evento de conclusão de chamada no DomainEventMesh
-    await domainEventMesh.publish({
-      eventType: 'SDR_CALL_COMPLETED',
-      eventVersion: '1.0.0',
-      organizationId: input.organizationId,
-      correlationId: `sdr-${callId}`,
-      producer: 'autonomous-sdr-engine',
-      aggregateId: input.leadId,
-      payload: {
-        callId,
-        disposition: callResult.disposition,
-        durationSeconds,
-        meetingId: meetingProposal.meetingId,
-        // Chamada e reunião são simuladas localmente — consumidores do mesh
-        // não devem tratar meetingId como reunião real (ressalva do Agente 24).
-        simulated: true,
+    await domainEventMesh.publish(
+      {
+        eventType: 'SDR_CALL_COMPLETED',
+        eventVersion: '1.0.0',
+        organizationId: input.organizationId,
+        correlationId: `sdr-${callId}`,
+        producer: 'autonomous-sdr-engine',
+        aggregateId: input.leadId,
+        payload: {
+          callId,
+          disposition: callResult.disposition,
+          durationSeconds,
+          meetingId: meetingProposal.meetingId,
+          // Chamada e reunião são simuladas localmente — consumidores do mesh
+          // não devem tratar meetingId como reunião real (ressalva do Agente 24).
+          simulated: true,
+        },
       },
-    });
+      // Chave estável do fato de negócio (handoff 16→00, onda-3): retry do mesmo
+      // callId deduplica na UNIQUE parcial (organizationId, idempotencyKey).
+      { idempotencyKey: `sdr-call:${callId}` },
+    );
 
     return callResult;
   }
@@ -158,24 +163,28 @@ export class AutonomousSdrService implements IAutonomousSdrPort {
     this.meetingsStore.set(`${params.organizationId}:${meetingId}`, proposal);
 
     // Publicar evento de reunião agendada no DomainEventMesh
-    await domainEventMesh.publish({
-      eventType: 'MEETING_SCHEDULED_CALENDAR',
-      eventVersion: '1.0.0',
-      organizationId: params.organizationId,
-      correlationId: `cal-${meetingId}`,
-      producer: 'autonomous-sdr-scheduler',
-      aggregateId: params.leadId,
-      payload: {
-        meetingId,
-        googleCalendarEventId,
-        googleMeetLink,
-        startTime,
-        sellerEmail: params.sellerEmail,
-        // googleCalendarEventId/googleMeetLink são UUIDs fabricados — nenhuma
-        // integração real com Google Calendar/Meet ocorreu.
-        simulated: true,
+    await domainEventMesh.publish(
+      {
+        eventType: 'MEETING_SCHEDULED_CALENDAR',
+        eventVersion: '1.0.0',
+        organizationId: params.organizationId,
+        correlationId: `cal-${meetingId}`,
+        producer: 'autonomous-sdr-scheduler',
+        aggregateId: params.leadId,
+        payload: {
+          meetingId,
+          googleCalendarEventId,
+          googleMeetLink,
+          startTime,
+          sellerEmail: params.sellerEmail,
+          // googleCalendarEventId/googleMeetLink são UUIDs fabricados — nenhuma
+          // integração real com Google Calendar/Meet ocorreu.
+          simulated: true,
+        },
       },
-    });
+      // Chave estável por reunião agendada (handoff 16→00, onda-3).
+      { idempotencyKey: `sdr-meeting:${meetingId}` },
+    );
 
     logger.info(
       `[AutonomousSdr] Reunião agendada no Google Calendar: ${params.title} às ${startTime} (Meet: ${googleMeetLink}).`,

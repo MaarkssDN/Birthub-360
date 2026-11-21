@@ -112,10 +112,9 @@ COPY --from=builder /app/scripts ./scripts
 # fonte, não via o bundle.
 COPY --from=builder /app/src ./src
 
-# Create a non-root user and ensure ownership
-RUN groupadd -g 1001 nodejs && useradd -u 1001 -g nodejs nodejs \
-    && chown -R nodejs:nodejs /app
-USER nodejs
+# Usa o usuario nao-privilegiado 'node' (uid 1000) ja presente na imagem node:22-slim.
+RUN chown -R node:node /app
+USER node
 
 EXPOSE 3024
 

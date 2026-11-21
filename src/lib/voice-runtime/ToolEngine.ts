@@ -117,10 +117,7 @@ export class ToolExecutionEngine {
         }, effectiveTimeoutMs);
       });
 
-      const result = await Promise.race([
-        tool.execute(args, ctx),
-        timeoutPromise,
-      ]);
+      const result = await Promise.race([tool.execute(args, ctx), timeoutPromise]);
 
       observability.endSpan(`tool-${sessionId}`, sessionId, 'TOOL_EXECUTION_COMPLETED', {
         tool: toolName,
