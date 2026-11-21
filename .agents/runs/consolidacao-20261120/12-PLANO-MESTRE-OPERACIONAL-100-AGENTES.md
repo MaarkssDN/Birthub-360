@@ -1,7 +1,7 @@
 # 12 — PLANO MESTRE OPERACIONAL & GOVERNANÇA DOS 100 AGENTES
 **Birthub 360° — Central de Inteligência e Comando Operacional**
 **Autor:** Agente 00 — Astra (Coordenador Global)
-**Data de Atualização:** 2026-11-21 · **Base de Integração:** `main @ 23ea16de5`
+**Data de Atualização:** 2026-11-21 · **Base de Integração:** `main @ 0d790443d`
 **Governança Oficial:** AGENTS.md (Arquitetura 100 Agentes · 10 Squads) | **Auditoria Independente:** Agente 09 — Silas
 
 ---
@@ -39,268 +39,184 @@ A fase de preservação de órfãos e saneamento das branches de transferência 
 
 ---
 
-## 3. INVENTÁRIO E CLASSIFICAÇÃO DOS HANDOFFS
+## 3. DIAGNÓSTICO DOS GATES DO PR #528 (FALHAS PRÉ-EXISTENTES VS ALTERAÇÕES)
 
-Foram mapeados **605 arquivos de handoff** em `.agents/handoffs/`. Destes, a grande maioria representa histórico superado ou concluído de ciclos anteriores (Waves A a E). A triagem ativa identificou as seguintes frentes em aberto que compõem o Backlog Mestre:
+O PR #528 é uma alteração **estritamente documental** em `.agents/runs/**`. A inspeção minuciosa dos jobs que falharam no GitHub Actions revela com precisão que **nenhuma falha decorre de código introduzido pelo PR**:
 
-1. **`14-para-01-swarm-audit-log-schema.md` / PR #487 (DRAFT):**  
-   - *Status:* `AGUARDANDO_APROVACAO` (Bloqueado por 2 decisões humanas: LGPD sobre IP/UserAgent e integridade `onDelete: Cascade` vs `RESTRICT`).
-   - *Domínio:* Squad 10 (Pietro/Vera) & Squad 00 (Íris/Silas).
-2. **`10-para-23-agendar-security-sweep.md` (novo do PR #492):**  
-   - *Status:* `PRONTO_PARA_DESPACHO`. Agendar o sweep periódico de segurança no BullMQ worker (`src/workers/`) respeitando a modularidade de `securitySweepScanner.ts`.
-   - *Domínio:* Squad 20 (Pina Agente 23).
-3. **`10-para-15-scanner-seguranca-real.md` (novo do PR #492):**  
-   - *Status:* `PRONTO_PARA_DESPACHO`. Revisão de semântica de waivers GHSA/CVE e rating de compliance.
-   - *Domínio:* Squad 90 (Vito Agente 99 / Safira Agente 98).
-4. **`00-para-04-10-08-relatorios-forecast.md`:**  
-   - *Status:* `EM_ANDAMENTO`. Reconciliação dos snapshots semanais com banco real sem heurística em memória.
-   - *Domínio:* Squad 40 (Sofia Agente 46 / Malu Agente 49).
-5. **`00-para-12-17-voicehub-reactivacao.md`:**  
-   - *Status:* `EM_ANDAMENTO` (Parcela 17 concluída; falta validação de sinalização de áudio 3CX pelo Squad 60).
-   - *Domínio:* Squad 60 (Aurora Agente 60 / Nando Agente 61).
-6. **`08-para-00-cobertura-modulos-gaps-produto.md`:**  
-   - *Status:* `PENDENTE`. Auditoria de rotas vazias e jornadas com empty states incompletos.
-   - *Domínio:* Squad 30 (Ema Agente 32) & Squad 00 (Luma Agente 05).
-7. **`18-para-08-schemathesis-ci.md` / PR #399:**  
-   - *Status:* `EM_ANDAMENTO`. Validação do contrato RFC-7807 e execução contínua de fuzzing Schemathesis.
-   - *Domínio:* Squad 20 (Zara Agente 21) & Squad 00 (Téo Agente 04).
+1. **Job `Semgrep SAST` (Falha):**
+   - *Causa:* O scanner bloqueante identificou 2 achados que existem na branch `main`:
+     - `scripts/security/reencrypt-credentials.ts:565` (`bypass-tls-verification`: uso de `rejectUnauthorized: false`).
+     - `src/features/integrations/bitrix/bitrix.routes.ts:837` (`direct-response-write`: uso de `res.send(buffer)`).
+   - *Natureza:* **100% pré-existente na `main`**. Esses 2 achados constituem precisamente o escopo do **PR #507** (`agente/99-semgrep-codeql-main`), criado especificamente para saná-los. O PR #528 não tocou nesses arquivos.
+2. **Job `Central Birth Hub 360 / application gate` (Falha):**
+   - *Causa:* Falha na etapa `Run Prettier check` (`biome format src`), que reprovou o arquivo:
+     - `src/features/copiloto-ia/application/CopilotoIaUseCases.ts:502-505` (quebra de linha no operador ternário `isCriticalSla`).
+   - *Natureza:* **100% pré-existente na `main`**. Esse arquivo foi introduzido em `main` no commit `da814442c` (`feat(crm-ia-voice)`) mesclado por outra sessão. O PR #528 não tocou em nenhum arquivo `.ts` ou `.tsx`.
+3. **Job `build` (Falha):**
+   - *Causa:* O job de consolidação final executa `test "$APPLICATION_GATE_RESULT" = success`. Como o `application gate` reportou failure devido à formatação de `CopilotoIaUseCases.ts`, o job `build` abortou por dependência em cascata.
+4. **Conclusão e Governança:**
+   - O PR #528 é perfeitamente válido do ponto de vista de governança documental. Conforme a regra de **não alterar código de produção sem autorização**, o ajuste de estilo em `CopilotoIaUseCases.ts` deve ser despachado em branch própria de CI/style (Squad 90 / Agente 94 Tess) ou absorvido quando da integração do PR #507.
 
 ---
 
-## 4. MATRIZ DE DE-PARA: ROSTER LEGADO → ARQUITETURA 100 AGENTES
+## 4. INVENTÁRIO RASTREÁVEL DOS HANDOFFS (607 DOCUMENTOS)
 
-| Papel / Domínio | ID Legado | Squad Novo | Agente Oficial (100) | Nome | Arquivos / Responsabilidade |
-|---|:---:|:---:|:---:|---|---|
-| Coordenador Global | 00 | Squad 00 | **00** | **Astra** | Orquestração, ondas, AGENTS.md, package.json |
-| Auditor Independente | 24 | Squad 00 | **09** | **Silas** | Auditoria final, `.agents/reviews/**` (VETO POWER) |
-| QA & Test Harness | 08 / 14 | Squad 00 | **01 / 02** | **Ória / Bento** | Protocolos de teste, mocks, vitest configs |
-| Testes Unitários | 08 | Squad 00 | **03** | **Nina** | Suítes `vitest.unit`, cobertura estrutural |
-| Testes Integração / Contratos | 08 / 18 | Squad 00 | **04** | **Téo** | Suítes `vitest.integration`, Schemathesis |
-| Automação E2E / Visual | 08 / 03 | Squad 00 | **05** | **Luma** | Playwright, regressão visual, fluxos reais |
-| Verificação de Realidade | 22 | Squad 00 | **06** | **Gael** | Persistência real, anti-mocking em prod |
-| LGPD & Privacidade | 21 | Squad 00 | **07** | **Íris** | Guardrails PII, bases legais, DSR |
-| Anonimização & Expurgo | 21 / 01A | Squad 00 | **08** | **Dora** | Sanitização ponta a ponta, expurgo seguro |
-| Schema Prisma | 01 | Squad 10 | **11** | **Pietro** | `prisma/schema.prisma` |
-| Migrações & Rollouts | 01 | Squad 10 | **12** | **Vera** | `prisma/migrations/**`, zero downtime |
-| Multi-Tenancy & RLS | 01 / 01A | Squad 10 | **13** | **Nilo** | Políticas RLS, `scripts/security/check-rls*` |
-| Seeds & Ambientes | 01A | Squad 10 | **14** | **Bia** | `prisma/seed.ts`, fixtures sintéticas |
-| Retenção & Expurgo Banco | 01A | Squad 10 | **15** | **Olavo** | Jobs de expurgo no banco, retention workers |
-| Query Tuning & N+1 | 01A | Squad 10 | **16** | **Cora** | Índices, queries Prisma, otimização |
-| Cache & Redis | 16 | Squad 10 | **17** | **Remo** | Redis locks, estratégias de cache |
-| Integridade & Backup | 10 | Squad 10 | **19** | **Bruno** | `scripts/security/backup-database.ts`, DR |
-| Backend & Contratos | 00 / 18 | Squad 20 | **20** | **Ciro** | Coordenador de Backend e APIs |
-| OpenAPI & Schemas Zod | 18 | Squad 20 | **21** | **Zara** | `docs/openapi.yaml`, contratos Zod |
-| Camada HTTP & Rotas | 00 / 02 | Squad 20 | **22** | **Hugo** | `src/bootstrap/routes.ts`, middlewares |
-| Runtime & Filas BullMQ | 16 | Squad 20 | **23** | **Pina** | `src/lib/queue/**`, `src/workers/**` |
-| Resiliência & DLQ | 16 | Squad 20 | **24** | **Ivo** | Retries, Dead-Letter Queues, idempotência |
-| App Shell & Rotas Frontend | 02 | Squad 30 | **31** | **Noa** | `src/App.tsx`, sidebar, navegação principal |
-| Design System & Estilos | 03 | Squad 30 | **33** | **Célia** | `src/components/ui/**`, `src/styles/**` |
-| Acessibilidade WCAG 2.2 | 03 | Squad 30 | **34** | **Ari** | ARIA, contraste, navegação por teclado |
-| Motion & Microinterações | 03 | Squad 30 | **35** | **Mia** | Framer Motion, reduced motion |
-| Landing & Conversão | 03 / 11 | Squad 30 | **36** | **Léo** | `landing/**`, SEO, identity |
-| CRM Core (Leads/Deals) | 04 | Squad 40 | **41 / 42** | **Cadu / Lívia** | `src/features/crm/**`, kanban, pipeline |
-| Cadências Comerciais | 17 | Squad 40 | **44** | **Lola** | `src/features/cadence/**`, réguas de contato |
-| Integrações Bitrix24 | 06 / 06A | Squad 50 | **51–54** | **Bela / Lino / Vega / Rita** | `src/features/integrations/bitrix/**` |
-| WhatsApp & Omnichannel | 06 | Squad 50/60 | **56 / 66** | **Luna / Kiko** | Baileys, Meta API, Inbox |
-| Telefonia VoIP / 3CX | 12 | Squad 60 | **61 / 62** | **Nando / Sol** | WebRTC, SIP, gravação de áudio |
-| IA & Enxame Autônomo | 07 / 13 | Squad 70 | **71–74** | **Clara / Ada / Numa / Luca** | `src/features/ai-*`, copilotos, prompts |
-| Guardrails de IA | 07 | Squad 70 | **77** | **Gaia** | PII redaction, jailbreak guards |
-| Mobile & Capacitor | 09 | Squad 80 | **81–86** | **Enzo / Davi / Ceci / Bóris** | `capacitor.config.ts`, `android/**`, `ios/**` |
-| Infraestrutura AWS & Deploy | 10 | Squad 90 | **91 / 94** | **Terra / Tess** | Terraform, deploy scripts, CI/CD |
-| AppSec & Secret Scanning | 15 | Squad 90 | **98 / 99** | **Safira / Vito** | Rotação de chaves, Semgrep, Trivy |
+Uma varredura exaustiva no diretório `.agents/handoffs/` contabilizou **607 arquivos Markdown** distribuídos em 89 subdiretórios históricos e operacionais.
 
----
+### 4.1 Justificativa dos 580 Documentos Resolvidos / Integrados
+- **Ondas Concluídas (Ondas 0 a 52, C0, W7, WB1):** 462 arquivos representam frentes de ciclos anteriores cujos PRs já foram consolidados e integrados à `main` (ex.: refatorações de DSR, Genesis Brand System, correções de timezone, padronização de erros).
+- **Saneamento e Débitos Forenses (2026-10 e 2026-11):** 118 arquivos correspondem a auditorias e alinhamentos de dependências pontuais que foram absorvidos pelos merges das Waves A, B, C, D, E e F.
 
-## 5. BACKLOG MESTRE UNIFICADO (PRIORIZADO)
+### 4.2 Matriz dos 27 Registros Ativos / Em Aberto
+Abaixo estão os 27 registros que demandam atenção, categorizados pelo seu estado real de resolução:
 
-### P0 — Crítica (Bloqueadores Reais de Lançamento e Integridade)
-- **BM-P0-01 (DEBT-0001):** Deploy EC2 sem `migrate deploy` e sem healthcheck fail-closed.  
-  - *Dono:* Agente 94 (Tess) / Agente 90 (Hélio). *Arquivos:* `deploy-ec2.sh`, `docs/deploy/*`.  
-  - *Critério de Aceite:* `deploy-ec2.sh` executa obrigatoriamente a migração do Prisma e valida `/health/ready` antes de chavear tráfego.
-- **BM-P0-02 (DEBT-0002):** Rotina de Backup/Restore automatizada com evidência de restauração.  
-  - *Dono:* Agente 19 (Bruno) / Agente 10 (Mara). *Arquivos:* `scripts/security/backup-database.ts`.  
-  - *Critério de Aceite:* Script gera dump criptografado e executa restore comprovado em banco descartável com relatório versionado.
-- **BM-P0-03 (DEBT-0004):** Decisão formal sobre o escopo do aplicativo Mobile no lançamento.  
-  - *Dono:* Orquestrador Humano / Agente 80 (Navi).  
-  - *Critério de Aceite:* Deliberação assinada: manter no Go-Live com backend e biometria validados OU desacoplar do Day-1.
-- **BM-P0-04 (SEC-HOST-01):** Remoção de exposição da porta Docker `192.168.0.116:2375` e rotação de segredos devstack.  
-  - *Dono:* Orquestrador Humano / Agente 98 (Safira).  
-  - *Critério de Aceite:* Porta não acessível externamente sem TLS mútuo; chaves de dev/staging rotacionadas.
-
-### P1 — Alta (Funcionalidades Essenciais, Segurança e Qualidade)
-- **BM-P1-01 (PR #487):** Desbloqueio e integração do model `SwarmAuditLog` e migração RLS.  
-  - *Dono:* Agente 11 (Pietro) / Agente 12 (Vera) / Agente 07 (Íris).  
-  - *Critério de Aceite:* Decisão humana validada (retenção 90 dias com anonimização; integridade CASCADE vs RESTRICT); parecer favorável de Silas.
-- **BM-P1-02 (PR #507):** Resolução de achados estáticos de segurança (Semgrep/CodeQL) em main.  
-  - *Dono:* Agente 99 (Vito) / Agente 55 (Ícaro).  
-  - *Critério de Aceite:* Verificação de TLS em conexões remotas de banco; sanitização recursiva de e-mail; zero erros nos scanners.
-- **BM-P1-03 (PR #434 - DEBT-0017/18/19):** CRM Trilha E (status canônico de mesa, isolamento de tenant em Contact e soft delete de Company).  
-  - *Dono:* Agente 41 (Cadu) / Agente 11 (Pietro).  
-  - *Critério de Aceite:* Não permitir exclusão física de Company com entidades vinculadas; tenantId validado em todas as mutações.
-- **BM-P1-04 (PR #437 - DEBT-0011):** Persistência e deduplicação de cold-email com trilha LGPD.  
-  - *Dono:* Agente 43 (Amon) / Agente 07 (Íris).  
-  - *Critério de Aceite:* Registro de disparo com base legal no banco e respeito a listas de opt-out.
-- **BM-P1-05 (PR #401 - AUD-1):** SSRF Guard no crawler/scraper e RBAC na rota `/enrich`.  
-  - *Dono:* Agente 97 (Rocco) / Agente 99 (Vito).  
-  - *Critério de Aceite:* Bloqueio comprovado de 169.254.169.254 e faixas privadas; rota protegida por permissão admin/analista.
-- **BM-P1-06 (PR #397 - AUD-1):** Hardening de cookies de sessão (`SECURE_COOKIES` secure-by-default) e sanitização global.  
-  - *Dono:* Agente 96 (Nera) / Agente 22 (Hugo).  
-  - *Critério de Aceite:* Flag `Secure` e `SameSite=Lax/Strict` forçados em produção.
-- **BM-P1-07 (PR #396 - AUD-1):** Sanitização de erro de provider Bitrix, 501 honesto no sync e RBAC nas rotas WhatsApp.  
-  - *Dono:* Agente 53 (Vega) / Agente 56 (Luna).  
-  - *Critério de Aceite:* Falha de terceiro não vaza stack trace nem PII; rotas de WhatsApp protegidas por tenant e role.
-
-### P2 — Média (Confiabilidade, Contratos de API e Desempenho)
-- **BM-P2-01 (PR #399):** Envelope de erro unificado (RFC-7807), contrato Zod e runner Schemathesis.  
-  - *Dono:* Agente 21 (Zara) / Agente 04 (Téo).  
-  - *Critério de Aceite:* Respostas de erro padronizadas em todas as rotas da API; testes de contrato passando.
-- **BM-P2-02 (PR #403):** Correção de testes flaky E2E e de integração na suíte contínua.  
-  - *Dono:* Agente 02 (Bento) / Agente 05 (Luma).  
-  - *Critério de Aceite:* Execução determinística da suíte em CI sem necessidade de retries aleatórios.
-- **BM-P2-03 (PR #386):** Saneamento final de handoffs de QA.  
-  - *Dono:* Agente 01 (Ória).  
-  - *Critério de Aceite:* Matriz de testes de QA 100% conciliada com os novos endpoints.
-- **BM-P2-04 (Handoff 10→23):** Agendamento periódico do `securitySweepScanner` no BullMQ worker.  
-  - *Dono:* Agente 23 (Pina).  
-  - *Critério de Aceite:* Job diário disparado via BullMQ que executa audit/SBOM sem bloquear a thread principal.
-
-### P3 — Baixa (Refinamentos Visuais e Documentação)
-- **BM-P3-01 (PR #367 & #353):** Arquivamento e consolidação de matrizes de documentação de integrações.  
-  - *Dono:* Agente 39 (Tina) / Agente 50 (Atlas).
-- **BM-P3-02 (Dependabot):** Atualização agrupada de dependências dev/runtime (PRs #497 a #501).  
-  - *Dono:* Agente 94 (Tess).
+| # | Caminho Relativo | Domínio | Status Declarado | Status Real / Evidência | Próxima Ação |
+|---|---|---|:---:|:---:|---|
+| 1 | `.agents/handoffs/00-para-04-10-08-relatorios-forecast.md` | CRM / BI | em-andamento | EM_ANDAMENTO | Reconciliação dos snapshots com banco real (Sofia / Malu) |
+| 2 | `.agents/handoffs/00-para-08-cobertura-testes-modulos.md` | QA | em-andamento | EM_ANDAMENTO | Cobertura de testes na mesa de tratamento |
+| 3 | `.agents/handoffs/00-para-12-17-voicehub-reactivacao.md` | Voz / Cadência | em-andamento | EM_ANDAMENTO | Parcela 17 pronta; aguardando validação 3CX (Squad 60) |
+| 4 | `.agents/handoffs/08-para-00-cobertura-modulos-gaps-produto.md` | Produto | aberto | PENDENTE | Auditoria de rotas vazias e empty states (Noa / Ema) |
+| 5 | `.agents/handoffs/README.md` | Governança | aberto | METADADO | Template de governança (não é pendência de código) |
+| 6 | `.agents/handoffs/backlog-5/18-para-08-schemathesis-ci.md` | Contratos | aberto | EM_ANDAMENTO | RFC-7807 coberto pelo PR #399 (Zara / Téo) |
+| 7 | `.agents/handoffs/onda-0/00-para-15-segredos-desktop-env.md` | Segurança | aberto | PENDENTE | Proteção de segredos desktop e credenciais em repouso |
+| 8 | `.agents/handoffs/onda-1/00-para-33-ratificar-aria-label-gamified-orb.md` | A11y | aberto | RESOLVIDO_TECNICO | Contraste e ARIA cobertos pelo PR #463 mergeado |
+| 9 | `.agents/handoffs/onda-1/02-para-03-gamified-orb-button-name.md` | A11y | aberto | RESOLVIDO_TECNICO | Nome acessível implementado no PR #463 |
+| 10 | `.agents/handoffs/onda-1/03-para-04-migrar-utilitarias-cruas-contraste.md` | Design System | aberto | PENDENTE | Higienização de classes arbitrárias de contraste (Ari / Célia) |
+| 11 | `.agents/handoffs/onda-1/03-para-12-voice-hub-contraste-tema-claro.md` | Design System | aberto | PENDENTE | Ajuste de contraste do Voice Hub no tema claro (Ari) |
+| 12 | `.agents/handoffs/onda-1/03-para-13-characters-h1-contraste-tema-claro.md` | Design System | aberto | PENDENTE | Ajuste de contraste H1 em `/app/characters` (1,52:1 &rarr; AA) |
+| 13 | `.agents/handoffs/onda-1/14-para-01-swarm-audit-log-schema.md` | Dados | aberto | AGUARDANDO_APROVACAO | Bloqueado por Decisões DEC-H01 e DEC-H02 (PR #487) |
+| 14 | `.agents/handoffs/onda-1/14-para-07-swarm-audit-service-e-404-agentes.md` | IA / Rotas | aberto | EM_ANDAMENTO | 404 resolvido no PR #459; serviço aguarda PR #487 |
+| 15 | `.agents/handoffs/onda-2/05-para-04-whatsapp-consolidado.md` | Mensageria | aberto | EM_ANDAMENTO | Integração Baileys/CRM associada ao PR #396 |
+| 16 | `.agents/handoffs/onda-52/01-para-24-typecheck-integrations-schema-decision.md` | Dados | aberto | RESOLVIDO_TECNICO | Schema reconciliado nos merges da Onda 2 |
+| 17 | `.agents/handoffs/onda-8/18-para-00-relatorio-conformidade-handoffs.md` | Governança | aberto | METADADO | Relatório de conformidade absorvido neste plano |
+| 18 | `.agents/handoffs/onda-ownership-100-agentes/03-para-00-agents-md-paths-reservados-inexistentes.md` | Governança | aberto | RESOLVIDO_TECNICO | Resolvido pelo suporte a `allowMissingPath` no PR #471 |
+| 19 | `.agents/handoffs/onda-reconciliacao-20261114/00-para-10-scanner-seguranca-real.md` | Segurança | aberto | RESOLVIDO_TECNICO | Resolvido pelo scanner real do PR #492 mergeado |
+| 20 | `.agents/handoffs/onda-reconciliacao-20261114/10-para-15-scanner-seguranca-real.md` | Segurança | aberto | PRONTO_PARA_DESPACHO | Revisão de semântica de waivers pelo Agente 99 |
+| 21 | `.agents/handoffs/onda-reconciliacao-20261114/10-para-23-agendar-security-sweep.md` | Runtime | aberto | PRONTO_PARA_DESPACHO | Agendamento diário do sweep no worker pelo Agente 23 |
+| 22 | `.agents/handoffs/onda-saneamento-20261110/00-para-01-logica-de-criacao-de-primeiro-usuario-executa-user-count-redundante-pa.md` | Backend | aberto | PENDENTE | Otimização de contagem na criação de primeiro usuário |
+| 23 | `.agents/handoffs/onda-saneamento-20261110/00-para-05-ausencia-de-validacao-previa-em-lote-de-listas-de-supressao-opt-out-em.md` | LGPD | aberto | PENDENTE | Validação em lote de listas de supressão opt-out |
+| 24 | `.agents/handoffs/onda-v4-fase2/00-para-01-estruturacao-banco-rls.md` | Dados | bloqueado | RESOLVIDO_TECNICO | RLS estruturado e verificado por `verify:rls-coverage` |
+| 25 | `.agents/handoffs/techdebt-2026-09-29/00-para-00-arquivos-monoliticos-scripts.md` | Refactor | aberto | PENDENTE | Modularização de scripts monolíticos de manutenção |
+| 26 | `.agents/handoffs/00-para-00-continuidade-onda-1-e-onda-2-fechamento-20261120.md` | Governança | em-andamento | RESOLVIDO_TECNICO | Handoff absorvido nesta consolidação final |
+| 27 | `.agents/handoffs/03-para-00-continuidade-design-tokens-v2-e-modernizacao-telas-20261120.md` | Design System | em-andamento | RESOLVIDO_TECNICO | Tokens v2 absorvidos pelo PR #471 e Brand System |
 
 ---
 
-## 6. PLANO MESTRE DE EXECUÇÃO POR ONDAS
+## 5. RECONCILIAÇÃO HISTÓRICA DOS IDENTIFICADORES DE DECISÃO
+
+Para evitar colisões com o registro histórico em `.agents/runs/consolidacao-20261120/04-REGISTRO-DECISOES.md`, os identificadores oficiais foram reconciliados:
+
+### 5.1 Registro Histórico de Decisões Vigentes (Preservado)
+- **D-01:** SSRF IPv6 — parser canônico único (`src/shared/security/ipv6.ts`).
+- **D-02:** Command Palette — sem ações no-op (remoção de "Nova oportunidade" solta).
+- **D-03:** Outbox `idempotencyKey` — contrato determinístico de negócio (sem `randomUUID`).
+- **D-04:** Branch protection de `main` — required checks (`Visual Regression Gate` + `application gate`).
+- **D-05:** Visual baselines — branch efêmera com `force-with-lease`.
+- **D-06:** Paleta oficial #368 — formalmente FECHADA e descartada (179 conflitos).
+- **D-07:** Ownership UX — `landing/**` e tokens sob a Squad 30.
+- **D-08:** DSR público aceito com limitação declarada (sem servidor SMTP local em testes).
+- **D-09:** Governança — transição oficial para a Arquitetura de 100 Agentes e Agente 09 (Silas).
+- **D-10:** Release NO-GO mantido até o saneamento dos 4 itens P0.
+- **D-11:** Catálogo de pendências históricas de produto e interface.
+
+### 5.2 Decisões Humanas Reservadas Atuais (Série DEC-H / D-12 a D-15)
+
+```markdown
+DEC-H01 (D-12) · Governança do model SwarmAuditLog (PR #487)
+- Sub-item 1 (LGPD): Adotar retenção de 90 dias para ipAddress e userAgent, anonimizando após o período?
+  -> Recomendação Técnica: SIM. Dados de IP/UserAgent são dados pessoais pela LGPD e não devem ser retidos indefinidamente.
+- Sub-item 2 (Integridade): Na deleção de organização, logs devem ser apagados (CASCADE) ou desvinculados (RESTRICT)?
+  -> Recomendação Técnica: RESTRICT. Logs de auditoria devem sobreviver à organização para fins de trilha forense e compliance.
+
+DEC-H02 (D-13) · Hardening de TLS para Conexões Remotas de Banco (PR #507)
+- Questão: Forçar rejectUnauthorized: true em hosts remotos, exigindo PGSSLROOTCERT para CAs privados, e proibir DB_SSL_INSECURE_SKIP_VERIFY em produção?
+  -> Recomendação Técnica: SIM. A flag de bypass só deve ser permitida em testes de bancada isolados.
+
+DEC-H03 (D-14) · Escopo Mobile no Lançamento V1.0 (DEBT-0004)
+- Questão: O aplicativo mobile Capacitor integra o pacote de lançamento Day-1, ou o Day-1 será focado exclusivamente na plataforma Web/PWA responsiva?
+  -> Recomendação Técnica: Web/PWA no Day-1 (zero overflow mobile medido em 70 rotas); App nativo em release subsequente.
+
+DEC-H04 (D-15) · Enxame Autônomo e Custos de IA (DEBT-0012/13/14)
+- Questão: As automações de IA autônoma em background serão disponibilizadas para todos os clientes com quotas fechadas por tenant, ou ficarão restritas a clientes piloto via feature-flag?
+  -> Recomendação Técnica: Feature-flag fechada para clientes piloto, com limites estritos de gasto por tenant.
+```
+
+---
+
+## 6. COMPORTAMENTO REAL DE TLS E RISCO NO PR #507
+
+A análise detalhada da implementação de `scripts/security/credential-script-guards.ts` e `scripts/security/reencrypt-credentials.ts` no PR #507 revela o seguinte funcionamento:
+
+1. **Hosts Locais (`localhost`, `127.0.0.1`):**  
+   - `ssl: false`, `insecure: false`. A conexão ocorre sem criptografia por ser IPC/loopback local.
+2. **Hosts Remotos (AWS RDS, PostgreSQL em nuvem):**  
+   - **Padrão Seguro:** `ssl: { rejectUnauthorized: true }`. O driver exige certificado válido emitido por CA pública conhecida. Se `PGSSLROOTCERT=/caminho/ca.pem` for fornecido, carrega o certificado do emissor privado.
+   - **Mecanismo de Opt-Out:** Variável de ambiente `DB_SSL_INSECURE_SKIP_VERIFY=true`. Ativa `rejectUnauthorized: false` e emite aviso em `stderr`:
+     `AVISO: DB_SSL_INSECURE_SKIP_VERIFY=true — o certificado do banco NÃO está sendo verificado (vulnerável a interceptação). Prefira PGSSLROOTCERT=<ca.pem>.`
+3. **Avaliação de Risco:**
+   - **Risco de Segurança:** O uso de `DB_SSL_INSECURE_SKIP_VERIFY=true` em ambiente de produção ou staging expõe a conexão com o banco de dados a ataques de Man-in-the-Middle (MitM), permitindo que um invasor na rede intercepte credenciais e dados em trânsito durante a re-encriptação.
+4. **Recomendação Técnica da Coordenação:**
+   - A decisão humana **DEC-H02** deve determinar que `DB_SSL_INSECURE_SKIP_VERIFY=true` seja estritamente proibido em ambientes de staging e produção. Ambientes com certificados autoassinados ou corporativos (ex: AWS RDS com certificado de região) devem obrigatoriamente fornecer o bundle do emissor via `PGSSLROOTCERT`.
+
+---
+
+## 7. MATRIZ EXAUSTIVA DOS BLOQUEADORES P0 DE RELEASE
+
+| ID | Bloqueador | Responsável Oficial | Dependências | Critério de Aceite | Evidências Esperadas | Condição de Desbloqueio |
+|---|---|:---:|---|---|---|:---:|
+| **BM-P0-01** | Deploy EC2 sem `migrate deploy` e sem healthcheck | **Agente 94 (Tess)** / Agente 90 (Hélio) | Acesso ao script de deploy e runner | `deploy-ec2.sh` roda `prisma migrate deploy` e valida `/health/ready` fail-closed | Log de execução em staging com simulação de erro e rollback acionado | Imediata (despacho M-03 pronto) |
+| **BM-P0-02** | Ausência de rotina de Backup e Restore testado | **Agente 19 (Bruno)** / Agente 10 (Mara) | PostgreSQL de teste para drill | Script gera dump criptografado e executa restore comprovado sem perda de dados | `docs/security/BACKUP-RESTORE-DRILL-RESULT.json` datado com sha256 e contagem de tabelas | Imediata (despacho M-03 pronto) |
+| **BM-P0-03** | Escopo Mobile no Go-Live indefinido | **Orquestrador Humano** / Agente 80 (Navi) | Deliberação estratégica de produto | Definição assinada: manter Web/PWA Day-1 ou incluir app nativo | Registro formal da decisão DEC-H03 em `04-REGISTRO-DECISOES.md` | Resposta do Orquestrador à DEC-H03 |
+| **BM-P0-04** | Porta Docker 2375 exposta no host devstack | **Orquestrador Humano** / Agente 98 (Safira) | Acesso SSH/root ao host `192.168.0.116` | Porta 2375 fechada para conexões externas sem mTLS; segredos rotacionados | Log de port-scan (nmap/curl) comprovando recusa de conexão externa | Ação do Orquestrador no host físico |
+
+---
+
+## 8. PLANO MESTRE DE EXECUÇÃO POR ONDAS (ADAPTADO)
 
 ```mermaid
 flowchart TD
-    O0["ONDA 0: Estabilização & Preservação (CONCLUÍDA)"] --> O1["ONDA 1: Resolução de Gates & Decisões Humanas"]
-    O1 --> O2["ONDA 2: Dívidas Técnicas Core & Segurança (Trilha 1 & 2)"]
-    O2 --> O3["ONDA 3: Contratos, Filas e Jornadas de Produto"]
+    O0["ONDA 0: Estabilização & Preservação (CONCLUÍDA)"] --> O1["ONDA 1: Desbloqueio de Decisões Humanas e PRs de Segurança"]
+    O1 --> O2["ONDA 2: Dívidas Técnicas Core & Blindagem Operacional (Trilha 1 & 2)"]
+    O2 --> O3["ONDA 3: Contratos, Workers e Jornadas de Produto"]
     O3 --> O4["ONDA 4: Homologação Integrada, Testes de Carga & LGPD"]
     O4 --> O5["ONDA 5: Release Readiness & Auditoria GO/NO-GO"]
 ```
 
-### ONDA 0 — PRESERVAÇÃO E ESTABILIZAÇÃO (STATUS: 100% CONCLUÍDA)
-- **Objetivo:** Recuperar arquivos órfãos, resolver conflitos de branches e unificar a memória em Git.
-- **Entregas Realizadas:** PRs #479, #480, #481, #482, #483, #484, #489, #506, #508, #488, #471, #473-#476, #447, #451-#453, #491-#496 integrados à `main`.
-- **Resultado:** Zero risco de perda de contexto; linter e testes de arquitetura 100% verdes na `main`.
+### ONDA 0 — Preservação e Estabilização [STATUS: CONCLUÍDA]
+- Todos os handoffs recuperados e integrados à `main` via PRs #506, #508, #488, #471, #473–#476, #447, #451–#453, #491–#496.
 
-### ONDA 1 — DESBLOQUEIO DE DECISÕES HUMANAS E CI (IMEDIATA)
-- **Objetivo:** Obter deliberações do Orquestrador Humano para destravar os PRs em DRAFT e unificar a esteira de CI.
-- **Missões:**
-  1. *Decisão Humana D-01:* Aprovação da política do PR #487 (SwarmAuditLog: retenção 90 dias; CASCADE vs RESTRICT).
-  2. *Decisão Humana D-02:* Aprovação da estratégia de TLS no PR #507 (skip verify apenas para dev local com opt-out explícito).
-  3. *Decisão Humana D-03:* Escopo Mobile oficial para o Go-Live (Day-1 vs Day-30).
-  4. *Integração do PR #507 e #487* após parecer de Silas (Agente 09).
-- **Critério de Parada:** Zero PRs em DRAFT com bloqueio de governança.
+### ONDA 1 — Desbloqueio de Decisões Humanas e PRs de Segurança [IMEDIATA]
+- **Objetivo:** Deliberação das decisões DEC-H01 a DEC-H04 e integração assistida dos PRs #507 (Semgrep/TLS) e #487 (SwarmAuditLog).
+- **Critério de Parada:** Zero PRs em DRAFT com bloqueio de governança; parecer de Silas arquivado em `.agents/reviews/`.
 
-### ONDA 2 — DÍVIDAS TÉCNICAS CORE & SEGURANÇA APLICADA (SQUADS 10, 20, 90)
-- **Objetivo:** Sanear integridade de banco de dados, deploy automatizado e blindagem de rotas.
-- **Missões:**
-  1. *Agente 94 (Tess) & Agente 90 (Hélio):* Atualização de `deploy-ec2.sh` com migrate deploy fail-closed e healthcheck `/health/ready` (BM-P0-01).
-  2. *Agente 19 (Bruno) & Agente 10 (Mara):* Implementação e ensaio real de backup/restore criptografado (BM-P0-02).
-  3. *Agente 41 (Cadu) & Agente 11 (Pietro):* Integração do PR #434 (Trilha E CRM - status canônico e soft delete de Company).
-  4. *Agente 43 (Amon) & Agente 07 (Íris):* Integração do PR #437 (Persistência cold-email com trilha LGPD).
-  5. *Agente 97 (Rocco) & Agente 99 (Vito):* Integração dos PRs de segurança AUD-1 (#401, #397, #396).
-- **Critério de Parada:** Todas as dívidas P0 e P1 de infraestrutura e dados eliminadas com testes de regressão verdes.
+### ONDA 2 — Dívidas Técnicas Core & Blindagem Operacional [TRILHA 1]
+- **Objetivo:** Resolução de BM-P0-01 (Deploy com migrate) e BM-P0-02 (Backup/Restore real). Integração do PR #434 (Trilha E CRM), PR #437 (Cold-Email LGPD) e PRs #401/#397/#396 (Segurança AUD-1).
+- **Critério de Parada:** Zero bloqueador P0 em aberto; suíte de testes de regressão 100% verde.
 
-### ONDA 3 — CONTRATOS, WORKERS E JORNADAS DE PRODUTO (SQUADS 20, 30, 40, 50)
-- **Objetivo:** Estabilizar contratos de API, consumo assíncrono de eventos e eliminar inconsistências de UI.
-- **Missões:**
-  1. *Agente 21 (Zara) & Agente 04 (Téo):* Integração do PR #399 (Envelope RFC-7807 + Schemathesis contínuo).
-  2. *Agente 23 (Pina):* Agendamento do sweep diário no BullMQ (Handoff 10→23).
-  3. *Agente 31 (Noa) & Agente 33 (Célia):* Auditoria de consistência das 70 rotas `/app/*` e empty states honestos.
-  4. *Agente 44 (Lola) & Agente 46 (Sofia):* Fechamento da reconciliação de forecast e cadência sem dados simulados.
-- **Critério de Parada:** Zero chamada de API fora do contrato RFC-7807; workers de mensageria 100% dedicados.
+### ONDA 3 — Contratos, Workers e Jornadas de Produto
+- **Objetivo:** Padronização RFC-7807 (PR #399), agendamento do security sweep em BullMQ (Agente 23) e saneamento de empty states nas 70 rotas `/app/*`.
+- **Critério de Parada:** Fuzzing Schemathesis operando sem 5xx; workers dedicados ativos.
 
-### ONDA 4 — HOMOLOGAÇÃO INTEGRADA, RESILIÊNCIA E LGPD (SQUAD 00)
-- **Objetivo:** Execução das suítes de ponta a ponta contra ambientes de dados reais (sem mocks de produto).
-- **Missões:**
-  1. *Agente 05 (Luma):* Execução de E2E crítico (Login → Cadastros CRM → Cadência → Outbox → DSR LGPD).
-  2. *Agente 06 (Gael):* Auditoria forense de persistência real e ausência de dados órfãos pós-exclusão.
-  3. *Agente 07 (Íris) & Agente 08 (Dora):* Auditoria de ponta a ponta dos canais de opt-out e expurgo programado.
-  4. *Agente 02 (Bento):* Integração do PR #403 (eliminação de flakiness em testes).
-- **Critério de Parada:** 100% dos testes E2E e de integração passando em stack real Postgres+Redis.
+### ONDA 4 — Homologação Integrada e Resiliência em Staging
+- **Objetivo:** Bateria E2E Playwright de ponta a ponta (Login &rarr; CRM &rarr; Cadência &rarr; Outbox &rarr; DSR LGPD) contra stack real Postgres+Redis.
+- **Critério de Parada:** 100% dos testes de jornada executados contra dados reais e validados.
 
-### ONDA 5 — AUDITORIA INDEPENDENTE FINAL E PARECER GO/NO-GO
+### ONDA 5 — Auditoria Independente Final e Parecer GO-LIVE
 - **Objetivo:** Emissão do veredito formal de release pelo Agente 09 (Silas).
-- **Missões:**
-  1. *Agente 09 (Silas):* Auditoria integral dos critérios do GO-LIVE checklist.
-  2. *Agente 00 (Astra):* Apresentação do Dossiê Final de Release ao Orquestrador Humano.
-- **Critério de Parada:** Parecer formal `APROVADO / GO-LIVE` emitido sem ressalvas bloqueantes.
+- **Critério de Parada:** Laudo formal `APROVADO / GO-LIVE` emitido sem ressalvas bloqueantes.
 
 ---
 
-## 7. MATRIZ DE RISCOS ATUALIZADA
+## 9. PRÓXIMOS DESPACHOS OPERACIONAIS (PRONTOS PARA EXECUÇÃO)
 
-| ID | Risco Identificado | Severidade | Probabilidade | Impacto | Mitigação / Plano de Ação | Responsável |
-|---|---|:---:|:---:|:---:|---|:---:|
-| **R-01** | Deploy em produção sem migração de banco | **CRÍTICA** | Média | Alto | BM-P0-01: Inclusão obrigatória de `prisma migrate deploy` em `deploy-ec2.sh` fail-closed | Agente 94 (Tess) |
-| **R-02** | Perda irreversível de dados em incidente de banco | **CRÍTICA** | Baixa | Extremo | BM-P0-02: Automação de dump diário e drill de restore testado em banco descartável | Agente 19 (Bruno) |
-| **R-03** | Vulnerabilidade de XSS ou bypass de TLS | **ALTA** | Baixa | Alto | BM-P1-02 (PR #507): Verificação estrita de certificados e sanitização recursiva de HTML | Agente 99 (Vito) |
-| **R-04** | Violação de LGPD por persistência indevida de PII | **ALTA** | Média | Alto | PR #487: Política de retenção de 90 dias com job automático de anonimização | Agente 07 (Íris) |
-| **R-05** | Inconsistência de multi-tenancy em deleção de empresa | **MÉDIA** | Baixa | Médio | PR #434: Substituição de hard-delete por soft-delete em `Company` | Agente 41 (Cadu) |
-| **R-06** | Falhas transitórias e flakiness em CI bloqueando merges | **MÉDIA** | Média | Baixo | PR #403: Reestabilização dos timers e fixtures do Playwright | Agente 02 (Bento) |
-
----
-
-## 8. REGISTRO DE DECISÕES HUMANAS RESERVADAS
-
-As seguintes decisões são prerrogativa exclusiva do **Orquestrador Humano**:
-
-```
-DECISÃO D-01: Governança do model SwarmAuditLog (PR #487)
-- Questão 1 (LGPD): Adotar retenção de 90 dias para ipAddress e userAgent, anonimizando após o período? [Recomendação: SIM]
-- Questão 2 (Integridade): Manter onDelete: Cascade ao deletar organização, ou preservar auditoria desvinculada (RESTRICT)? [Recomendação: RESTRICT]
-
-DECISÃO D-02: Hardening de TLS para Conexões Remotas de Banco (PR #507)
-- Questão: Forçar rejeição de certificados autoassinados em conexões não-locais, exigindo PGSSLROOTCERT para certificados privados? [Recomendação: SIM]
-
-DECISÃO D-03: Escopo Mobile para o Lançamento V1.0 (DEBT-0004)
-- Questão: O aplicativo mobile Capacitor integra o pacote de lançamento Day-1, ou o Day-1 será focado exclusivamente na plataforma Web/PWA responsiva? [Recomendação: Web/PWA no Day-1; Mobile App em release subsequente]
-
-DECISÃO D-04: Enxame Autônomo e Custos de IA (DEBT-0012/13/14)
-- Questão: As funcionalidades de IA autônoma em background serão disponibilizadas com quotas estritas por tenant no lançamento, ou permanecerão em feature-flag fechada para clientes piloto? [Recomendação: Feature-flag para pilotos com quotas fechadas]
-```
-
----
-
-## 9. CHECKLIST MESTRE DE PRONTIDÃO DE LANÇAMENTO (RELEASE READINESS)
-
-- [x] **Governança:** AGENTS.md e MATRIZ_PROPRIEDADE.md atualizados para 100 Agentes.
-- [x] **Gate de Propriedade:** `verify:ownership-coverage` validado (23 escopos íntegros).
-- [x] **Qualidade Estática:** `biome lint` e `biome format` sem erros em 2422 arquivos.
-- [x] **Idempotência Outbox:** DomainEventMesh com idempotencyKey determinística em todos os domínios core.
-- [x] **Scanner de Segurança:** `ContinuousSecurityAuditService` operando com scanner real (CycloneDX + npm audit).
-- [x] **Acessibilidade Básica:** Contraste do GamifiedOrb e labels de configurações em conformidade WCAG 2.2 AA.
-- [ ] **Deploy Resiliente:** Script `deploy-ec2.sh` com migrate deploy e healthcheck fail-closed validado.
-- [ ] **Backup e Recuperação:** Teste de restore documentado em `BACKUP-RESTORE-DRILL-RESULT.json`.
-- [ ] **Decisões D-01 a D-04:** Deliberações humanas formalizadas no registro de decisões.
-- [ ] **Saneamento de PRs Restantes:** PRs #487, #507, #434, #437, #401, #397, #396 e #399 integrados com parecer de Silas.
-- [ ] **Homologação E2E:** Suíte de jornadas essenciais executada contra stack real em ambiente de staging.
-- [ ] **Parecer GO-LIVE:** Relatório final emitido e homologado pelo Agente 09 (Silas).
-
----
-
-## 10. PRÓXIMOS DESPACHOS OPERACIONAIS (PRONTOS PARA EXECUÇÃO)
-
-Assim que o Orquestrador Humano aprovar este plano, o Agente 00 (Astra) disparará imediatamente o **Lote 1 da Onda 1 & Onda 2**:
-
-1. **Missão M-01 (Squad 90 - Agente 94 Tess & Agente 99 Vito):**
-   - *Objetivo:* Rebase, validação e preparação do PR #507 (Segurança Semgrep/CodeQL e TLS).
-   - *Entrega esperada:* Branch alinhada com `main`, checks verdes e solicitação de parecer a Silas.
-2. **Missão M-02 (Squad 10 - Agente 11 Pietro & Agente 12 Vera):**
-   - *Objetivo:* Aplicação das deliberações D-01 no PR #487 (SwarmAuditLog: ajuste de FK e política de retenção).
-   - *Entrega esperada:* Migration testada em banco descartável e parecer de Silas.
-3. **Missão M-03 (Squad 40 - Agente 41 Cadu & Squad 10 - Agente 11 Pietro):**
-   - *Objetivo:* Rebase e validação do PR #434 (CRM Trilha E - status canônico e soft delete de Company).
-   - *Entrega esperada:* Testes unitários e de integração verdes e envio para auditoria independente.
-4. **Missão M-04 (Squad 90 - Agente 94 Tess & Agente 19 Bruno):**
-   - *Objetivo:* Elaboração do patch de `deploy-ec2.sh` (BM-P0-01) e script de backup/restore testado (BM-P0-02).
-   - *Entrega esperada:* PR com documentação de teste e rollback em `docs/deploy/`.
+1. **Despacho M-01 (Squad 90 — Agente 94 Tess & Agente 99 Vito):**
+   - Rebase, resolução dos achados do PR #507 (Semgrep e TLS) e submissão ao Agente 09 (Silas).
+2. **Despacho M-02 (Squad 10 — Agente 11 Pietro & Agente 12 Vera):**
+   - Ajuste do model `SwarmAuditLog` e migração RLS no PR #487 conforme deliberação DEC-H01.
+3. **Despacho M-03 (Squad 90 — Agente 94 Tess & Squad 10 — Agente 19 Bruno):**
+   - Implementação do patch em `deploy-ec2.sh` (BM-P0-01) e script de backup/restore testado (BM-P0-02).
+4. **Despacho M-04 (Squad 40 — Agente 41 Cadu & Squad 10 — Agente 11 Pietro):**
+   - Atualização e validação do PR #434 (Trilha E CRM - status canônico e soft delete de Company).
 
 ---
 *Documento registrado e versionado na Central de Inteligência Operacional do Birthub 360°.*
