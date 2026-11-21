@@ -131,17 +131,17 @@ export function BentoShowcase({ className, ...props }: React.HTMLAttributes<HTML
         </div>
       </div>
 
-      {/* ── CARD 4: CADÊNCIA MULTICANAL & TELEFONIA 3CX (SPAN 2) - DOURADO RADIANTE ── */}
-      <div className="md:col-span-2 relative group rounded-3xl border border-[#F59E0B]/30 dark:border-[#F59E0B]/25 bg-gradient-to-br from-white via-amber-50/40 to-yellow-50/30 dark:from-[#211A11] dark:via-[#1B140B] dark:to-[#110D07] backdrop-blur-xl p-7 sm:p-9 shadow-[0_8px_30px_rgba(245,158,11,0.06)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] hover:border-[#F59E0B]/60 transition-all duration-300 flex flex-col justify-between overflow-hidden">
-        <div className="pointer-events-none absolute -bottom-10 -right-10 w-80 h-80 rounded-full blur-3xl opacity-20 bg-[#F59E0B] group-hover:opacity-35 transition-opacity" />
+      {/* ── CARD 4: CADÊNCIA MULTICANAL & TELEFONIA 3CX (SPAN 2) - DOURADO RADIANTE OFICIAL ── */}
+      <div className="md:col-span-2 relative group rounded-3xl border border-[#FFC107]/30 dark:border-[#FFC107]/25 bg-gradient-to-br from-white via-amber-50/40 to-yellow-50/30 dark:from-[#211A11] dark:via-[#1B140B] dark:to-[#110D07] backdrop-blur-xl p-7 sm:p-9 shadow-[0_8px_30px_rgba(255,193,7,0.06)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] hover:border-[#FFC107]/60 transition-all duration-300 flex flex-col justify-between overflow-hidden">
+        <div className="pointer-events-none absolute -bottom-10 -right-10 w-80 h-80 rounded-full blur-3xl opacity-20 bg-[#FFC107] group-hover:opacity-35 transition-opacity" />
 
         <div className="relative z-10 mb-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F59E0B]/15 text-[#b45309] dark:text-[#F59E0B] border border-[#F59E0B]/40 font-mono text-[11px] font-bold uppercase tracking-wider mb-3">
-            <PhoneCall className="w-3.5 h-3.5 text-[#F59E0B]" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFC107]/15 text-[#b45309] dark:text-[#FFC107] border border-[#FFC107]/40 font-mono text-[11px] font-bold uppercase tracking-wider mb-3">
+            <PhoneCall className="w-3.5 h-3.5 text-[#FFC107]" />
             <span>Pilar 03 · Orquestração de Vendas</span>
           </div>
 
-          <h3 className="font-display text-2xl sm:text-3xl font-extrabold text-[#d97706] dark:text-[#F59E0B] mb-2 tracking-tight">
+          <h3 className="font-display text-2xl sm:text-3xl font-extrabold text-[#d97706] dark:text-[#FFC107] mb-2 tracking-tight">
             Cadência Multicanal com Voz &amp; WhatsApp Ativo
           </h3>
 
@@ -153,24 +153,24 @@ export function BentoShowcase({ className, ...props }: React.HTMLAttributes<HTML
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 font-sans">
-          <div className="p-3.5 rounded-2xl bg-white/80 dark:bg-black/30 border border-[#F59E0B]/25 shadow-xs">
-            <div className="text-xs font-bold text-[#b45309] dark:text-[#F59E0B] mb-1">
+          <div className="p-3.5 rounded-2xl bg-white/80 dark:bg-black/30 border border-[#FFC107]/25 shadow-xs">
+            <div className="text-xs font-bold text-[#b45309] dark:text-[#FFC107] mb-1">
               Etapa 01: Voz 3CX
             </div>
             <div className="text-[11px] text-slate-600 dark:text-[#fde68a] leading-relaxed">
               Ligação gravada, transcrita e resumida pela IA com detecção de sentimento
             </div>
           </div>
-          <div className="p-3.5 rounded-2xl bg-white/80 dark:bg-black/30 border border-[#F59E0B]/25 shadow-xs">
-            <div className="text-xs font-bold text-[#b45309] dark:text-[#F59E0B] mb-1">
+          <div className="p-3.5 rounded-2xl bg-white/80 dark:bg-black/30 border border-[#FFC107]/25 shadow-xs">
+            <div className="text-xs font-bold text-[#b45309] dark:text-[#FFC107] mb-1">
               Etapa 02: WhatsApp
             </div>
             <div className="text-[11px] text-slate-600 dark:text-[#fde68a] leading-relaxed">
               Envio do resumo executivo e confirmação de data da reunião
             </div>
           </div>
-          <div className="p-3.5 rounded-2xl bg-white/80 dark:bg-black/30 border border-[#F59E0B]/25 shadow-xs">
-            <div className="text-xs font-bold text-[#b45309] dark:text-[#F59E0B] mb-1">
+          <div className="p-3.5 rounded-2xl bg-white/80 dark:bg-black/30 border border-[#FFC107]/25 shadow-xs">
+            <div className="text-xs font-bold text-[#b45309] dark:text-[#FFC107] mb-1">
               Etapa 03: Proposta Viva
             </div>
             <div className="text-[11px] text-slate-600 dark:text-[#fde68a] leading-relaxed">

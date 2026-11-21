@@ -5,13 +5,17 @@ import { logger } from '../logger.js';
 import { isFinalAttempt, recordDeadLetter } from './deadLetter.js';
 import { recordQueueJobCompleted, registerQueueForMetrics } from './metrics.js';
 import { connection } from './redis.js';
+import { SCHEDULER_SCAN_DEFAULTS } from './queueDefaults.js';
 
 export const BITRIX_SYNC_QUEUE_NAME = 'bitrix-sync';
 
 /** De quanto em quanto tempo as regras de sincronização automática são reavaliadas. */
 const RUN_EVERY_MS = 15 * 60 * 1000;
 
-export const bitrixSyncQueue = new Queue(BITRIX_SYNC_QUEUE_NAME, { connection });
+export const bitrixSyncQueue = new Queue(BITRIX_SYNC_QUEUE_NAME, {
+  connection,
+  defaultJobOptions: SCHEDULER_SCAN_DEFAULTS,
+});
 bitrixSyncQueue.on('error', (err) =>
   logger.warn({ message: err.message }, 'bitrixSyncQueue offline'),
 );

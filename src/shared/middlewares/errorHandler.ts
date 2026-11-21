@@ -43,6 +43,14 @@ export interface ApiResponse<T = unknown> {
   requestId?: string;
   /** Regra: 5xx e timeouts (408/504) são retentáveis; 4xx de validação/autorização/conflito não são. */
   retryable?: boolean;
+
+  // ── RFC 7807 (Problem Details for HTTP APIs) ───────────────────────────
+  type?: string;
+  title?: string;
+  status?: number;
+  detail?: string;
+  instance?: string;
+  stack?: never; // Estritamente proibido no envelope de resposta do cliente
 }
 
 export class AppError extends Error {
@@ -74,24 +82,35 @@ function sanitizeStatusCode(statusCode: unknown): number {
     : 500;
 }
 
+function isRestrictedEnvironment(): boolean {
+  const nodeEnv = (process.env.NODE_ENV || env.NODE_ENV || '').toLowerCase();
+  const appEnv = (process.env.APP_ENV || '').toLowerCase();
+  return (
+    nodeEnv === 'production' ||
+    nodeEnv === 'staging' ||
+    appEnv === 'production' ||
+    appEnv === 'staging'
+  );
+}
+
 /**
  * Regra de exposição de `error.message` ao cliente (checklist de contratos — nunca vazar
- * stack/PII): em produção, TODO erro 5xx recebe mensagem genérica, independente do tipo —
+ * stack/PII): em produção e staging, TODO erro 5xx recebe mensagem genérica, independente do tipo —
  * `AppError` com 502/503/504 também pode carregar detalhe de upstream no `message`
  * (ex.: `faultstring` do Omie, erro bruto do Slack/Stripe em integrações externas).
  * Em desenvolvimento/teste a mensagem real é preservada para
  * depuração. Erros 4xx mantêm a mensagem: são erros do pedido, escritos para o usuário final.
  */
 function clientSafeMessage(err: Error, status: number): string {
-  if (env.NODE_ENV === 'production' && status >= 500) {
+  if (isRestrictedEnvironment() && status >= 500) {
     return 'Erro Interno do Servidor';
   }
   return err.message || 'Erro Interno do Servidor';
 }
 
-/** `details` pode carregar payload de upstream — suprimido junto com a mensagem mascarada. */
+/** `details` pode carregar payload de upstream — suprimido junto com a mensagem mascarada em prod/staging. */
 function clientSafeDetails(err: Error & { details?: unknown }, status: number): unknown {
-  if (env.NODE_ENV === 'production' && status >= 500) return undefined;
+  if (isRestrictedEnvironment() && status >= 500) return undefined;
   return err.details;
 }
 
@@ -166,14 +185,30 @@ function sendError(
   options?: { code?: ApiErrorCode; details?: unknown },
 ): void {
   const code = options?.code ?? codeForStatus(status);
+  const codeSlug = code.toLowerCase().replace(/_/g, '-');
+  const instance = req.originalUrl || req.url || '/';
+
   const body: ApiResponse = {
     success: false,
     error,
     code,
     retryable: isRetryableStatus(status),
     requestId: resolveRequestId(req, res),
+
+    // RFC 7807 Problem Details
+    type: `https://api.birthhub360.com/errors/${codeSlug}`,
+    title: error,
+    status,
+    detail: error,
+    instance,
   };
   if (options?.details !== undefined) body.details = options.details;
+
+  const acceptsProblemJson = req.header('accept')?.includes('application/problem+json');
+  if (acceptsProblemJson) {
+    res.setHeader('Content-Type', 'application/problem+json; charset=utf-8');
+  }
+
   res.status(status).json(body);
 }
 
