@@ -102,7 +102,7 @@ export async function assertNotOptedOut(
   }
 }
 
-export type { CadenceChannel, OptOutRecord, OptOutRepository, OptOutSubject };
+export type { CadenceChannel, OptOutRecord, OptOutRepository, OptOutSubject, RecordOptOutInput };
 export { normalizeOptOutSubject };
 
 export {

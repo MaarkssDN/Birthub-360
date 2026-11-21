@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { randomUUID } from 'node:crypto';
 import { requestContext } from '../../lib/async-context.js';
 import { fromPrismaAutomationAction, toPrismaAutomationTrigger } from '../../lib/enumMap.js';
@@ -178,6 +179,13 @@ interface ActionAttemptState {
   inAppNotificationCreated?: boolean;
 }
 
+/**
+ * Cadeia de automações em execução no fluxo assíncrono atual. Uma ação que dispara outro evento
+ * (ex.: criar atividade → `Atividade_Concluida`) reentra em `handle()` dentro deste mesmo
+ * contexto; se a mesma automação reaparecer na cadeia, é um ciclo A→B→A e a 2ª execução é abortada.
+ */
+const automationChain = new AsyncLocalStorage<readonly string[]>();
+
 export class AutomationEngine {
   /**
    * Roda todas as automações ativas que casam com o evento.
@@ -246,6 +254,21 @@ export class AutomationEngine {
         const correlationId = randomUUID();
         const action = fromPrismaAutomationAction(automation.action);
 
+        const chain = automationChain.getStore() ?? [];
+        if (chain.includes(automation.id)) {
+          logger.error(
+            {
+              automationId: automation.id,
+              name: automation.name,
+              correlationId,
+              chain: [...chain, automation.id],
+              entityId: event.entityId,
+            },
+            'Ciclo de automação detectado (A→B→A): execução abortada na 2ª iteração.',
+          );
+          continue;
+        }
+
         // Dedupe de disparo: mesmo evento de gatilho (replay, corrida entre workers) para a
         // mesma automação, dentro da janela de TTL, não executa a ação uma segunda vez. Ver
         // `automation-idempotency.service.ts` para a justificativa completa da chave e do
@@ -273,7 +296,9 @@ export class AutomationEngine {
         }
 
         const startedAt = new Date();
-        const result = await this.runActionWithRetry({ ...automation, action }, event);
+        const result = await automationChain.run([...chain, automation.id], () =>
+          this.runActionWithRetry({ ...automation, action }, event),
+        );
 
         if (result.success) {
           await prisma.automation.update({
@@ -610,18 +635,33 @@ export class AutomationEngine {
         );
       }
       const { domainEventMesh } = await import('../../lib/queue/domainEventMesh.service.js');
-      await domainEventMesh.publish({
-        eventType: 'LEAD_ENRICHMENT_REQUESTED' as any,
-        eventVersion: '1.0.0',
-        organizationId: event.organizationId,
-        correlationId: `enrich-${leadId}`,
-        producer: 'automation-engine',
-        aggregateId: leadId,
-        payload: {
-          leadId,
-          trigger: event.trigger,
+      await domainEventMesh.publish(
+        {
+          eventType: 'LEAD_ENRICHMENT_REQUESTED' as any,
+          eventVersion: '1.0.0',
+          organizationId: event.organizationId,
+          correlationId: `enrich-${leadId}`,
+          producer: 'automation-engine',
+          aggregateId: leadId,
+          payload: {
+            leadId,
+            trigger: event.trigger,
+          },
         },
-      });
+        {
+          // Mesma identidade do dedupe de disparo (automation-idempotency.service.ts):
+          // retry da ação ou re-execução do mesmo evento não duplica o pedido de enrich;
+          // um evento de gatilho genuinamente distinto gera hash distinto e publica normal.
+          idempotencyKey: `lead-enrichment:${buildTriggerIdempotencyKey({
+            automationId: automation.id,
+            organizationId: event.organizationId,
+            entity: event.entity,
+            entityId: event.entityId,
+            trigger: event.trigger,
+            data: event.data,
+          })}`,
+        },
+      );
       return;
     }
 

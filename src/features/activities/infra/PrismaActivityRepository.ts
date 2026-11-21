@@ -54,7 +54,7 @@ export class PrismaActivityRepository implements ActivityRepository {
     limit = 50,
     filters: ActivityListFilters = {},
   ): Promise<ActivityPage> {
-    const where: Prisma.ActivityWhereInput = { organizationId };
+    const where: Prisma.ActivityWhereInput = { organizationId, deletedAt: null };
     if (dateStr) {
       const searchDate = new Date(dateStr);
       where.date = {
@@ -91,7 +91,7 @@ export class PrismaActivityRepository implements ActivityRepository {
 
   async findRange(organizationId: string, from: Date, to: Date): Promise<Activity[]> {
     const activities = await prisma.activity.findMany({
-      where: { organizationId, date: { gte: from, lt: to } },
+      where: { organizationId, deletedAt: null, date: { gte: from, lt: to } },
       include: { lead: { include: { company: true, contact: true } } },
       orderBy: { date: 'asc' },
     });
@@ -99,7 +99,7 @@ export class PrismaActivityRepository implements ActivityRepository {
   }
 
   async findAllWithFilters(organizationId: string, dateStr?: string): Promise<Activity[]> {
-    const where: Prisma.ActivityWhereInput = { organizationId };
+    const where: Prisma.ActivityWhereInput = { organizationId, deletedAt: null };
     if (dateStr) {
       const searchDate = new Date(dateStr);
       where.date = {
@@ -191,10 +191,15 @@ export class PrismaActivityRepository implements ActivityRepository {
   }
 
   async delete(organizationId: string, id: string): Promise<Activity> {
-    const existing = await prisma.activity.findFirst({ where: { id, organizationId } });
+    const existing = await prisma.activity.findFirst({
+      where: { id, organizationId, deletedAt: null },
+    });
     if (!existing) throw new Error('Activity not found');
 
-    const deleted = await prisma.activity.delete({ where: { id } });
+    const deleted = await prisma.activity.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
     return serializeActivity(deleted) as unknown as Activity;
   }
 }
