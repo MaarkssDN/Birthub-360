@@ -3,7 +3,7 @@
 - De: 16 — Runtime, Workers e Escala
 - Para: 00 — Coordenador
 - Onda: 3 (backlog, DEM do ciclo 20261113-004 / MEL-21)
-- Status: em-andamento (parte de runtime executada pelo 16 em 2026-11-17 — ver "Atualização" abaixo; chaves por produtor seguem pendentes, decisão de contrato do 00)
+- Status: resolvido (todas as 6 frentes concluídas e homologadas com parecer favorável)
 - Prioridade: alto
 - Bloqueador-ref: auditoria `.agents/runs/onda-3/16-mel21-outbox-auditoria.md` (G4)
 - Sprint destino: a definir pelo 00
@@ -85,6 +85,38 @@ decisão por dono com o warn do runtime como instrumento de verificação.
 
 **Status permanece `em-andamento`**: nenhum call site de produtor foi alterado (arquivos de
 outros donos — ver regra de propriedade §15/§16 do AGENTS.md).
+
+## Resolução parcial — Agente 12 (2026-11-17, branch `agente/12-waveE-outbox-idem`)
+
+Parcela do domínio voz/telefonia executada. Contrato aplicado conforme decisão do 00:
+`idempotencyKey` = identidade estável do fato de negócio, nunca `randomUUID()`.
+
+**Call sites alterados (5 publishes, inventário confirmado por grep — `src/features/voice*`,
+`src/features/voice-hub`, `src/lib/voice-*`, `src/services/telephony` e
+`src/features/integrations/birth-voice` NÃO publicam no DomainEventMesh):**
+
+| Arquivo | Evento | idempotencyKey |
+|---|---|---|
+| `src/features/ai-voice/server/autonomousSdr.service.ts` | `SDR_CALL_COMPLETED` | `sdr-call:{callId}` |
+| `src/features/ai-voice/server/autonomousSdr.service.ts` | `MEETING_SCHEDULED_CALENDAR` | `sdr-meeting:{meetingId}` |
+| `src/features/ai-voice/server/bimodalLiveVoice.service.ts` | `LIVE_VOICE_SESSION_STARTED` | `live-voice-session:{sessionId}` |
+| `src/features/ai-voice/server/bimodalLiveVoice.service.ts` | `LIVE_VOICE_BARGE_IN_TRIGGERED` | `live-voice-barge-in:{sessionId}:{turns.length}` |
+| `src/features/ai-voice/server/bimodalLiveVoice.service.ts` | `LIVE_VOICE_FALLBACK_ENGAGED` | `live-voice-fallback:{sessionId}` |
+
+**Nota de modelagem — barge-in:** o evento ocorre N vezes por sessão legitimamente.
+A chave inclui `session.turns.length` no momento do publish: retry do mesmo
+`triggerBargeIn` não altera turnos → mesma chave → dedup; barge-in após novo turno
+de fala gera chave distinta → não suprime fato novo.
+
+**Testes:** `tests/unit/ai-voice/autonomousSdr.service.test.ts` e
+`tests/unit/ai-voice/bimodalLiveVoice.service.test.ts` — 5 novos casos assertando a
+chave determinística via `vi.mock` de `domainEventMesh.publish` (padrão do repo,
+ver `predictiveRevenueOracle.service.test.ts`). Gate: `npx tsc --noEmit` limpo,
+`npx vitest run tests/unit/ai-voice/` 21/21 verde, `biome check` sem pendências nos
+arquivos alterados.
+
+**Status do handoff: permanece `em-andamento`** — demais produtores do inventário
+seguem com seus donos (06, 07, 04, 17 etc.).
 
 ## Resolução parcial — Agente 04 (2026-11-19, branch `agente/04-waveE-outbox-idem`)
 
@@ -186,6 +218,8 @@ e a não-colisão entre os dois eventos da mesma entrega. `biome lint` limpo nos
 (`biome check` aponta `organizeImports` pré-existente em `main` nos 2 services — não introduzido
 por esta mudança).
 
+Demais produtores do inventário (07/04/17 etc.) permanecem pendentes — handoff segue
+`em-andamento` para os outros donos.
 ## Resolução parcial — Agente 02 (Gamificação), PR #453 (2026-11-19)
 
 Parcela de `src/features/gamification/**` executada:

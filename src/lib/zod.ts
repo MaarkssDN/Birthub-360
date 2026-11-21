@@ -1,5 +1,20 @@
 import { z } from 'zod';
 import { sanitizeCnpj } from './cnpj.js';
+import {
+  sanitizedString,
+  sanitizedOptionalString,
+  sanitizePlainText,
+  stripHtmlTags,
+  escapeHtmlChars,
+} from './zodSanitizer.js';
+
+export {
+  sanitizedString,
+  sanitizedOptionalString,
+  sanitizePlainText,
+  stripHtmlTags,
+  escapeHtmlChars,
+};
 
 // ─── Enums de Domínio ───────────────────────────────────────────────────────
 // Ao invés de strings livres, definimos os valores aceitos explicitamente.
@@ -85,7 +100,7 @@ export const companySchema = z.object({
   zipCode: z.string().optional().nullable(),
   status: z.enum(COMPANY_STATUS).default('Ativo'),
   tags: z.array(z.string()).optional().default([]),
-  observations: z.string().optional().nullable(),
+  observations: sanitizedOptionalString(),
 });
 
 export const contactSchema = z.object({
@@ -97,7 +112,7 @@ export const contactSchema = z.object({
   email: z.string().email('E-mail inválido').optional().nullable().or(z.literal('')),
   linkedin: z.string().optional().nullable(),
   birthDate: z.string().optional().nullable(),
-  observations: z.string().optional().nullable(),
+  observations: sanitizedOptionalString(),
   status: z.enum(CONTACT_STATUS).default('Ativo'),
   companyId: z.string(),
 });
