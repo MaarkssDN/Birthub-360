@@ -580,11 +580,7 @@ export class LeadUseCases extends BaseUseCases<Lead, LeadRepository> {
     );
     const globalWebhookUrl = resolveGlobalBitrixWebhookUrl(organizationId);
     if (!connection && globalWebhookUrl) {
-      const { id } = await connectBitrix(
-        organizationId,
-        globalWebhookUrl,
-        'Bitrix Principal',
-      );
+      const { id } = await connectBitrix(organizationId, globalWebhookUrl, 'Bitrix Principal');
       connection = await prisma.bitrixConnection.findUnique({ where: { id } });
     }
 
