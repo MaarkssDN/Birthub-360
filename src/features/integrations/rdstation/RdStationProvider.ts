@@ -5,6 +5,7 @@
  * Docs: https://developers.rdstation.com/reference/deals
  */
 
+import { fetchWithProviderRetry } from '@/lib/enrichment/providerFetch.js';
 import {
   type CrmConnectionConfig,
   type CrmProvider,
@@ -13,6 +14,7 @@ import {
 } from '../shared/CrmProvider.js';
 
 const RDSTATION_API_BASE = 'https://crm.rdstation.com/api/v1';
+const RDSTATION_ALLOWED_HOSTS = ['crm.rdstation.com'] as const;
 
 async function rdRequest<T>(
   path: string,
@@ -20,14 +22,18 @@ async function rdRequest<T>(
   options: RequestInit = {},
 ): Promise<T> {
   const token = config.accessToken ?? config.apiKey;
-  const res = await fetch(`${RDSTATION_API_BASE}${path}`, {
-    ...options,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      ...(options.headers ?? {}),
+  const res = await fetchWithProviderRetry(
+    `${RDSTATION_API_BASE}${path}`,
+    {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        ...(options.headers ?? {}),
+      },
     },
-  });
+    { providerName: 'rdstation', timeoutMs: 15_000, allowedHosts: RDSTATION_ALLOWED_HOSTS },
+  );
 
   if (!res.ok) {
     const body = await res.text();

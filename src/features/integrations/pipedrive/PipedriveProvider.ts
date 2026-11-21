@@ -1,10 +1,12 @@
 /**
  * PipedriveProvider — CRM connector para Pipedrive (API Key ou OAuth 2.0).
  *
- * Autenticação: API Token via query param `api_token` (mais simples) ou OAuth.
+ * Autenticação: API Token via header `x-api-token` (não via query string — token em URL vaza
+ * para logs de proxy/APM; a API do Pipedrive aceita o token nesse header) ou OAuth via Bearer.
  * Docs: https://developers.pipedrive.com/docs/api/v1
  */
 
+import { fetchWithProviderRetry } from '@/lib/enrichment/providerFetch.js';
 import {
   type CrmConnectionConfig,
   type CrmProvider,
@@ -13,23 +15,32 @@ import {
 } from '../shared/CrmProvider.js';
 
 const PIPEDRIVE_BASE = 'https://api.pipedrive.com/v1';
+const PIPEDRIVE_ALLOWED_HOSTS = ['api.pipedrive.com'] as const;
 
 async function pipedriveRequest<T>(
   path: string,
   config: CrmConnectionConfig,
   options: RequestInit = {},
 ): Promise<T> {
-  const separator = path.includes('?') ? '&' : '?';
-  const token = config.apiKey ?? config.accessToken;
-  const url = `${PIPEDRIVE_BASE}${path}${separator}api_token=${token}`;
+  const url = `${PIPEDRIVE_BASE}${path}`;
 
-  const res = await fetch(url, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers ?? {}),
-    },
-  });
+  // Token NUNCA vai na query string (vazaria em logs de proxy/APM/URL). A API do Pipedrive
+  // aceita o API token no header `x-api-token`; tokens OAuth vão em `Authorization: Bearer`.
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(options.headers as Record<string, string> | undefined),
+  };
+  if (config.apiKey) {
+    headers['x-api-token'] = config.apiKey;
+  } else if (config.accessToken) {
+    headers.Authorization = `Bearer ${config.accessToken}`;
+  }
+
+  const res = await fetchWithProviderRetry(
+    url,
+    { ...options, headers },
+    { providerName: 'pipedrive', timeoutMs: 15_000, allowedHosts: PIPEDRIVE_ALLOWED_HOSTS },
+  );
 
   if (!res.ok) {
     const body = await res.text();
