@@ -105,7 +105,14 @@ async function verifyProd() {
   }
 
   // 6. Secure Cookies & Cookie Domain
-  if (secureCookies === 'true' || process.env.BETTER_AUTH_URL?.startsWith('https://')) {
+  // Espelha a resolução de src/config/env.ts + src/lib/auth.ts: em produção o default é
+  // secure (SECURE_COOKIES unset => true); 'false' explícito ou BETTER_AUTH_URL https
+  // mandam, nessa ordem de precedência do consumidor.
+  const secureCookiesEffective =
+    secureCookies === 'true' ||
+    process.env.BETTER_AUTH_URL?.startsWith('https://') ||
+    (secureCookies !== 'false' && isProduction);
+  if (secureCookiesEffective) {
     audit.push({ name: 'Secure Cookies', status: 'PASS', details: 'Ativado (secure=true)' });
   } else {
     audit.push({ name: 'Secure Cookies', status: isProduction ? 'FAIL' : 'INFO', details: 'Desativado (secure=false)' });
