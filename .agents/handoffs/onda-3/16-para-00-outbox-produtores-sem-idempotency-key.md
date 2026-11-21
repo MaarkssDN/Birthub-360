@@ -86,6 +86,58 @@ decisão por dono com o warn do runtime como instrumento de verificação.
 **Status permanece `em-andamento`**: nenhum call site de produtor foi alterado (arquivos de
 outros donos — ver regra de propriedade §15/§16 do AGENTS.md).
 
+## Resolução parcial — Agente 07 (2026-11-19, branch `agente/07-waveE-outbox-idem`)
+
+Parcela do Agente 07 (IA/automações/intelligence/roleplay/`src/lib/ai`) executada conforme
+decisão de contrato do 00: `idempotencyKey` = identidade estável do fato de negócio,
+`dominio:{entityId}` ou id da execução; nunca `randomUUID()` solto.
+
+**Confirmação de inventário:** `multimodalRoleplaySimulator.service.ts` **não existe** em
+`src/features/roleplay/services/` (somente `roleplay-ai.service.ts` e
+`roleplaySession.service.ts`, nenhum `domainEventMesh.publish`) — item do inventário
+obsoleto, nada a fazer. `src/lib/ai/**` e `src/features/copiloto-ia/**` não têm produtores
+do mesh.
+
+**Call sites alterados (8 em 7 arquivos):**
+
+| Arquivo | Evento | `idempotencyKey` |
+|---|---|---|
+| `src/features/automations/automation.engine.ts` (~L613) | LEAD_ENRICHMENT_REQUESTED | `lead-enrichment:{buildTriggerIdempotencyKey(...)}` — reusa o hash determinístico do dedupe de disparo (automationId+org+entity+entityId+trigger+data): retry da ação e replay do mesmo evento colidem; evento genuinamente distinto não |
+| `src/features/intelligence/services/winLossAutopsy.service.ts` (~L361) | WIN_LOSS_AUTOPSY_COMPLETED | `win-loss-autopsy:{autopsyId}` (id do relatório gerado na execução) |
+| `src/features/intelligence/services/methodologicalDigitalTwin.service.ts` (~L214) | METHODOLOGICAL_MENTORSHIP_COMPLETED | `mentorship:{exerciseId}` |
+| `src/features/intelligence/services/autonomyGovernor.service.ts` (~L76) | AUTONOMY_LIMIT_EXCEEDED | `autonomy-eval:{actionId}` (id da avaliação `eval-${randomUUID()}`) |
+| `src/features/intelligence/services/autonomyCircuitBreaker.service.ts` (~L118, ~L160) | AUTONOMY_CIRCUIT_BREAKER_TRIPPED / _RECOVERED | `circuit-breaker-{tripped,recovered}:{orgId}:{lastDowngradeAt|lastUpgradeAt}` — timestamp da transição distingue trips futuros legítimos de retries da mesma transição |
+| `src/features/intelligence/agents/tactical/promiseGuardian.agent.ts` (~L117) | PROMISE_COMMITMENT_DETECTED | `promise-commitment:{commitmentId}` |
+| `src/features/intelligence/agents/tactical/devilsAdvocate.agent.ts` (~L135) | DEVILS_ADVOCATE_ALERT | `devils-advocate:{dealId}:{analysisDate}` — analysisDate identifica a execução; reavaliações futuras do mesmo deal não são suprimidas |
+| `src/features/knowledge/services/accountKnowledgeGraph.service.ts` (~L74, follow-up) | GRAPH_RELATIONSHIP_UPDATED | `graph-relationship:{sourceId}:{targetId}:{type}` — o `edge.id` é `edge-${randomUUID()}` por chamada, então a identidade estável da relação é a tupla (source, target, type): retry/replay da mesma relação colide na outbox; relações distintas não |
+
+**Testes:**
+- Novo `src/features/intelligence/services/__tests__/outboxIdempotencyKeys.test.ts`
+  (6 testes): cada produtor publica com a chave esperada; AutonomyGovernor gera chaves
+  distintas por avaliação; CircuitBreaker TRIPPED cobre o caminho de downgrade.
+- `src/features/automations/__tests__/automation.engine.extended-actions.test.ts`:
+  mock de `buildTriggerIdempotencyKey` trocado para implementação real (função pura);
+  assert de `idempotencyKey` `lead-enrichment:{sha256}` + teste de determinismo
+  (mesmo evento → mesma chave; evento distinto → chave distinta).
+- `src/features/knowledge/services/__tests__/accountKnowledgeGraph.outboxIdempotency.test.ts`
+  (3 testes, follow-up): GRAPH_RELATIONSHIP_UPDATED publica com a chave da tupla;
+  mesma relação republicada → mesma chave com edgeIds distintos; tipo diferente → chave distinta.
+- Dedup efetivo na outbox já coberto por `tests/unit/queue/outbox.remed05.test.ts` (16).
+
+**Gate:** `npx tsc --noEmit` limpo; `npx vitest run -c vitest.unit.config.ts` nos arquivos
+afetados 48/48; `biome check` limpo nos arquivos alterados (2 warnings pré-existentes não
+relacionados: `noNonNullAssertion` em autonomyGovernor e variável não usada em
+promiseGuardian — fora do escopo, P3).
+
+**Follow-up (2026-11-19, mesmo commit stream na branch):** call site de knowledge
+`accountKnowledgeGraph.service.ts` incluído — parcela do 07 completa (9 call sites em 8
+arquivos). Gate re-executado: `npx tsc --noEmit` limpo; vitest unitário dos arquivos
+afetados 13/13 (4 knowledge existentes + 3 novos + 6 intelligence); `biome check` limpo.
+
+**Restante (outros donos):** ai-voice (12?), integrations (06), cadence (17),
+commercial-intelligence/CRM-BI (04), gamification, mobile, proposals,
+market-intelligence, `src/lib/runtime` — seguem pendentes conforme inventário original
+(knowledge removido da lista — parcela do 07 concluída).
 ## Resolução parcial — Agente 12 (2026-11-17, branch `agente/12-waveE-outbox-idem`)
 
 Parcela do domínio voz/telefonia executada. Contrato aplicado conforme decisão do 00:
