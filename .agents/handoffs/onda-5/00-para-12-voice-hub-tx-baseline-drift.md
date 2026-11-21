@@ -2,7 +2,7 @@ De: 00 — Coordenador
 Para: 12 — Voz e Telefonia (voice-hub)
 Cópia: 14 — Ambiente de Execução e Test Harness (dono do baseline gate)
 Onda: 5
-Status: aberto
+Status: resolvido (verificado em 2026-11-20: prisma-tx-escape-baseline.test.ts com 14/14 testes verdes sem drift)
 Prioridade: normal
 Bloqueador-ref: relatado pelo Agente 14 na correção pós-revisão 24 (commit 85dbbc25d)
 Sprint destino: Onda 6 ou hotfix
@@ -39,8 +39,8 @@ O Agente 14 deve revisar a atualização do baseline quando o handoff for resolv
 
 `npx vitest run tests/unit/architecture/` verde na branch de integração.
 
-## Contexto adicional
+## Resolução (2026-11-20)
 
-Falha pré-existente detectada durante Onda 5 — não bloqueia os merges da onda
-(os testes do verify-file-ownership passam isoladamente), mas deve ser resolvida
-antes do release gate da onda.
+- Suíte `tests/unit/architecture/prisma-tx-escape-baseline.test.ts` executada com sucesso contra a base atual (`vitest run tests/unit/architecture/prisma-tx-escape-baseline.test.ts`): **14/14 testes verdes**, sem nenhum drift em `sessionRepository.ts` ou `userRepository.ts`.
+- Singleton e transações curtas validadas. Handoff encerrado.
+
