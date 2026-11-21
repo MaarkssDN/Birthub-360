@@ -5,8 +5,8 @@ import type {
   RegionIdentifier,
   RegionTelemetry,
 } from '../../../shared/contracts/multiRegionResilience.contract.js';
-import { domainEventMesh } from '../../queue/domainEventMesh.service.js';
 import { logger } from '../../logger.js';
+import { domainEventMesh } from '../../queue/domainEventMesh.service.js';
 
 export class MultiRegionResilienceService implements IMultiRegionResiliencePort {
   private regions = new Map<RegionIdentifier, RegionTelemetry>();
@@ -111,20 +111,31 @@ export class MultiRegionResilienceService implements IMultiRegionResiliencePort 
 
     this.failovers.set(failoverId, failoverEvent);
 
-    await domainEventMesh.publish({
-      eventType: 'MULTI_REGION_FAILOVER_TRIGGERED',
-      eventVersion: '1.0.0',
-      organizationId: params.organizationId ?? 'global-cluster',
-      correlationId: `failover-${failoverId}`,
-      producer: 'multi-region-resilience-engine',
-      aggregateId: params.fromRegion,
-      payload: {
-        fromRegion: params.fromRegion,
-        toRegion: params.toRegion,
-        reason: params.reason,
-        durationMs: 180,
+    // Handoff 16→00 (onda-3): idempotencyKey = identidade estável do fato de negócio.
+    // O failoverId é gerado uma única vez por execução de triggerFailover e representa o
+    // fato "failover de {from} para {to} nesta transição". Um retry de publish do MESMO
+    // evento reutiliza a chave e é deduplicado pela UNIQUE parcial da outbox; um failover
+    // genuinamente novo (nova chamada a triggerFailover) gera novo failoverId e, portanto,
+    // nova chave — nunca randomUUID por publish.
+    await domainEventMesh.publish(
+      {
+        eventType: 'MULTI_REGION_FAILOVER_TRIGGERED',
+        eventVersion: '1.0.0',
+        organizationId: params.organizationId ?? 'global-cluster',
+        correlationId: `failover-${failoverId}`,
+        producer: 'multi-region-resilience-engine',
+        aggregateId: params.fromRegion,
+        payload: {
+          fromRegion: params.fromRegion,
+          toRegion: params.toRegion,
+          reason: params.reason,
+          durationMs: 180,
+        },
       },
-    });
+      {
+        idempotencyKey: `multi-region-failover:${params.fromRegion}->${params.toRegion}:${failoverId}`,
+      },
+    );
 
     logger.warn(
       `[MultiRegionResilience] Failover ${failoverId} executado com sucesso: ${params.fromRegion} -> ${params.toRegion}. Motivo: ${params.reason}.`,

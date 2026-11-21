@@ -5,6 +5,7 @@ import { logger } from '../../../lib/logger.js';
 import { checkPlatformHealth } from '../controllers/health.controller.js';
 import { listActiveTenantIds } from '../repositories/tenantRepository.js';
 import { createMetric } from './metricService.js';
+import { registerQueueForMetrics } from '../../../lib/queue/metrics.js';
 
 /**
  * Real, honest platform-wide SLA sampling — see
@@ -98,6 +99,7 @@ export function startSlaScheduler(): { queue: Queue; worker: Worker } | undefine
     const connection = { ...getRedisConnectionOptions(), maxRetriesPerRequest: null };
 
     queue = new Queue(QUEUE_NAME, { connection });
+    registerQueueForMetrics(QUEUE_NAME, queue);
 
     // Dedicated live ioredis client for the actual readiness ping — separate from the plain
     // connection options object BullMQ builds its own client from (see `getRedisConnectionOptions`
