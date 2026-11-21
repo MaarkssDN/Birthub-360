@@ -39,7 +39,9 @@ export interface S3PutObjectEncryptedPayload {
 
 export class MissingKmsEncryptionError extends Error {
   constructor(reason: string) {
-    super(`Segurança de Voz [Sol]: Rejeitado upload de áudio sem criptografia SSE-KMS obrigatória. Motivo: ${reason}`);
+    super(
+      `Segurança de Voz [Sol]: Rejeitado upload de áudio sem criptografia SSE-KMS obrigatória. Motivo: ${reason}`,
+    );
     this.name = 'MissingKmsEncryptionError';
   }
 }
@@ -71,7 +73,9 @@ export function buildSecureVoiceRecordingUpload(
 
   const effectiveKmsKey = ssekmsKeyId || DEFAULT_VOICE_KMS_KEY_ALIAS;
   if (!effectiveKmsKey) {
-    throw new MissingKmsEncryptionError('Chave KMS (SSEKMSKeyId) é obrigatória para gravações de áudio.');
+    throw new MissingKmsEncryptionError(
+      'Chave KMS (SSEKMSKeyId) é obrigatória para gravações de áudio.',
+    );
   }
 
   logger.info(

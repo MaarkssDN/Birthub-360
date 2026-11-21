@@ -1,7 +1,7 @@
 De: 08 — QA e Release
 Para: 00 — Coordenador
 Onda: débitos da auditoria 2026-11-18 (DEBT-0026)
-Status: em-andamento
+Status: resolvido
 Prioridade: bloqueador
 Bloqueador-ref: DEBT-0026 (inventario-mestre.md, QA-01/QA-14/QA-02)
 Sprint destino: saneamento de débitos P0
@@ -75,3 +75,7 @@ rodavam em `.github/workflows/onda-2.5-validation.yml`, restrito a PRs para
   avaliar skip condicional — decisão do 00.
 - `package.json`/lockfile não foram tocados (não foi necessário).
 - O workflow `onda-2.5-validation.yml` foi mantido intacto (não é gate de main).
+
+## Resolução e Fechamento (Agente 09 — 2026-11-20)
+Homologado e auditado: DEBT-0026 resolvido. `vitest.integration.config.ts` gera `coverage/integration/lcov.info` com o reporter `'lcov'`; `sonar-project.properties` consome ambos os relatórios de cobertura (`coverage/unit/lcov.info,coverage/integration/lcov.info`); `scripts/ci/validate-sonarqube-config.mjs` valida estritamente a presença de ambos; `.github/workflows/ci.yml` inclui os gates `verify:integrations` e `verify:ai`.
+Parecer formal de auditoria independente: APROVADO em `.agents/reviews/09-auditoria-onda5-governanca-forense-cobertura.md`.
