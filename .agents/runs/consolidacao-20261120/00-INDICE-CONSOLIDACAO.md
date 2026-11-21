@@ -16,6 +16,8 @@ Data: 2026-11-20 · Protocolo V2.0 · Estado de `origin/main`: `5174664b2`
 | 08 | `08-MEMORIA-OPERACIONAL.md` | Contexto autocontido para continuidade sem as conversas |
 | 09 | `09-PLANO-DE-CONTINUIDADE.md` | Sequência priorizada de próximas ações |
 | 10 | `10-PROVENIENCIA-E-EVIDENCIAS.md` | Fontes, níveis de confiança, lacunas |
+| 11 | `11-DELTA-VERIFICACAO-20261120.md` | Delta de verificação, adoção de 100 agentes e revisão de PRs |
+| 12 | `12-PLANO-MESTRE-OPERACIONAL-100-AGENTES.md` | Plano Mestre de Execução por Ondas, Backlog Mestre, Matriz 100 Agentes e Checklist Release |
 
 ## Fontes processadas nesta consolidação
 
