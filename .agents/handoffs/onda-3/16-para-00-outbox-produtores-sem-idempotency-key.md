@@ -86,6 +86,24 @@ decisão por dono com o warn do runtime como instrumento de verificação.
 **Status permanece `em-andamento`**: nenhum call site de produtor foi alterado (arquivos de
 outros donos — ver regra de propriedade §15/§16 do AGENTS.md).
 
+## ResoluÃ§Ã£o parcial â€” Agente 10 (2026-11-19, branch `agente/10-waveE-outbox-idem`)
+
+Parcela do Agente 10 executada: `src/lib/runtime/services/multiRegionResilience.service.ts`
+(`MULTI_REGION_FAILOVER_TRIGGERED`, ex-linha 114) â€” confirmado via grep que era o Ãºnico call
+site de `domainEventMesh.publish` sem `idempotencyKey` em `src/lib/runtime/`.
+
+- **Chave adotada:** `multi-region-failover:{fromRegion}->{toRegion}:{failoverId}`.
+  O `failoverId` Ã© gerado uma Ãºnica vez por execuÃ§Ã£o de `triggerFailover` e identifica o fato
+  de negÃ³cio "failover de {from} para {to} nesta transiÃ§Ã£o". Retry de publish do mesmo evento
+  reutiliza a chave (dedup pela UNIQUE parcial `(organizationId, idempotencyKey)`); failover
+  genuinamente novo gera novo `failoverId` â†’ nova chave. NÃ£o usa `randomUUID` por publish.
+- **Teste:** `tests/unit/runtime/multiRegionResilience.service.test.ts` â€” novo caso
+  "publica MULTI_REGION_FAILOVER_TRIGGERED com idempotencyKey determinÃ­stica por failover"
+  (spy em `domainEventMesh.publish`; 2 failovers â†’ 2 chaves distintas e determinÃ­sticas).
+- **Gate local:** `npx tsc --noEmit` limpo; `vitest` do arquivo 5/5; `biome check`/`lint`
+  limpos nos arquivos alterados.
+- Demais produtores do inventÃ¡rio seguem com seus donos â€” status do handoff inalterado.
+## ResoluÃ§Ã£o parcial â€” Agente 12 (2026-11-17, branch `agente/12-waveE-outbox-idem`)
 ## Resolução parcial — Agente 09 (Mobile), 2026-11-19
 
 Branch `agente/09-waveE-outbox-idem`. Parcela: `src/features/mobile/mobileEdgeAi.service.ts`
@@ -333,4 +351,5 @@ Verificação:
 - `src/features/intelligence/services/__tests__/outboxIdempotencyKeys.test.ts` ? 6/6 verdes.
 - `src/features/knowledge/services/__tests__/accountKnowledgeGraph.outboxIdempotency.test.ts` ? 3/3 verdes.
 - Total acumulado nas frentes de outbox: Agente 16 (runtime), 04 (BI), 17 (cadence), 06 (integrations), 02 (gamification) e 07 (IA/automações/knowledge) 100% integrados e cobertos por testes unitários determinísticos.
+
 
