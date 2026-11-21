@@ -1105,6 +1105,7 @@ model Organization {
   domainEventConsumptions     DomainEventConsumption[]
   rebalanceApprovals          RebalanceApproval[]
   dataSubjectRequests         DataSubjectRequest[]
+  swarmAuditLogs              SwarmAuditLog[]
 }
 
 // ─── Comercial Inteligente (Revenue Command Center) ────────────────────────
@@ -6114,4 +6115,28 @@ model DomainEventConsumption {
 
   @@unique([organizationId, eventId, consumer])
   @@index([processedAt])
+}
+
+/// Auditoria das ações do enxame de agentes (swarmAudit.service.ts). Tenant-bearing: RLS forçada
+/// por organizationId (migration 20261120120000_swarm_audit_log). `ipAddress` e `userAgent` são
+/// dado pessoal (LGPD) — retenção/expurgo PENDENTE de decisão humana (handoff 11-12-para-01).
+model SwarmAuditLog {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  agentType     String
+  action        String
+  parameters    Json
+  /// 'success' | 'error' (validado na aplicação, como no serviço).
+  result        String
+  errorMessage  String?      @db.Text
+  userId        String?
+  sessionId     String?
+  correlationId String?
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
 }

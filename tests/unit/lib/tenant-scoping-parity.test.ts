@@ -168,6 +168,10 @@ const KNOWN_RLS_ONLY_MODELS = [
   // REMED-04: persistência de aprovação de rebalanceamento via PrismaRebalanceApprovalStore
   // passando organizationId explícito e protegido por RLS FORCE tenant_isolation.
   'RebalanceApproval',
+  // Onda 1 (handoff 14->01): log de auditoria do enxame de agentes. swarmAudit.service.ts sempre
+  // passa organizationId explícito em toda escrita e leitura (create/findMany/count) e a tabela é
+  // protegida por RLS FORCE tenant_isolation; RLS sozinha basta, sem injeção automática.
+  'SwarmAuditLog',
 ].sort();
 
 describe('paridade de tenant-scoping entre os dois pontos de acesso Prisma (TENANT-007)', () => {
