@@ -104,6 +104,15 @@ export const bullmqDlqMessagesTotal = new client.Counter({
   labelNames: ['queue', 'reason'] as const,
 });
 
+// WRK-06: webhookService.dispatch nunca lança (contrato: efeito colateral não derruba a
+// operação de negócio), mas evento dropado precisa ser observável — antes era só um
+// logger.error que ninguém alertava.
+export const webhookDispatchDroppedTotal = new client.Counter({
+  name: 'webhook_dispatch_dropped_total',
+  help: 'Total de eventos de webhook descartados antes do enqueue (falha de resolução de endpoint ou erro no dispatch).',
+  labelNames: ['reason'] as const,
+});
+
 export const workerProcessUp = new client.Gauge({
   name: 'birthhub360_worker_up',
   help: '1 quando o processo dedicado de workers terminou o bootstrap e está ativo.',
