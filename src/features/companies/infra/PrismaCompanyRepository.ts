@@ -1,6 +1,6 @@
 import type { Prisma } from '@prisma/client';
-import { toDeterministicCnpj } from '../../../lib/cnpj.js';
 import { env } from '../../../config/env.js';
+import { toDeterministicCnpj } from '../../../lib/cnpj.js';
 import { fromPrismaCompanyStatus, toPrismaCompanyStatus } from '../../../lib/enumMap.js';
 import { prisma } from '../../../lib/prisma.js';
 import { searchCompaniesPage } from '../../../lib/search/index.js';
@@ -181,6 +181,14 @@ export class PrismaCompanyRepository implements CompanyRepository {
   async delete(organizationId: string, id: string): Promise<Company> {
     const existing = await prisma.company.findFirst({ where: { id, organizationId } });
     if (!existing) throw new Error('Company not found');
+    // DEBT-0019 (auditoria 2026-11-18, CRM-05) — RESOLVIDO POR INFRAESTRUTURA, não por código
+    // aqui: `prisma` é o client estendido de src/lib/prisma.ts, cujo `$allOperations` intercepta
+    // `delete`/`deleteMany` de models auditáveis (Company está em AUDITABLE_MODELS) e converte
+    // em SOFT DELETE real — grava `deletedAt`/`deletedBy`/`deleteReason`, registra AuditLog e faz
+    // cascade soft delete de `contacts` e `leads` (este inclui deals: Lead.funnel='Negocio').
+    // Leituras já filtram `deletedAt: null` automaticamente (applySoftDeleteReadFilter). Ou
+    // seja: NÃO é hard delete — não alterar para `update({deletedAt})` manual (perderia a
+    // semântica de auditoria de "delete") nem remover o pré-check de tenant acima.
     const deleted = await prisma.company.delete({ where: { id, organizationId } });
     return serializeCompanyStatus(deleted) as Company;
   }

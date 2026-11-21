@@ -2,10 +2,12 @@ import type { Prisma } from '@prisma/client';
 import { type NextFunction, type Request, type Response, Router } from 'express';
 import { hasRequiredRole } from '../../../lib/auth/authorization.js';
 import { prisma } from '../../../lib/prisma.js';
+import { container } from '../../../shared/di/container.js';
 import { routeParam } from '../../../shared/http/routeParams.js';
 import type { AuthRequest } from '../../../shared/middlewares/authenticateToken.js';
 import { AppError } from '../../../shared/middlewares/errorHandler.js';
 import { requireRole } from '../../../shared/middlewares/requireRole.js';
+import type { LeadUseCases } from '../../crm/application/LeadUseCases.js';
 import {
   exportLeadToBitrixNow,
   findUnimportedBitrixLeadIds,
@@ -279,7 +281,18 @@ router.post(
       if (!connection)
         throw new AppError('Bitrix24 não está conectado para esta organização.', 400);
 
-      const data: Prisma.LeadUpdateInput = {
+      // DEBT-0017 (auditoria 2026-11-18, CRM-02): a escrita local passa pelo caso de uso
+      // canônico do CRM (`LeadUseCases.updateLead` → `PrismaLeadRepository.update`), que mantém
+      // `pipelineId`/`pipelineStageId`/`probability` em sincronia com `status` (CRM-011), grava
+      // `LeadStageHistory`, aplica a regra de `closedAt` e dispara os eventos de CRM — o
+      // `prisma.lead.update` direto anterior gravava o enum sem nenhum desses efeitos.
+      // `status` vai como RÓTULO legível (LeadStatus do zod/`enumMap.ts`), não como identificador
+      // Prisma — o repositório faz o de/para via `toPrismaLeadStatus`. Campos fora do
+      // `leadSchema` (lastInteraction/nextAction/lossReason) seguem no mesmo payload: o
+      // repositório faz spread de `data` no update, então são persistidos na mesma escrita
+      // atômica — por isso não usamos `updateLeadStatus` (que só aceita status + owner/tags e
+      // abriria uma segunda escrita).
+      const data: Record<string, unknown> = {
         lastInteraction: new Date(),
         nextAction: body.nextActionWhen ? new Date(body.nextActionWhen) : undefined,
       };
@@ -287,7 +300,7 @@ router.post(
       // — os demais resultados mudam a etapa real só no Bitrix (via bitrixStatusId abaixo), que é
       // a fonte da verdade pro funil de SDR. Ver AGENTS.md desta pasta.
       if (isDisqualify) {
-        data.status = 'Lead_Desqualificado';
+        data.status = 'Lead Desqualificado';
         // Bug real corrigido aqui: `body.lossReasonId` é o ID numérico opaco do Bitrix (ex.
         // "21638"), mas todo o resto do produto que lê `Lead.lossReason` (Win/Loss Analysis,
         // `lossTaxonomy.ts` do Comercial Inteligente, e a própria sincronização de volta ao
@@ -301,7 +314,7 @@ router.post(
         // consumidor a jusante já receber o mesmo formato que o Bitrix também produz.
         data.lossReason = resolveLossReasonLabel(body.lossReasonId as string);
       } else if (body.outcome === 'convertido') {
-        data.status = 'Convertido_em_Oportunidade';
+        data.status = 'Convertido em Oportunidade';
       }
 
       // Bitrix é a fonte da verdade pro funil de SDR (ver AGENTS.md desta pasta) — grava lá
@@ -319,7 +332,14 @@ router.post(
         body.bitrixStatusId ? { statusId: body.bitrixStatusId } : undefined,
       );
 
-      await prisma.lead.update({ where: { id }, data });
+      await container
+        .resolve<LeadUseCases>('LeadUseCases')
+        .updateLead(
+          organizationId,
+          id,
+          data as unknown as Parameters<LeadUseCases['updateLead']>[2],
+          userId,
+        );
 
       // Histórico próprio pro dashboard — antes desta rodada o único registro do desfecho ficava
       // só no comentário de texto livre do Bitrix, ilegível pra agregação. Vem depois da escrita
@@ -488,7 +508,13 @@ router.post(
       const newOwnerId = chosen.email
         ? await resolveBirthubUserIdByEmail(organizationId, chosen.email)
         : null;
-      await prisma.lead.update({ where: { id }, data: { owner: newOwnerId } });
+      // DEBT-0017 (mesma classe do /register): owner também passa pelo caso de uso canônico —
+      // `PrismaLeadRepository.update` registra a troca de responsável em LeadFieldChange
+      // (recordLeadFieldChanges), que o prisma.lead.update direto não fazia.
+      const { id: actorUserId } = (req as AuthRequest).user;
+      await container
+        .resolve<LeadUseCases>('LeadUseCases')
+        .updateLead(organizationId, id, { owner: newOwnerId }, actorUserId);
 
       await postCommentToBitrix(
         organizationId,
