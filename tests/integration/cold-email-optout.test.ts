@@ -56,6 +56,9 @@ beforeAll(async () =>
 afterEach(async () =>
   withRlsBypass(async () => {
     await prisma.optOutRecord.deleteMany({ where: { organizationId: ORG_ID } });
+    // DEBT-0011: disparos confirmados agora gravam EmailMessage — limpar entre testes para que
+    // a trava de dedupe (campaignId+target) de um caso não contamine o seguinte.
+    await prisma.emailMessage.deleteMany({ where: { organizationId: ORG_ID } });
     sendEmailMock.mockReset();
   }),
 );
@@ -184,5 +187,36 @@ describe('cold-email.service.ts x opt-out unificado (Postgres real)', () => {
 
     expect(result).toBe(true);
     expect(sendEmailMock).toHaveBeenCalledTimes(1);
+  });
+
+  // DEBT-0011: prova contra Postgres real que o disparo confirmado persiste EmailMessage
+  // (direction 'outbound', providerMessageId = chave de dedupe) e que a repetição do mesmo
+  // campaignId+target é bloqueada antes do SMTP — o "duplo clique reenvia" do débito.
+  it('disparo confirmado persiste EmailMessage outbound e dedupe bloqueia reenvio', async () => {
+    sendEmailMock.mockResolvedValue({ messageId: '<int@mailer>' });
+    const campaign = baseCampaign(ORG_ID, {
+      id: 'campaign-persist-1',
+      targetEmail: 'persist@empresa-cliente.com.br',
+    });
+
+    const first = await asOrg(ORG_ID, () => sendColdEmail(campaign));
+    expect(first).toBe(true);
+    expect(sendEmailMock).toHaveBeenCalledTimes(1);
+
+    const row = await asOrg(ORG_ID, () =>
+      prisma.emailMessage.findFirst({
+        where: { organizationId: ORG_ID, toEmail: 'persist@empresa-cliente.com.br' },
+      }),
+    );
+    expect(row).toMatchObject({
+      organizationId: ORG_ID,
+      direction: 'outbound',
+      providerMessageId: 'cold-email:campaign-persist-1:persist@empresa-cliente.com.br',
+      subject: 'Assunto',
+    });
+
+    const second = await asOrg(ORG_ID, () => sendColdEmail(campaign));
+    expect(second).toBe(false);
+    expect(sendEmailMock).toHaveBeenCalledTimes(1); // SMTP não foi tocado de novo
   });
 });

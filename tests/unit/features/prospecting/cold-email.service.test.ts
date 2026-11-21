@@ -46,6 +46,21 @@ vi.mock('../../../../src/features/prospecting/services/enrichment/domainGuess.js
   resolveEmailStatus: (...args: unknown[]) => resolveEmailStatusMock(...args),
 }));
 
+const emailMessageFindUniqueMock = vi.fn();
+const emailMessageCreateMock = vi.fn();
+const activityCreateMock = vi.fn();
+vi.mock('../../../../src/lib/prisma.js', () => ({
+  prisma: {
+    emailMessage: {
+      findUnique: (...args: unknown[]) => emailMessageFindUniqueMock(...args),
+      create: (...args: unknown[]) => emailMessageCreateMock(...args),
+    },
+    activity: {
+      create: (...args: unknown[]) => activityCreateMock(...args),
+    },
+  },
+}));
+
 const { sendColdEmail } =
   await import('../../../../src/features/prospecting/services/cold-email.service');
 
@@ -64,6 +79,9 @@ beforeEach(() => {
   vi.clearAllMocks();
   isOptedOutMock.mockResolvedValue(false);
   resolveEmailStatusMock.mockResolvedValue('verified');
+  emailMessageFindUniqueMock.mockResolvedValue(null);
+  emailMessageCreateMock.mockResolvedValue({ id: 'em-1' });
+  activityCreateMock.mockResolvedValue({ id: 'act-1' });
 });
 
 describe('Cold Email Service', () => {
