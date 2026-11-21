@@ -33,6 +33,7 @@ import type {
   CreateInsightInput,
   HandoffSummaryDTO,
   LeadLookupResultDTO,
+  NextBestActionDTO,
   RecordConsentInput,
 } from '../domain/CopilotoIa.js';
 import {
@@ -465,5 +466,81 @@ export class CopilotoIaUseCases {
   ): Promise<WhatsAppResponseTimeStats> {
     const messages = await this.repository.getWhatsAppMessageTimingsForLead(organizationId, leadId);
     return computeWhatsAppResponseTimeStats(messages);
+  }
+
+  /**
+   * Trilha C.1 — Próxima Melhor Ação (Next Best Action).
+   * Consolida a saúde do negócio, tempo de resposta no WhatsApp e sinais de conversa em uma
+   * recomendação prescritiva para o closer/SDR em tempo real.
+   */
+  async getNextBestAction(organizationId: string, leadId: string): Promise<NextBestActionDTO> {
+    const [dealHealth, timings] = await Promise.all([
+      this.repository.latestDealHealthSnapshot(organizationId, leadId),
+      this.repository.getWhatsAppMessageTimingsForLead(organizationId, leadId),
+    ]);
+
+    const stats = computeWhatsAppResponseTimeStats(timings);
+    const healthScore = dealHealth?.score ?? null;
+
+    let slaStatus: 'OK' | 'ALERTA' | 'CRITICO' = 'OK';
+    const isCriticalSla =
+      stats.hasPendingResponse &&
+      stats.pendingSinceMs !== null &&
+      stats.pendingSinceMs > 4 * 60 * 60 * 1000;
+
+    if (isCriticalSla) {
+      slaStatus = 'CRITICO';
+    } else if (stats.hasPendingResponse) {
+      slaStatus = 'ALERTA';
+    }
+
+    if (stats.hasPendingResponse) {
+      return {
+        leadId,
+        action: 'Responder mensagem pendente do Lead no WhatsApp',
+        priority: 'ALTA',
+        reason:
+          isCriticalSla
+            ? 'Lead aguarda retorno há mais de 4 horas (SLA estourado). Risco crítico de perda por inatividade.'
+            : 'Lead enviou mensagem e aguarda resposta. Contato ágil eleva a chance de avanço.',
+        suggestedChannel: 'WHATSAPP',
+        dealHealthScore: healthScore,
+        responseTimeSlaStatus: slaStatus,
+      };
+    }
+
+    if (healthScore !== null && healthScore < 50) {
+      return {
+        leadId,
+        action: 'Agendar Alinhamento / Reunião de Resgate de Oportunidade',
+        priority: 'ALTA',
+        reason: `Saúde do negócio em nível de alerta (${healthScore}/100) com objeções pendentes. Recomenda-se alinhamento imediato.`,
+        suggestedChannel: 'REUNIAO',
+        dealHealthScore: healthScore,
+        responseTimeSlaStatus: slaStatus,
+      };
+    }
+
+    if (healthScore !== null && healthScore >= 75) {
+      return {
+        leadId,
+        action: 'Enviar Proposta Comercial e Fechamento',
+        priority: 'ALTA',
+        reason: `Negócio com alto engajamento (${healthScore}/100) e sem objeções bloqueantes. Momento ideal para envio da minuta.`,
+        suggestedChannel: 'EMAIL',
+        dealHealthScore: healthScore,
+        responseTimeSlaStatus: slaStatus,
+      };
+    }
+
+    return {
+      leadId,
+      action: 'Follow-up de Qualificação e Próximos Passos',
+      priority: 'MEDIA',
+      reason: 'Manter cadência de comunicação ativa para avançar de estágio no funil.',
+      suggestedChannel: 'WHATSAPP',
+      dealHealthScore: healthScore,
+      responseTimeSlaStatus: slaStatus,
+    };
   }
 }
