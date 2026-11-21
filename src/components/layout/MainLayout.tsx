@@ -14,6 +14,8 @@ import { Toaster } from '../ui/Toaster.js';
 import { PageTransition } from './PageTransition.js';
 import { deriveActiveTabFromPath } from './settingsPillarNav.js';
 import type { TabType } from './tabMeta.js';
+import { getActiveModuleId } from './moduleRegistry.js';
+import { getModuleTheme } from './moduleThemes.js';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -29,6 +31,8 @@ export function MainLayout({ children, activeTab: activeTabProp }: MainLayoutPro
   // (topbar, breadcrumbs, widget de agente) tratava o pilar como "Ajustes Globais".
   const { pathname } = useLocation();
   const activeTab = activeTabProp ?? deriveActiveTabFromPath(pathname);
+  const activeModuleId = getActiveModuleId(pathname);
+  const activeModuleTheme = getModuleTheme(activeModuleId);
   const domainAccent =
     /forecast|revenue|dashboard|analytics|pipeline|performance|metas|predictability/.test(activeTab)
       ? 'gold'
@@ -63,9 +67,18 @@ export function MainLayout({ children, activeTab: activeTabProp }: MainLayoutPro
 
           <main
             className="relative flex-1 overflow-y-auto"
+            data-module={activeModuleId}
             data-accent={domainAccent}
             data-page-accent={domainAccent}
-            style={{ '--page-accent': `var(--color-heading-${domainAccent})` } as CSSProperties}
+            style={
+              {
+                '--page-accent': `var(--color-heading-${domainAccent})`,
+                '--module-primary': activeModuleTheme.primaryColor,
+                '--module-accent': activeModuleTheme.accentColor,
+                '--module-gradient': activeModuleTheme.gradient,
+                '--module-glow': activeModuleTheme.hoverGlow,
+              } as CSSProperties
+            }
           >
             <DataFlowLines />
             <PageTransition id={pathname}>{children}</PageTransition>

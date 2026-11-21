@@ -15,6 +15,16 @@ import { decodeTextEscapes, findEncodedTokenSpans } from '../../../lib/ai/guardr
  *
  * Inclui mitigação anti-encoding (Base64, hex, unicode/hex escapes \uXXXX/\xNN
  * e percent-encoding %XX) para evitar bypass de detecção de dados sensíveis.
+ *
+ * Decisão de deduplicação (handoff 00→07, wave E/F): este serviço mantém
+ * contrato próprio, separado de `src/lib/ai/guardrails/pii.guard.ts`. O guard
+ * bloqueia/redige a saída de IA com allowlist de domínios; este serviço
+ * retorna relatório de detecção (tipos, posições, texto mascarado) para
+ * pipelines de inteligência e cobre tipos adicionais (CNPJ, RG, CEP).
+ * Ambos compartilham apenas os helpers de decoding de
+ * `src/lib/ai/guardrails/encoding.ts` — unificar os detectores mudaria
+ * contratos de retorno distintos e ampliaria o blast radius de LGPD,
+ * então a duplicação de padrões é intencional e documentada.
  */
 
 export interface PIIDetectionResult {

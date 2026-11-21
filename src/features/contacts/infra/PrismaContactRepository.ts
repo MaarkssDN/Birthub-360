@@ -55,10 +55,33 @@ export class PrismaContactRepository implements ContactRepository {
     return contact as unknown as Contact | null;
   }
 
+  /**
+   * DEBT-0018: companyId precisa pertencer à mesma organização do contato.
+   * Antes o create/update repassava companyId sem validar tenant — um contato
+   * da org A podia ser vinculado a uma empresa da org B (a FK só garante que a
+   * empresa existe, não que é do mesmo tenant). FK composta ideal esbarra em
+   * limitação do Prisma (organizationId já participa da relação `organization`);
+   * a validação explícita é o fechamento correto no nível de aplicação.
+   */
+  private async assertCompanyBelongsToOrg(
+    organizationId: string,
+    companyId: string | null | undefined,
+  ): Promise<void> {
+    if (!companyId) return;
+    const company = await prisma.company.findFirst({
+      where: { id: companyId, organizationId },
+      select: { id: true },
+    });
+    if (!company) {
+      throw new Error('Company not found for this organization');
+    }
+  }
+
   async create(
     organizationId: string,
     data: Partial<Contact> & { birthDate?: string | Date },
   ): Promise<Contact> {
+    await this.assertCompanyBelongsToOrg(organizationId, data.companyId);
     return prisma.contact.create({
       data: {
         ...data,
@@ -78,6 +101,7 @@ export class PrismaContactRepository implements ContactRepository {
 
     const existing = await prisma.contact.findFirst({ where: { id, organizationId } });
     if (!existing) throw new Error('Contact not found');
+    await this.assertCompanyBelongsToOrg(organizationId, data.companyId);
 
     return prisma.contact.update({
       where: { id },

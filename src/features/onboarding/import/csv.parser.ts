@@ -118,9 +118,7 @@ export async function* parseCsvStream(
 
   for await (const rawChunk of source) {
     const chunkText =
-      typeof rawChunk === 'string'
-        ? rawChunk
-        : decoder.decode(rawChunk, { stream: true });
+      typeof rawChunk === 'string' ? rawChunk : decoder.decode(rawChunk, { stream: true });
 
     buffer += firstChunk ? chunkText.replace(/^\uFEFF/, '') : chunkText;
     firstChunk = false;

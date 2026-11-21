@@ -29,7 +29,10 @@ export async function runAutonomousSupervisorLoop<TOutput>(params: {
   executeStep: (stepIndex: number) => Promise<AutonomousAgentStepResult<TOutput>>;
 }): Promise<{ output: TOutput; stepsExecuted: number; traceThoughts: string[] }> {
   const configuredMax = params.maxSteps ?? MAX_AUTONOMOUS_AGENT_STEPS;
-  const effectiveMaxSteps = Math.min(Math.max(1, Math.trunc(configuredMax)), MAX_AUTONOMOUS_AGENT_STEPS);
+  const effectiveMaxSteps = Math.min(
+    Math.max(1, Math.trunc(configuredMax)),
+    MAX_AUTONOMOUS_AGENT_STEPS,
+  );
 
   const traceThoughts: string[] = [];
 

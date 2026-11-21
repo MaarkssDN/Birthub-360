@@ -44,3 +44,44 @@ Origem: reconciliação EXP-06 (handoff `onda-forense-20261020/00-para-15-forens
 ## Triagem (Agente 10, 2026-11-18)
 
 O handoff permanece `aberto`, mas os itens 1, 2, 4 e 5 tocam `src/lib/security/**` (propriedade do Agente 15) e `src/shared/contracts/**` (Agente 18); o item 3 (agendamento periódico) toca worker/filas (Agente 16/07). A fatia do Agente 10 — alerta de observabilidade quando `complianceRating=FAIL_BLOCKED` ou `simulated=true` em produção (`infrastructure/observability/alert.rules.yml`) — é prematura enquanto não existir scanner real/métrica. Handoff de retorno aberto: `.agents/handoffs/onda-reconciliacao-20261114/10-para-15-scanner-seguranca-real.md`. Recomendação ao 00: re-despachar a implementação central ao Agente 15.
+
+## Resolução (Agente 10, 2026-11-20 — branch `agente/10-waveF-scanner-real`)
+
+Implementado o scanner real conforme os itens 1, 2, 4 e 5:
+
+1. `runSecuritySweep()` agora executa scanner real via novo módulo
+   `src/lib/security/services/securitySweepScanner.ts`:
+   - `npm audit --json` parseado fail-closed (mesma validação de
+     `scripts/security/check-audit-waivers.ts`) → `SecurityVulnerability[]` real
+     (GHSA/CVE extraídos de `via[].url`/`title`; entradas de cadeia `via` string
+     ignoradas para não duplicar achados);
+   - SBOM via `npx cyclonedx-npm` (mesma ferramenta de `npm run security:sbom`,
+     `--output-reproducible`) em arquivo temporário → SHA-256 dos bytes do arquivo
+     + contagem real e recursiva de componentes CycloneDX;
+   - `totalDependenciesScanned` = componentes reais do SBOM.
+2. Waivers parseados de `docs/security/AUDIT_WAIVERS.md` (somente seção
+   `## Waivers ativos`; `## Débito conhecido`/`## Histórico` nunca autorizam).
+   Expiração: `expired_at:` tem precedência; senão data após a palavra-chave
+   "reavaliar/reavaliação" (linhas "Reavaliado em" = passado são ignoradas).
+   Waiver sem data parseável ou vencido NÃO é aplicado (fail-closed).
+   `checkWaiverValidity()` agora recebe advisory ID (GHSA/CVE) e lê o arquivo a
+   cada chamada.
+3. `simulated: false` em relatórios reais; `complianceRating` calculado de dados
+   reais: HIGH/CRITICAL sem waiver ativo → `FAIL_BLOCKED`; qualquer achado
+   remanescente → `WARN_WAIVED`; limpo → `PASS`.
+4. Simulador removido (não mantido como fixture): os testes injetam
+   `SecuritySweepScanner` (stdout/arquivo de processo), não dados fabricados no
+   relatório. Smoke real executado: SBOM 2311 componentes, 1 finding MEDIUM
+   (`@opentelemetry/instrumentation-http`, GHSA-3V2P-HM54-8QCQ, seção "Débito
+   conhecido" → sem waiver → WARN_WAIVED).
+5. Item de agendamento no worker (propriedade Agente 23/Pina) → novo handoff
+   `.agents/handoffs/onda-reconciliacao-20261114/10-para-23-agendar-security-sweep.md`.
+
+Pendências registradas:
+- `src/shared/contracts/continuousSecurityAudit.contract.ts` (Agente 18/21): o
+  shape NÃO mudou (`simulated?: boolean` já existia), mas o comentário de
+  cabeçalho do contrato ainda descreve o serviço como simulador — atualizar na
+  próxima revisão do contrato.
+- `checkWaiverValidity()` mudou a semântica do parâmetro: antes era ID interno
+  (`WAIVER-2026-DEV-01`, semeado); agora é advisory ID (GHSA/CVE) do waiver.
+  Nenhum consumidor em `src/` fora de testes (verificado via git grep).
