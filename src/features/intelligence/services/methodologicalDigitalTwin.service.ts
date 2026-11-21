@@ -1,4 +1,6 @@
 import { randomUUID } from 'node:crypto';
+import { logger } from '../../../lib/logger.js';
+import { domainEventMesh } from '../../../lib/queue/domainEventMesh.service.js';
 import type {
   CommercialTechniquePattern,
   IMethodologicalDigitalTwinPort,
@@ -6,8 +8,6 @@ import type {
   MentorshipExercise,
   MethodologicalMentorProfile,
 } from '../../../shared/contracts/methodologicalDigitalTwin.contract.js';
-import { domainEventMesh } from '../../../lib/queue/domainEventMesh.service.js';
-import { logger } from '../../../lib/logger.js';
 
 export class MethodologicalDigitalTwinService implements IMethodologicalDigitalTwinPort {
   private techniques = new Map<string, CommercialTechniquePattern>(); // key: `${orgId}:${techId}`
@@ -211,21 +211,28 @@ export class MethodologicalDigitalTwinService implements IMethodologicalDigitalT
       evaluatedAt: new Date().toISOString(),
     };
 
-    await domainEventMesh.publish({
-      eventType: 'METHODOLOGICAL_MENTORSHIP_COMPLETED',
-      eventVersion: '1.0.0',
-      organizationId: params.organizationId,
-      correlationId: `mentorship-${params.exerciseId}`,
-      producer: 'methodological-digital-twin-service',
-      aggregateId: params.sellerId,
-      payload: {
-        exerciseId: params.exerciseId,
-        sellerId: params.sellerId,
-        techniqueId: exercise.techniqueId,
-        scorePercent: evaluation.scorePercent,
-        spinAdherencePercent: evaluation.spinAdherencePercent,
+    await domainEventMesh.publish(
+      {
+        eventType: 'METHODOLOGICAL_MENTORSHIP_COMPLETED',
+        eventVersion: '1.0.0',
+        organizationId: params.organizationId,
+        correlationId: `mentorship-${params.exerciseId}`,
+        producer: 'methodological-digital-twin-service',
+        aggregateId: params.sellerId,
+        payload: {
+          exerciseId: params.exerciseId,
+          sellerId: params.sellerId,
+          techniqueId: exercise.techniqueId,
+          scorePercent: evaluation.scorePercent,
+          spinAdherencePercent: evaluation.spinAdherencePercent,
+        },
       },
-    });
+      {
+        // Um exercício de mentoria é concluído uma única vez; retry da avaliação
+        // (mesmo exerciseId) não deve republicar o evento.
+        idempotencyKey: `mentorship:${params.exerciseId}`,
+      },
+    );
 
     logger.info(
       `[DigitalTwin] Exercício ${params.exerciseId} concluído pelo vendedor ${params.sellerId}. Nota: ${evaluation.scorePercent}%.`,

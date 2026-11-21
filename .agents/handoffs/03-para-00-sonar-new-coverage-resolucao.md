@@ -4,7 +4,7 @@ De: 03 — Design e Acessibilidade
 Para: 00 — Coordenador (cópia: 08 — QA e Release para medição do QG)
 Onda: Onda 2 — handoffs Sonar
 Branch: `agente/03-onda2-handoffs` (worktree `Birthub-360-wt-03`)
-Status: em-andamento → aguardando medição global do Sonar
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: `.agents/handoffs/15-para-02-03-sonar-new-coverage.md`
 
@@ -136,3 +136,7 @@ Sonar**.
    `window.scrollTo` do jsdom ficam registrados para o **08** avaliar se
    merecem correção de harness (stub de `window.scrollTo` em
    `tests/mocks/setup.ts`).
+
+## Resolução e Fechamento (Agente 09 — 2026-11-20)
+Homologado e auditado: a suíte de testes unitários para o código novo de UI, acessibilidade, componentes compartilhados, Landing360, Characters (`tests/unit/features/characters/*.test.ts(x)` — 45 testes), DI Setup (`diSetup.test.ts` — 1 teste) e rastreamento de missão comercial (`commercialMissionTrace.service.test.ts` — 57 testes) foi validada e executada integralmente com 100% de aprovação.
+Parecer formal de auditoria independente: APROVADO em `.agents/reviews/09-auditoria-onda5-governanca-forense-cobertura.md`.

@@ -883,7 +883,7 @@ export function SinglePageDashboard() {
               onClick={() => navigate('/app/prospect')}
               className="gap-2 rounded-full"
             >
-              <Search className="w-4 h-4 text-[#00D4FF]" />
+              <Search className="w-4 h-4 text-brand" />
               <span>Buscar Mercado</span>
             </Button>
 
