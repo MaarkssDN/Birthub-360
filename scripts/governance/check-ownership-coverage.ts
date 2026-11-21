@@ -81,6 +81,12 @@ export type OwnershipManifestEntry = {
   rule?: string;
   /** coverage "review": script npm alternativo que cobre a verificação (opcional). */
   alternateCheck?: string;
+  /**
+   * Exceção estreita e auditável ao passo 4 (existência do path): o AGENTS.md §15 reserva o path
+   * para um dono, mas o diretório ainda não foi criado (ex.: src/lib/db/rls/**). Exige
+   * "justification" explicando a ausência; sem este campo, path inexistente continua violação.
+   */
+  allowMissingPath?: boolean;
 };
 
 export type OwnershipManifest = {
@@ -380,7 +386,8 @@ export function evaluateOwnershipCoverage(input: CoverageCheckInput): string[] {
 
     if (
       isPathLikeScope(scope) &&
-      !scopeExistsInRepo(scope, root)
+      !scopeExistsInRepo(scope, root) &&
+      !(manifestEntry.allowMissingPath === true && (manifestEntry.justification?.trim().length ?? 0) >= MIN_JUSTIFICATION_LENGTH)
     ) {
       violations.push(
         `Escopo "${scope}": path não existe no repositório — a matriz do AGENTS.md §15 (ou o ` +
