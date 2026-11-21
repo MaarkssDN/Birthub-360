@@ -88,7 +88,7 @@ describe('[16 Cora] PrismaContactRepository & PrismaActivityRepository — ausê
     expect(prismaMock.activity.findMany).toHaveBeenCalledTimes(1);
     expect(prismaMock.activity.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { organizationId: 'org-1' },
+        where: { organizationId: 'org-1', deletedAt: null },
         include: { lead: { include: { company: true, contact: true } } },
       }),
     );
@@ -102,7 +102,7 @@ describe('[16 Cora] PrismaContactRepository & PrismaActivityRepository — ausê
     expect(prismaMock.activity.findMany).toHaveBeenCalledTimes(1);
     expect(prismaMock.activity.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { organizationId: 'org-1', date: { gte: from, lt: to } },
+        where: { organizationId: 'org-1', deletedAt: null, date: { gte: from, lt: to } },
         include: { lead: { include: { company: true, contact: true } } },
       }),
     );

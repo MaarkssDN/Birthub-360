@@ -89,7 +89,11 @@ flowchart LR
 - [x] **[08 · Dora]** Rotina de expurgo LGPD propagando deleção física para logs de auditoria e telemetria agregada. (Validado em `src/shared/services/dataSubjectErasure.service.ts` e `tests/unit/shared/services/dataSubjectErasureCascade.test.ts`)
 - [x] **[09 · Silas]** Automação de verificação de hash SHA em `.agents/reviews/` para validação em CI. (Validado em `scripts/governance/verify-review-hashes.ts` e `tests/unit/governance/verify-review-hashes.test.ts`)
 - [x] **[10 · Mara]** Linters automáticos de SQL no build para checagem estrita de predicados `tenantId`. (Validado em `scripts/security/check-sql-tenant-predicates.ts` e `tests/unit/scripts/checkSqlTenantPredicates.test.ts`)
+<<<<<<< HEAD
+- [x] **[11 · Pietro]** Remoção de `onDelete: Cascade` em tabelas massivas (`Activity`, `TimelineEvent`), substituindo por soft delete. (Validado em `prisma/schema.prisma`, `prisma/migrations/20261120120000_onda2_soft_delete_activity_timeline/migration.sql`, `src/features/activities/infra/PrismaActivityRepository.ts` e `tests/unit/prisma/softDeleteActivityTimeline.test.ts`)
+=======
 - [x] **[11 · Pietro]** Remoção de `onDelete: Cascade` em tabelas massivas (`Activity`, `TimelineEvent`), substituindo por soft delete. (Validado em `src/lib/db/softDeleteCascadeGuard.ts`, `tests/unit/db/softDeleteCascadeGuard.test.ts` e `.agents/handoffs/onda-2-10-para-11-12-soft-delete-activity-timeline.md`)
+>>>>>>> origin/main
 - [x] **[14 · Bia]** Isolamento estrito em `prisma/seed.ts` utilizando geradores UUID v4 randômicos sem IDs estáticos. (Validado em `prisma/seed.ts` e `tests/unit/prisma/seedIsolation.test.ts`)
 - [x] **[16 · Cora]** Resolução de N+1 queries na listagem de CRM e leads usando Prisma `include` otimizado. (Validado em `src/features/crm/infra/__tests__/PrismaLeadRepository.test.ts`, `tests/unit/features/crm/leadQueryOptimization.test.ts` e `tests/unit/db/crm-repositories-n-plus-one.test.ts`)
 - [x] **[17 · Remo]** Prefixo obrigatório `${tenantId}:` em todas as chaves distribuídas de cache Redis. (Validado em `src/lib/cache/tenantCache.service.ts` e `tests/unit/lib/cache/tenantCacheService.test.ts`)
@@ -208,8 +212,8 @@ flowchart LR
 
 | Onda | Data Início | Data Término | Qtd Itens | Parecer Auditoria | Assinatura |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Onda 1** | 20/11/2026 | 20/11/2026 | 16 itens | `[x] APROVADO` | Agente 09 (Silas) |
-| **Onda 2** | 20/11/2026 | 20/11/2026 | 25 itens | `[x] APROVADO` | Agente 09 (Silas) |
+| **Onda 1** | 19/11/2026 | 20/11/2026 | 18 itens | `[x] APROVADO` (PR #485) | Agente 09 (Silas) |
+| **Onda 2** | 20/11/2026 | 20/11/2026 | 25 itens | `[x] APROVADO` (PR #490 / #504) | Agente 09 (Silas) |
 | **Onda 3** | 20/11/2026 | 20/11/2026 | 21 itens | `[x] APROVADO` | Agente 09 (Silas) |
 | **Onda 4** | 20/11/2026 | 20/11/2026 | 36 itens | `[x] APROVADO` | Agente 09 (Silas) |
 | **Onda 5** | 20/11/2026 | 20/11/2026 | 2 itens | `[x] APROVADO` | Agente 09 (Silas) |
