@@ -38,7 +38,22 @@ const DEFAULT_CIRCUIT_CONFIG: CircuitConfig = {
   cooldownMs: 30_000,
 };
 
-const KNOWN_SERVICES: DownstreamCircuitName[] = ['redis', 'database', 'bitrix', 'telephony', 'ai'];
+// MEL-42 (Onda 6 / DEM-20261114-007): o registry cobre todas as integrações externas que o
+// Agente 06 opera — Bitrix, Stripe, Omie, WhatsApp e provedores de IA (estes últimos via nomes
+// dinâmicos `ai:<provider>`, criados sob demanda por `ensureEntry`, por isso não listados aqui).
+// Nomes arbitrários continuam válidos (`(string & {})`), então integrações novas não exigem
+// mudança neste arquivo — a entrada explícita só garante que o circuit exista no snapshot de
+// `/health/ready` mesmo antes da primeira chamada.
+const KNOWN_SERVICES: DownstreamCircuitName[] = [
+  'redis',
+  'database',
+  'bitrix',
+  'telephony',
+  'ai',
+  'stripe',
+  'omie',
+  'whatsapp',
+];
 
 export class CircuitOpenError extends Error {
   public readonly service: string;

@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { type Job, Queue, Worker } from 'bullmq';
 import { ExternalCrmService } from '../../features/integrations/shared/ExternalCrmService.js';
 import { requestContext } from '../async-context.js';
@@ -49,8 +50,23 @@ export async function queueLeadPushToExternalCrms(
     return;
   }
 
+  // MEL-48/MEL-41 (Onda 6): jobId determinístico deduplica reenvios idênticos (double-submit,
+  // retry do caller, update que não mudou o payload). O hash cobre name/amount/stageLabel — um
+  // payload DIFERENTE gera jobId novo e é enviado normalmente; `removeOnComplete` (24h) limita a
+  // janela de dedup, mesmo padrão de `bitrix-push-`/`enrich-company-`. Antes usava `Date.now()`,
+  // o que garantia job novo a cada chamada e permitia pushes duplicados ao CRM externo.
+  const payloadHash = createHash('sha256')
+    .update(
+      JSON.stringify({
+        name: jobData.payload.name,
+        amount: jobData.payload.amount ?? null,
+        stageLabel: jobData.payload.stageLabel ?? null,
+      }),
+    )
+    .digest('hex')
+    .slice(0, 16);
   await externalCrmOutboundQueue.add('push-lead', jobData, {
-    jobId: `crm-push-${jobData.organizationId}-${jobData.leadId}-${Date.now()}`,
+    jobId: `crm-push-${jobData.organizationId}-${jobData.leadId}-${payloadHash}`,
   });
   logger.info(
     { organizationId: jobData.organizationId, leadId: jobData.leadId },

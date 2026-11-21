@@ -1,4 +1,5 @@
 import { DisallowedHostError, fetchWithTimeout, HttpTimeoutError } from '../../../lib/http.js';
+import { circuitGuard } from '../../../lib/circuitGuard.js';
 import { logger } from '../../../lib/logger.js';
 import { prisma } from '../../../lib/prisma.js';
 import {
@@ -64,53 +65,64 @@ async function callOmieRpc(
   call: string,
   param: Record<string, unknown>,
 ): Promise<OmieResponse> {
-  const res = await retryWithBackoff(
-    async () => {
-      let response: Response;
-      try {
-        response = await fetchWithTimeout(
-          `${OMIE_API_BASE}${endpoint}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ call, app_key: appKey, app_secret: appSecret, param: [param] }),
-          },
-          OMIE_TIMEOUT_MS,
-          OMIE_ALLOWED_HOSTS,
-        );
-      } catch (err: any) {
-        if (err instanceof DisallowedHostError) throw err;
-        if (err instanceof HttpTimeoutError) {
+  // MEL-42: circuit breaker compartilhado (src/lib/circuitGuard.ts) — falhas de provedor
+  // (rede/timeout/429/5xx após esgotar o retry) abrem o circuito 'omie' e as chamadas seguintes
+  // falham rápido com CircuitOpenError. `faultstring` no corpo (erro de negócio/credencial) é
+  // retornado normalmente e conta como sucesso — provedor alcançável.
+  const res = await circuitGuard.execute('omie', () =>
+    retryWithBackoff(
+      async () => {
+        let response: Response;
+        try {
+          response = await fetchWithTimeout(
+            `${OMIE_API_BASE}${endpoint}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                call,
+                app_key: appKey,
+                app_secret: appSecret,
+                param: [param],
+              }),
+            },
+            OMIE_TIMEOUT_MS,
+            OMIE_ALLOWED_HOSTS,
+          );
+        } catch (err: any) {
+          if (err instanceof DisallowedHostError) throw err;
+          if (err instanceof HttpTimeoutError) {
+            throw new TransientHttpError(
+              `Tempo limite esgotado ao comunicar com o Omie (timeout ${OMIE_TIMEOUT_MS / 1000}s).`,
+              undefined,
+              undefined,
+              err,
+            );
+          }
           throw new TransientHttpError(
-            `Tempo limite esgotado ao comunicar com o Omie (timeout ${OMIE_TIMEOUT_MS / 1000}s).`,
+            'Falha de rede ao comunicar com o Omie.',
             undefined,
             undefined,
             err,
           );
         }
-        throw new TransientHttpError(
-          'Falha de rede ao comunicar com o Omie.',
-          undefined,
-          undefined,
-          err,
-        );
-      }
-      if (response.status === 429) {
-        throw new TransientHttpError(
-          'Omie aplicou limite de chamadas (HTTP 429).',
-          429,
-          parseRetryAfterMs(response) ?? undefined,
-        );
-      }
-      if (response.status >= 500) {
-        throw new TransientHttpError(
-          `Omie respondeu com erro de servidor (HTTP ${response.status}).`,
-          response.status,
-        );
-      }
-      return response;
-    },
-    { label: 'omie', maxAttempts: OMIE_MAX_ATTEMPTS },
+        if (response.status === 429) {
+          throw new TransientHttpError(
+            'Omie aplicou limite de chamadas (HTTP 429).',
+            429,
+            parseRetryAfterMs(response) ?? undefined,
+          );
+        }
+        if (response.status >= 500) {
+          throw new TransientHttpError(
+            `Omie respondeu com erro de servidor (HTTP ${response.status}).`,
+            response.status,
+          );
+        }
+        return response;
+      },
+      { label: 'omie', maxAttempts: OMIE_MAX_ATTEMPTS },
+    ),
   );
 
   const json = (await res.json().catch(() => ({}))) as OmieResponse;
