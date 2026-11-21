@@ -190,6 +190,7 @@ export function Gamified3DOrb({
       onClick={handleInteract}
       disabled={!interactive}
       title={interactive ? 'Clique no Cristal 3D para obter impulso de energia!' : undefined}
+      aria-label={interactive ? 'Interagir com o cristal de energia 3D' : 'Cristal de energia 3D'}
     >
       <Canvas
         camera={{ position: [0, 0, 4.2], fov: 45 }}

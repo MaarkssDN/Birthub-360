@@ -2,6 +2,7 @@ import { Queue, Worker } from 'bullmq';
 import { getRedisConnectionOptions } from '../lib/env.js';
 import { logger } from '../../../lib/logger.js';
 import { purgeExpiredCallLogs } from './callLogService.js';
+import { registerQueueForMetrics } from '../../../lib/queue/metrics.js';
 
 /**
  * Schedules the daily CallLog retention purge described in
@@ -35,6 +36,7 @@ export function startRetentionScheduler(): { queue: Queue; worker: Worker } | un
     const connection = { ...getRedisConnectionOptions(), maxRetriesPerRequest: null };
 
     queue = new Queue(QUEUE_NAME, { connection });
+    registerQueueForMetrics(QUEUE_NAME, queue);
 
     worker = new Worker(
       QUEUE_NAME,
