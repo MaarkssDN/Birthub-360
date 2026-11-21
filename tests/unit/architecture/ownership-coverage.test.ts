@@ -442,6 +442,44 @@ describe('evaluateApprovalGate (regras de aprovação em prosa do §15)', () => 
   });
 });
 
+describe('allowMissingPath', () => {
+  const matrix: OwnershipEntry[] = [{ scope: 'pasta-reservada-xyz/**', owner: 'Agente 13' }];
+  const baseInput = { depcruiseRules, npmScriptNames: realNpmScripts, root: ROOT };
+  const entry = {
+    scope: 'pasta-reservada-xyz/**',
+    owner: 'Agente 13',
+    coverage: 'review' as const,
+    justification: JUSTIFICATION,
+  };
+
+  it('sem allowMissingPath, path inexistente continua violação', () => {
+    const violations = evaluateOwnershipCoverage({
+      ...baseInput,
+      matrixEntries: matrix,
+      manifest: manifestWith([entry]),
+    });
+    expect(violations.some((v) => v.includes('não existe no repositório'))).toBe(true);
+  });
+
+  it('com allowMissingPath e justificativa, path reservado inexistente é aceito', () => {
+    const violations = evaluateOwnershipCoverage({
+      ...baseInput,
+      matrixEntries: matrix,
+      manifest: manifestWith([{ ...entry, allowMissingPath: true }]),
+    });
+    expect(violations).toEqual([]);
+  });
+
+  it('allowMissingPath sem justificativa suficiente não isenta', () => {
+    const violations = evaluateOwnershipCoverage({
+      ...baseInput,
+      matrixEntries: matrix,
+      manifest: manifestWith([{ ...entry, justification: 'curta', allowMissingPath: true }]),
+    });
+    expect(violations.some((v) => v.includes('não existe no repositório'))).toBe(true);
+  });
+});
+
 describe('repositório real (gate de não-regressão)', () => {
   it('AGENTS.md §15 real + manifesto real + .dependency-cruiser.cjs real = zero violações', () => {
     const matrixEntries = parseOwnershipMatrix(readFileSync(AGENTS_PATH, 'utf-8'));

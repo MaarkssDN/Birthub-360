@@ -1,5 +1,6 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { multiRegionResilienceService } from '../../../src/lib/runtime/services/multiRegionResilience.service.js';
+import { domainEventMesh } from '../../../src/lib/queue/domainEventMesh.service.js';
 
 describe('MultiRegionResilienceService — Evolução 19', () => {
   beforeEach(() => {
@@ -49,6 +50,42 @@ describe('MultiRegionResilienceService — Evolução 19', () => {
 
     const status = await multiRegionResilienceService.getFailoverStatus(failover.failoverId);
     expect(status?.status).toBe('completed');
+  });
+
+  it('publica MULTI_REGION_FAILOVER_TRIGGERED com idempotencyKey determinística por failover', async () => {
+    const spy = vi.spyOn(domainEventMesh, 'publish');
+    try {
+      const first = await multiRegionResilienceService.triggerFailover({
+        fromRegion: 'sa-east-1',
+        toRegion: 'us-east-1',
+        reason: 'Latência anômala em sa-east-1',
+        organizationId: 'tenant-enterprise-01',
+      });
+      const second = await multiRegionResilienceService.triggerFailover({
+        fromRegion: 'sa-east-1',
+        toRegion: 'us-west-2',
+        reason: 'Segunda transição de failover',
+        organizationId: 'tenant-enterprise-01',
+      });
+
+      expect(spy).toHaveBeenCalledTimes(2);
+
+      const keyFirst = spy.mock.calls[0][1]?.idempotencyKey;
+      const keySecond = spy.mock.calls[1][1]?.idempotencyKey;
+
+      // Chave determinística: derivada do failoverId do fato de negócio, nunca randomUUID por publish.
+      expect(keyFirst).toBe(
+        `multi-region-failover:sa-east-1->us-east-1:${first.failoverId}`,
+      );
+      expect(keySecond).toBe(
+        `multi-region-failover:sa-east-1->us-west-2:${second.failoverId}`,
+      );
+      // Failovers genuinamente novos (failoverIds distintos) nunca colidem na chave.
+      expect(keyFirst).not.toBe(keySecond);
+      expect(spy.mock.calls[0][0].eventType).toBe('MULTI_REGION_FAILOVER_TRIGGERED');
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it('deve recusar failover quando origem e destino forem idênticos', async () => {

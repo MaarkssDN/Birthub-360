@@ -499,7 +499,7 @@ function BH360LogoMark({ size = 40 }: { size?: number }) {
     <span style={{ width: size, height: size }} className="inline-block relative shrink-0">
       <BirthHubLogo
         variant="icon"
-        title="Birth Hub 360º"
+        title="Birth Hub 360°"
         className="w-full h-full"
         animated={true}
       />
@@ -2974,14 +2974,14 @@ export function Landing360({
                     </div>
                   )}
 
-                  {/* Botão de Envio Primário Impeccable */}
+                  {/* Botão de Envio Primário Impeccable (Calibrado WCAG 2.2 AA - D4) */}
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full h-12 rounded-xl cursor-pointer shadow-lg transition-all duration-200 disabled:opacity-50 text-white font-mono text-sm font-bold uppercase tracking-wider flex items-center justify-center gap-2.5 bg-gradient-to-r from-[#0284C7] via-[#00D4FF] to-[#0284C7] hover:brightness-110 shadow-[#00D4FF]/25 hover:shadow-[#00D4FF]/40 active:scale-[0.99]"
+                    className="w-full h-12 rounded-xl cursor-pointer shadow-lg transition-all duration-200 disabled:opacity-50 text-white dark:text-[#041c32] font-mono text-sm font-bold uppercase tracking-wider flex items-center justify-center gap-2.5 bg-gradient-to-r from-[#0369A1] via-[#0284C7] to-[#0369A1] dark:from-[#00D4FF] dark:via-[#38BDF8] dark:to-[#00D4FF] hover:brightness-105 shadow-[#00D4FF]/20 hover:shadow-[#00D4FF]/35 active:scale-[0.99]"
                   >
                     {isSubmitting ? (
-                      <Loader2 className="w-5 h-5 animate-spin text-white" />
+                      <Loader2 className="w-5 h-5 animate-spin text-white dark:text-[#041c32]" />
                     ) : (
                       <>
                         <span>

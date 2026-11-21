@@ -1,7 +1,7 @@
 - De: 11
 - Para: 00
 - Onda: c0
-- Status: aberto
+- Status: resolvido (módulos antigos removidos e /tools protegido com guarda anti-bypass e auth em frontend.ts)
 - Prioridade: normal
 
 ## Resolução

@@ -207,21 +207,21 @@ describe('AI Safety - Adversarial Tests', () => {
   });
 
   describe('Encoding Bypass Prevention', () => {
-    it('deve documentar que Base64 não é detectado atualmente', () => {
+    it('deve detectar PII em Base64', () => {
       // CPF 123.456.789-09 em Base64
       const base64PII = 'MTIzLjQ1Ni43ODktMDk=';
       const result = detectPII(base64PII);
 
-      // Lacuna conhecida - não detecta Base64
-      expect(result.blocked).toBe(false);
+      expect(result.blocked).toBe(true);
     });
 
-    it('deve documentar que Unicode escape não é detectado atualmente', () => {
-      const unicodePII = 'CPF: \\u0031\\u0032\\u0033';
+    it('deve detectar PII em Unicode escape', () => {
+      // CPF 123.456.789-09 com cada caractere como escape \uXXXX
+      const unicodePII =
+        'CPF: \\u0031\\u0032\\u0033\\u002e\\u0034\\u0035\\u0036\\u002e\\u0037\\u0038\\u0039\\u002d\\u0030\\u0039';
       const result = detectPII(unicodePII);
 
-      // Lacuna conhecida - não detecta Unicode escape
-      expect(result.blocked).toBe(false);
+      expect(result.blocked).toBe(true);
     });
   });
 });

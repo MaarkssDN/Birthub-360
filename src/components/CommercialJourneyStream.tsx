@@ -41,7 +41,7 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
   };
 
   return (
-    <div className="w-full relative overflow-hidden rounded-[2.25rem] border border-line/80 bg-[#EAEAE2] dark:bg-[#121316] text-ink p-4 sm:p-6 lg:p-7 shadow-[0_16px_48px_-12px_rgba(0,0,0,0.08)] dark:shadow-[0_16px_48px_-12px_rgba(0,0,0,0.6)] transition-all duration-300">
+    <div className="w-full relative overflow-hidden rounded-[2.25rem] border border-line/80 bg-[#F4F7FB] dark:bg-[#0D0D0D] text-ink p-4 sm:p-6 lg:p-7 shadow-[0_16px_48px_-12px_rgba(0,0,0,0.08)] dark:shadow-[0_16px_48px_-12px_rgba(0,0,0,0.6)] transition-all duration-300">
       {/* ── TOP SCULPTED HEADER ZONE (Referência: Ronas IT / Spatial UI) ── */}
       <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 mb-6">
         {/* Left Carved Title & Back/Close */}
@@ -94,7 +94,7 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
                     : 'text-ink-2 hover:text-ink hover:bg-white/50 dark:hover:bg-white/[0.05]'
                 }`}
               >
-                <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-[#00D4FF]' : 'text-ink-2'}`} />
+                <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-brand' : 'text-ink-2'}`} />
                 <span>{item.label}</span>
               </button>
             );
@@ -110,8 +110,8 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
           transition={{ duration: 0.15 }}
           className="lg:col-span-4 p-4 rounded-3xl bg-white dark:bg-[#18191E] border border-line/80 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] flex items-center gap-3.5"
         >
-          <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-[#00D4FF]/20 to-[#D4F434]/20 border border-[#00D4FF]/30 flex items-center justify-center shrink-0 shadow-xs">
-            <Building2 className="w-6 h-6 text-[#00D4FF]" />
+          <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-brand/20 to-[#D4F434]/20 border border-brand/30 flex items-center justify-center shrink-0 shadow-xs">
+            <Building2 className="w-6 h-6 text-brand" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
@@ -273,7 +273,7 @@ export function CommercialJourneyStream({ onClose }: CommercialJourneyStreamProp
                   <span className="text-ink-2 font-mono text-[11px]">
                     Média ICP: <strong className="text-ink">160k</strong>
                   </span>
-                  <span className="text-[#00D4FF] font-bold font-mono text-xs">+10 pts</span>
+                  <span className="text-brand font-bold font-mono text-xs">+10 pts</span>
                 </div>
               </motion.div>
 

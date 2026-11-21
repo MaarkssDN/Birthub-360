@@ -44,11 +44,16 @@ vi.mock('@/lib/prisma', () => ({ prisma: prismaMock }));
 
 // Handoff 16→00 (onda-3): os publishes do webhook devem carregar idempotencyKey derivada do
 // fingerprint da entrega (o Bitrix não envia id de evento). Mock para fixar as chaves.
-const { meshPublishMock } = vi.hoisted(() => ({
+const { meshPublishMock, enqueueBitrixWebhookEventMock } = vi.hoisted(() => ({
   meshPublishMock: vi.fn().mockResolvedValue(undefined),
+  enqueueBitrixWebhookEventMock: vi.fn().mockResolvedValue(false),
 }));
 vi.mock('@/lib/queue/domainEventMesh.service', () => ({
   domainEventMesh: { publish: meshPublishMock },
+}));
+vi.mock('../bitrixWebhook.queue.js', () => ({
+  enqueueBitrixWebhookEvent: enqueueBitrixWebhookEventMock,
+  createBitrixWebhookWorker: vi.fn(),
 }));
 
 const clientMock = { callBitrix: vi.fn() };
@@ -229,7 +234,7 @@ describe('POST /webhook/:connectionId', () => {
    * `BitrixSyncFailuresHigh` observa. Diferente do push/pull automático (outboundSync.ts/
    * syncRules.ts), que já incrementavam a métrica em toda falha desde antes desta onda.
    */
-  it('incrementa bitrix_sync_failures_total quando o processamento do evento falha (achado da Onda 7)', async () => {
+  it('incrementa bitrix_sync_failures_total quando o processamento do evento falha (achado da Onda 7) e responde 200 imediato sem bloquear o portal', async () => {
     prismaMock.bitrixConnection.findUnique.mockResolvedValue(CONNECTION);
     prismaMock.lead.findFirst.mockResolvedValue({
       id: 'lead-local-1',
@@ -247,16 +252,59 @@ describe('POST /webhook/:connectionId', () => {
       .post('/webhook/conn-1')
       .send('auth[application_token]=segredo-correto&event=ONCRMLEADUPDATE&data[FIELDS][ID]=123');
 
-    expect(res.status).toBe(500);
-    expect(prismaMock.bitrixSyncLog.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({ status: 'failed', direction: 'inbound' }),
-      }),
-    );
+    expect(res.status).toBe(200);
+    await vi.waitFor(() => {
+      expect(prismaMock.bitrixSyncLog.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ status: 'failed', direction: 'inbound' }),
+        }),
+      );
+    });
     const metric = await bitrixSyncFailuresTotal.get();
     expect(metric.values).toContainEqual(
       expect.objectContaining({ labels: { tenant: 'org-1', entity: 'lead' }, value: 1 }),
     );
+  });
+
+  it('responde 200 imediato (queued: true) e enfileira o evento via BullMQ quando a fila está ativa, preservando replay guard e tenancy no worker', async () => {
+    enqueueBitrixWebhookEventMock.mockResolvedValueOnce(true);
+    prismaMock.bitrixConnection.findUnique.mockResolvedValue(CONNECTION);
+
+    const app = await buildApp();
+    const res = await request(app)
+      .post('/webhook/conn-1')
+      .send('auth[application_token]=segredo-correto&event=ONCRMLEADUPDATE&data[FIELDS][ID]=123');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ success: true, queued: true });
+    expect(enqueueBitrixWebhookEventMock).toHaveBeenCalledWith({
+      organizationId: 'org-1',
+      connectionId: 'conn-1',
+      eventType: 'ONCRMLEADUPDATE',
+      bitrixRecordId: '123',
+      deliveryFingerprint: 'fingerprint-de-teste',
+    });
+    // Processamento não rodou no ciclo HTTP — foi delegado à fila BullMQ.
+    expect(clientMock.callBitrix).not.toHaveBeenCalled();
+
+    // Agora simula o worker BullMQ consumindo o job enfileirado:
+    prismaMock.lead.findFirst.mockResolvedValue({
+      id: 'lead-local-1',
+      organizationId: 'org-1',
+      bitrixLeadId: '123',
+      contactId: null,
+      qualification: null,
+    });
+    clientMock.callBitrix.mockResolvedValue({ result: { ID: '123', STATUS_ID: 'CONVERTED' } });
+    prismaMock.lead.update.mockResolvedValue({});
+
+    const { processQueuedWebhookEvent } = await import('../bitrix.webhook.js');
+    await processQueuedWebhookEvent(enqueueBitrixWebhookEventMock.mock.calls[0][0]);
+
+    expect(clientMock.callBitrix).toHaveBeenCalledWith(CONNECTION.webhookUrl, 'crm.lead.get', {
+      id: '123',
+    });
+    expect(contextStore.some((s) => s.tenantId === 'org-1')).toBe(true);
   });
 
   it('publica no domainEventMesh com idempotencyKey estável derivada do fingerprint da entrega (webhook reentregue não duplica evento)', async () => {
