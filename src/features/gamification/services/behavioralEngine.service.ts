@@ -1,4 +1,6 @@
 import { randomUUID } from 'node:crypto';
+import { logger } from '../../../lib/logger.js';
+import { domainEventMesh } from '../../../lib/queue/domainEventMesh.service.js';
 import type {
   AdaptiveCoachingPlan,
   CommercialBottleneck,
@@ -6,8 +8,6 @@ import type {
   IBehavioralEnginePort,
 } from '../../../shared/contracts/behavioralEngine.contract.js';
 import { calculateSellerLevel } from '../domain/Gamification.js';
-import { domainEventMesh } from '../../../lib/queue/domainEventMesh.service.js';
-import { logger } from '../../../lib/logger.js';
 
 export class BehavioralEngineService implements IBehavioralEnginePort {
   // Armazenamento em memória com isolamento estrito por tenant
@@ -164,21 +164,24 @@ export class BehavioralEngineService implements IBehavioralEnginePort {
       const key = `${params.organizationId}:${b.id}`;
       this.bottlenecksStore.set(key, b);
 
-      await domainEventMesh.publish({
-        eventType: 'COMMERCIAL_BOTTLENECK_DETECTED',
-        eventVersion: '1.0.0',
-        organizationId: params.organizationId,
-        correlationId: `btn-evt-${b.id}`,
-        producer: 'behavioral-engine-service',
-        aggregateId: params.sellerId,
-        payload: {
-          bottleneckId: b.id,
-          metric: b.metric,
-          severity: b.severity,
-          observedValue: b.observedValue,
-          benchmarkValue: b.benchmarkValue,
+      await domainEventMesh.publish(
+        {
+          eventType: 'COMMERCIAL_BOTTLENECK_DETECTED',
+          eventVersion: '1.0.0',
+          organizationId: params.organizationId,
+          correlationId: `btn-evt-${b.id}`,
+          producer: 'behavioral-engine-service',
+          aggregateId: params.sellerId,
+          payload: {
+            bottleneckId: b.id,
+            metric: b.metric,
+            severity: b.severity,
+            observedValue: b.observedValue,
+            benchmarkValue: b.benchmarkValue,
+          },
         },
-      });
+        { idempotencyKey: `bottleneck-detected:${b.id}` },
+      );
     }
 
     return detected;
@@ -266,20 +269,23 @@ export class BehavioralEngineService implements IBehavioralEnginePort {
     const key = `${organizationId}:${missionId}`;
     this.missionsStore.set(key, mission);
 
-    await domainEventMesh.publish({
-      eventType: 'ADAPTIVE_MISSION_SUGGESTED',
-      eventVersion: '1.0.0',
-      organizationId,
-      correlationId: `msn-evt-${missionId}`,
-      producer: 'behavioral-engine-service',
-      aggregateId: b.sellerId,
-      payload: {
-        missionId,
-        title: mission.title,
-        rewardXp: xp,
-        deadline,
+    await domainEventMesh.publish(
+      {
+        eventType: 'ADAPTIVE_MISSION_SUGGESTED',
+        eventVersion: '1.0.0',
+        organizationId,
+        correlationId: `msn-evt-${missionId}`,
+        producer: 'behavioral-engine-service',
+        aggregateId: b.sellerId,
+        payload: {
+          missionId,
+          title: mission.title,
+          rewardXp: xp,
+          deadline,
+        },
       },
-    });
+      { idempotencyKey: `adaptive-mission:${missionId}` },
+    );
 
     return mission;
   }
@@ -390,36 +396,42 @@ export class BehavioralEngineService implements IBehavioralEnginePort {
     this.missionsStore.set(key, mission);
 
     // Publicar eventos auditáveis
-    await domainEventMesh.publish({
-      eventType: 'ADAPTIVE_MISSION_COMPLETED',
-      eventVersion: '1.0.0',
-      organizationId,
-      correlationId: `reward-${missionId}`,
-      producer: 'behavioral-engine-service',
-      aggregateId: sellerId,
-      payload: {
-        missionId,
-        awardedXp,
-        newTotalXp,
-        badgeUnlocked: mission.reward.badgeId,
-        verifierSource: evidence.verifierSource,
+    await domainEventMesh.publish(
+      {
+        eventType: 'ADAPTIVE_MISSION_COMPLETED',
+        eventVersion: '1.0.0',
+        organizationId,
+        correlationId: `reward-${missionId}`,
+        producer: 'behavioral-engine-service',
+        aggregateId: sellerId,
+        payload: {
+          missionId,
+          awardedXp,
+          newTotalXp,
+          badgeUnlocked: mission.reward.badgeId,
+          verifierSource: evidence.verifierSource,
+        },
       },
-    });
+      { idempotencyKey: `adaptive-mission-completed:${missionId}` },
+    );
 
-    await domainEventMesh.publish({
-      eventType: 'SELLER_XP_REWARDED',
-      eventVersion: '1.0.0',
-      organizationId,
-      correlationId: `xp-${missionId}`,
-      producer: 'behavioral-engine-service',
-      aggregateId: sellerId,
-      payload: {
-        sellerId,
-        xp: awardedXp,
-        totalXp: newTotalXp,
-        level: newLevel,
+    await domainEventMesh.publish(
+      {
+        eventType: 'SELLER_XP_REWARDED',
+        eventVersion: '1.0.0',
+        organizationId,
+        correlationId: `xp-${missionId}`,
+        producer: 'behavioral-engine-service',
+        aggregateId: sellerId,
+        payload: {
+          sellerId,
+          xp: awardedXp,
+          totalXp: newTotalXp,
+          level: newLevel,
+        },
       },
-    });
+      { idempotencyKey: `seller-xp:${sellerId}:${missionId}` },
+    );
 
     logger.info(
       `[BehavioralEngine] Recompensa de ${awardedXp} XP concedida com sucesso ao vendedor ${sellerId} no tenant ${organizationId}. Novo nível: ${newLevel} (${levelTitle}).`,
