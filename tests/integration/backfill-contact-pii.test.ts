@@ -113,5 +113,5 @@ describe('backfill-contact-pii — migra Contact legado (texto puro) para cifrad
       contactId,
     ]);
     expect(afterSecondRun.rows[0].email).toBe(migrated.rows[0].email);
-  }, 30_000);
+  }, 60_000); // Onda 6 / MEL-44: cada runBackfill() spawna `node --import tsx` (grafo inteiro do script) — ~10-20s por execução, 2 execuções por teste; 30s era margem fina sob carga do enxame.
 });

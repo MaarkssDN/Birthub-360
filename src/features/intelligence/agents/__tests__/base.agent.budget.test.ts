@@ -8,6 +8,59 @@ vi.mock('../../../../lib/ai/budget.js', () => ({
 vi.mock('../fallback.util.js', () => ({
   buildModelWithFallback: vi.fn(),
 }));
+// Onda 6 / MEL-44: sem este mock, o caminho de falha do gate de orçamento chama
+// recordAgentFailure → saveAgentMemory → prisma.agentMemory.upsert contra o DATABASE_URL dummy
+// do setup unitário (localhost:5432, nada escutando). O pool do pg fica ~25s em retries de
+// conexão antes do ECONNREFUSED — o teste "passava" em ~27s e estourava timeout em ambientes
+// mais lentos/ocupados (flake reportado). A persistência de memória não é o que este teste
+// prova (é o bloqueio do orçamento antes de montar modelo), então mockamos a store inteira.
+vi.mock('../agentMemory.store.js', () => ({
+  saveAgentMemory: vi.fn().mockResolvedValue(undefined),
+  recordAgentFailure: vi.fn().mockResolvedValue(undefined),
+  loadAgentMemory: vi.fn().mockResolvedValue(null),
+}));
+// gateway.js e checkpointer.ts ficam DEPOIS do gate de orçamento no fluxo de AgentExecutor —
+// o teste prova justamente que a execução para antes deles. Sem os mocks, o import estático
+// avalia o grafo inteiro do gateway (semanticCache → Redis, providers LiteLLM, prisma) e do
+// PostgresSaver a cada execução do arquivo, o que dominava o tempo do teste em máquinas
+// carregadas e era a outra metade do flake de timeout.
+vi.mock('../../../../lib/ai/gateway.js', () => ({
+  getAiModel: vi.fn(),
+  logAiUsage: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock('../../../../lib/ai/checkpointer.js', () => ({
+  checkpointer: {},
+  ensureCheckpointerReady: vi.fn().mockResolvedValue(undefined),
+  closeCheckpointerPool: vi.fn().mockResolvedValue(undefined),
+  __resetCheckpointerSetupForTests: vi.fn(),
+}));
+// Onda 6 / MEL-44 (causa raiz medida): `BDRAgent.run()` faz `await import()` de 6 módulos de
+// tools ANTES de chegar ao runWithTools/gates — e `capabilityToolRegistry.js` puxa ~20 módulos
+// (prisma, searchService/Meilisearch, ProposalAiService...). O transform+eval lazy disso dentro
+// do `it` media ~90s nesta máquina (reproduzido com timing por módulo: capabilityToolRegistry
+// sozinho ≈ 90s; os demais ≈ 40s somados), o que estourava o testTimeout mesmo com os gates
+// mockados — o orçamento nem chegava a ser consultado. Como o teste prova o bloqueio no gate
+// de orçamento (antes de montar modelo), as tools nunca são exercitadas: mockamos os 6 módulos
+// dinâmicos com stubs mínimos. Se o BDRAgent passar a importar outro módulo de tool, adicionar
+// o mock correspondente aqui.
+const stubTool = { name: 'stub-tool', description: 'stub', func: async () => '' };
+vi.mock('../../tools/marketResearchTool.js', () => ({ marketResearchTool: stubTool }));
+vi.mock('../../tools/playbookTool.js', () => ({ searchPlaybookTool: stubTool }));
+vi.mock('../../tools/crmTools.js', () => ({
+  searchLeadsTool: stubTool,
+  getLeadContextTool: stubTool,
+}));
+vi.mock('../../tools/battlecardTool.js', () => ({ getObjectionBattlecardTool: stubTool }));
+vi.mock('../../tools/advancedCommercialTools.js', () => ({ competitorAnalysisTool: stubTool }));
+vi.mock('../../tools/capabilityToolRegistry.js', () => ({
+  getToolsForSwarmRole: vi.fn().mockReturnValue([]),
+}));
+// learning.agent.ts entra no grafo via import estático do AgentExecutor e arrasta prisma +
+// authorization inteira no transform — mas `getLearningProfile` só roda DEPOIS dos gates de
+// segurança, que este teste bloqueia. Mockar remove ~40s de eval do caminho provado.
+vi.mock('../learning.agent.js', () => ({
+  getLearningProfile: vi.fn().mockResolvedValue(null),
+}));
 
 /**
  * AI-011: `BaseAgent.runWithTools` (base.agent.ts) fala direto com LangChain/Groq via

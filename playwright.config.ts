@@ -1,8 +1,51 @@
+import net from 'node:net';
 import path from 'node:path';
 import { defineConfig, devices } from '@playwright/test';
 
-const PORT = process.env.PORT ?? '3000';
-const BASE_URL = process.env.E2E_BASE_URL ?? `http://localhost:${PORT}`;
+// Onda 6 / MEL-45 (agente 14): isolamento do ambiente E2E local.
+//
+// Problema: a config usava PORT fixo 3000 (default de .env.test) com
+// `reuseExistingServer: true` fora do CI. Se QUALQUER processo já estivesse escutando na 3000 —
+// tipicamente o `start:e2e` de OUTRO worktree da mesma onda, com outro .env.test/banco — o
+// Playwright "reusava" esse servidor estranho e os specs de signup/onboarding falhavam por
+// bater numa base/ambiente que não era o esperado (o oposto do isolamento por worktree que o
+// resto do harness garante).
+//
+// Correção: quando ninguém apontou explicitamente um alvo (E2E_BASE_URL) e PORT é o default
+// '3000' vindo de .env.test, alocamos uma porta efêmera de verdade (listen(0)) — impossível
+// colidir com o servidor de outro worktree — e exportamos process.env.PORT para que
+// global-setup.ts e helpers enxerguem a mesma porta. O webServer que o Playwright spawna é
+// morto por ele ao final do run (cleanup garantido — antes, um servidor "reusado" nunca era
+// encerrado e ficava órfão segurando a porta). PORT != '3000' ou E2E_BASE_URL definidos pelo
+// usuário/CI continuam respeitados como override explícito.
+//
+// NOTA: package.json tem "type": "module", então este arquivo é carregado via import() ESM real
+// — top-level await é suportado aqui (verificado em playwright/lib/common requireOrImport).
+async function allocateEphemeralPort(): Promise<number> {
+  return await new Promise<number>((resolve, reject) => {
+    const server = net.createServer();
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', () => {
+      const address = server.address();
+      const port = typeof address === 'object' && address ? address.port : 0;
+      server.close(() => (port > 0 ? resolve(port) : reject(new Error('porta efêmera inválida'))));
+    });
+  });
+}
+
+const EXPLICIT_BASE_URL = process.env.E2E_BASE_URL?.trim();
+const EXPLICIT_PORT = process.env.PORT?.trim();
+const PORT =
+  EXPLICIT_PORT && EXPLICIT_PORT !== '3000'
+    ? EXPLICIT_PORT
+    : EXPLICIT_BASE_URL
+      ? // E2E_BASE_URL explícita sem PORT: mantém o comportamento anterior (webServer local na 3000).
+        '3000'
+      : String(await allocateEphemeralPort());
+// Garante que global-setup.ts (lê process.env.PORT no top-level do próprio módulo) e qualquer
+// helper vejam a porta efêmera — o config é avaliado antes do globalSetup no mesmo processo.
+process.env.PORT = PORT;
+const BASE_URL = EXPLICIT_BASE_URL ?? `http://localhost:${PORT}`;
 
 // Ambientes que já vêm com um Chromium provisionado (sandbox de agente, imagem corporativa de CI)
 // costumam ter uma build diferente da que o @playwright/test instalado espera — o launch falha com

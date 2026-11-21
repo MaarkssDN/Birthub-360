@@ -96,13 +96,39 @@ async function deleteOrganizationsAsOwner(args?: {
     // Permite bypass de RLS na conexão do owner para operações administrativas de teste
     await client.query(`SELECT set_config('app.bypass_rls', 'on', false)`).catch(() => {});
 
-    // Se nenhum filtro foi fornecido, descobre todos os IDs de Organization existentes
+    // Se nenhum filtro foi fornecido, apaga TODAS as organizações — o caso quente é o
+    // `prisma.organization.deleteMany()` sem where do afterAll abaixo. Onda 6 / MEL-44: a
+    // versão anterior descobria todos os ids e rodava ~25 DELETEs POR org (~2.500 queries no
+    // banco de teste compartilhado, que acumulava ~100 orgs de worktrees paralelos) — estourava
+    // o hookTimeout de 30s. Como o papel owner tem BYPASSRLS, o mesmo conjunto de deletes sai
+    // em ~25 queries globais com semântica idêntica (FK RESTRICT garante que não existem filhos
+    // órfãos de org já apagada).
+    //
+    // Exceção: ConsentAuditRecord/ConsentAuditChainHead têm trigger append-only que exige
+    // `app.lgpd_chain_retention_org` = organizationId DA LINHA (migration
+    // 20261021000000_lgpd_chain_restrict_org_no_app_delete) — GUC único não cobre orgs
+    // diferentes numa passada global. Por isso essas duas tabelas continuam por org, mas só
+    // para orgs que realmente têm registro de consentimento (na prática, quase nenhuma).
     if (targetIds.length === 0) {
-      const res = await client.query<{ id: string }>('SELECT id FROM "Organization"');
-      targetIds = res.rows.map((r) => r.id);
+      // Limpa primeiro as tabelas de consentimento, org a org, só onde há linhas.
+      const consentOrgs = await client.query<{ organizationId: string }>(
+        `SELECT DISTINCT "organizationId" FROM "ConsentAuditRecord"
+         UNION
+         SELECT DISTINCT "organizationId" FROM "ConsentAuditChainHead"`,
+      );
+      for (const { organizationId: orgId } of consentOrgs.rows) {
+        await client.query(`SELECT set_config('app.lgpd_chain_retention_org', $1, false)`, [orgId]);
+        await client.query(`DELETE FROM "ConsentAuditRecord" WHERE "organizationId" = $1`, [orgId]);
+        await client.query(`DELETE FROM "ConsentAuditChainHead" WHERE "organizationId" = $1`, [orgId]);
+      }
+      // Sem orgs com consentimento, as tabelas já estão vazias — nada a fazer.
+    } else {
+      for (const orgId of targetIds) {
+        await client.query(`SELECT set_config('app.lgpd_chain_retention_org', $1, false)`, [orgId]);
+        await client.query(`DELETE FROM "ConsentAuditRecord" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
+        await client.query(`DELETE FROM "ConsentAuditChainHead" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
+      }
     }
-
-    if (targetIds.length === 0) return { count: 0 };
 
     // Para cada organização, limpa as tabelas com FK RESTRICT ou triggers de retenção.
     // As 22 tabelas abaixo têm FK organizationId → Organization ON DELETE RESTRICT desde a
@@ -132,18 +158,29 @@ async function deleteOrganizationsAsOwner(args?: {
       'ProspectingSearchExecution',
       'FlywheelApproachRecord',
     ];
-    for (const orgId of targetIds) {
-      // Seta a flag LGPD oficial (ADR-006 / migration 20261021000000) para permitir DELETE na cadeia desta org
-      await client.query(`SELECT set_config('app.lgpd_chain_retention_org', $1, false)`, [orgId]);
-      await client.query(`DELETE FROM "ConsentAuditRecord" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
-      await client.query(`DELETE FROM "ConsentAuditChainHead" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
-      for (const table of RESTRICT_FK_TABLES) {
-        await client.query(`DELETE FROM "${table}" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
+    if (targetIds.length > 0) {
+      // Caminho filtrado (delete de org(s) específica(s)): mantém o loop por org — volume baixo.
+      for (const orgId of targetIds) {
+        // Seta a flag LGPD oficial (ADR-006 / migration 20261021000000) para permitir DELETE na cadeia desta org
+        await client.query(`SELECT set_config('app.lgpd_chain_retention_org', $1, false)`, [orgId]);
+        await client.query(`DELETE FROM "ConsentAuditRecord" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
+        await client.query(`DELETE FROM "ConsentAuditChainHead" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
+        for (const table of RESTRICT_FK_TABLES) {
+          await client.query(`DELETE FROM "${table}" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
+        }
+        await client.query(`DELETE FROM "user" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
       }
-      await client.query(`DELETE FROM "user" WHERE "organizationId" = $1`, [orgId]).catch(() => {});
+
+      const deleted = await client.query('DELETE FROM "Organization" WHERE id = ANY($1::text[])', [targetIds]);
+      return { count: deleted.rowCount ?? 0 };
     }
 
-    const deleted = await client.query('DELETE FROM "Organization" WHERE id = ANY($1::text[])', [targetIds]);
+    // Caminho global (deleteMany sem where): uma query por tabela, sem loop por org.
+    for (const table of RESTRICT_FK_TABLES) {
+      await client.query(`DELETE FROM "${table}"`).catch(() => {});
+    }
+    await client.query(`DELETE FROM "user" WHERE "organizationId" IN (SELECT id FROM "Organization")`).catch(() => {});
+    const deleted = await client.query('DELETE FROM "Organization"');
     return { count: deleted.rowCount ?? 0 };
   } finally {
     await client.end();
@@ -178,32 +215,56 @@ prisma.organization.delete = (async (args: { where: { id?: string; [key: string]
 const withRlsBypass = <T>(fn: () => Promise<T>): Promise<T> =>
   requestContext.run({ bypassRls: true }, fn);
 
-// Real database cleanup for integration tests.
+// Onda 6 / MEL-44 (agente 14): a versão anterior iterava TODAS as organizações do banco e rodava
+// 7 `deleteMany` por org via Prisma+RLS — ~700 queries sequenciais (cada uma ainda abrindo
+// transação com set_config de tenant). Como worktrees da mesma onda compartilham o mesmo
+// `prospectordb_test`, o número de orgs acumuladas cresce sem teto e o beforeAll/afterEach/
+// afterAll estourava o hookTimeout de 30s — todos os testes do arquivo apareciam como "skipped"
+// (reproduzido em capability-engine/import-agent-catalog/backfill-*: 51 testes skipped, hooks
+// timeout 30s, banco com 98 orgs).
 //
-// ITEM-02 (remediação de dívida técnica P0): Company/Contact/Activity/Note/TimelineEvent NÃO estão
-// no allowlist de bypass (BYPASS_RLS_ALLOWED_MODELS, src/lib/prisma.ts) — a RLS real dessas tabelas
-// fechou pra bypass, tanto leitura quanto escrita (migration
-// 20260825120000_scope_rls_bypass_to_bootstrap_allowlist). Um `deleteMany()` sob bypass, sem
-// `where`, agora afeta 0 linhas silenciosamente nessas tabelas (RLS nega por falta de tenant), o
-// que quebraria a limpeza global entre testes de toda a suíte. `Lead` continua no allowlist, mas
-// roda no mesmo laço por tenant por consistência (evita depender de dois caminhos diferentes).
-// `Organization` continua no allowlist — usada aqui só para descobrir QUAIS tenants existem no
-// banco de teste no momento (a mesma descoberta cross-tenant já legítima em outros bootstraps,
-// ver src/lib/prisma.ts), nunca para ler/escrever dado de negócio de um tenant.
+// A limpeza global abaixo é semanticamente idêntica — o loop antigo já apagava todas as linhas
+// de todas as orgs — mas roda na conexão owner (`testOwnerDatabaseUrl`, papel
+// `prospector_migrator`, que tem BYPASSRLS — ver scripts/db/create-app-role.sql), então um DELETE
+// por tabela resolve tudo em ~7 queries, independente do número de orgs. O `set_config` de
+// bypass fica como cinto-e-suspensório para ambientes cujo papel owner não tenha BYPASSRLS mas
+// cujas policies ainda honrem `app.bypass_rls` (as que fecharam bypass no ITEM-02 são cobertas
+// pelo atributo BYPASSRLS do papel, não pelo GUC).
+//
+// Ordem preserva a do loop antigo (filhos antes dos pais). As tabelas fora desta lista não são
+// tocadas — mesmo comportamento anterior.
+const CLEANUP_TABLES = [
+  'TimelineEvent',
+  'Activity',
+  'Note',
+  'PublicLeadConsent',
+  'Lead',
+  'Contact',
+  'Company',
+] as const;
+
+let cleanupClientPromise: Promise<Client> | null = null;
+const getCleanupClient = (): Promise<Client> => {
+  cleanupClientPromise ??= (async () => {
+    const url = testOwnerDatabaseUrl(databaseUrl);
+    if (!url) {
+      throw new Error(
+        'Limpeza de integração exige URL de owner (MIGRATOR_DATABASE_URL/DIRECT_URL) ' +
+          'com papel BYPASSRLS — sem ela o DELETE global violaria a RLS de tenant.',
+      );
+    }
+    const client = new Client({ connectionString: url });
+    await client.connect();
+    await client.query(`SELECT set_config('app.bypass_rls', 'on', false)`);
+    return client;
+  })();
+  return cleanupClientPromise;
+};
+
 const cleanDatabase = async () => {
-  const orgs = await withRlsBypass(() => prisma.organization.findMany({ select: { id: true } }));
-  for (const { id: tenantId } of orgs) {
-    await requestContext.run({ tenantId }, async () => {
-      await prisma.timelineEvent.deleteMany();
-      await prisma.activity.deleteMany();
-      await prisma.note.deleteMany();
-      // PublicLeadConsent.leadId é ON DELETE SET NULL: a prova operacional sobrevive
-      // à exclusão do Lead. Limpar explicitamente no tenant evita residual entre testes.
-      await prisma.publicLeadConsent.deleteMany();
-      await prisma.lead.deleteMany();
-      await prisma.contact.deleteMany();
-      await prisma.company.deleteMany();
-    });
+  const client = await getCleanupClient();
+  for (const table of CLEANUP_TABLES) {
+    await client.query(`DELETE FROM "${table}"`);
   }
 };
 
@@ -255,5 +316,11 @@ afterAll(async () => {
       if (!/permission denied for table Organization|42501/.test(String((error as Error)?.message ?? error))) throw error;
     }
   });
+  // Fecha a conexão owner da limpeza global (getCleanupClient) — sem isto o Client do pg fica
+  // aberto e o worker do Vitest não termina limpo no fim da suíte.
+  if (cleanupClientPromise) {
+    const client = await cleanupClientPromise;
+    await client.end();
+  }
   await prisma.$disconnect();
 });

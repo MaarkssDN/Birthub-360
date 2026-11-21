@@ -52,7 +52,13 @@ export default defineConfig({
     // (tests/integration/memory.test.ts) foi o gatilho real medido em CI: 4 arquivos alheios
     // (access-request/agent-bus/agent-runtime/role-supervisor) estouraram o hook padrão de 10s só
     // por rodarem depois de mais um arquivo pesado ter sido adicionado à suíte sequencial.
-    hookTimeout: 30000,
+    // Onda 6 / MEL-44 (agente 14): elevado de 30s para 120s. Além do motivo original acima,
+    // os specs de catálogo (import-agent-catalog/capability-engine) rodam no beforeAll a
+    // importação real de ~379 AgentDefinition + seeds de cargos/capabilities contra o Postgres
+    // compartilhado — trabalho legítimo que mede ~35-70s em banco remoto sob carga do enxame
+    // (reproduzido: hook timeout com a importação ainda progredindo, não travada). Não é
+    // mascaramento: o timeout continua finito e o seed completa de verdade.
+    hookTimeout: 120000,
     testTimeout: 30000,
     coverage: {
       provider: 'v8',
