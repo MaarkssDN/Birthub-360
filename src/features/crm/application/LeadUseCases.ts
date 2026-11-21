@@ -572,10 +572,17 @@ export class LeadUseCases extends BaseUseCases<Lead, LeadRepository> {
       orderBy: { createdAt: 'asc' },
     });
 
-    if (!connection && process.env.BITRIX24_WEBHOOK_URL) {
+    // DEBT-0006: fallback global só para orgs na allowlist explícita
+    // (BITRIX24_WEBHOOK_URL_ORG_ALLOWLIST) — antes qualquer tenant sem conexão
+    // importava do portal global via env.
+    const { resolveGlobalBitrixWebhookUrl } = await import(
+      '../../integrations/bitrix/service/settings.js'
+    );
+    const globalWebhookUrl = resolveGlobalBitrixWebhookUrl(organizationId);
+    if (!connection && globalWebhookUrl) {
       const { id } = await connectBitrix(
         organizationId,
-        process.env.BITRIX24_WEBHOOK_URL,
+        globalWebhookUrl,
         'Bitrix Principal',
       );
       connection = await prisma.bitrixConnection.findUnique({ where: { id } });

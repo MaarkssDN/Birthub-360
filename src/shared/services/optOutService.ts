@@ -106,11 +106,11 @@ export type { CadenceChannel, OptOutRecord, OptOutRepository, OptOutSubject, Rec
 export { normalizeOptOutSubject };
 
 export {
-  checkOptOutStatus,
   assertOptOutStatus,
-  recordContactOptOut,
-  OptOutSuppressedError,
+  checkOptOutStatus,
   isOptOutKeyword,
   type OptOutChannel,
   type OptOutCheckResult,
+  OptOutSuppressedError,
+  recordContactOptOut,
 } from './optOutCheck.service.js';
