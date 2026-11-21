@@ -1,4 +1,6 @@
 import { randomUUID } from 'node:crypto';
+import { logger } from '../../../lib/logger.js';
+import { domainEventMesh } from '../../../lib/queue/domainEventMesh.service.js';
 import type {
   AutopsyFactorHypothesis,
   AutopsyTimelineEvent,
@@ -7,14 +9,12 @@ import type {
   WinLossAutopsyReport,
   WinLossOutcome,
 } from '../../../shared/contracts/winLossAutopsy.contract.js';
-import { domainEventMesh } from '../../../lib/queue/domainEventMesh.service.js';
 import { curatedObjectionService } from '../../playbook/services/curatedObjection.service.js';
-import { commercialLearningFlywheel } from '../services/commercialLearningFlywheel.service.js';
-import { logger } from '../../../lib/logger.js';
 import {
   PrismaWinLossAutopsyRepository,
   type WinLossAutopsyRepository,
 } from '../infra/winLossAutopsyRepository.js';
+import { commercialLearningFlywheel } from '../services/commercialLearningFlywheel.service.js';
 
 export class WinLossAutopsyService implements IWinLossAutopsyPort {
   // REMED-02: fonte da verdade é o PostgreSQL (WinLossAutopsyReport, RLS por tenant).
@@ -358,22 +358,29 @@ export class WinLossAutopsyService implements IWinLossAutopsyPort {
     await this.repo.save(report);
 
     // Publicar evento no DomainEventMesh
-    await domainEventMesh.publish({
-      eventType: 'WIN_LOSS_AUTOPSY_COMPLETED',
-      eventVersion: '1.0.0',
-      organizationId: params.organizationId,
-      correlationId: `autopsy-evt-${id}`,
-      producer: 'win-loss-autopsy-service',
-      aggregateId: params.dealId,
-      payload: {
-        autopsyId: id,
-        dealId: params.dealId,
-        outcome: params.outcome,
-        dealTitle: params.dealTitle,
-        salesCycleDays,
-        primaryHypothesis: sectionD_FactorHypotheses[0]?.factor || 'Não identificado',
+    await domainEventMesh.publish(
+      {
+        eventType: 'WIN_LOSS_AUTOPSY_COMPLETED',
+        eventVersion: '1.0.0',
+        organizationId: params.organizationId,
+        correlationId: `autopsy-evt-${id}`,
+        producer: 'win-loss-autopsy-service',
+        aggregateId: params.dealId,
+        payload: {
+          autopsyId: id,
+          dealId: params.dealId,
+          outcome: params.outcome,
+          dealTitle: params.dealTitle,
+          salesCycleDays,
+          primaryHypothesis: sectionD_FactorHypotheses[0]?.factor || 'Não identificado',
+        },
       },
-    });
+      {
+        // Uma autópsia = um relatório (`id` gerado nesta execução); retry do publish
+        // com a mesma chave não duplica o evento na outbox.
+        idempotencyKey: `win-loss-autopsy:${id}`,
+      },
+    );
 
     logger.info(
       `[WinLossAutopsy] Relatório forense gerado para deal ${params.dealId} (${params.outcome}) no tenant ${params.organizationId}.`,

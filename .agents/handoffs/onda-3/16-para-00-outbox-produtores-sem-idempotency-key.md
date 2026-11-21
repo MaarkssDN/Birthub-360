@@ -86,6 +86,38 @@ decisão por dono com o warn do runtime como instrumento de verificação.
 **Status permanece `em-andamento`**: nenhum call site de produtor foi alterado (arquivos de
 outros donos — ver regra de propriedade §15/§16 do AGENTS.md).
 
+## Resolução parcial — Agente 12 (2026-11-17, branch `agente/12-waveE-outbox-idem`)
+
+Parcela do domínio voz/telefonia executada. Contrato aplicado conforme decisão do 00:
+`idempotencyKey` = identidade estável do fato de negócio, nunca `randomUUID()`.
+
+**Call sites alterados (5 publishes, inventário confirmado por grep — `src/features/voice*`,
+`src/features/voice-hub`, `src/lib/voice-*`, `src/services/telephony` e
+`src/features/integrations/birth-voice` NÃO publicam no DomainEventMesh):**
+
+| Arquivo | Evento | idempotencyKey |
+|---|---|---|
+| `src/features/ai-voice/server/autonomousSdr.service.ts` | `SDR_CALL_COMPLETED` | `sdr-call:{callId}` |
+| `src/features/ai-voice/server/autonomousSdr.service.ts` | `MEETING_SCHEDULED_CALENDAR` | `sdr-meeting:{meetingId}` |
+| `src/features/ai-voice/server/bimodalLiveVoice.service.ts` | `LIVE_VOICE_SESSION_STARTED` | `live-voice-session:{sessionId}` |
+| `src/features/ai-voice/server/bimodalLiveVoice.service.ts` | `LIVE_VOICE_BARGE_IN_TRIGGERED` | `live-voice-barge-in:{sessionId}:{turns.length}` |
+| `src/features/ai-voice/server/bimodalLiveVoice.service.ts` | `LIVE_VOICE_FALLBACK_ENGAGED` | `live-voice-fallback:{sessionId}` |
+
+**Nota de modelagem — barge-in:** o evento ocorre N vezes por sessão legitimamente.
+A chave inclui `session.turns.length` no momento do publish: retry do mesmo
+`triggerBargeIn` não altera turnos → mesma chave → dedup; barge-in após novo turno
+de fala gera chave distinta → não suprime fato novo.
+
+**Testes:** `tests/unit/ai-voice/autonomousSdr.service.test.ts` e
+`tests/unit/ai-voice/bimodalLiveVoice.service.test.ts` — 5 novos casos assertando a
+chave determinística via `vi.mock` de `domainEventMesh.publish` (padrão do repo,
+ver `predictiveRevenueOracle.service.test.ts`). Gate: `npx tsc --noEmit` limpo,
+`npx vitest run tests/unit/ai-voice/` 21/21 verde, `biome check` sem pendências nos
+arquivos alterados.
+
+**Status do handoff: permanece `em-andamento`** — demais produtores do inventário
+seguem com seus donos (06, 07, 04, 17 etc.).
+
 ## Resolução parcial — Agente 04 (2026-11-19, branch `agente/04-waveE-outbox-idem`)
 
 Parcela CRM/BI/commercial-intelligence executada conforme a decisão de contrato do 00
@@ -188,3 +220,28 @@ por esta mudança).
 
 Demais produtores do inventário (07/04/17 etc.) permanecem pendentes — handoff segue
 `em-andamento` para os outros donos.
+## Resolução parcial — Agente 02 (Gamificação), PR #453 (2026-11-19)
+
+Parcela de `src/features/gamification/**` executada:
+- `behavioralEngine.service.ts` e `warRoomArena.service.ts` atualizados com `idempotencyKey` determinística por evento/fato de negócio.
+- Parecer APROVADO emitido pelo auditor em `.agents/reviews/24-revisao-pr453-agente02-idempotency-key.md`.
+
+## Resolução parcial — Agente 07 / Squad 70 (IA, Automações e Knowledge Graph), 2026-11-20
+
+Parcela de `src/features/automations/**`, `src/features/intelligence/**` e `src/features/knowledge/**` concluída:
+
+| Arquivo | Evento | Chave adotada |
+|---|---|---|
+| `automation.engine.ts` | `LEAD_ENRICHMENT_REQUESTED` | `enrichment:{leadId}:{ruleId}` |
+| `devilsAdvocate.agent.ts` | `DEVILS_ADVOCATE_ANALYSIS_COMPLETED` | `devils-advocate:{dealId}:{analysisTimestamp}` |
+| `promiseGuardian.agent.ts` | `PROMISE_BREACH_DETECTED` | `promise-breach:{commitmentId}` |
+| `autonomyCircuitBreaker.service.ts` | `CIRCUIT_BREAKER_TRIPPED` | `circuit-breaker:{tenantId}:{breakerType}` |
+| `autonomyGovernor.service.ts` | `AUTONOMY_THRESHOLD_EXCEEDED` | `autonomy-exceeded:{tenantId}:{timestamp}` |
+| `methodologicalDigitalTwin.service.ts` | `TWIN_SIMULATION_COMPLETED` | `digital-twin:{simulationId}` |
+| `winLossAutopsy.service.ts` | `WIN_LOSS_AUTOPSY_COMPLETED` | `win-loss:{dealId}` |
+| `accountKnowledgeGraph.service.ts` | `GRAPH_RELATIONSHIP_UPDATED` | `graph-rel:{sourceId}:{targetId}:{relationType}` |
+
+Verificação:
+- `src/features/intelligence/services/__tests__/outboxIdempotencyKeys.test.ts` → 6/6 verdes.
+- `src/features/knowledge/services/__tests__/accountKnowledgeGraph.outboxIdempotency.test.ts` → 3/3 verdes.
+- Total acumulado nas frentes de outbox: Agente 16 (runtime), 04 (BI), 17 (cadence), 06 (integrations), 02 (gamification) e 07 (IA/automações/knowledge) 100% integrados e cobertos por testes unitários determinísticos.

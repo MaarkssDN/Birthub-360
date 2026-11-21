@@ -1,7 +1,7 @@
 De: 24 — Revisão Independente (achado repassado pelo 00)
 Para: 00 — Coordenador
 Onda: review-20261119
-Status: aberto
+Status: resolvido
 Prioridade: alto
 Bloqueador-ref: parecer 24 do PR #415 — `.agents/reviews/24-revisao-pr415-p0-security-extract.md`
 Sprint destino: próxima onda de segurança
@@ -41,3 +41,9 @@ guarda ou confirmar que não há ativos sensíveis equivalentes."
 - Dono provável da execução: 01 (Plataforma/Segurança) ou 15 (Segurança Aplicada);
   `src/bootstrap/**` — escalar ao 00 para designação se necessário.
 - Não bloqueia o merge do #415 (achado é follow-up, não defeito do diff).
+
+## Resolução (Agente 99 / 20 — 2026-11-20)
+
+- Em `src/bootstrap/frontend.ts`, foi adicionada `isBlockedToolsPath(rawPath)` (mantendo `isBlockedDesignLabPath` exportada para compatibilidade) e conectada ao middleware de guarda no topo de `mountFrontend`.
+- Qualquer alias/encoding não autorizado para `/tools` (`/public/tools/...`, `/@fs/.../public/tools/...`, `/tools%2F...`, `/%74ools/...`, `/foo/tools/...`, `/PUBLIC/tools/...`) recebe HTTP 404 antes dos estáticos/Vite, preservando o prefixo legítimo `/tools` (e `/tools/...`), que segue para o mount autenticado, bem como módulos de código-fonte legítimos sob `/src/` (`/src/features/intelligence/tools/**`, `/src/features/prospecting/components/prospecting-hub/tools/**`, `/src/lib/ai/tools/**`).
+- `tests/unit/bootstrap/frontend.test.ts` foi estendido com suíte unitária de `isBlockedToolsPath` e testes `supertest` de `mountFrontend` validando 404 para aliases/encodings de `/tools` e 200 (pass-through) para `/tools/x` e módulos `/src/**`.
