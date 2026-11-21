@@ -14,7 +14,7 @@ import {
   User,
   Users,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { IconSliders } from '../../../components/icons/index.js';
 import { Button } from '../../../components/ui/Button.js';
 import {
@@ -64,13 +64,26 @@ export function Settings() {
     | 'resilience'
   >('profile');
 
-  // Estados locais para edição de perfil (UX-09)
+  // Estados locais para edição de perfil (UX-09). `image` também é campo editável do
+  // better-auth (`updateUser` aceita `image?: string | null` — null remove o avatar).
   const [profileName, setProfileName] = useState(currentUser?.name ?? '');
+  const [profileImage, setProfileImage] = useState(currentUser?.image ?? '');
   const [isUpdatingName, setIsUpdatingName] = useState(false);
   const [nameFeedback, setNameFeedback] = useState<{
     type: 'success' | 'error';
     message: string;
   } | null>(null);
+  // Mesmo átomo de sessão do AuthContext — refetch propaga o nome/avatar novos para o app.
+  const { refetch: refetchSession } = authClient.useSession();
+
+  // A sessão pode resolver depois do mount (ou mudar em outra aba via broadcast do
+  // better-auth) — resincroniza os campos quando os dados da sessão mudam de fato.
+  useEffect(() => {
+    setProfileName(currentUser?.name ?? '');
+  }, [currentUser?.name]);
+  useEffect(() => {
+    setProfileImage(currentUser?.image ?? '');
+  }, [currentUser?.image]);
 
   // Estados locais para alteração de senha (UX-09)
   const [currentPassword, setCurrentPassword] = useState('');
@@ -90,20 +103,29 @@ export function Settings() {
       setNameFeedback({ type: 'error', message: 'O nome não pode estar em branco.' });
       return;
     }
+    // `image` só entra no payload quando mudou — assim salvar só o nome nunca apaga
+    // o avatar por acidente (campo vazio = remover foto, via `image: null`).
+    const trimmedImage = profileImage.trim();
+    const imageChanged = trimmedImage !== (currentUser?.image ?? '');
+    const payload: { name: string; image?: string | null } = { name: trimmed };
+    if (imageChanged) {
+      payload.image = trimmedImage === '' ? null : trimmedImage;
+    }
     setIsUpdatingName(true);
     try {
-      const res = await authClient.updateUser({ name: trimmed });
+      const res = await authClient.updateUser(payload);
       if (res?.error) {
         setNameFeedback({
           type: 'error',
-          message: res.error.message || 'Não foi possível atualizar o nome.',
+          message: res.error.message || 'Não foi possível atualizar o perfil.',
         });
       } else {
-        setNameFeedback({ type: 'success', message: 'Nome atualizado com sucesso!' });
+        setNameFeedback({ type: 'success', message: 'Perfil atualizado com sucesso!' });
         SoundFX.play('success');
+        await refetchSession();
       }
     } catch {
-      setNameFeedback({ type: 'error', message: 'Falha de comunicação ao atualizar o nome.' });
+      setNameFeedback({ type: 'error', message: 'Falha de comunicação ao atualizar o perfil.' });
     } finally {
       setIsUpdatingName(false);
     }
@@ -335,6 +357,27 @@ export function Settings() {
                     >
                       <div className="space-y-1.5">
                         <label
+                          htmlFor="settings-profile-image"
+                          className="text-xs font-semibold text-ink-2 uppercase tracking-wider block"
+                        >
+                          Foto de perfil (URL)
+                        </label>
+                        <Input
+                          id="settings-profile-image"
+                          type="url"
+                          value={profileImage}
+                          onChange={(e) => setProfileImage(e.target.value)}
+                          placeholder="https://exemplo.com/foto.jpg"
+                          disabled={isUpdatingName}
+                          autoComplete="off"
+                        />
+                        <p className="text-[11px] text-ink-2">
+                          Cole a URL pública da sua foto. Deixe em branco para remover o avatar.
+                        </p>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label
                           htmlFor="settings-profile-name"
                           className="text-xs font-semibold text-ink-2 uppercase tracking-wider block"
                         >
@@ -363,7 +406,7 @@ export function Settings() {
                             ) : (
                               <>
                                 <Check className="w-4 h-4" />
-                                Salvar Nome
+                                Salvar Perfil
                               </>
                             )}
                           </Button>
