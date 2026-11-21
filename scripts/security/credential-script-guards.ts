@@ -17,6 +17,8 @@
 // `--verify` é um modo SOMENTE LEITURA separado: não exige OLD_KEY/NEW_KEY nem snapshot, lê UMA
 // chave (`CREDENTIALS_ENCRYPTION_KEY` ou a env nomeada em `--key-env=NOME`) e não aceita `--apply`.
 
+import { readFileSync } from 'node:fs';
+
 export class ScriptPreconditionError extends Error {
   constructor(message: string) {
     super(message);
@@ -233,4 +235,43 @@ export function requireRedisUrl(env: ScriptEnv): string {
     );
   }
   return url;
+}
+
+export type DbSslConfig = false | { rejectUnauthorized: boolean; ca?: string };
+
+export interface ResolvedDbSsl {
+  ssl: DbSslConfig;
+  /** `true` só quando o operador desligou a verificação do certificado de propósito. */
+  insecure: boolean;
+}
+
+const LOCAL_DB_HOSTS = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
+
+/**
+ * TLS da conexão com o banco dos scripts de credenciais (o script lê e regrava segredos).
+ * - Host local (hostname PARSEADO da URL, não substring): sem TLS.
+ * - Qualquer outro host: TLS COM verificação do certificado. CA próprio via `PGSSLROOTCERT`
+ *   (caminho de arquivo PEM) para bancos com certificado privado/autoassinado.
+ * - Desligar a verificação exige `DB_SSL_INSECURE_SKIP_VERIFY=true` explícito (retorna `insecure`
+ *   para o chamador avisar em voz alta) — nunca é o padrão.
+ */
+export function resolveDbSsl(
+  dbUrl: string,
+  env: ScriptEnv,
+  readFile: (path: string) => string = (path) => readFileSync(path, 'utf8'),
+): ResolvedDbSsl {
+  let hostname = '';
+  try {
+    hostname = new URL(dbUrl).hostname.toLowerCase();
+  } catch {
+    // URL ilegível: trata como remota (seguro) — o driver reportará o erro de conexão.
+  }
+  if (LOCAL_DB_HOSTS.has(hostname)) return { ssl: false, insecure: false };
+
+  const insecure = env.DB_SSL_INSECURE_SKIP_VERIFY?.trim().toLowerCase() === 'true';
+  const caPath = env.PGSSLROOTCERT?.trim();
+  return {
+    ssl: { rejectUnauthorized: !insecure, ...(caPath ? { ca: readFile(caPath) } : {}) },
+    insecure,
+  };
 }
