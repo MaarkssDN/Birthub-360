@@ -19,6 +19,9 @@ import { emailIntentClassifier } from '../../cadence/infra/emailIntentClassifier
 import { prismaConversationSignalPort } from '../../cadence/infra/PrismaConversationSignalPort.js';
 import { isOptOutKeyword, recordOptOut } from '../../../shared/services/optOutService.js';
 import { prismaOptOutRepository } from '../../../shared/infra/PrismaOptOutRepository.js';
+import { sanitizeInboundEmailBody } from './emailSanitizer.js';
+
+export { sanitizeInboundEmailBody } from './emailSanitizer.js';
 
 /**
  * CYC-003 (onda 26) — transporte de ENTRADA de e-mail, hoje um stub: nenhum provedor real
@@ -308,6 +311,8 @@ async function handleInboundEmail(req: Request, res: Response): Promise<void> {
     return;
   }
 
+  const sanitizedBody = sanitizeInboundEmailBody(body);
+
   const email: InboundEmailReply = {
     organizationId,
     leadId: asString(payload.leadId) ?? '',
@@ -315,7 +320,7 @@ async function handleInboundEmail(req: Request, res: Response): Promise<void> {
     inReplyTo: asString(payload.inReplyTo),
     fromEmail,
     subject: asString(payload.subject),
-    body: body ?? '',
+    body: sanitizedBody,
     autoSubmittedHeader: asString(payload.autoSubmittedHeader),
     receivedAt: (() => {
       const raw = asString(payload.receivedAt);

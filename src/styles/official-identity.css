@@ -484,3 +484,37 @@ html.light .bh-platform-card [class*="subtitle" i],
 html.light .bh-platform-card :is(h1, h2, h3, h4, h5, h6, [class*="title" i]) + p {
   color: var(--subtitle-color-default);
 }
+
+/* Piso de legibilidade WCAG AA (Onda 1, A4) — utilitárias cruas de paleta/branco que features usam
+   sobre superfícies tokenizadas e que o axe mediu abaixo de 4.5:1. Mesmo padrão dos remaps
+   `html:not(.dark) .text-[#ef4444]` acima; cada regra aponta para um token existente. A correção
+   definitiva é migrar a feature para text-ok-active/text-warn-active/text-ink-2 (handoffs 03). */
+html:not(.dark) .text-emerald-500 {
+  color: var(--color-ok-solid);
+}
+html:not(.dark) .text-amber-500 {
+  color: var(--color-warning-solid);
+}
+html:not(.dark) .text-indigo-400 {
+  color: var(--iris);
+}
+/* Selo teal de ICP (--nav-c-teal cru = 2.58:1 sobre o fundo do selo no claro). */
+html:not(.dark) .text-\[var\(--nav-c-teal\)\] {
+  color: color-mix(in srgb, var(--nav-c-teal) 60%, black);
+}
+/* Card (superfície tokenizada) com texto secundário de módulo desenhado para fundo escuro. */
+html.dark .bh-platform-card .text-slate-500 {
+  color: var(--ink-2);
+}
+/* Badge "soft" crítico no escuro: --critical cru = 4.44:1 sobre bg-critical/10. */
+html.dark .bg-critical\/10.text-critical {
+  color: color-mix(in srgb, var(--critical) 85%, white);
+}
+/* Superfície sólida --warning-active (âmbar escuro no claro) pede texto claro, como bg-brand/on-brand. */
+html:not(.dark) .bg-warning-active {
+  color: var(--on-brand);
+}
+/* Constituição §4: branco sobre superfície sólida de marca é proibido (1.68:1 sobre #00D4FF). */
+.bg-brand.text-white {
+  color: var(--on-brand);
+}

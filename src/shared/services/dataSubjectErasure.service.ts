@@ -25,6 +25,7 @@ export interface ErasureResult {
   copilotoTranscriptSegmentsRedacted: number;
   copilotoInsightsRedacted: number;
   copilotoAudiosDeleted: number;
+  priorAuditLogsPurged?: number;
   alreadyAnonymized: boolean;
 }
 
@@ -271,6 +272,20 @@ export async function eraseDataSubject(target: ErasureTarget): Promise<ErasureRe
           },
         });
 
+        // 1.5. Expurgo físico de logs de auditoria anteriores contendo PII do titular (LGPD Art. 18 / Agente 08 - Dora)
+        let priorAuditLogsPurged = 0;
+        if (tx.auditLog && typeof tx.auditLog.deleteMany === 'function') {
+          const deleteResult = await tx.auditLog.deleteMany({
+            where: {
+              tenantId: target.organizationId,
+              entity: 'Contact',
+              entityId: target.contactId,
+              action: { not: 'ERASURE_LGPD_ART_18' },
+            },
+          });
+          priorAuditLogsPurged = deleteResult?.count ?? 0;
+        }
+
         // 2. Registro de auditoria imutável (sem PII direta) comprovando data, hora e hash do titular expurgado
         if (tx.auditLog && typeof tx.auditLog.create === 'function') {
           const subjectHash = createHash('sha256')
@@ -306,6 +321,7 @@ export async function eraseDataSubject(target: ErasureTarget): Promise<ErasureRe
           voiceCallLogsRedacted,
           copilotoTranscriptSegmentsRedacted,
           copilotoInsightsRedacted,
+          priorAuditLogsPurged,
           alreadyAnonymized,
           copilotoConversations,
         };
@@ -365,6 +381,7 @@ export async function eraseDataSubject(target: ErasureTarget): Promise<ErasureRe
         copilotoTranscriptSegmentsRedacted: dbResult.copilotoTranscriptSegmentsRedacted,
         copilotoInsightsRedacted: dbResult.copilotoInsightsRedacted,
         copilotoAudiosDeleted,
+        priorAuditLogsPurged: dbResult.priorAuditLogsPurged,
         alreadyAnonymized: dbResult.alreadyAnonymized,
       };
     },
