@@ -43,19 +43,20 @@
                 <data android:scheme="birthhub360" />
             </intent-filter>
 
-            <!-- Deep link — Android App Link (https) pro domínio de produção real, com
-                 autoVerify: exige publicar /.well-known/assetlinks.json nesse domínio (assinado com
-                 o SHA-256 do keystore de release) pra o Android confiar automaticamente sem mostrar
-                 o seletor de app — infraestrutura fora do escopo do Agente 09 (handoff aberto pra
-                 08/10). Até lá, este intent-filter ainda funciona como link comum (usuário escolhe
-                 "abrir com o app" na primeira vez), só não pula o seletor. Mantém o mesmo domínio
-                 fallback usado em capacitor.config.ts hoje — trocar junto quando o domínio final
-                 (app.birthhub360.com.br) entrar no ar. -->
+            <!-- Deep link — Android App Link (https) pro domínio canônico de produção
+                 (app.birthhub360.com.br, mesmo de capacitor.config.ts DEFAULT_APP_URL).
+                 autoVerify exige publicar /.well-known/assetlinks.json nesse domínio (assinado
+                 com o SHA-256 do keystore de release) — infraestrutura fora do escopo do Agente
+                 09 (handoff aberto pra 08/10). Enquanto o DNS/assetlinks não existir, o filtro
+                 ainda funciona como link comum (o usuário escolhe "abrir com o app"), só não
+                 pula o seletor. O host anterior (birthhub-360.onrender.com) foi REMOVIDO: o
+                 Render está desativado desde a transição Local-First e o domínio não serve mais
+                 a aplicação — DEBT-0004. -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="birthhub-360.onrender.com" android:pathPrefix="/app" />
+                <data android:scheme="https" android:host="app.birthhub360.com.br" android:pathPrefix="/app" />
             </intent-filter>
 
         </activity>
