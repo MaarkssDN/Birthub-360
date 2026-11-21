@@ -102,15 +102,15 @@ export async function assertNotOptedOut(
   }
 }
 
-export type { CadenceChannel, OptOutRecord, OptOutRepository, OptOutSubject };
+export type { CadenceChannel, OptOutRecord, OptOutRepository, OptOutSubject, RecordOptOutInput };
 export { normalizeOptOutSubject };
 
 export {
-  checkOptOutStatus,
   assertOptOutStatus,
-  recordContactOptOut,
-  OptOutSuppressedError,
+  checkOptOutStatus,
   isOptOutKeyword,
   type OptOutChannel,
   type OptOutCheckResult,
+  OptOutSuppressedError,
+  recordContactOptOut,
 } from './optOutCheck.service.js';

@@ -1,11 +1,11 @@
+import { ArrowRight } from 'lucide-react';
 import type React from 'react';
 import { useId, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { authClient } from '../../../lib/auth-client.js';
 import { BirthubLogo } from '../components/design-system/index.js';
 import { getAccessibleTextOnBrand } from '../components/design-system/tokens.js';
 import { useSessionStore } from '../store/useSessionStore.js';
-import { authClient } from '../../../lib/auth-client.js';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -59,7 +59,7 @@ export default function LoginPage() {
             <div className="p-2 bg-white border border-slate-200 rounded-lg">
               <BirthubLogo className="h-6 w-6" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900">Birth Voices Hub</h1>
+            <h1 className="text-2xl font-bold text-slate-900">Birth Hub 360° · Voice Hub</h1>
           </div>
 
           <h2 className="text-xl font-semibold text-center mb-6 text-slate-700">Login</h2>
