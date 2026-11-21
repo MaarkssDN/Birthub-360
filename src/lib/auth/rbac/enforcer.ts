@@ -99,5 +99,4 @@ export const enforceCommercialIntelligence = () =>
 /**
  * Middleware para recursos avançados do Copiloto IA.
  */
-export const enforceCopilotoIa = () =>
-  enforceRole(COPILOTO_IA_ROLES as readonly Role[]);
+export const enforceCopilotoIa = () => enforceRole(COPILOTO_IA_ROLES as readonly Role[]);
