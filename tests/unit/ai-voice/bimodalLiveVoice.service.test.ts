@@ -1,12 +1,19 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { domainEventMesh } from '../../../src/lib/queue/domainEventMesh.service.js';
 import { bimodalLiveVoiceService } from '../../../src/features/ai-voice/server/bimodalLiveVoice.service.js';
+
+vi.mock('../../../src/lib/queue/domainEventMesh.service.js', () => ({
+  domainEventMesh: { publish: vi.fn(async () => undefined) },
+}));
 
 describe('Eixo 5: Bimodal Live Voice Service (Agente 12 & 07)', () => {
   const orgA = 'org-birthub-tenant-alpha';
   const orgB = 'org-birthub-tenant-beta';
+  const publishMock = vi.mocked(domainEventMesh.publish);
 
   beforeEach(() => {
     bimodalLiveVoiceService.clear();
+    publishMock.mockClear();
   });
 
   it('deve iniciar sessão Live com WebRTC e estado LISTENING', async () => {
@@ -119,6 +126,89 @@ describe('Eixo 5: Bimodal Live Voice Service (Agente 12 & 07)', () => {
     expect(session?.isFallback).toBe(true);
     expect(session?.state).toBe('FALLBACK');
     expect(session?.turns.length).toBe(2);
+  });
+
+  it('deve publicar LIVE_VOICE_SESSION_STARTED com idempotencyKey determinística por sessionId', async () => {
+    await bimodalLiveVoiceService.createSession({
+      organizationId: orgA,
+      sessionId: 'sess-live-idem-01',
+      sellerId: 'seller-lucas',
+      contextMode: 'roleplay_simulation',
+    });
+
+    expect(publishMock).toHaveBeenCalledWith(
+      expect.objectContaining({ eventType: 'LIVE_VOICE_SESSION_STARTED' }),
+      { idempotencyKey: 'live-voice-session:sess-live-idem-01' },
+    );
+  });
+
+  it('deve publicar LIVE_VOICE_BARGE_IN_TRIGGERED com chave estável por turno — retry repete a chave, novo turno gera chave nova', async () => {
+    await bimodalLiveVoiceService.createSession({
+      organizationId: orgA,
+      sessionId: 'sess-live-idem-02',
+      sellerId: 'seller-lucas',
+      contextMode: 'roleplay_simulation',
+    });
+
+    await bimodalLiveVoiceService.sendAudioStream({
+      sessionId: 'sess-live-idem-02',
+      organizationId: orgA,
+      audioChunkBase64: 'chunk',
+      isFinalChunk: true,
+    });
+
+    // 2 turnos (user + assistant) → chave inclui contagem de turnos
+    await bimodalLiveVoiceService.triggerBargeIn({
+      sessionId: 'sess-live-idem-02',
+      organizationId: orgA,
+    });
+    await bimodalLiveVoiceService.triggerBargeIn({
+      sessionId: 'sess-live-idem-02',
+      organizationId: orgA,
+    });
+
+    const bargeInCalls = publishMock.mock.calls.filter(
+      ([event]) => (event as { eventType?: string }).eventType === 'LIVE_VOICE_BARGE_IN_TRIGGERED',
+    );
+    expect(bargeInCalls).toHaveLength(2);
+    // Retry do mesmo fato (sem novo turno) reutiliza a mesma chave → dedup na outbox
+    expect(bargeInCalls[0][1]).toEqual({ idempotencyKey: 'live-voice-barge-in:sess-live-idem-02:2' });
+    expect(bargeInCalls[1][1]).toEqual(bargeInCalls[0][1]);
+
+    // Novo turno de fala → barge-in seguinte é um fato novo, chave distinta
+    await bimodalLiveVoiceService.sendAudioStream({
+      sessionId: 'sess-live-idem-02',
+      organizationId: orgA,
+      audioChunkBase64: 'chunk',
+      isFinalChunk: true,
+    });
+    await bimodalLiveVoiceService.triggerBargeIn({
+      sessionId: 'sess-live-idem-02',
+      organizationId: orgA,
+    });
+
+    const lastCall = publishMock.mock.calls[publishMock.mock.calls.length - 1];
+    expect(lastCall[1]).toEqual({ idempotencyKey: 'live-voice-barge-in:sess-live-idem-02:4' });
+  });
+
+  it('deve publicar LIVE_VOICE_FALLBACK_ENGAGED com idempotencyKey determinística por sessionId', async () => {
+    await bimodalLiveVoiceService.createSession({
+      organizationId: orgA,
+      sessionId: 'sess-live-idem-03',
+      sellerId: 'seller-lucas',
+      contextMode: 'voicehub_copilot',
+    });
+
+    await bimodalLiveVoiceService.fallbackToAsync({
+      sessionId: 'sess-live-idem-03',
+      organizationId: orgA,
+      reason: 'Degradação de jitter',
+    });
+
+    expect(publishMock).toHaveBeenCalledWith(
+      expect.objectContaining({ eventType: 'LIVE_VOICE_FALLBACK_ENGAGED' }),
+      { idempotencyKey: 'live-voice-fallback:sess-live-idem-03' },
+    );
   });
 
   it('deve garantir isolamento multi-tenant entre sessões de voz', async () => {

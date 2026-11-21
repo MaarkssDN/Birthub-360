@@ -1,33 +1,33 @@
-import type React from 'react';
-import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
 import {
-  Home,
-  Users,
-  BarChart3,
-  Mic,
-  Settings,
-  BookOpen,
-  CreditCard,
-  Code,
-  Building2,
-  Search,
-  Sun,
-  Moon,
-  Laptop,
-  Star,
-  Clock,
-  ChevronRight,
-  Sparkles,
-  BookMarked,
   Activity,
+  BarChart3,
+  BookMarked,
+  BookOpen,
+  Building2,
+  ChevronRight,
+  Clock,
+  Code,
+  CreditCard,
+  Home,
+  Laptop,
+  Mic,
+  Moon,
+  Search,
+  Settings,
   Shield,
+  Sparkles,
+  Star,
   StarOff,
+  Sun,
+  Users,
 } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { authClient } from '../../../lib/auth-client.js';
 import { useSessionStore } from '../store/useSessionStore.js';
+import { BirthubLogo, useToast } from './design-system/index.js';
 import { useTheme } from './design-system/ThemeContext.js';
-import { useToast, BirthubLogo } from './design-system/index.js';
 import { getAccessibleTextOnBrand } from './design-system/tokens.js';
 import { NotificationCenter } from './NotificationCenter/index.js';
 
@@ -91,7 +91,7 @@ export function Sidebar() {
   const toggleFavorite = (e: React.MouseEvent, path: string) => {
     e.preventDefault();
     e.stopPropagation();
-    let updated;
+    let updated: string[];
     if (favorites.includes(path)) {
       updated = favorites.filter((p) => p !== path);
       showToast('Item removido dos favoritos', 'info');
@@ -252,7 +252,7 @@ export function Sidebar() {
             <h1 className="text-base font-extrabold leading-none tracking-tight text-slate-900 dark:text-white">
               Birth Hub{' '}
               <span className="text-[#0369a1] dark:text-[#00D4FF] drop-shadow-[0_0_8px_rgba(0,212,255,0.4)]">
-                360
+                360°
               </span>
             </h1>
             <span className="text-[9.5px] text-[#0369a1] dark:text-[#00D4FF] uppercase font-mono font-bold tracking-wider">

@@ -34,7 +34,7 @@ serviceAccount:
 podAnnotations: {}
 
 podSecurityContext:
-  fsGroup: 1001
+  fsGroup: 1000
 
 securityContext:
   capabilities:
@@ -42,7 +42,7 @@ securityContext:
       - ALL
   readOnlyRootFilesystem: false
   runAsNonRoot: true
-  runAsUser: 1001
+  runAsUser: 1000
   allowPrivilegeEscalation: false
 
 service:

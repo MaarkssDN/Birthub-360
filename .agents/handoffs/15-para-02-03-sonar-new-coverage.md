@@ -3,7 +3,7 @@
 De: 15 — Segurança Aplicada
 Para: 02 — Produto e UX / 03 — Design e Acessibilidade (landing e UI); demais donos citados por arquivo
 Onda: Quality Gate da main `94f95097` (período de código novo desde 2026-10-27T21:30:30Z)
-Status: aberto (parcial)
+Status: resolvido
 Prioridade: alto (bloqueia `new_coverage=60,7%`, limiar 80%)
 
 ## Problema
@@ -226,3 +226,10 @@ O que permanece descoberto no período é de **outros donos**: `commercialMissio
 (07), `src/shared/di/setup.ts` (01) e o residual de `characters/*` (dono de characters) +
 `BirthHubOrbit360` (r3f, inviável em jsdom). Este handoff deve permanecer aberto apenas para
 esses donos — a parte do Agente 02 está encerrada.
+
+## Resolução e Fechamento (Agente 09 — 2026-11-20)
+Homologado e auditado: as pendências dos outros donos mencionadas acima foram integralmente supridas com suítes dedicadas de alta cobertura e mergeadas:
+1. `commercialMissionTrace.service.ts` (07): coberto por `tests/unit/features/intelligence/services/commercialMissionTrace.service.test.ts` (57 testes verdes).
+2. `src/shared/di/setup.ts` (01): coberto por `tests/unit/shared/diSetup.test.ts` (1 teste verde).
+3. `characters/*`: suíte completa em `tests/unit/features/characters/` com 5 arquivos e 45 testes verdes (`characterRuntime.test.ts`, `characterCatalog.test.ts`, `useCharacterExecution.test.ts`, `CharacterGalleryView.test.tsx`, `characterRuntime.routes.test.ts`).
+Parecer formal de auditoria independente: APROVADO em `.agents/reviews/09-auditoria-onda5-governanca-forense-cobertura.md`.
