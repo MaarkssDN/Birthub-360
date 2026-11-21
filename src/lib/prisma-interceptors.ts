@@ -169,6 +169,16 @@ export const AUDITABLE_MODELS = [
   'CrmDealItem',
   'CrmCommercialDocument',
   'Attachment',
+  // DEBT-0056: estes 5 models têm `deletedAt` no schema e código que o preenche
+  // (sessionRepository/workflowRepository fazem soft delete em AgentSession/Workflow;
+  // CadenceSequence usa active/deletedAt), mas não estavam na lista — leituras
+  // devolviam registros "deletados". Derivado do schema.prisma (14 models com
+  // deletedAt = 9 originais + estes 5).
+  'Agent',
+  'AgentSession',
+  'CadenceSequence',
+  'CopilotoConversation',
+  'Workflow',
 ];
 
 export function isAuditableModel(model: string): boolean {

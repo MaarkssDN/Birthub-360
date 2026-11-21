@@ -757,12 +757,11 @@ model Activity {
   observations String?
 
   leadId         String
-  lead           Lead         @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  // NOT NULL + ON DELETE CASCADE (DATA-007/DATA-003): reaplicado após confirmar que o banco não
-  // tem linhas órfãs (ver migration 20260920010000_data007_organizationid_not_null_guarded, que
-  // falha com RAISE EXCEPTION caso encontre alguma antes de aplicar a constraint).
+  lead           Lead         @relation(fields: [leadId], references: [id], onDelete: Restrict)
+  // NOT NULL + ON DELETE RESTRICT (Onda 2 / Agente 11 Pietro): substitui Cascade por soft delete
+  // para evitar table locks massivos em deleções acidentais e preservar trilha de auditoria.
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
 
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -782,6 +781,8 @@ model Activity {
   // (PrismaLeadRepository.findById → include activities orderBy date desc)
   // filtra por leadId e ordena por date.
   @@index([leadId, date])
+  @@index([organizationId, deletedAt, date])
+  @@index([leadId, deletedAt, date])
 }
 
 model TimelineEvent {
@@ -790,12 +791,16 @@ model TimelineEvent {
   description String
 
   leadId String
-  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Restrict)
 
-  createdAt DateTime @default(now())
+  createdAt    DateTime  @default(now())
+  deletedAt    DateTime?
+  deletedBy    String?
+  deleteReason String?
 
   @@index([leadId])
   @@index([leadId, createdAt])
+  @@index([leadId, deletedAt, createdAt])
 }
 
 model Note {
