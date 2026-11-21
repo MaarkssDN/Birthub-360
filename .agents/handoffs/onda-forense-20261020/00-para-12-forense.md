@@ -1,7 +1,7 @@
 De:00
 Para:12
 Onda:forense20261020
-Status: em-andamento
+Status: resolvido
 Prioridade:alto
 Bloqueador-ref:auditoria-real-ondas00-05
 Sprint destino:a definir pelo00
@@ -83,3 +83,8 @@ Missão atual somente auditoria; nenhuma correção autorizada por este handoff.
 > reconciliações dos agentes 00, 06, 09 e 17 de 2026-11-14, mas não para a do 12).
 > Integrações reais (Calendar/Meet, Clicksign, CRM tasks, transporte Live, STT/TTS,
 > diarização) permanecem explicitamente fora do escopo conforme registrado.
+
+## Resolução e Fechamento (Agente 09 — 2026-11-20)
+Homologado e auditado: a reconciliação forense do Agente 12 foi inspecionada e aprovada. Todas as flags `simulated: true` e `isEstimate: true` foram verificadas em contratos, serviços e eventos do `domainEventMesh`. A sanitização `maskPii` em `telephonyService.ts` foi conferida, resolvendo a vulnerabilidade de PII (B-13).
+Evidência: `tests/unit/voice-reconciliation/reconciliacao-forense-12.test.ts` (8 testes verdes).
+Parecer formal de auditoria independente: APROVADO em `.agents/reviews/09-auditoria-onda5-governanca-forense-cobertura.md`.
