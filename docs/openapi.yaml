@@ -12220,6 +12220,26 @@ paths:
           }
         '404': { $ref: '#/components/responses/NotFound' }
 
+  /copiloto-ia/leads/{leadId}/next-best-action:
+    parameters:
+      - name: leadId
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [Copiloto IA]
+      summary: >-
+        Próxima Melhor Ação (Next Best Action) prescritiva calculada em tempo real com base no
+        Deal Health Score, tempo de resposta WhatsApp e sinais da conversa.
+      responses:
+        '200':
+          {
+            description: OK,
+            content:
+              { application/json: { schema: { $ref: '#/components/schemas/DataEnvelope' } } },
+          }
+        '404': { $ref: '#/components/responses/NotFound' }
+
   /copiloto-ia/conversations/{id}/live-insights:
     parameters:
       - $ref: '#/components/parameters/IdParam'
