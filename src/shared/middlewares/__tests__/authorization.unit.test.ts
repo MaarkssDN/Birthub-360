@@ -23,10 +23,15 @@ describe('Authorization Middlewares', () => {
 
       requireTenant(req, res, next);
       expect(res.status).toHaveBeenCalledWith(403);
-      expect(res.json).toHaveBeenCalledWith({
-        success: false,
-        error: 'User is not associated with any tenant/organization.',
-      });
+      // MEL-40: resposta no envelope canônico — `code`/`retryable` são aditivos ao `error` legado.
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: 'User is not associated with any tenant/organization.',
+          code: 'FORBIDDEN',
+          retryable: false,
+        }),
+      );
       expect(next).not.toHaveBeenCalled();
     });
   });

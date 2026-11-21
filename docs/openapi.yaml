@@ -22,7 +22,10 @@ info:
 
     **Envelope de resposta**: a maior parte dos endpoints devolve
     `{ "success": true, "data": ... }` (e opcionalmente `meta` para paginação) em
-    caso de sucesso, ou `{ "success": false, "error": "..." }` em caso de falha.
+    caso de sucesso, ou o envelope de erro padronizado emitido pelo middleware global
+    `src/shared/middlewares/errorHandler.ts` — `{ "success": false, "error": "<mensagem>",
+    "code": "<código estável>", "retryable": <bool>, "requestId": "<x-request-id>",
+    "details"?: ... }` (ver schema `ErrorResponse` e `src/shared/contracts/apiEnvelope.contract.ts`).
     Alguns endpoints legados de `/api/intelligence` fogem do padrão e devolvem
     `{ "result": ... }` diretamente — isso está anotado endpoint a endpoint.
 

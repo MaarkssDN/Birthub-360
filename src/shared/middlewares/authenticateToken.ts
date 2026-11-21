@@ -6,6 +6,7 @@ import { UNVERIFIED_ROLE } from '../../lib/auth/authorization.js';
 import { auth } from '../../lib/auth.js';
 import { logger } from '../../lib/logger.js';
 import type { getTenantPrisma } from '../../lib/tenant-prisma.js';
+import { sendApiError } from './errorHandler.js';
 
 export interface AuthUser {
   id: string;
@@ -36,7 +37,7 @@ export const authenticateToken = async (
     );
 
     if (!session?.user) {
-      res.status(401).json({ success: false, error: 'Autenticação necessária.' });
+      sendApiError(req, res, 401, 'Autenticação necessária.');
       return;
     }
 
@@ -51,20 +52,18 @@ export const authenticateToken = async (
     if (user.lockedUntil) {
       const lockedTime = new Date(user.lockedUntil).getTime();
       if (lockedTime > Date.now()) {
-        res
-          .status(403)
-          .json({ success: false, error: 'Conta temporariamente bloqueada por segurança.' });
+        sendApiError(req, res, 403, 'Conta temporariamente bloqueada por segurança.');
         return;
       }
     }
 
     if (!isAuthorizedLoginEmail(user.email)) {
-      res.status(403).json({ success: false, error: 'Acesso restrito ao e-mail autorizado.' });
+      sendApiError(req, res, 403, 'Acesso restrito ao e-mail autorizado.');
       return;
     }
 
     if (!user.organizationId) {
-      res.status(403).json({ success: false, error: 'Usuário sem organização vinculada.' });
+      sendApiError(req, res, 403, 'Usuário sem organização vinculada.');
       return;
     }
 
@@ -85,6 +84,6 @@ export const authenticateToken = async (
     });
   } catch (err: any) {
     logger.error({ err }, 'Authentication middleware error');
-    res.status(401).json({ success: false, error: 'Invalid session.' });
+    sendApiError(req, res, 401, 'Invalid session.');
   }
 };

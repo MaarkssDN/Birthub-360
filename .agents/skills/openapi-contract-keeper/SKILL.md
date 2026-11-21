@@ -20,14 +20,23 @@ O projeto conta com dois scripts complementares:
    - Defina os schemas de entrada (`params`, `query`, `body`) e saída (`response 200`, `400`, `401`, `404`) usando Zod.
    - Atualize a definição correspondente em `docs/openapi.yaml`.
 2. **Sem Tipos `any`:** Não exponha respostas com estruturas opacas ou campos dinâmicos sem schema declarado.
-3. **Erros Padronizados:** Respostas de erro devem seguir o padrão oficial do projeto:
+3. **Erros Padronizados:** Respostas de erro devem seguir o envelope oficial emitido pelo
+   middleware global `src/shared/middlewares/errorHandler.ts` (fonte canônica:
+   `src/shared/contracts/apiEnvelope.contract.ts`, schema OpenAPI `ErrorResponse`):
    ```json
    {
-     "error": "BAD_REQUEST",
-     "message": "Mensagem clara para o usuário",
+     "success": false,
+     "error": "Mensagem clara para o usuário",
+     "code": "BAD_REQUEST",
+     "retryable": false,
+     "requestId": "<x-request-id>",
      "details": [ ... ]
    }
    ```
+   `error` é a mensagem legível; `code` é o código estável da taxonomia `API_ERROR_CODES`.
+   Em rotas, prefira `throw new AppError(message, status, details)` ou o helper
+   `sendApiError(req, res, status, message, { code?, details? })` em vez de montar
+   `{ success:false, error }` inline.
 
 ### 3. Prevenção de Breaking Changes
 - Nunca renomeie ou remova propriedades de resposta existentes em versões ativas da API.

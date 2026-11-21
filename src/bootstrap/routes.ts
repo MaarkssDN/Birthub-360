@@ -77,6 +77,7 @@ import { COMMERCIAL_INTELLIGENCE_ROLES, COPILOTO_IA_ROLES } from '../lib/auth/au
 import { type AuthRequest, authenticateToken } from '../shared/middlewares/authenticateToken.js';
 import { requireTenant } from '../shared/middlewares/authorization.js';
 import { requireRole } from '../shared/middlewares/requireRole.js';
+import { sendApiError } from '../shared/middlewares/errorHandler.js';
 import { unavailableLegacyModule } from './legacyModuleGate.js';
 
 /**
@@ -282,7 +283,11 @@ export function mountFeatureRoutes(app: Express): void {
   // middlewares (incluindo o apiLimiter) repetidamente para a mesma requisição,
   // estourando o rate limit em segundos com uma única chamada a um endpoint
   // inexistente (ex.: /api/analytics/overview, que nunca teve rota registrada).
-  app.use('/api', (_req, res) => {
-    res.status(404).json({ success: false, error: 'Not found' });
+  app.use('/api', (req, res) => {
+    // MEL-40: mesmo envelope do errorHandler global (code/retryable/requestId) — antes era um
+    // `{ success:false, error }` parcial sem `code`/`requestId`. Não pode virar `next(err)`:
+    // mountFrontend (montado depois, antes do errorHandler) tem fallback GET `/{*splat}` que
+    // devolveria index.html com 200 para /api/* inexistente.
+    sendApiError(req, res, 404, 'Not found');
   });
 }
