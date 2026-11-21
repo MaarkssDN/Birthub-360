@@ -77,7 +77,10 @@ export interface EnqueueBatchReportInput {
 
 export async function enqueueCriticalMail(data: EnqueueCriticalMailInput): Promise<string | null> {
   if (!criticalMailQueue) {
-    logger.warn({ to: data.to, subject: data.subject }, 'Filas desabilitadas; critical mail ignorado');
+    logger.warn(
+      { to: data.to, subject: data.subject },
+      'Filas desabilitadas; critical mail ignorado',
+    );
     return null;
   }
   const job = await criticalMailQueue.add('send-critical-mail', data, {

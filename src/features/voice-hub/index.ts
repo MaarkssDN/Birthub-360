@@ -43,8 +43,7 @@ export class WebRtcTelemetryCollector {
     const received = Math.max(0, sample.packetsReceived);
     const lost = Math.max(0, sample.packetsLost);
     const totalPackets = received + lost;
-    const packetLossPct =
-      totalPackets > 0 ? Number(((lost / totalPackets) * 100).toFixed(2)) : 0;
+    const packetLossPct = totalPackets > 0 ? Number(((lost / totalPackets) * 100).toFixed(2)) : 0;
     const jitterMs = Number((Math.max(0, sample.jitterSeconds) * 1000).toFixed(2));
     const rttMs = Number((Math.max(0, sample.roundTripTimeSeconds ?? 0) * 1000).toFixed(2));
 

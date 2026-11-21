@@ -39,6 +39,7 @@ export function escapeHtmlChars(input: string): string {
 export function sanitizePlainText(input: string): string {
   if (!input || typeof input !== 'string') return '';
   // Remove bytes nulos e caracteres de controle invisíveis
+  // biome-ignore lint/suspicious/noControlCharactersInRegex: a classe remove de propósito os caracteres de controle ASCII (sanitização de entrada)
   const clean = input.replace(/\0/g, '').replace(/[\u0000-\u0008\u000B-\u000C\u000E-\u001F]/g, '');
   return stripHtmlTags(clean);
 }
