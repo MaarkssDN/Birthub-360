@@ -11,7 +11,36 @@ import {
   seedRealHistory,
 } from '../unit/commercial-intelligence/oracleTestDoubles.js';
 import { multiRegionResilienceService } from '../../src/lib/runtime/services/multiRegionResilience.service.js';
-import { continuousSecurityAuditService } from '../../src/lib/security/services/continuousSecurityAudit.service.js';
+import { createHash } from 'node:crypto';
+import { ContinuousSecurityAuditService } from '../../src/lib/security/services/continuousSecurityAudit.service.js';
+import type { SecuritySweepScanner } from '../../src/lib/security/services/securitySweepScanner.js';
+
+// O sweep real dispara `npm audit` + `cyclonedx-npm` (processos pesados, dependentes de
+// rede) — inaceitável numa suíte de integração. Injetamos um scanner de fixture que
+// reproduz o CONTRATO do scanner real (stdout JSON + artefato SBOM com hash), sem
+// fabricar o relatório: o serviço continua parseando e calculando tudo de verdade.
+const ONDA05_Sbom_ARTIFACT = {
+  sha256Digest: createHash('sha256').update('{"bomFormat":"CycloneDX","specVersion":"1.5"}').digest('hex'),
+  componentCount: 450,
+  generatedAt: '2026-11-20T00:00:00.000Z',
+};
+const ONDA05_AUDIT_STDOUT = JSON.stringify({
+  auditReportVersion: 2,
+  vulnerabilities: {},
+  metadata: {
+    vulnerabilities: { info: 0, low: 0, moderate: 0, high: 0, critical: 0, total: 0 },
+    dependencies: { prod: 400, dev: 50, optional: 0, peer: 0, peerOptional: 0, total: 450 },
+  },
+});
+const ONDA05_SCANNER: SecuritySweepScanner = {
+  runAuditJson: async () => ONDA05_AUDIT_STDOUT,
+  generateSbom: async () => ONDA05_Sbom_ARTIFACT,
+  readWaiversMarkdown: () => '# Waivers\n\n## Waivers ativos\n',
+};
+const continuousSecurityAuditService = new ContinuousSecurityAuditService(
+  undefined,
+  ONDA05_SCANNER,
+);
 
 describe('Onda 05 — Teste Integrado E2E: Escala, Governança e Resiliência', () => {
   const tenantA = 'org-enterprise-logistica-alpha';

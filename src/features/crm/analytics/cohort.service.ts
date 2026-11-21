@@ -14,7 +14,10 @@ export interface DailyCohortAggregationStorePort {
 export class DailyAggregatedCohortService {
   constructor(private readonly store: DailyCohortAggregationStorePort) {}
 
-  async getCommercialCohortReport(tenantId: string, monthsWindow: number = 12): Promise<{
+  async getCommercialCohortReport(
+    tenantId: string,
+    monthsWindow: number = 12,
+  ): Promise<{
     rows: (DailyCohortRollupRow & { retentionRatePct: number })[];
     usedPreAggregatedTable: true;
   }> {
