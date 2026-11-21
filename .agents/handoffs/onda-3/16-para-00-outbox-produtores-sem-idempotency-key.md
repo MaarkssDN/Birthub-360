@@ -106,6 +106,37 @@ src/features/gamification/` confirma que não restou call site sem chave na past
 
 Demais produtores do inventário seguem pendentes com seus donos (06, 07, 04, 17 etc.) —
 o warn throttled do runtime continua sendo o instrumento de verificação.
+## Resolução parcial — Agente 12 (2026-11-17, branch `agente/12-waveE-outbox-idem`)
+
+Parcela do domínio voz/telefonia executada. Contrato aplicado conforme decisão do 00:
+`idempotencyKey` = identidade estável do fato de negócio, nunca `randomUUID()`.
+
+**Call sites alterados (5 publishes, inventário confirmado por grep — `src/features/voice*`,
+`src/features/voice-hub`, `src/lib/voice-*`, `src/services/telephony` e
+`src/features/integrations/birth-voice` NÃO publicam no DomainEventMesh):**
+
+| Arquivo | Evento | idempotencyKey |
+|---|---|---|
+| `src/features/ai-voice/server/autonomousSdr.service.ts` | `SDR_CALL_COMPLETED` | `sdr-call:{callId}` |
+| `src/features/ai-voice/server/autonomousSdr.service.ts` | `MEETING_SCHEDULED_CALENDAR` | `sdr-meeting:{meetingId}` |
+| `src/features/ai-voice/server/bimodalLiveVoice.service.ts` | `LIVE_VOICE_SESSION_STARTED` | `live-voice-session:{sessionId}` |
+| `src/features/ai-voice/server/bimodalLiveVoice.service.ts` | `LIVE_VOICE_BARGE_IN_TRIGGERED` | `live-voice-barge-in:{sessionId}:{turns.length}` |
+| `src/features/ai-voice/server/bimodalLiveVoice.service.ts` | `LIVE_VOICE_FALLBACK_ENGAGED` | `live-voice-fallback:{sessionId}` |
+
+**Nota de modelagem — barge-in:** o evento ocorre N vezes por sessão legitimamente.
+A chave inclui `session.turns.length` no momento do publish: retry do mesmo
+`triggerBargeIn` não altera turnos → mesma chave → dedup; barge-in após novo turno
+de fala gera chave distinta → não suprime fato novo.
+
+**Testes:** `tests/unit/ai-voice/autonomousSdr.service.test.ts` e
+`tests/unit/ai-voice/bimodalLiveVoice.service.test.ts` — 5 novos casos assertando a
+chave determinística via `vi.mock` de `domainEventMesh.publish` (padrão do repo,
+ver `predictiveRevenueOracle.service.test.ts`). Gate: `npx tsc --noEmit` limpo,
+`npx vitest run tests/unit/ai-voice/` 21/21 verde, `biome check` sem pendências nos
+arquivos alterados.
+
+**Status do handoff: permanece `em-andamento`** — demais produtores do inventário
+seguem com seus donos (06, 07, 04, 17 etc.).
 
 ## Resolução parcial — Agente 04 (2026-11-19, branch `agente/04-waveE-outbox-idem`)
 
