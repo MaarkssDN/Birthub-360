@@ -3,7 +3,7 @@
 De: 21 — Privacidade e LGPD
 Para: 01 — Plataforma, Segurança e Dados
 Onda: W7 (follow-up do handoff 00→21 portal do titular)
-Status: em-andamento (implementado pelo 01 em 2026-11-17 — branch `agente/01-handoffs-20261117`; pendente: rodar teste de integração com Postgres real, aplicar migration não se aplica — não houve mudança de schema, e parecer do Agente 24)
+Status: resolvido
 Prioridade: normal
 Sprint destino: próxima onda
 
@@ -83,3 +83,9 @@ Existe `autoAnonymizeDisqualified.worker.ts`
   NÃO EXECUTADO localmente (exige Postgres de teste); rodar no gate de
   integração do CI.
 - **Sem mudança de schema/migration** — nenhum campo novo foi necessário.
+
+## Fechamento — Auditoria Independente (Agente 09 — Silas, 2026-11-20)
+
+- **Veredicto:** `APROVADO`
+- **Parecer formal:** `.agents/reviews/09-auditoria-onda4-settings-lgpd-voicehub-auth.md`
+- **Evidência:** Worker `src/features/lgpd/jobs/landingLeadRetention.worker.ts` e teste `tests/integration/landing-lead-retention-sweep.test.ts` auditados. Uso estrito de `bypassRls: true` apenas na descoberta cross-tenant de `Lead`, expurgo escopado ao tenant via `eraseDataSubject` (com `OptOutRecord` B-13 e preservação de `PublicLeadConsent`), guarda de relacionamento comercial ativo e idempotência confirmados. Handoff encerrado com `Status: resolvido`.
