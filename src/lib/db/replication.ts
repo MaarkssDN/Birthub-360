@@ -61,7 +61,11 @@ export class ReplicationConsistencyChecker<T = unknown> {
     const replicaRecord = await replica.read();
 
     if (!replicaRecord) {
-      throw new StaleReplicaReadError(primaryRecord.committedAt, 0, Date.now() - primaryRecord.committedAt);
+      throw new StaleReplicaReadError(
+        primaryRecord.committedAt,
+        0,
+        Date.now() - primaryRecord.committedAt,
+      );
     }
 
     if (replicaRecord.version < primaryRecord.version) {

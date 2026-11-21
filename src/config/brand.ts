@@ -98,4 +98,3 @@ export const BRAND = {
 } as const;
 
 export type BrandInfo = typeof BRAND;
-

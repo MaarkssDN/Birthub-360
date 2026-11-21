@@ -202,4 +202,3 @@ export function BirthHubOfficialEmblem({
     </svg>
   );
 }
-
