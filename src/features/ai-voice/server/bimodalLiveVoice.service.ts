@@ -1,3 +1,5 @@
+import { logger } from '../../../lib/logger.js';
+import { domainEventMesh } from '../../../lib/queue/domainEventMesh.service.js';
 import type {
   BimodalLiveSession,
   BimodalSessionConfig,
@@ -5,8 +7,6 @@ import type {
   LiveLatencyMetrics,
   LiveVoiceSessionState,
 } from '../../../shared/contracts/bimodalLiveVoice.contract.js';
-import { domainEventMesh } from '../../../lib/queue/domainEventMesh.service.js';
-import { logger } from '../../../lib/logger.js';
 
 export class BimodalLiveVoiceService implements IBimodalLiveVoicePort {
   private sessions = new Map<string, BimodalLiveSession>(); // key: `${orgId}:${sessionId}`
@@ -56,24 +56,29 @@ export class BimodalLiveVoiceService implements IBimodalLiveVoicePort {
     session.state = 'LISTENING';
     this.sessions.set(key, session);
 
-    await domainEventMesh.publish({
-      eventType: 'LIVE_VOICE_SESSION_STARTED',
-      eventVersion: '1.0.0',
-      organizationId: config.organizationId,
-      correlationId: `live-sess-${config.sessionId}`,
-      producer: 'bimodal-live-voice-service',
-      aggregateId: config.sessionId,
-      payload: {
-        sessionId: config.sessionId,
-        sellerId: config.sellerId,
-        contextMode: config.contextMode,
-        transport: session.transport,
-        sampleRate: config.sampleRate ?? 24000,
-        enableBargeIn: config.enableBargeIn ?? true,
-        // Sessão simulada localmente — sem transporte Live real.
-        simulated: true,
+    await domainEventMesh.publish(
+      {
+        eventType: 'LIVE_VOICE_SESSION_STARTED',
+        eventVersion: '1.0.0',
+        organizationId: config.organizationId,
+        correlationId: `live-sess-${config.sessionId}`,
+        producer: 'bimodal-live-voice-service',
+        aggregateId: config.sessionId,
+        payload: {
+          sessionId: config.sessionId,
+          sellerId: config.sellerId,
+          contextMode: config.contextMode,
+          transport: session.transport,
+          sampleRate: config.sampleRate ?? 24000,
+          enableBargeIn: config.enableBargeIn ?? true,
+          // Sessão simulada localmente — sem transporte Live real.
+          simulated: true,
+        },
       },
-    });
+      // Chave estável por sessão (handoff 16→00, onda-3): retry de createSession
+      // com o mesmo sessionId deduplica na outbox.
+      { idempotencyKey: `live-voice-session:${config.sessionId}` },
+    );
 
     logger.info(
       `[BimodalLiveVoice] Sessão Live ${config.sessionId} iniciada no modo ${config.contextMode} para tenant ${config.organizationId}.`,
@@ -170,22 +175,31 @@ export class BimodalLiveVoiceService implements IBimodalLiveVoicePort {
     // Retorna imediatamente para escuta ativa
     session.state = 'LISTENING';
 
-    await domainEventMesh.publish({
-      eventType: 'LIVE_VOICE_BARGE_IN_TRIGGERED',
-      eventVersion: '1.0.0',
-      organizationId: params.organizationId,
-      correlationId: `bargein-${params.sessionId}`,
-      producer: 'bimodal-live-voice-service',
-      aggregateId: params.sessionId,
-      payload: {
-        sessionId: params.sessionId,
-        interruptionReason:
-          params.interruptionReason ?? 'Voz do usuário detectada durante resposta da IA',
-        latencyMs,
-        // Sessão simulada — barge-in não interrompe áudio real.
-        simulated: true,
+    // Identidade estável do fato: barge-in é um evento por turno interrompido.
+    // `turns.length` não muda entre retries do mesmo triggerBargeIn (o método
+    // só marca interrupted, não adiciona turnos), então retries colidem na
+    // UNIQUE parcial; um novo barge-in após novo turno gera chave distinta.
+    const bargeInKey = `live-voice-barge-in:${params.sessionId}:${session.turns.length}`;
+
+    await domainEventMesh.publish(
+      {
+        eventType: 'LIVE_VOICE_BARGE_IN_TRIGGERED',
+        eventVersion: '1.0.0',
+        organizationId: params.organizationId,
+        correlationId: `bargein-${params.sessionId}`,
+        producer: 'bimodal-live-voice-service',
+        aggregateId: params.sessionId,
+        payload: {
+          sessionId: params.sessionId,
+          interruptionReason:
+            params.interruptionReason ?? 'Voz do usuário detectada durante resposta da IA',
+          latencyMs,
+          // Sessão simulada — barge-in não interrompe áudio real.
+          simulated: true,
+        },
       },
-    });
+      { idempotencyKey: bargeInKey },
+    );
 
     logger.info(
       `[BimodalLiveVoice] Barge-in executado na sessão ${params.sessionId} em ${latencyMs}ms. Geração cancelada e canal liberado para fala.`,
@@ -215,21 +229,25 @@ export class BimodalLiveVoiceService implements IBimodalLiveVoicePort {
     session.state = 'FALLBACK';
     session.updatedAt = new Date().toISOString();
 
-    await domainEventMesh.publish({
-      eventType: 'LIVE_VOICE_FALLBACK_ENGAGED',
-      eventVersion: '1.0.0',
-      organizationId: params.organizationId,
-      correlationId: `fallback-${params.sessionId}`,
-      producer: 'bimodal-live-voice-service',
-      aggregateId: params.sessionId,
-      payload: {
-        sessionId: params.sessionId,
-        reason: params.reason,
-        turnsPreservedCount: session.turns.length,
-        // Sessão simulada localmente.
-        simulated: true,
+    await domainEventMesh.publish(
+      {
+        eventType: 'LIVE_VOICE_FALLBACK_ENGAGED',
+        eventVersion: '1.0.0',
+        organizationId: params.organizationId,
+        correlationId: `fallback-${params.sessionId}`,
+        producer: 'bimodal-live-voice-service',
+        aggregateId: params.sessionId,
+        payload: {
+          sessionId: params.sessionId,
+          reason: params.reason,
+          turnsPreservedCount: session.turns.length,
+          // Sessão simulada localmente.
+          simulated: true,
+        },
       },
-    });
+      // Fallback é um fato único por sessão (handoff 16→00, onda-3).
+      { idempotencyKey: `live-voice-fallback:${params.sessionId}` },
+    );
 
     logger.warn(
       `[BimodalLiveVoice] Fallback ativado para sessão ${params.sessionId}: ${params.reason}. Histórico preservado (${session.turns.length} turnos).`,
