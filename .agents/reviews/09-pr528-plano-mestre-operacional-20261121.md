@@ -3,7 +3,7 @@ Runtime da Auditoria: Antigravity (sessão independente do autor)
 Agente Avaliado (ID): Agente 00 (Astra / Coordenador Global)
 Runtime do Avaliado: Claude Code / Devin / Antigravity
 Onda/Branch: Governança — PR #528, agente/00-plano-mestre-operacional-100-agentes, base origin/main
-Hash/Commit Auditado: 85a802e0b82f0ca82747385bebeaa948c27cf5e8
+Hash/Commit Auditado: 85a802e0b726ad13e09185699ae3d5fb5ca188a8
 
 ## Escopo e critérios (fixados antes)
 OBRIGATÓRIO: Auditoria do Plano Mestre Operacional e Governança dos 100 Agentes (`12-PLANO-MESTRE-OPERACIONAL-100-AGENTES.md`); validação da matriz rastreável de handoffs; reconciliação dos identificadores de decisões (série DEC-H01..H04 / D-12..D-15) sem colisão com o registro histórico (D-01..D-11); detalhamento de riscos e comportamento de TLS no PR #507; verificação de bloqueadores P0; conformidade com P1-P4 e AGENTS.md; zero alteração em código de produção.
