@@ -1,4 +1,5 @@
 import '../../../lib/logger.js';
+import { decodeTextEscapes, findEncodedTokenSpans } from '../../../lib/ai/guardrails/encoding.js';
 
 /**
  * Serviço de Detecção Automática de PII (Dados Pessoais Sensíveis)
@@ -11,6 +12,19 @@ import '../../../lib/logger.js';
  * - Nome pessoal
  * - Cartão de crédito
  * - RG
+ *
+ * Inclui mitigação anti-encoding (Base64, hex, unicode/hex escapes \uXXXX/\xNN
+ * e percent-encoding %XX) para evitar bypass de detecção de dados sensíveis.
+ *
+ * Decisão de deduplicação (handoff 00→07, wave E/F): este serviço mantém
+ * contrato próprio, separado de `src/lib/ai/guardrails/pii.guard.ts`. O guard
+ * bloqueia/redige a saída de IA com allowlist de domínios; este serviço
+ * retorna relatório de detecção (tipos, posições, texto mascarado) para
+ * pipelines de inteligência e cobre tipos adicionais (CNPJ, RG, CEP).
+ * Ambos compartilham apenas os helpers de decoding de
+ * `src/lib/ai/guardrails/encoding.ts` — unificar os detectores mudaria
+ * contratos de retorno distintos e ampliaria o blast radius de LGPD,
+ * então a duplicação de padrões é intencional e documentada.
  */
 
 export interface PIIDetectionResult {
@@ -40,8 +54,8 @@ const PII_PATTERNS = {
 export function detectPII(text: string): PIIDetectionResult {
   const positions: PIIDetectionResult['positions'] = [];
   const types: string[] = [];
-  let redactedText = text;
 
+  // 1. Detectar PII diretamente no texto cru
   for (const [type, pattern] of Object.entries(PII_PATTERNS)) {
     const regex = new RegExp(pattern.source, pattern.flags);
 
@@ -59,15 +73,88 @@ export function detectPII(text: string): PIIDetectionResult {
     }
   }
 
-  // Criar texto redatado
-  positions.sort((a, b) => b.start - a.start); // Travar do fim para o início
-  for (const pos of positions) {
-    const mask = '*'.repeat(pos.original.length);
-    redactedText = redactedText.slice(0, pos.start) + mask + redactedText.slice(pos.end);
+  // 2. Mitigação anti-encoding: tokens codificados (Base64/hex)
+  const normalized = decodeTextEscapes(text);
+  const encodedSpans = findEncodedTokenSpans(normalized);
+  for (const span of encodedSpans) {
+    for (const [type, pattern] of Object.entries(PII_PATTERNS)) {
+      const regex = new RegExp(pattern.source, pattern.flags);
+      if (regex.test(span.decoded)) {
+        if (!types.includes(type)) {
+          types.push(type);
+        }
+        // Localiza a posição do token cru no texto original
+        let searchFrom = 0;
+        let rawIndex = text.indexOf(span.raw, searchFrom);
+        while (rawIndex !== -1) {
+          const matchStart = rawIndex;
+          const matchEnd = rawIndex + span.raw.length;
+          if (!positions.some((p) => p.start === matchStart && p.end === matchEnd)) {
+            positions.push({
+              type,
+              start: matchStart,
+              end: matchEnd,
+              original: span.raw,
+            });
+          }
+          searchFrom = matchEnd;
+          rawIndex = text.indexOf(span.raw, searchFrom);
+        }
+      }
+    }
   }
 
-  const hasPII = positions.length > 0;
+  // 3. Mitigação anti-encoding: escapes no próprio corpo do texto (unicode \uXXXX / \xNN e percent-encoding %XX)
+  let hasEscapedPII = false;
+  if (normalized !== text) {
+    for (const [type, pattern] of Object.entries(PII_PATTERNS)) {
+      const regex = new RegExp(pattern.source, pattern.flags);
+      if (regex.test(normalized)) {
+        hasEscapedPII = true;
+        if (!types.includes(type)) {
+          types.push(type);
+        }
+      }
+    }
+  }
+
+  const hasPII = positions.length > 0 || hasEscapedPII;
   const confidence = hasPII ? 0.9 : 0;
+
+  // Se não houver PII, preserva o texto original intacto (encoding original protegido)
+  if (!hasPII) {
+    return {
+      hasPII: false,
+      types: [],
+      confidence: 0,
+      redactedText: text,
+      positions: [],
+    };
+  }
+
+  // Se houver PII codificada via escapes de texto (\uXXXX/%XX), redige sobre a visão normalizada
+  let redactedText = hasEscapedPII ? normalized : text;
+
+  if (hasEscapedPII) {
+    for (const pattern of Object.values(PII_PATTERNS)) {
+      const regex = new RegExp(pattern.source, pattern.flags);
+      redactedText = redactedText.replace(regex, (match) => '*'.repeat(match.length));
+    }
+    for (const span of encodedSpans) {
+      for (const pattern of Object.values(PII_PATTERNS)) {
+        const regex = new RegExp(pattern.source, pattern.flags);
+        if (regex.test(span.decoded)) {
+          redactedText = redactedText.split(span.raw).join('*'.repeat(span.raw.length));
+        }
+      }
+    }
+  } else {
+    positions.sort((a, b) => b.start - a.start); // Travar do fim para o início
+    for (const pos of positions) {
+      const mask = '*'.repeat(pos.original.length);
+      redactedText = redactedText.slice(0, pos.start) + mask + redactedText.slice(pos.end);
+    }
+  }
 
   return {
     hasPII,

@@ -48,7 +48,7 @@
 | `30` | `src/components/index.ts` |
 | `31` | `src/App.tsx`, `src/components/layout/**` |
 | `32` | `src/components/feedback/**` (Loading, Empty, Error) |
-| `33` | `src/components/ui/**`, `tailwind.config.js` |
+| `33` | `src/components/ui/**`, `tailwind.config.js`, `src/styles/**` |
 | `34` | `src/components/a11y/**` |
 | `35` | `src/components/motion/**` |
 | `36` | `src/features/landing/**` |

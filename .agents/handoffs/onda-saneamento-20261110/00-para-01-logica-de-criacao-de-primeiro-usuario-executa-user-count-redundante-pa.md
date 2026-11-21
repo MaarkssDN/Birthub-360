@@ -2,8 +2,6 @@ De: Agente 00 — Coordenador
 Para: Agente 01 (Plataforma, Segurança e Dados)
 Onda: Onda 1 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-044)
 Status: resolvido
-
-Status: em-andamento
 Prioridade: normal
 Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
 Sprint destino: Onda 1
@@ -58,3 +56,9 @@ Executar a tarefa `TAREFA-SANEAMENTO-044` estritamente dentro da propriedade de 
 - **Execução do teste de integração:** bloqueada nesta estação (sem `.env.test`/Docker). Pendente gate de integração do 00/08.
 - **Run report:** `.agents/runs/agente-01-tarefa-saneamento-044.md`.
 - **Revisão:** aguardando parecer do Agente 24.
+
+## Fechamento — Auditoria Independente (Agente 09 — Silas, 2026-11-20)
+
+- **Veredicto:** `APROVADO`
+- **Parecer formal:** `.agents/reviews/09-auditoria-onda4-settings-lgpd-voicehub-auth.md`
+- **Evidência:** Ausência de `user.count` em `src/lib/auth.ts` confirmada (`databaseHooks.user.create.before` atribui `role: 'ADMIN'` ao fundador de organização nova preservando `bypassRls` no `requestContext`); teste de regressão `tests/integration/auth-founder-admin.test.ts` auditado. Linha duplicada `Status: em-andamento` removida e handoff encerrado com `Status: resolvido`.

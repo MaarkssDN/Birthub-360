@@ -2,6 +2,10 @@ import { randomUUID } from 'node:crypto';
 import { Queue } from 'bullmq';
 import { getRedisConnectionOptions } from '../lib/env.js';
 import { logger } from '../../../lib/logger.js';
+import {
+  registerQueueForMetrics,
+  webhookDispatchDroppedTotal,
+} from '../../../lib/queue/metrics.js';
 import { resolveActiveEndpointsForEvent } from './webhookEndpointService.js';
 
 /**
@@ -23,6 +27,7 @@ export class WebhookService {
     this.webhookQueue = new Queue('webhooks', {
       connection: { ...getRedisConnectionOptions(), maxRetriesPerRequest: null },
     });
+    registerQueueForMetrics('webhooks', this.webhookQueue);
   }
 
   /**
@@ -81,6 +86,7 @@ export class WebhookService {
         hasAnyActiveEndpoint = resolution.hasAnyActiveEndpoint;
         targets = resolution.targets;
       } catch (resolutionError: any) {
+        webhookDispatchDroppedTotal.inc({ reason: 'endpoint_resolution_failed' });
         logger.error(
           `[WebhookService] Could not resolve tenant webhook endpoints for tenant ${organizationId} — dropping event ${event} instead of risking delivery to the wrong destination`,
           resolutionError,
@@ -117,6 +123,7 @@ export class WebhookService {
         `[WebhookService] Queued event ${event} for tenant ${organizationId} (deployment-wide fallback)`,
       );
     } catch (error: any) {
+      webhookDispatchDroppedTotal.inc({ reason: 'dispatch_error' });
       logger.error(`[WebhookService] Error dispatching webhook event ${event}`, error);
     }
   }

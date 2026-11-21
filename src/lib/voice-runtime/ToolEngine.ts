@@ -11,6 +11,24 @@ export class ToolPermissionError extends Error {
   }
 }
 
+/**
+ * Bloqueador B-08: Timeout rígido individual (máx 15s) em todas as tools de agentes de runtime.
+ * Garante que uma tool externa travada ou lenta seja abortada com exceção sem congelar o enxame.
+ */
+export const MAX_RUNTIME_TOOL_TIMEOUT_MS = 15000;
+
+export class ToolTimeoutError extends Error {
+  public readonly toolName: string;
+  public readonly timeoutMs: number;
+
+  constructor(toolName: string, timeoutMs: number = MAX_RUNTIME_TOOL_TIMEOUT_MS) {
+    super(`Tool '${toolName}' execution timed out after ${timeoutMs}ms`);
+    this.name = 'ToolTimeoutError';
+    this.toolName = toolName;
+    this.timeoutMs = timeoutMs;
+  }
+}
+
 export interface ToolExecutionContext {
   tenantId: string;
   // Tool names this specific agent/session is explicitly allowed to call — normally derived
@@ -48,6 +66,7 @@ export class ToolExecutionEngine {
     toolName: string,
     args: Record<string, unknown>,
     ctx: ToolExecutionContext,
+    timeoutMs: number = MAX_RUNTIME_TOOL_TIMEOUT_MS,
   ): Promise<unknown> {
     const tool = this.registeredTools.get(toolName);
     if (!tool) {
@@ -88,8 +107,18 @@ export class ToolExecutionEngine {
       tenantId: ctx.tenantId,
     });
 
+    const effectiveTimeoutMs = Math.min(timeoutMs, MAX_RUNTIME_TOOL_TIMEOUT_MS);
+    let timer: NodeJS.Timeout | undefined;
+
     try {
-      const result = await tool.execute(args, ctx);
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timer = setTimeout(() => {
+          reject(new ToolTimeoutError(toolName, effectiveTimeoutMs));
+        }, effectiveTimeoutMs);
+      });
+
+      const result = await Promise.race([tool.execute(args, ctx), timeoutPromise]);
+
       observability.endSpan(`tool-${sessionId}`, sessionId, 'TOOL_EXECUTION_COMPLETED', {
         tool: toolName,
         result,
@@ -97,11 +126,22 @@ export class ToolExecutionEngine {
       return result;
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
-      observability.endSpan(`tool-${sessionId}`, sessionId, 'TOOL_EXECUTION_FAILED', {
-        tool: toolName,
-        error: message,
-      });
+      const isTimeout = error instanceof ToolTimeoutError;
+      observability.endSpan(
+        `tool-${sessionId}`,
+        sessionId,
+        isTimeout ? 'TOOL_EXECUTION_TIMEOUT' : 'TOOL_EXECUTION_FAILED',
+        {
+          tool: toolName,
+          error: message,
+          timeout: isTimeout,
+        },
+      );
       throw error;
+    } finally {
+      if (timer) {
+        clearTimeout(timer);
+      }
     }
   }
 

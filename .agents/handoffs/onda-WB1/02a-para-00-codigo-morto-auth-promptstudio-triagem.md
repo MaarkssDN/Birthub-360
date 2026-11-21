@@ -4,7 +4,7 @@
 De: 02A — UX Research & Usability
 Para: 00 — Coordenador
 Onda: WB-1
-Status: aberto
+Status: resolvido
 Prioridade: normal
 Bloqueador-ref: DEBT-0025, DEBT-0065
 Sprint destino: a definir pelo 00
@@ -37,3 +37,16 @@ Grep sem referências aos componentes removidos; build e typecheck verdes; `/`, 
 ## Contexto adicional
 
 A SPA outbound (outra parte do UX-05) já tem handoff próprio para o 05 (`02a-para-05-outbound-spa-codigo-morto.md`). Este handoff cobre apenas auth components + confirmação do PromptStudio.
+
+## Resolução (Agente 99 / 20 — 2026-11-20)
+
+- Confirmado via `git grep` que não restavam imports de produção para os 5 componentes legados mortos de autenticação.
+- Removidos os 7 arquivos mortos em `src/features/auth/components/`: `WelcomeScreen.tsx`, `WelcomeScreen.css`, `LoginScreen.tsx`, `NewLoginScreen.tsx`, `NewLoginScreen.css`, `LandingLoginSplitScreen.tsx` e `OrbitalSystem.tsx`, além do teste órfão `tests/unit/features/auth/NewLoginScreen.contactCards.test.tsx`.
+- Preservados integralmente os componentes vivos de autenticação (`ResetPasswordScreen.tsx`, `ChangePasswordGate.tsx`, `GoogleLoginModal.tsx`).
+- Atualizado o comentário da linha ~70 em `src/components/layout/tabMeta.ts` removendo a menção obsoleta a Prompt Studio.
+
+## Re-verificação UX-05a (Agente 01 — waveF, 2026-11-20)
+
+- Confirmado em `origin/main @ 960e0524e`: os 7 arquivos + teste órfão já removidos pelo commit `f33025448`; `src/features/auth/components/` contém apenas `ResetPasswordScreen.tsx`, `ChangePasswordGate.tsx`, `GoogleLoginModal.tsx`.
+- `grep` por `WelcomeScreen|LoginScreen|NewLoginScreen|LandingLoginSplitScreen|OrbitalSystem` em `src/` e `tests/`: zero imports; restam apenas comentários históricos obsoletos em `src/App.tsx:82-91` (dono 31), `src/components/ui/sign-in-page.tsx:11` (dono 03), `src/config/brand.ts:30`, `tests/e2e/helpers.ts:24,38`, `tests/e2e/accessibility.spec.ts:77,87`, `tests/e2e/saved-views.spec.ts:83` — higienização cosmética delegada aos donos (não bloqueia UX-05a).
+- Comentário residual no próprio domínio corrigido: `src/features/auth/components/ResetPasswordScreen.tsx:121-122` não referencia mais `LoginScreen.tsx` (arquivo inexistente).

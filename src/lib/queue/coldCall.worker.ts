@@ -7,13 +7,19 @@ import { logger } from '../logger.js';
 import { isFinalAttempt, recordDeadLetter } from './deadLetter.js';
 import { recordQueueJobCompleted, registerQueueForMetrics } from './metrics.js';
 import { connection } from './redis.js';
+import { SCHEDULER_SCAN_DEFAULTS } from './queueDefaults.js';
 
 export const COLD_CALL_QUEUE_NAME = 'sdr-cold-call';
 
 /** De quanto em quanto tempo a campanha reexamina o funil. */
 const RUN_EVERY_MS = 15 * 60 * 1000;
 
-export const coldCallQueue = new Queue(COLD_CALL_QUEUE_NAME, { connection });
+export const coldCallQueue = new Queue(COLD_CALL_QUEUE_NAME, {
+  connection,
+  // defaults de scan; o job agendado mantém attempts:1 explícito (retry
+  // duplicaria ligações para os mesmos leads — ver comentário no scheduler).
+  defaultJobOptions: SCHEDULER_SCAN_DEFAULTS,
+});
 coldCallQueue.on('error', (err) => logger.warn({ message: err.message }, 'coldCallQueue offline'));
 registerQueueForMetrics(COLD_CALL_QUEUE_NAME, coldCallQueue);
 
