@@ -834,9 +834,9 @@ router.get(
       );
       res.setHeader('Content-Type', contentType);
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-      // nosemgrep: javascript.express.security.audit.xss.direct-response-write.direct-response-write
       // Download binário (csv/xlsx/json) com Content-Type fixo por formato e `attachment`: o navegador
       // não renderiza como HTML. Escopo por organizationId em downloadExtractionFile.
+      // nosemgrep: javascript.express.security.audit.xss.direct-response-write.direct-response-write
       res.send(buffer);
     } catch (error: any) {
       next(error);
