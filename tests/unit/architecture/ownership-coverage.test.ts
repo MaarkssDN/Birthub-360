@@ -5,7 +5,10 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 import {
+  evaluateApprovalGate,
   evaluateOwnershipCoverage,
+  isApprovalProtectedPath,
+  isApprovalRecordPath,
   isInsideDepcruiseGraph,
   isPathLikeScope,
   parseOwnershipMatrix,
@@ -359,6 +362,83 @@ describe('evaluateOwnershipCoverage', () => {
       manifest,
     });
     expect(violations.some((v) => v.includes('não existe no repositório'))).toBe(true);
+  });
+});
+
+describe('evaluateApprovalGate (regras de aprovação em prosa do §15)', () => {
+  const approvalDoc = (path: string, content: string) => ({ path, content });
+
+  it('isApprovalProtectedPath cobre server.ts, package.json e lockfiles', () => {
+    expect(isApprovalProtectedPath('server.ts')).toBe(true);
+    expect(isApprovalProtectedPath('package.json')).toBe(true);
+    expect(isApprovalProtectedPath('package-lock.json')).toBe(true);
+    expect(isApprovalProtectedPath('pnpm-lock.yaml')).toBe(true);
+    expect(isApprovalProtectedPath('nested/yarn.lock')).toBe(true);
+    expect(isApprovalProtectedPath('src/server.ts')).toBe(false);
+    expect(isApprovalProtectedPath('src/App.tsx')).toBe(false);
+  });
+
+  it('isApprovalRecordPath só aceita .agents/runs/ e .agents/approvals/', () => {
+    expect(isApprovalRecordPath('.agents/runs/00-aprovacao.md')).toBe(true);
+    expect(isApprovalRecordPath('.agents/approvals/pkg.md')).toBe(true);
+    expect(isApprovalRecordPath('.agents/handoffs/x.md')).toBe(false);
+    expect(isApprovalRecordPath('docs/aprovacao.md')).toBe(false);
+  });
+
+  it('passa quando nenhum path protegido foi alterado', () => {
+    expect(
+      evaluateApprovalGate({
+        changedFiles: ['src/App.tsx', '.agents/handoffs/x.md'],
+        approvalDocs: [],
+      }),
+    ).toEqual([]);
+  });
+
+  it('falha quando package.json muda sem registro de aprovação', () => {
+    const violations = evaluateApprovalGate({
+      changedFiles: ['package.json', 'src/App.tsx'],
+      approvalDocs: [],
+    });
+    expect(violations).toHaveLength(1);
+    expect(violations[0]).toContain('package.json');
+  });
+
+  it('falha quando server.ts muda e o registro não cita o orquestrador humano', () => {
+    const violations = evaluateApprovalGate({
+      changedFiles: ['server.ts'],
+      approvalDocs: [
+        approvalDoc(
+          '.agents/runs/00-aprovacao.md',
+          'Registro: alteração em server.ts aprovada pelo Agente 00.',
+        ),
+      ],
+    });
+    expect(violations).toHaveLength(1);
+    expect(violations[0]).toContain('server.ts');
+  });
+
+  it('passa quando o registro cita path, Agente 00, aprovação e orquestrador humano', () => {
+    expect(
+      evaluateApprovalGate({
+        changedFiles: ['server.ts', 'package.json'],
+        approvalDocs: [
+          approvalDoc(
+            '.agents/runs/00-aprovacao-server-package.md',
+            'Aprovação explícita do Agente 00 e do orquestrador humano para server.ts e package.json.',
+          ),
+        ],
+      }),
+    ).toEqual([]);
+  });
+
+  it('ignora registros fora de .agents/runs/ e .agents/approvals/', () => {
+    const violations = evaluateApprovalGate({
+      changedFiles: ['package.json'],
+      approvalDocs: [
+        approvalDoc('docs/nota.md', 'package.json aprovado pelo Agente 00'),
+      ],
+    });
+    expect(violations).toHaveLength(1);
   });
 });
 
