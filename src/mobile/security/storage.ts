@@ -54,10 +54,7 @@ export class MobileTokenStorage {
   private backend: SecureStorageBackend;
   private localStorageRef: Storage | null;
 
-  constructor(
-    backend?: SecureStorageBackend,
-    localStorageRef?: Storage | null,
-  ) {
+  constructor(backend?: SecureStorageBackend, localStorageRef?: Storage | null) {
     this.backend = backend ?? new InMemorySecureBackend();
     this.localStorageRef =
       localStorageRef !== undefined

@@ -49,6 +49,14 @@ spec:
                 name: {{ include "birthhub-360.fullname" . }}-config
             - secretRef:
                 name: {{ include "birthhub-360.fullname" . }}-secret
+          # Boot roda prisma migrate deploy antes do Node subir; liveness so comeca apos o startup passar.
+          startupProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 4
+            failureThreshold: 30
           livenessProbe:
             httpGet:
               path: /health/live

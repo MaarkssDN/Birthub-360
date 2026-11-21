@@ -54,12 +54,22 @@ export function isBlockedDesignLabPath(rawPath: string): boolean {
 }
 
 /**
- * Predicado puro da guarda anti-bypass de /tools — extraído para teste unitário.
- * Recebe o path cru (req.path); devolve true quando o path toca um asset de /tools
- * por um alias não autorizado (encoding como /tools%2F... ou /%74ools/..., /public/tools/...,
- * /@fs/.../public/tools/..., /foo/tools/..., etc.), preservando o prefixo legítimo /tools
- * (que segue para o mount autenticado) e os módulos de código-fonte sob /src/
- * (ex.: /src/features/intelligence/tools/*, /src/features/prospecting/.../tools/*, /src/lib/ai/tools/*).
+ * Predicado puro da guarda anti-bypass dos estáticos de /tools — mesma classe de
+ * vulnerabilidade P0 que o design-lab (DEM-20261114-001/003, guarda do PR #415):
+ * os mounts `/tools` autenticados abaixo só casam o prefixo literal, mas
+ * `express.static(distPath)`/`vite.middlewares` decodificam o path e servem o
+ * MESMO arquivo por aliases: `/%74ools/...`, `/tools%2F...`, `//tools/...`,
+ * `/public/tools/...` e `/@fs/<abs>/public|dist/tools/...` (dev). Aqui o path é
+ * decodificado e qualquer forma que resolva para a raiz estática `tools`
+ * (primeiro segmento, ou qualificada por `public/`/`dist/` para cobrir /@fs/)
+ * sem ser o prefixo legítimo `/tools/` — que segue para o mount autenticado —
+ * é bloqueada com 404 antes de qualquer static.
+ *
+ * Diferente do predicado do design-lab (que casa QUALQUER segmento
+ * "design-lab"), aqui só conta a raiz `tools` ou `public|dist/tools`: paths
+ * legítimos com segmento "tools" no meio (rota SPA `/dashboard/tools`, rotas
+ * de API sob `/api`, módulos fonte `/src/.../tools/` servidos pelo Vite em
+ * dev) não tocam os ativos estáticos sensíveis e não podem ser bloqueados.
  */
 export function isBlockedToolsPath(rawPath: string): boolean {
   let decodedPath = rawPath;
@@ -68,13 +78,15 @@ export function isBlockedToolsPath(rawPath: string): boolean {
   } catch {
     // Path malformado: mantém o raw — o static downstream já rejeita encoding inválido.
   }
-  const touchesToolsAsset = /(?:^|\/)tools(?:\/|$)/i.test(decodedPath);
+  // `//tools/...` e equivalentes: o static junta o path ao root e serve o mesmo
+  // arquivo — normaliza barras iniciais antes de testar o primeiro segmento.
+  const normalized = decodedPath.replace(/^\/+/, '/');
+  const touchesToolsAsset =
+    /^\/tools(?:\/|$)/i.test(normalized) ||
+    /(?:^|\/)public[/\\]tools(?:\/|$)/i.test(normalized) ||
+    /(?:^|\/)dist[/\\]tools(?:\/|$)/i.test(normalized);
   const isLegitStaticPrefix = /^\/tools(?:\/|$)/i.test(rawPath);
-  const isSourceModule =
-    /^\/src\//i.test(rawPath) &&
-    !decodedPath.includes('..') &&
-    !/(?:^|\/)public(?:\/|$)/i.test(decodedPath);
-  return touchesToolsAsset && !isLegitStaticPrefix && !isSourceModule;
+  return touchesToolsAsset && !isLegitStaticPrefix;
 }
 
 /**

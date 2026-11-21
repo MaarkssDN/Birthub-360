@@ -3,7 +3,7 @@
 - De: 16 — Runtime, Workers e Escala
 - Para: 00 — Coordenador
 - Onda: 3 (backlog, DEM do ciclo 20261113-004 / MEL-21)
-- Status: em-andamento (parte de runtime executada pelo 16 em 2026-11-17 — ver "Atualização" abaixo; chaves por produtor seguem pendentes, decisão de contrato do 00)
+- Status: resolvido (todas as 6 frentes concluídas e homologadas com parecer favorável)
 - Prioridade: alto
 - Bloqueador-ref: auditoria `.agents/runs/onda-3/16-mel21-outbox-auditoria.md` (G4)
 - Sprint destino: a definir pelo 00

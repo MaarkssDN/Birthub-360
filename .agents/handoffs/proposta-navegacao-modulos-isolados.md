@@ -144,6 +144,16 @@ que estiver na URL — reload-safe).
 - **Keep-alive de rotas**: preserva estado mas quebra deep-link e aumenta memória no
   mobile; URL params já é o padrão do projeto.
 
+## Resolução (Agente 00 — 2026-11-14)
+
+Decisão: **ENCERRADO como resolvido**. Verificado em `main`:
+`src/components/layout/AssistantsDock.tsx`, `ModuleNavPanel.tsx`,
+`docs/architecture/NAVEGACAO-MODULAR.md` e integração no `MainLayout`/`Sidebar`
+presentes e funcionais. A implementação divergiu da proposta em 3 pontos
+(documentados no cabeçalho: painel lateral em vez de top tabs, assistentes
+simultâneos, estado híbrido URL+sessionStorage) — divergência aprovada e já
+entregue. Ondas A–E descritas foram superadas pela execução real; não há trabalho
+pendente nesta frente.
 ## Resolução
 
 - **Data:** 2026-11-14 · **Executor:** Agente 00 (trilha de coordenação, DEM-20261114-002)

@@ -1,7 +1,7 @@
 De: 24 — Revisão Independente (achado repassado pelo 00)
 Para: 00 — Coordenador
 Onda: review-20261119
-Status: resolvido
+Status: RESOLVIDO (execução: Agente 99 — Vito, branch `agente/15-cve-waiver-tools-guard`)
 Prioridade: alto
 Bloqueador-ref: parecer 24 do PR #415 — `.agents/reviews/24-revisao-pr415-p0-security-extract.md`
 Sprint destino: próxima onda de segurança
@@ -41,6 +41,71 @@ guarda ou confirmar que não há ativos sensíveis equivalentes."
 - Dono provável da execução: 01 (Plataforma/Segurança) ou 15 (Segurança Aplicada);
   `src/bootstrap/**` — escalar ao 00 para designação se necessário.
 - Não bloqueia o merge do #415 (achado é follow-up, não defeito do diff).
+
+## Resolução (Agente 99 — Vito, 2026-11-19)
+
+**Veredito: bypass REAL — mesma classe P0 do design-lab. Correção implementada.**
+
+### Diagnóstico (evidências)
+
+1. **Mounts `/tools`**: `src/bootstrap/frontend.ts` monta `/tools` com `toolsLimiter` +
+   `authenticateToken` + `express.static(public/tools)` (dev, frontend.ts:109) e
+   `express.static(dist/tools)` (prod, frontend.ts:153), sempre ANTES do catch-all
+   `express.static(distPath)` (frontend.ts:164) e do fallback SPA. `mountFrontend` é o último
+   bootstrap (`server.ts:100`), depois de todas as rotas `/api` (`routes.ts`).
+2. **Bypass confirmado**: o mount `app.use('/tools', ...)` só casa o prefixo literal.
+   Paths que o `express.static(distPath)`/`vite.middlewares` decodificam para o mesmo
+   arquivo escapam do mount e da auth:
+   - produção: `/%74ools/...`, `/tools%2F...`, `//tools/...` → `dist/tools/**`;
+   - dev e prod: `/public/tools/...`, `/@fs/<abs>/public/tools/...` e
+     `/@fs/<abs>/dist/tools/...` (Vite serve `publicDir` na raiz e `/@fs/` absoluto sem auth).
+   Conteúdo exposto: `public/tools/social-selling/*.html` (materiais comerciais
+   proprietários) — sensibilidade equivalente à do design-lab.
+3. **authenticateToken sem bypass em prod**: `ALLOW_DEV_AUTH_BYPASS` só afeta
+   `requireEmailVerification` (`src/lib/auth.ts:104`) e o boot aborta se a flag vier
+   `true` com `NODE_ENV=production` (`src/config/env.ts:389-395`, fail-closed).
+   `authenticateToken` (`src/shared/middlewares/authenticateToken.ts`) exige sessão
+   Better Auth real + e-mail autorizado + organização — sem atalho condicional.
+4. **CSP `unsafe-inline` em `/tools`**: relaxamento restrito ao mount `/tools`
+   (`frontend.ts`, middleware de CSP antes do static), justificado em comentário —
+   conteúdo HTML estático próprio do produto, nunca dado de usuário refletido. O restante
+   do app mantém a CSP estrita do Helmet. Risco residual aceito e documentado; os aliases
+   bloqueados pela guarda também deixam de receber esse header relaxado (recebem 404).
+5. **Diferença /tools vs /design-lab**: mesmo desenho de mounts; a guarda do design-lab
+   (PR #415, ainda não mergeado — commits `930c9cea1`/`6f8fca2d3` só existem na branch
+   `agente/00-p0-security-extract-310`) usa predicado de segmento genérico, o que não
+   serviria para `/tools` sem falsos positivos (`/dashboard/tools` é rota SPA legítima —
+   `src/features/voice-hub/components/Sidebar.tsx:157` — e `/api/prospecting/tools/*`,
+   `/src/**/tools/` são paths legítimos com segmento "tools"). Por isso a guarda de
+   `/tools` é mais estrita: só conta a raiz `tools` ou `public|dist/tools`.
+
+### Correção aplicada
+
+- `src/bootstrap/frontend.ts`: novo predicado exportado `isBlockedToolsPath` + middleware
+  de guarda no topo de `mountFrontend` (antes de qualquer static/vite), cobrindo dev e
+  prod. Fail-closed: encoding malformado segue para o downstream (que já rejeita);
+  paths legítimos (`/tools/…` prefixo literal → mount autenticado; `/dashboard/tools`,
+  `/api/**/tools`, `/src/**/tools`, `/@fs/…/src/**/tools`) passam.
+- `tests/unit/bootstrap/frontend.toolsGuard.test.ts` (novo — nome distinto de
+  `frontend.test.ts` para não colidir com o arquivo que o PR #415 cria): 25 testes —
+  predicado puro + supertest comprovando 404 nos aliases e pass-through nos legítimos.
+
+### Gates executados
+
+- `npx tsc --noEmit` → limpo.
+- `npx vitest run -c vitest.unit.config.ts tests/unit/bootstrap/frontend.toolsGuard.test.ts`
+  → 25/25 passando.
+- `npx biome lint src/bootstrap/frontend.ts` → limpo (lint do repo é `biome lint src`).
+
+### Pendências / notas para o 00
+
+- Quando o PR #415 mergear, as duas guardas (`isBlockedDesignLabPath` +
+  `isBlockedToolsPath`) coexistem em `mountFrontend` — ambas fail-closed, sem conflito
+  funcional; uma consolidação futura pode unificá-las num predicado de raízes
+  estáticas sensíveis.
+- O bloqueio do application gate por GHSA-7589-6FVF-X4PW (effect/prisma) já está
+  resolvido em main pelo PR #469 (override effect 3.22.5, commit `4ecbfe0fb`) — esta
+  branch já contém a correção; nenhum trabalho adicional necessário.
 
 ## Resolução (Agente 99 / 20 — 2026-11-20)
 
