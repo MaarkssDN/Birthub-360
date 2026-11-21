@@ -75,7 +75,7 @@ function sanitizeOnce(input: string): string {
 
   // 3. Remove atributos de eventos inline (onload=, onerror=, onclick=, etc.).
   // O separador pode ser espaço OU "/" (`<img/onerror=x>` é executado pelos navegadores).
-  clean = clean.replace(/[\s/]+on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+  clean = clean.replace(/[\s/]+on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, () => '');
 
   // 4. Neutraliza URIs javascript:, vbscript: e data:text/html em href/src/action
   clean = clean.replace(
