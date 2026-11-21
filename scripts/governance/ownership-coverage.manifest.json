@@ -45,7 +45,7 @@
       "justification": "Dentro do grafo do depcruise, mas nenhuma regra forbidden modela propriedade de arquivo (o cruiser verifica fronteiras de importação, não autoria); App shell, navegação e Sidebar; slot exclusivo 31 para rotas centrais (AGENTS.md §14); proteção real: revisão de diff contra .agents/MATRIZ_PROPRIEDADE.md e handoff do dono (AGENTS.md §15/§16)."
     },
     {
-      "scope": "src/components/ui/**, tailwind.config.js",
+      "scope": "src/components/ui/**, tailwind.config.js, src/styles/**",
       "owner": "Agente 33 (Célia)",
       "coverage": "review",
       "justification": "Dentro do grafo do depcruise, mas nenhuma regra forbidden modela propriedade de arquivo (o cruiser verifica fronteiras de importação, não autoria); design system e primitivos de UI (tailwind é CSS-first em src/styles/globals.css); proteção real: revisão de diff contra .agents/MATRIZ_PROPRIEDADE.md e handoff do dono (AGENTS.md §15/§16)."
