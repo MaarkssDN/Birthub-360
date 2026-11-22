@@ -155,3 +155,4 @@ sonar-report/
 scratch/
 
 .vscode/
+.schemathesis/
