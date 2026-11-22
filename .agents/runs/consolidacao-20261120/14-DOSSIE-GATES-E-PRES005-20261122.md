@@ -50,24 +50,28 @@ Missão recebida via Orquestrador (canal Devin↔ChatGPT): MISSÃO 1 (dossiê de
 
 ### SonarQube — resultado real (substitui "PENDENTE")
 
-Concluiu com **FAILURE nos 4 PRs** (~19:06–19:18 UTC): #534, #535, #536, #537.
-**Fingerprint:** falha na etapa "Run Tests with Coverage" — testes unitários pré-existentes quebram antes da análise Sonar:
-- `tests/unit/shared/middlewares/errorHandler.test.ts:193` — `TypeError: req.header is not a function` (`sendError src/shared/middlewares/errorHandler.ts:207`)
-- `tests/unit/shared/middlewares/errorHandler.test.ts:212` — `AssertionError` (vazamento de `org-b` em resposta de erro)
-**Classificação:** falha de teste unitário em `src/`/`tests/` **não tocados pelos diffs docs-only** → herdada de main (PROVÁVEL; os diffs não alteram código). Não é indisponibilidade do serviço nem quality gate reprovado — é a suíte de testes que falha no step de cobertura.
+Concluiu com **FAILURE nos 4 PRs** (~19:05–19:18 UTC): #534, #535, #536, #537.
+**Fingerprint:** falha na etapa "Run Tests with Coverage" — a suíte vitest quebra antes da análise Sonar:
+- **5 arquivos de teste / 32 testes falhos** (981 arquivos passam, 7901 testes passam, 1 skip) — contagem idêntica nos 4 PRs e em `main`.
+- Arquivos com falha (idênticos em #534/#535/#536/#537 e `main` run `44856026577`):
+  - `tests/unit/bootstrap/frontend.test.ts` — guarda anti-bypass `/tools` (`/foo/tools/bar.html` retorna 200, esperado 404)
+  - `tests/unit/shared/middlewares/errorHandler.test.ts` e `errorHandler.production.test.ts` — `TypeError: req.header is not a function` (mock de req incompleto) + assertions de mascaramento
+  - `src/shared/services/__tests__/dataSubjectErasure.unit.test.ts` — anonimização LGPD
+  - `tests/unit/features/market-intelligence/server/accountIntelligence.routes.contract.test.ts` — contrato cross-tenant 404
+**Classificação:** **CONFIRMADO herdado de main** — fingerprint bit-a-bit idêntico (mesmos 5 arquivos, mesmos 32 testes, mesmos totais) no run de `main` `44856026577` (HEAD `0d790443d`) e no PR #528 (`44869048899`). Os diffs docs-only não tocam `src/`, `tests/` ou workflows. Não é indisponibilidade do serviço nem quality gate Sonar reprovado — é a suíte de testes que falha no step de cobertura.
 
-### Semgrep SAST — os 2 findings identificados
+### Semgrep SAST — os 2 findings identificados (corrigido em §6)
 
-| Arquivo | Regra |
-|---|---|
-| `scripts/security/reencrypt-credentials.ts` | `javascript.express.security.audit.xss.direct-response-write.direct-response-write` |
-| `src/features/integrations/bitrix/bitrix.routes.ts` | mesma regra (XSS direct-response-write) |
+| Arquivo | Linha | Regra |
+|---|---|---|
+| `scripts/security/reencrypt-credentials.ts` | ~565 | `problem-based-packs.insecure-transport.js-node.bypass-tls-verification` — `rejectUnauthorized: false` |
+| `src/features/integrations/bitrix/bitrix.routes.ts` | ~837 | `javascript.express.security.audit.xss.direct-response-write` — `res.send(buffer)` |
 
-Ambos em código-fonte pré-existente, fora do escopo docs-only. Cobertos pelo trabalho de AppSec em andamento (#507/DEC-H02). Classificação: **PROVÁVELMENTE herdado de main** (indício forte: PR #528 idêntico + arquivos não tocados; prova formal por comparação de baseline fica para o revisor).
+Ambos em código-fonte pré-existente, fora do escopo docs-only. **CONFIRMADO herdado de main**: run `44856026622` em `main` (`0d790443d`) reporta os mesmos 2 findings, mesmas regras, mesmas linhas ("Findings: 2 (2 blocking)", 111 rules, 2792 arquivos).
 
-### application gate/Biome — conciliação da contagem
+### application gate/Biome — conciliação da contagem (corrigido em §6)
 
-O log reporta "Found 6 errors" mas lista mais de 6 ocorrências porque várias são do **mesmo arquivo** (RevenueChart.tsx concentra 5) e há warnings FIXABLE misturados. Contagem exata de erros bloqueantes = 6 diagnósticos `error`-level; o restante são warnings. Arquivos afetados: `RevenueChart.tsx`, `EmptyState.tsx`, `MotionWrapper.tsx`, `flowIcons.tsx`, `AuthContext.logoutOfflinePurge.test.tsx`, `flowise-router.service.ts`, `AnalyticsUseCases.ts`, `UsageUseCases.ts` — **nenhum tocado pelos diffs**.
+O "Found 6 errors" vem do step **`biome format` (`format:check`)**, não do lint: são **6 arquivos com formatação divergente** — `src/features/copiloto-ia/application/CopilotoIaUseCases.ts`, `src/features/copiloto-ia/application/__tests__/nextBestAction.unit.test.ts`, `src/features/copiloto-ia/domain/CopilotoIa.ts`, `src/features/crm/application/LeadUseCases.ts`, `src/features/crm/routing/__tests__/round-robin.unit.test.ts`, `src/features/voice-hub/services/callRecord.service.ts`. Os diagnósticos `lint/*` listados no log são warnings que não bloqueiam. **CONFIRMADO herdado de main**: run `44856026585` em `main` falha com os mesmos 6 arquivos de formato. Nenhum arquivo é tocado pelos diffs.
 
 ### Gates — quadro final consolidado
 
@@ -80,9 +84,35 @@ O log reporta "Found 6 errors" mas lista mais de 6 ocorrências porque várias s
 | Semgrep SAST | ❌ | herdado de main — 2 findings conhecidos |
 | SonarQube | ❌ | herdado de main — testes unitários `errorHandler.test.ts` falham |
 
-**Todos os diffs são 100% documentais** (`.agents/`, `docs/orchestration/`). Nenhuma falha toca arquivo alterado pelo PR. Classificação global: **PROVÁVELMENTE herdado** — prova final cabe ao revisor independente.
+**Todos os diffs são 100% documentais** (`.agents/`, `docs/orchestration/`). Nenhuma falha toca arquivo alterado pelo PR. Classificação global: **CONFIRMADO herdado de main** para SonarQube, Semgrep e application gate — fingerprints idênticos verificados em runs de `main` (`0d790443d`) e PR #528; resta ao revisor independente homologar a classificação.
 
 ---
+
+## 6. ADENDO DE VERIFICAÇÃO — REVALIDAÇÃO PRES-005 E DECISÕES (Devin, 2026-11-22 ~19:30 UTC)
+
+### 6.1 Errata da §1.5
+
+- Tabela Semgrep da §1.5 atribuía a regra errada aos arquivos — corrigida acima (TLS-bypass ↔ `reencrypt-credentials.ts`; XSS direct-write ↔ `bitrix.routes.ts`).
+- §1.5 atribuía "Found 6 errors" a diagnósticos de lint — na verdade é `biome format` (`format:check`) com 6 arquivos não formatados; lista corrigida acima.
+- Classificação elevada de "PROVÁVELMENTE" para **CONFIRMADO** onde a comparação de baseline foi executada (SonarQube, Semgrep, application gate) — runs e fingerprints citados em §1.5.
+
+### 6.2 PRES-005 — mapa de risco revalidado (read-only)
+
+- `integracao/consolidacao-20261121`: **permanece SEM-REMOTO**, worktree `C:/Github/Birthub-360-worktrees/integracao-consolidacao-20261121`, HEAD **`d2059c594`** — inalterado desde o inventário; segue ativa (Genesis). Risco 🔴 mantido.
+- `chore/handoff-devin-consolidacao-global-20261120`: worktree HEAD `86288f30b`.
+- Checkout principal `C:/Github/Birthub-360`: branch `chore/handoff-00-despacho-wave-a-b-20261120` AHEAD-2, working tree sujo (modificações + handoffs não rastreados) — inalterado.
+- PR #537 HEAD: `7ea57a37` → `f0cf2323` (errata) → este adendo. Demais PRs conferidos: #534 `5d6a61c1`, #535 `4d01e6b0`, #536 `f80aca2b` — todos OPEN, SHAs conforme dossiê.
+- Nenhuma branch/worktree/stash tocada. Nenhum push de backup executado (aguarda decisão C).
+
+### 6.3 Pacote de decisão ao Orquestrador Humano (3 decisões separadas)
+
+| # | Decisão | Evidência | Bloqueio atual |
+|---|---|---|---|
+| A | Designar revisor independente (humano ou instância separada) para ratificar #534–#537 | §2, §4 — executor=auditor no mesmo runtime não configura independência | Sem revisor, ratificação permanece BLOQUEADA |
+| B | Exceções gate-a-gate para os 4 gates herdados | §1.5 — fingerprints idênticos em main/#528; diffs 100% docs | Exige ratificação (A) + autorização explícita; nada implementado |
+| C | Preservação não-destrutiva de commits locais (Genesis `d2059c594`, `agente/03-telas-brand-system` AHEAD-107) | §3 | Requer rechecagem de atividade Genesis + scan de segredos/arquivos grandes antes de propor backup |
+
+**Dossie encerrado em modo documental. Aguardando Orquestrador Humano.**
 
 ## 2. PACOTE DE HOMOLOGAÇÃO (MISSÃO 4)
 
@@ -131,7 +161,7 @@ O mesmo runtime Devin atuou como executor (Astra, PRs #534–#536) e auditor (Si
 
 ## 5. CRITÉRIOS DE ENCERRAMENTO — STATUS
 
-- A) Dossiê por gate: ✅ (§1, SonarQube = pendente de conclusão)
+- A) Dossiê por gate: ✅ (§1 + errata §1.5 + adendo §6 — SonarQube FAILURE confirmado, fingerprints corrigidos)
 - B) Pacote ratificação: ✅ preparado (§2/§4) — ratificação real BLOQUEADA
 - C) PRES-005: ✅ (§3)
 - D) Tabela homologação: ✅ (§2)
