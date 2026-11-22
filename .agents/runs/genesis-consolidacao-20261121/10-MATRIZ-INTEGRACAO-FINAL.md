@@ -108,3 +108,22 @@ Após cada merge: `git diff` acumulado revisado → sem deleções fora de `.age
 **Validação:** vitest unitário 2/2 ✅ · CommandPalette 14/14 ✅ · typecheck ✅ · lint:ci ✅ (1517 warnings preexistentes, 0 erros) · openapi-drift ✅ · rls-coverage ✅ · ownership-coverage ✅ · governance-reviews ✅.
 **Falhas preexistentes (não-regressões, src/ idêntico à main):** format:check 6 erros em arquivos não tocados; test:architecture 1 violação depcruise (`LeadUseCases.ts → bitrix/service/settings.ts`).
 **Não executado:** workflow completo do Schemathesis contra API real (exige Postgres/Redis/Meilisearch — Docker remoto, indisponível localmente); validação mecânica da composição de URL feita via sonda HTTP local.
+
+## Fase 3 — Auditoria Independente (Agente 09) — 21/11/2026
+
+**SHA auditado:** `065a73a1a` (tag `audit/genesis-fase3-submissao`). **Pós-higiene:** `00e7f8e7d`.
+**Parecer:** `.agents/reviews/09-parecer-genesis-consolidacao-065a73a1a.md` → **REPROVADO — CORREÇÕES OBRIGATÓRIAS** (porção CI/código).
+
+**Achados bloqueantes do auditor:**
+1. `csrfGuard` exige `Origin`/`Referer` em mutações — workflow não envia → 403 em massa.
+2. Rate limiters default (`API=600`, `AI=30`, `PUBLIC_LEAD=5`) → 429 em massa; `api-schema-fuzz.yml` já tem receita de override não replicada.
+3. Duplicação com `.github/workflows/api-schema-fuzz.yml` existente (Schemathesis 4.33.4) — decisão de governança pendente.
+4. Aprovação do handoff `08-para-08A` (gate de `.github/workflows/**`) não registrada.
+5. Echo do sign-up vaza `Set-Cookie` nos logs (MAJOR).
+6. Verificação de cobertura por heurística fraca; `it` tautológico no teste unitário.
+
+**Erro do executor corrigido:** resíduo `.schemathesis/` (~510 arquivos de cache da sonda local) commitado por engano em `065a73a1a` via `git add -A` → removido em `00e7f8e7d` + `.gitignore`.
+
+**Classificação das 7 alterações staged da worktree Devin:** 1 já integrada (`devin-para-00-continuidade-consolidacao-global-20261120.md`, idêntica à HEAD); 6 **potencialmente destrutivas** — são snapshots antigos que reverteriam `Status: resolvido→aberto/em-andamento` e apagariam `Resolução-ref` de pareceres aprovados (PRs #427/#441/#453, Agente 24/02/07). Recomendação: NÃO incorporar; manter como evidência; descarte cabe ao dono da worktree mediante aprovação.
+
+**Pendências preexistentes (não-regressões, src/ idêntico à main):** format:check 6 erros (copiloto-ia ×3 [sem dono declarado na MATRIZ — gap], crm/application/LeadUseCases [Agente 40/território compartilhado], crm/routing/round-robin.test [Agente 47], voice-hub/services/callRecord [não listado — lacuna voice-hub/services]); test:architecture 1 violação depcruise introduzida por `150c1686c` (2026-11-19, main): `LeadUseCases.ts → integrations/bitrix/service/settings.ts` — import dinâmico cross-feature; baseline de violações conhecidas não cobre esse alvo.
