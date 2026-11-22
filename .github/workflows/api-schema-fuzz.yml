@@ -46,6 +46,7 @@ on:
       - 'src/bootstrap/**'
       - 'src/features/**/routes/**'
       - 'src/shared/**'
+      - 'src/config/**'
       - 'prisma/schema.prisma'
       - 'prisma/migrations/**'
       - '.github/workflows/api-schema-fuzz.yml'
@@ -364,7 +365,7 @@ jobs:
             -n 2 \
             --max-time 300 \
             -w 1 \
-            --report-dir /tmp/neg-report > /tmp/negative.log 2>&1 || true
+            --report-dir /tmp/neg-report > /tmp/negative.log 2>&1
           NEG_EXIT=$?
           set -e
           echo "Negative control exit=$NEG_EXIT"

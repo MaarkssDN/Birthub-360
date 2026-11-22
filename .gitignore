@@ -156,3 +156,7 @@ scratch/
 
 .vscode/
 .schemathesis/
+.venv-schemathesis/
+schemathesis-report.json
+schemathesis-junit.xml
+schemathesis-report/
