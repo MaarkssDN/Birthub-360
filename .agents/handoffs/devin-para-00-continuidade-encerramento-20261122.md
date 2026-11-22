@@ -12,7 +12,8 @@
 **Repositório:** Birthub 360 (`C:\Github\Birthub-360`, `https://github.com/MaarkssDN/Birthub-360`)
 **Branch da sessão:** `agente/00-integracao-skills` (trabalho) → conteúdo integrado à `main`
 **HEAD de referência (origin/main na data):** `0d790443d10fed5c9da20394b29e43188a07b467`
-**Status do encerramento:** ENCERRAMENTO_PARCIAL (handoff produzido e publicado em PR documental; aguarda revisão independente conforme governança)
+**Status do encerramento:** ENCERRAMENTO_PARCIAL — rodada 2 de correções aplicada (2026-11-22): escopo visual corrigido, parecer PR421 localizado/reconciliado, pendências de segurança com versões verificadas por lockfile. Permanecem: decisão de governança sobre branch pattern (R7) e parecer do Agente 09 — Silas sobre o PR #530.
+**PR de preservação:** [#530](https://github.com/MaarkssDN/Birthub-360/pull/530) — branch `devin/handoff-encerramento-20261122`
 
 ---
 
@@ -59,7 +60,8 @@ Restrições respeitadas: nenhum reset/force-push/rebase destrutivo; alteraçõe
 - Execução local inviável: baselines são `*-chromium-linux` e a suíte exige stack completa (Postgres + app + Playwright).
 - Acionado `gh workflow run visual-regression.yml --ref main` → run **[44573014428](https://github.com/MaarkssDN/Birthub-360/actions/runs/44573014428)**.
 - Resultado: job "Detectar escopo visual" OK; "Visual Regression" **success em 9m24s**; "Visual Regression Gate" **success**.
-- **Estado:** VALIDADO. O bypass do check no push não escondeu regressão.
+- **Escopo real da validação (correção 2026-11-22):** a suíte executada é `visual-regression/visual.spec.ts`, que cobre apenas rotas da aplicação principal: `/login` e `/app/{dashboard,workspace,crm,prospect,intelligence,analytics,integrations,calendar,automations,module-access}` × temas × viewports. **A landing page NÃO foi coberta** — `landing/` e `src/features/landing/**` não possuem specs visuais nem baselines. Como o merge transportou uma reescrita grande de `landing/src/App.tsx` (~1974 linhas de diff), a ausência de regressão visual **global** não está comprovada; há uma lacuna de validação específica da landing (ver PEND-DEVIN-05).
+- **Estado:** VALIDADO para o escopo `/app/*` + `/login`; NÃO VERIFICADO para landing. O bypass do check no push não escondeu regressão no escopo coberto.
 
 ### E4 — Verificação Dependabot (2026-11-19 → re-verificado 2026-11-22)
 
@@ -76,6 +78,25 @@ Re-verificação 2026-11-22 (`dependabot/alerts?state=open`):
 - Alertas **112 e 111 (OTel) continuam abertos** — `instrumentation-http@0.221.0` ainda presente via `@opentelemetry/auto-instrumentations-node@^0.79.0` em `package-lock.json`/`pnpm-lock.yaml` da `main` atual.
 - **Novo alerta 118**: `effect` **high** — ReDoS em `Schema.TemplateLiteral`, vuln `<=3.22.0`, patched `3.22.1`, manifest `pnpm-lock.yaml`. Atenção: `package.json` já possui `overrides.effect = ^3.22.5` (correto no npm), mas o `pnpm-lock.yaml` aparenta estar **dessincronizado** — provável causa do alerta persistir no manifest pnpm.
 
+### E4b — Versões resolvidas verificadas por lockfile (origin/main @ `0d790443d`, 2026-11-22)
+
+| Lockfile | `effect` | `@opentelemetry/instrumentation-http` | `picomatch` | Papel real |
+|---|---|---|---|---|
+| `package-lock.json` (raiz) | **3.22.5** ✅ (>=3.22.1 patched) | **0.221.0** ❌ (<0.222.0) | presente (advisory retirado) | **Canônico de facto** — CI usa `npm ci` (`.github/workflows/ci.yml:172,471`); root `package.json` não declara `workspaces` nem `packageManager` |
+| `pnpm-lock.yaml` (raiz) | **3.20.0** ❌ (<=3.22.0) | **0.221.0** ❌ | presente | **Estale/dessincronizado** — `pnpm-workspace.yaml` contém apenas `allowBuilds` (config pnpm v10), sem `packages:`; nenhum workflow executa `pnpm install`; secret-scan dos workflows explicitamente faz `skip-files: 'pnpm-lock.yaml,...'` |
+| `agente-codigo-local/package-lock.json` | ausente | ausente | presente (mesmo advisory retirado) | Subprojeto separado (`agente-codigo-local/package.json`, "agente-birthub-360") |
+| `bun.lock` / `agente-codigo-local/bun.lock` | — | — | — | **Não existem** no repo (CI apenas os lista em `skip-files` preventivamente) |
+
+Conclusão: o único lockfile que afeta o build/deploy real é `package-lock.json`. Nele, `effect` já está corrigido (3.22.5) e `instrumentation-http` segue vulnerável (0.221.0). O alerta 118 (`effect`) existe **somente** porque o `pnpm-lock.yaml` está stale — corrigi-lo ou removê-lo é decisão de PEND-DEVIN-03, não bump de código.
+
+### E5 — Reconciliação do parecer histórico do PR #421 (localizado e já reconciliado)
+
+- O arquivo `.agents/reviews/24-revisao-pr421-20261119.md` **existe na `main`** (blob `9df3b855`, confirmado via `git ls-tree origin/main`). PEND-DEVIN-04 (localização documental) → **RESOLVIDO**.
+- O parecer é do **Agente 24 (Revisão Independente, modelo legado)** sobre o PR #421 (`agente/00-integracao-skills` → `main`), veredito **REPROVADO** por dirty merge `e791b827a`: 4 regressões (A-1a warn idempotencyKey removido; A-1b 2 testes removidos; A-1c `chat-model-guardrails.test.ts` deletado; A-1d intents mortos `qa-opportunity`/`ctx-crm-create` reintroduzidos), poluição WIP de infra/docker (A-2: `blackhole` no alertmanager, renomeação `${APP_DB_PASSWORD}`→`${POSTGRES_PASSWORD}`, `LIVEKIT_KEYS` com espaço, `LITELLM_MASTER_KEY` obrigatório), deleção de handoff aberto (A-3) e `@import` CSS de risco (A-4).
+- **Reconciliação já existente:** `.agents/reviews/24-revisao-pos-merge-pr421-20261119.md` (Agente 24, mesmo dia) verificou `origin/main` @ `ff67caa41` e emitiu **APROVADO**, respondendo item a item: A-1a/A-1b/A-1c/A-1d **CORRIGIDOS**, A-2 **LIMPO** (alertmanager com `slack_notifications`, compose consistente, `LIVEKIT_KEYS` sem espaço, sem `LITELLM_MASTER_KEY` obrigatório), A-3 **RESTAURADO**, A-4 **N/A** (import não entrou na main). Integridade por hash de todos os artefatos `.agents/**` aprovados confirmada (0 diferenças).
+- **Ressalva de escopo:** o parecer pos-merge foi **verificação estática** sobre `origin/main` — não reexecutou suite de testes/build. Os testes restaurados (dedup outbox, warn idempotencyKey, guardrails PII) constam como presentes e cobertos; a execução efetiva cabe ao gate de CI das branches futuras.
+- **Contexto adicional:** o PR #421 foi mergeado em `db1d23170` (2026-11-19T15:37Z) contendo os commits desta sessão (`11d2ded0d` + `e0229d4f8`). Ou seja: a versão "suja" auditada no parecer REPROVADO foi substituída por force-push/rebase **antes** do merge — o conteúdo que esta sessão empurrou diretamente para `main` (`11d2ded0d`) é o mesmo que entrou pelo PR. Não houve regressão residual segundo a auditoria.
+
 ## SEÇÃO 4 — IMPLEMENTAÇÕES PARCIAIS
 
 Nenhuma. Não houve código de produto implementado nesta sessão. O único trabalho de código foi o commit de mudanças já existentes no worktree (originadas de sessões/agentes anteriores, listadas no diff: handoffs `.agents/**`, `landing/**`, `docker-compose*.yml`, `alertmanager.yml`, `CommandPalette.tsx`, `domainEventMesh.service.ts` + teste, `globals.css`).
@@ -90,31 +111,39 @@ Nenhuma. Não houve código de produto implementado nesta sessão. O único trab
 **Prioridade sugerida:** Média-Alta (security medium, exposição de dados sensíveis em traces)
 **Agente proprietário:** Agente 99 — Vito (AppSec, Squad 90); apoio Agente 94 — Tess (CI) — confirmado no AGENTS.md vigente (arquitetura 100 agentes)
 **Dependências:** nenhuma
-**Critério de aceite:** `npm ls @opentelemetry/instrumentation-http` >=0.222.0 em `package-lock.json` e `pnpm-lock.yaml`; alertas 111/112 fechados; `npm run build`/typecheck OK.
-**Evidências necessárias:** diff de lockfiles, saída do Dependabot.
+**Critério de aceite:** `@opentelemetry/instrumentation-http` >=0.222.0 resolvido em `package-lock.json` (lockfile canônico — CI usa `npm ci`); alertas 111/112 fechados; `npm run build`/typecheck OK. Atualização do `pnpm-lock.yaml` só se PEND-DEVIN-03 decidir mantê-lo.
+**Evidências necessárias:** diff de lockfile(s), saída do Dependabot.
 **Próxima ação:** abrir PR de dependência com `overrides` ou bump de `auto-instrumentations-node`.
 
 **ID:** PEND-DEVIN-02
-**Título:** Resolver divergência `effect` entre package.json override e pnpm-lock.yaml (alerta 118)
-**Descrição:** `package.json` tem `overrides.effect=^3.22.5`, mas `pnpm-lock.yaml` ainda resolve `effect <=3.22.0`. Regenerar lockfile pnpm ou decidir lockfile canônico.
-**Prioridade sugerida:** Média
+**Título:** Resolver `effect` vulnerável no `pnpm-lock.yaml` (alerta 118) — **provável não-problema**
+**Descrição:** `package.json` tem `overrides.effect=^3.22.5` e `package-lock.json` resolve **3.22.5** (patched, ver E4b). O alerta 118 existe apenas porque `pnpm-lock.yaml` (stale, resolve `effect@3.20.0`) ainda é escaneado pelo Dependabot. Versão corrigida: >=3.22.1.
+**Prioridade sugerida:** Baixa-Média — depende integralmente de PEND-DEVIN-03
 **Agente proprietário:** Agente 99 — Vito (AppSec) + Agente 94 — Tess (CI/deps)
-**Dependências:** decisão sobre canonical lockfile (ver PEND-DEVIN-03)
-**Critério de aceite:** alerta 118 fechado; ambos lockfiles consistentes.
-**Próxima ação:** `pnpm install --lockfile-only` ou remover `pnpm-lock.yaml` se npm for o padrão.
+**Dependências:** decisão sobre lockfile canônico (PEND-DEVIN-03)
+**Critério de aceite:** se pnpm-lock for mantido → regenerado com `effect>=3.22.1`; se removido/ignorado → alerta dispensado com justificativa.
+**Próxima ação:** executar junto com PEND-DEVIN-03, não isoladamente.
 
 **ID:** PEND-DEVIN-03
-**Título:** Eliminar dualidade de lockfiles (`package-lock.json` + `pnpm-lock.yaml` + `agente-codigo-local/package-lock.json` + `bun.lock`)
-**Descrição:** CI usa `npm ci` (confirmado em `.github/workflows/ci.yml`), mas pnpm-lock é mantido e gera alertas Dependabot divergentes. Decisão de engenharia pendente.
-**Prioridade sugerida:** Média (dívida estrutural)
-**Agente proprietário:** Agente 00 — Astra (decisão) + squad plataforma
-**Critério de aceite:** um único lockfile canônico documentado; Dependabot configurado para o(s) manifest(s) correto(s).
+**Título:** Decidir destino dos lockfiles/gerenciadores (`package-lock.json` canônico vs `pnpm-lock.yaml` stale vs `agente-codigo-local/package-lock.json`)
+**Descrição:** Evidência coletada (E4b): CI usa `npm ci`; root `package.json` não declara `workspaces`/`packageManager`; `pnpm-workspace.yaml` só tem `allowBuilds`; workflows fazem `skip-files` de `pnpm-lock.yaml` e `agente-codigo-local/bun.lock` (este inexistente). `agente-codigo-local/` é subprojeto separado com próprio lockfile. Ou seja: **npm é o gerenciador efetivo**; pnpm-lock é resíduo que gera ruído Dependabot (alerta 118) e risco de drift.
+**Prioridade sugerida:** Média (dívida estrutural com impacto em SCA)
+**Agente proprietário:** Agente 00 — Astra (decisão) + Agente 94 — Tess (execução) + Agente 99 — Vito (SCA)
+**Critério de aceite:** lockfile(s) canônico(s) documentado(s); Dependabot escopado aos manifests corretos; nenhum lockfile stale gerando falso positivo.
+**Próxima ação sugerida:** remover `pnpm-lock.yaml` (ou regenerar se pnpm for usado em algum fluxo não detectado) e revisar `skip-files` dos workflows.
 
-**ID:** PEND-DEVIN-04
-**Título:** Verificar destino de `.agents/reviews/24-revisao-pr421-20261119.md`
-**Descrição:** Arquivo untracked observado no worktree principal em 2026-11-19 durante o commit. Não foi incluído no commit propositalmente (não verificado). Em 2026-11-22 o worktree principal está em outra branch (`chore/handoff-00-despacho-wave-a-b-20261120`) com outros untracked — não foi possível confirmar se o arquivo ainda existe/foi preservado por outra sessão.
-**Prioridade sugerida:** Baixa
-**Próxima ação:** Agente 00 verificar em `.agents/reviews/` se o parecer do PR #421 existe; se não, localizar na sessão que o gerou.
+**ID:** PEND-DEVIN-04 — **RESOLVIDO em 2026-11-22**
+**Título:** Localização de `.agents/reviews/24-revisao-pr421-20261119.md`
+**Resolução:** arquivo confirmado na `main` (blob `9df3b855`). O parecer é REPROVADO sobre dirty merge do PR #421, e a reconciliação dos achados **já foi executada** pelo Agente 24 no parecer pos-merge `24-revisao-pos-merge-pr421-20261119.md` (APROVADO, A-1a..A-4 todos corrigidos/n.a.). Não recriar documento. Acompanhar apenas se surgir novo achado.
+
+**ID:** PEND-DEVIN-05
+**Título:** Cobertura de regressão visual para a landing page
+**Descrição:** O run 44573014428 validou apenas `visual.spec.ts` (rotas `/login` e `/app/*`). A landing (`landing/` — reescrita grande transportada pelo merge — e `src/features/landing/**`) não possui specs nem baselines visuais. Lacuna registrada a pedido do orquestrador; não é regressão confirmada, é validação pendente.
+**Prioridade sugerida:** Média (a landing é superfície pública de conversão — Squad 30, Agente 36 Léo)
+**Agente proprietário:** Agente 05 — Luma (Regressão Visual, Squad 00) + Agente 36 — Léo (landing)
+**Dependências:** nenhuma técnica; requer decisão se landing entra na suíte `visual-regression/` ou ganha suíte própria.
+**Critério de aceite:** spec(s) visual(is) cobrindo rotas públicas da landing com baselines Linux no CI; ou registro formal de exclusão justificada.
+**Evidências necessárias:** novo run do workflow com specs de landing verdes, ou parecer de exclusão.
 
 ## SEÇÃO 6 — TESTES E VALIDAÇÕES
 
@@ -124,9 +153,13 @@ Nenhuma. Não houve código de produto implementado nesta sessão. O único trab
 | Rebase | `git rebase origin/main` | PASSOU (0 conflitos) | log `11d2ded0d` sobre `86cf92ffa` |
 | Merge+push | ff merge + `git push origin main` | PASSOU (com bypass de check) | remote `86cf92ffa..11d2ded0d` |
 | Ancestor check | `git merge-base --is-ancestor 11d2ded0d origin/main` | PASSOU (2026-11-22) | exit 0 |
-| Visual Regression | GH Actions run 44573014428 | **PASSOU** (9m24s + gate) | link acima |
+| Visual Regression | GH Actions run 44573014428 | **PASSOU no escopo `/login`+`/app/*`** (9m24s + gate); landing NÃO coberta | link acima; `visual.spec.ts` inspecionado |
 | Typecheck/lint/unit tests | — | NÃO EXECUTADO | fora do escopo pedido; recomendo gate local antes de futuras entregas de código |
-| Dependabot audit | `gh api dependabot/alerts` | EXECUTADO (2 datas) | tabelas acima |
+| Dependabot audit | `gh api dependabot/alerts` | EXECUTADO (3 datas: 19/11, 22/11 ×2) | tabelas acima |
+| Versões por lockfile | `git show origin/main:<lockfile>` + grep | EXECUTADO 2026-11-22 | tabela E4b: package-lock effect 3.22.5 ✅ / otel 0.221.0 ❌; pnpm-lock effect 3.20.0 ❌ / otel 0.221.0 ❌ |
+| Localização review PR421 | `git ls-tree origin/main .agents/reviews/` | EXECUTADO | blob `9df3b855` presente; reconciliação em `24-revisao-pos-merge-pr421-20261119.md` (APROVADO) |
+| Checks do PR #530 | `gh pr checks 530` | EXECUTADO | validate-agent-rules/Semgrep/SonarQube/build/application-gate FAIL — sendo investigateados como sistêmicos/preexistentes (R7/R8) |
+| Estado da main | `gh run list --branch main` | EXECUTADO | falhas preexistentes em Semgrep/SonarQube/Release/Schemathesis na própria main |
 
 ## SEÇÃO 7 — ARQUIVOS E ARTEFATOS
 
@@ -143,7 +176,7 @@ Integrados à `main` (via merge ff, commit `11d2ded0d` e commits transportados):
 
 Não commitados / risco de perda:
 
-- `.agents/reviews/24-revisao-pr421-20261119.md` — untracked em 2026-11-19, destino desconhecido (PEND-DEVIN-04).
+- ~~`.agents/reviews/24-revisao-pr421-20261119.md`~~ — **RESOLVIDO**: confirmado na `main` (ver E5/PEND-DEVIN-04).
 - Numerous untracked handoffs de OUTRAS sessões no worktree principal (2026-11-22) — propriedade de outros agentes, não tocar.
 
 Branches/worktrees: 30+ worktrees ativos listados em `git worktree list` (waves E/F, handoffs antigravity/devin/03/08a, PRs 471/486). Nenhum pertence a esta sessão além do já integrado. Este handoff usa worktree novo `handoff-devin-encerramento-20261122`.
@@ -153,43 +186,53 @@ Branches/worktrees: 30+ worktrees ativos listados em `git worktree list` (waves 
 - **Decisão humana:** autorização explícita para commit + rebase + merge + push direto na `main` ("pode commitar entao, ja fazer rebase... depois fazer merge e push"). Executada com bypass do required check — o humano tinha permissão de bypass no repo.
 - **Decisão técnica (Devin):** conversão de gitlinks para arquivos normais nas skills — necessária para o conteúdo existir em clones; reversível se a intenção era submodule (improvável, pois `.agents/skills/` é diretório de skills locais).
 - **Decisão pendente:** lockfile canônico (PEND-DEVIN-03).
-- **Governança:** sessão operou sob modelo de 24 agentes (AGENTS.md lido no início); o prompt de encerramento referencia arquitetura de 100 agentes/10 squads e auditor Agente 09 Silas. Confirmar mapeamento vigente em `.agents/MATRIZ_PROPRIEDADE.md` antes de despachar pendências.
+- **Governança:** a sessão operou inicialmente sob modelo de 24 agentes; o AGENTS.md vigente (lido em 2026-11-22 no worktree de handoff) confirma a **arquitetura de 100 agentes/10 squads**, com auditor independente **Agente 09 — Silas** (Squad 00) e ownership de dependências/AppSec no **Agente 99 — Vito** (Squad 90). O modelo legado 24 foi sucedido — referências a "Agente 24" neste documento são históricas (pareceres já emitidos na época).
+- **Decisão humana (2026-11-22):** o orquestrador rejeitou a classificação ENCERRAMENTO_CONCLUIDO e exigiu correções no PR #530 (branch pattern, escopo visual, reconciliação PR421, pendências de segurança com verificação por lockfile, revisão do Silas). Registrado como instrução vigente.
 
 ## SEÇÃO 9 — RISCOS E BLOQUEIOS
 
 | ID | Risco | Severidade | Evidência | Responsável | Medida |
 |---|---|---|---|---|---|
-| R1 | OTel instrumentation-http 0.221.0 vulnerável (CVE-2026-128080) — info sensível em logs/traces, conflita com política LGPD/PII do projeto | Média-Alta | alerts 111/112 abertos; lockfile main | Agente 99 — Vito | bump >=0.222.0 (PEND-DEVIN-01) |
-| R2 | `pnpm-lock.yaml` dessincronizado do `package.json` (effect override não refletido) | Média | alert 118 aberto no manifest pnpm | Agente 99 — Vito + 94 — Tess | regenerar lockfile ou eleger canônico (PEND-DEVIN-02/03) |
-| R3 | Dualidade/triplicidade de lockfiles gera alertas Dependabot ruidosos e drift de dependências | Média | 3 manifests nos alertas originais | Agente 00 | PEND-DEVIN-03 |
-| R4 | Bypass de required check "Visual Regression" no push direto à main | Baixa (mitigado) | remote message no push; run 44573014428 PASSOU depois | Agente 00 | manter PRs para mudanças de código; push direto só para docs/hotfix autorizado |
-| R5 | `.agents/reviews/24-revisao-pr421-20261119.md` possivelmente não preservado | Baixa | untracked não commitado | Agente 00 | PEND-DEVIN-04 |
+| R1 | OTel instrumentation-http **0.221.0** vulnerável (CVE-2026-128080) — info sensível em logs/traces, conflita com política LGPD/PII | Média-Alta | alertas 111/112 abertos; **0.221.0 confirmado em package-lock.json E pnpm-lock.yaml** (ver E4b) | Agente 99 — Vito | bump >=0.222.0 em package-lock (PEND-DEVIN-01) |
+| R2 | `pnpm-lock.yaml` stale: `effect@3.20.0` (vulnerável) e `instrumentation-http@0.221.0`, divergente do package.json/lock canônico | Média | alert 118 aberto; tabela E4b | Agente 99 — Vito + 94 — Tess | resolver via PEND-DEVIN-03 (provável remoção do lockfile) |
+| R3 | Dualidade de lockfiles/gerenciadores gera alertas Dependabot ruidosos e risco de drift | Média | npm é canônico de facto; pnpm-lock sem consumidor em CI | Agente 00 | PEND-DEVIN-03 |
+| R4 | Bypass de required check "Visual Regression" no push direto à main | Baixa (mitigado) | remote message no push; run 44573014428 PASSOU no escopo `/app/*` | Agente 00 | manter PRs para mudanças de código; push direto só para docs/hotfix autorizado |
+| R5 | ~~Review PR421 possivelmente perdido~~ | **RESOLVIDO** | arquivo na main; reconciliação já feita pelo parecer pos-merge APROVADO | — | — |
 | R6 | Worktree `birthub-360-audit-main` desapareceu do `git worktree list` sem registro nesta sessão | Baixa | divergência entre sessões | Agente 00 | verificar se remoção foi intencional |
+| R7 | **Gate `validate-agent-rules` reprova TODOS os PRs de handoff externos**: padrão só aceita `agente/NN-*`/`integracao/onda-N`; branches `devin/*`, `chore/handoff-*`, `antigravity/*` falham sempre (confirmado em PRs #526, #527, #530). Lacuna de governança para ferramentas externas | Média | `.github/workflows/enforce-governance.yml:18`; checks falhos idênticos em #526/#527 | Agente 00 + Agente 94 — Tess | decidir: estender padrão (ex.: `handoff/*`, `devin/*`) ou atribuir NN formal; **não desativar o gate** |
+| R8 | Falhas de CI **preexistentes na main** não relacionadas a docs: Semgrep SAST, SonarQube, `build`, "Central application gate", Schemathesis, Release | Média | `gh run list --branch main`: runs 44877492690+ com failure em Semgrep/SonarQube/Release/Schemathesis; mesmos checks falham em PRs docs-only (#526, #530) | Agente 94 — Tess + 99 — Vito | triar se são flakes, drift de main ou gates quebrados; não anunciar como sucesso |
+| R9 | Landing page sem cobertura de regressão visual (ver PEND-DEVIN-05) | Média | `visual.spec.ts` só cobre `/login`+`/app/*`; `landing/` fora da suíte | Agentes 05/36 | PEND-DEVIN-05 |
 
 ## SEÇÃO 10 — DEPENDÊNCIAS
 
-- PEND-DEVIN-01 e 02 → podem ser um único PR de dependências.
-- PEND-DEVIN-03 → decisão do Agente 00 precede execução de 01/02 (define quais lockfiles atualizar).
-- PEND-DEVIN-04 → verificação documental simples, independente.
-- Revisão independente (Agente 09 Silas ou equivalente vigente) → exigida para este handoff antes de considerar encerramento formal concluído, conforme governança.
+- PEND-DEVIN-03 → decisão do Agente 00 precede execução de 01/02/05-dep-lock (define quais lockfiles atualizar/manter).
+- PEND-DEVIN-04 → **resolvido** (localização + reconciliação já existentes na main).
+- PEND-DEVIN-05 → independente; pode correr em paralelo a 01–03.
+- Bloqueio externo: correção do padrão de branch do `validate-agent-rules` (R7) depende de decisão Astra+Tess — sem isso, PRs de handoff de ferramentas externas continuarão reprovando o gate.
+- Revisão independente (**Agente 09 — Silas**, auditor vigente) → exigida para este handoff antes de considerar encerramento formal concluído, com SHA exato fixado.
 
 ## SEÇÃO 11 — PRÓXIMOS PASSOS
 
-1. **Agente 00 — Astra:** receber este handoff, incorporar PEND-DEVIN-01..04 ao backlog mestre e decidir lockfile canônico (desbloqueia 01/02).
-2. **Agente 99 — Vito + Agente 94 — Tess:** PR de bump `instrumentation-http` >=0.222.0 + regeneração dos lockfiles afetados; evidência: alertas 111/112/118 fechados.
-3. **Agente 00:** verificar existência de `24-revisao-pr421-20261119.md`.
-4. **Auditor independente:** parecer sobre este handoff documental.
-5. **Orquestrador Humano:** dispensar formalmente os alertas picomatch se ainda constarem (já resolvidos segundo API).
+1. **Agente 00 — Astra + Agente 94 — Tess:** resolver o bloqueio de governança do PR #530 — o padrão `agente/NN-slug` não contempla ferramentas externas (`devin/*`, `chore/handoff-*`, `antigravity/*`); decidir extensão do padrão ou NN formal, **sem desativar o gate e sem force-push**. Afeta TODOS os PRs de handoff (#523–#530).
+2. **Agente 00 — Astra:** incorporar PEND-DEVIN-01, 02, 03, 05 ao backlog mestre (04 resolvido); decidir lockfile canônico.
+3. **Agente 99 — Vito + Agente 94 — Tess:** PR de bump `instrumentation-http` >=0.222.0 no `package-lock.json` (+ destino do `pnpm-lock.yaml`); evidência: alertas 111/112(/118) fechados.
+4. **Agentes 05 — Luma + 36 — Léo:** cobertura visual da landing (PEND-DEVIN-05).
+5. **Agente 94 — Tess + 99 — Vito:** triar falhas preexistentes de CI na main (R8: Semgrep, SonarQube, build, application gate, Schemathesis, Release).
+6. **Agente 09 — Silas:** parecer sobre este handoff/PR #530 com SHA exato fixado.
+7. **Orquestrador Humano:** dispensar formalmente os alertas picomatch se ainda constarem (já resolvidos segundo API).
 
 ## SEÇÃO 12 — INSTRUÇÕES PARA ASTRA
 
-- Todo o trabalho de código desta sessão **já está na `main`** — não repetir merge/rebase.
-- A branch `agente/00-integracao-skills` local == conteúdo de `main` naquele momento; se ainda existir, pode ser reconciliada/limpa por decisão sua (não apaguei nada).
-- Não há trabalho parcial de produto pendente desta sessão — apenas as 4 pendências documentais/de dependência acima.
-- O bypass do check visual foi **posteriormente validado** (run 44573014428 verde) — registrar como mitigado, não como dívida.
-- Atenção à coexistência de ~30 worktrees e múltiplas sessões Devin/Antigravity ativas: antes de despachar, reconciliar `.agents/handoffs/` (há handoffs untracked de várias sessões em `devin-para-00-*`, `antigravity-para-00-*`, `00-para-00-*`).
-- Documentos de referência: este handoff; `.agents/MATRIZ_PROPRIEDADE.md`; `AGENTS.md`; PRs abertos listados via `gh pr list` (30+, incluindo dependabot bumps e PRs de handoff de outras sessões — #523, #524, #525, #526, #527, #528, #529 pendentes de revisão/merge).
-- Decisão humana pendente: nenhuma bloqueante; opcional — confirmar se push direto na main deve continuar permitido para docs.
+- Todo o trabalho de código desta sessão **já está na `main`** (merge `db1d23170` do PR #421, que incluiu `11d2ded0d`+`e0229d4f8`) — não repetir merge/rebase.
+- **PR #421 já foi auditado duas vezes pelo Agente 24**: REPROVADO (dirty merge) → force-push/rebase → APROVADO pós-merge. Os achados A-1a..A-4 estão reconciliados — **não reabrir** salvo nova evidência.
+- A branch `agente/00-integracao-skills` pode ser reconciliada/limpa por decisão sua (não apaguei nada).
+- Não há trabalho parcial de produto pendente desta sessão — pendências ativas: PEND-DEVIN-01, 02, 03, 05 (+ bloqueio de governança do gate de branch).
+- **Escopo da validação visual:** run 44573014428 cobriu somente `/login` + `/app/*`. Landing NÃO validada — tratar como lacuna (PEND-DEVIN-05), não como aprovação global.
+- **Bloqueio de governança:** `validate-agent-rules` reprova qualquer branch fora de `agente/NN-*`/`integracao/onda-N`. PRs de handoff de ferramentas externas (#523–#530) estão todos bloqueados por isso — é decisão de governança (Astra+Tess), não defeito do conteúdo.
+- **Falhas de CI preexistentes na main** (Semgrep, SonarQube, build, application gate, Schemathesis, Release) não são causadas por este handoff — triar separadamente (R8).
+- Atenção à coexistência de ~30 worktrees e múltiplas sessões Devin/Antigravity ativas: antes de despachar, reconciliar `.agents/handoffs/` (há handoffs untracked de várias sessões).
+- Documentos de referência: este handoff; `.agents/reviews/24-revisao-pr421-20261119.md` e `24-revisao-pos-merge-pr421-20261119.md`; `.agents/MATRIZ_PROPRIEDADE.md`; `AGENTS.md`; `.github/workflows/enforce-governance.yml`.
+- Decisão humana pendente: (a) padrão de branch para ferramentas externas; (b) lockfile canônico; (c) se push direto na main deve continuar permitido para docs.
 
 ---
 
@@ -202,11 +245,11 @@ Branches/worktrees: 30+ worktrees ativos listados em `git worktree list` (waves 
 - [x] Decisões preservadas
 
 ### Entregas
-- [x] Trabalhos concluídos identificados (E1–E4)
-- [x] Evidências relacionadas (SHAs, run ID, alertas)
-- [x] Trabalhos parciais registrados (nenhum de código; PEND-DEVIN-04 documental)
-- [x] Pendências identificadas (4)
-- [x] Responsáveis atuais definidos (com ressalva de confirmar matriz vigente)
+- [x] Trabalhos concluídos identificados (E1–E5)
+- [x] Evidências relacionadas (SHAs, run ID, alertas, blobs, checks)
+- [x] Trabalhos parciais registrados (nenhum de código)
+- [x] Pendências identificadas (5 ativas: 01, 02, 03, 05 + bloqueio governança R7; 04 resolvida)
+- [x] Responsáveis atuais definidos (arquitetura 100 agentes confirmada no AGENTS.md vigente)
 
 ### Git
 - [x] Branch identificada (`agente/00-integracao-skills` → trabalho; `devin/handoff-encerramento-20261122` → este doc)
@@ -218,11 +261,12 @@ Branches/worktrees: 30+ worktrees ativos listados em `git worktree list` (waves 
 - [x] Arquivos não publicados destacados (PEND-DEVIN-04 + untracked de terceiros)
 
 ### Governança
-- [x] AGENTS.md consultado (versão 24-agentes no início da sessão; prompt cita 100 agentes — divergência registrada)
+- [x] AGENTS.md consultado (vigente = 100 agentes/10 squads; auditor 09 Silas; ownership deps → 99 Vito, CI → 94 Tess)
 - [x] Ownership verificado (handoffs: cada agente cria os seus; prefixo `devin-` tem precedente)
-- [x] Arquitetura de 100 agentes considerada (registrada como pendente de confirmação de mapeamento)
-- [x] Responsável atual identificado (Agente 00 para coordenação; Agentes 99 e 94 para deps)
-- [x] Auditorias necessárias registradas (revisão independente deste handoff)
+- [x] Arquitetura de 100 agentes considerada e aplicada nos responsáveis das pendências
+- [x] Responsável atual identificado (Agente 00 para coordenação; 99/94 para deps; 05/36 para visual da landing)
+- [x] Auditorias necessárias registradas (revisão independente do Silas sobre PR #530 com SHA fixado)
+- [x] Bloqueio de governança do gate de branch documentado (R7) — decisão Astra+Tess pendente
 
 ### Validação
 - [x] Testes efetivamente executados registrados (gate visual CI; sem testes unitários locais)
@@ -232,8 +276,8 @@ Branches/worktrees: 30+ worktrees ativos listados em `git worktree list` (waves 
 - [x] Lacunas de validação documentadas (sem typecheck/lint local nesta sessão)
 
 ### Continuidade
-- [x] Riscos identificados (R1–R6)
-- [x] Bloqueios documentados (nenhum bloqueante)
+- [x] Riscos identificados (R1–R9)
+- [x] Bloqueios documentados (R7 branch-pattern gate; dependência de decisão Astra p/ lockfile)
 - [x] Dependências mapeadas
 - [x] Próximos passos definidos
 - [x] Instruções para o Agente 00 concluídas
