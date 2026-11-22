@@ -22,6 +22,7 @@
 6. Criação manual de lead inexistente na UI com backend pronto — gap de produto P1.
 
 **Principais inconsistências:**
+- **Duas design systems paralelas**: `ui/` × voice-hub `design-system/index.tsx` (19 componentes redefinidos com a11y divergente — o voice-hub tem `aria-invalid` melhor que `ui/Input`); ≥12 modais `role="dialog"` manuais sem focus trap; `VirtualTable` com ARIA incompleto.
 - 4 padrões de título de página; 3 fontes de verdade de navegabilidade; 3 mecanismos de tema CSS; 2 camadas de tokens sem precedência documentada; DL v2.0 desatualizado vs implementação (fontes, radius, tons).
 - 797 `!important` (772 na landing intocável); ~3.889 classes arbitrárias; ~85-90 tsx de produto com hex literal; legado Vancouver/coolors no DS global.
 - Command Palette ignora permissões e não indexa ~10 rotas reais.

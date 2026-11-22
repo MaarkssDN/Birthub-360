@@ -21,6 +21,9 @@
 | DS-003 | Radius diverge do DL + `.bh-card` 2× divergente | globals.css:913-916,1342-1652 | 03 | identificado |
 | OPP-01 | Criação manual de lead inexistente na UI (backend pronto) | `LeadUseCases.ts:66` | 04 + 21 + 02 | oportunidade aprovada p/ Onda 4 |
 | PERF/REND | `useFetch` sem cancel/race-guard (app inteiro) + 5 providers sem memo | `useDatabase.ts:29-53`; contexts | 03/02 | identificado |
+| COMP-001 | **Duas design systems paralelas**: `ui/` × voice-hub `design-system/index.tsx` (19 componentes redefinidos, a11y divergente) | `design-system/index.tsx:55-1196` | 03 + voice-hub owner | identificado — decisão de consolidação |
+| COMP-002 | `VirtualTable` sem `role="table"/aria-rowcount/colcount`, teclado parcial | `VirtualTable.tsx:91-169` | 03 | identificado |
+| COMP-003 | ≥12 modais `role="dialog"` manuais sem focus trap/Escape do `ui/Dialog` | KnowledgeManager, DashboardBuilderModal, WhatsAppChatPanel, BitrixImportModal etc. | 03 + módulos | identificado |
 
 ## P2 — Impacto moderado
 
@@ -54,6 +57,15 @@
 | RSP-001 | modais voice-hub w-[450-560px] sem max-w | voice-hub owner |
 | RSP-002 | tabelas sem wrapper overflow em commercial-intelligence | módulo |
 | RSP-007 | logout inexistente em mobile | 02 |
+| COMP-004 | 3 EmptyStates divergentes; `feedback/EmptyState` órfão provável | 03 |
+| COMP-005 | 4 ErrorBoundaries; 3 sem uso fora de testes | 03 |
+| COMP-006 | forms sem `aria-invalid`/`aria-describedby`; sem FormField compartilhado (só 7/46 forms usam RHF+Zod) | 03 |
+| COMP-007 | `window.confirm` residual ×2 | módulos |
+| COMP-008 | toast toca SoundFX 2× por mensagem; 2º sistema de toast no voice-hub | 03 |
+| COMP-009 | sem DataTable; 39 `<table>` crus; Pagination em só 4 arquivos | 03 + módulos |
+| COMP-010 | batch actions duplicadas (CompanyList × CrmBoard) | 04/30 |
+| COMP-013 | `alert()` nativo em 7 arquivos | módulos |
+| COMP-014 | ~875 `<button>` nativos vs ~98 usando `<Button>`; ~425 inputs nativos vs ~204 componentes | transversal |
 
 ## P3 — Refinamento
 
@@ -77,6 +89,9 @@
 | UX-08 residual | 3/4 abas settings pilar placeholder (honesto) | 02/17 |
 | UX-10 residual | DEAL_COLUMNS fallback hardcoded | 04 + regra components/AGENTS.md |
 | UX-11 | ~~deep link ?lead~~ CORRIGIDO (LeadDetailDrawer.tsx:199) | — |
+| COMP-011 | órfãos candidatos em ui/ (StatsGrid, Carousel, BottomSheet, DropdownMenu, Modal, ThemeSwitcher, sign-in-page.demo) — triagem pendente | 03 |
+| COMP-012 | DropdownMenu Math.random/sem keyboard nav; Modal duplica focus trap | 03 |
+| COMP-015 | 4 padrões de título de página (ver UX/COMP) | 02/03 |
 
 ## Corrigidos desde a auditoria UX de 2026-11-18 (verificado nesta operação)
 

@@ -38,6 +38,8 @@ Gate: typecheck + lint + unit + axe das telas tocadas + parecer 09.
 | UX-006 home empty state + active-state `/app` | 02/30 |
 | UX-009/OPP-02 menu de conta + logout mobile | 02 |
 | UX-010 fonte única de navegabilidade (moduleRegistry canônico) | 02 |
+| COMP-003 migrar modais `role="dialog"` manuais para `ui/Dialog` (focus trap/Escape) — começar pelos 5 mais usados | 03 + módulos |
+| COMP-008 remover SoundFX duplicado do toast; COMP-013 `alert()`→toast | 03 + módulos |
 
 Gate: E2E navegação + redirects + axe + mobile-sweep + parecer 09.
 
@@ -54,6 +56,11 @@ Gate: E2E navegação + redirects + axe + mobile-sweep + parecer 09.
 | CSS-002 verificar e remover `index.css`/`luxury-tokens.css` mortos | 03 |
 | DS-010/012 depreciar Vancouver/coolors e duplicações `.bh-*`/`.badge-*`/`.text-gradient-*` | 03 |
 | DS-007 unificar motion (motion.ts × CSS tokens) | 03D |
+| COMP-001 decidir/consolidar DS paralelo do voice-hub (extrair padrão aria-invalid p/ ui/ primeiro) | 03 + voice-hub owner |
+| COMP-002 corrigir ARIA do VirtualTable (role/rowcount/teclado) | 03 |
+| COMP-004/005 consolidar EmptyState (3→1) e ErrorBoundary (4→1-2) | 03 |
+| COMP-006 FormField com aria-invalid/aria-describedby nos forms RHF | 03 |
+| COMP-009/010 DataTable/BulkActionsBar compartilhados (avaliação → implementação incremental) | 03 + módulos |
 | RSP-001 max-w nos modais voice-hub | voice-hub owner |
 | PERF-002 Workbox globIgnores p/ chunks sob demanda | 08 |
 
