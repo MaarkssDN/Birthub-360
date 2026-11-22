@@ -1,0 +1,325 @@
+name: Schemathesis API Fuzzing Gate
+
+# MEL-39: Property-based API fuzzing derivado de docs/openapi.yaml via Schemathesis 4.x.
+# Duas cadências:
+#  1. PRs que tocam a API/OpenAPI -> smoke fuzzing rapido e deterministico.
+#  2. Cron diario + workflow_dispatch -> fuzzing profundo com mais exemplos.
+#
+# Correcao Genesis (Onda III): a versao original apontava --url para a origem sem o
+# prefixo /api (todas as rotas montam sob /api — ver src/bootstrap/routes.ts), o que
+# geraria 404 em massa e um gate verde sem cobertura real. Alem disso usava
+# `pip install schemathesis` sem versao e um Bearer ficticio incompativel com a
+# sessao Better Auth (cookie). Este workflow:
+#  - pina schemathesis==4.32.7 (CLI com --url/--max-examples/--checks validos);
+#  - usa --url http://127.0.0.1:3000/api (base_path /api prefixa as operacoes);
+#  - provisiona sessao real via POST /api/auth/sign-up/email (ALLOW_DEV_AUTH_BYPASS
+#    esta ativo neste workflow, entao o sign-up retorna sessao sem verificacao de
+#    e-mail — mesmo mecanismo dos demais workflows de CI);
+#  - falha explicitamente se o servidor nao subir, se nenhuma operacao for executada
+#    ou se a resposta for HTML da SPA em vez de JSON da API;
+#  - inclui controle negativo: uma execucao propositalmente mal configurada
+#    (--url sem /api) DEVE falhar, provando que o gate detecta erro real.
+
+on:
+  pull_request:
+    paths:
+      - 'docs/openapi.yaml'
+      - 'server.ts'
+      - 'src/bootstrap/**'
+      - 'src/features/**/routes/**'
+      - 'src/shared/**'
+      - 'prisma/schema.prisma'
+      - '.github/workflows/schemathesis-fuzzing.yml'
+  schedule:
+    - cron: '0 4 * * *' # diario 04:00 UTC — fuzzing profundo
+  workflow_dispatch:
+    inputs:
+      max_examples:
+        description: ' Exemplos Hypothesis por endpoint'
+        default: '50'
+        required: false
+      checks:
+        description: 'Checks Schemathesis (separados por virgula)'
+        default: 'not_a_server_error,status_code_conformance,response_schema_conformance'
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: schemathesis-fuzzing-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  schemathesis-fuzz:
+    name: Schemathesis API Fuzzing
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: prospector
+          POSTGRES_PASSWORD: prospector_test_pass
+          POSTGRES_DB: prospectordb_test
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd "pg_isready -h 127.0.0.1 -U prospector -d prospectordb_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli -h 127.0.0.1 ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      meilisearch:
+        image: getmeili/meilisearch:v1.12
+        env:
+          MEILI_MASTER_KEY: ci-test-meili-key
+        ports:
+          - 7700:7700
+        options: >-
+          --health-cmd "wget --no-verbose --tries=1 -O - http://127.0.0.1:7700/health >/dev/null 2>&1 || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-start-period 30s
+          --health-retries 12
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://prospector_app:ci_app_test_pass@localhost:5434/prospectordb_test?schema=public
+      DIRECT_URL: postgresql://prospector_migrator:ci_migrator_test_pass@localhost:5434/prospectordb_test?schema=public
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: ci-test-jwt-secret-not-for-production
+      MEILI_HOST: http://localhost:7700
+      MEILI_MASTER_KEY: ci-test-meili-key
+      PORT: 3000
+      BETTER_AUTH_SECRET: ci-e2e-test-only-secret-not-for-production
+      BETTER_AUTH_URL: http://localhost:3000
+      ALLOW_DEV_AUTH_BYPASS: true
+      ALLOWED_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
+      AUTH_RATE_LIMIT_MAX: 1000
+      PLATFORM_OPERATOR_TOKEN: ci-test-operator-token-not-for-production
+      API_BASE: http://127.0.0.1:3000/api
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
+        with:
+          python-version: '3.12'
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Install Schemathesis (versao pinada)
+        # 4.32.7: ultima linha 4.32.x estavel; CLI validada com --url/--max-examples/
+        # --checks/--workers/--header. Versoes 4.33.x muito recentes — nao adotadas
+        # sem periodo de observacao (politica de dependencia >=7 dias).
+        run: pip install "schemathesis==4.32.7"
+
+      - name: Bootstrap papel NOSUPERUSER do banco
+        env:
+          PGPASSWORD: prospector_test_pass
+          APP_DB_PASSWORD: ci_app_test_pass
+          MIGRATOR_DB_PASSWORD: ci_migrator_test_pass
+        run: bash scripts/db/bootstrap-app-role.sh localhost 5434 prospector prospectordb_test
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Run Migrations
+        run: npx prisma migrate deploy
+
+      - name: Re-bootstrap pós-migrate
+        env:
+          PGPASSWORD: prospector_test_pass
+          APP_DB_PASSWORD: ci_app_test_pass
+          MIGRATOR_DB_PASSWORD: ci_migrator_test_pass
+        run: bash scripts/db/bootstrap-app-role.sh localhost 5434 prospector prospectordb_test
+
+      - name: Build Application
+        run: npm run build
+
+      - name: Start Express API Server
+        run: |
+          node dist/server.cjs &
+          SERVER_PID=$!
+          echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
+          echo "Aguardando inicialização da API..."
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:3000/health/live >/dev/null 2>&1; then
+              echo "API operacional após ${i}s."
+              break
+            fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:3000/health/live || { echo "Falha ao iniciar servidor"; kill -9 $SERVER_PID 2>/dev/null || true; exit 1; }
+
+      - name: Sanity — API responde JSON (nao HTML da SPA)
+        run: |
+          # Rota autenticada sem sessao: esperamos 401/403 JSON da API — nunca HTML da SPA.
+          CODE=$(curl -s -o /tmp/sanity.json -w '%{http_code}' "${API_BASE}/organization-modules")
+          echo "HTTP $CODE"
+          if [ "$CODE" = "200" ]; then
+            echo "INESPERADO: rota autenticada respondeu 200 sem sessao"
+            exit 1
+          fi
+          if grep -qi '<!doctype html\|<html' /tmp/sanity.json; then
+            echo "FALHA: resposta HTML da SPA — base URL errada ou SPA fallback ativo"
+            exit 1
+          fi
+          echo "Sanity OK: API viva e respondendo sob /api (status $CODE)"
+
+      - name: Provisionar sessao de teste (Better Auth sign-up)
+        id: auth
+        run: |
+          set -e
+          EMAIL="ci-schemathesis-$(date +%s)@birthhub360-test.local"
+          PASS="CiTest!$(openssl rand -hex 8)"
+          # better-auth exige name/email/password; ALLOW_DEV_AUTH_BYPASS=true faz o
+          # sign-up retornar sessao imediata (sem verificacao de e-mail) — mesmo
+          # mecanismo ja usado pelos cenarios de carga em tests/load/.
+          SIGNUP=$(curl -sS -i -X POST "${API_BASE}/auth/sign-up/email" \
+            -H 'Content-Type: application/json' \
+            -H "Origin: http://localhost:3000" \
+            -d "{\"name\":\"CI Schemathesis\",\"email\":\"${EMAIL}\",\"password\":\"${PASS}\"}")
+          echo "$SIGNUP" | head -20
+          SESSION_COOKIE=$(echo "$SIGNUP" | grep -i '^set-cookie:' | grep -o 'better-auth\.session_token=[^;]*' | head -1)
+          if [ -z "$SESSION_COOKIE" ]; then
+            echo "FALHA: sign-up nao retornou cookie de sessao"
+            exit 1
+          fi
+          # Nao logar o valor do cookie — apenas confirmar presenca.
+          echo "session_cookie_present=true" >> "$GITHUB_OUTPUT"
+          echo "SESSION_COOKIE=$SESSION_COOKIE" >> "$GITHUB_ENV"
+
+      - name: Validar sessao provisionada
+        run: |
+          CODE=$(curl -s -o /tmp/session.json -w '%{http_code}' \
+            -H "Cookie: $SESSION_COOKIE" \
+            "${API_BASE}/auth/get-session")
+          echo "get-session HTTP $CODE"
+          if [ "$CODE" != "200" ]; then
+            echo "FALHA: sessao de teste invalida (HTTP $CODE)"
+            exit 1
+          fi
+          grep -q '"user"' /tmp/session.json || { echo "FALHA: resposta sem user"; cat /tmp/session.json; exit 1; }
+          echo "Sessao valida."
+
+      - name: Run Schemathesis — smoke (PR) / deep (schedule+dispatch)
+        env:
+          PR_EXAMPLES: '15'
+          DEEP_EXAMPLES: ${{ inputs.max_examples || '50' }}
+          CHECKS: ${{ inputs.checks || 'not_a_server_error,status_code_conformance,response_schema_conformance' }}
+        run: |
+          set -e
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            EXAMPLES="$PR_EXAMPLES"; CHECKS="not_a_server_error,status_code_conformance"
+          else
+            EXAMPLES="$DEEP_EXAMPLES"; CHECKS="${{ inputs.checks || 'not_a_server_error,status_code_conformance,response_schema_conformance' }}"
+          fi
+          echo "Modo: ${{ github.event_name }} | examples=$EXAMPLES | checks=$CHECKS"
+          schemathesis run docs/openapi.yaml \
+            --url "${API_BASE}" \
+            --checks "$CHECKS" \
+            --max-examples "$EXAMPLES" \
+            --workers 2 \
+            --header "Cookie: $SESSION_COOKIE" \
+            --report-junit-path schemathesis-results.xml \
+            --report-json-path schemathesis-results.json || SCHEMATHESIS_EXIT=$?
+          # Schemathesis retorna !=0 quando ha falhas — isso DEVE reprovar o gate.
+          if [ "${SCHEMATHESIS_EXIT:-0}" -ne 0 ]; then
+            echo "Schemathesis reportou falhas (exit $SCHEMATHESIS_EXIT) — gate reprovado."
+            exit "$SCHEMATHESIS_EXIT"
+          fi
+
+      - name: Verificar cobertura efetiva (nenhuma operacao = falha)
+        run: |
+          if [ ! -f schemathesis-results.json ]; then
+            echo "FALHA: relatorio JSON ausente — run nao produziu evidencia"
+            exit 1
+          fi
+          python - <<'PY'
+          import json, sys
+          with open('schemathesis-results.json', encoding='utf-8') as f:
+              report = json.load(f)
+          # Estrutura do report JSON varia por versao; procurar contadores de casos.
+          text = json.dumps(report)
+          for key in ('"total"', '"passed"', '"tested"', '"operations"'):
+              pass
+          # Fallback robusto: extrair qualquer campo numerico de cobertura.
+          def find_counts(obj, out):
+              if isinstance(obj, dict):
+                  for k, v in obj.items():
+                      if k.lower() in ('operations', 'tested', 'total', 'passed', 'failed', 'case_count') and isinstance(v, (int, float)):
+                          out[k] = v
+                      find_counts(v, out)
+              elif isinstance(obj, list):
+                  for i in obj: find_counts(i, out)
+          counts = {}
+          find_counts(report, counts)
+          print('Contadores encontrados:', counts)
+          executed = sum(v for k, v in counts.items() if k in ('tested', 'passed', 'total', 'operations', 'case_count'))
+          if executed == 0:
+              print('FALHA: zero operacoes/testes executados — aprovacao sem cobertura e proibida')
+              sys.exit(1)
+          print(f'Cobertura efetiva confirmada (~{executed} casos/operacoes).')
+          PY
+
+      - name: Controle negativo — base URL errada DEVE falhar
+        if: github.event_name == 'pull_request'
+        run: |
+          # Prova de que o gate detecta configuracao errada: rodar 1 exemplo contra
+          # a origem SEM /api deve produzir falhas de contrato (404 nao documentado)
+          # quando checks de status sao ativos. Se passar, o gate e falso-positivo.
+          set +e
+          schemathesis run docs/openapi.yaml \
+            --url "http://127.0.0.1:3000" \
+            --checks status_code_conformance \
+            --max-examples 1 \
+            --workers 1 \
+            --header "Cookie: $SESSION_COOKIE" \
+            --report-json-path /tmp/negative.json > /tmp/negative.log 2>&1
+          NEG_EXIT=$?
+          set -e
+          echo "Negative control exit=$NEG_EXIT"
+          if [ "$NEG_EXIT" -eq 0 ]; then
+            echo "FALHA DO GATE: URL sem /api passou — deteccao de erro nao funciona"
+            exit 1
+          fi
+          echo "Controle negativo OK: configuracao errada foi detectada (exit $NEG_EXIT)."
+
+      - name: Stop Express API Server
+        if: always()
+        run: |
+          if [ -n "$SERVER_PID" ]; then
+            kill -15 $SERVER_PID 2>/dev/null || true
+          fi
+
+      - name: Upload Schemathesis Report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: schemathesis-results
+          path: |
+            schemathesis-results.xml
+            schemathesis-results.json
+          retention-days: 14
