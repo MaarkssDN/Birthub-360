@@ -8,11 +8,14 @@ O pacote completo da Operação Birthub Experience 360: 16 entregáveis + 4 ADRs
 proposta de reconciliação do DL + 8 handoffs da Onda 1 + este handoff de OPP-01.
 
 ## 2. Localização do pacote
-- `docs/audits/experience-360/00..18-*.md` (auditoria consolidada).
+- `docs/audits/experience-360/00..21-*.md` (auditoria consolidada + proposta DL +
+  matriz de riscos + homologação + decisões pendentes + **ownership proposto**
+  `20-OWNERSHIP-PROPOSAL.md` + **baseline executada** `21-BASELINE-REPORT.md`).
 - `docs/ADR/ADR-012..015-*.md` (decisões de produto).
 - `docs/audits/experience-360/16-DESIGN-LANGUAGE-RECONCILIATION.md` (proposta DL).
 - `.agents/handoffs/onda-1/00-para-*.md` (8 handoffs P1 + OPP-01).
-- Baseline auditado: `origin/main @ 0d790443d`; commits `bb015914b`, `2637c5144`.
+- Baseline auditado: `origin/main @ 0d790443d`; commits `bb015914b`, `2637c5144`,
+  `80b1a335b`.
 
 ## 3. Escopo obrigatório de revisão (conforme deliberação)
 1. **Divergência entre os dois Design Systems** — `ui/` × voice-hub
@@ -50,8 +53,14 @@ proposta de reconciliação do DL + 8 handoffs da Onda 1 + este handoff de OPP-0
 - Registrar parecer em `.agents/reviews/` conforme protocolo §40.
 
 ## 6. Observações
-- A auditoria foi estática + inventário visual do Agente 14; **sem** interação
-  em browser, Lighthouse/RUM ou screen reader nesta sessão — o parecer deve
-  ponderar essa limitação de cobertura.
+- A auditoria foi estática + inventário visual do Agente 14; a baseline
+  `test:visual` executada em 2026-11-22 falhou 88/88 por causas **ambientais**
+  (Postgres/Redis indisponíveis — Docker parado; baselines só-linux inexistentes
+  para win32) — detalhes em `21-BASELINE-REPORT.md`. Sem interação em browser,
+  Lighthouse/RUM ou screen reader — o parecer deve ponderar essa limitação.
+- **Ownership do auditor:** o AGENTS.md raiz §4 e os prompts confirmam que o
+  auditor independente oficial é o **Agente 09 (Silas)** — a referência a
+  "Agente 24" em handoffs legados é da numeração antiga (24 = Ivo, Resiliência).
+  Divergência resolvida: destinatário correto é 09 Silas.
 - O Agente 09 deve ser instância **realmente separada** da execução (decisão do
   Orquestrador) — não mudança de papel no mesmo runtime.
