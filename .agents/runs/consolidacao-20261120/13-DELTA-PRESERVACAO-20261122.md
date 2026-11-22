@@ -41,3 +41,14 @@ Relacionamento com backlog existente: complementa G-10/BG-GOV-LEGACY (artefatos 
 
 - Varredura de padrões de segredos (chaves, tokens, PEM, AWS keys) nos 10 artefatos preservados: **0 ocorrências de valores**; o handoff `11-para-15` documenta apenas nomes de chaves e comprimentos de um `.env` externo — nenhum valor reproduzido.
 - Nenhum arquivo de produção, CI, schema ou governança alterado. Escopo 100% documental.
+
+## 6. Errata — divergência journal × matriz (registrada na auditoria Silas, 2026-11-22)
+
+Os registros históricos da Etapa 0 contêm uma divergência interna de contagens, preservada verbatim neste PR:
+
+| Fonte | JA-EM-MAIN | COBERTO-EM-PR | PENDENTE |
+|---|---|---|---|
+| `docs/orchestration/journal/00.md` (entrada 2026-11-20) | 16 | 2 (#434, #437) | 8 |
+| `.agents/runs/audit-2026-11-18/matriz-reconciliacao-etapa-0.md` (contagem direta dos status DEBT-0001..0026) | **18** | **2** (#434, #437) | **6** |
+
+**Leitura:** a matriz é o artefato canônico de reconciliação e foi provavelmente atualizada após a redação do journal (2 débitos migraram de PENDENTE para JA-EM-MAIN). Nenhum registro histórico foi reescrito; esta errata apenas torna a divergência explícita para leitores futuros. Identificado na revisão independente do Agente 09 (Silas) — `.agents/reviews/preservacao-controlada-pr531-pr532-20261122-09.md`.
