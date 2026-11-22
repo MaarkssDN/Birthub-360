@@ -1,0 +1,9 @@
+{
+  "name": "testland/graphql-yoga-tests",
+  "description": "Use whenever a GraphQL Yoga or Mercurius server needs tests: in-process yoga.fetch() for queries and mutations, executor-http for subscriptions and streaming, auth headers, and checks for disabled introspection and persisted operations. Mercurius app.inject() patterns are in its references.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.4.7"
+}

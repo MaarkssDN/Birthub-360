@@ -1,0 +1,9 @@
+{
+  "name": "testland/flaui-tests",
+  "description": "Use when a Windows desktop app needs UI tests from C# or .NET with in-process UI Automation calls: FlaUI UIA2 and UIA3 packages, launching or attaching to the app, ConditionFactory locators, Retry waits and xUnit, NUnit or MSTest. For the WebDriver protocol use winappdriver.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.21"
+}

@@ -1,0 +1,9 @@
+{
+  "name": "testland/regression-suite-selector",
+  "description": "Use when the regression suite is so large that PR-time CI is the bottleneck. Builds a CI step that runs only tests affected by the PR's changed files (from coverage maps or Bazel rdeps), plus previously failing and new tests, while a periodic full run guards against a stale map.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.1.10"
+}

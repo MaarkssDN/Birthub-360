@@ -1,0 +1,9 @@
+{
+  "name": "testland/behave-testing",
+  "description": "Use when a Python project wants BDD scenarios with Behave: Gherkin .feature files, step implementations in features/steps, environment.py hooks, tags and behave runs in CI. The Python member of the Cucumber family.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.7.5"
+}

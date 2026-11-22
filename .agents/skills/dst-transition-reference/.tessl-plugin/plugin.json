@@ -1,0 +1,9 @@
+{
+  "name": "testland/dst-transition-reference",
+  "description": "Use when designing or auditing time-handling code or its tests around daylight saving time: skipped and repeated hours, jurisdiction differences, the IANA tz database, cron jobs that fire zero or two times, billing and meetings on transition days, plus leap seconds and clock smearing.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.17"
+}

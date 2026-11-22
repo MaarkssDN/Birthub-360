@@ -1,0 +1,86 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { routeParam } from '../../../shared/http/routeParams.js';
+import type { AuthRequest } from '../../../shared/middlewares/authenticateToken.js';
+import { requireRole } from '../../../shared/middlewares/requireRole.js';
+import { validateRequest } from '../../../shared/middlewares/validateRequest.js';
+import { createPrompt, listPrompts, updatePromptVariables } from '../services/prompt.service.js';
+
+const managementRoles = requireRole(['ADMIN', 'GESTOR']);
+
+export const promptRoutes = Router();
+
+// Listar os prompts do tenant autenticado
+promptRoutes.get('/', async (req, res, next) => {
+  try {
+    const { organizationId } = (req as AuthRequest).user;
+    const prompts = await listPrompts(organizationId);
+    res.json({ success: true, data: prompts });
+  } catch (err: any) {
+    next(err);
+  }
+});
+
+// Criar novo prompt override
+const createPromptSchema = z.object({
+  body: z.object({
+    name: z.string(),
+    category: z.string(),
+    content: z.string().optional(),
+    variables: z.record(z.string(), z.unknown()).optional(),
+  }),
+});
+promptRoutes.post(
+  '/',
+  managementRoles,
+  validateRequest(createPromptSchema),
+  async (req, res, next) => {
+    try {
+      const { name, category, content, variables } = req.body;
+      const { organizationId } = (req as AuthRequest).user;
+
+      const prompt = await createPrompt(organizationId, {
+        name,
+        category,
+        content: content ?? '',
+        variables,
+      });
+      res.status(201).json({ success: true, data: prompt });
+    } catch (err: any) {
+      next(err);
+    }
+  },
+);
+
+// Atualizar variáveis de um prompt existente
+const updatePromptSchema = z.object({
+  params: z.object({
+    id: z.string(),
+  }),
+  body: z.object({
+    variables: z.record(z.string(), z.unknown()),
+  }),
+});
+promptRoutes.put(
+  '/:id',
+  managementRoles,
+  validateRequest(updatePromptSchema),
+  async (req, res, next) => {
+    try {
+      const id = routeParam(req.params.id, 'id');
+      const { variables } = req.body;
+      const { organizationId } = (req as AuthRequest).user;
+
+      // Bug anterior: dava update por id sem checar dono — qualquer tenant autenticado podia
+      // editar o prompt de outro (IDOR). Ver updatePromptVariables (prompt.service.ts).
+      const prompt = await updatePromptVariables(organizationId, id, variables);
+      if (!prompt) {
+        res.status(404).json({ success: false, error: 'Prompt não encontrado.' });
+        return;
+      }
+      res.json({ success: true, data: prompt });
+    } catch (err: any) {
+      next(err);
+    }
+  },
+);

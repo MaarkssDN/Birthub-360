@@ -1,0 +1,322 @@
+import { randomBytes } from 'node:crypto';
+import { hashPassword } from 'better-auth/crypto';
+import { AuditService } from '../../../lib/audit/audit.service.js';
+import { isAuthorizedLoginEmail } from '../../../config/access-policy.js';
+// Fonte canônica de RBAC — não duplicar a hierarquia de papéis aqui (ver comentário em
+// src/lib/auth/authorization.ts sobre o sistema de RBAC divergente que existia antes).
+import { ASSIGNABLE_ROLES, isKnownRole } from '../../../lib/auth/authorization.js';
+import { prisma } from '../../../lib/prisma.js';
+
+export { ASSIGNABLE_ROLES };
+
+export class TeamServiceError extends Error {
+  constructor(
+    message: string,
+    public statusCode: number = 400,
+  ) {
+    super(message);
+  }
+}
+
+export interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  mustChangePassword: boolean;
+  createdAt: Date;
+  /** Bloqueio por tentativas de login (`src/lib/auth.ts`) — nunca era selecionado nem exibido
+   * antes do Piloto 024. `null`/data passada = não bloqueado. */
+  lockedUntil: Date | null;
+  failedLoginAttempts: number;
+  /** `emailVerified`, `image`, `bitrixUserId` e `updatedAt` são campos reais do model `User` que
+   * já existiam no schema mas nunca eram selecionados nem exibidos em nenhuma tela do módulo Team
+   * (achado fora de escopo documentado no Piloto 024, corrigido aqui). */
+  emailVerified: boolean;
+  image: string | null;
+  bitrixUserId: number | null;
+  updatedAt: Date;
+}
+
+const TEAM_MEMBER_SELECT = {
+  id: true,
+  name: true,
+  email: true,
+  role: true,
+  mustChangePassword: true,
+  createdAt: true,
+  lockedUntil: true,
+  failedLoginAttempts: true,
+  emailVerified: true,
+  image: true,
+  bitrixUserId: true,
+  updatedAt: true,
+} as const;
+
+export async function listTeamMembers(organizationId: string): Promise<TeamMember[]> {
+  return prisma.user.findMany({
+    where: { organizationId },
+    select: TEAM_MEMBER_SELECT,
+    orderBy: { createdAt: 'asc' },
+  });
+}
+
+export interface AssignableOwner {
+  id: string;
+  name: string;
+}
+
+// Versão sem dados sensíveis (sem e-mail, papel, mustChangePassword) de listTeamMembers — usada
+// pelo seletor de "responsável" em Leads/Activities, que qualquer usuário autenticado da
+// organização precisa ver, não só ADMIN.
+export async function listAssignableOwners(organizationId: string): Promise<AssignableOwner[]> {
+  return prisma.user.findMany({
+    where: { organizationId },
+    select: { id: true, name: true },
+    orderBy: { name: 'asc' },
+  });
+}
+
+function generateTempPassword(): string {
+  // 12 caracteres alfanuméricos legíveis (sem 0/O/1/l pra evitar confusão ao digitar).
+  const alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  const bytes = randomBytes(12);
+  let pw = '';
+  for (let i = 0; i < 12; i++) pw += alphabet[bytes[i] % alphabet.length];
+  return `${pw}!A1`; // garante símbolo/maiúscula/dígito para qualquer política de senha
+}
+
+// Quem executa a ação administrativa (ADMIN que chamou a rota) — alimenta actorId/ipAddress do
+// AuditLog. User não está em AUDITABLE_MODELS (src/lib/prisma-interceptors.ts), então a extensão
+// de auditoria do Prisma não cobre create/update/delete de User: cada mutação sensível deste
+// módulo registra a trilha explicitamente aqui (MEL-10, DEM-20261113-003).
+export interface TeamAuditActor {
+  userId?: string;
+  ipAddress?: string;
+}
+
+export async function createTeamMember(input: {
+  organizationId: string;
+  name: string;
+  email: string;
+  role: string;
+  actor?: TeamAuditActor;
+}): Promise<{ member: TeamMember; tempPassword: string }> {
+  const email = input.email.trim().toLowerCase();
+  const name = input.name.trim();
+
+  if (!name) throw new TeamServiceError('Nome é obrigatório.');
+  if (!isAuthorizedLoginEmail(email)) {
+    throw new TeamServiceError('Informe um e-mail válido.');
+  }
+  if (!isKnownRole(input.role)) {
+    throw new TeamServiceError(`Papel inválido. Use um de: ${ASSIGNABLE_ROLES.join(', ')}.`);
+  }
+
+  const existing = await prisma.user.findUnique({ where: { email }, select: { id: true } });
+  if (existing) {
+    throw new TeamServiceError('Já existe uma conta com esse e-mail.', 409);
+  }
+
+  const tempPassword = generateTempPassword();
+  const passwordHash = await hashPassword(tempPassword);
+
+  const member = await prisma.user.create({
+    data: {
+      name,
+      email,
+      role: input.role,
+      organizationId: input.organizationId,
+      mustChangePassword: true,
+      // true (não false) de propósito: `requireEmailVerification` (src/lib/auth.ts) agora
+      // bloqueia login de conta por e-mail/senha não verificada — mas esta conta não é
+      // auto-registro anônimo, é provisionada por um ADMIN já autenticado da organização, que
+      // relaya a `tempPassword` (retornada acima) pro colega por fora (nunca por e-mail
+      // automático — ver team.routes.ts). O ADMIN é quem está afirmando a identidade aqui, não
+      // a posse de uma caixa postal; `false` deixaria todo convite travado em EMAIL_NOT_VERIFIED
+      // no primeiro login, sem nenhum jeito de se autoverificar (nenhum e-mail de verificação é
+      // disparado neste fluxo). Efeito colateral aceito: o badge "verificado" em Team.tsx (antes
+      // sempre ausente em conta por senha, já que `emailVerified` nunca era setado por nenhum
+      // fluxo) passa a aparecer também aqui, não só em OAuth/signup+link — o selo passa a
+      // significar "identidade confirmada" (por posse do e-mail OU por vínculo de um ADMIN),
+      // não exclusivamente "clicou no link".
+      emailVerified: true,
+      accounts: {
+        create: {
+          id: crypto.randomUUID(),
+          accountId: email,
+          providerId: 'credential',
+          password: passwordHash,
+        },
+      },
+    },
+    select: TEAM_MEMBER_SELECT,
+  });
+
+  await AuditService.log({
+    action: 'CREATE',
+    entity: 'User',
+    entityId: member.id,
+    actorId: input.actor?.userId,
+    tenantId: input.organizationId,
+    ipAddress: input.actor?.ipAddress,
+    afterState: { email: member.email, role: member.role, provisionedBy: 'team' },
+  });
+
+  return { member, tempPassword };
+}
+
+/**
+ * Redefine a senha de um usuário já existente da organização (inclusive a própria conta de quem
+ * está chamando — diferente de deleteTeamMember, aqui não há razão pra bloquear auto-reset: é
+ * exatamente o caminho de "esqueci minha senha" pra quem já é ADMIN). Gera uma senha temporária
+ * nova do mesmo jeito que createTeamMember (aleatória, nunca escolhida por fora), zera todas as
+ * sessões ativas dessa conta (login antigo para de valer imediatamente) e marca
+ * mustChangePassword pra forçar a troca por uma senha definitiva no próximo login.
+ */
+export async function resetTeamMemberPassword(
+  organizationId: string,
+  targetUserId: string,
+  actor?: TeamAuditActor,
+): Promise<{ member: TeamMember; tempPassword: string }> {
+  const target = await prisma.user.findFirst({
+    where: { id: targetUserId, organizationId },
+    select: { id: true },
+  });
+  if (!target) {
+    throw new TeamServiceError('Usuário não encontrado nesta organização.', 404);
+  }
+
+  const tempPassword = generateTempPassword();
+  const passwordHash = await hashPassword(tempPassword);
+
+  const credentialAccount = await prisma.account.findFirst({
+    where: { userId: targetUserId, providerId: 'credential' },
+    select: { id: true },
+  });
+
+  if (credentialAccount) {
+    await prisma.account.update({
+      where: { id: credentialAccount.id },
+      data: { password: passwordHash },
+    });
+  } else {
+    // Conta que só tinha login social (Google/Microsoft) até agora — ganha um método de
+    // login por senha novo, sem mexer no vínculo OAuth já existente.
+    await prisma.account.create({
+      data: {
+        id: crypto.randomUUID(),
+        userId: targetUserId,
+        accountId: target.id,
+        providerId: 'credential',
+        password: passwordHash,
+      },
+    });
+  }
+
+  await prisma.session.deleteMany({ where: { userId: targetUserId } });
+
+  const member = await prisma.user.update({
+    where: { id: targetUserId },
+    data: { mustChangePassword: true },
+    select: TEAM_MEMBER_SELECT,
+  });
+
+  await AuditService.log({
+    action: 'PASSWORD_RESET',
+    entity: 'User',
+    entityId: targetUserId,
+    actorId: actor?.userId,
+    tenantId: organizationId,
+    ipAddress: actor?.ipAddress,
+    afterState: { sessionsRevoked: true, mustChangePassword: true },
+  });
+
+  return { member, tempPassword };
+}
+
+/**
+ * Zera o bloqueio por tentativas de login (`src/lib/auth.ts`, 5 tentativas erradas = 15 min de
+ * lockout). Antes deste piloto, a única forma de destravar um colega bloqueado era esperar os 15
+ * minutos ou mexer direto no banco — o campo existia (`User.lockedUntil`/`failedLoginAttempts`)
+ * mas não tinha nenhuma rota nem ação de UI (achado do Piloto 024).
+ */
+export async function unlockTeamMember(
+  organizationId: string,
+  targetUserId: string,
+  actor?: TeamAuditActor,
+): Promise<TeamMember> {
+  const target = await prisma.user.findFirst({
+    where: { id: targetUserId, organizationId },
+    select: { id: true },
+  });
+  if (!target) {
+    throw new TeamServiceError('Usuário não encontrado nesta organização.', 404);
+  }
+
+  const member = await prisma.user.update({
+    where: { id: targetUserId },
+    data: { lockedUntil: null, failedLoginAttempts: 0 },
+    select: TEAM_MEMBER_SELECT,
+  });
+
+  await AuditService.log({
+    action: 'UPDATE',
+    entity: 'User',
+    entityId: targetUserId,
+    actorId: actor?.userId,
+    tenantId: organizationId,
+    ipAddress: actor?.ipAddress,
+    afterState: { loginLockCleared: true },
+  });
+
+  return member;
+}
+
+export async function deleteTeamMember(
+  organizationId: string,
+  targetUserId: string,
+  requestingUserId: string,
+  ipAddress?: string,
+): Promise<void> {
+  if (targetUserId === requestingUserId) {
+    throw new TeamServiceError('Você não pode excluir sua própria conta por aqui.', 400);
+  }
+
+  const target = await prisma.user.findFirst({
+    where: { id: targetUserId, organizationId },
+    select: { id: true, role: true },
+  });
+  if (!target) {
+    throw new TeamServiceError('Usuário não encontrado nesta organização.', 404);
+  }
+
+  // Auto-exclusão já bloqueada acima, e não existe rota de edição de papel neste módulo — hoje é
+  // impossível zerar os ADMINs de uma organização pela UI só "por acidente" dessas duas
+  // ausências. Trava explícita aqui pra não depender desse acidente continuar valendo se uma
+  // função de editar papel for adicionada no futuro (achado real do Piloto 024).
+  if (target.role === 'ADMIN') {
+    const remainingAdmins = await prisma.user.count({
+      where: { organizationId, role: 'ADMIN' },
+    });
+    if (remainingAdmins <= 1) {
+      throw new TeamServiceError(
+        'Não é possível excluir o único ADMIN da organização. Promova outro usuário a ADMIN antes.',
+        400,
+      );
+    }
+  }
+
+  // Session/Account têm onDelete: Cascade a partir de User — uma única exclusão basta.
+  await prisma.user.delete({ where: { id: targetUserId } });
+
+  await AuditService.log({
+    action: 'DELETE',
+    entity: 'User',
+    entityId: targetUserId,
+    actorId: requestingUserId,
+    tenantId: organizationId,
+    ipAddress,
+    beforeState: { role: target.role },
+  });
+}

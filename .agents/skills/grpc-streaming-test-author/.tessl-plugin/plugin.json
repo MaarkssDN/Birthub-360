@@ -1,0 +1,9 @@
+{
+  "name": "testland/grpc-streaming-test-author",
+  "description": "Use when a server-streaming, client-streaming or bidirectional gRPC call needs tests, or a suite needs auditing for gaps: ordering, completion, cancellation, deadlines and partial failures, with skeletons for Go, Python, JVM and Node, plus the 17 gRPC status codes and their retry rules.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.15"
+}

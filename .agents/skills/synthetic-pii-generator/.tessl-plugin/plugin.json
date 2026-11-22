@@ -1,0 +1,9 @@
+{
+  "name": "testland/synthetic-pii-generator",
+  "description": "Use when seeding non-production environments, building demo data, or replacing real personal data in copied datasets. Generates fake but valid-looking PII: names, emails, phones, addresses, national IDs and SSNs, Luhn-valid test card numbers and birth dates, never real people's data.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.10"
+}

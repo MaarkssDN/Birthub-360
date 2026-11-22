@@ -1,0 +1,9 @@
+{
+  "name": "testland/rtl-rendering-tester",
+  "description": "Use when an app supports right-to-left languages (Arabic, Hebrew, Persian, Urdu). Runs the suite under RTL locales, checks dir=rtl, mirrored layout, icons and alignment, logical CSS properties instead of left and right, and captures screenshots per locale for review.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.1.13"
+}

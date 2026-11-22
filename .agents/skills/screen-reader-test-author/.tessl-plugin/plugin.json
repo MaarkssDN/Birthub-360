@@ -1,0 +1,9 @@
+{
+  "name": "testland/screen-reader-test-author",
+  "description": "Use when a feature needs manual screen-reader testing before sign-off: step-by-step scripts for NVDA, JAWS, VoiceOver or TalkBack with keystrokes and expected announcements, WCAG 2.2 checklists per page type, widget keystroke matrices and a guided session with a signed report.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.13"
+}

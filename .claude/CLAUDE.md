@@ -1,0 +1,313 @@
+# Constituição de Design Engineering — Birth Hub 360º
+
+Este arquivo é a camada permanente de direção visual e de engenharia de frontend deste
+repositório. Qualquer sessão do Claude Code que crie, edite ou revise UI neste projeto deve ler
+isto primeiro. O objetivo não é decoração: é garantir que toda interface nova pareça **desenhada
+para este produto**, não gerada por um modelo genérico de IA.
+
+Este documento **não autoriza redesenho da aplicação**. Ele define como qualquer trabalho visual
+futuro deve ser pensado e executado. Mudanças visuais amplas só acontecem quando pedidas
+explicitamente pelo usuário.
+
+Esta constituição é revisada com base em pilotos reais, não em teoria — cada piloto de tela vira
+aprendizado incorporado aqui e um registro curto em `.claude/PILOTS.md`. Ver Piloto 001
+(`WelcomeScreen.tsx`) para o primeiro caso que moldou as seções 5, 6 e 9.
+
+## 1. O que é este projeto
+
+- **Produto:** **Birth Hub 360º** — "sua central de comando inteligente: integrando dados,
+  potencializando decisões e acelerando a execução". Um CRM B2B com IA (prospecção, pipeline,
+  roleplay de vendas, automações, analytics).
+  - **Marca única, paleta neon do Design Language v2.0 (autoridade visual máxima, ratificada pelo
+    usuário em 19/11/2026; ver `DESIGN.md` e `src/styles/official-identity.css`).** Azul Neon `#00D4FF` (cor
+    de marca e de ação), Rosa Neon `#FF2D9B` e Dourado Neon `#FFC107`, sobre `#0d0d0d` (dark) e
+    `#f0efe9` (light). Fonte da verdade: `docs/design/BIRTHHUB-360-DESIGN-LANGUAGE.md`,
+    `src/styles/official-identity.css`, `src/styles/globals.css` (tokens reais) e `src/config/brand.ts`;
+    `identidade-visual/birthhub360/` documenta identidades ANTERIORES e ainda não foi sincronizada
+    com a paleta neon — não usar como referência de cor até então.
+  - **Contraste e acessibilidade sobre marca:** `bg-brand` sempre com `text-on-brand` (`#041c32`);
+    branco sobre superfície sólida de marca é proibido. No tema claro, as cores neon de título do
+    Design Language não atingem AA sobre `#f0efe9` (A11Y-001): títulos no tema claro usam variantes
+    escurecidas que cumpram 4.5:1 (3:1 só para texto grande), com contraste validado em `tokens.test.ts`.
+  - Até 09/2026 a plataforma trocava de marca em runtime entre Birth Hub 360
+    (`BrandContext`, `data-brand` no `<html>`, `--brand` reescrito por JS). Isso não existe mais:
+    a cor vive só em CSS. O eixo que aquele seletor de fato controlava no CONTEÚDO (playbook,
+    personas, matriz de objeções, portal Bitrix) sobreviveu como **playbook comercial**
+    (`src/config/playbooks.ts` + `src/hooks/useActivePlaybook.ts`) — dado comercial, não
+    identidade. **Atualização (09/2026, pedido explícito do usuário):** as chaves nomeadas por
+    empresa (`birthhub360`) foram removidas como playbooks selecionáveis — hoje existe uma
+    única chave genérica (`'geral'`), já que o ICP deixou de ser essas duas operações específicas.
+    Linhas antigas gravadas com `birthhub360` continuam legíveis (compatibilidade), só não
+    são mais graváveis por escrita nova. Um playbook de fato configurável por organização fica para
+    uma rodada futura — o que existe hoje só evita amarrar o produto a nomes de empresa no código.
+  - **ICP:** qualquer empresa com área comercial que queira automatizar ponta a ponta.
+    **Persona:** papéis da área comercial (SDR, closer, gestão). Nenhum texto novo deve amarrar o
+    produto a um vertical específico.
+- **Stack:** React 19 + TypeScript + Vite 6 + React Router 7 + Express/Prisma no backend.
+  Tailwind CSS 4 **CSS-first** (sem `tailwind.config.*`, tudo via `@theme` em
+  `src/styles/globals.css`). Framer Motion para animação. `@dnd-kit` para drag-and-drop (Kanban do
+  CRM). `recharts` para gráficos. `lucide-react` para ícones. Tipografia self-hosted em
+  `public/fonts/`: **Sora** (display, H1-H3 — substituiu Bodoni Moda em 09/2026, pedido explícito
+  do usuário) e **Inter** (interface, H4-H6 e corpo, inalterada) — nenhuma requisição a CDN de
+  fonte. Os arquivos `.woff2` de Bodoni Moda continuam em `public/fonts/` (não removidos), mas
+  nenhum token os referencia mais por padrão.
+  `@react-three/fiber` + `drei` + `three` já são dependências reais, usadas hoje em
+  `src/components/ui/BrandOrb.tsx` e em `src/features/dashboard/components/RevenueSignalOrb.tsx`
+  (Onda 8, FRONTEND-005: a menção anterior a `SpaceGame.tsx`/`GameWidget.tsx`/`AtlasOrb.tsx` citava
+  arquivos já removidos do repositório — `src/features/gamification/` hoje só tem backend).
+- **Também é um app Android** via Capacitor (`android/`, `capacitor.config.ts`) — todo layout
+  precisa funcionar em viewport de celular de verdade, não só "responsivo em teoria".
+- **Público:** ferramenta de trabalho para times comerciais (SDR, closers, gestão). Não é um site
+  de marketing/landing scrollytelling — a exceção é a tela pré-login (`WelcomeScreen.tsx`), que é
+  o portal institucional de entrada, não uma página de vendas. (`SelectionScreen.tsx`, a escolha
+  de marca, deixou de existir; `/select-brand` sobrevive só como redirecionamento.)
+
+## 2. Fontes de verdade que já existem — leia antes de inventar novas
+
+Não recrie o que já existe. Nesta ordem:
+
+1. **`src/styles/globals.css`** — único lugar onde tokens de design (`@theme`) são definidos.
+   Neutros do Design Language v2.0: `--bg`, `--surface`, `--surface-2`, `--ink`,
+   `--ink-2`, `--line`, `--brand`, `--brand-2`, `--on-brand`, `--iris`, `--orbit-blue`, `--warn`,
+   `--ok`, `--soft`. Dark mode via classe `.dark` (`@custom-variant dark`). Dois tokens de radius
+   (`--radius-card`, `--radius-card-lg`) e um de sombra (`--shadow-card`).
+   Três pares de contraste que não podem ser confundidos: `bg-brand` sempre com `text-on-brand`;
+   `--color-brand-active` é o **hover** da superfície de marca; `--color-brand-ink` é a cor de
+   marca **como texto** sobre superfície clara.
+2. **`identidade-visual/birthhub360/`** — logos vetoriais mestre, tokens (`.css`/`.ts`/`.json`),
+   `README.md` com as regras do brand book e `preview.html`. Abra o `preview.html` antes de supor
+   uma cor, um tamanho mínimo de logo ou um par tipográfico.
+3. **`src/config/brand.ts`** — a mesma identidade em código: nome, tagline, pilares, valores, hex
+   (para contextos sem CSS) e caminhos dos logos. Nenhum componente deve escrever "Birth Hub 360"
+   solto.
+4. **O antigo arquivo de DESIGN QA foi removido do controle de versão em 22/08/2026** (pedido
+   explícito do usuário — ver `docs/REMOVED-DOCS.md`). Não existe hoje um substituto versionado com
+   scores por categoria; os sinais vivos mais próximos de débito visual/a11y conhecido são
+   `eslint.config.mjs` (as regras `jsx-a11y` já voltaram a `error` — ver o comentário da Onda 43 no
+   próprio arquivo; não é mais débito comentado) e `.claude/PILOTS.md`. Antes de "descobrir" um
+   problema de design, confira esses dois antes de supor que é inédito.
+5. **`src/lib/motion.ts`** — variantes e hooks de animação já padronizados (`fadeInUp`,
+   `staggerContainer`, `useTilt`, `useMagnetic`, easings `EASE_PREMIUM`/`SPRING_SOFT`). Reuse antes
+   de inventar uma curva de easing nova.
+6. **`src/components/ui/`** — primitivos existentes (`Button`, `Card`, `Badge`, `Dialog`, `Drawer`,
+   `EmptyState`, `Skeleton`, `Pagination`, `Timeline`, `Toaster`). Componha a partir daqui.
+   A marca em si vive em `src/components/brand/BirthHubLogo.tsx` (`symbol`/`icon`/`horizontal`,
+   mais `BirthHubSignature` para topbar e `BirthHubWordmark` para o nome como texto). O arquivo é
+   **gerado** a partir dos SVGs de `identidade-visual/birthhub360/logos/` — não edite geometria
+   nele.
+7. **`.claude/PILOTS.md`** — registro curto de aprendizados por piloto de tela real. Consulte antes
+   de reabrir uma investigação ou decisão já tomada num piloto anterior.
+
+## 3. Como usar as skills em `.claude/skills/`
+
+| Skill             | Quando carregar                                                                                                                                           |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `frontend-design` | Sempre que for desenhar ou revisar qualquer tela, componente ou fluxo novo.                                                                               |
+| `ui-ux`           | Decisões de composição, hierarquia, estados, fluxo, densidade de informação.                                                                              |
+| `design-system`   | Antes de criar um token, variante de componente ou padrão visual novo — para não duplicar o que já existe (ver débito de tokens duplicados no DESIGN QA). |
+| `motion-design`   | Qualquer animação, transição, scroll reveal ou microinteração.                                                                                            |
+| `accessibility`   | Todo componente interativo, formulário, modal, navegação. Não opcional.                                                                                   |
+| `performance`     | Ao adicionar dependência, animação contínua, 3D, mídia externa, listas grandes, imagens.                                                                  |
+| `visual-qa`       | Depois de qualquer mudança visual, antes de reportar como concluído.                                                                                      |
+
+Essas skills são específicas deste repositório — elas apontam para arquivos reais, tokens reais e
+débitos técnicos reais já mapeados, não para teoria genérica de design. `CLAUDE.md` define os
+princípios (a constituição); cada skill define como avaliar, implementar e verificar esses
+princípios na prática (o conhecimento operacional). Evite duplicar o mesmo parágrafo nos dois
+lugares — se uma explicação detalhada já existe numa skill, referencie-a em vez de repeti-la aqui.
+
+## 4. As 10 regras visuais (não-negociáveis)
+
+1. **Evitar "AI slop"** — nada de composição genérica de gerador de landing page. Toda tela deve
+   ter uma decisão de design identificável, não um template.
+2. **Hero centralizada não é o padrão.** Antes de centralizar título+subtítulo+CTA, considere
+   composição assimétrica, grid com conteúdo real, ou ancoragem lateral. (Nota: `WelcomeScreen.tsx`
+   usa composição centralizada de propósito — é uma exceção justificada pelos critérios da seção 5,
+   não o padrão a copiar em telas novas. Ver `.claude/PILOTS.md`, Pilotos 001 e o piloto de
+   rebranding, para o raciocínio completo.)
+3. **Sem gradiente genérico de "IA".** Gradiente em título só nos casos explicitamente
+   previstos no Design Language v2.0 §2 ("Gradiente de Títulos" e "Gradiente de Ação (CTA)");
+   nunca em texto corrido, nunca como fundo de superfície com texto em cima, nunca decorativo
+   arbitrário, e no máximo um gradiente dominante por composição. Fora desses casos, gradiente
+   continua proibido. `.bg-gradient-orbit5` (`globals.css`) segue existente para halos, bordas e
+   indicadores — não para texto.
+4. **Sem três cards iguais só para preencher espaço.** Se o conteúdo não sustenta 3 itens
+   simetricamente iguais, não force a grade. Densidade de informação real > simetria decorativa.
+5. **Sombra, blur ou glassmorphism só com propósito.** `.glass-panel`/`.glass-card` já existem em
+   `globals.css` — use-os com intenção (hierarquia, camada, foco), não como enfeite padrão em todo
+   card novo.
+6. **Sem animação gratuita.** Toda animação justifica sua existência: comunica estado, guia
+   atenção, ou dá feedback. Se remover a animação não muda o entendimento da interface, remova a
+   animação.
+7. **3D não é decoração.** `@react-three/fiber`/`three` já existem no projeto — antes de usá-los
+   em uma tela nova, pergunte se o 3D comunica algo que 2D não comunica. Ver `performance/SKILL.md`
+   para o custo real disso.
+8. **UX nunca é sacrificado por estética.** Legibilidade, previsibilidade e velocidade de tarefa
+   vêm antes de qualquer escolha visual.
+9. **Performance nunca é sacrificada por motion.** Ver `performance/SKILL.md`.
+10. **Nunca quebrar funcionalidade existente para melhorar aparência.** Qualquer mudança visual
+    precisa preservar o comportamento coberto por `tests/e2e/` (`crm.spec.ts`, `auth.spec.ts`,
+    `contact-company-forms.spec.ts`, `command-palette.spec.ts`, `leads-crud.spec.ts`) e pelos testes
+    de acessibilidade/visuais já existentes. Ver seção 6 para como isso se aplica a conteúdo e
+    funcionalidade que não são cobertos por teste automatizado.
+
+## 5. Regra de exceção justificada
+
+As regras da seção 4 descrevem o **padrão default** deste produto, não uma proibição absoluta. Uma
+regra formulada como "X não é o padrão" (regras #2, #4, #5, #6 principalmente) pode ser excepcionada
+quando há justificativa real baseada em:
+
+- objetivo da tela;
+- fluxo (onde ela entra na jornada do usuário);
+- quantidade de informação real disponível;
+- contexto (ex.: tela antes da escolha de marca, estado único, gate institucional);
+- hierarquia da informação;
+- arquitetura já existente na vizinhança (telas do mesmo módulo/fluxo).
+
+Nunca por preferência estética isolada ("acho mais bonito assim"). Ao usar uma exceção, explique
+**por escrito** (na resposta ao usuário, ou em `.claude/PILOTS.md` se for um piloto) qual critério
+acima se aplica e por que a exceção é melhor para aquele caso específico. Sem essa justificativa
+explícita, a exceção não é válida — siga o padrão da regra.
+
+Isso existe para que Design Engineering não vire um checklist mecânico: seguir a letra de uma regra
+sem entender seu propósito pode produzir um resultado tão genérico quanto ignorá-la.
+
+## 6. Preservação de conteúdo e funcionalidade
+
+Antes de remover ou alterar texto, crédito, informação, link, ação, controle, mídia, elemento
+institucional ou funcionalidade existente por parecer visualmente inadequado, classifique o que ele
+é:
+
+1. **Conteúdo** (texto, crédito, informação institucional)
+2. **Regra de negócio**
+3. **Requisito institucional**
+4. **Funcionalidade** (algo que o usuário pode fazer/usar)
+5. **Elemento puramente decorativo**
+
+Só o item 5 pode ser removido livremente por motivo estético. Os itens 1-4 exigem preferir
+**refinamento** (reestilizar, reposicionar, reduzir ênfase) a remoção. Remoção só é aceitável quando
+estiver claramente dentro do escopo pedido pelo usuário ou for tecnicamente necessária — e mesmo
+assim, documente o que foi removido e por quê. Mídia legada questionável (ex.: um recurso externo
+sem uso claro) é documentada e discutida antes de ter seu comportamento alterado, nunca removida
+silenciosamente só por parecer desnecessária — ver `performance/SKILL.md` para o caso concreto já
+encontrado neste projeto.
+
+## 7. Direção de arte — pense antes de implementar
+
+Antes de escrever JSX/CSS para qualquer tela ou componente novo, responda (mentalmente ou em
+comentário de PR) a estas perguntas, na ordem:
+
+1. **Composição** — qual é o elemento dominante? O que o olho vê primeiro e por quê?
+2. **Hierarquia** — a ordem visual corresponde à ordem de importância real da informação para o
+   usuário comercial que vai usar isso no dia a dia?
+3. **Tipografia** — a escala usa `font-sans`/`font-display` (token `--font-brand-sans`) ou está
+   hardcoded? H1-H3 já têm tamanho/peso definidos em `@layer base` — reuse, não redefina.
+4. **Escala e densidade** — este é um dashboard/CRM de uso repetido, não uma landing page. Prefira
+   densidade de informação alta e espaçamento eficiente a espaço em branco decorativo excessivo.
+5. **Contraste** — texto sobre `--brand`/`--brand-2` exige atenção a acessibilidade WCAG 2.2 AA (4.5:1).
+   A regra é dura: **branco sobre superfície sólida de marca não passa em AA**. Use sempre
+   `text-on-brand`. Não reintroduza `text-white` cego sobre cor sólida de marca.
+6. **Ritmo visual e grid** — mantenha consistência com o grid já usado nas telas vizinhas do mesmo
+   módulo antes de inventar um novo.
+7. **Cor** — use os tokens (`bg-brand`, `text-ink-2`, `border-line` etc.), não hex cru. Hex só é
+   aceitável onde não existe CSS: three.js, canvas, PDF, e-mail — e mesmo aí vindo de
+   `BRAND.colors` ou tokens tipados (`tokens.ts`), nunca digitado à mão. Superfície de marca sólida
+   clara pede `text-on-brand`; cor de marca como texto sobre fundo claro pede `text-brand-ink`.
+8. **Estados** — todo componente interativo precisa de hover, focus-visible, active, disabled,
+   loading e erro definidos antes de ser considerado pronto. Ver `ui-ux/SKILL.md`.
+9. **Microinterações e movimento** — ver seção 8 e `motion-design/SKILL.md`.
+10. **Responsividade** — ver `ui-ux/SKILL.md`; lembre que este app roda em Android real via
+    Capacitor.
+
+## 8. Motion — filosofia
+
+**Framer Motion é a biblioteca de animação padrão deste projeto** (`src/lib/motion.ts`, com suporte
+a `prefers-reduced-motion` via `useReducedMotion`/`MotionConfig`). GSAP e a expansão do uso de 3D
+(`@react-three/fiber`) só entram com necessidade comprovada que Framer Motion/CSS não resolvem — os
+critérios operacionais completos (e por que ainda não se aplicam hoje) estão em
+`motion-design/SKILL.md` e `performance/SKILL.md`.
+
+Princípio único que governa toda animação nova, contínua ou não: **antes de criar `repeat:
+Infinity`, pulse, glow animado, scale contínuo, box-shadow animado ou parallax permanente, pergunte
+"que informação ou estado esta animação comunica?"**. Se a resposta for "nenhuma", ela provavelmente
+não deve existir — priorize animação de entrada/saída, mudança de estado, feedback e continuidade
+espacial em vez de loop decorativo. `prefers-reduced-motion` é sempre respeitado.
+
+## 9. Mídia, áudio e vídeo
+
+Áudio, vídeo e mídia externa nunca carregam ou tocam automaticamente por conveniência estética — só
+quando há necessidade real, e com controle do usuário. Recursos externos (CDN de terceiros, como o
+áudio já existente em `WelcomeScreen.tsx`) custam rede e bateria mesmo mutados/pausados, e precisam
+ser avaliados quanto a privacidade, disponibilidade, CSP e performance antes de adicionar um novo —
+critérios operacionais completos em `performance/SKILL.md`. Mídia legada questionável é tratada como
+qualquer outra funcionalidade existente (ver seção 6): documentada e discutida antes de ter seu
+comportamento alterado, nunca removida silenciosamente por parecer desnecessária.
+
+## 10. Acessibilidade — requisitos mínimos
+
+Não negociável em nenhum componente novo ou editado:
+
+- Navegável por teclado (Tab/Shift+Tab/Enter/Escape/setas onde fizer sentido).
+- Foco visível (`:focus-visible` global já existe em `globals.css`; componentes com anel próprio
+  devem manter contraste AA).
+- Contraste de texto ≥ 4.5:1 (texto normal) / 3:1 (texto grande) — especialmente texto sobre cor
+  sólida de marca, onde já houve bug real (DQA-19).
+- Semântica HTML correta antes de `role`/`aria-*` — `<button>` para ação, `<a>` para navegação,
+  landmarks (`<main>`, `<nav>`, `<header>`) na raiz de toda tela.
+- Labels associados a todo input (`label-has-associated-control` é um débito conhecido — não
+  aumente-o).
+- Estados de erro, vazio e loading sempre visíveis e anunciáveis, não só visuais.
+- `prefers-reduced-motion` respeitado em qualquer animação CSS ou Framer Motion nova.
+- Ver `accessibility/SKILL.md` para o checklist completo e o débito já mapeado (`eslint.config.mjs`,
+  `tests/e2e/accessibility.spec.ts`).
+
+## 11. Performance — requisitos mínimos
+
+- Não adicionar dependência nova sem justificar por que os primitivos/libs já presentes
+  (`framer-motion`, `recharts`, `lucide-react`, `@dnd-kit`, `three`/`@react-three/fiber`) não
+  resolvem.
+- Lazy loading por rota/tab já é o padrão (`React.lazy` + `Suspense` em todos os módulos) — siga-o
+  em qualquer tela nova.
+- Nenhuma animação ou render 3D contínuo fora da viewport/tab ativa.
+- Mídia (áudio/vídeo/imagens pesadas) segue a seção 9 — detalhamento operacional (rede, bateria,
+  CSP, preload, local vs. externo) em `performance/SKILL.md`.
+- Preservar performance mobile (Capacitor/Android) como requisito de primeira classe, não
+  secundário ao desktop.
+
+## 12. Processo obrigatório para qualquer tarefa de design/UI
+
+1. **Audite antes de implementar**: leia os arquivos de "fontes de verdade" (seção 2) relevantes à
+   tela/componente em questão.
+2. **Verifique débito técnico conhecido**: consulte `.claude/PILOTS.md` (e, se precisar do
+   contexto de por que `DESIGN_QA_CENTRAL_ATLASGR.md` é citado em outros lugares deste repo,
+   `docs/REMOVED-DOCS.md` — o arquivo foi removido do controle de versão) para não reintroduzir um
+   problema já corrigido, nem "descobrir" de novo algo já documentado.
+3. **Componha a partir do que existe**: tokens, primitivos `ui/`, variantes de `src/lib/motion.ts`.
+4. **Implemente** seguindo as regras visuais (seção 4), a regra de exceção (seção 5), a preservação
+   de conteúdo/funcionalidade (seção 6) e a direção de arte (seção 7).
+5. **Verifique acessibilidade, motion, mídia e performance** antes de considerar pronto (seções
+   8-11).
+6. **QA visual**: siga `visual-qa/SKILL.md` — comandos de verificação, classificação de warnings, e
+   amplitude de QA proporcional ao risco da mudança (um ajuste pontual não exige as mesmas
+   combinações que uma mudança em autenticação, layout ou design system). Quando a suíte oficial não
+   puder rodar por limitação real de ambiente, siga o protocolo dessa skill em vez de pular a
+   verificação ou declarar sucesso sem tê-la feito.
+7. **Registre o piloto**: se a tarefa for a primeira implementação real orientada por esta
+   constituição num fluxo/tela ainda não coberto, adicione uma entrada curta em `.claude/PILOTS.md`.
+   Não é necessário para ajustes pequenos em telas já pilotadas.
+
+## 13. O que este arquivo não é
+
+Esta constituição não é uma licença para redesenhar o app inteiro, trocar a biblioteca de
+componentes, ou "modernizar" telas que não foram pedidas. Ela existe para que, quando uma mudança
+visual for pedida, o resultado pareça parte deste produto — não um componente genérico colado por
+cima dele.
+
+Também não autoriza mexer no que sobrou das marcas anteriores por conta própria. O que ainda
+continua de pé, de propósito, cada um por um motivo diferente: os atalhos de `EXTERNAL_LINKS`
+apontam para sistemas de terceiros da operação; `public/tools/` são aplicações legadas embutidas
+por iframe; e as linhas antigas gravadas com `birthhub360` no playbook comercial (ver
+seção 1) continuam legíveis por compatibilidade, sem migração de dado. Trocar qualquer um deles
+exige coordenação com infraestrutura — peça antes. (A allowlist de domínios de login em
+`src/config/access-policy.ts` **já foi removida**, por pedido explícito do usuário — não é mais
+regra viva; não a reintroduza.)

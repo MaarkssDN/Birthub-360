@@ -1,0 +1,9 @@
+{
+  "name": "testland/data-quality-gate",
+  "description": "Use when a data pipeline needs one CI step that fails the build when data quality drops. Gathers check results from dbt, Great Expectations or Soda, applies severity-aware thresholds and returns a single go/no-go decision with a reason per check.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.0.8"
+}

@@ -1,0 +1,58 @@
+# Sistema de Agentes — CENTRAL-DE-INTELIGENCIA-COMECIAL-BIRTH HUB 360
+
+## Arquivos
+- `prompts/00-coordenador.md`
+- `prompts/01-plataforma-dados.md`
+- `prompts/02-produto-ux.md`
+- `prompts/03-design-a11y.md`
+- `prompts/04-crm-bi.md`
+- `prompts/05-prospeccao.md`
+- `prompts/06-integracoes-bitrix.md`
+- `prompts/06A-extracoes-bitrix.md` — especialista interno do Agente 06
+- `prompts/07-ia-automacoes.md`
+- `prompts/08-qa-release.md`
+- `prompts/08A-git-deploy-aws.md` — operações Git e AWS autorizadas; mesmo slot de 08, após aprovação de 24
+- `prompts/09-mobile.md`
+- `prompts/10-infraestrutura-sre.md`
+- `prompts/11-marca-institucional.md`
+- `prompts/12-voz-telefonia.md`
+- `prompts/13-enxame-governanca-agentes.md`
+- `prompts/14-ambiente-execucao-harness.md`
+- `prompts/15-seguranca-aplicada.md`
+- `prompts/16-runtime-workers-escala.md`
+- `prompts/17-cadencia-ciclo-receita.md`
+- `prompts/18-contratos-api-docs.md`
+- `prompts/24-revisao-independente.md` — auditor obrigatório de toda entrega, com parecer rastreável
+- `prompts/01A-dados-rls-retencao.md` — especialista interno do Agente 01, mesmo slot
+- *Especialistas de governança 21 (Privacidade e LGPD), 22 (Verificação de Realidade) e 23 (Custo, Performance e Limites de IA):* regidos diretamente pelas diretrizes de `/AGENTS.md` (§3, §26, §27) em conjunto com os prompts de domínio correlatos (`01A`, `14`, `15`, `07`).
+- `COMO-CHAMAR-OS-AGENTES.md` — prompts prontos para colar, um por agente, para abrir a sessão correspondente em qualquer ferramenta de agente de código
+
+## Inventário canônico de dívidas técnicas
+
+Antes de corrigir uma dívida já auditada, leia [`.agents/audits/technical-debt/CURRENT.md`](audits/technical-debt/CURRENT.md).
+O snapshot vigente tem 40 achados canônicos e 216 verificações.
+Não crie outro ID se o achado já possui identificador `DEBT-*`.
+A varredura de 176 itens do PR #741 não é fonte oficial.
+
+## Pastas de execução (criadas em runtime, não versionadas com conteúdo sensível)
+- `runs/` — relatórios de onda do Coordenador (`baseline.md`, `onda-2.md`, `onda-2.5.md`, `onda-4.md`, `onda-5.md`, …). Somente o Coordenador escreve aqui. Inclui a matriz de propriedade que `/AGENTS.md` → "Regra de concorrência" exige antes de disparar uma onda com mais de 3 especialistas.
+- `PLAN-V4/` (substitui a antiga referência `completion/`) — mapa da plataforma, inventário, bloqueadores e planos estruturados das ondas de finalização.
+- `handoffs/onda-<n>/` — um arquivo por handoff, formato definido em `/AGENTS.md` → "Protocolo de handoff". Qualquer agente cria o próprio arquivo.
+
+## Como executar
+1. Inicie o agente 00.
+2. Dê ao coordenador acesso ao repositório completo.
+3. Ele deve ler `/AGENTS.md`.
+4. Ele cria a branch de integração da onda e um `git worktree` por especialista ativo (ver `/AGENTS.md` → "Isolamento de execução").
+5. Execute os especialistas conforme `/AGENTS.md` → "Regra de concorrência" (até 8 simultâneos, com propriedade disjunta verificada antes de disparar e gate a cada 2–3 merges), cada um no próprio worktree.
+6. Siga o planejamento de ondas registrado em `runs/` e `PLAN-V4/`, incluindo a Onda 4 (09 Mobile, 10 Infraestrutura/SRE, 11 Marca) quando aplicável.
+7. Não pule gates de typecheck/lint/tests/build.
+8. Não aceite "auditoria concluída" quando existe correção executável.
+9. Revise handoffs abertos em `.agents/handoffs/onda-<n>/` antes de aprovar a onda.
+10. Acione SEMPRE o Agente 24 antes de aceitar conclusão, fechar handoff, integrar ou liberar deploy. Somente seu parecer APROVADO para a revisão exata permite avançar. Ver AGENTS.md §40.
+
+## Checklist dos handoffs
+O inventário HTML em `reviews/checklist-handoffs.html` separa status documental de aprovação independente. Marcar uma revisão pessoal no navegador não constitui aprovação oficial. Regenerar com `node scripts/generate-handoffs-checklist.cjs`; parecer inicial em `reviews/handoffs-2026-10-09-24.md`.
+
+## Observação
+Os `AGENTS.md` locais definem propriedade e evitam que especialistas editem as mesmas áreas de forma concorrente. Nenhum agente edita os arquivos em `prompts/` — ajuste de prompt é decisão humana fora do ciclo de execução.

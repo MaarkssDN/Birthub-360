@@ -1,0 +1,9 @@
+{
+  "name": "testland/prod-canary-validator",
+  "description": "Use when a canary deploy needs an automatic promote or rollback decision instead of someone watching dashboards. Compares the canary's error rate, p50, p95 and p99 latency and business KPIs with the baseline over the observation window, with absolute and relative thresholds and a significance check.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.10"
+}

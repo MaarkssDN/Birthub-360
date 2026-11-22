@@ -1,0 +1,97 @@
+# Arquivado por decisão do Agente 10 (Opção A: Manter EC2 via SSH)
+# Motivo: Este workflow está configurado para ECS/ECR/S3/CloudFront, mas:
+# - Nunca foi ativado (ausência de secret AWS_ROLE_TO_ASSUME)
+# - Diverge da arquitetura canônica documentada (100% Local-First / Single-Node)
+# - Diverge do ambiente real de produção (EC2 via SSH, operacional)
+# - K8s, ArgoCD, Helm charts, ECS estão marcados como ARCHIVED/LEGACY
+# - Migração para ECS/ECR seria regressão arquitetural desnecessária
+# Ref: .agents/handoffs/onda-liquidacao-debitos/00-para-08-10-estrategia-deploy-unificada.md
+# Ref: .agents/handoffs/onda-liquidacao-debitos/10-para-08-arquivar-deploy-aws.md
+#
+# Deploy real deve usar scripts EC2: deploy-ec2.sh, deploy-ec2.ps1, deploy-aws.ps1
+# Ver documentação em docs/operations/PRODUCTION_ARCHITECTURE.md ou docs/operations/DEPLOY_EC2.md
+
+name: Deploy to AWS Production (DISABLED - Arquivado)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: Build, Test & Deploy to AWS
+    runs-on: ubuntu-latest
+    env:
+      HAS_AWS_ROLE: ${{ secrets.AWS_ROLE_TO_ASSUME != '' }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node.js & Dependencies
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run test:unit
+
+      - name: Check AWS Deployment Credentials
+        if: env.HAS_AWS_ROLE != 'true'
+        run: echo "AWS_ROLE_TO_ASSUME is not configured; skipping AWS deployment steps."
+
+      - name: Configure AWS Credentials (OIDC)
+        if: env.HAS_AWS_ROLE == 'true'
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+      - name: Login to Amazon ECR
+        if: env.HAS_AWS_ROLE == 'true'
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@03f1aad4c6c7ffd436567f42f9384779290529bd # v2
+
+      - name: Build, tag, and push Docker image to ECR
+        if: env.HAS_AWS_ROLE == 'true'
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: birthhub-api
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t $REGISTRY/$REPOSITORY:latest .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          docker push $REGISTRY/$REPOSITORY:latest
+
+      - name: Build and Sync Frontend to S3
+        if: env.HAS_AWS_ROLE == 'true'
+        run: |
+          npm run build
+          aws s3 sync dist/ s3://${{ secrets.AWS_S3_FRONTEND_BUCKET }} --delete
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.AWS_CLOUDFRONT_DIST_ID }} --paths "/*"
+
+      - name: Deploy to Amazon ECS
+        if: env.HAS_AWS_ROLE == 'true'
+        run: |
+          aws ecs update-service --cluster birthhub-production --service birthhub-api-service --force-new-deployment
+
+      - name: Smoke Test Gate (Blocking)
+        if: env.HAS_AWS_ROLE == 'true'
+        run: |
+          echo "Aguardando estabilização do ECS..."
+          aws ecs wait services-stable --cluster birthhub-production --services birthhub-api-service
+
+          echo "Executando smoke test na API..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://api.birthhub360.com.br/health)
+          if [ "$STATUS" -ne 200 ]; then
+            echo "::error::Smoke test falhou com status $STATUS! Abortando validação de deploy."
+            exit 1
+          fi
+          echo "Smoke test aprovado com sucesso (HTTP 200)."

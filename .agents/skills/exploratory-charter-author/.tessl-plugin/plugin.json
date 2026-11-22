@@ -1,0 +1,9 @@
+{
+  "name": "testland/exploratory-charter-author",
+  "description": "Use when a feature has too many unknowns to script (new feature, risky refactor, bug cluster) and the team needs an exploratory test plan. Writes a session-based testing charter: one-sentence mission, 3-7 areas, a 60, 90 or 120 minute time-box, suggested tours and the debrief deliverables.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.0.4"
+}

@@ -1,0 +1,9 @@
+{
+  "name": "testland/sonarqube-maintainability-gate",
+  "description": "Use when a team wants maintainability and technical-debt ratings to gate PRs, or a SonarQube project reports numbers nobody tied to a gate. Runs SonarQube or SonarCloud on production code for code smells, bugs and maintainability ratings, the maintainability view rather than security.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.1.7"
+}

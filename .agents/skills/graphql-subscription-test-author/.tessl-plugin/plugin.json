@@ -1,0 +1,9 @@
+{
+  "name": "testland/graphql-subscription-test-author",
+  "description": "Use when GraphQL subscriptions need tests over graphql-ws (WebSocket) or graphql-sse: subscribing through the async iterator, asserting event shape and order, connection lifecycle and close codes, auth on connect and pubsub triggers. Queries and mutations belong to the server test skills.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.4.6"
+}

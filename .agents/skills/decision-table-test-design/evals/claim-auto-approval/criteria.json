@@ -1,0 +1,46 @@
+{
+  "context": "Dario's reduction is right about routing and wrong about the outcome, because the outcome has two parts and his grid has one column. Predicted baseline failure: the agent checks his reasoning sentence by sentence against the ops note, finds the sentence he quoted ('the handler opens the file either way') really is there, and signs the grid off - possibly adding a decorative extra case. What the unaided agent is predicted not to do is expand the dashes and compare what the engine actually returns on each side. src/triage.js returns serviceLevelDays as well as queue, and on R3 and R4 the garage-estimate dash hides 2 working days against 5. docs/reopened-claims.md is the same fact in production: MC-71204 and MC-71318 sit on Dario's R3 and closed nine working days apart, one of them at the ombudsman. The trap has a second half: two of his four dashes are legal - the photo genuinely does not change anything once a human has the claim, and the estimate genuinely does nothing on the automatic path where no service level is produced - so rejecting the grid wholesale and demanding all sixteen combinations is also wrong. Six outcomes, not four and not sixteen.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Deliverables produced",
+      "max_score": 5,
+      "description": "docs/grid-review.md exists and test/triage.test.js has at least one added test. Scores zero if either is missing."
+    },
+    {
+      "name": "MUST NOT sign off a merge whose two sides produce different outcomes",
+      "max_score": 32,
+      "description": "Anti-pattern guard: a dash is legal only where every expansion of it yields the same actions. Rows R3 (adjuster) and R4 (fraud review) MUST NOT be left merged on the garage estimate - each covers a 2 working day outcome and a 5 working day outcome. Scores zero if the grid is signed off as it stands, and zero if only one of R3 and R4 is reopened while the other is endorsed. Full marks require both rows named and split."
+    },
+    {
+      "name": "Service level treated as an outcome, not an attribute",
+      "max_score": 22,
+      "description": "The review states that triage produces two things - which queue the claim lands in and which service level the customer is promised - and that Dario's single outcome column cannot carry the second, which is why the merge passed his own review. Scores zero if the document argues only that the estimate 'is relevant' without saying what result it changes. Scores at most half if the two working day figure appears only inside a test and never in the review's reasoning."
+    },
+    {
+      "name": "Settled by running the engine",
+      "max_score": 20,
+      "description": "An added test calls triage on both expansions of a row Dario dashed - same queue, garage estimate present and absent - and asserts the serviceLevelDays differ (2 against 5). It must pass against the shipped src/triage.js. A test that only re-checks a queue assignment scores zero: queue is the one thing Dario got right, so it separates nothing. Scores at most half if the assertion is written but npm test does not run clean."
+    },
+    {
+      "name": "The legal dashes kept",
+      "max_score": 14,
+      "description": "The review states that Dario's photo dash on R3 and R4 is correct, and that his estimate dash on R1 and R2 is correct because no service level is produced on the automatic path. Scores zero if the answer is to rebuild all sixteen combinations as separate QA claims on the grounds that no merge can be trusted, and scores zero if the review reopens the photo dash."
+    },
+    {
+      "name": "Lands on six distinct outcomes",
+      "max_score": 14,
+      "description": "The corrected analysis has six genuinely different outcomes covering the sixteen combinations: approved automatically, held for a photo, and each of the two human queues at each of the two service levels. Scores zero if the count is left at four or raised to sixteen. Scores at most half if six rows appear but the document does not say which input stopped mattering where."
+    },
+    {
+      "name": "Evidence cited from the reopened claims",
+      "max_score": 10,
+      "description": "The review points at MC-71204 and MC-71318 - or the ombudsman file - as production proof that the merged row covers two different customer promises. Scores zero if the reopened-claims file is not used at all."
+    },
+    {
+      "name": "Existing behaviour preserved",
+      "max_score": 5,
+      "description": "All three shipped tests still pass and src/triage.js still routes as the ops note describes. MUST NOT weaken or delete a shipped test to make room for the added ones; deleting any of them scores zero."
+    }
+  ]
+}

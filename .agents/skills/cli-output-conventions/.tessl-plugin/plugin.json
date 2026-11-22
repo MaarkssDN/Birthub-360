@@ -1,0 +1,9 @@
+{
+  "name": "testland/cli-output-conventions",
+  "description": "Use when designing or testing a command-line tool's output: a new flag, command or error message, CLI assertions, or flaky tests caused by unstable output. Sets the contract for exit codes, stdout vs stderr, --json output, ordering, color and --help, based on the Command Line Interface Guidelines.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.1.10"
+}

@@ -1,0 +1,9 @@
+{
+  "name": "testland/stripe-test-cards-and-webhooks",
+  "description": "Use whenever code that takes payments with Stripe needs tests: test-mode keys, test cards for success, declines and 3D Secure, stripe listen to forward webhooks locally, stripe trigger fixtures, and Stripe-Signature verification.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.4.7"
+}

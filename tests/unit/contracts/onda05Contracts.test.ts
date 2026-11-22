@@ -1,0 +1,214 @@
+import { describe, expect, it } from 'vitest';
+import type {
+  AccountAllocationRecommendation,
+  BacktestValidationMetrics,
+  ProjectedRevenueHorizon,
+  WhatIfSimulationInput,
+  WhatIfSimulationResult,
+} from '../../../src/shared/contracts/predictiveRevenueOracle.contract.ts';
+import type {
+  FailoverEvent,
+  RegionTelemetry,
+} from '../../../src/shared/contracts/multiRegionResilience.contract.js';
+import type {
+  SbomManifestSummary,
+  SecuritySweepReport,
+  SecurityVulnerability,
+} from '../../../src/shared/contracts/continuousSecurityAudit.contract.js';
+import type { DomainEventType } from '../../../src/shared/contracts/domainEventMesh.contract.js';
+
+describe('Onda 05 — Validação de Contratos Canônicos', () => {
+  it('Evolução 18: Predictive Revenue Oracle — deve validar horizontes de projeção, simulação What-If e backtest', () => {
+    const horizon: ProjectedRevenueHorizon = {
+      horizonDays: 90,
+      expectedRevenue: 350000,
+      confidenceInterval: {
+        p10: 290000,
+        p50: 350000,
+        p90: 420000,
+      },
+      pipelineWeightedAmount: 480000,
+      projectedWonDealsCount: 12,
+      keyDrivers: ['Propostas quentes no setor logístico', 'Alta aderência ao playbook'],
+      uncertaintyDegree: 'LOW',
+    };
+
+    const whatIfInput: WhatIfSimulationInput = {
+      organizationId: 'org-tenant-01',
+      name: 'Expansão de Prospecção Outbound Q4',
+      horizonDays: 90,
+      prospectingVolumeDeltaPercent: 20,
+      avgTicketDeltaPercent: 10,
+    };
+
+    const whatIfResult: WhatIfSimulationResult = {
+      simulationId: 'sim-whatif-01',
+      organizationId: 'org-tenant-01',
+      name: whatIfInput.name,
+      baselineRevenue: 350000,
+      simulatedRevenue: 435000,
+      netRevenueDelta: 85000,
+      deltaPercent: 24.28,
+      impactBreakdown: {
+        prospectingImpact: 55000,
+        conversionImpact: 0,
+        cycleImpact: 0,
+        ticketImpact: 30000,
+        capacityImpact: 0,
+      },
+      simulatedAt: new Date().toISOString(),
+    };
+
+    const backtest: BacktestValidationMetrics = {
+      evaluationPeriod: '2026-Q3',
+      samplesEvaluated: 140,
+      meanAbsoluteError: 12400,
+      meanAbsolutePercentageError: 6.8,
+      predictionBias: 0.02,
+      calibrationScore: 0.94,
+      predictionIntervalCoveragePercent: 92.5,
+      isModelCalibrated: true,
+      status: 'CALIBRATED',
+    };
+
+    expect(horizon.confidenceInterval.p10).toBeLessThan(horizon.confidenceInterval.p50);
+    expect(horizon.confidenceInterval.p50).toBeLessThan(horizon.confidenceInterval.p90);
+    expect(whatIfResult.netRevenueDelta).toBe(85000);
+    expect(backtest.isModelCalibrated).toBe(true);
+    expect(backtest.meanAbsolutePercentageError).toBeLessThan(10);
+  });
+
+  it('Evolução 19: Multi-Region Resilience — deve validar telemetria regional e contrato de failover de tráfego', () => {
+    const telemetrySaoPaulo: RegionTelemetry = {
+      region: 'sa-east-1',
+      status: 'healthy',
+      latencyMs: 38,
+      errorRatePercent: 0.01,
+      activeWorkersCount: 16,
+      cacheHitRatio: 0.96,
+      lastHealthCheckIso: new Date().toISOString(),
+    };
+
+    const failover: FailoverEvent = {
+      failoverId: 'failover-ev-001',
+      organizationId: 'org-tenant-01',
+      fromRegion: 'sa-east-1',
+      toRegion: 'us-east-1',
+      reason: 'Degradação temporária de rota submarina em sa-east-1',
+      initiatedAt: new Date().toISOString(),
+      reroutedTrafficPercent: 100,
+      statePreserved: true,
+      status: 'completed',
+    };
+
+    expect(telemetrySaoPaulo.region).toBe('sa-east-1');
+    expect(telemetrySaoPaulo.status).toBe('healthy');
+    expect(failover.fromRegion).toBe('sa-east-1');
+    expect(failover.toRegion).toBe('us-east-1');
+    expect(failover.statePreserved).toBe(true);
+  });
+
+  it('Evolução 20: Continuous Security Audit — deve validar estrutura de SBOM CycloneDX e relatório de vulnerabilidades', () => {
+    const vulnerability: SecurityVulnerability = {
+      cveId: 'CVE-2026-9999',
+      packageName: 'sample-crypto-lib',
+      affectedVersionRange: '< 2.1.0',
+      severity: 'HIGH',
+      fixedInVersion: '2.1.0',
+      description: 'Potencial buffer parsing anomaly',
+      waiverReference: 'WAIVER-2026-10-A',
+    };
+
+    const sbom: SbomManifestSummary = {
+      format: 'CycloneDX_JSON',
+      specVersion: '1.5',
+      totalComponents: 420,
+      sha256Digest: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+      isReproducible: true,
+      generatedAt: new Date().toISOString(),
+    };
+
+    const sweep: SecuritySweepReport = {
+      sweepId: 'sweep-audit-20261018',
+      executedAt: new Date().toISOString(),
+      durationMs: 1450,
+      totalDependenciesScanned: 420,
+      vulnerabilitiesFound: [vulnerability],
+      criticalCount: 0,
+      highCount: 1,
+      activeWaiversCount: 1,
+      sbomSummary: sbom,
+      complianceRating: 'WARN_WAIVED',
+    };
+
+    expect(sweep.totalDependenciesScanned).toBe(420);
+    expect(sweep.criticalCount).toBe(0);
+    expect(sweep.sbomSummary.isReproducible).toBe(true);
+    expect(sweep.complianceRating).toBe('WARN_WAIVED');
+  });
+
+  it('Domain Event Mesh — deve validar inclusão dos novos tipos de eventos da Onda 05', () => {
+    const events: DomainEventType[] = [
+      'MULTIMODAL_ROLEPLAY_EVALUATED',
+      'MULTI_REGION_FAILOVER_TRIGGERED',
+      'SECURITY_AUDIT_SWEEP_COMPLETED',
+      'CONVERSATIONAL_COACHING_EVALUATED',
+      'REALTIME_COACHING_HINT_EMITTED',
+      'WORKLOAD_RECOMMENDATION_TRIGGERED',
+      'MICRO_TRAINING_COMPLETED',
+    ];
+
+    expect(events).toContain('MULTIMODAL_ROLEPLAY_EVALUATED');
+    expect(events).toContain('MULTI_REGION_FAILOVER_TRIGGERED');
+    expect(events).toContain('SECURITY_AUDIT_SWEEP_COMPLETED');
+    expect(events).toContain('CONVERSATIONAL_COACHING_EVALUATED');
+    expect(events).toContain('WORKLOAD_RECOMMENDATION_TRIGGERED');
+  });
+
+  it('Eixo 13: Inteligência Conversacional — deve validar tipagem de métricas de dinâmica e coaching pós-chamada', async () => {
+    const { conversationalIntelligenceService } = await import(
+      '../../../src/features/ai-voice/server/conversationalIntelligence.service.js'
+    );
+    const metrics = conversationalIntelligenceService.calculateDynamicMetrics([
+      {
+        turnId: '1',
+        speaker: 'seller',
+        startTimeSeconds: 0,
+        endTimeSeconds: 20,
+        durationSeconds: 20,
+        text: 'Olá',
+      },
+      {
+        turnId: '2',
+        speaker: 'customer',
+        startTimeSeconds: 20,
+        endTimeSeconds: 40,
+        durationSeconds: 20,
+        text: 'Olá tudo bem',
+      },
+    ]);
+
+    expect(metrics.sellerTalkRatio).toBe(0.5);
+    expect(metrics.customerTalkRatio).toBe(0.5);
+    // Reconciliação forense (Agente 12): a qualidade da diarização não é medida
+    // aqui, então as métricas são honestamente marcadas como estimativa.
+    expect(metrics.isEstimate).toBe(true);
+  });
+
+  it('Eixo 18: Bem-Estar e Carga Operacional — deve validar preferências voluntárias e microtreinamentos', async () => {
+    const { workloadWellbeingService } = await import(
+      '../../../src/features/calendar/services/workloadWellbeing.service.js'
+    );
+    const pref = workloadWellbeingService.getOrCreatePreferences('org-contract-test', 'seller-contract');
+    expect(pref.enableBreakSuggestions).toBe(true);
+    expect(pref.optOutWellbeingFeatures).toBe(false);
+
+    const mt = workloadWellbeingService.createMicroTrainingSession(
+      'org-contract-test',
+      'seller-contract',
+      'PRE_MEETING_CHECKLIST',
+    );
+    expect(mt.targetDurationMinutes).toBe(3);
+    expect(mt.isCompleted).toBe(false);
+  });
+});

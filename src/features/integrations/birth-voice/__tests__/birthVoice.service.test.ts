@@ -1,0 +1,246 @@
+/**
+ * O ponto por onde toda ligação passa — rota manual, automação e o futuro worker de prospecção
+ * fria. É aqui que o opt-out precisa ser respeitado; um bloqueio checado só na tela seria
+ * contornado pela primeira campanha automática.
+ */
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('@/config/env', () => ({
+  env: {
+    // https (não http): desde a correção do ACH-06-02, o ramo Hub (não-Bland) passa por
+    // `assertSafeExternalUrl`/`safeFetch` (mockados abaixo) — mantido https aqui só para o valor
+    // ser um endpoint plausível; a validação real de protocolo/DNS é responsabilidade do guard,
+    // que estes testes mockam, não deste arquivo.
+    BIRTH_VOICES_URL: 'https://hub.local',
+    BIRTH_VOICES_API_KEY: 'chave',
+    BIRTH_VOICES_AGENT_ID: 'agente-1',
+    PUBLIC_BASE_URL: 'http://prospector.local',
+    // Org de teste ('org-1', ver ORG abaixo) precisa de base legal LGPD registrada para o gate de
+    // guardrails.service.ts (assertPiiExternalConsent, mesmo mecanismo já usado pelos agentes de
+    // texto) deixar a ligação passar — sem isto, todo teste deste arquivo falharia com
+    // PiiConsentRequiredError antes mesmo de chegar na lógica de opt-out/telefone sob teste.
+    AI_PII_EXTERNAL_CONSENT_ORGANIZATIONS: 'org-1',
+  },
+}));
+
+vi.mock('@/lib/prisma', () => ({
+  prisma: {
+    lead: { findFirst: vi.fn() },
+    // Sem conexão cadastrada por padrão — requireConfig() cai pro fallback de env var acima,
+    // preservando o comportamento que todo teste pré-existente deste arquivo já assume.
+    voiceHubConnection: { findFirst: vi.fn().mockResolvedValue(null) },
+    // VOICE-001: requireConfig() agora também resolve o nome da organização para interpolar no
+    // roteiro genérico (voiceScript.ts) — nome fixo aqui, testes deste arquivo não olham pro texto
+    // do roteiro em si.
+    organization: { findUnique: vi.fn().mockResolvedValue({ name: 'Org de Teste' }) },
+  },
+}));
+
+vi.mock('@/lib/logger', () => ({
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}));
+
+vi.mock('@/features/integrations/birth-voice/callSuppression.service', () => ({
+  isSuppressed: vi.fn(),
+}));
+
+// ACH-06-02: callLead (ramo Hub/não-Bland) agora usa safeFetch/assertSafeExternalUrl de
+// urlGuard.ts em vez de fetch cru — mesmo padrão de mock já usado em
+// voiceHubConnection.service.test.ts. safeFetchMock delega pro fetch global mockado abaixo depois
+// de "revalidar", para que os testes de payload/roteamento pré-existentes continuem passando
+// olhando pro mesmo `fetch` global.
+const { assertSafeExternalUrlMock, safeFetchMock } = vi.hoisted(() => {
+  const assertSafeExternalUrlMock = vi.fn().mockResolvedValue(undefined);
+  const safeFetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+    await assertSafeExternalUrlMock(url);
+    return (globalThis.fetch as typeof fetch)(url, init);
+  });
+  return { assertSafeExternalUrlMock, safeFetchMock };
+});
+vi.mock('@/shared/security/urlGuard', () => ({
+  assertSafeExternalUrl: assertSafeExternalUrlMock,
+  safeFetch: safeFetchMock,
+}));
+
+import {
+  callLead,
+  NoPhoneNumberError,
+  SuppressedNumberError,
+} from '@/features/integrations/birth-voice/birthVoice.service';
+import { isSuppressed } from '@/features/integrations/birth-voice/callSuppression.service';
+import { PiiConsentRequiredError } from '@/features/intelligence/services/guardrails.service';
+import { prisma } from '@/lib/prisma';
+import { AppError } from '@/shared/middlewares/errorHandler';
+
+const leadMock = prisma.lead as unknown as { findFirst: ReturnType<typeof vi.fn> };
+const voiceHubConnectionMock = prisma.voiceHubConnection as unknown as {
+  findFirst: ReturnType<typeof vi.fn>;
+};
+const organizationMock = prisma.organization as unknown as {
+  findUnique: ReturnType<typeof vi.fn>;
+};
+const mockIsSuppressed = vi.mocked(isSuppressed);
+
+const ORG = 'org-1';
+
+function leadComTelefone(phone: string | null = '(11) 99999-8888', email: string | null = null) {
+  return {
+    id: 'lead-9',
+    contact: { name: 'Ana', phone, whatsapp: null, email },
+    company: { tradeName: 'Transportes X', legalName: null, phones: [] },
+  };
+}
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  voiceHubConnectionMock.findFirst.mockResolvedValue(null);
+  organizationMock.findUnique.mockResolvedValue({ name: 'Org de Teste' });
+  mockIsSuppressed.mockResolvedValue(false);
+  assertSafeExternalUrlMock.mockResolvedValue(undefined);
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ sessionId: 'sess-1', callSid: 'CA1', status: 'queued' }),
+    }),
+  );
+});
+
+describe('callLead', () => {
+  it('disca para o telefone do contato quando não há bloqueio', async () => {
+    leadMock.findFirst.mockResolvedValue(leadComTelefone());
+
+    await expect(callLead(ORG, 'lead-9')).resolves.toMatchObject({ callSid: 'CA1' });
+
+    expect(mockIsSuppressed).toHaveBeenCalledWith(ORG, '+5511999998888', {
+      leadId: 'lead-9',
+      email: null,
+    });
+    expect(fetch).toHaveBeenCalledOnce();
+  });
+
+  // ACH-06-02 (achado de auditoria): callLead usava fetch cru contra o Hub configurado — só
+  // validado uma vez no cadastro da conexão (VoiceHubConnection/env), deixando aberta a janela
+  // clássica de DNS rebinding entre aquela validação e cada ligação real. Este teste prova que a
+  // chamada real passa por safeFetch (que revalida e fixa a conexão nos endereços validados),
+  // revalidando a CADA chamada — não só no cadastro.
+  it('revalida a URL do Hub a cada chamada real via assertSafeExternalUrl/safeFetch, não só no cadastro', async () => {
+    leadMock.findFirst.mockResolvedValue(leadComTelefone());
+
+    await callLead(ORG, 'lead-9');
+
+    expect(assertSafeExternalUrlMock).toHaveBeenCalledWith('https://hub.local/api/voice/outbound');
+    expect(safeFetchMock).toHaveBeenCalledWith(
+      'https://hub.local/api/voice/outbound',
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(fetch).toHaveBeenCalledOnce();
+  });
+
+  // Uma URL que falha na revalidação (ex.: DNS rebinding — o host respondia IP público no cadastro
+  // e agora resolve para um IP privado/reservado) nunca deve chegar a fazer a chamada real.
+  it('não dispara a chamada real quando a revalidação da URL do Hub falha', async () => {
+    leadMock.findFirst.mockResolvedValue(leadComTelefone());
+    assertSafeExternalUrlMock.mockRejectedValue(
+      new AppError('Endereço não permitido (resolve para IP privado/reservado).', 400),
+    );
+
+    await expect(callLead(ORG, 'lead-9')).rejects.toBeInstanceOf(AppError);
+
+    expect(safeFetchMock).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  // leadId/email do lead entram como contexto para o opt-out unificado entre canais (05/06) —
+  // ver `17-para-05-06-12-contrato-optout.md`. Sem isso, um opt-out registrado só por e-mail
+  // não teria como ser encontrado por `isSuppressed`.
+  it('passa leadId e e-mail do contato como contexto do opt-out unificado', async () => {
+    leadMock.findFirst.mockResolvedValue(leadComTelefone('(11) 99999-8888', 'ana@exemplo.com'));
+
+    await callLead(ORG, 'lead-9');
+
+    expect(mockIsSuppressed).toHaveBeenCalledWith(ORG, '+5511999998888', {
+      leadId: 'lead-9',
+      email: 'ana@exemplo.com',
+    });
+  });
+
+  it('recusa a ligação sem consultar lead/opt-out quando a organização não tem base legal LGPD registrada', async () => {
+    leadMock.findFirst.mockResolvedValue(leadComTelefone());
+
+    await expect(callLead('org-sem-consentimento', 'lead-9')).rejects.toBeInstanceOf(
+      PiiConsentRequiredError,
+    );
+    expect(leadMock.findFirst).not.toHaveBeenCalled();
+    expect(mockIsSuppressed).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('recusa a ligação e não chama o Hub quando o número tem opt-out', async () => {
+    leadMock.findFirst.mockResolvedValue(leadComTelefone());
+    mockIsSuppressed.mockResolvedValue(true);
+
+    await expect(callLead(ORG, 'lead-9')).rejects.toBeInstanceOf(SuppressedNumberError);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  // A ordem importa: sem número discável não há chave de bloqueio para consultar, então este
+  // caminho tem de sair antes — e sem gastar uma consulta ao banco.
+  it('recusa antes de consultar a lista quando o lead não tem número discável', async () => {
+    leadMock.findFirst.mockResolvedValue(leadComTelefone('ramal 22'));
+
+    await expect(callLead(ORG, 'lead-9')).rejects.toBeInstanceOf(NoPhoneNumberError);
+    expect(mockIsSuppressed).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  // Achado de auditoria (onda 12): a detecção de provedor Bland era
+  // `config.baseUrl.includes('bland.ai') || process.env.BLAND_API_KEY` — a presença incidental
+  // dessa env (documentada em `.env.example` como só usada quando o baseUrl for bland.ai) fazia
+  // TODA ligação ser roteada para a Bland AI mesmo com o Hub real configurado em BIRTH_VOICES_URL.
+  // Este teste prova que o Hub configurado é sempre respeitado, independente de BLAND_API_KEY
+  // estar presente no processo.
+  it('sempre disca contra o Hub configurado (BIRTH_VOICES_URL), mesmo com BLAND_API_KEY presente no processo', async () => {
+    leadMock.findFirst.mockResolvedValue(leadComTelefone());
+    process.env.BLAND_API_KEY = 'chave-bland-de-outra-integracao';
+
+    try {
+      await callLead(ORG, 'lead-9');
+
+      expect(fetch).toHaveBeenCalledOnce();
+      const [calledUrl, options] = (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
+      expect(calledUrl).toBe('https://hub.local/api/voice/outbound');
+      expect(calledUrl).not.toContain('bland.ai');
+      expect((options as { headers: Record<string, string> }).headers.Authorization).toBe(
+        'Bearer chave',
+      );
+    } finally {
+      delete process.env.BLAND_API_KEY;
+    }
+  });
+
+  // requireConfig() prioriza a conexão cadastrada em Integrações (VoiceHubConnection) sobre as
+  // env vars globais — mesmo espírito de qualquer outra migração de config global para por-tenant
+  // já feita neste produto (BitrixConnection). Sem esta prioridade, cadastrar uma conexão pela
+  // tela não teria efeito nenhum enquanto a env var global continuasse setada.
+  it('usa a conexão cadastrada em Integrações (VoiceHubConnection) em vez das env vars globais, quando existe uma habilitada', async () => {
+    leadMock.findFirst.mockResolvedValue(leadComTelefone());
+    voiceHubConnectionMock.findFirst.mockResolvedValue({
+      baseUrl: 'https://voices.outra-org.com',
+      apiKey: 'chave-da-conexao',
+      agentId: 'agente-da-conexao',
+    });
+
+    await callLead(ORG, 'lead-9');
+
+    expect(voiceHubConnectionMock.findFirst).toHaveBeenCalledWith({
+      where: { organizationId: ORG, enabled: true },
+      orderBy: { createdAt: 'asc' },
+    });
+    const [calledUrl, options] = (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(calledUrl).toBe('https://voices.outra-org.com/api/voice/outbound');
+    expect((options as { headers: Record<string, string> }).headers.Authorization).toBe(
+      'Bearer chave-da-conexao',
+    );
+  });
+});

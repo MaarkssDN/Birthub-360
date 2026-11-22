@@ -1,0 +1,467 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import express from 'express';
+import request from 'supertest';
+
+/**
+ * Webhook /api/webhooks/voice-result (Bland AI) — cobre exatamente os quatro defeitos que a
+ * versão inline em server.ts tinha: segredo com fallback hardcoded, busca cross-tenant, ausência
+ * de idempotência e corpo não parseado.
+ */
+
+const leadFindFirst = vi.fn();
+const leadUpdate = vi.fn().mockResolvedValue({});
+const noteFindFirst = vi.fn();
+const noteCreate = vi.fn().mockResolvedValue({});
+const timelineCreate = vi.fn().mockResolvedValue({});
+// VoiceCallLog: projeção estruturada do mesmo resultado (ver comentário em voiceResult.webhook.ts).
+// A maioria dos testes deste arquivo não faz asserção sobre ela; o teste ACH-12-02 abaixo cobre
+// especificamente o fallback de providerCallId (randomUUID) quando falta call_id no payload.
+const voiceCallLogCreate = vi.fn().mockResolvedValue({});
+const sendWhatsAppMessage = vi.fn().mockResolvedValue(undefined);
+const notifyVoiceQualified = vi.fn();
+const contextRuns: Array<Record<string, unknown>> = [];
+
+vi.mock('../../../../../src/lib/prisma.js', () => ({
+  prisma: {
+    lead: {
+      findFirst: (...args: unknown[]) => leadFindFirst(...args),
+      update: (...args: unknown[]) => leadUpdate(...args),
+    },
+    note: {
+      findFirst: (...args: unknown[]) => noteFindFirst(...args),
+      create: (...args: unknown[]) => noteCreate(...args),
+    },
+    timelineEvent: {
+      create: (...args: unknown[]) => timelineCreate(...args),
+    },
+    voiceCallLog: {
+      create: (...args: unknown[]) => voiceCallLogCreate(...args),
+    },
+  },
+}));
+
+vi.mock('../../../../../src/lib/async-context.js', () => ({
+  requestContext: {
+    run: (store: Record<string, unknown>, fn: () => unknown) => {
+      contextRuns.push(store);
+      return fn();
+    },
+    getStore: () => undefined,
+  },
+}));
+
+vi.mock('../../../../../src/features/integrations/whatsapp/whatsapp.service.js', () => ({
+  sendWhatsAppMessage: (...args: unknown[]) => sendWhatsAppMessage(...args),
+}));
+
+vi.mock('../../../../../src/features/notifications/sse.service.js', () => ({
+  sseService: { notifyVoiceQualified: (...args: unknown[]) => notifyVoiceQualified(...args) },
+}));
+
+vi.mock('../../../../../src/lib/logger.js', () => ({
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}));
+
+// Testes de unidade não devem depender do Redis real (CI sobe um serviço `redis:7-alpine` para o
+// job de application gate — ver .github/workflows/ci.yml). Sem este mock, múltiplos `it()` deste
+// arquivo reenviando o mesmo call_id/corpo colidem no mesmo fingerprint de `claimWebhookDelivery`
+// (dedupe de entrega, Task 5) — inclusive o próprio teste de idempotência abaixo, que reenvia o
+// mesmo corpo de propósito para testar a idempotência de NEGÓCIO (Note/TimelineEvent), não a
+// dedupe de transporte deste guard. Nunca visto localmente porque sem `REDIS_URL` o guard sempre
+// faz fail-open ('unavailable'). A dedupe de entrega em si já tem sua própria cobertura em
+// tests/unit/shared/security/webhookReplayGuard.test.ts.
+vi.mock('../../../../../src/shared/security/webhookReplayGuard.js', () => ({
+  claimWebhookDelivery: vi.fn().mockResolvedValue('fresh'),
+  webhookDeliveryFingerprint: vi.fn(() => 'fingerprint-de-teste'),
+  validateWebhookTimestamp: vi.fn().mockReturnValue({ valid: true }),
+}));
+
+const mockEnv: Record<string, string | undefined> = { BIRTHHUB360_WEBHOOK_SECRET: 'segredo-de-teste' };
+vi.mock('../../../../../src/config/env.js', () => ({ env: mockEnv }));
+
+// O container de DI não é mockado por padrão — se não registrar o CopilotoVoiceIngestionPort
+// antes do teste, container.resolve() lança e o handler captura como 500.
+// Aqui mockamos o módulo para sempre ter um port silencioso que não interfere no teste.
+vi.mock('../../../../../src/shared/di/container.js', () => ({
+  container: {
+    resolve: vi.fn().mockReturnValue({
+      ingestCallResult: vi.fn().mockResolvedValue(undefined),
+    }),
+  },
+}));
+
+
+const { voiceResultWebhookRoutes } =
+  await import('../../../../../src/features/integrations/birth-voice/voiceResult.webhook');
+
+function buildApp() {
+  const app = express();
+  app.use('/api/webhooks/voice-result', voiceResultWebhookRoutes);
+  return app;
+}
+
+const VALID_HEADERS = { 'x-birthhub360-webhook-secret': 'segredo-de-teste' };
+
+function blandPayload(overrides: Record<string, unknown> = {}) {
+  return {
+    call_id: 'call-123',
+    phone_number: '+55 11 98877-6655',
+    summary: 'Cliente interessado',
+    concatenated_transcript: 'Conversa completa aqui',
+    recording_url: 'https://example.com/rec.mp3',
+    call_length: 2.5,
+    request_data: { leadId: 'lead-1', organizationId: 'org-1' },
+    ...overrides,
+  };
+}
+
+beforeEach(() => {
+  mockEnv.BIRTHHUB360_WEBHOOK_SECRET = 'segredo-de-teste';
+  leadFindFirst.mockResolvedValue({
+    id: 'lead-1',
+    organizationId: 'org-1',
+    customFields: {},
+    contact: { phone: '+5511988776655', whatsapp: null },
+  });
+  noteFindFirst.mockResolvedValue(null);
+});
+
+afterEach(() => {
+  vi.clearAllMocks();
+  contextRuns.length = 0;
+});
+
+describe('POST /api/webhooks/voice-result', () => {
+  it('responde 503 (fail-closed) quando BIRTHHUB360_WEBHOOK_SECRET não está configurado', async () => {
+    mockEnv.BIRTHHUB360_WEBHOOK_SECRET = undefined;
+
+    const res = await request(buildApp())
+      .post('/api/webhooks/voice-result')
+      .set(VALID_HEADERS)
+      .send(blandPayload());
+
+    expect(res.status).toBe(503);
+    expect(leadFindFirst).not.toHaveBeenCalled();
+  });
+
+  it('responde 401 com segredo errado, sem tocar o banco', async () => {
+    const res = await request(buildApp())
+      .post('/api/webhooks/voice-result')
+      .set({ 'x-birthhub360-webhook-secret': 'errado' })
+      .send(blandPayload());
+
+    expect(res.status).toBe(401);
+    expect(leadFindFirst).not.toHaveBeenCalled();
+  });
+
+  it('descarta payload sem organizationId sem varrer tenants (200, lead_found=false)', async () => {
+    const res = await request(buildApp())
+      .post('/api/webhooks/voice-result')
+      .set(VALID_HEADERS)
+      .send(blandPayload({ request_data: {} }));
+
+    expect(res.status).toBe(200);
+    expect(res.body.lead_found).toBe(false);
+    expect(leadFindFirst).not.toHaveBeenCalled();
+  });
+
+  it('cria o VoiceCallLog mesmo sem call_id, com providerCallId gerado (randomUUID), igual ao webhook novo', async () => {
+    const res = await request(buildApp())
+      .post('/api/webhooks/voice-result')
+      .set(VALID_HEADERS)
+      .send(blandPayload({ call_id: undefined }));
+
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ success: true, lead_found: true, duplicate: false });
+    expect(voiceCallLogCreate).toHaveBeenCalledTimes(1);
+    const [{ data }] = voiceCallLogCreate.mock.calls[0];
+    expect(data.leadId).toBe('lead-1');
+    expect(data.organizationId).toBe('org-1');
+    // Nunca o literal fixo 'sem-id' — colidiria com o índice único (organizationId,
+    // providerCallId) numa segunda chamada sem call_id da mesma organização.
+    expect(data.providerCallId).not.toBe('sem-id');
+    expect(typeof data.providerCallId).toBe('string');
+    expect(data.providerCallId.length).toBeGreaterThan(0);
+  });
+
+  it('registra nota, timeline e voiceQualified dentro do contexto do tenant', async () => {
+    const res = await request(buildApp())
+      .post('/api/webhooks/voice-result')
+      .set(VALID_HEADERS)
+      .send(blandPayload());
+
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ success: true, lead_found: true, duplicate: false });
+
+    // Toda a operação roda com o tenant do request_data no contexto (RLS).
+    expect(contextRuns).toContainEqual({ tenantId: 'org-1' });
+    // Lookup por id sempre filtrado pela organização — nunca busca global.
+    expect(leadFindFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ id: 'lead-1', organizationId: 'org-1' }),
+      }),
+    );
+    expect(noteCreate).toHaveBeenCalled();
+    expect(timelineCreate).toHaveBeenCalled();
+    expect(leadUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          customFields: expect.objectContaining({ voiceQualified: true }),
+        }),
+      }),
+    );
+    expect(notifyVoiceQualified).toHaveBeenCalledWith('org-1', 'lead-1', expect.any(String));
+  });
+
+  it('é idempotente: reentrega do mesmo call_id não duplica nota nem timeline', async () => {
+    noteFindFirst.mockResolvedValue({ id: 'nota-existente' });
+
+    const res = await request(buildApp())
+      .post('/api/webhooks/voice-result')
+      .set(VALID_HEADERS)
+      .send(blandPayload());
+
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ success: true, lead_found: true, duplicate: true });
+    expect(noteCreate).not.toHaveBeenCalled();
+    expect(timelineCreate).not.toHaveBeenCalled();
+    expect(leadUpdate).not.toHaveBeenCalled();
+  });
+
+  it('fallback por telefone fica restrito à organização do request_data', async () => {
+    const res = await request(buildApp())
+      .post('/api/webhooks/voice-result')
+      .set(VALID_HEADERS)
+      .send(blandPayload({ request_data: { organizationId: 'org-1' } }));
+
+    expect(res.status).toBe(200);
+    expect(leadFindFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: expect.objectContaining({ organizationId: 'org-1' }) }),
+    );
+  });
+
+  it('responde 500 quando a escrita falha, para a Bland reentregar com backoff', async () => {
+    noteCreate.mockRejectedValueOnce(new Error('db down'));
+
+    const res = await request(buildApp())
+      .post('/api/webhooks/voice-result')
+      .set(VALID_HEADERS)
+      .send(blandPayload());
+
+    expect(res.status).toBe(500);
+    expect(res.body.success).toBe(false);
+  });
+
+  describe('estado honesto do resultado (nunca infla voiceQualified)', () => {
+    it('ligação não atendida (duração ínfima) NÃO marca voiceQualified, mesmo com resumo presente', async () => {
+      const res = await request(buildApp())
+        .post('/api/webhooks/voice-result')
+        .set(VALID_HEADERS)
+        .send(blandPayload({ call_length: 0.05, summary: 'Ligação não atendeu' }));
+
+      expect(res.status).toBe(200);
+      expect(leadUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            customFields: expect.objectContaining({
+              voiceQualified: false,
+              voiceCallOutcome: 'no-answer',
+            }),
+          }),
+        }),
+      );
+    });
+
+    it('caixa postal detectada no resumo NÃO marca voiceQualified', async () => {
+      const res = await request(buildApp())
+        .post('/api/webhooks/voice-result')
+        .set(VALID_HEADERS)
+        .send(
+          blandPayload({ call_length: 0.3, summary: 'Caiu na caixa postal, deixe seu recado' }),
+        );
+
+      expect(res.status).toBe(200);
+      expect(leadUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            customFields: expect.objectContaining({
+              voiceQualified: false,
+              voiceCallOutcome: 'voicemail',
+            }),
+          }),
+        }),
+      );
+    });
+
+    it('conversa real (duração e resumo positivos) marca voiceQualified true', async () => {
+      const res = await request(buildApp())
+        .post('/api/webhooks/voice-result')
+        .set(VALID_HEADERS)
+        .send(blandPayload());
+
+      expect(res.status).toBe(200);
+      expect(leadUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            customFields: expect.objectContaining({
+              voiceQualified: true,
+              voiceCallOutcome: 'completed',
+            }),
+          }),
+        }),
+      );
+    });
+
+    it('sinal explícito de answered_by=machine tem prioridade sobre um resumo positivo', async () => {
+      const res = await request(buildApp())
+        .post('/api/webhooks/voice-result')
+        .set(VALID_HEADERS)
+        .send(
+          blandPayload({
+            call_length: 3,
+            summary: 'Conversa interessante',
+            answered_by: 'machine',
+          }),
+        );
+
+      expect(res.status).toBe(200);
+      expect(leadUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            customFields: expect.objectContaining({
+              voiceQualified: false,
+              voiceCallOutcome: 'voicemail',
+            }),
+          }),
+        }),
+      );
+    });
+  });
+
+  describe('fallback WhatsApp — mensagem, opt-out e ausência de duplicidade', () => {
+    it('envia a mensagem de "não conseguimos falar" quando a ligação não foi atendida', async () => {
+      await request(buildApp())
+        .post('/api/webhooks/voice-result')
+        .set(VALID_HEADERS)
+        .send(blandPayload({ call_length: 0.05, summary: 'não atendeu' }));
+
+      expect(sendWhatsAppMessage).toHaveBeenCalledWith(
+        'org-1',
+        '+5511988776655',
+        expect.stringContaining('não conseguimos falar'),
+      );
+    });
+
+    it('envia a mensagem de agradecimento quando a ligação teve conversa real', async () => {
+      await request(buildApp())
+        .post('/api/webhooks/voice-result')
+        .set(VALID_HEADERS)
+        .send(blandPayload());
+
+      expect(sendWhatsAppMessage).toHaveBeenCalledWith(
+        'org-1',
+        '+5511988776655',
+        expect.stringContaining('Obrigado por conversar'),
+      );
+    });
+
+    it('respeita optOutWhatsApp — nunca dispara nenhuma das duas mensagens', async () => {
+      leadFindFirst.mockResolvedValue({
+        id: 'lead-1',
+        organizationId: 'org-1',
+        customFields: { optOutWhatsApp: true },
+        contact: { phone: '+5511988776655', whatsapp: null },
+      });
+
+      await request(buildApp())
+        .post('/api/webhooks/voice-result')
+        .set(VALID_HEADERS)
+        .send(blandPayload());
+
+      expect(sendWhatsAppMessage).not.toHaveBeenCalled();
+    });
+
+    // A reentrega do mesmo call_id (idempotência) não pode gerar uma segunda mensagem de
+    // WhatsApp — nem "tentamos contato" nem "obrigado por conversar" duas vezes para o mesmo
+    // lead a partir do mesmo evento de resultado.
+    it('não dispara o fallback de WhatsApp na reentrega do mesmo call_id', async () => {
+      noteFindFirst.mockResolvedValue({ id: 'nota-existente' });
+
+      const res = await request(buildApp())
+        .post('/api/webhooks/voice-result')
+        .set(VALID_HEADERS)
+        .send(blandPayload());
+
+      expect(res.body.duplicate).toBe(true);
+      expect(sendWhatsAppMessage).not.toHaveBeenCalled();
+    });
+  });
+
+  // ACH-06-03: recording_url é eco de payload externo da Bland, persistido em VoiceCallLog e
+  // renderizado como link clicável (nota em texto livre aqui + <a href> em
+  // VoiceCallActivity.tsx). Sem validar o esquema, um valor não-HTTP (ex.: `javascript:`)
+  // sobreviveria como string não-vazia e teria comportamento não-HTTP ao ser clicado.
+  describe('recording_url — só persiste esquema http(s)', () => {
+    it('esquema http(s) válido é persistido e aparece no link da nota', async () => {
+      const res = await request(buildApp())
+        .post('/api/webhooks/voice-result')
+        .set(VALID_HEADERS)
+        .send(blandPayload({ recording_url: 'https://cdn.bland.ai/rec/abc.mp3' }));
+
+      expect(res.status).toBe(200);
+      expect(voiceCallLogCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ recordingUrl: 'https://cdn.bland.ai/rec/abc.mp3' }),
+        }),
+      );
+      expect(noteCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            content: expect.stringContaining(
+              '[Ouvir Gravação](https://cdn.bland.ai/rec/abc.mp3)',
+            ),
+          }),
+        }),
+      );
+    });
+
+    it('esquema javascript: é tratado como null (fail-safe), nunca derruba o webhook', async () => {
+      const res = await request(buildApp())
+        .post('/api/webhooks/voice-result')
+        .set(VALID_HEADERS)
+        .send(blandPayload({ recording_url: 'javascript:alert(document.cookie)' }));
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(voiceCallLogCreate).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ recordingUrl: null }) }),
+      );
+      expect(noteCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            content: expect.stringContaining('Sem gravação de áudio.'),
+          }),
+        }),
+      );
+      expect(noteCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            content: expect.not.stringContaining('javascript:'),
+          }),
+        }),
+      );
+    });
+
+    it('esquema data: também é tratado como null', async () => {
+      const res = await request(buildApp())
+        .post('/api/webhooks/voice-result')
+        .set(VALID_HEADERS)
+        .send(blandPayload({ recording_url: 'data:text/html,<script>alert(1)</script>' }));
+
+      expect(res.status).toBe(200);
+      expect(voiceCallLogCreate).toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ recordingUrl: null }) }),
+      );
+    });
+  });
+});

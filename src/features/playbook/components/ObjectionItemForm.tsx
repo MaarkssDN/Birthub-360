@@ -1,0 +1,183 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { Button } from '../../../components/ui/Button.js';
+import { Dialog } from '../../../components/ui/Dialog.js';
+import { Input } from '../../../components/ui/Input.js';
+import { Label } from '../../../components/ui/Label.js';
+import { Select } from '../../../components/ui/Select.js';
+import { Textarea } from '../../../components/ui/Textarea.js';
+import { PLAYBOOKS, type PlaybookKey } from '../../../config/playbooks.js';
+import { clientLogger } from '../../../lib/clientLogger.js';
+import { toast } from '../../../lib/toast.js';
+import { type ObjectionMatrixItem, playbookApi } from '../playbook.api.js';
+import { type ObjectionMatrixItemInput, objectionMatrixItemSchema } from '../playbook.schema.js';
+
+const emptyDefaults: ObjectionMatrixItemInput = {
+  brand: 'geral',
+  segment: '',
+  persona: '',
+  objectionTitle: '',
+  objectionText: '',
+  responseScript: '',
+  keyDifferentiator: '',
+};
+
+interface ObjectionItemFormProps {
+  item?: ObjectionMatrixItem | null;
+  defaultBrand: PlaybookKey;
+  onClose: () => void;
+  onSave: () => void;
+}
+
+export function ObjectionItemForm({ item, defaultBrand, onClose, onSave }: ObjectionItemFormProps) {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ObjectionMatrixItemInput>({
+    resolver: zodResolver(objectionMatrixItemSchema),
+    defaultValues: { ...emptyDefaults, brand: defaultBrand },
+  });
+
+  useEffect(() => {
+    reset(
+      item
+        ? {
+            brand: item.brand,
+            segment: item.segment,
+            persona: item.persona,
+            objectionTitle: item.objectionTitle,
+            objectionText: item.objectionText,
+            responseScript: item.responseScript,
+            keyDifferentiator: item.keyDifferentiator,
+          }
+        : { ...emptyDefaults, brand: defaultBrand },
+    );
+  }, [item, defaultBrand, reset]);
+
+  const onSubmit = async (data: ObjectionMatrixItemInput) => {
+    try {
+      if (item) {
+        await playbookApi.updateObjection(item.id, data);
+        toast.success('Objeção atualizada.');
+      } else {
+        await playbookApi.createObjection(data);
+        toast.success('Objeção criada.');
+      }
+      onSave();
+    } catch (error: any) {
+      clientLogger.error({ err: error }, 'Error saving objection matrix item');
+      toast.error(error instanceof Error ? error.message : 'Falha ao salvar a objeção.');
+    }
+  };
+
+  return (
+    <Dialog
+      isOpen
+      onClose={onClose}
+      title={item ? 'Editar Objeção' : 'Nova Objeção'}
+      maxWidth="max-w-2xl"
+      preventClose={isSubmitting}
+      footer={
+        <>
+          <Button type="button" variant="ghost" onClick={onClose} className="text-ink-2">
+            Cancelar
+          </Button>
+          <Button type="submit" form="objection-item-form" loading={isSubmitting}>
+            {item ? 'Salvar Alterações' : 'Criar Objeção'}
+          </Button>
+        </>
+      }
+    >
+      <form id="objection-item-form" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <Label htmlFor="oi-brand">Playbook *</Label>
+            {/* `brand` é o nome do campo no banco e na API; o rótulo mudou para
+                "Playbook" porque a chave passou a identificar o conjunto de
+                conteúdo comercial, não a marca da plataforma — ver
+                src/config/playbooks.ts. */}
+            <Select id="oi-brand" {...register('brand')}>
+              {PLAYBOOKS.map((pb) => (
+                <option key={pb.key} value={pb.key}>
+                  {pb.label}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="oi-title">Título da objeção *</Label>
+            <Input id="oi-title" type="text" {...register('objectionTitle')} />
+            {errors.objectionTitle && (
+              <p className="text-xs text-danger-active dark:text-danger mt-1">
+                {errors.objectionTitle.message}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="oi-segment">Segmento *</Label>
+            <Input id="oi-segment" type="text" {...register('segment')} />
+            {errors.segment && (
+              <p className="text-xs text-danger-active dark:text-danger mt-1">
+                {errors.segment.message}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="oi-persona">Persona *</Label>
+            <Input id="oi-persona" type="text" {...register('persona')} />
+            {errors.persona && (
+              <p className="text-xs text-danger-active dark:text-danger mt-1">
+                {errors.persona.message}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="oi-objection">Objeção (fala do cliente) *</Label>
+            <Textarea
+              id="oi-objection"
+              rows={3}
+              {...register('objectionText')}
+              className="resize-none"
+            />
+            {errors.objectionText && (
+              <p className="text-xs text-danger-active dark:text-danger mt-1">
+                {errors.objectionText.message}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="oi-script">Script de contorno recomendado *</Label>
+            <Textarea
+              id="oi-script"
+              rows={3}
+              {...register('responseScript')}
+              className="resize-none"
+            />
+            {errors.responseScript && (
+              <p className="text-xs text-danger-active dark:text-danger mt-1">
+                {errors.responseScript.message}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="oi-diff">Diferencial-chave *</Label>
+            <Textarea
+              id="oi-diff"
+              rows={2}
+              {...register('keyDifferentiator')}
+              className="resize-none"
+            />
+            {errors.keyDifferentiator && (
+              <p className="text-xs text-danger-active dark:text-danger mt-1">
+                {errors.keyDifferentiator.message}
+              </p>
+            )}
+          </div>
+        </div>
+      </form>
+    </Dialog>
+  );
+}

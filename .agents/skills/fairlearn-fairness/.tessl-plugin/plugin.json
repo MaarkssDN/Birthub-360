@@ -1,0 +1,9 @@
+{
+  "name": "testland/fairlearn-fairness",
+  "description": "Use when a model's decisions affect people and an auditor or rule (ECOA, GDPR Art. 22, EU AI Act) needs per-group evidence, or someone reports unfair treatment of a group. Computes Fairlearn MetricFrame group metrics, mitigates with ExponentiatedGradient and adds group checks to the gate.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.6"
+}

@@ -1,0 +1,82 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "prospector-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3024,
+      "env": {
+        "NODE_ENV": "development",
+        "REDIS_URL": "redis://:prospector_redis_pass@localhost:6379",
+        "PORT": "3024",
+        "BETTER_AUTH_URL": "http://localhost:3024",
+        "ALLOWED_ORIGINS": "http://localhost:3024,http://localhost:3000,http://localhost:5173,http://192.168.0.179:3024",
+        "OTEL_SDK_DISABLED": "true",
+        "DISABLE_HMR": "true"
+      }
+    },
+    {
+      "name": "prospector-dev-nowatch",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["tsx", "server.ts"],
+      "port": 3024,
+      "env": {
+        "NODE_ENV": "development",
+        "REDIS_URL": "redis://:prospector_redis_pass@localhost:6379",
+        "PORT": "3024",
+        "BETTER_AUTH_URL": "http://localhost:3024",
+        "ALLOWED_ORIGINS": "http://localhost:3024,http://localhost:3000,http://localhost:5173,http://192.168.0.179:3024",
+        "OTEL_SDK_DISABLED": "true",
+        "DISABLE_HMR": "true"
+      }
+    },
+    {
+      "name": "prospector-dev-uxcheck",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3009,
+      "env": {
+        "PORT": "3009",
+        "BETTER_AUTH_URL": "http://localhost:3009",
+        "ALLOWED_ORIGINS": "http://localhost:3009,http://localhost:3000,http://localhost:5173"
+      }
+    },
+    {
+      "name": "prospector-dev-verify-connectors",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
+      "port": 3811,
+      "env": {
+        "NODE_ENV": "development",
+        "PORT": "3811",
+        "DATABASE_URL": "postgresql://prospector_app:prospector_app_pass@localhost:5434/prospectordb_test",
+        "REDIS_URL": "redis://:prospector_redis_pass@localhost:6379",
+        "BETTER_AUTH_URL": "http://localhost:3811",
+        "ALLOWED_ORIGINS": "http://localhost:3811,http://localhost:3000,http://localhost:5173",
+        "OTEL_SDK_DISABLED": "true"
+      }
+    },
+    {
+      "name": "portal-comercial-static",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["http-server", "-p", "8088", "-c-1"],
+      "port": 8088
+    },
+    {
+      "name": "frontend-preview",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vite", "preview", "--port", "4173", "--strictPort"],
+      "port": 4173
+    },
+    {
+      "name": "landing-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "landing", "run", "dev"],
+      "port": 5300
+    }
+  ]
+}

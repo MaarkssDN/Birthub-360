@@ -1,0 +1,36 @@
+name: Code Quality (Lint)
+
+# Diagnóstico sob demanda, só de lint. O workflow canônico ci.yml já executa typecheck, lint,
+# testes de arquitetura e testes unitários (com coverage) automaticamente em todo push/PR — este
+# workflow rodava a mesma suíte inteira de novo sob demanda, duplicando minutos de CI sem ganho de
+# sinal (auditoria de redundância CI, onda 3: ci.yml / qualidade-ci.yml / sonarqube.yml rodando o
+# mesmo unit+coverage três vezes). ci.yml é a fonte de verdade para todos esses gates; este
+# workflow ficou reduzido a um atalho para depurar só a etapa de lint isoladamente, sem esperar o
+# restante do pipeline. Para typecheck/testes de arquitetura/unitários sob demanda, dispare o
+# próprio ci.yml via workflow_dispatch (já suportado) ou rode localmente:
+#   npx tsc --noEmit && npm run test:architecture && npm run test:unit
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+    - name: Setup Node.js
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 22
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run Linter
+      run: npm run lint:ci

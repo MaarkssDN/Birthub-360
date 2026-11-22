@@ -1,0 +1,8 @@
+/* Preserve character accents with contrast appropriate to each surface. */
+html:not(.dark) .bh-agent-text {
+  color: color-mix(in srgb, var(--agent-text-color) 30%, #082f49) !important;
+}
+
+html.dark .bh-agent-text {
+  color: color-mix(in srgb, var(--agent-text-color) 85%, #c7d2fe) !important;
+}

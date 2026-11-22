@@ -1,0 +1,356 @@
+import { AIMessage, HumanMessage, SystemMessage } from '@langchain/core/messages';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('../../prisma.js', () => ({
+  prisma: {
+    aILog: {
+      create: vi.fn(),
+    },
+  },
+}));
+
+// ARCH-005: gateway.ts agora importa queue/redis.ts (circuit breaker via Redis) — o mock precisa
+// cobrir todos os níveis que o módulo de conexão do Redis chama (connection.on('connect', ...) usa
+// logger.info), não só 'warn' como antes. Sem isso, um Redis real disponível no CI (mas não
+// necessariamente disponível/rápido o bastante localmente pra disparar o evento durante o teste)
+// faz o evento 'connect' chamar logger.info — undefined no mock antigo — e derruba o job inteiro
+// com "TypeError: logger.info is not a function", mesmo com todos os testes passando.
+vi.mock('../../logger.js', () => ({
+  logger: {
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+  },
+}));
+
+import * as budgetModule from '../budget.js';
+import { __resetLatencyCacheForTests } from '../gateway/dynamic-routing.js';
+import {
+  __resetCircuitBreakerForTests,
+  cleanAndParseJson,
+  generateEmbedding,
+  getAiModel,
+  toChatCompletionMessages,
+} from '../gateway.js';
+
+const PROVIDER_ENV_KEYS = [
+  'GROQ_API_KEY',
+  'OPENAI_API_KEY',
+  'OPENROUTER_API_KEY',
+  'VLLM_API_URL',
+  'VLLM_API_KEY',
+  'OLLAMA_BASE_URL',
+  'OLLAMA_API_KEY',
+  'LITELLM_URL',
+  'LITELLM_KEY',
+] as const;
+
+function jsonResponse(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+describe('AI gateway', () => {
+  beforeEach(async () => {
+    for (const key of PROVIDER_ENV_KEYS) vi.stubEnv(key, undefined);
+    vi.stubEnv('LITELLM_URL', 'http://litellm.test/v1/');
+    vi.stubEnv('LITELLM_KEY', 'test-litellm-key');
+    await __resetCircuitBreakerForTests();
+    __resetLatencyCacheForTests();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
+    __resetLatencyCacheForTests();
+  });
+
+  it('preserva os papéis de sistema, usuário e assistente', () => {
+    expect(
+      toChatCompletionMessages([
+        new SystemMessage('Regras prioritárias'),
+        new HumanMessage('Pergunta'),
+        new AIMessage('Resposta anterior'),
+      ]),
+    ).toEqual([
+      { role: 'system', content: 'Regras prioritárias' },
+      { role: 'user', content: 'Pergunta' },
+      { role: 'assistant', content: 'Resposta anterior' },
+    ]);
+  });
+
+  it('envia mensagens estruturadas ao LiteLLM e normaliza a resposta', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      jsonResponse({
+        model: 'llama-3.1-8b-instant',
+        choices: [{ message: { content: '  resposta útil  ' } }],
+        usage: { total_tokens: 12, prompt_tokens: 7, completion_tokens: 5 },
+      }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await getAiModel('local-llama3-fast', 3, 'unit:test').invoke([
+      new SystemMessage('Não invente dados.'),
+      new HumanMessage('Analise este lead.'),
+    ]);
+
+    expect(result.content).toBe('resposta útil');
+    expect(result.response_metadata.tokenUsage).toEqual({
+      totalTokens: 12,
+      promptTokens: 7,
+      completionTokens: 5,
+    });
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe('http://litellm.test/v1/chat/completions');
+    const body = JSON.parse(String(init.body));
+    expect(body.messages).toEqual([
+      { role: 'system', content: 'Não invente dados.' },
+      { role: 'user', content: 'Analise este lead.' },
+    ]);
+    expect(body.temperature).toBe(2);
+    expect(body.metadata).toEqual({ agent: 'unit:test' });
+  });
+
+  it('tenta Groq primeiro e só cai pro LiteLLM (último recurso) se Groq falhar', async () => {
+    vi.stubEnv('GROQ_API_KEY', 'gsk_test_key_for_unit_tests');
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Groq offline'))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          model: 'local-llama3',
+          choices: [{ message: { content: 'fallback ativo' } }],
+        }),
+      );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await getAiModel('local-llama3', 0.2, 'unit:fallback').invoke([
+      new SystemMessage('Regra'),
+      new HumanMessage('Pedido'),
+    ]);
+
+    expect(result.content).toBe('fallback ativo');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    const [groqUrl, groqInit] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(groqUrl).toBe('https://api.groq.com/openai/v1/chat/completions');
+    const groqBody = JSON.parse(String(groqInit.body));
+    expect(groqBody.model).toBe('openai/gpt-oss-120b');
+    expect(groqBody.messages[0]).toEqual({ role: 'system', content: 'Regra' });
+    expect(groqBody).not.toHaveProperty('metadata');
+    expect(groqBody).not.toHaveProperty('user');
+
+    const [litellmUrl, litellmInit] = fetchMock.mock.calls[1] as [string, RequestInit];
+    expect(litellmUrl).toBe('http://litellm.test/v1/chat/completions');
+    const litellmBody = JSON.parse(String(litellmInit.body));
+    expect(litellmBody.messages[0]).toEqual({ role: 'system', content: 'Regra' });
+  });
+
+  it('AI-011: não contata nenhum provedor se o orçamento mensal de IA já foi excedido', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    vi.spyOn(budgetModule, 'assertAiBudgetNotExceeded').mockRejectedValueOnce(
+      new Error('Orçamento mensal de IA excedido (teste)'),
+    );
+
+    await expect(
+      getAiModel('local-llama3-fast', 0, 'unit:budget').invoke([new HumanMessage('Pedido')]),
+    ).rejects.toThrow('Orçamento mensal de IA excedido (teste)');
+
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('rejeita respostas vazias do provedor', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        jsonResponse({
+          choices: [{ message: { content: '   ' } }],
+        }),
+      ),
+    );
+
+    await expect(getAiModel().invoke([new HumanMessage('Olá')])).rejects.toThrow('resposta vazia');
+  });
+
+  it('valida a resposta de embeddings do provedor remoto', async () => {
+    // O padrão passou a ser o modelo local (sem chave, sem rede). Este teste cobre o caminho
+    // remoto, que continua disponível via EMBEDDINGS_PROVIDER=gateway.
+    const anterior = process.env.EMBEDDINGS_PROVIDER;
+    process.env.EMBEDDINGS_PROVIDER = 'gateway';
+    try {
+      const fakeEmbedding = new Array(768).fill(0.01);
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue(
+          jsonResponse({
+            data: [{ embedding: fakeEmbedding }],
+          }),
+        ),
+      );
+
+      await expect(generateEmbedding('  conteúdo útil  ')).resolves.toEqual(fakeEmbedding);
+      await expect(generateEmbedding('   ')).rejects.toThrow('não pode ser vazio');
+    } finally {
+      if (anterior === undefined) delete process.env.EMBEDDINGS_PROVIDER;
+      else process.env.EMBEDDINGS_PROVIDER = anterior;
+    }
+  });
+
+  it('rejeita embedding do provedor gateway com dimensão diferente de 768 (RAG-003)', async () => {
+    // Mesma guarda existente em local-embeddings.ts (EMBEDDING_DIMENSIONS === 768): a coluna é
+    // vector(768), então um provedor gateway que devolva outra dimensão (ex.: 1536 do
+    // text-embedding-3-small da OpenAI) precisa falhar aqui em vez de estourar sem tratamento
+    // no INSERT do pgvector.
+    const anterior = process.env.EMBEDDINGS_PROVIDER;
+    process.env.EMBEDDINGS_PROVIDER = 'gateway';
+    try {
+      const wrongDimensionEmbedding = new Array(1536).fill(0.01);
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockResolvedValue(
+          jsonResponse({
+            data: [{ embedding: wrongDimensionEmbedding }],
+          }),
+        ),
+      );
+
+      await expect(generateEmbedding('conteúdo com dimensão errada')).rejects.toThrow(
+        'devolveu 1536 dimensões, mas a coluna espera 768',
+      );
+    } finally {
+      if (anterior === undefined) delete process.env.EMBEDDINGS_PROVIDER;
+      else process.env.EMBEDDINGS_PROVIDER = anterior;
+    }
+  });
+
+  it('usa o modelo local por padrão, sem tocar na rede', async () => {
+    const anterior = process.env.EMBEDDINGS_PROVIDER;
+    delete process.env.EMBEDDINGS_PROVIDER;
+
+    const fetchSpy = vi.fn();
+    vi.stubGlobal('fetch', fetchSpy);
+
+    try {
+      // Não carregamos o modelo de verdade aqui (são ~400 MB): basta garantir que a rota
+      // padrão delega ao módulo local em vez de chamar o proxy.
+      const local = await import('../local-embeddings.js');
+      const spy = vi.spyOn(local, 'embedLocal').mockResolvedValue(new Array(768).fill(0.01));
+
+      await expect(generateEmbedding('texto qualquer')).resolves.toHaveLength(768);
+      expect(spy).toHaveBeenCalledWith('texto qualquer', 'passage');
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      if (anterior !== undefined) process.env.EMBEDDINGS_PROVIDER = anterior;
+    }
+  });
+
+  it('reexecuta a mesma perna após uma falha 5xx transitória antes de desistir', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({ error: 'Internal' }, 500))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          model: 'local-llama3',
+          choices: [{ message: { content: 'recuperou na segunda tentativa' } }],
+        }),
+      );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await getAiModel('local-llama3', 0, 'unit:retry').invoke([
+      new HumanMessage('Pedido'),
+    ]);
+
+    expect(result.content).toBe('recuperou na segunda tentativa');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[0][0]).toBe('http://litellm.test/v1/chat/completions');
+    expect(fetchMock.mock.calls[1][0]).toBe('http://litellm.test/v1/chat/completions');
+  });
+
+  it('não reexecuta em erro 4xx — cai direto para o próximo provedor', async () => {
+    vi.stubEnv('GROQ_API_KEY', 'gsk_test_key_for_unit_tests');
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({ error: 'Requisição inválida' }, 400))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          model: 'local-llama3',
+          choices: [{ message: { content: 'fallback ativo' } }],
+        }),
+      );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await getAiModel('local-llama3', 0, 'unit:no-retry-4xx').invoke([
+      new HumanMessage('Pedido'),
+    ]);
+
+    expect(result.content).toBe('fallback ativo');
+    // Só 2 chamadas no total: 1 tentativa no Groq (sem retry por ser 4xx) + 1 no LiteLLM (último recurso).
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[0][0]).toBe('https://api.groq.com/openai/v1/chat/completions');
+    expect(fetchMock.mock.calls[1][0]).toBe('http://litellm.test/v1/chat/completions');
+  });
+
+  it('abre o circuit breaker após falhas consecutivas e para de contatar o provedor', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(jsonResponse({ error: 'Requisição inválida' }, 400));
+    vi.stubGlobal('fetch', fetchMock);
+
+    for (let i = 0; i < 3; i++) {
+      await expect(
+        getAiModel('local-llama3', 0, 'unit:breaker').invoke([new HumanMessage('Pedido')]),
+      ).rejects.toThrow();
+    }
+    const callsBeforeBreakerOpen = fetchMock.mock.calls.length;
+    expect(callsBeforeBreakerOpen).toBe(3);
+
+    await expect(
+      getAiModel('local-llama3', 0, 'unit:breaker').invoke([new HumanMessage('Pedido')]),
+    ).rejects.toThrow('temporariamente desativado');
+    // O circuit breaker impediu uma 4ª chamada de rede ao provedor já sabidamente fora do ar.
+    expect(fetchMock).toHaveBeenCalledTimes(callsBeforeBreakerOpen);
+  });
+
+  it('não repete o provider com erro 4xx do routing dinâmico no fallback estático', async () => {
+    vi.stubEnv('GROQ_API_KEY', 'gsk_test_key_for_unit_tests');
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({ error: 'Groq indisponível' }, 400))
+      .mockResolvedValueOnce(jsonResponse({ error: 'LiteLLM indisponível' }, 400));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(
+      getAiModel('local-llama3', 0, 'unit:dynamic-fallback').invoke([new HumanMessage('Pedido')]),
+    ).rejects.toThrow('Os motores de IA estão indisponíveis');
+
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
+      'https://api.groq.com/openai/v1/chat/completions',
+      'http://litellm.test/v1/chat/completions',
+    ]);
+  });
+
+  describe('cleanAndParseJson', () => {
+    it('limpa markdown code fences e extrai o objeto JSON', () => {
+      const raw = '```json\n{"score": 95, "reason": "Excelente fit"}\n```';
+      const parsed = cleanAndParseJson<{ score: number; reason: string }>(raw);
+      expect(parsed).toEqual({ score: 95, reason: 'Excelente fit' });
+    });
+
+    it('extrai JSON envolto por texto explicativo', () => {
+      const raw = 'Aqui está a resposta:\n[{"id": 1}, {"id": 2}]\nEspero ter ajudado!';
+      const parsed = cleanAndParseJson<Array<{ id: number }>>(raw);
+      expect(parsed).toEqual([{ id: 1 }, { id: 2 }]);
+    });
+
+    it('lança erro legível ao receber JSON corrompido', () => {
+      expect(() => cleanAndParseJson('{ score: invalid }')).toThrow(
+        'Falha ao decodificar JSON gerado pela IA',
+      );
+    });
+  });
+});

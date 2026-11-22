@@ -1,0 +1,9 @@
+{
+  "name": "testland/soc2-evidence-collector",
+  "description": "Use when preparing for a SOC 2 Type II audit or any audit that needs evidence packages from automated tests: per-criterion artifacts (CC1-CC9 and optional categories), collection from CI, audit and access logs and change records, Vanta, Drata or Secureframe formats, and observation-period sampling.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.11"
+}

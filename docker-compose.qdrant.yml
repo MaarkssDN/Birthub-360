@@ -1,0 +1,32 @@
+# Docker Compose para Qdrant - Vector Database (Onda IA-1)
+# Responsável: Agente 10
+# Arquivo isolado para não conflitar com docker-compose.yml principal
+
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: birthhub_qdrant
+    ports:
+      - "6333:6333"  # HTTP API
+      - "6334:6334"  # gRPC API
+    volumes:
+      - birthhub_qdrant_data:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__HTTP_PORT=6333
+      - QDRANT__SERVICE__GRPC_PORT=6334
+      - QDRANT__LOG_LEVEL=INFO
+      - QDRANT__SERVICE__MAX_REQUEST_SIZE_MB=32
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:6333/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  birthhub_qdrant_data:
+    name: birthhub_qdrant_data
+

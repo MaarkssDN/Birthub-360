@@ -1,0 +1,190 @@
+import type { Job, Queue, Worker } from 'bullmq';
+import type Redis from 'ioredis';
+import client from 'prom-client';
+import { logger } from '../logger.js';
+
+interface RegisteredQueue {
+  name: string;
+  queue: Queue;
+}
+
+const registeredQueues: RegisteredQueue[] = [];
+const instrumentedWorkers = new WeakSet<object>();
+
+export function registerQueueForMetrics(name: string, queue: Queue | null | undefined): void {
+  if (!queue) return;
+  if (registeredQueues.some((entry) => entry.name === name)) return;
+  registeredQueues.push({ name, queue });
+}
+
+async function collectDepthGauge(
+  gauge: client.Gauge<'queue'>,
+  getCount: (queue: Queue) => Promise<number>,
+): Promise<void> {
+  await Promise.all(
+    registeredQueues.map(async ({ name, queue }) => {
+      try {
+        gauge.set({ queue: name }, await getCount(queue));
+      } catch (err: any) {
+        logger.warn({ err, queue: name }, 'Falha ao coletar métrica de fila');
+      }
+    }),
+  );
+}
+
+export const bullmqQueueWaitingJobs = new client.Gauge({
+  name: 'bullmq_queue_waiting_jobs',
+  help: 'Jobs aguardando execução por fila BullMQ.',
+  labelNames: ['queue'] as const,
+  async collect() {
+    await collectDepthGauge(this, (queue) => queue.getWaitingCount());
+  },
+});
+
+export const bullmqQueueActiveJobs = new client.Gauge({
+  name: 'bullmq_queue_active_jobs',
+  help: 'Jobs em execução por fila BullMQ.',
+  labelNames: ['queue'] as const,
+  async collect() {
+    await collectDepthGauge(this, (queue) => queue.getActiveCount());
+  },
+});
+
+export const bullmqQueueFailedJobs = new client.Gauge({
+  name: 'bullmq_queue_failed_jobs',
+  help: 'Jobs falhados retidos por fila BullMQ.',
+  labelNames: ['queue'] as const,
+  async collect() {
+    await collectDepthGauge(this, (queue) => queue.getFailedCount());
+  },
+});
+
+// BullMQ emite `stalled`, mas não mantém "stalled" como estado consultável de fila. Por isso
+// esta série é Counter por evento, não Gauge baseado em getJobCountByTypes().
+export const bullmqQueueStalledTotal = new client.Counter({
+  name: 'bullmq_queue_stalled_total',
+  help: 'Total de eventos stalled observados por fila desde o boot.',
+  labelNames: ['queue'] as const,
+});
+
+export const bullmqOldestWaitingJobAgeSeconds = new client.Gauge({
+  name: 'bullmq_oldest_waiting_job_age_seconds',
+  help: 'Idade em segundos do job waiting mais antigo por fila.',
+  labelNames: ['queue'] as const,
+  async collect() {
+    await Promise.all(
+      registeredQueues.map(async ({ name, queue }) => {
+        try {
+          const [oldest] = await queue.getJobs(['waiting'], -1, -1, true);
+          const age = oldest?.timestamp ? Math.max(0, (Date.now() - oldest.timestamp) / 1000) : 0;
+          this.set({ queue: name }, age);
+        } catch (err: any) {
+          logger.warn({ err, queue: name }, 'Falha ao coletar idade do job mais antigo');
+        }
+      }),
+    );
+  },
+});
+
+export const bullmqQueueCompletedJobs = new client.Counter({
+  name: 'bullmq_queue_completed_jobs',
+  help: 'Total acumulado de jobs concluídos por fila desde o boot.',
+  labelNames: ['queue'] as const,
+});
+
+export const bullmqQueueRetryCount = new client.Counter({
+  name: 'bullmq_queue_retry_count_total',
+  help: 'Total de retries observados por fila desde o boot.',
+  labelNames: ['queue'] as const,
+});
+
+export const bullmqDlqMessagesTotal = new client.Counter({
+  name: 'bullmq_dlq_messages_total',
+  help: 'Total acumulado de jobs encaminhados para a Dead Letter Queue (DLQ) por fila e motivo.',
+  labelNames: ['queue', 'reason'] as const,
+});
+
+export const workerProcessUp = new client.Gauge({
+  name: 'birthhub360_worker_up',
+  help: '1 quando o processo dedicado de workers terminou o bootstrap e está ativo.',
+});
+
+export const redisReconnectCount = new client.Counter({
+  name: 'redis_reconnect_total',
+  help: 'Total de tentativas de reconexão Redis por papel de conexão.',
+  labelNames: ['role'] as const,
+});
+
+interface RegisteredRedisConnection {
+  role: string;
+  redis: Redis;
+  /** Se este papel de conexão deveria estar ativo nesta configuração (mesmo predicado já usado
+   * por observeConnection em queue/redis.ts) — evita reportar (e alertar sobre) uma conexão que
+   * nunca deveria conectar de propósito (ex.: cache Redis em dev sem REDIS_URL configurado). */
+  enabled: () => boolean;
+}
+const registeredRedisConnections: RegisteredRedisConnection[] = [];
+
+// CPI (auditoria — "Alerta real de Redis health" nunca tinha métrica real). ioredis já mantém
+// `.status` internamente ('ready' quando a conexão está utilizável) — só faltava expor isso como
+// Gauge Prometheus por papel de conexão. Consumida pelo grupo
+// `birthhub360.database.ativos-hoje` em alert.rules.yml.
+export function registerRedisConnectionForMetrics(
+  role: string,
+  redis: Redis,
+  enabled: () => boolean,
+): void {
+  if (registeredRedisConnections.some((entry) => entry.role === role)) return;
+  registeredRedisConnections.push({ role, redis, enabled });
+}
+
+export const redisConnectionUp = new client.Gauge({
+  name: 'redis_connection_up',
+  help: '1 quando a conexão Redis deste papel está pronta (status "ready"), 0 caso contrário. Só reportada para papéis habilitados nesta configuração.',
+  labelNames: ['role'] as const,
+  collect() {
+    for (const { role, redis, enabled } of registeredRedisConnections) {
+      if (!enabled()) continue;
+      this.set({ role }, redis.status === 'ready' ? 1 : 0);
+    }
+  },
+});
+
+export function recordQueueJobCompleted(name: string): void {
+  bullmqQueueCompletedJobs.inc({ queue: name });
+}
+
+export function recordQueueRetry(name: string): void {
+  bullmqQueueRetryCount.inc({ queue: name });
+}
+
+export function recordQueueDlqMessage(queue: string, reason: string): void {
+  bullmqDlqMessagesTotal.inc({ queue, reason });
+}
+
+export function setWorkerProcessUp(up: boolean): void {
+  workerProcessUp.set(up ? 1 : 0);
+}
+
+export function recordRedisReconnect(role: string): void {
+  redisReconnectCount.inc({ role });
+}
+
+/** Instrumentação comum para qualquer Worker, sem obrigar cada domínio a duplicar listeners. */
+export function registerWorkerForRuntimeMetrics(
+  name: string,
+  worker: Worker | null | undefined,
+): void {
+  if (!worker || instrumentedWorkers.has(worker)) return;
+  instrumentedWorkers.add(worker);
+
+  worker.on('stalled', () => {
+    bullmqQueueStalledTotal.inc({ queue: name });
+  });
+
+  worker.on('failed', (job: Job | undefined) => {
+    if (!job) return;
+    const attempts = job.opts.attempts ?? 1;
+    if (job.attemptsMade < attempts) bullmqQueueRetryCount.inc({ queue: name });
+  });
+}

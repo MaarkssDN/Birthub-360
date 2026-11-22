@@ -1,0 +1,682 @@
+/* ─────────────────────────────────────────────────────────────────────
+   BirthHub360 — Elegance Redesign (v3.0)
+   Elegant · Fine Strokes · Fluid Animations · Editorial Sophistication
+
+   Palette:
+   - Dourado   #C9A24C  (champagne gold, signature)
+   - Rosa Pink #F15BB5  (accent)
+   - Azul Bebê #B9DBF0  (soft sky)
+   - Pantaleão #5F8A7A  (sage green — "Pantaneiro")
+   - Ink       #141218  (deep ink)
+   - Pearl     #FBF8F3  (warm cream)
+
+   Typography (Constituição / Impeccable Operate):
+   - Sora — display, headlines (--font-brand-display)
+   - Inter — body, UI (--font-brand-sans)
+   - Self-hosted; sem Google Fonts
+   ───────────────────────────────────────────────────────────────────── */
+
+/* Google Fonts removido (Impeccable Operate / Constituição): Sora+Inter self-hosted. */
+
+/* ─── Design Tokens Override ───────────────────────────────────────── */
+:root,
+.light {
+  /* Brand palette — new elegance */
+  --el-gold: #c9a24c;
+  --el-gold-soft: #e6c979;
+  --el-gold-deep: #9b7a2d;
+  --el-pink: #f15bb5;
+  --el-pink-soft: #ffb3dc;
+  --el-blue: #b9dbf0;
+  --el-blue-deep: #6ea9c9;
+  --el-sage: #5f8a7a;
+  --el-sage-soft: #a8c3b8;
+
+  /* Neutral canvas */
+  --el-pearl: #fbf8f3;
+  --el-pearl-2: #f5efe6;
+  --el-cream: #efe8d9;
+  --el-ink: #141218;
+  --el-ink-2: #4a4650;
+  --el-ink-3: #7a7580;
+  --el-line: rgba(20, 18, 24, 0.08);
+  --el-line-strong: rgba(20, 18, 24, 0.14);
+
+  /* Signature gradients */
+  --el-grad-signature: linear-gradient(135deg, #c9a24c 0%, #f15bb5 45%, #b9dbf0 80%, #5f8a7a 100%);
+  --el-grad-gold: linear-gradient(135deg, #e6c979 0%, #c9a24c 50%, #9b7a2d 100%);
+  --el-grad-dawn: linear-gradient(135deg, #fbf8f3 0%, #ffe8f4 50%, #e8f4fb 100%);
+
+  /* Elegant shadows (fine, soft) */
+  --el-shadow-xs: 0 1px 2px rgba(20, 18, 24, 0.04);
+  --el-shadow-sm: 0 2px 10px -4px rgba(20, 18, 24, 0.08);
+  --el-shadow-md: 0 10px 30px -12px rgba(20, 18, 24, 0.12);
+  --el-shadow-lg: 0 24px 60px -16px rgba(20, 18, 24, 0.18);
+  --el-glow-gold: 0 0 40px -8px rgba(201, 162, 76, 0.35);
+  --el-glow-pink: 0 0 40px -8px rgba(241, 91, 181, 0.35);
+
+  /* Fine line border radius system */
+  --el-r-xs: 4px;
+  --el-r-sm: 8px;
+  --el-r-md: 12px;
+  --el-r-lg: 20px;
+  --el-r-xl: 28px;
+  --el-r-pill: 999px;
+
+  /* Easing */
+  --el-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --el-ease-elastic: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+  --el-ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Override legacy tokens so cascading components re-skin automatically */
+  --bg: var(--el-pearl);
+  --surface: #ffffff;
+  --surface-2: var(--el-pearl-2);
+  --surface-subtle: var(--el-cream);
+  --surface-elevated: #ffffff;
+  --surface-interactive: var(--el-pearl-2);
+  --ink: var(--el-ink);
+  --ink-2: var(--el-ink-2);
+  --line: var(--el-line);
+  --brand: var(--el-gold);
+  --brand-2: var(--el-gold-soft);
+  --on-brand: var(--el-ink);
+  --iris: var(--el-pink);
+  --pink: var(--el-pink);
+  --orbit-blue: var(--el-blue-deep);
+  --ok: var(--el-sage);
+  --accent-violet: var(--el-pink);
+  --accent-cyan: var(--el-blue-deep);
+  --pulse: var(--el-pink);
+}
+
+.dark {
+  --el-pearl: #0e0c12;
+  --el-pearl-2: #16131c;
+  --el-cream: #1e1a26;
+  --el-ink: #f8f4ea;
+  --el-ink-2: #c9c2d4;
+  --el-ink-3: #8b8395;
+  --el-line: rgba(248, 244, 234, 0.08);
+  --el-line-strong: rgba(248, 244, 234, 0.14);
+
+  --el-grad-dawn: linear-gradient(135deg, #0e0c12 0%, #1e1424 55%, #0c1a22 100%);
+
+  --el-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --el-shadow-sm: 0 4px 16px -6px rgba(0, 0, 0, 0.55);
+  --el-shadow-md: 0 16px 40px -16px rgba(0, 0, 0, 0.6);
+  --el-shadow-lg: 0 30px 80px -20px rgba(0, 0, 0, 0.7);
+
+  --bg: var(--el-pearl);
+  --surface: var(--el-pearl-2);
+  --surface-2: var(--el-cream);
+  --surface-subtle: #241e30;
+  --surface-elevated: #1a1724;
+  --surface-interactive: #241e30;
+  --ink: var(--el-ink);
+  --ink-2: var(--el-ink-2);
+  --line: var(--el-line);
+  /* A03-P0-02 (cirúrgico, a11y): o :root acima define --on-brand: var(--el-ink), que no escuro
+     resolve para o creme #f8f4ea — 2.18:1 sobre o ouro --brand. Texto sobre superfície de marca
+     precisa ficar escuro nos dois temas (ouro é claro): ink do tema claro, ~8:1. */
+  --on-brand: #141218;
+}
+
+/* ─── Typography ─────────────────────────────────────────────────── */
+html,
+body {
+  background: var(--el-pearl);
+  color: var(--el-ink);
+  font-family: var(--font-brand-sans), "Inter", ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings:
+    "ss01" on,
+    "cv11" on;
+  letter-spacing: -0.005em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background-image:
+    radial-gradient(1200px 600px at 85% -10%, rgba(241, 91, 181, 0.08), transparent 55%),
+    radial-gradient(900px 500px at -10% 110%, rgba(201, 162, 76, 0.1), transparent 55%),
+    radial-gradient(700px 400px at 110% 105%, rgba(185, 219, 240, 0.12), transparent 55%);
+  background-attachment: fixed;
+}
+
+.dark body {
+  background-image:
+    radial-gradient(1200px 600px at 85% -10%, rgba(241, 91, 181, 0.1), transparent 55%),
+    radial-gradient(900px 500px at -10% 110%, rgba(201, 162, 76, 0.08), transparent 55%),
+    radial-gradient(700px 400px at 110% 105%, rgba(95, 138, 122, 0.1), transparent 55%);
+}
+
+/* Display: Sora (Constituição) — sem !important para não travar utilitários */
+.font-display,
+h1,
+h2,
+h3,
+.text-display,
+.el-display {
+  font-family: var(--font-brand-display), "Sora", ui-sans-serif, system-ui, sans-serif;
+  font-optical-sizing: auto;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+}
+
+.el-display-italic,
+.font-display-italic {
+  font-family: var(--font-brand-display), "Sora", ui-sans-serif, system-ui, sans-serif;
+  font-style: italic;
+  letter-spacing: -0.01em;
+}
+
+/* Selection */
+::selection {
+  background: var(--el-gold);
+  color: var(--el-ink);
+}
+
+/* ─── Elegant Scrollbar ──────────────────────────────────────────── */
+.custom-scrollbar::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--el-gold-soft), var(--el-gold));
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background 0.3s var(--el-ease);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--el-gold), var(--el-pink));
+  background-clip: padding-box;
+}
+
+/* ─── Fine Line Utilities ────────────────────────────────────────── */
+.el-hairline {
+  position: relative;
+}
+.el-hairline::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--el-line-strong) 15%,
+    var(--el-line-strong) 85%,
+    transparent
+  );
+  pointer-events: none;
+}
+
+.el-hairline-top::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--el-line-strong) 15%,
+    var(--el-line-strong) 85%,
+    transparent
+  );
+  pointer-events: none;
+}
+
+/* ─── Signature Gold Underline ───────────────────────────────────── */
+.el-underline {
+  position: relative;
+  display: inline-block;
+}
+.el-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--el-gold) 0%, var(--el-pink) 100%);
+  transform-origin: left;
+  transform: scaleX(0);
+  transition: transform 0.6s var(--el-ease);
+}
+.el-underline:hover::after {
+  transform: scaleX(1);
+}
+
+/* ─── Glass Surface ──────────────────────────────────────────────── */
+.el-glass {
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid var(--el-line);
+}
+
+.el-glass-strong {
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+  backdrop-filter: blur(32px) saturate(1.6);
+  -webkit-backdrop-filter: blur(32px) saturate(1.6);
+  border: 1px solid var(--el-line-strong);
+}
+
+/* ─── Grain Texture Overlay ──────────────────────────────────────── */
+.el-grain {
+  position: relative;
+}
+.el-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  mix-blend-mode: overlay;
+}
+
+/* ─── Animations ─────────────────────────────────────────────────── */
+@keyframes el-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes el-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes el-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes el-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes el-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1deg);
+  }
+}
+
+@keyframes el-drift {
+  0% {
+    transform: translate(0, 0);
+  }
+  33% {
+    transform: translate(30px, -20px);
+  }
+  66% {
+    transform: translate(-20px, 20px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes el-pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(201, 162, 76, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 14px rgba(201, 162, 76, 0);
+  }
+}
+
+@keyframes el-gradient-shift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes el-reveal-mask {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.el-fade-up {
+  animation: el-fade-up 0.7s var(--el-ease) both;
+}
+.el-fade-in {
+  animation: el-fade-in 0.8s var(--el-ease) both;
+}
+.el-scale-in {
+  animation: el-scale-in 0.6s var(--el-ease) both;
+}
+.el-float {
+  animation: el-float 6s ease-in-out infinite;
+}
+.el-drift {
+  animation: el-drift 20s ease-in-out infinite;
+}
+.el-pulse-ring {
+  animation: el-pulse-ring 2.2s var(--el-ease) infinite;
+}
+.el-reveal-mask {
+  animation: el-reveal-mask 1s var(--el-ease) both;
+}
+
+.el-stagger > * {
+  animation: el-fade-up 0.7s var(--el-ease) both;
+}
+.el-stagger > *:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.el-stagger > *:nth-child(2) {
+  animation-delay: 0.12s;
+}
+.el-stagger > *:nth-child(3) {
+  animation-delay: 0.2s;
+}
+.el-stagger > *:nth-child(4) {
+  animation-delay: 0.28s;
+}
+.el-stagger > *:nth-child(5) {
+  animation-delay: 0.36s;
+}
+.el-stagger > *:nth-child(6) {
+  animation-delay: 0.44s;
+}
+.el-stagger > *:nth-child(7) {
+  animation-delay: 0.52s;
+}
+.el-stagger > *:nth-child(8) {
+  animation-delay: 0.6s;
+}
+
+/* ─── Shimmer Text (gold leaf) ───────────────────────────────────── */
+.el-gold-text {
+  background: linear-gradient(
+    110deg,
+    var(--el-gold-deep) 0%,
+    var(--el-gold-soft) 40%,
+    #fff6d9 50%,
+    var(--el-gold-soft) 60%,
+    var(--el-gold-deep) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: el-shimmer 6s linear infinite;
+}
+
+.el-signature-text {
+  background: var(--el-grad-signature);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: el-gradient-shift 8s ease infinite;
+}
+
+/* ─── Elegant Button Primitives ──────────────────────────────────── */
+.el-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.7rem 1.4rem;
+  border-radius: var(--el-r-pill);
+  font-family: var(--font-brand-sans), "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 0.875rem;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s var(--el-ease);
+  border: 1px solid transparent;
+}
+
+.el-btn-primary {
+  background: var(--el-grad-gold);
+  background-size: 200% 200%;
+  color: var(--el-ink);
+  box-shadow:
+    var(--el-shadow-sm),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+.el-btn-primary:hover {
+  background-position: 100% 0;
+  box-shadow: var(--el-shadow-md), var(--el-glow-gold);
+  transform: translateY(-1px);
+}
+
+.el-btn-ghost {
+  background: transparent;
+  color: var(--el-ink);
+  border: 1px solid var(--el-line-strong);
+}
+.el-btn-ghost:hover {
+  background: var(--surface-2);
+  border-color: var(--el-gold);
+}
+
+.el-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 60%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.8s var(--el-ease);
+  pointer-events: none;
+}
+.el-btn:hover::before {
+  transform: translateX(100%);
+}
+
+/* ─── Elegant Card ───────────────────────────────────────────────── */
+.el-card {
+  background: var(--surface);
+  border: 1px solid var(--el-line);
+  border-radius: var(--el-r-lg);
+  padding: 1.75rem;
+  box-shadow: var(--el-shadow-sm);
+  transition: all 0.5s var(--el-ease);
+  position: relative;
+  overflow: hidden;
+}
+.el-card:hover {
+  border-color: var(--el-gold);
+  box-shadow: var(--el-shadow-md);
+  transform: translateY(-2px);
+}
+.el-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(201, 162, 76, 0.04) 100%);
+  opacity: 0;
+  transition: opacity 0.5s var(--el-ease);
+  pointer-events: none;
+}
+.el-card:hover::before {
+  opacity: 1;
+}
+
+/* ─── Decorative Elements ────────────────────────────────────────── */
+.el-corner-ornament::before,
+.el-corner-ornament::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--el-gold);
+  pointer-events: none;
+  transition: all 0.4s var(--el-ease);
+}
+.el-corner-ornament::before {
+  top: 8px;
+  left: 8px;
+  border-right: none;
+  border-bottom: none;
+}
+.el-corner-ornament::after {
+  bottom: 8px;
+  right: 8px;
+  border-left: none;
+  border-top: none;
+}
+.el-corner-ornament:hover::before,
+.el-corner-ornament:hover::after {
+  width: 24px;
+  height: 24px;
+}
+
+/* Subtle floating orbs for backgrounds */
+.el-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.el-orb-gold {
+  background: var(--el-gold);
+}
+.el-orb-pink {
+  background: var(--el-pink);
+}
+.el-orb-blue {
+  background: var(--el-blue-deep);
+}
+.el-orb-sage {
+  background: var(--el-sage);
+}
+
+/* ─── Input Refinement ───────────────────────────────────────────── */
+.el-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--el-line-strong);
+  border-radius: var(--el-r-md);
+  color: var(--el-ink);
+  font-family: var(--font-brand-sans), "Inter", sans-serif;
+  font-size: 0.925rem;
+  transition: all 0.3s var(--el-ease);
+  outline: none;
+}
+.el-input:focus {
+  border-color: var(--el-gold);
+  box-shadow: 0 0 0 4px rgba(201, 162, 76, 0.1);
+}
+.el-input::placeholder {
+  color: var(--el-ink-3);
+}
+
+/* ─── Divider ────────────────────────────────────────────────────── */
+.el-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: var(--el-ink-3);
+  font-family: var(--font-brand-display), "Sora", sans-serif;
+  font-style: italic;
+  font-size: 0.875rem;
+}
+.el-divider::before,
+.el-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--el-line-strong), transparent);
+}
+
+/* ─── Page Transition Overlay (fluid) ────────────────────────────── */
+.el-page-enter {
+  animation: el-fade-up 0.6s var(--el-ease) both;
+}
+
+/* ─── Focus Rings (elegant, gold) ────────────────────────────────── */
+/* A03-P1-01 (cirúrgico, a11y): ouro cru sobre pearl mede 2.26:1 (< 3:1). Usa o token de foco
+   de globals.css (ouro escurecido no claro, ouro cru no escuro); fallback mantém o ouro. */
+*:focus-visible {
+  outline: 2px solid var(--focus-ring, var(--el-gold));
+  outline-offset: 2px;
+  border-radius: inherit;
+}
+
+/* ─── Reduce Motion ──────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* A03 Impeccable Operate density */
+.operate-dense {
+  --operate-gap: 0.75rem;
+}
+.operate-kpi-grid {
+  display: grid;
+  gap: var(--operate-gap, 0.75rem);
+  grid-template-columns: repeat(auto-fill, minmax(11.5rem, 1fr));
+}
+.operate-panel {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent);
+}
+.dark .operate-panel {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand) 12%, transparent);
+}

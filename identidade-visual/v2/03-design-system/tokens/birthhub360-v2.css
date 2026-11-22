@@ -1,0 +1,312 @@
+/* ==========================================================================
+   Birthub 360° — Design Tokens V2.0 (PROPOSTA / PENDENTE DE HOMOLOGAÇÃO)
+   --------------------------------------------------------------------------
+   Status: PROPOSTA — espelha a nomenclatura canônica de
+   identidade-visual/birthhub360/tokens/birthhub360.css (--color-*, --palette-*,
+   --font-*, --radius-*, --shadow-*, --grad-*, --glow-*) para permitir
+   substituição futura sem refatoração de consumidores.
+   NÃO substitui os tokens atuais; os arquivos originais permanecem intactos.
+
+   Paleta Neon Oficial fixada em identidade-visual/v2/FONTE-DE-VERDADE.md §3:
+     Azul Neon #00D4FF · Rosa Neon #FF2D9B · Dourado #FFC107 · Íris #8B7DFF
+     Dark #0D0D0D · Light #F4F7FB
+
+   Camada semântica: a paleta de marca é FIXA; as rampas semânticas dark/light
+   abaixo são as mesmas já homologadas em DESIGN.md / birthhub360.json
+   (tons adaptados para WCAG 2.2 AA em light mode).
+   ========================================================================== */
+
+:root {
+  /* --- Versão / governança --------------------------------------------- */
+  --bh-version: "v2.0-proposal";
+  --bh-version-status: "PENDENTE DE HOMOLOGAÇÃO";
+
+  /* ==========================================================================
+     PALETA DE MARCA (fixa — nunca neutralizar neon, nunca pastelizar)
+     ========================================================================== */
+  --palette-neon-blue: #00d4ff;   /* marca primária, halos, CTAs frios */
+  --palette-neon-pink: #ff2d9b;   /* energia, conversão, gradientes */
+  --palette-neon-gold: #ffc107;   /* métricas, metas, avisos, elemento 360° */
+  --palette-iris: #8b7dff;        /* IA, copiloto, agentes */
+  --palette-neon-black: #0d0d0d;  /* fundo canônico dark */
+  --palette-neon-white: #f8f9ff;  /* texto primário dark */
+  --palette-neon-card: #14141a;   /* superfície de cards dark */
+
+  /* --- Tipografia (trinca fixada) ---------------------------------------- */
+  --font-display: "Sora", system-ui, -apple-system, sans-serif;
+  --font-interface: "Inter", system-ui, -apple-system, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-features-interface: "cv05", "cv11", "ss01";
+  --tracking-display: -0.02em;
+  --tracking-interface: -0.012em;
+
+  /* --- Escala tipográfica (rem, base 16px) -------------------------------- */
+  --text-2xs: 0.6875rem;  /* 11px — labels de badge */
+  --text-xs:  0.75rem;    /* 12px — captions, hints */
+  --text-sm:  0.8125rem;  /* 13px — corpo denso, tabelas */
+  --text-md:  0.9375rem;  /* 15px — corpo padrão */
+  --text-lg:  1.0625rem;  /* 17px — lead */
+  --text-xl:  1.25rem;    /* 20px — h4 */
+  --text-2xl: 1.5rem;     /* 24px — h3 */
+  --text-3xl: 1.875rem;   /* 30px — h2 */
+  --text-4xl: 2.375rem;   /* 38px — h1 */
+  --text-5xl: 3.25rem;    /* 52px — display comercial */
+  --text-6xl: 4.5rem;     /* 72px — hero monumental */
+
+  --leading-tight: 1.15;
+  --leading-snug: 1.3;
+  --leading-normal: 1.55;
+  --leading-loose: 1.75;
+
+  /* --- Espaçamento (escala 4px) ------------------------------------------- */
+  --space-0: 0;
+  --space-1: 0.25rem;   /* 4px  */
+  --space-2: 0.5rem;    /* 8px  */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.5rem;    /* 24px */
+  --space-6: 2rem;      /* 32px */
+  --space-7: 3rem;      /* 48px */
+  --space-8: 4rem;      /* 64px */
+  --space-9: 6rem;      /* 96px */
+  --space-10: 8rem;     /* 128px */
+
+  /* --- Raios (mesmos valores homologados) --------------------------------- */
+  --radius-control: 12px;
+  --radius-card: 16px;
+  --radius-modal: 20px;
+  --radius-pill: 9999px;
+  --radius-xs: 6px;    /* chips internos, tags */
+  --radius-sm: 8px;    /* tooltips, menus compactos */
+
+  /* --- Layout: grid, containers, breakpoints ------------------------------ */
+  --grid-columns: 12;
+  --grid-gutter: var(--space-4);
+  --container-sm: 40rem;    /* 640px  */
+  --container-md: 48rem;    /* 768px  */
+  --container-lg: 64rem;    /* 1024px */
+  --container-xl: 80rem;    /* 1280px */
+  --container-2xl: 90rem;   /* 1440px */
+  /* Breakpoints documentais (não são custom properties em runtime):
+     sm 640px · md 768px · lg 1024px · xl 1280px · 2xl 1536px */
+
+  /* ==========================================================================
+     GRADIENTES E GLOWS DE ASSINATURA (fixos, conforme DESIGN.md)
+     ========================================================================== */
+  --grad-brand: linear-gradient(135deg, #00d4ff 0%, #ff2d9b 50%, #ffc107 100%);
+  --grad-cta: linear-gradient(135deg, #ff2d9b 0%, #00d4ff 100%);
+  --grad-vancouver: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 50%, #8b5cf6 100%);
+  --grad-orbit: conic-gradient(from 0deg, #ffc107, #ff2d9b, #00d4ff, #ffc107);
+  --grad-cyan-pink: linear-gradient(135deg, #00d4ff 0%, #ff2d9b 100%);
+  --grad-gold: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
+  --grad-glow: radial-gradient(circle at 50% 0%, rgba(0, 212, 255, 0.18), transparent 70%);
+
+  --glow-blue: 0 0 24px rgba(0, 212, 255, 0.45);
+  --glow-pink: 0 0 24px rgba(255, 45, 155, 0.45);
+  --glow-gold: 0 0 24px rgba(255, 193, 7, 0.45);
+  --glow-iris: 0 0 24px rgba(139, 125, 255, 0.45);
+
+  /* --- Motion tokens básicos (conjunto completo em 04-motion/) ------------- */
+  --duration-instant: 100ms;
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 350ms;
+  --duration-gentle: 600ms;
+  --duration-slow-ambient: 800ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-enter: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ==========================================================================
+     TEMA DARK — canônico (fundo #0D0D0D)
+     ========================================================================== */
+  color-scheme: dark;
+
+  /* Superfícies e texto */
+  --color-background: #0d0d0d;
+  --color-surface: #14141a;
+  --color-surface-elevated: #1c1c24;
+  --color-surface-hover: #252532;
+  --color-text-primary: #f8f9ff;
+  --color-text-secondary: #9eadc8;
+  --color-text-muted: #a1a1b5;
+  --color-border: rgba(0, 212, 255, 0.22);
+  --color-border-subtle: rgba(0, 212, 255, 0.18);
+  --color-border-strong: rgba(0, 212, 255, 0.45);
+  --color-border-pink: rgba(255, 45, 155, 0.25);
+  --color-border-gold: rgba(255, 193, 7, 0.3);
+
+  /* Marca e interação */
+  --color-brand-primary: #00d4ff;
+  --color-brand-secondary: #ff2d9b;
+  --color-brand-accent: #ffc107;
+  --color-interactive-primary: #00d4ff;
+  --color-interactive-hover: #33dfff;
+  --color-interactive-active: #00a8cc;
+  --color-focus: #00d4ff;
+  --color-on-brand: #0d0d0d; /* texto sobre neon = preto-neon, nunca branco puro */
+
+  /* Semânticos */
+  --color-success: #22c55e;
+  --color-warning: #ffc107;
+  --color-danger: #ef4444;
+  --color-info: #3b82f6;
+  --color-iris: #8b7dff;
+
+  /* Headings coloridos (derivados da paleta) */
+  --color-heading-cyan: #00d4ff;
+  --color-heading-blue: #3b82f6;
+  --color-heading-gold: #ffc107;
+  --color-heading-pink: #ff2d9b;
+  --color-heading-iris: #8b7dff;
+  --color-heading-success: #22c55e;
+  --color-heading-danger: #ef4444;
+
+  /* Código */
+  --color-code-bg: #09090d;
+  --color-code-ink: #e6edf3;
+
+  /* Sombras / elevação */
+  --shadow-card: 0 6px 20px rgba(0, 0, 0, 0.25);
+  --shadow-elevated: 0 12px 30px rgba(0, 0, 0, 0.65);
+  --shadow-overlay: 0 24px 64px rgba(0, 0, 0, 0.7);
+  --focus-shadow: 0 0 0 3px rgba(0, 212, 255, 0.2);
+  --focus-offset: 3px;
+
+  /* Componentes (aliases semânticos de consumo) */
+  --color-input-bg: #1c1c24;
+  --color-input-border: rgba(0, 212, 255, 0.25);
+  --color-btn-primary-bg: linear-gradient(135deg, #ff2d9b 0%, #00d4ff 100%);
+  --color-btn-primary-ink: #0d0d0d;
+  --color-btn-danger-bg: #ef4444;
+  --color-btn-danger-hover: #f87171;
+  --color-overlay: rgba(9, 9, 13, 0.72);
+  --color-skeleton-base: #1c1c24;
+  --color-skeleton-highlight: #252532;
+}
+
+/* ==========================================================================
+   TEMA LIGHT — fundo canônico #F4F7FB, rampas adaptadas para AA
+   ========================================================================== */
+:root[data-theme="light"],
+:root.light,
+html.light,
+[data-theme="light"] {
+  color-scheme: light;
+
+  --color-background: #f4f7fb;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #edf2f7;
+  --color-surface-hover: #e2e8f0;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #64748b;
+  --color-text-muted: #475569;
+  --color-border: rgba(2, 132, 199, 0.25);
+  --color-border-subtle: rgba(11, 19, 43, 0.12);
+  --color-border-strong: rgba(2, 132, 199, 0.5);
+  --color-border-pink: rgba(217, 27, 124, 0.25);
+  --color-border-gold: rgba(217, 119, 6, 0.35);
+
+  /* Rampas semânticas adaptadas AA (fonte: birthhub360.json / DESIGN.md) */
+  --color-brand-primary: #0284c7;
+  --color-brand-secondary: #d91b7c;
+  --color-brand-accent: #d97706;
+  --color-interactive-primary: #0284c7;
+  --color-interactive-hover: #0369a1;
+  --color-interactive-active: #075985;
+  --color-focus: #0284c7;
+  --color-on-brand: #ffffff;
+
+  --color-success: #16a34a;
+  --color-warning: #b45309;
+  --color-danger: #dc2626;
+  --color-info: #2563eb;
+  --color-iris: #7c3aed;
+
+  --color-heading-cyan: color-mix(in srgb, #0284c7 85%, #0d0d0d);
+  --color-heading-blue: color-mix(in srgb, #3b82f6 80%, #0d0d0d);
+  --color-heading-gold: color-mix(in srgb, #d97706 70%, #0d0d0d);
+  --color-heading-pink: #d91b7c;
+  --color-heading-iris: color-mix(in srgb, #8b7dff 65%, #0d0d0d);
+  --color-heading-success: color-mix(in srgb, #22c55e 60%, #0d0d0d);
+  --color-heading-danger: color-mix(in srgb, #ef4444 80%, #0d0d0d);
+
+  --color-code-bg: #f8fafc;
+  --color-code-ink: #0b132b;
+
+  --shadow-card: 0 6px 20px rgba(15, 23, 42, 0.08);
+  --shadow-elevated: 0 12px 30px rgba(15, 23, 42, 0.12);
+  --shadow-overlay: 0 24px 64px rgba(15, 23, 42, 0.18);
+  --focus-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);
+
+  --color-input-bg: #ffffff;
+  --color-input-border: rgba(11, 19, 43, 0.2);
+  --color-btn-primary-bg: linear-gradient(135deg, #d91b7c 0%, #0284c7 100%);
+  --color-btn-primary-ink: #ffffff;
+  --color-btn-danger-bg: #dc2626;
+  --color-btn-danger-hover: #ef4444;
+  --color-overlay: rgba(15, 23, 42, 0.45);
+  --color-skeleton-base: #edf2f7;
+  --color-skeleton-highlight: #e2e8f0;
+}
+
+/* ==========================================================================
+   ACENT POR MÓDULO — UM sistema, identidade contextual (mecanismo V2)
+   --------------------------------------------------------------------------
+   Não são 11 paletas: é UM conjunto de tokens semânticos onde o módulo injeta
+   apenas 3 variáveis derivadas da paleta Neon Oficial:
+     --module-accent        cor de destaque do módulo (AA no tema ativo)
+     --module-accent-ink    texto sobre o accent
+     --module-accent-glow   glow correspondente
+   Aplicação: <section data-module="p03"> … </section>
+   O mapeamento módulo→accent é [PENDENTE DE HOMOLOGAÇÃO] — proposta abaixo usa
+   apenas cores já fixadas (azul/rosa/dourado/íris) + semânticos AA.
+   ========================================================================== */
+[data-module] {
+  --module-accent: var(--color-interactive-primary);
+  --module-accent-ink: var(--color-on-brand);
+  --module-accent-glow: var(--glow-blue);
+  --module-accent-soft: color-mix(in srgb, var(--module-accent) 14%, transparent);
+}
+[data-module="hub"]    { --module-accent: var(--color-interactive-primary); --module-accent-glow: var(--glow-blue); }
+[data-module="p01"]    { --module-accent: var(--color-interactive-primary); --module-accent-glow: var(--glow-blue); }
+[data-module="p02"]    { --module-accent: var(--color-brand-secondary);  --module-accent-glow: var(--glow-pink); }
+[data-module="p03"]    { --module-accent: var(--color-brand-accent);     --module-accent-glow: var(--glow-gold); }
+[data-module="p04"]    { --module-accent: var(--color-iris);             --module-accent-glow: var(--glow-iris); }
+[data-module="p05"]    { --module-accent: var(--color-success);          --module-accent-glow: 0 0 24px rgba(34, 197, 94, 0.4); }
+[data-module="p06"]    { --module-accent: var(--color-info);             --module-accent-glow: 0 0 24px rgba(59, 130, 246, 0.4); }
+[data-module="p07"]    { --module-accent: var(--color-heading-gold);     --module-accent-glow: var(--glow-gold); }
+[data-module="p08"]    { --module-accent: var(--color-heading-pink);     --module-accent-glow: var(--glow-pink); }
+[data-module="m09"]    { --module-accent: var(--color-iris);             --module-accent-glow: var(--glow-iris); }
+[data-module="m10"]    { --module-accent: var(--color-interactive-primary); --module-accent-glow: var(--glow-blue); }
+[data-module="m11"]    { --module-accent: var(--color-brand-secondary);  --module-accent-glow: var(--glow-pink); }
+[data-module] .module-accent-text { color: var(--module-accent); }
+[data-module] .module-accent-chip {
+  background: var(--module-accent-soft);
+  color: var(--module-accent);
+  border: 1px solid color-mix(in srgb, var(--module-accent) 35%, transparent);
+}
+
+/* ==========================================================================
+   MOVIMENTO REDUZIDO — colapso global (obrigatório WCAG 2.2 / FONTE §7)
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-instant: 0ms;
+    --duration-fast: 0ms;
+    --duration-normal: 0ms;
+    --duration-slow: 0ms;
+    --duration-gentle: 0ms;
+    --duration-slow-ambient: 0ms;
+  }
+}
+/* Toggle manual da demo/produto: data-motion="reduced" no <html> */
+:root[data-motion="reduced"] {
+  --duration-instant: 0ms;
+  --duration-fast: 0ms;
+  --duration-normal: 0ms;
+  --duration-slow: 0ms;
+  --duration-gentle: 0ms;
+  --duration-slow-ambient: 0ms;
+}

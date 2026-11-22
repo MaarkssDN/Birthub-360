@@ -1,0 +1,9 @@
+{
+  "name": "testland/payment-gateway-sandboxes",
+  "description": "Use when code integrated with Adyen, PayPal or Braintree needs tests in sandbox mode: test credentials, sandbox URLs, deterministic test card numbers and each gateway's webhook simulator. For Stripe use stripe-test-cards-and-webhooks or stripe-subscription-billing-test-author.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.0.2"
+}

@@ -1,0 +1,9 @@
+{
+  "name": "testland/pii-masking-pipeline-builder",
+  "description": "Use when non-production environments need masked production data. Classifies each field against GDPR, CCPA, NIST and HIPAA PII categories, picks a masking operator, decides pseudonymization vs anonymization, emits a Presidio, Faker and Synthea config and blocks promotion if a re-scan finds PII.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.4"
+}

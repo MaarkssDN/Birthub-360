@@ -1,0 +1,102 @@
+name: Security - CodeQL
+
+# ITEM-10 (Onda 2 — CodeQL/Trivy/Dependency Review bloqueantes). Roda análise estática de
+# segurança (SAST) nas linguagens com superfície real de aplicação neste repositório:
+#   - javascript-typescript: frontend React + backend Express (src/, server.ts, worker.ts).
+#   - python: scripts auxiliares e ferramentas Python ainda versionados no repositório.
+# `android/` só tem boilerplate de teste do Capacitor (2 arquivos .java de exemplo, sem lógica
+# própria) — não entrou como linguagem própria por não ter superfície de segurança real hoje.
+#
+# CodeQL sozinho (github/codeql-action/analyze) NÃO falha o workflow por achado — só publica SARIF
+# na aba Security. O gate real que faz "PR com vulnerabilidade proibida falha" (critério de aceite
+# do ITEM-10) é o passo seguinte, `security:codeql-sarif`
+# (scripts/security/check-codeql-sarif.ts), que lê o SARIF gravado localmente e falha em qualquer
+# achado `level: error` (achado de alta confiança dos suites padrão do CodeQL).
+
+on:
+  pull_request:
+    branches: [ main, master ]
+  push:
+    branches: [ main, master ]
+  schedule:
+    # Quarta-feira, 06:00 UTC — deslocado do agendamento semanal do Trivy (segunda, 06:00 UTC) em
+    # security-trivy.yml para não competir por runner no mesmo horário.
+    - cron: '0 6 * * 3'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: "CodeQL / ${{ matrix.language }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+      # Necessário em repositórios privados para o CodeQL determinar automaticamente a
+      # linguagem/branch base; inofensivo em repositório público.
+      actions: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: javascript-typescript
+            build-mode: none
+          - language: python
+            build-mode: none
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          config-file: ./.github/codeql/codeql-config.yml
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          category: "/language:${{ matrix.language }}"
+          output: results
+          upload: never
+
+      - name: Upload SARIF para a aba Security
+        if: always()
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          sarif_file: results
+          category: "/language:${{ matrix.language }}"
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+
+      # `npm ci` (instala as ~1600 dependências da aplicação) não é necessário aqui — este job só
+      # roda um script de gate sem dependências de app, `npx tsx` traz só o runtime TS (bem mais
+      # rápido). O script é coberto por teste unitário próprio
+      # (tests/unit/security-codeql-sarif.test.ts), rodado no job de aplicação normal (ci.yml).
+      - name: "Gate: falhar em achado CodeQL error-level"
+        run: |
+          set -euo pipefail
+          if [ ! -d results ] || [ -z "$(find results -maxdepth 1 -type f -name '*.sarif' -size +0c -print -quit)" ]; then
+            echo "::error::CodeQL did not produce a non-empty SARIF report. Analysis evidence is required."
+            exit 1
+          fi
+          npx --yes tsx scripts/security/check-codeql-sarif.ts results
+
+      - name: Upload SARIF como artefato (auditoria/retenção)
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: codeql-sarif-${{ matrix.language }}
+          path: results/*.sarif
+          retention-days: 30
+          if-no-files-found: error

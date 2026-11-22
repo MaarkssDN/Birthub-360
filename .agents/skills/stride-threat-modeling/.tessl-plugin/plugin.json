@@ -1,0 +1,9 @@
+{
+  "name": "testland/stride-threat-modeling",
+  "description": "Use when a design, story or architecture sketch touching login, user data, payments, file uploads or an external integration is about to be built with no threat model. Walks assets and trust boundaries through Microsoft's STRIDE categories, triages threats and writes the threat model into the repo.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.4.8"
+}

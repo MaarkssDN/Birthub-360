@@ -1,0 +1,405 @@
+/**
+ * useDatabase.ts — React hooks for real-time data from the PostgreSQL/Prisma backend.
+ * Provides loading state, error handling, refetch, and CRUD mutations for all modules.
+ */
+
+import { useCallback, useEffect, useState } from 'react';
+import {
+  analyticsApi,
+  type ProductivityHeatmapSlot,
+  type RealtimeCockpitMetrics,
+  type UnifiedTimelineEntityType,
+  type UnifiedTimelineEvent,
+  type UnifiedTimelineOutcome,
+  type UnifiedTimelineQuery,
+} from '../features/analytics/analytics.api.js';
+export type {
+  ProductivityHeatmapSlot,
+  RealtimeCockpitMetrics,
+  UnifiedTimelineEntityType,
+  UnifiedTimelineEvent,
+  UnifiedTimelineOutcome,
+  UnifiedTimelineQuery,
+};
+import { activitiesDB, analyticsDB, companiesDB, contactsDB, leadsDB } from '../lib/db.js';
+import { readSseStream } from '../lib/sse.js';
+import type { Activity, Company, Contact, Lead, PaginatedResponse } from '../types/index.js';
+
+// ─── Generic fetch hook ────────────────────────────────────────────────────────
+function useFetch<T>(fetcher: () => Promise<T>, deps: unknown[] = []) {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await fetcher();
+      setData(result);
+    } catch (e: any) {
+      setError(e instanceof Error ? e.message : 'Erro ao carregar dados');
+    } finally {
+      setLoading(false);
+    }
+    // biome-ignore lint/correctness/useExhaustiveDependencies: `deps` é parâmetro genérico do hook (não um array literal) — cada chamador informa suas próprias dependências.
+  }, deps); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  return { data, loading, error, refetch: load };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// COMPANIES HOOK
+// ─────────────────────────────────────────────────────────────────────────────
+export function useCompanies(params?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+  segment?: string;
+}) {
+  const { data, loading, error, refetch } = useFetch(
+    () => companiesDB.list(params),
+    [params?.page, params?.limit, params?.search, params?.status, params?.segment],
+  );
+
+  const createCompany = useCallback(
+    async (newData: Partial<Company>) => {
+      const created = await companiesDB.create(newData);
+      await refetch();
+      return created;
+    },
+    [refetch],
+  );
+
+  const updateCompany = useCallback(
+    async (id: string, updates: Partial<Company>) => {
+      const updated = await companiesDB.update(id, updates);
+      await refetch();
+      return updated;
+    },
+    [refetch],
+  );
+
+  const deleteCompany = useCallback(
+    async (id: string) => {
+      await companiesDB.delete(id);
+      await refetch();
+    },
+    [refetch],
+  );
+
+  return {
+    companies: (data as PaginatedResponse<Company>)?.data ?? [],
+    meta: (data as PaginatedResponse<Company>)?.meta,
+    loading,
+    error,
+    refetch,
+    createCompany,
+    updateCompany,
+    deleteCompany,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONTACTS HOOK
+// ─────────────────────────────────────────────────────────────────────────────
+export function useContacts(params?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  companyId?: string;
+  status?: string;
+}) {
+  const { data, loading, error, refetch } = useFetch(
+    () => contactsDB.list(params),
+    [params?.page, params?.limit, params?.search, params?.companyId, params?.status],
+  );
+
+  const createContact = useCallback(
+    async (newData: Partial<Contact>) => {
+      const created = await contactsDB.create(newData);
+      await refetch();
+      return created;
+    },
+    [refetch],
+  );
+
+  const updateContact = useCallback(
+    async (id: string, updates: Partial<Contact>) => {
+      const updated = await contactsDB.update(id, updates);
+      await refetch();
+      return updated;
+    },
+    [refetch],
+  );
+
+  const deleteContact = useCallback(
+    async (id: string) => {
+      await contactsDB.delete(id);
+      await refetch();
+    },
+    [refetch],
+  );
+
+  return {
+    contacts: (data as PaginatedResponse<Contact>)?.data ?? [],
+    meta: (data as PaginatedResponse<Contact>)?.meta,
+    loading,
+    error,
+    refetch,
+    createContact,
+    updateContact,
+    deleteContact,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LEADS / CRM HOOK
+// ─────────────────────────────────────────────────────────────────────────────
+export function useLeads(params?: {
+  page?: number;
+  limit?: number;
+  status?: string;
+  companyId?: string;
+  owner?: string;
+}) {
+  const { data, loading, error, refetch } = useFetch(
+    () => leadsDB.list(params),
+    [params?.page, params?.limit, params?.status, params?.companyId, params?.owner],
+  );
+
+  const createLead = useCallback(
+    async (newData: Partial<Lead>) => {
+      const created = await leadsDB.create(newData);
+      await refetch();
+      return created;
+    },
+    [refetch],
+  );
+
+  const updateLead = useCallback(
+    async (id: string, updates: Partial<Lead>) => {
+      const updated = await leadsDB.update(id, updates);
+      await refetch();
+      return updated;
+    },
+    [refetch],
+  );
+
+  const moveLead = useCallback(
+    async (id: string, status: string) => {
+      const updated = await leadsDB.updateStatus(id, status);
+      await refetch();
+      return updated;
+    },
+    [refetch],
+  );
+
+  const deleteLead = useCallback(
+    async (id: string) => {
+      await leadsDB.delete(id);
+      await refetch();
+    },
+    [refetch],
+  );
+
+  return {
+    leads: (data as PaginatedResponse<Lead>)?.data ?? [],
+    meta: (data as PaginatedResponse<Lead>)?.meta,
+    loading,
+    error,
+    refetch,
+    createLead,
+    updateLead,
+    moveLead,
+    deleteLead,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ACTIVITIES HOOK
+// ─────────────────────────────────────────────────────────────────────────────
+export function useActivities(params?: {
+  page?: number;
+  limit?: number;
+  leadId?: string;
+  status?: string;
+  type?: string;
+  from?: string;
+  to?: string;
+}) {
+  const { data, loading, error, refetch } = useFetch(
+    () => activitiesDB.list(params),
+    [
+      params?.page,
+      params?.limit,
+      params?.leadId,
+      params?.status,
+      params?.type,
+      params?.from,
+      params?.to,
+    ],
+  );
+
+  const createActivity = useCallback(
+    async (newData: Partial<Activity>) => {
+      const created = await activitiesDB.create(newData);
+      await refetch();
+      return created;
+    },
+    [refetch],
+  );
+
+  const updateActivity = useCallback(
+    async (id: string, updates: Partial<Activity>) => {
+      const updated = await activitiesDB.update(id, updates);
+      await refetch();
+      return updated;
+    },
+    [refetch],
+  );
+
+  const deleteActivity = useCallback(
+    async (id: string) => {
+      await activitiesDB.delete(id);
+      await refetch();
+    },
+    [refetch],
+  );
+
+  return {
+    activities: (data as PaginatedResponse<Activity>)?.data ?? [],
+    meta: (data as PaginatedResponse<Activity>)?.meta,
+    loading,
+    error,
+    refetch,
+    createActivity,
+    updateActivity,
+    deleteActivity,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ANALYTICS OVERVIEW HOOK
+// ─────────────────────────────────────────────────────────────────────────────
+export function useAnalytics() {
+  return useFetch(() => analyticsDB.overview(), []);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ANALYTICS DASHBOARD HOOK (série mensal + ranking por dono, /api/analytics/dashboard)
+// ─────────────────────────────────────────────────────────────────────────────
+export function useAnalyticsDashboard(months: number) {
+  return useFetch(() => analyticsApi.dashboard(months), [months]);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PRODUCTIVITY HEATMAP HOOK (/api/analytics/productivity-heatmap)
+// ─────────────────────────────────────────────────────────────────────────────
+export function useProductivityHeatmap(days = 30) {
+  return useFetch<ProductivityHeatmapSlot[]>(() => analyticsApi.productivityHeatmap(days), [days]);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REALTIME COCKPIT HOOK (/api/analytics/realtime-cockpit + SSE Live Stream)
+// ─────────────────────────────────────────────────────────────────────────────
+export function useRealtimeCockpit() {
+  const [data, setData] = useState<RealtimeCockpitMetrics | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isLiveConnected, setIsLiveConnected] = useState(false);
+
+  const load = useCallback(async () => {
+    try {
+      const res = await analyticsApi.realtimeCockpit();
+      setData(res);
+      setError(null);
+    } catch (e: any) {
+      setError(e instanceof Error ? e.message : 'Erro ao carregar cockpit em tempo real');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void load();
+    const interval = setInterval(() => {
+      void load();
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, [load]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    let cancelled = false;
+
+    const connectSSE = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/events', {
+          method: 'GET',
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          signal: controller.signal,
+        });
+
+        if (response.ok) {
+          setIsLiveConnected(true);
+        }
+
+        await readSseStream(response, () => {
+          if (!cancelled) {
+            void load();
+          }
+        });
+      } catch {
+        if (!cancelled) {
+          setIsLiveConnected(false);
+        }
+      }
+    };
+
+    void connectSSE();
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [load]);
+
+  return { data, loading, error, isLiveConnected, refetch: load };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UNIFIED TIMELINE HOOK (/api/analytics/unified-timeline)
+// ─────────────────────────────────────────────────────────────────────────────
+export function useUnifiedTimeline(query: UnifiedTimelineQuery = {}) {
+  const [events, setEvents] = useState<UnifiedTimelineEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchTimeline = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await analyticsApi.unifiedTimeline(query);
+      setEvents(data ?? []);
+      setError(null);
+    } catch (e: any) {
+      setError(e instanceof Error ? e.message : 'Erro ao carregar timeline unificada');
+    } finally {
+      setLoading(false);
+    }
+  }, [query.period, query.entityType, query.outcome, query.search, query.page, query.limit]);
+
+  useEffect(() => {
+    void fetchTimeline();
+  }, [fetchTimeline]);
+
+  return { events, loading, error, refetch: fetchTimeline };
+}

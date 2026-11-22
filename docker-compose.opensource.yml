@@ -1,0 +1,281 @@
+services:
+  litellm:
+    environment:
+      LANGFUSE_HOST: http://langfuse-web:3000
+      LANGFUSE_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY:-}
+      LANGFUSE_SECRET_KEY: ${LANGFUSE_SECRET_KEY:-}
+    depends_on:
+      langfuse-web:
+        condition: service_healthy
+
+  langfuse-web: &langfuse-base
+    image: langfuse/langfuse:3
+    environment: &langfuse-env
+      HOSTNAME: '0.0.0.0'
+      DATABASE_URL: postgresql://prospector:prospector_pass@postgres:5432/langfuse
+      NEXTAUTH_URL: http://localhost:3001
+      NEXTAUTH_SECRET: ${LANGFUSE_NEXTAUTH_SECRET:-change-this-langfuse-nextauth-secret}
+      SALT: ${LANGFUSE_SALT:-change-this-langfuse-salt}
+      ENCRYPTION_KEY: ${LANGFUSE_ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
+      TELEMETRY_ENABLED: 'false'
+      REDIS_CONNECTION_STRING: redis://:prospector_redis_pass@redis:6379
+      CLICKHOUSE_MIGRATION_URL: clickhouse://clickhouse:9000
+      CLICKHOUSE_URL: http://clickhouse:8123
+      CLICKHOUSE_USER: clickhouse
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-clickhouse-local-password}
+      CLICKHOUSE_CLUSTER_ENABLED: 'false'
+      LANGFUSE_S3_EVENT_UPLOAD_BUCKET: langfuse
+      LANGFUSE_S3_EVENT_UPLOAD_REGION: auto
+      LANGFUSE_S3_EVENT_UPLOAD_ACCESS_KEY_ID: ${LANGFUSE_MINIO_USER:-langfuse}
+      LANGFUSE_S3_EVENT_UPLOAD_SECRET_ACCESS_KEY: ${LANGFUSE_MINIO_PASSWORD:-change-this-langfuse-minio-password}
+      LANGFUSE_S3_EVENT_UPLOAD_ENDPOINT: http://langfuse-minio:9000
+      LANGFUSE_S3_EVENT_UPLOAD_FORCE_PATH_STYLE: 'true'
+    ports: ['3001:3000']
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      postgres:
+        condition: service_started
+      redis:
+        condition: service_started
+      clickhouse:
+        condition: service_healthy
+      langfuse-minio:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/api/public/health || exit 1',
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+
+  langfuse-worker:
+    <<: *langfuse-base
+    image: langfuse/langfuse-worker:3
+    ports: []
+    environment:
+      <<: *langfuse-env
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:25.8-alpine
+    environment:
+      CLICKHOUSE_USER: clickhouse
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-clickhouse-local-password}
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - clickhouse_logs:/var/log/clickhouse-server
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://127.0.0.1:8123/ping']
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  langfuse-minio:
+    image: elestio/minio:latest
+    command: ['server', '/data', '--console-address', ':9001']
+    environment:
+      MINIO_ROOT_USER: ${LANGFUSE_MINIO_USER:-langfuse}
+      MINIO_ROOT_PASSWORD: ${LANGFUSE_MINIO_PASSWORD:-change-this-langfuse-minio-password}
+    volumes: ['langfuse_minio_data:/data']
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://127.0.0.1:9000/minio/health/live']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  langfuse-minio-init:
+    image: alpine:latest
+    depends_on:
+      langfuse-minio:
+        condition: service_healthy
+    entrypoint: ['/bin/sh', '-c']
+    command:
+      - >-
+        apk add --no-cache curl &&
+        curl -O https://dl.min.io/client/mc/release/linux-amd64/mc &&
+        chmod +x mc &&
+        ./mc alias set local http://langfuse-minio:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}" &&
+        ./mc mb --ignore-existing local/langfuse
+    environment:
+      MINIO_ROOT_USER: ${LANGFUSE_MINIO_USER:-langfuse}
+      MINIO_ROOT_PASSWORD: ${LANGFUSE_MINIO_PASSWORD:-change-this-langfuse-minio-password}
+    security_opt:
+      - no-new-privileges:true
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.136.0
+    command: ['--config=/etc/otelcol-contrib/config.yaml']
+    volumes:
+      - ./infrastructure/observability/otel-collector.yml:/etc/otelcol-contrib/config.yaml:ro
+    ports: ['4317:4317', '4318:4318', '9464:9464']
+    security_opt:
+      - no-new-privileges:true
+    depends_on: [tempo, loki]
+
+  tempo:
+    image: grafana/tempo:2.8.2
+    command: ['-config.file=/etc/tempo.yml']
+    volumes:
+      - ./infrastructure/observability/tempo.yml:/etc/tempo.yml:ro
+      - tempo_data:/var/tempo
+    security_opt:
+      - no-new-privileges:true
+
+  loki:
+    image: grafana/loki:3.5.5
+    command: ['-config.file=/etc/loki/local-config.yaml']
+    volumes:
+      - ./infrastructure/observability/loki.yml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    security_opt:
+      - no-new-privileges:true
+
+  alertmanager:
+    image: prom/alertmanager:v0.28.0
+    command: ['--config.file=/etc/alertmanager/alertmanager.yml']
+    volumes:
+      - ./infrastructure/observability/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    ports: ['9093:9093']
+    environment:
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL:-}
+    security_opt:
+      - no-new-privileges:true
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    command: ['--config.file=/etc/prometheus/prometheus.yml']
+    volumes:
+      - ./infrastructure/observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports: ['9090:9090']
+    security_opt:
+      - no-new-privileges:true
+
+  grafana:
+    image: grafana/grafana-oss:12.1.1
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-change-this-grafana-password}
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+    ports: ['3002:3000']
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infrastructure/observability/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+    security_opt:
+      - no-new-privileges:true
+    depends_on: [prometheus, tempo, loki]
+
+  # ── Temporal Server Suite (OS-4: Durable Workflow Engine) ────────────────────
+  temporal:
+    image: temporalio/auto-setup:1.24.2
+    container_name: birthhub_temporal
+    environment:
+      DB: postgres12
+      DB_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-prospector}
+      POSTGRES_PWD: ${POSTGRES_PASSWORD:-prospector_pass}
+      POSTGRES_SEEDS: postgres
+      ENABLE_ES: 'false'
+      TEMPORAL_CORS_ORIGINS: 'http://localhost:3000,http://localhost:8233,http://localhost:8088'
+    ports:
+      - '7233:7233'
+    depends_on:
+      postgres:
+        condition: service_started
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'temporal', 'operator', 'cluster', 'health']
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  temporal-admin-tools:
+    image: temporalio/admin-tools:1.24.2-tctl-1.18.1-cli-1.0.0
+    container_name: birthhub_temporal_admin_tools
+    environment:
+      TEMPORAL_ADDRESS: temporal:7233
+      TEMPORAL_CLI_ADDRESS: temporal:7233
+    depends_on:
+      temporal:
+        condition: service_started
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  temporal-ui:
+    image: temporalio/ui:2.30.0
+    container_name: birthhub_temporal_ui
+    environment:
+      TEMPORAL_ADDRESS: temporal:7233
+      TEMPORAL_CORS_ORIGINS: 'http://localhost:3000,http://localhost:8233,http://localhost:8088'
+    ports:
+      - '8233:8080'
+    depends_on:
+      temporal:
+        condition: service_started
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+  k6:
+    image: grafana/k6:latest
+    profiles: [tools]
+    command: ['run', '/tests/k6-api.js']
+    volumes: ['./tests/load/k6-api.js:/tests/k6-api.js:ro']
+    environment:
+      BASE_URL: http://host.docker.internal:3000
+    extra_hosts: ['host.docker.internal:host-gateway']
+
+  # Onda 42 (dossie CPI DEC-20 opcao A): mesma ideia do servico `k6` acima, mas contra rotas
+  # AUTENTICADAS reais do CRM (ver tests/load/k6-crm-authenticated.js) em vez de so /health/*.
+  # `npm run load:k6:crm` monta este servico. A app alvo precisa estar de pe com
+  # API_RATE_LIMIT_MAX bem mais alto do que o default de producao (600/15min por IP) — ver o
+  # comentario no topo do proprio script k6 para o porque.
+  k6-crm:
+    image: grafana/k6:latest
+    profiles: [tools]
+    command: ['run', '/tests/k6-crm-authenticated.js']
+    volumes: ['./tests/load/k6-crm-authenticated.js:/tests/k6-crm-authenticated.js:ro']
+    environment:
+      BASE_URL: http://host.docker.internal:3000
+    extra_hosts: ['host.docker.internal:host-gateway']
+
+  zap:
+    image: ghcr.io/zaproxy/zaproxy:stable
+    profiles: [tools]
+    command:
+      [
+        'zap-api-scan.py',
+        '-t',
+        'http://host.docker.internal:3000/api-docs/openapi.yaml',
+        '-f',
+        'openapi',
+        '-r',
+        '/zap/wrk/zap-report.html',
+      ]
+    volumes: ['./reports:/zap/wrk:rw']
+    extra_hosts: ['host.docker.internal:host-gateway']
+
+  trivy:
+    image: aquasec/trivy:latest
+    profiles: [tools]
+    command: ['fs', '--exit-code', '1', '--severity', 'HIGH,CRITICAL', '/workspace']
+    volumes: ['.:/workspace:ro']
+
+volumes:
+  clickhouse_data:
+  clickhouse_logs:
+  langfuse_minio_data:
+  tempo_data:
+  loki_data:
+  prometheus_data:
+  grafana_data:
+

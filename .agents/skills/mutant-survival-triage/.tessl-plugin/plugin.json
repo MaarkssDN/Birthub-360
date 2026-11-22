@@ -1,0 +1,9 @@
+{
+  "name": "testland/mutant-survival-triage",
+  "description": "Use when a mutation testing run (StrykerJS, PIT, mutmut or Mull) has finished and surviving mutants need explaining. Classifies each survivor (missing case, weak assertion, equivalent, unreachable, flaky) and drafts the test that would kill it, without rewriting tests automatically.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.16"
+}

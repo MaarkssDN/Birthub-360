@@ -1,0 +1,9 @@
+{
+  "name": "testland/codeql-queries",
+  "description": "Use when a GitHub-hosted repo needs deep semantic static analysis (SAST) beyond pattern matching, such as cross-file taint and data flow: codeql database create and analyze per language, query packs, SARIF upload to code scanning, and suppressions.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.10"
+}

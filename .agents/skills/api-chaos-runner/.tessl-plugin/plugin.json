@@ -1,0 +1,9 @@
+{
+  "name": "testland/api-chaos-runner",
+  "description": "Use when an existing API test suite should be rerun under network faults to prove retries, timeouts, circuit breakers and fallbacks work. Injects latency, timeouts, dropped connections, bandwidth caps and packet loss with Toxiproxy and reports which assertions break under which fault.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.5.6"
+}

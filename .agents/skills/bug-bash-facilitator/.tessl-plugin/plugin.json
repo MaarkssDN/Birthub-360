@@ -1,0 +1,9 @@
+{
+  "name": "testland/bug-bash-facilitator",
+  "description": "Use when a team wants a coordinated bug bash before a release or after a big change instead of an ad-hoc 'everyone test for an hour'. Prepares the charter, data, environments and sign-up, runs roles, a shared board and live triage, scores findings and writes the same-day wrap-up.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.7.6"
+}

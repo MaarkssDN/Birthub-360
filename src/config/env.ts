@@ -1,0 +1,547 @@
+import { z } from 'zod';
+import 'dotenv/config';
+import { logger } from '../lib/logger.js';
+
+const envSchema = z
+  .object({
+    // Sem default: um deployment que esqueça de definir NODE_ENV deve falhar ao subir
+    // em vez de silenciosamente assumir 'development' (e, com isso, habilitar bypasses
+    // de autenticação e CORS permissivo destinados apenas a ambiente local).
+    NODE_ENV: z.enum(['development', 'production', 'test']),
+
+    // ── Correlação de Release em Produção (Onda 18) ──────────────────────────
+    COMMIT_SHA: z.string().default('unknown'),
+    BUILD_VERSION: z.string().default('1.0.0'),
+    DEPLOY_TIMESTAMP: z.string().default('unknown'),
+    PORT: z.string().default('3005'),
+    HOST: z.string().default('0.0.0.0'),
+    DATABASE_URL: z.string().min(1, 'DATABASE_URL é obrigatória'),
+    REDIS_URL: z.string().optional(),
+    PRODUCTION_DOMAIN: z.string().optional(),
+    DOMAIN: z.string().optional(),
+    COOKIE_DOMAIN: z.string().optional(),
+    SECURE_COOKIES: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
+    ALLOWED_ORIGINS: z.string().optional(),
+    BETTER_AUTH_URL: z.string().optional(),
+    BETTER_AUTH_SECRET: z.string().optional(),
+    // Chave mestra (32 bytes, base64) que cifra em repouso credenciais de integrações persistidas
+    // no banco (GoogleWorkspaceConnection.accessToken/refreshToken, BitrixConnection.webhookUrl —
+    // ver src/lib/crypto/secretFields.ts). Separada de BETTER_AUTH_SECRET de propósito: uma chave
+    // comprometida não deve automaticamente comprometer a outra. Opcional aqui (mesmo padrão de
+    // BETTER_AUTH_SECRET) — a obrigatoriedade em produção é reforçada em runtime por
+    // secretFields.ts, não aqui, para não derrubar a aplicação inteira ao subir só por causa deste
+    // schema quando NODE_ENV ainda não foi resolvido nesta camada.
+    CREDENTIALS_ENCRYPTION_KEY: z.string().optional(),
+    // Chave ANTERIOR de credenciais, mantida durante o grace period de rotação
+    // (BT360-DT-0073): envelopes "enc:v2:<keyId>:..." gravados com a chave antiga
+    // continuam decriptáveis enquanto esta variável estiver definida. Remover só
+    // após re-cifrar todos os segredos com a chave nova (re-encrypt sweep).
+    CREDENTIALS_ENCRYPTION_KEY_PREVIOUS: z.string().optional(),
+    // Mesma obrigatoriedade condicional de CREDENTIALS_ENCRYPTION_KEY acima, reforçada em runtime
+    // por src/lib/crypto/piiIndex.ts — chave do índice cego (HMAC-SHA256) de busca exata sobre
+    // Contact.email/phone/whatsapp cifrados em repouso. Substitui `PII_SEARCH_HMAC_SECRET`
+    // (DEC-01/onda-42, `src/lib/security/piiSearchIndex.ts`) — aquela rodada implementou só o
+    // mecanismo de busca, deixando a cifra e a migration como handoff pendente
+    // (`.agents/handoffs/onda-42/01-para-00-pii-hash-fields.md`); este PR completa exatamente esse
+    // handoff (schema, migration, cifra AES-256-GCM reativada, decriptação de leitura aninhada,
+    // backfill) — ver esse mesmo handoff para o resumo da consolidação.
+    PII_BLIND_INDEX_KEY: z.string().optional(),
+    GOOGLE_CLIENT_ID: z.string().optional(),
+    GOOGLE_CLIENT_SECRET: z.string().optional(),
+    MEILI_MASTER_KEY: z.string().optional(),
+    MEILI_HOST: z.string().optional(),
+    PROSPECTING_PROVIDER_MODE: z.enum(['free', 'hybrid']).default('free'),
+    CNPJ_PROVIDER: z.enum(['brasilapi']).default('brasilapi'),
+    // Default seguro (fail-closed): o bypass de autenticação de desenvolvimento só
+    // deve ficar ativo quando alguém define ALLOW_DEV_AUTH_BYPASS=true explicitamente.
+    ALLOW_DEV_AUTH_BYPASS: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
+    API_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(600),
+    AI_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(30),
+    // Orçamento mensal de IA (USD). Alimenta duas coisas: a métrica passiva `ai_usage_budget_usd_total`
+    // (src/lib/ai/metrics.ts, consumida pelo alerta AIBudgetOverrun em
+    // infrastructure/observability/alert.rules.yml) E, desde AI-011 (onda 30), o circuit breaker real
+    // de orçamento (src/lib/ai/budget.ts): ao atingir este teto (soma de AILog.cost do mês corrente,
+    // em todas as organizações), toda nova chamada de IA passa a lançar `AiBudgetExceededError` em vez
+    // de contatar um provedor — decisão de produto (bloquear, não degradar nem só notificar) tomada
+    // explicitamente nesta rodada. Opcional e sem default: sem configurar, nem a métrica é publicada
+    // em /metrics (evita um "0" fabricado que faria a divisão custo/orçamento do alerta virar +Inf a
+    // qualquer custo real) nem o circuit breaker de orçamento bloqueia nada — mesmo comportamento
+    // "sem teto" de antes.
+    AI_MONTHLY_BUDGET_USD: z.coerce.number().positive().optional(),
+    // 20/15min por IP é apertado o bastante pra conter força bruta/credential stuffing, mas também
+    // apertado demais pra uma suíte E2E que cria uma conta real por teste sequencialmente a partir
+    // do mesmo IP (ver server.ts authLimiter) — configurável para o ambiente de CI poder abrir a
+    // cota sem enfraquecer o valor padrão de produção.
+    AUTH_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(20),
+    // Limite dedicado do módulo de "Reportar Problema" (POST /api/bug-reports), por organização —
+    // igual raciocínio do aiLimiter (SEC-008b): por tenant, não por IP, para um escritório inteiro
+    // atrás do mesmo NAT não esgotar a cota de spam-protection de outra organização. 10/15min é
+    // folgado para uso legítimo (ninguém reporta 10 bugs em 15 minutos) e apertado o bastante para
+    // conter um usuário mal-intencionado enchendo a tabela BugReport.
+    BUG_REPORT_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
+    // Limite dedicado do POST público /api/public/demo-leads (landing 360°), por IP, janela de 15min.
+    // 5 é folgado para um humano preencher o formulário (inclusive retries) e apertado o bastante
+    // para conter abuso/enumeração. Não compartilha a cota genérica de 600 do apiLimiter.
+    PUBLIC_LEAD_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(5),
+    // Limite dedicado dos endpoints de exportação (CSV/PDF/Excel), por tenant — 30/15min é
+    // folgado para relatórios legítimos e impede varredura em massa de tabelas via export.
+    EXPORT_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(30),
+    // Limite do agendamento público /api/calendar/book, por IP — 10/15min contém scraping
+    // de slots e spam de reservas sem atrapalhar um convidado real.
+    PUBLIC_BOOKING_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
+    // Organização dona dos leads da landing institucional. O endpoint público NÃO aceita
+    // tenantId/organizationId do cliente — só este valor, configurado no servidor, resolve o
+    // tenant. Sem ele o POST responde 503 (fail-closed). Use o id (cuid) da Organization, não um
+    // slug ou nome. Pendente do OK do Marcelo em produção.
+    LANDING_LEAD_ORGANIZATION_ID: z.string().min(1).optional(),
+    // Sal HMAC-SHA256 do IP do titular na captura pública. Sem valor, o IP não é persistido
+    // (nunca em claro). Mínimo 16 caracteres quando definido.
+    PUBLIC_LEAD_IP_HASH_SECRET: z.string().min(16).optional(),
+    // E-mail transacional de confirmação + instruções de DSR. Desligado por padrão.
+    LANDING_LEAD_CONFIRMATION_EMAIL_ENABLED: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
+    // Política operacional de retenção do lead da demo (aprovada pelo Marcelo em 2026-11-11).
+    // Não é texto legal final. O job de purge fica como follow-up — estas vars só declaram o prazo.
+    LANDING_LEAD_RETENTION_IDLE_DAYS: z.coerce.number().int().positive().default(90),
+    LANDING_LEAD_RETENTION_AFTER_DEMO_DAYS: z.coerce.number().int().positive().default(30),
+    JSON_BODY_LIMIT: z.string().default('2mb'),
+    TRUST_PROXY: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
+    EXPOSE_METRICS: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
+    ENABLE_SEARCH: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
+    ENABLE_QUEUES: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
+    // Gated por ENABLE_EMBEDDED_WORKERS: um BullMQ Worker (diferente de uma Queue) conecta no Redis
+    // avidamente ao ser criado — sem Redis disponível, isso derruba o processo. Default false:
+    // workers embutidos em server.ts só sobem se explicitamente habilitados; o entrypoint dedicado
+    // worker.ts é o caminho padrão de processamento (ver Fase Final 2, .agents/runs/final-fase-2.md).
+    ENABLE_EMBEDDED_WORKERS: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
+    // DOC-002: documentação OpenAPI (/api-docs, Swagger UI). Default false — a rota só é montada
+    // explicitamente (ver server.ts), nunca implicitamente por NODE_ENV !== 'production' sozinho.
+    EXPOSE_API_DOCS: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
+    // SEC-001/SEC-002 (Sprint 01/Onda 13): segredo de "operador de plataforma", separado do papel
+    // ADMIN de tenant. ADMIN de tenant já é exigido pelo próprio RBAC de negócio — este token é a
+    // segunda trava de "isso é infraestrutura compartilhada entre TODAS as organizações, não uma
+    // permissão de uma organização". Sem este valor configurado, /admin/queues e /metrics negam
+    // acesso por padrão (fail-closed) — ver src/shared/middlewares/requirePlatformOperator.ts.
+    // `.env.example` entrega `PLATFORM_OPERATOR_TOKEN=` (vazio) — dotenv carrega isso como string
+    // vazia, que NÃO é `undefined`: sem o preprocess, `z.string().min(16).optional()` rejeitava a
+    // string vazia ("Too small") e copiar o .env.example verbatim impedia o servidor de subir.
+    // Vazio continua significando "não configurado" (fail-closed em /admin/queues e /metrics).
+    PLATFORM_OPERATOR_TOKEN: z.preprocess(
+      (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
+      z.string().min(16).optional(),
+    ),
+
+    INFISICAL_TOKEN: z.string().optional(),
+    VAULT_ADDR: z.string().optional(),
+
+    // ── Gateway de IA: Flowise / OpenWebUI (OS-3, docker-compose.services.yml) ──
+    // Ambos opcionais e com fallback de host local: sem eles configurados, litellm.provider.ts
+    // simplesmente não considera esses dois destinos ao rotear por prefixo de modelo
+    // ("flowise/...", "openwebui/..."), sem impedir a aplicação inteira de subir. Antes lidos
+    // direto de process.env dentro do provider (inconsistente com o resto do arquivo) — movidos
+    // para cá para seguir o mesmo padrão de validação/tipagem de todas as outras integrações.
+    FLOWISE_URL: z.string().url().default('http://localhost:3008'),
+    FLOWISE_SECRET_KEY: z.string().optional(),
+    OPENWEBUI_URL: z.string().url().default('http://localhost:3009'),
+    OPENWEBUI_SECRET: z.string().optional(),
+    GEMINI_API_KEY: z.string().optional(),
+
+    // ── Qdrant (OS-5, docker-compose.services.yml) ───────────────────────────
+    // Cliente registrado em src/lib/qdrant/index.ts, mas hoje sem nenhuma feature plugada nele —
+    // o projeto já tem pgvector em produção (schema.prisma) para embeddings, e duplicar a mesma
+    // necessidade em dois bancos vetoriais sem um caso de uso real distinto seria só complexidade
+    // adicional. Fica disponível para quando (se) surgir uma necessidade concreta que o pgvector
+    // não cubra — só isolado no host, sem default sensível a expor.
+    QDRANT_HOST: z.string().default('localhost'),
+    QDRANT_PORT: z.coerce.number().int().positive().default(6333),
+    QDRANT_API_KEY: z.string().optional(),
+
+    // ── Temporal (OS-4, docker-compose.opensource.yml) ───────────────────────
+    TEMPORAL_ADDRESS: z.string().default('localhost:7233'),
+    TEMPORAL_NAMESPACE: z.string().default('default'),
+
+    // ── n8n — disparo de workflow de saída (OS-4, docker-compose.services.yml) ──
+    // Helper genérico em src/features/automations/infra/N8nWebhookDispatcher.ts, também sem
+    // nenhum gatilho de negócio ligado a ele ainda — decidir QUAL evento do sistema deve disparar
+    // qual workflow n8n é decisão de produto, não escopo desta integração de infraestrutura.
+    // Default false: chamar uma URL de webhook configurada errado/apontando pra fora não deve
+    // acontecer só porque N8N_WEBHOOK_URL ficou setada em algum .env esquecido.
+    ENABLE_N8N_WEBHOOKS: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
+    N8N_WEBHOOK_URL: z.string().url().optional(),
+
+    // ── SDR de voz (Birth Voices Hub) ────────────────────────────────────────
+    // Todas opcionais: sem elas a integração fica inerte (nenhuma ligação é disparada e o webhook
+    // responde 503), em vez de impedir a aplicação inteira de subir.
+    BIRTH_VOICES_URL: z.string().url().optional(),
+    BIRTH_VOICES_API_KEY: z.string().optional(),
+    BIRTH_VOICES_AGENT_ID: z.string().optional(),
+    // Segredo compartilhado que valida a assinatura HMAC dos webhooks de resultado da ligação.
+    BIRTH_VOICES_WEBHOOK_SECRET: z.string().optional(),
+    // URL pública desta aplicação — é o endereço que mandamos ao Birth Voices Hub para ele nos
+    // devolver o resultado da chamada, então precisa ser alcançável de fora.
+    PUBLIC_BASE_URL: z.string().url().optional(),
+
+    // ── Prospecção fria (discagem automática) ────────────────────────────────
+    // Duas chaves independentes para ligar: o booleano E a lista de organizações. Discar para quem
+    // nunca pediu contato é a operação mais arriscada do sistema — habilitar por engano tem que ser
+    // difícil, então nenhuma das duas sozinha basta.
+    SDR_COLD_CALL_ENABLED: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
+    /** Ids de organização separados por vírgula. Vazio = ninguém, mesmo com a flag acima ligada. */
+    SDR_COLD_CALL_ORGANIZATIONS: z.string().optional(),
+    // Janela de discagem no fuso do destinatário. O fim é exclusivo: 18 significa "até 17:59".
+    SDR_CALL_WINDOW_START: z.coerce.number().int().min(0).max(23).default(9),
+    SDR_CALL_WINDOW_END: z.coerce.number().int().min(1).max(24).default(18),
+    SDR_CALL_TIMEZONE: z.string().default('America/Sao_Paulo'),
+    SDR_MAX_CALLS_PER_RUN: z.coerce.number().int().positive().default(10),
+    SDR_MAX_ATTEMPTS_PER_LEAD: z.coerce.number().int().positive().default(3),
+
+    // Segredo do webhook /api/webhooks/voice-result (Bland AI). Fail-closed: sem ele o webhook
+    // responde 503 (ver voiceResult.webhook.ts) — nunca cai para um valor default versionado.
+    BIRTHHUB360_WEBHOOK_SECRET: z.string().optional(),
+
+    // ── Telefonia PABX 3CX ────────────────────────────────────────────────────
+    // Segredo compartilhado que valida a assinatura HMAC do webhook de eventos de chamada do 3CX
+    // (mesmo esquema do BIRTH_VOICES_WEBHOOK_SECRET). Sem ele o webhook fica fail-closed (503):
+    // quem chama esse endpoint não passa por authenticateToken (é o PABX do cliente, não um usuário
+    // logado), então sem assinatura qualquer um que descobrisse a URL poderia injetar eventos falsos.
+    THREECX_WEBHOOK_SECRET: z.string().optional(),
+    SDR_RETRY_COOLDOWN_HOURS: z.coerce.number().int().positive().default(48),
+
+    // ── Enxame autônomo (24h, sem gatilho humano) ────────────────────────────
+    // Mesmo padrão de dois-fatores da prospecção fria acima: nem toda organização deve ganhar um
+    // agente rodando sozinho por padrão. E, diferente da discagem fria, o enxame autônomo nunca
+    // executa uma ação real por conta própria — ele só PROPÕE, gravando uma AIPendingAction que
+    // um humano precisa aprovar (ver swarmScheduler.service.ts e aiPendingAction.service.ts, que já
+    // trata qualquer `action` sem executor conhecido como "unsupported_action").
+    SWARM_SCHEDULER_ENABLED: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
+    /** Ids de organização separados por vírgula. Vazio = ninguém, mesmo com a flag acima ligada. */
+    SWARM_SCHEDULER_ORGANIZATIONS: z.string().optional(),
+    SWARM_SCHEDULER_MAX_LEADS_PER_RUN: z.coerce.number().int().positive().default(5),
+    // supervised: analisa e deixa ações na caixa de aprovação. full: também pode executar o primeiro
+    // e-mail, mas somente com organização autorizada, score mínimo e dentro da janela comercial.
+    SWARM_AUTONOMY_MODE: z.enum(['supervised', 'full']).default('supervised'),
+    SWARM_AUTONOMOUS_MIN_SCORE: z.coerce.number().int().min(0).max(100).default(80),
+    SWARM_NEW_LEAD_GRACE_MINUTES: z.coerce.number().int().positive().default(30),
+    SWARM_STALE_PIPELINE_HOURS: z.coerce.number().int().positive().default(72),
+    SWARM_STALE_PROPOSAL_HOURS: z.coerce.number().int().positive().default(48),
+    SWARM_RECOMMENDATION_COOLDOWN_HOURS: z.coerce.number().int().positive().default(24),
+
+    // ── Envio real de e-mail (executor de AIPendingAction) ───────────────────
+    // Todas opcionais: sem SMTP_HOST, o mailer fica inerte — "aprovar" volta a só abrir o cliente
+    // de e-mail do usuário (mailto:), em vez de falhar a aplicação inteira ao subir.
+    SMTP_HOST: z.string().optional(),
+    SMTP_PORT: z.coerce.number().int().positive().default(587),
+    SMTP_SECURE: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
+    SMTP_USER: z.string().optional(),
+    SMTP_PASS: z.string().optional(),
+    /** Endereço "De" usado no envio — cai para SMTP_USER quando ausente. */
+    SMTP_FROM: z.string().optional(),
+    /** Caixa comercial que recebe leads do formulário público da landing
+     * (/api/public/lead-capture). Vazio = cai para SMTP_FROM/SMTP_USER; sem nenhum
+     * dos três a rota responde 503 (nunca finge captura). */
+    LEAD_CAPTURE_EMAIL: z.string().optional(),
+
+    // Segredo do webhook /api/webhooks/email/inbound (CYC-003, onda 26) — transporte de e-mail de
+    // ENTRADA, hoje um stub (nenhum provedor real de inbound-parse plugado, ver
+    // emailReply.webhook.ts). Mesmo esquema fail-closed de BIRTH_VOICES_WEBHOOK_SECRET: sem ele o
+    // webhook responde 503, nunca cai para um valor default versionado.
+    EMAIL_INBOUND_WEBHOOK_SECRET: z.string().optional(),
+
+    // Segredo do webhook /api/webhooks/signature/webhook (CYC-006, onda 28) — atualização de status
+    // de assinatura eletrônica vinda do provedor. O ENVIO da solicitação é um stub (nenhuma
+    // credencial de integrador gov.br configurada, ver GovBrSignatureProviderPort.ts), mas este
+    // webhook de ENTRADA já é real: fail-closed sem o segredo, mesmo esquema de
+    // EMAIL_INBOUND_WEBHOOK_SECRET.
+    SIGNATURE_INBOUND_WEBHOOK_SECRET: z.string().optional(),
+
+    // Segredo do webhook /api/integrations/chatwoot/webhook (OS-6) — Chatwoot assina cada entrega
+    // com HMAC-SHA256 sobre "{timestamp}.{corpo cru}" (header X-Chatwoot-Signature), verificado em
+    // chatwoot.helpers.ts. Mesmo esquema fail-closed dos webhooks acima: sem este valor, 503.
+    // Diferente de SECRET_KEY_BASE do Chatwoot (variável CHATWOOT_SECRET_KEY em .env.example, que
+    // é o segredo interno da aplicação Rails) — este é o hmac_token de assinatura de webhook,
+    // gerado pelo próprio Chatwoot por inbox/conta e copiado manualmente para cá.
+    CHATWOOT_WEBHOOK_SECRET: z.string().optional(),
+
+    // ── Retenção de histórico de extrações Bitrix (BitrixExtractionRun) ─────
+    // Onda 6, Agente 01A: o schema não precisa esperar a decisão humana de prazo pra existir, só o
+    // parâmetro. Mesmo padrão de janela já usado no worker de anonimização de leads desqualificados
+    // (autoAnonymizeDisqualified.worker.ts, 90 dias hardcoded) — aqui o valor é configurável em vez
+    // de fixo no código, e o worker de expurgo correspondente fica DESLIGADO por padrão (mesmo
+    // padrão de dois-fatores do SDR/enxame acima: a flag sozinha não move nada sem esta variável, e
+    // o valor de dias sozinho não expurga nada sem a flag). Confirmado pelo dono do produto em
+    // 2026-08-15: 45 dias — ver .agents/handoffs/onda-6/01A-para-06-bitrix-extraction-run-schema.md.
+    BITRIX_EXTRACTION_RETENTION_DAYS: z.coerce.number().int().positive().default(45),
+    BITRIX_EXTRACTION_PURGE_ENABLED: z
+      .enum(['true', 'false'])
+      .default('true')
+      .transform((value) => value === 'true'),
+    // Onda 7, Agente 06: diretório onde os arquivos gerados pelo serviço real de extração
+    // (CSV/XLSX/JSON) ficam em disco, fora do controle de versão (ver .gitignore). Mesma limitação
+    // conhecida já documentada para a sessão do WhatsApp (Integrations.tsx): no plano free do Render
+    // (ver render.yaml) o disco não é persistente entre reinícios/hibernação — um arquivo gerado
+    // pode deixar de existir depois de um restart, mesmo com o histórico (BitrixExtractionRun)
+    // continuando íntegro no Postgres. O download trata isso como 410 (não como erro silencioso),
+    // nunca finge que o arquivo ainda existe.
+    BITRIX_EXTRACTION_STORAGE_DIR: z.string().default('./data/bitrix-extractions'),
+
+    // ── Retenção de memória de agentes de IA (AgentMemory) ───────────────────
+    // AgentMemory acumula uma linha por (sessionId, agentType, organizationId) para cada execução de
+    // agente do enxame (SDR/BDR/CLOSER/CRM/OPS/LearningAgent) e nunca teve expurgo — cresce para
+    // sempre. Mesmo padrão de janela configurável já usado para BitrixExtractionRun acima
+    // (BITRIX_EXTRACTION_RETENTION_DAYS): 90 dias por padrão, ver
+    // agentMemoryCleanup.worker.ts. Diferente do expurgo de extrações Bitrix, este worker roda sem
+    // flag de "enabled" adicional — não há decisão de negócio pendente aqui, é remediação direta do
+    // gap de retenção (mesmo critério de "correção de dívida técnica" do freeze de escopo em
+    // AGENTS.md). `agentType = 'LEARNING_PROFILE'` (perfil de estilo aprendido, persistente por
+    // tenant+ator) é deliberadamente excluído do expurgo por idade — ver comentário em
+    // agentMemoryCleanup.worker.ts.
+    AGENT_MEMORY_RETENTION_DAYS: z.coerce.number().int().positive().default(90),
+
+    // ── Base legal LGPD para dado pessoal enviado a provedor de IA externo ──────
+    // Ponto único de verificação em guardrails.service.ts (hasPiiExternalConsent/
+    // assertPiiExternalConsent), consumido pelos caminhos reais que buscam dado pessoal de um
+    // titular (Contact) real e o encaminham — mesmo que minimizado/tokenizado — a um provedor
+    // de IA externo (Groq/OpenAI/LiteLLM): SDRQualificationAgent, OpsAgent (quando há leadId),
+    // SDROutboundDraftAgent e AIService.qualifyLead (fluxo padrão de qualificação de todo lead —
+    // trava adicionada na AI-007, Sprint 07/onda-20; faltava até então). Os agentes BDR/Closer/CRM
+    // do enxame (autonomyRoleRunner) ainda NÃO passam por esta trava — gap documentado, não
+    // corrigido nesta rodada. Mesmo padrão de dois-fatores/fail-closed de SWARM_SCHEDULER_* e
+    // SDR_COLD_CALL_*: lista vazia = nenhuma organização autorizada, mesmo que o restante do enxame
+    // esteja ligado. `*`/`all` libera todas (mesma sintaxe de SWARM_SCHEDULER_ORGANIZATIONS).
+    AI_PII_EXTERNAL_CONSENT_ORGANIZATIONS: z.string().optional(),
+
+    // ── Reranking da Base de Conhecimento (DEC-11, dossiê CPI, opção A) ─────────
+    // O RRF (`src/features/knowledge/search.service.ts`) já entrega um resultado final hoje — este
+    // estágio roda DEPOIS da fusão, sobre os top-N candidatos, só para reordenar por relevância real
+    // via LLM (ver `src/features/knowledge/services/reranker.service.ts` para a decisão LLM vs.
+    // cross-encoder). Default false: feature nova, opt-in — sem isto configurado o comportamento de
+    // busca é idêntico ao de antes desta mudança (RRF puro), inclusive nos testes de integração
+    // existentes que mockam o gateway de IA sem `getAiModel`.
+    KNOWLEDGE_RERANK_ENABLED: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
+    // Quantos candidatos do topo da lista já fundida por RRF entram na janela reordenada pelo
+    // reranker — o restante (se `hybridSearch` pedir mais que isto) mantém a ordem do RRF sem custo
+    // de IA adicional. 20 casa com `CANDIDATES_PER_STRATEGY` (o que cada perna da busca já traz).
+    KNOWLEDGE_RERANK_CANDIDATES: z.coerce.number().int().positive().default(20),
+    // Nome lógico de modelo (roteado por src/lib/ai/gateway/model-routing.ts) — o mesmo alias "fast"
+    // que KnowledgeCopilotService já usa para responder a pergunta em si: pontuar relevância é uma
+    // tarefa mais barata que gerar a resposta final, não precisa do modelo "grande".
+    KNOWLEDGE_RERANK_MODEL: z.string().default('local-llama3-fast'),
+  })
+  // Uma janela invertida (início 18, fim 9) nunca deixaria a campanha rodar, e o sintoma seria
+  // "o SDR não liga" — muito mais difícil de diagnosticar do que uma falha na subida.
+  .refine((cfg) => cfg.SDR_CALL_WINDOW_START < cfg.SDR_CALL_WINDOW_END, {
+    message: 'SDR_CALL_WINDOW_START precisa ser menor que SDR_CALL_WINDOW_END',
+    path: ['SDR_CALL_WINDOW_START'],
+  });
+
+const _env = envSchema.safeParse(process.env);
+
+if (!_env.success) {
+  logger.error({ errors: _env.error.format() }, '❌ Erro de Validação nas Variáveis de Ambiente');
+  if (process.env.NODE_ENV !== 'test') {
+    process.exit(1);
+  }
+}
+
+// Trava de segurança: nunca subir em produção com o bypass de autenticação ativo,
+// mesmo que alguma configuração/segredo tenha ativado a flag por engano.
+if (_env.success && _env.data.NODE_ENV === 'production' && _env.data.ALLOW_DEV_AUTH_BYPASS) {
+  logger.error(
+    '❌ ALLOW_DEV_AUTH_BYPASS=true não é permitido com NODE_ENV=production. Abortando inicialização.',
+  );
+  if (process.env.NODE_ENV !== 'test') {
+    process.exit(1);
+  }
+}
+
+// ONDA 17: Validação de domínio público x localhost em produção
+if (_env.success && _env.data.NODE_ENV === 'production') {
+  const prodDomain = _env.data.PRODUCTION_DOMAIN || _env.data.DOMAIN;
+  const publicBaseUrl = _env.data.PUBLIC_BASE_URL;
+  const betterAuthUrl = _env.data.BETTER_AUTH_URL;
+  const allowedOrigins = _env.data.ALLOWED_ORIGINS;
+
+  const hasPublicDomainConfigured =
+    Boolean(prodDomain && prodDomain !== 'localhost') ||
+    Boolean(
+      publicBaseUrl && !publicBaseUrl.includes('localhost') && !publicBaseUrl.includes('127.0.0.1'),
+    ) ||
+    Boolean(
+      betterAuthUrl && !betterAuthUrl.includes('localhost') && !betterAuthUrl.includes('127.0.0.1'),
+    );
+
+  if (hasPublicDomainConfigured) {
+    const invalidVars: string[] = [];
+
+    if (
+      publicBaseUrl &&
+      (publicBaseUrl.includes('localhost') || publicBaseUrl.includes('127.0.0.1'))
+    ) {
+      invalidVars.push('PUBLIC_BASE_URL');
+    }
+    if (
+      betterAuthUrl &&
+      (betterAuthUrl.includes('localhost') || betterAuthUrl.includes('127.0.0.1'))
+    ) {
+      invalidVars.push('BETTER_AUTH_URL');
+    }
+    if (allowedOrigins) {
+      const origins = allowedOrigins.split(',').map((s) => s.trim());
+      if (origins.some((o) => o.includes('localhost') || o.includes('127.0.0.1'))) {
+        invalidVars.push('ALLOWED_ORIGINS');
+      }
+    }
+
+    if (invalidVars.length > 0) {
+      logger.error(
+        `❌ Configuração inválida em produção: as seguintes variáveis contêm 'localhost' ou '127.0.0.1' enquanto o ambiente está configurado para domínio público: ${invalidVars.join(', ')}. Abortando inicialização.`,
+      );
+      if (process.env.NODE_ENV !== 'test') {
+        process.exit(1);
+      }
+    }
+  }
+}
+
+// SEC-001: BETTER_AUTH_SECRET é o segredo que o Better Auth (src/lib/auth.ts) usa para assinar/
+// derivar sessões, tokens de verificação de e-mail e reset de senha (ver `secret:
+// process.env.BETTER_AUTH_SECRET || undefined` em src/lib/auth.ts). Diferente de
+// CREDENTIALS_ENCRYPTION_KEY/PII_BLIND_INDEX_KEY (fail-closed em runtime, na primeira leitura —
+// ver src/lib/crypto/secretFields.ts e src/lib/crypto/piiIndex.ts), este segredo não tinha
+// NENHUMA trava: se ausente, o better-auth resolve `secret: undefined` e cai no próprio default
+// interno da lib (documentadamente "não seguro para produção" — pensado só para dev local), o que
+// compromete silenciosamente a integridade de toda sessão/token emitido pela plataforma. Mesmo
+// padrão de boot-time fail-closed já usado acima para ALLOW_DEV_AUTH_BYPASS: process.exit(1) só em
+// NODE_ENV=production (nunca em dev/test, onde um valor ausente/fraco é tolerado de propósito).
+// "Fraco" cobre dois casos reais e prováveis de erro operacional: (1) copiar `.env.example`
+// verbatim sem substituir o placeholder documentado ali; (2) gerar/colar um segredo curto demais
+// para servir como chave de assinatura — 32 caracteres é o mesmo piso já usado para
+// CREDENTIALS_ENCRYPTION_KEY/PII_BLIND_INDEX_KEY (32 bytes) nesta base de código.
+const BLOCKED_PRODUCTION_SECRET_PLACEHOLDERS = new Set([
+  'replace-with-a-long-random-secret', // valor literal de exemplo em .env.example
+  'changeme',
+  'secret',
+  'admin',
+  'password',
+  '12345678',
+  '123456',
+  'test',
+  'default',
+]);
+
+const MIN_BETTER_AUTH_SECRET_LENGTH = 32;
+const MIN_PLATFORM_OPERATOR_TOKEN_LENGTH = 32;
+const MIN_WEBHOOK_SECRET_LENGTH = 16;
+
+if (_env.success && _env.data.NODE_ENV === 'production') {
+  const secret = _env.data.BETTER_AUTH_SECRET;
+  const isMissing = !secret || secret.trim().length === 0;
+  const isWeak =
+    !isMissing &&
+    (secret.length < MIN_BETTER_AUTH_SECRET_LENGTH ||
+      BLOCKED_PRODUCTION_SECRET_PLACEHOLDERS.has(secret.toLowerCase()));
+
+  if (isMissing || isWeak) {
+    logger.error(
+      isMissing
+        ? '❌ BETTER_AUTH_SECRET ausente em produção — obrigatória para assinar sessões/tokens do Better Auth. Gere uma com `openssl rand -base64 32`. Abortando inicialização.'
+        : `❌ BETTER_AUTH_SECRET fraca em produção (mínimo ${MIN_BETTER_AUTH_SECRET_LENGTH} caracteres; valores de exemplo/placeholders não são permitidos). Gere uma com \`openssl rand -base64 32\`. Abortando inicialização.`,
+    );
+    if (process.env.NODE_ENV !== 'test') {
+      process.exit(1);
+    }
+  }
+
+  // PLATFORM_OPERATOR_TOKEN: quando configurado em produção, exige alta entropia (mínimo 32 caracteres)
+  // e bloqueia valores inseguros/placeholders.
+  const operatorToken = _env.data.PLATFORM_OPERATOR_TOKEN;
+  if (operatorToken) {
+    if (
+      operatorToken.length < MIN_PLATFORM_OPERATOR_TOKEN_LENGTH ||
+      BLOCKED_PRODUCTION_SECRET_PLACEHOLDERS.has(operatorToken.toLowerCase())
+    ) {
+      logger.error(
+        `❌ PLATFORM_OPERATOR_TOKEN fraco em produção (mínimo ${MIN_PLATFORM_OPERATOR_TOKEN_LENGTH} caracteres com alta entropia; valores triviais não são permitidos). Abortando inicialização.`,
+      );
+      if (process.env.NODE_ENV !== 'test') {
+        process.exit(1);
+      }
+    }
+  }
+
+  // Validação de segredos de webhook configurados em produção
+  const webhookSecretsToCheck: Array<{ name: string; value: string | undefined }> = [
+    { name: 'BIRTHHUB360_WEBHOOK_SECRET', value: _env.data.BIRTHHUB360_WEBHOOK_SECRET },
+    { name: 'BIRTH_VOICES_WEBHOOK_SECRET', value: _env.data.BIRTH_VOICES_WEBHOOK_SECRET },
+    { name: 'THREECX_WEBHOOK_SECRET', value: _env.data.THREECX_WEBHOOK_SECRET },
+    { name: 'CHATWOOT_WEBHOOK_SECRET', value: _env.data.CHATWOOT_WEBHOOK_SECRET },
+    { name: 'EMAIL_INBOUND_WEBHOOK_SECRET', value: _env.data.EMAIL_INBOUND_WEBHOOK_SECRET },
+    { name: 'SIGNATURE_INBOUND_WEBHOOK_SECRET', value: _env.data.SIGNATURE_INBOUND_WEBHOOK_SECRET },
+  ];
+
+  for (const { name, value } of webhookSecretsToCheck) {
+    if (value) {
+      if (
+        value.length < MIN_WEBHOOK_SECRET_LENGTH ||
+        BLOCKED_PRODUCTION_SECRET_PLACEHOLDERS.has(value.toLowerCase())
+      ) {
+        logger.error(
+          `❌ ${name} fraco em produção (mínimo ${MIN_WEBHOOK_SECRET_LENGTH} caracteres; segredos legados/placeholders não são permitidos). Abortando inicialização.`,
+        );
+        if (process.env.NODE_ENV !== 'test') {
+          process.exit(1);
+        }
+      }
+    }
+  }
+}
+
+// Tipado como o schema (não `NodeJS.ProcessEnv`): no caminho de sucesso (o único que importa em
+// produção — o de falha sempre encerra o processo antes de chegar aqui, exceto em NODE_ENV=test)
+// os valores já vêm com default/coerce/transform aplicados pelo Zod. Sem este cast, `env` virava
+// uma união com `NodeJS.ProcessEnv` (todos os campos `string | undefined`), o que apagava os tipos
+// corretos (number, boolean) em todo lugar que consome `env` e mascarava erros de tipo reais.
+export const env: z.infer<typeof envSchema> = _env.success
+  ? _env.data
+  : (process.env as unknown as z.infer<typeof envSchema>);

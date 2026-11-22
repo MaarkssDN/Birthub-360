@@ -1,0 +1,9 @@
+{
+  "name": "testland/allure-reports",
+  "description": "Use when a team wants richer test reports than JUnit XML: steps, attachments, per-test history, retries and severity or feature labels. Sets up Allure Report adapters for pytest, Jest, JUnit, TestNG, NUnit or Mocha, failure categories, history trends and the static HTML site as a CI artifact.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.4.15"
+}

@@ -1,0 +1,309 @@
+# Regras de alerta do Prometheus local (infrastructure/observability/prometheus.yml, carregado
+# pelo container `prometheus` de docker-compose.opensource.yml — stack opcional, ligada via
+# `npm run infra:up`). Não há Alertmanager configurado neste repositório (nenhum
+# `alertmanager.yml`/serviço em docker-compose.opensource.yml) — os alertas abaixo ficam
+# visíveis em Prometheus (`/alerts`) e podem ser consultados pelo datasource Prometheus já
+# provisionado no Grafana (`grafana-datasources.yml`), mas não dispara notificação (Slack/e-mail/
+# PagerDuty) até que alguém configure um receptor. Isso é decisão de produto/operação (qual canal
+# usar), não uma correção de rotina — registrado como pendência abaixo, não fingido como pronto.
+#
+# Cobertura pedida pela missão do Agente 10 (falha de migração, fila travada, sync Bitrix
+# falhando, 5xx acima de limiar, uso de IA fora do orçamento): dividida em dois grupos.
+#
+# - "ativos-hoje": usam métricas que a aplicação já exporta de fato em /metrics. Funcionam assim
+#   que `EXPOSE_METRICS=true` e o Prometheus (local via `npm run infra:up`, ou externo apontado
+#   para a instância Render real) está de fato scrapeando a instância certa.
+# - "pendente-instrumentacao": a métrica referenciada AINDA NÃO EXISTE no código da aplicação, ou
+#   (caso do grupo de migração) depende de um cluster Kubernetes real que não existe hoje — o
+#   deploy ativo é um único serviço Render (monólito Express: API + estático do Vite), NÃO um par
+#   Render+Vercel separado nem k8s/Helm/ArgoCD (ver `RUNBOOK.md` → "Go-live" para a correção desse
+#   ponto, confirmado nesta rodada contra o serviço Render real via API). As regras ficam prontas
+#   (não fabricadas "no vácuo" — nome de métrica e labels
+#   documentados como contrato) para ativar quando a instrumentação/cluster existir. Até lá,
+#   Prometheus simplesmente não encontra a série e a regra fica "unknown"/sem disparar — não é um
+#   falso positivo, mas também não é observabilidade real ainda.
+#
+# ATUALIZAÇÃO — Onda 8 (2026-08-15, Agente 10): das 5 lacunas de métrica abertas na Onda 4
+# (handoffs `.agents/handoffs/onda-4/10-para-{01,06,07}-*.md`), 3 foram implementadas de verdade
+# entre as Ondas 5-7 e têm produtor real no código (não só a definição da métrica — confirmado
+# lendo os pontos de `.inc()`/`.set()` chamados a partir do fluxo de negócio real, não só o módulo
+# de métricas isolado):
+#   - `bullmq_queue_*` (Agente 07, `src/lib/queue/metrics.ts`, consumida por 8+ workers reais);
+#   - `bitrix_sync_failures_total` (Agente 06, `src/features/integrations/bitrix/service/
+#     metrics.ts`, incrementada em `outboundSync.ts`/`syncRules.ts`/`bitrix.webhook.ts`);
+#   - `ai_usage_cost_usd_total`/`ai_usage_budget_usd_total` (Agente 07, `src/lib/ai/metrics.ts`,
+#     chamada de dentro de `src/lib/ai/gateway.ts`).
+# Essas 3 regras foram promovidas para grupos "ativos-hoje" abaixo (ver histórico de handoffs para
+# o "antes"). Segue pendente apenas o Job de migração Kubernetes (não aplicável ao caminho de
+# deploy real — ver nota acima).
+#
+# ATUALIZAÇÃO (2026-08-21): a métrica HTTP por status code (grupo http-5xx) também foi promovida.
+# A auto-instrumentação OTel nunca emitiu `http.server.duration` com a versão instalada de
+# `@opentelemetry/instrumentation-http` (confirmado em 3 rodadas — Onda 5, Onda 8, e novamente
+# nesta) — em vez de continuar esperando uma atualização de dependência, `http_server_duration_
+# milliseconds` (mesmo nome já usado abaixo) passou a ser medida manualmente via
+# `src/shared/middlewares/httpMetrics.ts` (Histogram prom-client, montado em `server.ts` antes de
+# qualquer rota, só quando `EXPOSE_METRICS=true`) — mesmo padrão de todas as outras métricas custom
+# deste projeto (`src/lib/ai/metrics.ts`, `src/lib/queue/metrics.ts`), sem depender do pipeline
+# OTLP → otel-collector para esta série específica. Ver
+# `.agents/handoffs/onda-4/10-para-01-metricas-http-otel.md` para o histórico completo.
+
+groups:
+  - name: birthhub-360.process-health.ativos-hoje
+    rules:
+      - alert: InstanceDown
+        expr: up{job="central-comercial"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Instância do birthhub-360 não responde ao scrape do Prometheus'
+          description: >-
+            `up == 0` para o job central-comercial por mais de 2 minutos. Verificar
+            /health/live e /health/ready diretamente, depois logs do processo. Ver runbook
+            infrastructure/observability/RUNBOOK.md → "Aplicação indisponível".
+
+      - alert: HighEventLoopLag
+        expr: nodejs_eventloop_lag_seconds{job="central-comercial"} > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Event loop do Node.js com lag alto (>500ms) por 5min+'
+          description: >-
+            Indica trabalho síncrono bloqueando o processo (query pesada sem streaming,
+            processamento de arquivo grande, loop CPU-bound) — sintoma comum antes de timeouts
+            em cascata. Ver runbook → "Latência/timeouts".
+
+      - alert: HighHeapUsageRatio
+        expr: >-
+          nodejs_heap_size_used_bytes{job="central-comercial"}
+          / nodejs_heap_size_total_bytes{job="central-comercial"} > 0.9
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Heap V8 acima de 90% do heap total alocado por 10min+'
+          description: >-
+            Candidato a memory leak ou carga real acima do dimensionado. Cruzar com
+            `resources.limits.memory` do Deployment/Rollout (charts/birthhub-360/values.yaml)
+            — se o pod está sendo OOMKilled, ver runbook → "Pod reiniciando (OOMKilled)".
+
+      - alert: ProcessRestarted
+        expr: process_uptime_seconds{job="central-comercial"} < 300
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Processo/Container do birthhub-360 reiniciou recentemente (<5min)'
+          description: >-
+            Processo do Node emitiu uptime menor que 300 segundos. Investigar crash, restart de container ou OOMKilled.
+
+      - alert: HighProcessMemoryUsage
+        expr: process_resident_memory_bytes{job="central-comercial"} > 1.5e9
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Uso de memória RSS do processo acima de 1.5GB por 10min+'
+          description: >-
+            Candidato a memory leak ou carga real acima do dimensionado. Cruzar com
+            os limites da instância.
+
+      - alert: HighProcessCpuUsage
+        expr: rate(process_cpu_seconds_total{job="central-comercial"}[5m]) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Uso de CPU do processo Node.js acima de 85% por 5min+'
+          description: >-
+            Processo consumindo muita CPU. Verificar se há loops ou tarefas síncronas pesadas.
+
+  - name: birthhub-360.migracao.pendente-instrumentacao
+    rules:
+      # Requer kube-state-metrics rodando num cluster Kubernetes real — não existe hoje (nenhum
+      # cluster registrado, ver charts/README.md e infrastructure/archive/argocd/README.md) e NÃO é o caminho de deploy
+      # ativo (Render, ver RUNBOOK.md → "Go-live"). Esta regra cobre o Job criado por
+      # charts/birthhub-360/templates/migration-job.yaml (hook pre-upgrade) e só passa a
+      # fazer sentido operacional se/quando o caminho k8s/Helm/ArgoCD virar o deploy real. Para o
+      # Render de hoje, falha de migração já é coberta pela combinação `startCommand: npx prisma
+      # migrate deploy && npm run start` + `healthCheckPath: /health/ready` (a instância nova
+      # nunca passa a servir tráfego se a migração ou o healthcheck falharem — ver `InstanceDown`
+      # acima e RUNBOOK.md → "Falha de migração"), não por uma métrica Prometheus dedicada.
+      - alert: MigrationJobFailed
+        expr: >-
+          kube_job_status_failed{job_name=~".*-migrate-.*", namespace=~"production|homolog"} > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Job de migração Prisma (hook Helm pre-upgrade) falhou'
+          description: >-
+            O release foi abortado pelo hook — nenhuma versão nova do app está rodando com
+            schema desatualizado (garantia mantida), mas o deploy está bloqueado até a causa
+            raiz ser corrigida. Ver runbook → "Falha de migração".
+          contract_metric_source: kube-state-metrics
+          contract_owner: 'Agente 10 (cluster real ainda não provisionado; caminho k8s aspiracional)'
+
+  - name: birthhub-360.filas.ativos-hoje
+    rules:
+      # RESOLVIDO (Onda 8, confirmado em código): bullmq_queue_waiting_jobs/active_jobs/
+      # failed_jobs (Gauge) e bullmq_queue_completed_jobs (Counter) existem de verdade em
+      # src/lib/queue/metrics.ts e são alimentadas por `registerQueueForMetrics()`/
+      # `recordQueueJobCompleted()` chamados a partir dos workers reais (leads, agente IA,
+      # enriquecimento, WhatsApp, sync Bitrix, follow-up, resumo executivo, dedup, win/loss, PDF
+      # semanal, anonimização automática — ver `src/lib/queue/**`). Handoff original:
+      # .agents/handoffs/onda-4/10-para-07-metricas-fila-orcamento-ia.md (implementado Agente 07,
+      # Ondas 5-7). Só aparecem em /metrics quando `EXPOSE_QUEUES=true`/`ENABLE_QUEUES=true` E
+      # `EXPOSE_METRICS=true` — no Render de produção hoje, `ENABLE_QUEUES=false` por padrão
+      # (`render.yaml`, confirmado contra o serviço real via API do Render nesta rodada), então
+      # estas séries só existem quando alguém ligar Redis/filas de propósito.
+      - alert: QueueBacklogHigh
+        expr: bullmq_queue_waiting_jobs > 500
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Fila BullMQ com mais de 500 jobs aguardando por 10min+'
+          description: >-
+            Fila travada ou worker sem capacidade. Ver runbook → "Fila travada". No Render, o
+            worker dedicado (`birthhub-360-worker`, `render.yaml`) ainda não foi ativado de
+            verdade (ver RUNBOOK.md → "Go-live"/handoff onda-6/16-para-08) — hoje `server.ts` é
+            quem processaria a fila, se `ENABLE_QUEUES=true` fosse ligado nele.
+          contract_metric_source: 'src/lib/queue/metrics.ts (real desde Onda 5-7)'
+
+      - alert: QueueStalled
+        expr: rate(bullmq_queue_completed_jobs[15m]) == 0 and bullmq_queue_waiting_jobs > 0
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Fila com jobs aguardando mas zero jobs completados em 15min — fila travada'
+          contract_metric_source: 'src/lib/queue/metrics.ts (real desde Onda 5-7)'
+
+  - name: birthhub-360.bitrix.ativos-hoje
+    rules:
+      # RESOLVIDO (Onda 8, confirmado em código): bitrix_sync_failures_total (Counter, labels
+      # tenant/entity) existe em src/features/integrations/bitrix/service/metrics.ts e é
+      # incrementada a partir do push automático/manual (outboundSync.ts), do pull por regra
+      # (syncRules.ts/bitrixSync.worker.ts) e do webhook de entrada (bitrix.webhook.ts). Handoff
+      # original: .agents/handoffs/onda-4/10-para-06-metricas-sync-bitrix.md (implementado Agente
+      # 06, Onda 5). Exposta em /metrics sempre que EXPOSE_METRICS=true, independente de
+      # ENABLE_QUEUES (o push síncrono/webhook não depende de fila).
+      - alert: BitrixSyncFailuresHigh
+        expr: increase(bitrix_sync_failures_total[15m]) >= 5
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: '5+ falhas de sincronização Bitrix em 15min'
+          description: >-
+            Bloqueador conhecido em /AGENTS.md ("Sincronizações Bitrix que podem falhar
+            silenciosamente"). Ver runbook → "Sync Bitrix falhando".
+          contract_metric_source: 'src/features/integrations/bitrix/service/metrics.ts (real desde Onda 5)'
+
+  - name: birthhub-360.http-5xx.ativos-hoje
+    rules:
+      # RESOLVIDO (2026-08-21): http_server_duration_milliseconds_* agora é produzida por
+      # src/shared/middlewares/httpMetrics.ts (prom-client Histogram, montado em server.ts quando
+      # EXPOSE_METRICS=true), não pela auto-instrumentação OTel — ver nota no topo do arquivo.
+      - alert: HighErrorRate5xx
+        expr: >-
+          sum(rate(http_server_duration_milliseconds_count{http_status_code=~"5.."}[5m]))
+          / sum(rate(http_server_duration_milliseconds_count[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Taxa de erro 5xx acima de 5% nos últimos 5min'
+          contract_metric_source: 'src/shared/middlewares/httpMetrics.ts (real desde 2026-08-21)'
+
+      - alert: HighHttpLatency
+        expr: >-
+          histogram_quantile(0.95, sum(rate(http_server_duration_milliseconds_bucket[5m])) by (le)) > 2000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Latência p95 de requisições HTTP acima de 2000ms nos últimos 5min'
+          description: >-
+            A aplicação está ficando lenta para responder requisições de clientes.
+          contract_metric_source: 'src/shared/middlewares/httpMetrics.ts (real desde 2026-08-21)'
+
+      - alert: HighErrorRate4xx
+        expr: >-
+          sum(rate(http_server_duration_milliseconds_count{http_status_code=~"4.."}[5m]))
+          / sum(rate(http_server_duration_milliseconds_count[5m])) > 0.20
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Taxa de erro HTTP 4xx acima de 20% nos últimos 5min'
+          description: >-
+            Volume anormal de respostas 4xx (pode indicar falhas de autenticação, erros de cliente ou ataques).
+          contract_metric_source: 'src/shared/middlewares/httpMetrics.ts (real desde 2026-08-21)'
+
+  - name: birthhub-360.orcamento-ia.ativos-hoje
+    rules:
+      # RESOLVIDO (Onda 8, confirmado em código): ai_usage_cost_usd_total (Counter, labels
+      # provider/tenant) existe em src/lib/ai/metrics.ts e é incrementada de dentro de
+      # src/lib/ai/gateway.ts logo após cada chamada de IA bem-sucedida. ai_usage_budget_usd_total
+      # (Gauge) só é registrada — e portanto só aparece em /metrics — quando a env
+      # AI_MONTHLY_BUDGET_USD está configurada; sem ela, a série não existe (de propósito: evita
+      # que a divisão vire +Inf e dispare um falso positivo). Handoff original:
+      # .agents/handoffs/onda-4/10-para-07-metricas-fila-orcamento-ia.md (implementado Agente 07).
+      # Custo de IA também continua registrado em banco (tabela AILog) — as duas fontes coexistem,
+      # não são substitutas uma da outra (AILog tem o detalhe por chamada; esta métrica é o
+      # agregado para alertar).
+      - alert: AIBudgetOverrun
+        expr: sum(ai_usage_cost_usd_total) / max(ai_usage_budget_usd_total) > 1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Uso de IA acima do orçamento definido pelo Agente 07'
+          description: >-
+            Bloqueador conhecido: "Ferramentas do Hub de IA inacessíveis" pode ser sintoma de
+            corte por orçamento. Ver runbook → "Hub de IA inacessível / orçamento de IA". Regra
+            só dispara ("unknown" caso contrário) quando AI_MONTHLY_BUDGET_USD estiver configurada
+            no ambiente — confirmar se está setada em produção antes de confiar neste alerta.
+          contract_metric_source: 'src/lib/ai/metrics.ts (real desde Onda 5-7, condicionado a AI_MONTHLY_BUDGET_USD)'
+
+  - name: birthhub-360.database.ativos-hoje
+    rules:
+      # RESOLVIDO (Onda 39, auditoria CPI): "Alerta real de DB pool saturation / Redis health"
+      # estava listado como puramente aspiracional (nenhum produtor no código). pg_pool_* e
+      # redis_connection_up agora existem de verdade — src/lib/prisma.ts expõe as 3 contagens que
+      # `pg.Pool` já mantinha internamente (nenhuma instrumentação de query nova, só leitura do
+      # próprio objeto Pool), e src/lib/queue/metrics.ts expõe `.status` de cada conexão ioredis
+      # registrada em src/lib/queue/redis.ts. `redis_connection_up` só é reportada para os papéis
+      # habilitados nesta configuração (bullmq/rate-limit/cache) — uma conexão que nunca deveria
+      # ligar de propósito (ex.: cache sem REDIS_URL em dev) não gera série, então não dispara
+      # falso positivo.
+      - alert: DbPoolSaturated
+        expr: pg_pool_waiting_requests > 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Pool de conexões Postgres (pg.Pool, max 20) com requisições esperando um client livre por 2min+'
+          description: >-
+            Toda a capacidade do pool está em uso e novas queries estão na fila — sintoma comum
+            antes de timeout em cascata. Cruzar com `pg_pool_total_connections`/
+            `pg_pool_idle_connections` (mesmo scrape) para confirmar saturação real vs. pico
+            passageiro. Ver runbook → "Latência/timeouts".
+          contract_metric_source: 'src/lib/prisma.ts (real desde Onda 39)'
+
+      - alert: RedisConnectionDown
+        expr: redis_connection_up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Conexão Redis (papel {{ $labels.role }}) fora do estado 'ready' por 2min+"
+          description: >-
+            Bloqueador conhecido: fila BullMQ travada, rate limit distribuído ou cache podem estar
+            silenciosamente inoperantes. Ver runbook → "Fila travada" / verificar `REDIS_URL` e
+            conectividade de rede até a instância Redis.
+          contract_metric_source: 'src/lib/queue/metrics.ts + src/lib/queue/redis.ts (real desde Onda 39)'

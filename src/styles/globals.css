@@ -1,0 +1,1990 @@
+/* TAREFA-SANEAMENTO-017 / BT360-DT-0020 — nenhuma fonte remota: todas as famílias
+   institucionais são self-hosted em `public/fonts/` (WOFF2 com fallback TTF), o que
+   elimina a dependência de rede/OS que tornava os snapshots de regressão visual
+   instáveis. As pilhas abaixo apontam apenas para Sora, Inter e IBM Plex Mono. */
+@import "tailwindcss";
+/* Birth Hub 360 — Tipografia Oficial Exclusiva:
+   - Sora: Títulos, Heros, Ações e Display
+   - Inter: Interface, Menus, Formulários, Tabelas e Corpo de Texto (com toque arredondado)
+   - IBM Plex Mono: Dados, Código, KPIs, Métricas e Badges Técnicos
+   Fontes self-hosted em `public/fonts/` com fallbacks para garantir suporte offline no Android/Capacitor. */
+
+/* Inter (latin-ext) */
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("/fonts/inter-latin-ext.woff2") format("woff2");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+/* Inter (latin) */
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("/fonts/inter-latin.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* IBM Plex Mono — WOFF2 self-hosted (latin + latin-ext) com fallback TTF local.
+   unicode-range separa os subconjuntos para não baixar a face errada (mesmo padrão
+   de Inter/Sora acima). */
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    url("/fonts/ibm-plex-mono-400-latin-ext.woff2") format("woff2"),
+    url("/fonts/ibm-plex-mono-400.ttf") format("truetype");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    url("/fonts/ibm-plex-mono-400-latin.woff2") format("woff2"),
+    url("/fonts/ibm-plex-mono-400.ttf") format("truetype");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    url("/fonts/ibm-plex-mono-400-italic-latin-ext.woff2") format("woff2"),
+    url("/fonts/ibm-plex-mono-400-italic.ttf") format("truetype");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    url("/fonts/ibm-plex-mono-400-italic-latin.woff2") format("woff2"),
+    url("/fonts/ibm-plex-mono-400-italic.ttf") format("truetype");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src:
+    url("/fonts/ibm-plex-mono-500-latin-ext.woff2") format("woff2"),
+    url("/fonts/ibm-plex-mono-500.ttf") format("truetype");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src:
+    url("/fonts/ibm-plex-mono-500-latin.woff2") format("woff2"),
+    url("/fonts/ibm-plex-mono-500.ttf") format("truetype");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src:
+    url("/fonts/ibm-plex-mono-600-latin-ext.woff2") format("woff2"),
+    url("/fonts/ibm-plex-mono-600.ttf") format("truetype");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src:
+    url("/fonts/ibm-plex-mono-600-latin.woff2") format("woff2"),
+    url("/fonts/ibm-plex-mono-600.ttf") format("truetype");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src:
+    url("/fonts/ibm-plex-mono-700-latin-ext.woff2") format("woff2"),
+    url("/fonts/ibm-plex-mono-700.ttf") format("truetype");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src:
+    url("/fonts/ibm-plex-mono-700-latin.woff2") format("woff2"),
+    url("/fonts/ibm-plex-mono-700.ttf") format("truetype");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Sora (latin-ext) */
+@font-face {
+  font-family: "Sora";
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url("/fonts/sora-latin-ext.woff2") format("woff2");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+/* Sora (latin) */
+@font-face {
+  font-family: "Sora";
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url("/fonts/sora-latin.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  /* ==========================================================================
+     PALETA OFICIAL DE CORES NEON — BIRTH HUB 360°
+     Azul Neon:    #00D4FF (Tecnologia, confiança, inovação)
+     Rosa Neon:    #FF2D9B (Energia, criatividade, atitude)
+     Dourado Neon: #FFC107 (Sofisticação, prosperidade, previsibilidade e métricas)
+     Preto Neon:   #0D0D0D (Fundo principal Dark Mode — NUNCA para textos)
+     Azul Leitura: #70D6FF (Textos corridos de corpo, subtítulos secundários — SEM BRANCO)
+     Fundo Cards:  #14141A (Superfícies e cartões de conteúdo)
+     Bordas Glow:  rgba(0, 212, 255, 0.22) (Bordas com efeito neon sutil)
+     ========================================================================== */
+  --neon-blue: #00d4ff;
+  --neon-pink: #ff2d9b;
+  --neon-gold: #ffc107;
+  --neon-black: #0d0d0d;
+  /* Token divergente corrigido (handoff 11-para-03 / BT360-DT-0060): o canônico
+     --palette-neon-white / BRAND.colors.neonWhite é #F8F9FF. O azul de leitura
+     #70D6FF continua existindo — mas com o nome semântico correto, --neon-text. */
+  --neon-white: #f8f9ff;
+  --neon-text: #70d6ff;
+  --neon-card-bg: #14141a;
+  --neon-card-border: rgba(0, 212, 255, 0.22);
+  --neon-lime: #d4f434;
+  --neon-lime-hover: #c5e826;
+  --lime-glow: rgba(212, 244, 52, 0.35);
+
+  /* Tons Light complementares — alinhados ao canônico (brand.ts /
+     tokens birthhub360.css): lightPink #D91B7C, lightBlue #0284C7, lightGold #D97706. */
+  --light-pink: #d91b7c;
+  --light-blue: #0284c7;
+  --light-gold: #d97706;
+
+  /* Gradientes Oficiais */
+  --grad-titles: linear-gradient(135deg, #00d4ff 0%, #ff2d9b 50%, #ffc107 100%);
+  --grad-cta: linear-gradient(135deg, #ff2d9b 0%, #00d4ff 100%);
+
+  --bg: #f0efe9;
+  --surface: #ffffff;
+  --surface-2: #f1f5f9;
+  --surface-subtle: #e2e8f0;
+  --surface-elevated: #ffffff;
+  --surface-interactive: #f1f5f9;
+  --overlay: rgba(11, 19, 43, 0.52);
+  --ink: #0b132b;
+  --ink-2: #475569;
+  --line: rgba(11, 19, 43, 0.12);
+  /* A03-P1-09 — --line é DECORATIVO (divisores, ~1.2–1.3:1). Limite de controle de formulário
+     (input/select/textarea/toggle/outline) precisa de >= 3:1 (WCAG 1.4.11): --border-input.
+     --line-strong é o degrau de hover. Derivados de --ink/--surface para seguirem qualquer
+     paleta ativa (inclusive a de elegance.css), sem hex novo. Calculado: ~3.5:1 (claro). */
+  --border-input: color-mix(in srgb, var(--ink) 50%, var(--surface));
+  --line-strong: color-mix(in srgb, var(--ink) 65%, var(--surface));
+  /* A03-P1-01 — anel de foco >= 3:1. --brand cru como anel no claro mede 2.26–2.65:1 (ouro do
+     elegance / sky). Mesma fórmula de --color-brand-ink (53% preto), ~6–7:1 contra --bg/--surface.
+     --brand-text é o mesmo tom, para uso como TEXTO (alias `primary`). */
+  --brand-text: color-mix(in srgb, var(--brand) 53%, black);
+  --focus-ring: var(--brand-text);
+  /* Paleta Oficial */
+  --midnight: #0b132b;
+  --sunset: #ef4444;
+  --red-violet: #8b5cf6;
+  --red-violet-active: var(--red-violet);
+  --gold: #ffc107;
+  --white: #ffffff;
+
+  /* BirthHub 360 - Cores de Marca Neon */
+  --brand: #00d4ff;
+  --brand-2: #ff2d9b;
+  --on-brand: #041c32;
+  --iris: #8b5cf6;
+  --orbit-blue: #00d4ff;
+  --red: #ef4444;
+  --pink: #ff2d9b;
+  --warn: #ffc107;
+  --ok: #22c55e;
+
+  /* Gradientes e glows */
+  --grad-brand: linear-gradient(135deg, #00d4ff 0%, #ff2d9b 50%, #ffc107 100%);
+  --glow-brand: 0 0 22px rgba(0, 212, 255, 0.35);
+  --glow-iris: 0 0 22px rgba(255, 45, 155, 0.3);
+  /* Indireção pro --color-info do @theme poder ser sobrescrito por tema (mesmo padrão de
+     --warn/--ok acima e --critical mais abaixo) — sem isso, `.dark { --color-info: ... }` perderia
+     pra `--color-info: #3b82f6` gerado pelo bloco `@theme` (que vem depois no arquivo e empata em
+     especificidade com `.dark`, então venceria por ordem de declaração). No claro é o hex cru
+     (--info-active já escurece pra badge "soft", ver comentário abaixo); no escuro é sobrescrito
+     com uma versão clareada — ver o comentário em `.dark` abaixo pro porquê. */
+  --info: #3b82f6;
+  /* --- Acentos de ícone da navegação lateral (Sidebar) - Paleta Coolors ---
+     Um matiz por "tipo" de módulo, sempre derivado dos tokens de marca/semântica (nenhum hex novo):
+     amarelo, laranja, rosa, roxo, azul, verde e neutro. Calibrados como GRÁFICO
+     (mínimo 3:1 contra a superfície, WCAG 1.4.11) — não como texto. */
+  --nav-c-gold: color-mix(in srgb, var(--coolors-yellow) 75%, black);
+  --nav-c-iris: var(--coolors-purple);
+  --nav-c-blue: color-mix(in srgb, var(--coolors-blue) 90%, black);
+  --nav-c-red: color-mix(in srgb, var(--coolors-pink) 85%, black);
+  --nav-c-green: color-mix(in srgb, var(--ok) 90%, black);
+  --nav-c-violet: color-mix(in srgb, var(--coolors-purple) 80%, var(--coolors-blue));
+  --nav-c-teal: color-mix(in srgb, var(--ok) 60%, var(--coolors-blue));
+  --nav-c-slate: var(--ink-2);
+  --soft: rgba(255, 190, 11, 0.12);
+  /* --- Acentos de interação - Paleta Coolors --- */
+  --accent-violet: var(--coolors-purple);
+  --accent-cyan: var(--coolors-blue);
+  --pulse: var(--coolors-pink);
+  /* Glow discreto no claro — "neon só no escuro" (regra do brief). Mesma fórmula de
+     --shadow-glow-brand acima (20%, blur 15px), só trocando a cor de base. */
+  --shadow-glow-accent-violet-value: 0 0 15px -3px
+    color-mix(in srgb, var(--coolors-purple) 20%, transparent);
+  --shadow-glow-accent-cyan-value: 0 0 15px -3px
+    color-mix(in srgb, var(--coolors-blue) 20%, transparent);
+  --shadow-glow-pulse-value: 0 0 15px -3px color-mix(in srgb, var(--coolors-pink) 20%, transparent);
+  /* Vermelho de estado crítico/risco (Comercial Inteligente: Centro de Decisão, Alertas, drill-down
+     de negócios) — precisa ser redefinido por tema porque nenhum hex único passa 4.5:1 (WCAG AA)
+     contra --surface nos dois temas ao mesmo tempo. Achado real via QA em navegador (contraste
+     medido, não estimado): #d03b3b passa no claro (4.80:1) mas falha no escuro (3.86:1) — ver
+     `.claude/PILOTS.md`, adendo "Centro de Decisão". Valor do escuro reaproveita o mesmo
+     `--color-danger` (#ef4444) já definido no bloco `@theme` (4.93:1 contra a superfície escura),
+     em vez de inventar uma cor nova.*/
+  /* Recalibrado 09/2026 (achado real do axe-core na paleta "Strategic Command Center": PR #481,
+     `.text-critical` do Sidebar contra o novo `--surface` claro #FFF1F7 caía pra 4.38:1, abaixo do
+     mínimo AA). 10% preto (mesma fórmula color-mix já usada no resto do arquivo) recupera margem:
+     5.21:1 contra a nova superfície clara — sem precisar reabrir os 2 casos originais que já
+     passavam (8.7:1 cru contra --surface antiga, agora ~7.9:1, ainda com folga). Conferido de novo
+     09/2026 (PR #512, mesmo achado do lado escuro abaixo) contra o novo `--surface-elevated` claro
+     #FFFFFF: 5.71:1 calculado — mais claro que `--surface`, então contraste só melhora; nenhum
+     ajuste necessário no claro, só no `.dark` abaixo. */
+  --critical: color-mix(in srgb, #ef4444 90%, black);
+  /* --critical acima já foi calibrado pra passar 4.5:1 cru contra --surface sólida (comentário
+     acima) — mas isso não cobre o padrão de badge "soft" (bg-critical/15 text-critical, usado em
+     DealsGrid.tsx/CompareBar.tsx pro estágio "Perdido"/Δ negativo): a mistura de 15% de --critical
+     sobre --surface-2 mede só 3.48:1 no claro e 3.93:1 no escuro (calculado, mesma fórmula de
+     luminância relativa do WCAG) — abaixo do mínimo, porque --critical não tinha o par "-active"
+     que --ok/--warn já ganharam para exatamente este cenário. Mistura de sentido oposto por tema
+     (escurece no claro, clareia no escuro) porque a superfície de fundo muda de direção entre os
+     temas — mesmo raciocínio de --ok-active/--warn-active, só que --critical já era redefinido por
+     tema (ao contrário de --ok/--warn), então --critical-active também precisa ser. */
+  --critical-active: color-mix(in srgb, var(--critical) 55%, black);
+  /* Mesmo problema do --critical acima, pros badges "soft" (bg-ok/15 text-ok, bg-info/15
+     text-info — Team.tsx, QualificationMatrixPage.tsx, ColdCallStatusCard.tsx etc.): o texto
+     saturado direto sobre --surface/--surface-2 claras cai abaixo de 4.5:1 (achado real do
+     axe-core, tests/e2e/accessibility.spec.ts — ex.: "Administrador" com --color-info cru dava
+     3.06:1 no claro). --color-ok cru já passa 4.5:1 contra as superfícies escuras (~5-7:1
+     medido), então só o tema claro precisa da versão mais escura — color-mix escala os 3 canais
+     igualmente, sem precisar hardcodear um hex novo por cor. --color-info cru NÃO passa contra o
+     composto bg-info/15 no escuro (só 4.25:1 — achado posterior do mesmo teste, telas
+     "Prospecção", "Integrações" e "Equipe" falhando; a suposição acima, de que --color-info cru já
+     passava no escuro, valia só contra --surface/--surface-2 sólidas, não contra o composto
+     translúcido do badge): ver a correção de --info no bloco `.dark` abaixo, que --info-active (2
+     linhas abaixo) herda automaticamente por já referenciar `var(--color-info)`. */
+  --ok-active: color-mix(in srgb, var(--color-ok) 70%, black);
+  /* --warn (#FFC500) cru contra --surface clara mede 1.59:1 (fórmula de luminância relativa do
+     WCAG, calculado — não estimado) — pior ainda que o --ok original (3.48:1), bem abaixo do
+     mínimo AA (4.5:1). PILOTS.md (Piloto 003, adendo Centro de Decisão) já tinha achado isso e
+     registrado como "requer decisão e sessão própria". Mesmo mix de 55% já usado por
+     --warning-active (cor irmã no sistema "Sinal", --color-warning) → 4.91:1, dentro da margem.
+     --warn cru já passa contra a superfície escura (11.70:1) — só o tema claro precisa da
+     versão escurecida, mesmo raciocínio do --ok-active acima. */
+  --warn-active: color-mix(in srgb, var(--warn) 55%, black);
+  --info-active: color-mix(in srgb, var(--color-info) 65%, black);
+  --success-active: color-mix(in srgb, var(--color-success) 55%, black);
+  --warning-active: color-mix(in srgb, var(--color-warning) 55%, black);
+  --danger-active: color-mix(in srgb, var(--color-danger) 65%, black);
+  --shadow-card-value: 0 1px 2px rgba(0, 0, 0, 0.04), 0 10px 28px -16px rgba(0, 0, 0, 0.22);
+  /* Elevação de hover do Card — mesma curva de profundidade de --shadow-card-value, um degrau mais
+     forte. Existe pra Card.tsx parar de escurecer o hover com um rgba solto (só calibrado pro tema
+     claro, invisível/errado no escuro) e passar a reagir a tema como o resto do design system. */
+  --shadow-card-hover-value: 0 1px 3px rgba(0, 0, 0, 0.06), 0 18px 40px -18px rgba(0, 0, 0, 0.28);
+  --shadow-nav-value: 12px 0 34px -28px rgba(26, 21, 19, 0.45);
+  --shadow-nav-active-value: 0 10px 26px -14px color-mix(in srgb, var(--brand) 52%, black);
+  --radius-nav-item-value: 12px;
+  /* Pilhas alinhadas à Constituição tipográfica canônica (Sora display + Inter
+     interface + IBM Plex Mono dados), todas self-hosted — sem dependência de
+     fontes remotas (Plus Jakarta Sans/Nunito/Outfit foram removidas). */
+  --font-brand-sans:
+    "Inter", ui-rounded, -apple-system-subheadline, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, sans-serif;
+  --title-color-default: var(--color-heading-cyan, #0369a1);
+  --title-color-cyan: #0369a1;
+  --title-color-pink: #d91b7c;
+  --title-color-gold: #b45309;
+  --subtitle-color-default: #0369a1;
+  --font-brand-display: "Sora", "Inter", system-ui, -apple-system, sans-serif;
+  --font-brand-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-features-rounded: "cv05", "cv11", "ss01";
+  --tracking-rounded: -0.012em;
+  --tracking-display: -0.02em;
+
+  /* Motion system tokens — durations e easings canônicos (Design Language v2.0, seção 8).
+     Referenciados por .bh-interactive, Framer Motion variants e qualquer transition CSS
+     que precise ser consistente com o sistema de movimento da marca. */
+  --duration-instant: 100ms;
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 350ms;
+  --duration-slowest: 500ms;
+
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-enter: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Vancouver Plus Card Styles mantidos canonicamente na secao de componentes Vancouver */
+
+/* Vancouver Plus Badge Styles */
+.badge-coolors {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-coolors-yellow {
+  background: linear-gradient(135deg, rgba(255, 190, 11, 0.15), rgba(255, 190, 11, 0.05));
+  color: var(--coolors-yellow);
+  border: 1px solid rgba(255, 190, 11, 0.3);
+}
+
+.badge-coolors-orange {
+  background: linear-gradient(135deg, rgba(251, 86, 7, 0.15), rgba(251, 86, 7, 0.05));
+  color: var(--coolors-orange);
+  border: 1px solid rgba(251, 86, 7, 0.3);
+}
+
+.badge-coolors-pink {
+  background: linear-gradient(135deg, rgba(255, 0, 110, 0.15), rgba(255, 0, 110, 0.05));
+  color: var(--coolors-pink);
+  border: 1px solid rgba(255, 0, 110, 0.3);
+}
+
+.badge-coolors-purple {
+  background: linear-gradient(135deg, rgba(131, 56, 236, 0.15), rgba(131, 56, 236, 0.05));
+  color: var(--coolors-purple);
+  border: 1px solid rgba(131, 56, 236, 0.3);
+}
+
+.badge-coolors-blue {
+  background: linear-gradient(135deg, rgba(58, 134, 255, 0.15), rgba(58, 134, 255, 0.05));
+  color: var(--coolors-blue);
+  border: 1px solid rgba(58, 134, 255, 0.3);
+}
+
+/* Vancouver Plus Gradient Text */
+.text-gradient-coolors {
+  background: linear-gradient(
+    135deg,
+    var(--coolors-blue),
+    var(--coolors-purple),
+    var(--coolors-pink)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.text-gradient-coolors-warm {
+  background: linear-gradient(
+    135deg,
+    var(--coolors-yellow),
+    var(--coolors-orange),
+    var(--coolors-pink)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Vancouver Plus Glow Effects */
+.glow-coolors-blue {
+  box-shadow: 0 0 20px rgba(58, 134, 255, 0.3);
+}
+
+.glow-coolors-purple {
+  box-shadow: 0 0 20px rgba(131, 56, 236, 0.3);
+}
+
+.glow-coolors-pink {
+  box-shadow: 0 0 20px rgba(255, 0, 110, 0.3);
+}
+
+.glow-coolors-yellow {
+  box-shadow: 0 0 20px rgba(255, 190, 11, 0.3);
+}
+
+/* Landing/Login Screen Visual Effects */
+.grad-text {
+  background-image: var(--grad-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.glow-text {
+  text-shadow:
+    0 0 20px rgba(0, 229, 255, 0.6),
+    0 0 40px rgba(0, 229, 255, 0.3);
+}
+
+.grad-text.glow-text {
+  text-shadow: none;
+  filter: drop-shadow(0 0 20px rgba(0, 229, 255, 0.6)) drop-shadow(0 0 40px rgba(0, 229, 255, 0.3));
+}
+
+/* Balloon animation for pillar tags */
+@keyframes balloon-explode {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(-20deg);
+    filter: blur(15px);
+    box-shadow: 0 0 0 rgba(0, 229, 255, 0);
+  }
+
+  40% {
+    opacity: 1;
+    transform: scale(1.5) rotate(10deg);
+    filter: blur(0px);
+    box-shadow:
+      0 0 40px currentColor,
+      0 0 80px currentColor;
+  }
+
+  60% {
+    transform: scale(0.85) rotate(-5deg);
+    box-shadow:
+      0 0 30px currentColor,
+      0 0 60px currentColor;
+  }
+
+  80% {
+    transform: scale(1.1) rotate(3deg);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+    filter: blur(0px);
+    box-shadow:
+      0 0 25px currentColor,
+      0 0 50px currentColor;
+  }
+}
+
+.balloon-item {
+  opacity: 0;
+  transform: scale(0);
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 50px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.balloon-item.explode {
+  animation: balloon-explode 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.balloon-item:hover {
+  transform: scale(1.15);
+  box-shadow:
+    0 0 35px currentColor,
+    0 0 70px currentColor;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.dark {
+  /* Paleta Canônica de Títulos e Subtítulos — NUNCA BRANCO OU PRETO */
+  --title-color-default: #00d4ff;
+  --title-color-cyan: #00d4ff;
+  --title-color-pink: #ff2d9b;
+  --title-color-gold: #ffc107;
+  --subtitle-color-default: #70d6ff;
+  /* Paleta Oficial Neon — Dark Mode (0D0D0D fundo, 14141A cards, 70D6FF texto neon suave — SEM BRANCO OU PRETO) */
+  --bg: #0d0d0d;
+  --surface: #14141a;
+  --surface-2: #14141a;
+  --surface-subtle: #1c1c24;
+  --surface-elevated: #1f1f28;
+  --surface-interactive: #252530;
+  --overlay: rgba(13, 13, 13, 0.85);
+  --ink: #70d6ff;
+  --ink-2: #38bdf8;
+  --line: rgba(0, 212, 255, 0.18);
+  --soft: rgba(0, 212, 255, 0.12);
+  /* Paleta Coolors - Dark mode versions */
+  --coolors-yellow: #ffc107;
+  --coolors-orange: #ff6b35;
+  --coolors-pink: #ff2d9b;
+  --coolors-purple: #8b7dff;
+  --coolors-blue: #00d4ff;
+  /* Atualização de tokens oficiais */
+  --brand: #00d4ff;
+  --brand-2: #ff2d9b;
+  --iris: #8b7dff;
+  --orbit-blue: #00d4ff;
+  --red: #ef4444;
+  --pink: #ff2d9b;
+  --warn: #ffc107;
+  --gold: #ffc107;
+  /* Acentos de ícone da Sidebar, lado escuro: matizes neon vibrantes */
+  --nav-c-gold: #ffc107;
+  --nav-c-iris: #ff2d9b;
+  --nav-c-blue: #00d4ff;
+  --nav-c-red: #ff6b6b;
+  --nav-c-green: #4ade80;
+  --nav-c-violet: #c4b5fd;
+  --nav-c-teal: #2dd4bf;
+  --nav-c-slate: #94a3b8;
+  /* --ok cru (#0f9d64) sobre --surface-elevated escura mede 4.44:1 como texto de 12px, abaixo do
+     mínimo AA de 4.5:1 (axe-core, "Volume de Leads" no Pipeline CRM). Clareado em ~14% rumo ao
+     branco: 5.3:1. Mesmo padrão de --critical em .dark (hex cru + color-mix; o token do claro
+     não pode se auto-referenciar aqui). */
+  --ok: color-mix(in srgb, #22c55e 86%, white);
+  /* Clareado (color-mix em direção ao branco, mesma fórmula de --critical-active acima) para
+     recuperar 4.5:1 como texto sólido contra --surface escura — 30% branco mede 5.35:1 (calculado,
+     luminância relativa WCAG), com folga. Só a versão "-active" muda por tema; --red-violet cru
+     continua intocado (halos/badges bg-red-violet/10, calibrados à parte, não regridem). */
+  --red-violet-active: color-mix(in srgb, var(--red-violet) 70%, white);
+  --shadow-card-value: 0 1px 2px rgba(0, 0, 0, 0.6), 0 14px 34px -18px rgba(0, 0, 0, 0.9);
+  --shadow-card-hover-value: 0 1px 3px rgba(0, 0, 0, 0.7), 0 20px 46px -20px rgba(0, 0, 0, 0.95);
+  --shadow-nav-value: 12px 0 38px -24px rgba(0, 0, 0, 0.85);
+  --shadow-nav-active-value: 0 12px 30px -15px color-mix(in srgb, var(--brand) 58%, black);
+  /* Recalibrado 09/2026 (mesmo achado do :root acima, lado escuro: axe-core mediu 4.37:1 contra o
+     novo --surface #111B49 — antes passava 4.89:1 contra o Obsidian mais escuro que saiu). 15%
+     branco recupera margem: 5.17:1 contra a nova superfície escura (calculado, luminância relativa
+     WCAG: #f16060 sobre #111B49). */
+  /* Recalibrado de novo 09/2026 (PR #512, achado real do axe-core: `.text-critical` do Sidebar/
+     "Sair" caía pra ~4.19:1 calculado contra o novo `--surface-elevated` #1B2B64 introduzido nesta
+     mesma PR para Card/Table/Sidebar/AppTopbar/Button-outline — abaixo do mínimo AA, porque a
+     calibração de 15% branco acima só tinha sido verificada contra `--surface`/`--surface-2`, não
+     contra o novo `--surface-elevated`, mais claro que os dois). `--surface-elevated` escura
+     (#1B2B64, luminância ~0.029) é a superfície mais clara das três que `.text-critical` pode
+     herdar como fundo no escuro — logo o pior caso — então a calibração usa ela como alvo. 25%
+     branco (em vez de 15%) recupera margem: 4.76:1 contra `--surface-elevated` escura, 5.87:1
+     contra `--surface` escura, 5.11:1 contra `--surface-2` escura (todos calculados via luminância
+     relativa WCAG) — sem regressão nos dois casos que já passavam, e sem escurecer (que pioraria
+     contra fundo escuro, sentido errado). Confirmado também num harness de navegador real
+     reproduzindo a composição exata do Sidebar (`bg-surface-elevated/96` + `backdrop-blur-xl`
+     sobre `--bg` escuro): 4.236:1 antes do fix (reprovava), 4.814:1 depois — ambos medidos via
+     `getComputedStyle` + fórmula de luminância relativa do WCAG, não estimados. */
+  --critical: color-mix(in srgb, #ef4444 75%, white);
+  /* --critical claro escurece pro badge soft (ver comentário no :root); no escuro precisa do
+     sentido oposto — clarear em direção ao branco — porque #ef4444 puro sobre a mistura escura
+     (bg-critical/15 sobre --surface-2 escura) mede só 3.93:1. 20% de --critical + 80% de branco
+     mede 4.93:1 contra --surface-2 e 5.29:1 contra --surface, com folga sobre o mínimo AA. Depois
+     do recalibre de --critical acima (75/25), --critical-active herda automaticamente (deriva de
+     var(--critical)) e sobe pra ~10.95:1 contra --surface-elevated / ~11.76:1 contra --surface-2 /
+     ~13.52:1 contra --surface — só ganha margem, usado hoje em dark mode por BentoMetric.tsx/
+     BentoInsight.tsx e, desde o achado abaixo, também por DealsGrid.tsx/CompareBar.tsx.
+     Achado posterior (harness de navegador real, Canvas2D + color-mix computado + luminância
+     relativa WCAG, não estimado): DealsGrid.tsx/CompareBar.tsx tinham um `dark:text-critical`
+     redundante e ERRADO no badge "Perdido"/Δ negativo
+     (`bg-critical/15 text-critical-active dark:text-critical`) — plain `--critical` no escuro
+     mede só 3.85:1 contra o composto real (bg-critical/15 sobre --surface-2 escura), abaixo de AA.
+     O padrão certo pra esse composto já era este token: plain `text-critical-active` (sem override
+     de tema) mede 9.80:1 no escuro e 8.65:1 no claro contra o mesmo composto — mesmo padrão já
+     usado sem override por BentoMetric.tsx/BentoInsight.tsx. `dark:text-critical` presumia (por
+     analogia com --ok-active/--warn-active, onde a versão "-active" no escuro é literalmente igual
+     à crua) que --critical-active no escuro também seria igual a --critical cru — não é: são cores
+     diferentes de propósito, porque --critical sozinho nunca foi calibrado pra este composto
+     translúcido, só pra texto sólido contra --surface/--surface-2. Removido o override; ver
+     `.claude/PILOTS.md`. */
+  --critical-active: color-mix(in srgb, var(--critical) 20%, white);
+  /* Ver :root (A03-P1-09/P1-01): no escuro a marca crua já passa como anel/texto (>= 3:1 / 4.5:1),
+     e a borda de controle clareia em direção a --ink. Calculado: ~4:1 contra --surface escura. */
+  --border-input: color-mix(in srgb, var(--ink) 45%, var(--surface));
+  --line-strong: color-mix(in srgb, var(--ink) 60%, var(--surface));
+  --brand-text: var(--brand);
+  --focus-ring: var(--brand);
+  /* A03-P1-06: com a paleta efetiva (elegance.css troca --ok pelo sage #5f8a7a também no escuro),
+     --color-ok cru no badge soft escuro media 4.04:1 (< 4.5:1). 25% de branco recupera margem
+     (~6:1 com o sage; ~8.6:1 com o verde original), mesma direção de --critical-active no escuro. */
+  --ok-active: color-mix(in srgb, var(--color-ok) 75%, white);
+  /* --warn cru já passa 11.70:1 contra a superfície escura — ver comentário de --warn-active no
+     :root acima. */
+  --warn-active: var(--warn);
+  /* --color-info cru (#3B82F6) mede só 4.25:1 contra o composto real do badge "soft" bg-info/15
+     no escuro (achado do axe-core, tests/e2e/accessibility.spec.ts — "Prospecção", "Integrações" e
+     "Equipe": fgColor #3b82f6 sobre bgColor #122245, abaixo do mínimo AA 4.5:1). Pior caso é
+     bg-info/15 sobre --surface-2 escura (#131c3a): compositar 15% de #3b82f6 sobre esse fundo dá
+     ≈#192b56 (luminância relativa WCAG calculada = 0.0263) — pra fechar 4.5:1 contra esse composto
+     o texto precisa de luminância ≥ 0.2924. color-mix(80% info + 20% branco) mede 0.3283 de
+     luminância → 4.96:1 contra esse pior caso e 5.65:1 contra bg-info/15 sobre --surface (composto
+     mais escuro), com folga real sobre o mínimo — mesma margem das outras "-active" já calibradas
+     neste arquivo (ex.: --critical-active no escuro, 4.93:1). Clarear com branco (não escurecer com
+     preto) porque no escuro a superfície de fundo já é escura — sentido oposto ao --critical-active
+     dois blocos acima, mesmo raciocínio de "a mistura vai na direção contrária à do fundo". */
+  --info: color-mix(in srgb, #3b82f6 80%, white);
+  /* --info-active herda a correção acima de graça: já referencia var(--color-info), que por sua
+     vez agora aponta pra --info (indireção adicionada no :root) — nenhuma mudança adicional
+     necessária aqui. */
+  --info-active: var(--color-info);
+  --success-active: var(--color-success);
+  --warning-active: var(--color-warning);
+  --danger-active: var(--color-danger);
+  /* Só aqui --accent-violet/--accent-cyan divergem de --iris/--orbit-blue — versão vívida para
+     glow sobre superfície escura (contraste como texto verificado: 4.65:1 e 10.17:1 contra
+     --surface escura, cálculo de luminância relativa WCAG). --pulse também clareia para neon.
+     --iris/--orbit-blue em si permanecem os mesmos do :root — nenhum outro componente muda. */
+  --accent-violet: #8b5cf6;
+  --accent-cyan: #00e5ff;
+  --pulse: #ef4444;
+  /* Glow vívido, difuso (12-20px), duas camadas — só aqui, só hover/focus (nunca em repouso). */
+  --shadow-glow-accent-violet-value:
+    0 0 20px -2px color-mix(in srgb, var(--accent-violet) 55%, transparent),
+    0 0 8px -1px color-mix(in srgb, var(--accent-violet) 40%, transparent);
+  --shadow-glow-accent-cyan-value:
+    0 0 20px -2px color-mix(in srgb, var(--accent-cyan) 55%, transparent),
+    0 0 8px -1px color-mix(in srgb, var(--accent-cyan) 40%, transparent);
+  --shadow-glow-pulse-value:
+    0 0 20px -2px color-mix(in srgb, var(--pulse) 55%, transparent),
+    0 0 8px -1px color-mix(in srgb, var(--pulse) 40%, transparent);
+}
+
+@theme {
+  --font-sans: var(--font-brand-sans);
+  --font-display: var(--font-brand-display);
+  --font-mono: var(--font-brand-mono);
+
+  /* Cores Neon Oficiais Birth Hub 360 — literais alinhados ao canônico
+     (identidade-visual/birthhub360/tokens + src/config/brand.ts). O azul de
+     leitura #70D6FF permanece apenas em --color-neon-text; official-identity.css
+     ainda sobrescreve estes tokens em runtime por tema. */
+  --color-neon-blue: #00d4ff;
+  --color-neon-pink: #ff2d9b;
+  --color-neon-gold: #ffc107;
+  --color-neon-black: #0d0d0d;
+  --color-neon-white: #f8f9ff;
+  --color-neon-text: #70d6ff;
+  --color-neon-card: #14141a;
+  --color-neon-border: rgba(0, 212, 255, 0.22);
+
+  /* Tons Light complementares — canônico: #D91B7C / #0284C7 / #D97706 */
+  --color-light-pink: #d91b7c;
+  --color-light-blue: #0284c7;
+  --color-light-gold: #d97706;
+
+  /* Paleta oficial Birth Hub 360 */
+  --color-obsidian: #0d0d0d;
+  --color-midnight: #0d0d0d;
+  --color-sunset: #ef4444;
+  --color-red-violet: #ff2d9b;
+  --color-gold: #ffc107;
+  /* Branco/snow canônicos (#F8F9FF). official-identity.css já forçava estes
+     mesmos valores em runtime; o literal aqui deixou de divergir do token. */
+  --color-white: #f8f9ff;
+  --color-snow: #f8f9ff;
+  --color-parchment: #e9e4d9;
+  /* "Inteligência em movimento" — halos, indicadores, órbita. Não é fundo de
+     botão: ver o comentário de --iris em :root. */
+  --color-iris: var(--iris);
+  --color-orbit-blue: var(--orbit-blue);
+  /* Íris (#7C3AED, upgrade 09/2026) sobre superfície clara mede 7.57:1 como texto — já passa AA
+     cru, mas a versão escurecida abaixo segue disponível para hierarquia (texto secundário sobre
+     texto primário íris). */
+  --color-iris-active: color-mix(in srgb, var(--iris) 78%, black);
+  /* "Vermelho" e "rosa" da paleta nova — halos, badges, indicador de urgência/ao vivo, ponta do
+     gradiente de assinatura. --red/--pink reagem a tema (ver :root/.dark); os "-active" existem
+     para o mesmo caso do --color-iris-active acima, texto sobre superfície clara. */
+  --color-red: var(--red);
+  --color-pink: var(--pink);
+  --color-red-active: color-mix(in srgb, var(--red) 80%, black);
+  --color-pink-active: color-mix(in srgb, var(--pink) 80%, black);
+  /* text-red-violet-active — variante seguro-como-texto de --color-red-violet (que fica intocado
+     para halos/badges), ver --red-violet-active em :root/.dark. */
+  --color-red-violet-active: var(--red-violet-active);
+  --color-ring: var(--focus-ring);
+  --color-focus-ring: var(--focus-ring);
+  /* Borda de controle >= 3:1 (A03-P1-09): `border-input`; hover: `border-line-strong`. */
+  --color-input: var(--border-input);
+  --color-line-strong: var(--line-strong);
+  /* A03-P2-07 — aliases de nomenclatura shadcn ainda usados no código (MainLayout,
+     LandingLoginSplitScreen, AISuiteHub…) e que hoje geram classes sem efeito. Só aliases para os
+     tokens semânticos existentes; não criar componente novo em cima deles.
+     `primary` aponta para --brand-text (seguro como texto nos dois temas), não para --brand cru. */
+  --color-background: var(--bg);
+  --color-foreground: var(--ink);
+  --color-border: var(--line);
+  --color-primary: var(--brand-text);
+  --color-muted: var(--surface-2);
+
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  /* var(--info), não hex cru — indireção que permite o `.dark` acima sobrescrever com a versão
+     clareada (ver comentário de --info no :root/.dark). Se fosse hex direto aqui, `.dark` nunca
+     conseguiria vencer: este bloco `@theme` gera seu `:root` mais abaixo no arquivo que o `.dark`
+     explícito, e como as duas seleções empatam em especificidade, ganharia por ordem de
+     declaração. */
+  --color-info: var(--info);
+
+  /* Neutros do produto — ver :root/.dark acima (âncora Obsidian / Snow White) */
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-interactive: var(--surface-interactive);
+  --color-overlay: var(--overlay);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-2: var(--brand-2);
+  /* Estado crítico/risco reativo a tema (ver definição em --critical, :root/.dark acima) — nunca
+     usar #d03b3b/#ef4444 cru num componente novo; usar text-critical/bg-critical/border-critical. */
+  --color-critical: var(--critical);
+  /* Reativo a tema — ver --critical-active em :root/.dark acima. */
+  --color-critical-active: var(--critical-active);
+  /* Cor de texto/ícone sobre superfície de marca sólida. Com a marca anterior
+     (laranja escuro) o par era texto BRANCO, e --color-brand-active existia
+     para escurecer o fundo até o branco passar 4.5:1. Com o Antique Gold a
+     direção se inverte: ouro é claro, branco em cima mede 2.10:1 e nunca passa
+     — o par correto (e o que o próprio brand book usa no CTA, p. 11) é
+     Obsidian sobre ouro, 8.74:1. Regra: `bg-brand` sempre com `text-on-brand`,
+     nunca com `text-white`. */
+  --color-on-brand: var(--on-brand);
+  /* Estado hover/pressed da superfície de marca — ouro um degrau mais escuro,
+     ainda com Obsidian legível em cima (6.37:1 calculado). Não confundir com o
+     --color-brand-active anterior, que servia ao propósito oposto (escurecer o
+     suficiente para o texto BRANCO passar). */
+  --color-brand-active: color-mix(in srgb, var(--brand) 85%, black);
+  /* Versão escurecida de --brand para uso como TEXTO sobre superfície clara:
+     ouro cru sobre --surface branca mede 2.10:1. Idioma já usado no resto do
+     arquivo — `text-brand-ink dark:text-brand`, porque contra a superfície
+     escura o ouro cru já mede 8.74:1.
+     53% (não 62%, valor anterior — axe-core mediu 4.22:1/4.38:1 contra
+     --surface-2 em produção, abaixo do mínimo AA; achado real em
+     tests/e2e/accessibility.spec.ts, Piloto 033) — recalculado com margem:
+     6.42:1 contra --surface, 5.34:1 contra --surface-2. */
+  --color-brand-ink: color-mix(in srgb, var(--brand) 53%, black);
+  /* Versão escurecida de --brand-2 (Gold Soft) para uso como TEXTO sobre
+     superfície clara — mesmo caso do --color-brand-ink acima, para o extremo
+     `to-brand-2` de gradientes usado como texto (`dark:text-brand-2`, herdado
+     da sweep de nomenclatura). Gold Soft cru sobre --surface mede 1.28:1: pior
+     ainda que --brand cru, porque é mais claro. 44% dá margem real: 6.48:1
+     contra --surface, 5.39:1 contra --surface-2. Como SUPERFÍCIE sólida
+     (`bg-brand-2`), o par correto continua sendo `text-on-brand` (Obsidian
+     sobre Gold Soft cru mede 12.70:1) — este token nunca deve ser confundido
+     com aquele caso. */
+  --color-brand-2-active: color-mix(in srgb, var(--brand-2) 44%, black);
+  --color-warn: var(--warn);
+  /* "gold" era um alias de --warn (#FFC500, "Amarelo Alerta" da marca anterior),
+     criado porque classes gold-* já existiam no código e renderizavam sem cor.
+     Com a Birth Hub 360 o ouro deixou de ser um amarelo de alerta e virou a cor
+     primária da marca: o alias agora aponta para --brand (Antique Gold), e
+     alerta continua em --warn. As classes gold-* que existiam sinalizavam
+     destaque/valor, não risco — que é exatamente o papel do ouro no brand book
+     ("reservar para valor, foco e assinatura"). */
+  --color-gold: var(--brand);
+  --color-ok: var(--ok);
+  /* Reativos a tema — ver --ok-active/--warn-active/--info-active em :root/.dark acima. */
+  --color-warn-active: var(--warn-active);
+  --color-ok-active: var(--ok-active);
+  /* Fixa (não reage a tema) — mesmo idioma de --color-brand-active acima, para botão SÓLIDO com
+     texto branco (`bg-ok-solid text-white`), distinto do padrão "badge soft" (`bg-ok/15
+     text-ok-active dark:text-ok`) que motivou --ok-active virar --color-ok cru no escuro (ver
+     comentário em .dark acima). --ok-active sozinho não serve mais o caso botão sólido no
+     escuro: #0f9d64 cru + texto branco mede só 3.48:1 (achado real do axe-core,
+     tests/e2e/accessibility.spec.ts, botão "Conectar WhatsApp" de Integrações). Mesma fórmula
+     que --ok-active já usa no claro (70% preto), só que fixa nos dois temas. */
+  --color-ok-solid: color-mix(in srgb, var(--color-ok) 60%, black);
+  --color-info-active: var(--info-active);
+  --color-success-active: var(--success-active);
+  --color-warning-active: var(--warning-active);
+  --color-danger-active: var(--danger-active);
+  /* Fixa (não reage a tema) — mesmo idioma de --color-ok-solid acima, pro mesmo bug: abas
+     "Cadastrar por Foto (OCR)"/"Ferramentas" de ProspectingHub.tsx usavam `bg-info-active
+     text-white` como fundo sólido — no escuro --info-active vira --color-info cru (#3b82f6),
+     medindo só 3.69:1 com texto branco (abaixo de 4.5:1 AA). Mesma fórmula que --info-active já
+     usa no claro (65% preto), só que fixa nos dois temas: 7.30:1. */
+  --color-info-solid: color-mix(in srgb, var(--color-info) 65%, black);
+  /* Fixa (não reage a tema) — mesmo idioma acima, pro botão "Tela Cheia" ativo de
+     ExecutiveHeader.tsx (`bg-warning-active text-white`/`hover:bg-warning`): no escuro
+     --warning-active vira --color-warning cru (#f59e0b), e --color-warning em si nunca reage a
+     tema — os dois casos medem só 2.25:1 com texto branco, bem abaixo de 4.5:1 AA. Mesma fórmula
+     que --warning-active já usa no claro (55% preto), só que fixa nos dois temas: 6.19:1. */
+  --color-warning-solid: color-mix(in srgb, var(--color-warning) 55%, black);
+  --color-soft: var(--soft);
+  --shadow-card: var(--shadow-card-value);
+  --shadow-card-hover: var(--shadow-card-hover-value);
+  --shadow-nav: var(--shadow-nav-value);
+  --shadow-nav-active: var(--shadow-nav-active-value);
+  /* Sombra/glow derivados da marca (color-mix com var(--brand), mesmo idioma do
+     keyframe pulse-glow abaixo) — existem para que nenhum componente volte a
+     hardcodear um rgba() da cor de marca, como já aconteceu em Button
+     "default", Card "accent" e .border-glow-orange. */
+  --shadow-brand-sm: 0 4px 12px color-mix(in srgb, var(--brand) 20%, transparent);
+  --shadow-glow-brand: 0 0 15px -3px color-mix(in srgb, var(--brand) 20%, transparent);
+  --shadow-glow-brand-strong: 0 0 15px -3px color-mix(in srgb, var(--brand) 40%, transparent);
+
+  /* Acentos de interação novos (ver --accent-violet/--accent-cyan/--pulse em :root/.dark) —
+     Button.tsx variantes iris/cyan/pulse. Glow difuso (12-20px), nunca em repouso: as classes
+     shadow-glow-* só entram via hover:/focus-visible: no componente, nunca como sombra base. */
+  --color-accent-violet: var(--accent-violet);
+  --color-accent-cyan: var(--accent-cyan);
+  --color-pulse: var(--pulse);
+  --shadow-glow-accent-violet: var(--shadow-glow-accent-violet-value);
+  --shadow-glow-accent-cyan: var(--shadow-glow-accent-cyan-value);
+  --shadow-glow-pulse: var(--shadow-glow-pulse-value);
+  /* destructive do Button real usava bg-red-500/600 cru: red-500 com texto branco mede ~3.76:1,
+     abaixo do mínimo AA 4.5:1 (mesma classe de achado do DQA-19 documentado acima para --brand).
+     --danger via color-mix corrige sem inventar hex novo. */
+  --color-btn-danger: color-mix(in srgb, var(--color-danger) 82%, black);
+  --color-btn-danger-hover: color-mix(in srgb, var(--color-danger) 68%, black);
+
+  --radius-card: 16px;
+  --radius-card-lg: 20px;
+  --radius-nav-item: var(--radius-nav-item-value);
+  --radius-control: 12px;
+
+  /* Escala de tipografia responsiva (H1-H6), única fonte de verdade — antes só H1-H3 existiam,
+     hardcoded direto no seletor de elemento em @layer base (débito documentado, à época, em
+     no antigo arquivo de DESIGN QA, "Typography 68" — removido do controle de versão em
+     22/08/2026, ver docs/REMOVED-DOCS.md). H1-H3 mantêm exatamente os mesmos valores
+     clamp() de antes (nenhuma mudança visual); H4-H6 são novos, seguindo a mesma progressão —
+     antes ficavam sem tamanho definido (herdavam o default do navegador, fora da escala da marca).
+     Expostos aqui (namespace --text-* do Tailwind 4) para também gerarem utilitários
+     text-h1..text-h6, reutilizáveis por qualquer elemento (não só <h1>-<h6>) que precise da mesma
+     escala responsiva sem redefinir o clamp() na mão — companion `--text-*--line-height` incluído
+     pra cada nível, convenção do Tailwind 4 pra `text-h*` também carregar o line-height certo.
+     Consolida a escala de tipografia num único sistema (--text-h1..h6) — a branch
+     codex/redesenhar-navegacao-por-jornada tinha introduzido em paralelo um segundo sistema de 3
+     níveis (--text-fluid-display/title/section) pro mesmo propósito; --text-fluid-* nunca foi
+     referenciado fora deste arquivo, então foi descartado ao reconciliar os dois merges pra não
+     manter dois tokens concorrentes pra tipografia responsiva (ver design-system/SKILL.md). */
+  /* Escala de tipografia responsiva calibrada (H1-H6) */
+  --text-h1: clamp(1.625rem, 3.2vw, 2.375rem);
+  --text-h1--line-height: 1.15;
+  --text-h2: clamp(1.35rem, 2.5vw, 1.85rem);
+  --text-h2--line-height: 1.2;
+  --text-h3: clamp(1.15rem, 2vw, 1.5rem);
+  --text-h3--line-height: 1.25;
+  --text-h4: clamp(1rem, 1.2vw + 0.5rem, 1.25rem);
+  --text-h4--line-height: 1.3;
+  --text-h5: clamp(0.9rem, 0.8vw + 0.5rem, 1.1rem);
+  --text-h5--line-height: 1.35;
+  --text-h6: clamp(0.8rem, 0.5vw + 0.5rem, 0.95rem);
+  --text-h6--line-height: 1.4;
+
+  --animate-toast-in: toast-in 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-pulse-glow: pulse-glow 3s ease-in-out infinite;
+  --animate-gradient-xy: gradient-xy 15s ease infinite;
+  --animate-gradient-flow: gradient-flow 8s ease infinite;
+  --animate-spin-slow: spin 12s linear infinite;
+  --animate-shimmer: shimmer 2.5s infinite linear;
+  --animate-border-beam: border-beam calc(var(--duration, 12) * 1s) infinite linear;
+  --animate-pulse-slow: pulse-slow 8s ease-in-out infinite;
+  --animate-fade-in: fade-in 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+  @keyframes border-beam {
+    0% {
+      offset-distance: 0%;
+    }
+
+    100% {
+      offset-distance: 100%;
+    }
+  }
+
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.5rem);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-12px);
+    }
+  }
+
+  @keyframes pulse-glow {
+    0%,
+    100% {
+      filter: drop-shadow(0 0 12px color-mix(in srgb, var(--brand) 25%, transparent));
+    }
+
+    50% {
+      filter: drop-shadow(0 0 24px color-mix(in srgb, var(--brand) 55%, transparent));
+    }
+  }
+
+  @keyframes gradient-xy {
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  @keyframes gradient-flow {
+    0% {
+      background-position: 0% 50%;
+    }
+
+    50% {
+      background-position: 100% 50%;
+    }
+
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulse-slow {
+    0%,
+    100% {
+      opacity: 0.6;
+      transform: scale(1);
+    }
+
+    50% {
+      opacity: 0.8;
+      transform: scale(1.05);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+@layer base {
+  body {
+    overflow-x: hidden;
+    font-family: var(--font-sans);
+    font-feature-settings: var(--font-features-rounded);
+    letter-spacing: var(--tracking-rounded);
+    -webkit-font-smoothing: antialiased;
+    background-color: var(--bg);
+    background-image:
+      radial-gradient(
+        at 0% 0%,
+        color-mix(in srgb, var(--brand) 10%, transparent) 0px,
+        transparent 50%
+      ),
+      radial-gradient(
+        at 100% 100%,
+        color-mix(in srgb, var(--brand-2) 10%, transparent) 0px,
+        transparent 50%
+      );
+    background-attachment: fixed;
+    color: var(--ink);
+  }
+
+  /* Headings and titles consume canonical brand neon/gold/pink accents — NUNCA BRANCO OU PRETO */
+  *,
+  *::before,
+  *::after {
+    font-family: var(--font-brand-sans);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  [role="heading"],
+  .font-display,
+  [class*="title" i],
+  [class*="Title"] {
+    /* Sem !important (TAREFA-SANEAMENTO-003): a imposição do display font vive na
+       seção não-layered no fim do arquivo, que vence @layer utilities sem hack. */
+    font-family: var(--font-brand-display);
+    color: var(--title-color-default);
+    letter-spacing: -0.02em;
+  }
+
+  /* As regras de "policiamento" de cor de títulos/subtítulos que ficavam aqui com
+     !important foram movidas para o fim do arquivo, fora de @layer, com prefixo
+     `html body` — ver o bloco "Brand title/subtitle policing" ao final. */
+
+  /* Títulos por padrão usam a identidade visual, preservando classes de cores utilitárias explícitas */
+
+  .neon-title-blue,
+  h1.neon-title-blue,
+  h2.neon-title-blue,
+  h3.neon-title-blue,
+  h4.neon-title-blue,
+  h5.neon-title-blue,
+  h6.neon-title-blue {
+    color: var(--color-heading-cyan);
+    text-shadow: none;
+  }
+
+  .neon-title-pink,
+  h1.neon-title-pink,
+  h2.neon-title-pink,
+  h3.neon-title-pink,
+  h4.neon-title-pink,
+  h5.neon-title-pink,
+  h6.neon-title-pink {
+    color: var(--color-heading-pink);
+    text-shadow: none;
+  }
+
+  .neon-title-gold,
+  h1.neon-title-gold,
+  h2.neon-title-gold,
+  h3.neon-title-gold,
+  h4.neon-title-gold,
+  h5.neon-title-gold,
+  h6.neon-title-gold {
+    color: var(--color-heading-gold);
+    text-shadow: none;
+  }
+
+  .neon-gradient-title {
+    background: linear-gradient(135deg, #00d4ff 0%, #ff2d9b 50%, #ffc107 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+    filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.35));
+  }
+
+  .neon-btn-cta,
+  .btn-cta-neon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    font-weight: 700;
+    color: var(--color-heading-cyan);
+    background: #14141a;
+    border: 2px solid #00d4ff;
+    box-shadow:
+      0 0 25px rgba(255, 45, 155, 0.45),
+      0 0 35px rgba(0, 212, 255, 0.35);
+    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* Display 44-72 e Título 28-36 usam Sora (h1-h3); Subtítulo 16-20 e Corpo
+     10-14 usam Inter (h4-h6) — h4-h6 continuam na grotesca porque este é um
+     CRM denso, onde eles rotulam bloco de tabela e card, e Sora perde peso
+     visual abaixo de ~20px. -0.01em preserva a densidade sem colar os
+     caracteres (Sora, como Inter, é uma geométrica — não precisa do respiro
+     extra que uma serifada de contraste alto pediria). */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  h1 {
+    font-size: var(--text-h1);
+    line-height: var(--text-h1--line-height);
+    font-weight: 700;
+  }
+
+  h2 {
+    font-size: var(--text-h2);
+    line-height: var(--text-h2--line-height);
+    font-weight: 700;
+  }
+
+  h3 {
+    font-size: var(--text-h3);
+    line-height: var(--text-h3--line-height);
+    font-weight: 600;
+  }
+
+  h4 {
+    font-size: var(--text-h4);
+    line-height: var(--text-h4--line-height);
+    font-weight: 600;
+  }
+
+  h5 {
+    font-size: var(--text-h5);
+    line-height: var(--text-h5--line-height);
+    font-weight: 600;
+  }
+
+  h6 {
+    font-size: var(--text-h6);
+    line-height: var(--text-h6--line-height);
+    font-weight: 600;
+  }
+
+  button,
+  a,
+  [role="button"] {
+    transition-duration: 180ms;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* Baseline de foco visível — rede de segurança para elementos interativos que não definem seu
+     próprio anel de foco. Regras mais específicas (ex.: focus-visible:ring-* dos componentes)
+     continuam vencendo por especificidade. */
+  :focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--brand) 32%, transparent);
+    color: var(--ink);
+  }
+
+  /* Clean Premium Glassmorphism & Elevation utilities.
+     Hairline de topo (inset, 1px) somado à sombra já existente — não decorativo: reforça a leitura
+     de "painel de instrumento" (borda precisa, camada com peso físico) pedida pela personalidade
+     "controle/precisão" de CREATIVE_SYSTEM_01.md (seção A), sem introduzir blur/gradiente novo.
+     rgba(255,255,255,...) fixo (não token) de propósito: é um realce de borda superior, não texto —
+     não participa de nenhum cálculo de contraste AA, e no tema padrão do produto (escuro, seção C
+     do mesmo documento) é onde ele é visível; no tema claro fica praticamente imperceptível sobre
+     --surface clara, o que é o comportamento correto (não deve competir com o conteúdo ali). */
+  .glass-panel {
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--line);
+    box-shadow:
+      var(--shadow-card),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .glass-panel-elevated {
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1px solid color-mix(in srgb, var(--line) 150%, transparent);
+    box-shadow:
+      0 12px 40px -12px rgba(0, 0, 0, 0.25),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .glass-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-card);
+    transition:
+      transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+      border-color 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+
+  .glass-card-interactive {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-card);
+    transition:
+      transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+      border-color 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+
+  .glass-card-interactive:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in srgb, var(--brand) 35%, transparent);
+    box-shadow: 0 14px 32px -12px color-mix(in srgb, var(--brand) 20%, transparent);
+  }
+
+  .text-glow {
+    text-shadow: 0 0 14px currentColor;
+  }
+
+  /* Antes `.border-glow-orange`, com a cor de marca hardcoded em rgba() e sem nenhum consumidor
+     em `src/` — renomeado (não fazia sentido nomear "orange" um efeito derivado da marca) e
+     migrado pro token `--shadow-glow-brand-strong` (ver @theme) em vez de repetir o color-mix
+     inline. É por isso que a troca de marca desta rodada não precisou tocar neste bloco. */
+  .border-glow-brand {
+    box-shadow: var(--shadow-glow-brand-strong);
+  }
+
+  /* Primitivas do design system (prefixo bh- = Birth Hub) */
+  .bh-glass {
+    background: color-mix(in srgb, var(--surface) 82%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+
+  .bh-surface {
+    background-color: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+
+  .bh-card {
+    background-color: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: var(--shadow-card);
+    transition:
+      transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  .bh-glow {
+    box-shadow: 0 0 16px -2px color-mix(in srgb, var(--brand) 30%, transparent);
+  }
+
+  .bh-focus:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--focus-ring) 20%, transparent);
+  }
+
+  .bh-interactive {
+    cursor: pointer;
+    transition:
+      transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.2s ease,
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .bh-interactive:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--brand) 30%, transparent);
+    box-shadow: 0 12px 28px -10px color-mix(in srgb, var(--brand) 20%, transparent);
+  }
+
+  .bh-interactive:active {
+    transform: scale(0.98);
+  }
+
+  /* Custom Rounded Scrollbar */
+  ::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--line) 180%, transparent);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--brand);
+  }
+}
+
+@layer components {
+  .bh-page {
+    width: 100%;
+    max-width: 92rem;
+    margin-inline: auto;
+    padding: clamp(1rem, 2vw, 2rem);
+  }
+
+  .bh-page-stack {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(1rem, 1.5vw, 1.5rem);
+  }
+
+  .bh-section {
+    border-top: 1px solid var(--line);
+    padding-top: 1rem;
+  }
+
+  .bh-surface-elevated {
+    background: var(--surface-elevated);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-card);
+  }
+
+  .bh-metric {
+    font-family: var(--font-sans);
+    font-variant-numeric: tabular-nums lining-nums;
+    letter-spacing: -0.025em;
+  }
+
+  .bh-label {
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
+    font-weight: 650;
+    letter-spacing: 0.055em;
+  }
+}
+
+@layer utilities {
+  /* Órbita 360º de assinatura (dourado → vermelho → rosa → íris → azul) — atualização 09/2026 da
+     órbita de 3 cores (dourado → íris → azul) para as 5 cores da nova direção. Reservada a
+     halo/borda/hero por regra da marca (CLAUDE.md, seção 4, regra #3): nunca fundo de superfície
+     com texto em cima, no máximo uma por composição. */
+  .bg-gradient-orbit5 {
+    background-image: linear-gradient(
+      100deg,
+      var(--brand) 0%,
+      var(--red) 26%,
+      var(--pink) 48%,
+      var(--iris) 70%,
+      var(--orbit-blue) 100%
+    );
+  }
+
+  .text-gradient-brand {
+    background-image: linear-gradient(135deg, var(--brand), var(--brand-2));
+    color: var(--brand-active);
+    -webkit-color: var(--brand-active);
+  }
+
+  .shimmer-bg {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2.5s infinite linear;
+  }
+
+  .hover-lift {
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+  }
+
+  /* Estados de interação canônicos */
+  .bh-state-default {
+    opacity: 1;
+  }
+
+  .bh-state-hover:hover {
+    background-color: color-mix(in srgb, var(--surface) 92%, var(--brand));
+  }
+
+  .bh-state-active:active {
+    transform: scale(0.98);
+  }
+
+  .bh-state-focus:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  .bh-state-selected {
+    border-color: var(--brand);
+    background-color: var(--soft);
+    color: var(--brand);
+  }
+
+  .bh-state-disabled {
+    opacity: 0.45;
+    pointer-events: none;
+    cursor: not-allowed;
+  }
+
+  .bh-state-loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.7;
+  }
+
+  .bh-state-success {
+    border-color: var(--color-success);
+    color: var(--color-success);
+  }
+
+  .bh-state-warning {
+    border-color: var(--warn);
+    color: var(--warn);
+  }
+
+  .bh-state-error {
+    border-color: var(--critical);
+    color: var(--critical);
+  }
+
+  /* Shimmer dos skeletons */
+  .bh-skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--surface-2) 100%, transparent) 0%,
+      color-mix(in srgb, var(--surface-2) 60%, var(--surface)) 50%,
+      color-mix(in srgb, var(--surface-2) 100%, transparent) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Padrões geométricos de atmosfera (60°) */
+  .bh-pattern-diagonal-60 {
+    background-image: repeating-linear-gradient(
+      60deg,
+      transparent,
+      transparent 28px,
+      color-mix(in srgb, var(--brand) 4%, transparent) 28px,
+      color-mix(in srgb, var(--brand) 4%, transparent) 29px
+    );
+  }
+
+  .bh-pattern-grid {
+    background-size: 32px 32px;
+    background-image:
+      linear-gradient(
+        to right,
+        color-mix(in srgb, var(--line) 40%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--line) 40%, transparent) 1px,
+        transparent 1px
+      );
+  }
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Respeita a preferência do usuário por menos movimento (WCAG 2.3.3) — reduz para o mínimo
+   perceptível todas as animações e transições CSS (keyframes customizados, .glass-card,
+   .hover-lift, transition-all etc). Não cobre animações do Framer Motion — essas são resolvidas
+   à parte por <MotionConfig reducedMotion="user"> em App.tsx (linha ~149), que já envolve toda a
+   árvore de rotas. Verificado na Onda 8: comentário anterior citava isso como backlog pendente,
+   mas o MotionConfig já estava implementado — só o comentário estava desatualizado. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    /* !important necessário de propósito: precisa vencer qualquer animation-duration/
+       transition-duration declarado por um componente específico, não só ser mais uma regra
+       na cascata — é assim que a acessibilidade de "menos movimento" (WCAG 2.3.3) funciona. */
+    /* biome-ignore lint/complexity/noImportantStyles: ver comentário acima */
+    animation-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: ver comentário acima */
+    animation-iteration-count: 1 !important;
+    /* biome-ignore lint/complexity/noImportantStyles: ver comentário acima */
+    transition-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: ver comentário acima */
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================================
+   BH Design System — Additional Utility Classes (v2.0)
+   Typography primitives, surface helpers, orbit marker
+   (bh-interactive, bh-label, bh-skeleton-shimmer already
+   defined in @layer blocks above — not repeated here)
+   ============================================================ */
+
+/* Typography utilities */
+.bh-display {
+  font-family: var(--font-brand-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.bh-headline {
+  font-family: var(--font-brand-display);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+
+.bh-data {
+  font-family: var(--font-brand-sans);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Surface utilities */
+.bh-surface {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.bh-glass {
+  background-color: color-mix(in srgb, var(--surface) 70%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--line) 60%, transparent);
+}
+
+.bh-card {
+  background-color: color-mix(in srgb, var(--surface-elevated) 80%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+/* Focus utility */
+.bh-focus {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Orbital concept visual marker */
+.bh-orbit-ring {
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--brand) 20%, transparent);
+  animation: var(--animate-spin-slow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bh-orbit-ring {
+    animation: none;
+  }
+}
+
+/* ============================================================
+   Vancouver Plus Design Template Adaptation (Modulify)
+   Maintains Birth Hub 360° Color System & Tokens
+   ============================================================ */
+
+/* Vancouver Plus Typography & Text Gradient */
+.vancouver-gradient-text,
+.gradient-text {
+  background-image: linear-gradient(
+    135deg,
+    var(--brand) 0%,
+    var(--iris) 50%,
+    var(--orbit-blue) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
+}
+
+/* Vancouver Card Styles */
+.vancouver-card {
+  position: relative;
+  background: color-mix(in srgb, var(--surface-elevated) 88%, transparent);
+  backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
+  border-radius: 1.25rem;
+  box-shadow:
+    0 4px 20px -2px rgba(0, 0, 0, 0.05),
+    0 12px 32px -8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.vancouver-card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--brand) 45%, transparent);
+  box-shadow:
+    0 8px 30px -4px color-mix(in srgb, var(--brand) 25%, transparent),
+    0 20px 45px -10px rgba(0, 0, 0, 0.12);
+}
+
+/* Vancouver Glass Container */
+.vancouver-glass {
+  background: color-mix(in srgb, var(--surface) 75%, transparent);
+  backdrop-filter: blur(20px);
+  border: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+  border-radius: 1.5rem;
+}
+
+/* Vancouver Link Underline Animation */
+.link-block-underline {
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--brand), var(--iris));
+  transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  border-radius: 9999px;
+}
+
+.nav-link-holder:hover .link-block-underline,
+.link-block:hover .link-block-underline {
+  width: 100%;
+}
+
+/* Vancouver Button Gradient Accent */
+.vancouver-btn-gradient {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem 1.375rem;
+  border-radius: 9999px;
+  font-family: var(--font-brand-display);
+  font-weight: 600;
+  font-size: 0.875rem;
+  /* A03-P1-08: texto branco sobre o gradiente claro media 2.40–3.04:1. --on-brand é o par
+     validado de texto sobre superfície de marca (ver --color-on-brand no @theme). Definição única
+     (a duplicata com --coolors-* perto do topo foi removida — A03-P3-04). */
+  color: var(--on-brand);
+  background: linear-gradient(135deg, var(--brand) 0%, var(--iris) 100%);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--brand) 35%, transparent);
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: hidden;
+}
+
+.vancouver-btn-gradient:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--brand) 50%, transparent);
+}
+
+.vancouver-btn-gradient:active {
+  transform: translateY(0);
+}
+
+/* Vancouver Pill Badge */
+.vancouver-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-family: var(--font-brand-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  background: color-mix(in srgb, var(--brand) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--brand) 30%, transparent);
+  color: var(--brand);
+}
+
+/* Vancouver App Container / Hero Frame */
+.vancouver-app-container {
+  position: relative;
+  border-radius: 1.5rem;
+  border: 1px solid color-mix(in srgb, var(--line) 90%, transparent);
+  background: color-mix(in srgb, var(--surface-elevated) 95%, transparent);
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+/* Vancouver Grid & Feature Layouts */
+.vancouver-grid-feature {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Fade in scroll animation */
+.animate-on-load-1st {
+  animation: vancouverFadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-on-load-2nd {
+  animation: vancouverFadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-on-load-3rd {
+  animation: vancouverFadeUp 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes vancouverFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================
+   Vancouver Plus Light Mode Refinements
+   Explicitly tunes light mode cards, glassmorphism & surfaces
+   ============================================================ */
+
+:root:not(.dark) {
+  --vancouver-card-bg: rgba(255, 255, 255, 0.88);
+  --vancouver-card-border: rgba(11, 19, 43, 0.1);
+  --vancouver-card-shadow:
+    0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 20px 40px -15px rgba(11, 19, 43, 0.06);
+  --vancouver-glass-bg: rgba(255, 255, 255, 0.78);
+}
+
+:root:not(.dark) .vancouver-card {
+  background: var(--vancouver-card-bg);
+  border-color: var(--vancouver-card-border);
+  box-shadow: var(--vancouver-card-shadow);
+  backdrop-filter: blur(16px);
+}
+
+:root:not(.dark) .vancouver-card:hover {
+  border-color: color-mix(in srgb, var(--brand) 40%, transparent);
+  box-shadow:
+    0 12px 35px -6px color-mix(in srgb, var(--brand) 18%, transparent),
+    0 24px 50px -12px rgba(11, 19, 43, 0.1);
+}
+
+:root:not(.dark) .vancouver-glass {
+  background: var(--vancouver-glass-bg);
+  border-color: var(--vancouver-card-border);
+  backdrop-filter: blur(20px);
+}
+
+:root:not(.dark) .vancouver-badge {
+  background: color-mix(in srgb, var(--brand) 10%, transparent);
+  border-color: color-mix(in srgb, var(--brand) 28%, transparent);
+  color: var(--brand);
+}
+
+:root:not(.dark) .vancouver-app-container {
+  background: rgba(255, 255, 255, 0.94);
+  border-color: rgba(11, 19, 43, 0.1);
+  box-shadow: 0 20px 50px -10px rgba(11, 19, 43, 0.08);
+}
+
+/* ============================================================
+   Brand title/subtitle policing — TAREFA-SANEAMENTO-003 (BT360-DT-0017)
+   ------------------------------------------------------------
+   Estas regras existiam dentro de @layer base com !important para vencer as
+   utilities do Tailwind (@layer utilities). Foram movidas para cá, FORA de
+   qualquer @layer: CSS não-layered já vence todas as layers na cascata, o que
+   permite remover o !important sem mudar o resultado computado.
+
+   O prefixo `html body` preserva a dominância que o !important garantia contra
+   regras não-layered de official-identity.css (carregado depois deste arquivo,
+   ex.: [data-page-accent] :is(h1..h6) e .bh-platform-card :is(h1..h6)). Sem ele,
+   empates de especificidade seriam resolvidos pela ordem de import e o heading
+   dentro de platform cards voltaria a herdar --ink — regressão visual.
+   ============================================================ */
+
+/* Display font dos títulos — continua imposto sobre utilities .font-* */
+html
+  body
+  :is(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    [role="heading"],
+    .font-display,
+    [class*="title" i],
+    [class*="Title"]
+  ) {
+  font-family: var(--font-brand-display);
+}
+
+/* Sobrescrever qualquer classe utilitária de branco ou preto quando aplicada a títulos */
+html
+  body
+  :is(h1, h2, h3, h4, h5, h6, [role="heading"], [class*="title" i], [class*="Title"]):is(
+    .text-white,
+    .text-black,
+    .text-ink,
+    .text-slate-900,
+    .text-slate-950,
+    .text-gray-900,
+    .text-gray-950,
+    .text-zinc-900,
+    .text-neutral-900,
+    .dark\:text-white,
+    .dark\:text-white\/90,
+    .text-white\/90,
+    .text-white\/80,
+    .text-gray-800,
+    .text-slate-800
+  ) {
+  color: var(--title-color-default);
+}
+
+/* Variações autorizadas de cores de títulos (Cyan, Gold, Pink, Gradiente) */
+html body :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).neon-title-gold,
+html body :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).text-gold {
+  color: var(--title-color-gold);
+}
+
+html body :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).neon-title-pink,
+html body :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).text-pink {
+  color: var(--title-color-pink);
+}
+
+html body :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).neon-title-blue,
+html body :is(h1, h2, h3, h4, h5, h6, [class*="title" i]).text-neon-blue {
+  color: var(--title-color-cyan);
+}
+
+/* Subtítulos: NUNCA brancos e NUNCA pretos */
+html
+  body
+  :is(
+    [class*="subtitle" i],
+    [class*="Subtitle"],
+    .text-subtitle,
+    .card-subtitle,
+    [data-slot="description"],
+    header p,
+    .page-subtitle
+  ) {
+  color: var(--subtitle-color-default);
+}
+
+/* Subtítulos que seguem imediatamente um cabeçalho */
+html body :is(h1, h2, h3, h4, h5, h6) + p {
+  color: var(--subtitle-color-default);
+}
+
+html
+  body
+  :is(
+    [class*="subtitle" i],
+    [class*="Subtitle"],
+    .text-subtitle,
+    .card-subtitle,
+    [data-slot="description"],
+    header p,
+    .page-subtitle,
+    :is(h1, h2, h3, h4, h5, h6) + p
+  ):is(
+    .text-white,
+    .text-black,
+    .text-ink,
+    .text-ink-2,
+    .text-slate-900,
+    .text-gray-900,
+    .text-zinc-900,
+    .text-neutral-900,
+    .dark\:text-white,
+    .text-white\/60,
+    .text-white\/70,
+    .text-white\/80,
+    .text-white\/90,
+    .text-gray-400,
+    .text-gray-500,
+    .text-slate-400,
+    .text-slate-500,
+    .text-muted-foreground
+  ) {
+  color: var(--subtitle-color-default);
+}

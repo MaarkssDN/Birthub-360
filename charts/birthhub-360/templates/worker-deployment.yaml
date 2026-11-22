@@ -1,0 +1,85 @@
+{{- if .Values.worker.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "birthhub-360.fullname" . }}-worker
+  labels:
+    {{- include "birthhub-360.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  {{- if not .Values.worker.autoscaling.enabled }}
+  # Omitido quando o HPA do worker está ligado (worker-hpa.yaml) — do contrário, todo
+  # `helm upgrade`/sync do ArgoCD reverte o worker para `replicaCount` fixo e briga com o HPA
+  # (mesmo padrão já usado em deployment.yaml/rollout.yaml para o Deployment/Rollout principal).
+  replicas: {{ .Values.worker.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "birthhub-360.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: worker
+  template:
+    metadata:
+      labels:
+        {{- include "birthhub-360.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: worker
+    spec:
+      terminationGracePeriodSeconds: 35
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}-worker
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["npm", "run", "start:worker"]
+          ports:
+            - name: health
+              containerPort: 3006
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "birthhub-360.fullname" . }}-config
+            - secretRef:
+                name: {{ include "birthhub-360.fullname" . }}-secret
+          # Só fica pronto após provar Redis + Postgres e registrar os processadores.
+          startupProbe:
+            httpGet:
+              path: /health/ready
+              port: health
+            periodSeconds: 5
+            timeoutSeconds: 4
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: health
+            periodSeconds: 20
+            timeoutSeconds: 4
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: health
+            periodSeconds: 10
+            timeoutSeconds: 4
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.worker.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

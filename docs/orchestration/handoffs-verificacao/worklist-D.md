@@ -1,0 +1,66 @@
+# Worklist verificacao D - 64 handoffs
+
+- [ABERTO] `.agents/handoffs/00-para-08-cobertura-testes-modulos.md` | De:00 Para:08 (qa) + 24 (revisã | 2026-11-12->2026-11-12 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/00-para-08-jornada-completa-fake-e2e-real.md` | De:00 Para:08 | 2026-11-10->2026-11-10 | evid:SIM aprov:NAO
+- [ABERTO] `.agents/handoffs/00-para-08-mesa-tratamento-e2e-jornada.md` | De:00 Para:08 | -> | evid:SIM aprov:NAO
+- [ABERTO] `.agents/handoffs/00-para-10-decisao-k8s-helm-argocd.md` | De:00 Para:10 | -> | evid:SIM aprov:NAO
+- [ABERTO] `.agents/handoffs/00-para-10-docker-2375-sem-autenticacao.md` | De:00 Para:10 | 2026-11-10->2026-11-10 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/25-para-08-gitleaks-allowlist-atlasgr.md` | De:25 Para:08 | 2026-09-02->2026-10-29 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/audit-ach/09-para-08-android-build-trigger-decisao-pendente.md` | De:09 Para:08 (dono exclusivo d | -> | evid:NAO aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/audit-ach/09-para-08-mobile-sweep-6-rotas.md` | De:09 Para:08 | 2026-09-11->2026-09-11 | evid:NAO aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/ci-recovery-final-20261101/03-SONARQUBE-COVERAGE.md` | De:00 Para:08 | 2026-10-27->2026-11-01 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/ci-recuperacao-onda-01/00-para-08-format-prettier-gate.md` | De:00 Para:08 | 2026-10-23->2026-10-23 | evid:SIM aprov:NAO
+- [ABERTO] `.agents/handoffs/onda-1/15-para-08-rls-coverage-ci.md` | De:15 Para:08 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-14/16-para-10-infra-temporal-crawlee.md` | De:16 (runtime, workers Para:10 (infraestrutura,  | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-2.5/00-para-08-pin-github-actions-sha.md` | De:00 Para:08 | -> | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-4/10-para-08-lint-quebrado-eslint-config.md` | De:10 Para:08 | -> | evid:NAO aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-4/10-para-08-prisma-cli-imagem-producao.md` | De:10 Para:08 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-51/00-para-08-e2e-timeout.md` | De:00 Para:08 | 2026-09-30->2026-09-30 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-52/00-para-08-pr741-openapi-hotspots.md` | De:00 Para:08 | -> | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-6/14-para-08-baselines-visuais-linux.md` | De:14 Para:08 | 2026-07-17->2026-08-21 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-6/15-para-08-zap-trivy-gate.md` | De:15 Para:08 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-6/16-para-08-deploy-worker-service.md` | De:16 Para:08 | 2026-09-20->2026-09-20 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-6/16-para-10-observabilidade-worker.md` | De:16 Para:10 | 2026-09-20->2026-09-20 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-8/09-para-08-10-dominio-producao-e-verificacao-deep-link.md` | De:09 Para:08 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-8/18-para-08-ci-openapi-drift.md` | De:18 Para:08 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-9/13-para-08-toolbinding-verificacao-catalogo-392.md` | De:13 (enxame autônomo  Para:08 (qa e release — a | -> | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-E/10-para-08-refatorar-dockerfile.md` | De:10 Para:08 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-c0/11-para-10-argocd-ghcr-nome-antigo.md` | De:11 Para:10 | -> | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-dividas-20261014/00-para-08-debt-20261014-ops-002.md` | De:00 Para:08 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-dividas-20261014/00-para-08-debt-20261014-ops-003.md` | De:00 Para:08 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-dividas-20261014/00-para-08-politica-publicacao-ghcr.md` | De:00 Para:08 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-dividas-20261014/00-para-08-pwa-politica-cache-autenticado.md` | De:00 Para:08 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-dividas-20261014/00-para-09-debt-20261014-ux-001.md` | De:00 Para:09 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-dividas-20261014/00-para-09-debt-20261014-ux-005.md` | De:00 Para:09 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-dividas-20261014/00-para-09-debt-20261014-ux-006.md` | De:00 Para:09 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-dividas-20261014/00-para-10-debt-20261014-fin-001.md` | De:00 Para:10 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-dividas-20261014/00-para-10-debt-20261014-ops-004.md` | De:00 Para:10 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-forense-20261020/00-para-08-forense.md` | De:00 Para:08 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-forense-20261020/00-para-09-forense.md` | De:00 Para:09 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-forense-20261020/00-para-10-forense.md` | De:00 Para:10 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-liquidacao-debitos/00-para-08-10-estrategia-deploy-unificada.md` | De:00 (coordenador) Para:08 (qa e release) e  | 2026-10-09->2026-10-09 | evid:PARCIAL aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-liquidacao-debitos/10-para-08-arquivar-deploy-aws.md` | De:10 (infraestrutura,  Para:08 (qa e release) | 2026-10-10->2026-10-10 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-liquidacao-debitos/10-para-08A-deploy-ec2-scripts.md` | De:10 (infraestrutura,  Para:08a (operações git e | 2026-10-10->2026-10-10 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-os/15-para-10-mount-opa-middleware.md` | De:15 Para:10 | 2026-10-10->2026-10-10 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-paralela-8/00-para-08-unit-failures.md` | De:00 Para:08 | 2026-11-12->2026-11-12 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261105/00-para-08-blindagem-release-gate.md` | De:00 Para:08 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261105/00-para-08a-gatilho-ghcr-docker-publish.md` | De:00 Para:08a | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261105/00-para-10-assercoes-rto-restore-drill.md` | De:00 Para:10 | 2026-11-06->2026-11-06 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261105/15-para-09-particionamento-cache-pwa-logout.md` | De:? Para:09 â€” mobile | 2026-11-06->2026-11-06 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261105/16-para-10-circuit-guard-redis-especifico.md` | De:16 Para:10 | 2026-11-06->2026-11-06 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261105/24-para-08a-trava-ci-aprovacao-revisao.md` | De:24 Para:08a | -> | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-08-62-arquivos-de-testes-unitarios-co-localizados-em-src-features-permane.md` | De:00 Para:08 | 2026-10-16->2026-11-12 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-08-dockerfile-reinstala-prisma-cli-em-etapa-sem-lock-estrito-versionado-a.md` | De:00 Para:08 | 2026-10-14->2026-11-12 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-08-instrucao-de-inicializacao-do-stack-local-omite-overlay-de-postgresql.md` | De:00 Para:08 | 2026-09-08->2026-11-12 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-08A-ausencia-de-cache-compartilhado-de-dependencias-node-modules-e-prisma.md` | De:00 Para:08a | 2026-11-10->2026-11-10 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-08A-falta-de-validacao-automatizada-de-integridade-de-tags-de-release-e-as.md` | De:00 Para:08a | 2026-11-10->2026-11-10 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-08A-proliferacao-excessiva-de-branches-remotas-orfas-degradando-a-rastreab.md` | De:00 Para:08a | 2026-11-10->2026-11-10 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-09-esquema-de-deep-links-nativos-no-androidmanifest-xml-diverge-das-rotas.md` | De:00 Para:09 | 2026-11-10->2026-11-12 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-09-icones-declarados-no-manifest-json-do-pwa-nao-existem-fisicamente-na-p.md` | De:00 Para:09 | 2026-10-14->2026-11-12 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/00-para-10-ausencia-de-limitacao-de-taxa-em-nivel-de-ingress-proxy-reverso-contra.md` | De:00 Para:10 | 2026-11-10->2026-11-12 | evid:SIM aprov:SIM
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/09-para-08-teste-de-paridade-valid-tabs-active-nav-tabs.md` | De:09 Para:08 | 2026-11-12->2026-11-12 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-saneamento-20261110/11-para-08-guard-de-fixtures-contra-reintroducao-de-marcas-legadas-em-tests-fixtures.md` | De:11 Para:08 | 2026-11-12->2026-11-12 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/onda-techdebt/08-para-10-docker-postgres-e-qdrant-duplicados.md` | De:08 Para:10 | -> | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/personagens-29-20261110/00-para-08-ratificacao-testes.md` | De:00 Para:08 | 2026-11-10->2026-11-10 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/saneamento-onda-3/01-para-08-ci-migrate-diff-gate.md` | De:01 (dados / prisma) Para:08 (qa release / git | 2026-10-10->2026-10-11 | evid:SIM aprov:NAO
+- [RESOLVIDO] `.agents/handoffs/techdebt-2026-09-29/00-para-10-performance.md` | De:00 (coordenador) Para:10 (infraestrutura,  | 2026-09-29->2026-09-29 | evid:SIM aprov:SIM

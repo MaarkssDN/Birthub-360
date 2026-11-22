@@ -1,0 +1,165 @@
+name: Publish private container image
+
+# Gate: publicar a imagem só depois que o workflow canônico de release (ci.yml, "Central Birth Hub 360
+# Release") tiver passado no mesmo commit de main — antes disso, push:main disparava a publicação
+# incondicionalmente, sem nenhum teste/scan rodar primeiro (achado HIGH da auditoria de
+# release-readiness). workflow_dispatch continua disponível para publicação manual, mas agora exige
+# um SHA explícito e reprova o mesmo gate do caminho automático (Onda 10.2, PROMPT 10.2: "NO CI
+# PASS = NO DEPLOY", sem exceção para disparo manual — antes desta mudança, workflow_dispatch
+# publicava a imagem sem checar CI nenhum).
+on:
+  # Desacoplado de workflow_run automático em conformidade com a política LOCAL_FIRST.md
+  # e handoffs 00-para-08-politica-publicacao-ghcr.md / DEBT-20261014-GOV-002.
+  # A publicação de imagem no GHCR ocorre estritamente sob demanda autorizada via workflow_dispatch.
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: 'Commit SHA completo (40 chars) já aprovado pelo CI a publicar.'
+        required: true
+        type: string
+      tag:
+        description: 'Tag de release anotada (ex.: v1.2.3) que deve apontar para o SHA. Opcional — quando informada, a integridade dela é validada.'
+        required: false
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+concurrency:
+  # Só um publish por vez (Onda 10.2, secao 18) — evita duas execuções empurrando tags
+  # conflitantes para o mesmo registry ao mesmo tempo.
+  group: docker-publish
+  cancel-in-progress: false
+
+jobs:
+  resolve-sha:
+    name: Resolver SHA e validar CI (NO CI PASS = NO DEPLOY)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: read
+    outputs:
+      sha: ${{ steps.resolve.outputs.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: resolve
+        # Input do dispatch passa por env (nunca interpolado direto no shell) — evita injeção.
+        env:
+          INPUT_SHA: ${{ inputs.sha }}
+        run: |
+          set -euo pipefail
+          if ! [[ "$INPUT_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::DEPLOY BLOCKED — SHA inválido. Informe o commit SHA completo (40 caracteres hex minúsculos)."
+            exit 1
+          fi
+          echo "sha=${INPUT_SHA}" >> "$GITHUB_OUTPUT"
+      - uses: ./.github/actions/require-ci-green
+        with:
+          sha: ${{ steps.resolve.outputs.sha }}
+          check-name: build
+
+  validate-release:
+    name: Validar integridade de release (ancestralidade + tag anotada)
+    runs-on: ubuntu-latest
+    needs: resolve-sha
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Verificar ancestralidade em main e integridade da tag
+        # BT360-DT-0050 / TAREFA-SANEAMENTO-027: impede publicar commit fora da
+        # linha de main e vincula a tag de release ao SHA quando informada.
+        # Assinatura GPG de commits NÃO é verificada: o repositório não adota
+        # assinatura criptográfica (nenhum commit assinado em main) — exigir
+        # verify-commit aqui reprovaria todo deploy. Registrado como risco
+        # residual no run report para decisão do Agente 00.
+        env:
+          RELEASE_SHA: ${{ needs.resolve-sha.outputs.sha }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          git fetch origin main --quiet
+          if ! git merge-base --is-ancestor "$RELEASE_SHA" origin/main; then
+            echo "::error::DEPLOY BLOCKED — o SHA informado não é ancestral de origin/main. Publicação restrita a commits da linha principal."
+            exit 1
+          fi
+          echo "ancestralidade: OK ($RELEASE_SHA ∈ origin/main)"
+          if [ -z "$RELEASE_TAG" ]; then
+            echo "tag de release: não informada — validação de tag ignorada (opcional)."
+            exit 0
+          fi
+          if ! [[ "$RELEASE_TAG" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::DEPLOY BLOCKED — tag '$RELEASE_TAG' não segue semver (vMAJOR.MINOR.PATCH[-sufixo])."
+            exit 1
+          fi
+          git fetch origin "refs/tags/$RELEASE_TAG:refs/tags/$RELEASE_TAG" --quiet || {
+            echo "::error::DEPLOY BLOCKED — tag '$RELEASE_TAG' não existe no repositório."
+            exit 1
+          }
+          tag_type="$(git cat-file -t "refs/tags/$RELEASE_TAG")"
+          if [ "$tag_type" != "tag" ]; then
+            echo "::error::DEPLOY BLOCKED — '$RELEASE_TAG' é tag leve; releases exigem tag anotada (git tag -a)."
+            exit 1
+          fi
+          tag_target="$(git rev-list -n 1 "refs/tags/$RELEASE_TAG")"
+          if [ "$tag_target" != "$RELEASE_SHA" ]; then
+            echo "::error::DEPLOY BLOCKED — tag '$RELEASE_TAG' aponta para ${tag_target:0:12}, não para o SHA ${RELEASE_SHA:0:12}."
+            exit 1
+          fi
+          echo "tag de release: OK ($RELEASE_TAG anotada → $RELEASE_SHA)"
+
+  publish:
+    needs: [resolve-sha, validate-release]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.resolve-sha.outputs.sha }}
+
+      - name: Log in to GHCR
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract image metadata
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=sha
+
+      - name: Build and push
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Resumo
+        if: always()
+        run: |
+          {
+            echo "### Deployment — Birth Hub 360º"
+            echo '```'
+            echo "ENVIRONMENT............. ghcr.io (image publish)"
+            echo "COMMIT SHA............... ${{ needs.resolve-sha.outputs.sha }}"
+            echo "CI QUALITY GATE........... PASS (validado no job resolve-sha antes de qualquer build)"
+            echo "ARTIFACT.................. ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
+            echo "ACTOR...................... ${{ github.actor }}"
+            echo "TIMESTAMP.................. $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "DEPLOYMENT.................. ${{ job.status }}"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

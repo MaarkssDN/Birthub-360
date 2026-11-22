@@ -1,0 +1,42 @@
+/**
+ * Estimativa de custo de chamadas de IA — política de precificação isolada do gateway em si:
+ * atualizar preços/modelos aqui nunca deve exigir tocar em roteamento, retry ou telemetria.
+ */
+
+import { logger } from '../../logger.js';
+import { recordAiPricingFallback } from '../metrics.js';
+import type { AiTokenUsage } from './types.js';
+
+// Preço aproximado por 1M de tokens (USD) — usado só para estimar custo no AILog e na métrica
+// ai_usage_cost_usd_total (metrics.ts), não é cobrança real.
+export const PRICING_PER_MILLION_TOKENS: Record<string, { input: number; output: number }> = {
+  'openai/gpt-oss-20b': { input: 0.075, output: 0.3 },
+  'openai/gpt-oss-120b': { input: 0.15, output: 0.6 },
+  'qwen/qwen3.8-27b': { input: 0.1, output: 0.3 },
+  'allam-2-7b': { input: 0.05, output: 0.15 },
+  'local-llama3': { input: 0.15, output: 0.6 },
+  'local-llama3-fast': { input: 0.075, output: 0.3 },
+  'qwen-coder': { input: 0.2, output: 0.6 },
+  'deepseek-coder': { input: 0.14, output: 0.28 },
+};
+
+// BILLING-009 (Onda 2): antes, um modelo desconhecido caía silenciosamente no preço de
+// local-llama3-fast, distorcendo o custo reportado (AILog, ai_usage_cost_usd_total, orçamento por
+// organização) sem nenhum sinal de que a tabela de preços ficou desatualizada. Agora loga e
+// incrementa uma métrica dedicada no fallback, para que um modelo novo sem entrada na tabela seja
+// detectável em vez de silenciosamente sub/superestimar gasto contra o teto de orçamento.
+export function estimateCostUsd(model: string, usage: AiTokenUsage): number {
+  const pricing = PRICING_PER_MILLION_TOKENS[model];
+  if (!pricing) {
+    logger.warn(
+      { model },
+      'estimateCostUsd: modelo sem preço cadastrado — usando fallback de local-llama3-fast para estimar custo.',
+    );
+    recordAiPricingFallback(model);
+  }
+  const resolved = pricing ?? PRICING_PER_MILLION_TOKENS['local-llama3-fast'];
+  return (
+    (usage.promptTokens / 1_000_000) * resolved.input +
+    (usage.completionTokens / 1_000_000) * resolved.output
+  );
+}

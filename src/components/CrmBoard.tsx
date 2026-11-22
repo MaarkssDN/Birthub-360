@@ -1,0 +1,764 @@
+/* eslint-disable jsx-a11y/no-noninteractive-tabindex -- regiões roláveis focáveis por teclado */
+
+import {
+  type Announcements,
+  closestCenter,
+  DndContext,
+  type DragEndEvent,
+  DragOverlay,
+  type DragStartEvent,
+  KeyboardCode,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import confetti from 'canvas-confetti';
+import { WifiOff } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { BRAND } from '../config/brand.js';
+import { BitrixImportModal } from '../features/crm/components/BitrixImportModal.js';
+import { KanbanCard } from '../features/crm/components/KanbanCard.js';
+import { KanbanColumn } from '../features/crm/components/KanbanColumn.js';
+import { LeadDetailDrawer } from '../features/crm/components/LeadDetailDrawer.js';
+import { SavedViewsPanel } from '../features/crm/components/SavedViewsPanel.js';
+import { useCrmBoardBatchActions } from '../hooks/useCrmBoardBatchActions.js';
+import { useCrmBoardController } from '../hooks/useCrmBoardController.js';
+import { useCrmBoardUrlParams } from '../hooks/useCrmBoardUrlParams.js';
+import { api } from '../lib/api.js';
+import { clientLogger } from '../lib/clientLogger.js';
+import { downloadBlob } from '../lib/nativeDownload.js';
+import { SoundFX } from '../lib/soundEffects.js';
+import { toast } from '../lib/toast.js';
+import { fromPrismaLeadStatus } from '../lib/enumMap.js';
+import type { CrmPipeline } from '../features/crm360/crm360.types.js';
+import type { Lead, LeadStatus } from '../types/index.js';
+import {
+  CrmBoardBatchBar,
+  CrmBoardFiltersBar,
+  CrmBoardHeader,
+  CrmBoardVitals,
+} from './CrmBoardToolbar.js';
+import { ContextualTip } from './ui/ContextualTip.js';
+import { EmptyState } from './ui/EmptyState.js';
+
+// dnd-kit ativa drag por teclado em Space E Enter por padrão — mas KanbanCard também usa Enter pra
+// abrir o LeadDetailDrawer (mesma tecla, dois significados). Restringindo o sensor a Space, Enter
+// fica livre e sem ambiguidade pra "abrir detalhes"; Space vira exclusivamente "pegar/soltar o card".
+const KEYBOARD_DRAG_CODES = {
+  start: [KeyboardCode.Space],
+  cancel: [KeyboardCode.Esc],
+  end: [KeyboardCode.Space],
+};
+
+const LEAD_COLUMNS: LeadStatus[] = [
+  'Lead Recebido',
+  'Cadência Iniciada',
+  'Qualificação (SDR)',
+  'Reunião Agendada',
+  'Lead Desqualificado',
+  'Convertido em Oportunidade',
+];
+
+const DEAL_COLUMNS: LeadStatus[] = [
+  'Nova Oportunidade',
+  'Proposta Enviada',
+  'Call/Visita Agendada',
+  'Piloto VTECH',
+  'Piloto Birthub 360 Profile',
+  'Piloto Birthub 360 Profile - Concluído',
+  'Piloto Birthub 360 Profile - Cancelado',
+  'Piloto Logística',
+  'Piloto Logístico - Concluído',
+  'Piloto Logístico - Cancelado',
+  'Negócios Perdidos',
+  'Negócios Ganhos',
+];
+
+/**
+ * Rótulos canônicos de exibição para desacoplar chaves históricas de banco (`LeadStatus`)
+ * de nomes legados de pilotos de clientes na camada visual multi-tenant (Horizonte 2).
+ */
+export const STAGE_DISPLAY_LABELS: Partial<Record<LeadStatus, string>> = {
+  'Piloto VTECH': 'Piloto Técnico (PoC)',
+  'Piloto Birthub 360 Profile': 'Piloto Hub 360° — Em Curso',
+  'Piloto Birthub 360 Profile - Concluído': 'Piloto Hub 360° — Concluído',
+  'Piloto Birthub 360 Profile - Cancelado': 'Piloto Hub 360° — Cancelado',
+  'Piloto Logística': 'Piloto Operacional — Em Curso',
+  'Piloto Logístico - Concluído': 'Piloto Operacional — Concluído',
+  'Piloto Logístico - Cancelado': 'Piloto Operacional — Cancelado',
+};
+
+export function formatStageLabel(stage: LeadStatus): string {
+  return STAGE_DISPLAY_LABELS[stage] ?? stage;
+}
+
+export function resolveDealPipelineColumns(
+  pipelines: CrmPipeline[],
+  activeLeads: Lead[] = [],
+): { columns: LeadStatus[]; stageLabelsByStatus: Partial<Record<LeadStatus, string>> } {
+  const dealPipeline =
+    pipelines.find((p) => p.entity === 'Negocio' && p.active) ??
+    pipelines.find((p) => p.entity === 'Negocio');
+  const rawStages = dealPipeline?.stages ?? [];
+  const sortedStages = [...rawStages].sort((a, b) => a.sortOrder - b.sortOrder);
+
+  const dynamicColumns: LeadStatus[] = [];
+  const stageLabelsByStatus: Partial<Record<LeadStatus, string>> = { ...STAGE_DISPLAY_LABELS };
+
+  for (const stage of sortedStages) {
+    if (!stage.leadStatus) continue;
+    const status = fromPrismaLeadStatus(stage.leadStatus);
+    if (!dynamicColumns.includes(status)) {
+      dynamicColumns.push(status);
+    }
+    const trimmedName = stage.name?.trim();
+    // Se o estágio no banco foi customizado pelo tenant (diferente do nome bruto da chave enum),
+    // preserva o rótulo customizado; caso seja o nome legado bruto de piloto (ex: 'Piloto VTECH'),
+    // mantém o rótulo neutro desacoplado de STAGE_DISPLAY_LABELS.
+    if (trimmedName && trimmedName !== status) {
+      stageLabelsByStatus[status] = trimmedName;
+    } else if (!stageLabelsByStatus[status]) {
+      stageLabelsByStatus[status] = status;
+    }
+  }
+
+  const baseColumns = dynamicColumns.length > 0 ? dynamicColumns : [...DEAL_COLUMNS];
+  for (const lead of activeLeads) {
+    if (lead.status && !baseColumns.includes(lead.status)) {
+      baseColumns.push(lead.status);
+    }
+  }
+
+  return { columns: baseColumns, stageLabelsByStatus };
+}
+
+interface CrmBoardProps {
+  funnel?: 'Lead' | 'Negocio';
+  embedded?: boolean;
+}
+
+export function CrmBoard({ funnel: funnelProp, embedded = false }: CrmBoardProps) {
+  // (identidade da plataforma vem de BRAND)
+  const [searchParams, setSearchParams] = useSearchParams();
+  const funnel: 'Lead' | 'Negocio' =
+    funnelProp ?? (searchParams.get('funnel') === 'Negocio' ? 'Negocio' : 'Lead');
+  const {
+    leads,
+    setLeads,
+    loading,
+    error,
+    fetchLeads,
+    handleConvert,
+    handleCardEnrich,
+    handleBatchEnrich,
+  } = useCrmBoardController(funnel);
+  const [dealPipelines, setDealPipelines] = useState<CrmPipeline[]>([]);
+
+  useEffect(() => {
+    if (funnel !== 'Negocio') return;
+    let cancelled = false;
+    api
+      .get<CrmPipeline[]>('/api/crm/pipelines')
+      .then((res) => {
+        if (!cancelled && Array.isArray(res)) {
+          setDealPipelines(res);
+        }
+      })
+      .catch(() => {
+        // Mantém fallback imediato (DEAL_COLUMNS + STAGE_DISPLAY_LABELS) em caso de falha/offline.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [funnel]);
+
+  const { columns, stageLabelsByStatus } = useMemo(() => {
+    if (funnel === 'Lead') {
+      return {
+        columns: LEAD_COLUMNS,
+        stageLabelsByStatus: STAGE_DISPLAY_LABELS,
+      };
+    }
+    return resolveDealPipelineColumns(dealPipelines, leads);
+  }, [funnel, dealPipelines, leads]);
+
+  const getStageLabel = useCallback(
+    (stage: LeadStatus): string => stageLabelsByStatus[stage] ?? formatStageLabel(stage),
+    [stageLabelsByStatus],
+  );
+  // Deep link do registro aberto: o lead/negócio selecionado vive no parâmetro `lead` da URL (não
+  // em useState local) para que a URL seja a fonte de verdade — compartilhável, sobrevive a
+  // reload, e o botão Voltar do navegador fecha o drawer antes de sair da tela (Onda A, Agente 00).
+  const selectedLeadId = searchParams.get('lead');
+  const [activeLead, setActiveLead] = useState<Lead | null>(null);
+  const keyboardDragStatusRef = useRef<LeadStatus | null>(null);
+
+  // Multi-seleção e ações em lote
+  const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [isBitrixModalOpen, setIsBitrixModalOpen] = useState(false);
+  const [isSavedViewsOpen, setIsSavedViewsOpen] = useState(false);
+  const [users, setUsers] = useState<{ id: string; name: string }[]>([]);
+
+  // Onda B2a (Agente 00, Commercial AI OS) — filtros reais do pipeline (dono + busca), persistidos
+  // na URL como `owner`/`q`, mesmo mecanismo já usado para `funnel`/`lead`.
+  const ownerFilter = searchParams.get('owner') ?? '';
+  const searchQuery = searchParams.get('q') ?? '';
+  const enrichmentFilter = searchParams.get('enrichment') ?? '';
+  const temperatureFilter = searchParams.get('temp') ?? '';
+
+  const ownerNameById = useMemo(
+    () => Object.fromEntries(users.map((u) => [u.id, u.name])),
+    [users],
+  );
+
+  const filteredLeads = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    return leads.filter((lead) => {
+      if (ownerFilter && lead.owner !== ownerFilter) return false;
+      if (enrichmentFilter) {
+        const status = lead.company?.enrichmentStatus || 'Pendente';
+        if (enrichmentFilter === 'Enriquecido' && status !== 'Enriquecido') return false;
+        if (enrichmentFilter === 'Pendente' && status !== 'Pendente') return false;
+        if (enrichmentFilter === 'Falhou' && status !== 'Falhou') return false;
+      }
+      if (temperatureFilter && lead.temperature !== temperatureFilter) return false;
+      if (query) {
+        const haystack = [lead.company?.tradeName, lead.company?.legalName, lead.contact?.name]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+        if (!haystack.includes(query)) return false;
+      }
+      return true;
+    });
+  }, [leads, ownerFilter, searchQuery, enrichmentFilter, temperatureFilter]);
+
+  const pipelineMetrics = useMemo(() => {
+    const totalAmount = leads.reduce((acc, l) => acc + (Number(l.amount) || 0), 0);
+    const hotLeads = leads.filter((l) => l.temperature === 'Quente').length;
+    const enrichedCount = leads.filter((l) => l.company?.enrichmentStatus === 'Enriquecido').length;
+    const winCount = leads.filter(
+      (l) => l.status === 'Convertido em Oportunidade' || l.status === 'Negócios Ganhos',
+    ).length;
+    const winRate = leads.length > 0 ? Math.round((winCount / leads.length) * 100) : 0;
+
+    return {
+      totalAmount,
+      totalCount: leads.length,
+      hotLeads,
+      enrichedCount,
+      winRate,
+    };
+  }, [leads]);
+
+  useEffect(() => {
+    // /api/users nunca existiu como rota (404 silencioso todo carregamento — achado do teste
+    // de console limpo em crm.spec.ts) — o endpoint real de nome/id de usuários da organização
+    // pra reatribuição é /api/team/assignable (ver team.routes.ts).
+    api
+      .get<{ owners: { id: string; name: string }[] }>('/api/team/assignable')
+      .then((res) => setUsers(res.owners))
+      .catch(() => setUsers([]));
+  }, []);
+
+  useEffect(() => {
+    const eventSource = new EventSource('/api/notifications/stream', { withCredentials: true });
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'voice-qualified') {
+          toast.success(data.message);
+          // Atualiza a lista para refletir possíveis mudanças
+          fetchLeads();
+        } else if (data.type === 'company-enriched') {
+          toast.info(data.message || 'Dados de empresa e lead enriquecidos!');
+          fetchLeads();
+        }
+      } catch (err: any) {
+        clientLogger.error({ err }, 'Erro ao processar evento SSE');
+      }
+    };
+    return () => {
+      eventSource.close();
+    };
+  }, [fetchLeads]);
+
+  // `sortableKeyboardCoordinates` (@dnd-kit/sortable) foi testado primeiro, por ser a opção
+  // nativa do dnd-kit — mas falhou em execução real neste board multi-coluna: sua busca por
+  // distância de canto (closestCorners) compara o card contra TODOS os droppables registrados
+  // (cada card individual E o droppable de cada coluna inteira via useDroppable em
+  // KanbanColumn), e o droppable da coluna, bem mais alto, tende a "ganhar" essa comparação
+  // antes de a seta conseguir avançar — ArrowRight repetido nunca saía da coluna vizinha mais
+  // próxima da origem.
+  //
+  // A primeira correção tentada usava um coordinateGetter próprio lendo `leads` (state) +
+  // um handleDragOver que reparentava o card otimisticamente no array `leads` a cada mudança de
+  // `over`, pra dar ao getter algo atualizado pra ler. Também falhou, por dois motivos
+  // confirmados em execução real: (1) o KeyboardSensor do dnd-kit congela a função
+  // coordinateGetter no momento em que o drag é ativado (Space) e reusa essa MESMA closure pro
+  // resto do gesto — fechar sobre `leads` direto sempre lia o valor de quando o drag começou,
+  // nunca o atualizado, nem trocando por uma ref sempre-atual resolvia sozinho; (2) reparentar o
+  // card de verdade em `leads` fazia o React desmontar/remontar o KanbanCard em outra
+  // <SortableContext> (coluna diferente = subárvore diferente, reconciliação por `key` não
+  // atravessa colunas), derrubando o foco real do DOM pro <body> no meio do drag — e esse
+  // remount, combinado com a remedição contínua de retângulos do dnd-kit
+  // (MeasuringStrategy.WhileDragging), também fazia a "coluna atual" pular sozinha sem nenhuma
+  // tecla ser pressionada.
+  //
+  // A solução abaixo evita os dois problemas não tocando em `leads` durante o drag: o
+  // coordinateGetter mantém seu próprio "cursor" (`keyboardDragStatusRef`), que ele mesmo lê E
+  // escreve a cada seta — autocontido, imune a re-render e a remontagem. `leads` só muda de
+  // verdade no drop (handleDragEnd), igual ao mouse já fazia antes desta rodada. O preview
+  // visual durante o drag continua vindo do <DragOverlay> (já existia antes desta rodada), que o
+  // dnd-kit já anima seguindo a posição virtual — não precisa de reparentação nenhuma pra isso.
+  const columnKeyboardCoordinateGetter = useCallback(
+    (
+      event: KeyboardEvent,
+      {
+        context,
+      }: {
+        context: {
+          droppableRects: Map<
+            string | number,
+            { left: number; top: number; width: number; height: number }
+          >;
+        };
+      },
+    ) => {
+      if (event.code !== 'ArrowLeft' && event.code !== 'ArrowRight') return undefined;
+      const currentStatus = keyboardDragStatusRef.current;
+      if (!currentStatus) return undefined;
+
+      const currentIndex = columns.indexOf(currentStatus);
+      if (currentIndex === -1) return undefined;
+      const nextIndex = event.code === 'ArrowRight' ? currentIndex + 1 : currentIndex - 1;
+      const nextStatus = columns[nextIndex];
+      if (!nextStatus) return undefined; // já está na primeira/última coluna
+
+      const rect =
+        context.droppableRects.get(nextStatus) ??
+        context.droppableRects.get(getStageLabel(nextStatus));
+      if (!rect) return undefined;
+
+      event.preventDefault();
+      keyboardDragStatusRef.current = nextStatus;
+      // Mira no CENTRO do retângulo da coluna, não perto do topo: closestCenter compara
+      // centro-a-centro contra TODOS os droppables (cada card E cada coluna inteira). Um ponto
+      // perto do topo fica geometricamente mais perto do centro de um card vizinho (retângulo
+      // pequeno) do que do centro da própria coluna (retângulo alto) — fazia o alvo "grudar" na
+      // coluna anterior por 1-2 teclas antes de reagir, ou pular coluna vazia. Mirando no centro
+      // real da coluna, ela sempre vence essa comparação pra ela mesma.
+      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    },
+    [columns, getStageLabel],
+  );
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: columnKeyboardCoordinateGetter,
+      keyboardCodes: KEYBOARD_DRAG_CODES,
+    }),
+  );
+
+  /** Resolve a coluna de destino a partir do `over.id` do dnd-kit — pode ser o id da própria
+        coluna (drop numa coluna vazia) ou o id de um card dentro dela (drop entre dois cards). */
+  const resolveStatusFromOverId = useCallback(
+    (overId: string | number): LeadStatus | null => {
+      if (typeof overId === 'string') {
+        if (columns.includes(overId as LeadStatus)) {
+          return overId as LeadStatus;
+        }
+        const matchedByLabel = columns.find((col) => getStageLabel(col) === overId);
+        if (matchedByLabel) {
+          return matchedByLabel;
+        }
+      }
+      const overLead = leads.find((l) => l.id === overId);
+      return overLead ? overLead.status : null;
+    },
+    [leads, columns, getStageLabel],
+  );
+
+  const leadLabel = useCallback((lead: Lead | null | undefined) => {
+    if (!lead) return 'Card';
+    return (
+      lead.company?.tradeName || lead.company?.legalName || lead.contact?.name || 'Lead sem empresa'
+    );
+  }, []);
+
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      const { active } = event;
+      const lead = leads.find((l) => l.id === active.id);
+      if (lead) {
+        setActiveLead(lead);
+        keyboardDragStatusRef.current = lead.status;
+        SoundFX.play('focus');
+      }
+    },
+    [leads],
+  );
+
+  const handleDragEnd = useCallback(
+    async (event: DragEndEvent) => {
+      const { active, over } = event;
+      setActiveLead(null);
+      keyboardDragStatusRef.current = null;
+
+      if (!over) return;
+
+      const leadId = active.id;
+      const targetStatus = resolveStatusFromOverId(over.id);
+      if (!targetStatus) return;
+
+      const currentLead = leads.find((l) => l.id === leadId);
+      if (currentLead && currentLead.status !== targetStatus) {
+        if (targetStatus === 'Negócios Ganhos' || targetStatus === 'Convertido em Oportunidade') {
+          SoundFX.play('success');
+          confetti({
+            particleCount: 80,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: [
+              '--color-brand-primary',
+              '--color-brand-secondary',
+              '--color-brand-accent',
+              '--color-success',
+              '--color-info',
+            ].map((token) =>
+              getComputedStyle(document.documentElement).getPropertyValue(token).trim(),
+            ),
+            disableForReducedMotion: true,
+          });
+        } else {
+          SoundFX.play('confirm');
+        }
+
+        setLeads((prev) =>
+          prev.map((lead) => (lead.id === leadId ? { ...lead, status: targetStatus } : lead)),
+        );
+
+        try {
+          // /api/leads/:id só existe como PUT (lead.routes.ts) — api.patch mandava PATCH,
+          // que o backend nunca registrou (404 silencioso engolido pelo catch abaixo).
+          // Resultado real: mover um card no Kanban nunca persistia, sempre revertia com o
+          // toast "a alteração foi desfeita" (achado do teste E2E de drag-and-drop).
+          await api.put(`/api/leads/${leadId}`, { status: targetStatus });
+        } catch (error: any) {
+          SoundFX.play('error');
+          clientLogger.error({ err: error }, 'Error updating lead status');
+          toast.error(
+            `Não foi possível mover ${leadLabel(currentLead)} — a alteração foi desfeita.`,
+          );
+          fetchLeads();
+        }
+      }
+    },
+    [leads, setLeads, fetchLeads, resolveStatusFromOverId, leadLabel],
+  );
+
+  const handleDragCancel = useCallback(() => {
+    setActiveLead(null);
+    keyboardDragStatusRef.current = null;
+  }, []);
+
+  // Announcements acessíveis do dnd-kit — o default ("Draggable item l2...") expõe o id
+  // interno do lead, que não diz nada pro usuário. Trocado por nome da empresa + coluna,
+  // sem introduzir dependência nova (accessibility.announcements é nativo do @dnd-kit/core).
+  const announcements: Announcements = useMemo(
+    () => ({
+      onDragStart({ active }) {
+        const lead = leads.find((l) => l.id === active.id);
+        const currentLabel = lead?.status ? getStageLabel(lead.status) : '';
+        return `${leadLabel(lead)} selecionado para mover, coluna atual ${currentLabel}. Use as setas para escolher o destino, espaço para soltar, Esc para cancelar.`;
+      },
+      onDragOver({ active, over }) {
+        const lead = leads.find((l) => l.id === active.id);
+        const status = over ? resolveStatusFromOverId(over.id) : null;
+        if (!status) return `${leadLabel(lead)} não está sobre nenhuma coluna.`;
+        return `${leadLabel(lead)} sobre a coluna ${getStageLabel(status)}.`;
+      },
+      onDragEnd({ active, over }) {
+        const lead = leads.find((l) => l.id === active.id);
+        const status = over ? resolveStatusFromOverId(over.id) : null;
+        if (!status) return `Movimentação de ${leadLabel(lead)} cancelada.`;
+        return `${leadLabel(lead)} movido para ${getStageLabel(status)}.`;
+      },
+      onDragCancel({ active }) {
+        const lead = leads.find((l) => l.id === active.id);
+        const currentLabel = lead?.status ? getStageLabel(lead.status) : '';
+        // `leads` nunca é tocado durante o drag (só no drop, em handleDragEnd), então
+        // lead.status aqui já é a coluna de origem, sem precisar de nenhuma ref à parte.
+        return `Movimentação de ${leadLabel(lead)} cancelada. O card permanece em ${currentLabel}.`;
+      },
+    }),
+    [leads, leadLabel, resolveStatusFromOverId, getStageLabel],
+  );
+
+  const handleToggleSelect = useCallback((leadId: string) => {
+    setSelectedLeadIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(leadId)) next.delete(leadId);
+      else next.add(leadId);
+      return next;
+    });
+  }, []);
+
+  const handleCardClick = useCallback(
+    (lead: Lead) => {
+      if (selectionMode) {
+        handleToggleSelect(lead.id);
+        return;
+      }
+      // push (padrão do setSearchParams): abrir o drawer entra no histórico do navegador, então
+      // Voltar fecha o drawer em vez de sair de /app/crm — ver handleCloseDrawer abaixo, que usa
+      // replace ao fechar explicitamente para não empilhar uma entrada de histórico simétrica.
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.set('lead', lead.id);
+        return next;
+      });
+    },
+    [selectionMode, handleToggleSelect, setSearchParams],
+  );
+
+  const handleCloseDrawer = useCallback(() => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete('lead');
+        return next;
+      },
+      { replace: true },
+    );
+  }, [setSearchParams]);
+
+  // Opera sobre os leads FILTRADOS visíveis, não todos os `leads` carregados — "selecionar todos"
+  // com um filtro ativo deve selecionar o que está na tela, não leads escondidos pelo filtro.
+  const handleSelectAll = useCallback(() => {
+    if (selectedLeadIds.size === filteredLeads.length) {
+      setSelectedLeadIds(new Set());
+    } else {
+      setSelectedLeadIds(new Set(filteredLeads.map((l) => l.id)));
+    }
+  }, [filteredLeads, selectedLeadIds.size]);
+
+  const handleClearSelection = useCallback(() => {
+    setSelectedLeadIds(new Set());
+    setSelectionMode(false);
+  }, []);
+
+  // Ações em lote e handlers de parâmetros de URL extraídos para hooks dedicados
+  // (`useCrmBoardBatchActions`/`useCrmBoardUrlParams`) na refatoração de hotspot — Onda 3,
+  // handoff 00→04. `clearSelection` replica exatamente o `setSelectedLeadIds(new Set())` que os
+  // handlers originais executavam (sem tocar em `selectionMode`, como antes).
+  const clearSelection = useCallback(() => setSelectedLeadIds(new Set()), []);
+
+  const {
+    isBatchUpdating,
+    handleBatchMoveStage,
+    handleBatchReassignOwner,
+    handleBatchExportBitrix,
+    handleBatchEnrichSelected,
+  } = useCrmBoardBatchActions({ selectedLeadIds, users, fetchLeads, clearSelection });
+
+  const {
+    handleFunnelChange,
+    handleApplySavedView,
+    handleOwnerFilterChange,
+    handleEnrichmentFilterChange,
+    handleTemperatureFilterChange,
+    handleSearchQueryChange,
+    handleClearFilters,
+  } = useCrmBoardUrlParams({ funnelProp, setSearchParams, clearSelection });
+
+  const handleExportCsv = async () => {
+    try {
+      const response = await fetch('/api/leads/export/csv', {
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Falha ao exportar');
+
+      const blob = await response.blob();
+      const filename = `leads_${BRAND.id}_${new Date().toISOString().slice(0, 10)}.csv`;
+      await downloadBlob(blob, filename);
+    } catch {
+      toast.error('Erro ao exportar leads. Tente novamente.');
+    }
+  };
+
+  const groupedLeads = useMemo(() => {
+    const grouped: Partial<Record<LeadStatus, Lead[]>> = Object.fromEntries(
+      columns.map((status) => [status, [] as Lead[]]),
+    );
+    filteredLeads.forEach((lead) => {
+      grouped[lead.status]?.push(lead);
+    });
+    return grouped;
+  }, [filteredLeads, columns]);
+
+  return (
+    <div
+      className={`flex-1 flex flex-col bg-bg text-ink animate-in fade-in duration-500 overflow-hidden relative ${embedded ? 'min-h-[680px] h-full' : 'h-full'}`}
+    >
+      <CrmBoardHeader
+        funnel={funnel}
+        showFunnelToggle={!funnelProp}
+        handleFunnelChange={handleFunnelChange}
+        setIsSavedViewsOpen={setIsSavedViewsOpen}
+        selectionMode={selectionMode}
+        setSelectionMode={setSelectionMode}
+        setSelectedLeadIds={setSelectedLeadIds}
+        setIsBitrixModalOpen={setIsBitrixModalOpen}
+        handleBatchExportBitrix={handleBatchExportBitrix}
+        handleBatchEnrich={handleBatchEnrich}
+        loading={loading}
+        handleExportCsv={handleExportCsv}
+      />
+
+      <CrmBoardVitals pipelineMetrics={pipelineMetrics} />
+
+      <CrmBoardFiltersBar
+        searchQuery={searchQuery}
+        handleSearchQueryChange={handleSearchQueryChange}
+        ownerFilter={ownerFilter}
+        handleOwnerFilterChange={handleOwnerFilterChange}
+        users={users}
+        enrichmentFilter={enrichmentFilter}
+        handleEnrichmentFilterChange={handleEnrichmentFilterChange}
+        temperatureFilter={temperatureFilter}
+        handleTemperatureFilterChange={handleTemperatureFilterChange}
+        handleClearFilters={handleClearFilters}
+        filteredCount={filteredLeads.length}
+        totalCount={leads.length}
+      />
+
+      {/* Contextual Tip Banner */}
+      {!embedded && (
+        <div className="px-6 pt-4 shrink-0">
+          <ContextualTip
+            id="tip-crm-pipeline"
+            title="💡 Dica de Gestão de Funil CRM"
+            description="Passe o cursor sobre os cards para ver o tempo de estagnação e tecnologias. Use 'Seleção em Lote' para mover dezenas de leads simultaneamente ou exportá-los para o Bitrix24!"
+          />
+        </div>
+      )}
+
+      {/* Região com scroll horizontal do Kanban */}
+      {/* role="region" torna o aria-label válido (div genérica não aceita nome acessível) e
+          sinaliza a screen readers que é uma landmark navegável — não só satisfaz o linter.
+          <section aria-label> produziria a mesma role region na árvore de acessibilidade, sem
+          ganho real — não vale o risco de desalinhar abertura/fechamento num componente grande. */}
+      {/* biome-ignore lint/a11y/useSemanticElements: ver comentário acima */}
+      <div
+        className="custom-scrollbar flex-1 min-h-[320px] overflow-x-auto overflow-y-hidden bg-bg p-4 pb-24 lg:p-6 lg:pb-24"
+        role="region"
+        // Div não-interativa com scroll — tabIndex é intencional (torna a região focável/rolável
+        // via teclado), não um erro de a11y. Mesmo padrão de VirtualTable.tsx.
+        // biome-ignore lint/a11y/noNoninteractiveTabindex: scroll horizontal via teclado, ver comentário acima
+        tabIndex={0}
+        aria-label="Colunas do pipeline — role o conteúdo horizontalmente"
+      >
+        {loading ? (
+          <div className="h-full flex items-center justify-center">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-8 h-8 border-4 border-brand border-t-transparent rounded-full animate-spin" />
+              <p className="text-ink-2 font-medium text-sm">Carregando pipeline comercial...</p>
+            </div>
+          </div>
+        ) : error ? (
+          <EmptyState
+            icon={<WifiOff className="w-8 h-8 text-brand" />}
+            title="Não foi possível carregar o pipeline"
+            description={error}
+            actionLabel="Tentar novamente"
+            onAction={fetchLeads}
+          />
+        ) : (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            onDragCancel={handleDragCancel}
+            accessibility={{ announcements }}
+          >
+            <div className="flex gap-6 h-full">
+              {columns.map((status) => (
+                <KanbanColumn
+                  key={status}
+                  status={getStageLabel(status) as LeadStatus}
+                  leads={groupedLeads[status] ?? []}
+                  onCardClick={handleCardClick}
+                  onCardEnrich={handleCardEnrich}
+                  onConvert={
+                    funnel === 'Lead' && status === 'Convertido em Oportunidade'
+                      ? handleConvert
+                      : undefined
+                  }
+                  selectedLeadIds={selectedLeadIds}
+                  onToggleSelect={handleToggleSelect}
+                  selectionMode={selectionMode}
+                  ownerNameById={ownerNameById}
+                />
+              ))}
+            </div>
+            <DragOverlay>
+              {activeLead ? (
+                <div className="w-[320px] rotate-2 scale-[1.03] opacity-95 shadow-2xl pointer-events-none">
+                  <KanbanCard lead={activeLead} onClick={() => {}} />
+                </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
+        )}
+      </div>
+
+      <CrmBoardBatchBar
+        selectedLeadIds={selectedLeadIds}
+        filteredCount={filteredLeads.length}
+        handleSelectAll={handleSelectAll}
+        stageOptions={columns.map((col) => ({ value: col, label: getStageLabel(col) }))}
+        handleBatchMoveStage={handleBatchMoveStage}
+        isBatchUpdating={isBatchUpdating}
+        users={users}
+        handleBatchReassignOwner={handleBatchReassignOwner}
+        handleBatchEnrichSelected={handleBatchEnrichSelected}
+        handleBatchExportBitrix={handleBatchExportBitrix}
+        handleClearSelection={handleClearSelection}
+      />
+
+      {/* Modal de Importação Bitrix24 */}
+      <BitrixImportModal
+        isOpen={isBitrixModalOpen}
+        onClose={() => setIsBitrixModalOpen(false)}
+        onImportSuccess={fetchLeads}
+      />
+
+      <SavedViewsPanel
+        isOpen={isSavedViewsOpen}
+        onClose={() => setIsSavedViewsOpen(false)}
+        currentFunnel={funnel}
+        currentFilters={{ owner: ownerFilter || undefined, q: searchQuery || undefined }}
+        ownerNameById={ownerNameById}
+        onApply={handleApplySavedView}
+      />
+
+      {selectedLeadId && (
+        <LeadDetailDrawer
+          leadId={selectedLeadId}
+          onClose={handleCloseDrawer}
+          onChanged={fetchLeads}
+        />
+      )}
+    </div>
+  );
+}

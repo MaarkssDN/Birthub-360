@@ -1,0 +1,332 @@
+import type { NextFunction, Request, Response } from 'express';
+import { logger } from '../../../lib/logger.js';
+import { routeParam } from '../../../shared/http/routeParams.js';
+import type { AuthRequest } from '../../../shared/middlewares/authenticateToken.js';
+import { publishCrmStageChange } from '../../../shared/services/crmEventBus.js';
+import type { Crm360UseCases } from '../application/Crm360UseCases.js';
+
+export class Crm360Controller {
+  constructor(private crm360UseCases: Crm360UseCases) {}
+
+  getOverview = async (req: Request, res: Response, _next: NextFunction) => {
+    try {
+      const orgId = (req as AuthRequest).user?.organizationId;
+      if (!orgId) {
+        return res.json({
+          success: true,
+          data: {
+            kpis: {
+              leads: 0,
+              openDeals: 0,
+              wonDeals: 0,
+              lostDeals: 0,
+              conversionRate: 0,
+              pipelineValue: 0,
+              weightedPipeline: 0,
+              overdueActivities: 0,
+              todayActivities: 0,
+              pendingDocuments: 0,
+            },
+            focusActivities: [],
+            recentDeals: [],
+            stageCounts: [],
+          },
+        });
+      }
+      const data = await this.crm360UseCases.getOverview(orgId);
+      res.json({ success: true, data });
+    } catch (error) {
+      // TAREFA-SANEAMENTO-018 (BT360-DT-0024): fallback de zeros é mantido para não quebrar
+      // o carregamento do painel, mas a falha real precisa ser observável no log.
+      logger.error({ err: error }, 'crm360.getOverview falhou — respondendo KPIs zerados');
+      res.json({
+        success: true,
+        data: {
+          kpis: {
+            leads: 0,
+            openDeals: 0,
+            wonDeals: 0,
+            lostDeals: 0,
+            conversionRate: 0,
+            pipelineValue: 0,
+            weightedPipeline: 0,
+            overdueActivities: 0,
+            todayActivities: 0,
+            pendingDocuments: 0,
+          },
+          focusActivities: [],
+          recentDeals: [],
+          stageCounts: [],
+        },
+      });
+    }
+  };
+
+  /**
+   * GET /api/crm/deals
+   * Handler defensivo para consulta de negócios:
+   * Retorna array vazio em vez de estourar exceção não tratada no carregamento de /app/crm360.
+   * TAREFA-SANEAMENTO-018 (BT360-DT-0024): o catch silencioso anterior escondia falhas reais
+   * de banco/RLS — agora o erro é registrado no log antes do fallback de resposta.
+   */
+  getDeals = async (req: Request, res: Response, _next: NextFunction) => {
+    const orgId = (req as AuthRequest).user?.organizationId;
+    if (!orgId) {
+      return res.status(200).json([]);
+    }
+    try {
+      const data = await this.crm360UseCases.getDeals(orgId);
+      return res.status(200).json(Array.isArray(data) ? data : []);
+    } catch (error) {
+      logger.error({ err: error, organizationId: orgId }, 'crm360.getDeals falhou');
+      return res.status(200).json([]);
+    }
+  };
+
+  getPipelines = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const orgId = (req as AuthRequest).user.organizationId;
+      const data = await this.crm360UseCases.getPipelines(orgId);
+      res.json({ success: true, data });
+    } catch (error: any) {
+      next(error);
+    }
+  };
+
+  getBoardLeads = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const orgId = (req as AuthRequest).user.organizationId;
+      const { funnel, pipelineId } = req.query as { funnel?: string; pipelineId?: string };
+      const data = await this.crm360UseCases.getBoardLeads(orgId, funnel, pipelineId);
+      res.json({ success: true, data });
+    } catch (error: any) {
+      next(error);
+    }
+  };
+
+  moveRecord = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { organizationId: orgId, id: actorUserId } = (req as AuthRequest).user;
+      const { stageId, expectedCloseDate } = req.body;
+      const leadId = routeParam(req.params.id, 'id');
+      const data = await this.crm360UseCases.updateLeadStage(
+        orgId,
+        leadId,
+        stageId,
+        expectedCloseDate ? new Date(expectedCloseDate) : undefined,
+        actorUserId,
+      );
+
+      if (data) {
+        void publishCrmStageChange({
+          organizationId: orgId,
+          leadId,
+          stageId,
+          data: { ...(data as unknown as Record<string, unknown>) },
+        });
+      }
+
+      res.json({ success: true, data });
+    } catch (error: any) {
+      next(error);
+    }
+  };
+
+  convertLead = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const orgId = (req as AuthRequest).user.organizationId;
+      const leadId = routeParam(req.params.id, 'id');
+      const data = await this.crm360UseCases.convertLead(orgId, leadId);
+
+      if (data) {
+        void publishCrmStageChange({
+          organizationId: orgId,
+          leadId,
+          funnel: 'Negocio',
+          data: { ...(data as unknown as Record<string, unknown>), converted: true },
+        });
+      }
+
+      res.json({ success: true, data });
+    } catch (error: any) {
+      next(error);
+    }
+  };
+
+  listProducts = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const orgId = (req as AuthRequest).user.organizationId;
+      const search = typeof req.query.q === 'string' ? req.query.q : undefined;
+      const data = await this.crm360UseCases.listProducts(orgId, search);
+      res.json({ success: true, data });
+    } catch (error: any) {
+      next(error);
+    }
+  };
+
+  createProduct = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const orgId = (req as AuthRequest).user.organizationId;
+      const data = await this.crm360UseCases.createProduct(orgId, req.body);
+      res.status(201).json({ success: true, data });
+    } catch (error: any) {
+      next(error);
+    }
+  };
+
+  getDealItems = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const orgId = (req as AuthRequest).user.organizationId;
+      const data = await this.crm360UseCases.getDealItems(
+        orgId,
+        routeParam(req.params.leadId, 'leadId'),
+      );
+      res.json({ success: true, data });
+    } catch (error: any) {
+      next(error);
+    }
+  };
+
+  addDealItem = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { organizationId: orgId, id: actorUserId } = (req as AuthRequest).user;
+      const data = await this.crm360UseCases.addDealItem(
+        orgId,
+        routeParam(req.params.leadId, 'leadId'),
+        req.body,
+        actorUserId,
+      );
+      res.status(201).json({ success: true, data });
+    } catch (error: any) {
+      next(error);
+    }
+  };
+
+  removeDealItem = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const orgId = (req as AuthRequest).user.organizationId;
+      await this.crm360UseCases.removeDealItem(
+        orgId,
+        routeParam(req.params.leadId, 'leadId'),
+        routeParam(req.params.id, 'id'),
+      );
+      res.status(204).send();
+    } catch (error: any) {
+      next(error);
+    }
+  };
+
+  listDocuments = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const orgId = (req as AuthRequest).user.organizationId;
+      const leadId = typeof req.query.leadId === 'string' ? req.query.leadId : undefined;
+      const data = await this.crm360UseCases.listDocuments(orgId, leadId);
+      res.json({ success: true, data });
+    } catch (error: any) {
+      next(error);
+    }
+  };
+
+  createDocument = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { organizationId: orgId, id: actorUserId } = (req as AuthRequest).user;
+      const data = await this.crm360UseCases.createDocument(orgId, req.body, actorUserId);
+      res.status(201).json({ success: true, data });
+    } catch (error: any) {
+      next(error);
+    }
+  };
+
+  updateDocumentContent = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { organizationId: orgId, id: actorUserId } = (req as AuthRequest).user;
+      const data = await this.crm360UseCases.updateDocumentContent(
+        orgId,
+        routeParam(req.params.id, 'id'),
+        req.body,
+        actorUserId,
+      );
+      res.json({ success: true, data });
+    } catch (error: any) {
+      next(error);
+    }
+  };
+
+  listDocumentVersions = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const orgId = (req as AuthRequest).user.organizationId;
+      const data = await this.crm360UseCases.listDocumentVersions(
+        orgId,
+        routeParam(req.params.id, 'id'),
+      );
+      res.json({ success: true, data });
+    } catch (error: any) {
+      next(error);
+    }
+  };
+
+  updateDocumentStatus = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { organizationId: orgId, id: actorUserId } = (req as AuthRequest).user;
+      const { status } = req.body;
+      const data = await this.crm360UseCases.updateDocumentStatus(
+        orgId,
+        routeParam(req.params.id, 'id'),
+        status,
+        actorUserId,
+      );
+      res.json({ success: true, data });
+    } catch (error: any) {
+      next(error);
+    }
+  };
+
+  /** BILLING-003 (onda 5) — ver Crm360UseCases.reconcileFaturaStripePayment. */
+  reconcileFaturaStripePayment = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { organizationId: orgId, id: actorUserId } = (req as AuthRequest).user;
+      const { connectionId, paymentIntentId } = req.body;
+      const data = await this.crm360UseCases.reconcileFaturaStripePayment(
+        orgId,
+        routeParam(req.params.id, 'id'),
+        connectionId,
+        paymentIntentId,
+        actorUserId,
+      );
+      res.json({ success: true, data });
+    } catch (error: any) {
+      next(error);
+    }
+  };
+
+  /** Rota pública (sem `authenticateToken`) — ver `crm360Public.routes.ts`. */
+  viewPublicDocument = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const data = await this.crm360UseCases.recordDocumentView(
+        routeParam(req.params.token, 'token'),
+      );
+      if (!data) {
+        res.status(404).json({ success: false, error: 'Proposta não encontrada.' });
+        return;
+      }
+      res.json({ success: true, data });
+    } catch (error: any) {
+      next(error);
+    }
+  };
+
+  requestDocumentSignature = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { organizationId: orgId, id: actorUserId } = (req as AuthRequest).user;
+      const data = await this.crm360UseCases.requestDocumentSignature(
+        orgId,
+        routeParam(req.params.id, 'id'),
+        actorUserId,
+        req.body,
+      );
+      res.status(201).json({ success: true, data });
+    } catch (error: any) {
+      next(error);
+    }
+  };
+}

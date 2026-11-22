@@ -1,0 +1,9 @@
+{
+  "name": "testland/xcuitest-suite",
+  "description": "Use whenever an iOS, iPadOS, tvOS or macOS app needs UI tests in Apple's XCUITest: XCUIApplication, XCUIElement and queries, accessibility identifiers in app code, xcodebuild test with a destination, and reading the xcresult bundle, plus macOS specifics such as privacy permission resets.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.4.6"
+}

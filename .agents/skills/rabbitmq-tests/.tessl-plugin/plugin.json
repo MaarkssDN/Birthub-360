@@ -1,0 +1,9 @@
+{
+  "name": "testland/rabbitmq-tests",
+  "description": "Use whenever RabbitMQ producers or consumers (pika, amqplib, RabbitMQ.Client, spring-amqp) need tests: work queues, pub/sub, routing, topics and RPC, publisher confirms, ack, nack and requeue, durable and quorum queues, with the Testcontainers RabbitMQ image.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.3"
+}

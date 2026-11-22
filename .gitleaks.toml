@@ -1,0 +1,109 @@
+title = "gitleaks config — Birth Hub 360"
+
+# Mantém todas as regras padrão do gitleaks (mesmo comportamento de detecção que o repositório já
+# tinha antes deste arquivo existir, ver .github/workflows/ci.yml, job "secret-scan") e só
+# acrescenta um allowlist global bem específico — não substitui nem enfraquece nenhuma regra.
+[extend]
+useDefault = true
+
+# Falso-positivo conhecido: um JWT SINTÉTICO (payload {"sub":"1234567890"}, sem relação com
+# nenhuma conta/sessão real) usado como fixture em
+# tests/unit/features/bug-reports/bugReport.sanitize.test.ts, para testar a redação de JWT feita
+# por bugReport.sanitize.ts. O gitleaks escaneia o diff de CADA commit do histórico — um
+# `// gitleaks:allow` inline só suprime a partir do commit em que é adicionado, não retroage aos
+# commits anteriores que já introduziram o literal. Allowlist por regex é a forma correta de
+# resolver isso sem reescrever histórico: casa com o valor exato do fixture, então não amplia o
+# allowlist para nenhum segredo real que venha a aparecer no futuro.
+#
+# Falso-positivo conhecido #2: a regra `linkedin-client-id` do gitleaks é um heurístico genérico
+# — qualquer identificador de exatamente 14 caracteres alfanuméricos logo após algo com "linkedin"
+# no nome (`(?i)...linkedin...[:=]...[a-z0-9]{14}`) é sinalizado como possível Client ID. Em
+# src/features/prospecting/components/prospecting-hub/tools/LinkedInTool.tsx a linha
+# `linkedinUrl: manualKnownUrl || undefined,` bateu nisso por coincidência: "manualKnownUrl" é só
+# o nome de uma variável local (o link colado manualmente pelo usuário), não uma credencial.
+# Confirmado rodando `gitleaks detect` local (sem --redact) contra o commit
+# d42daabe5c94b979e0507e0f574ec551d753bf06 — o "Secret" reportado é literalmente o texto
+# "manualKnownUrl".
+# Falso-positivo conhecido #3: os 31 arquivos `__next._tree.txt` do export estático do Next.js em
+# public/tools/treinamento-birthhub360/**/ são metadado de build gerado automaticamente (route tree
+# RSC — buildId, chunk hashes, slugs de rota como "01-bem-vindo-birthhub360"), não código-fonte nem
+# segredo. A regra genérica `generic-api-key` do gitleaks casa com o trecho
+# `"param":{"type":"d","key":"<slug>",...}` por entropia (baixa, ~3.5-4.0 — bem abaixo do limiar
+# típico de credencial real) e derrubava o gate "secret scan" (job obrigatório do CI) em toda
+# execução que incluísse esses commits no intervalo escaneado. Path-based, não regex de conteúdo:
+# o padrão de "key" varia por página/slug, então uma allowlist de conteúdo teria que ser
+# atualizada a cada novo export do treinamento — o caminho do arquivo é o identificador estável.
+#
+# Falso-positivo conhecido #4 (achado durante a triagem dos 45 segredos históricos do
+# `workflow_dispatch` de 2026-09-04, ver docs/security/GITLEAKS_HISTORICAL_FINDINGS_2026-09-05.md):
+# 42 dos 45 achados eram o MESMO arquivo `phase-12-manifest.json` (um manifesto de refatoração
+# gerado por ferramenta, presente em 3 momentos/caminhos do histórico —
+# `phase-12-manifest.json`, `_archive/fases-e-relatorios/phase-12-manifest.json`,
+# `docs/archive/fases/phase-12-manifest.json`) com um bloco `"hashes": {...}` mapeando caminho de
+# arquivo para hash SHA hex do conteúdo (checksum de auditoria da refatoração, não credencial). A
+# regra `generic-api-key` casa com qualquer string hex longa por entropia — mesmo padrão do
+# falso-positivo #3 acima. Path-based pelo mesmo motivo: o conteúdo (paths Windows + hashes) não é
+# capturável por um regex único sem enumerar cada hash.
+#
+# Falso-positivo conhecido #5: testes unitários dos conectores Slack/Stripe/Omie
+# (tests/unit/features/integrations/{stripe,omie}/*.test.ts) usam valores de fixture óbvios como
+# `secretKey`/`appKey`/`appSecret` ('sk_test_valid123', 'valid-key-1234', 'valid-secret', etc.) para
+# exercitar os caminhos de validação/rejeição de connectStripe/connectOmie. Nenhuma chamada de rede
+# real acontece nesses arquivos — `fetchWithTimeoutMock`/`createStripeMock` mockam toda a stack HTTP
+# (mesmo padrão de tests/unit/features/integrations/threecx/threecx.service.test.ts) — então não há
+# segredo real possível de vazar aqui. A regra `generic-api-key` casa por entropia do valor após o
+# nome do campo, mesmo padrão dos falsos-positivos #3/#4 acima. Path-based porque os valores de
+# fixture mudam conforme os testes evoluem (novos casos de sucesso/falha) — o caminho do arquivo é
+# o identificador estável, e o padrão já cobre qualquer teste futuro nesses dois diretórios.
+#
+# Falso-positivo conhecido #6 (PR #102, Agente 15, commit db02bd60): a fixture
+# `apiKey: 'sms-plain-key-0001'` em tests/unit/security/integrationSettingsBackfill.test.ts:94 é um
+# valor SINTÉTICO de "legado em texto puro" usado para testar o planejamento do backfill de cifra
+# (planSettingBackfill) — nenhuma chamada de rede, nenhum provedor real; o próprio nome diz que é
+# fixture. A regra `generic-api-key` casa por entropia (~3.5), mesmo padrão dos #3/#4/#5. Regex do
+# VALOR EXATO (ancorado), não path: o arquivo é um teste de segurança e deve continuar sendo
+# escaneado; o regex não cobre nenhum outro valor. Allowlist (e não `// gitleaks:allow` nem
+# .gitleaksignore) porque o literal já está no diff de db02bd60 e precisa ficar suprimido para
+# qualquer range que inclua esse commit, sem reescrever histórico.
+#
+# Falso-positivo conhecido #7: snapshots visuais gerados em
+# design-system-guide/BIRTH-HUB-360-DESIGN-SYSTEM-GUIDE-assets/data/*.json contêm mensagens de
+# console do Vite/Playwright com URLs `ws://localhost:24678/?token=...` usadas por um ambiente de
+# desenvolvimento local. Não são segredos do app nem de produção; são artefatos de documentação
+# e baseline visual. O allowlist por caminho evita que o gate de secret-scan derrube o CI em cada
+# snapshot novo.
+#
+# Falso-positivo conhecido #8: `agente-codigo-local/firebase-applet-config.json` contém um valor de
+# placeholder (`apiKey: "AIza_PLACEHOLDER"`) usado somente como configuração local do Firebase e não
+# como credencial real. Esse arquivo é um artefato de desenvolvimento e deve continuar ignorado pelo
+# scan de segredos do CI.
+[allowlist]
+description = "Fixtures sintéticas de teste e falsos-positivos confirmados (não são segredos reais)"
+paths = [
+  '''public/tools/treinamento-birthhub360/.*/__next\._tree\.txt$''',
+  '''public/tools/treinamento-atlasgr/.*/__next\._tree\.txt$''',
+  '''(^|/)phase-12-manifest\.json$''',
+  '''tests/unit/features/integrations/stripe/.*\.test\.ts$''',
+  '''tests/unit/features/integrations/omie/.*\.test\.ts$''',
+  '''\.agents/runs/.*\.md$''',
+  '''(^|/)agente-codigo-local/firebase-applet-config\.json$''',
+  '''(^|/)design-system-guide/BIRTH-HUB-360-DESIGN-SYSTEM-GUIDE-assets/data/.*\.json$''',
+]
+regexes = [
+  '''eyJhbGciOiJIUzI1NiJ9\.eyJzdWIiOiIxMjM0NTY3ODkwIn0\.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U''',
+  '''manualKnownUrl''',
+  # FP #6 — fixture do teste de backfill (ver comentário acima).
+  '''^sms-plain-key-0001$''',
+]
+
+# ACHADO REAL, JÁ REMEDIADO (02/09/2026): commit 46833fd4 (branch de desenvolvimento, mergeado em
+# main antes desta sessão) tinha uma senha de conta real em texto puro em dois scripts temporários
+# (`_tmp_bitrix_only.mjs`, `_tmp_enrich_and_bitrix.mjs` — nenhum dos dois existe hoje no repo). A
+# senha foi rotacionada imediatamente no Supabase de produção assim que este achado apareceu no gate
+# "secret scan" (invalidando o valor vazado); os dois arquivos nunca foram recriados. Este commit
+# permanece alcançável pela cadeia --first-parent que o gitleaks-action varre a cada push (topologia
+# de um merge anterior a esta sessão, não corrigível sem reescrever histórico — fora de escopo
+# aqui), reaparecendo em todo push subsequente. Suprimido por fingerprint em `.gitleaksignore` (não
+# por regex de conteúdo): a senha já é inválida, então não há segredo real a mascarar, e por
+# fingerprint (commit+arquivo+regra+linha específicos) isso nunca esconde um vazamento NOVO e
+# diferente do mesmo arquivo/regra.

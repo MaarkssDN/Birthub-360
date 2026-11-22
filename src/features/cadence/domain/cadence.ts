@@ -1,0 +1,598 @@
+/**
+ * Máquina de estados da cadência multicanal — entrega 2 do Agente 17
+ * (`.agents/prompts/17-cadencia-ciclo-receita.md`).
+ *
+ * Puro de propósito, mesmo espírito de `coldCall.policy.ts`: sem banco, sem rede, sem relógio
+ * implícito (todo "agora" entra como parâmetro). O que decide se um toque sai ou não é
+ * `decideCadenceAction`; tudo que muda o estado do "run" depois de uma decisão é uma das funções
+ * `apply*`, que sempre devolvem um novo objeto (nunca mutam o estado recebido).
+ *
+ * Requisitos duros do prompt, todos aplicados aqui:
+ * - resposta do lead encerra a cadência, em qualquer canal (`applyReplyStop`);
+ * - opt-out encerra imediatamente (`applyOptOutStop`) — checado ANTES de qualquer outra regra em
+ *   `decideCadenceAction`, porque é a trava mais importante do domínio;
+ * - janela comercial vale para todo contato externo (`ctx.isWithinBusinessWindow`, injetada —
+ *   reaproveite `isWithinCallWindow` de `coldCall.policy.ts` como implementação real);
+ * - cada toque registra tentativa, resultado real e erro — nunca "enviado" otimista
+ *   (`CadenceTouchAttempt`, `recordTouchAttempt` só marca `sent` quando o chamador confirma);
+ * - pausa e retomada manual disponíveis para o vendedor (`pauseCadenceRun`/`resumeCadenceRun`).
+ */
+
+import type { CadenceChannel } from './optOut.js';
+import type { RateLimitBlockReason } from './rateLimit.js';
+
+export type { CadenceChannel, RateLimitBlockReason };
+
+/** Um passo da sequência configurável (e-mail → WhatsApp → voz → e-mail…). */
+export interface CadenceTouch {
+  /** 1-based, ordem de execução dentro da sequência. */
+  order: number;
+  channel: CadenceChannel;
+  /** Horas desde o toque anterior (0 para o primeiro toque — dispara assim que o run começa, respeitada a janela comercial). */
+  delayHoursFromPrevious: number;
+  /** Quantas tentativas este toque aceita antes de desistir dele e avançar (falha de provedor não pode travar a cadência para sempre). Default 1 = sem retry. */
+  maxAttempts?: number;
+  /**
+   * Cadência multicanal adaptativa (item 26 do roadmap comercial): quando este toque esgota
+   * `maxAttempts` por FALHA REAL de entrega (número inválido, bounce, canal inexistente para o
+   * lead — nunca por "sem resposta", que não é uma falha de canal), a sequência avança para este
+   * `order` em vez do próximo da lista (`order + 1`). Existe para não insistir num canal
+   * estruturalmente quebrado para aquele lead nem pular cegamente para o próximo passo do
+   * template se ele depender do MESMO dado de contato que já falhou (ex.: WhatsApp e ligação
+   * dependem do mesmo telefone — se o telefone é inválido, os dois vão falhar; pular direto para
+   * o e-mail é a escolha adaptativa certa). `undefined`/`null` preserva o comportamento linear
+   * original (`order + 1`) — sequências existentes continuam idênticas sem precisar declarar
+   * isto. Nunca se aplica a um toque que teve sucesso (`sent`): sucesso sempre segue a ordem
+   * normal do template, só falha estrutural de canal é que muda a rota. Validado por
+   * `validateSequence` (precisa apontar para um `order` existente, diferente do próprio).
+   */
+  fallbackTouchOrder?: number | null;
+  /** Referência ao conteúdo (id de template/roteiro) — resolvido pelo canal, não por este domínio. */
+  templateRef?: string | null;
+}
+
+export interface CadenceSequenceDefinition {
+  id: string;
+  name: string;
+  /** Ordenado por `order`, sem lacunas nem repetição — ver `validateSequence`. */
+  touches: CadenceTouch[];
+}
+
+/**
+ * 5 estados do roadmap (CYC-002): `completed`/`failed` são terminais distintos de `stopped` —
+ * `completed` é o fim natural da sequência (todos os toques resolvidos), `failed` é uma falha
+ * estrutural do próprio run (hoje, só a sequência associada ter ficado inválida/inacessível —
+ * ver `applyPolicyGuardrailFailure`), `stopped` é encerramento por sinal externo (opt-out,
+ * resposta do lead, ou parada manual do vendedor).
+ */
+export type CadenceRunStatus = 'active' | 'paused' | 'stopped' | 'completed' | 'failed';
+export type CadenceStopReason =
+  | 'opt-out'
+  | 'lead-reply'
+  | 'completed'
+  | 'manual-stop'
+  | 'policy-guardrail';
+export type CadenceTouchResult = 'sent' | 'failed' | 'skipped' | 'pending';
+/**
+ * `contact-rate-limit`/`domain-rate-limit` (auditoria transversal, Agente 17): o mesmo contato (ou
+ * o mesmo domínio de e-mail) recebendo toques em excesso quando várias cadências/campanhas
+ * diferentes miram o mesmo lead — ver `domain/rateLimit.ts` para a política e
+ * `application/rateLimitService.ts` para a contagem real (I/O).
+ */
+export type CadenceSkipReason =
+  | 'outside-business-window'
+  | 'opt-out'
+  | 'lead-replied'
+  | 'paused'
+  | RateLimitBlockReason;
+
+export interface CadenceTouchAttempt {
+  touchOrder: number;
+  /** 1-based, conta quantas linhas (de qualquer resultado) já existem para este `touchOrder` — inclui esta. Nunca reseta entre tentativas com/sem sucesso; é o "tentativa nº X deste toque" citado no roadmap (CYC-002). */
+  attemptNumber: number;
+  channel: CadenceChannel;
+  attemptedAt: Date;
+  result: CadenceTouchResult;
+  skipReason?: CadenceSkipReason;
+  error?: string | null;
+  /** Id da mensagem devolvido pelo provedor (WhatsApp/e-mail) quando `result === 'sent'` — correlação para suporte/depuração, nunca usado para decidir estado. */
+  providerMessageId?: string | null;
+}
+
+export interface CadenceRunState {
+  id: string;
+  organizationId: string;
+  leadId: string;
+  sequenceId: string;
+  status: CadenceRunStatus;
+  /** Próximo toque a tentar (`order` de `CadenceTouch`). Sequência concluída quando não existe touch com este `order`. */
+  currentTouchOrder: number;
+  stopReason: CadenceStopReason | null;
+  startedAt: Date;
+  lastTouchAt: Date | null;
+  pausedAt: Date | null;
+  stoppedAt: Date | null;
+  /** Onda 40 (auditoria CPI — "sem campo Owner explícito no estado da cadência"): userId de quem
+   * iniciou este run (ator autenticado da rota `POST /cadence/runs`), nunca inferido. Null só
+   * para runs que já existiam antes desta coluna, ou disparados sem contexto de usuário
+   * (ex.: worker automático) — nunca um valor fabricado. Nunca muda depois da criação. */
+  createdBy: string | null;
+  attempts: CadenceTouchAttempt[];
+}
+
+export interface CadenceDecisionContext {
+  isOptedOut: boolean;
+  hasLeadReplied: boolean;
+  /** Injeção da regra de janela comercial (reaproveite `isWithinCallWindow`, não reimplemente aqui). */
+  isWithinBusinessWindow: (now: Date) => boolean;
+  /**
+   * Resultado já calculado (I/O feito por quem chama, ver `evaluateRateLimitForUpcomingTouch`
+   * em `application/rateLimitService.ts`) de `decideRateLimitBlock` para o toque candidato desta
+   * decisão. `null` quando nenhum limite se aplica.
+   */
+  rateLimitBlock: RateLimitBlockReason | null;
+}
+
+export type CadenceDecision =
+  | { type: 'stop'; reason: CadenceStopReason }
+  | {
+      type: 'wait';
+      reason: CadenceSkipReason | 'delay-not-elapsed' | 'locked';
+      nextEligibleAt?: Date;
+    }
+  | { type: 'dispatch'; touch: CadenceTouch };
+
+/** Sequência válida: `touches` não vazio, ordenado 1..N sem lacunas nem repetição, e todo `fallbackTouchOrder` aponta para um toque real e diferente de si mesmo. */
+export function validateSequence(sequence: CadenceSequenceDefinition): string[] {
+  const errors: string[] = [];
+  if (sequence.touches.length === 0) errors.push('Sequência sem nenhum toque.');
+  const orders = [...sequence.touches].map((t) => t.order).sort((a, b) => a - b);
+  orders.forEach((order, index) => {
+    if (order !== index + 1)
+      errors.push(
+        `Ordem de toques com lacuna/duplicidade perto da posição ${index + 1} (encontrado ${order}).`,
+      );
+  });
+
+  const validOrders = new Set(sequence.touches.map((t) => t.order));
+  for (const touch of sequence.touches) {
+    if ((touch.channel === 'email' || touch.channel === 'whatsapp') && !touch.templateRef?.trim()) {
+      errors.push(`Toque ${touch.order}: conteúdo obrigatório para ${touch.channel}.`);
+    }
+    if (touch.fallbackTouchOrder == null) continue;
+    if (touch.fallbackTouchOrder === touch.order) {
+      errors.push(
+        `Toque ${touch.order}: fallbackTouchOrder não pode apontar para o próprio toque (criaria um laço sem progresso).`,
+      );
+    } else if (!validOrders.has(touch.fallbackTouchOrder)) {
+      errors.push(
+        `Toque ${touch.order}: fallbackTouchOrder ${touch.fallbackTouchOrder} não corresponde a nenhum toque desta sequência.`,
+      );
+    }
+  }
+
+  return errors;
+}
+
+function touchesForOrder(
+  sequence: CadenceSequenceDefinition,
+  order: number,
+): CadenceTouch | undefined {
+  return sequence.touches.find((t) => t.order === order);
+}
+
+function attemptsForTouch(run: CadenceRunState, touchOrder: number): CadenceTouchAttempt[] {
+  return run.attempts.filter((a) => a.touchOrder === touchOrder);
+}
+
+/**
+ * DEBT-0009 — o que conta como "confirmação assíncrona ainda não resolvida".
+ *
+ * No domínio em memória o resultado é `'pending'` literal. Mas o enum
+ * `CadenceTouchResult` do PostgreSQL só tem `Sent`/`Failed`/`Skipped` — o adaptador Prisma
+ * (`PrismaCadenceRunRepository`) persiste `pending` como `skipped` mantendo
+ * `providerMessageId` (handoff ao Agente 01 para adicionar `Pending` ao enum). Um `skipped`
+ * COM `providerMessageId` é, portanto, a forma durável de um `pending`: `skipped` legítimos
+ * (fora da janela comercial, rate limit, opt-out) nunca carregam `providerMessageId`, porque só
+ * o dispatcher assíncrono (voz) devolve um. Tratar essa forma como pendente é o que impede o
+ * run de re-despachar o toque de voz em loop enquanto o webhook não chega.
+ */
+export function isPendingConfirmation(attempt: CadenceTouchAttempt): boolean {
+  return (
+    attempt.result === 'pending' ||
+    (attempt.result === 'skipped' && attempt.providerMessageId != null)
+  );
+}
+
+/** `stopped`/`completed`/`failed` são todos terminais — nenhum admite nova ação nem retomada (só `paused` retoma, via `resumeCadenceRun`). */
+function isTerminalStatus(status: CadenceRunStatus): boolean {
+  return status === 'stopped' || status === 'completed' || status === 'failed';
+}
+
+/** `completed` é o único motivo de parada que corresponde ao status `completed` (fim natural da sequência); todos os outros motivos levam a `stopped`. `policy-guardrail` nunca passa por aqui — é sempre `failed`, ver `applyPolicyGuardrailFailure`. */
+function terminalStatusForStopReason(reason: CadenceStopReason): 'completed' | 'stopped' {
+  return reason === 'completed' ? 'completed' : 'stopped';
+}
+
+/**
+ * Decide a próxima ação para este run, sem alterar nada. A ordem das checagens é a regra de
+ * negócio: opt-out e resposta do lead vêm antes de status `paused`/`stopped` de propósito — um
+ * run pausado que na verdade já devia estar encerrado por opt-out não deve reabrir na retomada
+ * manual sem essa checagem acontecer de novo (por isso o chamador deve rodar esta função também
+ * no momento do `resumeCadenceRun`, não só no scheduler).
+ */
+export function decideCadenceAction(
+  run: CadenceRunState,
+  sequence: CadenceSequenceDefinition,
+  now: Date,
+  ctx: CadenceDecisionContext,
+): CadenceDecision {
+  if (ctx.isOptedOut) return { type: 'stop', reason: 'opt-out' };
+  if (ctx.hasLeadReplied) return { type: 'stop', reason: 'lead-reply' };
+
+  if (isTerminalStatus(run.status)) return { type: 'stop', reason: run.stopReason ?? 'completed' };
+  if (run.status === 'paused') return { type: 'wait', reason: 'paused' };
+
+  const touch = touchesForOrder(sequence, run.currentTouchOrder);
+  if (!touch) return { type: 'stop', reason: 'completed' };
+
+  const pendingAttempt = attemptsForTouch(run, run.currentTouchOrder).find(isPendingConfirmation);
+  if (pendingAttempt) {
+    return { type: 'wait', reason: 'locked' };
+  }
+
+  const earliestEligible = run.lastTouchAt
+    ? new Date(run.lastTouchAt.getTime() + touch.delayHoursFromPrevious * 3_600_000)
+    : run.startedAt;
+  if (now.getTime() < earliestEligible.getTime()) {
+    return { type: 'wait', reason: 'delay-not-elapsed', nextEligibleAt: earliestEligible };
+  }
+
+  if (!ctx.isWithinBusinessWindow(now)) {
+    return { type: 'wait', reason: 'outside-business-window' };
+  }
+
+  // Rate limit é checado por último, só quando o toque despacharia de qualquer outro jeito
+  // (delay cumprido, dentro da janela comercial) — o motivo mais específico ganha (contato antes
+  // de domínio, ver `decideRateLimitBlock`), e o run continua `active`: é um `wait`, não um
+  // `stop` — bloqueio temporário de volume, não um sinal do lead nem falha estrutural do run.
+  if (ctx.rateLimitBlock) {
+    return { type: 'wait', reason: ctx.rateLimitBlock };
+  }
+
+  return { type: 'dispatch', touch };
+}
+
+/** Novo run, no primeiro toque, ativo. */
+export function startCadenceRun(input: {
+  id: string;
+  organizationId: string;
+  leadId: string;
+  sequenceId: string;
+  startedAt: Date;
+  createdBy?: string | null;
+}): CadenceRunState {
+  return {
+    id: input.id,
+    organizationId: input.organizationId,
+    leadId: input.leadId,
+    sequenceId: input.sequenceId,
+    status: 'active',
+    currentTouchOrder: 1,
+    stopReason: null,
+    startedAt: input.startedAt,
+    lastTouchAt: null,
+    pausedAt: null,
+    stoppedAt: null,
+    createdBy: input.createdBy ?? null,
+    attempts: [],
+  };
+}
+
+function stop(run: CadenceRunState, reason: CadenceStopReason, now: Date): CadenceRunState {
+  if (isTerminalStatus(run.status)) return run; // já num estado terminal — idempotente, não sobrescreve o motivo original
+  return {
+    ...run,
+    status: terminalStatusForStopReason(reason),
+    stopReason: reason,
+    stoppedAt: now,
+  };
+}
+
+/** Aplica o resultado de uma decisão `{type:'stop'}` de `decideCadenceAction` — único ponto que decide se o motivo leva a `completed` ou `stopped`. Exportado para `cadenceService.ts` não duplicar essa regra. */
+export function applyStopDecision(
+  run: CadenceRunState,
+  reason: CadenceStopReason,
+  now: Date,
+): CadenceRunState {
+  return stop(run, reason, now);
+}
+
+/** Opt-out encerra imediatamente — nenhuma outra regra tem precedência sobre esta. */
+export function applyOptOutStop(run: CadenceRunState, now: Date): CadenceRunState {
+  return stop(run, 'opt-out', now);
+}
+
+/** Resposta do lead (em qualquer canal) encerra a cadência — a intenção passou a ser conversa humana, não sequência automática. */
+export function applyReplyStop(run: CadenceRunState, now: Date): CadenceRunState {
+  return stop(run, 'lead-reply', now);
+}
+
+/** Parada manual pelo vendedor — distinta de pausa: não tem retomada. */
+export function stopCadenceManually(run: CadenceRunState, now: Date): CadenceRunState {
+  return stop(run, 'manual-stop', now);
+}
+
+/**
+ * Falha estrutural do run — não é uma decisão humana nem um sinal do lead, é o sistema
+ * constatando que não pode mais avançar esta cadência com segurança (hoje, o único gatilho real:
+ * a `CadenceSequence` associada ficou malformada/inacessível entre uma varredura e outra — ver
+ * `scanAndAdvanceCadenceRuns` em `cadenceRun.worker.ts`). Terminal e não retomável, mesmo espírito
+ * de `stopCadenceManually`; único caminho que leva a `status: 'failed'`.
+ */
+export function applyPolicyGuardrailFailure(run: CadenceRunState, now: Date): CadenceRunState {
+  if (isTerminalStatus(run.status)) return run;
+  return { ...run, status: 'failed', stopReason: 'policy-guardrail', stoppedAt: now };
+}
+
+/** Pausa manual — retomável, diferente de `stop` (que é definitivo). Idempotente. */
+export function pauseCadenceRun(run: CadenceRunState, now: Date): CadenceRunState {
+  if (run.status !== 'active') return run;
+  return { ...run, status: 'paused', pausedAt: now };
+}
+
+/**
+ * Retomada manual. Só sai de `paused`; nunca reabre um run `stopped` (opt-out/reply/completed são
+ * definitivos por design — reabrir exigiria uma decisão de negócio nova, não uma retomada).
+ */
+export function resumeCadenceRun(run: CadenceRunState): CadenceRunState {
+  if (run.status !== 'paused') return run;
+  return { ...run, status: 'active', pausedAt: null };
+}
+
+/**
+ * Registra o resultado real de uma tentativa de toque — nunca chame isto com `result: 'sent'`
+ * sem confirmação real do provedor (mesma disciplina de honestidade corrigida em
+ * `cold-email.service.ts`, commit `2e42a557`).
+ *
+ * Avança `currentTouchOrder` quando o toque foi enviado, ou quando falhou e já esgotou as
+ * tentativas permitidas (`maxAttempts`, default 1). Uma falha que ainda tem tentativa disponível
+ * mantém o mesmo `currentTouchOrder` — o scheduler tenta de novo no próximo ciclo elegível
+ * (respeitando de novo janela comercial e o próprio `delayHoursFromPrevious` como intervalo
+ * mínimo de retry, por simplicidade — não há backoff diferente configurado nesta entrega).
+ */
+export function recordTouchAttempt(
+  run: CadenceRunState,
+  sequence: CadenceSequenceDefinition,
+  touch: CadenceTouch,
+  now: Date,
+  outcome: {
+    result: CadenceTouchResult;
+    skipReason?: CadenceSkipReason;
+    error?: string | null;
+    providerMessageId?: string | null;
+  },
+): CadenceRunState {
+  const attempt: CadenceTouchAttempt = {
+    touchOrder: touch.order,
+    attemptNumber: attemptsForTouch(run, touch.order).length + 1,
+    channel: touch.channel,
+    attemptedAt: now,
+    result: outcome.result,
+    skipReason: outcome.skipReason,
+    error: sanitizeTouchError(outcome.error),
+    providerMessageId: outcome.providerMessageId ?? null,
+  };
+  const attempts = [...run.attempts, attempt];
+
+  if (outcome.result === 'skipped') {
+    // Uma tentativa pulada (fora da janela, pausado) não consome o toque nem avança a sequência.
+    return { ...run, attempts };
+  }
+
+  const maxAttempts = touch.maxAttempts ?? 1;
+  const attemptsSoFar = attemptsForTouch({ ...run, attempts }, touch.order).filter(
+    (a) => a.result !== 'skipped',
+  ).length;
+  const exhausted = outcome.result === 'failed' && attemptsSoFar >= maxAttempts;
+  const shouldAdvance = outcome.result === 'sent' || exhausted;
+
+  if (!shouldAdvance) {
+    return { ...run, attempts, lastTouchAt: now };
+  }
+
+  // Cadência multicanal adaptativa (item 26): um toque ENVIADO com sucesso sempre segue a ordem
+  // normal do template (order + 1) — sucesso nunca é motivo para desviar de rota. Só um toque
+  // ESGOTADO por falha real de canal consulta `fallbackTouchOrder`, quando declarado; sem ele,
+  // o comportamento é idêntico ao anterior (linear).
+  const nextOrder =
+    exhausted && touch.fallbackTouchOrder != null ? touch.fallbackTouchOrder : touch.order + 1;
+  const hasNext = touchesForOrder(sequence, nextOrder) !== undefined;
+  return {
+    ...run,
+    attempts,
+    lastTouchAt: now,
+    currentTouchOrder: nextOrder,
+    ...(hasNext
+      ? {}
+      : { status: 'completed' as const, stopReason: 'completed' as const, stoppedAt: now }),
+  };
+}
+
+/**
+ * DEBT-0009 — TTL de uma tentativa `pending` (hoje só o toque de voz, que resolve de forma
+ * assíncrona via webhook do provedor — ver `resolvePendingTouchAttempt`/`cadenceWebhookResolver`).
+ * Sem expiração, um webhook perdido deixava o run preso em `wait/locked` para sempre: o scanner
+ * de cadência (`cadenceRun.worker.ts`, tick de 5 min) re-avalia o run, mas `decideCadenceAction`
+ * sempre devolvia `locked` enquanto houvesse `pending`. 24h é folgado o suficiente para cobrir
+ * callbacks atrasados de voz sem transformar uma confirmação perdida em espera infinita; um
+ * webhook que chegar DEPOIS do TTL simplesmente não encontra mais `pending` e é ignorado
+ * (idempotente), e o toque já contabilizado como `failed` segue a política normal de retry/avanço
+ * do `maxAttempts` do toque.
+ */
+export const PENDING_TOUCH_CONFIRMATION_TTL_MS = 24 * 60 * 60 * 1000;
+
+export const PENDING_TOUCH_EXPIRED_ERROR =
+  'Confirmação do provedor não recebida dentro do prazo — tentativa pendente expirada.';
+
+export function resolvePendingTouchAttempt(
+  run: CadenceRunState,
+  sequence: CadenceSequenceDefinition,
+  providerMessageId: string,
+  now: Date,
+  outcome: {
+    result: 'sent' | 'failed';
+    error?: string | null;
+  },
+): CadenceRunState {
+  const attemptIndex = run.attempts.findIndex(
+    (a) => isPendingConfirmation(a) && a.providerMessageId === providerMessageId,
+  );
+  if (attemptIndex === -1) return run; // Idempotente se não achar
+
+  const attempt = run.attempts[attemptIndex];
+  const touch = touchesForOrder(sequence, attempt.touchOrder);
+  if (!touch) return run; // Sequência mudou e o toque sumiu (tecnicamente guardrail já pegaria, mas seguro)
+
+  const updatedAttempt: CadenceTouchAttempt = {
+    ...attempt,
+    result: outcome.result,
+    error: sanitizeTouchError(outcome.error),
+  };
+
+  const attempts = [...run.attempts];
+  attempts[attemptIndex] = updatedAttempt;
+
+  const maxAttempts = touch.maxAttempts ?? 1;
+  const attemptsSoFar = attempts.filter(
+    (a) => a.touchOrder === touch.order && a.result !== 'skipped',
+  ).length;
+  const exhausted = outcome.result === 'failed' && attemptsSoFar >= maxAttempts;
+  const shouldAdvance = outcome.result === 'sent' || exhausted;
+
+  if (!shouldAdvance) {
+    return { ...run, attempts }; // Mantém currentTouchOrder para retry futuro, delay contará a partir do lastTouchAt (q foi setado na criação do pending)
+  }
+
+  const nextOrder =
+    exhausted && touch.fallbackTouchOrder != null ? touch.fallbackTouchOrder : touch.order + 1;
+  const hasNext = touchesForOrder(sequence, nextOrder) !== undefined;
+
+  return {
+    ...run,
+    attempts,
+    currentTouchOrder: nextOrder,
+    ...(hasNext
+      ? {}
+      : { status: 'completed' as const, stopReason: 'completed' as const, stoppedAt: now }),
+  };
+}
+
+/**
+ * DEBT-0009 — expira tentativas pendentes de confirmação mais antigas que `ttlMs` (default
+ * `PENDING_TOUCH_CONFIRMATION_TTL_MS`), convertendo-as em `failed` com erro descritivo.
+ * "Pendente" aqui é `isPendingConfirmation` — cobre o `pending` literal e a forma persistida
+ * (`skipped` + `providerMessageId`, ver comentário do helper). É o
+ * "sweeper" da pendência: em vez de um job novo, o próprio scanner de cadência
+ * (`advanceCadenceRun`, tick de 5 min) chama esta função a cada ciclo — quando o webhook do
+ * provedor de voz nunca chega, o toque deixa de travar o run em `wait/locked` e passa a seguir
+ * a mesma política de retry/avanço de uma falha real (`maxAttempts`/`fallbackTouchOrder`).
+ *
+ * Regras:
+ * - nunca reescreve histórico de run terminal (`stopped`/`completed`/`failed`);
+ * - `pending` mais novo que o TTL é preservado — webhook ainda pode chegar;
+ * - se o `pending` expirado era do `currentTouchOrder`, aplica o MESMO avanço de
+ *   `resolvePendingTouchAttempt` com resultado `failed` (esgotou `maxAttempts` → próximo toque
+ *   ou `fallbackTouchOrder`; ainda tem tentativa → permanece no toque para retry);
+ * - um webhook tardio após a expiração é inócuo: `resolvePendingTouchAttempt` não encontra mais
+ *   `pending` com aquele `providerMessageId` e devolve o run inalterado.
+ */
+export function expireStalePendingTouchAttempts(
+  run: CadenceRunState,
+  sequence: CadenceSequenceDefinition,
+  now: Date,
+  ttlMs: number = PENDING_TOUCH_CONFIRMATION_TTL_MS,
+): CadenceRunState {
+  if (isTerminalStatus(run.status)) return run;
+
+  const cutoff = now.getTime() - ttlMs;
+  const expiredOrders = new Set<number>();
+  let changed = false;
+  const attempts = run.attempts.map((attempt) => {
+    if (isPendingConfirmation(attempt) && attempt.attemptedAt.getTime() < cutoff) {
+      changed = true;
+      expiredOrders.add(attempt.touchOrder);
+      return {
+        ...attempt,
+        result: 'failed' as const,
+        error: PENDING_TOUCH_EXPIRED_ERROR,
+      };
+    }
+    return attempt;
+  });
+  if (!changed) return run;
+
+  // Só o `pending` do toque corrente trava a decisão (`decideCadenceAction` → `wait/locked`);
+  // pendings expirados de toques já superados são saneados no histórico sem efeito no avanço.
+  if (!expiredOrders.has(run.currentTouchOrder)) {
+    return { ...run, attempts };
+  }
+
+  const touch = touchesForOrder(sequence, run.currentTouchOrder);
+  if (!touch) return { ...run, attempts };
+
+  // Mesma matemática de avanço de `resolvePendingTouchAttempt`/`recordTouchAttempt` para
+  // `result: 'failed'`: `shouldAdvance` só quando as tentativas não-puladas do toque esgotam
+  // `maxAttempts`; caso contrário o toque permanece para retry (o delay é medido de
+  // `lastTouchAt`, já gravado na criação do `pending`).
+  const maxAttempts = touch.maxAttempts ?? 1;
+  const attemptsSoFar = attempts.filter(
+    (a) => a.touchOrder === touch.order && a.result !== 'skipped',
+  ).length;
+  const exhausted = attemptsSoFar >= maxAttempts;
+
+  if (!exhausted) {
+    return { ...run, attempts };
+  }
+
+  const nextOrder = touch.fallbackTouchOrder ?? touch.order + 1;
+  const hasNext = touchesForOrder(sequence, nextOrder) !== undefined;
+  return {
+    ...run,
+    attempts,
+    currentTouchOrder: nextOrder,
+    ...(hasNext
+      ? {}
+      : { status: 'completed' as const, stopReason: 'completed' as const, stoppedAt: now }),
+  };
+}
+
+const MAX_TOUCH_ERROR_LENGTH = 500;
+
+/**
+ * Sanitização defensiva do texto de erro antes de persistir (CYC-002: "erro sanitizado" é
+ * requisito do roadmap para cada toque). Provedores externos (WhatsApp/e-mail/voz) às vezes ecoam
+ * o próprio payload da requisição no corpo de erro — nunca grave e-mail/telefone/CPF do lead nem
+ * credencial que por acaso apareça nessa mensagem. Trunca para não deixar um stack trace gigante
+ * numa coluna de auditoria.
+ */
+export function sanitizeTouchError(rawError: string | null | undefined): string | null {
+  if (!rawError) return null;
+  // CPF exige a pontuação (XXX.XXX.XXX-XX) para não colidir com um telefone de 11 dígitos sem
+  // formatação — ambos têm a mesma contagem de dígitos, e um número sem pontuação neste
+  // contexto (erro de dispatcher de canal) é quase sempre telefone, não CPF.
+  const redacted = rawError
+    .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g, '[email redigido]')
+    .replace(/\b\d{3}\.\d{3}\.\d{3}-\d{2}\b/g, '[cpf redigido]')
+    .replace(
+      /\b(?:\+?55\s?)?(?:\(?\d{2}\)?\s?)?(?:9\d{4}|\d{4})[-.\s]?\d{4}\b/g,
+      '[telefone redigido]',
+    )
+    .replace(
+      /\b(?:bearer|token|api[_-]?key)\s*[:=]?\s*['"]?[A-Za-z0-9._-]{8,}['"]?/gi,
+      '[credencial redigida]',
+    );
+  return redacted.length > MAX_TOUCH_ERROR_LENGTH
+    ? `${redacted.slice(0, MAX_TOUCH_ERROR_LENGTH)}…`
+    : redacted;
+}

@@ -1,0 +1,9 @@
+{
+  "name": "testland/server-sent-events-tests",
+  "description": "Use when a feature pushes updates over Server-Sent Events (text/event-stream) and needs tests: EventSource events and errors, the stream format, reconnect with Last-Event-ID replay, retry intervals and per-origin connection limits, plus k6 load tests. Two-way messaging is websocket-tests.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.7"
+}

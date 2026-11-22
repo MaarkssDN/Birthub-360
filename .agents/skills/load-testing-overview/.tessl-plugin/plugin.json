@@ -1,0 +1,9 @@
+{
+  "name": "testland/load-testing-overview",
+  "description": "Use when a service needs load or performance testing and no tool, load profile or pass/fail threshold is chosen yet, or a live performance incident needs its cause found. Picks k6, JMeter, Gatling, Locust or Artillery, explains the six load profiles and percentiles, and gives a first CI gate.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.8.10"
+}

@@ -1,0 +1,303 @@
+/* eslint-disable jsx-a11y/no-autofocus -- página de propósito único, ver comentário no local de uso */
+
+import { motion } from 'framer-motion';
+import {
+  AlertCircle,
+  ArrowRight,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  Loader2,
+  Moon,
+  Sun,
+} from 'lucide-react';
+import { useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { BirthHubSignature } from '../../../components/brand/BirthHubLogo.js';
+import { useBrand } from '../../../contexts/BrandContext.js';
+import { useTheme } from '../../../contexts/ThemeContext.js';
+import { authClient } from '../../../lib/auth-client.js';
+import { SoundFX } from '../../../lib/soundEffects.js';
+
+// Chegamos aqui a partir do link enviado por e-mail (ver sendResetPassword em src/lib/auth.ts):
+// better-auth redireciona pra cá com ?token=... quando o token é válido, ou ?error=INVALID_TOKEN
+// quando o link já expirou/foi usado (ver requestPasswordResetCallback no pacote better-auth).
+export function ResetPasswordScreen() {
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token');
+  const linkError = searchParams.get('error');
+
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const getPwdStrength = (pwd: string) => {
+    if (!pwd)
+      return {
+        score: 0,
+        label: '',
+        color: 'bg-slate-300 dark:bg-slate-700',
+        text: 'text-slate-400',
+        width: '0%',
+      };
+    let score = 0;
+    if (pwd.length >= 8) score += 1;
+    if (pwd.length >= 10 && /[0-9]/.test(pwd)) score += 1;
+    if (/[A-Z]/.test(pwd) && /[a-z]/.test(pwd)) score += 1;
+    if (/[^A-Za-z0-9]/.test(pwd)) score += 1;
+
+    if (score <= 1)
+      return {
+        score: 1,
+        label: 'Senha Fraca',
+        color: 'bg-rose-500',
+        text: 'text-rose-500',
+        width: '25%',
+      };
+    if (score === 2)
+      return {
+        score: 2,
+        label: 'Senha Razoável',
+        color: 'bg-amber-500',
+        text: 'text-amber-500',
+        width: '50%',
+      };
+    if (score === 3)
+      return {
+        score: 3,
+        label: 'Senha Segura',
+        color: 'bg-emerald-500',
+        text: 'text-emerald-500',
+        width: '75%',
+      };
+    return {
+      score: 4,
+      label: 'Senha Forte',
+      color: 'bg-[#00D4FF]',
+      text: 'text-[#00D4FF]',
+      width: '100%',
+    };
+  };
+
+  const pwdStrength = getPwdStrength(newPassword);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
+  const { brandInfo } = useBrand();
+  const { theme, toggleTheme } = useTheme();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (!token) {
+      setError('Link inválido ou expirado. Solicite uma nova redefinição de senha.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError('As senhas não coincidem.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    const result = await authClient.resetPassword({ newPassword, token });
+    setIsSubmitting(false);
+
+    if (result.error) {
+      setError(
+        result.error.message || 'Não foi possível redefinir a senha. O link pode ter expirado.',
+      );
+      return;
+    }
+
+    setSuccess(true);
+  };
+
+  return (
+    <main className="min-h-screen bg-bg text-ink flex items-center justify-center relative overflow-hidden font-sans p-4 transition-colors">
+      {/* Mesmo tratamento visual do LoginScreen (mesmo fluxo de auth) — metade laranja/metade azul
+          com tokens estáticos em vez do indigo-500 genérico anterior. Ver LoginScreen.tsx. */}
+      <motion.div
+        aria-hidden="true"
+        animate={{ scale: [1, 1.08, 1], rotate: [0, 90, 0] }}
+        transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}
+        className="absolute left-[-18%] top-1/2 h-[560px] w-[440px] -translate-y-1/2 rounded-full bg-brand/12 blur-[130px] pointer-events-none"
+      />
+      <motion.div
+        aria-hidden="true"
+        animate={{ scale: [1, 1.1, 1], rotate: [0, -90, 0] }}
+        transition={{ duration: 27, repeat: Infinity, ease: 'linear' }}
+        className="absolute right-[-18%] top-1/2 h-[560px] w-[440px] -translate-y-1/2 rounded-full bg-iris/12 blur-[130px] pointer-events-none"
+      />
+
+      <button
+        type="button"
+        onClick={toggleTheme}
+        className="fixed top-5 right-5 z-20 flex h-10 w-10 items-center justify-center rounded-xl border border-line bg-surface text-ink-2 shadow-sm transition-colors hover:bg-surface-2 cursor-pointer"
+        aria-label="Alternar tema"
+        title={`Mudar para modo ${theme === 'dark' ? 'claro' : 'escuro'}`}
+      >
+        {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+      </button>
+
+      <div className="w-full max-w-md relative z-10">
+        <div className="glass-panel p-8 sm:p-10 rounded-[2.5rem] border border-line bg-surface/95 shadow-2xl relative">
+          <div className="flex flex-col items-center mb-6">
+            <BirthHubSignature className="h-10 text-ink" />
+            <p className="text-ink-2 text-xs mt-3 font-medium text-center">{brandInfo.slogan}</p>
+          </div>
+
+          {!token || linkError ? (
+            <div className="space-y-5 text-center">
+              <div className="bg-danger/10 border border-danger/30 text-danger-active dark:text-danger p-3.5 rounded-2xl text-xs flex items-start gap-2.5 text-left">
+                <AlertCircle size={16} className="shrink-0 mt-0.5" />
+                <p>
+                  Este link de redefinição de senha é inválido ou já expirou. Solicite um novo na
+                  tela de login.
+                </p>
+              </div>
+              <Link
+                to="/login"
+                className="inline-flex items-center gap-2 text-xs text-ink-2 hover:text-brand font-bold transition-colors"
+              >
+                Voltar para o login
+              </Link>
+            </div>
+          ) : success ? (
+            <div className="space-y-5 text-center">
+              <div className="bg-brand/10 border border-brand/30 text-ink p-3.5 rounded-2xl text-xs flex items-start gap-2.5 text-left">
+                <CheckCircle2 size={16} className="shrink-0 mt-0.5 text-brand" />
+                <p>Senha redefinida com sucesso. Já pode entrar com a nova senha.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => navigate('/login')}
+                className="w-full bg-gradient-to-r from-brand to-brand-2 text-on-brand py-3.5 rounded-2xl font-extrabold text-xs shadow-lg shadow-brand/30 hover:scale-[1.02] active:scale-[0.98] transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              >
+                Ir para o login <ArrowRight size={16} />
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="bg-danger/10 border border-danger/30 text-danger-active dark:text-danger p-3.5 rounded-2xl text-xs flex items-start gap-2.5"
+                >
+                  <AlertCircle size={16} className="shrink-0 mt-0.5" />
+                  <p>{error}</p>
+                </motion.div>
+              )}
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5 ml-1">
+                  <label
+                    htmlFor="reset-new-password"
+                    className="block text-[10px] font-bold text-ink-2 uppercase tracking-wider"
+                  >
+                    Nova Senha
+                  </label>
+                  {newPassword && (
+                    <span className={`font-mono text-[10px] font-bold ${pwdStrength.text}`}>
+                      {pwdStrength.label}
+                    </span>
+                  )}
+                </div>
+                <div className="relative">
+                  <input
+                    id="reset-new-password"
+                    type={showNewPassword ? 'text' : 'password'}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full bg-surface-2 border border-line rounded-2xl px-4 py-3.5 pr-11 text-xs text-ink placeholder-ink-2 focus:outline-none focus:ring-2 focus:ring-brand transition-colors"
+                    placeholder="••••••••"
+                    minLength={8}
+                    required
+                    /* página de propósito único, acessada só via link de e-mail de redefinição de
+                       senha (nunca navegação livre); focar o único campo relevante da página é o
+                       padrão esperado deste fluxo (mesmo comportamento usado por GitHub/Google em
+                       telas equivalentes). */
+                    // biome-ignore lint/a11y/noAutofocus: ver comentário acima
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      SoundFX.play('click');
+                      setShowNewPassword(!showNewPassword);
+                    }}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-2 hover:text-brand transition-colors p-1 cursor-pointer"
+                    aria-label="Mostrar ou ocultar senha"
+                  >
+                    {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+
+                {newPassword && (
+                  <div className="pt-2 space-y-1">
+                    <div className="w-full h-1 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full transition-all duration-300 ${pwdStrength.color}`}
+                        style={{ width: pwdStrength.width }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="reset-confirm-password"
+                  className="block text-[10px] font-bold text-ink-2 uppercase tracking-wider mb-1.5 ml-1"
+                >
+                  Confirmar Nova Senha
+                </label>
+                <div className="relative">
+                  <input
+                    id="reset-confirm-password"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full bg-surface-2 border border-line rounded-2xl px-4 py-3.5 pr-11 text-xs text-ink placeholder-ink-2 focus:outline-none focus:ring-2 focus:ring-brand transition-colors"
+                    placeholder="••••••••"
+                    minLength={8}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      SoundFX.play('click');
+                      setShowConfirmPassword(!showConfirmPassword);
+                    }}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-2 hover:text-brand transition-colors p-1 cursor-pointer"
+                    aria-label="Mostrar ou ocultar confirmação de senha"
+                  >
+                    {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmitting || !newPassword || !confirmPassword}
+                className="w-full mt-2 bg-gradient-to-r from-brand to-brand-2 text-on-brand py-3.5 rounded-2xl font-extrabold text-xs shadow-lg shadow-brand/30 hover:scale-[1.02] active:scale-[0.98] transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <Loader2 className="animate-spin" size={18} />
+                ) : (
+                  <>
+                    Redefinir Senha <ArrowRight size={16} />
+                  </>
+                )}
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+    </main>
+  );
+}

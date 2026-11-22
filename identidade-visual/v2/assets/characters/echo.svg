@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%" fill="none" role="img" aria-labelledby="echo-title echo-desc">
+  <title id="echo-title">Echo — Especialista em Voz</title>
+  <desc id="avatar-desc">Avatar não-humano representando Echo: cápsula acústica emissora em coral e rosa neon com ondas de ressonância e equalizador vocal.</desc>
+  <defs>
+    <radialGradient id="echo-capsule-grad" cx="42%" cy="38%" r="65%">
+      <stop offset="0%" stop-color="#FECDD3"/>
+      <stop offset="30%" stop-color="#FB7185"/>
+      <stop offset="70%" stop-color="#E11D48"/>
+      <stop offset="100%" stop-color="#881337"/>
+    </radialGradient>
+    <linearGradient id="echo-wave-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00D4FF"/>
+      <stop offset="50%" stop-color="#FF2D9B"/>
+      <stop offset="100%" stop-color="#FB7185"/>
+    </linearGradient>
+    <filter id="echo-glow" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="echo-halo" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="9" result="blur2"/>
+    </filter>
+  </defs>
+
+  <!-- Halo de Fundo Acústico -->
+  <circle cx="64" cy="64" r="48" fill="#FB7185" fill-opacity="0.18" filter="url(#echo-halo)"/>
+
+  <!-- Ondas Concêntricas de Propagação Sonora (Sound Waves) -->
+  <circle cx="64" cy="64" r="54" stroke="url(#echo-wave-grad)" stroke-width="1.2" stroke-dasharray="6 8" opacity="0.4"/>
+  <circle cx="64" cy="64" r="44" stroke="#00D4FF" stroke-width="1.8" stroke-dasharray="4 6" opacity="0.6"/>
+  <circle cx="64" cy="64" r="34" stroke="#FF2D9B" stroke-width="1.5" stroke-dasharray="3 4" opacity="0.75"/>
+
+  <!-- Cápsula Central / Transdutor Acústico -->
+  <circle cx="64" cy="64" r="24" fill="url(#echo-capsule-grad)" filter="url(#echo-glow)"/>
+
+  <!-- Moldura Estilizada do Microfone / Diafragma -->
+  <circle cx="64" cy="64" r="18" fill="#0D0D0D" stroke="#00D4FF" stroke-width="2"/>
+
+  <!-- Equalizador Vocal / Barras de Onda de Frequência -->
+  <g filter="url(#echo-glow)">
+    <line x1="52" y1="64" x2="52" y2="64" stroke="#FFE4E6" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="56" y1="58" x2="56" y2="70" stroke="#00D4FF" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="60" y1="53" x2="60" y2="75" stroke="#FFE4E6" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="64" y1="49" x2="64" y2="79" stroke="#FF2D9B" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="68" y1="53" x2="68" y2="75" stroke="#FFE4E6" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="72" y1="58" x2="72" y2="70" stroke="#00D4FF" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="76" y1="64" x2="76" y2="64" stroke="#FFE4E6" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- Ponto de Transmissão Ativa (Voz Ao Vivo) -->
+  <circle cx="64" cy="28" r="3" fill="#00D4FF" filter="url(#echo-glow)"/>
+  <circle cx="64" cy="100" r="3" fill="#00D4FF" filter="url(#echo-glow)"/>
+
+  <!-- Arcos Laterais de Escuta Ativa -->
+  <path d="M 22 52 A 46 46 0 0 0 22 76" stroke="#FB7185" stroke-width="2.5" stroke-linecap="round" opacity="0.85"/>
+  <path d="M 106 52 A 46 46 0 0 1 106 76" stroke="#FB7185" stroke-width="2.5" stroke-linecap="round" opacity="0.85"/>
+</svg>

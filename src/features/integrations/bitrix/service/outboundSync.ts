@@ -1,0 +1,745 @@
+import { randomUUID } from 'node:crypto';
+import { AuditService } from '../../../../lib/audit/audit.service.js';
+import { fromPrismaLeadStatus } from '../../../../lib/enumMap.js';
+import { logger } from '../../../../lib/logger.js';
+import { prisma } from '../../../../lib/prisma.js';
+import { AppError } from '../../../../shared/middlewares/errorHandler.js';
+import { callBitrix, getConnectionWebhookUrl } from './client.js';
+import { buildOutboundCustomFields, resolveEnumMaps } from './customFields.js';
+import { acquireBitrixSyncLock, releaseBitrixSyncLock } from './idempotentSync.js';
+import { bitrixSyncFailuresTotal } from './metrics.js';
+
+export interface SyncLeadOverrides {
+  /** STATUS_ID de destino no Bitrix — sem isto, o Bitrix aplica o status padrão do funil ao criar. */
+  statusId?: string;
+  /** ASSIGNED_BY_ID de destino — sem isto, o lead fica sem responsável definido no Bitrix. */
+  assignedById?: string;
+}
+
+async function logSync(params: {
+  organizationId: string;
+  connectionId: string;
+  direction: 'outbound';
+  entityType: 'lead' | 'deal';
+  leadId: string;
+  bitrixRecordId: string | null;
+  status: 'success' | 'failed';
+  errorMessage?: string | null;
+  correlationId: string;
+}): Promise<void> {
+  // Sinal agregado/acionável por alerta (bloqueador #11 de /AGENTS.md) — antes desta métrica, uma
+  // falha de push só existia como uma linha de BitrixSyncLog, sem nenhum jeito de disparar um
+  // alerta quando o mesmo tenant acumulasse várias falhas seguidas. Ver metrics.ts.
+  if (params.status === 'failed') {
+    bitrixSyncFailuresTotal.inc({ tenant: params.organizationId, entity: params.entityType });
+  }
+  await prisma.bitrixSyncLog
+    .create({
+      data: {
+        organizationId: params.organizationId,
+        connectionId: params.connectionId,
+        direction: params.direction,
+        entityType: params.entityType,
+        leadId: params.leadId,
+        bitrixRecordId: params.bitrixRecordId,
+        status: params.status,
+        errorMessage: params.errorMessage ?? null,
+        correlationId: params.correlationId,
+      },
+    })
+    .catch((err) => logger.error({ err, ...params }, '[bitrix] Falha ao gravar BitrixSyncLog'));
+}
+
+/**
+ * Reivindica o direito de criar um NOVO lead no Bitrix para este registro (transição atômica
+ * `bitrixLeadId: null` → `bitrixSyncStatus: 'syncing'`). Fecha a corrida em que duas exportações
+ * concorrentes do MESMO lead local (ex.: duas abas, ou o botão manual + uma futura reexportação
+ * em lote ao mesmo tempo) leriam `bitrixLeadId: null` e ambas chamariam `crm.lead.add`, criando
+ * dois registros no Bitrix. `updateMany` com um `where` que inclui a condição é atômico no nível
+ * do Postgres — só uma das chamadas concorrentes consegue `count === 1`.
+ */
+async function claimOutboundSync(leadId: string, organizationId: string): Promise<boolean> {
+  const { count } = await prisma.lead.updateMany({
+    where: { id: leadId, organizationId, bitrixLeadId: null, bitrixSyncStatus: { not: 'syncing' } },
+    data: { bitrixSyncStatus: 'syncing' },
+  });
+  return count === 1;
+}
+
+/**
+ * Envia (ou atualiza) um lead do Birth Hub 360 como Lead no Bitrix24. Núcleo compartilhado pelas duas
+ * entradas públicas abaixo — lança AppError em qualquer falha; cada chamador decide se propaga
+ * (botão manual) ou engole (push automático). Sempre grava o resultado (sucesso ou falha) em
+ * `Lead.bitrixSyncStatus`/`bitrixSyncError`/`bitrixSyncedAt` e em BitrixSyncLog — antes desta
+ * correção uma falha do push automático só existia no log de aplicação, nunca na tela (achado
+ * P1-3 da auditoria).
+ */
+async function syncLeadToBitrix(
+  organizationId: string,
+  connectionId: string,
+  webhookUrl: string,
+  leadId: string,
+  overrides: SyncLeadOverrides = {},
+): Promise<{ bitrixLeadId: string }> {
+  const lockAcquired = acquireBitrixSyncLock(organizationId, 'lead', leadId);
+  if (!lockAcquired) {
+    throw new AppError(
+      'Este lead já está sendo sincronizado com o Bitrix24 (trava de idempotência ativa).',
+      409,
+    );
+  }
+
+  try {
+    const correlationId = randomUUID();
+    const lead = await prisma.lead.findFirst({
+      where: { id: leadId, organizationId },
+      include: { company: true, contact: true },
+    });
+    if (!lead) throw new AppError('Lead não encontrado.', 404);
+
+    try {
+      const statusLabel = fromPrismaLeadStatus(lead.status);
+      const enumMaps = await resolveEnumMaps(webhookUrl, 'lead');
+      const customFields = buildOutboundCustomFields(
+        lead as unknown as Record<string, unknown>,
+        lead.qualification as Record<string, unknown> | null,
+        lead.contact as unknown as Record<string, unknown> | null,
+        'lead',
+        enumMaps,
+      );
+
+      // COMMENTS mantém um resumo curto (não mais o dump inteiro da qualificação — isso agora
+      // vai estruturado nos UF_CRM_* via customFields acima, filtrável/relatável no próprio
+      // Bitrix em vez de preso num campo de texto livre).
+      const commentsParts = [
+        lead.company?.observations,
+        `Etapa no Birth Hub 360: ${statusLabel}`,
+        lead.temperature ? `Temperatura: ${lead.temperature}` : null,
+        lead.score != null ? `Fit Score: ${lead.score}` : null,
+        lead.pic ? `Perfil (PIC): ${lead.pic}` : null,
+      ]
+        .filter(Boolean)
+        .join('\n');
+
+      const fields: Record<string, unknown> = {
+        ...customFields,
+        TITLE: lead.company?.tradeName || lead.company?.legalName || 'Lead Birth Hub 360',
+        NAME: lead.contact?.name?.split(' ')[0],
+        LAST_NAME: lead.contact?.name?.split(' ').slice(1).join(' ') || undefined,
+        COMPANY_TITLE: lead.company?.legalName || lead.company?.tradeName,
+        PHONE:
+          lead.contact?.phone || lead.company?.phones?.[0]
+            ? [{ VALUE: lead.contact?.phone || lead.company?.phones?.[0], VALUE_TYPE: 'WORK' }]
+            : undefined,
+        EMAIL:
+          lead.contact?.email || lead.company?.emails?.[0]
+            ? [{ VALUE: lead.contact?.email || lead.company?.emails?.[0], VALUE_TYPE: 'WORK' }]
+            : undefined,
+        SOURCE_ID: 'WEB',
+        SOURCE_DESCRIPTION: 'Birth Hub 360 Prospector',
+        COMMENTS: commentsParts || undefined,
+        ...(overrides.statusId ? { STATUS_ID: overrides.statusId } : {}),
+        ...(overrides.assignedById ? { ASSIGNED_BY_ID: overrides.assignedById } : {}),
+      };
+
+      if (lead.bitrixLeadId) {
+        await callBitrix(
+          webhookUrl,
+          'crm.lead.update',
+          { id: lead.bitrixLeadId, fields },
+          { correlationId },
+        );
+        await prisma.lead.update({
+          where: { id: lead.id },
+          data: { bitrixSyncStatus: 'synced', bitrixSyncError: null, bitrixSyncedAt: new Date() },
+        });
+        await logSync({
+          organizationId,
+          connectionId,
+          direction: 'outbound',
+          entityType: 'lead',
+          leadId,
+          bitrixRecordId: lead.bitrixLeadId,
+          status: 'success',
+          correlationId,
+        });
+        return { bitrixLeadId: lead.bitrixLeadId };
+      }
+
+      // Corrida entre exportações concorrentes do MESMO lead local — ver claimOutboundSync.
+      // Não é um erro do usuário (a exportação vai simplesmente virar update na próxima
+      // chamada, assim que o bitrixLeadId concorrente terminar de ser gravado), mas precisa
+      // parar aqui em vez de arriscar criar um segundo lead no Bitrix.
+      const claimed = await claimOutboundSync(lead.id, organizationId);
+      if (!claimed) {
+        throw new AppError(
+          'Este lead já está sendo sincronizado com o Bitrix24 — tente novamente em alguns segundos.',
+          409,
+        );
+      }
+
+      // Deduplicação contra o Bitrix antes de criar: se já existe um Lead lá com o mesmo
+      // e-mail/telefone (cadastrado manualmente, importado por outra via, ou de uma tentativa
+      // anterior cujo bitrixLeadId não foi persistido por algum motivo), reaproveita esse
+      // registro via update em vez de criar um duplicado. Best-effort: se crm.duplicate.findbycomm
+      // falhar por qualquer razão (portal antigo sem o método, permissão insuficiente), segue
+      // para crm.lead.add normalmente — dedup é uma melhoria, não um requisito bloqueante.
+      const email = lead.contact?.email || lead.company?.emails?.[0] || null;
+      const phone = lead.contact?.phone || lead.company?.phones?.[0] || null;
+      const existingBitrixId = await findDuplicateBitrixLeadId(
+        webhookUrl,
+        { email, phone },
+        correlationId,
+      );
+
+      if (existingBitrixId) {
+        await callBitrix(
+          webhookUrl,
+          'crm.lead.update',
+          { id: existingBitrixId, fields },
+          { correlationId },
+        );
+        await prisma.lead.update({
+          where: { id: lead.id },
+          data: {
+            bitrixLeadId: existingBitrixId,
+            bitrixSyncStatus: 'synced',
+            bitrixSyncError: null,
+            bitrixSyncedAt: new Date(),
+          },
+        });
+        await logSync({
+          organizationId,
+          connectionId,
+          direction: 'outbound',
+          entityType: 'lead',
+          leadId,
+          bitrixRecordId: existingBitrixId,
+          status: 'success',
+          correlationId,
+        });
+        logger.info(
+          { correlationId, organizationId, leadId, bitrixLeadId: existingBitrixId },
+          '[bitrix] Duplicidade evitada — lead local vinculado a um Lead Bitrix já existente (crm.duplicate.findbycomm)',
+        );
+        return { bitrixLeadId: existingBitrixId };
+      }
+
+      const { result: newId } = await callBitrix<{ result: string }>(
+        webhookUrl,
+        'crm.lead.add',
+        { fields },
+        { correlationId },
+      );
+      await prisma.lead.update({
+        where: { id: lead.id },
+        data: {
+          bitrixLeadId: String(newId),
+          bitrixSyncStatus: 'synced',
+          bitrixSyncError: null,
+          bitrixSyncedAt: new Date(),
+        },
+      });
+      await callBitrix(
+        webhookUrl,
+        'crm.timeline.comment.add',
+        {
+          fields: {
+            ENTITY_ID: newId,
+            ENTITY_TYPE: 'lead',
+            COMMENT: `Lead criado pelo Birth Hub 360 Prospector.\nEtapa: ${statusLabel}${lead.score != null ? `\nFit Score: ${lead.score}` : ''}`,
+          },
+        },
+        { correlationId },
+      );
+      await logSync({
+        organizationId,
+        connectionId,
+        direction: 'outbound',
+        entityType: 'lead',
+        leadId,
+        bitrixRecordId: String(newId),
+        status: 'success',
+        correlationId,
+      });
+      return { bitrixLeadId: String(newId) };
+    } catch (err: any) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      // bitrixSyncStatus só some de 'syncing' aqui em caso de erro — o caminho de sucesso acima
+      // já sobrescreve para 'synced' antes de chegar neste catch.
+      await prisma.lead
+        .update({
+          where: { id: lead.id },
+          data: { bitrixSyncStatus: 'failed', bitrixSyncError: errorMessage },
+        })
+        .catch((updateErr) => {
+          logger.error(
+            { err: updateErr, leadId },
+            '[bitrix] Falha ao registrar status de sync (failed) no lead',
+          );
+        });
+      await logSync({
+        organizationId,
+        connectionId,
+        direction: 'outbound',
+        entityType: 'lead',
+        leadId,
+        bitrixRecordId: lead.bitrixLeadId,
+        status: 'failed',
+        errorMessage,
+        correlationId,
+      });
+      throw err;
+    }
+  } finally {
+    releaseBitrixSyncLock(organizationId, 'lead', leadId);
+  }
+}
+
+/**
+ * Registra um comentário na timeline do registro Bitrix vinculado a este lead local — usado pelo
+ * módulo Comercial Inteligente para notificar um risco (negócio estagnado, sem próxima ação etc.)
+ * direto no Bitrix, sem exigir que quem está no cockpit abra o Bitrix separadamente. Prioriza o
+ * vínculo de Deal (bitrixDealId) sobre o de Lead: Comercial Inteligente só opera sobre o funil
+ * "Negócio", que é o que o Bitrix normalmente representa como Deal quando importado por lá.
+ */
+export async function postCommentToBitrix(
+  organizationId: string,
+  leadId: string,
+  comment: string,
+  opts: PostCommentToBitrixOptions = {},
+): Promise<{ entityType: 'lead' | 'deal'; bitrixRecordId: string }> {
+  const correlationId = randomUUID();
+  const lead = await prisma.lead.findFirst({
+    where: { id: leadId, organizationId },
+    select: { bitrixLeadId: true, bitrixDealId: true },
+  });
+  if (!lead) throw new AppError('Negócio não encontrado.', 404);
+
+  const entityType = lead.bitrixDealId ? 'deal' : lead.bitrixLeadId ? 'lead' : null;
+  const bitrixRecordId = lead.bitrixDealId || lead.bitrixLeadId;
+  if (!entityType || !bitrixRecordId) {
+    throw new AppError('Este negócio ainda não está vinculado a um registro do Bitrix24.', 400);
+  }
+
+  const connection = await prisma.bitrixConnection.findFirst({
+    where: { organizationId },
+    orderBy: { createdAt: 'asc' },
+  });
+  if (!connection) throw new AppError('Bitrix24 não está conectado para esta organização.', 400);
+
+  const dedupMarker = dedupMarkerOf(opts.dedupRef);
+  if (dedupMarker) {
+    const alreadyPosted = await hasBitrixTimelineCommentByDedupRef(
+      connection.webhookUrl,
+      bitrixRecordId,
+      entityType,
+      dedupMarker,
+      correlationId,
+    );
+    if (alreadyPosted) {
+      logger.info(
+        { organizationId, leadId, entityType, bitrixRecordId, dedupRef: opts.dedupRef },
+        '[bitrix] Comentário já existe na timeline do Bitrix24 (dedupRef) — crm.timeline.comment.add ignorado.',
+      );
+      return { entityType, bitrixRecordId };
+    }
+  }
+
+  try {
+    await callBitrix(
+      connection.webhookUrl,
+      'crm.timeline.comment.add',
+      {
+        fields: {
+          ENTITY_ID: bitrixRecordId,
+          ENTITY_TYPE: entityType,
+          COMMENT: dedupMarker ? `${comment}\n${dedupMarker}` : comment,
+        },
+      },
+      { correlationId },
+    );
+    await logSync({
+      organizationId,
+      connectionId: connection.id,
+      direction: 'outbound',
+      entityType,
+      leadId,
+      bitrixRecordId,
+      status: 'success',
+      correlationId,
+    });
+    return { entityType, bitrixRecordId };
+  } catch (err: any) {
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    await logSync({
+      organizationId,
+      connectionId: connection.id,
+      direction: 'outbound',
+      entityType,
+      leadId,
+      bitrixRecordId,
+      status: 'failed',
+      errorMessage,
+      correlationId,
+    });
+    throw err;
+  }
+}
+
+interface BitrixTimelineCommentListResult {
+  result?: { comments?: Array<{ COMMENT?: string }> } | Array<{ COMMENT?: string }>;
+}
+
+/**
+ * Checagem best-effort de dedup para comentários de timeline: consulta
+ * `crm.timeline.comment.list` procurando o marcador `[ref:<dedupRef>]` já postado.
+ * Qualquer falha na consulta retorna `false` (segue com o add) — dedup é melhoria,
+ * não requisito bloqueante, mesmo padrão de `findDuplicateBitrixLeadId`.
+ */
+async function hasBitrixTimelineCommentByDedupRef(
+  webhookUrl: string,
+  entityId: string,
+  entityType: 'lead' | 'deal',
+  marker: string,
+  correlationId: string,
+): Promise<boolean> {
+  try {
+    const data = await callBitrix<BitrixTimelineCommentListResult>(
+      webhookUrl,
+      'crm.timeline.comment.list',
+      {
+        filter: { ENTITY_ID: entityId, ENTITY_TYPE: entityType },
+        select: ['ID', 'COMMENT'],
+      },
+      { correlationId, maxAttempts: 1 },
+    );
+    const comments = Array.isArray(data.result)
+      ? data.result
+      : ((data.result as { comments?: Array<{ COMMENT?: string }> } | undefined)?.comments ?? []);
+    return comments.some((c) => typeof c?.COMMENT === 'string' && c.COMMENT.includes(marker));
+  } catch (err: any) {
+    logger.warn(
+      { err, correlationId },
+      '[bitrix] crm.timeline.comment.list indisponível — seguindo sem checagem de dedup de comentário',
+    );
+    return false;
+  }
+}
+
+interface BitrixDuplicateFindResult {
+  result?: { LEAD?: string[] };
+}
+
+/** Consulta crm.duplicate.findbycomm por e-mail e depois por telefone — devolve o primeiro Lead ID encontrado, ou null. */
+async function findDuplicateBitrixLeadId(
+  webhookUrl: string,
+  contact: { email: string | null; phone: string | null },
+  correlationId: string,
+): Promise<string | null> {
+  for (const [type, value] of [
+    ['EMAIL', contact.email],
+    ['PHONE', contact.phone],
+  ] as const) {
+    if (!value) continue;
+    try {
+      const data = await callBitrix<BitrixDuplicateFindResult>(
+        webhookUrl,
+        'crm.duplicate.findbycomm',
+        { type, values: [value], entity_type: 'LEAD' },
+        { correlationId, maxAttempts: 1 },
+      );
+      const found = data.result?.LEAD?.[0];
+      if (found) return found;
+    } catch (err: any) {
+      logger.debug(
+        { err, type, correlationId },
+        '[bitrix] crm.duplicate.findbycomm indisponível ou sem permissão — seguindo sem checagem de duplicidade',
+      );
+    }
+  }
+  return null;
+}
+
+/**
+ * Chamado automaticamente sempre que um lead nasce no Birth Hub 360 (ver promoteToCrm) — não precisa de
+ * clique manual. Fire-and-forget por design: nunca propaga erro, já que o Bitrix é um sistema
+ * secundário e uma falha aqui não pode impedir o lead de existir no Birth Hub 360.
+ *
+ * O `catch` abaixo continua só logando (correto — o Birth Hub 360 não pode travar por causa do Bitrix),
+ * mas `syncLeadToBitrix` agora grava o resultado em `Lead.bitrixSyncStatus`/`bitrixSyncError` e em
+ * BitrixSyncLog ANTES de propagar o erro pra cá — a falha deixou de ser invisível na tela: o
+ * LeadDetailDrawer lê esses campos para mostrar "Falha ao sincronizar" com o motivo (achado P1-3
+ * da auditoria, antes só resolvido no log).
+ */
+export async function pushLeadToBitrix(organizationId: string, leadId: string): Promise<void> {
+  const correlationId = randomUUID();
+  try {
+    const connection = await prisma.bitrixConnection.findFirst({
+      where: { organizationId },
+      orderBy: { createdAt: 'asc' },
+    });
+    if (!connection) return;
+    await syncLeadToBitrix(organizationId, connection.id, connection.webhookUrl, leadId);
+    logger.info(
+      { correlationId, organizationId, connectionId: connection.id, leadId },
+      '[bitrix] Lead enviado automaticamente',
+    );
+  } catch (err: any) {
+    logger.warn(
+      { err, correlationId, organizationId, leadId },
+      '[bitrix] Falha ao enviar lead — motivo salvo em Lead.bitrixSyncError e propagado para fila de retentativa',
+    );
+    throw err; // Necessário para o worker BullMQ identificar a falha e agendar o retry
+  }
+}
+
+/** Suporta exportação individual OU em lote (quando leadId é omitido/undefined). */
+export async function exportLeadToBitrixNow(
+  organizationId: string,
+  leadId?: string,
+  connectionId?: string,
+  overrides: SyncLeadOverrides = {},
+): Promise<{ bitrixLeadId?: string; exportedCount?: number; skippedCount?: number }> {
+  let webhookUrl: string;
+  let resolvedConnectionId: string;
+  if (connectionId) {
+    webhookUrl = await getConnectionWebhookUrl(organizationId, connectionId);
+    resolvedConnectionId = connectionId;
+  } else {
+    const connection = await prisma.bitrixConnection.findFirst({
+      where: { organizationId },
+      orderBy: { createdAt: 'asc' },
+    });
+    if (!connection) throw new AppError('Bitrix24 não está conectado para esta organização.', 400);
+    webhookUrl = connection.webhookUrl;
+    resolvedConnectionId = connection.id;
+  }
+
+  if (leadId && leadId !== 'all') {
+    const result = await syncLeadToBitrix(
+      organizationId,
+      resolvedConnectionId,
+      webhookUrl,
+      leadId,
+      overrides,
+    );
+    await AuditService.log({
+      action: 'EXPORT',
+      entity: 'Lead',
+      entityId: leadId,
+      tenantId: organizationId,
+      afterState: { bitrixLeadId: result.bitrixLeadId },
+    });
+    return result;
+  }
+
+  // Exportação em lote de todos os leads da organização
+  const leads = await prisma.lead.findMany({
+    where: { organizationId },
+    select: { id: true },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  let exportedCount = 0;
+  let skippedCount = 0;
+
+  for (const l of leads) {
+    try {
+      await syncLeadToBitrix(organizationId, resolvedConnectionId, webhookUrl, l.id, overrides);
+      exportedCount++;
+    } catch (err: any) {
+      logger.warn({ err, leadId: l.id }, '[bitrix] Falha ao exportar lead em lote');
+      skippedCount++;
+    }
+  }
+
+  await AuditService.log({
+    action: 'EXPORT',
+    entity: 'Lead',
+    tenantId: organizationId,
+    afterState: { exportedCount, skippedCount, total: leads.length },
+  });
+  return { exportedCount, skippedCount };
+}
+
+export interface SyncActivityToBitrixParams {
+  type: 'call' | 'whatsapp' | 'email' | 'meeting';
+  subject: string;
+  description?: string;
+  completed?: boolean;
+  direction?: 'inbound' | 'outbound';
+  durationSeconds?: number;
+}
+
+export interface SyncActivityToBitrixOptions {
+  /** Repropaga falhas — uso exclusivo de consumidores de fila/outbox (ex.: bitrixEventMeshBridge). */
+  propagateErrors?: boolean;
+  /** Marcador `[ref:<dedupRef>]` na DESCRIPTION + checagem crm.activity.list antes do add. */
+  dedupRef?: string;
+}
+
+export interface PostCommentToBitrixOptions {
+  /** Marcador `[ref:<dedupRef>]` no COMMENT + checagem crm.timeline.comment.list antes do add. */
+  dedupRef?: string;
+}
+
+function dedupMarkerOf(ref?: string): string | null {
+  return ref ? `[ref:${ref}]` : null;
+}
+
+/**
+ * Espelha atividades de contato (ligações de voz, WhatsApp, e-mail) do Lead no CRM do Bitrix24
+ * via `crm.activity.add`. Fire-and-forget: nunca quebra fluxos principais se o Bitrix estiver
+ * fora do ar ou o lead ainda não estiver vinculado.
+ */
+export async function syncActivityToBitrix(
+  organizationId: string,
+  leadId: string,
+  params: SyncActivityToBitrixParams,
+  opts: SyncActivityToBitrixOptions = {},
+): Promise<{ bitrixActivityId?: number } | null> {
+  try {
+    const connection = await prisma.bitrixConnection.findFirst({
+      where: { organizationId },
+      orderBy: { createdAt: 'asc' },
+    });
+    if (!connection) return null;
+
+    const lead = await prisma.lead.findFirst({
+      where: { id: leadId, organizationId },
+      select: {
+        id: true,
+        bitrixLeadId: true,
+        bitrixDealId: true,
+        contact: { select: { phone: true, whatsapp: true, email: true } },
+      },
+    });
+    if (!lead) return null;
+
+    let ownerTypeId: number | null = null;
+    let ownerId: string | null = null;
+
+    if (lead.bitrixLeadId) {
+      ownerTypeId = 1; // 1 = Lead
+      ownerId = lead.bitrixLeadId;
+    } else if (lead.bitrixDealId) {
+      ownerTypeId = 2; // 2 = Deal
+      ownerId = lead.bitrixDealId;
+    } else {
+      logger.info(
+        { organizationId, leadId },
+        '[bitrix] Lead sem vínculo com ID no Bitrix24 — syncActivityToBitrix ignorado.',
+      );
+      return null;
+    }
+
+    const webhookUrl = await getConnectionWebhookUrl(organizationId, connection.id);
+
+    const dedupMarker = dedupMarkerOf(opts.dedupRef);
+    if (dedupMarker) {
+      const existingActivityId = await findBitrixActivityIdByDedupRef(
+        webhookUrl,
+        ownerTypeId,
+        ownerId,
+        dedupMarker,
+      );
+      if (existingActivityId != null) {
+        logger.info(
+          { organizationId, leadId, bitrixActivityId: existingActivityId, dedupRef: opts.dedupRef },
+          '[bitrix] Atividade já existe no Bitrix24 (dedupRef) — crm.activity.add ignorado.',
+        );
+        return { bitrixActivityId: existingActivityId };
+      }
+    }
+
+    // Mapeamento Bitrix TYPE_ID: 1 = Meeting, 2 = Call, 4 = Email
+    const typeId = params.type === 'meeting' ? 1 : params.type === 'email' ? 4 : 2;
+
+    const phoneOrEmail =
+      params.type === 'email' ? lead.contact?.email : lead.contact?.whatsapp || lead.contact?.phone;
+
+    const fields: Record<string, unknown> = {
+      OWNER_TYPE_ID: ownerTypeId,
+      OWNER_ID: ownerId,
+      TYPE_ID: typeId,
+      SUBJECT: params.subject,
+      DESCRIPTION: dedupMarker
+        ? `${params.description || ''}\n${dedupMarker}`
+        : params.description || '',
+      COMPLETED: params.completed === false ? 'N' : 'Y',
+      DIRECTION: params.direction === 'inbound' ? 1 : 2,
+      START_TIME: new Date().toISOString(),
+    };
+
+    if (phoneOrEmail) {
+      fields.COMMUNICATIONS = [
+        {
+          VALUE: phoneOrEmail,
+          TYPE: params.type === 'email' ? 'EMAIL' : 'PHONE',
+        },
+      ];
+    }
+
+    const response = await callBitrix<{ result: number }>(webhookUrl, 'crm.activity.add', {
+      fields,
+    });
+
+    logger.info(
+      { organizationId, leadId, bitrixActivityId: response?.result },
+      '[bitrix] Atividade CRM sincronizada com sucesso no Bitrix24.',
+    );
+
+    return { bitrixActivityId: response?.result };
+  } catch (err: any) {
+    // Consumidores de fila/outbox (bitrixEventMeshBridge) precisam da falha para o mesh
+    // reagendar via outbox; os demais chamadores mantêm o comportamento fire-and-forget.
+    if (opts.propagateErrors) {
+      throw err;
+    }
+    logger.warn(
+      { err, organizationId, leadId, params },
+      '[bitrix] Falha ao sincronizar atividade CRM no Bitrix24 (efeito secundário não-bloqueante).',
+    );
+    return null;
+  }
+}
+
+interface BitrixActivityListResult {
+  result?: Array<{ ID?: number | string; DESCRIPTION?: string }>;
+}
+
+/**
+ * Checagem best-effort de dedup para atividades CRM: consulta `crm.activity.list` do owner
+ * procurando o marcador `[ref:<dedupRef>]` na DESCRIPTION. Falha na consulta retorna `null`
+ * (segue com o add) — dedup é melhoria, não requisito bloqueante.
+ */
+async function findBitrixActivityIdByDedupRef(
+  webhookUrl: string,
+  ownerTypeId: number,
+  ownerId: string,
+  marker: string,
+): Promise<number | null> {
+  try {
+    const data = await callBitrix<BitrixActivityListResult>(
+      webhookUrl,
+      'crm.activity.list',
+      {
+        filter: { OWNER_TYPE_ID: ownerTypeId, OWNER_ID: ownerId },
+        select: ['ID', 'DESCRIPTION'],
+        order: { ID: 'DESC' },
+      },
+      { maxAttempts: 1 },
+    );
+    const found = (data.result ?? []).find(
+      (a) => typeof a?.DESCRIPTION === 'string' && a.DESCRIPTION.includes(marker),
+    );
+    return found?.ID != null ? Number(found.ID) : null;
+  } catch (err: any) {
+    logger.warn(
+      { err, marker },
+      '[bitrix] crm.activity.list indisponível — seguindo sem checagem de dedup de atividade',
+    );
+    return null;
+  }
+}

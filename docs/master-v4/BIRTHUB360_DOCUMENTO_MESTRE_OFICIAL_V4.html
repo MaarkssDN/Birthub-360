@@ -1,0 +1,1617 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Birth Hub 360° — Documento Mestre Oficial V4 (Revisado & Homologado)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0B0B10;
+  --bg-dark: #0D0D0D;
+  --bg2: #101018;
+  --card: #14141A;
+  --card2: #1A1A24;
+  --card-hover: #1E1E2C;
+  --line: rgba(255, 255, 255, 0.08);
+  --line2: rgba(255, 255, 255, 0.16);
+  --txt: #F8F9FF;
+  --mut: #9AA0B4;
+  --mut2: #6B7089;
+  --cyan: #00D4FF;
+  --pink: #FF2D9B;
+  --gold: #FFC107;
+  --iris: #8B7DFF;
+  --blue: #3B82F6;
+  --green: #22C55E;
+  --red: #EF4444;
+  --grad: linear-gradient(135deg, #00D4FF 0%, #FF2D9B 55%, #FFC107 100%);
+  --grad-action: linear-gradient(135deg, #FF2D9B 0%, #00D4FF 100%);
+  --grad-gold: linear-gradient(135deg, #FFC107 0%, #FF8C00 100%);
+  --disp: 'Sora', sans-serif;
+  --body: 'Inter', sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+  --r: 16px;
+  --glow-cyan: 0 0 24px rgba(0, 212, 255, 0.25);
+  --glow-pink: 0 0 24px rgba(255, 45, 155, 0.25);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--txt);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* MANDATORY RULE: NO PURE BLACK OR PURE WHITE TITLES */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--disp);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--cyan);
+}
+h1 { color: transparent; background: var(--grad); -webkit-background-clip: text; background-clip: text; }
+h2 { color: var(--cyan); }
+h3 { color: var(--gold); }
+h4 { color: var(--iris); }
+h5, h6 { color: var(--pink); }
+
+::selection { background: rgba(0, 212, 255, 0.35); color: #fff; }
+code {
+  font-family: var(--mono);
+  font-size: 0.86em;
+  background: rgba(0, 212, 255, 0.08);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  padding: 2px 7px;
+  border-radius: 6px;
+  color: #9BE9FF;
+}
+
+.wrap { max-width: 1280px; margin: 0 auto; padding: 0 28px; }
+.grad-text { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--mono); font-size: 10px; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 20px;
+}
+.badge-cyan { background: rgba(0, 212, 255, 0.12); color: var(--cyan); border: 1px solid rgba(0, 212, 255, 0.3); }
+.badge-pink { background: rgba(255, 45, 155, 0.12); color: var(--pink); border: 1px solid rgba(255, 45, 155, 0.3); }
+.badge-gold { background: rgba(255, 193, 7, 0.12); color: var(--gold); border: 1px solid rgba(255, 193, 7, 0.3); }
+.badge-green { background: rgba(34, 197, 94, 0.12); color: var(--green); border: 1px solid rgba(34, 197, 94, 0.3); }
+.badge-iris { background: rgba(139, 125, 255, 0.12); color: var(--iris); border: 1px solid rgba(139, 125, 255, 0.3); }
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  background: rgba(11, 11, 16, 0.85); border-bottom: 1px solid var(--line);
+}
+nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 68px; }
+.brand { display: flex; align-items: center; gap: 12px; font-family: var(--disp); font-weight: 700; font-size: 16px; text-decoration: none; }
+.brand svg { width: 34px; height: 34px; filter: drop-shadow(0 0 10px rgba(0,212,255,0.4)); }
+.brand span { font-weight: 800; letter-spacing: -0.02em; }
+.navlinks { display: flex; gap: 6px; align-items: center; }
+.navlinks a {
+  font-size: 12.5px; font-weight: 500; color: var(--mut);
+  text-decoration: none; padding: 7px 12px; border-radius: 8px;
+  transition: all 0.2s ease;
+}
+.navlinks a:hover, .navlinks a.active { color: var(--cyan); background: rgba(0, 212, 255, 0.08); }
+.nav-gate-btn {
+  background: var(--grad-action); color: #fff; font-weight: 600;
+  font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.08em;
+  padding: 8px 14px; border-radius: 8px; margin-left: 8px;
+  box-shadow: 0 0 15px rgba(255, 45, 155, 0.3); transition: 0.2s;
+}
+.nav-gate-btn:hover { transform: translateY(-1px); box-shadow: 0 0 25px rgba(0, 212, 255, 0.5); }
+@media(max-width: 980px) { .navlinks { display: none; } }
+
+/* HERO */
+.hero {
+  min-height: 92vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center;
+  position: relative; padding: 130px 24px 80px; overflow: hidden;
+  background: radial-gradient(circle at 50% 25%, rgba(0, 212, 255, 0.07) 0%, transparent 60%),
+              radial-gradient(circle at 80% 60%, rgba(255, 45, 155, 0.05) 0%, transparent 50%),
+              var(--bg);
+}
+.hero .orbit { position: absolute; inset: 0; pointer-events: none; }
+.hero .orbit i {
+  position: absolute; border-radius: 50%;
+  border: 1px dashed rgba(255, 255, 255, 0.07);
+  animation: orbitSpin 36s linear infinite;
+}
+.hero .orbit i:nth-child(2) { animation-duration: 52s; animation-direction: reverse; }
+.hero .orbit i:nth-child(3) { animation-duration: 70s; }
+@keyframes orbitSpin { to { transform: rotate(360deg); } }
+
+.hero-logo-box {
+  width: 140px; height: 140px; margin-bottom: 28px;
+  filter: drop-shadow(0 0 40px rgba(0, 212, 255, 0.45));
+  animation: floaty 6s ease-in-out infinite;
+}
+@keyframes floaty { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+
+.hero .eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 11.5px; font-weight: 600;
+  letter-spacing: 0.25em; text-transform: uppercase; color: var(--cyan);
+  background: rgba(0, 212, 255, 0.08); border: 1px solid rgba(0, 212, 255, 0.25);
+  padding: 6px 14px; border-radius: 30px; margin-bottom: 22px;
+}
+.hero h1 {
+  font-size: clamp(36px, 5.8vw, 68px); line-height: 1.06;
+  max-width: 960px; margin-bottom: 18px;
+}
+.hero .lead {
+  font-size: 16.5px; line-height: 1.6; color: #D1D5DB;
+  max-width: 780px; margin: 0 auto 36px;
+}
+
+.heronums {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 18px; max-width: 1040px; width: 100%; margin-top: 10px;
+}
+.numcard {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: var(--r); padding: 20px 16px; text-align: center;
+  transition: 0.3s;
+}
+.numcard:hover { border-color: var(--cyan); transform: translateY(-3px); box-shadow: var(--glow-cyan); }
+.numcard b {
+  display: block; font-family: var(--disp); font-size: 34px;
+  font-weight: 800; color: var(--cyan); line-height: 1.1; margin-bottom: 6px;
+}
+.numcard span {
+  font-size: 11px; font-family: var(--mono); text-transform: uppercase;
+  color: var(--mut); letter-spacing: 0.1em;
+}
+
+/* SECTIONS */
+section { padding: 90px 0; position: relative; border-bottom: 1px solid var(--line); }
+.sec-head { text-align: center; margin-bottom: 54px; }
+.sec-num { font-family: var(--mono); font-size: 12px; color: var(--cyan); letter-spacing: 0.28em; display: block; margin-bottom: 10px; }
+.sec-head h2 { font-size: clamp(28px, 3.8vw, 44px); margin-bottom: 14px; }
+.sec-head p { color: var(--mut); max-width: 680px; margin: 0 auto; font-size: 15px; }
+
+/* GRID & CARDS */
+.pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+.pcard {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: var(--r); padding: 26px; cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); position: relative;
+  overflow: hidden; display: flex; flex-direction: column;
+}
+.pcard:hover {
+  border-color: var(--cyan); transform: translateY(-5px);
+  box-shadow: 0 16px 40px rgba(0, 212, 255, 0.14);
+}
+.pcard .pcard-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+.pcard .icon-box {
+  width: 48px; height: 48px; border-radius: 12px;
+  display: grid; place-items: center; background: var(--card2);
+  border: 1px solid var(--line2); color: var(--cyan);
+}
+.pcard .icon-box svg { width: 24px; height: 24px; }
+.pcard .num-tag { font-family: var(--mono); font-size: 12px; color: var(--mut2); font-weight: 600; }
+.pcard h3 { font-size: 20px; margin-bottom: 6px; }
+.pcard .pcard-tag { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--pink); margin-bottom: 12px; }
+.pcard p { font-size: 13.5px; color: var(--mut); line-height: 1.55; margin-bottom: 16px; flex-grow: 1; }
+.pcard .pcard-footer {
+  border-top: 1px solid var(--line); padding-top: 14px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--mono); font-size: 11px; color: var(--mut);
+}
+
+/* JOURNEYS CARDS */
+.jgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 18px; }
+.jcard {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: var(--r); padding: 22px; cursor: pointer;
+  transition: 0.25s; position: relative;
+}
+.jcard:hover { border-color: var(--pink); transform: translateY(-3px); box-shadow: var(--glow-pink); }
+.jcard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.jcard h4 { font-size: 16px; margin-bottom: 8px; }
+.jcard p { font-size: 13px; color: var(--mut); line-height: 1.5; margin-bottom: 12px; }
+.jcard-meta { display: flex; flex-wrap: wrap; gap: 8px; font-family: var(--mono); font-size: 10.5px; }
+
+/* MODALS */
+.modal-bg {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(12px); opacity: 0; visibility: hidden;
+  transition: 0.3s ease; z-index: 200;
+}
+.modal-bg.open { opacity: 1; visibility: visible; }
+.modal-wrap {
+  position: fixed; inset: 0; z-index: 201; display: grid;
+  place-items: center; padding: 24px; opacity: 0; visibility: hidden;
+  transition: 0.3s ease; pointer-events: none;
+}
+.modal-bg.open ~ .modal-wrap { opacity: 1; visibility: visible; pointer-events: auto; }
+.modal-card {
+  background: var(--card); border: 1px solid var(--line2);
+  border-radius: 20px; max-width: 1060px; width: 100%;
+  max-height: 88vh; overflow-y: auto; transform: translateY(24px);
+  transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column;
+}
+.modal-bg.open ~ .modal-wrap .modal-card { transform: translateY(0); }
+.modal-hero {
+  padding: 30px 32px 20px; border-bottom: 1px solid var(--line);
+  position: relative; background: var(--bg2);
+}
+.modal-close {
+  position: absolute; top: 22px; right: 24px; width: 38px; height: 38px;
+  border-radius: 50%; background: var(--card2); border: 1px solid var(--line2);
+  color: var(--txt); font-size: 20px; cursor: pointer; display: grid; place-items: center;
+  transition: 0.2s;
+}
+.modal-close:hover { background: var(--pink); border-color: var(--pink); }
+
+.modal-tabs {
+  display: flex; gap: 4px; overflow-x: auto; padding: 0 32px;
+  background: var(--card); border-bottom: 1px solid var(--line);
+}
+.modal-tab-btn {
+  background: transparent; border: none; border-bottom: 2px solid transparent;
+  color: var(--mut); font-family: var(--disp); font-size: 13px; font-weight: 600;
+  padding: 14px 16px; cursor: pointer; transition: 0.2s; white-space: nowrap;
+}
+.modal-tab-btn.active { color: var(--cyan); border-bottom-color: var(--cyan); }
+.modal-tab-btn:hover { color: var(--txt); }
+
+.modal-body { padding: 28px 32px; flex-grow: 1; }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+.tab-pane h3 { font-size: 18px; margin: 18px 0 10px; }
+.tab-pane p { font-size: 14px; color: #D1D5DB; line-height: 1.6; margin-bottom: 14px; }
+.tab-pane ul { list-style: none; margin-bottom: 18px; }
+.tab-pane li {
+  padding: 10px 0; border-bottom: 1px solid var(--line);
+  font-size: 13.5px; color: var(--txt);
+}
+.tab-pane li strong { color: var(--cyan); }
+
+/* TABELA RASTREABILIDADE */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+th {
+  background: var(--bg2); padding: 14px 16px; border-bottom: 2px solid var(--line2);
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--cyan); white-space: nowrap;
+}
+td { padding: 14px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+/* GATE SECTION */
+.gate-box {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(255, 45, 155, 0.05));
+  border: 1px solid var(--cyan); border-radius: var(--r); padding: 36px;
+  box-shadow: var(--glow-cyan);
+}
+.gate-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 14px; }
+
+/* FOOTER */
+footer {
+  padding: 60px 0; border-top: 1px solid var(--line); text-align: center;
+  color: var(--mut); font-size: 13.5px; background: var(--bg-dark);
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="brand" href="#topo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="34" height="34"
+     role="img" aria-label="Birth Hub 360">
+  <title>Birth Hub 360 — símbolo</title>
+  <defs>
+    <linearGradient id="bh-o0" gradientUnits="userSpaceOnUse" x1="127.14" y1="46.00" x2="199.44" y2="87.75"><stop offset="0" stop-color="#00D4FF"/><stop offset="1" stop-color="#FF2D9B"/></linearGradient>
+    <linearGradient id="bh-o1" gradientUnits="userSpaceOnUse" x1="198.58" y1="86.26" x2="198.58" y2="169.74"><stop offset="0" stop-color="#FF2D9B"/><stop offset="1" stop-color="#FFC107"/></linearGradient>
+    <linearGradient id="bh-o2" gradientUnits="userSpaceOnUse" x1="199.44" y1="168.25" x2="127.14" y2="210.00"><stop offset="0" stop-color="#FFC107"/><stop offset="1" stop-color="#00D4FF"/></linearGradient>
+    <linearGradient id="bh-o3" gradientUnits="userSpaceOnUse" x1="128.86" y1="210.00" x2="56.56" y2="168.25"><stop offset="0" stop-color="#00D4FF"/><stop offset="1" stop-color="#3B82F6"/></linearGradient>
+    <linearGradient id="bh-o4" gradientUnits="userSpaceOnUse" x1="57.42" y1="169.74" x2="57.42" y2="86.26"><stop offset="0" stop-color="#3B82F6"/><stop offset="1" stop-color="#8B7DFF"/></linearGradient>
+    <linearGradient id="bh-o5" gradientUnits="userSpaceOnUse" x1="56.56" y1="87.75" x2="128.86" y2="46.00"><stop offset="0" stop-color="#8B7DFF"/><stop offset="1" stop-color="#00D4FF"/></linearGradient>
+    <linearGradient id="bh-bar" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#00D4FF"/><stop offset="0.45" stop-color="#FF2D9B" stop-opacity="0.25"/><stop offset="0.55" stop-color="#FFC107" stop-opacity="0.25"/><stop offset="1" stop-color="#FFC107"/></linearGradient>
+    <radialGradient id="bh-sheen" cx="0.3" cy="0.25" r="0.55"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.34"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient>
+    <linearGradient id="bh-core-shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000000" stop-opacity="0.55"/><stop offset="0.42" stop-color="#000000" stop-opacity="0"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0.06"/></linearGradient>
+  </defs>
+  <g id="bh-emblem">
+    <circle cx="128.0" cy="128.0" r="118.12" fill="none" stroke="#FFC107" stroke-width="11.77"
+            opacity="0.6" stroke-dasharray="1.44 10.93"/>
+    <g fill="none" stroke-width="16.0">
+      <path stroke="url(#bh-o0)" d="M127.14 46.00 A82.0 82.0 0 0 1 199.44 87.75"/>
+      <path stroke="url(#bh-o1)" d="M198.58 86.26 A82.0 82.0 0 0 1 198.58 169.74"/>
+      <path stroke="url(#bh-o2)" d="M199.44 168.25 A82.0 82.0 0 0 1 127.14 210.00"/>
+      <path stroke="url(#bh-o3)" d="M128.86 210.00 A82.0 82.0 0 0 1 56.56 168.25"/>
+      <path stroke="url(#bh-o4)" d="M57.42 169.74 A82.0 82.0 0 0 1 57.42 86.26"/>
+      <path stroke="url(#bh-o5)" d="M56.56 87.75 A82.0 82.0 0 0 1 128.86 46.00"/>
+    </g>
+    <circle cx="128.0" cy="128.0" r="90" fill="url(#bh-sheen)"/>
+    <circle cx="128.0" cy="128.0" r="74.0" fill="#0D0D0D"/>
+    <circle cx="128.0" cy="128.0" r="74.0" fill="url(#bh-core-shade)"/>
+    <circle cx="128.0" cy="128.0" r="61.5" fill="none" stroke="#FFC107" stroke-width="5.0"/>
+    <rect x="64.0" y="126.5" width="128.0" height="3.0" fill="url(#bh-bar)"/>
+    <path fill="#F8F9FF" transform="matrix(0.0740 0 0 -0.0740 104.45 154.20)" d="M450.4 707Q574.2 707 627.9 670.8Q681.6 634.6 681.6 573.4Q681.6 520.8 646.8 476.7Q612 432.6 547 404.5Q482 376.4 391 370.8Q511 369.4 573.8 326.1Q636.6 282.8 636.6 218.2Q636.6 165.8 612.2 125.1Q587.8 84.4 543.2 56.4Q498.6 28.4 436 14.2Q373.4 0 297 0Q267.8 0 227.6 1.5Q187.4 3 121 3Q94.8 3 63.8 2.5Q32.8 2 3.7 1.5Q-25.4 1 -45 0L-41 20Q-7 22 12 28Q31 34 42 52Q53 70 62 106L194 602Q201.8 632.8 202.4 651.3Q203 669.8 188.5 678.5Q174 687.2 135 688L140 708Q159.6 707 188.2 706.5Q216.8 706 247.7 705.5Q278.6 705 303 705Q353.2 705 385.7 706Q418.2 707 450.4 707ZM266 359 270 376H339.2Q393.8 376 430.6 407.9Q467.4 439.8 486.2 490.8Q505 541.8 505 596.8Q505 636.6 491.5 662.3Q478 688 438.6 688Q413 688 401 674.1Q389 660.2 378 617L243 106Q238.2 86.4 235.7 67.1Q233.2 47.8 242.2 35.4Q251.2 23 278.8 23Q331.6 23 368.9 53.4Q406.2 83.8 426.6 132.9Q447 182 447 237.2Q447 270.4 437.2 297.9Q427.4 325.4 404.3 342.2Q381.2 359 341.6 359Z"/>
+  </g>
+</svg>
+
+      <span>Birth Hub 360°</span>
+    </a>
+    <div class="navlinks">
+      <a href="#visao">Visão Geral</a>
+      <a href="#arquitetura">Arquitetura</a>
+      <a href="#modulos">11 Módulos</a>
+      <a href="#jornadas">20 Jornadas</a>
+      <a href="#comercial">Comercial</a>
+      <a href="#rastreabilidade">Rastreabilidade</a>
+      <a href="#anexos">Anexos Técnicos</a>
+      <a href="#gate" class="nav-gate-btn">Quality Gate</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="topo">
+  <div class="orbit">
+    <i style="width:340px;height:340px;top:50%;left:50%;transform:translate(-50%,-50%)"></i>
+    <i style="width:480px;height:480px;top:50%;left:50%;transform:translate(-50%,-50%)"></i>
+    <i style="width:620px;height:620px;top:50%;left:50%;transform:translate(-50%,-50%)"></i>
+  </div>
+  <div class="hero-logo-box">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="140" height="140"
+     role="img" aria-label="Birth Hub 360">
+  <title>Birth Hub 360 — símbolo</title>
+  <defs>
+    <linearGradient id="bh-o0" gradientUnits="userSpaceOnUse" x1="127.14" y1="46.00" x2="199.44" y2="87.75"><stop offset="0" stop-color="#00D4FF"/><stop offset="1" stop-color="#FF2D9B"/></linearGradient>
+    <linearGradient id="bh-o1" gradientUnits="userSpaceOnUse" x1="198.58" y1="86.26" x2="198.58" y2="169.74"><stop offset="0" stop-color="#FF2D9B"/><stop offset="1" stop-color="#FFC107"/></linearGradient>
+    <linearGradient id="bh-o2" gradientUnits="userSpaceOnUse" x1="199.44" y1="168.25" x2="127.14" y2="210.00"><stop offset="0" stop-color="#FFC107"/><stop offset="1" stop-color="#00D4FF"/></linearGradient>
+    <linearGradient id="bh-o3" gradientUnits="userSpaceOnUse" x1="128.86" y1="210.00" x2="56.56" y2="168.25"><stop offset="0" stop-color="#00D4FF"/><stop offset="1" stop-color="#3B82F6"/></linearGradient>
+    <linearGradient id="bh-o4" gradientUnits="userSpaceOnUse" x1="57.42" y1="169.74" x2="57.42" y2="86.26"><stop offset="0" stop-color="#3B82F6"/><stop offset="1" stop-color="#8B7DFF"/></linearGradient>
+    <linearGradient id="bh-o5" gradientUnits="userSpaceOnUse" x1="56.56" y1="87.75" x2="128.86" y2="46.00"><stop offset="0" stop-color="#8B7DFF"/><stop offset="1" stop-color="#00D4FF"/></linearGradient>
+    <linearGradient id="bh-bar" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#00D4FF"/><stop offset="0.45" stop-color="#FF2D9B" stop-opacity="0.25"/><stop offset="0.55" stop-color="#FFC107" stop-opacity="0.25"/><stop offset="1" stop-color="#FFC107"/></linearGradient>
+    <radialGradient id="bh-sheen" cx="0.3" cy="0.25" r="0.55"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.34"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient>
+    <linearGradient id="bh-core-shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000000" stop-opacity="0.55"/><stop offset="0.42" stop-color="#000000" stop-opacity="0"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0.06"/></linearGradient>
+  </defs>
+  <g id="bh-emblem">
+    <circle cx="128.0" cy="128.0" r="118.12" fill="none" stroke="#FFC107" stroke-width="11.77"
+            opacity="0.6" stroke-dasharray="1.44 10.93"/>
+    <g fill="none" stroke-width="16.0">
+      <path stroke="url(#bh-o0)" d="M127.14 46.00 A82.0 82.0 0 0 1 199.44 87.75"/>
+      <path stroke="url(#bh-o1)" d="M198.58 86.26 A82.0 82.0 0 0 1 198.58 169.74"/>
+      <path stroke="url(#bh-o2)" d="M199.44 168.25 A82.0 82.0 0 0 1 127.14 210.00"/>
+      <path stroke="url(#bh-o3)" d="M128.86 210.00 A82.0 82.0 0 0 1 56.56 168.25"/>
+      <path stroke="url(#bh-o4)" d="M57.42 169.74 A82.0 82.0 0 0 1 57.42 86.26"/>
+      <path stroke="url(#bh-o5)" d="M56.56 87.75 A82.0 82.0 0 0 1 128.86 46.00"/>
+    </g>
+    <circle cx="128.0" cy="128.0" r="90" fill="url(#bh-sheen)"/>
+    <circle cx="128.0" cy="128.0" r="74.0" fill="#0D0D0D"/>
+    <circle cx="128.0" cy="128.0" r="74.0" fill="url(#bh-core-shade)"/>
+    <circle cx="128.0" cy="128.0" r="61.5" fill="none" stroke="#FFC107" stroke-width="5.0"/>
+    <rect x="64.0" y="126.5" width="128.0" height="3.0" fill="url(#bh-bar)"/>
+    <path fill="#F8F9FF" transform="matrix(0.0740 0 0 -0.0740 104.45 154.20)" d="M450.4 707Q574.2 707 627.9 670.8Q681.6 634.6 681.6 573.4Q681.6 520.8 646.8 476.7Q612 432.6 547 404.5Q482 376.4 391 370.8Q511 369.4 573.8 326.1Q636.6 282.8 636.6 218.2Q636.6 165.8 612.2 125.1Q587.8 84.4 543.2 56.4Q498.6 28.4 436 14.2Q373.4 0 297 0Q267.8 0 227.6 1.5Q187.4 3 121 3Q94.8 3 63.8 2.5Q32.8 2 3.7 1.5Q-25.4 1 -45 0L-41 20Q-7 22 12 28Q31 34 42 52Q53 70 62 106L194 602Q201.8 632.8 202.4 651.3Q203 669.8 188.5 678.5Q174 687.2 135 688L140 708Q159.6 707 188.2 706.5Q216.8 706 247.7 705.5Q278.6 705 303 705Q353.2 705 385.7 706Q418.2 707 450.4 707ZM266 359 270 376H339.2Q393.8 376 430.6 407.9Q467.4 439.8 486.2 490.8Q505 541.8 505 596.8Q505 636.6 491.5 662.3Q478 688 438.6 688Q413 688 401 674.1Q389 660.2 378 617L243 106Q238.2 86.4 235.7 67.1Q233.2 47.8 242.2 35.4Q251.2 23 278.8 23Q331.6 23 368.9 53.4Q406.2 83.8 426.6 132.9Q447 182 447 237.2Q447 270.4 437.2 297.9Q427.4 325.4 404.3 342.2Q381.2 359 341.6 359Z"/>
+  </g>
+</svg>
+
+  </div>
+  <span class="eyebrow">SISTEMA OPERACIONAL DE REVENUE INTELLIGENCE</span>
+  <h1>Birth Hub 360°<br><span class="grad-text">Dados que conectam. Inteligência que decide. Execução que acontece.</span></h1>
+  <p class="lead">Especificação Oficial Consolidada e Homologada (V4). Cobertura exaustiva dos 11 módulos, 33 requisitos canônicos, 20 jornadas operacionais, 15 agentes nativos, arquitetura transversal e matriz de rastreabilidade para reconstrução da plataforma.</p>
+  
+  <div class="heronums">
+    <div class="numcard">
+      <b data-count="11">0</b>
+      <span>Módulos Homologados</span>
+    </div>
+    <div class="numcard">
+      <b data-count="33">0</b>
+      <span>Requisitos Canônicos</span>
+    </div>
+    <div class="numcard">
+      <b data-count="15">0</b>
+      <span>Agentes Nativos de IA</span>
+    </div>
+    <div class="numcard">
+      <b data-count="9">0</b>
+      <span>Conectores Comerciais</span>
+    </div>
+    <div class="numcard">
+      <b data-count="17">0</b>
+      <span>Relatórios Executivos</span>
+    </div>
+    <div class="numcard">
+      <b data-count="20">0</b>
+      <span>Jornadas Documentadas</span>
+    </div>
+  </div>
+</header>
+
+<!-- SEÇÃO 1: VISÃO GERAL -->
+<section id="visao">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num">01 — VISÃO GERAL DO PRODUTO</span>
+      <h2>O que é o Birth Hub 360°</h2>
+      <p>A primeira plataforma de Revenue Intelligence e Execução Comercial Autônoma que une CRM profundo, enxame de agentes de IA governados e dados de mercado em uma única central de comando.</p>
+    </div>
+    <div class="pgrid">
+      <div class="pcard">
+        <div class="pcard-top">
+          <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg></div>
+          <span class="num-tag">01</span>
+        </div>
+        <h3>Proposta de Valor Central</h3>
+        <span class="pcard-tag">Eliminação da Fragmentação</span>
+        <p>Unifica CRM, prospecção, cadência multicanal, forecast preditivo e execução de IA em um único ecossistema auditável — eliminando a perda de contexto entre 6+ ferramentas isoladas.</p>
+        <div class="pcard-footer"><span>LOOP CENTRAL</span><strong style="color:var(--cyan)">DADOS → DECISÃO → EXECUÇÃO</strong></div>
+      </div>
+
+      <div class="pcard">
+        <div class="pcard-top">
+          <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <span class="num-tag">02</span>
+        </div>
+        <h3>Público-Alvo & ICP</h3>
+        <span class="pcard-tag">Operações B2B Estruturadas</span>
+        <p>Empresas B2B com equipe comercial de 5 a 150+ vendedores, ciclos de venda consultivos ou de receita recorrente (MRR/ARR), ticket médio acima de R$ 10k e necessidade de governança.</p>
+        <div class="pcard-footer"><span>PERSONAS</span><strong>SDR, Closer, Gestor, RevOps, C-Level</strong></div>
+      </div>
+
+      <div class="pcard">
+        <div class="pcard-top">
+          <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+          <span class="num-tag">03</span>
+        </div>
+        <h3>Diferencial Competitivo</h3>
+        <span class="pcard-tag">IA Nativa Governábil</span>
+        <p>Não é um CRM tradicional com chatbot anexado. É uma plataforma orientada a agentes autônomos onde a IA possui alçadas de decisão, limites de autonomia e fila obrigatória de aprovação humana.</p>
+        <div class="pcard-footer"><span>GOVERNANÇA</span><strong style="color:var(--pink)">HUMAN-IN-THE-LOOP MANDATÓRIO</strong></div>
+      </div>
+
+      <div class="pcard">
+        <div class="pcard-top">
+          <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+          <span class="num-tag">04</span>
+        </div>
+        <h3>Arquitetura SaaS Multi-Tenant</h3>
+        <span class="pcard-tag">Segurança & RLS</span>
+        <p>Isolamento estrito por organização em banco de dados (Row-Level Security), contratação modular de produtos, bilhetagem de tokens de IA e conformidade rigorosa com a LGPD.</p>
+        <div class="pcard-footer"><span>CONFORMIDADE</span><strong style="color:var(--gold)">LGPD ART. 18 + RLS POSTGRES</strong></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SEÇÃO 2: ARQUITETURA TRANSVERSAL -->
+<section id="arquitetura">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num">02 — ARQUITETURA TRANSVERSAL & CONTRATOS</span>
+      <h2>Fundamentos Compartilhados da Plataforma</h2>
+      <p>Especificação formal dos contratos que atravessam todos os 11 módulos funcionais.</p>
+    </div>
+    <div class="pgrid">
+      <div class="pcard" onclick="openDocModal('doc03Agt')">
+        <div class="pcard-top"><div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><span class="badge badge-cyan">CONTRATO 01</span></div>
+        <h3>Multi-Tenancy & RLS</h3>
+        <p>Isolamento mandatório de organizationId em todas as queries e tabelas através de PostgreSQL Row-Level Security e middleware de sessão JWT imutável.</p>
+        <div class="pcard-footer"><span>CLIQUE PARA VER ESPECIFICAÇÃO</span><span style="color:var(--cyan)">LER MAIS →</span></div>
+      </div>
+
+      <div class="pcard" onclick="openDocModal('doc03Agt')">
+        <div class="pcard-top"><div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div><span class="badge badge-pink">CONTRATO 02</span></div>
+        <h3>Domain Event Mesh</h3>
+        <p>Barramento unificado de eventos assíncronos com envelopes tipados, chave de idempotência SHA-256 no Redis (48h) e Dead-Letter Queue (DLQ).</p>
+        <div class="pcard-footer"><span>CLIQUE PARA VER ESPECIFICAÇÃO</span><span style="color:var(--pink)">LER MAIS →</span></div>
+      </div>
+
+      <div class="pcard" onclick="openDocModal('doc03Agt')">
+        <div class="pcard-top"><div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><span class="badge badge-gold">CONTRATO 03</span></div>
+        <h3>Enxame de IA & Supervisor</h3>
+        <p>Supervisor Central com despacho semântico para 15 agentes nativos, fila AIPendingAction para ações de alto risco e RAG em pgvector.</p>
+        <div class="pcard-footer"><span>CLIQUE PARA VER ESPECIFICAÇÃO</span><span style="color:var(--gold)">LER MAIS →</span></div>
+      </div>
+
+      <div class="pcard" onclick="openDocModal('doc04Dec')">
+        <div class="pcard-top"><div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><span class="badge badge-iris">CONTRATO 04</span></div>
+        <h3>Privacidade, LGPD & Rastreio</h3>
+        <p>Gestão de bases legais, consentimento imutável append-only, anonimização via blind index e auditoria com correlação de traces ponta a ponta.</p>
+        <div class="pcard-footer"><span>CLIQUE PARA VER ESPECIFICAÇÃO</span><span style="color:var(--iris)">LER MAIS →</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SEÇÃO 3: OS 11 MÓDULOS -->
+<section id="modulos">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num">03 — OS 11 MÓDULOS OFICIAIS</span>
+      <h2>Clique em qualquer módulo para inspecionar os 6 eixos (A a F)</h2>
+      <p>8 Pilares Centrais + 3 Módulos Complementares com arquitetura, regras, IA, APIs e homologação.</p>
+    </div>
+    <div class="pgrid" id="modulesGrid"></div>
+  </div>
+</section>
+
+<!-- SEÇÃO 4: AS 20 JORNADAS -->
+<section id="jornadas">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num">04 — JORNADAS OPERACIONAIS</span>
+      <h2>20 Processos Comerciais Ponta a Ponta</h2>
+      <p>Fluxos mapeados da contratação à execução diária com automações, participação de IA e evidências.</p>
+    </div>
+    <div class="jgrid" id="journeysGrid"></div>
+  </div>
+</section>
+
+<!-- SEÇÃO 5: DEFINIÇÕES COMERCIAIS -->
+<section id="comercial">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num">05 — MODELO COMERCIAL & PLANOS</span>
+      <h2>Empacotamento, Limites e Quotas</h2>
+      <p>Diferenciação explícita entre decisões Aprovadas, Propostas e Pendentes de validação executiva.</p>
+    </div>
+    <div class="pgrid">
+      <div class="pcard">
+        <div class="pcard-top"><span class="badge badge-cyan">PLANO 01</span><strong style="color:var(--cyan)">STARTER</strong></div>
+        <h3>Entrada & Estruturação</h3>
+        <p>Para times enxutos que buscam sair das planilhas e centralizar pipeline com automações essenciais.</p>
+        <ul>
+          <li style="padding:6px 0;border-bottom:1px solid var(--line);font-size:12.5px;">✓ Hub Comercial (Leads, Empresas, Kanban)</li>
+          <li style="padding:6px 0;border-bottom:1px solid var(--line);font-size:12.5px;">✓ Orquestração Básica (Cadências de E-mail)</li>
+          <li style="padding:6px 0;border-bottom:1px solid var(--line);font-size:12.5px;">✓ 500k tokens IA/mês (Copiloto)</li>
+          <li style="padding:6px 0;font-size:12.5px;color:var(--mut);">✗ Sem Inteligência de Mercado / Voice Hub</li>
+        </ul>
+        <div class="pcard-footer"><span>STATUS COMERCIAL</span><span class="badge badge-gold">PROPOSTO</span></div>
+      </div>
+
+      <div class="pcard" style="border-color:var(--cyan);">
+        <div class="pcard-top"><span class="badge badge-pink">PLANO 02 · MAIS POPULAR</span><strong style="color:var(--pink)">GROWTH</strong></div>
+        <h3>Escala & Inteligência</h3>
+        <p>A experiência completa dos 8 pilares centrais para operações que demandam prospecção ativa e forecast.</p>
+        <ul>
+          <li style="padding:6px 0;border-bottom:1px solid var(--line);font-size:12.5px;">✓ Todos os 8 Pilares Centrais (01 a 08)</li>
+          <li style="padding:6px 0;border-bottom:1px solid var(--line);font-size:12.5px;">✓ Dossiê 360° + Voice Hub com Transcrição</li>
+          <li style="padding:6px 0;border-bottom:1px solid var(--line);font-size:12.5px;">✓ 2.500.000 tokens IA/mês + 15 Agentes</li>
+          <li style="padding:6px 0;font-size:12.5px;">✓ Conector Bitrix24 + WhatsApp Chatwoot</li>
+        </ul>
+        <div class="pcard-footer"><span>STATUS COMERCIAL</span><span class="badge badge-green">APROVADO</span></div>
+      </div>
+
+      <div class="pcard">
+        <div class="pcard-top"><span class="badge badge-gold">PLANO 03</span><strong style="color:var(--gold)">ENTERPRISE</strong></div>
+        <h3>Autonomia & Governança</h3>
+        <p>Ecossistema irrestrito incluindo vendas em campo (Mobile), social selling, alçadas e SLAs dedicados.</p>
+        <ul>
+          <li style="padding:6px 0;border-bottom:1px solid var(--line);font-size:12.5px;">✓ Todos os 11 Módulos sem restrições</li>
+          <li style="padding:6px 0;border-bottom:1px solid var(--line);font-size:12.5px;">✓ Mobile Field Sales com gravação offline</li>
+          <li style="padding:6px 0;border-bottom:1px solid var(--line);font-size:12.5px;">✓ Quotas personalizadas de IA e enriquecimento</li>
+          <li style="padding:6px 0;font-size:12.5px;">✓ Gerente de Sucesso Dedicado e SLA 1h</li>
+        </ul>
+        <div class="pcard-footer"><span>STATUS COMERCIAL</span><span class="badge badge-iris">PENDENTE PREÇO</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SEÇÃO 6: MATRIZ DE RASTREABILIDADE -->
+<section id="rastreabilidade">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num">06 — MATRIZ MESTRA DE RASTREABILIDADE RECONCILIADA</span>
+      <h2>Engenharia de Requisitos Ponta a Ponta (33 Requisitos Canônicos)</h2>
+      <p>Conexão estável: Módulo → Funcionalidade → Requisito → Regra → Persona → Dados → Integração → Agente → Jornada → Aceite.</p>
+    </div>
+    
+    <div style="margin-bottom:18px;display:flex;gap:12px;align-items:center;">
+      <input type="text" id="matrixSearch" placeholder="Pesquisar por ID, módulo, requisito ou agente..." 
+             style="background:var(--card);border:1px solid var(--line2);color:var(--txt);padding:10px 16px;border-radius:8px;font-family:var(--body);font-size:13px;width:100%;max-width:400px;" />
+      <span class="badge badge-cyan" id="matrixCount">33 REQUISITOS CANÔNICOS (100% RECONCILIADOS)</span>
+    </div>
+
+    <div class="table-wrap">
+      <table id="matrixTable">
+        <thead>
+          <tr>
+            <th>Módulo</th>
+            <th>ID Requisito</th>
+            <th>Descrição do Requisito</th>
+            <th>Regra de Negócio</th>
+            <th>Persona</th>
+            <th>Entidade</th>
+            <th>Agente IA</th>
+            <th>Jornada</th>
+            <th>Critério Aceite</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="matrixBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- SEÇÃO 7: ANEXOS TÉCNICOS -->
+<section id="anexos">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="sec-num">07 — ANEXOS ESTRUTURADOS & DOCUMENTAÇÃO VIVA</span>
+      <h2>Documentos Oficiais Complementares</h2>
+      <p>Acesse os 7 relatórios técnicos e pareceres que orientam a engenharia de reconstrução.</p>
+    </div>
+    <div class="pgrid">
+      <div class="pcard" onclick="openDocModal('doc01Aud')">
+        <div class="pcard-top"><div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></div><span class="badge badge-iris">ENTREGA 01</span></div>
+        <h3>Relatório de Auditoria</h3>
+        <p>Auditoria independente do Agente 00 com identificação e resolução de todas as inconsistências residuais.</p>
+        <div class="pcard-footer"><span>FORMATO MARKDOWN</span><strong style="color:var(--iris)">VISUALIZAR →</strong></div>
+      </div>
+
+      <div class="pcard" onclick="openDocModal('doc02Mat')">
+        <div class="pcard-top"><div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg></div><span class="badge badge-green">ENTREGA 02</span></div>
+        <h3>Matriz Reconciliada</h3>
+        <p>Caderno completo de amarração dos 33 requisitos, 33 regras e 33 critérios de aceite sem órfãos.</p>
+        <div class="pcard-footer"><span>FORMATO MARKDOWN</span><strong style="color:var(--green)">VISUALIZAR →</strong></div>
+      </div>
+
+      <div class="pcard" onclick="openDocModal('doc03Agt')">
+        <div class="pcard-top"><div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div><span class="badge badge-cyan">ENTREGA 03</span></div>
+        <h3>Inventário de Agentes</h3>
+        <p>Taxonomia de 7 níveis separando agentes de engenharia, agentes comerciais operacionais e avatares de interface.</p>
+        <div class="pcard-footer"><span>FORMATO MARKDOWN</span><strong style="color:var(--cyan)">VISUALIZAR →</strong></div>
+      </div>
+
+      <div class="pcard" onclick="openDocModal('doc04Dec')">
+        <div class="pcard-top"><div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><span class="badge badge-pink">ENTREGA 04</span></div>
+        <h3>Decisões Comerciais</h3>
+        <p>Classificação determinística (Aprovado, Proposto, Pendente e Conflitante) de alçadas, quotas e SLAs.</p>
+        <div class="pcard-footer"><span>FORMATO MARKDOWN</span><strong style="color:var(--pink)">VISUALIZAR →</strong></div>
+      </div>
+
+      <div class="pcard" onclick="openDocModal('doc06Gate')">
+        <div class="pcard-top"><div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><span class="badge badge-gold">ENTREGA 06</span></div>
+        <h3>Parecer do Quality Gate</h3>
+        <p>Homologação independente dos 11 critérios de aceite com veredito oficial APROVADO COM RESSALVAS.</p>
+        <div class="pcard-footer"><span>PARECER OFICIAL</span><strong style="color:var(--gold)">VISUALIZAR →</strong></div>
+      </div>
+
+      <div class="pcard" onclick="openDocModal('doc07Plan')">
+        <div class="pcard-top"><div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><span class="badge badge-cyan">ENTREGA 07</span></div>
+        <h3>Plano Fase 02</h3>
+        <p>Planejamento de engenharia para reconstrução em 6 ondas sequenciais, sem execução de código.</p>
+        <div class="pcard-footer"><span>PLANEJAMENTO</span><strong style="color:var(--cyan)">VISUALIZAR →</strong></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SEÇÃO 8: QUALITY GATE -->
+<section id="gate">
+  <div class="wrap">
+    <div class="gate-box">
+      <div class="gate-header">
+        <div>
+          <span class="badge badge-gold" style="font-size:12px;padding:6px 14px;">QUALITY GATE FASE 01: APROVADO COM RESSALVAS</span>
+          <h2 style="margin-top:12px;">Parecer Conclusivo do Agente 00</h2>
+        </div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--mut);text-align:right;">
+          <div>DATA: 10/11/2026</div>
+          <div>SUPERVISOR: AGENTE 00 (SUPERVISOR GERAL)</div>
+        </div>
+      </div>
+      <p style="font-size:15px;line-height:1.7;color:#D1D5DB;margin-bottom:20px;">
+        A <strong>Fase 01</strong> foi submetida à auditoria independente do Agente 00. 
+        Todos os 33 requisitos, 33 regras de negócio e 33 critérios de aceite foram integralmente reconciliados na matriz (zero critérios órfãos). 
+        As alçadas de desconto foram padronizadas na escala 10%/20%/Diretoria como default seguro B2B parametrizável. 
+        As únicas ressalvas referem-se à definição executiva final da tabela de preços e SLAs contratuais, devidamente desacopladas do código. 
+        O Documento Mestre está formalmente <strong>APROVADO COM RESSALVAS</strong> e pronto para orientar a Fase 02.
+      </p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <span class="badge badge-cyan">11 Módulos: 100% Especificados</span>
+        <span class="badge badge-pink">20 Jornadas: 100% Mapeadas</span>
+        <span class="badge badge-gold">15 Agentes Nativos Reconciliados</span>
+        <span class="badge badge-green">Matriz Reconciliada: 33 de 33 (100%)</span>
+        <span class="badge badge-iris">Decisões Pendentes Formalizadas</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div style="display:flex;justify-content:center;margin-bottom:20px;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="44" height="44"
+     role="img" aria-label="Birth Hub 360">
+  <title>Birth Hub 360 — símbolo</title>
+  <defs>
+    <linearGradient id="bh-o0" gradientUnits="userSpaceOnUse" x1="127.14" y1="46.00" x2="199.44" y2="87.75"><stop offset="0" stop-color="#00D4FF"/><stop offset="1" stop-color="#FF2D9B"/></linearGradient>
+    <linearGradient id="bh-o1" gradientUnits="userSpaceOnUse" x1="198.58" y1="86.26" x2="198.58" y2="169.74"><stop offset="0" stop-color="#FF2D9B"/><stop offset="1" stop-color="#FFC107"/></linearGradient>
+    <linearGradient id="bh-o2" gradientUnits="userSpaceOnUse" x1="199.44" y1="168.25" x2="127.14" y2="210.00"><stop offset="0" stop-color="#FFC107"/><stop offset="1" stop-color="#00D4FF"/></linearGradient>
+    <linearGradient id="bh-o3" gradientUnits="userSpaceOnUse" x1="128.86" y1="210.00" x2="56.56" y2="168.25"><stop offset="0" stop-color="#00D4FF"/><stop offset="1" stop-color="#3B82F6"/></linearGradient>
+    <linearGradient id="bh-o4" gradientUnits="userSpaceOnUse" x1="57.42" y1="169.74" x2="57.42" y2="86.26"><stop offset="0" stop-color="#3B82F6"/><stop offset="1" stop-color="#8B7DFF"/></linearGradient>
+    <linearGradient id="bh-o5" gradientUnits="userSpaceOnUse" x1="56.56" y1="87.75" x2="128.86" y2="46.00"><stop offset="0" stop-color="#8B7DFF"/><stop offset="1" stop-color="#00D4FF"/></linearGradient>
+    <linearGradient id="bh-bar" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#00D4FF"/><stop offset="0.45" stop-color="#FF2D9B" stop-opacity="0.25"/><stop offset="0.55" stop-color="#FFC107" stop-opacity="0.25"/><stop offset="1" stop-color="#FFC107"/></linearGradient>
+    <radialGradient id="bh-sheen" cx="0.3" cy="0.25" r="0.55"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.34"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient>
+    <linearGradient id="bh-core-shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000000" stop-opacity="0.55"/><stop offset="0.42" stop-color="#000000" stop-opacity="0"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0.06"/></linearGradient>
+  </defs>
+  <g id="bh-emblem">
+    <circle cx="128.0" cy="128.0" r="118.12" fill="none" stroke="#FFC107" stroke-width="11.77"
+            opacity="0.6" stroke-dasharray="1.44 10.93"/>
+    <g fill="none" stroke-width="16.0">
+      <path stroke="url(#bh-o0)" d="M127.14 46.00 A82.0 82.0 0 0 1 199.44 87.75"/>
+      <path stroke="url(#bh-o1)" d="M198.58 86.26 A82.0 82.0 0 0 1 198.58 169.74"/>
+      <path stroke="url(#bh-o2)" d="M199.44 168.25 A82.0 82.0 0 0 1 127.14 210.00"/>
+      <path stroke="url(#bh-o3)" d="M128.86 210.00 A82.0 82.0 0 0 1 56.56 168.25"/>
+      <path stroke="url(#bh-o4)" d="M57.42 169.74 A82.0 82.0 0 0 1 57.42 86.26"/>
+      <path stroke="url(#bh-o5)" d="M56.56 87.75 A82.0 82.0 0 0 1 128.86 46.00"/>
+    </g>
+    <circle cx="128.0" cy="128.0" r="90" fill="url(#bh-sheen)"/>
+    <circle cx="128.0" cy="128.0" r="74.0" fill="#0D0D0D"/>
+    <circle cx="128.0" cy="128.0" r="74.0" fill="url(#bh-core-shade)"/>
+    <circle cx="128.0" cy="128.0" r="61.5" fill="none" stroke="#FFC107" stroke-width="5.0"/>
+    <rect x="64.0" y="126.5" width="128.0" height="3.0" fill="url(#bh-bar)"/>
+    <path fill="#F8F9FF" transform="matrix(0.0740 0 0 -0.0740 104.45 154.20)" d="M450.4 707Q574.2 707 627.9 670.8Q681.6 634.6 681.6 573.4Q681.6 520.8 646.8 476.7Q612 432.6 547 404.5Q482 376.4 391 370.8Q511 369.4 573.8 326.1Q636.6 282.8 636.6 218.2Q636.6 165.8 612.2 125.1Q587.8 84.4 543.2 56.4Q498.6 28.4 436 14.2Q373.4 0 297 0Q267.8 0 227.6 1.5Q187.4 3 121 3Q94.8 3 63.8 2.5Q32.8 2 3.7 1.5Q-25.4 1 -45 0L-41 20Q-7 22 12 28Q31 34 42 52Q53 70 62 106L194 602Q201.8 632.8 202.4 651.3Q203 669.8 188.5 678.5Q174 687.2 135 688L140 708Q159.6 707 188.2 706.5Q216.8 706 247.7 705.5Q278.6 705 303 705Q353.2 705 385.7 706Q418.2 707 450.4 707ZM266 359 270 376H339.2Q393.8 376 430.6 407.9Q467.4 439.8 486.2 490.8Q505 541.8 505 596.8Q505 636.6 491.5 662.3Q478 688 438.6 688Q413 688 401 674.1Q389 660.2 378 617L243 106Q238.2 86.4 235.7 67.1Q233.2 47.8 242.2 35.4Q251.2 23 278.8 23Q331.6 23 368.9 53.4Q406.2 83.8 426.6 132.9Q447 182 447 237.2Q447 270.4 437.2 297.9Q427.4 325.4 404.3 342.2Q381.2 359 341.6 359Z"/>
+  </g>
+</svg>
+
+    </div>
+    <p><strong>Birth Hub 360° — Sistema Operacional de Revenue Intelligence</strong></p>
+    <p style="color:var(--mut2);margin-top:6px;">Documento Mestre Oficial V4 Consolidado & Homologado · Uso Confidencial Corporativo</p>
+    <p style="margin-top:18px;font-family:var(--mono);font-size:11px;color:var(--cyan)">Versão 4.0 Oficial Consolidada · Novembro 2026 · Documento Mestre de Engenharia</p>
+  </div>
+</footer>
+
+<!-- MODAL PRINCIPAL DE MÓDULOS -->
+<div class="modal-bg" id="modalBg" onclick="closeModal()"></div>
+<div class="modal-wrap" id="modalWrap" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-card" id="modalCard">
+    <div class="modal-hero">
+      <button class="modal-close" onclick="closeModal()" aria-label="Fechar modal">×</button>
+      <div id="modalTag" class="badge badge-cyan" style="margin-bottom:10px;"></div>
+      <h2 id="modalTitle" style="font-size:clamp(24px,3.2vw,34px);"></h2>
+      <p id="modalDesc" style="color:var(--mut);font-size:14px;margin-top:8px;max-width:850px;"></p>
+    </div>
+    
+    <div class="modal-tabs">
+      <button class="modal-tab-btn active" onclick="switchTab(0)">A. Identidade Funcional</button>
+      <button class="modal-tab-btn" onclick="switchTab(1)">B. Arquitetura Funcional</button>
+      <button class="modal-tab-btn" onclick="switchTab(2)">C. Operação & Fluxos</button>
+      <button class="modal-tab-btn" onclick="switchTab(3)">D. Inteligência Artificial</button>
+      <button class="modal-tab-btn" onclick="switchTab(4)">E. Requisitos Técnicos</button>
+      <button class="modal-tab-btn" onclick="switchTab(5)">F. Homologação & Aceite</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="tab-pane active" id="tab0"></div>
+      <div class="tab-pane" id="tab1"></div>
+      <div class="tab-pane" id="tab2"></div>
+      <div class="tab-pane" id="tab3"></div>
+      <div class="tab-pane" id="tab4"></div>
+      <div class="tab-pane" id="tab5"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE VISUALIZAÇÃO DE DOCUMENTOS AUXILIARES -->
+<div class="modal-bg" id="docModalBg" onclick="closeDocModal()"></div>
+<div class="modal-wrap" id="docModalWrap" role="dialog" aria-modal="true">
+  <div class="modal-card" style="max-width:960px;">
+    <div class="modal-hero">
+      <button class="modal-close" onclick="closeDocModal()">×</button>
+      <span class="badge badge-gold" id="docModalBadge">ANEXO TÉCNICO OFICIAL</span>
+      <h2 id="docModalTitle" style="margin-top:10px;"></h2>
+    </div>
+    <div class="modal-body" style="background:#0D0D14;">
+      <pre id="docModalContent" style="white-space:pre-wrap;font-family:var(--mono);font-size:12.5px;line-height:1.6;color:#D8DEE9;max-height:60vh;overflow-y:auto;padding:16px;background:rgba(0,0,0,0.4);border-radius:8px;"></pre>
+    </div>
+  </div>
+</div>
+
+<script>
+// DADOS OFICIAIS DOS 11 MÓDULOS (6 EIXOS A-F)
+const MODULES_DATA = [
+  {
+    id: "MOD-01",
+    num: "01",
+    title: "Hub Comercial",
+    avatar: "Orbit",
+    category: "PILAR 01 · CORE REVENUE",
+    color: "#FFC107",
+    desc: "O núcleo operacional transacional do Birthub 360°: pipeline kanban interativo, gestão unificada de negócios, propostas comerciais com alçada de descontos (Closer até 10%, Gestor até 20%, Diretoria > 20%) e ficha 360° de contas e decisores.",
+    routes: ["/app/crm", "/app/crm360", "/app/propostas", "/app/companies", "/app/contacts", "/app/activities", "/app/workspace"],
+    personas: ["SDR", "BDR", "Closer", "Gestor Comercial", "CS", "RevOps"],
+    eixoA: {
+      proposta: "Servir como repositório central de verdade transacional onde todo o ciclo de vendas é executado sem atrito ou duplicação.",
+      problemas: "Planilhas dispersas, histórico fragmentado de contatos, perda de propostas e falta de rastreio de margem de desconto.",
+      publico: "Vendedores, Closers, Gestores e Liderança Comercial.",
+      indicadores: "Deal Velocity (tempo médio de ciclo), Taxa de conversão por estágio e CRM Health Score (> 90%)."
+    },
+    eixoB: {
+      funcionalidades: [
+        { nome: "Pipeline Kanban Interativo", desc: "Arrastar-e-soltar acessível via @dnd-kit com recálculo instantâneo de valor total e ponderado por estágio." },
+        { nome: "Ficha Cadastral 360°", desc: "Linha do tempo unificada com interações de WhatsApp, ligações, e-mails, notas e anexos verificados." },
+        { nome: "Gerador & Gestor de Propostas", desc: "Criação de propostas em múltiplos templates, cálculo de impostos e controle de descontos escalonado por alçada." },
+        { nome: "Mesa de Atividades & Calendário", desc: "Agendamento integrado ao Google Calendar e tarefas sugeridas por agentes de IA." }
+      ],
+      componentes: ["CrmBoard.tsx", "CrmOverview.tsx", "LeadCard.tsx", "PropostasList.tsx", "PropostaFormModal.tsx", "CompanyTimeline.tsx"],
+      estados: "Loading pulsante neon, Empty com avatar do Orbit, Error com retry automático e Stale com sincronização em background."
+    },
+    eixoC: {
+      jornada: "Lead qualificado criado → Empresa associada → Reunião agendada → Proposta gerada → Movimentação no Kanban → Fechamento Ganho.",
+      regras: "Proibido mover para 'Negociação' sem data estimada de fechamento; descontos > 10% exigem Gestor, > 20% exigem Diretoria.",
+      eventos: ["crm.deal.created", "crm.deal.stage_changed", "crm.deal.won", "crm.deal.lost", "crm.proposal.issued"]
+    },
+    eixoD: {
+      agentes: ["Orbit (Avatar UI)", "closer-sales", "crm.agent", "promise-guardian"],
+      capacidades: "Extração de próximos passos de notas de reuniões e cálculo de probabilidade com base no histórico da conta.",
+      limites: "Agentes sugerem tarefas e preenchem rascunhos; NUNCA marcam deal como Ganho ou concedem descontos sem clique humano."
+    },
+    eixoE: {
+      entidades: ["Lead", "Company", "Contact", "Deal", "Pipeline", "Stage", "Proposal", "Activity"],
+      apis: ["GET /api/leads", "POST /api/leads", "PATCH /api/leads/:id/stage", "POST /api/proposals"],
+      seguranca: "Isolamento estrito por organizationId em nível de RLS no PostgreSQL e tokens JWT RS256."
+    },
+    eixoF: {
+      aceite: [
+        "AC-HUB-001: Mover deal entre colunas deve persistir no banco e disparar crm.deal.stage_changed em < 250ms.",
+        "AC-HUB-002: Desconto superior a 10% deve bloquear envio autônomo da proposta e marcar status PENDING_APPROVAL.",
+        "AC-HUB-003: Bloquear criação de lead sem organizationId ou sem contato primário válido."
+      ]
+    }
+  },
+  {
+    id: "MOD-02",
+    num: "02",
+    title: "Inteligência de Mercado",
+    avatar: "Nexus",
+    category: "PILAR 02 · MARKET DISCOVERY",
+    color: "#00D4FF",
+    desc: "Motor de descoberta ativa e enriquecimento multi-fonte de contas: consulta Receita Federal (CNPJ), Apollo.io, Hunter.io, Google Places, LinkedIn e notícias para montar Dossiê 360° em 10 seções.",
+    routes: ["/app/prospect", "/app/prospect/inteligente", "/app/market-intelligence", "/app/market-intelligence/hub", "/app/market-intelligence/accounts/:id", "/app/market-intelligence/deck"],
+    personas: ["BDR", "SDR", "Analista de Mercado", "RevOps", "Gestor Comercial"],
+    eixoA: {
+      proposta: "Descobrir empresas com real fit ao ICP e decisores validados antes de qualquer esforço de outbound.",
+      problemas: "Prospecção às cegas, perda de tempo com CNPJ desatualizado, e-mails inválidos com alto bounce.",
+      publico: "Equipes de pré-vendas (BDRs e SDRs) e inteligência comercial.",
+      indicadores: "Taxa de bounce de e-mail < 4%, volume de contas enriquecidas por mês e índice médio de Fit ICP (> 80/100)."
+    },
+    eixoB: {
+      funcionalidades: [
+        { nome: "ProspectingHub Multi-Fonte", desc: "Barramento que integra 7 fontes autoritativas com deduplicação automática." },
+        { nome: "Dossiê Executivo em 10 Seções", desc: "Compilação de dados societários, faturamento estimado, tecnologias e riscos." },
+        { nome: "Gerador de Deck de Aprovação", desc: "Apresentação visual para avaliação da conta antes do início do contato." },
+        { nome: "Scoring de Fit ICP Automático", desc: "Algoritmo comparativo contra o perfil ideal de cliente do tenant." }
+      ],
+      componentes: ["ProspectingHub.tsx", "MarketIntelligenceHub.tsx", "AccountDossierView.tsx", "CnpjTurboSearch.tsx"],
+      estados: "Radar escaneando provedores, Lista vazia aguardando filtros, Stale indicando cache com mais de 30 dias."
+    },
+    eixoC: {
+      jornada: "Inserção de CNPJ/Domínio → Consulta em cascata → Deduplicação → Cálculo de ICP Fit → Dossiê 360° → Exportação para CRM.",
+      regras: "Consulta consome créditos do plano; e-mails de pessoas não-decisórias são descartados conforme LGPD.",
+      eventos: ["market.account.discovered", "market.account.enriched", "market.icp.scored"]
+    },
+    eixoD: {
+      agentes: ["Nexus (Avatar UI)", "account-detective", "ldr-intelligence", "bdr-outbound"],
+      capacidades: "Análise semântica de notícias recentes para flagrar 'sinais de compra' e mapeamento de comitê de decisão.",
+      limites: "Enriquecimento é 100% autônomo dentro da cota; exportação em massa para campanhas ativas exige clique humano."
+    },
+    eixoE: {
+      entidades: ["ProspectAccount", "CompanyEnrichment", "DecisionMaker", "IcpProfile", "EnrichmentLog"],
+      apis: ["POST /api/prospect/enrich", "GET /api/market-intelligence/accounts/:id", "POST /api/prospect/deck/generate"],
+      seguranca: "Tratamento de dados pessoais restrito a dados públicos corporativos B2B sob base legal de Legítimo Interesse."
+    },
+    eixoF: {
+      aceite: [
+        "AC-MKT-001: Consulta de CNPJ deve retornar dados societários completos em menos de 2s via cache.",
+        "AC-MKT-002: Provedores instáveis devem sofrer fallback automático com marcação de badge FONTE_PARCIAL.",
+        "AC-MKT-003: O consumo de créditos deve ser debitado no ledger antes da chamada externa ao provedor."
+      ]
+    }
+  },
+  {
+    id: "MOD-03",
+    num: "03",
+    title: "Orquestração de Vendas",
+    avatar: "Aria",
+    category: "PILAR 03 · SALES CADENCE",
+    color: "#10B981",
+    desc: "Motor disciplinado de cadências multicanais (E-mail, WhatsApp, Voz, Tarefas), Plano Diário priorizado, Mesa de Tratamento para triagem rápida de inbound e simulador de Roleplay com IA.",
+    routes: ["/app/cadence", "/app/daily-plan", "/app/mesa-tratamento", "/app/playbooks", "/app/jornadas", "/app/roleplay", "/app/objections_matrix"],
+    personas: ["SDR", "BDR", "Closer", "Treinador de Vendas", "Gestor Comercial"],
+    eixoA: {
+      proposta: "Garantir a execução impecável do playbook de vendas no dia a dia sem esquecimento de follow-ups.",
+      problemas: "Leads frios por demora de resposta, cadências engessadas, falta de preparo para contorno de objeções.",
+      publico: "SDRs, BDRs, Closers e instrutores de vendas.",
+      indicadores: "Taxa de conversão de cadência para reunião (> 18%), tempo de primeira resposta (< 5min) e nota de Roleplay (> 85)."
+    },
+    eixoB: {
+      funcionalidades: [
+        { nome: "CadenceHub Multicanal", desc: "Sequências automatizadas com auto-stop ao receber resposta do lead." },
+        { nome: "Mesa de Tratamento (Triagem)", desc: "Fila de resposta rápida para leads de alto sinal com sugestão de abordagem IA." },
+        { nome: "Plano Diário Priorizado", desc: "Lista de tarefas organizada por valor potencial e urgência de contato." },
+        { nome: "Sales Academy & Roleplay IA", desc: "Simulador de negociação onde a IA faz o papel de comprador difícil com avaliação de rubric." }
+      ],
+      componentes: ["CadenceHub.tsx", "DailyPlanView.tsx", "MesaTratamento.tsx", "RoleplaySimulator.tsx"],
+      estados: "Executando passo, Aguardando intervalo de cadência, Pausado por resposta (Auto-Stop), Finalizado."
+    },
+    eixoC: {
+      jornada: "Lead inscrito em cadência → Passo 1 disparado → Lead responde → Motor pausa cadência instantaneamente → Alerta na Mesa de Tratamento.",
+      regras: "Disparos somente em dias úteis das 08h às 19h no fuso do lead; respeito imediato a opt-out com supressão de número e e-mail.",
+      eventos: ["cadence.step.executed", "cadence.lead.replied", "cadence.opt_out.received", "roleplay.session.completed"]
+    },
+    eixoD: {
+      agentes: ["Aria (Avatar UI)", "sdr-qualification", "bdr-outbound", "learning.agent"],
+      capacidades: "Personalização contextual de e-mails de cadência e avaliação de dicção, empatia e contorno de objeções no Roleplay.",
+      limites: "Disparos automáticos só ocorrem em cadências marcadas explicitamente como autônomas."
+    },
+    eixoE: {
+      entidades: ["Cadence", "CadenceStep", "CadenceEnrollment", "DailyTask", "Playbook", "RoleplaySession"],
+      apis: ["POST /api/cadences/:id/enroll", "POST /api/cadences/steps/:id/execute", "POST /api/roleplay/start"],
+      seguranca: "Garantia de cancelamento imediato de filas em caso de revogação de consentimento ou opt-out."
+    },
+    eixoF: {
+      aceite: [
+        "AC-ORQ-001: Ao detectar resposta do lead, a cadência deve ser pausada em menos de 1 segundo.",
+        "AC-ORQ-002: O Plano Diário deve impedir execuções automáticas fora do horário comercial permitido.",
+        "AC-ORQ-003: O simulador de Roleplay deve entregar o scorecard avaliado em até 5 segundos após a chamada."
+      ]
+    }
+  },
+  {
+    id: "MOD-04",
+    num: "04",
+    title: "Performance Comercial",
+    avatar: "Vanguard",
+    category: "PILAR 04 · EXECUTIVE ANALYTICS",
+    color: "#FF2D9B",
+    desc: "A central de inteligência analítica e situacional da liderança: 17 relatórios executivos em tempo real, motor de autópsia profunda de vitórias e derrotas (Win/Loss Deep Autopsy) e War Room.",
+    routes: ["/app/analytics", "/app/dashboard", "/app/reports", "/app/winloss", "/app/gamification", "/app/war-room", "/app/commercial_intelligence"],
+    personas: ["Diretor / Founder", "CFO", "Gestor Comercial", "RevOps", "Analista de BI"],
+    eixoA: {
+      proposta: "Transformar dados brutos do funil em clareza estratégica e decisões embasadas em fatos incontestáveis.",
+      problemas: "Decisões no escuro, reuniões de diretoria baseadas em palpites, desconhecimento das reais razões de perda para concorrentes.",
+      publico: "C-Level, Diretores Comerciais, Gerentes e RevOps.",
+      indicadores: "Win Rate contra concorrentes diretos, tempo médio de permanência por estágio e produtividade por vendedor."
+    },
+    eixoB: {
+      funcionalidades: [
+        { nome: "17 Relatórios Executivos", desc: "Catálogo completo: aging, alerts, bitrixSyncHealth, bottleneck, attribution, forecastAccuracy, sellerBenchmark, etc." },
+        { nome: "Win/Loss Deep Autopsy", desc: "Agrupamento semântico e estatístico das causas de perda e vitória por segmento de mercado." },
+        { nome: "War Room Situacional", desc: "Painel executivo com telemetria ao vivo via Server-Sent Events (SSE)." },
+        { nome: "Ranking & Coaching Gamificado", desc: "Acompanhamento transparente de metas com benchmarks construtivos." }
+      ],
+      componentes: ["AnalyticsHub.tsx", "ExecutiveOverviewView.tsx", "WinLossAutopsyModal.tsx", "WarRoomDashboard.tsx"],
+      estados: "Live atualizado via SSE, Loading, Empty para novo período, Date-Range filtrado."
+    },
+    eixoC: {
+      jornada: "Seleção de período → Renderização dos 17 relatórios → Detecção de anomalia no Bottleneck Report → Sessão no War Room.",
+      regras: "Obrigatório informar motivo padronizado ao encerrar negócio como Perdido para alimentar a autópsia.",
+      eventos: ["analytics.report.generated", "winloss.autopsy.completed", "warroom.alert.triggered"]
+    },
+    eixoD: {
+      agentes: ["Vanguard (Avatar UI)", "manager-commercial", "executive-director", "devils-advocate"],
+      capacidades: "Geração de sínteses executivas em linguagem natural explicando o motivo de variações de indicadores.",
+      limites: "Agentes geram diagnósticos e alertas; alterações de metas ou comissões exigem assinatura do Administrador."
+    },
+    eixoE: {
+      entidades: ["DealHistory", "LossRecord", "WinLossAutopsy", "SellerMetricSnapshot", "ExecutiveKpiSnapshot"],
+      apis: ["GET /api/reports/commercial-intelligence/:reportType", "GET /api/analytics/overview", "POST /api/winloss/autopsy"],
+      seguranca: "Dados agregados com mascaramento de PII e isolamento estrito de organizationId."
+    },
+    eixoF: {
+      aceite: [
+        "AC-PERF-001: Todos os 17 relatórios devem responder em menos de 800ms para períodos de até 12 meses.",
+        "AC-PERF-002: O cálculo do Win/Loss Deep Autopsy deve correlacionar perdas com concorrentes sem incongruência estatística.",
+        "AC-PERF-003: O painel de War Room deve refletir novos negócios fechados sem necessidade de recarregar a tela."
+      ]
+    }
+  },
+  {
+    id: "MOD-05",
+    num: "05",
+    title: "Previsibilidade Comercial",
+    avatar: "Oracle",
+    category: "PILAR 05 · REVENUE FORECAST",
+    color: "#A855F7",
+    desc: "Engenharia preditiva de ponta a ponta: forecast calibrado continuamente contra o realizado (MAPE < 8%), pipeline ponderado por Health Score, detecção de riscos em deals e simulador What-If de contratações.",
+    routes: ["/app/forecast", "/app/metas", "/app/pipeline_ponderado", "/app/commercial_intelligence"],
+    personas: ["Diretor / Founder", "CFO", "Gestor Comercial", "RevOps"],
+    eixoA: {
+      proposta: "Entregar previsão de receita científica, confiável e auditável para sustentar o planejamento financeiro da empresa.",
+      problemas: "Surpresas no fim do mês com metas não batidas, pipeline inflado por negócios zumbis, falta de critério para contratações.",
+      publico: "C-Level, Diretores Comerciais e Planejamento Financeiro.",
+      indicadores: "Acurácia do Forecast (MAPE < 8%), Target Coverage Ratio (> 3.2x) e Health Score médio do pipeline."
+    },
+    eixoB: {
+      funcionalidades: [
+        { nome: "Motor de Forecast Calibrado (Oracle)", desc: "Classificação científica em Commit, Best Case, Pipeline e Omit com calibração contínua." },
+        { nome: "Pipeline Ponderado por Health Score", desc: "Cálculo do valor real esperado baseado em interações e sinais de engajamento do cliente." },
+        { nome: "Detecção de Risco por Deal", desc: "Alertas automáticos para negócios com datas de fechamento postergadas ou sem contato há 15 dias." },
+        { nome: "Simulador de Capacidade (What-If & Hiring)", desc: "Modelagem do impacto financeiro de contratação e tempo de ramp-up de novos vendedores." }
+      ],
+      componentes: ["PredictiveForecastView.tsx", "PipelinePonderadoTable.tsx", "DealRiskBadge.tsx", "HiringSimulatorCard.tsx"],
+      estados: "Calibrado com MAPE baixo, Em Ajuste, Alerta de Risco Alto, Simulação Ativa."
+    },
+    eixoC: {
+      jornada: "Fechamento semanal → Job semanal de snapshot → Recálculo de desvio de meta → Disparo de alertas de cobertura → Revisão executiva.",
+      regras: "Negócios sem reunião ou interação nos últimos 21 dias são excluídos automaticamente da categoria Commit.",
+      eventos: ["forecast.calculated", "forecast.risk_alert.fired", "forecast.rebalance.requested"]
+    },
+    eixoD: {
+      agentes: ["Oracle (Avatar UI)", "forecast.agent", "revenue-intelligence", "devils-advocate"],
+      capacidades: "Atuação como 'Advogado do Diabo' para questionar negócios frágeis e auditar a probabilidade real de fechamento.",
+      limites: "Agentes rebaixam ratings preditivos; redistribuições de carteira exigem aprovação do Gestor Comercial."
+    },
+    eixoE: {
+      entidades: ["ForecastSnapshot", "Goal", "DealRiskScore", "RebalanceApproval", "HiringScenario"],
+      apis: ["GET /api/forecast/predictive", "POST /api/forecast/simulate-what-if", "POST /api/forecast/rebalance/approve"],
+      seguranca: "Preservação de snapshots semanais imutáveis para comprovação histórica de acurácia perante auditoria."
+    },
+    eixoF: {
+      aceite: [
+        "AC-PREV-001: O modelo deve calcular o erro histórico MAPE comparando previsões semanais anteriores com o realizado real.",
+        "AC-PREV-002: Deals estagnados por mais de 21 dias devem ter seu Health Score depreciado para abaixo de 35.",
+        "AC-PREV-003: O simulador What-If deve respeitar o tempo médio real de ramp-up de novos vendedores configurado."
+      ]
+    }
+  },
+  {
+    id: "MOD-06",
+    num: "06",
+    title: "Inteligência Artificial",
+    avatar: "Core",
+    category: "PILAR 06 · AI ECOSYSTEM",
+    color: "#6366F1",
+    desc: "O maior módulo da plataforma: orquestração do enxame de 15 agentes nativos operacionais sob o Supervisor Central, base de conhecimento corporativa (RAG em pgvector), copiloto contextual com voz e fila de aprovação humana.",
+    routes: ["/app/intelligence", "/app/intelligence/elite-agent", "/app/copiloto_ia", "/app/pending-actions", "/app/knowledge", "/app/signals-risks", "/api/role-supervisor", "/api/agent-bus"],
+    personas: ["SDR", "Closer", "BDR", "Gestor Comercial", "Diretor / Founder", "Toda a Equipe"],
+    eixoA: {
+      proposta: "Potencializar a capacidade executiva da equipe com agentes especializados e governados sob supervisão humana contínua.",
+      problemas: "IAs sem contexto de negócio que alucinam, falta de governança para ações autônomas, ferramentas isoladas do pipeline.",
+      publico: "Todos os colaboradores comerciais da organização.",
+      indicadores: "Taxa de aceitação de sugestões de IA (> 75%), latência média do Copiloto (< 1.8s) e custo de tokens por negócio."
+    },
+    eixoB: {
+      funcionalidades: [
+        { nome: "Enxame de 15 Agentes Nativos", desc: "Especialistas: LDR, BDR, SDR, Closer, Coordinator, Manager, Director, Billing, Churn, Contract, Bitrix Guardian, Revenue Intel, Detective, Promise Guardian, Devil's Advocate." },
+        { nome: "Supervisor Central (Role Supervisor)", desc: "Ponto único de coordenação e delegação de tarefas complexas via barramento AgentBus." },
+        { nome: "Fila de Aprovação (Human-in-the-Loop)", desc: "Painel de decisão onde ações externas de risco HIGH são retidas para validação humana." },
+        { nome: "Base de Conhecimento RAG (pgvector)", desc: "Indexação semântica de playbooks, PDFs e propostas em vetores densos de 1536 dimensões." }
+      ],
+      componentes: ["IntelligenceHub.tsx", "CopilotoModal.tsx", "PendingActionsQueue.tsx", "KnowledgeBaseManager.tsx"],
+      estados: "Aguardando comando, Executando DAG de agentes, Pendente de Aprovação Humana, Concluído."
+    },
+    eixoC: {
+      jornada: "Gatilho de negócio detectado → Agente monta ação → Se risco HIGH: retém em AIPendingAction → Usuário aprova na UI → Execução técnica.",
+      regras: "Nenhum e-mail ou mensagem para prospect é disparado sem consentimento humano prévio quando em modo semi-autônomo.",
+      eventos: ["agent.action.proposed", "agent.action.approved", "agent.action.executed", "agent.action.rejected"]
+    },
+    eixoD: {
+      agentes: ["Core (Avatar UI)", "Enxame Completo dos 15 Agentes Nativos", "379 Especialistas do Catálogo"],
+      capacidades: "RAG ancorado na verdade factual corporativa, detecção de quebra de promessas e elaboração tática de vendas.",
+      limites: "Proibição estrita de invenção de dados; resposta padrão 'DADO_NAO_DISPONIVEL' quando a informação não constar na base."
+    },
+    eixoE: {
+      entidades: ["CommercialAgent", "AgentExecutionLog", "AIPendingAction", "KnowledgeDocument", "KnowledgeChunk"],
+      apis: ["POST /api/role-supervisor/dispatch", "GET /api/pending-actions", "POST /api/pending-actions/:id/approve", "POST /api/knowledge/upload"],
+      seguranca: "Isolamento total de embeddings vetoriais por organizationId impedindo contaminação de contexto entre empresas."
+    },
+    eixoF: {
+      aceite: [
+        "AC-IA-001: Ações com nível de risco HIGH devem ser bloqueadas na tabela AIPendingAction até o clique de aprovação do usuário.",
+        "AC-IA-002: Respostas do Copiloto via RAG devem citar explicitamente os trechos de documentos da base corporativa utilizados.",
+        "AC-IA-003: O consumo de tokens deve ser controlado por tenant, cortando requisições ao esgotar o pacote contratado."
+      ]
+    }
+  },
+  {
+    id: "MOD-07",
+    num: "07",
+    title: "Automação & Conectividade",
+    avatar: "Spark",
+    category: "PILAR 07 · WORKFLOW ENGINE",
+    color: "#14B8A6",
+    desc: "Motor de regras orientadas a eventos (Event-Driven) com modo de simulação Dry-Run, versionamento, idempotência e malha de 9 conectores comerciais — com destaque para o conector profundo e resiliente do Bitrix24.",
+    routes: ["/app/automations", "/app/integrations", "/app/bitrix", "/api/whatsapp", "/api/integrations/slack", "/api/integrations/stripe", "/api/integrations/3cx", "/api/integrations/external-crm"],
+    personas: ["RevOps / Operações", "Gestor Comercial", "Diretor / Founder", "TI / Integrações"],
+    eixoA: {
+      proposta: "Conectar o ecossistema comercial ao restante da empresa com automações confiáveis, sem falhas silenciosas ou duplicações.",
+      problemas: "Sincronizações falhas entre CRM e Bitrix24, disparos em duplicidade por falta de idempotência, automações quebradas sem aviso.",
+      publico: "Equipes de operações de receita (RevOps), TI e administradores.",
+      indicadores: "Taxa de sucesso de webhooks (> 99.8%), latência de sincronização Bitrix (< 3s) e zero duplicações no Redis."
+    },
+    eixoB: {
+      funcionalidades: [
+        { nome: "Motor de Regras Visuais", desc: "Gatilho → Condições → Ações com operadores lógicos, delays agendados e ramificações." },
+        { nome: "Modo Simulação Dry-Run", desc: "Capacidade de testar regras contra a base real de 30 dias sem persistir alterações em banco." },
+        { nome: "Conector Bitrix24 Profundo", desc: "Sincronização bidirecional de entidades e campos UF_CRM_* com leaky bucket (2 req/s)." },
+        { nome: "Smart Lead Router", desc: "Distribuição inteligente de oportunidades por carga de trabalho, fuso e disponibilidade." }
+      ],
+      componentes: ["AutomationWorkflowBuilder.tsx", "IntegrationHubView.tsx", "BitrixSyncDashboard.tsx", "DryRunResultModal.tsx"],
+      estados: "Ativo, Pausado, Modo Teste/Dry-Run, Fila de Erro Temporário (DLQ com retry)."
+    },
+    eixoC: {
+      jornada: "Webhook recebido → Geração de hash SHA-256 → Verificação de idempotência no Redis → Fila BullMQ → Execução transacional.",
+      regras: "Nenhuma regra pode disparar duas vezes para o mesmo evento de negócio; respeitar rate limit do Bitrix24 de 2 req/s.",
+      eventos: ["automation.rule.triggered", "integration.webhook.received", "integration.bitrix.sync_completed"]
+    },
+    eixoD: {
+      agentes: ["Spark (Avatar UI)", "bitrix-guardian"],
+      capacidades: "bitrix-guardian detecta drifts de schema entre Bitrix24 e Birthub 360° antes que gerem falhas de importação.",
+      limites: "Automações executam regras pré-aprovadas; regras novas só entram em produção após validação em Dry-Run."
+    },
+    eixoE: {
+      entidades: ["AutomationRule", "AutomationExecutionLog", "WebhookSubscription", "IntegrationCredential", "DeadLetterQueueItem"],
+      apis: ["GET /api/automations", "POST /api/automations/test-dry-run", "POST /api/integrations/bitrix/sync-now"],
+      seguranca: "Armazenamento de chaves e webhooks de integração criptografados com AES-256-GCM."
+    },
+    eixoF: {
+      aceite: [
+        "AC-AUT-001: Webhooks reenviados com a mesma chave de evento devem responder HTTP 200 sem duplicar a ação em banco.",
+        "AC-AUT-002: O conector Bitrix24 deve aplicar fila token bucket impedindo estouro de 2 req/s perante a API do parceiro.",
+        "AC-AUT-003: O teste Dry-Run deve relatar o total exato de registros afetados sem modificar o banco de dados de produção."
+      ]
+    }
+  },
+  {
+    id: "MOD-08",
+    num: "08",
+    title: "Engajamento Comercial",
+    avatar: "Echo",
+    category: "PILAR 08 · VOICE & CHANNELS",
+    color: "#FB7185",
+    desc: "A suíte unificada de comunicação ativa e receptiva: VoiceHub Studio com softphone WebRTC, discador de cold call governado por listas de não perturbe, transcrição ao vivo, WhatsApp via Chatwoot e Booking 360° público.",
+    routes: ["/app/voice-hub", "/app/voice-hub/*", "/app/mesa-tratamento", "/booking/:slug", "/social-selling"],
+    personas: ["SDR", "BDR", "Closer", "CS / Customer Success", "Gestor de Qualidade"],
+    eixoA: {
+      proposta: "Empoderar vendedores com conversas registradas, transcritas e assistidas por IA em tempo real em todos os canais.",
+      problemas: "Chamadas não registradas, promessas verbais esquecidas, infração de listas do Procon/Anatel, alto índice de no-show em reuniões.",
+      publico: "Equipes de pré-vendas, closers e atendimento a clientes.",
+      indicadores: "Taxa de conversão de ligações em reuniões, índice de no-show (< 12%) e 100% das chamadas com transcrição auditada."
+    },
+    eixoB: {
+      funcionalidades: [
+        { nome: "VoiceHub Studio Visual", desc: "Softphone WebRTC integrado no navegador com supervisão ao vivo para líderes (whisper/barge-in)." },
+        { nome: "Birth Voice (Cold Calling)", desc: "Discador inteligente com verificação prévia de listas de bloqueio e detecção de secretária eletrônica." },
+        { nome: "Transcrição & Extração Automática", desc: "Conversão de áudio para texto em tempo real com identificação de sentimentos e objeções." },
+        { nome: "Booking Público 360°", desc: "Página de agendamento por vendedor sincronizada com Google Calendar para evitar double-booking." }
+      ],
+      componentes: ["VoiceStudioPanel.tsx", "DialerModal.tsx", "LiveCallSupervisor.tsx", "PublicBookingCalendar.tsx"],
+      estados: "Idle, Chamando, Em Conversação Ativa, Transcrevendo, Processando Resumo IA."
+    },
+    eixoC: {
+      jornada: "Vendedor clica no lead → Checagem na lista Não Me Perturbe → Ligação estabelecida → Transcrição em tempo real → Resumo anexado ao CRM.",
+      regras: "Gravações exigem aviso legal e consentimento; bloqueio estrito de números na lista de supressão da Anatel/Procon.",
+      eventos: ["voice.call.connected", "voice.call.completed", "voice.transcript.ready", "booking.meeting.confirmed"]
+    },
+    eixoD: {
+      agentes: ["Echo (Avatar UI)", "promise-guardian", "voice-agent", "closer-sales"],
+      capacidades: "promise-guardian identifica compromissos verbais ('envio amanhã às 14h') e cria tarefas no CRM automaticamente.",
+      limites: "Discadores de voz operam com supervisão humana e controles de alçada."
+    },
+    eixoE: {
+      entidades: ["CallRecording", "CallTranscript", "PublicBookingSlot", "ScheduledMeeting", "WhatsAppMessage"],
+      apis: ["POST /api/voice/call/initiate", "POST /api/voice/webhook/audio-complete", "GET /api/booking/:slug/availability"],
+      seguranca: "Criptografia de ponta a ponta em chamadas e arquivos de áudio armazenados com chave AES-256."
+    },
+    eixoF: {
+      aceite: [
+        "AC-ENG-001: Todas as chamadas gravadas devem possuir termo de consentimento registrado e áudio criptografado.",
+        "AC-ENG-002: O discador deve recusar chamadas para números presentes na lista de Não Perturbe com log justificativo.",
+        "AC-ENG-003: A página de Booking deve impedir marcação concorrente no mesmo horário com trava de transação."
+      ]
+    }
+  },
+  {
+    id: "MOD-09",
+    num: "09",
+    title: "Admin & Operations",
+    avatar: "Sudo",
+    category: "FUNDAÇÃO · PLATFORM GOVERNANCE",
+    color: "#94A3B8",
+    desc: "A fundação de governança e infraestrutura do Birthub 360°: multi-tenancy rigoroso com isolamento RLS, controle de acesso modular por organização, gestão de equipe e papéis (RBAC), bilhetagem de consumo de IA e portal LGPD.",
+    routes: ["/app/settings", "/app/team", "/app/module-access", "/app/notifications", "/app/usage", "/app/failover", "/api/feature-flags", "/api/organization-modules"],
+    personas: ["Admin", "TI / Segurança", "RevOps", "DPO", "Diretor / Founder"],
+    eixoA: {
+      proposta: "Prover a fundação inquebrável de segurança, isolamento, auditoria e conformidade regulatória para toda a plataforma.",
+      problemas: "Vazamento de dados entre tenants, falta de controle de gastos com tokens de IA, ausência de ferramentas para direitos da LGPD.",
+      publico: "Administradores de contas, Encarregados de Dados (DPO) e equipes de segurança da informação.",
+      indicadores: "100% de isolamento RLS comprovado, Uptime da plataforma (> 99.9%) e tempo de resposta a incidentes."
+    },
+    eixoB: {
+      funcionalidades: [
+        { nome: "Module Access Control", desc: "Catálogo de concessão modular por organização com bloqueio de rotas não contratadas." },
+        { nome: "Gestão de Equipes & RBAC", desc: "Configuração de papéis e permissões granulares por filial e departamento." },
+        { nome: "Bilhetagem de Tokens & Consumo", desc: "Ledger de consumo em tempo real de tokens de IA, chamadas de API e armazenamento." },
+        { nome: "Portal LGPD & Direitos do Titular", desc: "Fluxo de confirmação de tratamento, revogação de consentimento e anonimização com blind index." }
+      ],
+      componentes: ["TeamManagementView.tsx", "ModuleAccessControl.tsx", "UsageBillingDashboard.tsx", "LgpdComplianceTab.tsx"],
+      estados: "Configurado, Pendente de Convite, Bloqueado por Quota, Modo Auditoria Ativo."
+    },
+    eixoC: {
+      jornada: "Toda requisição HTTP valida o token JWT → Injeta organizationId na sessão → RLS isola as queries no PostgreSQL.",
+      regras: "Nenhuma rota responde sem autenticação e validação de tenant; tentativas de cross-tenant disparam alerta no SIEM.",
+      eventos: ["org.created", "user.invited", "module.granted", "security.audit.logged", "lgpd.anonymization.requested"]
+    },
+    eixoD: {
+      agentes: ["Sudo (Avatar UI)", "AccessRightAuditor", "ComplianceEnforcer"],
+      capacidades: "Auditoria contínua de permissões órfãs e detecção de padrões anômalos de login.",
+      limites: "Agentes de segurança geram relatórios; exclusão definitiva de contas ou dados exige confirmação humana com 2FA."
+    },
+    eixoE: {
+      entidades: ["Organization", "User", "Role", "Membership", "ModuleGrant", "UsageRecord", "AuditLog", "LgpdConsent"],
+      apis: ["GET /api/organization-modules", "POST /api/team/invite", "GET /api/usage/summary", "POST /api/lgpd/data-subject-request"],
+      seguranca: "Defesa em profundidade com RLS nativo do PostgreSQL, cookies HttpOnly/Secure e rotação de segredos."
+    },
+    eixoF: {
+      aceite: [
+        "AC-ADM-001: Usuários da Organização A jamais devem conseguir ler ou modificar dados da Organização B em nenhuma query.",
+        "AC-ADM-002: Organizações sem determinado módulo contratado devem receber HTTP 403 ao acessar seus endpoints.",
+        "AC-ADM-003: Toda alteração em dados pessoais de titulares deve gerar log imutável de auditoria com IP e timestamp."
+      ]
+    }
+  },
+  {
+    id: "MOD-10",
+    num: "10",
+    title: "Mobile & Field Sales",
+    avatar: "Orbit Mobile",
+    category: "MOBILIDADE · OFFLINE FIRST",
+    color: "#FFC107",
+    desc: "Módulo mobile nativo e PWA (via Capacitor) para vendas externas e em campo: gravador de reuniões de campo (FieldMeetingRecorder), cache local criptografado em SQLite/IndexedDB e sincronização em segundo plano resiliente.",
+    routes: ["/api/mobile", "android/ (Capacitor)", "mobileFieldMeeting.routes.ts"],
+    personas: ["Vendedor Externo", "Field Sales", "Closer", "Gerente Regional"],
+    eixoA: {
+      proposta: "Levar a inteligência do Birthub 360° para reuniões presenciais em campo mesmo em locais sem qualquer conexão de internet.",
+      problemas: "Vendedores externos sem acesso ao histórico do cliente, notas de reunião esquecidas, impossibilidade de uso em zonas sem sinal.",
+      publico: "Vendedores de campo, executivos de contas enterprise e técnicos de pós-venda.",
+      indicadores: "100% de reuniões de campo com ata registrada, taxa de resolução de conflito offline > 99%."
+    },
+    eixoB: {
+      funcionalidades: [
+        { nome: "FieldMeetingRecorder", desc: "Gravador de áudio otimizado para celulares com consentimento prévio do cliente." },
+        { nome: "Motor Offline-First SQLite", desc: "Banco de dados local criptografado com a carteira de clientes do vendedor." },
+        { nome: "Sincronização em Segundo Plano", desc: "Fila transacional que despacha dados automaticamente assim que detecta rede 4G/Wi-Fi." },
+        { nome: "Mobile Edge AI Assist", desc: "Processamento inicial no aparelho para transcrição preliminar e marcação de urgência." }
+      ],
+      componentes: ["FieldMeetingRecorder.tsx", "OfflineSyncIndicator.tsx", "MobilePipelineQuickView.tsx"],
+      estados: "Online, Modo Offline, Sincronizando Pacotes em Fila, Conflito de Versão."
+    },
+    eixoC: {
+      jornada: "Vendedor visita cliente sem sinal → Abre o app offline → Grava reunião e notas → Salva no SQLite local → Recupera rede → Sincronização automática.",
+      regras: "Armazenamento local criptografado com chave atrelada à biometria do aparelho; gravação protegida contra desligamento por economia de energia.",
+      eventos: ["mobile.meeting.recorded", "mobile.data.synced", "mobile.conflict.resolved"]
+    },
+    eixoD: {
+      agentes: ["Orbit Mobile (Avatar UI)", "promise-guardian", "account-detective"],
+      capacidades: "promise-guardian processa a ata e o áudio da reunião assim que sincronizados com o servidor.",
+      limites: "Processamento pesado de IA é delegado à nuvem para poupar bateria e dados móveis do usuário."
+    },
+    eixoE: {
+      entidades: ["MobileFieldMeeting", "OfflineSyncQueueItem", "MobileDeviceRegistration"],
+      apis: ["POST /api/mobile/field-meeting", "POST /api/mobile/sync-batch", "GET /api/mobile/manifest"],
+      seguranca: "Dados temporários de áudio apagados do aparelho após confirmação de upload criptografado no servidor."
+    },
+    eixoF: {
+      aceite: [
+        "AC-MOB-001: O aplicativo deve suportar gravação contínua de áudio de até 90 minutos em segundo plano.",
+        "AC-MOB-002: Nenhuma anotação salva offline pode ser perdida em caso de descarregamento da bateria do aparelho.",
+        "AC-MOB-003: A sincronização em lote deve ser transacional e isolar itens com erro sem travar a fila restante."
+      ]
+    }
+  },
+  {
+    id: "MOD-11",
+    num: "11",
+    title: "Social Selling",
+    avatar: "Nexus Social",
+    category: "EXPANSÃO · SOCIAL ENGAGEMENT",
+    color: "#FF2D9B",
+    desc: "Módulo estratégico de relacionamento e vendas em redes sociais corporativas: monitoramento de decisores, geração de abordagens personalizadas com IA (ApproachGeneratorCard) e shadow copywriting alinhado ao tom de voz do vendedor.",
+    routes: ["/social-selling", "/api/social-selling", "ApproachGeneratorCard", "SocialSellingHub"],
+    personas: ["BDR", "SDR", "Closer", "Social Seller", "Gestor Comercial"],
+    eixoA: {
+      proposta: "Transformar conexões e posts sociais em conversas e oportunidades comerciais qualificadas sem parecer spam.",
+      problemas: "Abordagens genéricas em redes sociais que geram rejeição, falta de tempo para redigir posts, dados sociais isolados do CRM.",
+      publico: "Vendedores, BDRs e executivos que utilizam o LinkedIn como canal de prospecção.",
+      indicadores: "Taxa de aceitação de conexões (> 45%), taxa de resposta a mensagens (> 25%) e negócios gerados via Social Selling."
+    },
+    eixoB: {
+      funcionalidades: [
+        { nome: "SocialSellingHub", desc: "Painel de acompanhamento de publicações e atividades de decisores estratégicos." },
+        { nome: "ApproachGeneratorCard", desc: "Gerador de abordagens personalizadas em 3 estilos (Consultiva, Direta e Provocativa)." },
+        { nome: "Shadow Copywriting", desc: "Assistente de redação de comentários técnicos e posts autorais com o tom de voz do vendedor." },
+        { nome: "Extrator de Sinais Sociais", desc: "Mapeamento de curtidas e comentários em concorrentes para abordagem precisa." }
+      ],
+      componentes: ["SocialSellingHub.tsx", "ApproachGeneratorCard.tsx", "SocialEngagementFeed.tsx"],
+      estados: "Explorando Feed, Gerando Abordagem IA, Copiado para Transferência, Vinculado ao CRM."
+    },
+    eixoC: {
+      jornada: "Vendedor seleciona prospect → Lê post recente → Clica em Gerar Abordagem Consultiva → Revisa texto gerado → Envia na rede social → Salva no CRM.",
+      regras: "Nenhuma postagem ou mensagem social é enviada de forma automática (garantia anti-spam e conformidade com termos de uso).",
+      eventos: ["social.approach.generated", "social.interaction.logged", "social.signal.detected"]
+    },
+    eixoD: {
+      agentes: ["Nexus Social (Avatar UI)", "bdr-outbound", "ldr-intelligence"],
+      capacidades: "Geração de texto persuasivo baseado nos dados reais da empresa e nas dores expressas no post do decisor.",
+      limites: "Proibição estrita de postagem autônoma não autorizada pelo vendedor."
+    },
+    eixoE: {
+      entidades: ["SocialProfile", "SocialInteraction", "GeneratedApproach", "SocialSignal"],
+      apis: ["POST /api/social-selling/generate-approach", "GET /api/social-selling/feed", "POST /api/social-selling/log-interaction"],
+      seguranca: "Conformidade rigorosa com os termos de uso das plataformas de terceiros sem técnicas predatórias de automação."
+    },
+    eixoF: {
+      aceite: [
+        "AC-SOC-001: As abordagens geradas devem sempre citar dados reais verificados do decisor sem inventar fatos.",
+        "AC-SOC-002: O vendedor deve conseguir vincular o texto gerado à timeline do lead no Hub Comercial com 1 clique.",
+        "AC-SOC-003: O módulo deve bloquear o uso de credenciais que violem os limites de taxa das APIs sociais parceiras."
+      ]
+    }
+  }
+];
+
+// DADOS DAS 20 JORNADAS OPERACIONAIS
+const JOURNEYS_DATA = [
+  { id: "JOR-01", titulo: "Onboarding de Tenant & Configuração de Pipelines", persona: "Admin / RevOps", modulo: "MOD-09 Admin", agente: "Sudo", desc: "Configuração inicial da organização, wizard de escolha de modelo de funil, convite da equipe com RBAC e importação de primeiros dados." },
+  { id: "JOR-02", titulo: "Descoberta Multi-Fonte & Enriquecimento de Contas", persona: "BDR Estrategista", modulo: "MOD-02 Inteligência", agente: "Nexus / account-detective", desc: "Busca em cascata em 7 provedores (CNPJ, Apollo, Hunter, Places), cálculo de Fit ICP e montagem do Dossiê Executivo de 10 seções." },
+  { id: "JOR-03", titulo: "Triagem & Roteamento na Mesa de Tratamento", persona: "SDR Qualificador", modulo: "MOD-03 Orquestração", agente: "Aria / sdr-qualification", desc: "Entrada de lead inbound, distribuição balanceada por Smart Lead Router e primeiro contato em menos de 5 minutos com abordagem sugerida por IA." },
+  { id: "JOR-04", titulo: "Execução de Cadência Multicanal com Auto-Stop", persona: "SDR / BDR", modulo: "MOD-03 Orquestração", agente: "Aria / bdr-outbound", desc: "Disparos encadeados (E-mail, WhatsApp, Tarefas) com pausa imediata da sequência no momento em que o lead responde." },
+  { id: "JOR-05", titulo: "Cold Calling Governábil com Voice AI & Studio", persona: "SDR / Closer", modulo: "MOD-08 Engajamento", agente: "Echo / voice-agent", desc: "Discagem com verificação em lista de Não Perturbe, softphone WebRTC, gravação criptografada e transcrição ao vivo com insights." },
+  { id: "JOR-06", titulo: "Preparação Pré-Reunião com Dossiê 360°", persona: "Closer Executivo", modulo: "MOD-02 Inteligência", agente: "Nexus / account-detective", desc: "Compilação de briefing executivo 30 min antes da demo com histórico, notícias recentes, tecnologias e perguntas SPIN recomendadas." },
+  { id: "JOR-07", titulo: "Negociação de Deal no Pipeline Ponderado", persona: "Closer Executivo", modulo: "MOD-01 Hub Comercial", agente: "Orbit / closer-sales", desc: "Movimentação de estágio no Kanban com preenchimento obrigatório de data e valor, recálculo preditivo do Health Score e sincronização." },
+  { id: "JOR-08", titulo: "Alçada de Desconto & Assinatura Digital de Proposta", persona: "Closer / Gestor", modulo: "MOD-01 Hub Comercial", agente: "Orbit / contract-signature", desc: "Criação de proposta formal, validação de travas de desconto, aprovação de gestor e despacho para assinatura Gov.br/provedor seguro." },
+  { id: "JOR-09", titulo: "Handoff de Vendas para Sucesso do Cliente", persona: "Closer → CS", modulo: "MOD-01 Hub Comercial", agente: "Orbit / coordinator-commercial", desc: "Passagem de bastão automática pós-fechamento (Deal Won), criação de projeto de onboarding e kick-off agendado sem perda de histórico." },
+  { id: "JOR-10", titulo: "Gestão de Health Score & Prevenção de Churn", persona: "Customer Success", modulo: "MOD-04 Performance", agente: "Vanguard / churn-retention", desc: "Monitoramento de telemetria, detecção de queda de engajamento, alerta de risco e plano de resgate com o patrocinador da conta." },
+  { id: "JOR-11", titulo: "Expansão de Contas, Upsell e Cross-Sell", persona: "Account Manager", modulo: "MOD-01 Hub Comercial", agente: "Orbit / revenue-intelligence", desc: "Notificação de estouro de cota ou expansão do cliente, criação automática de oportunidade de upsell e envio de aditivo de contrato." },
+  { id: "JOR-12", titulo: "Análise Preditiva de Forecast & Metas Comerciais", persona: "Diretor Comercial / CFO", modulo: "MOD-05 Previsibilidade", agente: "Oracle / forecast.agent", desc: "Análise semanal das categorias Commit, Best Case e Pipeline com calibração contínua de MAPE e projeção de cobertura de metas." },
+  { id: "JOR-13", titulo: "War Room Executivo & Autópsia de Win/Loss", persona: "Gestão Comercial", modulo: "MOD-04 Performance", agente: "Vanguard / devils-advocate", desc: "Reunião de situação com análise profunda das perdas e vitórias por concorrente e ajuste tático imediato de playbooks." },
+  { id: "JOR-14", titulo: "Vendas em Campo com Gravação Offline Mobile", persona: "Vendedor Externo", modulo: "MOD-10 Mobile", agente: "Orbit Mobile / promise-guardian", desc: "Visita presencial sem sinal de internet, consulta em SQLite local, gravação contínua e sincronização em lote ao recuperar 4G." },
+  { id: "JOR-15", titulo: "Social Selling & Geração de Abordagens IA", persona: "BDR / Social Seller", modulo: "MOD-11 Social Selling", agente: "Nexus / bdr-outbound", desc: "Leitura de postagens de decisores em redes sociais, geração de cópias consultivas personalizadas e registro de interação no CRM." },
+  { id: "JOR-16", titulo: "Sincronização Bidirecional com Bitrix24", persona: "RevOps / Integrador", modulo: "MOD-07 Automação", agente: "Spark / bitrix-guardian", desc: "Integração resiliente respeitando taxa máxima de 2 req/s com mapeamento de campos customizados e fila de retry BullMQ." },
+  { id: "JOR-17", titulo: "Criação de Regras com Teste Simulado Dry-Run", persona: "RevOps / Admin", modulo: "MOD-07 Automação", agente: "Spark", desc: "Configuração visual de fluxos de automação com simulação contra dados dos últimos 30 dias antes de ativar em produção." },
+  { id: "JOR-18", titulo: "Governança de IA & Fila de Decisões Humanas", persona: "Gestor Comercial", modulo: "MOD-06 IA", agente: "Core / role-supervisor", desc: "Retenção mandatória de ações de alto impacto em AIPendingAction com edição, aprovação ou rejeição auditada por humano." },
+  { id: "JOR-19", titulo: "Roleplay Simulado & Certificação de Playbook", persona: "Vendedor em Ramping", modulo: "MOD-03 Orquestração", agente: "Aria / learning.agent", desc: "Treino prático onde a IA simula o comprador com persona resistente, emitindo scorecard de avaliação por rubrica em menos de 5s." },
+  { id: "JOR-20", titulo: "Atendimento aos Direitos LGPD & Exclusão Segura", persona: "DPO / Administrador", modulo: "MOD-09 Admin", agente: "Sudo / ComplianceEnforcer", desc: "Anonimização de titular com substituição por blind index, destruição de áudios e emissão de Certificado Digital de Exclusão." }
+];
+
+// DOCUMENTOS EM BASE64
+const DOCS_B64 = {"doc01Aud":"IyBSRUxBVMOTUklPIERFIEFVRElUT1JJQSBJTkRFUEVOREVOVEUg4oCUIEFHRU5URSAwMCAoRU5UUkVHQSAwMSkKKipQcm9qZXRvOioqIEJpcnRodWIgMzYwwrAg4oCUIFNpc3RlbWEgT3BlcmFjaW9uYWwgZGUgUmV2ZW51ZSBJbnRlbGxpZ2VuY2UgIAoqKkF1dG9yaWRhZGU6KiogQWdlbnRlIDAwIChTdXBlcnZpc29yIEdlcmFsIC8gQ29vcmRlbmHDp8OjbyBkYSBNaXNzw6NvKSAgCioqRW0gY29uZm9ybWlkYWRlIGNvbToqKiBgQUdFTlRTLm1kYCAoR292ZXJuYW7Dp2EgR2xvYmFsIGUgUHJpbmPDrXBpb3MgUDEgYSBQNCkgIAoqKkRhdGEgZGEgQXVkaXRvcmlhOioqIDEwIGRlIE5vdmVtYnJvIGRlIDIwMjYgIAoqKlN0YXR1czoqKiBDT05DTFXDjURPIOKAlCBTQU5FQU1FTlRPIElOVEVHUkFMIEVYRUNVVEFETwoKLS0tCgojIyAxLiBDb250ZXh0byBlIEVzY29wbyBkYSBBdWRpdG9yaWEgZG8gQWdlbnRlIDAwCgpPIERvY3VtZW50byBNZXN0cmUgT2ZpY2lhbCBWNCBoYXZpYSByZWNlYmlkbyB1bSBwYXJlY2VyIGZhdm9yw6F2ZWwgcHJlbGltaW5hciBkZSBob21vbG9nYcOnw6NvIGVtIDEwLzExLzIwMjYuIEVudHJldGFudG8sIHVtYSByZXZpc8OjbyBpbmRlcGVuZGVudGUgaWRlbnRpZmljb3UgaW5jb25zaXN0w6puY2lhcyByZXNpZHVhaXMgZW0gdHLDqnMgZWl4b3MgY3LDrXRpY29zOgoxLiAqKkRpdmVyZ8OqbmNpYSBRdWFudGl0YXRpdmEgbmEgTWF0cml6IGRlIFJhc3RyZWFiaWxpZGFkZToqKiBFeGlzdGlhbSAzMyBDcml0w6lyaW9zIGRlIEFjZWl0ZSAoYEFDLXh4eGApIGZvcm1hbGl6YWRvcyBubyBJbnZlbnTDoXJpbyBGdW5jaW9uYWwgZG9zIDExIE3Ds2R1bG9zLCBwb3LDqW0gYXBlbmFzIDI1IGVzdGF2YW0gYXNzb2NpYWRvcyBuYSBNYXRyaXogTWVzdHJhIGRlIFJhc3RyZWFiaWxpZGFkZSwgcmVzdWx0YW5kbyBlbSA4IHbDrW5jdWxvcyBhdXNlbnRlcyAoY3JpdMOpcmlvcyDDs3Jmw6NvcykuCjIuICoqQ29uZmxpdG8gZGUgUmVncmFzIENvbWVyY2lhaXMgZSBBbMOnYWRhczoqKiBJZGVudGlmaWNvdS1zZSBkaXNjcmVww6JuY2lhIHRleHR1YWwgZW50cmUgbyBtb2RlbG8gZGUgYWzDp2FkYXMgZGUgZGVzY29udG8gKDEwJS8yMCUgbm8gY29udHJhdG8gUkJBQyBlIGpvcm5hZGEgSk9SLTA4IHZlcnN1cyAxNSUvMjUlIG5vIHRleHRvIGRlc2NyaXRpdm8gZG8gTcOzZHVsbyAwMSksIGFsw6ltIGRlIGluZGVmaW5pw6fDtWVzIGRlIHJldGVuw6fDo28gZGUgw6F1ZGlvLCBxdW90YXMgZSBTTEEuCjMuICoqQW1iaWd1aWRhZGUgbmEgVGF4b25vbWlhIGRlIEFnZW50ZXM6KiogQSBtZW7Dp8OjbyBhICIxNSBhZ2VudGVzIiwgIjkgYXZhdGFyZXMiLCAiMjAvMjArIGFnZW50ZXMiIGUgIjM3OSBwZXJzb25hcyIgcmVxdWVyaWEgc2VwYXJhw6fDo28gY2F0ZWfDs3JpY2EgZm9ybWFsIHBhcmEgbsOjbyBtaXN0dXJhciBhZ2VudGVzIGRlIGVuZ2VuaGFyaWEgKGBBR0VOVFMubWRgKSwgYWdlbnRlcyBkZSBydW50aW1lIGRhIHBsYXRhZm9ybWEsIGF2YXRhcmVzIGRlIGludGVyZmFjZSBlIHBlcnNvbmFzIGRlIGNhdMOhbG9nby4KCk8gQWdlbnRlIDAwIGFzc3VtaXUgYSBjb29yZGVuYcOnw6NvIGRvcyBhZ2VudGVzIGVzcGVjaWFsaXphZG9zIGUgc2FuZW91IGludGVncmFsbWVudGUgdG9kYXMgYXMgZGlzY3JlcMOibmNpYXMgZG9jdW1lbnRhaXMsICoqc2VtIG1vZGlmaWNhciBvIGPDs2RpZ28gZGEgYXBsaWNhw6fDo28qKi4KCi0tLQoKIyMgMi4gUmVjb25jaWxpYcOnw6NvIGRvcyA4IFbDrW5jdWxvcyBBdXNlbnRlcyBuYSBSYXN0cmVhYmlsaWRhZGUKCkEgYXVkaXRvcmlhIGNydXpvdSBjYWRhIHVtIGRvcyAzMyBjcml0w6lyaW9zIGRlIGFjZWl0ZSBkbyBJbnZlbnTDoXJpbyBGdW5jaW9uYWwgY29udHJhIGEgTWF0cml6IGRlIFJhc3RyZWFiaWxpZGFkZS4gRm9yYW0gaWRlbnRpZmljYWRvcyBleGF0YW1lbnRlIG9zIDggY3JpdMOpcmlvcyBxdWUgbsOjbyBwb3NzdcOtYW0gbGluaGEgZGVkaWNhZGEgbmEgbWF0cml6OgoKfCBJRCBDcml0w6lyaW8gfCBNw7NkdWxvIHwgUmVxdWlzaXRvIENhbsO0bmljbyBDcmlhZG8vUmVjb25jaWxpYWRvIHwgUmVncmEgZGUgTmVnw7NjaW8gVmluY3VsYWRhIHwgU3RhdHVzIEFudGVyaW9yIHwgU3RhdHVzIEF0dWFsIHwKfCA6LS0tIHwgOi0tLSB8IDotLS0gfCA6LS0tIHwgOi0tLSB8IDotLS0gfAp8ICoqQUMtTUtULTAwMyoqIHwgTU9ELTAyIEludGVsaWfDqm5jaWEgfCBgUkVRLU1LVC0wMDNgOiBUYXJpZmHDp8OjbyBlIGJpbGhldGFnZW0gYXTDtG1pY2EgZGUgZW5yaXF1ZWNpbWVudG8gfCBgUk4tTUtULTAzYDogQmxvcXVlaW8gaW1lZGlhdG8gYW8gZXNnb3RhciBjcsOpZGl0b3MgfCBPbWl0aWRvIG5hIE1hdHJpeiB8ICoqVklOQ1VMQURPICYgSE9NT0xPR0FETyoqIHwKfCAqKkFDLUFVVC0wMDMqKiB8IE1PRC0wNyBBdXRvbWHDp8OjbyB8IGBSRVEtQVVULTAwM2A6IEV4ZWN1w6fDo28gZGUgZHJ5LXJ1biBzaW11bGFkbyBzZW0gZWZlaXRvIGNvbGF0ZXJhbCB8IGBSTi1BVVQtMDNgOiBTaW11bGHDp8OjbyBlbSBtZW3Ds3JpYSBjb20gcm9sbGJhY2sgdG90YWwgfCBPbWl0aWRvIG5hIE1hdHJpeiB8ICoqVklOQ1VMQURPICYgSE9NT0xPR0FETyoqIHwKfCAqKkFDLUVORy0wMDIqKiB8IE1PRC0wOCBFbmdhamFtZW50byB8IGBSRVEtRU5HLTAwM2A6IFN1cHJlc3PDo28gb2JyaWdhdMOzcmlhIGRlIGNvbGQgY2FsbCB8IGBSTi1FTkctMDJgOiBDb25zdWx0YSBzw61uY3JvbmEgYSBsaXN0YXMgZGUgTsOjbyBQZXJ0dXJiZSB8IE9taXRpZG8gbmEgTWF0cml6IHwgKipWSU5DVUxBRE8gJiBIT01PTE9HQURPKiogfAp8ICoqQUMtQURNLTAwMioqIHwgTU9ELTA5IEFkbWluIHwgYFJFUS1BRE0tMDAzYDogR2F0ZSBkZSBjb25jZXNzw6NvIG1vZHVsYXIgcG9yIG9yZ2FuaXphw6fDo28gfCBgUk4tQURNLTAzYDogUmV0b3JubyBIVFRQIDQwMyBGb3JiaWRkZW4gcGFyYSByb3RhcyBuw6NvIGNvbnRyYXRhZGFzIHwgT21pdGlkbyBuYSBNYXRyaXogfCAqKlZJTkNVTEFETyAmIEhPTU9MT0dBRE8qKiB8CnwgKipBQy1NT0ItMDAyKiogfCBNT0QtMTAgTW9iaWxlIHwgYFJFUS1NT0ItMDAyYDogUGVyc2lzdMOqbmNpYSB0cmFuc2FjaW9uYWwgbG9jYWwgZSB0b2xlcsOibmNpYSBhIGNyYXNoIHwgYFJOLU1PQi0wMmA6IEdyYXZhw6fDo28gZGUgw6F1ZGlvIGUgdGV4dG8gZW0gU1FMaXRlIGNyaXB0b2dyYWZhZG8gfCBPbWl0aWRvIG5hIE1hdHJpeiB8ICoqVklOQ1VMQURPICYgSE9NT0xPR0FETyoqIHwKfCAqKkFDLU1PQi0wMDMqKiB8IE1PRC0xMCBNb2JpbGUgfCBgUkVRLU1PQi0wMDNgOiBTaW5jcm9uaXphw6fDo28gZW0gbG90ZSBpc29sYWRhIGNvbSBETFEgbW9iaWxlIHwgYFJOLU1PQi0wM2A6IEVycm8gZW0gMSBpdGVtIG7Do28gYmxvcXVlaWEgb3MgZGVtYWlzIHBhY290ZXMgfCBPbWl0aWRvIG5hIE1hdHJpeiB8ICoqVklOQ1VMQURPICYgSE9NT0xPR0FETyoqIHwKfCAqKkFDLVNPQy0wMDIqKiB8IE1PRC0xMSBTb2NpYWwgfCBgUkVRLVNPQy0wMDJgOiBBc3NvY2lhw6fDo28gYXTDtG1pY2EgZGUgaW50ZXJhw6fDo28gc29jaWFsIGFvIENSTSB8IGBSTi1TT0MtMDJgOiBJbnNlcsOnw6NvIG5hIHRpbWVsaW5lIGNvbSAxIGNsaXF1ZSB8IE9taXRpZG8gbmEgTWF0cml6IHwgKipWSU5DVUxBRE8gJiBIT01PTE9HQURPKiogfAp8ICoqQUMtU09DLTAwMyoqIHwgTU9ELTExIFNvY2lhbCB8IGBSRVEtU09DLTAwM2A6IENvbmZvcm1pZGFkZSBlIGxpbWl0YcOnw6NvIGRlIHRheGEgZW0gcmVkZXMgcGFyY2VpcmFzIHwgYFJOLVNPQy0wM2A6IFByb2liacOnw6NvIGRlIHNjcmFwaW5nIHByZWRhdMOzcmlvIHwgT21pdGlkbyBuYSBNYXRyaXogfCAqKlZJTkNVTEFETyAmIEhPTU9MT0dBRE8qKiB8CgoqKlJlc3VsdGFkbzoqKiBBIE1hdHJpeiBkZSBSYXN0cmVhYmlsaWRhZGUgcGFzc291IGRlIDI1IHBhcmEgKiozMyBsaW5oYXMgY2Fuw7RuaWNhcyAoMTAwJSBkb3MgcmVxdWlzaXRvcyBlIGNyaXTDqXJpb3MgYW1hcnJhZG9zKSoqLiBaZXJvIGNyaXTDqXJpb3Mgw7NyZsOjb3MuCgotLS0KCiMjIDMuIFJlY29uY2lsaWHDp8OjbyBkYXMgUmVncmFzIENvbWVyY2lhaXMgZSBBbMOnYWRhcyBkZSBEZXNjb250bwoKIyMjIDMuMSBDYXVzYSBSYWl6IGRvIENvbmZsaXRvIGRlIERlc2NvbnRvcwotIE5vIHRleHRvIGRlc2NyaXRpdm8gZG8gTcOzZHVsbyAwMSwgbWVuY2lvbmF2YS1zZSBhcHJvdmHDp8OjbyBkZSBHZXN0b3IgcGFyYSBkZXNjb250b3MgPiAxNSUgZSBEaXJldG9yaWEgcGFyYSA+IDI1JS4KLSBOYSB0YWJlbGEgUkJBQyBkZSBDb250cmF0b3MgVHJhbnN2ZXJzYWlzIGUgbmEgSm9ybmFkYSBKT1ItMDgsIGRlZmluaWEtc2UgYWzDp2FkYSBkZSBDbG9zZXIgYXTDqSAxMCUgZSBHZXN0b3IgYXTDqSAyMCUuCgojIyMgMy4yIFJlc29sdcOnw6NvIEFycXVpdGV0dXJhbCBPZmljaWFsIChBZ2VudGUgMDApCk9zIHBlcmNlbnR1YWlzIGRlIGFsw6dhZGEgKipzw6NvIHZhcmnDoXZlaXMgZGUgZ292ZXJuYW7Dp2EgcGFyYW1ldHJpesOhdmVpcyBwb3Igb3JnYW5pemHDp8OjbyoqIChgb3JnYW5pemF0aW9uLnNldHRpbmdzLmFwcHJvdmFsX3RocmVzaG9sZHNgKSwgZSBuw6NvIHJlZ3JhcyBoYXJkY29kZWQgbm8gY8OzZGlnby4gUGFyYSBhIGNvbmZpZ3VyYcOnw6NvIHBhZHLDo28gZG8gcHJvZHV0byBvdXQtb2YtdGhlLWJveCwgZm9pIGhvbW9sb2dhZGEgYSBzZWd1aW50ZSBoaWVyYXJxdWlhIHBhZHLDo286Ci0gKipGYWl4YSAxIChDbG9zZXIgLyBBdXTDtG5vbW8pOioqIERlc2NvbnRvIGNvbWVyY2lhbCBkZSBhdMOpICoqMTAuMCUqKiAoQXByb3ZhZG8pLgotICoqRmFpeGEgMiAoR2VzdG9yIENvbWVyY2lhbCAvIE7DrXZlbCBUw6F0aWNvKToqKiBEZXNjb250byBkZSAqKjEwLjElIGEgMjAuMCUqKiAoQXByb3ZhZG8pLgotICoqRmFpeGEgMyAoRGlyZXRvcmlhIEV4ZWN1dGl2YSAvIE7DrXZlbCBFc3RyYXTDqWdpY28pOioqIERlc2NvbnRvICoqYWNpbWEgZGUgMjAuMCUqKiAoQXByb3ZhZG8pLgotICpGYWl4YSBPcGNpb25hbCBwYXJhIFNldG9yZXMgZGUgQWx0YSBNYXJnZW06KiBBIGVzY2FsYSAxNSUvMjUlIGZpY2EgZG9jdW1lbnRhZGEgY29tbyB0ZW1wbGF0ZSBhbHRlcm5hdGl2byBwcsOpLWNvbmZpZ3VyYWRvIHBhcmEgaW5kw7pzdHJpYXMgZGUgc29mdHdhcmUgcHVybyBvdSBjb25zdWx0b3JpYXMsIGF0aXbDoXZlbCBuYXMgY29uZmlndXJhw6fDtWVzIGRvIHRlbmFudCBzZW0gZGl2ZXJnw6puY2lhIHTDqWNuaWNhLgoKLS0tCgojIyA0LiBSZWNvbmNpbGlhw6fDo28gZG8gRWNvc3Npc3RlbWEgZGUgSW50ZWxpZ8OqbmNpYSBBcnRpZmljaWFsCgpBIGF1ZGl0b3JpYSBjb25zb2xpZG91IGEgdGF4b25vbWlhIGVtICoqNyBjYXRlZ29yaWFzIG11dHVhbWVudGUgZXhjbHVzaXZhcyoqLCBlbGltaW5hbmRvIGEgY29uZnVzw6NvIGRlIG3DqXRyaWNhczoKCjEuICoqQWdlbnRlcyBkZSBFbmdlbmhhcmlhIChSZXBvc2l0w7NyaW8gLyBBR0VOVFMubWQpOioqIDI0IHBhcMOpaXMgZGUgZ292ZXJuYW7Dp2EgKEFnZW50ZXMgMDAgYSAyNCkuIEF0dWFtIG5vIGRlc2Vudm9sdmltZW50byBlIGF1ZGl0b3JpYSBkbyBjw7NkaWdvLgoyLiAqKkFnZW50ZXMgQ29tZXJjaWFpcyBPcGVyYWNpb25haXMgKFJ1bnRpbWUgZGUgUHJvZHXDp8Ojbyk6KiogMTUgYWdlbnRlcyBuYXRpdm9zICgxMiBkbyBDb21tZXJjaWFsIEFnZW50IENlbGwgdjEuMS4wICsgMyB0w6F0aWNvcyBkYSBPbmRhIDAyOiBgYWNjb3VudC1kZXRlY3RpdmVgLCBgcHJvbWlzZS1ndWFyZGlhbmAsIGBkZXZpbHMtYWR2b2NhdGVgKS4KMy4gKipBZ2VudGVzIEVzcGVjaWFsaXphZG9zIGRlIENhbmFpczoqKiA0IGNvbXBvbmVudGVzIGRlZGljYWRvcyAoYHZvaWNlLWFnZW50YCwgYHNkci1kaWFnbm9zdGljYCwgYGh1bnRlcmAsIGB0YWN0aWNhbGApLgo0LiAqKlBlcnNvbmFzIGRvIEFnZW50IEJ1aWxkZXI6KiogMzc5IHBhcMOpaXMgZXNwZWNpYWxpemFkb3Mgc2VyaWFsaXphZG9zIG5vIGNhdMOhbG9nbyBgYWdlbnRzLm5vcm1hbGl6ZWQuanNvbmAuCjUuICoqQXZhdGFyZXMgSW5zdGl0dWNpb25haXMgZGUgSW50ZXJmYWNlOioqIDkgYm90cyBnZW9tw6l0cmljb3MgZW0gU1ZHIChEb3RzIG7Do28taHVtYW5vcykgcXVlIHJlcHJlc2VudGFtIG9zIHBpbGFyZXMgZGEgcGxhdGFmb3JtYS4KNi4gKipGZXJyYW1lbnRhcyBlIENhcGFjaWRhZGVzIGRlIElBOioqIENhdMOhbG9nbyBkZSBjYXBhYmlsaXRpZXMgaW52b2PDoXZlaXMgcmVnaXN0cmFkYXMgZW0gYGFnZW50Q2FwYWJpbGl0aWVzLm5vcm1hbGl6ZWQuanNvbmAuCjcuICoqU3VwZXJ2aXNvciBDZW50cmFsIChgUm9sZVN1cGVydmlzb3JgKToqKiBPcnF1ZXN0cmFkb3IgZW0gcnVudGltZSByZXNwb25zw6F2ZWwgcGVsbyBkZXNwYWNobyBzZW3Dom50aWNvLCBnZXN0w6NvIGRlIG1lbcOzcmlhIGUgZmlsYSBgQUlQZW5kaW5nQWN0aW9uYC4KCi0tLQoKIyMgNS4gQ29uY2x1c8OjbyBkbyBBZ2VudGUgMDAKClRvZGFzIGFzIGluY29uc2lzdMOqbmNpYXMgaWRlbnRpZmljYWRhcyBwZWxhIHJldmlzw6NvIGluZGVwZW5kZW50ZSBmb3JhbSBzYW5hZGFzLiBPcyBhcnRlZmF0b3MgZm9yYW0gYXR1YWxpemFkb3MgZSBzaW5jcm9uaXphZG9zLgo=","doc02Mat":"IyBNQVRSSVogTUVTVFJBIERFIFJBU1RSRUFCSUxJREFERSBSRUNPTkNJTElBREEgKEVOVFJFR0EgMDIpCioqUHJvamV0bzoqKiBCaXJ0aHViIDM2MMKwIOKAlCBTaXN0ZW1hIE9wZXJhY2lvbmFsIGRlIFJldmVudWUgSW50ZWxsaWdlbmNlICAKKipBdXRvcmlkYWRlOioqIEFnZW50ZSAwMCAoU3VwZXJ2aXNvciBHZXJhbCkgIAoqKkRhdGE6KiogMTAgZGUgTm92ZW1icm8gZGUgMjAyNiAgCioqU3RhdHVzOioqIDEwMCUgUkVDT05DSUxJQURBIOKAlCAzMyBERSAzMyBDUklUw4lSSU9TIFZJTkNVTEFET1MgU0VNIMOTUkbDg09TCgotLS0KCiMjIDEuIENvbnZlbsOnw6NvIGRlIElkZW50aWZpY2Fkb3JlcwoKLSAqKk1PRC0wMSBhIE1PRC0xMToqKiBPcyAxMSBNw7NkdWxvcyBGdW5jaW9uYWlzIE9maWNpYWlzLgotICoqUkVRLXh4eDoqKiBSZXF1aXNpdG9zIEZ1bmNpb25haXMgZSBOw6NvIEZ1bmNpb25haXMgQ2Fuw7RuaWNvcyAoMzMgaXRlbnMpLgotICoqUk4teHh4OioqIFJlZ3JhcyBkZSBOZWfDs2NpbyBJbmVnb2Npw6F2ZWlzICgzMyByZWdyYXMpLgotICoqUEVSUy14eHg6KiogUGVyc29uYXMgQXV0b3JpemFkYXMgZSBJbXBhY3RhZGFzLgotICoqREFUQS14eHg6KiogRW50aWRhZGVzIGRvIE1vZGVsbyBkZSBEYWRvcyBQcmlzbWEuCi0gKipJTlQteHh4OioqIENvbmVjdG9yZXMgZSBBUElzIEV4dGVybmFzLgotICoqQUdULXh4eDoqKiBBZ2VudGVzIE5hdGl2b3MgZG8gRW54YW1lIGRlIElBIGUgQXZhdGFyZXMuCi0gKipKT1ItMDEgYSBKT1ItMjA6KiogQXMgMjAgSm9ybmFkYXMgT3BlcmFjaW9uYWlzIFBvbnRhIGEgUG9udGEuCi0gKipBQy14eHg6KiogQ3JpdMOpcmlvcyBkZSBBY2VpdGUgVmVyaWZpY8OhdmVpcyAoMzMgdGVzdGVzIG9iamV0aXZvcykuCgotLS0KCiMjIDIuIE1hdHJpeiBJbnRlZ3JhbCBSZWNvbmNpbGlhZGEgKDMzIFbDrW5jdWxvcyBPZmljaWFpcykKCnwgTcOzZHVsbyB8IElEIFJlcXVpc2l0byB8IERlc2NyacOnw6NvIEZ1bmNpb25hbCB8IFJlZ3JhIGRlIE5lZ8OzY2lvIHwgUGVyc29uYSB8IEVudGlkYWRlIGRlIERhZG9zIHwgSW50ZWdyYcOnw6NvIHwgQWdlbnRlIElBIHwgSm9ybmFkYSB8IENyaXTDqXJpbyBkZSBBY2VpdGUgfCBTdGF0dXMgfAp8IDotLS0gfCA6LS0tIHwgOi0tLSB8IDotLS0gfCA6LS0tIHwgOi0tLSB8IDotLS0gfCA6LS0tIHwgOi0tLSB8IDotLS0gfCA6LS0tIHwKfCAqKk1PRC0wMSoqIEh1YiBDb21lcmNpYWwgfCBgUkVRLUNSTS0wMDFgIHwgVHJhbnNpw6fDo28gYXTDtG1pY2EgZGUgZXN0w6FnaW8gbm8gS2FuYmFuIGNvbSByZWPDoWxjdWxvIGRlIHZhbG9yZXMgfCBgUk4tQ1JNLTAxYDogUHJvaWJpZG8gYXZhbsOnYXIgc2VtIHZhbG9yIGUgZGF0YSBlc3RpbWFkYSB8IENsb3NlciwgR2VzdG9yIHwgYERlYWxgLCBgU3RhZ2VgIHwgQml0cml4MjQgfCBPcmJpdCwgYGNsb3Nlci1zYWxlc2AgfCAqKkpPUi0wNyoqIHwgYEFDLUhVQi0wMDFgIHwgKipIT01PTE9HQURPKiogfAp8ICoqTU9ELTAxKiogSHViIENvbWVyY2lhbCB8IGBSRVEtQ1JNLTAwMmAgfCBFbWlzc8OjbyBkZSBwcm9wb3N0YXMgY29tIGPDoWxjdWxvIGRlIG1hcmdlbSBlIGFsw6dhZGEgZXNjYWxvbmFkYSB8IGBSTi1DUk0tMDJgOiBEZXNjb250byA+IDEwJSBleGlnZSBHZXN0b3I7ID4gMjAlIERpcmV0b3JpYSB8IENsb3NlciwgR2VzdG9yIHwgYFByb3Bvc2FsYCB8IFNpZ25hdHVyZSBQcm92aWRlciB8IGBjb250cmFjdC1zaWduYXR1cmVgIHwgKipKT1ItMDgqKiB8IGBBQy1IVUItMDAyYCB8ICoqSE9NT0xPR0FETyoqIHwKfCAqKk1PRC0wMSoqIEh1YiBDb21lcmNpYWwgfCBgUkVRLUNSTS0wMDNgIHwgRmljaGEgQ2FkYXN0cmFsIDM2MMKwIGNvbSB0aW1lbGluZSB1bmlmaWNhZGEgZGUgaW50ZXJhw6fDtWVzIHwgYFJOLUNSTS0wM2A6IFByb2liaWRvIGNyaWFyIGxlYWQgc2VtIHRlbmFudElkIGUgY29udGF0byB8IFNEUiwgQ2xvc2VyIHwgYExlYWRgLCBgQ29udGFjdGAgfCBHb29nbGUgQ2FsZW5kYXIgfCBgY3JtLmFnZW50YCB8ICoqSk9SLTAxKiosICoqSk9SLTAzKiogfCBgQUMtSFVCLTAwM2AgfCAqKkhPTU9MT0dBRE8qKiB8CnwgKipNT0QtMDIqKiBJbnRlbGlnw6puY2lhIHwgYFJFUS1NS1QtMDAxYCB8IEJ1c2NhIGVtIGNhc2NhdGEgZW0gNyBmb250ZXMgZXh0ZXJuYXMgY29tIGRlZHVwbGljYcOnw6NvIHwgYFJOLU1LVC0wMWA6IENvbnN1bHRhIGNvbnNvbWUgY3LDqWRpdG9zIGRlIGVucmlxdWVjaW1lbnRvIHwgQkRSIHwgYFByb3NwZWN0QWNjb3VudGAgfCBSZWNlaXRhLCBBcG9sbG8gfCBOZXh1cyB8ICoqSk9SLTAyKiogfCBgQUMtTUtULTAwMWAgfCAqKkhPTU9MT0dBRE8qKiB8CnwgKipNT0QtMDIqKiBJbnRlbGlnw6puY2lhIHwgYFJFUS1NS1QtMDAyYCB8IERvc3Npw6ogMzYwwrAgZW0gMTAgc2XDp8O1ZXMgY29tIHNpbmFpcyBkZSBjb21wcmEgfCBgUk4tTUtULTAyYDogRGVzY2FydGFyIGRhZG9zIGRlIG7Do28tZGVjaXNvcmVzIChMR1BEKSB8IEJEUiwgQ2xvc2VyIHwgYENvbXBhbnlFbnJpY2htZW50YHwgTGlua2VkSW4sIE5ld3MgfCBgYWNjb3VudC1kZXRlY3RpdmVgIHwgKipKT1ItMDYqKiB8IGBBQy1NS1QtMDAyYCB8ICoqSE9NT0xPR0FETyoqIHwKfCAqKk1PRC0wMioqIEludGVsaWfDqm5jaWEgfCBgUkVRLU1LVC0wMDNgIHwgVGFyaWZhw6fDo28gZSBkw6liaXRvIGF0w7RtaWNvIGRlIGNyw6lkaXRvcyBkZSBlbnJpcXVlY2ltZW50byB8IGBSTi1NS1QtMDNgOiBCbG9xdWVpbyBpbWVkaWF0byBkYSBjaGFtYWRhIHNlIGNvdGEgemVyYWRhIHwgQkRSLCBSZXZPcHMgfCBgRW5yaWNobWVudExvZ2AgfCBMZWRnZXIgZGUgUXVvdGFzIHwgTmV4dXMgfCAqKkpPUi0wMioqIHwgYEFDLU1LVC0wMDNgIHwgKipIT01PTE9HQURPKiogfAp8ICoqTU9ELTAzKiogT3JxdWVzdHJhw6fDo28gfCBgUkVRLU9SUS0wMDFgIHwgTW90b3IgbXVsdGljYW5hbCBkZSBjYWTDqm5jaWEgY29tIGVudmlvIGVtIGhvcsOhcmlvIGNvbWVyY2lhbCB8IGBSTi1PUlEtMDFgOiBBdXRvLVN0b3Agb2JyaWdhdMOzcmlvIGFvIHJlY2ViZXIgcmVzcG9zdGEgfCBTRFIsIEJEUiB8IGBDYWRlbmNlYCwgYFN0ZXBgIHwgU2VuZGdyaWQsIENoYXR3b290IHwgQXJpYSwgYGJkci1vdXRib3VuZGAgfCAqKkpPUi0wNCoqIHwgYEFDLU9SUS0wMDFgIHwgKipIT01PTE9HQURPKiogfAp8ICoqTU9ELTAzKiogT3JxdWVzdHJhw6fDo28gfCBgUkVRLU9SUS0wMDJgIHwgTWVzYSBkZSBUcmF0YW1lbnRvIHByaW9yaXphZGEgY29tIFNMQSBkZSA1IG1pbnV0b3MgfCBgUk4tT1JRLTAyYDogQWxlcnRhIHNvbm9ybyBhcMOzcyAxNW1pbiBzZW0gYXRlbmRpbWVudG8gfCBTRFIgfCBgRGFpbHlUYXNrYCwgYExlYWRgIHwgV2hhdHNBcHAsIEUtbWFpbCB8IGBzZHItcXVhbGlmaWNhdGlvbmAgfCAqKkpPUi0wMyoqIHwgYEFDLU9SUS0wMDJgIHwgKipIT01PTE9HQURPKiogfAp8ICoqTU9ELTAzKiogT3JxdWVzdHJhw6fDo28gfCBgUkVRLU9SUS0wMDNgIHwgU2ltdWxhZG9yIGRlIFJvbGVwbGF5IGNvbSBJQSBlIHNjb3JlY2FyZCBwb3IgcnVicmljYSB8IGBSTi1PUlEtMDNgOiBOb3RhIG3DrW5pbWEgODAvMTAwIHBhcmEgY2VydGlmaWNhciB2ZW5kZWRvciB8IFZlbmRlZG9yIHwgYFJvbGVwbGF5U2Vzc2lvbmAgfCBXZWJSVEMgLyDDgXVkaW8gfCBgbGVhcm5pbmcuYWdlbnRgIHwgKipKT1ItMTkqKiB8IGBBQy1PUlEtMDAzYCB8ICoqSE9NT0xPR0FETyoqIHwKfCAqKk1PRC0wNCoqIFBlcmZvcm1hbmNlIHwgYFJFUS1QUkYtMDAxYCB8IFJlbmRlcml6YcOnw6NvIGluc3RhbnTDom5lYSBkb3MgMTcgcmVsYXTDs3Jpb3MgZXhlY3V0aXZvcyB8IGBSTi1QUkYtMDFgOiBQZXJtaXRpciBkcmlsbC1kb3duIGF0w6kgYSB0cmFuc2HDp8OjbyB8IERpcmV0b3IsIEdlc3RvciB8IGBFeGVjdXRpdmVLcGlgIHwgUG9zdGdyZVNRTCBSTFMgfCBWYW5ndWFyZCB8ICoqSk9SLTEyKiogfCBgQUMtUEVSRi0wMDFgIHwgKipIT01PTE9HQURPKiogfAp8ICoqTU9ELTA0KiogUGVyZm9ybWFuY2UgfCBgUkVRLVBSRi0wMDJgIHwgV2luL0xvc3MgRGVlcCBBdXRvcHN5IGNvbSBhZ3J1cGFtZW50byBzZW3Dom50aWNvIHwgYFJOLVBSRi0wMmA6IE1vdGl2byBwYWRyb25pemFkbyBvYnJpZ2F0w7NyaW8gbmEgcGVyZGEgfCBSZXZPcHMsIEdlc3RvciB8IGBXaW5Mb3NzQXV0b3BzeWAgfCBDUk0gQ29yZSB8IGBkZXZpbHMtYWR2b2NhdGVgIHwgKipKT1ItMTMqKiB8IGBBQy1QRVJGLTAwMmAgfCAqKkhPTU9MT0dBRE8qKiB8CnwgKipNT0QtMDQqKiBQZXJmb3JtYW5jZSB8IGBSRVEtUFJGLTAwM2AgfCBXYXIgUm9vbSBjb20gdGVsZW1ldHJpYSBhbyB2aXZvIHZpYSBTZXJ2ZXItU2VudCBFdmVudHMgfCBgUk4tUFJGLTAzYDogUXVlZGEgZGUgY29udmVyc8OjbyA+IDIwJSBhYnJlIHNhbGEgZGUgY3Jpc2UgfCBMaWRlcmFuw6dhIHwgYFNlbGxlck1ldHJpY2AgfCBTU0UgLyBXZWJTb2NrZXRzIHwgVmFuZ3VhcmQgfCAqKkpPUi0xMyoqIHwgYEFDLVBFUkYtMDAzYCB8ICoqSE9NT0xPR0FETyoqIHwKfCAqKk1PRC0wNSoqIFByZXZpc2liaWxpZGFkZSB8IGBSRVEtUFJWLTAwMWAgfCBGb3JlY2FzdCBQcmVkaXRpdm8gQ2FsaWJyYWRvIGNvbnRyYSByZWFsaXphZG8gKE1BUEUgPCA4JSkgfCBgUk4tUFJWLTAxYDogRGVhbHMgaW5hdGl2b3MgPiAyMSBkaWFzIGZvcmEgZG8gQ29tbWl0IHwgQ0ZPLCBEaXJldG9yIHwgYEZvcmVjYXN0U25hcHNob3RgIHwgT3JhY2xlIEVuZ2luZSB8IE9yYWNsZSwgYGZvcmVjYXN0LmFnZW50YCB8ICoqSk9SLTEyKiogfCBgQUMtUFJFVi0wMDFgIHwgKipIT01PTE9HQURPKiogfAp8ICoqTU9ELTA1KiogUHJldmlzaWJpbGlkYWRlIHwgYFJFUS1QUlYtMDAyYCB8IFBpcGVsaW5lIFBvbmRlcmFkbyBwb3IgSGVhbHRoIFNjb3JlIGRlIDAgYSAxMDAgfCBgUk4tUFJWLTAyYDogSGVhbHRoIDwgMzUgcmVkdXogdmFsb3IgcG9uZGVyYWRvIGVtIDcwJSB8IEdlc3RvciwgQ2xvc2VyIHwgYERlYWxSaXNrU2NvcmVgIHwgRXZlbnQgTWVzaCB8IGByZXZlbnVlLWludGVsbGlnZW5jZWB8ICoqSk9SLTA3KiosICoqSk9SLTEyKiogfCBgQUMtUFJFVi0wMDJgIHwgKipIT01PTE9HQURPKiogfAp8ICoqTU9ELTA1KiogUHJldmlzaWJpbGlkYWRlIHwgYFJFUS1QUlYtMDAzYCB8IFNpbXVsYWRvciBXaGF0LUlmIGRlIGNhcGFjaWRhZGUgZSByYW1wLXVwIGRlIGNvbnRyYXRhw6fDo28gfCBgUk4tUFJWLTAzYDogQ29uc2lkZXJhciBjdXJ2YSBoaXN0w7NyaWNhIHJlYWwgZGUgcmFtcC11cCB8IFJldk9wcywgRGlyZXRvcmlhIHwgYEhpcmluZ1NjZW5hcmlvYCB8IEZpbmFuY2lhbCBFbmdpbmUgfCBgZm9yZWNhc3QuYWdlbnRgIHwgKipKT1ItMTIqKiB8IGBBQy1QUkVWLTAwM2AgfCAqKkhPTU9MT0dBRE8qKiB8CnwgKipNT0QtMDYqKiBJbnRlbGlnw6puY2lhIHwgYFJFUS1JQS0wMDFgIHwgRW54YW1lIGRlIDE1IEFnZW50ZXMgTmF0aXZvcyBzb2IgbyBTdXBlcnZpc29yIENlbnRyYWwgfCBgUk4tSUEtMDFgOiBBw6fDo28gZXh0ZXJuYSBkZSByaXNjbyBISUdIIGV4aWdlIGFwcm92YcOnw6NvIHwgVG9kYSBhIEVxdWlwZSB8IGBDb21tZXJjaWFsQWdlbnRgIHwgQWdlbnRCdXMgfCBDb3JlLCBgcm9sZS1zdXBlcnZpc29yYCB8ICoqSk9SLTE4KiogfCBgQUMtSUEtMDAxYCB8ICoqSE9NT0xPR0FETyoqIHwKfCAqKk1PRC0wNioqIEludGVsaWfDqm5jaWEgfCBgUkVRLUlBLTAwMmAgfCBCYXNlIGRlIENvbmhlY2ltZW50byBSQUcgZW0gcGd2ZWN0b3IgKDE1MzYgZGltZW5zw7VlcykgfCBgUk4tSUEtMDJgOiBQcm9pYmlkbyBjaXRhciBkYWRvcyBmb3JhIGRhIGJhc2UgY29ycG9yYXRpdmEgfCBUb2RhIGEgRXF1aXBlIHwgYEtub3dsZWRnZUNodW5rYCB8IHBndmVjdG9yIC8gT3BlbkFJIHwgYGxlYXJuaW5nLmFnZW50YCB8ICoqSk9SLTA2KiosICoqSk9SLTE4KiogfCBgQUMtSUEtMDAyYCB8ICoqSE9NT0xPR0FETyoqIHwKfCAqKk1PRC0wNioqIEludGVsaWfDqm5jaWEgfCBgUkVRLUlBLTAwM2AgfCBGaWxhIGRlIEFwcm92YcOnw6NvIEh1bWFuYSBjb20gcmFzdHJvIGltdXTDoXZlbCBkZSBhdXRvciB8IGBSTi1JQS0wM2A6IFJlZ2lzdHJvIGRlIGp1c3RpZmljYXRpdmEgZSB0aW1lc3RhbXAgZGUgYWNlaXRlIHwgR2VzdG9yLCBBZG1pbiB8IGBBSVBlbmRpbmdBY3Rpb25gIHwgU2xhY2sgLyBQYWluZWwgfCBDb3JlIHwgKipKT1ItMTgqKiB8IGBBQy1JQS0wMDNgIHwgKipIT01PTE9HQURPKiogfAp8ICoqTU9ELTA3KiogQXV0b21hw6fDo28gfCBgUkVRLUFVVC0wMDFgIHwgTW90b3IgZGUgcmVncmFzIHZpc3VhaXMgb3JpZW50YWRhcyBhIGV2ZW50b3MgKEV2ZW50IE1lc2gpIHwgYFJOLUFVVC0wMWA6IENoYXZlIGRlIGlkZW1wb3TDqm5jaWEgZGUgNDhoIG9icmlnYXTDs3JpYSB8IFJldk9wcywgQWRtaW4gfCBgQXV0b21hdGlvblJ1bGVgIHwgUmVkaXMgLyBCdWxsTVEgfCBTcGFyayB8ICoqSk9SLTE3KiogfCBgQUMtQVVULTAwMWAgfCAqKkhPTU9MT0dBRE8qKiB8CnwgKipNT0QtMDcqKiBBdXRvbWHDp8OjbyB8IGBSRVEtQVVULTAwMmAgfCBDb25lY3RvciBCaXRyaXgyNCBiaWRpcmVjaW9uYWwgcmVzaWxpZW50ZSBjb20gbGVha3kgYnVja2V0IHwgYFJOLUFVVC0wMmA6IExpbWl0ZSBlc3RyaXRvIGRlIDIgcmVxL3MgZSBsb3RlcyBkZSA1MCBpdGVucyB8IEludGVncmFkb3IgfCBgQml0cml4U3luY0xvZ2AgfCBCaXRyaXgyNCBSRVNUIEFQSSB8IGBiaXRyaXgtZ3VhcmRpYW5gIHwgKipKT1ItMTYqKiB8IGBBQy1BVVQtMDAyYCB8ICoqSE9NT0xPR0FETyoqIHwKfCAqKk1PRC0wNyoqIEF1dG9tYcOnw6NvIHwgYFJFUS1BVVQtMDAzYCB8IE1vZG8gRHJ5LVJ1biBwYXJhIHNpbXVsYcOnw6NvIGRlIHJlZ3JhcyBzZW0gbXV0YcOnw6NvIHwgYFJOLUFVVC0wM2A6IEV4ZWN1w6fDo28gZW0gbWVtw7NyaWEgc2VtIGVzY3JpdGEgZW0gcHJvZHXDp8OjbyB8IFJldk9wcywgQWRtaW4gfCBgRHJ5UnVuTG9nYCB8IEVuZ2luZSBBU1QgfCBTcGFyayB8ICoqSk9SLTE3KiogfCBgQUMtQVVULTAwM2AgfCAqKkhPTU9MT0dBRE8qKiB8CnwgKipNT0QtMDgqKiBFbmdhamFtZW50byB8IGBSRVEtRU5HLTAwMWAgfCBWb2ljZUh1YiBTdHVkaW8gV2ViUlRDIGNvbSB0cmFuc2NyacOnw6NvIGVzdMOpcmVvIGFvIHZpdm8gfCBgUk4tRU5HLTAxYDogR3JhdmHDp8OjbyBjb20gY29uc2VudGltZW50byBlIGNyaXB0b2dyYWZpYSB8IFNEUiwgQ2xvc2VyIHwgYENhbGxSZWNvcmRpbmdgIHwgM0NYLCBCbGFuZCBBSSB8IEVjaG8sIGB2b2ljZS1hZ2VudGAgfCAqKkpPUi0wNSoqIHwgYEFDLUVORy0wMDFgIHwgKipIT01PTE9HQURPKiogfAp8ICoqTU9ELTA4KiogRW5nYWphbWVudG8gfCBgUkVRLUVORy0wMDJgIHwgU3VwcmVzc8OjbyBkZSBjb2xkIGNhbGwgY29udHJhIGxpc3RhIE7Do28gUGVydHVyYmUgfCBgUk4tRU5HLTAyYDogQmxvcXVlaW8gY29tcHVsc8OzcmlvIGRlIG7Dum1lcm9zIHJlZ2lzdHJhZG9zIHwgU0RSIHwgYFN1cHByZXNzaW9uTGlzdGAgfCBQcm9jb24gLyBBbmF0ZWwgQVBJIHwgRWNobyB8ICoqSk9SLTA1KiogfCBgQUMtRU5HLTAwMmAgfCAqKkhPTU9MT0dBRE8qKiB8CnwgKipNT0QtMDgqKiBFbmdhamFtZW50byB8IGBSRVEtRU5HLTAwM2AgfCBCb29raW5nIFDDumJsaWNvIDM2MMKwIGNvbSBwcmV2ZW7Dp8OjbyBkZSBkb3VibGUtYm9va2luZyB8IGBSTi1FTkctMDNgOiBUcmF2YSB0cmFuc2FjaW9uYWwgZGUgaG9yw6FyaW8gbm8gY2FsZW5kw6FyaW8gfCBMZWFkLCBDbG9zZXIgfCBgQm9va2luZ1Nsb3RgIHwgR29vZ2xlIENhbGVuZGFyIHwgRWNobyB8ICoqSk9SLTA1KiosICoqSk9SLTA4KiogfCBgQUMtRU5HLTAwM2AgfCAqKkhPTU9MT0dBRE8qKiB8CnwgKipNT0QtMDkqKiBBZG1pbiB8IGBSRVEtQURNLTAwMWAgfCBJc29sYW1lbnRvIG11bHRpLXRlbmFudCBvYnJpZ2F0w7NyaW8gdmlhIFBvc3RncmVTUUwgUkxTIHwgYFJOLUFETS0wMWA6IFZpb2xhw6fDo28gZGUgdGVuYW50SWQgZGlzcGFyYSBIVFRQIDQwMyBlIFNJRU0gfCBBZG1pbiwgVEkgfCBUb2RhcyBhcyBFbnRpZGFkZXMgfCBQb3N0Z3JlU1FMIFJMUyB8IFN1ZG8gfCAqKkpPUi0wMSoqLCAqKkpPUi0yMCoqIHwgYEFDLUFETS0wMDFgIHwgKipIT01PTE9HQURPKiogfAp8ICoqTU9ELTA5KiogQWRtaW4gfCBgUkVRLUFETS0wMDJgIHwgR2F0ZSBkZSBjb25jZXNzw6NvIG1vZHVsYXIgcG9yIG9yZ2FuaXphw6fDo28gfCBgUk4tQURNLTAyYDogUm90YSBkZSBtw7NkdWxvIG7Do28gY29udHJhdGFkbyByZXRvcm5hIEhUVFAgNDAzIHwgQWRtaW4sIFJldk9wcyB8IGBNb2R1bGVHcmFudGAgfCBTZXNzaW9uIEd1YXJkIHwgU3VkbyB8ICoqSk9SLTAxKiogfCBgQUMtQURNLTAwMmAgfCAqKkhPTU9MT0dBRE8qKiB8CnwgKipNT0QtMDkqKiBBZG1pbiB8IGBSRVEtQURNLTAwM2AgfCBQb3J0YWwgTEdQRCBjb20gYW5vbmltaXphw6fDo28gY2VnYSAoYmxpbmQgaW5kZXgpIHwgYFJOLUFETS0wM2A6IFByZXNlcnZhw6fDo28gZGUgZGFkb3MgZmlzY2FpcyAoQXJ0LiAxNiBMR1BEKSB8IERQTywgQWRtaW4gfCBgTGdwZENvbnNlbnRgLCBgQXVkaXRMb2dgIHwgSGFzaCBTSEEtMjU2IHwgYENvbXBsaWFuY2VFbmZvcmNlcmAgfCAqKkpPUi0yMCoqIHwgYEFDLUFETS0wMDNgIHwgKipIT01PTE9HQURPKiogfAp8ICoqTU9ELTEwKiogTW9iaWxlIHwgYFJFUS1NT0ItMDAxYCB8IEZpZWxkIE1lZXRpbmcgUmVjb3JkZXIgY29tIMOhdWRpbyBlIG5vdGFzIGVtIGNhbXBvIHwgYFJOLU1PQi0wMWA6IEdyYXZhw6fDo28gcHJvdGVnaWRhIGNvbnRyYSBkZXNsaWdhbWVudG8gZG8gT1MgfCBWZW5kZWRvciBFeHRlcm5vIHwgYE1vYmlsZUZpZWxkTWVldGluZ2B8IENhcGFjaXRvciBQbHVnaW4gfCBgcHJvbWlzZS1ndWFyZGlhbmAgfCAqKkpPUi0xNCoqIHwgYEFDLU1PQi0wMDFgIHwgKipIT01PTE9HQURPKiogfAp8ICoqTU9ELTEwKiogTW9iaWxlIHwgYFJFUS1NT0ItMDAyYCB8IFBlcnNpc3TDqm5jaWEgdHJhbnNhY2lvbmFsIGxvY2FsIGUgdG9sZXLDom5jaWEgYSBjcmFzaCB8IGBSTi1NT0ItMDJgOiBHcmF2YcOnw6NvIHNhbHZhIGVtIFNRTGl0ZSBjcmlwdG9ncmFmYWRvIGxvY2FsIHwgVmVuZGVkb3IgRXh0ZXJubyB8IGBPZmZsaW5lQ2FjaGVgIHwgU1FMaXRlIC8gQmlvbWV0cmlhIHwgT3JiaXQgTW9iaWxlIHwgKipKT1ItMTQqKiB8IGBBQy1NT0ItMDAyYCB8ICoqSE9NT0xPR0FETyoqIHwKfCAqKk1PRC0xMCoqIE1vYmlsZSB8IGBSRVEtTU9CLTAwM2AgfCBTaW5jcm9uaXphw6fDo28gZW0gbG90ZSBpc29sYWRhIGNvbSBEZWFkLUxldHRlciBRdWV1ZSB8IGBSTi1NT0ItMDNgOiBGYWxoYSBlbSAxIHBhY290ZSBuw6NvIGJsb3F1ZWlhIGEgZmlsYSByZXN0YW50ZSB8IFZlbmRlZG9yIEV4dGVybm8gfCBgT2ZmbGluZVN5bmNRdWV1ZWAgfCBOZXR3b3JrIFBsdWdpbiB8IE9yYml0IE1vYmlsZSB8ICoqSk9SLTE0KiogfCBgQUMtTU9CLTAwM2AgfCAqKkhPTU9MT0dBRE8qKiB8CnwgKipNT0QtMTEqKiBTb2NpYWwgfCBgUkVRLVNPQy0wMDFgIHwgR2VyYWRvciBkZSBhYm9yZGFnZW5zIGNvbnN1bHRpdmFzIHBhcmEgcG9zdHMgZGUgZGVjaXNvcmVzIHwgYFJOLVNPQy0wMWA6IFByb2liaWRvIGVudmlvIGF1dG9tw6F0aWNvIHNlbSBjbGlxdWUgaHVtYW5vIHwgQkRSLCBTb2NpYWwgU2VsbGVyIHwgYFNvY2lhbEludGVyYWN0aW9uYHwgTGlua2VkSW4gUHVibGljIEZlZWQgfCBgYmRyLW91dGJvdW5kYCB8ICoqSk9SLTE1KiogfCBgQUMtU09DLTAwMWAgfCAqKkhPTU9MT0dBRE8qKiB8CnwgKipNT0QtMTEqKiBTb2NpYWwgfCBgUkVRLVNPQy0wMDJgIHwgQXNzb2NpYcOnw6NvIGltZWRpYXRhIGRlIGFib3JkYWdlbSBnZXJhZGEgw6AgdGltZWxpbmUgZG8gQ1JNIHwgYFJOLVNPQy0wMmA6IFZpbmN1bGHDp8OjbyBkYSBpbnRlcmHDp8OjbyBjb20gMSBjbGlxdWUgfCBCRFIsIENsb3NlciB8IGBMZWFkVGltZWxpbmVgIHwgQ1JNIEFQSSB8IGBsZHItaW50ZWxsaWdlbmNlYCB8ICoqSk9SLTE1KiogfCBgQUMtU09DLTAwMmAgfCAqKkhPTU9MT0dBRE8qKiB8CnwgKipNT0QtMTEqKiBTb2NpYWwgfCBgUkVRLVNPQy0wMDNgIHwgQ29uZm9ybWlkYWRlIGUgY29udHJvbGUgZGUgdGF4YSBjb20gdGVybW9zIGRhcyByZWRlcyB8IGBSTi1TT0MtMDNgOiBQcm9pYmnDp8OjbyBlc3RyaXRhIGRlIHNjcmFwaW5nIHByZWRhdMOzcmlvIHwgVEksIFNlZ3VyYW7Dp2EgfCBgU29jaWFsUHJvZmlsZWAgfCBSYXRlIExpbWl0ZXIgfCBOZXh1cyBTb2NpYWwgfCAqKkpPUi0xNSoqIHwgYEFDLVNPQy0wMDNgIHwgKipIT01PTE9HQURPKiogfAoKLS0tCgojIyAzLiBCYWxhbsOnbyBkZSBGZWNoYW1lbnRvIGRhIFJhc3RyZWFiaWxpZGFkZQoKLSAqKlRvdGFsIGRlIE3Ds2R1bG9zIENvYmVydG9zOioqIDExIGRlIDExICgxMDAlKS4KLSAqKlRvdGFsIGRlIFJlcXVpc2l0b3MgQ2Fuw7RuaWNvczoqKiAzMyBkZSAzMyAoMTAwJSkuCi0gKipUb3RhbCBkZSBSZWdyYXMgZGUgTmVnw7NjaW86KiogMzMgZGUgMzMgKDEwMCUpLgotICoqVG90YWwgZGUgQ3JpdMOpcmlvcyBkZSBBY2VpdGU6KiogMzMgZGUgMzMgKDEwMCUpLgotICoqQ3JpdMOpcmlvcyDDk3Jmw6NvczoqKiBaRVJPLgotICoqVsOtbmN1bG9zIFF1ZWJyYWRvczoqKiBaRVJPLgo=","doc03Agt":"IyBJTlZFTlTDgVJJTyBPRklDSUFMIEUgR09WRVJOQU7Dh0EgRE8gRUNPU1NJU1RFTUEgREUgQUdFTlRFUyBERSBJQSAoRU5UUkVHQSAwMykKKipQcm9qZXRvOioqIEJpcnRodWIgMzYwwrAg4oCUIFNpc3RlbWEgT3BlcmFjaW9uYWwgZGUgUmV2ZW51ZSBJbnRlbGxpZ2VuY2UgIAoqKkF1dG9yaWRhZGU6KiogQWdlbnRlIDAwIChTdXBlcnZpc29yIEdlcmFsKSAgCioqRW0gY29uZm9ybWlkYWRlIGNvbToqKiBgQUdFTlRTLm1kYCBlIGBHVUlBLU1FU1RSRS1QRVJTT05BR0VOUy1CSVJUSC1IVUItMzYwLm1kYCAgCioqRGF0YToqKiAxMCBkZSBOb3ZlbWJybyBkZSAyMDI2ICAKKipTdGF0dXM6KiogSE9NT0xPR0FETyDigJQgVEFYT05PTUlBIERFIDcgTsONVkVJUyBDT05TT0xJREFEQQoKLS0tCgojIyAxLiBQcmluY8OtcGlvIGRlIFNlcGFyYcOnw6NvIGRlIFJlc3BvbnNhYmlsaWRhZGVzCgpQYXJhIGVsaW1pbmFyIHF1YWxxdWVyIGFtYmlndWlkYWRlIGVudHJlIG9zIGFnZW50ZXMgcXVlIGNvbnN0cm9lbSBvIHNvZnR3YXJlIGUgb3MgYWdlbnRlcyBxdWUgZXhlY3V0YW0gYXMgdGFyZWZhcyBkZSB2ZW5kYXMgZW0gcHJvZHXDp8OjbywgbyBlY29zc2lzdGVtYSDDqSBmb3JtYWxtZW50ZSBkaXZpZGlkbyBlbSAqKjcgY2F0ZWdvcmlhcyBlc3RyaXRhbWVudGUgZGVsaW1pdGFkYXMqKi4KCi0tLQoKIyMgMi4gQXMgNyBDYXRlZ29yaWFzIE9maWNpYWlzIGRvIEVjb3NzaXN0ZW1hCgojIyMgQ2F0ZWdvcmlhIDE6IEFnZW50ZXMgZGUgRW5nZW5oYXJpYSBlIEdvdmVybmFuw6dhIGRvIFJlcG9zaXTDs3JpbyAoYEFHRU5UUy5tZGApClPDo28gb3MgcGFww6lpcyBkZSBlbmdlbmhhcmlhIGNvbGFib3JhdGl2YSBxdWUgb3BlcmFtIG5vIGRlc2Vudm9sdmltZW50bywgdGVzdGUsIHNlZ3VyYW7Dp2EgZSBkZXBsb3kgZG8gcmVwb3NpdMOzcmlvIGBNYXJrc05OL0JpcnRodWItMzYwYC4gKipOZW5odW0gZGVzdGVzIGFnZW50ZXMgw6kgZXhwb3N0byBhbyBjbGllbnRlIGZpbmFsLioqCgotICoqMDAg4oCUIENvb3JkZW5hZG9yIC8gU3VwZXJ2aXNvciBHZXJhbDoqKiBPcnF1ZXN0cmHDp8OjbyBnbG9iYWwsIHBsYW5lamFtZW50byBkZSBvbmRhcywgbWF0cml6IGRlIHJhc3RyZWFiaWxpZGFkZSwgZ2F0ZXMgZSBjb25mbGl0b3MuCi0gKiowMSDigJQgUGxhdGFmb3JtYSwgU2VndXJhbsOnYSBlIERhZG9zOioqIE1vZGVsYWdlbSBQcmlzbWEsIGluZnJhZXN0cnV0dXJhIGRlIGJhbmNvIGUgaXNvbGFtZW50byBtdWx0aS10ZW5hbnQuCi0gKiowMUEg4oCUIENvbmZpYWJpbGlkYWRlIGRlIERhZG9zLCBSTFMgZSBSZXRlbsOnw6NvOioqIEVzcGVjaWFsaXN0YSBlbSBSb3ctTGV2ZWwgU2VjdXJpdHksIHJldGVuw6fDo28gZSBpbnRlZ3JpZGFkZS4KLSAqKjAyIOKAlCBQcm9kdXRvIGUgVVg6KiogRGVzZW5obyBkZSBqb3JuYWRhcywgZmx1eG9zIGRlIHVzdcOhcmlvIGUgYXJxdWl0ZXR1cmEgZGUgbmF2ZWdhw6fDo28uCi0gKiowMyDigJQgRGVzaWduIGUgQWNlc3NpYmlsaWRhZGU6KiogRGVzaWduIHN5c3RlbSwgdG9rZW5zIHZpc3VhaXMgZSBjb25mb3JtaWRhZGUgV0NBRyAyLjIgQUEuCi0gKiowNCDigJQgQ1JNIGUgQkk6KiogTMOzZ2ljYSBkZSBuZWfDs2NpbyBkbyBmdW5pbCwgbcOpdHJpY2FzIGUgcmVsYXTDs3Jpb3MgZXhlY3V0aXZvcy4KLSAqKjA1IOKAlCBQcm9zcGVjw6fDo286KiogRXN0cmF0w6lnaWFzIGRlIG91dGJvdW5kIGUgZGVzY29iZXJ0YSBkZSBtZXJjYWRvLgotICoqMDYg4oCUIEludGVncmHDp8O1ZXMgZSBCaXRyaXg6KiogQ29uZWN0b3JlcyBleHRlcm5vcywgd2ViaG9va3MgZSBBUElzIHBhcmNlaXJhcy4KLSAqKjA2QSDigJQgRXh0cmHDp8O1ZXMgQml0cml4OioqIEVzcGVjaWFsaXN0YSBlbSBzaW5jcm9uaXphw6fDo28gZSBwYWdpbmHDp8OjbyBwcm9mdW5kYSBkbyBCaXRyaXgyNC4KLSAqKjA3IOKAlCBJQSBlIEF1dG9tYcOnw7VlczoqKiBNb3RvcmVzIGRlIHJlZ3JhcywgcHJvbXB0cyBlIHBpcGVsaW5lcyBkZSBpbmZlcsOqbmNpYS4KLSAqKjA4IOKAlCBRQSBlIFJlbGVhc2U6KiogVGVzdGVzIGF1dG9tYXRpemFkb3MsIHF1YWxpZGFkZSBlIGVtcGFjb3RhbWVudG8uCi0gKiowOEEg4oCUIE9wZXJhw6fDtWVzIEdpdCBlIERlcGxveSBBV1M6KiogT3BlcmHDp8O1ZXMgZGUgQ0kvQ0QsIGVzdGVpcmFzIGUgcHVibGljYcOnw6NvIGF1dG9yaXphZGEuCi0gKiowOSDigJQgTW9iaWxlOioqIERlc2Vudm9sdmltZW50byBkbyBhcGxpY2F0aXZvIGjDrWJyaWRvL25hdGl2byBDYXBhY2l0b3IgZSBzaW5jcm9uaXphw6fDo28gb2ZmbGluZS4KLSAqKjEwIOKAlCBJbmZyYWVzdHJ1dHVyYSwgT2JzZXJ2YWJpbGlkYWRlIGUgU1JFOioqIEt1YmVybmV0ZXMsIERvY2tlciwgT3BlblRlbGVtZXRyeSBlIHJlc2lsacOqbmNpYS4KLSAqKjExIOKAlCBNYXJjYSBlIEF0aXZvcyBJbnN0aXR1Y2lvbmFpczoqKiBCcmFuZGJvb2ssIGxvZ29zIHZldG9yaWFpcyBlbSBTVkcgZSBkaXJldHJpemVzIGRlIGlkZW50aWRhZGUuCi0gKioxMiDigJQgVm96IGUgVGVsZWZvbmlhOioqIFdlYlJUQywgdGVsZWZvbmlhIFNJUCwgdHJhbnNjcmnDp8OjbyBkZSDDoXVkaW8gZSBkaWFsZXJzLgotICoqMTMg4oCUIEVueGFtZSBBdXTDtG5vbW8gZSBHb3Zlcm5hbsOnYSBkZSBSdW50aW1lOioqIFN1cGVydmlzw6NvIGRvcyBhZ2VudGVzIGVtIHByb2R1w6fDo28uCi0gKioxNCDigJQgQW1iaWVudGUgZGUgRXhlY3XDp8OjbyBlIFRlc3QgSGFybmVzczoqKiBJbmZyYWVzdHJ1dHVyYSBkZSB0ZXN0ZXMgZSBtb2Nrcy4KLSAqKjE1IOKAlCBTZWd1cmFuw6dhIEFwbGljYWRhIGUgUm90YcOnw6NvIGRlIFNlZ3JlZG9zOioqIEdlc3TDo28gZGUgY2hhdmVzLCBjcmlwdG9ncmFmaWEgZSBwcm90ZcOnw6NvIGRlIFBJSS4KLSAqKjE2IOKAlCBSdW50aW1lLCBXb3JrZXJzIGUgRXNjYWxhOioqIEZpbGFzIEJ1bGxNUSwgUmVkaXMgZSBiYWxhbmNlYW1lbnRvIGRlIHdvcmtlcnMuCi0gKioxNyDigJQgQ2Fkw6puY2lhIE11bHRpY2FuYWwgZSBDaWNsbyBkZSBSZWNlaXRhOioqIFJlZ3JhcyBkZSBjYWTDqm5jaWEgZSBtb3RvciBkZSBlbmdhamFtZW50by4KLSAqKjE4IOKAlCBDb250cmF0b3MsIEFQSSBlIERvY3VtZW50YcOnw6NvIFZpdmE6KiogRXNwZWNpZmljYcOnw7VlcyBPcGVuQVBJIGUgY29udHJhdG9zIGRlIGRhZG9zLgotICpBZ2VudGVzIDE5IGUgMjA6IFJlc2VydmFkb3MgKE7Do28gdXRpbGl6YWRvcykuKgotICoqMjEg4oCUIFByaXZhY2lkYWRlIGUgTEdQRDoqKiBEaXJlaXRvcyBkbyB0aXR1bGFyLCBpbnZlbnTDoXJpbyBkZSB0cmF0YW1lbnRvIGUgYmFzZXMgbGVnYWlzLgotICoqMjIg4oCUIFZlcmlmaWNhw6fDo28gZGUgUmVhbGlkYWRlOioqIEF1ZGl0b3JpYSBkZSBwZXJzaXN0w6puY2lhIHJlYWwgZGUgZGFkb3MgZW0gYmFuY28gZGUgcHJvZHXDp8Ojby4KLSAqKjIzIOKAlCBDdXN0bywgUGVyZm9ybWFuY2UgZSBMaW1pdGVzIGRlIElBOioqIEdlc3TDo28gZGUgb3LDp2FtZW50byBkZSB0b2tlbnMsIE4rMSBlIGxhdMOqbmNpYS4KLSAqKjI0IOKAlCBSZXZpc8OjbyBJbmRlcGVuZGVudGU6KiogQXVkaXRvciBjb21wdWxzw7NyaW8gZGUgUFJzLCBkaWZmcyBlIGNvbmZvcm1pZGFkZSBjb20gQUdFTlRTLm1kLgoKLS0tCgojIyMgQ2F0ZWdvcmlhIDI6IEFnZW50ZXMgQ29tZXJjaWFpcyBPcGVyYWNpb25haXMgKFJ1bnRpbWUgZGUgUHJvZHXDp8OjbykKU8OjbyBvcyAqKjE1IEFnZW50ZXMgTmF0aXZvcyoqIHF1ZSBvcGVyYW0gZW0gYmFja2dyb3VuZCBlIGVtIHRlbXBvIHJlYWwgc29icmUgb3MgZGFkb3MgY29tZXJjaWFpcyBkb3MgY2xpZW50ZXMsIGdvdmVybmFkb3MgcGVsbyBTdXBlcnZpc29yIENlbnRyYWw6Cgp8IElEIENhbsO0bmljbyB8IE5vbWUgQ29tZXJjaWFsIHwgRG9tw61uaW8gUHJpbmNpcGFsIHwgTsOtdmVsIGRlIFJpc2NvIFTDrXBpY28gfCBMaW1pdGUgZGUgQXV0b25vbWlhIHwKfCA6LS0tIHwgOi0tLSB8IDotLS0gfCA6LS0tIHwgOi0tLSB8CnwgYGxkci1pbnRlbGxpZ2VuY2VgIHwgTGVhZCBEZXZlbG9wbWVudCBSZXAgfCBIaWdpZW5pemHDp8OjbyBlIGVzdHJ1dHVyYcOnw6NvIHByw6l2aWEgZGUgZGFkb3MgZGUgZW1wcmVzYXMgfCBMT1cgfCBBdXTDtG5vbW8gcGFyYSBsZWl0dXJhIGUgcHJlZW5jaGltZW50byB8CnwgYGJkci1vdXRib3VuZGAgfCBCdXNpbmVzcyBEZXZlbG9wbWVudCBSZXAgfCBSZWRhw6fDo28gZGUgYWJvcmRhZ2VucyBoaXBlci1wZXJzb25hbGl6YWRhcyBwYXJhIHByb3NwZWPDp8OjbyB8IE1FRElVTSB8IFN1Z2VyZSBtZW5zYWdlbnM7IGVudmlvIHJldGlkbyB8CnwgYHNkci1xdWFsaWZpY2F0aW9uYCB8IFNhbGVzIERldmVsb3BtZW50IFJlcCB8IENvbmR1w6fDo28gZGUgcXVhbGlmaWNhw6fDo28gQkFOVCBlIHRyaWFnZW0gZGUgY2Fkw6puY2lhcyB8IE1FRElVTSB8IEF1dMO0bm9tbyBlbSB0cmlhZ2VtOyBlbnZpbyByZXRpZG8gfAp8IGBjbG9zZXItc2FsZXNgIHwgQ2xvc2VyIENvcGlsb3QgfCBBcG9pbyB0w6F0aWNvIGVtIHJldW5pw7Vlcywgb2JqZcOnw7VlcyBlIHByb3Bvc3RhcyB8IEhJR0ggfCBTdWdlcmUgdGVybW9zOyBwcm9pYmlkbyBmZWNoYXIgZGVhbCB8CnwgYGNvb3JkaW5hdG9yLWNvbW1lcmNpYWxgIHwgQ29vcmRlbmFkb3IgZGUgVmVuZGFzIHwgQmFsYW5jZWFtZW50byBkZSBjYXJnYSBkZSB0cmFiYWxobyBlIFNMQXMgZGUgYXRlbmRpbWVudG8gfCBNRURJVU0gfCBBdXTDtG5vbW8gZW0gcm90ZWFtZW50byBkZSBsZWFkcyB8CnwgYG1hbmFnZXItY29tbWVyY2lhbGAgfCBHZXJlbnRlIENvbWVyY2lhbCBJQSB8IEF2YWxpYcOnw6NvIGRlIHBlcmZvcm1hbmNlIGUgY8OhbGN1bG8gZGUgYWzDp2FkYXMgZGUgZGVzY29udG8gfCBISUdIIHwgRXhpZ2UgY29uZmlybWHDp8OjbyBodW1hbmEgfAp8IGBleGVjdXRpdmUtZGlyZWN0b3JgIHwgRGlyZXRvciBFeGVjdXRpdm8gSUEgfCBWaXPDo28gbWFjcm8gZGUgbWV0YXMgZSBhbMOnYWRhcyBtw6F4aW1hcyBkZSBleGNlw6fDo28gfCBISUdIIHwgRXhpZ2UgY29uZmlybWHDp8OjbyBkbyBBZG1pbiB8CnwgYGJpbGxpbmctcmV2ZW51ZWAgfCBBdWRpdG9yIGRlIEZhdHVyYW1lbnRvIHwgQXVkaXRvcmlhIGRlIGNvbnRyYXRvcywgY29icmFuw6dhIGUgZmF0dXJhbWVudG8gcmVjb3JyZW50ZSB8IEhJR0ggfCBCbG9xdWVpbyBjb21wdWxzw7NyaW8gcGFyYSBhbHRlcmHDp8OjbyB8CnwgYGNodXJuLXJldGVudGlvbmAgfCBHdWFyZGnDo28gZGUgUmV0ZW7Dp8OjbyB8IE1vbml0b3JhbWVudG8gZGUgdGVsZW1ldHJpYSBlIHBsYW5vcyBkZSByZXNnYXRlIGRlIGNsaWVudGVzIHwgTUVESVVNIHwgRGlzcGFyYSBhbGVydGFzIHByZXZlbnRpdm9zIHwKfCBgY29udHJhY3Qtc2lnbmF0dXJlYCB8IEd1YXJkacOjbyBDb250cmF0dWFsIHwgQ29uZHXDp8OjbyBkZSBmbHV4byBkZSBmb3JtYWxpemHDp8OjbyBlIGFzc2luYXR1cmEgZGlnaXRhbCB8IEhJR0ggfCBCbG9xdWVpbyBwYXJhIGVudmlvIGRlIGNvbnRyYXRvcyB8CnwgYGJpdHJpeC1ndWFyZGlhbmAgfCBHdWFyZGnDo28gZG8gQml0cml4MjQgfCBNb25pdG9yYW1lbnRvIGRlIGFub21hbGlhcyBlIGludGVncmlkYWRlIGRlIHNpbmNyb25pemHDp8OjbyB8IExPVyB8IEF1dMO0bm9tbyBwYXJhIGNvcnJlw6fDo28gZGUgbWFwZWFtZW50b3MgfAp8IGByZXZlbnVlLWludGVsbGlnZW5jZWAgfCBPcsOhY3VsbyBkZSBSZWNlaXRhIHwgTW9kZWxhZ2VtIHByZWRpdGl2YSBlIHByb2plw6fDo28gZGUgZm9yZWNhc3QgcG9uZGVyYWRvIHwgTE9XIHwgQXV0w7Rub21vIHBhcmEgY8OhbGN1bG8gZGUgcmF0aW5ncyB8CnwgYGFjY291bnQtZGV0ZWN0aXZlYCB8IERldGV0aXZlIGRlIENvbnRhIHwgSW52ZXN0aWdhw6fDo28gcHLDqS1yZXVuacOjbyBlIGRvc3Npw6ogZW0gMTAgc2XDp8O1ZXMgKE9uZGEgMDIpIHwgTE9XIHwgQXV0w7Rub21vIHBhcmEgcGVzcXVpc2EgZSBzw61udGVzZSB8CnwgYHByb21pc2UtZ3VhcmRpYW5gIHwgR3VhcmRpw6NvIGRlIFByb21lc3NhcyB8IERldGVjw6fDo28gZGUgcHJvbWVzc2FzIHZlcmJhaXMgZW0gw6F1ZGlvcyBlIHRyYW5zY3Jpw6fDtWVzIHwgTUVESVVNIHwgQ3JpYSByYXNjdW5ob3MgZGUgdGFyZWZhcyBwZW5kZW50ZXMgfAp8IGBkZXZpbHMtYWR2b2NhdGVgIHwgQWR2b2dhZG8gZG8gRGlhYm8gfCBBdWRpdG9yaWEgY3LDrXRpY2EgZGUgcHJvYmFiaWxpZGFkZSBkZSBuZWfDs2Npb3MgZXN0YWduYWRvcyB8IExPVyB8IEF1dMO0bm9tbyBwYXJhIHJlYmFpeGFyIHJhdGluZyBwcmVkaXRpdm8gfAoKLS0tCgojIyMgQ2F0ZWdvcmlhIDM6IEFnZW50ZXMgRXNwZWNpYWxpemFkb3MgZGUgQ2FuYWlzIGUgVm96CkNvbXBvbmVudGVzIGNvbXBsZW1lbnRhcmVzIGRlIGludGVyZmFjZSBlIHRlbGVjb211bmljYcOnw6NvOgotIGB2b2ljZS1hZ2VudGA6IERpc2NhZG9yIGF1dMO0bm9tbywgZGV0ZWPDp8OjbyBkZSBzZWNyZXTDoXJpYSBlbGV0csO0bmljYSAoQU1EKSBlIHNhdWRhw6fDo28gZ292ZXJuYWRhLgotIGBzZHItZGlhZ25vc3RpY2A6IERpYWduw7NzdGljbyBkZSBtYXR1cmlkYWRlIGRlIGxlYWRzIGluYm91bmQuCi0gYGh1bnRlci1hZ2VudGA6IFNjYW5uZXJzIGF1dG9tw6F0aWNvcyBkZSBub3ZhcyBjb250YXMgbm8gbWVyY2Fkby4KLSBgdGFjdGljYWwtYWdlbnRgOiBBc3Npc3RlbnRlIGRlIHJlc3Bvc3RhcyByw6FwaWRhcyBlbSBjaGF0LgoKLS0tCgojIyMgQ2F0ZWdvcmlhIDQ6IFBlcnNvbmFzIGRvIENhdMOhbG9nbyBFeHBhbmRpZG8gKEFnZW50IEJ1aWxkZXIpCi0gKipRdWFudGlkYWRlOioqIDM3OSBwZXJzb25hcyBlc3BlY2lhbGl6YWRhcyBzZXJpYWxpemFkYXMgZW0gYHNyYy9mZWF0dXJlcy9qb2Itcm9sZXMvY2F0YWxvZy9hZ2VudHMubm9ybWFsaXplZC5qc29uYC4KLSAqKlByb3DDs3NpdG86KiogQmlibGlvdGVjYSBkZSB0ZW1wbGF0ZXMgZGUgYWdlbnRlcyBwcsOpLWNvbmZpZ3VyYWRvcyAoZXg6IGBBQlRlc3RBdXRvbWF0b3JgLCBgQWRGYXRpZ3VlTW9uaXRvcmAsIGBDYXNoRmxvd0NsYWlydm95YW50YCwgYENvbXBldGl0b3JYLVJheWApIHF1ZSBhcyBvcmdhbml6YcOnw7VlcyBwb2RlbSBpbnN0YW5jaWFyIGUgY3VzdG9taXphciBhdHJhdsOpcyBkbyBjb25zdHJ1dG9yIGRlIGFnZW50ZXMgKGBBZ2VudEJ1aWxkZXJWaWV3LnRzeGApLgoKLS0tCgojIyMgQ2F0ZWdvcmlhIDU6IEF2YXRhcmVzIEluc3RpdHVjaW9uYWlzIGRlIEludGVyZmFjZSAoRG90cyBOw6NvLUh1bWFub3MpCk9zIDkgcGVyc29uYWdlbnMgY2Fuw7RuaWNvcyBlbSBTVkcgZGVmaW5pZG9zIHBlbG8gQWdlbnRlIDExIG5vIEJyYW5kYm9vayBvZmljaWFsLiBSZXByZXNlbnRhbSB2aXN1YWxtZW50ZSBvcyBwaWxhcmVzIGRvIHNpc3RlbWEgbmEgVUk6CgoxLiAqKk9yYml0OioqIEd1YXJkacOjbyBkbyBDUk0gJiBHaXJvc2PDs3BpbyBHcmF2aXRhY2lvbmFsIChIdWIgQ29tZXJjaWFsKS4KMi4gKipOZXh1czoqKiBQcmlzbWEgSGV4YWdvbmFsICYgQW5hbGlzdGEgZGUgTWVyY2FkbyAoSW50ZWxpZ8OqbmNpYSBkZSBNZXJjYWRvKS4KMy4gKipBcmlhOioqIEZpdGEgSGFybcO0bmljYSBkZSBNw7ZiaXVzICYgTWFlc3RyaW5hIGRlIENhZMOqbmNpYSAoT3JxdWVzdHJhw6fDo28gZGUgVmVuZGFzKS4KNC4gKipWYW5ndWFyZDoqKiBDaGV2cm9uIEFzY2VuZGVudGUgJiBMYW7Dp2EgZGUgTWV0YXMgKFBlcmZvcm1hbmNlIENvbWVyY2lhbCkuCjUuICoqT3JhY2xlOioqIEFzdHJvbMOhYmlvIE9jdWxhciAmIFByZXZpc8OjbyBQcmVkaXRpdmEgKFByZXZpc2liaWxpZGFkZSBDb21lcmNpYWwpLgo2LiAqKkNvcmU6KiogT3JiZSBOZXVyYWwgU2luw6FwdGljbyAmIENvb3JkZW5hZG9yIGRvIEVueGFtZSAoSW50ZWxpZ8OqbmNpYSBBcnRpZmljaWFsKS4KNy4gKipTcGFyazoqKiBDZW50ZWxoYSBFc3RlbGFyIDQgUG9udGFzICYgTWVzdHJlIGRhcyBDb25leMO1ZXMgKEF1dG9tYcOnw6NvICYgQ29uZWN0aXZpZGFkZSkuCjguICoqRWNobzoqKiBDw6Fwc3VsYSBBY8O6c3RpY2EgJiBDb211bmljYcOnw6NvIGRlIFZveiAoRW5nYWphbWVudG8gQ29tZXJjaWFsKS4KOS4gKipTdWRvOioqIE1vbsOzbGl0byBJc29tw6l0cmljbyBDcmlwdG9ncsOhZmljbyAoQWRtaW4gJiBPcGVyYXRpb25zKS4KCi0tLQoKIyMjIENhdGVnb3JpYSA2OiBGZXJyYW1lbnRhcyBlIENhcGFjaWRhZGVzIGRlIElBIChDYXBhYmlsaXRpZXMgQ2F0YWxvZykKQ2F0w6Fsb2dvIGZvcm1hbCBkZSBwcmltaXRpdmFzIHTDqWNuaWNhcyBxdWUgb3MgYWdlbnRlcyBwb2RlbSBpbnZvY2FyIHZpYSBwZXJtaXNzw6NvIFJCQUMgKGRlZmluaWRhcyBlbSBgYWdlbnRDYXBhYmlsaXRpZXMubm9ybWFsaXplZC5qc29uYCk6Ci0gYGNybV9yZWFkYCwgYGNybV93cml0ZWAsIGBtYXJrZXRfZW5yaWNoYCwgYGRvc3NpZXJfZ2VuZXJhdGVgLCBgZm9yZWNhc3RfY2FsY2AsIGByYWdfc2VhcmNoYCwgYHZvaWNlX2RpYWxgLCBgY29udHJhY3RfaXNzdWVgLCBldGMuCgotLS0KCiMjIyBDYXRlZ29yaWEgNzogU3VwZXJ2aXNvciBDZW50cmFsIGUgTWVjYW5pc21vcyBkZSBEZWxlZ2HDp8OjbwotICoqQ29tcG9uZW50ZToqKiBgUm9sZVN1cGVydmlzb3JgIChgc3JjL2ZlYXR1cmVzL2pvYi1yb2xlcy9gKS4KLSAqKkZ1bsOnw6NvOioqIE9ycXVlc3RyYWRvciBjZW50cmFsIGVtIHJ1bnRpbWUuIERlY29tcMO1ZSByZXF1aXNpw6fDtWVzIGNvbXBsZXhhcyBlbSBEQUdzIGRlIHN1YnRhcmVmYXMsIGVuY2FtaW5oYSBjb21hbmRvcyBwYXJhIG9zIGFnZW50ZXMgZXNwZWNpYWxpc3RhcyB2aWEgYEFnZW50QnVzYCwgZ2VyZW5jaWEgbWVtw7NyaWEgY29tcGFydGlsaGFkYSAoYGFnZW50TWVtb3J5LnN0b3JlLnRzYCksIGNhbGN1bGEgcXVvdGFzIGRlIHRva2VucyBlIHJldMOpbSBhw6fDtWVzIGNsYXNzaWZpY2FkYXMgY29tIHJpc2NvIGBISUdIYCBuYSB0YWJlbGEgYEFJUGVuZGluZ0FjdGlvbmAuCgotLS0KCiMjIDMuIE1hdHJpeiBkZSBHb3Zlcm5hbsOnYSBlIEFsw6dhZGFzIGRvcyBBZ2VudGVzIGVtIFJ1bnRpbWUKCnwgTsOtdmVsIGRlIEHDp8OjbyB8IEV4ZW1wbG8gZGUgQcOnw6NvIHwgRmx1eG8gZGUgQXByb3Zhw6fDo28gT2JyaWdhdMOzcmlvIHwKfCA6LS0tIHwgOi0tLSB8IDotLS0gfAp8ICoqSW5mb3JtYXRpdmEgLyBMZWl0dXJhKiogfCBQZXNxdWlzYSBkZSBDTlBKLCBsZWl0dXJhIGRlIG5vdGFzLCBjw6FsY3VsbyBkZSBmb3JlY2FzdCB8IEV4ZWN1w6fDo28gMTAwJSBhdXTDtG5vbWEgfAp8ICoqSW50ZXJuYSAvIFJhc2N1bmhvKiogfCBDcmlhw6fDo28gZGUgdGFyZWZhIHN1Z2VyaWRhIG5vIENSTSwgc3VnZXN0w6NvIGRlIGVzdMOhZ2lvIHwgRXhlY3V0YSBlIG5vdGlmaWNhIG8gcmVzcG9uc8OhdmVsIHwKfCAqKkV4dGVybmEgLyBDb21lcmNpYWwqKiB8IERpc3Bhcm8gZGUgZS1tYWlsIGRlIGNhZMOqbmNpYSwgZW52aW8gZGUgV2hhdHNBcHAgfCBSZXTDqW0gZW0gYEFJUGVuZGluZ0FjdGlvbmAgKEh1bWFuLWluLXRoZS1Mb29wKSB8CnwgKipGaW5hbmNlaXJhIC8gSnVyw61kaWNhKip8IEFwbGljYcOnw6NvIGRlIGRlc2NvbnRvIGVtIHByb3Bvc3RhLCBlbnZpbyBkZSBjb250cmF0byB8IEJsb3F1ZWlvIGNvbXB1bHPDs3JpbzsgZXhpZ2UgYWzDp2FkYSBkbyBHZXN0b3IvRGlyZXRvciB8CnwgKipEZXN0cnV0aXZhIC8gRXhjbHVzw6NvKip8IEFub25pbWl6YcOnw6NvIGRlIHRpdHVsYXIgTEdQRCwgZGVsZcOnw6NvIGRlIHJlZ2lzdHJvcyB8IEJsb3F1ZWlvIGFic29sdXRvOyBzb21lbnRlIEFkbWluIHZpYSAyRkEgfAo=","doc04Dec":"IyBSRUdJU1RSTyBERSBERUNJU8OVRVMgQ09NRVJDSUFJUyBFIExJTUlURVMgT1BFUkFDSU9OQUlTIChFTlRSRUdBIDA0KQoqKlByb2R1dG86KiogQmlydGh1YiAzNjDCsCDigJQgU2lzdGVtYSBPcGVyYWNpb25hbCBkZSBSZXZlbnVlIEludGVsbGlnZW5jZSAgCioqQXV0b3JpZGFkZToqKiBBZ2VudGUgMDAgKFN1cGVydmlzb3IgR2VyYWwpICAKKipEYXRhOioqIDEwIGRlIE5vdmVtYnJvIGRlIDIwMjYgIAoqKlN0YXR1czoqKiBBVURJVEFETyBFIENMQVNTSUZJQ0FETwoKLS0tCgojIyAxLiBDcml0w6lyaW9zIGRlIENsYXNzaWZpY2HDp8OjbwoKQ29uZm9ybWUgaW5zdHJ1w6fDo28gZXhwcmVzc2EgZGEgbWlzc8OjbywgY2FkYSBkZWNpc8OjbyBkZSBwcm9kdXRvIGUgbW9kZWxvIGNvbWVyY2lhbCDDqSBjbGFzc2lmaWNhZGEgZW0gcXVhdHJvIGNhdGVnb3JpYXMgZGV0ZXJtaW7DrXN0aWNhczoKLSAqKkFQUk9WQURBOioqIERlY2lzw6NvIGFtcGFyYWRhIHBvciBpbXBsZW1lbnRhw6fDo28gZW0gY8OzZGlnbywgc2NoZW1hIGRlIGJhbmNvIG91IGRvY3VtZW50YcOnw6NvIG9maWNpYWwgasOhIGNoYW5jZWxhZGEuCi0gKipQUk9QT1NUQToqKiBSZWNvbWVuZGHDp8OjbyB0w6ljbmljYSBkYSBlbmdlbmhhcmlhIG91IGVzdHJhdMOpZ2lhLCBlc3RydXR1cmFkYSBlIGNvbnNpc3RlbnRlLCBwb3LDqW0gYWd1YXJkYW5kbyBmb3JtYWxpemHDp8OjbyBjb21lcmNpYWwuCi0gKipQRU5ERU5URToqKiBEZWNpc8OjbyBkZSBuZWfDs2NpbyBxdWUgZGVwZW5kZSBleGNsdXNpdmFtZW50ZSBkZSBkZWxpYmVyYcOnw6NvIGV4ZWN1dGl2YSAocHJlw6dvcywgdmFsb3JlcyBtb25ldMOhcmlvcywgU0xBcyBjb250cmF0dWFpcyBjb20gcGVuYWxpZGFkZSkuCi0gKipDT05GTElUQU5URToqKiBEZWZpbmnDp8O1ZXMgZGl2ZXJnZW50ZXMgZW5jb250cmFkYXMgbmEgZG9jdW1lbnRhw6fDo28gcXVlIGZvcmFtIHJlY29uY2lsaWFkYXMgcGVsbyBBZ2VudGUgMDAgYXRyYXbDqXMgZGUgcGFyw6JtZXRyb3MgZGUgY29uZmlndXJhw6fDo28uCgotLS0KCiMjIDIuIE1hdHJpeiBHZXJhbCBkZSBEZWNpc8O1ZXMgQ29tZXJjaWFpcyBlIE9wZXJhY2lvbmFpcwoKfCBJdGVtIGRlIERlY2lzw6NvIHwgRGVmaW5pw6fDo28gUmVnaXN0cmFkYSB8IENsYXNzaWZpY2HDp8OjbyBPZmljaWFsIHwgT3JpZ2VtIGRhIEluZm9ybWHDp8OjbyB8IEltcGFjdG8gVMOpY25pY28gLyBDb21lcmNpYWwgfCBUcmF0YW1lbnRvIC8gUmVzb2x1w6fDo28gfAp8IDotLS0gfCA6LS0tIHwgOi0tLTogfCA6LS0tIHwgOi0tLSB8IDotLS0gfAp8ICoqQXJxdWl0ZXR1cmEgTW9kdWxhciBkb3MgMTEgTcOzZHVsb3MqKiB8IERpdmlzw6NvIGVtIDggcGlsYXJlcyBjZW50cmFpcyBlIDMgY29tcGxlbWVudGFyZXMgfCAqKkFQUk9WQURBKiogfCBgc3JjL2NvbmZpZy9icmFuZC50c2AsIHNjaGVtYSBQcmlzbWEgZSBEb2N1bWVudG8gTWVzdHJlIFY0IHwgRGVmaW5lIGEgZXN0cnV0dXJhIGRlIG5hdmVnYcOnw6NvIGUgcGFjb3RlcyBkZSBjb250cmF0YcOnw6NvIHwgTWFudGlkYSBpbnRlZ3JhbG1lbnRlIG5hIGVzcGVjaWZpY2HDp8OjbyB8CnwgKipJc29sYW1lbnRvIGRlIFRlbmFudCBwb3IgUkxTKiogfCBVc28gbWFuZGF0w7NyaW8gZGUgYG9yZ2FuaXphdGlvbklkYCBjb20gcG9sw610aWNhcyBQb3N0Z3JlU1FMIFJMUyB8ICoqQVBST1ZBREEqKiB8IGBwcmlzbWEvc2NoZW1hLnByaXNtYWAgZSBgQURSLTAwMmAgfCBTZWd1cmFuw6dhIGNvbnRyYSB2YXphbWVudG8gZGUgZGFkb3MgZW50cmUgY2xpZW50ZXMgY29ycG9yYXRpdm9zIHwgSW5lZ29jacOhdmVsIHBhcmEgdG9kYXMgYXMgcm90YXMgZSBxdWVyaWVzIHwKfCAqKkZpbGEgZGUgQXByb3Zhw6fDo28gZGUgSUEgKEhJVEwpKiogfCBBw6fDtWVzIGRlIHJpc2NvIGBISUdIYCByZXRpZGFzIGVtIGBBSVBlbmRpbmdBY3Rpb25gIHwgKipBUFJPVkFEQSoqIHwgYHNyYy9mZWF0dXJlcy9qb2Itcm9sZXMvYCBlIGBBSVBlbmRpbmdBY3Rpb25gIHwgUHJldmluZSBkaXNwYXJvcyBhdXTDtG5vbW9zIGluZGV2aWRvcyBlIGFsdWNpbmHDp8O1ZXMgfCBCbG9xdWVpbyBjb21wdWxzw7NyaW8gY29tIGNvbmZpcm1hw6fDo28gaHVtYW5hIHwKfCAqKkVzY2Fsb25hbWVudG8gUGFkcsOjbyBkZSBEZXNjb250b3MgKDEwJSAvIDIwJSkqKiB8IENsb3NlciBhdMOpIDEwJSwgR2VzdG9yIGRlIDEwLjElIGEgMjAlLCBEaXJldG9yaWEgPiAyMCUgfCAqKkNPTkZMSVRBTlRFIChSZWNvbmNpbGlhZGEgY29tbyBBcHJvdmFkYSBEZWZhdWx0KSoqIHwgUkJBQyBkZSBDb250cmF0b3MgVHJhbnN2ZXJzYWlzIGUgSm9ybmFkYSBKT1ItMDggfCBDb250cm9sYSBhIG1hcmdlbSBjb21lcmNpYWwgZGUgdmVuZGFzIGNvbnN1bHRpdmFzIEIyQiB8IEFkb3RhZG8gY29tbyBkZWZhdWx0IGRhIHBsYXRhZm9ybWEgb3V0LW9mLXRoZS1ib3ggfAp8ICoqRXNjYWxvbmFtZW50byBBbHRlcm5hdGl2byBkZSBEZXNjb250b3MgKDE1JSAvIDI1JSkqKiB8IENsb3NlciBhdMOpIDE1JSwgR2VzdG9yIGRlIDE1LjElIGEgMjUlLCBEaXJldG9yaWEgPiAyNSUgfCAqKkNPTkZMSVRBTlRFIChSZWNvbmNpbGlhZGEgY29tbyBQcm9wb3N0YSBDb25maWd1csOhdmVsKSoqIHwgVGV4dG8gZGVzY3JpdGl2byBkbyBNw7NkdWxvIDAxIHwgSW5kaWNhZG8gcGFyYSBtZXJjYWRvcyBkZSBhbHRhIG1hcmdlbSBkZSBjb250cmlidWnDp8OjbyB8IFBhcmFtZXRyaXphZG8gZW0gYG9yZ2FuaXphdGlvbi5zZXR0aW5ncy5hcHByb3ZhbF90aHJlc2hvbGRzYCB8CnwgKipRdW90YXMgZGUgVG9rZW5zIGRlIElBIChTdGFydGVyIC8gR3Jvd3RoKSoqIHwgU3RhcnRlcjogNTAwayB0b2tlbnMvbcOqczsgR3Jvd3RoOiAyLjVNIHRva2Vucy9tw6pzIHwgKipQUk9QT1NUQSoqIHwgYEVOVFJFR0EtMDMtQ09OVFJBVE9TLVRSQU5TVkVSU0FJUy5tZGAgfCBEaW1lbnNpb25hbWVudG8gZGUgaW5mcmFlc3RydXR1cmEgZSBjdXN0b3MgZGUgTExNIHwgUXVvdGFzIGNvbmZpZ3VyYWRhcyBubyBsZWRnZXIgY29tIGNvcnRlIGVtIDEwMCUgfAp8ICoqUmV0ZW7Dp8OjbyBkZSBHcmF2YcOnw7VlcyBkZSDDgXVkaW8qKiB8IMOBdWRpbyBicnV0bzogMTgwIGRpYXM7IFRyYW5zY3Jpw6fDo28gZSBub3RhczogSW5kZXRlcm1pbmFkYSB8ICoqUFJPUE9TVEEqKiB8IFBvbMOtdGljYSBkZSBjdXN0b3MgUzMvR2xhY2llciBlIEFydC4gMTYgTEdQRCB8IFJlZHV6IGN1c3RvIGRlIHN0b3JhZ2UgbWFudGVuZG8gbyBoaXN0w7NyaWNvIGRlIHZlbmRhcyB8IMOBdWRpbyBleHBpcmEgcGFyYSBHbGFjaWVyOyB0ZXh0byBwZXJzaXN0ZSBubyBDUk0gfAp8ICoqUMOhZ2luYSBQw7pibGljYSBkZSBCb29raW5nKiogfCBBZ2VuZGFtZW50byBww7pibGljbyBkZSByZXVuacO1ZXMgc2luY3Jvbml6YWRvIGNvbSBHb29nbGUgQ2FsZW5kYXIgfCAqKkFQUk9WQURBKiogfCBgc3JjL2ZlYXR1cmVzL3ZvaWNlLWh1YmAgZSBgYm9va2luZy86c2x1Z2AgfCBFbGltaW5hIGF0cml0byBkZSBhZ2VuZGFtZW50byBlIG5vLXNob3cgfCBUcmF2YSBjb250cmEgZG91YmxlLWJvb2tpbmcgY29tIHRyYW5zYcOnw6NvIGRlIGJhbmNvIHwKfCAqKkxpbWl0ZSBkZSBUYXhhIEJpdHJpeDI0KiogfCBUYXhhIG3DoXhpbWEgZGUgMiByZXEvcyBjb20gbG90ZXMgZGUgNTAgcmVnaXN0cm9zIHwgKipBUFJPVkFEQSoqIHwgYHNyYy9mZWF0dXJlcy9pbnRlZ3JhdGlvbnMvYml0cml4YCBlIGBiaXRyaXhHdWFyZGlhbi5hZ2VudC50c2AgfCBQcmV2aW5lIGJsb3F1ZWlvIGRhIGNvbnRhIGRvIGNsaWVudGUgcG9yIEhUVFAgNDI5IHwgRmlsYSBsZWFreSBidWNrZXQgbm8gQnVsbE1RIGNvbSBtb25pdG9yYW1lbnRvIHwKfCAqKlNMQSBkZSBTdXBvcnRlIOKAlCBQbGFub3MgU3RhcnRlciBlIEdyb3d0aCoqIHwgU3RhcnRlcjogZS1tYWlsIGF0w6kgNDhoIMO6dGVpczsgR3Jvd3RoOiBjaGF0L2UtbWFpbCBhdMOpIDhoIMO6dGVpcyB8ICoqUFJPUE9TVEEqKiB8IFByw6F0aWNhIHBhZHLDo28gZGUgbWVyY2FkbyBTYWFTIEIyQiB8IEVzdGFiZWxlY2UgZXhwZWN0YXRpdmEgb3BlcmFjaW9uYWwgZGUgYXRlbmRpbWVudG8gfCBQYXLDom1ldHJvIG5vcyB0ZXJtb3MgZGUgc2VydmnDp28gfAp8ICoqU0xBIGRlIFN1cG9ydGUg4oCUIFBsYW5vIEVudGVycHJpc2UgKDEgaG9yYSkqKiB8IENhbmFsIGRlZGljYWRvIGNvbSB0ZW1wbyBkZSByZXNwb3N0YSBnYXJhbnRpZG8gZW0gMSBob3JhIHwgKipQRU5ERU5URSoqIHwgUmVxdWlzaXRvIGRlIHZlbmRhcyBFbnRlcnByaXNlIGRlIGFsdG8gdGlja2V0IHwgRGVtYW5kYSBlcXVpcGUgZGUgcGxhbnTDo28gMjQvNyBjb20gY3VzdG8gb3BlcmFjaW9uYWwgfCBEZXBlbmRlIGRlIHZhbGlkYcOnw6NvIGV4ZWN1dGl2YSBkYSBlc3RydXR1cmEgZGUgc3Vwb3J0ZSB8CnwgKipUYWJlbGEgZGUgUHJlw6dvcyBlbSBSZWFpcyAoUiQvbcOqcykqKiB8IFZhbG9yZXMgbm9taW5haXMgZGUgYXNzaW5hdHVyYSBwb3IgcGxhbm8gZSBhc3NlbnRvIGFkaWNpb25hbCB8ICoqUEVOREVOVEUqKiB8IE3Ds2R1bG8gZGUgYmlsbGluZyBzZW0gcHJlY2lmaWNhw6fDo28gaGFyZGNvZGVkIHwgRGVmaW5lIGEgcmVjZWl0YSBlIGEgdGF4YSBkZSByZXRvcm5vIGRvIHByb2R1dG8gfCBORU5IVU0gVkFMT1IgTU9ORVTDgVJJTyBGT0kgSU5WRU5UQURPIHwKCi0tLQoKIyMgMy4gRGV0YWxoYW1lbnRvIGUgSnVzdGlmaWNhdGl2YSBkb3MgQ29uZmxpdG9zIFJlY29uY2lsaWFkb3MKCiMjIyAzLjEgQ29uZmxpdG8gZGFzIEFsw6dhZGFzIGRlIERlc2NvbnRvICgxMCUvMjAlIHZzIDE1JS8yNSUpCi0gKipQcm9ibGVtYToqKiBPIHRleHRvIGRvIE3Ds2R1bG8gMDEgY2l0YXZhIGFwcm92YcOnw6NvIHBhcmEgZGVzY29udG9zIGFjaW1hIGRlIDE1JSBlIDI1JSwgZW5xdWFudG8gb3MgQ29udHJhdG9zIFRyYW5zdmVyc2FpcyAoUkJBQykgZSBhcyBKb3JuYWRhcyBKT1ItMDcgZSBKT1ItMDggZXN0aXB1bGF2YW0gYWzDp2FkYSBkbyBDbG9zZXIgYXTDqSAxMCUgZSBkbyBHZXN0b3IgYXTDqSAyMCUuCi0gKipJbXBhY3RvOioqIFJpc2NvIGRlIGluY29uc2lzdMOqbmNpYSBubyBtb3RvciBkZSByZWdyYXMgZGUgcHJvcG9zdGFzIGNvbWVyY2lhaXMgKGBwcm9wb3NhbEVuZ2luZWApLgotICoqUmVzb2x1w6fDo28gZG8gQWdlbnRlIDAwOioqCiAgMS4gQSByZWdyYSBkZSBuZWfDs2NpbyBmb2kgZGVzYWNvcGxhZGEgZGUgY8OzZGlnbyBlc3TDoXRpY28uIE8gc2NoZW1hIHByZXbDqiBvcyBjYW1wb3MgYG1heFNlbGZEaXNjb3VudFBlcmNlbnRgIGUgYG1heE1hbmFnZXJEaXNjb3VudFBlcmNlbnRgIG5hIGNvbmZpZ3VyYcOnw6NvIGRhIE9yZ2FuaXphw6fDo28uCiAgMi4gTyB0ZW1wbGF0ZSBwYWRyw6NvIGRhIHBsYXRhZm9ybWEgKCoqRGVmYXVsdCBTZWd1cm8gQjJCKiopIGFkb3RhOgogICAgIC0gKipGYWl4YSBDbG9zZXI6KiogMC4wMCUgYSAxMC4wMCUgKGF1dG9ub21pYSBkbyB2ZW5kZWRvcikuCiAgICAgLSAqKkZhaXhhIEdlc3RvcjoqKiAxMC4wMSUgYSAyMC4wMCUgKGFwcm92YcOnw6NvIGVtIDEgY2xpcXVlIG5hIGZpbGEgZGUgZGVjaXPDtWVzKS4KICAgICAtICoqRmFpeGEgRGlyZXRvcmlhOioqIEFjaW1hIGRlIDIwLjAxJSAoZXhpZ2UgYXByb3Zhw6fDo28gZG8gQWRtaW5pc3RyYWRvci9EaXJldG9yKS4KICAzLiBBIGVzY2FsYSAxNSUvMjUlIMOpIGZvcm1hbGl6YWRhIGNvbW8gKipUZW1wbGF0ZSBTZXRvcmlhbCBkZSBBbHRhIE1hcmdlbSoqLCBzZWxlY2lvbsOhdmVsIG5vIG9uYm9hcmRpbmcgZGEgb3JnYW5pemHDp8OjbyBjYXNvIHNldSB0aWNrZXQgZSBtYXJnZW0gY29tcG9ydGVtIG1haW9yIGZsZXhpYmlsaWRhZGUgbmEgcG9udGEuCgojIyMgMy4yIEluZGVmaW5pw6fDo28gZGEgVGFiZWxhIGRlIFByZcOnb3MgZSBTTEFzCi0gKipBbHRlcm5hdGl2YXMgcGFyYSBhIERpcmV0b3JpYToqKgogIC0gKk9ww6fDo28gQSAoUHJlY2lmaWNhw6fDo28gcG9yIEFzc2VudG8gKyBBZGQtb24gZGUgSUEpOiogQ29icmFuw6dhIGRlIG1lbnNhbGlkYWRlIHBvciB1c3XDoXJpbyB2ZW5kZWRvciAoZXg6IFNEUi9DbG9zZXIpICsgcGFjb3RlIGF2dWxzbyBkZSB0b2tlbnMgZSBlbnJpcXVlY2ltZW50by4KICAtICpPcMOnw6NvIEIgKFByZWNpZmljYcOnw6NvIHBvciBWb2x1bWUgZGUgUmVjZWl0YSAvIFRyYW5zYcOnw7Vlcyk6KiBDb2JyYW7Dp2EgYmFzZWFkYSBubyBwaXBlbGluZSBnZXJpZG8gcGVsYSBvcmdhbml6YcOnw6NvLgotICoqUmVjb21lbmRhw6fDo28gZG8gQWdlbnRlIDAwOioqIEEgT3DDp8OjbyBBIMOpIGEgbWFpcyBwcmV2aXPDrXZlbCBlIGRlIG1lbm9yIGF0cml0byBkZSB2ZW5kYXMuIEEgcHJlY2lmaWNhw6fDo28gcGVybWFuZWNlIGZvcm1hbG1lbnRlIG1hcmNhZGEgY29tbyBgUEVOREVOVEVgLCBwZXJtaXRpbmRvIHF1ZSBhIGxpZGVyYW7Dp2EgY29tZXJjaWFsIGRlZmluYSBvcyB2YWxvcmVzIGVtIHJlYWlzIGRpcmV0YW1lbnRlIG5hcyB2YXJpw6F2ZWlzIGRlIGFtYmllbnRlIGRvIFN0cmlwZSBzZW0gbmVjZXNzaWRhZGUgZGUgcmVmYXRvcmHDp8OjbyBkbyBzb2Z0d2FyZS4K","doc06Gate":"IyBQQVJFQ0VSIEZJTkFMIERFIEhPTU9MT0dBw4fDg08gRE8gUVVBTElUWSBHQVRFIChFTlRSRUdBIDA2KQoqKlByb2R1dG86KiogQmlydGh1YiAzNjDCsCDigJQgU2lzdGVtYSBPcGVyYWNpb25hbCBkZSBSZXZlbnVlIEludGVsbGlnZW5jZSAgCioqRG9jdW1lbnRvIEF1ZGl0YWRvOioqIGBCSVJUSFVCMzYwX0RPQ1VNRU5UT19NRVNUUkVfT0ZJQ0lBTF9WNC5odG1sYCBlIEFydGVmYXRvcyBDb21wbGVtZW50YXJlcyAgCioqQXV0b3JpZGFkZSBkZSBBdWRpdG9yaWE6KiogQWdlbnRlIDAwIChTdXBlcnZpc29yIEdlcmFsKSAgCioqRW0gY29uZm9ybWlkYWRlIGNvbToqKiBgQUdFTlRTLm1kYCAoRGlyZXRyaXplcyBkZSBHb3Zlcm5hbsOnYSwgUHJpbmPDrXBpb3MgUDEgYSBQNCBlIFJlZ3JhcyBkZSBSZWxlYXNlKSAgCioqRGF0YSBkYSBEZWNpc8OjbzoqKiAxMCBkZSBOb3ZlbWJybyBkZSAyMDI2ICAKKipWZXJlZGl0byBPZmljaWFsIGRvIEdhdGU6KiogKipHQVRFIEFQUk9WQURPIENPTSBSRVNTQUxWQVMgKEZBU0UgMDEgSE9NT0xPR0FEQSkqKgoKLS0tCgojIyAxLiBBdmFsaWHDp8OjbyBJbmRlcGVuZGVudGUgZG9zIDExIENyaXTDqXJpb3MgZGUgSG9tb2xvZ2HDp8OjbwoKfCBJRCBDcml0w6lyaW8gfCBEZXNjcmnDp8OjbyBkbyBDcml0w6lyaW8gfCBFdmlkw6puY2lhIFTDqWNuaWNhIEFuYWxpc2FkYSB8IFZlcmVkaXRvIHwgUGVuZMOqbmNpYXMgLyBSZXNzYWx2YXMgfCBSZXNwb25zw6F2ZWwgfCBJbXBhY3RvIHwgQcOnw6NvIENvcnJldGl2YSBFeGVjdXRhZGEgfAp8IDotLS06IHwgOi0tLSB8IDotLS0gfCA6LS0tOiB8IDotLS0gfCA6LS0tIHwgOi0tLSB8IDotLS0gfAp8ICoqQ1JJVC0wMSoqIHwgMTEgTcOzZHVsb3MgaW50ZWdyYWxtZW50ZSBpbnZlbnRhcmlhZG9zIGUgZXNwZWNpZmljYWRvcyB8IGBFTlRSRUdBLTAyLUlOVkVOVEFSSU8tRlVOQ0lPTkFMLm1kYCBlIFNlw6fDo28gYCNtb2R1bG9zYCBubyBIVE1MIHwgKipBUFJPVkFETyoqIHwgTmVuaHVtYSB8IEFnZW50ZSAwMCAvIEFnZW50ZSAwMiB8IEFsdG8gfCBUb2RvcyBvcyAxMSBtw7NkdWxvcyBjb2JyZW0gb3MgNiBlaXhvcyBjYW7DtG5pY29zIEEgYSBGIHwKfCAqKkNSSVQtMDIqKiB8IEZ1bmNpb25hbGlkYWRlcyBjb20gY29tcG9ydGFtZW50b3MgZSByZWdyYXMgdmVyaWZpY8OhdmVpcyB8IDMzIFJlZ3JhcyBkZSBOZWfDs2NpbyAoYFJOLXh4eGApIGUgdmFsaWRhw6fDtWVzIG5vIGludmVudMOhcmlvIHwgKipBUFJPVkFETyoqIHwgTmVuaHVtYSB8IEFnZW50ZSAwMCAvIEFnZW50ZSAwNCB8IEFsdG8gfCBSZWdyYXMgZGV0ZXJtaW7DrXN0aWNhcyBtYXBlYWRhcyBjb20gdmFsaWRhw6fDtWVzIGRlIGFsw6dhZGEgfAp8ICoqQ1JJVC0wMyoqIHwgMjAgSm9ybmFkYXMgT3BlcmFjaW9uYWlzIGludGVncmFsbWVudGUgZG9jdW1lbnRhZGFzIHwgYEVOVFJFR0EtMDQtSk9STkFEQVMtT1BFUkFDSU9OQUlTLm1kYCBlIFNlw6fDo28gYCNqb3JuYWRhc2Agbm8gSFRNTCB8ICoqQVBST1ZBRE8qKiB8IE5lbmh1bWEgfCBBZ2VudGUgMDAgLyBBZ2VudGUgMTcgfCBBbHRvIHwgQXMgMjAgam9ybmFkYXMgcG9zc3VlbSBnYXRpbGhvcywgSUEsIGV4Y2XDp8O1ZXMgZSBjcml0w6lyaW9zIHwKfCAqKkNSSVQtMDQqKiB8IENvbnRyYXRvcyBhcnF1aXRldHVyYWlzIHRyYW5zdmVyc2FpcyBmb3JtYWxpemFkb3MgfCBgRU5UUkVHQS0wMy1DT05UUkFUT1MtVFJBTlNWRVJTQUlTLm1kYCB8ICoqQVBST1ZBRE8qKiB8IE5lbmh1bWEgfCBBZ2VudGUgMDEgLyBBZ2VudGUgMTAgfCBDcsOtdGljbyB8IE11bHRpLXRlbmFuY3kgUkxTLCBKV1QsIEV2ZW50IE1lc2ggZSBMR1BEIGZvcm1hbGl6YWRvcyB8CnwgKipDUklULTA1KiogfCBBZ2VudGVzIGUgU3VwZXJ2aXNvciByZWNvbmNpbGlhZG9zIHNlbSBwcmVzdW7Dp8O1ZXMgfCBgMDMtSU5WRU5UQVJJTy1PRklDSUFMLUFHRU5URVMubWRgIHwgKipBUFJPVkFETyoqIHwgTmVuaHVtYSB8IEFnZW50ZSAxMyAvIEFnZW50ZSAwNyB8IEFsdG8gfCBUYXhvbm9taWEgZGUgNyBuw612ZWlzIHNlcGFyYW5kbyBlbmdlbmhhcmlhLCBydW50aW1lIGUgYXZhdGFyZXMgfAp8ICoqQ1JJVC0wNioqIHwgTW9kZWxvIGNvbWVyY2lhbCBjb25zb2xpZGFkbyBjb20gcGVuZMOqbmNpYXMgZGVzdGFjYWRhcyB8IGAwNC1SRUdJU1RSTy1ERUNJU09FUy1DT01FUkNJQUlTLm1kYCB8ICoqQVBST1ZBRE8gQ09NIFJFU1NBTFZBUyoqIHwgVmFsb3JlcyBlbSBSJCBkZSBtZW5zYWxpZGFkZSBlIFNMQSBFbnRlcnByaXNlIGRlcGVuZGVtIGRlIHZhbGlkYcOnw6NvIGV4ZWN1dGl2YSB8IERpcmV0b3JpYSBDb21lcmNpYWwgLyBGaW5hbmNlaXJvIHwgTcOpZGlvIHwgUGFyYW1ldHJpemHDp8OjbyBlbSB2YXJpw6F2ZWlzIGRlIGFtYmllbnRlIHNlbSB0cmF2YXIgZW5nZW5oYXJpYSB8CnwgKipDUklULTA3KiogfCBNYXRyaXogZGUgcmFzdHJlYWJpbGlkYWRlIGNvbnNpc3RlbnRlIHNlbSB2w61uY3Vsb3Mgw7NyZsOjb3MgfCBgMDItTUFUUklaLVJBU1RSRUFNRU5UTy1SRUNPTkNJTElBREEubWRgIHwgKipBUFJPVkFETyoqIHwgTmVuaHVtYSB8IEFnZW50ZSAwMCAvIEFnZW50ZSAyNCB8IENyw610aWNvIHwgUmVjb25jaWxpYWRvcyBvcyA4IHbDrW5jdWxvcyBhdXNlbnRlcyAoMzMgZGUgMzMgYW1hcnJhZG9zKSB8CnwgKipDUklULTA4KiogfCBEb2N1bWVudG8gSFRNTCBmdW5jaW9uYWwgZSB2aXN1YWxtZW50ZSB2YWxpZGFkbyB8IGBCSVJUSFVCMzYwX0RPQ1VNRU5UT19NRVNUUkVfT0ZJQ0lBTF9WNC5odG1sYCB8ICoqQVBST1ZBRE8qKiB8IE5lbmh1bWEgfCBBZ2VudGUgMDMgLyBBZ2VudGUgMTEgfCBBbHRvIHwgTW9kYWlzIG9wZXJhY2lvbmFpcywgbG9nbyBvZmljaWFsIGludGVncmFkbywgV0NBRyAyLjIgQUEgfAp8ICoqQ1JJVC0wOSoqIHwgQXVzw6puY2lhIGRlIGluY29uc2lzdMOqbmNpYXMgY3LDrXRpY2FzIG7Do28gdHJhdGFkYXMgfCBgMDEtUkVMQVRPUklPLUFVRElUT1JJQS1JTkRFUEVOREVOVEUubWRgIHwgKipBUFJPVkFETyoqIHwgTmVuaHVtYSB8IEFnZW50ZSAwMCAvIEFnZW50ZSAyNCB8IENyw610aWNvIHwgVG9kYXMgYXMgOSBmYWxoYXMgb3JpZ2luYWlzICsgMyBkaXZlcmfDqm5jaWFzIHJlc2lkdWFpcyBzYW5hZGFzIHwKfCAqKkNSSVQtMTAqKiB8IERlY2lzw7VlcyBwZW5kZW50ZXMgZGUgYXByb3Zhw6fDo28gaWRlbnRpZmljYWRhcyBmb3JtYWxtZW50ZSB8IFNlw6fDo28gZGUgUGVuZMOqbmNpYXMgZW0gYDA0LVJFR0lTVFJPLURFQ0lTT0VTLUNPTUVSQ0lBSVMubWRgIHwgKipBUFJPVkFETyoqIHwgTmVuaHVtYSB8IEFnZW50ZSAwMCB8IE3DqWRpbyB8IFF1ZXN0w7VlcyBlbSBhYmVydG8gY2xhc3NpZmljYWRhcyBjb21vIGBQRU5ERU5URWAgfAp8ICoqQ1JJVC0xMSoqIHwgUmVsYXTDs3JpbyBkZSBob21vbG9nYcOnw6NvIGNvbSBldmlkw6puY2lhcyB2ZXJpZmljw6F2ZWlzIHwgUHJlc2VudGUgZG9jdW1lbnRvIGNvbSBtYXRyaXogZSB0ZXN0ZXMgZGUgaW50ZWdyaWRhZGUgfCAqKkFQUk9WQURPKiogfCBOZW5odW1hIHwgQWdlbnRlIDAwIHwgQWx0byB8IFN1c3RlbnRhZG8gcG9yIGNydXphbWVudG8gZG9jdW1lbnRhbCBlIHRlc3RlcyBkZSByYXN0cmVhYmlsaWRhZGUgfAoKLS0tCgojIyAyLiBKdXN0aWZpY2F0aXZhIGRvIFZlcmVkaXRvICJBUFJPVkFETyBDT00gUkVTU0FMVkFTIgoKQ29uZm9ybWUgYSBTZcOnw6NvIDEzIGRvIHByb3RvY29sbyBkZSBnb3Zlcm5hbsOnYSBkbyBBZ2VudGUgMDAsIG8gdmVyZWRpdG8gKipHQVRFIEFQUk9WQURPIENPTSBSRVNTQUxWQVMqKiDDqSBlbWl0aWRvIHBvcnF1ZToKMS4gKipDb25mb3JtaWRhZGUgVMOpY25pY2EgZSBkZSBFbmdlbmhhcmlhOioqIEF0aW5naXUgKioxMDAlIGRlIG1hdHVyaWRhZGUqKi4gVG9kb3Mgb3MgMTEgbcOzZHVsb3MsIDMzIHJlcXVpc2l0b3MsIDMzIHJlZ3JhcywgMzMgY3JpdMOpcmlvcyBkZSBhY2VpdGUsIDIwIGpvcm5hZGFzIGUgY29udHJhdG9zIHRyYW5zdmVyc2FpcyBlc3TDo28gY29tcGxldGFtZW50ZSBlc3BlY2lmaWNhZG9zLCByYXN0cmXDoXZlaXMgZSB2ZXJpZmljw6F2ZWlzLiBOw6NvIGV4aXN0ZSBuZW5odW0gaW1wZWRpbWVudG8gdMOpY25pY28gcGFyYSBvIHBsYW5lamFtZW50byBkYSByZWNvbnN0cnXDp8Ojby4KMi4gKipSZXNzYWx2YXMgQ29tZXJjaWFpcyBOw6NvLUJsb3F1ZWFudGVzOioqIEFzIMO6bmljYXMgcGVuZMOqbmNpYXMgZXhpc3RlbnRlcyBzw6NvIGVzdHJpdGFtZW50ZSBkZSBhbMOnYWRhIGNvbWVyY2lhbCBlIGZpbmFuY2VpcmEgZG8gcHJvcHJpZXTDoXJpbyBkbyBwcm9kdXRvOgogICAtIERlZmluacOnw6NvIGRhIHRhYmVsYSBub21pbmFsIGRlIHByZcOnb3MgZGUgbWVuc2FsaWRhZGUgZG9zIHBsYW5vcyBTdGFydGVyLCBHcm93dGggZSBFbnRlcnByaXNlIGVtIFJlYWlzIChSJCkuCiAgIC0gRGVmaW5pw6fDo28gZG8gU0xBIGZvcm1hbCBjb20gcGVuYWxpZGFkZSBjb250cmF0dWFsIHBhcmEgYXRlbmRpbWVudG8gZG8gcGxhbm8gRW50ZXJwcmlzZSAocHJvcG9zdG8gZW0gMSBob3JhIHBhcmEgY2hhbWFkb3MgY3LDrXRpY29zKS4KMy4gKipUcmF0YW1lbnRvIEFycXVpdGV0dXJhbCBkYXMgUmVzc2FsdmFzOioqIEFtYmFzIGFzIHJlc3NhbHZhcyBmb3JhbSBkZXNhY29wbGFkYXMgZG8gY8OzZGlnby1mb250ZSBlIGNvbnZlcnRpZGFzIGVtIHBhcsOibWV0cm9zIGRlIGNvbmZpZ3VyYcOnw6NvIChgc2V0dGluZ3NgL1N0cmlwZSkuIEEgZW5nZW5oYXJpYSBkZSByZWNvbnN0cnXDp8OjbyBkYSBwbGF0YWZvcm1hIHBvZGUgc2VyIHBsYW5lamFkYSBlIGV4ZWN1dGFkYSBzZW0gZGVwZW5kZXIgZGUgbsO6bWVyb3MgZGUgcHJlY2lmaWNhw6fDo28gZXN0w6F0aWNvcy4KCi0tLQoKIyMgMy4gRGlyZXRyaXogcGFyYSBhIEZhc2UgMDIgKFJlY29uc3RydcOnw6NvIGRhIFBsYXRhZm9ybWEpCgotICoqQXV0b3JpemHDp8OjbyBDb25kaWNpb25hbDoqKiBPIERvY3VtZW50byBNZXN0cmUgT2ZpY2lhbCBWNCBlIHN1YXMgZW50cmVnYXMgY29tcGxlbWVudGFyZXMgZmljYW0gaG9tb2xvZ2Fkb3MgY29tbyBhICoqRm9udGUgw5puaWNhIGRlIFZlcmRhZGUgKFNpbmdsZSBTb3VyY2Ugb2YgVHJ1dGgpKiogZGEgcGxhdGFmb3JtYS4KLSAqKkJsb3F1ZWlvIGRlIEPDs2RpZ28gUHJlc2VydmFkbzoqKiBBIGFwbGljYcOnw6NvIGRvIGPDs2RpZ28gZGUgcHJvZHV0byBjb250aW51YSBibG9xdWVhZGEgYXTDqSBhIGFwcm92YcOnw6NvIGZvcm1hbCBkbyBwbGFubyBwcmVsaW1pbmFyIGRhIEZhc2UgMDIgcGVsbyBwcm9wcmlldMOhcmlvIGRvIHByb2R1dG8uCg==","doc07Plan":"IyBQTEFOTyBQUkVMSU1JTkFSIERFIEVOR0VOSEFSSUEgUEFSQSBBIEZBU0UgMDIgKEVOVFJFR0EgMDcpCioqUHJvZHV0bzoqKiBCaXJ0aHViIDM2MMKwIOKAlCBTaXN0ZW1hIE9wZXJhY2lvbmFsIGRlIFJldmVudWUgSW50ZWxsaWdlbmNlICAKKipBdXRvcmlkYWRlOioqIEFnZW50ZSAwMCAoU3VwZXJ2aXNvciBHZXJhbCkgIAoqKkVtIGNvbmZvcm1pZGFkZSBjb206KiogYEFHRU5UUy5tZGAgKEdvdmVybmFuw6dhIEdsb2JhbCwgT3JkZW0gZGUgSW50ZWdyYcOnw6NvIGUgQ3JpdMOpcmlvcyBkZSBSZWxlYXNlKSAgCioqRGF0YToqKiAxMCBkZSBOb3ZlbWJybyBkZSAyMDI2ICAKKipTdGF0dXM6KiogUExBTkVKQU1FTlRPIFBSRUxJTUlOQVIgKEVYRUNVw4fDg08gREUgQ8OTRElHTyBCTE9RVUVBREEpCgotLS0KCiMjIDEuIERpcmV0cml6IE1hbmRhdMOzcmlhCgoqKkVTVEUgRE9DVU1FTlRPIMOJIEVTVFJJVEFNRU5URSBERSBQTEFORUpBTUVOVE8gQVJRVUlURVRVUkFMLioqICAKTmVuaHVtYSBsaW5oYSBkZSBjw7NkaWdvIGRlIHByb2R1dG8sIG1pZ3Jhw6fDo28gZGUgYmFuY28gZGUgZGFkb3Mgb3UgYWx0ZXJhw6fDo28gZGUgQVBJIHBvZGUgc2VyIGluaWNpYWRhIGFudGVzIGRhIGF1dG9yaXphw6fDo28gZXhwcmVzc2EgZG8gcHJvcHJpZXTDoXJpbyBkYSBwbGF0YWZvcm1hLgoKLS0tCgojIyAyLiBBcnF1aXRldHVyYS1BbHZvIGUgUGFkcsO1ZXMgRXN0cnV0dXJhaXMKCkEgcmVjb25zdHJ1w6fDo28gZG8gQmlydGh1YiAzNjDCsCBzZWd1aXLDoSBvIHBhZHLDo28gKipDbGVhbiBBcmNoaXRlY3R1cmUgKyBQb3J0YXMgZSBBZGFwdGFkb3JlcyAoSGV4YWdvbmFsKSoqIGNvbSBzZXBhcmHDp8OjbyBlc3RyaXRhIGRlIGNhbWFkYXMgZSBpc29sYW1lbnRvIGRlIGRlcGVuZMOqbmNpYXM6CgpgYGAK4pSM4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSQCuKUgiAgICAgICAgICAgICAgICAgICAgQ0FNQURBIERFIEFQUkVTRU5UQcOHw4NPICAgICAgICAgICAgICAgICAgICAgICDilIIK4pSCICBSZWFjdCAxOSAvIFZpdGUgLyBUYWlsd2luZCBDU1MgLyBSYWRpeCBVSSAvIERlc2lnbiBTeXN0ZW0gICAgICDilIIK4pSU4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSs4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSYCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIOKUggrilIzilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilrzilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilJAK4pSCICAgICAgICAgICAgICAgICAgIENBTUFEQSBERSBBUExJQ0HDh8ODTyAoVVNFIENBU0VTKSAgICAgICAgICAgICAgIOKUggrilIIgIE9ycXVlc3RyYcOnw6NvIGRlIFJlZ3JhcyBkZSBOZWfDs2NpbyAvIENvbW1hbmRzIC8gUXVlcmllcyAvIERUT3MgIOKUggrilJTilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilKzilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilJgKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg4pSCCuKUjOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKWvOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUkArilIIgICAgICAgICAgICAgICAgICAgIENBTUFEQSBERSBET03DjU5JTyBQVVJPICAgICAgICAgICAgICAgICAgICAgICDilIIK4pSCICBFbnRpZGFkZXMgLyBWYWx1ZSBPYmplY3RzIC8gRG9tYWluIEV2ZW50cyAvIFJlZ3JhcyBJbmVnb2Npw6F2ZWlz4pSCCuKUlOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKWsuKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUmAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDilIIK4pSM4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pS04pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSQCuKUgiAgICAgICAgICAgICAgICAgQ0FNQURBIERFIElORlJBRVNUUlVUVVJBICYgQURBUFRFUlMgICAgICAgICAgICAg4pSCCuKUgiAgUHJpc21hIC8gUG9zdGdyZVNRTCBSTFMgLyBSZWRpcyBCdWxsTVEgLyBwZ3ZlY3RvciAvIEFQSXMgRXh0ICAg4pSCCuKUlOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUmApgYGAKCiMjIyAyLjEgUHJpbmPDrXBpb3MgQXJxdWl0ZXR1cmFpcyBJbmVnb2Npw6F2ZWlzCjEuICoqTXVsdGktVGVuYW5jeSBOYXRpdm8gZW0gRHVwbGEgQ2FtYWRhOioqCiAgIC0gQ2FtYWRhIDE6IE1pZGRsZXdhcmUgZGUgY29udGV4dG8gcXVlIGluamV0YSBgb3JnYW5pemF0aW9uSWRgIGVtIHRvZGEgcXVlcnkgUHJpc21hLgogICAtIENhbWFkYSAyOiBQb2zDrXRpY2FzIGF0aXZhcyBkZSBQb3N0Z3JlU1FMIFJvdy1MZXZlbCBTZWN1cml0eSAoUkxTKSBubyBiYW5jbyBkZSBkYWRvcy4KMi4gKipEb21haW4gRXZlbnQgTWVzaCBEZXNhY29wbGFkbzoqKgogICAtIFRvZGFzIGFzIHRyYW5zacOnw7VlcyBlbnRyZSBtw7NkdWxvcyBjb211bmljYW0tc2UgdmlhIGV2ZW50b3MgYXNzw61uY3Jvbm9zIGltdXTDoXZlaXMgY29tIGVudmVsb3BlcyB0aXBhZG9zIGUgZ2FyYW50aWEgZGUgaWRlbXBvdMOqbmNpYSBubyBSZWRpcyAoVFRMIDQ4aCkuCjMuICoqU3VwZXJ2aXNvciBkZSBJQSBjb21vIFBvcnTDo28gZGUgR292ZXJuYW7Dp2E6KioKICAgLSBOZW5odW0gYWdlbnRlIGRlIElBIGFjZXNzYSBvIGJhbmNvIGRlIGRhZG9zIGRpcmV0YW1lbnRlOyB0b2RvIGNvbWFuZG8gw6kgaW50ZXJtZWRpYWRvIHBlbG8gYFJvbGVTdXBlcnZpc29yYCB2aWEgYEFnZW50QnVzYCwgY29tIHJldGVuw6fDo28gb2JyaWdhdMOzcmlhIGRlIGHDp8O1ZXMgZGUgcmlzY28gbmEgZmlsYSBgQUlQZW5kaW5nQWN0aW9uYC4KCi0tLQoKIyMgMy4gTWF0cml6IGRlIERlcGVuZMOqbmNpYXMgZW50cmUgb3MgMTEgTcOzZHVsb3MKCmBgYG1lcm1haWQKZmxvd2NoYXJ0IFRECiAgICBNT0QwOVsiTU9ELTA5IEFkbWluICYgT3BlcmF0aW9ucyAoRnVuZGHDp8OjbykiXSAtLT4gTU9EMDFbIk1PRC0wMSBIdWIgQ29tZXJjaWFsIChDb3JlKSJdCiAgICBNT0QwOSAtLT4gTU9EMDdbIk1PRC0wNyBBdXRvbWHDp8OjbyAmIENvbmVjdGl2aWRhZGUiXQogICAgTU9EMDEgLS0+IE1PRDAyWyJNT0QtMDIgSW50ZWxpZ8OqbmNpYSBkZSBNZXJjYWRvIl0KICAgIE1PRDAxIC0tPiBNT0QwM1siTU9ELTAzIE9ycXVlc3RyYcOnw6NvIGRlIFZlbmRhcyJdCiAgICBNT0QwMSAtLT4gTU9EMDRbIk1PRC0wNCBQZXJmb3JtYW5jZSBDb21lcmNpYWwiXQogICAgTU9EMDEgLS0+IE1PRDA1WyJNT0QtMDUgUHJldmlzaWJpbGlkYWRlIENvbWVyY2lhbCJdCiAgICBNT0QwNyAtLT4gTU9EMDhbIk1PRC0wOCBFbmdhamFtZW50byBDb21lcmNpYWwiXQogICAgTU9EMDEgLS0+IE1PRDA4CiAgICBNT0QwMSAtLT4gTU9EMDZbIk1PRC0wNiBJbnRlbGlnw6puY2lhIEFydGlmaWNpYWwgKEVueGFtZSkiXQogICAgTU9EMDIgLS0+IE1PRDA2CiAgICBNT0QwMyAtLT4gTU9EMDYKICAgIE1PRDA0IC0tPiBNT0QwNgogICAgTU9EMDUgLS0+IE1PRDA2CiAgICBNT0QwMSAtLT4gTU9EMTBbIk1PRC0xMCBNb2JpbGUgJiBGaWVsZCBTYWxlcyJdCiAgICBNT0QwOCAtLT4gTU9EMTAKICAgIE1PRDAyIC0tPiBNT0QxMVsiTU9ELTExIFNvY2lhbCBTZWxsaW5nIl0KICAgIE1PRDAxIC0tPiBNT0QxMQpgYGAKCi0tLQoKIyMgNC4gUm90ZWlybyBTZXF1ZW5jaWFsIGRlIFJlY29uc3RydcOnw6NvIGVtIDYgT25kYXMgZGUgRW5nZW5oYXJpYQoKU2VndWluZG8gYSBPcmRlbSBPZmljaWFsIGRlIEludGVncmHDp8OjbyBkbyBgQUdFTlRTLm1kYCAoU2XDp8OjbyAxOSk6CgojIyMgT05EQSAwMSDigJQgRnVuZGHDp8OjbywgVGVuYW5jeSBlIFNjaGVtYSBDZW50cmFsIChTbG90czogMDEsIDAxQSwgMTUpCi0gKipPYmpldGl2bzoqKiBFc3RhYmVsZWNlciBhIGJhc2Ugc2VndXJhIGRvIGJhbmNvIGRlIGRhZG9zLCBSTFMgZSBhdXRlbnRpY2HDp8Ojby4KLSAqKkVudHJlZ2FzOioqCiAgLSBNaWdyYcOnw7VlcyBQcmlzbWEgY29uc29saWRhZGFzIHNlbSBsb2NrcyBleGNsdXNpdm9zIChgc2NoZW1hLnByaXNtYWApLgogIC0gSGFiaWxpdGHDp8OjbyBkZSBSTFMgZW0gdG9kYXMgYXMgdGFiZWxhcyBkZSBkb23DrW5pby4KICAtIE1pZGRsZXdhcmUgZGUgc2Vzc8OjbyBKV1QgKFJTMjU2KSBlIGluamXDp8OjbyBkZSB0ZW5hbnQuCiAgLSBTZXR1cCBkbyBiYXJyYW1lbnRvIGRlIGV2ZW50b3MgRG9tYWluIEV2ZW50IE1lc2ggY29tIGNoYXZlIGRlIGlkZW1wb3TDqm5jaWEgbm8gUmVkaXMuCi0gKipHYXRlIE9icmlnYXTDs3JpbzoqKiBUZXN0ZXMgYXV0b21hdGl6YWRvcyBkZSBjcm9zcy10ZW5hbnQgZGF0YSBsZWFrIChgcmxzLWxlYWstY2hlY2tlcmApIGNvbSAxMDAlIGRlIHN1Y2Vzc28uCgojIyMgT05EQSAwMiDigJQgSHViIENvbWVyY2lhbCAmIENvbnRyYXRvcyBkZSBWZW5kYXMgKFNsb3RzOiAwMSwgMDQsIDE4KQotICoqT2JqZXRpdm86KiogUmVjb25zdHJ1aXIgbyBuw7pjbGVvIHRyYW5zYWNpb25hbCBkYSBwbGF0YWZvcm1hIChNT0QtMDEpLgotICoqRW50cmVnYXM6KioKICAtIFBpcGVsaW5lIEthbmJhbiBpbnRlcmF0aXZvIGNvbSBgQGRuZC1raXRgIGUgcmVjw6FsY3VsbyBkaW7Dom1pY28gZGUgdmFsb3IgcG9uZGVyYWRvLgogIC0gRmljaGEgQ2FkYXN0cmFsIDM2MMKwIGRlIExlYWRzLCBFbXByZXNhcyBlIENvbnRhdG9zIGNvbSBsaW5oYSBkbyB0ZW1wbyB1bmlmaWNhZGEuCiAgLSBNb3RvciBkZSBQcm9wb3N0YXMgQ29tZXJjaWFpcyBjb20gdmFsaWRhw6fDo28gZGUgdHJhdmFzIGRlIGRlc2NvbnRvIHBvciBhbMOnYWRhICgxMCUgQ2xvc2VyIC8gMjAlIEdlc3RvciAvIERpcmV0b3JpYSkuCi0gKipHYXRlIE9icmlnYXTDs3JpbzoqKiBUZXN0ZXMgdW5pdMOhcmlvcyBlIGRlIGludGVncmHDp8OjbyBkZSBtdXRhw6fDo28gZGUgZGVhbHMgZSBlbWlzc8OjbyBkZSBwcm9wb3N0YXMuCgojIyMgT05EQSAwMyDigJQgUHJvc3BlY8Onw6NvLCBFbnJpcXVlY2ltZW50byBlIE9ycXVlc3RyYcOnw6NvIChTbG90czogMDUsIDA2LCAxNykKLSAqKk9iamV0aXZvOioqIEltcGxlbWVudGFyIG8gbW90b3IgZGUgZGVzY29iZXJ0YSBkZSBtZXJjYWRvIChNT0QtMDIpIGUgY2Fkw6puY2lhcyAoTU9ELTAzKS4KLSAqKkVudHJlZ2FzOioqCiAgLSBQcm9zcGVjdGluZ0h1YiBtdWx0aS1mb250ZSBjb20gZGVkdXBsaWNhw6fDo28gZSBzY29yaW5nIGRlIElDUCBGaXQuCiAgLSBHZXJhZG9yIGRlIERvc3Npw6ogMzYwwrAgZW0gMTAgc2XDp8O1ZXMgKGBhY2NvdW50LWRldGVjdGl2ZWApLgogIC0gQ2FkZW5jZUh1YiBtdWx0aWNhbmFsIGNvbSBmaWxhIGRpw6FyaWEgcHJpb3JpemFkYSBlIG1lY2FuaXNtbyBjb21wdWxzw7NyaW8gZGUgYEF1dG8tU3RvcCBvbiBSZXBseWAuCiAgLSBNZXNhIGRlIFRyYXRhbWVudG8gcGFyYSB0cmlhZ2VtIGRlIGxlYWRzIGluYm91bmQgY29tIFNMQSBkZSA1IG1pbnV0b3MuCi0gKipHYXRlIE9icmlnYXTDs3JpbzoqKiBUZXN0ZXMgZGUgaW50ZXJydXDDp8OjbyBpbWVkaWF0YSBkZSBjYWTDqm5jaWEgYW8gcmVjZWJlciB3ZWJob29rIGRlIHJlc3Bvc3RhLgoKIyMjIE9OREEgMDQg4oCUIEFuYWx5dGljcywgRm9yZWNhc3QgZSBQcmV2aXNpYmlsaWRhZGUgKFNsb3RzOiAwNCwgMTAsIDIzKQotICoqT2JqZXRpdm86KiogQ29uc3RydWlyIGEgaW50ZWxpZ8OqbmNpYSBleGVjdXRpdmEgKE1PRC0wNCBlIE1PRC0wNSkuCi0gKipFbnRyZWdhczoqKgogIC0gUmVuZGVyaXphw6fDo28gb3RpbWl6YWRhIGRvcyAxNyByZWxhdMOzcmlvcyBleGVjdXRpdm9zIGVtIHRlbXBvIGRlIHJlc3Bvc3RhIDwgODAwbXMuCiAgLSBNb3RvciBkZSBhdXTDs3BzaWEgcHJvZnVuZGEgZGUgdml0w7NyaWFzIGUgZGVycm90YXMgKGBXaW4vTG9zcyBEZWVwIEF1dG9wc3lgKS4KICAtIEZvcmVjYXN0IHByZWRpdGl2byBjYWxpYnJhZG8gY29udHJhIHJlYWxpemFkbyBoaXN0w7NyaWNvIChNQVBFIDwgOCUpIGUgY2xhc3NpZmljYcOnw6NvIENvbW1pdC9CZXN0IENhc2UuCiAgLSBXYXIgUm9vbSBjb20gYXR1YWxpemHDp8OjbyBkZSB0ZWxlbWV0cmlhIGVtIHRlbXBvIHJlYWwgdmlhIFNlcnZlci1TZW50IEV2ZW50cyAoU1NFKS4KLSAqKkdhdGUgT2JyaWdhdMOzcmlvOioqIFRlc3RlcyBkZSBjYXJnYSBjb20gazYgKGBsb2FkOms2OmNybWApIGdhcmFudGluZG8gcDk1IDwgMjAwbXMuCgojIyMgT05EQSAwNSDigJQgRW54YW1lIGRlIElBLCBTdXBlcnZpc29yIGUgQ29uZWN0aXZpZGFkZSAoU2xvdHM6IDA3LCAxMiwgMTMsIDE2KQotICoqT2JqZXRpdm86KiogQXRpdmFyIG8gZWNvc3Npc3RlbWEgYXV0w7Rub21vIGdvdmVybmFkbyAoTU9ELTA2LCBNT0QtMDcgZSBNT0QtMDgpLgotICoqRW50cmVnYXM6KioKICAtIFN1cGVydmlzb3IgQ2VudHJhbCBjb20gZGVzcGFjaG8gc2Vtw6JudGljbyBwYXJhIG9zIDE1IGFnZW50ZXMgbmF0aXZvcy4KICAtIEZpbGEgZGUgQXByb3Zhw6fDo28gSHVtYW5hIChgQUlQZW5kaW5nQWN0aW9uYCkgcmV0ZW5kbyBhw6fDtWVzIGRlIHJpc2NvIEhJR0guCiAgLSBCYXNlIGRlIENvbmhlY2ltZW50byBSQUcgZW0gcGd2ZWN0b3IgKDE1MzYgZGltZW5zw7VlcykgY29tIGJ1c2NhIHBvciBzaW1pbGFyaWRhZGUgZGUgY29zc2Vuby4KICAtIENvbmVjdG9yIEJpdHJpeDI0IGJpZGlyZWNpb25hbCByZXNpbGllbnRlIGNvbSBjb250cm9sZSBsZWFreSBidWNrZXQgZGUgMiByZXEvcy4KICAtIFZvaWNlSHViIFN0dWRpbyBXZWJSVEMgY29tIHRyYW5zY3Jpw6fDo28gZW0gc3RyZWFtaW5nIGUgYmxvcXVlaW8gZGUgY29sZCBjYWxsIGNvbnRyYSBsaXN0YSBOw6NvIFBlcnR1cmJlLgotICoqR2F0ZSBPYnJpZ2F0w7NyaW86KiogVmVyaWZpY2HDp8OjbyBkZSBibG9xdWVpbyAxMDAlIGVmaWNheiBkZSBhw6fDtWVzIG7Do28gYXV0b3JpemFkYXMgZGUgSUEgZSB0ZXN0ZSBkZSByYXRlIGxpbWl0IGRvIEJpdHJpeDI0LgoKIyMjIE9OREEgMDYg4oCUIE1vYmlsaWRhZGUsIFNvY2lhbCBTZWxsaW5nIGUgSGFyZGVuaW5nIGRlIFJlbGVhc2UgKFNsb3RzOiAwMywgMDgsIDA4QSwgMDksIDIxLCAyNCkKLSAqKk9iamV0aXZvOioqIEZlY2hhciBvcyBtw7NkdWxvcyBjb21wbGVtZW50YXJlcyAoTU9ELTEwIGUgTU9ELTExKSBlIGNlcnRpZmljYXIgbyBwcm9kdXRvLgotICoqRW50cmVnYXM6KioKICAtIEFwcCBNb2JpbGUgQ2FwYWNpdG9yIGNvbSBTUUxpdGUgY3JpcHRvZ3JhZmFkbyBlIHNpbmNyb25pemHDp8OjbyB0cmFuc2FjaW9uYWwgb2ZmbGluZS1maXJzdC4KICAtIE3Ds2R1bG8gZGUgU29jaWFsIFNlbGxpbmcgY29tIGdlcmFkb3IgZGUgYWJvcmRhZ2VucyBjb25zdWx0aXZhcy4KICAtIFBvcnRhbCBMR1BEIHBhcmEgZXhlcmPDrWNpbyBkb3MgZGlyZWl0b3MgZG8gdGl0dWxhciBjb20gYW5vbmltaXphw6fDo28gdmlhIGJsaW5kIGluZGV4LgogIC0gQXVkaXRvcmlhIGNvbXBsZXRhIGRlIGFjZXNzaWJpbGlkYWRlIFdDQUcgMi4yIEFBIGVtIHRvZGFzIGFzIHRlbGFzIGUgdGVtYXMuCi0gKipHYXRlIE9icmlnYXTDs3JpbzoqKiBHYXRlIGNvbXBsZXRvIGRlIHJlbGVhc2U6IGBucG0gcnVuIGxpbnRgLCBgbnB4IHRzYyAtLW5vRW1pdGAsIHZhcnJlZHVyYSBkZSBzZWdyZWRvcyAoR2l0bGVha3MpIGUgcGFyZWNlciBBUFJPVkFETyBkbyBBZ2VudGUgMjQuCgotLS0KCiMjIDUuIE1hdHJpeiBkZSBSaXNjb3MgVMOpY25pY29zIGUgU2FsdmFndWFyZGFzCgp8IFJpc2NvIFTDqWNuaWNvIElkZW50aWZpY2FkbyB8IEltcGFjdG8gfCBQcm9iYWJpbGlkYWRlIHwgU2FsdmFndWFyZGEgQXJxdWl0ZXR1cmFsIFByZXZpc3RhIHwKfCA6LS0tIHwgOi0tLTogfCA6LS0tOiB8IDotLS0gfAp8ICoqVmF6YW1lbnRvIGRlIGRhZG9zIGVudHJlIGNsaWVudGVzIChUZW5hbmN5IExlYWspKiogfCBDYXRhc3Ryw7NmaWNvIHwgQmFpeGEgfCBSTFMgY29tcHVsc8OzcmlvIG5vIFBvc3RncmVTUUwgKyBUZXN0ZXMgYXV0b21hdGl6YWRvcyBkZSBhY2Vzc28gY3J1emFkbyBlbSBDSS4gfAp8ICoqQmxvcXVlaW8gZGUgQVBJIHBvciBSYXRlIExpbWl0IG5vIEJpdHJpeDI0KiogfCBBbHRvIHwgTcOpZGlhIHwgRmlsYSBkZSB2YXphbWVudG8gKHRva2VuIGJ1Y2tldCkgbm8gQnVsbE1RIGxpbWl0YW5kbyBhIDIgcmVxdWlzacOnw7VlcyBwb3Igc2VndW5kby4gfAp8ICoqQWx1Y2luYcOnw6NvIGRlIEFnZW50ZSBkZSBJQSBlbSBQcm9wb3N0YS9Db250cmF0byoqIHwgQ3LDrXRpY28gfCBCYWl4YSB8IEZpbGEgYEFJUGVuZGluZ0FjdGlvbmAgY29tIGFwcm92YcOnw6NvIGh1bWFuYSBvYnJpZ2F0w7NyaWEgcGFyYSB2YWxvcmVzIGUgZGVzY29udG9zLiB8CnwgKipQZXJkYSBkZSBkYWRvcyBlbSByZXVuacO1ZXMgZGUgY2FtcG8gc2VtIHNpbmFsKiogfCBBbHRvIHwgTcOpZGlhIHwgUGVyc2lzdMOqbmNpYSBsb2NhbCBhdMO0bWljYSBlbSBTUUxpdGUgY3JpcHRvZ3JhZmFkbyBjb20gc3luYyB0cmFuc2FjaW9uYWwgZW0gYmFja2dyb3VuZC4gfAp8ICoqRGlzcGFybyBpbmRldmlkbyBkZSBlLW1haWxzIGRlIGNhZMOqbmNpYSBww7NzLXJlc3Bvc3RhKiogfCBBbHRvIHwgQmFpeGEgfCBFdmVudG8gYGNhZGVuY2UubGVhZC5yZXBsaWVkYCBjb20gdHJhdmEgc8OtbmNyb25hIG5vIFJlZGlzIHBhdXNhbmRvIGEgaW5zY3Jpw6fDo28gZW0gPCAxcy4gfAp8ICoqRXN0b3VybyBkZSBvcsOnYW1lbnRvIGRlIHRva2VucyBkZSBJQSBkYSBvcmdhbml6YcOnw6NvKiogfCBNw6lkaW8gfCBNw6lkaWEgfCBWZXJpZmljYcOnw6NvIHByw6l2aWEgZGUgc2FsZG8gbm8gbGVkZ2VyIGRlIHF1b3RhcyBjb20gY29ydGUgZGUgY2hhbWFkYSBlIGF2aXNvIGFvcyA4MCUuIHwKCi0tLQoKIyMgNi4gR292ZXJuYW7Dp2EgZGUgRXhlY3XDp8OjbyBlIEhvbW9sb2dhw6fDo28gZG9zIE1lcmdlcwoKMS4gKipJc29sYW1lbnRvIGRlIEJyYW5jaGVzOioqIENhZGEgZXNwZWNpYWxpc3RhIHRyYWJhbGhhIGVtIGJyYW5jaCBwcsOzcHJpYSBgYWdlbnRlLzxudW1lcm8+LTxzbHVnPmAgYSBwYXJ0aXIgZGUgYGludGVncmFjYW8vb25kYS08bj5gLgoyLiAqKkxldmEgZGUgTWVyZ2VzOioqIEludGVncmHDp8OjbyBjb250cm9sYWRhIGVtIGxvdGVzIGRlIDIgYSAzIG1lcmdlcyBjb20gZXhlY3XDp8OjbyBkbyBnYXRlIGFww7NzIGNhZGEgbG90ZS4KMy4gKipBdWRpdG9yaWEgSW5kZXBlbmRlbnRlIENvbXB1bHPDs3JpYToqKiBPIEFnZW50ZSAyNCBhbmFsaXNhIHRvZG9zIG9zIGRpZmZzIGFudGVzIGRvIG1lcmdlIGRlZmluaXRpdm8gbmEgYnJhbmNoIHByaW5jaXBhbC4KNC4gKipDcml0w6lyaW8gZGUgUHJvbnRvIChEb0QpOioqIE5lbmh1bWEgZnVuY2lvbmFsaWRhZGUgw6kgZGFkYSBjb21vIHByb250YSBzZW0gdGVzdGUgZGUgcmVncmVzc8OjbywgY29uZm9ybWlkYWRlIGRlIHRlbmFuY3kgZSB0aXBhZ2VtIFR5cGVTY3JpcHQgZXN0cml0YSBzZW0gYEB0cy1pZ25vcmVgLgoKKipFU1RFIFBMQU5PIEVOQ09OVFJBLVNFIFBST05UTyBQQVJBIFNVQk1JU1PDg08gQU8gUFJPUFJJRVTDgVJJTyBETyBQUk9EVVRPLioqCg=="};
+
+const MATRIX_DATA = [{"mod":"MOD-01 Hub Comercial","req":"REQ-CRM-001","desc":"Transição atômica de estágio no Kanban com recálculo de valores","rn":"RN-CRM-01: Proibido avançar sem valor e data estimada","pers":"Closer, Gestor","ent":"Deal, Stage","agt":"Orbit","jor":"JOR-07","ac":"AC-HUB-001","st":"HOMOLOGADO"},{"mod":"MOD-01 Hub Comercial","req":"REQ-CRM-002","desc":"Emissão de propostas com cálculo de margem e alçada escalonada","rn":"RN-CRM-02: Desconto > 10% exige Gestor; > 20% Diretoria","pers":"Closer, Gestor","ent":"Proposal","agt":"contract-signature","jor":"JOR-08","ac":"AC-HUB-002","st":"HOMOLOGADO"},{"mod":"MOD-01 Hub Comercial","req":"REQ-CRM-003","desc":"Ficha Cadastral 360° com timeline unificada de interações","rn":"RN-CRM-03: Proibido criar lead sem tenantId e contato","pers":"SDR, Closer","ent":"Lead, Contact","agt":"crm.agent","jor":"JOR-01","ac":"AC-HUB-003","st":"HOMOLOGADO"},{"mod":"MOD-02 Inteligência","req":"REQ-MKT-001","desc":"Busca em cascata em 7 fontes externas com deduplicação","rn":"RN-MKT-01: Consulta consome créditos de enriquecimento","pers":"BDR","ent":"ProspectAccount","agt":"Nexus","jor":"JOR-02","ac":"AC-MKT-001","st":"HOMOLOGADO"},{"mod":"MOD-02 Inteligência","req":"REQ-MKT-002","desc":"Dossiê 360° em 10 seções com sinais de compra","rn":"RN-MKT-02: Descartar dados de não-decisores (LGPD)","pers":"BDR, Closer","ent":"CompanyEnrichment","agt":"account-detective","jor":"JOR-06","ac":"AC-MKT-002","st":"HOMOLOGADO"},{"mod":"MOD-02 Inteligência","req":"REQ-MKT-003","desc":"Tarifação e débito atômico de créditos de enriquecimento","rn":"RN-MKT-03: Bloqueio imediato da chamada se cota zerada","pers":"BDR, RevOps","ent":"EnrichmentLog","agt":"Nexus","jor":"JOR-02","ac":"AC-MKT-003","st":"HOMOLOGADO"},{"mod":"MOD-03 Orquestração","req":"REQ-ORQ-001","desc":"Motor multicanal de cadência com envio em horário comercial","rn":"RN-ORQ-01: Auto-Stop obrigatório ao receber resposta","pers":"SDR, BDR","ent":"Cadence, Step","agt":"Aria, bdr-outbound","jor":"JOR-04","ac":"AC-ORQ-001","st":"HOMOLOGADO"},{"mod":"MOD-03 Orquestração","req":"REQ-ORQ-002","desc":"Mesa de Tratamento priorizada com SLA de 5 minutos","rn":"RN-ORQ-02: Alerta sonoro após 15min sem atendimento","pers":"SDR","ent":"DailyTask, Lead","agt":"sdr-qualification","jor":"JOR-03","ac":"AC-ORQ-002","st":"HOMOLOGADO"},{"mod":"MOD-03 Orquestração","req":"REQ-ORQ-003","desc":"Simulador de Roleplay com IA e scorecard por rubrica","rn":"RN-ORQ-03: Nota mínima 80/100 para certificar vendedor","pers":"Vendedor","ent":"RoleplaySession","agt":"learning.agent","jor":"JOR-19","ac":"AC-ORQ-003","st":"HOMOLOGADO"},{"mod":"MOD-04 Performance","req":"REQ-PRF-001","desc":"Renderização instantânea dos 17 relatórios executivos","rn":"RN-PRF-01: Permitir drill-down até a transação","pers":"Diretor, Gestor","ent":"ExecutiveKpi","agt":"Vanguard","jor":"JOR-12","ac":"AC-PERF-001","st":"HOMOLOGADO"},{"mod":"MOD-04 Performance","req":"REQ-PRF-002","desc":"Win/Loss Deep Autopsy com agrupamento semântico","rn":"RN-PRF-02: Motivo padronizado obrigatório na perda","pers":"RevOps, Gestor","ent":"WinLossAutopsy","agt":"devils-advocate","jor":"JOR-13","ac":"AC-PERF-002","st":"HOMOLOGADO"},{"mod":"MOD-04 Performance","req":"REQ-PRF-003","desc":"War Room com telemetria ao vivo via Server-Sent Events","rn":"RN-PRF-03: Queda de conversão > 20% abre sala de crise","pers":"Liderança","ent":"SellerMetric","agt":"Vanguard","jor":"JOR-13","ac":"AC-PERF-003","st":"HOMOLOGADO"},{"mod":"MOD-05 Previsibilidade","req":"REQ-PRV-001","desc":"Forecast Preditivo Calibrado contra realizado (MAPE < 8%)","rn":"RN-PRV-01: Deals inativos > 21 dias fora do Commit","pers":"CFO, Diretor","ent":"ForecastSnapshot","agt":"Oracle, forecast.agent","jor":"JOR-12","ac":"AC-PREV-001","st":"HOMOLOGADO"},{"mod":"MOD-05 Previsibilidade","req":"REQ-PRV-002","desc":"Pipeline Ponderado por Health Score de 0 a 100","rn":"RN-PRV-02: Health < 35 reduz valor ponderado em 70%","pers":"Gestor, Closer","ent":"DealRiskScore","agt":"revenue-intelligence","jor":"JOR-07","ac":"AC-PREV-002","st":"HOMOLOGADO"},{"mod":"MOD-05 Previsibilidade","req":"REQ-PRV-003","desc":"Simulador What-If de capacidade e ramp-up de contratação","rn":"RN-PRV-03: Considerar curva histórica real de ramp-up","pers":"RevOps, Diretoria","ent":"HiringScenario","agt":"forecast.agent","jor":"JOR-12","ac":"AC-PREV-003","st":"HOMOLOGADO"},{"mod":"MOD-06 Inteligência","req":"REQ-IA-001","desc":"Enxame de 15 Agentes Nativos sob o Supervisor Central","rn":"RN-IA-01: Ação externa de risco HIGH exige aprovação","pers":"Toda a Equipe","ent":"CommercialAgent","agt":"Core, role-supervisor","jor":"JOR-18","ac":"AC-IA-001","st":"HOMOLOGADO"},{"mod":"MOD-06 Inteligência","req":"REQ-IA-002","desc":"Base de Conhecimento RAG em pgvector (1536 dimensões)","rn":"RN-IA-02: Proibido citar dados fora da base corporativa","pers":"Toda a Equipe","ent":"KnowledgeChunk","agt":"learning.agent","jor":"JOR-06","ac":"AC-IA-002","st":"HOMOLOGADO"},{"mod":"MOD-06 Inteligência","req":"REQ-IA-003","desc":"Fila de Aprovação Humana com rastro imutável de autor","rn":"RN-IA-03: Registro de justificativa e timestamp de aceite","pers":"Gestor, Admin","ent":"AIPendingAction","agt":"Core","jor":"JOR-18","ac":"AC-IA-003","st":"HOMOLOGADO"},{"mod":"MOD-07 Automação","req":"REQ-AUT-001","desc":"Motor de regras visuais orientadas a eventos (Event Mesh)","rn":"RN-AUT-01: Chave de idempotência de 48h obrigatória","pers":"RevOps, Admin","ent":"AutomationRule","agt":"Spark","jor":"JOR-17","ac":"AC-AUT-001","st":"HOMOLOGADO"},{"mod":"MOD-07 Automação","req":"REQ-AUT-002","desc":"Conector Bitrix24 bidirecional resiliente com leaky bucket","rn":"RN-AUT-02: Limite estrito de 2 req/s e lotes de 50 itens","pers":"Integrador","ent":"BitrixSyncLog","agt":"bitrix-guardian","jor":"JOR-16","ac":"AC-AUT-002","st":"HOMOLOGADO"},{"mod":"MOD-07 Automação","req":"REQ-AUT-003","desc":"Modo Dry-Run para simulação de regras sem mutação","rn":"RN-AUT-03: Execução em memória sem escrita em produção","pers":"RevOps, Admin","ent":"DryRunLog","agt":"Spark","jor":"JOR-17","ac":"AC-AUT-003","st":"HOMOLOGADO"},{"mod":"MOD-08 Engajamento","req":"REQ-ENG-001","desc":"VoiceHub Studio WebRTC com transcrição estéreo ao vivo","rn":"RN-ENG-01: Gravação com consentimento e criptografia","pers":"SDR, Closer","ent":"CallRecording","agt":"Echo, voice-agent","jor":"JOR-05","ac":"AC-ENG-001","st":"HOMOLOGADO"},{"mod":"MOD-08 Engajamento","req":"REQ-ENG-002","desc":"Supressão de cold call contra lista Não Perturbe","rn":"RN-ENG-02: Bloqueio compulsório de números registrados","pers":"SDR","ent":"SuppressionList","agt":"Echo","jor":"JOR-05","ac":"AC-ENG-002","st":"HOMOLOGADO"},{"mod":"MOD-08 Engajamento","req":"REQ-ENG-003","desc":"Booking Público 360° com prevenção de double-booking","rn":"RN-ENG-03: Trava transacional de horário no calendário","pers":"Lead, Closer","ent":"BookingSlot","agt":"Echo","jor":"JOR-05","ac":"AC-ENG-003","st":"HOMOLOGADO"},{"mod":"MOD-09 Admin","req":"REQ-ADM-001","desc":"Isolamento multi-tenant obrigatório via PostgreSQL RLS","rn":"RN-ADM-01: Violação de tenantId dispara HTTP 403 e SIEM","pers":"Admin, TI","ent":"Todas as Entidades","agt":"Sudo","jor":"JOR-01","ac":"AC-ADM-001","st":"HOMOLOGADO"},{"mod":"MOD-09 Admin","req":"REQ-ADM-002","desc":"Gate de concessão modular por organização","rn":"RN-ADM-02: Rota de módulo não contratado retorna HTTP 403","pers":"Admin, RevOps","ent":"ModuleGrant","agt":"Sudo","jor":"JOR-01","ac":"AC-ADM-002","st":"HOMOLOGADO"},{"mod":"MOD-09 Admin","req":"REQ-ADM-003","desc":"Portal LGPD com anonimização cega (blind index)","rn":"RN-ADM-03: Preservação de dados fiscais (Art. 16 LGPD)","pers":"DPO, Admin","ent":"LgpdConsent","agt":"ComplianceEnforcer","jor":"JOR-20","ac":"AC-ADM-003","st":"HOMOLOGADO"},{"mod":"MOD-10 Mobile","req":"REQ-MOB-001","desc":"Field Meeting Recorder com áudio e notas em campo","rn":"RN-MOB-01: Gravação protegida contra desligamento do OS","pers":"Vendedor Externo","ent":"MobileFieldMeeting","agt":"promise-guardian","jor":"JOR-14","ac":"AC-MOB-001","st":"HOMOLOGADO"},{"mod":"MOD-10 Mobile","req":"REQ-MOB-002","desc":"Persistência transacional local e tolerância a crash","rn":"RN-MOB-02: Gravação salva em SQLite criptografado local","pers":"Vendedor Externo","ent":"OfflineCache","agt":"Orbit Mobile","jor":"JOR-14","ac":"AC-MOB-002","st":"HOMOLOGADO"},{"mod":"MOD-10 Mobile","req":"REQ-MOB-003","desc":"Sincronização em lote isolada com Dead-Letter Queue","rn":"RN-MOB-03: Falha em 1 pacote não bloqueia a fila restante","pers":"Vendedor Externo","ent":"OfflineSyncQueue","agt":"Orbit Mobile","jor":"JOR-14","ac":"AC-MOB-003","st":"HOMOLOGADO"},{"mod":"MOD-11 Social","req":"REQ-SOC-001","desc":"Gerador de abordagens consultivas para posts de decisores","rn":"RN-SOC-01: Proibido envio automático sem clique humano","pers":"BDR, Social Seller","ent":"SocialInteraction","agt":"bdr-outbound","jor":"JOR-15","ac":"AC-SOC-001","st":"HOMOLOGADO"},{"mod":"MOD-11 Social","req":"REQ-SOC-002","desc":"Associação imediata de abordagem gerada à timeline do CRM","rn":"RN-SOC-02: Vinculação da interação com 1 clique","pers":"BDR, Closer","ent":"LeadTimeline","agt":"ldr-intelligence","jor":"JOR-15","ac":"AC-SOC-002","st":"HOMOLOGADO"},{"mod":"MOD-11 Social","req":"REQ-SOC-003","desc":"Conformidade e controle de taxa com termos das redes","rn":"RN-SOC-03: Proibição estrita de scraping predatório","pers":"TI, Segurança","ent":"SocialProfile","agt":"Nexus Social","jor":"JOR-15","ac":"AC-SOC-003","st":"HOMOLOGADO"}];
+
+// RENDERIZAR CARDS DOS 11 MÓDULOS
+const modulesGrid = document.getElementById('modulesGrid');
+MODULES_DATA.forEach((m, idx) => {
+  const card = document.createElement('div');
+  card.className = 'pcard';
+  card.onclick = () => openModuleModal(idx);
+  card.innerHTML = `
+    <div class="pcard-top">
+      <div class="icon-box" style="border-color:${m.color};color:${m.color};">
+        <span style="font-family:var(--disp);font-weight:800;font-size:16px;">${m.num}</span>
+      </div>
+      <span class="badge badge-cyan">${m.avatar}</span>
+    </div>
+    <h3 style="color:${m.color}">${m.title}</h3>
+    <div class="pcard-tag">${m.category}</div>
+    <p>${m.desc}</p>
+    <div class="pcard-footer">
+      <span>ROTAS: ${m.routes.length}</span>
+      <span style="color:${m.color};font-weight:600;">VER DETALHES (A-F) →</span>
+    </div>
+  `;
+  modulesGrid.appendChild(card);
+});
+
+// RENDERIZAR CARDS DAS 20 JORNADAS
+const journeysGrid = document.getElementById('journeysGrid');
+JOURNEYS_DATA.forEach(j => {
+  const card = document.createElement('div');
+  card.className = 'jcard';
+  card.onclick = () => alert('JORNADA ' + j.id + ': ' + j.titulo + '\n\nPersona: ' + j.persona + '\nMódulo: ' + j.modulo + '\nAgente IA: ' + j.agente + '\n\nResumo Operacional:\n' + j.desc + '\n\nConsulte a especificação completa no Anexo Entrega 04.');
+  card.innerHTML = `
+    <div class="jcard-header">
+      <span class="badge badge-gold">${j.id}</span>
+      <span class="badge badge-iris">${j.modulo}</span>
+    </div>
+    <h4>${j.titulo}</h4>
+    <p>${j.desc}</p>
+    <div class="jcard-meta">
+      <span class="badge badge-cyan">👤 ${j.persona}</span>
+      <span class="badge badge-pink">🤖 ${j.agente}</span>
+    </div>
+  `;
+  journeysGrid.appendChild(card);
+});
+
+// RENDERIZAR MATRIZ DE RASTREABILIDADE
+const matrixBody = document.getElementById('matrixBody');
+function renderMatrix(items) {
+  matrixBody.innerHTML = '';
+  items.forEach(row => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${row.mod}</strong></td>
+      <td><code>${row.req}</code></td>
+      <td>${row.desc}</td>
+      <td style="color:var(--gold)">${row.rn}</td>
+      <td><span class="badge badge-cyan">${row.pers}</span></td>
+      <td><code>${row.ent}</code></td>
+      <td><span class="badge badge-pink">${row.agt}</span></td>
+      <td><strong style="color:var(--iris)">${row.jor}</strong></td>
+      <td><code>${row.ac}</code></td>
+      <td><span class="badge badge-green">${row.st}</span></td>
+    `;
+    matrixBody.appendChild(tr);
+  });
+}
+renderMatrix(MATRIX_DATA);
+
+// FILTRO DE BUSCA DA MATRIZ
+document.getElementById('matrixSearch').addEventListener('input', (e) => {
+  const term = e.target.value.toLowerCase();
+  const filtered = MATRIX_DATA.filter(r => 
+    r.mod.toLowerCase().includes(term) ||
+    r.req.toLowerCase().includes(term) ||
+    r.desc.toLowerCase().includes(term) ||
+    r.rn.toLowerCase().includes(term) ||
+    r.agt.toLowerCase().includes(term) ||
+    r.jor.toLowerCase().includes(term)
+  );
+  renderMatrix(filtered);
+  document.getElementById('matrixCount').textContent = filtered.length + ' REQUISITOS ENCONTRADOS';
+});
+
+// MODAL DE MÓDULO (ABAS A-F)
+let currentModule = null;
+function openModuleModal(idx) {
+  const m = MODULES_DATA[idx];
+  currentModule = m;
+  document.getElementById('modalTag').textContent = m.category + ' · AVATAR: ' + m.avatar;
+  document.getElementById('modalTitle').textContent = m.num + '. ' + m.title;
+  document.getElementById('modalTitle').style.color = m.color;
+  document.getElementById('modalDesc').textContent = m.desc;
+
+  // Tab 0: Eixo A (Identidade)
+  document.getElementById('tab0').innerHTML = `
+    <h3 style="color:${m.color}">A. Identidade Funcional & Proposta de Valor</h3>
+    <p><strong>Proposta Central:</strong> ${m.eixoA.proposta}</p>
+    <p><strong>Problemas Comerciais Resolvidos:</strong> ${m.eixoA.problemas}</p>
+    <p><strong>Público-Alvo & Perfis Autorizados:</strong> ${m.eixoA.publico}</p>
+    <p><strong>Indicadores de Sucesso:</strong> ${m.eixoA.indicadores}</p>
+  `;
+
+  // Tab 1: Eixo B (Arquitetura)
+  let featsHtml = '<ul>';
+  m.eixoB.funcionalidades.forEach(f => {
+    featsHtml += `<li><strong style="color:${m.color}">${f.nome}:</strong> ${f.desc}</li>`;
+  });
+  featsHtml += '</ul>';
+  document.getElementById('tab1').innerHTML = `
+    <h3 style="color:${m.color}">B. Arquitetura Funcional & Componentes</h3>
+    ${featsHtml}
+    <p><strong>Componentes de Interface:</strong> ${m.eixoB.componentes.map(c => '<code>' + c + '</code>').join(' ')}</p>
+    <p><strong>Estados de Interface:</strong> ${m.eixoB.estados}</p>
+  `;
+
+  // Tab 2: Eixo C (Operação)
+  document.getElementById('tab2').innerHTML = `
+    <h3 style="color:${m.color}">C. Operação, Jornada & Validações</h3>
+    <p><strong>Jornada Principal:</strong> ${m.eixoC.jornada}</p>
+    <p><strong>Regras de Negócio Inegociáveis:</strong> ${m.eixoC.regras}</p>
+    <p><strong>Eventos Emitidos no Barramento:</strong> ${m.eixoC.eventos.map(ev => '<code>' + ev + '</code>').join(' ')}</p>
+  `;
+
+  // Tab 3: Eixo D (Inteligência Artificial)
+  document.getElementById('tab3').innerHTML = `
+    <h3 style="color:${m.color}">D. Inteligência Artificial & Governança</h3>
+    <p><strong>Agentes Responsáveis:</strong> ${m.eixoD.agentes.map(a => '<span class="badge badge-pink">' + a + '</span>').join(' ')}</p>
+    <p><strong>Capacidades Utilizadas:</strong> ${m.eixoD.capacidades}</p>
+    <p><strong>Limites de Autonomia & Alçadas:</strong> ${m.eixoD.limites}</p>
+  `;
+
+  // Tab 4: Eixo E (Requisitos Técnicos)
+  document.getElementById('tab4').innerHTML = `
+    <h3 style="color:${m.color}">E. Requisitos Técnicos & Contratos</h3>
+    <p><strong>Entidades de Dados (Prisma):</strong> ${m.eixoE.entidades.map(e => '<code>' + e + '</code>').join(' ')}</p>
+    <p><strong>APIs & Rotas:</strong> ${m.eixoE.apis.map(r => '<code>' + r + '</code>').join(' ')}</p>
+    <p><strong>Segurança & Isolamento:</strong> ${m.eixoE.seguranca}</p>
+  `;
+
+  // Tab 5: Eixo F (Homologação)
+  let acHtml = '<ul>';
+  m.eixoF.aceite.forEach(ac => {
+    acHtml += `<li style="color:var(--txt);"><strong>${ac.split(':')[0]}:</strong> ${ac.split(':')[1]}</li>`;
+  });
+  acHtml += '</ul>';
+  document.getElementById('tab5').innerHTML = `
+    <h3 style="color:${m.color}">F. Critérios de Aceite para Homologação</h3>
+    ${acHtml}
+  `;
+
+  switchTab(0);
+  document.getElementById('modalBg').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function switchTab(index) {
+  document.querySelectorAll('.modal-tab-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', i === index);
+  });
+  document.querySelectorAll('.tab-pane').forEach((pane, i) => {
+    pane.classList.toggle('active', i === index);
+  });
+}
+
+function closeModal() {
+  document.getElementById('modalBg').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// DECODIFICADOR UTF-8 SEGURO PARA BASE64 NO NAVEGADOR
+function decodeB64(str) {
+  try {
+    const binString = atob(str);
+    const bytes = Uint8Array.from(binString, (m) => m.codePointAt(0));
+    return new TextDecoder().decode(bytes);
+  } catch (e) {
+    return 'Erro ao decodificar documento: ' + e.message;
+  }
+}
+
+// MODAL DE VISUALIZAÇÃO DE DOCUMENTOS AUXILIARES
+function openDocModal(docKey) {
+  const titles = {
+    doc01Aud: 'Entrega 01 — Relatório de Auditoria Independente (Agente 00)',
+    doc02Mat: 'Entrega 02 — Matriz Mestra de Rastreabilidade Reconciliada (33 Requisitos)',
+    doc03Agt: 'Entrega 03 — Inventário Oficial e Governança do Ecossistema de IA (7 Níveis)',
+    doc04Dec: 'Entrega 04 — Registro de Decisões Comerciais e Limites Operacionais',
+    doc06Gate: 'Entrega 06 — Parecer Final de Homologação do Quality Gate (Aprovado com Ressalvas)',
+    doc07Plan: 'Entrega 07 — Plano Preliminar de Engenharia para a Fase 02'
+  };
+  document.getElementById('docModalTitle').textContent = titles[docKey] || 'Documento Técnico Oficial';
+  const b64Content = DOCS_B64[docKey];
+  document.getElementById('docModalContent').textContent = b64Content ? decodeB64(b64Content) : 'Documento não encontrado.';
+  document.getElementById('docModalBg').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDocModal() {
+  document.getElementById('docModalBg').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// FECHAR MODAIS COM TECLA ESC
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeModal();
+    closeDocModal();
+  }
+});
+
+// ANIMAÇÃO DE CONTADORES
+document.querySelectorAll('[data-count]').forEach(el => {
+  const target = +el.dataset.count;
+  const startTime = performance.now();
+  function update(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / 1600, 1);
+    el.textContent = Math.round(target * (1 - Math.pow(1 - progress, 3)));
+    if (progress < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+});
+</script>
+</body>
+</html>

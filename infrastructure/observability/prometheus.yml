@@ -1,0 +1,29 @@
+# Config do Prometheus da stack de OBSERVABILIDADE LOCAL (docker-compose.opensource.yml, subida
+# via `npm run infra:up`) — os alvos `host.docker.internal:3000`/`app:3000` só existem a partir de
+# um container rodando na máquina de desenvolvimento, apontando para o `npm run dev` local ou para
+# o serviço `app` do compose. Este arquivo NÃO scrapea nenhuma instância de produção (nem Render,
+# nem Oracle Cloud).
+#
+global:
+  scrape_interval: 15s
+
+# Sem Alertmanager configurado neste repositório — os alertas ficam visíveis em Prometheus
+# (`/alerts`) e via datasource no Grafana, mas não notificam ninguém até um receptor ser
+# adicionado (decisão de operação, não coberta nesta rodada). Ver
+# infrastructure/observability/alert.rules.yml para o detalhamento por grupo.
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+rule_files:
+  - alert.rules.yml
+
+scrape_configs:
+  - job_name: central-comercial
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['host.docker.internal:3000', 'app:3000']
+  - job_name: otel-collector
+    static_configs:
+      - targets: ['otel-collector:9464']

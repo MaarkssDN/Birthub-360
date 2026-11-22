@@ -1,0 +1,9 @@
+{
+  "name": "testland/test-framework-blueprint",
+  "description": "Use when designing a test automation framework from scratch or re-architecting one that grew organically. Walks seven steps from inventorying the app to runner, layout, fixtures, object model, data and mocks, reporting, CI and conventions, and outputs a written blueprint with a build order.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.6.19"
+}

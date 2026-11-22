@@ -1,0 +1,273 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import express from 'express';
+import request from 'supertest';
+
+// `ALLOWED_ORIGINS` (o array exportado) é calculado uma única vez, no momento em que o módulo é
+// importado — para exercitar os dois ramos (fallback de localhost vs. lista vinda da env) sem
+// vazar estado entre testes, cada teste reseta o registro de módulos e reimporta
+// `src/bootstrap/security.ts` depois de mockar `env` com o valor que quer observar.
+async function loadSecurityModule(envOverrides: Record<string, unknown>) {
+  vi.resetModules();
+  vi.doMock('../../../src/config/env.js', () => ({
+    env: {
+      NODE_ENV: 'development',
+      ALLOWED_ORIGINS: undefined,
+      TRUST_PROXY: false,
+      ...envOverrides,
+    },
+  }));
+  return import('../../../src/bootstrap/security.js');
+}
+
+describe('bootstrap/security', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.doUnmock('../../../src/config/env.js');
+  });
+
+  describe('ALLOWED_ORIGINS', () => {
+    it('cai para o fallback de localhost quando ALLOWED_ORIGINS não está definida', async () => {
+      const mod = await loadSecurityModule({ ALLOWED_ORIGINS: undefined });
+      expect(mod.ALLOWED_ORIGINS).toEqual([
+        'http://localhost:3005',
+        'http://localhost:3000',
+        'http://localhost:5173',
+      ]);
+    });
+
+    it('faz parse da lista CSV configurada, removendo espaços e entradas vazias', async () => {
+      const mod = await loadSecurityModule({
+        ALLOWED_ORIGINS: 'https://app.birthhub360.com.br, https://app.birthhub360.com.br,',
+      });
+      expect(mod.ALLOWED_ORIGINS).toEqual([
+        'https://app.birthhub360.com.br',
+        'https://app.birthhub360.com.br',
+      ]);
+    });
+  });
+
+  describe('assertAllowedOriginsConfigured', () => {
+    it('encerra o processo em produção sem ALLOWED_ORIGINS configurada', async () => {
+      const exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => undefined) as never);
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+      const mod = await loadSecurityModule({ NODE_ENV: 'production', ALLOWED_ORIGINS: undefined });
+      mod.assertAllowedOriginsConfigured();
+
+      expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('ALLOWED_ORIGINS'));
+      expect(exitSpy).toHaveBeenCalledWith(1);
+    });
+
+    it('NÃO encerra o processo em produção quando ALLOWED_ORIGINS está configurada', async () => {
+      const exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => undefined) as never);
+
+      const mod = await loadSecurityModule({
+        NODE_ENV: 'production',
+        ALLOWED_ORIGINS: 'https://app.birthhub360.com.br',
+      });
+      mod.assertAllowedOriginsConfigured();
+
+      expect(exitSpy).not.toHaveBeenCalled();
+    });
+
+    it('NÃO encerra o processo fora de produção, mesmo sem ALLOWED_ORIGINS', async () => {
+      const exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => undefined) as never);
+
+      const mod = await loadSecurityModule({ NODE_ENV: 'development', ALLOWED_ORIGINS: undefined });
+      mod.assertAllowedOriginsConfigured();
+
+      expect(exitSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('applySecurityMiddleware', () => {
+    beforeEach(() => {
+      vi.resetModules();
+      vi.doUnmock('../../../src/config/env.js');
+    });
+
+    it('fora de produção permite origens locais (localhost, LAN privada, Capacitor) mas rejeita origem externa', async () => {
+      const { applySecurityMiddleware } = await import('../../../src/bootstrap/security.js');
+      const app = express();
+      applySecurityMiddleware(app);
+      app.get('/ping', (_req, res) => res.status(200).json({ ok: true }));
+
+      // Vite dev em porta arbitrária — permitida.
+      const local = await request(app).get('/ping').set('Origin', 'http://localhost:5999');
+      expect(local.status).toBe(200);
+      expect(local.headers['access-control-allow-origin']).toBe('http://localhost:5999');
+
+      // LAN privada (celular/dispositivo na mesma rede) — permitida.
+      const lan = await request(app).get('/ping').set('Origin', 'http://192.168.0.50:5173');
+      expect(lan.status).toBe(200);
+      expect(lan.headers['access-control-allow-origin']).toBe('http://192.168.0.50:5173');
+
+      // Capacitor (app mobile) — permitida.
+      const capacitor = await request(app)
+        .get('/ping')
+        .set('Origin', 'capacitor://localhost');
+      expect(capacitor.status).toBe(200);
+      expect(capacitor.headers['access-control-allow-origin']).toBe('capacitor://localhost');
+
+      // Origem externa qualquer — REJEITADA (BT360-DT-0074): sem headers CORS.
+      const external = await request(app)
+        .get('/ping')
+        .set('Origin', 'https://qualquer-origem.example.com');
+      expect(external.headers['access-control-allow-origin']).toBeUndefined();
+      expect(external.headers['access-control-allow-credentials']).toBeUndefined();
+    });
+
+    it('fora de produção permite origem externa explicitamente listada em ALLOWED_ORIGINS', async () => {
+      vi.doMock('../../../src/config/env.js', () => ({
+        env: {
+          NODE_ENV: 'development',
+          ALLOWED_ORIGINS: 'https://staging.birthhub360.com.br',
+          TRUST_PROXY: false,
+        },
+      }));
+      const { applySecurityMiddleware } = await import('../../../src/bootstrap/security.js');
+      const app = express();
+      applySecurityMiddleware(app);
+      app.get('/ping', (_req, res) => res.status(200).json({ ok: true }));
+
+      const res = await request(app)
+        .get('/ping')
+        .set('Origin', 'https://staging.birthhub360.com.br');
+      expect(res.status).toBe(200);
+      expect(res.headers['access-control-allow-origin']).toBe(
+        'https://staging.birthhub360.com.br',
+      );
+      expect(res.headers['access-control-allow-credentials']).toBe('true');
+    });
+
+    it('permite a origem da extensão Chrome do PRÓPRIO produto em produção quando ela está explicitamente em ALLOWED_ORIGINS', async () => {
+      vi.doMock('../../../src/config/env.js', () => ({
+        env: {
+          NODE_ENV: 'production',
+          ALLOWED_ORIGINS: 'https://app.example.com,chrome-extension://abcdefghijklmnop',
+          TRUST_PROXY: true,
+        },
+      }));
+      const { applySecurityMiddleware } = await import('../../../src/bootstrap/security.js');
+      const app = express();
+      applySecurityMiddleware(app);
+      app.get('/ping', (_req, res) => res.status(200).json({ ok: true }));
+
+      const res = await request(app)
+        .get('/ping')
+        .set('Origin', 'chrome-extension://abcdefghijklmnop');
+
+      expect(res.status).toBe(200);
+      expect(res.headers['access-control-allow-origin']).toBe(
+        'chrome-extension://abcdefghijklmnop',
+      );
+      expect(res.headers['access-control-allow-credentials']).toBe('true');
+    });
+
+    // BACKEND-001/SEC-002: antes desta correção, `origin.startsWith('chrome-extension://')`
+    // liberava CORS com credentials:true para QUALQUER extensão instalada no Chrome do usuário —
+    // não só a extensão própria deste produto (chrome-extension/, "Copiloto Comercial IA — Atlas
+    // GR"). Este teste prova o oposto do de cima: uma extensão de terceiros, com um id diferente
+    // do que está em ALLOWED_ORIGINS, é rejeitada — o middleware `cors` responde sem os cabeçalhos
+    // `Access-Control-Allow-*` (o navegador real bloquearia a leitura da resposta pelo JS da
+    // página) em vez de ecoar a origem como permitida.
+    it('rejeita a origem de uma extensão Chrome de TERCEIROS (id diferente do configurado) em produção', async () => {
+      vi.doMock('../../../src/config/env.js', () => ({
+        env: {
+          NODE_ENV: 'production',
+          ALLOWED_ORIGINS: 'https://app.example.com,chrome-extension://abcdefghijklmnop',
+          TRUST_PROXY: true,
+        },
+      }));
+      const { applySecurityMiddleware } = await import('../../../src/bootstrap/security.js');
+      const app = express();
+      applySecurityMiddleware(app);
+      app.get('/ping', (_req, res) => res.status(200).json({ ok: true }));
+
+      const res = await request(app)
+        .get('/ping')
+        .set('Origin', 'chrome-extension://zzzzzzzzzzzzzzzzoutraextensao00');
+
+      expect(res.headers['access-control-allow-origin']).toBeUndefined();
+      expect(res.headers['access-control-allow-credentials']).toBeUndefined();
+    });
+
+    it('continua permitindo `http://localhost:*`/ALLOWED_ORIGINS configurada normalmente em produção', async () => {
+      vi.doMock('../../../src/config/env.js', () => ({
+        env: {
+          NODE_ENV: 'production',
+          ALLOWED_ORIGINS: 'https://app.example.com,chrome-extension://abcdefghijklmnop',
+          TRUST_PROXY: true,
+        },
+      }));
+      const { applySecurityMiddleware } = await import('../../../src/bootstrap/security.js');
+      const app = express();
+      applySecurityMiddleware(app);
+      app.get('/ping', (_req, res) => res.status(200).json({ ok: true }));
+
+      const res = await request(app).get('/ping').set('Origin', 'https://app.example.com');
+
+      expect(res.status).toBe(200);
+      expect(res.headers['access-control-allow-origin']).toBe('https://app.example.com');
+      expect(res.headers['access-control-allow-credentials']).toBe('true');
+    });
+
+    // Regressão real: Better Auth resolve IP do cliente lendo x-forwarded-for por conta
+    // própria (getIp, @better-auth/core/utils/ip.ts) — sem trustedProxies configurado, um
+    // header com mais de um IP (formato de cadeia com mais de um proxy à frente da
+    // aplicação) é tratado como não confiável e devolve null, fazendo o rate limit de login
+    // virar um único bucket compartilhado entre todos os clientes (warning real de produção
+    // "Rate limiting could not determine a client IP", issues #157/#158). Reaproveitar
+    // req.ip do Express foi tentado e descartado (trust proxy: N conta hops a partir do
+    // socket que conecta na aplicação, não a partir do cliente — com mais de 1 proxy à
+    // frente, req.ip resolve para outro proxy, não para o cliente real). Com
+    // TRUST_PROXY=true este middleware aplica a convenção universal do próprio cabeçalho
+    // (cada proxy ANEXA ao final; o valor mais à esquerda é sempre o cliente original) —
+    // sem precisar conhecer a contagem de hops nem o CIDR do proxy do Render.
+    it('com TRUST_PROXY=true, normaliza x-forwarded-for multi-hop para o primeiro valor (cliente original, convenção do header)', async () => {
+      vi.doMock('../../../src/config/env.js', () => ({
+        env: {
+          NODE_ENV: 'production',
+          ALLOWED_ORIGINS: 'https://app.example.com',
+          TRUST_PROXY: true,
+        },
+      }));
+      const { applySecurityMiddleware } = await import('../../../src/bootstrap/security.js');
+      const app = express();
+      app.set('trust proxy', 1);
+      applySecurityMiddleware(app);
+      app.get('/ping', (req, res) => res.status(200).json({ xff: req.headers['x-forwarded-for'] }));
+
+      // Simula uma cadeia com mais de um proxy à frente da aplicação: "<cliente>, <proxy>".
+      const res = await request(app)
+        .get('/ping')
+        .set('X-Forwarded-For', '203.0.113.7, 10.0.0.5')
+        .set('Origin', 'https://app.example.com');
+
+      expect(res.status).toBe(200);
+      expect(res.body.xff).toBe('203.0.113.7');
+    });
+
+    it('não mexe em x-forwarded-for de hop único (caso já suportado pelo Better Auth)', async () => {
+      vi.doMock('../../../src/config/env.js', () => ({
+        env: {
+          NODE_ENV: 'production',
+          ALLOWED_ORIGINS: 'https://app.example.com',
+          TRUST_PROXY: true,
+        },
+      }));
+      const { applySecurityMiddleware } = await import('../../../src/bootstrap/security.js');
+      const app = express();
+      app.set('trust proxy', 1);
+      applySecurityMiddleware(app);
+      app.get('/ping', (req, res) => res.status(200).json({ xff: req.headers['x-forwarded-for'] }));
+
+      const res = await request(app)
+        .get('/ping')
+        .set('X-Forwarded-For', '203.0.113.7')
+        .set('Origin', 'https://app.example.com');
+
+      expect(res.body.xff).toBe('203.0.113.7');
+    });
+  });
+});

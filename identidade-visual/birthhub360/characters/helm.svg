@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%" fill="none" role="img" aria-labelledby="helm-title helm-desc">
+  <title id="helm-title">Helm — Gerente Comercial IA</title>
+  <desc id="helm-desc">Avatar não-humano representando Helm: leme octogonal de comando com raios de governo e núcleo violeta.</desc>
+  <defs>
+    <radialGradient id="helm-core-grad" cx="42%" cy="38%" r="65%">
+      <stop offset="0%" stop-color="#EDE9FE"/>
+      <stop offset="45%" stop-color="#A78BFA"/>
+      <stop offset="100%" stop-color="#6D28D9"/>
+    </radialGradient>
+    <linearGradient id="helm-rim-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#A78BFA" stop-opacity="0.95"/>
+      <stop offset="55%" stop-color="#FFC107" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#00D4FF" stop-opacity="0.9"/>
+    </linearGradient>
+    <filter id="helm-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="helm-halo-blur" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="blur2"/>
+    </filter>
+  </defs>
+
+  <circle cx="64" cy="64" r="46" fill="#A78BFA" fill-opacity="0.14" filter="url(#helm-halo-blur)"/>
+
+  <!-- Aro externo do leme -->
+  <circle cx="64" cy="64" r="40" stroke="url(#helm-rim-grad)" stroke-width="4" fill="none" filter="url(#helm-glow)"/>
+  <circle cx="64" cy="64" r="34" stroke="#A78BFA" stroke-width="1" stroke-dasharray="4 6" opacity="0.5"/>
+
+  <!-- Raios do leme (8 direções, cruz simplificado) -->
+  <g stroke="#A78BFA" stroke-width="3" stroke-linecap="round" filter="url(#helm-glow)">
+    <line x1="64" y1="28" x2="64" y2="100"/>
+    <line x1="28" y1="64" x2="100" y2="64"/>
+    <line x1="39" y1="39" x2="89" y2="89"/>
+    <line x1="89" y1="39" x2="39" y2="89"/>
+  </g>
+
+  <!-- Empunhaduras nos raios -->
+  <g fill="#FFC107" filter="url(#helm-glow)">
+    <circle cx="64" cy="28" r="4"/>
+    <circle cx="64" cy="100" r="4"/>
+    <circle cx="28" cy="64" r="4"/>
+    <circle cx="100" cy="64" r="4"/>
+  </g>
+
+  <!-- Cubo central de comando -->
+  <rect x="52" y="52" width="24" height="24" rx="5" fill="url(#helm-core-grad)" filter="url(#helm-glow)" transform="rotate(45 64 64)"/>
+  <circle cx="64" cy="64" r="7" fill="#0D0D0D" stroke="#EDE9FE" stroke-width="2"/>
+  <circle cx="64" cy="64" r="3" fill="#A78BFA"/>
+</svg>

@@ -1,0 +1,9 @@
+{
+  "name": "testland/slo-load-test-plan",
+  "description": "Use when SLOs and an endpoint list exist but nobody has decided which load tests to run, what load each carries or what counts as failure. Turns each SLO into scenarios with a load profile, workload model, pass/fail threshold and error-budget allowance, before any tool is configured.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.8.8"
+}

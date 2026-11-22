@@ -1,0 +1,9 @@
+{
+  "name": "testland/graphql-n-plus-one-remediation",
+  "description": "Use whenever a GraphQL query fires one database query per item (N+1), a slow-query alert traces to GraphQL, or a PR adds a list resolver: find the fan-out, write a test that counts queries, and fix it with DataLoader batching, parent projection or selection-set prefetch.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.4.8"
+}

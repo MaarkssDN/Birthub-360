@@ -1,0 +1,41 @@
+{
+  "context": "Maike struck out six shapes for two different reasons and only one of the reasons is a property of the business. Predicted baseline failure: the agent reads her note, agrees that a form which does not render a control cannot produce the state, prices her ten shapes correctly and hands the comparison run back. What the unaided agent is predicted not to do is ask which paths can create an order at all. docs/order-channels.md says EDI is 38% of volume and does not pass through the form, and data/orders-sample.csv contains four commercial tail-lift orders that arrived that way - EDI-90114, EDI-90117, EDI-90121, EDI-90184 - so her strikeouts 1 and 2 describe shapes that were ordered last quarter and are exactly the shape finance already found bad invoices on. The trap has a second half that punishes blanket suspicion: strikeouts 3 to 6 do stand, and not because of the form - docs/ferry-service-note.md says lift-equipped vehicles are not carried on any island sailing, which is a constraint on the service. Reinstating all sixteen shapes is as wrong as accepting all six strikeouts, and the four that stand still need a check that the constraint holds rather than a silent deletion.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Deliverable exists",
+      "max_score": 5,
+      "description": "docs/matrix-review.md exists and carries a per-shape result. Scores zero if absent or if it only restates the schedule."
+    },
+    {
+      "name": "MUST NOT strike a shape out on one channel's form behaviour",
+      "max_score": 30,
+      "description": "Anti-pattern guard: a combination is deleted only after the constraint is shown to hold everywhere, not after one interface is observed to withhold a control. Strikeouts 1 and 2 - commercial address, tail lift, mainland, at each weight - MUST be restored as orderable, because EDI orders do not pass through the quoting form. Scores zero if the six strikeouts are accepted as a set. Scores at most half if the review says the form is weak evidence but still leaves those two shapes out of the shapes to price."
+    },
+    {
+      "name": "The four island tail-lift strikeouts upheld",
+      "max_score": 20,
+      "description": "Strikeouts 3, 4, 5 and 6 - every shape combining a tail lift with an island destination - are upheld, on the ferry operator's vehicle restriction rather than on the form. Scores zero if all sixteen shapes are reinstated on the grounds that Maike's evidence cannot be trusted, and scores zero if these four are upheld by repeating her form reasoning with no reference to the carriage conditions."
+    },
+    {
+      "name": "A check proposed for each strikeout that stands",
+      "max_score": 16,
+      "description": "The review says how the run proves the island tail-lift constraint still holds - an order attempted or submitted in that shape through each channel, expected to be rejected or to have no lift-equipped vehicle available - so a later change is caught rather than assumed. Scores zero if the four shapes are simply removed with nothing that would notice if the constraint lapsed."
+    },
+    {
+      "name": "Twelve orderable shapes, each with a total",
+      "max_score": 22,
+      "description": "The corrected set is the twelve shapes that are not island-plus-lift, each carrying a numeric list total. The nine distinct totals are EUR 0, 25, 30, 40, 55, 70, 90, 95 and 120. Scores zero if fewer than twelve shapes are priced or if results are given as lists of surcharge names rather than totals. Scores at most half if more than two totals are arithmetically wrong, notably the residential lift at EUR 65 rather than EUR 40."
+    },
+    {
+      "name": "The island merge found and stated",
+      "max_score": 12,
+      "description": "On an island destination both the residential fact and the weight stop changing the total - all four such shapes come to EUR 95 - and the review says so rather than sending finance four separate island jobs. Scores zero if the four EUR 95 shapes are listed as four distinct comparison jobs with no note that they are one case."
+    },
+    {
+      "name": "Evidence cited by order reference",
+      "max_score": 10,
+      "description": "The review names at least one of the commercial tail-lift orders in data/orders-sample.csv, or the EDI channel share, as the reason the strikeout falls. Scores zero if the strikeout is overturned on reasoning alone with no reference to an order that exists."
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+﻿BirthHub 360 Technical Debt Audit
+Generated: 2026-09-29 12:12:11 -03:00
+Project: C:\Github\Birthub-360
+Report: C:\Users\marce\OneDrive\Desktop\BirthHub360-Debt-Audit\BirthHub360-TechDebt-Report-20260929-120403.html
+
+ENVIRONMENT
+PowerShell: 5.1.26100.9549
+Node: v22.23.2
+npm: 10.9.8
+pnpm: não instalado
+
+SUMMARY
+Health index: 96
+Findings: 5505
+P0: 0, P1: 215, P2: 3371, P3: 1918, P4: 1
+
+CHECKS
+[PASS] Git :: git status :: exit=0 :: 1.1s
+[PASS] Git :: git fsck (dangling objects) :: exit=0 :: 8.1s

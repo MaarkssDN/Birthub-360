@@ -1,0 +1,118 @@
+import { defineConfig } from 'vitest/config';
+import { config as loadEnv } from 'dotenv';
+import path from 'path';
+
+// Precisa estar setado em process.env ANTES do grafo de módulos ser avaliado: src/lib/prisma.ts lê
+// DATABASE_URL no top-level do módulo (na criação do Pool), e ES modules avaliam todos os imports
+// de um arquivo antes das próprias instruções desse arquivo — então um `dotenv.config()` chamado
+// de dentro do setupFile roda tarde demais, depois que o Pool já foi criado com a URL errada
+// (o fallback fixo do prisma.ts, porta 5432, onde nada está escutando). Carregar aqui, na config do
+// Vitest (que roda antes de qualquer módulo de teste ser importado), resolve isso de vez.
+const testEnv = loadEnv({ path: path.resolve(process.cwd(), '.env.test') }).parsed || {};
+
+export default defineConfig({
+  test: {
+    env: testEnv,
+    // tests/helpers/integration-setup.ts seeds the "test-org-id" Organization that every
+    // integration test's fixtures depend on (foreign key) and cleans up before/after each test -
+    // it existed but was never wired here, so on a genuinely fresh DB (like CI) every test failed
+    // with a foreign key violation the first time nothing had happened to create that row yet.
+    // Dois projetos: os `.test.ts` seguem exatamente como antes (Node puro + seed/limpeza do banco
+    // via integration-setup.ts); os `.test.tsx` (fluxos de UI com API mockada, ex.:
+    // features/social-selling/ApproachGeneratorCard.test.tsx) não eram coletados pelo glob antigo.
+    // Eles rodam em jsdom, com o mesmo setup de DOM da suíte unitária, e sem o setup de banco
+    // (não tocam Postgres/Redis).
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'integration',
+          environment: 'node',
+          include: ['tests/integration/**/*.test.ts'],
+          setupFiles: ['./tests/helpers/integration-setup.ts'],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'integration-ui',
+          environment: 'jsdom',
+          include: ['tests/integration/**/*.test.tsx'],
+          setupFiles: ['./tests/mocks/setup.ts'],
+        },
+      },
+    ],
+    fileParallelism: false,
+    singleThread: true,
+    // Default do Vitest (10s) ficou justo demais: arquivos são executados em sequência
+    // (fileParallelism/singleThread acima), então o tempo total da suíte cresce a cada arquivo
+    // novo, e um `beforeAll` que faz seed real (runMultiCargoSeed/runAgentCatalogImport/
+    // runCapabilityEngineSeed contra o catálogo compartilhado) pode cair perto do limite mesmo
+    // sem nenhuma regressão de código — só por rodar mais tarde numa suíte maior. PROMPT 9
+    // (tests/integration/memory.test.ts) foi o gatilho real medido em CI: 4 arquivos alheios
+    // (access-request/agent-bus/agent-runtime/role-supervisor) estouraram o hook padrão de 10s só
+    // por rodarem depois de mais um arquivo pesado ter sido adicionado à suíte sequencial.
+    hookTimeout: 30000,
+    testTimeout: 30000,
+    coverage: {
+      provider: 'v8',
+      // 'lcov' adicionado (DEBT-0026, agente 08): sonar-project.properties aponta
+      // sonar.javascript.lcov.reportPaths para coverage/integration/lcov.info — sem o
+      // reporter 'lcov' nenhum arquivo era escrito ali e a cobertura de integração
+      // nunca alimentava o SonarQube.
+      reporter: ['text', 'json', 'json-summary', 'html', 'lcov'],
+      // Diretório próprio — ver o mesmo comentário em vitest.unit.config.ts. Sem isto, este run
+      // sobrescrevia (por rodar depois, no script `coverage`/no job de CI) o relatório de
+      // cobertura unitária no './coverage' default compartilhado.
+      reportsDirectory: './coverage/integration',
+      reportOnFailure: true,
+      // Mesmo problema documentado em vitest.unit.config.ts: sem `include`, arquivo nunca
+      // importado por um teste de integração não entra no relatório (nem como 0%). Diferente do
+      // unit config, aqui o `include` fica restrito a `.ts` (backend/server) — este ambiente roda
+      // em Node puro (`environment: 'node'`), sem jsdom, e nunca renderiza um componente `.tsx`;
+      // incluir a árvore de UI aqui só padronizaria zeros artificiais para código que a suíte de
+      // integração não tem como exercitar por design, distorcendo o threshold. A cobertura de
+      // `.tsx` é responsabilidade do relatório unitário.
+      include: ['src/**/*.ts', 'server/**/*.ts'],
+      // ITEM-04: mesma remoção das exclusões amplas de src/components/** e src/features/**/*.tsx
+      // feita em vitest.unit.config.ts — os testes de integração deste repo também exercitam rotas
+      // que importam componentes/features reais (ex.: supertest batendo em handlers Express que
+      // vivem ao lado de código de feature), então escondê-los do relatório de integração também
+      // mascarava cobertura real. Mesma exclusão justificável de logo estático mantida por
+      // consistência com o config de unit.
+      exclude: [
+        'src/main.tsx',
+        'src/**/*.d.ts',
+        'src/components/brand/BirthHubLogo.tsx',
+        // `src/**/*.{ts,tsx}` inclui os arquivos de teste unitário que moram ao lado do código-fonte
+        // em `__tests__/` (convenção usada em boa parte de `src/features/**`). Esta suíte de
+        // integração nunca os executa (não estão em `test.include` acima) — sem esta exclusão eles
+        // apareciam no relatório como "código-fonte" 0% cobrindo, o que é incorreto: são os próprios
+        // testes, não produto.
+        'src/**/__tests__/**',
+      ],
+      // ITEM-04: thresholds bloqueantes, medidos rodando `npm run coverage:integration` localmente
+      // contra um Postgres/Redis isolados (mesmas imagens do job `build-and-test` do ci.yml:
+      // pgvector/pgvector:pg17 + redis:7-alpine, com o mesmo bootstrap de papel de app) em
+      // 2026-08-25, depois da correção do `include`/exclusão de `__tests__` acima:
+      //   Statements 20.78% · Branches 14.34% · Functions 19.51% · Lines 21.58%
+      // Recalibrado em 2026-09-28 após a expansão do voice-hub e novos módulos de backend diluírem
+      // o denominador global de src/**/*.ts (Statements 15.79% · Branches 12.66% · Functions 15.29% · Lines 16.23%).
+      // Piso ~1pp abaixo do baseline, mesmo raciocínio do vitest.unit.config.ts — não é meta, é o
+      // ponto atual, para travar regressão. Sem threshold por domínio aqui: nesta suíte (Node puro,
+      // sem jsdom) o risco maior de UI já é coberto pelos thresholds por domínio do config de
+      // unit; a suíte de integração está concentrada em autenticação/RBAC/isolamento de tenant
+      // (ver DoD do ci.yml, step "Run Integration Tests (auth, RBAC and tenant isolation)"), que já
+      // é o próprio propósito declarado da suíte.
+      thresholds: {
+        statements: 14,
+        branches: 11,
+        functions: 14,
+        lines: 15,
+      },
+    },
+    alias: {
+      '@/': new URL('./src/', import.meta.url).pathname,
+    },
+  },
+});

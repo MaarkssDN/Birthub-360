@@ -1,0 +1,27 @@
+import { type ReactNode, useCallback, useState } from 'react';
+import { type ActiveRecord, ActiveRecordContext } from './activeRecord.js';
+
+export type { ActiveRecord } from './activeRecord.js';
+
+/**
+ * Registro comercial (empresa/negócio) atualmente aberto na tela, para que o copiloto de IA global
+ * (FloatingChatbook/useAssistantChat) saiba do que o usuário está falando sem precisar repetir o
+ * contexto na pergunta. Telas de detalhe registram-se aqui ao montar e se removem ao desmontar.
+ */
+export function ActiveRecordProvider({ children }: { children: ReactNode }) {
+  const [activeRecord, setActiveRecordState] = useState<ActiveRecord | null>(null);
+
+  const setActiveRecord = useCallback((record: ActiveRecord) => {
+    setActiveRecordState(record);
+  }, []);
+
+  const clearActiveRecord = useCallback((id: string) => {
+    setActiveRecordState((prev) => (prev?.id === id ? null : prev));
+  }, []);
+
+  return (
+    <ActiveRecordContext.Provider value={{ activeRecord, setActiveRecord, clearActiveRecord }}>
+      {children}
+    </ActiveRecordContext.Provider>
+  );
+}

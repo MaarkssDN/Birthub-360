@@ -1,0 +1,41 @@
+{
+  "context": "Both files bind the same hard-coded port and the runner executes test files concurrently by default, so whichever file loses the race dies in its setup hook and never runs a test - which is why the error names a file that has nothing wrong with it, and why a two-core machine (default concurrency of one) is green. Predicted baseline failure: the agent takes one of the two options the team already floated - serialise the run (`--test-concurrency=1`, or running the files one at a time in the CI command) or retry on `EADDRINUSE` - both of which leave the collision in place and cap the suite's parallelism forever. The next most likely output is giving the second file port 4301, which removes today's clash while keeping the pattern that caused it, and still breaks the moment a third file, a second concurrent run, or another process on the box wants that number. Diagnoses are predicted to say 'port conflict in parallel tests' and stop there, without connecting the machine-dependent choice of victim and the green two-core box to the same cause.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Deliverables present and green",
+      "max_score": 6,
+      "description": "`node --test` passes with all four originally-named tests present across the two files, and `collision-notes.md` exists. A test or a whole file deleted, merged, or skipped scores zero here."
+    },
+    {
+      "name": "Each file binds a port the OS assigns",
+      "max_score": 30,
+      "description": "Both files listen on port 0 (or otherwise obtain a port that cannot be claimed by another process) and build their base URL from `server.address().port` after listening. Full credit requires both files converted and no hard-coded port number left anywhere in the tests. Assigning each file a different fixed port scores at most half - it survives today's suite and not a third file, a second concurrent run, or another process holding the number. Any solution that keeps a shared fixed port scores zero."
+    },
+    {
+      "name": "No serialisation, retry, or quarantine as the fix",
+      "max_score": 16,
+      "description": "MUST NOT reach green by forcing the files to run one at a time (`--test-concurrency=1`, a changed test script, `describe`-level concurrency settings, merging the two files into one), by retrying on `EADDRINUSE`, by sleeping before binding, or by skipping a file. Any of these offered as the fix scores zero for this criterion."
+    },
+    {
+      "name": "Notes name the contended resource and read the evidence",
+      "max_score": 20,
+      "description": "`collision-notes.md` identifies the hard-coded port as the resource the two concurrently-running files compete for, states that the file named in the error is simply the one that lost the bind - so its tests never ran and it is not the file at fault - and connects the green two-core box to the runner executing fewer files at once. A write-up that names the port clash but explains neither the machine-dependent victim nor the green two-core box scores at most half. One that attributes the failures to flaky networking, to the runner being broken, or to `src/server.js` scores zero."
+    },
+    {
+      "name": "Servers are still shut down",
+      "max_score": 10,
+      "description": "Each file still closes its server after its tests, so the fix does not trade a port clash for a process that never exits. A file left without teardown scores zero here."
+    },
+    {
+      "name": "Source and assertions untouched",
+      "max_score": 8,
+      "description": "MUST NOT modify `src/server.js`, and the assertions - 200 and the health body, 404 for an unknown route, the orders payload, the total in cents - all stand unchanged. Any edit scores zero here."
+    },
+    {
+      "name": "Rule stated for the next file",
+      "max_score": 8,
+      "description": "The notes state what a third test file must do - take a port from the OS rather than choosing a number, and derive its URL from the bound address - rather than only describing the two files changed today."
+    }
+  ]
+}

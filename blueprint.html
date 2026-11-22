@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blueprint de Arquitetura — Birth Hub 360°</title>
+
+<style>
+  :root {
+    /* Paleta "Strategic Command Center" (09/2026) extraída de globals.css */
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --surface-elevated: #ffffff;
+    --surface-subtle: #e2e8f0;
+    --ink: #0b132b;
+    --ink-2: #475569;
+    --line: rgba(11, 19, 43, 0.12);
+
+    --brand: #d4af37;
+    --brand-2: #f0d77b;
+    --iris: #c53678;
+    --orbit-blue: #1677ff;
+    --red: #ff5841;
+    --pink: #c53678;
+
+    --font-brand-sans: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+    --font-brand-display: "Cabin", ui-sans-serif, system-ui, sans-serif;
+
+    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --radius-card: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-brand-sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem clamp(1rem, 5vw, 4rem);
+  }
+
+  header {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    margin-bottom: 3rem;
+    box-shadow: var(--shadow-card);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-brand-display);
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.015em;
+  }
+
+  h1 { font-size: clamp(2rem, 4vw, 3rem); color: var(--brand); margin-bottom: 0.5rem; }
+  h2 { font-size: clamp(1.5rem, 3vw, 2rem); margin: 4rem 0 1.5rem; border-bottom: 1px solid var(--line); padding-bottom: 1rem; }
+  h3 { font-size: 1.5rem; color: var(--ink); margin-bottom: 1rem; }
+  h4 { font-size: 1.1rem; color: var(--ink-2); margin: 1.5rem 0 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  p { margin-bottom: 1rem; }
+
+  ul { margin: 0 0 1.5rem 2rem; }
+  li { margin-bottom: 0.5rem; }
+
+  strong { color: var(--ink); font-weight: 600; }
+
+  .hero-subtitle {
+    font-size: 1.25rem;
+    color: var(--ink-2);
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .value-stream {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--surface);
+    padding: 3rem;
+    border-radius: var(--radius-card);
+    border: 1px solid var(--line);
+    margin-bottom: 3rem;
+    box-shadow: var(--shadow-card);
+  }
+
+  .value-stream-nodes {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .stream-node {
+    background: color-mix(in srgb, var(--brand) 10%, var(--surface));
+    border: 1px solid var(--brand);
+    color: var(--ink);
+    padding: 0.75rem 1.5rem;
+    border-radius: 999px;
+    font-family: var(--font-brand-display);
+    font-weight: 700;
+  }
+
+  .stream-arrow {
+    color: var(--brand);
+    font-weight: bold;
+    font-size: 1.5rem;
+  }
+
+  .pillar-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    padding: 2.5rem;
+    margin-bottom: 2.5rem;
+    box-shadow: var(--shadow-card);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+
+  .pillar-card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--brand) 30%, transparent);
+    box-shadow: 0 12px 28px -10px color-mix(in srgb, var(--brand) 20%, transparent);
+  }
+
+  .pillar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .pillar-title { margin: 0; color: var(--orbit-blue); }
+
+  .status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-family: var(--font-brand-sans);
+    white-space: nowrap;
+  }
+
+  .status-implementado { background-color: color-mix(in srgb, #0f9d64 10%, transparent); color: #0f9d64; border: 1px solid #0f9d64; }
+  .status-parcial { background-color: color-mix(in srgb, #ffc500 10%, transparent); color: #b38a00; border: 1px solid #ffc500; }
+  .status-planejado { background-color: color-mix(in srgb, var(--orbit-blue) 10%, transparent); color: var(--orbit-blue); border: 1px solid var(--orbit-blue); }
+  .status-nao-evidenciado { background-color: color-mix(in srgb, var(--ink) 10%, transparent); color: var(--ink-2); border: 1px solid var(--line); }
+
+  .architecture-flow {
+    background: var(--surface-subtle);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-top: 1.5rem;
+    border: 1px solid var(--line);
+  }
+
+  .flow-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .flow-step:last-child { margin-bottom: 0; }
+
+  .flow-down-arrow {
+    color: var(--ink-2);
+    margin: 0.25rem 0;
+    font-size: 1.25rem;
+  }
+
+  .subpillars-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.5rem;
+    margin-top: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .subpillar-item {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  th, td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.875rem;
+  }
+
+  th {
+    background-color: var(--surface-subtle);
+    font-family: var(--font-brand-display);
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  .matrix-flow {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    background: var(--surface);
+    padding: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+
+  .matrix-step {
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .matrix-arrow {
+    color: var(--brand);
+    font-weight: bold;
+  }
+
+  .glossary-term { margin-top: 1.5rem; }
+  .glossary-term h4 { color: var(--orbit-blue); margin-bottom: 0.25rem; }
+
+  .traceability-box {
+    background: color-mix(in srgb, var(--brand) 5%, transparent);
+    border: 1px solid var(--brand);
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  @media (max-width: 768px) {
+    .pillar-header { flex-direction: column; }
+    .stream-arrow { display: none; }
+    .value-stream-nodes { flex-direction: column; gap: 0.5rem; width: 100%; }
+    .stream-node { width: 100%; text-align: center; }
+    table, thead, tbody, th, td, tr { display: block; }
+    th { position: absolute; top: -9999px; left: -9999px; }
+    td { position: relative; padding-left: 50%; border-bottom: 1px solid var(--line); }
+    td:before { position: absolute; top: 1rem; left: 1rem; width: 45%; padding-right: 10px; white-space: nowrap; font-weight: 700; content: attr(data-label); }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <h1>Blueprint de Arquitetura</h1>
+    <h2 style="border: none; margin: 0; padding: 0; color: var(--ink);">Birth Hub 360°</h2>
+    <p class="hero-subtitle" style="margin-top: 1rem;">Documento Oficial de Arquitetura Conceitual e Funcional</p>
+  </header>
+
+  <section>
+    <h2>Esteira de Valor</h2>
+    <div class="value-stream">
+      <p style="text-align: center; margin-bottom: 2rem; color: var(--ink-2);">O fluxo contínuo de transformação da operação comercial.</p>
+      <div class="value-stream-nodes">
+        <div class="stream-node">DADOS</div>
+        <div class="stream-arrow">↓</div>
+        <div class="stream-node">INTELIGÊNCIA</div>
+        <div class="stream-arrow">↓</div>
+        <div class="stream-node">ESTRATÉGIA</div>
+        <div class="stream-arrow">↓</div>
+        <div class="stream-node">EXECUÇÃO</div>
+        <div class="stream-arrow">↓</div>
+        <div class="stream-node">PERFORMANCE</div>
+        <div class="stream-arrow">↓</div>
+        <div class="stream-node">PREVISIBILIDADE</div>
+        <div class="stream-arrow">↓</div>
+        <div class="stream-node">IA & AUTOMAÇÃO</div>
+        <div class="stream-arrow">↓</div>
+        <div class="stream-node">RESULTADOS</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>1. O Manifesto do Produto</h2>
+    <article>
+      <p>O Birth Hub 360° atua como um centro de comando comercial que conecta dados, inteligência, estratégia, execução, performance, previsibilidade, IA e automação para resolver a fragmentação sistêmica, transformando operações comerciais em resultados mensuráveis e previsíveis.</p>
+      <p>A arquitetura do produto é estruturada como uma fábrica de alta tecnologia. Os 8 pilares operacionais representam os maquinários principais, enquanto o fluxo de valor define a esteira de produção que percorre todas as fases do processo comercial.</p>
+      <p>O fluxo inicia-se na camada de dados, onde informações primárias entram na fábrica. Estes dados são processados e transformados em inteligência acionável. A inteligência influencia diretamente a formulação da estratégia, a qual orienta os parâmetros rigorosos de execução. A execução constante gera novos dados de performance real. A consolidação da performance alimenta os motores de previsibilidade futura. Ao longo de toda a esteira, a Inteligência Artificial utiliza contexto para recomendar intervenções, enquanto as automações transformam decisões gerenciais em ações escaláveis. O ciclo se renova contínua e previsivelmente, retornando novos dados refinados para o início da operação.</p>
+    </article>
+  </section>
+
+  <section>
+    <h2>2. A Arquitetura da Marca — Os 8 Pilares</h2>
+
+    <article class="pillar-card">
+      <div class="pillar-header">
+        <h3 class="pillar-title">01 — HUB COMERCIAL</h3>
+        <span class="status-badge status-implementado">IMPLEMENTADO</span>
+      </div>
+      <p><strong>Posicionamento:</strong> Onde tudo começa.</p>
+      <p><strong>Conceito Técnico:</strong> O núcleo operacional onde a operação comercial acontece.</p>
+      <p><strong>Função na Esteira:</strong> Centraliza e estrutura as entidades de negócio, atuando como o grande repositório e base operacional para os demais processos da fábrica.</p>
+
+      <h4>Subpilares</h4>
+      <ul class="subpillars-grid">
+        <li class="subpillar-item">Gestão de Contas</div>
+        <li class="subpillar-item">Gestão de Contatos</div>
+        <li class="subpillar-item">Gestão de Leads</div>
+        <li class="subpillar-item">Gestão de Oportunidades</div>
+        <li class="subpillar-item">Gestão de Negócios</div>
+        <li class="subpillar-item">Pipeline Comercial</div>
+        <li class="subpillar-item">Funil de Vendas</div>
+        <li class="subpillar-item">Histórico Comercial</div>
+      </div>
+
+      <h4>Modelo de Funcionamento</h4>
+      <div class="architecture-flow">
+        <div class="flow-step">
+          <strong>Input</strong>
+          <div class="flow-down-arrow">↓</div>
+          Dados transacionais brutos, cadastros de contatos e criação de negócios.
+        </div>
+        <div class="flow-step">
+          <div class="flow-down-arrow">↓</div>
+          <strong>Processamento</strong>
+          <div class="flow-down-arrow">↓</div>
+          Estrutura entidades relacionais e organiza fases do funil.
+        </div>
+        <div class="flow-step">
+          <div class="flow-down-arrow">↓</div>
+          <strong>Output</strong>
+          <div class="flow-down-arrow">↓</div>
+          Registros estruturados e pipeline operável.
+        </div>
+        <div class="flow-step">
+          <div class="flow-down-arrow">↓</div>
+          <strong>Próximo destino</strong>
+          <div class="flow-down-arrow">↓</div>
+          Inteligência de Mercado e Orquestração de Vendas.
+        </div>
+      </div>
+    </article>
+
+    <article class="pillar-card">
+      <div class="pillar-header">
+        <h3 class="pillar-title">02 — INTELIGÊNCIA DE MERCADO</h3>
+        <span class="status-badge status-parcial">PARCIAL</span>
+      </div>
+      <p><strong>Posicionamento:</strong> Onde as oportunidades são descobertas.</p>
+      <p><strong>Conceito Técnico:</strong> Transforma dados de mercado em oportunidades comerciais.</p>
+      <p><strong>Função na Esteira:</strong> Enriquece os registros do Hub, segmentando-os e priorizando aqueles com maior fit antes que consumam esforço de execução.</p>
+
+      <h4>Subpilares</h4>
+      <ul class="subpillars-grid">
+        <li class="subpillar-item">Prospecção Inteligente</div>
+        <li class="subpillar-item">ICP & Segmentação</div>
+        <li class="subpillar-item">Inteligência de Contas</div>
+        <li class="subpillar-item">Enriquecimento de Dados</div>
+        <li class="subpillar-item">Sinais de Mercado</div>
+        <li class="subpillar-item">Análise de Potencial</div>
+        <li class="subpillar-item">Priorização de Oportunidades</div>
+        <li class="subpillar-item">Insights Comerciais</div>
+      </div>
+
+      <h4>Modelo de Funcionamento</h4>
+      <div class="architecture-flow">
+        <div class="flow-step">
+          <strong>Input</strong>
+          <div class="flow-down-arrow">↓</div>
+          Leads e Contas do Hub, somados a fontes de enriquecimento.
+        </div>
+        <div class="flow-step">
+          <div class="flow-down-arrow">↓</div>
+          <strong>Processamento</strong>
+          <div class="flow-down-arrow">↓</div>
+          Cruzamento com critérios de ICP e cálculo de fit score.
+        </div>
+        <div class="flow-step">
+          <div class="flow-down-arrow">↓</div>
+          <strong>Output</strong>
+          <div class="flow-down-arrow">↓</div>
+          Listas segmentadas e contas priorizadas para abordagem.
+        </div>
+        <div class="flow-step">
+          <div class="flow-down-arrow">↓</div>
+          <strong>Próximo destino</strong>
+          <div class="flow-down-arrow">↓</div>
+          Orquestração de Vendas (para definição de roteiro).
+        </div>
+      </div>
+    </article>
+
+    <article class="pillar-card">
+      <div class="pillar-header">
+        <h3 class="pillar-title">03 — ORQUESTRAÇÃO DE VENDAS</h3>
+        <span class="status-badge status-implementado">IMPLEMENTADO</span>
+      </div>
+      <p><strong>Posicionamento:</strong> Onde a estratégia vira execução.</p>
+      <p><strong>Conceito Técnico:</strong> Transforma estratégia comercial em execução padronizada.</p>
+      <p><strong>Função na Esteira:</strong> Determina o ritmo, os roteiros e as atividades que devem ser executadas com base na inteligência prévia.</p>
+
+      <h4>Subpilares</h4>
+      <ul class="subpillars-grid">
+        <li class="subpillar-item">Playbooks Comerciais</div>
+        <li class="subpillar-item">Qualificação</div>
+        <li class="subpillar-item">Cadências</div>
+        <li class="subpillar-item">Jornadas Comerciais</div>
+        <li class="subpillar-item">Tarefas & Atividades</div>
+        <li class="subpillar-item">Processos de Vendas</div>
+        <li class="subpillar-item">Roteiros</div>
+        <li class="subpillar-item">Gestão de Execução</div>
+      </div>
+
+      <h4>Modelo de Funcionamento</h4>
+      <div class="architecture-flow">
+        <div class="flow-step">
+          <strong>Input</strong>
+          <div class="flow-down-arrow">↓</div>
+          Oportunidades priorizadas pela Inteligência de Mercado.
+        </div>
+        <div class="flow-step">
+          <div class="flow-down-arrow">↓</div>
+          <strong>Processamento</strong>
+          <div class="flow-down-arrow">↓</div>
+          Associação a cadências, roteiros e playbooks operacionais.
+        </div>
+        <div class="flow-step">
+          <div class="flow-down-arrow">↓</div>
+          <strong>Output</strong>
+          <div class="flow-down-arrow">↓</div>
+          Filas de tarefas e cronogramas diários de interação.
+        </div>
+        <div class="flow-step">
+          <div class="flow-down-arrow">↓</div>
+          <strong>Próximo destino</strong>
+          <div class="flow-down-arrow">↓</div>
+          Engajamento Comercial.
+        </div>
+      </div>
+    </article>
+
+    <article class="pillar-card">
+      <div class="pillar-header">
+        <h3 class="pillar-title">04 — PERFORMANCE COMERCIAL</h3>
+        <span class="status-badge status-implementado">IMPLEMENTADO</span>
+      </div>
+      <p><strong>Posicionamento:</strong> Onde os resultados são compreendidos.</p>
+      <p><strong>Conceito Técnico:</strong> Mostra o que está acontecendo na operação no presente para tomar decisões melhores.</p>
+      <p><strong>Função na Esteira:</strong> Mede e consolida as métricas geradas pela execução diária, provendo visibilidade da saúde atual do funil.</p>
+
+      <h4>Subpilares</h4>
+      <ul class="subpillars-grid">
+        <li class="subpillar-item">Indicadores Comerciais</div>
+        <li class="subpillar-item">KPIs</div>
+        <li class="subpillar-item">Dashboards</div>
+        <li class="subpillar-item">Análise de Funil</div>
+        <li class="subpillar-item">Conversão</div>
+        <li class="subpillar-item">Performance de Equipes</div>
+        <li class="subpillar-item">Performance de Canais</div>
+        <li class="subpillar-item">Análise de Resultados</div>
+      </div>
+
+      <h4>Modelo de Funcionamento</h4>
+      <div class="architecture-flow">
+        <div class="flow-step">
+          <strong>Input</strong>
+          <div class="flow-down-arrow">↓</div>
+          Eventos de transição de funil e logs de execução.
+        </div>
+        <div class="flow-step">
+          <div class="flow-down-arrow">↓</div>
+          <strong>Processamento</strong>
+          <div class="flow-down-arrow">↓</div>
+          Agregação de dados, cálculo de conversão e medição de volume.
+        </div>
+        <div class="flow-step">
+          <div class="flow-down-arrow">↓</div>
+          <strong>Output</strong>
+          <div class="flow-down-arrow">↓</div>
+          KPIs consolidados, dashboards e relatórios analíticos.
+        </div>
+        <div class="flow-step">
+          <div class="flow-down-arrow">↓</div>
+          <strong>Próximo destino</strong>
+          <div class="flow-down-arrow">↓</div>
+          Previsibilidade Comercial e ajustes na Estratégia.
+        </div>
+      </div>
+    </article>
+
+    <article class="pillar-card">
+      <div class="pillar-header">
+        <h3 class="pillar-title">05 — PREVISIBILIDADE COMERCIAL</h3>
+        <span class="status-badge status-parcial">PARCIAL</span>
+      </div>
+      <p><strong>Posicionamento:</strong> Onde o futuro é projetado.</p>
+      <p><strong>Conceito Técnico:</strong> Transforma o pipeline em visão futura para saber o que pode acontecer antes que aconteça.</p>
+      <p><strong>Função na Esteira:</strong> Combina o volume financeiro do Hub com as métricas da Performance para antecipar o atingimento das metas no ciclo vigente.</p>
+
+      <h4>Subpilares</h4>
+      <ul class="subpillars-grid">
+        <li class="subpillar-item">Forecast</div>
+        <li class="subpillar-item">Pipeline Ponderado</div>
+        <li class="subpillar-item">Projeções</div>
+        <li class="subpillar-item">Cenários Comerciais</div>
+        <li class="subpillar-item">Metas</div>
+        <li class="subpillar-item">Commit</div>
+        <li class="subpillar-item">Best Case</div>
+        <li class="subpillar-item">Acompanhamento de Meta</div>
+      </div>
+
+      <h4>Modelo de Funcionamento</h4>
+      <div class="architecture-flow">
+        <div class="flow-step">
+          <strong>Input</strong>
+          <div class="flow-down-arrow">↓</div>
+          Oportunidades ativas do Hub e taxas históricas da Performance.
+        </div>
+        <div class="flow-step">
+          <div class="flow-down-arrow">↓</div>
+          <strong>Processamento</strong>
+          <div class="flow-down-arrow">↓</div>
+          Ponderação de risco, extrapolação estatística e confronto com cotas.
+        </div>
+        <div class="flow-step">
+          <div class="flow-down-arrow">↓</div>
+          <strong>Output</strong>
+          <div class="flow-down-arrow">↓</div>
+          Declaração de Forecast, Commit financeiro e cenários preditivos.
+        </div>
+        <div class="flow-step">
+          <div class="flow-down-arrow">↓</div>
+          <strong>Próximo destino</strong>
+          <div class="flow-down-arrow">↓</div>
+          Decisão executiva e realinhamento da Orquestração.
+        </div>
+      </div>
+    </article>
+
+    <article class="pillar-card">
+      <div class="pillar-header">
+        <h3 class="pillar-title">06 — INTELIGÊNCIA ARTIFICIAL</h3>
+        <span class="status-badge status-implementado">IMPLEMENTADO</span>
+      </div>
+      <p><strong>Posicionamento:</strong> Onde os dados ganham inteligência.</p>
+      <p><strong>Conceito Técnico:</strong> A camada inteligente que entende, recomenda e executa.</p>
+      <p><strong>Função na Esteira:</strong> Observa a totalidade dos dados transitando na fábrica para diminuir a fricção cognitiva, gerando contextos sumarizados e propondo os próximos passos.</p>
+
+      <h4>Subpilares</h4>
+      <ul class="subpillars-grid">
+        <li class="subpillar-item">Agentes de IA</div>
+        <li class="subpillar-item">Assistentes Comerciais</div>
+        <li class="subpillar-item">Recomendações</div>
+        <li class="subpillar-item">Análise Inteligente</div>
+        <li class="subpillar-item">Memória Contextual</div>
+        <li class="subpillar-item">Geração de Insights</div>
+        <li class="subpillar-item">Automação Inteligente</div>
+        <li class="subpillar-item">Execução Assistida por IA</div>
+      </div>
+
+      <h4>Modelo de Funcionamento</h4>
+      <div class="architecture-flow">
+        <div class="flow-step">
+          <strong>Input</strong>
+          <div class="flow-down-arrow">↓</div>
+          Contextos não estruturados (transcrições, e-mails, notas) e dados relacionais.
+        </div>
+        <div class="flow-step">
+          <div class="flow-down-arrow">↓</div>
+          <strong>Processamento</strong>
+          <div class="flow-down-arrow">↓</div>
+          Processamento de linguagem, análise de sentimento e inferência de intenção.
+        </div>
+        <div class="flow-step">
+          <div class="flow-down-arrow">↓</div>
+          <strong>Output</strong>
+          <div class="flow-down-arrow">↓</div>
+          Resumos executivos, insights pontuais e draft de respostas.
+        </div>
+        <div class="flow-step">
+          <div class="flow-down-arrow">↓</div>
+          <strong>Próximo destino</strong>
+          <div class="flow-down-arrow">↓</div>
+          Automação & Conectividade ou diretamente ao Operador no Hub.
+        </div>
+      </div>
+    </article>
+
+    <article class="pillar-card">
+      <div class="pillar-header">
+        <h3 class="pillar-title">07 — AUTOMAÇÃO & CONECTIVIDADE</h3>
+        <span class="status-badge status-implementado">IMPLEMENTADO</span>
+      </div>
+      <p><strong>Posicionamento:</strong> Onde tudo se conecta e acontece.</p>
+      <p><strong>Conceito Técnico:</strong> Conecta sistemas, elimina trabalho manual e mantém os dados em movimento.</p>
+      <p><strong>Função na Esteira:</strong> Age como a correia transmissora, garantindo que eventos ocorridos gerem reações subsequentes automáticas dentro ou fora do ambiente.</p>
+
+      <h4>Subpilares</h4>
+      <ul class="subpillars-grid">
+        <li class="subpillar-item">Automação de Processos</div>
+        <li class="subpillar-item">Workflows</div>
+        <li class="subpillar-item">Integrações</div>
+        <li class="subpillar-item">APIs</div>
+        <li class="subpillar-item">Webhooks</div>
+        <li class="subpillar-item">Sincronização de Dados</div>
+        <li class="subpillar-item">Conectores CRM</div>
+        <li class="subpillar-item">Orquestração de Sistemas</div>
+      </div>
+
+      <h4>Modelo de Funcionamento</h4>
+      <div class="architecture-flow">
+        <div class="flow-step">
+          <strong>Input</strong>
+          <div class="flow-down-arrow">↓</div>
+          Gatilhos oriundos de mudanças de estado ou conclusões de tarefas.
+        </div>
+        <div class="flow-step">
+          <div class="flow-down-arrow">↓</div>
+          <strong>Processamento</strong>
+          <div class="flow-down-arrow">↓</div>
+          Avaliação de regras lógicas de negócio e roteamento de payloads.
+        </div>
+        <div class="flow-step">
+          <div class="flow-down-arrow">↓</div>
+          <strong>Output</strong>
+          <div class="flow-down-arrow">↓</div>
+          Disparo de webhooks, atualização silenciosa de registros e envio de alertas.
+        </div>
+        <div class="flow-step">
+          <div class="flow-down-arrow">↓</div>
+          <strong>Próximo destino</strong>
+          <div class="flow-down-arrow">↓</div>
+          Outros pilares do sistema ou ferramentas de terceiros (ERPs, Comunicação).
+        </div>
+      </div>
+    </article>
+
+    <article class="pillar-card">
+      <div class="pillar-header">
+        <h3 class="pillar-title">08 — ENGAJAMENTO COMERCIAL</h3>
+        <span class="status-badge status-implementado">IMPLEMENTADO</span>
+      </div>
+      <p><strong>Posicionamento:</strong> Onde as relações se transformam em negócios.</p>
+      <p><strong>Conceito Técnico:</strong> Centraliza interações e transforma cada interação em uma oportunidade.</p>
+      <p><strong>Função na Esteira:</strong> Canaliza a execução tática definida na Orquestração, realizando os contatos reais com os prospects e capturando o retorno do mercado.</p>
+
+      <h4>Subpilares</h4>
+      <ul class="subpillars-grid">
+        <li class="subpillar-item">Comunicação</div>
+        <li class="subpillar-item">Telefonia & Voz</div>
+        <li class="subpillar-item">Ligações</div>
+        <li class="subpillar-item">Campanhas</div>
+        <li class="subpillar-item">Follow-ups</div>
+        <li class="subpillar-item">Interações</div>
+        <li class="subpillar-item">Histórico de Comunicação</div>
+        <li class="subpillar-item">Gestão de Relacionamento</div>
+      </div>
+
+      <h4>Modelo de Funcionamento</h4>
+      <div class="architecture-flow">
+        <div class="flow-step">
+          <strong>Input</strong>
+          <div class="flow-down-arrow">↓</div>
+          Filas de execução montadas pela Orquestração de Vendas.
+        </div>
+        <div class="flow-step">
+          <div class="flow-down-arrow">↓</div>
+          <strong>Processamento</strong>
+          <div class="flow-down-arrow">↓</div>
+          Iniciação de chamadas telefônicas, disparos de e-mail e registro de toque.
+        </div>
+        <div class="flow-step">
+          <div class="flow-down-arrow">↓</div>
+          <strong>Output</strong>
+          <div class="flow-down-arrow">↓</div>
+          Eventos de interação (duração, resultado da chamada) e áudios gravados.
+        </div>
+        <div class="flow-step">
+          <div class="flow-down-arrow">↓</div>
+          <strong>Próximo destino</strong>
+          <div class="flow-down-arrow">↓</div>
+          Hub Comercial (registro) e Performance (agregação de KPIs).
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section>
+    <h2>3. Regras de Produto e Feature Flags</h2>
+    <article>
+      <h4>Regra 01 — Implementação determina disponibilidade</h4>
+      <p>Uma funcionalidade somente pode ser apresentada como disponível quando existir implementação funcional suficiente para utilizá-la no ambiente sistêmico.</p>
+
+      <h4>Regra 02 — Interface não pode mentir</h4>
+      <p>O produto não deve exibir menus sem implementação atrelada, dashboards preenchidos com dados fixos visuais, bots sem capacidade generativa ou ações sem backend operante. Páginas estáticas não podem ser mascaradas como módulos concluídos.</p>
+
+      <h4>Regra 03 — Feature Flag</h4>
+      <p>Funcionalidades futuras identificadas na arquitetura devem permanecer controladas por feature flags. Estados permitidos do ciclo de vida: ENABLED, DISABLED, DEVELOPMENT, BETA, EXPERIMENTAL, DEPRECATED.</p>
+
+      <h4>Regra 04 — Módulo inativo</h4>
+      <p>Quando um módulo estiver inativo, não apresentar dados falsos ou métricas simuladas. Indicar claramente que o módulo não está disponível e preservar a integridade da navegação geral.</p>
+
+      <h4>Regra 05 — Dados inexistentes</h4>
+      <p>Quando não existirem dados suficientes para compor um relatório ou gráfico, mostrar estado vazio explícito (ex: "Nenhum dado disponível para este período"). Não utilizar números fictícios para preencher dashboards.</p>
+
+      <h4>Regra 06 — Implementação futura</h4>
+      <p>Funcionalidades documentadas conceitualmente, mas ainda sem código, devem ser identificadas no blueprint arquitetural estritamente como <strong>PLANEJADO</strong> e nunca como <strong>IMPLEMENTADO</strong>.</p>
+    </article>
+  </section>
+
+  <section>
+    <h2>4. Matriz de Interconexão</h2>
+    <p>A arquitetura não opera de maneira fragmentada. Abaixo, exemplos de fluxos de transformação entre pilares.</p>
+
+    <h4>Fluxo 1: Qualificação e Conversão de Elite</h4>
+    <div class="matrix-flow">
+      <div class="matrix-step">Inteligência de Mercado</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step" style="font-weight: normal; color: var(--ink-2);">identifica uma conta com alto potencial</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step">Hub Comercial</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step" style="font-weight: normal; color: var(--ink-2);">registra a oportunidade priorizada</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step">Orquestração de Vendas</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step" style="font-weight: normal; color: var(--ink-2);">cria a cadência de aproximação</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step">Engajamento</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step" style="font-weight: normal; color: var(--ink-2);">executa as interações</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step">Performance</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step" style="font-weight: normal; color: var(--ink-2);">consolida as conversões</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step">Previsibilidade</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step" style="font-weight: normal; color: var(--ink-2);">atualiza o forecast do mês</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step">IA</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step" style="font-weight: normal; color: var(--ink-2);">sugere fechamento</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step">Automação</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step" style="font-weight: normal; color: var(--ink-2);">dispara contrato automatizado.</div>
+    </div>
+
+    <h4>Fluxo 2: Análise de Riscos Sistêmicos</h4>
+    <div class="matrix-flow">
+      <div class="matrix-step">Engajamento Comercial</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step" style="font-weight: normal; color: var(--ink-2);">detecta objeção financeira na ligação</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step">IA</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step" style="font-weight: normal; color: var(--ink-2);">analisa a objeção recorrente no período</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step">Performance</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step" style="font-weight: normal; color: var(--ink-2);">cruza objeção com queda na conversão</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step">Previsibilidade</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step" style="font-weight: normal; color: var(--ink-2);">reduz a probabilidade do pipeline do segmento</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step">Orquestração de Vendas</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step" style="font-weight: normal; color: var(--ink-2);">altera playbook para incluir prova de valor antecipada.</div>
+    </div>
+
+    <h4>Fluxo 3: Expansão Dinâmica Baseada em Sucesso</h4>
+    <div class="matrix-flow">
+      <div class="matrix-step">Hub Comercial</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step" style="font-weight: normal; color: var(--ink-2);">marca uma conta complexa como ganha</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step">Automação</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step" style="font-weight: normal; color: var(--ink-2);">notifica implementação</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step">Inteligência de Mercado</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step" style="font-weight: normal; color: var(--ink-2);">busca perfis lookalike na base não prospectada</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step">Orquestração de Vendas</div>
+      <div class="matrix-arrow">→</div>
+      <div class="matrix-step" style="font-weight: normal; color: var(--ink-2);">distribui os perfis lookalike em cadências de expansão para a equipe SDR.</div>
+    </div>
+
+    <h4>Matriz Arquitetural Direta</h4>
+    <table>
+      <thead>
+        <tr>
+          <th>Pilar Origem</th>
+          <th>Informação Produzida</th>
+          <th>Pilar Destino</th>
+          <th>Utilização</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td data-label="Pilar Origem">Hub Comercial</td>
+          <td data-label="Informação Produzida">Criação de Entidade</td>
+          <td data-label="Pilar Destino">Inteligência de Mercado</td>
+          <td data-label="Utilização">Gatilho para enriquecimento e classificação do ICP.</td>
+        </tr>
+        <tr>
+          <td data-label="Pilar Origem">Inteligência de Mercado</td>
+          <td data-label="Informação Produzida">Pontuação de Conta (Score)</td>
+          <td data-label="Pilar Destino">Orquestração de Vendas</td>
+          <td data-label="Utilização">Roteamento para playbooks de alta intensidade.</td>
+        </tr>
+        <tr>
+          <td data-label="Pilar Origem">Orquestração de Vendas</td>
+          <td data-label="Informação Produzida">Carga de Tarefas Diárias</td>
+          <td data-label="Pilar Destino">Engajamento Comercial</td>
+          <td data-label="Utilização">Alimentação do terminal do operador.</td>
+        </tr>
+        <tr>
+          <td data-label="Pilar Origem">Engajamento Comercial</td>
+          <td data-label="Informação Produzida">Tentativas e Contatos Efetivos</td>
+          <td data-label="Pilar Destino">Performance Comercial</td>
+          <td data-label="Utilização">Cálculo de produtividade (ligações vs agendamentos).</td>
+        </tr>
+        <tr>
+          <td data-label="Pilar Origem">Performance Comercial</td>
+          <td data-label="Informação Produzida">Taxas de Avanço Históricas</td>
+          <td data-label="Pilar Destino">Previsibilidade Comercial</td>
+          <td data-label="Utilização">Definição do peso da probabilidade no Forecast.</td>
+        </tr>
+        <tr>
+          <td data-label="Pilar Origem">Inteligência Artificial</td>
+          <td data-label="Informação Produzida">Inferência de Intenção Semântica</td>
+          <td data-label="Pilar Destino">Automação & Conectividade</td>
+          <td data-label="Utilização">Avanço automático da fase de negócio no Hub.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>5. Glossário de Negócios</h2>
+
+    <div class="glossary-term">
+      <h4>ICP</h4>
+      <p>Ideal Customer Profile. No contexto do Birth Hub 360°, é a definição estrutural que avalia o potencial de uma conta prospectada, garantindo que a fábrica opere processando a matéria-prima correta na Inteligência de Mercado.</p>
+    </div>
+
+    <div class="glossary-term">
+      <h4>Commit</h4>
+      <p>O volume financeiro de negócios abertos no Hub que a operação comercial atesta, de forma declarada na Previsibilidade Comercial, que fecharão dentro do ciclo. Representa a segurança mínima projetada da receita.</p>
+    </div>
+
+    <div class="glossary-term">
+      <h4>Pipeline Ponderado</h4>
+      <p>Cálculo analítico em que o valor potencial total de um negócio (Hub Comercial) sofre um decréscimo baseado na sua probabilidade real de ganho (definida na Performance), resultando no valor matematicamente projetado para o negócio pela Previsibilidade Comercial.</p>
+    </div>
+
+    <div class="glossary-term">
+      <h4>Webhooks</h4>
+      <p>Ponto de conectividade (Automação). Envio de chamadas HTTP em tempo real quando um evento de negócio ocorre dentro do sistema, integrando as saídas dos pilares aos sistemas legados do cliente sem latência e de forma não-bloqueante.</p>
+    </div>
+
+    <div class="glossary-term">
+      <h4>Cadências</h4>
+      <p>O modelo organizacional da Orquestração de Vendas que define o espaçamento temporal, os canais e a quantidade de tentativas que a execução deve efetuar na busca de contato qualificado com a conta prospectada.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Rastreabilidade Arquitetural</h2>
+    <div class="traceability-box">
+      <p>Este documento exige rastreabilidade estrutural contínua. Cada declaração funcional obedece a seguinte matriz causal rastreável no código-fonte:</p>
+      <div style="font-weight: 700; color: var(--orbit-blue); margin: 1rem 0;">
+        Necessidade de negócio → Pilar → Subpilar → Funcionalidade → Dados → Processamento → Resultado
+      </div>
+      <p>Qualquer recurso listado que rompa essa cadeia evidencial é classificado terminantemente como <strong>NÃO EVIDENCIADO</strong>. Funcionalidades descritas conceitualmente, sem presença concreta nas rotas, APIs ou modelos de dados da aplicação atual, refletem direção, não implementação vigente.</p>
+    </div>
+  </section>
+
+</div>
+
+</body>
+</html>

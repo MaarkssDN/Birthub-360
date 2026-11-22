@@ -1,0 +1,9 @@
+{
+  "name": "testland/attack-surface-test-checklist",
+  "description": "Use when a pull request, release branch or feature is about to be security tested and needs a targeted test list. Maps the changed code to nine attack surfaces and attaches OWASP ASVS 4.0.3 requirements, Top 10 2021 IDs and WSTG sections, only for surfaces the change touches.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.10.15"
+}

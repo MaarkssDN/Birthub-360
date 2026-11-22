@@ -1,0 +1,9 @@
+{
+  "name": "testland/bdd-step-library-curator",
+  "description": "Use when a Cucumber, Behave or Reqnroll project has grown past ~50 step definitions, before writing a step that may already exist, or when new .feature files need a duplicate check. Inventories steps, merges duplicates, publishes a step-library README and a scenario coverage map.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.7.8"
+}

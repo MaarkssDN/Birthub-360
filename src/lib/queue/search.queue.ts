@@ -1,0 +1,99 @@
+import { type Job, Queue, QueueEvents, Worker } from 'bullmq';
+import { logger } from '../logger.js';
+import { meili } from '../search/index.js';
+import { isFinalAttempt, recordDeadLetter } from './deadLetter.js';
+import { recordQueueJobCompleted, registerQueueForMetrics } from './metrics.js';
+import { connection, queuesEnabled } from './redis.js';
+
+export const SEARCH_QUEUE_NAME = 'search-indexing';
+
+/**
+ * QUEUE-001: indexação no Meilisearch é idempotente por natureza (`addDocuments`/`updateDocuments`
+ * fazem upsert pelo id, `deleteDocuments` de um id já ausente é um no-op) — retry com backoff é
+ * seguro aqui sem risco de duplicar efeito, diferente de uma ação que dispara algo externo uma vez
+ * só. Sem isto, um blip do Meilisearch (reinício, timeout de rede) fazia um lead/empresa ficar
+ * permanentemente fora do índice de busca até a próxima escrita naquele registro.
+ */
+export const searchQueue = queuesEnabled
+  ? new Queue(SEARCH_QUEUE_NAME, {
+      connection,
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 3_000 },
+        removeOnComplete: { age: 6 * 60 * 60 },
+        removeOnFail: { age: 7 * 24 * 60 * 60 },
+      },
+    })
+  : null;
+registerQueueForMetrics(SEARCH_QUEUE_NAME, searchQueue);
+export const searchQueueEvents = queuesEnabled
+  ? new QueueEvents(SEARCH_QUEUE_NAME, { connection })
+  : null;
+
+searchQueue?.on('error', (err) => logger.warn({ message: err.message }, 'searchQueue offline'));
+searchQueueEvents?.on('error', (err) =>
+  logger.warn({ message: err.message }, 'searchQueueEvents offline'),
+);
+
+searchQueueEvents?.on('completed', ({ jobId }) => {
+  logger.debug({ jobId }, 'Job completed in search queue');
+});
+
+searchQueueEvents?.on('failed', ({ jobId, failedReason }) => {
+  logger.error({ jobId, failedReason }, 'Job failed in search queue');
+});
+
+export const createSearchWorker = () => {
+  const worker = new Worker(
+    SEARCH_QUEUE_NAME,
+    async (job: Job) => {
+      logger.debug(
+        { jobId: job.id, action: job.name, index: job.data.index },
+        'Processing search indexing job',
+      );
+
+      try {
+        const { index, action, data } = job.data;
+        if (!index || !action || !data) {
+          throw new Error('Missing required job data for search indexing');
+        }
+
+        if (action === 'add' || action === 'update') {
+          if (action === 'add') {
+            await meili.index(index).addDocuments(data);
+          } else {
+            await meili.index(index).updateDocuments(data);
+          }
+        } else if (action === 'delete') {
+          await meili.index(index).deleteDocuments(data);
+        }
+
+        return { success: true, processedAt: new Date().toISOString() };
+      } catch (error: unknown) {
+        logger.error({ err: error }, 'Error during search indexing');
+        throw error;
+      }
+    },
+    { connection },
+  );
+
+  worker.on('error', (err) => {
+    logger.error({ err }, 'Search Worker error');
+  });
+
+  worker.on('completed', () => recordQueueJobCompleted(SEARCH_QUEUE_NAME));
+
+  worker.on('failed', (job, err) => {
+    if (!job || !isFinalAttempt(job.attemptsMade, job.opts.attempts)) return;
+    void recordDeadLetter({
+      queue: SEARCH_QUEUE_NAME,
+      jobId: job.id,
+      jobName: job.name,
+      attemptsMade: job.attemptsMade,
+      error: err,
+      data: job.data,
+    });
+  });
+
+  return worker;
+};

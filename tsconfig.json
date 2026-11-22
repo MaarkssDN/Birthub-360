@@ -1,0 +1,50 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "module": "ESNext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true,
+    "resolveJsonModule": false,
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "allowJs": true,
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+
+    // ── TypeScript Strict Mode ──────────────────────────────
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "noImplicitReturns": false,
+    "noUncheckedIndexedAccess": false,
+
+    // ── Qualidade adicional ─────────────────────────────────
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "exactOptionalPropertyTypes": false
+  },
+  "include": ["src", "server.ts"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "server",
+    "src/lib/voice-hub",
+    "src/lib/voice-runtime",
+    "src/features/voice-hub",
+    "src/features/cadence/dialer",
+    "src/features/prospecting/outbound",
+    "src/features/temporal-workers",
+    "src/features/prospecting/crawlee",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/__tests__/**"
+  ]
+}

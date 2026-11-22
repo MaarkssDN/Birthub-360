@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%" fill="none" role="img" aria-labelledby="tribunal-title tribunal-desc">
+  <title id="tribunal-title">Tribunal — Advogado do Diabo</title>
+  <desc id="tribunal-desc">Avatar não-humano representando Tribunal: balança de auditoria crítica com pratos de contraprova e coluna de ponderação.</desc>
+  <defs>
+    <linearGradient id="tribunal-column-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#CBD5E1"/>
+      <stop offset="55%" stop-color="#64748B"/>
+      <stop offset="100%" stop-color="#334155"/>
+    </linearGradient>
+    <linearGradient id="tribunal-pan-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EF4444" stop-opacity="0.95"/>
+      <stop offset="55%" stop-color="#FFC107" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#94A3B8" stop-opacity="0.9"/>
+    </linearGradient>
+    <filter id="tribunal-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="tribunal-halo-blur" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="blur2"/>
+    </filter>
+  </defs>
+
+  <circle cx="64" cy="64" r="46" fill="#64748B" fill-opacity="0.15" filter="url(#tribunal-halo-blur)"/>
+
+  <!-- Base -->
+  <rect x="38" y="98" width="52" height="9" rx="4.5" fill="#0D0D0D" stroke="#64748B" stroke-width="2"/>
+  <rect x="56" y="90" width="16" height="9" rx="2" fill="url(#tribunal-column-grad)"/>
+
+  <!-- Coluna -->
+  <rect x="59" y="38" width="10" height="54" rx="3" fill="url(#tribunal-column-grad)" filter="url(#tribunal-glow)"/>
+
+  <!-- Viga de contrapeso -->
+  <rect x="30" y="42" width="68" height="7" rx="3.5" fill="url(#tribunal-column-grad)" transform="rotate(-4 64 45)" filter="url(#tribunal-glow)"/>
+
+  <!-- Cordas e pratos -->
+  <g stroke="#94A3B8" stroke-width="1.8">
+    <line x1="36" y1="50" x2="36" y2="66"/>
+    <line x1="92" y1="46" x2="92" y2="62"/>
+  </g>
+  <g filter="url(#tribunal-glow)">
+    <path d="M 26 66 Q 36 74 46 66 Q 36 70 26 66 Z" fill="url(#tribunal-pan-grad)"/>
+    <path d="M 82 62 Q 92 70 102 62 Q 92 66 82 62 Z" fill="url(#tribunal-pan-grad)"/>
+  </g>
+
+  <!-- Pivô central -->
+  <circle cx="64" cy="45" r="6" fill="#0D0D0D" stroke="#EF4444" stroke-width="2.4" filter="url(#tribunal-glow)"/>
+  <circle cx="62" cy="43" r="2" fill="#EF4444"/>
+
+  <!-- Marcadores de contraprova -->
+  <circle cx="36" cy="72" r="2.6" fill="#EF4444"/>
+  <circle cx="92" cy="68" r="2.6" fill="#FFC107"/>
+</svg>

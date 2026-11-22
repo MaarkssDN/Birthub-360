@@ -1,0 +1,9 @@
+{
+  "name": "testland/defect-escape-taxonomy",
+  "description": "Use when a defect has been confirmed in production and the team must name which class of gap let it through before deciding what to build. Classifies it as a test, process or tooling gap and one of thirteen sub-patterns at the earliest layer that should have caught it, with the fix, without blame.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.6.5"
+}

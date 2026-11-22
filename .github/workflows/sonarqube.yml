@@ -1,0 +1,212 @@
+name: SonarQube Analysis
+
+# Pipeline oficial de análise de qualidade estática e cobertura do Birthub 360 no SonarQube Cloud.
+# Organização: Marks (vars.SONAR_ORGANIZATION = marcelinmark26359876123123)
+# Projeto: Birthub 360 (vars.SONAR_PROJECT_KEY = MarksNN_Birthub-360)
+# Autenticação: secrets.SONAR_TOKEN
+# Validação obrigatória pré-scan: scripts/ci/validate-sonarqube-config.mjs
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('sonarqube-pr-{0}', github.event.pull_request.number) || format('sonarqube-{0}-{1}', github.event_name, github.sha) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  sonarcloud:
+    name: SonarQube
+    runs-on: ubuntu-latest
+    # DEBT-0026: a cobertura de integração (coverage/integration/lcov.info) passa a alimentar o
+    # SonarQube, então o job precisa dos mesmos serviços do build-and-test do ci.yml — sem eles
+    # `npm run test:integration -- --coverage` não sobe.
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: prospector
+          POSTGRES_PASSWORD: prospector_test_pass
+          POSTGRES_DB: prospectordb_test
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd "pg_isready -h 127.0.0.1 -U prospector -d prospectordb_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli -h 127.0.0.1 ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      meilisearch:
+        image: getmeili/meilisearch:v1.12
+        env:
+          MEILI_MASTER_KEY: ci-test-meili-key
+        ports:
+          - 7700:7700
+        options: >-
+          --health-cmd "wget --no-verbose --tries=1 -O - http://127.0.0.1:7700/health >/dev/null 2>&1 || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-start-period 30s
+          --health-retries 12
+    env:
+      # Credencial ausente deve reprovar o check, nunca transformar scan ignorado em verde.
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL || vars.SONAR_HOST_URL || 'https://sonarcloud.io' }}
+      SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
+      # Sem isso, src/config/env.ts (importado por src/lib/prisma.ts, que quase todo teste unitário
+      # acaba puxando) falha a validação do zod por falta de NODE_ENV e chama process.exit(1) — o
+      # que derruba o processo do Vitest inteiro antes de qualquer teste rodar. production.yaml já
+      # seta isso pro job build-and-test; este workflow ficou de fora dessa correção.
+      NODE_ENV: test
+      DATABASE_URL: postgresql://prospector_app:ci_app_test_pass@localhost:5434/prospectordb_test?schema=public
+      # Migrations rodam como o papel DONO (prospector_migrator); app e testes como prospector_app.
+      # Mesmo contrato do job build-and-test do ci.yml.
+      DIRECT_URL: postgresql://prospector_migrator:ci_migrator_test_pass@localhost:5434/prospectordb_test?schema=public
+      REDIS_URL: redis://localhost:6379
+      MEILI_HOST: http://localhost:7700
+      MEILI_MASTER_KEY: ci-test-meili-key
+      PORT: 3000
+      JWT_SECRET: ci-test-jwt-secret-not-for-production
+      BETTER_AUTH_SECRET: ci-e2e-test-only-secret-not-for-production
+      BETTER_AUTH_URL: http://localhost:3000
+      ALLOW_DEV_AUTH_BYPASS: true
+      ALLOWED_ORIGINS: http://localhost:3000
+      AUTH_RATE_LIMIT_MAX: 500
+      PLATFORM_OPERATOR_TOKEN: ci-test-operator-token-not-for-production
+      BOOTSTRAP_SUPERUSER_URL: postgresql://prospector:prospector_test_pass@localhost:5434/prospectordb_test
+    steps:
+      - name: Validate SonarQube configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${SONAR_TOKEN:-}" ]; then
+            echo "::error::SONAR_TOKEN is required. The scanner and quality gate cannot be skipped."
+            exit 1
+          fi
+          case "$SONAR_HOST_URL" in
+            https://sonarcloud.io|https://sonarcloud.io/|https://sonarqube.us|https://sonarqube.us/)
+              if [ -z "${SONAR_ORGANIZATION:-}" ]; then
+                echo "::error::Set the SONAR_ORGANIZATION repository variable to the verified SonarQube Cloud organization key."
+                exit 1
+              fi
+              ;;
+          esac
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+
+      - name: Validate SonarQube Configuration
+        run: node scripts/ci/validate-sonarqube-config.mjs
+        env:
+          SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
+          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          IS_FORK_PR: ${{ github.event.pull_request.head.repo.fork == true && 'true' || 'false' }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Run Tests with Coverage
+        run: npm run test:unit -- --coverage
+
+      # DEBT-0026: a suíte de integração também gera LCOV (coverage/integration/lcov.info,
+      # reporter 'lcov' em vitest.integration.config.ts) que alimenta
+      # sonar.javascript.lcov.reportPaths. Os passos abaixo replicam a ordem do job
+      # build-and-test do ci.yml: bootstrap do papel → migrate deploy → re-bootstrap →
+      # .env.test → test:integration --coverage.
+      - name: Bootstrap papel NOSUPERUSER da aplicação
+        env:
+          PGPASSWORD: prospector_test_pass
+          APP_DB_PASSWORD: ci_app_test_pass
+          MIGRATOR_DB_PASSWORD: ci_migrator_test_pass
+        run: bash scripts/db/bootstrap-app-role.sh localhost 5434 prospector prospectordb_test
+
+      - name: Run Migrations (para testes de integração)
+        run: npx prisma migrate deploy
+
+      - name: Re-bootstrap pós-migrate
+        env:
+          PGPASSWORD: prospector_test_pass
+          APP_DB_PASSWORD: ci_app_test_pass
+          MIGRATOR_DB_PASSWORD: ci_migrator_test_pass
+        run: bash scripts/db/bootstrap-app-role.sh localhost 5434 prospector prospectordb_test
+
+      - name: Criar .env.test para os testes de integração
+        run: |
+          cat > .env.test <<EOF
+          NODE_ENV=$NODE_ENV
+          PORT=$PORT
+          DATABASE_URL=$DATABASE_URL
+          DIRECT_URL=$DIRECT_URL
+          REDIS_URL=$REDIS_URL
+          MEILI_HOST=$MEILI_HOST
+          MEILI_MASTER_KEY=$MEILI_MASTER_KEY
+          BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET
+          BETTER_AUTH_URL=$BETTER_AUTH_URL
+          ALLOW_DEV_AUTH_BYPASS=$ALLOW_DEV_AUTH_BYPASS
+          ALLOWED_ORIGINS=$ALLOWED_ORIGINS
+          AUTH_RATE_LIMIT_MAX=$AUTH_RATE_LIMIT_MAX
+          PLATFORM_OPERATOR_TOKEN=$PLATFORM_OPERATOR_TOKEN
+          BOOTSTRAP_SUPERUSER_URL=$BOOTSTRAP_SUPERUSER_URL
+          EOF
+
+      - name: Run Integration Tests with Coverage
+        run: npm run test:integration -- --coverage
+
+      - name: Python coverage for MONTAR_CONTEXT
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m venv "$RUNNER_TEMP/sonar-py"
+          "$RUNNER_TEMP/sonar-py/bin/pip" install --disable-pip-version-check coverage
+          "$RUNNER_TEMP/sonar-py/bin/coverage" run --branch --source=src/features/intelligence/commercial-v3/assets/07_RUNTIME scripts/ci/cover-montar-context.py
+          mkdir -p coverage/python
+          "$RUNNER_TEMP/sonar-py/bin/coverage" xml -o coverage/python/coverage.xml
+          test -s coverage/python/coverage.xml
+
+      - name: SonarQube Scan
+        id: sonar_scan
+        uses: SonarSource/sonarqube-scan-action@ad8210318ac8bb816e41990d5af2b304f7a6c213 # master (snapshot fixado em SHA — política de branch protection exige commit SHA completo, não branch)
+        with:
+          args: >-
+            -Dsonar.qualitygate.wait=true
+            "-Dsonar.organization=${{ env.SONAR_ORGANIZATION }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+
+      - name: Report SonarQube Quality Gate Status
+        if: always() && steps.sonar_scan.outcome != 'skipped'
+        run: node scripts/ci/report-sonarqube-qualitygate.mjs
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
+          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY || 'MarksNN_Birthub-360' }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_BRANCH: ${{ github.head_ref || github.ref_name }}

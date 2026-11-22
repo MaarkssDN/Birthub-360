@@ -1,0 +1,456 @@
+import {
+  AlertTriangle,
+  Calendar,
+  Check,
+  Copy,
+  Filter,
+  Loader2,
+  Pencil,
+  Plus,
+  Search,
+  Shield,
+  Sparkles,
+  Trash2,
+  Trophy,
+  WifiOff,
+} from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { useConfirmDialog } from '../../../components/ui/ConfirmDialog.js';
+import { PageTitleCard } from '../../../components/ui/PageTitleCard.js';
+import { EmptyState } from '../../../components/ui/EmptyState.js';
+import { Pagination } from '../../../components/ui/Pagination.js';
+import { PLAYBOOKS } from '../../../config/playbooks.js';
+import { useAuth } from '../../../contexts/AuthContext.js';
+import { useActivePlaybook } from '../../../hooks/useActivePlaybook.js';
+import { hasRequiredRole } from '../../../lib/auth/authorization.js';
+import { clientLogger } from '../../../lib/clientLogger.js';
+import { toast } from '../../../lib/toast.js';
+import {
+  type ObjectionMatrixItem,
+  type ObjectionSuggestion,
+  type PlaybookListMeta,
+  playbookApi,
+  type WinningPatternSuggestion,
+} from '../playbook.api.js';
+import { LivingPlaybookReview } from './LivingPlaybookReview.js';
+import { ObjectionItemForm } from './ObjectionItemForm.js';
+import { ObjectionSuggestionsReview } from './ObjectionSuggestionsReview.js';
+
+// Mesmo tamanho de página usado em CompanyList/ContactList (via Pagination compartilhado).
+const PAGE_SIZE = 20;
+
+export function ObjectionsMatrixPage() {
+  const { playbook, setPlaybook, info: playbookMeta } = useActivePlaybook();
+  const { currentUser } = useAuth();
+  // Mesmo achado do Piloto 017 na Matriz de Qualificação: DELETE exige ADMIN/GESTOR no backend, o
+  // botão "Excluir" aparecia pra qualquer papel.
+  const canDelete = !!currentUser && hasRequiredRole(currentUser.role, ['ADMIN', 'GESTOR']);
+  const { confirm, dialog } = useConfirmDialog();
+  const [items, setItems] = useState<ObjectionMatrixItem[]>([]);
+  const [meta, setMeta] = useState<PlaybookListMeta | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [selectedSegment, setSelectedSegment] = useState('todos');
+  const [selectedPersona, setSelectedPersona] = useState('todos');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  // Corrige um bug latente (Piloto 017): os use cases de application/ sempre buscavam page=1,
+  // limit=200 fixos — organizações com mais de 200 objeções cadastradas numa marca perdiam os
+  // itens excedentes em silêncio, sem erro nem indicação. Agora a página é real e controlada
+  // pela UI, com `meta.totalPages` vindo do backend.
+  const [page, setPage] = useState(1);
+
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<ObjectionMatrixItem | null>(null);
+
+  // Item 7 de "IA Agêntica de Vendas": sugestões geradas de negócios REALMENTE perdidos — não
+  // persistidas até revisão humana explícita (ver ObjectionSuggestionsReview.tsx).
+  const [generatingSuggestions, setGeneratingSuggestions] = useState(false);
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
+  const [suggestions, setSuggestions] = useState<ObjectionSuggestion[]>([]);
+  const [suggestionsEmptyReason, setSuggestionsEmptyReason] = useState<string | undefined>();
+
+  const handleGenerateSuggestions = async () => {
+    setGeneratingSuggestions(true);
+    try {
+      const res = await playbookApi.generateObjectionSuggestions();
+      setSuggestions(res.data);
+      setSuggestionsEmptyReason(res.meta?.emptyReason);
+      setIsReviewOpen(true);
+    } catch (err: any) {
+      clientLogger.error({ err }, 'Falha ao gerar sugestões de objeções via IA');
+      toast.error(err instanceof Error ? err.message : 'Falha ao gerar sugestões.');
+    } finally {
+      setGeneratingSuggestions(false);
+    }
+  };
+
+  // Item 42 (Playbook Vivo): quando um vendedor descobre uma abordagem que converte melhor, o
+  // sistema sugere pro time inteiro. Gate de gestão (backend já restringe a ADMIN/GESTOR) —
+  // escondido pra quem não tem o papel, mesmo padrão de `canDelete` acima.
+  const canRunLivingPlaybook =
+    !!currentUser && hasRequiredRole(currentUser.role, ['ADMIN', 'GESTOR']);
+  const [generatingPatterns, setGeneratingPatterns] = useState(false);
+  const [isPatternsReviewOpen, setIsPatternsReviewOpen] = useState(false);
+  const [winningPatterns, setWinningPatterns] = useState<WinningPatternSuggestion[]>([]);
+  const [patternsEmptyReason, setPatternsEmptyReason] = useState<string | undefined>();
+
+  const handleGenerateWinningPatterns = async () => {
+    setGeneratingPatterns(true);
+    try {
+      const res = await playbookApi.generateWinningPatterns();
+      setWinningPatterns(res.data);
+      setPatternsEmptyReason(res.meta?.emptyReason);
+      setIsPatternsReviewOpen(true);
+    } catch (err: any) {
+      clientLogger.error({ err }, 'Falha ao gerar padrões vencedores do Playbook Vivo');
+      toast.error(err instanceof Error ? err.message : 'Falha ao gerar padrões vencedores.');
+    } finally {
+      setGeneratingPatterns(false);
+    }
+  };
+
+  const load = () => {
+    setLoading(true);
+    setError(null);
+    playbookApi
+      .listObjectionsPage({ brand: playbook, page, limit: PAGE_SIZE })
+      .then((res) => {
+        setItems(res.data);
+        setMeta(res.meta);
+      })
+      .catch((err) => {
+        clientLogger.error({ err }, 'Falha ao carregar Matriz de Objeções');
+        setError(err instanceof Error ? err.message : 'Falha ao carregar a matriz.');
+      })
+      .finally(() => setLoading(false));
+  };
+
+  // Trocar de marca reseta pra página 1 (a página atual pode não existir na outra marca).
+  useEffect(() => {
+    setPage(1);
+  }, []);
+
+  useEffect(load, [playbook, page]);
+
+  const segments = useMemo(
+    () => Array.from(new Set(items.map((item) => item.segment))).sort(),
+    [items],
+  );
+  const personas = useMemo(
+    () => Array.from(new Set(items.map((item) => item.persona))).sort(),
+    [items],
+  );
+  const filtered = items.filter((item) => {
+    if (selectedSegment !== 'todos' && item.segment !== selectedSegment) return false;
+    if (selectedPersona !== 'todos' && item.persona !== selectedPersona) return false;
+    const q = searchTerm.trim().toLowerCase();
+    if (q) {
+      const haystack =
+        `${item.objectionTitle} ${item.objectionText} ${item.responseScript} ${item.keyDifferentiator}`.toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
+    return true;
+  });
+
+  const handleCopy = (text: string, key: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 2000);
+  };
+
+  const handleDelete = async (item: ObjectionMatrixItem) => {
+    if (
+      !(await confirm({
+        title: 'Excluir objeção',
+        description: 'Excluir esta objeção da matriz?',
+        confirmLabel: 'Excluir',
+        variant: 'danger',
+      }))
+    )
+      return;
+    try {
+      await playbookApi.deleteObjection(item.id);
+      toast.success('Objeção excluída.');
+      load();
+    } catch (err: any) {
+      clientLogger.error({ err }, 'Falha ao excluir objeção da matriz');
+      toast.error(err instanceof Error ? err.message : 'Falha ao excluir a objeção.');
+    }
+  };
+
+  return (
+    <div className="flex-1 overflow-y-auto bg-transparent p-6 sm:p-8 font-sans">
+      <div className="max-w-5xl mx-auto space-y-8">
+        <PageTitleCard
+          title="Matriz de Objeções"
+          subtitle={`${meta?.total ?? items.length} objeç${(meta?.total ?? items.length) !== 1 ? 'ões' : 'ão'} mapeada${(meta?.total ?? items.length) !== 1 ? 's' : ''} no playbook ${playbookMeta.label}, com script de contorno recomendado e diferencial-chave.`}
+          icon={<Shield className="h-5 w-5" />}
+          accent="warning"
+          actions={
+            <>
+              {canRunLivingPlaybook && (
+                <button
+                  type="button"
+                  onClick={handleGenerateWinningPatterns}
+                  disabled={generatingPatterns}
+                  title="Playbook Vivo: encontra abordagens que converteram melhor a partir de outcomes positivos reais e sugere pro time"
+                  className="flex items-center gap-2 bg-surface-2 hover:bg-line border border-line disabled:opacity-60 text-ink px-4 py-2.5 rounded-2xl font-bold transition-all active:scale-95 cursor-pointer"
+                >
+                  {generatingPatterns ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Trophy className="w-5 h-5 text-iris" />
+                  )}
+                  {generatingPatterns ? 'Buscando...' : 'Playbook Vivo'}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleGenerateSuggestions}
+                disabled={generatingSuggestions}
+                title="Gera sugestões de objeção a partir de padrões reais de negócios perdidos registrados no CRM"
+                className="flex items-center gap-2 bg-surface-2 hover:bg-line border border-line disabled:opacity-60 text-ink px-4 py-2.5 rounded-2xl font-bold transition-colors active:scale-95 cursor-pointer"
+              >
+                {generatingSuggestions ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Sparkles className="w-5 h-5 text-iris" />
+                )}
+                {generatingSuggestions ? 'Gerando...' : 'Gerar sugestões de IA'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingItem(null);
+                  setIsFormOpen(true);
+                }}
+                className="flex items-center gap-2 bg-brand-active hover:brightness-110 text-on-brand px-5 py-2.5 rounded-2xl font-bold transition-colors shadow-lg shadow-brand/20 active:scale-95 cursor-pointer"
+              >
+                <Plus className="w-5 h-5" /> Nova Objeção
+              </button>
+            </>
+          }
+        />
+
+        <div className="bh-platform-card bg-surface/80 p-4 rounded-card border border-line flex flex-wrap items-center gap-3">
+          <span className="text-xs font-bold text-ink flex items-center gap-1.5 shrink-0">
+            <Filter size={14} className="text-brand" /> Filtros
+          </span>
+          <div className="relative flex-1 min-w-[200px]">
+            <Search
+              size={14}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-2 pointer-events-none"
+            />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Buscar por palavra-chave..."
+              className="w-full pl-9 pr-3 py-2 rounded-xl bg-surface-2 text-ink text-xs font-semibold border border-line focus:outline-none focus:ring-1 focus:ring-brand"
+            />
+          </div>
+          <select
+            aria-label="Playbook"
+            value={playbook}
+            onChange={(e) => setPlaybook(e.target.value as typeof playbook)}
+            className="px-3 py-2 rounded-xl bg-surface-2 text-ink text-xs font-bold border border-brand/40 focus:outline-none focus:ring-1 focus:ring-brand"
+          >
+            {PLAYBOOKS.map((pb) => (
+              <option key={pb.key} value={pb.key}>
+                {pb.label}
+              </option>
+            ))}
+          </select>
+          <select
+            aria-label="Filtrar por segmento"
+            value={selectedSegment}
+            onChange={(e) => setSelectedSegment(e.target.value)}
+            className="px-3 py-2 rounded-xl bg-surface-2 text-ink text-xs font-semibold border border-line focus:outline-none focus:ring-1 focus:ring-brand"
+          >
+            <option value="todos">Todos os Segmentos</option>
+            {segments.map((seg) => (
+              <option key={seg} value={seg}>
+                {seg}
+              </option>
+            ))}
+          </select>
+          <select
+            aria-label="Filtrar por persona"
+            value={selectedPersona}
+            onChange={(e) => setSelectedPersona(e.target.value)}
+            className="px-3 py-2 rounded-xl bg-surface-2 text-ink text-xs font-semibold border border-line focus:outline-none focus:ring-1 focus:ring-brand"
+          >
+            <option value="todos">Todas as Personas</option>
+            {personas.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
+          <span className="text-[11px] text-ink-2 ml-auto">{filtered.length} resultado(s)</span>
+        </div>
+
+        {loading ? (
+          <div className="flex items-center justify-center gap-2 text-ink-2 text-sm py-16">
+            <Loader2 className="w-5 h-5 animate-spin" /> Carregando matriz de objeções...
+          </div>
+        ) : error ? (
+          <EmptyState
+            title="Não foi possível carregar a matriz"
+            description={error}
+            actionLabel="Tentar novamente"
+            onAction={load}
+            icon={<WifiOff className="w-10 h-10 text-brand" />}
+          />
+        ) : (
+          <div className="space-y-4">
+            {filtered.length === 0 ? (
+              <div className="bh-platform-card text-center py-12 text-sm text-ink-2 bg-surface/60 rounded-card border border-dashed border-line">
+                {items.length === 0
+                  ? 'Nenhuma objeção cadastrada ainda para esta marca.'
+                  : 'Nenhuma objeção encontrada para os filtros selecionados.'}
+              </div>
+            ) : (
+              filtered.map((item) => (
+                <div
+                  key={item.id}
+                  className="bh-platform-card bg-surface/80 p-6 rounded-card border border-line space-y-3 shadow-sm"
+                >
+                  <div className="flex items-center justify-between pb-3 border-b border-line flex-wrap gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-danger/15 text-danger-active dark:text-danger font-bold">
+                        {item.segment}
+                      </span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-info/15 text-info-active dark:text-info font-bold">
+                        {item.persona}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(item.responseScript, item.id)}
+                        className="text-xs text-ink-2 hover:text-ink flex items-center gap-1.5"
+                      >
+                        {copiedKey === item.id ? (
+                          <Check size={14} className="text-success-active dark:text-success" />
+                        ) : (
+                          <Copy size={14} />
+                        )}
+                        {copiedKey === item.id ? 'Copiado' : 'Copiar'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingItem(item);
+                          setIsFormOpen(true);
+                        }}
+                        className="text-xs text-ink-2 hover:text-ink flex items-center gap-1.5"
+                        aria-label="Editar objeção"
+                      >
+                        <Pencil size={14} /> Editar
+                      </button>
+                      {canDelete && (
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(item)}
+                          className="text-xs text-danger-active dark:text-danger hover:text-danger/80 flex items-center gap-1.5"
+                          aria-label="Excluir objeção"
+                        >
+                          <Trash2 size={14} /> Excluir
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="font-black text-sm text-ink mb-1 flex items-center gap-1.5">
+                      {/* amber-500 cru (= mesmo hex de --color-warning) sem par dark:,
+                          reintroduzindo o problema de contraste que o design system já resolveu —
+                          15 linhas abaixo o mesmo significado semântico ("atenção") já usa o
+                          token corrigido (achado do Piloto 017). */}
+                      <AlertTriangle size={14} className="text-warning-active dark:text-warning" />{' '}
+                      &quot;
+                      {item.objectionTitle}&quot;
+                    </h3>
+                    <p className="text-ink-2 text-sm italic">&quot;{item.objectionText}&quot;</p>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-surface-2 border border-line">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-success-active dark:text-success block mb-1">
+                      Script de Contorno Recomendado
+                    </span>
+                    <p className="text-sm text-ink leading-relaxed font-medium">
+                      {item.responseScript}
+                    </p>
+                  </div>
+
+                  <p className="text-xs text-warning-active dark:text-warning font-bold">
+                    💡 Diferencial-chave: {item.keyDifferentiator}
+                  </p>
+
+                  {/* createdAt/updatedAt já vinham da API mas não eram exibidos em nenhuma tela —
+                      achado do Piloto 017. Exibição discreta, mesmo padrão de KanbanCard.tsx
+                      (ícone + texto pequeno em text-ink-2); título nativo (tooltip) mostra a data
+                      completa de criação sem precisar de mais um elemento visual. */}
+                  <div
+                    className="flex items-center gap-1.5 text-[11px] text-ink-2 pt-1"
+                    title={`Criado em ${new Date(item.createdAt).toLocaleString('pt-BR')}`}
+                  >
+                    <Calendar className="w-3 h-3 shrink-0" />
+                    Atualizado em {new Date(item.updatedAt).toLocaleDateString('pt-BR')}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {!loading && !error && (meta?.totalPages ?? 1) > 1 && (
+          <div className="bh-platform-card bg-surface/80 rounded-card border border-line overflow-hidden">
+            <Pagination
+              page={page}
+              totalPages={meta?.totalPages ?? 1}
+              onPageChange={setPage}
+              totalItems={meta?.total}
+              itemLabel="objeções"
+            />
+          </div>
+        )}
+      </div>
+
+      {isFormOpen && (
+        <ObjectionItemForm
+          item={editingItem}
+          defaultBrand={playbook}
+          onClose={() => setIsFormOpen(false)}
+          onSave={() => {
+            setIsFormOpen(false);
+            load();
+          }}
+        />
+      )}
+
+      <ObjectionSuggestionsReview
+        isOpen={isReviewOpen}
+        onClose={() => setIsReviewOpen(false)}
+        suggestions={suggestions}
+        emptyReason={suggestionsEmptyReason}
+        defaultBrand={playbook}
+        onAdded={load}
+      />
+
+      {canRunLivingPlaybook && (
+        <LivingPlaybookReview
+          isOpen={isPatternsReviewOpen}
+          onClose={() => setIsPatternsReviewOpen(false)}
+          suggestions={winningPatterns}
+          emptyReason={patternsEmptyReason}
+        />
+      )}
+
+      {dialog}
+    </div>
+  );
+}

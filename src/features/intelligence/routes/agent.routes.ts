@@ -1,0 +1,570 @@
+import { type NextFunction, type Request, type Response, Router } from 'express';
+import { z } from 'zod';
+
+import { logger } from '../../../lib/logger.js';
+import type { AuthRequest } from '../../../shared/middlewares/authenticateToken.js';
+import { requireRole } from '../../../shared/middlewares/requireRole.js';
+import { validateRequest } from '../../../shared/middlewares/validateRequest.js';
+import { synthesizeSpeech } from '../services/voicebox.service.js';
+
+const router = Router();
+const writeRoles = requireRole(['ADMIN', 'GESTOR', 'CLOSER', 'SDR']);
+
+const ttsRequestSchema = z.object({
+  text: z.string().trim().min(1, 'Texto vazio').max(2_000),
+});
+
+router.post(
+  '/tts',
+  writeRoles,
+  validateRequest(ttsRequestSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { text } = req.body as z.infer<typeof ttsRequestSchema>;
+      const startTime = Date.now();
+      const audio = await synthesizeSpeech(text);
+
+      const { logAiUsage } = await import('../../../lib/ai/gateway.js');
+      await logAiUsage({
+        promptId: 'tts_generate',
+        model: 'Voicebox',
+        usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+        latencyMs: Date.now() - startTime,
+      });
+
+      res.setHeader('Content-Type', 'audio/wav');
+      res.send(audio);
+    } catch (error: any) {
+      logger.error({ err: error }, 'Voicebox TTS request failed');
+      next(error);
+    }
+  },
+);
+
+import { getCharacter } from '../../characters/characterCatalog.js';
+import { characterRuntimeRoutes } from '../../characters/characterRuntime.routes.js';
+import {
+  approveLearningProfileVersion,
+  getLearningProfileHistory,
+  LearningAgent,
+  rejectLearningProfileVersion,
+  rollbackLearningProfile,
+} from '../agents/learning.agent.js';
+// --- SWARM & CONTINUOUS LEARNING ENDPOINTS ---
+import { SwarmOrchestrator } from '../agents/supervisor.agent.js';
+import { getDatasetSummary, validateToolUseCases } from '../evaluation/goldenDataset.service.js';
+import { getEvaluationMetricsSnapshot } from '../services/evaluationMetrics.service.js';
+import { logSwarmAction } from '../services/swarmAudit.service.js';
+import { acquireMissionSlot, releaseMissionSlot } from '../services/swarmConcurrency.service.js';
+import { getSwarmSloSnapshot } from '../services/swarmScheduler.service.js';
+
+const swarmMissionSchema = z.object({
+  mission: z.string().trim().min(1, 'A missão é obrigatória.').max(4_000),
+  sessionId: z.string().trim().min(1).max(200).optional(),
+  // Opcional: quando presente, permite ao Agente SDR do enxame buscar o contexto real do lead no
+  // CRM em vez de tentar (e sempre falhar) usar o texto da missão como se fosse um ID — ver
+  // sdrNode em supervisor.agent.ts (IA-003).
+  leadId: z.string().trim().min(1).max(200).optional(),
+  // Opcional: personagem oficial (catálogo canônico de 29) que originou a missão —
+  // vínculo visual↔execução auditável, validado contra o catálogo (nunca livre).
+  characterId: z.string().trim().min(1).max(64).optional(),
+});
+
+router.post(
+  '/swarm/mission',
+  writeRoles,
+  validateRequest(swarmMissionSchema),
+  async (req, res, next) => {
+    try {
+      const { mission, sessionId, leadId, characterId } = req.body as z.infer<
+        typeof swarmMissionSchema
+      >;
+      const { organizationId, id: userId } = (req as AuthRequest).user;
+      if (characterId && !getCharacter(characterId)) {
+        res.status(400).json({ success: false, error: 'characterId desconhecido.' });
+        return;
+      }
+      const sid = sessionId || `swarm-mission-${Date.now()}`;
+      // Gate de concorrência/idempotência: mesmo sessionId nunca executa 2x na org.
+      const slot = await acquireMissionSlot(organizationId, sid);
+      if (slot === 'duplicate') {
+        res.status(409).json({
+          success: false,
+          error: 'Missão já em execução para este sessionId (idempotência).',
+        });
+        return;
+      }
+      if (slot === 'timeout') {
+        res.status(429).json({
+          success: false,
+          error: 'Capacidade de missões do enxame esgotada — tente novamente em instantes.',
+        });
+        return;
+      }
+      try {
+        void logSwarmAction({
+          organizationId,
+          agentType: 'SUPERVISOR',
+          action: 'swarm_mission_start',
+          parameters: { sessionId: sid, characterId, missionChars: mission.length },
+          result: 'success',
+          userId,
+        });
+        const swarm = new SwarmOrchestrator();
+        const result = await swarm.executeMission(mission, sid, leadId);
+        // Retorna a última mensagem ou todo o contexto no formato esperado pelo api.ts (data envelope)
+        res.json({ success: true, data: { messages: result.map((m) => m.content) } });
+      } finally {
+        releaseMissionSlot(organizationId, sid);
+      }
+    } catch (err: any) {
+      next(err);
+    }
+  },
+);
+
+router.post(
+  '/swarm/stream',
+  writeRoles,
+  validateRequest(swarmMissionSchema),
+  async (req, res, next) => {
+    try {
+      const { mission, sessionId, leadId, characterId } = req.body as z.infer<
+        typeof swarmMissionSchema
+      >;
+      const { organizationId, id: userId } = (req as AuthRequest).user;
+      if (characterId && !getCharacter(characterId)) {
+        res.status(400).json({ success: false, error: 'characterId desconhecido.' });
+        return;
+      }
+      const sid = sessionId || `swarm-mission-${Date.now()}`;
+
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+      res.flushHeaders?.();
+
+      // Gate de concorrência/idempotência com feedback SSE real:
+      // 'queued' informa a posição na fila; 'duplicate'/'timeout' encerram com erro.
+      const slot = await acquireMissionSlot(organizationId, sid, (position) => {
+        res.write(
+          `event: queued\ndata: ${JSON.stringify({ type: 'queued', sessionId: sid, position })}\n\n`,
+        );
+      });
+      if (slot !== 'acquired') {
+        res.write(
+          `event: error\ndata: ${JSON.stringify({
+            type: 'rejected',
+            code: slot === 'duplicate' ? 'DUPLICATE_MISSION' : 'QUEUE_TIMEOUT',
+            message:
+              slot === 'duplicate'
+                ? 'Missão já em execução para este sessionId.'
+                : 'Capacidade do enxame esgotada — tente novamente em instantes.',
+          })}\n\n`,
+        );
+        res.end();
+        return;
+      }
+
+      try {
+        void logSwarmAction({
+          organizationId,
+          agentType: 'SUPERVISOR',
+          action: 'swarm_mission_start',
+          parameters: { sessionId: sid, characterId, missionChars: mission.length },
+          result: 'success',
+          userId,
+        });
+        const swarm = new SwarmOrchestrator();
+
+        await swarm.executeMissionStream(
+          mission,
+          sid,
+          (event) => {
+            res.write(`data: ${JSON.stringify(event)}\n\n`);
+          },
+          leadId,
+        );
+
+        void logSwarmAction({
+          organizationId,
+          agentType: 'SUPERVISOR',
+          action: 'swarm_mission_end',
+          parameters: { sessionId: sid, characterId },
+          result: 'success',
+          userId,
+        });
+        res.write('event: end\ndata: {}\n\n');
+      } catch (streamErr: any) {
+        void logSwarmAction({
+          organizationId,
+          agentType: 'SUPERVISOR',
+          action: 'swarm_mission_end',
+          parameters: { sessionId: sid, characterId },
+          result: 'error',
+          errorMessage: streamErr?.message,
+          userId,
+        });
+        throw streamErr;
+      } finally {
+        releaseMissionSlot(organizationId, sid);
+        if (!res.writableEnded) res.end();
+      }
+    } catch (err: any) {
+      if (!res.headersSent) {
+        next(err);
+      } else {
+        res.write(`event: error\ndata: ${JSON.stringify((err as Error).message)}\n\n`);
+        res.end();
+      }
+    }
+  },
+);
+
+// AI-009 (Sprint 07/onda-20): fonte de dados e UI (SwarmDashboard.tsx, aba "SLO por agente") já
+// existiam desde a onda 7 — só faltava esta rota, nunca registrada (ver
+// .agents/handoffs/onda-7/13-para-07-rota-slo-swarm.md). `validateRequest` só valida `req.body`
+// hoje (não `query`), então o parse de querystring é manual aqui.
+const sloQuerySchema = z.object({
+  days: z.coerce.number().int().min(1).max(90).optional(),
+});
+
+router.get('/swarm/slo', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const parsed = sloQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      res.status(400).json({ success: false, error: parsed.error.flatten() });
+      return;
+    }
+    const { organizationId } = (req as AuthRequest).user;
+    const snapshot = await getSwarmSloSnapshot(organizationId, parsed.data.days ?? 30);
+    res.json(snapshot);
+  } catch (err: any) {
+    next(err);
+  }
+});
+
+// AI-006 (onda 35): harness real das 9 dimensões de avaliação do enxame — ver
+// evaluationMetrics.service.ts. Mesma validação de querystring do /swarm/slo acima.
+router.get('/evaluation-metrics', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const parsed = sloQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      res.status(400).json({ success: false, error: parsed.error.flatten() });
+      return;
+    }
+    const { organizationId } = (req as AuthRequest).user;
+    const snapshot = await getEvaluationMetricsSnapshot(organizationId, parsed.data.days ?? 30);
+    res.json(snapshot);
+  } catch (err: any) {
+    next(err);
+  }
+});
+
+// Circuit Breaker - expor estado atual para observabilidade
+router.get('/circuit-breaker/state', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { organizationId } = (req as AuthRequest).user;
+    const { getCircuitBreakerState } = await import(
+      '../services/autonomyCircuitBreaker.service.js'
+    );
+    const state = getCircuitBreakerState(organizationId);
+    res.json({ success: true, data: state || null });
+  } catch (err: any) {
+    next(err);
+  }
+});
+
+// --- MELHORIAS AVANÇADAS DO SWARM ---
+
+// Learning Heatmap - visualizar padrões aprendidos pelo LearningAgent
+router.get('/learning-heatmap', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id: tenantId, organizationId } = (req as AuthRequest).user;
+    const { generateLearningHeatmap } = await import('../services/learningHeatmap.service.js');
+    const heatmap = await generateLearningHeatmap(organizationId, tenantId);
+    res.json({ success: true, data: heatmap });
+  } catch (err: any) {
+    next(err);
+  }
+});
+
+// Benchmark de Modelos - comparar performance entre Groq, OpenAI e vLLM
+router.get('/model-benchmark', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { organizationId } = (req as AuthRequest).user;
+    const { getFullSwarmModelBenchmark } = await import('../services/modelBenchmark.service.js');
+    const benchmark = await getFullSwarmModelBenchmark(organizationId);
+    res.json({ success: true, data: benchmark });
+  } catch (err: any) {
+    next(err);
+  }
+});
+
+// Predição de Sucesso - prever probabilidade de sucesso antes de executar missão
+const successPredictionSchema = z.object({
+  agentRole: z.enum(['SDR', 'BDR', 'CLOSER', 'CRM', 'OPS', 'SUPERVISOR']),
+  missionType: z.string().trim().min(1),
+  leadId: z.string().trim().optional(),
+  leadScore: z.number().min(0).max(100).optional(),
+  leadStage: z.string().trim().optional(),
+  timeSinceLastContact: z.number().optional(),
+  previousAttempts: z.number().int().min(0).optional(),
+});
+
+router.post(
+  '/success-prediction',
+  validateRequest(successPredictionSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id: tenantId, organizationId } = (req as AuthRequest).user;
+      const body = req.body as z.infer<typeof successPredictionSchema>;
+      const { predictMissionSuccess } = await import('../services/successPrediction.service.js');
+      const prediction = await predictMissionSuccess({
+        organizationId,
+        tenantId,
+        ...body,
+      });
+      res.json({ success: true, data: prediction });
+    } catch (err: any) {
+      next(err);
+    }
+  },
+);
+
+// Alertas Proativos - verificar saúde dos agentes e criar alertas
+router.get('/proactive-alerts', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { organizationId } = (req as AuthRequest).user;
+    const { DEFAULT_ALERT_THRESHOLDS, checkAgentHealthAndCreateAlerts } = await import(
+      '../services/proactiveAlerts.service.js'
+    );
+    const alerts = await checkAgentHealthAndCreateAlerts(organizationId, DEFAULT_ALERT_THRESHOLDS);
+    res.json({ success: true, data: alerts });
+  } catch (err: any) {
+    next(err);
+  }
+});
+
+// A/B Testing de Prompts - listar experimentos
+router.get(
+  '/prompt-ab-testing/experiments',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { organizationId } = (req as AuthRequest).user;
+      const { listPromptExperiments } = await import('../services/promptAbTesting.service.js');
+      const experiments = await listPromptExperiments(organizationId);
+      res.json({ success: true, data: experiments });
+    } catch (err: any) {
+      next(err);
+    }
+  },
+);
+
+// Dashboard Real-time do Swarm - monitoramento ao vivo
+router.get('/realtime-dashboard', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { organizationId } = (req as AuthRequest).user;
+    const { getSwarmRealtimeStatus } = await import(
+      '../services/swarmRealtimeDashboard.service.js'
+    );
+    const status = await getSwarmRealtimeStatus(organizationId);
+    res.json({ success: true, data: status });
+  } catch (err: any) {
+    next(err);
+  }
+});
+
+// Auditoria do Swarm - logs de ações
+router.get('/audit-logs', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { organizationId } = (req as AuthRequest).user;
+    const { agentType, action, result } = req.query as Record<string, string>;
+    const { getSwarmAuditLogs } = await import('../services/swarmAudit.service.js');
+    const { logs, total } = await getSwarmAuditLogs({
+      organizationId,
+      agentType,
+      action,
+      result: result as 'success' | 'error' | undefined,
+    });
+    res.json({ success: true, data: { logs, total } });
+  } catch (err: any) {
+    next(err);
+  }
+});
+
+// Heatmap de Uso dos Agentes
+router.get('/usage-heatmap', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { organizationId } = (req as AuthRequest).user;
+    const days = parseInt((req.query.days as string) || '30', 10);
+    const { generateAgentUsageHeatmap } = await import('../services/agentUsageHeatmap.service.js');
+    const heatmap = await generateAgentUsageHeatmap(organizationId, days);
+    res.json({ success: true, data: heatmap });
+  } catch (err: any) {
+    next(err);
+  }
+});
+
+// Análise de Custos por Agente
+router.get('/cost-analysis', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { organizationId } = (req as AuthRequest).user;
+    const days = parseInt((req.query.days as string) || '30', 10);
+    const { analyzeAgentCosts } = await import('../services/agentCostAnalysis.service.js');
+    const analysis = await analyzeAgentCosts(organizationId, days);
+    res.json({ success: true, data: analysis });
+  } catch (err: any) {
+    next(err);
+  }
+});
+
+// AI-005 (onda 36): Golden Dataset real e versionado — ver goldenDataset.service.ts. Não é
+// escopado por tenant (o dataset é um fixture de QA compartilhado, não dado de produção de uma
+// organização) — só reaproveita a autenticação já aplicada em '/api/agent' pelo server.ts.
+router.get('/golden-dataset/summary', async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const summary = getDatasetSummary();
+    const toolUseValidation = await validateToolUseCases();
+    res.json({ summary, toolUseValidation });
+  } catch (err: any) {
+    next(err);
+  }
+});
+
+router.post('/swarm/learn', async (req, res, next) => {
+  try {
+    // userId/organizationId vêm da sessão autenticada, nunca do body — do contrário qualquer
+    // usuário logado poderia passar o organizationId de outro tenant e ler o AuditLog dele
+    // (vazamento entre tenants), além de contaminar o perfil de estilo aprendido que os outros
+    // agentes daquele tenant herdam depois.
+    const { id: userId, organizationId } = (req as AuthRequest).user;
+    const learningAgent = new LearningAgent();
+    const guidelines = await learningAgent.reflectAndLearn(userId, organizationId);
+    res.json({
+      success: true,
+      learnedGuidelines: guidelines || 'Sem ações recentes suficientes para aprender.',
+      // Item 103 da constituição de produto: uma reflexão nova nunca vira comportamento ativo
+      // sozinha — fica pendente até um GESTOR+ aprovar em `/swarm/learn/:version/approve`.
+      pendingApproval: Boolean(guidelines),
+    });
+  } catch (err: any) {
+    next(err);
+  }
+});
+
+// GOV-13 (onda 39): histórico e rollback do perfil de estilo versionado pelo LearningAgent — o
+// mecanismo já existia em learning.agent.ts (append-only, nunca sobrescreve), mas ficava
+// inacessível fora de um script manual, sem rota HTTP nenhuma (ver
+// .agents/handoffs/onda-39/13-para-07-rota-rollback-learning-profile.md). Escopo: sempre o
+// perfil do próprio usuário autenticado — o histórico é por (tenant, ator), nunca cross-user
+// (decisão arquitetural deliberada, travada por
+// `tests/unit/.../agent.routes.learning-profile.test.ts`: identidade só de `req.user`, nunca de
+// querystring/body, mesmo para ADMIN). O gate de aprovação do item 103
+// (`/swarm/learn/approve`/`/reject`, abaixo) segue o mesmo escopo self-service — nunca um GESTOR
+// aprovando o perfil de outra pessoa, só o próprio.
+router.get('/swarm/learn/history', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id: actorId, organizationId } = (req as AuthRequest).user;
+    const history = await getLearningProfileHistory(organizationId, actorId);
+    res.json({ success: true, data: history });
+  } catch (err: any) {
+    next(err);
+  }
+});
+
+import { commercialV3Routes } from '../commercial-v3/routes/commercialV3.routes.js';
+// --- CÉLULA COMERCIAL DE AGENTES (onda 43, Agente 13; onda 6/AIAGENT-004) ---
+// Extraída para `commercialCell.routes.ts` na onda 6 — ver o cabeçalho daquele arquivo para o
+// motivo (gate de hotspot) e a garantia de que nenhuma URL pública mudou. Montado aqui como
+// sub-router, então os caminhos continuam `/api/agent/commercial-cell/...`.
+import { commercialCellRoutes } from './commercialCell.routes.js';
+import { universalEcosystemRoutes } from './universalEcosystem.routes.js';
+
+// Central de Personagens e Agentes — catálogo dos 29 personagens + vínculo
+// runtime real (registry, circuit breaker, gate de concorrência, audit log).
+router.use('/characters', characterRuntimeRoutes);
+
+router.use(commercialCellRoutes);
+router.use('/commercial-v3', commercialV3Routes);
+router.use(universalEcosystemRoutes);
+
+const learningRollbackSchema = z.object({
+  targetVersion: z.number().int().min(1),
+});
+
+router.post(
+  '/swarm/learn/rollback',
+  validateRequest(learningRollbackSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id: actorId, organizationId } = (req as AuthRequest).user;
+      const { targetVersion } = req.body as z.infer<typeof learningRollbackSchema>;
+      const result = await rollbackLearningProfile(organizationId, actorId, targetVersion);
+      if (!result.success) {
+        res.status(404).json({ success: false, error: result.reason });
+        return;
+      }
+      res.json({ success: true, data: result });
+    } catch (err: any) {
+      next(err);
+    }
+  },
+);
+
+const learningDecisionSchema = z.object({
+  targetVersion: z.number().int().min(1),
+});
+
+// Item 103 da constituição de produto — gate de aprovação humana para o único ponto do produto
+// onde uma reflexão de IA mudava comportamento real de agente sozinha (ver `learning.agent.ts`).
+// Self-service, mesmo escopo de `/swarm/learn/history`/`/rollback` acima (identidade sempre de
+// `req.user`, nunca de body/querystring) — aprovar só afeta o comportamento do próprio agente do
+// próprio usuário.
+router.post(
+  '/swarm/learn/approve',
+  writeRoles,
+  validateRequest(learningDecisionSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id: actorId, organizationId, role } = (req as AuthRequest).user;
+      const { targetVersion } = req.body as z.infer<typeof learningDecisionSchema>;
+      const result = await approveLearningProfileVersion(organizationId, actorId, targetVersion, {
+        userId: actorId,
+        userRole: role,
+      });
+      if (!result.success) {
+        res.status(400).json({ success: false, error: result.reason });
+        return;
+      }
+      res.json({ success: true, data: result });
+    } catch (err: any) {
+      next(err);
+    }
+  },
+);
+
+router.post(
+  '/swarm/learn/reject',
+  writeRoles,
+  validateRequest(learningDecisionSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id: actorId, organizationId, role } = (req as AuthRequest).user;
+      const { targetVersion } = req.body as z.infer<typeof learningDecisionSchema>;
+      const result = await rejectLearningProfileVersion(organizationId, actorId, targetVersion, {
+        userId: actorId,
+        userRole: role,
+      });
+      if (!result.success) {
+        res.status(400).json({ success: false, error: result.reason });
+        return;
+      }
+      res.json({ success: true, data: result });
+    } catch (err: any) {
+      next(err);
+    }
+  },
+);
+
+export const agentRoutes = router;

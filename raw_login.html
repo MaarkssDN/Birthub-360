@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Obsidian: cor institucional escura da marca (identidade-visual/birthhub360).
+         BrandProvider troca este valor conforme o tema ativo. -->
+  <meta name="theme-color" content="#0B132B" />
+  <meta name="description"
+    content="Birth Hub 360� - sua central de comando inteligente: integrando dados, potencializando decis�es e acelerando a execu�o." />
+  <!-- Variante de �cone (n�o o s�mbolo completo): abaixo de ~96px a coroa de tra�os
+         do emblema vira ru�do. Ver identidade-visual/birthhub360/README.md. -->
+  <link rel="icon" type="image/svg+xml" href="/brand/birthhub360-icone.svg" />
+  <title>Birth Hub 360� | Central de Comando Inteligente</title>
+  <!-- Prevent FOUC: apply theme class immediately before React loads -->
+  <script>
+    (function() {
+      try {
+        var theme = localStorage.getItem('birthhub360_theme');
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
+</head>
+
+<body>
+  <noscript>Ative o JavaScript para usar o Birth Hub 360�.</noscript>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
+</html>
+

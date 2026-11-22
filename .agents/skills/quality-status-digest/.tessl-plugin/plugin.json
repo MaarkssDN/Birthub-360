@@ -1,0 +1,9 @@
+{
+  "name": "testland/quality-status-digest",
+  "description": "Use when a weekly quality review, sprint check-in or quarterly portfolio review is due and the numbers already exist in CI, the tracker and the quarantine list. Computes pass rate, escaped defects and flake debt, rates each area red, amber or green, and rolls teams up into a portfolio view.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.1.7"
+}

@@ -1,0 +1,9 @@
+{
+  "name": "testland/sonarqube-rules",
+  "description": "Use when a team runs SonarQube or SonarCloud for multi-language static analysis and code quality: sonar-scanner and sonar-project.properties, Sonar Way profiles and custom rules, quality gates on new code, branch and PR analysis, and NOSONAR or SuppressWarnings suppressions.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.5"
+}

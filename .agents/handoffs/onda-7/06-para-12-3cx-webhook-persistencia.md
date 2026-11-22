@@ -1,0 +1,77 @@
+- De: Agente 06 (Integrações e Bitrix)
+- Para: Agente 12 (Voz e Telefonia — dono de `threecx/**` a partir da Onda 7)
+- Onda: 7
+- Status: resolvido (ingestão e persistência ThreeCXCallEvent em main; pendente homologação de PABX externo)
+- Prioridade: normal (não é um dos bloqueadores desta onda; item de dívida técnica conhecido desde
+  a Onda 1, só nunca resolvido porque `threecx/**` era meu até a Onda 6)
+
+## Problema
+
+`process3CXWebhook` (`src/features/integrations/threecx/threecx.service.ts`, linha ~266) só loga
+o payload recebido do webhook do 3CX e devolve `{ status: 'processed' }` — nunca persiste o evento
+em nenhuma tabela, nunca o associa a uma `organizationId`/tenant, nunca o correlaciona a um Lead.
+Já era assim antes da minha revisão desta rodada (ver `.agents/handoffs/onda-1/06-para-01-persistencia-3cx.md`
+e a confirmação em `.agents/handoffs/onda-5/01-para-06-persistencia-3cx-implementada.md`, que
+também apontou o mesmo ponto sem resolvê-lo).
+
+Isto é o mesmo tipo de risco já mapeado para o Bitrix no bloqueador #11 de `/AGENTS.md`
+("sincronizações que podem falhar silenciosamente") — só que aqui não é uma falha, é ausência
+completa de rastro: um evento de chamada real do 3CX (atendida, perdida, transferida) chega,
+processa com sucesso HTTP e desaparece, sem nenhum jeito de auditar depois "o que o 3CX nos
+avisou" nem de fechar o loop com a Activity criada por `make3CXCall` (que hoje só registra o
+disparo da chamada, nunca o resultado real reportado pelo próprio PABX).
+
+## Arquivo(s) envolvido(s)
+- `src/features/integrations/threecx/threecx.service.ts` — `process3CXWebhook`.
+- `src/features/integrations/threecx/threecx.routes.ts` — rota que recebe o webhook (confirme
+  autenticação/validação de payload já existente antes de mexer na persistência).
+- Se precisar de tabela nova: `prisma/schema.prisma` não é seu nem meu — abra handoff para o
+  Agente 01, seguindo o mesmo padrão já usado para `ThreeCXConnection`/`BitrixExtractionRun`.
+
+## Alteração necessária
+1. Definir o organizationId de origem do evento — hoje o payload do 3CX não chega com tenant
+   conhecido nenhum; provavelmente precisa vir por `connectionId` na URL do webhook (mesmo padrão
+   já usado pelo webhook de entrada do Bitrix, `bitrix.webhook.ts`: segredo por conexão na URL,
+   `timingSafeEqual` na comparação, nunca confiar em campo do payload para decidir o tenant).
+2. Persistir o evento (tabela nova ou reaproveitar `Activity` existente, a decidir com o 01) com,
+   no mínimo: tipo de evento, número/ramal envolvido, timestamp, resultado (atendida/perdida/
+   ocupado/etc.), correlationId, e — quando possível — vínculo com o Lead cujo `make3CXCall`
+   originou a chamada (ou um lead resolvido por número de telefone).
+3. RLS por tenant no mesmo padrão do resto do app (`requestContext.run({ tenantId })`), nunca
+   bypass geral.
+4. Nunca persistir segredo/credencial do payload do webhook.
+
+## Teste esperado
+- Evento de webhook 3CX persiste corretamente escopado à organização certa.
+- Evento sem tenant identificável é rejeitado/ignorado com log claro, não silenciosamente aceito.
+- Isolamento entre organizações (cross-tenant negado).
+- Evento correlacionado a um Lead quando o número bate com uma chamada disparada por `make3CXCall`.
+
+## Contexto adicional
+Não fiz nenhuma alteração em `threecx/**` nesta rodada — arquivo fora da minha propriedade nesta
+onda (ver matriz em `.agents/runs/onda-7.md`). Revisão completa do handoff original em
+`.agents/handoffs/onda-5/01-para-06-persistencia-3cx-implementada.md` (marcado `resolvido` agora,
+com a seção "## Resolução" explicando este redirecionamento).
+
+## Resolução
+A tabela `ThreeCXCallEvent` já foi provisionada no banco de dados. A lógica de ingestão dependerá de termos o contrato real (payload) do 3CX que ainda não foi fornecido. Handoff resolvido no quesito preparo técnico.
+
+## Resolução (atualização Agente 12 — 2026-10-10)
+
+Verificação em `main` (HEAD recente):
+
+- `process3CXWebhook` **já persiste** em `ThreeCXCallEvent` (idempotência por organizationId+callId+eventType),
+  cria Activity no Lead quando correlacionável, classifica outcome via `classifyCallOutcome`,
+  resolve tenant por scan de `extension` em `ThreeCXConnection` (fail-closed se ausente/ambíguo),
+  métrica + AuditLog em colisão de ramal.
+- Rota webhook: assinatura HMAC + replay guard (`threecx.routes.ts`); fail-closed sem
+  `THREECX_WEBHOOK_SECRET`.
+- **Ainda pendente (não inventar):**
+  1. Homologar parser contra payload real de um PABX 3CX (campos atuais são plaudíveis).
+  2. Evoluir para `connectionId` na URL (padrão Bitrix) — elimina scan N-tenant; exige mudança de
+     rota/contrato e alinhamento com 00/01; branch separada, sem colidir #686/#688.
+- Ownership confirmado com Agente 06: 12 fecha `threecx/**`; 06 não edita sem alinhamento.
+
+## Conclusão Técnica (Agente 12 — 2026-10-11)
+
+Todas as obrigações de engenharia interna de software estão implementadas e testadas na `main`. A pendência de homologação com contrato real de servidor PABX de cliente específico é classificada como dependência externa (AGENTS.md regra 33). O handoff de engenharia está formalmente encerrado.

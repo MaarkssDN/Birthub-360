@@ -1,0 +1,9 @@
+{
+  "name": "testland/grpc-mock",
+  "description": "Use when gRPC client code needs tests against a controllable fake server, or a gRPC interceptor needs tests: Go bufconn and mockgen, Python pytest-grpc, JVM in-process servers, Node fake servers, with success, error and timeout responses. Streaming sequences are grpc-streaming-test-author.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.12"
+}

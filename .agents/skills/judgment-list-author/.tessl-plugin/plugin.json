@@ -1,0 +1,9 @@
+{
+  "name": "testland/judgment-list-author",
+  "description": "Use when a team must create or refresh the human relevance judgments that search tests rely on, before running NDCG, MRR or recall evaluations: query sets, grading scales, rater guidelines, inter-rater agreement, Quepid, TREC-style pooling and refresh cadence.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.6"
+}

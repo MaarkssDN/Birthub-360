@@ -1,0 +1,9 @@
+{
+  "name": "testland/cloud-grid-e2e",
+  "description": "Use when E2E tests must run on real browsers and devices in BrowserStack Automate, Sauce Labs or LambdaTest: credentials, the WebDriver hub URL and vendor capabilities, a local tunnel for internal apps, session status reporting and a CI matrix sized to the plan's parallel sessions.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.0.2"
+}

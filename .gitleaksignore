@@ -1,0 +1,67 @@
+# Fingerprints de achados do gitleaks já investigados e tratados — ver o comentário
+# correspondente em .gitleaks.toml para o contexto completo de cada um. Formato: uma fingerprint
+# por linha, exatamente como o gitleaks reporta em "Fingerprint:" na saída do finding.
+
+# Senha real de conta em texto puro, JÁ ROTACIONADA no Supabase de produção em 02/09/2026 — ver
+# comentário em .gitleaks.toml. Os dois arquivos não existem mais no repositório.
+46833fd443e28916b2d0908382d7683245be1b86:_tmp_bitrix_only.mjs:generic-api-key:3
+46833fd443e28916b2d0908382d7683245be1b86:_tmp_enrich_and_bitrix.mjs:generic-api-key:3
+
+# Mesmo achado acima (senha já rotacionada), fingerprint com hash de commit diferente: a
+# reescrita de histórico de main documentada em docs/security/runbooks/DECIDE_GIT_HISTORY_REWRITE.md
+# ("Caminho B", 2026-09-05 — filter-repo removendo test-gemini.ts/test-gemini-quota.ts) mudou o
+# hash de todo commit descendente na cadeia, inclusive commits que não tocavam nesses arquivos.
+# Mesmo conteúdo/arquivo/linha/regra de cima, hash de commit pós-reescrita — não é um vazamento
+# novo. Se o gitleaks voltar a expor esse achado com um TERCEIRO hash de commit no futuro (nova
+# reescrita de histórico), o padrão é o mesmo: confirmar que é o mesmo conteúdo já tratado acima
+# antes de adicionar a fingerprint nova aqui.
+ca7219a6f521303f33edb538b6c7dfff903801f5:_tmp_bitrix_only.mjs:generic-api-key:3
+ca7219a6f521303f33edb538b6c7dfff903801f5:_tmp_enrich_and_bitrix.mjs:generic-api-key:3
+
+# Chave real do Google Gemini, JÁ ROTACIONADA — confirmado diretamente pelo dono do repositório em
+# 2026-09-05 (ver docs/security/runbooks/ROTATE_GEMINI_API_KEY.md e
+# docs/security/GITLEAKS_HISTORICAL_FINDINGS_2026-09-05.md). Os dois arquivos não existem mais no
+# repositório.
+40242d7e5463ee48f3daab9bdc1a84501c6dfa58:test-gemini.ts:generic-api-key:2
+db20c1f3e5cd53f3c0be462502548bfafa850587:test-gemini-quota.ts:generic-api-key:2
+
+# Shared secret de webhook hardcoded em texto puro em src/features/crm/components/LeadDetailDrawer.tsx:99
+# ('segredo_compartilhado_atlasgr_123') — já triado no item #2 de
+# docs/security/GITLEAKS_HISTORICAL_FINDINGS_2026-09-05.md: ACHADO REAL, JÁ REMEDIADO NO CÓDIGO
+# ATUAL. Esse header não existe mais em LeadDetailDrawer.tsx; a validação migrou para
+# src/features/integrations/birth-voice/voiceResult.webhook.ts, que é fail-closed (responde 503 sem
+# BIRTHHUB360_WEBHOOK_SECRET configurada, e nunca compara contra esse literal antigo como fallback).
+# Ação humana ainda recomendada por aquele documento (não bloqueadora): confirmar que o valor real
+# de BIRTHHUB360_WEBHOOK_SECRET em produção não é esse literal antigo — fora do alcance desta sessão
+# (sem acesso ao dashboard do Render). As duas fingerprints abaixo são o mesmo achado do documento
+# (commit 9236028b) e um segundo commit com o mesmo conteúdo/linha (17361fe7) que apareceu por
+# reescrita/duplicação de histórico, mesma lógica do bloco acima.
+17361fe70cacfb00ef052d9505c4bcb8e45bf9bf:src/features/crm/components/LeadDetailDrawer.tsx:generic-api-key:99
+9236028bc137b674da860e01cca871aea63b0758:src/features/crm/components/LeadDetailDrawer.tsx:generic-api-key:99
+
+# tests/unit/config/env.test.ts:141 — teste que verifica que o app RECUSA o segredo legado
+# bloqueado 'segredo_compartilhado_atlasgr_123' (mesmo literal do achado histórico já tratado
+# acima, LeadDetailDrawer.tsx:99/GITLEAKS_HISTORICAL_FINDINGS_2026-09-05.md) quando usado como
+# BIRTHHUB360_WEBHOOK_SECRET — não é um segredo novo, é o teste da própria defesa
+# (BLOCKED_PRODUCTION_SECRET_PLACEHOLDERS em src/config/env.ts) que impede esse valor de
+# funcionar em produção. Adicionado no commit 31bffaf3/9ab9ee28 (fix(security): harden
+# production secrets, 2026-09-17) sem entrada correspondente aqui, bloqueando secret-scan de
+# qualquer PR desde então.
+31bffaf30dd8c838c482fcc2497b24eb8be7f638:tests/unit/config/env.test.ts:generic-api-key:141
+9ab9ee28ebe4855f8c1d3e4bd151c2e12fe987e9:tests/unit/config/env.test.ts:generic-api-key:141
+# Valores de PII_BLIND_INDEX_KEY/CREDENTIALS_ENCRYPTION_KEY do template .env.test.example,
+# consumido pelo harness de testes locais (distintos dos valores do .env.example). Ignore apenas
+# as fingerprints históricas exatas; qualquer novo commit/linha continua sendo escaneado.
+7eaf7d191fce8e2d1d3de403a1fab3bfe2bb33f2:.env.test.example:generic-api-key:36
+7eaf7d191fce8e2d1d3de403a1fab3bfe2bb33f2:.env.test.example:generic-api-key:37
+# Follow-up P3-4 do parecer 24 do PR #153 (agente/24-review-pr153-97be4018): a linha de
+# PII_BLIND_INDEX_KEY em .env.test.example deslocou de 36/37 para 38 (commit 12910286 adicionou
+# linhas acima). Verificado pelo WF2 como aparente chave só de teste (CONFIRMAÇÃO HUMANA PENDENTE): existe apenas em .env.test.example
+# (template do harness local, distinto do .env.example), não aparece em nenhum outro arquivo,
+# config de deploy ou código. Fingerprint no formato de `gitleaks dir` (sem commit) — cobre só
+# esta linha/regra; qualquer outra linha ou valor novo continua sendo escaneado.
+.env.test.example:generic-api-key:38
+
+# Suppress false positive generated by our Node script in step 1
+# which outputs a generic-api-key placeholder as part of a JSON representation.
+22fa6ca8438aab54e84246c5e72b2e9b73279317:generate_audits.cjs:generic-api-key:31

@@ -1,0 +1,232 @@
+---
+name: traceability-matrix-builder
+description: "Use for test coverage audits, finding requirements without tests, sprint-end coverage reviews or compliance documentation. Builds a requirements-to-tests traceability matrix from a test case repository and Jira, Linear or GitHub Issues, with orphaned cases and requirements and a coverage summary."
+---
+
+# traceability-matrix-builder
+
+## Overview
+
+This workflow ingests requirements + cases from any combination of
+the catalog's sources and emits a deployable matrix proving "every
+requirement has at least one test, every test verifies at least
+one requirement." Mandatory in regulated industries (IEC 62304,
+DO-178C, ISO 26262, FDA-cleared software); useful elsewhere as a
+coverage-gap detector.
+
+Per ISO/IEC/IEEE 29119-3:2021 §6.3 "Traceability" and ISTQB
+CTAL-TM syllabus on test conditions and coverage items (cite by
+stable ID; texts behind iso.org / istqb.org paywall).
+
+For canonical case fields see
+`test-case-anatomy-reference`.
+
+## When to use
+
+- Pre-release coverage audit ("which requirements lack tests?").
+- Compliance documentation in regulated industries.
+- Sprint-end coverage review.
+- Auditing requirement-coverage gaps.
+
+## Step 1 - Extract requirements
+
+Inventory the source - Jira project, Linear team, GitHub
+Issues label. Each requirement must have:
+
+- **Stable ID** (e.g., `REQ-AUTH-001`, `ENG-1234`, `#42`)
+- **Title** (one-sentence)
+- **Status** (Active / Deprecated)
+
+```python
+# Jira example
+def get_requirements_jira(project_key):
+    jql = f'project = {project_key} AND issuetype = "User Story" AND status != Done'
+    issues = jira_search(jql)
+    return [
+        {"id": i["key"], "title": i["fields"]["summary"],
+         "status": i["fields"]["status"]["name"]}
+        for i in issues
+    ]
+```
+
+For Linear / GitHub Issues use the corresponding platform reference in
+`bug-tracker-workflow` (qa-defect-management plugin) adapted for
+requirement-type issues rather than bugs.
+
+## Step 2 - Extract cases + refs
+
+For each case in the TCM, harvest its identifier + the requirement
+references stored in the `refs` / link / tags field:
+
+```python
+# Per platform
+def get_cases_testrail(project_id):
+    cases = []
+    # Per tcm-case-management list_cases pattern (references/testrail.md)
+    for case in list_testrail_cases(project_id):
+        refs = case.get("refs", "").split(",") if case.get("refs") else []
+        cases.append({"id": f"C{case['id']}", "title": case["title"],
+                      "refs": [r.strip() for r in refs if r.strip()]})
+    return cases
+
+def get_cases_xray(project_key):
+    # Tests in Xray are Jira issues; links indicate requirement coverage
+    tests = jira_search(f'project = {project_key} AND issuetype = Test')
+    cases = []
+    for t in tests:
+        # Get linked requirement issues
+        links = get_issue_links(t["key"])
+        reqs = [l["outwardIssue"]["key"] for l in links
+                if l.get("type", {}).get("name") in ("Tests", "TestedBy")]
+        cases.append({"id": t["key"], "title": t["fields"]["summary"],
+                      "refs": reqs})
+    return cases
+```
+
+## Step 3 - Validate refs, then compute coverage
+
+**Checkpoint first:** confirm every case `ref` resolves to an existing requirement ID before computing coverage - the `& req_ids` intersection below silently drops dangling refs (a typo'd `REQ-AUTH-01` vs `REQ-AUTH-001`), which under-counts coverage. Flag and fix dangling refs first.
+
+Three derived metrics:
+
+```python
+def coverage(requirements, cases):
+    req_ids = {r["id"] for r in requirements}
+    case_to_reqs = {c["id"]: set(c["refs"]) & req_ids for c in cases}
+    reqs_to_cases = {r["id"]: [] for r in requirements}
+    for c in cases:
+        for r in c["refs"]:
+            if r in reqs_to_cases:
+                reqs_to_cases[r].append(c["id"])
+
+    covered = {r for r, cs in reqs_to_cases.items() if cs}
+    uncovered = req_ids - covered
+    orphan_cases = {c["id"] for c in cases if not case_to_reqs[c["id"]]}
+    over_tested = {r: len(cs) for r, cs in reqs_to_cases.items() if len(cs) > 5}
+
+    return {
+        "requirements_total": len(requirements),
+        "requirements_covered": len(covered),
+        "coverage_pct": len(covered) / len(requirements) * 100 if requirements else 0,
+        "uncovered_requirements": sorted(uncovered),
+        "orphan_cases": sorted(orphan_cases),
+        "over_tested_requirements": over_tested,
+        "matrix": reqs_to_cases,
+    }
+```
+
+### Definitions
+
+| Metric | Definition | Healthy value |
+|---|---|---|
+| Requirement coverage % | Requirements with ≥1 case / total requirements | 95-100% (regulated); 80%+ (non-regulated) |
+| Orphan cases | Cases with zero requirement refs | <5% (some cases are exploratory / regression-only - legitimate) |
+| Over-tested requirements | Requirements with >5 cases each | Audit - possible test bloat |
+| Coverage depth | Average cases per requirement | 1.5 - 3 typical; <1 = gaps; >5 = bloat |
+
+## Step 4 - Emit the matrix
+
+CSV is the machine-readable core:
+
+```python
+import csv
+
+def write_matrix_csv(reqs_to_cases, requirements, path):
+    with open(path, "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["Requirement ID", "Requirement Title", "Test Case IDs", "Count"])
+        for r in requirements:
+            cs = reqs_to_cases.get(r["id"], [])
+            w.writerow([r["id"], r["title"], "; ".join(cs), len(cs)])
+```
+
+Markdown (for a PR or wiki) and interactive HTML (for audit handoff) render the
+same `reqs_to_cases` structure; both templates are in
+[references/matrix-formats.md](references/matrix-formats.md).
+
+## Step 5 - Produce executive summary
+
+Lead with a headline coverage number, then the actionable lists - never a bare
+percentage. Compact skeleton:
+
+```text
+## Traceability summary - <project> - <date>
+
+Headline:   <covered>/<total> requirements covered (<pct>%) - <n> gaps block <release>.
+Gaps:       each uncovered REQ id + a recommended action
+Bloat:      requirements with >5 cases - audit for duplicates
+Orphans:    <n> unlinked cases - split into intentional vs needs-linking
+Next steps: sized actions to close the gaps
+```
+
+A filled example is in
+[references/matrix-formats.md](references/matrix-formats.md).
+
+## Step 6 - Schedule + automation
+
+Run the matrix-builder on a schedule:
+
+```yaml
+# .github/workflows/traceability.yml
+on:
+  schedule:
+    - cron: '0 9 * * MON'  # weekly Monday 09:00
+  workflow_dispatch:
+
+jobs:
+  build-matrix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: python scripts/build-matrix.py > matrix.md
+      - run: |
+          gh issue create --title "Traceability matrix - $(date +%Y-%m-%d)" \
+                          --body-file matrix.md \
+                          --label coverage-report
+```
+
+A worked example (project `ENG`: 92 Jira requirements, 287 TestRail cases, from
+extraction through `coverage()` to the CSV output) is in
+[references/matrix-formats.md](references/matrix-formats.md).
+
+## Anti-patterns
+
+| Anti-pattern | Why it fails | Fix |
+|---|---|---|
+| One requirement = one test forever | Doesn't reflect risk; over-tested critical paths under-tested edges | Tier requirements; aim for 1+ test per req, more for critical/high-risk |
+| Manual matrix in Excel | Diverges from reality the moment someone adds a test | Auto-generate from TCM + requirements source |
+| Building matrix only for audits | Discovery delayed until too late | Run weekly; treat as a continuous metric |
+| Counting orphan cases as "bad" | Some orphans are legitimate (smoke, exploratory) | Categorise: intentional orphan vs needs-linking |
+| Counting linked-but-broken-link refs as covered | Stale `refs` to deleted requirements masquerade as coverage | Validate `refs` resolve in the requirements source |
+| Bidirectional matrix collapsed to one direction | Loses visibility into over-tested vs under-tested | Always emit both directions |
+| Reporting % only | Misses the actionable gap list | Always list the uncovered IDs |
+
+## Limitations
+
+- **Stale refs.** Free-text `refs` fields (TestRail, Qase tags)
+  don't validate referent existence; the builder must verify
+  against the requirements source.
+- **Cross-source matrices.** When requirements live in Jira but
+  cases in TestRail, the join is by free-text key. Discipline
+  required.
+- **Doesn't measure test quality.** Coverage % can be 100% with
+  weak tests; pair with a test-case quality review.
+- **Risk-weighting absent.** All requirements weighted equally;
+  high-risk requirements may deserve deeper coverage. Pair with
+  qa-process risk-matrix output to weight.
+- **No mutation-testing input.** True coverage measurement combines
+  requirement coverage with mutation testing
+  (`qa-mutation-testing`); both
+  needed.
+
+## References
+
+- ISO/IEC/IEEE 29119-3:2021 §6.3 "Traceability" - cite by stable
+  ID.
+- ISTQB CTAL-TM syllabus - coverage items, test conditions.
+- IEC 62304 §5.5 (medical-device software traceability) - cite by
+  stable ID.
+- DO-178C §6.5 (avionics traceability) - cite by stable ID.
+- Composes:
+  `test-case-anatomy-reference`,
+  case-management skills for each platform.

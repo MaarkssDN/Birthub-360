@@ -1,0 +1,9 @@
+{
+  "name": "testland/coverage-diff-reporter",
+  "description": "Use when a pull request needs readable coverage feedback rather than one total. Compares current and baseline coverage (LCOV, Cobertura or JSON) and reports per-file line and branch deltas, new files and hidden drops, with a one-line summary for the PR comment.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.4.11"
+}

@@ -1,0 +1,9 @@
+{
+  "name": "testland/pitest-mutation",
+  "description": "Use when a Java or Kotlin test suite needs mutation testing. Sets up PIT (PITest) with the Maven or Gradle plugin: target classes and tests, mutation and coverage thresholds, mvn pitest:mutationCoverage and the HTML and XML reports.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.13"
+}

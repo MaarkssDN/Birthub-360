@@ -1,0 +1,145 @@
+# Stage 1: Build
+FROM node:22-slim AS builder
+
+WORKDIR /app
+
+ENV DATABASE_URL=""
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssl \
+    ca-certificates \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# .npmrc carrega `legacy-peer-deps=true` (mem0ai fixa peer @types/pg@8.11.0, incompatível com o
+# @types/pg@^8.16 exigido por @prisma/adapter-pg — só tipos de dev, sem efeito em runtime). Sem
+# copiá-lo, `npm ci` dentro da imagem falha com ERESOLVE, mesmo com o lockfile íntegro — foi
+# exatamente o que derrubou o workflow "Publish private container image" em 03/09/2026 (run
+# 33817231355), enquanto o mesmo `npm ci` passava no CI e no Render porque lá o checkout
+# completo (com .npmrc) está presente.
+COPY package*.json .npmrc ./
+RUN npm ci --ignore-scripts
+
+COPY . .
+RUN npx prisma generate
+# Node deriva o heap do cgroup. No builder limitado, o padrão mata o Vite
+# por volta de 800 MB (exit 134). O runner não herda esta variável.
+ENV NODE_OPTIONS="--max-old-space-size=2048"
+RUN npm run build
+RUN npm run build:worker
+
+# Remove devDependencies (typescript, eslint, vitest, prisma CLI, etc.) antes de copiar
+# node_modules pro estágio final — nada disso é necessário em runtime, só incha a imagem
+# de produção (DEVOPS-005 na auditoria de dívida técnica).
+# A versão exata da CLI já resolvida pelo npm ci fica em node_modules/prisma.
+# Capturá-la antes do prune evita reinstalar o range semver de devDependencies
+# (ex.: ^7.10.0), que pode resolver uma versão diferente do package-lock.json.
+RUN node -p "require('./node_modules/prisma/package.json').version" > /tmp/prisma-cli-version
+
+RUN npm prune --omit=dev
+
+# npm prune acima remove também a CLI do prisma (devDependency), que o Job de migração
+# k8s/Helm quebra sem ela ("npx prisma migrate deploy": command not found) — ver handoff
+# .agents/handoffs/onda-4/10-para-08-prisma-cli-imagem-producao.md. O deploy real hoje
+# (Render, render.yaml) não usa este Dockerfile e não é afetado, mas o caminho
+# k8s/Helm/ArgoCD (charts/birthhub-360/templates/migration-job.yaml,
+# k8s/migration-job.yaml — aspiracional) precisa da CLI presente na imagem final.
+# Reinstala só a CLI, na versão exata já instalada pelo lockfile, sem tocar em
+# package.json/lockfile (--no-save) e sem reintroduzir o restante das devDependencies.
+# O build falha se a CLI instalada divergir do lock ou do client.
+RUN prisma_version="$(tr -d '\r\n' < /tmp/prisma-cli-version)" \
+ && npm install --no-save --ignore-scripts "prisma@${prisma_version}" \
+ && node node_modules/@prisma/engines/scripts/postinstall.js \
+ && node -e "const fs=require('fs'); const path=require('path'); const dir='node_modules/@prisma/engines'; const hit=fs.readdirSync(dir).find((name)=>name.startsWith('schema-engine-') && fs.statSync(path.join(dir,name)).size>1000000); if(!hit){ console.error('schema-engine ausente depois do postinstall'); process.exit(1);} console.log('schema-engine', hit);" \
+ && node -e "const lock=require('./package-lock.json').packages['node_modules/prisma'].version; const cli=require('prisma/package.json').version; const client=require('@prisma/client/package.json').version; if (cli!==lock || cli!==client) { console.error('Prisma CLI/client/lock divergentes', {cli, client, lock}); process.exit(1);} console.log('prisma CLI/client/lock', cli);"
+
+# Stage 2: Production
+FROM node:22-slim AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=3024
+
+# Dependências de SO para a aplicação, Prisma e Chromium/Playwright headless (Crawlee/scraping)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssl \
+    ca-certificates \
+    libnss3 \
+    libnspr4 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libxkbcommon0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxrandr2 \
+    libgbm1 \
+    libasound2 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libglib2.0-0 \
+    libx11-6 \
+    libx11-xcb1 \
+    libxcb1 \
+    libxext6 \
+    fonts-liberation \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy necessary files from builder
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/prisma ./prisma
+# prisma.config.ts fica na raiz do projeto (fora de prisma/) e o Prisma CLI (usado abaixo por
+# `prisma migrate deploy`, ver comentário mais adiante) depende dele pra resolver `datasource.url`
+# desde o Prisma 7 — sem essa cópia o container crash-loopava no boot com "The datasource.url
+# property is required in your Prisma config file when using prisma migrate deploy" (reproduzido
+# no deploy do Railway; a imagem buildava com SUCCESS mas nunca ficava saudável em runtime).
+COPY --from=builder /app/prisma.config.ts ./
+COPY --from=builder /app/scripts ./scripts
+# Achado real (Onda AC — deploy OCI): scripts/*.ts (seed-team.ts e ~20 outros ops scripts) importam
+# de "../src/lib/..." com tsx em runtime. Sem esta cópia, qualquer script rodado dentro do
+# container final falha com ERR_MODULE_NOT_FOUND — reproduzido rodando
+# `docker exec ... npx tsx scripts/seed-team.ts` no primeiro deploy real na instância OCI: o
+# usuário administrador nunca era criado (deploy-oci.sh engole o erro com `|| true`, então o
+# deploy "tinha sucesso" com a tabela de usuários vazia). `dist/` é o bundle da aplicação em si
+# (server.cjs) e não inclui esses scripts — eles continuam rodando via tsx direto do TypeScript
+# fonte, não via o bundle.
+COPY --from=builder /app/src ./src
+
+# Create a non-root user and ensure ownership
+RUN groupadd -g 1001 nodejs && useradd -u 1001 -g nodejs nodejs \
+    && chown -R nodejs:nodejs /app
+USER nodejs
+
+EXPOSE 3024
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD node -e "fetch('http://127.0.0.1:${PORT:-3024}/health/live').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+
+# `prisma migrate deploy` roda a cada boot do container, antes do processo Node começar a
+# aceitar tráfego — mesma garantia que render.yaml já tem no startCommand real
+# (`npx prisma migrate deploy && ... && npm run start`), agora também no nível da imagem, para
+# qualquer caminho que consuma este Dockerfile diretamente sem repetir esse comando (ver
+# AGENTS.md bloqueador #5: "Deploy capaz de iniciar sem aplicar migrações").
+#
+# Achado real corrigido nesta rodada: `docker-compose.oci.yml` (caminho self-hosted OCI) usava o
+# CMD desta imagem sem prefixo de migração — `scripts/deploy-oci.sh` sobe o container `app` via
+# `docker compose up -d` e só roda `prisma migrate deploy` DEPOIS, num `docker exec` separado
+# (linha ~174). Entre o container ficar "up" (o healthcheck de /health/live só verifica processo
+# vivo, não schema migrado) e esse `docker exec` terminar, a aplicação já podia responder tráfego
+# contra um schema desatualizado ou, num volume novo, sem tabelas. Idempotente (`migrate deploy`
+# sem pendência é rápido/no-op) e seguro sob múltiplas réplicas (Prisma usa advisory lock —
+# instâncias concorrentes serializam em vez de corromper o schema), então não introduz problema
+# novo no caminho k8s/Helm (que também tem o Job dedicado em
+# charts/birthhub-360/templates/migration-job.yaml como pre-install/pre-upgrade hook; esta
+# camada aqui é defesa adicional, não substitui aquele hook). Render não é afetado — usa
+# `buildCommand`/`startCommand` próprios e nunca passa por este Dockerfile (ver render.yaml).
+# `exec` no fim troca o shell pelo processo Node como PID 1 do container, preservando o
+# encaminhamento correto de sinais (SIGTERM) para desligamento gracioso.
+CMD ["sh", "-c", "npx prisma migrate deploy && exec npm run start"]

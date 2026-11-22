@@ -1,0 +1,9 @@
+{
+  "name": "testland/grpcurl-cli",
+  "description": "Use when calling a gRPC service by hand or from a script: listing and describing services via reflection or proto files, invoking unary and streaming methods with JSON input, TLS and plaintext options, auth headers and exit codes for smoke tests and CI gates. Uses grpcurl.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.13"
+}

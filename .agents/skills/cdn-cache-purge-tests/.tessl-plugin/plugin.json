@@ -1,0 +1,9 @@
+{
+  "name": "testland/cdn-cache-purge-tests",
+  "description": "Use when CDN or browser caching needs tests: purges and invalidations on Cloudflare, Fastly (surrogate keys) and CloudFront, end-to-end write, purge and fresh-read checks, propagation delay and cache-status headers, plus browser Cache-Control, ETag and service-worker caching with Playwright.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.6"
+}

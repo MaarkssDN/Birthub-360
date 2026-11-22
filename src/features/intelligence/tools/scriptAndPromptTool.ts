@@ -1,0 +1,153 @@
+import { DynamicStructuredTool } from '@langchain/core/tools';
+import { z } from 'zod';
+import {
+  generateEmailDraft,
+  generateSalesPitch,
+  handleSalesObjection,
+} from '../../../lib/ai/features.js';
+import { generateTextOutput } from '../../../lib/ai/gateway.js';
+import { getTenantId } from '../../../lib/context.js';
+import { logger } from '../../../lib/logger.js';
+import { prisma } from '../../../lib/prisma.js';
+
+/**
+ * Fábrica de Scripts Comerciais, Copy Multicanal, Battlecards e Prompts Reutilizáveis.
+ * Permite que qualquer agente (ou o Swarm) gere scripts de ligação, WhatsApp, e-mail, LinkedIn,
+ * contorno de objeções e salve Prompts/CustomAiTools reais na biblioteca da organização.
+ */
+export const scriptAndPromptTool = new DynamicStructuredTool({
+  name: 'script_and_prompt_factory',
+  description:
+    'Gera scripts comerciais (cold call, WhatsApp, LinkedIn, e-mail, pitch de vendas, contorno de objeções) e cria/salva Prompts ou Ferramentas de IA reutilizáveis (Prompt / CustomAiTool) na biblioteca da organização.',
+  schema: z.object({
+    artifactType: z
+      .enum([
+        'cold_call_script',
+        'whatsapp_script',
+        'linkedin_sequence',
+        'email_sequence',
+        'sales_pitch',
+        'objection_rebuttal',
+        'reusable_system_prompt',
+      ])
+      .describe('Tipo de script comercial ou prompt de IA a gerar.'),
+    targetAudienceOrPersona: z
+      .string()
+      .describe(
+        'Cargo do decisor, nicho ou persona alvo (ex: CFO de Indústria, Diretor Comercial SaaS).',
+      ),
+    objective: z
+      .string()
+      .describe(
+        'Objetivo central do script ou do prompt (ex: agendar demo de 15 min, contornar objeção de preço).',
+      ),
+    leadId: z
+      .string()
+      .optional()
+      .describe('ID do lead para personalizar com dados reais do CRM (opcional).'),
+    saveToPromptLibrary: z
+      .boolean()
+      .default(true)
+      .describe(
+        'Se true, salva o artefato gerado na tabela Prompt da organização para reuso por qualquer agente.',
+      ),
+    promptTitle: z.string().optional().describe('Título para salvar na biblioteca de Prompts.'),
+  }),
+  func: async ({
+    artifactType,
+    targetAudienceOrPersona,
+    objective,
+    leadId,
+    saveToPromptLibrary,
+    promptTitle,
+  }) => {
+    try {
+      const organizationId = getTenantId();
+      if (!organizationId) {
+        return JSON.stringify({ error: 'Contexto de organização (tenant) ausente.' });
+      }
+
+      let leadContext = '';
+      if (leadId) {
+        const lead = await prisma.lead.findFirst({
+          where: { id: leadId, organizationId },
+          include: { company: true, contact: true },
+        });
+        if (lead) {
+          leadContext = `Lead: ${lead.title || 'Lead'} | Empresa: ${lead.company?.tradeName || lead.company?.legalName || 'N/A'} | Setor: ${lead.company?.segment || 'N/A'} | Cargo: ${lead.contact?.role || 'Decisor'}`;
+        }
+      }
+
+      let generatedContent = '';
+
+      if (artifactType === 'sales_pitch') {
+        generatedContent = await generateSalesPitch(
+          `${targetAudienceOrPersona}. ${leadContext}`,
+          objective,
+          organizationId,
+        );
+      } else if (artifactType === 'objection_rebuttal') {
+        generatedContent = await handleSalesObjection(
+          objective,
+          `${targetAudienceOrPersona}. ${leadContext}`,
+          organizationId,
+        );
+      } else if (artifactType === 'email_sequence') {
+        generatedContent = await generateEmailDraft(
+          targetAudienceOrPersona,
+          leadContext || 'Empresa Prospectada',
+          objective,
+          organizationId,
+        );
+      } else {
+        // DEBT-0015: sem fallback fabricado. Se o gateway falhar, generateTextOutput lança e a
+        // ferramenta retorna { error } — conteúdo inventado nunca pode ser persistido na
+        // biblioteca de Prompts como se fosse gerado por IA.
+        const textResult = await generateTextOutput({
+          organizationId,
+          feature: `script_factory_${artifactType}`,
+          systemInstruction:
+            'Você é um especialista sênior em Enablement Comercial B2B e Engenharia de Prompts. Crie artefatos altamente práticos, persuasivos, diretos e prontos para uso imediato.',
+          prompt: `Tipo de artefato: ${artifactType}\nPersona/Público-alvo: ${targetAudienceOrPersona}\nObjetivo: ${objective}\nContexto do CRM: ${leadContext || 'Uso geral para prospecção/vendas'}\n\nEntregue o roteiro estruturado com abertura, perguntas de diagnóstico (SPIN/BANT), proposta de valor e chamada para ação (CTA) clara.`,
+        });
+        generatedContent = textResult.text;
+      }
+
+      let savedPromptId: string | null = null;
+      if (saveToPromptLibrary) {
+        const saved = await prisma.prompt.create({
+          data: {
+            organizationId,
+            name: promptTitle || `[${artifactType}] ${targetAudienceOrPersona.slice(0, 60)}`,
+            category: artifactType,
+            version: '1.0.0',
+            owner: 'Swarm Script Factory',
+            tags: [artifactType, 'swarm-generated'],
+            variables: {},
+            history: [{ timestamp: new Date().toISOString(), content: generatedContent }],
+            approved: true,
+          },
+        });
+        savedPromptId = saved.id;
+      }
+
+      return JSON.stringify(
+        {
+          success: true,
+          artifactType,
+          targetAudienceOrPersona,
+          savedPromptId,
+          content: generatedContent,
+        },
+        null,
+        2,
+      );
+    } catch (error) {
+      logger.error({ error, artifactType }, 'Erro em scriptAndPromptTool');
+      return JSON.stringify({
+        error: 'Falha ao gerar script comercial ou prompt.',
+        details: error instanceof Error ? error.message : String(error),
+      });
+    }
+  },
+});

@@ -1,0 +1,9 @@
+{
+  "name": "testland/seed-data-curator",
+  "description": "Use when E2E tests need a reproducible seed dataset and the project has none, or the existing seed has drifted. Picks a representative cross-section of users, orgs and data, generates rows with the project's factory library, checks in the fixture and wires it into test setup.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.10"
+}

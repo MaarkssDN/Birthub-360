@@ -1,0 +1,159 @@
+# Security Guide
+
+## Introduction
+
+This guide provides developers and operators with the security protocols used in the Prospector-Atlas platform.
+
+## Authentication & Authorization
+
+- **Sessão (Better Auth):** autenticação por e-mail/senha e OAuth (Google/Microsoft) via
+  `better-auth` (`src/lib/auth.ts`). Sessão validada por cookie `HttpOnly`
+  (`better-auth.session_token`), não por par de Access/Refresh Token JWT — `authenticateToken`
+  (`src/shared/middlewares/authenticateToken.ts`) chama `auth.api.getSession()` a cada request.
+- **Roles:** fonte canônica única em `src/lib/auth/authorization.ts` — 5 papéis hierárquicos:
+  `PLATFORM_OPERATOR` (200) > `ADMIN` (100) > `MANAGER` (75) > `USER` (50) > `VIEWER` (10). Não existe mais
+  `server/security/PermissionMatrix.ts` nem os papéis `ADMINISTRADOR/GESTOR_COMERCIAL/CLOSER/SDR`
+  — esse era um segundo sistema de permissões (enum de 18 papéis) nunca ligado a nenhuma rota,
+  removido antes de virar débito real (ver comentário no topo de `authorization.ts`).
+- **Middleware:** `authenticateToken`, `requireTenant` (`src/shared/middlewares/authorization.ts`)
+  e `requireRole` (`src/shared/middlewares/requireRole.ts`) em toda rota protegida.
+
+## Data Validation
+
+Valide todo corpo de requisição com schemas Zod, aplicados via `validateRequest`
+(`src/shared/middlewares/validateRequest.ts`) — os schemas em si ficam junto de cada feature
+(`src/features/*/`), não centralizados num único arquivo.
+
+## Auditing
+
+Use `AuditService.log` (`src/lib/audit/audit.service.ts`) para mudanças de estado críticas,
+acesso a dados e tentativas de autenticação.
+
+> **Nota de Governança (Agente 15, Onda Freeze Sprint13):** O utilitário `auditAccessMiddleware`
+> (`src/lib/security/auditLog.middleware.ts`) fornece uma factory Express padronizada para registro
+> automático de `EXPORT`, `DELETE` e `UPDATE` via `AuditService.log`. O middleware está validado
+> com testes unitários, mas sua montagem nas rotas é opt-in por domínio de feature (ver handoff
+> `roadmap-v2-transversais/15-para-00-auditaccessmiddleware-nao-utilizado.md`).
+
+
+## Superfície exposta — estado registrado (Onda 6, Agente 15)
+
+Revisão pontual de `server.ts` (propriedade do Agente 00 — leitura apenas, correções passam por
+handoff):
+
+| Superfície                                                                                                                   | Estado atual                                                                                                                                                                                                                                                                                             | Risco residual                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ---------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /metrics`                                                                                                               | Só monta quando `EXPOSE_METRICS=true` (opt-in explícito). **Corrigido na Sprint 01/Onda 13 (SEC-002):** exige `requirePlatformOperator` (token `PLATFORM_OPERATOR_TOKEN`, header/query/cookie, fail-closed sem o valor configurado) — ver `src/shared/middlewares/requirePlatformOperator.ts`.           | Labels `tenant`/`organizationId` continuam presentes em métricas de custo de IA e sync Bitrix (`src/lib/ai/metrics.ts`, `src/features/integrations/bitrix/service/metrics.ts`) — não é PII de pessoa física, mas identifica tenant; residual aceito, mitigado pela mesma trava de token.                                                                                                                                                                                                                                                                                                                                          |
+| `GET/POST /admin/queues` (Bull Board)                                                                                        | Montado via `app.use` em rota protegida. **Reforçado na Sprint 01/Onda 13 (SEC-001 e SEC-003):** exige `requirePlatformOperator` limitando acesso — ADMIN de tenant não abre mais o painel sem o token de operador de plataforma também.                 | Risco residual eliminado ou contido (só aberto para PLATFORM_OPERATOR). |
+| `GET /api-docs` (Swagger UI)                                                                                                 | Monta em `NODE_ENV !== 'production'` OU quando `EXPOSE_API_DOCS=true` é setado explicitamente (opt-in, mesmo padrão de `EXPOSE_METRICS`).                                                                                                                                                                | Aceitável: spec pública de rotas não é segredo por si só, mas confirme que `EXPOSE_API_DOCS` continua desligado em produção salvo necessidade pontual (ex.: scan do ZAP contra staging).                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| 4 webhooks montados antes de `express.json()` (`birth-voice`, `3cx/webhook`, `webhooks/voice-result`, `integrations/bitrix`) | Todos os 4 verificados nesta onda: **todos** usam comparação em tempo constante (`timingSafeEqual`, direto ou via helper `isValidSignature`/`secretMatches`/`safeEqual`) e respondem `503` (fail-closed) quando a env do segredo correspondente está ausente, antes mesmo de tentar comparar assinatura. | Nenhum problema encontrado. Ver detalhamento por arquivo abaixo.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+
+Detalhamento dos 4 webhooks (arquivo → mecanismo → fail-closed):
+
+- `src/features/integrations/birth-voice/birthVoice.webhook.ts` → `isValidSignature()` em
+  `birthVoice.helpers.ts` (HMAC-SHA256 + `timingSafeEqual`) → `503` se `BIRTH_VOICES_WEBHOOK_SECRET`
+  ausente.
+- `src/features/integrations/threecx/threecx.routes.ts` → mesma `isValidSignature()` → `503` se
+  `THREECX_WEBHOOK_SECRET` ausente.
+- `src/features/integrations/birth-voice/voiceResult.webhook.ts` → `secretMatches()` local
+  (`timingSafeEqual` com igualdade de tamanho verificada antes) → `503` se
+  `BIRTHHUB360_WEBHOOK_SECRET` ausente.
+- `src/features/integrations/bitrix/bitrix.webhook.ts` → `safeEqual()` local (`timingSafeEqual`
+  com igualdade de tamanho verificada antes, contra `BitrixConnection.webhookSecret` por conexão)
+  → recusa (não processa) quando `!connection.inboundEventsEnabled || !connection.webhookSecret` —
+  fail-closed por conexão, não por env global (arquitetura correta aqui, já que o segredo é
+  per-tenant/per-conexão, não uma env compartilhada).
+
+Nenhuma correção necessária em `server.ts` nesta onda — nenhum achado novo além dos débitos já
+documentados em `.agents/completion/01-bloqueadores.md`.
+
+## `security:zap` / `security:trivy` — quando e como rodar
+
+Decisão implementada pelo Agente 08 (Onda 6, remediação) a partir da proposta em
+`.agents/handoffs/onda-6/15-para-08-zap-trivy-gate.md`:
+
+- **`npm run security:trivy`** (scan de filesystem/dependências, não precisa da aplicação
+  rodando) — roda **automaticamente toda semana** via `.github/workflows/security-trivy.yml`
+  (`workflow_dispatch` também disponível para rodar sob demanda), num runner hospedado do GitHub
+  Actions com rede irrestrita — o erro de TLS ao baixar `mirror.gcr.io/aquasec/trivy-db` visto em
+  ambientes de agente com proxy restritivo não se aplica lá. Esse job agendado continua **não
+  bloqueando PR** (reporta no Job Summary da execução). Rodar localmente continua funcionando do
+  mesmo jeito para depuração pontual, mas requer rede sem proxy TLS restritivo para o primeiro
+  download do banco de vulnerabilidades.
+  **Atualizado no ITEM-10 (Onda 2, 2026-08-25):** o mesmo workflow ganhou um segundo job,
+  `trivy-fs-pr-gate`, que roda em todo PR (via `aquasecurity/trivy-action`, não via
+  docker-compose) e **falha o check** em achado `HIGH`/`CRITICAL` sem waiver ativo em
+  `.trivyignore.yaml` (o mesmo vale para CodeQL e Dependency Review, ver
+  `.github/workflows/codeql.yml` e `.github/workflows/dependency-review.yml`). Bloquear
+  efetivamente o botão de merge exige marcar esses três checks como obrigatórios na proteção da
+  branch `main` — mesma configuração manual, fora deste repositório, já usada hoje para o
+  contexto `build` de `ci.yml` (ver comentário no topo desse arquivo). `production.yaml` e
+  `cd-homolog.yml` (jobs `publish`/`build-and-push`) também passaram a escanear a imagem Docker
+  com Trivy antes do `docker push`, esses sim bloqueantes de verdade porque interrompem o próprio
+  job de release. Ver `docs/security/AUDIT_WAIVERS.md` (topo do arquivo) para a política de waiver
+  compartilhada entre `npm audit`, Trivy e Dependency Review.
+- **`npm run security:zap`** (scan dinâmico de API, exige a aplicação já no ar) — **não** entra em
+  CI automático (não existe alvo efêmero vivo em nenhum job de push/PR deste projeto) — continua
+  manual, mas agora como passo obrigatório do runbook de pré-release, rodado contra staging:
+  ver `docs/deploy/producao.md` §7.1 (scan ZAP pré-release — o checklist de release foi
+  incorporado em `producao.md` §7 e o passo ZAP em §7.1; `RELEASE_CHECKLIST.md` saiu do
+  controle de versão em 22/08/2026, ver `docs/REMOVED-DOCS.md`).
+
+## `npm audit` — vulnerabilidades `uuid <11.1.1` (Onda 6, Agente 08)
+
+Contexto completo em `.agents/handoffs/onda-6/15-para-00-npm-audit-dependencias.md` (Agente 15).
+Das 4 vulnerabilidades `moderate` (`GHSA-w5hq-g745-h8pq`, `uuid <11.1.1`), duas cadeias
+diferentes:
+
+- **`testcontainers` → `dockerode` → `uuid`** (dev-only, `test:containers`): **corrigido**.
+  `testcontainers` foi atualizado de `^11.14.0` para `^12.1.0` — `dockerode@5.0.1` (puxado pela
+  nova major) não depende mais de `uuid` (removido como dependência direta na própria lib). API
+  usada neste repositório (`GenericContainer`, `Wait.forLogMessage`, em
+  `tests/container/postgres.test.ts`) não mudou entre as majors — a única mudança de
+  comportamento real da v12 (estratégia de wait padrão passando a preferir Docker healthcheck) não
+  afeta este teste porque ele já configura `withWaitStrategy()` explicitamente. Requisito de Node
+  `>= 22.22` da v12 já é atendido (CI roda Node 22 atual; ambiente local verificado em `v22.22.2`).
+  `npx tsc --noEmit` limpo depois do upgrade.
+
+- **`exceljs` → `uuid`** (dependência de produção real — exportação de XLSX): **risco aceito, não
+  corrigido**. Investigado nesta rodada se existe versão mais recente do `exceljs` que não
+  dependa de `uuid <11.1.1` em vez de aplicar o downgrade sugerido por `npm audit fix --force`
+  (que instalaria `exceljs@3.4.0`, uma versão **anterior** à já usada aqui, `^3.10.0` — sinal
+  correto de que não é uma correção real). Verificado com `npm view exceljs@<versão>
+dependencies.uuid` em todas as versões publicadas do `exceljs` até a mais recente disponível
+  (`4.4.0`, a última estável na 4.x): `3.10.0`–`4.1.0` dependem de `uuid@^7.0.3`, `4.2.0`–`4.4.0`
+  dependem de `uuid@^8.3.0` — **nenhuma versão publicada do `exceljs`, em nenhuma major, depende
+  de `uuid >=11.1.1`**. Não há correção real disponível via upgrade/downgrade de versão do
+  `exceljs` isoladamente.
+  - Risco mantido como classificado pelo Agente 15: a vulnerabilidade
+    (`GHSA-w5hq-g745-h8pq`, buffer bounds check ausente em `uuid.v3/v5/v6` quando um `buf` de
+    saída é fornecido pelo chamador) exige que o código chame `uuid.v3/v5/v6` passando esse
+    parâmetro `buf` — não é o padrão de uso do `exceljs` internamente, e o projeto não usa `uuid`
+    diretamente nos módulos de export XLSX (`scripts/setup-vector-db.ts`, export do CRM). Sem
+    vetor de exploração identificado neste código.
+  - Alternativa não aplicada nesta rodada: `npm overrides` forçando `uuid` para `>=11.1.1` só
+    dentro da árvore do `exceljs` (mesmo padrão já usado para `xcode` em `package.json`), sem
+    trocar a versão do `exceljs` em si. Ficou fora do escopo desta remediação pontual — reavaliar
+    em uma rodada dedicada a dependências, testando a geração de XLSX de ponta a ponta antes de
+    aplicar.
+  - Reavaliar quando o `exceljs` publicar uma versão que migre para `uuid >=11.1.1`, ou se o
+    vetor de exploração for reclassificado.
+
+## Rotação Padronizada de Segredos (Agente 15)
+
+A governança e rotação de segredos da plataforma foi padronizada sob a [Política Global de Rotação de Segredos](SECRET_ROTATION_POLICY.md).
+- **Catálogo & Taxonomia:** Segredos classificados do Tier 0 (chaves de criptografia em repouso e índices cegos de PII) ao Tier 4 (subssistemas locais).
+- **Regra de Ouro (P15):** Nenhuma credencial é considerada rotacionada sem evidência de teste negativo comprovando a invalidação da credencial antiga.
+- **Runbooks Oficiais em `docs/security/runbooks/`:**
+  - [`ROTATE_CREDENTIALS_ENCRYPTION_KEY.md`](runbooks/ROTATE_CREDENTIALS_ENCRYPTION_KEY.md) — Chave mestra AES-256-GCM com re-encriptação de dados em repouso.
+  - [`ROTATE_PII_BLIND_INDEX_KEY.md`](runbooks/ROTATE_PII_BLIND_INDEX_KEY.md) — Chave HMAC-SHA256 para busca exata de contatos (LGPD).
+  - [`ROTATE_BETTER_AUTH_SECRET.md`](runbooks/ROTATE_BETTER_AUTH_SECRET.md) — Segredo de sessões Better Auth.
+  - [`ROTATE_PLATFORM_OPERATOR_TOKEN.md`](runbooks/ROTATE_PLATFORM_OPERATOR_TOKEN.md) — Token de rotas administrativas `/admin/queues` e `/metrics`.
+  - [`ROTATE_INBOUND_WEBHOOK_SECRETS.md`](runbooks/ROTATE_INBOUND_WEBHOOK_SECRETS.md) — Webhooks de entrada (Birth Voices, 3CX, Chatwoot, Voice Result).
+  - [`ROTATE_BITRIX24_WEBHOOKS.md`](runbooks/ROTATE_BITRIX24_WEBHOOKS.md), [`ROTATE_BLAND_AI_KEY.md`](runbooks/ROTATE_BLAND_AI_KEY.md), [`ROTATE_GEMINI_API_KEY.md`](runbooks/ROTATE_GEMINI_API_KEY.md).
+- **Ferramentas de Suporte:**
+  - `scripts/security/reencrypt-credentials.ts` — Re-encriptação (OLD_KEY → NEW_KEY) de credenciais persistidas, inclusive `Setting` de integrações (`--model=Setting`). **Dry-run por padrão**: só grava com `--apply --snapshot-confirmed=<id>`. Também cobre as sessões WhatsApp no Redis (`--target=redis-wa-auth`) e tem `--verify` somente leitura; sai com código 2 se houver linha ilegível (nunca gravada). Usar apenas via runbook `ROTATE_CREDENTIALS_ENCRYPTION_KEY.md`.
+  - `scripts/security/backfill-integration-settings-encryption.ts` — Cifra segredos de integração legados em texto puro (ADR-010). Dry-run por padrão; grava só com `--apply --snapshot-confirmed=<id>`.
+  - `scripts/security/audit-secret-hygiene.ts` — Diagnóstico de entropia e conformidade sem vazamento de segredos.
+  - `src/lib/security/credentialCrypto.ts` — Utilitário canônico de criptografia AES-256-GCM e sanitização de logs para conectores externos.
+

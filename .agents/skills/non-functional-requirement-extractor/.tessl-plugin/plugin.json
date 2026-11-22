@@ -1,0 +1,9 @@
+{
+  "name": "testland/non-functional-requirement-extractor",
+  "description": "Use when a PRD, design doc or product brief must be turned into testable non-functional requirements. Extracts performance, accessibility, security, i18n, reliability and observability needs as threshold-bound assertions, each mapped to its measurement source (Lighthouse, axe, OWASP ASVS, WCAG).",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.4.7"
+}

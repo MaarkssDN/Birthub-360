@@ -1,0 +1,9 @@
+{
+  "name": "testland/ai-spec-coverage-mapper",
+  "description": "Use when a spec and a test suite both exist but nobody can say which requirements are covered, before a release sign-off, an audit or planning test effort. Uses an LLM to map existing tests to spec sections, outputs a coverage matrix per spec ID and names the gaps. It does not write new tests.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.10"
+}

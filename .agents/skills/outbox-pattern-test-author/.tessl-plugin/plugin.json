@@ -1,0 +1,9 @@
+{
+  "name": "testland/outbox-pattern-test-author",
+  "description": "Use when adding or changing a transactional outbox, its relay or poller, or auditing it: tests that the DB write and event insert are atomic, events publish at least once in order, consumers dedupe and stay idempotent, and the relay recovers from failures.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.13"
+}

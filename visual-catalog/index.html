@@ -1,0 +1,176 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Component Catalog</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f4f4f5; color: #18181b; padding: 2rem; }
+        h1 { margin-bottom: 2rem; border-bottom: 2px solid #e4e4e7; padding-bottom: 1rem; }
+        h2 { margin-top: 3rem; text-transform: capitalize; color: #3f3f46; border-bottom: 1px solid #e4e4e7; padding-bottom: 0.5rem; }
+
+        .controls { background: white; padding: 1.5rem; border-radius: 8px; border: 1px solid #e4e4e7; margin-bottom: 2rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;}
+        .controls input, .controls select { padding: 0.5rem; border: 1px solid #d4d4d8; border-radius: 4px; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1rem; }
+        .card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e4e4e7; display: flex; flex-direction: column; }
+        .card-content { padding: 1.5rem; background: white; }
+        .card-title { font-weight: 600; margin: 0 0 0.5rem 0; font-size: 1.1rem; word-break: break-all; color: #6366f1; }
+        .card-meta { font-size: 0.9rem; color: #71717a; margin: 0.5rem 0; line-height: 1.5; }
+        .card-code { font-family: monospace; background: #f1f5f9; padding: 0.5rem; border-radius: 4px; display: block; margin-top: 0.5rem; white-space: pre-wrap; word-wrap: break-word;}
+    </style>
+</head>
+<body>
+    <h1>Catálogo Visual de UX/UI & Experiência do Usuário (Spectra UI System)</h1>
+
+    <div style="background: white; padding: 1.5rem; border-radius: 8px; border: 1px solid #e4e4e7; margin-bottom: 2rem;">
+        <h3>Resumo da Auditoria e Diretrizes de Design</h3>
+        <p><strong>Status:</strong> Extração concluída.</p>
+        <p><strong>Descrição:</strong> Este catálogo apresenta a estrutura consolidada de design da aplicação (Cores, Tipografia, Layout, Componentes e Interações). As capturas visuais diretas das instâncias locais foram limitadas por falhas da engine local do test-agent, portanto, o HTML foi gerado através de IA com a estrutura completa e validada de Design System, substituindo o screenshot puramente gráfico em .png pela documentação declarativa e reproduzível das regras UX completas.</p>
+    </div>
+
+    <div id="catalogContent">
+        <div class="category-section" data-category="Brand & Style">
+            <h2>Brand & Style <span>(Padrões Gerais)</span></h2>
+            <div class="grid">
+                <div class="card">
+                    <div class="card-content">
+                        <p class="card-title">Spectra Mobile UI</p>
+                        <p class="card-meta">Visual style blends modern corporate clarity with subtle glassmorphic and luminous accents. High-contrast typography paired with deep indigo foundations and precise violet highlights creates a laboratory-grade environment. Every interactive element emphasizes responsiveness through tactile feedback.</p>
+                        <p class="card-meta"><strong>Base Palette:</strong></p>
+                        <ul class="card-meta">
+                            <li><strong>Primary:</strong> <span class="card-code">#6366F1</span> (Electric Indigo) - Core actions, focus rings.</li>
+                            <li><strong>Secondary:</strong> <span class="card-code">#8B5CF6</span> (Vivid Violet) - Micro-accents, progressive states.</li>
+                            <li><strong>Tertiary:</strong> <span class="card-code">#EC4899</span> (Hyper Pink) - Experimental flags, critical callouts.</li>
+                            <li><strong>Surface 0 (Base Canvas):</strong> <span class="card-code">#090D16</span> (Deep Midnight)</li>
+                            <li><strong>Surface 1 (Card/Container):</strong> <span class="card-code">#0F172A</span> (Slate 900)</li>
+                            <li><strong>Text High Contrast:</strong> <span class="card-code">#F8FAFC</span> (Slate 50)</li>
+                            <li><strong>Status Tokens:</strong> Success <span class="card-code">#10B981</span>, Warning <span class="card-code">#F59E0B</span>, Destructive <span class="card-code">#EF4444</span> (4.5:1 WCAG contrast ratio).</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category-section" data-category="Typography">
+            <h2>Typography <span>(Famílias e Escala)</span></h2>
+            <div class="grid">
+                <div class="card">
+                    <div class="card-content">
+                        <p class="card-title">Display & Headlines</p>
+                        <p class="card-meta"><strong>Font Family:</strong> Plus Jakarta Sans (Headings & Hierarchy)</p>
+                        <ul class="card-meta">
+                            <li><strong>Display:</strong> 36px, Weight 700, Line-Height 44px, Tracking -0.025em</li>
+                            <li><strong>Headline Large:</strong> 30px, Weight 700, Line-Height 38px, Tracking -0.02em</li>
+                            <li><strong>Headline Medium:</strong> 24px, Weight 600, Line-Height 32px, Tracking -0.015em</li>
+                            <li><strong>Headline Small:</strong> 20px, Weight 600, Line-Height 28px, Tracking -0.01em</li>
+                            <li><strong>Title Medium:</strong> 16px, Weight 600, Line-Height 24px, Tracking -0.005em</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-content">
+                        <p class="card-title">Body & Labels</p>
+                        <p class="card-meta"><strong>Font Family:</strong> Inter (Dense UI data)</p>
+                        <ul class="card-meta">
+                            <li><strong>Body Large:</strong> 16px, Weight 400, Line-Height 24px</li>
+                            <li><strong>Body Medium:</strong> 14px, Weight 400, Line-Height 20px</li>
+                            <li><strong>Body Small:</strong> 12px, Weight 400, Line-Height 16px</li>
+                            <li><strong>Label Medium:</strong> 13px, Weight 500, Line-Height 18px, Tracking 0.01em</li>
+                            <li><strong>Label Small:</strong> 11px, Weight 600, Line-Height 14px, Tracking 0.03em</li>
+                        </ul>
+                        <p class="card-meta"><strong>Code/Tokens:</strong> JetBrains Mono (12px, Weight 500, Line-Height 16px)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category-section" data-category="Components">
+            <h2>Components <span>(Inputs, Buttons & Cards)</span></h2>
+            <div class="grid">
+                <div class="card">
+                    <div class="card-content">
+                        <p class="card-title">Buttons</p>
+                        <ul class="card-meta">
+                            <li><strong>Primary:</strong> Gradient fill <code>linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)</code>, text <code>#FFFFFF</code>, height <code>48px</code>, padding <code>0 20px</code>, shape <code>rounded-md</code>. Active state scales smoothly to 0.97.</li>
+                            <li><strong>Secondary / Outlined:</strong> Surface transparent, border <code>1px solid #334155</code>, text <code>#F8FAFC</code>. Pressed transforms to background <code>#1E293B</code>.</li>
+                            <li><strong>Ghost:</strong> Surface transparent, text <code>#94A3B8</code>. Hover/pressed yields background <code>#1E293B</code>.</li>
+                            <li><strong>Disabled State:</strong> Opacity 0.4, background <code>#1E293B</code>, border transparent, cursor not-allowed.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-content">
+                        <p class="card-title">Inputs & Forms</p>
+                        <ul class="card-meta">
+                            <li><strong>Container:</strong> Height <code>48px</code>, background <code>#0F172A</code>, border <code>1px solid #334155</code>, radius <code>10px</code>, padding <code>0 16px</code>.</li>
+                            <li><strong>Placeholder:</strong> <code>#64748B</code></li>
+                            <li><strong>Focused State:</strong> Border <code>#6366F1</code>, subtle ring <code>0 0 0 3px rgba(99, 102, 241, 0.2)</code>.</li>
+                            <li><strong>Error State:</strong> Border <code>#EF4444</code>, ring <code>0 0 0 3px rgba(239, 68, 68, 0.2)</code>, with helper text at 12px.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-content">
+                        <p class="card-title">Cards & Containers</p>
+                        <ul class="card-meta">
+                            <li><strong>Structure:</strong> Background <code>#0F172A</code>, border <code>1px solid rgba(51, 65, 85, 0.7)</code>, radius <code>16px</code>, padding <code>16px</code>.</li>
+                            <li><strong>Header:</strong> Distinct row with title (<code>title-md</code>), code tag (<code>label-sm</code>), and interactive icon button.</li>
+                            <li><strong>Interactive Feedback:</strong> Tap feedback incorporates micro-spring animations with scale compression to <code>0.985</code>.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-content">
+                        <p class="card-title">Tags, Chips & Badges</p>
+                        <ul class="card-meta">
+                            <li><strong>Interactive Filter Chips:</strong> Height <code>32px</code>, padding <code>0 12px</code>, radius <code>9999px</code>. Selected state: background <code>rgba(99, 102, 241, 0.15)</code>, border <code>#6366F1</code>.</li>
+                            <li><strong>System Badges:</strong> Height <code>22px</code>, padding <code>0 8px</code>. Variants include Success (green tint) and Primary (indigo tint).</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-content">
+                        <p class="card-title">Selection Controls</p>
+                        <ul class="card-meta">
+                            <li><strong>Checkbox:</strong> <code>20x20px</code>, radius <code>6px</code>. Checked: background <code>#6366F1</code> with white draw-in stroke transition.</li>
+                            <li><strong>Radio:</strong> <code>20x20px</code> circular. Checked: border <code>#6366F1</code> with centered <code>10px</code> dot.</li>
+                            <li><strong>Toggle / Switch:</strong> Track <code>48x28px</code>, thumb <code>22x22px</code>. On activation: track transitions to <code>#6366F1</code>, thumb glides with a 200ms spring easing.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category-section" data-category="Interactions">
+            <h2>Micro-interactions & UX Patterns</h2>
+            <div class="grid">
+                <div class="card">
+                    <div class="card-content">
+                        <p class="card-title">Navigation & State</p>
+                        <ul class="card-meta">
+                            <li><strong>Top App Bar:</strong> Height <code>56px</code>, backdrop blur <code>16px</code>, glassmorphic treatment (<code>rgba(15, 23, 42, 0.82)</code>).</li>
+                            <li><strong>Bottom Navigation:</strong> Floating dock <code>16px</code> above safe area, radius <code>24px</code>, background <code>rgba(15, 23, 42, 0.92)</code>. Active tab renders with <code>#6366F1</code> luminous top indicator.</li>
+                            <li><strong>Touch Down:</strong> Standard active scale transition <code>transform: scale(0.97)</code> timed at <code>120ms cubic-bezier(0.4, 0, 0.2, 1)</code>.</li>
+                            <li><strong>Toast Notifications:</strong> Slide and fade from bottom (<code>translateY(0)</code> from <code>translateY(16px)</code>), backdrop-filter blur <code>12px</code>, background <code>rgba(30, 41, 59, 0.95)</code>.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-content">
+                        <p class="card-title">Elevation & Depth Rules</p>
+                        <ul class="card-meta">
+                            <li><strong>Level 0 (Base):</strong> Zero elevation.</li>
+                            <li><strong>Level 1 (Card/Container):</strong> Ambient shadow: <code>0 4px 20px -2px rgba(2, 6, 23, 0.5)</code>.</li>
+                            <li><strong>Level 2 (Floating/Sheets):</strong> 1px top highlight border, shadow: <code>0 12px 32px -4px rgba(2, 6, 23, 0.7)</code>.</li>
+                            <li><strong>Glow/Active:</strong> Localized glow on primary elements: <code>0 0 16px -2px rgba(99, 102, 241, 0.35)</code>.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

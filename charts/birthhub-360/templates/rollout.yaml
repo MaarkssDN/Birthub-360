@@ -1,0 +1,82 @@
+{{- if .Values.blueGreen.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: {{ include "birthhub-360.fullname" . }}
+  labels:
+    {{- include "birthhub-360.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "birthhub-360.selectorLabels" . | nindent 6 }}
+      # Mesmo motivo do deployment.yaml: sem isto o selector também bate com os pods do worker
+      # (nome+instance é subconjunto dos labels do worker), poluindo o HPA (que lê o selector
+      # deste Rollout via scale subresource) e o Service/PDB principais com pods do worker.
+      app.kubernetes.io/component: web
+  strategy:
+    blueGreen:
+      activeService: {{ include "birthhub-360.fullname" . }}
+      previewService: {{ include "birthhub-360.fullname" . }}-preview
+      autoPromotionEnabled: true
+      autoPromotionSeconds: {{ .Values.blueGreen.autoPromotionSeconds }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "birthhub-360.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: web
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "birthhub-360.fullname" . }}-config
+            - secretRef:
+                name: {{ include "birthhub-360.fullname" . }}-secret
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

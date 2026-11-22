@@ -1,0 +1,9 @@
+{
+  "name": "testland/bats-testing",
+  "description": "Use whenever the code under test is a shell script, a CLI binary or anything run from Bash: argument parsing, flags, exit codes and output. Sets up Bats-core with @test blocks, run, status and output assertions, setup/teardown, shared helpers and TAP output for CI.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.1.10"
+}

@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>05-BACKEND-SCHEMA - Birth Hub 360</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Cabin, Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #101D2F 0%, #101D2F 100%);
+      color: #F5F2EA;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 60px;
+      padding: 40px;
+      background: rgba(21, 29, 47, 0.3;
+      border-radius: 20px;
+      border: 1px solid rgba(198, 155, 82, 0.2);
+    }
+
+    .header h1 {
+      font-size: 3em;
+      background: linear-gradient(135deg, #C69B52 0%, #E4BC76 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .header .subtitle {
+      color: #58616C;
+      font-size: 1.2em;
+    }
+
+    .metadata {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .metadata-item {
+      background: rgba(198, 155, 82, 0.1);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9em;
+      border: 1px solid rgba(198, 155, 82, 0.3);
+    }
+
+    .nav-bar {
+      position: sticky;
+      top: 20px;
+      background: rgba(16, 29, 47, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 15px 30px;
+      border-radius: 15px;
+      border: 1px solid rgba(198, 155, 82, 0.2);
+      margin-bottom: 40px;
+      z-index: 100;
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+    }
+
+    .nav-bar a {
+      color: #F5F2EA;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+
+    .nav-bar a:hover {
+      background: rgba(198, 155, 82, 0.2);
+    }
+
+    .section {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 20px;
+      padding: 40px;
+      margin-bottom: 30px;
+      border: 1px solid rgba(216, 214, 207, 0.3;
+    }
+
+    .section h2 {
+      color: #C69B52;
+      margin-bottom: 30px;
+      font-size: 2em;
+      border-bottom: 2px solid rgba(198, 155, 82, 0.3);
+      padding-bottom: 15px;
+    }
+
+    .section h3 {
+      color: #E4BC76;
+      margin: 25px 0 15px 0;
+      font-size: 1.5em;
+    }
+
+    .erd-diagram {
+      background: rgba(16, 29, 47, 0.5);
+      padding: 30px;
+      border-radius: 15px;
+      margin: 20px 0;
+      font-family: 'IBM Plex Mono, Courier New', monospace;
+      font-size: 0.85em;
+      overflow-x: auto;
+      border: 1px solid rgba(198, 155, 82, 0.2);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+
+    th,
+    td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid rgba(216, 214, 207, 0.3;
+    }
+
+    th {
+      background: rgba(198, 155, 82, 0.1);
+      color: #C69B52;
+    }
+
+    tr:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .evidence {
+      background: rgba(16, 29, 47, 0.5);
+      padding: 15px;
+      border-radius: 8px;
+      margin: 10px 0;
+      font-family: 'IBM Plex Mono, Courier New', monospace;
+      font-size: 0.85em;
+      border-left: 3px solid #C69B52;
+    }
+
+    .evidence-code {
+      color: #C69B52;
+    }
+
+    .endpoint-card {
+      background: rgba(21, 29, 47, 0.3;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(216, 214, 207, 0.3;
+      margin: 15px 0;
+    }
+
+    .endpoint-card h4 {
+      color: #C69B52;
+      margin-bottom: 10px;
+      font-size: 1.1em;
+    }
+
+    .endpoint-card .method {
+      font-family: 'IBM Plex Mono, Courier New', monospace;
+      font-weight: bold;
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-right: 10px;
+    }
+
+    .method-get {
+      background: rgba(49, 95, 214, 0.2);
+      color: #4ade80;
+    }
+
+    .method-post {
+      background: rgba(59, 130, 246, 0.2);
+      color: #60a5fa;
+    }
+
+    .method-put {
+      background: rgba(234, 179, 8, 0.2);
+      color: #facc15;
+    }
+
+    .method-delete {
+      background: rgba(190, 59, 54, 0.2);
+      color: #f87171;
+    }
+
+    .endpoint-card .path {
+      font-family: 'IBM Plex Mono, Courier New', monospace;
+      color: #58616C;
+      font-size: 0.9em;
+    }
+
+    .service-list {
+      background: rgba(16, 29, 47, 0.3);
+      padding: 20px;
+      border-radius: 10px;
+      margin: 15px 0;
+    }
+
+    .service-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(21, 29, 47, 0.3;
+    }
+
+    .service-list li:last-child {
+      border-bottom: none;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.8em;
+      font-weight: 600;
+      margin: 0 5px 5px 0;
+    }
+
+    .badge-pk {
+      background: rgba(234, 179, 8, 0.2);
+      color: #facc15;
+    }
+
+    .badge-fk {
+      background: rgba(59, 130, 246, 0.2);
+      color: #60a5fa;
+    }
+
+    .badge-unique {
+      background: rgba(168, 85, 247, 0.2);
+      color: #a78bfa;
+    }
+
+    .badge-index {
+      background: rgba(49, 95, 214, 0.2);
+      color: #4ade80;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 60px;
+      padding: 30px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 20px;
+      border: 1px solid rgba(216, 214, 207, 0.3;
+    }
+
+    .footer a {
+      color: #C69B52;
+      text-decoration: none;
+      margin: 0 15px;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 2em;
+      }
+
+      .nav-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .section {
+        padding: 25px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>BACKEND SCHEMA</h1>
+      <div class="subtitle">Birth Hub 360 — Estrutura Backend Completa</div>
+      <div class="metadata">
+        <div class="metadata-item">📅 Analysis: 2026-09-25</div>
+        <div class="metadata-item">🌿 Branch: main</div>
+        <div class="metadata-item">📝 Commit: 1dec130b</div>
+        <div class="metadata-item">🗄️ ORM: Prisma 7.10.0</div>
+      </div>
+    </div>
+
+    <nav class="nav-bar">
+      <a href="#database">Database</a>
+      <a href="#erd">ERD</a>
+      <a href="#api">API Endpoints</a>
+      <a href="#services">Services</a>
+      <a href="#queues">Queues & Workers</a>
+      <a href="#security">Security</a>
+    </nav>
+
+    <div class="section" id="database">
+      <h2>🗄️ Database Schema</h2>
+
+      <h3>PostgreSQL + pgvector</h3>
+      <p>Banco de dados PostgreSQL com extensão pgvector para embeddings e busca vetorial. Suporta RLS (Row Level
+        Security) para isolamento multi-tenant.</p>
+
+      <h3>Models Principais</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Descrição</th>
+            <th>Campos Chave</th>
+            <th>Constraints</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Organization</td>
+            <td>Tenant principal (multi-tenancy)</td>
+            <td>id, name, slug, createdAt</td>
+            <td><span class="badge badge-pk">PK: id</span></td>
+          </tr>
+          <tr>
+            <td>User</td>
+            <td>Usuários da plataforma</td>
+            <td>id, email, passwordHash, role, organizationId</td>
+            <td><span class="badge badge-pk">PK: id</span> <span class="badge badge-fk">FK: organizationId</span> <span
+                class="badge badge-unique">UNIQUE: email</span></td>
+          </tr>
+          <tr>
+            <td>Company</td>
+            <td>Empresas do CRM</td>
+            <td>id, legalName, tradeName, cnpj, organizationId</td>
+            <td><span class="badge badge-pk">PK: id</span> <span class="badge badge-fk">FK: organizationId</span> <span
+                class="badge badge-unique">UNIQUE: organizationId, cnpj</span></td>
+          </tr>
+          <tr>
+            <td>Contact</td>
+            <td>Contatos vinculados a empresas</td>
+            <td>id, name, email, phone, whatsapp, companyId, organizationId</td>
+            <td><span class="badge badge-pk">PK: id</span> <span class="badge badge-fk">FK: companyId,
+                organizationId</span> <span class="badge badge-index">INDEX: emailIndex, phoneIndex</span></td>
+          </tr>
+          <tr>
+            <td>Lead</td>
+            <td>Oportunidades/leads do funil</td>
+            <td>id, status, funnel, temperature, amount, companyId, contactId, organizationId</td>
+            <td><span class="badge badge-pk">PK: id</span> <span class="badge badge-fk">FK: companyId, contactId,
+                organizationId</span> <span class="badge badge-unique">UNIQUE: organizationId, bitrixLeadId</span></td>
+          </tr>
+          <tr>
+            <td>Activity</td>
+            <td>Atividades e follow-ups</td>
+            <td>id, type, date, status, leadId, owner</td>
+            <td><span class="badge badge-pk">PK: id</span> <span class="badge badge-fk">FK: leadId</span></td>
+          </tr>
+          <tr>
+            <td>MarketIntelligenceCompany</td>
+            <td>Universo empresarial oficial</td>
+            <td>id, cnpj, razaoSocial, datasetId, competencia</td>
+            <td><span class="badge badge-pk">PK: id</span> <span class="badge badge-fk">FK: datasetId</span> <span
+                class="badge badge-unique">UNIQUE: datasetId, cnpj</span></td>
+          </tr>
+          <tr>
+            <td>MarketIntelligenceDataset</td>
+            <td>Snapshots versionados do universo empresarial</td>
+            <td>id, dataset, competencia, hash, status, activatedAt</td>
+            <td><span class="badge badge-pk">PK: id</span> <span class="badge badge-unique">UNIQUE: dataset,
+                competencia, hash</span></td>
+          </tr>
+          <tr>
+            <td>Note</td>
+            <td>Anotações em leads/companies/contacts</td>
+            <td>id, content, entityType, entityId, authorId</td>
+            <td><span class="badge badge-pk">PK: id</span> <span class="badge badge-fk">FK: authorId</span></td>
+          </tr>
+          <tr>
+            <td>Attachment</td>
+            <td>Anexos em leads/companies/contacts</td>
+            <td>id, filename, url, size, mimeType, entityType, entityId</td>
+            <td><span class="badge badge-pk">PK: id</span></td>
+          </tr>
+          <tr>
+            <td>ModuleAccessGrant</td>
+            <td>Concessão de acesso a módulos executivos</td>
+            <td>id, userId, moduleKey, grantedBy, grantedAt</td>
+            <td><span class="badge badge-pk">PK: id</span> <span class="badge badge-fk">FK: userId</span> <span
+                class="badge badge-unique">UNIQUE: userId, moduleKey</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="evidence"><span class="evidence-code">prisma/schema.prisma</span></div>
+    </div>
+
+    <div class="section" id="erd">
+      <h2>🔗 Entity Relationship Diagram</h2>
+
+      <div class="erd-diagram">
+        <pre>
+┌─────────────────┐       ┌─────────────────┐
+│   Organization   │──────→│      User        │
+│   (Tenant)        │       │                 │
+└────────┬──────────┘       └─────────────────┘
+         │
+         ├──→ Company ──────→ Contact ──────→ Lead ───→ Activity
+         │                    │                  │         │
+         │                    └──────────────────┴─────────┘
+         │
+         ├──→ MarketIntelligenceDataset ──→ MarketIntelligenceCompany
+         │
+         ├──→ Note ───────────────────────────────────────────────┐
+         │                                                          │
+         └──→ ModuleAccessGrant ←──────────────────────────────┘
+                                 │
+                                 ↓
+                            User
+</pre>
+      </div>
+
+      <h3>Enums Importantes</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Enum</th>
+            <th>Valores</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>UserRole</td>
+            <td>ADMIN, GESTOR, CLOSER, SDR, VISUALIZADOR</td>
+          </tr>
+          <tr>
+            <td>LeadStatus</td>
+            <td>Lead_Recebido, Cadencia_Iniciada, Qualificacao_SDR, Reuniao_Agendada, Convertido_em_Oportunidade,
+              Proposta_Enviada, Negocios_Perdidos, Negocios_Ganhos, etc.</td>
+          </tr>
+          <tr>
+            <td>LeadFunnel</td>
+            <td>Lead, Negocio (dois funis Bitrix24)</td>
+          </tr>
+          <tr>
+            <td>ActivityType</td>
+            <td>Ligacao, WhatsApp, Email, Reuniao, Follow_up, Visita, Tarefa</td>
+          </tr>
+          <tr>
+            <td>IntelligenceEvidenceType</td>
+            <td>FACT, INFERENCE, RECOMMENDATION, ESTIMATE, UNKNOWN, CONFLICT</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section" id="api">
+      <h2>🌐 API Endpoints</h2>
+
+      <h3>Autenticação</h3>
+      <div class="endpoint-card">
+        <h4><span class="method-post">POST</span> /api/auth/sign-in/email</h4>
+        <div class="path">Login com e-mail e senha</div>
+      </div>
+
+      <div class="endpoint-card">
+        <h4><span class="method-post">POST</span> /api/auth/sign-up/email</h4>
+        <div class="path">Cadastro de novo usuário</div>
+      </div>
+
+      <div class="endpoint-card">
+        <h4><span class="method-post">POST</span> /api/auth/sign-in/social</h4>
+        <div class="path">Login via OAuth (Google, Microsoft)</div>
+      </div>
+
+      <h3>CRM</h3>
+      <div class="endpoint-card">
+        <h4><span class="method-get">GET</span> /api/companies</h4>
+        <div class="path">Listar empresas</div>
+      </div>
+
+      <div class="endpoint-card">
+        <h4><span class="method-post">POST</span> /api/companies</h4>
+        <div class="path">Criar empresa</div>
+      </div>
+
+      <div class="endpoint-card">
+        <h4><span class="method-get">GET</span> /api/leads</h4>
+        <div class="path">Listar leads</div>
+      </div>
+
+      <div class="endpoint-card">
+        <h4><span class="method-post">POST</span> /api/leads</h4>
+        <div class="path">Criar lead</div>
+      </div>
+
+      <div class="endpoint-card">
+        <h4><span class="method-put">PUT</span> /api/leads/:id</h4>
+        <div class="path">Atualizar lead</div>
+      </div>
+
+      <div class="endpoint-card">
+        <h4><span class="method-get">GET</span> /api/contacts</h4>
+        <div class="path">Listar contatos</div>
+      </div>
+
+      <div class="endpoint-card">
+        <h4><span class="method-get">GET</span> /api/activities</h4>
+        <div class="path">Listar atividades</div>
+      </div>
+
+      <h3>Prospecção</h3>
+      <div class="endpoint-card">
+        <h4><span class="method-post">POST</span> /api/prospecting/search</h4>
+        <div class="path">Buscar prospects via Apollo/IA</div>
+      </div>
+
+      <div class="endpoint-card">
+        <h4><span class="method-post">POST</span> /api/prospecting/enrich</h4>
+        <div class="path">Enriquecer CNPJ</div>
+      </div>
+
+      <div class="endpoint-card">
+        <h4><span class="method-post">POST</span> /api/prospecting/promote</h4>
+        <div class="path">Promover prospect para CRM</div>
+      </div>
+
+      <h3>Inteligência</h3>
+      <div class="endpoint-card">
+        <h4><span class="method-post">POST</span> /api/intelligence/generate</h4>
+        <div class="path">Gerar conteúdo via IA</div>
+      </div>
+
+      <div class="endpoint-card">
+        <h4><span class="method-get">GET</span> /api/intelligence/prompts</h4>
+        <div class="path">Listar prompts customizados</div>
+      </div>
+
+      <h3>Integrações</h3>
+      <div class="endpoint-card">
+        <h4><span class="method-post">POST</span> /api/bitrix/connect</h4>
+        <div class="path">Conectar integração Bitrix24</div>
+      </div>
+
+      <div class="endpoint-card">
+        <h4><span class="method-post">POST</span> /api/whatsapp/connect</h4>
+        <div class="path">Conectar integração WhatsApp</div>
+      </div>
+
+      <div class="evidence"><span class="evidence-code">src/bootstrap/routes.ts, docs/openapi.yaml</span></div>
+    </div>
+
+    <div class="section" id="services">
+      <h2>⚙️ Services</h2>
+
+      <h3>Services Principais</h3>
+      <ul class="service-list">
+        <li><strong>AuthService:</strong> Gerenciamento de autenticação (Better Auth)</li>
+        <li><strong>CompanyService:</strong> CRUD de empresas com enriquecimento</li>
+        <li><strong>ContactService:</strong> CRUD de contatos com PII encryption</li>
+        <li><strong>LeadService:</strong> CRUD de leads com pipeline management</li>
+        <li><strong>ActivityService:</strong> Gestão de atividades e follow-ups</li>
+        <li><strong>ProspectingService:</strong> Prospecção e enriquecimento de leads</li>
+        <li><strong>IntelligenceService:</strong> Gateway de IA e geração de conteúdo</li>
+        <li><strong>BitrixService:</strong> Sincronização bidirecional com Bitrix24</li>
+        <li><strong>WhatsAppService:</strong> Automação de mensagens via Baileys</li>
+        <li><strong>EnrichmentService:</strong> Enriquecimento de dados (BrasilAPI, Apollo)</li>
+      </ul>
+
+      <h3>Controllers</h3>
+      <p>Controllers organizados por feature em <code>src/features/*/presentation/</code>, implementando lógica de HTTP
+        e validação via Zod.</p>
+
+      <div class="evidence"><span class="evidence-code">src/features/*/services/, src/features/*/presentation/</span>
+      </div>
+    </div>
+
+    <div class="section" id="queues">
+      <h2>📬 Queues & Workers</h2>
+
+      <h3>Filas BullMQ</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Fila</th>
+            <th>Propósito</th>
+            <th>Worker</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>leads-enrichment</td>
+            <td>Enriquecimento de leads</td>
+            <td>createLeadsWorker</td>
+          </tr>
+          <tr>
+            <td>intelligence-agents</td>
+            <td>Execução de agentes de IA</td>
+            <td>createAgentWorker</td>
+          </tr>
+          <tr>
+            <td>enrichment-queue</td>
+            <td>Enriquecimento em cascata</td>
+            <td>createEnrichmentWorker</td>
+          </tr>
+          <tr>
+            <td>whatsapp-conversation-signal</td>
+            <td>Sinais de conversa WhatsApp</td>
+            <td>createWhatsAppSignalWorker</td>
+          </tr>
+          <tr>
+            <td>bitrix-sync</td>
+            <td>Sincronização com Bitrix24</td>
+            <td>createBitrixSyncWorker</td>
+          </tr>
+          <tr>
+            <td>deduplication-queue</td>
+            <td>Deducação de leads</td>
+            <td>createDeduplicationWorker</td>
+          </tr>
+          <tr>
+            <td>sdr-cold-call</td>
+            <td>Discagem automática SDR</td>
+            <td>createColdCallWorker</td>
+          </tr>
+          <tr>
+            <td>swarm-scheduler</td>
+            <td>Agendamento de enxame autônomo</td>
+            <td>createSwarmSchedulerWorker</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Jobs Agendados</h3>
+      <ul class="service-list">
+        <li><strong>Bitrix Sync:</strong> Sincronização periódica com Bitrix24</li>
+        <li><strong>Follow-up Jobs:</strong> Jobs de follow-up automático</li>
+        <li><strong>Executive Summary:</strong> Resumo diário executivo</li>
+        <li><strong>Deduplication:</strong> Job de deduplicação</li>
+        <li><strong>Win/Loss Analysis:</strong> Análise de ganhos/perdas</li>
+        <li><strong>Weekly PDF Report:</strong> Relatório semanal em PDF</li>
+        <li><strong>Cold Leads Scanner:</strong> Scanner de leads frios</li>
+        <li><strong>Stagnation Scanner:</strong> Scanner de estagnação</li>
+        <li><strong>Account Intelligence Insights:</strong> Insights de conta</li>
+        <li><strong>Forecast Snapshot:</strong> Snapshot de forecast semanal</li>
+      </ul>
+
+      <div class="evidence"><span class="evidence-code">worker.ts, src/lib/queue/</span></div>
+    </div>
+
+    <div class="section" id="security">
+      <h2>🔒 Security</h2>
+
+      <h3>Autenticação</h3>
+      <ul class="service-list">
+        <li><strong>Better Auth:</strong> Biblioteca de autenticação com suporte a e-mail/senha e OAuth</li>
+        <li><strong>Session:</strong> Cookie-based session com better-auth.session_token</li>
+        <li><strong>Middleware:</strong> authenticateToken valida sessão em rotas protegidas</li>
+      </ul>
+
+      <h3>Autorização (RBAC)</h3>
+      <ul class="service-list">
+        <li><strong>Hierarquia:</strong> ADMIN (100) > GESTOR (75) > CLOSER (50) > SDR (40) > VISUALIZADOR (10)</li>
+        <li><strong>Middleware:</strong> requireRole verifica permissões por rota</li>
+        <li><strong>Multi-tenant:</strong> requireTenant isola dados por organização</li>
+        <li><strong>Fonte Canônica:</strong> src/lib/auth/authorization.ts</li>
+      </ul>
+
+      <h3>Segurança de Dados</h3>
+      <ul class="service-list">
+        <li><strong>PII Encryption:</strong> email, phone, whatsapp cifrados (AES-256-GCM)</li>
+        <li><strong>Blind Index:</strong> Índices HMAC-SHA256 para busca em dados cifrados</li>
+        <li><strong>Secrets Encryption:</strong> Credenciais de integrações cifradas</li>
+        <li><strong>RLS:</strong> Row Level Security no PostgreSQL</li>
+      </ul>
+
+      <h3>Rate Limiting</h3>
+      <ul class="service-list">
+        <li><strong>API Rate Limit:</strong> 600/15min por IP</li>
+        <li><strong>AI Rate Limit:</strong> 30/15min por organização</li>
+        <li><strong>Auth Rate Limit:</strong> 20/15min para rotas de auth</li>
+        <li><strong>Redis-backed:</strong> Rate limiting distribuído</li>
+      </ul>
+
+      <h3>Headers de Segurança</h3>
+      <ul class="service-list">
+        <li><strong>Helmet:</strong> Headers de segurança HTTP</li>
+        <li><strong>CORS:</strong> Configurável via ALLOWED_ORIGINS</li>
+        <li><strong>CSRF:</strong> Proteção via csrfGuard</li>
+      </ul>
+
+      <div class="evidence"><span class="evidence-code">src/lib/auth/, src/bootstrap/security.ts,
+          src/bootstrap/rateLimiters.ts</span></div>
+    </div>
+
+    <div class="section">
+      <h2>📊 Observabilidade</h2>
+
+      <h3>Métricas e Logging</h3>
+      <ul class="service-list">
+        <li><strong>OpenTelemetry:</strong> Traces e métricas distribuídas</li>
+        <li><strong>Prometheus:</strong> Métricas em /metrics (quando EXPOSE_METRICS=true)</li>
+        <li><strong>Sentry:</strong> Error tracking e performance monitoring</li>
+        <li><strong>Pino:</strong> Logs estruturados com suporte a Loki</li>
+        <li><strong>Langfuse:</strong> Observabilidade específica para IA</li>
+      </ul>
+
+      <h3>Health Checks</h3>
+      <ul class="service-list">
+        <li><strong>/health/live:</strong> Liveness probe</li>
+        <li><strong>/health/ready:</strong> Readiness probe</li>
+        <li><strong>/health/version:</strong> Version info</li>
+      </ul>
+
+      <div class="evidence"><span class="evidence-code">src/bootstrap/healthchecks.ts, src/lib/telemetry/,
+          src/lib/monitoring/</span></div>
+    </div>
+
+    <div class="footer">
+      <p>📖 <a href="00-INDEX.html">← Documentation Hub</a></p>
+      <p style="margin-top: 20px; color: #58616C;">Generated by Repository Documentation Architect V5 • 2026-09-25</p>
+    </div>
+  </div>
+</body>
+
+</html>

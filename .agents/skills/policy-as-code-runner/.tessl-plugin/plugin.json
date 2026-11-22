@@ -1,0 +1,9 @@
+{
+  "name": "testland/policy-as-code-runner",
+  "description": "Use when a team needs custom policies that off-the-shelf scanners don't cover (cost limits, required tags, security baselines) enforced in CI. Writes OPA Rego policies and runs Conftest against Kubernetes manifests, Terraform plans, Dockerfiles or any structured data; also covers Cedar.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.1.15"
+}

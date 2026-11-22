@@ -1,0 +1,374 @@
+import type { AIPendingAction } from '@prisma/client';
+import { MailerNotConfiguredError, sendEmail } from '../../../lib/email/mailer.js';
+import { integrationSettingsRepository } from '../../../lib/integrations/integrationSettings.repository.js';
+import { logger } from '../../../lib/logger.js';
+import { prisma } from '../../../lib/prisma.js';
+import type { ActivityType } from '../../../lib/zod.js';
+import { container } from '../../../shared/di/container.js';
+import { activityService } from '../../activities/services/activity.service.js';
+import type { NoteUseCases } from '../../notes/application/NoteUseCases.js';
+import {
+  type NotificationKind,
+  notificationService,
+} from '../../notifications/notification.service.js';
+
+export interface ExecutionResult {
+  /** Mantido como `sent` por compatibilidade com a API/UI: true significa que a ação foi executada. */
+  sent: boolean;
+  reason?:
+    | 'not_configured'
+    | 'send_failed'
+    | 'unsupported_action'
+    | 'missing_owner'
+    /** Credencial do tenant existe mas não decifra — reconfigurar; nunca tratada como ausente. */
+    | 'credentials_unreadable';
+}
+
+interface SendEmailPayload {
+  to?: string;
+  subject?: string;
+  body?: string;
+}
+
+interface SendWhatsAppReplyPayload {
+  leadId?: string;
+  to?: string;
+  body?: string;
+  conversationSignalId?: string;
+}
+
+/** Porta resolvida via DI (src/shared/di/setup.ts) — `intelligence/**` não pode importar
+ * `integrations/whatsapp/whatsapp.service.ts` diretamente (no-cross-feature-imports,
+ * dependency-cruiser), mesmo padrão já usado por `GoogleCalendarService`/`ChurnPredictionService`
+ * neste arquivo de composição. Tipo estrutural local, não o tipo real do outro domínio. */
+interface WhatsAppSenderPort {
+  sendWhatsAppMessage(
+    organizationId: string,
+    number: string,
+    text: string,
+    buttons?: string[],
+    context?: { leadId?: string | null },
+  ): Promise<unknown>;
+}
+
+interface SwarmRecommendationPayload {
+  leadId?: string;
+  synthesis?: string;
+  triggerDetail?: string;
+}
+
+interface CreateFollowUpPayload {
+  leadId?: string;
+  date?: string;
+  type?: ActivityType;
+  observations?: string;
+  owner?: string;
+}
+
+/** GOV-13 (OpsAgent): payload de `notify_team` — mesmo shape aceito pela ferramenta de IA em
+ * `agents/opsPendingActions.tool.ts`. */
+interface NotifyTeamPayload {
+  leadId?: string | null;
+  title?: string;
+  body?: string | null;
+  kind?: NotificationKind;
+}
+
+type ExecutableAction = Pick<AIPendingAction, 'id' | 'action' | 'payload' | 'organizationId'>;
+
+/**
+ * Executor central de ações aprovadas. Cada tipo só entra aqui quando existe uma implementação
+ * concreta, validada e auditável; tipos desconhecidos nunca retornam um sucesso fictício.
+ */
+export async function executeAction(action: ExecutableAction): Promise<ExecutionResult> {
+  try {
+    if (action.action === 'send_email') {
+      const payload = action.payload as SendEmailPayload;
+      if (!payload.to || !payload.subject || !payload.body) {
+        return { sent: false, reason: 'unsupported_action' };
+      }
+      await sendEmail({ to: payload.to, subject: payload.subject, text: payload.body });
+      return { sent: true };
+    }
+
+    if (action.action === 'swarm_recommendation') {
+      const payload = action.payload as SwarmRecommendationPayload;
+      if (!action.organizationId || !payload.leadId || !payload.synthesis) {
+        return { sent: false, reason: 'unsupported_action' };
+      }
+      await container
+        .resolve<NoteUseCases>('NoteUseCases')
+        .createNote(action.organizationId, 'lead', payload.leadId, {
+          author: 'Enxame de IA da Birth Hub 360',
+          content: [
+            'Recomendação autônoma aprovada',
+            payload.triggerDetail ? `Gatilho: ${payload.triggerDetail}` : null,
+            payload.synthesis,
+          ]
+            .filter(Boolean)
+            .join('\n\n'),
+        });
+      return { sent: true };
+    }
+
+    if (action.action === 'create_follow_up') {
+      const payload = action.payload as CreateFollowUpPayload;
+      if (!action.organizationId || !payload.leadId || !payload.date) {
+        return { sent: false, reason: 'unsupported_action' };
+      }
+
+      // Mesmo princípio do `create_follow_up_task` da ferramenta de IA (`opsTools.ts`): sem
+      // `owner` explícito no payload, o responsável real é o dono do próprio Lead — nunca um
+      // nome de IA fabricado. `activityService.create` já rejeitaria o placeholder via
+      // `assertRealOwner`, mas resolver aqui evita tratar "sem responsável" como falha
+      // genérica (`send_failed`) e dá um motivo específico e acionável.
+      let resolvedOwner = payload.owner?.trim();
+      if (!resolvedOwner) {
+        const lead = await prisma.lead.findFirst({
+          where: { id: payload.leadId, organizationId: action.organizationId },
+          select: { owner: true },
+        });
+        resolvedOwner = lead?.owner?.trim() || undefined;
+        if (!resolvedOwner) {
+          return { sent: false, reason: 'missing_owner' };
+        }
+      }
+
+      await activityService.create(action.organizationId, {
+        leadId: payload.leadId,
+        date: payload.date,
+        type: payload.type || 'Follow-up',
+        status: 'Pendente',
+        owner: resolvedOwner,
+        observations: payload.observations ?? null,
+      });
+      return { sent: true };
+    }
+
+    if (action.action === 'send_whatsapp_reply') {
+      // Negociador de IA em segundo plano (item 3): réplica real ao lead, sempre a partir de uma
+      // ação já aprovada por um humano nesta versão — ver o comentário de riskLevel em
+      // swarmScheduler.service.ts::maybeProposeNegotiatorReply sobre por que não há caminho de
+      // autoexecução para este canal ainda.
+      const payload = action.payload as SendWhatsAppReplyPayload;
+      if (!action.organizationId || !payload.to || !payload.body) {
+        return { sent: false, reason: 'unsupported_action' };
+      }
+      const whatsapp = container.resolve<WhatsAppSenderPort>('WhatsAppSenderPort');
+      await whatsapp.sendWhatsAppMessage(
+        action.organizationId,
+        payload.to,
+        payload.body,
+        undefined,
+        {
+          leadId: payload.leadId ?? null,
+        },
+      );
+      return { sent: true };
+    }
+
+    if (action.action === 'notify_team') {
+      // GOV-13: contraparte de execução do `notify_team` proposto pelo OpsAgent
+      // (`agents/opsPendingActions.tool.ts`) — antes desta correção o Ops chamava
+      // `notificationService.create` direto do tool-calling, sem aprovação humana no meio.
+      const payload = action.payload as NotifyTeamPayload;
+      if (!action.organizationId || !payload.title) {
+        return { sent: false, reason: 'unsupported_action' };
+      }
+      const notification = await notificationService.create({
+        organizationId: action.organizationId,
+        title: payload.title,
+        body: payload.body ?? null,
+        kind: payload.kind ?? 'Info',
+        entity: payload.leadId ? 'Lead' : null,
+        entityId: payload.leadId ?? null,
+      });
+      if (!notification) {
+        return { sent: false, reason: 'send_failed' };
+      }
+      return { sent: true };
+    }
+
+    if (action.action === 'send_whatsapp') {
+      const payload = action.payload as {
+        leadId?: string | null;
+        recipient?: string;
+        to?: string;
+        message?: string;
+        body?: string;
+      };
+      const to = payload.recipient || payload.to;
+      const text = payload.message || payload.body;
+      if (!action.organizationId || !to || !text) {
+        return { sent: false, reason: 'unsupported_action' };
+      }
+      const whatsapp = container.resolve<WhatsAppSenderPort>('WhatsAppSenderPort');
+      await whatsapp.sendWhatsAppMessage(action.organizationId, to, text, undefined, {
+        leadId: payload.leadId ?? null,
+      });
+      return { sent: true };
+    }
+
+    if (action.action === 'send_sms') {
+      const payload = action.payload as {
+        leadId?: string | null;
+        recipient?: string;
+        message?: string;
+      };
+      if (!action.organizationId || !payload.recipient || !payload.message) {
+        return { sent: false, reason: 'unsupported_action' };
+      }
+      // Repositório valida que action.organizationId == tenant do requestContext (sem bypassRls)
+      // e decifra o webhookUrl (secret no catálogo) só para este fetch.
+      // Ilegível ≠ não configurado: falha fechada com motivo próprio (sem fetch).
+      const sms = await integrationSettingsRepository.lookup(action.organizationId, 'sms');
+      if (sms.state === 'unreadable') {
+        return { sent: false, reason: 'credentials_unreadable' };
+      }
+      const webhookUrl = sms.state === 'configured' ? (sms.values.webhookUrl?.trim() ?? '') : '';
+      if (!webhookUrl) {
+        return { sent: false, reason: 'not_configured' };
+      }
+      // safeFetch valida e fixa a conexão nos endereços já resolvidos (sem DNS rebinding nem
+      // redirect para host interno — ver src/shared/security/urlGuard.ts).
+      const { assertSafeExternalUrl, safeFetch } = await import(
+        '../../../shared/security/urlGuard.js'
+      );
+      await assertSafeExternalUrl(webhookUrl);
+      const res = await safeFetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: payload.recipient,
+          text: payload.message,
+          leadId: payload.leadId ?? null,
+        }),
+        signal: AbortSignal.timeout(10000),
+      });
+      return res.ok ? { sent: true } : { sent: false, reason: 'send_failed' };
+    }
+
+    if (action.action === 'start_cadence') {
+      const payload = action.payload as {
+        leadId?: string;
+        cadenceType?: string;
+        channels?: string[];
+      };
+      if (!action.organizationId || !payload.leadId) {
+        return { sent: false, reason: 'unsupported_action' };
+      }
+      await prisma.lead.updateMany({
+        where: { id: payload.leadId, organizationId: action.organizationId },
+        data: { status: 'Cadencia_Iniciada' },
+      });
+      await prisma.note.create({
+        data: {
+          leadId: payload.leadId,
+          content: `Cadência ${payload.cadenceType || 'outbound'} iniciada após aprovação humana. Canais: ${(payload.channels || ['email', 'whatsapp']).join(', ')}.`,
+          author: 'Enxame de IA da Birth Hub 360',
+        },
+      });
+      return { sent: true };
+    }
+
+    return { sent: false, reason: 'unsupported_action' };
+  } catch (error: any) {
+    if (error instanceof MailerNotConfiguredError) {
+      return { sent: false, reason: 'not_configured' };
+    }
+    logger.error(
+      { err: error, actionId: action.id, action: action.action },
+      'Falha ao executar AIPendingAction.',
+    );
+    return { sent: false, reason: 'send_failed' };
+  }
+}
+
+/** Executa a ação e persiste tentativas, instante, sucesso e erro na própria linha do ledger. */
+export async function executeAndRecord(action: ExecutableAction): Promise<ExecutionResult> {
+  const result = await executeAction(action);
+
+  const attemptData = {
+    attempts: { increment: 1 },
+    lastAttemptAt: new Date(),
+  };
+  await prisma.aIPendingAction.update({
+    where: { id: action.id },
+    data: result.sent
+      ? {
+          ...attemptData,
+          executed: true,
+          executedAt: new Date(),
+          executionError: null,
+        }
+      : {
+          ...attemptData,
+          executionError:
+            result.reason === 'send_failed'
+              ? 'Falha ao executar a ação autônoma.'
+              : result.reason === 'unsupported_action'
+                ? 'Tipo de ação ou payload ainda não suportado pelo executor.'
+                : result.reason === 'missing_owner'
+                  ? 'Lead sem responsável real definido no CRM — informe o responsável explicitamente para executar esta ação.'
+                  : result.reason === 'credentials_unreadable'
+                    ? 'Credenciais da integração ilegíveis (falha de decifra) — reconfigure a integração no Hub Universal.'
+                    : null,
+        },
+  });
+
+  return result;
+}
+
+/**
+ * HITL — Acopla feedback da decisão humana (aprovação ou rejeição) ao LearningAgent e registra no AuditLog.
+ * Permite ao sistema fechar o closed-loop de inteligência com dados reais auditáveis da interação humana.
+ */
+export async function recordHumanDecisionFeedback(params: {
+  organizationId: string;
+  actorId: string;
+  actionId: string;
+  decision: 'APPROVE' | 'REJECT';
+  actionType?: string;
+  rationale?: string;
+  leadId?: string | null;
+}): Promise<void> {
+  const { organizationId, actorId, actionId, decision, actionType, rationale, leadId } = params;
+  try {
+    await prisma.auditLog.create({
+      data: {
+        tenantId: organizationId,
+        actorId,
+        action:
+          decision === 'APPROVE' ? 'AI_PENDING_ACTION_APPROVED' : 'AI_PENDING_ACTION_REJECTED',
+        entity: 'AIPendingAction',
+        entityId: actionId,
+        details: JSON.stringify({
+          actionType,
+          leadId: leadId ?? null,
+          decision,
+          rationale: rationale ?? null,
+          timestamp: new Date().toISOString(),
+        }),
+      },
+    });
+
+    if (actorId && organizationId) {
+      import('../agents/learning.agent.js')
+        .then(({ LearningAgent }) => {
+          const agent = new LearningAgent();
+          return agent.reflectAndLearn(organizationId, actorId);
+        })
+        .catch((err) => {
+          logger.warn(
+            { err, actorId, organizationId },
+            'LearningAgent reflection background call error',
+          );
+        });
+    }
+  } catch (error) {
+    logger.error(
+      { err: error, actionId, actorId },
+      'Falha ao registrar feedback de decisão humana de IA',
+    );
+  }
+}

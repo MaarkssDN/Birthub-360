@@ -1,0 +1,486 @@
+@import "../../identidade-visual/birthhub360/tokens/birthhub360.css";
+@import "../../identidade-visual/birthhub360/tokens/characters.css";
+
+/* Compatibility adapters: existing platform utilities consume the official tokens.
+   Import after globals.css; never redefine the canonical palette here. */
+:root,
+html.light,
+html.dark,
+[data-theme] {
+  --bg: var(--color-background);
+  --surface: var(--color-surface);
+  --surface-2: var(--color-surface-elevated);
+  --surface-subtle: var(--color-surface-elevated);
+  --surface-elevated: var(--color-surface-elevated);
+  --surface-interactive: var(--color-surface-hover);
+  --ink: var(--color-text-primary);
+  --ink-2: var(--color-text-secondary);
+  --line: var(--color-border-subtle);
+  --line-strong: var(--color-border-strong);
+  --border-input: color-mix(in srgb, var(--color-text-primary) 50%, var(--color-surface));
+  --brand: var(--color-interactive-primary);
+  --brand-2: var(--color-brand-secondary);
+  --brand-text: var(--color-heading-cyan);
+  --on-brand: var(--palette-neon-black);
+  --focus-ring: var(--color-focus);
+  --iris: var(--color-heading-iris);
+  --red-violet: var(--color-heading-iris);
+  --red-violet-active: var(--color-heading-iris);
+  --orbit-blue: var(--color-heading-blue);
+  --gold: var(--color-heading-gold);
+  --pink: var(--color-heading-pink);
+  --red: var(--color-heading-danger);
+  --warn: var(--color-warning);
+  --ok: var(--color-success);
+  --info: var(--palette-info);
+  --critical: var(--color-heading-danger);
+  --accent-violet: var(--color-heading-iris);
+  --accent-cyan: var(--color-heading-cyan);
+  --pulse: var(--color-heading-pink);
+  /* Pilhas canônicas self-hosted (Sora display / Inter interface / IBM Plex Mono
+     dados) — famílias remotas (Plus Jakarta Sans/Nunito/Outfit) removidas em
+     globals.css; ver TAREFA-SANEAMENTO-017. */
+  --font-brand-sans: var(--font-interface);
+  --font-brand-display: var(--font-heading);
+  --font-brand-mono: var(--font-data);
+  --shadow-card-value: var(--shadow-card);
+  --shadow-card-hover-value: var(--shadow-elevated);
+  --radius-nav-item-value: var(--radius-control);
+  --neon-blue: var(--color-heading-cyan);
+  --neon-pink: var(--color-heading-pink);
+  --neon-gold: var(--color-heading-gold);
+  --neon-white: var(--color-text-primary);
+  --neon-text: var(--color-text-secondary);
+  --neon-card-bg: var(--color-surface);
+  --neon-card-border: var(--color-border-subtle);
+  --coolors-yellow: var(--color-heading-gold);
+  --coolors-orange: var(--color-heading-gold);
+  --coolors-pink: var(--color-heading-pink);
+  --coolors-purple: var(--color-heading-iris);
+  --coolors-blue: var(--color-heading-blue);
+}
+html.dark,
+[data-theme="dark"] {
+  --on-brand: var(--palette-neon-black);
+}
+
+html.light,
+:root.light,
+[data-theme="light"],
+:root[data-theme="light"] {
+  --brand: #0369a1;
+  --color-brand: #0369a1;
+  --color-brand-primary: #0369a1;
+  --color-interactive-primary: #0369a1;
+  --color-interactive-hover: #075985;
+  --color-brand-active: #075985;
+  --on-brand: #f8fafc;
+  --color-on-brand: #f8fafc;
+  --color-heading-gold: #92400e;
+  --color-heading-cyan: #0369a1;
+  --color-text-secondary: #475569;
+  --palette-muted: #475569;
+  --ink-2: #475569;
+}
+
+[data-theme="light"] .text-brand,
+html.light .text-brand {
+  color: #0369a1;
+}
+
+[data-theme="light"] .text-ink-2,
+html.light .text-ink-2 {
+  color: #475569;
+}
+
+[data-theme="light"] .vancouver-gradient-text,
+html.light .vancouver-gradient-text,
+[data-theme="light"] .gradient-text,
+html.light .gradient-text {
+  color: #b45309;
+}
+
+[data-theme="light"] .vancouver-btn-outline,
+html.light .vancouver-btn-outline {
+  color: #0369a1;
+  border-color: #0369a1;
+}
+
+/* Utility compatibility without changing the official focus shorthand. */
+.text-brand-ink {
+  color: var(--color-heading-cyan);
+}
+.text-gold {
+  color: var(--color-heading-gold);
+}
+.text-pink {
+  color: var(--color-heading-pink);
+}
+.text-iris-active {
+  color: var(--color-heading-iris);
+}
+body {
+  font-feature-settings: var(--font-features-rounded);
+  letter-spacing: var(--tracking-rounded);
+}
+.bh-landing-card {
+  --card-accent: var(--page-accent, var(--color-heading-cyan));
+  background: var(--color-surface);
+  border: 1px solid var(--card-accent);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+.bh-landing-card:hover {
+  border-color: var(--card-accent);
+  box-shadow: var(--shadow-elevated);
+}
+.bh-landing-card :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--card-accent);
+}
+.bh-platform-card:not(.bh-landing-card) {
+  --card-accent: var(--title-color-default, var(--color-heading-cyan));
+  background: var(--color-surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    var(--shadow-card);
+  color: var(--ink);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.bh-platform-card:not(.bh-landing-card):hover {
+  border-color: var(--line-strong);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    var(--shadow-elevated);
+}
+/* Domain accent is supplied by the application shell; body text stays neutral. */
+[data-page-accent] :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--ink);
+  text-shadow: none;
+}
+.bh-platform-card:not(.bh-landing-card) :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--ink);
+  text-shadow: none;
+}
+.bh-platform-card:not(.bh-landing-card)[data-accent] {
+  box-shadow:
+    inset 0 1px 0 var(--card-accent),
+    var(--shadow-card);
+}
+.bh-platform-card:not(.bh-landing-card)[data-accent]:hover {
+  box-shadow:
+    inset 0 1px 0 var(--card-accent),
+    var(--shadow-elevated);
+}
+.bh-platform-card[data-accent="gold"] {
+  --card-accent: var(--color-heading-gold);
+}
+.bh-platform-card[data-accent="pink"] {
+  --card-accent: var(--color-heading-pink);
+}
+.bh-platform-card[data-accent="iris"] {
+  --card-accent: var(--color-heading-iris);
+}
+.bh-platform-card[data-accent="success"] {
+  --card-accent: var(--color-heading-success);
+}
+.bh-platform-card[data-accent="danger"] {
+  --card-accent: var(--color-heading-danger);
+}
+.bh-platform-card[data-accent="blue"] {
+  --card-accent: var(--color-heading-blue);
+}
+.bh-platform-card[data-accent="neutral"] {
+  --card-accent: var(--color-heading-blue);
+}
+.bh-official-control {
+  font-family: var(--font-interface);
+}
+.bh-official-control:focus-visible {
+  outline: var(--color-focus-ring);
+  outline-offset: var(--focus-offset);
+  box-shadow: none;
+}
+.bh-official-control[aria-invalid="true"] {
+  border-color: var(--color-danger);
+}
+.bh-official-control:-webkit-autofill {
+  -webkit-text-fill-color: var(--color-text-primary);
+  box-shadow: 0 0 0 1000px var(--color-surface) inset;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bh-platform-card,
+  .bh-official-control {
+    transition: none;
+    animation: none;
+    transform: none;
+  }
+}
+/* Ring utilities expect a color, whereas the canonical token is an outline. */
+[class*="ring-focus-ring"],
+[class*="ring-ring"] {
+  --tw-ring-color: var(--color-focus);
+}
+html.dark,
+[data-theme="dark"] {
+  --ok-active: var(--color-heading-success);
+  --info-active: var(--color-heading-blue);
+  --critical-active: var(--color-heading-danger);
+  --warn-active: var(--color-heading-gold);
+  --success-active: var(--color-heading-success);
+  --warning-active: var(--color-heading-gold);
+  --danger-active: var(--color-heading-danger);
+}
+
+.bh-platform-card .bh-label {
+  color: var(--card-accent);
+}
+.bh-platform-card:not(.bh-landing-card) .bh-label {
+  color: var(--ink-2);
+}
+:root,
+html.light,
+html.dark,
+[data-theme] {
+  --color-white: var(--palette-neon-white);
+  --color-snow: var(--palette-neon-white);
+  --color-gold: var(--color-heading-gold);
+  --color-neon-white: var(--color-text-primary);
+  --color-neon-text: var(--color-text-secondary);
+  --color-neon-blue: var(--color-heading-cyan);
+  --color-neon-pink: var(--color-heading-pink);
+  --color-neon-gold: var(--color-heading-gold);
+  --color-red-violet: var(--color-heading-iris);
+  --color-iris-active: var(--color-heading-iris);
+  --color-brand-ink: var(--color-heading-cyan);
+  --color-brand-active: var(--color-interactive-hover);
+  --radius-card-lg: var(--radius-card);
+  --glow-brand: var(--glow-cyan);
+  --glow-iris: var(--glow-pink);
+  --grad-titles: var(--grad-brand);
+}
+
+/* Tema claro: neon e sky-600 em texto ficam abaixo de 4.5:1 no fundo da app.
+   O tema escuro mantém o neon. !important ganha do utility do Tailwind.
+   Ordenação em especificidade crescente: [data-theme] (0,2,0) -> html.light (0,2,1) -> html:not(.dark) (0,2,1). */
+[data-theme="light"] .text-\[\#00D4FF\],
+[data-theme="light"] .text-\[\#00d4ff\],
+[data-theme="light"] .text-\[\#0284c7\],
+[data-theme="light"] .text-\[\#0284C7\],
+html.light .text-\[\#00D4FF\],
+html.light .text-\[\#00d4ff\],
+html.light .text-\[\#0284c7\],
+html.light .text-\[\#0284C7\],
+html:not(.dark) .text-\[\#00D4FF\],
+html:not(.dark) .text-\[\#00d4ff\],
+html:not(.dark) .text-\[\#0284c7\],
+html:not(.dark) .text-\[\#0284C7\] {
+  color: #0369a1;
+}
+[data-theme="light"] .text-\[\#FF2D9B\],
+[data-theme="light"] .text-\[\#ff2d9b\],
+html.light .text-\[\#FF2D9B\],
+html.light .text-\[\#ff2d9b\],
+html:not(.dark) .text-\[\#FF2D9B\],
+html:not(.dark) .text-\[\#ff2d9b\] {
+  color: #be185d;
+}
+[data-theme="light"] .text-\[\#F59E0B\],
+[data-theme="light"] .text-\[\#f59e0b\],
+[data-theme="light"] .text-\[\#b45309\],
+html.light .text-\[\#F59E0B\],
+html.light .text-\[\#f59e0b\],
+html.light .text-\[\#b45309\],
+html:not(.dark) .text-\[\#F59E0B\],
+html:not(.dark) .text-\[\#f59e0b\],
+html:not(.dark) .text-\[\#b45309\] {
+  color: #92400e;
+}
+[data-theme="light"] .text-\[\#8B7DFF\],
+[data-theme="light"] .text-\[\#8b7dff\],
+html.light .text-\[\#8B7DFF\],
+html.light .text-\[\#8b7dff\],
+html:not(.dark) .text-\[\#8B7DFF\],
+html:not(.dark) .text-\[\#8b7dff\] {
+  color: #6d28d9;
+}
+[data-theme="light"] .text-\[\#EF4444\],
+[data-theme="light"] .text-\[\#ef4444\],
+html.light .text-\[\#EF4444\],
+html.light .text-\[\#ef4444\],
+html:not(.dark) .text-\[\#EF4444\],
+html:not(.dark) .text-\[\#ef4444\] {
+  color: #b91c1c;
+}
+/* Existing neutral utility surfaces follow theme inside the product shell. */
+[data-page-accent] .bg-white {
+  background-color: var(--color-surface);
+}
+
+.bh-platform-card[data-accent="brand"] {
+  --card-accent: var(--color-heading-cyan);
+}
+
+.bh-platform-card[data-accent="cyan"] {
+  --card-accent: var(--color-heading-cyan);
+}
+
+/* ==========================================================================
+   Catálogo Oficial de Componentes — Utilitários de Superfície e Efeitos
+   ========================================================================== */
+
+/* Glassmorphism Oficial 360° (Catálogo #29) */
+.bh-glass {
+  background: color-mix(in srgb, var(--color-surface) 75%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--color-border);
+}
+
+/* Bordas com Efeito Neon Glow (Catálogo #29) */
+.border-glow-brand,
+.border-glow-cyan {
+  border-color: var(--color-heading-cyan);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.35);
+}
+.border-glow-pink {
+  border-color: var(--color-heading-pink);
+  box-shadow: 0 0 20px rgba(255, 45, 155, 0.35);
+}
+.border-glow-gold {
+  border-color: var(--color-heading-gold);
+  box-shadow: 0 0 20px rgba(255, 193, 7, 0.35);
+}
+
+/* Glow Shadows */
+.shadow-glow-blue {
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.45);
+}
+.shadow-glow-pink {
+  box-shadow: 0 0 20px rgba(255, 45, 155, 0.45);
+}
+.shadow-glow-gold {
+  box-shadow: 0 0 20px rgba(255, 193, 7, 0.45);
+}
+
+/* Gradientes Oficiais em Texto e Fundo */
+.text-gradient-brand {
+  background: var(--grad-brand);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.text-gradient-cta {
+  background: var(--grad-cta);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Anel de Órbita Cônico 360° (Catálogo #30) */
+.bg-orbit-conic {
+  background: var(--grad-orbit);
+}
+
+/* Badges Coolors Oficiais (Catálogo #23) */
+.badge-coolors-yellow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 193, 7, 0.15);
+  color: var(--color-heading-gold);
+  border: 1px solid rgba(255, 193, 7, 0.35);
+}
+.badge-coolors-blue {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(0, 212, 255, 0.15);
+  color: var(--color-heading-cyan);
+  border: 1px solid rgba(0, 212, 255, 0.35);
+}
+.badge-coolors-pink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 45, 155, 0.15);
+  color: var(--color-heading-pink);
+  border: 1px solid rgba(255, 45, 155, 0.35);
+}
+.badge-coolors-iris {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(139, 125, 255, 0.15);
+  color: var(--color-heading-iris);
+  border: 1px solid rgba(139, 125, 255, 0.35);
+}
+.badge-coolors-green {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--color-heading-success);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+}
+
+/* Botões do Catálogo Oficial (#5 e #6) */
+.btn-neon-cta {
+  background: var(--grad-cta);
+  color: #0d0d0d;
+  font-family: var(--font-display);
+  font-weight: 800;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 4px 18px rgba(0, 212, 255, 0.4);
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.btn-neon-cta:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.btn-vancouver-outline {
+  border: 1px solid var(--color-heading-cyan);
+  color: var(--color-heading-cyan);
+  background: transparent;
+  border-radius: var(--radius-pill);
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.btn-vancouver-outline:hover {
+  background: rgba(0, 212, 255, 0.12);
+  box-shadow: 0 0 16px rgba(0, 212, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+/* Override títulos e subtítulos dentro de cards para nunca usar branco ou preto */
+.bh-platform-card :is(h1, h2, h3, h4, h5, h6, [class*="title" i]) {
+  color: var(--title-color-default, var(--color-heading-cyan));
+  font-family: var(--font-brand-display);
+}
+.bh-platform-card :is(h1, h2, h3, h4, h5, h6, [class*="title" i]) + p,
+.bh-platform-card [class*="subtitle" i] {
+  color: var(--subtitle-color-default, #70d6ff);
+}
+html.light .bh-platform-card [class*="subtitle" i],
+html.light .bh-platform-card :is(h1, h2, h3, h4, h5, h6, [class*="title" i]) + p {
+  color: var(--subtitle-color-default);
+}

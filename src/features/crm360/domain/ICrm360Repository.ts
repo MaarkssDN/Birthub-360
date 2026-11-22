@@ -1,0 +1,104 @@
+import type {
+  CrmDealItemInput,
+  CrmDocumentInput,
+  CrmDocumentSignatureRequestInput,
+  CrmDocumentUpdateInput,
+  CrmProductInput,
+} from '../crm360.schema.js';
+import type {
+  CrmCommercialDocument,
+  CrmCommercialDocumentVersionDTO,
+  CrmDealItem,
+  CrmOverviewData,
+  CrmPipeline,
+  CrmProduct,
+  CrmPublicDocumentView,
+} from '../crm360.types.js';
+
+export interface ICrm360Repository {
+  getOverviewData(organizationId: string): Promise<CrmOverviewData>;
+  getPipelines(organizationId: string, entity?: string): Promise<CrmPipeline[]>;
+  getDeals(organizationId: string): Promise<unknown[]>;
+  getBoardLeads(
+    organizationId: string,
+    funnel?: string,
+    pipelineId?: string,
+  ): Promise<{ stages: unknown[]; leads: unknown[] }>;
+  /** `actorUserId` obrigatório quando o destino é uma etapa "ganho" (CYC-007 — ver `dealClosureGate.ts`). */
+  updateLeadStage(
+    organizationId: string,
+    leadId: string,
+    stageId: string,
+    expectedCloseDate?: Date,
+    actorUserId?: string,
+  ): Promise<unknown>;
+  convertLead(organizationId: string, leadId: string): Promise<unknown>;
+
+  // Produtos & Itens de Negócio
+  listProducts(organizationId: string, search?: string): Promise<CrmProduct[]>;
+  createProduct(organizationId: string, data: CrmProductInput): Promise<CrmProduct>;
+  getDealItems(organizationId: string, leadId: string): Promise<CrmDealItem[]>;
+  /**
+   * `actorUserId` alimenta a trava de alçada de desconto (RN-CRM-02) — o item é avaliado
+   * isoladamente dentro da mesma transação que o grava; acima da alçada do papel, 403.
+   */
+  addDealItem(
+    organizationId: string,
+    leadId: string,
+    input: CrmDealItemInput,
+    actorUserId?: string,
+  ): Promise<CrmDealItem>;
+  removeDealItem(organizationId: string, leadId: string, itemId: string): Promise<void>;
+
+  // Documentos Comerciais (CYC-005, onda 25: versionamento + rastreamento de visualização)
+  listDocuments(organizationId: string, leadId?: string): Promise<CrmCommercialDocument[]>;
+  createDocument(
+    organizationId: string,
+    input: CrmDocumentInput,
+    actorUserId?: string,
+  ): Promise<CrmCommercialDocument>;
+  /** Cria uma nova `CrmCommercialDocumentVersion` (nunca sobrescreve a anterior) e atualiza os campos de conteúdo do documento. */
+  updateDocumentContent(
+    organizationId: string,
+    documentId: string,
+    input: CrmDocumentUpdateInput,
+    actorUserId?: string,
+  ): Promise<CrmCommercialDocument>;
+  listDocumentVersions(
+    organizationId: string,
+    documentId: string,
+  ): Promise<CrmCommercialDocumentVersionDTO[]>;
+  /**
+   * Grava `sentAt` na primeira transição para `Enviado`, além de aplicar o novo status.
+   * `actorUserId` obrigatório quando o destino é `Pago` E o documento tem um `leadId` associado
+   * (ACH-17-08 — mesmo gate de fechamento determinístico de `updateLeadStage`, ver
+   * `dealClosureGate.ts`); sem lead associado não há negócio a fechar, então o ator não é exigido.
+   */
+  updateDocumentStatus(
+    organizationId: string,
+    documentId: string,
+    status: string,
+    actorUserId?: string,
+  ): Promise<CrmCommercialDocument>;
+  /**
+   * BILLING-003 (onda 5) — único caminho que marca uma Fatura como Pago; confirma AO VIVO contra
+   * a API do Stripe antes de gravar. Ver `PrismaCrm360Repository.reconcileFaturaStripePayment`.
+   */
+  reconcileFaturaStripePayment(
+    organizationId: string,
+    documentId: string,
+    connectionId: string,
+    paymentIntentId: string,
+    actorUserId?: string,
+  ): Promise<CrmCommercialDocument>;
+  /** Rota pública (sem tenant conhecido a priori) — resolve o documento pelo `publicToken` opaco e registra a visualização. `null` quando o token não existe ou o documento foi excluído. */
+  recordDocumentView(publicToken: string): Promise<CrmPublicDocumentView | null>;
+
+  /** CYC-006 (onda 28): solicita assinatura eletrônica real (provedor `'govbr'`, stub de transporte — ver `GovBrSignatureProviderPort.ts`). */
+  requestDocumentSignature(
+    organizationId: string,
+    documentId: string,
+    actorUserId: string | undefined,
+    input: CrmDocumentSignatureRequestInput,
+  ): Promise<{ id: string; providerRequestId: string }>;
+}

@@ -1,0 +1,24 @@
+- De: Agente (AI)
+- Para: Coordenador (00) e Desenvolvedor
+- Onda: 12
+- Status: resolvido
+- Prioridade: normal
+
+## Problema
+O usuario solicitou a implementacao de novos CRMs (HubSpot, Pipedrive, RD Station, Monday.com) na plataforma, que ate o momento possui integracao e foco exclusivo no Bitrix24.
+
+## Arquivo(s) envolvido(s)
+src/features/integrations/* (criacao de novos diretorios para hubspot, pipedrive, rdstation, monday)
+
+## Alteracao necessaria
+Implementar conectores, servicos de autenticacao (OAuth/API Keys), mapeamento de funil e writeback para HubSpot, Pipedrive, RD Station e Monday.com. 
+Isso vai exigir expandir o schema do Prisma (prisma/schema.prisma) para suportar credenciais multiprovedor.
+
+## Teste esperado
+Conseguir autenticar, ler Leads e fazer writeback de estagios do funil nesses 4 novos CRMs atraves da interface da Birth Hub 360.
+
+## Contexto adicional
+Esta solicitacao e categorizada como *Feature Nova* e, pela regra vigente no AGENTS.md (Freeze de escopo Sprint 00 -> Sprint 13), esta bloqueada para execucao direta pelo Agente sem aval do Coordenador. Agendado para revisao e execucao pos-Sprint 13, ou ate liberacao explícita para quebrar o Freeze.
+
+## Resolução (Coordenador 00)
+Conforme regra 23 de AGENTS.md (Freeze de escopo), novas funcionalidades (novos CRMs) estão estritamente bloqueadas. O escopo é movido para o backlog pós-Sprint 13. Nenhuma ação será tomada nesta onda.

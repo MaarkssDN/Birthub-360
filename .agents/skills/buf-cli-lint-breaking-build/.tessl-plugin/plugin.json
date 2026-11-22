@@ -1,0 +1,9 @@
+{
+  "name": "testland/buf-cli-lint-breaking-build",
+  "description": "Use when .proto files need a CI gate or a buf failure needs debugging: buf build, buf lint (STANDARD rules), buf breaking against a git or BSR baseline, buf format, and choosing the rule category per consumer. Explains which changes break wire or generated code and why.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.15"
+}

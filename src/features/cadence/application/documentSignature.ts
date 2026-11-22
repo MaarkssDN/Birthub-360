@@ -1,0 +1,157 @@
+import { randomUUID } from 'node:crypto';
+import { type DealClosureEvent, evaluateDealClosure } from '../../../shared/domain/dealClosure.js';
+import {
+  buildSignatureRequestDraft,
+  isValidSignatureTransition,
+  type SignatureRequestDraft,
+  type SignatureStatus,
+} from '../../../shared/domain/signature.js';
+
+/** Envia a solicitação ao provedor real (ou stub) e devolve o id que ele atribuiu — usado depois para casar o webhook de status com a solicitação certa. */
+export interface SignatureProviderPort {
+  sendForSignature(draft: SignatureRequestDraft): Promise<{ providerRequestId: string }>;
+}
+
+export interface SignatureRequestRepositoryPort {
+  create(input: SignatureRequestDraft): Promise<{ id: string }>;
+  markSent(id: string, providerRequestId: string): Promise<void>;
+  findById(
+    id: string,
+    organizationId: string,
+  ): Promise<{
+    id: string;
+    organizationId: string;
+    documentId: string;
+    status: SignatureStatus;
+    providerRequestId?: string | null;
+  } | null>;
+  findByProviderRequestId(
+    provider: string,
+    providerRequestId: string,
+  ): Promise<{
+    id: string;
+    organizationId: string;
+    status: SignatureStatus;
+    /** Lead associado ao documento assinado (via `CrmCommercialDocument.leadId`), ou `null` quando o documento não está ligado a nenhum lead — nesse caso não há negócio para fechar. */
+    leadId: string | null;
+  } | null>;
+  /** `organizationId` vem do registro já resolvido por `findByProviderRequestId` — nunca de um valor solto no payload do webhook (RLS escopado pelo tenant real). */
+  updateStatus(input: {
+    id: string;
+    organizationId: string;
+    status: SignatureStatus;
+    evidenceRef: string | null;
+    rawWebhookPayload: unknown;
+  }): Promise<void>;
+  /**
+   * ACH-17-02 (onda-43, handoff 13→17): leitura por documento, escopada normalmente pelo tenant
+   * (RLS normal, sem bypass — chamador já autenticado, diferente de `findByProviderRequestId`, que
+   * roda antes de qualquer tenant ser conhecido). Um documento pode ter mais de uma solicitação ao
+   * longo do tempo (reenvio); devolve a mais recente por `requestedAt`. `null` quando o documento
+   * nunca teve uma solicitação de assinatura — nunca um erro.
+   */
+  findByDocumentId(
+    organizationId: string,
+    documentId: string,
+  ): Promise<{
+    id: string;
+    status: SignatureStatus;
+    provider: string;
+    signerEmail: string;
+    requestedAt: Date;
+    respondedAt: Date | null;
+  } | null>;
+  /**
+   * ACH-17-01: persiste um `DealClosureEvent` já aceito por `evaluateDealClosure` e move
+   * `Lead.status` para "Negócios Ganhos" — o mesmo efeito de `ensureManualDealClosureAllowed`
+   * (confirmação manual no Kanban), só que disparado por este webhook. Só é chamado depois que o
+   * evento já passou pelo portão do domínio (`isDeterministicCloseEvent`), nunca antes.
+   */
+  recordSignatureDealClosure(event: DealClosureEvent): Promise<void>;
+}
+
+export interface RequestDocumentSignatureInput {
+  organizationId: string;
+  documentId: string;
+  provider: string;
+  signerEmail: string;
+  signerName?: string | null;
+  requestedBy?: string | null;
+}
+
+/** Cria a solicitação (status `created`), envia ao provedor (real ou stub) e grava o resultado (status `sent` + `providerRequestId`). */
+export async function requestDocumentSignature(
+  ports: { repository: SignatureRequestRepositoryPort; provider: SignatureProviderPort },
+  input: RequestDocumentSignatureInput,
+): Promise<{ id: string; providerRequestId: string }> {
+  const draft = buildSignatureRequestDraft(input);
+  const created = await ports.repository.create(draft);
+  const { providerRequestId } = await ports.provider.sendForSignature(draft);
+  await ports.repository.markSent(created.id, providerRequestId);
+  return { id: created.id, providerRequestId };
+}
+
+export type ApplySignatureStatusUpdateResult =
+  | { applied: true }
+  | { applied: false; reason: 'not-found' | 'invalid-transition' };
+
+/**
+ * Aplica um evento de status vindo do provedor (webhook). Idempotente/seguro contra reentrega e
+ * entrega fora de ordem: uma transição que `isValidSignatureTransition` rejeita é ignorada sem
+ * lançar — o chamador decide como logar isso, nunca deveria travar o processamento do webhook nem
+ * corromper um estado terminal já aplicado.
+ */
+export async function applySignatureStatusUpdate(
+  ports: { repository: SignatureRequestRepositoryPort },
+  input: {
+    provider: string;
+    providerRequestId: string;
+    nextStatus: SignatureStatus;
+    evidenceRef: string | null;
+    rawWebhookPayload: unknown;
+  },
+): Promise<ApplySignatureStatusUpdateResult> {
+  const existing = await ports.repository.findByProviderRequestId(
+    input.provider,
+    input.providerRequestId,
+  );
+  if (!existing) return { applied: false, reason: 'not-found' };
+
+  if (!isValidSignatureTransition(existing.status, input.nextStatus)) {
+    return { applied: false, reason: 'invalid-transition' };
+  }
+
+  await ports.repository.updateStatus({
+    id: existing.id,
+    organizationId: existing.organizationId,
+    status: input.nextStatus,
+    evidenceRef: input.evidenceRef,
+    rawWebhookPayload: input.rawWebhookPayload,
+  });
+
+  // ACH-17-01: até aqui, `signature_completed` nunca fechava negócio nenhum — só
+  // `manual_crm_confirmation` (arrastar card no Kanban) chamava `evaluateDealClosure`. Documento
+  // sem lead associado (`leadId` nulo) é tratado como "nada a fechar", nunca como erro: um
+  // documento comercial pode existir sem lead vinculado, e isso não deveria derrubar o
+  // processamento do webhook.
+  if (input.nextStatus === 'signed' && existing.leadId) {
+    const result = evaluateDealClosure(
+      {
+        organizationId: existing.organizationId,
+        leadId: existing.leadId,
+        type: 'signature_completed',
+        // Id da própria CrmDocumentSignatureRequest — nunca um resumo/texto gerado.
+        evidenceRef: existing.id,
+        triggeredBy: `webhook:${input.provider}`,
+      },
+      () => randomUUID(),
+      new Date(),
+    );
+
+    if (result.accepted && result.event) {
+      await ports.repository.recordSignatureDealClosure(result.event);
+    }
+  }
+
+  return { applied: true };
+}

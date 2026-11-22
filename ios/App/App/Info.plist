@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CAPACITOR_DEBUG</key>
+	<string>$(CAPACITOR_DEBUG)</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleDisplayName</key>
+        <string>Birth Hub 360</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<!-- Deep link — esquema custom "birthhub360://<destino>", resolvido em SceneDelegate.swift.
+	     Espelha o intent-filter android:scheme="birthhub360" de
+	     android/app/src/main/AndroidManifest.xml — mesmo esquema nas duas plataformas.
+	     Universal Links (https://.../app/<destino>) exigiriam a capability "Associated Domains"
+	     (entitlement) + hospedar /.well-known/apple-app-site-association no domínio de produção —
+	     não implementado nesta onda por exigir edição do project.pbxproj sem Xcode disponível pra
+	     validar, e depender do mesmo handoff de infraestrutura (08/10) já aberto pro
+	     assetlinks.json do Android App Link. O esquema custom abaixo funciona sem essa dependência
+	     externa. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>br.com.birthhub360.prospector.deeplink</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>birthhub360</string>
+			</array>
+		</dict>
+	</array>
+	<!-- Permissões de uso (iOS exige NS*UsageDescription declarada — sem ela, getUserMedia /
+	     MediaRecorder / geolocation encerram o app com SIGKILL, não apenas falham).
+	     Auditoria DEM-20261115-001 (Agente 09): adicionadas porque o WebView roda o mesmo
+	     src/** do app web, que já usa câmera (OCR de prospecção) e microfone (gravação de
+	     áudio de campo). Justificativas espelham as permissões equivalentes do
+	     android/app/src/main/AndroidManifest.xml — manter as duas plataformas em sincronia.
+	     NSLocationWhenInUseUsageDescription NÃO foi declarada: não existe nenhuma chamada a
+	     geolocation/getCurrentPosition/watchPosition em src/ (verificado por grep na
+	     auditoria) — declarar permissão sem uso funcional viola a regra do AGENTS.md do
+	     Agente 09; as permissões de localização do lado Android foram removidas no mesmo
+	     handoff por divergirem dessa regra. -->
+	<key>NSCameraUsageDescription</key>
+	<string>O Birth Hub 360 usa a câmera para capturar documentos e imagens em OCR de prospecção, com pré-visualização ao vivo antes da captura.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>O Birth Hub 360 usa o microfone para gravar reuniões de campo com consentimento prévio dos participantes (LGPD), com sincronização posterior dos áudios.</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+    <false/>
+    <key>UISceneConfigurations</key>
+    <dict>
+      <key>UIWindowSceneSessionRoleApplication</key>
+      <array>
+        <dict>
+            <key>UISceneConfigurationName</key>
+            <string>Default Configuration</string>
+            <key>UISceneDelegateClassName</key>
+            <string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
+            <key>UISceneStoryboardFile</key>
+            <string>Main</string>
+        </dict>
+      </array>
+    </dict>
+	</dict>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>armv7</string>
+	</array>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<true/>
+</dict>
+</plist>

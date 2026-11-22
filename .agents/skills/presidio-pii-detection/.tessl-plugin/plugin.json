@@ -1,0 +1,9 @@
+{
+  "name": "testland/presidio-pii-detection",
+  "description": "Use when existing data (datasets, logs, free text) must be scanned for personal data or redacted: Microsoft Presidio analyzer and anonymizer, built-in recognizers for names, emails, cards, SSNs, IBANs and national IDs, custom pattern recognizers, score thresholds and CI gates.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.7"
+}

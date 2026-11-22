@@ -1,0 +1,187 @@
+import type { Prisma } from '@prisma/client';
+import { toDeterministicCnpj } from '../../../lib/cnpj.js';
+import { env } from '../../../config/env.js';
+import { fromPrismaCompanyStatus, toPrismaCompanyStatus } from '../../../lib/enumMap.js';
+import { prisma } from '../../../lib/prisma.js';
+import { searchCompaniesPage } from '../../../lib/search/index.js';
+import type { CompanyStatus } from '../../../lib/zod.js';
+import type { Company, CompanyRepository } from '../domain/Company.js';
+
+// O Prisma Client devolve a CHAVE do enum (ex.: "Em_analise"), nao o valor mapeado via @map no
+// schema (ex.: "Em análise") — e so aceita a mesma chave em escritas. Ja era tratado para Company
+// aninhada em Lead (PrismaLeadRepository.ts:serializeLead) via toPrismaCompanyStatus/
+// fromPrismaCompanyStatus, mas nunca aqui, no CRUD direto de Company usado pela tela Empresas.
+// Sem isto: POST/PUT com status "Em análise" falha (chave de enum invalida) e GET devolve
+// "Em_analise" cru, que a UI (CompanyList/CompanyForm) nunca reconhece.
+//
+// O retorno de `prisma.company.*` tem `status` tipado pelo Prisma Client como a chave do enum —
+// diferente do domínio `Company['status']` (label acentuado, ver domain/Company.ts). Esta função
+// já resolve essa única divergência de tipo; o `as Company` nos call sites abaixo cobre só os
+// campos extra de relação (`contacts`/`leads` do `include`) que o Prisma devolve e a interface
+// `Company` não declara — não mais o enum (por isso `as Company` direto, não `as unknown as`).
+function serializeCompanyStatus<T extends { status: string }>(
+  company: T,
+): Omit<T, 'status'> & { status: CompanyStatus } {
+  return { ...company, status: fromPrismaCompanyStatus(company.status) };
+}
+
+export class PrismaCompanyRepository implements CompanyRepository {
+  async findAllWithFilters(
+    organizationId: string,
+    query?: string,
+    page: number = 1,
+    limit: number = 50,
+  ): Promise<{ data: Company[]; meta: unknown }> {
+    const where: Prisma.CompanyWhereInput = { organizationId };
+    const skip = (page - 1) * limit;
+
+    if (query) {
+      // Com ENABLE_SEARCH=true, prioriza o Meilisearch (tolerante a erros de digitação e
+      // ranqueado por relevância) sobre o ILIKE simples do Postgres. `null` significa que o
+      // Meilisearch está indisponível/falhou — cai de volta para o filtro OR abaixo. Um array
+      // vazio é uma resposta legítima do Meilisearch (busca funcionou, sem resultados) e deve
+      // ser respeitado, não sobrescrito pelo fallback.
+      const meiliPage = env.ENABLE_SEARCH
+        ? await searchCompaniesPage(organizationId, query, limit, skip)
+        : null;
+      if (meiliPage !== null) {
+        if (meiliPage.ids.length === 0) {
+          return {
+            data: [],
+            meta: {
+              total: meiliPage.total,
+              page,
+              limit,
+              totalPages: Math.ceil(meiliPage.total / limit),
+            },
+          };
+        }
+
+        where.id = { in: meiliPage.ids };
+        // MEL-16 (DEM-20261113-003): a listagem NÃO inclui contacts/leads — o include to-many
+        // baixava TODAS as relations de cada empresa da página (over-fetch quadrático ao
+        // volume de contatos/leads por conta) e nenhum consumidor da lista usa esses campos
+        // (CompanyList/CommandPalette/ProspeccaoInteligenteHub leem só colunas da empresa;
+        // contacts só é usado pelo detalhe, que passa por findById abaixo, que mantém o
+        // include). Tipo `Company` declara contacts?/leads? como opcionais.
+        const rows = await prisma.company.findMany({
+          where,
+          take: limit,
+        });
+        const orderIndex = new Map(meiliPage.ids.map((id, idx) => [id, idx]));
+        const sortedRows = [...rows].sort(
+          (a, b) => (orderIndex.get(a.id) ?? 0) - (orderIndex.get(b.id) ?? 0),
+        );
+
+        return {
+          data: sortedRows.map((c) => serializeCompanyStatus(c)) as Company[],
+          meta: {
+            total: meiliPage.total,
+            page,
+            limit,
+            totalPages: Math.ceil(meiliPage.total / limit),
+          },
+        };
+      }
+
+      // Company.cnpj é gravado normalizado (só dígitos, ver src/lib/cnpj.ts) — comparar contra
+      // `query` cru faria uma busca por "12.345.678/0001-99" nunca bater com o dado salvo.
+      // Extrai os dígitos da busca e só adiciona a condição de cnpj quando sobrar algum (uma
+      // busca sem nenhum dígito, ex. "Acme", não deve virar `contains: ''`, que bateria com
+      // toda empresa independente de ter CNPJ).
+      const cnpjDigits = query.replace(/\D/g, '');
+      where.OR = [
+        { tradeName: { contains: query, mode: 'insensitive' } },
+        { legalName: { contains: query, mode: 'insensitive' } },
+        ...(cnpjDigits ? [{ cnpj: { contains: cnpjDigits } }] : []),
+        { emails: { hasSome: [query] } },
+        { phones: { hasSome: [query] } },
+        { website: { contains: query, mode: 'insensitive' } },
+      ];
+    }
+
+    // biome-ignore lint/plugin/no-prisma-tx-escape: uso legado congelado no baseline (parecer 15 #40 L1); migrar para runInTransaction
+    const [data, total] = await prisma.$transaction([
+      // MEL-16 (DEM-20261113-003): sem `include: { contacts, leads }` — ver comentário no branch
+      // Meilisearch acima. findById mantém o include para a tela de detalhe.
+      prisma.company.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.company.count({ where }),
+    ]);
+
+    return {
+      data: data.map((c) => serializeCompanyStatus(c)) as Company[],
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
+
+  async findById(organizationId: string, id: string): Promise<Company | null> {
+    const company = await prisma.company.findFirst({
+      where: { id, organizationId },
+      include: { contacts: true, leads: true },
+    });
+    return company ? (serializeCompanyStatus(company) as Company) : null;
+  }
+
+  async create(organizationId: string, data: Partial<Company>): Promise<Company> {
+    const normalizedCnpj = data.cnpj ? toDeterministicCnpj(data.cnpj) : null;
+    const finalData = { ...data, cnpj: normalizedCnpj };
+
+    try {
+      const created = await prisma.company.create({
+        data: {
+          ...finalData,
+          organizationId,
+          ...(finalData.status
+            ? { status: toPrismaCompanyStatus(finalData.status as CompanyStatus) }
+            : {}),
+        } as Prisma.CompanyUncheckedCreateInput,
+      });
+      return serializeCompanyStatus(created) as Company;
+    } catch (error: unknown) {
+      const err = error as { code?: string; meta?: { target?: string[] | string } };
+      if (err.code === 'P2002' && err.meta?.target?.includes('cnpj')) {
+        throw new Error('Já existe uma empresa com este CNPJ nesta organização.');
+      }
+      throw error;
+    }
+  }
+
+  async update(organizationId: string, id: string, data: Partial<Company>): Promise<Company> {
+    const existing = await prisma.company.findFirst({ where: { id, organizationId } });
+    if (!existing) throw new Error('Company not found');
+
+    const normalizedCnpj =
+      data.cnpj !== undefined ? (data.cnpj ? toDeterministicCnpj(data.cnpj) : null) : undefined;
+    const finalData = {
+      ...data,
+      ...(normalizedCnpj !== undefined ? { cnpj: normalizedCnpj } : {}),
+    };
+
+    // organizationId também no `where` do update em si (mesmo padrão de PrismaLeadRepository)
+    // — não corrige uma falha explorável hoje (o pré-check acima + RLS real já bloqueiam um
+    // tenant errado), mas deixa a query de escrita autocontida em vez de depender só do
+    // pré-check + RLS como únicas camadas.
+    const updated = await prisma.company.update({
+      where: { id, organizationId },
+      data: {
+        ...finalData,
+        ...(finalData.status
+          ? { status: toPrismaCompanyStatus(finalData.status as CompanyStatus) }
+          : {}),
+      } as Prisma.CompanyUpdateInput,
+    });
+    return serializeCompanyStatus(updated) as Company;
+  }
+
+  async delete(organizationId: string, id: string): Promise<Company> {
+    const existing = await prisma.company.findFirst({ where: { id, organizationId } });
+    if (!existing) throw new Error('Company not found');
+    const deleted = await prisma.company.delete({ where: { id, organizationId } });
+    return serializeCompanyStatus(deleted) as Company;
+  }
+}

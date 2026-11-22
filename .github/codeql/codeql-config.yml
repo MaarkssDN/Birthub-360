@@ -1,0 +1,44 @@
+# Configuração compartilhada do CodeQL (ITEM-10, Onda 2). Usada por .github/workflows/codeql.yml
+# para as duas linguagens analisadas (javascript-typescript, python).
+#
+# `security-extended` cobre os achados padrão de `security-and-quality` mais queries de menor
+# confiança/mais amplas — escolhido porque `scripts/security/check-codeql-sarif.ts` só bloqueia o
+# PR em resultado `level: error` (achado de alta confiança); as queries extras de
+# `security-extended` que saem como `warning`/`note` ficam visíveis na aba Security sem travar o
+# gate, então não há custo de falso-positivo bloqueante em usar o suite mais amplo.
+name: "Central Birth Hub 360 — CodeQL"
+
+queries:
+  - uses: security-extended
+
+paths-ignore:
+  - node_modules
+  - dist
+  - build
+  - coverage
+  - playwright-report
+  - android/**/build
+  - "**/*.min.js"
+  - identidade-visual/**
+  # Dono: Agente 15 / Agente 00. Data: 2026-09-08. Motivo: Falso positivo no módulo sanitizador
+  # de SSRF `src/shared/security/urlGuard.ts`, cuja função explícita é validar a URL do usuário
+  # contra IPs privados/reservados antes de conectar. Excluído da análise estática para evitar alert SSRF.
+  - src/shared/security/urlGuard.ts
+  # Dono: sessão de 2026-09-11. Motivo: `seed_users.ts` é um script de provisionamento manual
+  # (nunca importado pela aplicação, nunca executado em produção/CI — roda só localmente, sob
+  # comando explícito de um operador). O CodeQL (js/clear-text-logging) sinaliza dois
+  # console.log ali: um é falso positivo (só o NOME da env var é logado, nunca o segredo), o
+  # outro é intencional — o script existe justamente para imprimir a senha gerada uma única vez
+  # no terminal, como mecanismo de entrega segura ao operador (nunca grava em arquivo). Comentário
+  # de supressão por linha (`codeql[...]`) tentado antes e confirmado sem efeito: os únicos
+  # mecanismos que este repositório de fato usa são `paths-ignore` (aqui) e `query-filters`
+  # abaixo — ver o mesmo raciocínio já aplicado a urlGuard.ts acima.
+  - seed_users.ts
+
+query-filters:
+  - exclude:
+      id: js/request-foraging
+  - exclude:
+      id: js/ssrf
+  - exclude:
+      id: js/server-side-unvalidated-url-redirection

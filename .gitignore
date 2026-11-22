@@ -1,0 +1,157 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+__pycache__/
+*.py[cod]
+.env*
+!.env.example
+!.env.test.example
+
+skills-lock.json
+
+/src/generated/prisma
+# DEVOPS-003 (Onda 2): config real do Prometheus da OCI, gerada por scripts/deploy-oci.sh a partir
+# de infrastructure/observability/prometheus.oci.yml.tpl — carrega PLATFORM_OPERATOR_TOKEN, nunca
+# versionar.
+infrastructure/observability/prometheus.oci.generated.yml
+playwright-report/
+test-results/
+.venv-opensource/
+reports/
+# Exceção: relatórios versionados do inventário forense. Não cobre saídas geradas em outras pastas reports/.
+!.agents/audits/technical-debt/**/reports/
+!.agents/audits/technical-debt/**/reports/**
+
+audit-forense-*/
+*-summary.json
+
+# Modelos de embeddings baixados em runtime (~400 MB)
+.cache/
+
+# Planilhas de import pontual com PII de terceiros (ex.: scripts/import-*.ts) — nunca versionar.
+Prospect_Vibra.xlsx
+
+# Modelos de idioma do Tesseract (OCR) — baixados sob demanda pelo tesseract.js no primeiro uso.
+*.traineddata
+
+# Dump de persistência local do Redis — nunca deveria ter sido commitado (DEP-006).
+dump.rdb
+
+# Credenciais de sessão do WhatsApp (Baileys) geradas em runtime — nunca devem ir para o
+# controle de versão (DEVOPS-008).
+whatsapp_auth/
+
+# Arquivos CSV/XLSX/JSON gerados pelo serviço real de Extrações Bitrix (BitrixExtractionRun) —
+# contêm dado pessoal real de leads/contatos, nunca devem ir para o controle de versão. Ver
+# BITRIX_EXTRACTION_STORAGE_DIR em src/config/env.ts.
+/data/bitrix-extractions/
+
+# Dumps de banco com dado pessoal real de prospecção — nunca devem ir para o controle de
+# versão (AGENTS.md → "Segurança e higiene", achado backups/prospector-*.dump). Cobre qualquer
+# formato que pg_dump/pg_dumpall pode gerar (scripts/backup.sh produz .sql por padrão — achado da
+# Fase Final 3: só *.dump estava coberto, .sql do próprio script de backup deste repo não estava).
+backups/*.dump
+backups/*.sql
+backups/*.backup
+backups/*.tar
+backups/*.tar.gz
+backups/*.gz
+BACKUP-RESTORE-DRILL-RESULT.json
+# Scripts locais de provisionamento com credenciais de teste
+scripts/provision-admin.ts
+
+# Artefatos de vídeo/imagem gerados sob demanda por script na raiz do repo — a documentação
+# oficial vive em documentacao-aplicacao/ (versionada de propósito, não afetada por esta regra).
+/navigation_flow.mp4
+/*.mp4
+/*.png
+public/tools/atlas-market-intelligence/*.csv
+public/tools/atlas-market-intelligence/*.sqlite
+
+# Cache de bytecode do Python, gerado ao rodar tests/python/market_intelligence/ ou os scripts
+# ETL localmente — nunca esteve coberto, achado ao validar as correções de MI-004/MI-005.
+__pycache__/
+*.pyc
+
+# ITEM-11: SBOM gerado por `npm run security:sbom` (CycloneDX, a partir de package-lock.json).
+# Publicado como artefato do workflow run de cada release real (production.yaml/cd-homolog.yml),
+# não versionado — ver docs/security/DEPENDENCY_POLICY.md para o porquê.
+/sbom.cdx.json
+
+# Worktrees isoladas criadas pelo harness do Claude Code para agentes em background
+# (isolation: "worktree") — estado de trabalho local, nunca conteúdo do repositório.
+.claude/worktrees/
+
+# Mesma razão do .claude/worktrees/ acima: worktrees isoladas criadas por sessões/agentes fora do
+# harness (ex.: `git worktree add .worktrees/<nome>`) nunca devem virar conteúdo do repositório —
+# um `git add -A` num diretório assim gera um gitlink (mode 160000) sem entrada em .gitmodules,
+# o que quebra `git submodule foreach` no checkout do CI (achado real: PR #531, application gate).
+.worktrees/
+
+*storybook.log
+storybook-static
+
+# Scripts temporários locais (já houve credencial de produção commitada por engano em _tmp_*.mjs)
+_tmp_*
+
+# Estado/saída de trabalho do skill kit de segurança Mantis (google/mantis, instalado em
+# .agents/skills/ e .claude/skills/mantis-*) — KB, findings, planos e caches de cada
+# campanha de revisão são artefatos de análise efêmeros, não código do produto.
+/workspace/
+mantis-summary.md
+
+.codex/
+urls.txt
+
+tsc_output.txt
+.tmp/
+nul
+
+# Backups temporarios gerados pelos gates locais
+.gate-backups/
+
+# Artefatos de auditoria visual e manuais gerados
+visual-audit-capture/
+visual-audit-authenticated/
+visual-manual-output/
+BirthHub360_Manual_Completo.html
+BirthHub360_Manual_Visual_da_Plataforma.html
+
+
+audit-screenshots/
+
+# Configuração local MCP com token Modulify
+.vscode/mcp.json
+
+.devin/
+
+# Arquivos de pacote e deploy temporários
+*.tar.gz
+*.zip
+
+# Scripts locais com credenciais temporarias
+scripts/setup-admin-user.mjs
+scripts/verify-user.mjs
+
+# Agent Bus runtime databases
+.agents/bus/*.db*
+scripts/test-*.ts
+scripts/test-*.mjs
+scripts/find-*.ts
+scripts/find-*.mjs
+.agents/scripts/
+
+# Scripts de diagnóstico do SonarQube — gerados automaticamente pelo scanner
+# nunca devem ser versionados (ver workflows/sonarqube.yml)
+.sonar/
+.scannerwork/
+sonar-report/
+*.scannerwork
+
+
+scratch/
+
+.vscode/

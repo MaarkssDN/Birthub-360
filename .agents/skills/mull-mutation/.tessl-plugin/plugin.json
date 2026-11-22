@@ -1,0 +1,9 @@
+{
+  "name": "testland/mull-mutation",
+  "description": "Use when a C or C++ project built with Clang needs mutation testing. Sets up Mull: the version-matched package, -fpass-plugin build flags, mull-runner, mutators, path filters and GitHub Actions. Other languages: stryker-mutation, stryker-net-mutation, pitest-mutation, mutmut-mutation.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.11"
+}

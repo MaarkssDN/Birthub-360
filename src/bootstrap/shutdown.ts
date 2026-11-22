@@ -1,0 +1,155 @@
+import type { Server } from 'node:http';
+import type { EmbeddedWorkersHandle } from './workers.js';
+
+export interface QuittableConnection {
+  quit(): Promise<unknown>;
+  disconnect(): unknown;
+}
+
+export interface ShutdownLogger {
+  info(...args: unknown[]): void;
+  error(...args: unknown[]): void;
+}
+
+export interface ShutdownDeps {
+  httpServer: Server;
+  workers: EmbeddedWorkersHandle;
+  sseService: {
+    closeAll(): Promise<unknown>;
+    gracefulDrain?(reconnectAfterMs?: number): Promise<unknown>;
+  };
+  prisma: { $disconnect(): Promise<unknown> };
+  shutdownLangfuse: () => Promise<unknown>;
+  connection: QuittableConnection;
+  rateLimiterConnection: QuittableConnection;
+  cacheConnection: QuittableConnection;
+  logger: ShutdownLogger;
+  /** Só para teste: evita chamar process.exit(0) de verdade. Default: process.exit. */
+  exit?: (code: number) => void;
+  /** Tempo máximo (ms) para aguardar o dreno de conexões HTTP antes de prosseguir. Default: 10000. */
+  httpCloseTimeoutMs?: number;
+}
+
+const DEFAULT_HTTP_CLOSE_TIMEOUT_MS = 10_000;
+
+/**
+ * Constrói o handler de graceful shutdown, sem registrá-lo nos sinais do processo — separado de
+ * `registerShutdownSignals` para poder ser testado (chamado diretamente) sem depender de
+ * `process.on`. A ordem de encerramento é intencional e preservada do server.ts original:
+ *
+ * 1. para de aceitar novas conexões HTTP (`server.close`);
+ * 2. drena os clientes SSE (`sseService.gracefulDrain` / `closeAll`) enviando `server_shutdown`
+ *    enquanto o servidor HTTP drena conexões abertas;
+ * 3. fecha todos os workers BullMQ embutidos (param de puxar novos jobs);
+ * 4. encerra Langfuse (flush de traces pendentes) e desconecta o Prisma;
+ * 5. por último, fecha as três conexões Redis (dados, rate limiter, cache) — usadas por quase
+ *    tudo acima, por isso ficam por último.
+ *
+ * Cada etapa é best-effort: um erro ao fechar um recurso é logado, mas não impede o encerramento
+ * das etapas seguintes — preferível a travar o shutdown inteiro por causa de um recurso que já
+ * estava indisponível (é frequentemente o próprio motivo do shutdown).
+ */
+export function createGracefulShutdown(deps: ShutdownDeps): (signal: string) => Promise<void> {
+  const {
+    httpServer,
+    workers,
+    sseService,
+    prisma,
+    shutdownLangfuse,
+    connection,
+    rateLimiterConnection,
+    cacheConnection,
+    logger,
+    exit = (code: number) => process.exit(code),
+    httpCloseTimeoutMs = DEFAULT_HTTP_CLOSE_TIMEOUT_MS,
+  } = deps;
+
+  // Deriva a lista de `EmbeddedWorkersHandle` em vez de enumerar campo por campo: uma lista
+  // mantida à mão ficou incompleta duas vezes (workers nunca fechados no shutdown, mesmo já
+  // registrados em `startEmbeddedWorkers`) — todo campo do handle é um CloseableWorker, então não
+  // há necessidade de seletividade aqui, só de nunca esquecer um campo novo.
+  const workerList = (): EmbeddedWorkersHandle[keyof EmbeddedWorkersHandle][] =>
+    Object.values(workers);
+
+  return async function shutdown(signal: string): Promise<void> {
+    logger.info(`${signal} received: closing gracefully`);
+
+    const httpClosePromise = new Promise<void>((resolve) => {
+      let settled = false;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve();
+      };
+      const timer = setTimeout(() => {
+        logger.error(
+          { timeoutMs: httpCloseTimeoutMs },
+          'Timeout ao aguardar o encerramento do servidor HTTP; prosseguindo com shutdown',
+        );
+        finish();
+      }, httpCloseTimeoutMs);
+      timer.unref?.();
+
+      try {
+        httpServer.close((err) => {
+          if (err) {
+            logger.error({ err }, 'Erro ao fechar o servidor HTTP');
+          } else {
+            logger.info('Servidor HTTP fechado com sucesso');
+          }
+          finish();
+        });
+      } catch (err) {
+        logger.error({ err }, 'Erro ao iniciar fechamento do servidor HTTP');
+        finish();
+      }
+    });
+
+    try {
+      if (typeof sseService.gracefulDrain === 'function') {
+        await sseService.gracefulDrain();
+      } else {
+        await sseService.closeAll();
+      }
+    } catch (err) {
+      logger.error({ err }, 'Erro ao fechar clientes SSE durante shutdown');
+    }
+
+    await httpClosePromise;
+
+    for (const worker of workerList()) {
+      try {
+        await worker?.close();
+      } catch (err) {
+        logger.error({ err }, 'Erro ao fechar worker durante shutdown');
+      }
+    }
+
+    try {
+      await shutdownLangfuse();
+    } catch (err) {
+      logger.error({ err }, 'Erro ao encerrar Langfuse durante shutdown');
+    }
+
+    try {
+      await prisma.$disconnect();
+    } catch (err) {
+      logger.error({ err }, 'Erro ao desconectar Prisma durante shutdown');
+    }
+
+    await Promise.allSettled([
+      connection.quit().catch(() => connection.disconnect()),
+      rateLimiterConnection.quit().catch(() => rateLimiterConnection.disconnect()),
+      cacheConnection.quit().catch(() => cacheConnection.disconnect()),
+    ]);
+
+    exit(0);
+  };
+}
+
+/** Registra o handler de shutdown nos sinais SIGTERM/SIGINT do processo. */
+export function registerShutdownSignals(shutdown: (signal: string) => Promise<void>): void {
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
+}

@@ -1,0 +1,96 @@
+node_modules
+node_modules_*
+dist
+build
+coverage
+.cache
+.npm
+*.log
+
+# Git e CI/CD
+.git
+.github
+
+# Cópias efêmeras locais. Não entram no contexto de build.
+# Migrations em prisma/migrations continuam incluídas pela exceção mais abaixo.
+.worktrees
+.tmp
+tmp
+temp
+**/*.tmp
+
+# Ambientes, segredos e dumps (Segurança Bloqueador #4, #14)
+.env
+.env.*
+*.pem
+*.key
+backups
+*.dump
+# `*.sql` no .dockerignore é ancorado na raiz do contexto (semântica Go filepath.Match do
+# moby/patternmatcher): só exclui dumps soltos na raiz (ex.: migrate.sql). As migrations do
+# Prisma DEVEM entrar na imagem — o CMD roda `npx prisma migrate deploy` no boot e o estágio
+# final copia /app/prisma. A exceção abaixo é explícita (defesa em profundidade) para que um
+# endurecimento futuro para `**/*.sql` não as remova silenciosamente.
+# Ver .agents/runs/00-dockerignore-prisma-migrations-20261010.md
+*.sql
+!prisma/migrations/
+!prisma/migrations/**
+
+# Agentes, memória operacional, IDEs e diretórios efêmeros/worktrees locais
+.agents
+.claude
+.devin
+.jules
+.impeccable
+.vscode
+.idea
+.storybook
+.worktrees
+.tmp
+tmp
+agente-codigo-local
+
+# Projetos nativos mobile / desktop
+android
+ios
+chrome-extension
+
+# Manifestos e infraestrutura
+k8s
+charts
+argocd
+infrastructure
+docker
+
+# Documentação, manuais e ativos visuais pesados.
+# O brandbook fica de fora. O Vite importa os tokens e os três SVG do logo;
+# a exceção precisa reabrir os diretórios pais, senão o arquivo não entra.
+docs
+documentacao-aplicacao
+identidade-visual/**
+!identidade-visual/birthhub360/
+!identidade-visual/birthhub360/tokens/
+!identidade-visual/birthhub360/tokens/**
+!identidade-visual/birthhub360/logos/
+!identidade-visual/birthhub360/logos/**
+assets/brand
+birthhub-360-assets
+design-system-capture
+design-system-guide
+prints-design-system
+audit-screenshots
+screenshots
+
+# Testes, relatórios e catálogos visuais
+tests
+playwright-report
+test-results
+visual-audit-authenticated
+visual-catalog
+visual-regression
+visual-regression-report
+
+# Dockerfiles
+Dockerfile
+.dockerignore
+

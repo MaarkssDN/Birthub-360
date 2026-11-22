@@ -1,0 +1,849 @@
+[
+  {
+    "id": "BB-ID-01",
+    "regra": "Posicionamento oficial: Sistema Operacional de Inteligência Comercial, impulsionado por IA e Revenue Intelligence. Usar a frase completa na primeira menção de cada peça.",
+    "status": "CONFIRMADA",
+    "secao": "Identidade",
+    "origem": "C01 da missão"
+  },
+  {
+    "id": "BB-ID-02",
+    "regra": "Depois da primeira menção, a forma curta \"Sistema Operacional de Inteligência Comercial\" é aceita. \"CRM\" sozinho não descreve o produto e não deve ser a definição principal.",
+    "status": "PROVISÓRIA",
+    "secao": "Identidade",
+    "origem": "derivada de C01"
+  },
+  {
+    "id": "BB-ID-03",
+    "regra": "Em textos novos, escrever Birthub 360° com o símbolo de grau (U+00B0), nunca o ordinal (U+00BA). Grafia pendente de decisão humana.",
+    "status": "PROVISÓRIA",
+    "secao": "Identidade",
+    "origem": "P-01"
+  },
+  {
+    "id": "BB-ID-04",
+    "regra": "O nome é citado por um único ponto de troca (constante ou token de conteúdo) e nunca digitado solto em componente ou peça. Neste documento: BRAND_NAME em brandbook.js.",
+    "status": "PROVISÓRIA",
+    "secao": "Identidade",
+    "origem": "P-01"
+  },
+  {
+    "id": "BB-ID-05",
+    "regra": "A arte do logotipo não é redesenhada para acompanhar a grafia. A arte atual lê \"BIRTH HUB 360°\"; um novo wordmark depende da decisão de P-01.",
+    "status": "CONFIRMADA",
+    "secao": "Identidade",
+    "origem": "C06 da missão"
+  },
+  {
+    "id": "BB-ID-06",
+    "regra": "Não abreviar o nome em texto (por exemplo \"BH360\"). Em espaço estreito, usar o ícone do logotipo.",
+    "status": "PROVISÓRIA",
+    "secao": "Identidade",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-ID-07",
+    "regra": "Arquitetura do produto: Hub Central, Workspaces Modulares e Assistentes Globais. Os 11 módulos são P01 a P08 (pilares) e M09 a M11.",
+    "status": "CONFIRMADA",
+    "secao": "Identidade",
+    "origem": "C07 da missão"
+  },
+  {
+    "id": "BB-ID-08",
+    "regra": "O ICP é qualquer empresa com área comercial que queira automatizar a operação ponta a ponta. Nenhum texto novo amarra o produto a um vertical específico.",
+    "status": "PROVISÓRIA",
+    "secao": "Identidade",
+    "origem": "derivada de C01 e do Manual do Produto"
+  },
+  {
+    "id": "BB-ID-09",
+    "regra": "A promessa de IA é sempre acompanhada de evidência ou fonte; a marca nunca afirma onisciência. Coerente com BB-ID-15.",
+    "status": "PROVISÓRIA",
+    "secao": "Identidade",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-ID-10",
+    "regra": "Propósito: reunir o que está disperso na operação comercial em um único comando. Texto proposto, pendente de aprovação editorial.",
+    "status": "PROVISÓRIA",
+    "secao": "Identidade",
+    "origem": "derivada de src/config/brand.ts"
+  },
+  {
+    "id": "BB-ID-11",
+    "regra": "Proposta de valor em três promessas verificáveis: unifica dados, recomenda com evidência, executa com governança e aprovação humana em ação de alto risco.",
+    "status": "PROVISÓRIA",
+    "secao": "Identidade",
+    "origem": "Manual do Produto cap. 1 e BIRTHUB360_CONTRATOS_AGENTES.md"
+  },
+  {
+    "id": "BB-ID-12",
+    "regra": "Narrativa em três tempos: Conectar, Decidir, Executar. Cada peça de comunicação ocupa um desses tempos e aponta para o seguinte.",
+    "status": "PROVISÓRIA",
+    "secao": "Identidade",
+    "origem": "derivada de brand.ts (pilares Conexão, Inteligência, Execução)"
+  },
+  {
+    "id": "BB-ID-13",
+    "regra": "Não reutilizar afirmações sem lastro do manual de produto legado (\"0ms de latência de decisão\", \"100% WCAG 2.2 AA\", \"40+ módulos\", contra 11 módulos oficiais). Só publicar número com fonte medida.",
+    "status": "PROVISÓRIA",
+    "secao": "Identidade",
+    "origem": "AGENTS.md §25 (zero mock)"
+  },
+  {
+    "id": "BB-ID-14",
+    "regra": "Personalidade: precisa, direta, analítica e resolutiva, com a postura de um consultor sênior de alto impacto.",
+    "status": "CONFIRMADA",
+    "secao": "Identidade",
+    "origem": "Manual de Identidade do Produto, cap. 4"
+  },
+  {
+    "id": "BB-ID-15",
+    "regra": "A IA fala em hipótese apoiada em evidência concreta, nunca como entidade onipotente.",
+    "status": "CONFIRMADA",
+    "secao": "Identidade",
+    "origem": "Manual de Identidade do Produto, cap. 4"
+  },
+  {
+    "id": "BB-ID-16",
+    "regra": "Botões e ações usam verbo direto que anuncia o resultado (\"Gerar proposta comercial\", \"Sincronizar agora\"). Proibidos \"Clique aqui\", \"Submeter\" e \"OK\".",
+    "status": "CONFIRMADA",
+    "secao": "Identidade",
+    "origem": "Manual de Identidade do Produto, cap. 4"
+  },
+  {
+    "id": "BB-ID-17",
+    "regra": "Mensagens de erro dizem a causa raiz e oferecem o próximo passo de recuperação.",
+    "status": "CONFIRMADA",
+    "secao": "Identidade",
+    "origem": "Manual de Identidade do Produto, cap. 4"
+  },
+  {
+    "id": "BB-ID-18",
+    "regra": "A personalidade tem duas réguas: cinematográfica na experiência comercial (landing, campanhas) e discreta e rápida na operação (plataforma).",
+    "status": "PROVISÓRIA",
+    "secao": "Identidade",
+    "origem": "C08 da missão"
+  },
+  {
+    "id": "BB-LOGO-01",
+    "regra": "O logotipo original não é redesenhado, recolorido, vetorizado de novo nem \"melhorado\". Usar sempre os SVGs mestres copiados em assets/logos/.",
+    "status": "CONFIRMADA",
+    "secao": "Logotipo",
+    "origem": "C06 da missão"
+  },
+  {
+    "id": "BB-LOGO-02",
+    "regra": "Três versões oficiais: símbolo (emblema completo, 96 px ou mais), ícone (32 a 96 px; favicon e avatar) e horizontal (emblema mais logotipo, assinatura institucional).",
+    "status": "CONFIRMADA",
+    "secao": "Logotipo",
+    "origem": "src/config/brand.ts"
+  },
+  {
+    "id": "BB-LOGO-03",
+    "regra": "Os SVGs mestres têm cores históricas (incluindo #3B82F6 no anel e serifa no \"B\" e no wordmark) que diferem dos tokens neon atuais. Foram preservados por determinação do usuário e não são corrigidos nesta frente.",
+    "status": "CONFIRMADA",
+    "secao": "Logotipo",
+    "origem": "identidade-visual/README.md"
+  },
+  {
+    "id": "BB-LOGO-04",
+    "regra": "Cada imagem de logotipo leva texto alternativo com o nome e a versão. Em um cabeçalho que já traz o nome em texto, o ícone é decorativo (alt vazio).",
+    "status": "PROVISÓRIA",
+    "secao": "Logotipo",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-LOGO-05",
+    "regra": "Geometria do símbolo (viewBox 256): anel de graduação com diâmetro 248, órbita 180, disco central 148, aro dourado 123 e eixo de 128 de largura. A órbita tem 16 de espessura em 6 arcos.",
+    "status": "CONFIRMADA",
+    "secao": "Logotipo",
+    "origem": "medido no SVG mestre"
+  },
+  {
+    "id": "BB-LOGO-06",
+    "regra": "O emblema não sofre distorção de proporção, rotação arbitrária dos anéis nem alteração dos gradientes neon que formam a assinatura óptica.",
+    "status": "CONFIRMADA",
+    "secao": "Logotipo",
+    "origem": "BRANDBOOK-OFICIAL-BIRTH-HUB-360.html, cap. 4"
+  },
+  {
+    "id": "BB-LOGO-07",
+    "regra": "O ícone é o recorte justo da órbita: viewBox 38 38 180 180, sem margem interna. O horizontal mede 946 por 256, com o símbolo ocupando a altura total.",
+    "status": "CONFIRMADA",
+    "secao": "Logotipo",
+    "origem": "medido no SVG mestre"
+  },
+  {
+    "id": "BB-LOGO-08",
+    "regra": "Área de proteção X = ¼ do diâmetro visível do símbolo (62 de 248 unidades) em todo o contorno. Nenhum texto, borda, imagem ou outro elemento entra nela.",
+    "status": "PROVISÓRIA",
+    "secao": "Logotipo",
+    "origem": "proposta derivada da geometria medida"
+  },
+  {
+    "id": "BB-LOGO-09",
+    "regra": "No ícone, que não tem anel de graduação, X = ¼ do lado do recorte (45 de 180 unidades). A proteção é medida a partir da borda visível, não da borda do arquivo.",
+    "status": "PROVISÓRIA",
+    "secao": "Logotipo",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-LOGO-10",
+    "regra": "Símbolo completo: 96 px ou mais. Ícone: 32 a 96 px. Abaixo de 96 px o anel de graduação do símbolo deixa de ser legível e deve ser trocado pelo ícone.",
+    "status": "CONFIRMADA",
+    "secao": "Logotipo",
+    "origem": "src/config/brand.ts"
+  },
+  {
+    "id": "BB-LOGO-11",
+    "regra": "Logotipo horizontal: altura mínima de 32 px em tela e 12 mm em impressão. Favicon e avatar pequeno usam o ícone, com 24 px como piso. Estes pisos precisam de teste em dispositivo real.",
+    "status": "PROVISÓRIA",
+    "secao": "Logotipo",
+    "origem": "proposta deste brandbook, não validada em dispositivo"
+  },
+  {
+    "id": "BB-LOGO-12",
+    "regra": "Fundos permitidos: Dark #0D0D0D, superfícies #14141A, #1C1C24 e #252530, e Light #F4F7FB para símbolo e ícone (o disco central escuro garante o contraste).",
+    "status": "PROVISÓRIA",
+    "secao": "Logotipo",
+    "origem": "C02 e inspeção visual"
+  },
+  {
+    "id": "BB-LOGO-13",
+    "regra": "O logotipo horizontal sobre Light exige placa escura #0D0D0D com área de proteção respeitada, porque o wordmark em gradiente neon fica abaixo de 3:1 sobre #F4F7FB.",
+    "status": "PROVISÓRIA",
+    "secao": "Logotipo",
+    "origem": "contraste medido (ver tabela abaixo do grid)"
+  },
+  {
+    "id": "BB-LOGO-14",
+    "regra": "Proibido sobre fundo neon sólido, gradiente, imagem ocupada ou cinza médio. Se o fundo não puder ser controlado, usar a placa escura.",
+    "status": "PROVISÓRIA",
+    "secao": "Logotipo",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-LOGO-15",
+    "regra": "Proibido distorcer proporção, girar o emblema ou os anéis, e alterar os gradientes neon do emblema.",
+    "status": "CONFIRMADA",
+    "secao": "Logotipo",
+    "origem": "BRANDBOOK-OFICIAL-BIRTH-HUB-360.html, cap. 4"
+  },
+  {
+    "id": "BB-LOGO-16",
+    "regra": "Também proibido: recolorir ou fazer versão monocromática improvisada, aplicar sombra, contorno ou transparência, cortar o emblema, e montar um logotipo horizontal novo com outra fonte. Versão monocromática oficial depende de arte nova aprovada.",
+    "status": "PROVISÓRIA",
+    "secao": "Logotipo",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-COR-01",
+    "regra": "Paleta oficial: Azul Neon #00D4FF, Rosa Neon #FF2D9B, Dourado #FFC107, Íris #8B7DFF, Dark #0D0D0D e Light #F4F7FB. Nenhuma outra cor de marca é criada nesta versão.",
+    "status": "CONFIRMADA",
+    "secao": "Paleta Neon",
+    "origem": "C02 da missão"
+  },
+  {
+    "id": "BB-COR-02",
+    "regra": "Papéis: Azul Neon é tecnologia e interação; Rosa Neon é energia e conversão; Dourado é receita e previsibilidade; Íris é inteligência artificial.",
+    "status": "CONFIRMADA",
+    "secao": "Paleta Neon",
+    "origem": "C02 e Manual de Identidade Visual"
+  },
+  {
+    "id": "BB-COR-03",
+    "regra": "Os neons não são neutralizados nem trocados por pastéis. Dark e Light não são preto nem branco puros.",
+    "status": "CONFIRMADA",
+    "secao": "Paleta Neon",
+    "origem": "C02 e C04"
+  },
+  {
+    "id": "BB-COR-04",
+    "regra": "Light oficial V2.0 é #F4F7FB (missão). O \"Neon White\" #F8F9FF dos tokens atuais é a cor de texto sobre Dark e não é usado como canvas. Conflito registrado.",
+    "status": "PROVISÓRIA",
+    "secao": "Paleta Neon",
+    "origem": "P-05"
+  },
+  {
+    "id": "BB-COR-05",
+    "regra": "Sobre Dark, Azul Neon, Dourado e Íris passam AA como texto normal em todas as superfícies escuras. Rosa Neon passa em Dark e #14141A, mas cai a 4,40:1 em #252530 (só texto grande ou ícone).",
+    "status": "CONFIRMADA",
+    "secao": "Paleta Neon",
+    "origem": "C02 (medição WCAG deste brandbook)"
+  },
+  {
+    "id": "BB-COR-06",
+    "regra": "Neon puro como texto sobre Light não passa: 1,65:1 (azul), 3,20:1 (rosa), 1,52:1 (dourado) e 3,02:1 (íris). Sobre Light, neon só aparece como preenchimento, nunca como texto.",
+    "status": "CONFIRMADA",
+    "secao": "Paleta Neon",
+    "origem": "C02 (medição WCAG deste brandbook)"
+  },
+  {
+    "id": "BB-COR-07",
+    "regra": "Texto colorido em Light usa as variantes derivadas #006C8C, #C4105F, #7A5800 e #5B4BD6, todas com 4,80:1 ou mais nas quatro superfícies claras medidas. Valores derivados, não oficiais.",
+    "status": "PROVISÓRIA",
+    "secao": "Paleta Neon",
+    "origem": "P-02"
+  },
+  {
+    "id": "BB-COR-08",
+    "regra": "Texto sobre preenchimento neon usa #0D0D0D (on-neon), com 5,65:1 ou mais. Texto branco sobre neon é proibido (por exemplo 1,77:1 sobre Azul Neon e 3,44:1 sobre Rosa).",
+    "status": "CONFIRMADA",
+    "secao": "Paleta Neon",
+    "origem": "C04 e CLAUDE.md"
+  },
+  {
+    "id": "BB-COR-09",
+    "regra": "Componentes de interface e anéis de foco exigem 3:1 contra o fundo adjacente; a cor nunca é o único sinal de estado (sempre acompanhada de texto, ícone ou forma).",
+    "status": "PROVISÓRIA",
+    "secao": "Paleta Neon",
+    "origem": "WCAG 2.2"
+  },
+  {
+    "id": "BB-COR-10",
+    "regra": "Distribuição de área por tela: 60% canvas e superfícies, 25% tinta e linhas, 10% Azul Neon de interação e 5% acentos (Rosa, Dourado, Íris). A proporção é guia de revisão, não métrica automática.",
+    "status": "PROVISÓRIA",
+    "secao": "Paleta Neon",
+    "origem": "exemplo da missão (60/25/10/5)"
+  },
+  {
+    "id": "BB-COR-11",
+    "regra": "Num mesmo viewport, um acento secundário domina por contexto (Rosa em conversão, Dourado em receita, Íris em IA). Não misturar os quatro neons no mesmo componente.",
+    "status": "PROVISÓRIA",
+    "secao": "Paleta Neon",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-COR-12",
+    "regra": "Ação primária é Azul Neon sólido com texto on-neon. Rosa Neon sólido é reservado ao ponto de conversão de maior valor da tela (um por tela).",
+    "status": "PROVISÓRIA",
+    "secao": "Paleta Neon",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-COR-13",
+    "regra": "Escada de superfícies Dark: canvas #0D0D0D, superfície #14141A, superfície 2 #1C1C24, superfície 3 #252530. Cada degrau acima é uma camada mais alta.",
+    "status": "CONFIRMADA",
+    "secao": "Paleta Neon",
+    "origem": "tokens oficiais e P-04"
+  },
+  {
+    "id": "BB-COR-14",
+    "regra": "Escada Light derivada: canvas #F4F7FB, superfície #FBFCFE, superfície 2 #EEF2F8, superfície 3 #E3E9F2.",
+    "status": "PROVISÓRIA",
+    "secao": "Paleta Neon",
+    "origem": "P-04 e proposta deste brandbook"
+  },
+  {
+    "id": "BB-COR-15",
+    "regra": "Sombras de elevação têm deslocamento vertical e desfoque (por exemplo 0 12px 28px -12px); nunca halo colorido de deslocamento zero para dar profundidade. Cartão dentro de cartão é proibido.",
+    "status": "PROVISÓRIA",
+    "secao": "Paleta Neon",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-COR-16",
+    "regra": "Raios: controle 12 px, cartão 16 px, modal 20 px, pílula 9999 px.",
+    "status": "PROVISÓRIA",
+    "secao": "Paleta Neon",
+    "origem": "tokens oficiais de raio"
+  },
+  {
+    "id": "BB-COR-17",
+    "regra": "Halo de marca: 0 0 24px com a cor a 45% de opacidade. Personagens usam 0 0 32px a 35 a 40%.",
+    "status": "CONFIRMADA",
+    "secao": "Paleta Neon",
+    "origem": "tokens oficiais --glow-blue, --glow-pink, --glow-gold"
+  },
+  {
+    "id": "BB-COR-18",
+    "regra": "Glow sinaliza estado (foco, ativo, em processamento) e nunca decora. No máximo um elemento com halo por região da tela; em repouso, sem halo.",
+    "status": "PROVISÓRIA",
+    "secao": "Paleta Neon",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-COR-19",
+    "regra": "Em Light não há halo: o foco usa anel sólido de 2 px e a profundidade vem de sombra com deslocamento.",
+    "status": "PROVISÓRIA",
+    "secao": "Paleta Neon",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-COR-20",
+    "regra": "A órbita 360° é conic-gradient(from 0deg, #FFC107, #FF2D9B, #00D4FF, #FFC107).",
+    "status": "CONFIRMADA",
+    "secao": "Paleta Neon",
+    "origem": "tokens oficiais --grad-orbit"
+  },
+  {
+    "id": "BB-COR-21",
+    "regra": "A órbita aparece só em anéis, bordas finas, indicadores e grafismos. Nunca como fundo com texto por cima, nunca em texto (background-clip: text é proibido) e no máximo uma por composição.",
+    "status": "PROVISÓRIA",
+    "secao": "Paleta Neon",
+    "origem": "proposta deste brandbook e C04"
+  },
+  {
+    "id": "BB-COR-22",
+    "regra": "Botão primário é cor sólida. O gradiente de CTA do manual legado (rosa para azul) não é adotado em V2.0.",
+    "status": "PROVISÓRIA",
+    "secao": "Paleta Neon",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-COR-23",
+    "regra": "Cores funcionais: sucesso #22C55E, crítico #EF4444, atenção (warning) em Dourado #FFC107, informativo #3B82F6 e inteligência artificial em Íris. O Design System está sendo alinhado a estes valores.",
+    "status": "CONFIRMADA",
+    "secao": "Paleta Neon",
+    "origem": "Manual de Identidade Visual, cap. 2"
+  },
+  {
+    "id": "BB-COR-24",
+    "regra": "Em Light, as cores funcionais usam #15803D, #B91C1C e #1D4ED8 (todas acima de 4,5:1 sobre #F4F7FB); os valores originais não passam.",
+    "status": "PROVISÓRIA",
+    "secao": "Paleta Neon",
+    "origem": "contraste medido, derivação deste brandbook"
+  },
+  {
+    "id": "BB-COR-25",
+    "regra": "Todo componente interativo define padrão, hover, foco visível, ativo, desabilitado, carregando e erro. Todo painel de dados define loading, empty, error e stale (AGENTS.md §25).",
+    "status": "PROVISÓRIA",
+    "secao": "Paleta Neon",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-COR-26",
+    "regra": "Dois temas oficiais, Dark (#0D0D0D) e Light (#F4F7FB), com alternância manual e persistência da escolha. O tema nunca depende só de prefers-color-scheme.",
+    "status": "CONFIRMADA",
+    "secao": "Paleta Neon",
+    "origem": "C02 e C04"
+  },
+  {
+    "id": "BB-COR-27",
+    "regra": "As variantes Light (superfícies, tinta e cores de texto) e a tinta #E8EEFF são derivadas, medidas neste documento e aguardam homologação.",
+    "status": "PROVISÓRIA",
+    "secao": "Paleta Neon",
+    "origem": "P-02, P-03 e P-04"
+  },
+  {
+    "id": "BB-COR-28",
+    "regra": "Nenhum título ou subtítulo usa #FFFFFF ou #000000. Texto usa a tinta do tema ou a cor de acento do tema (ver Tipografia).",
+    "status": "CONFIRMADA",
+    "secao": "Paleta Neon",
+    "origem": "C04"
+  },
+  {
+    "id": "BB-TIPO-01",
+    "regra": "Trinca tipográfica: Sora (display), Inter (interface) e IBM Plex Mono (dados e código). Nenhuma outra família em peça nova.",
+    "status": "CONFIRMADA",
+    "secao": "Tipografia",
+    "origem": "C03 da missão"
+  },
+  {
+    "id": "BB-TIPO-02",
+    "regra": "Proibidas em layout novo as famílias legadas Bodoni Moda, Cabin, JetBrains Mono e Playfair Display. O serifado do \"B\" e do wordmark do logotipo é arte preservada, não tipografia de layout.",
+    "status": "CONFIRMADA",
+    "secao": "Tipografia",
+    "origem": "BRANDBOOK-OFICIAL-BIRTH-HUB-360.html, cap. 4"
+  },
+  {
+    "id": "BB-TIPO-03",
+    "regra": "Inter usa font-feature-settings: \"cv05\",\"cv11\",\"ss01\" e tracking -0,012em (o \"toque arredondado\"). Sora usa tracking -0,02em.",
+    "status": "CONFIRMADA",
+    "secao": "Tipografia",
+    "origem": "Manual de Identidade Visual, cap. 3"
+  },
+  {
+    "id": "BB-TIPO-04",
+    "regra": "Plex Mono é reservada a métricas, contadores, badges técnicos, IDs, logs e código; números tabulares alinham colunas. Nunca em texto corrido nem como fantasia de \"tecnológico\".",
+    "status": "CONFIRMADA",
+    "secao": "Tipografia",
+    "origem": "Manual de Identidade Visual, cap. 3"
+  },
+  {
+    "id": "BB-TIPO-05",
+    "regra": "Sora vale para H1 a H6 (Manual de Identidade Visual). O .claude/CLAUDE.md do repositório usa Inter em H4 a H6; a divergência aguarda decisão.",
+    "status": "PROVISÓRIA",
+    "secao": "Tipografia",
+    "origem": "divergência D-02"
+  },
+  {
+    "id": "BB-TIPO-06",
+    "regra": "Escala de Experiência Comercial e Leitura: display 72, H1 48, H2 36, H3 24, H4 18, corpo 16, apoio 13 e dados 14 (px). Display nunca passa de 6rem; cada degrau difere do vizinho em pelo menos 1,25x ou em peso.",
+    "status": "PROVISÓRIA",
+    "secao": "Tipografia",
+    "origem": "proposta deste brandbook, ligada a C08"
+  },
+  {
+    "id": "BB-TIPO-07",
+    "regra": "Escala Comercial e Leitura: corpo de 16 px no mínimo, entrelinha 1,6 a 1,7 e medida de 65 a 75 caracteres. Em fundo escuro, entrelinha um pouco maior.",
+    "status": "PROVISÓRIA",
+    "secao": "Tipografia",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-TIPO-15",
+    "regra": "Escala de Experiência Operacional e Plataforma, a do Design System: display-xl 48, display 36, h1 30, h2 24, h3 20, h4 18, h5 16, h6 14, corpo 14 (entrelinha 1,5), body-sm 13, caption 12, label 13, dados 14 e data-lg 24 (px). Display-xl 48 é de uso comercial; na plataforma o título dominante é h1 30. Marcada PROVISÓRIA: o DS também a marca como provisória.",
+    "status": "PROVISÓRIA",
+    "secao": "Tipografia",
+    "origem": "03-design-system/tokens/tokens.json (lido em 2026-11-13)"
+  },
+  {
+    "id": "BB-TIPO-16",
+    "regra": "Cada superfície usa uma escala só, escolhida pelo nível: Comercial e Leitura usa a de BB-TIPO-06; Operacional e Plataforma usa a de BB-TIPO-15. Famílias, pesos e tracking (BB-TIPO-01 a 04 e 09) valem para as duas.",
+    "status": "PROVISÓRIA",
+    "secao": "Tipografia",
+    "origem": "C08 da missão"
+  },
+  {
+    "id": "BB-TIPO-08",
+    "regra": "Títulos usam text-wrap: balance e texto corrido text-wrap: pretty. Tracking nunca abaixo de -0,04em.",
+    "status": "PROVISÓRIA",
+    "secao": "Tipografia",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-TIPO-09",
+    "regra": "Pesos oficiais: Sora 400, 600, 700 e 800; Inter 400, 500, 600 e 700; Plex Mono 400, 500 e 600.",
+    "status": "CONFIRMADA",
+    "secao": "Tipografia",
+    "origem": "Manual de Identidade Visual, cap. 3"
+  },
+  {
+    "id": "BB-TIPO-10",
+    "regra": "Títulos e subtítulos nunca são #FFFFFF nem #000000. Em Dark, tinta #E8EEFF ou cor de acento; em Light, tinta #0F1A2E ou variante de acento.",
+    "status": "CONFIRMADA",
+    "secao": "Tipografia",
+    "origem": "C04 da missão"
+  },
+  {
+    "id": "BB-TIPO-11",
+    "regra": "Ênfase em texto vem de peso, tamanho e cor sólida. Gradiente em texto (background-clip: text) é proibido em qualquer contexto.",
+    "status": "CONFIRMADA",
+    "secao": "Tipografia",
+    "origem": "C04 e CLAUDE.md"
+  },
+  {
+    "id": "BB-TIPO-12",
+    "regra": "Um título tem uma cor só. A cor de acento do capítulo ou módulo pode colorir o título inteiro; palavras soltas coloridas dentro de frase são exceção rara.",
+    "status": "PROVISÓRIA",
+    "secao": "Tipografia",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-TIPO-13",
+    "regra": "Uma tela tem um único título dominante. Papéis (título, corpo, rótulo, dado) devem ser distinguíveis sem ler o texto, por tamanho, peso ou família.",
+    "status": "PROVISÓRIA",
+    "secao": "Tipografia",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-TIPO-14",
+    "regra": "Números de métrica usam Plex Mono tabular; unidade e rótulo em Inter menor. Número sem fonte medida não é publicado (zero mock).",
+    "status": "PROVISÓRIA",
+    "secao": "Tipografia",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-LING-01",
+    "regra": "Neon Editorial Cinematic é referência criativa, não definição automática de regras. Regras só existem quando escritas e etiquetadas neste documento.",
+    "status": "CONFIRMADA",
+    "secao": "Linguagem visual",
+    "origem": "C05 da missão"
+  },
+  {
+    "id": "BB-LING-02",
+    "regra": "O N1 Final Candidate (repositório externo MaarkssDN/Land-page, commit 0d08b31) pode ser citado como referência criativa da Experiência Comercial, nunca como regra homologada nem como precedente para workspaces operacionais. Detalhes e mapeamento em 08-referencia-n1.",
+    "status": "PROVISÓRIA",
+    "secao": "Linguagem visual",
+    "origem": "análise do N1 (08-referencia-n1), errata V2.1"
+  },
+  {
+    "id": "BB-LING-03",
+    "regra": "Leitura da direção: neon como luz funcional (cor com função), editorial como estrutura (grid assimétrico, escala tipográfica, legendas) e cinematic como profundidade e ritmo, limitado à camada comercial.",
+    "status": "PROVISÓRIA",
+    "secao": "Linguagem visual",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-LING-04",
+    "regra": "Cinco grafismos 360° autorizados: bezel de graduação, órbita, retícula e eixo, arcos concêntricos, nós e conexões. Todos desenhados em CSS ou SVG, em traço fino, sem redesenhar o logotipo.",
+    "status": "PROVISÓRIA",
+    "secao": "Linguagem visual",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-LING-05",
+    "regra": "Grafismo ocupa a moldura e a margem; nunca fica atrás de texto corrido. Cada grafismo carrega informação (medida, estado, relação) ou sai.",
+    "status": "PROVISÓRIA",
+    "secao": "Linguagem visual",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-LING-06",
+    "regra": "Proibido: malha ou grade decorativa de fundo, nuvem de brilho radial e ilustração montada com formas soltas em tamanho de herói.",
+    "status": "PROVISÓRIA",
+    "secao": "Linguagem visual",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-LING-07",
+    "regra": "Hero centralizado e três cartões iguais só para preencher espaço não são o padrão. Uma exceção exige justificativa escrita por objetivo, fluxo ou volume real de informação.",
+    "status": "CONFIRMADA",
+    "secao": "Linguagem visual",
+    "origem": ".claude/CLAUDE.md, regras 2 e 4"
+  },
+  {
+    "id": "BB-LING-08",
+    "regra": "Cada composição tem um elemento dominante identificável, grid assimétrico e uma legenda em Plex Mono que explica o que o olho vê.",
+    "status": "PROVISÓRIA",
+    "secao": "Linguagem visual",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-LING-09",
+    "regra": "Na plataforma (nível operacional), densidade alta e estrutura previsível vencem a expressão; na landing e em campanhas (nível comercial), escala e ousadia vencem.",
+    "status": "PROVISÓRIA",
+    "secao": "Linguagem visual",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-LING-10",
+    "regra": "Quatro camadas de profundidade: canvas, superfície, conteúdo, sinal. Glow e cor neon intensa pertencem à camada de sinal.",
+    "status": "PROVISÓRIA",
+    "secao": "Linguagem visual",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-LING-11",
+    "regra": "Desfoque e vidro (backdrop-filter) só com função: cabeçalho fixo sobre conteúdo rolando, camada flutuante. Nunca como enfeite em todo cartão.",
+    "status": "PROVISÓRIA",
+    "secao": "Linguagem visual",
+    "origem": "CLAUDE.md regra 5"
+  },
+  {
+    "id": "BB-LING-12",
+    "regra": "Ícones são SVG desenhado, em grade 24, traço único de 1,75 e pontas arredondadas, na cor de acento do contexto. Nunca emoji nem glifo Unicode no lugar de ícone.",
+    "status": "PROVISÓRIA",
+    "secao": "Linguagem visual",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-LING-13",
+    "regra": "Ícone acompanha sempre um rótulo em texto, a menos que seja ação universal com nome acessível. Ícone não fica dentro de quadrado arredondado acima de título.",
+    "status": "PROVISÓRIA",
+    "secao": "Linguagem visual",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-LING-14",
+    "regra": "Sem fotografia humana genérica. Personagens e logotipo originais não são redesenhados.",
+    "status": "CONFIRMADA",
+    "secao": "Linguagem visual",
+    "origem": "C06 da missão"
+  },
+  {
+    "id": "BB-LING-15",
+    "regra": "Nenhuma métrica, gráfico ou cliente fabricado é apresentado como real. Exemplo é sempre rotulado (\"EXEMPLO\" ou \"VALORES ILUSTRATIVOS\").",
+    "status": "CONFIRMADA",
+    "secao": "Linguagem visual",
+    "origem": "AGENTS.md §25 (zero mock)"
+  },
+  {
+    "id": "BB-LING-16",
+    "regra": "Dois níveis de movimento: Experiência Comercial (cinematográfica) e Operacional (discreta e rápida).",
+    "status": "CONFIRMADA",
+    "secao": "Linguagem visual",
+    "origem": "C08 da missão"
+  },
+  {
+    "id": "BB-LING-17",
+    "regra": "prefers-reduced-motion é obrigatório em toda animação CSS ou JavaScript: com a preferência ativa, a animação é removida ou reduzida a troca de estado.",
+    "status": "CONFIRMADA",
+    "secao": "Linguagem visual",
+    "origem": "C08 da missão"
+  },
+  {
+    "id": "BB-LING-18",
+    "regra": "Nível comercial: 400 a 900 ms; nível operacional: 120 a 200 ms; ambos com saída exponencial. Nenhum loop decorativo: toda animação comunica estado, guia atenção ou dá retorno.",
+    "status": "PROVISÓRIA",
+    "secao": "Linguagem visual",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-PERS-01",
+    "regra": "29 personagens, 26 agentes técnicos e 11 módulos são três conjuntos distintos e nunca são confundidos em texto, interface ou peça. Assistentes globais é uma quarta categoria.",
+    "status": "CONFIRMADA",
+    "secao": "Personagens",
+    "origem": "C09 da missão"
+  },
+  {
+    "id": "BB-PERS-02",
+    "regra": "Contagem de personagens: 29 SVGs. Camadas: 9 pilares, 15 agentes comerciais, 4 agentes de canal e 1 orquestrador (Aegis).",
+    "status": "CONFIRMADA",
+    "secao": "Personagens",
+    "origem": "arquivos do repositório (conferido)"
+  },
+  {
+    "id": "BB-PERS-03",
+    "regra": "O significado exato de \"26 agentes técnicos\" aguarda confirmação humana: 26 coincide com o roster de engenharia, não com o enxame de IA. Enquanto isso, não publicar \"26\" em peça externa.",
+    "status": "PROVISÓRIA",
+    "secao": "Personagens",
+    "origem": "divergência D-05"
+  },
+  {
+    "id": "BB-PERS-04",
+    "regra": "Nomes dos módulos: P01 Hub Comercial, P02 Inteligência de Mercado, P03 Orquestração de Vendas, P04 Performance Comercial, P05 Previsibilidade, P06 Inteligência Artificial, P07 Automação e Conectividade, P08 Voice e WhatsApp, M09 Administração, M10 Field Sales, M11 Social Selling. P07, M09 e M11 pendem de confirmação pela auditoria (D-10).",
+    "status": "PROVISÓRIA",
+    "secao": "Personagens",
+    "origem": "Documento Mestre V4.10 e Decisões de Produto"
+  },
+  {
+    "id": "BB-PERS-05",
+    "regra": "Os personagens não são redesenhados. Usar os SVGs de public/brand/characters/ como estão.",
+    "status": "CONFIRMADA",
+    "secao": "Personagens",
+    "origem": "C06 da missão"
+  },
+  {
+    "id": "BB-PERS-06",
+    "regra": "Natureza não humana: sem traços antropomórficos figurativos, sem rostos, sem fotografia. São inteligências sintéticas expressivas.",
+    "status": "CONFIRMADA",
+    "secao": "Personagens",
+    "origem": "Guia Mestre dos Personagens, 1.1"
+  },
+  {
+    "id": "BB-PERS-07",
+    "regra": "Seis expressões padronizadas por personagem: repouso, escuta, processamento, fala, sucesso e erro. A expressão comunica o estado real do agente, nunca é enfeite.",
+    "status": "CONFIRMADA",
+    "secao": "Personagens",
+    "origem": "Guia Mestre dos Personagens, 4"
+  },
+  {
+    "id": "BB-PERS-08",
+    "regra": "Cada personagem tem paleta própria (por exemplo o verde de Aria e o laranja de Forge) e essa paleta fica fora da C02. É permitida só dentro do personagem; interface ao redor segue C02.",
+    "status": "PROVISÓRIA",
+    "secao": "Personagens",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-PERS-09",
+    "regra": "Mostrar sobre fundo escuro ou em placa escura: os halos dos SVGs perdem presença em Light. Em tela pequena, usar a versão a 40 px ou mais.",
+    "status": "PROVISÓRIA",
+    "secao": "Personagens",
+    "origem": "Guia Mestre dos Personagens e proposta"
+  },
+  {
+    "id": "BB-PERS-10",
+    "regra": "Personagem identifica um módulo pela associação documentada (Orbit em P01, Nexus em P02, Aria em P03, Vanguard em P04, Oracle em P05, Core em P06, Spark em P07, Echo em P08, Sudo em M09). M10 e M11 não têm personagem-pilar definido e não recebem um improvisado.",
+    "status": "PROVISÓRIA",
+    "secao": "Personagens",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-PERS-11",
+    "regra": "Comando de ativação em Plex Mono (\"Ei Orbit\"). Nome do personagem em Sora, descrição em Inter.",
+    "status": "PROVISÓRIA",
+    "secao": "Personagens",
+    "origem": "Guia Mestre dos Personagens"
+  },
+  {
+    "id": "BB-APL-01",
+    "regra": "Landing é nível comercial: título em escala grande ancorado à esquerda, diagrama de arquitetura à direita, um único CTA em Rosa Neon e a faixa dos 11 módulos como prova de escopo.",
+    "status": "PROVISÓRIA",
+    "secao": "Aplicações",
+    "origem": "C08 e proposta deste brandbook"
+  },
+  {
+    "id": "BB-APL-02",
+    "regra": "O título da landing é o posicionamento oficial (C01), sem reescrita de efeito. A promessa não cita número sem fonte.",
+    "status": "PROVISÓRIA",
+    "secao": "Aplicações",
+    "origem": "BB-ID-01"
+  },
+  {
+    "id": "BB-APL-03",
+    "regra": "Login: painel de marca à esquerda, formulário à direita, rótulo visível em todo campo, foco em Azul Neon com anel e botão primário sólido. Sem halo decorativo.",
+    "status": "PROVISÓRIA",
+    "secao": "Aplicações",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-APL-04",
+    "regra": "Plataforma: Hub Central na barra lateral com os 11 módulos (código em mono e ícone), cabeçalho do workspace na cor de acento do módulo, paleta de comandos sempre à mão e abas dentro do módulo.",
+    "status": "PROVISÓRIA",
+    "secao": "Aplicações",
+    "origem": "C07 e proposta deste brandbook"
+  },
+  {
+    "id": "BB-APL-05",
+    "regra": "Todo painel mostra empty com ação clara (como \"Importar lista\"); nenhum cartão preenche vazio com dado inventado.",
+    "status": "PROVISÓRIA",
+    "secao": "Aplicações",
+    "origem": "AGENTS.md §25"
+  },
+  {
+    "id": "BB-APL-06",
+    "regra": "Dashboard declara os quatro estados (loading, empty, error, stale). Stale mantém o dado anterior visível e informa a idade; error oferece nova tentativa.",
+    "status": "PROVISÓRIA",
+    "secao": "Aplicações",
+    "origem": "Manual do Produto cap. 5 e AGENTS.md §25"
+  },
+  {
+    "id": "BB-APL-07",
+    "regra": "Dashboard em bento de tamanhos desiguais, com o gráfico dominante e números em Plex Mono tabular. Projeção é tracejada e rotulada; linha de dado real é sólida.",
+    "status": "PROVISÓRIA",
+    "secao": "Aplicações",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-APL-08",
+    "regra": "Os 11 módulos compartilham um único sistema (mesma estrutura, mesmos componentes). O contexto muda só por um acento C02, o código em mono (P01 a M11) e o ícone. Não existem onze sistemas visuais.",
+    "status": "PROVISÓRIA",
+    "secao": "Aplicações",
+    "origem": "C07 e proposta deste brandbook"
+  },
+  {
+    "id": "BB-APL-09",
+    "regra": "Acentos: Dourado em P01, P05 e M09; Azul em P02, P07 e M10; Rosa em P04, P08 e M11; Íris em P03 e P06. A atribuição é provisória e não carrega significado fora do módulo.",
+    "status": "PROVISÓRIA",
+    "secao": "Aplicações",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-APL-10",
+    "regra": "Proposta e apresentação seguem a tipografia da marca. Documento em Dark leva logotipo horizontal em Dark; slide em Light usa tinta #0F1A2E e acento Rosa de Light (#C4105F). Campos entre colchetes são placeholders até haver conteúdo real.",
+    "status": "PROVISÓRIA",
+    "secao": "Aplicações",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-APL-11",
+    "regra": "Assinatura de e-mail usa o ícone (sem anel de graduação) a 48 px e o nome em Sora. Logotipo horizontal em fundo claro só com placa escura.",
+    "status": "PROVISÓRIA",
+    "secao": "Aplicações",
+    "origem": "BB-LOGO-13"
+  },
+  {
+    "id": "BB-APL-12",
+    "regra": "Peças sociais usam tipografia em escala grande e grafismo 360°; sem fotografia humana. Uma mensagem por peça, assinatura com ícone e nome no rodapé.",
+    "status": "PROVISÓRIA",
+    "secao": "Aplicações",
+    "origem": "C06 da missão e proposta"
+  },
+  {
+    "id": "BB-APL-13",
+    "regra": "Variações de fundo: Dark, Light e Dourado sólido com texto #0D0D0D (11,92:1). Avatar usa o ícone sobre Dark.",
+    "status": "PROVISÓRIA",
+    "secao": "Aplicações",
+    "origem": "proposta deste brandbook"
+  },
+  {
+    "id": "BB-APL-14",
+    "regra": "Mobile é cidadão de primeira classe: alvos de toque de 44 px ou mais, navegação inferior com rótulos e leitura em Dark e Light. O protótipo foi verificado só em navegador a 390 px, não em dispositivo.",
+    "status": "PROVISÓRIA",
+    "secao": "Aplicações",
+    "origem": ".claude/CLAUDE.md (app Android via Capacitor)"
+  }
+]

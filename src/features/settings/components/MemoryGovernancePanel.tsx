@@ -1,0 +1,761 @@
+import {
+  BrainCircuit,
+  Check,
+  History,
+  Plus,
+  RefreshCw,
+  RotateCcw,
+  ShieldAlert,
+  X,
+} from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { Badge } from '../../../components/ui/Badge.js';
+import { Button } from '../../../components/ui/Button.js';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '../../../components/ui/Card.js';
+import { Input } from '../../../components/ui/Input.js';
+import { Label } from '../../../components/ui/Label.js';
+import { Textarea } from '../../../components/ui/Textarea.js';
+import { useAuth } from '../../../contexts/AuthContext.js';
+import { api } from '../../../lib/api.js';
+import { hasRequiredRole } from '../../../lib/auth/authorization.js';
+import { clientLogger } from '../../../lib/clientLogger.js';
+
+// Consome só `/api/memory/**` (feature job-roles, dono do PROMPT 9) via HTTP — nunca importa
+// nenhum módulo de `src/features/job-roles/**` diretamente (proibido por
+// `no-cross-feature-imports`, `.dependency-cruiser.cjs`). Vive em `settings/components/` porque é
+// o único consumidor (aba "Memória & Aprendizado" de `Settings.tsx`), não porque pertença ao
+// domínio de configurações — mesmo espírito de outras abas de Settings que também só chamam a API
+// de outra feature por HTTP.
+
+type MemoryScope = 'AGENT' | 'ROLE' | 'ORGANIZATION';
+type MemoryCategory =
+  | 'PRICING'
+  | 'DISCOUNT'
+  | 'FORECAST_RULE'
+  | 'CONTRACT'
+  | 'FINANCE'
+  | 'COMPLIANCE'
+  | 'WRITE_AUTOMATION'
+  | 'CAPABILITY'
+  | 'OPERATIONAL';
+type MemoryStatus =
+  | 'PROPOSED'
+  | 'UNDER_REVIEW'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'SUPERSEDED'
+  | 'ROLLED_BACK';
+
+// Mesma matriz de `memory-policy.ts` (backend) — duplicada aqui só para feedback visual
+// imediato (desabilitar o botão antes do clique); quem decide de verdade é sempre o backend,
+// que rejeita com 403 se este espelho ficar desatualizado.
+const SENSITIVE_CATEGORIES: readonly MemoryCategory[] = [
+  'PRICING',
+  'DISCOUNT',
+  'FORECAST_RULE',
+  'CONTRACT',
+  'FINANCE',
+  'COMPLIANCE',
+  'WRITE_AUTOMATION',
+  'CAPABILITY',
+];
+
+interface LearningCandidateDto {
+  id: string;
+  sourceExecutionId: string;
+  agentCode: string;
+  jobRoleCode: string | null;
+  targetScope: MemoryScope;
+  topic: string;
+  category: MemoryCategory;
+  proposedContent: Record<string, unknown> & { summary?: string };
+  reflection: Record<string, unknown> & { rationale?: string };
+  evidence: unknown[];
+  sanitization: { detectedTypes: string[]; requiresManualReview: boolean } | null;
+  status: MemoryStatus;
+  decisionNotes: string | null;
+  decidedAt: string | null;
+  resultingMemoryId: string | null;
+  createdAt: string;
+}
+
+interface MemoryRecordDto {
+  id: string;
+  topic: string;
+  category: MemoryCategory;
+  content: Record<string, unknown> & { summary?: string };
+  version: number;
+  status: MemoryStatus;
+  createdAt: string;
+  rolledBackReason?: string | null;
+}
+
+function categoryLabel(category: MemoryCategory): string {
+  return category
+    .toLowerCase()
+    .split('_')
+    .map((w) => w[0].toUpperCase() + w.slice(1))
+    .join(' ');
+}
+
+function scopeLabel(scope: MemoryScope): string {
+  if (scope === 'AGENT') return 'Agente';
+  if (scope === 'ROLE') return 'Cargo';
+  return 'Organização';
+}
+
+/** Extrai o id da memória ativa em conflito da mensagem literal de erro do backend
+ *  (`Já existe uma memória ativa (<id>) com conteúdo diferente...`, ver `memory.service.ts`) —
+ *  não há campo estruturado para isso na resposta 409 hoje. */
+function extractConflictMemoryId(message: string): string | null {
+  const match = /memória ativa \(([^)]+)\)/.exec(message);
+  return match?.[1] ?? null;
+}
+
+const EMPTY_NEW_CANDIDATE = {
+  sourceExecutionId: '',
+  targetScope: 'AGENT' as MemoryScope,
+  topic: '',
+  category: 'OPERATIONAL' as MemoryCategory,
+  summary: '',
+  rationale: '',
+};
+
+const memoryCandidateSchema = z.object({
+  sourceExecutionId: z.string().trim().min(1, 'Informe o id da execução de origem.'),
+  targetScope: z.enum(['AGENT', 'ROLE', 'ORGANIZATION']),
+  topic: z.string().trim().min(1, 'Informe o tópico aprendido.').max(180, 'Tópico muito longo.'),
+  category: z.enum([
+    'OPERATIONAL',
+    'PRICING',
+    'DISCOUNT',
+    'FORECAST_RULE',
+    'CONTRACT',
+    'FINANCE',
+    'COMPLIANCE',
+    'WRITE_AUTOMATION',
+    'CAPABILITY',
+  ]),
+  summary: z
+    .string()
+    .trim()
+    .min(1, 'Informe o resumo do aprendizado.')
+    .max(500, 'Resumo muito longo.'),
+  rationale: z
+    .string()
+    .trim()
+    .min(1, 'Informe o racional da memória.')
+    .max(1000, 'Racional muito longo.'),
+});
+
+type MemoryCandidateFormValues = z.infer<typeof memoryCandidateSchema>;
+
+export function MemoryGovernancePanel() {
+  const { currentUser } = useAuth();
+  const [candidates, setCandidates] = useState<LearningCandidateDto[]>([]);
+  const [loadingCandidates, setLoadingCandidates] = useState(true);
+  const [candidateError, setCandidateError] = useState<string | null>(null);
+  const [notesByCandidate, setNotesByCandidate] = useState<Record<string, string>>({});
+  const [conflictByCandidate, setConflictByCandidate] = useState<Record<string, string>>({});
+  const [processingId, setProcessingId] = useState<string | null>(null);
+
+  const [showNewForm, setShowNewForm] = useState(false);
+  const {
+    register: registerNewCandidate,
+    handleSubmit: handleNewCandidateSubmit,
+    reset: resetNewCandidate,
+    setError: setNewCandidateFormError,
+    clearErrors: clearNewCandidateFormErrors,
+    formState: { errors: newCandidateErrors, isSubmitting: creatingCandidate },
+  } = useForm<MemoryCandidateFormValues>({
+    resolver: zodResolver(memoryCandidateSchema),
+    defaultValues: EMPTY_NEW_CANDIDATE,
+  });
+
+  const [scope, setScope] = useState<MemoryScope>('ORGANIZATION');
+  const [codeInput, setCodeInput] = useState('');
+  const [records, setRecords] = useState<MemoryRecordDto[]>([]);
+  const [loadingRecords, setLoadingRecords] = useState(false);
+  const [recordsError, setRecordsError] = useState<string | null>(null);
+  const [rollbackReasonById, setRollbackReasonById] = useState<Record<string, string>>({});
+
+  const loadCandidates = useCallback(async () => {
+    setLoadingCandidates(true);
+    setCandidateError(null);
+    try {
+      const res = await api.get<{ candidates: LearningCandidateDto[] }>(
+        '/api/memory/candidates?status=PROPOSED',
+      );
+      setCandidates(res.candidates || []);
+    } catch (err: any) {
+      setCandidateError(
+        err instanceof Error ? err.message : 'Erro ao carregar candidatos de memória.',
+      );
+    } finally {
+      setLoadingCandidates(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadCandidates();
+  }, [loadCandidates]);
+
+  const canDecide = (category: MemoryCategory) => {
+    if (!currentUser) return false;
+    const minRole = SENSITIVE_CATEGORIES.includes(category) ? 'GESTOR' : 'SDR';
+    return hasRequiredRole(currentUser.role, [minRole]);
+  };
+
+  const handleApprove = async (candidate: LearningCandidateDto, supersedesMemoryId?: string) => {
+    setProcessingId(candidate.id);
+    try {
+      await api.post(`/api/memory/candidates/${candidate.id}/approve`, {
+        notes: notesByCandidate[candidate.id]?.trim() || undefined,
+        supersedesMemoryId,
+      });
+      setConflictByCandidate((prev) => {
+        const next = { ...prev };
+        delete next[candidate.id];
+        return next;
+      });
+      await loadCandidates();
+    } catch (err: any) {
+      const message = err instanceof Error ? err.message : 'Erro ao aprovar memória.';
+      const conflictId = extractConflictMemoryId(message);
+      if (conflictId) {
+        setConflictByCandidate((prev) => ({ ...prev, [candidate.id]: conflictId }));
+      } else {
+        clientLogger.error({ err }, 'Error approving learning candidate');
+        setCandidateError(message);
+      }
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleReject = async (candidate: LearningCandidateDto) => {
+    setProcessingId(candidate.id);
+    try {
+      await api.post(`/api/memory/candidates/${candidate.id}/reject`, {
+        notes: notesByCandidate[candidate.id]?.trim() || undefined,
+      });
+      await loadCandidates();
+    } catch (err: any) {
+      clientLogger.error({ err }, 'Error rejecting learning candidate');
+      setCandidateError(err instanceof Error ? err.message : 'Erro ao rejeitar memória.');
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleCreateCandidate = handleNewCandidateSubmit(async (data) => {
+    clearNewCandidateFormErrors('root');
+    try {
+      await api.post('/api/memory/candidates', {
+        sourceExecutionId: data.sourceExecutionId,
+        targetScope: data.targetScope,
+        topic: data.topic,
+        category: data.category,
+        proposedContent: { summary: data.summary },
+        reflection: { rationale: data.rationale },
+      });
+      resetNewCandidate(EMPTY_NEW_CANDIDATE);
+      setShowNewForm(false);
+      await loadCandidates();
+    } catch (err: any) {
+      setNewCandidateFormError('root', {
+        type: 'server',
+        message: err instanceof Error ? err.message : 'Erro ao propor candidato de memória.',
+      });
+    }
+  });
+
+  const loadRecords = useCallback(async () => {
+    if (scope !== 'ORGANIZATION' && !codeInput.trim()) {
+      setRecords([]);
+      return;
+    }
+    setLoadingRecords(true);
+    setRecordsError(null);
+    try {
+      const path =
+        scope === 'ORGANIZATION'
+          ? '/api/memory/organization'
+          : scope === 'AGENT'
+            ? `/api/memory/agent/${encodeURIComponent(codeInput.trim())}`
+            : `/api/memory/role/${encodeURIComponent(codeInput.trim())}`;
+      const res = await api.get<{ memory: MemoryRecordDto[] }>(path);
+      setRecords(res.memory || []);
+    } catch (err: any) {
+      setRecordsError(err instanceof Error ? err.message : 'Erro ao carregar memória ativa.');
+    } finally {
+      setLoadingRecords(false);
+    }
+  }, [scope, codeInput]);
+
+  useEffect(() => {
+    void loadRecords();
+  }, [loadRecords]);
+
+  const canRollback = !!currentUser && hasRequiredRole(currentUser.role, ['GESTOR']);
+
+  const handleRollback = async (record: MemoryRecordDto) => {
+    const reason = rollbackReasonById[record.id]?.trim();
+    if (!reason) {
+      setRecordsError('Informe o motivo do rollback antes de confirmar.');
+      return;
+    }
+    const scopePath = scope.toLowerCase();
+    try {
+      await api.post(`/api/memory/${scopePath}/${record.id}/rollback`, { reason });
+      await loadRecords();
+    } catch (err: any) {
+      setRecordsError(err instanceof Error ? err.message : 'Erro ao revogar memória.');
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <BrainCircuit className="w-5 h-5 text-brand" />
+              Memória & Aprendizado dos Agentes
+            </CardTitle>
+            <CardDescription>
+              Aprovação humana obrigatória antes de qualquer aprendizado virar comportamento real
+              dos agentes de IA — nenhuma mudança de política entra em vigor sem decisão registrada
+              aqui.
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => setShowNewForm((v) => !v)}>
+              <Plus className="w-4 h-4 mr-1.5" />
+              Propor memória
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void loadCandidates()}
+              disabled={loadingCandidates}
+            >
+              <RefreshCw className={`w-4 h-4 mr-1.5 ${loadingCandidates ? 'animate-spin' : ''}`} />
+              Atualizar
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {showNewForm && (
+            <form
+              onSubmit={handleCreateCandidate}
+              noValidate
+              className="border border-line rounded-xl p-4 mb-4 space-y-3 bg-surface-2/40"
+            >
+              <p className="text-xs text-ink-2">
+                Registra manualmente o que uma execução de agente ensinou — sempre ancorado numa
+                execução real e terminal (`AgentExecution.id`), nunca especulativo. Fica{' '}
+                <strong>proposto</strong> aqui até um decisor aprovar.
+              </p>
+              {typeof newCandidateErrors.root?.message === 'string' && (
+                <div
+                  role="alert"
+                  className="p-2.5 bg-danger/10 border border-danger/30 text-danger-active dark:text-danger rounded-lg text-xs"
+                >
+                  {newCandidateErrors.root.message}
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <Label htmlFor="memory-source-execution">Execução de origem</Label>
+                <Input
+                  id="memory-source-execution"
+                  inputSize="sm"
+                  placeholder="Id da AgentExecution de origem"
+                  error={!!newCandidateErrors.sourceExecutionId}
+                  aria-describedby={
+                    newCandidateErrors.sourceExecutionId
+                      ? 'memory-source-execution-error'
+                      : undefined
+                  }
+                  {...registerNewCandidate('sourceExecutionId')}
+                />
+                {newCandidateErrors.sourceExecutionId?.message && (
+                  <p
+                    id="memory-source-execution-error"
+                    className="text-[11px] text-danger-active dark:text-danger"
+                  >
+                    {newCandidateErrors.sourceExecutionId.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <div className="space-y-1.5">
+                  <Label htmlFor="memory-target-scope">Escopo</Label>
+                  <select
+                    id="memory-target-scope"
+                    {...registerNewCandidate('targetScope')}
+                    className="bg-surface-2 border border-line rounded-lg px-2.5 py-1.5 text-xs text-ink outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                    aria-invalid={!!newCandidateErrors.targetScope}
+                  >
+                    <option value="AGENT">Agente</option>
+                    <option value="ROLE">Cargo</option>
+                    <option value="ORGANIZATION">Organização</option>
+                  </select>
+                  {newCandidateErrors.targetScope?.message && (
+                    <p className="text-[11px] text-danger-active dark:text-danger">
+                      {newCandidateErrors.targetScope.message}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="memory-category">Categoria</Label>
+                  <select
+                    id="memory-category"
+                    {...registerNewCandidate('category')}
+                    className="bg-surface-2 border border-line rounded-lg px-2.5 py-1.5 text-xs text-ink outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                    aria-invalid={!!newCandidateErrors.category}
+                  >
+                    {(
+                      [
+                        'OPERATIONAL',
+                        'PRICING',
+                        'DISCOUNT',
+                        'FORECAST_RULE',
+                        'CONTRACT',
+                        'FINANCE',
+                        'COMPLIANCE',
+                        'WRITE_AUTOMATION',
+                        'CAPABILITY',
+                      ] as MemoryCategory[]
+                    ).map((c) => (
+                      <option key={c} value={c}>
+                        {categoryLabel(c)}
+                      </option>
+                    ))}
+                  </select>
+                  {newCandidateErrors.category?.message && (
+                    <p className="text-[11px] text-danger-active dark:text-danger">
+                      {newCandidateErrors.category.message}
+                    </p>
+                  )}
+                </div>
+                <div className="flex-1 min-w-[200px] space-y-1.5">
+                  <Label htmlFor="memory-topic">Tópico</Label>
+                  <Input
+                    id="memory-topic"
+                    inputSize="sm"
+                    placeholder="Tópico (ex: sdr.follow_up.melhor_horario)"
+                    error={!!newCandidateErrors.topic}
+                    aria-describedby={newCandidateErrors.topic ? 'memory-topic-error' : undefined}
+                    {...registerNewCandidate('topic')}
+                  />
+                  {newCandidateErrors.topic?.message && (
+                    <p
+                      id="memory-topic-error"
+                      className="text-[11px] text-danger-active dark:text-danger"
+                    >
+                      {newCandidateErrors.topic.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="memory-summary">Resumo do aprendizado</Label>
+                <Textarea
+                  id="memory-summary"
+                  placeholder="O que foi aprendido (resumo curto e factual)"
+                  className="min-h-[50px] text-xs"
+                  aria-invalid={!!newCandidateErrors.summary}
+                  aria-describedby={newCandidateErrors.summary ? 'memory-summary-error' : undefined}
+                  {...registerNewCandidate('summary')}
+                />
+                {newCandidateErrors.summary?.message && (
+                  <p
+                    id="memory-summary-error"
+                    className="text-[11px] text-danger-active dark:text-danger"
+                  >
+                    {newCandidateErrors.summary.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="memory-rationale">Racional</Label>
+                <Textarea
+                  id="memory-rationale"
+                  placeholder="Por que vale a pena lembrar disso (racional)"
+                  className="min-h-[50px] text-xs"
+                  aria-invalid={!!newCandidateErrors.rationale}
+                  aria-describedby={
+                    newCandidateErrors.rationale ? 'memory-rationale-error' : undefined
+                  }
+                  {...registerNewCandidate('rationale')}
+                />
+                {newCandidateErrors.rationale?.message && (
+                  <p
+                    id="memory-rationale-error"
+                    className="text-[11px] text-danger-active dark:text-danger"
+                  >
+                    {newCandidateErrors.rationale.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex gap-2">
+                <Button size="sm" type="submit" disabled={creatingCandidate}>
+                  Enviar para aprovação
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  type="button"
+                  onClick={() => setShowNewForm(false)}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </form>
+          )}
+
+          {candidateError && (
+            <div className="p-3 bg-danger/10 border border-danger/30 text-danger-active dark:text-danger rounded-xl text-xs flex items-center gap-2 mb-4">
+              <ShieldAlert className="w-4 h-4 shrink-0" />
+              {candidateError}
+            </div>
+          )}
+
+          {loadingCandidates && candidates.length === 0 ? (
+            <div className="text-center py-8 text-xs text-ink-2">Carregando candidatos...</div>
+          ) : candidates.length === 0 ? (
+            <div className="text-center py-8 text-xs text-ink-2 border border-dashed border-line rounded-xl">
+              Nenhum aprendizado aguardando aprovação no momento.
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {candidates.map((candidate) => {
+                const eligible = canDecide(candidate.category);
+                const conflictId = conflictByCandidate[candidate.id];
+                return (
+                  <div
+                    key={candidate.id}
+                    className="border border-line rounded-xl p-4 space-y-3 bg-surface-2/40"
+                  >
+                    <div className="flex flex-wrap items-center gap-2 justify-between">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant="secondary">{categoryLabel(candidate.category)}</Badge>
+                        <Badge variant="outline">
+                          {scopeLabel(candidate.targetScope)}
+                          {candidate.targetScope === 'AGENT' && ` · ${candidate.agentCode}`}
+                          {candidate.targetScope === 'ROLE' &&
+                            candidate.jobRoleCode &&
+                            ` · ${candidate.jobRoleCode}`}
+                        </Badge>
+                        {candidate.sanitization?.requiresManualReview && (
+                          <Badge variant="warning">
+                            Contém dado sensível — revisão obrigatória
+                          </Badge>
+                        )}
+                      </div>
+                      <span className="text-[11px] text-ink-2">
+                        {new Date(candidate.createdAt).toLocaleString('pt-BR')}
+                      </span>
+                    </div>
+
+                    <div>
+                      <p className="text-sm font-bold text-ink">{candidate.topic}</p>
+                      {candidate.proposedContent.summary && (
+                        <p className="text-xs text-ink-2 mt-0.5">
+                          {candidate.proposedContent.summary}
+                        </p>
+                      )}
+                    </div>
+
+                    {candidate.reflection.rationale && (
+                      <p className="text-xs text-ink-2 italic border-l-2 border-line pl-3">
+                        &ldquo;{candidate.reflection.rationale}&rdquo;
+                      </p>
+                    )}
+
+                    <p className="text-[11px] text-ink-2">
+                      {candidate.evidence.length} evidência(s) rastreável(is) · origem: execução{' '}
+                      {candidate.sourceExecutionId.slice(0, 8)}...
+                    </p>
+
+                    {!eligible && (
+                      <p className="text-[11px] text-warning-active dark:text-warning">
+                        Esta categoria exige nível de GESTOR ou superior para decidir.
+                      </p>
+                    )}
+
+                    {conflictId && (
+                      <div className="p-2.5 bg-warning/10 border border-warning/30 rounded-lg text-xs text-warning-active dark:text-warning space-y-2">
+                        <p>
+                          Já existe uma memória ativa diferente para este tópico. Aprovar substitui
+                          a versão atual (nunca some — fica versionada e reversível).
+                        </p>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={processingId === candidate.id}
+                          onClick={() => void handleApprove(candidate, conflictId)}
+                        >
+                          Confirmar substituição
+                        </Button>
+                      </div>
+                    )}
+
+                    <Textarea
+                      placeholder="Nota da decisão (opcional)"
+                      value={notesByCandidate[candidate.id] ?? ''}
+                      onChange={(e) =>
+                        setNotesByCandidate((prev) => ({
+                          ...prev,
+                          [candidate.id]: e.target.value,
+                        }))
+                      }
+                      className="min-h-[60px] text-xs"
+                    />
+
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        disabled={!eligible || processingId === candidate.id}
+                        onClick={() => void handleApprove(candidate)}
+                      >
+                        <Check className="w-4 h-4 mr-1.5" />
+                        Aprovar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={!eligible || processingId === candidate.id}
+                        onClick={() => void handleReject(candidate)}
+                      >
+                        <X className="w-4 h-4 mr-1.5" />
+                        Rejeitar
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <History className="w-5 h-5 text-brand" />
+            Memória ativa
+          </CardTitle>
+          <CardDescription>
+            O que está em vigor hoje para um agente, cargo ou para a organização inteira —
+            versionado, com rollback disponível para GESTOR/ADMIN.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={scope}
+              onChange={(e) => setScope(e.target.value as MemoryScope)}
+              className="bg-surface-2 border border-line rounded-lg px-2.5 py-1.5 text-xs text-ink outline-none focus-visible:ring-2 focus-visible:ring-brand"
+              aria-label="Escopo da memória"
+            >
+              <option value="ORGANIZATION">Organização</option>
+              <option value="AGENT">Agente (por código)</option>
+              <option value="ROLE">Cargo (por código)</option>
+            </select>
+            {scope !== 'ORGANIZATION' && (
+              <input
+                type="text"
+                value={codeInput}
+                onChange={(e) => setCodeInput(e.target.value)}
+                placeholder={scope === 'AGENT' ? 'Código do agente (ex: sdr)' : 'Código do cargo'}
+                className="bg-surface-2 border border-line rounded-lg px-2.5 py-1.5 text-xs text-ink outline-none focus-visible:ring-2 focus-visible:ring-brand placeholder:text-ink-2"
+              />
+            )}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => void loadRecords()}
+              disabled={loadingRecords}
+            >
+              Buscar
+            </Button>
+          </div>
+
+          {recordsError && (
+            <div className="p-3 bg-danger/10 border border-danger/30 text-danger-active dark:text-danger rounded-xl text-xs">
+              {recordsError}
+            </div>
+          )}
+
+          {loadingRecords ? (
+            <div className="text-center py-6 text-xs text-ink-2">Carregando memória ativa...</div>
+          ) : records.length === 0 ? (
+            <div className="text-center py-6 text-xs text-ink-2 border border-dashed border-line rounded-xl">
+              Nenhuma memória ativa encontrada para este escopo.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {records.map((record) => (
+                <div key={record.id} className="border border-line rounded-xl p-3 space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary">{categoryLabel(record.category)}</Badge>
+                      <Badge variant="outline">v{record.version}</Badge>
+                    </div>
+                    <span className="text-[11px] text-ink-2">
+                      {new Date(record.createdAt).toLocaleString('pt-BR')}
+                    </span>
+                  </div>
+                  <p className="text-sm font-bold text-ink">{record.topic}</p>
+                  {record.content.summary && (
+                    <p className="text-xs text-ink-2">{record.content.summary}</p>
+                  )}
+                  {canRollback && (
+                    <div className="flex items-center gap-2 pt-1">
+                      <input
+                        type="text"
+                        value={rollbackReasonById[record.id] ?? ''}
+                        onChange={(e) =>
+                          setRollbackReasonById((prev) => ({
+                            ...prev,
+                            [record.id]: e.target.value,
+                          }))
+                        }
+                        placeholder="Motivo do rollback"
+                        className="flex-1 bg-surface-2 border border-line rounded-lg px-2.5 py-1 text-xs text-ink outline-none focus-visible:ring-2 focus-visible:ring-brand placeholder:text-ink-2"
+                      />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => void handleRollback(record)}
+                      >
+                        <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
+                        Rollback
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

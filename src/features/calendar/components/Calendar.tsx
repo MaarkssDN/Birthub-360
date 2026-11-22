@@ -1,0 +1,539 @@
+import {
+  DndContext,
+  type DragEndEvent,
+  DragOverlay,
+  type DragStartEvent,
+  PointerSensor,
+  useDraggable,
+  useDroppable,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  AlertTriangle,
+  CalendarDays,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Link2,
+  Loader2,
+  X,
+} from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Button } from '../../../components/ui/Button.js';
+import { Card } from '../../../components/ui/Card.js';
+import { Dialog } from '../../../components/ui/Dialog.js';
+import { useAuth } from '../../../contexts/AuthContext.js';
+import { useBrandAccent } from '../../../hooks/useBrandAccent.js';
+import { downloadFile } from '../../../lib/api.js';
+import { hasRequiredRole } from '../../../lib/auth/authorization.js';
+import { SoundFX } from '../../../lib/soundEffects.js';
+import { toast } from '../../../lib/toast.js';
+import {
+  type ActivityStatus,
+  activitySubject,
+  type CalendarActivity,
+  calendarApi,
+} from '../calendar.api.js';
+import {
+  addMonths,
+  buildMonthGrid,
+  dayKey,
+  groupByDay,
+  isSameDay,
+  monthGridRange,
+  moveToDay,
+} from '../calendar.util.js';
+import { PageHeader } from '../../../components/ui/PageHeader.js';
+import { BookingLinksModal } from './BookingLinksModal.js';
+
+const WEEKDAYS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+
+/**
+ * Cor por status. São estados, não séries: seguem a paleta de status (com rótulo textual junto,
+ * nunca só a cor) em vez das cores categóricas usadas em gráficos.
+ */
+const STATUS_STYLE: Record<ActivityStatus, string> = {
+  Pendente: 'bg-warning/15 text-warning-active dark:text-warning border-warning/30',
+  'Em andamento': 'bg-info/15 text-info-active dark:text-info border-info/30',
+  Concluída: 'bg-success/15 text-success-active dark:text-success border-success/30',
+  Cancelada: 'bg-surface-2 text-ink-2 border-line line-through',
+};
+
+function timeLabel(activity: CalendarActivity): string {
+  if (activity.time) return activity.time;
+  const d = new Date(activity.date);
+  return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function ActivityCard({ activity, dragging }: { activity: CalendarActivity; dragging?: boolean }) {
+  return (
+    <div
+      className={`w-full text-left px-1.5 py-1 rounded-md border text-[10px] leading-tight ${STATUS_STYLE[activity.status]} ${
+        dragging ? 'shadow-lg' : ''
+      }`}
+    >
+      <span className="font-semibold">{timeLabel(activity)}</span>{' '}
+      <span className="opacity-90">{activity.type}</span>
+      <span className="block truncate opacity-75">{activitySubject(activity)}</span>
+    </div>
+  );
+}
+
+function DraggableActivity({
+  activity,
+  onOpen,
+  canDrag,
+}: {
+  activity: CalendarActivity;
+  onOpen: (a: CalendarActivity) => void;
+  canDrag: boolean;
+}) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: activity.id,
+    // `PUT /api/activities/:id` exige ADMIN/GESTOR/CLOSER/SDR — um VISUALIZADOR conseguia
+    // arrastar o card (o cursor `cursor-grab` sugeria que funcionava) e só descobria que não tinha
+    // permissão quando o backend recusava e a UI revertia a posição (achado do Piloto 020, mesmo
+    // padrão dos Pilotos 017-019). `disabled` do próprio dnd-kit impede o pickup por completo.
+    disabled: !canDrag,
+  });
+
+  return (
+    // Elemento é alvo de useDraggable (dnd-kit) — listeners/attributes esperam um elemento
+    // genérico, não um <button type="button"> nativo (padrão já estabelecido no Piloto 020, ver
+    // .claude/PILOTS.md).
+    // biome-ignore lint/a11y/useSemanticElements: ver comentário acima
+    <div
+      ref={setNodeRef}
+      {...(canDrag ? listeners : {})}
+      {...attributes}
+      role="button"
+      tabIndex={0}
+      aria-label={`${activity.type} — ${activitySubject(activity)} — ${activity.status}`}
+      // `{...listeners}` do dnd-kit já traz o próprio onKeyDown (Space ativa o pickup de
+      // arrastar) — sobrescrever sem chamá-lo primeiro reproduziria o mesmo bug real já
+      // encontrado e corrigido em CrmBoard.tsx/KanbanCard (onKeyDown customizado apagando o do
+      // dnd-kit, drag por teclado ficava inoperável). Enter abre o detalhe, sem colidir com Space.
+      onKeyDown={(e) => {
+        if (canDrag) listeners?.onKeyDown?.(e);
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          e.currentTarget.click();
+        }
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          onOpen(activity);
+        }
+      }}
+      onClick={() => onOpen(activity)}
+      className={`${canDrag ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'} ${isDragging ? 'opacity-30' : ''}`}
+    >
+      <ActivityCard activity={activity} />
+    </div>
+  );
+}
+
+function DayCell({
+  date,
+  inMonth,
+  isToday,
+  activities,
+  onOpen,
+  canDrag,
+}: {
+  date: Date;
+  inMonth: boolean;
+  isToday: boolean;
+  activities: CalendarActivity[];
+  onOpen: (a: CalendarActivity) => void;
+  canDrag: boolean;
+}) {
+  const key = dayKey(date);
+  const { setNodeRef, isOver } = useDroppable({ id: key });
+  const accent = useBrandAccent();
+
+  // Três cabem sem esticar a célula; o resto vira "+N", que abre o dia.
+  const visible = activities.slice(0, 3);
+  const hidden = activities.length - visible.length;
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`min-h-[104px] p-1.5 border border-line flex flex-col gap-1 transition-colors ${
+        inMonth ? 'bg-surface-2' : 'bg-surface-2/40'
+      } ${isOver ? `${accent.bgSoft} ring-1 ${accent.border}` : ''}`}
+    >
+      <div className="flex items-center justify-between">
+        <span
+          className={`text-[11px] font-semibold w-5 h-5 flex items-center justify-center rounded-full ${
+            isToday ? `${accent.bg} text-on-brand` : 'text-ink-2'
+          }`}
+        >
+          {date.getDate()}
+        </span>
+        {activities.length > 0 && (
+          <span className="text-[10px] text-ink-2">{activities.length}</span>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-1">
+        {visible.map((a) => (
+          <DraggableActivity key={a.id} activity={a} onOpen={onOpen} canDrag={canDrag} />
+        ))}
+        {hidden > 0 && (
+          <button
+            type="button"
+            onClick={() => onOpen(activities[visible.length])}
+            className="text-[10px] text-ink-2 hover:text-ink text-left transition-colors"
+          >
+            +{hidden} {hidden === 1 ? 'outra' : 'outras'}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function Calendar() {
+  const { currentUser } = useAuth();
+  // PUT /api/activities/:id (arrastar pra remarcar, Cancelar/Concluir) exige ADMIN/GESTOR/CLOSER/
+  // SDR no backend — VISUALIZADOR não estava nessa lista, mas a UI nunca escondia essas ações
+  // (achado do Piloto 020, mesmo padrão dos Pilotos 017-019).
+  const canWrite =
+    !!currentUser && hasRequiredRole(currentUser.role, ['ADMIN', 'GESTOR', 'CLOSER', 'SDR']);
+  const [reference, setReference] = useState(() => new Date());
+  const [activities, setActivities] = useState<CalendarActivity[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [dragged, setDragged] = useState<CalendarActivity | null>(null);
+  const [selected, setSelected] = useState<CalendarActivity | null>(null);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+
+  // Distância mínima antes de virar arrasto: sem isso, um clique simples no card já
+  // iniciaria drag e o usuário nunca conseguiria abrir o detalhe.
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+
+  const load = useCallback(async (ref: Date) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { from, to } = monthGridRange(ref);
+      setActivities(await calendarApi.range(from, to));
+    } catch (err: any) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void load(reference);
+  }, [load, reference]);
+
+  const grid = useMemo(() => buildMonthGrid(reference), [reference]);
+  const byDay = useMemo(() => groupByDay(activities), [activities]);
+  const today = new Date();
+
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      SoundFX.play('focus');
+      setDragged(activities.find((a) => a.id === event.active.id) ?? null);
+    },
+    [activities],
+  );
+
+  const handleDragEnd = useCallback(
+    async (event: DragEndEvent) => {
+      const { active, over } = event;
+      setDragged(null);
+      if (!over) return;
+
+      const act = activities.find((a) => a.id === active.id);
+      if (!act) return;
+
+      const targetKey = String(over.id);
+      const novaData = moveToDay(act.date, targetKey);
+      const anterior = [...activities];
+
+      SoundFX.play('confirm');
+      setActivities((lista) =>
+        lista.map((item) =>
+          item.id === act.id ? { ...item, date: novaData.toISOString() } : item,
+        ),
+      );
+
+      try {
+        await calendarApi.update(act.id, { date: novaData.toISOString() });
+        toast.success('Atividade remarcada.');
+      } catch (err: any) {
+        setActivities(anterior);
+        toast.error((err as Error).message);
+      }
+    },
+    [activities],
+  );
+
+  const changeStatus = useCallback(
+    async (activity: CalendarActivity, status: ActivityStatus) => {
+      const statusAnterior = activity.status;
+      const anterior = [...activities];
+
+      setActivities((lista) =>
+        lista.map((item) => (item.id === activity.id ? { ...item, status } : item)),
+      );
+      setSelected((s) => (s && s.id === activity.id ? { ...s, status } : s));
+
+      try {
+        await calendarApi.update(activity.id, { status });
+        toast.success(`Status atualizado para ${status}.`);
+      } catch (err: any) {
+        setActivities(anterior);
+        setSelected((s) => (s && s.id === activity.id ? { ...s, status: statusAnterior } : s));
+        toast.error((err as Error).message);
+      }
+    },
+    [activities],
+  );
+
+  const monthLabel = reference.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+  return (
+    <div className="flex-1 overflow-y-auto bg-transparent">
+      <div className="bh-page">
+        <div className="bh-page-stack">
+          <PageHeader
+            title={monthLabel}
+            subtitle={
+              loading
+                ? 'Carregando...'
+                : `${activities.length} atividade${activities.length === 1 ? '' : 's'} no período — arraste para remarcar`
+            }
+            icon={<CalendarDays className="w-5 h-5" />}
+            actions={
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Botão Links de Agendamento (Calendly) - sem requireRole no backend, qualquer papel
+                    autenticado gerencia os próprios links; nenhum gate de papel necessário aqui. */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  sound="focus"
+                  onClick={() => setIsBookingModalOpen(true)}
+                  className="text-xs"
+                  title="Gerenciar links públicos de agendamento estilo Calendly"
+                >
+                  <Link2 className="w-4 h-4 mr-1.5 text-brand" /> Links de Agendamento
+                </Button>
+
+                {/* Botão Baixar Agenda (.ics) - /api/activities/feed.ics exige sessão autenticada
+                    (cookie), então um app externo (Google/Apple Calendar) fazendo *subscribe* por URL
+                    nunca consegue buscar essa rota: o cookie nunca vai junto na requisição que o
+                    provedor do calendário faz do lado dele. O botão antes copiava essa URL e prometia
+                    "sincronizar" - funcionava só no instante em que a pessoa colava e o navegador
+                    dela (autenticado) buscava uma vez; a assinatura periódica real sempre falhava
+                    depois. Correção: baixa o .ics agora, para importar manualmente - mesmo padrão já
+                    usado em downloadExecutiveExport/handleExportCsv. */}
+                <Button
+                  type="button"
+                  variant="secondary"
+                  sound="confirm"
+                  onClick={() => {
+                    void downloadFile(
+                      `${window.location.origin}/api/activities/feed.ics`,
+                      'agenda.ics',
+                    ).catch((err) => {
+                      toast.error(err instanceof Error ? err.message : 'Falha ao baixar a agenda.');
+                    });
+                  }}
+                  className="text-xs"
+                  title="Baixar agenda em .ics para importar no Google Agenda / Apple Calendar"
+                >
+                  <Download className="w-4 h-4 mr-1.5" /> Baixar Agenda (.ics)
+                </Button>
+
+                <div className="flex items-center gap-1 pl-2 border-l border-line">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    sound="navigate"
+                    onClick={() => setReference((r) => addMonths(r, -1))}
+                    aria-label="Mês anterior"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    sound="navigate"
+                    onClick={() => setReference(new Date())}
+                  >
+                    Hoje
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    sound="navigate"
+                    onClick={() => setReference((r) => addMonths(r, 1))}
+                    aria-label="Próximo mês"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            }
+          />
+
+          {error && (
+            <div className="bg-surface-elevated/80 backdrop-blur-md border border-line shadow-card rounded-card p-8 text-center">
+              <AlertTriangle className="w-8 h-8 mx-auto mb-3 text-danger-active dark:text-danger" />
+              <p className="text-sm text-ink-2 mb-4">{error}</p>
+              <Button type="button" variant="outline" onClick={() => void load(reference)}>
+                Tentar novamente
+              </Button>
+            </div>
+          )}
+
+          {!error && (
+            <Card
+              padding="none"
+              className={`overflow-hidden transition-opacity ${loading ? 'opacity-60' : ''}`}
+            >
+              <div className="grid grid-cols-7 border-b border-line">
+                {WEEKDAYS.map((d) => (
+                  <div
+                    key={d}
+                    className="py-2 text-center text-[11px] font-bold uppercase tracking-wide text-ink-2"
+                  >
+                    {d}
+                  </div>
+                ))}
+              </div>
+
+              <DndContext
+                sensors={sensors}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+                onDragCancel={() => setDragged(null)}
+              >
+                <div className="grid grid-cols-7">
+                  {grid.map((date) => (
+                    <DayCell
+                      key={dayKey(date)}
+                      date={date}
+                      inMonth={date.getMonth() === reference.getMonth()}
+                      isToday={isSameDay(date, today)}
+                      activities={byDay.get(dayKey(date)) ?? []}
+                      onOpen={setSelected}
+                      canDrag={canWrite}
+                    />
+                  ))}
+                </div>
+
+                {/* Fantasma que segue o cursor durante o arrasto. */}
+                <DragOverlay>
+                  {dragged && (
+                    <div className="w-40">
+                      <ActivityCard activity={dragged} dragging />
+                    </div>
+                  )}
+                </DragOverlay>
+              </DndContext>
+            </Card>
+          )}
+
+          {!loading && !error && activities.length === 0 && (
+            <Card padding="lg" className="text-center border-dashed">
+              <CalendarDays className="w-12 h-12 mx-auto mb-4 text-ink-2" />
+              <h3 className="text-lg font-semibold text-ink mb-1">Nenhuma atividade neste mês</h3>
+              <p className="text-sm text-ink-2">
+                As atividades criadas na Agenda e no CRM aparecem aqui automaticamente.
+              </p>
+            </Card>
+          )}
+        </div>
+
+        {/* Detalhe do dia/atividade */}
+        <Dialog
+          isOpen={!!selected}
+          onClose={() => setSelected(null)}
+          title={
+            selected ? (
+              <div>
+                <span className="block text-lg font-bold text-ink">{selected.type}</span>
+                <span className="block text-sm font-normal text-ink-2">
+                  {activitySubject(selected)}
+                </span>
+              </div>
+            ) : (
+              ''
+            )
+          }
+          maxWidth="max-w-md"
+          footer={
+            selected && canWrite ? (
+              <>
+                {selected.status !== 'Cancelada' && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => void changeStatus(selected, 'Cancelada')}
+                  >
+                    <X className="w-4 h-4 mr-2" /> Cancelar
+                  </Button>
+                )}
+                {selected.status !== 'Concluída' && (
+                  <Button type="button" onClick={() => void changeStatus(selected, 'Concluída')}>
+                    <Check className="w-4 h-4 mr-2" /> Concluir
+                  </Button>
+                )}
+              </>
+            ) : undefined
+          }
+        >
+          {selected && (
+            <>
+              <dl className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <dt className="text-ink-2">Data</dt>
+                  <dd className="text-ink">
+                    {new Date(selected.date).toLocaleDateString('pt-BR', { dateStyle: 'full' })}
+                  </dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-ink-2">Horário</dt>
+                  <dd className="text-ink">{timeLabel(selected)}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-ink-2">Responsável</dt>
+                  <dd className="text-ink">{selected.owner}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-ink-2">Status</dt>
+                  <dd className="text-ink">{selected.status}</dd>
+                </div>
+              </dl>
+
+              {selected.observations && (
+                <p className="mt-3 text-sm text-ink-2 bg-surface-2 rounded-xl p-3 whitespace-pre-wrap">
+                  {selected.observations}
+                </p>
+              )}
+            </>
+          )}
+        </Dialog>
+
+        {/* Modal de Gestão de Links de Agendamento */}
+        <BookingLinksModal
+          isOpen={isBookingModalOpen}
+          onClose={() => setIsBookingModalOpen(false)}
+        />
+
+        {loading && activities.length === 0 && !error && (
+          <div className="fixed bottom-8 right-8 flex items-center gap-2 text-sm text-ink-2 bg-surface border border-line rounded-xl px-4 py-2">
+            <Loader2 className="w-4 h-4 animate-spin" /> Carregando atividades…
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

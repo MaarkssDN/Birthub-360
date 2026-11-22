@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "birthhub-360.fullname" . }}
+  labels:
+    {{- include "birthhub-360.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "birthhub-360.selectorLabels" . | nindent 4 }}
+    # Ver deployment.yaml/rollout.yaml — sem isto o Service também elegeria pods do worker
+    # (que só expõem a porta "health", não "http"; o Endpoint ficaria sem esse pod para esta
+    # porta, mas o selector continuaria semanticamente errado e o pod apareceria nos Endpoints
+    # do Service sem porta correspondente).
+    app.kubernetes.io/component: web

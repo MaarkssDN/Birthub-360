@@ -1,0 +1,461 @@
+import { describe, it, expect, afterAll } from 'vitest';
+import { prisma } from '../../src/lib/prisma';
+import { requestContext } from '../../src/lib/async-context';
+import {
+  eraseDataSubject,
+  ANONYMIZED_CONTACT_NAME,
+  ANONYMIZED_TRANSCRIPT_SEGMENT_TEXT,
+} from '../../src/shared/services/dataSubjectErasure.service';
+
+// Handoff: .agents/handoffs/onda-6/01A-para-14-lgpd-erasure-cross-tenant-test.md
+//
+// Cobre o item 4 da missão do Agente 01A (.agents/prompts/01A-dados-rls-retencao.md): "cria
+// titular em duas organizações, apaga em uma e comprova que a outra permanece intacta". O 01A já
+// tinha provado isso ao vivo contra Postgres real (9/9 checks OK) com um script temporário não
+// commitado — este arquivo é a versão permanente, no padrão de
+// tests/integration/tenant-isolation-db001.test.ts, para pegar regressão futura em
+// eraseDataSubject (src/shared/services/dataSubjectErasure.service.ts).
+//
+// Cria dados reais (Company/Contact/Lead/WhatsAppMessage/ConversationSignal/TimelineEvent) em duas
+// organizações (ORG_A/ORG_B) fora de qualquer request HTTP — por isso usa bypassRls só para
+// setup/leitura de asserção/teardown (ver src/lib/async-context.ts), igual ao padrão já
+// estabelecido. `eraseDataSubject` em si roda sob RLS real: a própria função já abre
+// requestContext.run({ tenantId: organizationId }) internamente (ver dataSubjectErasure.service.ts),
+// então chamá-la para o titular de ORG_A já exercita a policy de RLS de verdade, não um bypass.
+//
+// IMPORTANTE — pegadinha real encontrada escrevendo este arquivo: o callback passado a
+// `requestContext.run()` PRECISA ser uma função `async` (mesmo sem nenhum `await` dentro dela).
+// `src/lib/prisma.ts` lê `requestContext.getStore()` de forma síncrona no topo do
+// `$allOperations` da extensão do Prisma; se o callback passado a `run()` for uma arrow function
+// não-async que só repassa a Promise (`() => prisma.x.create(...)`), o motor de query do Prisma
+// 7 (`client-engine-runtime`) processa a chamada fora da janela em que o AsyncLocalStorage
+// considera o contexto "ativo", e `getStore()` volta `undefined` — sem tenantId nem bypassRls, a
+// policy de RLS nega o INSERT/UPDATE com "new row violates row-level security policy", mesmo
+// tendo passado tenantId/bypassRls corretos para `run()`. Envolver o callback em `async () => {...}`
+// (o padrão já usado em todo o resto de `tests/integration/`) resolve — por isso todo `withTenant`/
+// `withBypass` abaixo usa `async`, mesmo quando não há `await` explícito no corpo.
+const withBypass = <T>(fn: () => Promise<T>): Promise<T> =>
+  requestContext.run({ bypassRls: true }, fn);
+
+const withTenant = <T>(tenantId: string, fn: () => Promise<T>): Promise<T> =>
+  requestContext.run({ tenantId }, fn);
+
+const suffix = `${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+const ORG_A = `test-lgpd-org-a-${suffix}`;
+const ORG_B = `test-lgpd-org-b-${suffix}`;
+
+describe('eraseDataSubject — exclusão de titular sem vazamento cross-tenant (integração real)', () => {
+  // WhatsAppMessage/ConversationSignal não estão no allowlist de bypass (BYPASS_RLS_ALLOWED_MODELS,
+  // src/lib/prisma.ts) — ITEM-02 fechou a RLS dessas tabelas pra bypass. Limpa por tenant.
+  afterAll(async () => {
+    for (const org of [ORG_A, ORG_B]) {
+      await withTenant(org, async () => {
+        await prisma.whatsAppMessage.deleteMany({ where: { organizationId: org } });
+        await prisma.conversationSignal.deleteMany({ where: { organizationId: org } });
+        await prisma.voiceCallLog.deleteMany({ where: { organizationId: org } });
+        // Filhas antes do pai (mesma ordem da FK `onDelete: Cascade` — apagadas explicitamente,
+        // não por cascade, mesmo cuidado das três linhas acima).
+        await prisma.copilotoTranscriptSegment.deleteMany({ where: { organizationId: org } });
+        await prisma.copilotoInsight.deleteMany({ where: { organizationId: org } });
+        await prisma.copilotoConversation.deleteMany({ where: { organizationId: org } });
+      });
+    }
+    // TimelineEvent não tem organizationId próprio (filtra via Lead pai — ver schema.prisma) — o
+    // afterEach global de tests/helpers/integration-setup.ts já limpa Lead/Contact/Company/
+    // TimelineEvent sem where (roda depois de cada teste), então isto é defensivo/idempotente caso
+    // este arquivo rode sozinho fora dessa suíte.
+    await withBypass(() =>
+      prisma.organization.deleteMany({ where: { id: { in: [ORG_A, ORG_B] } } }),
+    );
+  });
+
+  it('apaga titular de ORG_A sem tocar o titular equivalente em ORG_B, e RLS real bloqueia leitura cross-tenant', async () => {
+    // --- Seed: duas organizações, cada uma com Company → Contact → Lead → WhatsAppMessage/
+    // ConversationSignal/TimelineEvent ligados ao mesmo titular (Contact). ---
+    await withBypass(async () => {
+      await prisma.organization.create({ data: { id: ORG_A, name: 'Test LGPD Org A' } });
+      await prisma.organization.create({ data: { id: ORG_B, name: 'Test LGPD Org B' } });
+    });
+
+    const companyA = await withTenant(ORG_A, async () =>
+      prisma.company.create({ data: { legalName: 'Empresa A LTDA', tradeName: 'Empresa A' } }),
+    );
+    const companyB = await withTenant(ORG_B, async () =>
+      prisma.company.create({ data: { legalName: 'Empresa B LTDA', tradeName: 'Empresa B' } }),
+    );
+
+    const contactA = await withTenant(ORG_A, async () =>
+      prisma.contact.create({
+        data: {
+          name: 'Titular A',
+          phone: '+5511999990001',
+          whatsapp: '+5511999990001',
+          email: 'titular-a@example.com',
+          linkedin: 'https://linkedin.com/in/titular-a',
+          observations: 'Observação sensível sobre o titular A',
+          companyId: companyA.id,
+        },
+      }),
+    );
+    const contactB = await withTenant(ORG_B, async () =>
+      prisma.contact.create({
+        data: {
+          name: 'Titular B',
+          phone: '+5511999990002',
+          whatsapp: '+5511999990002',
+          email: 'titular-b@example.com',
+          linkedin: 'https://linkedin.com/in/titular-b',
+          observations: 'Observação sensível sobre o titular B',
+          companyId: companyB.id,
+        },
+      }),
+    );
+
+    const leadA = await withTenant(ORG_A, async () =>
+      prisma.lead.create({
+        data: { contactId: contactA.id, companyId: companyA.id, title: 'Negócio A' },
+      }),
+    );
+    const leadB = await withTenant(ORG_B, async () =>
+      prisma.lead.create({
+        data: { contactId: contactB.id, companyId: companyB.id, title: 'Negócio B' },
+      }),
+    );
+
+    await withTenant(ORG_A, async () =>
+      prisma.whatsAppMessage.create({
+        data: {
+          organizationId: ORG_A,
+          waMessageId: `wa-a-${suffix}`,
+          direction: 'inbound',
+          phoneE164: '+5511999990001',
+          body: 'Mensagem de PII do titular A',
+          contactId: contactA.id,
+          leadId: leadA.id,
+        },
+      }),
+    );
+    await withTenant(ORG_B, async () =>
+      prisma.whatsAppMessage.create({
+        data: {
+          organizationId: ORG_B,
+          waMessageId: `wa-b-${suffix}`,
+          direction: 'inbound',
+          phoneE164: '+5511999990002',
+          body: 'Mensagem de PII do titular B',
+          contactId: contactB.id,
+          leadId: leadB.id,
+        },
+      }),
+    );
+
+    await withTenant(ORG_A, async () =>
+      prisma.conversationSignal.create({
+        data: {
+          organizationId: ORG_A,
+          leadId: leadA.id,
+          messageCount: 3,
+          intent: 'alta_intencao_compra',
+          summary: 'Resumo citando o titular A por nome',
+          nextStep: 'Ligar para o titular A amanhã',
+          objections: ['preço'],
+          rawModelOutput: { raw: 'saída do modelo sobre A' },
+        },
+      }),
+    );
+    await withTenant(ORG_B, async () =>
+      prisma.conversationSignal.create({
+        data: {
+          organizationId: ORG_B,
+          leadId: leadB.id,
+          messageCount: 2,
+          intent: 'duvida_tecnica',
+          summary: 'Resumo citando o titular B por nome',
+          nextStep: 'Enviar proposta ao titular B',
+          objections: ['prazo'],
+          rawModelOutput: { raw: 'saída do modelo sobre B' },
+        },
+      }),
+    );
+
+    await withTenant(ORG_A, async () =>
+      prisma.timelineEvent.create({
+        data: {
+          type: 'comment',
+          description: 'Ligação com o titular A sobre o contrato',
+          leadId: leadA.id,
+        },
+      }),
+    );
+    await withTenant(ORG_B, async () =>
+      prisma.timelineEvent.create({
+        data: {
+          type: 'comment',
+          description: 'Ligação com o titular B sobre o contrato',
+          leadId: leadB.id,
+        },
+      }),
+    );
+
+    await withTenant(ORG_A, async () =>
+      prisma.voiceCallLog.create({
+        data: {
+          organizationId: ORG_A,
+          leadId: leadA.id,
+          providerCallId: `call-a-${suffix}`,
+          outcome: 'connected_positive',
+          durationSeconds: 120,
+          summary: 'Resumo da ligação com o titular A',
+          transcript: 'Transcrição completa da ligação com o titular A',
+          recordingUrl: 'https://cdn.example.com/recordings/call-a.mp3',
+        },
+      }),
+    );
+    await withTenant(ORG_B, async () =>
+      prisma.voiceCallLog.create({
+        data: {
+          organizationId: ORG_B,
+          leadId: leadB.id,
+          providerCallId: `call-b-${suffix}`,
+          outcome: 'connected_positive',
+          durationSeconds: 90,
+          summary: 'Resumo da ligação com o titular B',
+          transcript: 'Transcrição completa da ligação com o titular B',
+          recordingUrl: 'https://cdn.example.com/recordings/call-b.mp3',
+        },
+      }),
+    );
+
+    // --- CopilotoConversation (Copiloto Comercial IA — ACH-VOICE-003) com `contactId` DIRETO,
+    // mais um segmento de transcrição e um insight derivado, para os dois titulares. ---
+    const conversationA = await withTenant(ORG_A, async () =>
+      prisma.copilotoConversation.create({
+        data: {
+          organizationId: ORG_A,
+          source: 'CALL',
+          contactId: contactA.id,
+          leadId: leadA.id,
+        },
+      }),
+    );
+    const conversationB = await withTenant(ORG_B, async () =>
+      prisma.copilotoConversation.create({
+        data: {
+          organizationId: ORG_B,
+          source: 'CALL',
+          contactId: contactB.id,
+          leadId: leadB.id,
+        },
+      }),
+    );
+
+    const segmentA = await withTenant(ORG_A, async () =>
+      prisma.copilotoTranscriptSegment.create({
+        data: {
+          organizationId: ORG_A,
+          conversationId: conversationA.id,
+          startMs: 0,
+          endMs: 5000,
+          text: 'Transcrição citando o titular A por nome',
+        },
+      }),
+    );
+    const segmentB = await withTenant(ORG_B, async () =>
+      prisma.copilotoTranscriptSegment.create({
+        data: {
+          organizationId: ORG_B,
+          conversationId: conversationB.id,
+          startMs: 0,
+          endMs: 5000,
+          text: 'Transcrição citando o titular B por nome',
+        },
+      }),
+    );
+
+    await withTenant(ORG_A, async () =>
+      prisma.copilotoInsight.create({
+        data: {
+          organizationId: ORG_A,
+          conversationId: conversationA.id,
+          type: 'objecao',
+          valueJson: { detalhe: 'Objeção de preço levantada pelo titular A' },
+          evidenceSegmentIds: [segmentA.id],
+        },
+      }),
+    );
+    await withTenant(ORG_B, async () =>
+      prisma.copilotoInsight.create({
+        data: {
+          organizationId: ORG_B,
+          conversationId: conversationB.id,
+          type: 'objecao',
+          valueJson: { detalhe: 'Objeção de prazo levantada pelo titular B' },
+          evidenceSegmentIds: [segmentB.id],
+        },
+      }),
+    );
+
+    // --- Ação sob teste: apaga o titular de ORG_A (RLS real — eraseDataSubject roda sob o
+    // tenant da própria organização passada, não sob bypass). ---
+    const result = await eraseDataSubject({ organizationId: ORG_A, contactId: contactA.id });
+
+    expect(result).toMatchObject({
+      contactId: contactA.id,
+      whatsAppMessagesMasked: 1,
+      conversationSignalsRedacted: 1,
+      timelineEventsRedacted: 1,
+      voiceCallLogsRedacted: 1,
+      copilotoTranscriptSegmentsRedacted: 1,
+      copilotoInsightsRedacted: 1,
+      alreadyAnonymized: false,
+    });
+
+    // --- 1. Contact de ORG_A anonimizado. Contact não está no allowlist de bypass (ITEM-02) — lê
+    // no contexto do próprio tenant. ---
+    const contactAAfter = await withTenant(ORG_A, async () =>
+      prisma.contact.findUniqueOrThrow({ where: { id: contactA.id } }),
+    );
+    expect(contactAAfter.name).toBe(ANONYMIZED_CONTACT_NAME);
+    expect(contactAAfter.phone).toBeNull();
+    expect(contactAAfter.whatsapp).toBeNull();
+    expect(contactAAfter.email).toBeNull();
+    expect(contactAAfter.linkedin).toBeNull();
+    expect(contactAAfter.observations).toBeNull();
+    expect(contactAAfter.customFields).toEqual({});
+
+    // --- 2. Contact de ORG_B permanece intacto. ---
+    const contactBAfter = await withTenant(ORG_B, async () =>
+      prisma.contact.findUniqueOrThrow({ where: { id: contactB.id } }),
+    );
+    expect(contactBAfter.name).toBe('Titular B');
+    expect(contactBAfter.phone).toBe('+5511999990002');
+    expect(contactBAfter.email).toBe('titular-b@example.com');
+    expect(contactBAfter.observations).toBe('Observação sensível sobre o titular B');
+
+    // --- 3. Sob RLS real (não bypass), uma leitura do contexto de ORG_B não enxerga nada de
+    // ORG_A — nem o Contact, nem o WhatsAppMessage, nem o ConversationSignal, nem o TimelineEvent.
+    const crossTenantReadFromB = await withTenant(ORG_B, async () => ({
+      contact: await prisma.contact.findUnique({ where: { id: contactA.id } }),
+      whatsAppMessage: await prisma.whatsAppMessage.findFirst({
+        where: { contactId: contactA.id },
+      }),
+      conversationSignal: await prisma.conversationSignal.findFirst({
+        where: { leadId: leadA.id },
+      }),
+      timelineEvent: await prisma.timelineEvent.findFirst({ where: { leadId: leadA.id } }),
+      voiceCallLog: await prisma.voiceCallLog.findFirst({ where: { leadId: leadA.id } }),
+      leadList: await prisma.lead.findMany({ where: { organizationId: ORG_A } }),
+    }));
+    expect(crossTenantReadFromB.contact).toBeNull();
+    expect(crossTenantReadFromB.whatsAppMessage).toBeNull();
+    expect(crossTenantReadFromB.conversationSignal).toBeNull();
+    expect(crossTenantReadFromB.timelineEvent).toBeNull();
+    expect(crossTenantReadFromB.voiceCallLog).toBeNull();
+    expect(crossTenantReadFromB.leadList).toEqual([]);
+
+    // --- 4/5. ConversationSignal de ORG_A redigido, ORG_B intacto. Nenhuma dessas tabelas está no
+    // allowlist de bypass (ITEM-02) — cada leitura roda no contexto do próprio tenant. ---
+    const signalAAfter = await withTenant(ORG_A, async () =>
+      prisma.conversationSignal.findFirstOrThrow({ where: { leadId: leadA.id } }),
+    );
+    expect(signalAAfter.summary).toBeNull();
+    expect(signalAAfter.nextStep).toBeNull();
+    expect(signalAAfter.objections).toEqual([]);
+    expect(signalAAfter.rawModelOutput).toEqual({});
+
+    const signalBAfter = await withTenant(ORG_B, async () =>
+      prisma.conversationSignal.findFirstOrThrow({ where: { leadId: leadB.id } }),
+    );
+    expect(signalBAfter.summary).toBe('Resumo citando o titular B por nome');
+    expect(signalBAfter.nextStep).toBe('Enviar proposta ao titular B');
+    expect(signalBAfter.objections).toEqual(['prazo']);
+
+    // --- 6/7. TimelineEvent de ORG_A redigido, ORG_B intacto. ---
+    const timelineAAfter = await withTenant(ORG_A, async () =>
+      prisma.timelineEvent.findFirstOrThrow({ where: { leadId: leadA.id } }),
+    );
+    expect(timelineAAfter.description).toBe('[evento anonimizado — LGPD]');
+
+    const timelineBAfter = await withTenant(ORG_B, async () =>
+      prisma.timelineEvent.findFirstOrThrow({ where: { leadId: leadB.id } }),
+    );
+    expect(timelineBAfter.description).toBe('Ligação com o titular B sobre o contrato');
+
+    // --- 8/9. WhatsAppMessage de ORG_A mascarado, ORG_B intacto. ---
+    const waAAfter = await withTenant(ORG_A, async () =>
+      prisma.whatsAppMessage.findFirstOrThrow({ where: { contactId: contactA.id } }),
+    );
+    expect(waAAfter.body).toBeNull();
+
+    const waBAfter = await withTenant(ORG_B, async () =>
+      prisma.whatsAppMessage.findFirstOrThrow({ where: { contactId: contactB.id } }),
+    );
+    expect(waBAfter.body).toBe('Mensagem de PII do titular B');
+
+    // --- 10/11. VoiceCallLog de ORG_A redigido (transcript/summary/recordingUrl removidos,
+    // outcome/durationSeconds/createdAt preservados — ACH-01-02), ORG_B intacto. ---
+    const voiceCallLogAAfter = await withTenant(ORG_A, async () =>
+      prisma.voiceCallLog.findFirstOrThrow({ where: { leadId: leadA.id } }),
+    );
+    expect(voiceCallLogAAfter.transcript).toBeNull();
+    expect(voiceCallLogAAfter.summary).toBeNull();
+    expect(voiceCallLogAAfter.recordingUrl).toBeNull();
+    expect(voiceCallLogAAfter.outcome).toBe('connected_positive');
+    expect(voiceCallLogAAfter.durationSeconds).toBe(120);
+    expect(voiceCallLogAAfter.createdAt).toBeInstanceOf(Date);
+
+    const voiceCallLogBAfter = await withTenant(ORG_B, async () =>
+      prisma.voiceCallLog.findFirstOrThrow({ where: { leadId: leadB.id } }),
+    );
+    expect(voiceCallLogBAfter.transcript).toBe('Transcrição completa da ligação com o titular B');
+    expect(voiceCallLogBAfter.summary).toBe('Resumo da ligação com o titular B');
+    expect(voiceCallLogBAfter.recordingUrl).toBe('https://cdn.example.com/recordings/call-b.mp3');
+    expect(voiceCallLogBAfter.outcome).toBe('connected_positive');
+    expect(voiceCallLogBAfter.durationSeconds).toBe(90);
+
+    // --- 12/13. CopilotoTranscriptSegment/CopilotoInsight de ORG_A redigidos (ACH-VOICE-003 —
+    // gap que este fix fecha: antes, a MESMA ligação continuava legível aqui mesmo depois de
+    // VoiceCallLog já ter sido redigido acima), ORG_B intacto. ---
+    const segmentAAfter = await withTenant(ORG_A, async () =>
+      prisma.copilotoTranscriptSegment.findFirstOrThrow({ where: { conversationId: conversationA.id } }),
+    );
+    expect(segmentAAfter.text).toBe(ANONYMIZED_TRANSCRIPT_SEGMENT_TEXT);
+
+    const insightAAfter = await withTenant(ORG_A, async () =>
+      prisma.copilotoInsight.findFirstOrThrow({ where: { conversationId: conversationA.id } }),
+    );
+    expect(insightAAfter.valueJson).toEqual({});
+    // Campos não-PII preservados — mesmo raciocínio de VoiceCallLog.outcome/durationSeconds acima.
+    expect(insightAAfter.type).toBe('objecao');
+    expect(insightAAfter.evidenceSegmentIds).toEqual([segmentA.id]);
+
+    const segmentBAfter = await withTenant(ORG_B, async () =>
+      prisma.copilotoTranscriptSegment.findFirstOrThrow({ where: { conversationId: conversationB.id } }),
+    );
+    expect(segmentBAfter.text).toBe('Transcrição citando o titular B por nome');
+
+    const insightBAfter = await withTenant(ORG_B, async () =>
+      prisma.copilotoInsight.findFirstOrThrow({ where: { conversationId: conversationB.id } }),
+    );
+    expect(insightBAfter.valueJson).toEqual({ detalhe: 'Objeção de prazo levantada pelo titular B' });
+
+    // --- RLS real: ORG_B não enxerga a conversa/segmento/insight de ORG_A. ---
+    const crossTenantCopilotoFromB = await withTenant(ORG_B, async () => ({
+      conversation: await prisma.copilotoConversation.findUnique({ where: { id: conversationA.id } }),
+      segment: await prisma.copilotoTranscriptSegment.findFirst({
+        where: { conversationId: conversationA.id },
+      }),
+    }));
+    expect(crossTenantCopilotoFromB.conversation).toBeNull();
+    expect(crossTenantCopilotoFromB.segment).toBeNull();
+
+    // --- Idempotência (garantia documentada no docstring de eraseDataSubject): rodar de novo
+    // sobre um titular já anonimizado não falha, não duplica efeito, e sinaliza alreadyAnonymized.
+    const secondRun = await eraseDataSubject({ organizationId: ORG_A, contactId: contactA.id });
+    expect(secondRun.alreadyAnonymized).toBe(true);
+    const contactAAfterSecondRun = await withTenant(ORG_A, async () =>
+      prisma.contact.findUniqueOrThrow({ where: { id: contactA.id } }),
+    );
+    expect(contactAAfterSecondRun.name).toBe(ANONYMIZED_CONTACT_NAME);
+  });
+});

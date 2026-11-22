@@ -1,0 +1,86 @@
+name: Build Android APK
+
+on:
+  # Mobile é artefato sob demanda. O gate automático canônico vive em ci.yml.
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'android/**'
+      - 'capacitor.config.ts'
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    name: Android / quality gate
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+    - name: Setup Node.js
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: '22'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Generate Prisma Client
+      run: npx prisma generate
+
+    - name: Run Type Check
+      run: npm run typecheck
+      env:
+        NODE_OPTIONS: --max-old-space-size=4096
+
+    - name: Run Lint
+      run: npm run lint:ci
+
+    - name: Run Unit Tests
+      run: npm run test:unit
+
+  android-build:
+    name: Android / build APK
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    needs: gate
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+    - name: Setup Node.js
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: '22'
+        cache: 'npm'
+
+    - name: Setup Java
+      uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+      with:
+        distribution: 'zulu'
+        java-version: '21'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build Web App
+      run: npm run build
+
+    - name: Sync Capacitor
+      run: npx cap sync android
+
+    - name: Grant execute permission to gradlew
+      run: chmod +x android/gradlew
+
+    - name: Build APK
+      working-directory: ./android
+      run: ./gradlew assembleDebug --no-daemon
+
+    - name: Upload APK
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: birthhub360-android-apk
+        path: android/app/build/outputs/apk/debug/app-debug.apk

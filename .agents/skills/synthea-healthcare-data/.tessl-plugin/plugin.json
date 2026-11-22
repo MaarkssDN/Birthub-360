@@ -1,0 +1,9 @@
+{
+  "name": "testland/synthea-healthcare-data",
+  "description": "Use when testing FHIR servers, EHR integrations, claims processing or other health IT needs realistic patient records with no HIPAA exposure. Runs MITRE Synthea to simulate patient populations and outputs FHIR R4, STU3, DSTU2, C-CDA or CSV, with custom disease modules.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.6"
+}

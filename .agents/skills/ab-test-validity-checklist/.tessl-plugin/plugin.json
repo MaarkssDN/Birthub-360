@@ -1,0 +1,9 @@
+{
+  "name": "testland/ab-test-validity-checklist",
+  "description": "Use when launching, auditing or governing an A/B test or online experiment design. Builds a per-experiment checklist and sign-off: pre-registered metric, power and guardrails, randomization unit and sample ratio mismatch checks, assignment, telemetry, peeking rules and novelty effects.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.1.16"
+}

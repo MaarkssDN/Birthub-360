@@ -1,0 +1,214 @@
+[
+  {
+    "file": "src/features/prospecting/domain/prospectTypes.ts",
+    "author": "C:/Github/birthub-turbo-05"
+  },
+  {
+    "file": "src/features/prospecting/domain/requirementEngine.ts",
+    "author": "C:/Github/birthub-turbo-05"
+  },
+  {
+    "file": "src/features/prospecting/routes/__tests__/prospecting.routes.test.ts",
+    "author": "C:/Github/birthub-turbo-05"
+  },
+  {
+    "file": "src/features/prospecting/routes/prospecting.routes.ts",
+    "author": "C:/Github/birthub-turbo-05"
+  },
+  {
+    "file": "src/features/prospecting/schemas/discoverCriteria.schema.ts",
+    "author": "C:/Github/birthub-turbo-05"
+  },
+  {
+    "file": "src/features/prospecting/services/apollo/__tests__/organizationSearch.test.ts",
+    "author": "C:/Github/birthub-turbo-05"
+  },
+  {
+    "file": "src/features/prospecting/services/apollo/__tests__/people.test.ts",
+    "author": "C:/Github/birthub-turbo-05"
+  },
+  {
+    "file": "src/features/prospecting/services/apollo/client.ts",
+    "author": "C:/Github/birthub-turbo-05"
+  },
+  {
+    "file": "src/features/prospecting/services/apollo/organizationSearch.ts",
+    "author": "C:/Github/birthub-turbo-05"
+  },
+  {
+    "file": "src/features/prospecting/services/apollo/people.ts",
+    "author": "C:/Github/birthub-turbo-05"
+  },
+  {
+    "file": "src/features/prospecting/services/apollo/types.ts",
+    "author": "C:/Github/birthub-turbo-05"
+  },
+  {
+    "file": "src/features/prospecting/services/enrichment/cnpjLookup.ts",
+    "author": "C:/Github/birthub-turbo-05"
+  },
+  {
+    "file": "src/features/prospecting/services/nominatim.service.ts",
+    "author": "C:/Github/birthub-turbo-05"
+  },
+  {
+    "file": "src/features/prospecting/services/places.service.ts",
+    "author": "C:/Github/birthub-turbo-05"
+  },
+  {
+    "file": "src/features/prospecting/services/prospecting/discovery.ts",
+    "author": "C:/Github/birthub-turbo-05"
+  },
+  {
+    "file": "src/features/prospecting/services/prospecting/qualityEnrichment.ts",
+    "author": "C:/Github/birthub-turbo-05"
+  },
+  {
+    "file": "src/features/prospecting/utils/exclusionSet.ts",
+    "author": "C:/Github/birthub-turbo-05"
+  },
+  {
+    "file": "src/features/prospecting/domain/__tests__/turboQuality.test.ts",
+    "author": "C:/Github/birthub-turbo-05"
+  },
+  {
+    "file": "src/features/prospecting/domain/turboQuality.ts",
+    "author": "C:/Github/birthub-turbo-05"
+  },
+  {
+    "file": "src/features/prospecting/services/__tests__/companyCatalogDiscovery.test.ts",
+    "author": "C:/Github/birthub-turbo-05"
+  },
+  {
+    "file": "src/features/prospecting/services/__tests__/turboDiscovery.test.ts",
+    "author": "C:/Github/birthub-turbo-05"
+  },
+  {
+    "file": "src/features/prospecting/services/__tests__/turboProviders.test.ts",
+    "author": "C:/Github/birthub-turbo-05"
+  },
+  {
+    "file": "src/features/prospecting/services/companyCatalogDiscovery.service.ts",
+    "author": "C:/Github/birthub-turbo-05"
+  },
+  {
+    "file": "src/features/prospecting/services/turboHealth.service.ts",
+    "author": "C:/Github/birthub-turbo-05"
+  },
+  {
+    "file": "src/features/prospecting/components/ProspectingHub.tsx",
+    "author": "C:/Github/birthub-turbo-ui"
+  },
+  {
+    "file": "src/features/prospecting/components/prospecting-hub/CandidateCard.tsx",
+    "author": "C:/Github/birthub-turbo-ui"
+  },
+  {
+    "file": "src/features/prospecting/components/prospecting-hub/DecisionMakerSearch.tsx",
+    "author": "C:/Github/birthub-turbo-ui"
+  },
+  {
+    "file": "src/features/prospecting/components/prospecting-hub/DiscoveryFilterPanel.tsx",
+    "author": "C:/Github/birthub-turbo-ui"
+  },
+  {
+    "file": "src/features/prospecting/components/prospecting-hub/DiscoveryResultsPanel.tsx",
+    "author": "C:/Github/birthub-turbo-ui"
+  },
+  {
+    "file": "src/features/prospecting/components/prospecting-hub/SearchExecutionPanel.tsx",
+    "author": "C:/Github/birthub-turbo-ui"
+  },
+  {
+    "file": "src/features/prospecting/components/prospecting-hub/TurboCriteriaForms.tsx",
+    "author": "C:/Github/birthub-turbo-ui"
+  },
+  {
+    "file": "src/features/prospecting/components/prospecting-hub/TurboProvidersPanel.tsx",
+    "author": "C:/Github/birthub-turbo-ui"
+  },
+  {
+    "file": "src/features/prospecting/components/prospecting-hub/__tests__/TurboFilters.test.ts",
+    "author": "C:/Github/birthub-turbo-ui"
+  },
+  {
+    "file": "src/features/prospecting/components/prospecting-hub/__tests__/TurboProviderHistory.test.ts",
+    "author": "C:/Github/birthub-turbo-ui"
+  },
+  {
+    "file": "src/lib/ai/gateway/circuit-breaker.ts",
+    "author": "C:/Github/birthub-turbo-07"
+  },
+  {
+    "file": "src/lib/ai/gateway/http-client.ts",
+    "author": "C:/Github/birthub-turbo-07"
+  },
+  {
+    "file": "src/lib/ai/gateway/providers/groq.provider.ts",
+    "author": "C:/Github/birthub-turbo-07"
+  },
+  {
+    "file": "src/lib/ai/gateway/providers/types.ts",
+    "author": "C:/Github/birthub-turbo-07"
+  },
+  {
+    "file": "src/lib/ai/usage-log.ts",
+    "author": "C:/Github/birthub-turbo-07"
+  },
+  {
+    "file": "src/lib/ai/__tests__/turboSearch.test.ts",
+    "author": "C:/Github/birthub-turbo-07"
+  },
+  {
+    "file": "src/lib/ai/__tests__/usage-log.test.ts",
+    "author": "C:/Github/birthub-turbo-07"
+  },
+  {
+    "file": "src/lib/ai/turboSearch.ts",
+    "author": "C:/Github/birthub-turbo-07"
+  },
+  {
+    "file": "tests/integration/prospecting-search-execution-rls.test.ts",
+    "author": "C:/Github/birthub-turbo-08"
+  },
+  {
+    "file": "tests/unit/features/prospecting/services/places.service.test.ts",
+    "author": "C:/Github/birthub-turbo-08"
+  },
+  {
+    "file": "tests/unit/features/prospecting/services/prospecting.service.dedupe.test.ts",
+    "author": "C:/Github/birthub-turbo-08"
+  },
+  {
+    "file": "tests/unit/features/prospecting/services/prospecting.service.query-planning.test.ts",
+    "author": "C:/Github/birthub-turbo-08"
+  },
+  {
+    "file": "tests/unit/features/prospecting/services/prospecting.service.searchExecution.test.ts",
+    "author": "C:/Github/birthub-turbo-08"
+  },
+  {
+    "file": "tests/e2e/prospecting-turbo-api.spec.ts",
+    "author": "C:/Github/birthub-turbo-08"
+  },
+  {
+    "file": ".agents/handoffs/onda-turbo-20261009/05-para-00-motor-backend.md",
+    "author": "C:/Github/birthub-turbo-05"
+  },
+  {
+    "file": ".agents/handoffs/onda-turbo-20261009/07-para-00-turbo-ai.md",
+    "author": "C:/Github/birthub-turbo-07"
+  },
+  {
+    "file": ".agents/handoffs/onda-turbo-20261009/08-para-00-turbo-regression-tests.md",
+    "author": "C:/Github/birthub-turbo-08"
+  },
+  {
+    "file": "src/shared/di/setup.ts",
+    "author": "C:/Github/birthub-turbo-01"
+  },
+  {
+    "file": ".agents/handoffs/onda-turbo-20261009/01-para-00-turbo-catalog.md",
+    "author": "C:/Github/birthub-turbo-01"
+  }
+]

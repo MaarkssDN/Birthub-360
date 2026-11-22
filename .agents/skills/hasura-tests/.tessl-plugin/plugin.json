@@ -1,0 +1,9 @@
+{
+  "name": "testland/hasura-tests",
+  "description": "Use when a Hasura GraphQL Engine needs tests, especially role-based row permissions: a docker-compose test instance, metadata API setup, x-hasura-role and x-hasura-user-id headers, and a role by table by operation permission matrix against the v1/graphql endpoint.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.4.9"
+}

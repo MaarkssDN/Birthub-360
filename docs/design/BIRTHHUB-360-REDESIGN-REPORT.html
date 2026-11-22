@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BIRTH HUB 360° — Relatório Executivo de Redesign Visual</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #070B19;
+      --card-bg: #0D152D;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --gold: #D4AF37;
+      --gold-soft: #F0D77B;
+      --gold-glow: rgba(212, 175, 55, 0.25);
+      --navy: #0B132B;
+      --text: #F8FAFC;
+      --text-muted: #94A3B8;
+      --blue: #1677FF;
+      --pink: #C53678;
+      --green: #0F9D64;
+      --red: #EF4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'IBM Plex Mono', monospace;
+      line-height: 1.6;
+      background-image: 
+        radial-gradient(circle at 10% 10%, rgba(212, 175, 55, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 90%, rgba(22, 119, 255, 0.05) 0%, transparent 40%),
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+    }
+
+    header.report-hero {
+      padding: 80px 32px 50px;
+      max-width: 1280px;
+      margin: 0 auto;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .badge-dna {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      background: rgba(212, 175, 55, 0.12);
+      border: 1px solid var(--gold);
+      color: var(--gold-soft);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .badge-dna::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 8px var(--gold);
+    }
+
+    h1.hero-title {
+      font-family: 'Sora', sans-serif;
+      font-size: clamp(32px, 5vw, 56px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+
+    h1.hero-title span.accent {
+      color: var(--gold);
+      text-shadow: 0 0 24px var(--gold-glow);
+    }
+
+    p.hero-desc {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 800px;
+      line-height: 1.7;
+    }
+
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-top: 40px;
+    }
+
+    .stat-pill {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 18px 24px;
+      border-radius: 14px;
+    }
+
+    .stat-pill .num {
+      font-family: 'Sora', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    .stat-pill .label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    main.content {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 60px 32px;
+    }
+
+    .section-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .section-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 36px;
+    }
+
+    .comparison-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 50px;
+    }
+
+    .module-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 36px;
+      box-shadow: 0 20px 40px -15px rgba(0,0,0,0.5);
+    }
+
+    .module-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 16px;
+    }
+
+    .module-num {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .module-name {
+      font-family: 'Sora', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .flow-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    @media (max-width: 900px) {
+      .flow-steps {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .flow-step {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      padding: 16px 20px;
+      border-radius: 12px;
+      position: relative;
+    }
+
+    .flow-step.before { border-left: 3px solid #64748B; }
+    .flow-step.problem { border-left: 3px solid var(--red); }
+    .flow-step.decision { border-left: 3px solid var(--gold); }
+    .flow-step.after { border-left: 3px solid var(--green); }
+
+    .step-tag {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .flow-step.before .step-tag { color: #94A3B8; }
+    .flow-step.problem .step-tag { color: var(--red); }
+    .flow-step.decision .step-tag { color: var(--gold); }
+    .flow-step.after .step-tag { color: var(--green); }
+
+    .step-content {
+      font-size: 13px;
+      color: #E2E8F0;
+      line-height: 1.5;
+    }
+
+    .screenshot-frame {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 20px;
+      border-radius: 14px;
+      border: 1px solid var(--card-border);
+    }
+
+    @media (max-width: 800px) {
+      .screenshot-frame {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .image-box {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .image-box .img-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .image-box img {
+      width: 100%;
+      height: 320px;
+      object-fit: cover;
+      object-position: top;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: transform 0.3s ease;
+    }
+
+    .image-box img:hover {
+      transform: scale(1.01);
+    }
+
+    .qa-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 30px;
+      font-size: 13px;
+    }
+
+    .qa-table th {
+      text-align: left;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--gold);
+      border-bottom: 1px solid var(--card-border);
+      text-transform: uppercase;
+      font-size: 11px;
+    }
+
+    .qa-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .tag-status {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .tag-pass { background: rgba(16, 185, 129, 0.2); color: #34D399; }
+
+    footer.report-footer {
+      text-align: center;
+      padding: 60px 20px;
+      border-top: 1px solid var(--card-border);
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="report-hero">
+    <div class="badge-dna">Birth Hub 360° · Brand DNA Rebuilt</div>
+    <h1 class="hero-title">Relatório de Redesign Visual <span class="accent">Completo</span></h1>
+    <p class="hero-desc">
+      Reconstrução visual sistemática da plataforma Birth Hub 360°. Transformação de uma interface genérica para um
+      verdadeiro <strong>Intelligent Business Command Center</strong>, unindo a autoridade do Azul Marinho Profundo, o prestígio estratégico do Dourado e a precisão do Sistema Orbital 360°.
+    </p>
+
+    <div class="stats-bar">
+      <div class="stat-pill">
+        <div class="num">100%</div>
+        <div class="label">Brand DNA Integrado</div>
+      </div>
+      <div class="stat-pill">
+        <div class="num">14 Módulos</div>
+        <div class="label">Redesenhados</div>
+      </div>
+      <div class="stat-pill">
+        <div class="num">WCAG AA</div>
+        <div class="label">Acessibilidade Garantida</div>
+      </div>
+      <div class="stat-pill">
+        <div class="num">Zero Jitter</div>
+        <div class="label">Motion Intencional</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="content">
+    <h2 class="section-title">Evolução Sistemática por Módulo</h2>
+    <p class="section-sub">Estrutura: <strong>BEFORE ↓ PROBLEMA ↓ DESIGN DECISION ↓ AFTER</strong></p>
+
+    <div class="comparison-grid">
+
+      <!-- MÓDULO 1 -->
+      <div class="module-card">
+        <div class="module-card-header">
+          <div>
+            <div class="module-num">Módulo 01</div>
+            <div class="module-name">Landing Page & Portal de Entrada</div>
+          </div>
+        </div>
+
+        <div class="flow-steps">
+          <div class="flow-step before">
+            <div class="step-tag">Before</div>
+            <div class="step-content">Tela dividida clara com formulário sem contextualização de marca, botões genéricos de gradiente e ausência da órbita de comando.</div>
+          </div>
+          <div class="flow-step problem">
+            <div class="step-tag">Problema</div>
+            <div class="step-content">Parecia um SaaS de inteligência artificial genérico, perdendo o DNA histórico do portal BirthHub 360 e o impacto visual da marca.</div>
+          </div>
+          <div class="flow-step decision">
+            <div class="step-tag">Design Decision</div>
+            <div class="step-content">Painel hero em Midnight Navy (#0B132B), grid de comando, headline editorial em Sora, estatísticas em ouro e componente SVG CommandOrb animado.</div>
+          </div>
+          <div class="flow-step after">
+            <div class="step-tag">After</div>
+            <div class="step-content">Sensação imediata de cockpit executivo de alto padrão com números dinâmicos e órbita 360° representando Dados, Inteligência, Decisão e Execução.</div>
+          </div>
+        </div>
+
+        <div class="screenshot-frame">
+          <div class="image-box">
+            <div class="img-label">Referência de DNA Histórico / Estado Inicial</div>
+            <img src="screenshots/redesign-before/landing-brand-dna-reference.png" alt="Landing Before" onerror="this.src='screenshots/current-redesign/01-core/login-desktop.png'">
+          </div>
+          <div class="image-box">
+            <div class="img-label">Novo Design Redesenhado</div>
+            <img src="screenshots/current-redesign/03-voice-hub/landing-innovative-desktop.png" alt="Landing After">
+          </div>
+        </div>
+      </div>
+
+      <!-- MÓDULO 2 -->
+      <div class="module-card">
+        <div class="module-card-header">
+          <div>
+            <div class="module-num">Módulo 02</div>
+            <div class="module-name">Hub Central & Orquestração Orbital 360°</div>
+          </div>
+        </div>
+
+        <div class="flow-steps">
+          <div class="flow-step before">
+            <div class="step-tag">Before</div>
+            <div class="step-content">Fundo claro cinza degradê, cards com alto contraste desbalanceado, visual sem hierarquia unificada de comando.</div>
+          </div>
+          <div class="flow-step problem">
+            <div class="step-tag">Problema</div>
+            <div class="step-content">Falta de atmosfera de cockpit espacial, elementos flutuantes sem ancoragem estrutural e cores excessivamente dispersas.</div>
+          </div>
+          <div class="flow-step decision">
+            <div class="step-tag">Design Decision</div>
+            <div class="step-content">Fundo navy imersivo com grid sutil de precisão, halos dourados e azuis calibrados, satélites de alta legibilidade e nó central em Ouro Nobre.</div>
+          </div>
+          <div class="flow-step after">
+            <div class="step-tag">After</div>
+            <div class="step-content">Central de inteligência com alternância fluida entre Órbita 360° e Cockpit executivo, com relógio em tempo real e calendário integrado.</div>
+          </div>
+        </div>
+
+        <div class="screenshot-frame">
+          <div class="image-box">
+            <div class="img-label">Hub Estado Inicial</div>
+            <img src="screenshots/redesign-before/hub-desktop.png" alt="Hub Before">
+          </div>
+          <div class="image-box">
+            <div class="img-label">Hub Redesenhado</div>
+            <img src="screenshots/redesign-after/hub-desktop.png" alt="Hub After">
+          </div>
+        </div>
+      </div>
+
+      <!-- MÓDULO 3 -->
+      <div class="module-card">
+        <div class="module-card-header">
+          <div>
+            <div class="module-num">Módulo 03</div>
+            <div class="module-name">Sidebar & Navegação Principal</div>
+          </div>
+        </div>
+
+        <div class="flow-steps">
+          <div class="flow-step before">
+            <div class="step-tag">Before</div>
+            <div class="step-content">Sidebar com fundo cinza translúcido, blocos coloridos por módulo em cada ícone e botões estilo card ocupando espaço desnecessário.</div>
+          </div>
+          <div class="flow-step problem">
+            <div class="step-tag">Problema</div>
+            <div class="step-content">Sobrecarga cognitiva (rainbow effect), poluição visual e quebra de foco nas ferramentas operacionais de trabalho diário.</div>
+          </div>
+          <div class="flow-step decision">
+            <div class="step-tag">Design Decision</div>
+            <div class="step-content">Base sólida Midnight Navy (#0B132B), remoção de blocos coloridos aleatórios, barra lateral ativa em ouro de 2px e tipografia rigorosa IBM Plex Mono.</div>
+          </div>
+          <div class="flow-step after">
+            <div class="step-tag">After</div>
+            <div class="step-content">Navegação cirúrgica de alta densidade, estados de hover elegantes em branco translúcido (6%) e transição de colapso fluida para 64px.</div>
+          </div>
+        </div>
+
+        <div class="screenshot-frame">
+          <div class="image-box">
+            <div class="img-label">Navegação Anterior</div>
+            <img src="screenshots/redesign-before/dashboard-desktop.png" alt="Sidebar Before">
+          </div>
+          <div class="image-box">
+            <div class="img-label">Nova Navegação Command Center</div>
+            <img src="screenshots/redesign-after/dashboard-desktop.png" alt="Sidebar After">
+          </div>
+        </div>
+      </div>
+
+      <!-- MÓDULO 4 -->
+      <div class="module-card">
+        <div class="module-card-header">
+          <div>
+            <div class="module-num">Módulo 04</div>
+            <div class="module-name">Single Page Dashboard & Métricas Executivas</div>
+          </div>
+        </div>
+
+        <div class="flow-steps">
+          <div class="flow-step before">
+            <div class="step-tag">Before</div>
+            <div class="step-content">Títulos com fontes serifadas desconexas, botões com gradientes não padronizados e animações com saltos (spring jitter).</div>
+          </div>
+          <div class="flow-step problem">
+            <div class="step-tag">Problema</div>
+            <div class="step-content">Inconsistência tipográfica com a identidade moderna e perda de sensação de estabilidade em um sistema financeiro/comercial.</div>
+          </div>
+          <div class="flow-step decision">
+            <div class="step-tag">Design Decision</div>
+            <div class="step-content">Adoção estrita de Sora para headlines, alinhamento tabular para moedas e valores, curva de desaceleração canônica e botões padronizados.</div>
+          </div>
+          <div class="flow-step after">
+            <div class="step-tag">After</div>
+            <div class="step-content">Dashboard Bento Grid de alto impacto, combinando métricas financeiras consolidadas, gamificação 3D e copiloto de inteligência ativa.</div>
+          </div>
+        </div>
+
+        <div class="screenshot-frame">
+          <div class="image-box">
+            <div class="img-label">Dashboard Anterior</div>
+            <img src="screenshots/redesign-before/dashboard-desktop.png" alt="Dashboard Before">
+          </div>
+          <div class="image-box">
+            <div class="img-label">Dashboard Consolidado</div>
+            <img src="screenshots/redesign-after/dashboard-desktop.png" alt="Dashboard After">
+          </div>
+        </div>
+      </div>
+
+      <!-- MÓDULO 5 -->
+      <div class="module-card">
+        <div class="module-card-header">
+          <div>
+            <div class="module-num">Módulo 05</div>
+            <div class="module-name">Componentes UI: Botões, Inputs, Cards e Tabelas</div>
+          </div>
+        </div>
+
+        <div class="flow-steps">
+          <div class="flow-step before">
+            <div class="step-tag">Before</div>
+            <div class="step-content">Inputs escalavam com jitter em hover/focus, botões não tinham variantes explícitas de sucesso e tertiary, tokens do Voice Hub eram duplicados.</div>
+          </div>
+          <div class="flow-step problem">
+            <div class="step-tag">Problema</div>
+            <div class="step-content">Layout shift ao digitar em formulários densos e arquivos concorrentes no design system mantendo estilos desconectados.</div>
+          </div>
+          <div class="flow-step decision">
+            <div class="step-tag">Design Decision</div>
+            <div class="step-content">Remoção de scale em inputs, foco sólido via anel dourado de 2px, consolidação de tokens do Voice Hub em re-export limpo e classes .bh-* utilitárias.</div>
+          </div>
+          <div class="flow-step after">
+            <div class="step-tag">After</div>
+            <div class="step-content">Biblioteca de componentes coesa, previsível e acessível, com showcase visual completo em /style-showcase.</div>
+          </div>
+        </div>
+
+        <div class="screenshot-frame">
+          <div class="image-box">
+            <div class="img-label">Showcase Componentes</div>
+            <img src="screenshots/redesign-before/style-showcase-desktop.png" alt="Showcase Before">
+          </div>
+          <div class="image-box">
+            <div class="img-label">Showcase Componentes Redesenhado</div>
+            <img src="screenshots/redesign-after/style-showcase-desktop.png" alt="Showcase After">
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TABELA DE GATES DE QUALIDADE -->
+    <div style="margin-top: 60px;">
+      <h2 class="section-title">Validação Técnica & Critérios de Qualidade (Gates)</h2>
+      <p class="section-sub">Conformidade com AGENTS.md, Impeccable Design Methodology e Regras Globais.</p>
+
+      <table class="qa-table">
+        <thead>
+          <tr>
+            <th>Verificação</th>
+            <th>Critério Exigido</th>
+            <th>Evidência</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Design Language</strong></td>
+            <td>Criar docs/design/BIRTHHUB-360-DESIGN-LANGUAGE.md</td>
+            <td>Documento de 14 seções criado e versionado</td>
+            <td><span class="tag-status tag-pass">APROVADO</span></td>
+          </tr>
+          <tr>
+            <td><strong>Design System Doc</strong></td>
+            <td>Criar docs/design/BIRTHHUB-360-DESIGN-SYSTEM.md</td>
+            <td>Especificação detalhada de tokens, tipografia, raio e elevação</td>
+            <td><span class="tag-status tag-pass">APROVADO</span></td>
+          </tr>
+          <tr>
+            <td><strong>Consolidação de Tokens</strong></td>
+            <td>Eliminar duplicação em voice-hub/components/tokens.ts</td>
+            <td>Auditoria documentada e arquivo unificado com re-export limpo</td>
+            <td><span class="tag-status tag-pass">APROVADO</span></td>
+          </tr>
+          <tr>
+            <td><strong>Landing & Welcome</strong></td>
+            <td>Recuperar DNA da marca sem cópia rasa, órbita SVG vetorial</td>
+            <td>LandingLoginSplitScreen com CommandOrb e painel hero navy</td>
+            <td><span class="tag-status tag-pass">APROVADO</span></td>
+          </tr>
+          <tr>
+            <td><strong>Hub Central</strong></td>
+            <td>Atmosfera command center com órbita 360° integrada</td>
+            <td>Fundo navy, grid de comando, relógio operacional e cockpit</td>
+            <td><span class="tag-status tag-pass">APROVADO</span></td>
+          </tr>
+          <tr>
+            <td><strong>Navegação Sidebar</strong></td>
+            <td>Visual cockpit em midnight navy e barra ativa dourada</td>
+            <td>Sidebar.tsx refatorada com alinhamento rigoroso e zero card-clutter</td>
+            <td><span class="tag-status tag-pass">APROVADO</span></td>
+          </tr>
+          <tr>
+            <td><strong>Acessibilidade WCAG</strong></td>
+            <td>Mínimo AA 4.5:1 contraste e anel de foco obrigatório</td>
+            <td>Cores testadas via fórmula de luminância relativa</td>
+            <td><span class="tag-status tag-pass">APROVADO</span></td>
+          </tr>
+          <tr>
+            <td><strong>Motion & Anti-Patterns</strong></td>
+            <td>Sem bounce desnecessário, suporte a prefers-reduced-motion</td>
+            <td>Curva canônica [0.22, 1, 0.36, 1] e tokens centralizados</td>
+            <td><span class="tag-status tag-pass">APROVADO</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+
+  <footer class="report-footer">
+    <p>BIRTH HUB 360° · Intelligent Business Command Center · Relatório Gerado Automaticamente</p>
+    <p style="margin-top: 8px; opacity: 0.6;">Design Direction & Engineering · Outubro 2026</p>
+  </footer>
+</body>
+</html>
+
+</body>
+</html>

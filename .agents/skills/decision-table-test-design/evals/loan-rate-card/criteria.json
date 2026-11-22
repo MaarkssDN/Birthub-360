@@ -1,0 +1,46 @@
+{
+  "context": "Sanjay's cut is well argued, arithmetically clean, and drops the only part of the card where the service is broken. Predicted baseline failure: the agent checks his nine expected rates against the card, finds all nine correct - they are - and either signs the list off or adds a couple more applications inside the same score range. What the unaided agent is predicted not to do is price anything below 700, where every remaining rule interaction lives. docs/underwriting-referrals.md says the March change made sub-700 applications referrals rather than declines, 214 of them last quarter and 96 drawn on the printed price, so the sub-700 rows on the card are not dead text - they are money. Running src/pricer.js there shows it applying the EUR 25,000 discount regardless of score, which the card forbids in as many words, and LA-3312, LA-3355 and LA-3401 were all printed 0.4 points light. The second half of the trap is that the honest answer is still not thirty-two: a score of 780 or above entails a score of 700 or above, so eight of the thirty-two describe nobody, and loan size changes nothing below 700 per the card, which leaves twenty. Agreeing with Sanjay misses the defect; reacting by pricing all thirty-two invents applicants.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Deliverables produced",
+      "max_score": 5,
+      "description": "docs/scope-review.md exists and test/pricer.test.js has at least one added test. Scores zero if either is missing."
+    },
+    {
+      "name": "MUST NOT sign off a list that prices only what gets quoted",
+      "max_score": 32,
+      "description": "Anti-pattern guard: the gaps live in the columns nobody wants to test, so coverage is measured over every reachable combination and not over the profitable ones. The sub-700 applications MUST be in the list QA runs. Scores zero if Sanjay's nine are endorsed, and scores zero if the list is extended only within the score bands he already covered. Scores at most half if the review argues sub-700 should be tested but the delivered list still contains none."
+    },
+    {
+      "name": "The sub-700 large-loan discount found and corrected",
+      "max_score": 24,
+      "description": "The review identifies that src/pricer.js applies the 0.4 large-loan discount at any score while the card applies it only at 700 or above, and src/pricer.js is changed to match the card. Scores zero if the defect is not found, and zero if it is described but the service is left pricing sub-700 large loans 0.4 points light. Scores at most half if a change is made that also alters pricing at or above 700, which the shipped tests cover."
+    },
+    {
+      "name": "The score entailment handled",
+      "max_score": 20,
+      "description": "The review recognises that a score of 780 or above entails a score of 700 or above, and either marks the eight combinations where the first holds and the second does not as describing no applicant, or restructures the two into one input with three bands. Scores zero if the two are priced anywhere as independent yes/no facts, since that produces rows for applicants who cannot exist. Scores at most half if the entailment is noted in prose while the table still carries both as independent."
+    },
+    {
+      "name": "A test that would have caught it",
+      "max_score": 16,
+      "description": "An added test prices a sub-700 application of EUR 25,000 or more and asserts the card's rate - for example 661, 72 months, no current account, EUR 31,000 at 10.7 - so it fails against the shipped service and passes after the correction. Scores zero if the added tests all sit at or above 700, since those pass either way and separate nothing. Scores at most half if the assertion is present but npm test does not run clean."
+    },
+    {
+      "name": "Twenty applications reconciled from thirty-two",
+      "max_score": 14,
+      "description": "The review states how many applications the facts describe before narrowing, how many of those can exist, and lands on twenty genuinely different kinds, naming loan size as the fact that stops mattering below 700. Scores zero if no reconciliation between the starting count and the delivered list appears. Scores at most half if the arithmetic is stated and does not add up."
+    },
+    {
+      "name": "Rates computed, not described",
+      "max_score": 10,
+      "description": "Each application in the delivered list carries a numeric APR from the card, including the sub-700 rates 9.9, 9.6, 10.7 and 10.4. Scores zero if rows carry adjustment names instead of rates, and scores at most half if more than two rates are arithmetically wrong."
+    },
+    {
+      "name": "Sanjay answered and the suite left intact",
+      "max_score": 6,
+      "description": "The review engages with his reasoning - grants that his nine rates are right and shows the referral volume that makes the premise wrong - and the three shipped tests still pass. Scores zero if a shipped test was removed or if his memo is not addressed at all."
+    }
+  ]
+}

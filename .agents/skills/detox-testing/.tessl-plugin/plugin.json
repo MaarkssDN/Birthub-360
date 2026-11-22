@@ -1,0 +1,9 @@
+{
+  "name": "testland/detox-testing",
+  "description": "Use whenever a React Native app needs end-to-end tests with Detox: gray-box runs inside the app, by.id, by.text and by.label matchers, waitFor for extra sync, and the Jest runner. Flutter is flutter-testing; cross-platform black-box is appium-testing; YAML flows are maestro-flows.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.4.9"
+}

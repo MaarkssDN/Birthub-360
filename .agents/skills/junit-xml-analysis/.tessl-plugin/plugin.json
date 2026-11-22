@@ -1,0 +1,9 @@
+{
+  "name": "testland/junit-xml-analysis",
+  "description": "Explains CI test numbers that disagree with what the suite actually did - a 'slowest tests' list dominated by the wrong suite, a release gate or dashboard reading only the summary attributes on the suite element and never the cases below them, or a pass rate that quietly counts skipped tests as passes. Parses JUnit-format XML (the interchange format Jenkins, GitHub Actions, GitLab, Buildkite, and CircleCI all ingest) into per-suite and per-case metrics tables - passed / failed / errored / skipped, time, classname, message, stack - groups failures by classname for trend analysis, and separates new failures from flakes by cross-referencing the `flakyFailure` and rerun elements. Use when a report, gate, or metric derived from test results cannot be trusted.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.4.19"
+}

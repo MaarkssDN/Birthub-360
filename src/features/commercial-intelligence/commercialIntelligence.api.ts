@@ -1,0 +1,990 @@
+import { api } from '../../lib/api.js';
+import type {
+  DailyPlanClosingInput,
+  PendingDailyClosing,
+  UserDailyPlanSummary,
+} from '../../shared/contracts/dailyPlan.contract.js';
+import { brazilMonthKey } from '../../shared/time/brazilCalendar.js';
+
+/**
+ * DUPLICAÇÃO INTENCIONAL, NÃO DÍVIDA ESQUECIDA: várias interfaces abaixo (formas de resposta dos
+ * endpoints de `/api/commercial-intelligence`) redeclaram, campo a campo e sem import
+ * compartilhado, as mesmas interfaces de `./domain/CommercialIntelligence.ts` (backend). Uma
+ * unificação via `src/shared/contracts/commercialIntelligence.contract.ts` foi tentada na Sprint 00
+ * e revertida por quebrar o contrato de tipos consumido por este arquivo — decisão do dono do
+ * repositório, registrada em
+ * `.agents/handoffs/onda-8/18-para-04-duplicacao-commercial-intelligence-contract.md` (handoff
+ * `18-para-04`, status "resolvido/rejeitado") e formalizada em `docs/ADR/ADR-003-Decisoes-
+ * Estruturais-Onda-6-8.md` (seção D). Não tente unificar de novo sem reabrir essa decisão.
+ */
+export type ForecastTier = 'Commit' | 'BestCase' | 'Pipeline' | 'Upside';
+
+export interface DailyPlanTeamMember {
+  id: string;
+  name: string;
+  email: string | null;
+}
+
+interface DailyPlanBitrixConnection {
+  id: string;
+  label: string;
+}
+
+export interface CommercialGoalDTO {
+  period: string;
+  metric: 'NEW_MRR';
+  amount: number;
+  currency: string;
+  updatedAt: string;
+  createdBy: string | null;
+}
+
+export interface CoverageSnapshot {
+  coverage: number | null;
+  coverageRecommended: number | null;
+  pipelineEligible: number;
+  remainingGoal: number;
+}
+
+export type CoverageProtectionStatus = 'saudavel' | 'atencao' | 'critico' | 'sem_dados';
+
+export interface CoverageProtectionEntry {
+  period: string;
+  label: string;
+  goalAmount: number | null;
+  pipelineEligible: number;
+  remainingGoal: number | null;
+  coverage: number | null;
+  coverageRecommended: number | null;
+  status: CoverageProtectionStatus;
+}
+
+export interface PreviousPeriodComparison {
+  period: string;
+  closedAmount: number;
+  closedCount: number;
+  winRate: number | null;
+}
+
+export type ForecastConfidenceClassification = 'saudavel' | 'atencao' | 'critico';
+
+export interface ForecastConfidence {
+  score: number | null;
+  classification: ForecastConfidenceClassification | null;
+  sampleSize: number;
+  fieldCompletenessScore: number | null;
+  stageHistoryCoverage: number | null;
+  sampleSizePenaltyApplied: boolean;
+}
+
+export interface ExecutiveOverview {
+  period: string;
+  goal: CommercialGoalDTO | null;
+  closedAmount: number;
+  closedCount: number;
+  pctOfGoal: number | null;
+  commitAmount: number;
+  commitCount: number;
+  bestCaseAmount: number;
+  bestCaseCount: number;
+  upsideAmount: number;
+  upsideCount: number;
+  forecastAmount: number;
+  gapForecast: number | null;
+  gapCommit: number | null;
+  pipelineTotal: number;
+  pipelineTotalCount: number;
+  pipelineEligible: number;
+  pipelineEligibleCount: number;
+  coverageMonth: CoverageSnapshot;
+  coverage30: CoverageSnapshot;
+  coverage60: CoverageSnapshot;
+  coverage90: CoverageSnapshot;
+  coverageProtection: CoverageProtectionEntry[];
+  previousPeriod: PreviousPeriodComparison | null;
+  forecastConfidence: ForecastConfidence;
+  isEmpty: boolean;
+  dataAsOf: string;
+}
+
+export interface PipelineCreationBreakdown {
+  label: string;
+  count: number;
+  amount: number;
+}
+
+export interface PipelineCarryover {
+  count: number;
+  amount: number;
+  stillOpenCount: number;
+  stillOpenAmount: number;
+  closedInPeriodCount: number;
+  wonInPeriodAmount: number;
+  lostInPeriodAmount: number;
+  shareOfPeriodPipeline: number | null;
+}
+
+export interface PipelineCreation {
+  period: string;
+  count: number;
+  amount: number;
+  averageTicket: number | null;
+  bySource: PipelineCreationBreakdown[];
+  byOwner: PipelineCreationBreakdown[];
+  pipelineNeeded: number | null;
+  creationCoverage: number | null;
+  elapsedBusinessDays: number;
+  totalBusinessDays: number;
+  paceExpectedAmount: number | null;
+  pacePercent: number | null;
+  paceGapAmount: number | null;
+  carryover: PipelineCarryover;
+}
+
+export type ExportFormat = 'csv' | 'json' | 'html';
+
+export interface FunnelStageConversion {
+  stageId: string;
+  label: string;
+  sortOrder: number;
+  count: number;
+  amount: number;
+  conversionFromPrevious: number | null;
+  averageDaysInStage: number | null;
+  historicalReachedCount: number;
+  historicalReachedAmount: number;
+  historicalConversionFromPrevious: number | null;
+}
+
+export interface PerformanceMetrics {
+  period: string;
+  winRate: number | null;
+  wonCount: number;
+  lostCount: number;
+  opportunities: {
+    open: number;
+    createdInPeriod: number;
+    won: number;
+    lost: number;
+    advanced: number;
+    stalled: number;
+    eligible: number;
+    commit: number;
+    bestCase: number;
+    atRisk: number;
+  };
+  averageTicket: {
+    created: number | null;
+    open: number | null;
+    won: number | null;
+    lost: number | null;
+  };
+  salesCycle: { meanDays: number | null; medianDays: number | null; sampleSize: number };
+  pipelineVelocity: {
+    value: number | null;
+    openOpportunities: number;
+    winRatePct: number | null;
+    averageOpenDealValue: number | null;
+    salesCycleMedianDays: number | null;
+  };
+  funnel: FunnelStageConversion[];
+  funnelHistoricalTrackingSince: string | null;
+  firstContactSla: {
+    meanHours: number | null;
+    medianHours: number | null;
+    sampleSize: number;
+    leadsWithoutContact: number;
+    withinTargetPct: number | null;
+    targetHours: number;
+  };
+  revenueConcentration: {
+    topClients: {
+      companyId: string | null;
+      companyName: string | null;
+      amount: number;
+      pct: number;
+    }[];
+    top10Pct: number | null;
+    totalWonAmount: number;
+  };
+}
+
+export interface AgingBucket {
+  label: string;
+  minDays: number;
+  maxDays: number | null;
+  count: number;
+  amount: number;
+}
+export interface StageAging {
+  stageId: string;
+  stageName: string;
+  count: number;
+  amountOverThreshold: number;
+  averageDaysInStage: number | null;
+  dataQuality: 'measured' | 'estimated' | 'unknown';
+}
+export interface AgingReport {
+  buckets: AgingBucket[];
+  byStage: StageAging[];
+  criticalThresholdDays: number;
+  trackingSince: string | null;
+}
+
+export interface LossReasonBreakdown {
+  reason: string;
+  count: number;
+  amount: number;
+}
+export interface LossAnalysis {
+  period: string;
+  totalCount: number;
+  totalAmount: number;
+  byReason: LossReasonBreakdown[];
+  sampleObservations: Array<{
+    leadId: string;
+    title: string | null;
+    reason: string;
+    observation: string | null;
+  }>;
+}
+
+export interface LeadingIndicatorPoint {
+  label: string;
+  current: number;
+  previousWeek: number;
+  movingAverage4w: number;
+  trend: 'up' | 'down' | 'flat';
+  weeklySeries: number[];
+}
+export interface LeadingIndicatorsReport {
+  weekStart: string;
+  weekEnd: string;
+  indicators: LeadingIndicatorPoint[];
+  trackingSince: string | null;
+}
+
+export type AlertSeverity = 'critical' | 'warning' | 'info' | 'positive';
+export interface ExecutiveAlert {
+  id: string;
+  severity: AlertSeverity;
+  title: string;
+  description: string;
+  metricValue: number | null;
+}
+
+export interface CrmQualityField {
+  field: string;
+  label: string;
+  filled: number;
+  total: number;
+  completeness: number | null;
+}
+
+export interface DataReadinessField {
+  field: string;
+  label: string;
+  filled: number;
+  total: number;
+  completeness: number | null;
+  weight: number;
+  forecastImpact: 'alto' | 'medio' | 'baixo';
+  classification: 'saudavel' | 'atencao' | 'critico' | null;
+}
+export interface DataReadinessScore {
+  overallScore: number | null;
+  classification: 'saudavel' | 'atencao' | 'critico' | null;
+  fields: DataReadinessField[];
+}
+
+export interface BitrixSyncFailure {
+  leadId: string;
+  title: string | null;
+  companyName: string | null;
+  error: string | null;
+  lastAttemptAt: string | null;
+}
+export interface BitrixSyncHealth {
+  connected: boolean;
+  totalOpen: number;
+  linked: number;
+  notLinked: number;
+  failed: number;
+  linkedRate: number | null;
+  failures: BitrixSyncFailure[];
+  lastSyncAt: string | null;
+  syncedCount30d: number;
+  failedCount30d: number;
+}
+
+export interface CrmQualityIndex {
+  period: string;
+  overallScore: number | null;
+  fields: CrmQualityField[];
+  dataReadiness: DataReadinessScore;
+  suspectedDuplicateGroups: number;
+  evaluatedCount: number;
+  bitrixSync: BitrixSyncHealth;
+}
+
+export interface DealDrillDownRow {
+  id: string;
+  title: string | null;
+  companyName: string | null;
+  amount: number;
+  owner: string | null;
+  stageName: string | null;
+  probability: number | null;
+  weightedProbability: number | null;
+  tier: ForecastTier | null;
+  agingDays: number;
+  lastInteraction: string | null;
+  nextAction: string | null;
+  riskFactors: string[];
+  expectedCloseAt: string | null;
+  source: string | null;
+  bitrixLinked: boolean;
+}
+export interface DealDrillDownResult {
+  total: number;
+  rows: DealDrillDownRow[];
+}
+
+export interface MetricDefinition {
+  key: string;
+  name: string;
+  description: string;
+  formula: string;
+  source: string;
+  period: string;
+  inclusionRules: string;
+  exclusionRules: string;
+}
+
+export interface CommercialFilter {
+  month: string;
+  owner?: string;
+  product?: string;
+  source?: string;
+  icp?: string;
+  company?: string;
+}
+
+export interface FilterOptions {
+  owners: string[];
+  products: string[];
+  sources: string[];
+  icps: string[];
+  companies: string[];
+}
+
+export interface HistoricalTrendPoint {
+  period: string;
+  label: string;
+  winRate: number | null;
+  salesCycleMeanDays: number | null;
+  averageTicketWon: number | null;
+  pipelineCreatedAmount: number | null;
+  closedSampleSize: number;
+}
+export interface HistoricalTrendsReport {
+  points: HistoricalTrendPoint[];
+}
+
+export interface ExecutiveSummaryResult {
+  summary: string;
+  generatedAt: string;
+}
+export interface BitrixNoteDraftResult {
+  draft: string;
+}
+
+// ─── Motivo real de perda via IA sobre transcrição real ──────────────────────
+
+export type LossReasonAiUnavailableReason = 'sem_transcricao' | 'negocio_nao_encontrado';
+export interface LossReasonAiAnalysisResult {
+  leadId: string;
+  available: boolean;
+  reason: LossReasonAiUnavailableReason | null;
+  declaredReasonRaw: string | null;
+  declaredBucket: string;
+  inferredBucket: string | null;
+  evidenceQuote: string | null;
+  mismatch: boolean;
+  confidence: 'alta' | 'media' | 'baixa' | null;
+  source: 'ai' | 'fallback' | null;
+  generatedAt: string;
+}
+
+// ─── Previsor — Faixa de Cenário (derivada client-side de ExecutiveOverview já carregado) ────────
+
+export interface ForecastScenario {
+  label: string;
+  amount: number;
+  gapToGoal: number | null;
+}
+export interface ForecastRange {
+  conservative: ForecastScenario;
+  likely: ForecastScenario;
+  optimistic: ForecastScenario;
+  currency: string;
+}
+export type TrendDirection = 'melhorando' | 'estavel' | 'piorando';
+export interface TrendMomentum {
+  direction: TrendDirection;
+  latestWinRate: number;
+  previousAverageWinRate: number;
+  deltaPercentagePoints: number;
+}
+
+// ─── Health Score composto + erro histórico do Forecast ─────────────────────
+
+export type HealthClassification = 'saudavel' | 'atencao' | 'critico';
+export type HealthPillarKey =
+  | 'pipeline'
+  | 'conversao'
+  | 'produtividade'
+  | 'qualidadeCrm'
+  | 'followUp'
+  | 'confiabilidadeForecast';
+export interface HealthPillarScore {
+  pillar: HealthPillarKey;
+  label: string;
+  score: number | null;
+  classification: HealthClassification | null;
+  explanation: string;
+  metricsUsed: string[];
+  unavailableReason: string | null;
+}
+export interface HealthScoreResult {
+  period: string;
+  pillars: HealthPillarScore[];
+  overallScore: number | null;
+  generatedAt: string;
+  liveInsightsSummary?: LiveCallInsightsSummary | null;
+}
+
+export type ForecastAccuracyUnavailableReason =
+  | 'periodo_nao_fechou'
+  | 'sem_snapshot'
+  | 'sem_realizado';
+export interface ForecastAccuracyResult {
+  available: boolean;
+  period: string;
+  reason: ForecastAccuracyUnavailableReason | null;
+  snapshotAt: string | null;
+  rulesVersion: string | null;
+  predictedForecastAmount: number | null;
+  realizedClosedAmount: number | null;
+  errorAmount: number | null;
+  errorPercent: number | null;
+  direction: 'superestimou' | 'subestimou' | 'acertou' | null;
+}
+export interface ForecastAccuracySummary {
+  available: boolean;
+  reason: 'sem_historico_suficiente' | null;
+  sampleSize: number;
+  meanAbsoluteErrorPercent: number | null;
+  samples: ForecastAccuracyResult[];
+}
+
+// ─── Forecast auto-calibrado ──────────────────────────────────────────────────
+
+export type ForecastCalibrationUnavailableReason = 'sem_historico_suficiente';
+export type ForecastBiasDirection = 'superestimando' | 'subestimando' | 'neutro';
+export interface ForecastCalibrationResult {
+  available: boolean;
+  reason: ForecastCalibrationUnavailableReason | null;
+  sampleSize: number;
+  minSampleSize: number;
+  calibrationFactor: number | null;
+  minFactor: number;
+  maxFactor: number;
+  biasDirection: ForecastBiasDirection | null;
+  rawForecastAmount: number;
+  calibratedForecastAmount: number | null;
+  goalAmount: number | null;
+  currency: string;
+  calibratedGapToGoal: number | null;
+}
+
+// ─── Detecção automática de gargalo de funil ─────────────────────────────────
+
+export type BottleneckSeverity = 'critico' | 'atencao' | 'normal' | 'sem_dados';
+export interface FunnelBottleneckStage {
+  stageId: string;
+  stageName: string;
+  sortOrder: number;
+  averageDaysInStage: number | null;
+  sampleSize: number;
+  normalBaselineDays: number | null;
+  multiplier: number | null;
+  severity: BottleneckSeverity;
+  openCount: number;
+  openAmount: number;
+}
+export interface FunnelBottleneckReport {
+  stages: FunnelBottleneckStage[];
+  criticalMultiplier: number;
+  warningMultiplier: number;
+  minSampleSizeForBaseline: number;
+  trackingSince: string | null;
+}
+
+// ─── Benchmark de vendedor ────────────────────────────────────────────────────
+
+export type SellerBenchmarkMetric = 'winRate' | 'salesCycleMedianDays' | 'averageTicketWon';
+export interface SellerBenchmarkSuggestion {
+  metric: SellerBenchmarkMetric;
+  label: string;
+  sellerValue: number;
+  teamAverage: number;
+  topPerformerValue: number;
+  text: string;
+}
+export interface SellerBenchmarkRow {
+  owner: string;
+  winRate: number | null;
+  wonCount: number;
+  lostCount: number;
+  averageTicketWon: number | null;
+  salesCycleMedianDays: number | null;
+  openCount: number;
+  openAmount: number;
+  isTopPerformer: boolean;
+  suggestion: SellerBenchmarkSuggestion | null;
+}
+export interface SellerBenchmarkTeamAverages {
+  winRate: number | null;
+  salesCycleMedianDays: number | null;
+  averageTicketWon: number | null;
+}
+export interface SellerBenchmarkReport {
+  period: string;
+  minDealsForRanking: number;
+  sellers: SellerBenchmarkRow[];
+  teamAverages: SellerBenchmarkTeamAverages;
+  topPerformerOwner: string | null;
+}
+
+// ─── Atribuição de receita por canal/origem — TOQUE ÚNICO (item 25, versão reduzida) ─────────
+
+export interface ChannelAttributionBreakdown {
+  label: string;
+  wonCount: number;
+  wonAmount: number;
+  pctOfWonAmount: number | null;
+  averageTicket: number | null;
+}
+export interface ChannelAttributionReport {
+  period: string;
+  model: 'toque_unico';
+  totalWonAmount: number;
+  totalWonCount: number;
+  byChannel: ChannelAttributionBreakdown[];
+  bySource: ChannelAttributionBreakdown[];
+}
+
+// ─── Simulação de cenário (contratação de SDR/vendedor) ──────────────────────
+
+export type HiringScenarioUnavailableReason =
+  | 'numero_de_reps_invalido'
+  | 'sem_dados_de_pipeline_por_vendedor';
+export interface HiringScenarioResult {
+  available: boolean;
+  reason: HiringScenarioUnavailableReason | null;
+  additionalReps: number;
+  windowDays: number;
+  rampUpDays: number;
+  avgPipelineAmountPerRepPerMonth: number | null;
+  activeRepsInPeriod: number;
+  incrementalPipelineAmount: number | null;
+  winRatePct: number | null;
+  salesCycleMedianDays: number | null;
+  cycleExceedsWindow: boolean;
+  estimatedIncrementalRevenue: number | null;
+  currency: string;
+}
+
+// ─── CLOSEDATE Intelligence ─────────────────────────────────────────────────
+
+export interface CloseDateDealRow {
+  leadId: string;
+  title: string | null;
+  companyName: string | null;
+  owner: string | null;
+  amount: number;
+  stageName: string | null;
+  tier: ForecastTier;
+  originalCloseAt: string | null;
+  currentCloseAt: string | null;
+  slips: number;
+  pullIns: number;
+  netDaysShifted: number | null;
+  lastChangedAt: string | null;
+  chronic: boolean;
+}
+export interface CloseDateBreakdown {
+  label: string;
+  dealsWithSlips: number;
+  totalSlips: number;
+  chronicDeals: number;
+  amountAtRisk: number;
+}
+export interface CloseDateIntelligenceReport {
+  period: string;
+  trackingSince: string | null;
+  openDealsEvaluated: number;
+  dealsWithAnyChange: number;
+  dealsWithSlips: number;
+  totalSlips: number;
+  totalPullIns: number;
+  chronicDeals: number;
+  amountWithSlips: number;
+  averageDaysSlippedPerSlip: number | null;
+  slippedIntoPeriodCount: number;
+  slippedOutOfPeriodCount: number;
+  slippedOutOfPeriodAmount: number;
+  byOwner: CloseDateBreakdown[];
+  byProduct: CloseDateBreakdown[];
+  byStage: CloseDateBreakdown[];
+  deals: CloseDateDealRow[];
+  rulesVersion: string;
+}
+
+// ─── Jornada (handoffs, reentradas, sem interação, transições) ──────────────
+
+export interface HandoffRow {
+  leadId: string;
+  title: string | null;
+  companyName: string | null;
+  amount: number;
+  fromOwner: string | null;
+  toOwner: string | null;
+  changedAt: string;
+  source: string;
+  isOpen: boolean;
+}
+export interface HandoffPairBreakdown {
+  fromOwner: string | null;
+  toOwner: string | null;
+  count: number;
+}
+export interface HandoffsSummary {
+  trackingSince: string | null;
+  countInPeriod: number;
+  dealsWithHandoffInPeriod: number;
+  openDealsWithMultipleHandoffs: number;
+  byPair: HandoffPairBreakdown[];
+  recent: HandoffRow[];
+}
+export interface ReentryRow {
+  leadId: string;
+  title: string | null;
+  companyName: string | null;
+  owner: string | null;
+  amount: number;
+  fromTerminalStage: string;
+  toStage: string;
+  reenteredAt: string;
+  currentStatus: 'aberto' | 'ganho' | 'perdido';
+}
+export interface ReentriesSummary {
+  trackingSince: string | null;
+  countInPeriod: number;
+  birthhub360ed: number;
+  recoveredCount: number;
+  recoveredAmount: number;
+  reactivatedOpenCount: number;
+  reactivatedOpenAmount: number;
+  rows: ReentryRow[];
+}
+export interface NoInteractionRow {
+  leadId: string;
+  title: string | null;
+  companyName: string | null;
+  owner: string | null;
+  amount: number;
+  stageName: string | null;
+  daysSinceInteraction: number | null;
+  tier: ForecastTier;
+}
+export interface NoInteractionSummary {
+  thresholdDays: number;
+  openDealsEvaluated: number;
+  count: number;
+  amount: number;
+  neverInteractedCount: number;
+  rows: NoInteractionRow[];
+}
+export interface StageTransitionEdge {
+  fromStage: string;
+  toStage: string;
+  count: number;
+  medianDaysInFrom: number | null;
+  backward: boolean;
+}
+export interface StageTransitionsSummary {
+  trackingSince: string | null;
+  totalTransitions: number;
+  backwardTransitions: number;
+  edges: StageTransitionEdge[];
+}
+export interface JourneyReport {
+  period: string;
+  handoffs: HandoffsSummary;
+  reentries: ReentriesSummary;
+  noInteraction: NoInteractionSummary;
+  transitions: StageTransitionsSummary;
+}
+
+// ─── Mentor Comercial (playbook de recomendações por IA) ─────────────────────
+
+export type MentorRecommendationPriority = 'alta' | 'media' | 'baixa';
+export interface MentorRecommendation {
+  priority: MentorRecommendationPriority;
+  title: string;
+  rationale: string;
+  suggestedAction: string;
+  relatedDealIds: string[];
+}
+export interface MentorPlaybookResult {
+  recommendations: MentorRecommendation[];
+  source: 'ai' | 'fallback';
+  generatedAt: string;
+}
+
+function qs(
+  filter: CommercialFilter,
+  extra?: Record<string, string | number | boolean | undefined>,
+): string {
+  const params = new URLSearchParams();
+  params.set('month', filter.month);
+  if (filter.owner) params.set('owner', filter.owner);
+  if (filter.product) params.set('product', filter.product);
+  if (filter.source) params.set('source', filter.source);
+  if (filter.icp) params.set('icp', filter.icp);
+  if (filter.company) params.set('company', filter.company);
+  if (extra) {
+    for (const [key, value] of Object.entries(extra)) {
+      if (value !== undefined && value !== '') params.set(key, String(value));
+    }
+  }
+  return params.toString();
+}
+
+const BASE = '/api/commercial-intelligence';
+
+export const commercialIntelligenceApi = {
+  overview: (filter: CommercialFilter) =>
+    api.get<ExecutiveOverview>(`${BASE}/overview?${qs(filter)}`),
+  pipelineCreation: (filter: CommercialFilter) =>
+    api.get<PipelineCreation>(`${BASE}/pipeline-creation?${qs(filter)}`),
+  performance: (filter: CommercialFilter) =>
+    api.get<PerformanceMetrics>(`${BASE}/performance?${qs(filter)}`),
+  aging: (filter: CommercialFilter) => api.get<AgingReport>(`${BASE}/aging?${qs(filter)}`),
+  losses: (filter: CommercialFilter) => api.get<LossAnalysis>(`${BASE}/losses?${qs(filter)}`),
+  leadingIndicators: () => api.get<LeadingIndicatorsReport>(`${BASE}/leading-indicators`),
+  alerts: (filter: CommercialFilter) => api.get<ExecutiveAlert[]>(`${BASE}/alerts?${qs(filter)}`),
+  crmQuality: (filter: CommercialFilter) =>
+    api.get<CrmQualityIndex>(`${BASE}/crm-quality?${qs(filter)}`),
+  deals: (
+    filter: CommercialFilter,
+    extra?: {
+      tier?: ForecastTier;
+      stageId?: string;
+      agingCritical?: boolean;
+      missingNextAction?: boolean;
+      ids?: string;
+      limit?: number;
+      offset?: number;
+      sort?: 'recent' | 'riskImpact';
+    },
+  ) => api.get<DealDrillDownResult>(`${BASE}/deals?${qs(filter, extra)}`),
+  metricsDictionary: () => api.get<MetricDefinition[]>(`${BASE}/metrics-dictionary`),
+  filterOptions: () => api.get<FilterOptions>(`${BASE}/filter-options`),
+  trends: (filter: CommercialFilter) =>
+    api.get<HistoricalTrendsReport>(`${BASE}/trends?${qs(filter)}`),
+  healthScore: (filter: CommercialFilter) =>
+    api.get<HealthScoreResult>(`${BASE}/health-score?${qs(filter)}`),
+  forecastAccuracy: () => api.get<ForecastAccuracySummary>(`${BASE}/forecast-accuracy`),
+  forecastCalibration: (filter: CommercialFilter) =>
+    api.get<ForecastCalibrationResult>(`${BASE}/forecast-calibration?${qs(filter)}`),
+  funnelBottlenecks: (filter: CommercialFilter) =>
+    api.get<FunnelBottleneckReport>(`${BASE}/funnel-bottlenecks?${qs(filter)}`),
+  sellerBenchmark: (filter: CommercialFilter) =>
+    api.get<SellerBenchmarkReport>(`${BASE}/seller-benchmark?${qs(filter)}`),
+  hiringScenario: (filter: CommercialFilter, additionalReps: number) =>
+    api.get<HiringScenarioResult>(`${BASE}/hiring-scenario?${qs(filter, { additionalReps })}`),
+  channelAttribution: (filter: CommercialFilter) =>
+    api.get<ChannelAttributionReport>(`${BASE}/channel-attribution?${qs(filter)}`),
+  closeDateIntelligence: (filter: CommercialFilter) =>
+    api.get<CloseDateIntelligenceReport>(`${BASE}/close-date-intelligence?${qs(filter)}`),
+  journey: (filter: CommercialFilter) => api.get<JourneyReport>(`${BASE}/journey?${qs(filter)}`),
+  getGoal: (month: string) => api.get<CommercialGoalDTO | null>(`${BASE}/goals?month=${month}`),
+  setGoal: (period: string, amount: number, currency = 'BRL') =>
+    api.put<CommercialGoalDTO>(`${BASE}/goals`, { period, amount, currency }),
+  notifyBitrix: (leadId: string, comment: string) =>
+    api.post<{ entityType: 'lead' | 'deal'; bitrixRecordId: string }>(
+      `/api/bitrix/leads/${leadId}/comment`,
+      { comment },
+    ),
+  // Plano Diário (DailyPlanHub) — chama a rota do Bitrix24 diretamente, sem importar
+  // src/features/integrations/bitrix (proibido por `no-cross-feature-imports`, ver
+  // .dependency-cruiser.cjs). Mesmos endpoints/formatos de `bitrix.api.ts`.
+  getDailyPlan: (assignedById?: string) => {
+    const query = assignedById ? `?assignedById=${encodeURIComponent(assignedById)}` : '';
+    return api.get<UserDailyPlanSummary>(`/api/bitrix/daily-plan${query}`);
+  },
+  syncDailyPlan: (assignedById?: string) =>
+    api.post<UserDailyPlanSummary>('/api/bitrix/daily-plan/sync', { assignedById }),
+  dailyPlanTeamMembers: async () => {
+    // O `assignedById` do plano diário é um ID do Bitrix, não o UUID interno retornado por
+    // `/api/team/assignable`. A mesma primeira conexão é usada pelo serviço que monta o plano.
+    const connections = await api.get<DailyPlanBitrixConnection[]>('/api/bitrix/connections');
+    const connection = connections[0];
+    if (!connection) {
+      return { members: [] as DailyPlanTeamMember[], connectionLabel: null };
+    }
+    const members = await api.get<DailyPlanTeamMember[]>(
+      `/api/bitrix/users?connectionId=${encodeURIComponent(connection.id)}`,
+    );
+    return { members, connectionLabel: connection.label };
+  },
+  completeDailyPlanItem: (itemType: string, itemId: string) =>
+    api.post<{ success: boolean; message: string }>('/api/bitrix/daily-plan/complete', {
+      itemType,
+      itemId,
+    }),
+  addDailyPlanNote: (
+    itemType: string,
+    itemId: string,
+    note: string,
+    entityType?: string,
+    entityId?: string,
+  ) =>
+    api.post<{ success: boolean; message: string }>('/api/bitrix/daily-plan/note', {
+      itemType,
+      itemId,
+      note,
+      entityType,
+      entityId,
+    }),
+  // Comentários já existentes no Bitrix24 do item (histórico real, não só o que a Central
+  // adicionou) — buscado sob demanda quando a gaveta de observação é aberta, nunca em lote.
+  getDailyPlanItemNotes: (
+    itemType: string,
+    itemId: string,
+    entityType?: string,
+    entityId?: string,
+  ) => {
+    const params = new URLSearchParams({ itemType, itemId });
+    if (entityType) params.set('entityType', entityType);
+    if (entityId) params.set('entityId', entityId);
+    return api.get<string[]>(`/api/bitrix/daily-plan/notes?${params.toString()}`);
+  },
+  createDailyPlanActivity: (payload: {
+    title: string;
+    channel: string;
+    contactName?: string;
+    phone?: string;
+    dueTime?: string;
+    observations?: string;
+    leadId?: string;
+  }) => api.post<{ success: boolean; message: string }>('/api/bitrix/daily-plan/activity', payload),
+  // Fechamento obrigatório do Plano Diário (parecer do dia anterior + metas do novo dia) — ver
+  // DailyClosingGate.tsx/DailyClosingContext.tsx, checado uma vez por sessão antes de liberar o app.
+  getPendingDailyClosing: () =>
+    api.get<PendingDailyClosing>('/api/bitrix/daily-plan/closing/pending'),
+  submitDailyPlanClosing: (payload: DailyPlanClosingInput) =>
+    api.post<{ success: boolean }>('/api/bitrix/daily-plan/closing', payload),
+  aiExecutiveSummary: (filter: CommercialFilter) =>
+    api.post<ExecutiveSummaryResult>(`${BASE}/ai/executive-summary`, filter),
+  aiBitrixNote: (leadId: string) =>
+    api.post<BitrixNoteDraftResult>(`${BASE}/ai/bitrix-note`, { leadId }),
+  aiMentorPlaybook: (filter: CommercialFilter) =>
+    api.post<MentorPlaybookResult>(`${BASE}/ai/mentor-playbook`, filter),
+  aiLossReasonAnalysis: (leadId: string) =>
+    api.post<LossReasonAiAnalysisResult>(`${BASE}/ai/loss-reason-analysis`, { leadId }),
+};
+
+/**
+ * Exportação HTML/CSV/JSON do Relatório Executivo — a rota devolve o CONTEÚDO cru (não o envelope
+ * `{success,data}` que `apiFetch`/`api.get` espera), então não passa por `commercialIntelligenceApi`
+ * acima. Mesmo padrão já usado em `CrmBoard.tsx` (`handleExportCsv`, `/api/leads/export/csv`):
+ * `fetch` bruto + `Blob` + link `<a download>` temporário.
+ */
+export async function downloadExecutiveExport(
+  filter: CommercialFilter,
+  format: ExportFormat,
+): Promise<void> {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${BASE}/export?${qs(filter, { format })}`, {
+    credentials: 'include',
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    throw new Error(
+      errorData?.error || errorData?.message || 'Falha ao exportar o relatório executivo.',
+    );
+  }
+  const blob = await response.blob();
+  const disposition = response.headers.get('Content-Disposition') || '';
+  const match = /filename="([^"]+)"/.exec(disposition);
+  const filename = match?.[1] || `comercial-inteligente-${filter.month}.${format}`;
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  link.parentNode?.removeChild(link);
+  window.URL.revokeObjectURL(url);
+}
+
+export { formatCurrency, formatPercent, formatMultiple } from './presentation/formatMetrics.js';
+
+/** DATA-007: implementação única e pura, compartilhada por backend e frontend. */
+export {
+  buildForecastRange,
+  computeTrendMomentum,
+  TREND_MOMENTUM_THRESHOLD_PP,
+} from './application/predictiveForecast.js';
+
+export function currentMonth(): string {
+  return brazilMonthKey(new Date());
+}
+
+export type LiveCallObjectionCategory =
+  | 'preco_ou_orcamento'
+  | 'concorrente'
+  | 'timing_ou_prioridade'
+  | 'autoridade_decisor'
+  | 'produto_fit'
+  | 'indecisao'
+  | 'contrato_ou_juridico'
+  | 'outros'
+  | string;
+
+export interface LiveCallInsight {
+  callId: string;
+  dealId: string;
+  timestamp: string | Date;
+  objectionCategory?: LiveCallObjectionCategory | null;
+  suggestedRebuttal?: string | null;
+  sentimentScore: number;
+  organizationId?: string;
+  confidence?: number;
+  competitorMentioned?: string | null;
+  keyPhrases?: string[];
+  transcriptSnippet?: string | null;
+}
+
+export interface LiveCallInsightsSummary {
+  totalCalls: number;
+  averageSentimentScore: number | null;
+  activeObjectionsCount: number;
+  topObjections: { category: string; count: number }[];
+  detectedCompetitors: string[];
+}

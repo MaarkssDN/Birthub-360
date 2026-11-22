@@ -1,0 +1,9 @@
+{
+  "name": "testland/mobile-a11y-test-author",
+  "description": "Use when an iOS or Android app needs accessibility tests: XCUITest performAccessibilityAudit (iOS 17+), VoiceOver labels and traits, Espresso AccessibilityChecks, Accessibility Scanner and TalkBack order, plus WCAG checks for labels, 44pt and 48dp touch targets, contrast and focus order.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.4.10"
+}

@@ -1,0 +1,9 @@
+{
+  "name": "testland/hipaa-test-patterns",
+  "description": "Use when a product handling protected health information (PHI) needs HIPAA Security Rule readiness tests: administrative, physical and technical safeguards (access control, audit logs, integrity, transmission security), PHI in fixtures, minimum-necessary access and BAA scope.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.10"
+}

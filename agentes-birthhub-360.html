@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Birth Hub 360° — Os 29 Personagens</title>
+<link rel="stylesheet" href="identidade-visual/birthhub360/tokens/characters.css">
+<style>
+  :root{
+    --bg:#0D0D0D; --surface:#14141A; --surface2:#1B1B24;
+    --ink:#F2F2F5; --muted:#9A9AA8; --line:rgba(255,255,255,.07);
+    --cyan:#00D4FF; --pink:#FF2D9B; --gold:#FFC107;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;line-height:1.55;padding-bottom:80px}
+  header{padding:56px 24px 32px;max-width:1280px;margin:0 auto}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.18em;color:var(--cyan);text-transform:uppercase}
+  h1{font-family:Sora,Inter,sans-serif;font-size:clamp(30px,4vw,46px);letter-spacing:-.02em;margin:10px 0 12px}
+  .sub{color:var(--muted);max-width:760px;font-size:15px}
+  .sub code{color:var(--cyan);font-family:"IBM Plex Mono",monospace;font-size:13px}
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin-top:22px}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 18px;font-size:13px;color:var(--muted)}
+  .stat b{display:block;font-size:22px;color:var(--ink);font-family:"IBM Plex Mono",monospace}
+  .note{margin-top:18px;background:linear-gradient(135deg,rgba(139,125,255,.10),rgba(0,212,255,.06));border:1px solid rgba(139,125,255,.3);border-radius:14px;padding:14px 18px;font-size:13.5px;color:var(--muted)}
+  .note b{color:var(--ink)}
+  .controls{position:sticky;top:0;z-index:20;background:rgba(13,13,13,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:14px 24px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .controls>div{max-width:1280px;margin:0 auto;display:flex;gap:12px;flex-wrap:wrap;align-items:center;width:100%}
+  .controls input{flex:1;min-width:220px;background:var(--surface);border:1px solid var(--line);border-radius:10px;color:var(--ink);padding:10px 14px;font-size:14px;outline:none}
+  .controls input:focus{border-color:var(--cyan)}
+  .chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;color:var(--muted);padding:7px 14px;font-size:12px;cursor:pointer;font-family:"IBM Plex Mono",monospace;transition:.15s}
+  .chip:hover,.chip.on{color:var(--ink);border-color:var(--cyan)}
+  main{max-width:1280px;margin:0 auto;padding:32px 24px}
+  section{margin-bottom:44px}
+  .sec-title{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+  .sec-title h2{font-family:Sora,sans-serif;font-size:20px;letter-spacing:-.01em}
+  .sec-title .count{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
+  .sec-title .bar{flex:1;height:1px;background:var(--line)}
+  .sec-desc{color:var(--muted);font-size:13px;margin:-8px 0 18px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px;position:relative;overflow:hidden;transition:.2s}
+  .card:hover{transform:translateY(-2px);border-color:rgba(0,212,255,.4);box-shadow:0 12px 36px -8px rgba(0,0,0,.6)}
+  .card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--pc,#00D4FF)}
+  .top{display:flex;gap:14px;align-items:center;margin-bottom:12px}
+  .avatar{flex:none;width:64px;height:64px;border-radius:9999px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.03);border:1px solid var(--line)}
+  .avatar img{width:52px;height:52px}
+  .who{min-width:0}
+  .who h3{font-family:Sora,sans-serif;font-size:17px;letter-spacing:-.01em}
+  .who .role{color:var(--pc,#00D4FF);font-size:12.5px;font-weight:600}
+  .cmd{display:inline-block;margin-top:4px;font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--muted);background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:2px 8px}
+  .desc{font-size:13px;color:var(--muted);min-height:38px}
+  .meta{margin-top:10px;display:flex;flex-direction:column;gap:5px;font-size:12px}
+  .meta .row{display:flex;gap:8px;align-items:baseline}
+  .meta .k{font-family:"IBM Plex Mono",monospace;font-size:10px;color:#5c5c6e;text-transform:uppercase;letter-spacing:.08em;flex:none;width:86px}
+  .meta .v{color:var(--ink)}
+  .meta .v.mono{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted)}
+  .pal{display:flex;gap:6px;margin-top:12px}
+  .pal i{width:18px;height:18px;border-radius:6px;border:1px solid rgba(255,255,255,.12);display:block}
+  .states{display:flex;gap:4px;margin-top:12px;flex-wrap:wrap}
+  .states button{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--muted);background:transparent;border:1px solid var(--line);border-radius:6px;padding:3px 8px;cursor:pointer;transition:.15s}
+  .states button:hover{color:var(--ink);border-color:var(--pc,#00D4FF)}
+  .states button.on{color:#0D0D0D;background:var(--pc,#00D4FF);border-color:var(--pc,#00D4FF);font-weight:600}
+  .hide{display:none}
+  footer{max-width:1280px;margin:40px auto 0;padding:24px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line)}
+  footer code{color:var(--cyan);font-family:"IBM Plex Mono",monospace}
+  @media(max-width:560px){.grid{grid-template-columns:1fr}.avatar{width:56px;height:56px}.avatar img{width:44px;height:44px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">Birth Hub 360° · Sistema Visual de Personagens · characters.css v1.0</div>
+  <h1>Os 29 Personagens</h1>
+  <p class="sub">Personagens <b>reais e homologados</b> do produto — não os 32 agentes de desenvolvimento. Cada um é um avatar SVG vetorial em <code>public/brand/characters/</code>, com paleta própria, arquétipo, assinatura de animação, comando de voz ("Ei …") e 6 estados reativos (<code>idle · listening · processing · speaking · success · error</code>) sincronizados ao streaming de IA. Clique nos estados para ver a animação oficial.</p>
+  <div class="stats">
+    <div class="stat"><b>29</b>personagens</div>
+    <div class="stat"><b>4</b>camadas</div>
+    <div class="stat"><b>6</b>estados cada</div>
+    <div class="stat"><b>&lt;4KB</b>por SVG</div>
+  </div>
+  <div class="note"><b>Fontes reais:</b> catálogo em <code>src/features/characters/characterCatalog{Pillars,Agents}.ts</code> + tokens em <code>identidade-visual/birthhub360/tokens/characters.{json,ts,css}</code>. Personagem sem <code>linkedAgentId</code> é "pillar" (representa um pilar do produto); os demais são personas de agentes de runtime do enxame comercial (COMMERCIAL_AGENT_REGISTRY). Fallback universal: <b>Core</b>.</div>
+</header>
+<div class="controls"><div>
+  <input id="q" type="search" placeholder="Buscar personagem, papel, agente vinculado…">
+  <button class="chip on" data-f="all">Todos</button>
+  <button class="chip" data-f="pillar">Pilares (9)</button>
+  <button class="chip" data-f="commercial-agent">Agentes Comerciais (15)</button>
+  <button class="chip" data-f="channel-agent">Canais &amp; Voz (4)</button>
+  <button class="chip" data-f="orchestration">Orquestração (1)</button>
+</div></div>
+<main id="main"></main>
+<footer>SVGs servidos de <code>public/brand/characters/*.svg</code> · Animações oficiais em <code>identidade-visual/birthhub360/tokens/characters.css</code> · Respeita <code>prefers-reduced-motion</code> · Personagens são não-humanos por design (arquetipos "Non-Human …")</footer>
+<script>
+const LAYERS={
+  'pillar':{t:'Camada 5 — Personagens-Pilar',d:'Um guardião por pilar do produto (Hub Comercial → Administração). Ids e paletas originais preservados; representam módulos inteiros, não agentes de runtime.'},
+  'commercial-agent':{t:'Camada 2 — Agentes Comerciais de Runtime',d:'15 personas vinculadas a agentes reais do COMMERCIAL_AGENT_REGISTRY: LDR, BDR, SDR, Closer, Coordenador, Gerente, Diretor, Auditor, Retenção, Contratos, Bitrix, Receita, Dossiê, Promessas e Advogado do Diabo.'},
+  'channel-agent':{t:'Camada 3 — Canais e Voz',d:'4 personas dos canais de contato: discador autônomo, diagnóstico inbound, hunter de contas e assistente tático de chat.'},
+  'orchestration':{t:'Camada 7 — Orquestração',d:'O Supervisor Central: orquestra o enxame de agentes, memória compartilhada, filas e guardrails de risco.'}
+};
+const C=[
+// ===== PILARES =====
+{id:'orbit',n:'Orbit',r:'Guardião do CRM',l:'pillar',g:'PILAR 01 — HUB COMERCIAL',ag:null,cmd:'Ei Orbit',arch:'Non-Human Gravitational Gyroscope',anim:'orbita lenta de anéis com satélites de dados',ctx:'Monitorando pipeline e integridade dos negócios',desc:'Guardião do Hub Comercial: vigia a integridade do pipeline de negócios e das empresas.',pc:'#FFC107',sc:'#00D4FF',ac:'#FF2D9B'},
+{id:'nexus',n:'Nexus',r:'Analista de Dados',l:'pillar',g:'PILAR 02 — INTELIGÊNCIA DE MERCADO',ag:null,cmd:'Ei Nexus',arch:'Non-Human Faceted Quantum Prism',anim:'refração prismática dos vértices hexagonais',ctx:'Pesquisando dados de mercado, ICP e decisores',desc:'Analista de Inteligência de Mercado: pesquisa dados, ICP e decisores para prospecção.',pc:'#00D4FF',sc:'#38BDF8',ac:'#FFC107'},
+{id:'aria',n:'Aria',r:'Maestrina de Fluxos',l:'pillar',g:'PILAR 03 — ORQUESTRAÇÃO DE VENDAS',ag:null,cmd:'Ei Aria',arch:'Non-Human Harmonic Mobius Ribbon',anim:'ondulação harmônica das fitas de fluxo',ctx:'Otimizando cadência diária e próximas melhores ações',desc:'Maestrina de Orquestração de Vendas: coordena cadências diárias e melhores próximas ações.',pc:'#10B981',sc:'#00D4FF',ac:'#34D399'},
+{id:'vanguard',n:'Vanguard',r:'Estrategista de Metas',l:'pillar',g:'PILAR 04 — PERFORMANCE COMERCIAL',ag:null,cmd:'Ei Vanguard',arch:'Non-Human Ascending Spearhead & Shield',anim:'propulsão ascendente com ignição do núcleo',ctx:'Acompanhando gargalos de conversão e metas',desc:'Estrategista de Performance Comercial: acompanha gargalos de conversão e metas.',pc:'#FF2D9B',sc:'#FFC107',ac:'#00D4FF'},
+{id:'oracle',n:'Oracle',r:'Visionário de Forecast',l:'pillar',g:'PILAR 05 — PREVISIBILIDADE COMERCIAL',ag:null,cmd:'Ei Oracle',arch:'Non-Human Astrolabe Ocular Lens',anim:'rotação lenta dos círculos temporais concêntricos',ctx:'Projetando forecast ponderado e fechamentos',desc:'Visionário de Previsibilidade Comercial: projeta forecast ponderado e fechamentos.',pc:'#A855F7',sc:'#FF2D9B',ac:'#00D4FF'},
+{id:'core',n:'Core',r:'Mente Principal',l:'pillar',g:'PILAR 06 — INTELIGÊNCIA ARTIFICIAL',ag:null,cmd:'Ei Core',arch:'Non-Human Synaptic Hypersphere',anim:'respiração neural com feixes sinápticos',ctx:'Supervisionando o enxame de agentes autônomos',desc:'Mente Principal de IA: supervisiona o enxame de agentes autônomos e o conhecimento. Fallback universal do sistema.',pc:'#6366F1',sc:'#00D4FF',ac:'#FF2D9B'},
+{id:'spark',n:'Spark',r:'Engenheiro de Integrações',l:'pillar',g:'PILAR 07 — AUTOMAÇÃO & CONECTIVIDADE',ag:null,cmd:'Ei Spark',arch:'Non-Human 4-Point Electric Starlight',anim:'centelhamento elétrico de 4 pontas',ctx:'Monitorando conectores externos e filas',desc:'Engenheiro de Automação e Conectividade: monitora conectores externos, filas e webhooks.',pc:'#14B8A6',sc:'#D4F434',ac:'#00F2FE'},
+{id:'echo',n:'Echo',r:'Especialista em Voz',l:'pillar',g:'PILAR 08 — ENGAJAMENTO COMERCIAL',ag:null,cmd:'Ei Echo',arch:'Non-Human Acoustic Resonator Capsule',anim:'ressonância esférica com ondas sonoras concêntricas',ctx:'Acompanhando discador, transcrições e cadências',desc:'Especialista em Engajamento Comercial: acompanha discador, transcrições e cadências de voz.',pc:'#FB7185',sc:'#00D4FF',ac:'#FF2D9B'},
+{id:'sudo',n:'Sudo',r:'Controlador de Sistema',l:'pillar',g:'ADMINISTRAÇÃO',ag:null,cmd:'Ei Sudo',arch:'Non-Human Isometric Cryptographic Monolith',anim:'pulso criptográfico do monólito isométrico',ctx:'Validando governança, alçadas e segurança',desc:'Controlador de Administração: valida governança, alçadas, RBAC e segurança do sistema.',pc:'#94A3B8',sc:'#00D4FF',ac:'#FFC107'},
+// ===== AGENTES COMERCIAIS =====
+{id:'axiom',n:'Axiom',r:'Guardião de Dados LDR',l:'commercial-agent',g:'LDR — ldr-intelligence',ag:'ldr-intelligence',cmd:'Ei Axiom',arch:'Non-Human Data Integrity Cell',anim:'verificação sequencial dos nós da grade de dados',ctx:'Verificando integridade e completude dos dados de conta',desc:'LDR — Inteligência de Leads: contextualiza e prioriza contas, higienizando dados antes da abordagem.',pc:'#38BDF8',sc:'#FFC107',ac:'#22C55E'},
+{id:'beacon',n:'Beacon',r:'Prospector Outbound',l:'commercial-agent',g:'BDR — bdr-outbound',ag:'bdr-outbound',cmd:'Ei Beacon',arch:'Non-Human Signal Beacon Tower',anim:'emissão pulsante de arcos de transmissão',ctx:'Emitindo sinais de prospecção e abordagens personalizadas',desc:'BDR — Outbound: redige abordagens hiper-personalizadas para prospecção ativa.',pc:'#FBBF24',sc:'#FF2D9B',ac:'#00D4FF'},
+{id:'meridian',n:'Meridian',r:'Qualificador SDR',l:'commercial-agent',g:'SDR — sdr-qualification',ag:'sdr-qualification',cmd:'Ei Meridian',arch:'Non-Human Qualification Compass',anim:'oscilação da agulha de decisão sobre o meridiano',ctx:'Calibrando qualificação BANT e triagem de cadências',desc:'SDR — Qualificação: conduz qualificação BANT e triagem de cadências de entrada.',pc:'#34D399',sc:'#8B7DFF',ac:'#00D4FF'},
+{id:'forge',n:'Forge',r:'Closer Copilot',l:'commercial-agent',g:'Closer — closer-sales',ag:'closer-sales',cmd:'Ei Forge',arch:'Non-Human Closing Forge',anim:'chama interna pulsante com faíscas de impacto',ctx:'Forjando fechamento: objeções, propostas e táticas de reunião',desc:'Closer Copilot: apoia reuniões, objeções e propostas — sugere, nunca fecha o deal.',pc:'#FB923C',sc:'#FFC107',ac:'#FF2D9B'},
+{id:'relay',n:'Relay',r:'Coordenador de Vendas',l:'commercial-agent',g:'Coordenador — coordinator-commercial',ag:'coordinator-commercial',cmd:'Ei Relay',arch:'Non-Human Workload Router Node',anim:'pulso sequencial nas três rotas de distribuição',ctx:'Distribuindo carga de trabalho e balanceando SLAs',desc:'Coordenador Comercial: balanceia carga de trabalho e SLAs de atendimento.',pc:'#2DD4BF',sc:'#00D4FF',ac:'#FFC107'},
+{id:'helm',n:'Helm',r:'Gerente Comercial IA',l:'commercial-agent',g:'Gerente — manager-commercial',ag:'manager-commercial',cmd:'Ei Helm',arch:'Non-Human Command Helm Wheel',anim:'rotação lenta dos raios do leme com pulsos nos comandos',ctx:'Pilotando performance da equipe e alçadas de desconto',desc:'Gerente Comercial IA: avalia performance da equipe e calcula alçadas — exige confirmação humana.',pc:'#A78BFA',sc:'#FFC107',ac:'#00D4FF'},
+{id:'apex',n:'Apex',r:'Diretor Executivo IA',l:'commercial-agent',g:'Diretor — executive-director',ag:'executive-director',cmd:'Ei Apex',arch:'Non-Human Executive Summit',anim:'brilho da estrela de topo sobre os cumes de alçada',ctx:'Visão macro de metas e alçadas máximas de exceção',desc:'Diretor Executivo IA: visão macro de metas e alçadas máximas — exige confirmação do Admin.',pc:'#FACC15',sc:'#8B7DFF',ac:'#FF2D9B'},
+{id:'ledger',n:'Ledger',r:'Auditor de Faturamento',l:'commercial-agent',g:'Billing — billing-revenue',ag:'billing-revenue',cmd:'Ei Ledger',arch:'Non-Human Ledger Tome',anim:'lançamento sequencial de colunas de auditoria',ctx:'Auditando contratos, cobrança e faturamento recorrente',desc:'Auditor de Faturamento: audita contratos e cobrança — bloqueio compulsório em alterações.',pc:'#22C55E',sc:'#FFC107',ac:'#00D4FF'},
+{id:'anchor',n:'Anchor',r:'Guardião de Retenção',l:'commercial-agent',g:'Churn — churn-retention',ag:'churn-retention',cmd:'Ei Anchor',arch:'Non-Human Retention Anchor',anim:'estabilização do anel com vibração amortecida das patas',ctx:'Ancorando clientes: telemetria de churn e planos de resgate',desc:'Guardião de Retenção: monitora telemetria de churn e dispara planos de resgate.',pc:'#60A5FA',sc:'#FF2D9B',ac:'#8B7DFF'},
+{id:'seal',n:'Seal',r:'Guardião Contratual',l:'commercial-agent',g:'Contratos — contract-signature',ag:'contract-signature',cmd:'Ei Seal',arch:'Non-Human Digital Wax Seal',anim:'compressão do selo de cera com carimbo central',ctx:'Selando formalização e assinatura digital de contratos',desc:'Guardião Contratual: conduz formalização e assinatura — bloqueio para envio de contratos.',pc:'#F472B6',sc:'#FFC107',ac:'#8B7DFF'},
+{id:'cipher',n:'Cipher',r:'Guardião Bitrix24',l:'commercial-agent',g:'Bitrix — bitrix-guardian',ag:'bitrix-guardian',cmd:'Ei Cipher',arch:'Non-Human Interlocked Sync Rings',anim:'engrenamento contra-rotativo dos anéis hexagonais',ctx:'Protegendo a integridade da sincronização Bitrix24',desc:'Guardião Bitrix24: monitora anomalias e integridade de sincronização — autônomo em mapeamentos.',pc:'#6EE7B7',sc:'#38BDF8',ac:'#FFC107'},
+{id:'harbinger',n:'Harbinger',r:'Oráculo de Receita',l:'commercial-agent',g:'Receita — revenue-intelligence',ag:'revenue-intelligence',cmd:'Ei Harbinger',arch:'Non-Human Faceted Prediction Crystal',anim:'trajetória ascendente da seta de tendência no cristal',ctx:'Modelando previsão ponderada e inteligência de receita',desc:'Oráculo de Receita: modelagem preditiva e projeção de forecast — autônomo para ratings.',pc:'#C084FC',sc:'#00D4FF',ac:'#FF2D9B'},
+{id:'scout',n:'Scout',r:'Detetive de Conta',l:'commercial-agent',g:'Dossiê — account-detective',ag:'account-detective',cmd:'Ei Scout',arch:'Non-Human Investigation Lens',anim:'varredura da lupa sobre o mapa de evidências',ctx:'Investigando contas: dossiê pré-reunião em 10 seções',desc:'Detetive de Conta: investigação pré-reunião e dossiê em 10 seções — autônomo para pesquisa.',pc:'#4ADE80',sc:'#00D4FF',ac:'#FFC107'},
+{id:'pledge',n:'Pledge',r:'Guardião de Promessas',l:'commercial-agent',g:'Promessas — promise-guardian',ag:'promise-guardian',cmd:'Ei Pledge',arch:'Non-Human Commitment Knot',anim:'aperto do nó central com selagem dos extremos',ctx:'Vigiando promessas verbais e tarefas derivadas de áudio',desc:'Guardião de Promessas: detecta promessas verbais em áudios e cria rascunhos de tarefas.',pc:'#F9A8D4',sc:'#8B7DFF',ac:'#FFC107'},
+{id:'tribunal',n:'Tribunal',r:'Advogado do Diabo',l:'commercial-agent',g:'Auditoria — devils-advocate',ag:'devils-advocate',cmd:'Ei Tribunal',arch:'Non-Human Audit Scales',anim:'balanço ponderado dos pratos de contraprova',ctx:'Auditando criticamente probabilidade de negócios estagnados',desc:'Advogado do Diabo: auditoria crítica de probabilidade — autônomo para rebaixar rating.',pc:'#64748B',sc:'#EF4444',ac:'#FFC107'},
+// ===== CANAIS & VOZ =====
+{id:'vox',n:'Vox',r:'Discador Autônomo',l:'channel-agent',g:'Voice — voice-agent',ag:'voice-agent',cmd:'Ei Vox',arch:'Non-Human Directional Voice Emitter',anim:'emissão direcional de arcos sonoros',ctx:'Discando chamadas autônomas com detecção de secretária',desc:'Voice Agent: discador autônomo, detecção de secretária eletrônica (AMD) e saudação governada.',pc:'#F0ABFC',sc:'#00D4FF',ac:'#FF2D9B'},
+{id:'scope',n:'Scope',r:'Diagnóstico de Leads',l:'channel-agent',g:'SDR Diagnostic — sdr-diagnostic',ag:'sdr-diagnostic',cmd:'Ei Scope',arch:'Non-Human Diagnostic Reticle',anim:'pulso vital varrendo o retículo de diagnóstico',ctx:'Diagnosticando maturidade de leads inbound',desc:'SDR Diagnostic: diagnóstico de maturidade de leads inbound.',pc:'#A3E635',sc:'#8B7DFF',ac:'#00D4FF'},
+{id:'tracker',n:'Tracker',r:'Scanner de Mercado',l:'channel-agent',g:'Hunter — hunter-agent',ag:'hunter-agent',cmd:'Ei Tracker',arch:'Non-Human Market Sweep Radar',anim:'varredura angular do feixe de radar',ctx:'Varrendo o mercado em busca de novas contas',desc:'Hunter Agent: scanners automáticos de novas contas no mercado.',pc:'#F87171',sc:'#FFC107',ac:'#00D4FF'},
+{id:'tempo',n:'Tempo',r:'Assistente Tático',l:'channel-agent',g:'Tactical — tactical-agent',ag:'tactical-agent',cmd:'Ei Tempo',arch:'Non-Human Tactical Chat Bolt',anim:'descarga do relâmpago com pontos de digitação',ctx:'Respondendo com agilidade tática em chat',desc:'Tactical Agent: assistente de respostas rápidas em chat.',pc:'#67E8F9',sc:'#FF2D9B',ac:'#FFC107'},
+// ===== ORQUESTRAÇÃO =====
+{id:'aegis',n:'Aegis',r:'Supervisor Central',l:'orchestration',g:'Supervisor — supervisor-central',ag:'supervisor-central',cmd:'Ei Aegis',arch:'Non-Human Orchestration Shield',anim:'rotação do anel orbital com íris central de comando',ctx:'Orquestrando o enxame: delegação, memória e guardrails',desc:'Supervisor Central: orquestra o enxame de agentes, memória compartilhada, filas e guardrails de risco.',pc:'#8B7DFF',sc:'#FFC107',ac:'#00D4FF'},
+];
+const STATES=['idle','listening','processing','speaking','success','error'];
+const main=document.getElementById('main');
+function card(a){
+  const el=document.createElement('div');el.className='card';el.style.setProperty('--pc',a.pc);el.dataset.search=(a.n+' '+a.r+' '+a.g+' '+a.ag+' '+a.desc+' '+a.arch).toLowerCase();
+  el.innerHTML=`<div class="top">
+      <div class="avatar bh-character-avatar" data-state="idle"><img src="public/brand/characters/${a.id}.svg" alt="${a.n} — ${a.r}"></div>
+      <div class="who"><h3>${a.n}</h3><div class="role">${a.r}</div><span class="cmd">${a.cmd}</span></div></div>
+    <p class="desc">${a.desc}</p>
+    <div class="meta">
+      <div class="row"><span class="k">Vínculo</span><span class="v mono">${a.ag?'agente: '+a.ag:'personagem-pilar'}</span></div>
+      <div class="row"><span class="k">Contexto</span><span class="v">${a.ctx}</span></div>
+      <div class="row"><span class="k">Archetype</span><span class="v">${a.arch}</span></div>
+      <div class="row"><span class="k">Animação</span><span class="v">${a.anim}</span></div>
+    </div>
+    <div class="pal"><i style="background:${a.pc}" title="primary ${a.pc}"></i><i style="background:${a.sc}" title="secondary ${a.sc}"></i><i style="background:${a.ac}" title="accent ${a.ac}"></i></div>
+    <div class="states">${STATES.map(s=>`<button data-s="${s}">${s}</button>`).join('')}</div>`;
+  const av=el.querySelector('.avatar');
+  el.querySelectorAll('.states button').forEach(b=>b.addEventListener('click',()=>{
+    av.dataset.state=b.dataset.s;
+    el.querySelectorAll('.states button').forEach(x=>x.classList.toggle('on',x===b));
+  }));
+  el.querySelector('.states button[data-s="idle"]').classList.add('on');
+  return el;
+}
+function render(){
+  const q=document.getElementById('q').value.toLowerCase();
+  const f=document.querySelector('.chip.on').dataset.f;
+  main.innerHTML='';
+  for(const l of Object.keys(LAYERS)){
+    if(f!=='all'&&f!==l)continue;
+    const list=C.filter(a=>a.l===l&&(!q||a.dataset===undefined));
+    const matched=list.filter(a=>(a.n+' '+a.r+' '+a.g+' '+(a.ag||'')+' '+a.desc+' '+a.arch).toLowerCase().includes(q));
+    if(!matched.length)continue;
+    const sec=document.createElement('section');
+    sec.innerHTML=`<div class="sec-title"><h2>${LAYERS[l].t}</h2><span class="count">${matched.length}</span><div class="bar"></div></div><p class="sec-desc">${LAYERS[l].d}</p>`;
+    const grid=document.createElement('div');grid.className='grid';
+    matched.forEach(a=>grid.appendChild(card(a)));
+    sec.appendChild(grid);main.appendChild(sec);
+  }
+}
+document.getElementById('q').addEventListener('input',render);
+document.querySelectorAll('.chip').forEach(ch=>ch.addEventListener('click',()=>{
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));ch.classList.add('on');render();
+}));
+render();
+</script>
+</body>
+</html>

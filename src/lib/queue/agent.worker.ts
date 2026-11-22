@@ -1,0 +1,115 @@
+import { type Job, Queue, Worker } from 'bullmq';
+import { SDROutboundDraftAgent } from '../../features/intelligence/agents/sdrOutboundDraft.agent.js';
+import { requestContext } from '../async-context.js';
+import { logger } from '../logger.js';
+import { isFinalAttempt, recordDeadLetter } from './deadLetter.js';
+import { recordQueueJobCompleted, registerQueueForMetrics } from './metrics.js';
+import { connection } from './redis.js';
+
+export const AGENT_QUEUE_NAME = 'intelligence-agents';
+export const agentQueue = new Queue(AGENT_QUEUE_NAME, { connection });
+agentQueue.on('error', (err) => logger.warn({ message: err.message }, 'agentQueue offline'));
+registerQueueForMetrics(AGENT_QUEUE_NAME, agentQueue);
+
+export interface AgentJobData {
+  agentType: 'SDR_OUTBOUND';
+  payload: {
+    leadId: string;
+    tenantId: string;
+    /** Só true após as travas do scheduler (opt-in, score mínimo e janela comercial). */
+    autoExecute: boolean;
+  };
+}
+
+/**
+ * Liga o produtor que faltava ao worker de SDR outbound. O job permanece por sete dias depois de
+ * concluído, evitando que o scheduler de 15 minutos gere o mesmo primeiro contato repetidamente;
+ * a chave de idempotência no banco é a segunda trava, permanente.
+ */
+export async function enqueueSdrOutboundDraft(
+  leadId: string,
+  tenantId: string,
+  autoExecute: boolean,
+): Promise<string | undefined> {
+  const job = await agentQueue.add(
+    'draft-first-contact',
+    { agentType: 'SDR_OUTBOUND', payload: { leadId, tenantId, autoExecute } },
+    {
+      jobId: `sdr-outbound-${tenantId}-${leadId}`,
+      attempts: 3,
+      backoff: { type: 'exponential', delay: 2_000 },
+      removeOnComplete: { age: 7 * 24 * 60 * 60 },
+      removeOnFail: { age: 30 * 24 * 60 * 60 },
+    },
+  );
+  return job.id;
+}
+
+export function createAgentWorker() {
+  const worker = new Worker<AgentJobData>(
+    AGENT_QUEUE_NAME,
+    async (job: Job<AgentJobData>) => {
+      logger.info({ jobId: job.id, agentType: job.data.agentType }, 'Processing agent job');
+
+      try {
+        if (job.data.agentType === 'SDR_OUTBOUND') {
+          const { leadId, tenantId, autoExecute } = job.data.payload;
+          // Mesmo padrão de enrich.worker.ts: este worker roda fora de uma requisição
+          // HTTP, então sem isto nenhuma operação de model aqui carrega o
+          // app.current_tenant_id que a RLS depende — o create() de AIPendingAction (que
+          // usa RETURNING) seria rejeitado pela política assim que RLS estiver realmente
+          // ativa (ver getTenantId() em AgentService, usado como fallback do
+          // organizationId passado explícito abaixo).
+          await requestContext.run({ tenantId }, async () => {
+            const agent = new SDROutboundDraftAgent(`session_${leadId}`, tenantId);
+            const result = await agent.draftEmailForLead(leadId, tenantId, autoExecute);
+            logger.info({ jobId: job.id, leadId, ...result }, 'SDR outbound job completed');
+
+            // Item 2 de "IA Agêntica de Vendas": primeiro toque também por WhatsApp, não só
+            // e-mail. Instância própria — evita misturar o histórico de memória do rascunho de
+            // e-mail com o de WhatsApp (ver comentário de draftWhatsAppForLead). Falha isolada:
+            // um erro aqui não derruba o job nem desfaz o rascunho de e-mail já criado acima.
+            try {
+              const whatsAppAgent = new SDROutboundDraftAgent(
+                `session_${leadId}_whatsapp`,
+                tenantId,
+              );
+              const whatsAppResult = await whatsAppAgent.draftWhatsAppForLead(leadId, tenantId);
+              logger.info(
+                { jobId: job.id, leadId, ...whatsAppResult },
+                'SDR outbound (WhatsApp) job completed',
+              );
+            } catch (whatsAppError: any) {
+              logger.error(
+                { err: whatsAppError, jobId: job.id, leadId },
+                'SDR outbound (WhatsApp) falhou — rascunho de e-mail (se gerado) permanece válido.',
+              );
+            }
+          });
+        }
+      } catch (error: any) {
+        logger.error({ err: error, jobId: job.id }, 'Agent job failed');
+        throw error;
+      }
+    },
+    { connection, concurrency: 5 },
+  );
+
+  worker.on('failed', (job, err) => {
+    logger.error({ err, jobId: job?.id }, 'Worker job permanently failed');
+    if (!job || !isFinalAttempt(job.attemptsMade, job.opts.attempts)) return;
+    void recordDeadLetter({
+      queue: AGENT_QUEUE_NAME,
+      jobId: job.id,
+      jobName: job.name,
+      organizationId: job.data.payload?.tenantId,
+      attemptsMade: job.attemptsMade,
+      correlationId: job.data.payload?.leadId,
+      error: err,
+    });
+  });
+
+  worker.on('completed', () => recordQueueJobCompleted(AGENT_QUEUE_NAME));
+
+  return worker;
+}

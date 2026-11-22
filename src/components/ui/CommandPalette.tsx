@@ -1,0 +1,637 @@
+import {
+  Activity,
+  ArrowDown,
+  ArrowUp,
+  Bot,
+  Building2,
+  CornerDownLeft,
+  FileBarChart,
+  Globe,
+  Home,
+  Loader2,
+  Radar,
+  Search,
+  Users,
+} from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { api } from '../../lib/api.js';
+import {
+  OPEN_AI_CHAT_EVENT,
+  OPEN_COMMAND_PALETTE_EVENT,
+  type PaletteIntent,
+} from '../../lib/paletteIntent.js';
+import { SoundFX } from '../../lib/soundEffects.js';
+import type { Company, Contact, PaginatedResponse } from '../../types/index.js';
+import type { TabNavIcon, TabType } from '../layout/tabMeta.js';
+import { isNavHiddenTab, NAV_TAB_ALIASES, TAB_META } from '../layout/tabMeta.js';
+import { deriveActiveTabFromPath } from '../layout/settingsPillarNav.js';
+
+type ResultItem = {
+  id: string;
+  group: 'Nesta página' | 'Ações rápidas' | 'Navegar' | 'Empresas' | 'Decisores';
+  label: string;
+  sublabel?: string;
+  icon: TabNavIcon;
+  onSelect: () => void;
+};
+
+const DIACRITICS_PATTERN = new RegExp(
+  `[${String.fromCharCode(0x300)}-${String.fromCharCode(0x36f)}]`,
+  'g',
+);
+
+// Mesmo seletor/estratégia de trap de foco já usada em Drawer.tsx (não compartilhado entre os
+// dois arquivos — cada primitivo de overlay já mantinha sua própria cópia antes desta correção).
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+function normalize(value: string): string {
+  return value.normalize('NFD').replace(DIACRITICS_PATTERN, '').toLowerCase();
+}
+
+// Os módulos executivos (Social Selling, Treinamento Comercial, Proposta Comercial, Hub
+// Inteligência & Mkt) foram removidos deste catálogo: eles não vivem mais em `/app/*` (ver
+// tabMeta.ts), então `navigateAndClose` — que só sabe montar `/app/${tab}` — não pode navegar até
+// eles. O Hub Executivo standalone (rotas top-level em App.tsx) é o único ponto de entrada agora.
+const MODULE_ORDER: TabType[] = [
+  // PILAR 01 — HUB COMERCIAL
+  'workspace',
+  'crm',
+  'crm360',
+  'propostas',
+  'companies',
+  'contacts',
+  'settings_hub',
+
+  // PILAR 02 — INTELIGÊNCIA DE MERCADO
+  'prospect',
+  'market-intelligence',
+  'settings_market',
+
+  // PILAR 03 — ORQUESTRAÇÃO DE VENDAS
+  'playbooks',
+  'cadence',
+  'jornadas',
+  'processos',
+  'roteiros',
+  'daily-plan',
+  'activities',
+  'calendar',
+  'roleplay',
+  'qualification_matrix',
+  'objections_matrix',
+  'topic_training',
+  'chatbook',
+  'editor',
+  'settings_sales',
+
+  // PILAR 04 — PERFORMANCE COMERCIAL
+  'dashboard',
+  'analytics',
+  'winloss',
+  'reports',
+  'settings_performance',
+
+  // PILAR 05 — PREVISIBILIDADE COMERCIAL
+  'forecast',
+  'metas',
+  'pipeline_ponderado',
+  'settings_predictability',
+
+  // PILAR 06 — INTELIGÊNCIA ARTIFICIAL
+  'commercial_intelligence',
+  'copiloto_ia',
+  'intelligence',
+  'knowledge',
+  'sdr-diagnostic',
+  'settings_ai',
+
+  // PILAR 07 — AUTOMAÇÃO & CONECTIVIDADE
+  'automations',
+  'integrations',
+  'bitrix',
+  'settings_automation',
+
+  // PILAR 08 — ENGAJAMENTO COMERCIAL
+  'voice-hub',
+  'outbound',
+  'dialer',
+  'mesa-tratamento',
+  'settings_engagement',
+
+  // ADMINISTRAÇÃO & CONFIGURAÇÕES
+  'notifications',
+  'usage',
+  'team',
+  'module-access',
+  'settings',
+];
+
+export function CommandPalette() {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [entityLoading, setEntityLoading] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const previouslyFocused = useRef<HTMLElement | null>(null);
+
+  const close = useCallback(() => {
+    setIsOpen(false);
+    setQuery('');
+    setCompanies([]);
+    setContacts([]);
+    setActiveIndex(0);
+  }, []);
+
+  // Atalho global ⌘K/Ctrl+K + evento disparado pela busca do topbar.
+  useEffect(() => {
+    const handleKeydown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsOpen((prev) => !prev);
+      } else if (e.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+    const handleOpenEvent = () => setIsOpen(true);
+    window.addEventListener('keydown', handleKeydown);
+    window.addEventListener(OPEN_COMMAND_PALETTE_EVENT, handleOpenEvent);
+    return () => {
+      window.removeEventListener('keydown', handleKeydown);
+      window.removeEventListener(OPEN_COMMAND_PALETTE_EVENT, handleOpenEvent);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      previouslyFocused.current = document.activeElement as HTMLElement | null;
+      requestAnimationFrame(() => inputRef.current?.focus());
+    } else {
+      document.body.style.overflow = '';
+      previouslyFocused.current?.focus();
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  // Trap de foco (bug real de acessibilidade corrigido, Onda 3/Agente 03): o painel já tinha
+  // role="dialog"/aria-modal="true", mas nada impedia Tab de sair dele para o conteúdo por trás
+  // do backdrop — quem navega só por teclado conseguia "perder" o foco atrás de uma camada
+  // visualmente inacessível. Mesma estratégia (Tab/Shift+Tab cíclico dentro do painel) já usada
+  // em Drawer.tsx.
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleTabTrap = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab' || !panelRef.current) return;
+
+      const focusable = panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement;
+
+      if (event.shiftKey && active === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleTabTrap);
+    return () => document.removeEventListener('keydown', handleTabTrap);
+  }, [isOpen]);
+
+  // Busca real de empresas/decisores (debounced) — usa o mesmo endpoint que Empresas/Contatos.
+  useEffect(() => {
+    const trimmed = query.trim();
+    if (trimmed.length < 2) {
+      setCompanies([]);
+      setContacts([]);
+      setEntityLoading(false);
+      return;
+    }
+    setEntityLoading(true);
+    const timer = window.setTimeout(async () => {
+      try {
+        const [companyRes, contactRes] = await Promise.all([
+          api.get<PaginatedResponse<Company>>(
+            `/api/companies?q=${encodeURIComponent(trimmed)}&limit=5`,
+          ),
+          api.get<PaginatedResponse<Contact>>(
+            `/api/contacts?q=${encodeURIComponent(trimmed)}&limit=5`,
+          ),
+        ]);
+        setCompanies(companyRes.data ?? []);
+        setContacts(contactRes.data ?? []);
+      } catch {
+        setCompanies([]);
+        setContacts([]);
+      } finally {
+        setEntityLoading(false);
+      }
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [query]);
+
+  const navigateAndClose = useCallback(
+    (tab: TabType, intent?: PaletteIntent) => {
+      navigate(`/app/${tab}`, intent ? { state: intent } : undefined);
+      close();
+    },
+    [navigate, close],
+  );
+
+  const items = useMemo<ResultItem[]>(() => {
+    const q = normalize(query.trim());
+    const result: ResultItem[] = [];
+
+    const quickActions: ResultItem[] = [
+      {
+        id: 'qa-activity',
+        group: 'Ações rápidas',
+        label: 'Criar nova atividade',
+        icon: Activity,
+        onSelect: () => navigateAndClose('activities', { type: 'open-create' }),
+      },
+      {
+        id: 'qa-prospect',
+        group: 'Ações rápidas',
+        label: 'Iniciar prospecção',
+        icon: Search,
+        onSelect: () => navigateAndClose('prospect'),
+      },
+      {
+        id: 'qa-report',
+        group: 'Ações rápidas',
+        label: 'Abrir Relatórios de IA',
+        icon: FileBarChart,
+        onSelect: () => navigateAndClose('reports'),
+      },
+      {
+        id: 'qa-ai',
+        group: 'Ações rápidas',
+        label: 'Chamar copiloto de IA',
+        icon: Bot,
+        onSelect: () => {
+          window.dispatchEvent(new Event(OPEN_AI_CHAT_EVENT));
+          close();
+        },
+      },
+      {
+        id: 'qa-company',
+        group: 'Ações rápidas',
+        label: 'Nova empresa',
+        icon: Building2,
+        onSelect: () => navigateAndClose('companies', { type: 'open-create' }),
+      },
+      {
+        id: 'qa-contact',
+        group: 'Ações rápidas',
+        label: 'Novo contato',
+        icon: Users,
+        onSelect: () => navigateAndClose('contacts', { type: 'open-create' }),
+      },
+    ];
+    // "Nova oportunidade" (qa-opportunity) foi removida: `/app/crm` (CrmBoard) não consome
+    // `PaletteIntent`/`location.state` — a ação era um no-op (handoff 04→03, backlog-5).
+    // Se um fluxo real de criação for decidido (produto → 00/02), a ação volta com o consumidor.
+    result.push(...quickActions.filter((a) => !q || normalize(a.label).includes(q)));
+
+    // MEL-35 (handoff 02→03): grupo contextual "Nesta página" derivado da rota ativa. Só oferece
+    // ações reais: intents `open-create`/`prefill-search` que a tela de destino já consome
+    // (CompanyList/ContactList/ActivityList) ou navegação pura para tabs visíveis na nav. Como o
+    // grupo só aparece quando o usuário JÁ está na rota, não é preciso re-checar RequireRole — a
+    // própria rota já aplicou o gate; as ações contextuais de páginas restritas se limitam a
+    // navegação segura ("Voltar ao dashboard").
+    const rawTab = deriveActiveTabFromPath(pathname);
+    const activeTab = (NAV_TAB_ALIASES[rawTab as TabType] ?? rawTab) as TabType;
+    const go = (tab: TabType, intent?: PaletteIntent) => () => navigateAndClose(tab, intent);
+    const contextual: ResultItem[] = [];
+    switch (activeTab) {
+      case 'crm':
+        // ctx-crm-create ("Nova oportunidade") removido: no-op — CrmBoard não lê o intent
+        // `open-create` (handoff 04→03, backlog-5). Permanecem só navegações reais.
+        contextual.push(
+          {
+            id: 'ctx-crm-companies',
+            group: 'Nesta página',
+            label: 'Ir para empresas',
+            icon: Building2,
+            onSelect: go('companies'),
+          },
+          {
+            id: 'ctx-crm-contacts',
+            group: 'Nesta página',
+            label: 'Ir para contatos',
+            icon: Users,
+            onSelect: go('contacts'),
+          },
+        );
+        break;
+      case 'companies':
+        contextual.push(
+          {
+            id: 'ctx-companies-create',
+            group: 'Nesta página',
+            label: 'Nova empresa',
+            icon: Building2,
+            onSelect: go('companies', { type: 'open-create' }),
+          },
+          {
+            id: 'ctx-companies-contacts',
+            group: 'Nesta página',
+            label: 'Ir para contatos',
+            icon: Users,
+            onSelect: go('contacts'),
+          },
+        );
+        break;
+      case 'contacts':
+        contextual.push(
+          {
+            id: 'ctx-contacts-create',
+            group: 'Nesta página',
+            label: 'Novo contato',
+            icon: Users,
+            onSelect: go('contacts', { type: 'open-create' }),
+          },
+          {
+            id: 'ctx-contacts-companies',
+            group: 'Nesta página',
+            label: 'Ir para empresas',
+            icon: Building2,
+            onSelect: go('companies'),
+          },
+        );
+        break;
+      case 'activities':
+        contextual.push({
+          id: 'ctx-activities-create',
+          group: 'Nesta página',
+          label: 'Criar nova atividade',
+          icon: Activity,
+          onSelect: go('activities', { type: 'open-create' }),
+        });
+        break;
+      case 'dashboard':
+      case 'analytics':
+        contextual.push(
+          {
+            id: `ctx-${activeTab}-reports`,
+            group: 'Nesta página',
+            label: 'Abrir Relatórios',
+            icon: FileBarChart,
+            onSelect: go('reports'),
+          },
+          {
+            id: `ctx-${activeTab}-market`,
+            group: 'Nesta página',
+            label: 'Buscar mercado',
+            icon: Radar,
+            onSelect: go('market-intelligence'),
+          },
+        );
+        break;
+      case 'settings':
+        contextual.push(
+          {
+            id: 'ctx-settings-dashboard',
+            group: 'Nesta página',
+            label: 'Voltar ao dashboard',
+            icon: Home,
+            onSelect: go('dashboard'),
+          },
+          {
+            id: 'ctx-settings-integrations',
+            group: 'Nesta página',
+            label: 'Abrir integrações',
+            icon: Globe,
+            onSelect: go('integrations'),
+          },
+        );
+        break;
+      case 'mesa-tratamento':
+      case 'forecast':
+      case 'metas':
+      case 'team':
+      case 'module-access':
+      case 'usage':
+        // Páginas atrás de RequireRole (ADMIN/GESTOR/SDR+): como o usuário já está nelas, o gate
+        // passou — a única ação contextual segura é navegar de volta, sem prometer ação de módulo.
+        contextual.push({
+          id: `ctx-${activeTab}-dashboard`,
+          group: 'Nesta página',
+          label: 'Voltar ao dashboard',
+          icon: Home,
+          onSelect: go('dashboard'),
+        });
+        break;
+      default:
+        break;
+    }
+    result.push(...contextual.filter((a) => !q || normalize(a.label).includes(q)));
+
+    const moduleItems: ResultItem[] = MODULE_ORDER.filter(
+      (tab) => !isNavHiddenTab(tab) && (!q || normalize(TAB_META[tab].label).includes(q)),
+    ).map((tab) => ({
+      id: `mod-${tab}`,
+      group: 'Navegar',
+      label: TAB_META[tab].label,
+      icon: TAB_META[tab].icon,
+      onSelect: () => navigateAndClose(tab),
+    }));
+    result.push(...(q ? moduleItems : moduleItems.slice(0, 8)));
+
+    if (q.length >= 2) {
+      result.push(
+        ...companies.map((c) => ({
+          id: `company-${c.id}`,
+          group: 'Empresas' as const,
+          label: c.tradeName || c.legalName,
+          sublabel: c.city ? `${c.city}${c.state ? `/${c.state}` : ''}` : undefined,
+          icon: Building2,
+          onSelect: () =>
+            navigateAndClose('companies', {
+              type: 'prefill-search',
+              value: c.tradeName || c.legalName,
+            }),
+        })),
+      );
+      result.push(
+        ...contacts.map((c) => ({
+          id: `contact-${c.id}`,
+          group: 'Decisores' as const,
+          label: c.name,
+          sublabel: c.role || c.company?.tradeName,
+          icon: Users,
+          onSelect: () => navigateAndClose('contacts', { type: 'prefill-search', value: c.name }),
+        })),
+      );
+    }
+
+    return result;
+  }, [query, companies, contacts, navigateAndClose, close, pathname]);
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, []);
+
+  const handleInputKeydown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActiveIndex((prev) => {
+        const next = Math.min(prev + 1, items.length - 1);
+        if (next !== prev) SoundFX.play('focus');
+        return next;
+      });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActiveIndex((prev) => {
+        const next = Math.max(prev - 1, 0);
+        if (next !== prev) SoundFX.play('focus');
+        return next;
+      });
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const selected = items[activeIndex];
+      if (selected) {
+        SoundFX.play('confirm');
+        selected.onSelect();
+      }
+    }
+  };
+
+  if (!isOpen) return null;
+
+  let groupCursor = '';
+
+  return (
+    // role="dialog" é um papel de "janela", não de controle interativo — o jsx-a11y sinaliza
+    // qualquer onClick/onKeyDown aqui como se fosse indevido num elemento não-interativo, mas o
+    // uso real é o padrão "clicar fora fecha" (só dispara quando e.target === e.currentTarget,
+    // nunca em clique nos itens internos) + Escape já tratado abaixo — equivalente de teclado já
+    // existe, não falta suporte.
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+    <div
+      className="fixed inset-0 z-[1000] flex items-start justify-center bg-overlay sm:px-4 sm:pt-[12vh]"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Command palette"
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') close();
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) close();
+      }}
+    >
+      <div
+        ref={panelRef}
+        className="relative flex h-full w-full flex-col overflow-hidden border-0 bg-surface shadow-card sm:h-auto sm:max-w-2xl sm:rounded-card sm:border sm:border-line"
+      >
+        <div className="flex items-center gap-3 border-b border-line bg-surface px-4 py-3.5">
+          <Search className="h-4 w-4 shrink-0 text-ink-2" strokeWidth={1.5} />
+          <input
+            ref={inputRef}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleInputKeydown}
+            placeholder="Buscar empresa, decisor ou comando…"
+            className="flex-1 bg-transparent text-sm font-medium tracking-[-0.011em] text-ink outline-none placeholder:text-ink-2 focus-visible:ring-0"
+          />
+          {entityLoading && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-brand" />}
+          <kbd className="hidden shrink-0 rounded-full border border-line bg-surface-2 px-2 py-0.5 text-[10px] font-medium text-ink-2 sm:block">
+            ESC
+          </kbd>
+        </div>
+
+        <div className="flex-1 sm:max-h-[60vh] overflow-y-auto p-2.5">
+          {items.length === 0 && (
+            <p className="px-3 py-8 text-center text-sm text-ink-2">
+              Nenhum resultado para &quot;{query}&quot;.
+            </p>
+          )}
+          {items.map((item, idx) => {
+            const showHeader = item.group !== groupCursor;
+            groupCursor = item.group;
+            const Icon = item.icon;
+            const isActive = idx === activeIndex;
+            return (
+              <div key={item.id}>
+                {showHeader && (
+                  <p className="px-3 pb-1 pt-3 text-[11px] font-medium uppercase tracking-[0.08em] text-ink-2 first:pt-1">
+                    {item.group}
+                  </p>
+                )}
+                <button
+                  type="button"
+                  onMouseEnter={() => {
+                    if (idx !== activeIndex) {
+                      setActiveIndex(idx);
+                      SoundFX.play('hover');
+                    }
+                  }}
+                  onClick={item.onSelect}
+                  className={`group flex w-full items-center gap-3 rounded-full px-3 py-2 text-left text-[13px] tracking-[-0.011em] motion-safe:transition-colors motion-safe:duration-200 ${
+                    isActive
+                      ? 'bg-[color:color-mix(in_srgb,var(--brand)_12%,var(--surface))] font-semibold text-ink'
+                      : 'font-medium text-ink-2 hover:bg-[color:color-mix(in_srgb,var(--ink)_5%,transparent)] hover:text-ink'
+                  }`}
+                >
+                  <span
+                    className={`grid h-8 w-8 shrink-0 place-items-center rounded-full ${
+                      isActive
+                        ? 'bg-[color:color-mix(in_srgb,var(--brand)_18%,var(--surface))] text-primary ring-1 ring-[color:var(--brand-text)]'
+                        : 'text-ink-2'
+                    }`}
+                  >
+                    <Icon className="h-3.5 w-3.5" strokeWidth={1.5} />
+                  </span>
+                  <span className="flex-1 truncate font-semibold">{item.label}</span>
+                  {item.sublabel && (
+                    <span className="shrink-0 truncate text-xs text-ink-2 font-normal">
+                      {item.sublabel}
+                    </span>
+                  )}
+                  {isActive && (
+                    <CornerDownLeft className="h-3.5 w-3.5 shrink-0 text-ink-2" strokeWidth={1.5} />
+                  )}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="flex items-center justify-between border-t border-line bg-surface px-4 py-2.5 text-[11px] font-medium text-ink-2">
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1.5">
+              <span className="flex items-center gap-0.5 rounded border border-line bg-surface px-1 py-0.5 text-[9px]">
+                <ArrowUp className="h-2.5 w-2.5" />
+                <ArrowDown className="h-2.5 w-2.5" />
+              </span>{' '}
+              Navegar
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="rounded border border-line bg-surface px-1 py-0.5 text-[9px]">
+                <CornerDownLeft className="h-2.5 w-2.5" />
+              </span>{' '}
+              Confirmar
+            </span>
+          </div>
+          <span className="hidden text-[11px] sm:inline">Spotlight 2026</span>
+        </div>
+      </div>
+    </div>
+  );
+}

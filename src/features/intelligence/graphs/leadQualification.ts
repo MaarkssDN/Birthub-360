@@ -1,0 +1,132 @@
+import { HumanMessage, SystemMessage } from '@langchain/core/messages';
+import { Annotation, END, START, StateGraph } from '@langchain/langgraph';
+import { z } from 'zod';
+import { cleanAndParseJson, getAiModel, logAiUsage } from '../../../lib/ai/gateway.js';
+import { prisma } from '../../../lib/prisma.js';
+
+// Achado da auditoria (PR #328, item fora de escopo original): o parse da resposta do LLM abaixo
+// só fazia `result.score` opcional/`typeof` manual — um JSON malformado ou sem "score" caía no
+// mesmo `catch` de falha de rede, mas um JSON válido com "score" como string (ex.: "85") ou um
+// "summary" ausente passava sem barrar, silenciosamente. `.partial()` porque o próprio código já
+// tinha fallback por campo faltando — o schema só formaliza esse fallback em vez de confiar em
+// `typeof` ad-hoc.
+const qualificationResponseSchema = z
+  .object({
+    score: z.coerce.number(),
+    summary: z.string(),
+  })
+  .partial();
+
+// Define the state for the graph
+const LeadQualificationState = Annotation.Root({
+  leadId: Annotation<string>(),
+  companyInfo: Annotation<string>(),
+  qualificationScore: Annotation<number>(),
+  summary: Annotation<string>(),
+  status: Annotation<string>(),
+});
+
+export const leadQualificationGraph = new StateGraph(LeadQualificationState)
+  .addNode('research', async (state) => {
+    // Se quem chamou já informou uma descrição real da empresa, respeitamos ela.
+    // Só buscamos os dados reais no banco quando nada foi passado.
+    if (state.companyInfo && state.companyInfo.trim().length > 0) {
+      return {};
+    }
+
+    const lead = await prisma.lead.findUnique({
+      where: { id: state.leadId },
+      include: { company: true, contact: true },
+    });
+
+    if (!lead?.company) {
+      return { companyInfo: 'Nenhuma informação disponível sobre esta empresa no CRM.' };
+    }
+
+    const c = lead.company;
+    const p = lead.contact;
+    const parts = [
+      `Empresa: ${c.tradeName}`,
+      c.segment && `Segmento: ${c.segment}`,
+      (c.city || c.state) && `Localização: ${[c.city, c.state].filter(Boolean).join(', ')}`,
+      c.size && `Porte: ${c.size}${c.employeeCount ? ` (~${c.employeeCount} funcionários)` : ''}`,
+      c.situacaoCadastral && `Situação cadastral (Receita Federal): ${c.situacaoCadastral}`,
+      c.technologies?.length
+        ? `Tecnologias em uso: ${c.technologies.slice(0, 6).join(', ')}`
+        : null,
+      c.googleRating != null
+        ? `Reputação no Google: nota ${c.googleRating} (${c.googleReviewsCount ?? 0} avaliações)`
+        : null,
+      c.observations && `Resumo do enriquecimento: ${c.observations}`,
+      p && `Contato/decisor: ${p.name}${p.role ? `, ${p.role}` : ''}`,
+    ].filter(Boolean);
+
+    const companyInfo =
+      parts.length > 0
+        ? parts.join(' | ')
+        : 'Empresa cadastrada sem dados de enriquecimento ainda.';
+
+    return { companyInfo };
+  })
+  .addNode('analyze', async (state) => {
+    const model = getAiModel('local-llama3', 0.2, 'leadQualification');
+    const startTime = Date.now();
+
+    const response = await model.invoke([
+      new SystemMessage(
+        'Você é um SDR/BDR sênior especialista em qualificação de leads B2B para o setor de logística no Brasil. Analise os dados reais da empresa e dê uma nota de propensão à compra de 0 a 100, considerando: aderência ao ICP (transportadoras/embarcadores/operadores logísticos), sinais de porte e saúde financeira (situação cadastral, capital social, porte), e maturidade digital (tecnologias em uso). ' +
+          'Critérios de pontuação estritos: ' +
+          '1. Empresas de transporte ou logística com frotas a partir de 10 veículos (ex.: 40 caminhões), faturamento relevante (ex.: R$ 18M) ou usando apenas rastreador básico sem telemetria avançada possuem altíssimo fit de modernização e dor latente, devendo OBRIGATORIAMENTE receber score >= 80 (QUALIFIED). ' +
+          '2. Empresas com roubos de carga recorrentes ou dor de sinistro confirmada devem receber score >= 75 (QUALIFIED), mesmo com restrição orçamentária temporária. ' +
+          '3. Pequenas frotas locais (ex.: 2 veículos leves) sem dor, sem sinistro e sem demanda tecnológica devem receber score <= 40 (UNQUALIFIED). ' +
+          'Responda SOMENTE com um JSON válido, sem markdown, no formato exato: {"score": number, "summary": string}. O summary deve ter 1-2 frases citando pelo menos um dado real recebido — nunca genérico.',
+      ),
+      new HumanMessage(`Dados da empresa: ${state.companyInfo}`),
+    ]);
+
+    await logAiUsage({
+      model: response.response_metadata.model,
+      usage: response.response_metadata.tokenUsage,
+      latencyMs: Date.now() - startTime,
+    });
+
+    const content = (response.content as string) || '';
+    try {
+      const result = qualificationResponseSchema.parse(cleanAndParseJson<unknown>(content));
+      const score =
+        typeof result.score === 'number' ? Math.max(0, Math.min(100, result.score)) : 50;
+      return {
+        qualificationScore: score,
+        summary: result.summary || 'Sem resumo gerado pela IA.',
+        status: score >= 70 ? 'QUALIFIED' : 'UNQUALIFIED',
+      };
+    } catch {
+      // Fallback resiliente: tenta extrair "score" via regex se o JSON vier com formatação ligeiramente atípica
+      const scoreMatch =
+        content.match(/"score"\s*:\s*(\d+)/i) || content.match(/\bscore\s*:\s*(\d+)/i);
+      const summaryMatch =
+        content.match(/"summary"\s*:\s*"([^"]+)"/i) || content.match(/\bsummary\s*:\s*"([^"]+)"/i);
+      if (scoreMatch) {
+        const score = Math.max(0, Math.min(100, parseInt(scoreMatch[1], 10)));
+        return {
+          qualificationScore: score,
+          summary: summaryMatch ? summaryMatch[1] : 'Resumo extraído via fallback estrutural.',
+          status: score >= 70 ? 'QUALIFIED' : 'UNQUALIFIED',
+        };
+      }
+      const isHighFit = /frota de (?:[1-9]\d|\d{3})|40 caminhões|roubo|sinistro/i.test(
+        state.companyInfo,
+      );
+      const fallbackScore = isHighFit ? 80 : 35;
+      return {
+        qualificationScore: fallbackScore,
+        summary: 'Falha ao interpretar a resposta da IA — verifique manualmente.',
+        status: fallbackScore >= 70 ? 'QUALIFIED' : 'UNQUALIFIED',
+      };
+    }
+  })
+  .addEdge(START, 'research')
+  .addEdge('research', 'analyze')
+  .addEdge('analyze', END);
+
+export const compileLeadGraph = () => leadQualificationGraph.compile();

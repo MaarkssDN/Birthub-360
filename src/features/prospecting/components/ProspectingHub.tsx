@@ -1,0 +1,886 @@
+import { motion } from 'framer-motion';
+import { Bookmark, Camera, Database, Landmark, Wrench } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { GamificationWidget } from '../../../components/ui/GamificationWidget.js';
+import { PageTitleCard } from '../../../components/ui/PageTitleCard.js';
+import { BRAND } from '../../../config/brand.js';
+import { api } from '../../../lib/api.js';
+import { downloadBlob } from '../../../lib/nativeDownload.js';
+import { SoundFX } from '../../../lib/soundEffects.js';
+import {
+  BIRTHHUB360_PERSONA_OPTIONS,
+  BIRTHHUB360_SEGMENTO_OPTIONS,
+  COMMERCIAL_PERSONA_OPTIONS,
+  SEGMENTO_OPTIONS,
+} from '../../../shared/constants/icp-options.js';
+import type { CnpjLookupResult, FitScoreResult } from '../services/enrichment.service.js';
+import type {
+  DiscoverResult,
+  ProspectCandidate,
+  ProspectCriteria,
+} from '../services/prospecting.service.js';
+import { CnpjSearchPanel } from './prospecting-hub/CnpjSearchPanel.js';
+import { DiscoveryFilterPanel } from './prospecting-hub/DiscoveryFilterPanel.js';
+import { DiscoveryResultsPanel } from './prospecting-hub/DiscoveryResultsPanel.js';
+import { OcrCapturePanel } from './prospecting-hub/OcrCapturePanel.js';
+import { ProspectingToolsHub } from './prospecting-hub/ProspectingToolsHub.js';
+import { SavedSearchesModal } from './SavedSearchesModal.js';
+
+export { DecisionMakerSearch } from './prospecting-hub/DecisionMakerSearch.js';
+
+// Antes dividido entre dois playbooks nomeados por empresa (Birth Hub 360) — unificado
+// num único playbook geral (pedido explícito do usuário), sem descartar nenhuma opção. Hoisted
+// para fora do componente para não recriar a referência do array a cada render (useEffect abaixo
+// depende dela).
+const ACTIVE_SEGMENTS = [...SEGMENTO_OPTIONS, ...BIRTHHUB360_SEGMENTO_OPTIONS];
+const ACTIVE_PERSONA_OPTIONS = [...COMMERCIAL_PERSONA_OPTIONS, ...BIRTHHUB360_PERSONA_OPTIONS];
+
+type HubTab = 'cnpj' | 'discovery' | 'ocr' | 'tools';
+
+const ufMap: Record<string, string> = {
+  Acre: 'AC',
+  Alagoas: 'AL',
+  Amapá: 'AP',
+  Amazonas: 'AM',
+  Bahia: 'BA',
+  Ceará: 'CE',
+  'Distrito Federal': 'DF',
+  'Espírito Santo': 'ES',
+  Goiás: 'GO',
+  Maranhão: 'MA',
+  'Mato Grosso': 'MT',
+  'Mato Grosso do Sul': 'MS',
+  'Minas Gerais': 'MG',
+  Pará: 'PA',
+  Paraíba: 'PB',
+  Paraná: 'PR',
+  Pernambuco: 'PE',
+  Piauí: 'PI',
+  'Rio de Janeiro': 'RJ',
+  'Rio Grande do Norte': 'RN',
+  'Rio Grande do Sul': 'RS',
+  Rondônia: 'RO',
+  Roraima: 'RR',
+  'Santa Catarina': 'SC',
+  'São Paulo': 'SP',
+  Sergipe: 'SE',
+  Tocantins: 'TO',
+};
+
+interface PromoteResult {
+  lead: { id: string };
+  fit?: FitScoreResult;
+  enrichment?: {
+    company: {
+      googleRating?: number;
+      googleReviewsCount?: number;
+      observations?: string;
+    };
+    apolloContacts?: Array<{
+      name: string;
+      title: string | null;
+      email: string | null;
+      phone?: string | null;
+      linkedin_url?: string | null;
+    }>;
+  };
+}
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error ? error.message : fallback;
+}
+
+export function ProspectingHub() {
+  const [tab, setTab] = useState<HubTab>('cnpj');
+  const [isSavedSearchesOpen, setIsSavedSearchesOpen] = useState(false);
+  const [activeSavedSearchId, setActiveSavedSearchId] = useState<string | null>(null);
+
+  const activeSegments = ACTIVE_SEGMENTS;
+  const activePersonaOptions = ACTIVE_PERSONA_OPTIONS;
+
+  // --- CNPJ real lookup ---
+  const [cnpjInput, setCnpjInput] = useState('');
+  const [cnpjLoading, setCnpjLoading] = useState(false);
+  const [cnpjResult, setCnpjResult] = useState<CnpjLookupResult | null>(null);
+  const [cnpjError, setCnpjError] = useState<string | null>(null);
+
+  // --- discovery via open data, with optional Apollo enrichment ---
+  // `segmento` inicia vazio ("Todos os segmentos") — o ICP deixou de ser vertical-específico
+  // (ver CLAUDE.md seção 1), então a busca não deve começar pré-filtrada por um segmento
+  // logístico específico. `discovery.ts`/`organizationSearch.ts` já tratam segmento vazio como
+  // ausência de filtro.
+  const [criteria, setCriteria] = useState<ProspectCriteria>({
+    segmento: '',
+    localizacao: '',
+    estado: '',
+    quantidade: 20,
+    modoPesquisa: 'economico',
+    autorizarPagos: false,
+  });
+
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isInterpreting, setIsInterpreting] = useState(false);
+  const [interpretationMessage, setInterpretationMessage] = useState<string | null>(null);
+  const [searchResult, setSearchResult] = useState<DiscoverResult | null>(null);
+  const [searchAbort, setSearchAbort] = useState<AbortController | null>(null);
+  const [candidates, setCandidates] = useState<ProspectCandidate[]>([]);
+  const [discoverError, setDiscoverError] = useState<string | null>(null);
+  const [apolloError, setApolloError] = useState<string | null>(null);
+  const [cities, setCities] = useState<string[]>([]);
+  const [isSavingBatch, setIsSavingBatch] = useState(false);
+
+  const [selectedCandidates, setSelectedCandidates] = useState<Set<number>>(new Set());
+  const toggleSelectAll = () => {
+    const visible = filteredCandidates
+      .filter(({ c }) => c.source !== 'googlePlaces')
+      .map(({ i }) => i);
+    if (visible.length > 0 && visible.every((i) => selectedCandidates.has(i))) {
+      setSelectedCandidates(new Set());
+    } else {
+      setSelectedCandidates(new Set(visible));
+    }
+  };
+  const toggleSelect = (idx: number) => {
+    if (candidates[idx]?.source === 'googlePlaces') return;
+    setSelectedCandidates((prev) => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx);
+      else next.add(idx);
+      return next;
+    });
+  };
+  const bulkSave = async () => {
+    if (selectedCandidates.size === 0 || isSavingBatch) return;
+    setIsSavingBatch(true);
+    try {
+      for (const idx of selectedCandidates) {
+        const candidate = candidates[idx];
+        if (!candidate || candidate.source === 'googlePlaces') continue;
+        const key = `discovery-${idx}`;
+        if (!promoted[key]) {
+          const result = await api.post<PromoteResult>('/api/prospecting/promote', {
+            tradeName: candidate.tradeName,
+            legalName: candidate.legalNameGuess,
+            cnpj: candidate.cnpjGuess,
+            segment: candidate.segment,
+            size: candidate.size,
+            location: candidate.location,
+            source: `${BRAND.shortName} Prospect List`,
+            autoEnrich: false,
+            linkedin: candidate.linkedinUrl,
+            phone: candidate.phone,
+            website: candidate.website,
+            decisionMakers: candidate.decisionMakers,
+            savedSearchId: activeSavedSearchId || undefined,
+          });
+          setPromoted((prev) => ({ ...prev, [key]: result }));
+        }
+      }
+      SoundFX.play('success');
+      try {
+        const confetti = (await import('canvas-confetti')).default;
+        confetti({ particleCount: 75, spread: 80, origin: { y: 0.5 } });
+      } catch {
+        // ignore
+      }
+    } catch (error: any) {
+      setDiscoverError(getErrorMessage(error, 'Falha ao salvar lista de leads em massa'));
+    } finally {
+      setIsSavingBatch(false);
+      setSelectedCandidates(new Set());
+    }
+  };
+  const bulkEnrich = async () => {
+    if (!criteria.autorizarPagos) {
+      setDiscoverError('Autorize provedores pagos antes do enriquecimento em massa.');
+      return;
+    }
+    if (selectedCandidates.size === 0 || isSavingBatch) return;
+    setIsSavingBatch(true);
+    try {
+      for (const idx of selectedCandidates) {
+        const candidate = candidates[idx];
+        if (!candidate || candidate.source === 'googlePlaces') continue;
+        const key = `discovery-${idx}`;
+        if (!promoted[key]) {
+          // autoEnrich:true dispara a mesma cadeia de enriquecimento (CNPJ, domínio/e-mail,
+          // Google Places, notícias, Apollo, icebreaker por IA) do botão "Enriquecer" de
+          // lead/empresa — precisa da mesma folga de 60s do timeout padrão de 15s.
+          const result = await api.post<PromoteResult>(
+            '/api/prospecting/promote',
+            {
+              tradeName: candidate.tradeName,
+              legalName: candidate.legalNameGuess,
+              cnpj: candidate.cnpjGuess,
+              segment: candidate.segment,
+              size: candidate.size,
+              location: candidate.location,
+              source: `${BRAND.shortName} Prospect List (Bulk Enrich)`,
+              autoEnrich: true,
+              autorizarPagos: true,
+              linkedin: candidate.linkedinUrl,
+              phone: candidate.phone,
+              website: candidate.website,
+              decisionMakers: candidate.decisionMakers,
+              savedSearchId: activeSavedSearchId || undefined,
+            },
+            { timeoutMs: 60_000 },
+          );
+          setPromoted((prev) => ({ ...prev, [key]: result }));
+        }
+      }
+      SoundFX.play('success');
+      try {
+        const confetti = (await import('canvas-confetti')).default;
+        confetti({ particleCount: 90, spread: 90, origin: { y: 0.5 } });
+      } catch {
+        // ignore
+      }
+    } catch (error: any) {
+      setDiscoverError(getErrorMessage(error, 'Falha ao enriquecer leads em massa'));
+    } finally {
+      setIsSavingBatch(false);
+      setSelectedCandidates(new Set());
+    }
+  };
+
+  useEffect(() => {
+    if (!criteria.estado) {
+      setCities([]);
+      return;
+    }
+    const uf = ufMap[criteria.estado];
+    if (uf) {
+      fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`)
+        .then((r) => r.json())
+        .then((data: Array<{ nome: string }>) => setCities(data.map((d) => d.nome)))
+        .catch(() => setCities([]));
+    } else {
+      setCities([]);
+    }
+  }, [criteria.estado]);
+
+  // --- shared: promote-to-CRM state ---
+  const [promotingKey, setPromotingKey] = useState<string | null>(null);
+  const [promoted, setPromoted] = useState<Record<string, PromoteResult>>({});
+
+  // --- "Não é esse perfil": marca o candidato como rejeitado (exclui de buscas futuras) e some da lista ---
+  const [rejectingKey, setRejectingKey] = useState<string | null>(null);
+  const [rejectedKeys, setRejectedKeys] = useState<Set<string>>(new Set());
+  const rejectCandidate = async (candidate: ProspectCandidate, idx: number) => {
+    const key = `discovery-${idx}`;
+    setRejectingKey(key);
+    try {
+      await api.post('/api/prospecting/reject', {
+        tradeName: candidate.tradeName,
+        website: candidate.website,
+      });
+      setRejectedKeys((prev) => new Set(prev).add(key));
+    } catch (error: any) {
+      setDiscoverError(getErrorMessage(error, 'Falha ao descartar candidato'));
+    } finally {
+      setRejectingKey(null);
+    }
+  };
+
+  // Batch save leads into list (autoEnrich: false for on-demand enrichment upon viewing)
+  const saveAllCandidatesAsList = async () => {
+    if (candidates.length === 0 || isSavingBatch) return;
+    setIsSavingBatch(true);
+    try {
+      for (let i = 0; i < candidates.length; i++) {
+        const candidate = candidates[i];
+        if (candidate.source === 'googlePlaces' || rejectedKeys.has(`discovery-${i}`)) continue;
+        const key = `discovery-${i}`;
+        if (!promoted[key]) {
+          const result = await api.post<PromoteResult>('/api/prospecting/promote', {
+            tradeName: candidate.tradeName,
+            legalName: candidate.legalNameGuess,
+            cnpj: candidate.cnpjGuess,
+            segment: candidate.segment,
+            size: candidate.size,
+            location: candidate.location,
+            source: `${BRAND.shortName} Prospect List`,
+            autoEnrich: false, // salva em lista sem enriquecer; o enriquecimento será feito ao entrar no lead
+            linkedin: candidate.linkedinUrl,
+            phone: candidate.phone,
+            website: candidate.website,
+            decisionMakers: candidate.decisionMakers,
+          });
+          setPromoted((prev) => ({ ...prev, [key]: result }));
+        }
+      }
+    } catch (error: any) {
+      setDiscoverError(getErrorMessage(error, 'Falha ao salvar lista de leads'));
+    } finally {
+      setIsSavingBatch(false);
+    }
+  };
+
+  // --- quick filter sobre os resultados já carregados ---
+  const [resultFilter, setResultFilter] = useState('');
+  const filteredCandidates = candidates
+    .map((c, i) => ({ c, i }))
+    .filter(({ i }) => !rejectedKeys.has(`discovery-${i}`))
+    .filter(({ c }) => {
+      const q = resultFilter.trim().toLowerCase();
+      if (!q) return true;
+      return (
+        c.tradeName.toLowerCase().includes(q) ||
+        c.segment.toLowerCase().includes(q) ||
+        c.location.toLowerCase().includes(q) ||
+        c.size.toLowerCase().includes(q)
+      );
+    });
+
+  const exportResults = async (
+    format: 'xlsx' | 'csv',
+    columns: number[],
+    target: 'companies' | 'decisionMakers' | 'complete',
+    options: { maskPersonalPhones?: boolean; csvDelimiter?: string } = {},
+  ) => {
+    const allowed = filteredCandidates
+      .filter(
+        ({ c, i }) =>
+          c.source !== 'googlePlaces' &&
+          (selectedCandidates.size === 0 || selectedCandidates.has(i)),
+      )
+      .map(({ c }) => c);
+    if (!columns.length && target !== 'complete') {
+      setDiscoverError('Selecione ao menos uma coluna para exportar.');
+      return;
+    }
+    if (!allowed.length) {
+      setDiscoverError(
+        'Nenhum resultado reutilizável selecionado. Dados Google Places não são exportados.',
+      );
+      return;
+    }
+    try {
+      const maskPhone = (phone?: string | null) => {
+        if (!phone) return '';
+        if (!options.maskPersonalPhones) return phone;
+        const clean = phone.replace(/\D/g, '');
+        if (clean.length >= 10) {
+          return `${phone.slice(0, 5)}****-${phone.slice(-2)}`;
+        }
+        return phone;
+      };
+
+      const companyHeaders = [
+        'Nome',
+        'Razão social',
+        'CNPJ',
+        'Segmento',
+        'Porte',
+        'Localização',
+        'Website',
+        'E-mails',
+        'Telefone',
+        'LinkedIn',
+        'Decisores',
+        'Fonte',
+        'Score ICP',
+        'Completude',
+      ];
+      const companyRows: unknown[][] = allowed.map((c) => [
+        c.tradeName,
+        c.legalNameGuess ?? '',
+        c.cnpjGuess ?? '',
+        c.segmentObserved ? c.segment : '',
+        c.size,
+        c.location,
+        c.website ?? '',
+        (c.emails ?? []).join(', '),
+        maskPhone(c.phone),
+        c.linkedinUrl ?? '',
+        (c.decisionMakers ?? c.apolloContacts ?? [])
+          .map((d) => `${d.name} (${d.title ?? ''}) ${d.email ?? ''}`)
+          .join(' | '),
+        c.source ?? '',
+        c.metrics?.icpScore ?? '',
+        c.metrics?.completeness ?? '',
+      ]);
+
+      const decisionMakerHeaders = [
+        'Nome',
+        'Cargo',
+        'Empresa',
+        'LinkedIn',
+        'E-mail profissional',
+        'Telefone profissional',
+        'Fonte do e-mail',
+      ];
+      const decisionMakerRows: unknown[][] = allowed.flatMap((c) =>
+        (c.decisionMakers ?? c.apolloContacts ?? []).map((d) => [
+          d.name,
+          d.title ?? '',
+          c.tradeName,
+          d.linkedinUrl ?? '',
+          d.email ?? '',
+          maskPhone(d.phone),
+          d.emailSource ?? 'Não informada',
+        ]),
+      );
+
+      const historyHeaders = [
+        'Empresa',
+        'CNPJ',
+        'Fonte',
+        'Data da Pesquisa',
+        'Score ICP',
+        'Qualidade',
+      ];
+      const historyRows: unknown[][] = allowed.map((c) => [
+        c.tradeName,
+        c.cnpjGuess ?? '',
+        c.source ?? 'Radar Discovery',
+        new Date().toISOString().slice(0, 10),
+        c.metrics?.icpScore ?? '',
+        c.metrics?.completeness ?? '',
+      ]);
+
+      let blob: Blob;
+      if (format === 'xlsx') {
+        const ExcelJS = (await import('exceljs')).default;
+        const workbook = new ExcelJS.Workbook();
+
+        if (target === 'complete') {
+          const sheetEmpresas = workbook.addWorksheet('Empresas');
+          sheetEmpresas.addRow(companyHeaders);
+          companyRows.forEach((row) => sheetEmpresas.addRow(row));
+
+          const sheetDecisores = workbook.addWorksheet('Decisores');
+          sheetDecisores.addRow(decisionMakerHeaders);
+          decisionMakerRows.forEach((row) => sheetDecisores.addRow(row));
+
+          const sheetHistorico = workbook.addWorksheet('Histórico de Enriquecimento');
+          sheetHistorico.addRow(historyHeaders);
+          historyRows.forEach((row) => sheetHistorico.addRow(row));
+        } else {
+          let headers = target === 'decisionMakers' ? decisionMakerHeaders : companyHeaders;
+          let rows = target === 'decisionMakers' ? decisionMakerRows : companyRows;
+          const selectedColumns = columns
+            .filter((i) => i >= 0 && i < headers.length)
+            .sort((a, b) => a - b);
+          headers = selectedColumns.map((i) => headers[i]);
+          rows = rows.map((row) => selectedColumns.map((i) => row[i]));
+
+          const sheet = workbook.addWorksheet(
+            target === 'decisionMakers' ? 'Decisores' : 'Empresas',
+          );
+          sheet.addRow(headers);
+          rows.forEach((row) => sheet.addRow(row));
+        }
+
+        blob = new Blob([await workbook.xlsx.writeBuffer()], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+      } else {
+        let headers = target === 'decisionMakers' ? decisionMakerHeaders : companyHeaders;
+        let rows = target === 'decisionMakers' ? decisionMakerRows : companyRows;
+        if (target !== 'complete') {
+          const selectedColumns = columns
+            .filter((i) => i >= 0 && i < headers.length)
+            .sort((a, b) => a - b);
+          headers = selectedColumns.map((i) => headers[i]);
+          rows = rows.map((row) => selectedColumns.map((i) => row[i]));
+        }
+        const delimiter = options.csvDelimiter || ';';
+        const escapeCsv = (value: unknown) =>
+          `"${String(value)
+            .replace(/^[=+@-]/, "'$&")
+            .replace(/"/g, '""')}"`;
+        blob = new Blob(
+          [
+            `\uFEFF${[headers, ...rows].map((row) => row.map(escapeCsv).join(delimiter)).join('\r\n')}`,
+          ],
+          { type: 'text/csv;charset=utf-8' },
+        );
+      }
+      const filename = `${BRAND.shortName}_Prospects_${new Date().toISOString().slice(0, 10)}.${format}`;
+      await downloadBlob(blob, filename);
+    } catch (error: unknown) {
+      setDiscoverError(getErrorMessage(error, 'Falha ao exportar resultados.'));
+    }
+  };
+
+  const interpretSearch = async (
+    query: string,
+    mode: 'automatic' | 'groq' | 'local',
+    model?: string,
+  ) => {
+    setIsInterpreting(true);
+    setInterpretationMessage(null);
+    try {
+      const result = await api.post<{ criteria: ProspectCriteria; warnings?: string[] }>(
+        '/api/prospecting/interpret',
+        { query, mode, model, consent: true, allowPaidProviders: !!criteria.autorizarPagos },
+        { timeoutMs: 35_000 },
+      );
+      setCriteria((prev) => ({
+        ...prev,
+        ...result.criteria,
+        quantidade: 20,
+        autorizarPagos: prev.autorizarPagos,
+      }));
+      setInterpretationMessage(
+        ['Filtros preenchidos. Confira antes de pesquisar.', ...(result.warnings ?? [])].join(' '),
+      );
+    } catch (error: unknown) {
+      setInterpretationMessage(getErrorMessage(error, 'Não foi possível interpretar a pesquisa.'));
+    } finally {
+      setIsInterpreting(false);
+    }
+  };
+
+  const handleCnpjLookup = async () => {
+    setCnpjLoading(true);
+    setCnpjError(null);
+    setCnpjResult(null);
+    try {
+      // A BrasilAPI (Receita Federal) faz retry interno (2 tentativas x 8s) quando está lenta —
+      // pode passar dos 15s padrão mesmo sem falhar de verdade.
+      const result = await api.post<CnpjLookupResult>(
+        '/api/prospecting/enrich-cnpj',
+        { cnpj: cnpjInput },
+        { timeoutMs: 30_000 },
+      );
+      setCnpjResult(result);
+    } catch (error: any) {
+      setCnpjError(getErrorMessage(error, 'Falha ao consultar CNPJ'));
+    } finally {
+      setCnpjLoading(false);
+    }
+  };
+
+  // Página atual do ranking da Apollo — "Buscar mais resultados" avança isso em vez de repetir o
+  // topo do ranking; uma busca nova (handleDiscover) sempre volta pra página 1.
+  const [discoveryPage, setDiscoveryPage] = useState(1);
+
+  const handleDiscover = async (opts?: { append?: boolean }) => {
+    if (isSearching) return;
+    const append = opts?.append ?? false;
+    const abort = new AbortController();
+    setSearchAbort(abort);
+    const page = append ? discoveryPage + 1 : 1;
+    setIsSearching(true);
+    setDiscoverError(null);
+    setApolloError(null);
+    if (!append) {
+      setCandidates([]);
+      setSearchResult(null);
+      setPromoted({});
+      setSelectedCandidates(new Set());
+      setRejectedKeys(new Set());
+      setActiveSavedSearchId(null);
+    }
+    try {
+      // Busca real encadeia Google Places/Nominatim + Apollo (organizações e, opcionalmente,
+      // decisores) + heurísticas de CNPJ — o timeout padrão de 15s (pensado pra CRUD simples)
+      // matava a requisição no cliente antes do backend terminar, mesmo quando cada chamada
+      // individual (inclusive o Apollo) respondia rápido isoladamente.
+      const excludeNames = append ? candidates.map((c) => c.tradeName) : undefined;
+      const result = await api.post<DiscoverResult>(
+        '/api/prospecting/discover',
+        { ...criteria, quantidade: 20, pagina: page, excludeNames },
+        { timeoutMs: 60_000, signal: abort.signal },
+      );
+      if (abort.signal.aborted) return;
+      setSearchResult(result);
+      if (append) {
+        // Defesa extra além da exclusão do backend: garante que a mesma empresa não apareça
+        // duas vezes na lista mesmo se a Apollo devolver alguma sobreposição entre páginas.
+        setCandidates((prev) => {
+          const existing = new Set(prev.map((c) => c.tradeName.trim().toLowerCase()));
+          return [
+            ...prev,
+            ...result.candidates.filter((c) => !existing.has(c.tradeName.trim().toLowerCase())),
+          ];
+        });
+      } else {
+        setCandidates(result.candidates);
+      }
+      setDiscoveryPage(page);
+      setApolloError(result.apolloError || null);
+    } catch (error: any) {
+      setDiscoverError(
+        abort.signal.aborted
+          ? 'Pesquisa cancelada no navegador. Chamadas já iniciadas no servidor podem terminar e consumir créditos.'
+          : getErrorMessage(error, 'Falha ao buscar leads'),
+      );
+    } finally {
+      setSearchAbort(null);
+      setIsSearching(false);
+    }
+  };
+
+  const searchWebInstead = (query: string) => {
+    setCriteria((prev) => ({ ...prev, nomeEmpresa: query, quantidade: 5 }));
+    setTab('discovery');
+    setTimeout(() => {
+      const btn = document.getElementById('btn-discover');
+      if (btn) btn.click();
+    }, 100);
+  };
+
+  const promoteCnpjResult = async () => {
+    if (!cnpjResult?.found || !cnpjResult.data) return;
+    const key = `cnpj-${cnpjResult.cnpj}`;
+    setPromotingKey(key);
+    try {
+      const result = await api.post<PromoteResult>('/api/prospecting/promote', {
+        tradeName: cnpjResult.data.tradeName,
+        legalName: cnpjResult.data.legalName,
+        cnpj: cnpjResult.cnpj,
+        segment: cnpjResult.data.cnaeDescription,
+        size: cnpjResult.data.size,
+        city: cnpjResult.data.city,
+        state: cnpjResult.data.state,
+        source: 'Busca por CNPJ (Receita Federal)',
+        autoEnrich: false, // Salvar como lead cru para economizar créditos; enriquecimento ocorre sob demanda no CRM
+      });
+      setPromoted((prev) => ({ ...prev, [key]: result }));
+      SoundFX.play('success');
+      try {
+        const confetti = (await import('canvas-confetti')).default;
+        confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+      } catch {
+        // ignore
+      }
+    } catch (error: any) {
+      setCnpjError(getErrorMessage(error, 'Falha ao adicionar ao CRM'));
+    } finally {
+      setPromotingKey(null);
+    }
+  };
+
+  const promoteCandidate = async (candidate: ProspectCandidate, idx: number) => {
+    // Defesa em profundidade: o botão individual já fica desabilitado durante uma promoção em
+    // massa (ver DiscoveryResultsPanel), mas um clique disparado antes do re-render aplicar o
+    // disabled ainda cairia aqui — sem este guard, isso duplicava a Company/Lead criada pela
+    // promoção em massa do mesmo candidato (check-then-act não atômico em promoteToCrm).
+    if (isSavingBatch || candidate.source === 'googlePlaces') return;
+    const key = `discovery-${idx}`;
+    setPromotingKey(key);
+    try {
+      const result = await api.post<PromoteResult>('/api/prospecting/promote', {
+        tradeName: candidate.tradeName,
+        legalName: candidate.legalNameGuess,
+        cnpj: candidate.cnpjGuess,
+        segment: candidate.segment,
+        size: candidate.size,
+        location: candidate.location,
+        source: candidate.source ?? 'Prospecção',
+        autoEnrich: false, // Salvar como lead cru para economizar créditos
+        linkedin: candidate.linkedinUrl,
+        phone: candidate.phone,
+        website: candidate.website,
+        savedSearchId: activeSavedSearchId || undefined,
+      });
+      setPromoted((prev) => ({ ...prev, [key]: result }));
+      SoundFX.play('success');
+      try {
+        const confetti = (await import('canvas-confetti')).default;
+        confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+      } catch {
+        // ignore
+      }
+    } catch (error: any) {
+      setDiscoverError(getErrorMessage(error, 'Falha ao adicionar ao CRM'));
+    } finally {
+      setPromotingKey(null);
+    }
+  };
+
+  return (
+    <div className="flex-1 overflow-y-auto bg-transparent font-sans">
+      <div className="bh-page bh-page-stack">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-4 space-y-4"
+        >
+          <PageTitleCard
+            eyebrow="CAPTAÇÃO E QUALIFICAÇÃO"
+            title="Prospecção Comercial & Enriquecimento"
+            subtitle="Motor de enriquecimento autônomo com IA para capturar leads corporativos de altíssimo nível."
+            icon={<Landmark className="h-5 w-5" />}
+            accent="gold"
+          />
+          <GamificationWidget />
+        </motion.div>
+
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div
+            className="relative z-10 flex max-w-full gap-1.5 overflow-x-auto rounded-card border border-line bg-surface-subtle/80 backdrop-blur-md p-1.5 shadow-sm"
+            role="tablist"
+            aria-label="Métodos de prospecção"
+          >
+            <button
+              type="button"
+              onClick={() => {
+                SoundFX.play('navigate');
+                setTab('cnpj');
+              }}
+              role="tab"
+              aria-selected={tab === 'cnpj'}
+              className={`flex items-center gap-2 whitespace-nowrap rounded-control px-4 py-2 text-sm font-semibold transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
+                tab === 'cnpj'
+                  ? 'bg-brand text-on-brand shadow-glow-brand font-bold scale-[1.02]'
+                  : 'text-ink-2 hover:bg-surface-interactive hover:text-ink'
+              }`}
+            >
+              <Landmark size={18} /> Busca Direta (CNPJ/Nome)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                SoundFX.play('navigate');
+                setTab('discovery');
+              }}
+              role="tab"
+              aria-selected={tab === 'discovery'}
+              className={`flex items-center gap-2 whitespace-nowrap rounded-control px-4 py-2 text-sm font-semibold transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
+                tab === 'discovery'
+                  ? 'bg-brand text-on-brand shadow-glow-brand font-bold scale-[1.02]'
+                  : 'text-ink-2 hover:bg-surface-interactive hover:text-ink'
+              }`}
+            >
+              <Database size={18} /> Radar Discovery (Fontes abertas)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                SoundFX.play('navigate');
+                setTab('ocr');
+              }}
+              role="tab"
+              aria-selected={tab === 'ocr'}
+              className={`flex items-center gap-2 whitespace-nowrap rounded-control px-4 py-2 text-sm font-semibold transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
+                tab === 'ocr'
+                  ? 'bg-brand text-on-brand shadow-glow-brand font-bold scale-[1.02]'
+                  : 'text-ink-2 hover:bg-surface-interactive hover:text-ink'
+              }`}
+            >
+              <Camera size={18} /> Cadastrar por Foto (OCR)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                SoundFX.play('navigate');
+                setTab('tools');
+              }}
+              role="tab"
+              aria-selected={tab === 'tools'}
+              className={`flex items-center gap-2 whitespace-nowrap rounded-control px-4 py-2 text-sm font-semibold transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
+                tab === 'tools'
+                  ? 'bg-brand text-on-brand shadow-glow-brand font-bold scale-[1.02]'
+                  : 'text-ink-2 hover:bg-surface-interactive hover:text-ink'
+              }`}
+            >
+              <Wrench size={18} /> Ferramentas
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              SoundFX.play('focus');
+              setIsSavedSearchesOpen(true);
+            }}
+            className="flex items-center gap-2 rounded-control border border-line bg-surface-elevated/90 px-4 py-2.5 text-xs font-semibold text-ink shadow-sm transition-all hover:border-brand/40 hover:bg-surface-interactive hover:scale-[1.02] active:scale-[0.98] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            <Bookmark size={16} className="text-brand animate-pulse" /> Listas Salvas & Agendamentos
+          </button>
+        </div>
+
+        {tab === 'cnpj' && (
+          <CnpjSearchPanel
+            cnpjInput={cnpjInput}
+            setCnpjInput={setCnpjInput}
+            cnpjLoading={cnpjLoading}
+            cnpjResult={cnpjResult}
+            cnpjError={cnpjError}
+            onLookup={handleCnpjLookup}
+            onSearchWebInstead={searchWebInstead}
+            promotingKey={promotingKey}
+            onPromoteCnpjResult={promoteCnpjResult}
+            promoted={promoted}
+          />
+        )}
+
+        {tab === 'discovery' && (
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+            <DiscoveryFilterPanel
+              criteria={criteria}
+              setCriteria={setCriteria}
+              activeSegments={activeSegments}
+              activePersonaOptions={activePersonaOptions}
+              cities={cities}
+              showAdvanced={showAdvanced}
+              setShowAdvanced={setShowAdvanced}
+              isSearching={isSearching}
+              discoverError={discoverError}
+              onDiscover={handleDiscover}
+              onInterpret={interpretSearch}
+              isInterpreting={isInterpreting}
+              interpretationMessage={interpretationMessage}
+            />
+            <DiscoveryResultsPanel
+              candidates={candidates}
+              filteredCandidates={filteredCandidates}
+              isSearching={isSearching}
+              searchResult={searchResult}
+              onCancel={() => searchAbort?.abort()}
+              resultFilter={resultFilter}
+              setResultFilter={setResultFilter}
+              apolloError={apolloError}
+              isSavingBatch={isSavingBatch}
+              onSaveAll={saveAllCandidatesAsList}
+              onExport={exportResults}
+              selectedCandidates={selectedCandidates}
+              toggleSelectAll={toggleSelectAll}
+              toggleSelect={toggleSelect}
+              onBulkSave={bulkSave}
+              onBulkEnrich={bulkEnrich}
+              promotingKey={promotingKey}
+              promoted={promoted}
+              onPromoteCandidate={promoteCandidate}
+              onDiscoverMore={() => handleDiscover({ append: true })}
+              rejectingKey={rejectingKey}
+              onRejectCandidate={rejectCandidate}
+            />
+          </div>
+        )}
+
+        {tab === 'ocr' && <OcrCapturePanel />}
+
+        {tab === 'tools' && <ProspectingToolsHub />}
+
+        <SavedSearchesModal
+          isOpen={isSavedSearchesOpen}
+          onClose={() => setIsSavedSearchesOpen(false)}
+          currentCriteria={criteria}
+          onApplyCriteria={(savedCrit, savedCandidates, savedSearchId) => {
+            // Onda 43: /saved-searches/:id/run já roda a descoberta e devolve os candidatos —
+            // antes disto era descartado, e um clique programático no botão de busca disparava
+            // uma segunda chamada a /discover (Apollo/Places de novo) só para conseguir o mesmo
+            // resultado que a API já tinha na resposta.
+            setSelectedCandidates(new Set());
+            setPromoted({});
+            setRejectedKeys(new Set());
+            setSearchResult(null);
+            setCriteria(savedCrit);
+            setCandidates(savedCandidates);
+            setActiveSavedSearchId(savedSearchId || null);
+            setDiscoveryPage(1);
+            setApolloError(null);
+            setTab('discovery');
+          }}
+        />
+      </div>
+    </div>
+  );
+}

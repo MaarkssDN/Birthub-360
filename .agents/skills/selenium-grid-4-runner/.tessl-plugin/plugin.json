@@ -1,0 +1,9 @@
+{
+  "name": "testland/selenium-grid-4-runner",
+  "description": "Use when cross-browser tests must run on a self-hosted Selenium Grid 4 for data residency or cost: standalone or hub-and-node, the Docker images, node registration, session queue tuning and observability. Managed grids are cloud-grid-e2e; choosing browsers is browser-matrix-strategy-reference.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.19"
+}

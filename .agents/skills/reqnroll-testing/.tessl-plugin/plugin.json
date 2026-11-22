@@ -1,0 +1,9 @@
+{
+  "name": "testland/reqnroll-testing",
+  "description": "Use when a .NET project starts BDD, migrates from SpecFlow (end-of-life 2024-12-31) or maintains a legacy SpecFlow suite. Configures Reqnroll: Gherkin .feature files, [Given/When/Then] C# bindings, hooks and dotnet test runs.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.7.8"
+}

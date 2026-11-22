@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<title>Birth Hub 360° — Preview 29 Personagens</title>
+<link rel="stylesheet" href="tokens/characters.css">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: Inter, system-ui, sans-serif; background: #0D0D0D; color: #F8F9FF; padding: 32px; }
+  html[data-theme="light"] body { background: #F4F6FB; color: #0F172A; }
+  h1 { font-family: Sora, sans-serif; color: #FFC107; font-size: 26px; margin-bottom: 4px; }
+  .sub { color: #94A3B8; font-size: 13px; margin-bottom: 20px; font-family: 'IBM Plex Mono', monospace; }
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+  .controls button { background: #14141A; color: #F8F9FF; border: 1px solid rgba(0,212,255,.3); border-radius: 999px; padding: 6px 14px; font: 12px 'IBM Plex Mono', monospace; cursor: pointer; }
+  .controls button.on { background: rgba(0,212,255,.2); border-color: #00D4FF; color: #00D4FF; }
+  html[data-theme="light"] .controls button { background: #fff; color: #0F172A; border-color: rgba(2,132,199,.3); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 18px; }
+  .card { background: rgba(20,20,26,.85); border: 1px solid rgba(0,212,255,.18); border-radius: 18px; padding: 18px 12px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  html[data-theme="light"] .card { background: #fff; border-color: rgba(2,132,199,.2); }
+  .avatar { width: 72px; height: 72px; }
+  figcaption { text-align: center; display: flex; flex-direction: column; gap: 2px; }
+  figcaption strong { font-family: Sora, sans-serif; font-size: 14px; }
+  .id { font: 10px 'IBM Plex Mono', monospace; color: #00D4FF; }
+  .meta { font: 10px 'IBM Plex Mono', monospace; color: #94A3B8; }
+  section { margin-bottom: 28px; }
+  section h2 { font-family: Sora, sans-serif; color: #00D4FF; font-size: 17px; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+<h1>Birth Hub 360° — 29 Personagens Oficiais</h1>
+<p class="sub">preview-29.html · evidência visual · states: idle/listening/processing/speaking/success/error · gerado de characterCatalog.ts</p>
+<div class="controls" id="states"><button data-s="idle">idle</button><button data-s="listening">listening</button><button data-s="processing">processing</button><button data-s="speaking">speaking</button><button data-s="success">success</button><button data-s="error">error</button><button data-s="__theme">alternar tema</button></div>
+<section data-layer="pillar"><h2>Pilares (9 originais)</h2><div class="grid">
+    <figure class="card" data-char="orbit">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #FFC10733, #00D4FF1f); box-shadow:0 0 32px rgba(255, 193, 7, 0.35)">
+        <img src="characters/orbit.svg" alt="Orbit, agente guardião do CRM e da integridade de pipeline" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#FFC107">Orbit</strong>
+        <span class="id">orbit</span>
+        <span class="meta">Pilares (9 originais)</span>
+      </figcaption>
+    </figure>
+    <figure class="card" data-char="nexus">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #00D4FF33, #38BDF81f); box-shadow:0 0 32px rgba(0, 212, 255, 0.40)">
+        <img src="characters/nexus.svg" alt="Nexus, agente analista de dados e inteligência de mercado" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#00D4FF">Nexus</strong>
+        <span class="id">nexus</span>
+        <span class="meta">Pilares (9 originais)</span>
+      </figcaption>
+    </figure>
+    <figure class="card" data-char="aria">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #10B98133, #00D4FF1f); box-shadow:0 0 32px rgba(16, 185, 129, 0.38)">
+        <img src="characters/aria.svg" alt="Aria, agente maestrina de fluxos diários e cadência de vendas" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#10B981">Aria</strong>
+        <span class="id">aria</span>
+        <span class="meta">Pilares (9 originais)</span>
+      </figcaption>
+    </figure>
+    <figure class="card" data-char="vanguard">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #FF2D9B33, #FFC1071f); box-shadow:0 0 32px rgba(255, 45, 155, 0.40)">
+        <img src="characters/vanguard.svg" alt="Vanguard, agente estrategista de metas e aceleração de performance" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#FF2D9B">Vanguard</strong>
+        <span class="id">vanguard</span>
+        <span class="meta">Pilares (9 originais)</span>
+      </figcaption>
+    </figure>
+    <figure class="card" data-char="oracle">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #A855F733, #FF2D9B1f); box-shadow:0 0 32px rgba(168, 85, 247, 0.40)">
+        <img src="characters/oracle.svg" alt="Oracle, agente visionário de forecast e previsibilidade comercial" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#A855F7">Oracle</strong>
+        <span class="id">oracle</span>
+        <span class="meta">Pilares (9 originais)</span>
+      </figcaption>
+    </figure>
+    <figure class="card" data-char="core">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #6366F133, #00D4FF1f); box-shadow:0 0 34px rgba(99, 102, 241, 0.45)">
+        <img src="characters/core.svg" alt="Core, agente mente principal e orquestrador cognitivo de IA" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#6366F1">Core</strong>
+        <span class="id">core</span>
+        <span class="meta">Pilares (9 originais)</span>
+      </figcaption>
+    </figure>
+    <figure class="card" data-char="spark">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #14B8A633, #D4F4341f); box-shadow:0 0 32px rgba(20, 184, 166, 0.40)">
+        <img src="characters/spark.svg" alt="Spark, agente engenheiro de conectores e integrações" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#14B8A6">Spark</strong>
+        <span class="id">spark</span>
+        <span class="meta">Pilares (9 originais)</span>
+      </figcaption>
+    </figure>
+    <figure class="card" data-char="echo">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #FB718533, #00D4FF1f); box-shadow:0 0 32px rgba(251, 113, 133, 0.40)">
+        <img src="characters/echo.svg" alt="Echo, agente especialista em telefonia, voz e engajamento" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#FB7185">Echo</strong>
+        <span class="id">echo</span>
+        <span class="meta">Pilares (9 originais)</span>
+      </figcaption>
+    </figure>
+    <figure class="card" data-char="sudo">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #94A3B833, #00D4FF1f); box-shadow:0 0 32px rgba(0, 212, 255, 0.35)">
+        <img src="characters/sudo.svg" alt="Sudo, agente controlador de sistema, governança e alçadas" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#94A3B8">Sudo</strong>
+        <span class="id">sudo</span>
+        <span class="meta">Pilares (9 originais)</span>
+      </figcaption>
+    </figure>
+    </div></section>
+<section data-layer="commercial-agent"><h2>Agentes Comerciais (15)</h2><div class="grid">
+    <figure class="card" data-char="axiom">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #38BDF833, #FFC1071f); box-shadow:0 0 32px rgba(56, 189, 248, 0.38)">
+        <img src="characters/axiom.svg" alt="Axiom, agente LDR de inteligência e higienização de dados de leads" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#7DD3FC">Axiom</strong>
+        <span class="id">axiom</span>
+        <span class="meta">Agentes Comerciais (15) · ldr-intelligence</span>
+      </figcaption>
+    </figure>
+    <figure class="card" data-char="beacon">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #FBBF2433, #FF2D9B1f); box-shadow:0 0 32px rgba(251, 191, 36, 0.38)">
+        <img src="characters/beacon.svg" alt="Beacon, agente BDR de outbound e prospecção personalizada" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#FDE68A">Beacon</strong>
+        <span class="id">beacon</span>
+        <span class="meta">Agentes Comerciais (15) · bdr-outbound</span>
+      </figcaption>
+    </figure>
+    <figure class="card" data-char="meridian">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #34D39933, #8B7DFF1f); box-shadow:0 0 32px rgba(52, 211, 153, 0.38)">
+        <img src="characters/meridian.svg" alt="Meridian, agente SDR de qualificação BANT e triagem" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#6EE7B7">Meridian</strong>
+        <span class="id">meridian</span>
+        <span class="meta">Agentes Comerciais (15) · sdr-qualification</span>
+      </figcaption>
+    </figure>
+    <figure class="card" data-char="forge">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #FB923C33, #FFC1071f); box-shadow:0 0 32px rgba(251, 146, 60, 0.40)">
+        <img src="characters/forge.svg" alt="Forge, agente closer copilot de fechamento e objeções" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#FDBA74">Forge</strong>
+        <span class="id">forge</span>
+        <span class="meta">Agentes Comerciais (15) · closer-sales</span>
+      </figcaption>
+    </figure>
+    <figure class="card" data-char="relay">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #2DD4BF33, #00D4FF1f); box-shadow:0 0 32px rgba(45, 212, 191, 0.38)">
+        <img src="characters/relay.svg" alt="Relay, agente coordenador comercial de roteamento e SLAs" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#5EEAD4">Relay</strong>
+        <span class="id">relay</span>
+        <span class="meta">Agentes Comerciais (15) · coordinator-commercial</span>
+      </figcaption>
+    </figure>
+    <figure class="card" data-char="helm">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #A78BFA33, #FFC1071f); box-shadow:0 0 32px rgba(167, 139, 250, 0.38)">
+        <img src="characters/helm.svg" alt="Helm, agente gerente comercial de performance e alçadas" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#C4B5FD">Helm</strong>
+        <span class="id">helm</span>
+        <span class="meta">Agentes Comerciais (15) · manager-commercial</span>
+      </figcaption>
+    </figure>
+    <figure class="card" data-char="apex">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #FACC1533, #8B7DFF1f); box-shadow:0 0 32px rgba(250, 204, 21, 0.38)">
+        <img src="characters/apex.svg" alt="Apex, agente diretor executivo de visão macro e alçadas" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#FDE68A">Apex</strong>
+        <span class="id">apex</span>
+        <span class="meta">Agentes Comerciais (15) · executive-director</span>
+      </figcaption>
+    </figure>
+    <figure class="card" data-char="ledger">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #22C55E33, #FFC1071f); box-shadow:0 0 32px rgba(34, 197, 94, 0.38)">
+        <img src="characters/ledger.svg" alt="Ledger, agente auditor de faturamento e contratos" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#86EFAC">Ledger</strong>
+        <span class="id">ledger</span>
+        <span class="meta">Agentes Comerciais (15) · billing-revenue</span>
+      </figcaption>
+    </figure>
+    <figure class="card" data-char="anchor">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #60A5FA33, #FF2D9B1f); box-shadow:0 0 32px rgba(96, 165, 250, 0.38)">
+        <img src="characters/anchor.svg" alt="Anchor, agente guardião de retenção e prevenção de churn" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#93C5FD">Anchor</strong>
+        <span class="id">anchor</span>
+        <span class="meta">Agentes Comerciais (15) · churn-retention</span>
+      </figcaption>
+    </figure>
+    <figure class="card" data-char="seal">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #F472B633, #FFC1071f); box-shadow:0 0 32px rgba(244, 114, 182, 0.38)">
+        <img src="characters/seal.svg" alt="Seal, agente guardião contratual de assinatura digital" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#F9A8D4">Seal</strong>
+        <span class="id">seal</span>
+        <span class="meta">Agentes Comerciais (15) · contract-signature</span>
+      </figcaption>
+    </figure>
+    <figure class="card" data-char="cipher">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #6EE7B733, #38BDF81f); box-shadow:0 0 32px rgba(110, 231, 183, 0.36)">
+        <img src="characters/cipher.svg" alt="Cipher, agente guardião de integração e sincronização Bitrix24" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#A7F3D0">Cipher</strong>
+        <span class="id">cipher</span>
+        <span class="meta">Agentes Comerciais (15) · bitrix-guardian</span>
+      </figcaption>
+    </figure>
+    <figure class="card" data-char="harbinger">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #C084FC33, #00D4FF1f); box-shadow:0 0 32px rgba(192, 132, 252, 0.38)">
+        <img src="characters/harbinger.svg" alt="Harbinger, agente oráculo de receita e forecast preditivo" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#D8B4FE">Harbinger</strong>
+        <span class="id">harbinger</span>
+        <span class="meta">Agentes Comerciais (15) · revenue-intelligence</span>
+      </figcaption>
+    </figure>
+    <figure class="card" data-char="scout">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #4ADE8033, #00D4FF1f); box-shadow:0 0 32px rgba(74, 222, 128, 0.36)">
+        <img src="characters/scout.svg" alt="Scout, agente detetive de conta e dossiê pré-reunião" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#86EFAC">Scout</strong>
+        <span class="id">scout</span>
+        <span class="meta">Agentes Comerciais (15) · account-detective</span>
+      </figcaption>
+    </figure>
+    <figure class="card" data-char="pledge">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #F9A8D433, #8B7DFF1f); box-shadow:0 0 32px rgba(249, 168, 212, 0.36)">
+        <img src="characters/pledge.svg" alt="Pledge, agente guardião de promessas comerciais" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#FBCFE8">Pledge</strong>
+        <span class="id">pledge</span>
+        <span class="meta">Agentes Comerciais (15) · promise-guardian</span>
+      </figcaption>
+    </figure>
+    <figure class="card" data-char="tribunal">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #64748B33, #EF44441f); box-shadow:0 0 32px rgba(100, 116, 139, 0.40)">
+        <img src="characters/tribunal.svg" alt="Tribunal, agente advogado do diabo de auditoria de negócios" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#CBD5E1">Tribunal</strong>
+        <span class="id">tribunal</span>
+        <span class="meta">Agentes Comerciais (15) · devils-advocate</span>
+      </figcaption>
+    </figure>
+    </div></section>
+<section data-layer="channel-agent"><h2>Canais e Voz (4)</h2><div class="grid">
+    <figure class="card" data-char="vox">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #F0ABFC33, #00D4FF1f); box-shadow:0 0 32px rgba(240, 171, 252, 0.38)">
+        <img src="characters/vox.svg" alt="Vox, agente de voz e discador autônomo" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#F5D0FE">Vox</strong>
+        <span class="id">vox</span>
+        <span class="meta">Canais e Voz (4) · voice-agent</span>
+      </figcaption>
+    </figure>
+    <figure class="card" data-char="scope">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #A3E63533, #8B7DFF1f); box-shadow:0 0 32px rgba(163, 230, 53, 0.36)">
+        <img src="characters/scope.svg" alt="Scope, agente de diagnóstico de maturidade de leads" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#BEF264">Scope</strong>
+        <span class="id">scope</span>
+        <span class="meta">Canais e Voz (4) · sdr-diagnostic</span>
+      </figcaption>
+    </figure>
+    <figure class="card" data-char="tracker">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #F8717133, #FFC1071f); box-shadow:0 0 32px rgba(248, 113, 113, 0.36)">
+        <img src="characters/tracker.svg" alt="Tracker, agente hunter de novas contas no mercado" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#FCA5A5">Tracker</strong>
+        <span class="id">tracker</span>
+        <span class="meta">Canais e Voz (4) · hunter-agent</span>
+      </figcaption>
+    </figure>
+    <figure class="card" data-char="tempo">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #67E8F933, #FF2D9B1f); box-shadow:0 0 32px rgba(103, 232, 249, 0.36)">
+        <img src="characters/tempo.svg" alt="Tempo, agente tático de respostas rápidas em chat" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#A5F3FC">Tempo</strong>
+        <span class="id">tempo</span>
+        <span class="meta">Canais e Voz (4) · tactical-agent</span>
+      </figcaption>
+    </figure>
+    </div></section>
+<section data-layer="orchestration"><h2>Orquestração (1)</h2><div class="grid">
+    <figure class="card" data-char="aegis">
+      <div class="avatar bh-character-avatar" data-state="idle" data-states="idle listening processing speaking success error"
+           style="background:linear-gradient(135deg, #8B7DFF33, #FFC1071f); box-shadow:0 0 36px rgba(139, 125, 255, 0.42)">
+        <img src="characters/aegis.svg" alt="Aegis, supervisor central e orquestrador do enxame de agentes" width="56" height="56">
+      </div>
+      <figcaption>
+        <strong style="color:#C4B5FD">Aegis</strong>
+        <span class="id">aegis</span>
+        <span class="meta">Orquestração (1) · supervisor-central</span>
+      </figcaption>
+    </figure>
+    </div></section>
+<script>
+  const params = new URLSearchParams(location.search);
+  const state = params.get('state');
+  const theme = params.get('theme');
+  if (theme === 'light') document.documentElement.dataset.theme = 'light';
+  if (state && state !== '__theme') {
+    document.querySelectorAll('.avatar').forEach((a) => { a.dataset.state = state; });
+    document.querySelectorAll('#states button').forEach((b) => b.classList.toggle('on', b.dataset.s === state));
+  }
+  document.getElementById('states').addEventListener('click', (e) => {
+    const s = e.target.dataset && e.target.dataset.s;
+    if (!s) return;
+    if (s === '__theme') {
+      document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+      return;
+    }
+    document.querySelectorAll('.avatar').forEach((a) => { a.dataset.state = s; });
+    document.querySelectorAll('#states button').forEach((b) => b.classList.toggle('on', b.dataset.s === s));
+  });
+</script>
+</body>
+</html>

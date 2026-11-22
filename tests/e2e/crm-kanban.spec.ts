@@ -1,0 +1,565 @@
+import { test, expect, type Page } from '@playwright/test';
+import { signUp, uniqueTestEmail } from './helpers';
+
+// Cobertura oficial do Kanban do CRM (Etapa 06) — antes desta suíte não existia nenhum teste E2E
+// real de drag por mouse, drag por teclado, KanbanCard ou LeadDetailDrawer (só navegação, ver
+// crm.spec.ts). Harness temporário usado durante os pilotos de design NÃO virou teste oficial por
+// cópia — os specs abaixo foram escritos contra a infraestrutura real do repo (Playwright +
+// helpers.ts + API autenticada via page.request, mesmo padrão de leads-crud.spec.ts).
+
+async function createCompanyAndLead(page: Page, opts: { tradeName: string; status: string }) {
+  const companyRes = await page.request.post('/api/companies', {
+    data: { legalName: `${opts.tradeName} LTDA`, tradeName: opts.tradeName },
+  });
+  expect(companyRes.ok()).toBeTruthy();
+  const company = (await companyRes.json()).data;
+
+  const leadRes = await page.request.post('/api/leads', {
+    data: { status: opts.status, companyId: company.id, source: 'e2e-kanban' },
+  });
+  expect(leadRes.ok()).toBeTruthy();
+  const lead = (await leadRes.json()).data;
+  return { company, lead };
+}
+
+/** Arrasto manual por mouse — dnd-kit (PointerSensor, activationConstraint distance:8) precisa de
+ * vários eventos mousemove intermediários pra reconhecer o gesto como drag; um único `dragTo` do
+ * Playwright às vezes não gera passos suficientes. */
+async function dragCardToColumn(
+  page: Page,
+  cardLocator: ReturnType<Page['getByRole']>,
+  columnHeading: ReturnType<Page['getByRole']>,
+) {
+  // O board rola horizontalmente (overflow-x-auto) e nem toda coluna cabe no viewport padrão —
+  // sem isto, arrastar para uma coluna fora da área visível calcula coordenadas de um ponto que
+  // nunca esteve realmente na tela (mouse.move usa coordenadas de viewport, não faz auto-scroll
+  // como .click()/.hover() fazem).
+  await columnHeading.scrollIntoViewIfNeeded();
+  const cardBox = await cardLocator.boundingBox();
+  const columnBox = await columnHeading.boundingBox();
+  if (!cardBox || !columnBox) throw new Error('Bounding box não encontrado para card ou coluna.');
+
+  const startX = cardBox.x + cardBox.width / 2;
+  const startY = cardBox.y + cardBox.height / 2;
+  const endX = columnBox.x + columnBox.width / 2;
+  const endY = columnBox.y + columnBox.height + 80; // corpo da coluna, abaixo do cabeçalho
+
+  await page.mouse.move(startX, startY);
+  await page.mouse.down();
+  // Passos intermediários: primeiro além do activationConstraint (8px) para o dnd-kit reconhecer
+  // o gesto como drag (não como clique), depois em direção ao alvo.
+  await page.mouse.move(startX + 20, startY + 10, { steps: 5 });
+  await page.mouse.move(endX, endY, { steps: 15 });
+  await page.mouse.move(endX, endY, { steps: 2 }); // assenta a posição final antes do drop
+  await page.mouse.up();
+}
+
+test.describe('Kanban do CRM — drag e drop', () => {
+  test.beforeEach(async ({ page }) => {
+    await signUp(page, { email: uniqueTestEmail('kanban') });
+  });
+
+  test('drag por mouse: move card para coluna adjacente e persiste após reload', async ({
+    page,
+  }) => {
+    const { company } = await createCompanyAndLead(page, {
+      tradeName: `Acme Kanban ${Date.now()}`,
+      status: 'Lead Recebido',
+    });
+    await page.goto('/app/crm');
+
+    const card = page.getByRole('button', { name: new RegExp(company.tradeName) });
+    await expect(card).toBeVisible();
+    const targetColumn = page.getByRole('heading', { name: 'Cadência Iniciada' });
+
+    const putResponse = page.waitForResponse(
+      (res) => res.url().includes('/api/leads/') && res.request().method() === 'PUT',
+    );
+    await dragCardToColumn(page, card, targetColumn);
+    const res = await putResponse;
+    expect(res.status()).toBe(200);
+
+    // A coluna "Cadência Iniciada" deve conter o card agora.
+    const columnBody = page
+      .locator('h3', { hasText: 'Cadência Iniciada' })
+      .locator('xpath=ancestor::div[contains(@class,"rounded-card") or contains(@class,"rounded-2xl")][1]');
+    await expect(
+      columnBody.getByRole('button', { name: new RegExp(company.tradeName) }),
+    ).toBeVisible();
+
+    // Persistência real: reload e o card continua na nova coluna (não é só estado otimista local).
+    await page.reload();
+    await expect(page.getByText('Leads e pré-vendas')).toBeVisible({ timeout: 15_000 });
+    const columnBodyAfterReload = page
+      .locator('h3', { hasText: 'Cadência Iniciada' })
+      .locator('xpath=ancestor::div[contains(@class,"rounded-card") or contains(@class,"rounded-2xl")][1]');
+    await expect(
+      columnBodyAfterReload.getByRole('button', { name: new RegExp(company.tradeName) }),
+    ).toBeVisible();
+  });
+
+  test('drag por mouse: rollback visual e toast de erro quando o PUT falha (500)', async ({
+    page,
+  }) => {
+    const { company } = await createCompanyAndLead(page, {
+      tradeName: `Rollback Kanban ${Date.now()}`,
+      status: 'Lead Recebido',
+    });
+    await page.goto('/app/crm');
+
+    const card = page.getByRole('button', { name: new RegExp(company.tradeName) });
+    await expect(card).toBeVisible();
+
+    await page.route('**/api/leads/*', async (route) => {
+      if (route.request().method() === 'PUT') {
+        await route.fulfill({
+          status: 500,
+          contentType: 'application/json',
+          body: JSON.stringify({ success: false, error: 'Erro simulado pelo teste' }),
+        });
+      } else {
+        await route.continue();
+      }
+    });
+
+    const targetColumn = page.getByRole('heading', { name: 'Qualificação (SDR)' });
+    await dragCardToColumn(page, card, targetColumn);
+
+    // Toast de erro (CrmBoard.tsx handleDragEnd) — texto exato inclui "a alteração foi desfeita".
+    await expect(page.getByText(/a alteração foi desfeita/)).toBeVisible({ timeout: 10_000 });
+
+    // Rollback: o card volta a aparecer na coluna original ("Lead Recebido") depois do refetch.
+    const originalColumn = page
+      .locator('h3', { hasText: 'Lead Recebido' })
+      .locator('xpath=ancestor::div[contains(@class,"rounded-card") or contains(@class,"rounded-2xl")][1]');
+    await expect(
+      originalColumn.getByRole('button', { name: new RegExp(company.tradeName) }),
+    ).toBeVisible({ timeout: 10_000 });
+  });
+
+  test('drag por teclado: pickup (Espaço), ArrowRight, drop (Espaço) move o card e anuncia a movimentação', async ({
+    page,
+  }) => {
+    const { company } = await createCompanyAndLead(page, {
+      tradeName: `Teclado Kanban ${Date.now()}`,
+      status: 'Lead Recebido',
+    });
+    await page.goto('/app/crm');
+
+    const card = page.getByRole('button', { name: new RegExp(company.tradeName) }).first();
+    await expect(card).toBeVisible();
+    await card.focus();
+
+    // O dnd-kit dispara onDragStart e, em seguida (o item já "está sobre" sua própria coluna),
+    // onDragOver de imediato — a mensagem de pickup (onDragStart) é substituída rápido demais pra
+    // afirmar de forma estável nela; a asserção relevante é o efeito final da movimentação.
+    await page.keyboard.press('Space'); // pickup
+    // Espera o estado de "pego" ficar visível no DOM (aria-pressed do dnd-kit) antes da seta —
+    // sem isso, ArrowRight pode chegar antes do listener de keydown do KeyboardSensor terminar de
+    // processar a ativação do Space, e a seta se perde (visto de forma intermitente sem este wait).
+    await expect(card).toHaveAttribute('aria-pressed', 'true');
+
+    // Mesmo assim, o aria-pressed não garante o listener pronto: o KeyboardSensor do dnd-kit
+    // anexa seu próprio keydown num setTimeout(0) interno (sem promise pra aguardar — ver
+    // node_modules/@dnd-kit/core/dist/core.esm.js, KeyboardSensor.attach()), e sob CPU contenda
+    // medimos, instrumentando em execução real, atrasos de até ~140ms nesse setTimeout — mais do
+    // que o intervalo real entre o aria-pressed acima e este ArrowRight. `toPass()` reenvia a
+    // tecla até o anúncio da coluna certa aparecer; o efeito é síncrono assim que o listener
+    // existe, então uma tentativa sem anúncio em 500ms é perda real, não lentidão.
+    await expect(async () => {
+      await page.keyboard.press('ArrowRight'); // Lead Recebido -> Cadência Iniciada
+      await expect(page.getByText(/sobre a coluna Cadência Iniciada/)).toBeVisible({
+        timeout: 500,
+      });
+    }).toPass({ timeout: 10_000 });
+
+    const putResponse = page.waitForResponse(
+      (res) => res.url().includes('/api/leads/') && res.request().method() === 'PUT',
+    );
+    await page.keyboard.press('Space'); // drop
+    const res = await putResponse;
+    expect(res.status()).toBe(200);
+
+    await expect(page.getByText(/movido para Cadência Iniciada/)).toBeVisible({ timeout: 10_000 });
+    const columnBody = page
+      .locator('h3', { hasText: 'Cadência Iniciada' })
+      .locator('xpath=ancestor::div[contains(@class,"rounded-card") or contains(@class,"rounded-2xl")][1]');
+    await expect(
+      columnBody.getByRole('button', { name: new RegExp(company.tradeName) }),
+    ).toBeVisible();
+  });
+
+  test('drag por teclado: Escape cancela e o card permanece na coluna original', async ({
+    page,
+  }) => {
+    const { company } = await createCompanyAndLead(page, {
+      tradeName: `Cancelar Kanban ${Date.now()}`,
+      status: 'Lead Recebido',
+    });
+    await page.goto('/app/crm');
+
+    const card = page.getByRole('button', { name: new RegExp(company.tradeName) }).first();
+    await expect(card).toBeVisible();
+    await card.focus();
+
+    await page.keyboard.press('Space'); // pickup
+    await expect(card).toHaveAttribute('aria-pressed', 'true');
+
+    // O KeyboardSensor do dnd-kit só anexa seu próprio listener de keydown num setTimeout(0)
+    // agendado dentro de attach() (pra não reprocessar o mesmo Space que ativou o drag) — ver
+    // node_modules/@dnd-kit/core/dist/core.esm.js, KeyboardSensor.attach(). Esse setTimeout(0)
+    // não tem callback/promise que o teste possa aguardar, e sob CPU contenda (CI, sandbox com
+    // Postgres/Redis/Chromium concorrendo) medimos atrasos reais de até ~140ms nele — mais do que
+    // o intervalo entre o aria-pressed acima e o ArrowRight logo abaixo. Quando isso acontece, o
+    // ArrowRight (e, em seguida, o Escape, disparado sem pausa nenhuma) chega ao document ANTES do
+    // listener existir e é silenciosamente perdido: o drag fica "preso" (aria-pressed nunca volta
+    // a false) e o anúncio de cancelamento nunca aparece — exatamente o erro visto na CI
+    // (getByText(/cancelada/) nunca fica visível). Instrumentado e confirmado em execução real
+    // (window.__kbd + monkeypatch de document.addEventListener) antes desta correção: em ~50% das
+    // execuções locais sob carga, nem o handler do ArrowRight nem o do Escape eram sequer
+    // chamados. `expect(...).toPass()` reenvia o ArrowRight até a coluna realmente mudar — como o
+    // efeito é síncrono assim que o listener existe (confirmado: <5ms do keydown até o anúncio),
+    // qualquer tentativa que não produza o anúncio em 500ms é uma perda real, não lentidão, e pode
+    // ser reenviada com segurança. Depois que o ArrowRight é confirmado, o listener (já anexado)
+    // continua ativo para o resto do gesto, então o Escape logo em seguida não precisa do mesmo
+    // retry — condição confirmada pela mesma instrumentação (Escape só falhava exatamente nos
+    // casos em que o ArrowRight também já tinha falhado).
+    await expect(async () => {
+      await page.keyboard.press('ArrowRight');
+      await expect(page.getByText(/sobre a coluna Cadência Iniciada/)).toBeVisible({
+        timeout: 500,
+      });
+    }).toPass({ timeout: 10_000 });
+    await page.keyboard.press('Escape'); // cancela
+
+    await expect(page.getByText(/[Mm]ovimentação de .* cancelada/)).toBeVisible({
+      timeout: 10_000,
+    });
+    const originalColumn = page
+      .locator('h3', { hasText: 'Lead Recebido' })
+      .locator('xpath=ancestor::div[contains(@class,"rounded-card") or contains(@class,"rounded-2xl")][1]');
+    await expect(
+      originalColumn.getByRole('button', { name: new RegExp(company.tradeName) }),
+    ).toBeVisible();
+  });
+
+  test('drag por teclado: múltiplas colunas (ArrowRight duas vezes) e ArrowLeft de volta', async ({
+    page,
+  }) => {
+    const { company } = await createCompanyAndLead(page, {
+      tradeName: `Multi Coluna Kanban ${Date.now()}`,
+      status: 'Lead Recebido',
+    });
+    await page.goto('/app/crm');
+
+    const card = page.getByRole('button', { name: new RegExp(company.tradeName) }).first();
+    await expect(card).toBeVisible({ timeout: 15_000 });
+    await card.focus();
+    await page.keyboard.press('Space');
+    await expect(card).toHaveAttribute('aria-pressed', 'true');
+    // Corrida real com o setTimeout(0) do dnd-kit KeyboardSensor (ver testes anteriores):
+    // o primeiro ArrowRight pode chegar antes do listener existir. `toPass()` é seguro AQUI
+    // porque o card está em "Lead Recebido" e o único destino de ArrowRight é "Cadência Iniciada"
+    // — se a tecla for perdida e reprocessada, o destino não muda (não há coluna à esquerda).
+    await expect(async () => {
+      await page.keyboard.press('ArrowRight'); // Lead Recebido -> Cadência Iniciada
+      await expect(page.getByText(/sobre a coluna Cadência Iniciada/)).toBeVisible({
+        timeout: 500,
+      });
+    }).toPass({ timeout: 10_000 });
+    // IMPORTANTE: NÃO usar toPass() para moves sequenciais — cada retry pressiona ArrowRight
+    // de novo, avançando o card para além da coluna alvo (na 2ª tentativa iria de
+    // Qualificação-SDR para Reunião Agendada em vez de repetir o move correto).
+    // O listener do dnd-kit JÁ ESTÁ ATIVO após o primeiro move confirmado acima; o único
+    // atraso restante é o measureDroppableContainers assíncrono entre moves (~5-15ms real).
+    // waitForTimeout(200) cobre esse atraso com margem para CI sob carga sem ser frágil.
+    await page.waitForTimeout(200); // aguarda measureDroppableContainers pós-move
+    await page.keyboard.press('ArrowRight'); // Cadência Iniciada -> Qualificação (SDR)
+    await expect(page.getByText(/sobre a coluna Qualificação \(SDR\)/)).toBeVisible({
+      timeout: 5_000,
+    });
+    await page.waitForTimeout(200); // mesmo motivo
+    await page.keyboard.press('ArrowLeft'); // Qualificação (SDR) -> Cadência Iniciada
+    await expect(page.getByText(/sobre a coluna Cadência Iniciada/)).toBeVisible({
+      timeout: 5_000,
+    });
+    await page.keyboard.press('Space'); // drop em Cadência Iniciada
+
+    const columnBody = page
+      .locator('h3', { hasText: 'Cadência Iniciada' })
+      .locator('xpath=ancestor::div[contains(@class,"rounded-card") or contains(@class,"rounded-2xl")][1]');
+    await expect(
+      columnBody.getByRole('button', { name: new RegExp(company.tradeName) }),
+    ).toBeVisible();
+  });
+});
+
+test.describe('Kanban do CRM — coluna vazia', () => {
+  test.beforeEach(async ({ page }) => {
+    await signUp(page, { email: uniqueTestEmail('kanban-empty') });
+  });
+
+  test('coluna sem leads mostra o estado vazio "Solte cards aqui"', async ({ page }) => {
+    await page.goto('/app/crm');
+    // Conta recém-criada não tem nenhum lead — todas as colunas do funil Lead começam vazias.
+    const column = page
+      .locator('h3', { hasText: 'Qualificação (SDR)' })
+      .locator('xpath=ancestor::div[contains(@class,"rounded-card") or contains(@class,"rounded-2xl")][1]');
+    await expect(column.getByText(/Solte cards aqui/i)).toBeVisible();
+    await expect(column.getByText('0', { exact: true })).toBeVisible();
+  });
+
+  test('drag por mouse: solta em coluna vazia move o card corretamente', async ({ page }) => {
+    // Coluna próxima (índice 2, "Qualificação (SDR)") de propósito — dentro do viewport padrão do
+    // Playwright sem precisar de scroll horizontal (ver comentário em dragCardToColumn).
+    const { company } = await createCompanyAndLead(page, {
+      tradeName: `Vazia Kanban ${Date.now()}`,
+      status: 'Lead Recebido',
+    });
+    await page.goto('/app/crm');
+
+    const card = page.getByRole('button', { name: new RegExp(company.tradeName) });
+    const targetColumn = page.getByRole('heading', { name: 'Qualificação (SDR)' });
+    await dragCardToColumn(page, card, targetColumn);
+
+    const columnBody = page
+      .locator('h3', { hasText: 'Qualificação (SDR)' })
+      .locator('xpath=ancestor::div[contains(@class,"rounded-card") or contains(@class,"rounded-2xl")][1]');
+    await expect(
+      columnBody.getByRole('button', { name: new RegExp(company.tradeName) }),
+    ).toBeVisible({ timeout: 10_000 });
+  });
+});
+
+test.describe('Kanban do CRM — LeadDetailDrawer', () => {
+  test.beforeEach(async ({ page }) => {
+    await signUp(page, { email: uniqueTestEmail('kanban-drawer') });
+  });
+
+  test('clique no card abre o drawer com foco inicial e Escape fecha devolvendo o foco', async ({
+    page,
+  }) => {
+    const { company } = await createCompanyAndLead(page, {
+      tradeName: `Drawer Kanban ${Date.now()}`,
+      status: 'Lead Recebido',
+    });
+    await page.goto('/app/crm');
+
+    const card = page.getByRole('button', { name: new RegExp(company.tradeName) });
+    await card.click();
+
+    const drawer = page.getByRole('dialog');
+    await expect(drawer).toBeVisible();
+    // Foco inicial dentro do drawer (accessibility.spec.ts já cobre o padrão geral de foco em
+    // Dialog; aqui confirmamos que o LeadDetailDrawer especificamente segue o mesmo contrato).
+    await expect(drawer).toContainText(company.tradeName);
+
+    await page.keyboard.press('Escape');
+    await expect(drawer).not.toBeVisible();
+    // Foco retorna ao card que abriu o drawer (mesmo padrão documentado em LeadDetailDrawer.tsx).
+    await expect(card).toBeFocused();
+  });
+
+  test('botão de fechar (X) fecha o drawer', async ({ page }) => {
+    const { company } = await createCompanyAndLead(page, {
+      tradeName: `Fechar X Kanban ${Date.now()}`,
+      status: 'Lead Recebido',
+    });
+    await page.goto('/app/crm');
+
+    await page.getByRole('button', { name: new RegExp(company.tradeName) }).click();
+    const drawer = page.getByRole('dialog');
+    await expect(drawer).toBeVisible();
+
+    await drawer.getByRole('button', { name: 'Fechar detalhes do lead' }).click();
+    await expect(drawer).not.toBeVisible();
+  });
+
+  test('alterar o estágio pelo select do drawer move o card no board', async ({ page }) => {
+    const { company } = await createCompanyAndLead(page, {
+      tradeName: `Select Kanban ${Date.now()}`,
+      status: 'Lead Recebido',
+    });
+    await page.goto('/app/crm');
+
+    await page.getByRole('button', { name: new RegExp(company.tradeName) }).click();
+    const drawer = page.getByRole('dialog');
+    await expect(drawer).toBeVisible();
+
+    const putResponse = page.waitForResponse(
+      (res) => res.url().includes('/api/leads/') && res.request().method() === 'PUT',
+    );
+    await drawer.getByLabel('Status do Funil').selectOption('Qualificação (SDR)');
+    const res = await putResponse;
+    expect(res.status()).toBe(200);
+
+    await page.keyboard.press('Escape');
+    const columnBody = page
+      .locator('h3', { hasText: 'Qualificação (SDR)' })
+      .locator('xpath=ancestor::div[contains(@class,"rounded-card") or contains(@class,"rounded-2xl")][1]');
+    await expect(
+      columnBody.getByRole('button', { name: new RegExp(company.tradeName) }),
+    ).toBeVisible({ timeout: 10_000 });
+  });
+
+  // Onda A (Agente 00, Commercial AI OS) — o lead selecionado passou a viver no parâmetro `lead`
+  // da URL (ver CrmBoard.tsx) em vez de state local, para que o registro aberto seja
+  // compartilhável por link e sobreviva a reload.
+  test('abrir o card grava o lead na URL; reload com ?lead= reabre o mesmo drawer', async ({
+    page,
+  }) => {
+    const { company, lead } = await createCompanyAndLead(page, {
+      tradeName: `Deep Link Kanban ${Date.now()}`,
+      status: 'Lead Recebido',
+    });
+    await page.goto('/app/crm');
+
+    await page.getByRole('button', { name: new RegExp(company.tradeName) }).click();
+    const drawer = page.getByRole('dialog');
+    await expect(drawer).toBeVisible();
+    await expect(page).toHaveURL(new RegExp(`[?&]lead=${lead.id}(&|$)`));
+
+    // A URL é a fonte de verdade do registro aberto — reload não deve perder o drawer.
+    await page.reload();
+    const drawerAfterReload = page.getByRole('dialog');
+    await expect(drawerAfterReload).toBeVisible();
+    await expect(drawerAfterReload).toContainText(company.tradeName);
+  });
+
+  test('botão Voltar do navegador fecha o drawer sem sair de /app/crm', async ({ page }) => {
+    const { company } = await createCompanyAndLead(page, {
+      tradeName: `Voltar Kanban ${Date.now()}`,
+      status: 'Lead Recebido',
+    });
+    await page.goto('/app/crm');
+
+    await page.getByRole('button', { name: new RegExp(company.tradeName) }).click();
+    const drawer = page.getByRole('dialog');
+    await expect(drawer).toBeVisible();
+
+    await page.goBack();
+    await expect(drawer).not.toBeVisible();
+    await expect(page).toHaveURL(/\/app\/crm$/);
+  });
+
+  // Onda B (Agente 00, Commercial AI OS) — Action Bar consolidada (P0-3) e Linha do Tempo (P0-4).
+  // As ações já existiam espalhadas (ícones no cabeçalho, botões no rodapé, botão Bitrix dentro de
+  // uma seção) — este teste cobre a barra única resultante, não uma ação nova.
+  test('barra de ações mostra as ações da oportunidade agrupadas', async ({ page }) => {
+    const { company } = await createCompanyAndLead(page, {
+      tradeName: `Action Bar Kanban ${Date.now()}`,
+      status: 'Lead Recebido',
+    });
+    await page.goto('/app/crm');
+
+    await page.getByRole('button', { name: new RegExp(company.tradeName) }).click();
+    const drawer = page.getByRole('dialog');
+    await expect(drawer).toBeVisible();
+
+    const actionBar = drawer.getByRole('group', { name: 'Ações da oportunidade' });
+    await expect(actionBar).toBeVisible();
+    await expect(actionBar.getByRole('button', { name: /Enriquecer/ })).toBeVisible();
+    await expect(actionBar.getByRole('button', { name: /Qualificar via Voz/ })).toBeVisible();
+    await expect(actionBar.getByRole('button', { name: /WhatsApp/ })).toBeVisible();
+    await expect(actionBar.getByRole('button', { name: /Enviar ao Bitrix24/ })).toBeVisible();
+    await expect(actionBar.getByRole('button', { name: /Excluir/ })).toBeVisible();
+  });
+
+  // Linha do Tempo usa `lead.timeline`, já retornado por GET /api/leads/:id há muito tempo (ver
+  // PrismaLeadRepository.ts) mas nunca renderizado — todo lead novo já nasce com 1 evento
+  // ("creation") gravado pela própria rota de criação.
+  test('linha do tempo mostra o evento de criação do lead', async ({ page }) => {
+    const { company } = await createCompanyAndLead(page, {
+      tradeName: `Timeline Kanban ${Date.now()}`,
+      status: 'Lead Recebido',
+    });
+    await page.goto('/app/crm');
+
+    await page.getByRole('button', { name: new RegExp(company.tradeName) }).click();
+    const drawer = page.getByRole('dialog');
+    await expect(drawer).toBeVisible();
+
+    const timelineSection = drawer
+      .getByText('Linha do Tempo')
+      .locator('xpath=ancestor::section[1]');
+    await expect(timelineSection).toContainText('Lead criado');
+  });
+});
+
+// Onda B2a (Agente 00, Commercial AI OS) — filtros reais do pipeline (busca + dono), persistidos
+// na URL (?q=/?owner=). Achado real durante a implementação: Lead.owner guarda o User.id (contrato
+// DATA-003), mas o botão "Reatribuir Vendedor" gravava o NOME — divergência corrigida junto (ver
+// handleBatchReassignOwner em CrmBoard.tsx), porque sem ela o filtro por dono nunca bateria com
+// leads reatribuídos em lote.
+test.describe('Kanban do CRM — Filtros', () => {
+  test('busca por texto filtra os cards visíveis', async ({ page }) => {
+    await signUp(page, { email: uniqueTestEmail('kanban-filters-busca') });
+    const { company: companyA } = await createCompanyAndLead(page, {
+      tradeName: `Zeta Filtro ${Date.now()}`,
+      status: 'Lead Recebido',
+    });
+    const { company: companyB } = await createCompanyAndLead(page, {
+      tradeName: `Omega Filtro ${Date.now()}`,
+      status: 'Lead Recebido',
+    });
+    await page.goto('/app/crm');
+
+    const cardA = page.getByRole('button', { name: new RegExp(companyA.tradeName) });
+    const cardB = page.getByRole('button', { name: new RegExp(companyB.tradeName) });
+    await expect(cardA).toBeVisible();
+    await expect(cardB).toBeVisible();
+
+    await page.getByLabel('Buscar por empresa ou contato').fill(companyA.tradeName);
+
+    await expect(cardA).toBeVisible();
+    await expect(cardB).not.toBeVisible();
+    await expect(page.getByRole('button', { name: 'Limpar filtros' })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Limpar filtros' }).click();
+    await expect(cardB).toBeVisible();
+  });
+
+  test('reatribuir em lote grava o dono como id; card e filtro mostram o nome resolvido, não o id cru', async ({
+    page,
+  }) => {
+    // Self-assign: usa o nome do próprio usuário logado como "dono" a reatribuir — garante um
+    // dono conhecido no <select> sem depender de outro membro de equipe existir no tenant de
+    // teste, e o nome precisa ser conhecido de antemão (selectOption por label exige string exata).
+    const ownerName = `Vendedor Filtro ${Date.now()}`;
+    await signUp(page, { email: uniqueTestEmail('kanban-filters-owner'), name: ownerName });
+
+    const { company } = await createCompanyAndLead(page, {
+      tradeName: `Reatribuir Filtro ${Date.now()}`,
+      status: 'Lead Recebido',
+    });
+    await page.goto('/app/crm');
+
+    await page.getByRole('button', { name: 'Seleção em Lote' }).click();
+    // Em modo de seleção o card ganha um checkbox irmão ("Selecionar <empresa>") cujo nome
+    // acessível também contém o nome da empresa — âncora no início evita casar com ele.
+    await page.getByRole('button', { name: new RegExp(`^${company.tradeName}`) }).click();
+
+    const batchResponse = page.waitForResponse(
+      (res) => res.url().includes('/api/leads/batch-update') && res.request().method() === 'POST',
+    );
+    await page.getByLabel('Dono:', { exact: true }).selectOption({ label: ownerName });
+    const res = await batchResponse;
+    expect(res.status()).toBe(200);
+    const payload = res.request().postDataJSON() as { updates: { owner: string } };
+    // O valor gravado é o id (cuid), não o nome — não bate no padrão de um nome com espaço.
+    expect(payload.updates.owner).not.toMatch(/\s/);
+
+    // O rodapé do card (data + dono) fica FORA da div com role="button" (é uma div irmã dela,
+    // dentro do wrapper externo "rounded-2xl") — por isso a checagem de conteúdo sobe até esse
+    // wrapper em vez de usar o locator de role="button" (que só cobre a área arrastável/clicável).
+    const cardContainer = page
+      .locator('h4', { hasText: company.tradeName })
+      .locator('xpath=ancestor::div[contains(@class,"rounded-card") or contains(@class,"rounded-2xl")][1]');
+    await expect(cardContainer).toContainText(ownerName);
+    await expect(cardContainer).not.toContainText(payload.updates.owner);
+
+    await page.getByLabel('Filtrar por dono:').selectOption({ label: ownerName });
+    await expect(cardContainer).toBeVisible();
+    await expect(page.getByText(/1 de \d+ leads/)).toBeVisible();
+  });
+});

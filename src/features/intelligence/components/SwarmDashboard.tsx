@@ -1,0 +1,932 @@
+import canvasConfetti from 'canvas-confetti';
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+  AlertTriangle,
+  Bot,
+  CheckCircle2,
+  Database,
+  Gauge,
+  Handshake,
+  Loader2,
+  RefreshCw,
+  Send,
+  ShieldAlert,
+  Sparkles,
+  Square,
+  Wrench,
+  Zap,
+} from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useBrandAccent } from '../../../hooks/useBrandAccent.js';
+import { api } from '../../../lib/api.js';
+import { clientLogger } from '../../../lib/clientLogger.js';
+import { SoundFX } from '../../../lib/soundEffects.js';
+import { SWARM_BRAND } from '../agents/swarm.constants.js';
+import type {
+  AgentSloMetrics,
+  PipelineAgent,
+  SloRate,
+  SwarmAgent,
+  SwarmDashboardView,
+  SwarmEvent,
+  SwarmEventType,
+  SwarmMessage,
+  SwarmSloPanelProps,
+  SwarmSloSnapshot,
+} from './swarm-dashboard/swarm.types.js';
+import {
+  AGENT_NAMES,
+  createId,
+  formatMs,
+  formatPercent,
+  getAgentName,
+  MISSION_SUGGESTIONS,
+  PIPELINE_AGENTS,
+  SLO_ROLE_COLOR,
+  SLO_ROLE_LABEL,
+} from './swarm-dashboard/swarmMission.constants.js';
+import { UniversalEcosystemPanel } from './UniversalEcosystemPanel.js';
+
+export type {
+  AgentSloMetrics,
+  PipelineAgent,
+  SloRate,
+  SwarmAgent,
+  SwarmDashboardView,
+  SwarmEvent,
+  SwarmEventType,
+  SwarmMessage,
+  SwarmSloPanelProps,
+  SwarmSloSnapshot,
+};
+export {
+  AGENT_NAMES,
+  createId,
+  formatMs,
+  formatPercent,
+  getAgentName,
+  MISSION_SUGGESTIONS,
+  PIPELINE_AGENTS,
+  SLO_ROLE_COLOR,
+  SLO_ROLE_LABEL,
+};
+
+export function SwarmDashboard() {
+  const accent = useBrandAccent();
+  const [view, setView] = useState<SwarmDashboardView>('mission');
+  const [mission, setMission] = useState('');
+  const [leadId, setLeadId] = useState('');
+  const [isExecuting, setIsExecuting] = useState(false);
+  const [messages, setMessages] = useState<SwarmMessage[]>([]);
+  const [activeStep, setActiveStep] = useState(0);
+  const [engagedAgents, setEngagedAgents] = useState<Set<SwarmAgent>>(new Set());
+  const [startedAt, setStartedAt] = useState<number | null>(null);
+  const [elapsedMs, setElapsedMs] = useState(0);
+
+  const [sloSnapshot, setSloSnapshot] = useState<SwarmSloSnapshot | null>(null);
+  const [sloLoading, setSloLoading] = useState(false);
+  const [sloError, setSloError] = useState<string | null>(null);
+
+  const abortRef = useRef<AbortController | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  }, []);
+
+  const fetchSlo = useCallback(async () => {
+    setSloLoading(true);
+    setSloError(null);
+    try {
+      const data = await api.get<SwarmSloSnapshot>('/api/agent/swarm/slo?days=30');
+      setSloSnapshot(data);
+    } catch (error: any) {
+      clientLogger.error({ err: error }, 'Falha ao buscar o painel de SLO do enxame');
+      setSloError(
+        'Painel de SLO ainda não disponível nesta instância (rota pendente ou base sem dados).',
+      );
+    } finally {
+      setSloLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (view === 'slo' && !sloSnapshot && !sloLoading) {
+      void fetchSlo();
+    }
+  }, [view, sloSnapshot, sloLoading, fetchSlo]);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
+  }, []);
+
+  useEffect(() => {
+    if (!isExecuting || !startedAt) return;
+    const interval = window.setInterval(() => setElapsedMs(Date.now() - startedAt), 200);
+    return () => window.clearInterval(interval);
+  }, [isExecuting, startedAt]);
+
+  const stopMission = () => {
+    abortRef.current?.abort();
+  };
+
+  const resolvePendingThinking = (text: string) => {
+    setMessages((prev) =>
+      prev.map((m) => (m.status === 'thinking' ? { ...m, status: 'error', text } : m)),
+    );
+  };
+
+  const parseSseErrorMessage = (dataStr: string): string => {
+    try {
+      const parsed = JSON.parse(dataStr);
+      return typeof parsed === 'string' ? parsed : JSON.stringify(parsed);
+    } catch {
+      return dataStr;
+    }
+  };
+
+  const runSimulation = async (overrideMission?: string) => {
+    const missionText = (overrideMission ?? mission).trim();
+    if (!missionText) return;
+
+    SoundFX.play('click');
+    setIsExecuting(true);
+    setActiveStep(0);
+    setEngagedAgents(new Set());
+    setStartedAt(Date.now());
+    setElapsedMs(0);
+    setMessages([
+      {
+        id: 'routing-boot',
+        agent: 'supervisor',
+        text: 'Analisando a missão e escolhendo o primeiro especialista...',
+        timestamp: new Date(),
+        status: 'thinking',
+        kind: 'routing',
+        step: 0,
+      },
+    ]);
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/agent/swarm/stream', {
+        method: 'POST',
+        credentials: 'include',
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ mission: missionText, leadId: leadId.trim() || undefined }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Falha ao iniciar streaming');
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('Stream não suportado');
+
+      const decoder = new TextDecoder('utf-8');
+      let buffer = '';
+      let streamErrored = false;
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        if (!value) continue;
+
+        buffer += decoder.decode(value, { stream: true });
+        const frames = buffer.split('\n\n');
+        buffer = frames.pop() || '';
+
+        for (const frame of frames) {
+          if (!frame.trim()) continue;
+
+          let eventName = 'message';
+          let dataStr = '';
+          for (const line of frame.split('\n')) {
+            if (line.startsWith('event: ')) eventName = line.slice(7).trim();
+            else if (line.startsWith('data: ')) dataStr += line.slice(6);
+          }
+          if (!dataStr) continue;
+
+          if (eventName === 'error') {
+            streamErrored = true;
+            const message = parseSseErrorMessage(dataStr);
+            resolvePendingThinking('Interrompido por um erro no enxame.');
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: createId(),
+                agent: 'supervisor',
+                text: `O enxame foi interrompido: ${message}`,
+                timestamp: new Date(),
+                status: 'error',
+                kind: 'routing',
+                step: activeStep,
+              },
+            ]);
+            continue;
+          }
+
+          if (eventName === 'end' || dataStr === '{}') continue;
+
+          try {
+            const event = JSON.parse(dataStr) as SwarmEvent;
+            applyEvent(event);
+          } catch (e: any) {
+            clientLogger.error({ err: e }, 'Erro ao fazer parse SSE data');
+          }
+        }
+      }
+
+      if (!streamErrored)
+        resolvePendingThinking(
+          'Sem resposta deste agente — a conexão foi encerrada antes da conclusão.',
+        );
+
+      setIsExecuting(false);
+    } catch (error: any) {
+      if ((error as Error).name === 'AbortError') {
+        resolvePendingThinking('Cancelado pelo usuário.');
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: createId(),
+            agent: 'supervisor',
+            text: 'Missão cancelada pelo usuário.',
+            timestamp: new Date(),
+            status: 'error',
+            kind: 'routing',
+            step: activeStep,
+          },
+        ]);
+      } else {
+        clientLogger.error({ err: error }, 'Falha ao executar Enxame via Stream');
+        resolvePendingThinking('Falha de comunicação com o enxame.');
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: createId(),
+            agent: 'supervisor',
+            text: 'O Swarm não conseguiu se comunicar com os agentes. Tente novamente em instantes.',
+            timestamp: new Date(),
+            status: 'error',
+            kind: 'routing',
+            step: activeStep,
+          },
+        ]);
+      }
+      setIsExecuting(false);
+    } finally {
+      abortRef.current = null;
+    }
+  };
+
+  const applyEvent = (event: SwarmEvent) => {
+    setActiveStep(event.step);
+
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === 'routing-boot' && m.status === 'thinking' ? { ...m, status: 'done' } : m,
+      ),
+    );
+
+    if (event.type === 'routing') {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: createId(),
+          agent: 'supervisor',
+          text: event.content,
+          timestamp: new Date(),
+          status: 'done',
+          kind: 'routing',
+          step: event.step,
+        },
+      ]);
+
+      if (event.nextAgent) {
+        const target = event.nextAgent;
+        setEngagedAgents((prev) => new Set(prev).add(target));
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `thinking-${target}-${event.step}`,
+            agent: target,
+            text: '',
+            timestamp: new Date(),
+            status: 'thinking',
+            kind: 'result',
+            step: event.step,
+          },
+        ]);
+      }
+      return;
+    }
+
+    if (event.type === 'agent_result' || event.type === 'agent_error') {
+      const thinkingId = `thinking-${event.agent}-${event.step}`;
+      setMessages((prev) => {
+        const idx = prev.findIndex((m) => m.id === thinkingId);
+        const updated: SwarmMessage = {
+          id: thinkingId,
+          agent: event.agent,
+          text: event.content,
+          timestamp: new Date(),
+          status: event.type === 'agent_error' ? 'error' : 'done',
+          kind: 'result',
+          step: event.step,
+        };
+        if (idx === -1) return [...prev, updated];
+        const next = [...prev];
+        next[idx] = updated;
+        return next;
+      });
+      return;
+    }
+
+    if (event.type === 'final') {
+      SoundFX.play('success');
+      canvasConfetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { y: 0.6 },
+        colors: [
+          '--color-brand-primary',
+          '--color-brand-secondary',
+          '--color-brand-accent',
+          '--color-success',
+          '--color-info',
+        ].map((token) => getComputedStyle(document.documentElement).getPropertyValue(token).trim()),
+        disableForReducedMotion: true,
+      });
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: createId(),
+          agent: 'supervisor',
+          text: event.content,
+          timestamp: new Date(),
+          status: 'done',
+          kind: 'final',
+          step: event.step,
+        },
+      ]);
+    }
+  };
+
+  const getAgentIcon = (agent: string) => {
+    switch (agent) {
+      case 'supervisor':
+        return <ShieldAlert size={18} className={accent.text} />;
+      case 'sdr':
+        return (
+          <Bot
+            size={18}
+            className="text-[var(--color-heading-cyan)] dark:text-[var(--color-heading-cyan)]"
+          />
+        );
+      case 'bdr':
+        return (
+          <Zap
+            size={18}
+            className="text-[var(--color-heading-success)] dark:text-[var(--color-heading-success)]"
+          />
+        );
+      case 'closer':
+        return (
+          <Handshake
+            size={18}
+            className="text-[var(--color-heading-pink)] dark:text-[var(--color-heading-pink)]"
+          />
+        );
+      case 'crm':
+        return (
+          <Database
+            size={18}
+            className="text-[var(--color-heading-iris)] dark:text-[var(--color-heading-iris)]"
+          />
+        );
+      case 'ops':
+        return (
+          <Wrench
+            size={18}
+            className="text-[var(--color-heading-gold)] dark:text-[var(--color-heading-gold)]"
+          />
+        );
+      default:
+        return <Bot size={18} />;
+    }
+  };
+
+  const getAgentBg = (agent: string, status: SwarmMessage['status']) => {
+    if (status === 'error')
+      return 'bg-danger/10 border-danger/30 text-danger-active dark:text-danger';
+    switch (agent) {
+      case 'supervisor':
+        return `${accent.bgSofter} ${accent.borderSoft} text-ink`;
+      case 'sdr':
+        return 'bg-[var(--color-heading-cyan)]/10 border-[var(--color-heading-cyan)]/30 text-ink';
+      case 'bdr':
+        return 'bg-[var(--color-heading-success)]/10 border-[var(--color-heading-success)]/30 text-ink';
+      case 'closer':
+        return 'bg-[var(--color-heading-pink)]/10 border-[var(--color-heading-pink)]/30 text-ink';
+      case 'crm':
+        return 'bg-[var(--color-heading-iris)]/10 border-[var(--color-heading-iris)]/30 text-ink';
+      case 'ops':
+        return 'bg-[var(--color-heading-gold)]/10 border-[var(--color-heading-gold)]/30 text-ink';
+      default:
+        return 'bg-surface-2 border-line text-ink';
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-[750px] bg-surface rounded-[var(--radius-card)] border border-[var(--color-heading-iris)] overflow-hidden shadow-card relative">
+      {/* Efeitos Glow Suaves de Fundo */}
+      <div
+        className={`absolute top-[-10%] left-[-10%] w-[50%] h-[50%] ${accent.blobA} rounded-full blur-[120px] pointer-events-none opacity-30`}
+      />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[var(--color-heading-cyan)]/10 rounded-full blur-[120px] pointer-events-none opacity-30" />
+
+      {/* Cabeçalho */}
+      <div className="px-8 py-6 border-b border-line bg-surface/80 backdrop-blur-xl flex items-center justify-between z-10 gap-4 flex-wrap">
+        <div className="flex items-center gap-4">
+          <div
+            className={`w-12 h-12 rounded-xl bg-gradient-to-br ${accent.gradient} flex items-center justify-center text-on-brand shadow-md`}
+          >
+            <Zap size={24} fill="currentColor" />
+          </div>
+          <div>
+            <h2 className="text-xl text-ink font-black tracking-tight">{SWARM_BRAND} Swarm</h2>
+            <p className="text-ink-2 text-sm mt-0.5 font-medium">
+              Orquestração Autônoma de Agentes Comerciais
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {isExecuting && (
+            <div className="hidden md:flex items-center gap-2 mr-2">
+              {PIPELINE_AGENTS.map((p) => (
+                <div
+                  key={p.key}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border transition-colors ${
+                    engagedAgents.has(p.key)
+                      ? getAgentBg(p.key, 'done')
+                      : 'bg-surface-2 border-line text-ink-2'
+                  }`}
+                >
+                  {p.label}
+                </div>
+              ))}
+              <span className="text-ink-2 text-[10px] font-bold uppercase tracking-widest ml-1">
+                {(elapsedMs / 1000).toFixed(1)}s
+              </span>
+            </div>
+          )}
+          <span className="flex h-3 w-3 relative">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-success"></span>
+          </span>
+          <span className="text-xs font-bold text-success-active dark:text-success uppercase tracking-widest">
+            Enxame Online
+          </span>
+        </div>
+      </div>
+
+      {/* Seletor de visão: missão ao vivo vs. SLO por agente */}
+      <div className="px-8 pt-4 border-b border-line bg-surface-2/40 z-10 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            SoundFX.play('click');
+            setView('mission');
+          }}
+          className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold uppercase tracking-widest rounded-t-lg border-b border-line transition-colors cursor-pointer ${view === 'mission' ? `${accent.text} border-current` : 'text-ink-2 border-transparent hover:text-ink'}`}
+        >
+          <Send size={12} /> Missão ao vivo
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            SoundFX.play('click');
+            setView('slo');
+          }}
+          className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold uppercase tracking-widest rounded-t-lg border-b border-line transition-colors cursor-pointer ${view === 'slo' ? `${accent.text} border-current` : 'text-ink-2 border-transparent hover:text-ink'}`}
+        >
+          <Gauge size={12} /> SLO por agente
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            SoundFX.play('click');
+            setView('connectors');
+          }}
+          className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold uppercase tracking-widest rounded-t-lg border-b border-line transition-colors cursor-pointer ${view === 'connectors' ? `${accent.text} border-current` : 'text-ink-2 border-transparent hover:text-ink'}`}
+        >
+          <Database size={12} /> Ecossistema (21+ Plataformas)
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            SoundFX.play('click');
+            setView('studio');
+          }}
+          className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold uppercase tracking-widest rounded-t-lg border-b border-line transition-colors cursor-pointer ${view === 'studio' ? `${accent.text} border-current` : 'text-ink-2 border-transparent hover:text-ink'}`}
+        >
+          <Sparkles size={12} /> Office, Scripts & Agente Isolado
+        </button>
+      </div>
+
+      {(view === 'connectors' || view === 'studio') && (
+        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar z-10">
+          <UniversalEcosystemPanel
+            mode={view}
+            onLaunchSwarmMission={(missionText) => {
+              setMission(missionText);
+              setView('mission');
+              void runSimulation(missionText);
+            }}
+          />
+        </div>
+      )}
+
+      {view === 'slo' && (
+        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar z-10">
+          <SwarmSloPanel
+            snapshot={sloSnapshot}
+            loading={sloLoading}
+            error={sloError}
+            onRetry={fetchSlo}
+          />
+        </div>
+      )}
+
+      {/* Área de Mensagens (Chat) */}
+      {view === 'mission' && (
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar z-10">
+          {messages.length === 0 && !isExecuting && (
+            <div className="h-full flex flex-col items-center justify-center text-center opacity-90">
+              <div className="w-20 h-20 bg-surface-2 rounded-full flex items-center justify-center mb-6 border border-line shadow-sm">
+                <Bot size={32} className="text-ink-2" />
+              </div>
+              <h3 className="text-ink text-lg font-bold mb-2">Aguardando Missão</h3>
+              <p className="text-ink-2 text-sm max-w-sm mb-6">
+                Descreva o que os agentes devem fazer e eles se organizarão automaticamente para
+                executar.
+              </p>
+
+              <div className="flex flex-col gap-2 max-w-lg w-full">
+                {MISSION_SUGGESTIONS.map((suggestion) => (
+                  <button
+                    type="button"
+                    key={suggestion}
+                    onClick={() => setMission(suggestion)}
+                    className={`text-left text-xs text-ink bg-surface-2 border border-line rounded-xl px-4 py-3 ${accent.hoverBorder} hover:bg-surface transition-colors cursor-pointer`}
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <AnimatePresence initial={false}>
+            {messages.map((msg) => {
+              if (msg.kind === 'routing') {
+                return (
+                  <motion.div
+                    key={msg.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-ink-2 ml-2"
+                  >
+                    {msg.status === 'thinking' ? (
+                      <Loader2 size={12} className={`animate-spin ${accent.text}`} />
+                    ) : (
+                      <ShieldAlert size={12} className={accent.text} />
+                    )}
+                    <span
+                      className={
+                        msg.status === 'error' ? 'text-danger-active dark:text-danger' : ''
+                      }
+                    >
+                      {msg.text}
+                    </span>
+                  </motion.div>
+                );
+              }
+
+              if (msg.kind === 'final') {
+                return (
+                  <motion.div
+                    key={msg.id}
+                    initial={{ opacity: 0, y: 15, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    className="mr-0"
+                  >
+                    <div
+                      className={`p-6 rounded-[var(--radius-card)] border backdrop-blur-xl shadow-card ${accent.borderSoft} bg-surface-2/90`}
+                    >
+                      <div className="flex items-center gap-2 mb-3">
+                        <CheckCircle2 size={18} className={accent.text} />
+                        <span className="font-black text-sm tracking-wide text-ink uppercase">
+                          Síntese Final do Enxame
+                        </span>
+                      </div>
+                      <p className="text-ink text-[15px] leading-relaxed font-medium whitespace-pre-wrap">
+                        {msg.text}
+                      </p>
+                    </div>
+                  </motion.div>
+                );
+              }
+
+              return (
+                <motion.div
+                  key={msg.id}
+                  initial={{ opacity: 0, y: 15, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  className={`flex gap-4 ${msg.agent === 'supervisor' ? 'ml-0 mr-12' : 'ml-12 mr-0'}`}
+                >
+                  <div className="w-12 h-12 rounded-xl bg-surface-2 flex items-center justify-center shrink-0 border border-line shadow-sm backdrop-blur-md">
+                    {msg.status === 'thinking' ? (
+                      <Loader2 size={18} className="animate-spin text-ink-2" />
+                    ) : msg.status === 'error' ? (
+                      <AlertTriangle size={18} className="text-danger-active dark:text-danger" />
+                    ) : (
+                      getAgentIcon(msg.agent)
+                    )}
+                  </div>
+                  <div
+                    className={`p-5 rounded-2xl border backdrop-blur-xl shadow-card flex-1 relative overflow-hidden group/message transition-all duration-300 ${getAgentBg(msg.agent, msg.status)}`}
+                    onPointerMove={handleMouseMove}
+                  >
+                    {/* Bento Spotlight */}
+                    <div
+                      className="pointer-events-none absolute -inset-px opacity-0 transition-opacity duration-300 group-hover/message:opacity-100 z-10 rounded-[inherit]"
+                      style={{
+                        background: 'var(--grad-glow)',
+                        backgroundPosition: `${mousePos.x}px ${mousePos.y}px`,
+                      }}
+                      aria-hidden="true"
+                    />
+                    <div className="relative z-30">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-bold text-sm tracking-wide text-ink">
+                          {getAgentName(msg.agent)}
+                        </span>
+                        <span className="text-ink-2 text-[10px] uppercase font-black tracking-widest">
+                          {msg.timestamp.toLocaleTimeString()}
+                        </span>
+                      </div>
+                      {msg.status === 'thinking' ? (
+                        <div className="flex items-center gap-2 text-ink-2 text-sm font-medium">
+                          <Loader2 size={14} className="animate-spin" /> Processando...
+                        </div>
+                      ) : (
+                        <p className="text-ink text-[15px] leading-relaxed font-medium whitespace-pre-wrap">
+                          {msg.text}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        </div>
+      )}
+
+      {/* Input Footer */}
+      {view === 'mission' && (
+        <div className="p-6 bg-surface/95 border-t border-line backdrop-blur-2xl relative z-50">
+          <div className="relative max-w-4xl mx-auto mb-3">
+            <input
+              type="text"
+              value={leadId}
+              onChange={(e) => setLeadId(e.target.value)}
+              placeholder="Lead ID (opcional) — necessário para o Agente SDR qualificar um lead real do CRM"
+              className="w-full bg-surface-2 border border-line rounded-xl px-4 py-2.5 text-ink text-[13px] font-medium focus:outline-none focus:ring-1 focus:bg-surface transition-colors placeholder:text-ink-2 pointer-events-auto"
+              disabled={isExecuting}
+            />
+          </div>
+          <div className="relative max-w-4xl mx-auto">
+            <input
+              type="text"
+              value={mission}
+              onChange={(e) => setMission(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !isExecuting && mission.trim()) runSimulation();
+              }}
+              placeholder="O que você deseja que o Swarm faça? (Clique aqui para digitar)"
+              className={`w-full bg-surface-2 border border-line rounded-2xl pl-6 pr-20 py-5 text-ink text-[16px] font-medium focus:outline-none focus:ring-1 focus:bg-surface transition-colors placeholder:text-ink-2 shadow-inner relative z-50 pointer-events-auto focus:border-brand focus:ring-brand/50`}
+              disabled={isExecuting}
+            />
+            {isExecuting ? (
+              <button
+                type="button"
+                onClick={stopMission}
+                aria-label="Cancelar missão"
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 bg-danger-active hover:brightness-110 active:scale-95 rounded-xl flex items-center justify-center text-white transition-all shadow-lg z-50 pointer-events-auto cursor-pointer"
+                title="Cancelar missão"
+              >
+                <Square size={16} fill="currentColor" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => runSimulation()}
+                disabled={!mission.trim()}
+                aria-label="Executar missão"
+                className={`absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 bg-gradient-to-r ${accent.gradient} active:scale-95 hover:-translate-y-1 hover:shadow-lg hover:shadow-brand/20 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:-translate-y-1/2 disabled:cursor-not-allowed rounded-xl flex items-center justify-center text-on-brand transition-all shadow-md z-50 pointer-events-auto cursor-pointer relative overflow-hidden group/btn`}
+              >
+                <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover/btn:animate-[shimmer_1.5s_infinite] pointer-events-none" />
+                <Send
+                  size={20}
+                  className="ml-1 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform"
+                />
+              </button>
+            )}
+          </div>
+          <p className="text-center text-ink-2 text-xs mt-4 font-bold uppercase tracking-widest flex items-center justify-center gap-1.5">
+            {isExecuting ? (
+              <>
+                <Sparkles size={12} className={accent.text} />
+                Enxame em ação · etapa {activeStep}
+              </>
+            ) : (
+              <>
+                Pressione{' '}
+                <kbd className="font-mono bg-surface-2 px-1.5 py-0.5 rounded text-ink mx-1 border border-line">
+                  Enter
+                </kbd>{' '}
+                para enviar a missão
+              </>
+            )}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SwarmSloPanel({ snapshot, loading, error, onRetry }: SwarmSloPanelProps) {
+  const accent = useBrandAccent();
+
+  if (loading && !snapshot) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center text-center gap-3 text-ink-2">
+        <Loader2 size={28} className={`animate-spin ${accent.text}`} />
+        <p className="text-sm font-medium">
+          Calculando SLO a partir de AIPendingAction e AILog reais...
+        </p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center text-center gap-4 max-w-md mx-auto">
+        <AlertTriangle size={28} className="text-amber-500" />
+        <p className="text-sm text-ink-2 font-medium">{error}</p>
+        <button
+          type="button"
+          onClick={onRetry}
+          className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg border border-line text-ink hover:bg-surface-2 transition-colors cursor-pointer"
+        >
+          <RefreshCw size={12} /> Tentar novamente
+        </button>
+      </div>
+    );
+  }
+
+  if (!snapshot) return null;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h3 className="text-ink text-sm font-black uppercase tracking-widest flex items-center gap-2">
+            <Gauge size={16} className={accent.text} /> SLO por agente · últimos{' '}
+            {snapshot.windowDays} dias
+          </h3>
+          <p className="text-ink-2 text-xs mt-1">
+            Fonte: AIPendingAction (por papel) e AILog (agregado da organização) — nunca número
+            fabricado.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onRetry}
+          className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg border border-line text-ink-2 hover:text-ink hover:bg-surface-2 transition-colors cursor-pointer"
+        >
+          <RefreshCw size={11} /> Atualizar
+        </button>
+      </div>
+
+      <div className="overflow-x-auto rounded-2xl border border-line bg-surface">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-surface-2 text-ink-2 text-[10px] uppercase tracking-widest">
+              <th className="text-left font-bold px-4 py-3">Agente</th>
+              <th className="text-right font-bold px-4 py-3">Cobertura</th>
+              <th className="text-right font-bold px-4 py-3">Conversão</th>
+              <th className="text-right font-bold px-4 py-3">Override humano</th>
+              <th className="text-right font-bold px-4 py-3">Taxa de erro</th>
+              <th className="text-right font-bold px-4 py-3">Latência operacional</th>
+            </tr>
+          </thead>
+          <tbody>
+            {snapshot.agents.map((agent) => (
+              <tr
+                key={agent.role}
+                className="border-t border-line hover:bg-surface-2/50 transition-colors"
+                title={agent.dataSourceNote}
+              >
+                <td className="px-4 py-3">
+                  <span className="font-bold text-ink flex items-center gap-2">
+                    <span
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: SLO_ROLE_COLOR[agent.role] }}
+                    />
+                    {SLO_ROLE_LABEL[agent.role]}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-right text-ink font-mono">{agent.coverage}</td>
+                <td
+                  className="px-4 py-3 text-right text-ink font-mono"
+                  title={agent.conversion.emptyReason}
+                >
+                  {formatPercent(agent.conversion)}
+                </td>
+                <td
+                  className="px-4 py-3 text-right text-ink font-mono"
+                  title={agent.humanOverride.emptyReason}
+                >
+                  {formatPercent(agent.humanOverride)}
+                </td>
+                <td className="px-4 py-3 text-right font-mono" title={agent.errorRate.emptyReason}>
+                  <span
+                    className={
+                      agent.errorRate.value !== null && agent.errorRate.value > 0
+                        ? 'text-danger-active dark:text-danger font-bold'
+                        : 'text-ink'
+                    }
+                  >
+                    {formatPercent(agent.errorRate)}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-right text-ink font-mono">
+                  {formatMs(agent.avgExecutionLatencyMs)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="rounded-2xl border border-line bg-surface-2 p-5">
+        <p className="text-[10px] uppercase tracking-widest font-bold text-ink-2 mb-3">
+          Consumo de IA da organização (AILog, agregado — não fatiado por agente)
+        </p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div>
+            <p className="text-ink text-lg font-black font-mono">
+              ${snapshot.cost.totalCostUsd.toFixed(2)}
+            </p>
+            <p className="text-ink-2 text-[10px] uppercase tracking-widest mt-0.5">Custo (USD)</p>
+          </div>
+          <div>
+            <p className="text-ink text-lg font-black font-mono">
+              {snapshot.cost.totalTokens.toLocaleString('pt-BR')}
+            </p>
+            <p className="text-ink-2 text-[10px] uppercase tracking-widest mt-0.5">Tokens</p>
+          </div>
+          <div>
+            <p className="text-ink text-lg font-black font-mono">
+              {snapshot.cost.requestCount.toLocaleString('pt-BR')}
+            </p>
+            <p className="text-ink-2 text-[10px] uppercase tracking-widest mt-0.5">Chamadas</p>
+          </div>
+          <div>
+            <p className="text-ink text-lg font-black font-mono">
+              {formatMs(snapshot.cost.avgLatencyMs)}
+            </p>
+            <p className="text-ink-2 text-[10px] uppercase tracking-widest mt-0.5">
+              Latência média
+            </p>
+          </div>
+        </div>
+        <p className="text-ink-2 text-[11px] mt-4 leading-relaxed">{snapshot.cost.note}</p>
+      </div>
+    </div>
+  );
+}

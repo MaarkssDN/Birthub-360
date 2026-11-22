@@ -1,0 +1,9 @@
+{
+  "name": "testland/sqs-tests",
+  "description": "Use whenever code that sends or receives AWS SQS messages needs tests: Standard vs FIFO semantics, visibility timeouts, dead-letter queues for poison messages and retention, using LocalStack, aws-sdk-client-mock for TypeScript or moto for Python.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.6"
+}

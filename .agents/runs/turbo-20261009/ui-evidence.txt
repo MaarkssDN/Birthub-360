@@ -1,0 +1,31 @@
+Agente 05 UI / Onda turbo-20261009 / Branch agente/05-turbo-ui / Base e32bad52d
+Suposições: fontes ausentes indisponíveis, planos não validados; pesquisa econômica e pagamento explicitamente autorizado; IA apenas interpreta consulta com consentimento. Types backend temporariamente copiados para gates, RESTAURADOS. Sem commit/push.
+Plano executado: inspeção governança/prompts/pedido integral e componentes; contrato 05 backend; formularios reais; erros/proveniencia e uso permitido; testes componente; QA isolada; gates locais.
+IMPLEMENTADO: Segmento estruturado com múltiplos valores, múltiplas personas/modelos, Volume/Quantidade UI removidos, limite interno20 preservado; CNPJ, Apollo domínio IDs faixas financiación pesos ICP, filtros indisponíveis explicitamente disabled; IA automatic/groq/local consent sem pesquisa automática; modos e pago separado; CSV/XLSX empresas/decisores e colunas seleção/filtragem; Maps excluído CRM/seleção/export/rejeição; email sem verificação fictícia; WhatsApp sem links não confirmados; fontes/qualidade Cadastro; providers status/teste e histórico custo endpoint existente; loading sem etapas timer inventadas; cancelamento navegador com ressalva operação servidor continua; reset seleção/promovidos novas pesquisas e critérios salvos.
+TESTADO: 7 testes co-local PASS, APIs mocks identificados; npm lint PASS (340warnings baseline), npx tsc --noEmit PASS antes pesos finais; npm build PASS Vite/esbuild/PWA antes pesos e disabled finais.
+VERIFICADO VISUALMENTE: harness temporário real DiscoveryFilterPanel+TurboProvidersPanel sem dados empresa, serviços ou autenticação; Edge instalado, 1440/390/360 no overflow, console0, teclado foco Enter, múltiplas personas seleção/remoção; axe light/dark critical/serious0 após correção contraste CTA/error/remove. Screenshots C:/Users/marce/AppData/Local/Temp/turbo-ui-{1440,390,360}.png e turbo-ui-persona-{desktop,mobile,dark}.png. Harness e servidor removidos/encerrados.
+BLOQUEIOS: autenticação/persistência/provedores e DB/Ollama indisponíveis relatados pelo00; nenhuma validação externa alegada. Última repetição testes OOM Zone; tsc concorrente cancelado; PowerShell CLR memória erro transitório (sem alterações dessa tentativa). Coordenador executa gates finais sobre candidato integrado.
+PARCIAL: persona campos específicos experiência/tempo/função/poder/competências não filtráveis mostrados como indisponíveis, contexto descrição disponível; painel de detalhe não reorganizado integralmente nas5abas (fontes/qualidade/cadastro e decisores existentes + histórico execução real); histórico é execução individual consultável e buscas salvas existentes, sem listagem global nova; coluna e decisão export implementados.
+Aprendizados: JSX labels contendo opções exige selector específico Playwright; browser.newContext obrigatório axe; Chromium bundled ausente usar canal Edge instalado; múltiplos gates grandes simultâneos causaram memória nativa.
+Handoffs: contratos/segurança/custo comunicados05 backend e00; 24 requer revisar hashes exatos abaixo. Nenhuma entrega aprovada pelo autor.
+Riscos: gate final e revisão24 pendentes; métricas/semântica dependem backend; nenhum segredo ou dado empresarial real coletado na QA.
+Arquivos e hashes SHA256:
+{
+  "src/features/prospecting/components/ProspectingHub.tsx": "ffbe802dada93421dbc7926552a0bc6767a3305bbb0a86d9b57c402edf74d059",
+  "src/features/prospecting/components/prospecting-hub/CandidateCard.tsx": "1eb7c06b41f940473d20926d6a8725bc8df35093b2eba166b842ca01ed488756",
+  "src/features/prospecting/components/prospecting-hub/DecisionMakerSearch.tsx": "2918ba0abb4c9555e43bea4e5f1e9b421ca9720f008bec2f5179255a6767c168",
+  "src/features/prospecting/components/prospecting-hub/DiscoveryFilterPanel.tsx": "5a91580f9099ac04fe867b81e691a65bb75d3f31d908177c36b6f2fe70b435c4",
+  "src/features/prospecting/components/prospecting-hub/DiscoveryResultsPanel.tsx": "78b90d139e5c36c40841de7883f2f4d7da30b448d4f5b596a8338d018c0c71a3",
+  "src/features/prospecting/components/prospecting-hub/SearchExecutionPanel.tsx": "c4830b965cb97aba3d288ba997d28057ee69a09ffa738ae7f207f99e4f1215dc",
+  "src/features/prospecting/components/prospecting-hub/TurboCriteriaForms.tsx": "d351e99f77750725211e3c1d76f94b7f6a5bf098b5a47a4e62cc802c0cce4e2c",
+  "src/features/prospecting/components/prospecting-hub/TurboProvidersPanel.tsx": "77988d167d5ec13af4a46ad9c4dbec4d215d458aebfe4f7465495a08ce90e4c7",
+  "src/features/prospecting/components/prospecting-hub/__tests__/TurboFilters.test.ts": "c502304fd7f789cbc3bb245655a96f042ec995aa31b18fa6d8eb2d49f7d44b3e",
+  "src/features/prospecting/components/prospecting-hub/__tests__/TurboProviderHistory.test.ts": "2e6af61cf870c6fd24276669520452987feca619c6e008c75aa7d920701fc2f3"
+}
+FOLLOWUP Modelo IA: input opcional com maxLength120 repassado /interpret, query maxLength2000. Modelos orientados a consultar teste provider autorizado existente. 4 testes focused PASS, incluindo modelo trim local e atributos maxlength. Lint4files PASS0warnings; sem fullgates paralelos. SHA256 finais substituem versões desses4arquivos anteriores:
+{
+  "src/features/prospecting/components/ProspectingHub.tsx": "24aa6b486f57d5c1ea2e723595e6ca8e7b1969d67d1f910c521fe008116aed05",
+  "src/features/prospecting/components/prospecting-hub/DiscoveryFilterPanel.tsx": "011c3456e4388a79189d7a9ca8adf69d2f747b2c6fba57be253070b6db6e20b7",
+  "src/features/prospecting/components/prospecting-hub/TurboCriteriaForms.tsx": "6478f4895d350a9aa76d6c9b8078774a989f9a10348c289425294dad1fc6e9fd",
+  "src/features/prospecting/components/prospecting-hub/__tests__/TurboFilters.test.ts": "1164e7a7cdf4ae57671f1c31457c4ac364031eb6ba208d507febcb679130e926"
+}

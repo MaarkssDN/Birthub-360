@@ -1,0 +1,9 @@
+{
+  "name": "testland/pdf-snapshot-tester",
+  "description": "Use when generated PDFs (invoices, contracts, regulatory filings) must not shift layout, or a template, font or PDF library is changing. Renders pages to images and pixel-diffs them against approved baselines, strips volatile metadata, and compares HTML-to-PDF engines.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.1.11"
+}

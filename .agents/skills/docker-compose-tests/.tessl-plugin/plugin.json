@@ -1,0 +1,9 @@
+{
+  "name": "testland/docker-compose-tests",
+  "description": "Use when tests need the app plus several real services (database, cache, queue) started together. Writes a compose.test.yaml with healthcheck-ordered startup, per-job project names for parallel CI, --wait and --exit-code-from gating, and clean teardown with volumes removed.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.7"
+}

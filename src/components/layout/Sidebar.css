@@ -1,0 +1,273 @@
+/* ==========================================================================
+   BIRTH HUB 360° — ORGANIC SPATIAL ENTERPRISE SIDEBAR
+   Inspirado na estética soft-luxury / Ronas IT Spatial UI:
+   - Superfície suavemente escupida com curvatura contínua
+   - Itens de navegação em formato pill/squircle com icon wells de alta precisão
+   - Destaques táteis com luz ambiente e micro-chanfro especular
+   - Contraste absoluto para Light Mode e Dark Mode (WCAG 2.2 AA)
+   ========================================================================== */
+
+/* Card base para itens da Sidebar */
+.sidebar-nav-card {
+  position: relative;
+  border-radius: 14px;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Card IDLE (inativo) */
+.sidebar-card-idle {
+  background: transparent;
+  border: 1px solid transparent;
+  box-shadow: none;
+  color: var(--ink-2);
+}
+
+.sidebar-card-idle:hover {
+  transform: translateX(4px);
+  background: var(--surface);
+  border-color: var(--line);
+  box-shadow:
+    0 4px 14px -2px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  color: var(--ink);
+}
+
+.dark .sidebar-card-idle:hover {
+  transform: translateX(4px);
+  background: var(--surface-elevated);
+  border-color: color-mix(in srgb, var(--ink) 12%, transparent);
+  box-shadow:
+    0 4px 16px -2px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  color: var(--ink);
+}
+
+/* CARDS ATIVOS SEMÂNTICOS DE ALTA PRECISÃO (Pill / Squircle) */
+
+/* 1. CYAN (Azul Executivo / Inovação) */
+.sidebar-nav-card.sidebar-card-active-cyan {
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--color-brand) 45%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 4px 18px -2px color-mix(in srgb, var(--color-brand) 18%, transparent),
+    0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.dark .sidebar-nav-card.sidebar-card-active-cyan {
+  background: color-mix(in srgb, var(--color-brand) 10%, var(--surface-elevated));
+  border: 1px solid color-mix(in srgb, var(--color-brand) 40%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 4px 22px -3px color-mix(in srgb, var(--color-brand) 28%, transparent),
+    0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.sidebar-nav-card.sidebar-card-active-cyan:hover {
+  border-color: var(--color-brand);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 6px 22px -3px color-mix(in srgb, var(--color-brand) 25%, transparent);
+}
+
+/* 2. PINK (Rosa Executivo / Sinais) */
+.sidebar-nav-card.sidebar-card-active-pink {
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--color-brand-2) 45%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 4px 18px -2px color-mix(in srgb, var(--color-brand-2) 18%, transparent),
+    0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.dark .sidebar-nav-card.sidebar-card-active-pink {
+  background: color-mix(in srgb, var(--color-brand-2) 10%, var(--surface-elevated));
+  border: 1px solid color-mix(in srgb, var(--color-brand-2) 40%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 4px 22px -3px color-mix(in srgb, var(--color-brand-2) 28%, transparent),
+    0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* 3. GOLD (Dourado / Receita & Performance) */
+.sidebar-nav-card.sidebar-card-active-gold {
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--color-neon-gold) 45%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 4px 18px -2px color-mix(in srgb, var(--color-neon-gold) 18%, transparent),
+    0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.dark .sidebar-nav-card.sidebar-card-active-gold {
+  background: color-mix(in srgb, var(--color-neon-gold) 10%, var(--surface-elevated));
+  border: 1px solid color-mix(in srgb, var(--color-neon-gold) 40%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 4px 22px -3px color-mix(in srgb, var(--color-neon-gold) 28%, transparent),
+    0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* 4. IRIS (Íris / IA & Automações) */
+.sidebar-nav-card.sidebar-card-active-iris {
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--color-iris) 45%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    0 4px 18px -2px color-mix(in srgb, var(--color-iris) 18%, transparent),
+    0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.dark .sidebar-nav-card.sidebar-card-active-iris {
+  background: color-mix(in srgb, var(--color-iris) 10%, var(--surface-elevated));
+  border: 1px solid color-mix(in srgb, var(--color-iris) 40%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 4px 22px -3px color-mix(in srgb, var(--color-iris) 28%, transparent),
+    0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Sub-items Pocket (Subnível com curvatura orgânica) */
+.sidebar-subitems-pocket {
+  position: relative;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.dark .sidebar-subitems-pocket {
+  background: var(--surface);
+  border-color: color-mix(in srgb, var(--ink) 8%, transparent);
+}
+
+/* Floating Rail Popover (Menu recolhido com cantos arredondados) */
+.sidebar-rail-popover-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow:
+    0 16px 40px -4px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.dark .sidebar-rail-popover-card {
+  background: var(--surface-elevated);
+  border-color: color-mix(in srgb, var(--ink) 14%, transparent);
+  box-shadow:
+    0 16px 48px -4px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Footer Card (Copiloto IA / Destaque Célula) */
+.sidebar-footer-card {
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow:
+    0 4px 16px -2px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark .sidebar-footer-card {
+  background: var(--surface-elevated);
+  border-color: color-mix(in srgb, var(--ink) 10%, transparent);
+  box-shadow:
+    0 4px 18px -2px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.sidebar-footer-card:hover {
+  border-color: var(--brand);
+  transform: translateY(-1px);
+  box-shadow:
+    0 6px 22px -3px color-mix(in srgb, var(--color-brand) 15%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   IMPECCABLE SIDEBAR — ENHANCED UX STYLES
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* Scrollbar styling for nav container */
+.bh-sidebar-nav {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.bh-sidebar-nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+.bh-sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.bh-sidebar-nav::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 3px;
+}
+
+.bh-sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: var(--line-strong, rgba(0, 0, 0, 0.2));
+}
+
+/* Collapsed state refinements */
+.bh-sidebar--collapsed .bh-sidebar-wordmark {
+  opacity: 0;
+  width: 0;
+  pointer-events: none;
+}
+
+/* Footer card iris glow on hover */
+.bh-sidebar-footer-card:hover {
+  border-color: var(--iris, #8b7dff);
+  background: color-mix(in srgb, var(--iris, #8b7dff) 4%, var(--surface));
+}
+
+.dark .bh-sidebar-footer-card:hover {
+  border-color: color-mix(in srgb, var(--color-iris) 50%, transparent);
+  background: color-mix(in srgb, var(--color-iris) 8%, var(--surface-elevated));
+  box-shadow:
+    0 8px 24px -4px color-mix(in srgb, var(--color-iris) 25%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* Section badge glow animation */
+.bh-sidebar-section-badge-dot {
+  animation: sidebar-dot-pulse 2s ease-in-out infinite;
+}
+
+@keyframes sidebar-dot-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-nav-card,
+  .sidebar-footer-card,
+  .bh-sidebar-footer-card {
+    transition: none;
+  }
+
+  .bh-sidebar-section-badge-dot {
+    animation: none;
+  }
+}
+
+/* Mobile sidebar overlay */
+.bh-sidebar--mobile {
+  box-shadow: 24px 0 48px -12px rgba(0, 0, 0, 0.2);
+}
+
+.dark .bh-sidebar--mobile {
+  box-shadow: 24px 0 48px -12px rgba(0, 0, 0, 0.5);
+}

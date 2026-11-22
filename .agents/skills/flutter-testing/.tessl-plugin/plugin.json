@@ -1,0 +1,9 @@
+{
+  "name": "testland/flutter-testing",
+  "description": "Use whenever a Flutter app needs tests: unit tests with flutter test, widget tests with testWidgets and WidgetTester, integration_test on simulators, emulators or devices, choosing the layer per change, mockito with build_runner, LCOV coverage and CI.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.4.5"
+}

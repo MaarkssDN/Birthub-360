@@ -1,0 +1,9 @@
+{
+  "name": "testland/cloudflare-workers-miniflare",
+  "description": "Use when Cloudflare Workers code needs tests locally: Miniflare 3 (workerd-backed), wrangler dev, emulated KV, Durable Objects, R2 and D1 bindings, and in-process tests with Vitest and @cloudflare/vitest-pool-workers.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.5"
+}

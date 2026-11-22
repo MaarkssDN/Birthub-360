@@ -1,0 +1,251 @@
+/**
+ * `make3CXCall` costumava fabricar sucesso incondicionalmente, sem nenhuma chamada de rede real
+ * ao PABX — o vendedor via "ligando" e o CRM registrava "chamada iniciada" mesmo sem nenhum
+ * telefone tocar. Estes testes travam o comportamento honesto: sucesso só quando o PABX responde
+ * ok, falha real (erro reportado + Activity com o texto correto) quando não responde.
+ */
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
+const createActivityMock = vi.fn();
+
+// ThreeCXConnection agora é persistida via Prisma (ver handoff
+// .agents/handoffs/onda-1/06-para-01-persistencia-3cx.md, resolvido em
+// .agents/handoffs/onda-5/01-para-06-persistencia-3cx-implementada.md) em vez do antigo `Map` em
+// memória — o mock abaixo simula a tabela com um array local por teste (resetado no beforeEach),
+// o suficiente para `seedConnection()` (via connect3CX/create) alimentar o que `make3CXCall`
+// (via get3CXConnectionsForOrg/findMany) lê depois.
+let threeCXStore: Array<Record<string, unknown>> = [];
+const createThreeCXMock = vi.fn((args: { data: Record<string, unknown> }) => {
+  const record = { ...args.data };
+  threeCXStore.push(record);
+  return Promise.resolve(record);
+});
+const findManyThreeCXMock = vi.fn((args: { where: { organizationId: string } }) => {
+  return Promise.resolve(
+    threeCXStore.filter((c) => c.organizationId === args.where.organizationId),
+  );
+});
+const deleteManyThreeCXMock = vi.fn().mockResolvedValue({ count: 0 });
+
+vi.mock('@/lib/prisma', () => ({
+  prisma: {
+    activity: { create: (...args: unknown[]) => createActivityMock(...args) },
+    threeCXConnection: {
+      create: (...args: [{ data: Record<string, unknown> }]) => createThreeCXMock(...args),
+      findMany: (...args: [{ where: { organizationId: string } }]) => findManyThreeCXMock(...args),
+      deleteMany: (...args: unknown[]) => deleteManyThreeCXMock(...args),
+    },
+  },
+}));
+
+// assertSafeExternalUrl/safeFetch fazem DNS lookup real — indisponível/instável em ambiente de
+// teste sandboxed (mesmo padrão de src/features/integrations/bitrix/service/__tests__/client.test.ts).
+// `safeFetch` é mockado como um passthrough para o `fetch` global (stubado por teste abaixo) —
+// preserva as asserções existentes sobre com quais argumentos o fetch real foi chamado, sem
+// exercitar a resolução de DNS/pinning de verdade.
+const assertSafeExternalUrlMock = vi.fn().mockResolvedValue(undefined);
+const safeFetchMock = vi.fn((...args: [string, RequestInit?]) =>
+  (globalThis.fetch as typeof fetch)(...args),
+);
+vi.mock('@/shared/security/urlGuard', () => ({
+  assertSafeExternalUrl: (...args: unknown[]) => assertSafeExternalUrlMock(...args),
+  safeFetch: (...args: [string, RequestInit?]) => safeFetchMock(...args),
+}));
+
+const isSuppressedMock = vi.fn().mockResolvedValue(false);
+// "Um número suprimido nunca é discado, por nenhum caminho" (ver AGENTS.md) vale também para o
+// Click-to-Call do 3CX — mesma lista de bloqueio usada pelo SDR de voz (birth-voice).
+vi.mock('@/features/integrations/birth-voice/callSuppression.service', () => ({
+  isSuppressed: (...args: unknown[]) => isSuppressedMock(...args),
+}));
+
+import { connect3CX, make3CXCall } from '@/features/integrations/threecx/threecx.service';
+
+const ORG_ID = 'org-3cx-test';
+
+async function seedConnection() {
+  return connect3CX(ORG_ID, { pbxUrl: 'https://pbx.example.com', extension: '101' });
+}
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  createActivityMock.mockResolvedValue({});
+  threeCXStore = [];
+  deleteManyThreeCXMock.mockResolvedValue({ count: 0 });
+  isSuppressedMock.mockResolvedValue(false);
+  assertSafeExternalUrlMock.mockResolvedValue(undefined);
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
+describe('make3CXCall — honestidade sobre chamada real (nunca finge sucesso)', () => {
+  it('quando o PABX responde ok, reporta sucesso e grava Activity dizendo que a chamada foi disparada', async () => {
+    const conn = await seedConnection();
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200 });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await make3CXCall(ORG_ID, conn.id, '11987654321', 'lead-1');
+
+    expect(result.success).toBe(true);
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://pbx.example.com/api/v1/calls',
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(createActivityMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          observations: expect.stringContaining('Chamada disparada via 3CX PABX'),
+        }),
+      }),
+    );
+  });
+
+  it('quando o PABX responde erro, NÃO reporta sucesso e a Activity registra a falha, não uma chamada fictícia', async () => {
+    const conn = await seedConnection();
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 503 }));
+
+    await expect(make3CXCall(ORG_ID, conn.id, '11987654321', 'lead-2')).rejects.toThrow(
+      /Não foi possível disparar a chamada/,
+    );
+
+    expect(createActivityMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          observations: expect.stringContaining('FALHOU'),
+        }),
+      }),
+    );
+    // Nunca escreve a frase de sucesso quando a chamada de verdade falhou.
+    const [[{ data }]] = createActivityMock.mock.calls;
+    expect(data.observations).not.toContain('Chamada disparada via 3CX PABX');
+  });
+
+  it('quando o PABX está inalcançável (falha de rede), NÃO reporta sucesso', async () => {
+    const conn = await seedConnection();
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('ECONNREFUSED')));
+
+    await expect(make3CXCall(ORG_ID, conn.id, '11987654321')).rejects.toThrow(
+      /Não foi possível disparar a chamada/,
+    );
+  });
+
+  it('rejeita número de destino inválido antes de qualquer chamada de rede', async () => {
+    const conn = await seedConnection();
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(make3CXCall(ORG_ID, conn.id, '123')).rejects.toThrow(/inválido/);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  // "Um número suprimido nunca é discado, por nenhum caminho" — antes desta auditoria o
+  // Click-to-Call do 3CX era exatamente esse caminho esquecido: um opt-out registrado pela
+  // ligação de IA (birth-voice) não impedia um vendedor humano de discar de novo pelo 3CX.
+  it('recusa a chamada e não bate na rede quando o número está na lista de bloqueio (opt-out)', async () => {
+    const conn = await seedConnection();
+    isSuppressedMock.mockResolvedValue(true);
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(make3CXCall(ORG_ID, conn.id, '11987654321')).rejects.toThrow(
+      /lista interna de bloqueio/,
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+    // Terceiro argumento: contexto do opt-out unificado entre canais (leadId/email, quando
+    // informados — aqui não foram) — ver .agents/handoffs/onda-7/17-para-05-06-12-contrato-optout.md.
+    expect(isSuppressedMock).toHaveBeenCalledWith(ORG_ID, '11987654321', {
+      leadId: null,
+      email: null,
+    });
+  });
+
+  // Gap real de auditoria: sem leadId resolvido (ex.: número digitado manualmente, ou dial a
+  // partir de um contato sem lead vinculado), o Click-to-Call ainda tem o e-mail do contato em
+  // mãos — e um opt-out registrado só por e-mail (sem esse telefone em comum) precisa continuar
+  // bloqueando, exatamente como já bloqueia para os outros canais (WhatsApp/e-mail/voz).
+  it('recusa a chamada quando não há leadId mas o e-mail do contato está na lista de opt-out', async () => {
+    const conn = await seedConnection();
+    isSuppressedMock.mockResolvedValue(true);
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(
+      make3CXCall(ORG_ID, conn.id, '11987654321', undefined, 'contato-optout@exemplo.com'),
+    ).rejects.toThrow(/lista interna de bloqueio/);
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(isSuppressedMock).toHaveBeenCalledWith(ORG_ID, '11987654321', {
+      leadId: null,
+      email: 'contato-optout@exemplo.com',
+    });
+  });
+
+  // Gap real de auditoria: `conn.pbxUrl` já passou pelo guard de SSRF uma vez em `connect3CX`,
+  // mas nunca era revalidado no momento de discar de verdade — um DNS rebinding (host resolvia
+  // IP público no cadastro, IP privado agora) passaria batido em toda chamada seguinte pela
+  // mesma conexão já persistida.
+  it('revalida a URL persistida contra SSRF (assertSafeExternalUrl) antes de discar de verdade', async () => {
+    const conn = await seedConnection();
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    assertSafeExternalUrlMock.mockRejectedValueOnce(
+      new Error('Endereço não permitido (resolve para IP privado/reservado).'),
+    );
+
+    await expect(make3CXCall(ORG_ID, conn.id, '11987654321')).rejects.toThrow(
+      /IP privado\/reservado/,
+    );
+    expect(assertSafeExternalUrlMock).toHaveBeenCalledWith('https://pbx.example.com');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('envia headers de autenticação e negocia Call Control API quando endpoint v1 retorna 404', async () => {
+    const connWithAuth = await connect3CX(ORG_ID, {
+      pbxUrl: 'https://pbx-modern.example.com',
+      extension: '202',
+      apiKey: 'api-user',
+      apiSecret: 'secret123',
+    });
+
+    const fetchMock = vi.fn().mockImplementation((url: string) => {
+      if (url.includes('/api/v1/calls')) {
+        return Promise.resolve({ ok: false, status: 404 });
+      }
+      if (url.includes('/callcontrol/202/makecall')) {
+        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ result: { callid: 999 } }) });
+      }
+      return Promise.resolve({ ok: false, status: 500 });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await make3CXCall(ORG_ID, connWithAuth.id, '11987654321', 'lead-auth');
+    expect(result.success).toBe(true);
+
+    // Verificou tentativa v1 com headers de auth
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://pbx-modern.example.com/api/v1/calls',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: expect.stringMatching(/^Basic /),
+          'X-API-KEY': 'api-user',
+        }),
+      }),
+    );
+
+    // E fallback transparente para Call Control API
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://pbx-modern.example.com/callcontrol/202/makecall',
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({
+          Authorization: expect.stringMatching(/^Basic /),
+          'X-API-KEY': 'api-user',
+        }),
+        body: expect.stringContaining('"destination":"11987654321"'),
+      }),
+    );
+  });
+});
+

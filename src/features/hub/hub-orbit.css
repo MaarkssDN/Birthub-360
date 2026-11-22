@@ -1,0 +1,713 @@
+/* ============ HUB — PORTAL DE ENTRADA ============ */
+.hub-page {
+  position: relative;
+  min-height: 100vh;
+  background: var(--bg);
+  overflow: hidden;
+}
+#hubCanvas3d {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+#hubBurst {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+}
+.hub-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.hub-topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 32px 0;
+}
+.hub-topbar .name {
+  font-weight: 900;
+  font-size: 19px;
+  letter-spacing: -0.01em;
+}
+.hub-topbar .op-switch {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px 5px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  backdrop-filter: blur(10px);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+.op-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--brand);
+  box-shadow: 0 0 10px var(--brand);
+  animation: beacon 2s infinite ease-out;
+}
+/* .hub-beacon: o ponto "ao vivo" ao lado do badge de marca no header real (HubScreen.tsx) —
+   dimensão/cor já vêm de utilitário Tailwind (h-2 w-2 rounded-full bg-brand); esta regra só
+   adiciona o pulso, reaproveitando o @keyframes beacon acima (achado do audit: a classe existia
+   sem nenhuma regra, então o ponto ficava estático). */
+.hub-beacon {
+  animation: beacon 2s infinite ease-out;
+}
+/* .hub-widget: painéis da topbar do Hub real (relógio, calendário, tarefas pendentes —
+   HubScreen.tsx/HubTaskWidget.tsx). Mesma declaração de .widget acima (achado do audit: o
+   componente real usa a classe no singular, "hub-widget", que não tinha regra correspondente —
+   os 3 painéis renderizavam sem borda/blur/sombra). Duplicada em vez de renomear .widget pra não
+   arriscar um consumidor que eu não tenha encontrado nesta varredura. */
+.hub-widget {
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  backdrop-filter: blur(14px);
+  border-radius: 18px;
+  box-shadow: var(--shadow-card);
+}
+@keyframes beacon {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand) 70%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+.sound-toggle {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  backdrop-filter: blur(10px);
+  color: var(--ink-2);
+  display: grid;
+  place-items: center;
+}
+.sound-toggle:hover {
+  color: var(--ink);
+}
+
+.hub-hero {
+  padding: 26px 32px 6px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.hub-greeting .eyebrow {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-brand-active);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .hub-greeting .eyebrow {
+    color: var(--brand-2);
+  }
+}
+.hub-greeting h1 {
+  font-size: clamp(34px, 5.2vw, 54px);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  margin-top: 6px;
+  line-height: 1.02;
+}
+.hub-greeting h1 .accent {
+  color: var(--color-brand-active);
+  font-weight: 900;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .hub-greeting h1 .accent {
+    color: var(--brand-2);
+  }
+}
+.hub-greeting .tagline {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--color-brand-active);
+  margin-top: 8px;
+  letter-spacing: -0.01em;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .hub-greeting .tagline {
+    color: var(--brand-2);
+  }
+}
+
+/* relógio + calendário */
+.hub-widgets {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+}
+.widget {
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  backdrop-filter: blur(14px);
+  border-radius: 18px;
+  box-shadow: var(--shadow-card);
+}
+.clock-widget {
+  padding: 12px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 128px;
+}
+.clock-widget .time {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-brand-active);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .clock-widget .time {
+    color: var(--brand-2);
+  }
+}
+.clock-widget .date {
+  font-size: 10px;
+  color: var(--ink-2);
+  font-weight: 800;
+  text-transform: capitalize;
+  margin-top: 2px;
+}
+.cal-widget {
+  padding: 10px 12px;
+  width: 178px;
+}
+.cal-widget .cal-head {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: capitalize;
+  color: var(--color-brand-active);
+  text-align: center;
+  margin-bottom: 6px;
+  letter-spacing: 0.04em;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .cal-widget .cal-head {
+    color: var(--brand-2);
+  }
+}
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.cal-grid span {
+  font-size: 8.5px;
+  text-align: center;
+  color: var(--ink-2);
+  font-weight: 800;
+  opacity: 0.85;
+}
+.cal-grid .cal-day {
+  font-size: 10px;
+  text-align: center;
+  border-radius: 6px;
+  padding: 2.5px 0;
+  color: var(--ink-2);
+  font-weight: 600;
+}
+.cal-grid .cal-day.today {
+  background: var(--brand);
+  color: var(--on-brand);
+  font-weight: 800;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--brand) 60%, transparent);
+}
+
+/* Tarefas pendentes — gestores designam, usuários concluem */
+.task-widget {
+  padding: 10px 12px;
+  width: 236px;
+  display: flex;
+  flex-direction: column;
+}
+.task-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--ink-2);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+.task-count {
+  background: var(--brand);
+  color: var(--on-brand);
+  border-radius: 999px;
+  padding: 1px 6px;
+  font-size: 9.5px;
+  font-weight: 800;
+}
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 82px;
+  overflow-y: auto;
+  margin-bottom: 6px;
+}
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+}
+.task-row .task-check {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  flex-shrink: 0;
+  background: none;
+  display: grid;
+  place-items: center;
+  color: var(--on-brand);
+}
+.task-row.done .task-check {
+  background: var(--ok, #0f9d64);
+  border-color: var(--ok, #0f9d64);
+}
+.task-row .task-text {
+  flex: 1;
+  color: var(--ink);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.task-row.done .task-text {
+  text-decoration: line-through;
+  color: var(--ink-2);
+  opacity: 0.6;
+}
+.task-row .task-assignee {
+  font-size: 8.5px;
+  font-weight: 800;
+  color: var(--color-brand-active);
+  background: var(--soft);
+  border-radius: 999px;
+  padding: 1px 5px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.task-add {
+  display: flex;
+  gap: 4px;
+  border-top: 1px solid var(--line);
+  padding-top: 6px;
+}
+.task-add input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--ink);
+  border-radius: 6px;
+  padding: 4px 6px;
+  font-size: 10px;
+  font-family: inherit;
+}
+.task-add select {
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--ink);
+  border-radius: 6px;
+  font-size: 9px;
+  font-family: inherit;
+  max-width: 74px;
+}
+.task-add .task-add button:hover {
+  background: var(--brand-2);
+}
+
+@media (max-width: 760px) {
+  .hub-widgets {
+    display: none;
+  }
+}
+
+.hub-section-label {
+  padding: 6px 32px 4px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  max-width: 1180px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hub-section-label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--line), transparent);
+}
+
+/* ---- COMPOSIÇÃO RADIAL DOS PRODUTOS DO PORTAL ---- */
+.hub-orbit {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+  flex: 1;
+  min-height: 380px;
+  height: 100%;
+}
+.orbit-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.orbit-lines path {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+.orbit-lines circle.pulse {
+  fill: var(--brand);
+  filter: drop-shadow(0 0 6px var(--brand));
+}
+
+.hub-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 116px;
+  margin: -58px 0 0 -58px;
+  perspective: 900px;
+  z-index: 2;
+  transform: scale(var(--orb-scale, 1));
+  transform-origin: center center;
+  transition: transform 0.25s ease;
+}
+.hc-orb {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  position: relative;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1.5px solid rgba(226, 232, 240, 0.95);
+  box-shadow:
+    0 8px 24px -4px rgba(15, 23, 42, 0.08),
+    0 2px 6px -1px rgba(15, 23, 42, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(16px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  overflow: hidden;
+  transition:
+    transform 0.4s cubic-bezier(0.2, 0.9, 0.25, 1),
+    box-shadow 0.4s ease,
+    border-color 0.3s ease;
+}
+.dark .hc-orb {
+  background: rgba(17, 27, 73, 0.88);
+  border: 1.5px solid rgba(240, 215, 123, 0.22);
+  box-shadow:
+    0 12px 28px -6px rgba(0, 0, 0, 0.6),
+    0 0 16px -4px rgba(22, 119, 255, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+.hub-card:hover .hc-orb {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow:
+    0 18px 36px -10px color-mix(in srgb, var(--orbit-accent, var(--brand)) 40%, transparent),
+    0 0 20px -2px color-mix(in srgb, var(--orbit-accent, var(--brand)) 30%, transparent);
+  border-color: var(--orbit-accent, var(--brand));
+}
+.hub-card:active .hc-orb {
+  transform: scale(0.95);
+  transition-duration: 0.12s;
+}
+
+.hc-orb::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  opacity: 0.35;
+  background: conic-gradient(
+    from 0deg,
+    transparent,
+    color-mix(in srgb, var(--orbit-accent, var(--brand)) 40%, transparent),
+    transparent 45%
+  );
+  animation: orbit 10s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hc-orb::before {
+    animation: none;
+  }
+}
+
+.hc-orb .hc-icon-wrap {
+  position: relative;
+  z-index: 1;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--orbit-accent, var(--brand)) 12%, transparent);
+  color: var(--orbit-accent, var(--brand));
+  border: 1px solid color-mix(in srgb, var(--orbit-accent, var(--brand)) 25%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform 0.3s ease,
+    background 0.3s ease,
+    box-shadow 0.3s ease;
+}
+.hub-card:hover .hc-icon-wrap {
+  transform: scale(1.1);
+  background: color-mix(in srgb, var(--orbit-accent, var(--brand)) 22%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--orbit-accent, var(--brand)) 35%, transparent);
+}
+
+.hc-icon-wrap svg .profile-ring {
+  transition:
+    stroke 0.3s ease,
+    stroke-width 0.3s ease;
+}
+.hub-card:hover .hc-icon-wrap svg .profile-ring {
+  stroke: var(--orbit-accent, var(--brand));
+  stroke-width: 3;
+}
+.hc-icon-wrap svg .avatar-head {
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  transform-box: fill-box;
+  transform-origin: bottom center;
+}
+.hub-card:hover .hc-icon-wrap svg .avatar-head {
+  transform: rotate(-6deg) translateY(-1px);
+}
+.hc-icon-wrap svg .badge {
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.hub-card:hover .hc-icon-wrap svg .badge {
+  transform: scale(1.3) rotate(10deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hc-icon-wrap svg .avatar-head,
+  .hc-icon-wrap svg .badge {
+    transition: none;
+  }
+  .hub-card:hover .hc-icon-wrap svg .avatar-head,
+  .hub-card:hover .hc-icon-wrap svg .badge {
+    transform: none;
+  }
+}
+
+/* Card Central (Central Comercial) — Ouro Nobre 24K */
+.hub-card.primary {
+  width: 176px;
+  margin: -88px 0 0 -88px;
+  z-index: 3;
+}
+.hub-card.primary .hc-orb {
+  width: 170px;
+  height: 170px;
+  background: linear-gradient(135deg, #fff6d1 0%, #f5ce62 25%, #d4af37 60%, #b8860b 100%);
+  border: 2.5px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    0 16px 36px -6px rgba(184, 134, 11, 0.45),
+    0 0 24px rgba(212, 175, 55, 0.35),
+    inset 0 2px 5px rgba(255, 255, 255, 0.9),
+    inset 0 -3px 6px rgba(138, 98, 0, 0.35);
+}
+.dark .hub-card.primary .hc-orb {
+  background: radial-gradient(
+    circle at 35% 30%,
+    #fff4bf 0%,
+    #f0d77b 25%,
+    #d4af37 60%,
+    #8a6400 100%
+  );
+  border: 2.5px solid rgba(240, 215, 123, 0.65);
+  box-shadow:
+    0 18px 42px -8px rgba(212, 175, 55, 0.65),
+    0 0 35px rgba(212, 175, 55, 0.4),
+    inset 0 2px 6px rgba(255, 255, 255, 0.6),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.5);
+}
+.hub-card.primary .hc-orb .hc-icon-wrap {
+  width: 46px;
+  height: 46px;
+  background: rgba(11, 19, 43, 0.12);
+  border: 1.5px solid rgba(11, 19, 43, 0.2);
+  color: #0b132b;
+}
+.hub-card.primary .hc-orb::before {
+  opacity: 0.6;
+  background: conic-gradient(from 0deg, transparent, rgba(255, 255, 255, 0.5), transparent 45%);
+}
+.hub-card.primary:hover .hc-orb {
+  box-shadow:
+    0 22px 48px -8px rgba(184, 134, 11, 0.6),
+    0 0 36px rgba(212, 175, 55, 0.5);
+}
+
+@keyframes orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.hc-title {
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+  line-height: 1.2;
+  padding: 0 6px;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+  transition: color 0.25s ease;
+}
+.dark .hc-title {
+  color: #f8fafc;
+}
+.hub-card:hover .hc-title {
+  color: var(--orbit-accent, var(--brand));
+}
+
+.hc-tag {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--ink-2);
+  margin-top: 2px;
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+.hc-tag-inside {
+  margin-top: -2px;
+}
+.hub-card:not(.primary) .hc-tag-inside {
+  display: none;
+}
+.hub-card.primary .hc-tag-inside {
+  color: #0b132b;
+  font-weight: 800;
+  font-size: 9px;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(4px);
+  padding: 1.5px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  margin-top: 2px;
+  letter-spacing: 0.02em;
+}
+.hub-card.primary .hc-title {
+  color: #0b132b;
+  font-size: 14.5px;
+  font-weight: 900;
+  padding: 0 12px;
+  line-height: 1.15;
+}
+.hub-card.primary:hover .hc-title {
+  color: #0b132b;
+}
+
+.label-logo-full {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 5px;
+  vertical-align: -2px;
+}
+.label-logo {
+  display: inline-block;
+  color: var(--color-brand-active);
+  flex-shrink: 0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .label-logo {
+    color: var(--brand-2);
+  }
+}
+.label-logo-word {
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+@media (max-width: 900px) {
+  .hub-orbit {
+    height: auto;
+    position: static;
+    padding: 10px 20px 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+  }
+  .orbit-lines {
+    display: none;
+  }
+  /* !important necessário: .hub-card.primary (821 linhas acima) é mais específico (duas classes,
+     0,2,0) que este .hub-card do media query (0,1,0) e continuaria aplicando a margem negativa
+     de centralização do desktop no mobile sem isto — cascata por especificidade não resolve
+     aqui (achado real: minha primeira análise, que só comparou .hub-card com .hub-card, estava
+     incompleta). */
+  .hub-card {
+    position: static;
+    /* biome-ignore lint/complexity/noImportantStyles: ver comentário acima */
+    margin: 0 !important;
+  }
+  .hub-card.primary {
+    order: -1;
+  }
+}
+
+/* [hidden] precisa vencer classes utilitárias display do Tailwind (mesma especificidade,
+   0,1,0) independente da ordem de carregamento — sem !important um elemento com
+   hidden + className="flex"/"grid" continuaria visível. */
+[hidden] {
+  /* biome-ignore lint/complexity/noImportantStyles: ver comentário acima */
+  display: none !important;
+}

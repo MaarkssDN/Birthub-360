@@ -1,0 +1,39 @@
+{{- if .Values.podDisruptionBudget.enabled }}
+# Evita que um drain de nó/rolling upgrade voluntário do cluster derrube todas as réplicas do
+# app de uma vez — sem isto, `kubectl drain` (manutenção de nó, autoscaler do cluster
+# desligando nó ocioso) pode remover réplicas suficientes para zerar a capacidade de servir
+# tráfego, mesmo com o Deployment/Rollout saudável.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "birthhub-360.fullname" . }}
+  labels:
+    {{- include "birthhub-360.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "birthhub-360.selectorLabels" . | nindent 6 }}
+      # Sem isto, este PDB também contava pods do worker no total de "pods que casam com o
+      # selector" (nome+instance é subconjunto dos labels do worker) — um drain de nó podia
+      # evictar as duas réplicas do app principal (minAvailable:1 satisfeito só com réplicas
+      # do worker de pé) sem violar este PDB, esvaziando a capacidade HTTP real enquanto o
+      # Kubernetes considerava a política de disrupção respeitada.
+      app.kubernetes.io/component: web
+{{- end }}
+{{- if and .Values.podDisruptionBudget.enabled .Values.worker.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "birthhub-360.fullname" . }}-worker
+  labels:
+    {{- include "birthhub-360.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.workerMinAvailable }}
+  selector:
+    matchLabels:
+      {{- include "birthhub-360.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: worker
+{{- end }}

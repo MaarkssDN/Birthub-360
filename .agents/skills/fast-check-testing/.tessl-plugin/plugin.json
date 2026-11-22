@@ -1,0 +1,9 @@
+{
+  "name": "testland/fast-check-testing",
+  "description": "Use whenever the task mentions property-based, generative or invariant tests in JavaScript or TypeScript (fast-check): fc.assert and fc.property, arbitraries and composite inputs, map, chain and filter, shrinking and seeds, with Jest, Vitest or Mocha. Has a worked example to start from.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.16"
+}

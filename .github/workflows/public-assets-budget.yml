@@ -1,0 +1,49 @@
+name: Public Assets Budget
+
+# ITEM-05 (remediacao de divida tecnica): tudo em public/ e copiado verbatim para dist/ pelo
+# `vite build` e servido sem autenticacao por express.static(dist) em producao (server.ts). Este
+# workflow existe para pegar cedo uma reincidencia do que motivou o item — um dataset pesado
+# (~56MB, seed empresarial de CNPJ) foi commitado em public/tools/atlas-market-intelligence/data/
+# sem nunca ser buscado pelo navegador, so pelo backend no deploy. Ver
+# scripts/ci/check-public-budget.mjs e data/market-intelligence/README.md.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'public/**'
+      - 'scripts/ci/check-public-budget.mjs'
+      - '.github/workflows/public-assets-budget.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'public/**'
+      - 'scripts/ci/check-public-budget.mjs'
+      - '.github/workflows/public-assets-budget.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # Espelha ci.yml: PR cancela o run anterior da mesma PR; fora de PR, push/schedule/workflow_dispatch
+  # (os triggers que este workflow tiver) ficam num grupo por evento+SHA, sem cancelamento.
+  group: ${{ github.event_name == 'pull_request' && format('public-assets-budget-pr-{0}', github.event.pull_request.number) || format('public-assets-budget-{0}-{1}', github.event_name, github.sha) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  budget:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+
+      - name: Check public/ size budget
+        run: node scripts/ci/check-public-budget.mjs

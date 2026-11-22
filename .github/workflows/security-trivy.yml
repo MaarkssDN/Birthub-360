@@ -1,0 +1,113 @@
+name: Security - Trivy
+
+# ITEM-10 (Onda 2 — CodeQL/Trivy/Dependency Review bloqueantes) tornou o Trivy um gate real de PR,
+# além do scan semanal amplo que já existia. Dois jobs, cadências e propósitos diferentes:
+#
+# - `trivy-fs-pr-gate` (evento `pull_request`, branches main/master): scan de filesystem/
+#   dependências (HIGH/CRITICAL) do diff proposto, **bloqueante** — sem `continue-on-error`.
+#   Usa a GitHub Action oficial (`aquasecurity/trivy-action`, binário + banco de vulnerabilidades
+#   via cache do runner), não o `docker compose --profile tools run trivy` usado localmente —
+#   mais rápido que subir a stack docker-compose inteira, e sem depender de rede irrestrita além
+#   do necessário para instalar o binário e o banco.
+# - `trivy-fs-scan` (agendado, toda segunda 06:00 UTC + `workflow_dispatch`): mantém o comportamento
+#   histórico — `npm run security:trivy` (docker compose, ver package.json), scan mais amplo de
+#   filesystem via container, não bloqueia (é um scan de monitoramento periódico independente do
+#   merge, decisão original registrada em
+#   .agents/handoffs/onda-6/15-para-08-zap-trivy-gate.md). Continua útil como scan mais amplo e
+#   como cobertura para findings que só apareçam depois de um PR já mergeado (CVE novo publicado
+#   sem nenhum código ter mudado).
+#
+# Achado aceito por política (não corrigível sem breaking change fora do escopo deste gate) vai em
+# .trivyignore.yaml, com `expired_at` e referência a docs/security/AUDIT_WAIVERS.md — nunca por
+# `continue-on-error` solto ou por rebaixar a severidade globalmente.
+
+on:
+  pull_request:
+    branches: [ main, master ]
+  schedule:
+    # Toda segunda-feira, 06:00 UTC (03:00 America/Sao_Paulo) — fora do horário comercial, não
+    # compete por runner com os jobs de push/PR do ci.yml.
+    - cron: '0 6 * * 1'
+  # Permite rodar sob demanda (Actions → "Security - Trivy" → Run workflow) sem esperar o próximo
+  # gatilho — útil logo depois de adicionar uma dependência nova.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  trivy-fs-pr-gate:
+    name: "Trivy — gate de PR (fs/dependências, HIGH/CRITICAL, bloqueante)"
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Rodar Trivy (fs scan, HIGH/CRITICAL, bloqueante)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          format: sarif
+          output: trivy-fs-results.sarif
+          trivyignores: .trivyignore.yaml
+          # Sem isto, com `format: sarif` a action ignora `severity` ("Building SARIF report with
+          # all severities") e o `exit-code: 1` dispara em QUALQUER achado — reproduzido em
+          # 2026-09-02 (PR #329): o gate, nomeado "HIGH/CRITICAL, bloqueante", ficou vermelho por
+          # um advisory MEDIUM (GHSA-rgwj-5xj2-c3m3, mysql2 transitivo do CLI do Prisma). Com a
+          # opção ligada, o SARIF e o exit code respeitam a mesma política de severidade do nome.
+          limit-severities-for-sarif: true
+          skip-files: 'pnpm-lock.yaml,agente-codigo-local/bun.lock'
+
+      - name: Upload SARIF para a aba Security
+        if: always()
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          sarif_file: trivy-fs-results.sarif
+          category: trivy-fs
+
+      - name: Upload SARIF como artefato (auditoria/retenção)
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: trivy-fs-pr-gate-sarif
+          path: trivy-fs-results.sarif
+          retention-days: 30
+          if-no-files-found: warn
+
+  trivy-fs-scan:
+    name: "Trivy — scan semanal de filesystem/dependências (HIGH/CRITICAL, não bloqueante)"
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # `npm run security:trivy` é só `docker compose --profile tools run --rm trivy` (ver
+      # package.json) — não precisa de `npm ci`/node_modules, o comando é um wrapper fino sobre
+      # docker compose. O runner ubuntu-latest já vem com Docker e Docker Compose v2 instalados.
+      - name: Rodar Trivy (fs scan, HIGH/CRITICAL)
+        id: trivy
+        # NÃO bloqueia — reporta. Este job é o scan de monitoramento periódico independente do
+        # merge; o gate real de PR é o job `trivy-fs-pr-gate` acima.
+        continue-on-error: true
+        run: npm run security:trivy
+
+      - name: Registrar resultado no Job Summary
+        if: always()
+        run: |
+          if [ "${{ steps.trivy.outcome }}" = "success" ]; then
+            echo "### Trivy — sem achados HIGH/CRITICAL" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "### Trivy encontrou vulnerabilidade(s) HIGH/CRITICAL" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "Ver o log do step \"Rodar Trivy\" acima para a lista completa. Este job não" >> "$GITHUB_STEP_SUMMARY"
+            echo "bloqueia PR/merge (é um scan agendado, reporta, não bloqueia — o gate real de PR" >> "$GITHUB_STEP_SUMMARY"
+            echo "é o job trivy-fs-pr-gate) — triagem manual necessária: abrir handoff/issue se" >> "$GITHUB_STEP_SUMMARY"
+            echo "algum achado for novo e relevante." >> "$GITHUB_STEP_SUMMARY"
+          fi

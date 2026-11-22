@@ -1,0 +1,9 @@
+{
+  "name": "testland/qa-hiring-kit",
+  "description": "Use when opening a QA, SDET, automation, test lead or quality manager role or running any part of the hiring loop: job description, interview questions, a competency-anchored scoring rubric, interviewer calibration, the panel debrief to a hire or no-hire decision and a 30-60-90 day onboarding plan.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.0.2"
+}

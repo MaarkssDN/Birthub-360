@@ -1,0 +1,8 @@
+@import "./styles/globals.css";
+@import "./styles/luxury-tokens.css";
+
+/* Anéis de foco universais e acessíveis WCAG 2.2 AA (Passo 68) */
+:focus-visible {
+  outline: 2px solid var(--ring, #0ea5e9);
+  outline-offset: 2px;
+}

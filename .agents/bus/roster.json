@@ -1,0 +1,216 @@
+[
+  {
+    "id": "00",
+    "slug": "coordenador",
+    "name": "Coordenador",
+    "role": "Orquestrador Geral e Integração de Ondas",
+    "prompt": ".agents/prompts/00-coordenador.md",
+    "category": "Coordenação"
+  },
+  {
+    "id": "01",
+    "slug": "plataforma-dados",
+    "name": "Plataforma, Segurança e Dados",
+    "role": "Postgres, Prisma, Migrations, RLS, Backup e Tenancy",
+    "prompt": ".agents/prompts/01-plataforma-dados.md",
+    "category": "Engenharia",
+    "exclusiveWith": ["01A"]
+  },
+  {
+    "id": "01A",
+    "slug": "dados-rls-retencao",
+    "name": "Confiabilidade de Dados, RLS e Retenção",
+    "role": "Especialista em RLS, integridade e expurgo LGPD",
+    "prompt": ".agents/prompts/01A-dados-rls-retencao.md",
+    "category": "Engenharia",
+    "exclusiveWith": ["01"]
+  },
+  {
+    "id": "02",
+    "slug": "produto-ux",
+    "name": "Produto e UX",
+    "role": "Navegação principal, rotas, telas centrais e consistência",
+    "prompt": ".agents/prompts/02-produto-ux.md",
+    "category": "Produto"
+  },
+  {
+    "id": "03",
+    "slug": "design-a11y",
+    "name": "Design e Acessibilidade",
+    "role": "Design System, WCAG 2.2 AA, Tokens e Tokens Tailwind",
+    "prompt": ".agents/prompts/03-design-a11y.md",
+    "category": "Design"
+  },
+  {
+    "id": "04",
+    "slug": "crm-bi",
+    "name": "CRM e BI",
+    "role": "Pipelines, leads, métricas de funil e relatórios analíticos",
+    "prompt": ".agents/prompts/04-crm-bi.md",
+    "category": "Negócio"
+  },
+  {
+    "id": "05",
+    "slug": "prospeccao",
+    "name": "Prospecção",
+    "role": "Enriquecimento B2B, CNPJ, Hunter, Apollo e scrapers",
+    "prompt": ".agents/prompts/05-prospeccao.md",
+    "category": "Negócio"
+  },
+  {
+    "id": "06",
+    "slug": "integracoes-bitrix",
+    "name": "Integrações e Bitrix",
+    "role": "Bitrix24, Webhooks, Google, WhatsApp, 3CX e telefonia",
+    "prompt": ".agents/prompts/06-integracoes-bitrix.md",
+    "category": "Integração",
+    "exclusiveWith": ["06A"]
+  },
+  {
+    "id": "06A",
+    "slug": "extracoes-bitrix",
+    "name": "Extrações Bitrix",
+    "role": "Especialista de extração massiva e backfill Bitrix24",
+    "prompt": ".agents/prompts/06A-extracoes-bitrix.md",
+    "category": "Integração",
+    "exclusiveWith": ["06"]
+  },
+  {
+    "id": "07",
+    "slug": "ia-automacoes",
+    "name": "IA e Automações",
+    "role": "Gateways LLM, prompts de runtime, agentes de atendimento",
+    "prompt": ".agents/prompts/07-ia-automacoes.md",
+    "category": "IA"
+  },
+  {
+    "id": "08",
+    "slug": "qa-release",
+    "name": "QA e Release",
+    "role": "Testes E2E, pipelines CI/CD, gates e Dockerfile",
+    "prompt": ".agents/prompts/08-qa-release.md",
+    "category": "Qualidade",
+    "exclusiveWith": ["08A"]
+  },
+  {
+    "id": "08A",
+    "slug": "git-deploy-aws",
+    "name": "Operações Git e Deploy AWS",
+    "role": "Release deployment, AWS ECS/S3 e merges autorizados",
+    "prompt": ".agents/prompts/08A-git-deploy-aws.md",
+    "category": "Operações",
+    "exclusiveWith": ["08"]
+  },
+  {
+    "id": "09",
+    "slug": "mobile",
+    "name": "Mobile",
+    "role": "Capacitor, Android, iOS e comportamentos touch",
+    "prompt": ".agents/prompts/09-mobile.md",
+    "category": "Mobile"
+  },
+  {
+    "id": "10",
+    "slug": "infraestrutura-sre",
+    "name": "Infraestrutura e SRE",
+    "role": "Kubernetes, ArgoCD, Prometheus, Grafana e observabilidade",
+    "prompt": ".agents/prompts/10-infraestrutura-sre.md",
+    "category": "Infraestrutura"
+  },
+  {
+    "id": "11",
+    "slug": "marca-institucional",
+    "name": "Marca e Ativos Institucionais",
+    "role": "Identidade visual, logos, paleta oficial e branding",
+    "prompt": ".agents/prompts/11-marca-institucional.md",
+    "category": "Design"
+  },
+  {
+    "id": "12",
+    "slug": "voz-telefonia",
+    "name": "Voz e Telefonia",
+    "role": "Birth Voice, WebRTC, SIP, transcrição e áudio",
+    "prompt": ".agents/prompts/12-voz-telefonia.md",
+    "category": "Engenharia"
+  },
+  {
+    "id": "13",
+    "slug": "enxame-governanca-agentes",
+    "name": "Enxame Autônomo de Runtime",
+    "role": "Governança e auditoria dos agentes de runtime em produção",
+    "prompt": ".agents/prompts/13-enxame-governanca-agentes.md",
+    "category": "Governança"
+  },
+  {
+    "id": "14",
+    "slug": "ambiente-execucao-harness",
+    "name": "Ambiente de Execução e Harness",
+    "role": "Ambiente de testes, mocks e fixtures seguras",
+    "prompt": ".agents/prompts/14-ambiente-execucao-harness.md",
+    "category": "Qualidade"
+  },
+  {
+    "id": "15",
+    "slug": "seguranca-aplicada",
+    "name": "Segurança Aplicada",
+    "role": "Segredos, rotação de chaves, auditoria de código e PII",
+    "prompt": ".agents/prompts/15-seguranca-aplicada.md",
+    "category": "Segurança"
+  },
+  {
+    "id": "16",
+    "slug": "runtime-workers-escala",
+    "name": "Runtime, Workers e Escala",
+    "role": "Filas BullMQ, workers de background, Redis e concorrência",
+    "prompt": ".agents/prompts/16-runtime-workers-escala.md",
+    "category": "Infraestrutura"
+  },
+  {
+    "id": "17",
+    "slug": "cadencia-ciclo-receita",
+    "name": "Cadência Multicanal",
+    "role": "Sequências de e-mail, régua de contato e funis automáticos",
+    "prompt": ".agents/prompts/17-cadencia-ciclo-receita.md",
+    "category": "Negócio"
+  },
+  {
+    "id": "18",
+    "slug": "contratos-api-docs",
+    "name": "Contratos, API e Docs",
+    "role": "OpenAPI, tipos compartilhados, documentação viva e schemas",
+    "prompt": ".agents/prompts/18-contratos-api-docs.md",
+    "category": "Engenharia"
+  },
+  {
+    "id": "21",
+    "slug": "privacidade-lgpd",
+    "name": "Privacidade e LGPD",
+    "role": "DSR, retenção, termos de consentimento e inventário PII",
+    "prompt": ".agents/prompts/21-privacidade-lgpd.md",
+    "category": "Governança"
+  },
+  {
+    "id": "22",
+    "slug": "verificacao-realidade",
+    "name": "Verificação de Realidade",
+    "role": "Auditoria de persistência real, fim de mocks e telas cenográficas",
+    "prompt": ".agents/prompts/22-verificacao-realidade.md",
+    "category": "Qualidade"
+  },
+  {
+    "id": "23",
+    "slug": "custo-performance-ia",
+    "name": "Custo e Performance de IA",
+    "role": "Latência, orçamento de tokens, N+1 e otimização de cache",
+    "prompt": ".agents/prompts/23-custo-performance-ia.md",
+    "category": "IA"
+  },
+  {
+    "id": "24",
+    "slug": "revisao-independente",
+    "name": "Revisão Independente",
+    "role": "Auditor obrigatório antes de qualquer merge ou release",
+    "prompt": ".agents/prompts/24-revisao-independente.md",
+    "category": "Governança"
+  }
+]

@@ -1,0 +1,595 @@
+import { randomUUID } from 'node:crypto';
+import { logger } from '../../../../lib/logger.js';
+import { prisma } from '../../../../lib/prisma.js';
+import {
+  computeBackoffDelayMs,
+  parseRetryAfterMs,
+  sleep,
+} from '../../../../shared/http/retryWithBackoff.js';
+import { AppError } from '../../../../shared/middlewares/errorHandler.js';
+import { assertSafeExternalUrl, safeFetch } from '../../../../shared/security/urlGuard.js';
+
+export function normalizeWebhookUrl(rawUrl: string): string {
+  const trimmed = rawUrl.trim();
+  return trimmed.endsWith('/') ? trimmed : `${trimmed}/`;
+}
+
+// ── Resiliência de chamadas ao Bitrix24 (bloqueador #11 do AGENTS.md: "sincronização não pode
+// falhar silenciosamente") ──────────────────────────────────────────────────────────────────────
+//
+// Parâmetros alinhados ao extrator de referência do usuário (extrator_bitrix.html) e ao limite
+// documentado do Bitrix (~2 chamadas/seg em ritmo sustentado por webhook): timeout por tentativa,
+// backoff exponencial com jitter, teto de tentativas, e classificação explícita de erro
+// recuperável (rede, timeout, 429/QUERY_LIMIT_EXCEEDED, 5xx) vs. definitivo (401/403/token
+// revogado, filtro/campo inválido) — erro definitivo nunca é retentado, porque bater na mesma
+// causa 4 vezes só atrasa o feedback ao usuário sem chance real de sucesso.
+export const BITRIX_MAX_ATTEMPTS = 4;
+const BASE_BACKOFF_MS = 500;
+const MAX_BACKOFF_MS = 8_000;
+const REQUEST_TIMEOUT_MS = 15_000;
+
+//
+// O retry acima é REATIVO: só desacelera depois que o Bitrix já respondeu 429/QUERY_LIMIT_EXCEEDED.
+// Extrações paginadas, `batch` e syncs em lote disparavam chamadas back-to-back sem nenhum
+// espaçamento — estouravam o limite do plano (~2 req/s nos planos básicos) e dependiam de tomar
+// 429 para então entrar em backoff. Aqui garantimos um intervalo mínimo ENTRE chamadas HTTP
+// sucessivas por webhookUrl (o rate limit do Bitrix é por portal, não global), serializado por
+// fila para que chamadas concorrentes da mesma conexão também respeitem o espaçamento (sem
+// rajada quando dois syncs disparam juntos). Plano superior pode baixar via env.
+const BITRIX_MIN_INTERVAL_MS =
+  Number(process.env.BITRIX_MIN_INTERVAL_MS) >= 0
+    ? Number(process.env.BITRIX_MIN_INTERVAL_MS)
+    : 500;
+
+const lastRequestAtByWebhook = new Map<string, number>();
+const paceQueueByWebhook = new Map<string, Promise<void>>();
+
+/**
+ * Espera a vez desta conexão na fila de pacing e garante o intervalo mínimo desde a última
+ * chamada HTTP real. Chamadas concorrentes para o MESMO webhook são serializadas — cada uma só
+ * "toma seu slot" depois que a anterior disparou o fetch, então N chamadas paralelas viram N
+ * slots espaçados de BITRIX_MIN_INTERVAL_MS em vez de um burst. `signal` (cancelamento
+ * cooperativo do chamador) também interrompe a espera na fila.
+ */
+function paceBitrixRequest(webhookUrl: string, signal?: AbortSignal): Promise<void> {
+  if (BITRIX_MIN_INTERVAL_MS <= 0) return Promise.resolve();
+  const queued = (paceQueueByWebhook.get(webhookUrl) ?? Promise.resolve()).then(async () => {
+    const elapsed = Date.now() - (lastRequestAtByWebhook.get(webhookUrl) ?? 0);
+    const waitMs = BITRIX_MIN_INTERVAL_MS - elapsed;
+    if (waitMs > 0) await sleepUnlessAborted(waitMs, signal);
+    lastRequestAtByWebhook.set(webhookUrl, Date.now());
+  });
+  // `.catch` na cópia guardada na fila: uma rejeição inesperada do pacing não pode travar a fila
+  // para sempre — a promise devolvida ao chamador (`queued`) ainda propaga o erro normalmente.
+  paceQueueByWebhook.set(
+    webhookUrl,
+    queued.catch(() => {}),
+  );
+  return queued;
+}
+
+/** Só para testes: limpa o estado de pacing entre casos (módulo fica cacheado entre imports). */
+export function __resetBitrixRateLimiterForTests(): void {
+  lastRequestAtByWebhook.clear();
+  paceQueueByWebhook.clear();
+}
+
+/** Erro definitivo do Bitrix (não recuperável por retry) — carrega o correlationId para rastreio nos logs. */
+export class BitrixDefinitiveError extends AppError {
+  constructor(
+    message: string,
+    statusCode: number,
+    public readonly correlationId: string,
+  ) {
+    super(message, statusCode);
+  }
+}
+
+// backoffDelayMs/sleep/retryAfterMs foram extraídos para src/shared/http/retryWithBackoff.ts
+// (INTEGRATION-002) para reuso por Stripe/Omie/Slack — importados acima como
+// computeBackoffDelayMs/sleep/parseRetryAfterMs. Mesma fórmula e constantes de sempre
+// (BASE_BACKOFF_MS/MAX_BACKOFF_MS abaixo continuam passadas explicitamente, comportamento
+// idêntico ao anterior); o loop de retry/circuit-breaker deste arquivo continua específico do
+// Bitrix (classificação de erro, correlationId, breaker) e não foi tocado.
+function backoffDelayMs(attempt: number): number {
+  return computeBackoffDelayMs(attempt, BASE_BACKOFF_MS, MAX_BACKOFF_MS);
+}
+
+/**
+ * Confirma que a URL realmente fala com um portal Bitrix24 antes de salvar — sem isto, um typo
+ * na URL ou um token revogado só apareceria na hora de exportar o primeiro lead, silenciosamente
+ * salvo como "conectado".
+ *
+ * Revalida a URL contra o guard de SSRF (`safeFetch`, que já embute `assertSafeExternalUrl`) aqui
+ * dentro, e não só no cadastro (`connectBitrix`) — esta função também é chamada por
+ * `testBitrixConnection` para uma conexão JÁ persistida (botão "Testar conexão"), sem revalidação
+ * prévia do chamador. `safeFetch` fixa a conexão real nos MESMOS endereços validados nesta
+ * chamada (nenhuma segunda resolução de DNS entre validar e conectar de verdade) — sem isso, um
+ * DNS rebinding (host resolvia IP público na validação, IP privado na conexão real seguinte) não
+ * seria pego nem na primeira vez, nem nos testes de conexão seguintes.
+ */
+async function readJsonWithSignal<T>(response: Response, signal: AbortSignal): Promise<T | null> {
+  if (signal.aborted) {
+    throw signal.reason ?? new DOMException('The operation was aborted.', 'AbortError');
+  }
+  return new Promise<T | null>((resolve, reject) => {
+    const onAbort = () => {
+      reject(signal.reason ?? new DOMException('The operation was aborted.', 'AbortError'));
+    };
+    signal.addEventListener('abort', onAbort, { once: true });
+    response
+      .json()
+      .then(
+        (val) => resolve(val as T),
+        (err) => {
+          if (signal.aborted) {
+            reject(err);
+            return;
+          }
+          resolve(null);
+        },
+      )
+      .finally(() => {
+        signal.removeEventListener('abort', onAbort);
+      });
+  });
+}
+
+export async function testWebhook(webhookUrl: string): Promise<{ portalDomain: string }> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15_000);
+
+  let response: Response;
+  let data: { error?: string; error_description?: string } | null = null;
+  try {
+    try {
+      await paceBitrixRequest(webhookUrl, controller.signal);
+      response = await safeFetch(`${webhookUrl}profile.json`, { signal: controller.signal });
+    } catch (error: any) {
+      // Erro do guard de SSRF (URL/host reprovado por `safeFetch`) já vem com a mensagem certa —
+      // não reescreve para o genérico de falha de rede abaixo.
+      if (error instanceof AppError) throw error;
+      if (controller.signal.aborted) {
+        throw new AppError('Tempo limite esgotado ao testar essa URL (timeout 15s).', 504);
+      }
+      logger.warn({ err: error }, '[bitrix] Falha de rede ao testar webhook');
+      throw new AppError(
+        'Não foi possível conectar a essa URL. Confira o endereço do webhook.',
+        400,
+      );
+    }
+
+    if (!response.ok) {
+      throw new AppError(
+        `Bitrix24 respondeu com erro HTTP ${response.status} — confira a URL do webhook.`,
+        400,
+      );
+    }
+
+    try {
+      data = await readJsonWithSignal<{ error?: string; error_description?: string }>(
+        response,
+        controller.signal,
+      );
+    } catch {
+      if (controller.signal.aborted) {
+        throw new AppError('Tempo limite esgotado ao testar essa URL (timeout 15s).', 504);
+      }
+      data = null;
+    }
+  } finally {
+    clearTimeout(timeout);
+  }
+
+  if (!data || data.error) {
+    throw new AppError(
+      data?.error_description ||
+        'Webhook do Bitrix24 rejeitado (token inválido, revogado, ou sem permissão de perfil).',
+      400,
+    );
+  }
+
+  let portalDomain = '';
+  try {
+    portalDomain = new URL(webhookUrl).hostname;
+  } catch {
+    // já validado por assertSafeExternalUrl antes de chegar aqui
+  }
+  return { portalDomain };
+}
+
+export function hostnameOf(webhookUrl: string): string | null {
+  try {
+    return new URL(webhookUrl).hostname;
+  } catch {
+    return null;
+  }
+}
+
+/** Resolve a URL do webhook de UMA conexão específica, validando que ela pertence a esta organização. */
+export async function getConnectionWebhookUrl(
+  organizationId: string,
+  connectionId: string,
+): Promise<string> {
+  const connection = await prisma.bitrixConnection.findFirst({
+    where: { id: connectionId, organizationId },
+    select: { webhookUrl: true },
+  });
+  if (!connection)
+    throw new AppError('Conexão Bitrix24 não encontrada para esta organização.', 404);
+  return connection.webhookUrl;
+}
+
+interface BitrixApiError {
+  error: string;
+  error_description?: string;
+}
+
+export interface BitrixCallOptions {
+  /** Amarra todas as tentativas de uma mesma chamada lógica (e, se o chamador propagar, todo o
+   * lote/tick de sincronização) num único id — sem isso, cinco tentativas da mesma chamada viram
+   * cinco linhas de log soltas, impossíveis de correlacionar numa falha intermitente. */
+  correlationId?: string;
+  /** Sobrescreve o teto de tentativas — usado nos testes para não esperar segundos de backoff real. */
+  maxAttempts?: number;
+  /**
+   * Cancelamento cooperativo (TAREFA-SANEAMENTO-046 / BT360-DT-0036): quando o chamador aborta
+   * este signal (ex.: extração cancelada pelo usuário), a chamada HTTP em voo é abortada, o
+   * backoff entre tentativas é interrompido e `BitrixCallAbortedError` propaga imediatamente —
+   * nunca classificado como timeout transitório nem como erro definitivo do Bitrix.
+   */
+  signal?: AbortSignal;
+}
+
+/**
+ * Cancelamento cooperativo do CHAMADOR (não é falha do Bitrix24): distingue "o usuário mandou
+ * parar" de "o provedor falhou", para que o consumidor (ex.: extração em lote) encerre o fluxo
+ * sem gerar arquivo, sem gravar status='failed' e sem consumir as tentativas de retry restantes.
+ */
+export class BitrixCallAbortedError extends Error {
+  constructor() {
+    super('Chamada ao Bitrix24 abortada pelo cancelamento do chamador.');
+    this.name = 'BitrixCallAbortedError';
+  }
+}
+
+/**
+ * Um único attempt HTTP contra o Bitrix — sem retry, sem classificação. `callBitrix` orquestra por
+ * cima disto.
+ *
+ * Revalida a URL contra o guard de SSRF a CADA attempt (via `safeFetch`, que fixa a conexão real
+ * nos endereços validados nesta mesma chamada) em vez de confiar só na validação única que
+ * `callBitrix` fazia antes do loop de retry — uma conexão de longa duração pode ter até
+ * `BITRIX_MAX_ATTEMPTS` tentativas espalhadas por segundos (backoff exponencial), tempo
+ * suficiente para um DNS rebinding entre a primeira validação e uma tentativa posterior.
+ */
+async function attemptBitrixCall<T>(
+  webhookUrl: string,
+  method: string,
+  params: Record<string, unknown> | undefined,
+  correlationId: string,
+  signal?: AbortSignal,
+): Promise<T> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  // Cancelamento cooperativo do chamador: quando `signal` aborta, aborta o MESMO controller
+  // interno — o fetch em voo rejeita na hora (AbortError) e os catches abaixo distinguem isso de
+  // timeout real via `signal?.aborted` antes de classificar como TransientBitrixError.
+  const onExternalAbort = () => controller.abort();
+  if (signal) {
+    if (signal.aborted) onExternalAbort();
+    else signal.addEventListener('abort', onExternalAbort, { once: true });
+  }
+  let response: Response;
+  let data: (T & { error?: string; error_description?: string }) | null = null;
+  try {
+    try {
+      // Pacing ANTES de cada attempt (inclui retentativas — toda request HTTP conta no limite
+      // do portal). Se o chamador abortar durante a espera na fila, BitrixCallAbortedError
+      // propaga e é classificado abaixo como cancelamento, nunca como falha do Bitrix.
+      await paceBitrixRequest(webhookUrl, signal ?? controller.signal);
+      response = await safeFetch(`${webhookUrl}${method}.json`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params || {}),
+        signal: controller.signal,
+      });
+    } catch (err: any) {
+      // Erro do guard de SSRF nunca é transiente/retentável — propaga cru (fora do contrato de
+      // `TransientBitrixError`/`BitrixDefinitiveError`, `callBitrix` já trata isso como erro
+      // inesperado que não deve ser retentado, ver comentário lá).
+      if (err instanceof AppError) throw err;
+      if (signal?.aborted) throw new BitrixCallAbortedError();
+      if (controller.signal.aborted) {
+        throw new TransientBitrixError(
+          `Tempo limite esgotado ao comunicar com o Bitrix24 (timeout ${REQUEST_TIMEOUT_MS / 1000}s).`,
+          504,
+        );
+      }
+      // Falha de rede (DNS, conexão recusada, etc.) — recuperável, o próximo attempt pode ter sucesso.
+      throw new TransientBitrixError('Falha de rede ao comunicar com o Bitrix24.', 502, err);
+    }
+
+    if (response.status === 429) {
+      throw new TransientBitrixError(
+        'Bitrix24 aplicou limite de chamadas (HTTP 429).',
+        429,
+        undefined,
+        parseRetryAfterMs(response) ?? undefined,
+      );
+    }
+    if (response.status >= 500) {
+      throw new TransientBitrixError(
+        `Bitrix24 respondeu com erro de servidor (HTTP ${response.status}).`,
+        502,
+      );
+    }
+    if (response.status === 401 || response.status === 403) {
+      throw new BitrixDefinitiveError(
+        'Webhook do Bitrix24 sem permissão ou token revogado — reconecte o portal.',
+        response.status,
+        correlationId,
+      );
+    }
+
+    try {
+      data = await readJsonWithSignal<T & { error?: string; error_description?: string }>(
+        response,
+        controller.signal,
+      );
+    } catch {
+      if (signal?.aborted) throw new BitrixCallAbortedError();
+      if (controller.signal.aborted) {
+        throw new TransientBitrixError(
+          `Tempo limite esgotado ao comunicar com o Bitrix24 (timeout ${REQUEST_TIMEOUT_MS / 1000}s).`,
+          504,
+        );
+      }
+      data = null;
+    }
+  } finally {
+    signal?.removeEventListener('abort', onExternalAbort);
+    clearTimeout(timeout);
+  }
+
+  if (!response.ok) {
+    throw new BitrixDefinitiveError(
+      `Bitrix24 respondeu com erro (HTTP ${response.status}).`,
+      502,
+      correlationId,
+    );
+  }
+  const apiError = (data as unknown as BitrixApiError | null)?.error;
+  if (apiError) {
+    // QUERY_LIMIT_EXCEEDED é o rate-limit "soft" reportado no corpo (em vez de HTTP 429) — mesmo
+    // tratamento de recuperável. Qualquer outro erro do Bitrix (filtro inválido, campo
+    // inexistente, permissão insuficiente) é definitivo: retentar não muda o resultado.
+    if (apiError === 'QUERY_LIMIT_EXCEEDED') {
+      throw new TransientBitrixError(
+        'Bitrix24 aplicou limite de chamadas (QUERY_LIMIT_EXCEEDED).',
+        429,
+      );
+    }
+    const description = (data as unknown as BitrixApiError).error_description;
+    throw new BitrixDefinitiveError(
+      description || `Bitrix24 recusou a chamada (${apiError}).`,
+      400,
+      correlationId,
+    );
+  }
+  if (!data) {
+    throw new BitrixDefinitiveError(
+      'Bitrix24 devolveu uma resposta vazia/ilegível.',
+      502,
+      correlationId,
+    );
+  }
+  return data;
+}
+
+/** Erro recuperável — `callBitrix` reintenta com backoff até `maxAttempts`. Nunca chega ao chamador. */
+class TransientBitrixError extends Error {
+  constructor(
+    message: string,
+    public readonly statusCode: number,
+    public readonly cause?: unknown,
+    public readonly retryAfterMsHint?: number,
+  ) {
+    super(message);
+  }
+}
+
+// ── Circuit breaker de saúde do provedor ────────────────────────────────────────────────────────
+//
+// Gap de auditoria: `bitrix_sync_failures_total` (metrics.ts) já CONTA falhas, mas nada usava essa
+// contagem para PARAR de tentar quando o Bitrix está claramente fora do ar — cada sync (push
+// automático, regra de pull, webhook) continuava tentando individualmente, mesmo sob falha
+// sustentada, pagando timeout+backoff cheios a cada chamada e gerando carga/ruído desnecessários
+// contra um portal sabidamente indisponível.
+//
+// Implementação deliberadamente simples e local ao processo — Map em memória (contador +
+// timestamp), sem dependência nova e sem Redis: depois de CIRCUIT_FAILURE_THRESHOLD falhas
+// CONSECUTIVAS (nenhum sucesso entre elas) da MESMA conexão, o circuito abre por
+// CIRCUIT_COOLDOWN_MS — toda chamada seguinte falha imediatamente (fail-fast), sem tentar rede, com
+// o MESMO shape de erro (AppError) que uma falha real teria, para não quebrar o contrato de quem já
+// trata exceção de `callBitrix` hoje (outboundSync.ts, syncRules.ts, extraction.ts). Chaveado pelo
+// `webhookUrl` inteiro (não só o hostname): cada conexão/organização tem seu próprio estado, então
+// uma conexão quebrada de um tenant nunca faz outro tenant (ou outra conexão do mesmo portal)
+// falhar rápido também.
+//
+// Só 401/403 (token revogado/sem permissão — a CONEXÃO está quebrada) e o esgotamento de tentativas
+// por falha transiente (rede/timeout/5xx/429 sustentados — o PROVEDOR está indisponível) contam
+// para o breaker. Um erro definitivo "comum" do Bitrix (filtro/campo inválido) é problema do
+// PAYLOAD daquela chamada específica, não da saúde do provedor — não deve abrir o circuito e
+// derrubar chamadas de outros leads/regras que mandam payloads válidos pela mesma conexão.
+const CIRCUIT_BREAKER_ENABLED = process.env.BITRIX_CIRCUIT_BREAKER_ENABLED !== 'false';
+const CIRCUIT_FAILURE_THRESHOLD =
+  Number(process.env.BITRIX_CIRCUIT_BREAKER_THRESHOLD) > 0
+    ? Number(process.env.BITRIX_CIRCUIT_BREAKER_THRESHOLD)
+    : 5;
+const CIRCUIT_COOLDOWN_MS =
+  Number(process.env.BITRIX_CIRCUIT_BREAKER_COOLDOWN_MS) > 0
+    ? Number(process.env.BITRIX_CIRCUIT_BREAKER_COOLDOWN_MS)
+    : 60_000;
+
+interface CircuitState {
+  consecutiveFailures: number;
+  /** 0 = circuito fechado. Timestamp (Date.now()) até quando o circuito fica aberto. */
+  openUntil: number;
+}
+const circuitState = new Map<string, CircuitState>();
+
+/** Só para testes: limpa o estado do circuit breaker entre casos (o módulo fica cacheado entre imports dentro do mesmo processo de teste). */
+export function __resetBitrixCircuitBreakerForTests(): void {
+  circuitState.clear();
+}
+
+function isCircuitOpen(webhookUrl: string): boolean {
+  const state = circuitState.get(webhookUrl);
+  return !!state && Date.now() < state.openUntil;
+}
+
+function recordCircuitSuccess(webhookUrl: string): void {
+  circuitState.delete(webhookUrl);
+}
+
+function recordCircuitFailure(webhookUrl: string): void {
+  const state = circuitState.get(webhookUrl) ?? { consecutiveFailures: 0, openUntil: 0 };
+  state.consecutiveFailures += 1;
+  if (state.consecutiveFailures >= CIRCUIT_FAILURE_THRESHOLD) {
+    state.openUntil = Date.now() + CIRCUIT_COOLDOWN_MS;
+    logger.error(
+      {
+        host: hostnameOf(webhookUrl),
+        consecutiveFailures: state.consecutiveFailures,
+        cooldownMs: CIRCUIT_COOLDOWN_MS,
+      },
+      '[bitrix] Circuit breaker ABERTO — falhas consecutivas sustentadas nesta conexão; chamadas seguintes falharão rápido até o cooldown expirar',
+    );
+  }
+  circuitState.set(webhookUrl, state);
+}
+
+/** Erro do circuit breaker aberto — mesmo formato (AppError) que uma falha real do Bitrix24, para não quebrar o contrato de quem chama `callBitrix`. */
+export class BitrixCircuitOpenError extends AppError {
+  constructor() {
+    super(
+      'Bitrix24 está temporariamente indisponível para esta conexão (falhas consecutivas recentes) — novas tentativas serão retomadas automaticamente após o período de resfriamento.',
+      503,
+    );
+  }
+}
+
+/** `sleep` que também respeita cancelamento cooperativo — abortar durante o backoff rejeita na hora em vez de esperar o delay inteiro (TAREFA-SANEAMENTO-046). */
+function sleepUnlessAborted(ms: number, signal?: AbortSignal): Promise<void> {
+  if (!signal) return sleep(ms);
+  if (signal.aborted) return Promise.reject(new BitrixCallAbortedError());
+  return new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      signal.removeEventListener('abort', onAbort);
+      resolve();
+    }, ms);
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(new BitrixCallAbortedError());
+    };
+    signal.addEventListener('abort', onAbort, { once: true });
+  });
+}
+
+/**
+ * Cliente HTTP de baixo nível para a REST API do Bitrix24 (via webhook de entrada). Reintenta
+ * automaticamente falha de rede, timeout, HTTP 429/5xx e `QUERY_LIMIT_EXCEEDED`, com backoff
+ * exponencial + jitter; erro de autenticação/autorização ou erro definitivo do Bitrix (filtro,
+ * campo, permissão) falha imediatamente, sem consumir tentativas à toa. Antes de qualquer tentativa
+ * de rede, consulta o circuit breaker desta conexão — ver bloco acima.
+ */
+export async function callBitrix<T>(
+  webhookUrl: string,
+  method: string,
+  params?: Record<string, unknown>,
+  options: BitrixCallOptions = {},
+): Promise<T> {
+  const correlationId = options.correlationId ?? randomUUID();
+
+  if (CIRCUIT_BREAKER_ENABLED && isCircuitOpen(webhookUrl)) {
+    logger.warn(
+      { correlationId, method, host: hostnameOf(webhookUrl) },
+      '[bitrix] Circuit breaker aberto — falhando rápido sem chamar a rede',
+    );
+    throw new BitrixCircuitOpenError();
+  }
+
+  await assertSafeExternalUrl(webhookUrl);
+  const maxAttempts = options.maxAttempts ?? BITRIX_MAX_ATTEMPTS;
+
+  let lastError: TransientBitrixError | null = null;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    // Cancelamento cooperativo: abort durante o backoff entre tentativas ou antes da próxima
+    // tentativa encerra imediatamente — sem queimar as tentativas restantes (TAREFA-SANEAMENTO-046).
+    if (options.signal?.aborted) throw new BitrixCallAbortedError();
+    try {
+      const result = await attemptBitrixCall<T>(
+        webhookUrl,
+        method,
+        params,
+        correlationId,
+        options.signal,
+      );
+      if (CIRCUIT_BREAKER_ENABLED) recordCircuitSuccess(webhookUrl);
+      return result;
+    } catch (err: any) {
+      if (err instanceof BitrixDefinitiveError) {
+        logger.warn(
+          { correlationId, method, statusCode: err.statusCode, attempt },
+          '[bitrix] Erro definitivo — não será retentado',
+        );
+        if (CIRCUIT_BREAKER_ENABLED && (err.statusCode === 401 || err.statusCode === 403)) {
+          recordCircuitFailure(webhookUrl);
+        }
+        throw err;
+      }
+      if (!(err instanceof TransientBitrixError)) throw err; // erro inesperado/abortado (bug de código ou cancelamento do chamador) — propaga cru, sem retentar
+      lastError = err;
+      logger.warn(
+        { correlationId, method, statusCode: err.statusCode, attempt, maxAttempts },
+        '[bitrix] Falha recuperável — ' +
+          (attempt < maxAttempts ? 'retentando' : 'tentativas esgotadas'),
+      );
+      if (attempt < maxAttempts) {
+        await sleepUnlessAborted(err.retryAfterMsHint ?? backoffDelayMs(attempt), options.signal);
+      }
+    }
+  }
+
+  if (CIRCUIT_BREAKER_ENABLED) recordCircuitFailure(webhookUrl);
+
+  // Tentativas esgotadas: converte pro tipo de erro público (AppError) que o resto do app espera,
+  // preservando o correlationId no log (nunca na mensagem devolvida ao usuário, que não deve
+  // carregar detalhe técnico de infraestrutura).
+  logger.error(
+    { correlationId, method, statusCode: lastError?.statusCode },
+    '[bitrix] Chamada falhou após todas as tentativas',
+  );
+  throw new AppError(
+    lastError?.statusCode === 429
+      ? 'Bitrix24 está limitando as chamadas no momento — tente novamente em alguns instantes.'
+      : 'Não foi possível comunicar com o Bitrix24 após várias tentativas.',
+    lastError?.statusCode ?? 502,
+  );
+}
+
+let statusLabelCache: { webhookUrl: string; labels: Map<string, string> } | null = null;
+
+/** ID → nome de exibição de cada etapa (inclui as etapas customizadas do cliente, ex: "Novo Lead (Distribuidoras)"). */
+export async function getStatusLabels(webhookUrl: string): Promise<Map<string, string>> {
+  if (statusLabelCache?.webhookUrl === webhookUrl) return statusLabelCache.labels;
+  const data = await callBitrix<{ result: Array<{ STATUS_ID: string; NAME: string }> }>(
+    webhookUrl,
+    'crm.status.list',
+    { filter: { ENTITY_ID: 'STATUS' } },
+  );
+  const labels = new Map(data.result.map((s) => [s.STATUS_ID, s.NAME]));
+  statusLabelCache = { webhookUrl, labels };
+  return labels;
+}

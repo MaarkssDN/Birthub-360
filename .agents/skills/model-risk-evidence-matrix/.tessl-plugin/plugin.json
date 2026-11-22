@@ -1,0 +1,9 @@
+{
+  "name": "testland/model-risk-evidence-matrix",
+  "description": "Use when an ML model release is up for promotion and someone must decide which fairness and explainability evidence is required, or check the evidence against the model's risk tier. Assigns a low, medium or high tier, lists required artifacts and returns promote, needs-work or block.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.8"
+}

@@ -1,0 +1,84 @@
+model_list:
+  # "local-llama3"/"local-llama3-fast" são os nomes lógicos usados em todo o app (ai.service.ts,
+  # gateway.ts, ReportsHub) para "modelo de raciocínio" vs "modelo rápido". Ambos rodam de fato
+  # contra o Ollama local (sem chave, sem custo, roda na própria máquina via host.docker.internal)
+  # — nomes antigos "gemini-pro"/"gemini-flash" foram removidos por serem enganosos: davam a
+  # entender que chamavam o Gemini real do Google, quando sempre rodaram contra Ollama por padrão
+  # (ver IA-001). O provedor Gemini foi removido do app (Groq é o motor de IA principal); os
+  # aliases abaixo nunca dependeram dele.
+  - model_name: local-llama3
+    litellm_params:
+      model: ollama/llama3.1:8b
+      api_base: 'http://ollama:11434'
+  - model_name: local-llama3-fast
+    litellm_params:
+      model: ollama/llama3.2:3b
+      api_base: 'http://ollama:11434'
+  - model_name: deepseek-r1
+    litellm_params:
+      model: ollama/deepseek-r1:8b
+      api_base: 'http://ollama:11434'
+  - model_name: qwen-agent
+    litellm_params:
+      model: ollama/qwen2.5:7b
+      api_base: 'http://ollama:11434'
+  - model_name: qwen-coder
+    litellm_params:
+      model: ollama/qwen2.5:7b
+      api_base: 'http://ollama:11434'
+  - model_name: mistral-nemo
+    litellm_params:
+      model: ollama/mistral-nemo:12b
+      api_base: 'http://ollama:11434'
+  - model_name: text-embedding
+    litellm_params:
+      model: ollama/bge-m3
+      api_base: 'http://ollama:11434'
+  - model_name: nomic-embed
+    litellm_params:
+      model: ollama/nomic-embed-text
+      api_base: 'http://ollama:11434'
+  - model_name: vision-ocr
+    litellm_params:
+      model: ollama/qwen2-vl:7b
+      api_base: 'http://ollama:11434'
+  - model_name: llama-vision
+    litellm_params:
+      model: ollama/llama3.2-vision:11b
+      api_base: 'http://ollama:11434'
+  - model_name: gpt-4o
+    litellm_params:
+      model: openai/gpt-4o
+  - model_name: claude-sonnet
+    litellm_params:
+      model: anthropic/claude-sonnet-4-5-20250929
+  - model_name: ollama-llama3
+    litellm_params:
+      model: ollama/llama3.1:8b
+      api_base: 'http://ollama:11434'
+  - model_name: openrouter-mixtral
+    litellm_params:
+      model: openrouter/mistralai/mixtral-8x7b-instruct
+  - model_name: deepseek-coder
+    litellm_params:
+      model: openrouter/deepseek/deepseek-coder
+      api_key: 'os.environ/OPENROUTER_API_KEY'
+
+litellm_settings:
+  drop_params: true
+  num_retries: 3
+  request_timeout: 60
+  success_callback: ['langfuse']
+  failure_callback: ['langfuse']
+  fallbacks:
+    [
+      { 'local-llama3': ['local-llama3-fast'] },
+      { 'gpt-4o': ['local-llama3'] },
+      { 'claude-sonnet': ['local-llama3'] },
+      { 'qwen-agent': ['local-llama3'] },
+      { 'deepseek-r1': ['local-llama3'] },
+    ]
+
+router_settings:
+  routing_strategy: usage-based-routing
+  enable_pre_call_checks: true

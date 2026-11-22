@@ -1,0 +1,9 @@
+{
+  "name": "testland/restler-fuzzing",
+  "description": "Use when a stateful REST API (resources created, read, changed and deleted in sequence) needs fuzzing that finds multi-step bugs stateless fuzzers miss. Runs Microsoft RESTler from an OpenAPI spec (compile, test, fuzz-lean, fuzz) and reports 5xx errors, resource leaks and hierarchy violations.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.5.7"
+}

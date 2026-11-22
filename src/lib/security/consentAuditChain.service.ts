@@ -1,0 +1,840 @@
+import { createHash, randomUUID } from 'node:crypto';
+import type {
+  ConsentAuditEvent,
+  IConsentAuditChainPort,
+} from '../../shared/contracts/consentAudit.contract.js';
+import { logger } from '../logger.js';
+import { canonicalJson } from './canonicalJson.js';
+import { SUBJECT_TOKEN_PATTERN, type SubjectTokenizer } from './subjectTokenizer.js';
+
+export { canonicalJson } from './canonicalJson.js';
+
+export const GENESIS_HASH = '0'.repeat(64);
+/** Versão do formato canônico/hash (F6). Mudanças exigem nova versão, nunca reescrita. */
+export const CONSENT_CHAIN_FORMAT_VERSION = 3;
+
+/** Formatos aceitos (sem texto livre na cadeia): finalidade em CAIXA_ALTA e versão curta. */
+export const CONSENT_PURPOSE_PATTERN = /^[A-Z][A-Z0-9_]{1,63}$/;
+export const TERMS_VERSION_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$/;
+
+export type ConsentChainEventKind = 'GENESIS' | 'CONSENT' | 'REVOCATION' | 'RETRACTION';
+
+/** Motivo de revogação — enum fechado; texto livre nunca entra na cadeia (F3 / P3-1). */
+export const REVOCATION_REASON_CODES = [
+  'TITULAR_REQUEST',
+  'ERASURE_REQUEST',
+  'PURPOSE_FULFILLED',
+  'LEGAL_OBLIGATION',
+  'OPERATOR_CORRECTION',
+] as const;
+export type RevocationReasonCode = (typeof REVOCATION_REASON_CODES)[number];
+export function isRevocationReasonCode(v: unknown): v is RevocationReasonCode {
+  return typeof v === 'string' && (REVOCATION_REASON_CODES as readonly string[]).includes(v);
+}
+
+export interface StoredConsentAuditEvent extends ConsentAuditEvent {
+  formatVersion: number;
+  /** 0 = gênese do tenant. */
+  sequence: number;
+  kind: ConsentChainEventKind;
+  reasonCode?: RevocationReasonCode;
+}
+
+/** Ponteiro de cabeça da cadeia (F5 / P2-2): detecta truncamento de cauda e recriação. */
+export interface ConsentChainHead {
+  organizationId: string;
+  genesisId: string;
+  genesisHash: string;
+  lastSequence: number;
+  lastHash: string;
+}
+
+/** Tarefa de expurgo (outbox) gravada na MESMA transação da revogação (F4 / P2-3). */
+export interface ConsentPurgeTask {
+  id: string;
+  organizationId: string;
+  revocationEventId: string;
+  /** Referência operacional do titular; anulada ao concluir (minimização). */
+  subjectRef: string | null;
+  shredSubjectKey: boolean;
+  status: 'PENDING' | 'DONE' | 'DEAD';
+  attempts: number;
+  nextAttemptAt: string;
+  lastError?: string;
+  completedAt?: string;
+  /** Retenção do registro da tarefa (prova do atendimento), após a qual é excluído. */
+  retainUntil?: string;
+}
+
+/** Detalhe livre opcional de um evento — FORA da cadeia, expurgável (F3). */
+export interface ConsentEventDetail {
+  eventId: string;
+  organizationId: string;
+  subjectLookupId: string;
+  detail: string;
+  /** Retenção (fora da cadeia; ConsentAuditRecord.retentionUntil está deprecated no #35). */
+  retentionUntil?: string;
+}
+
+export interface ChainLockContext {
+  head: ConsentChainHead | null;
+  last: StoredConsentAuditEvent | null;
+  append: (event: StoredConsentAuditEvent) => Promise<void>;
+  enqueuePurge: (task: ConsentPurgeTask) => Promise<void>;
+  saveDetail: (detail: ConsentEventDetail) => Promise<void>;
+}
+
+export interface ConsentAuditChainRepository {
+  /** Exclusão mútua por tenant (Postgres: transação + advisory lock); tudo no ctx é atômico. */
+  withTenantLock<T>(organizationId: string, fn: (ctx: ChainLockContext) => Promise<T>): Promise<T>;
+  listChain(organizationId: string): Promise<StoredConsentAuditEvent[]>;
+  getHead(organizationId: string): Promise<ConsentChainHead | null>;
+  /** Organizações a varrer pelo worker (sem bypass de RLS nas tabelas LGPD). */
+  listTenants(): Promise<string[]>;
+  /**
+   * Claim ATÔMICO sem colunas de lease: trava UMA tarefa PENDING vencida do tenant com
+   * `FOR UPDATE SKIP LOCKED` e mantém o lock enquanto `fn` processa; o retorno de `fn` é gravado
+   * na mesma transação. Crash → rollback → a tarefa volta a ficar disponível.
+   */
+  withNextDuePurge(
+    organizationId: string,
+    now: Date,
+    fn: (task: ConsentPurgeTask) => Promise<ConsentPurgeTask>,
+  ): Promise<boolean>;
+  deleteExpiredPurges(organizationId: string, now: Date): Promise<number>;
+  deleteDetailsForSubject(organizationId: string, subjectLookupId: string): Promise<number>;
+}
+
+export class InMemoryConsentAuditChainRepository implements ConsentAuditChainRepository {
+  private chains = new Map<string, StoredConsentAuditEvent[]>();
+  private heads = new Map<string, ConsentChainHead>();
+  readonly purges = new Map<string, ConsentPurgeTask>();
+  readonly details = new Map<string, ConsentEventDetail>();
+  private locks = new Map<string, Promise<unknown>>();
+
+  async withTenantLock<T>(
+    organizationId: string,
+    fn: (ctx: ChainLockContext) => Promise<T>,
+  ): Promise<T> {
+    const prev = this.locks.get(organizationId) ?? Promise.resolve();
+    const run = prev.then(async () => {
+      // Transação simulada: acumula e só aplica se `fn` concluir.
+      const chain = this.chains.get(organizationId) ?? [];
+      const staged: StoredConsentAuditEvent[] = [];
+      const stagedPurges: ConsentPurgeTask[] = [];
+      const stagedDetails: ConsentEventDetail[] = [];
+      let stagedHead: ConsentChainHead | undefined;
+      const result = await fn({
+        head: this.heads.get(organizationId)
+          ? { ...(this.heads.get(organizationId) as ConsentChainHead) }
+          : null,
+        last: chain.at(-1) ? { ...(chain.at(-1) as StoredConsentAuditEvent) } : null,
+        append: async (e) => {
+          // Emula o trigger BEFORE INSERT do #35: confere sequência/encadeamento e avança o head.
+          const tip = staged.at(-1) ?? chain.at(-1);
+          const h = stagedHead ?? this.heads.get(organizationId);
+          if (e.organizationId !== organizationId) throw new Error('tenant divergente');
+          if (
+            !tip
+              ? e.sequence !== 0 || e.previousHash !== GENESIS_HASH
+              : !h || e.sequence !== h.lastSequence + 1 || e.previousHash !== h.lastHash
+          ) {
+            throw new Error('trigger: sequence/previousHash fora de ordem');
+          }
+          stagedHead = tip
+            ? { ...(h as ConsentChainHead), lastSequence: e.sequence, lastHash: e.currentHash }
+            : {
+                organizationId,
+                genesisId: e.id,
+                genesisHash: e.currentHash,
+                lastSequence: 0,
+                lastHash: e.currentHash,
+              };
+          staged.push({ ...e });
+        },
+        enqueuePurge: async (t) => {
+          stagedPurges.push({ ...t });
+        },
+        saveDetail: async (d) => {
+          stagedDetails.push({ ...d });
+        },
+      });
+      chain.push(...staged);
+      this.chains.set(organizationId, chain);
+      if (stagedHead) this.heads.set(organizationId, stagedHead);
+      for (const t of stagedPurges) this.purges.set(t.id, t);
+      for (const d of stagedDetails) this.details.set(d.eventId, d);
+      return result;
+    });
+    this.locks.set(
+      organizationId,
+      run.catch(() => undefined),
+    );
+    return run;
+  }
+
+  async listChain(organizationId: string): Promise<StoredConsentAuditEvent[]> {
+    return (this.chains.get(organizationId) ?? []).map((e) => ({ ...e }));
+  }
+
+  async getHead(organizationId: string): Promise<ConsentChainHead | null> {
+    const h = this.heads.get(organizationId);
+    return h ? { ...h } : null;
+  }
+
+  private lockedTasks = new Set<string>();
+
+  async listTenants(): Promise<string[]> {
+    const orgs = [...this.chains.keys(), ...[...this.purges.values()].map((t) => t.organizationId)];
+    return [...new Set(orgs)];
+  }
+
+  async withNextDuePurge(
+    organizationId: string,
+    now: Date,
+    fn: (task: ConsentPurgeTask) => Promise<ConsentPurgeTask>,
+  ): Promise<boolean> {
+    // Seleção + lock síncronos: equivalente in-memory de FOR UPDATE SKIP LOCKED.
+    const t = [...this.purges.values()].find(
+      (x) =>
+        x.organizationId === organizationId &&
+        x.status === 'PENDING' &&
+        new Date(x.nextAttemptAt) <= now &&
+        !this.lockedTasks.has(x.id),
+    );
+    if (!t) return false;
+    this.lockedTasks.add(t.id);
+    try {
+      const updated = await fn({ ...t });
+      this.purges.set(updated.id, { ...updated });
+      return true;
+    } finally {
+      this.lockedTasks.delete(t.id);
+    }
+  }
+
+  async deleteExpiredPurges(organizationId: string, now: Date): Promise<number> {
+    let n = 0;
+    for (const [id, t] of this.purges) {
+      const expired = t.status !== 'PENDING' && t.retainUntil && new Date(t.retainUntil) <= now;
+      if (t.organizationId === organizationId && expired) {
+        this.purges.delete(id);
+        n++;
+      }
+    }
+    return n;
+  }
+
+  async deleteDetailsForSubject(organizationId: string, subjectLookupId: string): Promise<number> {
+    let n = 0;
+    for (const [id, d] of this.details) {
+      if (d.organizationId === organizationId && d.subjectLookupId === subjectLookupId) {
+        this.details.delete(id);
+        n++;
+      }
+    }
+    return n;
+  }
+
+  /** Somente testes: acesso direto para simular adulteração. */
+  rawChain(organizationId: string): StoredConsentAuditEvent[] {
+    return this.chains.get(organizationId) ?? [];
+  }
+
+  rawHeads(): Map<string, ConsentChainHead> {
+    return this.heads;
+  }
+
+  clear(): void {
+    this.chains.clear();
+    this.heads.clear();
+    this.purges.clear();
+    this.details.clear();
+    this.locks.clear();
+  }
+}
+
+/** hash = sha256(previousHash + JSON canônico de todos os demais campos, exceto currentHash). */
+export function computeConsentEventHash(
+  event: Omit<StoredConsentAuditEvent, 'currentHash'>,
+): string {
+  const { previousHash, ...payload } = event;
+  return createHash('sha256')
+    .update(previousHash + canonicalJson(payload))
+    .digest('hex');
+}
+
+export type ChainViolation =
+  | 'HEAD_MISSING'
+  | 'TRUNCATED'
+  | 'GENESIS_REPLACED'
+  | 'SEQUENCE_GAP'
+  | 'REORDERED'
+  | 'GENESIS_INVALID'
+  | 'PREVIOUS_HASH_MISMATCH'
+  | 'HASH_MISMATCH'
+  | 'TENANT_MISMATCH'
+  | 'PII_IN_CHAIN';
+
+export interface ChainVerificationResult {
+  valid: boolean;
+  totalRecords: number;
+  brokenAtId?: string;
+  reason?: ChainViolation;
+}
+
+/** Checkpoint externo durável ancorado em S3 Object Lock / KMS (F5 / Issue #36). */
+export interface ExternalConsentCheckpoint {
+  organizationId: string;
+  genesisId: string;
+  genesisHash: string;
+  lastSequence: number;
+  lastHash: string;
+  anchoredAt: string;
+  signature?: string;
+}
+
+export interface IConsentExternalCheckpointStore {
+  saveCheckpoint(checkpoint: ExternalConsentCheckpoint): Promise<void>;
+  getLatestCheckpoint(organizationId: string): Promise<ExternalConsentCheckpoint | null>;
+}
+
+export class InMemoryConsentExternalCheckpointStore implements IConsentExternalCheckpointStore {
+  private readonly checkpoints = new Map<string, ExternalConsentCheckpoint>();
+
+  async saveCheckpoint(checkpoint: ExternalConsentCheckpoint): Promise<void> {
+    this.checkpoints.set(checkpoint.organizationId, { ...checkpoint });
+  }
+
+  async getLatestCheckpoint(organizationId: string): Promise<ExternalConsentCheckpoint | null> {
+    const cp = this.checkpoints.get(organizationId);
+    return cp ? { ...cp } : null;
+  }
+
+  clear(): void {
+    this.checkpoints.clear();
+  }
+}
+
+type ChainViolationFound = { reason: ChainViolation; id?: string };
+
+/** Checagem pura de UM elo (TAREFA-SANEAMENTO-038): compartilhada pelo verificador síncrono e pelo assíncrono fracionado. */
+function checkChainRecord(
+  organizationId: string,
+  chain: StoredConsentAuditEvent[],
+  i: number,
+  expectedPrev: string,
+): { violation: ChainViolationFound | null; nextPrev: string } {
+  const r = chain[i];
+  if (r.organizationId !== organizationId)
+    return { violation: { reason: 'TENANT_MISMATCH', id: r.id }, nextPrev: expectedPrev };
+  if (r.sequence !== i)
+    return {
+      violation: { reason: r.sequence < i ? 'REORDERED' : 'SEQUENCE_GAP', id: r.id },
+      nextPrev: expectedPrev,
+    };
+  if ((i === 0) !== (r.kind === 'GENESIS'))
+    return { violation: { reason: 'GENESIS_INVALID', id: r.id }, nextPrev: expectedPrev };
+  if (r.previousHash !== expectedPrev)
+    return { violation: { reason: 'PREVIOUS_HASH_MISMATCH', id: r.id }, nextPrev: expectedPrev };
+  const { currentHash, ...content } = r;
+  if (computeConsentEventHash(content) !== currentHash)
+    return { violation: { reason: 'HASH_MISMATCH', id: r.id }, nextPrev: expectedPrev };
+  if (r.kind !== 'GENESIS' && !SUBJECT_TOKEN_PATTERN.test(r.subjectRef))
+    return { violation: { reason: 'PII_IN_CHAIN', id: r.id }, nextPrev: expectedPrev };
+  return { violation: null, nextPrev: currentHash };
+}
+
+/** Checagem da cabeça/checkpoint externo (truncamento de cauda e recriação de gênese). */
+function checkChainTail(
+  chain: StoredConsentAuditEvent[],
+  head: ConsentChainHead | null | undefined,
+  externalCheckpoint: ExternalConsentCheckpoint | null | undefined,
+): ChainViolationFound | null {
+  if (head !== undefined) {
+    if (!head) return chain.length === 0 ? null : { reason: 'HEAD_MISSING' };
+    if (chain.length === 0) return { reason: 'TRUNCATED' };
+    if (chain[0].id !== head.genesisId || chain[0].currentHash !== head.genesisHash) {
+      return { reason: 'GENESIS_REPLACED', id: chain[0].id };
+    }
+    const last = chain[chain.length - 1];
+    if (last.sequence !== head.lastSequence || last.currentHash !== head.lastHash) {
+      return { reason: 'TRUNCATED', id: last.id };
+    }
+  }
+  if (externalCheckpoint) {
+    if (chain.length === 0) return { reason: 'TRUNCATED' };
+    if (
+      chain[0].id !== externalCheckpoint.genesisId ||
+      chain[0].currentHash !== externalCheckpoint.genesisHash
+    ) {
+      return { reason: 'GENESIS_REPLACED', id: chain[0].id };
+    }
+    if (chain.length - 1 < externalCheckpoint.lastSequence) {
+      return { reason: 'TRUNCATED', id: chain[chain.length - 1]?.id };
+    }
+    const elAtCheckpoint = chain[externalCheckpoint.lastSequence];
+    if (elAtCheckpoint && elAtCheckpoint.currentHash !== externalCheckpoint.lastHash) {
+      return { reason: 'HASH_MISMATCH', id: elAtCheckpoint.id };
+    }
+  }
+  return null;
+}
+
+function chainResult(
+  organizationId: string,
+  chain: StoredConsentAuditEvent[],
+  violation: ChainViolationFound | null,
+): ChainVerificationResult {
+  if (violation) {
+    logger.error(
+      { organizationId, recordId: violation.id, reason: violation.reason },
+      'ConsentAuditChain: violação de integridade',
+    );
+    return {
+      valid: false,
+      totalRecords: chain.length,
+      brokenAtId: violation.id,
+      reason: violation.reason,
+    };
+  }
+  return { valid: true, totalRecords: chain.length };
+}
+
+/**
+ * Verificação pura da cadeia. Com `head` (ou checkpoint externo) detecta também truncamento de
+ * cauda e recriação da cadeia a partir de um novo gênese.
+ *
+ * Síncrona de propósito: adequada para cadeias pequenas (testes, rotinas pontuais). O caminho
+ * de request (`verifyChainIntegrity`) usa `verifyConsentChainAsync`, que cede o event loop a
+ * cada `yieldEvery` registros — TAREFA-SANEAMENTO-038: o hash-chaining O(n) não pode bloquear
+ * a API de onboarding em cadeias grandes.
+ */
+export function verifyConsentChain(
+  organizationId: string,
+  chain: StoredConsentAuditEvent[],
+  head?: ConsentChainHead | null,
+  externalCheckpoint?: ExternalConsentCheckpoint | null,
+): ChainVerificationResult {
+  let expectedPrev = GENESIS_HASH;
+  for (let i = 0; i < chain.length; i++) {
+    const { violation, nextPrev } = checkChainRecord(organizationId, chain, i, expectedPrev);
+    if (violation) return chainResult(organizationId, chain, violation);
+    expectedPrev = nextPrev;
+  }
+  return chainResult(organizationId, chain, checkChainTail(chain, head, externalCheckpoint));
+}
+
+const yieldToEventLoop = () => new Promise<void>((resolve) => setImmediate(resolve));
+
+/** Registros entre cedências do event loop na verificação assíncrona. */
+export const CONSENT_CHAIN_VERIFY_YIELD_EVERY = 256;
+
+/**
+ * Mesma verificação de `verifyConsentChain`, mas cede o event loop periodicamente para que
+ * cadeias longas não bloqueiem requests concorrentes (TAREFA-SANEAMENTO-038). O custo total de
+ * CPU é idêntico; apenas a fatia síncrona por iteração fica limitada a `yieldEvery` hashes.
+ */
+export async function verifyConsentChainAsync(
+  organizationId: string,
+  chain: StoredConsentAuditEvent[],
+  head?: ConsentChainHead | null,
+  externalCheckpoint?: ExternalConsentCheckpoint | null,
+  yieldEvery: number = CONSENT_CHAIN_VERIFY_YIELD_EVERY,
+): Promise<ChainVerificationResult> {
+  let expectedPrev = GENESIS_HASH;
+  for (let i = 0; i < chain.length; i++) {
+    if (yieldEvery > 0 && i > 0 && i % yieldEvery === 0) await yieldToEventLoop();
+    const { violation, nextPrev } = checkChainRecord(organizationId, chain, i, expectedPrev);
+    if (violation) return chainResult(organizationId, chain, violation);
+    expectedPrev = nextPrev;
+  }
+  return chainResult(organizationId, chain, checkChainTail(chain, head, externalCheckpoint));
+}
+
+export type SubjectPurger = (
+  organizationId: string,
+  subjectRef: string,
+) => Promise<Record<string, number>>;
+
+export class ConsentChainUnavailableError extends Error {}
+
+export interface ConsentAuditChainOptions {
+  repo: ConsentAuditChainRepository;
+  tokenizer: SubjectTokenizer;
+  externalCheckpointStore?: IConsentExternalCheckpointStore;
+  /** Retenção do registro da tarefa de expurgo após conclusão (dias). */
+  purgeTaskRetentionDays?: number;
+  maxPurgeAttempts?: number;
+  /** Somente testes: ponto de injeção de falhas. */
+  hooks?: { afterShred?: (task: ConsentPurgeTask) => Promise<void> };
+  /** Notifica outras instâncias para invalidar caches em memória (pub/sub). */
+  broadcastPurge?: (organizationId: string, subjectRef: string) => Promise<void>;
+}
+
+export class ConsentAuditChainService implements IConsentAuditChainPort {
+  private readonly purgers = new Map<string, SubjectPurger>();
+
+  constructor(private readonly opts: ConsentAuditChainOptions) {}
+
+  private assertTenant(organizationId: string): void {
+    if (!organizationId || organizationId.trim() === '') {
+      throw new Error('Tenancy violation: ConsentAuditChain exige organizationId');
+    }
+  }
+
+  private async append(
+    organizationId: string,
+    build: (seq: number, previousHash: string) => Omit<StoredConsentAuditEvent, 'currentHash'>,
+    after?: (event: StoredConsentAuditEvent, ctx: ChainLockContext) => Promise<void>,
+  ): Promise<StoredConsentAuditEvent> {
+    return this.opts.repo.withTenantLock(organizationId, async (ctx) => {
+      let tip = ctx.last;
+      let head = ctx.head;
+      if (!tip && head) {
+        // Head existe mas a cadeia sumiu: recusa recriar (F5).
+        throw new ConsentChainUnavailableError(
+          'Cadeia truncada/recriada: head existe sem registros',
+        );
+      }
+      if (!tip) {
+        const g: Omit<StoredConsentAuditEvent, 'currentHash'> = {
+          formatVersion: CONSENT_CHAIN_FORMAT_VERSION,
+          id: `gen-${randomUUID()}`,
+          kind: 'GENESIS',
+          sequence: 0,
+          organizationId,
+          subjectRef: '',
+          purpose: 'GENESIS',
+          termsVersion: `consent-chain/v${CONSENT_CHAIN_FORMAT_VERSION}`,
+          status: 'GRANTED',
+          previousHash: GENESIS_HASH,
+          occurredAt: new Date().toISOString(),
+        };
+        tip = { ...g, currentHash: computeConsentEventHash(g) };
+        // O banco (trigger #35) cria o head na gênese; a aplicação não grava head.
+        await ctx.append(tip);
+        head = null;
+      }
+      // Head só é LIDO (checagem); o trigger do #35 o avança.
+      if (head && (head.lastSequence !== tip.sequence || head.lastHash !== tip.currentHash)) {
+        throw new ConsentChainUnavailableError('Head divergente do último elo — append recusado');
+      }
+      const partial = build(tip.sequence + 1, tip.currentHash);
+      const event: StoredConsentAuditEvent = {
+        ...partial,
+        currentHash: computeConsentEventHash(partial),
+      };
+      await ctx.append(event);
+      if (after) await after(event, ctx);
+      return event;
+    });
+  }
+
+  private base(kind: ConsentChainEventKind, organizationId: string, subjectToken: string) {
+    return {
+      formatVersion: CONSENT_CHAIN_FORMAT_VERSION,
+      kind,
+      organizationId,
+      subjectRef: subjectToken,
+      occurredAt: new Date().toISOString(),
+    };
+  }
+
+  async recordConsent(input: {
+    organizationId: string;
+    subjectRef: string;
+    purpose: string;
+    termsVersion: string;
+    operatorUserId?: string;
+    retentionDays?: number;
+    /** Texto/metadados expurgáveis em ConsentEventDetail — nunca entram no hash da cadeia. */
+    detail?: string;
+  }): Promise<ConsentAuditEvent> {
+    this.assertTenant(input.organizationId);
+    if (!CONSENT_PURPOSE_PATTERN.test(input.purpose))
+      throw new Error('purpose inválido (CAIXA_ALTA_COM_UNDERSCORE)');
+    if (!TERMS_VERSION_PATTERN.test(input.termsVersion)) throw new Error('termsVersion inválido');
+    const token = await this.opts.tokenizer.tokenFor(input.organizationId, input.subjectRef);
+    const retentionUntil = input.retentionDays
+      ? new Date(Date.now() + input.retentionDays * 86_400_000).toISOString()
+      : undefined;
+    const detail = input.detail;
+    const needsDetail = Boolean(detail) || Boolean(retentionUntil);
+    const lookupId = needsDetail
+      ? await this.opts.tokenizer.lookupId(input.organizationId, input.subjectRef)
+      : undefined;
+    const event = await this.append(
+      input.organizationId,
+      (sequence, previousHash) => ({
+        ...this.base('CONSENT', input.organizationId, token),
+        id: `cst-${randomUUID()}`,
+        sequence,
+        previousHash,
+        purpose: input.purpose,
+        termsVersion: input.termsVersion,
+        operatorUserId: input.operatorUserId,
+        status: 'GRANTED',
+      }),
+      async (ev, ctx) => {
+        // Retenção e texto canônico ficam FORA da cadeia (ConsentEventDetail), expurgáveis.
+        if (needsDetail && lookupId) {
+          await ctx.saveDetail({
+            eventId: ev.id,
+            organizationId: input.organizationId,
+            subjectLookupId: lookupId,
+            detail: detail ?? '',
+            retentionUntil,
+          });
+        }
+      },
+    );
+    logger.info(
+      { id: event.id, organizationId: event.organizationId, sequence: event.sequence },
+      'ConsentAuditChain: consentimento registrado',
+    );
+    return event;
+  }
+
+  /**
+   * Revogação (art. 8º §5º / art. 18, IX). `reason` DEVE ser um `RevocationReasonCode`.
+   * Na MESMA transação: evento REVOCATION + tarefa de expurgo (outbox) + detalhe livre opcional
+   * fora da cadeia. `ERASURE_REQUEST` também agenda crypto-shredding da chave do titular.
+   */
+  async revokeConsent(
+    organizationId: string,
+    subjectRef: string,
+    reason: string,
+    operatorUserId?: string,
+    options: { detail?: string; processNow?: boolean } = {},
+  ): Promise<ConsentAuditEvent> {
+    this.assertTenant(organizationId);
+    if (!isRevocationReasonCode(reason)) {
+      throw new Error(`reason inválido: use um de ${REVOCATION_REASON_CODES.join(', ')}`);
+    }
+    const token = await this.opts.tokenizer.tokenFor(organizationId, subjectRef);
+    const lookupId = await this.opts.tokenizer.lookupId(organizationId, subjectRef);
+    const event = await this.append(
+      organizationId,
+      (sequence, previousHash) => ({
+        ...this.base('REVOCATION', organizationId, token),
+        id: `rev-${randomUUID()}`,
+        sequence,
+        previousHash,
+        purpose: 'REVOCATION',
+        termsVersion: 'REVOKED',
+        reasonCode: reason,
+        operatorUserId,
+        status: 'REVOKED',
+      }),
+      async (ev, ctx) => {
+        await ctx.enqueuePurge({
+          id: `prg-${randomUUID()}`,
+          organizationId,
+          revocationEventId: ev.id,
+          subjectRef,
+          shredSubjectKey: reason === 'ERASURE_REQUEST',
+          status: 'PENDING',
+          attempts: 0,
+          nextAttemptAt: new Date().toISOString(),
+        });
+        if (options.detail) {
+          await ctx.saveDetail({
+            eventId: ev.id,
+            organizationId,
+            subjectLookupId: lookupId,
+            detail: options.detail,
+          });
+        }
+      },
+    );
+    logger.warn(
+      { id: event.id, organizationId, reason },
+      'ConsentAuditChain: consentimento REVOGADO',
+    );
+    if (options.processNow !== false) {
+      // Melhor esforço imediato; falhas ficam na outbox para o worker de reconciliação.
+      await this.processPendingPurges().catch((err) =>
+        logger.error(
+          { err, organizationId },
+          'ConsentAuditChain: expurgo imediato falhou; ficará pendente',
+        ),
+      );
+    }
+    return event;
+  }
+
+  /** Define o publicador de invalidação entre instâncias (wiring do bootstrap). */
+  /** Pseudônimo estável do titular (HMAC com o segredo do tenant) — para mensagens entre instâncias. */
+  async subjectPseudonym(organizationId: string, subjectRef: string): Promise<string> {
+    return this.opts.tokenizer.lookupId(organizationId, subjectRef);
+  }
+
+  /** Offboarding do tenant: destrói o segredo do tenant (crypto-shredding de todos os titulares). */
+  async destroyTenantKey(organizationId: string): Promise<void> {
+    await this.opts.tokenizer.destroyTenantKey(organizationId);
+    logger.warn({ organizationId }, 'ConsentAuditChain: segredo do tenant destruído (offboarding)');
+  }
+
+  setPurgeBroadcaster(fn: ConsentAuditChainOptions['broadcastPurge']): void {
+    this.opts.broadcastPurge = fn;
+  }
+
+  /** Registra um consumidor de expurgo (wiring explícito no bootstrap; deve ser idempotente). */
+  registerPurger(name: string, purger: SubjectPurger): void {
+    this.purgers.set(name, purger);
+  }
+
+  /**
+   * Processa a outbox de expurgo: idempotente e reprocessável (retry com backoff exponencial).
+   * Ao concluir: grava RETRACTION (token + contagens, sem PII), aplica crypto-shredding se
+   * pedido, anula `subjectRef` da tarefa e define a retenção do registro.
+   */
+  /**
+   * Worker da outbox: itera POR ORGANIZAÇÃO (RLS sem bypass), trava uma tarefa por vez com
+   * SKIP LOCKED e processa de forma idempotente. Ao concluir: RETRACTION (sem PII), shred se
+   * pedido, `subjectRef` anulado e retenção do registro da tarefa.
+   */
+  async processPendingPurges(
+    limit = 50,
+    now = new Date(),
+  ): Promise<{ done: number; failed: number }> {
+    let done = 0;
+    let failed = 0;
+    for (const organizationId of await this.opts.repo.listTenants()) {
+      while (done + failed < limit) {
+        let ok = false;
+        const claimed = await this.opts.repo.withNextDuePurge(organizationId, now, async (task) => {
+          try {
+            const updated = await this.runPurgeTask(task, now);
+            ok = true;
+            return updated;
+          } catch (err) {
+            const attempts = task.attempts + 1;
+            const dead = attempts >= (this.opts.maxPurgeAttempts ?? 10);
+            logger.error({ taskId: task.id, attempts, dead }, 'ConsentAuditChain: expurgo falhou');
+            return {
+              ...task,
+              attempts,
+              status: dead ? 'DEAD' : 'PENDING',
+              nextAttemptAt: new Date(
+                now.getTime() + Math.min(2 ** attempts, 3600) * 1000,
+              ).toISOString(),
+              lastError: err instanceof Error ? err.message.slice(0, 200) : 'erro',
+            };
+          }
+        });
+        if (!claimed) break;
+        if (ok) done++;
+        else failed++;
+      }
+      await this.opts.repo.deleteExpiredPurges(organizationId, now);
+    }
+    return { done, failed };
+  }
+
+  private async runPurgeTask(task: ConsentPurgeTask, now: Date): Promise<ConsentPurgeTask> {
+    if (!task.subjectRef) throw new Error('Tarefa sem subjectRef');
+    const subjectRef = task.subjectRef;
+    const counts: Record<string, number> = {};
+    for (const [name, purger] of this.purgers) {
+      const res = await purger(task.organizationId, subjectRef);
+      for (const [k, v] of Object.entries(res)) counts[`${name}.${k}`] = v;
+    }
+    await this.opts.broadcastPurge?.(task.organizationId, subjectRef);
+    // Idempotência: RETRACTION é gravado ANTES do shred. Tombstone presente ⇒ processamento
+    // anterior já gravou o RETRACTION e caiu antes de concluir: não recria a chave nem duplica.
+    const shredded = await this.opts.tokenizer.isShredded(task.organizationId, subjectRef);
+    const alreadyRetracted =
+      shredded || (await this.hasRetractionFor(task.organizationId, task.revocationEventId));
+    if (!alreadyRetracted) {
+      const token = await this.opts.tokenizer.tokenFor(task.organizationId, subjectRef);
+      await this.append(task.organizationId, (sequence, previousHash) => ({
+        ...this.base('RETRACTION', task.organizationId, token),
+        id: `ret-${randomUUID()}`,
+        sequence,
+        previousHash,
+        purpose: `RETRACTION:${canonicalJson({ revocationEventId: task.revocationEventId, counts })}`,
+        termsVersion: 'RETRACTED',
+        status: 'REVOKED',
+      }));
+    }
+    if (task.shredSubjectKey) {
+      const { lookupId } = await this.opts.tokenizer.shred(task.organizationId, subjectRef);
+      await this.opts.repo.deleteDetailsForSubject(task.organizationId, lookupId);
+    }
+    await this.opts.hooks?.afterShred?.(task);
+    const retentionDays = this.opts.purgeTaskRetentionDays ?? 1825;
+    return {
+      ...task,
+      subjectRef: null,
+      status: 'DONE',
+      attempts: task.attempts + 1,
+      completedAt: now.toISOString(),
+      retainUntil: new Date(now.getTime() + retentionDays * 86_400_000).toISOString(),
+      lastError: undefined,
+    };
+  }
+
+  private async hasRetractionFor(
+    organizationId: string,
+    revocationEventId: string,
+  ): Promise<boolean> {
+    const chain = await this.opts.repo.listChain(organizationId);
+    return chain.some(
+      (e) =>
+        e.kind === 'RETRACTION' &&
+        e.purpose.includes(`"revocationEventId":${JSON.stringify(revocationEventId)}`),
+    );
+  }
+
+  async anchorExternalCheckpoint(
+    organizationId: string,
+  ): Promise<ExternalConsentCheckpoint | null> {
+    this.assertTenant(organizationId);
+    if (!this.opts.externalCheckpointStore) return null;
+    const head = await this.opts.repo.getHead(organizationId);
+    if (!head) return null;
+    const checkpoint: ExternalConsentCheckpoint = {
+      organizationId,
+      genesisId: head.genesisId,
+      genesisHash: head.genesisHash,
+      lastSequence: head.lastSequence,
+      lastHash: head.lastHash,
+      anchoredAt: new Date().toISOString(),
+    };
+    await this.opts.externalCheckpointStore.saveCheckpoint(checkpoint);
+    logger.info(
+      { organizationId, lastSequence: checkpoint.lastSequence, lastHash: checkpoint.lastHash },
+      'ConsentAuditChain: checkpoint externo ancorado com sucesso',
+    );
+    return checkpoint;
+  }
+
+  async verifyChainIntegrity(
+    organizationId: string,
+    options?: { checkExternal?: boolean },
+  ): Promise<ChainVerificationResult> {
+    this.assertTenant(organizationId);
+    const [chain, head, externalCheckpoint] = await Promise.all([
+      this.opts.repo.listChain(organizationId),
+      this.opts.repo.getHead(organizationId),
+      options?.checkExternal && this.opts.externalCheckpointStore
+        ? this.opts.externalCheckpointStore.getLatestCheckpoint(organizationId)
+        : Promise.resolve(null),
+    ]);
+    // Versão assíncrona fracionada (TAREFA-SANEAMENTO-038): cede o event loop a cada
+    // CONSENT_CHAIN_VERIFY_YIELD_EVERY registros para não bloquear a API em cadeias longas.
+    return verifyConsentChainAsync(organizationId, chain, head, externalCheckpoint);
+  }
+
+  async getChain(organizationId: string): Promise<StoredConsentAuditEvent[]> {
+    this.assertTenant(organizationId);
+    return this.opts.repo.listChain(organizationId);
+  }
+
+  /** Somente testes: limpa repositório em memória. */
+  clear(): void {
+    if (this.opts.repo instanceof InMemoryConsentAuditChainRepository) this.opts.repo.clear();
+  }
+}

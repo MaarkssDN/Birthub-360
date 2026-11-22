@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>03-APP-FLOW - Birth Hub 360</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Cabin, Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #101D2F 0%, #101D2F 100%);
+      color: #F5F2EA;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 60px;
+      padding: 40px;
+      background: rgba(21, 29, 47, 0.3;
+      border-radius: 20px;
+      border: 1px solid rgba(198, 155, 82, 0.2);
+    }
+
+    .header h1 {
+      font-size: 3em;
+      background: linear-gradient(135deg, #C69B52 0%, #E4BC76 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .header .subtitle {
+      color: #58616C;
+      font-size: 1.2em;
+    }
+
+    .metadata {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .metadata-item {
+      background: rgba(198, 155, 82, 0.1);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9em;
+      border: 1px solid rgba(198, 155, 82, 0.3);
+    }
+
+    .nav-bar {
+      position: sticky;
+      top: 20px;
+      background: rgba(16, 29, 47, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 15px 30px;
+      border-radius: 15px;
+      border: 1px solid rgba(198, 155, 82, 0.2);
+      margin-bottom: 40px;
+      z-index: 100;
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+    }
+
+    .nav-bar a {
+      color: #F5F2EA;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+
+    .nav-bar a:hover {
+      background: rgba(198, 155, 82, 0.2);
+    }
+
+    .section {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 20px;
+      padding: 40px;
+      margin-bottom: 30px;
+      border: 1px solid rgba(216, 214, 207, 0.3;
+    }
+
+    .section h2 {
+      color: #C69B52;
+      margin-bottom: 30px;
+      font-size: 2em;
+      border-bottom: 2px solid rgba(198, 155, 82, 0.3);
+      padding-bottom: 15px;
+    }
+
+    .section h3 {
+      color: #E4BC76;
+      margin: 25px 0 15px 0;
+      font-size: 1.5em;
+    }
+
+    .flow-diagram {
+      background: rgba(16, 29, 47, 0.5);
+      padding: 30px;
+      border-radius: 15px;
+      margin: 20px 0;
+      font-family: 'IBM Plex Mono, Courier New', monospace;
+      font-size: 0.9em;
+      overflow-x: auto;
+      border: 1px solid rgba(198, 155, 82, 0.2);
+    }
+
+    .route-card {
+      background: rgba(21, 29, 47, 0.3;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(216, 214, 207, 0.3;
+      margin: 15px 0;
+    }
+
+    .route-card h4 {
+      color: #C69B52;
+      margin-bottom: 10px;
+      font-size: 1.1em;
+    }
+
+    .route-card .path {
+      font-family: 'IBM Plex Mono, Courier New', monospace;
+      color: #58616C;
+      font-size: 0.9em;
+      margin: 5px 0;
+    }
+
+    .route-card .description {
+      color: #94a3b8;
+      font-size: 0.9em;
+      margin: 8px 0;
+    }
+
+    .route-card .guards {
+      margin-top: 10px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.8em;
+      font-weight: 600;
+      margin: 0 5px 5px 0;
+    }
+
+    .badge-auth {
+      background: rgba(59, 130, 246, 0.2);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .badge-role {
+      background: rgba(168, 85, 247, 0.2);
+      color: #a78bfa;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+
+    .badge-module {
+      background: rgba(234, 179, 8, 0.2);
+      color: #facc15;
+      border: 1px solid rgba(234, 179, 8, 0.3);
+    }
+
+    .flow-step {
+      background: rgba(16, 29, 47, 0.3);
+      padding: 15px;
+      border-radius: 10px;
+      margin: 10px 0;
+      border-left: 3px solid #C69B52;
+    }
+
+    .flow-step h4 {
+      color: #E4BC76;
+      margin-bottom: 8px;
+    }
+
+    .flow-step p {
+      color: #58616C;
+      font-size: 0.9em;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+
+    th,
+    td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid rgba(216, 214, 207, 0.3;
+    }
+
+    th {
+      background: rgba(198, 155, 82, 0.1);
+      color: #C69B52;
+    }
+
+    tr:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .evidence {
+      background: rgba(16, 29, 47, 0.5);
+      padding: 15px;
+      border-radius: 8px;
+      margin: 10px 0;
+      font-family: 'IBM Plex Mono, Courier New', monospace;
+      font-size: 0.85em;
+      border-left: 3px solid #C69B52;
+    }
+
+    .evidence-code {
+      color: #C69B52;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 60px;
+      padding: 30px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 20px;
+      border: 1px solid rgba(216, 214, 207, 0.3;
+    }
+
+    .footer a {
+      color: #C69B52;
+      text-decoration: none;
+      margin: 0 15px;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 2em;
+      }
+
+      .nav-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .section {
+        padding: 25px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>APPLICATION FLOW & USER JOURNEY</h1>
+      <div class="subtitle">Birth Hub 360 — Fluxos de Aplicação e Jornada do Usuário</div>
+      <div class="metadata">
+        <div class="metadata-item">📅 Analysis: 2026-09-25</div>
+        <div class="metadata-item">🌿 Branch: main</div>
+        <div class="metadata-item">📝 Commit: 1dec130b</div>
+        <div class="metadata-item">🔀 Router: React Router DOM 7.18.1</div>
+      </div>
+    </div>
+
+    <nav class="nav-bar">
+      <a href="#overview">Visão Geral</a>
+      <a href="#authentication">Autenticação</a>
+      <a href="#authenticated-flows">Fluxos Autenticados</a>
+      <a href="#unauthenticated-flows">Fluxos Não Autenticados</a>
+      <a href="#admin-flows">Fluxos Administrativos</a>
+      <a href="#guards">Guards e Proteção</a>
+      <a href="07-REPOSITORY-EVIDENCE.html">📋 Evidências</a>
+    </nav>
+
+    <div class="section" id="overview">
+      <h2>🗺️ Visão Geral da Aplicação</h2>
+
+      <h3>Arquitetura de Navegação</h3>
+      <p>Aplicação React SPA com React Router DOM 7.18.1, organizada em rotas aninhadas sob <code>/app/*</code> para
+        oauthenticated content e rotas públicas para login/landing.</p>
+
+      <div class="flow-diagram">
+        <pre>
+┌─────────────────────────────────────────────────────────────────┐
+│                        PUBLIC ROUTES                             │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
+│  │     /       │  │  /welcome    │  │  /login      │          │
+│  │ WelcomeScreen│  │ WelcomeScreen│  │ LoginScreen  │          │
+│  └──────────────┘  └──────────────┘  └──────┬───────┘          │
+│                                                 │                 │
+└─────────────────────────────────────────────────┼─────────────────┘
+                                                  │ Authenticated
+┌─────────────────────────────────────────────────┼─────────────────┐
+│                      PROTECTED /app/*           │                 │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │                    MainLayout                             │   │
+│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │   │
+│  │  │ Sidebar  │  │ Topbar   │  │ Content  │              │   │
+│  │  └──────────┘  └──────────┘  └────┬─────┘              │   │
+│  └───────────────────────────────────────┼──────────────────┘   │
+└───────────────────────────────────────────┼──────────────────────┘
+                                               │
+┌───────────────────────────────────────────┼──────────────────────┐
+│                   AUTHENTICATED MODULES     │                      │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
+│  │/app      │  │/app/crm  │  │/app/     │  │/app/     │       │
+│  │Dashboard │  │  Board   │  │prospect  │  │intelligence│      │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘       │
+│                                                                 │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
+│  │/app/     │  │/app/     │  │/app/     │  │/app/     │       │
+│  │companies │  │contacts │  │commercial│  │market-   │       │
+│  │          │  │          │  │_intelligence│intelligence│     │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘       │
+└───────────────────────────────────────────────────────────────────┘
+</pre>
+      </div>
+
+      <h3>Componentes de Layout</h3>
+      <ul class="component-list">
+        <li><strong>MainLayout:</strong> Layout principal com Sidebar, Topbar e Content Area</li>
+        <li><strong>Sidebar:</strong> Navegação lateral com itens condicionais por papel</li>
+        <li><strong>AppTopbar:</strong> Barra superior com notificações e user menu</li>
+        <li><strong>ProtectedRoute:</strong> Guard de autenticação</li>
+        <li><strong>RequireRole:</strong> Guard de autorização por papel</li>
+        <li><strong>RequireModuleAccess:</strong> Guard de acesso a módulos executivos</li>
+      </ul>
+
+      <div class="evidence"><span class="evidence-code">src/App.tsx, src/components/layout/MainLayout.tsx</span></div>
+    </div>
+
+    <div class="section" id="authentication">
+      <h2>🔐 Fluxo de Autenticação</h2>
+
+      <h3>Login Flow</h3>
+      <div class="flow-step">
+        <h4>1. Acesso à Tela de Login</h4>
+        <p>Usuário acessa <code>/login</code> → <code>LoginScreen</code> component</p>
+        <div class="evidence"><span class="evidence-code">src/features/auth/components/LoginScreen.tsx</span></div>
+      </div>
+
+      <div class="flow-step">
+        <h4>2. Escolha do Método de Login</h4>
+        <p>Opções: E-mail/senha ou Google OAuth (se configurado)</p>
+      </div>
+
+      <div class="flow-step">
+        <h4>3. Submissão de Credenciais</h4>
+        <p>POST para <code>/api/auth/sign-in/email</code> ou OAuth callback</p>
+        <div class="evidence"><span class="evidence-code">src/lib/auth.ts (Better Auth)</span></div>
+      </div>
+
+      <div class="flow-step">
+        <h4>4. Sucesso de Autenticação</h4>
+        <p>Cookie de sessão definido → Redirecionamento para <code>/app</code></p>
+      </div>
+
+      <div class="flow-step">
+        <h4>5. Primeiro Acesso</h4>
+        <p>Se senha temporária → <code>ChangePasswordGate</code> → <code>WelcomeScreen</code></p>
+      </div>
+
+      <h3>Cadastro Flow</h3>
+      <div class="flow-step">
+        <h4>1. Acesso à Tela de Cadastro</h4>
+        <p>Usuário acessa <code>/welcome</code> → <code>WelcomeScreen</code> com formulário de cadastro</p>
+      </div>
+
+      <div class="flow-step">
+        <h4>2. Preenchimento de Dados</h4>
+        <p>Nome, e-mail, senha (validação Zod)</p>
+      </div>
+
+      <div class="flow-step">
+        <h4>3. Criação de Conta</h4>
+        <p>POST para <code>/api/auth/sign-up/email</code> → Criação de User + Organization</p>
+      </div>
+
+      <div class="flow-step">
+        <h4>4. Verificação de E-mail</h4>
+        <p>Envio de e-mail de verificação (se SMTP configurado)</p>
+      </div>
+
+      <div class="flow-step">
+        <h4>5. Login Automático</h4>
+        <p>Após verificação → Redirecionamento para <code>/app</code></p>
+      </div>
+    </div>
+
+    <div class="section" id="authenticated-flows">
+      <h2>📱 Fluxos Autenticados</h2>
+
+      <h3>Dashboard Flow</h3>
+      <div class="route-card">
+        <h4>Dashboard Principal</h4>
+        <div class="path">/app (ou /app/dashboard)</div>
+        <div class="description">Dashboard adaptativo com visão geral de atividades, métricas e atalhos</div>
+        <div class="guards">
+          <span class="badge badge-auth">Autenticado</span>
+          <span class="badge badge-module">Todos os papéis</span>
+        </div>
+        <div class="evidence"><span class="evidence-code">src/features/dashboard/components/AdaptiveDashboard.tsx</span>
+        </div>
+      </div>
+
+      <h3>CRM Flow</h3>
+      <div class="route-card">
+        <h4>CRM Board (Pipeline Kanban)</h4>
+        <div class="path">/app/crm</div>
+        <div class="description">Pipeline visual Kanban de leads com drag-and-drop, filtros e views salvas</div>
+        <div class="guards">
+          <span class="badge badge-auth">Autenticado</span>
+          <span class="badge badge-module">Todos os papéis</span>
+        </div>
+        <div class="evidence"><span class="evidence-code">src/components/CrmBoard.tsx</span></div>
+      </div>
+
+      <div class="route-card">
+        <h4>CRM360 Overview</h4>
+        <div class="path">/app/crm360</div>
+        <div class="description">Visão executiva do CRM com KPIs, cards de atalho e métricas agregadas</div>
+        <div class="guards">
+          <span class="badge badge-auth">Autenticado</span>
+          <span class="badge badge-module">Todos os papéis</span>
+        </div>
+        <div class="evidence"><span class="evidence-code">src/features/crm360/components/CrmOverview.tsx</span></div>
+      </div>
+
+      <h3>Prospecção Flow</h3>
+      <div class="route-card">
+        <h4>Hub de Prospecção</h4>
+        <div class="path">/app/prospect</div>
+        <div class="description">Descoberta de prospects via Apollo/IA, enriquecimento de CNPJ e promoção para CRM</div>
+        <div class="guards">
+          <span class="badge badge-auth">Autenticado</span>
+          <span class="badge badge-module">SDR, CLOSER, GESTOR, ADMIN</span>
+        </div>
+        <div class="evidence"><span class="evidence-code">src/features/prospecting/components/ProspectingHub.tsx</span>
+        </div>
+      </div>
+
+      <h3>Inteligência Flow</h3>
+      <div class="route-card">
+        <h4>Hub de IA</h4>
+        <div class="path">/app/intelligence</div>
+        <div class="description">Toolkit de 20 funções de IA para geração de conteúdo e análise</div>
+        <div class="guards">
+          <span class="badge badge-auth">Autenticado</span>
+          <span class="badge badge-module">Todos os papéis</span>
+        </div>
+        <div class="evidence"><span
+            class="evidence-code">src/features/intelligence/components/IntelligenceHub.tsx</span></div>
+      </div>
+
+      <div class="route-card">
+        <h4>Agente Comercial de Elite</h4>
+        <div class="path">/app/intelligence/elite-agent</div>
+        <div class="description">Workspace do agente comercial conversacional (NBA)</div>
+        <div class="guards">
+          <span class="badge badge-auth">Autenticado</span>
+          <span class="badge badge-module">Todos os papéis</span>
+        </div>
+        <div class="evidence"><span
+            class="evidence-code">src/features/intelligence/components/EliteCommercialAgentWorkspace.tsx</span></div>
+      </div>
+
+      <h3>Comercial Inteligente Flow</h3>
+      <div class="route-card">
+        <h4>Comercial Inteligente</h4>
+        <div class="path">/app/commercial_intelligence</div>
+        <div class="description">Módulo executivo com dashboards, forecasts e detecção de riscos</div>
+        <div class="guards">
+          <span class="badge badge-auth">Autenticado</span>
+          <span class="badge badge-role">ADMIN, GESTOR</span>
+        </div>
+        <div class="evidence"><span
+            class="evidence-code">src/features/commercial-intelligence/components/CommercialIntelligenceHub.tsx</span>
+        </div>
+      </div>
+
+      <div class="route-card">
+        <h4>Plano Diário</h4>
+        <div class="path">/app/daily-plan</div>
+        <div class="description">Planejamento diário de atividades comerciais</div>
+        <div class="guards">
+          <span class="badge badge-auth">Autenticado</span>
+          <span class="badge badge-role">ADMIN, GESTOR</span>
+        </div>
+        <div class="evidence"><span
+            class="evidence-code">src/features/commercial-intelligence/components/DailyPlanHub.tsx</span></div>
+      </div>
+
+      <h3>Market Intelligence Flow</h3>
+      <div class="route-card">
+        <h4>LDR (Lead Dataset Request)</h4>
+        <div class="path">/app/market-intelligence</div>
+        <div class="description">Universo empresarial oficial com dados de Receita Federal</div>
+        <div class="guards">
+          <span class="badge badge-auth">Autenticado</span>
+          <span class="badge badge-module">Todos os papéis</span>
+        </div>
+        <div class="evidence"><span class="evidence-code">src/pages/Ldr.tsx</span></div>
+      </div>
+
+      <div class="route-card">
+        <h4>Account 360</h4>
+        <div class="path">/app/market-intelligence/accounts/:id</div>
+        <div class="description">Visão detalhada de uma empresa do universo oficial</div>
+        <div class="guards">
+          <span class="badge badge-auth">Autenticado</span>
+          <span class="badge badge-module">Todos os papéis</span>
+        </div>
+        <div class="evidence"><span
+            class="evidence-code">src/features/market-intelligence/components/Account360.tsx</span></div>
+      </div>
+    </div>
+
+    <div class="section" id="unauthenticated-flows">
+      <h2>🌐 Fluxos Não Autenticados</h2>
+
+      <div class="route-card">
+        <h4>Landing Page / Welcome</h4>
+        <div class="path">/ ou /welcome</div>
+        <div class="description">Tela institucional com hero, emblema e CTA "Explorar Hub"</div>
+        <div class="guards">
+          <span class="badge badge-auth">Público</span>
+        </div>
+        <div class="evidence"><span class="evidence-code">src/features/auth/components/WelcomeScreen.tsx</span></div>
+      </div>
+
+      <div class="route-card">
+        <h4>Login Screen</h4>
+        <div class="path">/login</div>
+        <div class="description">Formulário de login com e-mail/senha e OAuth</div>
+        <div class="guards">
+          <span class="badge badge-auth">Público</span>
+        </div>
+        <div class="evidence"><span class="evidence-code">src/features/auth/components/LoginScreen.tsx</span></div>
+      </div>
+
+      <div class="route-card">
+        <h4>Reset Password</h4>
+        <div class="path">/reset-password</div>
+        <div class="description">Formulário de recuperação de senha</div>
+        <div class="guards">
+          <span class="badge badge-auth">Público</span>
+        </div>
+        <div class="evidence"><span class="evidence-code">src/features/auth/components/ResetPasswordScreen.tsx</span>
+        </div>
+      </div>
+
+      <div class="route-card">
+        <h4>Política de Privacidade</h4>
+        <div class="path">/privacy</div>
+        <div class="description">Página de política de privacidade</div>
+        <div class="guards">
+          <span class="badge badge-auth">Público</span>
+        </div>
+        <div class="evidence"><span class="evidence-code">src/pages/PrivacyPolicy.tsx</span></div>
+      </div>
+
+      <div class="route-card">
+        <h4>Termos de Uso</h4>
+        <div class="path">/terms</div>
+        <div class="description">Página de termos de uso</div>
+        <div class="guards">
+          <span class="badge badge-auth">Público</span>
+        </div>
+        <div class="evidence"><span class="evidence-code">src/pages/TermsOfUse.tsx</span></div>
+      </div>
+    </div>
+
+    <div class="section" id="admin-flows">
+      <h2>⚙️ Fluxos Administrativos</h2>
+
+      <div class="route-card">
+        <h4>Team Management</h4>
+        <div class="path">/app/team</div>
+        <div class="description">Gestão de usuários, papéis e convites</div>
+        <div class="guards">
+          <span class="badge badge-auth">Autenticado</span>
+          <span class="badge badge-role">ADMIN</span>
+        </div>
+        <div class="evidence"><span class="evidence-code">src/features/team/components/Team.tsx</span></div>
+      </div>
+
+      <div class="route-card">
+        <h4>Module Access</h4>
+        <div class="path">/app/module-access</div>
+        <div class="description">Administração de acesso a módulos executivos</div>
+        <div class="guards">
+          <span class="badge badge-auth">Autenticado</span>
+          <span class="badge badge-role">ADMIN</span>
+        </div>
+        <div class="evidence"><span
+            class="evidence-code">src/features/module-access/components/ModuleAccessAdmin.tsx</span></div>
+      </div>
+
+      <div class="route-card">
+        <h4>Usage / Billing</h4>
+        <div class="path">/app/usage</div>
+        <div class="description">Consumo de IA e billing por organização</div>
+        <div class="guards">
+          <span class="badge badge-auth">Autenticado</span>
+          <span class="badge badge-role">ADMIN, GESTOR</span>
+        </div>
+        <div class="evidence"><span class="evidence-code">src/features/billing/components/Billing.tsx</span></div>
+      </div>
+
+      <div class="route-card">
+        <h4>Settings</h4>
+        <div class="path">/app/settings</div>
+        <div class="description">Configurações da organização e preferências do usuário</div>
+        <div class="guards">
+          <span class="badge badge-auth">Autenticado</span>
+          <span class="badge badge-module">Todos os papéis</span>
+        </div>
+        <div class="evidence"><span class="evidence-code">src/features/settings/components/Settings.tsx</span></div>
+      </div>
+    </div>
+
+    <div class="section" id="guards">
+      <h2>🛡️ Guards e Proteção de Rotas</h2>
+
+      <h3>Componentes de Guard</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Guard</th>
+            <th>Propósito</th>
+            <th>Lógica</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ProtectedRoute</td>
+            <td>Verifica autenticação</td>
+            <td>Redireciona para /login se não autenticado</td>
+          </tr>
+          <tr>
+            <td>RequireRole</td>
+            <td>Verifica papel (RBAC)</td>
+            <td>Verifica hierarquia de papéis via authorization.ts</td>
+          </tr>
+          <tr>
+            <td>RequireModuleAccess</td>
+            <td>Verifica acesso a módulo executivo</td>
+            <td>Consulta ModuleAccessGrant no banco</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Proteção no Backend</h3>
+      <ul class="component-list">
+        <li><strong>authenticateToken:</strong> Middleware que valida sessão Better Auth</li>
+        <li><strong>requireTenant:</strong> Middleware que resolve organizationId da sessão</li>
+        <li><strong>requireRole:</strong> Middleware que verifica papel via authorization.ts</li>
+        <li><strong>Rate Limiting:</strong> Limites por IP, organização e rota específica</li>
+      </ul>
+
+      <div class="evidence"><span class="evidence-code">src/components/layout/ProtectedRoute.tsx,
+          src/components/layout/RequireRole.tsx, src/shared/middlewares/</span></div>
+
+      <h3>Proteção Defesa em Profundidade</h3>
+      <p>Rotas sensíveis (Commercial Intelligence, Mesa de Tratamento, Copiloto IA) têm proteção dupla: guard no
+        frontend E middleware no backend. Isso previne acesso via URL direto.</p>
+
+      <div class="evidence"><span class="evidence-code">src/App.tsx (exemplos de RequireRole),
+          src/bootstrap/routes.ts</span></div>
+    </div>
+
+    <div class="footer">
+      <p>📖 <a href="00-INDEX.html">← Documentation Hub</a></p>
+      <p style="margin-top: 20px; color: #58616C;">Generated by Repository Documentation Architect V5 • 2026-09-25</p>
+    </div>
+  </div>
+</body>
+
+</html>

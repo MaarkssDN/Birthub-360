@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Auditoria de Dívida Técnica — Squad 70 · IA, Automações e Enxame Autônomo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #a855f7;
+      --p0: #ef4444;
+      --p1: #f97316;
+      --p2: #eab308;
+      --p3: #3b82f6;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 24px;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header {
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-p0 { background: rgba(239, 68, 68, 0.2); color: var(--p0); border: 1px solid var(--p0); }
+    .badge-p1 { background: rgba(249, 115, 22, 0.2); color: var(--p1); border: 1px solid var(--p1); }
+    .badge-p2 { background: rgba(234, 179, 8, 0.2); color: var(--p2); border: 1px solid var(--p2); }
+    .badge-p3 { background: rgba(59, 130, 246, 0.2); color: var(--p3); border: 1px solid var(--p3); }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; background: var(--card-bg); border-radius: 8px; overflow: hidden; }
+    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: #111827; font-size: 13px; text-transform: uppercase; color: var(--muted); }
+    tr:hover { background: rgba(255, 255, 255, 0.02); }
+    .agent-tag { font-weight: 600; color: var(--accent); }
+    .file-tag { font-family: monospace; font-size: 12px; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; color: #38bdf8; }
+    .nav-back { display: inline-block; margin-bottom: 16px; color: var(--muted); text-decoration: none; font-size: 14px; }
+    .nav-back:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="../dashboard/index.html" class="nav-back">← Voltar ao Dashboard Global de Dívidas Técnicas</a>
+    <header>
+      <div style="font-size: 12px; text-transform: uppercase; color: var(--accent); font-weight: bold; letter-spacing: 1px;">Auditoria Independente por Squad</div>
+      <h1 style="margin: 8px 0 4px 0;">Squad 70 · IA, Automações e Enxame Autônomo</h1>
+      <p style="color: var(--muted); margin: 0;"><strong>Coordenador Responsável:</strong> 70 — Orion (Coordenador de IA & Enxame)</p>
+      <p style="color: var(--muted); font-size: 13px; margin-top: 4px;">Data de Auditoria: 2026-11-19 | Total de Especialistas: 10 | Status: CONSOLIDADO</p>
+    </header>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Especialista</th>
+          <th>Papel Técnico</th>
+          <th>Severidade</th>
+          <th>Dívida Técnica Identificada</th>
+          <th>Impacto Potencial</th>
+          <th>Esforço</th>
+          <th>Arquivo Alvo</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+          <tr>
+            <td class="agent-tag">70</td>
+            <td style="font-weight: 600;">Orion</td>
+            <td style="color: var(--muted); font-size: 13px;">Coordenador de IA</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Chamadas a LLMs no repositório sem versionamento explícito de prompt vinculado nos logs e traces.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Impossibilidade de auditar qual prompt gerou uma resposta alucinada no passado.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/lib/ai/index.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">71</td>
+            <td style="font-weight: 600;">Clara</td>
+            <td style="color: var(--muted); font-size: 13px;">Runtime do Enxame</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Loop de reflexão do agente autônomo sem limite estrito de passos (maxSteps) em certos fluxos.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Risco de loop infinito consumindo centenas de dólares em poucos minutos.</td>
+            <td style="font-size: 13px;">Baixo</td>
+            <td><span class="file-tag">src/lib/ai/agents/supervisor.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">72</td>
+            <td style="font-weight: 600;">Ada</td>
+            <td style="color: var(--muted); font-size: 13px;">Tool Calling & Ferramentas</td>
+            <td><span class="badge badge-p0">P0</span></td>
+            <td>B-08: Ferramentas de IA (Tools) executadas sem timeout explícito: se API externa travar, agente congela.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Travamento de workers e falhas em cascata no Hub de IA.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/lib/ai/tools/registry.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">73</td>
+            <td style="font-weight: 600;">Numa</td>
+            <td style="color: var(--muted); font-size: 13px;">RAG & Vetores</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Consultas de busca semântica no PgVector sem particionamento por tenantId nos filtros do índice HNSW.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Degradação da precisão e vazamento potencial de contexto entre tenants no RAG.</td>
+            <td style="font-size: 13px;">Alto</td>
+            <td><span class="file-tag">src/lib/ai/rag/vector.service.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">74</td>
+            <td style="font-weight: 600;">Luca</td>
+            <td style="color: var(--muted); font-size: 13px;">Copiloto Comercial</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Copiloto comercial envia todo o histórico de mensagens sem janela deslizante com sumarização prévia.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Consumo excessivo de tokens e latência de resposta >6 segundos.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/features/ai-copilot/copilot.service.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">75</td>
+            <td style="font-weight: 600;">Yara</td>
+            <td style="color: var(--muted); font-size: 13px;">Resumo & Sentimento</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Análise de sentimento baseada em prompt simples de texto sem calibração para gírias brasileiras.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Classificação incorreta de clientes insatisfeitos como neutros.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/lib/ai/nlp/sentiment.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">76</td>
+            <td style="font-weight: 600;">Dex</td>
+            <td style="color: var(--muted); font-size: 13px;">Motor de Automações</td>
+            <td><span class="badge badge-p0">P0</span></td>
+            <td>Automações em cadeia não possuem detector de dependência cíclica (A dispara B que dispara A).</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Loops de execução que inundam o banco de dados e geram milhares de tarefas falsas.</td>
+            <td style="font-size: 13px;">Alto</td>
+            <td><span class="file-tag">src/features/automations/engine.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">77</td>
+            <td style="font-weight: 600;">Gaia</td>
+            <td style="color: var(--muted); font-size: 13px;">Guardrails de IA</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Ausência de filtro de guardrail para bloqueio de ataques de prompt injection indireto em campos de texto.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Risco de induzir o copiloto ou agente a ignorar instruções de segurança.</td>
+            <td style="font-size: 13px;">Alto</td>
+            <td><span class="file-tag">src/lib/ai/guardrails/input.filter.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">78</td>
+            <td style="font-weight: 600;">Oz</td>
+            <td style="color: var(--muted); font-size: 13px;">FinOps & Orçamento</td>
+            <td><span class="badge badge-p1">P1</span></td>
+            <td>Limite de custo diário com IA calculado via query agregada no Postgres em vez de contador atômico no Redis.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Atraso no corte de orçamento permitindo estouro da cota financeira da organização.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">src/lib/ai/finops/budget.service.ts</span></td>
+          </tr>
+        
+          <tr>
+            <td class="agent-tag">79</td>
+            <td style="font-weight: 600;">Mina</td>
+            <td style="color: var(--muted); font-size: 13px;">Evals & Qualidade</td>
+            <td><span class="badge badge-p2">P2</span></td>
+            <td>Avaliações com Promptfoo rodam apenas sob demanda local, sem gate automático em PRs do GitHub.</td>
+            <td style="color: #cbd5e1; font-size: 13px;">Regressões de qualidade e tom de resposta passam despercebidas para produção.</td>
+            <td style="font-size: 13px;">Médio</td>
+            <td><span class="file-tag">tests/evals/promptfoo.config.yaml</span></td>
+          </tr>
+        
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

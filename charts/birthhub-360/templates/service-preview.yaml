@@ -1,0 +1,20 @@
+{{- if .Values.blueGreen.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "birthhub-360.fullname" . }}-preview
+  labels:
+    {{- include "birthhub-360.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: 3000
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "birthhub-360.selectorLabels" . | nindent 4 }}
+    # Ver deployment.yaml/rollout.yaml/service.yaml — mesmo motivo, evita que o selector
+    # também bata com pods do worker.
+    app.kubernetes.io/component: web
+{{- end }}

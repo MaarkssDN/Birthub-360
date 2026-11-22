@@ -1,0 +1,9 @@
+{
+  "name": "testland/browser-matrix-strategy-reference",
+  "description": "Use when deciding which browsers, OS versions and devices to test: a three-tier matrix built from traffic data, quarterly re-tier reviews, a published support policy and test budget, or the case for dropping an old browser. The Playwright, Selenium Grid and cloud-grid skills run it.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.17"
+}

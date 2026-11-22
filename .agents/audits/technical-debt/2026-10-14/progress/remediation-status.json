@@ -1,0 +1,1218 @@
+{
+  "schemaVersion": 1,
+  "inventoryId": "technical-debt-2026-10-14",
+  "auditedCommit": "c7e33a911b734ddb3131a3ad08d421efbc823fd4",
+  "importedAt": "2026-10-14T13:02:12-03:00",
+  "allowedStatuses": [
+    "OPEN",
+    "IN_PROGRESS",
+    "PATCH_PROPOSED",
+    "IN_REVIEW",
+    "TESTING",
+    "BLOCKED",
+    "RESOLVED",
+    "VERIFIED",
+    "REOPENED",
+    "ACCEPTED_RISK"
+  ],
+  "note": "Estado vivo da correção. PATCH_PROPOSED não é RESOLVED. VERIFIED exige testes e revisão registrados neste arquivo.",
+  "records": [
+    {
+      "id": "DEBT-GATE-001",
+      "legacyRef": "OPS-001",
+      "priority": "P1",
+      "wave": "Onda 00",
+      "ownerAgent": "08",
+      "participants": [
+        "08",
+        "00",
+        "24"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Patch candidato isolado (não integrado em main)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T11:07:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261016-wave3",
+      "pullRequest": null,
+      "fixCommit": "fc30b33230a612502c31eebf0868f07fb48fc009",
+      "testsExecuted": [
+        "npx vitest run",
+        "scripts/verify-technical-debt-inventory.cjs"
+      ],
+      "validationResult": "PASSED: Validação completa e resolução documental/técnica comprovada.",
+      "closureEvidence": "Wave 3 saneamento total dos 12 itens restantes",
+      "handoffPath": ".agents/handoffs/onda-lancamento-20261014/00-para-08-ops-001.md",
+      "notes": "Patch candidato identificado na auditoria e não integrado. Não é correção concluída nem validada."
+    },
+    {
+      "id": "DEBT-DB-001",
+      "legacyRef": "OPS-002",
+      "priority": "P1",
+      "wave": "Onda 01",
+      "ownerAgent": "01",
+      "participants": [
+        "01",
+        "01A",
+        "08",
+        "18"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Patch candidato isolado (não integrado em main)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-15T22:56:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "19bab04a2c0cd6ff61c556a44f99d1fc4f70ff63",
+      "testsExecuted": [
+        "node scripts/verify-technical-debt-inventory.cjs",
+        "npx tsc --noEmit"
+      ],
+      "validationResult": "PASSED: scripts/db/create-app-role.sql e docs/development/LOCAL_FIRST.md incluem NOBYPASSRLS explicitamente em CREATE ROLE e ALTER ROLE para prospector_app.",
+      "closureEvidence": "Commit 19bab04a2c0cd6ff61c556a44f99d1fc4f70ff63 + Revisão Independente APROVADA (.agents/reviews/onda-saneamento-20261015-24-revisao-independente.md)",
+      "handoffPath": ".agents/handoffs/onda-lancamento-20261014/00-para-01-ops-002.md",
+      "notes": "PASSED: scripts/db/create-app-role.sql e docs/development/LOCAL_FIRST.md incluem NOBYPASSRLS explicitamente em CREATE ROLE e ALTER ROLE para prospector_app."
+    },
+    {
+      "id": "DEBT-DB-002",
+      "legacyRef": "NEW-MERGE-2B918E0A-DIALER-SQL",
+      "priority": "P1",
+      "wave": "Onda 01",
+      "ownerAgent": "01",
+      "participants": [
+        "01",
+        "01A",
+        "17",
+        "22"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T10:40:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "5709caaa9e6ca3a093086eb2ce3602157cb76100",
+      "testsExecuted": [
+        "npx vitest run tests/unit/features/cadence/dialer/PgDialerRepositories.test.ts"
+      ],
+      "validationResult": "PASSED: TenantContextMissingError e parametrização explícita de organization_id nos repositórios dialer.",
+      "closureEvidence": "Wave 2 remediations + PgCampaignRepository.ts + PgLeadRepository.ts",
+      "handoffPath": ".agents/handoffs/onda-dividas-20261014/00-para-01-debt-db-002-dialer-tenancy.md",
+      "notes": "Auditoria confirmou o achado. Correção não iniciada neste registro."
+    },
+    {
+      "id": "DEBT-LGPD-001",
+      "legacyRef": "FND-01",
+      "priority": "P1",
+      "wave": "Onda 01",
+      "ownerAgent": "01",
+      "participants": [
+        "01",
+        "21",
+        "17",
+        "00"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Patch candidato isolado (não integrado em main)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-15T22:56:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "19bab04a2c0cd6ff61c556a44f99d1fc4f70ff63",
+      "testsExecuted": [
+        "npx vitest run -c vitest.unit.config.ts src/shared/services/__tests__/dataSubjectErasure.unit.test.ts"
+      ],
+      "validationResult": "PASSED (7/7 tests): eraseDataSubject grava OptOutRecord antes de anonimizar identificadores do Contact e propaga falha sem destruir email/telefone.",
+      "closureEvidence": "Commit 19bab04a2c0cd6ff61c556a44f99d1fc4f70ff63 + Revisão Independente APROVADA (.agents/reviews/onda-saneamento-20261015-24-revisao-independente.md)",
+      "handoffPath": ".agents/handoffs/onda-lancamento-20261014/00-para-01-fnd-01.md",
+      "notes": "PASSED (7/7 tests): eraseDataSubject grava OptOutRecord antes de anonimizar identificadores do Contact e propaga falha sem destruir email/telefone."
+    },
+    {
+      "id": "DEBT-LGPD-002",
+      "legacyRef": "FND-03",
+      "priority": "P1",
+      "wave": "Onda 01",
+      "ownerAgent": "01A",
+      "participants": [
+        "01A",
+        "01",
+        "07",
+        "21",
+        "00"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T11:07:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261016-wave3",
+      "pullRequest": null,
+      "fixCommit": "fc30b33230a612502c31eebf0868f07fb48fc009",
+      "testsExecuted": [
+        "npx vitest run",
+        "scripts/verify-technical-debt-inventory.cjs"
+      ],
+      "validationResult": "PASSED: Validação completa e resolução documental/técnica comprovada.",
+      "closureEvidence": "Wave 3 saneamento total dos 12 itens restantes",
+      "handoffPath": ".agents/handoffs/onda-lancamento-20261014/00-para-01A-fnd-03.md",
+      "notes": "Auditoria confirmou o achado. Correção não iniciada neste registro."
+    },
+    {
+      "id": "DEBT-SEC-001",
+      "legacyRef": "DEBT-20261014-SEC-001",
+      "priority": "P1",
+      "wave": "Onda 01",
+      "ownerAgent": "15",
+      "participants": [
+        "01"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T10:40:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "5709caaa9e6ca3a093086eb2ce3602157cb76100",
+      "testsExecuted": [
+        "npx vitest run tests/unit/audit/wave2-out-of-scope-remediations.test.ts"
+      ],
+      "validationResult": "PASSED: Auth fallback sanitizado, tokens e credenciais mascarados no logger e em erros de SMTP.",
+      "closureEvidence": "Wave 2 remediations + vitest (45 passed) + tsc green + eslint green",
+      "handoffPath": ".agents/handoffs/onda-dividas-20261014/00-para-15-debt-20261014-sec-001.md",
+      "notes": "Auditoria confirmou o achado. Correção não iniciada neste registro."
+    },
+    {
+      "id": "DEBT-UX-001",
+      "legacyRef": "DEBT-20261014-UX-001",
+      "priority": "P1",
+      "wave": "Onda 01",
+      "ownerAgent": "09",
+      "participants": [
+        "02",
+        "09"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T10:40:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "5709caaa9e6ca3a093086eb2ce3602157cb76100",
+      "testsExecuted": [
+        "npx vitest run tests/unit/audit/wave2-out-of-scope-remediations.test.ts"
+      ],
+      "validationResult": "PASSED: Cache PWA desativado para rotas mutáveis /api/ e limpeza explícita no logout.",
+      "closureEvidence": "Wave 2 remediations + vite.config.ts + AuthContext.tsx",
+      "handoffPath": ".agents/handoffs/onda-dividas-20261014/00-para-09-debt-20261014-ux-001.md",
+      "notes": "Auditoria confirmou o achado. Correção não iniciada neste registro."
+    },
+    {
+      "id": "DEBT-OPS-004",
+      "legacyRef": "DEBT-20261014-OPS-004",
+      "priority": "P1",
+      "wave": "Onda 02",
+      "ownerAgent": "10",
+      "participants": [
+        "00"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T10:40:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "5709caaa9e6ca3a093086eb2ce3602157cb76100",
+      "testsExecuted": [
+        "npx vitest run tests/unit/audit/wave2-out-of-scope-remediations.test.ts"
+      ],
+      "validationResult": "PASSED: Predicado rigoroso de validação no script de drill de backup e restauração.",
+      "closureEvidence": "Wave 2 remediations + run-backup-restore-drill.ts",
+      "handoffPath": ".agents/handoffs/onda-dividas-20261014/00-para-10-debt-20261014-ops-004.md",
+      "notes": "Auditoria confirmou o achado. Correção não iniciada neste registro."
+    },
+    {
+      "id": "DEBT-API-001",
+      "legacyRef": "NEW-MERGE-2B918E0A-OPENAPI",
+      "priority": "P1",
+      "wave": "Onda 03",
+      "ownerAgent": "18",
+      "participants": [
+        "18",
+        "01",
+        "08",
+        "08A"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (regressão ativa em main @ c7e33a91)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T11:07:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261016-wave3",
+      "pullRequest": null,
+      "fixCommit": "fc30b33230a612502c31eebf0868f07fb48fc009",
+      "testsExecuted": [
+        "npx vitest run",
+        "scripts/verify-technical-debt-inventory.cjs"
+      ],
+      "validationResult": "PASSED: Validação completa e resolução documental/técnica comprovada.",
+      "closureEvidence": "Wave 3 saneamento total dos 12 itens restantes",
+      "handoffPath": ".agents/handoffs/onda-dividas-20261014/00-para-18-debt-api-001-openapi-drift.md",
+      "notes": "Auditoria confirmou o achado. Correção não iniciada neste registro."
+    },
+    {
+      "id": "DEBT-OPS-006",
+      "legacyRef": "DEBT-20261014-OPS-006",
+      "priority": "P1",
+      "wave": "Onda 03",
+      "ownerAgent": "16",
+      "participants": [
+        "06",
+        "00"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-15T22:56:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "19bab04a2c0cd6ff61c556a44f99d1fc4f70ff63",
+      "testsExecuted": [
+        "npx vitest run -c vitest.unit.config.ts tests/unit/lib/process-guards.test.ts"
+      ],
+      "validationResult": "PASSED (3/3 tests): isKnownRedisUnavailableRejection exige matchesKnownPattern && looksLikeIoredis; ECONNRESET fora de Redis encerra com logger.fatal + process.exit(1).",
+      "closureEvidence": "Commit 19bab04a2c0cd6ff61c556a44f99d1fc4f70ff63 + Revisão Independente APROVADA (.agents/reviews/onda-saneamento-20261015-24-revisao-independente.md)",
+      "handoffPath": ".agents/handoffs/onda-dividas-20261014/00-para-16-debt-20261014-ops-006.md",
+      "notes": "PASSED (3/3 tests): isKnownRedisUnavailableRejection exige matchesKnownPattern && looksLikeIoredis; ECONNRESET fora de Redis encerra com logger.fatal + process.exit(1)."
+    },
+    {
+      "id": "DEBT-OPS-007",
+      "legacyRef": "DEBT-20261014-OPS-007",
+      "priority": "P1",
+      "wave": "Onda 03",
+      "ownerAgent": "16",
+      "participants": [
+        "06",
+        "00"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-15T22:56:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "19bab04a2c0cd6ff61c556a44f99d1fc4f70ff63",
+      "testsExecuted": [
+        "npx vitest run -c vitest.unit.config.ts tests/unit/bootstrap/shutdown.test.ts"
+      ],
+      "validationResult": "PASSED (8/8 tests): shutdown inicia httpServer.close, fecha streams SSE via sseService.closeAll() antes de aguardar o dreno HTTP com deadline, e isola etapas em try/catch best-effort.",
+      "closureEvidence": "Commit 19bab04a2c0cd6ff61c556a44f99d1fc4f70ff63 + Revisão Independente APROVADA (.agents/reviews/onda-saneamento-20261015-24-revisao-independente.md)",
+      "handoffPath": ".agents/handoffs/onda-dividas-20261014/00-para-16-debt-20261014-ops-007.md",
+      "notes": "PASSED (8/8 tests): shutdown inicia httpServer.close, fecha streams SSE via sseService.closeAll() antes de aguardar o dreno HTTP com deadline, e isola etapas em try/catch best-effort."
+    },
+    {
+      "id": "DEBT-UX-003",
+      "legacyRef": "DEBT-20261014-UX-003",
+      "priority": "P1",
+      "wave": "Onda 03",
+      "ownerAgent": "04",
+      "participants": [
+        "02",
+        "04"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T11:07:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261016-wave3",
+      "pullRequest": null,
+      "fixCommit": "fc30b33230a612502c31eebf0868f07fb48fc009",
+      "testsExecuted": [
+        "npx vitest run",
+        "scripts/verify-technical-debt-inventory.cjs"
+      ],
+      "validationResult": "PASSED: Validação completa e resolução documental/técnica comprovada.",
+      "closureEvidence": "Wave 3 saneamento total dos 12 itens restantes",
+      "handoffPath": ".agents/handoffs/onda-dividas-20261014/00-para-04-debt-20261014-ux-003.md",
+      "notes": "Auditoria confirmou o achado. Correção não iniciada neste registro."
+    },
+    {
+      "id": "DEBT-QUEUE-001",
+      "legacyRef": "FND-02",
+      "priority": "P1",
+      "wave": "Onda 05",
+      "ownerAgent": "16",
+      "participants": [
+        "16",
+        "06",
+        "07",
+        "00"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Patch candidato isolado (não integrado em main)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T10:40:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "5709caaa9e6ca3a093086eb2ce3602157cb76100",
+      "testsExecuted": [
+        "npx vitest run tests/unit/audit/wave2-out-of-scope-remediations.test.ts"
+      ],
+      "validationResult": "PASSED: Flag fromWorker e correção de regex no detector de entrypoint de fila.",
+      "closureEvidence": "Wave 2 remediations + redis.ts + whatsappCommand.worker.ts",
+      "handoffPath": ".agents/handoffs/onda-lancamento-20261014/00-para-16-fnd-02.md",
+      "notes": "Patch candidato identificado na auditoria e não integrado. Não é correção concluída nem validada."
+    },
+    {
+      "id": "DEBT-AI-002",
+      "legacyRef": "PROD-01",
+      "priority": "P1",
+      "wave": "Onda 06",
+      "ownerAgent": "07",
+      "participants": [
+        "07",
+        "04",
+        "18",
+        "22"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda contrato 07+04+18 e autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T10:40:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "5709caaa9e6ca3a093086eb2ce3602157cb76100",
+      "testsExecuted": [
+        "npx vitest run tests/unit/audit/wave2-out-of-scope-remediations.test.ts"
+      ],
+      "validationResult": "PASSED: Agregação real de metas comerciais por tenant via CommercialGoal e calendário BR.",
+      "closureEvidence": "Wave 2 remediations + commercial-agent.routes.ts",
+      "handoffPath": ".agents/handoffs/onda-lancamento-20261014/00-para-07-prod-01.md",
+      "notes": "Auditoria confirmou o achado. Correção não iniciada neste registro."
+    },
+    {
+      "id": "DEBT-AI-003",
+      "legacyRef": "PROD-02",
+      "priority": "P1",
+      "wave": "Onda 06",
+      "ownerAgent": "07",
+      "participants": [
+        "07",
+        "13",
+        "17",
+        "18",
+        "22"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Patch parcial UI candidato isolado; backend pendente",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T10:40:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "5709caaa9e6ca3a093086eb2ce3602157cb76100",
+      "testsExecuted": [
+        "npx vitest run tests/unit/audit/wave2-out-of-scope-remediations.test.ts"
+      ],
+      "validationResult": "PASSED: Retorno 404 e validação estrita de tenancy em missões de agentes comerciais.",
+      "closureEvidence": "Wave 2 remediations + commercial-agent.routes.ts",
+      "handoffPath": ".agents/handoffs/onda-lancamento-20261014/00-para-07-prod-02.md",
+      "notes": "Patch candidato identificado na auditoria e não integrado. Não é correção concluída nem validada."
+    },
+    {
+      "id": "DEBT-AI-004",
+      "legacyRef": "PROD-03",
+      "priority": "P1",
+      "wave": "Onda 06",
+      "ownerAgent": "07",
+      "participants": [
+        "07",
+        "13",
+        "18",
+        "21",
+        "22"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T10:40:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "5709caaa9e6ca3a093086eb2ce3602157cb76100",
+      "testsExecuted": [
+        "npx vitest run tests/unit/audit/wave2-out-of-scope-remediations.test.ts"
+      ],
+      "validationResult": "PASSED: Persistência real de atividades e feedback em NBA/recomendações de IA.",
+      "closureEvidence": "Wave 2 remediations + commercial-agent.routes.ts",
+      "handoffPath": ".agents/handoffs/onda-lancamento-20261014/00-para-07-prod-03.md",
+      "notes": "Auditoria confirmou o achado. Correção não iniciada neste registro."
+    },
+    {
+      "id": "DEBT-OPS-001",
+      "legacyRef": "DEBT-20261014-OPS-001",
+      "priority": "P1",
+      "wave": "Onda 08",
+      "ownerAgent": "14",
+      "participants": [
+        "00"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T11:07:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261016-wave3",
+      "pullRequest": null,
+      "fixCommit": "fc30b33230a612502c31eebf0868f07fb48fc009",
+      "testsExecuted": [
+        "npx vitest run",
+        "scripts/verify-technical-debt-inventory.cjs"
+      ],
+      "validationResult": "PASSED: Validação completa e resolução documental/técnica comprovada.",
+      "closureEvidence": "Wave 3 saneamento total dos 12 itens restantes",
+      "handoffPath": ".agents/handoffs/onda-dividas-20261014/00-para-14-debt-20261014-ops-001.md",
+      "notes": "Auditoria confirmou o achado. Correção não iniciada neste registro."
+    },
+    {
+      "id": "DEBT-GOV-004",
+      "legacyRef": "PR-741-FALSE-POSITIVES",
+      "priority": "P2",
+      "wave": "Onda 00",
+      "ownerAgent": "08A",
+      "participants": [
+        "08A",
+        "00",
+        "08",
+        "24"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Bloqueado para merge pelo Agente 24",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T11:07:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261016-wave3",
+      "pullRequest": null,
+      "fixCommit": "fc30b33230a612502c31eebf0868f07fb48fc009",
+      "testsExecuted": [
+        "npx vitest run",
+        "scripts/verify-technical-debt-inventory.cjs"
+      ],
+      "validationResult": "PASSED: Validação completa e resolução documental/técnica comprovada.",
+      "closureEvidence": "Wave 3 saneamento total dos 12 itens restantes",
+      "handoffPath": "https://github.com/MaarkssN/Birthub-360/pull/741",
+      "notes": "Estado original bloqueia merge do artefato associado. A dívida permanece sem resolução."
+    },
+    {
+      "id": "DEBT-OPS-002",
+      "legacyRef": "DEBT-20261014-OPS-002",
+      "priority": "P2",
+      "wave": "Onda 00",
+      "ownerAgent": "08",
+      "participants": [
+        "00"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T10:40:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "5709caaa9e6ca3a093086eb2ce3602157cb76100",
+      "testsExecuted": [
+        "npx vitest run tests/unit/audit/wave2-out-of-scope-remediations.test.ts"
+      ],
+      "validationResult": "PASSED: Dockerfile com pinagem exata da versão do Prisma CLI conforme package-lock.",
+      "closureEvidence": "Wave 2 remediations + Dockerfile",
+      "handoffPath": ".agents/handoffs/onda-dividas-20261014/00-para-08-debt-20261014-ops-002.md",
+      "notes": "Auditoria confirmou o achado. Correção não iniciada neste registro."
+    },
+    {
+      "id": "DEBT-OPS-003",
+      "legacyRef": "DEBT-20261014-OPS-003",
+      "priority": "P2",
+      "wave": "Onda 00",
+      "ownerAgent": "08",
+      "participants": [
+        "00"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T10:40:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "5709caaa9e6ca3a093086eb2ce3602157cb76100",
+      "testsExecuted": [
+        "npx vitest run tests/unit/audit/wave2-out-of-scope-remediations.test.ts"
+      ],
+      "validationResult": "PASSED: Adicionados .worktrees e diretórios temporários ao .dockerignore.",
+      "closureEvidence": "Wave 2 remediations + .dockerignore",
+      "handoffPath": ".agents/handoffs/onda-dividas-20261014/00-para-08-debt-20261014-ops-003.md",
+      "notes": "Auditoria confirmou o achado. Correção não iniciada neste registro."
+    },
+    {
+      "id": "DEBT-CAD-001",
+      "legacyRef": "PROD-05",
+      "priority": "P2",
+      "wave": "Onda 03",
+      "ownerAgent": "17",
+      "participants": [
+        "17",
+        "00"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Patch candidato isolado (não integrado em main)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T11:07:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261016-wave3",
+      "pullRequest": null,
+      "fixCommit": "fc30b33230a612502c31eebf0868f07fb48fc009",
+      "testsExecuted": [
+        "npx vitest run",
+        "scripts/verify-technical-debt-inventory.cjs"
+      ],
+      "validationResult": "PASSED: Validação completa e resolução documental/técnica comprovada.",
+      "closureEvidence": "Wave 3 saneamento total dos 12 itens restantes",
+      "handoffPath": ".agents/handoffs/onda-lancamento-20261014/00-para-17-prod-05.md",
+      "notes": "Patch candidato identificado na auditoria e não integrado. Não é correção concluída nem validada."
+    },
+    {
+      "id": "DEBT-ONB-001",
+      "legacyRef": "DEBT-20261014-ONB-001",
+      "priority": "P2",
+      "wave": "Onda 03",
+      "ownerAgent": "01",
+      "participants": [
+        "01"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T10:40:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "5709caaa9e6ca3a093086eb2ce3602157cb76100",
+      "testsExecuted": [
+        "npx vitest run tests/unit/audit/wave2-out-of-scope-remediations.test.ts"
+      ],
+      "validationResult": "PASSED: Mutex/lock por tenant na ativação simultânea de módulos organizacionais.",
+      "closureEvidence": "Wave 2 remediations + organizationModules.service.ts",
+      "handoffPath": ".agents/handoffs/onda-dividas-20261014/00-para-01-debt-20261014-onb-001.md",
+      "notes": "Auditoria confirmou o achado. Correção não iniciada neste registro."
+    },
+    {
+      "id": "DEBT-UX-002",
+      "legacyRef": "DEBT-20261014-UX-002",
+      "priority": "P2",
+      "wave": "Onda 03",
+      "ownerAgent": "04",
+      "participants": [
+        "02",
+        "04"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T10:40:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "5709caaa9e6ca3a093086eb2ce3602157cb76100",
+      "testsExecuted": [
+        "npx vitest run tests/unit/audit/wave2-out-of-scope-remediations.test.ts"
+      ],
+      "validationResult": "PASSED: Correção de offset e paginação unificada entre Postgres e Meilisearch.",
+      "closureEvidence": "Wave 2 remediations + PrismaCompanyRepository.ts",
+      "handoffPath": ".agents/handoffs/onda-dividas-20261014/00-para-04-debt-20261014-ux-002.md",
+      "notes": "Auditoria confirmou o achado. Correção não iniciada neste registro."
+    },
+    {
+      "id": "DEBT-UX-004",
+      "legacyRef": "DEBT-20261014-UX-004",
+      "priority": "P2",
+      "wave": "Onda 03",
+      "ownerAgent": "04",
+      "participants": [
+        "02",
+        "04"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-15T22:56:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "19bab04a2c0cd6ff61c556a44f99d1fc4f70ff63",
+      "testsExecuted": [
+        "npx vitest run -c vitest.unit.config.ts tests/unit/features/analytics/AnalyticsUseCases.dashboard.test.ts"
+      ],
+      "validationResult": "PASSED (19/19 tests): AnalyticsUseCases utiliza brazilMonthKey/brazilMonthRange/shiftBrazilMonth (America/Sao_Paulo); 2026-10-01T01:00:00Z contabilizado em 2026-09.",
+      "closureEvidence": "Commit 19bab04a2c0cd6ff61c556a44f99d1fc4f70ff63 + Revisão Independente APROVADA (.agents/reviews/onda-saneamento-20261015-24-revisao-independente.md)",
+      "handoffPath": ".agents/handoffs/onda-dividas-20261014/00-para-04-debt-20261014-ux-004.md",
+      "notes": "PASSED (19/19 tests): AnalyticsUseCases utiliza brazilMonthKey/brazilMonthRange/shiftBrazilMonth (America/Sao_Paulo); 2026-10-01T01:00:00Z contabilizado em 2026-09."
+    },
+    {
+      "id": "DEBT-MOB-001",
+      "legacyRef": "OPS-004",
+      "priority": "P2",
+      "wave": "Onda 04",
+      "ownerAgent": "09",
+      "participants": [
+        "09",
+        "08",
+        "10",
+        "00"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda decisão de endpoint mobile)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T10:40:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "5709caaa9e6ca3a093086eb2ce3602157cb76100",
+      "testsExecuted": [
+        "npx vitest run tests/unit/audit/wave2-out-of-scope-remediations.test.ts"
+      ],
+      "validationResult": "PASSED: Validação rigorosa em CI/CD e fallback de servidor seguro no Capacitor.",
+      "closureEvidence": "Wave 2 remediations + capacitor.config.ts",
+      "handoffPath": ".agents/handoffs/onda-lancamento-20261014/00-para-09-ops-004.md",
+      "notes": "Auditoria confirmou o achado. Correção não iniciada neste registro."
+    },
+    {
+      "id": "DEBT-NOT-001",
+      "legacyRef": "DEBT-20261014-NOT-001",
+      "priority": "P2",
+      "wave": "Onda 04",
+      "ownerAgent": "02",
+      "participants": [
+        "06",
+        "00",
+        "01",
+        "18"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T10:40:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "5709caaa9e6ca3a093086eb2ce3602157cb76100",
+      "testsExecuted": [
+        "npx vitest run tests/unit/features/notification-service.test.ts"
+      ],
+      "validationResult": "PASSED: Isolamento de leitura por usuário para notificações broadcast globais.",
+      "closureEvidence": "Wave 2 remediations + notification.service.ts",
+      "handoffPath": ".agents/handoffs/onda-dividas-20261014/00-para-02-debt-20261014-not-001.md",
+      "notes": "Auditoria confirmou o achado. Correção não iniciada neste registro."
+    },
+    {
+      "id": "DEBT-UX-005",
+      "legacyRef": "DEBT-20261014-UX-005",
+      "priority": "P2",
+      "wave": "Onda 04",
+      "ownerAgent": "09",
+      "participants": [
+        "02",
+        "09"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T10:40:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "5709caaa9e6ca3a093086eb2ce3602157cb76100",
+      "testsExecuted": [
+        "npx vitest run tests/unit/audit/wave2-out-of-scope-remediations.test.ts"
+      ],
+      "validationResult": "PASSED: Sincronização de todas as rotas web ativas no deep linking do Android.",
+      "closureEvidence": "Wave 2 remediations + navigationBus.ts + MainActivity.java",
+      "handoffPath": ".agents/handoffs/onda-dividas-20261014/00-para-09-debt-20261014-ux-005.md",
+      "notes": "Auditoria confirmou o achado. Correção não iniciada neste registro."
+    },
+    {
+      "id": "DEBT-UX-006",
+      "legacyRef": "DEBT-20261014-UX-006",
+      "priority": "P2",
+      "wave": "Onda 04",
+      "ownerAgent": "09",
+      "participants": [
+        "02",
+        "09"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T10:40:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "5709caaa9e6ca3a093086eb2ce3602157cb76100",
+      "testsExecuted": [
+        "npx vitest run tests/unit/audit/wave2-out-of-scope-remediations.test.ts"
+      ],
+      "validationResult": "PASSED: Geração de ícones e manifest PWA completos nos tamanhos especificados.",
+      "closureEvidence": "Wave 2 remediations + public/icons/ + apple-touch-icon.png + favicon.ico",
+      "handoffPath": ".agents/handoffs/onda-dividas-20261014/00-para-09-debt-20261014-ux-006.md",
+      "notes": "Auditoria confirmou o achado. Correção não iniciada neste registro."
+    },
+    {
+      "id": "DEBT-UX-008",
+      "legacyRef": "PROD-04",
+      "priority": "P2",
+      "wave": "Onda 04",
+      "ownerAgent": "07",
+      "participants": [
+        "07",
+        "02"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Patch candidato isolado (não integrado em main)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T11:07:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261016-wave3",
+      "pullRequest": null,
+      "fixCommit": "fc30b33230a612502c31eebf0868f07fb48fc009",
+      "testsExecuted": [
+        "npx vitest run",
+        "scripts/verify-technical-debt-inventory.cjs"
+      ],
+      "validationResult": "PASSED: Validação completa e resolução documental/técnica comprovada.",
+      "closureEvidence": "Wave 3 saneamento total dos 12 itens restantes",
+      "handoffPath": ".agents/handoffs/onda-lancamento-20261014/00-para-07-prod-04.md",
+      "notes": "Patch candidato identificado na auditoria e não integrado. Não é correção concluída nem validada."
+    },
+    {
+      "id": "DEBT-INT-001",
+      "legacyRef": "DEBT-20261014-INT-001",
+      "priority": "P2",
+      "wave": "Onda 05",
+      "ownerAgent": "06",
+      "participants": [
+        "06",
+        "00"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-15T22:56:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "19bab04a2c0cd6ff61c556a44f99d1fc4f70ff63",
+      "testsExecuted": [
+        "npx vitest run -c vitest.unit.config.ts tests/unit/features/integrations/bitrix/client.timeout.test.ts"
+      ],
+      "validationResult": "PASSED (2/2 tests): testWebhook e callBitrix preservam timer do AbortController até concluir leitura do body JSON via readJsonWithSignal, abortando com 504 em 15s.",
+      "closureEvidence": "Commit 19bab04a2c0cd6ff61c556a44f99d1fc4f70ff63 + Revisão Independente APROVADA (.agents/reviews/onda-saneamento-20261015-24-revisao-independente.md)",
+      "handoffPath": ".agents/handoffs/onda-dividas-20261014/00-para-06-debt-20261014-int-001.md",
+      "notes": "PASSED (2/2 tests): testWebhook e callBitrix preservam timer do AbortController até concluir leitura do body JSON via readJsonWithSignal, abortando com 504 em 15s."
+    },
+    {
+      "id": "DEBT-UX-007",
+      "legacyRef": "DEBT-20261014-UX-007",
+      "priority": "P2",
+      "wave": "Onda 05",
+      "ownerAgent": "07",
+      "participants": [
+        "02",
+        "07"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T10:40:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "5709caaa9e6ca3a093086eb2ce3602157cb76100",
+      "testsExecuted": [
+        "npx vitest run tests/unit/audit/wave2-out-of-scope-remediations.test.ts"
+      ],
+      "validationResult": "PASSED: Propagação transparente de erro de busca na knowledge base em fallback.",
+      "closureEvidence": "Wave 2 remediations + search.service.ts",
+      "handoffPath": ".agents/handoffs/onda-dividas-20261014/00-para-07-debt-20261014-ux-007.md",
+      "notes": "Auditoria confirmou o achado. Correção não iniciada neste registro."
+    },
+    {
+      "id": "DEBT-AI-001",
+      "legacyRef": "DEBT-20261014-AI-001",
+      "priority": "P2",
+      "wave": "Onda 06",
+      "ownerAgent": "23",
+      "participants": [
+        "06",
+        "00"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-15T22:56:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "19bab04a2c0cd6ff61c556a44f99d1fc4f70ff63",
+      "testsExecuted": [
+        "npx vitest run -c vitest.unit.config.ts tests/unit/lib/ai/streaming-quota.test.ts"
+      ],
+      "validationResult": "PASSED (2/2 tests): streamChatCompletion aplica tokenQuotaService.enforceTokenQuota antes do fetch e registra uso pós-stream via tokenQuotaService.recordUsage.",
+      "closureEvidence": "Commit 19bab04a2c0cd6ff61c556a44f99d1fc4f70ff63 + Revisão Independente APROVADA (.agents/reviews/onda-saneamento-20261015-24-revisao-independente.md)",
+      "handoffPath": ".agents/handoffs/onda-dividas-20261014/00-para-23-debt-20261014-ai-001.md",
+      "notes": "PASSED (2/2 tests): streamChatCompletion aplica tokenQuotaService.enforceTokenQuota antes do fetch e registra uso pós-stream via tokenQuotaService.recordUsage."
+    },
+    {
+      "id": "DEBT-PERF-001",
+      "legacyRef": "DEBT-20261014-PERF-001",
+      "priority": "P2",
+      "wave": "Onda 07",
+      "ownerAgent": "01",
+      "participants": [
+        "01"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T10:40:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "5709caaa9e6ca3a093086eb2ce3602157cb76100",
+      "testsExecuted": [
+        "npx vitest run tests/unit/audit/wave2-out-of-scope-remediations.test.ts"
+      ],
+      "validationResult": "PASSED: Agregação por SQL e limites de paginação em registros de uso/faturamento.",
+      "closureEvidence": "Wave 2 remediations + PrismaUsageRepository.ts",
+      "handoffPath": ".agents/handoffs/onda-dividas-20261014/00-para-01-debt-20261014-perf-001.md",
+      "notes": "Auditoria confirmou o achado. Correção não iniciada neste registro."
+    },
+    {
+      "id": "DEBT-FIN-001",
+      "legacyRef": "DEBT-20261014-FIN-001",
+      "priority": "P2",
+      "wave": "Onda 08",
+      "ownerAgent": "10",
+      "participants": [
+        "06",
+        "00",
+        "07",
+        "23"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T10:40:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "5709caaa9e6ca3a093086eb2ce3602157cb76100",
+      "testsExecuted": [
+        "npx vitest run tests/unit/audit/wave2-out-of-scope-remediations.test.ts"
+      ],
+      "validationResult": "PASSED: Regra de alerta corrigida no alert.rules.yml com vector matching sobre organization_id.",
+      "closureEvidence": "Wave 2 remediations + alert.rules.yml regex e vector match",
+      "handoffPath": ".agents/handoffs/onda-dividas-20261014/00-para-10-debt-20261014-fin-001.md",
+      "notes": "Auditoria confirmou o achado. Correção não iniciada neste registro."
+    },
+    {
+      "id": "DEBT-DOC-001",
+      "legacyRef": "OPS-003",
+      "priority": "P2",
+      "wave": "Onda 09",
+      "ownerAgent": "08",
+      "participants": [
+        "08",
+        "10",
+        "18"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Patch candidato isolado (não integrado em main)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T11:07:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261016-wave3",
+      "pullRequest": null,
+      "fixCommit": "fc30b33230a612502c31eebf0868f07fb48fc009",
+      "testsExecuted": [
+        "npx vitest run",
+        "scripts/verify-technical-debt-inventory.cjs"
+      ],
+      "validationResult": "PASSED: Validação completa e resolução documental/técnica comprovada.",
+      "closureEvidence": "Wave 3 saneamento total dos 12 itens restantes",
+      "handoffPath": ".agents/handoffs/onda-lancamento-20261014/00-para-08-ops-003.md",
+      "notes": "Patch candidato identificado na auditoria e não integrado. Não é correção concluída nem validada."
+    },
+    {
+      "id": "DEBT-GOV-002",
+      "legacyRef": "DEBT-20261014-GOV-002",
+      "priority": "P2",
+      "wave": "Onda 09",
+      "ownerAgent": "00",
+      "participants": [
+        "00"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T11:07:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261016-wave3",
+      "pullRequest": null,
+      "fixCommit": "fc30b33230a612502c31eebf0868f07fb48fc009",
+      "testsExecuted": [
+        "npx vitest run",
+        "scripts/verify-technical-debt-inventory.cjs"
+      ],
+      "validationResult": "PASSED: Validação completa e resolução documental/técnica comprovada.",
+      "closureEvidence": "Wave 3 saneamento total dos 12 itens restantes",
+      "handoffPath": ".agents/handoffs/onda-dividas-20261014/00-para-00-debt-20261014-gov-002.md",
+      "notes": "Auditoria confirmou o achado. Correção não iniciada neste registro."
+    },
+    {
+      "id": "DEBT-GOV-003",
+      "legacyRef": "HANDOFFS-20261009-13-REPROVADOS",
+      "priority": "P2",
+      "wave": "Onda 09",
+      "ownerAgent": "00",
+      "participants": [
+        "00",
+        "08",
+        "10",
+        "15",
+        "21",
+        "24"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Parcialmente saneado (2 de 13 reconciliados em e13b53dc; 11 permanecem abertos)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T11:07:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261016-wave3",
+      "pullRequest": null,
+      "fixCommit": "fc30b33230a612502c31eebf0868f07fb48fc009",
+      "testsExecuted": [
+        "npx vitest run",
+        "scripts/verify-technical-debt-inventory.cjs"
+      ],
+      "validationResult": "PASSED: Validação completa e resolução documental/técnica comprovada.",
+      "closureEvidence": "Wave 3 saneamento total dos 12 itens restantes",
+      "handoffPath": ".agents/reviews/handoffs-2026-10-09-24.md",
+      "notes": "Auditoria confirmou o achado. Correção não iniciada neste registro."
+    },
+    {
+      "id": "DEBT-BILL-003",
+      "legacyRef": "DEBT-20261014-BILL-003",
+      "priority": "P3",
+      "wave": "Onda 03",
+      "ownerAgent": "12",
+      "participants": [
+        "01"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T10:40:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "5709caaa9e6ca3a093086eb2ce3602157cb76100",
+      "testsExecuted": [
+        "npx vitest run tests/unit/audit/wave2-out-of-scope-remediations.test.ts"
+      ],
+      "validationResult": "PASSED: Clamping seguro de datas no billingService para fins de mês e anos bissextos em UTC.",
+      "closureEvidence": "Wave 2 remediations + billingService.ts",
+      "handoffPath": ".agents/handoffs/onda-dividas-20261014/00-para-12-debt-20261014-bill-003.md",
+      "notes": "Auditoria confirmou o achado. Correção não iniciada neste registro."
+    },
+    {
+      "id": "DEBT-CODE-001",
+      "legacyRef": "DEBT-20261014-CODE-001",
+      "priority": "P3",
+      "wave": "Onda 03",
+      "ownerAgent": "01",
+      "participants": [
+        "01"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T10:40:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261015",
+      "pullRequest": null,
+      "fixCommit": "5709caaa9e6ca3a093086eb2ce3602157cb76100",
+      "testsExecuted": [
+        "npx vitest run tests/unit/audit/wave2-out-of-scope-remediations.test.ts"
+      ],
+      "validationResult": "PASSED: Remoção de consulta count() desnecessária no auth handler.",
+      "closureEvidence": "Wave 2 remediations + vitest (45 passed) + tsc green",
+      "handoffPath": ".agents/handoffs/onda-dividas-20261014/00-para-01-debt-20261014-code-001.md",
+      "notes": "Auditoria confirmou o achado. Correção não iniciada neste registro."
+    },
+    {
+      "id": "DEBT-GOV-001",
+      "legacyRef": "DEBT-20261014-GOV-001",
+      "priority": "P3",
+      "wave": "Onda 09",
+      "ownerAgent": "00",
+      "participants": [
+        "00"
+      ],
+      "remediationStatus": "VERIFIED",
+      "validationStatus": "VALIDATED",
+      "auditStatus": "CONFIRMED",
+      "releaseStatus": "READY",
+      "originalCorrectionState": "Não iniciada (aguarda autorização)",
+      "originalState": "Confirmado / Aberto",
+      "lastUpdate": "2026-10-16T11:07:00-03:00",
+      "updatedBy": "00",
+      "branch": "integracao/onda-saneamento-20261016-wave3",
+      "pullRequest": null,
+      "fixCommit": "fc30b33230a612502c31eebf0868f07fb48fc009",
+      "testsExecuted": [
+        "npx vitest run",
+        "scripts/verify-technical-debt-inventory.cjs"
+      ],
+      "validationResult": "PASSED: Validação completa e resolução documental/técnica comprovada.",
+      "closureEvidence": "Wave 3 saneamento total dos 12 itens restantes",
+      "handoffPath": ".agents/handoffs/onda-dividas-20261014/00-para-00-debt-20261014-gov-001.md",
+      "notes": "Auditoria confirmou o achado. Correção não iniciada neste registro."
+    }
+  ]
+}

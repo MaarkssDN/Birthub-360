@@ -1,0 +1,553 @@
+# Workflow canônico de release da aplicação.
+# A proteção da main exige o contexto GitHub Actions `build`; por isso esse nome é
+# reservado exclusivamente ao agregador final deste workflow.
+name: Central Birth Hub 360 Release
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # PRs: cancela o run anterior da mesma PR ao receber um novo push (feedback rápido).
+  # push em main/master/develop: fila por SHA sem cancelamento — merges próximos no tempo não
+  # podem cancelar a verificação de integração um do outro, ou o estado combinado de main fica
+  # sem gate verde confirmado (mesmo modo de falha do incidente da Onda 5, RLS do AILog só
+  # visível no gate de integração).
+  # v2 separa PRs corrigidos dos runs legados cujo application gate usava always()
+  # e podia continuar após cancelamento, mantendo o grupo anterior ocupado.
+  group: ${{ github.event_name == 'pull_request' && format('central-birthhub360-release-pr-v2-{0}', github.event.pull_request.number) || format('central-birthhub360-release-push-{0}', github.sha) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  secret-scan:
+    name: Central Birth Hub 360 / secret scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Gitleaks (varredura de segredo versionado)
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+
+  dependency-review:
+    name: Central Birth Hub 360 / dependency review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: on-failure
+          allow-ghsas: GHSA-ggr8-5vv4-36mx, GHSA-Q2HR-2G5M-VWHR, GHSA-QHR7-859C-M2P7, GHSA-6J4F-FJ2G-MC7P, GHSA-G57G-F23G-4646, GHSA-V53P-9FQP-M79J, GHSA-PRGH-XP8R-P3M5, GHSA-fc5q-39xc-vjpf, GHSA-FC5Q-39XC-VJPF
+
+  trivy-scan:
+    name: Central Birth Hub 360 / trivy scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Rodar Trivy (fs scan, HIGH/CRITICAL, bloqueante)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          format: sarif
+          output: trivy-fs-results.sarif
+          trivyignores: .trivyignore.yaml
+          limit-severities-for-sarif: true
+          skip-files: 'pnpm-lock.yaml,agente-codigo-local/bun.lock'
+
+      - name: Upload SARIF para a aba Security
+        if: always()
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          sarif_file: trivy-fs-results.sarif
+          category: trivy-fs
+
+  build-and-test:
+    name: Central Birth Hub 360 / application gate
+    runs-on: ubuntu-latest
+    needs: [secret-scan, trivy-scan]
+    # Respeita cancelamento de um PR superado; o agregador build abaixo continua fail-closed.
+    if: ${{ !cancelled() && needs.secret-scan.result == 'success' && needs.trivy-scan.result == 'success' }}
+    # Os runs 36785425846 e 36791581889 completaram os gates anteriores, mas expiraram em 60/90 min
+    # enquanto os 100 E2E rodavam serialmente com 1 worker. O último step E2E durou 73m28s sem resumo;
+    # 120 min reserva ~103 min após os ~17 min medidos antes dos E2E. Margem operacional, não prova
+    # de que a suíte completa passe; o reporter line também expõe progresso no próximo run.
+    timeout-minutes: 120
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: prospector
+          POSTGRES_PASSWORD: prospector_test_pass
+          POSTGRES_DB: prospectordb_test
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd "pg_isready -h 127.0.0.1 -U prospector -d prospectordb_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli -h 127.0.0.1 ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      meilisearch:
+        image: getmeili/meilisearch:v1.12
+        env:
+          MEILI_MASTER_KEY: ci-test-meili-key
+        ports:
+          - 7700:7700
+        options: >-
+          --health-cmd "wget --no-verbose --tries=1 -O - http://127.0.0.1:7700/health >/dev/null 2>&1 || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-start-period 30s
+          --health-retries 12
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://prospector_app:ci_app_test_pass@localhost:5434/prospectordb_test?schema=public
+      # Migrations rodam como o papel DONO (prospector_migrator); app e testes como prospector_app
+      # (só DML, dono de nada). prisma.config.ts prefere DIRECT_URL para a CLI; o runtime ignora.
+      DIRECT_URL: postgresql://prospector_migrator:ci_migrator_test_pass@localhost:5434/prospectordb_test?schema=public
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: ci-test-jwt-secret-not-for-production
+      MEILI_HOST: http://localhost:7700
+      MEILI_MASTER_KEY: ci-test-meili-key
+      PORT: 3000
+      BETTER_AUTH_SECRET: ci-e2e-test-only-secret-not-for-production
+      BETTER_AUTH_URL: http://localhost:3000
+      ALLOW_DEV_AUTH_BYPASS: true
+      ALLOWED_ORIGINS: http://localhost:3000
+      AUTH_RATE_LIMIT_MAX: 500
+      PLATFORM_OPERATOR_TOKEN: ci-test-operator-token-not-for-production
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Prisma engines
+        # `npx prisma generate`/postinstall baixam os engines binários do Prisma a
+        # cada run; o cache por hash do lockfile elimina o download repetido sem
+        # risco de versão divergente (BT360-DT-0049 / TAREFA-SANEAMENTO-026).
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            node_modules/.prisma
+            node_modules/@prisma/engines
+            ~/.cache/prisma
+          key: prisma-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: prisma-${{ runner.os }}-
+
+      - name: Bootstrap papel NOSUPERUSER da aplicação
+        env:
+          PGPASSWORD: prospector_test_pass
+          APP_DB_PASSWORD: ci_app_test_pass
+          MIGRATOR_DB_PASSWORD: ci_migrator_test_pass
+        run: bash scripts/db/bootstrap-app-role.sh localhost 5434 prospector prospectordb_test
+
+      - name: Audit for vulnerabilities (waiver-aware)
+        run: npm run security:audit-waivers
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Run Lint
+        run: npm run lint:ci
+
+      - name: Run Prettier check
+        # Correção da ANALISE-DIVIDA-TECNICA-ROBUSTA.md original (2026-08-28): Prettier já estava
+        # configurado (.prettierrc) mas sem script format:check nem gate de CI — rodado
+        # `npm run format` uma vez para zerar os 925 arquivos fora do padrão antes de tornar isto
+        # bloqueante, para o gate nascer já limpo em vez de falhar o primeiro PR de qualquer um.
+        run: npm run format:check
+
+      - name: Verificar working tree limpa após os gates de verificação
+        # Nenhum gate de CI (lint, geração do Prisma Client, etc.) deve alterar
+        # arquivos versionados. Autofix é um comando local explícito
+        # (`npm run lint:fix`), nunca implícito no pipeline. Este passo é uma
+        # rede de segurança: se algum gate futuro reintroduzir --fix/autofix (ou
+        # outro efeito colateral que escreva no working tree), o CI falha aqui em
+        # vez de mascarar a mudança silenciosamente.
+        run: |
+          if ! git diff --quiet -- . ':!node_modules'; then
+            echo "::error::Os gates de verificação alteraram arquivos versionados. O CI deve apenas verificar, nunca corrigir automaticamente. Rode 'npm run lint:fix' localmente e commite o resultado."
+            git diff --stat -- . ':!node_modules'
+            exit 1
+          fi
+
+      - name: Run Type Check
+        run: npm run typecheck
+
+      - name: Verificar governança e parecer independente (Agente 24)
+        run: npm run verify:governance-reviews
+
+      - name: Architecture tests (fronteiras de dependência e hotspots)
+        run: npm run test:architecture
+
+      - name: Verificar deriva de OpenAPI
+        run: npm run verify:openapi-drift
+
+      # Gate estático de cobertura RLS (DEM-20261113-002 / MEL-03, handoff
+      # onda-1/15-para-08-rls-coverage-ci.md): falha se um model com organizationId/
+      # tenantId não tiver ENABLE ROW LEVEL SECURITY + CREATE POLICY nas migrations.
+      # Análise estática de schema.prisma + prisma/migrations — não precisa de banco.
+      - name: RLS coverage gate
+        run: npm run verify:rls-coverage
+
+      - name: Run Unit Tests
+        run: npm run test:unit -- --coverage
+
+      - name: Domain coverage report (auth, billing, tenancy, IA — MEL-46)
+        # Informativo: os gates reais são os thresholds por domínio de
+        # vitest.unit.config.ts (avaliados dentro do step acima). Este passo só
+        # imprime o agregado por domínio no log para facilitar revisão de PRs —
+        # coverage-final.json existe mesmo quando a suíte falha (reportOnFailure).
+        if: always()
+        continue-on-error: true
+        run: node scripts/ci/coverage-domain-report.mjs
+
+      - name: Run AI Resilience Tests (TD-009)
+        run: npm run test:unit -- src/lib/ai/gateway/__tests__/http-client.test.ts src/lib/ai/gateway/__tests__/circuit-breaker.test.ts src/lib/ai/gateway/__tests__/retry.test.ts
+
+      - name: Run Migrations (para testes de integração)
+        run: npx prisma migrate deploy
+
+      - name: Re-bootstrap pós-migrate (parecer 24 do PR #62)
+        # Produção re-roda o bootstrap depois das migrations (o script é idempotente). Sem este passo o
+        # CI só via bootstrap → migrate, ordem em que a migration 20261021000000 revoga por último e
+        # esconde uma regressão do script (DELETE em Organization devolvido ao app). A suíte de
+        # integração roda sobre este estado; tests/integration/db-restricted-table-privileges.test.ts
+        # ainda re-roda o script e confere has_table_privilege.
+        env:
+          PGPASSWORD: prospector_test_pass
+          APP_DB_PASSWORD: ci_app_test_pass
+          MIGRATOR_DB_PASSWORD: ci_migrator_test_pass
+        run: bash scripts/db/bootstrap-app-role.sh localhost 5434 prospector prospectordb_test
+
+      - name: Golden Dataset live regression gate
+        if: ${{ env.GROQ_API_KEY != '' || env.OPENAI_API_KEY != '' }}
+        continue-on-error: true
+        env:
+          GOLDEN_EVAL_USE_LLM_JUDGE: 'true'
+        run: npm run eval:golden
+
+      - name: Verificar deriva de schema/migration (DATA-007, não-bloqueante)
+        # Compara o banco recém-migrado (todas as migrations de prisma/migrations aplicadas, passo
+        # acima) contra o datamodel de prisma/schema.prisma. Um diff não-vazio (--exit-code sai com
+        # 2) significa que schema.prisma foi alterado sem uma migration correspondente sendo
+        # gerada — exatamente a classe de drift que produziu DATA-007 (commit bf9489fe, 2026-09-19:
+        # organizationId/tenantId virou NOT NULL em seis models sem nenhuma migration). Ver
+        # docs/audits/repository-debt-audit/DELTA-2026-09-20.md seção 3.
+        #
+        # continue-on-error: rodando isso contra o estado real do repo, o diff já acusa uma
+        # quantidade grande de drift ESTRUTURAL pré-existente e não relacionado a nenhum PR
+        # específico (índices renomeados por truncamento de identificador de 63 bytes do Postgres,
+        # a tabela KnowledgeChunk removida por migration mas ainda declarada em schema.prisma,
+        # etc.) — como gate bloqueante, isso derruba o application gate de TODO PR/push no
+        # repositório, não só de quem de fato introduziu drift novo. Mantido como passo visível
+        # (aparece no log/step summary de cada run) até essa dívida estrutural ser resolvida à
+        # parte; script continua disponível via `npm run verify:migration-drift` para uso manual.
+        run: npm run verify:migration-drift
+        continue-on-error: true
+
+      - name: Criar .env.test para os testes de integração e E2E
+        run: |
+          cat > .env.test <<EOF
+          NODE_ENV=$NODE_ENV
+          PORT=$PORT
+          DATABASE_URL=$DATABASE_URL
+          DIRECT_URL=$DIRECT_URL
+          REDIS_URL=$REDIS_URL
+          MEILI_HOST=$MEILI_HOST
+          MEILI_MASTER_KEY=$MEILI_MASTER_KEY
+          BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET
+          BETTER_AUTH_URL=$BETTER_AUTH_URL
+          ALLOW_DEV_AUTH_BYPASS=$ALLOW_DEV_AUTH_BYPASS
+          ALLOWED_ORIGINS=$ALLOWED_ORIGINS
+          AUTH_RATE_LIMIT_MAX=$AUTH_RATE_LIMIT_MAX
+          PLATFORM_OPERATOR_TOKEN=$PLATFORM_OPERATOR_TOKEN
+          BOOTSTRAP_SUPERUSER_URL=postgresql://prospector:prospector_test_pass@localhost:5434/prospectordb_test
+          EOF
+
+      - name: Run Integration Tests (auth, RBAC and tenant isolation)
+        run: npm run test:integration -- --coverage
+
+      # DEBT-0026: verify:integrations/verify:ai existiam só no workflow não-gate
+      # onda-2.5-validation.yml (PRs para validation/onda-2.5-base). Aqui eles entram no
+      # application gate. verify:integrations é bloqueante (mesma semântica do workflow de
+      # validação); integrações pagas sem credencial retornam SKIPPED por design do script.
+      - name: Verify integrations (provedores externos)
+        run: npm run verify:integrations
+
+      # verify:ai gera conteúdo real via GROQ_API_KEY/OPENAI_API_KEY (env do job). Bloqueante:
+      # sem motor configurado o script aborta — falha aqui é sinal real de regressão no Hub de IA.
+      - name: Verify AI (Hub de IA — geração real)
+        run: npm run verify:ai
+
+      - name: Run Build
+        run: npm run build
+
+      - name: Smoke test do build de produção (/health/live, /health/ready, /health/version)
+        env:
+          PORT: 3024
+          NODE_ENV: test
+          ALLOW_DEV_AUTH_BYPASS: true
+        run: |
+          node dist/server.cjs &
+          SERVER_PID=$!
+          echo "Aguardando boot do servidor de produção (PID $SERVER_PID)..."
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3024/health/live >/dev/null 2>&1; then
+              echo "Servidor online após ${i}s."
+              break
+            fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:3024/health/live || { echo "Falha em /health/live"; kill -9 $SERVER_PID 2>/dev/null || true; exit 1; }
+          curl -fsS http://127.0.0.1:3024/health/ready || { echo "Falha em /health/ready"; kill -9 $SERVER_PID 2>/dev/null || true; exit 1; }
+          curl -fsS http://127.0.0.1:3024/health/version || { echo "Falha em /health/version"; kill -9 $SERVER_PID 2>/dev/null || true; exit 1; }
+          echo "Smoke test de produção aprovado!"
+          kill -15 $SERVER_PID 2>/dev/null || true
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Ligar stub determinístico do LLM da Comercial V3.1 (só E2E)
+        run: echo "COMMERCIAL_V3_LLM_STUB=true" >> .env.test
+
+      - name: Run E2E Tests
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-report
+          path: playwright-report/
+        if: failure()
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: coverage-reports
+          path: coverage/
+        if: always()
+
+      - name: Publicar diagnóstico da aplicação
+        if: failure()
+        run: |
+          {
+            echo "## Application gate failed"
+            echo "A falha ocorreu em um dos passos acima (testes, lint, build). Verifique os logs."
+          } >> $GITHUB_STEP_SUMMARY
+
+  # Este é o único job que deve publicar o contexto `build` exigido pela branch protection.
+  # O if: always() transforma falha/cancelamento das dependências em FAIL explícito em vez de
+  # deixar o required check ausente.
+  build:
+    name: build
+    if: always() && github.event_name != 'workflow_dispatch'
+    needs: [secret-scan, dependency-review, trivy-scan, build-and-test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Consolidar veredito do repositório
+        env:
+          SECRET_SCAN_RESULT: ${{ needs.secret-scan.result }}
+          DEPENDENCY_REVIEW_RESULT: ${{ needs.dependency-review.result }}
+          TRIVY_SCAN_RESULT: ${{ needs.trivy-scan.result }}
+          APPLICATION_GATE_RESULT: ${{ needs.build-and-test.result }}
+          CI_EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          printf 'secret-scan=%s\n' "$SECRET_SCAN_RESULT"
+          if [ "$CI_EVENT_NAME" = "pull_request" ]; then
+            printf 'dependency-review=%s\n' "$DEPENDENCY_REVIEW_RESULT"
+          fi
+          printf 'trivy-scan=%s\n' "$TRIVY_SCAN_RESULT"
+          printf 'application-gate=%s\n' "$APPLICATION_GATE_RESULT"
+          test "$SECRET_SCAN_RESULT" = success
+          if [ "$CI_EVENT_NAME" = "pull_request" ]; then
+            test "$DEPENDENCY_REVIEW_RESULT" = success
+          fi
+          test "$TRIVY_SCAN_RESULT" = success
+          test "$APPLICATION_GATE_RESULT" = success
+
+  # Geração manual de baselines Linux. Não participa do required check `build`.
+  visual-baselines:
+    name: 'Gerar baselines visuais Linux (manual)'
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: prospector
+          POSTGRES_PASSWORD: prospector_test_pass
+          POSTGRES_DB: prospectordb_test
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd "pg_isready -h 127.0.0.1 -U prospector -d prospectordb_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli -h 127.0.0.1 ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      meilisearch:
+        image: getmeili/meilisearch:v1.12
+        env:
+          MEILI_MASTER_KEY: ci-test-meili-key
+        ports:
+          - 7700:7700
+        options: >-
+          --health-cmd "wget --no-verbose --tries=1 --spider http://127.0.0.1:7700/health || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-start-period 30s
+          --health-retries 10
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://prospector_app:ci_app_test_pass@localhost:5434/prospectordb_test?schema=public
+      # Migrations rodam como o papel DONO (prospector_migrator); app e testes como prospector_app
+      # (só DML, dono de nada). prisma.config.ts prefere DIRECT_URL para a CLI; o runtime ignora.
+      DIRECT_URL: postgresql://prospector_migrator:ci_migrator_test_pass@localhost:5434/prospectordb_test?schema=public
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: ci-test-jwt-secret-not-for-production
+      MEILI_HOST: http://localhost:7700
+      MEILI_MASTER_KEY: ci-test-meili-key
+      PORT: 3000
+      BETTER_AUTH_SECRET: ci-e2e-test-only-secret-not-for-production
+      BETTER_AUTH_URL: http://localhost:3000
+      ALLOW_DEV_AUTH_BYPASS: true
+      ALLOWED_ORIGINS: http://localhost:3000
+      AUTH_RATE_LIMIT_MAX: 5000
+      PLATFORM_OPERATOR_TOKEN: ci-test-operator-token-not-for-production
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Prisma engines
+        # `npx prisma generate`/postinstall baixam os engines binários do Prisma a
+        # cada run; o cache por hash do lockfile elimina o download repetido sem
+        # risco de versão divergente (BT360-DT-0049 / TAREFA-SANEAMENTO-026).
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            node_modules/.prisma
+            node_modules/@prisma/engines
+            ~/.cache/prisma
+          key: prisma-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: prisma-${{ runner.os }}-
+
+      - name: Bootstrap papel NOSUPERUSER da aplicação
+        env:
+          PGPASSWORD: prospector_test_pass
+          APP_DB_PASSWORD: ci_app_test_pass
+          MIGRATOR_DB_PASSWORD: ci_migrator_test_pass
+        run: bash scripts/db/bootstrap-app-role.sh localhost 5434 prospector prospectordb_test
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Criar .env.test para os testes E2E
+        run: |
+          cat > .env.test <<EOF
+          NODE_ENV=$NODE_ENV
+          PORT=$PORT
+          DATABASE_URL=$DATABASE_URL
+          DIRECT_URL=$DIRECT_URL
+          REDIS_URL=$REDIS_URL
+          MEILI_HOST=$MEILI_HOST
+          MEILI_MASTER_KEY=$MEILI_MASTER_KEY
+          BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET
+          BETTER_AUTH_URL=$BETTER_AUTH_URL
+          ALLOW_DEV_AUTH_BYPASS=$ALLOW_DEV_AUTH_BYPASS
+          ALLOWED_ORIGINS=$ALLOWED_ORIGINS
+          AUTH_RATE_LIMIT_MAX=$AUTH_RATE_LIMIT_MAX
+          PLATFORM_OPERATOR_TOKEN=$PLATFORM_OPERATOR_TOKEN
+          EOF
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Gerar baselines visuais no Linux
+        run: npm run test:visual:update
+
+      - name: Upload baselines geradas
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: visual-snapshots-linux
+          path: visual-regression/baselines/**/*.png
+          if-no-files-found: error
+
+      - name: Upload Playwright report (se falhar)
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: visual-baselines-playwright-report
+          path: visual-regression-report/
+        if: failure()

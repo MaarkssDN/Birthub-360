@@ -1,0 +1,200 @@
+name: Production CI/CD
+
+# LOCAL-FIRST: nenhum push/PR pode publicar artefato de produção enquanto a Central
+# estiver em desenvolvimento local. Este workflow fica disponível somente sob ação
+# humana explícita via workflow_dispatch.
+#
+# Onda 10.2 (PROMPT 10.2 — CI/CD PRODUCTION GATE): este workflow rodava sua PRÓPRIA suíte de
+# testes, mais estreita que a do CI canônico (ci.yml, "Central Birth Hub 360 Release") — faltavam
+# Prettier, testes arquiteturais, verificação de deriva de OpenAPI e o golden dataset. Isso
+# permitia publicar uma imagem de produção que nunca passou pelo Quality Gate completo, só porque
+# rodou (uma versão menor de) testes aqui dentro. Corrigido: este workflow não roda mais testes —
+# ele EXIGE que o SHA informado já tenha um `build` verde em ci.yml (job `resolve-sha`, action
+# `.github/actions/require-ci-green`) e publica exatamente esse SHA. "NO CI PASS = NO DEPLOY", sem
+# exceção para workflow_dispatch — nem sequer chega a instalar dependências ou rodar um teste local
+# se o CI não tiver passado para o SHA pedido.
+# DESATIVADO POR ENQUANTO: Plataforma operando estritamente em modo 100% LOCAL-FIRST.
+# Render, Neon, Cloudflare, pipelines cloud externos desativados conforme decisao de produto.
+# Para reativar no futuro, descomente o bloco 'on:' abaixo sob aprovacao explicita.
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: 'Commit SHA completo (40 chars) já aprovado pelo CI a publicar.'
+        required: true
+        type: string
+
+
+permissions:
+  contents: read
+
+concurrency:
+  # Só um publish/deploy de produção por vez (Onda 10.2, secao 18) — evita corrida entre duas
+  # execuções manuais publicando tags/SBOMs conflitantes ao mesmo tempo.
+  group: production-publish
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  resolve-sha:
+    name: Validar CI (NO CI PASS = NO DEPLOY)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: read
+    outputs:
+      sha: ${{ inputs.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/require-ci-green
+        with:
+          sha: ${{ inputs.sha }}
+          check-name: build
+
+  publish:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    needs: resolve-sha
+    environment: production
+    permissions:
+      contents: read
+      packages: write
+      # ITEM-10 (Onda 2): upload do SARIF do scan de imagem (job abaixo) para a aba Security.
+      security-events: write
+
+    steps:
+      - name: Checkout code (SHA já validado pelo CI)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.resolve-sha.outputs.sha }}
+
+      # ITEM-11 (Onda 3 — SBOM e governança de dependências): todo release real produz um SBOM
+      # CycloneDX correlacionável ao commit publicado. Ver docs/security/DEPENDENCY_POLICY.md.
+      - name: Use Node.js 22 (para gerar o SBOM)
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies (para o SBOM)
+        run: npm ci --no-audit --no-fund
+
+      - name: Gerar SBOM (CycloneDX)
+        run: npm run security:sbom
+
+      - name: Nomear artefato do SBOM com o SHA curto do release
+        id: sbom_name
+        run: echo "name=sbom-$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload do SBOM como artefato do release
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.sbom_name.outputs.name }}
+          path: sbom.cdx.json
+          retention-days: 90
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Necessário para `cache-from`/`cache-to: type=gha` abaixo — o driver "docker" padrão (sem
+      # este passo) não suporta o backend de cache remoto do GitHub Actions.
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,format=short
+            type=raw,value=latest
+
+      # ITEM-10 (Onda 2 — CodeQL/Trivy/Dependency Review bloqueantes): a imagem é construída e
+      # carregada localmente (push: false, load: true) para ser escaneada ANTES de publicar no
+      # registry — um achado HIGH/CRITICAL sem waiver impede o push, em vez de publicar primeiro e
+      # descobrir depois. cache-from/cache-to (GitHub Actions cache) evitam pagar o build duas
+      # vezes: o push abaixo reaproveita as camadas já construídas aqui.
+      - name: Build Docker image (local, para scan antes do push)
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        with:
+          context: .
+          push: false
+          load: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Selecionar tag primária para o scan
+        id: primary_tag
+        run: echo "tag=$(echo '${{ steps.meta.outputs.tags }}' | head -n1)" >> "$GITHUB_OUTPUT"
+
+      # `ignore-unfixed: true` só aqui (não no gate de PR de filesystem) — política deliberada:
+      # imagens base (node/debian) frequentemente carregam CVE de pacote de SO sem fix upstream
+      # disponível ainda; bloquear todo release por isso não é acionável. Achado com fix
+      # disponível continua bloqueando normalmente. Ver .trivyignore.yaml para waivers explícitos
+      # por advisory ID (não por severidade rebaixada globalmente).
+      - name: Trivy — scan da imagem (HIGH/CRITICAL, bloqueante antes do push)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: image
+          image-ref: ${{ steps.primary_tag.outputs.tag }}
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          ignore-unfixed: true
+          format: sarif
+          output: trivy-image-results.sarif
+          trivyignores: .trivyignore.yaml
+          # Mesmo motivo do job trivy-fs-pr-gate em security-trivy.yml: sem isto, `format: sarif`
+          # faz a trivy-action ignorar `severity: HIGH,CRITICAL` e avaliar (inclusive para o
+          # exit-code) achados de qualquer severidade. Ver comentário completo lá.
+          limit-severities-for-sarif: true
+
+      - name: Upload SARIF do scan de imagem para a aba Security
+        if: always()
+        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          sarif_file: trivy-image-results.sarif
+          category: trivy-image
+
+      - name: Upload SARIF do scan de imagem como artefato (auditoria/retenção)
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: trivy-image-sarif
+          path: trivy-image-results.sarif
+          retention-days: 30
+          if-no-files-found: warn
+
+      # Só roda se o scan acima passou — o step de scan falha (exit-code 1) e interrompe o job
+      # antes de chegar aqui quando há achado HIGH/CRITICAL sem waiver.
+      - name: Push Docker image (imagem já escaneada)
+        run: |
+          set -euo pipefail
+          while IFS= read -r tag; do
+            [ -n "$tag" ] && docker push "$tag"
+          done <<< "${{ steps.meta.outputs.tags }}"
+
+      - name: Resumo
+        if: always()
+        run: |
+          {
+            echo "### Deployment — Birth Hub 360º"
+            echo '```'
+            echo "ENVIRONMENT............. PRODUCTION (ghcr.io image publish)"
+            echo "COMMIT SHA............... ${{ needs.resolve-sha.outputs.sha }}"
+            echo "CI QUALITY GATE........... PASS (validado no job resolve-sha antes de qualquer build)"
+            echo "ARTIFACT.................. ${{ steps.primary_tag.outputs.tag }}"
+            echo "ACTOR...................... ${{ github.actor }}"
+            echo "TIMESTAMP.................. $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "DEPLOYMENT.................. ${{ job.status }}"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

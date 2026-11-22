@@ -1,0 +1,537 @@
+import { motion } from 'framer-motion';
+import { AlertTriangle, PhoneCall, Sparkles } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { EmptyState } from '../../../components/ui/EmptyState.js';
+import { Skeleton } from '../../../components/ui/Skeleton.js';
+import { useActivePlaybook } from '../../../hooks/useActivePlaybook.js';
+import { usePlaybookMatrixData } from '../../../hooks/usePlaybookMatrixData.js';
+import { api } from '../../../lib/api.js';
+import { SoundFX } from '../../../lib/soundEffects.js';
+import { toast } from '../../../lib/toast.js';
+import {
+  OBJECTIONS_DATA,
+  QUALIFICATION_CRITERIA,
+} from '../../chatbook/components/chatbook-hub/playbookData.js';
+import { ActiveCallView } from './roleplay-hub/ActiveCallView.js';
+import { CallAnalysisReport } from './roleplay-hub/CallAnalysisReport.js';
+import { CallSetup } from './roleplay-hub/CallSetup.js';
+import { RoleplayHistoryPanel } from './roleplay-hub/RoleplayHistoryPanel.js';
+import type { CallAnalysisResult, CallMessage } from './roleplay-hub/types.js';
+
+export function RoleplayHub() {
+  const { playbook, info: playbookMeta } = useActivePlaybook();
+  const { objections, qualifications } = usePlaybookMatrixData(playbook);
+
+  const [selectedPersona, setSelectedPersona] = useState('gestor_frota');
+  const [difficulty, setDifficulty] = useState<'facil' | 'medio' | 'dificil'>('medio');
+  const [callActive, setCallActive] = useState(false);
+  const [isFinished, setIsFinished] = useState(false);
+  const [messages, setMessages] = useState<CallMessage[]>([]);
+  const [inputMessage, setInputMessage] = useState('');
+  const [isThinking, setIsThinking] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [callDuration, setCallDuration] = useState(0);
+  const [botSpeaking, setBotSpeaking] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<CallAnalysisResult | null>(null);
+  const [isEvaluating, setIsEvaluating] = useState(false);
+  const [evaluationError, setEvaluationError] = useState<string | null>(null);
+  const [turnEvaluations, setTurnEvaluations] = useState<
+    Array<{
+      clarity: number;
+      objectionHandling: number;
+      total: number;
+      feedback: string;
+    }>
+  >([]);
+
+  // Novas states para Gravação de Áudio e Timestamps da Onda 3
+  const [audioBlobUrl, setAudioBlobUrl] = useState<string | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<BlobPart[]>([]);
+  const [timestamps, setTimestamps] = useState<
+    Array<{ sender: string; timeSeconds: number; text: string }>
+  >([]);
+
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+
+  const personasAtlas = [
+    {
+      id: 'diretor_logistica',
+      label: 'Diretor de Logística & Supply',
+      desc: 'Focado em ROI, eficiência de processos e redução de sinistros.',
+    },
+    {
+      id: 'gerente_risco',
+      label: 'Gerente de Risco (GR)',
+      desc: 'Exigente, cético quanto a novas ferramentas, focado em compliance.',
+    },
+    {
+      id: 'comprador_pme',
+      label: 'Dono / CEO de Transportadora',
+      desc: 'Pouco tempo, focado em custo-benefício e facilidade de implantação.',
+    },
+  ];
+
+  const personasbirthhub360 = [
+    {
+      id: 'gestor_frota',
+      label: 'Gestor de Frotas (Transportadora)',
+      desc: 'Preocupado com consumo de combustível, manutenção e jammers.',
+    },
+    {
+      id: 'diretor_operacoes',
+      label: 'Diretor de Operações Logísticas',
+      desc: 'Busca telemetria CAN real, videotelemetria e controle de jornada.',
+    },
+    {
+      id: 'gerente_rh',
+      label: 'Gerente de RH / Passivo Trabalhista',
+      desc: 'Interessado no Total Jornada para cumprir legislação e evitar horas extras.',
+    },
+  ];
+
+  // Antes dividida entre dois playbooks nomeados por empresa (Birth Hub 360) — unificada
+  // num único playbook geral (pedido explícito do usuário), sem descartar nenhuma persona.
+  const currentPersonas = [...personasAtlas, ...personasbirthhub360];
+
+  // Mesma classificação de persona usada para o motor de IA do turno (generateRoleplay) — extraída
+  // pra função pura porque finishCall também precisa dela para o parecer técnico de sessão
+  // (generateRoleplayEvaluation), e as duas chamadas de IA precisam da mesma persona.
+  const personaKeyFor = (personaId: string): 'skeptical_cfo' | 'strict_buyer' | 'tech_director' =>
+    ['diretor_operacoes', 'diretor_logistica'].includes(personaId)
+      ? 'tech_director'
+      : ['gestor_frota', 'comprador_pme'].includes(personaId)
+        ? 'skeptical_cfo'
+        : 'strict_buyer';
+
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval> | undefined;
+    if (callActive && !isFinished) {
+      interval = setInterval(() => setCallDuration((p) => p + 1), 1000);
+    }
+    return () => clearInterval(interval);
+  }, [callActive, isFinished]);
+
+  const formatDuration = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.lang = 'pt-BR';
+      recognitionRef.current.onresult = (event: SpeechRecognitionEventLike) => {
+        const transcript = event.results[0][0].transcript;
+        setInputMessage(transcript);
+        setIsListening(false);
+      };
+      recognitionRef.current.onerror = () => setIsListening(false);
+      recognitionRef.current.onend = () => setIsListening(false);
+    }
+  }, []);
+
+  const toggleListening = () => {
+    if (!recognitionRef.current) {
+      toast.error(
+        'Reconhecimento de voz não suportado neste navegador. Tente pelo Chrome desktop.',
+      );
+      return;
+    }
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      setIsListening(true);
+      recognitionRef.current.start();
+    }
+  };
+
+  const speakText = (text: string) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'pt-BR';
+      const voices = window.speechSynthesis.getVoices();
+      const ptVoices = voices.filter((v) => v.lang.includes('pt-BR') || v.lang.includes('pt_BR'));
+      const bestVoice =
+        ptVoices.find((v) => v.name.toLowerCase().includes('google')) ||
+        ptVoices.find((v) => v.name.toLowerCase().includes('premium')) ||
+        ptVoices.find((v) => v.name.toLowerCase().includes('online')) ||
+        ptVoices.find((v) => v.name.toLowerCase().includes('microsoft')) ||
+        ptVoices[0];
+      if (bestVoice) utterance.voice = bestVoice;
+      // Rate/pitch neutros (1.0/1.0) em vez do 1.1/1.05 anterior — fala levemente acelerada e
+      // aguda lê como apressada/robótica, não como alguém real ao telefone. As pausas naturais
+      // (vírgulas, reticências) já vêm do texto que a IA gera (ver o novo prompt de
+      // generateRoleplay), não de configuração de voz.
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      utterance.onstart = () => setBotSpeaking(true);
+      utterance.onend = () => setBotSpeaking(false);
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
+  const startCall = async () => {
+    SoundFX.play('focus');
+    setCallActive(true);
+    setIsFinished(false);
+    setAnalysisResult(null);
+    setIsEvaluating(false);
+    setEvaluationError(null);
+    setTurnEvaluations([]);
+    setCallDuration(0);
+    setAudioBlobUrl(null);
+    setTimestamps([]);
+    audioChunksRef.current = [];
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const url = URL.createObjectURL(audioBlob);
+        setAudioBlobUrl(url);
+        // Parar as faixas do microfone
+        stream.getTracks().forEach((track) => {
+          track.stop();
+        });
+      };
+
+      mediaRecorder.start();
+    } catch (err: any) {
+      console.error('Erro ao acessar microfone para gravação', err);
+      toast.error('Não foi possível iniciar a gravação. Verifique as permissões do microfone.');
+    }
+
+    // Provisório: o playbook único ainda usa a saudação do playbook de logística/risco;
+    // o texto de frota (playbookData.ts) fica para a rodada de consolidação de conteúdo.
+    const initialGreeting =
+      'Alô? Recebi seu contato sobre a sua plataforma. Nossa operação já trabalha com Gerenciamento de Risco. Por que deveríamos conversar?';
+
+    setMessages([
+      {
+        id: '1',
+        sender: 'bot',
+        text: initialGreeting,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      },
+    ]);
+    setTimestamps([{ sender: 'bot', timeSeconds: 0, text: initialGreeting }]);
+    speakText(initialGreeting);
+  };
+
+  const handleSendMessage = async () => {
+    if (!inputMessage.trim() || isThinking) return;
+
+    const userMsg: CallMessage = {
+      id: Date.now().toString(),
+      sender: 'user',
+      text: inputMessage.trim(),
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    const text = inputMessage.trim();
+    const nextMessages = [...messages, userMsg];
+    setMessages(nextMessages);
+    setTimestamps((prev) => [...prev, { sender: 'sdr', timeSeconds: callDuration, text: text }]);
+    setInputMessage('');
+    setIsThinking(true);
+
+    const persona = personaKeyFor(selectedPersona);
+    // Prioriza matrizes dinâmicas cadastradas pelo tenant via playbookApi com fallback retroativo para estáticos
+    const liveCriteria =
+      qualifications.length > 0
+        ? qualifications.map((item) => ({
+            category: item.questionCategory,
+            criteria: item.idealAnswer,
+            question: item.questionText,
+          }))
+        : QUALIFICATION_CRITERIA.map((item) => ({
+            category: item.category,
+            criteria: item.atlas,
+            question: item.spinQuestionAtlas,
+          }));
+
+    const liveObjections =
+      objections.length > 0
+        ? objections.map((item) => ({
+            title: item.objectionTitle,
+            technique: item.keyDifferentiator,
+            guidance: item.responseScript,
+          }))
+        : OBJECTIONS_DATA.map((item) => ({
+            title: item.title,
+            technique: item.technique,
+            guidance: item.bestResponseAtlas,
+          }));
+
+    const playbookContext = JSON.stringify({
+      difficulty,
+      persona: currentPersonas.find((item) => item.id === selectedPersona),
+      qualificationCriteria: liveCriteria,
+      objections: liveObjections,
+    });
+
+    try {
+      const response = await api.post<{
+        result: {
+          reply: string;
+          feedback: string;
+          clarity: number;
+          objectionHandling: number;
+          total: number;
+        };
+      }>(
+        '/api/intelligence/studio',
+        {
+          kind: 'roleplay',
+          brand: { name: playbookMeta.label, description: playbookMeta.description },
+          inputs: {
+            persona,
+            message: text,
+            transcript: nextMessages.map((message) => ({
+              sender: message.sender === 'user' ? 'sdr' : 'buyer',
+              text: message.text,
+            })),
+            playbookContext,
+          },
+        },
+        { timeoutMs: 90_000 },
+      );
+
+      const botMessage = {
+        id: Date.now().toString(),
+        sender: 'bot' as const,
+        text: response.result.reply,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
+      setMessages((prev) => [...prev, botMessage]);
+      setTimestamps((prev) => [
+        ...prev,
+        { sender: 'bot', timeSeconds: callDuration, text: response.result.reply },
+      ]);
+      setTurnEvaluations((prev) => [
+        ...prev,
+        {
+          clarity: response.result.clarity,
+          objectionHandling: response.result.objectionHandling,
+          total: response.result.total,
+          feedback: response.result.feedback,
+        },
+      ]);
+      speakText(response.result.reply);
+    } catch (error: any) {
+      const reason = error instanceof Error ? error.message : 'Falha inesperada';
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          sender: 'bot',
+          text: `Não consegui consultar o comprador simulado agora. ${reason}`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        },
+      ]);
+    } finally {
+      setIsThinking(false);
+    }
+  };
+
+  // Encerra microfone/gravação/TTS — separado de requestEvaluation porque o retry do parecer
+  // técnico (botão "Tentar novamente" em caso de falha da IA) precisa disparar de novo só a
+  // chamada de IA, sem reabrir microfone nem duplicar a gravação já parada.
+  const stopActiveCallResources = () => {
+    SoundFX.play('success');
+    setCallActive(false);
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    if (recognitionRef.current && isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    }
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+    }
+  };
+
+  // Parecer técnico da ligação completa: chamada de IA dedicada (POST /roleplay/finish →
+  // generateRoleplayEvaluation), não mais a média local dos turnos. roleplay/AGENTS.md exige que
+  // falhas de IA sejam explícitas — se a chamada falhar, mostramos o erro real e um botão de
+  // retentativa em vez de fabricar uma nota/feedback genérico.
+  const requestEvaluation = async () => {
+    setIsEvaluating(true);
+    setEvaluationError(null);
+    try {
+      const persona = currentPersonas.find((item) => item.id === selectedPersona);
+      const result = await api.post<{
+        sessionId: string | null;
+        overallScore: number;
+        clarityScore: number;
+        objectionHandlingScore: number;
+        closingScore: number;
+        strengths: string[];
+        improvements: string[];
+        summary: string;
+      }>(
+        '/api/intelligence/roleplay/finish',
+        {
+          brand: playbook,
+          brandName: playbookMeta.label,
+          brandDescription: playbookMeta.description,
+          personaId: selectedPersona,
+          personaLabel: persona?.label || selectedPersona,
+          personaKey: personaKeyFor(selectedPersona),
+          difficulty,
+          durationSeconds: callDuration,
+          transcript: messages.map((message) => ({
+            sender: message.sender,
+            text: message.text,
+          })),
+          turnEvaluations,
+        },
+        { timeoutMs: 90_000 },
+      );
+
+      setAnalysisResult({
+        score: result.overallScore,
+        feedback: result.summary,
+        strengths: result.strengths,
+        improvements: result.improvements,
+        clarityScore: result.clarityScore,
+        objectionHandlingScore: result.objectionHandlingScore,
+        closingScore: result.closingScore,
+        sessionId: result.sessionId,
+      });
+    } catch (error: any) {
+      setEvaluationError(
+        error instanceof Error ? error.message : 'Falha inesperada ao gerar o parecer técnico.',
+      );
+    } finally {
+      setIsEvaluating(false);
+    }
+  };
+
+  const finishCall = () => {
+    stopActiveCallResources();
+    setIsFinished(true);
+    setAnalysisResult(null);
+    void requestEvaluation();
+  };
+
+  return (
+    <div className="flex-1 overflow-y-auto bg-transparent p-4 md:p-8 flex flex-col items-center relative overflow-hidden transition-colors duration-1000">
+      <div className="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-brand/10 blur-[120px] pointer-events-none" />
+      <div className="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-brand-2/10 blur-[120px] pointer-events-none" />
+
+      <div className="w-full max-w-4xl space-y-12 pb-24 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-surface/70 backdrop-blur-2xl rounded-[3rem] p-8 md:p-12 border border-brand/25 shadow-[0_20px_40px_rgba(0,0,0,0.03)] flex flex-col items-center justify-center text-center gap-5 relative overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-surface/50 to-transparent pointer-events-none" />
+          <div className="relative z-10 flex flex-col items-center gap-5">
+            <span className="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-brand/30 bg-brand/10 text-brand-ink dark:text-brand shadow-sm">
+              {playbookMeta.label}
+            </span>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-brand-ink dark:text-brand tracking-tight flex items-center gap-3">
+              <PhoneCall className="text-brand" size={40} /> Roleplay
+            </h1>
+            <p className="text-ink-2 text-base md:text-lg font-medium max-w-xl">
+              Simule uma ligação real de vendas por voz no playbook {playbookMeta.label} e receba
+              uma nota + dicas de melhoria ao final.
+            </p>
+          </div>
+        </motion.div>
+
+        {!callActive && !isFinished && (
+          <>
+            <CallSetup
+              currentPersonas={currentPersonas}
+              selectedPersona={selectedPersona}
+              setSelectedPersona={setSelectedPersona}
+              difficulty={difficulty}
+              setDifficulty={setDifficulty}
+              onStart={startCall}
+            />
+            <RoleplayHistoryPanel playbook={playbook} />
+          </>
+        )}
+
+        {callActive && (
+          <ActiveCallView
+            currentPersonas={currentPersonas}
+            selectedPersona={selectedPersona}
+            messages={messages}
+            isThinking={isThinking}
+            isListening={isListening}
+            inputMessage={inputMessage}
+            toggleListening={toggleListening}
+            onSendMessage={handleSendMessage}
+            callDuration={formatDuration(callDuration)}
+            botSpeaking={botSpeaking}
+            onEndCall={finishCall}
+          />
+        )}
+
+        {isFinished && isEvaluating && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-surface/90 backdrop-blur-2xl rounded-[3rem] p-10 border border-line shadow-[0_30px_60px_rgba(0,0,0,0.08)] space-y-6"
+            role="status"
+            aria-live="polite"
+          >
+            <div className="flex items-center gap-3 text-ink">
+              <Sparkles className="w-6 h-6 text-brand animate-pulse" aria-hidden="true" />
+              <h2 className="text-xl font-black tracking-tight">Gerando parecer técnico…</h2>
+            </div>
+            <p className="text-sm text-ink-2">
+              A IA está lendo a ligação inteira para avaliar rapport, investigação de dores,
+              tratamento de objeções e fechamento — isso leva alguns segundos.
+            </p>
+            <div className="space-y-4">
+              <Skeleton className="h-24 w-full rounded-[2rem]" />
+              <Skeleton className="h-40 w-full rounded-[2rem]" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Skeleton className="h-32 w-full rounded-[2rem]" />
+                <Skeleton className="h-32 w-full rounded-[2rem]" />
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {isFinished && !isEvaluating && evaluationError && (
+          <EmptyState
+            icon={<AlertTriangle className="w-8 h-8 text-danger" aria-hidden="true" />}
+            title="Não foi possível gerar o parecer técnico"
+            description={`${evaluationError} A transcrição da ligação foi mantida — você pode tentar gerar o parecer novamente sem refazer a chamada.`}
+            actionLabel="Tentar novamente"
+            onAction={() => void requestEvaluation()}
+          />
+        )}
+
+        {isFinished && !isEvaluating && analysisResult && (
+          <CallAnalysisReport
+            analysisResult={analysisResult}
+            onRestart={startCall}
+            audioBlobUrl={audioBlobUrl}
+            timestamps={timestamps}
+            turnEvaluations={turnEvaluations}
+          />
+        )}
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,9 @@
+{
+  "name": "testland/gameplay-recording-replay",
+  "description": "Use when a game needs recorded play sessions as regression tests, netcode replays for spectators or esports, or reproducible bug repros for cert. Replays sessions bit-for-bit and checks the end state, via Unity InputEventTrace, Unreal's Replay System or deterministic Godot input replay.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.4.15"
+}

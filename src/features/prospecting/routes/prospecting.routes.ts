@@ -1,0 +1,613 @@
+import { AuditService } from '../../../lib/audit/audit.service.js';
+import { isValidCnpj } from '../../../lib/cnpj.js';
+import { type NextFunction, type Request, type Response, Router } from 'express';
+import multer from 'multer';
+import { z } from 'zod';
+import { routeParam } from '../../../shared/http/routeParams.js';
+import type { AuthRequest } from '../../../shared/middlewares/authenticateToken.js';
+import { requireRole } from '../../../shared/middlewares/requireRole.js';
+import { validateRequest } from '../../../shared/middlewares/validateRequest.js';
+import { rntrcRiskByUf } from '../../../shared/services/rntrcTerritorialRisk.service.js';
+import { IcebreakerService } from '../../intelligence/services/IcebreakerService.js';
+import { discoverCriteriaSchema } from '../schemas/discoverCriteria.schema.js';
+import { checkApolloConnection } from '../services/apollo.service.js';
+import { fetchCnpjData } from '../services/enrichment.service.js';
+import {
+  extractTextFromImage,
+  OcrValidationError,
+  structureOcrCandidate,
+} from '../services/ocr.service.js';
+import {
+  discoverCandidates,
+  discoverDecisionMakers,
+  promoteToCrm,
+  rejectCandidate,
+} from '../services/prospecting.service.js';
+import { findSearchExecution } from '../services/searchExecution.service.js';
+import { getTurboProviderHealth } from '../services/turboHealth.service.js';
+import { checkProviderRateLimit } from '../services/providerRateLimit.js';
+import { normalizeCompanyDomain } from '../utils/domain.js';
+
+const icebreakerService = new IcebreakerService();
+
+const router = Router();
+
+const rejectCandidateSchema = z.object({
+  tradeName: z.string().trim().min(1, 'tradeName é obrigatório').max(200),
+  website: z.string().trim().max(300).optional(),
+  reason: z.string().trim().max(300).optional(),
+});
+
+// Só em memória (nunca grava em disco) — a imagem só existe pelo tempo do OCR, não é um asset
+// que o app precisa reter depois de extrair o texto.
+const ocrUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 8 * 1024 * 1024 },
+});
+
+// Revalida o login técnico da Apollo por API key sem consumir créditos.
+router.post(
+  '/apollo/reconnect',
+  async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const status = await checkApolloConnection();
+      res.json({ success: true, data: status });
+    } catch (error: any) {
+      next(error);
+    }
+  },
+);
+
+// Descoberta de candidatos via IA a partir de um ICP (Perfil de Cliente Ideal).
+// ACH-05-01 (auditoria de segurança): chamada real e faturável (Apollo/IA) — VISUALIZADOR
+// (papel somente-leitura, padrão de novo usuário) não pode acioná-la.
+router.post(
+  '/discover',
+  requireRole(['ADMIN', 'GESTOR', 'CLOSER', 'SDR']),
+  validateRequest(discoverCriteriaSchema),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const criteria = req.body as import('../services/prospecting.service.js').ProspectCriteria;
+      const { organizationId } = (req as AuthRequest).user;
+      const result = await discoverCandidates(criteria, organizationId);
+      res.json({ success: true, data: result });
+    } catch (error: any) {
+      next(error);
+    }
+  },
+);
+
+router.get('/providers', async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    res.json({ success: true, data: await getTurboProviderHealth() });
+  } catch (error) {
+    next(error);
+  }
+});
+router.post(
+  '/providers/test',
+  requireRole(['ADMIN', 'GESTOR']),
+  async (_req: Request, res: Response, next: NextFunction) => {
+    try {
+      res.json({ success: true, data: await getTurboProviderHealth() });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+router.post(
+  '/interpret',
+  requireRole(['ADMIN', 'GESTOR', 'CLOSER', 'SDR']),
+  validateRequest(
+    z.object({
+      query: z.string().trim().min(5).max(2000),
+      model: z
+        .string()
+        .regex(/^[a-zA-Z0-9_./:-]{1,120}$/)
+        .optional(),
+      mode: z.enum(['automatic', 'groq', 'local']).default('automatic'),
+      consent: z.literal(true),
+      allowPaidProviders: z.boolean().default(false),
+    }),
+  ),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const limit = checkProviderRateLimit('apollo');
+      if (!limit.allowed) {
+        res.status(429).json({
+          success: false,
+          error: 'Limite de interpretação excedido; tente novamente mais tarde.',
+        });
+        return;
+      }
+      const { interpretTurboSearch } = await import('../../../lib/ai/turboSearch.js');
+      const user = (req as AuthRequest).user;
+      await AuditService.log({
+        action: 'AGENT_EXECUTED',
+        entity: 'TurboSearchInterpretConsent',
+        actorId: user.id,
+        organizationId: user.organizationId,
+        afterState: {
+          consent: true,
+          mode: req.body.mode,
+          allowPaidProviders: req.body.allowPaidProviders,
+        },
+      });
+      const result = await interpretTurboSearch({
+        ...req.body,
+        organizationId: user.organizationId,
+        userId: user.id,
+      });
+      const filters = result.filters;
+      const criteria = discoverCriteriaSchema.parse({
+        segmento: filters.segment ?? '',
+        localizacao: filters.locations.join(', '),
+        palavrasChave: filters.keywords.join(','),
+        segmentoDetalhes: {
+          palavrasExcluir: filters.excludedKeywords,
+          cnaePrincipal: filters.cnaes[0],
+          cnaesSecundarios: filters.cnaes.slice(1),
+        },
+        porte:
+          filters.employeeMin != null || filters.employeeMax != null
+            ? `${filters.employeeMin ?? 1},${filters.employeeMax ?? 1000000}`
+            : undefined,
+        personas: filters.personas.map((p) => ({
+          cargoPrincipal: p.titles[0],
+          cargosEquivalentes: p.titles.slice(1),
+          senioridades: p.seniorities,
+          departamentos: p.departments,
+        })),
+      });
+      res.json({ success: true, data: { ...result, criteria } });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+// Lê uma foto (cartão de visita, fachada, lista impressa) via OCR local + IA e devolve um
+// candidato no mesmo formato da Descoberta — o cadastro real no CRM usa o /promote já existente,
+// depois que o usuário confere os dados extraídos (OCR erra; não promovemos sozinho).
+// ACH-05-01: chamada real e faturável (OCR + IA) — mesma restrição de /discover.
+router.post(
+  '/ocr',
+  requireRole(['ADMIN', 'GESTOR', 'CLOSER', 'SDR']),
+  ocrUpload.single('image'),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      if (!req.file) {
+        res.status(400).json({ success: false, error: 'Envie uma imagem no campo "image".' });
+        return;
+      }
+      const brandName =
+        typeof req.body?.brandName === 'string' ? req.body.brandName : 'Birth Hub 360';
+      const brandDescription =
+        typeof req.body?.brandDescription === 'string'
+          ? req.body.brandDescription
+          : 'Gestão de risco e inteligência logística B2B';
+
+      const rawText = await extractTextFromImage(req.file.buffer, req.file.mimetype);
+      const candidate = await structureOcrCandidate(rawText, {
+        name: brandName,
+        description: brandDescription,
+      });
+      res.json({ success: true, data: { candidate, rawText } });
+    } catch (error: any) {
+      if (error instanceof OcrValidationError) {
+        res.status(422).json({ success: false, error: error.message });
+        return;
+      }
+      next(error);
+    }
+  },
+);
+
+// Consulta em tempo real (sem persistir) de um CNPJ na Receita Federal via BrasilAPI.
+// ACH-05-01 (avaliado): BrasilAPI é gratuita e sem chave — não é uma chamada faturável como
+// Apollo/Hunter/IA, então fica fora do requireRole aplicado às rotas acima.
+router.post(
+  '/enrich-cnpj',
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { cnpj } = req.body as { cnpj?: string };
+      if (!cnpj || typeof cnpj !== 'string') {
+        res.status(400).json({ success: false, error: 'CNPJ é obrigatório' });
+        return;
+      }
+      if (!isValidCnpj(cnpj)) {
+        res.status(400).json({ success: false, error: 'CNPJ inválido' });
+        return;
+      }
+      const result = await fetchCnpjData(cnpj);
+      // MI-014 (dossiê CPI, DEC-15 opção A): a UF devolvida pela Receita Federal já basta para
+      // reaproveitar o indicador RNTRC/ANTT territorial que o módulo de Market Intelligence
+      // publica (ver `rntrcRiskByUf` — mesmo dataset/cache de `rntrcTerritorialSnapshot`, sem
+      // recalcular nada). `marketRisk` fica `null` só quando a Receita não devolveu empresa.
+      const marketRisk = result.found && result.data ? rntrcRiskByUf(result.data.state) : null;
+      res.json({ success: true, data: { ...result, marketRisk } });
+    } catch (error: any) {
+      next(error);
+    }
+  },
+);
+
+// Promove um candidato (IA ou CNPJ) para o CRM: cria Company + Contact + Lead e enriquece automaticamente.
+router.post(
+  '/promote',
+  requireRole(['ADMIN', 'GESTOR', 'CLOSER', 'SDR']),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const body = req.body as { tradeName?: string; source?: string };
+      if (!body.tradeName || !body.source) {
+        res.status(400).json({ success: false, error: 'tradeName e source são obrigatórios' });
+        return;
+      }
+      if (/google|places/i.test(body.source)) {
+        res.status(403).json({
+          success: false,
+          error:
+            'Dados Google Places não podem ser promovidos sem autorização de reutilização comprovada.',
+        });
+        return;
+      }
+      if (req.body.autoEnrich === true && req.body.autorizarPagos !== true) {
+        res.status(400).json({
+          success: false,
+          error: 'Enriquecimento adicional exige autorização de consultas pagas.',
+        });
+        return;
+      }
+      const { organizationId } = (req as AuthRequest).user;
+      const result = await promoteToCrm({
+        ...req.body,
+        autoEnrich: req.body.autoEnrich === true && req.body.autorizarPagos === true,
+        organizationId,
+      });
+      res.status(201).json({ success: true, data: result });
+    } catch (error: any) {
+      next(error);
+    }
+  },
+);
+
+// Marca um candidato da Descoberta como "Não é esse perfil" — passa a ser excluído de buscas
+// futuras deste tenant (ver `fetchKnownExclusions` em prospecting.service.ts).
+router.post(
+  '/reject',
+  requireRole(['ADMIN', 'GESTOR', 'CLOSER', 'SDR']),
+  validateRequest(rejectCandidateSchema),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { organizationId } = (req as AuthRequest).user;
+      await rejectCandidate({ ...req.body, organizationId });
+      res.status(201).json({ success: true });
+    } catch (error: any) {
+      next(error);
+    }
+  },
+);
+
+// Busca de decisores para uma empresa específica
+// ACH-05-01: chamada real e faturável (Apollo/Hunter) — mesma restrição de /discover.
+router.post(
+  '/decision-makers',
+  requireRole(['ADMIN', 'GESTOR', 'CLOSER', 'SDR']),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { domain, criteria } = req.body as {
+        domain?: string;
+        criteria?: Record<string, unknown>;
+      };
+      const normalizedDomain = typeof domain === 'string' ? normalizeCompanyDomain(domain) : '';
+      if (!normalizedDomain) {
+        res.status(400).json({ success: false, error: 'Informe um domínio válido da empresa' });
+        return;
+      }
+      const result = await discoverDecisionMakers(normalizedDomain, criteria ?? {});
+      res.json({ success: true, data: result });
+    } catch (error: any) {
+      next(error);
+    }
+  },
+);
+
+// Gera um quebra-gelo comercial sob demanda a partir de recortes públicos reais da empresa.
+// ARCH-006 (auditoria de dívida técnica): substitui o placeholder de UI que só mostrava um
+// alert() sem chamar IA nenhuma.
+// ACH-05-01: chamada real e faturável (IA) — mesma restrição de /discover.
+router.post(
+  '/icebreaker',
+  requireRole(['ADMIN', 'GESTOR', 'CLOSER', 'SDR']),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { companyName } = req.body as { companyName?: string };
+      if (!companyName || typeof companyName !== 'string') {
+        res.status(400).json({ success: false, error: 'companyName é obrigatório' });
+        return;
+      }
+      const icebreaker = await icebreakerService.generateIcebreaker(companyName);
+      res.json({ success: true, data: { icebreaker } });
+    } catch (error: any) {
+      next(error);
+    }
+  },
+);
+
+// Import the cold email service
+import { type ColdEmailCampaign, sendColdEmail } from '../services/cold-email.service.js';
+
+// Envia um cold email (ex: template de prospecção) com rotulagem LGPD
+router.post(
+  '/cold-email',
+  requireRole(['ADMIN', 'GESTOR', 'CLOSER', 'SDR']),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { organizationId } = (req as AuthRequest).user;
+      // organizationId sempre vem do tenant autenticado, nunca do corpo da requisição — é o que
+      // permite checar opt-out por organização antes do envio (ver cold-email.service.ts).
+      const campaign = { ...(req.body as ColdEmailCampaign), organizationId };
+      if (!campaign?.targetEmail) {
+        res.status(400).json({ success: false, error: 'targetEmail é obrigatório' });
+        return;
+      }
+
+      const success = await sendColdEmail(campaign);
+      if (success) {
+        res.json({ success: true, message: 'Email sent' });
+      } else {
+        res.status(500).json({ success: false, error: 'Failed to send cold email' });
+      }
+    } catch (error: any) {
+      next(error);
+    }
+  },
+);
+
+import { logger } from '../../../lib/logger.js';
+import { prisma } from '../../../lib/prisma.js';
+import { enrichmentCascadeQueue } from '../../../lib/queue/enrichmentCascade.worker.js';
+import { connection as bullmqRedisConnection, pingRedis } from '../../../lib/queue/redis.js';
+// ───────────────────── Enriquecimento em Cascata (Apollo ➔ Hunter ➔ Google Places) ─────────────────────
+import { runEnrichmentCascade } from '../services/enrichmentCascade.service.js';
+
+// queuesEnabled (redis.ts) só confere se REDIS_URL está presente, não se o Redis está de fato
+// acessível em runtime. Se a env aponta pra um Redis inatingível, enrichmentCascadeQueue.add()
+// pode ficar pendurado indefinidamente (enableOfflineQueue mantém o comando em fila esperando uma
+// conexão que nunca chega), travando a requisição até o proxy estourar o timeout. Por isso,
+// confirmamos que a conexão responde (pingRedis) dentro de uma janela curta antes de tentar
+// enfileirar; se o ping não voltar a tempo, caímos para o caminho síncrono já existente.
+const ENRICH_CASCADE_QUEUE_PING_TIMEOUT_MS = 3_000;
+
+async function isEnrichCascadeQueueReachable(): Promise<boolean> {
+  let timeoutHandle: NodeJS.Timeout | undefined;
+  const timeout = new Promise<false>((resolve) => {
+    timeoutHandle = setTimeout(() => resolve(false), ENRICH_CASCADE_QUEUE_PING_TIMEOUT_MS);
+  });
+  try {
+    return await Promise.race([pingRedis(bullmqRedisConnection).then(() => true), timeout]);
+  } catch {
+    return false;
+  } finally {
+    if (timeoutHandle) {
+      clearTimeout(timeoutHandle);
+    }
+  }
+}
+
+// ACH-05-01: chamada real e faturável (Apollo/Hunter/Google Places em cascata) — mesma
+// restrição de /discover.
+router.post(
+  '/companies/:id/enrich-cascade',
+  requireRole(['ADMIN', 'GESTOR', 'CLOSER', 'SDR']),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { organizationId } = (req as AuthRequest).user;
+      const companyId = routeParam(req.params.id, 'id');
+      const { async: isAsync, ...options } = req.body || {};
+
+      if (isAsync && enrichmentCascadeQueue) {
+        if (await isEnrichCascadeQueueReachable()) {
+          const job = await enrichmentCascadeQueue.add('enrich-cascade-job', {
+            companyId,
+            organizationId,
+            options,
+          });
+          res.status(202).json({
+            success: true,
+            message: 'Enriquecimento em cascata enfileirado',
+            jobId: job.id,
+          });
+          return;
+        }
+        logger.warn(
+          { companyId, organizationId },
+          'enrich-cascade: Redis configurado mas inacessível dentro do timeout; caindo para execução síncrona',
+        );
+      }
+
+      const result = await runEnrichmentCascade(organizationId, companyId, options);
+      res.json({ success: true, data: result });
+    } catch (error: any) {
+      next(error);
+    }
+  },
+);
+
+// ───────────────────── Listas Salvas de Prospecção & Agendamento ─────────────────────
+router.get(
+  '/saved-searches',
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { organizationId } = (req as AuthRequest).user;
+      const items = await prisma.savedSearch.findMany({
+        where: { organizationId },
+        orderBy: { createdAt: 'desc' },
+      });
+      res.json({ success: true, data: items });
+    } catch (error: any) {
+      next(error);
+    }
+  },
+);
+
+router.post(
+  '/saved-searches',
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { organizationId } = (req as AuthRequest).user;
+      const { name, criteria, schedule } = req.body || {};
+
+      if (!name || typeof name !== 'string') {
+        res.status(400).json({ success: false, error: 'name é obrigatório' });
+        return;
+      }
+
+      const nextRunAt =
+        schedule === 'daily'
+          ? new Date(Date.now() + 24 * 60 * 60 * 1000)
+          : schedule === 'weekly'
+            ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+            : null;
+
+      const created = await prisma.savedSearch.create({
+        data: {
+          name,
+          criteria: criteria || {},
+          schedule: schedule || null,
+          nextRunAt,
+          organizationId,
+        },
+      });
+
+      res.status(201).json({ success: true, data: created });
+    } catch (error: any) {
+      next(error);
+    }
+  },
+);
+
+router.delete(
+  '/saved-searches/:id',
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { organizationId } = (req as AuthRequest).user;
+      const id = routeParam(req.params.id, 'id');
+
+      await prisma.savedSearch.deleteMany({
+        where: { id, organizationId },
+      });
+
+      res.json({ success: true, message: 'Busca salva removida' });
+    } catch (error: any) {
+      next(error);
+    }
+  },
+);
+
+// ACH-05-01 (avaliado): /run dispara discoverCandidates — mesma chamada real e faturável de
+// /discover, então recebe a mesma restrição. GET/POST/DELETE de /saved-searches acima só leem ou
+// gravam o registro de agendamento (sem custo por chamada), por isso ficam fora do requireRole.
+router.post(
+  '/saved-searches/:id/run',
+  requireRole(['ADMIN', 'GESTOR', 'CLOSER', 'SDR']),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { organizationId } = (req as AuthRequest).user;
+      const id = routeParam(req.params.id, 'id');
+
+      const savedSearch = await prisma.savedSearch.findFirst({
+        where: { id, organizationId },
+      });
+
+      if (!savedSearch) {
+        res.status(404).json({ success: false, error: 'Busca salva não encontrada' });
+        return;
+      }
+
+      const criteria = discoverCriteriaSchema.parse(savedSearch.criteria);
+      const result = await discoverCandidates(criteria, organizationId, id);
+      const count = result?.candidates?.length || 0;
+
+      const updated = await prisma.savedSearch.update({
+        where: { id },
+        data: {
+          lastRunAt: new Date(),
+          leadsDiscovered: { increment: count },
+          nextRunAt:
+            savedSearch.schedule === 'daily'
+              ? new Date(Date.now() + 24 * 60 * 60 * 1000)
+              : savedSearch.schedule === 'weekly'
+                ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+                : savedSearch.nextRunAt,
+        },
+      });
+
+      res.json({
+        success: true,
+        data: {
+          savedSearch: updated,
+          candidates: result?.candidates || [],
+          count,
+          searchId: result?.searchId,
+        },
+      });
+    } catch (error: any) {
+      next(error);
+    }
+  },
+);
+
+// ───────────────────── Search-ID: auditoria/replay de execuções de busca ─────────────────────
+// Onda 42 (dossiê CPI, DEC-13, opção A): toda execução real de /discover (e de
+// /saved-searches/:id/run) grava um ProspectingSearchExecution com o Search-ID já devolvido no
+// corpo da resposta original (`data.searchId`) — esta rota lê esse registro de volta, escopado por
+// tenant (RLS + organizationId explícito, ver findSearchExecution em searchExecution.service.ts).
+router.get(
+  '/searches/:searchId',
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { organizationId } = (req as AuthRequest).user;
+      const searchId = routeParam(req.params.searchId, 'searchId');
+      const execution = await findSearchExecution(searchId, organizationId);
+      if (!execution) {
+        res.status(404).json({ success: false, error: 'Execução de busca não encontrada' });
+        return;
+      }
+      res.json({ success: true, data: execution });
+    } catch (error: any) {
+      next(error);
+    }
+  },
+);
+
+// Enriquecimento web via scraper seguro (Cheerio + Playwright fallback)
+router.post('/enrich', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { url, forceBrowser } = req.body as { url?: string; forceBrowser?: boolean };
+    if (!url) {
+      res.status(400).json({ success: false, error: 'A URL é obrigatória para o scraper' });
+      return;
+    }
+
+    const { webScraperService } = await import('../services/enrichment/webScraper.service.js');
+    if (!webScraperService.isSafeUrl(url)) {
+      res
+        .status(400)
+        .json({ success: false, error: 'URL bloqueada pela política de segurança SSRF' });
+      return;
+    }
+
+    const scrapedData = await webScraperService.scrapeWebsite(url, {
+      forcePlaywright: Boolean(forceBrowser),
+    });
+    res.json({
+      success: true,
+      data: scrapedData,
+    });
+  } catch (error: any) {
+    next(error);
+  }
+});
+
+export const prospectingRoutes = router;

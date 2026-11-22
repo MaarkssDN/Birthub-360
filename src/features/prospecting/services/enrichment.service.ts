@@ -1,0 +1,800 @@
+// ARCH-009 (auditoria de dívida técnica): 846L / complexidade proxy 235 — a maior do repo.
+// Diferente de bitrix/apollo (onde a decomposição foi por responsabilidade de domínio), aqui o
+// núcleo é UM único fluxo sequencial (runEnrichment) que orquestra várias fontes de dado passo a
+// passo, cada passo alimentando o próximo (domínio guessado informa busca de contato, que informa
+// o resumo final etc.) — não dá pra separar isso em "adapters" independentes sem reescrever a
+// orquestração inteira, e este arquivo não tem cobertura de teste que garanta que uma reescrita
+// desse tipo preserva o comportamento atual (ver nota abaixo sobre lib/adapters).
+//
+// O que FOI extraído sem mudar comportamento (código movido, não reescrito) foram os três blocos
+// que são funções puras/isoladas dentro do arquivo, cada uma testável e reutilizável por si só:
+// - enrichment/cnpjLookup.ts: fetchCnpjData/fetchCepData (BrasilAPI/Receita Federal)
+// - enrichment/domainGuess.ts: heurística de domínio/e-mail + status de entregabilidade
+// - enrichment/fitScore.ts: computeFitScore (determinístico, auditável)
+// Este arquivo mantém enrichCompany/runEnrichment — o orquestrador de fato — e reexporta a API
+// pública dos três módulos acima.
+//
+// ATUALIZAÇÃO (achado P1-2 da antiga BITRIX24-LEAD-FLOW-AUDIT.md — removida do controle de
+// versão em 22/08/2026, ver docs/REMOVED-DOCS.md): os adapters (IDataProvider) citados
+// aqui numa nota anterior — BrasilApiAdapter/ApolloAdapter/CnpjWsAdapter/GooglePlacesAdapter em
+// lib/adapters/data-providers, e o orquestrador MergeEngineService que os consumia — foram
+// REMOVIDOS. Eram uma segunda implementação completa, nunca chamada por runEnrichment nem por
+// nenhuma rota real (só pelos próprios testes unitários), puro código morto duplicando esta
+// lógica. Se uma reescrita nesses moldes voltar a ser cogitada, trate como trabalho novo — não
+// há mais nada pra "migrar para consumir".
+
+import type { Prisma } from '@prisma/client';
+import type { PlaybookKey } from '../../../config/playbooks.js';
+import { fromPrismaCompanyStatus } from '../../../lib/enumMap.js';
+import { logger } from '../../../lib/logger.js';
+import type { prisma } from '../../../lib/prisma.js';
+import {
+  defaultEnrichmentRepository,
+  type IEnrichmentRepository,
+} from '../infra/PrismaEnrichmentRepository.js';
+export { defaultEnrichmentRepository, type IEnrichmentRepository };
+import { AppError } from '../../../shared/middlewares/errorHandler.js';
+import { IcebreakerService } from '../../intelligence/services/IcebreakerService.js';
+import { filterNewContacts } from '../utils/contactDedupe.js';
+import { enrichOrganizationByDomain, enrichOrganizationWithContacts } from './apollo.service.js';
+import { discoverCnpjByName, isValidCnpj, sanitizeCnpj } from './cnpj.util.js';
+import { checkEmailDeliverability } from './email-verification.service.js';
+import { fetchCnpjData } from './enrichment/cnpjLookup.js';
+import {
+  type DomainGuess,
+  extractDomainFromWebsite,
+  guessDomainAndEmails,
+  guessWhatsappFromPhone,
+  resolveEmailStatus,
+} from './enrichment/domainGuess.js';
+import { computeFitScore } from './enrichment/fitScore.js';
+import {
+  computeLookalikeScore,
+  type LookalikeMatch,
+  type LookalikeScoreResult,
+} from './lookalike-scoring.service.js';
+import { type NewsMention, searchCompanyNews } from './news.service.js';
+import { searchNominatimPlace } from './nominatim.service.js';
+import { searchGooglePlace } from './places.service.js';
+
+export {
+  type CepLookupResult,
+  type CnpjLookupResult,
+  fetchCepData,
+  fetchCnpjData,
+} from './enrichment/cnpjLookup.js';
+export { type DomainGuess, guessDomainAndEmails } from './enrichment/domainGuess.js';
+export {
+  computeFitScore,
+  type FitScoreInput,
+  type FitScoreResult,
+  type ScoreBreakdownItem,
+} from './enrichment/fitScore.js';
+
+export interface EnrichCompanyOptions {
+  cnpj?: string;
+  segmentKeywords?: string[];
+  fleetSizeHint?: string;
+  /**
+   * Repassado para `computeFitScore`, mas não afeta mais o score (ver `fitScore.ts`). O ACH-05-07
+   * bonificava frota/região/carga de risco/stack logístico só quando o playbook ativo era o de
+   * risco de carga/logística ('birthhub360'); a unificação de playbook comercial em 'geral' (decisão
+   * do usuário, ver CLAUDE.md seção 1) removeu a única forma de saber se a organização era desse
+   * vertical, e o bônus foi removido (não substituído por "vale pra todo mundo"). Campo mantido
+   * aqui só para não quebrar os chamadores existentes.
+   */
+  activePlaybook?: PlaybookKey;
+  /** Decisores já buscados na tela de descoberta (Apollo/Hunter) — quando presentes, evitam uma
+   * nova chamada às APIs pagas para os mesmos dados que o usuário já viu antes de promover o lead. */
+  preFetchedDecisionMakers?: Array<{
+    name: string;
+    title: string | null;
+    email: string | null;
+    emailSource?: 'apollo' | 'hunter';
+    phone: string | null;
+    linkedinUrl: string | null;
+  }>;
+  /**
+   * Ignora o cache de `isEnrichmentFresh` e força um novo enriquecimento completo mesmo que a
+   * empresa já tenha sido enriquecida recentemente — use quando o operador pede explicitamente
+   * um novo enriquecimento (ex: corrigiu o CNPJ manualmente, ou clicou num botão "Reenriquecer"
+   * dedicado). Sem este flag, chamadas repetidas a `enrichCompany` para a mesma empresa dentro do
+   * TTL não rechamam Apollo/Hunter/Google Places (ver `isEnrichmentFresh`).
+   */
+  force?: boolean;
+}
+
+/**
+ * TTL do cache de enriquecimento completo, em horas — configurável via
+ * `ENRICHMENT_CACHE_TTL_HOURS` (default 24h). Requisito da Onda 7 (LGPD/05: "não enriquece além
+ * do estritamente necessário para qualificação comercial"): antes deste guard, TODO chamador de
+ * `enrichCompany` — inclusive automáticos, como `promoteToCrm` reaproveitando uma Company já
+ * enriquecida para abrir um novo Lead — reexecutava o pipeline inteiro (CNPJ, Google Places,
+ * GDELT, Apollo Organization, Apollo People/Hunter) mesmo quando a empresa tinha sido enriquecida
+ * minutos antes, gastando crédito pago de provider sem necessidade real.
+ */
+function getEnrichmentCacheTtlMs(environment: NodeJS.ProcessEnv = process.env): number {
+  const hours = Number(environment.ENRICHMENT_CACHE_TTL_HOURS);
+  const safeHours = Number.isFinite(hours) && hours > 0 ? hours : 24;
+  return safeHours * 60 * 60 * 1000;
+}
+
+/**
+ * Decide se `company` ainda está "fresca" o bastante para pular um novo enriquecimento pago.
+ * Pura e testável: recebe `now`/`ttlMs` explicitamente em vez de ler `Date.now()`/env direto.
+ */
+export function isEnrichmentFresh(
+  company: { enrichmentStatus: string; enrichedAt: Date | null },
+  now: Date = new Date(),
+  ttlMs: number = getEnrichmentCacheTtlMs(),
+): boolean {
+  if (company.enrichmentStatus !== 'Enriquecido' || !company.enrichedAt) return false;
+  return now.getTime() - company.enrichedAt.getTime() < ttlMs;
+}
+
+/**
+ * Ciclo de vida do EnrichmentLog (TAREFA-SANEAMENTO-019 / BT360-DT-0027): cada execução de
+ * enriquecimento grava ~7 linhas em `EnrichmentLog` com o payload bruto do provider em `rawData`
+ * (incluindo dados pessoais de decisores) e nada as removia — a tabela crescia para sempre e o
+ * "cache" de proveniência nunca expirava. Política de retenção: logs mais velhos que
+ * `ENRICHMENT_LOG_RETENTION_DAYS` (default 60 dias, dentro da faixa 30–60 recomendada pela
+ * auditoria DIV-05-003) são expurgados de forma oportunista por `maybePurgeExpiredEnrichmentLogs`.
+ *
+ * Por que oportunista e não um cron: o agendador de filas/cron é propriedade do Agente 16
+ * (`src/lib/queue/**`) — pendurar a purga em `enrichCompany` (o único caminho que produz essas
+ * linhas) mantém a política dentro do domínio do 05, sem depender de infra de outro agente. O
+ * throttle de 24h evita um `deleteMany` por chamada de enriquecimento.
+ */
+const ENRICHMENT_LOG_PURGE_INTERVAL_MS = 24 * 60 * 60 * 1000;
+let lastEnrichmentLogPurgeAt = 0;
+
+export function getEnrichmentLogRetentionMs(environment: NodeJS.ProcessEnv = process.env): number {
+  const days = Number(environment.ENRICHMENT_LOG_RETENTION_DAYS);
+  const safeDays = Number.isFinite(days) && days > 0 ? days : 60;
+  return safeDays * 24 * 60 * 60 * 1000;
+}
+
+/** Pura: instante de corte — logs criados antes dele são elegíveis ao expurgo. */
+export function computeEnrichmentLogCutoff(now: Date, retentionMs: number): Date {
+  return new Date(now.getTime() - retentionMs);
+}
+
+/**
+ * Expurgo efetivo: delega o `deleteMany` ao repositório. Propaga o erro do banco — quem chama
+ * decide como tratar (ver `maybePurgeExpiredEnrichmentLogs`, que isola a falha para não derrubar
+ * o enriquecimento por causa de uma manutenção).
+ */
+export async function purgeExpiredEnrichmentLogs(
+  repo: IEnrichmentRepository,
+  options: { now?: Date; retentionMs?: number } = {},
+): Promise<number> {
+  const now = options.now ?? new Date();
+  const retentionMs = options.retentionMs ?? getEnrichmentLogRetentionMs();
+  const cutoff = computeEnrichmentLogCutoff(now, retentionMs);
+  const deleted = await repo.deleteEnrichmentLogsCreatedBefore(cutoff);
+  if (deleted > 0) {
+    logger.info(
+      { deleted, cutoff: cutoff.toISOString(), retentionMs },
+      'purgeExpiredEnrichmentLogs: EnrichmentLog(s) expirados removidos (retenção de cache de enriquecimento)',
+    );
+  }
+  return deleted;
+}
+
+/**
+ * Ponto de entrada usado por `enrichCompany`: no máximo uma tentativa de expurgo a cada 24h por
+ * processo. Falha de banco no expurgo é logada com `warn` (erro explícito e observável) e NÃO
+ * derruba o enriquecimento — o enriquecimento em si não depende do log antigo; a retenção apenas
+ * tenta de novo no próximo intervalo.
+ */
+export async function maybePurgeExpiredEnrichmentLogs(
+  repo: IEnrichmentRepository,
+  now: Date = new Date(),
+): Promise<number> {
+  if (now.getTime() - lastEnrichmentLogPurgeAt < ENRICHMENT_LOG_PURGE_INTERVAL_MS) return 0;
+  lastEnrichmentLogPurgeAt = now.getTime();
+  try {
+    return await purgeExpiredEnrichmentLogs(repo, { now });
+  } catch (error) {
+    logger.warn(
+      { err: error },
+      'maybePurgeExpiredEnrichmentLogs: expurgo de EnrichmentLog expirados falhou — retenção tentará novamente no próximo intervalo',
+    );
+    return 0;
+  }
+}
+
+/** Somente para testes — zera o throttle em memória entre casos de teste. */
+export function resetEnrichmentLogPurgeThrottleForTests(): void {
+  lastEnrichmentLogPurgeAt = 0;
+}
+
+interface CompanyUpdateData {
+  cnpj?: string;
+  legalName?: string;
+  tradeName?: string;
+  situacaoCadastral?: string;
+  naturezaJuridica?: string;
+  capitalSocial?: number;
+  dataAbertura?: Date;
+  cnae?: string;
+  size?: string;
+  employeeCount?: number;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  phones?: string[];
+  emails?: string[];
+  qsa?: Array<{ nome: string; qualificacao: string }>;
+  website?: string;
+  googleRating?: number;
+  googleReviewsCount?: number;
+  // Tipado como o JSON de entrada do Prisma (e não `unknown`) porque este objeto é repassado
+  // direto pro `company.update` — deixar `unknown` aqui quebra a inferência do `data`.
+  businessHours?: Prisma.InputJsonValue;
+  observations?: string;
+  linkedin?: string;
+  twitter?: string;
+  facebook?: string;
+  technologies?: string[];
+  keywords?: string[];
+  logoUrl?: string;
+  apolloOrgId?: string;
+  newsMentions?: Prisma.InputJsonValue;
+}
+
+/**
+ * Orquestra o enriquecimento completo de uma empresa já existente no CRM e grava o histórico.
+ *
+ * `organizationId` é exigido aqui (não só no chamador) por consistência com o resto do código —
+ * hoje todo chamador real já valida a posse do registro antes de chegar aqui, e `Company` tem RLS
+ * (FORCE ROW LEVEL SECURITY) como segunda camada, então isto não corrige uma falha explorável;
+ * é hardening para que um chamador futuro que esqueça o pré-check não fique dependendo só da RLS.
+ */
+export async function enrichCompany(
+  organizationId: string,
+  companyId: string,
+  options: EnrichCompanyOptions = {},
+  repo: IEnrichmentRepository = defaultEnrichmentRepository,
+) {
+  const company = await repo.findCompanyById(companyId, organizationId);
+  if (!company) throw new AppError('Company not found', 404);
+
+  // Expurgo oportunista de EnrichmentLog expirados (TAREFA-SANEAMENTO-019): nunca lança e tem
+  // throttle interno de 24h, então não adiciona latência nem pode derrubar o enriquecimento.
+  void maybePurgeExpiredEnrichmentLogs(repo);
+
+  if (!options.force && isEnrichmentFresh(company)) {
+    logger.info(
+      { companyId, enrichedAt: company.enrichedAt },
+      'enrichCompany: cache de enriquecimento ainda válido — pulando rechamada a Apollo/Hunter/Google Places/BrasilAPI (passe options.force para ignorar)',
+    );
+    return buildCachedEnrichmentResult(company, options);
+  }
+
+  await repo.updateCompany(companyId, {
+    enrichmentStatus: 'Enriquecendo',
+  });
+
+  try {
+    return await runEnrichment(company, options, repo);
+  } catch (error: any) {
+    await repo.updateCompany(companyId, { enrichmentStatus: 'Falhou' }).catch(() => {});
+    throw error;
+  }
+}
+
+/**
+ * Resultado devolvido quando `isEnrichmentFresh` decide pular um novo enriquecimento pago —
+ * mesma forma de retorno de `runEnrichment` (os chamadores em prospecting.service.ts/
+ * LeadUseCases.ts/ContactUseCases.ts/CompanyUseCases.ts só leem `.company`/`.fit`), mas montado
+ * inteiramente a partir do que já está persistido, sem nenhuma chamada externa nova:
+ * - `fit` é recalculado por `computeFitScore` (determinístico, gratuito) a partir dos campos já
+ *   salvos na Company — exceto `cnaeDescription`, que não é persistido (só o código CNAE é) e só
+ *   fica disponível durante um lookup de CNPJ ao vivo; o bônus de aderência de CNAE ao ICP fica de
+ *   fora do fit recalculado a partir do cache, mesma limitação já documentada em `runEnrichment`.
+ * - `lookalike` reaproveita `lookalikeScore`/`lookalikeTopMatches` já gravados (não recalcula o
+ *   embedding pgvector — isso já não passava por nenhum provider pago, mas evita trabalho à toa).
+ * - `domainGuess`/`apolloContacts` não têm dado "fresco" pra oferecer sem uma nova chamada, então
+ *   voltam vazios/nulos em vez de inventados.
+ *
+ * Exportada (ACH-05-04) para ser testável diretamente como função pura, sem precisar mockar
+ * Prisma — recebe `company`/`options` já prontos e não faz nenhuma chamada externa.
+ */
+export function buildCachedEnrichmentResult(
+  company: NonNullable<Awaited<ReturnType<typeof prisma.company.findUnique>>>,
+  options: EnrichCompanyOptions,
+) {
+  const fit = computeFitScore({
+    situacaoCadastral: company.situacaoCadastral,
+    capitalSocial: company.capitalSocial,
+    employeeCountEstimate: company.employeeCount,
+    segmentKeywords: options.segmentKeywords,
+    segment: company.segment,
+    city: company.city,
+    state: company.state,
+    fleetSizeHint: options.fleetSizeHint,
+    technologies: company.technologies,
+    activePlaybook: options.activePlaybook,
+  });
+
+  const lookalike: LookalikeScoreResult | null =
+    company.lookalikeScore != null
+      ? {
+          score: company.lookalikeScore,
+          matches: (company.lookalikeTopMatches as unknown as LookalikeMatch[] | null) || [],
+        }
+      : null;
+
+  return {
+    company: { ...company, status: fromPrismaCompanyStatus(company.status) },
+    fit,
+    lookalike,
+    domainGuess: null as DomainGuess | null,
+    apolloContacts: [] as Array<{
+      name: string;
+      title: string | null;
+      email: string | null;
+      phone: string | null;
+      linkedin_url: string | null;
+    }>,
+    cached: true as const,
+  };
+}
+
+interface DecisionMakerLike {
+  name: string;
+  title: string | null;
+  email: string | null;
+  phone: string | null;
+  linkedin_url: string | null;
+}
+
+/**
+ * Persiste os decisores encontrados (Apollo/Hunter/pré-buscados na Descoberta) como `Contact`,
+ * deduplicando por e-mail/telefone normalizado contra Contacts já existentes desta empresa —
+ * extraído das duas chamadas quase idênticas que existiam antes em `runEnrichment` (uma para
+ * `preFetchedDecisionMakers`, outra para o resultado ao vivo de `enrichOrganizationWithContacts`).
+ * Sem o dedupe, um reenriquecimento (ex: depois do TTL de `isEnrichmentFresh` expirar, ou com
+ * `options.force`) inseria o mesmo decisor de novo a cada execução — duplicata real de dado
+ * pessoal, não hipotética (ver AGENTS.md → LGPD: "05 garante... não enriquece além do
+ * estritamente necessário").
+ */
+async function saveDecisionMakersAsContacts(
+  companyId: string,
+  organizationId: string | null,
+  candidates: DecisionMakerLike[],
+  sourceLabel: 'Apollo' | 'Hunter',
+  repo: IEnrichmentRepository,
+): Promise<number> {
+  const validCandidates = candidates.filter((c) => c.name && c.name !== 'Sem Nome');
+  if (validCandidates.length === 0) return 0;
+
+  const existingContacts = await repo.findContactsEmailsAndPhones(companyId);
+  const newContacts = filterNewContacts(validCandidates, existingContacts);
+
+  const skippedCount = validCandidates.length - newContacts.length;
+  if (skippedCount > 0) {
+    logger.info(
+      { companyId, skippedCount, sourceLabel },
+      'saveDecisionMakersAsContacts: contato(s) já existente(s) ignorado(s) (dedupe por e-mail/telefone normalizado)',
+    );
+  }
+  if (newContacts.length === 0) return 0;
+
+  const contactsData = await Promise.all(
+    newContacts.map(async (c) => ({
+      name: c.name,
+      role: c.title,
+      email: c.email,
+      phone: c.phone,
+      whatsapp: guessWhatsappFromPhone(c.phone),
+      linkedin: c.linkedin_url,
+      source: sourceLabel,
+      emailStatus: await resolveEmailStatus(c.email),
+      companyId,
+      organizationId: organizationId || '',
+    })),
+  );
+  return repo.createContacts(contactsData);
+}
+
+async function runEnrichment(
+  company: NonNullable<Awaited<ReturnType<typeof prisma.company.findUnique>>>,
+  options: EnrichCompanyOptions,
+  repo: IEnrichmentRepository,
+) {
+  const companyId = company.id;
+  const cnpj = options.cnpj || company.cnpj;
+  const updateData: CompanyUpdateData = {};
+  let enrichmentSourceLabel = 'Heurística';
+  // Capturado durante o lookup de CNPJ (se houver) e usado no fit score — não é persistido no
+  // Company hoje (só o código CNAE é), mas precisa estar disponível aqui pro critério de aderência.
+  let cnaeDescription: string | undefined;
+
+  let finalCnpj = cnpj;
+  if (!finalCnpj && company.tradeName) {
+    const discovered = await discoverCnpjByName(company.tradeName);
+    if (discovered) finalCnpj = discovered;
+  }
+
+  if (finalCnpj && isValidCnpj(finalCnpj)) {
+    const lookup = await fetchCnpjData(finalCnpj);
+
+    await repo.createEnrichmentLog({
+      companyId,
+      source: 'BrasilAPI-CNPJ',
+      field: 'dados-cadastrais',
+      status: lookup.found ? 'success' : lookup.error === 'not_found' ? 'not_found' : 'failed',
+      // Dado direto da Receita Federal (fonte oficial) — "confirmado", nunca uma estimativa
+      // nossa. Ver handoff onda-7/05-para-01-enrichmentlog-provenance-fields.md.
+      dataOrigin: lookup.found ? 'confirmado' : null,
+      appliedToCompany: lookup.found && !!lookup.data,
+      rawData: lookup.raw ? JSON.parse(JSON.stringify(lookup.raw)) : undefined,
+    });
+
+    if (lookup.found && lookup.data) {
+      enrichmentSourceLabel = 'BrasilAPI/Receita Federal';
+      cnaeDescription = lookup.data.cnaeDescription;
+      Object.assign(updateData, {
+        // lookup.cnpj vem pontuado (fetchCnpjData/formatCnpj, pensado pra exibição na tela de
+        // preview) — grava normalizado pra dígitos puros, mesmo formato dos outros write paths de
+        // Company.cnpj (Onda 43, achado: 3 formatos diferentes coexistiam no banco).
+        cnpj: sanitizeCnpj(lookup.cnpj),
+        legalName: lookup.data.legalName,
+        tradeName: lookup.data.tradeName,
+        situacaoCadastral: lookup.data.situacaoCadastral,
+        naturezaJuridica: lookup.data.naturezaJuridica,
+        capitalSocial: lookup.data.capitalSocial,
+        dataAbertura: new Date(lookup.data.dataAbertura),
+        cnae: lookup.data.cnae,
+        size: lookup.data.size,
+        employeeCount: lookup.data.employeeCountEstimate,
+        address: lookup.data.address,
+        city: lookup.data.city,
+        state: lookup.data.state,
+        zipCode: lookup.data.zipCode,
+        phones: Array.from(new Set([...(company.phones || []), ...lookup.data.phones])),
+        emails: Array.from(new Set([...(company.emails || []), ...lookup.data.emails])),
+        qsa: lookup.data.qsa,
+      } satisfies Partial<CompanyUpdateData>);
+    }
+  }
+
+  // Se já sabemos o domínio real (ex: `primary_domain` da Apollo ou `websiteUri` do Google Places,
+  // capturados no momento da promoção do candidato), usamos ele diretamente — só recorremos à
+  // heurística de adivinhação por nome quando não há nenhum site conhecido. Isso evita o caso em
+  // que a empresa tem domínio verificado (ex: "dmslog.com") mas a heurística "chuta" um domínio
+  // diferente e errado (ex: "dmslogistics.com.br"), pulando os passos de enriquecimento de contatos.
+  const knownDomain = extractDomainFromWebsite(company.website);
+  const domainGuess: DomainGuess = knownDomain
+    ? {
+        domain: knownDomain,
+        verified: true,
+        emails: [
+          `contato@${knownDomain}`,
+          `comercial@${knownDomain}`,
+          `atendimento@${knownDomain}`,
+        ],
+      }
+    : await guessDomainAndEmails(company.tradeName || company.legalName);
+
+  // Calculado antes do log para o campo `appliedToCompany` refletir com precisão se o domínio
+  // encontrado virou de fato `Company.website` nesta execução (ver bug documentado no handoff
+  // onda-7/05-para-01-enrichmentlog-provenance-fields.md: um domínio podia aparecer como
+  // "success" no log mesmo quando a empresa já tinha site e o valor nunca era escrito).
+  const websiteWillBeApplied = !!(domainGuess.domain && !company.website);
+
+  await repo.createEnrichmentLog({
+    companyId,
+    source: knownDomain ? 'Website-Conhecido' : 'Domain-Heuristic',
+    field: 'website-e-emails',
+    status: domainGuess.domain ? (domainGuess.verified ? 'success' : 'not_found') : 'failed',
+    // "confirmado" só quando o domínio já era conhecido (website já cadastrado na Company,
+    // não uma adivinhação); "inferido" quando veio da heurística de nome + verificação HTTP
+    // (a verificação HTTP confirma que o domínio responde, não que é o domínio certo da
+    // empresa — continua sendo uma hipótese, não um dado confirmado).
+    dataOrigin: domainGuess.domain ? (knownDomain ? 'confirmado' : 'inferido') : null,
+    appliedToCompany: websiteWillBeApplied,
+    rawData: JSON.parse(JSON.stringify(domainGuess)),
+  });
+
+  if (websiteWillBeApplied) {
+    updateData.website = domainGuess.verified
+      ? `https://${domainGuess.domain}`
+      : `https://${domainGuess.domain} (não verificado)`;
+  }
+  // Bug real corrigido aqui: quando o CNPJ não trazia e-mail (comum em MEI/autônomo), o bloco da
+  // Receita Federal acima já gravava `updateData.emails = []` — um array vazio, mas ainda assim
+  // "truthy" em JS — então o antigo guard `!updateData.emails` nunca deixava esse fallback rodar.
+  // Além disso, só aplicamos e-mail adivinhado quando o domínio foi REALMENTE verificado (resolveu
+  // via HTTP) — para domínio não verificado, "adivinhar" um e-mail em cima de um domínio que talvez
+  // nem exista é especulação demais para apresentar como dado da empresa.
+  if (
+    domainGuess.verified &&
+    domainGuess.emails.length &&
+    !(company.emails || []).length &&
+    !updateData.emails?.length
+  ) {
+    // O domínio verificado (HTTP 2xx/3xx) não garante que ele aceite e-mail — checamos MX real
+    // antes de gravar os e-mails adivinhados (contato@, comercial@, atendimento@) como dado da
+    // empresa, senão empurramos endereço inexistente pra régua de outreach.
+    const deliverability = await Promise.all(domainGuess.emails.map(checkEmailDeliverability));
+    const deliverableEmails = domainGuess.emails.filter(
+      (_, i) => deliverability[i].status !== 'invalid',
+    );
+    if (deliverableEmails.length) {
+      updateData.emails = deliverableEmails;
+    }
+  }
+
+  // Google Places is optional. OpenStreetMap is the zero-cost fallback.
+  const locationQuery = updateData.city || company.city || '';
+  const stateQuery = updateData.state || company.state || '';
+  const companyName = updateData.tradeName || company.tradeName;
+  const location = `${locationQuery} ${stateQuery}`.trim();
+  const googlePlace = await searchGooglePlace(companyName, location);
+  const place = googlePlace || (await searchNominatimPlace(companyName, location));
+  const placeSource = googlePlace ? 'Google-Places' : 'OpenStreetMap-Nominatim';
+
+  if (place) {
+    if (place.rating != null) updateData.googleRating = place.rating;
+    if (place.userRatingCount != null) updateData.googleReviewsCount = place.userRatingCount;
+    // `PlaceSearchResult.businessHours` é `unknown` (payload livre do Google Places); o cast é
+    // seguro porque só chegamos aqui quando o valor não é null/undefined.
+    if (place.businessHours != null)
+      updateData.businessHours = place.businessHours as Prisma.InputJsonValue;
+
+    if (place.websiteUri && !domainGuess.verified) {
+      updateData.website = place.websiteUri;
+    }
+    if (place.nationalPhoneNumber) {
+      updateData.phones = Array.from(
+        new Set([...(updateData.phones || company.phones || []), place.nationalPhoneNumber]),
+      );
+    }
+
+    await repo.createEnrichmentLog({
+      companyId,
+      source: placeSource,
+      field: 'reputacao-local',
+      status: 'success',
+      // Dado devolvido nominalmente pelo provider (Google Places/OpenStreetMap) para este
+      // lugar específico — "confirmado", não uma estimativa nossa.
+      dataOrigin: 'confirmado',
+      appliedToCompany: true,
+      rawData: JSON.parse(JSON.stringify(place)),
+    });
+    enrichmentSourceLabel += googlePlace ? ' + Google' : ' + OpenStreetMap';
+  }
+
+  // GDELT — índice global de notícias, gratuito/sem chave. Sinal best-effort: nome de empresa
+  // pode gerar falso positivo em notícias de terceiros com nome parecido, por isso guardamos os
+  // artigos brutos (para o usuário julgar) em vez de usá-los em qualquer pontuação automática.
+  const newsMentions: NewsMention[] = await searchCompanyNews(companyName || '');
+  await repo.createEnrichmentLog({
+    companyId,
+    source: 'GDELT-News',
+    field: 'noticias',
+    status: newsMentions.length > 0 ? 'success' : 'not_found',
+    // Sinal best-effort com risco documentado de falso positivo (nome parecido) — "inferido",
+    // nunca apresentado como confirmação de que a notícia é sobre esta empresa.
+    dataOrigin: newsMentions.length > 0 ? 'inferido' : null,
+    appliedToCompany: newsMentions.length > 0,
+    rawData: newsMentions.length > 0 ? JSON.parse(JSON.stringify(newsMentions)) : undefined,
+  });
+  if (newsMentions.length > 0) {
+    updateData.newsMentions = newsMentions as unknown as Prisma.InputJsonValue;
+  }
+
+  // Apollo Organization Enrich — perfil firmográfico completo (tecnologias, keywords, redes
+  // sociais, capital de mercado etc.), disponível mesmo em planos básicos da Apollo.
+  if (domainGuess.verified && domainGuess.domain) {
+    const orgEnrich = await enrichOrganizationByDomain(domainGuess.domain);
+    await repo.createEnrichmentLog({
+      companyId,
+      source: 'Apollo-Organization',
+      field: 'firmographics',
+      status: orgEnrich.organization ? 'success' : orgEnrich.error ? 'failed' : 'not_found',
+      // Registro devolvido nominalmente pela Apollo para este domínio (tecnologias,
+      // keywords, redes sociais) — "confirmado". Exceção conhecida e documentada abaixo:
+      // `estimated_num_employees` é uma estimativa da própria Apollo, não rastreada nesta
+      // granularidade de log (ver handoff onda-7/05-para-01-enrichmentlog-provenance-fields.md,
+      // item 1 — mistura reconhecida, não resolvida por uma segunda coluna neste ciclo).
+      dataOrigin: orgEnrich.organization ? 'confirmado' : null,
+      appliedToCompany: !!orgEnrich.organization,
+      rawData: orgEnrich.organization
+        ? JSON.parse(JSON.stringify(orgEnrich.organization))
+        : undefined,
+    });
+
+    if (orgEnrich.organization) {
+      const org = orgEnrich.organization;
+      updateData.technologies = org.technology_names?.slice(0, 20) || [];
+      updateData.keywords = org.keywords?.slice(0, 20) || [];
+      if (org.logo_url) updateData.logoUrl = org.logo_url;
+      if (org.id) updateData.apolloOrgId = org.id;
+      if (org.linkedin_url && !company.linkedin) updateData.linkedin = org.linkedin_url;
+      if (org.twitter_url && !company.twitter) updateData.twitter = org.twitter_url;
+      if (org.facebook_url && !company.facebook) updateData.facebook = org.facebook_url;
+      // A Receita Federal (CNPJ) é a fonte de verdade para porte/funcionários quando disponível;
+      // a Apollo só complementa quando a Receita não trouxe nada.
+      if (org.estimated_num_employees && !updateData.employeeCount && !company.employeeCount) {
+        updateData.employeeCount = org.estimated_num_employees;
+      }
+      enrichmentSourceLabel += ' + Apollo (firmographics)';
+    }
+  }
+
+  // Apollo People Enrichment — com fallback automático para Hunter.io Domain Search quando o
+  // plano da chave Apollo não inclui People Search (ver apollo.service.ts).
+  let apolloContacts: Array<{
+    name: string;
+    title: string | null;
+    email: string | null;
+    phone: string | null;
+    linkedin_url: string | null;
+  }> = [];
+  let contactsSource: 'apollo' | 'hunter' | null = null;
+  if (options.preFetchedDecisionMakers?.length) {
+    // Já buscamos os decisores na tela de descoberta (Radar) — reaproveita em vez de gastar
+    // créditos Apollo/Hunter de novo com o mesmo domínio.
+    apolloContacts = options.preFetchedDecisionMakers.map((dm) => ({
+      name: dm.name,
+      title: dm.title,
+      email: dm.email,
+      phone: dm.phone,
+      linkedin_url: dm.linkedinUrl,
+    }));
+    contactsSource = options.preFetchedDecisionMakers.some((dm) => dm.emailSource === 'hunter')
+      ? 'hunter'
+      : 'apollo';
+    enrichmentSourceLabel += ' + Decisores pré-buscados na descoberta';
+
+    // Persiste antes de logar: `appliedToCompany` precisa refletir se algum decisor virou
+    // Contact de fato (o dedupe por e-mail/telefone dentro de `saveDecisionMakersAsContacts`
+    // pode descartar todos quando já existem — "success" no log não deve dizer "apliquei" nesse caso).
+    const createdCount = await saveDecisionMakersAsContacts(
+      companyId,
+      company.organizationId,
+      apolloContacts,
+      'Apollo',
+      repo,
+    );
+
+    await repo.createEnrichmentLog({
+      companyId,
+      source: 'Discovery-PreFetched',
+      field: 'contatos-decisores',
+      status: 'success',
+      // Decisores retornados nominalmente pela Apollo/Hunter na tela de Descoberta — "confirmado".
+      dataOrigin: 'confirmado',
+      appliedToCompany: createdCount > 0,
+      rawData: JSON.parse(JSON.stringify(apolloContacts)),
+    });
+  } else if (domainGuess.verified && domainGuess.domain) {
+    const apolloRes = await enrichOrganizationWithContacts(domainGuess.domain);
+    if (apolloRes.contacts.length > 0) {
+      apolloContacts = apolloRes.contacts;
+      contactsSource = apolloRes.source ?? 'apollo';
+      const sourceLabel =
+        contactsSource === 'hunter' ? 'Hunter.io (Domain Search)' : 'Apollo (People Search)';
+      enrichmentSourceLabel += ` + ${sourceLabel}`;
+
+      // Mesmo motivo do bloco Discovery-PreFetched acima: persiste antes de logar para que
+      // `appliedToCompany` reflita o resultado real do dedupe, não só "a Apollo/Hunter respondeu".
+      const createdCount = await saveDecisionMakersAsContacts(
+        companyId,
+        company.organizationId,
+        apolloContacts,
+        contactsSource === 'hunter' ? 'Hunter' : 'Apollo',
+        repo,
+      );
+
+      await repo.createEnrichmentLog({
+        companyId,
+        source: contactsSource === 'hunter' ? 'Hunter-DomainSearch' : 'Apollo-People',
+        field: 'contatos-decisores',
+        status: 'success',
+        dataOrigin: 'confirmado',
+        appliedToCompany: createdCount > 0,
+        rawData: JSON.parse(JSON.stringify(apolloContacts)),
+      });
+    }
+  }
+
+  const fit = computeFitScore({
+    situacaoCadastral: updateData.situacaoCadastral ?? company.situacaoCadastral,
+    capitalSocial: updateData.capitalSocial ?? company.capitalSocial,
+    employeeCountEstimate: updateData.employeeCount ?? company.employeeCount,
+    cnaeDescription,
+    segmentKeywords: options.segmentKeywords,
+    segment: company.segment,
+    city: updateData.city ?? company.city,
+    state: updateData.state ?? company.state,
+    fleetSizeHint: options.fleetSizeHint,
+    technologies: updateData.technologies ?? company.technologies,
+    activePlaybook: options.activePlaybook,
+  });
+
+  // Look-alike scoring (pgvector) — roda depois do fit score determinístico, nunca no lugar dele:
+  // é um sinal complementar ("parece com quem já comprou"), não substitui os critérios auditáveis
+  // acima. `null` quando o tenant ainda não tem histórico de vitórias suficiente (cold start).
+  const lookalike = company.organizationId
+    ? await computeLookalikeScore(companyId, company.organizationId)
+    : null;
+  await repo.createEnrichmentLog({
+    companyId,
+    source: 'Lookalike-PgVector',
+    field: 'similaridade-com-ganhos',
+    status: lookalike ? 'success' : 'not_found',
+    // Scoring/estimativa (distância de cosseno entre embeddings) — "inferido", nunca um dado
+    // que a empresa ou um provider confirmou diretamente.
+    dataOrigin: lookalike ? 'inferido' : null,
+    appliedToCompany: !!lookalike,
+    rawData: lookalike ? JSON.parse(JSON.stringify(lookalike)) : undefined,
+  });
+
+  // Resumo determinístico do enriquecimento — montado a partir dos próprios dados coletados
+  // acima (Receita Federal, Google Negócios, Apollo), sem depender de nenhum modelo generativo.
+  const summaryParts: string[] = [];
+  if (updateData.situacaoCadastral) {
+    summaryParts.push(
+      updateData.situacaoCadastral.toUpperCase() === 'ATIVA'
+        ? 'CNPJ ativo na Receita Federal'
+        : `CNPJ com situação "${updateData.situacaoCadastral}" — atenção antes de abordar`,
+    );
+  }
+  if (updateData.googleRating != null) {
+    summaryParts.push(
+      `nota ${updateData.googleRating} no Google (${updateData.googleReviewsCount || 0} avaliações)`,
+    );
+  }
+  if (updateData.technologies && updateData.technologies.length > 0) {
+    summaryParts.push(
+      `stack de tecnologia identificado: ${updateData.technologies.slice(0, 5).join(', ')}`,
+    );
+  }
+  if (apolloContacts.length > 0) {
+    const sourceLabel = contactsSource === 'hunter' ? 'Hunter.io' : 'Apollo';
+    summaryParts.push(
+      `decisores identificados via ${sourceLabel}: ${apolloContacts.map((c) => `${c.name} (${c.title || 'cargo não informado'})`).join(', ')}`,
+    );
+  }
+  if (newsMentions.length > 0) {
+    summaryParts.push(
+      `${newsMentions.length} menção(ões) recentes na imprensa encontradas (GDELT): ${newsMentions.map((n) => n.title).join('; ')}`,
+    );
+  }
+  if (lookalike) {
+    summaryParts.push(
+      `${lookalike.score}% de semelhança com empresas já ganhas (mais parecida: ${lookalike.matches[0]?.tradeName})`,
+    );
+  }
+
+  const icebreakerService = new IcebreakerService();
+  const icebreaker = await icebreakerService.generateIcebreaker(companyName || '');
+  if (icebreaker) {
+    summaryParts.push(`\n\n💡 Sugestão de Quebra-Gelo: "${icebreaker}"`);
+  }
+
+  if (summaryParts.length > 0) {
+    updateData.observations = `Resumo do enriquecimento — ${summaryParts.join('; ')}.`;
+  }
+
+  const updated = await repo.updateCompany(companyId, {
+    ...updateData,
+    enrichmentStatus: 'Enriquecido',
+    enrichmentSource: enrichmentSourceLabel,
+    enrichedAt: new Date(),
+  });
+
+  return {
+    company: { ...updated, status: fromPrismaCompanyStatus(updated.status) },
+    fit,
+    lookalike,
+    domainGuess,
+    apolloContacts,
+  };
+}

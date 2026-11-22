@@ -1,0 +1,9 @@
+{
+  "name": "testland/k6-load-testing",
+  "description": "Use whenever HTTP, WebSocket or gRPC load tests should be written in JavaScript with k6, or a k6 threshold passes but the system still feels slow: VU scripts with checks, stages for ramps, thresholds on p95 latency and errors as the CI gate, and how to read tail latency and coordinated omission.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.8.10"
+}

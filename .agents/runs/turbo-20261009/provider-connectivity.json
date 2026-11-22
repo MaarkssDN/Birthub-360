@@ -1,0 +1,44 @@
+[
+  {
+    "provider": "searxng",
+    "status": "unreachable",
+    "reason": "TypeError",
+    "latencyMs": 3
+  },
+  {
+    "provider": "ollama",
+    "status": "unreachable",
+    "reason": "TypeError",
+    "latencyMs": 19
+  },
+  {
+    "provider": "brasilapi",
+    "status": 200,
+    "latencyMs": 127,
+    "cnpjLookup": "found",
+    "userAgent": "BirthHub360/1.0 (CNPJ lookup)",
+    "note": "undici default 403; transparent application header 200; existing backend found cadastral fields"
+  },
+  {
+    "provider": "apollo",
+    "status": 200,
+    "authenticated": true,
+    "latencyMs": 291
+  },
+  {
+    "provider": "groq",
+    "status": 200,
+    "authenticated": true,
+    "latencyMs": 345,
+    "models": 11
+  },
+  {
+    "provider": "database",
+    "status": "unreachable"
+  },
+  {
+    "provider": "googlePlaces",
+    "status": "configured_not_tested",
+    "reason": "billable_request_not_authorized"
+  }
+]

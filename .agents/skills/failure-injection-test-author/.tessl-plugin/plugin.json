@@ -1,0 +1,9 @@
+{
+  "name": "testland/failure-injection-test-author",
+  "description": "Use when one test must reproduce a failure that spans HTTP and network layers, such as an incident nobody can recreate with HTTP stubs or TCP chaos alone. Combines WireMock fault stubs (500s, bad JSON, slow replies) with Toxiproxy (latency, loss, resets) and checks the app's resilience.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.8"
+}

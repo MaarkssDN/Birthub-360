@@ -1,0 +1,9 @@
+{
+  "name": "testland/experiment-sdk-testing",
+  "description": "Use when code instrumented with Statsig, Optimizely, Split.io (Harness FME), Amplitude Experiment or VWO needs tests. Initializes the SDK offline from a committed config fixture, pins each test to an arm and checks assignment integrity, with per-vendor references.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.0.1"
+}

@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: birthhub-360-production
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/maarkss1/Birthub-360.git'
+    targetRevision: main
+    path: charts/birthhub-360
+    helm:
+      valueFiles:
+        - values.yaml
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: production
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

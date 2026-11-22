@@ -1,0 +1,9 @@
+{
+  "name": "testland/web-push-tests",
+  "description": "Use when a PWA ships browser web push and the subscription lifecycle needs release tests: pushManager.subscribe with VAPID keys, pushsubscriptionchange, push event delivery, push-service responses (201, 410, 413, 429) and unsubscribe. Native APNs and FCM are push-notification-test-author.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.2.7"
+}

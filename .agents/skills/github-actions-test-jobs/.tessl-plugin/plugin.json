@@ -1,0 +1,9 @@
+{
+  "name": "testland/github-actions-test-jobs",
+  "description": "Use whenever the task is to run tests in GitHub Actions: a test workflow on pull requests, matrix builds across OS and runtime versions, splitting a suite across parallel runners, service containers such as Postgres or Redis, uploading JUnit reports, and trigger filters.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.1.16"
+}

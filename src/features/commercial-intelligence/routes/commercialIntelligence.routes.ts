@@ -1,0 +1,130 @@
+import { Router } from 'express';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
+import { env } from '../../../config/env.js';
+import { COMMERCIAL_INTELLIGENCE_ROLES } from '../../../lib/auth/authorization.js';
+import { auditAccessMiddleware } from '../../../lib/security/auditLog.middleware.js';
+import { container } from '../../../shared/di/container.js';
+import type { AuthRequest } from '../../../shared/middlewares/authenticateToken.js';
+import { requireRole } from '../../../shared/middlewares/requireRole.js';
+import type { CommercialIntelligenceController } from '../presentation/CommercialIntelligenceController.js';
+import { predictiveRoutes } from './predictive.routes.js';
+
+const router = Router();
+
+// Camada de autorização própria da rota (além de `authenticateToken`/`requireTenant` já
+// aplicados no mount de `server.ts`, igual a todo outro módulo). Isto é DEFESA EM PROFUNDIDADE
+// deliberada, não redundância acidental: mesmo que o mount em `server.ts` mude no futuro, este
+// router nunca serve o módulo restrito sem re-checar o papel aqui — nenhum sub-endpoint escapa
+// por engano. Mesmo padrão de `managementRoles`/`writeRoles` em crm360.routes.ts.
+router.use(requireRole([...COMMERCIAL_INTELLIGENCE_ROLES]));
+
+// Limitador dedicado (mesmo desenho SEC-008b do `aiLimiter` em server.ts: por organizationId, não
+// por IP) só para os 2 endpoints que chamam o gateway de IA — aplicado por rota, não no router
+// inteiro, porque as demais rotas deste módulo são leitura pura de banco e a UI já faz várias
+// chamadas por troca de aba; colocar o limite de IA (bem mais baixo) no router inteiro derrubaria
+// a navegação normal do cockpit bem antes de qualquer chamada de IA de verdade.
+const aiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: env.AI_RATE_LIMIT_MAX,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) =>
+    (req as AuthRequest).user?.organizationId || ipKeyGenerator(req.ip || 'unknown'),
+  message: {
+    success: false,
+    error: 'Muitas chamadas de IA para esta organização — tente novamente em alguns minutos.',
+  },
+});
+
+function resolve(): CommercialIntelligenceController {
+  return container.resolve<CommercialIntelligenceController>('CommercialIntelligenceController');
+}
+
+router.get('/overview', (req, res, next) => resolve().getOverview(req, res, next));
+router.get('/pipeline-creation', (req, res, next) => resolve().getPipelineCreation(req, res, next));
+router.get('/performance', (req, res, next) => resolve().getPerformance(req, res, next));
+router.get('/aging', (req, res, next) => resolve().getAging(req, res, next));
+router.get('/losses', (req, res, next) => resolve().getLosses(req, res, next));
+router.get('/leading-indicators', (req, res, next) =>
+  resolve().getLeadingIndicators(req, res, next),
+);
+router.get('/alerts', (req, res, next) => resolve().getAlerts(req, res, next));
+router.get('/crm-quality', (req, res, next) => resolve().getCrmQuality(req, res, next));
+// F4: endpoint dedicado do relatório de saúde da integração Bitrix24 (antes só composto em
+// `/crm-quality`) — leitura pura de banco, sem limitador de IA e sem filtro comercial.
+router.get('/bitrix-sync-health', (req, res, next) =>
+  resolve().getBitrixSyncHealth(req, res, next),
+);
+router.get('/deals', (req, res, next) => resolve().getDeals(req, res, next));
+router.get('/deals/:leadId/forecast', (req, res, next) =>
+  resolve().getForecastExplain(req, res, next),
+);
+router.get('/metrics-dictionary', (req, res) => resolve().getMetricsDictionary(req, res));
+// Exportação HTML/CSV/JSON do Relatório Executivo — devolve conteúdo cru (não o envelope
+// {success,data} do resto do router), ver comentário em `CommercialIntelligenceController.getExport`.
+// DEM-20261114-003 (follow-up Onda 2): dump do relatório executivo (métricas + PII agregada do
+// tenant) passa a gravar AuditLog/EXPORT, mesmo padrão do export de leads.
+router.get('/export', auditAccessMiddleware('CommercialIntelligence'), (req, res, next) =>
+  resolve().getExport(req, res, next),
+);
+router.get('/filter-options', (req, res, next) => resolve().getFilterOptions(req, res, next));
+router.get('/trends', (req, res, next) => resolve().getHistoricalTrends(req, res, next));
+// Health Score composto + erro histórico do Forecast (snapshots reais), CLOSEDATE Intelligence e
+// Jornada — leitura pura de banco como as demais rotas GET acima (sem limitador de IA).
+router.get('/health-score', (req, res, next) => resolve().getHealthScore(req, res, next));
+router.get('/forecast-accuracy', (req, res, next) => resolve().getForecastAccuracy(req, res, next));
+// Forecast auto-calibrado (fecha o loop do erro histórico acima), gargalo de funil e benchmark de
+// vendedor — mesma leitura pura de banco das rotas GET acima (sem limitador de IA).
+router.get('/forecast-calibration', (req, res, next) =>
+  resolve().getForecastCalibration(req, res, next),
+);
+router.get('/funnel-bottlenecks', (req, res, next) =>
+  resolve().getFunnelBottlenecks(req, res, next),
+);
+router.get('/seller-benchmark', (req, res, next) => resolve().getSellerBenchmark(req, res, next));
+router.get('/hiring-scenario', (req, res, next) => resolve().getHiringScenario(req, res, next));
+// Atribuição de receita por canal/origem — TOQUE ÚNICO (item 25, versão reduzida — ver
+// domain/CommercialIntelligence.ts::ChannelAttributionReport e o handoff bloqueado de multi-touch).
+router.get('/channel-attribution', (req, res, next) =>
+  resolve().getChannelAttribution(req, res, next),
+);
+router.get('/close-date-intelligence', (req, res, next) =>
+  resolve().getCloseDateIntelligence(req, res, next),
+);
+router.get('/journey', (req, res, next) => resolve().getJourney(req, res, next));
+router.get('/goals', (req, res, next) => resolve().getGoal(req, res, next));
+// PUT (não POST) de propósito: idempotente por (organizationId, period, metric) — upsert, não
+// criação de um novo registro a cada chamada. Só ADMIN/GESTOR (mesmo requireRole do router
+// inteiro) pode definir a meta — nunca inferida/fabricada pelo sistema.
+router.put('/goals', (req, res, next) => resolve().putGoal(req, res, next));
+
+// POST (não GET) de propósito: dispara uma chamada de IA de verdade (custo, latência, efeito
+// colateral de notificação em caso crítico) — não é uma leitura idempotente sem custo como as
+// rotas GET acima.
+router.post('/ai/executive-summary', aiLimiter, (req, res, next) =>
+  resolve().postAiExecutiveSummary(req, res, next),
+);
+router.post('/ai/bitrix-note', aiLimiter, (req, res, next) =>
+  resolve().postAiBitrixNote(req, res, next),
+);
+// Motivo real de perda a partir de transcrição real (item 21) — mesmo desenho de custo/efeito dos
+// demais endpoints de IA acima: aiLimiter dedicado, só roda com clique explícito por negócio.
+router.post('/ai/loss-reason-analysis', aiLimiter, (req, res, next) =>
+  resolve().postAiLossReasonAnalysis(req, res, next),
+);
+// Mentor Comercial — playbook de recomendações priorizadas (mesmo desenho de custo/efeito
+// colateral dos 2 endpoints de IA acima: `aiLimiter` dedicado, nunca disparado sem clique explícito).
+router.post('/ai/mentor-playbook', aiLimiter, (req, res, next) =>
+  resolve().postAiMentorPlaybook(req, res, next),
+);
+// Item 5 de "IA Agêntica de Vendas": detecção de deal em risco (silêncio/tom negativo/concorrente
+// mencionado) — chama IA para a análise de tom/concorrente, mesmo aiLimiter dos demais endpoints.
+router.post('/ai/deal-risk-scan', aiLimiter, (req, res, next) =>
+  resolve().scanDealRisks(req, res, next),
+);
+
+// REMED-03/04: Revenue Oracle honesto (histórico real) + aprovação persistida de rebalanceamento.
+// Herda o requireRole(ADMIN/GESTOR) do router.use acima.
+router.use('/predictive', predictiveRoutes);
+
+export const commercialIntelligenceRoutes = router;

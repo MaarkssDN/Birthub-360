@@ -1,0 +1,9 @@
+{
+  "name": "testland/kafka-consumer-tests",
+  "description": "Use whenever Kafka producers or consumers need tests, in KafkaJS, kafka-go or Spring Kafka: a real broker via Testcontainers, offset commits, consumer-group rebalances, at-least-once vs exactly-once transactions, idempotent producers and dead-letter topics.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.3.6"
+}

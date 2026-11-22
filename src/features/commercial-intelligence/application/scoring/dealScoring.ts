@@ -1,0 +1,176 @@
+/**
+ * Scoring de negócios (funil "Negócio") — carrega negócios + etapas + histórico e aplica o
+ * Forecast Ponderado Explicável (`forecastEngine.scoreOpportunity`) a cada um, produzindo o
+ * `ScoredDeal` que TODOS os relatórios de `application/queries/*` consomem como entrada comum.
+ * Nenhum relatório chama o repositório para negócios/histórico diretamente — sempre por aqui, para
+ * que o scoring (dias na etapa atual, forecast, aging) seja calculado uma única vez e de forma
+ * idêntica em todo o módulo.
+ */
+
+import type {
+  CommercialIntelligenceRepository,
+  DealRow,
+  LeadFieldChangeRow,
+} from '../../domain/CommercialIntelligence.js';
+import { type ForecastResult, scoreOpportunity } from '../forecastEngine.js';
+import { agingInStageDays } from '../pipelineEligibility.js';
+import { daysBetween } from '../shared/mathUtils.js';
+
+export type StageHistoryRow = {
+  leadId: string;
+  stageId: string | null;
+  stageName: string;
+  enteredAt: Date;
+  exitedAt: Date | null;
+  isWon?: boolean;
+  isLost?: boolean;
+};
+
+export interface ScoredDeal {
+  deal: DealRow;
+  forecast: ForecastResult;
+  daysInCurrentStage: number | null;
+  agingDays: number;
+  /** Adiamentos reais da data prevista (`LeadFieldChange`). `null` quando nunca houve mudança rastreada para este negócio. */
+  closeDateSlips: number | null;
+}
+
+/** Resumo por negócio das mudanças de `expectedCloseAt` — reaproveitado pelo scoring e pela CLOSEDATE Intelligence. */
+export interface CloseDateChangeStats {
+  slips: number;
+  pullIns: number;
+  originalCloseAt: Date | null;
+  lastChangedAt: Date | null;
+}
+
+export function summarizeCloseDateChanges(
+  changes: LeadFieldChangeRow[],
+): Map<string, CloseDateChangeStats> {
+  const byLead = new Map<string, CloseDateChangeStats>();
+  for (const change of changes) {
+    if (change.field !== 'expectedCloseAt') continue;
+    const entry = byLead.get(change.leadId) ?? {
+      slips: 0,
+      pullIns: 0,
+      originalCloseAt: null,
+      lastChangedAt: null,
+    };
+    // "Data original" = primeira data conhecida no histórico rastreado: o valor anterior da 1ª
+    // mudança ou, se a 1ª mudança foi o preenchimento inicial (vazio → data), a própria data nova.
+    if (entry.originalCloseAt == null) {
+      const candidate = change.previousValue ?? change.newValue;
+      if (candidate) {
+        const original = new Date(candidate);
+        if (!Number.isNaN(original.getTime())) entry.originalCloseAt = original;
+      }
+    }
+    const before = change.previousValue ? new Date(change.previousValue).getTime() : NaN;
+    const after = change.newValue ? new Date(change.newValue).getTime() : NaN;
+    // Só compara quando as DUAS datas existem — preencher uma data vazia pela primeira vez, ou
+    // limpar a data, não é adiamento nem antecipação (é mudança de completude, medida em CRM Quality).
+    if (!Number.isNaN(before) && !Number.isNaN(after)) {
+      if (after > before) entry.slips += 1;
+      else if (after < before) entry.pullIns += 1;
+    }
+    entry.lastChangedAt = change.changedAt;
+    byLead.set(change.leadId, entry);
+  }
+  return byLead;
+}
+
+/** Duração média (dias) de segmentos JÁ CONCLUÍDOS (`exitedAt` preenchido) por etapa — usada tanto pelo forecast (estagnação) quanto pelo aging por etapa. */
+export function buildStageDurationStats(history: StageHistoryRow[]): Map<string, number> {
+  const byStage = new Map<string, number[]>();
+  for (const row of history) {
+    if (!row.stageId || !row.exitedAt) continue;
+    const days = daysBetween(row.enteredAt, row.exitedAt);
+    if (!byStage.has(row.stageId)) byStage.set(row.stageId, []);
+    byStage.get(row.stageId)?.push(days);
+  }
+  const result = new Map<string, number>();
+  for (const [stageId, durations] of byStage) {
+    const avg = durations.reduce((s, v) => s + v, 0) / durations.length;
+    result.set(stageId, avg);
+  }
+  return result;
+}
+
+/** Linha de histórico "em aberto" (exitedAt null) mais recente para um lead numa etapa específica — é a entrada na etapa atual. */
+export function currentStageEntry(
+  history: StageHistoryRow[],
+  leadId: string,
+  stageId: string | null,
+): StageHistoryRow | null {
+  if (!stageId) return null;
+  const rows = history
+    .filter((row) => row.leadId === leadId && row.stageId === stageId && row.exitedAt == null)
+    .sort((a, b) => b.enteredAt.getTime() - a.enteredAt.getTime());
+  return rows[0] ?? null;
+}
+
+/** Valor em risco = valor do negócio × probabilidade de NÃO fechar (Centro de Decisão). */
+export function riskImpactValue(s: ScoredDeal): number {
+  return s.deal.amount * (1 - s.forecast.probability / 100);
+}
+
+export interface ScoredDealsResult {
+  scored: ScoredDeal[];
+  stages: Awaited<ReturnType<CommercialIntelligenceRepository['findDealPipelineStages']>>;
+  history: StageHistoryRow[];
+  /** Todo o histórico de mudança de campo da organização (expectedCloseAt + owner), já carregado uma única vez. */
+  fieldChanges: LeadFieldChangeRow[];
+  closeDateStats: Map<string, CloseDateChangeStats>;
+}
+
+/**
+ * Filtro comum a quase todo relatório: só o funil "Negócio". `findDeals` já devolve só esse funil
+ * (ver o repositório Prisma) — este carregamento é o ponto de entrada único de todos os relatórios.
+ */
+export async function loadScoredDeals(
+  repository: CommercialIntelligenceRepository,
+  organizationId: string,
+  now: Date,
+): Promise<ScoredDealsResult> {
+  const [deals, stages, history, fieldChanges] = await Promise.all([
+    repository.findDeals(organizationId),
+    repository.findDealPipelineStages(organizationId),
+    repository.findStageHistory(organizationId),
+    repository.findFieldChanges(organizationId),
+  ]);
+
+  const durationStats = buildStageDurationStats(history);
+  const closeDateStats = summarizeCloseDateChanges(fieldChanges);
+
+  const scored: ScoredDeal[] = deals.map((deal) => {
+    const entry = currentStageEntry(history, deal.id, deal.pipelineStageId);
+    const daysInCurrentStage = entry ? daysBetween(entry.enteredAt, now) : null;
+    const stageAverageDurationDays = deal.pipelineStageId
+      ? (durationStats.get(deal.pipelineStageId) ?? null)
+      : null;
+
+    const closeDateSlips = closeDateStats.get(deal.id)?.slips ?? null;
+
+    const forecast = scoreOpportunity({
+      amount: deal.amount,
+      stageProbability: deal.stageProbability ?? 0,
+      now,
+      createdAt: deal.createdAt,
+      expectedCloseAt: deal.expectedCloseAt,
+      lastInteraction: deal.lastInteraction,
+      nextAction: deal.nextAction,
+      daysInCurrentStage,
+      stageAverageDurationDays,
+      closeDateSlips,
+    });
+
+    return {
+      deal,
+      forecast,
+      daysInCurrentStage,
+      agingDays: agingInStageDays(deal, now, daysInCurrentStage),
+      closeDateSlips,
+    };
+  });
+
+  return { scored, stages, history, fieldChanges, closeDateStats };
+}

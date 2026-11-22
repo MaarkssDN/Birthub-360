@@ -1,0 +1,196 @@
+name: Endpoint Latency Budget
+
+# ITEM-15 (remediacao de divida tecnica): materializa os SLOs de latencia ja documentados em
+# docs/SRE.md (secao 1) como um gate mensuravel, em vez de ficarem so em prosa. Sobe a aplicacao
+# real (Postgres + Redis + Express, o mesmo processo que tests/e2e usa via `npm run start:e2e`) e
+# roda tests/load/k6-api.js contra /health/live e /health/ready, com threshold de p95 por rota.
+#
+# Onda 42 (dossie CPI DEC-20 opcao A): acrescenta um segundo cenario, tests/load/
+# k6-crm-authenticated.js, contra rotas AUTENTICADAS reais do CRM (login real via Better Auth,
+# listagem de leads/empresas e criacao de atividade) — cobre o debito que ficava registrado em
+# docs/development/PERFORMANCE_BUDGETS.md ("nenhuma rota autenticada tinha latencia medida sob
+# carga"). Roda na mesma app/mesmos service containers do cenario de health check, sem subir
+# infraestrutura nova.
+#
+# Nao e um required check do repositorio (nao bloqueia merge por branch protection) — roda em PR
+# que mexe no bootstrap do servidor/infra de health check, e tambem por schedule/dispatch para
+# publicar a tendencia de latencia mesmo sem PR. Ver docs/development/PERFORMANCE_BUDGETS.md.
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'server.ts'
+      - 'src/bootstrap/**'
+      - 'tests/load/**'
+      - '.github/workflows/endpoint-latency-budget.yml'
+      # Onda 42: rotas exercitadas pelo cenario autenticado (k6-crm-authenticated.js) — uma mudanca
+      # aqui e exatamente o tipo de risco de latencia que esse cenario existe para pegar.
+      - 'src/features/crm/**'
+      - 'src/features/companies/**'
+      - 'src/features/activities/**'
+      - 'src/shared/middlewares/authenticateToken.ts'
+      - 'src/shared/middlewares/authorization.ts'
+      - 'src/lib/auth.ts'
+  schedule:
+    # 06:00 UTC, todo dia — publica a tendencia de latencia independente de PR.
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # Espelha ci.yml: PR cancela o run anterior da mesma PR; fora de PR, push/schedule/workflow_dispatch
+  # (os triggers que este workflow tiver) ficam num grupo por evento+SHA, sem cancelamento.
+  group: ${{ github.event_name == 'pull_request' && format('endpoint-latency-budget-pr-{0}', github.event.pull_request.number) || format('endpoint-latency-budget-{0}-{1}', github.event_name, github.sha) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  K6_VERSION: '0.54.0'
+
+jobs:
+  latency:
+    name: Critical endpoint latency (k6)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: prospector
+          POSTGRES_PASSWORD: prospector_test_pass
+          POSTGRES_DB: prospectordb_test
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://prospector_app:ci_app_test_pass@localhost:5434/prospectordb_test?schema=public
+      DIRECT_URL: postgresql://prospector_migrator:ci_migrator_test_pass@localhost:5434/prospectordb_test?schema=public
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: ci-test-jwt-secret-not-for-production
+      MEILI_HOST: http://localhost:7700
+      MEILI_MASTER_KEY: ci-test-meili-key
+      PORT: 3000
+      BETTER_AUTH_SECRET: ci-e2e-test-only-secret-not-for-production
+      ALLOW_DEV_AUTH_BYPASS: true
+      ALLOWED_ORIGINS: http://localhost:3000
+      AUTH_RATE_LIMIT_MAX: 500
+      # Onda 42: o apiLimiter (src/bootstrap/rateLimiters.ts) e 600 req/15min por IP por padrao —
+      # o cenario k6-crm-authenticated.js sozinho ja gera mais de 800 requisicoes so no seed de
+      # dados (empresas + leads), todas da mesma maquina/IP do runner. Sem esse teto mais alto o
+      # proprio seed do teste estouraria o rate limit genuino e o resultado viraria uma parede de
+      # 429, nao a latencia real das rotas — mesmo raciocinio ja documentado para
+      # AUTH_RATE_LIMIT_MAX acima. Nunca afrouxa o default de producao (env.ts), so este job de CI.
+      API_RATE_LIMIT_MAX: 200000
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Bootstrap papel NOSUPERUSER da aplicacao
+        env:
+          PGPASSWORD: prospector_test_pass
+          APP_DB_PASSWORD: ci_app_test_pass
+          MIGRATOR_DB_PASSWORD: ci_migrator_test_pass
+        run: bash scripts/db/bootstrap-app-role.sh localhost 5434 prospector prospectordb_test
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Run Migrations
+        run: npx prisma migrate deploy
+
+      - name: Criar .env.test
+        run: |
+          cat > .env.test <<EOF
+          NODE_ENV=$NODE_ENV
+          PORT=$PORT
+          DATABASE_URL=$DATABASE_URL
+          DIRECT_URL=$DIRECT_URL
+          REDIS_URL=$REDIS_URL
+          MEILI_HOST=$MEILI_HOST
+          MEILI_MASTER_KEY=$MEILI_MASTER_KEY
+          BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET
+          ALLOWED_ORIGINS=$ALLOWED_ORIGINS
+          AUTH_RATE_LIMIT_MAX=$AUTH_RATE_LIMIT_MAX
+          API_RATE_LIMIT_MAX=$API_RATE_LIMIT_MAX
+          EOF
+
+      - name: Instalar k6 (binario oficial, pinado)
+        run: |
+          set -euo pipefail
+          curl -fsSL "https://github.com/grafana/k6/releases/download/v${K6_VERSION}/k6-v${K6_VERSION}-linux-amd64.tar.gz" \
+            -o /tmp/k6.tar.gz
+          tar -xzf /tmp/k6.tar.gz -C /tmp
+          sudo mv "/tmp/k6-v${K6_VERSION}-linux-amd64/k6" /usr/local/bin/k6
+          k6 version
+
+      - name: Subir a aplicacao (mesmo processo que tests/e2e usa)
+        run: npx dotenv-cli -e .env.test -- npx tsx server.ts &
+
+      - name: Aguardar /health/live responder
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 30); do
+            if curl -fsS "http://127.0.0.1:${PORT}/health/live" > /dev/null 2>&1; then
+              echo "App pronta."
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "App nao respondeu /health/live a tempo."
+          exit 1
+
+      - name: Rodar k6 contra endpoints criticos (sem autenticacao)
+        run: |
+          k6 run tests/load/k6-api.js \
+            --summary-export=k6-latency-report.json \
+            --env BASE_URL="http://localhost:${PORT}"
+
+      - name: Rodar k6 contra rotas autenticadas do CRM (Onda 42)
+        run: |
+          k6 run tests/load/k6-crm-authenticated.js \
+            --summary-export=k6-crm-latency-report.json \
+            --env BASE_URL="http://localhost:${PORT}"
+
+      - name: Upload da tendencia de latencia (health check)
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: endpoint-latency-trend-${{ github.sha }}
+          path: k6-latency-report.json
+          retention-days: 90
+
+      - name: Upload da tendencia de latencia (CRM autenticado)
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: crm-authenticated-latency-trend-${{ github.sha }}
+          path: k6-crm-latency-report.json
+          retention-days: 90

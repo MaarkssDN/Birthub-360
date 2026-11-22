@@ -1,0 +1,9 @@
+{
+  "name": "testland/schemathesis-fuzzing",
+  "description": "Use whenever an API has an OpenAPI or GraphQL schema and needs tests generated from it: fuzzing every endpoint for 5xx errors and schema violations. Runs Schemathesis from the CLI or pytest, picks the conformance checks and gates CI on failures as the API evolves.",
+  "private": false,
+  "skills": [
+    "."
+  ],
+  "version": "1.5.5"
+}

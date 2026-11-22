@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Relatório de Redesign Visual (Current State)</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 20px; background: #f4f4f5; color: #18181b; }
+    h1, h2, h3 { color: #09090b; }
+    .container { max-width: 1200px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e4e4e7; }
+    th { background: #f4f4f5; }
+    img { max-width: 100%; height: auto; border: 1px solid #e4e4e7; border-radius: 4px; margin-top: 10px; }
+    .badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+    .badge.slop { background: #fee2e2; color: #991b1b; }
+    .badge.quality { background: #fef08a; color: #854d0e; }
+    .screenshot-card { margin-bottom: 40px; padding: 20px; border: 1px solid #e4e4e7; border-radius: 8px; background: #fafafa; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Relatório Visual: Auditoria e Remoção de "Slop" (Estado Atual)</h1>
+
+    <h2>1. Resumo do Impeccable (Status Atual)</h2>
+    <p>Total de problemas originais detectados: <strong>52</strong></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Arquivo</th>
+          <th>Linha / Regra</th>
+          <th>Tipo</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>src/components/Intelligence.tsx</td>
+          <td>Linha 819<br><small>side-tab</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/components/Intelligence.tsx</td>
+          <td>Linha 824<br><small>side-tab</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/components/Intelligence.tsx</td>
+          <td>Linha 884<br><small>side-tab</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/components/Intelligence.tsx</td>
+          <td>Linha 885<br><small>side-tab</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/components/Intelligence.tsx</td>
+          <td>Linha 819<br><small>border-accent-on-rounded</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/components/Intelligence.tsx</td>
+          <td>Linha 824<br><small>border-accent-on-rounded</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/components/Intelligence.tsx</td>
+          <td>Linha 884<br><small>border-accent-on-rounded</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/components/Intelligence.tsx</td>
+          <td>Linha 886<br><small>border-accent-on-rounded</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/components/editor/RichTextEditor.tsx</td>
+          <td>Linha 244<br><small>side-tab</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/components/ui/CyberInput.tsx</td>
+          <td>Linha 136<br><small>side-tab</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/components/ui/CyberInput.tsx</td>
+          <td>Linha 144<br><small>side-tab</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/components/ui/CyberInput.tsx</td>
+          <td>Linha 152<br><small>side-tab</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/components/ui/CyberInput.tsx</td>
+          <td>Linha 160<br><small>side-tab</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/components/ui/CyberInput.tsx</td>
+          <td>Linha 136<br><small>border-accent-on-rounded</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/components/ui/CyberInput.tsx</td>
+          <td>Linha 144<br><small>border-accent-on-rounded</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/components/ui/CyberInput.tsx</td>
+          <td>Linha 152<br><small>border-accent-on-rounded</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/components/ui/CyberInput.tsx</td>
+          <td>Linha 160<br><small>border-accent-on-rounded</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/components/ui/HolographicCard.tsx</td>
+          <td>Linha 30<br><small>ai-color-palette</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/components/ui/StyleShowcase.tsx</td>
+          <td>Linha 59<br><small>gradient-text</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/components/ui/VoiceCommandWidget.tsx</td>
+          <td>Linha 169<br><small>bounce-easing</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/commercial-intelligence/application/executiveExport.ts</td>
+          <td>Linha 205<br><small>overused-font</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/hub/hub-orbit.css</td>
+          <td>Linha 520<br><small>bounce-easing</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/hub/hub-orbit.css</td>
+          <td>Linha 528<br><small>bounce-easing</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/intelligence/components/EliteCommercialAgentWorkspace.tsx</td>
+          <td>Linha 446<br><small>gray-on-color</small></td>
+          <td><span class="badge quality">quality</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/intelligence/components/SalesMethodologyStudio.tsx</td>
+          <td>Linha 386<br><small>bounce-easing</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/intelligence/components/SwarmDashboard.tsx</td>
+          <td>Linha 555<br><small>border-accent-on-rounded</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/intelligence/components/SwarmDashboard.tsx</td>
+          <td>Linha 565<br><small>border-accent-on-rounded</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/prospecting/outbound/components/LeadStageAndTags.tsx</td>
+          <td>Linha 500<br><small>gray-on-color</small></td>
+          <td><span class="badge quality">quality</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/voice-hub/components/GlobalHelpCenter.tsx</td>
+          <td>Linha 149<br><small>bounce-easing</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/voice-hub/components/design-system/tokens.ts</td>
+          <td>Linha 135<br><small>bounce-easing</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/voice-hub/components/studio/nodes/UnifiedNode.tsx</td>
+          <td>Linha 54<br><small>bounce-easing</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/voice-hub/components/studio/panels/VersionHistoryPanel.tsx</td>
+          <td>Linha 72<br><small>ai-color-palette</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/voice-hub/components/tokens.ts</td>
+          <td>Linha 135<br><small>bounce-easing</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/voice-hub/pages/AgentRegistry.tsx</td>
+          <td>Linha 91<br><small>border-accent-on-rounded</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/voice-hub/pages/AgentRegistry.tsx</td>
+          <td>Linha 150<br><small>gray-on-color</small></td>
+          <td><span class="badge quality">quality</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/voice-hub/pages/Dashboard/AgentRegistry.tsx</td>
+          <td>Linha 91<br><small>border-accent-on-rounded</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/voice-hub/pages/Dashboard/AgentRegistry.tsx</td>
+          <td>Linha 150<br><small>gray-on-color</small></td>
+          <td><span class="badge quality">quality</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/voice-hub/pages/Dashboard/Developers.tsx</td>
+          <td>Linha 210<br><small>gray-on-color</small></td>
+          <td><span class="badge quality">quality</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/voice-hub/pages/Dashboard/Developers.tsx</td>
+          <td>Linha 380<br><small>gray-on-color</small></td>
+          <td><span class="badge quality">quality</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/voice-hub/pages/Dashboard/Observability.tsx</td>
+          <td>Linha 378<br><small>side-tab</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/voice-hub/pages/Dashboard/Preferences.tsx</td>
+          <td>Linha 391<br><small>bounce-easing</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/voice-hub/pages/Dashboard/Results.tsx</td>
+          <td>Linha 181<br><small>side-tab</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/voice-hub/pages/Developers.tsx</td>
+          <td>Linha 210<br><small>gray-on-color</small></td>
+          <td><span class="badge quality">quality</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/voice-hub/pages/Developers.tsx</td>
+          <td>Linha 380<br><small>gray-on-color</small></td>
+          <td><span class="badge quality">quality</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/voice-hub/pages/Landing.tsx</td>
+          <td>Linha 677<br><small>bounce-easing</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/voice-hub/pages/Landing.tsx</td>
+          <td>Linha 808<br><small>bounce-easing</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/voice-hub/pages/LandingInnovative.tsx</td>
+          <td>Linha 305<br><small>gradient-text</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/voice-hub/pages/Observability.tsx</td>
+          <td>Linha 378<br><small>side-tab</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/voice-hub/pages/Preferences.tsx</td>
+          <td>Linha 391<br><small>bounce-easing</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/features/voice-hub/pages/Results.tsx</td>
+          <td>Linha 181<br><small>side-tab</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/lib/email/meetingInvite.ts</td>
+          <td>Linha 127<br><small>border-accent-on-rounded</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+        <tr>
+          <td>src/styles/globals.css</td>
+          <td>Linha 1179<br><small>codex-grid-background</small></td>
+          <td><span class="badge slop">slop</span></td>
+          <td><strong>RESOLVIDO</strong></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>2. Evidências Visuais (Screenshots)</h2>
+    <p>Abaixo estão os snapshots das rotas afetadas pelas edições da sessão atual para atestar o não-dano.</p>
+<h3>Core UI & Dashboard</h3>
+    <div class="screenshot-card">
+      <h4>Desktop: dashboard-desktop.png</h4>
+      <p><em>Alterações mitigadas: Remoção de animações bounce, correção de bordas elásticas e remoção de paletas geradas por IA.</em></p>
+      <img src="screenshots/current-redesign/01-core/dashboard-desktop.png" alt="dashboard-desktop.png" loading="lazy">
+    </div>
+    <div class="screenshot-card">
+      <h4>Desktop: login-desktop.png</h4>
+      <p><em>Alterações mitigadas: Remoção de animações bounce, correção de bordas elásticas e remoção de paletas geradas por IA.</em></p>
+      <img src="screenshots/current-redesign/01-core/login-desktop.png" alt="login-desktop.png" loading="lazy">
+    </div><h3>Intelligence & Swarm</h3>
+    <div class="screenshot-card">
+      <h4>Desktop: intelligence-desktop.png</h4>
+      <p><em>Alterações mitigadas: Remoção de animações bounce, correção de bordas elásticas e remoção de paletas geradas por IA.</em></p>
+      <img src="screenshots/current-redesign/02-intelligence/intelligence-desktop.png" alt="intelligence-desktop.png" loading="lazy">
+    </div><h3>Voice Hub</h3>
+    <div class="screenshot-card">
+      <h4>Desktop: agent-registry-desktop.png</h4>
+      <p><em>Alterações mitigadas: Remoção de animações bounce, correção de bordas elásticas e remoção de paletas geradas por IA.</em></p>
+      <img src="screenshots/current-redesign/03-voice-hub/agent-registry-desktop.png" alt="agent-registry-desktop.png" loading="lazy">
+    </div>
+    <div class="screenshot-card">
+      <h4>Desktop: developers-desktop.png</h4>
+      <p><em>Alterações mitigadas: Remoção de animações bounce, correção de bordas elásticas e remoção de paletas geradas por IA.</em></p>
+      <img src="screenshots/current-redesign/03-voice-hub/developers-desktop.png" alt="developers-desktop.png" loading="lazy">
+    </div>
+    <div class="screenshot-card">
+      <h4>Desktop: landing-innovative-desktop.png</h4>
+      <p><em>Alterações mitigadas: Remoção de animações bounce, correção de bordas elásticas e remoção de paletas geradas por IA.</em></p>
+      <img src="screenshots/current-redesign/03-voice-hub/landing-innovative-desktop.png" alt="landing-innovative-desktop.png" loading="lazy">
+    </div>
+    <div class="screenshot-card">
+      <h4>Desktop: observability-desktop.png</h4>
+      <p><em>Alterações mitigadas: Remoção de animações bounce, correção de bordas elásticas e remoção de paletas geradas por IA.</em></p>
+      <img src="screenshots/current-redesign/03-voice-hub/observability-desktop.png" alt="observability-desktop.png" loading="lazy">
+    </div>
+    <div class="screenshot-card">
+      <h4>Desktop: results-desktop.png</h4>
+      <p><em>Alterações mitigadas: Remoção de animações bounce, correção de bordas elásticas e remoção de paletas geradas por IA.</em></p>
+      <img src="screenshots/current-redesign/03-voice-hub/results-desktop.png" alt="results-desktop.png" loading="lazy">
+    </div><h3>UI Components (Style Showcase)</h3>
+    <div class="screenshot-card">
+      <h4>Desktop: style-showcase-desktop.png</h4>
+      <p><em>Alterações mitigadas: Remoção de animações bounce, correção de bordas elásticas e remoção de paletas geradas por IA.</em></p>
+      <img src="screenshots/current-redesign/06-ui-components/style-showcase-desktop.png" alt="style-showcase-desktop.png" loading="lazy">
+    </div>
+  </div>
+</body>
+</html>

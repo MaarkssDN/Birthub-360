@@ -1,0 +1,1053 @@
+import { HumanMessage, SystemMessage } from '@langchain/core/messages';
+import { type Prisma, ReportSource } from '@prisma/client';
+import { type NextFunction, type Request, type Response, Router } from 'express';
+import { z } from 'zod';
+import { swarmObservabilityRoutes } from './swarm-observability.routes.js';
+import {
+  analyzeCompetitors,
+  analyzeSentiment,
+  categorizeLead,
+  createColdCallScript,
+  draftFollowUp,
+  evaluateDealRisk,
+  extractActionItems,
+  extractKeywords,
+  generateElevatorPitch,
+  generateEmailDraft,
+  generateLinkedInMessage,
+  generateMeetingAgenda,
+  generateObjectionHandling,
+  identifyPainPoints,
+  type PiiValue,
+  predictConversionScore,
+  scoreLeadQuality,
+  suggestNextAction,
+  summarizeLead,
+  summarizeMeetingNotes,
+  translateText,
+} from '../../../lib/ai/features.js';
+import { getAiModel, getGroqTelemetrySnapshot, logAiUsage } from '../../../lib/ai/gateway.js';
+import { logger } from '../../../lib/logger.js';
+import { prisma } from '../../../lib/prisma.js';
+import { leadsQueue } from '../../../lib/queue/index.js';
+import { routeParam } from '../../../shared/http/routeParams.js';
+import type { AuthRequest } from '../../../shared/middlewares/authenticateToken.js';
+import { requirePlatformOperator } from '../../../shared/middlewares/requirePlatformOperator.js';
+import { requireRole } from '../../../shared/middlewares/requireRole.js';
+import { validateRequest } from '../../../shared/middlewares/validateRequest.js';
+import { aiService } from '../services/ai.service.js';
+import { listAiSettings, saveAiSettings } from '../services/ai-settings.service.js';
+import {
+  appendAssistantTurn,
+  listAssistantHistory,
+} from '../services/assistant-history.service.js';
+import {
+  assertPiiExternalConsent,
+  PiiConsentRequiredError,
+  redactAndTrackPiiLeak,
+} from '../services/guardrails.service.js';
+import {
+  approvePendingAction,
+  discardPendingAction,
+  listActionsAwaitingOutcome,
+  listPendingActions,
+  recordActionOutcome,
+} from '../services/pending-actions.service.js';
+import {
+  finishRoleplaySession,
+  listRoleplaySessions,
+} from '../services/roleplay-session.service.js';
+import { generateAssistantStream } from '../services/studio/generators/assistant.js';
+import { SYSTEM_RULES, streamText } from '../services/studio/shared.js';
+import {
+  assistantRequestSchema,
+  type StudioGenerationRequest,
+  studioGenerationSchema,
+  studioService,
+} from '../services/studio.service.js';
+import { analyzeOrgWinLoss, persistWinLossReport } from '../services/winLossAnalysis.worker.js';
+import { aiSuiteRouter } from './ai-suite.routes.js';
+
+const router = Router();
+
+router.use('/suite', aiSuiteRouter);
+
+// Telemetria em tempo real da Groq Cloud (TTFT, tokens, custo estimado)
+router.get(
+  '/telemetry/groq',
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const organizationId = (req as AuthRequest).user?.organizationId;
+      const snapshot = await getGroqTelemetrySnapshot(organizationId);
+      res.json({ success: true, data: snapshot });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+router.post(
+  '/studio',
+  validateRequest(studioGenerationSchema),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const result = await studioService.generate(req.body as StudioGenerationRequest);
+      res.json({ result });
+    } catch (error: any) {
+      logger.error({ err: error }, 'Error generating AI studio artifact');
+      next(error);
+    }
+  },
+);
+
+// Custom AI Tools (DT-006: persistência real no PostgreSQL via Prisma)
+router.get(
+  '/tools/custom',
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { organizationId } = (req as AuthRequest).user;
+      const tools = await prisma.customAiTool.findMany({
+        where: { organizationId },
+        orderBy: { createdAt: 'desc' },
+      });
+      res.json({ success: true, data: tools });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+router.post(
+  '/tools/custom',
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { organizationId } = (req as AuthRequest).user;
+      const { name, category, prompt } = req.body;
+      if (!name || !category || !prompt) {
+        res.status(400).json({ success: false, error: 'name, category e prompt são obrigatórios' });
+        return;
+      }
+      const tool = await prisma.customAiTool.create({
+        data: {
+          organizationId,
+          name,
+          category,
+          prompt,
+        },
+      });
+      res.json({ success: true, data: tool });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+router.delete(
+  '/tools/custom/:id',
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { organizationId } = (req as AuthRequest).user;
+      const { id } = req.params;
+      await prisma.customAiTool.deleteMany({
+        where: { id: String(id), organizationId },
+      });
+      res.json({ success: true });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
+
+// Histórico de conversa do Chatbook (AssistantMessage) — GET carrega ao montar/trocar de marca,
+// POST /studio/stream grava os dois turnos (usuário + assistente) ao final de cada resposta.
+router.get(
+  '/chatbook/history',
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { organizationId, id: userId } = (req as AuthRequest).user;
+      const brand = String(req.query.brand || '');
+      if (brand !== 'geral') {
+        res.status(400).json({ success: false, error: 'brand deve ser "geral".' });
+        return;
+      }
+      const messages = await listAssistantHistory(organizationId, userId, brand);
+      res.json({ success: true, data: messages });
+    } catch (error: any) {
+      next(error);
+    }
+  },
+);
+
+// Streaming (SSE) do Chatbook — só o kind "assistant" do Studio, o único cuja saída é texto livre
+// sem schema JSON (ver Fase 2 do plano: roleplay/training continuam via /studio, sem streaming).
+router.post(
+  '/studio/stream',
+  validateRequest(assistantRequestSchema),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const request = req.body as z.infer<typeof assistantRequestSchema>;
+    const { organizationId, id: userId } = (req as AuthRequest).user;
+    if (!request.brandKey) {
+      res
+        .status(400)
+        .json({ success: false, error: 'brandKey é obrigatório para /studio/stream.' });
+      return;
+    }
+    try {
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+      res.flushHeaders?.();
+
+      const result = await generateAssistantStream(request, (chunk) => {
+        res.write(`event: delta\ndata: ${JSON.stringify({ delta: chunk })}\n\n`);
+      });
+
+      await appendAssistantTurn(
+        organizationId,
+        userId,
+        request.brandKey,
+        request.inputs.question,
+        result.answer,
+      );
+
+      res.write(`event: end\ndata: ${JSON.stringify({ capability: result.capability })}\n\n`);
+      res.end();
+    } catch (error: any) {
+      logger.error({ err: error }, 'Error streaming AI studio assistant');
+      if (!res.headersSent) {
+        next(error);
+      } else {
+        res.write(`event: error\ndata: ${JSON.stringify((error as Error).message)}\n\n`);
+        res.end();
+      }
+    }
+  },
+);
+
+// Parecer técnico de fim de ligação do Roleplay (ver RoleplayHub.finishCall) — recebe a
+// transcrição completa + avaliações por turno já calculadas em tempo real, dispara uma chamada de
+// IA dedicada de avaliação de sessão (generateRoleplayEvaluation) e persiste em RoleplaySession
+// (antes só existia em memória no componente, perdido ao recarregar — Piloto 008 em
+// .claude/PILOTS.md).
+const roleplayFinishSchema = z.object({
+  brand: z.literal('geral'),
+  brandName: z.string().trim().min(1).max(80),
+  brandDescription: z.string().trim().min(1).max(500),
+  personaId: z.string().trim().min(1).max(80),
+  personaLabel: z.string().trim().min(1).max(200),
+  personaKey: z.enum(['skeptical_cfo', 'strict_buyer', 'tech_director']),
+  difficulty: z.enum(['facil', 'medio', 'dificil']),
+  durationSeconds: z
+    .number()
+    .int()
+    .min(0)
+    .max(24 * 60 * 60),
+  transcript: z
+    .array(
+      z.object({
+        sender: z.enum(['bot', 'user']),
+        text: z.string().trim().min(1).max(2_000),
+      }),
+    )
+    .min(1)
+    .max(200),
+  turnEvaluations: z
+    .array(
+      z.object({
+        clarity: z.number().int().min(0).max(100),
+        objectionHandling: z.number().int().min(0).max(100),
+        total: z.number().int().min(0).max(100),
+        feedback: z.string().trim().min(1).max(800),
+      }),
+    )
+    .max(100),
+});
+
+router.post(
+  '/roleplay/finish',
+  validateRequest(roleplayFinishSchema),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { organizationId, id: userId } = (req as AuthRequest).user;
+      const body = req.body as z.infer<typeof roleplayFinishSchema>;
+      const result = await finishRoleplaySession({ organizationId, userId, ...body });
+      res.json({ success: true, data: result });
+    } catch (error: any) {
+      logger.error({ err: error }, 'Error generating roleplay session evaluation');
+      next(error);
+    }
+  },
+);
+
+// Histórico de ligações do Roleplay — as sessões já eram persistidas por /roleplay/finish, mas até
+// agora não havia rota para reler o que foi salvo (ver comentário de listRoleplaySessions).
+router.get(
+  '/roleplay/history',
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { organizationId, id: userId } = (req as AuthRequest).user;
+      const brand = String(req.query.brand || '');
+      if (brand !== 'geral') {
+        res.status(400).json({ success: false, error: 'brand deve ser "geral".' });
+        return;
+      }
+      const sessions = await listRoleplaySessions(organizationId, userId, brand);
+      res.json({ success: true, data: sessions });
+    } catch (error: any) {
+      logger.error({ err: error }, 'Error fetching roleplay session history');
+      next(error);
+    }
+  },
+);
+
+const contentGenerationSchema = z.object({
+  tool: z.string().min(1).max(80),
+  leadId: z.string().min(1).max(100).optional(),
+  competitor: z.string().trim().max(200).optional(),
+  tone: z.string().trim().max(80).optional(),
+  objective: z.string().trim().max(100).optional(),
+  personaFallback: z.string().trim().max(200).optional(),
+  brandId: z.literal('geral').default('geral'),
+});
+
+router.post(
+  '/',
+  validateRequest(contentGenerationSchema),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { tool, leadId, competitor, tone, objective, personaFallback, brandId } =
+        req.body as z.infer<typeof contentGenerationSchema>;
+      const authRequest = req as AuthRequest;
+      const result = await aiService.generateContent(tool, leadId, {
+        competitor,
+        tone,
+        objective,
+        personaFallback,
+        brandId,
+        organizationId: authRequest.user.organizationId,
+      });
+      res.json({ success: true, data: { result }, result });
+    } catch (error: unknown) {
+      const err = error as Error;
+      if (err.message === 'Invalid tool' || err.message === 'Missing competitor') {
+        res.status(400).json({ error: err.message });
+        return;
+      }
+      logger.error({ err: error }, 'Error generating intelligence');
+      next(error);
+    }
+  },
+);
+
+router.post('/qualify', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { leadId, companyInfo } = req.body as { leadId?: string; companyInfo?: string };
+
+    if (!leadId) {
+      res.status(400).json({ error: 'Missing leadId' });
+      return;
+    }
+
+    const organizationId = (req as AuthRequest).user.organizationId;
+
+    // QUEUE-002: organizationId agora viaja no job — sem ele o worker não tinha como escopar a
+    // query por tenant (ver createLeadsWorker em src/lib/queue/index.ts), e a atualização final
+    // do lead sempre falhava sob RLS. `jobId` determinístico (por tenant+lead) faz um clique
+    // duplo, ou um segundo pedido de qualificação antes do primeiro terminar, reaproveitar o job
+    // já em fila/execução em vez de gastar uma segunda chamada de IA e correr duas atualizações
+    // concorrentes do mesmo lead.
+    let job: { id?: string };
+    if (leadsQueue) {
+      const jobId = `qualify-lead:${organizationId}:${leadId}`;
+      const existing = await leadsQueue.getJob(jobId);
+      const existingState = existing ? await existing.getState() : null;
+
+      if (existing && existingState && ['waiting', 'active', 'delayed'].includes(existingState)) {
+        // Já há uma qualificação em andamento para este lead — reaproveita em vez de
+        // duplicar a chamada de IA e correr duas atualizações concorrentes do mesmo lead.
+        job = existing;
+      } else {
+        // Job anterior com este id já terminou (completed/failed) ou nunca existiu: remove
+        // antes de reusar o mesmo jobId — mesmo padrão de debounce-por-id já usado em
+        // whatsappSignal.worker.ts, para nunca colidir com um job terminal retido pelo TTL
+        // de `removeOnComplete`/`removeOnFail`.
+        if (existing) await existing.remove().catch(() => {});
+        job = await leadsQueue.add(
+          'qualify-lead',
+          // companyInfo é opcional — quando ausente, o worker busca os dados reais da empresa no CRM.
+          { leadId, companyInfo: companyInfo || '', organizationId },
+          { jobId },
+        );
+      }
+    } else {
+      job = { id: 'no-queue' };
+    }
+
+    res.status(202).json({
+      message: 'Lead qualification started in background',
+      jobId: job.id,
+    });
+  } catch (error: any) {
+    logger.error({ err: error }, 'Error queuing lead qualification');
+    next(error);
+  }
+});
+
+import { loadAgentMemory } from '../agents/agentMemory.store.js';
+import { SDRQualificationAgent } from '../agents/sdrQualification.agent.js';
+
+router.post(
+  '/agents/sdr/qualify',
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { leadId, sessionId } = req.body as { leadId?: string; sessionId?: string };
+
+      if (!leadId) {
+        res.status(400).json({ error: 'Missing leadId' });
+        return;
+      }
+
+      // Para evitar timeout da requisição HTTP, rodamos o agente assíncronamente sem esperar
+      // (Numa infra real, isso também iria pro BullMQ)
+      const agent = new SDRQualificationAgent();
+      agent.run(leadId, sessionId).catch((err) => {
+        logger.error({ err, leadId }, 'SDR Agent background execution failed');
+      });
+
+      res.status(202).json({
+        message: 'SDR Agent qualification started in background',
+        leadId,
+      });
+    } catch (error: any) {
+      logger.error({ err: error }, 'Error starting SDR Agent');
+      next(error);
+    }
+  },
+);
+
+// A rota acima dispara o SDRQualificationAgent sem aguardar e devolve 202 imediatamente — sem esta
+// rota não havia nenhuma forma de buscar o resultado depois (o cliente ficava sem saber quando/se a
+// qualificação terminou). O agente persiste seu progresso em AgentMemory (sdrQualification.agent.ts
+// updateMemory/recordAgentFailure), então "ainda não existe registro" é o sinal de "pendente".
+// AI-003 (onda 31): 3 estados agora, não 2 — antes, "sem base legal LGPD" e "erro no grafo"
+// deixavam a sessão sem nenhuma linha gravada, e esta rota reportava `pending` para sempre,
+// indistinguível de uma execução ainda em andamento. `AgentMemory.status` torna isso explícito.
+router.get(
+  '/agents/sdr/status/:sessionId',
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const sessionId = routeParam(req.params.sessionId, 'sessionId');
+      const authRequest = req as AuthRequest;
+
+      const memory = await loadAgentMemory({
+        sessionId,
+        agentType: 'SDR',
+        organizationId: authRequest.user.organizationId,
+      });
+
+      if (!memory) {
+        res.status(202).json({ status: 'pending', sessionId });
+        return;
+      }
+
+      if (memory.status === 'Failed') {
+        res.json({ status: 'failed', sessionId, error: memory.errorMessage });
+        return;
+      }
+
+      res.json({ status: 'completed', sessionId, messages: memory.messages });
+    } catch (error: any) {
+      logger.error({ err: error }, 'Error fetching SDR agent status');
+      next(error);
+    }
+  },
+);
+
+import { VectorSearchService } from '../services/vector-search.service.js';
+
+router.get(
+  '/search',
+  requireRole(['ADMIN', 'GESTOR', 'CLOSER', 'SDR']),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const query = typeof req.query.q === 'string' ? req.query.q.trim() : '';
+      const requestedLimit = Number.parseInt(String(req.query.limit || '5'), 10);
+      const limit = Number.isFinite(requestedLimit) ? Math.max(1, Math.min(20, requestedLimit)) : 5;
+
+      if (!query) {
+        res.status(400).json({ error: 'Search query (q) is required' });
+        return;
+      }
+      if (query.length > 2_000) {
+        res.status(400).json({ error: 'Search query is too long' });
+        return;
+      }
+
+      const organizationId = (req as AuthRequest).user?.organizationId;
+      const startTime = Date.now();
+      const results = await VectorSearchService.searchChunks(query, organizationId, limit);
+
+      await logAiUsage({
+        promptId: 'search_vector_query',
+        model: 'VectorSearch',
+        usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+        latencyMs: Date.now() - startTime,
+      });
+
+      res.json({ results });
+    } catch (error: any) {
+      logger.error({ err: error }, 'Error performing vector search');
+      next(error);
+    }
+  },
+);
+
+// Rotas para AIPendingActions
+router.get('/pending', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const authRequest = req as AuthRequest;
+    const db = authRequest.db || prisma;
+    const pendingActions = await listPendingActions(db, authRequest.user.organizationId);
+    res.json(pendingActions);
+  } catch (error: any) {
+    logger.error({ err: error }, 'Error fetching pending actions');
+    next(error);
+  }
+});
+
+// SEC-011: aprovar uma AIPendingAction dispara efeito real (enviar e-mail, criar nota/atividade —
+// ver executeAction em aiPendingAction.service.ts), então é uma confirmação humana de ação de alto
+// impacto, não uma leitura. Sem `requireRole` aqui, qualquer papel autenticado do tenant — inclusive
+// VISUALIZADOR (só leitura, ROLE_HIERARCHY=10) — podia aprovar/descartar, contornando a hierarquia
+// de papéis. Mesmo corte de VISUALIZADOR já aplicado por 01 em agent.routes.ts (`/swarm/mission`).
+const pendingActionRoles = requireRole(['ADMIN', 'GESTOR', 'CLOSER', 'SDR']);
+
+router.post(
+  '/pending/:id/approve',
+  pendingActionRoles,
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const id = routeParam(req.params.id, 'id');
+      const authRequest = req as AuthRequest;
+      const db = authRequest.db || prisma;
+      const result = await approvePendingAction(
+        db,
+        authRequest.user.organizationId,
+        id,
+        authRequest.user.id,
+      );
+      if (!result) {
+        res.status(404).json({ success: false, error: 'Ação pendente não encontrada.' });
+        return;
+      }
+
+      logger.info(
+        { actionId: id, sent: result.execution.sent, reason: result.execution.reason },
+        'AI action approved',
+      );
+
+      res.json({ success: true, data: { action: result.action, execution: result.execution } });
+    } catch (error: any) {
+      logger.error({ err: error }, 'Error approving action');
+      next(error);
+    }
+  },
+);
+
+router.delete(
+  '/pending/:id',
+  pendingActionRoles,
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const authRequest = req as AuthRequest;
+      const db = authRequest.db || prisma;
+      const discarded = await discardPendingAction(
+        db,
+        authRequest.user.organizationId,
+        routeParam(req.params.id, 'id'),
+        authRequest.user.id,
+      );
+      if (!discarded) {
+        res.status(404).json({ success: false, error: 'Ação pendente não encontrada.' });
+        return;
+      }
+      res.status(204).send();
+    } catch (error: any) {
+      logger.error({ err: error }, 'Error discarding pending AI action');
+      next(error);
+    }
+  },
+);
+
+// Item 103 da constituição de produto (Closed-Loop Intelligence) — fecha o ciclo depois de
+// `executeAndRecord`: fila de ações já executadas sem resultado de negócio registrado ainda.
+router.get(
+  '/pending/awaiting-outcome',
+  pendingActionRoles,
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const authRequest = req as AuthRequest;
+      const db = authRequest.db || prisma;
+      const actions = await listActionsAwaitingOutcome(db, authRequest.user.organizationId);
+      res.json({ success: true, data: { actions } });
+    } catch (error: any) {
+      logger.error({ err: error }, 'Error fetching actions awaiting outcome');
+      next(error);
+    }
+  },
+);
+
+const outcomeSchema = z.object({
+  status: z.enum(['POSITIVE', 'NEGATIVE', 'NEUTRAL']),
+  notes: z.string().trim().max(2000).optional(),
+});
+
+router.post(
+  '/pending/:id/outcome',
+  pendingActionRoles,
+  validateRequest(outcomeSchema),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const authRequest = req as AuthRequest;
+      const db = authRequest.db || prisma;
+      const { status, notes } = req.body as z.infer<typeof outcomeSchema>;
+      const result = await recordActionOutcome(
+        db,
+        authRequest.user.organizationId,
+        routeParam(req.params.id, 'id'),
+        authRequest.user.id,
+        { status, notes },
+      );
+      if (!result) {
+        res
+          .status(404)
+          .json({ success: false, error: 'Ação executada não encontrada para este id.' });
+        return;
+      }
+      if (result.alreadyRecorded) {
+        res
+          .status(409)
+          .json({ success: false, error: 'Esta ação já tem um resultado registrado.' });
+        return;
+      }
+      res.json({ success: true, data: { action: result.action } });
+    } catch (error: any) {
+      logger.error({ err: error }, 'Error recording AI pending action outcome');
+      next(error);
+    }
+  },
+);
+
+// Configuração de provider/modelo/temperatura por ferramenta de IA (usada pela tela AIConfigCenter).
+// Sem registro para uma toolKey, `ai.service.ts` cai no TOOL_CONFIG hardcoded como padrão.
+router.get(
+  '/ai-settings',
+  async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const settings = await listAiSettings();
+      res.json({ success: true, data: settings });
+    } catch (error: any) {
+      logger.error({ err: error }, 'Error fetching AI engine settings');
+      next(error);
+    }
+  },
+);
+
+const putAiSettingsSchema = z.object({
+  settings: z.array(
+    z.object({
+      toolKey: z.string().min(1),
+      provider: z.string().min(1),
+      model: z.enum(['local-llama3', 'local-llama3-fast', 'qwen-coder', 'deepseek-coder']),
+      temperature: z.number().min(0).max(2),
+    }),
+  ),
+});
+
+// Config global de IA (sem organizationId — afeta todos os tenants). ADMIN é um papel POR
+// ORGANIZAÇÃO — qualquer ADMIN de qualquer tenant tinha esse papel, então `requireRole(['ADMIN'])`
+// sozinho permitia que o admin de UM cliente mudasse o comportamento de IA de TODOS os outros
+// tenants da plataforma (TENANT-002, auditoria de débito técnico). Mesma dupla trava usada em
+// `/admin/queues` (ver bootstrap/bullBoard.ts) e `/metrics`: precisa das DUAS coisas — sessão
+// ADMIN de tenant (`requireRole`) E o token de operador de infraestrutura, separado do RBAC de
+// negócio (`requirePlatformOperator`, SEC-001/SEC-002).
+router.put(
+  '/ai-settings',
+  requireRole(['ADMIN']),
+  requirePlatformOperator,
+  validateRequest(putAiSettingsSchema),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { settings } = req.body as {
+        settings: { toolKey: string; provider: string; model: string; temperature: number }[];
+      };
+
+      const saved = await saveAiSettings(settings);
+
+      res.json({ success: true, data: saved });
+    } catch (error: any) {
+      logger.error({ err: error }, 'Error saving AI engine settings');
+      next(error);
+    }
+  },
+);
+
+// Geração e interpretação de relatórios via IA — recebe as métricas já calculadas pelo frontend
+// (mesmo /api/analytics/overview usado no LiveStatsWidget) e devolve uma leitura executiva em Markdown.
+const reportSchema = z.object({
+  metrics: z.record(z.string(), z.unknown()),
+  brandId: z.literal('geral').default('geral'),
+});
+
+// Antes do playbook geral único, este texto variava por playbook (logística vs. frota) — ver
+// git blame para o conteúdo antigo. Removido junto com Birth Hub 360 (pedido explícito do
+// usuário); mantém-se genérico até o desenho de um playbook configurável por organização.
+function reportBrandContext(_brandId: 'geral'): string {
+  return 'Birth Hub 360 (inteligência comercial B2B)';
+}
+
+function reportPrompt(brandContext: string): string {
+  return `Você é um analista de operações comerciais da ${brandContext}.
+Escreva um relatório executivo curto em Markdown interpretando os dados fornecidos para a liderança comercial:
+1. Um resumo de 2-3 frases do estado atual.
+2. Os 2 pontos mais fortes e os 2 pontos mais fracos, cada um em uma linha.
+3. 3 recomendações de ação concretas e priorizadas para a próxima semana.
+Baseie-se SOMENTE nos números fornecidos acima — nunca invente métricas que não estão no JSON.`;
+}
+
+// PC-008: o relatório era devolvido ao frontend e nunca persistido — sumia ao navegar/recarregar
+// a tela (ReportsHub mantinha só em estado local). Persiste aqui e expõe GET /report/latest
+// abaixo para a tela carregar o último relatório gerado da organização ao montar.
+router.get(
+  '/report/latest',
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const organizationId = (req as AuthRequest).user.organizationId;
+      const latest = await prisma.report.findFirst({
+        // Filtro explícito por ON_DEMAND: sem isto, o resumo diário automático (`ReportSource
+        // DAILY_AUTO`, gerado por `dailyExecutiveSummary.worker.ts`) apareceria aqui sem o
+        // usuário ter pedido, substituindo silenciosamente o último relatório que ele gerou.
+        where: { organizationId, source: 'ON_DEMAND' },
+        orderBy: { createdAt: 'desc' },
+      });
+      res.json({ success: true, data: latest });
+    } catch (error: any) {
+      next(error);
+    }
+  },
+);
+
+// Histórico do resumo executivo diário automático (`dailyExecutiveSummary.worker.ts`, cron
+// 0 18 * * *) — antes gerava via IA todo dia mas só logava; nunca aparecia em nenhuma tela.
+router.get(
+  '/report/daily-summaries',
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const organizationId = (req as AuthRequest).user.organizationId;
+      const summaries = await prisma.report.findMany({
+        where: { organizationId, source: 'DAILY_AUTO' },
+        orderBy: { createdAt: 'desc' },
+        take: 14,
+        select: { id: true, content: true, metrics: true, createdAt: true },
+      });
+      res.json({ success: true, data: summaries });
+    } catch (error: any) {
+      next(error);
+    }
+  },
+);
+
+router.post(
+  '/report',
+  validateRequest(reportSchema),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const organizationId = (req as AuthRequest).user.organizationId;
+      const { metrics, brandId } = req.body as z.infer<typeof reportSchema>;
+
+      const systemPrompt = `${SYSTEM_RULES}
+
+${reportPrompt(reportBrandContext(brandId))}`;
+      const userPrompt = `Números atuais da plataforma (CRM, prospecção e pipeline):\n${JSON.stringify(metrics, null, 2)}`;
+
+      const model = getAiModel('local-llama3-fast', 0.4, 'report_interpretation');
+      const startTime = Date.now();
+      const response = await model.invoke([
+        new SystemMessage(systemPrompt),
+        new HumanMessage(userPrompt),
+      ]);
+      const latencyMs = Date.now() - startTime;
+
+      await logAiUsage({
+        model: response.response_metadata.model,
+        usage: response.response_metadata.tokenUsage,
+        latencyMs,
+      });
+
+      const content = await redactAndTrackPiiLeak(String(response.content), 'report');
+
+      const saved = await prisma.report.create({
+        data: {
+          organizationId,
+          brandId,
+          content,
+          metrics: metrics as Prisma.InputJsonValue,
+        },
+      });
+
+      res.json({ result: saved.content, reportId: saved.id, createdAt: saved.createdAt });
+    } catch (error: any) {
+      logger.error({ err: error }, 'Error generating report interpretation');
+      next(error);
+    }
+  },
+);
+
+router.post(
+  '/report/stream',
+  validateRequest(reportSchema),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const organizationId = (req as AuthRequest).user.organizationId;
+    const { metrics, brandId } = req.body as z.infer<typeof reportSchema>;
+    const prompt = `${SYSTEM_RULES}
+
+${reportPrompt(reportBrandContext(brandId))}
+
+Números atuais da plataforma (CRM, prospecção e pipeline):
+${JSON.stringify(metrics, null, 2)}`;
+
+    try {
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+      res.flushHeaders?.();
+
+      const content = await streamText(
+        prompt,
+        'report_interpretation',
+        0.4,
+        'local-llama3-fast',
+        (chunk) => {
+          res.write(`event: delta\ndata: ${JSON.stringify({ delta: chunk })}\n\n`);
+        },
+      );
+
+      const saved = await prisma.report.create({
+        data: { organizationId, brandId, content, metrics: metrics as Prisma.InputJsonValue },
+      });
+
+      res.write(
+        `event: end\ndata: ${JSON.stringify({ reportId: saved.id, createdAt: saved.createdAt })}\n\n`,
+      );
+      res.end();
+    } catch (error: any) {
+      logger.error({ err: error }, 'Error streaming report interpretation');
+      if (!res.headersSent) {
+        next(error);
+      } else {
+        res.write(`event: error\ndata: ${JSON.stringify((error as Error).message)}\n\n`);
+        res.end();
+      }
+    }
+  },
+);
+
+// AI Toolkit Endpoints (Expose the 20 functionalities to frontend via single proxy or discrete endpoints)
+// `any[]` é deliberado aqui (COD-004): as 20 funções abaixo têm aridades e tipos de parâmetro
+// diferentes entre si. `unknown[]` faria o TS rejeitar a atribuição de cada função concreta a este
+// Record (contravariância de parâmetros — `unknown` não é atribuível a `string`), e não há um tipo
+// de união prático que descreva "uma função de N parâmetros de texto, N variando por chave". A
+// aridade real de cada uma é validada em runtime contra AI_TOOLKIT_ARITY logo abaixo.
+const aiToolkitFunctions: Record<string, (...args: any[]) => Promise<unknown>> = {
+  summarizeLead,
+  generateEmailDraft,
+  predictConversionScore,
+  generateMeetingAgenda,
+  draftFollowUp,
+  scoreLeadQuality,
+  suggestNextAction,
+  generateObjectionHandling,
+  analyzeCompetitors,
+  generateElevatorPitch,
+  identifyPainPoints,
+  createColdCallScript,
+  summarizeMeetingNotes,
+  generateLinkedInMessage,
+  evaluateDealRisk,
+  analyzeSentiment,
+  extractKeywords,
+  categorizeLead,
+  translateText,
+  extractActionItems,
+};
+
+// Todas as funções do toolkit recebem apenas argumentos de texto — o número abaixo é a aridade
+// real de cada uma (ver src/lib/ai/features.ts), usado para validar a chamada antes do dispatch.
+const AI_TOOLKIT_ARITY: Record<string, number> = {
+  summarizeLead: 1,
+  generateEmailDraft: 2,
+  predictConversionScore: 1,
+  generateMeetingAgenda: 2,
+  draftFollowUp: 1,
+  scoreLeadQuality: 1,
+  suggestNextAction: 2,
+  generateObjectionHandling: 1,
+  analyzeCompetitors: 1,
+  generateElevatorPitch: 1,
+  identifyPainPoints: 1,
+  createColdCallScript: 2,
+  summarizeMeetingNotes: 1,
+  generateLinkedInMessage: 2,
+  evaluateDealRisk: 1,
+  analyzeSentiment: 1,
+  extractKeywords: 1,
+  categorizeLead: 1,
+  translateText: 2,
+  extractActionItems: 1,
+};
+
+// Normaliza o campo opcional `piiValues` do corpo da requisição: descarta silenciosamente
+// entradas malformadas (não é um contrato de segurança — só controla o que é minimizado antes de
+// ir pro provedor externo, então falhar aberto para "nenhum valor" é seguro e não bloqueia quem
+// não sabe/precisa desse recurso).
+function normalizePiiValues(raw: unknown): PiiValue[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(
+    (entry): entry is PiiValue =>
+      typeof entry === 'object' &&
+      entry !== null &&
+      typeof (entry as { token?: unknown }).token === 'string' &&
+      (typeof (entry as { value?: unknown }).value === 'string' ||
+        (entry as { value?: unknown }).value == null),
+  );
+}
+
+router.post(
+  '/toolkit/execute',
+  requireRole(['ADMIN', 'GESTOR', 'CLOSER', 'SDR']),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { functionName, args, piiValues } = req.body as {
+        functionName?: unknown;
+        args?: unknown;
+        piiValues?: unknown;
+      };
+
+      // LGPD (AI-007, mesmo gate de base.agent.ts/sdrQualification.agent.ts/ops.agent.ts): os
+      // `args` aqui são texto livre digitado/colado por um operador humano (ex.: "Resumir
+      // Anotações de Reunião", "Rascunho de E-mail") — pode conter nome/telefone/e-mail reais de
+      // um titular, exatamente a mesma classe de risco que motivou o gate em base.agent.ts
+      // ("texto livre da missão... pode conter PII de um titular real"). Faltava aqui: este
+      // endpoint despachava para o gateway de IA externo sem nenhuma checagem de base legal.
+      // `piiValues`/`minimizePii` (features.ts) só troca o valor por um token reversível — ainda é
+      // tratamento de dado pessoal do titular, e continua exigindo a mesma base legal (ver
+      // guardrails.service.ts:hasPiiExternalConsent).
+      const organizationId = (req as AuthRequest).user?.organizationId ?? null;
+      try {
+        assertPiiExternalConsent(organizationId);
+      } catch (error: any) {
+        if (error instanceof PiiConsentRequiredError) {
+          res.status(403).json({ success: false, error: error.message });
+          return;
+        }
+        throw error;
+      }
+
+      if (typeof functionName !== 'string' || !aiToolkitFunctions[functionName]) {
+        res.status(400).json({ error: 'Function not found in AI Toolkit' });
+        return;
+      }
+
+      const expectedArity = AI_TOOLKIT_ARITY[functionName];
+      const isValidArgs =
+        Array.isArray(args) &&
+        args.length === expectedArity &&
+        args.every((arg) => typeof arg === 'string' && arg.trim().length > 0);
+      if (!isValidArgs) {
+        res.status(400).json({
+          error: `A função "${functionName}" espera ${expectedArity} argumento(s) de texto não vazio.`,
+        });
+        return;
+      }
+
+      // piiValues é opcional: quem chama a API e conhece um dado de PII no texto (ex.: nome do
+      // contato de um lead) pode informá-lo aqui para que seja minimizado antes de ir ao
+      // provedor de IA externo e restaurado na resposta — mesmo padrão de ai.service.ts/crmTools.ts.
+      const result = await (
+        aiToolkitFunctions[functionName] as (...args: any[]) => Promise<unknown>
+      )(...(args as string[]), normalizePiiValues(piiValues));
+      res.json({ success: true, result });
+    } catch (error: any) {
+      logger.error({ err: error }, 'Error executing AI Toolkit function');
+      next(error);
+    }
+  },
+);
+
+// ── Win/Loss Analysis ────────────────────────────────────────────────────────
+// Roda a análise imediatamente (em vez de aguardar o cron de sexta) e devolve
+// o resultado. Útil para o usuário disparar manualmente pela UI.
+//
+// REVOPS-004 (onda 5): esta rota reimplementava a mesma lógica de
+// `winLossAnalysis.worker.ts` inline (com um `take` de mensagens diferente e um prompt
+// diferente do cron — as duas execuções podiam enxergar contextos sutilmente diferentes
+// para o mesmo lead). Agora reusa `analyzeOrgWinLoss` (única implementação) e persiste o
+// resultado como `Report` (source: WIN_LOSS_ON_DEMAND), exposto por `GET .../latest` abaixo.
+router.post(
+  '/win-loss-analysis',
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const organizationId = (req as AuthRequest).user?.organizationId;
+      if (!organizationId) {
+        res.status(401).json({ success: false, error: 'Organização não identificada.' });
+        return;
+      }
+
+      const result = await analyzeOrgWinLoss(organizationId);
+      if (!result) {
+        res.json({
+          analysis:
+            'Nenhum lead fechado nos últimos 7 dias para analisar. Aguarde o acúmulo de dados ou expanda o período de busca.',
+        });
+        return;
+      }
+
+      await persistWinLossReport(result, ReportSource.WIN_LOSS_ON_DEMAND);
+      logger.info(
+        { organizationId, leadsAnalyzed: result.leadsAnalyzed, tool: 'win-loss-analysis' },
+        '[WinLoss] Análise manual disparada e persistida com sucesso',
+      );
+
+      res.json({ analysis: result.analysis, leadsAnalyzed: result.leadsAnalyzed });
+    } catch (error: any) {
+      logger.error({ err: error }, 'Falha no Win/Loss Analysis manual');
+      next(error);
+    }
+  },
+);
+
+// REVOPS-004: expõe o último resultado persistido (automático de sexta OU manual, o que for mais
+// recente) — antes desta correção a varredura automática nunca aparecia em lugar nenhum da UI
+// (ver comentário removido de WinLossAnalysis.tsx). Mesmo padrão de GET /report/latest acima.
+router.get(
+  '/win-loss-analysis/latest',
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const organizationId = (req as AuthRequest).user.organizationId;
+      const latest = await prisma.report.findFirst({
+        where: {
+          organizationId,
+          source: { in: [ReportSource.WEEKLY_WIN_LOSS_AUTO, ReportSource.WIN_LOSS_ON_DEMAND] },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+      res.json({ success: true, data: latest });
+    } catch (error: any) {
+      next(error);
+    }
+  },
+);
+
+router.use('/observability', swarmObservabilityRoutes);
+
+export const intelligenceRoutes = router;

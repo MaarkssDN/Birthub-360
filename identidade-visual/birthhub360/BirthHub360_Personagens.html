@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Birth Hub 360° — Sistema Visual dos 9 Personagens Oficiais</title>
+  <link rel="icon" type="image/svg+xml" href="../../public/brand/birthhub360-icone.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700;800&family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tokens/birthhub360.css">
+  <link rel="stylesheet" href="tokens/characters.css">
+  <style>
+    :root {
+      --bg-dark-app: #0A0A0F;
+      --bg-dark-surface: #14141A;
+      --bg-light-app: #F8FAFC;
+      --bg-light-surface: #FFFFFF;
+      --text-muted: #70D6FF;
+      --border-glow: rgba(0, 212, 255, 0.22);
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, sans-serif;
+      background-color: var(--bg-dark-app);
+      color: #BAE6FD;
+      transition: background-color 300ms ease, color 300ms ease;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    html.light body {
+      background-color: var(--bg-light-app);
+      color: #334155;
+    }
+
+    /* Tipografia de Cabeçalhos */
+    h1, h2, h3, .font-heading {
+      font-family: 'Sora', sans-serif;
+    }
+
+    .font-mono {
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    /* Container Principal */
+    .app-container {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 5rem 1.5rem;
+    }
+
+    /* Barra Superior de Controles de Demonstração */
+    .demo-bar {
+      position: sticky;
+      top: 1rem;
+      z-index: 100;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      background: rgba(20, 20, 26, 0.85);
+      border: 1px solid rgba(0, 212, 255, 0.25);
+      padding: 0.875rem 1.5rem;
+      border-radius: 9999px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+      margin-bottom: 2.5rem;
+    }
+
+    html.light .demo-bar {
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(2, 132, 199, 0.2);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-toggle {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      color: #70D6FF;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.5rem 0.875rem;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all 200ms ease;
+    }
+
+    html.light .btn-toggle {
+      background: rgba(2, 132, 199, 0.05);
+      border-color: rgba(2, 132, 199, 0.2);
+      color: #0369A1;
+    }
+
+    .btn-toggle:hover {
+      border-color: #00D4FF;
+      color: #00D4FF;
+    }
+
+    .btn-toggle.active {
+      background: rgba(0, 212, 255, 0.15);
+      border-color: #00D4FF;
+      color: #00D4FF;
+      box-shadow: 0 0 12px rgba(0, 212, 255, 0.35);
+    }
+
+    /* Grid dos 9 Personagens */
+    .characters-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 2rem;
+    }
+
+    @media (max-width: 640px) {
+      .characters-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Card Individual do Personagem */
+    .char-showcase-card {
+      position: relative;
+      background: var(--bg-dark-surface);
+      border: 1px solid var(--border-glow);
+      border-radius: 24px;
+      padding: 2rem;
+      display: flex;
+      flex-col;
+      gap: 1.5rem;
+      overflow: hidden;
+      box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.6);
+      transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    html.light .char-showcase-card {
+      background: var(--bg-light-surface);
+      border-color: rgba(2, 132, 199, 0.18);
+      box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.06);
+    }
+
+    .char-showcase-card:hover {
+      transform: translateY(-4px);
+    }
+
+    /* Halo Dinâmico por Personagem */
+    .char-halo-layer {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 220px;
+      height: 220px;
+      border-radius: 9999px;
+      pointer-events: none;
+      filter: blur(48px);
+      opacity: 0.25;
+      transition: opacity 300ms ease;
+    }
+
+    /* Stage do Avatar */
+    .avatar-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.75rem 1rem;
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      position: relative;
+    }
+
+    html.light .avatar-stage {
+      background: rgba(2, 132, 199, 0.03);
+      border-color: rgba(2, 132, 199, 0.1);
+    }
+
+    .avatar-wrapper {
+      width: 128px;
+      height: 128px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Badges e Identificadores */
+    .char-kicker {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.25rem;
+    }
+
+    .char-name {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .char-role {
+      font-size: 0.875rem;
+      color: #94A3B8;
+      margin: 0.25rem 0 0 0;
+    }
+
+    html.light .char-role {
+      color: #64748B;
+    }
+
+    .command-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.25rem 0.625rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: rgba(0, 212, 255, 0.1);
+      border: 1px solid rgba(0, 212, 255, 0.25);
+      color: #00D4FF;
+      margin-top: 0.75rem;
+    }
+
+    html.light .command-pill {
+      background: rgba(2, 132, 199, 0.08);
+      border-color: rgba(2, 132, 199, 0.2);
+      color: #0284C7;
+    }
+
+    /* Status e Expressões */
+    .state-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      padding: 0.375rem 0.75rem;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      margin-top: 1rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    html.light .state-indicator {
+      background: rgba(2, 132, 199, 0.04);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 9999px;
+      background-color: #00D4FF;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- Header Institucional -->
+    <header style="margin-bottom: 2rem;">
+      <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+        <img src="../../public/brand/birthhub360-icone.svg" alt="Birth Hub 360" width="36" height="36">
+        <span class="font-mono" style="font-size: 0.8rem; font-weight: 700; color: #00D4FF; letter-spacing: 0.1em; text-transform: uppercase;">
+          Identidade Visual Oficial · Agente 11
+        </span>
+      </div>
+      <h1 style="font-size: 2.25rem; font-weight: 800; letter-spacing: -0.03em; color: #00D4FF; margin: 0 0 0.5rem 0;">
+        Sistema Visual dos 9 Personagens do Birth Hub 360°
+      </h1>
+      <p style="font-size: 1rem; color: #70D6FF; margin: 0; max-width: 760px;">
+        Arquitetura de bots não-humanos com silhuetas vetoriais originais, cromática neon oficial (Azul, Rosa e Dourado) e compatibilidade total com Light/Dark Mode e acessibilidade WCAG 2.2 AA.
+      </p>
+    </header>
+
+    <!-- Barra de Controle Interativa de Demonstração -->
+    <div class="demo-bar" role="toolbar" aria-label="Controles do Simulador de Expressões">
+      <div class="control-group">
+        <span class="font-mono" style="font-size: 0.75rem; color: #70D6FF; font-weight: 600;">Tema:</span>
+        <button id="btn-theme-dark" class="btn-toggle active" onclick="setTheme('dark')">Dark Mode</button>
+        <button id="btn-theme-light" class="btn-toggle" onclick="setTheme('light')">Light Mode</button>
+      </div>
+
+      <div class="control-group">
+        <span class="font-mono" style="font-size: 0.75rem; color: #70D6FF; font-weight: 600;">Expressão / Estado:</span>
+        <button class="btn-toggle state-btn active" data-state="idle" onclick="setAllStates('idle')">Repouso</button>
+        <button class="btn-toggle state-btn" data-state="listening" onclick="setAllStates('listening')">Escuta</button>
+        <button class="btn-toggle state-btn" data-state="processing" onclick="setAllStates('processing')">Processamento</button>
+        <button class="btn-toggle state-btn" data-state="speaking" onclick="setAllStates('speaking')">Resposta</button>
+        <button class="btn-toggle state-btn" data-state="success" onclick="setAllStates('success')">Sucesso</button>
+        <button class="btn-toggle state-btn" data-state="error" onclick="setAllStates('error')">Erro</button>
+      </div>
+
+      <div class="control-group">
+        <button id="btn-reduced-motion" class="btn-toggle" onclick="toggleReducedMotion()">
+          Redução de Movimento: OFF
+        </button>
+      </div>
+    </div>
+
+    <!-- Grid com os 9 Personagens -->
+    <main class="characters-grid" id="characters-container">
+
+      <!-- 1. ORBIT -->
+      <article class="char-showcase-card" style="border-color: rgba(255, 193, 7, 0.3);">
+        <div class="char-halo-layer" style="background: #FFC107;"></div>
+        <div>
+          <div class="char-kicker font-mono" style="color: #FFC107;">PILAR 01 — HUB COMERCIAL</div>
+          <h2 class="char-name" style="color: #FFC107;">Orbit</h2>
+          <p class="char-role">Guardião do CRM & Pipeline 360°</p>
+        </div>
+        <div class="avatar-stage">
+          <div class="avatar-wrapper">
+            <div class="bh-character-avatar" data-state="idle" style="width: 100%; height: 100%;">
+              <img src="../../public/brand/characters/orbit.svg" alt="Avatar do agente Orbit" width="128" height="128">
+            </div>
+          </div>
+          <div class="command-pill font-mono">
+            <span>🎤</span> Diga "Ei Orbit"
+          </div>
+          <div class="state-indicator font-mono">
+            <span class="status-dot" style="background-color: #FFC107;"></span>
+            <span class="state-desc" style="color: #F8F9FF;">Monitorando pipeline e negócios ativos...</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- 2. NEXUS -->
+      <article class="char-showcase-card" style="border-color: rgba(0, 212, 255, 0.3);">
+        <div class="char-halo-layer" style="background: #00D4FF;"></div>
+        <div>
+          <div class="char-kicker font-mono" style="color: #00D4FF;">PILAR 02 — INTELIGÊNCIA DE MERCADO</div>
+          <h2 class="char-name" style="color: #00D4FF;">Nexus</h2>
+          <p class="char-role">Analista de Dados & Grafo B2B</p>
+        </div>
+        <div class="avatar-stage">
+          <div class="avatar-wrapper">
+            <div class="bh-character-avatar" data-state="idle" style="width: 100%; height: 100%;">
+              <img src="../../public/brand/characters/nexus.svg" alt="Avatar do agente Nexus" width="128" height="128">
+            </div>
+          </div>
+          <div class="command-pill font-mono">
+            <span>🎤</span> Diga "Ei Nexus"
+          </div>
+          <div class="state-indicator font-mono">
+            <span class="status-dot" style="background-color: #00D4FF;"></span>
+            <span class="state-desc" style="color: #F8F9FF;">Cruzando dados e sinais firmográficos...</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- 3. ARIA -->
+      <article class="char-showcase-card" style="border-color: rgba(16, 185, 129, 0.3);">
+        <div class="char-halo-layer" style="background: #10B981;"></div>
+        <div>
+          <div class="char-kicker font-mono" style="color: #10B981;">PILAR 03 — ORQUESTRAÇÃO DE VENDAS</div>
+          <h2 class="char-name" style="color: #10B981;">Aria</h2>
+          <p class="char-role">Maestrina de Fluxos & Cadências</p>
+        </div>
+        <div class="avatar-stage">
+          <div class="avatar-wrapper">
+            <div class="bh-character-avatar" data-state="idle" style="width: 100%; height: 100%;">
+              <img src="../../public/brand/characters/aria.svg" alt="Avatar da agente Aria" width="128" height="128">
+            </div>
+          </div>
+          <div class="command-pill font-mono" style="border-color: rgba(16, 185, 129, 0.3); color: #10B981;">
+            <span>🎤</span> Diga "Ei Aria"
+          </div>
+          <div class="state-indicator font-mono">
+            <span class="status-dot" style="background-color: #10B981;"></span>
+            <span class="state-desc" style="color: #F8F9FF;">Otimizando cadências e Next Best Action...</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- 4. VANGUARD -->
+      <article class="char-showcase-card" style="border-color: rgba(255, 45, 155, 0.3);">
+        <div class="char-halo-layer" style="background: #FF2D9B;"></div>
+        <div>
+          <div class="char-kicker font-mono" style="color: #FF2D9B;">PILAR 04 — PERFORMANCE COMERCIAL</div>
+          <h2 class="char-name" style="color: #FF2D9B;">Vanguard</h2>
+          <p class="char-role">Estrategista de Metas & Cockpit</p>
+        </div>
+        <div class="avatar-stage">
+          <div class="avatar-wrapper">
+            <div class="bh-character-avatar" data-state="idle" style="width: 100%; height: 100%;">
+              <img src="../../public/brand/characters/vanguard.svg" alt="Avatar do agente Vanguard" width="128" height="128">
+            </div>
+          </div>
+          <div class="command-pill font-mono" style="border-color: rgba(255, 45, 155, 0.3); color: #FF2D9B;">
+            <span>🎤</span> Diga "Ei Vanguard"
+          </div>
+          <div class="state-indicator font-mono">
+            <span class="status-dot" style="background-color: #FF2D9B;"></span>
+            <span class="state-desc" style="color: #F8F9FF;">Calculando velocidade e gargalos de conversão...</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- 5. ORACLE -->
+      <article class="char-showcase-card" style="border-color: rgba(168, 85, 247, 0.3);">
+        <div class="char-halo-layer" style="background: #A855F7;"></div>
+        <div>
+          <div class="char-kicker font-mono" style="color: #A855F7;">PILAR 05 — PREVISIBILIDADE COMERCIAL</div>
+          <h2 class="char-name" style="color: #C084FC;">Oracle</h2>
+          <p class="char-role">Visionário de Forecast Preditivo</p>
+        </div>
+        <div class="avatar-stage">
+          <div class="avatar-wrapper">
+            <div class="bh-character-avatar" data-state="idle" style="width: 100%; height: 100%;">
+              <img src="../../public/brand/characters/oracle.svg" alt="Avatar do agente Oracle" width="128" height="128">
+            </div>
+          </div>
+          <div class="command-pill font-mono" style="border-color: rgba(168, 85, 247, 0.3); color: #C084FC;">
+            <span>🎤</span> Diga "Ei Oracle"
+          </div>
+          <div class="state-indicator font-mono">
+            <span class="status-dot" style="background-color: #A855F7;"></span>
+            <span class="state-desc" style="color: #F8F9FF;">Calibrando Commit vs. Forecast AI...</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- 6. CORE -->
+      <article class="char-showcase-card" style="border-color: rgba(99, 102, 241, 0.3);">
+        <div class="char-halo-layer" style="background: #6366F1;"></div>
+        <div>
+          <div class="char-kicker font-mono" style="color: #818CF8;">PILAR 06 — INTELIGÊNCIA ARTIFICIAL</div>
+          <h2 class="char-name" style="color: #818CF8;">Core</h2>
+          <p class="char-role">Mente Principal & Orquestrador</p>
+        </div>
+        <div class="avatar-stage">
+          <div class="avatar-wrapper">
+            <div class="bh-character-avatar" data-state="idle" style="width: 100%; height: 100%;">
+              <img src="../../public/brand/characters/core.svg" alt="Avatar do agente Core" width="128" height="128">
+            </div>
+          </div>
+          <div class="command-pill font-mono" style="border-color: rgba(99, 102, 241, 0.3); color: #818CF8;">
+            <span>🎤</span> Diga "Ei Core"
+          </div>
+          <div class="state-indicator font-mono">
+            <span class="status-dot" style="background-color: #6366F1;"></span>
+            <span class="state-desc" style="color: #F8F9FF;">Sintetizando raciocínio e supervisionando copilotos...</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- 7. SPARK -->
+      <article class="char-showcase-card" style="border-color: rgba(20, 184, 166, 0.3);">
+        <div class="char-halo-layer" style="background: #14B8A6;"></div>
+        <div>
+          <div class="char-kicker font-mono" style="color: #2DD4BF;">PILAR 07 — AUTOMAÇÃO & CONECTIVIDADE</div>
+          <h2 class="char-name" style="color: #2DD4BF;">Spark</h2>
+          <p class="char-role">Engenheiro de Integrações & APIs</p>
+        </div>
+        <div class="avatar-stage">
+          <div class="avatar-wrapper">
+            <div class="bh-character-avatar" data-state="idle" style="width: 100%; height: 100%;">
+              <img src="../../public/brand/characters/spark.svg" alt="Avatar do agente Spark" width="128" height="128">
+            </div>
+          </div>
+          <div class="command-pill font-mono" style="border-color: rgba(20, 184, 166, 0.3); color: #2DD4BF;">
+            <span>🎤</span> Diga "Ei Spark"
+          </div>
+          <div class="state-indicator font-mono">
+            <span class="status-dot" style="background-color: #14B8A6;"></span>
+            <span class="state-desc" style="color: #F8F9FF;">Monitorando conectores, webhooks e filas...</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- 8. ECHO -->
+      <article class="char-showcase-card" style="border-color: rgba(251, 113, 133, 0.3);">
+        <div class="char-halo-layer" style="background: #FB7185;"></div>
+        <div>
+          <div class="char-kicker font-mono" style="color: #FDA4AF;">PILAR 08 — ENGAJAMENTO COMERCIAL</div>
+          <h2 class="char-name" style="color: #FDA4AF;">Echo</h2>
+          <p class="char-role">Especialista em Voz & Telefonia</p>
+        </div>
+        <div class="avatar-stage">
+          <div class="avatar-wrapper">
+            <div class="bh-character-avatar" data-state="idle" style="width: 100%; height: 100%;">
+              <img src="../../public/brand/characters/echo.svg" alt="Avatar da agente Echo" width="128" height="128">
+            </div>
+          </div>
+          <div class="command-pill font-mono" style="border-color: rgba(251, 113, 133, 0.3); color: #FDA4AF;">
+            <span>🎤</span> Diga "Ei Echo"
+          </div>
+          <div class="state-indicator font-mono">
+            <span class="status-dot" style="background-color: #FB7185;"></span>
+            <span class="state-desc" style="color: #F8F9FF;">Acompanhando discador e modulação acústica...</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- 9. SUDO -->
+      <article class="char-showcase-card" style="border-color: rgba(148, 163, 184, 0.3);">
+        <div class="char-halo-layer" style="background: #00D4FF;"></div>
+        <div>
+          <div class="char-kicker font-mono" style="color: #94A3B8;">ADMINISTRAÇÃO & GOVERNANÇA</div>
+          <h2 class="char-name" style="color: #E2E8F0;">Sudo</h2>
+          <p class="char-role">Controlador de Sistema & Alçadas</p>
+        </div>
+        <div class="avatar-stage">
+          <div class="avatar-wrapper">
+            <div class="bh-character-avatar" data-state="idle" style="width: 100%; height: 100%;">
+              <img src="../../public/brand/characters/sudo.svg" alt="Avatar do agente Sudo" width="128" height="128">
+            </div>
+          </div>
+          <div class="command-pill font-mono" style="border-color: rgba(148, 163, 184, 0.3); color: #CBD5E1;">
+            <span>🎤</span> Diga "Ei Sudo"
+          </div>
+          <div class="state-indicator font-mono">
+            <span class="status-dot" style="background-color: #94A3B8;"></span>
+            <span class="state-desc" style="color: #F8F9FF;">Validando permissões, billing e alçadas...</span>
+          </div>
+        </div>
+      </article>
+
+    </main>
+
+  </div>
+
+  <script>
+    // Alternância de Tema Light / Dark
+    function setTheme(theme) {
+      if (theme === 'light') {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+        document.getElementById('btn-theme-light').classList.add('active');
+        document.getElementById('btn-theme-dark').classList.remove('active');
+      } else {
+        document.documentElement.classList.remove('light');
+        document.documentElement.classList.add('dark');
+        document.getElementById('btn-theme-dark').classList.add('active');
+        document.getElementById('btn-theme-light').classList.remove('active');
+      }
+    }
+
+    // Comutador de Estado e Expressão
+    const stateDescriptions = {
+      idle: 'Aguardando interação com pulso sereno...',
+      listening: 'Escutando com atenção máxima ao canal de entrada...',
+      processing: 'Executando raciocínio em alta frequência e cruzando dados...',
+      speaking: 'Sintetizando resposta estruturada para a operação...',
+      success: 'Ação comercial concluída com sucesso absoluto!',
+      error: 'Restrição identificada ou alçada necessária para avançar.'
+    };
+
+    const stateColors = {
+      idle: '#00D4FF',
+      listening: '#38BDF8',
+      processing: '#FF2D9B',
+      speaking: '#FFC107',
+      success: '#10B981',
+      error: '#EF4444'
+    };
+
+    function setAllStates(state) {
+      // Atualizar botões
+      document.querySelectorAll('.state-btn').forEach(btn => {
+        if (btn.getAttribute('data-state') === state) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      // Atualizar avatares
+      document.querySelectorAll('.bh-character-avatar').forEach(avatar => {
+        avatar.setAttribute('data-state', state);
+      });
+
+      // Atualizar indicadores
+      document.querySelectorAll('.state-indicator').forEach(indicator => {
+        const dot = indicator.querySelector('.status-dot');
+        const desc = indicator.querySelector('.state-desc');
+        if (dot) dot.style.backgroundColor = stateColors[state] || '#00D4FF';
+        if (desc) desc.textContent = stateDescriptions[state] || 'Em operação...';
+      });
+    }
+
+    // Simulação de Redução de Movimento
+    let reducedMotionActive = false;
+    function toggleReducedMotion() {
+      reducedMotionActive = !reducedMotionActive;
+      const btn = document.getElementById('btn-reduced-motion');
+      if (reducedMotionActive) {
+        btn.textContent = 'Redução de Movimento: ON';
+        btn.classList.add('active');
+        document.querySelectorAll('.bh-character-avatar').forEach(av => {
+          av.style.animation = 'none';
+          av.style.transform = 'none';
+        });
+      } else {
+        btn.textContent = 'Redução de Movimento: OFF';
+        btn.classList.remove('active');
+        document.querySelectorAll('.bh-character-avatar').forEach(av => {
+          av.style.animation = '';
+          av.style.transform = '';
+        });
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+De: Agente 00 — Coordenador
+Para: Agente 01 (Plataforma, Segurança e Dados)
+Onda: Onda 1 (Plano Mestre de Saneamento — TAREFA-SANEAMENTO-012)
+Status: resolvido
+
+Status (histórico): em-andamento
+Prioridade: normal
+Bloqueador-ref: RELEASE_BLOCKED — plano mestre de saneamento reconciliado (2026-11-10)
+Sprint destino: Onda 1
+
+## Problema
+
+**Resumo de consumo de inteligência artificial carrega todas as linhas de logs em memória para agregação**
+
+- **Dívida técnica:** BT360-DT-0008
+- **Esforço estimado:** Médio
+- **Status atual da dívida:** NÃO INICIADO
+
+**Causa raiz:** Implementação inicial orientada a protótipo sem uso de funções nativas de agregação do banco.
+
+**Impacto:** Degradação de performance do dashboard, latência superior a 3 segundos e consumo excessivo de memória no processo da API.
+
+## Arquivo(s) envolvido(s)
+
+`src/features/analytics/infra/PrismaAnalyticsRepository.ts`
+
+## Evidência
+
+- Backlog canônico: `docs/auditorias/plano-mestre-consolidado/BIRTHUB360_BACKLOG_EXECUCAO.md` — seção `TAREFA-SANEAMENTO-012`.
+- Relatório de reconciliação: `docs/auditorias/plano-mestre-consolidado/BIRTHUB360_RELATORIO_RECONCILIACAO_FINAL.md`.
+- Revisão vigente: `.agents/reviews/24-revisao-plano-mestre-saneamento-reconciliado-20261110.md` (RELEASE_BLOCKED até saneamento das Ondas 0–5).
+
+## Alteração necessária
+
+Executar a tarefa `TAREFA-SANEAMENTO-012` estritamente dentro da propriedade de arquivos do `AGENTS.md` §15:
+
+1. Alteração cirúrgica — somente os arquivos do escopo; nenhuma refatoração adjacente.
+2. Tratamento explícito de erro, sem fallbacks enganosos (AGENTS.md §30 e §32).
+3. Adicionar ou atualizar testes automatizados cobrindo caminho de sucesso e de falha.
+4. Respeitar slots exclusivos e dependências de schema/contrato (abrir handoff ao proprietário quando o arquivo pertencer a outro agente).
+
+## Teste esperado
+
+- `npx tsc --noEmit`
+- `npm run lint`
+- Testes específicos da área afetada (sucesso e falha).
+
+## Contexto adicional
+
+- **Agente revisor obrigatório:** Agente 24 — parecer formal em `.agents/reviews/`.
+- **Condição para encerramento:** parecer `APROVADO` do Agente 24 com validação de hashes dos arquivos alterados e verificação de não-regressão.
+- O destinatário pode atualizar o `Status` deste handoff e adicionar seção de resolução sem apagar o pedido original.
+
+## Resolução (Agente 01 — 2026-11-12)
+
+- **Arquivo indicado não contém a dívida:** `PrismaAnalyticsRepository.ts` não tem método de consumo de IA (dono: Agente 04). Nenhuma alteração feita nele.
+- **Ofensor real identificado** em arquivos do Agente 07: `agentCostAnalysis.service.ts` (`aILog.findMany` sem `take` + select de campos inexistentes → provável 500) e `agentUsageHeatmap.service.ts` (`agentMemory.findMany` sem limite + custo/latência fabricados).
+- **Redirecionado:** handoff `01-para-07-resumo-consumo-ia-findmany-sem-agregacao.md` aberto nesta mesma onda com evidências e correção sugerida.
+- **Run report:** `.agents/runs/agente-01-tarefa-saneamento-012.md`. Aguardando 00 confirmar reatribuição e parecer do 24.
+
+> Reconciliação 2026-11-14 (Agente 00): veredicto DEFEITO-REAL — resolução é redirecionamento; ofensor persiste. Correção pendente de despacho. Ver RESULTADOS-RECONCILIACAO-20261114.md.
+
+**Atualização 2026-11 (Agente 07):** o ofensor real redirecionado ao 07 foi corrigido na branch `agente/07-reconciliacao-heatmap` — `agentUsageHeatmap.service.ts` agora usa `agentMemory.groupBy` (sem findMany sem limite), custo fabricado removido (`costUsd`/`avgLatencyMs` retornam `null`, pois não há fonte real por `agentType`; custo real segue em `/api/agent/cost-analysis`). Evidências no handoff `01-para-07-resumo-consumo-ia-findmany-sem-agregacao.md` (seção Resolução). Aguardando integração e parecer do Agente 24.
+
+**Verificação 2026-11-17 (Agente 01, branch `agente/01-handoffs-20261117`):** a correção do
+ofensor JÁ ESTÁ INTEGRADA nesta base — `agentUsageHeatmap.service.ts` usa
+`agentMemory.groupBy` (L51) e `agentCostAnalysis.service.ts` usa `aILog.groupBy` (L43),
+ambos com comentário documentando a remoção do `findMany` sem limite. Nenhuma ação
+restante para o 01 neste handoff; fechamento formal aguarda parecer do Agente 24.

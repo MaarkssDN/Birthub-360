@@ -1,0 +1,126 @@
+import { useCallback, useEffect, useState } from 'react';
+import { api } from '../lib/api.js';
+import { clientLogger } from '../lib/clientLogger.js';
+import { toast } from '../lib/toast.js';
+import type { Lead } from '../types/index.js';
+
+export function useCrmBoardController(funnel: 'Lead' | 'Negocio') {
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchLeads = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const url = `/api/leads?limit=1000&funnel=${funnel}`;
+      const response = await api.get<{
+        data: Lead[];
+        meta?: { total: number; page: number; limit: number; totalPages: number };
+      }>(url);
+
+      if (Array.isArray(response)) {
+        setLeads(response);
+      } else if (response?.data) {
+        setLeads(response.data);
+      }
+    } catch (err: any) {
+      clientLogger.error({ err }, 'Error fetching leads');
+      setError(
+        err instanceof Error ? err.message : 'Não foi possível carregar o pipeline comercial.',
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [funnel]);
+
+  useEffect(() => {
+    fetchLeads();
+  }, [fetchLeads]);
+
+  const handleConvert = useCallback(
+    async (leadId: string) => {
+      try {
+        await api.post(`/api/crm/leads/${leadId}/convert`);
+        toast.success('Lead convertido em negócio e enviado ao pipeline comercial.');
+        await fetchLeads();
+      } catch (error: any) {
+        clientLogger.error({ err: error }, 'Error converting lead to deal');
+        toast.error(error instanceof Error ? error.message : 'Falha ao converter o lead.');
+      }
+    },
+    [fetchLeads],
+  );
+
+  const handleImportBitrix = async () => {
+    setLoading(true);
+    try {
+      const response = await api.post<{ data: { imported: number; skipped: number } }>(
+        '/api/leads/import/bitrix24',
+      );
+      const data = response.data;
+      if (data.imported > 0) {
+        toast.success(`${data.imported} novos leads importados do Bitrix24! `);
+        await fetchLeads();
+      } else if (data.skipped > 0) {
+        toast.info(`${data.skipped} leads recentes já estavam no sistema.`);
+      } else {
+        toast.info('Nenhum lead novo encontrado no Bitrix24.');
+      }
+    } catch (err: any) {
+      clientLogger.error({ err }, 'Error importing from Bitrix24');
+      toast.error(err instanceof Error ? err.message : 'Falha ao importar do Bitrix24.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCardEnrich = useCallback(
+    async (leadId: string) => {
+      try {
+        await api.post(`/api/leads/${leadId}/enrich`, undefined, { timeoutMs: 60_000 });
+        await fetchLeads();
+        toast.success('Lead enriquecido com sucesso.');
+      } catch (error: any) {
+        clientLogger.error({ err: error }, 'Error enriching lead');
+        toast.error(error instanceof Error ? error.message : 'Falha ao enriquecer o lead.');
+      }
+    },
+    [fetchLeads],
+  );
+
+  const handleBatchEnrich = async () => {
+    setLoading(true);
+    try {
+      const response = await api.post<{ data: { enqueued: number } }>('/api/leads/enrich-batch');
+      const data = response.data;
+      if (data.enqueued > 0) {
+        toast.success(
+          `${data.enqueued} leads enviados para a fila de enriquecimento! O processo pode levar alguns minutos.`,
+        );
+        await fetchLeads(); // para ver o status mudar de pendente
+      } else {
+        toast.info('Nenhum lead pendente de enriquecimento encontrado.');
+      }
+    } catch (err: any) {
+      clientLogger.error({ err }, 'Error in batch enrichment');
+      toast.error(
+        err instanceof Error ? err.message : 'Falha ao processar o enriquecimento em lote.',
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return {
+    leads,
+    setLeads,
+    loading,
+    error,
+    fetchLeads,
+    handleConvert,
+    handleImportBitrix,
+    handleCardEnrich,
+    handleBatchEnrich,
+  };
+}

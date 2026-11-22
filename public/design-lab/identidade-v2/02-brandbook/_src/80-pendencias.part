@@ -1,0 +1,56 @@
+<section class="ch ac-gold" id="pendencias" data-secao="Pendências" aria-labelledby="h-pendencias">
+  <div class="ch-head">
+    <h2 id="h-pendencias">Pendências</h2>
+    <div><p class="lede">O que veio da missão, o que é provisório e onde as fontes se contradizem. Itens abaixo não são regras: são decisões a tomar.</p></div>
+  </div>
+  <div class="sub" id="decisoes">
+    <h3>Matriz de decisões</h3>
+    <div class="tbl cdec"><table>
+      <thead><tr><th scope="col">ID</th><th scope="col">Decisão</th><th scope="col">Status</th></tr></thead>
+      <tbody>
+        <tr><td class="mono id">C01</td><td>Posicionamento, Sistema Operacional de Inteligência Comercial</td><td>CONFIRMADA · BB-ID-01</td></tr>
+        <tr><td class="mono id">C02</td><td>Paleta Neon, Íris, Dark e Light</td><td>CONFIRMADA · BB-COR-01</td></tr>
+        <tr><td class="mono id">C03</td><td>Sora, Inter e IBM Plex Mono</td><td>CONFIRMADA · BB-TIPO-01</td></tr>
+        <tr><td class="mono id">C04</td><td>Sem título em #FFF ou #000</td><td>CONFIRMADA · BB-TIPO-10</td></tr>
+        <tr><td class="mono id">C05</td><td>Neon Editorial Cinematic como referência</td><td>CONFIRMADA · BB-LING-01</td></tr>
+        <tr><td class="mono id">C06</td><td>Sem foto humana; logo e personagens intactos</td><td>CONFIRMADA · BB-LOGO-01, BB-PERS-05, BB-LING-14</td></tr>
+        <tr><td class="mono id">C07</td><td>Hub Central, Workspaces e Assistentes; 11 módulos</td><td>CONFIRMADA · BB-ID-07</td></tr>
+        <tr><td class="mono id">C08</td><td>Dois níveis de movimento e reduced-motion</td><td>CONFIRMADA · BB-LING-16, BB-LING-17</td></tr>
+        <tr><td class="mono id">C09</td><td>29 personagens, 26 agentes e 11 módulos distintos</td><td>CONFIRMADA · BB-PERS-01 (o significado de 26 pende)</td></tr>
+        <tr><td class="mono id" style="color:var(--c-gold)">P-01</td><td>Grafia "Birthub 360°"</td><td>PROVISÓRIA · pendente de decisão humana</td></tr>
+        <tr><td class="mono id" style="color:var(--c-gold)">P-02</td><td>Variantes de texto em Light</td><td>PROVISÓRIA · BB-COR-07</td></tr>
+        <tr><td class="mono id" style="color:var(--c-gold)">P-03</td><td>Tinta #E8EEFF e #0F1A2E</td><td>PROVISÓRIA · BB-COR-27</td></tr>
+        <tr><td class="mono id" style="color:var(--c-gold)">P-04</td><td>Superfícies</td><td>PROVISÓRIA · BB-COR-14</td></tr>
+        <tr><td class="mono id" style="color:var(--c-gold)">P-05</td><td>Light #F4F7FB contra #F8F9FF</td><td>PROVISÓRIA · BB-COR-04</td></tr>
+      </tbody></table></div>
+  </div>
+  <div class="sub" id="divergencias">
+    <h3>Divergências encontradas por esta frente</h3>
+    <div class="tbl pend"><table>
+      <thead><tr><th scope="col">ID</th><th scope="col">Achado</th><th scope="col">Próximo passo</th></tr></thead>
+      <tbody>
+        <tr><td class="id">D-01</td><td>FONTE-DE-VERDADE.md diz que Íris #8B7DFF e Light #F4F7FB não existem nas fontes oficiais. Existem: <code>--palette-iris #8B7DFF</code> e <code>--palette-bg #F4F7FB</code> em <code>birthhub360.css</code>, e o Manual Visual lista Íris. Já <code>brand.ts</code> define <code>iris</code> como #FF2D9B.</td><td>Agente 00 corrige a nota; Agente 11 alinha <code>brand.ts</code>.</td></tr>
+        <tr><td class="id">D-02</td><td>H4 a H6: Sora (Manual Visual) contra Inter (<code>.claude/CLAUDE.md</code>).</td><td>Decisão humana. V2.0 usa Sora (BB-TIPO-05).</td></tr>
+        <tr><td class="id">D-03</td><td>Manual Visual manda gradiente em título com texto recortado. Contraria C04 e a constituição do repositório.</td><td>V2.0 proíbe (BB-TIPO-11). Atualizar o manual legado.</td></tr>
+        <tr><td class="id">D-04</td><td>Gradiente de CTA rosa para azul no manual legado.</td><td>V2.0 usa cor sólida (BB-COR-22).</td></tr>
+        <tr><td class="id">D-05</td><td>"26 agentes técnicos" coincide com o roster de engenharia (AGENTS.md §3), não com o enxame de IA (24 mais Supervisor, ou 15).</td><td>Confirmar o significado com o dono da missão.</td></tr>
+        <tr><td class="id">D-06</td><td>Manual do Produto traz "0ms de latência", "100% WCAG" e "40+ módulos" sem fonte; o produto tem 11 módulos.</td><td>Não reutilizar (BB-ID-13).</td></tr>
+        <tr><td class="id">D-07</td><td>Wordmark horizontal perde contraste sobre Light (abaixo de 3:1 em quase todo o traço).</td><td>Placa escura (BB-LOGO-13); arte nova só com decisão humana.</td></tr>
+        <tr><td class="id">D-08</td><td>O "B" e o wordmark do logotipo são serifados, fora da trinca tipográfica. Arte preservada por C06.</td><td>Nenhuma ação; registrar.</td></tr>
+        <tr><td class="id">D-09</td><td>Cores funcionais originais (#22C55E, #EF4444, #3B82F6) não passam 4,5:1 sobre Light.</td><td>Variantes derivadas (BB-COR-24) aguardam homologação.</td></tr>
+        <tr><td class="id">D-10</td><td>Nomes de P07, M09 e M11 vêm do Documento Mestre V4.10 e do Guia dos Personagens; sem confirmação.</td><td>01-auditoria confirma.</td></tr>
+        <tr><td class="id">D-11</td><td>Três paletas coexistem no repositório (Neon, Strategic Command Center e a da missão). Este brandbook segue a da missão.</td><td>Agente 00 e Design System decidem a migração.</td></tr>
+        <tr><td class="id">D-12</td><td>Design System ainda declara semânticas #34D399, #FF9A3D e #FF5C6C e escala operacional própria. O brandbook agora declara duas escalas (BB-TIPO-06 e BB-TIPO-15) e semânticas #22C55E, #EF4444, #FFC107, #3B82F6.</td><td>Agente 00 e DS alinham as semânticas; escala Operacional segue provisória.</td></tr>
+      </tbody></table></div>
+  </div>
+</section>
+
+</div>
+<footer class="ft wrap">
+  <p><b><span data-brand>Birthub 360°</span> · Brandbook V2.0 · RASCUNHO, NÃO HOMOLOGADO.</b> Gerado pela frente 02. Fontes de verdade: <code>FONTE-DE-VERDADE.md</code> e <code>shared/core.css</code>. Regras com ID estável em <code>regras.json</code>. Nenhum arquivo existente do repositório foi alterado.</p>
+</footer>
+</main>
+</div>
+<script src="brandbook.js"></script>
+</body>
+</html>

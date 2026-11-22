@@ -1,0 +1,191 @@
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, type ReactNode, useContext } from 'react';
+import {
+  canAccessCommercialIntelligence,
+  canAccessCopilotoIa,
+  hasRequiredRole,
+  isKnownRole,
+  type Role,
+} from '../lib/auth/authorization.js';
+import { authClient } from '../lib/auth-client.js';
+
+export interface UserSession {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  roleTitle: string;
+  permissions: string[];
+  avatarBg: string;
+  mustChangePassword: boolean;
+  /** Avatar do usuário (User.image no schema) — já gravado no backend, opcional. Consumidores
+   *  devem sempre ter um fallback (iniciais) para quando for null/undefined. */
+  image?: string | null;
+}
+
+interface AuthContextType {
+  currentUser: UserSession | null;
+  isAdmin: boolean;
+  logout: () => void;
+  canAccessAdminPanel: () => boolean;
+  /** Comercial Inteligente (Revenue Command Center executivo) — ADMIN/GESTOR, ver src/lib/auth/authorization.ts. */
+  canAccessCommercialIntelligence: boolean;
+  /** Copiloto Comercial IA — ADMIN/GESTOR/CLOSER/SDR, ver COPILOTO_IA_ROLES em src/lib/auth/authorization.ts. */
+  canAccessCopilotoIa: boolean;
+  isPending: boolean;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Papéis reais gravados em User.role (ver src/lib/auth/authorization.ts, fonte canônica de RBAC).
+// Este arquivo já usou um segundo taxonomia de papéis (SUPER_ADMIN/TENANT_OWNER/MANAGER/SDR/...)
+// que nunca era gravada no banco — qualquer usuário GESTOR/CLOSER/SDR/VISUALIZADOR real (a imensa
+// maioria) caía no fallback `[] ` de permissões porque essas chaves não existiam na tabela antiga,
+// e `isAdmin`/`canAccessAdminPanel` só reconheciam papéis (SUPER_ADMIN/TENANT_OWNER) que nenhum
+// usuário jamais tem. Substituído pela hierarquia real, alinhada ao que o backend efetivamente
+// autoriza via `requireRole` (ver src/shared/middlewares/requireRole.ts).
+const ROLE_TITLES: Record<Role, string> = {
+  ADMIN: 'Administrador',
+  GESTOR: 'Gestor',
+  CLOSER: 'Closer',
+  SDR: 'SDR',
+  VISUALIZADOR: 'Visualizador',
+};
+
+// Espelha os gates reais de `requireRole(['ADMIN', 'GESTOR'])` já usados nas rotas de
+// companies/contacts/leads (exclusão) e `requireRole(['ADMIN'])` em team — não é um catálogo à
+// parte: se o backend mudar quem pode o quê, este mapa precisa mudar junto (ver AGENTS.md sobre
+// não reintroduzir um terceiro sistema de RBAC).
+const ROLE_PERMISSIONS: Record<Role, string[]> = {
+  ADMIN: [
+    'crm.read',
+    'crm.write',
+    'crm.delete',
+    'settings.manage',
+    'users.manage',
+    'billing.manage',
+  ],
+  GESTOR: ['crm.read', 'crm.write', 'crm.delete'],
+  CLOSER: ['crm.read', 'crm.write'],
+  SDR: ['crm.read', 'crm.write'],
+  VISUALIZADOR: ['crm.read'],
+};
+
+function permissionsForRole(role: string): string[] {
+  return isKnownRole(role) ? ROLE_PERMISSIONS[role] : [];
+}
+
+function titleForRole(role: string): string {
+  return isKnownRole(role) ? ROLE_TITLES[role] : role;
+}
+
+// A sessão do better-auth carrega os campos adicionais configurados em src/lib/auth.ts
+// (role/organizationId), mas o client não os tipa automaticamente — refletimos aqui o
+// mesmo formato usado pelo middleware de autenticação do servidor (authenticateToken.ts).
+interface SessionUser {
+  id: string;
+  name?: string | null;
+  email: string;
+  role?: string;
+  mustChangePassword?: boolean;
+  image?: string | null;
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const { data, isPending } = authClient.useSession();
+  const sessionUser = data?.user as SessionUser | undefined;
+
+  const currentUser: UserSession | null = sessionUser
+    ? (() => {
+        // Fallback fail-closed: papel ausente/desconhecido nunca vira 'ADMIN' nem qualquer papel
+        // com permissões — vira string vazia, que `isKnownRole`/`hasRequiredRole` sempre negam.
+        const role = sessionUser.role || '';
+        const permissions = permissionsForRole(role);
+        return {
+          id: sessionUser.id,
+          name: sessionUser.name || sessionUser.email.split('@')[0],
+          email: sessionUser.email,
+          role,
+          roleTitle: titleForRole(role),
+          permissions,
+          avatarBg: 'bg-gradient-to-r from-blue-500 to-indigo-500',
+          mustChangePassword: !!sessionUser.mustChangePassword,
+          image: sessionUser.image ?? null,
+        };
+      })()
+    : null;
+
+  const logout = async () => {
+    try {
+      await authClient.signOut();
+    } catch (err: any) {
+      console.error('Erro ao encerrar sessão:', err);
+    } finally {
+      try {
+        if (typeof window !== 'undefined' && 'caches' in window && window.caches) {
+          const keys = await window.caches.keys();
+          await Promise.all(keys.map((key) => window.caches.delete(key)));
+        }
+      } catch {
+        // Ignora erro de CacheStorage indisponível (contexto inseguro / navegador restrito)
+      }
+      // EXP-03: expurgo da fila offline criptografada (PII/LGPD e isolamento entre
+      // usuários no mesmo dispositivo). `clearQueue()` remove as chaves
+      // `birthhub_offline_sync_queue_v1` e `birthhub_offline_id_mappings_v1` do
+      // storage criptografado (AES-GCM via EncryptedStorageAdapter).
+      // Import dinâmico: mantém o subsistema mobile fora do bundle inicial de auth.
+      // Ressalva Agente 24: `clearQueue()` aguarda `service.ready`, que depende de
+      // IndexedDB/crypto — se travar, o logout ficaria pendurado SEM redirect.
+      // Timeout de 3s garante que o redirect para /login nunca seja bloqueado
+      // pelo expurgo (o resíduo, se houver, é purgado no próximo logout).
+      try {
+        const { offlineSyncService } = await import('../features/mobile/offlineSync.service.js');
+        const purge = offlineSyncService.clearQueue().then(() => 'done' as const);
+        const timeout = new Promise<'timeout'>((resolve) =>
+          setTimeout(() => resolve('timeout'), 3000),
+        );
+        const outcome = await Promise.race([purge, timeout]);
+        if (outcome === 'timeout') {
+          console.warn(
+            '[Auth] Expurgo da fila offline excedeu 3s no logout; seguindo para /login.',
+          );
+        }
+      } catch (err) {
+        console.error('Erro ao expurgar fila offline no logout:', err);
+      }
+      window.location.href = '/login';
+    }
+  };
+
+  const isAdmin = currentUser ? hasRequiredRole(currentUser.role, ['ADMIN']) : false;
+  const canAccessCommercialIntelligenceValue = currentUser
+    ? canAccessCommercialIntelligence(currentUser.role)
+    : false;
+  const canAccessCopilotoIaValue = currentUser ? canAccessCopilotoIa(currentUser.role) : false;
+
+  const canAccessAdminPanel = () => isAdmin;
+
+  return (
+    <AuthContext.Provider
+      value={{
+        currentUser,
+        isAdmin,
+        logout,
+        canAccessAdminPanel,
+        canAccessCommercialIntelligence: canAccessCommercialIntelligenceValue,
+        canAccessCopilotoIa: canAccessCopilotoIaValue,
+        isPending,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth deve ser usado dentro de um AuthProvider');
+  }
+  return context;
+}

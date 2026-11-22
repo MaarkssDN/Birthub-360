@@ -1,0 +1,169 @@
+# Default values for birthhub-360.
+replicaCount: 2
+
+# repository aponta para o registro real onde cd-homolog.yml/docker-publish.yml/production.yaml
+# publicam a imagem (ghcr.io/${{ github.repository }}, resolvido em minúsculas pelo GHCR) — antes
+# apontava só para "birthhub-360", um nome de imagem sem registro/owner que não corresponde a
+# nada publicado. Atualizado em 2026-09-11 (achado da Onda C0 do BIRTHUB-BRAIN-REORG,
+# docs/architecture/LEGACY_BRAND_CONTENT_MAP.md §2.1): o valor anterior
+# ("ghcr.io/maarksn/central-de-inteligencia-comecial-birthhub360") já não corresponde a
+# `github.repository` — o dono da conta é "maarkss1" (não "maarksn") e o repositório foi
+# renomeado para "Birthub-360". Confirmado via API do GitHub que o nome antigo apenas
+# redireciona para o repositório atual (mesmo `id`); não é garantia permanente.
+# `.github/workflows/docker-publish.yml` tinha o mesmo nome de imagem obsoleto (owner correto,
+# porém repositório antigo) num IMAGE_NAME separado — alinhado ao mesmo valor nesta mesma onda de
+# correção, ver .agents/handoffs/onda-c0/11-para-10-argocd-ghcr-nome-antigo.md.
+image:
+  repository: ghcr.io/maarkss1/birthub-360
+  pullPolicy: IfNotPresent
+  tag: 'latest'
+
+imagePullSecrets: []
+nameOverride: ''
+fullnameOverride: ''
+
+blueGreen:
+  enabled: true
+  autoPromotionSeconds: 30 # Time to wait before automatically promoting the green version
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ''
+
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 1001
+
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 1001
+  allowPrivilegeEscalation: false
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: 'nginx'
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: 'true'
+    # Rate limiting de borda (TAREFA-SANEAMENTO-029 / BT360-DT-0057) — mesma
+    # política do manifesto legado infrastructure/archive/k8s/ingress.yaml: flood bruto por IP é contido no ingress,
+    # antes de chegar na aplicação (que mantém seus próprios limitadores
+    # express-rate-limit por rota/tenant em src/bootstrap/rateLimiters.ts).
+    nginx.ingress.kubernetes.io/limit-rps: '30'
+    nginx.ingress.kubernetes.io/limit-connections: '20'
+  hosts:
+    - host: birthhub-360.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls:
+    - secretName: birthhub-360-tls
+      hosts:
+        - birthhub-360.local
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+# Job Helm (pre-install/pre-upgrade hook, ver templates/migration-job.yaml) que roda
+# `npx prisma migrate deploy` antes de qualquer Deployment/Rollout novo ser aplicado. Se o Job
+# falhar, o release inteiro (helm upgrade / sync do ArgoCD) é abortado — nenhuma versão nova do
+# app inicia contra um schema desatualizado ou uma migração quebrada (mesma garantia que
+# render.yaml já tem no deploy real via Render). A imagem publicada hoje pelo Dockerfile da raiz
+# reinstala a CLI `prisma` no estágio final após o prune de devDependencies — ver o comentário no
+# topo do template e o handoff (resolvido) em
+# .agents/handoffs/onda-4/10-para-08-prisma-cli-imagem-producao.md.
+migrations:
+  enabled: true
+  backoffLimit: 0
+  activeDeadlineSeconds: 300
+  # Por padrão usa a mesma imagem do app (image.repository/image.tag acima). Só preencha aqui se
+  # quiser rodar a migração a partir de uma imagem "migrator" separada que preserve a CLI prisma.
+  image:
+    repository: ''
+    tag: ''
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+# PodDisruptionBudget do Deployment/Rollout principal e do worker — evita que um drain de nó
+# (manutenção, cluster autoscaler removendo nó ocioso) derrube todas as réplicas de uma vez.
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+  workerMinAvailable: 1
+
+worker:
+  enabled: true
+  replicaCount: 2
+  # Desligado por padrão: sem uma métrica real de profundidade de fila exposta ao Prometheus
+  # hoje (ver infrastructure/observability/alert.rules.yml), autoscaling do worker só por
+  # CPU/memória é uma aproximação grosseira — fila BullMQ pode crescer com CPU ociosa (worker
+  # esperando I/O de rede em chamadas de IA/Bitrix). Ligue explicitamente
+  # (worker.autoscaling.enabled=true) se aceitar essa aproximação, ou depois que o Agente 07
+  # expuser métrica de profundidade de fila (ver handoff correspondente).
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 6
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1024Mi
+    requests:
+      cpu: 200m
+      memory: 512Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+env:
+  NODE_ENV: 'production'
+  PORT: '3000'
+  # O processo web apenas publica jobs. Processadores existem exclusivamente no Deployment
+  # dedicado abaixo; manter isto explícito evita que um upgrade/restart passe a executar cada
+  # fila também nas réplicas HTTP.
+  ENABLE_QUEUES: 'true'
+  ENABLE_EMBEDDED_WORKERS: 'false'
+  WORKER_HEALTH_PORT: '3006'
+  LITELLM_URL: 'http://birthhub-360-litellm:4000'
+  TEMPORAL_ADDRESS: 'temporal:7233'
+  TEMPORAL_NAMESPACE: 'default'
+
+secrets:
+  # JWT_SECRET: "secret"
+  # DATABASE_URL: "postgresql://user:password@db-host:5432/db"
+  # LITELLM_KEY: "sk-litellm"
+  # REDIS_URL: "redis://redis-host:6379"
+  # MEILISEARCH_URL: "http://meilisearch:7700"
+  # MEILISEARCH_MASTER_KEY: "masterKey"

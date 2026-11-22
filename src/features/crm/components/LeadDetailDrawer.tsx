@@ -1,0 +1,1051 @@
+import {
+  Building2,
+  ChevronDown,
+  ChevronUp,
+  ClipboardList,
+  Clock,
+  FileText,
+  Globe,
+  Loader2,
+  Mail,
+  Phone,
+  Save,
+  Send,
+  Sparkles,
+  User,
+  X,
+} from 'lucide-react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
+import { drawerSlideRight, modalBackdropMotion } from '../../../lib/motion.js';
+import { EntityAttachments } from '../../../components/crm/EntityAttachments.js';
+import { AIEmailGenerator } from '../../../components/ui/AIEmailGenerator.js';
+import { Button } from '../../../components/ui/Button.js';
+import { useConfirmDialog } from '../../../components/ui/ConfirmDialog.js';
+import { Timeline, type TimelineItem } from '../../../components/ui/Timeline.js';
+import { useAuth } from '../../../contexts/AuthContext.js';
+import { useActivePlaybook } from '../../../hooks/useActivePlaybook.js';
+import { useActiveRecord } from '../../../hooks/useActiveRecord.js';
+import { api } from '../../../lib/api.js';
+import { LEAD_STATUS_EMOJI as STATUS_EMOJI } from '../../../lib/enumMap.js';
+import { SoundFX } from '../../../lib/soundEffects.js';
+import { toast } from '../../../lib/toast.js';
+// LEAD_STATUS é reexportado como tipo em ../../../types (export type {...}) — o array em
+// runtime só existe na fonte original.
+import { LEAD_STATUS } from '../../../lib/zod.js';
+import type { Lead, LeadQualification, LeadStatus, Note } from '../../../types/index.js';
+// Mesmo raciocínio do WhatsAppChatPanel acima: o CRM só decide QUANDO oferecer a entrada, não
+// COMO o Copiloto Comercial IA funciona (Onda 7 — UI/UX, ver src/features/copiloto-ia/AGENTS.md).
+import { LeadCopilotoPanel } from '../../copiloto-ia/components/LeadCopilotoPanel.js';
+import { bitrixApi } from '../../integrations/bitrix/bitrix.api.js';
+// Painel de conversa real (histórico + envio) já usado pela Prospecção sobre a mesma integração
+// de WhatsApp (src/features/integrations/whatsapp, sessão Baileys por tenant) — reusado aqui em vez
+// de duplicar lógica de polling/envio; CRM só decide QUANDO oferecer a ação, não COMO ela funciona.
+import { WhatsAppChatPanel } from '../../integrations/whatsapp/components/WhatsAppChatPanel.js';
+import { PredictiveScoringNbaCard } from '../../intelligence/components/PredictiveScoringNbaCard.js';
+import { type BantQualificationData, calculateLeadScore } from '../domain/leadScoreCalculator.js';
+// Central unificada de conversas (item #18) — mescla lead.timeline com WhatsApp/e-mail/ligações.
+import {
+  type RawTimelineEvent,
+  useUnifiedLeadConversation,
+} from '../hooks/useUnifiedLeadConversation.js';
+import { LeadActionBar } from './LeadActionBar.js';
+
+const TEMPERATURE_EMOJI: Record<string, string> = { Quente: '🔥', Morno: '🌤️', Frio: '❄️' };
+
+// TimelineEvent.type já vem do backend (PrismaLeadRepository.ts) restrito a estes 6 valores —
+// rótulo em português pra exibição; qualquer valor fora da lista cai no fallback (o próprio type).
+const TIMELINE_TYPE_LABELS: Record<string, string> = {
+  creation: 'Lead criado',
+  edition: 'Dados atualizados',
+  movement: 'Mudança de etapa',
+  activity: 'Atividade registrada',
+  comment: 'Comentário',
+  generic: 'Evento',
+};
+
+const TIMELINE_ITEM_TYPE: Record<string, TimelineItem['type']> = {
+  movement: 'status_change',
+  comment: 'note',
+};
+
+const LEAD_STATUSES: LeadStatus[] = [...LEAD_STATUS];
+
+// UX-11 (DEBT-0065): apiFetch (src/lib/api.ts) propaga erros HTTP como `Error(message)` sem
+// expor status — o backend responde 404 de GET /api/leads/:id com {error:'Lead not found'}
+// (LeadController.ts:53); falhas de rede/timeout têm mensagens próprias ("Não foi possível
+// conectar ao servidor." / timeout). A distinção 404↔rede é feita pela mensagem do erro.
+const isLeadNotFoundError = (err: unknown): boolean =>
+  err instanceof Error && /lead not found|status 404/i.test(err.message);
+
+const QUALIFICATION_GROUPS = [
+  {
+    category: 'budget',
+    label: '💰 Budget / Orçamento',
+    options: [
+      { label: 'Aprovado (Verba garantida para telemetria/rastreamento)', value: 'aprovado' },
+      { label: 'Em Planejamento / Estimativa orçamentária', value: 'em_planejamento' },
+      { label: 'Indefinido / Avaliando viabilidade', value: 'indefinido' },
+      { label: 'Sem Verba / Restrição orçamentária', value: 'sem_verba' },
+    ],
+  },
+  {
+    category: 'authority',
+    label: '👑 Authority / Nível de Decisão',
+    options: [
+      { label: 'Decisor C-Level / Sócio / Diretor Executivo', value: 'decisor_clevel' },
+      {
+        label: 'Influenciador Forte / Gerente de Frota ou Logística',
+        value: 'influenciador_gerente',
+      },
+      { label: 'Usuário Operacional / Supervisor de Pátio', value: 'usuario_operacional' },
+      { label: 'Contato inicial / Sem autoridade', value: 'sem_autoridade' },
+    ],
+  },
+  {
+    category: 'need',
+    label: '🎯 Need / Dores Principais (SPIN)',
+    options: [
+      {
+        label: 'Dor Crítica (Alto custo de Diesel / Sinistros frequentes)',
+        value: 'critica_urgente',
+      },
+      {
+        label: 'Otimização Moderada (Controle de jornada e telemetria CAN)',
+        value: 'moderada_otimizacao',
+      },
+      { label: 'Curiosidade / Comparação com concorrentes', value: 'curiosidade_benchmarking' },
+      { label: 'Sem Dor identificada no momento', value: 'sem_dor' },
+    ],
+  },
+  {
+    category: 'timing',
+    label: '⏳ Timing / Prazo de Decisão',
+    options: [
+      { label: 'Imediato (< 30 dias para início do piloto)', value: 'imediato_30d' },
+      { label: 'Curto Prazo (30 a 60 dias)', value: 'curto_60d' },
+      { label: 'Médio Prazo (60 a 90 dias)', value: 'medio_90d' },
+      { label: 'Longo Prazo (> 90 dias / Indefinido)', value: 'longo_prazo' },
+    ],
+  },
+];
+
+interface LeadDetailDrawerProps {
+  leadId: string;
+  onClose: () => void;
+  /** Chamado sempre que o lead muda (status, enriquecimento, exclusão) para o board recarregar. */
+  onChanged: () => void;
+}
+
+export function LeadDetailDrawer({ leadId, onClose, onChanged }: LeadDetailDrawerProps) {
+  const reduceMotion = useReducedMotion();
+  const { playbook, info: playbookMeta } = useActivePlaybook();
+  const { setActiveRecord, clearActiveRecord } = useActiveRecord();
+  const { currentUser } = useAuth();
+  const { confirm, dialog: confirmDialog } = useConfirmDialog();
+  const titleId = useId();
+  const statusSelectId = useId();
+  const ownerSelectId = useId();
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+  const [lead, setLead] = useState<Lead | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [enriching, setEnriching] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [noteText, setNoteText] = useState('');
+  const [savingNote, setSavingNote] = useState(false);
+  const [qualOpen, setQualOpen] = useState(false);
+  const [qualDraft, setQualDraft] = useState<LeadQualification>({});
+  const [savingQual, setSavingQual] = useState(false);
+  const [callingVoice, setCallingVoice] = useState(false);
+  const [agentType, setAgentType] = useState('sdr');
+  const [whatsappOpen, setWhatsappOpen] = useState(false);
+  const [owners, setOwners] = useState<{ id: string; name: string }[]>([]);
+  const [savingOwner, setSavingOwner] = useState(false);
+  const [exportingBitrix, setExportingBitrix] = useState(false);
+  const [loadError, setLoadError] = useState<'network' | null>(null);
+
+  const handleExportToBitrix = async () => {
+    setExportingBitrix(true);
+    try {
+      const res = await bitrixApi.exportLead(leadId);
+      toast.success(`Lead sincronizado com sucesso no Bitrix24 (ID #${res.data.bitrixLeadId})!`);
+      fetchLead();
+      onChanged();
+    } catch (err: any) {
+      toast.error(err instanceof Error ? err.message : 'Falha ao exportar para Bitrix24');
+    } finally {
+      setExportingBitrix(false);
+    }
+  };
+  const fetchLead = useCallback(async () => {
+    try {
+      setLoading(true);
+      setLoadError(null);
+      const data = await api.get<Lead>(`/api/leads/${leadId}`);
+      setLead(data);
+      setQualDraft((data.qualification as LeadQualification) || {});
+      setActiveRecord({
+        type: 'lead',
+        id: data.id,
+        label: data.title || data.company?.legalName || 'Lead',
+      });
+    } catch (err) {
+      if (isLeadNotFoundError(err)) {
+        toast.error('Lead não encontrado ou sem permissão de acesso');
+        onClose();
+      } else {
+        // Erro de rede/5xx/timeout: mantém o drawer aberto em estado de erro com retry,
+        // em vez de fechar e perder o contexto do deep link ?lead=<id> (UX-11).
+        toast.error('Falha ao carregar detalhes do lead');
+        setLoadError('network');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [leadId, onClose, setActiveRecord]);
+
+  useEffect(() => {
+    previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
+    fetchLead();
+    // /api/users nunca existiu como rota (404 silencioso todo carregamento) — endpoint real é
+    // /api/team/assignable (ver team.routes.ts e o mesmo achado em CrmBoard.tsx).
+    api
+      .get<{ owners: { id: string; name: string }[] }>('/api/team/assignable')
+      .then((res) => setOwners(res.owners))
+      .catch(() => setOwners([]));
+    return () => {
+      if (previouslyFocusedRef.current?.focus) {
+        previouslyFocusedRef.current.focus();
+      }
+      clearActiveRecord(leadId);
+    };
+  }, [fetchLead, leadId, clearActiveRecord]);
+
+  useEffect(() => {
+    if (!loading && closeButtonRef.current) {
+      closeButtonRef.current.focus();
+    }
+  }, [loading]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  const handleVoiceCall = useCallback(async () => {
+    if (!lead) return;
+    setCallingVoice(true);
+    try {
+      await api.post(`/api/integrations/birth-voice/call/${lead.id}`, { agentType });
+      toast.success(
+        'Ligação de qualificação disparada com sucesso! O resultado chega de forma assíncrona.',
+      );
+    } catch (error: any) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Não foi possível disparar a ligação de qualificação.',
+      );
+    } finally {
+      setCallingVoice(false);
+    }
+  }, [lead, agentType]);
+
+  const handleStatusChange = async (newStatus: string) => {
+    if (!lead) return;
+    try {
+      const updated = await api.put<Lead>(`/api/leads/${lead.id}`, { status: newStatus });
+      setLead(updated);
+      onChanged();
+      const isWon =
+        newStatus.toLowerCase().includes('ganho') || newStatus.toLowerCase().includes('convert');
+      if (isWon) {
+        SoundFX.play('success');
+        try {
+          const confetti = (await import('canvas-confetti')).default;
+          confetti({ particleCount: 65, spread: 70, origin: { y: 0.6 } });
+        } catch {
+          // ignore
+        }
+      } else {
+        SoundFX.play('navigate');
+      }
+      toast.success(`Status atualizado para "${newStatus}"`);
+    } catch {
+      toast.error('Erro ao atualizar status');
+    }
+  };
+
+  const handleOwnerChange = async (newOwnerId: string) => {
+    if (!lead) return;
+    setSavingOwner(true);
+    try {
+      // DATA-003 (Sprint 05/Onda 17): Lead.owner é contrato User.id, não nome — enviar o
+      // nome aqui reintroduzia o mesmo bug já corrigido no import Bitrix (onda 10, ver
+      // requireLeadOwnership.ts). Todo o resto da aplicação (autoatribuição, round-robin,
+      // import Bitrix atual) já grava o id.
+      const updated = await api.put<Lead>(`/api/leads/${lead.id}`, { owner: newOwnerId || null });
+      setLead(updated);
+      onChanged();
+      toast.success('Responsável atualizado com sucesso');
+    } catch {
+      toast.error('Erro ao atualizar responsável');
+    } finally {
+      setSavingOwner(false);
+    }
+  };
+
+  const handleEnrich = async () => {
+    if (!lead) return;
+    setEnriching(true);
+    try {
+      const result = await api.post<{ lead?: Lead; data?: { lead?: Lead } }>(
+        `/api/leads/${lead.id}/enrich`,
+        {},
+      );
+      const updatedLead = result.lead || result.data?.lead;
+      if (updatedLead) {
+        setLead(updatedLead);
+      }
+      onChanged();
+      SoundFX.play('success');
+      toast.success('Lead enriquecido com sucesso!');
+    } catch {
+      toast.error('Erro ao enriquecer lead');
+    } finally {
+      setEnriching(false);
+    }
+  };
+
+  const handleAddNote = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!noteText.trim() || !lead) return;
+    setSavingNote(true);
+    try {
+      const newNote = await api.post<Note>(`/api/leads/${lead.id}/notes`, {
+        content: noteText.trim(),
+        author: currentUser?.name || 'Usuário',
+      });
+      setLead((prev) =>
+        prev ? { ...prev, internalNotes: [newNote, ...(prev.internalNotes || [])] } : null,
+      );
+      setNoteText('');
+      toast.success('Nota adicionada');
+    } catch {
+      toast.error('Erro ao adicionar nota');
+    } finally {
+      setSavingNote(false);
+    }
+  };
+
+  // `qualDraft` (LeadQualification, checklist do Playbook Comercial) e BantQualificationData
+  // (budget/authority/need/timing) têm formatos diferentes — o cast pré-existente já não batia
+  // campo a campo antes desta correção de lint; mantido aqui como estava (via `unknown`, não
+  // `any`) para não mudar o cálculo de score como efeito colateral de uma limpeza de lint.
+  // ACH-05-07: o bônus de dor de diesel/sinistro (fuelCostPain/theftRiskPain) só vale para o
+  // playbook de risco de carga/logística — repassa o playbook ativo do navegador em vez de
+  // deixar o cálculo assumir logística para qualquer organização.
+  const liveScore = calculateLeadScore({
+    ...(qualDraft as unknown as BantQualificationData),
+    activePlaybook: playbook,
+  });
+
+  const handleSaveQualification = async () => {
+    if (!lead) return;
+    setSavingQual(true);
+    try {
+      const updated = await api.put<Lead>(`/api/leads/${lead.id}`, {
+        qualification: qualDraft,
+        score: liveScore.score,
+        temperature: liveScore.temperature,
+      });
+      setLead(updated);
+      setQualOpen(false);
+      onChanged();
+      if (liveScore.score >= 70) {
+        SoundFX.play('success');
+        try {
+          const confetti = (await import('canvas-confetti')).default;
+          confetti({
+            particleCount: 50,
+            spread: 60,
+            origin: { y: 0.6 },
+            colors: [
+              '--color-brand-primary',
+              '--color-brand-secondary',
+              '--color-brand-accent',
+              '--color-success',
+              '--color-info',
+            ].map((token) =>
+              getComputedStyle(document.documentElement).getPropertyValue(token).trim(),
+            ),
+            disableForReducedMotion: true,
+          });
+        } catch {
+          // ignore
+        }
+      } else {
+        SoundFX.play('confirm');
+      }
+      toast.success(`Qualificação salva! Score: ${liveScore.score}/100 (${liveScore.temperature})`);
+    } catch {
+      SoundFX.play('error');
+      toast.error('Erro ao salvar qualificação');
+    } finally {
+      setSavingQual(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!lead) return;
+    const confirmed = await confirm({
+      title: 'Excluir lead',
+      description: `Tem certeza que deseja excluir "${lead.company?.tradeName || lead.contact?.name || 'este lead'}"?`,
+      confirmLabel: 'Excluir',
+      variant: 'danger',
+    });
+    if (!confirmed) return;
+    setDeleting(true);
+    try {
+      await api.delete(`/api/leads/${lead.id}`);
+      toast.success('Lead excluído com sucesso');
+      onChanged();
+      onClose();
+    } catch {
+      toast.error('Erro ao excluir lead');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const company = lead?.company;
+  const leadPhone = lead?.contact?.whatsapp || lead?.contact?.phone || company?.phones?.[0] || null;
+
+  // GET /api/leads/:id já inclui `timeline` (TimelineEvent[], PrismaLeadRepository.ts:99) desde
+  // sempre — a UI nunca chegou a renderizar esse dado, só as notas manuais abaixo. Nenhuma rota,
+  // migration ou campo novo foi necessário para esta seção.
+  const nativeTimelineEvents: RawTimelineEvent[] = (lead?.timeline ?? []).map((event) => ({
+    id: event.id,
+    title: TIMELINE_TYPE_LABELS[event.type] ?? event.type,
+    description: event.description,
+    createdAt: event.createdAt,
+    type: TIMELINE_ITEM_TYPE[event.type],
+  }));
+  // Central unificada de conversas (item #18) — mescla os eventos nativos acima com WhatsApp,
+  // e-mail e ligações de voz do mesmo lead num único feed cronológico. Ver
+  // `useUnifiedLeadConversation.ts` — três buscas independentes, nunca bloqueiam a timeline
+  // nativa se uma integração falhar.
+  const { items: timelineItems } = useUnifiedLeadConversation(lead?.id ?? '', nativeTimelineEvents);
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end">
+      {/* Backdrop de "clicar fora fecha" — não precisa de suporte a teclado próprio: Escape já
+          fecha o drawer via listener global (window.addEventListener acima), então isto é
+          conveniência de mouse/touch, não um alvo de interação que um usuário de teclado precise
+          alcançar. Elemento de backdrop com role="button" para fechar via teclado - sem aria-hidden
+          pois é focável. */}
+      <motion.div
+        variants={reduceMotion ? undefined : modalBackdropMotion}
+        initial={reduceMotion ? undefined : 'hidden'}
+        animate={reduceMotion ? undefined : 'show'}
+        exit={reduceMotion ? undefined : 'exit'}
+        className="fixed inset-0 bg-ink/40 backdrop-blur-xs transition-opacity"
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            e.currentTarget.click();
+          }
+        }}
+        onClick={onClose}
+      />
+      <motion.div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        variants={reduceMotion ? undefined : drawerSlideRight}
+        initial={reduceMotion ? undefined : 'hidden'}
+        animate={reduceMotion ? undefined : 'show'}
+        exit={reduceMotion ? undefined : 'exit'}
+        className="relative w-full max-w-2xl bg-surface border-l border-line shadow-2xl flex flex-col h-full overflow-hidden z-10 motion-gpu before:absolute before:inset-x-0 before:top-0 before:h-[2px] before:bg-gradient-to-r before:from-transparent before:via-brand/50 before:to-transparent before:z-20"
+      >
+        {loading ? (
+          <div className="flex-1 flex items-center justify-center p-8">
+            <Loader2 className="w-8 h-8 text-brand animate-spin" />
+          </div>
+        ) : loadError && !lead ? (
+          <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8 text-center">
+            <p className="text-sm text-ink-2">Falha ao carregar — tente novamente.</p>
+            <div className="flex items-center gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => fetchLead()}>
+                Tentar novamente
+              </Button>
+              <Button type="button" variant="ghost" size="sm" onClick={onClose}>
+                Fechar
+              </Button>
+            </div>
+          </div>
+        ) : !lead ? null : (
+          <>
+            <div className="p-6 border-b border-line bg-surface-2/50 backdrop-blur-sm shrink-0">
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-brand/10 text-brand-ink dark:text-brand flex items-center justify-center shrink-0 border border-brand/20 shadow-sm">
+                    <Building2 size={24} />
+                  </div>
+                  <div>
+                    <h2 id={titleId} className="text-xl font-bold text-ink leading-tight">
+                      {company?.tradeName || lead.contact?.name || 'Lead sem nome'}
+                    </h2>
+                    <div className="flex items-center gap-2 mt-1">
+                      {company?.legalName && (
+                        <span className="text-xs text-ink-2 truncate max-w-xs">
+                          {company.legalName}
+                        </span>
+                      )}
+                      {lead.temperature && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-surface border border-line font-medium text-ink">
+                          {TEMPERATURE_EMOJI[lead.temperature] || ''} {lead.temperature}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    ref={closeButtonRef}
+                    onClick={() => {
+                      SoundFX.play('click');
+                      onClose();
+                    }}
+                    aria-label="Fechar detalhes do lead"
+                    title="Fechar detalhes do lead"
+                    className="p-2 rounded-xl text-ink-2 hover:text-ink hover:bg-surface-2 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mt-6">
+                <div>
+                  <label
+                    htmlFor={statusSelectId}
+                    className="block text-xs font-semibold text-ink-2 mb-1.5"
+                  >
+                    Status do Funil
+                  </label>
+                  <div className="relative">
+                    <select
+                      id={statusSelectId}
+                      value={lead.status}
+                      onChange={(e) => handleStatusChange(e.target.value)}
+                      className="w-full pl-3 pr-8 py-2 bg-surface/90 border border-line rounded-xl text-sm font-semibold text-ink appearance-none focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 hover:border-brand/40 transition-all cursor-pointer"
+                    >
+                      {LEAD_STATUSES.map((st) => (
+                        <option key={st} value={st}>
+                          {STATUS_EMOJI[st] || '📌'} {st}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="w-4 h-4 text-ink-2 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor={ownerSelectId}
+                    className="block text-xs font-semibold text-ink-2 mb-1.5"
+                  >
+                    Responsável
+                  </label>
+                  <div className="relative">
+                    <select
+                      id={ownerSelectId}
+                      value={owners.find((o) => o.name === lead.owner)?.id || lead.owner || ''}
+                      onChange={(e) => handleOwnerChange(e.target.value)}
+                      disabled={savingOwner}
+                      className="w-full pl-3 pr-8 py-2 bg-surface border border-line rounded-xl text-sm font-semibold text-ink appearance-none focus:outline-none focus:border-brand disabled:opacity-50"
+                    >
+                      <option value="">Sem responsável</option>
+                      {owners.map((o) => (
+                        <option key={o.id} value={o.id}>
+                          {o.name}
+                        </option>
+                      ))}
+                    </select>
+                    {savingOwner ? (
+                      <Loader2 className="w-4 h-4 text-brand animate-spin absolute right-2.5 top-1/2 -translate-y-1/2" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-ink-2 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <LeadActionBar
+              lead={lead}
+              enriching={enriching}
+              onEnrich={handleEnrich}
+              deleting={deleting}
+              onDelete={handleDelete}
+              agentType={agentType}
+              onAgentTypeChange={setAgentType}
+              callingVoice={callingVoice}
+              onVoiceCall={handleVoiceCall}
+              leadPhone={leadPhone}
+              onOpenWhatsapp={() => setWhatsappOpen(true)}
+              exportingBitrix={exportingBitrix}
+              onExportBitrix={handleExportToBitrix}
+            />
+
+            <div className="flex-1 overflow-y-auto p-6 space-y-8">
+              {company && (
+                <section className="space-y-4">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-ink-2 flex items-center gap-2">
+                    <Building2 className="w-4 h-4 text-brand" /> Dados da Empresa
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4 bg-surface-2/40 p-4 rounded-2xl border border-line">
+                    {company.cnpj && (
+                      <div>
+                        <span className="text-[10px] text-ink-2 font-medium block">CNPJ</span>
+                        <span className="text-xs font-semibold text-ink">{company.cnpj}</span>
+                      </div>
+                    )}
+                    {company.segment && (
+                      <div>
+                        <span className="text-[10px] text-ink-2 font-medium block">Segmento</span>
+                        <span className="text-xs font-semibold text-ink">{company.segment}</span>
+                      </div>
+                    )}
+                    {company.employeeCount && company.employeeCount > 0 && (
+                      <div>
+                        <span className="text-[10px] text-ink-2 font-medium block">
+                          Funcionários
+                        </span>
+                        <span className="text-xs font-semibold text-ink">
+                          {company.employeeCount}
+                        </span>
+                      </div>
+                    )}
+                    {company.website && (
+                      <div>
+                        <span className="text-[10px] text-ink-2 font-medium block">Website</span>
+                        <a
+                          href={
+                            company.website.startsWith('http')
+                              ? company.website
+                              : `https://${company.website}`
+                          }
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-xs font-semibold text-brand-ink dark:text-brand hover:underline flex items-center gap-1"
+                        >
+                          <Globe className="w-3 h-3" /> {company.website}
+                        </a>
+                      </div>
+                    )}
+                    {company.enrichmentStatus && (
+                      <div>
+                        <span className="text-[10px] text-ink-2 font-medium block">
+                          Enriquecimento
+                        </span>
+                        <span
+                          className={`text-xs font-semibold ${
+                            company.enrichmentStatus === 'Enriquecido'
+                              ? 'text-emerald-600 dark:text-emerald-400'
+                              : company.enrichmentStatus === 'Enriquecendo'
+                                ? 'text-amber-500'
+                                : 'text-ink-2'
+                          }`}
+                        >
+                          {company.enrichmentStatus}
+                          {company.enrichmentSource ? ` (${company.enrichmentSource})` : ''}
+                        </span>
+                      </div>
+                    )}
+                    {company.capitalSocial != null && company.capitalSocial > 0 && (
+                      <div>
+                        <span className="text-[10px] text-ink-2 font-medium block">
+                          Capital Social
+                        </span>
+                        <span className="text-xs font-semibold text-ink">
+                          {new Intl.NumberFormat('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL',
+                          }).format(company.capitalSocial)}
+                        </span>
+                      </div>
+                    )}
+                    {company.googleRating != null && (
+                      <div>
+                        <span className="text-[10px] text-ink-2 font-medium block">
+                          Avaliação Google
+                        </span>
+                        <span className="text-xs font-semibold text-amber-500 flex items-center gap-1">
+                          ★ {company.googleRating}
+                          {company.googleReviewsCount
+                            ? ` (${company.googleReviewsCount} avaliações)`
+                            : ''}
+                        </span>
+                      </div>
+                    )}
+                    {company.technologies && company.technologies.length > 0 && (
+                      <div className="col-span-2 pt-2 border-t border-line">
+                        <span className="text-[10px] text-ink-2 font-medium block mb-1">
+                          Tecnologias Identificadas
+                        </span>
+                        <div className="flex flex-wrap gap-1">
+                          {company.technologies.slice(0, 8).map((tech: string, i: number) => (
+                            <span
+                              key={i}
+                              className="px-2 py-0.5 rounded-md text-[10px] bg-surface border border-line text-ink font-medium"
+                            >
+                              {tech}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {lead.contact && (
+                <section className="space-y-4">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-ink-2 flex items-center gap-2">
+                    <User className="w-4 h-4 text-brand" /> Contato Principal
+                  </h3>
+                  <div className="bg-surface-2/40 p-4 rounded-2xl border border-line space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-bold text-ink">{lead.contact.name}</span>
+                      {lead.contact.role && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-surface border border-line font-medium text-ink-2">
+                          {lead.contact.role}
+                        </span>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 pt-2 border-t border-line">
+                      {lead.contact.email && (
+                        <div className="flex items-center gap-2 text-xs text-ink-2">
+                          <Mail className="w-3.5 h-3.5 text-brand shrink-0" />
+                          <a
+                            href={`mailto:${lead.contact.email}`}
+                            className="hover:text-brand truncate"
+                          >
+                            {lead.contact.email}
+                          </a>
+                        </div>
+                      )}
+                      {lead.contact.phone && (
+                        <div className="flex items-center gap-2 text-xs text-ink-2">
+                          <Phone className="w-3.5 h-3.5 text-brand shrink-0" />
+                          <a
+                            href={`tel:${lead.contact.phone}`}
+                            className="hover:text-brand truncate"
+                          >
+                            {lead.contact.phone}
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              <section className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-ink-2 flex items-center gap-2">
+                      <ClipboardList className="w-4 h-4 text-brand" /> Matriz BANT & Lead Score
+                    </h3>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[11px] font-black ${
+                        liveScore.temperature === 'Quente'
+                          ? 'bg-rose-500/10 text-rose-600 border border-rose-500/20'
+                          : liveScore.temperature === 'Morno'
+                            ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
+                            : 'bg-blue-500/10 text-blue-600 border border-blue-500/20'
+                      }`}
+                    >
+                      {TEMPERATURE_EMOJI[liveScore.temperature]} {liveScore.score}/100
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      SoundFX.play('click');
+                      setQualOpen(!qualOpen);
+                    }}
+                    className="text-xs text-brand-ink dark:text-brand hover:underline font-semibold flex items-center gap-1 active:scale-95 transition-all"
+                  >
+                    {qualOpen ? (
+                      <ChevronUp className="w-3.5 h-3.5" />
+                    ) : (
+                      <ChevronDown className="w-3.5 h-3.5" />
+                    )}
+                    {qualOpen ? 'Fechar' : 'Editar BANT'}
+                  </button>
+                </div>
+
+                {qualOpen ? (
+                  <div className="bg-surface-2/40 p-4 rounded-2xl border border-line space-y-4">
+                    {/* Score Meter */}
+                    <div className="p-3.5 rounded-xl bg-surface border border-line space-y-2 relative overflow-hidden">
+                      <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-brand to-transparent opacity-60" />
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-ink flex items-center gap-1.5">
+                          🎯 Lead Score:{' '}
+                          <b className="text-sm font-black text-brand-ink dark:text-brand">
+                            {liveScore.score}
+                          </b>
+                          /100
+                        </span>
+                        <span className="text-xs font-bold text-ink-2">
+                          Classificação:{' '}
+                          <b className="text-ink">
+                            {TEMPERATURE_EMOJI[liveScore.temperature]} {liveScore.temperature}
+                          </b>
+                        </span>
+                      </div>
+
+                      <div className="w-full bg-surface-2 h-2.5 rounded-full overflow-hidden border border-line/50">
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            liveScore.score >= 70
+                              ? 'bg-gradient-to-r from-amber-500 to-rose-500'
+                              : liveScore.score >= 40
+                                ? 'bg-gradient-to-r from-blue-500 to-amber-500'
+                                : 'bg-blue-500'
+                          }`}
+                          style={{ width: `${liveScore.score}%` }}
+                        />
+                      </div>
+
+                      <p className="text-[11px] text-ink-2 italic pt-1">
+                        💡 {liveScore.recommendation}
+                      </p>
+                    </div>
+
+                    {QUALIFICATION_GROUPS.map((group) => (
+                      <div key={group.category} className="space-y-1.5">
+                        <label
+                          htmlFor={`qual-${group.category}`}
+                          className="text-[10px] font-bold uppercase tracking-wider text-ink-2 block"
+                        >
+                          {group.label}
+                        </label>
+                        <select
+                          id={`qual-${group.category}`}
+                          value={qualDraft[group.category as keyof LeadQualification] || ''}
+                          onChange={(e) =>
+                            setQualDraft({ ...qualDraft, [group.category]: e.target.value })
+                          }
+                          className="w-full p-2 bg-surface border border-line rounded-xl text-xs font-medium text-ink focus:outline-none focus:border-brand"
+                        >
+                          <option value="">Selecione...</option>
+                          {group.options.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    ))}
+
+                    <Button
+                      type="button"
+                      variant="cosmic"
+                      shine
+                      soundClick
+                      onClick={handleSaveQualification}
+                      loading={savingQual}
+                      className="w-full"
+                    >
+                      {!savingQual && <Save className="w-3.5 h-3.5 mr-2" />}
+                      Salvar Matriz & Atualizar Score ({liveScore.score} pts)
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="bg-surface-2/40 p-4 rounded-2xl border border-line space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-black text-ink">Score Atual:</span>
+                        <span className="px-2 py-0.5 rounded-lg bg-surface border border-line font-black text-xs text-brand-ink dark:text-brand">
+                          {lead.score ?? liveScore.score}/100
+                        </span>
+                      </div>
+                      <span className="text-xs font-bold text-ink-2">
+                        Temperatura:{' '}
+                        <b className="text-ink">
+                          {TEMPERATURE_EMOJI[lead.temperature || liveScore.temperature]}{' '}
+                          {lead.temperature || liveScore.temperature}
+                        </b>
+                      </span>
+                    </div>
+
+                    {Object.keys(lead.qualification || {}).length === 0 ? (
+                      <p className="text-xs text-ink-2 italic">
+                        Nenhuma resposta BANT registrada ainda. Clique em &quot;Editar BANT&quot;
+                        para qualificar.
+                      </p>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-line/50">
+                        {Object.entries(lead.qualification || {}).map(([k, v]) => (
+                          <div key={k} className="p-2 rounded-xl bg-surface border border-line/60">
+                            <span className="text-[10px] text-ink-2 uppercase font-bold block">
+                              {k}
+                            </span>
+                            <span className="text-xs font-semibold text-ink capitalize">
+                              {String(v).replace(/_/g, ' ')}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </section>
+
+              <section className="space-y-4">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-ink-2 flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-brand" /> Linha do Tempo
+                  <span className="text-[10px] font-normal normal-case text-ink-2">
+                    · CRM, WhatsApp, e-mail e ligações num só feed
+                  </span>
+                </h3>
+                <Timeline
+                  items={timelineItems}
+                  emptyMessage="Nenhum evento registrado para este lead ainda."
+                />
+              </section>
+
+              <section className="space-y-4">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-ink-2 flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-brand" /> Notas & Histórico
+                </h3>
+                <form onSubmit={handleAddNote} className="space-y-2">
+                  <textarea
+                    value={noteText}
+                    onChange={(e) => setNoteText(e.target.value)}
+                    placeholder="Adicionar uma observação..."
+                    rows={3}
+                    className="w-full p-3 bg-surface-2/40 border border-line rounded-2xl text-xs text-ink focus:outline-none focus:border-brand resize-none"
+                  />
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={savingNote || !noteText.trim()}
+                      className="px-4 py-2 bg-brand-active hover:brightness-110 text-on-brand rounded-xl text-xs font-bold transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                    >
+                      {savingNote ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Send className="w-3.5 h-3.5" />
+                      )}
+                      Adicionar Nota
+                    </button>
+                  </div>
+                </form>
+
+                <div className="space-y-3">
+                  {lead.internalNotes?.map((n) => (
+                    <div
+                      key={n.id}
+                      className="p-3 bg-surface-2/40 rounded-2xl border border-line space-y-1"
+                    >
+                      <p className="text-xs text-ink whitespace-pre-wrap">{n.content}</p>
+                      <span className="text-[10px] text-ink-2 flex items-center gap-1">
+                        <Clock className="w-3 h-3" /> {new Date(n.createdAt).toLocaleString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <EntityAttachments entityType="lead" entityId={lead.id} />
+
+              {playbookMeta && (
+                <section className="space-y-4">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-ink-2 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-brand" /> Copiloto de Vendas (
+                    {playbookMeta.label})
+                  </h3>
+                  <AIEmailGenerator
+                    companyName={lead.company?.legalName || lead.company?.tradeName || undefined}
+                    contactName={lead.contact?.name || undefined}
+                    role={lead.contact?.role || undefined}
+                    phone={lead.contact?.phone || undefined}
+                  />
+                </section>
+              )}
+
+              <PredictiveScoringNbaCard
+                leadId={lead.id}
+                leadName={lead.contact?.name || lead.title || 'Lead'}
+                companyName={company?.legalName || company?.tradeName || undefined}
+                stage={lead.status}
+                recentNotes={lead.internalNotes?.map((n) => n.content).join('; ')}
+              />
+
+              <LeadCopilotoPanel leadId={lead.id} />
+
+              {/* Seção de status Bitrix24 — a ação de enviar/reenviar vive na LeadActionBar
+                  (topo do drawer); esta seção só exibe o estado da sincronização. */}
+              <section className="space-y-4">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-ink-2 flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-sky-500" /> Integração Bitrix24
+                </h3>
+                <div className="bg-surface-2/40 p-4 rounded-2xl border border-line space-y-3">
+                  <div>
+                    <span className="text-[10px] text-ink-2 font-bold uppercase block">
+                      Status no Portal
+                    </span>
+                    {lead.bitrixLeadId || lead.bitrixDealId ? (
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-sky-500/15 border border-sky-500/30 text-sky-700 dark:text-sky-300">
+                          🌐 Sincronizado (#{lead.bitrixLeadId || lead.bitrixDealId})
+                        </span>
+                        {lead.bitrixSyncedAt && (
+                          <span className="text-[10px] text-ink-2">
+                            · {new Date(lead.bitrixSyncedAt).toLocaleDateString('pt-BR')}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium text-ink-2 bg-surface border border-line mt-0.5">
+                        Não sincronizado no Bitrix
+                      </span>
+                    )}
+                  </div>
+                  {lead.bitrixSyncError && (
+                    <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs">
+                      ⚠️ Falha na sincronização: {lead.bitrixSyncError}
+                    </div>
+                  )}
+                </div>
+              </section>
+            </div>
+          </>
+        )}
+      </motion.div>
+
+      {whatsappOpen && leadPhone && (
+        <WhatsAppChatPanel
+          phone={leadPhone}
+          contactName={lead?.contact?.name || company?.tradeName || undefined}
+          onClose={() => setWhatsappOpen(false)}
+        />
+      )}
+
+      {confirmDialog}
+    </div>
+  );
+}
