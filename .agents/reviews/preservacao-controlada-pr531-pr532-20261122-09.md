@@ -103,4 +103,21 @@
 
 ---
 
+## 10. REAUDITORIA DO DELTA (2026-11-22, pós-correções autorizadas)
+
+Verificação dos novos commits após o parecer original:
+
+| PR | HEAD auditado | Delta vs. SHA original | Resultado |
+|---|---|---|---|
+| #531 | `5d6a61c19ede9a1746faec1ceee415f18c90f814` | +11 linhas, somente seção 6 "Errata" no doc 13 | ✅ Correção cirúrgica conforme prescrito; nenhum registro histórico alterado; contagens da errata conferem com a contagem direta da matriz (18/2/6) |
+| #532 | `4d01e6b077405812efcf418c4f14e375424d4568` | −178 linhas, somente remoção de `.agents/handoffs/HANDOFF-DESIGN-SYSTEM.md` | ✅ Duplicata eliminada; os 5 handoffs restantes permanecem íntegros (blobs inalterados) |
+
+**Vereditos revisados:**
+- **#531 → APROVADO PARA HOMOLOGAÇÃO HUMANA** (ressalva journal×matriz agora documentada no próprio PR).
+- **#532 → APROVADO PARA HOMOLOGAÇÃO HUMANA** — o bloqueio foi sanado; restam apenas handoffs únicos/históricos.
+
+Ambos permanecem **condicionados à homologação explícita do Orquestrador Humano**. Nenhum merge autorizado ou executado por esta revisão.
+
+---
+
 **Parecer emitido sob AGENTS.md §40 — auditoria independente obrigatória. Autor nunca aprova a própria entrega.**
