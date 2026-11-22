@@ -173,3 +173,7 @@ Veredito da 2ª rodada: 6/7 achados confirmados corrigidos; **1 bug novo introdu
 - `audit/genesis-fase4-submissao` → `cb8b8ccdd` (SHA da 2ª auditoria Agente 09)
 - `audit/genesis-fase4-final` → `92a95528f` (correção `|| true` + paths + gitignore)
 - HEAD atual → `d2059c594` = `92a95528f` + 1 commit documental (registro da re-auditoria). Diff de código/CI idêntico ao auditado; delta é só `.agents/runs/**`.
+
+## Reauditoria focal Agente 09 (3ª rodada) — APROVADO
+
+HEAD auditado `d2059c594`: bug do `|| true` confirmado corrigido (NEG_EXIT captura exit real); `src/config/**` nos paths; `.gitignore` cobre todos os artefatos schemathesis; nenhum outro `|| true` mascarando validação; pipeline único confirmado. **Veredito: APROVADO** — delta final íntegro, sem regressões.
