@@ -1,0 +1,329 @@
+[
+  {
+    "PATH": "C:/Github/Birthub-360",
+    "BRANCH": "chore/handoff-00-despacho-wave-a-b-20261120",
+    "HEAD": "e62fdd238e727c44cc9acba88bbc1ad4bc92bdab",
+    "DIRTY": "24",
+    "AHEAD": "2 BEHIND=11",
+    "UNMERGED_PATCHES": "1",
+    "MERGE_TREE_EXIT": "0",
+    "DIFFSTAT": "2 files changed, 189 insertions(+)"
+  },
+  {
+    "PATH": "C:/Github/Birthub-360-worktrees/agente-01-waveF-ux05a",
+    "BRANCH": "agente/01-waveF-ux05a-auth-morta",
+    "HEAD": "0c5c9804a35140ffb596c3f8f613ffaf85968b41",
+    "DIRTY": "0",
+    "AHEAD": "0 BEHIND=210",
+    "UNMERGED_PATCHES": "0",
+    "DIFFSTAT": ""
+  },
+  {
+    "PATH": "C:/Github/Birthub-360-worktrees/agente-02-waveF-ux09",
+    "BRANCH": "agente/02-waveF-ux09-perfil",
+    "HEAD": "65eacb196d08d4f32944f53b35a431e68dbacede",
+    "DIRTY": "0",
+    "AHEAD": "0 BEHIND=210",
+    "UNMERGED_PATCHES": "0",
+    "DIFFSTAT": ""
+  },
+  {
+    "PATH": "C:/Github/Birthub-360-worktrees/agente-07-waveF",
+    "BRANCH": "agente/07-waveF-pii-detection",
+    "HEAD": "b7e71cba79f04db2e076d73c20f040e34c2a5443",
+    "DIRTY": "0",
+    "AHEAD": "0 BEHIND=225",
+    "UNMERGED_PATCHES": "0",
+    "DIFFSTAT": ""
+  },
+  {
+    "PATH": "C:/Github/Birthub-360-worktrees/agente-08-handoffs-386",
+    "BRANCH": "agente/08-handoffs-20261117",
+    "HEAD": "aafad8eb7c61fe9e9b3a48a1758f08b82a8ab92e",
+    "DIRTY": "0",
+    "AHEAD": "17 BEHIND=211",
+    "UNMERGED_PATCHES": "10",
+    "MERGE_TREE_EXIT": "0",
+    "DIFFSTAT": "5 files changed, 292 insertions(+), 1 deletion(-)"
+  },
+  {
+    "PATH": "C:/Github/Birthub-360-worktrees/agente-08-waveF-gate",
+    "BRANCH": "agente/08-waveF-ownership-gate",
+    "HEAD": "8c13f9d467ea53a5a38f9bf292679a6854045a4e",
+    "DIRTY": "0",
+    "AHEAD": "0 BEHIND=39",
+    "UNMERGED_PATCHES": "0",
+    "DIFFSTAT": ""
+  },
+  {
+    "PATH": "C:/Github/Birthub-360-worktrees/agente-08-waveF-orch-e2e",
+    "BRANCH": "agente/08-waveF-orchestration-e2e",
+    "HEAD": "960070acaca07692657bf27ac3d0f9bbbdadeb13",
+    "DIRTY": "0",
+    "AHEAD": "0 BEHIND=39",
+    "UNMERGED_PATCHES": "0",
+    "DIFFSTAT": ""
+  },
+  {
+    "PATH": "C:/Github/Birthub-360-worktrees/agente-10-waveF-scanner",
+    "BRANCH": "agente/10-waveF-scanner-real",
+    "HEAD": "8e3fcac7b16ad57f08c01052a2b1e6db80d5b162",
+    "DIRTY": "0",
+    "AHEAD": "0 BEHIND=210",
+    "UNMERGED_PATCHES": "0",
+    "DIFFSTAT": ""
+  },
+  {
+    "PATH": "C:/Github/Birthub-360-worktrees/handoff-00-reconciliacao-etapa-0",
+    "BRANCH": "chore/handoff-00-reconciliacao-etapa-0-20261121",
+    "HEAD": "ae37cac88585eeae0a0aa1844a657c15d8920259",
+    "DIRTY": "0",
+    "AHEAD": "1 BEHIND=0",
+    "UNMERGED_PATCHES": "1",
+    "MERGE_TREE_EXIT": "0",
+    "DIFFSTAT": "1 file changed, 93 insertions(+)"
+  },
+  {
+    "PATH": "C:/Github/Birthub-360-worktrees/handoff-03-brand-system",
+    "BRANCH": "chore/handoff-03-genesis-brand-system-20261120",
+    "HEAD": "29de2d616b5f9805539950e5fac160cfce8e3e72",
+    "DIRTY": "0",
+    "AHEAD": "1 BEHIND=11",
+    "UNMERGED_PATCHES": "0",
+    "MERGE_TREE_EXIT": "0",
+    "DIFFSTAT": "1 file changed, 102 insertions(+)"
+  },
+  {
+    "PATH": "C:/Github/Birthub-360-worktrees/handoff-03-tokens-v2",
+    "BRANCH": "chore/handoff-03-design-tokens-v2-20261120",
+    "HEAD": "d23cec6e2b049ba7367c65b99d9f33655337282e",
+    "DIRTY": "0",
+    "AHEAD": "1 BEHIND=11",
+    "UNMERGED_PATCHES": "0",
+    "MERGE_TREE_EXIT": "0",
+    "DIFFSTAT": "1 file changed, 92 insertions(+)"
+  },
+  {
+    "PATH": "C:/Github/Birthub-360-worktrees/handoff-08a-destravamento",
+    "BRANCH": "chore/handoff-08a-destravamento-prs-20261120",
+    "HEAD": "f5dd709c4a01c91f26a6cc6b36f34446d62faa2a",
+    "DIRTY": "0",
+    "AHEAD": "0 BEHIND=10",
+    "UNMERGED_PATCHES": "0",
+    "DIFFSTAT": ""
+  },
+  {
+    "PATH": "C:/Github/Birthub-360-worktrees/handoff-devin-consolidacao",
+    "BRANCH": "chore/handoff-devin-consolidacao-global-20261120",
+    "HEAD": "86288f30bd8f3f564d26c7ab0b0d80f2afc787d0",
+    "DIRTY": "55",
+    "AHEAD": "0 BEHIND=226",
+    "UNMERGED_PATCHES": "0",
+    "DIFFSTAT": ""
+  },
+  {
+    "PATH": "C:/Github/Birthub-360-worktrees/handoff-devin-encerramento-20261121",
+    "BRANCH": "chore/handoff-devin-encerramento-20261121",
+    "HEAD": "0a0ec2e715ea54da04f0354b3f8ba9853ea46b5a",
+    "DIRTY": "0",
+    "AHEAD": "1 BEHIND=0",
+    "UNMERGED_PATCHES": "1",
+    "MERGE_TREE_EXIT": "0",
+    "DIFFSTAT": "1 file changed, 97 insertions(+)"
+  },
+  {
+    "PATH": "C:/Github/Birthub-360-worktrees/handoff-devin-merge",
+    "BRANCH": "devin/handoff-continuidade-merge-20261120",
+    "HEAD": "fdb806d7130f4198e4eb1fdc0b807907b9b8a1de",
+    "DIRTY": "0",
+    "AHEAD": "1 BEHIND=0",
+    "UNMERGED_PATCHES": "1",
+    "MERGE_TREE_EXIT": "0",
+    "DIFFSTAT": "1 file changed, 74 insertions(+)"
+  },
+  {
+    "PATH": "C:/Github/Birthub-360-worktrees/handoff-devin-v2-consolidacao",
+    "BRANCH": "chore/handoff-devin-v2-consolidacao-20261120",
+    "HEAD": "3b293bff83d28acaefe26fe34dbb6e1141c0b18a",
+    "DIRTY": "0",
+    "AHEAD": "0 BEHIND=229",
+    "UNMERGED_PATCHES": "0",
+    "DIFFSTAT": ""
+  },
+  {
+    "PATH": "C:/Github/Birthub-360-worktrees/handoff-restauracao-governanca-20261121",
+    "BRANCH": "chore/handoff-antigravity-restauracao-governanca-20261121",
+    "HEAD": "27d0a5b2debdcab4f942621dac6cc8e1acbd70a9",
+    "DIRTY": "0",
+    "AHEAD": "1 BEHIND=0",
+    "UNMERGED_PATCHES": "1",
+    "MERGE_TREE_EXIT": "0",
+    "DIFFSTAT": "1 file changed, 78 insertions(+)"
+  },
+  {
+    "PATH": "C:/Github/Birthub-360-worktrees/onda1-bloqueadores-p0",
+    "BRANCH": "agente/00-onda1-bloqueadores-p0",
+    "HEAD": "4038509fcb24b54a6babf0c736d9e5dcd234d597",
+    "DIRTY": "0",
+    "AHEAD": "1 BEHIND=230",
+    "UNMERGED_PATCHES": "0",
+    "MERGE_TREE_EXIT": "1",
+    "DIFFSTAT": "30 files changed, 2355 insertions(+), 43 deletions(-)"
+  },
+  {
+    "PATH": "C:/Github/Birthub-360-worktrees/pr471-brand",
+    "BRANCH": "pr471-resolve",
+    "HEAD": "3a02758c3df82144be37cf92073a8dda17418c3e",
+    "DIRTY": "0",
+    "AHEAD": "0 BEHIND=203",
+    "UNMERGED_PATCHES": "0",
+    "DIFFSTAT": ""
+  },
+  {
+    "PATH": "C:/Github/Birthub-360-worktrees/pr486-guard",
+    "BRANCH": "pr486-resolve",
+    "HEAD": "6aa35acab5915741c4a476226ee9e777668e1533",
+    "DIRTY": "0",
+    "AHEAD": "0 BEHIND=123",
+    "UNMERGED_PATCHES": "0",
+    "DIFFSTAT": ""
+  },
+  {
+    "PATH": "C:/Github/Birthub-360-worktrees/wE-02-waveE-outbox-idem",
+    "BRANCH": "wE-02-waveE-outbox-idem",
+    "HEAD": "716c3c6243bb121fdecdd55329f076f0807c6969",
+    "DIRTY": "0",
+    "AHEAD": "0 BEHIND=42",
+    "UNMERGED_PATCHES": "0",
+    "DIFFSTAT": ""
+  },
+  {
+    "PATH": "C:/Github/Birthub-360-worktrees/wE-07-waveE-outbox-idem",
+    "BRANCH": "wE-07-waveE-outbox-idem",
+    "HEAD": "dfb7da5ddf6616d5a5c3c07f5060d0239f0f6306",
+    "DIRTY": "0",
+    "AHEAD": "0 BEHIND=199",
+    "UNMERGED_PATCHES": "0",
+    "DIFFSTAT": ""
+  },
+  {
+    "PATH": "C:/Github/Birthub-360-worktrees/wE-09-waveE-outbox-idem",
+    "BRANCH": "wE-09-waveE-outbox-idem",
+    "HEAD": "4ee1990980c8841d344c7d737f8f697520c1d524",
+    "DIRTY": "0",
+    "AHEAD": "0 BEHIND=62",
+    "UNMERGED_PATCHES": "0",
+    "DIFFSTAT": ""
+  },
+  {
+    "PATH": "C:/Github/Birthub-360-worktrees/wE-10-waveE-outbox-idem",
+    "BRANCH": "wE-10-waveE-outbox-idem",
+    "HEAD": "6aea8b1b48e1c2f94c16622ebd8bb27e61737de2",
+    "DIRTY": "0",
+    "AHEAD": "0 BEHIND=52",
+    "UNMERGED_PATCHES": "0",
+    "DIFFSTAT": ""
+  },
+  {
+    "PATH": "C:/Github/Birthub-360-wt/handoff-devin-central",
+    "BRANCH": "chore/handoff-devin-central-auditoria-20261120",
+    "HEAD": "c2405a8e9c4af000d502646bc7bd61d5d0672ca5",
+    "DIRTY": "0",
+    "AHEAD": "0 BEHIND=229",
+    "UNMERGED_PATCHES": "0",
+    "DIFFSTAT": ""
+  },
+  {
+    "PATH": "C:/Github/Birthub-360-wt/handoff-suite-swarm",
+    "BRANCH": "chore/handoff-devin-suite-swarm-20261120",
+    "HEAD": "42145cadddb0f6fee643acb8f137a5eadea46cd8",
+    "DIRTY": "0",
+    "AHEAD": "0 BEHIND=228",
+    "UNMERGED_PATCHES": "0",
+    "DIFFSTAT": ""
+  },
+  {
+    "PATH": "C:/Github/wt-447-clean",
+    "BRANCH": "agente/07-waveE-outbox-idem",
+    "HEAD": "c1a5ce036d980153b45fed7492f0641318ad3403",
+    "DIRTY": "0",
+    "AHEAD": "0 BEHIND=223",
+    "UNMERGED_PATCHES": "0",
+    "DIFFSTAT": ""
+  },
+  {
+    "PATH": "C:/Github/wt-466-clean",
+    "BRANCH": "agente/03-fix-ownership-coverage",
+    "HEAD": "dc54884bb6c2bb9a9c8a5cb3c7e486f8daa15247",
+    "DIRTY": "0",
+    "AHEAD": "0 BEHIND=222",
+    "UNMERGED_PATCHES": "0",
+    "DIFFSTAT": ""
+  },
+  {
+    "PATH": "C:/Github/wt-handoff-00-consolidacao",
+    "BRANCH": "chore/handoff-00-consolidacao-global-20261120",
+    "HEAD": "0000000000000000000000000000000000000000",
+    "DIRTY": "13291",
+    "BRANCH_MISSING": "1",
+    "DIFFSTAT": ""
+  },
+  {
+    "PATH": "C:/Github/wt-handoff-devin-central",
+    "BRANCH": "chore/handoff-devin-central-operacao-20261121",
+    "HEAD": "82eb67477484ac9ffd6a8c6a7724118fa6780b2c",
+    "DIRTY": "0",
+    "AHEAD": "1 BEHIND=0",
+    "UNMERGED_PATCHES": "1",
+    "MERGE_TREE_EXIT": "0",
+    "DIFFSTAT": "1 file changed, 80 insertions(+)"
+  },
+  {
+    "PATH": "C:/Users/Marcelo/.gemini/antigravity/worktrees/Birthub-360/consolidacao_backlog_birthub360",
+    "BRANCH": "consolidacao_backlog_birthub360",
+    "HEAD": "12503753760093e35d0f7c0f74ef7b51c50f4c7b",
+    "DIRTY": "0",
+    "AHEAD": "1 BEHIND=0",
+    "UNMERGED_PATCHES": "1",
+    "MERGE_TREE_EXIT": "0",
+    "DIFFSTAT": "9 files changed, 826 insertions(+), 52 deletions(-)"
+  },
+  {
+    "PATH": "C:/Users/Marcelo/.gemini/antigravity/worktrees/Birthub-360/execute_setup_script",
+    "BRANCH": "execute_setup_script",
+    "HEAD": "0d790443d10fed5c9da20394b29e43188a07b467",
+    "DIRTY": "0",
+    "AHEAD": "0 BEHIND=0",
+    "UNMERGED_PATCHES": "0",
+    "DIFFSTAT": ""
+  },
+  {
+    "PATH": "C:/Users/Marcelo/.gemini/antigravity/worktrees/Birthub-360/handle_all_hands_subagents",
+    "BRANCH": "handle_all_hands_subagents",
+    "HEAD": "0d790443d10fed5c9da20394b29e43188a07b467",
+    "DIRTY": "0",
+    "AHEAD": "0 BEHIND=0",
+    "UNMERGED_PATCHES": "0",
+    "DIFFSTAT": ""
+  },
+  {
+    "PATH": "C:/Users/Marcelo/.gemini/antigravity/worktrees/Birthub-360/reconcile_handoffs_birthub",
+    "BRANCH": "agente/00-plano-mestre-operacional-100-agentes",
+    "HEAD": "5b1bc5d45cc078f307980687bae65f408f19e58e",
+    "DIRTY": "0",
+    "AHEAD": "5 BEHIND=0",
+    "UNMERGED_PATCHES": "4",
+    "MERGE_TREE_EXIT": "0",
+    "DIFFSTAT": "3 files changed, 246 insertions(+)"
+  },
+  {
+    "PATH": "C:/Users/Marcelo/.gemini/antigravity/worktrees/Birthub-360/update_agents_documentation",
+    "BRANCH": "chore/handoff-antigravity-encerramento-100-agentes-20261121",
+    "HEAD": "7f6c85930f21b4c64a085f6c627380d9243196ce",
+    "DIRTY": "0",
+    "AHEAD": "1 BEHIND=0",
+    "UNMERGED_PATCHES": "1",
+    "MERGE_TREE_EXIT": "0",
+    "DIFFSTAT": "1 file changed, 104 insertions(+)"
+  }
+]
