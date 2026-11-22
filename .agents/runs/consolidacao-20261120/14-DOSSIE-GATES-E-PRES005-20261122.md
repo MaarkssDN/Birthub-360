@@ -46,6 +46,44 @@ Missão recebida via Orquestrador (canal Devin↔ChatGPT): MISSÃO 1 (dossiê de
 
 ---
 
+## 1.5 ERRATA/EVIDÊNCIAS COMPLEMENTARES (2026-11-22, resposta do revisor externo)
+
+### SonarQube — resultado real (substitui "PENDENTE")
+
+Concluiu com **FAILURE nos 4 PRs** (~19:06–19:18 UTC): #534, #535, #536, #537.
+**Fingerprint:** falha na etapa "Run Tests with Coverage" — testes unitários pré-existentes quebram antes da análise Sonar:
+- `tests/unit/shared/middlewares/errorHandler.test.ts:193` — `TypeError: req.header is not a function` (`sendError src/shared/middlewares/errorHandler.ts:207`)
+- `tests/unit/shared/middlewares/errorHandler.test.ts:212` — `AssertionError` (vazamento de `org-b` em resposta de erro)
+**Classificação:** falha de teste unitário em `src/`/`tests/` **não tocados pelos diffs docs-only** → herdada de main (PROVÁVEL; os diffs não alteram código). Não é indisponibilidade do serviço nem quality gate reprovado — é a suíte de testes que falha no step de cobertura.
+
+### Semgrep SAST — os 2 findings identificados
+
+| Arquivo | Regra |
+|---|---|
+| `scripts/security/reencrypt-credentials.ts` | `javascript.express.security.audit.xss.direct-response-write.direct-response-write` |
+| `src/features/integrations/bitrix/bitrix.routes.ts` | mesma regra (XSS direct-response-write) |
+
+Ambos em código-fonte pré-existente, fora do escopo docs-only. Cobertos pelo trabalho de AppSec em andamento (#507/DEC-H02). Classificação: **PROVÁVELMENTE herdado de main** (indício forte: PR #528 idêntico + arquivos não tocados; prova formal por comparação de baseline fica para o revisor).
+
+### application gate/Biome — conciliação da contagem
+
+O log reporta "Found 6 errors" mas lista mais de 6 ocorrências porque várias são do **mesmo arquivo** (RevenueChart.tsx concentra 5) e há warnings FIXABLE misturados. Contagem exata de erros bloqueantes = 6 diagnósticos `error`-level; o restante são warnings. Arquivos afetados: `RevenueChart.tsx`, `EmptyState.tsx`, `MotionWrapper.tsx`, `flowIcons.tsx`, `AuthContext.logoutOfflinePurge.test.tsx`, `flowise-router.service.ts`, `AnalyticsUseCases.ts`, `UsageUseCases.ts` — **nenhum tocado pelos diffs**.
+
+### Gates — quadro final consolidado
+
+| Gate | #534–#537 | Origem |
+|---|---|---|
+| validate-agent-rules | ✅ PASS | resolvido por nomenclatura |
+| secret scan / trivy / dep-review / CodeQL | ✅ PASS | — |
+| build (agregador) | ❌ | cascata de application gate |
+| application gate (Biome) | ❌ | herdado de main — `src/` não tocado |
+| Semgrep SAST | ❌ | herdado de main — 2 findings conhecidos |
+| SonarQube | ❌ | herdado de main — testes unitários `errorHandler.test.ts` falham |
+
+**Todos os diffs são 100% documentais** (`.agents/`, `docs/orchestration/`). Nenhuma falha toca arquivo alterado pelo PR. Classificação global: **PROVÁVELMENTE herdado** — prova final cabe ao revisor independente.
+
+---
+
 ## 2. PACOTE DE HOMOLOGAÇÃO (MISSÃO 4)
 
 | PR | Conteúdo | HEAD | Ownership | Checks obrigatórios | Falhas remanescentes | Auditoria |
