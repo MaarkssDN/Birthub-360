@@ -1,6 +1,19 @@
 # 06 — Validação CI/Testes
 
-**Status:** PENDENTE — nenhum gate executado ainda (Fases 3–4 aguardam aprovação).
+**Status:** ONDA I validada (21/11/2026); gates de código pendentes para após Ondas II–III.
+
+## Gates — Onda I (executados 21/11/2026)
+
+| Gate | Resultado |
+|---|---|
+| Diff acumulado vs `main@0d790443` | ✅ somente `.agents/**` — 23 arquivos, +1594/−52; **zero** alterações em `src/ tests/ prisma/ docs/ .github/` |
+| Não-regressão PR#485 | ✅ diff não toca nenhum arquivo B-01..B-14 (enforcer, session, optout, voice, bitrix, baileys, mobile, ToolEngine, inventario-dados, checklist Prisma) |
+| Integridade referências do índice | ✅ todas as refs `NN-*.md` do `00-INDICE` resolvem para arquivos existentes (00–17) |
+| Encoding UTF-8 | ✅ corrigido cp1252→UTF-8 em `02-BACKLOG-MESTRE.md`; demais validados |
+| Scan de segredos no diff | ✅ nenhum segredo/credencial detectado |
+| Duplicações | ✅ 2 handoffs antigravity da raiz = byte-idênticos às branches (versão commitada prevalece); 2 handoffs `03-*` já na main |
+| Biome/lint/tsc/build | n/a — diff 100% markdown em `.agents/` (sem código) |
+| Gates de código/CI completos | pendentes — Fases 3–4 (após Ondas II–III) |
 
 ## Gates programados para a base consolidada
 

@@ -1,6 +1,17 @@
 # 05 — Consolidação Documental
 
-**Status:** em preparação — aguardando aprovação do plano de integração.
+**Status:** ONDA I EXECUTADA (21/11/2026, autorizada pelo Orquestrador) — Ondas II e III pendentes.
+
+## Executado — Onda I
+
+| # | Branch | Merge commit | Resultado |
+|---:|---|---|---|
+| 1 | `agente/00-plano-mestre-operacional-100-agentes` (`5b1bc5d45`) | `c1b78331e` | limpo — 3 arquivos, +246 |
+| 2 | `consolidacao_backlog_birthub360` (`125037537`) | `bd77a9593` | 1 conflito documental resolvido + reparo de encoding |
+
+**Conflito:** `00-INDICE-CONSOLIDACAO.md` — resolvido com a versão canônica da branch 2 (superconjunto 00–17); a versão do merge 1 continha tabela redundante legada.
+
+**Ajuste documental:** `02-BACKLOG-MESTRE.md` continha a seção "## 2. Backlog Mestre Reconciliado" em cp1252 (mojibake de origem na branch) — convertida para UTF-8 válido. Demais arquivos UTF-8 OK.
 
 ## Estratégia aprovada para execução (pendente OK)
 

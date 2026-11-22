@@ -1,4 +1,8 @@
-# 10 — Matriz Final de Integração (Fase 2 — preparação, merges NÃO executados)
+# 10 — Matriz Final de Integração
+
+**Status:** ONDA I EXECUTADA em 21/11/2026 (autorização Orquestrador). Ondas II e III pendentes.
+
+**Resultado Onda I:** merge 1 `c1b78331e` (limpo); merge 2 `bd77a9593` (1 conflito documental resolvido + fix encoding). Diff acumulado: somente `.agents/**`.
 
 **Base de integração:** `integracao/consolidacao-20261121` @ `0d790443` (= main)
 **Worktree:** `C:\Github\Birthub-360-worktrees\integracao-consolidacao-20261121`
