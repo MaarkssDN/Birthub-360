@@ -8,8 +8,18 @@
 > consolidado, que agora inclui: gatilho `pull_request` com filtro de paths
 > (smoke), correção da base URL para `/api`, overrides de todos os rate
 > limiters, verificação de cobertura via `operations.tested`, controle
-> negativo e sanity anti-SPA. O status deste handoff permanece **aberto** —
-> aprovação de 08A/00 ainda não foi emitida e não é presumida.
+> negativo e sanity anti-SPA.
+>
+> **Evidência de execução real (2026-11-22):** `workflow_dispatch` na branch
+> publicada executou o pipeline completo — serviços, auth Better Auth,
+> sanity `/api`, schemathesis 4.33.4, cobertura `operations.tested=571` e
+> relatórios JUnit/JSON. Resultado: FAILURE por 571 findings reais de
+> contrato (ver `.agents/runs/genesis-consolidacao-20261121/11-EXECUCAO-CI-SCHEMATHESIS.md`,
+> run 45083747478). O "teste esperado" de execução real foi atendido;
+> findings de contrato são débito da API/OpenAPI, não do workflow.
+>
+> O status deste handoff permanece **aberto** — aprovação formal de
+> 08A/00 ainda não foi emitida e não é presumida.
 
 ```
 De: 08 — QA e Release
