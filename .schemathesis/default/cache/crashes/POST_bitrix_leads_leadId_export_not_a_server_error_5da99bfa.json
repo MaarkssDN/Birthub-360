@@ -1,0 +1,128 @@
+{
+  "operation": "POST /bitrix/leads/{leadId}/export",
+  "method": "TRACE",
+  "path_template": "/bitrix/leads/{leadId}/export",
+  "fingerprint": "5da99bfa",
+  "case_id": "2RcVyG",
+  "code_sample": "curl -X TRACE -H 'Content-Type: application/json' -H 'Cookie: [Filtered]' -d '{\"connectionId\": \"0\", \"statusId\": \"\", \"assignedById\": \"\"}' http://127.0.0.1:8899/api/bitrix/leads/0/export",
+  "sequence": [
+    {
+      "method": "TRACE",
+      "url": "http://127.0.0.1:8899/api/bitrix/leads/0/export",
+      "url_template": "http://127.0.0.1:8899/api/bitrix/leads/{leadId}/export",
+      "headers": {
+        "User-Agent": "schemathesis/4.32.7",
+        "Accept-Encoding": "gzip, deflate, zstd",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "X-Schemathesis-TestCaseId": "2RcVyG",
+        "Content-Type": "application/json",
+        "Cookie": "[Filtered]",
+        "Content-Length": "57"
+      },
+      "response": {
+        "status_code": 501,
+        "headers": {
+          "server": "BaseHTTP/0.6 Python/3.14.10",
+          "date": "Sun, 22 Nov 2026 03:13:08 GMT",
+          "connection": "close",
+          "content-type": "text/html;charset=utf-8",
+          "content-length": "483"
+        },
+        "body": "<!DOCTYPE HTML>\n<html lang=\"en\">\n    <head>\n        <meta charset=\"utf-8\">\n        <style type=\"text/css\">\n            :root {\n                color-scheme: light dark;\n            }\n        </style>\n        <title>Error response</title>\n    </head>\n    <body>\n        <h1>Error response</h1>\n        <p>Error code: 501</p>\n        <p>Message: Unsupported method ('TRACE').</p>\n        <p>Error code explanation: 501 - Server does not support this operation.</p>\n    </body>\n</html>\n"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "not_a_server_error",
+          "status": "failure",
+          "message": "Server error"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 2.4400000256719068e-05,
+          "mode": "negative"
+        },
+        "components": {
+          "PATH": "positive",
+          "COOKIE": "positive",
+          "BODY": "positive"
+        },
+        "phase": {
+          "name": "coverage",
+          "data": {
+            "type": "CoveragePhaseData",
+            "description": "Unspecified HTTP method: TRACE",
+            "location": null,
+            "parameter": null,
+            "parameter_location": null,
+            "scenario": "unspecified_http_method"
+          }
+        },
+        "pool_draws": [
+          {
+            "location": "body",
+            "parameter_name": "connectionId",
+            "resource_name": "Connection",
+            "resource_field": "connectionId",
+            "source_operation": "POST /bitrix/connections/{connectionId}/test",
+            "source_status": 200,
+            "source_identity": null,
+            "source_input": true,
+            "source_query": null
+          },
+          {
+            "location": "body",
+            "parameter_name": "assignedById",
+            "resource_name": "AssignedBy",
+            "resource_field": "assignedById",
+            "source_operation": "POST /bitrix/daily-plan/sync",
+            "source_status": 200,
+            "source_identity": null,
+            "source_input": true,
+            "source_query": null
+          }
+        ],
+        "pool_misses": [
+          [
+            "body",
+            "statusId"
+          ]
+        ],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {
+          "PATH": {
+            "leadId": "0"
+          },
+          "COOKIE": {
+            "better-auth.session_token": ""
+          }
+        }
+      },
+      "path": "/bitrix/leads/{leadId}/export",
+      "path_parameters": {
+        "leadId": "0"
+      },
+      "query": {},
+      "case_headers": {},
+      "cookies": {
+        "better-auth.session_token": "[Filtered]"
+      },
+      "case_body": {
+        "encoding": "json",
+        "value": {
+          "connectionId": "0",
+          "statusId": "",
+          "assignedById": ""
+        }
+      },
+      "media_type": "application/json",
+      "parent_index": null,
+      "auth_identity": null,
+      "operation": "POST /bitrix/leads/{leadId}/export"
+    }
+  ]
+}

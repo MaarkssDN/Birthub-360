@@ -1,0 +1,105 @@
+{
+  "operation": "GET /intelligence/agents/sdr/status/{sessionId}",
+  "method": "TRACE",
+  "path_template": "/intelligence/agents/sdr/status/{sessionId}",
+  "fingerprint": "05611039",
+  "case_id": "8HVD8t",
+  "code_sample": "curl -X TRACE -H 'Cookie: [Filtered]' http://127.0.0.1:8899/api/intelligence/agents/sdr/status/0",
+  "sequence": [
+    {
+      "method": "TRACE",
+      "url": "http://127.0.0.1:8899/api/intelligence/agents/sdr/status/0",
+      "url_template": "http://127.0.0.1:8899/api/intelligence/agents/sdr/status/{sessionId}",
+      "headers": {
+        "User-Agent": "schemathesis/4.32.7",
+        "Accept-Encoding": "gzip, deflate, zstd",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "X-Schemathesis-TestCaseId": "8HVD8t",
+        "Cookie": "[Filtered]",
+        "Content-Length": "0"
+      },
+      "response": {
+        "status_code": 501,
+        "headers": {
+          "server": "BaseHTTP/0.6 Python/3.14.10",
+          "date": "Sun, 22 Nov 2026 03:13:07 GMT",
+          "connection": "close",
+          "content-type": "text/html;charset=utf-8",
+          "content-length": "483"
+        },
+        "body": "<!DOCTYPE HTML>\n<html lang=\"en\">\n    <head>\n        <meta charset=\"utf-8\">\n        <style type=\"text/css\">\n            :root {\n                color-scheme: light dark;\n            }\n        </style>\n        <title>Error response</title>\n    </head>\n    <body>\n        <h1>Error response</h1>\n        <p>Error code: 501</p>\n        <p>Message: Unsupported method ('TRACE').</p>\n        <p>Error code explanation: 501 - Server does not support this operation.</p>\n    </body>\n</html>\n"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "not_a_server_error",
+          "status": "failure",
+          "message": "Server error"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 1.7100000150094274e-05,
+          "mode": "negative"
+        },
+        "components": {
+          "PATH": "positive",
+          "COOKIE": "positive"
+        },
+        "phase": {
+          "name": "coverage",
+          "data": {
+            "type": "CoveragePhaseData",
+            "description": "Unspecified HTTP method: TRACE",
+            "location": null,
+            "parameter": null,
+            "parameter_location": null,
+            "scenario": "unspecified_http_method"
+          }
+        },
+        "pool_draws": [
+          {
+            "location": "path",
+            "parameter_name": "sessionId",
+            "resource_name": "Session",
+            "resource_field": "id",
+            "source_operation": "DELETE /auth-extra/sessions/{id}",
+            "source_status": 200,
+            "source_identity": null,
+            "source_input": false,
+            "source_query": null
+          }
+        ],
+        "pool_misses": [],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {
+          "PATH": {
+            "sessionId": "0"
+          },
+          "COOKIE": {
+            "better-auth.session_token": ""
+          }
+        }
+      },
+      "path": "/intelligence/agents/sdr/status/{sessionId}",
+      "path_parameters": {
+        "sessionId": "[Filtered]"
+      },
+      "query": {},
+      "case_headers": {},
+      "cookies": {
+        "better-auth.session_token": "[Filtered]"
+      },
+      "case_body": {
+        "encoding": "none"
+      },
+      "media_type": null,
+      "parent_index": null,
+      "auth_identity": null,
+      "operation": "GET /intelligence/agents/sdr/status/{sessionId}"
+    }
+  ]
+}

@@ -88,3 +88,23 @@ Após cada merge: `git diff` acumulado revisado → sem deleções fora de `.age
 5. Ordem de cherry-pick: `e61cc2789` → `7c50152c9` → `d358fabbd` (fixes do workflow dependem do workflow); docs independentes; testes independentes; `8d271d6fc` pode conflitar se NextBestActionCard mudou na main.
 
 **Proposta:** cherry-pick seletivo na ordem: docs (4) → testes (3) → workflow (3, com correção do `/api` antes do merge) → format (1). Validar `npm run build` + `vitest` nos arquivos de teste + dry-run do workflow em branch descartável antes de promover.
+
+## Execução Onda III (21/11/2026, autorizada — Fases III-A a III-G)
+
+**Reconciliação:** 10 commits pendentes; divergência 10-vs-11 explicada por commits multi-categoria (ca6a71dd6, 766c8b42b, e61cc2789 tocam doc+teste/CI). Matriz arquivo-a-arquivo: 6 commits patch-equivalentes já presentes na main; trabalho real = 1 teste novo + 3 deltas doc + 1 workflow.
+
+**Integrado:**
+- `6f8cea2cc` — teste unitário `voicehub-persistence-runid.test.ts` (novo) + seções "Resolução" nos handoffs 12-para-08 e 18-para-08 + novo handoff `08-para-08A-schemathesis-workflow-aprovacao.md`.
+- `bf3ffd05a` — workflow Schemathesis corrigido (substitui e61cc2789+7c50152c9+d358fabbd):
+  - `--url http://127.0.0.1:3000/api` (provado: schemathesis 4.32.7 prefixa base_path `/api` às operações; sonda local gerou requests em `/api/auth/sso-discover`, `/api/access-requests` etc.)
+  - sessão real via `POST /api/auth/sign-up/email` + cookie `better-auth.session_token` (ALLOW_DEV_AUTH_BYPASS já ativo no CI; sign-up cria organização automaticamente)
+  - `pip install schemathesis==4.32.7` pinado (flags `--url/--max-examples/--checks/--workers/--header/--report-*-path` verificadas no CLI instalado)
+  - smoke em PR (15 exemplos, 2 checks) / deep em schedule+dispatch (50+, 3 checks)
+  - paths do trigger corrigidos para a estrutura real (`src/bootstrap/**`, `src/features/**/routes/**`, `src/shared/**`, `server.ts`, `prisma/schema.prisma`)
+  - sanity anti-SPA (rejeita HTML), verificação de cobertura efetiva (zero ops = falha), controle negativo em PR (URL sem /api DEVE reprovar)
+
+**Equivalentes não reaplicados:** 766c8b42b, fcc5afbcb, e83997afd, 39314fa2e, 8d271d6fc (NextBestActionCard já formatado na main — III-F sem ação).
+
+**Validação:** vitest unitário 2/2 ✅ · CommandPalette 14/14 ✅ · typecheck ✅ · lint:ci ✅ (1517 warnings preexistentes, 0 erros) · openapi-drift ✅ · rls-coverage ✅ · ownership-coverage ✅ · governance-reviews ✅.
+**Falhas preexistentes (não-regressões, src/ idêntico à main):** format:check 6 erros em arquivos não tocados; test:architecture 1 violação depcruise (`LeadUseCases.ts → bitrix/service/settings.ts`).
+**Não executado:** workflow completo do Schemathesis contra API real (exige Postgres/Redis/Meilisearch — Docker remoto, indisponível localmente); validação mecânica da composição de URL feita via sonda HTTP local.

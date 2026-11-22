@@ -1,0 +1,105 @@
+{
+  "operation": "GET /integrations/email/messages",
+  "method": "TRACE",
+  "path_template": "/integrations/email/messages",
+  "fingerprint": "654e694e",
+  "case_id": "Lg6G1O",
+  "code_sample": "curl -X TRACE -H 'Cookie: [Filtered]' 'http://127.0.0.1:8899/api/integrations/email/messages?leadId='",
+  "sequence": [
+    {
+      "method": "TRACE",
+      "url": "http://127.0.0.1:8899/api/integrations/email/messages?leadId=",
+      "url_template": "http://127.0.0.1:8899/api/integrations/email/messages",
+      "headers": {
+        "User-Agent": "schemathesis/4.32.7",
+        "Accept-Encoding": "gzip, deflate, zstd",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "X-Schemathesis-TestCaseId": "Lg6G1O",
+        "Cookie": "[Filtered]",
+        "Content-Length": "0"
+      },
+      "response": {
+        "status_code": 501,
+        "headers": {
+          "server": "BaseHTTP/0.6 Python/3.14.10",
+          "date": "Sun, 22 Nov 2026 03:13:18 GMT",
+          "connection": "close",
+          "content-type": "text/html;charset=utf-8",
+          "content-length": "483"
+        },
+        "body": "<!DOCTYPE HTML>\n<html lang=\"en\">\n    <head>\n        <meta charset=\"utf-8\">\n        <style type=\"text/css\">\n            :root {\n                color-scheme: light dark;\n            }\n        </style>\n        <title>Error response</title>\n    </head>\n    <body>\n        <h1>Error response</h1>\n        <p>Error code: 501</p>\n        <p>Message: Unsupported method ('TRACE').</p>\n        <p>Error code explanation: 501 - Server does not support this operation.</p>\n    </body>\n</html>\n"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "not_a_server_error",
+          "status": "failure",
+          "message": "Server error"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 1.1799999811046291e-05,
+          "mode": "negative"
+        },
+        "components": {
+          "COOKIE": "positive",
+          "QUERY": "positive"
+        },
+        "phase": {
+          "name": "coverage",
+          "data": {
+            "type": "CoveragePhaseData",
+            "description": "Unspecified HTTP method: TRACE",
+            "location": null,
+            "parameter": null,
+            "parameter_location": null,
+            "scenario": "unspecified_http_method"
+          }
+        },
+        "pool_draws": [
+          {
+            "location": "query",
+            "parameter_name": "leadId",
+            "resource_name": "Lead",
+            "resource_field": "id",
+            "source_operation": "POST /activities",
+            "source_status": 200,
+            "source_identity": null,
+            "source_input": true,
+            "source_query": null
+          }
+        ],
+        "pool_misses": [],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {
+          "COOKIE": {
+            "better-auth.session_token": ""
+          },
+          "QUERY": {
+            "leadId": ""
+          }
+        }
+      },
+      "path": "/integrations/email/messages",
+      "path_parameters": {},
+      "query": {
+        "leadId": ""
+      },
+      "case_headers": {},
+      "cookies": {
+        "better-auth.session_token": "[Filtered]"
+      },
+      "case_body": {
+        "encoding": "none"
+      },
+      "media_type": null,
+      "parent_index": null,
+      "auth_identity": null,
+      "operation": "GET /integrations/email/messages"
+    }
+  ]
+}

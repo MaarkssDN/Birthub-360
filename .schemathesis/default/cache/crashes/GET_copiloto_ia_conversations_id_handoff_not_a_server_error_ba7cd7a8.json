@@ -1,0 +1,93 @@
+{
+  "operation": "GET /copiloto-ia/conversations/{id}/handoff",
+  "method": "TRACE",
+  "path_template": "/copiloto-ia/conversations/{id}/handoff",
+  "fingerprint": "ba7cd7a8",
+  "case_id": "4Qpsw8",
+  "code_sample": "curl -X TRACE -H 'Cookie: [Filtered]' http://127.0.0.1:8899/api/copiloto-ia/conversations/0/handoff",
+  "sequence": [
+    {
+      "method": "TRACE",
+      "url": "http://127.0.0.1:8899/api/copiloto-ia/conversations/0/handoff",
+      "url_template": "http://127.0.0.1:8899/api/copiloto-ia/conversations/{id}/handoff",
+      "headers": {
+        "User-Agent": "schemathesis/4.32.7",
+        "Accept-Encoding": "gzip, deflate, zstd",
+        "Accept": "*/*",
+        "Connection": "keep-alive",
+        "X-Schemathesis-TestCaseId": "4Qpsw8",
+        "Cookie": "[Filtered]",
+        "Content-Length": "0"
+      },
+      "response": {
+        "status_code": 501,
+        "headers": {
+          "server": "BaseHTTP/0.6 Python/3.14.10",
+          "date": "Sun, 22 Nov 2026 03:12:57 GMT",
+          "connection": "close",
+          "content-type": "text/html;charset=utf-8",
+          "content-length": "483"
+        },
+        "body": "<!DOCTYPE HTML>\n<html lang=\"en\">\n    <head>\n        <meta charset=\"utf-8\">\n        <style type=\"text/css\">\n            :root {\n                color-scheme: light dark;\n            }\n        </style>\n        <title>Error response</title>\n    </head>\n    <body>\n        <h1>Error response</h1>\n        <p>Error code: 501</p>\n        <p>Message: Unsupported method ('TRACE').</p>\n        <p>Error code explanation: 501 - Server does not support this operation.</p>\n    </body>\n</html>\n"
+      },
+      "link": null,
+      "checks": [
+        {
+          "name": "not_a_server_error",
+          "status": "failure",
+          "message": "Server error"
+        }
+      ],
+      "meta": {
+        "generation": {
+          "time": 1.5999999959603883e-05,
+          "mode": "negative"
+        },
+        "components": {
+          "PATH": "positive",
+          "COOKIE": "positive"
+        },
+        "phase": {
+          "name": "coverage",
+          "data": {
+            "type": "CoveragePhaseData",
+            "description": "Unspecified HTTP method: TRACE",
+            "location": null,
+            "parameter": null,
+            "parameter_location": null,
+            "scenario": "unspecified_http_method"
+          }
+        },
+        "pool_draws": [],
+        "pool_misses": [],
+        "semantic_draws": [],
+        "dictionary_draws": [],
+        "constants_draws": [],
+        "raw_containers": {
+          "PATH": {
+            "id": "0"
+          },
+          "COOKIE": {
+            "better-auth.session_token": ""
+          }
+        }
+      },
+      "path": "/copiloto-ia/conversations/{id}/handoff",
+      "path_parameters": {
+        "id": "0"
+      },
+      "query": {},
+      "case_headers": {},
+      "cookies": {
+        "better-auth.session_token": "[Filtered]"
+      },
+      "case_body": {
+        "encoding": "none"
+      },
+      "media_type": null,
+      "parent_index": null,
+      "auth_identity": null,
+      "operation": "GET /copiloto-ia/conversations/{id}/handoff"
+    }
+  ]
+}
