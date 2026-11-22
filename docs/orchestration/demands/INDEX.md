@@ -15,6 +15,7 @@
 | DEM-20261114-006 | Backlog de Ondas — Onda 5 (UX states/i18n/onboarding + contraste + API contracts) + TAREFA-SANEAMENTO-011 | 00 → 02/03/18/14 | EM_ANDAMENTO | 2026-11-14 |
 
 | DEM-20261116-001 | Backlog Ondas — Onda 5 backlog (UX/forms/a11y/API) | 00 → 02/03/18 | EM_ANDAMENTO | 2026-11-16 |
+| DEM-20261118-001 | Etapa 0 do Plano de Saneamento — Reconciliação PRs × Achados | 00 | CONCLUÍDA | 2026-11-20 |
 
 ## Sessões conhecidas
 | Agente | Sessão | Estado confirmado |
