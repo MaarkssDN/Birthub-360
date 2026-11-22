@@ -34,3 +34,30 @@ Status: `VERIFICADO` = confirmado em git/GitHub; `REPORTADO` = evidência de age
 | G-28 | AUD-1 segurança por domínio (#396/#397/#401) | Segurança | 05/06/15 | Abertos | P1 | CI | — | CI + merge | Sanitização/RBAC |
 | G-29 | Envelope erro unificado + OpenAPI (#399) | Contratos | 18 | Aberto | P2 | CI | — | CI + merge | Contrato único |
 | G-30 | Flaky e2e (#403), Schemathesis noturno (#400 merged?) | QA | 14/08 | #403 aberto; #400 mergeado | P2 | CI | git log | CI + merge #403 | Suite estável |
+
+---
+
+## 2. Backlog Mestre Reconciliado — 20 Atividades Rumo à Homologação
+
+| ID | Prioridade | Domínio / Squad | Agente Dono | Tarefa Técnica | Origem / PR | Status Verificado | Critério de Aceite |
+|:---|:---:|:---|:---:|:---|:---|:---:|:---|
+| **BM-P0-01** | **P0** | Squad 90 (Infra/CI) | 94 Tess | Formatação Biome em LeadUseCases.ts e CopilotoIaUseCases.ts | PR #511 | **BLOQUEADO** (Dependency Cruiser) | Prettier/Biome verde no CI em main |
+| **BM-P0-02** | **P0** | Squad 90 (AppSec) | 99 Vito | Remediação de Achados Semgrep / SAST (TLS e Bitrix) | PR #507 (Draft) | **EM_ANDAMENTO** | Semgrep SAST 100% verde sem waivers |
+| **BM-P0-03** | **P0** | Squad 10/00 (Dados/LGPD) | 11 Pietro / 07 Íris | Auditoria e Deliberação SwarmAuditLog (DEC-H01) | PR #487 (Draft) | **AGUARDANDO_APROVACAO** | Deliberação formal (RESTRICT + Anonimização) |
+| **BM-P0-04** | **P0** | Squad 90 (SecOps) | 90 Hélio / Humano | Portas Docker Host (2375) e Rotação de Segredos | Host / DEBT-0005 | **PENDENTE** | Porta 2375 fechada / TLS mútuo; chaves rotacionadas |
+| **BM-P1-01** | **P1** | Squad 40 (CRM) | 41 Cadu | Integração CRM Trilha E (DEBT-0017/18/19) | PR #434 | **CONCLUÍDO_SEM_VALIDACAO** | Conflito em PrismaContactRepository 100% sanado |
+| **BM-P1-02** | **P1** | Squad 40 (Prospecção) | 43 Amon | Persistência e Deduplicação Cold-Email (DEBT-0011) | PR #437 | **EM_ANDAMENTO** | Hash SHA-256 e deduplicação no banco |
+| **BM-P1-03** | **P1** | Squad 90/20 (Segurança) | 96 Nera / 97 Rocco | Pacote AUD-1 Segurança (SSRF, cookies seguros, RBAC) | PRs #396, #397, #401 | **CONCLUÍDO_SEM_VALIDACAO** | Cookies com SameSite=Strict e rotas protegidas |
+| **BM-P1-04** | **P1** | Squad 20/00 (Contratos) | 21 Zara / 04 Téo | Padronização RFC 7807 e Runner Schemathesis | PR #399 | **CONCLUÍDO_SEM_VALIDACAO** | Erros no formato pplication/problem+json |
+| **BM-P1-05** | **P1** | Squad 00 (QA) | 04 Téo | Saneamento de Handoffs de QA e Schemathesis CLI | PR #386 | **CONCLUÍDO_SEM_VALIDACAO** | CLI executa sem flags depreciadas |
+| **BM-P1-06** | **P1** | Squad 00 (Automação E2E) | 05 Luma | Estabilização de Testes Flaky E2E | PR #403 | **EM_ANDAMENTO** | 10 execuções Playwright consecutivas verdes |
+| **BM-P1-07** | **P1** | Squad 90 (SecOps) | 99 Vito | Renovação de Exceções Hotspot e Waivers Trivy | Config / DEBT-0020 | **PENDENTE** | Waivers renovados até 2026-12-31 |
+| **BM-P2-01** | **P2** | Squad 90/10 (Segurança) | 99 Vito / 10 Mara | Scanner Real no ContinuousSecurityAudit (EXP-06) | PR #484 / Branch 10 | **EM_ANDAMENTO** | Flag simulated: false e persistência de auditoria |
+| **BM-P2-02** | **P2** | Squad 70/00 (IA/LGPD) | 77 Gaia / 07 Íris | Detecção Anti-Encoding em piiDetection.service.ts | Branch 07 | **EM_ANDAMENTO** | Sanitização contra base64/hex encoding |
+| **BM-P2-03** | **P2** | Squad 00 (QA) | 03 Nina | Cobertura de Testes SonarQube 80% (DEBT-0026) | PR #430 | **EM_ANDAMENTO** | Quality gate SonarQube verde em CI |
+| **BM-P2-04** | **P2** | Squad 30 (Acessibilidade) | 34 Ari | Acessibilidade WCAG 2.2 AA (labels e contraste) | PRs #462, #463 | **CONCLUÍDO_SEM_VALIDACAO** | Zero violações axe-core em páginas críticas |
+| **BM-P2-05** | **P2** | Squad 90 (Auth) | 96 Nera | Desconexão Google OAuth e Relatório B-02 | PR #505 (Draft) | **CONCLUÍDO_SEM_VALIDACAO** | Revogação de tokens e testes de /disconnect |
+| **BM-P2-06** | **P2** | Squad 00 (Governança) | 00 Astra / 01 Ória | Reconciliação do Acervo de Handoffs (607 arquivos) | PR #524 / PR #528 | **CONCLUÍDO_VERIFICADO** | Acervo de handoffs 100% rastreado no git |
+| **BM-P3-01** | **P3** | Squad 00 (Governança) | 00 Astra / 02 Bento | Extensão do Gate de Ownership de Prosa | Script / Manifest | **PENDENTE** | Bloqueio de commits sem agente proprietário |
+| **BM-P3-02** | **P3** | Squad 30 (UX/UI) | 31 Noa / 37 Suri | Limpeza Residual UX e Avatar de Perfil | Branches UX | **CONCLUÍDO_SEM_VALIDACAO** | Limpeza de código morto e upload de avatar |
+| **BM-P3-03** | **P3** | Squad 00 (QA) | 04 Téo | Automação Noturna de Schemathesis Fuzzing | Workflow / CI | **CONCLUÍDO_VERIFICADO** | Cron noturno executando em ambiente staging |
