@@ -127,3 +127,23 @@ Após cada merge: `git diff` acumulado revisado → sem deleções fora de `.age
 **Classificação das 7 alterações staged da worktree Devin:** 1 já integrada (`devin-para-00-continuidade-consolidacao-global-20261120.md`, idêntica à HEAD); 6 **potencialmente destrutivas** — são snapshots antigos que reverteriam `Status: resolvido→aberto/em-andamento` e apagariam `Resolução-ref` de pareceres aprovados (PRs #427/#441/#453, Agente 24/02/07). Recomendação: NÃO incorporar; manter como evidência; descarte cabe ao dono da worktree mediante aprovação.
 
 **Pendências preexistentes (não-regressões, src/ idêntico à main):** format:check 6 erros (copiloto-ia ×3 [sem dono declarado na MATRIZ — gap], crm/application/LeadUseCases [Agente 40/território compartilhado], crm/routing/round-robin.test [Agente 47], voice-hub/services/callRecord [não listado — lacuna voice-hub/services]); test:architecture 1 violação depcruise introduzida por `150c1686c` (2026-11-19, main): `LeadUseCases.ts → integrations/bitrix/service/settings.ts` — import dinâmico cross-feature; baseline de violações conhecidas não cobre esse alvo.
+
+## Fase 4 — Saneamento corretivo pós-auditoria (21/11/2026)
+
+**SHA:** `04897f200` → `9326a3a3f`. Checkpoint `checkpoint/genesis-fase4-pre-correcao`.
+
+| # | Achado Agente 09 | Correção aplicada | Evidência |
+|---|---|---|---|
+| 1 | BLOCKER csrfGuard sem Origin | `Origin`+`Referer` em todos os requests schemathesis (run e controle negativo); sign-up/sign-in já enviavam Origin | yaml revisado; csrfGuard em src/bootstrap/security.ts exige Origin/Referer em não-GET com cookie |
+| 2 | BLOCKER rate limiters | Overrides `API/AI/BUG_REPORT/EXPORT/PUBLIC_LEAD/PUBLIC_BOOKING=100000`, `AUTH=5000` no env do job + `.env.test`; só NODE_ENV=test | env.ts defaults intactos; overrides restritos ao job efêmero |
+| 3 | MAJOR vazamento Set-Cookie | Removido `echo "$SIGNUP"`; sign-up agora grava body em /tmp e valida só HTTP code; cookie vai a GITHUB_ENV sem log | diff do step |
+| 4 | MAJOR duplicação workflows | **Consolidação:** `schemathesis-fuzzing.yml` REMOVIDO; capacidades fundidas em `api-schema-fuzz.yml` (já revisado no PR #400): gatilho PR paths, smoke/deep, -u /api, overrides, cobertura, controle negativo, sanity | `git rm` + rewrite do arquivo único |
+| 5 | MAJOR aprovação 08A pendente | Handoff `08-para-08A` atualizado: objeto de aprovação agora é `api-schema-fuzz.yml` consolidado; **status mantido ABERTO** — sem aprovação presumida | doc atualizado |
+| 6 | MINOR cobertura fraca | Step dedicado parseia `schemathesis-report.json`: `operations.tested`, `operations.selected`, `test_cases.generated`; `tested==0 or generated==0` → exit 1 | estrutura confirmada em cli/json_report.py do pacote 4.x |
+| 7 | MINOR `it` tautológico | Substituído por asserção real: `ORG_A` deve interpolar `${RUN_ID}` com backticks (detecta desacoplamento tenant/run) | vitest 2/2 ✅ |
+
+**Bug adicional encontrado e corrigido:** `api-schema-fuzz.yml` original usava `-u http://127.0.0.1:3000` SEM `/api` — mesmo defeito do workflow duplicado (requests caíam na SPA/404; job não-bloqueante mascarava). Corrigido para `-u .../api`.
+
+**Auditoria do cache `.schemathesis/` (item 9):** 511 arquivos commitados em `065a73a1a`, removidos em `00e7f8e7d`. Inspeção read-only: todos os `Cookie` aparecem como `[Filtered]` (auto-masking do schemathesis), base_url `127.0.0.1:8899` (sonda local), zero credenciais reais (a sonda não usou auth). Conteúdo = nomes de rotas públicas do OpenAPI + respostas da sonda. **Conclusão: sem segredos; higienização de histórico NÃO recomendada** (custo/risco > benefício; objetos inertes). `.gitignore` agora cobre `.schemathesis/`.
+
+**Validação:** vitest 2/2 ✅ · typecheck ✅ · YAML parse ✅ · diff vs main: `.agents/**` + `api-schema-fuzz.yml` + teste + `.gitignore`. Gates preexistentes inalterados (format:check, test:architecture — pendências documentadas).
