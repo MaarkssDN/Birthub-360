@@ -160,3 +160,16 @@ Veredito da 2ª rodada: 6/7 achados confirmados corrigidos; **1 bug novo introdu
 - Paths do trigger agora cobrem src/config/**.
 
 **Estado dos gates preexistentes:** format:check (6 erros) e test:architecture (1 violação depcruise) permanecem — idênticos à main, fora de escopo.
+
+## Validação de ownership — api-schema-fuzz.yml (Agente 00, 2026-11-22)
+
+- `.github/AGENTS.md`: dono declarado = Agente 08 (QA e Release); workflows exigem aprovação 08A/00.
+- Arquivo auditado: `api-schema-fuzz.yml` — base revisada no PR #400 (Agente 08), consolidada pelo Genesis com correções exigidas pelo Agente 09.
+- Validação Agente 00 (escopo, não assinatura): diff confere com as 7 correções autorizadas + 1 fix de exit code; sem alterações fora do escopo de CI; permissões `contents: read`; nenhuma credencial real.
+- **Parecer formal 08A/00: PENDENTE** — handoff `08-para-08A-schemathesis-workflow-aprovacao.md` permanece aberto; não presumido.
+
+## Estado HEAD vs tags
+
+- `audit/genesis-fase4-submissao` → `cb8b8ccdd` (SHA da 2ª auditoria Agente 09)
+- `audit/genesis-fase4-final` → `92a95528f` (correção `|| true` + paths + gitignore)
+- HEAD atual → `d2059c594` = `92a95528f` + 1 commit documental (registro da re-auditoria). Diff de código/CI idêntico ao auditado; delta é só `.agents/runs/**`.
