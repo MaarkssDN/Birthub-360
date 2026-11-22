@@ -166,3 +166,67 @@ O mesmo runtime Devin atuou como executor (Astra, PRs #534–#536) e auditor (Si
 - C) PRES-005: ✅ (§3)
 - D) Tabela homologação: ✅ (§2)
 - E) Desfecho no canal: registrado em `Chatgpt Responder.txt`
+
+---
+
+## 7. MISSÃO MESTRE — FOTOGRAFIA FORENSE E PACOTE FINAL (2026-11-22 ~20:00 UTC)
+
+### 7.1 Fotografia forense revalidada
+
+| Item | Estado verificado |
+|---|---|
+| `origin/main` | `0d790443d10fed5c9da20394b29e43188a07b467` — **inalterado** |
+| #534 | OPEN, HEAD `5d6a61c19ede9a1746faec1ceee415f18c90f814`, MERGEABLE |
+| #535 | OPEN, HEAD `4d01e6b077405812efcf418c4f14e375424d4568`, MERGEABLE |
+| #536 | OPEN, HEAD `f80aca2be2b3be3b3b4e2d91f805b4c2f50eb688`, MERGEABLE |
+| #537 | OPEN, HEAD `a37f8e97b` (este commit adicionará novo HEAD) |
+| #531/#532/#533 | OPEN, SHAs idênticos aos substitutos, MERGEABLE — mantidos até autorização de fechamento |
+
+Nenhuma divergência de SHA detectada. Sem alterações concorrentes nos arquivos dos PRs.
+
+### 7.2 Dossiê de CI — estado consolidado
+
+Classificação final dos gates vermelhos nos 4 PRs (todos com diffs 100% documentais):
+
+| Gate | Fingerprint | Em main? | Classe |
+|---|---|---|---|
+| build | agregador `APPLICATION_GATE_RESULT=failure` | sim (cascata) | CONFIRMADO herdado |
+| application gate | `biome format` — 6 arquivos não formatados | run 44856026585, mesmos 6 arquivos | CONFIRMADO herdado |
+| Semgrep | 2 findings: `reencrypt-credentials.ts:565` (bypass-tls-verification), `bitrix.routes.ts:837` (xss.direct-response-write) | run 44856026622, idênticos | CONFIRMADO herdado |
+| SonarQube | "Run Tests with Coverage" — 5 arquivos/32 testes falhos (errorHandler.test.ts etc.) | run 44856026577, fingerprint bit-a-bit idêntico | CONFIRMADO herdado |
+| validate-agent-rules | — | — | RESOLVIDO por conformidade de branch |
+
+### 7.3 Pacote para auditoria independente (Missão B)
+
+Despacho preparado para instância separada designada pelo Orquestrador. Escopo read-only:
+- Diffs completos: `gh pr diff 534|535|536|537`
+- SHAs exatos (§7.1), ownership (§15 AGENTS.md), checks (§7.2)
+- Parecer Silas em #536 = evidência técnica, **não** ratificação
+- Veredito esperado: APROVADO / APROVADO COM RESSALVAS / REPROVADO / BLOQUEADO POR FALTA DE EVIDÊNCIA
+- **Status: aguardando designação humana do revisor**
+
+### 7.4 PRES-005 — matriz de risco prioritária
+
+| Worktree/Branch | HEAD | Upstream | Estado | Criticidade | Estratégia proposta |
+|---|---|---|---|---|---|
+| `integracao/consolidacao-20261121` | `d2059c594` (revalidar — Genesis ativa) | SEM-REMOTO | commits locais não publicados | 🔴 ALTA — sessão ativa | backup/push de preservação após autorização |
+| `agente/03-telas-brand-system` | — | AHEAD-107 | commits não alcançáveis em remoto | 🟠 MÉDIA | verificar equivalência em PRs antes de backup |
+| `update_agents_documentation` | — | AHEAD-40 | idem | 🟠 MÉDIA | idem |
+| checkout principal | `0d790443d` | sujo (28 entradas) | alterações não commitadas | 🟠 MÉDIA | inventário + commit de preservação ou stash documentado |
+| `handoff-devin-consolidacao` | `86288f30b` | sujo (7) | idem | 🟠 MÉDIA | idem |
+| stash `stash@{0}` | WIP onda-2 `6b84a7f96` | — | 1 stash | 🟡 BAIXA | registrar referência; não aplicar |
+
+**Nenhuma operação executada** — sem push, reset, clean, prune, rebase ou stash pop.
+
+### 7.5 Triagem de credenciais — encaminhamento Agente 98 (Safira)
+
+Solicitação documental registrada: o handoff `11-para-15-env-identidade-visual.md` (preservado em #535) lista nomes de chaves e comprimentos de um `.env` externo populado (DATABASE_URL, BETTER_AUTH_SECRET, CREDENTIALS_ENCRYPTION_KEY, PII_BLIND_INDEX_KEY, STORAGE_ACCESS_KEY_ID). **Sem valores expostos.** Safira deve: classificar criticidade, identificar serviços afetados, propor plano de mitigação/rotação. Nenhuma rotação unilateral executada.
+
+### 7.6 Decisões pendentes do Orquestrador
+
+- **A)** Designar revisor independente para #534/#535/#536/#537 → pacote pronto em §7.3
+- **B)** Exceções gate a gate — evidência comparativa completa em §7.2; exige A + autorização explícita
+- **C)** Preservação remota dos commits locais críticos — requer autorização operacional específica
+- **D)** Encerramento como SUPERSEDED de #531/#532/#533 — somente após homologação dos substitutos
+
+**Ordem de integração candidata:** #536 → #534 → #535, com #537 avaliado por utilidade documental (pode ser mergeado junto ou mantido como evidência).
