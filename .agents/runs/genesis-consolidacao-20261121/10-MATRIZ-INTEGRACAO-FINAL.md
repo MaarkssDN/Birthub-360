@@ -147,3 +147,16 @@ Após cada merge: `git diff` acumulado revisado → sem deleções fora de `.age
 **Auditoria do cache `.schemathesis/` (item 9):** 511 arquivos commitados em `065a73a1a`, removidos em `00e7f8e7d`. Inspeção read-only: todos os `Cookie` aparecem como `[Filtered]` (auto-masking do schemathesis), base_url `127.0.0.1:8899` (sonda local), zero credenciais reais (a sonda não usou auth). Conteúdo = nomes de rotas públicas do OpenAPI + respostas da sonda. **Conclusão: sem segredos; higienização de histórico NÃO recomendada** (custo/risco > benefício; objetos inertes). `.gitignore` agora cobre `.schemathesis/`.
 
 **Validação:** vitest 2/2 ✅ · typecheck ✅ · YAML parse ✅ · diff vs main: `.agents/**` + `api-schema-fuzz.yml` + teste + `.gitignore`. Gates preexistentes inalterados (format:check, test:architecture — pendências documentadas).
+
+## Re-auditoria Agente 09 (2ª rodada) + correção final — 21/11/2026
+
+**SHA auditado:** `cb8b8ccdd` → **HEAD final: `92a95528f`** (tag `audit/genesis-fase4-final`).
+
+Veredito da 2ª rodada: 6/7 achados confirmados corrigidos; **1 bug novo introduzido por mim**: `|| true` no step de controle negativo tornava `NEG_EXIT` sempre 0 → step falharia em 100% dos PRs sem validar nada. Corrigido em `92a95528f` (remoção do `|| true`; `set +e` já protegia) + `src/config/**` adicionado aos paths do trigger + `.gitignore` para artefatos locais do schemathesis. Verificação mecânica do trecho final confirma captura correta do exit code.
+
+**Limitações registradas (não-bloqueantes, aceitas):**
+- `/api/public/lead-capture` e `/api/public/data-subject-requests` têm limiters hardcoded (5/10) não configuráveis por env → 429 nesses endpoints; ambos documentam 429 no spec → não reprova, gera ruído de findings (propósito do job não-bloqueante).
+- Controle negativo é indireto (depende de mutações falharem sem /api).
+- Paths do trigger agora cobrem src/config/**.
+
+**Estado dos gates preexistentes:** format:check (6 erros) e test:architecture (1 violação depcruise) permanecem — idênticos à main, fora de escopo.
