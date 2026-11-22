@@ -213,13 +213,23 @@ Branches/worktrees: 30+ worktrees ativos listados em `git worktree list` (waves 
 
 ## SEÇÃO 11 — PRÓXIMOS PASSOS
 
-1. **Agente 00 — Astra + Agente 94 — Tess:** resolver o bloqueio de governança do PR #530 — o padrão `agente/NN-slug` não contempla ferramentas externas (`devin/*`, `chore/handoff-*`, `antigravity/*`); decidir extensão do padrão ou NN formal, **sem desativar o gate e sem force-push**. Afeta TODOS os PRs de handoff (#523–#530).
-2. **Agente 00 — Astra:** incorporar PEND-DEVIN-01, 02, 03, 05 ao backlog mestre (04 resolvido); decidir lockfile canônico.
-3. **Agente 99 — Vito + Agente 94 — Tess:** PR de bump `instrumentation-http` >=0.222.0 no `package-lock.json` (+ destino do `pnpm-lock.yaml`); evidência: alertas 111/112(/118) fechados.
-4. **Agentes 05 — Luma + 36 — Léo:** cobertura visual da landing (PEND-DEVIN-05).
-5. **Agente 94 — Tess + 99 — Vito:** triar falhas preexistentes de CI na main (R8: Semgrep, SonarQube, build, application gate, Schemathesis, Release).
-6. **Agente 09 — Silas:** parecer sobre este handoff/PR #530 com SHA exato fixado.
-7. **Orquestrador Humano:** dispensar formalmente os alertas picomatch se ainda constarem (já resolvidos segundo API).
+> **Atualização 2026-11-22 — DESPACHO DE GOVERNANÇA do orquestrador** (dirigido a Astra+Tess, registrado aqui para rastreabilidade). Determinações:
+>
+> 1. **Branches:** priorizar padrão oficial `agente/NN-*`, atribuindo alterações ao agente proprietário independente da ferramenta executora. Astra+Tess verificam a matriz de propriedade e propõem **migração controlada** dos PRs afetados (#526, #527, #530). **Não** ampliar prefixes aceitos nem desativar o gate. Investigar também a implementação incompleta das verificações de ownership e parecer independente no `enforce-governance.yml` (os steps de ownership e de parecer do auditor são stubs com `echo`, linhas ~26-40).
+> 2. **Auditoria PR #530:** HEAD `5513c7fbc016203198930bba6a45268190086bf2` encaminhado a instância efetivamente independente — verificar integridade do handoff, reconciliação PR421, evidências de segurança e cobertura visual declarada.
+> 3. **Dependências/lockfiles:** Vito+Tess investigam OTel pendente e decidem fundamentadamente sobre `pnpm-lock.yaml`. **`package-lock.json` permanece referência operacional** até política formal em contrário. Não remover lockfiles nem modificar deps sem análise de impacto.
+> 4. **Visual landing:** PEND-DEVIN-05 → Agentes 05 (Luma) e 36 (Léo), com baselines, rotas e critérios de aceite. Aprovação de `/app/*` **não** é aprovação visual global.
+> 5. **Gates preexistentes:** reutilizar evidências do **PR #537**, verificando aplicabilidade ao HEAD do #530; não duplicar dossiês nem conceder exceções automáticas.
+> 6. **Condições:** apresentar PRs regularizados + parecer independente + checks atuais + pendências para homologação humana. **Nenhum merge, force push, bypass, exclusão ou alteração de proteção de branches autorizado.**
+
+Sequência operacional resultante:
+
+1. **Agente 00 — Astra + Agente 94 — Tess:** migrar PRs de handoff para branches `agente/NN-*` do agente proprietário (verificar `.agents/MATRIZ_PROPRIEDADE.md`); propor mapeamento ferramenta→NN. Inclui investigar os stubs de ownership/parecer no workflow.
+2. **Agente 99 — Vito + Agente 94 — Tess:** investigação OTel `instrumentation-http` >=0.222.0 no `package-lock.json` + decisão fundamentada sobre `pnpm-lock.yaml`.
+3. **Agentes 05 — Luma + 36 — Léo:** PEND-DEVIN-05 (cobertura visual landing).
+4. **Agente 94 — Tess + 99 — Vito:** aplicar/verificar evidências do PR #537 quanto às falhas preexistentes (R8).
+5. **Instância independente designada:** parecer sobre PR #530 @ `5513c7fbc`.
+6. **Orquestrador Humano:** homologação final.
 
 ## SEÇÃO 12 — INSTRUÇÕES PARA ASTRA
 
@@ -232,7 +242,7 @@ Branches/worktrees: 30+ worktrees ativos listados em `git worktree list` (waves 
 - **Falhas de CI preexistentes na main** (Semgrep, SonarQube, build, application gate, Schemathesis, Release) não são causadas por este handoff — triar separadamente (R8).
 - Atenção à coexistência de ~30 worktrees e múltiplas sessões Devin/Antigravity ativas: antes de despachar, reconciliar `.agents/handoffs/` (há handoffs untracked de várias sessões).
 - Documentos de referência: este handoff; `.agents/reviews/24-revisao-pr421-20261119.md` e `24-revisao-pos-merge-pr421-20261119.md`; `.agents/MATRIZ_PROPRIEDADE.md`; `AGENTS.md`; `.github/workflows/enforce-governance.yml`.
-- Decisão humana pendente: (a) padrão de branch para ferramentas externas; (b) lockfile canônico; (c) se push direto na main deve continuar permitido para docs.
+- Decisões humanas pendentes — **atualizado pelo despacho de 2026-11-22**: (a) padrão de branch → **decidido**: migrar para `agente/NN-*` do proprietário (execução Astra+Tess); (b) lockfile → **`package-lock.json` é a referência operacional**; decisão sobre pnpm-lock delegada a Vito+Tess; (c) push direto na main para docs → sem orientação nova, manter recomendação de PRs.
 
 ---
 
