@@ -24,5 +24,5 @@
 
 - ~~Recuperação do index contaminado~~ **EXECUTADO** (autorização Orquestrador): `src/tests/docs/prisma` restaurados ao HEAD; 2 pareceres do Agente 09 recuperados; 7 docs `.agents/` legítimos preservados staged.
 - ~~Realinhamento da branch órfã~~ **EXECUTADO**: `chore/handoff-00-consolidacao-global-20261120` → `b0deaf09` (tracking origin); `5cddf447e` preservado na tag `backup/genesis-20261121-wt-handoff-00-snapshot`.
-- ~~Matriz final de integração~~ **ONDA I EXECUTADA** (autorizada): merges `c1b78331e` + `bd77a9593` em `integracao/consolidacao-20261121`; diff só `.agents/**`; Ondas II–III aguardam autorização.
+- ~~Matriz final de integração~~ **ONDAS I e II EXECUTADAS** (autorizadas): Onda I merges `c1b78331e`+`bd77a9593`; Onda II 7 merges limpos até `a7809ab40`; diff só `.agents/**`; Onda III em diagnóstico.
 - `main` permanece intocada; nenhuma promoção sem autorização.

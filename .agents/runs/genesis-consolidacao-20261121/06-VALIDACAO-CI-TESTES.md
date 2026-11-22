@@ -1,6 +1,6 @@
 # 06 — Validação CI/Testes
 
-**Status:** ONDA I validada (21/11/2026); gates de código pendentes para após Ondas II–III.
+**Status:** ONDAS I e II validadas (21/11/2026); gates de código pendentes para Onda III.
 
 ## Gates — Onda I (executados 21/11/2026)
 
@@ -13,7 +13,19 @@
 | Scan de segredos no diff | ✅ nenhum segredo/credencial detectado |
 | Duplicações | ✅ 2 handoffs antigravity da raiz = byte-idênticos às branches (versão commitada prevalece); 2 handoffs `03-*` já na main |
 | Biome/lint/tsc/build | n/a — diff 100% markdown em `.agents/` (sem código) |
-| Gates de código/CI completos | pendentes — Fases 3–4 (após Ondas II–III) |
+| Gates de código/CI completos | pendentes — Fase 3 (após Onda III) |
+
+## Gates — Onda II (executados 21/11/2026)
+
+| Gate | Resultado |
+|---|---|
+| 7 merges sequenciais | ✅ todos limpos, zero conflitos |
+| Diff acumulado vs `main@0d790443` | ✅ 30 arquivos, somente `.agents/**`; zero em src/tests/prisma/.github/docs |
+| PR#485 | ✅ preservado — nenhum arquivo B-01..B-14 tocado |
+| UTF-8 nos 7 novos handoffs | ✅ todos válidos |
+| Duplicações | ✅ confirmadas: handoffs antigravity da raiz byte-idênticos; despacho-paralelo já na main via PR #520 |
+| Conteúdo não rastreado da raiz | preservado intocado (não integrado, por determinação) |
+| 7 alterações staged da worktree Devin | preservadas em `handoff-devin-consolidacao` (não integradas — aguardam decisão documental específica) |
 
 ## Gates programados para a base consolidada
 

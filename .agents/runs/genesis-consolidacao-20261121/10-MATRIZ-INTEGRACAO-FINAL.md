@@ -1,8 +1,10 @@
 # 10 — Matriz Final de Integração
 
-**Status:** ONDA I EXECUTADA em 21/11/2026 (autorização Orquestrador). Ondas II e III pendentes.
+**Status:** ONDAS I e II EXECUTADAS em 21/11/2026. Onda III (Agente 08) em diagnóstico — merges NÃO executados.
 
-**Resultado Onda I:** merge 1 `c1b78331e` (limpo); merge 2 `bd77a9593` (1 conflito documental resolvido + fix encoding). Diff acumulado: somente `.agents/**`.
+**Resultado Onda I:** merge 1 `c1b78331e` (limpo); merge 2 `bd77a9593` (1 conflito documental resolvido + fix encoding).
+
+**Resultado Onda II:** 7 merges limpos (`61aaf9a4d`…`a7809ab40`), 7 handoffs adicionados; 1 patch parcial já equivalente (despacho-paralelo via PR #520). HEAD: `a7809ab40`.
 
 **Base de integração:** `integracao/consolidacao-20261121` @ `0d790443` (= main)
 **Worktree:** `C:\Github\Birthub-360-worktrees\integracao-consolidacao-20261121`
@@ -60,3 +62,29 @@ Conteúdo legítimo preservado em `C:\Github\_backups\genesis-20261121\handoff-d
 ## Critérios de aceite por merge
 
 Após cada merge: `git diff` acumulado revisado → sem deleções fora de `.agents/handoffs|runs|reviews` → `biome format:check` → commit com mensagem `docs(handoff): integra <branch> (Genesis Consolidation)`.
+
+## Diagnóstico Onda III — `agente/08-handoffs-20261117` @ `aafad8eb7` (planejamento, NÃO executado)
+
+10 patches pendentes (`git cherry`, todos `+`):
+
+| SHA | Conteúdo | Tipo | Risco |
+|---|---|---|---|
+| `ca6a71dd6` | Teste regressão RUN_ID voice-hub + handoff | test+doc | baixo |
+| `766c8b42b` | Cobertura CommandPalette contextual (MEL-35) | test+doc | baixo |
+| `e61cc2789` | Workflow Schemathesis fuzzing (MEL-39) | **CI** | **médio-alto** |
+| `fef7cba2c` | Handoff aprovação Schemathesis + saneia status QA | doc | baixo |
+| `fcc5afbcb` | Handoff cobertura-testes-modulos | doc | baixo |
+| `e83997afd` | Evidência CI no handoff unit-failures | doc | baixo |
+| `39314fa2e` | Alinha CommandPalette test ao main pós-#390 | test | baixo |
+| `8d271d6fc` | Biome format NextBestActionCard | **src/** | baixo (formatação) |
+| `7c50152c9` | Fix `--base-url`→`--url` no workflow | CI | depende de e61cc2789 |
+| `d358fabbd` | Fix `--max-examples` no workflow | CI | depende de e61cc2789 |
+
+**Problemas encontrados no workflow Schemathesis:**
+1. `--url http://127.0.0.1:3000` **não inclui o prefixo `/api`**. O `docs/openapi.yaml` declara `servers: [{url: /api}]` e todas as rotas são montadas sob `/api` (`src/bootstrap/routes.ts`). Schemathesis montaria `http://127.0.0.1:3000/<path>` → 404 em massa → o check `not_a_server_error` passa **vacuamente** (verde sem valor). Correção necessária: `--url http://127.0.0.1:3000/api` (ou validar se Schemathesis resolve o `servers` relativo).
+2. Autenticação: header `Authorization: Bearer ci-test-token` — o projeto usa sessão Better Auth via cookie (`better-auth.session_token`), não Bearer. Endpoints autenticados responderão 401/403. Aceitável para fuzzing de borda (não é 5xx), mas limita a cobertura real — documentar como limitação ou provisionar token de teste.
+3. Triggers: `pull_request` filtrado por paths (`docs/openapi.yaml`, `src/server/**`, `src/routes/**`) — `src/routes/**` provavelmente não existe (rotas em `src/bootstrap/routes.ts` e `src/routes/**`?); cron diário 04:00 UTC + `workflow_dispatch`. Custo CI: job de até 30min com Postgres+Redis+Meilisearch — pesado para PR; considerar `workflow_dispatch`/schedule apenas, ou smoke reduzido em PR.
+4. Dependências novas: `pip install schemathesis` (sem pin de versão — risco de supply chain; pinar), imagem `pgvector/pgvector:pg16` (consistente com CI?), `actions/setup-python@v5`, checkout/setup-node pinados por SHA (bom).
+5. Ordem de cherry-pick: `e61cc2789` → `7c50152c9` → `d358fabbd` (fixes do workflow dependem do workflow); docs independentes; testes independentes; `8d271d6fc` pode conflitar se NextBestActionCard mudou na main.
+
+**Proposta:** cherry-pick seletivo na ordem: docs (4) → testes (3) → workflow (3, com correção do `/api` antes do merge) → format (1). Validar `npm run build` + `vitest` nos arquivos de teste + dry-run do workflow em branch descartável antes de promover.
