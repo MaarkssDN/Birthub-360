@@ -34,7 +34,10 @@ const SHELL = 'SHELL-SPA';
 let root: string;
 let server: http.Server;
 
-function rawGet(rawPath: string, auth = false): Promise<{ status: number; body: string }> {
+function rawGet(
+  rawPath: string,
+  auth = false,
+): Promise<{ status: number; body: string; headers: string }> {
   return new Promise((resolve, reject) => {
     const { port } = server.address() as AddressInfo;
     const socket = net.connect(port, '127.0.0.1', () => {
@@ -50,7 +53,11 @@ function rawGet(rawPath: string, auth = false): Promise<{ status: number; body: 
     socket.on('error', reject);
     socket.on('end', () => {
       const headEnd = raw.indexOf('\r\n\r\n');
-      resolve({ status: Number(raw.split(' ')[1]), body: raw.slice(headEnd + 4) });
+      resolve({
+        status: Number(raw.split(' ')[1]),
+        body: raw.slice(headEnd + 4),
+        headers: raw.slice(0, headEnd),
+      });
     });
   });
 }
@@ -162,7 +169,9 @@ describe.each(DIRS)('estáticos de /%s sem autenticação (socket cru, dist real
   );
 
   it('serve o ativo para requisição autenticada', async () => {
-    expect(await rawGet(`/${dir}/s.txt`, true)).toEqual({ status: 200, body: marker(dir) });
+    const response = await rawGet(`/${dir}/s.txt`, true);
+    expect(response).toMatchObject({ status: 200, body: marker(dir) });
+    expect(response.headers).toMatch(/^Cache-Control: private, no-store$/im);
   });
 
   it('mantém o alias bloqueado mesmo autenticado', async () => {
@@ -188,11 +197,11 @@ describe('rotas legítimas continuam acessíveis sem autenticação', () => {
     '/app/x%20y',
     '/book/a%2Fb',
   ])('devolve o shell da SPA: %s', async (rawPath) => {
-    expect(await rawGet(rawPath)).toEqual({ status: 200, body: SHELL });
+    expect(await rawGet(rawPath)).toMatchObject({ status: 200, body: SHELL });
   });
 
   it('devolve asset público', async () => {
-    expect(await rawGet('/assets/app.txt')).toEqual({ status: 200, body: 'ASSET-PUBLICO' });
+    expect(await rawGet('/assets/app.txt')).toMatchObject({ status: 200, body: 'ASSET-PUBLICO' });
   });
 });
 

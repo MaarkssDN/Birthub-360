@@ -71,7 +71,8 @@ export default defineConfig(() => {
           globPatterns: ['**/*.js', '**/*.css', '**/*.html', '**/*.ico', '**/*.png', '**/*.svg', '**/*.woff2'],
           runtimeCaching: [
             {
-              urlPattern: /\/(?:tools|design-lab)(?:\/|$)/i,
+              urlPattern: ({ url, sameOrigin }) =>
+                sameOrigin && /^\/(?:tools|design-lab)(?:\/|$)/i.test(url.pathname),
               handler: 'NetworkOnly',
             },
             {
@@ -88,7 +89,7 @@ export default defineConfig(() => {
           navigateFallbackDenylist: [
             /^\/api\//,
             /^\/webhook\//,
-            /^\/(?:tools|design-lab)(?:\/|$)/i,
+            /^\/(?:tools|design-lab)(?:\/|\?|$)/i,
           ],
         },
         // Desabilita em modo dev para não interferir com HMR

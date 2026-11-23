@@ -35,6 +35,12 @@ const toolsLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+const protectedStaticOptions: NonNullable<Parameters<typeof express.static>[1]> = {
+  setHeaders(response) {
+    response.setHeader('Cache-Control', 'private, no-store');
+  },
+};
+
 /**
  * Decide se um path cru (req.path) alcança um diretório estático protegido (`tools`,
  * `design-lab`) por fora do mount autenticado. O path é canonicalizado como o
@@ -144,7 +150,7 @@ export async function mountFrontend(app: Express): Promise<void> {
       '/tools',
       toolsLimiter,
       authenticateToken,
-      express.static(path.join(process.cwd(), 'public', 'tools')),
+      express.static(path.join(process.cwd(), 'public', 'tools'), protectedStaticOptions),
     );
 
     // Protege arquivos estáticos do design-lab com autenticação em desenvolvimento
@@ -152,7 +158,7 @@ export async function mountFrontend(app: Express): Promise<void> {
       '/design-lab',
       toolsLimiter,
       authenticateToken,
-      express.static(path.join(process.cwd(), 'public', 'design-lab')),
+      express.static(path.join(process.cwd(), 'public', 'design-lab'), protectedStaticOptions),
     );
 
     const vite = await createViteServer({
@@ -188,7 +194,7 @@ export async function mountFrontend(app: Express): Promise<void> {
       '/tools',
       toolsLimiter,
       authenticateToken,
-      express.static(path.join(process.cwd(), 'public', 'tools')),
+      express.static(path.join(process.cwd(), 'public', 'tools'), protectedStaticOptions),
     );
 
     // Protege arquivos estáticos do design-lab com autenticação
@@ -196,7 +202,7 @@ export async function mountFrontend(app: Express): Promise<void> {
       '/design-lab',
       toolsLimiter,
       authenticateToken,
-      express.static(path.join(process.cwd(), 'public', 'design-lab')),
+      express.static(path.join(process.cwd(), 'public', 'design-lab'), protectedStaticOptions),
     );
 
     app.use(express.static(distPath));
