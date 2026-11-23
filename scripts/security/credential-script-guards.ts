@@ -1,8 +1,9 @@
 // scripts/security/credential-script-guards.ts
 //
 // Pré-condições OBRIGATÓRIAS dos scripts que gravam credenciais cifradas
-// (backfill-integration-settings-encryption.ts e reencrypt-credentials.ts). Puro (sem pg, sem
-// src/config/env.ts) para ser testável e rodar ANTES de qualquer conexão com o banco.
+// (backfill-integration-settings-encryption.ts e reencrypt-credentials.ts). Sem conexão e sem
+// src/config/env.ts, para ser testável e rodar ANTES de qualquer conexão com o banco (só o
+// parser de URL do `pg` é usado, em resolveDbSsl).
 //
 // Por que existe: src/lib/crypto/secretFields.ts, fora de NODE_ENV=production e sem
 // CREDENTIALS_ENCRYPTION_KEY, cai numa chave FIXA de desenvolvimento. Um backfill rodado assim
@@ -16,6 +17,10 @@
 //
 // `--verify` é um modo SOMENTE LEITURA separado: não exige OLD_KEY/NEW_KEY nem snapshot, lê UMA
 // chave (`CREDENTIALS_ENCRYPTION_KEY` ou a env nomeada em `--key-env=NOME`) e não aceita `--apply`.
+
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import type { ClientConfig } from 'pg';
 
 export class ScriptPreconditionError extends Error {
   constructor(message: string) {
@@ -233,4 +238,74 @@ export function requireRedisUrl(env: ScriptEnv): string {
     );
   }
   return url;
+}
+
+export interface ResolvedDbSsl {
+  /** Config pronta para `pg.Pool`/`pg.Client` — sem `connectionString`, que sobrescreveria `ssl`. */
+  config: ClientConfig;
+  /** `true` só quando o operador desligou a verificação do certificado de propósito. */
+  insecure: boolean;
+}
+
+// O MESMO parser que o `pg` usa, resolvido a partir dele: interpretar a URL com outro parser
+// (`new URL`) diverge em escapes e permitiria um host remoto passar por local.
+const { parse: parsePgUrl } = createRequire(createRequire(import.meta.url).resolve('pg'))(
+  'pg-connection-string',
+) as { parse: (url: string) => Record<string, unknown> };
+
+const LOCAL_DB_HOSTS = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
+
+/**
+ * TLS da conexão com o banco dos scripts de credenciais (o script lê e regrava segredos).
+ * - Host local (o host que o próprio `pg` usará): como na URL; sem TLS se ela não pedir.
+ * - Qualquer outro host: TLS COM verificação do certificado. CA próprio via `PGSSLROOTCERT`
+ *   (caminho de arquivo PEM; tem precedência) ou `sslrootcert` da URL; `sslcert`/`sslkey` da URL
+ *   são mantidos.
+ * - O `pg` aplica a URL POR CIMA da opção `ssl` (`sslmode=no-verify`, `uselibpqcompat`, `ssl=0`…),
+ *   por isso a URL é entregue já interpretada, com `ssl` decidido aqui.
+ * - Desligar a verificação exige `DB_SSL_INSECURE_SKIP_VERIFY=true` explícito (retorna `insecure`
+ *   para o chamador avisar em voz alta) — nunca é o padrão, nem via parâmetro da própria URL.
+ * - Esquema diferente de postgres/postgresql ou URL ilegível: aborta.
+ */
+export function resolveDbSsl(
+  dbUrl: string,
+  env: ScriptEnv,
+  readFile: (path: string) => string = (path) => readFileSync(path, 'utf8'),
+): ResolvedDbSsl {
+  if (!/^postgres(?:ql)?:\/\//i.test(dbUrl)) {
+    throw new ScriptPreconditionError(
+      'DATABASE_URL deve começar com postgres:// ou postgresql://.',
+    );
+  }
+  let parsed: Record<string, unknown>;
+  try {
+    parsed = parsePgUrl(dbUrl);
+  } catch {
+    // Sem a mensagem original: pode conter a URL (com senha).
+    throw new ScriptPreconditionError(
+      'DATABASE_URL ilegível (ou certificado citado nela inacessível) — abortando.',
+    );
+  }
+  const config: ClientConfig = { ...parsed, connectionString: undefined };
+  // Host vazio (o `pg` cairia em PGHOST ou localhost) conta como remoto: exige TLS.
+  if (LOCAL_DB_HOSTS.has((config.host ?? '').toLowerCase())) {
+    return { config: { ...config, ssl: config.ssl ?? false }, insecure: false };
+  }
+
+  const insecure = env.DB_SSL_INSECURE_SKIP_VERIFY?.trim().toLowerCase() === 'true';
+  const caPath = env.PGSSLROOTCERT?.trim();
+  const urlSsl = typeof config.ssl === 'object' ? config.ssl : {};
+  const ca = caPath ? readFile(caPath) : urlSsl.ca;
+  return {
+    config: {
+      ...config,
+      ssl: {
+        rejectUnauthorized: !insecure,
+        ...(ca ? { ca } : {}),
+        ...(urlSsl.cert ? { cert: urlSsl.cert } : {}),
+        ...(urlSsl.key ? { key: urlSsl.key } : {}),
+      },
+    },
+    insecure,
+  };
 }
