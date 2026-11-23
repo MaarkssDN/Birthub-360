@@ -323,6 +323,11 @@ test.describe('Acessibilidade automática (axe-core)', () => {
     await signUp(page, { email: uniqueTestEmail('a11y-calendar') });
     await page.goto('/app/calendar');
     await waitForAppReady(page);
+    // Calendar.tsx aplica `opacity-60` no Card da grade enquanto `loading === true`
+    // (subtitle "Carregando..."), reduzindo temporariamente o contraste de `.text-ink-2`
+    // sobre `bg-surface-2` de 7.0:1 para 2.71:1 até o GET /api/activities assentar.
+    await expect(page.getByText('Carregando...')).toHaveCount(0, { timeout: 15_000 });
+    await expect(page.locator('.opacity-60')).toHaveCount(0, { timeout: 15_000 });
     await assertNoBlockingViolations(page, testInfo);
   });
 
