@@ -9,12 +9,12 @@ permissions:
 
 jobs:
   e2e-tests:
-    timeout-minutes: 60
+    timeout-minutes: 120
     runs-on: ubuntu-latest
 
     services:
       postgres:
-        image: pgvector/pgvector:pg17
+        image: pgvector/pgvector:pg16
         env:
           POSTGRES_USER: prospector
           POSTGRES_PASSWORD: prospector_test_pass
@@ -22,7 +22,7 @@ jobs:
         ports:
           - 5434:5432
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -h 127.0.0.1 -U prospector -d prospectordb_test"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -32,10 +32,23 @@ jobs:
         ports:
           - 6379:6379
         options: >-
-          --health-cmd "redis-cli ping"
+          --health-cmd "redis-cli -h 127.0.0.1 ping"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+
+      meilisearch:
+        image: getmeili/meilisearch:v1.12
+        env:
+          MEILI_MASTER_KEY: ci-test-meili-key
+        ports:
+          - 7700:7700
+        options: >-
+          --health-cmd "wget --no-verbose --tries=1 -O - http://127.0.0.1:7700/health >/dev/null 2>&1 || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-start-period 30s
+          --health-retries 12
 
     env:
       NODE_ENV: test
@@ -94,8 +107,19 @@ jobs:
         ALLOWED_ORIGINS=$ALLOWED_ORIGINS
         AUTH_RATE_LIMIT_MAX=$AUTH_RATE_LIMIT_MAX
         PLATFORM_OPERATOR_TOKEN=$PLATFORM_OPERATOR_TOKEN
+        BOOTSTRAP_SUPERUSER_URL=postgresql://prospector:prospector_test_pass@localhost:5434/prospectordb_test
         COMMERCIAL_V3_LLM_STUB=true
         EOF
+
+    - name: Run Migrations
+      run: npx dotenv-cli -e .env.test -- npx prisma migrate deploy
+
+    - name: Re-bootstrap pós-migrate
+      env:
+        PGPASSWORD: prospector_test_pass
+        APP_DB_PASSWORD: ci_app_test_pass
+        MIGRATOR_DB_PASSWORD: ci_migrator_test_pass
+      run: bash scripts/db/bootstrap-app-role.sh localhost 5434 prospector prospectordb_test
 
     - name: Run E2E Tests
       run: npm run test:e2e
