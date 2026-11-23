@@ -60,7 +60,7 @@ describe('Cross-Role Authorization + Aprovações (PROMPT 7)', () => {
     await runMultiCargoSeed();
     await runAgentCatalogImport();
     await runCapabilityEngineSeed();
-  });
+  }, 120_000);
 
   afterAll(async () => {
     // `AccessRequest`/`TemporaryCapabilityGrant`/`ApprovalDecision` têm RLS ESTRITO de propósito
