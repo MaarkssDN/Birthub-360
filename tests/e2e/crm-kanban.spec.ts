@@ -54,6 +54,24 @@ async function dragCardToColumn(
   await page.mouse.up();
 }
 
+/**
+ * Aguarda o `KeyboardSensor.attach()` do `@dnd-kit/core` anexar seu listener de `keydown`
+ * (agendado via `setTimeout(0)` após o `Space` de pickup). Executar `requestAnimationFrame`
+ * seguido de `setTimeout` no próprio event loop da página garante ordenação FIFO após o
+ * `setTimeout(0)` interno do sensor sem precisar reenviar `ArrowRight` em loop (que não é
+ * idempotente e causava overshoot para colunas seguintes sob carga de CPU).
+ */
+async function waitForKeyboardSensorReady(page: Page) {
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) => {
+        requestAnimationFrame(() => {
+          setTimeout(resolve, 150);
+        });
+      }),
+  );
+}
+
 test.describe('Kanban do CRM — drag e drop', () => {
   test.beforeEach(async ({ page }) => {
     await signUp(page, { email: uniqueTestEmail('kanban') });
@@ -154,24 +172,13 @@ test.describe('Kanban do CRM — drag e drop', () => {
     // onDragOver de imediato — a mensagem de pickup (onDragStart) é substituída rápido demais pra
     // afirmar de forma estável nela; a asserção relevante é o efeito final da movimentação.
     await page.keyboard.press('Space'); // pickup
-    // Espera o estado de "pego" ficar visível no DOM (aria-pressed do dnd-kit) antes da seta —
-    // sem isso, ArrowRight pode chegar antes do listener de keydown do KeyboardSensor terminar de
-    // processar a ativação do Space, e a seta se perde (visto de forma intermitente sem este wait).
     await expect(card).toHaveAttribute('aria-pressed', 'true');
+    await waitForKeyboardSensorReady(page);
 
-    // Mesmo assim, o aria-pressed não garante o listener pronto: o KeyboardSensor do dnd-kit
-    // anexa seu próprio keydown num setTimeout(0) interno (sem promise pra aguardar — ver
-    // node_modules/@dnd-kit/core/dist/core.esm.js, KeyboardSensor.attach()), e sob CPU contenda
-    // medimos, instrumentando em execução real, atrasos de até ~140ms nesse setTimeout — mais do
-    // que o intervalo real entre o aria-pressed acima e este ArrowRight. `toPass()` reenvia a
-    // tecla até o anúncio da coluna certa aparecer; o efeito é síncrono assim que o listener
-    // existe, então uma tentativa sem anúncio em 500ms é perda real, não lentidão.
-    await expect(async () => {
-      await page.keyboard.press('ArrowRight'); // Lead Recebido -> Cadência Iniciada
-      await expect(page.getByText(/sobre a coluna Cadência Iniciada/)).toBeVisible({
-        timeout: 500,
-      });
-    }).toPass({ timeout: 10_000 });
+    await page.keyboard.press('ArrowRight'); // Lead Recebido -> Cadência Iniciada
+    await expect(page.getByText(/sobre a coluna Cadência Iniciada/)).toBeVisible({
+      timeout: 10_000,
+    });
 
     const putResponse = page.waitForResponse(
       (res) => res.url().includes('/api/leads/') && res.request().method() === 'PUT',
@@ -204,32 +211,12 @@ test.describe('Kanban do CRM — drag e drop', () => {
 
     await page.keyboard.press('Space'); // pickup
     await expect(card).toHaveAttribute('aria-pressed', 'true');
+    await waitForKeyboardSensorReady(page);
 
-    // O KeyboardSensor do dnd-kit só anexa seu próprio listener de keydown num setTimeout(0)
-    // agendado dentro de attach() (pra não reprocessar o mesmo Space que ativou o drag) — ver
-    // node_modules/@dnd-kit/core/dist/core.esm.js, KeyboardSensor.attach(). Esse setTimeout(0)
-    // não tem callback/promise que o teste possa aguardar, e sob CPU contenda (CI, sandbox com
-    // Postgres/Redis/Chromium concorrendo) medimos atrasos reais de até ~140ms nele — mais do que
-    // o intervalo entre o aria-pressed acima e o ArrowRight logo abaixo. Quando isso acontece, o
-    // ArrowRight (e, em seguida, o Escape, disparado sem pausa nenhuma) chega ao document ANTES do
-    // listener existir e é silenciosamente perdido: o drag fica "preso" (aria-pressed nunca volta
-    // a false) e o anúncio de cancelamento nunca aparece — exatamente o erro visto na CI
-    // (getByText(/cancelada/) nunca fica visível). Instrumentado e confirmado em execução real
-    // (window.__kbd + monkeypatch de document.addEventListener) antes desta correção: em ~50% das
-    // execuções locais sob carga, nem o handler do ArrowRight nem o do Escape eram sequer
-    // chamados. `expect(...).toPass()` reenvia o ArrowRight até a coluna realmente mudar — como o
-    // efeito é síncrono assim que o listener existe (confirmado: <5ms do keydown até o anúncio),
-    // qualquer tentativa que não produza o anúncio em 500ms é uma perda real, não lentidão, e pode
-    // ser reenviada com segurança. Depois que o ArrowRight é confirmado, o listener (já anexado)
-    // continua ativo para o resto do gesto, então o Escape logo em seguida não precisa do mesmo
-    // retry — condição confirmada pela mesma instrumentação (Escape só falhava exatamente nos
-    // casos em que o ArrowRight também já tinha falhado).
-    await expect(async () => {
-      await page.keyboard.press('ArrowRight');
-      await expect(page.getByText(/sobre a coluna Cadência Iniciada/)).toBeVisible({
-        timeout: 500,
-      });
-    }).toPass({ timeout: 10_000 });
+    await page.keyboard.press('ArrowRight');
+    await expect(page.getByText(/sobre a coluna Cadência Iniciada/)).toBeVisible({
+      timeout: 10_000,
+    });
     await page.keyboard.press('Escape'); // cancela
 
     await expect(page.getByText(/[Mm]ovimentação de .* cancelada/)).toBeVisible({
@@ -257,31 +244,23 @@ test.describe('Kanban do CRM — drag e drop', () => {
     await card.focus();
     await page.keyboard.press('Space');
     await expect(card).toHaveAttribute('aria-pressed', 'true');
-    // Corrida real com o setTimeout(0) do dnd-kit KeyboardSensor (ver testes anteriores):
-    // o primeiro ArrowRight pode chegar antes do listener existir. `toPass()` é seguro AQUI
-    // porque o card está em "Lead Recebido" e o único destino de ArrowRight é "Cadência Iniciada"
-    // — se a tecla for perdida e reprocessada, o destino não muda (não há coluna à esquerda).
-    await expect(async () => {
-      await page.keyboard.press('ArrowRight'); // Lead Recebido -> Cadência Iniciada
-      await expect(page.getByText(/sobre a coluna Cadência Iniciada/)).toBeVisible({
-        timeout: 500,
-      });
-    }).toPass({ timeout: 10_000 });
-    // IMPORTANTE: NÃO usar toPass() para moves sequenciais — cada retry pressiona ArrowRight
-    // de novo, avançando o card para além da coluna alvo (na 2ª tentativa iria de
-    // Qualificação-SDR para Reunião Agendada em vez de repetir o move correto).
-    // O listener do dnd-kit JÁ ESTÁ ATIVO após o primeiro move confirmado acima; o único
-    // atraso restante é o measureDroppableContainers assíncrono entre moves (~5-15ms real).
-    // waitForTimeout(200) cobre esse atraso com margem para CI sob carga sem ser frágil.
-    await page.waitForTimeout(200); // aguarda measureDroppableContainers pós-move
+    await waitForKeyboardSensorReady(page);
+
+    await page.keyboard.press('ArrowRight'); // Lead Recebido -> Cadência Iniciada
+    await expect(page.getByText(/sobre a coluna Cadência Iniciada/)).toBeVisible({
+      timeout: 10_000,
+    });
+    // O listener do dnd-kit já está ativo; a pausa curta aguarda o measureDroppableContainers
+    // assíncrono entre movimentos sequenciais.
+    await page.waitForTimeout(200);
     await page.keyboard.press('ArrowRight'); // Cadência Iniciada -> Qualificação (SDR)
     await expect(page.getByText(/sobre a coluna Qualificação \(SDR\)/)).toBeVisible({
-      timeout: 5_000,
+      timeout: 10_000,
     });
-    await page.waitForTimeout(200); // mesmo motivo
+    await page.waitForTimeout(200);
     await page.keyboard.press('ArrowLeft'); // Qualificação (SDR) -> Cadência Iniciada
     await expect(page.getByText(/sobre a coluna Cadência Iniciada/)).toBeVisible({
-      timeout: 5_000,
+      timeout: 10_000,
     });
     await page.keyboard.press('Space'); // drop em Cadência Iniciada
 
