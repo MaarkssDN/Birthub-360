@@ -94,6 +94,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/public/tools ./public/tools
+COPY --from=builder /app/public/design-lab ./public/design-lab
 COPY --from=builder /app/prisma ./prisma
 # prisma.config.ts fica na raiz do projeto (fora de prisma/) e o Prisma CLI (usado abaixo por
 # `prisma migrate deploy`, ver comentário mais adiante) depende dele pra resolver `datasource.url`

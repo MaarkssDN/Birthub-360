@@ -188,7 +188,7 @@ export async function mountFrontend(app: Express): Promise<void> {
       '/tools',
       toolsLimiter,
       authenticateToken,
-      express.static(path.join(distPath, 'tools')),
+      express.static(path.join(process.cwd(), 'public', 'tools')),
     );
 
     // Protege arquivos estáticos do design-lab com autenticação
@@ -196,7 +196,7 @@ export async function mountFrontend(app: Express): Promise<void> {
       '/design-lab',
       toolsLimiter,
       authenticateToken,
-      express.static(path.join(distPath, 'design-lab')),
+      express.static(path.join(process.cwd(), 'public', 'design-lab')),
     );
 
     app.use(express.static(distPath));

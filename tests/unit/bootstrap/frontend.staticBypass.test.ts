@@ -3,7 +3,7 @@
 // temporário e express.static/send de verdade (sem mock). O cliente escreve a
 // request line direto no socket porque supertest/fetch resolvem `..` e `\` antes de enviar (e
 // interceptadores de http.request rejeitam absolute-form), mascarando o bypass.
-// Invariante: nenhum path sem autenticação devolve bytes de dist/tools ou dist/design-lab.
+// Invariante: nenhum path sem autenticação devolve bytes dos arquivos protegidos.
 import fs from 'node:fs';
 import type http from 'node:http';
 import net, { type AddressInfo } from 'node:net';
@@ -59,10 +59,11 @@ beforeAll(async () => {
   root = fs.mkdtempSync(path.join(os.tmpdir(), 'bh360-static-bypass-'));
   const dist = path.join(root, 'dist');
   for (const dir of DIRS) {
-    fs.mkdirSync(path.join(dist, dir), { recursive: true });
-    fs.writeFileSync(path.join(dist, dir, 's.txt'), marker(dir));
+    const protectedDir = path.join(root, 'public', dir);
+    fs.mkdirSync(protectedDir, { recursive: true });
+    fs.writeFileSync(path.join(protectedDir, 's.txt'), marker(dir));
   }
-  fs.mkdirSync(path.join(dist, 'assets'));
+  fs.mkdirSync(path.join(dist, 'assets'), { recursive: true });
   fs.writeFileSync(path.join(dist, 'assets', 'app.txt'), 'ASSET-PUBLICO');
   fs.writeFileSync(path.join(dist, 'index.html'), SHELL);
 

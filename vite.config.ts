@@ -1,5 +1,6 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import { cpSync } from 'node:fs';
 import path from 'path';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
@@ -13,6 +14,22 @@ export default defineConfig(() => {
       // simplesmente paravam de funcionar, em dev e no build de produção (achado dos E2E).
       react(),
       tailwindcss(),
+      {
+        name: 'copy-public-assets',
+        apply: 'build',
+        writeBundle({ dir }) {
+          if (!dir) throw new Error('O build precisa de um diretório de saída.');
+          const publicDir = path.resolve(__dirname, 'public');
+          cpSync(publicDir, dir, {
+            recursive: true,
+            force: false,
+            filter(source) {
+              const [entry] = path.relative(publicDir, source).split(path.sep);
+              return !['tools', 'design-lab'].includes(entry.toLowerCase());
+            },
+          });
+        },
+      },
       VitePWA({
         registerType: 'autoUpdate',
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icons/*.png'],
@@ -54,6 +71,10 @@ export default defineConfig(() => {
           globPatterns: ['**/*.js', '**/*.css', '**/*.html', '**/*.ico', '**/*.png', '**/*.svg', '**/*.woff2'],
           runtimeCaching: [
             {
+              urlPattern: /\/(?:tools|design-lab)(?:\/|$)/i,
+              handler: 'NetworkOnly',
+            },
+            {
               // Assets de fontes e ícones: CacheFirst
               urlPattern: /\.(woff2?|ttf|otf|eot)$/,
               handler: 'CacheFirst',
@@ -64,7 +85,11 @@ export default defineConfig(() => {
             },
           ],
           // Exclui rotas de API real do service worker (não cachear POST/PATCH/DELETE)
-          navigateFallbackDenylist: [/^\/api\//, /^\/webhook\//],
+          navigateFallbackDenylist: [
+            /^\/api\//,
+            /^\/webhook\//,
+            /^\/(?:tools|design-lab)(?:\/|$)/i,
+          ],
         },
         // Desabilita em modo dev para não interferir com HMR
         devOptions: { enabled: false },
@@ -150,6 +175,7 @@ export default defineConfig(() => {
             },
     },
     build: {
+      copyPublicDir: false,
       rollupOptions: {
         output: {
           manualChunks(id) {
