@@ -49,10 +49,34 @@ describe('Trilha C.2 — Round-Robin de Distribuição de Leads', () => {
 
   describe('assignLeadWeightedByScore — roteamento ponderado por score', () => {
     const weightedCandidates: readonly WeightedSalesRepCandidate[] = [
-      { id: 'rep-junior-1', name: 'Junior 1', active: true, onVacation: false, performanceWeight: 1 },
-      { id: 'rep-senior-1', name: 'Senior 1', active: true, onVacation: false, performanceWeight: 3 }, // Top performer
-      { id: 'rep-junior-2', name: 'Junior 2', active: true, onVacation: false, performanceWeight: 1 },
-      { id: 'rep-senior-2', name: 'Senior 2', active: true, onVacation: false, performanceWeight: 2 }, // Top performer
+      {
+        id: 'rep-junior-1',
+        name: 'Junior 1',
+        active: true,
+        onVacation: false,
+        performanceWeight: 1,
+      },
+      {
+        id: 'rep-senior-1',
+        name: 'Senior 1',
+        active: true,
+        onVacation: false,
+        performanceWeight: 3,
+      }, // Top performer
+      {
+        id: 'rep-junior-2',
+        name: 'Junior 2',
+        active: true,
+        onVacation: false,
+        performanceWeight: 1,
+      },
+      {
+        id: 'rep-senior-2',
+        name: 'Senior 2',
+        active: true,
+        onVacation: false,
+        performanceWeight: 2,
+      }, // Top performer
     ];
 
     it('direciona leads quentes (score >= 75) para os top performers (peso >= 2)', () => {

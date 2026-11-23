@@ -499,10 +499,9 @@ export class CopilotoIaUseCases {
         leadId,
         action: 'Responder mensagem pendente do Lead no WhatsApp',
         priority: 'ALTA',
-        reason:
-          isCriticalSla
-            ? 'Lead aguarda retorno há mais de 4 horas (SLA estourado). Risco crítico de perda por inatividade.'
-            : 'Lead enviou mensagem e aguarda resposta. Contato ágil eleva a chance de avanço.',
+        reason: isCriticalSla
+          ? 'Lead aguarda retorno há mais de 4 horas (SLA estourado). Risco crítico de perda por inatividade.'
+          : 'Lead enviou mensagem e aguarda resposta. Contato ágil eleva a chance de avanço.',
         suggestedChannel: 'WHATSAPP',
         dealHealthScore: healthScore,
         responseTimeSlaStatus: slaStatus,

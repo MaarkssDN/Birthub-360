@@ -563,9 +563,12 @@ export class LeadUseCases extends BaseUseCases<Lead, LeadRepository> {
 
   async importRecentBitrixLeads(organizationId: string) {
     const { prisma } = await import('../../../lib/prisma.js');
-    const { findUnimportedBitrixLeadIds, importSelectedBitrixLeads, connectBitrix } = await import(
-      '../../integrations/bitrix/bitrix.service.js'
-    );
+    const {
+      findUnimportedBitrixLeadIds,
+      importSelectedBitrixLeads,
+      connectBitrix,
+      resolveGlobalBitrixWebhookUrl,
+    } = await import('../../integrations/bitrix/bitrix.service.js');
 
     let connection = await prisma.bitrixConnection.findFirst({
       where: { organizationId },
@@ -575,16 +578,9 @@ export class LeadUseCases extends BaseUseCases<Lead, LeadRepository> {
     // DEBT-0006: fallback global só para orgs na allowlist explícita
     // (BITRIX24_WEBHOOK_URL_ORG_ALLOWLIST) — antes qualquer tenant sem conexão
     // importava do portal global via env.
-    const { resolveGlobalBitrixWebhookUrl } = await import(
-      '../../integrations/bitrix/service/settings.js'
-    );
     const globalWebhookUrl = resolveGlobalBitrixWebhookUrl(organizationId);
     if (!connection && globalWebhookUrl) {
-      const { id } = await connectBitrix(
-        organizationId,
-        globalWebhookUrl,
-        'Bitrix Principal',
-      );
+      const { id } = await connectBitrix(organizationId, globalWebhookUrl, 'Bitrix Principal');
       connection = await prisma.bitrixConnection.findUnique({ where: { id } });
     }
 

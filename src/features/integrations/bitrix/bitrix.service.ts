@@ -69,6 +69,8 @@ export {
   exportLeadToBitrixNow,
   postCommentToBitrix,
 } from './service/outboundSync.js';
+// DEBT-0006: guard do webhook global por organização, consumido por LeadUseCases.ts.
+export { resolveGlobalBitrixWebhookUrl } from './service/settings.js';
 // Histórico real de sincronização (webhook de entrada + push/pull), consumido por WebhookMonitor.tsx.
 export { listRecentBitrixSyncLogs } from './service/syncLogs.js';
 export {

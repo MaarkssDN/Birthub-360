@@ -106,7 +106,10 @@ export class CallRecordService {
   public parseDiarizedTurns(transcript: string): DiarizedTurn[] {
     if (!transcript) return [];
 
-    const lines = transcript.split('\n').map((l) => l.trim()).filter(Boolean);
+    const lines = transcript
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean);
     const turns: DiarizedTurn[] = [];
 
     for (const line of lines) {
@@ -115,7 +118,9 @@ export class CallRecordService {
 
       if (isSeller || isCustomer) {
         const speaker: 'SELLER' | 'CUSTOMER' = isSeller ? 'SELLER' : 'CUSTOMER';
-        const cleanText = line.replace(/^(vendedor|seller|closer|sdr|cliente|customer|lead|contato)[\s:]+/i, '').trim();
+        const cleanText = line
+          .replace(/^(vendedor|seller|closer|sdr|cliente|customer|lead|contato)[\s:]+/i, '')
+          .trim();
         turns.push({ speaker, text: this.redactPii(cleanText) });
       } else {
         // Turno padrão atribuído ao locutor anterior ou customer
