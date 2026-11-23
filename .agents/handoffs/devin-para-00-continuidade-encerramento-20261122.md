@@ -246,6 +246,42 @@ Sequência operacional resultante:
 
 ---
 
+## SEÇÃO 13 — PRES-005: INVENTÁRIO, BACKUP E INTEGRIDADE DO OBJECT STORE
+
+> Adicionado em 2026-11-22 após execução do PRES-005 (inventário read-only de ~40 worktrees) e do reparo autorizado do object store.
+
+### 13.1 Inventário e backup
+
+- Inventário read-only dos worktrees concluído; artefatos em `C:\Github\Birthub-360-backups\pres005-20261122\` (fora do Git): bundles (`integracao-consolidacao-20261121*.bundle`, `agente-03-telas-brand-system.bundle`, `update-agents-documentation.bundle`), patches dos worktrees sujos e `MANIFESTO.txt`.
+- Repo de teste de restauração: `C:\Github\Birthub-360-backups\restore-test-20261122\` (resultados na seção 13.3).
+
+### 13.2 Achado: object store danificado → causa raiz identificada
+
+- `git count-objects -v` reportou `garbage: 8` (`tmp_pack_*`, ~1 GB) e `git fsck` reportou commit-graph malformado e objetos dangling.
+- Teste de restauração dos bundles Genesis **falhou** ("remote did not send all necessary objects") — commits `7a1ee3642`/`9abaae38a` existiam como objetos, mas a traversal não os emitia.
+- **Causa raiz (corrigida):** o repositório estava em estado **shallow** — `.git/shallow` com 42 commits de fronteira, incluindo `9abaae38a`. Em clone shallow, os ancestrais dos commits de fronteira não existem localmente; bundles criados a partir dele não são autocontidos. Os `tmp_pack_*` eram lixo real (interrupções de fetch/gc), mas o defeito restaurabilidade era o shallow, não "corrupção" no sentido clássico.
+- `.git/shallow` tinha mtime 2026-11-22 21:47 — algo recente (possivelmente a sessão Genesis ativa) re-shallowou ou atualizou o arquivo. **Atenção:** a branch `integracao/consolidacao-20261121` está ativa e seu HEAD muda; revalidar antes de qualquer decisão de publicação.
+
+### 13.3 Reparo executado (autorizado pelo orquestrador: fsck + gc)
+
+1. `git gc` + remoção de `tmp_pack_*` → `garbage: 0`, `size-garbage: 0`, packs consolidados.
+2. `git fetch --unshallow origin` → `git rev-parse --is-shallow-repository` = `false`; `7a1ee3642` voltou a ser alcançável; `rev-list --count 9abaae38a` = 5221 (antes: 1).
+3. Novo bundle: `integracao-consolidacao-20261121-FULL-v4.bundle` @ ref `5ce58788b621d35296f8253e0d0feff3901b3592`.
+   - `git bundle verify`: **OK** — "records a complete history", SHA-1.
+   - **Teste de restauração real** (`git clone` → `restore-test-v4`): todos os objetos transferidos (erro anterior eliminado); `rev-list --count` = **6499**; `7a1ee3642` confirmado ancestor; `git fsck --no-dangling` limpo.
+   - Ressalva ambiental: checkout da working tree falha em caminhos longos de `postman/collections/**` por limite MAX_PATH do Windows — limitação do SO, não do bundle. Contorno: `git config core.longpaths true` (ou clone em volume com long paths habilitado).
+4. Bundles v1/v2/v3 e os bundles de outras branches são **obsoletos/não restauráveis** — usar v4 como artefato canônico do PRES-005. Demais bundles ainda não passaram por teste de restauração pós-reparo.
+
+### 13.4 Pendências PRES-005 remanescentes
+
+- Teste de restauração dos demais bundles (após confirmação de que também não dependem de histórico shallow).
+- Localizar o parecer integral do Codex (auditoria independente) — não encontrado em repo, worktrees, Drive nem comentários de PR; permanece lacuna de evidência.
+- Ownership do PRES-005: Agente 19 — Bruno é o candidato conforme `.agents/MATRIZ_PROPRIEDADE.md`, mas **não confirmado pelo orquestrador** — registrar como pendente até deliberação humana.
+- Ratificação independente dos PRs #534 (`5d6a61c19`), #535 (`4d01e6b07`), #536 (`f80aca2be`), #537 (`9d0d7cf83`) — todos OPEN, HEADs inalterados.
+- Decisão sobre push da branch Genesis para remote (nenhum push autorizado até agora).
+
+---
+
 ## CHECKLIST — OPERAÇÃO HANDOFF FINAL
 
 ### Contexto
