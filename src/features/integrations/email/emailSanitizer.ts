@@ -59,20 +59,9 @@ function isTrackingPixelImgTag(imgTag: string): boolean {
   return false;
 }
 
-// Uma única passada de `replace` pode REMONTAR o que removeu (`<scr<script></script>ipt>`,
-// `oonnerror=`): por isso cada passada é repetida até não haver mais mudança.
+// Uma única passada pode REMONTAR o que removeu (`<scr<script></script>ipt>`): por isso a
+// sanitização inteira é repetida até não haver mais mudança.
 const MAX_SANITIZE_PASSES = 20;
-
-// Aplica a remoção repetidamente até o texto estabilizar (um replace único pode remontar o padrão).
-function replaceUntilStable(input: string, pattern: RegExp, replacement: string): string {
-  let current = input;
-  for (let i = 0; i < MAX_SANITIZE_PASSES; i++) {
-    const next = current.replace(pattern, replacement);
-    if (next === current) return current;
-    current = next;
-  }
-  return current;
-}
 
 /**
  * Remove as tags abertas por `openRe` aprovadas por `shouldRemove` e, se houver `closeRe`, também o
@@ -106,13 +95,46 @@ function removeTag(
   return out + input.slice(kept);
 }
 
+// Um atributo como o tokenizador HTML o lê: separadores, nome e valor opcional (aspas sem
+// fechamento vão até o fim do texto).
+const ATTRIBUTE_RE =
+  /[\t\n\f\r /]*([^\t\n\f\r />][^\t\n\f\r />=]*)(?:[\t\n\f\r ]*=[\t\n\f\r ]*("[^"]*(?:"|$)|'[^']*(?:'|$)|[^\t\n\f\r >]*))?/y;
+
+/**
+ * Remove atributos `on*=` só quando são NOME de atributo dentro de uma tag (nunca no texto nem em
+ * valores como `href=".../onboarding=1"`), em varredura linear. `<` e `>` dentro de valores entre
+ * aspas viram entidades (equivalentes ali), para que nenhum valor pulado possa abrir uma tag se o
+ * navegador o ler em outro contexto (ex.: `<!--<a title="--><img src=x onerror=y>">`).
+ */
+function stripEventHandlers(input: string): string {
+  const tagStartRe = /<\/?[a-z][^\t\n\f\r />]*/gi;
+  let out = '';
+  let pos = 0;
+  while (tagStartRe.test(input)) {
+    out += input.slice(pos, tagStartRe.lastIndex);
+    pos = tagStartRe.lastIndex;
+    ATTRIBUTE_RE.lastIndex = pos;
+    for (let m = ATTRIBUTE_RE.exec(input); m; m = ATTRIBUTE_RE.exec(input)) {
+      pos = ATTRIBUTE_RE.lastIndex;
+      const [attribute, name, value] = m;
+      if (value === undefined) out += attribute;
+      else if (!/^on[a-z]/i.test(name)) {
+        const isQuoted = value.startsWith('"') || value.startsWith("'");
+        out += attribute.slice(0, attribute.length - value.length);
+        out += isQuoted ? escapeAngles(value) : value;
+      }
+    }
+    tagStartRe.lastIndex = pos;
+  }
+  return out + input.slice(pos);
+}
+
+function escapeAngles(input: string): string {
+  return input.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 function escapeHtml(input: string): string {
-  return input
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+  return escapeAngles(input.replace(/&/g, '&amp;')).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 function sanitizeOnce(input: string): string {
@@ -128,15 +150,8 @@ function sanitizeOnce(input: string): string {
   // 2. Remove pixels espiões (<img ...> 1x1, 0x0, display:none, visibility:hidden ou URLs de tracker)
   clean = removeTag(clean, /<img\b/gi, null, isTrackingPixelImgTag);
 
-  // 3. Remove atributos de eventos inline (onload=, onerror=, onclick=, etc.).
-  // O separador pode ser espaço, "/" (`<img/onerror=x>`) ou só a aspa que fechou o atributo anterior
-  // (`<img src="x"onerror=y>`) — os navegadores executam os três. Um único caractere separador, sem
-  // `+`: `[\s/]+` era quadrático em sequências longas de espaços.
-  clean = replaceUntilStable(
-    clean,
-    /(?:[\s/]|(?<=["']))on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi,
-    '',
-  );
+  // 3. Remove atributos de eventos inline (onload=, onerror=, onclick=, etc.)
+  clean = stripEventHandlers(clean);
 
   // 4. Neutraliza URIs javascript:, vbscript: e data:text/html em href/src/action
   clean = clean.replace(

@@ -45,6 +45,49 @@ describe('sanitizeInboundEmailBody — contornos por remontagem', () => {
     expect(out).toBe('<img src="x">');
   });
 
+  it('preserva "on...=" em texto e em valores de atributo', () => {
+    for (const html of [
+      '<a href="https://x.com/campaign/onboarding=1/step">Iniciar</a> texto <b>x</b>',
+      '<a href="https://x.com/online=1">aqui</a><p>resto</p><a href="https://y.com/b">b</a>',
+      '<p>filtro "online=sim" ativo</p>',
+      'acesse https://x.com/one=1/abc hoje',
+      '<a href=https://x.com/one=1>a</a>',
+      "<p title='x onclick=y'>a < b</p>",
+      '<b one>x</b>',
+    ]) {
+      expect(sanitizeInboundEmailBody(html)).toBe(html);
+    }
+  });
+
+  it('remove on* como nome de atributo em qualquer forma que o navegador aceita', () => {
+    for (const html of [
+      '<img src=x onerror=alert(1)>',
+      '<img src=x ONERROR\n=\n"alert(1)">',
+      '<img src=x//onerror=1 / onerror=alert(1)>',
+      '<img alt="a>b" onerror=alert(1)>',
+      `<img alt='"'onerror=alert(1)>`,
+      '<svg><animate\fonbegin=alert(1)>',
+      '</p onclick=alert(1)>',
+      '<a b onx="1"nerror=alert(1)>',
+      '<img src=x onerror="alert(1)',
+    ]) {
+      expect(sanitizeInboundEmailBody(html), html).not.toMatch(
+        /(?:onerror|onbegin|onclick)\s*=\s*["']?alert/i,
+      );
+    }
+  });
+
+  it('valor entre aspas não esconde tag ativa de outro contexto (comentário, textarea)', () => {
+    for (const html of [
+      '<!--<a title="--><img src=x onerror=alert(1)>">',
+      '<textarea><a title="</textarea><img src=x onerror=alert(1)>">',
+      '<!--<a title="--><img src=x onerror=alert(1)>',
+    ]) {
+      const out = sanitizeInboundEmailBody(html);
+      expect(out, html).not.toContain('<img');
+    }
+  });
+
   it('se não estabilizar em 20 passadas, devolve texto escapado — nunca HTML ativo', () => {
     // Cada passada desmonta um nível: com N níveis = nº de passadas, sobrava `<base ...>` intacto.
     for (const depth of [1, 5, 19, 20, 21, 22, 40, 200]) {
@@ -74,6 +117,9 @@ describe('sanitizeInboundEmailBody — contornos por remontagem', () => {
     ['<script sem ">"', '<script'.repeat(140_000)],
     ['<img sem ">"', '<img '.repeat(200_000)],
     ['src com domínio de tracker repetido', `<img src="${'mailgun.org/'.repeat(80_000)}">`],
+    ['tags abertas com aspas', '<a x="'.repeat(160_000)],
+    ['tag com espaços e barras', `<a ${' /'.repeat(490_000)}`],
+    ['nomes seguidos de espaços', `<a ${`b${' '.repeat(99_999)}`.repeat(10)}`],
     ['aninhamento', `${'<ba'.repeat(150_000)}<base>${'se>'.repeat(150_000)}`],
   ])('tempo limitado em entrada patológica de ~1 MB: %s', (_nome, evil) => {
     const start = performance.now();
