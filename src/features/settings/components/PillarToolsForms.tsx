@@ -101,6 +101,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                 </div>
                 <div className="flex items-center gap-2">
                   <Input
+                    aria-label="Tempo Limite de Estagnação de Oportunidades"
                     type="number"
                     value={props.hubStagnationDays}
                     onChange={(e) => props.setHubStagnationDays(Number(e.target.value))}
@@ -120,6 +121,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
+                    aria-label="Exigir Motivo Padronizado ao Perder Negócio"
                     type="checkbox"
                     checked={props.hubRequireLossReason}
                     onChange={(e) => props.setHubRequireLossReason(e.target.checked)}
@@ -138,6 +140,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
+                    aria-label="Deduplicação Automática por CNPJ e Domínio"
                     type="checkbox"
                     checked={props.hubDedupCnpj}
                     onChange={(e) => props.setHubDedupCnpj(e.target.checked)}
@@ -173,6 +176,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                   </p>
                 </div>
                 <Input
+                  aria-label="Faturamento Mínimo Estimado para ICP"
                   type="text"
                   value={props.marketMinRevenue}
                   onChange={(e) => props.setMarketMinRevenue(e.target.value)}
@@ -190,6 +194,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
+                    aria-label="Enriquecimento Automático em Cascata"
                     type="checkbox"
                     checked={props.marketAutoEnrich}
                     onChange={(e) => props.setMarketAutoEnrich(e.target.checked)}
@@ -209,6 +214,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
+                    aria-label="Radar de Sinais & Alertas de Contratação"
                     type="checkbox"
                     checked={props.marketSignalAlerts}
                     onChange={(e) => props.setMarketSignalAlerts(e.target.checked)}
@@ -245,6 +251,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                 </div>
                 <div className="flex items-center gap-2">
                   <Input
+                    aria-label="SLA de Speed-to-Lead Inbound"
                     type="number"
                     value={props.salesSpeedToLead}
                     onChange={(e) => props.setSalesSpeedToLead(Number(e.target.value))}
@@ -264,6 +271,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
+                    aria-label="Checklist Obrigatório BANT / MEDDICC"
                     type="checkbox"
                     checked={props.salesRequireBant}
                     onChange={(e) => props.setSalesRequireBant(e.target.checked)}
@@ -283,6 +291,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                 </div>
                 <div className="flex items-center gap-2">
                   <Input
+                    aria-label="Capacidade Máxima Diária por SDR"
                     type="number"
                     value={props.salesDailyTouchesLimit}
                     onChange={(e) => props.setSalesDailyTouchesLimit(Number(e.target.value))}
@@ -319,6 +328,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                 </div>
                 <div className="flex items-center gap-2">
                   <Input
+                    aria-label="Benchmark de Conversão Mínima de Funil"
                     type="number"
                     value={props.perfBenchmarkRate}
                     onChange={(e) => props.setPerfBenchmarkRate(Number(e.target.value))}
@@ -340,6 +350,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
+                    aria-label="Ranking e Pontuação de Vendedores (Rep Score)"
                     type="checkbox"
                     checked={props.perfRepScoreActive}
                     onChange={(e) => props.setPerfRepScoreActive(e.target.checked)}
@@ -358,6 +369,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
+                    aria-label="Notificações de Quedas Bruscas no Funil"
                     type="checkbox"
                     checked={props.perfAnomalyAlerts}
                     onChange={(e) => props.setPerfAnomalyAlerts(e.target.checked)}
@@ -394,6 +406,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                   </p>
                 </div>
                 <select
+                  aria-label="Método de Cálculo do Pipeline Ponderado"
                   value={props.predModelType}
                   onChange={(e) => props.setPredModelType(e.target.value as 'historico' | 'manual')}
                   className="p-2 text-xs rounded-lg border border-[var(--line)] bg-[var(--surface)] text-[var(--ink)] font-medium"
@@ -413,6 +426,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-[var(--ink-2)]">Todo dia</span>
                   <Input
+                    aria-label="Dia de Congelamento do Commit Mensal"
                     type="number"
                     value={props.predFreezeDay}
                     onChange={(e) => props.setPredFreezeDay(Number(e.target.value))}
@@ -431,6 +445,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                 </div>
                 <div className="flex items-center gap-2">
                   <Input
+                    aria-label="Fator de Confiança do Best Case"
                     type="number"
                     value={props.predConfidenceFactor}
                     onChange={(e) => props.setPredConfidenceFactor(Number(e.target.value))}
@@ -466,6 +481,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                   </p>
                 </div>
                 <select
+                  aria-label="Modelo de IA Ativo para Vendas"
                   value={props.aiModel}
                   onChange={(e) => props.setAiModel(e.target.value)}
                   className="p-2 text-xs rounded-lg border border-[var(--line)] bg-[var(--surface)] text-[var(--ink)] font-semibold"
@@ -486,6 +502,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                   </p>
                 </div>
                 <input
+                  aria-label="Temperatura de Inferência"
                   type="range"
                   min="0"
                   max="1"
@@ -505,6 +522,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
+                    aria-label="Sanitização e Mascaramento de PII (LGPD)"
                     type="checkbox"
                     checked={props.aiPiiMasking}
                     onChange={(e) => props.setAiPiiMasking(e.target.checked)}
@@ -541,6 +559,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
+                    aria-label="Sincronização Bidirecional com Bitrix24"
                     type="checkbox"
                     checked={props.autoBiDirectional}
                     onChange={(e) => props.setAutoBiDirectional(e.target.checked)}
@@ -559,6 +578,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                 </div>
                 <div className="flex items-center gap-2">
                   <Input
+                    aria-label="Intervalo de Sincronização em Segundo Plano"
                     type="number"
                     value={props.autoSyncInterval}
                     onChange={(e) => props.setAutoSyncInterval(Number(e.target.value))}
@@ -578,6 +598,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                 </div>
                 <div className="flex items-center gap-2">
                   <Input
+                    aria-label="Tentativas de Reenvio em Falha de Webhook"
                     type="number"
                     value={props.autoRetryCount}
                     onChange={(e) => props.setAutoRetryCount(Number(e.target.value))}
@@ -614,6 +635,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
+                    aria-label="Click-to-Call Integrado (3CX / Voice Hub)"
                     type="checkbox"
                     checked={props.engClickToCall}
                     onChange={(e) => props.setEngClickToCall(e.target.checked)}
@@ -632,6 +654,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
+                    aria-label="Gravação & Transcrição Automática por IA"
                     type="checkbox"
                     checked={props.engRecordCalls}
                     onChange={(e) => props.setEngRecordCalls(e.target.checked)}
@@ -650,6 +673,7 @@ export function PillarToolsForms(props: PillarToolsFormsProps) {
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
+                    aria-label="Trava de Horário Comercial (Anti-Spam)"
                     type="checkbox"
                     checked={props.engWorkingHoursOnly}
                     onChange={(e) => props.setEngWorkingHoursOnly(e.target.checked)}

@@ -60,7 +60,12 @@ export async function executeVoiceCommandWithCommit(
   const commandId = command.commandId ?? randomUUID();
 
   logger.info(
-    { commandId, type: command.type, organizationId: command.organizationId, userId: command.userId },
+    {
+      commandId,
+      type: command.type,
+      organizationId: command.organizationId,
+      userId: command.userId,
+    },
     'VoiceHub: iniciando processamento transacional de comando de voz',
   );
 

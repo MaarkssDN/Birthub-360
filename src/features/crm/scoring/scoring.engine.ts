@@ -6,7 +6,10 @@ export interface AsyncLeadScoringJobPayload {
 }
 
 export interface LeadScoringQueueProducerPort {
-  enqueue(jobName: 'calculate-lead-score', payload: AsyncLeadScoringJobPayload): Promise<{
+  enqueue(
+    jobName: 'calculate-lead-score',
+    payload: AsyncLeadScoringJobPayload,
+  ): Promise<{
     jobId: string;
   }>;
 }

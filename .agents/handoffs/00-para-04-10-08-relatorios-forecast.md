@@ -74,3 +74,18 @@ Re-verificado em `main` atual: inventário 17/17 permanece íntegro com 271 test
 - p95 analytics: harness k6 existe (`tests/load/k6-*.js` + workflow `endpoint-latency-budget.yml`), mas nenhum cenário cobre endpoints de analytics/commercial-intelligence. Estender o cenário = `tests/**` (dono 08) + paths do workflow (dono 08). Execução do benchmark requer app+Postgres+Redis — não executável neste worktree; pendente de ambiente/operador.
 - MAPE: worker semanal `forecastSnapshotWeekly.worker.ts` existe e está registrado em `worker.ts`, `worker-mercado.ts` e modo embutido; depende de produção efetivamente rodar o worker (deploy EC2 manual; ativação do worker dedicado segue `adiado` em `onda-6/16-para-10-observabilidade-worker.md`).
 - Custo de forecast → Agente 23; baseline MAPE → Agente 08.
+
+## Resolução do Cenário de Carga k6 Analytics (Agente 00 / Agente 08 / Squad 00, 2026-11-20)
+
+- ✅ **Harness k6 de Analytics & Commercial Intelligence criado:**
+  - Arquivo: `tests/load/k6-analytics-commercial-intelligence.js`.
+  - Cobertura dos endpoints analíticos:
+    - `GET /api/commercial-intelligence/overview`
+    - `GET /api/commercial-intelligence/performance`
+    - `GET /api/commercial-intelligence/aging`
+    - `GET /api/commercial-intelligence/pipeline-creation`
+    - `GET /api/commercial-intelligence/bitrix-sync-health`
+  - Setup com login e sessão real de Better Auth (papel ADMIN, aderente a `COMMERCIAL_INTELLIGENCE_ROLES`), populando dados de leads e empresas para alimentar os agregadores analíticos.
+  - Thresholds formais estabelecidos: `http_req_failed < 1%`, p50 < 200ms, p95 < 500ms (SLO docs/SRE.md 1.2), p99 < 800ms (teto máximo do Documento Mestre P04).
+  - Integrado ao compose (`docker-compose.opensource.yml` -> serviço `k6-analytics`) e `package.json` (`npm run load:k6:analytics`).
+  - Documentação atualizada em `docs/development/PERFORMANCE_BUDGETS.md`.

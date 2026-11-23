@@ -577,4 +577,17 @@ export class CopilotoIaController {
       next(error);
     }
   };
+
+  getNextBestAction = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { organizationId } = (req as AuthRequest).user;
+      const recommendation = await this.useCases.getNextBestAction(
+        organizationId,
+        routeParam(req.params.leadId, 'leadId'),
+      );
+      res.json({ success: true, data: recommendation });
+    } catch (error: any) {
+      next(error);
+    }
+  };
 }

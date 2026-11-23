@@ -419,3 +419,15 @@ export interface CopilotoIaRepository {
     leadId: string,
   ): Promise<WhatsAppMessageTiming[]>;
 }
+
+/** Próxima Melhor Ação (Next Best Action) sugerida pelo Copiloto IA em tempo real. */
+export interface NextBestActionDTO {
+  leadId: string;
+  action: string;
+  priority: 'ALTA' | 'MEDIA' | 'BAIXA';
+  reason: string;
+  suggestedChannel: 'WHATSAPP' | 'EMAIL' | 'CALL' | 'REUNIAO';
+  dealHealthScore: number | null;
+  responseTimeSlaStatus: 'OK' | 'ALERTA' | 'CRITICO';
+}
+

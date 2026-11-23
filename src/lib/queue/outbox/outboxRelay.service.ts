@@ -38,8 +38,10 @@ export interface OutboxRelayOptions {
 export class OutboxRelay {
   readonly workerId: string;
   private timer?: NodeJS.Timeout;
+  private purgeTimer?: NodeJS.Timeout;
   private running = false;
   private ticking = false;
+  private static readonly PURGE_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
   constructor(private readonly opts: OutboxRelayOptions) {
     this.workerId = opts.workerId ?? `relay-${randomUUID()}`;
@@ -164,11 +166,27 @@ export class OutboxRelay {
         });
     }, intervalMs);
     this.timer.unref?.();
+
+    // WRK-03: retenção LGPD da DLQ — purgeExpired existia mas nenhum caller o
+    // agendava, então DEAD_LETTER acumulava para sempre. Purge diário + uma
+    // execução no boot (catch-up após downtime).
+    if (!this.purgeTimer) {
+      const runPurge = () => {
+        this.purgeExpired().catch((err) =>
+          logger.error({ err }, 'OutboxRelay: falha no purge de retenção'),
+        );
+      };
+      runPurge();
+      this.purgeTimer = setInterval(runPurge, OutboxRelay.PURGE_INTERVAL_MS);
+      this.purgeTimer.unref?.();
+    }
   }
 
   stop(): void {
     if (this.timer) clearInterval(this.timer);
     this.timer = undefined;
+    if (this.purgeTimer) clearInterval(this.purgeTimer);
+    this.purgeTimer = undefined;
   }
 
   /** Alias de `stop()` para o graceful shutdown genérico (EmbeddedWorkersHandle). */

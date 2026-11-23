@@ -118,8 +118,8 @@ export function ResetPasswordScreen() {
 
   return (
     <main className="min-h-screen bg-bg text-ink flex items-center justify-center relative overflow-hidden font-sans p-4 transition-colors">
-      {/* Mesmo tratamento visual do LoginScreen (mesmo fluxo de auth) — metade laranja/metade azul
-          com tokens estáticos em vez do indigo-500 genérico anterior. Ver LoginScreen.tsx. */}
+      {/* Tratamento visual da tela de auth — metade laranja/metade azul com tokens estáticos
+          em vez do indigo-500 genérico anterior. */}
       <motion.div
         aria-hidden="true"
         animate={{ scale: [1, 1.08, 1], rotate: [0, 90, 0] }}

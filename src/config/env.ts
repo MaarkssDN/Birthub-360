@@ -322,6 +322,15 @@ const envSchema = z
     // nunca finge que o arquivo ainda existe.
     BITRIX_EXTRACTION_STORAGE_DIR: z.string().default('./data/bitrix-extractions'),
 
+    // DEBT-0006: fallback global de portal Bitrix. Antes era lido via process.env direto e
+    // valia para QUALQUER organização sem BitrixConnection — risco cross-tenant. Agora a env
+    // é declarada aqui e o uso passa por allowlist explícita de organizationIds
+    // (BITRIX24_WEBHOOK_URL_ORG_ALLOWLIST, separados por vírgula; vazio/ausente = fallback
+    // desligado, fail-closed). Ver resolveGlobalBitrixWebhookUrl em
+    // src/features/integrations/bitrix/service/settings.ts.
+    BITRIX24_WEBHOOK_URL: z.string().optional(),
+    BITRIX24_WEBHOOK_URL_ORG_ALLOWLIST: z.string().optional(),
+
     // ── Retenção de memória de agentes de IA (AgentMemory) ───────────────────
     // AgentMemory acumula uma linha por (sessionId, agentType, organizationId) para cada execução de
     // agente do enxame (SDR/BDR/CLOSER/CRM/OPS/LearningAgent) e nunca teve expurgo — cresce para
