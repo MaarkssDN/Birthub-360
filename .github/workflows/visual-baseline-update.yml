@@ -68,11 +68,11 @@ jobs:
         ports:
           - 7700:7700
         options: >-
-          --health-cmd "wget --no-verbose --tries=1 --spider http://127.0.0.1:7700/health || exit 1"
+          --health-cmd "wget --no-verbose --tries=1 -O - http://127.0.0.1:7700/health >/dev/null 2>&1 || exit 1"
           --health-interval 10s
           --health-timeout 5s
           --health-start-period 30s
-          --health-retries 10
+          --health-retries 12
 
     env:
       NODE_ENV: test
@@ -147,6 +147,13 @@ jobs:
 
       - name: Apply database migrations
         run: npx dotenv-cli -e .env.test -- npx prisma migrate deploy
+
+      - name: Re-bootstrap pós-migrate
+        env:
+          PGPASSWORD: prospector_test_pass
+          APP_DB_PASSWORD: ci_app_test_pass
+          MIGRATOR_DB_PASSWORD: ci_migrator_test_pass
+        run: bash scripts/db/bootstrap-app-role.sh localhost 5434 prospector prospectordb_test
 
       # tests/e2e/visual.spec.ts está em testIgnore no playwright.config.ts (ele não faz
       # parte do test:e2e normal). Removido apenas neste checkout efêmero para que o

@@ -417,6 +417,29 @@ jobs:
           test "$TRIVY_SCAN_RESULT" = success
           test "$APPLICATION_GATE_RESULT" = success
 
+      - name: Publicar resumo de evidência do gate build
+        if: always()
+        env:
+          SECRET_SCAN_RESULT: ${{ needs.secret-scan.result }}
+          DEPENDENCY_REVIEW_RESULT: ${{ needs.dependency-review.result }}
+          TRIVY_SCAN_RESULT: ${{ needs.trivy-scan.result }}
+          APPLICATION_GATE_RESULT: ${{ needs.build-and-test.result }}
+          CI_EVENT_NAME: ${{ github.event_name }}
+          TARGET_SHA: ${{ github.sha }}
+        run: |
+          {
+            echo "## Veredito consolidado — \`build\`"
+            echo ""
+            echo "- **SHA:** \`$TARGET_SHA\`"
+            echo "- **Evento:** \`$CI_EVENT_NAME\`"
+            echo "- **secret-scan:** \`$SECRET_SCAN_RESULT\`"
+            if [ "$CI_EVENT_NAME" = "pull_request" ]; then
+              echo "- **dependency-review:** \`$DEPENDENCY_REVIEW_RESULT\`"
+            fi
+            echo "- **trivy-scan:** \`$TRIVY_SCAN_RESULT\`"
+            echo "- **application-gate:** \`$APPLICATION_GATE_RESULT\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
   # Geração manual de baselines Linux. Não participa do required check `build`.
   visual-baselines:
     name: 'Gerar baselines visuais Linux (manual)'
@@ -455,11 +478,11 @@ jobs:
         ports:
           - 7700:7700
         options: >-
-          --health-cmd "wget --no-verbose --tries=1 --spider http://127.0.0.1:7700/health || exit 1"
+          --health-cmd "wget --no-verbose --tries=1 -O - http://127.0.0.1:7700/health >/dev/null 2>&1 || exit 1"
           --health-interval 10s
           --health-timeout 5s
           --health-start-period 30s
-          --health-retries 10
+          --health-retries 12
 
     env:
       NODE_ENV: test

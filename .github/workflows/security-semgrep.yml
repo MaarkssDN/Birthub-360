@@ -15,6 +15,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('semgrep-pr-{0}', github.event.pull_request.number) || format('semgrep-{0}-{1}', github.event_name, github.sha) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   semgrep:
     name: Semgrep SAST
@@ -25,4 +29,26 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Semgrep scan (bloqueante)
-        run: semgrep scan --config p/typescript --config p/nodejs --config p/secrets --error --metrics=off --exclude node_modules --exclude dist --exclude tests src server.ts worker.ts scripts
+        id: semgrep_scan
+        run: semgrep scan --config p/typescript --config p/nodejs --config p/secrets --error --metrics=off --sarif-output=semgrep-results.sarif --exclude node_modules --exclude dist --exclude tests src server.ts worker.ts scripts
+      - name: Upload relatório SARIF do Semgrep (evidência)
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: semgrep-sarif-${{ github.run_id }}
+          path: semgrep-results.sarif
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Publicar resumo de evidência do Semgrep
+        if: always()
+        env:
+          SCAN_OUTCOME: ${{ steps.semgrep_scan.outcome }}
+          TARGET_SHA: ${{ github.sha }}
+        run: |
+          {
+            echo "## Semgrep SAST"
+            echo ""
+            echo "- **SHA:** \`$TARGET_SHA\`"
+            echo "- **Rulesets:** \`p/typescript\`, \`p/nodejs\`, \`p/secrets\` (\`--error\` bloqueante)"
+            echo "- **Resultado:** \`$SCAN_OUTCOME\`"
+          } >> "$GITHUB_STEP_SUMMARY"
