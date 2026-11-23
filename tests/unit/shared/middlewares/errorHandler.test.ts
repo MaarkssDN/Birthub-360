@@ -17,6 +17,7 @@ function buildReqRes(requestId = 'req-test-123') {
   headers.set('x-request-id', requestId);
 
   const req = {
+    originalUrl: '/api/v1/recurso-teste',
     headers: { 'x-request-id': requestId },
     observability: {
       requestId,
@@ -61,6 +62,11 @@ describe('errorHandler Middleware', () => {
       code: 'VALIDATION_ERROR',
       retryable: false,
       requestId: 'req-zod-1',
+      type: 'https://api.birthhub360.com/errors/validation-error',
+      title: 'Erro de Validação',
+      status: 400,
+      detail: 'Erro de Validação',
+      instance: '/api/v1/recurso-teste',
       details: error.issues,
     });
   });
@@ -79,6 +85,11 @@ describe('errorHandler Middleware', () => {
       code: 'INTERNAL_ERROR',
       retryable: true,
       requestId: 'req-500-1',
+      type: 'https://api.birthhub360.com/errors/internal-error',
+      title: 'Test Error',
+      status: 500,
+      detail: 'Test Error',
+      instance: '/api/v1/recurso-teste',
     });
   });
 
@@ -199,6 +210,11 @@ describe('errorHandler Middleware', () => {
       code: 'CONFLICT',
       retryable: false,
       requestId: 'req-p2002-1',
+      type: 'https://api.birthhub360.com/errors/conflict',
+      title: 'Conflito de Dados: Este registro já existe.',
+      status: 409,
+      detail: 'Conflito de Dados: Este registro já existe.',
+      instance: '/api/v1/recurso-teste',
     });
   });
 
@@ -218,6 +234,72 @@ describe('errorHandler Middleware', () => {
       code: 'NOT_FOUND',
       retryable: false,
       requestId: 'req-p2025-1',
+      type: 'https://api.birthhub360.com/errors/not-found',
+      title: 'Registro não encontrado.',
+      status: 404,
+      detail: 'Registro não encontrado.',
+      instance: '/api/v1/recurso-teste',
     });
+  });
+
+  describe('negociação de conteúdo RFC 7807 — leitura defensiva do header Accept', () => {
+    const PROBLEM_JSON = 'application/problem+json; charset=utf-8';
+
+    it('não lança e responde o envelope quando req não tem header()', () => {
+      const { req, res, next } = buildReqRes('req-sem-header-fn');
+      expect(req.header).toBeUndefined();
+
+      expect(() => errorHandler(new AppError('Falha', 409), req, res, next)).not.toThrow();
+
+      expect(res.status).toHaveBeenCalledWith(409);
+      expect(res.json).toHaveBeenCalledTimes(1);
+      expect(res.setHeader).not.toHaveBeenCalled();
+    });
+
+    it('não lança quando req não tem header() nem headers', () => {
+      const { req, res, next } = buildReqRes('req-sem-headers');
+      delete (req as { headers?: unknown }).headers;
+
+      expect(() => errorHandler(new AppError('Falha', 409), req, res, next)).not.toThrow();
+
+      expect(res.status).toHaveBeenCalledWith(409);
+      expect(res.setHeader).not.toHaveBeenCalled();
+    });
+
+    it('usa problem+json a partir de req.headers.accept quando req não tem header()', () => {
+      const { req, res, next } = buildReqRes();
+      req.headers.accept = 'application/problem+json, application/json;q=0.9';
+
+      errorHandler(new AppError('Falha', 409), req, res, next);
+
+      expect(res.setHeader).toHaveBeenCalledTimes(1);
+      expect(res.setHeader).toHaveBeenCalledWith('Content-Type', PROBLEM_JSON);
+    });
+
+    it('usa problem+json a partir de req.header() (API do Express)', () => {
+      const { req, res, next } = buildReqRes();
+      const header = vi.fn((name: string) =>
+        name === 'accept' ? 'application/problem+json' : undefined,
+      );
+      req.header = header as unknown as Request['header'];
+
+      errorHandler(new AppError('Falha', 409), req, res, next);
+
+      expect(res.setHeader).toHaveBeenCalledTimes(1);
+      expect(res.setHeader).toHaveBeenCalledWith('Content-Type', PROBLEM_JSON);
+    });
+
+    it.each([undefined, '', '*/*', 'application/json', 'text/html'])(
+      'não força problem+json quando Accept é %s',
+      (accept) => {
+        const { req, res, next } = buildReqRes();
+        if (accept !== undefined) req.headers.accept = accept;
+
+        errorHandler(new AppError('Falha', 409), req, res, next);
+
+        expect(res.setHeader).not.toHaveBeenCalled();
+        expect(res.json).toHaveBeenCalledTimes(1);
+      },
+    );
   });
 });
