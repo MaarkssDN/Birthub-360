@@ -276,6 +276,7 @@ describe('resolveDbSsl — TLS do banco nos scripts de credenciais', () => {
       'postgresql://u:p@localhost.exemplo.com/db',
       'postgresql://u:p@localhost/db?host=db.exemplo.com',
       'postgresql://u:p@localhost/db?host=localhost&host=db.exemplo.com',
+      'postgresql:///db',
     ]) {
       expect(effective(url).ssl, url).toEqual({ rejectUnauthorized: true });
     }

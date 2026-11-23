@@ -2,8 +2,8 @@
 //
 // Pré-condições OBRIGATÓRIAS dos scripts que gravam credenciais cifradas
 // (backfill-integration-settings-encryption.ts e reencrypt-credentials.ts). Sem conexão e sem
-// src/config/env.ts, para ser testável e rodar ANTES de qualquer conexão com o banco (o `pg` só
-// interpreta a URL, em resolveDbSsl).
+// src/config/env.ts, para ser testável e rodar ANTES de qualquer conexão com o banco (só o
+// parser de URL do `pg` é usado, em resolveDbSsl).
 //
 // Por que existe: src/lib/crypto/secretFields.ts, fora de NODE_ENV=production e sem
 // CREDENTIALS_ENCRYPTION_KEY, cai numa chave FIXA de desenvolvimento. Um backfill rodado assim
@@ -20,7 +20,7 @@
 
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import pg from 'pg';
+import type { ClientConfig } from 'pg';
 
 export class ScriptPreconditionError extends Error {
   constructor(message: string) {
@@ -242,7 +242,7 @@ export function requireRedisUrl(env: ScriptEnv): string {
 
 export interface ResolvedDbSsl {
   /** Config pronta para `pg.Pool`/`pg.Client` — sem `connectionString`, que sobrescreveria `ssl`. */
-  config: pg.ClientConfig;
+  config: ClientConfig;
   /** `true` só quando o operador desligou a verificação do certificado de propósito. */
   insecure: boolean;
 }
@@ -286,9 +286,9 @@ export function resolveDbSsl(
       'DATABASE_URL ilegível (ou certificado citado nela inacessível) — abortando.',
     );
   }
-  const config: pg.ClientConfig = { ...parsed, connectionString: undefined };
-  const host = new pg.Client({ host: config.host }).host.toLowerCase();
-  if (LOCAL_DB_HOSTS.has(host)) {
+  const config: ClientConfig = { ...parsed, connectionString: undefined };
+  // Host vazio (o `pg` cairia em PGHOST ou localhost) conta como remoto: exige TLS.
+  if (LOCAL_DB_HOSTS.has((config.host ?? '').toLowerCase())) {
     return { config: { ...config, ssl: config.ssl ?? false }, insecure: false };
   }
 
