@@ -240,37 +240,53 @@ export function requireRedisUrl(env: ScriptEnv): string {
 export type DbSslConfig = false | { rejectUnauthorized: boolean; ca?: string };
 
 export interface ResolvedDbSsl {
+  /** URL a entregar ao `pg`: em host remoto, sem os parâmetros que sobrescreveriam `ssl`. */
+  connectionString: string;
   ssl: DbSslConfig;
   /** `true` só quando o operador desligou a verificação do certificado de propósito. */
   insecure: boolean;
 }
 
+// O `pg` aplica o que está na URL POR CIMA da opção `ssl` (pg/lib/connection-parameters.js):
+// `?sslmode=no-verify`, `?sslmode=require&uselibpqcompat=true`, `?sslmode=disable` e `?ssl=0`
+// desligariam a verificação (ou o TLS) mesmo com `rejectUnauthorized: true`.
+const TLS_OVERRIDE_PARAMS = ['ssl', 'sslmode', 'uselibpqcompat', 'sslnegotiation'];
+
 const LOCAL_DB_HOSTS = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
 
 /**
  * TLS da conexão com o banco dos scripts de credenciais (o script lê e regrava segredos).
- * - Host local (hostname PARSEADO da URL, não substring): sem TLS.
+ * - Host local (hostname efetivo PARSEADO da URL, inclusive `?host=`, não substring): sem TLS.
  * - Qualquer outro host: TLS COM verificação do certificado. CA próprio via `PGSSLROOTCERT`
  *   (caminho de arquivo PEM) para bancos com certificado privado/autoassinado.
  * - Desligar a verificação exige `DB_SSL_INSECURE_SKIP_VERIFY=true` explícito (retorna `insecure`
- *   para o chamador avisar em voz alta) — nunca é o padrão.
+ *   para o chamador avisar em voz alta) — nunca é o padrão, nem via parâmetro da própria URL.
+ * - URL ilegível: aborta (não dá para garantir que ela não desliga o TLS).
  */
 export function resolveDbSsl(
   dbUrl: string,
   env: ScriptEnv,
   readFile: (path: string) => string = (path) => readFileSync(path, 'utf8'),
 ): ResolvedDbSsl {
-  let hostname = '';
+  let url: URL;
   try {
-    hostname = new URL(dbUrl).hostname.toLowerCase();
+    url = new URL(dbUrl);
   } catch {
-    // URL ilegível: trata como remota (seguro) — o driver reportará o erro de conexão.
+    throw new ScriptPreconditionError(
+      'DATABASE_URL ilegível — abortando (não é possível garantir TLS verificado na conexão).',
+    );
   }
-  if (LOCAL_DB_HOSTS.has(hostname)) return { ssl: false, insecure: false };
+  // No `pg`, `?host=` (a última ocorrência) prevalece sobre o host da autoridade.
+  const hostname = (url.searchParams.getAll('host').at(-1) || url.hostname).toLowerCase();
+  if (LOCAL_DB_HOSTS.has(hostname)) {
+    return { connectionString: dbUrl, ssl: false, insecure: false };
+  }
+  for (const param of TLS_OVERRIDE_PARAMS) url.searchParams.delete(param);
 
   const insecure = env.DB_SSL_INSECURE_SKIP_VERIFY?.trim().toLowerCase() === 'true';
   const caPath = env.PGSSLROOTCERT?.trim();
   return {
+    connectionString: url.toString(),
     ssl: { rejectUnauthorized: !insecure, ...(caPath ? { ca: readFile(caPath) } : {}) },
     insecure,
   };

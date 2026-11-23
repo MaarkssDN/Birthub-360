@@ -22,6 +22,8 @@ const DANGEROUS_BLOCK_TAGS = [
 const TRACKING_URL_PATTERNS =
   /(?:open\.substack\.com|list-manage\.com\/track\/open|mandrillapp\.com\/track\/open|sendgrid\.net\/wf\/open|mailgun\.org\/.*\/open|\/pixel(?:\.[a-z]+|\b)|track(?:ing)?[-_.]?pixel|\/beacon[./?])/i;
 
+const MAX_TRACKING_URL_CHARS = 2048;
+
 function isTrackingPixelImgTag(imgTag: string): boolean {
   const lower = imgTag.toLowerCase();
 
@@ -48,7 +50,8 @@ function isTrackingPixelImgTag(imgTag: string): boolean {
 
   // URLs conhecidas de pixel de abertura
   const srcAttr = lower.match(/\bsrc\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/);
-  const src = srcAttr?.[1] ?? srcAttr?.[2] ?? srcAttr?.[3] ?? '';
+  // Recorte: `mailgun.org/.*/open` é quadrático num src gigante com o domínio repetido.
+  const src = (srcAttr?.[1] ?? srcAttr?.[2] ?? srcAttr?.[3] ?? '').slice(0, MAX_TRACKING_URL_CHARS);
   if (src && TRACKING_URL_PATTERNS.test(src)) {
     return true;
   }
@@ -71,26 +74,73 @@ function replaceUntilStable(input: string, pattern: RegExp, replacement: string)
   return current;
 }
 
+/**
+ * Remove as tags abertas por `openRe` aprovadas por `shouldRemove` e, se houver `closeRe`, também o
+ * conteúdo até o fechamento seguinte (ambos com flag `g`). Varredura linear de propósito: o regex equivalente
+ * (`<tag\b[^>]*>[\s\S]*?</tag>`) é quadrático em `<tag` repetido sem fechamento (corpo de até 1 MB).
+ */
+function removeTag(
+  input: string,
+  openRe: RegExp,
+  closeRe: RegExp | null,
+  shouldRemove: (openTag: string) => boolean = () => true,
+): string {
+  let pendingCloseRe = closeRe;
+  let out = '';
+  let kept = 0;
+  for (let open = openRe.exec(input); open; open = openRe.exec(input)) {
+    const gt = input.indexOf('>', open.index);
+    if (gt === -1) break;
+    let end = gt + 1;
+    openRe.lastIndex = end;
+    if (!shouldRemove(input.slice(open.index, end))) continue;
+    if (pendingCloseRe) {
+      pendingCloseRe.lastIndex = end;
+      if (pendingCloseRe.test(input)) end = pendingCloseRe.lastIndex;
+      else pendingCloseRe = null;
+    }
+    out += input.slice(kept, open.index);
+    kept = end;
+    openRe.lastIndex = end;
+  }
+  return out + input.slice(kept);
+}
+
+function escapeHtml(input: string): string {
+  return input
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function sanitizeOnce(input: string): string {
   let clean = input;
 
   // 1. Remove blocos perigosos com seu conteúdo (<script>...</script>, <iframe>...</iframe>, etc.)
   for (const tag of DANGEROUS_BLOCK_TAGS) {
-    const pairedRe = new RegExp(`<${tag}\\b[^>]*>[\\s\\S]*?<\\/${tag}\\s*>`, 'gi');
-    const selfClosingRe = new RegExp(`<${tag}\\b[^>]*\\/?>`, 'gi');
-    clean = clean.replace(pairedRe, '').replace(selfClosingRe, '');
+    const openRe = new RegExp(`<${tag}\\b`, 'gi');
+    const closeRe = new RegExp(`</${tag}\\s*>`, 'gi');
+    clean = removeTag(clean, openRe, closeRe);
   }
 
   // 2. Remove pixels espiões (<img ...> 1x1, 0x0, display:none, visibility:hidden ou URLs de tracker)
-  clean = clean.replace(/<img\b[^>]*>/gi, (match) => (isTrackingPixelImgTag(match) ? '' : match));
+  clean = removeTag(clean, /<img\b/gi, null, isTrackingPixelImgTag);
 
   // 3. Remove atributos de eventos inline (onload=, onerror=, onclick=, etc.).
-  // O separador pode ser espaço OU "/" (`<img/onerror=x>` é executado pelos navegadores).
-  clean = replaceUntilStable(clean, /[\s/]+on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+  // O separador pode ser espaço, "/" (`<img/onerror=x>`) ou só a aspa que fechou o atributo anterior
+  // (`<img src="x"onerror=y>`) — os navegadores executam os três. Um único caractere separador, sem
+  // `+`: `[\s/]+` era quadrático em sequências longas de espaços.
+  clean = replaceUntilStable(
+    clean,
+    /(?:[\s/]|(?<=["']))on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi,
+    '',
+  );
 
   // 4. Neutraliza URIs javascript:, vbscript: e data:text/html em href/src/action
   clean = clean.replace(
-    /\b(href|src|action|formaction)\s*=\s*(?:"\s*(?:javascript|vbscript|data\s*:\s*text\/html)[^"]*"|'\s*(?:javascript|vbscript|data\s*:\s*text\/html)[^']*'|(?:\s*(?:javascript|vbscript|data\s*:\s*text\/html)[^\s>]+))/gi,
+    /\b(href|src|action|formaction)\s*=\s*(?:"\s*(?:javascript|vbscript|data\s*:\s*text\/html)[^"]*"|'\s*(?:javascript|vbscript|data\s*:\s*text\/html)[^']*'|(?:javascript|vbscript|data\s*:\s*text\/html)[^\s>]+)/gi,
     '$1=""',
   );
 
@@ -106,5 +156,7 @@ export function sanitizeInboundEmailBody(rawBody: string | null | undefined): st
     if (next === clean) return clean;
     clean = next;
   }
-  return clean;
+  // Não estabilizou em MAX_SANITIZE_PASSES: aninhamento só plausível em ataque, e o resto ainda pode
+  // conter HTML ativo. Fail-safe: vira texto puro em vez de HTML parcialmente limpo.
+  return escapeHtml(clean);
 }

@@ -560,14 +560,14 @@ async function withDb<T>(env: ScriptEnv, fn: (query: QueryFn) => Promise<T>): Pr
   const dbUrl = env.DATABASE_URL?.trim();
   if (!dbUrl) throw new Error('DATABASE_URL não definida (obrigatória para --target=db).');
   const { default: pg } = await import('pg');
-  const { ssl, insecure } = resolveDbSsl(dbUrl, env);
+  const { connectionString, ssl, insecure } = resolveDbSsl(dbUrl, env);
   if (insecure) {
     process.stderr.write(
       'AVISO: DB_SSL_INSECURE_SKIP_VERIFY=true — o certificado do banco NÃO está sendo verificado ' +
         '(vulnerável a interceptação). Prefira PGSSLROOTCERT=<ca.pem>.\n',
     );
   }
-  const pool = new pg.Pool({ connectionString: dbUrl, max: 1, ssl });
+  const pool = new pg.Pool({ connectionString, max: 1, ssl });
   const client = await pool.connect();
   try {
     const query: QueryFn = async (sql, params) => {

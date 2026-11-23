@@ -826,18 +826,16 @@ router.get(
         return;
       }
       const entity = req.query.entity ? String(req.query.entity) : undefined;
-      const { buffer, filename, contentType } = await downloadExtractionFile(
+      const { buffer, filename } = await downloadExtractionFile(
         organizationId,
         routeParam(req.params.id, 'id'),
         format as ExtractionFileFormat,
         entity,
       );
-      res.setHeader('Content-Type', contentType);
-      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-      // Download binário (csv/xlsx/json) com Content-Type fixo por formato e `attachment`: o navegador
-      // não renderiza como HTML. Escopo por organizationId em downloadExtractionFile.
-      // nosemgrep: javascript.express.security.audit.xss.direct-response-write.direct-response-write
-      res.send(buffer);
+      // `attachment()` codifica o nome (RFC 6266) — sem interpolar valor do banco no header. Tipo
+      // literal `application/octet-stream` (o documentado em docs/openapi.yaml): o conteúdo veio do
+      // portal e nunca deve ser interpretado pelo navegador; a extensão do arquivo define o formato.
+      res.attachment(filename).type('application/octet-stream').send(buffer);
     } catch (error: any) {
       next(error);
     }

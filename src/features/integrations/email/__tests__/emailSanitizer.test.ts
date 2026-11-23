@@ -40,8 +40,44 @@ describe('sanitizeInboundEmailBody — contornos por remontagem', () => {
     expect(out).toBe('<a href="">x</a>');
   });
 
-  it('termina em tempo limitado em entrada patológica', () => {
-    const evil = `${'<scr'.repeat(500)}ipt>${'</scr'.repeat(500)}ipt>`;
-    expect(() => sanitizeInboundEmailBody(evil)).not.toThrow();
+  it('remove handler colado na aspa do atributo anterior', () => {
+    const out = sanitizeInboundEmailBody('<img src="x"onerror=alert(1)>');
+    expect(out).toBe('<img src="x">');
+  });
+
+  it('se não estabilizar em 20 passadas, devolve texto escapado — nunca HTML ativo', () => {
+    // Cada passada desmonta um nível: com N níveis = nº de passadas, sobrava `<base ...>` intacto.
+    for (const depth of [1, 5, 19, 20, 21, 22, 40, 200]) {
+      const evil = `${'<ba'.repeat(depth)}<base href=//evil.example>${'se href=//evil.example>'.repeat(depth)}`;
+      expect(sanitizeInboundEmailBody(evil).toLowerCase(), String(depth)).not.toContain('<base');
+    }
+    const deep = `<p>Olá</p>${'<ba'.repeat(40)}<base>${'se>'.repeat(40)}`;
+    const out = sanitizeInboundEmailBody(deep);
+    expect(out).toContain('&lt;p&gt;Olá&lt;/p&gt;');
+    expect(out).not.toMatch(/[<>"']/);
+  });
+
+  it('preserva o texto entre tags perigosas sem fechamento e depois de blocos removidos', () => {
+    expect(sanitizeInboundEmailBody('a<link rel=x>b<SCRIPT>1</script >c<meta>d<script e')).toBe(
+      'abcd<script e',
+    );
+    expect(sanitizeInboundEmailBody('<img src="a.png"><img width=1><b>x</b>')).toBe(
+      '<img src="a.png"><b>x</b>',
+    );
+  });
+
+  // Corpo do webhook aceita até 1 MB. Antes (regex quadrático) 50 mil espaços já custavam ~8 s.
+  it.each([
+    ['espaços', ' '.repeat(1_000_000)],
+    ['href= + espaços', `href=${' '.repeat(1_000_000)}`],
+    ['<script> sem fechamento', '<script>'.repeat(125_000)],
+    ['<script sem ">"', '<script'.repeat(140_000)],
+    ['<img sem ">"', '<img '.repeat(200_000)],
+    ['src com domínio de tracker repetido', `<img src="${'mailgun.org/'.repeat(80_000)}">`],
+    ['aninhamento', `${'<ba'.repeat(150_000)}<base>${'se>'.repeat(150_000)}`],
+  ])('tempo limitado em entrada patológica de ~1 MB: %s', (_nome, evil) => {
+    const start = performance.now();
+    sanitizeInboundEmailBody(evil);
+    expect(performance.now() - start).toBeLessThan(4_000);
   });
 });

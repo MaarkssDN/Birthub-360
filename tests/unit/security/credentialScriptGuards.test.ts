@@ -6,6 +6,7 @@
  * --snapshot-confirmed=<id>. Puro: nada aqui conecta em banco.
  */
 import { randomBytes } from 'node:crypto';
+import pg from 'pg';
 import { describe, expect, it } from 'vitest';
 import {
   assertBackfillPreconditions,
@@ -244,12 +245,16 @@ describe('resolveDbSsl — TLS do banco nos scripts de credenciais', () => {
       'postgresql://u:p@127.0.0.1:5432/db',
       'postgresql://u:p@[::1]:5432/db',
     ]) {
-      expect(resolveDbSsl(url, {}, noFile)).toEqual({ ssl: false, insecure: false });
+      expect(resolveDbSsl(url, {}, noFile)).toEqual({
+        connectionString: url,
+        ssl: false,
+        insecure: false,
+      });
     }
   });
 
   it('host remoto verifica o certificado por padrão (rejectUnauthorized=true)', () => {
-    expect(resolveDbSsl('postgresql://u:p@db.exemplo.com:5432/db', {}, noFile)).toEqual({
+    expect(resolveDbSsl('postgresql://u:p@db.exemplo.com:5432/db', {}, noFile)).toMatchObject({
       ssl: { rejectUnauthorized: true },
       insecure: false,
     });
@@ -260,13 +265,43 @@ describe('resolveDbSsl — TLS do banco nos scripts de credenciais', () => {
       'postgresql://u:p@db.exemplo.com/db?application_name=localhost',
       'postgresql://localhost:x@db.exemplo.com/db',
       'postgresql://u:p@localhost.exemplo.com/db',
+      'postgresql://u:p@localhost/db?host=db.exemplo.com',
     ]) {
       expect(resolveDbSsl(url, {}, noFile).ssl).toEqual({ rejectUnauthorized: true });
     }
   });
 
-  it('URL ilegível é tratada como remota (seguro), nunca como local', () => {
-    expect(resolveDbSsl('isto não é uma url', {}, noFile).ssl).toEqual({ rejectUnauthorized: true });
+  it('URL ilegível aborta sem vazar a URL, nunca é tratada como local', () => {
+    for (const url of ['isto não é uma url', 'postgresql://u:segredo@/db?sslmode=no-verify']) {
+      expect(() => resolveDbSsl(url, {}, noFile)).toThrow(ScriptPreconditionError);
+      expect(() => resolveDbSsl(url, {}, noFile)).not.toThrow(/segredo/);
+    }
+  });
+
+  it('parâmetros TLS da URL não sobrescrevem a verificação na config efetiva do pg', () => {
+    for (const q of [
+      'sslmode=require&uselibpqcompat=true',
+      'sslmode=no-verify',
+      'sslmode=disable',
+      'sslmode=require',
+      'ssl=no-verify',
+      'ssl=0',
+      'sslnegotiation=direct',
+    ]) {
+      const { connectionString, ssl } = resolveDbSsl(
+        `postgresql://u:p%40ss@db.exemplo.com/db?application_name=x&${q}`,
+        { PGSSLROOTCERT: '/certs/ca.pem' },
+        () => 'PEM-DO-CA',
+      );
+      const client = new pg.Client({ connectionString, ssl });
+      expect((client as unknown as { ssl: unknown }).ssl, q).toEqual({
+        rejectUnauthorized: true,
+        ca: 'PEM-DO-CA',
+      });
+      expect(client.password).toBe('p@ss');
+      expect(client.host).toBe('db.exemplo.com');
+      expect(connectionString).toContain('application_name=x');
+    }
   });
 
   it('PGSSLROOTCERT carrega o CA próprio mantendo a verificação', () => {
@@ -276,13 +311,13 @@ describe('resolveDbSsl — TLS do banco nos scripts de credenciais', () => {
     };
     expect(
       resolveDbSsl('postgresql://u:p@db.exemplo.com/db', { PGSSLROOTCERT: '/certs/ca.pem' }, readFile),
-    ).toEqual({ ssl: { rejectUnauthorized: true, ca: 'PEM-DO-CA' }, insecure: false });
+    ).toMatchObject({ ssl: { rejectUnauthorized: true, ca: 'PEM-DO-CA' }, insecure: false });
   });
 
   it('só DB_SSL_INSECURE_SKIP_VERIFY=true explícito desliga a verificação, e sinaliza insecure', () => {
     expect(
       resolveDbSsl('postgresql://u:p@db.exemplo.com/db', { DB_SSL_INSECURE_SKIP_VERIFY: 'true' }, noFile),
-    ).toEqual({ ssl: { rejectUnauthorized: false }, insecure: true });
+    ).toMatchObject({ ssl: { rejectUnauthorized: false }, insecure: true });
     for (const v of ['false', '1', 'yes', '', undefined]) {
       expect(
         resolveDbSsl('postgresql://u:p@db.exemplo.com/db', { DB_SSL_INSECURE_SKIP_VERIFY: v }, noFile)
