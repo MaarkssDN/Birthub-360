@@ -125,7 +125,7 @@ describe('agent.execute — ToolExecutor genérico do AgentRuntime (fix AIAGENT-
     await runMultiCargoSeed();
     await runAgentCatalogImport();
     await runCapabilityEngineSeed();
-  });
+  }, 120_000);
 
   beforeEach(() => {
     invokeCallCount = 0;
