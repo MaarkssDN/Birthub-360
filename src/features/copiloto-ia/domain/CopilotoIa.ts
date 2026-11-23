@@ -430,4 +430,3 @@ export interface NextBestActionDTO {
   dealHealthScore: number | null;
   responseTimeSlaStatus: 'OK' | 'ALERTA' | 'CRITICO';
 }
-

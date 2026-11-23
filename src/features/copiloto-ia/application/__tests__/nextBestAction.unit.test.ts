@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { CopilotoIaUseCases } from '../CopilotoIaUseCases.js';
-import type { CopilotoIaRepository, CopilotoDealHealthSnapshotDTO } from '../../domain/CopilotoIa.js';
+import type {
+  CopilotoIaRepository,
+  CopilotoDealHealthSnapshotDTO,
+} from '../../domain/CopilotoIa.js';
 import type { WhatsAppMessageTiming } from '../whatsappResponseTime.js';
 
 class MockCopilotoRepository implements Partial<CopilotoIaRepository> {
