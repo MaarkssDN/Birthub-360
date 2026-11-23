@@ -73,3 +73,13 @@ rota continua servindo a UI que depende de APIs desligadas.
 ## 10. Estratégia de rollback
 Revert do commit da rota; o comportamento anterior (UI quebrada) volta —
 aceitável como rollback temporário, mas o fallback é a correção pretendida.
+
+## 11. Atualização 2026-11-22 (baseline + ownership)
+- **Ownership:** CONFIRMADO — Agente 02 (layout/rotas, `AppLayout.tsx`) +
+  Agente 12 (voice-hub/gate). Squad 30 + Squad 60/Lena(65).
+- **Baseline:** o comportamento 503 é **intencional** no backend
+  (`legacyModuleGate`) — a "falha" visual atual é o sintoma documentado, não
+  regressão nova. A correção é de UX de falha, não de backend.
+- **Aceite complementar:** o fallback deve ser testável simulando resposta 503
+  — prever mock/rota de teste ou feature flag de indisponibilidade para o E2E
+  não depender do estado real do gate por org.

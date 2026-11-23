@@ -53,3 +53,12 @@ módulo.
 
 ## 10. Estratégia de rollback
 Revert do commit; sem mudança de contrato ou dado.
+
+## 11. Atualização 2026-11-22 (baseline + ownership)
+- **Ownership:** CONFIRMADO — Agente 12 dono de `src/features/voice-hub/**`
+  (`AGENTS.md` local); roster Squad 60, Lena(65) é a especialista de Voice Hub
+  UI.
+- **Baseline:** voice-hub está em 503 por `legacyModuleGate` — a tela pode nem
+  montar no ambiente atual; a correção do `alert()` é preventivamente correta
+  mas sua validação visual depende do fallback (handoff 503) ou do gate
+  reaberto pelo Agente 12.

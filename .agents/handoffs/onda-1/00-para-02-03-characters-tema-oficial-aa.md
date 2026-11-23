@@ -65,3 +65,16 @@ sem auditoria de contraste AA.
 ## 10. Estratégia de rollback
 Revert do commit; baseline visual anterior permanece no histórico para
 comparação.
+
+## 11. Atualização 2026-11-22 (baseline + ownership)
+- **Ownership:** PENDENTE DE RATIFICAÇÃO — proposta revisada em
+  `22-OWNERSHIP-MATRIX.md`: `characterCatalog.ts` declara "nenhum personagem é
+  um agente de IA" → domínio = experiência/personas → **Squad 30 (legado 02)**,
+  não Squad 70. Squad 70 só como fonte de eventos/runtime.
+- **Baseline:** `/app/characters` **não é coberta** pela suíte `test:visual`
+  (rotas do spec: login, dashboard, workspace, crm, prospecção, inteligência,
+  analytics, integrações, calendário, automações, admin). Contraste 1,52:1 vem
+  do inventário do Agente 14 — **revalidar com screenshot/axe quando a infra
+  de teste estiver disponível**.
+- **Dependência:** aguardar ADR-012 para tokens; baseline visual da rota não
+  existe — gerar evidência before/after no PR.

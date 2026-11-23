@@ -58,3 +58,14 @@ caminho no board; caso contrário remover os atributos inertes.
 
 ## 10. Estratégia de rollback
 Revert do commit; sem migração de dados. Mudança contida em 1-2 arquivos.
+
+## 11. Atualização 2026-11-22 (baseline + ownership)
+- **Ownership:** CONFIRMADO — Agente 04 é dono de `src/features/crm/**`
+  (`src/features/crm/AGENTS.md`). Roster: Squad 40.
+- **Baseline:** rota CRM coberta pela suíte `test:visual`, mas a execução local
+  falhou por causa **ambiental** (Postgres/Redis indisponíveis — Docker parado);
+  execução CI Linux despachada (run 45084163511). Ver `21-BASELINE-REPORT.md`.
+- **Dependência ambiental:** validação visual/axe desta rota depende do CI ou
+  de Docker local ativo.
+- **Aceite complementar:** na evidência visual, confirmar que o card ativável
+  continua visualmente idêntico (sem mudança de pixels além do foco).

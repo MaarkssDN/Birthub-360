@@ -61,3 +61,12 @@ item.
 
 ## 10. Estratégia de rollback
 Revert do commit; memoização é aditiva, sem migração.
+
+## 11. Atualização 2026-11-22 (baseline + ownership)
+- **Ownership:** `src/contexts/**` proposto → **Agente 02 (legado) / Squad 30**,
+  APROVADO PARCIALMENTE pelo Orquestrador (deliberação item 2); ThemeContext
+  exige participação do Agente 03. AGENTS.md local ainda não criado — pendente
+  autorização específica.
+- **Baseline:** contexts afetam todas as rotas — regressão aqui é global;
+  mitigação já prevista (API inalterada). Sem baseline visual específica
+  necessária (não muda pixels por si só).

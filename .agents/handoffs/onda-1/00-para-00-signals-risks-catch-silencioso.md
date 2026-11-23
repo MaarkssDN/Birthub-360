@@ -53,3 +53,13 @@ viola o princípio de que erros relevantes devem ser observáveis (AGENTS §30).
 
 ## 10. Estratégia de rollback
 Revert do commit; sem contrato ou dado envolvido.
+
+## 11. Atualização 2026-11-22 (baseline + ownership)
+- **Ownership:** PENDENTE DE RATIFICAÇÃO — proposta revisada em
+  `22-OWNERSHIP-MATRIX.md`: `signalsRisks.api.ts` consome
+  `/api/commercial-intelligence/*` (dono vigente Agente 04) e
+  `/api/market-intelligence/*` → **Squad 40 (legado 04)** recomendado.
+  `market-intelligence/` também sem AGENTS.md — fronteira com Squad 70 a
+  verificar.
+- **Baseline:** rota não coberta pela suíte visual; validação será via teste
+  de componente + smoke quando infra disponível.

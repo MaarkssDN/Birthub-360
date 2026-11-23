@@ -62,3 +62,10 @@ Hook criado sem cancelamento (`AbortController`) nem guarda de race
 
 ## 10. Estratégia de rollback
 Revert do commit; guarda é aditiva e reversível.
+
+## 11. Atualização 2026-11-22 (baseline + ownership)
+- **Ownership:** `src/hooks/**` proposto → **Agente 02 / Squad 30**, aprovado
+  parcialmente; `useCrmBoard*` permanece Agente 04. AGENTS.md local pendente.
+- **Baseline:** maior alcance da Onda 1 — qualquer regressão afeta todas as
+  telas de dados. Recomendado: além dos gates locais, smoke manual nas telas
+  companies/contacts/leads quando o ambiente de teste estiver disponível.

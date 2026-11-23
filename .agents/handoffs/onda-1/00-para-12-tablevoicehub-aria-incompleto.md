@@ -56,3 +56,10 @@ DS paralelo implementou tabela com roles parciais em vez de semântica nativa
 
 ## 10. Estratégia de rollback
 Revert do commit; componente isolado, sem contrato externo.
+
+## 11. Atualização 2026-11-22 (baseline + ownership)
+- **Ownership:** CONFIRMADO — Agente 12 (Squad 60); coordenação com Agente 03
+  mantida. Atenção: o arquivo vive no `design-system/` paralelo do voice-hub —
+  se COMP-001 decidir deprecar esse DS, esta correção pode ser absorvida pela
+  migração para `ui/`. Verificar status do COMP-001 antes de implementar para
+  não retrabalhar.
