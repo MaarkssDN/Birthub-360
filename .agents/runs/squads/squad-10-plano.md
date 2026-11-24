@@ -51,6 +51,7 @@ Ordem de despacho inicial (respeitando exclusão mútua 11↔12 e capacidade ≤
 - `npx vitest run -c vitest.unit.config.ts src/lib/__tests__/prisma-interceptors.unit.test.ts` → **28/28 testes PASS** (3.61s).
 - Verificação de schema: os 4 models (`Agent`, `AgentSession`, `CadenceSequence`, `Workflow`) confirmados com apenas `deletedAt` — sem `deletedBy`/`deleteReason`.
 - `TimelineEvent` já consta em `AUDITABLE_MODELS` (`src/lib/prisma-interceptors.ts:190`) — handoff 20→10 resolvido na baseline.
+- Inventário rápido para M3/M4 (somente leitura, `prisma/schema.prisma` @ `93e82c220`): 256 relações com `onDelete:` explícito, 38 `onDelete: Restrict`; 380 `@@index`; 20 ocorrências de `deletedAt` (15 models soft-delete + referências). Base para o despacho de Pietro/Vera.
 
 ## 5. Handoffs emitidos nesta sessão
 
