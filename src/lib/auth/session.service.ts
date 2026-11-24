@@ -5,6 +5,12 @@
  *
  * Em caso de tentativa de reuso de um Refresh Token já consumido (indicativo de interceptação ou roubo),
  * toda a família de sessões do usuário é imediatamente revogada por segurança.
+ *
+ * ATENÇÃO (auditoria Onda 3, Agente 96): este serviço é IN-MEMORY (Map em processo) e, na baseline
+ * auditada, NÃO está conectado a nenhuma rota de produção — o login/sessão real é o Better Auth
+ * (src/lib/auth.ts, sessões persistidas em banco). Não use este serviço como store de sessão de
+ * produção sem antes persistir tokens/famílias e compartilhar estado entre instâncias; em
+ * multi-instância, rotação em uma instância é invisível para as demais.
  */
 
 import { createHash, randomUUID } from 'node:crypto';
@@ -49,6 +55,9 @@ export class SessionService {
   private families = new Map<string, Set<string>>();
   // Set de famílias revogadas
   private revokedFamilies = new Set<string>();
+  // Throttle da varredura de tokens expirados (ver sweepExpired) — evita O(n) a cada operação.
+  private lastSweepAt = 0;
+  private static readonly SWEEP_INTERVAL_MS = 60_000;
 
   public static generateFingerprint(userAgent: string, ipAddress: string): string {
     return createHash('sha256').update(`${userAgent}::${ipAddress}`).digest('hex');
@@ -63,6 +72,15 @@ export class SessionService {
     clientFingerprint: string,
     ttlSeconds: number = 7 * 24 * 3600, // 7 dias
   ): { accessToken: string; refreshToken: string; familyId: string } {
+    if (!userId || !organizationId || !clientFingerprint) {
+      throw new Error('SessionService: userId, organizationId e clientFingerprint são obrigatórios.');
+    }
+    if (!Number.isFinite(ttlSeconds) || ttlSeconds <= 0) {
+      throw new Error('SessionService: ttlSeconds deve ser um número positivo.');
+    }
+
+    this.maybeSweepExpired();
+
     const familyId = randomUUID();
     const refreshToken = randomUUID();
     const accessToken = `act_${randomUUID()}`;
@@ -97,6 +115,8 @@ export class SessionService {
     currentFingerprint: string,
     ttlSeconds: number = 7 * 24 * 3600,
   ): { accessToken: string; refreshToken: string; familyId: string } {
+    this.maybeSweepExpired();
+
     const record = this.tokens.get(providedRefreshToken);
 
     if (!record) {
@@ -180,10 +200,42 @@ export class SessionService {
     return this.revokedFamilies.has(familyId);
   }
 
+  /**
+   * Remove tokens expirados dos Maps em memória. Sem isto, `tokens`/`families`/
+   * `revokedFamilies` cresciam sem limite em um processo longevo (cada refresh emite um token
+   * novo e o antigo, já `used`, nunca era removido) — memory leak em serviço de longa duração.
+   * Seguro: um token expirado já é rejeitado por `rotateRefreshToken` antes desta limpeza, e uma
+   * família sem nenhum token restante não pode mais ser rotacionada, então a marca de revogação
+   * dela pode sair junto.
+   */
+  public sweepExpired(): void {
+    const now = Date.now();
+    for (const [tokenId, record] of this.tokens) {
+      if (record.expiresAt <= now) {
+        this.tokens.delete(tokenId);
+        this.families.get(record.familyId)?.delete(tokenId);
+      }
+    }
+    for (const [familyId, tokenIds] of this.families) {
+      if (tokenIds.size === 0) {
+        this.families.delete(familyId);
+        this.revokedFamilies.delete(familyId);
+      }
+    }
+    this.lastSweepAt = now;
+  }
+
+  private maybeSweepExpired(): void {
+    if (Date.now() - this.lastSweepAt >= SessionService.SWEEP_INTERVAL_MS) {
+      this.sweepExpired();
+    }
+  }
+
   public reset(): void {
     this.tokens.clear();
     this.families.clear();
     this.revokedFamilies.clear();
+    this.lastSweepAt = 0;
   }
 }
 
