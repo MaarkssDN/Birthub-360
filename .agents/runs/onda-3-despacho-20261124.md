@@ -27,6 +27,12 @@ Matriz de ownership: `.agents/runs/onda-3-matriz-ownership.md` (commit d5192c47a
 | 8 | 09 — Silas | ONDA3-09-AUDIT (baseline Onda 2) | wt-09-audit-onda3 | agente/09-audit-onda3 | a1e19e5c |
 | 8' | 99 — Vito | ONDA3-99-APPSEC (slot liberado após parecer 09 APROVADO) | wt-99-appsec | agente/99-appsec-onda3 | 0a75be87 |
 
+## Andamento (atualizado em tempo real)
+
+- **09 — Silas**: CONCLUÍDO baseline — parecer APROVADO da integração Onda 2 (`b02efad9e`). Em standby para pareceres de entregas.
+- **20 — Ciro**: CONCLUÍDO (`23b1d31cd`) — ownership `src/api/index.ts|router.ts` INEXISTENTE no repo; produziu 3 handoffs: `20-para-11-10-timelineevent-auditavel.md` (TimelineEvent fora de AUDITABLE_MODELS — bug ativo LGPD), `20-para-11-12-modelos-auditaveis-sem-deletedby.md` (4 models latentes), `20-para-00-ownership-api-inexistente.md` (remapear ownership src/api/**, src/bootstrap/**, errorHandler). Testes: 24/24. Aguardando revisão 09 e decisão de roteamento do 00.
+- Slot 1 (20) liberado; substituto pendente — ownership de `src/lib/prisma-interceptors.ts`/`src/lib/prisma.ts` não consta na MATRIZ_PROPRIEDADE (gap a decidir antes de despachar correção do Defeito A).
+
 ## Regras em vigor
 
 - Máximo 8 especialistas; 09 é permanente enquanto houver entregas pendentes.
