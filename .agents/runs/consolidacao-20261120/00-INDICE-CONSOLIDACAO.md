@@ -1,32 +1,52 @@
-# 00 — ÍNDICE DA CONSOLIDAÇÃO GLOBAL
-**Birthub 360 — Central de Inteligência Operacional**
-Data: 2026-11-20 · Protocolo V2.0 · Estado de `origin/main`: `5174664b2`
+# 00 — ÍNDICE MESTRE DA CONSOLIDAÇÃO INTEGRAL
+**Birthub 360° — Central de Inteligência Operacional & Governança Global**  
+**Autor:** Agente 00 — Astra (Coordenador Global)  
+**Data:** 2026-11-23 · **Base de Integração:** `origin/main @ 0d790443d`  
+**Governança Oficial:** AGENTS.md (Arquitetura 100 Agentes · 10 Squads) | **Auditoria Independente:** Agente 09 — Silas  
 
-## Documentos deste pacote
+---
 
-| # | Arquivo | Conteúdo |
+## Estrutura do Sistema Único de Planejamento e Continuidade Operacional
+
+Este acervo documental unifica todo o conhecimento operacional das sessões anteriores, incluindo os PRs de encerramento #514 a #529, os novos PRs de preservação e homologação #530 a #539, a Operação Genesis Consolidation (`origin/integracao/consolidacao-20261121`), a Auditoria Experience 360 e os diagnósticos forenses de CI/CD.
+
+### 1. Núcleo Canônico (Origin/Main & PR #528)
+| # | Arquivo | Conteúdo Principal | Origem / Publicação |
+|---|---|---|---|
+| **00** | `00-INDICE-CONSOLIDACAO.md` | Índice mestre e diretrizes de governança documental | `origin/main @ f8d951806` (PR #470) |
+| **00b**| `00-memoria-operacional-central-20261119-fonte.md` | Artefato fonte bruto da sessão operacional de 19/11 | `origin/main @ f8d951806` (PR #470) |
+| **01** | `01-ESTADO-GLOBAL-BIRTHUB360.md` | Diagnóstico executivo global, veredito de release, base `0d790443d` | `origin/main @ f8d951806` (PR #470) |
+| **02** | `02-BACKLOG-MESTRE.md` | Backlog unificado consolidado (IDs G-01 a G-30 e BM-P0-01 a BM-P3-03) | `origin/main @ f8d951806` (PR #470) |
+| **03** | `03-MATRIZ-AGENTES.md` | Roster oficial de 100 Agentes, ownerships e De-Para legado | `origin/main @ f8d951806` (PR #470) |
+| **04** | `04-REGISTRO-DECISOES.md` | Registro de decisões arquiteturais e operacionais D-01 a D-11 | `origin/main @ f8d951806` (PR #470) |
+| **05** | `05-MAPA-DEPENDENCIAS.md` | Mapeamento de interdependências técnicas e eliminação de ciclos | `origin/main @ f8d951806` (PR #470) |
+| **06** | `06-MATRIZ-RISCOS.md` | Matriz de riscos operacionais e de segurança RSK-01 a RSK-12 | `origin/main @ f8d951806` (PR #470) |
+| **07** | `07-ARQUIVAMENTO-CONVERSAS.md` | Protocolo e inventário de encerramento de conversas | `origin/main @ f8d951806` (PR #470) |
+| **08** | `08-MEMORIA-OPERACIONAL.md` | Contexto autocontido para continuidade operacional sem dependência de chat | `origin/main @ f8d951806` (PR #470) |
+| **09** | `09-PLANO-DE-CONTINUIDADE.md` | Sequência priorizada de continuidade operacional e despachos | `origin/main @ f8d951806` (PR #470) |
+| **10** | `10-PROVENIENCIA-E-EVIDENCIAS.md` | Fontes de verdade, níveis de confiança e trilhas de auditoria | `origin/main @ f8d951806` (PR #470) |
+| **11** | `11-DELTA-VERIFICACAO-20261120.md` | Delta de verificação empírica, gates e conformidade | `origin/main @ f8d951806` (PR #470) |
+| **12** | `12-PLANO-MESTRE-OPERACIONAL-100-AGENTES.md` | Plano mestre operacional dos 100 agentes, ondas 0 a 5 e decisões DEC-H01..H04 | `agente/00-plano-mestre...` (PR #528) |
+
+### 2. Análises Complementares de Homologação (Preservação Local)
+| # | Arquivo | Conteúdo Principal |
 |---|---|---|
-| 01 | `01-ESTADO-GLOBAL-BIRTHUB360.md` | Diagnóstico executivo, veredito de release, frentes de trabalho |
-| 02 | `02-BACKLOG-MESTRE.md` | Tabela única de tarefas (ID global, prioridade, responsável, evidência, próxima ação) |
-| 03 | `03-MATRIZ-AGENTES.md` | Roster legado vs. novo (100 agentes), conflitos de ownership |
-| 04 | `04-REGISTRO-DECISOES.md` | Decisões vigentes, substituídas, pendentes de aprovação |
-| 05 | `05-MAPA-DEPENDENCIAS.md` | Ordem lógica de implementação, validação e integração |
-| 06 | `06-MATRIZ-RISCOS.md` | Bloqueios técnicos, operacionais e de governança |
-| 07 | `07-ARQUIVAMENTO-CONVERSAS.md` | Situação de arquivamento por conversa/fonte |
-| 08 | `08-MEMORIA-OPERACIONAL.md` | Contexto autocontido para continuidade sem as conversas |
-| 09 | `09-PLANO-DE-CONTINUIDADE.md` | Sequência priorizada de próximas ações |
-| 10 | `10-PROVENIENCIA-E-EVIDENCIAS.md` | Fontes, níveis de confiança, lacunas |
-| 11 | `11-DELTA-VERIFICACAO-20261120.md` | Delta de verificação, adoção de 100 agentes e revisão de PRs |
-| 12 | `12-PLANO-MESTRE-OPERACIONAL-100-AGENTES.md` | Plano Mestre de Execução por Ondas, Backlog Mestre, Matriz 100 Agentes e Checklist Release |
+| **13** | `13-INVENTARIO-ANALITICO-HANDOFFS.md` | Inventário analítico dos handoffs (históricos e ativos em reconciliação) |
+| **14** | `14-RELATORIO-VALIDACAO-ESTADO-REAL.md` | Auditoria forense por 8 camadas (código, testes, banco, segurança, tenancy, UI, CI) |
+| **15** | `15-CHECKLIST-MESTRE-HOMOLOGACAO.md` | Checklist integral de 46 itens em 17 domínios técnicos rumo ao release |
+| **16** | `16-PLANO-INTEGRACAO-PRS.md` | Estratégia de saneamento e integração assistida dos PRs abertos em 4 levas |
+| **17** | `17-PLANO-TESTES-HOMOLOGACAO.md` | Protocolo de testes de integração, k6 carga, Schemathesis, RLS e E2E |
 
-## Fontes processadas nesta consolidação
+### 3. Dossiês e Movimentos Recentes (Sessões 22/11 e 23/11)
+| # | Arquivo | Conteúdo Principal | Origem |
+|---|---|---|---|
+| **18** | `18-DOSSIE-GATES-E-PRES005-20261122.md` | Dossiê formal de gates de CI, prova de herança da main e inventário PRES-005 (40 worktrees) | PR #537 (`agente/00-dossie-gates...`) |
+| **19** | `19-TRIAGEM-SCHEMATHESIS-GENESIS-571.md` | Triagem dos 571 findings do run CI 45083747478 por causa-raiz e handoff 21/22 | `origin/integracao/consolidacao-20261121` |
+| **20** | `20-AUDITORIA-EXPERIENCE-360-UX-UI.md` | Auditoria completa de frontend, design system, rotas e acessibilidade | PR #538 (`docs/audits/experience-360/`) |
 
-1. **Sessão A — Orquestração de handoffs Waves A–E** (esta conversa): despacho de agentes, PRs #381–#466, triagem de status, governança.
-2. **Sessão B — Memória operacional central**: `.agents/runs/00-memoria-operacional-central-20261119.md` (encontrada **não commitada** no working tree de `C:\Github\Birthub-360`).
-3. **Verificação ao vivo (read-only)**: `git log origin/main`, `gh pr list/view/checks`, contagem de handoffs em `.agents/handoffs/`.
+---
 
-## Avisos metodológicos
-
-- Nenhuma informação foi marcada "concluída" apenas por relato: onde foi possível, o estado foi confirmado via git/GitHub. Itens não verificáveis estão marcados `REPORTADO`.
-- Divergências entre fontes foram preservadas (ex.: roster de agentes legado vs. novo).
-- Este pacote **não autoriza** merges, alterações de código ou mudanças de governança — é material de decisão para o Orquestrador Humano.
+## Diretrizes Fundamentais
+1. **Regra de Ouro:** Não iniciar novas implementações de produto antes da autorização expressa do Orquestrador Humano sobre as decisões DEC-H01 a DEC-H07.
+2. **Auditoria Independente:** Qualquer artefato de código submetido à branch `main` exige parecer formal `APROVADO` emitido pelo **Agente 09 (Silas)** sob `.agents/reviews/`.
+3. **Imutabilidade Histórica:** Handoffs passados e pareceres SHA-256 sob `.agents/reviews/` permanecem intocados.
