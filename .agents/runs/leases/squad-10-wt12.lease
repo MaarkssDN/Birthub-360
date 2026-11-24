@@ -1,0 +1,8 @@
+{
+  "session_id": "agente-12-vera-dem20261123-001",
+  "squad": "squad-10",
+  "agente": "12-vera",
+  "timestamp": "2026-11-24T19:00:00Z",
+  "expires_at": "2026-11-24T23:00:00Z",
+  "escopo": "agente/12-deletedby-migration-s10 · C:/Github/Birthub-360-worktrees/squads/squad-10/wt-12 · base coord/squad-10 (4f41ee3b5) · porta efemera PG 22100-22199 · node_modules junction -> C:/Github/Birthub-360/node_modules · ownership: prisma/migrations/** apenas (schema.prisma e do Agente 11)"
+}
