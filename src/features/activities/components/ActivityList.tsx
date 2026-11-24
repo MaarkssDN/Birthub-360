@@ -36,6 +36,7 @@ import type { PaletteIntent } from '../../../lib/paletteIntent.js';
 import { SoundFX } from '../../../lib/soundEffects.js';
 import { toast } from '../../../lib/toast.js';
 import type { Activity, Lead } from '../../../types/index.js';
+import { wallTimeInZoneToUtcIso } from '../../crm/tasks/calendar.utils.js';
 
 const TYPE_ICONS: Record<string, React.JSX.Element> = {
   ligação: <Phone className="w-4 h-4" />,
@@ -126,6 +127,15 @@ interface NewActivityForm {
   leadId: string;
 }
 
+/**
+ * `YYYY-MM-DD` de uma data no fuso LOCAL do navegador (default: hoje). Métodos baseados em
+ * `toISOString()` devolvem a data UTC — depois das 21h em São Paulo já é "amanhã", e tanto o
+ * formulário quanto os templates abriam com o dia errado.
+ */
+function localDateInputValue(date: Date = new Date()): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
 function leadLabel(lead: Lead): string {
   const company = lead.company?.tradeName || lead.company?.legalName;
   return [lead.title || 'Negócio sem título', company].filter(Boolean).join(' — ');
@@ -205,7 +215,7 @@ export function ActivityList() {
 
   const [form, setForm] = useState<NewActivityForm>({
     type: 'Ligação',
-    date: new Date().toISOString().split('T')[0],
+    date: localDateInputValue(),
     time: '',
     owner: currentUser?.name || '',
     observations: '',
@@ -262,7 +272,7 @@ export function ActivityList() {
     targetDate.setDate(targetDate.getDate() + tpl.suggestedOffsetDays);
     setForm({
       type: tpl.type,
-      date: targetDate.toISOString().split('T')[0],
+      date: localDateInputValue(targetDate),
       time: tpl.defaultTime,
       owner: currentUser?.name || form.owner,
       observations: `[${tpl.title}] ${tpl.description}`,
@@ -301,9 +311,22 @@ export function ActivityList() {
     }
     setIsSaving(true);
     try {
+      // `form.date` é YYYY-MM-DD (date-only) e `form.time` é horário de parede do usuário.
+      // Enviar a data crua fazia `new Date('YYYY-MM-DD')` no backend virar meia-noite UTC —
+      // em America/Sao_Paulo a atividade caía no dia ANTERIOR (off-by-one). Aqui a data de
+      // parede é convertida para o instante UTC correto já no fuso do navegador.
+      const clientTimeZone =
+        Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Sao_Paulo';
+      let activityDateIso: string;
+      try {
+        activityDateIso = wallTimeInZoneToUtcIso(form.date, form.time || null, clientTimeZone);
+      } catch {
+        toast.error('Data ou horário inválido para a atividade.');
+        return;
+      }
       await createActivity({
         type: form.type as import('../../../lib/zod.js').ActivityType,
-        date: form.date,
+        date: activityDateIso,
         time: form.time || null,
         owner: form.owner || currentUser?.name || 'Vendedor',
         observations: form.observations || null,
@@ -313,7 +336,7 @@ export function ActivityList() {
       setIsFormOpen(false);
       setForm({
         type: 'Ligação',
-        date: new Date().toISOString().split('T')[0],
+        date: localDateInputValue(),
         time: '',
         owner: currentUser?.name || '',
         observations: '',
@@ -489,8 +512,11 @@ export function ActivityList() {
               const typeColor = TYPE_COLORS[typeKey] ?? 'bg-surface-2 text-ink-2 border-line';
               const statusStyle = STATUS_STYLES[a.status] ?? 'bg-surface-2 text-ink-2 border-line';
               const isDone = a.status === 'Concluída';
+              // a.date chega como ISO completo (instante UTC) da API — concatenar
+              // 'T12:00:00' produzia '...ZT12:00:00' (Invalid Date). new Date() direto
+              // resolve no fuso local do navegador, que é o dia que o usuário escolheu.
               const formattedDate = a.date
-                ? new Date(`${a.date}T12:00:00`).toLocaleDateString('pt-BR', {
+                ? new Date(a.date).toLocaleDateString('pt-BR', {
                     weekday: 'short',
                     day: '2-digit',
                     month: 'short',
