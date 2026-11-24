@@ -1,5 +1,9 @@
 # Stage 1: Build
-FROM node:22-slim AS builder
+# Pin por digest (2026-11-24): `node:22-slim` é tag móvel e já variou o runtime do build entre
+# execuções. O digest abaixo é o manifest list resolvido em 2026-11-24 (Node 22.x LTS, slim).
+# Para atualizar: `docker buildx imagetools inspect node:22-slim` e troque o sha256 nas duas
+# ocorrências (builder e runner) de uma vez — manter os dois estágios na mesma versão.
+FROM node:22-slim@sha256:be979e5523c76fa4d5ca4ebd3099078f220aa47ec39c48ad5b5df9314debd6eb AS builder
 
 WORKDIR /app
 
@@ -60,7 +64,8 @@ RUN prisma_version="$(tr -d '\r\n' < /tmp/prisma-cli-version)" \
  && node -e "const lock=require('./package-lock.json').packages['node_modules/prisma'].version; const cli=require('prisma/package.json').version; const client=require('@prisma/client/package.json').version; if (cli!==lock || cli!==client) { console.error('Prisma CLI/client/lock divergentes', {cli, client, lock}); process.exit(1);} console.log('prisma CLI/client/lock', cli);"
 
 # Stage 2: Production
-FROM node:22-slim AS runner
+# Mesmo digest pinado do estágio builder — ver comentário acima.
+FROM node:22-slim@sha256:be979e5523c76fa4d5ca4ebd3099078f220aa47ec39c48ad5b5df9314debd6eb AS runner
 
 WORKDIR /app
 
