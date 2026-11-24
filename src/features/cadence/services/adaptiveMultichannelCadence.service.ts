@@ -121,11 +121,10 @@ export class AdaptiveMultichannelCadenceService implements IMultichannelCadenceP
     // Sujeito completo (leadId + e-mail + telefone): `subjectsMatch` só casa por identificador
     // compartilhado, então consultar só por leadId deixava passar opt-out gravado por e-mail ou
     // telefone sem leadId vinculado (achado da auditoria ONDA3-44 — correção do handoff 44→17).
-    const optOutSubject = await this.resolveOptOutSubject(
-      organizationId,
-      enrollment.leadId,
-      { email: enrollment.contactEmail, phone: enrollment.contactPhone },
-    );
+    const optOutSubject = await this.resolveOptOutSubject(organizationId, enrollment.leadId, {
+      email: enrollment.contactEmail,
+      phone: enrollment.contactPhone,
+    });
     const optedOut = await isOptedOut(this.optOutRepo, organizationId, optOutSubject, step.channel);
 
     if (optedOut) {
@@ -274,7 +273,7 @@ export class AdaptiveMultichannelCadenceService implements IMultichannelCadenceP
       });
       // `||` (não `??`): contato pode ter string vazia — ela não pode mascarar o fallback do enrollment.
       email = lead?.contact?.email || email;
-      phoneE164 = (lead?.contact?.whatsapp || lead?.contact?.phone) || phoneE164;
+      phoneE164 = lead?.contact?.whatsapp || lead?.contact?.phone || phoneE164;
     } catch (err) {
       logger.warn(
         { err, organizationId, leadId },

@@ -390,12 +390,24 @@ export function CallsLogCard({
           <table className="w-full text-left text-xs text-slate-650 dark:text-slate-450">
             <thead>
               <tr className="border-b border-slate-100 dark:border-slate-800 font-bold text-slate-400 uppercase tracking-wider text-[10px]">
-                <th scope="col" className="py-2">ID</th>
-                <th scope="col" className="py-2">Contato</th>
-                <th scope="col" className="py-2">Duração</th>
-                <th scope="col" className="py-2">Agente</th>
-                <th scope="col" className="py-2">Status</th>
-                <th scope="col" className="py-2 text-right">Quando</th>
+                <th scope="col" className="py-2">
+                  ID
+                </th>
+                <th scope="col" className="py-2">
+                  Contato
+                </th>
+                <th scope="col" className="py-2">
+                  Duração
+                </th>
+                <th scope="col" className="py-2">
+                  Agente
+                </th>
+                <th scope="col" className="py-2">
+                  Status
+                </th>
+                <th scope="col" className="py-2 text-right">
+                  Quando
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-semibold">
