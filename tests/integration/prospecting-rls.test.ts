@@ -55,7 +55,14 @@ const asBypass = () => requestContext.enterWith({ bypassRls: true });
 const hardDeleteOrgData = async (organizationId: string) => {
   asBypass();
   await withRlsContext(async (tx) => {
+    // Ordem estrita de deleção para preservar integridade referencial:
+    // filhas com FK RESTRICT/CASCADE antes de Lead e Company
+    await tx.$executeRaw`DELETE FROM "TimelineEvent" WHERE "organizationId" = ${organizationId}`;
+    await tx.$executeRaw`DELETE FROM "Activity" WHERE "organizationId" = ${organizationId}`;
+    await tx.$executeRaw`DELETE FROM "Note" WHERE "organizationId" = ${organizationId}`;
+    await tx.$executeRaw`DELETE FROM "PublicLeadConsent" WHERE "organizationId" = ${organizationId}`;
     await tx.$executeRaw`DELETE FROM "Lead" WHERE "organizationId" = ${organizationId}`;
+    await tx.$executeRaw`DELETE FROM "Contact" WHERE "organizationId" = ${organizationId}`;
     await tx.$executeRaw`DELETE FROM "Company" WHERE "organizationId" = ${organizationId}`;
   });
 };

@@ -24,7 +24,9 @@ async function expectDenied(sql: string) {
   const c = await pool.connect();
   try {
     await c.query('BEGIN');
-    await expect(c.query(sql), sql).rejects.toThrow(/must be owner|permission denied/);
+    await expect(c.query(sql), sql).rejects.toThrow(
+      /must be owner|permission denied|must have admin option|must be member of role/,
+    );
   } finally {
     await c.query('ROLLBACK').catch(() => {});
     c.release();
