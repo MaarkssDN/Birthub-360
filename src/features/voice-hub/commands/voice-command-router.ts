@@ -8,6 +8,16 @@
  * - exige confirmação ativa e válida para comandos críticos (confirmation.manager);
  * - executa SOMENTE via executor real vinculado — executor ausente ou simulado
  *   produz falha honesta, nunca falso positivo.
+ *
+ * STATUS (2026-11-24, Agente 64 — DEM-20261123-001): pipeline B-07 completo e
+ * testado, porém SEM call-site de produção — contrato-futuro. A montagem
+ * (endpoint HTTP/WS + registro de executores reais por tipo de comando)
+ * depende de arquivos de outros donos (`src/lib/voice-hub/routes|controllers/**`
+ * → Agente 60; `src/bootstrap/routes.ts` → Agente 22; executores de mutação →
+ * domínio CRM). Proposta de wiring completa em
+ * `.agents/handoffs/squad-60/64-para-60-voice-commands-wiring.md`.
+ * Contrato do consumidor (o que o call-site futuro DEVE respeitar) está
+ * coberto por `tests/unit/features/voice-hub/voiceCommandContract.test.ts`.
  */
 
 import { randomUUID } from 'node:crypto';
