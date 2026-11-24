@@ -55,6 +55,9 @@ export class InvalidDealPatchError extends Error {
 }
 
 function assertValidDealPatch(patch: DealUpdatePatch): void {
+  if (!patch || typeof patch !== 'object' || Array.isArray(patch)) {
+    throw new InvalidDealPatchError('o patch deve ser um objeto.');
+  }
   const keys = Object.keys(patch).filter(
     (k) => (patch as Record<string, unknown>)[k] !== undefined,
   );
@@ -62,11 +65,17 @@ function assertValidDealPatch(patch: DealUpdatePatch): void {
     // Patch vazio não deve queimar um incremento de `version` nem gravar no-op.
     throw new InvalidDealPatchError('o patch não pode ser vazio.');
   }
-  if (patch.title !== undefined && (!patch.title.trim() || patch.title.length > 500)) {
-    throw new InvalidDealPatchError('title deve ser uma string não vazia (máx. 500 caracteres).');
+  if (patch.title !== undefined) {
+    if (typeof patch.title !== 'string' || !patch.title.trim() || patch.title.length > 500) {
+      throw new InvalidDealPatchError(
+        'title deve ser uma string não vazia (máx. 500 caracteres).',
+      );
+    }
   }
-  if (patch.stageId !== undefined && !patch.stageId.trim()) {
-    throw new InvalidDealPatchError('stageId deve ser uma string não vazia quando informado.');
+  if (patch.stageId !== undefined) {
+    if (typeof patch.stageId !== 'string' || !patch.stageId.trim()) {
+      throw new InvalidDealPatchError('stageId deve ser uma string não vazia quando informado.');
+    }
   }
   if (
     patch.valueCents !== undefined &&
@@ -124,6 +133,11 @@ export class DealsService {
     for (const item of params.deals) {
       if (!item.dealId?.trim()) {
         throw new Error('dealId é obrigatório em cada item do lote de Deals.');
+      }
+      if (!Number.isInteger(item.expectedVersion) || item.expectedVersion < 1) {
+        throw new Error(
+          `expectedVersion deve ser um inteiro positivo (>= 1) para o deal "${item.dealId}".`,
+        );
       }
       if (seen.has(item.dealId)) {
         throw new InvalidDealPatchError(

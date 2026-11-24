@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   type DealRecord,
   type DealRepositoryPort,
+  type DealUpdatePatch,
   DealsService,
   InvalidDealPatchError,
 } from '../../deals/deals.service.js';
@@ -231,6 +232,33 @@ describe('[42 · Lívia] DealsService — validação de patch e lote', () => {
         dealId: 'd-1',
         expectedVersion: 1,
         patch: {},
+      }),
+    ).rejects.toBeInstanceOf(InvalidDealPatchError);
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('rejeita patch nulo/não-objeto e campos com tipo errado sem TypeError', async () => {
+    const repo = makeRepo();
+    const spy = vi.spyOn(repo, 'updateIfVersionMatches');
+    const service = new DealsService(repo);
+    const base = { tenantId: 't-1', dealId: 'd-1', expectedVersion: 1 };
+
+    await expect(
+      service.updateDealWithOptimisticLock({
+        ...base,
+        patch: null as unknown as DealUpdatePatch,
+      }),
+    ).rejects.toBeInstanceOf(InvalidDealPatchError);
+    await expect(
+      service.updateDealWithOptimisticLock({
+        ...base,
+        patch: { title: 42 as unknown as string },
+      }),
+    ).rejects.toBeInstanceOf(InvalidDealPatchError);
+    await expect(
+      service.updateDealWithOptimisticLock({
+        ...base,
+        patch: { stageId: {} as unknown as string },
       }),
     ).rejects.toBeInstanceOf(InvalidDealPatchError);
     expect(spy).not.toHaveBeenCalled();
