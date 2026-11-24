@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar.js';
 import { AppTopbar } from './AppTopbar.js';
 import { OfflineBanner } from './OfflineBanner.js';
+import { SkipLink } from '../a11y/index.js';
 import { DataFlowLines } from '../ui/DataFlowLines.js';
 import { VoiceCommandWidget } from '../ui/VoiceCommandWidget.js';
 import { ModuleAgentWidget } from '../ui/ModuleAgentWidget.js';
@@ -48,6 +49,7 @@ export function MainLayout({ children, activeTab: activeTabProp }: MainLayoutPro
 
   return (
     <div className="relative flex flex-col h-screen h-[100dvh] w-full overflow-hidden bg-bg font-sans text-ink antialiased selection:bg-brand selection:text-on-brand">
+      <SkipLink />
       <OfflineBanner />
 
       <div className="relative flex flex-1 min-h-0 w-full overflow-hidden">
