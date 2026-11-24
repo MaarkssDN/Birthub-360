@@ -40,3 +40,32 @@ Coordenador: Agente 00 (Devin) — worktree `wt-00-integracao`, branch `integrac
 - Falhas de domínio `isAuditableModel` / `deleteReason` → Agente 20 investiga e gera handoffs (provável destino: schema Prisma → Agente 11, ou domínio dono).
 - Interação 42↔44 (cadências) e 45→44: handoffs formais.
 - 96 não toca RBAC (Agente 97).
+
+## Rodada 2 de slots (2026-11-24) — reposições
+
+Concluídos na primeira leva: 42 (`76b2fc64e`), 34 (`ec193df74`), 45 (`f4afaa7dc`), 65 (`60d521224`), 96 (`29279e07e`), 21 (`e73b17c91`), 20 (`23b1d31cd` — só handoffs; ownership `src/api/index.ts|router.ts` INEXISTENTE).
+
+Achado estrutural do Agente 20: `src/api/**` é majoritariamente inexistente — roteador real é `src/bootstrap/routes.ts` (sem dono); `src/api/schemas/**` também não existe (21 confirmou; contrato real = `docs/openapi.yaml`). Ownership de 20/21/22 precisa de decisão de governança.
+
+Novos slots:
+
+| Slot | Agente | Missão | Branch | Worktree | Ownership |
+|------|--------|--------|--------|----------|-----------|
+| R1 | 31 — Noa | ONDA3-31-APP-SHELL | `agente/31-app-shell-onda3` | `wt-31-app-shell` | `src/App.tsx`, `src/components/layout/**` |
+| R2 | 41 — Cadu | ONDA3-41-ACTIVITIES | `agente/41-activities-onda3` | `wt-41-activities` | `src/features/activities/**`, `src/features/crm/contacts/**` |
+| R3 | 43 — Amon | ONDA3-43-PROSPECTING-AUTHZ | `agente/43-prospecting-authz-onda3` | `wt-43-prospecting-authz` | `src/features/prospecting/**` |
+| R4 | 44 — Lola | ONDA3-44-CADENCE | `agente/44-cadence-onda3` | `wt-44-cadence` | `src/features/crm/cadences/**`, `src/features/cadence/**` |
+| R5 | 22 — Hugo | ONDA3-22-CONTROLLERS | `agente/22-controllers-onda3` | `wt-22-controllers` | `src/api/controllers/**`, `src/api/middlewares/**` |
+| R6 | 23 — Pina | ONDA3-23-QUEUE | `agente/23-queue-onda3` | `wt-23-queue` | `src/lib/queue/**`, `src/workers/**` |
+| R7 | 97 — Rocco | ONDA3-97-RBAC | `agente/97-rbac-onda3` | `wt-97-rbac` | `src/lib/auth/rbac/**` |
+
+Pendências de limpeza (não commitadas, fora dos SHAs congelados):
+- `wt-65-voice-hub`: `src/features/voice-hub/pages/Results.tsx` modificado (reescrita substancial — avaliar antes de descartar).
+- `wt-96-auth`: `src/lib/auth/__tests__/password-hash.unit.test.ts` modificado (timeout anti-flake Argon2).
+- `wt-21-api-contracts`: `drift-inverse.tmp.ts` não rastreado (scratch).
+
+Bugs reais descobertos na onda (fila de sucessão):
+- Soft delete: 4 models auditáveis sem `deletedBy`/`deleteReason` → `PrismaClientValidationError` (handoffs 20→11/12).
+- `TimelineEvent` fora de `AUDITABLE_MODELS` → leituras não filtram `deletedAt` (20→10/11).
+- Off-by-one de fuso em atividades; leadId cross-tenant; IDORs prospecting/hub-tasks (45→41/43).
+- ~80% de `src/features/voice-hub/**` é código morto (decisão humana pendente — 65).
