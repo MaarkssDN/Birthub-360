@@ -92,3 +92,28 @@ As 7 missões de especialista + auditoria contínua do Silas (polling ~10min, pa
 3. Integração em lotes de 2–3 em `integracao/onda-4-dem20261123` (worktree wt-00-integracao), gates locais após cada lote (`npx tsc --noEmit`, lint, testes do domínio).
 4. Sem push, sem PR, sem merge em main, sem deploy — conforme autorização.
 5. Handoffs finais consolidados em `.agents/handoffs/onda4/`.
+
+---
+
+## ADENDO — INTEGRAÇÃO EXECUTADA (2026-11-24)
+
+**Pareceres Silas:** 7/7 APROVADO (`.agents/reviews/onda4/`, branch `agente/09-review-onda4` → merge `3cad22cbc`). 64 reprovado na rodada 1 (ownership do teste + tenancy na confirmação), corrigido em `8b7a9ab1d` e aprovado em `425271b5c`.
+
+**Merges em `integracao/onda-4-dem20261123` (wt-00-integracao), zero conflitos:**
+
+| Lote | Merge commits | Conteúdo |
+|---|---|---|
+| 1 | `fcd6b379f`, `9db152eaf`, `147d4e031` | 44 cadences, 51 bitrix-auth, 56 whatsapp |
+| 2 | `80344481c`, `6a221daf2` | 69 optout, 72 tool-engine |
+| 3 | `d0c9f3b0d`, `9ee051956`, `3cad22cbc` | 85 mobile-offline, 64 voice-commands r2, pareceres Silas |
+
+**Gates pós-integração (árvore integrada):**
+- `npx tsc --noEmit` → exit 0
+- `vitest` 6 arquivos de teste novos do escopo → **57/57 passando**
+- `biome lint` nos 6 domínios alterados → limpo; lint global → 1516 warnings pré-existentes, 0 erros
+
+**SHA final da branch:** `3cad22cbc` (+ eventual commit deste adendo).
+
+**Handoffs cruzados pendentes de roteamento** (nenhum bloqueia a integração — todos fora do ownership dos executores): 56→06 (anti-ban dead code no send real; STOP sem Lead), 69→56/17 (purga sem caller em produção), 44→17 (janela global SP + scan sem filtro org), 51→06/07 (seleção de conexão desc vs asc), 64→12 (router sem conexão STT/UI), 72→12 (getAvailableTools sem filtro de permissão), 85→80/81/88 (outbox sem X-Idempotency-Key — prioridade ALTA).
+
+**Plataforma:** NO-GO mantido. Branch `main` intocada. Sem push/PR/deploy.
