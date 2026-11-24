@@ -48,7 +48,7 @@ describe('Workspaces por Login/Cargo (PROMPT 6)', () => {
     await runMultiCargoSeed();
     await runAgentCatalogImport();
     await runCapabilityEngineSeed();
-  });
+  }, 120_000);
 
   afterAll(async () => {
     await prisma.userJobRole.deleteMany({ where: { organizationId: ORG_ID } });

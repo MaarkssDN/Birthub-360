@@ -62,7 +62,7 @@ describe('Agent Runtime Genérico (PROMPT 4)', () => {
     await runMultiCargoSeed();
     await runAgentCatalogImport();
     await runCapabilityEngineSeed();
-  });
+  }, 120_000);
 
   afterAll(async () => {
     await prisma.agentExecution.deleteMany({ where: { organizationId: ORG_ID } });

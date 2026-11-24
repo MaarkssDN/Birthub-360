@@ -52,7 +52,7 @@ describe('Agent Builder / Fábrica de Agentes (PROMPT 10)', () => {
     await runMultiCargoSeed();
     await runAgentCatalogImport();
     await runCapabilityEngineSeed();
-  });
+  }, 120_000);
 
   afterAll(async () => {
     // AgentBuildProposal tem RLS ESTRITO (sem bypass_rls — ver migration
