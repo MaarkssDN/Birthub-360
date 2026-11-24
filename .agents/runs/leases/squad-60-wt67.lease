@@ -1,0 +1,9 @@
+lease: squad-60-wt67
+agent: 67-Teca
+demanda: DEM-20261123-001 / SQUAD60-67-TEMPLATES-PII
+worktree: C:/Github/Birthub-360-worktrees/squads/squad-60/wt-67
+branch: agente/67-templates-pii-s60
+base: integracao/onda-3-dem20261123 @ 5422d99c3e (clone C:/Github/Birthub-360)
+ports: 22600-22699
+scope: src/features/notifications/templates/**, tests/unit/features/notifications/templates/**, .agents/handoffs/squad-60/, .agents/runs/{squads,leases}/
+created: 2026-11-24

@@ -1,0 +1,7 @@
+# Lease squad-50-wt55 (Agente 55 - Icaro)
+agent: 55
+branch: agente/55-email-connectors-s50
+worktree: C:/Github/Birthub-360-worktrees/squads/squad-50/wt-55
+ports: 22500-22599
+created: 2026-11-24T21:10:59Z
+expires: 2026-11-25T04:00Z
