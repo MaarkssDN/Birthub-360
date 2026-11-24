@@ -14,6 +14,7 @@ import { logger } from './logger.js';
 import {
   applyPiiEncryptionToWriteArgs,
   applySoftDeleteReadFilter,
+  buildSoftDeleteData,
   decryptNestedContactPii,
   handleSoftDeleteResult,
   injectSoftDeleteSelect,
@@ -300,7 +301,10 @@ const extendedPrisma = basePrisma.$extends({
             ] as Record<string, unknown>;
             return (modelDelegate.update as (args: unknown) => Prisma.PrismaPromise<unknown>)({
               where: a.where,
-              data: { deletedAt: new Date(), deletedBy: userId, deleteReason: 'Soft delete' },
+              // buildSoftDeleteData escreve só os campos que existem no schema do model —
+              // Agent/AgentSession/CadenceSequence/Workflow têm apenas `deletedAt`
+              // (Defeito B, ONDA3-10-DATA-INTERCEPTORS; ver prisma-interceptors.ts).
+              data: buildSoftDeleteData(model as string, userId, 'Soft delete'),
             });
           })) as Record<string, unknown>;
           if (result?.id) {
@@ -325,7 +329,7 @@ const extendedPrisma = basePrisma.$extends({
             ] as Record<string, unknown>;
             return (modelDelegate.updateMany as (args: unknown) => Prisma.PrismaPromise<unknown>)({
               where: a.where,
-              data: { deletedAt: new Date(), deletedBy: userId, deleteReason: 'Soft delete' },
+              data: buildSoftDeleteData(model as string, userId, 'Soft delete'),
             });
           })) as Record<string, unknown>;
         } else {
@@ -351,37 +355,40 @@ const extendedPrisma = basePrisma.$extends({
           (operation === 'delete' || operation === 'deleteMany') &&
           affectedIds.length > 0
         ) {
-          const cascadeData = {
-            deletedAt: new Date(),
-            deletedBy: userId,
-            deleteReason: 'Cascade Soft Delete',
-          };
+          // Cascade usa o mesmo helper por model de destino — hoje Contact/Lead/Activity têm
+          // os 3 campos, mas o helper garante o contrato se um destino futuro tiver só
+          // `deletedAt` (mesmo Defeito B acima).
+          const cascadeReason = 'Cascade Soft Delete';
 
           if (model === 'Company') {
             await executeWithRls((client) =>
               client.contact.updateMany({
                 where: { companyId: { in: affectedIds } },
-                data: cascadeData,
+                data: buildSoftDeleteData(
+                  'Contact',
+                  userId,
+                  cascadeReason,
+                ) as Prisma.ContactUpdateManyMutationInput,
               }),
             );
             await executeWithRls((client) =>
               client.lead.updateMany({
                 where: { companyId: { in: affectedIds } },
-                data: cascadeData,
+                data: buildSoftDeleteData('Lead', userId, cascadeReason) as Prisma.LeadUpdateManyMutationInput,
               }),
             );
           } else if (model === 'Contact') {
             await executeWithRls((client) =>
               client.lead.updateMany({
                 where: { contactId: { in: affectedIds } },
-                data: cascadeData,
+                data: buildSoftDeleteData('Lead', userId, cascadeReason) as Prisma.LeadUpdateManyMutationInput,
               }),
             );
           } else if (model === 'Lead') {
             await executeWithRls((client) =>
               client.activity.updateMany({
                 where: { leadId: { in: affectedIds } },
-                data: cascadeData,
+                data: buildSoftDeleteData('Activity', userId, cascadeReason) as Prisma.ActivityUpdateManyMutationInput,
               }),
             );
           }
