@@ -636,32 +636,171 @@ export async function fetchUserDailyPlan(
   };
 }
 
+/** Prefixo que o frontend envia em `item.id` para cada origem do plano (ver montagem dos itens
+ * acima: `local_...`, `bitrix_task_...`, `bitrix_act_...`, `bitrix_lead_...`). */
+const DAILY_PLAN_ITEM_PREFIX: Record<DailyPlanItemOrigin, string> = {
+  LOCAL_ACTIVITY: 'local_',
+  BITRIX_TASK: 'bitrix_task_',
+  BITRIX_ACTIVITY: 'bitrix_act_',
+  BITRIX_LEAD: 'bitrix_lead_',
+};
+
+/**
+ * Extrai o ID externo do `itemId` recebido, exigindo coerência com o `itemType`: um
+ * `bitrix_lead_9` enviado como `BITRIX_TASK` não pode virar "task 9" (o strip antigo removia
+ * qualquer prefixo conhecido, o que era uma porta de IDOR entre tipos de entidade).
+ */
+function normalizeDailyPlanItemId(itemType: DailyPlanItemOrigin, itemId: string): string {
+  const trimmed = itemId.trim();
+  const expected = DAILY_PLAN_ITEM_PREFIX[itemType];
+  if (expected && trimmed.startsWith(expected)) return trimmed.slice(expected.length);
+  for (const [type, prefix] of Object.entries(DAILY_PLAN_ITEM_PREFIX)) {
+    if (type !== itemType && trimmed.startsWith(prefix)) {
+      throw new AppError('itemId não corresponde ao itemType informado.', 400);
+    }
+  }
+  return trimmed;
+}
+
+/** Lê um campo de resposta do Bitrix tolerando variações de caixa/nome entre métodos
+ * (`tasks.task.get` devolve camelCase, `crm.*.get` devolve UPPERCASE). */
+function pickBitrixField(source: unknown, ...keys: string[]): string | undefined {
+  if (!source || typeof source !== 'object') return undefined;
+  const rec = source as Record<string, unknown>;
+  for (const key of keys) {
+    const value = rec[key];
+    if (value !== undefined && value !== null) return String(value);
+  }
+  return undefined;
+}
+
+/**
+ * Confirma que a entidade Bitrix apontada por `rawId` pertence ao plano diário do sujeito —
+ * ou seja, que o responsável/atribuído dela é o usuário Bitrix resolvido para quem está
+ * autenticado (ou para o membro cujo plano um ADMIN/GESTOR está operando via override).
+ *
+ * Sem esta checagem, `POST /api/bitrix/daily-plan/complete` aceitava qualquer `itemId`
+ * arbitrário e executava a mutação (`tasks.task.complete`, `crm.activity.update`,
+ * `crm.timeline.comment.add`) em entidades de OUTROS usuários do mesmo portal — IDOR clássico.
+ * Falha fechada: sem identidade Bitrix resolvida ou sem dono correspondente, nega com 404
+ * (mesmo status de "não encontrado", para não virar oráculo de existência da entidade).
+ */
+async function assertBitrixItemBelongsToPlanUser(
+  webhookUrl: string,
+  itemType: DailyPlanItemOrigin,
+  rawId: string,
+  bitrixUserId: string,
+): Promise<void> {
+  const deny = (): never => {
+    throw new AppError('Item não encontrado no seu plano diário.', 404);
+  };
+
+  if (itemType === 'BITRIX_TASK') {
+    const res = await callBitrix<{
+      result?: ({ task?: Record<string, unknown> } & Record<string, unknown>) | null;
+    }>(webhookUrl, 'tasks.task.get', { taskId: rawId });
+    const task = res?.result?.task ?? res?.result ?? null;
+    const responsibleId = pickBitrixField(task, 'responsibleId', 'responsible_id', 'RESPONSIBLE_ID');
+    if (!responsibleId || responsibleId !== bitrixUserId) deny();
+    return;
+  }
+
+  if (itemType === 'BITRIX_ACTIVITY') {
+    const res = await callBitrix<{ result?: Record<string, unknown> | null }>(
+      webhookUrl,
+      'crm.activity.get',
+      { id: rawId },
+    );
+    const responsibleId = pickBitrixField(
+      res?.result,
+      'RESPONSIBLE_ID',
+      'responsibleId',
+      'responsible_id',
+    );
+    if (!responsibleId || responsibleId !== bitrixUserId) deny();
+    return;
+  }
+
+  if (itemType === 'BITRIX_LEAD') {
+    const res = await callBitrix<{ result?: Record<string, unknown> | null }>(
+      webhookUrl,
+      'crm.lead.get',
+      { id: rawId },
+    );
+    const assignedById = pickBitrixField(res?.result, 'ASSIGNED_BY_ID', 'assignedById');
+    if (!assignedById || assignedById !== bitrixUserId) deny();
+    return;
+  }
+}
+
 /**
  * Conclui um item do plano diário, sincronizando com o Bitrix24 se aplicável.
+ *
+ * Segurança (IDOR — correção POS4): antes de qualquer mutação, o item é validado contra o
+ * plano do usuário autenticado — `LOCAL_ACTIVITY` precisa pertencer ao usuário (`owner`) na
+ * organização; `BITRIX_*` precisa ter o usuário Bitrix do chamador como responsável/atribuído.
+ * `options.overrideBitrixUserId` existe só para ADMIN/GESTOR operarem o plano de outro membro
+ * (mesmo override já aceito por GET/POST /daily-plan), nunca para pular a checagem.
  */
 export async function completeDailyPlanItem(
   organizationId: string,
-  _userId: string,
+  userId: string,
   itemType: DailyPlanItemOrigin,
   itemId: string,
+  options?: { overrideBitrixUserId?: string },
 ): Promise<{ success: boolean; message: string }> {
-  const connection = await resolvePlanConnection(organizationId);
+  const rawId = normalizeDailyPlanItemId(itemType, itemId);
 
   if (itemType === 'LOCAL_ACTIVITY') {
-    const rawId = itemId.replace(/^local_/, '');
+    // O plano só lista atividades com `owner: userId` na organização — concluir item de outro
+    // usuário do mesmo tenant (ou de outra org) é negado aqui, não só no update.
+    const activity = await prisma.activity.findFirst({
+      where: { id: rawId, organizationId, owner: userId },
+      select: { id: true },
+    });
+    if (!activity) {
+      throw new AppError('Item não encontrado no seu plano diário.', 404);
+    }
     await prisma.activity.update({
-      where: { id: rawId, organizationId },
+      where: { id: rawId },
       data: { status: 'Concluida' },
     });
     return { success: true, message: 'Atividade marcada como realizada na Central.' };
   }
 
+  const connection = await resolvePlanConnection(organizationId);
   if (!connection) {
     throw new AppError('Conexão com Bitrix24 não encontrada para esta organização.', 400);
   }
 
+  // Resolve a identidade Bitrix do DONO do plano sendo operado (o próprio usuário, ou o membro
+  // do override de ADMIN/GESTOR) — mesma ordem de fetchUserDailyPlan: vínculo explícito
+  // (`User.bitrixUserId`) -> e-mail -> nome completo.
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true, name: true, bitrixUserId: true },
+  });
+  if (!user?.email) {
+    throw new AppError('Não foi possível identificar o usuário para validar o plano diário.', 403);
+  }
+  const { id: planBitrixUserId } = await resolvePlanBitrixUser(
+    organizationId,
+    connection.id,
+    { email: user.email, name: user.name, bitrixUserId: user.bitrixUserId },
+    options?.overrideBitrixUserId,
+  );
+  if (!planBitrixUserId) {
+    throw new AppError(
+      'Seu usuário não está vinculado a um usuário do Bitrix24 — não é possível concluir itens do plano diário.',
+      403,
+    );
+  }
+
   const webhookUrl = await getConnectionWebhookUrl(organizationId, connection.id);
-  const rawId = itemId.replace(/^(bitrix_task_|bitrix_act_|bitrix_lead_)/, '');
+
+  // Validação de posse ANTES da mutação: a entidade precisa ter sido listada no plano deste
+  // usuário (responsável da tarefa/atividade ou atribuído do lead).
+  await assertBitrixItemBelongsToPlanUser(webhookUrl, itemType, rawId, planBitrixUserId);
 
   if (itemType === 'BITRIX_TASK') {
     await callBitrix(webhookUrl, 'tasks.task.complete', { taskId: rawId });
