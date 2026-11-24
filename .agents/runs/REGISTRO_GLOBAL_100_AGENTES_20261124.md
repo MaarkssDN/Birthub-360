@@ -44,17 +44,18 @@
 - **Agentes Integrados (7/7):** `02` (`d776c8f8f`), `04` (`0d87b8adf`), `08` (`f2011442e`), `90` (`be14797b6`), `93` (`1074ee1a2`), `94` (`f9196627d`), `99` (`54d10014a`).
 - **Auditoria (Agente 09 — Silas):** 7/7 pareceres por slot `APROVADO` em `f842a5ebf` + parecer de integração combinada da baseline `32d07c375` `APROVADO` em `b02efad9e` (`09-dem-20261123-integracao-onda2-32d07c375.md`).
 
-### 1.3 Onda 3 (`integracao/onda-3-dem20261123` @ `027f42b18`) — **ATIVA (8/8 SLOTS OCUPADOS)**
-- **Baseline:** `32d07c375`.
-- **Slots em Execução:**
-  - Slot 1: `20 — Ciro` (`wt-20-core-backend`, `agente/20-core-backend-onda3`) — **ATIVO** (investigando `isAuditableModel`/`deleteReason` e contratos internos).
-  - Slot 2: `21 — Zara` (`wt-21-api-contracts`, `agente/21-api-contracts-onda3`) — **ATIVO** (auditando schemas Zod e `openapi.yaml`).
-  - Slot 3: `34 — Ari` (`wt-34-accessibility`, `agente/34-accessibility-onda3`) — **ATIVO** (implementação em progresso em `src/components/a11y/`).
-  - Slot 4: `42 — Lívia` (`wt-42-crm-kanban`, `agente/42-crm-kanban-onda3`) — **ATIVO** (alterações em `deals.service.ts`, `KanbanBoard.tsx` e testes `__tests__/`).
-  - Slot 5: `45 — Otto` (`wt-45-crm-agenda`, `agente/45-crm-agenda-onda3`) — **ATIVO** (alterações em `calendar.utils.ts` e `__tests__/`).
-  - Slot 6: `65 — Lena` (`wt-65-voice-hub`, `agente/65-voice-hub-onda3`) — **ATIVO** (alterações em `voiceHub.api.ts`, `VoiceHubView.tsx`, `LandingInnovative.tsx`).
-  - Slot 7: `96 — Nera` (`wt-96-auth`, `agente/96-auth-onda3`) — **ATIVO** (alterações em `password-hash.ts`, `session.service.ts`, testes unitários e handoff `96-para-00-session-service-morta.md`).
-  - Slot 8: `09 — Silas` (`wt-09-audit-onda3`, `agente/09-audit-onda3` @ `b02efad9e`) — **ATIVO / RESERVADO** (checklist publicado em `a32fd0fe5`, parecer baseline Onda 2 emitido em `b02efad9e`, aguardando congelamento de SHAs dos Slots 1–7).
+### 1.3 Onda 3 (`integracao/onda-3-dem20261123`) — **ENCERRADA (19/19 ENTREGAS INTEGRADAS)**
+- **Baseline:** `32d07c375`. **HEAD de encerramento:** `1960064d8` (+ este registro).
+- **Entregas integradas:** Rodada 1 (20, 21, 34, 42, 45, 65, 96, 99) + Rodada 2 (22, 31, 40, 41, 43, 44, 97, 10, 23) + Rodada 3 (77 R3, 43 R3, 94) + **Leva 6** (`44-cadence-fix` `fea9d698b`, `50-hubtasks-authz` `5a1e85605` — ambas `APROVADO` Silas, merges `7b8b0eed3`/`3e2f39169`, pareceres `fb95a7008`).
+- **Reprovadas e não integradas:** `45-R2` (`2bf6ffe31`, violação de ownership `activities/**` do 41 — parecer retificado `3ec7af126`).
+- **Encerramento formal:** por deliberação do Orquestrador Humano (2026-11-24). Todos os SHAs, branches `agente/*-onda3`, worktrees `dem-20261123-onda3/*` e pareceres preservados — nenhum trabalho reaberto.
+- **Sucessão:** a operação continua na topologia de Squads (§1.5), não mais por slots fixos da Onda 3.
+
+### 1.5 Topologia de Squads (vigente desde `93e82c220`)
+- 10 squads com coordenadores próprios, branches `integracao/squad-NN` e worktrees `C:\Github\Birthub-360-worktrees\squads\squad-NN\` (`wt-coord` + `wt-<agente>`).
+- Fluxo: Especialista → Coordenador de Squad (`integracao/squad-NN`) → SHA congelado → Agente 09 Silas → Astra promove à integração global.
+- Lease global exclusivo do Astra: `.agents/runs/leases/global-astra.lease` (`1960064d8`) — única sessão autorizada a escrever na integração global.
+- AGENTS.md oficial de 100 agentes/10 squads vigente (roster por squads em `.agents/MATRIZ_PROPRIEDADE.md` rev. 2026-11-24).
 
 ### 1.4 Onda 4 (`C:\Github\Birthub-360-worktrees\dem-20261123-onda4\`) — **PREPARADA (EM FILA DE SLOTS)**
 - **Worktrees já provisionados na baseline `32d07c375` (aguardando liberação de slots da Onda 3):**
@@ -64,19 +65,20 @@
 
 ---
 
-## 2. Ocupação Atual dos Oito Slots Globais (+ Coordenador 00)
+## 2. Ocupação Atual — Ciclo Pós-Onda 3 (Squads)
 
-| Slot | Agente | Squad | Missão Ativa | Branch | Worktree | SHA Base | Status |
-|:---:|:---|:---:|:---|:---|:---|:---:|:---:|
-| **COORD** | `00 — Astra` | 00 | `SQUAD00-OPERACAO-CONTINUA` | `integracao/onda-3-dem20261123` | `dem-20261123-onda3/wt-00-integracao` | `027f42b18` | **ATIVO** |
-| **Slot 1** | `20 — Ciro` | 20 | `ONDA3-20-CORE-BACKEND` | `agente/20-core-backend-onda3` | `dem-20261123-onda3/wt-20-core-backend` | `32d07c375` | **ATIVO** |
-| **Slot 2** | `21 — Zara` | 21 | `ONDA3-21-API-CONTRACTS` | `agente/21-api-contracts-onda3` | `dem-20261123-onda3/wt-21-api-contracts` | `32d07c375` | **ATIVO** |
-| **Slot 3** | `34 — Ari` | 30 | `ONDA3-34-ACCESSIBILITY` | `agente/34-accessibility-onda3` | `dem-20261123-onda3/wt-34-accessibility` | `32d07c375` | **ATIVO** |
-| **Slot 4** | `42 — Lívia` | 40 | `ONDA3-42-CRM-KANBAN` | `agente/42-crm-kanban-onda3` | `dem-20261123-onda3/wt-42-crm-kanban` | `32d07c375` | **ATIVO** |
-| **Slot 5** | `45 — Otto` | 40 | `ONDA3-45-CRM-AGENDA` | `agente/45-crm-agenda-onda3` | `dem-20261123-onda3/wt-45-crm-agenda` | `32d07c375` | **ATIVO** |
-| **Slot 6** | `65 — Lena` | 60 | `ONDA3-65-VOICE-HUB` | `agente/65-voice-hub-onda3` | `dem-20261123-onda3/wt-65-voice-hub` | `32d07c375` | **ATIVO** |
-| **Slot 7** | `96 — Nera` | 90 | `ONDA3-96-AUTH` | `agente/96-auth-onda3` | `dem-20261123-onda3/wt-96-auth` | `32d07c375` | **ATIVO** |
-| **Slot 8** | `09 — Silas` | 00 | `ONDA3-09-AUDIT` | `agente/09-audit-onda3` | `dem-20261123-onda3/wt-09-audit-onda3` | `b02efad9e` | **ATIVO (GATE)** |
+Coordenação global única: `00 — Astra` (lease `global-astra.lease`). Capacidade por squad: máx. 3 executores concorrentes (política conservadora §5 da estrutura de squads).
+
+| Squad | Coordenador | Missões ativas (executor — branch — worktree) |
+|:---:|:---|:---|
+| 00 | `00 — Astra` | `06 — Gael` verify daily-plan (read-only) — `agente/06-dailyplan-verify-s00` — CONCLUÍDO `13992c708` (IDOR confirmado + handoffs) · `04 — Téo` stage-transition IT + env — `agente/04-env-isolado-s00` — ATIVO · `02 — Bento` harness PG/Redis isolado — `agente/02-env-harness-s00` — ATIVO |
+| 40 | `40 — Ravi` | `42 — Lívia` stage-transitions — `agente/42-stage-transitions-s40` — ATIVO · `44 — Lola` dormant cadence contracts — `agente/44-cadence-contracts-s40` — ATIVO |
+| 50 | `50 — Atlas` | `50 — Atlas` daily-plan/complete IDOR (ALTA) — `agente/50-dailyplan-idor-s50` — ATIVO |
+| 60 | `60 — Aurora` | `60 — Aurora` voice-hub inventory — `agente/60-voice-hub-inventory-s60` — ATIVO |
+| 90 | `90 — Hélio` | `96 — Nera` sessions/cookies follow-up — `agente/96-sessions-cookies-s90` — ATIVO |
+| 00 audit | `09 — Silas` | Auditoria independente sob demanda: matriz `7930a77d3` em curso + fila de pareceres das entregas acima |
+
+Total de especialistas ativos: **7 executores + 1 auditor** (08 incl. coordenação de missões). Squads 10, 20, 30, 70, 80 sem missão despachada neste ciclo.
 
 ---
 
