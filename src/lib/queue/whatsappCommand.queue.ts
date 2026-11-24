@@ -1,15 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import { Queue } from 'bullmq';
+import type { SendWhatsAppMessageContext } from '../../features/integrations/whatsapp/whatsapp.service.js';
 import { logger } from '../logger.js';
 import { registerQueueForMetrics } from './metrics.js';
 import { connection, queuesEnabled } from './redis.js';
-
-export interface SendWhatsAppMessageContext {
-  leadId?: string | null;
-  email?: string | null;
-  skipOptOutCheck?: boolean;
-  fromWorker?: boolean;
-}
 
 export const WHATSAPP_COMMAND_QUEUE_NAME = 'whatsapp-command';
 export const WHATSAPP_DLQ_QUEUE_NAME = 'whatsapp-messages-dlq';
