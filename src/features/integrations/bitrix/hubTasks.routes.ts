@@ -23,8 +23,8 @@ const router = Router();
 
 router.get('/hub-tasks', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { organizationId, id: userId, email } = (req as AuthRequest).user;
-    const user = { id: userId, email };
+    const { organizationId, id: userId, email, role } = (req as AuthRequest).user;
+    const user = { id: userId, email, role };
     const [tasks, assignees] = await Promise.all([
       listHubTasks(organizationId, user),
       listHubTaskAssignees(organizationId),
@@ -39,7 +39,7 @@ router.post(
   '/hub-tasks',
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { organizationId, id: userId, email } = (req as AuthRequest).user;
+      const { organizationId, id: userId, email, role } = (req as AuthRequest).user;
       const { text, assigneeId } = req.body;
       if (!text || !assigneeId) {
         res.status(400).json({ success: false, error: 'text e assigneeId são obrigatórios.' });
@@ -47,7 +47,7 @@ router.post(
       }
       const tasks = await createHubTask(
         organizationId,
-        { id: userId, email },
+        { id: userId, email, role },
         { text: String(text), assigneeId: String(assigneeId) },
       );
       res.json({ success: true, data: { tasks } });
@@ -61,10 +61,15 @@ router.post(
   '/hub-tasks/:id/toggle',
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { organizationId, id: userId, email } = (req as AuthRequest).user;
+      const { organizationId, id: userId, email, role } = (req as AuthRequest).user;
       const taskId = routeParam(req.params.id, 'id');
       const { done } = req.body;
-      const tasks = await toggleHubTask(organizationId, { id: userId, email }, taskId, !!done);
+      const tasks = await toggleHubTask(
+        organizationId,
+        { id: userId, email, role },
+        taskId,
+        !!done,
+      );
       res.json({ success: true, data: { tasks } });
     } catch (error: any) {
       next(error);
