@@ -8,19 +8,40 @@ import {
   Music,
   Search,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
-import { readModuleAvailabilityError } from '../lib/moduleNotReady.js';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { voiceHubApi, type VoiceCallSummary } from '../api/voiceHub.api.js';
+import { logger } from '../../../lib/logger.js';
 
-interface CallLogEntry {
-  id: string;
-  agent?: string;
-  contactName?: string;
-  timestamp: string;
-  duration: string;
-  status?: string;
-  summary?: string;
-  transcript?: string;
-  audioUrl?: string;
+// Rótulo honesto do executor das chamadas listadas: VoiceCallLog não guarda um nome de agente
+// por chamada — toda linha vem do fluxo de voz IA (SDR Birth Voices). Nunca exibir um nome
+// de agente inventado.
+const AGENT_LABEL = 'Agente de Voz IA';
+
+// `outcome` é o estado classificado por classifyCallOutcome (birthVoice.helpers.ts) — vocabulário
+// fechado, nunca um "sentimento" inventado. O rótulo PT-BR abaixo apenas traduz o estado real.
+const OUTCOME_LABELS: Record<string, string> = {
+  completed: 'Concluída',
+  voicemail: 'Caixa postal',
+  busy: 'Ocupado',
+  timeout: 'Timeout',
+  'invalid-number': 'Número inválido',
+  failed: 'Falhou',
+  cancelled: 'Cancelada',
+  'no-answer': 'Não atendida',
+  unknown: 'Desconhecido',
+};
+
+type OutcomeTone = 'positive' | 'neutral' | 'negative';
+
+function outcomeLabel(outcome: string): string {
+  return OUTCOME_LABELS[outcome] ?? outcome;
+}
+
+function outcomeTone(outcome: string): OutcomeTone {
+  if (outcome === 'completed') return 'positive';
+  if (outcome === 'no-answer' || outcome === 'voicemail' || outcome === 'unknown')
+    return 'neutral';
+  return 'negative';
 }
 
 interface SessionRecord {
@@ -29,45 +50,54 @@ interface SessionRecord {
   caller: string;
   dateTime: string;
   duration: string;
-  sentiment: 'Positivo' | 'Neutro' | 'Negativo';
+  durationSeconds: number;
+  outcome: string;
+  outcomeText: string;
+  tone: OutcomeTone;
   summary: string;
-  transcript: string;
   audioUrl?: string;
 }
 
 type LoadState = 'loading' | 'ready' | 'empty' | 'error';
 
-function mapCallLogs(callLogs: CallLogEntry[]): SessionRecord[] {
-  return callLogs.map((log) => ({
-    id: log.id,
-    agentName: log.agent || 'Desconhecido',
-    caller: log.contactName || 'Anônimo',
-    dateTime: new Date(log.timestamp).toLocaleString(),
-    duration: log.duration,
-    sentiment: log.status === 'Concluído' ? 'Positivo' : 'Neutro',
-    summary: log.summary || 'Resumo não disponível',
-    transcript: log.transcript || 'Transcrição não disponível',
-    audioUrl: log.audioUrl || '',
+function formatDurationSeconds(totalSeconds: number): string {
+  const safe = Number.isFinite(totalSeconds) && totalSeconds > 0 ? Math.round(totalSeconds) : 0;
+  const hh = Math.floor(safe / 3600);
+  const mm = Math.floor((safe % 3600) / 60);
+  const ss = safe % 60;
+  const mmss = `${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
+  return hh > 0 ? `${hh}:${mmss}` : mmss;
+}
+
+function mapVoiceCalls(calls: VoiceCallSummary[]): SessionRecord[] {
+  return calls.map((call) => ({
+    id: call.id,
+    agentName: AGENT_LABEL,
+    caller: call.leadTitle || `Lead ${call.leadId}`,
+    dateTime: new Date(call.createdAt).toLocaleString(),
+    duration: formatDurationSeconds(call.durationSeconds ?? 0),
+    durationSeconds: Number.isFinite(call.durationSeconds) ? call.durationSeconds : 0,
+    outcome: call.outcome || 'unknown',
+    outcomeText: outcomeLabel(call.outcome || 'unknown'),
+    tone: outcomeTone(call.outcome || 'unknown'),
+    summary: call.summary || 'Resumo não disponível',
+    audioUrl: call.recordingUrl || '',
   }));
 }
 
-function parseDurationSeconds(duration: string): number | null {
-  const parts = duration.split(':').map((p) => Number(p));
-  if (parts.some((n) => Number.isNaN(n))) return null;
-  if (parts.length === 2) return parts[0] * 60 + parts[1];
-  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
-  return null;
-}
+type TranscriptState =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'ready'; text: string | null }
+  | { status: 'error' };
 
-function formatAverageDuration(sessions: SessionRecord[]): string | null {
-  const seconds = sessions
-    .map((s) => parseDurationSeconds(s.duration))
-    .filter((n): n is number => n !== null);
-  if (seconds.length === 0) return null;
-  const avg = Math.round(seconds.reduce((a, b) => a + b, 0) / seconds.length);
-  const mm = String(Math.floor(avg / 60)).padStart(2, '0');
-  const ss = String(avg % 60).padStart(2, '0');
-  return `${mm}:${ss}`;
+function formatAverageDurationSeconds(sessions: SessionRecord[]): string | null {
+  const withDuration = sessions.filter((s) => s.durationSeconds > 0);
+  if (withDuration.length === 0) return null;
+  const avg = Math.round(
+    withDuration.reduce((acc, s) => acc + s.durationSeconds, 0) / withDuration.length,
+  );
+  return formatDurationSeconds(avg);
 }
 
 export default function ResultsPage() {
@@ -78,52 +108,36 @@ export default function ResultsPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
 
+  const [transcript, setTranscript] = useState<TranscriptState>({ status: 'idle' });
+  const transcriptRequestRef = useRef(0);
+
   useEffect(() => {
     let cancelled = false;
     setLoadState('loading');
     setLoadError(null);
 
-    // Canonical prefix for the Voice Hub module. On main this path is fail-closed with
-    // MODULE_NOT_READY (503) until tenancy-safe activation — never invent empty success.
+    // Endpoint canônico `/api/integrations/birth-voice/calls` (VoiceCallLog, tenant-scoped).
+    // O prefixo legado `/api/voice-hub/*` segue fail-closed (503 MODULE_NOT_READY) até a
+    // decisão de reabertura do gate — ver handoff 65-para-00-voicehub-503-gate.
     void (async () => {
       try {
-        const res = await fetch('/api/voice-hub/call-logs', { credentials: 'include' });
-        const data: unknown = await res.json().catch(() => null);
-        const availabilityError = await readModuleAvailabilityError(res, data);
+        const page = await voiceHubApi.getVoiceCalls(50);
         if (cancelled) return;
-
-        if (availabilityError) {
-          setSessions([]);
-          setSelectedSession(null);
-          setLoadError(availabilityError);
-          setLoadState('error');
-          return;
-        }
-
-        const callLogs =
-          data &&
-          typeof data === 'object' &&
-          Array.isArray((data as { callLogs?: unknown }).callLogs)
-            ? (data as { callLogs: CallLogEntry[] }).callLogs
-            : null;
-
-        if (!callLogs) {
-          setSessions([]);
-          setSelectedSession(null);
-          setLoadError('Resposta de call logs inválida. Nenhuma sessão foi assumida.');
-          setLoadState('error');
-          return;
-        }
-
-        const mapped = mapCallLogs(callLogs);
+        const mapped = mapVoiceCalls(page.calls);
         setSessions(mapped);
         setSelectedSession(null);
+        setTranscript({ status: 'idle' });
         setLoadState(mapped.length === 0 ? 'empty' : 'ready');
-      } catch {
+      } catch (err: unknown) {
         if (cancelled) return;
+        logger.warn({ err }, '[Results] Falha ao carregar chamadas de voz');
         setSessions([]);
         setSelectedSession(null);
-        setLoadError('Falha de rede ao carregar call logs. Nenhuma métrica foi inventada.');
+        setLoadError(
+          err instanceof Error && err.message
+            ? `Não foi possível carregar as chamadas de voz: ${err.message}`
+            : 'Falha de rede ao carregar chamadas de voz. Nenhuma métrica foi inventada.',
+        );
         setLoadState('error');
       }
     })();
@@ -136,17 +150,40 @@ export default function ResultsPage() {
   const filteredSessions = sessions.filter(
     (s) =>
       s.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.caller.includes(searchTerm) ||
+      s.caller.toLowerCase().includes(searchTerm.toLowerCase()) ||
       s.agentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       s.summary.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const averageDuration = useMemo(() => formatAverageDuration(sessions), [sessions]);
-  const positiveShare = useMemo(() => {
+  const averageDuration = useMemo(() => formatAverageDurationSeconds(sessions), [sessions]);
+  // "Conversas realizadas" é derivado do outcome real classificado ('completed' = conversa
+  // confirmada por callResultedInConversation) — não é uma pontuação de sentimento inventada.
+  const conversationShare = useMemo(() => {
     if (sessions.length === 0) return null;
-    const positive = sessions.filter((s) => s.sentiment === 'Positivo').length;
-    return Math.round((positive / sessions.length) * 100);
+    const completed = sessions.filter((s) => s.outcome === 'completed').length;
+    return Math.round((completed / sessions.length) * 100);
   }, [sessions]);
+  const completedCount = useMemo(
+    () => sessions.filter((s) => s.outcome === 'completed').length,
+    [sessions],
+  );
+
+  const handleSelectSession = (session: SessionRecord) => {
+    setSelectedSession(session);
+    const requestId = ++transcriptRequestRef.current;
+    setTranscript({ status: 'loading' });
+    voiceHubApi
+      .getVoiceCall(session.id)
+      .then((detail) => {
+        if (transcriptRequestRef.current !== requestId) return;
+        setTranscript({ status: 'ready', text: detail?.transcript ?? null });
+      })
+      .catch((err: unknown) => {
+        if (transcriptRequestRef.current !== requestId) return;
+        logger.warn({ err, callId: session.id }, '[Results] Falha ao carregar transcrição');
+        setTranscript({ status: 'error' });
+      });
+  };
 
   const handleExportCSV = () => {
     if (sessions.length === 0) return;
@@ -156,27 +193,26 @@ export default function ResultsPage() {
       'Caller/Contato',
       'Data e Hora',
       'Duração',
-      'Sentimento da Chamada',
+      'Resultado da Chamada (outcome real)',
       'Resumo Comercial/Operacional',
-      'Transcrição Integral',
     ];
 
+    // A transcrição integral não vem na listagem (só em GET /calls/:id) — o CSV exporta os
+    // campos da listagem; a transcrição fica disponível na visualização detalhada da sessão.
     const csvContent = [
       headers.join(','),
       ...sessions.map((s) => {
         const escapedAgentName = `"${(s.agentName || '').replace(/"/g, '""')}"`;
         const escapedSummary = `"${(s.summary || '').replace(/"/g, '""')}"`;
-        const escapedTranscript = `"${(s.transcript || '').replace(/"/g, '""')}"`;
 
         return [
           s.id,
           escapedAgentName,
-          s.caller,
+          `"${s.caller.replace(/"/g, '""')}"`,
           s.dateTime,
           s.duration,
-          s.sentiment,
+          `"${s.outcomeText}"`,
           escapedSummary,
-          escapedTranscript,
         ].join(',');
       }),
     ].join('\n');
@@ -218,7 +254,7 @@ export default function ResultsPage() {
           role="status"
           className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600"
         >
-          <Loader2 className="h-4 w-4 animate-spin" /> Carregando call logs do Voice Hub…
+          <Loader2 className="h-4 w-4 animate-spin" /> Carregando chamadas de voz…
         </div>
       )}
 
@@ -274,15 +310,15 @@ export default function ResultsPage() {
         </div>
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
           <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-            Score Positivo / Neutro
+            Conversas Realizadas
           </div>
           <div className="text-3xl font-extrabold text-slate-900 mt-2">
-            {positiveShare === null ? '—' : `${positiveShare}%`}
+            {conversationShare === null ? '—' : `${conversationShare}%`}
           </div>
           <div className="text-xs text-slate-500 mt-1">
-            {positiveShare === null
-              ? 'Sem sessões para derivar sentimento'
-              : 'Proporção marcada como Positivo nas sessões carregadas'}
+            {conversationShare === null
+              ? 'Sem sessões para derivar resultado'
+              : `${completedCount} de ${sessions.length} chamadas com outcome "completed" (conversa confirmada)`}
           </div>
         </div>
       </div>
@@ -310,7 +346,7 @@ export default function ResultsPage() {
             )}
             {loadState === 'error' && (
               <div role="status" className="p-8 text-center text-slate-500 text-sm">
-                Lista vazia de propósito — o servidor não confirmou call logs.
+                Lista vazia de propósito — o servidor não confirmou chamadas de voz.
               </div>
             )}
             {loadState === 'empty' && (
@@ -335,7 +371,7 @@ export default function ResultsPage() {
                       e.currentTarget.click();
                     }
                   }}
-                  onClick={() => setSelectedSession(s)}
+                  onClick={() => handleSelectSession(s)}
                   className={`p-4 cursor-pointer hover:bg-slate-50 transition-colors border-l-4 ${
                     selectedSession?.id === s.id ? 'bg-brand-50 border-brand' : 'border-transparent'
                   }`}
@@ -344,14 +380,14 @@ export default function ResultsPage() {
                     <span className="font-mono text-xs font-bold text-slate-700">{s.id}</span>
                     <span
                       className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                        s.sentiment === 'Positivo'
+                        s.tone === 'positive'
                           ? 'bg-green-100 text-green-700'
-                          : s.sentiment === 'Neutro'
+                          : s.tone === 'neutral'
                             ? 'bg-slate-100 text-slate-650'
                             : 'bg-red-100 text-red-700'
                       }`}
                     >
-                      {s.sentiment}
+                      {s.outcomeText}
                     </span>
                   </div>
                   <div className="font-semibold text-sm text-slate-900 mt-1.5 truncate">
@@ -389,14 +425,14 @@ export default function ResultsPage() {
                   <span className="text-xs text-slate-500 font-mono">{selectedSession.caller}</span>
                   <span
                     className={`text-xs px-2.5 py-1 rounded-md font-bold ${
-                      selectedSession.sentiment === 'Positivo'
+                      selectedSession.tone === 'positive'
                         ? 'bg-green-100 text-green-700'
-                        : selectedSession.sentiment === 'Neutro'
+                        : selectedSession.tone === 'neutral'
                           ? 'bg-slate-100 text-slate-600'
                           : 'bg-red-100 text-red-700'
                     }`}
                   >
-                    {selectedSession.sentiment}
+                    {selectedSession.outcomeText}
                   </span>
                 </div>
               </div>
@@ -451,29 +487,49 @@ export default function ResultsPage() {
                   Diálogo Completo
                 </h4>
                 <div className="space-y-3 max-h-[320px] overflow-y-auto bg-slate-50 border border-slate-100 p-4 rounded-lg scrollbar-hide">
-                  {selectedSession.transcript.split('\n').map((line, idx) => {
-                    const isAgent = line.startsWith('Agente:');
-                    const cleanLine = line.replace('Agente:', '').replace('Usuário:', '').trim();
-                    return (
-                      <div
-                        key={idx}
-                        className={`flex flex-col ${isAgent ? 'items-start' : 'items-end'}`}
-                      >
-                        <span className="text-[10px] text-slate-400 mb-0.5">
-                          {isAgent ? 'Agente de Voz' : 'Usuário / Contato'}
-                        </span>
+                  {transcript.status === 'loading' && (
+                    <div role="status" className="text-xs text-slate-500 text-center py-4">
+                      Carregando transcrição da chamada…
+                    </div>
+                  )}
+                  {transcript.status === 'error' && (
+                    <div role="alert" className="text-xs text-amber-700 text-center py-4">
+                      Não foi possível carregar a transcrição desta chamada.
+                    </div>
+                  )}
+                  {transcript.status === 'ready' && !transcript.text && (
+                    <div className="text-xs text-slate-500 text-center py-4">
+                      Transcrição não disponível para esta chamada.
+                    </div>
+                  )}
+                  {transcript.status === 'ready' &&
+                    transcript.text &&
+                    transcript.text.split('\n').map((line, idx) => {
+                      const isAgent = line.startsWith('Agente:');
+                      const cleanLine = line
+                        .replace('Agente:', '')
+                        .replace('Usuário:', '')
+                        .trim();
+                      return (
                         <div
-                          className={`p-3 rounded-xl text-xs max-w-[85%] leading-relaxed ${
-                            isAgent
-                              ? 'bg-white text-slate-850 hover:border-slate-200 border border-slate-100 rounded-tl-none font-medium'
-                              : 'bg-brand text-white rounded-tr-none'
-                          }`}
+                          key={idx}
+                          className={`flex flex-col ${isAgent ? 'items-start' : 'items-end'}`}
                         >
-                          {cleanLine}
+                          <span className="text-[10px] text-slate-400 mb-0.5">
+                            {isAgent ? 'Agente de Voz' : 'Usuário / Contato'}
+                          </span>
+                          <div
+                            className={`p-3 rounded-xl text-xs max-w-[85%] leading-relaxed ${
+                              isAgent
+                                ? 'bg-white text-slate-850 hover:border-slate-200 border border-slate-100 rounded-tl-none font-medium'
+                                : 'bg-brand text-white rounded-tr-none'
+                            }`}
+                          >
+                            {cleanLine}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
                 </div>
               </div>
             </div>
