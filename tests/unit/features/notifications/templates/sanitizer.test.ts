@@ -101,6 +101,85 @@ describe('[67 · Teca] Sanitização de templates e mensagens outbound (LGPD)', 
     });
   });
 
+  // Regressões ACH-01/ACH-02 do parecer Silas (REPROVADO adae9741f1)
+  describe('ACH-01 — PII fragmentada por tags HTML não pode vazar (fail-closed)', () => {
+    it('CPF quebrado por <b> é redigido em sanitizeFreeTextVariable', () => {
+      const r = sanitizeFreeTextVariable('CPF 123.<b>456</b>.789-01');
+      expect(r.cleanValue).not.toContain('123.456.789-01');
+      expect(r.wasRedacted).toBe(true);
+      expect(r.redactedCategories).toContain('cpf');
+    });
+
+    it('telefone e e-mail fragmentados por tags são redigidos', () => {
+      const tel = sanitizeFreeTextVariable('ligar 11 <b>99999</b>-8888');
+      expect(tel.cleanValue).not.toContain('99999');
+      expect(tel.wasRedacted).toBe(true);
+
+      const mail = sanitizeFreeTextVariable('maria<b>@</b>empresa.com');
+      expect(mail.cleanValue).not.toContain('empresa.com');
+      expect(mail.wasRedacted).toBe(true);
+    });
+
+    it('sanitizeOutboundMessageBody stripHtml=true redige PII fragmentado', () => {
+      const { sanitizedBody, redactedPiiCategories } = sanitizeOutboundMessageBody(
+        'CPF 123.<b>456</b>.789-01 e tel 11 <i>99999</i>-8888',
+        { stripHtml: true },
+      );
+      expect(sanitizedBody).not.toContain('123.456.789-01');
+      expect(sanitizedBody).not.toContain('99999');
+      expect(redactedPiiCategories).toEqual(expect.arrayContaining(['cpf', 'phone']));
+    });
+
+    it('sanitizeOutboundMessageBody stripHtml=false ainda redige PII fragmentado (fail-closed vence preservação de HTML)', () => {
+      const { sanitizedBody, redactedPiiCategories } = sanitizeOutboundMessageBody(
+        'CPF 123.<b>456</b>.789-01 <p>olá</p>',
+        { stripHtml: false },
+      );
+      expect(sanitizedBody).not.toContain('123.456.789-01');
+      expect(sanitizedBody).not.toContain('456</b>');
+      expect(redactedPiiCategories).toContain('cpf');
+      // HTML sem PII continua preservado no modo false
+      const clean = sanitizeOutboundMessageBody('<p>sem pii</p>', { stripHtml: false });
+      expect(clean.sanitizedBody).toBe('<p>sem pii</p>');
+    });
+
+    it('sanitizeWhatsAppTemplatePayload redige PII fragmentado no templateBody', () => {
+      const result = sanitizeWhatsAppTemplatePayload({
+        templateBody: 'CPF 123.<b>456</b>.789-01 — {{firstName}}',
+        allowedVariables: ['firstName'],
+        variables: { firstName: 'Ana' },
+      });
+      expect(result.renderedText).not.toContain('123.456.789-01');
+      expect(result.redactedPiiCategories).toContain('cpf');
+    });
+
+    it('detectPiiCategories detecta PII fragmentado por tags', () => {
+      const cats = detectPiiCategories('CPF 123.<b>456</b>.789-01 maria<b>@</b>x.com');
+      expect(cats).toEqual(expect.arrayContaining(['cpf', 'email']));
+    });
+  });
+
+  describe('ACH-02 — telefone +55 classificado como phone, não credit_card', () => {
+    it.each(['+55 11 99999-8888', '+5511999998888'])(
+      'formato %s → phone',
+      (value) => {
+        const r = sanitizeFreeTextVariable(`tel ${value}`);
+        expect(r.cleanValue).toContain('[PHONE_REDACTED]');
+        expect(r.cleanValue).not.toContain('[CARD_REDACTED]');
+        expect(r.redactedCategories).toContain('phone');
+        expect(r.redactedCategories).not.toContain('credit_card');
+        expect(detectPiiCategories(value)).toContain('phone');
+        expect(detectPiiCategories(value)).not.toContain('credit_card');
+      },
+    );
+
+    it('cartão de crédito válido (Luhn) continua credit_card', () => {
+      const r = sanitizeFreeTextVariable('cartão 4111 1111 1111 1111');
+      expect(r.redactedCategories).toContain('credit_card');
+      expect(r.cleanValue).toContain('[CARD_REDACTED]');
+    });
+  });
+
   describe('detectPiiCategories — auditoria LGPD sem vazar o dado', () => {
     it('retorna apenas categorias, nunca os valores encontrados', () => {
       const categories = detectPiiCategories('CPF 123.456.789-01 e mail x@y.com');
