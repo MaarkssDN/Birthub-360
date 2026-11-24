@@ -1,5 +1,6 @@
 import type { z } from 'zod';
 import { activitySchema } from '../../../lib/zod.js';
+import { civilDateKeyInZone, wallTimeInZoneToUtcIso } from '../../crm/tasks/calendar.utils.js';
 import type { ActivityListFilters, ActivityRepository } from '../domain/Activity.js';
 import { assertRealOwner } from '../domain/ownerGuard.js';
 
@@ -131,7 +132,12 @@ export class ActivityUseCases {
     to.setDate(to.getDate() + 90);
 
     const activities = await this.activityRepository.findRange(organizationId, from, to);
-    const filtered = owner ? activities.filter((a) => a.owner === owner) : activities;
+    // Match case-insensitive/trim — `owner` é texto livre e o front manda o nome como
+    // digitado; comparação exata já devolvia feed vazio por diferença de caixa/espaço.
+    const normalizedOwner = owner?.trim().toLowerCase();
+    const filtered = normalizedOwner
+      ? activities.filter((a) => a.owner?.trim().toLowerCase() === normalizedOwner)
+      : activities;
 
     const formatIcsDate = (d: Date) => {
       return `${d.toISOString().replace(/[-:]/g, '').split('.')[0]}Z`;
@@ -147,10 +153,26 @@ export class ActivityUseCases {
     ];
 
     for (const act of filtered) {
-      const startDate = new Date(act.date);
+      // `act.time` é horário de PAREDE (o que o usuário marcou), não UTC. Antes fazia
+      // `setHours` no fuso do SERVIDOR e exportava com sufixo `Z` — o evento ia para o
+      // calendário do usuário deslocado pelo offset do servidor. Agora o dia civil é
+      // extraído no fuso America/Sao_Paulo e recombinado via wallTimeInZoneToUtcIso,
+      // que já devolve o instante UTC correto.
+      const actInstant = new Date(act.date);
+      let startDate = actInstant;
       if (act.time) {
-        const [hh, mm] = act.time.split(':').map(Number);
-        startDate.setHours(hh || 9, mm || 0, 0, 0);
+        try {
+          startDate = new Date(
+            wallTimeInZoneToUtcIso(
+              civilDateKeyInZone(actInstant, 'America/Sao_Paulo'),
+              act.time,
+              'America/Sao_Paulo',
+            ),
+          );
+        } catch {
+          // `time` fora do formato HH:mm não pode derrubar o feed inteiro — cai no
+          // instante gravado (melhor que perder a agenda de todos os eventos).
+        }
       }
       const endDate = new Date(startDate.getTime() + 45 * 60 * 1000);
 

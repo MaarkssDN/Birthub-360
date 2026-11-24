@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
+import { hasRequiredRole } from '../../../lib/auth/authorization.js';
 import type { ActivityStatus, ActivityType } from '../../../lib/zod.js';
 import { routeParam } from '../../../shared/http/routeParams.js';
 import type { AuthRequest } from '../../../shared/middlewares/authenticateToken.js';
@@ -107,9 +108,33 @@ export class ActivityController {
     try {
       const user = (req as AuthRequest).user;
       const orgId = user.organizationId;
-      const userName = (user as unknown as { name?: string }).name || user.email;
+      const sessionName = (user as unknown as { name?: string }).name;
+      const userName = sessionName || user.email;
       const { owner } = req.query as { owner?: string };
-      const ics = await this.activityUseCases.generateIcalFeed(orgId, owner || userName);
+
+      // `?owner=` é texto livre comparado com Activity.owner (nome de exibição). Sem
+      // validação, qualquer autenticado exportava a agenda de qualquer colega do tenant
+      // (IDOR de leitura). Regra: sem owner → agenda do próprio usuário; owner igual a um
+      // identificador do próprio usuário → permitido; owner de terceiro → só ADMIN/GESTOR
+      // (exportação de agenda da equipe é caso legítimo de gestão).
+      const requestedOwner = typeof owner === 'string' && owner.trim() ? owner.trim() : null;
+      if (requestedOwner) {
+        const selfIdentifiers = new Set(
+          [userName, user.email, sessionName]
+            .filter((v): v is string => !!v)
+            .map((v) => v.trim().toLowerCase()),
+        );
+        const isSelf = selfIdentifiers.has(requestedOwner.toLowerCase());
+        if (!isSelf && !hasRequiredRole(user.role, ['ADMIN', 'GESTOR'])) {
+          res.status(403).json({
+            success: false,
+            error: 'Sem permissão para exportar a agenda de outro responsável.',
+          });
+          return;
+        }
+      }
+
+      const ics = await this.activityUseCases.generateIcalFeed(orgId, requestedOwner || userName);
       res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
       res.setHeader('Content-Disposition', 'attachment; filename="agenda.ics"');
       res.send(ics);
