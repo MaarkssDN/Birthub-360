@@ -1,0 +1,10 @@
+lease: squad-40-wt46
+agent: 46-Sofia
+worktree: C:/Github/Birthub-360-worktrees/squads/squad-40/wt-46
+branch: agente/46-forecast-s40
+base: integracao/onda-4-dem20261123 (coord/squad-40 inexistente — desvio documentado)
+ports: 22400-22499
+created: 2026-11-23
+scope: src/features/crm/forecast/**, tests relacionados, .agents/handoffs/squad-40/, .agents/runs/squads/
+frozen_sha: d8cf21b37c1b0177ab8790faa6fc07b47a514531
+status: entregue-para-silas
