@@ -13,6 +13,7 @@ import { CommandPalette } from '../ui/CommandPalette.js';
 import { Toaster } from '../ui/Toaster.js';
 import { PageTransition } from './PageTransition.js';
 import { deriveActiveTabFromPath } from './settingsPillarNav.js';
+import { SkipLink } from '../a11y/SkipLink.js';
 import type { TabType } from './tabMeta.js';
 import { getActiveModuleId } from './moduleRegistry.js';
 import { getModuleTheme } from './moduleThemes.js';
@@ -48,6 +49,8 @@ export function MainLayout({ children, activeTab: activeTabProp }: MainLayoutPro
 
   return (
     <div className="relative flex flex-col h-screen h-[100dvh] w-full overflow-hidden bg-bg font-sans text-ink antialiased selection:bg-brand selection:text-on-brand">
+      {/* WCAG 2.4.1 — primeiro focável do DOM; alvo é o <main id="main-content"> abaixo. */}
+      <SkipLink />
       <OfflineBanner />
 
       <div className="relative flex flex-1 min-h-0 w-full overflow-hidden">
@@ -66,7 +69,10 @@ export function MainLayout({ children, activeTab: activeTabProp }: MainLayoutPro
           <AppTopbar onOpenMobileNav={toggleMobileNav} activeTab={activeTab as TabType} />
 
           <main
-            className="relative flex-1 overflow-y-auto"
+            id="main-content"
+            // tabIndex=-1: alvo do SkipLink focável sem entrar na ordem de tab.
+            tabIndex={-1}
+            className="relative flex-1 overflow-y-auto focus:outline-none"
             data-module={activeModuleId}
             data-accent={domainAccent}
             data-page-accent={domainAccent}
