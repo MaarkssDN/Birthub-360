@@ -1,0 +1,9 @@
+squad-30 worktree lease
+session_id: 32-ema-s30-ui-states
+tsquad: 30
+agent: 32 Ema
+branch: agente/32-ui-states-s30
+base: integracao/onda-3-dem20261123 @ 5422d99c3e
+worktree: C:/Github/Birthub-360-worktrees/squads/squad-30/wt-32
+timestamp: 2026-11-24
+escopo: src/components/feedback/** + 1-2 telas representativas; portas 22300-22399
