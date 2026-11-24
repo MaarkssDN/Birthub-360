@@ -62,7 +62,7 @@ const { eraseDataSubject } = await import(
 );
 
 describe('Agente 08 (Dora) - Expurgo Físico LGPD em Cascata para Logs e Telemetria', () => {
-  it('deve realizar expurgo de dados do titular e deletar fisicamente logs de auditoria prévios contendo PII', async () => {
+  it('deve realizar expurgo de dados do titular e conservar logs de auditoria imutáveis (Art. 16, I)', async () => {
     const contactMock = {
       id: 'contact-dora-1',
       name: 'João da Silva',
@@ -78,7 +78,6 @@ describe('Agente 08 (Dora) - Expurgo Físico LGPD em Cascata para Logs e Telemet
     prismaMock.whatsAppMessage.updateMany.mockResolvedValue({ count: 2 });
     prismaMock.copilotoConversation.findMany.mockResolvedValue([]);
     prismaMock.agentMemory.updateMany.mockResolvedValue({ count: 1 });
-    prismaMock.auditLog.deleteMany.mockResolvedValue({ count: 5 });
     prismaMock.auditLog.create.mockResolvedValue({});
 
     const result = await eraseDataSubject({
@@ -89,16 +88,18 @@ describe('Agente 08 (Dora) - Expurgo Físico LGPD em Cascata para Logs e Telemet
 
     expect(result.contactId).toBe('contact-dora-1');
     expect(result.whatsAppMessagesMasked).toBe(2);
-    expect(result.priorAuditLogsPurged).toBe(5);
+    expect(result.priorAuditLogsPurged).toBe(0);
 
-    // Verifica que logs de auditoria anteriores contendo PII deste contato foram deletados fisicamente
-    expect(prismaMock.auditLog.deleteMany).toHaveBeenCalledWith({
-      where: {
-        tenantId: 'org-lgpd-test',
+    // AuditLog é append-only/imutável (gatilho auditlog_no_mutation): nenhum deleteMany é permitido.
+    // A comprovação do direito é feita pelo append do evento ERASURE_LGPD_ART_18 sem PII direta.
+    expect(prismaMock.auditLog.deleteMany).not.toHaveBeenCalled();
+    expect(prismaMock.auditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        action: 'ERASURE_LGPD_ART_18',
         entity: 'Contact',
         entityId: 'contact-dora-1',
-        action: { not: 'ERASURE_LGPD_ART_18' },
-      },
+        tenantId: 'org-lgpd-test',
+      }),
     });
   });
 });
