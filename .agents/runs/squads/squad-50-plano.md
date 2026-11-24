@@ -99,6 +99,29 @@ Cada executor usará branch `agente/<id>-<slug>-s50` e worktree `squads/squad-50
 - Matriz de prontidão publicada: `.agents/runs/squads/squad-50-matriz-prontidao-conectores.md`.
 - Handoffs emitidos em `.agents/handoffs/squad-50/` (ver §6).
 
+## 5b. Sessão 2 (2026-11-24, continuação) — reconciliação solicitada pelo Orquestrador Humano
+
+- **Proposta de ownership Bitrix publicada** (`50-para-00-proposta-ownership-bitrix.md`):
+  redistribuição dos 58 arquivos reais de `src/features/integrations/bitrix/` entre núcleo (50),
+  51 auth, 52 batch, 53 sync/webhooks, 54 mapping, 59 observabilidade; rotas/filas/produto-CRM
+  marcados para Squad 20/40. Aguarda publicação na MATRIZ pelo Astra.
+- **Classificação de conectores sem dono** (`50-para-00-classificacao-conectores.md`):
+  chatwoot PARCIAL; hubspot/monday/pipedrive/rdstation IMPLEMENTADOS via framework
+  `ExternalCrmService`+`externalCrmOutbound.queue` (outbound-only, sem webhook inbound);
+  omie/slack/stripe/signature IMPLEMENTADOS. Stripe proposto ao Squad 20 (26-Dália).
+- **Fronteira WhatsApp** (`50-para-00-fronteira-whatsapp-s60.md`): texto de cláusula proposto
+  para ratificação — Luna = transporte/sessão; Squad 60 = inbox/templates/opt-out.
+- **BITRIX24-LEAD-FLOW-AUDIT.md**: confirmado que existiu e foi removido por decisão humana
+  (`e9fba0b0c`); diagnóstico novo criado em
+  `docs/integrations/BITRIX24-DIAGNOSTICO-INTEGRACAO-20261124.md`.
+- **Hubtasks authz (43→50)**: verificado resolvido — `hubTasks.service.ts:104-116` aplica
+  filtro `CREATED_BY`/`RESPONSIBLE_ID`.
+- **Webhooks pré-auth revalidados**: chatwoot (HMAC+timestamp+dedup), 3CX (`x-3cx-signature` +
+  `claimWebhookDelivery`), signature (HMAC+dedup), stripe (`stripe-signature`), birth-voice
+  (candidatos de segredo) — todos validam origem; risco R3 do §4 rebaixado.
+- **Testes executados:** `tests/unit/lib/integrations/` → 13/13 PASS (circuit breaker,
+  webhookIdempotency, whatsappAntiBan, bitrixBatchExtractor); client Bitrix 24/24 PASS (sessão 1).
+
 ## 6. Handoffs emitidos nesta sessão
 
 - `.agents/handoffs/squad-50/50-para-00-ownership-features-integrations.md` — deliberação de
@@ -106,3 +129,5 @@ Cada executor usará branch `agente/<id>-<slug>-s50` e worktree `squads/squad-50
 - `.agents/handoffs/squad-50/50-para-00-overlap-whatsapp-squad60.md` — delimitação 56 Luna ×
   66/67/69 Squad 60 antes de despachar.
 - `.agents/handoffs/squad-50/50-para-00-relatorio-sessao-coordenacao.md` — relatório padrão ao Astra.
+- Sessão 2: `50-para-00-proposta-ownership-bitrix.md`, `50-para-00-classificacao-conectores.md`,
+  `50-para-00-fronteira-whatsapp-s60.md`; diagnóstico `docs/integrations/BITRIX24-DIAGNOSTICO-INTEGRACAO-20261124.md`.
