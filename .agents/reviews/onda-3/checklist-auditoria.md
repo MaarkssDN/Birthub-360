@@ -59,15 +59,17 @@ Para cada entrega, verificar ANTES de emitir parecer:
 
 ## Status das 7 entregas
 
-| Agente | Missão | Branch | SHA auditado | Status | Parecer |
-|--------|--------|--------|--------------|--------|---------|
-| 20 | ONDA3-20-CORE-BACKEND | `agente/20-core-backend-onda3` | — | PENDENTE (baseline) | — |
-| 21 | ONDA3-21-API-CONTRACTS | `agente/21-api-contracts-onda3` | — | PENDENTE (baseline) | — |
-| 34 | ONDA3-34-ACCESSIBILITY | `agente/34-accessibility-onda3` | — | PENDENTE (baseline) | — |
-| 42 | ONDA3-42-CRM-KANBAN | `agente/42-crm-kanban-onda3` | — | PENDENTE (baseline) | — |
-| 45 | ONDA3-45-CRM-AGENDA | `agente/45-crm-agenda-onda3` | — | PENDENTE (baseline) | — |
-| 65 | ONDA3-65-VOICE-HUB | `agente/65-voice-hub-onda3` | — | PENDENTE (baseline) | — |
-| 96 | ONDA3-96-AUTH | `agente/96-auth-onda3` | — | PENDENTE (baseline) | — |
+| Agente | Missão | Branch | SHA auditado | Status | Parecer (esta auditoria) |
+|--------|--------|--------|--------------|--------|---------------------------|
+| 20 | ONDA3-20-CORE-BACKEND | `agente/20-core-backend-onda3` | `23b1d31cd` | AUDITADO | APROVADO (`parecer-20-*.md`) |
+| 21 | ONDA3-21-API-CONTRACTS | `agente/21-api-contracts-onda3` | `2ea541871` | AUDITADO | **REPROVADO** (`parecer-21-*.md`) — spec Postman defasada c/ 15 paths fantasma; diverge do parecer paralelo APROVADO do slot |
+| 34 | ONDA3-34-ACCESSIBILITY | `agente/34-accessibility-onda3` | `27924c7cf` | AUDITADO | APROVADO (`parecer-34-*.md`) |
+| 42 | ONDA3-42-CRM-KANBAN | `agente/42-crm-kanban-onda3` | `47846b442` | AUDITADO | APROVADO (`parecer-42-*.md`) |
+| 45 | ONDA3-45-CRM-AGENDA | `agente/45-crm-agenda-onda3` | `8e2c0d1e0` | AUDITADO | APROVADO (`parecer-45-*.md`) |
+| 65 | ONDA3-65-VOICE-HUB | `agente/65-voice-hub-onda3` | `b8a39713e` | AUDITADO | APROVADO (`parecer-65-*.md`) — obs.: ratificar ownership de 2 arquivos de teste c/ 00 |
+| 96 | ONDA3-96-AUTH | `agente/96-auth-onda3` | `dd8351072` | AUDITADO | APROVADO (`parecer-96-*.md`) |
+
+**Nota de coordenação**: uma segunda instância do Agente 09 (runtime Antigravity/Devin) emitiu pareceres paralelos de slot em `.agents/reviews/09-dem-20261123-slotNN-<sha>.md` sobre os mesmos SHAs — APROVADO para todos os 7. Esta auditoria (Devin subagent, missão `ONDA3-09-AUDIT`) reexecutou evidências de forma independente e divergiu apenas no Agente 21 (REPROVADO). O Agente 00 deve reconciliar a duplicidade de auditoria e a divergência de veredito do 21 antes da integração.
 
 ## Riscos/observações registradas na Fase 1
 
@@ -78,3 +80,4 @@ Para cada entrega, verificar ANTES de emitir parecer:
 ## Log de monitoramento
 
 - 2026-11-24 (início): baseline verificada; nenhuma entrega com commits à frente de `32d07c375`; nenhum handoff em `.agents/handoffs/onda-3/` observado nos worktrees. Checklist publicado.
+- 2026-11-24 ~13:40: 7/7 entregas congeladas e auditadas por esta instância. Evidências reexecutadas: 34 (vitest 6/6, tsc 0, biome limpo), 21 (verify:openapi-drift verde + parse YAML + diff programático specs), 45 (vitest 14/14, tsc 0, biome limpo), 96 (vitest 45/45, tsc 0), 42 (vitest 14/14, tsc 0, biome limpo), 65 (vitest 266/266 + 13/13, tsc 0), 20 (claims verificadas no tree — docs-only). Vereditos: 6 APROVADO + 1 REPROVADO (21). Detectada auditoria paralela do slot 09 nos mesmos SHAs (ver nota na tabela).

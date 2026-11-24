@@ -8,6 +8,7 @@ Onda/Branch: Onda 3 / `agente/21-api-contracts-onda3` (worktree `wt-21-api-contr
 Hash/Commit Auditado: `2ea541871` (HEAD; commits `ae5988377`, `e73b17c91`, `b023b644a`, `2ea541871` sobre baseline `32d07c375`)
 Missão: ONDA3-21-API-CONTRACTS (demanda DEM-20261123-001)
 Data do parecer: 2026-11-24
+Nota de coordenação CRÍTICA: existe parecer paralelo do slot (`09-dem-20261123-slot21-2ea541871.md`, APROVADO) emitido por outra instância do Agente 09 no mesmo branch de auditoria, sobre o MESMO SHA `2ea541871`. Os vereditos divergem: o parecer paralelo não detectou o achado bloqueante abaixo (spec Postman com os 15 paths fantasma). Este REPROVADO está fundamentado em verificação programática reproduzível (parse YAML dos dois specs: 510 vs 495 paths). O Agente 00 deve reconciliar a divergência antes de integrar — conservadoramente, o REPROVADO prevalece até correção do spec Postman e novo SHA.
 
 ## Verificações de Gate
 
