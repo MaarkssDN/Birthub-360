@@ -2,7 +2,8 @@
 
 ## Dono
 
-Agente 04 — CRM e BI
+Agente 45 — Otto (Tarefas, Agendas e Atividades). Este arquivo declarava
+"Agente 04" (numeração legada) — substituído pela MATRIZ_PROPRIEDADE.md oficial.
 
 Este arquivo governa esta pasta e todas as subpastas.
 
