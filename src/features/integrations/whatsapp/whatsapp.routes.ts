@@ -9,6 +9,10 @@ import { listConversations } from './whatsappMessage.service.js';
 
 const router = Router();
 const managementRoles = requireRole(['ADMIN', 'GESTOR']);
+// Piso de leitura das conversas/mensagens/sinais/status: conteúdo de WhatsApp é PII de leads
+// (e /status expõe QR da sessão, vetor de sequestro se vazado). VISUALIZADOR não lê
+// (auditoria 2026-11-15, P2-03 — antes esses GETs não tinham requireRole algum).
+const readRoles = requireRole(['ADMIN', 'GESTOR', 'CLOSER', 'SDR']);
 
 function idempotencyKey(req: Request): string | undefined {
   const value = req.header('x-idempotency-key');
@@ -17,6 +21,7 @@ function idempotencyKey(req: Request): string | undefined {
 
 router.get(
   '/conversations',
+  readRoles,
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { organizationId } = (req as AuthRequest).user;
@@ -28,7 +33,10 @@ router.get(
   },
 );
 
-router.get('/messages', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+router.get(
+  '/messages',
+  readRoles,
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { organizationId } = (req as AuthRequest).user;
     const leadId = typeof req.query.leadId === 'string' ? req.query.leadId : undefined;
@@ -44,7 +52,10 @@ router.get('/messages', async (req: Request, res: Response, next: NextFunction):
   }
 });
 
-router.get('/signals', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+router.get(
+  '/signals',
+  readRoles,
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { organizationId } = (req as AuthRequest).user;
     const leadId = typeof req.query.leadId === 'string' ? req.query.leadId : undefined;
@@ -82,7 +93,10 @@ router.post(
   },
 );
 
-router.get('/status', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+router.get(
+  '/status',
+  readRoles,
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { organizationId } = (req as AuthRequest).user;
     const status = await getWhatsAppStatus(organizationId);

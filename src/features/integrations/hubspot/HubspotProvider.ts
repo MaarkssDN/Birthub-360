@@ -5,6 +5,7 @@
  * Docs: https://developers.hubspot.com/docs/api/crm/contacts
  */
 
+import { fetchWithProviderRetry } from '@/lib/enrichment/providerFetch.js';
 import {
   type CrmConnectionConfig,
   type CrmProvider,
@@ -13,6 +14,7 @@ import {
 } from '../shared/CrmProvider.js';
 
 const HUBSPOT_API_BASE = 'https://api.hubapi.com';
+const HUBSPOT_ALLOWED_HOSTS = ['api.hubapi.com'] as const;
 
 async function hubspotRequest<T>(
   path: string,
@@ -20,14 +22,20 @@ async function hubspotRequest<T>(
   options: RequestInit = {},
 ): Promise<T> {
   const url = `${HUBSPOT_API_BASE}${path}`;
-  const res = await fetch(url, {
-    ...options,
-    headers: {
-      Authorization: `Bearer ${config.accessToken}`,
-      'Content-Type': 'application/json',
-      ...(options.headers ?? {}),
+  // fetchWithProviderRetry: timeout por tentativa + retry com backoff/jitter para 429/5xx/rede
+  // (mesmo padrão dos providers de prospecção — auditoria 2026-11-15, P2-02).
+  const res = await fetchWithProviderRetry(
+    url,
+    {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${config.accessToken}`,
+        'Content-Type': 'application/json',
+        ...(options.headers ?? {}),
+      },
     },
-  });
+    { providerName: 'hubspot', timeoutMs: 15_000, allowedHosts: HUBSPOT_ALLOWED_HOSTS },
+  );
 
   if (!res.ok) {
     const body = await res.text();
