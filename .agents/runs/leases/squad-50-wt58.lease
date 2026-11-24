@@ -1,0 +1,9 @@
+lease: squad-50-wt58
+agent: 58-Elisa
+demanda: DEM-20261123-001 / SQUAD50-58-ENRICHMENT-ERP
+worktree: C:/Github/Birthub-360-worktrees/squads/squad-50/wt-58
+branch: agente/58-enrichment-erp-s50
+base: integracao/onda-3-dem20261123 @ 5422d99c3e
+ports: 22500-22599
+scope: src/lib/integrations/erp/**, src/features/integrations/{omie,signature,slack}/**, .agents/handoffs/squad-50/, .agents/runs/{squads,leases}/
+created: 2026-11-24
