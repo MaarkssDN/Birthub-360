@@ -26,7 +26,9 @@ export const prismaLeadSubjectResolver: LeadSubjectResolver = {
     });
 
     const customFields =
-      lead?.customFields && typeof lead.customFields === 'object' && !Array.isArray(lead.customFields)
+      lead?.customFields &&
+      typeof lead.customFields === 'object' &&
+      !Array.isArray(lead.customFields)
         ? (lead.customFields as Record<string, unknown>)
         : null;
     const explicitTimeZone =

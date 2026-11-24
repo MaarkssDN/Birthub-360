@@ -113,8 +113,7 @@ export function buildDeps(): AdvanceCadenceRunDeps {
     // POS4-17-CADENCE-TZ: a janela comercial agora é avaliada no fuso do DESTINATÁRIO (lead),
     // resolvido por `prismaLeadSubjectResolver` — não mais fixa em America/Sao_Paulo para todos.
     // Lead sem sinal de localização cai no fallback SP documentado em `domain/businessWindow.ts`.
-    isWithinBusinessWindow: (now, leadTimeZone) =>
-      isWithinCadenceBusinessWindow(now, leadTimeZone),
+    isWithinBusinessWindow: (now, leadTimeZone) => isWithinCadenceBusinessWindow(now, leadTimeZone),
     hasLeadReplied,
     // Rate limit por contato/domínio (auditoria transversal, Agente 17) — ver
     // `application/rateLimitService.ts`/`rateLimitConfig.ts`. Política lida do ambiente a cada

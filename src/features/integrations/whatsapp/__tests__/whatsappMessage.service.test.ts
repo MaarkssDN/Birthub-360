@@ -373,11 +373,7 @@ describe('persistWhatsAppMessage — opt-out inbound sem lead aberto + purga de 
       organizationId: ORG,
       number: '5511888880000',
     });
-    whatsappCommandQueueMock.getJobs.mockResolvedValue([
-      matchingJob,
-      otherOrgJob,
-      otherNumberJob,
-    ]);
+    whatsappCommandQueueMock.getJobs.mockResolvedValue([matchingJob, otherOrgJob, otherNumberJob]);
 
     await persistWhatsAppMessage({
       organizationId: ORG,

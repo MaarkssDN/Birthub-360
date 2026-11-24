@@ -11,7 +11,7 @@
       "$queryRaw:0d9e9cfe1eef5a83"
     ],
     "src/features/activities/infra/PrismaActivityRepository.ts": [
-      "$transaction:5173b1df4de2aac7",
+      "$transaction:20e071c9a915fd0e",
       "$transaction:5545b046d2719fd7"
     ],
     "src/features/activities/services/activity.service.ts": [

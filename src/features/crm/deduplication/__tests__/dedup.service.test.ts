@@ -167,9 +167,7 @@ describe('planContactMerge — fusão segura (dry-run)', () => {
     expect(byField.document).toMatchObject({ value: '12345678909', source: 'duplicate' });
     expect(byField.email).toMatchObject({ value: 'ana@x.com', source: 'primary' });
     expect(plan.conflicts).toHaveLength(0);
-    expect(plan.audit.filledFromDuplicate).toEqual(
-      expect.arrayContaining(['phone', 'document']),
-    );
+    expect(plan.audit.filledFromDuplicate).toEqual(expect.arrayContaining(['phone', 'document']));
     expect(plan.audit.action).toBe('CRM_CONTACT_MERGE_PLAN');
   });
 
@@ -206,8 +204,8 @@ describe('planContactMerge — fusão segura (dry-run)', () => {
   });
 
   it('BLOQUEIA auto-merge (mesmo id)', () => {
-    expect(() =>
-      planContactMerge(primary, { ...primary, fields: { ...primary.fields } }),
-    ).toThrow(/itself/);
+    expect(() => planContactMerge(primary, { ...primary, fields: { ...primary.fields } })).toThrow(
+      /itself/,
+    );
   });
 });

@@ -84,10 +84,7 @@ describe('completeDailyPlanItem — IDOR (POS4)', () => {
   it('(a) BITRIX_TASK de outro responsável do mesmo tenant → 404 e NENHUMA mutação no Bitrix', async () => {
     mockBitrixGet('tasks.task.get', { task: { id: '555', responsibleId: '88' } });
 
-    await expectStatus(
-      completeDailyPlanItem(ORG, USER, 'BITRIX_TASK', 'bitrix_task_555'),
-      404,
-    );
+    await expectStatus(completeDailyPlanItem(ORG, USER, 'BITRIX_TASK', 'bitrix_task_555'), 404);
 
     expect(bitrixCalls('tasks.task.complete')).toHaveLength(0);
     expect(bitrixCalls('tasks.task.get')).toHaveLength(1); // só a verificação de posse rodou
@@ -96,10 +93,7 @@ describe('completeDailyPlanItem — IDOR (POS4)', () => {
   it('(b) BITRIX_ACTIVITY fora do plano (responsável diverso) → 404 e crm.activity.update não chamado', async () => {
     mockBitrixGet('crm.activity.get', { ID: '900', RESPONSIBLE_ID: '42' });
 
-    await expectStatus(
-      completeDailyPlanItem(ORG, USER, 'BITRIX_ACTIVITY', 'bitrix_act_900'),
-      404,
-    );
+    await expectStatus(completeDailyPlanItem(ORG, USER, 'BITRIX_ACTIVITY', 'bitrix_act_900'), 404);
 
     expect(bitrixCalls('crm.activity.update')).toHaveLength(0);
   });
@@ -107,10 +101,7 @@ describe('completeDailyPlanItem — IDOR (POS4)', () => {
   it('BITRIX_LEAD atribuído a outro usuário → 404 e crm.timeline.comment.add não chamado', async () => {
     mockBitrixGet('crm.lead.get', { ID: '12', ASSIGNED_BY_ID: '5' });
 
-    await expectStatus(
-      completeDailyPlanItem(ORG, USER, 'BITRIX_LEAD', 'bitrix_lead_12'),
-      404,
-    );
+    await expectStatus(completeDailyPlanItem(ORG, USER, 'BITRIX_LEAD', 'bitrix_lead_12'), 404);
 
     expect(bitrixCalls('crm.timeline.comment.add')).toHaveLength(0);
   });
@@ -149,10 +140,7 @@ describe('completeDailyPlanItem — IDOR (POS4)', () => {
   it('(d2) LOCAL_ACTIVITY de outro usuário do mesmo tenant → 404 (owner divergente no where)', async () => {
     prismaMock.activity.findFirst.mockResolvedValue(null); // owner != userId ou outra org
 
-    await expectStatus(
-      completeDailyPlanItem(ORG, USER, 'LOCAL_ACTIVITY', 'local_act-1'),
-      404,
-    );
+    await expectStatus(completeDailyPlanItem(ORG, USER, 'LOCAL_ACTIVITY', 'local_act-1'), 404);
 
     // A busca já carrega organizationId + owner do usuário autenticado.
     expect(prismaMock.activity.findFirst).toHaveBeenCalledWith(
@@ -176,10 +164,7 @@ describe('completeDailyPlanItem — IDOR (POS4)', () => {
   });
 
   it('itemId com prefixo de OUTRO tipo (bitrix_lead_9 como BITRIX_TASK) → 400 sem chamar o Bitrix', async () => {
-    await expectStatus(
-      completeDailyPlanItem(ORG, USER, 'BITRIX_TASK', 'bitrix_lead_9'),
-      400,
-    );
+    await expectStatus(completeDailyPlanItem(ORG, USER, 'BITRIX_TASK', 'bitrix_lead_9'), 400);
 
     expect(clientMock.callBitrix).not.toHaveBeenCalled();
   });
@@ -192,10 +177,7 @@ describe('completeDailyPlanItem — IDOR (POS4)', () => {
     });
     dealsMock.getBitrixUsers.mockResolvedValue([]); // e-mail/nome não casam com ninguém
 
-    await expectStatus(
-      completeDailyPlanItem(ORG, USER, 'BITRIX_TASK', 'bitrix_task_555'),
-      403,
-    );
+    await expectStatus(completeDailyPlanItem(ORG, USER, 'BITRIX_TASK', 'bitrix_task_555'), 403);
 
     expect(clientMock.callBitrix).not.toHaveBeenCalled();
   });

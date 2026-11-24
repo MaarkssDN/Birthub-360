@@ -174,10 +174,7 @@ export async function createHubTask(
 
 /** Carrega a tarefa no portal para autorizar a mutação — `tasks.task.get` só enxerga tarefas do
  * portal da conexão desta organização, então o escopo de tenancy já vem de graça do webhook. */
-async function fetchHubTaskForAuthz(
-  webhookUrl: string,
-  taskId: string,
-): Promise<BitrixTaskRaw> {
+async function fetchHubTaskForAuthz(webhookUrl: string, taskId: string): Promise<BitrixTaskRaw> {
   const payload = await callBitrix<{ result?: { task?: BitrixTaskRaw } }>(
     webhookUrl,
     'tasks.task.get',

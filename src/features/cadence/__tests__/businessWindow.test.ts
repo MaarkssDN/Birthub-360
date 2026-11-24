@@ -60,9 +60,9 @@ describe('isValidIanaTimeZone', () => {
 
 describe('resolveBusinessTimeZone', () => {
   it('explícito válido vence; UF vem depois; fallback SP por último', () => {
-    expect(
-      resolveBusinessTimeZone({ explicitTimeZone: 'Europe/Lisbon', state: 'AM' }),
-    ).toBe('Europe/Lisbon');
+    expect(resolveBusinessTimeZone({ explicitTimeZone: 'Europe/Lisbon', state: 'AM' })).toBe(
+      'Europe/Lisbon',
+    );
     expect(resolveBusinessTimeZone({ state: 'AM' })).toBe('America/Manaus');
     expect(resolveBusinessTimeZone({ state: 'lixo' })).toBe(DEFAULT_BUSINESS_TIMEZONE);
     expect(resolveBusinessTimeZone({})).toBe(DEFAULT_BUSINESS_TIMEZONE);
@@ -91,15 +91,15 @@ describe('isWithinCadenceBusinessWindow', () => {
 
   it('borda da janela: 09:00 dentro, 18:00 fora (fim exclusivo), 08:59 fora', () => {
     // 11:59Z = 08:59 SP
-    expect(isWithinCadenceBusinessWindow(new Date('2026-08-03T11:59:00Z'), 'America/Sao_Paulo')).toBe(
-      false,
-    );
+    expect(
+      isWithinCadenceBusinessWindow(new Date('2026-08-03T11:59:00Z'), 'America/Sao_Paulo'),
+    ).toBe(false);
     // 21:00Z = 18:00 SP — fora (endHour exclusivo)
     expect(isWithinCadenceBusinessWindow(SEG_2100_UTC, 'America/Sao_Paulo')).toBe(false);
     // 20:59Z = 17:59 SP — dentro
-    expect(isWithinCadenceBusinessWindow(new Date('2026-08-03T20:59:00Z'), 'America/Sao_Paulo')).toBe(
-      true,
-    );
+    expect(
+      isWithinCadenceBusinessWindow(new Date('2026-08-03T20:59:00Z'), 'America/Sao_Paulo'),
+    ).toBe(true);
   });
 
   it('fim de semana bloqueado em qualquer fuso', () => {

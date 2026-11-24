@@ -65,9 +65,7 @@ export class SttTranscriptContractError extends Error {
 function assertNonEmpty(value: string, field: string): string {
   const trimmed = typeof value === 'string' ? value.trim() : '';
   if (!trimmed) {
-    throw new SttTranscriptContractError(
-      `Campo obrigatório ausente no evento STT: '${field}'.`,
-    );
+    throw new SttTranscriptContractError(`Campo obrigatório ausente no evento STT: '${field}'.`);
   }
   return trimmed;
 }
@@ -185,9 +183,7 @@ export function mapDiarizedUtterancesToEvents(
         transcript: text,
         isFinal: true,
         speaker: utterance.speaker,
-        ...(utterance.confidence !== undefined
-          ? { confidence: utterance.confidence }
-          : {}),
+        ...(utterance.confidence !== undefined ? { confidence: utterance.confidence } : {}),
         startSec: utterance.startSec,
         endSec: utterance.endSec,
       }),

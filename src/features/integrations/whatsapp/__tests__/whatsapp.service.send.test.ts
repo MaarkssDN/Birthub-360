@@ -96,10 +96,12 @@ vi.mock('@whiskeysockets/baileys', async (importOriginal) => {
   };
 });
 
-const { initWhatsApp, sendWhatsAppMessage } =
-  await import('../../../../../src/features/integrations/whatsapp/whatsapp.service');
-const { whatsAppAntiBanThrottler } =
-  await import('../../../../../src/lib/integrations/whatsapp/baileys.client');
+const { initWhatsApp, sendWhatsAppMessage } = await import(
+  '../../../../../src/features/integrations/whatsapp/whatsapp.service'
+);
+const { whatsAppAntiBanThrottler } = await import(
+  '../../../../../src/lib/integrations/whatsapp/baileys.client'
+);
 
 let orgCounter = 0;
 async function connectFreshOrg(): Promise<string> {

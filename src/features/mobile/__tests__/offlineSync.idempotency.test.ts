@@ -138,8 +138,7 @@ describe('[85 · Bóris] Outbox idempotency — X-Idempotency-Key', () => {
     it.each([
       {
         name: 'CREATE_LEAD',
-        setup: async (s: OfflineSyncService) =>
-          s.enqueueCreateLead({ name: 'Lead X' }),
+        setup: async (s: OfflineSyncService) => s.enqueueCreateLead({ name: 'Lead X' }),
         mockResponse: { id: 'lead_real_1' },
       },
       {
@@ -251,9 +250,7 @@ describe('[85 · Bóris] Outbox idempotency — X-Idempotency-Key', () => {
     it('item permanece com a mesma key após esgotar retries (fila failed)', async () => {
       service.setOnlineState(true);
       const item = await service.enqueueCreateLead({ name: 'Lead Esgotado' });
-      mockApiClient.request.mockRejectedValue(
-        new Error('Não foi possível conectar ao servidor.'),
-      );
+      mockApiClient.request.mockRejectedValue(new Error('Não foi possível conectar ao servidor.'));
 
       await service.syncQueue();
       await service.syncQueue();

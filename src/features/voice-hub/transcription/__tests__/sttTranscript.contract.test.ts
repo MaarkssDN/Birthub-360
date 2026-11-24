@@ -44,18 +44,21 @@ describe('[Agente 63 · Lira] Contrato STT → Voice Command Router', () => {
       'rejeita contexto sem %s',
       (field) => {
         expect(() =>
-          createSttTranscriptEvent({ ...CONTEXT, [field]: '  ' }, {
-            transcript: 'oi',
-            isFinal: true,
-          }),
+          createSttTranscriptEvent(
+            { ...CONTEXT, [field]: '  ' },
+            {
+              transcript: 'oi',
+              isFinal: true,
+            },
+          ),
         ).toThrow(SttTranscriptContractError);
       },
     );
 
     it('rejeita transcript vazio ou só espaços', () => {
-      expect(() =>
-        createSttTranscriptEvent(CONTEXT, { transcript: '   ', isFinal: true }),
-      ).toThrow(SttTranscriptContractError);
+      expect(() => createSttTranscriptEvent(CONTEXT, { transcript: '   ', isFinal: true })).toThrow(
+        SttTranscriptContractError,
+      );
     });
 
     it('rejeita confidence fora de [0,1] ou não numérica', () => {
@@ -120,9 +123,7 @@ describe('[Agente 63 · Lira] Contrato STT → Voice Command Router', () => {
         transcript: 'criar lead',
         isFinal: false,
       });
-      expect(() => toVoiceCommandRequest(interim, 'admin')).toThrow(
-        SttTranscriptContractError,
-      );
+      expect(() => toVoiceCommandRequest(interim, 'admin')).toThrow(SttTranscriptContractError);
     });
   });
 

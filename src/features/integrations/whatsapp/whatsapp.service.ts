@@ -503,10 +503,7 @@ export async function sendWhatsAppMessage(
   // Cobre tanto o envio direto do worker quanto o reenviado via fila — todos convergem aqui.
   await whatsAppAntiBanThrottler.throttle(organizationId);
   try {
-    await withTimeout(
-      sock.sendPresenceUpdate('composing', result.jid),
-      BAILEYS_CALL_TIMEOUT_MS,
-    );
+    await withTimeout(sock.sendPresenceUpdate('composing', result.jid), BAILEYS_CALL_TIMEOUT_MS);
   } catch (err: any) {
     // Presença é cosmética — uma falha aqui nunca pode impedir o envio da mensagem em si.
     logger.warn({ err, organizationId }, '[whatsapp] Falha ao enviar presença (composing)');

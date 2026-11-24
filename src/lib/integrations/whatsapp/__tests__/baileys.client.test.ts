@@ -44,16 +44,11 @@ describe('WhatsAppAntiBanThrottler — serialização por organização', () => 
 
     const startedAt = Date.now();
     let fastResolvedAt = 0;
-    const fastPromise = throttler
-      .throttle('org-rapida', 5)
-      .then((d) => {
-        fastResolvedAt = Date.now() - startedAt;
-        return d;
-      });
-    const [slow, fast] = await Promise.all([
-      throttler.throttle('org-lenta', 120),
-      fastPromise,
-    ]);
+    const fastPromise = throttler.throttle('org-rapida', 5).then((d) => {
+      fastResolvedAt = Date.now() - startedAt;
+      return d;
+    });
+    const [slow, fast] = await Promise.all([throttler.throttle('org-lenta', 120), fastPromise]);
 
     expect(slow).toBe(120);
     expect(fast).toBe(5);

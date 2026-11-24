@@ -75,7 +75,10 @@ describe('extractSttTranscript — contrato STT tolerante', () => {
   it('aceita Whisper { text, segments }', () => {
     const result = extractSttTranscript({
       text: 'criar lead chamado Bob',
-      segments: [{ start: 0, end: 1, text: 'criar lead ' }, { start: 1, end: 2, text: 'chamado Bob' }],
+      segments: [
+        { start: 0, end: 1, text: 'criar lead ' },
+        { start: 1, end: 2, text: 'chamado Bob' },
+      ],
     });
     expect(result.kind).toBe('final');
     if (result.kind === 'final') expect(result.transcript).toContain('criar lead');
@@ -134,9 +137,11 @@ describe('resolveVoiceActorFromSession / mapSystemRoleToVoiceRole', () => {
   });
 
   it('resolve user direto e aliases de tenant', () => {
-    expect(
-      resolveVoiceActorFromSession({ id: 'u1', tenantId: 't1', role: 'ADMIN' }),
-    ).toEqual({ userId: 'u1', organizationId: 't1', role: 'admin' });
+    expect(resolveVoiceActorFromSession({ id: 'u1', tenantId: 't1', role: 'ADMIN' })).toEqual({
+      userId: 'u1',
+      organizationId: 't1',
+      role: 'admin',
+    });
   });
 
   it('retorna null sem userId ou organizationId — nunca inventa tenant', () => {

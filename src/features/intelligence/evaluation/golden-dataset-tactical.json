@@ -65,7 +65,10 @@
         "daysInCurrentStage": 24,
         "daysSinceLastInteraction": 15,
         "stageAverageDays": 8,
-        "unresolvedObjections": ["Preço 20% acima do orçamento da diretoria", "Dúvida sobre integração HL7"]
+        "unresolvedObjections": [
+          "Preço 20% acima do orçamento da diretoria",
+          "Dúvida sobre integração HL7"
+        ]
       },
       "expected": {
         "optimismBiasDetected": true,

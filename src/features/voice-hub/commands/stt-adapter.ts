@@ -122,8 +122,8 @@ function readSpeechResultItem(item: unknown): {
     asNonEmptyString(record.transcript) ??
     asNonEmptyString(record.text) ??
     (nested && typeof nested === 'object'
-      ? asNonEmptyString((nested as { transcript?: unknown }).transcript) ??
-        asNonEmptyString((nested as { text?: unknown }).text)
+      ? (asNonEmptyString((nested as { transcript?: unknown }).transcript) ??
+        asNonEmptyString((nested as { text?: unknown }).text))
       : undefined);
   return { transcript, isFinal: record.isFinal === true };
 }
@@ -195,7 +195,11 @@ export function extractSttTranscript(stt: unknown): SttTranscriptExtraction {
 
 /** Papel de domínio do Voice Hub → papel do guard de comandos de voz. */
 export function mapSystemRoleToVoiceRole(role: unknown): VoiceActorRole {
-  switch (String(role ?? '').trim().toUpperCase()) {
+  switch (
+    String(role ?? '')
+      .trim()
+      .toUpperCase()
+  ) {
     case 'ADMIN':
       return 'admin';
     case 'GESTOR':
@@ -234,9 +238,7 @@ export function resolveVoiceActorFromSession(session: unknown): VoiceCommandActo
   const root = session as Record<string, unknown>;
   // Desembrulha `{ user: {...} }` (better-auth / AuthRequest-like).
   const user =
-    root.user && typeof root.user === 'object'
-      ? (root.user as Record<string, unknown>)
-      : root;
+    root.user && typeof root.user === 'object' ? (root.user as Record<string, unknown>) : root;
 
   const userId = readField(user, ['id', 'userId', 'user_id']);
   const organizationId = readField(user, [
@@ -371,9 +373,7 @@ export interface SttVoiceCommandAdapterOptions {
    * `resolveVoiceActorFromSession`. Injetável para contextos de sessão
    * customizados — mas NUNCA deve ler tenancy do payload STT.
    */
-  resolveActor?: (
-    session: unknown,
-  ) => VoiceCommandActor | null | Promise<VoiceCommandActor | null>;
+  resolveActor?: (session: unknown) => VoiceCommandActor | null | Promise<VoiceCommandActor | null>;
 }
 
 export function createSttVoiceCommandAdapter(options: SttVoiceCommandAdapterOptions) {

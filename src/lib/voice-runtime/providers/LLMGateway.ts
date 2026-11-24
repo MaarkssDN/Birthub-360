@@ -244,37 +244,6 @@ class LLMProviderGateway {
               }),
             });
 
-            const data = (await response.json()) as {
-              choices?: Array<{ message?: { content?: string } }>;
-              usage?: { total_tokens?: number };
-            };
-            const openaiText = data.choices?.[0]?.message?.content || '';
-            if (!openaiText) throw new Error('OpenAI retornou resposta vazia.');
-            return {
-              text: openaiText,
-              tokensUsed: data.usage?.total_tokens || tokensUsed,
-            };
-          }
-
-          if (provider === 'Claude') {
-            const apiKey = process.env.ANTHROPIC_API_KEY;
-            if (!apiKey) throw new Error('ANTHROPIC_API_KEY não configurado.');
-
-            const response = await fetch('https://api.anthropic.com/v1/messages', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': apiKey,
-                'anthropic-version': '2023-06-01',
-              },
-              body: JSON.stringify({
-                model: process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022',
-                system: systemInstruction,
-                messages: [{ role: 'user', content: prompt }],
-                max_tokens: 1024,
-              }),
-            });
-
             if (!response.ok) {
               throw new Error(`Claude API Error: ${response.status} ${response.statusText}`);
             }

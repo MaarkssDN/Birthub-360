@@ -81,9 +81,7 @@ export function isValidIanaTimeZone(value: string | null | undefined): value is 
  * Devolve o fuso IANA para uma UF brasileira, ou `null` quando a sigla não é reconhecida
  * (vazio, nome por extenso, UF de outro país, lixo). O chamador decide o fallback.
  */
-export function timeZoneForBrazilianState(
-  state: string | null | undefined,
-): string | null {
+export function timeZoneForBrazilianState(state: string | null | undefined): string | null {
   if (typeof state !== 'string') return null;
   const uf = state.trim().toUpperCase();
   if (!/^[A-Z]{2}$/.test(uf)) return null;

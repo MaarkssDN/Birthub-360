@@ -700,7 +700,12 @@ async function assertBitrixItemBelongsToPlanUser(
       result?: ({ task?: Record<string, unknown> } & Record<string, unknown>) | null;
     }>(webhookUrl, 'tasks.task.get', { taskId: rawId });
     const task = res?.result?.task ?? res?.result ?? null;
-    const responsibleId = pickBitrixField(task, 'responsibleId', 'responsible_id', 'RESPONSIBLE_ID');
+    const responsibleId = pickBitrixField(
+      task,
+      'responsibleId',
+      'responsible_id',
+      'RESPONSIBLE_ID',
+    );
     if (!responsibleId || responsibleId !== bitrixUserId) deny();
     return;
   }
