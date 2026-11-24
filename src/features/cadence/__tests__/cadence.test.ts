@@ -15,6 +15,7 @@ import {
   resolvePendingTouchAttempt,
   resumeCadenceRun,
   sanitizeTouchError,
+  sequenceDefinitionForRun,
   startCadenceRun,
   stopCadenceManually,
   validateSequence,
@@ -831,5 +832,35 @@ describe('DEBT-0009 — confirmação pendente de toque assíncrono (voz)', () =
     expect(resolved).not.toBe(run);
     expect(resolved.attempts[0].result).toBe('sent');
     expect(resolved.status).toBe('completed'); // único toque enviado → fim natural
+  });
+});
+
+// POS4-17-CADENCE-TZ / achado 2 do handoff 44→17 — o scan descobre runs sob bypassRls; a
+// sequência resolvida para um run precisa ser do MESMO tenant, senão os touches de outra
+// organização seriam despachados. A regra vive no domínio para ser testável sem banco; o filtro
+// de `deletedAt`/`active` é da query (coberto por teste de integração, ver handoff POS4).
+describe('sequenceDefinitionForRun — isolamento de tenant no scan (POS4-17-CADENCE-TZ)', () => {
+  const lookup = {
+    organizationId: 'org-A',
+    definition: { id: 'seq-1', name: 'Seq', touches: SEQUENCE.touches },
+  };
+
+  it('mesmo tenant devolve a definição parseada', () => {
+    expect(sequenceDefinitionForRun(lookup, 'org-A')).toBe(lookup.definition);
+  });
+
+  it('sequência de OUTRO tenant devolve null — run é encerrado, nunca despacha touches alheios', () => {
+    expect(sequenceDefinitionForRun(lookup, 'org-B')).toBeNull();
+  });
+
+  it('sequência ausente do mapa (inclui soft-deletada, filtrada na query) devolve null', () => {
+    expect(sequenceDefinitionForRun(undefined, 'org-A')).toBeNull();
+    expect(sequenceDefinitionForRun(null, 'org-A')).toBeNull();
+  });
+
+  it('definição malformada (null) devolve null mesmo no tenant correto', () => {
+    expect(
+      sequenceDefinitionForRun({ organizationId: 'org-A', definition: null }, 'org-A'),
+    ).toBeNull();
   });
 });

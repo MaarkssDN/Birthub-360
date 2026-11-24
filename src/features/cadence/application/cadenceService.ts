@@ -59,9 +59,19 @@ export interface CadenceDispatcher {
   }>;
 }
 
-/** Resolve o sujeito de opt-out (leadId + e-mail + telefone) a partir do lead — evita repetir a busca em cada chamada. */
+/** Sujeito de opt-out acrescido do fuso do destinatário — usado pela janela comercial por lead (POS4-17-CADENCE-TZ). */
+export interface LeadSubject extends OptOutSubject {
+  /**
+   * Fuso IANA resolvido para o lead (customFields.timezone → UF da empresa → fallback SP).
+   * `null`/`undefined` quando o resolvedor não conseguiu determinar — a implementação da janela
+   * aplica o próprio fallback.
+   */
+  timeZone?: string | null;
+}
+
+/** Resolve o sujeito de opt-out (leadId + e-mail + telefone) e o fuso do lead — evita repetir a busca em cada chamada. */
 export interface LeadSubjectResolver {
-  resolve(organizationId: string, leadId: string): Promise<OptOutSubject>;
+  resolve(organizationId: string, leadId: string): Promise<LeadSubject>;
 }
 
 /**
@@ -82,7 +92,12 @@ export interface AdvanceCadenceRunDeps {
   subjectResolver: LeadSubjectResolver;
   dispatcher: CadenceDispatcher;
   lock: CadenceRunLockPort;
-  isWithinBusinessWindow: (now: Date) => boolean;
+  /**
+   * Janela comercial (POS4-17-CADENCE-TZ): recebe o fuso IANA do destinatário como 2º argumento.
+   * Implementações `(now) => boolean` continuam válidas — ignoram o fuso e caem no fallback da
+   * própria política; a implementação de produção (`isWithinCadenceBusinessWindow`) usa o fuso.
+   */
+  isWithinBusinessWindow: (now: Date, leadTimeZone?: string | null) => boolean;
   /**
    * `since` (DEBT-0008): quando presente, só conta réplica/comunicação ocorrida a partir daquele
    * instante — `advanceCadenceRun` sempre passa `run.startedAt`, para que uma resposta histórica
@@ -210,8 +225,13 @@ export async function advanceCadenceRun(
     const upcomingTouch = sequence.touches.find((t) => t.order === run.currentTouchOrder);
     let isOptedOutForUpcoming = false;
     let rateLimitBlock: RateLimitBlockReason | null = null;
+    // Fuso do destinatário para a janela comercial por lead (POS4-17-CADENCE-TZ) — resolvido na
+    // mesma consulta de sujeito do opt-out, sem I/O extra. `null` quando não há toque candidato
+    // (a janela nem é avaliada nesse caso) ou quando o lead não tem sinal de localização.
+    let leadTimeZone: string | null = null;
     if (upcomingTouch) {
       const subject = await deps.subjectResolver.resolve(organizationId, run.leadId);
+      leadTimeZone = subject.timeZone ?? null;
       isOptedOutForUpcoming = await isOptedOut(
         deps.optOutRepo,
         organizationId,
@@ -237,6 +257,7 @@ export async function advanceCadenceRun(
     const decision = decideCadenceAction(run, sequence, now, {
       isOptedOut: isOptedOutForUpcoming,
       hasLeadReplied,
+      leadTimeZone,
       isWithinBusinessWindow: deps.isWithinBusinessWindow,
       rateLimitBlock,
     });

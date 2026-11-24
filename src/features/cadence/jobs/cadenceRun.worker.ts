@@ -7,14 +7,16 @@ import { registerQueueForMetrics } from '../../../lib/queue/metrics.js';
 import { connection } from '../../../lib/queue/redis.js';
 import { SCHEDULER_SCAN_DEFAULTS } from '../../../lib/queue/queueDefaults.js';
 import { container } from '../../../shared/di/container.js';
-import { isWithinCallWindow } from '../../integrations/birth-voice/coldCall.policy.js';
+import { isWithinCadenceBusinessWindow } from '../domain/businessWindow.js';
 import { type AdvanceCadenceRunDeps, advanceCadenceRun } from '../application/cadenceService.js';
 import { loadCadenceRateLimitPolicy } from '../application/rateLimitConfig.js';
 import {
   applyPolicyGuardrailFailure,
   type CadenceChannel,
   type CadenceSequenceDefinition,
+  type CadenceSequenceLookup,
   type CadenceTouch,
+  sequenceDefinitionForRun,
   validateSequence,
 } from '../domain/cadence.js';
 import {
@@ -108,7 +110,11 @@ export function buildDeps(): AdvanceCadenceRunDeps {
     subjectResolver: prismaLeadSubjectResolver,
     dispatcher: buildProductionCadenceDispatcher(getVoicePort()),
     lock: redisCadenceRunLock,
-    isWithinBusinessWindow: (now) => isWithinCallWindow(now),
+    // POS4-17-CADENCE-TZ: a janela comercial agora é avaliada no fuso do DESTINATÁRIO (lead),
+    // resolvido por `prismaLeadSubjectResolver` — não mais fixa em America/Sao_Paulo para todos.
+    // Lead sem sinal de localização cai no fallback SP documentado em `domain/businessWindow.ts`.
+    isWithinBusinessWindow: (now, leadTimeZone) =>
+      isWithinCadenceBusinessWindow(now, leadTimeZone),
     hasLeadReplied,
     // Rate limit por contato/domínio (auditoria transversal, Agente 17) — ver
     // `application/rateLimitService.ts`/`rateLimitConfig.ts`. Política lida do ambiente a cada
@@ -135,19 +141,34 @@ export async function scanAndAdvanceCadenceRuns(
     const runs = await prisma.cadenceRun.findMany({
       where: { status: 'Active' },
       select: { id: true, organizationId: true, sequenceId: true },
+      // orderBy torna a varredura justa/determinística com >500 runs ativos (achado 3 do handoff
+      // 44→17): sem ordenação o Postgres poderia devolver sempre o mesmo subconjunto e runs no fim
+      // da fila nunca seriam processados. `startedAt` asc = quem espera há mais tempo vai primeiro.
+      orderBy: { startedAt: 'asc' },
       take: MAX_RUNS_PER_TICK,
     });
 
     if (runs.length === 0)
-      return { activeRuns: runs, sequences: new Map<string, CadenceSequenceDefinition | null>() };
+      return { activeRuns: runs, sequences: new Map<string, CadenceSequenceLookup>() };
 
     const sequenceIds = [...new Set(runs.map((r) => r.sequenceId))];
     const sequenceRows = await prisma.cadenceSequence.findMany({
-      where: { id: { in: sequenceIds } },
-      select: { id: true, name: true, touches: true },
+      // `deletedAt: null`: sequência soft-deletada não pode continuar despachando toques
+      // (achado 2 do handoff 44→17). `active` NÃO é filtrado de propósito: o contrato documentado
+      // em `application/sequenceService.ts`/`cadence.routes.ts` diz que desativar uma sequência
+      // só impede NOVOS runs — runs já em andamento a partir dela continuam (decisão de produto,
+      // não defeito). A validação de tenant (`organizationId` vs `run.organizationId`) acontece
+      // no consumidor do mapa, porque a consulta em lote não conhece o par run↔sequência.
+      where: { id: { in: sequenceIds }, deletedAt: null },
+      select: { id: true, organizationId: true, name: true, touches: true },
     });
-    const seqMap = new Map<string, CadenceSequenceDefinition | null>();
-    for (const row of sequenceRows) seqMap.set(row.id, parseCadenceSequenceDefinition(row));
+    const seqMap = new Map<string, CadenceSequenceLookup>();
+    for (const row of sequenceRows) {
+      seqMap.set(row.id, {
+        organizationId: row.organizationId,
+        definition: parseCadenceSequenceDefinition(row),
+      });
+    }
     return { activeRuns: runs, sequences: seqMap };
   });
 
@@ -159,7 +180,12 @@ export async function scanAndAdvanceCadenceRuns(
   let failedInvalidSequence = 0;
 
   for (const run of activeRuns) {
-    const sequence = sequences.get(run.sequenceId);
+    const lookup = sequences.get(run.sequenceId);
+    // Sequência ausente (inclui soft-deletada, filtrada na query), de outro tenant, ou
+    // malformada — nos três casos o run não pode avançar com segurança e é encerrado como
+    // `failed`/`policy-guardrail` (mesmo tratamento de antes para "inválida/inacessível").
+    // A checagem de tenant mora no domínio (`sequenceDefinitionForRun`) para ser testável sem banco.
+    const sequence = sequenceDefinitionForRun(lookup, run.organizationId);
     if (!sequence) {
       // Sequência ausente/malformada — encerra o run como `failed` em vez de deixá-lo `Active`
       // para sempre (o próximo tick voltaria a pular exatamente do mesmo jeito). Roda com o
@@ -172,8 +198,13 @@ export async function scanAndAdvanceCadenceRuns(
         });
         failedInvalidSequence++;
         logger.error(
-          { organizationId: run.organizationId, runId: run.id, sequenceId: run.sequenceId },
-          'CadenceRun encerrado como failed: sequência associada inválida/inacessível.',
+          {
+            organizationId: run.organizationId,
+            runId: run.id,
+            sequenceId: run.sequenceId,
+            sequenceOrganizationId: lookup?.organizationId ?? null,
+          },
+          'CadenceRun encerrado como failed: sequência associada inválida/inacessível/de outro tenant.',
         );
       } catch (err: any) {
         errors++;

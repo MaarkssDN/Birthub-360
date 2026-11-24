@@ -13,7 +13,8 @@ import type {
 } from '../../../shared/domain/optOut.js';
 import type { CadenceRateLimitPolicy } from '../domain/rateLimit.js';
 import { isOptedOut } from '../../../shared/services/optOutService.js';
-import type { LeadSubjectResolver } from './cadenceService.js';
+import type { LeadSubject, LeadSubjectResolver } from './cadenceService.js';
+import { isValidIanaTimeZone } from '../domain/businessWindow.js';
 import {
   type CadenceRateLimitPort,
   evaluateRateLimitForUpcomingTouch,
@@ -75,7 +76,7 @@ export interface CadenceExecutionServiceDeps {
   subjectResolver: LeadSubjectResolver;
   rateLimitPort?: CadenceRateLimitPort;
   rateLimitPolicy?: CadenceRateLimitPolicy;
-  isWithinBusinessWindow?: (now: Date) => boolean;
+  isWithinBusinessWindow?: (now: Date, leadTimeZone?: string | null) => boolean;
   businessWindow?: CallWindow;
   dispatcher?: CadenceChannelDispatcherPort;
   taskPort?: TaskCreationPort;
@@ -109,12 +110,18 @@ export class CadenceExecutionService implements CadenceExecutionPort {
     }
   }
 
-  isWithinBusinessWindow(now: Date): boolean {
+  isWithinBusinessWindow(now: Date, leadTimeZone?: string | null): boolean {
     if (this.deps.isWithinBusinessWindow) {
-      return this.deps.isWithinBusinessWindow(now);
+      return this.deps.isWithinBusinessWindow(now, leadTimeZone);
     }
     const window = this.deps.businessWindow ?? resolveCallWindowFromEnv();
-    return isWithinCallWindow(now, window);
+    // POS4-17-CADENCE-TZ: quando o lead tem fuso resolvido e válido, ele vence o fuso configurado
+    // (env/default) — a janela passa a ser a do destinatário, não a do servidor/tenant.
+    const effectiveWindow =
+      leadTimeZone && isValidIanaTimeZone(leadTimeZone)
+        ? { ...window, timeZone: leadTimeZone.trim() }
+        : window;
+    return isWithinCallWindow(now, effectiveWindow);
   }
 
   onDeliveryStatus(listener: SwarmDeliveryNotificationListener): () => void {
@@ -156,8 +163,9 @@ export class CadenceExecutionService implements CadenceExecutionPort {
     const now = options?.now ?? new Date();
     const actionId = randomUUID();
 
-    // 1. Validar e resolver sujeito de contato para o lead
-    let subject: OptOutSubject;
+    // 1. Validar e resolver sujeito de contato para o lead (inclui o fuso do destinatário,
+    // usado pela janela comercial por lead — POS4-17-CADENCE-TZ)
+    let subject: LeadSubject;
     try {
       subject = await this.deps.subjectResolver.resolve(input.organizationId, input.leadId);
     } catch (err: any) {
@@ -213,7 +221,7 @@ export class CadenceExecutionService implements CadenceExecutionPort {
 
     // 3. Janela Comercial (válida para canais externos)
     if (this.isExternalChannel(input.channel)) {
-      const withinWindow = this.isWithinBusinessWindow(now);
+      const withinWindow = this.isWithinBusinessWindow(now, subject.timeZone ?? null);
       if (!withinWindow) {
         await this.notifyDeliveryStatus({
           actionId,
