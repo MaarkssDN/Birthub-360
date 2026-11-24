@@ -1,0 +1,10 @@
+lease: squad-40-wt46
+agent: 46-Sofia
+demanda: DEM-20261123-001 / SQUAD40-46-FORECAST
+worktree: C:/Github/Birthub-360-worktrees/squads/squad-40/wt-46
+branch: agente/46-forecast-s40-v2
+base: coord/squad-40 @ 4a70fe798 (clone C:/Github/Birthub-360)
+ports: 22400-22499
+scope: src/features/crm/forecast/**, .agents/handoffs/squad-40/, .agents/runs/{squads,leases}/
+supersedes: d8cf21b37 (agente/46-forecast-s40, base errada — histórico preservado)
+created: 2026-11-24
