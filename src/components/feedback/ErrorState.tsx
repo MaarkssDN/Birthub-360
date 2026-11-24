@@ -71,9 +71,7 @@ export function ErrorState({
         <AlertTriangle className="h-7 w-7" strokeWidth={1.5} />
       </div>
       <h3 className="mb-1.5 font-display text-lg font-bold text-ink">{title}</h3>
-      {message && (
-        <p className="mb-6 max-w-md text-sm leading-relaxed text-ink-2">{message}</p>
-      )}
+      {message && <p className="mb-6 max-w-md text-sm leading-relaxed text-ink-2">{message}</p>}
       {onRetry && (
         <Button variant="vancouver" onClick={onRetry} className="flex items-center gap-2 text-xs">
           <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />

@@ -56,10 +56,7 @@ export function StaleDataIndicator({
           disabled={isRefreshing}
           className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-warning/40 px-2.5 py-1 text-[11px] font-bold transition-colors hover:bg-warning/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring disabled:cursor-not-allowed disabled:opacity-60"
         >
-          <RefreshCw
-            className={cn('h-3 w-3', isRefreshing && 'animate-spin')}
-            aria-hidden="true"
-          />
+          <RefreshCw className={cn('h-3 w-3', isRefreshing && 'animate-spin')} aria-hidden="true" />
           {isRefreshing ? 'Sincronizando…' : 'Sincronizar agora'}
         </button>
       )}

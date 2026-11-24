@@ -1,10 +1,8 @@
 import { Building2, GitMerge, Loader2, RefreshCw } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import { LoadingState } from '../../../components/feedback/LoadingState.js';
 import { Badge } from '../../../components/ui/Badge.js';
 import { Button } from '../../../components/ui/Button.js';
-import { LoadingState } from '../../../components/feedback/LoadingState.js';
-import { ListSkeleton } from '../../../components/ui/Skeleton.js';
-import { OperationalStateContainer } from '../../../components/ui/OperationalStateContainer.js';
 import {
   Card,
   CardContent,
@@ -12,6 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from '../../../components/ui/Card.js';
+import { OperationalStateContainer } from '../../../components/ui/OperationalStateContainer.js';
+import { ListSkeleton } from '../../../components/ui/Skeleton.js';
 import { api } from '../../../lib/api.js';
 import { clientLogger } from '../../../lib/clientLogger.js';
 import { toast } from '../../../lib/toast.js';
