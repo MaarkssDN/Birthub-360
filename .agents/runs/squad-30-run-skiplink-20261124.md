@@ -1,4 +1,10 @@
 # Run — Agente 30 (Violeta), coordenadora Squad 30 — DEM-20261123-001
+
+> **STATUS: SUPERADO — NÃO INTEGRAR.** Executado no clone stale
+> `D:\Github\Birthub-360` (base `9f80c07ed`, linha onda-4 divergente). O SkipLink
+> já existia integrado na Onda 3 do clone autoritativo `C:\Github\Birthub-360`
+> (Agente 31, `0e27cf657`, aprovado Silas). Parecer Silas: REPROVADO por
+> duplicação. Registro mantido apenas como evidência histórica.
 - Runtime: Devin (subagente coordenador) · Data: 2026-11-24
 - Worktree: `C:/Github/Birthub-360-worktrees/squads/squad-30/wt-coord`
 - Branch: `coord/squad-30` · Base: `9f80c07ed` (SHA `93e82c220` da missão inexistente no clone — desvio registrado)

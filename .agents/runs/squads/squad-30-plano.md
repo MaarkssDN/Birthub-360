@@ -3,6 +3,14 @@ Coordenadora: Agente 30 — Violeta · DEM-20261123-001
 Branch: `coord/squad-30` · Worktree: `C:/Github/Birthub-360-worktrees/squads/squad-30/wt-coord`
 Base: `9f80c07ed` (ponta de `integracao/onda-4-dem20261123`, que contém `integracao/onda-3-dem20261123`)
 
+> **⚠️ SUPERADO (2026-11-24, deliberação humana §7):** este plano e o commit
+> `bd83277f0` (SkipLink) foram elaborados sobre o clone **D:\Github\Birthub-360**,
+> divergente/stale. O clone autoritativo da onda é **C:\Github\Birthub-360**
+> (base `93e82c220`), onde o SkipLink **já foi integrado na Onda 3**
+> (Agente 31, commit `0e27cf657`, parecer Silas APROVADO em `0f990e2bb`).
+> `bd83277f0` **NÃO deve ser integrado**. Continuação na branch
+> `coord/squad-30-v2` a partir de `93e82c220`.
+
 ## Desvios de setup registrados
 - SHA `93e82c220` **não existe** neste clone (verificado via `git cat-file`, `git rev-list --all`, após `git fetch origin`). Base adotada: ponta da integração Onda 4 (`9f80c07ed`), que já contém a Onda 3.
 - `.agents/runs/REGISTRO_GLOBAL_100_AGENTES_20261124.md`, `.agents/runs/estrutura-10-coordenadores-squads-20261124.md` e handoffs `34-para-*` **não existem** neste checkout — provável artefato da onda ainda não mergeado. Backlog reconstruído a partir de AGENTS.md, MATRIZ_PROPRIEDADE.md e estado real do código.
