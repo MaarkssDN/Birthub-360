@@ -67,9 +67,7 @@ function assertValidDealPatch(patch: DealUpdatePatch): void {
   }
   if (patch.title !== undefined) {
     if (typeof patch.title !== 'string' || !patch.title.trim() || patch.title.length > 500) {
-      throw new InvalidDealPatchError(
-        'title deve ser uma string não vazia (máx. 500 caracteres).',
-      );
+      throw new InvalidDealPatchError('title deve ser uma string não vazia (máx. 500 caracteres).');
     }
   }
   if (patch.stageId !== undefined) {

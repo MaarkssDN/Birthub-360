@@ -5,8 +5,8 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   type DealRecord,
   type DealRepositoryPort,
-  type DealUpdatePatch,
   DealsService,
+  type DealUpdatePatch,
   InvalidDealPatchError,
 } from '../../deals/deals.service.js';
 import {
