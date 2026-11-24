@@ -1,0 +1,5 @@
+session_id: devin-subagent-navi-s80
+squad: 80
+holder: agente/80-navi-coordenador
+timestamp: 2026-11-24
+escopo: coord/squad-80 worktree wt-coord; portas 22800-22899; branch coord/squad-80; base 93e82c220
